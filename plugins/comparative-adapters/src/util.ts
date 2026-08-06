@@ -315,19 +315,28 @@ export type PifLine = ReturnType<typeof parsePifLine>
  * `chr1`) can align at identical coordinates in a conserved region. Shared by
  * the in-memory and indexed all-vs-all adapters so that reasoning lives once.
  */
-export function isSelfDiagonal(a: {
+export function isSelfDiagonal(a: AlignedSide) {
+  return (
+    a.refName === a.mateRefName &&
+    a.start === a.mateStart &&
+    a.end === a.mateEnd
+  )
+}
+
+/**
+ * One side of one all-vs-all alignment: the locus it draws at plus the locus it
+ * draws to, both under their full PanSN names. The in-memory adapter builds this
+ * by orienting a PAF record ({@link orientPafRecord}); the indexed one reads it
+ * straight off a PIF row, which make-pif already oriented. Every predicate below
+ * is stated over this shape so the two adapters cannot answer differently.
+ */
+export interface AlignedSide {
   refName: string
   start: number
   end: number
   mateRefName: string
   mateStart: number
   mateEnd: number
-}) {
-  return (
-    a.refName === a.mateRefName &&
-    a.start === a.mateStart &&
-    a.end === a.mateEnd
-  )
 }
 
 /**
@@ -344,14 +353,7 @@ export function isSelfDiagonal(a: {
  * divergence this prevents.
  */
 export function sideDraws(
-  side: {
-    refName: string
-    start: number
-    end: number
-    mateRefName: string
-    mateStart: number
-    mateEnd: number
-  },
+  side: AlignedSide,
   anchorPrefix: string | undefined,
   targetPrefix: string | undefined,
 ) {
@@ -364,8 +366,16 @@ export function sideDraws(
 }
 
 /**
- * Fraction of the shorter of two intervals that they share. 1 when one contains
- * the other, 0 when they are disjoint.
+ * How much two intervals coincide: shared length over combined extent (Jaccard).
+ * 1 when they are identical, 0 when disjoint.
+ *
+ * Over the shorter span rather than the union, this returned 1 whenever one
+ * interval merely CONTAINED the other, so a short alignment nested inside a long
+ * one on both of its spans — a repeat inside a syntenic block, a minimap2
+ * secondary inside its primary — scored as a perfect reciprocal match and was
+ * dropped. Against the union a 1 kb block inside a 100 kb one scores 0.01 and
+ * survives, while a true reciprocal pair (which differs by hundreds of bases
+ * over hundreds of kb) still scores >0.99.
  */
 function overlapFraction(
   aStart: number,
@@ -374,8 +384,8 @@ function overlapFraction(
   bEnd: number,
 ) {
   const overlap = Math.min(aEnd, bEnd) - Math.max(aStart, bStart)
-  const shorter = Math.min(aEnd - aStart, bEnd - bStart)
-  return shorter > 0 ? Math.max(0, overlap) / shorter : 0
+  const union = Math.max(aEnd, bEnd) - Math.min(aStart, bStart)
+  return union > 0 ? Math.max(0, overlap) / union : 0
 }
 
 /**
@@ -387,6 +397,29 @@ function overlapFraction(
  * what keeps real paralogy (same pair of contigs, different loci) out of it.
  */
 const RECIPROCAL_OVERLAP = 0.9
+
+/** Two sides are one homology stated twice when both spans nearly coincide. */
+function isRestatement(a: AlignedSide, b: AlignedSide) {
+  return (
+    overlapFraction(a.start, a.end, b.start, b.end) >= RECIPROCAL_OVERLAP &&
+    overlapFraction(a.mateStart, a.mateEnd, b.mateStart, b.mateEnd) >=
+      RECIPROCAL_OVERLAP
+  )
+}
+
+/**
+ * Total order on the sides of one contig pair. Ascending start is what the sweep
+ * in {@link markReciprocalDuplicates} needs; the rest only has to be a tiebreak
+ * that does not depend on the order the sides arrived in.
+ */
+function cmpSide(a: AlignedSide, b: AlignedSide) {
+  return (
+    a.start - b.start ||
+    a.end - b.end ||
+    a.mateStart - b.mateStart ||
+    a.mateEnd - b.mateEnd
+  )
+}
 
 /**
  * An all-vs-all mapping contains a record per ORDERED pair, so A-vs-B and
@@ -405,53 +438,72 @@ const RECIPROCAL_OVERLAP = 0.9
  * is untouched, which a "keep only the canonical direction" rule could not
  * promise.
  *
- * Returns a stateful predicate — call it once per side, in a deterministic
- * order, and it answers whether that side is a restatement of one already
- * accepted.
+ * Returns a mask parallel to `sides`: true where that side restates one kept
+ * earlier in its contig pair's own coordinate order.
+ *
+ * A batch pass over a whole set rather than a predicate fed one side at a time,
+ * because both properties of the streaming form were bugs:
+ *
+ *  - **Which member survived depended on arrival order.** The in-memory adapter
+ *    walked records in file order and the indexed one in (tier letter, file
+ *    offset) order, so one file drew a different member of each pair — different
+ *    CIGAR, coordinates off by a few hundred bases — depending on which adapter
+ *    was loaded. Sorting here makes it a property of the alignment instead.
+ *  - **It was quadratic.** Compared against every side already kept for the
+ *    pair, one contig pair holding 50k alignments cost 4.6s — and paid it per
+ *    region, per band, per pan/zoom. Swept in ascending start, a side can only
+ *    restate one that still reaches it, so the pass prunes on `end <= start` and
+ *    compares against the active set alone.
+ *
+ * Callers run this once over a whole file (the in-memory adapter's `setupPre`)
+ * or once over a whole query result, never per feature.
  */
-export function createReciprocalDedupe() {
-  const kept = new Map<
-    string,
-    { start: number; end: number; mateStart: number; mateEnd: number }[]
-  >()
-  return function isDuplicate(side: {
-    refName: string
-    start: number
-    end: number
-    mateRefName: string
-    mateStart: number
-    mateEnd: number
-  }) {
-    const key = `${side.refName}\u0000${side.mateRefName}`
-    const seen = kept.get(key)
-    if (
-      seen?.some(
-        p =>
-          overlapFraction(p.start, p.end, side.start, side.end) >=
-            RECIPROCAL_OVERLAP &&
-          overlapFraction(
-            p.mateStart,
-            p.mateEnd,
-            side.mateStart,
-            side.mateEnd,
-          ) >= RECIPROCAL_OVERLAP,
-      )
-    ) {
-      return true
+export function markReciprocalDuplicates(sides: AlignedSide[]) {
+  const duplicate = new Array<boolean>(sides.length).fill(false)
+  // A restatement necessarily shares both contig names, so only sides of the
+  // same pair are candidates for each other. Nested maps rather than a joined
+  // string key: a contig name can contain any of the characters one would
+  // reach for as a separator.
+  const byPair = new Map<string, Map<string, number[]>>()
+  for (const [i, side] of sides.entries()) {
+    let byMate = byPair.get(side.refName)
+    if (!byMate) {
+      byMate = new Map()
+      byPair.set(side.refName, byMate)
     }
-    const entry = {
-      start: side.start,
-      end: side.end,
-      mateStart: side.mateStart,
-      mateEnd: side.mateEnd,
-    }
-    if (seen) {
-      seen.push(entry)
+    const group = byMate.get(side.mateRefName)
+    if (group) {
+      group.push(i)
     } else {
-      kept.set(key, [entry])
+      byMate.set(side.mateRefName, [i])
     }
-    return false
   }
+
+  for (const byMate of byPair.values()) {
+    for (const group of byMate.values()) {
+      group.sort((a, b) => cmpSide(sides[a]!, sides[b]!))
+      // Kept sides that still reach the sweep position. Sides arrive in
+      // ascending start, so one whose end has been passed can never overlap
+      // again.
+      const active: number[] = []
+      for (const i of group) {
+        const side = sides[i]!
+        let write = 0
+        for (const kept of active) {
+          if (sides[kept]!.end > side.start) {
+            active[write++] = kept
+          }
+        }
+        active.length = write
+        if (active.some(kept => isRestatement(sides[kept]!, side))) {
+          duplicate[i] = true
+        } else {
+          active.push(i)
+        }
+      }
+    }
+  }
+  return duplicate
 }
 
 /**

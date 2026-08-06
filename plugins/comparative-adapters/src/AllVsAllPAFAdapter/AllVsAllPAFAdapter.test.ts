@@ -148,6 +148,57 @@ test('haplotype-level: targetAssemblyName isolates the hap1-vs-hap2 band', async
   expect(fa[0]!.get('start')).toBe(100)
 })
 
+// The reciprocal pair the dedupe exists for: one homology aligned from either
+// end, so the file holds it twice and a band would paint the ribbon twice.
+// Written with the LATER-starting member first, which is the order that used to
+// break: file order decided the winner, so a block ending between the two starts
+// kept the earlier member in one block and the later one in the next.
+const reciprocalPaf = () =>
+  writePaf([
+    'CFT073#1#chr\t5500000\t4971408\t5115000\t+\tK12#1#chr\t5000000\t4362436\t4496063\t130000\t133627\t60',
+    'K12#1#chr\t5000000\t4362432\t4496576\t+\tCFT073#1#chr\t5500000\t4971470\t5115529\t130000\t134144\t60',
+  ])
+
+test('a reciprocal pair draws once', async () => {
+  const fa = await feats(makeAdapter(['K12', 'CFT073'], {}, reciprocalPaf()), {
+    refName: 'chr',
+    start: 4_000_000,
+    end: 4_600_000,
+    assemblyName: 'K12',
+  })
+  expect(fa.length).toBe(1)
+  // and the survivor is chosen by coordinate, not by which row the file listed
+  // first — the two all-vs-all adapters read the same file in different orders
+  expect(fa[0]!.get('start')).toBe(4362432)
+})
+
+// The dedupe used to run per getFeatures call, so it only ever saw the sides
+// intersecting one block. A boundary falling between the two near-identical
+// spans let the shorter member through on one side of it and the longer member
+// through on the other, and the ribbon came back doubled. Deciding it once over
+// the whole file at setup makes the answer independent of how the view is cut
+// into blocks.
+test('a reciprocal pair stays deduped across block boundaries', async () => {
+  const adapter = makeAdapter(['K12', 'CFT073'], {}, reciprocalPaf())
+  const blocks = [
+    [4_000_000, 4_362_434],
+    [4_362_434, 4_600_000],
+  ] as const
+  const ids = new Set<string>()
+  for (const [start, end] of blocks) {
+    for (const f of await feats(adapter, {
+      refName: 'chr',
+      start,
+      end,
+      assemblyName: 'K12',
+    })) {
+      ids.add(f.id())
+    }
+  }
+  // the same one member in both blocks, never both members
+  expect(ids.size).toBe(1)
+})
+
 // a sample-level prefix must not match a longer sample name that merely starts
 // with it, which a bare startsWith would let through
 test('a sample prefix does not match a longer sample name', async () => {

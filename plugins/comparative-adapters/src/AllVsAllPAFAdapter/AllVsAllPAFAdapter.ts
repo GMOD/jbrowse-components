@@ -10,28 +10,38 @@ import {
   makeSyntenyFeature,
   orientPafRecord,
 } from '../PAFAdapter/util.ts'
-import { panSNContig } from '../pansn.ts'
+import { panSNContig, panSNPrefixes } from '../pansn.ts'
 import {
   assemblyByPanSNPrefix,
-  createReciprocalDedupe,
   assemblyForPanSNName,
+  isSelfDiagonal,
+  markReciprocalDuplicates,
   noPanSNMatchError,
   panSNInventory,
   resolvePanSNPrefix,
   sideDraws,
 } from '../util.ts'
 
+import type { AlignedSide } from '../util.ts'
 import type { AllVsAllPAFAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 
-// One side of one PAF record: the locus it draws at. `flip` mirrors PAFAdapter
-// (true = the PAF query/qname side is the feature), and `index` is the record's
-// position in the parsed array, which the feature id is derived from.
-interface RecordSide {
-  index: number
+/**
+ * One side of one PAF record, resolved to the locus it draws at and kept that
+ * way. A region query reads these fields directly rather than re-running
+ * {@link orientPafRecord} on every candidate it walks.
+ */
+interface IndexedSide extends AlignedSide {
+  // position of the record in the parsed array, for the tags/strand the feature
+  // carries — the bulk of a record (its CIGAR) is not copied in here
+  record: number
+  // mirrors PAFAdapter: true = the PAF query/qname side is the feature. Decides
+  // how the CIGAR is oriented at emit time.
   flip: boolean
+  // stable across this file, and what the feature's id is derived from
+  syntenyId: number
 }
 
 export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllPAFAdapterConfig> {
@@ -44,8 +54,30 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
     return true
   }
 
+  // Config-derived and therefore fixed for this adapter: an edit produces a new
+  // snapshot, hence a new cache key and a new adapter (see dataAdapterCache).
+  // Read once instead of per getFeatures — that is per band, per region, per
+  // pan/zoom, and assemblyByPanSNPrefix builds a fresh map each time.
+  private asmByPrefixCache?: Record<string, string>
+
+  private asmByPrefix() {
+    this.asmByPrefixCache ??= assemblyByPanSNPrefix(this)
+    return this.asmByPrefixCache
+  }
+
   setup = createSharedSetup((opts: BaseOptions) => this.setupPre(opts))
 
+  /**
+   * Everything that does not depend on the query, done once per file load and
+   * memoized by {@link createSharedSetup}: the oriented sides, the reciprocal-pair
+   * decision, and the per-(prefix, contig) index a region query walks.
+   *
+   * All three used to be per-query work. The index was keyed on the bare contig,
+   * so a query for `chr1` in a 100-genome pangenome walked every sample's `chr1`
+   * and threw 99% of it away in `sideDraws`; and the dedupe re-derived — per
+   * region, per band, per pan/zoom — an answer that is a property of the file.
+   * What is left at query time is a bounded walk of one bucket.
+   */
   async setupPre(opts?: BaseOptions) {
     const records = await loadPafRecords({
       file: openLocation(this.getConf('pafLocation'), this.pluginManager),
@@ -54,65 +86,88 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
     })
     opts?.statusCallback?.('Indexing alignments by contig')
 
-    // Each record is filed under the stripped contig of both of its sides, so a
-    // region query walks only the records touching that contig instead of the
-    // whole file. Keyed on the contig rather than sample+contig because the
-    // anchor prefix is a per-query input (and may name a sample or a single
-    // haplotype), while the contig is what the query's refName is matched
-    // against either way. Built once: N bands x every pan/zoom otherwise rescans
-    // every record in the file.
-    const sidesByContig = new Map<string, RecordSide[]>()
+    // Both sides of every record, oriented. Self-diagonals (minimap2 without
+    // `-X` emits one per sequence) drop out here rather than at read time: the
+    // test is on coordinates alone, so no query can change the answer.
+    const sides: IndexedSide[] = []
     // collected on the same pass, so a query whose assembly matches no sample in
     // the file can say what the file does hold — see noPanSNMatchError
     const seqNames = new Set<string>()
-    for (const [index, r] of records.entries()) {
+    for (const [record, r] of records.entries()) {
       for (const flip of [true, false]) {
-        const name = flip ? r.qname : r.tname
-        seqNames.add(name)
-        const contig = panSNContig(name)
-        const sides = sidesByContig.get(contig)
-        if (sides) {
-          sides.push({ index, flip })
-        } else {
-          sidesByContig.set(contig, [{ index, flip }])
+        seqNames.add(flip ? r.qname : r.tname)
+        const side = orientPafRecord(r, flip)
+        if (!isSelfDiagonal(side)) {
+          sides.push({
+            ...side,
+            record,
+            flip,
+            syntenyId: record * 2 + (flip ? 0 : 1),
+          })
         }
       }
     }
-    return { records, sidesByContig, panSN: panSNInventory(seqNames) }
+
+    const duplicate = markReciprocalDuplicates(sides)
+    const kept = sides.filter((_, i) => !duplicate[i])
+
+    // prefix -> contig -> positions in `kept`. Filed under every prefix a side's
+    // PanSN name is addressable by (`grape` and `grape#1`), so a sample-level
+    // assembly and a haplotype-resolved one — each haplotype loaded as its own
+    // assembly via assemblyNameToPanSN — both resolve without the lookup knowing
+    // which depth the config named. Keyed on the anchor's own name, since that is
+    // what a query's (assembly, refName) resolves to.
+    const index = new Map<string, Map<string, number[]>>()
+    for (const [i, side] of kept.entries()) {
+      const contig = panSNContig(side.refName)
+      for (const prefix of panSNPrefixes(side.refName)) {
+        let byContig = index.get(prefix)
+        if (!byContig) {
+          byContig = new Map()
+          index.set(prefix, byContig)
+        }
+        const bucket = byContig.get(contig)
+        if (bucket) {
+          bucket.push(i)
+        } else {
+          byContig.set(contig, [i])
+        }
+      }
+    }
+
+    return { records, sides: kept, index, panSN: panSNInventory(seqNames) }
   }
 
   // Exactly the contigs `getFeatures` can emit for: the same `sideDraws` gate
-  // over the same per-contig index, so a contig is reported iff some side filed
-  // under it draws. Answering it from the index rather than a fresh scan also
-  // lets each contig stop at its first drawing side.
+  // over the same index, so a contig is reported iff some side filed under it
+  // draws. Answering it from the index rather than a fresh scan also lets each
+  // contig stop at its first drawing side.
   async getRefNames(opts: BaseOptions = {}) {
-    const { records, sidesByContig } = await this.setup(opts)
+    const { sides, index } = await this.setup(opts)
     const anchorPrefix = resolvePanSNPrefix(this, opts.assemblyName)
     const targetPrefix = resolvePanSNPrefix(this, opts.targetAssemblyName)
-    return [...sidesByContig]
-      .filter(([, sides]) =>
-        sides.some(({ index, flip }) =>
-          sideDraws(
-            orientPafRecord(records[index]!, flip),
-            anchorPrefix,
-            targetPrefix,
-          ),
-        ),
+    const byContig =
+      anchorPrefix === undefined ? undefined : index.get(anchorPrefix)
+    return [...(byContig ?? [])]
+      .filter(([, bucket]) =>
+        bucket.some(i => sideDraws(sides[i]!, anchorPrefix, targetPrefix)),
       )
       .map(([contig]) => contig)
   }
 
   getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const { records, sidesByContig, panSN } = await this.setup(opts)
+      const { records, sides, index, panSN } = await this.setup(opts)
       const { start: qstart, end: qend, refName: qref, assemblyName } = query
-      const { targetAssemblyName } = opts
-      const asmByPrefix = assemblyByPanSNPrefix(this)
+      const asmByPrefix = this.asmByPrefix()
       const anchorPrefix = resolvePanSNPrefix(this, assemblyName)
-      const targetPrefix = resolvePanSNPrefix(this, targetAssemblyName)
+      const targetPrefix = resolvePanSNPrefix(this, opts.targetAssemblyName)
 
       // An assembly the file has never heard of is a misconfigured track that
       // would otherwise draw nothing and say nothing; see noPanSNMatchError.
+      // Tested against the inventory rather than the index, because a prefix
+      // whose every alignment was a self-diagonal IS in the file and legitimately
+      // draws nothing.
       if (!panSN.prefixes.has(anchorPrefix)) {
         throw noPanSNMatchError({
           assemblyName,
@@ -121,36 +176,30 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
         })
       }
 
-      // Only the sides filed under the queried contig can satisfy the
-      // `refName === qref` test, so the rest of the file is skipped outright.
-      // A cross-sample record has exactly one anchor side, so it emits once. A
-      // same-sample (paralogy) record — e.g. a segmental duplication — has BOTH
-      // sides on the anchor, so it draws at each of its two loci with a distinct
-      // id (index*2 + side).
-      // Records are walked in file order, so which of a reciprocal pair is kept
-      // is a property of the file rather than of when a read landed.
-      const isDuplicate = createReciprocalDedupe()
-      for (const { index, flip } of sidesByContig.get(qref) ?? []) {
-        const r = records[index]!
-        const side = orientPafRecord(r, flip)
+      // Only the anchor's own sides on the queried contig can satisfy the query,
+      // so the rest of the file is never touched. A cross-sample record has
+      // exactly one anchor side, so it emits once. A same-sample (paralogy)
+      // record — e.g. a segmental duplication — has BOTH sides on the anchor, so
+      // it draws at each of its two loci with a distinct id.
+      for (const i of index.get(anchorPrefix)?.get(qref) ?? []) {
+        const side = sides[i]!
         const { start, end, mateRefName, mateStart, mateEnd } = side
 
         if (
           sideDraws(side, anchorPrefix, targetPrefix) &&
-          doesIntersect2(qstart, qend, start, end) &&
-          !isDuplicate(side)
+          doesIntersect2(qstart, qend, start, end)
         ) {
-          const { extra, strand } = r
+          const { extra, strand } = records[side.record]!
           observer.next(
             makeSyntenyFeature({
-              syntenyId: index * 2 + (flip ? 0 : 1),
+              syntenyId: side.syntenyId,
               assemblyName,
               refName: qref,
               start,
               end,
               strand,
               extra,
-              flip,
+              flip: side.flip,
               mate: {
                 start: mateStart,
                 end: mateEnd,

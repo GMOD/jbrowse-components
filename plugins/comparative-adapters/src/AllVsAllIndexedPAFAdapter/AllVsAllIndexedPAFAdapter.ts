@@ -9,9 +9,9 @@ import { panSNContig, panSNPrefixes } from '../pansn.ts'
 import {
   assemblyByPanSNPrefix,
   assemblyForPanSNName,
-  createReciprocalDedupe,
   hasCoarseTierPrefix,
   makeIndexedSyntenyFeature,
+  markReciprocalDuplicates,
   noPanSNMatchError,
   panSNInventory,
   readPifLines,
@@ -20,7 +20,7 @@ import {
   sideDraws,
 } from '../util.ts'
 
-import type { PifLine } from '../util.ts'
+import type { AlignedSide, PifLine } from '../util.ts'
 import type { AllVsAllIndexedPAFAdapterConfig } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -28,28 +28,20 @@ import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterC
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 
-// The `sideDraws` gate over a PIF row, which is already oriented to the
-// perspective it is indexed under. One-vs-all draws every mate, including
-// same-sample paralogy: make-pif's double-emit already keys each locus on its
-// own contig, so viewing chr1 returns the chr1-anchored row and viewing chr2 the
-// chr2-anchored row (distinct fileOffsets = distinct ids).
-function drawsHere(
-  line: PifLine,
-  anchorPrefix: string | undefined,
-  targetPrefix: string | undefined,
-) {
-  return sideDraws(
-    {
-      refName: line.indexedRefName,
-      start: line.indexedStart,
-      end: line.indexedEnd,
-      mateRefName: line.mateName,
-      mateStart: line.mateStart,
-      mateEnd: line.mateEnd,
-    },
-    anchorPrefix,
-    targetPrefix,
-  )
+// A PIF row read as one all-vs-all side. make-pif already oriented the row to
+// the perspective it is indexed under, so this is a rename rather than a
+// reorientation — but it is what lets the shared `sideDraws` /
+// `markReciprocalDuplicates` predicates see the same shape the in-memory adapter
+// builds with orientPafRecord.
+function pifSide(line: PifLine): AlignedSide {
+  return {
+    refName: line.indexedRefName,
+    start: line.indexedStart,
+    end: line.indexedEnd,
+    mateRefName: line.mateName,
+    mateStart: line.mateStart,
+    mateEnd: line.mateEnd,
+  }
 }
 
 export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<AllVsAllIndexedPAFAdapterConfig> {
@@ -79,6 +71,17 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
 
   public async hasDataForRefName() {
     return true
+  }
+
+  // Config-derived and therefore fixed for this adapter: an edit produces a new
+  // snapshot, hence a new cache key and a new adapter (see dataAdapterCache).
+  // Read once instead of per getFeatures — that is per band, per region, per
+  // pan/zoom, and assemblyByPanSNPrefix builds a fresh map each time.
+  private asmByPrefixCache?: Record<string, string>
+
+  private asmByPrefix() {
+    this.asmByPrefixCache ??= assemblyByPanSNPrefix(this)
+    return this.asmByPrefixCache
   }
 
   // The tabix contig list, read once. Every seqid is a PanSN name prefixed with
@@ -155,10 +158,9 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
     const { statusCallback = () => {}, stopToken } = opts
     return ObservableCreate<Feature>(async observer => {
       const { start, end, refName: qref, assemblyName } = query
-      const { targetAssemblyName } = opts
-      const asmByPrefix = assemblyByPanSNPrefix(this)
+      const asmByPrefix = this.asmByPrefix()
       const anchorPrefix = resolvePanSNPrefix(this, assemblyName)
-      const targetPrefix = resolvePanSNPrefix(this, targetAssemblyName)
+      const targetPrefix = resolvePanSNPrefix(this, opts.targetAssemblyName)
 
       const coarse = resolveCoarseTier({
         hasCoarseTier: await this.hasCoarseTier(opts),
@@ -194,12 +196,14 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
       // Aggregated, a multi-haplotype anchor reads as one Σbytes bar.
       const slot = createStatusFanOut(statusCallback)
       const stopTokenCheck = createStopTokenChecker(stopToken)
-      // Collected rather than emitted from the read callbacks, because the
-      // reciprocal-pair dedupe below has to see a DETERMINISTIC order to choose
-      // the same side of a pair on every run: the reads above are a Promise.all
-      // over every (seqid, letter) and which one lands first is a property of
-      // the network. Sorted by (letter, fileOffset), so the file decides.
-      const rows: { letter: string; fileOffset: number; line: PifLine }[] = []
+      // Collected rather than emitted from the read callbacks so the whole
+      // result can be deduped in one pass, and so emission order is the file's
+      // rather than the network's: the reads are a Promise.all over every
+      // (seqid, letter) and which lands first varies run to run. fileOffset is a
+      // virtual offset into the one file, so it totally orders the rows on its
+      // own — the perspective letter is not part of the sort.
+      const rows: { fileOffset: number; line: PifLine; side: AlignedSide }[] =
+        []
       await Promise.all(
         seqs.flatMap(seq =>
           letters.map(letter =>
@@ -211,30 +215,25 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
               statusCallback: slot(),
               stopTokenCheck,
               lineCallback: (parsed, fileOffset) => {
-                if (drawsHere(parsed, anchorPrefix, targetPrefix)) {
-                  rows.push({ letter, fileOffset, line: parsed })
+                // One-vs-all draws every mate, including same-sample paralogy:
+                // make-pif's double-emit already keys each locus on its own
+                // contig, so viewing chr1 returns the chr1-anchored row and
+                // viewing chr2 the chr2-anchored row (distinct fileOffsets =
+                // distinct ids).
+                const side = pifSide(parsed)
+                if (sideDraws(side, anchorPrefix, targetPrefix)) {
+                  rows.push({ fileOffset, line: parsed, side })
                 }
               },
             }),
           ),
         ),
       )
-      rows.sort(
-        (a, b) =>
-          a.letter.localeCompare(b.letter) || a.fileOffset - b.fileOffset,
-      )
+      rows.sort((a, b) => a.fileOffset - b.fileOffset)
 
-      const isDuplicate = createReciprocalDedupe()
-      for (const { fileOffset, line } of rows) {
-        const side = {
-          refName: line.indexedRefName,
-          start: line.indexedStart,
-          end: line.indexedEnd,
-          mateRefName: line.mateName,
-          mateStart: line.mateStart,
-          mateEnd: line.mateEnd,
-        }
-        if (!isDuplicate(side)) {
+      const duplicate = markReciprocalDuplicates(rows.map(r => r.side))
+      for (const [i, { fileOffset, line }] of rows.entries()) {
+        if (!duplicate[i]) {
           observer.next(
             makeIndexedSyntenyFeature({
               line,

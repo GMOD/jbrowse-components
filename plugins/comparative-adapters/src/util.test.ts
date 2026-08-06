@@ -1,4 +1,8 @@
-import { createReciprocalDedupe, parseBed, resolveCoarseTier } from './util.ts'
+import {
+  markReciprocalDuplicates,
+  parseBed,
+  resolveCoarseTier,
+} from './util.ts'
 
 describe('parseBed', () => {
   test('reads a scored, stranded row', () => {
@@ -53,7 +57,7 @@ describe('resolveCoarseTier', () => {
   })
 })
 
-describe('createReciprocalDedupe', () => {
+describe('markReciprocalDuplicates', () => {
   // The E. coli wfmash pair that prompted this: one homology, aligned from
   // either end, so the two sides differ by 4 bp on the anchor and 513 on the
   // mate over 134 kb. Both are anchored on K12 when K12 is the row being drawn,
@@ -76,40 +80,100 @@ describe('createReciprocalDedupe', () => {
   }
 
   test('drops the second statement of one homology', () => {
-    const isDuplicate = createReciprocalDedupe()
-    expect(isDuplicate(k12ToCft)).toBe(false)
-    expect(isDuplicate(cftToK12)).toBe(true)
+    expect(markReciprocalDuplicates([k12ToCft, cftToK12])).toEqual([
+      false,
+      true,
+    ])
+  })
+
+  // Which member survives is decided by coordinate, not by which the caller
+  // happened to read first: the in-memory adapter walks a PAF in file order and
+  // the indexed one reads two tabix ranges concurrently, and the same file must
+  // draw the same ribbon either way.
+  test('drops the same member whichever order the sides arrive in', () => {
+    expect(markReciprocalDuplicates([cftToK12, k12ToCft])).toEqual([
+      true,
+      false,
+    ])
   })
 
   test('keeps a second alignment of the same contigs at another locus', () => {
-    const isDuplicate = createReciprocalDedupe()
-    expect(isDuplicate(k12ToCft)).toBe(false)
-    expect(isDuplicate({ ...k12ToCft, start: 100_000, end: 234_144 })).toBe(
-      false,
-    )
+    expect(
+      markReciprocalDuplicates([
+        k12ToCft,
+        { ...k12ToCft, start: 100_000, end: 234_144 },
+      ]),
+    ).toEqual([false, false])
   })
 
   // Paralogy: the same span of the anchor aligned to two different places on
   // the mate is two homologies, not one stated twice, and only agreement on
   // BOTH spans makes a duplicate.
   test('keeps two mates of one anchor span', () => {
-    const isDuplicate = createReciprocalDedupe()
-    expect(isDuplicate(k12ToCft)).toBe(false)
     expect(
-      isDuplicate({ ...k12ToCft, mateStart: 100_000, mateEnd: 244_059 }),
-    ).toBe(false)
+      markReciprocalDuplicates([
+        k12ToCft,
+        { ...k12ToCft, mateStart: 100_000, mateEnd: 244_059 },
+      ]),
+    ).toEqual([false, false])
+  })
+
+  // Scored over the shorter span, containment read as a perfect match, so a
+  // short block nested inside a long one on BOTH spans — a repeat inside a
+  // syntenic block, a minimap2 secondary inside its primary — was silently
+  // dropped. Two homologies at very different scales are not one stated twice.
+  test('keeps a short block nested inside a long one on both spans', () => {
+    expect(
+      markReciprocalDuplicates([
+        k12ToCft,
+        {
+          ...k12ToCft,
+          start: 4400000,
+          end: 4401000,
+          mateStart: 5000000,
+          mateEnd: 5001000,
+        },
+      ]),
+    ).toEqual([false, false])
+  })
+
+  // A different contig pair is never a candidate, however similar the coords
+  test('keeps identical coordinates on a different contig pair', () => {
+    expect(
+      markReciprocalDuplicates([
+        k12ToCft,
+        { ...k12ToCft, mateRefName: 'UTI89#1#chr' },
+      ]),
+    ).toEqual([false, false])
   })
 
   test('keeps everything in a file with one direction per pair', () => {
-    const isDuplicate = createReciprocalDedupe()
-    for (let i = 0; i < 5; i++) {
-      expect(
-        isDuplicate({
+    expect(
+      markReciprocalDuplicates(
+        Array.from({ length: 5 }, (_, i) => ({
           ...k12ToCft,
           start: i * 200_000,
           end: i * 200_000 + 134_144,
-        }),
-      ).toBe(false)
-    }
+        })),
+      ),
+    ).toEqual([false, false, false, false, false])
+  })
+
+  // The sweep prunes on `end <= start`, so a long run of non-overlapping
+  // alignments on one contig pair must not degrade to comparing everything
+  // against everything — which is what made a 50k-row pair cost seconds, per
+  // region, per band, per pan/zoom.
+  test('stays linear over a tiled contig pair', () => {
+    const n = 50_000
+    const sides = Array.from({ length: n }, (_, i) => ({
+      ...k12ToCft,
+      start: i * 1000,
+      end: i * 1000 + 900,
+      mateStart: i * 1000,
+      mateEnd: i * 1000 + 900,
+    }))
+    const t = performance.now()
+    expect(markReciprocalDuplicates(sides).filter(Boolean)).toHaveLength(0)
+    expect(performance.now() - t).toBeLessThan(2000)
   })
 })
