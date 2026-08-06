@@ -34,8 +34,8 @@
     "@jbrowse/mobx-state-tree": "^6.1.0",
     "@jbrowse/plugin-dotplot-view": "workspace:^",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
-    "@mui/icons-material": "^9.2.0",
-    "@mui/material": "^9.2.0",
+    "@mui/icons-material": "^9.3.0",
+    "@mui/material": "^9.3.0",
     "@mui/x-data-grid": "^9.10.1",
     "mobx": "^7.0.0",
     "mobx-react": "^10.0.0"

@@ -36,7 +36,7 @@
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^6.1.0",
     "@jbrowse/product-core": "workspace:^",
-    "@mui/material": "^9.2.0",
+    "@mui/material": "^9.3.0",
     "mobx": "^7.0.0"
   },
   "peerDependencies": {
