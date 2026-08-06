@@ -120,10 +120,11 @@ a dialog whose **Launch 3D protein structure view** renders the AlphaFold model
 of the same protein, mapped back to the genome the way the alignment is.
 
 That dialog has two more options here than it would on a site running protein3d
-alone: it checks whether msaview is loaded, and offers **Launch MSA view** and
-**Launch 3D structure + MSA view** when it is, for a protein AlphaFold also
-publishes its input alignment for. Both build an MSA view from that alignment
-rather than from orthologs.
+alone: it checks whether msaview is loaded, and offers **Launch MSA view
+(AlphaFold a3m)** and **Launch 3D structure + MSA view** when it is, for a
+protein AlphaFold also publishes its input alignment for. Both build an MSA view
+from that alignment rather than from orthologs, which is what the a3m in the
+label is there to warn you about.
 
 The two alignments answer different questions. The ortholog panel is one row per
 named species, which is what makes a present-or-absent domain call readable
