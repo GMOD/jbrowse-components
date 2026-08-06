@@ -79,15 +79,26 @@ id, class and size, so a band in the matrix reads off a named record. Cell
 coloring by **SV type** is the other way to ask that question, shown in the
 [multi-variant track guide](/docs/user_guides/multivariant_track).
 
-<Figure caption="The 1KGP ensemble SV callset across 200 kb of chr1 twice over: as a genotype matrix, one row per sample, sorted by genotype at the RHD deletion, and under it as ordinary variant records colored by SV class. Each call is drawn at its real span in both, so the deletion is a 70 kb block splitting the cohort into three bands above and the labelled HGSV_1821 record below. The NCBI RefSeq genes are at the foot." src="/img/multisv_rhd.png" />
+<Figure caption="The 1KGP ensemble SV callset across 200 kb of chr1 twice over, with the panel's sequencing depth under it: as a genotype matrix, one row per sample, sorted by genotype at the RHD deletion; as ordinary variant records colored by SV class, so a band in the matrix reads off a named record; and as QuicK-mer2 copy number for 2504 individuals, one row each, clustered on this window, where blue is a copy lost against the diploid white and red a copy gained. The deletion is a 70 kb block splitting the cohort into three bands in the matrix and into three levels in the depth, and the olive no-call column is a copy-number gain in the lane below it. NCBI RefSeq genes at the foot." src="/img/multisv_rhd.png" />
 
 That olive stripe is worth naming, because it is the one thing in the frame that
 is not what it looks like. It is `HGSV_1823`, a 6 kb copy-number record sitting
 inside the deletion, and it is uncalled in 2,663 of the 3,202 samples. A no-call
 is not a reference call and it is not a deletion call: it is the caller
 declining to answer, which the display draws in its own color precisely so it
-cannot be mistaken for either. The lower lane is where that reading is checked:
+cannot be mistaken for either. The record lane is where that reading is checked:
 the same column is a copy-number call there, not a deletion.
+
+The depth lane answers it outright, which is what a callset cannot do for a
+nested call. A genotype is a caller's discrete verdict per record, so a locus
+carrying calls inside other calls is read as a stack of columns whose relation
+to each other is not on screen, and a record the caller declined leaves a hole.
+Copy number is one continuous quantity per bin per individual, from the reads
+rather than from a caller, so the same column that is olive above is red below:
+those samples carry an extra copy of that 6 kb, and the rest of the deleted span
+around it is the same three levels as the matrix. The
+[copy-number tutorial](/docs/tutorials/population_cnv) is where that lane comes
+from, and it is the same store.
 
 ## Reading the genotypes off the reads
 

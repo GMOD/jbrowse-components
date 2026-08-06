@@ -62,7 +62,14 @@ echo "$(wc -l <"$SAMPLES") samples -> $SAMPLES"
 if [ "${1:-}" = "--whole-genome" ]; then
   REGIONS=()
 else
-  REGIONS=(--region chr17:35000000-37500000 --region chr4:68000000-69000000)
+  # The windows the figures visit: CCL3L1/CCL4L1 and UGT2B17 for the CNV
+  # tutorial, and RHD for the SV-multisamples one, where the panel's copy
+  # number is read beside the same cohort's ensemble SV calls.
+  REGIONS=(
+    --region chr17:35000000-37500000
+    --region chr4:68000000-69000000
+    --region chr1:25150000-25450000
+  )
 fi
 
 node "$HERE/build_signal_zarr.ts" \

@@ -15,6 +15,13 @@ import {
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
+// The 1000 Genomes ensemble SV callset, 3202 samples, read straight from EBI.
+// Declared twice below, once per display: `showTrack` resolves by trackId and
+// hands back the open track, so two displays of one callset means two session
+// tracks pointing at the same file.
+const KGP_ENSEMBLE_SV_VCF =
+  'https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20210124.SV_Illumina_Integration/1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz'
+
 export const uiSpecs: ScreenshotSpec[] = [
   // The top-level "Add" menu (Circular / Dotplot / Linear genome / Linear
   // synteny / Tabular data / SV inspector), cropped to the menu for the
@@ -435,17 +442,30 @@ export const uiSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multisv_rhd',
-    url: kgUrl({
+    // NOT the remote 1000-genomes config any more, because the copy-number
+    // lane needs the Zarr plugin and a plugin can only be declared by a config
+    // (reviewer: "potentially would be valuable to see our zarr based copy
+    // number track here. the nested cnv are hard to see with vcf. it would be a
+    // tall screenshot but might help"). test_data/1000g_cnv/config.json is the
+    // CNV tutorial's own config: the plugin, the 2504-sample store and a RefSeq
+    // lane. The ensemble callset it does not carry comes in as session tracks,
+    // one per display, since showTrack resolves by trackId and a second display
+    // of one track is not available.
+    url: sessionSpec('test_data/1000g_cnv/config.json', {
       sessionTracks: [
+        {
+          type: 'VariantTrack',
+          trackId: 'kgp_sv_matrix',
+          name: '1KGP ensemble SV calls, 3202 samples',
+          assemblyNames: ['hg38'],
+          adapter: { type: 'VcfTabixAdapter', uri: KGP_ENSEMBLE_SV_VCF },
+        },
         {
           type: 'VariantTrack',
           trackId: 'kgp_sv_records',
           name: '1KGP ensemble SV calls',
           assemblyNames: ['hg38'],
-          adapter: {
-            type: 'VcfTabixAdapter',
-            uri: 'https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20210124.SV_Illumina_Integration/1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz',
-          },
+          adapter: { type: 'VcfTabixAdapter', uri: KGP_ENSEMBLE_SV_VCF },
         },
       ],
       views: [
@@ -455,7 +475,7 @@ export const uiSpecs: ScreenshotSpec[] = [
           loc: '1:25,200,000-25,400,000',
           tracks: [
             {
-              trackId: '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
+              trackId: 'kgp_sv_matrix',
               type: 'LinearMultiSampleVariantDisplay',
               forceLoad: true,
               height: 400,
@@ -475,11 +495,46 @@ export const uiSpecs: ScreenshotSpec[] = [
               // multi-variant guide's SV-type figure
               color: 'jexl:svTypeColor(feature)',
             },
+            // THE DEPTH LANE, which is what the callset cannot draw. A VCF
+            // states a genotype per record, so a locus carrying nested and
+            // overlapping calls is read as a stack of columns whose relation to
+            // each other is not on screen. QuicK-mer2 copy number is one
+            // continuous quantity per 1 kb bin per individual, so the same
+            // panel reads as levels: two copies white, one blue, zero deep
+            // blue, and a partial-length loss is a block that starts and stops
+            // where the sequence does rather than where a caller drew a record.
+            //
+            // Clustered on this window, so the dosage classes separate into
+            // bands. The rows cannot correspond to the matrix above it in any
+            // case -- that one is sorted by genotype at HGSV_1821 and this one
+            // by similarity over the window -- so clustering costs nothing and
+            // is what makes the classes visible.
+            //
+            // The store is test_data/1000g_cnv/qm2_cn_1kb.zarr, which
+            // scripts/build_1000g_cnv_zarr.sh now builds over this window as
+            // well as the two the CNV tutorial visits.
+            {
+              trackId: 'cnv_1000g_zarr',
+              type: 'MultiLinearWiggleDisplay',
+              defaultRendering: 'multirowdensity',
+              // pinned rather than autoscaled, and symmetric about the diploid
+              // pivot, for the reasons cnv1000g's CN_HEATMAP_SETTINGS gives:
+              // copy number is an absolute quantity and a diverging ramp only
+              // reads as diverging if both sides are the same width.
+              bicolorPivot: 2,
+              minScore: 0,
+              maxScore: 4,
+              posColor: '#b2182b',
+              negColor: '#2166ac',
+              height: 480,
+              runClustering: true,
+              showTree: false,
+            },
             // showLabels:'on' forces gene names on at this zoom; showOnlyGenes
             // drops the per-transcript subfeatures so RHD/RHCE read as single
             // labelled glyphs under the matrix
             {
-              trackId: 'ncbi_refseq_109_hg38',
+              trackId: 'ncbi_refseq_hg38',
               type: 'LinearBasicDisplay',
               height: 140,
               // 'on' + showDescriptions:false is the retired pair;
@@ -492,8 +547,10 @@ export const uiSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: '1KGP',
-    readyTimeout: 90000,
-    viewportHeight: 980,
+    // the 2504-row store is clustered on this window as well as fetched, and
+    // the callset itself is a remote EBI tabix read
+    readyTimeout: 300000,
+    viewportHeight: 1490,
     settleMs: 35000,
     hideTooltip: true,
     // The record lane's SV-type key floats at its own top-right, on top of the
@@ -513,6 +570,17 @@ export const uiSpecs: ScreenshotSpec[] = [
       '[data-testid$="-kgp_sv_records"] ~ div div:has(> button[title="Hide legend"])',
     ],
     actions: [
+      // the clustering RPC over 2504 rows finishes well after first paint, and
+      // a capture taken before it lands shows the store in panel order under a
+      // "Clustering samples 62%" overlay. The display publishes `data-clustered`
+      // on the same element as its first-paint testid, which is the only DOM
+      // evidence it ran with the dendrogram off.
+      {
+        type: 'waitForSelector',
+        selector:
+          '[data-testid="multi-wiggle-display-done"][data-clustered="true"]',
+        timeout: 240000,
+      },
       { type: 'rightclick', from: { x: 750, y: 450 } },
       { type: 'waitForText', text: 'Sort by genotype' },
       { type: 'click', text: 'Sort by genotype' },

@@ -2462,9 +2462,9 @@
   },
   "pangenome/hprc_chm13_allele": {
     "name": "pangenome/hprc_chm13_allele",
-    "status": "bad",
-    "note": "if it helps make a fourth screenshot zooming out the bottom lgv farther. also, we might want to consider ways to reduce height of the graph genome viewer, it takes a lot of height. ",
-    "reviewedAt": "2026-08-06T06:21:03.780Z",
+    "status": "answered",
+    "note": "BOTH ASKS MEASURED; nothing committed for either yet. (1) The fourth screenshot: I rendered one, an hs1 pane over the last 1.3 Mb of chr17 with the segments lane, and it is nearly empty — CHM13 entered this graph at rank 61, so barely any segments are credited to it (the tutorial says 60 for the whole of chr1), and the pane shows the one dark bar plus two ticks. Widening the existing hs1 pane instead was already settled in an earlier round and the note is in the spec: tried at 360 kb and 627 kb, the LINE enrichment is a mean (23.70% in the allele against 14.18/14.47% in the flanks) rather than a block a reader can see, and past ~400 kb the RepeatMasker bigBed hits its byte budget and the lane comes back empty behind a FORCE LOAD prompt. So no fourth panel unless you want the chromosome-end position stated, which is a number (the allele ends 235 kb from the end of chr17) rather than a picture. (2) The graph pane height is not a spec choice: canvasHeight is min(600, drawing aspect x width) in the plugin and this drawing pins the 600 ceiling. bubbleSpread compress does shorten the 142 kb arc and I rendered it — it is worse, the subject node becomes a ~20px box at the end of a long thin chain and the annotation box marking it becomes the most prominent thing in the pane. A real reduction is a plugin change (a per-view pane height honoured by canvasHeight, or a lower cap), which needs a betabuild publish before any figure moves, so it is waiting on your go-ahead. Also note: three consecutive renders had the hs1 RepeatMasker lane fail to fetch from hgdownload with an error banner while curl to the same URL returned 200, so the committed PNG was restored rather than replaced with one carrying the banner.",
+    "reviewedAt": "2026-08-06T07:14:03.797Z",
     "hash": "8f51983bf970621888db06006a170da03710f473"
   },
   "dotplot_self_chry": {
@@ -2616,10 +2616,10 @@
   },
   "multisv_rhd": {
     "name": "multisv_rhd",
-    "status": "bad",
-    "note": "this is a tricky thing, but potentially would be valuable to see our zarr based copy number track here. the nested cnv are hard to see with vcf. it would be a tall screenshot but might help. One view now, not two composed captures. The legend half is fixed at the source: an override colour (SV type, consequence impact) only reaches alt-carrying cells, so the reference grey and the no-call yellow were painted with nothing in the key to name them -- getNonAltItems now appends 'Homozygous reference' plus 'No call' (gated on hasNoCall) to both keys, with tests. The 'which sv is which' half is the bigger change and it took your second suggestion literally: the figure is now the genotype matrix with the SAME callset under it in the ordinary LinearVariantDisplay, coloured by the same svTypeColor jexl, each record on its own row with its id, class and size drawn on it (HGSV_1821 <DEL> 70.1Kbp sits exactly under the deletion band, HGSV_1823 <CNV> 6.16Kbp under the olive no-call stripe). A matrix cell only says a sample carries SOMETHING at that column, and 26 records overlap in this window, so the record lane is what makes a band readable as a named call. The SV-type CELL colouring the old second capture carried is not lost -- multisv_svtype in the multi-variant guide is that figure on a window whose classes are the subject. Loading the same VCF twice needs a second trackId, since showTrack resolves one track per id; two multi-sample displays in one view remains impossible (the second kills the first's context menu, so no sort).",
-    "reviewedAt": "2026-08-06T05:40:29.309Z",
-    "hash": "bb85f13fbd4ef10d97f04ad67ffe3386d38c0749"
+    "status": "good",
+    "note": "THE ZARR COPY-NUMBER LANE IS IN, and it is the tall screenshot you expected (1490px). The store already existed for the CNV tutorial — 2504 individuals of QuicK-mer2 1 kb copy number — but only over the two windows those figures visit, so scripts/build_1000g_cnv_zarr.sh now also builds chr1:25,150,000-25,450,000 and the committed store grew 1.4 to 1.7 MB. The figure had to move off the remote 1000genomes config onto test_data/1000g_cnv/config.json, because a plugin can only be declared by a config; the ensemble callset comes in as two session tracks, one per display. Clustered on the window, the depth lane separates the same three dosage classes the matrix sorts into, and it answers the nested call the VCF cannot: the olive no-call column of HGSV_1823 is a red gain in the depth lane. The capture now waits on data-clustered=true rather than a settle, after a first render came back mid-clustering at 62%. The four cnv1000g figures were re-rendered and reverted: chunks 0-12 of the store are byte-identical and their windows come first in the region list, so their pixels did not need to move.",
+    "reviewedAt": "2026-08-06T07:25:26.538Z",
+    "hash": "d3ffd1d97a3eaa450536d4546d12ad949171b13a"
   },
   "tcga/cohort_cnv_zarr_genome": {
     "name": "tcga/cohort_cnv_zarr_genome",
