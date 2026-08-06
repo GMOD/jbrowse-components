@@ -11,18 +11,21 @@ behind it are in
 first, this file assumes it.
 
 **State as of 2026-08-05.** Closed: §1 deterministic layout, §2 pinned bundle,
-§3 carriage read path, §9 reference-only index (built and hosted, and its
-premise corrected — it is not a drop-in). **§5 is the blocker**: the
-level-of-detail producer is done and its output hosted, but no bubble-tier file
-renders in a browser, and eight hypotheses plus bgzf itself are eliminated. Open
-and unblocked by it: §4 colour/legend, §6 the axis, §7 in-view navigation, §8 the
-UI debts, and the demo list.
+§3 carriage read path, §5 the level-of-detail tier (producer, hosted files, and
+the browser bug that blocked it), §9 reference-only index (built and hosted, and
+its premise corrected — it is not a drop-in). Open: §4 colour/legend, §6 the
+axis, §7 in-view navigation, §8 the UI debts, and the demo list. Nothing is
+blocked.
 
-This file stays until §5 closes. Its durable spillover already lives elsewhere
-and should not be duplicated back in: the wasm string-decode defect found while
-chasing §5 is `gmod/bgzf-filehandle` `agent-docs/adr/0002` (with the same fix in
-`bbi-js`), and the jsdom blindness that hid it is enforced by
-`config/jest/textEncoder.js` in this repo.
+**Before the next graph figure ships, the plugin needs a `pnpm betabuild`** —
+`e0bc34a` (the tier fix) is built locally but not published, so the pinned
+bundle in the three fixtures predates it. Bump the pin and regenerate the graph
+figures in the same commit, per §2.
+
+Durable spillover from §5 lives outside this file and should not be copied back
+in: the wasm string-decode defect it turned up is `gmod/bgzf-filehandle`
+`agent-docs/adr/0002` (same fix in `bbi-js`), and the jsdom blindness that hid
+that whole class is enforced by `config/jest/textEncoder.js` in this repo.
 
 The view is a third-party plugin,
 `~/src/jb2plugins/jbrowse-plugin-graphgenomeview`; build and deploy traps are in
@@ -122,147 +125,43 @@ Both are cheap, and together they are one deploy.
   sentence in prose instead. A gradient strip labelled with the window's ends,
   shown only when that scheme is active, retires the sentence.
 
-## 5. Level of detail: producer done, and **BLOCKED in the browser** 2026-08-05
+## 5. Level of detail: producer done, and the browser blocker is FIXED 2026-08-05
 
-**Read this subsection before touching the tier.** The producer works and the
-adapter reads its output correctly *in Node*. In a browser, every bubble-tier
-file fails in the RPC worker with
+The tier draws. `pangenome/probe_tierhosted` renders 5 Mb of HPRC chr1 from the
+hosted tier as **29 nodes / 28 edges, layout 231 ms**, where the fine index over
+the same span is 3,034 segments and undrawable.
 
-```
-[GraphGenomeView.loadFromTabixSubgraph] TypeError: Failed to execute 'decode' on
-'TextDecoder': The provided ArrayBuffer value must not be resizable
-```
+**The bug was ours, in `src/bandage/bandage-layout.js`.** emscripten's
+`UTF8ArrayToString` decodes a view over `HEAPU8` — over `WebAssembly.Memory`,
+whose buffer is a resizable `ArrayBuffer`, which browsers refuse to decode.
+`UTF16ToString` has the same shape. Both take that path **only for strings
+longer than 16 units**; shorter ones fall through to a manual char loop.
 
-Eight hypotheses are eliminated, each against a rendered control. **Do not
-re-derive these:**
+That threshold is why it read as a data bug for a whole session. The fine index
+names nodes `s10274` (6 bytes, manual loop, fine). The tier names backbone nodes
+`bb_GRCh38#0#chr1_0` (18 bytes, TextDecoder, throws). 100% failure on one index,
+0% on the other, with everything else identical. Fixed in
+`jbrowse-plugin-graphgenomeview` `e0bc34a`, patched in `scripts/build-wasm.sh`
+because that script overwrites the generated file wholesale.
 
-| hypothesis | verdict |
-| ---------- | ------- |
-| window size (5 Mb) | fails identically at 200 kb |
-| file size | 3.0 MB tier fails, 6.7 MB hosted fine index works |
-| local vs remote route | hosted bytes **served locally** render fine |
-| bgzip/tabix toolchain | hosted content recompressed by htslib 1.24 renders fine |
-| BGZF vs plain-gzip index | both pairs are BGZF, byte-identical headers and EOF blocks |
-| the GFA tag column (col 6) | fails with the column stripped to 5 |
-| stale pinned plugin bundle | fails against a local `pnpm build` of HEAD |
-| `bgzf-filehandle` 6.2.0's un-sliced `unzipChunkSlice` | fails on 6.3.2 too (the plugin is bumped to it now) |
+**Two process failures cost far more than the bug, both worth not repeating.**
 
-So it is the tier **content** specifically, browser-only. The error crosses the
-RPC boundary without a stack (`e.stack` is empty in the view's catch), so the
-next step is a **devtools breakpoint in the worker**, not more bisection.
+- **`test_data/graphgenomeview/_localdist` is a stale hand-copy and nothing
+  refreshes it.** `GRAPH_PLUGIN_LOCAL=1` serves that directory, so every "I
+  rebuilt the plugin and it still fails" result was read off a build hours old.
+  A dependency bump, two upstream patches and two rounds of instrumentation were
+  all judged against a bundle that contained none of them. **`cp -r
+  <plugin>/dist test_data/graphgenomeview/_localdist` before any
+  `GRAPH_PLUGIN_LOCAL` run**, or better, make the generator do it.
+- **Bisecting on inputs cannot find a bug whose error names a type.** Nine
+  rounds eliminated window size, file size, route, compressor, index flavour,
+  tag column, plugin version and two dependency versions, and none of them was
+  it. One instrumented run — wrap `TextDecoder.prototype.decode`, **throw** the
+  stack rather than logging it, since a worker's console does not reach the page
+  — named the frame immediately. Reach for that on the second round, not the
+  tenth.
 
-**The plugin's own tests cannot see this, and that is the finding to carry
-forward.** The resizable ArrayBuffer is wasm memory — `bgzf-filehandle`
-decompresses through an inlined wasm module — and only Chrome enforces the rule:
-
-```js
-const rab = new ArrayBuffer(8, { maxByteLength: 64 })   // rab.resizable === true
-new TextDecoder().decode(new Uint8Array(rab).subarray(0, 5))
-// node / jsdom: "hello"     chrome: TypeError, must not be resizable
-```
-
-The plugin's vitest runs `environment: 'jsdom'`, whose `TextDecoder` is Node's
-lenient one, so `bubbleTier.test.ts` — the test that nominally *covers* the tier
-— passes over a whole chromosome while the browser path is broken. Any repro
-written under `src/**/*.test.ts` will keep passing. **Reproduce in a real
-browser**, and treat "the Node repro passes" as saying nothing about this class
-of bug.
-
-**`bgzf-filehandle` is NOT the source — eliminated 2026-08-05**, so do not start
-there. Everything below was checked in the shipped bundle, not just the source:
-
-- both 6.2.0 and 6.3.2 `.slice()` out of the wasm heap on the array return path
-  (`getArrayU8FromWasm0(r0, r1).slice()`), and 6.3.2's own comment says why;
-- patching `unzipChunkSlice` to copy in both versions changes nothing;
-- serving the tier from the CDN instead of the dev server changes nothing, so it
-  is not range requests or `Content-Encoding`;
-- the plugin's store had a **stale duplicate** bgzf 6.2.0 beside 6.3.2 after the
-  tabix bump, which made several intermediate readings wrong. `rm -rf
-  node_modules && pnpm install` leaves exactly one (6.3.2). Re-verified on that
-  clean single-copy build: still fails.
-
-**One real upstream defect was found along the way, worth reporting regardless
-of this bug.** wasm-bindgen's string path does *not* copy where the array path
-does:
-
-```js
-cachedTextDecoder.decode(getUint8ArrayMemory0().subarray(ptr, ptr + len))  // no .slice()
-```
-
-`getStringFromWasm0` feeds `Error(getStringFromWasm0(...))` at two call sites, so
-**the bgzf wasm module cannot report any error in Chrome** — every Rust-side
-error message becomes this same TypeError. That is a real hazard for every
-consumer (bam-js, tabix-js), and it also means a `TextDecoder ... resizable`
-error anywhere near bgzf may be *masking* the actual failure rather than being
-it. Patching it here did not unmask a different error, so it is not what this
-bug is, but it should still go upstream.
-
-This is **generic to wasm-bindgen, not to bgzf**: that `getStringFromWasm0` body
-is wasm-bindgen's own emitted code, unchanged, and
-[MDN states that `WebAssembly.Memory().buffer` *is* a resizable ArrayBuffer](https://developer.mozilla.org/en-US/docs/WebAssembly/Reference/JavaScript_interface/Memory/Memory).
-So the platform changed under every wasm-bindgen module that decodes strings,
-and the same shape has already bitten the ecosystem from the other side
-([Safari's 2 GB TextDecoder limit hitting the identical call site](https://github.com/rustwasm/wasm-bindgen/discussions/4185)).
-Not something to fix by "not using wasm-bindgen" — it is vendored inside
-`@gmod/bgzf-filehandle`'s wasm build, and the only non-wasm path there is the
-`DecompressionStream`/pako fallback for *non*-BGZF input, which a bgzf file
-never takes.
-
-**That defect is now fixed at source** (we own the repo):
-`gmod/bgzf-filehandle` `0057909` patches `getStringFromWasm0` to copy, in
-`crate/build-wasm.sh` so it survives wasm-bindgen regeneration, with
-`test/resizable-buffer.test.ts` pinning both halves. Applying that fix into the
-plugin's tree and re-running the tier probe **still gives the same error**, so
-bgzf is eliminated on the string path too. Worth landing regardless: it means
-bam-js, tabix-js and cram-js can report wasm errors in Chrome at all.
-
-So the source is something else in the worker handing `TextDecoder` a view over
-a resizable buffer. `tabix-js`'s own decode sites are the remaining suspects
-(`src/util.ts:243` for index refNames, `src/tabixIndexedFile.ts:615` for data
-lines, plus the two header decodes) — all checked out at `~/src/gmod/tabix-js`,
-so a fix there is ours to make too.
-
-**Instrument, do not bisect** — nine rounds of file-level A/B eliminated eight
-hypotheses and never located it. Wrap `TextDecoder.prototype.decode` to log a
-stack when `input.buffer.resizable`, then read the frame. One gotcha already
-paid for: patching it from the plugin's `src/index.ts` **does not fire**, because
-the RPC worker does not run the plugin entry's top-level side effects. Put the
-wrapper where the worker actually executes — inside the adapter module, or in
-jbrowse-web's own worker bootstrap — or use a real devtools breakpoint on the
-worker context.
-
-Rebuild the inputs in about a minute — none of this needs the 842 MB graph:
-
-```bash
-curl -O https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.bubbles.bed.gz
-for mc in 0 1000 10000; do
-  bash scripts/build_bubble_tier.sh hprc-v2.0-mc-grch38.bubbles.bed.gz tier$mc $mc
-done
-# the two controls that WORK, for A/B
-curl -O https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.segs.bed.gz   # + .tbi, links, links.tbi
-```
-
-A repro under the plugin's `src/` (vitest only collects `src/**/*.test.ts`) has
-`getSubgraph` returning a correct graph at both 200 kb and 5 Mb — but see the
-jsdom note above before reading anything into that.
-
-One more constraint the tier alone does not clear: `MAX_GRAPH_REGION_BP` is
-5 Mb, so even once this is fixed a whole-chromosome launch needs that constant
-raised. At 5 Mb the tier is already worth it — 199 nodes at `--min-content 1000`
-against 3,034 fine segments.
-
-Measured node counts, so nobody re-runs them (chr1, reference-keyed queries):
-
-| window | fine | tier 1000 | tier 10000 |
-| ------ | ---- | --------- | ---------- |
-| 1 Mb | 454 | 53 | 9 |
-| 5 Mb | 3,034 | 199 | 35 |
-| 249 Mb (all of chr1) | 21,535 | 3,342 | 474 |
-
-Whole-genome index at `--min-content 10000` is 104 kB + 222 kB, against
-6.7 MB + 34.2 MB for the fine pair.
-
----
+What is left here is the view side, unchanged and now unblocked:
 
 The spike this section asked for is done, and it did not need `vg snarls` or
 BubbleGun at all: HPRC already publishes the bubble decomposition we host
