@@ -1,8 +1,12 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui/theme'
+import { ThemeProvider } from '@mui/material/styles'
 import { render } from '@testing-library/react'
 
-import { SvgBandLabels } from './MafBandLabels.tsx'
+import { createMafTestEnvironment } from '../testEnv.ts'
+import MafBandLabels, { SvgBandLabels } from './MafBandLabels.tsx'
 import { YSCALE_AXIS_WIDTH } from './MafYScaleGutter.tsx'
+
+import type { LinearMafDisplayModel } from '../stateModel.ts'
 
 const theme = createJBrowseTheme()
 
@@ -65,5 +69,38 @@ describe('band titles reach the SVG export', () => {
 
   it('draws nothing when the model titles nothing', () => {
     expect(draw([])).toEqual([])
+  })
+})
+
+// The on-screen half, which the export half mirrors. A pure refactor — two
+// hardcoded divs became a map over `model.bandLabels` — but the captions are
+// what the export test is comparing itself against, so both ends of the pair
+// are pinned rather than one.
+describe('band titles on screen', () => {
+  function screenLabels(configure: (d: LinearMafDisplayModel) => void) {
+    const { display } = createMafTestEnvironment().createDisplay()
+    configure(display)
+    const { container } = render(
+      <ThemeProvider theme={theme}>
+        <MafBandLabels model={display} />
+      </ThemeProvider>,
+    )
+    return [...container.querySelectorAll('div')]
+  }
+
+  it('titles both bands, each at its band top', () => {
+    const divs = screenLabels(d => {
+      d.setShowConservation(true)
+    })
+    expect(divs.map(d => d.textContent)).toEqual([
+      'Coverage',
+      'Conservation (% identity)',
+    ])
+    expect(divs[0]!.style.top).toBe('0px')
+    expect(divs[1]!.style.top).toBe(`${COVERAGE_HEIGHT}px`)
+  })
+
+  it('draws nothing with only one band up', () => {
+    expect(screenLabels(() => {})).toEqual([])
   })
 })
