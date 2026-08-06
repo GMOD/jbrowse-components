@@ -108,7 +108,92 @@ Both are cheap, and together they are one deploy.
   sentence in prose instead. A gradient strip labelled with the window's ends,
   shown only when that scheme is active, retires the sentence.
 
-## 5. Level of detail: producer done 2026-08-02, view side open
+## 5. Level of detail: producer done, and **BLOCKED in the browser** 2026-08-05
+
+**Read this subsection before touching the tier.** The producer works and the
+adapter reads its output correctly *in Node*. In a browser, every bubble-tier
+file fails in the RPC worker with
+
+```
+[GraphGenomeView.loadFromTabixSubgraph] TypeError: Failed to execute 'decode' on
+'TextDecoder': The provided ArrayBuffer value must not be resizable
+```
+
+Eight hypotheses are eliminated, each against a rendered control. **Do not
+re-derive these:**
+
+| hypothesis | verdict |
+| ---------- | ------- |
+| window size (5 Mb) | fails identically at 200 kb |
+| file size | 3.0 MB tier fails, 6.7 MB hosted fine index works |
+| local vs remote route | hosted bytes **served locally** render fine |
+| bgzip/tabix toolchain | hosted content recompressed by htslib 1.24 renders fine |
+| BGZF vs plain-gzip index | both pairs are BGZF, byte-identical headers and EOF blocks |
+| the GFA tag column (col 6) | fails with the column stripped to 5 |
+| stale pinned plugin bundle | fails against a local `pnpm build` of HEAD |
+| `bgzf-filehandle` 6.2.0's un-sliced `unzipChunkSlice` | fails on 6.3.2 too (the plugin is bumped to it now) |
+
+So it is the tier **content** specifically, browser-only. The error crosses the
+RPC boundary without a stack (`e.stack` is empty in the view's catch), so the
+next step is a **devtools breakpoint in the worker**, not more bisection.
+
+**The plugin's own tests cannot see this, and that is the finding to carry
+forward.** The resizable ArrayBuffer is wasm memory — `bgzf-filehandle`
+decompresses through an inlined wasm module — and only Chrome enforces the rule:
+
+```js
+const rab = new ArrayBuffer(8, { maxByteLength: 64 })   // rab.resizable === true
+new TextDecoder().decode(new Uint8Array(rab).subarray(0, 5))
+// node / jsdom: "hello"     chrome: TypeError, must not be resizable
+```
+
+The plugin's vitest runs `environment: 'jsdom'`, whose `TextDecoder` is Node's
+lenient one, so `bubbleTier.test.ts` — the test that nominally *covers* the tier
+— passes over a whole chromosome while the browser path is broken. Any repro
+written under `src/**/*.test.ts` will keep passing. **Reproduce in a real
+browser**, and treat "the Node repro passes" as saying nothing about this class
+of bug.
+
+The mechanism that fits every row of the table above and is not yet tested: a
+wasm-backed Uint8Array reaches `TextDecoder` only on some decompress paths, and
+which path a query takes may depend on how many bgzf blocks it spans. The tier
+files are small and dense (a whole chromosome in very few blocks) where the
+hosted fine pair is large and sparse, so a single-block fast path that returns a
+*view* rather than a `.slice()` copy would split exactly the way these results
+do. Check `unzipChunkSlice` against a one-block query before anything else.
+
+Rebuild the inputs in about a minute — none of this needs the 842 MB graph:
+
+```bash
+curl -O https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.bubbles.bed.gz
+for mc in 0 1000 10000; do
+  bash scripts/build_bubble_tier.sh hprc-v2.0-mc-grch38.bubbles.bed.gz tier$mc $mc
+done
+# the two controls that WORK, for A/B
+curl -O https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.segs.bed.gz   # + .tbi, links, links.tbi
+```
+
+A repro under the plugin's `src/` (vitest only collects `src/**/*.test.ts`) has
+`getSubgraph` returning a correct graph at both 200 kb and 5 Mb — but see the
+jsdom note above before reading anything into that.
+
+One more constraint the tier alone does not clear: `MAX_GRAPH_REGION_BP` is
+5 Mb, so even once this is fixed a whole-chromosome launch needs that constant
+raised. At 5 Mb the tier is already worth it — 199 nodes at `--min-content 1000`
+against 3,034 fine segments.
+
+Measured node counts, so nobody re-runs them (chr1, reference-keyed queries):
+
+| window | fine | tier 1000 | tier 10000 |
+| ------ | ---- | --------- | ---------- |
+| 1 Mb | 454 | 53 | 9 |
+| 5 Mb | 3,034 | 199 | 35 |
+| 249 Mb (all of chr1) | 21,535 | 3,342 | 474 |
+
+Whole-genome index at `--min-content 10000` is 104 kB + 222 kB, against
+6.7 MB + 34.2 MB for the fine pair.
+
+---
 
 The spike this section asked for is done, and it did not need `vg snarls` or
 BubbleGun at all: HPRC already publishes the bubble decomposition we host
@@ -298,15 +383,38 @@ following turns out to fight the user.
   would make the two panels comparable, and would also let the graph label
   `HG00642.1` where the callset labels `HG00642 HP0`.
 
-## 9. Rebuild the hosted index reference-only (config, not code)
+## ~~9. Rebuild the hosted index reference-only~~ — built 2026-08-05, and it does **not** buy the 12 s
 
-Measured in [reference/PANGENOME_GRAPHS.md](../reference/PANGENOME_GRAPHS.md):
-9.18 MB of `.tbi` is downloaded before any subgraph can be cut, 95% of it
-indexing donor contigs no query on the demo path reaches, and a reference-only
-rebuild returns byte-identical rows for 19× less. Emit the small pair beside the
-full one in `build_rgfa_tabix.sh`, point the HPRC configs at it, and the 12 s
-`fetch` in every graph figure goes with it. Keep the full pair for `context > 0`
-and for a segments track on a contributing assembly.
+`build_rgfa_tabix.sh` takes a third argument now (the reference's PanSN sample)
+and emits `<prefix>.ref.segs.bed.gz` / `.ref.links.bed.gz`. Built, hosted at
+`demos/hprc/hprc-v2.0-mc-grch38.ref.*`, verified rendering, and the size claim
+holds: 0.48 MB of `.tbi` against 9.18 MB, rows byte-identical across seven
+windows including a whole chromosome.
+
+**The premise of this item was wrong, and the correction is the useful part.**
+It said the donor rows are unreachable "at the default `context: 0`".
+`subgraphContext` is `types.optional(types.number, 1)` — the default is **1
+hop**, and a hop follows allele interiors, which are indexed under exactly the
+donor contigs the small pair drops. So pointing the graph cut at it silently
+returns the context-0 graph: the two-stubs-in-mid-air picture `graph_context.png`
+exists to explain, with no error to notice. Measured on C4:
+
+| context | full | reference-only |
+| ------- | ---- | -------------- |
+| 0 | 30 nodes / 36 edges | 30 / 36 — same |
+| 1 (default) | 34 / 43 | 30 / 36 — **differs** |
+| 2 | 34 / 45 | 30 / 36 — **differs** |
+
+So the small pair is for a **segments track drawn on the reference** and for a
+session that sets `subgraphContext: 0` deliberately. The graph cut keeps the full
+pair, as does a segments lane opened on a contributing assembly (E. coli, and
+HPRC's own hs1/CHM13 lane).
+
+**The 12 s `fetch` is therefore still there, and is still worth killing.** What
+would actually do it: make the hop reach donor rows without indexing every donor
+contig — e.g. a third small file keyed by segment id for allele interiors only,
+or having the link row carry enough of the interior that no second query is
+needed. That is a producer change plus an adapter change, not a config swap.
 
 ## Demo opportunities, in the order I would shoot them
 
@@ -432,7 +540,22 @@ scan, the release-2 files, and why CHM13 is the only donor worth loading.
 
 ## Traps worth knowing before you touch the figures
 
-All of these cost time on 2026-07-26.
+Two from 2026-08-05, both from probing the tier:
+
+- **Appending a spec to a `specs/*.ts` array leaves a sparse hole if you are not
+  careful**, and the generator dies far away with
+  `TypeError: Cannot read properties of undefined (reading 'mode')` inside
+  `screenshot-specs.ts`, which reads as somebody else's broken spec file.
+  **`Array.prototype.filter` SKIPS holes**, so `arr.filter(x => !x).length` is
+  not a hole check and will tell you the array is clean — use
+  `for (let i = 0; i < a.length; i++) if (!(i in a)) …`. Three separate runs were
+  misattributed to a concurrent agent before this was pinned down.
+- **`TMPDIR` under the session scratchpad is too long for Chrome**, which dies
+  with `FATAL: Socket path too long: …/SingletonSocket` before any spec renders.
+  Use a short one (`/tmp/ss`). Distinct from the "insufficient resources"
+  failure a *missing* TMPDIR gives.
+
+All of the following cost time on 2026-07-26.
 
 - **A `stages` capture stacks the stage frames only.** The spec's own `actions`
   are setup for stage one, not a frame — put the interaction in the first stage
