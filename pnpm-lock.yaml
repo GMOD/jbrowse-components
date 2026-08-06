@@ -42,8 +42,8 @@ importers:
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.8.0(supports-color@8.1.1))
       '@gmod/bbi':
-        specifier: ^10.0.2
-        version: 10.0.2
+        specifier: ^11.0.0
+        version: 11.0.0
       '@jbrowse/mobx-state-tree':
         specifier: ^6.1.0
         version: 6.1.0(mobx@7.0.0)
@@ -177,14 +177,14 @@ importers:
         specifier: ^1.0.4
         version: 1.0.4(eslint@10.8.0(supports-color@8.1.1))
       eslint-plugin-unicorn:
-        specifier: 72.0.0
-        version: 72.0.0(eslint@10.8.0(supports-color@8.1.1))
+        specifier: 73.0.0
+        version: 73.0.0(eslint@10.8.0(supports-color@8.1.1))
       express:
         specifier: ^5.2.1
         version: 5.2.1(supports-color@8.1.1)
       generic-filehandle2:
-        specifier: ^2.2.1
-        version: 2.2.1
+        specifier: ^2.2.2
+        version: 2.2.2
       globals:
         specifier: ^17.9.0
         version: 17.9.0
@@ -432,8 +432,8 @@ importers:
         specifier: ^3.1.3
         version: 3.1.3
       generic-filehandle2:
-        specifier: ^2.2.1
-        version: 2.2.1
+        specifier: ^2.2.2
+        version: 2.2.2
       idb:
         specifier: ^8.0.3
         version: 8.0.3
@@ -744,8 +744,8 @@ importers:
         specifier: ^9.2.0
         version: 9.2.0(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       generic-filehandle2:
-        specifier: ^2.2.1
-        version: 2.2.1
+        specifier: ^2.2.2
+        version: 2.2.2
       mobx:
         specifier: ^7.0.0
         version: 7.0.0
@@ -808,8 +808,8 @@ importers:
         specifier: ^9.2.0
         version: 9.2.0(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       generic-filehandle2:
-        specifier: ^2.2.1
-        version: 2.2.1
+        specifier: ^2.2.2
+        version: 2.2.2
       mobx:
         specifier: ^7.0.0
         version: 7.0.0
@@ -823,8 +823,8 @@ importers:
   plugins/bed:
     dependencies:
       '@gmod/bbi':
-        specifier: ^10.0.2
-        version: 10.0.2
+        specifier: ^11.0.0
+        version: 11.0.0
       '@gmod/bed':
         specifier: ^2.2.9
         version: 2.2.9
@@ -998,8 +998,8 @@ importers:
         specifier: ^9.2.0
         version: 9.2.0(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       generic-filehandle2:
-        specifier: ^2.2.1
-        version: 2.2.1
+        specifier: ^2.2.2
+        version: 2.2.2
       mobx:
         specifier: ^7.0.0
         version: 7.0.0
@@ -1323,8 +1323,8 @@ importers:
         specifier: ^9.2.0
         version: 9.2.0(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react@19.2.8)(supports-color@8.1.1))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       generic-filehandle2:
-        specifier: ^2.2.1
-        version: 2.2.1
+        specifier: ^2.2.2
+        version: 2.2.2
       mobx:
         specifier: ^7.0.0
         version: 7.0.0
@@ -1374,8 +1374,8 @@ importers:
         specifier: ^6.1.0
         version: 6.1.0(mobx@7.0.0)
       generic-filehandle2:
-        specifier: ^2.2.1
-        version: 2.2.1
+        specifier: ^2.2.2
+        version: 2.2.2
       mobx:
         specifier: ^7.0.0
         version: 7.0.0
@@ -1774,8 +1774,8 @@ importers:
   plugins/wiggle:
     dependencies:
       '@gmod/bbi':
-        specifier: ^10.0.2
-        version: 10.0.2
+        specifier: ^11.0.0
+        version: 11.0.0
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -2734,8 +2734,8 @@ importers:
         specifier: ^7.0.4
         version: 7.0.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       generic-filehandle2:
-        specifier: ^2.2.1
-        version: 2.2.1
+        specifier: ^2.2.2
+        version: 2.2.2
       idb:
         specifier: ^8.0.3
         version: 8.0.3
@@ -2795,8 +2795,8 @@ importers:
         specifier: ^0.35.3
         version: 0.35.3(@types/node@26.1.2)
       shiki:
-        specifier: ^4.4.1
-        version: 4.4.1
+        specifier: ^4.4.2
+        version: 4.4.2
       unified:
         specifier: ^11.0.5
         version: 11.0.5
@@ -4267,8 +4267,8 @@ packages:
   '@gmod/bam@7.9.1':
     resolution: {integrity: sha512-fWCQA4Y34ETR6VcfVPLXCDmeiKrg6gJtyVJB+eu7KfwwBRiRmhrVGo4YhJywl+3On1gOTB/XK5obuoCgDjGJTQ==}
 
-  '@gmod/bbi@10.0.2':
-    resolution: {integrity: sha512-+SLeLDeKB+6XHdKE3koOQvBIVwq8ECSLynsct7HYec6P5qRTYV4Q63+tAMtDn4In4xXnUsXNFliZ1O9REKv+GQ==}
+  '@gmod/bbi@11.0.0':
+    resolution: {integrity: sha512-wyxOJ6cr906Vht+jXhO4Tg2NSRmXhh33yFOayLHHIPlOzhjDa0ZHQWbGO/shUi7Z2Me8vVkxQhZNxeE0IJQGpQ==}
 
   '@gmod/bed@2.2.9':
     resolution: {integrity: sha512-+vtkTtwdcA7nSy/tEJlAsZtjUmopVDszXCgA0JBGSyEYq/inL//rt7Zaz+cTFEfGNivCGGKV0crLc5hliKrlrA==}
@@ -4290,6 +4290,9 @@ packages:
 
   '@gmod/nclist@3.0.11':
     resolution: {integrity: sha512-b7wbxPAQCvyi9Eny/O5uTRq2CRaJJlS8TG4CBTOCaMbhFSv7Cy108ps0nntxtxO7TKc/mVs4V1TJNL8uzQG3IQ==}
+
+  '@gmod/shared-read-cache@1.3.0':
+    resolution: {integrity: sha512-tiq+TDrDyd4aKnePr5xqKvieok9kYZ6TCbfXZ9RKDucRjyT8awn0HZxMyjVfm0/J02eNiD0Q2400GgpcSUEnAw==}
 
   '@gmod/tabix@3.5.7':
     resolution: {integrity: sha512-sg/2qax0r/5yh1lMt+wCLXQkqdosLo9OdPlILUEgMOkCW4ZBsb3WuAv/k4fjhO5b17OD25wh5etQMjjg7fXoqA==}
@@ -5392,28 +5395,56 @@ packages:
     resolution: {integrity: sha512-VeR2CY6Nn9/WbisoYLOQZ7HZOnwTrpBuOw4wExjqLnBCi62BNWynBUO6K2uPIASPFJwAv7cX1fUu+LrPlSstcw==}
     engines: {node: '>=20'}
 
+  '@shikijs/core@4.4.2':
+    resolution: {integrity: sha512-StyzbAyxg2/tBGf78gwbBkGyeQ73lf8UiJArFaQhTQIDqQOCKPCQFanvrs4/Yv3Yfyc+ONInJM6K+FMIf+P+kA==}
+    engines: {node: '>=20'}
+
   '@shikijs/engine-javascript@4.4.1':
     resolution: {integrity: sha512-6U4lJBh8LTvIkEVqRHv/rr3ruwtO6IweFQt1ME1ntHJMGHS+6N86vfYGO1o8c/DtOCTia2lfhdQBtBrps1sDfQ==}
+    engines: {node: '>=20'}
+
+  '@shikijs/engine-javascript@4.4.2':
+    resolution: {integrity: sha512-MnIkeqWdVPUWsxlx8gKLVCJFTsqrQJgpTPBPpQwaFeJ56lOnJxj5aN2LUFnfxUEcvOQuNocmbaMnVrCEln6rkw==}
     engines: {node: '>=20'}
 
   '@shikijs/engine-oniguruma@4.4.1':
     resolution: {integrity: sha512-p23RugMKss0r5DAtRJW1yAXUDl60JvhQYV20yuxei//26JyDSJefV3umyWzzwep2weblMnJGDYahuti6XkcMgA==}
     engines: {node: '>=20'}
 
+  '@shikijs/engine-oniguruma@4.4.2':
+    resolution: {integrity: sha512-GLhowz1+jixjz+wiZ3wMnOn1jTxiFCGl2PkXufivbnwPHKuyw1AYqu5/hbWhZZ2oAb0NP05WUJhYeigY14drnw==}
+    engines: {node: '>=20'}
+
   '@shikijs/langs@4.4.1':
     resolution: {integrity: sha512-xb2kCMloBCIraIy2fS5MW0t/BxVY3q2nDyQKBoeSeq6KNrQbShHetCFlw2n35fGIJ6t3+hXDLQogP5ir9O9bvA==}
+    engines: {node: '>=20'}
+
+  '@shikijs/langs@4.4.2':
+    resolution: {integrity: sha512-8DfeusD+Zdv/eYIDdXyJTUnSMHt+aAWjAOCXV20HNGAHRlInXpG8wh421v6B91WOm9TFwRLN+b/LG5F2NAIojg==}
     engines: {node: '>=20'}
 
   '@shikijs/primitive@4.4.1':
     resolution: {integrity: sha512-ko2OfDoG89YuQ7xL5LtcQiWKb7NIv1Ephb7g48TVU198OzAMLC8lXVEwaJGHK4sUMYrfAGJDqYmNLOLiW/Kz8w==}
     engines: {node: '>=20'}
 
+  '@shikijs/primitive@4.4.2':
+    resolution: {integrity: sha512-l6fQQKsOMlz72n38fztmSgZ76MO6KSWuw8o+GJ+FhmqrpC9pIOJNQNXGgbb5yX2AwpzlEHwsaLPnk/8o4Fm+rA==}
+    engines: {node: '>=20'}
+
   '@shikijs/themes@4.4.1':
     resolution: {integrity: sha512-wudOaoFro+/Zl9gQv2W1Ur5XlVduqvTuYLI483Xi0wgc1A+cy1hfB2r6ac6ufBgF+ID7KJEW7L41MHrzQ4wH+w==}
     engines: {node: '>=20'}
 
+  '@shikijs/themes@4.4.2':
+    resolution: {integrity: sha512-H0CFoL07ddDC2Dd6EdrPYNkRhUR6YCkJlnuYFceYYUJJA5TIm2b5B33qqiDYryBExgbKMndFJPb2u1gTuqO37g==}
+    engines: {node: '>=20'}
+
   '@shikijs/types@4.4.1':
     resolution: {integrity: sha512-GOwCLQDHM5EjGUWNPrhzJbr6JP8V/Dx/CDVkWvbZ1Avw5JFnNUckrgbLmE07qtg4WlW7Q7QFndhjIkeU9XMPvw==}
+    engines: {node: '>=20'}
+
+  '@shikijs/types@4.4.2':
+    resolution: {integrity: sha512-PFYitV4vpDr/iPCIhnHp+Q4ftic5N5VeNJ3KQ1O8gn3h2ar8qgwMAXF7tq4m1CWaMS60fV4VqF6vfnWH4F7vqQ==}
     engines: {node: '>=20'}
 
   '@shikijs/vscode-textmate@10.0.2':
@@ -7161,8 +7192,8 @@ packages:
     peerDependencies:
       eslint: ^7.14.0 || ^8.0.0 || ^9.0.0 || ^10.0.0
 
-  eslint-plugin-unicorn@72.0.0:
-    resolution: {integrity: sha512-hqO6ksoOHO+ZhdseTuKRVQbx9U7PRO/cv8qAR1mctwzdVO2hYud8uS9luAhp43RJgziYgHAph8eHyipT8GL0ng==}
+  eslint-plugin-unicorn@73.0.0:
+    resolution: {integrity: sha512-V0YatLe9nkGhXEXKe2Qljb1EY0sJHwDV0HUF1NKFwtsHh/fU7qGHDgv+6fchzZcgU2/7noHo2gdjnmo0P2uDPw==}
     engines: {node: '>=22'}
     peerDependencies:
       eslint: '>=10.4'
@@ -7414,8 +7445,8 @@ packages:
     resolution: {integrity: sha512-HmKyTFGomdAchz4umx8MwBnrnfFmdpwiTyGA4ZOF7rya2Lmgbc9qate4yweInL+0gUBVImhaz12SBGpW3SY4Yg==}
     engines: {node: '>=22.12.0'}
 
-  generic-filehandle2@2.2.1:
-    resolution: {integrity: sha512-nwFh5dvrcuNqvcEa0+MiKrqeRFzisDiBdUC04Eb+XemV93pmOL3cTWEkR3LEESUvnLH7D3RIneACw6O71SJ65w==}
+  generic-filehandle2@2.2.2:
+    resolution: {integrity: sha512-WB3RHemurYMq8Fj85EjBYPk/8/ulmMhhpGu5BC4BAVJO8G010H/BNQMe8Ry1KxOyo0ZLV1QDyXjNMbZSRyLa0A==}
 
   gensync@1.0.0-beta.2:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
@@ -9497,6 +9528,10 @@ packages:
 
   shiki@4.4.1:
     resolution: {integrity: sha512-rFP+iYKzjLEIqiMiKANhARqiAbk4deDhWnBtnUO/K0D0dPxMGDH4N0FVfBY/VeI+lPrV4wNGCHQZp7EOr7NNBw==}
+    engines: {node: '>=20'}
+
+  shiki@4.4.2:
+    resolution: {integrity: sha512-P8F/dFhRevaw2uSdeIYlq/5SXZNY85DPtmXQ947gD1Zj2JqO5AkNvVVBar0Me9JkFx3uzVud/qOtP5ek9NEQGA==}
     engines: {node: '>=20'}
 
   side-channel-list@1.0.1:
@@ -12187,28 +12222,27 @@ snapshots:
       '@gmod/bgzf-filehandle': 6.3.2
       '@jbrowse/quick-lru': 7.3.5
       crc: 4.3.2
-      generic-filehandle2: 2.2.1
+      generic-filehandle2: 2.2.2
     transitivePeerDependencies:
       - buffer
 
-  '@gmod/bbi@10.0.2':
+  '@gmod/bbi@11.0.0':
     dependencies:
-      '@gmod/abortable-promise-cache': 3.0.4
-      '@jbrowse/quick-lru': 7.3.5
-      generic-filehandle2: 2.2.1
+      '@gmod/shared-read-cache': 1.3.0
+      generic-filehandle2: 2.2.2
 
   '@gmod/bed@2.2.9': {}
 
   '@gmod/bgzf-filehandle@6.3.2':
     dependencies:
-      generic-filehandle2: 2.2.1
+      generic-filehandle2: 2.2.2
       pako-esm2: 2.0.2
 
   '@gmod/cram@10.6.1':
     dependencies:
       '@jbrowse/quick-lru': 7.3.5
       crc: 4.3.2
-      generic-filehandle2: 2.2.1
+      generic-filehandle2: 2.2.2
       md5: 2.3.0
     transitivePeerDependencies:
       - buffer
@@ -12221,7 +12255,7 @@ snapshots:
     dependencies:
       '@gmod/bgzf-filehandle': 6.3.2
       '@jbrowse/quick-lru': 7.3.5
-      generic-filehandle2: 2.2.1
+      generic-filehandle2: 2.2.2
 
   '@gmod/nclist@3.0.11':
     dependencies:
@@ -12229,18 +12263,20 @@ snapshots:
       '@jbrowse/quick-lru': 7.3.5
       '@jridgewell/resolve-uri': 3.1.2
 
+  '@gmod/shared-read-cache@1.3.0': {}
+
   '@gmod/tabix@3.5.7':
     dependencies:
       '@gmod/abortable-promise-cache': 3.0.4
       '@gmod/bgzf-filehandle': 6.3.2
       '@jbrowse/quick-lru': 7.3.5
-      generic-filehandle2: 2.2.1
+      generic-filehandle2: 2.2.2
 
   '@gmod/trix@3.0.19': {}
 
   '@gmod/twobit@6.0.11':
     dependencies:
-      generic-filehandle2: 2.2.1
+      generic-filehandle2: 2.2.2
 
   '@gmod/ucsc-hub@2.0.12': {}
 
@@ -13258,9 +13294,23 @@ snapshots:
       '@types/hast': 3.0.5
       hast-util-to-html: 9.0.5
 
+  '@shikijs/core@4.4.2':
+    dependencies:
+      '@shikijs/primitive': 4.4.2
+      '@shikijs/types': 4.4.2
+      '@shikijs/vscode-textmate': 10.0.2
+      '@types/hast': 3.0.5
+      hast-util-to-html: 9.0.5
+
   '@shikijs/engine-javascript@4.4.1':
     dependencies:
       '@shikijs/types': 4.4.1
+      '@shikijs/vscode-textmate': 10.0.2
+      oniguruma-to-es: 4.3.6
+
+  '@shikijs/engine-javascript@4.4.2':
+    dependencies:
+      '@shikijs/types': 4.4.2
       '@shikijs/vscode-textmate': 10.0.2
       oniguruma-to-es: 4.3.6
 
@@ -13269,9 +13319,18 @@ snapshots:
       '@shikijs/types': 4.4.1
       '@shikijs/vscode-textmate': 10.0.2
 
+  '@shikijs/engine-oniguruma@4.4.2':
+    dependencies:
+      '@shikijs/types': 4.4.2
+      '@shikijs/vscode-textmate': 10.0.2
+
   '@shikijs/langs@4.4.1':
     dependencies:
       '@shikijs/types': 4.4.1
+
+  '@shikijs/langs@4.4.2':
+    dependencies:
+      '@shikijs/types': 4.4.2
 
   '@shikijs/primitive@4.4.1':
     dependencies:
@@ -13279,11 +13338,26 @@ snapshots:
       '@shikijs/vscode-textmate': 10.0.2
       '@types/hast': 3.0.5
 
+  '@shikijs/primitive@4.4.2':
+    dependencies:
+      '@shikijs/types': 4.4.2
+      '@shikijs/vscode-textmate': 10.0.2
+      '@types/hast': 3.0.5
+
   '@shikijs/themes@4.4.1':
     dependencies:
       '@shikijs/types': 4.4.1
 
+  '@shikijs/themes@4.4.2':
+    dependencies:
+      '@shikijs/types': 4.4.2
+
   '@shikijs/types@4.4.1':
+    dependencies:
+      '@shikijs/vscode-textmate': 10.0.2
+      '@types/hast': 3.0.5
+
+  '@shikijs/types@4.4.2':
     dependencies:
       '@shikijs/vscode-textmate': 10.0.2
       '@types/hast': 3.0.5
@@ -14125,7 +14199,7 @@ snapshots:
       piccolore: 0.1.3
       picomatch: 4.0.5
       semver: 7.8.5
-      shiki: 4.4.1
+      shiki: 4.4.2
       smol-toml: 1.7.1
       svgo: 4.0.2
       tinyclip: 0.1.15
@@ -15204,7 +15278,7 @@ snapshots:
     dependencies:
       eslint: 10.8.0(supports-color@8.1.1)
 
-  eslint-plugin-unicorn@72.0.0(eslint@10.8.0(supports-color@8.1.1)):
+  eslint-plugin-unicorn@73.0.0(eslint@10.8.0(supports-color@8.1.1)):
     dependencies:
       '@eslint-community/eslint-utils': 4.10.1(eslint@10.8.0(supports-color@8.1.1))
       '@eslint/css-tree': 4.0.5
@@ -15523,7 +15597,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  generic-filehandle2@2.2.1: {}
+  generic-filehandle2@2.2.2: {}
 
   gensync@1.0.0-beta.2: {}
 
@@ -18136,6 +18210,17 @@ snapshots:
       '@shikijs/langs': 4.4.1
       '@shikijs/themes': 4.4.1
       '@shikijs/types': 4.4.1
+      '@shikijs/vscode-textmate': 10.0.2
+      '@types/hast': 3.0.5
+
+  shiki@4.4.2:
+    dependencies:
+      '@shikijs/core': 4.4.2
+      '@shikijs/engine-javascript': 4.4.2
+      '@shikijs/engine-oniguruma': 4.4.2
+      '@shikijs/langs': 4.4.2
+      '@shikijs/themes': 4.4.2
+      '@shikijs/types': 4.4.2
       '@shikijs/vscode-textmate': 10.0.2
       '@types/hast': 3.0.5
 

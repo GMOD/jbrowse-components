@@ -69,7 +69,7 @@
     "body-parser": "^2.3.0",
     "date-fns": "^4.4.0",
     "dockview-react": "^7.0.4",
-    "generic-filehandle2": "^2.2.1",
+    "generic-filehandle2": "^2.2.2",
     "idb": "^8.0.3",
     "mobx": "^7.0.0",
     "mobx-react": "^10.0.0",

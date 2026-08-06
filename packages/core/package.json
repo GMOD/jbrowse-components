@@ -212,7 +212,7 @@
     "deepmerge": "^4.3.1",
     "dompurify": "^3.4.13",
     "fast-deep-equal": "^3.1.3",
-    "generic-filehandle2": "^2.2.1",
+    "generic-filehandle2": "^2.2.2",
     "idb": "^8.0.3",
     "mobx": "^7.0.0",
     "mobx-react": "^10.0.0",
