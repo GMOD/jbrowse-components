@@ -12,13 +12,22 @@ the TL;DR: a bulleted list, optionally followed by one short paragraph saying
 how to install what apt does not carry. Nothing else. The intro goes under its
 own `##` heading, or the TOC files it under "Prerequisites".
 
-A page closes with `## See also`, then `## References` if it has one.
-`## Reproduce it end to end` goes after the data preparation it wraps up, which
-on most pages is just before those two. `See also` is bare links, no sentence
-explaining each one; a reader can follow a link. Don't restate the prerequisite
-tool list inside Reproduce, point at `[Prerequisites](#prerequisites)`. Don't
-write a generic troubleshooting table: a failure worth documenting is one this
-dataset actually produces, and it goes in the prose where it happens.
+A page closes with `## See also`, then `## References` if it has one. Nothing
+goes below them: a worked example parked under `See also` and reached by an
+anchor from higher up the page is still content, and belongs above the closing
+sections. `## Reproduce it end to end` goes after the data preparation it wraps
+up, which on most pages is just before those two.
+
+A `See also` entry may carry a **short qualifier naming the relationship** —
+"the same display partitioned by strain", "the germline counterpart" — which is
+what lets a reader pick out of a list of ten. It may not carry a sentence
+arguing something: a comparison worth making is prose, on the page, where it can
+be read rather than stumbled on. (This previously said bare links only, which 21
+of 36 tutorials ignored because the qualifier earns its place; the line now says
+what the corpus does.) Don't restate the prerequisite tool list inside
+Reproduce, point at `[Prerequisites](#prerequisites)`. Don't write a generic
+troubleshooting table: a failure worth documenting is one this dataset actually
+produces, and it goes in the prose where it happens.
 
 Don't sell the hosted data — the figures already carry their own live links.
 

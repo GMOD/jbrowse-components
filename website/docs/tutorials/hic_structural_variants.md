@@ -21,6 +21,12 @@ in the nucleus. JBrowse draws the result as a triangle: the diagonal runs along
 the top edge, and depth below it is genomic separation, so a bin near the top is
 a pair of loci close together and a bin near the bottom is a pair far apart.
 
+[HiGlass](https://higlass.io/) is the reference viewer for Hi-C on its own, with
+matrix-versus-matrix layouts JBrowse has no equivalent of. The trade here runs
+the other way: a linear browser puts the matrix in the same coordinate system as
+genes, annotations and read-level tracks, which is what the rest of this page
+reads the contacts against.
+
 Two features of that picture have names, and ENCODE publishes both as separate
 annotation files derived from the same matrix:
 
@@ -253,7 +259,4 @@ the 24 columns in config skips the guesswork.
 - [](/docs/tutorials/cancer_sv), the same translocation question answered from
   reads instead of contacts
 - [](/docs/user_guides/sv_visualization)
-- [HiGlass](https://higlass.io/) is the reference viewer for Hi-C on its own,
-  with matrix-versus-matrix layouts JBrowse has no equivalent of. The trade here
-  is the other way round: a linear browser puts the matrix in the same
-  coordinate system as genes, annotations and read-level tracks.
+- [HiGlass](https://higlass.io/)

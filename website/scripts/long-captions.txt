@@ -6,19 +6,4 @@
 # visual takeaway, and move the color/stroke/row glossary into the prose that
 # introduces the figure. Removing one is the win. A multi-panel figure that has
 # to name each panel is the legitimate reason to stay listed.
-tutorials/allvsall_synteny.md /img/multiway_synteny/ecoli_launch_from_selection.png
-tutorials/allvsall_synteny.md /img/multiway_synteny/ecoli_one_vs_all.png
-tutorials/allvsall_synteny.md /img/pangenome/rgfa_paa_bubble.png
-tutorials/dog10k_svs.md /img/dog10k-denr-sine-deletions.png
-tutorials/dog10k_svs.md /img/dog10k-fgf4-retrogene-synteny.png
-tutorials/pangenome_ecoli.md /img/pangenome/graph_resolution.png
-tutorials/pangenome_ecoli.md /img/pangenome/pggb_locus_sample_rows.png
-tutorials/pangenome_hprc.md /img/pangenome/hprc_chm13_allele.png
-tutorials/pangenome_hprc.md /img/pangenome/hprc_mhc_anchored.png
-tutorials/protein_structure.md /img/protein/connected.png
-tutorials/scatac_pseudobulk.md /img/scatac/pbmc5k_marker_swap.png
-user_guides/graph_genome_view.md /img/pangenome/graph_context.png
-user_guides/graph_genome_view.md /img/pangenome/pggb_locus_sample_rows.png
-user_guides/graph_genome_view.md /img/pangenome/rgfa_strain_launch.png
-user_guides/sv_visualization.md /img/inversion_long_read.png
-user_guides/sv_visualization.md /img/inverted_duplication.png
+

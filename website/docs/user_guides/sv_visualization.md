@@ -66,7 +66,12 @@ pair orientations are not supported. The table below assumes `fr`:
 
 <!-- COLOR_TABLE alignments-pair-orientation END -->
 
-<Figure caption="An inverted duplication (CPX type INVdup, HGSV_2721) in HG02768 paired-end reads, with the 1KGP ensemble call above and the variant's INFO fields open alongside. Green LL, navy RR, and magenta split reads flag the inverted segment; the duplicated copy reads out as elevated coverage and arcs. These orientation-colored reads are a minority of an otherwise concordant grey pileup, so they cluster at the breakpoints." src="/img/inverted_duplication.png" />
+Green LL, navy RR and magenta split reads flag the inverted segment, and the
+duplicated copy reads out as elevated coverage and arcs. Those
+orientation-colored reads are a minority of an otherwise concordant grey pileup,
+so they cluster at the breakpoints.
+
+<Figure caption="An inverted duplication (CPX type INVdup, HGSV_2721) in HG02768 paired-end reads, with the 1KGP ensemble call above and the variant's INFO fields open alongside." src="/img/inverted_duplication.png" />
 
 ### Short reads vs long reads
 
@@ -82,7 +87,11 @@ inversion arc. The figure below shows this ~1.2 kb inversion in one 1000 Genomes
 sample (HG00151) with Oxford Nanopore long reads, the 1KGP ensemble SV call
 marking the locus above.
 
-<Figure caption="Group by... → Split read (SA tag) (top) and the grouping it produces (bottom): the same inversion (HGSV_10047, chr1:197,787,660-197,788,855) in HG00151 Oxford Nanopore long reads. In the split section each read's reverse-strand middle (blue) paints between its forward-strand ends (red) and the magenta arc joins the two breakpoints; the section below spans the locus without splitting. The 1KGP ensemble VCF call marks it above." src="/img/inversion_long_read.png" />
+In the split section each read's reverse-strand middle (blue) paints between its
+forward-strand ends (red), and the magenta arc joins the two breakpoints; the
+section below it spans the locus without splitting.
+
+<Figure caption="Group by... → Split read (SA tag) (top) and the grouping it produces (bottom): the same inversion (HGSV_10047, chr1:197,787,660-197,788,855) in HG00151 Oxford Nanopore long reads, with the 1KGP ensemble VCF call above." src="/img/inversion_long_read.png" />
 
 ### Insert size color scheme
 

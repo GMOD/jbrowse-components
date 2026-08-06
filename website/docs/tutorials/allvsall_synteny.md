@@ -354,7 +354,11 @@ A lane can only say where a strain stops, so the figure below carries a second
 pane, the same window in the pangenome graph of these strains, which
 [the next section](#the-same-gap-drawn-as-a-graph) picks up.
 
-<Figure caption="Above, one track with one lane per strain: K-12 against every other sample in the file, grouped by mate assembly, K-12's own lane hidden. The shaded band is K-12's phenylacetate (paa) operon, and Sakai, CFT073 and IAI39 all stop at its left edge where NCTC86 runs through. Below, the same window as a graph: the ringed node is the 21.8 kb segment carrying the operon, and the short arm beside it is the detour the other three take." src="/img/multiway_synteny/ecoli_one_vs_all.png" />
+The shaded band is K-12's phenylacetate (paa) operon, and Sakai, CFT073 and
+IAI39 all stop at its left edge where NCTC86 runs through. In the graph below
+it, the ringed node is the segment carrying the operon.
+
+<Figure caption="Above, one track with one lane per strain: K-12 against every other sample in the file, grouped by mate assembly, K-12's own lane hidden. Below, the same window as a graph, where the short arm beside the ringed node is the detour the other three take." src="/img/multiway_synteny/ecoli_one_vs_all.png" />
 
 The same mode zoomed out to the whole chromosome gives a per-strain overview of
 where each one diverges. Because a synteny view's rows are ordinary linear
@@ -378,7 +382,13 @@ the [graph genome view](/docs/user_guides/graph_genome_view) opens a window of
 it beside the alignment. Against the ribbons rather than the lanes, the same
 event reads twice over:
 
-<Figure caption="Above, the phenylacetate operon window with NCTC86 over K12 and Sakai under it, each row carrying its own genes and both bands from the all-vs-all PAF. The NCTC86 band runs unbroken across the island; the Sakai band breaks before it and resumes 6 kb past its right edge, with alignment on both flanks. Below, the same window as a graph, on the same reference-position ramp: the two rings mark one segment, s502, as a block in K-12's segments lane and as the long node carrying the island." src="/img/pangenome/rgfa_paa_bubble.png" />
+Each row carries its own genes and both bands from the all-vs-all PAF. The
+NCTC86 band runs unbroken across the island; the Sakai band breaks before it and
+resumes past its right edge, with alignment on both flanks. The ringed segment,
+`s502`, is a block in K-12's segments lane and the long node carrying the
+island.
+
+<Figure caption="Above, the phenylacetate operon window with NCTC86 over K12 and Sakai under it. Below, the same window as a graph on the same reference-position ramp, the two rings marking one segment in both." src="/img/pangenome/rgfa_paa_bubble.png" />
 
 ### From a lane to a stack, for one locus
 
@@ -406,7 +416,12 @@ falls, and the palette button's **Show color legend** names the colors. **CIGAR
 display mode** in the view menu switches between colored indels, transparent
 ones, and none.
 
-<Figure caption="Rubberband-select an 8 kb window of the shared backbone, then Launch → Linear synteny view. The dialog lists the four strains that align there, all checked, in the order their rows will stack; the launched view is those five rows with a band between each neighbouring pair, each row collapsed to its ruler until tracks are added. The wedges inside the ribbons are the CIGAR's insertions and deletions." src="/img/multiway_synteny/ecoli_launch_from_selection.png" links="Selection=multiway_synteny/ecoli_launch_selection,Dialog=multiway_synteny/ecoli_launch_dialog,Result=multiway_synteny/ecoli_launch_result" />
+The dialog lists the strains that align there, all checked, in the order their
+rows will stack; the launched view is those rows with a band between each
+neighbouring pair, each collapsed to its ruler until tracks are added. The
+wedges inside the ribbons are the CIGAR's insertions and deletions.
+
+<Figure caption="Rubberband-select an 8 kb window of the shared backbone, then Launch → Linear synteny view." src="/img/multiway_synteny/ecoli_launch_from_selection.png" links="Selection=multiway_synteny/ecoli_launch_selection,Dialog=multiway_synteny/ecoli_launch_dialog,Result=multiway_synteny/ecoli_launch_result" />
 
 ## Reproduce it end to end
 

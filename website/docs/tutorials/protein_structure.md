@@ -116,7 +116,12 @@ Launching from a gene keeps the two views linked: hovering a genomic position
 highlights the matching residue on the structure and its sequence alignment, and
 hovering the structure highlights the genomic position.
 
-<Figure caption="A connected session on human TP53 (UniProt P04637). The genome view (left) shows the NCBI RefSeq gene models and ClinVar variants, while the protein view (right) shows the AlphaFold structure together with the genome-to-structure sequence alignment and per-residue tracks (pLDDT confidence, domains, helices, hydrophobicity). Hovering a variant in the genome highlights the matching residue on the structure." src="/img/protein/connected.png" />
+The genome view on the left carries the NCBI RefSeq gene models and ClinVar
+variants; the protein view on the right carries the AlphaFold structure, the
+genome-to-structure sequence alignment, and per-residue tracks for pLDDT
+confidence, domains, helices and hydrophobicity.
+
+<Figure caption="A connected session on human TP53 (UniProt P04637). Hovering a variant in the genome view highlights the matching residue on the structure." src="/img/protein/connected.png" />
 
 ### The other things that dialog launches
 

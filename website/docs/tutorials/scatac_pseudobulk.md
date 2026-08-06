@@ -39,7 +39,10 @@ PBMCs are a good check on the whole path, because the answer is known in
 advance: at a T-cell marker the T-cell rows have to carry the signal, and at a
 B-cell marker the same rows have to go flat and the B-cell rows light up.
 
-<Figure caption="Twelve per-cell-type BigWigs from the 10x 5k PBMC scATAC dataset, loaded as one MultiQuantitativeTrack, over CD8A and MS4A1 in one discontinuous view. CD8A is carried by the CD8, MAIT and NK rows, all CD8A-expressing lineages; MS4A1 by the two B rows and nothing else. Each row keeps the color its cluster had in the single-cell object, and the rows are ordered by lineage, so the two markers land in different blocks." src="/img/scatac/pbmc5k_marker_swap.png" />
+Each row keeps the color its cluster had in the single-cell object, and the rows
+are ordered by lineage, so the two markers land in different blocks.
+
+<Figure caption="Twelve per-cell-type BigWigs from the 10x 5k PBMC scATAC dataset, loaded as one MultiQuantitativeTrack, over CD8A and MS4A1 in one discontinuous view. CD8A is carried by the CD8, MAIT and NK rows; MS4A1 by the two B rows and nothing else." src="/img/scatac/pbmc5k_marker_swap.png" />
 
 The pseudobulk step runs in the same environment your clustering does, so the
 BigWigs it writes can also be viewed inline through the

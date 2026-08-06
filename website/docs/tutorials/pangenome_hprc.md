@@ -321,7 +321,13 @@ The [guide](/docs/user_guides/graph_genome_view#three-layouts) sets out what the
 three modes put on each axis. What that costs at this scale is the same MHC
 class II window drawn both ways:
 
-<Figure caption="One MHC class II subgraph drawn both ways, same window and same tracks above it. Left, force-directed: the drawing is the graph's shape and nothing in it lines up with the linear view. Right, anchored: every x is a GRCh38 coordinate, so the backbone is one straight line and each allele hangs below where it attaches, stacked by rank. Rings 1 and 2 are the same two nodes in both halves, a 12 kb reference stretch and the 12.3 kb allele over it: touching in the force drawing, rows apart on the anchored one. The unnumbered ring on the left is a third node, a 1.8 kb allele whose right-click menu is open; Highlight in hg38 wrote the orange band above it, the 12 kb backbone segment it attaches across." src="/img/pangenome/hprc_mhc_anchored.png" links="Force-directed=pangenome/hprc_mhc_layout_force,Anchored=pangenome/hprc_mhc_layout_anchored" />
+Rings 1 and 2 mark the same two nodes in both halves, a reference stretch and
+the allele over it: touching in the force drawing, rows apart on the anchored
+one. The unnumbered ring on the left is a third node, an allele whose
+right-click menu is open, and **Highlight in hg38** is what wrote the orange
+band above it, over the backbone segment that node attaches across.
+
+<Figure caption="One MHC class II subgraph drawn both ways, same window and same tracks above it. Left, force-directed: the drawing is the graph's shape and nothing in it lines up with the linear view. Right, anchored: every x is a GRCh38 coordinate, so the backbone is one straight line and each allele hangs below where it attaches, stacked by rank." src="/img/pangenome/hprc_mhc_anchored.png" links="Force-directed=pangenome/hprc_mhc_layout_force,Anchored=pangenome/hprc_mhc_layout_anchored" />
 
 Each locus below is a window small enough to draw:
 
@@ -484,7 +490,11 @@ the same way `hg38` asks for `GRCh38#0#chr17`. This replaces the track
 }
 ```
 
-<Figure caption="One donor node, on both coordinate systems. Top: the GRCh38 window, its bubble lane cut to bubbles holding an allele over 100 kb, with the banded bubble a 1,023 bp reference span. Middle: the graph cut from that window, where the boxed node is 142.2 kb of CHM13 sequence attached at a 75 bp anchor. Bottom: that node on hs1's own chr17, an ordinary interval under UCSC's RepeatMasker, tiled by long L1 elements in red." src="/img/pangenome/hprc_chm13_allele.png" />
+The bubble lane up top is cut to bubbles holding an allele over 100 kb, and the
+banded one is a short reference span. In the middle the boxed node is the CHM13
+sequence that hangs off it, attached at a small anchor.
+
+<Figure caption="One donor node, on both coordinate systems. Top: the GRCh38 window. Middle: the graph cut from it. Bottom: that same node on hs1's own chr17, an ordinary interval under UCSC's RepeatMasker, tiled by long L1 elements in red." src="/img/pangenome/hprc_chm13_allele.png" />
 
 CHM13 entered this graph at rank 61, after sixty haplotypes, so most of what it
 carries was already in the graph and little is credited to it:

@@ -707,7 +707,11 @@ bar labelled `93 bp` running off the left edge: its segment links to
 93 bp of CFT073 stands in for 7.1 kb of K12 and the bar is that 7.1 kb. It is a
 deletion, not a loop, and most of it is outside the frame.
 
-<Figure caption="460 bp at the ycbF/pyrD boundary, the same graph in both layouts under the same MAF lane. Left, Sample rows in the MAF's five rows and order: the top row is the K12 backbone, and below it each strain's marks are the segments it takes instead. The MAF row above says the same thing base by base. Right, the same nodes with the reference axis let go, where the 93 bp segment CFT073 takes instead of 7 kb of K12 is the one branch off the chain." src="/img/pangenome/pggb_locus_sample_rows.png" links="Sample rows=pangenome/pggb_locus_sample_rows_rows,Force-directed=pangenome/pggb_locus_sample_rows_force" />
+In **Sample rows** the lanes take the MAF's own rows and order: the top row is
+the K12 backbone, and below it each strain's marks are the segments it takes
+instead. The MAF row above says the same thing base by base.
+
+<Figure caption="460 bp at the ycbF/pyrD boundary, the same graph in both layouts under the same MAF lane. Left, Sample rows. Right, the same nodes with the reference axis let go, where the segment CFT073 takes instead is the one branch off the chain." src="/img/pangenome/pggb_locus_sample_rows.png" links="Sample rows=pangenome/pggb_locus_sample_rows_rows,Force-directed=pangenome/pggb_locus_sample_rows_force" />
 
 #### Where this stops, and what to do instead
 
@@ -730,7 +734,11 @@ Finally, a segment carried by several assemblies draws on one row: sample rows
 put it on the first path that walks it, and the others are listed in the node
 popup.
 
-<Figure caption="One stretch of K12 at the colanic acid cluster, cut from the two graphs this build produces, each over the window its own graph can draw. Left, the minigraph rGFA over three whole backbone segments: thirteen nodes, a chain with alternate segments of 2-154 bp hanging off it. Right, the pggb graph over the 300 bp banded on its ruler: fifty-three nodes, one at every variant. Two comparable panes, two orders of magnitude apart in span." src="/img/pangenome/graph_resolution.png" links="minigraph=pangenome/graph_resolution_minigraph,pggb=pangenome/graph_resolution_pggb" />
+The two panes are comparable but two orders of magnitude apart in span: the
+minigraph side covers three whole backbone segments, the pggb side the stretch
+banded on its ruler.
+
+<Figure caption="One stretch of K12 at the colanic acid cluster, cut from the two graphs this build produces, each over the window its own graph can draw. Left, the minigraph rGFA: a chain with alternate segments hanging off it. Right, the pggb graph: a node at every variant." src="/img/pangenome/graph_resolution.png" links="minigraph=pangenome/graph_resolution_minigraph,pggb=pangenome/graph_resolution_pggb" />
 
 Both panes are colored by reference position over the same 28 kb, so a node and
 the block it came from take one color, and each pane's header carries its node

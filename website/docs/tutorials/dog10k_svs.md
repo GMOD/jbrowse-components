@@ -255,7 +255,11 @@ for the deletion. Dimorphic SINE and LINE-1 variants like these make up over 45%
 of all deletions in the callset, which is why a dog SV panel looks nothing like
 a SNV panel.
 
-<Figure caption="Two SINEC2A1 deletions in adjacent DENR introns, one column each, every animal of every breed in the panel. The window holds the whole gene, and the lines above the matrix tie each column back to the intron it sits in. The Mastiff-clade breeds carry both repeats, the Labrador Retrievers have lost both, and the Greek wolves have lost the left one entirely while a third of them still carry the right one." src="/img/dog10k-denr-sine-deletions.png" />
+The window holds the whole gene, and the lines above the matrix tie each column
+back to the intron it sits in. The Greek wolves have lost the left repeat
+entirely while a third of them still carry the right one.
+
+<Figure caption="Two SINEC2A1 deletions in adjacent DENR introns, one column each, every animal of every breed in the panel. The Mastiff-clade breeds carry both repeats and the Labrador Retrievers have lost both." src="/img/dog10k-denr-sine-deletions.png" />
 
 This contrasts with the Collie eye anomaly figure. That deletion was long, rare,
 and confined to one clade. These are short, common, and it is the reference that
@@ -469,7 +473,12 @@ align to the same three exons, so as two regions of one row their ribbons cross
 through each other; from above and below they close on the gene instead, and
 each intron is one gap seen twice.
 
-<Figure caption="The two sequenced FGF4 retrocopies aligned to their parent gene between them, each row carrying the GenBank annotation of its record, with the parent's RefSeq model and the per-breed sample rows between the two ribbons. Each retrocopy's CDS is one box against the parent's three, and each ribbon gap sits over a record the chondrodysplastic breeds and both spaniels carry and the Labradors, German Shepherds and Greek wolves do not." src="/img/dog10k-fgf4-retrogene-synteny.png" />
+Each row carries the GenBank annotation of its own record, with the parent's
+RefSeq model and the per-breed sample rows between the two ribbons. Each ribbon
+gap sits over a record the chondrodysplastic breeds and both spaniels carry, and
+the Labradors, German Shepherds and Greek wolves do not.
+
+<Figure caption="The two sequenced FGF4 retrocopies aligned to their parent gene between them. Each retrocopy's CDS is one box against the parent's three." src="/img/dog10k-fgf4-retrogene-synteny.png" />
 
 The window stops where the CFA18 alignment does, so that retrocopy is on screen
 end to end and the CFA12 ribbon runs on past it. The sample rows are the same

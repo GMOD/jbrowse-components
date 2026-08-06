@@ -201,7 +201,11 @@ locus one rank holds alleles from many haplotypes, so a rank row means nothing
 biological. **Sample rows** rows by the assembly each allele came from instead,
 so reading across a row says what that strain does to the reference.
 
-<Figure caption="460 bp of the pggb graph drawn twice, under the genes, MAF and segments lanes for the same window. Left, Sample rows: the top row is the K12 backbone with each segment's length on it, and each row below is one strain whose charcoal marks are the segments it takes instead, tied by grey threads to where they attach. Right, the same nodes force-directed, where the locus reads as a shape rather than as rows." src="/img/pangenome/pggb_locus_sample_rows.png" links="Sample rows=pangenome/pggb_locus_sample_rows_rows,Force-directed=pangenome/pggb_locus_sample_rows_force" />
+In **Sample rows** the top row is the K12 backbone, carrying each segment's
+length, and every row under it is one strain whose charcoal marks are the
+segments it takes instead, tied by grey threads to where they attach.
+
+<Figure caption="460 bp of the pggb graph drawn twice, under the genes, MAF and segments lanes for the same window. Left, Sample rows. Right, the same nodes force-directed, where the locus reads as a shape rather than as rows." src="/img/pangenome/pggb_locus_sample_rows.png" links="Sample rows=pangenome/pggb_locus_sample_rows_rows,Force-directed=pangenome/pggb_locus_sample_rows_force" />
 
 What "came from" means depends on the format, and it is the one place the two
 formats say genuinely different things. On rGFA it is the strain that _first
@@ -233,7 +237,15 @@ rather than as the one event it is. A hop closes those, costing a query per
 off-reference segment already reached. **None** shows what the region query
 alone reaches.
 
-<Figure caption="The paa island cut from the same segments track twice, each cut under the linear view it was made from. The genes and the segments lane are the same in both halves, and the long green block is the island, which the graph draws as the green node labelled 21.8 kb. One colour per node across the pair: the blue box is the 43 bp segment and the orange box the 558 bp one, the same two nodes in both halves, where one CFT073 detour leaves the backbone and rejoins it. Left, at Graph context None, they end in mid-air, because the sequence between them sits on that strain's own contig, which no K12 coordinate reaches. Right, at 1 hop, the red arrow marks the 5.5 kb interior the extra queries found, and the blue and orange nodes are now the two sides of a closed bubble (the node and edge counts in the header rise to match). A hop is one step, so the right half has a loose end of its own where the walk stopped, at 9.5 kb; it expands only over off-reference segments, so it no longer drags in the backbone either side of the window." src="/img/pangenome/graph_context.png" links="None=pangenome/graph_context_none,1 hop=pangenome/graph_context_hop1" />
+Both halves below share their genes and segments lane, and colour each node the
+same way, so a segment can be found in either. The long green block is the
+island; the blue and orange boxes are the two nodes where one CFT073 detour
+leaves the backbone and rejoins it. A hop is one step, so the right half stops
+with a loose end of its own, and the node and edge counts in the header rise to
+match what it reached. It expands only over off-reference segments, so it does
+not drag in the backbone either side of the window.
+
+<Figure caption="The paa island cut from the same segments track twice, each under the linear view it was made from. Left, at Graph context None, the two boxed nodes end in mid-air: the sequence between them sits on that strain's own contig, which no K12 coordinate reaches. Right, at 1 hop, the red arrow marks the interior the extra queries found, closing them into a bubble." src="/img/pangenome/graph_context.png" links="None=pangenome/graph_context_none,1 hop=pangenome/graph_context_hop1" />
 
 A **2 hops** setting handles a graph whose alleles have alleles of their own. On
 this window 1 hop already closes the cut; HPRC's amylase window keeps growing
@@ -340,7 +352,12 @@ window the graph gives CFT073 tens of kilobases the reference does not have.
 Clicking that strain's entry opens the sequence on CFT073's own coordinates,
 where its gene track names it: `clbA` to `clbS`, the colibactin island.
 
-<Figure caption="Top: the graph at K12's asnW/asnU/asnV tRNA cluster, with the strain list open and the CFT073 entry boxed. The colors are Stable rank, so the labeled orange arm is the segment only CFT073 carries and the blue is backbone it shares with K12, and between them they are the window the menu row names. Bottom: the view that entry launches, the same sequence on CFT073's own coordinates, holding the clb genotoxin operon. No alignment is consulted, the launched coordinates come from the segments' own SN/SO tags." src="/img/pangenome/rgfa_strain_launch.png" />
+The colors below are **Stable rank**, so the labeled orange arm is the segment
+only CFT073 carries and the blue is backbone it shares with K12; between them
+they are the window the menu row names. No alignment is consulted, the launched
+coordinates come from the segments' own `SN`/`SO` tags.
+
+<Figure caption="Top: the graph at K12's asnW/asnU/asnV tRNA cluster, with the strain list open and the CFT073 entry boxed. Bottom: the view that entry launches, the same sequence on CFT073's own coordinates, holding the clb genotoxin operon." src="/img/pangenome/rgfa_strain_launch.png" />
 
 ## Building the rGFA these figures use
 
