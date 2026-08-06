@@ -21,6 +21,10 @@ const useStyles = makeStyles()(theme => ({
   summaryTitle: {
     flexGrow: 1,
   },
+  clearRow: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+  },
 }))
 
 const JobsSection = observer(function JobsSection({
@@ -45,20 +49,15 @@ const JobsSection = observer(function JobsSection({
         <Typography variant="h5" className={classes.summaryTitle}>
           {title}
         </Typography>
-        {onClear && jobs.length ? (
-          <Button
-            component="span"
-            size="small"
-            onClick={e => {
-              e.stopPropagation()
-              onClear()
-            }}
-          >
-            Clear
-          </Button>
-        ) : null}
       </AccordionSummary>
       <AccordionDetails>
+        {onClear && jobs.length ? (
+          <div className={classes.clearRow}>
+            <Button size="small" onClick={onClear}>
+              Clear
+            </Button>
+          </div>
+        ) : null}
         {jobs.length ? (
           jobs.map(job => renderCard(job))
         ) : (
