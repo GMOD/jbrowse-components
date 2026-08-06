@@ -429,9 +429,10 @@ tags and an rGFA records no traversals at all. Load a GFA that carries `P` or
 [graph genome view guide](/docs/user_guides/graph_genome_view#which-strain-takes-which-path)
 does, and the view anchors on those paths: `carriedBy` then lists every sample
 through the node and **Sample rows** becomes carriage rather than attribution.
-At HPRC scale the same answer comes from `minigraph --call` over the assemblies,
-from the `.gbz` and vg, or from the [callset](#the-variant-callset) at that
-site.
+At HPRC scale the answer is a published file rather than a rebuild:
+[carriage at the graph's own granularity](#carriage-at-the-graphs-own-granularity)
+is one record per snarl with a genotype per haplotype, so the site under the
+node you clicked states who walks it.
 
 <Figure caption="Right-clicking one haplotype's allele (circled), over the band Highlight in hg38 left in the linear view above. The band it produces is the 12 kb backbone segment the allele attaches across, which here is HLA-DRB5." src="/img/pangenome/hprc_node_menu.png" />
 
@@ -752,8 +753,9 @@ haplotypes share is credited to whichever was added first, and one sample can
 end up named on half the rows in a dense window purely by build order. Nor does
 a high rank mean the earlier haplotypes lack the sequence: they may have lacked
 it, or had their copy merged into an existing path, or simply not aligned there.
-It bounds discovery and nothing else. Carriage is the callset's job,
-[below](#structure-not-sequence).
+It bounds discovery and nothing else. Carriage is a different file's job, and at
+this graph's own granularity that file is published:
+[below](#carriage-at-the-graphs-own-granularity).
 
 ## The variant callset
 
@@ -844,6 +846,54 @@ clustering** in the track menu reorders the 464 rows by genotype similarity and
 draws a dendrogram beside them. The figure in the next section is that matrix,
 beside the graph the same alleles came out of.
 
+## Carriage at the graph's own granularity
+
+The callset above is decomposed, so one graph bubble arrives as many records and
+a column is a primitive variant rather than an allele of the graph. Release 2
+also publishes the undecomposed form, one record per **snarl**, in the
+`hprc_v2.0_mc_grch38_index` submission. That is the file to read when the
+question is who carries a given bubble, because its rows and the graph's alleles
+are the same objects:
+
+```json
+{
+  "type": "VariantTrack",
+  "trackId": "hprc2_pgbi_grch38",
+  "name": "HPRC2 pangenome carriage (snarl-level, 462 haplotypes)",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/submissions/671F0A25-700C-4DDF-96B0-9668F6C0F25E--hprc_v2.0_mc_grch38_index/hprc-v2.0-mc-grch38.pgbi.vcf.gz"
+  },
+  "displays": [
+    { "type": "LinearMultiSampleVariantDisplay", "renderingMode": "phased" }
+  ]
+}
+```
+
+It ships its own index, so nothing is downloaded but the slice in view: the C4
+window is a couple of seconds over HTTP. It carries 231 sample columns rather
+than the wave file's 232, because CHM13 is not among them, so phased mode draws
+462 rows and `AN` tops out there too.
+
+Two fields are why this file answers what the graph cannot. `AT` states each
+allele as the **traversal** it takes through the graph, the same statement the
+`AT` in a pggb VCF makes, which the wave file drops
+(`bcftools annotate -x INFO/AT` is in its own header). And `LV`/`PS` place each
+record in the snarl tree, so `jexl:feature.INFO.LV[0]==0` cuts the lane to
+top-level sites, the same tier the [bubble track](#the-bubble-track) holds.
+
+One join does not work and is worth not attempting: `ID` and `AT` name
+**base-level integer nodes** (`>161001867>161004536`), not the `sNNNNN` segment
+ids of `sv.gfa`. Match a record to a bubble by interval, not by id.
+
+With this lane loaded, the reading the rest of this page has to keep qualifying
+becomes direct. `discoveryRank` and `firstSeenIn` on the
+[allele inventory](#the-allele-inventory) remain attribution, and a genotype
+column here is carriage, so the two sit over one coordinate and say different,
+compatible things: which haplotype the graph credits an allele to, and which
+haplotypes actually walk it.
+
 ## Structure, not sequence
 
 The graph and the callset are the same object at two resolutions. minigraph
@@ -915,16 +965,25 @@ in seconds off the small index pair rather than the 842 MB download they came
 from. It therefore works with no assemblies loaded, which is the normal
 situation with someone else's graph.
 
-Carriage is reachable here, not merely deferred. HPRC publishes every release 2
-assembly, so
-[`build_minigraph_paths.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_minigraph_paths.sh)
-runs `minigraph --call` over them and writes one row per haplotype per bubble,
-which the guide's
+Carriage needs no rebuilding at all: it is
+[a published file](#carriage-at-the-graphs-own-granularity), tabix-indexed like
+the callset. The route that does rebuild it is
+[`build_minigraph_paths.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_minigraph_paths.sh),
+which runs `minigraph --call` over the assemblies and writes one row per
+haplotype per bubble for the guide's
 [per-strain paths](/docs/user_guides/graph_genome_view#which-strain-takes-which-path)
-draw as a lane each. What that costs is a 464-assembly download and a mapping
-run, which is why this page takes the index route: a scope decision, not a
-property of the data. Both scripts need htslib (`bgzip`, `tabix`) on your
-`PATH`.
+lane. That costs a 464-assembly download and a mapping run, and is worth it only
+for a graph whose assemblies you have and whose carriage nobody has published.
+Both scripts need htslib (`bgzip`, `tabix`) on your `PATH`.
+
+`build_rgfa_tabix.sh` takes an optional third argument, the reference's PanSN
+sample, and writes a second index pair keyed only under that sample's sequences
+(`hprc-v2.0-mc-grch38.ref.*`, also hosted). It is 0.48 MB of tabix index against
+9.18 MB, returns byte-identical rows, and is for a segments track drawn on
+GRCh38. Do not point the graph cut at it: **Graph context** defaults to 1 hop, a
+hop follows an allele's interior segments, and those are indexed under the donor
+contig the small pair drops, so the graph comes back as though the setting were
+**None**.
 
 The [repeat-density lanes](#what-kind-of-sequence-grch38-was-missing) are their
 own script, and the only one here that touches neither the graph nor HPRC. It

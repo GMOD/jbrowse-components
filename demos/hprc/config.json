@@ -35,7 +35,9 @@
       "adapter": {
         "type": "MinigraphBubbleAdapter",
         "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.bubbles.bed.gz",
-        "assemblyNameToPanSN": { "hg38": "GRCh38" }
+        "assemblyNameToPanSN": {
+          "hg38": "GRCh38"
+        }
       },
       "displayDefaults": {
         "color": "rgb(130,130,130)"
@@ -69,6 +71,23 @@
       ]
     },
     {
+      "type": "VariantTrack",
+      "trackId": "hprc2_pgbi_grch38",
+      "name": "HPRC2 pangenome carriage (snarl-level, 462 haplotypes)",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/submissions/671F0A25-700C-4DDF-96B0-9668F6C0F25E--hprc_v2.0_mc_grch38_index/hprc-v2.0-mc-grch38.pgbi.vcf.gz"
+      },
+      "displays": [
+        {
+          "type": "LinearMultiSampleVariantDisplay",
+          "displayId": "hprc2_pgbi_grch38_regular",
+          "renderingMode": "phased"
+        }
+      ]
+    },
+    {
       "type": "FeatureTrack",
       "trackId": "hprc_minigraph_segments",
       "name": "HPRC release 2 graph (rGFA segments)",
@@ -76,7 +95,9 @@
       "adapter": {
         "type": "RgfaTabixAdapter",
         "uri": "https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38",
-        "assemblyNameToPanSN": { "hg38": "GRCh38" }
+        "assemblyNameToPanSN": {
+          "hg38": "GRCh38"
+        }
       },
       "displayDefaults": {
         "color": "jexl:get(feature,'rank')==0?'rgb(52,152,219)':'rgb(237,137,44)'"

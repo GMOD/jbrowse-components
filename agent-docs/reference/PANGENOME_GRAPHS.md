@@ -319,14 +319,31 @@ published HPRC graph figures. It is index download, not query:
 | reference rows only | 2.5/12.5 | 0.21/0.26 | 195              |
 
 195 of those 13,717 sequences are `GRCh38#*`; the rest are donor contigs.
-`getSubgraph` at the default `context: 0` queries **only** the reference
-refName, and a reference-keyed link row states both endpoints in full, so the
-donor rows are unreachable on the demo path. Rebuilding the pair from
-`$1 ~ /^GRCh38/` returns byte-identical rows at
-`GRCh38#0#chr6:32,500,000-32,560,000` for **19× less index** (9.18 MB → 0.48
-MB). Donor rows are still needed for `context > 0` hops and for a segments
-track opened on a contributing assembly (the E. coli case, not HPRC), so this
-is a second smaller pair rather than a filter on the only one.
+Rebuilding the pair from `$1 ~ /^GRCh38/` returns byte-identical rows for
+**19× less index** (9.18 MB → 0.48 MB), verified across seven windows including
+a whole chromosome. `build_rgfa_tabix.sh` emits it from a third argument, and
+the pair is hosted at `demos/hprc/hprc-v2.0-mc-grch38.ref.*`.
+
+**Correction, 2026-08-05: "`getSubgraph` at the default `context: 0`" was wrong,
+and it inverts the conclusion.** `subgraphContext` is `types.optional(types.number, 1)`
+— the default is **1 hop**, not 0. A hop follows an allele's interior segments,
+which are indexed under the donor contig, so on the small pair the expansion
+finds nothing and the cut silently degrades to context 0: the two stubs ending
+in mid-air that `graph_context.png` exists to explain. Measured on C4:
+
+| context | full | reference-only |
+| ------- | ---- | -------------- |
+| 0       | 30 nodes / 36 edges | 30 / 36 — same |
+| 1 (default) | 34 / 43 | 30 / 36 — **differs** |
+| 2       | 34 / 45 | 30 / 36 — **differs** |
+
+So the small pair is for a **segments track drawn on the reference** (which only
+ever queries the reference refName) and for a session that sets
+`subgraphContext: 0` deliberately. The graph cut keeps the full pair, as does a
+segments track opened on a contributing assembly (E. coli, and HPRC's hs1/CHM13
+lane). The 12 s `fetch` in the graph figures is therefore **not** free to
+reclaim this way; reclaiming it needs the hop to reach donor rows some other
+way, which is a different piece of work.
 
 ## The bubble file is a locus finder (scanned 2026-07-30)
 

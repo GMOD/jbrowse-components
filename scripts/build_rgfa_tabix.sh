@@ -14,11 +14,37 @@
 # `hprc-v2.0-mc-grch38.gfa.gz` beside it is base-level and is not.
 #
 # Requires: gfatools, awk, sort, bgzip, tabix
-# Usage:    bash scripts/build_rgfa_tabix.sh <graph.rgfa[.gz]> [out-prefix]
+# Usage:    bash scripts/build_rgfa_tabix.sh <graph.rgfa[.gz]> [out-prefix] [ref-prefix]
 #
 # Produces <prefix>.segs.bed.gz{,.tbi} and <prefix>.links.bed.gz{,.tbi}. Runs on
 # a whole human pangenome: HPRC's hprc-v2.0-mc-grch38.sv.gfa.gz is 751k segments
 # and indexes in about 45 seconds, peaking near 3.7 GB.
+#
+# `ref-prefix` (e.g. GRCh38) additionally writes <prefix>.ref.segs.bed.gz and
+# <prefix>.ref.links.bed.gz, the same rows keyed only under stable sequences of
+# that PanSN sample. A launch downloads both .tbi files before it can cut
+# anything, and on HPRC that fixed cost is 9.18 MB of index against 0.48 MB for
+# the small pair (19x), because 195 of that graph's 13,717 indexed sequences are
+# GRCh38 and the rest are donor contigs. Rows a reference query returns are
+# byte-identical between the two, verified across seven windows including a
+# whole chromosome.
+#
+# **Read what follows before pointing a graph track at it.** The small pair is
+# equivalent ONLY at `Graph context: None`, and the view's `subgraphContext`
+# defaults to 1 hop. A hop follows an allele's interior segments, which are
+# indexed under the DONOR contig the small pair drops, so the graph silently
+# comes back as though context were 0 — the two-stubs-in-mid-air picture
+# `graph_context.png` exists to explain. Measured on HPRC's C4 window:
+#
+#   context 0   full 30 nodes / 36 edges   ref-only 30 / 36   same
+#   context 1   full 34 / 43               ref-only 30 / 36   DIFFERS
+#   context 2   full 34 / 45               ref-only 30 / 36   DIFFERS
+#
+# So use the small pair for a segments track drawn on the reference, which only
+# ever queries the reference refName, and for a session that sets
+# `subgraphContext: 0` deliberately. Keep the full pair for the graph cut, and
+# for a segments track opened ON a contributing assembly (the E. coli case,
+# where every strain is loaded, and HPRC's hs1/CHM13 lane).
 #
 # These two files also state, between them, every allele the graph holds:
 # build_rgfa_alleles.sh derives that inventory from this pair alone, with no
@@ -26,8 +52,9 @@
 #
 set -euo pipefail
 
-GFA="${1:?usage: build_rgfa_tabix.sh <graph.rgfa[.gz]> [out-prefix]}"
+GFA="${1:?usage: build_rgfa_tabix.sh <graph.rgfa[.gz]> [out-prefix] [ref-prefix]}"
 PREFIX="${2:-${GFA%.gfa*}}"
+REF_PREFIX="${3:-}"
 
 # HPRC ships its minigraph graphs gzipped, so read through a decompressor when
 # needed rather than making the user stage a 2.6 GB plain copy. The graph is
@@ -66,4 +93,20 @@ awk -F'\t' '
   sort -k1,1 -k2,2n | bgzip > "$PREFIX.links.bed.gz"
 tabix -f -p bed "$PREFIX.links.bed.gz"
 
+# The reference-only pair, derived from the full one rather than rebuilt from
+# the graph, so the rows are the same rows by construction and not merely by
+# intent. Column 1 is the stable sequence a row is INDEXED under, and PanSN puts
+# the sample before the first `#`, so this keeps exactly the rows a reference
+# query could return. Both endpoints stay stated in full, so a link into a donor
+# allele survives with its far end intact.
+if [ -n "$REF_PREFIX" ]; then
+  for kind in segs links; do
+    gzip -dc "$PREFIX.$kind.bed.gz" |
+      awk -F'\t' -v p="$REF_PREFIX#" 'index($1, p) == 1' |
+      bgzip > "$PREFIX.ref.$kind.bed.gz"
+    tabix -f -p bed "$PREFIX.ref.$kind.bed.gz"
+  done
+fi
+
 ls -l "$PREFIX".segs.bed.gz* "$PREFIX".links.bed.gz*
+[ -n "$REF_PREFIX" ] && ls -l "$PREFIX".ref.*.bed.gz*
