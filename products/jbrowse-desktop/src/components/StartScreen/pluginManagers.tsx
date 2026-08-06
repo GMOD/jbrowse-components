@@ -39,6 +39,22 @@ import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 // of it is needed to draw the start screen, which has no session: it is needed
 // the moment one is opened. So this module is the far side of util.tsx's
 // dynamic import, and nothing may import it statically. See util.tsx.
+//
+// createStartScreenPluginManager stays here even though it needs none of the
+// above, and that is not an oversight. Moving it to a module of its own — so the
+// start screen could build its manager without pulling the graph — was tried and
+// reverted: it left main.js the same size (1,357,376 vs 1,357,165 bytes, i.e.
+// nothing, since the graph was already behind the dynamic import either way) and
+// it broke the packaged app. The volvox assembly hung at initialized:false with
+// an empty error, which is what an RPC worker that never answers looks like.
+//
+// The suspected mechanism, unconfirmed: `fetchCJS` lives in src/util.tsx, which
+// rpcWorker.ts — a separate webpack entry — also imports. Adding a second async
+// renderer consumer of it appears to tip splitChunks into extracting a shared
+// chunk that the worker then has to load at runtime, and worker chunk loading
+// under file:// with publicPath './' is exactly what desktop's webpack config
+// warns about. Anyone retrying this should confirm that first; the win on offer
+// is deferring the graph from start-screen-mount to session-open, not bytes.
 
 function makePluginLoader(definitions: PluginDefinition[]) {
   return new PluginLoader(dropVendoredPlugins(definitions, DESKTOP_VENDORED), {

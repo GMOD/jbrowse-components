@@ -1,4 +1,4 @@
-import { Suspense, lazy, useMemo, useState } from 'react'
+import { Suspense, lazy, useMemo, useRef, useState } from 'react'
 
 import { LoadingEllipses, createJBrowseTheme } from '@jbrowse/core/ui'
 import { localStorageGetItem } from '@jbrowse/core/util'
@@ -38,6 +38,26 @@ const LoaderContents = observer(function LoaderContents() {
   const [specLink, setSpecLink] = useQueryParam('specLink')
   const notifyError = useNotifyError()
 
+  // The installed manager, readable synchronously. Replacing one is a side
+  // effect — it terminates RPC worker threads and destroys an MST tree — and
+  // React may call a state updater more than once, so that work must not live
+  // inside one. A ref rather than the `pluginManager` state because two loads
+  // can resolve before a re-render, and the second must still see what the
+  // first installed.
+  const installedRef = useRef<PluginManager | undefined>(undefined)
+
+  // Install a manager, tearing down whatever it replaces so its worker pool and
+  // autosave loop don't leak. undefined installs nothing, which is what
+  // returning to the start screen wants.
+  const replacePluginManager = useEventCallback((pm?: PluginManager) => {
+    const previous = installedRef.current
+    if (previous && previous !== pm) {
+      destroyPluginManager(previous)
+    }
+    installedRef.current = pm
+    setPluginManager(pm)
+  })
+
   const handleSetPluginManager = useEventCallback((pm: PluginManager) => {
     const rootModel = pm.rootModel as DesktopRootModel | undefined
     rootModel?.setOpenNewSessionCallback(async (path: string) => {
@@ -47,25 +67,12 @@ const LoaderContents = observer(function LoaderContents() {
       handleSetPluginManager(await openSpecLink(link))
     })
     rootModel?.setReturnToStartScreenCallback(() => {
-      // "Return to start screen": tear down the manager and clear it so its
+      // "Return to start screen": tear down the manager and leave none, so its
       // RPC workers + autosave loop don't leak behind the start screen
-      setPluginManager(prev => {
-        if (prev) {
-          destroyPluginManager(prev)
-        }
-        return undefined
-      })
+      replacePluginManager(undefined)
     })
 
-    setPluginManager(prev => {
-      // a new session/plugin-reload replaces the manager: tear down the old
-      // one so its RPC workers + autosave loop don't leak. destroy is
-      // idempotent (guarded by isAlive) so this stays safe under re-renders.
-      if (prev && prev !== pm) {
-        destroyPluginManager(prev)
-      }
-      return pm
-    })
+    replacePluginManager(pm)
     setConfig(undefined)
     setSpecLink(undefined)
   })
