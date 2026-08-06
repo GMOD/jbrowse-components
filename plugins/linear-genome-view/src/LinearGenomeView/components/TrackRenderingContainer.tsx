@@ -33,6 +33,19 @@ const useStyles = makeStyles()({
   // `overflow` would reintroduce the scroll container — one the browser can
   // still scroll silently (focus, scrollIntoView, scroll anchoring) even with
   // no scrollbar shown, desyncing track content from the scalebar.
+  //
+  // `contain: strict` is also what makes every piece of display chrome reach the
+  // track's overlay layer through `TrackOverlayPortal` — containment creates a
+  // stacking context, so nothing in here can paint above `PaddingBlocks`, which
+  // is a later sibling. That looks like a tax worth removing (swap for a bare
+  // `overflow: clip`, which clips without a scroll container AND without a
+  // stacking context, and the portals become plain z-indexes). It was measured:
+  // `browser-tests/probe-containment.ts`. Under DOM load that swap costs 2.6x
+  // paint time on a track height change and 4.0x on a pan, at identical paint
+  // counts. The stacking context IS the paint isolation — the two can't be
+  // separated, so the portal is the price of the isolation, not a workaround
+  // for it. Layout containment measured free; the paint half is the load-bearing
+  // one. ADR-058.
   trackRenderingContainer: {
     whiteSpace: 'nowrap',
     position: 'relative',

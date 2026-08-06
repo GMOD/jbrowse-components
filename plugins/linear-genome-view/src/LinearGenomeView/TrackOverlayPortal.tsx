@@ -15,6 +15,14 @@ import { TrackOverlayContext } from './TrackOverlayContext.ts'
 // problem (previously re-solved per-display: MultiWiggleLegendOverlay,
 // FloatingLegend).
 //
+// The sandbox is `contain: strict`, and the obvious simplification — drop the
+// containment so chrome can just out-z-index the masks and none of this is
+// needed — is measured and rejected (ADR-058): it costs 2.4-4.8x paint time
+// under DOM load, because the stacking context that blocks the z-index is the
+// same thing that isolates the paint. See `browser-tests/probe-containment.ts`
+// in jbrowse-web and the comment on `trackRenderingContainer`. The portal buys
+// both.
+//
 // The overlay node is `pointer-events:none` (so it doesn't eat canvas
 // events), and that does NOT change here — children that should capture hover
 // (any interactive legend/panel) must set `pointer-events:auto` on their own

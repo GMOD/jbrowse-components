@@ -34,6 +34,15 @@ description: The shared display status chrome that owns loading, error, and retr
   `rendersCanvas: false`; the chrome publishes `painted`, never the raw flag.
 - `renderError`/`tooLarge` replace the subtree (canvas unmounts,
   `backend.dispose()`); `error`/`loading` are overlays over a live canvas.
+- **The three overlay states portal as a group**, in `DisplayStatusChromeBase`,
+  into the TrackContainer's overlay layer — otherwise the LGV's inter-region
+  masks stripe the loading chip and the error banner at multi-region scale, and
+  no z-index inside the display's `contain: strict` sandbox can win against
+  them ([ADR-058](../architecture-decision-records/adr-058-track-paint-containment-stays.md)).
+  One portal at that level rather than one per overlay, because it is the level
+  both the MUI set and `plainChromeOverlays` pass through. That layer is
+  `pointer-events: none`, so an interactive overlay sets `pointer-events: auto`
+  on its own box — part of the overlay-set contract in `chromeOverlays.ts`.
 - A status set while the phase is `ready` — work with no fetch behind it, e.g.
   declarative clustering — renders as a corner `ProgressChip`
   (`DisplayBackgroundProgress`), not the scrim: the drawn content is still
