@@ -8,9 +8,9 @@ tutorial_category: Synteny & comparative genomics
 ---
 
 **TL;DR:** build a five-strain _E. coli_ graph with pggb, then load its linear
-projections (synteny, pangenome variants, whole-genome MAF, depth, graph
-complexity and per-strain presence) as ordinary JBrowse tracks on the K12 axis,
-and draw the graph itself beside them.
+projections (synteny, pangenome variants, whole-genome MAF, depth and per-strain
+presence) as ordinary JBrowse tracks on the K12 axis, and draw the graph itself
+beside them.
 
 A pangenome graph collapses many genomes into one structure: shared sequence is
 a single path that every sample walks, and where samples differ the path
@@ -74,7 +74,6 @@ have:
 | Pangenome variants     | Every difference the graph calls, across all samples        | `pggb -V`, `cactus-pangenome --vcf`, `vg deconstruct` | [multi-sample variant track](/docs/user_guides/multivariant_track) |
 | Whole-genome alignment | The multiple alignment, column by column                    | `pggb -M`, `hal2maf`                                  | [](/docs/user_guides/maf_track)                                    |
 | Pangenome depth        | How many genomes cover each reference base (core/accessory) | `odgi depth`, `odgi pav`                              | [quantitative track](/docs/config_guides/quantitative_track)       |
-| Graph complexity       | How branched the graph is under each reference base         | `odgi degree`                                         | [quantitative track](/docs/config_guides/quantitative_track)       |
 
 This tutorial builds a five-strain _E. coli_ pangenome with pggb, loads each
 projection, and draws the graph itself. It uses the same five genomes as the
@@ -103,9 +102,9 @@ samtools faidx all.fa.gz
 
 Then run pggb. `-V K12:10000` decomposes the graph into a VCF against the K12
 path, and `-M` writes the multiple alignment as a MAF. The image also carries
-[odgi](https://github.com/pangenome/odgi), which the untangle, depth, presence,
-complexity and subgraph sections below reuse, so wrap the `docker run` once and
-call it `in_pggb`:
+[odgi](https://github.com/pangenome/odgi), which the untangle, depth, presence
+and subgraph sections below reuse, so wrap the `docker run` once and call it
+`in_pggb`:
 
 ```bash
 in_pggb() {
@@ -490,6 +489,8 @@ Zoomed out, the track is the pangenome's core/accessory landscape along K12: a
 plateau near the strain count, dropping over the accessory stretches the variant
 and MAF projections zoom into.
 
+<Figure caption="odgi depth over the whole K12 chromosome: a plateau near the strain count over core sequence, troughs at 1 over the stretches only K12 carries, and spikes past the strain count over the rRNA operons the graph collapses into one copy." src="/img/pangenome/depth.png" />
+
 The troughs sit at depth 1 where no other strain traverses the graph. Those
 stretches are K12's private sequence, and the gene lane names what is in them:
 mostly cryptic prophages and IS elements, which is where a bacterial accessory
@@ -515,27 +516,6 @@ relative rather than as an exact genome tally. That is a property of this
 builder, not of the projection: the Minigraph-Cactus tutorial draws
 [both graphs' curves over one of those operons](/docs/tutorials/pangenome_cactus#pangenome-depth-and-per-strain-presence),
 and only this one steps up.
-
-### Graph complexity
-
-Depth says how many paths are present; degree says how **branched** the graph
-is.
-[`odgi degree`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_degree.html)
-reports each window's mean node degree, which is 2 along a stretch every path
-walks identically and rises wherever paths enter and leave. So it locates the
-graph's tangles directly rather than by inferring them from a dip in coverage,
-and it is the one curve here with no equivalent in an alignment-derived track.
-Same windows, same conversion, same track type, so load it as a second
-`QuantitativeTrack` under the depth one:
-
-```bash
-in_pggb odgi degree -i "/data/$og" -b /data/depth_windows.bed \
-  | awk -v OFS='\t' '$1 == "K12#1#chr" && $4 + 0 == $4 {print "chr", $2, $3, $4}' \
-  | sort -k1,1 -k2,2n > ecoli_pggb_degree.bedgraph
-bedGraphToBigWig ecoli_pggb_degree.bedgraph chrom.sizes ecoli_pggb_degree.bw
-```
-
-<Figure caption="The two graph-shape curves over the whole K12 chromosome. On top, odgi depth: a plateau near the strain count over core sequence, troughs at 1 over K12-private accessory stretches, and spikes above the strain count over the collapsed rRNA operons. Below, odgi degree: mean node degree, near 2 where every path walks the same nodes and higher wherever paths enter and leave. They disagree where a window is fully covered and still branched, which is what depth alone cannot say." src="/img/pangenome/depth.png" />
 
 ### Per-strain presence
 
@@ -901,17 +881,17 @@ npx --yes serve ecoli_pangenome_graph_build/jbrowse2
 ```
 
 It downloads the RefSeq genomes, runs pggb, converts the wfmash PAF,
-`odgi untangle`, both VCF tiers, the MAF, `odgi similarity`, `odgi depth`,
-`odgi degree` and `odgi pav` into the projections above, downloads JBrowse, and
-writes a `config.json` with the assemblies, per-strain gene tracks, the
-graph-derived tracks, and a default session. It also writes the `odgi viz`
-raster, the two graph-view subgraphs (`ecoli_pggb_subgraph.gfa` and
-`ecoli_rgfa_slice.gfa`), and the rGFA tabix indexes behind the segments track,
-all of which need the cactus image for minigraph and gfatools. The `config.json`
-declares the graph genome view plugin, so the graph track and its launch menu
-item work without adding the plugin by hand. It needs the same tools listed
-under [Prerequisites](#prerequisites), and picks its container runtime from what
-is on `PATH`, docker first and then singularity or apptainer. Force one with
+`odgi untangle`, both VCF tiers, the MAF, `odgi similarity`, `odgi depth` and
+`odgi pav` into the projections above, downloads JBrowse, and writes a
+`config.json` with the assemblies, per-strain gene tracks, the graph-derived
+tracks, and a default session. It also writes the `odgi viz` raster, the two
+graph-view subgraphs (`ecoli_pggb_subgraph.gfa` and `ecoli_rgfa_slice.gfa`), and
+the rGFA tabix indexes behind the segments track, all of which need the cactus
+image for minigraph and gfatools. The `config.json` declares the graph genome
+view plugin, so the graph track and its launch menu item work without adding the
+plugin by hand. It needs the same tools listed under
+[Prerequisites](#prerequisites), and picks its container runtime from what is on
+`PATH`, docker first and then singularity or apptainer. Force one with
 `CONTAINER=singularity`.
 
 Everything downstream is derived from the strain table at the top of the script,
@@ -932,5 +912,5 @@ the genome count, and `odgi untangle` indexes every step of every path.
   strains from the all-vs-all PAF in a notebook
 - [](/docs/jbrowser), the same in R
 - [pggb](https://github.com/pangenome/pggb)
-- [odgi](https://odgi.readthedocs.io/), whose `untangle`, `similarity`, `depth`,
-  `degree` and `pav` commands produce most of the tracks on this page
+- [odgi](https://odgi.readthedocs.io/), whose `untangle`, `similarity`, `depth`
+  and `pav` commands produce most of the tracks on this page

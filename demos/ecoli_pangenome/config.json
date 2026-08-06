@@ -154,7 +154,6 @@
           "tracks": [
             "K12_genes",
             "ecoli_pggb_depth",
-            "ecoli_pggb_degree",
             "ecoli_pggb_pav",
             "ecoli_pggb_variants",
             "ecoli_pggb_maf"
@@ -376,19 +375,6 @@
         "type": "BigWigAdapter",
         "bigWigLocation": {
           "uri": "ecoli_pggb_depth.bw",
-          "locationType": "UriLocation"
-        }
-      },
-      "assemblyNames": ["K12"]
-    },
-    {
-      "type": "QuantitativeTrack",
-      "trackId": "ecoli_pggb_degree",
-      "name": "pggb graph: graph complexity (mean node degree over K12)",
-      "adapter": {
-        "type": "BigWigAdapter",
-        "bigWigLocation": {
-          "uri": "ecoli_pggb_degree.bw",
           "locationType": "UriLocation"
         }
       },

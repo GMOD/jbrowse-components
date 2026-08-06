@@ -12,7 +12,7 @@ findings that are expensive to re-derive. Replaces `GENERAL_GFA_HANDOFF.md` and
 The view itself is a third-party plugin,
 `~/src/jb2plugins/jbrowse-plugin-graphgenomeview` — build and deploy traps are
 in the `key_pattern_graphgenomeview_plugin_deploy_and_autofit` memory. User docs
-are `website/docs/tutorials/pangenome_graph_view.md`.
+are `website/docs/user_guides/graph_genome_view.md`.
 
 ## Coordinates are the only real difference between formats
 
@@ -175,7 +175,15 @@ Facts behind it, each measured rather than assumed:
   to the pane's height and centred, and the backbone no longer sits under the
   linear view's axis.
 - **`odgi degree` is a dud**: over 500 bp windows, mean 3.82, max 4.79, no
-  dynamic range. It does not make a graph-complexity track.
+  dynamic range. It does not make a graph-complexity track. The tutorial shipped
+  one anyway for a while; it was removed 2026-08-05 with the measurement that
+  settles it, over the 9,284 windows `build_ecoli_pangenome_graph.sh` writes:
+  p5 2.85 / p50 3.93 / p95 4.05, so 90% of the chromosome sits in a 1.2-unit
+  band, and **degree correlates with depth at r = 0.78**, i.e. it is mostly the
+  curve above it drawn again. The claim it was carried for was "a window can be
+  fully covered and still branched" — of the 5,719 windows at full depth, 11.8%
+  land in the global top decile of degree, which is what chance gives. Don't
+  rebuild it; if graph tangledness needs a lane, it needs a different statistic.
 - **`odgi untangle` is usable** as a general-graph lane:
   `odgi untangle -i graph.og -r K12#1#chr -e 5000 -m 1000 -t 8`, 2m14s, 5,433
   rows, ~1,100 reference-anchored segments per strain with orientation and

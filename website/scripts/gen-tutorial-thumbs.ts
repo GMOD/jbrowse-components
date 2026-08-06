@@ -262,24 +262,6 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     // the app header, which also carries the figure's baked-in callout text
     band: [0.28, 0.95],
   },
-  // The 464-haplotype clustered genotype matrix with its dendrogram: the
-  // population-scale figure that best reads as "pangenome" on a card. Skip the
-  // app header; keep the left edge so the dendrogram stays in frame.
-  // The graph itself, which is what that tutorial is for: the sample-rows
-  // braid over the segment lane, both in the reference-position ramp. Framed
-  // past the app chrome and the gene lane so the card is graph rather than
-  // toolbar.
-  //
-  // `xband` to the left half: the source figure is a two-panel composite, and
-  // its halves are different heights, so the right half's extra height is
-  // padding under the left one. A full-width band over the rows pane frames
-  // that padding as half the card.
-  pangenome_graph_view: {
-    src: 'pangenome/pggb_locus_sample_rows.png',
-    band: [0.37, 0.69],
-    xband: [0, 0.5],
-    position: 'left',
-  },
   pangenome_hprc: {
     // The classic Bandage force-directed picture of the C4 subgraph, past the
     // view chrome and the LGV/bubbles lanes above it.
@@ -365,6 +347,33 @@ async function render(spec: ThumbSpec) {
 const check = process.argv.includes('--check')
 const managed = new Set<string>()
 let stale = 0
+
+// A key here is a card key, and nothing downstream says so: index.astro looks a
+// thumb up BY key, so a spec whose page moved or was renamed keeps rendering a
+// webp no card ever requests. `pangenome_graph_view` did exactly that after the
+// page became user_guides/graph_genome_view.md, and every run kept reporting it
+// as a managed thumb. Fail on it instead.
+//
+// A key is `docs/tutorials/<key>.md`, or `docs/<key>.md` for the handful of
+// root-level pages index.astro pulls onto the page (EXTRA_DOCS: the quickstarts
+// and the cookbook). Derived rather than listed, so adding one there needs no
+// edit here.
+const docsDir = join(here, '..', 'docs')
+const mdSlugs = async (dir: string) =>
+  (await readdir(dir))
+    .filter(f => f.endsWith('.md') && f !== 'CLAUDE.md')
+    .map(f => f.replace(/\.md$/, ''))
+const slugs = new Set([
+  ...(await mdSlugs(join(docsDir, 'tutorials'))),
+  ...(await mdSlugs(docsDir)),
+])
+const orphans = Object.keys(THUMB_SPECS).filter(k => !slugs.has(k))
+if (orphans.length > 0) {
+  console.error(
+    `✗ no docs/tutorials page for: ${orphans.join(', ')} — drop the spec (and its webp), or point it at the page's new slug`,
+  )
+  process.exit(1)
+}
 
 for (const [key, spec] of Object.entries(THUMB_SPECS)) {
   managed.add(`${key}.webp`)

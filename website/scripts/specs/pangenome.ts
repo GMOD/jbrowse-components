@@ -220,20 +220,17 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     settleMs: 15000,
   },
 
-  // Projection 4: pangenome depth (core vs accessory) from `odgi depth`, above
-  // graph complexity from `odgi degree`, as a whole-chromosome overview so the
-  // shared plateau and the accessory dips read at a glance. No gene lane: at
-  // 4.6 Mb the ~4,300 K12 genes only trip the FeatureTrack "too many features"
-  // gate, so the two curves carry the figure on their own.
+  // Projection 4: pangenome depth (core vs accessory) from `odgi depth`, as a
+  // whole-chromosome overview so the shared plateau, the accessory dips and the
+  // collapsed-rRNA spikes read at a glance. No gene lane: at 4.6 Mb the ~4,300
+  // K12 genes only trip the FeatureTrack "too many features" gate, so the curve
+  // carries the figure on its own.
   //
-  // Both in one frame rather than two figures, because separately they are two
-  // near-identical whole-genome curves and the point is where they DISAGREE:
-  // depth counts paths present, degree counts branching, so a window can be
-  // fully covered and still tangled.
-  //
-  // `readyText: 'graph complexity'` is the gate on the second lane: it fails
-  // rather than quietly capturing half the figure if ecoli_pggb_degree ever
-  // drops out of the hosted config again.
+  // This used to be two lanes, depth over an `odgi degree` "graph complexity"
+  // curve, on the claim that a window can be fully covered and still branched.
+  // The data does not support it: over the build's 9,284 windows degree is flat
+  // (p5 2.85 / p95 4.05) and correlates with depth at r = 0.78, so the second
+  // lane was a near-copy of the first. Both the track and its section are gone.
   {
     mode: 'url',
     name: 'pangenome/depth',
@@ -249,23 +246,15 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
               type: 'LinearWiggleDisplay',
               height: 200,
             },
-            {
-              trackId: 'ecoli_pggb_degree',
-              type: 'LinearWiggleDisplay',
-              height: 200,
-            },
           ],
         },
       ],
     }),
-    readyText: 'graph complexity',
+    readyText: 'pangenome depth',
     readyTimeout: 90000,
     viewportWidth: 1000,
-    // two 200px wiggle lanes plus their axes and the view chrome. Measured
-    // against the rebuilt demo, where 560 cut 77px off the bottom of the degree
-    // lane, so the second curve was clipped in a figure that is about comparing
-    // the two.
-    viewportHeight: 640,
+    // one 200px wiggle lane plus its axis and the view chrome
+    viewportHeight: 400,
     settleMs: 15000,
     hideTooltip: true,
     actions: [

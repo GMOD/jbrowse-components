@@ -10,8 +10,8 @@ description:
 a linear view of the same window, and moves between the two. The reference's own
 path through the graph is its **backbone**; every segment off that path is an
 alternate allele another assembly carries. Most other pangenome tracks are
-**projections** instead — the graph flattened onto one reference's coordinates
-as synteny, variants, alignment, or depth.
+**projections** instead: the graph flattened onto one reference's coordinates as
+synteny, variants, alignment, or depth.
 
 **Prerequisites:** the plugin (below), a graph in rGFA or GFA, and the
 contributing assemblies if you want to launch out into them.
@@ -336,7 +336,7 @@ window the graph gives CFT073 tens of kilobases the reference does not have.
 Clicking that strain's entry opens the sequence on CFT073's own coordinates,
 where its gene track names it: `clbA` to `clbS`, the colibactin island.
 
-<Figure caption="Top: the graph at K12's asnW/asnU/asnV tRNA cluster, with the strain list open and the CFT073 entry boxed. The colors are Stable rank, so the labeled orange arm is the segment only CFT073 carries and the blue is backbone it shares with K12 — between them they are the window the menu row names. Bottom: the view that entry launches, the same sequence on CFT073's own coordinates, holding the clb genotoxin operon. No alignment is consulted, the launched coordinates come from the segments' own SN/SO tags." src="/img/pangenome/rgfa_strain_launch.png" />
+<Figure caption="Top: the graph at K12's asnW/asnU/asnV tRNA cluster, with the strain list open and the CFT073 entry boxed. The colors are Stable rank, so the labeled orange arm is the segment only CFT073 carries and the blue is backbone it shares with K12, and between them they are the window the menu row names. Bottom: the view that entry launches, the same sequence on CFT073's own coordinates, holding the clb genotoxin operon. No alignment is consulted, the launched coordinates come from the segments' own SN/SO tags." src="/img/pangenome/rgfa_strain_launch.png" />
 
 ## Building the rGFA these figures use
 
@@ -469,7 +469,7 @@ is a 1 bp feature with the number hidden in its label.
 
 The size is measured; the position inside the anchor span is not. A bubble does
 not state where in the span its indel sits, so the CIGAR puts it at the end by
-convention — invisible over a 2 kb anchor, placed rather than located over a 100
+convention: invisible over a 2 kb anchor, placed rather than located over a 100
 kb one.
 
 `altLen`, `nested`, `discoveryRank` and the traversed `segments` are in the

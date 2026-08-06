@@ -11,7 +11,6 @@
 #   alignment      `pggb -M`, re-rooted on K12 as a MAF, its rows ordered by an
 #                  `odgi similarity` UPGMA tree
 #   depth          `odgi depth`, core vs accessory over K12 as a bigWig
-#   complexity     `odgi degree`, mean node degree per window
 #   presence       `odgi pav`, one bigWig per strain as a MultiWiggle
 #
 # It also writes the `odgi viz` graph raster as a static comparison figure, and
@@ -336,17 +335,13 @@ for strain in $STRAINS; do
   bedGraphToBigWig "ecoli_pggb_pav_${strain}.bedgraph" chrom.sizes "ecoli_pggb_pav_${strain}.bw"
 done
 
-# ── Projection 4c: graph complexity (odgi degree) as a bigWig ────────────────
-# Depth says how many paths are present; degree says how BRANCHED the graph is.
-# `odgi degree -b` reports each window's mean node degree, which is 2 along a
-# stretch every path walks identically and rises wherever paths enter and leave.
-# So it locates the graph's tangles directly, rather than by inferring them from
-# a dip in coverage, and it is the one curve here that has no equivalent in an
-# alignment-derived track. Reuses depth_windows.bed; column 4 is mean.degree.
-in_pggb odgi degree -i "/data/$OG" -b /data/depth_windows.bed \
-  | awk -v p="${REF}#1#chr" -v OFS='\t' '$1 == p && $4 + 0 == $4 { print "chr", $2, $3, $4 }' \
-  | sort -k1,1 -k2,2n > ecoli_pggb_degree.bedgraph
-bedGraphToBigWig ecoli_pggb_degree.bedgraph chrom.sizes ecoli_pggb_degree.bw
+# No `odgi degree` complexity track. It was built here and dropped: measured over
+# the 9,284 500 bp windows this script writes, mean node degree runs p5 2.85 /
+# p50 3.93 / p95 4.05, so the curve is flat, and it correlates with the depth
+# track above it at r = 0.78. The claim it was carried for -- that a window can
+# be fully covered and still branched -- does not survive the data: of the 5,719
+# windows at full depth, 11.8% land in the top decile of degree, which is what
+# chance gives. See agent-docs/reference/PANGENOME_GRAPHS.md.
 
 # ── Graph overview: odgi viz (the "vs odgi viz" comparison figure) ────────────
 # pggb already renders its own 1D and 2D visualizations unless you pass -v, so
@@ -566,11 +561,6 @@ jb add-track-json maf_track.json --update --out "$APP"
 jb add-track ecoli_pggb_depth.bw --trackId ecoli_pggb_depth \
   --name "pggb graph: pangenome depth (paths over $REF)" -a "$REF" --load copy --force --out "$APP"
 
-# projection 4c: graph complexity, the same shape of track over odgi degree
-jb add-track ecoli_pggb_degree.bw --trackId ecoli_pggb_degree \
-  --name "pggb graph: graph complexity (mean node degree over $REF)" -a "$REF" \
-  --load copy --force --out "$APP"
-
 # projection 4b: per-strain presence (one bigWig per strain -> MultiQuantitativeTrack).
 # add-track-json doesn't copy files, so drop the per-strain bigWigs beside config.json.
 # Derived from $STRAINS rather than listed: a hardcoded list silently drops any
@@ -764,7 +754,7 @@ cat > session.json <<JSON
       "init": {
         "assembly": "$REF",
         "loc": "chr:1,000,000-1,010,000",
-        "tracks": ["${REF}_genes", "ecoli_pggb_depth", "ecoli_pggb_degree", "ecoli_pggb_pav", "ecoli_pggb_variants", "ecoli_pggb_maf"]
+        "tracks": ["${REF}_genes", "ecoli_pggb_depth", "ecoli_pggb_pav", "ecoli_pggb_variants", "ecoli_pggb_maf"]
       }
     }
   ]
@@ -776,7 +766,7 @@ echo
 echo "Built $APP/config.json with the assemblies, gene tracks, and the pggb-graph"
 echo "projections (synteny from the wfmash PAF and from odgi untangle, variants in"
 echo "both the decomposed and raw snarl tiers, MAF ordered by an odgi similarity"
-echo "tree, depth, graph complexity, per-strain presence). Serve it, e.g.:"
+echo "tree, depth, per-strain presence). Serve it, e.g.:"
 echo "  npx serve $(pwd)/$APP"
 echo "or open $(pwd)/$APP/config.json in JBrowse Desktop via File -> Session ->"
 echo "Open config.json or .jbrowse file... (the same session, no re-adding tracks)."
