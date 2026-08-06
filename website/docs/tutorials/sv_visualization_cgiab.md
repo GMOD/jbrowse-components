@@ -673,6 +673,12 @@ Within C-GIAB itself there is more on the same FTP than this tutorial loads:
   cells) on the
   [NIST C-GIAB page](https://www.nist.gov/programs-projects/cancer-genome-bottle)
 
+## Data availability
+
+Raw data from C-GIAB is under NCBI BioProject PRJNA200694. Processed data and
+benchmark call sets are available from the
+[NIST Cancer Genome in a Bottle page](https://www.nist.gov/programs-projects/cancer-genome-bottle).
+
 ## See also
 
 - [](/docs/tutorials/synteny_visualization)
@@ -690,11 +696,3 @@ Within C-GIAB itself there is more on the same FTP than this tutorial loads:
   [Verkko: telomere-to-telomere assembly of diploid chromosomes](https://doi.org/10.1038/s41587-023-01662-6)
 - Wagner et al. (2026).
   [A complete human pancreatic cancer genome](https://doi.org/10.64898/2026.05.01.722316)
-
-## Data availability
-
-Raw data from C-GIAB is under NCBI BioProject PRJNA200694. Processed data and
-benchmark call sets are available from the
-[NIST Cancer Genome in a Bottle page](https://www.nist.gov/programs-projects/cancer-genome-bottle).
-For the methods behind the dataset, see
-[McDaniel et al. 2025](https://doi.org/10.1038/s41597-025-05438-2).

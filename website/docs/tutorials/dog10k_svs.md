@@ -98,9 +98,9 @@ The sample rows keep the Dog10K IDs, which are the data's identity but say
 nothing to a reader. `layout` renames them for the sidebar and gives each group
 a swatch, without touching the VCF.
 
-It is display **state**, not track configuration — the same thing the tree
-sidebar writes when you rearrange rows by hand — so it goes on the track entry
-of a session, not in the track's `displays`. Put in a `displays` array it is
+It is display **state**, not track configuration, the same thing the tree
+sidebar writes when you rearrange rows by hand, so it goes on the track entry of
+a session, not in the track's `displays`. Put in a `displays` array it is
 silently ignored, since a display config accepts only its declared slots:
 
 ```json

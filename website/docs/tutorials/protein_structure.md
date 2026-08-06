@@ -140,9 +140,8 @@ for at menu-build time. They build the view from the alignment AlphaFold's own
 pipeline folded from, when AlphaFold publishes one for that accession. That
 alignment is deep and its rows are not species-labelled, the opposite trade from
 the ortholog panel in [](/docs/tutorials/genomes_msa), and a much larger
-download — which is why the label names its source, since msaview contributes a
-gene right-click item called plain **Launch MSA view** that builds the other
-thing.
+download. That is why the label names its source: msaview contributes a gene
+right-click item called plain **Launch MSA view** that builds the other thing.
 
 ### Sharing a connected view as a URL
 

@@ -122,7 +122,7 @@ tracks that view had:
 One panel per segment rather than per chromosome, which is the difference
 between the two routes: this chain leaves chr3 and returns to it, so it gets two
 chr3 panels, and a form filled in by hand gets one. Every panel opens on the
-same span, centered on the junction its segment carries — a segment's own length
+same span, centered on the junction its segment carries. A segment's own length
 is a property of the reads that happened to describe it, and panels at different
 zooms put the connecting curves in the corners instead of across the frame.
 
@@ -138,7 +138,7 @@ names, with the tracks from the launching view copied onto both.
 Two loci is all a record can give: a BND names one partner, so this route opens
 one hop of a chain however many hops it has. Chaining records to reach the rest
 would mean assuming that two junctions sharing a locus sit on the same molecule,
-which is the thing a caller does not assert and the reads do — so the multi-hop
+which is the thing a caller does not assert and the reads do, so the multi-hop
 route is the reconstruction dialog above rather than a second walker over the
 VCF.
 
