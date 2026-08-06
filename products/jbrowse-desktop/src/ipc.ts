@@ -1,4 +1,7 @@
-import type { IpcChannels } from '../electron/ipc/channelTypes.ts'
+import type {
+  IpcChannels,
+  IpcPushChannels,
+} from '../electron/ipc/channelTypes.ts'
 
 // `import type` only: channelTypes.ts is erased at build time, so nothing from
 // the main process's tree is bundled into the renderer.
@@ -24,4 +27,22 @@ export function invokeIpc<K extends keyof IpcChannels>(
   ...args: IpcChannels[K]['args']
 ): Promise<IpcChannels[K]['return']> {
   return ipcRenderer.invoke(channel, ...args)
+}
+
+/**
+ * Listen for a push from the main process, checked against
+ * {@link IpcPushChannels} the way {@link invokeIpc} checks the other direction.
+ * Returns the unsubscribe, so an effect can hand it straight back.
+ */
+export function onIpc<K extends keyof IpcPushChannels>(
+  channel: K,
+  listener: (...args: IpcPushChannels[K]['args']) => void,
+): () => void {
+  const handler = (_event: unknown, ...args: unknown[]) => {
+    listener(...(args as IpcPushChannels[K]['args']))
+  }
+  ipcRenderer.on(channel, handler)
+  return () => {
+    ipcRenderer.off(channel, handler)
+  }
 }

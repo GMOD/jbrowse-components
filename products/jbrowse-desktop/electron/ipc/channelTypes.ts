@@ -28,6 +28,20 @@ export interface SessionSnap {
   [key: string]: unknown
 }
 
+/**
+ * Pushes from the main process to the renderer — the one direction the invoke
+ * channels above cannot express, since only the renderer can invoke.
+ *
+ * Kept to the minimum: a push has no reply, so anything needing one costs a
+ * channel in each direction (here, sessionFlushed) and a reason why the work
+ * cannot simply be done when the renderer next asks for something.
+ */
+export interface IpcPushChannels {
+  // Sent when the window is closing and a session is open. The renderer flushes
+  // it and answers with sessionFlushed; until then the close is held.
+  flushSessionForClose: { args: [] }
+}
+
 export interface AuthWindowParams {
   internetAccountId: string
   data: { redirect_uri: string }
@@ -57,6 +71,14 @@ export interface IpcChannels {
   removeRecentSession: { args: [sessionPath: string]; return: void }
   renameSession: { args: [sessionPath: string, newName: string]; return: void }
   showItemInFolder: { args: [sessionPath: string]; return: void }
+  // Whether a session is open and therefore has edits worth flushing before the
+  // window goes away. The main process gates `close` on this: with no session
+  // (the start screen) there is nothing to wait for and the window closes at
+  // once, which is also the state it falls back to if the renderer dies.
+  setSessionOpen: { args: [open: boolean]; return: void }
+  // The renderer's answer to a flushSessionForClose push: the session has been
+  // written (or failed to write), so the close may proceed.
+  sessionFlushed: { args: []; return: void }
   loadThumbnail: { args: [name: string]; return: string | undefined }
   reset: { args: []; return: void }
   listQuickstarts: { args: []; return: string[] }

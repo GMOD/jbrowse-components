@@ -8,6 +8,7 @@ import { CssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { invokeIpc } from '../ipc.ts'
+import { useIpc } from '../useIpc.ts'
 import { useQueryParam } from '../useQueryParam.ts'
 import { NotificationProvider } from './Notifications.tsx'
 import { useNotifyError } from './NotifyContext.ts'
@@ -56,6 +57,27 @@ const LoaderContents = observer(function LoaderContents() {
     }
     installedRef.current = pm
     setPluginManager(pm)
+    // The main process holds the window's close only while there is a session
+    // to flush, so this has to be told both ways round — including on the way
+    // back to the start screen, or closing from there would wait for a flush
+    // nothing is going to send.
+    invokeIpc('setSessionOpen', Boolean(pm)).catch(console.error)
+  })
+
+  // Closing the window (title bar, Cmd+W, macOS Quit) never went through the
+  // renderer, so the last second of edits died with it — the Exit menu item has
+  // flushed for exactly this reason for a while. Main asks; this answers, and
+  // must answer even when the flush fails, or the close it is holding never
+  // completes.
+  useIpc('flushSessionForClose', () => {
+    const rootModel = installedRef.current?.rootModel as
+      | DesktopRootModel
+      | undefined
+    Promise.resolve(rootModel?.flushSession())
+      .catch(console.error)
+      .finally(() => {
+        invokeIpc('sessionFlushed').catch(console.error)
+      })
   })
 
   const handleSetPluginManager = useEventCallback((pm: PluginManager) => {

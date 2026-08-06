@@ -4,6 +4,7 @@ import debug from 'electron-debug'
 import pkg from 'electron-updater'
 
 import { setupAutoUpdater } from './autoUpdater.ts'
+import { createCloseGuard } from './closeGuard.ts'
 import { registerDownloadHandler } from './downloads.ts'
 import { initializeFileSystem } from './fileSystemInit.ts'
 import { registerAuthHandlers } from './ipc/authHandlers.ts'
@@ -22,6 +23,7 @@ import { initializePaths } from './paths.ts'
 import { logError } from './util.ts'
 import { buildAppUrl, createMainWindow } from './window.ts'
 
+import type { CloseGuard } from './closeGuard.ts'
 import type { LaunchTarget } from './launchTarget.ts'
 import type { BrowserWindow } from 'electron'
 
@@ -144,7 +146,7 @@ async function confirmOpenLink(url: string, parent: BrowserWindow | null) {
 // Tracks the single main window. Concurrent ensureWindow calls during creation
 // share the in-flight promise; the 'closed' handler nulls both bindings
 // together so the next call rebuilds the window.
-function createWindowManager() {
+function createWindowManager(closeGuard: CloseGuard) {
   let mainWindow: BrowserWindow | null = null
   let creating: Promise<BrowserWindow> | null = null
 
@@ -157,6 +159,9 @@ function createWindowManager() {
         RENDERER_OVERRIDE,
       )
       mainWindow = win
+      // before the 'closed' handler below, so a close still gets held for the
+      // session flush rather than racing the bookkeeping here
+      closeGuard.register(win)
       win.on('closed', () => {
         mainWindow = null
         creating = null
@@ -202,7 +207,17 @@ function createWindowManager() {
 
 function runApp() {
   const initialTarget = getInitialTarget()
-  const wm = createWindowManager()
+  // registers its ipc handlers here, before 'ready', for the same reason the
+  // app-level listeners below are registered before any await
+  const closeGuard = createCloseGuard({
+    onQuitting: listener => {
+      app.on('before-quit', listener)
+    },
+    quitApp: () => {
+      app.quit()
+    },
+  })
+  const wm = createWindowManager(closeGuard)
 
   // Every route that can carry a launch target funnels through here so a link
   // is confirmed exactly once, wherever it arrived from (cold launch, macOS
