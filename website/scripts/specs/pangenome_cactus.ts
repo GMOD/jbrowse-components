@@ -392,6 +392,14 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
             {
               trackId: 'ecoli_cactus_pav',
               type: 'MultiLinearWiggleDisplay',
+              // Density rather than the default stacked XY, and the pggb
+              // sibling (pangenome/pav) takes the same change so the two
+              // builders stay comparable. pav is a presence fraction per
+              // window, so at 4.6 Mb in 1000 px the XY rendering spent a row's
+              // height on a quantity that is 1 almost everywhere and drew each
+              // absence as a hairline slit; density spends colour on it
+              // instead, so an accessory stretch is a white column.
+              defaultRendering: 'multirowdensity',
               // 4 strains at 60px a row, enough for the accessory dips to read
               // without the stack dominating the frame
               height: 240,
