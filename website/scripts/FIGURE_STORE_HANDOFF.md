@@ -84,6 +84,13 @@ or the app. **Do not just raise `diffThreshold`** — `image-pipeline.ts` is
 explicit that a raised gate silently swallows real changes (a deliberate recolor
 moves ~2.4 %).
 
+**Do not run that check on a busy machine.** CPU starvation is itself timing
+variance, so a contended run reports specs as flaky that are fine — the result
+is worse than no result. Check `uptime` against `nproc` first, and that nothing
+else holds port 3334 (a concurrent sweep both takes the port and competes for
+the cores). This was attempted here and abandoned for exactly that: load average
+27.77 on 16 cores with another sweep already running.
+
 ### 3. Confirm the raised CRAM ceilings landed
 
 Six failures survived the build fixes, and they split cleanly once measured
