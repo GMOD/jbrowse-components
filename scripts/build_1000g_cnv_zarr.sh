@@ -16,7 +16,21 @@
 # there, so no clone of this repository is needed.
 set -euo pipefail
 
+# Parsed up front rather than where it is used: an unrecognized flag is
+# otherwise indistinguishable from no flag, and the run reaches that test only
+# after the trackDb download and the npm probe.
+case "${1:-}" in
+  --whole-genome) WHOLE_GENOME=1 ;;
+  '') WHOLE_GENOME=0 ;;
+  *)
+    echo "unknown argument: $1" >&2
+    echo "usage: $0 [--whole-genome]" >&2
+    exit 1
+    ;;
+esac
+
 HERE=$(cd "$(dirname "$0")" && pwd)
+REPO=$(dirname "$HERE")
 RAW=https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts
 TRACKDB=https://raw.githubusercontent.com/KiddLab/kmer_1KG/master/kmer-1kg.trackDb.txt
 BW_BASE=https://jbrowse.org/genomes/GRCh38/1000g/kidd_lab_cnv
@@ -33,11 +47,15 @@ done
 (cd "$HERE" && node --input-type=module -e 'await import("@gmod/bbi")') 2>/dev/null ||
   npm install --silent --no-save --prefix "$HERE" @gmod/bbi generic-filehandle2
 
-# In a checkout the default output is the store this repository commits;
-# standalone it is a build directory under the working directory.
-if [ -d "$(dirname "$HERE")/test_data/1000g_cnv" ]; then
-  OUT=${OUT:-test_data/1000g_cnv/qm2_cn_1kb.zarr}
-  SAMPLES=${SAMPLES:-test_data/1000g_cnv/samples.tsv}
+# In a checkout the default output is the store this repository commits, named
+# from $REPO so the run does not depend on the working directory: the checkout
+# test is absolute, so a relative default would resolve against the caller
+# instead and write a second test_data/1000g_cnv tree there. Standalone there is
+# no checkout to anchor to, so the build directory is relative to the caller,
+# which is what the tutorial documents.
+if [ -d "$REPO/test_data/1000g_cnv" ]; then
+  OUT=${OUT:-$REPO/test_data/1000g_cnv/qm2_cn_1kb.zarr}
+  SAMPLES=${SAMPLES:-$REPO/test_data/1000g_cnv/samples.tsv}
 else
   OUT=${OUT:-1000g_cnv_build/qm2_cn_1kb.zarr}
   SAMPLES=${SAMPLES:-1000g_cnv_build/samples.tsv}
@@ -59,7 +77,7 @@ echo "$(wc -l <"$SAMPLES") samples -> $SAMPLES"
 # The tutorial's store covers the two loci its figures visit. Whole genomes work
 # the same way but hold the full base-resolution matrix in memory while
 # building, which at panel scale wants a machine with room for it.
-if [ "${1:-}" = "--whole-genome" ]; then
+if [ "$WHOLE_GENOME" = 1 ]; then
   REGIONS=()
 else
   # The windows the figures visit: CCL3L1/CCL4L1 and UGT2B17 for the CNV

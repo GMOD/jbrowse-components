@@ -102,3 +102,9 @@ test_data/graphgenomeview/*_local.json
 products/jbrowse-web/browser-tests/ultradeep-trace.json
 scripts/build_dog10k_cyp1a2_cn.sh
 test_data/dog10k/dog10k_fgf4_cohort_samples.tsv
+
+# derived from the Kidd lab trackDb by scripts/build_1000g_cnv_zarr.sh on every
+# run, and only ever an input to the converter. The browser reads the store
+# beside it, which is committed. Tracking this would pin a 2504-row copy of
+# somebody else's manifest that nothing revalidates.
+test_data/1000g_cnv/samples.tsv
