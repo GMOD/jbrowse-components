@@ -23,3 +23,9 @@ static/pagefind/
 # they derive from churn hard enough (517 revisions in three months) that
 # tracking them would add ~160MB/yr of undeltifiable binary history.
 static/img/gallery-thumbs/
+
+# what the last `pnpm screenshots` run noticed, written by screenshot-report.ts
+# and read by review-screenshots-web to mark specs that failed to render or
+# rendered differently twice. Describes one run on one machine, so committing it
+# would churn every sweep and mean nothing on anyone else's checkout.
+scripts/screenshot-run.json

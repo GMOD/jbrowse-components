@@ -1,3 +1,6 @@
+import { writeFileSync } from 'node:fs'
+import { join } from 'node:path'
+
 // What the run noticed while it was capturing, and how it says so at the end.
 //
 // The recording half and the printing half are one module on purpose: each
@@ -13,11 +16,13 @@ import { PENDING_DISPLAYS } from '@jbrowse/browser-test-utils'
 import { visibleTooltipText } from './annotations.ts'
 import { unpublishedFigures } from './figure-paths.ts'
 import { figureName } from './figure-store.ts'
+import { websiteDir } from './paths.ts'
 import {
   CLIP_WARN_PX,
   DEVICE_SCALE_FACTOR,
   check,
   diffThreshold,
+  filterTokens,
 } from './screenshot-options.ts'
 import { specs } from './screenshot-specs.ts'
 
@@ -228,6 +233,54 @@ export function printSummary(totals: RunTotals) {
     )
   }
   printUnpublished()
+  writeRunReport(totals)
+}
+
+// Everything above is printed and then lost, which is the wrong lifetime for
+// half of it. A reviewer opening review-screenshots-web is looking at PNGs on
+// disk with no way to tell which ones the last run failed to re-render, or
+// which ones it re-rendered differently twice — and a figure that is stale
+// because its spec died looks exactly like a figure that is fine.
+//
+// So the run leaves a machine-readable record beside its console output.
+// Gitignored: it describes one run on one machine, and committing it would
+// churn on every sweep and mean nothing on anyone else's checkout.
+//
+// `filter` and `check` ride along because they decide what the record MEANS. A
+// filtered run says nothing about the specs it skipped, and only a --check run
+// can populate `flaky` at all — without both, a reviewer cannot tell "not
+// flaky" from "never tested for flakiness".
+export interface RunReport {
+  finishedAt: string
+  filter: string[]
+  check: boolean
+  failures: { name: string; error: string }[]
+  flaky: { name: string; frac: number }[]
+  updated: { name: string; detail: string }[]
+  suppressed: { name: string; frac: number }[]
+}
+
+export const runReportPath = join(websiteDir, 'scripts', 'screenshot-run.json')
+
+function writeRunReport(totals: RunTotals) {
+  const report: RunReport = {
+    finishedAt: new Date().toISOString(),
+    filter: filterTokens,
+    check,
+    failures: totals.failures,
+    flaky: totals.flaky,
+    updated: totals.changed.map(({ name, result }) => ({
+      name,
+      detail: result.status === 'updated' ? result.detail : 'new',
+    })),
+    suppressed: totals.suppressed,
+  }
+  try {
+    writeFileSync(runReportPath, `${JSON.stringify(report, null, 2)}\n`)
+  } catch (e) {
+    // Never fail a 30-minute sweep over its own bookkeeping.
+    console.error(`could not write ${runReportPath}: ${e}`)
+  }
 }
 
 // Last, because it is the thing to act on.

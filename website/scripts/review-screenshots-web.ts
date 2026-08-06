@@ -12,6 +12,7 @@ import {
 
 import { readManifest, unpublishedFigures } from './figure-paths.ts'
 import { figureName } from './figure-store.ts'
+import { type RunReport, runReportPath } from './screenshot-report.ts'
 import {
   collectScreenshots,
   imageHash,
@@ -73,6 +74,7 @@ function buildSpecPayload() {
   // site gets. An unpushed regen is invisible to git, so without this a verdict
   // could be recorded against pixels nobody else will ever see.
   const unpublished = new Set(unpublishedFigures().map(figureName))
+  const runStates = specRunStates(loadRunReport())
   return collectScreenshots(specs).map(shot => {
     const verdict = report[shot.name]
     // the hash of the PNG as the reviewer is about to see it. It rides along so
@@ -93,6 +95,9 @@ function buildSpecPayload() {
       verdict,
       stale,
       unpublished: unpublished.has(shot.name),
+      // undefined when the last run never touched this spec, which the UI
+      // draws as "not covered" rather than as passing
+      run: runStates.get(shot.name),
       imageHash: currentHash ?? null,
       ...(liveUrl ? { liveUrl } : {}),
     }
@@ -105,10 +110,70 @@ function buildSpecPayload() {
 // report the whole store, not the part that happens to have a spec.
 function buildFigureStatePayload() {
   const outstanding = unpublishedFigures()
+  const run = loadRunReport()
   return {
     unpublished: outstanding.map(figureName),
     total: readManifest().size,
+    run: run && {
+      finishedAt: run.finishedAt,
+      filter: run.filter,
+      check: run.check,
+      failed: run.failures.length,
+      flaky: run.flaky.length,
+    },
   }
+}
+
+// What the last sweep noticed, keyed by spec name. Re-read per request for the
+// same reason the working-tree scans are: the loop is regenerate, reload, look
+// again, and a report cached at server start describes the run before the one
+// you just did.
+//
+// Absent is a real answer and is kept distinct from "fine". A spec the last run
+// did not touch — because the run was filtered, or predates the spec — has no
+// verdict here, and the UI must not draw it as passing.
+function loadRunReport(): RunReport | undefined {
+  try {
+    return JSON.parse(fs.readFileSync(runReportPath, 'utf8')) as RunReport
+  } catch {
+    return undefined
+  }
+}
+
+interface SpecRunState {
+  failed?: string
+  flaky?: number
+  updated?: string
+  suppressed?: number
+  covered: boolean
+}
+
+function specRunStates(run: RunReport | undefined) {
+  const byName = new Map<string, SpecRunState>()
+  if (!run) {
+    return byName
+  }
+  const touch = (name: string) => {
+    let s = byName.get(name)
+    if (!s) {
+      s = { covered: true }
+      byName.set(name, s)
+    }
+    return s
+  }
+  for (const f of run.failures) {
+    touch(f.name).failed = f.error
+  }
+  for (const f of run.flaky) {
+    touch(f.name).flaky = f.frac
+  }
+  for (const u of run.updated) {
+    touch(u.name).updated = u.detail
+  }
+  for (const s of run.suppressed) {
+    touch(s.name).suppressed = s.frac
+  }
+  return byName
 }
 
 const contentTypes: Record<string, string> = {
@@ -315,6 +380,13 @@ const PAGE = /* html */ `<!doctype html>
   .pill.new { background: #cffafe; color: #155e63; }
   .pill.changed, .pill.stale { background: #fde68a; color: #854d0e; }
   .pill.unpublished { background: #ffe4d5; color: #7c2d12; }
+  /* A spec that failed to render is the most consequential thing on a card —
+     the image below it is whatever the last successful run left, which looks
+     exactly like a current figure. Red, and louder than the verdict pills. */
+  .pill.failed { background: #fbd9d9; color: #7f1d1d; font-weight: 700; }
+  .pill.flaky { background: #ede9fe; color: #5b21b6; }
+  .pill.notcovered { background: #f1f5f9; color: #64748b; }
+  .runerr { margin: 6px 0 0; padding: 8px 10px; border-radius: 6px; background: #fbd9d9; color: #7f1d1d; font-size: 12px; white-space: pre-wrap; font-family: ui-monospace, monospace; max-height: 9em; overflow: auto; }
   /* Says the answer either way. A reviewer needs to know that what they are
      approving is what everyone else will get, and silence cannot say that. */
   #store { padding: 8px 14px; font-size: 13px; border-bottom: 1px solid ButtonBorder; }
@@ -409,6 +481,7 @@ const PAGE = /* html */ `<!doctype html>
     <button class="tab" data-status="all">All</button>
   </div>
   <button class="tab" data-toggle="changed" title="only screenshots new or changed vs origin/main">Changed vs main<span class="tabcount" data-count="changed"></span></button>
+  <button class="tab" data-toggle="run" title="only specs the last run failed to render, rendered differently twice, or kept behind a raised diffThreshold">Render problems<span class="tabcount" data-count="run"></span></button>
   <div class="counts" id="counts"></div>
 </header>
 <div id="store"></div>
@@ -416,7 +489,17 @@ const PAGE = /* html */ `<!doctype html>
 <script>
 ${CLIENT}
 
-const filters = { status: 'needs', changedOnly: false, sortBy: 'default', group: '', kind: 'all' }
+const filters = { status: 'needs', changedOnly: false, runOnly: false, sortBy: 'default', group: '', kind: 'all' }
+
+// The last run's summary, filled by loadStoreState. Null until it arrives (and
+// if it never does), which runPills reads to tell "no run" from "not covered".
+let runInfo = null
+
+// A spec the last run could not render, rendered differently twice, or only
+// kept because its own diffThreshold was raised. All three mean the image on
+// the card is not simply "what the app produces now".
+const hasRunProblem = s =>
+  !!s.run && (s.run.failed || s.run.flaky !== undefined || s.run.suppressed !== undefined)
 
 // Most spec names are namespaced with '/' (gallery/x, multiway_synteny/x);
 // only the hand-listed desktop-* names use a hyphen instead. Grouping only on
@@ -432,6 +515,7 @@ function writeUrl() {
   if (q) params.set('q', q)
   if (filters.status !== 'needs') params.set('status', filters.status)
   if (filters.changedOnly) params.set('changed', '1')
+  if (filters.runOnly) params.set('problems', '1')
   if (filters.sortBy !== 'default') params.set('sort', filters.sortBy)
   if (filters.group) params.set('group', filters.group)
   if (filters.kind !== 'all') params.set('kind', filters.kind)
@@ -451,6 +535,7 @@ function readUrl() {
   const status = params.get('status')
   if (STATUSES.includes(status)) filters.status = status
   filters.changedOnly = params.get('changed') === '1'
+  filters.runOnly = params.get('problems') === '1'
   const sort = params.get('sort')
   if (SORTS.includes(sort)) filters.sortBy = sort
   const group = params.get('group')
@@ -538,20 +623,49 @@ async function loadStoreState() {
     const res = await fetch('/api/figure-state')
     const s = await res.json()
     if (!res.ok) throw new Error(s && s.error || 'HTTP ' + res.status)
+    runInfo = s.run || null
+    const parts = []
     if (!s.unpublished.length) {
-      el.className = 'ok'
-      el.innerHTML = 'All ' + s.total + ' figures are published to the store — what you see here is what everyone gets.'
+      parts.push('All ' + s.total + ' figures are published to the store — what you see here is what everyone gets.')
     } else {
-      el.className = 'pending'
-      el.innerHTML = '<strong>' + s.unpublished.length + ' figure(s) exist only on this machine.</strong> ' +
+      parts.push('<strong>' + s.unpublished.length + ' figure(s) exist only on this machine.</strong> ' +
         'Run <code>pnpm figures:push</code> and commit <code>figures.lock</code>, or they are silently dropped — ' +
         'a verdict recorded now is against pixels nobody else will see.' +
-        '<div class="names">' + s.unpublished.map(esc).join(', ') + '</div>'
+        '<div class="names">' + s.unpublished.map(esc).join(', ') + '</div>')
     }
+    parts.push(describeRun(s.run))
+    el.className = s.unpublished.length || (s.run && s.run.failed) ? 'pending' : 'ok'
+    el.innerHTML = parts.join('<div class="names"></div>')
+    render()
   } catch (err) {
     el.className = 'pending'
     el.textContent = 'Could not read the figure store state: ' + err.message
   }
+}
+
+// The last sweep, in one line. Says when, because a week-old run describes a
+// week-old app; says what it covered, because a --filter run is silent about
+// everything else; and says whether flakiness was even tested for, since only
+// --check can answer that and "0 flaky" from a normal run means "not measured".
+function describeRun(r) {
+  if (!r) {
+    return 'No sweep has run on this machine, so no figure here carries a render verdict. ' +
+      '<code>pnpm screenshots</code> writes one.'
+  }
+  const when = new Date(r.finishedAt)
+  const hours = (Date.now() - when.getTime()) / 3600000
+  const ago = hours < 1 ? 'less than an hour ago'
+    : hours < 48 ? Math.round(hours) + 'h ago'
+    : Math.round(hours / 24) + ' days ago'
+  const scope = r.filter.length
+    ? 'filtered to <code>' + r.filter.map(esc).join(',') + '</code>'
+    : 'a full sweep'
+  const bits = ['Last run ' + ago + ', ' + scope + '.']
+  if (r.failed) bits.push('<strong>' + r.failed + ' spec(s) failed to render</strong> — their cards show the last image that worked.')
+  bits.push(r.check
+    ? r.flaky + ' nondeterministic.'
+    : 'Nondeterminism not measured (only <code>--check</code> tests for it).')
+  return bits.join(' ')
 }
 
 function renderUsages(usages) {
@@ -569,6 +683,33 @@ function kindPill(spec) {
   return spec.autogenerated
     ? pill('auto', 'autogenerated')
     : pill('manual', 'manual')
+}
+
+// What the last sweep had to say about this spec.
+//
+// The failure pill matters most: when a spec dies, the PNG on the card is
+// whatever the last SUCCESSFUL run left behind, and nothing else on screen
+// distinguishes that from a current figure. A reviewer could approve a figure
+// the app stopped being able to produce.
+//
+// "not covered" is drawn rather than left blank, because blank reads as fine.
+// It means the last run was filtered past this spec (or predates it), so the
+// card carries no evidence either way. Only autogenerated specs get it — a
+// manual figure has no spec to run.
+function runPills(spec) {
+  const r = spec.run
+  if (!r) {
+    return spec.autogenerated && runInfo && runInfo.filter.length
+      ? ' ' + pill('notcovered', 'not in the last run')
+      : ''
+  }
+  var out = ''
+  if (r.failed) out += ' ' + pill('failed', '✗ failed to render')
+  if (r.flaky !== undefined)
+    out += ' ' + pill('flaky', 'nondeterministic — ' + (r.flaky * 100).toFixed(2) + '% between two renders')
+  if (r.suppressed !== undefined)
+    out += ' ' + pill('flaky', 'kept behind a raised diffThreshold (' + (r.suppressed * 100).toFixed(2) + '%)')
+  return out
 }
 
 // A compose figure's parts are its ingredients, not figures of their own: the
@@ -630,7 +771,9 @@ function renderCard(spec) {
         (spec.stale ? ' ' + pill('stale', 'image changed since ' + status) : '') +
         (isNew(spec) ? ' ' + pill('new', 'new') : '') +
         (isChanged(spec) ? ' ' + pill('changed', 'changed') : '') +
-        (spec.unpublished ? ' ' + pill('unpublished', 'not pushed to the store') : '') + '</h2>' +
+        (spec.unpublished ? ' ' + pill('unpublished', 'not pushed to the store') : '') +
+        runPills(spec) + '</h2>' +
+      (spec.run && spec.run.failed ? '<pre class="runerr">' + esc(spec.run.failed) + '</pre>' : '') +
       renderUsages(spec.usages) +
       renderParts(spec) +
       (spec.liveUrl ? '<a class="livelink" href="' + esc(spec.liveUrl) + '" target="_blank" rel="noopener">Open live in JBrowse ↗</a>' : '') +
@@ -660,6 +803,7 @@ function syncControls() {
     b.classList.toggle('active', b.dataset.status === filters.status)
   }
   $('[data-toggle="changed"]').classList.toggle('active', filters.changedOnly)
+  $('[data-toggle="run"]').classList.toggle('active', filters.runOnly)
   $('#sortby').value = filters.sortBy
   $('#kind').value = filters.kind
   // group belongs here with the other two rather than only in
@@ -680,13 +824,17 @@ function renderCounts() {
   const scoped = data.filter(s => matchesScope(s, q))
   const inScope = status =>
     scoped.filter(
-      s => hasStatus(s, status) && (!filters.changedOnly || isNew(s) || isChanged(s)),
+      s =>
+        hasStatus(s, status) &&
+        (!filters.changedOnly || isNew(s) || isChanged(s)) &&
+        (!filters.runOnly || hasRunProblem(s)),
     ).length
   for (const status of ['needs', 'good', 'bad', 'answered']) {
     $('[data-count="' + status + '"]').textContent = inScope(status)
   }
   $('[data-count="changed"]').textContent =
     scoped.filter(s => isNew(s) || isChanged(s)).length
+  $('[data-count="run"]').textContent = scoped.filter(hasRunProblem).length
 
   const has = status => s => s.verdict?.status === status && !s.stale
   const answered = data.filter(has('answered')).length
@@ -725,7 +873,8 @@ function hasStatus(s, status) {
 
 function matchesFilters(s, q) {
   const matchesChanged = !filters.changedOnly || isNew(s) || isChanged(s)
-  return matchesScope(s, q) && (justActed.has(s.name) || (hasStatus(s, filters.status) && matchesChanged))
+  const matchesRun = !filters.runOnly || hasRunProblem(s)
+  return matchesScope(s, q) && (justActed.has(s.name) || (hasStatus(s, filters.status) && matchesChanged && matchesRun))
 }
 
 function render() {
@@ -751,7 +900,8 @@ $('header').addEventListener('click', e => {
   if (statusBtn) {
     changeFilter('status', statusBtn.dataset.status)
   } else if (toggleBtn) {
-    changeFilter('changedOnly', !filters.changedOnly)
+    const key = toggleBtn.dataset.toggle === 'run' ? 'runOnly' : 'changedOnly'
+    changeFilter(key, !filters[key])
   }
 })
 $('#search').addEventListener('input', () => {
