@@ -71,16 +71,44 @@ handling was React reconciliation, not the fetch machinery. The
 `FetchVisibleRegions` gate and `ClearBlockingStateOnViewportChange` clear are
 real and correct — they just don't loop during a steady too-large state.
 
-## The 50kb→5mb→50kb stuck-banner bug (derived regionTooLarge)
+## The byte estimate was a rate, and the rate was fiction (closed 2026-08)
 
-Canvas's derived byte gate reads `estimatedBytesForVisibleSpan` (the stored
-estimate rescaled by `view.visibleBp / measuredSpanBp`), not the
-measured-span estimate. Reading the measured-span number deadlocked: it survived
-`clearAllRpcData`, stayed above the limit after zooming back into a small region,
-and `FetchVisibleRegions` wouldn't re-estimate while `regionTooLarge` held — so
-the banner stuck forever. The rescale is what makes the byte gate a pure function
-of the view (like `densityTooLarge` scaling featureCount by `bpPerPx`), so it
-self-releases on zoom-in.
+For most of its life the byte gate stored one measurement and scaled it —
+`estimatedBytesForVisibleSpan = bytes × visibleBp / measuredSpanBp` — which made
+the verdict a pure function of the viewport and let the banner self-release on
+zoom-in. That release was the *only* release: `FetchVisibleRegions` skipped while
+`regionTooLarge` held, so nothing else could re-measure, which is why reading the
+raw measured-span number instead deadlocked (the 50kb→5mb→50kb stuck banner).
+Everything downstream was built on the rate — the `AUTO_FORCE_LOAD_BP` floor's
+"a small span is a small fetch", the `gateBelowForceLoadFloor` opt-in MAF and
+alignments each took, the flooring of both spans at 20kb that made the estimate
+flat where the index was.
+
+**Bytes do not follow span.** An index quotes whole blocks, so the estimate is a
+step function, and *where* the steps fall is a property of the file rather than
+of the index's bin width. Measured on files in this repo: `volvox.maf.bed.gz`
+reports an identical 306,719 bytes from 25kb up to 100kb; the whole-genome
+`hs37d5.HG002…sv.vcf.gz` is flat at 15,408 from 7.8 Mb of span all the way down,
+where the model extrapolated from chr1 predicts 22. A 700x under-report, in the
+direction that releases a banner it should hold — so every gated track above the
+floor spent a release, an aborted fetch and a re-banner on each zoom step, and
+the floor's 20kb was never "roughly the index's resolution" for anything but the
+densest files.
+
+The fix was to notice that the skip and the staleness were the same thing. The
+fetch autoruns now skip on `regionTooLarge && !gateMeasurementStale`, so a
+blocked display runs one fetch per settled viewport; that fetch stops at the
+measurement (an index read, no download) because every gated display measures
+before it fetches. Which retires the rate, the floor on the byte axis, and the
+opt-in — see REGION_TOO_LARGE.md § "Measurement follows the viewport".
+
+Two proposals that were costed and did not survive it. **A curve instead of a
+ratio** — the adapter sampling its index at a ladder of sub-spans so the main
+thread interpolates — measured at 18x the cost of the one call on a whole-genome
+region set (2.4s against 133ms, 22 chromosomes), to answer a question only a
+blocked track asks, and it would still have been a model. **A separate
+measurement-only RPC** issued while blocked would have given canvas the two-call
+coordination it is built to avoid, for a measurement its own fetch already takes.
 
 ## Derived regionTooLarge replaced an imperative clear-and-reset cycle
 

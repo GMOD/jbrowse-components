@@ -326,55 +326,36 @@ display, a real cost for very wide multi-sample tracks (100 samples x 1 Mbp at
 **Retire when** a plugin's memory ceiling shows up in production. The options are
 then chunked typed-array delivery or a streaming RPC primitive, neither built.
 
-### The byte gate assumes bytes scale with span, so block-quantized formats slip past it
+### The density axis is a model with no measurement under it
 
-**Status:** Open, narrowed 2026-08-06.
+**Status:** Accepted, bounded by the `AUTO_FORCE_LOAD_BP` floor.
 
-`rescaleByteEstimateToVisibleSpan` scales one cached measurement by
-`visibleBp / measuredSpanBp`, and `AUTO_FORCE_LOAD_BP` skipped gating below 20kb.
-Both assume a smaller view means a smaller fetch. Tabix returns whole
-overlapping lines, so for a format that puts an unbounded amount of data on one
-line — MAF-tabix stores an entire alignment block, every species, in column 6 —
-the cost is quantized by feature, not by view.
+`observedMaxDensity` is the last fetch's features-per-bp times the current
+`coarseBpPerPx` — so the number the density verdict compares is an extrapolation
+from whatever window happened to be fetched, and features clump, which makes it
+non-monotone in span in a way the byte axis is not. It is what remains of the
+"bytes scale with span" assumption after the byte axis stopped assuming
+(REGION_TOO_LARGE.md § "Measurement follows the viewport"), and it is why
+`densityGateActive` still carries the floor while `byteGateActive` doesn't.
 
-**The floor half is closed.** `gateBelowForceLoadFloor` on
-`RegionTooLargeMixin` is an opt-in (default false; `LinearMafDisplay` and
-`LinearAlignmentsDisplay` set it) that removes the floor term from `gateActive`
-and nothing else, so the byte axis is on duty at every zoom for the displays
-whose bytes don't follow span — MAF by species count, alignments by depth. Since
-index estimates are monotone in span, the opt-in can only stop regions that
-already bannered above the floor, which is what makes it safe to hand to a third
-display without a per-format threshold.
+**Measured, and the floor costs nothing today.** A scan of all 60 indexed files
+in this repo (2026-08-06) found exactly two that would banner below 20kb —
+`dog10k_cyp1a2_cohort_cn.bed.gz` (7,511 features in a 20kb window, still 1,987 at
+500bp) and `dog10k_slc28a3_cohort_cn.bed.gz` — and both are
+`LinearMultiRowFeatureDisplay` tracks, which set `densityGateEnabled: false`. The
+densest track with the axis on peaks at 590 features per 20kb and falls
+monotonically from there. So removing the floor would buy nothing measurable, and
+keeping it hides nothing measurable.
 
-**The rescale half is closed below the floor and open above it.**
+Note the shape of those two files: N samples over the same interval, so the
+feature count doesn't fall with span at all. That is the density counterpart of
+the block-quantized byte case, and the argument that retired the *byte* floor
+(measure at the span being judged) has no counterpart here — there is no cheap
+index read that answers "how many features are in this window".
 
-Below: measurement says the estimate is *flat* across the whole sub-16kb range,
-since an index reports whole blocks, so the rescale was releasing the banner on a
-number that isn't real — an aborted fetch cycle per zoom step that never settled.
-`rescaleByteEstimateToVisibleSpan` now floors both of its spans at
-`AUTO_FORCE_LOAD_BP`, making the estimate flat exactly where the index is, so the
-verdict below the floor is the verdict at 20kb. That is the same monotonicity
-argument the floor opt-in above rests on, and it removes an error that ran in the
-*unsafe* direction (extrapolated from 50kb, volvox predicts 98kB at 16kb where
-the index charges 239kB).
-
-Above: proportionality is still assumed and still under-reports on zoom-in —
-volvox charges 239kB at 16kb and 307kB at 50kb, not the 3× the model expects. The
-difference is that up there the bytes genuinely do fall, so each release-then-
-re-measure cycle makes progress and terminates; below the floor it could not. No
-data is downloaded either way (the pre-flight re-measures before the fetch body
-runs), which is what keeps this a wart rather than the missing ceiling it used to
-be.
-
-**Retire when** the estimate is a curve rather than a ratio — i.e. the adapter
-reports enough of the index's shape to interpolate, rather than one number the
-main thread scales. Note what is no longer needed: decoupling measurement from
-fetching (a re-measure on viewport change while the gate blocks) was the standing
-proposal, and flooring removed the case it existed for. Simply removing the
-rescale still does not work, and neither does invalidating the estimate on view
-change; both are costed in
-[MAF_LARGE_BLOCKS.md](MAF_LARGE_BLOCKS.md) § "Why the rescale can't just be
-removed". Read that before proposing a fix.
+**Retire when** the density figure is measured at the span being judged rather
+than extrapolated, or a file with the axis on is found that banners below the
+floor. Reach for the scan above before either.
 
 ---
 

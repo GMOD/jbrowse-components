@@ -171,72 +171,56 @@ and the user chooses, instead of a 30-second freeze. Pair it with a cheap safety
 valve in the adapter: if a single line's payload exceeds a budget, fail with a
 message naming the block and pointing at the splitter rather than OOMing.
 
-### Why the rescale can't just be removed
+### The rescale is gone, and what replaced it
 
 Measured 2026-08-06 with `bytesForRegions` against files in this repo. The
-estimate is not approximately proportional to span down there — it is **flat**,
-because an index reports whole blocks:
+estimate is not approximately proportional to span — it is a **step function**,
+because an index reports whole blocks, and *where* the steps fall is a property
+of the file rather than of the index's bin width:
 
-| file | 200bp | 1kb | 5kb | 16kb | 50kb |
-| --- | --- | --- | --- | --- | --- |
-| `volvox/volvox.maf.bed.gz` | 213,443 | 213,443 | 213,443 | 238,685 | 306,719 |
-| `breakpoint/hs37d5.HG002…sv.vcf.gz` | 15,408 | 15,408 | 15,408 | 15,408 | 15,408 |
-| `ce11.26way.chrI_subset.bed.gz` | 92,757 | 92,757 | 92,757 | 92,757 | 92,757 |
+| file | 200bp | 1kb | 5kb | 16kb | 50kb | 100kb |
+| --- | --- | --- | --- | --- | --- | --- |
+| `volvox/volvox.maf.bed.gz` | 213,443 | 213,443 | 213,443 | 238,685 | 306,719 | 306,719 |
+| `breakpoint/hs37d5.HG002…sv.vcf.gz` | 15,408 | 15,408 | 15,408 | 15,408 | 15,408 | 15,408 |
+| `ce11.26way.chrI_subset.bed.gz` | 92,757 | 92,757 | 92,757 | 92,757 | 92,757 | 92,757 |
 
-Constant until the tabix linear index's 16kb bins start splitting — i.e. flat
-across exactly the range `gateBelowForceLoadFloor` just switched the gate on for.
-BigBed is the same shape (`getBlockSizeForRangeMulti` sums whole R-tree leaf
-blocks). This is *why* the ce11 26-way never gates, incidentally: 92,757 bytes
-against a 1 Mb cap, two orders of magnitude of headroom at every zoom.
+The hs37d5 file is flat all the way up to 7.8 Mb of span on chr1, four hundred
+times above where a 20kb floor would have looked — so "the index stops resolving
+at about 20kb" was true of the densest file measured and of nothing else. BigBed
+is the same shape (`getBlockSizeForRangeMulti` sums whole R-tree leaf blocks).
+This is *why* the ce11 26-way never gates, incidentally: 92,757 bytes against a
+1 Mb cap, two orders of magnitude of headroom at every zoom.
 
 The consequence for an over-budget track was: the rescale releases the banner on
 zoom-in, the pre-flight re-measures the same flat number, the banner returns. One
 aborted fetch cycle and a banner flash per zoom step, never settling. **It never
 downloads** — `byteGateBlocksFetch` re-measures before `work()` — so this cost a
-round trip, not data. That was the wart, and the honest outcome underneath it
-(force-load or nothing, for a genuinely unaffordable file) is correct.
+round trip, not data.
 
-**Fixed**, by the third option below. Two obvious fixes, both wrong:
+**Fixed by deleting the rescale.** Two obvious fixes were wrong for the same
+reason, and naming it is what found the third:
 
-- **"Stop rescaling; use the measurement as-is."** Deadlocks. The estimate only
-  updates inside `byteGateBlocksFetch`, which only runs from a fetch, which
-  `FetchVisibleRegions` skips while `regionTooLarge` holds. With no downward
-  rescale nothing ever re-measures, so a BAM gated at 200kb stays gated at 2kb
-  forever. **The downward rescale is the release mechanism**, not a convenience.
+- **"Stop rescaling; use the measurement as-is."** Deadlocks *given the fetch
+  autoruns skip while `regionTooLarge` holds*. With no downward rescale nothing
+  re-measures, so a BAM gated at 200kb stays gated at 2kb forever.
 - **"Invalidate the estimate on view change so the pre-flight re-runs."** No
   deadlock, same flash: a dropped estimate reads as "not too large", so the
-  banner still disappears, a fetch still starts, and the scrim still shows before
-  the new measurement puts the banner back.
+  banner disappears, a fetch starts, and the scrim shows before the new
+  measurement puts the banner back.
 
-Both of those read as "the rescale is all-or-nothing", which is the premise that
-was wrong. **The fix is to floor both spans** in
-`rescaleByteEstimateToVisibleSpan`:
+Both take the skip as fixed and try to work around it. **The skip is the bug.**
+The fetch autoruns now skip on `regionTooLarge && !gateMeasurementStale`, so a
+blocked display runs its ordinary fetch once per settled viewport — and that
+fetch stops at the measurement, because that is what a fetch does when the answer
+is over budget. One index read, no download, no banner flash, and the estimate is
+never anything but a real measurement of what is on screen. See
+[REGION_TOO_LARGE.md](REGION_TOO_LARGE.md) § "Measurement follows the viewport".
 
-```
-bytes × max(visibleBp, AUTO_FORCE_LOAD_BP) / max(measuredSpanBp, AUTO_FORCE_LOAD_BP)
-```
-
-The proportional model is kept exactly where the table above says it holds, and
-the estimate goes flat exactly where the index is. Every rescale at or above the
-floor is untouched, so the release mechanism is intact and there is no deadlock;
-below the floor the verdict is simply the verdict at 20kb, which is what the
-monotonicity of index estimates said it always was. Flooring the *denominator*
-too is not cosmetic — without it an estimate captured below the floor gets scaled
-up by the ratio of the floor to the span it was measured at.
-
-The same constant serves both uses deliberately: the floor was chosen at roughly
-the index's own resolution, which is what makes it both a reasonable place to
-stop gating and the exact place the estimate stops resolving. A second constant
-could only drift, and the drift would mean nothing.
-
-The earlier proposal here was to **decouple measuring from fetching**: re-measure
-on viewport change while the gate is blocking, so the verdict updates without a
-fetch cycle having to be started and abandoned. That is an autorun on the fetch
-mixins (not on `RegionTooLargeMixin`, which has non-LGV consumers and must stay
-view-only). It was never built — a real change to shared fetch machinery for a
-flash on tracks that are already force-load-only — and the floor removes the
-reason to build it: there is no longer a fetch cycle being started and abandoned
-down there to need re-measuring out of.
+A **curve** was the other candidate — the adapter sampling its index at a ladder
+of centered sub-spans so the main thread interpolates instead of scaling. It is
+still a model, and it is not affordable: a 20-rung ladder over a 22-chromosome
+whole-genome region set measured 2.4s against 133ms for the single call, an 18x
+multiplier on the one path where the estimate matters most.
 
 ## Recommendation
 

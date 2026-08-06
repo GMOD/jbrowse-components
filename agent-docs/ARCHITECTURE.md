@@ -531,7 +531,10 @@ Subclasses override `fetchNeeded` to call `self.fetchRegions(needed, work)`.
 `fetchRegions` runs an optional pre-flight byte estimate before invoking the work
 callback: `RegionTooLargeMixin.byteGateBlocksFetch` → the
 `CoreGetRegionByteEstimate` RPC, active when the display sets `byteGateEnabled`
-and the shared `gateActive` says something could act on the answer. Oversize regions surface a banner:
+and the shared `byteGateActive` says something could act on the answer. A blocked
+display keeps running that fetch, once per settled viewport, because the
+measurement is the only thing that releases the banner and a blocked fetch stops
+at it. Oversize regions surface a banner:
 `DisplayChrome` renders `TooLargeMessage` from the model's
 `regionTooLargeReason`.
 
@@ -552,9 +555,11 @@ connector to an off-screen position.
 ### The region-too-large gate (summary)
 
 `regionTooLarge` raises the "region too large" banner and holds off the fetch.
-It's a **derived** getter on `RegionTooLargeMixin` — a pure function of the
-cached byte estimate rescaled to the current viewport — so it self-releases on
-zoom-in with no imperative clear and doesn't flicker on pan. Displays opt in by
+It's a **derived** getter on `RegionTooLargeMixin` — a pure function of the last
+byte measurement — and what keeps that measurement describing what is on screen
+is that a blocked display keeps fetching, once per settled viewport, with the
+fetch stopping at the measurement rather than downloading. So the banner releases
+on a fresh index read, with no imperative clear and no flicker on pan. Displays opt in by
 overriding hooks (`derivedRegionTooLargeEnabled`, `configuredFetchSizeLimit`,
 `densityTooLarge`) rather than shadowing the getter. Canvas folds
 its byte check into the feature-fetch RPC instead of a separate pre-flight

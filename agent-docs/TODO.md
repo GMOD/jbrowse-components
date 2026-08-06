@@ -280,9 +280,10 @@ reverses, ~2x the other way). Reading `UNMASKED_RENDERER_WEBGL` off the probe
 
 Design done, nothing built, premise unconfirmed — see
 [reference/MAF_LARGE_BLOCKS.md](reference/MAF_LARGE_BLOCKS.md). Run the one-line block-size
-check before building any of it. The byte-gate half (the estimate rescales by span
-while a tabix line's cost is quantized by feature) is not MAF-specific and is
-logged in ARCHITECTURAL_LIMITS.md.
+check before building any of it. The byte-gate half is closed: the gate no longer
+scales an estimate by span, it re-measures at the viewport it is judging, so a
+cost quantized by feature is measured rather than modelled
+(REGION_TOO_LARGE.md § "Measurement follows the viewport").
 
 ### Alignments still repacks every row-instanced pass on the main thread
 
