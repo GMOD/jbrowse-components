@@ -877,6 +877,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "samplesTsvLocation",
           "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        },
+        {
+          "name": "fetchSizeLimit",
+          "type": "(JexlString | number)"
         }
       ],
       "shorthandKeys": []

@@ -252,9 +252,11 @@ export default function RegionTooLargeMixin() {
       /**
        * #getter
        * The span on screen, or undefined before the view is measured. The gate's
-       * only read of its container: `visibleBp` reads `view.width`, which throws
-       * before measurement and a bare getter must never throw, so the pre-init
-       * guard lives here once rather than at each reader.
+       * only read of the *view* (`adapterFetchSizeLimit` reaches the containing
+       * track, and nothing else leaves the display): `visibleBp` reads
+       * `view.width`, which throws before measurement and a bare getter must
+       * never throw, so the pre-init guard lives here once rather than at each
+       * reader.
        */
       get gateVisibleBp(): number | undefined {
         const view = getContainingView(self) as LinearGenomeViewModel
