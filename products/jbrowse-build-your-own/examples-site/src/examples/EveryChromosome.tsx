@@ -25,7 +25,12 @@ import { observer } from 'mobx-react'
 
 const hg38 = {
   name: 'hg38',
-  uri: 'https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit',
+  uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
+  // this file names its sequences `1`, `2`, ... and the list below asks for
+  // `chr1`, `chr2`, ...; the alias table is what makes those the same sequence
+  refNameAliases: {
+    uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+  },
 }
 
 // Spelled out rather than asked for, and that is the whole trick.

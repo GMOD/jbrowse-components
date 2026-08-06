@@ -5,12 +5,12 @@ export default function WithInit() {
     <LinearGenomeView
       assembly={{
         name: 'hg38',
-        uri: 'https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit',
+        uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
         refNameAliases: {
-          uri: 'https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chromAlias.txt',
+          uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
         },
         cytobands: {
-          uri: 'https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/cytoBandIdeo.txt.gz',
+          uri: 'https://jbrowse.org/genomes/GRCh38/cytoBand.txt',
         },
       }}
       tracks={[
