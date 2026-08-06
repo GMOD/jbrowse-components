@@ -57,14 +57,16 @@ export default defineConfig({
   base: BASE,
   publicDir: './static',
   trailingSlash: 'always',
-  // Renamed docs pages keep their old URL working. The site has no other
-  // redirect layer (S3 + CloudFront serve the built files as-is), so without an
-  // entry here a rename silently 404s every external link to the old slug.
+  // A renamed docs page keeps its old URL working, but only when that URL was
+  // ever live: the site has no other redirect layer (S3 + CloudFront serve the
+  // built files as-is), and a page that only ever reached staging has nothing
+  // pointing at it. Check with `curl -o /dev/null -w '%{http_code}'` against
+  // https://jbrowse.org/jb2/docs/<old-slug>/ before adding an entry — prod is
+  // well behind staging, so most new pages are not there.
   // The destination carries BASE itself: Astro writes it verbatim into the
   // `<meta http-equiv="refresh">`, and fixAbsoluteLinks only rewrites `<a href>`.
   redirects: {
     '/docs/jbrowse_jupyter/': `${BASE}/docs/jbrowse_anywidget/`,
-    '/docs/json_schema/': `${BASE}/docs/config_and_session_json/`,
   },
   // Astro's default HTML minifier strips whitespace-only text nodes between
   // elements, so `<strong>a</strong>\n<strong>b</strong>` renders as "ab" and
