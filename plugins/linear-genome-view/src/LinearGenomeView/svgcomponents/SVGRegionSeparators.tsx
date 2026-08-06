@@ -9,6 +9,14 @@ type LGV = LinearGenomeViewModel
 // (a translucent fill would tint the track data it masks rather than hide it).
 // Keyed off isRightEndOfDisplayedRegion like PaddingBlocks, so the bar at the
 // last region's right edge isn't dropped.
+//
+// The seam is ALL of PaddingBlocks this draws, which is why it walks
+// dynamicBlocks itself rather than reading `model.paddingSpans` like the
+// on-screen component. The other two span kinds are chrome for an interactive
+// row, not information a figure carries: `elided`'s striped grey says "regions
+// here are too narrow to draw", which in a static image is noise, and at
+// whole-genome zoom it is most of the row. Don't put this on paddingSpans to
+// close the "divergence".
 export default function SVGRegionSeparators({
   model,
   height,

@@ -2008,9 +2008,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
          *
          * Elided blocks get no seam even though they carry the flag: at the
          * zoom where regions elide, one bar per region is a solid grey wall.
-         * PaddingBlocks is the in-tree consumer and SVGRegionSeparators is the
-         * export-side one; the latter still walks dynamicBlocks in the viewport
-         * frame and is not on this yet.
+         *
+         * PaddingBlocks is the in-tree consumer. The SVG export is deliberately
+         * NOT one: `SVGRegionSeparators` walks dynamicBlocks itself and draws
+         * only the seam, because `elided` and `boundary` are chrome for an
+         * interactive row rather than information a figure carries — striped
+         * grey saying "regions here are too narrow to draw" is noise in a
+         * static image, and at whole-genome zoom it would be most of the row.
+         * The seam is the one that must survive: regions lay out contiguously,
+         * so it is all that separates two of them.
          */
         get paddingSpans(): {
           key: string
