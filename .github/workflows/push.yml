@@ -162,6 +162,13 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
+      # First because it is the cheapest and needs nothing: a diagram's .dot IS
+      # tracked, so unlike every other figure it can be committed ahead of the
+      # picture it renders to, and figures.lock stays consistent with the store
+      # the whole time it is wrong. Reads two files out of the checkout, wants
+      # neither graphviz nor a figures:pull.
+      - name: Check diagrams match their sources
+        run: pnpm diagrams:check
       # generate-img-doc.ts compares products/jbrowse-img/img against the
       # website's mirror of it, so both have to be on disk. This is also the
       # only gate that proves figures.lock is HONEST: a fresh runner has no

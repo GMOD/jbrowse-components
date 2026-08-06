@@ -1,28 +1,40 @@
-# Architecture diagrams
+# Diagrams
 
 Graphviz sources for the architecture and pipeline figures used in the docs.
-These replace hand-drawn PNGs and ASCII diagrams so the figures are
+These replace hand-drawn PNGs and ASCII blocks so the figures are
 version-controllable and easy to edit.
 
-| Source                          | Rendered output                               | Used in                                           |
-| ------------------------------- | --------------------------------------------- | ------------------------------------------------- |
-| `products_and_plugins.dot`      | `../static/img/products_and_plugins.png`      | `docs/developer_guide.md` (Products and plugins)  |
-| `product_architecture.dot`      | `../static/img/product_architecture.png`      | `docs/developer_guide.md` (state model / React)   |
-| `wolfdog_ancestry_pipeline.dot` | `../static/img/wolfdog_ancestry_pipeline.png` | `docs/tutorials/local_ancestry.md` (The pipeline) |
-| `feature_plotting_threads.dot`  | `../static/img/feature_plotting_threads.png`  | `docs/developer_guides/plotting_features.md`      |
-| `gpu_display_lifecycle.dot`     | `../static/img/gpu_display_lifecycle.png`     | `docs/developer_guides/creating_gpu_display.md`   |
+Each `<name>.dot` renders to `../static/img/<name>.png` — `diagrams.ts` owns
+that mapping, so nothing here needs to restate it.
 
-## Rendering
+| Source                          | Used in                                           |
+| ------------------------------- | ------------------------------------------------- |
+| `products_and_plugins.dot`      | `docs/developer_guide.md` (Products and plugins)  |
+| `product_architecture.dot`      | `docs/developer_guide.md` (state model / React)   |
+| `wolfdog_ancestry_pipeline.dot` | `docs/tutorials/local_ancestry.md` (The pipeline) |
+| `feature_plotting_threads.dot`  | `docs/developer_guides/plotting_features.md`      |
+| `gpu_display_lifecycle.dot`     | `docs/developer_guides/creating_gpu_display.md`   |
 
-Render every `.dot` to PNG with the Graphviz `dot` CLI (`brew install graphviz`
-or `apt install graphviz`):
+## Editing one
+
+Edit the `.dot`, then from the repo root:
 
 ```sh
-for f in *.dot; do dot -Tpng -Gdpi=150 "$f" -o "../static/img/${f%.dot}.png"; done
-pnpm figures:push   # from the repo root, then commit figures.lock
+pnpm diagrams        # renders every source, rewrites diagrams.lock
+pnpm figures:push    # uploads the bytes, rewrites figures.lock
 ```
 
-Edit the `.dot` source and re-run that to update a figure. The `-Gdpi=150` flag
-keeps the text crisp at the size shown in the docs. `static/img/` is gitignored,
-so a re-render is only visible to anyone else once it is pushed to the figure
-store.
+Commit `diagrams.lock` and `figures.lock` together with the `.dot`. Needs the
+Graphviz `dot` CLI (`brew install graphviz` or `apt install graphviz`); the DPI
+lives in `diagrams.ts` rather than in a command anyone can paste half of.
+
+`static/img/` is gitignored, so **a re-render nobody pushed is invisible to
+git**. For an ordinary figure that is merely a hazard. For a diagram it is
+worse: the `.dot` is tracked, so a commit can show a source edit while the site
+keeps serving the picture the old source produced, and `figures.lock` agrees
+with the store the entire time.
+
+`pnpm diagrams:check` is the gate for that, in the `Generated files up to date`
+CI job. It compares each source's hash against the figure hash recorded beside
+it in `diagrams.lock`, which is why there is no flag that just records the
+current state: the only way to make the check pass is to actually render.
