@@ -514,4 +514,58 @@ export const mafSpecs: ScreenshotSpec[] = [
     direction: 'horizontal',
     parts: ['maf_summary_zoomed_out', 'maf_summary_zoomed_in'],
   },
+  // HPRC release 2's minigraph-cactus multiple alignment, read straight off the
+  // human-pangenomics bucket by BgzipMafAdapter: a 53 GB MAF plus its taffy
+  // .tai, no conversion step and no local copy.
+  //
+  // The locus is C4, which is the example HPRCv2's own README reaches for
+  // (GRCh38#0#chr6:31972057-32055418, narrowed here to the C4A/CYP21A1P core so
+  // the fetch stays sane). C4A/C4B are copy-number variable in humans, so the
+  // thing to see is not phylogeny — every row is a human — but which haplotypes
+  // carry which copies. The 470-way figures above are the contrast: there a
+  // missing row means a species diverged past alignment, here it means a person
+  // does not have that segment.
+  //
+  // MANE Select rather than the full UCSC gene set: at C4 the RefSeq track
+  // carries hundreds of `biological region` features (every CH-n recombination
+  // sub-region), which in grow mode filled the figure and left no room for the
+  // alignment it was supposed to caption.
+  //
+  // fetchSizeLimit raised because the gate is measuring something real: 464
+  // haplotypes over a duplicated locus is ~1.4 MB compressed, and the default
+  // ceiling is there for tracks that would pull that by accident.
+  {
+    mode: 'url' as const,
+    name: 'maf_hprc_pangenome',
+    url: sessionSpec('test_data/hprc_maf.json', {
+      sessionTracks: [HG38_MANE_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr6:31,980,000-32,010,000',
+          tracks: [
+            {
+              trackId: 'mane_hg38',
+              type: 'LinearBasicDisplay',
+              heightMode: 'grow',
+            },
+            {
+              trackId: 'hprc_v2_1_mc_grch38',
+              type: 'LinearMafDisplay',
+              rowHeight: 2,
+              rowProportion: 1,
+              // grow so all 464 rows are on screen at once; the point of the
+              // figure is the whole cohort, and a scrolled track shows half of it
+              heightMode: 'grow',
+              fetchSizeLimit: 50_000_000,
+            },
+          ],
+        },
+      ],
+    }),
+    viewportHeight: 920,
+    // the .tai alone is 5.35 MB and the first block read follows it
+    actions: [{ type: 'delay' as const, ms: 25000 }],
+  },
 ]

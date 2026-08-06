@@ -877,6 +877,44 @@ column here is carriage, so the two sit over one coordinate and say different,
 compatible things: which haplotype the graph credits an allele to, and which
 haplotypes actually walk it.
 
+## The alignment underneath both
+
+The graph and the callset are both derived. The thing they are derived _from_ is
+the multiple alignment, and release 2 publishes that too —
+`hprc-v2.1-mc-grch38.full.maf.gz`, 53 GB, 464 haplotypes, beside a `.tai` index
+written by [taffy](https://github.com/ComparativeGenomicsToolkit/taffy). The
+index makes it addressable, so a locus is a ranged read rather than a download:
+
+```json
+{
+  "type": "MafTrack",
+  "trackId": "hprc_v2_1_mc_grch38",
+  "name": "HPRC release 2 pangenome alignment (464 haplotypes)",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BgzipMafAdapter",
+    "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.full.maf.gz"
+  }
+}
+```
+
+The `uri` shorthand resolves the sibling `.tai`. That index is 5.35 MB and
+downloads once; after it, a 10 kb locus is about a 670 KB range request.
+
+![](/img/maf_hprc_pangenome.png)
+
+The locus is C4, the example [HPRCv2](https://github.com/pangenome/HPRCv2)
+itself opens with. Every row is a human haplotype, so what the rows say is
+different from the cross-species alignments elsewhere in these docs: a row that
+drops out has not diverged past alignment, it belongs to a person who does not
+carry that segment. C4A and C4B are copy-number variable, and the white bands
+are exactly that — read down a column to see who carries what, and across to see
+where each segment starts and stops.
+
+This is also the level the other two tracks lose. The graph collapses these
+haplotypes into segments and the callset reduces them to genotypes; here each
+one is still its own row of sequence.
+
 ## Structure, not sequence
 
 The graph and the callset are the same object at two resolutions. minigraph

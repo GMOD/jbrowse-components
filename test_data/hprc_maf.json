@@ -1,0 +1,24 @@
+{
+  "assemblies": [
+    {
+      "name": "hg38",
+      "aliases": ["GRCh38"],
+      "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+      "refNameAliases": {
+        "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "MafTrack",
+      "trackId": "hprc_v2_1_mc_grch38",
+      "name": "HPRC release 2 pangenome alignment (464 haplotypes)",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BgzipMafAdapter",
+        "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.full.maf.gz"
+      }
+    }
+  ]
+}
