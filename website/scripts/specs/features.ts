@@ -49,7 +49,12 @@ export const featuresSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'ctgA',
-    viewportWidth: 1100,
+    // the two frames sit side by side (reviewer), so the pair is twice this
+    // wide: narrowed from 1100, which made a 4400px PNG the page then scales
+    // the menu text out of. `stageColumns` borders each frame, so the two app
+    // windows are separated by a gutter rather than sharing an edge
+    stageColumns: 2,
+    viewportWidth: 950,
     // trimmed 100px off both frames (reviewer); MUI reflows the Read-height
     // submenu upward to stay inside the shorter viewport, and the pin circle
     // anchors to the live element, so it follows
@@ -82,9 +87,9 @@ export const featuresSpecs: ScreenshotSpec[] = [
           },
           {
             type: 'text',
-            x: 250,
+            x: 210,
             y: 34,
-            maxWidth: 560,
+            maxWidth: 500,
             fontSize: 15,
             text: 'Each feature-height preset has a trailing pin that sets it as the default for all tracks of this type.',
           },
@@ -128,9 +133,9 @@ export const featuresSpecs: ScreenshotSpec[] = [
           },
           {
             type: 'text',
-            x: 250,
+            x: 210,
             y: 34,
-            maxWidth: 560,
+            maxWidth: 500,
             fontSize: 15,
             text: 'Clicking the pin sets Compact as the default: tracks following the default go compact at once, and the snackbar offers to apply it to the one customized track.',
           },

@@ -1973,8 +1973,10 @@ export const uiSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'chromhmm',
     // Roadmap 127-epigenome ChromHMM chromatin states as a multi-row feature
-    // heatmap, on the SAME HOXA window as chromhmm_hoxa_9celltype below so the
-    // two figures differ only in row count. The window it used to be shot on
+    // heatmap over the HOXA cluster. It was one of a pair, the other being the
+    // nine-cell-type Broad track at the same window; the reviewer kept this one
+    // ("chromhmm screenshot is the visual interest that i care about") and the
+    // nine-row twin is deleted. The window it used to be shot on
     // (chr11:5.87-6.78Mb) had no structure the extra rows revealed: it read as
     // one green transcribed block against grey, so 127 rows looked like nine
     // rows with more noise, which is the opposite of the point.
@@ -2062,153 +2064,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     settleMs: 6000,
     viewportHeight: 840,
-  },
-
-  // The nine-cell-type Broad ENCODE track at the HOXA cluster, which is the
-  // build scripts/build_chromhmm_multirow.sh actually produces and the window it
-  // opens on. The tutorial's only figure used to be the 127-epigenome Roadmap
-  // track above, so the path a reader follows end to end was the one path the
-  // page never showed.
-  //
-  // HOXA rather than a single promoter: at nine rows each state block is thick
-  // enough to read as a color, and the cluster separates the cell types by what
-  // they are rather than by how deeply they were sequenced.
-  //
-  // The two boxes are the figure's whole point, and without them the picture is
-  // a wall of color a reader has no entry into. A HOX cluster is transcribed
-  // colinearly, so a cell type opens the part of it matching its own positional
-  // identity and leaves the rest under Polycomb; the break falls between HOXA7
-  // and HOXA9 in every row that has one, which is what makes it a column in the
-  // painting rather than nine unrelated patterns. Boxing the two domains says
-  // where to look; the caption says what the split means. The three row labels
-  // below name the rows that are the exceptions to it.
-  //
-  // Both are anchored to the track and a locus, so they stay on the genes when
-  // the window, the track height or the viewport width moves.
-  {
-    mode: 'url',
-    name: 'chromhmm_hoxa_9celltype',
-    url: lgvSession(DEMO_CONFIG, {
-      assembly: 'hg19',
-      loc: 'chr7:27,050,000-27,300,000',
-      tracks: [
-        {
-          trackId: 'ncbi_gff_hg19',
-          type: 'LinearBasicDisplay',
-          // as above: the retired `showDescriptions: false` resolved to 'auto'
-          showLabels: 'auto',
-          // the HOXA genes stack three deep here, and at 100 the third row's
-          // labels were cut in half by the lane's own bottom edge
-          height: 140,
-        },
-        {
-          trackId: 'broad_chromhmm_multirow_hg19',
-          type: 'LinearMultiRowFeatureDisplay',
-          // 9 rows: 40px each, thick enough that a state block is a color
-          // rather than a line, and the row labels sit inside their own row
-          height: 360,
-        },
-      ],
-    }),
-    annotations: [
-      // HOXA1 txStart to HOXA7 txEnd, hg19 refGene
-      {
-        type: 'box',
-        anchor: {
-          track: 'broad_chromhmm_multirow_hg19',
-          locus: 'chr7:27,132,613-27,196,294',
-        },
-        pad: 2,
-      },
-      // HOXA9 txStart to HOTTIP txEnd, hg19 refGene
-      {
-        type: 'box',
-        anchor: {
-          track: 'broad_chromhmm_multirow_hg19',
-          locus: 'chr7:27,202,056-27,246,878',
-        },
-        pad: 2,
-        color: '#1565c0',
-      },
-      {
-        type: 'text',
-        text: 'anterior HOXA1-A7',
-        fontSize: 20,
-        anchor: {
-          track: 'broad_chromhmm_multirow_hg19',
-          locus: 'chr7:27,132,613-27,196,294',
-          fracY: 0,
-        },
-        dy: 20,
-      },
-      {
-        type: 'text',
-        text: 'posterior HOXA9-A13',
-        fontSize: 20,
-        color: '#1565c0',
-        anchor: {
-          track: 'broad_chromhmm_multirow_hg19',
-          locus: 'chr7:27,202,056-27,246,878',
-          fracY: 0,
-        },
-        dy: 20,
-      },
-      // Three row labels, because the reviewer's question was what the NINE
-      // CELL TYPES mean and the boxes above only say where to look. Each sits
-      // at its own row's centre (row i of 9 -> (i+0.5)/9) so it reads as a label
-      // ON that row, and each is pushed into the flank beside the box it is
-      // about rather than over the painting.
-      //
-      // Measured off the file itself, per cell type over each box's span:
-      //   anterior  H1-hESC 55% Repressed + 30% Poised_Promoter, K562 73%
-      //             Repressed, GM12878 58% Heterochrom; the five differentiated
-      //             lines run 69-92% enhancer/promoter/transcription
-      //   posterior everything is Repressed EXCEPT HUVEC (37% Strong_Enhancer,
-      //             20% Active_Promoter) and HSMM (50% Active_Promoter)
-      //
-      // H1-hESC: the pluripotent line is the one that is neither on nor off.
-      // Its magenta is 3_Poised_Promoter over both halves, which is what a
-      // bivalent HOX cluster looks like before a lineage has an address. Left of
-      // the anterior box, because it is about the whole row.
-      {
-        type: 'text',
-        text: 'H1-hESC: poised, not shut',
-        fontSize: 16,
-        textAlign: 'end',
-        anchor: {
-          track: 'broad_chromhmm_multirow_hg19',
-          locus: 'chr7:27,132,613',
-          alignX: 'left',
-          fracY: 1.5 / 9,
-        },
-        dx: -6,
-      },
-      // HUVEC and HSMM: endothelium and skeletal muscle, the two mesoderm lines
-      // and the only two that open the posterior half as well. RIGHT of the
-      // posterior box — in the left flank the same label sat next to the
-      // anterior one and read as pointing at it. The right flank is uniform
-      // 12_Repressed grey in all nine rows, so nothing is hidden by covering it.
-      ...([4, 6] as const).map(row => ({
-        type: 'text' as const,
-        text: 'posterior half open',
-        fontSize: 16,
-        textAlign: 'start' as const,
-        color: '#1565c0',
-        anchor: {
-          track: 'broad_chromhmm_multirow_hg19',
-          locus: 'chr7:27,246,878',
-          alignX: 'right' as const,
-          fracY: (row + 0.5) / 9,
-        },
-        dx: 6,
-      })),
-    ],
-    readyText: 'ChromHMM',
-    readyTimeout: 60000,
-    settleMs: 8000,
-    // 740 put the viewport's own bottom edge on the boxes' bottom stroke, which
-    // read as the painting continuing past the frame
-    viewportHeight: 764,
   },
 
   // The "Display types" submenu, with the multi-row display boxed: the

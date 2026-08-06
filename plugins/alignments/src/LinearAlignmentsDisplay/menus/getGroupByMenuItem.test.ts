@@ -1,3 +1,5 @@
+import { staysOpenOnClick } from '@jbrowse/core/ui'
+
 import { getGroupByMenuItem } from './sortGroup.ts'
 
 import type { GroupByType } from '../../shared/types.ts'
@@ -95,6 +97,18 @@ test('a stored hidden dimension falls back to None', () => {
 test('grouping by tag checks the Tag... radio', () => {
   const items = radios(makeModel({ type: 'tag' }).model)
   expect(items.filter(i => i.checked).map(i => i.label)).toEqual(['Tag...'])
+})
+
+// The dimension radios write a value, so the menu stays up and the ticks move
+// live; the tag row opens a dialog, so it has to dismiss it. Asserted through
+// `staysOpenOnClick` rather than the flag: the row left `keepMenuOpen` unset,
+// which the radio default turned back into "stay open", and the dialog opened
+// behind two levels of standing menu.
+test('dimension rows stay open, the tag row (a dialog) dismisses', () => {
+  const rows = radios(makeModel().model)
+  expect(rows.map(i => [i.label, staysOpenOnClick(i)])).toEqual(
+    rows.map(i => [i.label, !String(i.label).startsWith('Tag')]),
+  )
 })
 
 // Like the sort and color menus' tag rows — otherwise the tag being grouped on

@@ -86,8 +86,7 @@ export const gallerySpecs: ScreenshotSpec[] = [
     // alignments (deep pileup), and a legend for the modification-type swatches.
     // catlas single-cell ATAC (16 cell types) gives that orthogonal signal —
     // GAPDH is a housekeeping gene, so its promoter should read open broadly
-    // across cell types, unlike the cell-type-restricted INS example in
-    // gallery/scatac_catlas.
+    // across cell types.
     url: sessionSpec('test_data/config_demo.json', {
       sessionTracks: [HG38_GENCODE_PROMOTER_TRACK],
       views: [
@@ -164,41 +163,6 @@ export const gallerySpecs: ScreenshotSpec[] = [
     readyTimeout: 600000,
     settleMs: 15000,
     viewportHeight: 535,
-  },
-  {
-    mode: 'url',
-    name: 'gallery/scatac_catlas',
-    // INS (insulin) promoter — a beta-cell-restricted accessibility peak, with
-    // Alpha (glucagon) and the other 14 cell types in this atlas subset showing
-    // little to no signal at the same locus. Zoomed out to a ~30kb window with a
-    // compact gene track on top so the peak reads against the INS gene body and
-    // its neighbors. Shorter display height so the 16 rows stay a compact panel.
-    url: sessionSpec('test_data/config_demo.json', {
-      views: [
-        {
-          assembly: 'hg38',
-          loc: 'chr11:2,145,000-2,175,000',
-          type: 'LinearGenomeView',
-          tracks: [
-            {
-              trackId: 'ncbi_refseq_109_hg38_latest',
-              type: 'LinearBasicDisplay',
-              displayMode: 'compact',
-              showOnlyGenes: true,
-              height: 60,
-            },
-            {
-              trackId: 'catlas_scatac_celltypes_hg38',
-              type: 'MultiLinearWiggleDisplay',
-              height: 320,
-            },
-          ],
-        },
-      ],
-    }),
-    readyTimeout: 120000,
-    settleMs: 15000,
-    viewportHeight: 620,
   },
   {
     mode: 'url',

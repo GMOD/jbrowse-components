@@ -60,7 +60,7 @@ export function groupByRadioMenuItem({
 }) {
   const checked = checkedType(current, [...options, ...extra])
   // Direct selects keep the menu open; `extra` radios open a dialog, so they
-  // dismiss it.
+  // dismiss it — same rule the sort and color menus' tag rows follow.
   const radio = (
     o: { type?: GroupByType; label: string },
     onClick: () => void,
@@ -87,7 +87,10 @@ export function groupByRadioMenuItem({
           true,
         ),
       ),
-      ...extra.map(e => radio(e, e.onClick)),
+      // `false`, not omitted: `staysOpenOnClick` defaults a radio to staying
+      // open, so leaving it unset left the track menu and this submenu standing
+      // over the dialog the row had just opened.
+      ...extra.map(e => radio(e, e.onClick, false)),
     ] satisfies MenuItem[],
   }
 }

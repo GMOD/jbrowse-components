@@ -521,11 +521,15 @@ export const svSpecs: ScreenshotSpec[] = [
               linkedReads: 'normal',
               readConnections: 'arc',
               readConnectionsDown: true,
-              // same reasoning as the doc spec above: at the 40px default every
-              // arc clips to the ceiling. The card is wider (no drawer), so
-              // 0.41 px/bp — a concordant ~400bp pair domes to ~165px and the
-              // band has to clear that for the arcs to separate at all.
-              readConnectionsHeight: 200,
+              // An arc's apex is its genomic span in px, clamped to the band,
+              // so the band only has to clear the pairs whose apex carries
+              // meaning. The card is 0.41 px/bp, where a concordant ~400bp pair
+              // domes to ~165px and everything spanning the 1.3kb duplication
+              // is over the ceiling either way, so most of the band was already
+              // one clamped mass. 150 (reviewer: decrease it) still resolves a
+              // pair up to ~370bp below the ceiling, which is where this
+              // library's concordant inserts sit.
+              readConnectionsHeight: 150,
               heightMode: 'grow',
               coverageHeight: 120,
               featureHeight: 3,
@@ -539,12 +543,11 @@ export const svSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'HG02768',
     readyTimeout: 60000,
-    // must clear the grown track (~770px here: the 610px stack plus the 160px
-    // the arc band gained, still under GROW_MAX_HEIGHT's 800), else the capture
-    // crops exactly the discordant cluster at the bottom of the layout —
-    // measured against the rendered app rather than guessed, so there is no
-    // trailing whitespace
-    viewportHeight: 1060,
+    // must clear the grown track, else the capture crops exactly the discordant
+    // cluster at the bottom of the layout — measured against the rendered app
+    // rather than guessed, so there is no trailing whitespace. The run reported
+    // 51 css px of blank below the content after the arc band came down to 150.
+    viewportHeight: 1010,
     settleMs: 30000,
   },
 

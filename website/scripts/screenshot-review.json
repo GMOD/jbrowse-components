@@ -68,8 +68,8 @@
     "name": "alignments_track_arcs",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-29T21:54:15.394Z",
-    "hash": "5b92e8b7d4b5c0ebecaf40945bbfbb6c56d0ff3b"
+    "reviewedAt": "2026-08-06T05:34:19.539Z",
+    "hash": "ebfebe254588f9276066845b4d36769d2822efc4"
   },
   "sv_inspector_importform_loaded": {
     "name": "sv_inspector_importform_loaded",
@@ -107,8 +107,8 @@
     "name": "sv_synteny/linear_synteny_genes",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-04T17:39:50.268Z",
-    "hash": "2ce49ff2debe251df24b85f951e9a34870a3782e"
+    "reviewedAt": "2026-08-06T05:33:39.708Z",
+    "hash": "2d4141a51adc4e5532aae3ca718ad74b31a0d71e"
   },
   "bigwig/whole_genome_coverage": {
     "name": "bigwig/whole_genome_coverage",
@@ -132,9 +132,9 @@
   "cnv": {
     "name": "cnv",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-27T13:42:59.593Z",
-    "hash": "7f1f4809ea08a48ba23142f1e85c764178a900ce"
+    "note": "regenerated: the committed PNG was a blank frame (view never painted), not a spec problem — the same spec re-renders the genome-wide tumor/normal multiscatter correctly.",
+    "reviewedAt": "2026-08-06T05:46:20.228Z",
+    "hash": "b68b35be2a02a436f3128d3d06f2f70543333bb4"
   },
   "smalldel": {
     "name": "smalldel",
@@ -146,15 +146,15 @@
     "name": "insertion",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-27T12:49:07.357Z",
-    "hash": "2aa1c5c07b381b821222841bccf50212fc9d148c"
+    "reviewedAt": "2026-08-06T05:38:47.118Z",
+    "hash": "1e0fc2e66b8fa73109c3b06f0620afa2a4446989"
   },
   "multisv": {
     "name": "multisv",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-05T00:00:25.939Z",
-    "hash": "2641a4bf57811761d6ba1e14e60001bf7ac5364b"
+    "reviewedAt": "2026-08-06T05:40:20.130Z",
+    "hash": "0f9f2bea5889b1b6a133a57e3cb754ae3e3f3950"
   },
   "breakpoint_split_view": {
     "name": "breakpoint_split_view",
@@ -187,8 +187,8 @@
     "name": "sv_cgiab/translocation_sv_inspector_view",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-25T23:06:28.349Z",
-    "hash": "c815028929b498368629809407a756423d6fa263"
+    "reviewedAt": "2026-08-06T05:33:37.677Z",
+    "hash": "5f936fc763879c0c1645a6fec71a06ab34c4a320"
   },
   "sv_cgiab/cnv_show_all_regions": {
     "name": "sv_cgiab/cnv_show_all_regions",
@@ -215,8 +215,8 @@
     "name": "sv_cgiab/synteny_view",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-04T17:39:43.322Z",
-    "hash": "ee48187119a856afc0b32dbc521310a3cb637567"
+    "reviewedAt": "2026-08-06T05:33:28.233Z",
+    "hash": "1e9171d2b12c8937592055cec1a4847d9d5bc939"
   },
   "linear_synteny": {
     "name": "linear_synteny",
@@ -252,10 +252,10 @@
   },
   "alignments_sort_by_base": {
     "name": "alignments_sort_by_base",
-    "status": "bad",
-    "note": "the first screenshot shows sorted reads which is unexpected",
-    "reviewedAt": "2026-08-06T05:15:46.261Z",
-    "hash": "d5ec8c2b811fcda4943a2f5faeff4a64800b5fb2"
+    "status": "good",
+    "note": "FIXED: the session no longer arrives pre-sorted, so the before frame is the unsorted pileup (A mismatches scattered) and the after frame is the same reads stacked into one block — cause and effect. The pre-sort existed to guarantee the right-click landed on a mismatch; SORT_COLUMN's fracY now aims at the run of three adjacent A rows instead, and a miss fails the cascade by name rather than capturing the wrong menu.",
+    "reviewedAt": "2026-08-06T05:56:24.696Z",
+    "hash": "75728ac3c18d9319f9790300ca19b1cdde07d8a0"
   },
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
@@ -274,9 +274,9 @@
   "alignments/select_arc_display": {
     "name": "alignments/select_arc_display",
     "status": "good",
-    "note": "DONE: the result frame closes the menu. A checkbox menu item stays open after it is ticked, so the second stage now presses Escape twice (submenu, then the track menu) before settling, and hideSelectors drops the MUI 'Track settings' tooltip the dismissal leaves under the cursor. The frame is the track with arcs on and nothing else. Stage 2 also takes its own viewportHeight 480 (the spec's 600 exists to hold the deep 'Read connections' submenu in frame 1), which removes 121px of blank the taller frame was padding with.",
-    "reviewedAt": "2026-07-30T14:10:33.288Z",
-    "hash": "1e59e0b9a1f30115d74a1caa5e729c81b7902996"
+    "note": "FIXED: the readConnectionsHeight default went 25 -> 35 (LinearAlignmentsDisplay configSchema); 25 was chosen alongside the per-section band reservation, and a lane that draws no arcs now gets no band, so only the lanes using the height pay for it. Regenerated against a build carrying the change.",
+    "reviewedAt": "2026-08-06T06:10:18.666Z",
+    "hash": "643af7f6dce784f39e6a4dd3be9ef66a3723c542"
   },
   "bookmark_widget_create": {
     "name": "bookmark_widget_create",
@@ -330,8 +330,8 @@
     "name": "hierarchical/hierarchical_user_menu-fs8",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-25T23:05:50.318Z",
-    "hash": "863b36d5fe70f3c81e1eb05305d68a07dcde067e"
+    "reviewedAt": "2026-08-06T05:38:44.681Z",
+    "hash": "b1acc195ebccbcfa5b4d0979149215396053a9d8"
   },
   "hs1_vs_mm39_synteny": {
     "name": "hs1_vs_mm39_synteny",
@@ -394,22 +394,22 @@
     "name": "plugin_store",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-19T21:16:39.100Z",
-    "hash": "a00bd1b86a2ced8fa003f36853bed871061e9ee1"
+    "reviewedAt": "2026-08-06T05:32:13.895Z",
+    "hash": "2e2b0b2c48af3928a54694c44878d06833211dd2"
   },
   "add_track_tracklist": {
     "name": "add_track_tracklist",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-27T19:39:17.961Z",
-    "hash": "a190831c46b761c858e4ba478005360ea519c52e"
+    "reviewedAt": "2026-08-06T05:34:17.257Z",
+    "hash": "ae4b16dcd36106d114fbc427b34a7ac911d340bc"
   },
   "alignments/compact": {
     "name": "alignments/compact",
     "status": "good",
     "note": "FIXED: the \"Read height\" box was already in the spec but the committed PNG predated it AND the content-stable diff gate kept discarding the regen (the box is only 0.197% of the frame, under the 0.5% threshold). Force-regenerated: Read height and Compact are now both boxed.",
-    "reviewedAt": "2026-07-27T01:24:51.931Z",
-    "hash": "e30e32d3863a5f10fff8e7e8e3a81ff3d903733e"
+    "reviewedAt": "2026-08-06T05:34:21.770Z",
+    "hash": "46f92417b96865d80c1435236c1b3bbbeb7f6a48"
   },
   "bookmark_widget_edit_colors": {
     "name": "bookmark_widget_edit_colors",
@@ -465,8 +465,8 @@
     "name": "edit_track_settings",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-19T21:10:00.913Z",
-    "hash": "72009c3fac9916e012d732ef28e2569bba0b8dcc"
+    "reviewedAt": "2026-08-06T05:37:46.354Z",
+    "hash": "8804595534a8ae16ac6048ac79ed44de951c5e75"
   },
   "favorite_tracks": {
     "name": "favorite_tracks",
@@ -517,8 +517,8 @@
     "name": "rnaseq/longread_isoseq",
     "status": "good",
     "note": "FIXED: switched to super-compact (featureHeight 1) so all isoforms stack in view.",
-    "reviewedAt": "2026-07-25T17:14:09.848Z",
-    "hash": "e6ad888c286e6dd6b17f50f54d4968af3f00ee36"
+    "reviewedAt": "2026-08-06T05:32:27.981Z",
+    "hash": "79db230b46947b944091f26c19ff3c4e8b006b16"
   },
   "rnaseq/overview": {
     "name": "rnaseq/overview",
@@ -617,8 +617,8 @@
     "name": "trio-matrix-phased-clean",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-01T14:16:15.782Z",
-    "hash": "3aec59e858df39d60414bbef08a8a9cbcc8182c5"
+    "reviewedAt": "2026-08-06T06:01:36.889Z",
+    "hash": "51b6372817962e79b840a50345d80a4068ec597f"
   },
   "upstream_downstream_details": {
     "name": "upstream_downstream_details",
@@ -642,9 +642,9 @@
   "gwas/locuszoom_ld": {
     "name": "gwas/locuszoom_ld",
     "status": "good",
-    "note": "put this in gallery",
-    "reviewedAt": "2026-07-27T13:45:08.259Z",
-    "hash": "9fadcc34d28d78136e030832fe9ef760c350fc01"
+    "note": "",
+    "reviewedAt": "2026-08-06T05:38:40.757Z",
+    "hash": "4c7cdb94f85bda44683f3431aa2f1c13a132f99c"
   },
   "gwas/manhattan": {
     "name": "gwas/manhattan",
@@ -681,8 +681,8 @@
     "name": "multi-sv-trio",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-30T14:00:47.983Z",
-    "hash": "fa3188f02b5728fc46b3ab33b6d1e88ad4fd22fb"
+    "reviewedAt": "2026-08-06T05:39:58.775Z",
+    "hash": "8f6ee04e8499d5e35718ba31eaf6b56032b7b472"
   },
   "product_architecture": {
     "name": "product_architecture",
@@ -881,9 +881,9 @@
   "sv_cgiab/deletion_sv_inspector_search": {
     "name": "sv_cgiab/deletion_sv_inspector_search",
     "status": "good",
-    "note": "Measured the actual SV_85 <DEL> feature glyph bounding box and moved the red box + arrow + caption onto it (was floating above the feature in blank space).",
-    "reviewedAt": "2026-07-25T23:06:24.791Z",
-    "hash": "f46c1161d5339b8b146b1767dc76c427b65deca5"
+    "note": "",
+    "reviewedAt": "2026-08-06T05:33:24.698Z",
+    "hash": "920775fa2847245ebe9924344b2e2873c269f487"
   },
   "sv_cgiab/translocation_breakpoint_split": {
     "name": "sv_cgiab/translocation_breakpoint_split",
@@ -916,15 +916,15 @@
     "name": "maf_track",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-01T15:26:41.578Z",
-    "hash": "553cd3a5327021451a027799d6259690ff72aa3a"
+    "reviewedAt": "2026-08-06T05:39:46.987Z",
+    "hash": "8d62b43dc47950b4855d7ea97b7afd600f99e688"
   },
   "alignments/haplotype_groupby": {
     "name": "alignments/haplotype_groupby",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-01T12:30:37.769Z",
-    "hash": "ea6104b6421ff04b884c635a363fdcb619b95bdf"
+    "note": "FIXED in the app, not the capture: the Group by 'Tag...' radio left keepMenuOpen unset, which the radio default turns back into 'stay open', so the dialog opened behind two levels of standing menu. It now passes false, matching the sort and color menus' tag rows; getGroupByMenuItem.test.ts asserts the whole row set through staysOpenOnClick.",
+    "reviewedAt": "2026-08-06T06:10:18.875Z",
+    "hash": "ebe69775ea6c83af3ecd37c8049061cf03e08c7c"
   },
   "gene_track_selenocysteine": {
     "name": "gene_track_selenocysteine",
@@ -997,8 +997,8 @@
     "name": "jbrowse-img/hg38_hs1_mm39_synteny",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-04T20:18:45.204Z",
-    "hash": "56b6df1d49a503858541c87ffc325f75c094c927"
+    "reviewedAt": "2026-08-06T06:00:18.419Z",
+    "hash": "ffd7518e1b24ee5db5eecac7a0f8442b7a8aa458"
   },
   "jbrowse-img/methylation": {
     "name": "jbrowse-img/methylation",
@@ -1011,15 +1011,15 @@
     "name": "jbrowse-img/hs1_mm39_synteny",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-04T20:18:49.205Z",
-    "hash": "fb3f6d08a95f56a40bad90144cd3cc915d1ccc89"
+    "reviewedAt": "2026-08-06T06:00:17.085Z",
+    "hash": "a44c3c651f9c9cf636dfaf2e21844f0bb146aefd"
   },
   "jbrowse-img/grape_peach_synteny": {
     "name": "jbrowse-img/grape_peach_synteny",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-04T20:18:43.756Z",
-    "hash": "85219174156082fa741896fc1921b44f9aba481f"
+    "reviewedAt": "2026-08-06T06:00:15.217Z",
+    "hash": "7f7e875dd0a7cba4d4116b51082381a6e028050f"
   },
   "jbrowse-img/gene_track": {
     "name": "jbrowse-img/gene_track",
@@ -1032,8 +1032,8 @@
     "name": "jbrowse-img/circular_chords",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-13T17:46:31.103Z",
-    "hash": "a8c9bfb9b46e3641f7fb893bbf6de3e20b69d157"
+    "reviewedAt": "2026-08-06T06:00:13.775Z",
+    "hash": "1d31f7c9f2de926f4131652ac9deaae40d97e7ba"
   },
   "jbrowse-img/alignments_readgroup": {
     "name": "jbrowse-img/alignments_readgroup",
@@ -1059,8 +1059,8 @@
     "name": "jbrowse-img/yeast_synteny",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-04T17:30:10.565Z",
-    "hash": "154decf6c5fcabf0eb9c3dd71e104ed9088ef2f0"
+    "reviewedAt": "2026-08-06T06:00:20.275Z",
+    "hash": "9481c3a8573d959b5b82683313a1dad747546175"
   },
   "jbrowse-img/yeast_dotplot": {
     "name": "jbrowse-img/yeast_dotplot",
@@ -1087,15 +1087,15 @@
     "name": "protein/connected",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-19T21:22:31.700Z",
-    "hash": "ed81894bae88bbde9f0a90123e6f3e2ef99c547b"
+    "reviewedAt": "2026-08-06T05:32:22.383Z",
+    "hash": "968c5a4bf79d9c16c72ebdbc28139dd357aaebc0"
   },
   "sv_cgiab/dotplot_import_form": {
     "name": "sv_cgiab/dotplot_import_form",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-04T17:39:39.826Z",
-    "hash": "da902d5d6854ab8d87b050beb800ecd031c3871a"
+    "reviewedAt": "2026-08-06T05:33:26.591Z",
+    "hash": "2ac1cfb8f5ee85228281cfde85f176bbf7cbdc19"
   },
   "feature_detail_protein": {
     "name": "feature_detail_protein",
@@ -1113,10 +1113,10 @@
   },
   "chromhmm": {
     "name": "chromhmm",
-    "status": "good",
-    "note": "Three changes, all three asks. ZOOM: 180 kb -> 500 kb (chr7:26,950,000-27,450,000). Inside the cluster every row is fine structure and there is no background to read it against, which is what made 127 rows of it look like noise; out here the two boxes are saturated rectangles with ~300 kb of quiescent pseudogene desert either side, so the domain has an edge. Wider than this and the clustering starts separating rows on the flanks instead of on HOXA. LEGEND: the Roadmap file names its states 15_Quies / 14_ReprPCWk / 12_EnhBiv, and the auto-derived key showed them as-is, ordered by how much of each was on screen. The display's legend slot now declares all 15 {label,color} entries spelled out and in order 1-15; colors were read out of the bigBed itself (via @gmod/bbi ranged reads, the file is 705 MB) rather than assumed, so every swatch matches what is painted. HEIGHT: 700 -> 480 in the spec, viewport 1060 -> 840. 127 rows fill whatever height they are given, so the extra 220 px bought no detail, only more area of the same painting. Caption rewritten to what the render now shows: the clustering splits the rows into an upper block that opens the cluster and a lower block holding both boxes in grey Polycomb speckled olive where the same bases are bivalent.",
-    "reviewedAt": "2026-08-04T22:28:09.108Z",
-    "hash": "f2a8a5eb1274512576a8240231c5e73573bfb743"
+    "status": "bad",
+    "note": "anything else you would suggest to improve this figure?",
+    "reviewedAt": "2026-08-06T05:36:47.603Z",
+    "hash": "98aaa4cf3e06f2afb67b94ecc5d8afd9ccf9dde7"
   },
   "jbrowse-img/hic": {
     "name": "jbrowse-img/hic",
@@ -1129,15 +1129,15 @@
     "name": "maf_470way",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-01T13:26:49.023Z",
-    "hash": "dcb479af7ad9a5dbb890c99a8e1f64cfb686361f"
+    "reviewedAt": "2026-08-06T05:38:55.258Z",
+    "hash": "07c2275934b0210c8a4b96ce1dbabd23905e8e0f"
   },
   "maf_470way_codon": {
     "name": "maf_470way_codon",
     "status": "good",
     "note": "display more compact maf. reduce height of gene track. FIXED: gene track (MANE Select) switched from the default display to displayMode:'compact', height:40 (one MANE transcript needs one row, not the default reserved multi-row space); MAF display heightOverride 560->460 for a tighter per-row height. Regenerated (viewportHeight 700->830 to clear the resulting layout).",
-    "reviewedAt": "2026-08-03T13:14:51.077Z",
-    "hash": "bbdb1ec03fa92e32b304700ac1e0c8cfa4090bd6"
+    "reviewedAt": "2026-08-06T05:38:56.937Z",
+    "hash": "9f5568414943f87b3e7d5194b4df2a9d9af1c839"
   },
   "maf_color_by_chromosome": {
     "name": "maf_color_by_chromosome",
@@ -1171,8 +1171,8 @@
     "name": "maf_codon_tooltip",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-05T00:57:25.812Z",
-    "hash": "2b5f0c14368c7c81699152978fea67e80c90461c"
+    "reviewedAt": "2026-08-06T05:39:09.591Z",
+    "hash": "383a549fc39f5b37142ed52faef188c2368e975a"
   },
   "gc_content": {
     "name": "gc_content",
@@ -1191,9 +1191,9 @@
   "variants/consequence_impact_1000g": {
     "name": "variants/consequence_impact_1000g",
     "status": "good",
-    "note": "Same root cause and same fix as read_vs_ref_insertion: pure text-antialiasing churn from a Chrome update, 0.512% raw (over the 0.5% gate) but 0.178% once the thresholded difference is eroded by a pixel. Gate fixed in pngDiffFraction, noise rewrite reverted.",
-    "reviewedAt": "2026-07-29T21:21:27.018Z",
-    "hash": "28fc6230069b9d850e080356cc1fa4bf3d39f838"
+    "note": "",
+    "reviewedAt": "2026-08-06T06:01:43.243Z",
+    "hash": "84ef34f74e56c078c31dcedfc45d6ab444c85236"
   },
   "sv_cgiab/driver_smad4_loh": {
     "name": "sv_cgiab/driver_smad4_loh",
@@ -1291,13 +1291,6 @@
     "reviewedAt": "2026-08-06T05:21:14.744Z",
     "hash": "a7bd6c5e553e4f2ca8d5ad40a949427633915ec5"
   },
-  "gallery/scatac_catlas": {
-    "name": "gallery/scatac_catlas",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-06T05:21:17.360Z",
-    "hash": "f77fce5a76e7da5d63f844b17c6b48436d6580a8"
-  },
   "gallery/yeast_dotplot": {
     "name": "gallery/yeast_dotplot",
     "status": "good",
@@ -1343,8 +1336,8 @@
     "name": "rnaseq/basic",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-25T17:14:08.291Z",
-    "hash": "9b1e359345b671e2238d93ecc66366727e6a1c61"
+    "reviewedAt": "2026-08-06T05:32:26.338Z",
+    "hash": "47c5d1a343c95d09c441869f66aa9999aeb0aa0a"
   },
   "synteny_human_chimp_cigar_modes": {
     "name": "synteny_human_chimp_cigar_modes",
@@ -1356,9 +1349,9 @@
   "synteny_te_vapb_sva": {
     "name": "synteny_te_vapb_sva",
     "status": "good",
-    "note": "FIXED: RepeatMasker heightMode fit->grow — repeats now render at NORMAL feature height (no fit-scaling inflation), the track auto-sizes compactly to the few rows, and every name is drawn (SVA_F at the insertion) with no fit-ladder decimation. (Corrected from the earlier fit:110 which the reviewer flagged as weirdly tall + label-decimating.)",
-    "reviewedAt": "2026-08-04T17:40:10.630Z",
-    "hash": "7f038f030ee06e1857580c2f68938070d9ae3c7f"
+    "note": "",
+    "reviewedAt": "2026-08-06T05:33:47.116Z",
+    "hash": "f662c98748d9ab15b808febe9e220092cf77f7fc"
   },
   "synteny_te_picalm_alu": {
     "name": "synteny_te_picalm_alu",
@@ -1371,8 +1364,8 @@
     "name": "cookbook_color_by_strand",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-19T21:09:02.267Z",
-    "hash": "b8b1fc30909f43cc20c0f38733b8c174fbd17386"
+    "reviewedAt": "2026-08-06T05:37:38.132Z",
+    "hash": "993c2555c9a39c9615deab192def21ee770e7417"
   },
   "popgen/fst_in2lt_2L": {
     "name": "popgen/fst_in2lt_2L",
@@ -1554,8 +1547,8 @@
     "name": "multiway_synteny/grape_peach_cacao_gene_orthologs",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-04T09:18:44.789Z",
-    "hash": "c7bc6b21a0aed0ea1672d6506a5230ac5477478f"
+    "reviewedAt": "2026-08-06T05:40:52.669Z",
+    "hash": "1eca41f3ec54dffcd7dfe7971c77b4e3e398aa7e"
   },
   "sv_cgiab/cnv_chr17_loh": {
     "name": "sv_cgiab/cnv_chr17_loh",
@@ -1566,10 +1559,10 @@
   },
   "feature_height_default": {
     "name": "feature_height_default",
-    "status": "bad",
-    "note": "consider using left right split instead of top bottom. add margin between left and right when doing so",
-    "reviewedAt": "2026-08-06T05:21:10.127Z",
-    "hash": "61be83ee30017b35b946cd999399ae2c0ebf1bfa"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-06T06:01:54.229Z",
+    "hash": "8ffe574c6d72847d8feb0688fd37e17ea136417c"
   },
   "multiway_synteny/ecoli_stx_island": {
     "name": "multiway_synteny/ecoli_stx_island",
@@ -1610,22 +1603,22 @@
     "name": "pangenome/maf",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-05T02:10:47.762Z",
-    "hash": "697862264123e33db689130ee2e88c384e326bf6"
+    "reviewedAt": "2026-08-06T06:00:57.873Z",
+    "hash": "8f32a898f42121382bc7f36311f175b5d03bd047"
   },
   "phylop_ncbi_refseq_tp53": {
     "name": "phylop_ncbi_refseq_tp53",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-20T21:01:47.471Z",
-    "hash": "4b116c3dd61f86f6a2e5d2786a03f4c25ee9f1c6"
+    "reviewedAt": "2026-08-06T05:32:11.372Z",
+    "hash": "764a7b07bf07c91f4dfdea7a39f8a7b779a624ea"
   },
   "methylation/hg002_snrpn_combined": {
     "name": "methylation/hg002_snrpn_combined",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-27T05:00:14.550Z",
-    "hash": "a9da9e180e054d18d104671e6823542cc409484f"
+    "reviewedAt": "2026-08-06T05:39:54.921Z",
+    "hash": "3c816d1f4da8384529f60216494afcc1ddb49af1"
   },
   "ld/lct_haplotype_matrix": {
     "name": "ld/lct_haplotype_matrix",
@@ -1656,15 +1649,8 @@
     "name": "multisv_svtype",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-05T00:00:27.821Z",
-    "hash": "8fbe9697f44511dfd173b6a149140a59fce5814b"
-  },
-  "scatac/alb_hepatocyte": {
-    "name": "scatac/alb_hepatocyte",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-27T14:29:32.191Z",
-    "hash": "0809ad34c49228dbdf1857a003a119fbb2f021bb"
+    "reviewedAt": "2026-08-06T05:40:51.238Z",
+    "hash": "a1b4668a9a45dedcf906d09de2e6f8b341fd6c1b"
   },
   "pangenome_cactus/depth": {
     "name": "pangenome_cactus/depth",
@@ -1726,22 +1712,22 @@
     "name": "tcga/cohort_cnv_erbb2",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-29T20:42:10.285Z",
-    "hash": "bb15968258b970f580ff0a618312e74f75084caf"
+    "reviewedAt": "2026-08-06T05:34:03.770Z",
+    "hash": "c3aa949b985aebd45f48bc0ccb1a8671f276004c"
   },
   "tcga/cohort_cnv_genome": {
     "name": "tcga/cohort_cnv_genome",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-29T20:42:22.896Z",
-    "hash": "fb3838e709a8dab50e0481a69aad36f707f94481"
+    "reviewedAt": "2026-08-06T06:01:29.880Z",
+    "hash": "bcc92bd32b489a7c1310013b8e4298a4deec8f32"
   },
   "variants/potato_missingness": {
     "name": "variants/potato_missingness",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-04T17:40:35.821Z",
-    "hash": "d6a12b17fbc20d8c71134fc121d31f305f85810d"
+    "reviewedAt": "2026-08-06T05:34:08.087Z",
+    "hash": "6771d5b7ea6b3093e328d46201654cca8d20cd86"
   },
   "sv_cgiab/dotplot_hap1": {
     "name": "sv_cgiab/dotplot_hap1",
@@ -1767,9 +1753,9 @@
   "alignments/height_mode_fit": {
     "name": "alignments/height_mode_fit",
     "status": "good",
-    "note": "resolved: reworked per the note to open the toggling menu. Was one of three specs (fixed + fit + a compose) all rejected as \"not interesting\"; fixed and the compose are deleted and this single figure replaces them in alignments_track.md. Shows the Read height submenu with the TRACK SIZING radios and \"Fit read height to display\" selected, which also makes the documented \"no size preset reads as selected while fitting\" behaviour visible.",
-    "reviewedAt": "2026-07-25T06:00:00.000Z",
-    "hash": "86f3b76631081ba9022de03dc55030151542ec19"
+    "note": "",
+    "reviewedAt": "2026-08-06T05:35:10.641Z",
+    "hash": "a7d0a83a210f399197fa310ba6bd370038567c98"
   },
   "alignments/height_mode_fixed": {
     "name": "alignments/height_mode_fixed",
@@ -1800,9 +1786,9 @@
   "gallery/inverted_duplication": {
     "name": "gallery/inverted_duplication",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-01T12:31:29.775Z",
-    "hash": "bc7263ff9e50cc06e787b38a392f82ae26c3934e"
+    "note": "FIXED: readConnectionsHeight 200 -> 150. An arc apex is its genomic span in px clamped to the band, so at 0.41 px/bp everything spanning the 1.3 kb duplication was clamped either way; 150 still resolves a concordant ~370bp pair below the ceiling and gives the pileup back 50px.",
+    "reviewedAt": "2026-08-06T06:10:19.112Z",
+    "hash": "f886c0d489d3d4aa1b44ec3d87a648de90a47cf2"
   },
   "genomes_synteny/launch_dialog": {
     "name": "genomes_synteny/launch_dialog",
@@ -1877,8 +1863,8 @@
     "name": "popgen/in2lt_per_sample",
     "status": "good",
     "note": "DONE as asked: the '161 standard lines' callout is gone, the carrier label and its arrow stay. It was naming empty lane -- those rows are homozygous reference, so the label sat on blank grey and the only thing it added was ink; the carrier block is the one that needs pointing at, being a tenth of the track at the bottom edge.",
-    "reviewedAt": "2026-07-30T06:22:09.275Z",
-    "hash": "3ea0dc5101eedea8b4ff53d02ffcaafe35ce479d"
+    "reviewedAt": "2026-08-06T05:32:17.349Z",
+    "hash": "1065ba81a2199b786f17ce1434cb766a9bed657b"
   },
   "synteny_hg38_hs1_tnnt3": {
     "name": "synteny_hg38_hs1_tnnt3",
@@ -1945,10 +1931,10 @@
   },
   "pangenome/local_subgraph": {
     "name": "pangenome/local_subgraph",
-    "status": "bad",
+    "status": "good",
     "note": "it still says \"its open end rejoins k12 7kb outside this window, we may want to demonstrate this somehow. it is confusing otherwise. previous notes: Why extracting more data does not recover it, since that is the question left standing. The blunt end is segment 176693 in ecoli_pggb.segs.bed.gz -- 93 bp, rank 1, CFT073 only -- and its two links in ecoli_pggb.links.bed.gz land at K12:1,004,686 and K12:997,574. The gap between those anchors is 7.1 kb, so a window that holds BOTH ends is 7.4 kb wide, not the ~1 kb this cut spans. That is what makes it unrecoverable by extracting more: odgi extract -E over K12:1,000,500-1,008,900 returns 6,361 segments against the 48 drawn here, because a base-level pggb graph averages ~17 bp per segment, and a 6,361-node hairball is not a legible figure at any layout. odgi extract -c 1 is worse rather than a middle ground: it fetches the far anchor alone, so THAT node's two ends are then open in turn, and it anchors 7 kb off the left of the linear view. Both were run rather than reasoned about. So the fix was to name the event instead of the cut: the force pane's label says '93 bp of CFT073 where K12 has 7.1 kb. Its open end rejoins K12 7 kb outside this window', which answers the question the open end raises instead of raising it again. The genuinely different answer is a coarser graph: the same event is four nodes in the minigraph graph of these same five strains (s378 -> s379 -> s380 is K12 through the deletion, s378 -> s2025 -> s380 is CFT073 around it, both one row each in ecoli_minigraph.links.bed.gz over K12:997000-1005000). Which resolution can hold an event is a property of the graph, not of the window you asked for.",
-    "reviewedAt": "2026-08-05T12:55:51.976Z",
-    "hash": "63b0e9ef8dc1ca7b318500bee7ed98f14eff7d97"
+    "reviewedAt": "2026-08-06T05:30:51.368Z",
+    "hash": "422bd399121e249d2986cd7c09e028f722303c8b"
   },
   "pangenome/rgfa_subgraph_launch": {
     "name": "pangenome/rgfa_subgraph_launch",
@@ -2031,22 +2017,22 @@
     "name": "pangenome/hprc_c4_subgraph",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-04T09:29:01.044Z",
-    "hash": "d30740b1adb900d18bfa0f9c8a839e044e338ae7"
+    "reviewedAt": "2026-08-06T05:41:13.324Z",
+    "hash": "5d3edecdd714a693f40bdf04d09de8097008dd05"
   },
   "pangenome/hprc_graph_vs_callset": {
     "name": "pangenome/hprc_graph_vs_callset",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-05T00:01:39.114Z",
-    "hash": "ffe62f0dfcd3dc08d5ac53beb05b33be4b1de0c7"
+    "reviewedAt": "2026-08-06T06:00:41.079Z",
+    "hash": "0d8cbc6fc5492ce7cf55c01b4a8c91dcdc9ae880"
   },
   "pangenome/hprc_mhc_anchored": {
     "name": "pangenome/hprc_mhc_anchored",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-05T00:02:01.482Z",
-    "hash": "5b330752f6b7e51f1c921b878d9fd7b0a53f50c9"
+    "reviewedAt": "2026-08-06T05:30:15.463Z",
+    "hash": "85d2b28efbc946fddb6a847fdac951c8ae618a4f"
   },
   "pangenome/hprc_mhc_sample_rows": {
     "name": "pangenome/hprc_mhc_sample_rows",
@@ -2057,10 +2043,10 @@
   },
   "pangenome/hprc_node_menu": {
     "name": "pangenome/hprc_node_menu",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-04T20:22:00.171Z",
-    "hash": "5a4d64bf4a85907890f5fa73a771790adfd22dec"
+    "status": "bad",
+    "note": "may not need standalone figure combine with pangenome/hprc_mhc_anchored . look for consolidations like this elsewhere",
+    "reviewedAt": "2026-08-06T05:30:48.480Z",
+    "hash": "cd6edd9c52cd3b736082fee85c2d363289a6cffe"
   },
   "pangenome/pggb_synteny": {
     "name": "pangenome/pggb_synteny",
@@ -2122,15 +2108,15 @@
     "name": "pangenome/rgfa_launch_out_menu",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-04T08:12:27.214Z",
-    "hash": "a2bb1b577f9df6835ee680c8f0702c54658e756f"
+    "reviewedAt": "2026-08-06T05:31:54.656Z",
+    "hash": "24b6e5c7245bfd988f2aa235cfa22d236efa599a"
   },
   "pangenome/hprc_lpa_kiv2": {
     "name": "pangenome/hprc_lpa_kiv2",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-05T00:01:48.144Z",
-    "hash": "8e72a97c92f4a4582bad9bd38c256230cba64aa0"
+    "reviewedAt": "2026-08-06T05:30:06.487Z",
+    "hash": "aafca64061bc411c96c07471e14eb349d39a1a85"
   },
   "pangenome/rgfa_segment_neighbourhood": {
     "name": "pangenome/rgfa_segment_neighbourhood",
@@ -2148,10 +2134,10 @@
   },
   "pangenome/rgfa_hover_sync": {
     "name": "pangenome/rgfa_hover_sync",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-04T08:12:14.038Z",
-    "hash": "99a7a968fbfc0d7176a1f609f869796c8a4a2084"
+    "status": "bad",
+    "note": "add maf track if it helps clarify this figure",
+    "reviewedAt": "2026-08-06T05:31:51.151Z",
+    "hash": "5a1f370a047e714c5dfe2fa4d71af0cefb55cfac"
   },
   "pangenome/rgfa_sample_rows": {
     "name": "pangenome/rgfa_sample_rows",
@@ -2162,10 +2148,10 @@
   },
   "pangenome/pggb_locus_sample_rows": {
     "name": "pangenome/pggb_locus_sample_rows",
-    "status": "good",
-    "note": "THE 93 BP LINE IS A 7.0 KB DELETION, AND THE DRAWING SAYS SO NOW. What it was: a row-structured layout draws an off-reference node over the reference its allele REPLACES, never over its own sequence length (an insertion adds bp a reference axis has no room for, so length lives in the tooltip). This segment's two backbone links are K12:997,574 and K12:1,004,686, so 93 bp of CFT073 is drawn across the 7,112 bp of K12 it stands in for. The window is 461 bp, so the bar entered from off-frame with '93 bp' written on it: a label describing the sequence while the reader looks at the reference. Not a loop -- nothing rejoins inside the window. FIXED IN THE PLUGIN, because the label was the wrong FACT rather than in the wrong place. The row layouts now report alleles carrying less than the reference they replace (refSpan minus the longest path through the run, so a bubble is measured by what one haplotype carries rather than by its arms summed) and graphLabels writes them in the same words a bare-edge deletion gets, with the covered nodes no longer printing their own length; a run wider than the window is labelled on the part that IS shown, since its true midpoint is off-canvas and the label was being culled there. Published and pinned, so the row reads '7 kb deletion'. It found two more on the way: hprc_cfhr_deletion's anchored pane now names a 28.6 kb and an 11.2 kb allele deletion that nothing could name before. ZOOM: declined, measured -- tabix ecoli_pggb.segs.bed.gz returns 32 backbone segments over this 460 bp, 52 over 900 bp, 172 over 3 kb and 1,261 over 10 kb, the force half beside it is legible to about 50 nodes, and the deletion's far anchor is 7 kb away.",
-    "reviewedAt": "2026-08-04T08:11:33.193Z",
-    "hash": "b20d6334f0071dc51f6502a99c3abd0148a87fa2"
+    "status": "bad",
+    "note": "is this a dupe of pangenome/local_subgraph  in a way? clarify this, and if needed, avoid this duplication. THE 93 BP LINE IS A 7.0 KB DELETION, AND THE DRAWING SAYS SO NOW. What it was: a row-structured layout draws an off-reference node over the reference its allele REPLACES, never over its own sequence length (an insertion adds bp a reference axis has no room for, so length lives in the tooltip). This segment's two backbone links are K12:997,574 and K12:1,004,686, so 93 bp of CFT073 is drawn across the 7,112 bp of K12 it stands in for. The window is 461 bp, so the bar entered from off-frame with '93 bp' written on it: a label describing the sequence while the reader looks at the reference. Not a loop -- nothing rejoins inside the window. FIXED IN THE PLUGIN, because the label was the wrong FACT rather than in the wrong place. The row layouts now report alleles carrying less than the reference they replace (refSpan minus the longest path through the run, so a bubble is measured by what one haplotype carries rather than by its arms summed) and graphLabels writes them in the same words a bare-edge deletion gets, with the covered nodes no longer printing their own length; a run wider than the window is labelled on the part that IS shown, since its true midpoint is off-canvas and the label was being culled there. Published and pinned, so the row reads '7 kb deletion'. It found two more on the way: hprc_cfhr_deletion's anchored pane now names a 28.6 kb and an 11.2 kb allele deletion that nothing could name before. ZOOM: declined, measured -- tabix ecoli_pggb.segs.bed.gz returns 32 backbone segments over this 460 bp, 52 over 900 bp, 172 over 3 kb and 1,261 over 10 kb, the force half beside it is legible to about 50 nodes, and the deletion's far anchor is 7 kb away.",
+    "reviewedAt": "2026-08-06T05:31:33.412Z",
+    "hash": "b959bd77f4f59563f0a142d8e0fa13a94a477a37"
   },
   "scatac/pbmc5k_cd8a": {
     "name": "scatac/pbmc5k_cd8a",
@@ -2178,8 +2164,8 @@
     "name": "dog10k-cyp1a2-cohort-copy-number",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-01T03:39:48.157Z",
-    "hash": "ad259f37c2cca7eda319d1feb8cb03015275645d"
+    "reviewedAt": "2026-08-06T05:37:41.036Z",
+    "hash": "c46b5751e70f5de855cc4eb8aa3788319e542a20"
   },
   "dog10k-cyp1a2-copy-number": {
     "name": "dog10k-cyp1a2-copy-number",
@@ -2233,9 +2219,9 @@
   "pangenome/hprc_amylase_graph": {
     "name": "pangenome/hprc_amylase_graph",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-04T09:19:50.077Z",
-    "hash": "62b88062983106f26ff9e69250ef28219b7698a9"
+    "note": "make sure people who dont know that amylase is a genome region with many structural and copy number variants (link to ",
+    "reviewedAt": "2026-08-06T05:41:36.374Z",
+    "hash": "8bbf216687305fd84fd6521b33196a32b63d4a09"
   },
   "dog10k-igf1-haplotype": {
     "name": "dog10k-igf1-haplotype",
@@ -2255,8 +2241,8 @@
     "name": "ld/anopheles_2la",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-04T00:23:07.959Z",
-    "hash": "27b600b55a6ac75bca7fb9b3f40cd476de44aa36"
+    "reviewedAt": "2026-08-06T05:38:51.610Z",
+    "hash": "1964ef0da95b39dc1793604f0d6eefef3d4c21b5"
   },
   "ld/lct_pooled_vs_panel": {
     "name": "ld/lct_pooled_vs_panel",
@@ -2304,15 +2290,15 @@
     "name": "pangenome/rgfa_paa_bubble",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-05T00:07:47.754Z",
-    "hash": "3c2c124a3b02f4e57d6c5934f82d24f44bc91e93"
+    "reviewedAt": "2026-08-06T05:31:59.436Z",
+    "hash": "a241c8b12f8eeac0e31629ade4be00f7a6b838c6"
   },
   "pangenome/hprc_cfhr_deletion": {
     "name": "pangenome/hprc_cfhr_deletion",
     "status": "good",
     "note": "THE THIRD ROW STAYS, and its band is 40 px shorter. Its ribbon is the boring half and the note is right about that — one ribbon straight through — so levelHeights is [110,70] now, the carrier's band keeping its height because that is where the event is. What the row is FOR is its gene lane: CFHR3 and CFHR1 annotated on HG00099 are what make their absence from HG01109 a deletion rather than a hole in CAT's annotation of one assembly, and its ribbon running through the highlighted span is what makes the carrier's gap a deletion rather than an alignment dropout. Drop the row and the top row's 'no CFHR3, no CFHR1' is an unfalsifiable claim about a single assembly. (Same answer the sibling hprc_inversion figure's third row got this round, where the control is now visible as gene order rather than only as a ribbon.) THE BANDAGE HALF was answered in the previous pass and the figure already carries that answer: it is the ANCHORED layout, not the force one, because FMMM has no reference axis, so the deletion arc's endpoints and the deletionApex label sat in different places and the loop enclosed nothing. Cross-referenced against ~/src/vendor then: VRPG projects onto reference coordinates beside a linear panel, sequenceTubeMap orders nodes monotonically along x, odgi pav/viz drop to a path-by-position matrix, Bandage has no reference concept at all, and PangyPlot is the one force-directed viewer that solves it — by pushing the bypassed nodes off a straight deletion chord rather than bowing the edge. Written up in agent-docs/reference/PANGENOME_GRAPHS.md under Carriage, including why the arc is not linearized into a BEDPE track.",
-    "reviewedAt": "2026-08-04T09:20:19.307Z",
-    "hash": "b9d4dd4598a1d6e5850f214c63387d5f2fa79702"
+    "reviewedAt": "2026-08-06T05:41:15.337Z",
+    "hash": "184efaf8758dcac2b0ca313a6ad26a39eab8bd06"
   },
   "dog10k-fgf4-retrogene": {
     "name": "dog10k-fgf4-retrogene",
@@ -2324,8 +2310,8 @@
     "name": "pangenome/graph_context",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-04T08:09:37.722Z",
-    "hash": "26a9c61107bbeb7a761d57f0667fa154be50bdf2"
+    "reviewedAt": "2026-08-06T05:41:06.894Z",
+    "hash": "566ffb1a79903f74cbabd137d9ed2072f1bd0a2d"
   },
   "dog10k-size-fst-scan": {
     "name": "dog10k-size-fst-scan",
@@ -2338,8 +2324,8 @@
     "name": "dog10k-fgf4-retrogene-synteny",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-05T00:53:18.231Z",
-    "hash": "514318f703c757694afe574274ea70d13cd9e69d"
+    "reviewedAt": "2026-08-06T05:37:43.947Z",
+    "hash": "80a1c05900e6d653942f92a07de59c4988be2e20"
   },
   "pangenome/pggb_collapsed_repeat": {
     "name": "pangenome/pggb_collapsed_repeat",
@@ -2366,8 +2352,8 @@
     "name": "tcga/mutations_cdh1_histology",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-05T00:57:58.419Z",
-    "hash": "c5425a4edd80008d9b0efc133ff9068df5a5b60f"
+    "reviewedAt": "2026-08-06T06:01:32.869Z",
+    "hash": "1bcfa20b8642d0aa6ad2296338bb36b4e62cdaeb"
   },
   "scrna/ms4a1_bcell": {
     "name": "scrna/ms4a1_bcell",
@@ -2436,8 +2422,8 @@
     "name": "scrna/marker_panel",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-02T20:05:35.460Z",
-    "hash": "7804f4256c2853d62167ae33733dfc7b76999101"
+    "reviewedAt": "2026-08-06T06:01:28.027Z",
+    "hash": "0628a9092b6b806b0be019484be85d6d74b0dc55"
   },
   "cancer_sv/multihop_reads": {
     "name": "cancer_sv/multihop_reads",
@@ -2483,10 +2469,10 @@
   },
   "cancer_sv/derivative_synteny": {
     "name": "cancer_sv/derivative_synteny",
-    "status": "good",
-    "note": "DONE, and this is now the figure the projection is for: the hg38 row carries the RefSeq gene track and the derivative row carries the same annotation projected onto the allele, under the same longest-coding glyph mode, so the two rows differ by coordinates alone and a ribbon connects a gene to its own copy. The somatic SV track it replaced was overprinting its breakend labels across the three narrow windows and is already the subject of multihop_reads, two sections up. The derivative row is the tall one (220px): seven genes in one coordinate space with a 32 kb arm across it puts nearly every one on its own row, where the reference row's three separated windows share rows. The realigned reads went to featureHeight 5 so all 29 rows are above the fold instead of twenty of them.  previous notes: not sure if relevant but could brainstorm a way to combine this figure and cancer_sv/derivative_inserts and/or cancer_sv/derivative_proof  together, then standalones can be deleted PARTLY COMBINED, and here is what was not. derivative_proof is gone, merged into derivative_inserts (see its note), so the reconstruction is two figures instead of three. This one and derivative_inserts were NOT merged: they are the same view at 39.5 kb and at 1.1 kb, so a compose would stack two 1600px-wide synteny views into a 1600x2200 image, and the site would scale that to where neither panel's ribbons are legible -- the horizontal compose that works for multihop_reads needs both halves to be half-width, and a synteny view at 800px cannot hold three reference windows. The overview also already carries the reads across the whole contig, so the two figures now differ by scale alone, which is the split worth keeping.",
-    "reviewedAt": "2026-08-03T01:05:23.999Z",
-    "hash": "a6ad97b6eab812dc6e602ccf7e661485afff35e7"
+    "status": "bad",
+    "note": "good figure, any other ways to make this even more compelling?",
+    "reviewedAt": "2026-08-06T05:36:27.677Z",
+    "hash": "1ba820e38ea2426906592a0ba8c54bfc4ea2ee85"
   },
   "dog10k-size-fst-scan-genome": {
     "name": "dog10k-size-fst-scan-genome",
@@ -2504,10 +2490,10 @@
   },
   "pangenome/hprc_chm13_allele": {
     "name": "pangenome/hprc_chm13_allele",
-    "status": "good",
-    "note": "if it helps make a fourth screenshot zooming out the bottom lgv farther , not the whole thing. also, we might want to consider ways to reduce height of the graph genome viewer, it takes a lot of height. ",
-    "reviewedAt": "2026-08-05T03:18:13.607Z",
-    "hash": "0a58006355bd946d7db258be00bf6ea2218f583b"
+    "status": "bad",
+    "note": "if it helps make a fourth screenshot zooming out the bottom lgv farther. also, we might want to consider ways to reduce height of the graph genome viewer, it takes a lot of height. ",
+    "reviewedAt": "2026-08-06T06:00:36.049Z",
+    "hash": "8f51983bf970621888db06006a170da03710f473"
   },
   "dotplot_self_chry": {
     "name": "dotplot_self_chry",
@@ -2565,19 +2551,12 @@
     "reviewedAt": "2026-08-04T18:47:38.948Z",
     "hash": "59c2075570108d7717f609ac57472b0dd39ddcb5"
   },
-  "pangenome_cactus/variants": {
-    "name": "pangenome_cactus/variants",
-    "status": "good",
-    "note": "Kept, and given the one thing it was missing: something that says which row to read. It is the only picture in the tutorial's 'Pangenome variants projection' section, and that section is about a display choice (LinearMultiSampleVariantMatrixDisplay on the vg deconstruct VCF), so deleting it leaves the one step of the Cactus path with no picture. The window is also load-bearing -- chr:800,000-806,000 is deliberately the same 6 kb the MAF figure below draws base by base, so the reader gets one stretch in two projections. WHAT WAS ACTUALLY WRONG is that the finding was invisible: 133 columns of blue and grey with nothing pointing at NCTC86. Measured on the hosted VCF over that window (tabix + a per-sample genotype count): CFT073 carries an alt at 70 of the 133 records, IAI39 at 86, Sakai at 55, and NCTC86 at 3. That is the figure. A label now sits on NCTC86's row saying it, anchored to the row's own gutter label -- an SVG <text> in shared/components/SvgSampleRowLabels.tsx -- rather than to a fraction of the display height, since the matrix sits under a connector band whose height the spec has no business knowing. Caption updated to name the labeled row.",
-    "reviewedAt": "2026-08-04T22:45:34.636Z",
-    "hash": "9278b41eb1598a7e4ad04ef213acd162ad3807c1"
-  },
   "pangenome/long_reads": {
     "name": "pangenome/long_reads",
     "status": "good",
-    "note": "Both suggestions taken, and one of them is only half applicable -- which is worth saying rather than silently doing. VIEW AS PAIRS: nothing to act on. These are ONT reads and not one of the 38 in this window carries the paired flag (checked on the BAM the figure loads). LINK SUPPLEMENTARY: yes, and it is on now. 18 of those 38 carry an SA tag, 10 supplementary alignments land in the window, and 18 of the 22 SA segments map back into 2.5-2.6 Mb, so the chains are local rather than scattered. linkedReads 'normal' is the single setting behind both menu items; on unpaired reads it chains a read's own supplementary segments, so the pileup now says which reads cross the prophage boundary in one piece and which are split at it -- something the CIGAR deletion cannot say. MAF: added, ecoli_pggb_maf, the same track pangenome/maf draws whole-genome. This is the one that changes the figure. It gives the window a THIRD independent statement of the same event: the reads carry a 6,789-6,791 bp deletion, the depth track steps 5 to 1, and all four non-K12 MAF rows go blank across exactly the prophage span -- three different files, and none of them is the others' summary. BANDAGE: not added. A graph pane here would be a fourth encoding of an event already stated three times, and this figure is in the tutorial's long-reads section rather than its graph section; pangenome/rgfa_paa_bubble and hprc_cfhr_deletion are where a graph pane is beside its linear evidence. Viewport 690 -> 865 for the MAF's five rows and its coverage band; caption rewritten to name the four files.",
-    "reviewedAt": "2026-08-04T23:26:26.993Z",
-    "hash": "c688cdeb0f30eb89a077c9e4aedfaf523cbe73b4"
+    "note": "",
+    "reviewedAt": "2026-08-06T06:00:57.780Z",
+    "hash": "44ddf0ced9c581fd1b452832b855b834373ecbab"
   },
   "scatac/pbmc5k_marker_swap": {
     "name": "scatac/pbmc5k_marker_swap",
@@ -2590,8 +2569,8 @@
     "name": "tcga/mutations_tp53_subtype",
     "status": "good",
     "note": "FIXED, and it was a real bug rather than a drawing choice. The matrix lays out one column per feature in the order the worker returns them, and for a horizontally flipped view it mirrored that order to n-1-i. Both halves assumed the features arrive genomic-ascending, which nothing established: getFeaturesInMultipleRegions merges the per-region fetches and emits them as they land, so with one region it looked fine and TP53 with introns collapsed is where it broke -- six reversed regions, six interleaved fetches, a mirror applied to an order already roughly descending. Measured rather than eyeballed: a probe read connectorLineCoords out of the live view and counted the pairs where the column axis and the genomic axis disagree. 210 columns, 0 such pairs now. The matrix has since been put on the same convention the LD display and hic already use -- the worker reflects each region's run onto itself (orderByScreenPosition) and no consumer carries an orientation, so `flipped`, `mirrorColumnIndex` and the shader uniform are gone and a view with mixed forward and reversed regions works too, which one global mirror could not express. CORRECTION to an earlier version of this note: I also had the ordering helper dedupe features, and said that dropped a duplicate column. It dropped nothing. This callset is SNVs and small indels -- over the six collapsed TP53 exons the longest REF allele is 30 bp against introns hundreds of bp wide, 210 records in and 210 columns out -- so nothing spans two fetched regions. The dedupe is removed and both TCGA figures re-render byte-identical without it.",
-    "reviewedAt": "2026-08-04T19:32:50.167Z",
-    "hash": "6bd4c5c77f49732845f1437f420920de045e130f"
+    "reviewedAt": "2026-08-06T06:02:13.539Z",
+    "hash": "0455360a547a6291435282f8f2559ae140eacae4"
   },
   "cancer_sv/derivative_autogenerated": {
     "name": "cancer_sv/derivative_autogenerated",
@@ -2611,8 +2590,8 @@
     "name": "hic/overlay_controls",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-04T20:18:23.600Z",
-    "hash": "99d6ff72efa136d6c0b8277b8143fc46dcbd184c"
+    "reviewedAt": "2026-08-06T05:38:41.519Z",
+    "hash": "0f254923fb68f6b547da0d0be4adbc1c07a04d46"
   },
   "hic/two_regions": {
     "name": "hic/two_regions",
@@ -2625,15 +2604,8 @@
     "name": "pangenome/graph_resolution",
     "status": "good",
     "note": "layoutQuality 3 landed: both halves draw as smooth arcs, the pggb beads read as beads, and the caption sits inside the arc",
-    "reviewedAt": "2026-08-04T21:04:13.113Z",
-    "hash": "85afe7707698e2af458fcde749c0c44c47aba27a"
-  },
-  "chromhmm_hoxa_9celltype": {
-    "name": "chromhmm_hoxa_9celltype",
-    "status": "good",
-    "note": "Yes, and it is now annotated and in the caption. Measured off wgEncodeBroadHmm.multirow.bb itself, per cell type over each box's span. ANTERIOR (HOXA1-A7): open in six of the nine -- HepG2, HUVEC, HMEC, HSMM, NHEK, NHLF run 56-92% promoter/enhancer/transcription. Closed in exactly the two blood lines and the stem line: GM12878 58% Heterochrom + 22% Repressed, K562 73% Repressed, H1-hESC 55% Repressed + 30% Poised_Promoter. POSTERIOR (HOXA9-A13): Repressed in everything EXCEPT HUVEC (37% Strong_Enhancer + 20% Active_Promoter) and HSMM (50% Active_Promoter) -- endothelium and skeletal muscle, the mesodermal pair, and the posterior genes carry a trunk-and-limb address. So which half a row opens is that lineage's position, which is the significance the note asked about. Three row labels added, each anchored to the track at its own row centre ((i+0.5)/9) so they cannot drift: 'H1-hESC: poised, not shut' left of the anterior box (the magenta is 3_Poised_Promoter over both halves -- an active promoter mark on a repressed cluster, i.e. bivalent, which is neither on nor off), and 'posterior half open' on the HUVEC and HSMM rows, placed in the right flank rather than the left, where the identical label sat beside the anterior box and read as pointing at it. The right flank is uniform 12_Repressed grey in all nine rows so nothing is hidden. Caption and the tutorial paragraph under it rewritten to match.",
-    "reviewedAt": "2026-08-04T22:28:21.876Z",
-    "hash": "db143eaa5ccf8d33650f99809a4bfb48d29e9048"
+    "reviewedAt": "2026-08-06T05:41:08.980Z",
+    "hash": "62f77cee48c91bb600ae98a495028d5d5631a91d"
   },
   "cancer_sv/multihop_split_view_steps": {
     "name": "cancer_sv/multihop_split_view_steps",
@@ -2674,15 +2646,8 @@
     "name": "multisv_rhd",
     "status": "bad",
     "note": "this is a tricky thing, but potentially would be valuable to see our zarr based copy number track here. the nested cnv are hard to see with vcf. it would be a tall screenshot but might help. One view now, not two composed captures. The legend half is fixed at the source: an override colour (SV type, consequence impact) only reaches alt-carrying cells, so the reference grey and the no-call yellow were painted with nothing in the key to name them -- getNonAltItems now appends 'Homozygous reference' plus 'No call' (gated on hasNoCall) to both keys, with tests. The 'which sv is which' half is the bigger change and it took your second suggestion literally: the figure is now the genotype matrix with the SAME callset under it in the ordinary LinearVariantDisplay, coloured by the same svTypeColor jexl, each record on its own row with its id, class and size drawn on it (HGSV_1821 <DEL> 70.1Kbp sits exactly under the deletion band, HGSV_1823 <CNV> 6.16Kbp under the olive no-call stripe). A matrix cell only says a sample carries SOMETHING at that column, and 26 records overlap in this window, so the record lane is what makes a band readable as a named call. The SV-type CELL colouring the old second capture carried is not lost -- multisv_svtype in the multi-variant guide is that figure on a window whose classes are the subject. Loading the same VCF twice needs a second trackId, since showTrack resolves one track per id; two multi-sample displays in one view remains impossible (the second kills the first's context menu, so no sort).",
-    "reviewedAt": "2026-08-05T12:54:58.980Z",
-    "hash": "1decf2ef5863a08de0197269cbba108381619f06"
-  },
-  "multisv_rhd_dosage": {
-    "name": "multisv_rhd_dosage",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-05T04:19:48.235Z",
-    "hash": "3fce39522e0d2b74314ddfc2ed0f4f63f19cafb6"
+    "reviewedAt": "2026-08-06T05:40:29.309Z",
+    "hash": "bb85f13fbd4ef10d97f04ad67ffe3386d38c0749"
   },
   "tcga/cohort_cnv_zarr_genome": {
     "name": "tcga/cohort_cnv_zarr_genome",
@@ -2693,10 +2658,10 @@
   },
   "alignments/strand_split_coverage": {
     "name": "alignments/strand_split_coverage",
-    "status": "bad",
-    "note": "confusing. should show reads instead of hiding with with color by strand also",
-    "reviewedAt": "2026-08-06T05:17:05.813Z",
-    "hash": "40c747109f872f0325db40b1813433fe64d0a60f"
+    "status": "good",
+    "note": "FIXED: reads are back on screen at featureHeight 9 (not the 3px compact height, which drew a solid pink and purple stripe with no reads in it) and coverage came down 150 -> 110, so each strand section is now ~110px of coverage over ~130px of pileup instead of coverage alone. Colored by strand as well as grouped by it.",
+    "reviewedAt": "2026-08-06T06:10:30.821Z",
+    "hash": "47970feddc6f6e04776e60431605cb3cb37dad1b"
   },
   "hic/bcr_abl1_translocation": {
     "name": "hic/bcr_abl1_translocation",
@@ -2767,5 +2732,40 @@
     "note": "please combine this with linkage disequilibrium track in same view. then consider deleting the linkage disequilibrium track standalone since combined will be better. ",
     "reviewedAt": "2026-08-06T05:25:04.216Z",
     "hash": "9ff14413dc941886099ebc0ba084046d60fd1492"
+  },
+  "rnaseq/strand_split_coverage": {
+    "name": "rnaseq/strand_split_coverage",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-06T06:01:17.434Z",
+    "hash": "f506dd3b5c6bd7b8a195cbc0623b900a93d4882f"
+  },
+  "maf_summary_tier": {
+    "name": "maf_summary_tier",
+    "status": "good",
+    "note": "please show left/right split instead of top bottom, and decrease browser width and height in each",
+    "reviewedAt": "2026-08-06T06:01:54.299Z",
+    "hash": "13a6997db593efa8aed42a1904216dc5ff979d16"
+  },
+  "mcscan_synteny/gene_level": {
+    "name": "mcscan_synteny/gene_level",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-06T05:39:48.978Z",
+    "hash": "d2900154593675d33084eab10592fb94cea7a79b"
+  },
+  "orthofinder_synteny/wheat_4a_urartu": {
+    "name": "orthofinder_synteny/wheat_4a_urartu",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-06T05:40:54.285Z",
+    "hash": "fde561a8de16f4ee5e92a26a5e77cb15493041d7"
+  },
+  "multisv_rhd_dosage": {
+    "name": "multisv_rhd_dosage",
+    "status": "good",
+    "note": "KEPT after all. It was deleted per the note, then restored: two sections of the tutorial read off it — the dosage series itself, and 'Look again at the top row and the deleted span is not at zero', which opens the RHCE mismapping section. Removing the picture left both narrating a frame that was no longer there, which is worse than an unexciting figure.",
+    "reviewedAt": "2026-08-06T06:10:30.441Z",
+    "hash": "3fce39522e0d2b74314ddfc2ed0f4f63f19cafb6"
   }
 }

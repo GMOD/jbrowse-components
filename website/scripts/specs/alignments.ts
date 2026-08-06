@@ -23,7 +23,10 @@ const FIT_LABEL = heightModeLabel('fit', 'read')
 const SORT_COLUMN = {
   track: 'volvox_bam',
   locus: 'ctgA:14,481',
-  fracY: 0.3,
+  // Down into the run of three adjacent A rows at the top of the (unsorted)
+  // pileup: only a read carrying the mismatch offers "SNP/Mismatch", so this
+  // fraction has to land on one of the eleven that do rather than on any read.
+  fracY: 0.22,
 }
 
 // The surfeit locus, the most tightly-packed gene cluster in the vertebrate
@@ -340,9 +343,17 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
               type: 'LinearAlignmentsDisplay',
               forceLoad: true,
               groupBy: { type: 'strand' },
-              showPileup: false,
-              coverageHeight: 150,
-              height: 340,
+              // the reads stay on screen under each band (reviewer: hiding them
+              // is confusing), colored by the same dimension the grouping used —
+              // so the section a band belongs to is readable off the reads
+              // themselves rather than only off the group label
+              colorBy: { type: 'strand' },
+              // ~12 reads per strand here, so the pileup is short whatever it is
+              // given: at the compact 3px it drew as a solid pink and a solid
+              // purple stripe with no reads in it
+              featureHeight: 9,
+              coverageHeight: 110,
+              height: 480,
             },
           ],
         },
@@ -351,7 +362,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="pileup-display-done"]',
     readyTimeout: 90000,
     settleMs: 12000,
-    viewportHeight: 545,
+    viewportHeight: 690,
     hideTooltip: true,
   },
 
@@ -421,10 +432,18 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
 
   // Sort by base at a SNP, showing the right-click workflow (reviewer wanted the
   // menu over the SNP captured, not just the declarative result). The view is
-  // centered on the ctgA:14481 SNP (a green-A mismatch column) with the reads
-  // already sorted by that base, so the variant reads cluster at the top — a
-  // right-click there reliably lands on a mismatch and opens the read context
-  // menu's "SNP/Mismatch → Sort by base at position" submenu, boxed here.
+  // centered on the ctgA:14481 SNP, a green-A mismatch column: ~half the 21
+  // reads carry A against the reference g, scattered through the pileup.
+  //
+  // The session used to arrive already sorted by that base, which made the
+  // right-click land on a mismatch every time — and made the before frame a
+  // picture of the after state (reviewer: "the first screenshot shows sorted
+  // reads which is unexpected"). It starts unsorted now, so the two frames are
+  // cause and effect. That costs nothing in reliability: the right-click has to
+  // land on one of the A rows for the menu to offer "SNP/Mismatch" at all, so
+  // SORT_COLUMN's fracY picks a row inside a run of them, and a layout change
+  // that moves the run fails the cascade by name rather than quietly capturing
+  // the wrong menu.
   //
   // The right-click and both callouts resolve through SORT_COLUMN, so the action
   // and the arrow that explains it cannot come apart: the SNP is named once, as
@@ -436,21 +455,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       assembly: 'volvox',
       loc: 'ctgA:14470-14500',
       showCenterLine: true,
-      tracks: [
-        {
-          trackId: 'volvox_bam',
-          type: 'LinearAlignmentsDisplay',
-          sortedBy: {
-            // 0-based internal coordinate: the SNP displayed as ctgA:14,481
-            // (1-based) is position 14480 internally. Match the base the
-            // right-click sort lands on so both figure frames sort identically.
-            type: 'basePair',
-            pos: 14480,
-            refName: 'ctgA',
-            assemblyName: 'volvox',
-          },
-        },
-      ],
+      tracks: ['volvox_bam'],
     }),
     readyText: 'ctgA',
     // narrower window; the right-click below anchors to the SNP's locus, so it
@@ -1162,8 +1167,11 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     viewportHeight: 600,
     settleMs: 5000,
     // dismissing the menu leaves the track-menu button hovered, so MUI paints
-    // its "Track settings" tooltip into the result frame
-    hideSelectors: ['.MuiTooltip-popper'],
+    // its "Track settings" tooltip into the result frame. `hideTooltip` rather
+    // than a `.MuiTooltip-popper` hideSelector, which hid it from the capture
+    // but not from the run's own tooltip check — that runs first, so every regen
+    // reported a stray tooltip the figure did not have.
+    hideTooltip: true,
     stages: [
       {
         actions: [
@@ -1338,17 +1346,23 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
           type: 'LinearAlignmentsDisplay',
           groupBy: { type: 'firstOfPairStrand' },
-          showPileup: false,
+          // reads under each band, colored by the dimension that grouped them
+          // (reviewer: the coverage-only frame was a boring image). The switch
+          // at the gene boundary then shows twice — as the fill of the two
+          // histograms and as which section the reads are stacked in
+          colorBy: { type: 'firstOfPairStrand' },
+          featureHeight: 3,
           showSashimiArcs: false,
-          coverageHeight: 135,
-          height: 300,
+          coverageHeight: 110,
+          height: 560,
         },
       ],
     }),
     readySelector: '[data-testid="pileup-display-done"]',
     readyTimeout: 90000,
     settleMs: 12000,
-    viewportHeight: 620,
+    // the run reported 107 css px clipped below the fold at 780
+    viewportHeight: 890,
     hideTooltip: true,
   },
 ]

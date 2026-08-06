@@ -205,8 +205,26 @@ async function renderSpecToTemp(
   return renderPath
 }
 
-// Gutter between the panels of a `stageColumns` grid, in captured (2x) pixels.
+// Gutter between side-by-side panels — a `stageColumns` grid or a horizontal
+// `compose` — in captured (2x) pixels. Two app windows sharing an edge read as
+// one window with a seam down it, which is what the border is for; a vertical
+// stack doesn't have the problem (the app's own title bar separates the frames)
+// and is left abutting, as every stacked figure in the set already is.
 const GRID_GUTTER_PX = 24
+
+// White border on each panel, so the pair is separated by a full gutter.
+function padPanels(files: string[]) {
+  for (const f of files) {
+    execFileSync(IM, [
+      f,
+      '-bordercolor',
+      'white',
+      '-border',
+      `${GRID_GUTTER_PX / 2}`,
+      f,
+    ])
+  }
+}
 
 // Capture each stage of a multi-stage figure to its own temp file, then stack
 // them top-to-bottom with ImageMagick (`convert f0 f1 -append`) into
@@ -234,19 +252,7 @@ async function captureStages(
       // padded on the right to the full row width rather than centered, so the
       // frames stay on a grid a reader can scan down a column of.
       //
-      // Each frame takes a white border first, so the panels are separated by a
-      // gutter instead of abutting: two app windows sharing an edge read as one
-      // window with a seam down it.
-      for (const f of stageFiles) {
-        execFileSync(IM, [
-          f,
-          '-bordercolor',
-          'white',
-          '-border',
-          `${GRID_GUTTER_PX / 2}`,
-          f,
-        ])
-      }
+      padPanels(stageFiles)
       for (const [r, row] of rowFiles.entries()) {
         const frames = stageFiles.slice(r * cols, r * cols + cols)
         execFileSync(IM, [...frames, '+append', row])
@@ -537,12 +543,35 @@ async function captureComposeSpec(spec: ComposeSpec) {
   if (missing.length > 0) {
     throw new Error(`missing part image(s): ${missing.join(', ')}`)
   }
-  const partPaths = spec.parts.map(partPath)
   const renderPath = tempPath('jb-compose', spec.name)
-  const append = spec.direction === 'horizontal' ? '+append' : '-append'
-  execFileSync(IM, [...partPaths, append, renderPath])
-  optimizePng(renderPath)
-  return commitTemp(renderPath, path.join(outDir, `${spec.name}.png`), spec)
+  const horizontal = spec.direction === 'horizontal'
+  // side by side, the parts get the grid's gutter — but they are the COMMITTED
+  // part PNGs, so the border has to go on a copy or every part figure grows a
+  // white frame of its own each time the compose runs
+  const partPaths = spec.parts.map((part, i) =>
+    horizontal ? tempPath('jb-part', spec.name, `-${i}`) : partPath(part),
+  )
+  try {
+    if (horizontal) {
+      for (const [i, part] of spec.parts.entries()) {
+        fs.copyFileSync(partPath(part), partPaths[i]!)
+      }
+      padPanels(partPaths)
+    }
+    execFileSync(IM, [
+      ...partPaths,
+      horizontal ? '+append' : '-append',
+      renderPath,
+    ])
+    optimizePng(renderPath)
+    return commitTemp(renderPath, path.join(outDir, `${spec.name}.png`), spec)
+  } finally {
+    if (horizontal) {
+      for (const f of partPaths) {
+        fs.rmSync(f, { force: true })
+      }
+    }
+  }
 }
 
 async function main() {

@@ -577,9 +577,13 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       readConnectionsHeight: {
         type: 'number',
         // Arcs scale to whatever band they get, so this only buys apex
-        // separation between insert sizes; 40 dominated a grouped stack, where
-        // every lane pays it. Kept above the 20px drag floor (clampBandHeight).
-        defaultValue: 25,
+        // separation between insert sizes. It was dropped to 25 alongside the
+        // per-section reservation, but that reservation is what fixed the
+        // grouped stack — a lane drawing no arcs now gets no band at all, so
+        // only the lanes that use the height pay for it, and at 25 the arcs
+        // were too flat to separate. Kept above the 20px drag floor
+        // (clampBandHeight).
+        defaultValue: 35,
         description: 'Height of the read-connection band in pixels',
       },
       /**

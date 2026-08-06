@@ -240,7 +240,8 @@ adapter with nothing to run. [CATlas](https://www.catlas.org/) publishes hg38
 coverage per cell type at
 `https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/<CellType>.bw`:
 
-<Figure caption="CATlas single-cell ATAC over the albumin (ALB) gene on chr4, one accessibility row per cell type on a shared scale, loaded straight from the atlas's hosted BigWigs. The Hepatocyte row is open across the locus while the other 15 rows stay flat." src="/img/scatac/alb_hepatocyte.png" />
+Point a `MultiWiggleAdapter` at the cell types you want and the rows draw the
+same way the ones above do.
 
 The rows read the same way whether the files came from an atlas or from your own
 `export_coverage` call, so an atlas is also a way to check a lineage in your own

@@ -34,8 +34,6 @@ instead we merge them into a single file with an extra `cellType` column and let
 the multi-row feature display split that one track back into a labeled sub-row
 per cell type. Every row shares one config, one adapter, and one fetch.
 
-<Figure src="/img/chromhmm_hoxa_9celltype.png" caption="The nine UCSC ENCODE Broad epigenomes over the HOXA cluster as one multi-row track, one row per cell type, with hg19 RefSeq genes above. Boxed: the anterior genes HOXA1 to HOXA7, and the posterior HOXA9 to HOXA13. Most rows open the anterior box in promoter red, enhancer orange and transcription green and stop at its right edge; the labeled rows are the exceptions."/>
-
 HOXA is the window the build script opens on because the painting there has a
 structure to find rather than just a lot of color. The genes are transcribed in
 the order they sit in, so a cell type opens the stretch matching its own
@@ -45,11 +43,11 @@ the change read as a column across the rows rather than as nine unrelated
 patterns.
 
 Which rows those are is the point of picking nine cell types rather than one.
-The posterior genes carry a trunk-and-limb address, and the two rows that open
-them here are the endothelial and skeletal-muscle lines, HUVEC and HSMM, the
+The posterior genes carry a trunk-and-limb address, and the two cell types that
+open them are the endothelial and skeletal-muscle lines, HUVEC and HSMM, the
 mesodermal pair. The keratinocyte, lung-fibroblast and mammary lines stop at
 HOXA7. GM12878 and K562 are blood, and hold the whole cluster shut. H1-hESC is
-pluripotent and has no address yet, so its rows are neither: the magenta is
+pluripotent and has no address yet, so it is neither: its magenta is
 `3_Poised_Promoter`, an active promoter mark sitting on a repressed cluster,
 which is the bivalent state HOX clusters are held in before a lineage commits.
 

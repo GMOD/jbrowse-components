@@ -278,15 +278,9 @@ row per sample:
 }
 ```
 
-<Figure caption="The graph's variant calls over 6 kb of K12, one column per variant and one row per strain, with the band above tying each column back to its position. Labeled: NCTC86's row, grey almost throughout while the other three break up, so one strain tracks the reference across this window and the others do not." src="/img/pangenome_cactus/variants.png" />
-
 Grey in the matrix is a call matching K12, blue an alternate allele, and dark
 red a second alternate at a multi-allelic site. Every variant gets the same
-width, which is what the band above is tying back to a position.
-
-This is the same 6 kb the MAF figure below draws base by base, so the two are
-one window in two projections: the alignment rows there, and the genotypes
-decomposed from them here.
+width, and the band above ties each column back to its position.
 
 The [multi-sample variant track guide](/docs/user_guides/multivariant_track)
 covers the matrix versus the per-position display, and clustering samples by

@@ -456,7 +456,7 @@ export const mafSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hg38.multiz470way',
               type: 'LinearMafDisplay',
-              height: 460,
+              height: 380,
               subtreeFilter: HG38_470WAY_30,
             },
           ],
@@ -465,12 +465,13 @@ export const mafSpecs: ScreenshotSpec[] = [
     }),
     readyText: '12',
     readyTimeout: 120000,
-    viewportWidth: 1000,
-    // 765 (what maf_470way_codon settled on for the same 30 rows at the same
-    // 460px display height) guessed wrong in the other direction: the run
-    // reported 32.3 css px CLIPPED below the fold, not blank space to trim, and
-    // what it cut was the annotation's second line. Raised by that measurement.
-    viewportHeight: 800,
+    // the two halves sit side by side (reviewer), so each is narrower and
+    // shorter than it was as a stacked pair: 1000x800 twice over was a
+    // 4000px-wide figure
+    viewportWidth: 780,
+    // sized off the run's own CLIPPED/blank report, not off the PNG: 800 was
+    // right for the 460px display, and the display is 380 now.
+    viewportHeight: 720,
     settleMs: 18000,
     hideTooltip: true,
     annotations: [
@@ -494,6 +495,9 @@ export const mafSpecs: ScreenshotSpec[] = [
   {
     mode: 'compose',
     name: 'maf_summary_tier',
+    // side by side (reviewer): the two panels are the same track at two zooms,
+    // and stacked the second read as the next step rather than the alternative
+    direction: 'horizontal',
     parts: ['maf_summary_zoomed_out', 'maf_summary_zoomed_in'],
   },
 ]
