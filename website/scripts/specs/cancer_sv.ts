@@ -237,7 +237,12 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
       // `<trackId>-loaded` only once a read has matches on BOTH panels, which
       // is exactly the thing this pane exists to show.
       readySelector: `[data-testid="${TUMOUR}-loaded"]`,
-      readyTimeout: 120000,
+      // The COLO829 tumour track is a CRAM streamed from ont-open-data, and
+      // decoding it takes long enough on a CI runner that 120000 failed all
+      // four sweeps of .github/workflows/figures.yml — deterministically, not
+      // under load. The files answer in under half a second, so the ceiling is
+      // decode-and-draw, not the fetch. Same fix as orthofinder_synteny/wheat.
+      readyTimeout: 300000,
       settleMs: 15000,
       // Where each half's reads were aligned, on the half itself (reviewer: "if
       // it was shown how this was done, it is ideal e.g. text blurb saying
@@ -447,7 +452,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           {
             type: 'waitForSelector',
             selector: '[data-testid="derivative-path-candidates"]',
-            timeout: 60000,
+            timeout: 180000,
           },
         ],
       },
@@ -547,7 +552,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
             type: 'waitForSelector',
             selector: '[data-testid="derivative-path-candidates"]',
             // the pass walks every read's SA chain over a 200x ONT pileup
-            timeout: 60000,
+            timeout: 180000,
           },
         ],
       },
@@ -833,7 +838,9 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: '25,359',
-    readyTimeout: 90000,
+    // 300000 for the same reason as realigned_reads_reference above: this waits
+    // on the COLO829 CRAM and failed every CI sweep at 90000.
+    readyTimeout: 300000,
     settleMs: 8000,
     stages: [
       {

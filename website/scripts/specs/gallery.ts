@@ -171,7 +171,13 @@ export const gallerySpecs: ScreenshotSpec[] = [
     // the remote CRAM's first fetch takes long enough that settleMs alone once
     // committed a loading screen; wait on the pileup canvas actually drawing
     readySelector: '[data-testid="pileup-display-done"]',
-    readyTimeout: 90000,
+    // 90000 was enough on a dev machine and never once on a CI runner: this
+    // failed all four sweeps of .github/workflows/figures.yml, deterministically
+    // rather than under load, with the pileup simply not done in time. Same
+    // shape as orthofinder_synteny/wheat, which passed as soon as its ceiling
+    // went to 300000. The CRAM and its index answer in under half a second, so
+    // this is decode-and-draw time on a runner with no GPU, not the network.
+    readyTimeout: 300000,
     settleMs: 15000,
     viewportHeight: 600,
   },
