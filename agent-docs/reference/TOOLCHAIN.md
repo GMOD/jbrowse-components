@@ -114,12 +114,22 @@ import statement records:
   the script says so.
 
 What is left after those is small and worth removing, since a published
-`dependencies` entry is an install every consumer pays for. The three found in
+`dependencies` entry is an install every consumer pays for. The four found in
 the 2026-08-06 sweep were `@gmod/vcf` in breakpoint-split-view (surviving only
 in a test *comment* describing breakend syntax), `@jbrowse/product-core` in
 jbrowse-img and `@mui/icons-material` in jbrowse-react-app (each appearing
-nowhere but its own `package.json`). Two prior removals in jbrowse-web are in
+nowhere but its own `package.json`), and `@babel/runtime` in
+jbrowse-react-linear-genome-view. Two prior removals in jbrowse-web are in
 `ccdcf301cb`.
+
+**`@babel/runtime` is only ever needed with `@babel/plugin-transform-runtime`,**
+and `babel.config.cjs` has never configured it — the preset list is
+react/env/typescript plus `babel-plugin-react-compiler`. So nothing in this repo
+can emit a `@babel/runtime` import, which is why the two sibling products
+(react-app, react-circular-genome-view) build the same `config/webpack/umdConfig.mjs`
+UMD bundle without declaring it. It is now absent from the whole workspace; if
+one reappears, the question is whether someone added transform-runtime, not
+whether the package is used.
 
 Two things to do when one goes:
 
@@ -131,9 +141,24 @@ Two things to do when one goes:
   on someone else's package manager. Grep for the importers and confirm each
   declares it.
 
-`pnpm install --lockfile-only` is enough to update the lockfile and leaves
-`node_modules` alone, which matters in a shared worktree — a full install
-re-links every package under whatever else is mid-build. The tradeoff is that
-typecheck then proves less than it looks: the symlinks are still there, so it
-cannot fail on a dep you removed. The greps are the evidence; typecheck only
-catches the unrelated damage.
+`pnpm install --lockfile-only` is the gentle way to update the lockfile in a
+shared worktree, since a full install re-links every package under whatever else
+is mid-build. It produces a clean diff — the 2026-08-06 sweep's was exactly the
+three removed entries, with no re-resolution churn.
+
+**Then confirm the prune actually happened before believing a green typecheck.**
+pnpm keeps a per-package `node_modules` of symlinks, and typecheck can only fail
+on a removed dep once that symlink is gone; while it is there, tsc resolves the
+import and the check proves nothing. `--lockfile-only` says it updates only the
+lockfile, and yet on pnpm 11.18 the three symlinks were gone afterwards, with a
+following full install reporting "Already up to date" in 237ms — so which step
+pruned them is not worth reasoning about. Just look:
+
+```sh
+ls -d plugins/breakpoint-split-view/node_modules/@gmod/vcf   # gone?
+ls -d plugins/breakpoint-split-view/node_modules/@jbrowse/alignments-core  # control: still there?
+```
+
+The control matters: an empty result means nothing unless a dep you kept is
+still linked. With both confirmed, typecheck is a real check. Without it, the
+greps are carrying the whole claim.
