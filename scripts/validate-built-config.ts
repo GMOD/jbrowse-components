@@ -20,11 +20,12 @@ import { dirname, isAbsolute, resolve } from 'node:path'
 
 import { validateConfig } from '../products/jbrowse-cli/src/commands/validate/validateConfig.ts'
 
-const path = process.argv[2]
-if (!path) {
+const arg = process.argv[2]
+if (!arg) {
   console.error('usage: validate-built-config.ts <config.json>')
   process.exit(2)
 }
+const path: string = arg
 if (!existsSync(path)) {
   console.error(`no config at ${path} — the script did not get that far`)
   process.exit(1)
@@ -34,7 +35,7 @@ const config = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>
 const { problems, errorCount } = validateConfig(config)
 
 for (const p of problems) {
-  console.error(`${p.severity ?? 'error'} ${p.path ?? ''}: ${p.message}`)
+  console.error(`${p.level} ${p.where}: ${p.message}`)
 }
 
 // Every `uri` that is not a url has to resolve next to the config, since that
