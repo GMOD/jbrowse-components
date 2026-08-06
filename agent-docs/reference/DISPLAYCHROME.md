@@ -464,6 +464,32 @@ They stay separate because `DisplayChromeBase` takes its overlay set as a *prop*
 and never renders a track control; folding the two would put entries in
 `DisplayChromeOverlays` that the chrome ignores.
 
+**An embedder mounts one thing, though.** That split is real at the
+implementation level and not at all real for a host: nobody wants stock Material
+scrims with plain corner buttons, and every consumer mounts the two together
+with the same two plain sets. `DisplayUIProvider` is the pair, with both props
+defaulting to the plain sets, so the common case is
+`<DisplayUIProvider>{tracks}</DisplayUIProvider>` — no arguments, one import.
+Supplying either brings your own.
+
+Defaulting *that component's props* is not the ambient default the contexts
+avoid, and the distinction is the whole reason it is safe: the contexts still
+resolve to `undefined`, so the paths above are untouched, and nothing reaches a
+plain set without someone having mounted the component on purpose.
+`DisplayUIProvider.test.tsx` pins both halves — that mounting it supplies both
+seams, and that *not* mounting it still yields Material — because a
+half-wired provider reads as a styling bug rather than a missing one.
+
+**Colors are not a seam and are not in it.** A display reads `usePalette()` for
+its own content colors, which is a palette of strings rather than a toolkit, so
+it arrives through `PaletteProvider` whatever the two seams are set to — a
+feature track needs it even with plain chrome. `useSessionPalette(session, mode)`
+(`@jbrowse/core/ui/PaletteContext`) is how a host follows its own dark mode:
+it writes the config `theme` slot, which is what *both* halves of the rendering
+derive from — the palette React draws with, and the theme shipped to the worker
+that bakes feature labels into the image. Mounting `PaletteProvider` alone
+leaves those baked labels in the old mode.
+
 **A set is written against exported types, not inferred ones.** The four model
 shapes the overlays are handed (`DisplayErrorBarModel`,
 `DisplayLoadingOverlayModel`, `DisplayBackgroundProgressModel`,

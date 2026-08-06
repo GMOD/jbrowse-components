@@ -58,6 +58,28 @@ it belongs in a package and the example imports it like any reader would — whi
 also puts it under a real test, where a site-local helper never is. If no, it
 stays copied.
 
+**The tell is that the copies are worse than what JBrowse already runs**, and it
+has now held four times. Every one of these was a block sitting quietly in
+several example files, and in each case the published version knew something the
+copies did not:
+
+| the copies                        | what they were missing                                    | became                                  |
+| --------------------------------- | --------------------------------------------------------- | --------------------------------------- |
+| a wheel/drag gesture layer, ×8    | rAF batching, the zoom rate limit                          | `usePanZoom`                            |
+| `setConf(session, 'theme', …)`, ×8 | `theme` is a frozen slot, so the write discarded the host's own theme | `useSessionPalette` + `setThemeMode`     |
+| a region-seam filter, ×3          | elided and past-the-end blocks; and it drew a seam per elided region, which at whole-genome zoom is a grey wall | `view.paddingSpans`      |
+| sticky refName labels, ×2         | the same-refName run dedup, the whole-name fit test        | `view.scalebarRefNameLabels`            |
+
+That is the argument for treating "the examples all write X" as a missing export
+rather than a duplication problem: the reader is not merely repeating himself,
+he is shipping a worse version of something that already exists, and the site is
+teaching him to.
+
+`jbrowse-build-your-own` asks this question automatically now — see its
+`CLAUDE.md` for the `COPIED` list, where a block copied into three or more files
+has to carry the reason it is the reader's own to write. It is the only site
+with that check; the rule applies to all four.
+
 ## The demo comes first on the page
 
 `ExampleSection` renders **heading → demo → doc → source**, and all four sites
