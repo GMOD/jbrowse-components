@@ -49,7 +49,7 @@ const HG19_HUB = `?config=${encodeURIComponent('https://jbrowse.org/ucsc/hg19/co
 // LCT / MCM6 lactase-persistence locus. Recent positive selection swept a long
 // haplotype to high frequency in dairying populations, so a large block of SNPs
 // around LCT is inherited together — a long stretch of high r².
-const lctTrack = (name: string) => ({
+const lctTrack = (name: string, height = 510) => ({
   type: 'VariantTrack',
   trackId: 'kgp_lct_ld',
   name,
@@ -74,9 +74,10 @@ const lctTrack = (name: string) => ({
       // read as running off the left edge no matter how far the window zoomed
       // out. On, its edges land under the coordinates they are at.
       useGenomicPositions: true,
-      // 460 for the triangle (unchanged) + 50 for the recombination zone
-      // showRecombination adds above it
-      height: 510,
+      // 460 for the triangle + 50 for the recombination zone showRecombination
+      // adds above it, when the triangle is the whole figure. The haploblock
+      // figure stacks it over an 800px matrix and passes less.
+      height,
     },
   ],
 })
@@ -584,59 +585,15 @@ export const ldSpecs: ScreenshotSpec[] = [
   // while the legend still said D'. PlinkLDTabixAdapter.test.ts asserts
   // `dprimeIdx` on exactly that file, so nothing is lost by deleting the
   // picture.
-  {
-    mode: 'url',
-    name: 'ld/lct_lactase',
-    url: `${HG19_HUB}&session=${encodeSessionSpec({
-      sessionTracks: [
-        lctTrack('LCT lactase-persistence LD, 1000G European panel (r²)'),
-      ],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg19',
-          loc: LCT_LOC,
-          highlight: LCT_HIGHLIGHT,
-          tracks: [
-            {
-              trackId: 'hg19-ncbiRefSeqCurated',
-              type: 'LinearBasicDisplay',
-              height: 60,
-              showOnlyGenes: true,
-            },
-            // The causal variant, from a source independent of the genotypes
-            // the r² is computed from: ClinVar's LACTASE PERSISTENCE records at
-            // chr2:136,608,642–136,608,745 — rs4988235, the -13910 C>T enhancer
-            // variant in an MCM6 intron that keeps LCT transcribed into
-            // adulthood. ClinVar has ~79 records in this window, nearly all
-            // unrelated VUS, so filter to the lactase phenotype: one labeled
-            // variant anchoring the block rather than a wall of clinical noise.
-            {
-              trackId: 'hg19-clinvarMain',
-              type: 'LinearBasicDisplay',
-              height: 70,
-              jexlFiltersSetting: [
-                "jexl:get(feature,'phenotypeList')=='LACTASE PERSISTENCE'",
-              ],
-            },
-            { trackId: 'kgp_lct_ld', type: 'LDDisplay' },
-          ],
-        },
-      ],
-    })}&sessionName=Screenshot`,
-    readyText: 'variants shown',
-    // 3.1 Mb of genotypes rather than 1.65, so the fetch and the r² are both
-    // larger; the probe render of this window took well under this.
-    readyTimeout: 300000,
-    // gene(60) + clinvar(70) + ld(510, incl. the recombination zone) + 3
-    // headers + ruler/overview, with room for the triangle to reach its base
-    viewportHeight: 950,
-    settleMs: 14000,
-    // No callout. It carried "One block, inherited together" at a hand-measured
-    // x/y, asserting what the old slice could not show. The block now has two
-    // visible edges, the highlight names the gene and the ClinVar tick names the
-    // causal variant.
-  },
+  // ld/lct_lactase was here and is DELETED (reviewer: "please combine this with
+  // linkage disequilibrium track in same view. then consider deleting the
+  // linkage disequilibrium track standalone since combined will be better"). It
+  // was the same locus, the same gene and ClinVar lanes and the same European
+  // panel as the figure below, with the triangle as the only data lane — so a
+  // reader met the statistic and the thing it summarises as two pictures and
+  // had to carry the locus between them. The triangle is now the top lane of
+  // ld/lct_haploblock, over the haplotypes it is computed from.
+  //
   // THE HAPLOBLOCK FIGURE, and the reason it exists: an LD triangle is a
   // pairwise matrix rotated 45 degrees, so its VERTICAL axis is the distance
   // between the two variants being compared rather than any value. Nothing on
@@ -680,6 +637,11 @@ export const ldSpecs: ScreenshotSpec[] = [
     name: 'ld/lct_haploblock',
     url: `${HG19_HUB}&session=${encodeSessionSpec({
       sessionTracks: [
+        // The statistic, over the haplotypes it is computed from. 360 rather
+        // than the standalone figure's 510: the triangle's subject is the shape
+        // of the block and its two edges, both of which survive a shorter
+        // band, and the matrix under it is what the figure is for.
+        lctTrack('LCT lactase-persistence LD, 1000G European panel (r²)', 360),
         {
           type: 'VariantTrack',
           trackId: 'kgp_lct_haplotypes',
@@ -701,13 +663,17 @@ export const ldSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg19',
-          // 1.5 Mb: the block plus enough flank on both sides that the slab has
-          // somewhere to stop. Matrix mode gives every variant an equal-width
-          // column regardless of how the variants bunch genomically, so the
-          // window is chosen for what it contains rather than to keep columns
-          // above a pixel — at the triangles' 3.1 Mb it would be 1470 columns
-          // and sub-pixel again.
-          loc: 'chr2:135,500,000-137,000,000',
+          // 2.4 Mb: the block plus enough flank on both sides that the slab has
+          // somewhere to stop, AND that the triangle now stacked over it has
+          // two visible edges. At the matrix's own 1.5 Mb the triangle filled
+          // the frame corner to corner — the exact failure the tutorial warns
+          // about one section up, since r² against rs4988235 is still 0.72 at
+          // 135.8 Mb and 0.37 at 136.8 Mb (build_lct_ld.sh) and only reaches
+          // 0.06 / 0.02 at 135.0 / 137.4 Mb. Matrix mode gives every variant an
+          // equal-width column regardless of how the variants bunch
+          // genomically, so the cost is columns: ~1140 here against ~710, still
+          // about a pixel apiece and the slab is a horizontal band either way.
+          loc: 'chr2:135,000,000-137,400,000',
           highlight: LCT_HIGHLIGHT,
           tracks: [
             {
@@ -727,22 +693,28 @@ export const ldSpecs: ScreenshotSpec[] = [
                 "jexl:get(feature,'phenotypeList')=='LACTASE PERSISTENCE'",
               ],
             },
+            // The triangle directly above the matrix, on one x axis: a column
+            // of the matrix and a corner of the triangle are the same variant,
+            // and the block's edges land at the same coordinates in both.
+            { trackId: 'kgp_lct_ld', type: 'LDDisplay' },
             {
               trackId: 'kgp_lct_haplotypes',
               type: 'LinearMultiSampleVariantMatrixDisplay',
-              height: 800,
+              height: 700,
               lineZoneHeight: 34,
               // one row per haplotype rather than per sample. Phased is the
               // point: a haplotype is what travels as one piece, and a diploid
               // row would average a carrier chromosome with a non-carrier one.
               renderingMode: 'phased',
               runClustering: true,
-              // the same window the view shows. dog10k-igf1-haplotype clusters
-              // on a narrower core than it draws, which is right when the
-              // separating sites are concentrated; here they are not —
-              // clustering on the 135.7-136.15 Mb sub-window where per-site
-              // agreement separates carriers best puts only 48% of carriers in
-              // the top clade, against 100% for the full window.
+              // 135.5-137.0, the window this figure used to draw as well as
+              // cluster on, kept as the clustering core when the drawn window
+              // widened to 2.4 Mb: it is the region the 100%-of-carriers-in-one-
+              // clade result was measured on. Clustering on a narrower core than
+              // is drawn is the dog10k-igf1-haplotype pattern; what does not
+              // work here is going narrower still — the 135.7-136.15 Mb
+              // sub-window where per-site agreement separates carriers best puts
+              // only 48% of carriers in the top clade.
               clusterRegion: 'chr2:135,500,000-137,000,000',
               colorBy: 'population',
               // the common, block-tagging variants. Unfiltered, this window is
@@ -756,11 +728,13 @@ export const ldSpecs: ScreenshotSpec[] = [
     // the dendrogram only renders once the clustering RPC lands, so this waits
     // on real completion rather than on a duration guess
     readySelector: '[data-testid="tree_sidebar_dendrogram"]',
-    readyTimeout: 120000,
-    settleMs: 5000,
-    // gene(60) + clinvar(70) + the 800px matrix, their headers and the ruler.
-    // Confirmed by a capture: the run reports neither clipped content nor slack
-    // below the last row at this height.
-    viewportHeight: 1200,
+    // the r² is computed live off 1.5 Mb of the European panel, which is the
+    // slow half now — the standalone triangle figure allowed 300 s for a wider
+    // window
+    readyTimeout: 300000,
+    settleMs: 8000,
+    // gene(60) + clinvar(70) + the 360px LD band + the 700px matrix, their
+    // headers and the ruler. Sized from the run's own clipped/blank report.
+    viewportHeight: 1498,
   },
 ]

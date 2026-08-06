@@ -80,13 +80,13 @@ the distance between the two variants being compared rather than any value.
 Nothing on screen says so, and no other track works that way.
 
 The haplotypes it summarises need no such explaining, and the same VCF draws
-them. A
+them in the same view, one lane below the triangle. A
 [`LinearMultiSampleVariantMatrixDisplay`](/docs/config/linearmultisamplevariantmatrixdisplay/)
 in
 [`renderingMode: 'phased'`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-renderingmode)
 gives one row per chromosome and one column per variant.
 
-<Figure src="/img/ld/lct_haploblock.png" caption="1000 Genomes haplotypes at LCT/MCM6, one row per chromosome, clustered rather than left in file order. The pale slab across the upper rows is one haplotype carried by many chromosomes, ending either side of the highlighted gene where the mosaic resumes. Sidebar stripe is population; above it, RefSeq genes and the ClinVar lactase-persistence records."/>
+<Figure src="/img/ld/lct_haploblock.png" caption="The triangle and the haplotypes it summarises, in one view over the same window. Below the triangle, 1000 Genomes haplotypes at LCT/MCM6, one row per chromosome, clustered rather than left in file order: the pale slab across the upper rows is one haplotype carried by many chromosomes, ending either side of the highlighted gene where the mosaic resumes, at the coordinates the block's edges sit at above. Sidebar stripe is population; on top, RefSeq genes and the ClinVar lactase-persistence records."/>
 
 **Ordering is what makes a block visible, not colour and not row count.** Left
 in file order the same matrix is a plaid at any size, because a block is a set
