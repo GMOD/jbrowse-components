@@ -70,6 +70,16 @@ jobs:
         run: pnpm figures:pull
       - name: Build jbrowse-web
         uses: ./.github/actions/build-jbrowse-web
+      # The `cliSpec` figures shell out to jb2export, which runs from source and
+      # resolves `@jbrowse/core/x` to `packages/core/esm/x.js` through its own
+      # loader hook (products/jbrowse-img/src/resolve.ts). Without the ESM build
+      # that hook throws before the CLI renders anything, and every one of those
+      # specs fails — 26 of the 38 failures on the first two runs of this
+      # workflow, all reported as "Command failed" with the real reason buried
+      # in a stack trace. build-jbrowse-web above is a webpack bundle of the
+      # app; it does not produce esm/.
+      - name: Build the ESM output the jb2export specs resolve against
+        run: pnpm build:esm
       # The generator shells out to ImageMagick and pngquant for the diff gate
       # and the optimizer; without them every capture would ship unquantized and
       # the content-stable gate could not run at all.
