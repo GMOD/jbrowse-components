@@ -53,6 +53,11 @@ up by default.
 The special value `?config=none` skips loading a config file entirely. This is
 useful with `&hubURL=` (below), which supplies its own assemblies and tracks.
 
+To change the default without putting `?config=` in every link, set
+`window.__jbrowseConfigPath` in the `<head>` of JBrowse's index.html — see
+[](/docs/config_guides/avoiding_stale_config), which uses the same mechanism. An
+explicit `?config=` still wins over it.
+
 ### &assembly=
 
 Example

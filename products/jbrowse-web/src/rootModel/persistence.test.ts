@@ -3,6 +3,7 @@ import { destroy, isAlive } from '@jbrowse/mobx-state-tree'
 
 import corePlugins from '../corePlugins.ts'
 import sessionModelFactory from '../sessionModel/index.ts'
+import { staleSessionIds } from './persistence.ts'
 import rootModelFactory from './rootModel.ts'
 
 jest.mock('../makeWorkerInstance', () => () => {})
@@ -97,4 +98,63 @@ test('a replacement root model is the one that wins the unload write', () => {
   unload()
 
   expect(storedSessionName()).toBe('new session')
+})
+
+describe('staleSessionIds', () => {
+  function meta(id: string, daysAgo: number, favorite = false) {
+    return {
+      id,
+      name: id,
+      configPath: '',
+      favorite,
+      createdAt: new Date('2020-01-01'),
+      updatedAt: new Date(Date.UTC(2024, 0, 100 - daysAgo)),
+    }
+  }
+
+  // 100 non-favorites is the cap, so a list at or under it loses nothing
+  function fill(n: number) {
+    return Array.from({ length: n }, (_, i) => meta(`s${i}`, i))
+  }
+
+  it('keeps everything while under the cap', () => {
+    expect(staleSessionIds(fill(100), undefined)).toEqual([])
+  })
+
+  it('drops only the oldest past the cap', () => {
+    const ids = staleSessionIds(fill(103), undefined)
+    expect(ids).toEqual(['s100', 's101', 's102'])
+  })
+
+  // favorites are what a user asked to keep, so they are not candidates at all
+  // — and crucially they do not occupy the 100 slots either, or starring a
+  // hundred sessions would silently start evicting the recent ones
+  it('never drops a favorite, and favorites do not consume the cap', () => {
+    const list = [...fill(103), meta('fav', 999, true)]
+    expect(staleSessionIds(list, undefined)).toEqual(['s100', 's101', 's102'])
+  })
+
+  // the open session is rewritten every autosave tick, so deleting it only
+  // makes it vanish until the next edit puts it back — with its star reset
+  it('never drops the active session, however old', () => {
+    const list = [...fill(103), meta('active', 999)]
+    expect(staleSessionIds(list, 'active')).toEqual(['s100', 's101', 's102'])
+  })
+
+  // rows written before updatedAt existed fall back to createdAt via
+  // sessionLastUsed; reading updatedAt directly would sort them as NaN
+  it('ranks legacy rows with no updatedAt by createdAt', () => {
+    const legacy = {
+      id: 'legacy',
+      name: 'legacy',
+      configPath: '',
+      favorite: false,
+      createdAt: new Date(Date.UTC(2024, 0, 1)),
+    }
+    const recent = meta('recent', 0)
+    const list = [legacy, recent, ...fill(99)]
+    // 101 non-favorites, cap 100: exactly the oldest one goes, and that is the
+    // legacy row (Jan 2024) rather than an arbitrary NaN-sorted victim
+    expect(staleSessionIds(list, undefined)).toEqual(['legacy'])
+  })
 })

@@ -175,7 +175,7 @@ describe('SessionLoader', () => {
       }
       expect(isLoaded({ type: 'snapshot', snapshot: { id: 'x' } })).toBe(true)
       expect(isLoaded({ type: 'spec', spec: {} })).toBe(true)
-      expect(isLoaded({ type: 'hub', hubSpec: {} })).toBe(true)
+      expect(isLoaded({ type: 'hub', hubSpec: { hubURL: [] } })).toBe(true)
       expect(isLoaded({ type: 'default' })).toBe(true)
       expect(isLoaded({ type: 'error', error: new Error('x') })).toBe(true)
     })

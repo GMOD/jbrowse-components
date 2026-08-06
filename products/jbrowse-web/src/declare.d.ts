@@ -2,9 +2,15 @@ declare module '@fontsource/roboto'
 declare module 'dockview-react/dist/styles/dockview.css'
 
 interface Window {
-  // Set by SessionLoader.ts to allow overriding config path via embed
+  // Both are set by the HOST PAGE in an inline script, never by anything in
+  // this repo — grep finds only the reads, which is why they look unused.
+  //
+  // Read by SessionLoader's resolvedConfigPath, for a deployment whose config
+  // lives somewhere other than ./config.json and that doesn't want to say so
+  // in every link's ?config=
   __jbrowseConfigPath?: string
-  // When set, appends a ?rand= cache-buster to the fetched config URL
+  // Read by fetchRemoteConfig: appends a ?rand= cache-buster to the config URL
+  // (see docs/config_guides/avoiding_stale_config)
   __jbrowseCacheBuster?: boolean
   // Debug globals for the devtools console; also how browser-tests reach into
   // the live models (see browser-tests/suites). Nothing in the repo imports the

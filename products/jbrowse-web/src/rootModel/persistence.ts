@@ -6,7 +6,7 @@ import { openSessionDB } from '../openSessionDB.ts'
 import { deleteSessionRows, upsertSessionRows } from '../sessionDbOps.ts'
 
 import type { SessionDBHandle } from '../sessionDbOps.ts'
-import type { Session } from '../types.ts'
+import type { Session, SessionMetadata } from '../types.ts'
 import type { WebRootModel } from './rootModel.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
@@ -16,19 +16,33 @@ import type { AbstractSessionModel } from '@jbrowse/core/util'
 // pruned.
 const MAX_AUTOSAVED_SESSIONS = 100
 
+/**
+ * Which autosaved sessions the pruner deletes: everything past the newest
+ * MAX_AUTOSAVED_SESSIONS non-favorites. Favorites and the open session are
+ * never candidates, whatever their age.
+ *
+ * Split out from pruneOldSessions rather than left inline because this is the
+ * one decision here that destroys a user's work when it is wrong, and it is
+ * also the only part testable without an IndexedDB — jsdom has none, so the
+ * transaction code around it never runs under jest at all.
+ */
+export function staleSessionIds(
+  metadata: SessionMetadata[],
+  activeId: string | undefined,
+) {
+  return metadata
+    .filter(m => !m.favorite && m.id !== activeId)
+    .sort((a, b) => +sessionLastUsed(b) - +sessionLastUsed(a))
+    .slice(MAX_AUTOSAVED_SESSIONS)
+    .map(m => m.id)
+}
+
 async function pruneOldSessions(
   sessionDB: SessionDBHandle,
   activeId: string | undefined,
 ) {
   const metadata = await sessionDB.getAll('metadata')
-  const stale = metadata
-    .filter(m => !m.favorite && m.id !== activeId)
-    .sort((a, b) => +sessionLastUsed(b) - +sessionLastUsed(a))
-    .slice(MAX_AUTOSAVED_SESSIONS)
-  await deleteSessionRows(
-    sessionDB,
-    stale.map(m => m.id),
-  )
+  await deleteSessionRows(sessionDB, staleSessionIds(metadata, activeId))
 }
 
 // Opens the IndexedDB for autosave persistence, then mirrors session changes

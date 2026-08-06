@@ -13,24 +13,31 @@ const FileHandleRestoreBanner = observer(function FileHandleRestoreBanner({
   session: WebSessionModel
 }) {
   const [restoring, setRestoring] = useState(false)
-  const { pendingFileHandleIds } = session
+  const count = session.pendingFileHandleIds.length
 
-  if (pendingFileHandleIds.length === 0) {
+  if (count === 0) {
     return null
   }
-
-  const count = pendingFileHandleIds.length
 
   const handleRestore = async () => {
     setRestoring(true)
     try {
-      const before = count
       await session.restorePendingFileHandles()
-      if (session.pendingFileHandleIds.length < before) {
+      if (session.pendingFileHandleIds.length < count) {
         reloadPage()
+      } else {
+        // restoreFileHandles settles each handle rather than throwing, so a
+        // denied (or dismissed) permission prompt comes back as "still
+        // pending" — indistinguishable from the click doing nothing at all
+        // unless it is said out loud
+        session.notify(
+          'No file access was granted, so nothing was restored',
+          'warning',
+        )
       }
     } catch (e) {
-      console.error('Error restoring file handles:', e)
+      console.error(e)
+      session.notifyError(`${e}`, e)
     } finally {
       setRestoring(false)
     }

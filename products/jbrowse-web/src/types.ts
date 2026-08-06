@@ -47,7 +47,12 @@ export type SessionSource =
   | { type: 'spec'; spec: Snap }
   | {
       type: 'hub'
-      hubSpec: Snap
+      // a plain string[], not the loader's own `hubURL` MST array: this whole
+      // value lives in a `types.frozen` prop, which contractually holds
+      // detached JSON. Storing the live node there instead reads as a dead
+      // node once the loader is destroyed, and nothing catches it — MST's
+      // deepFreeze deliberately skips observable arrays.
+      hubSpec: { hubURL: string[] }
       // the loc/assembly/tracks URL shorthand, when the link carried it
       // alongside &hubURL=; applied on top of the hub session
       viewInit?: Partial<InitState>

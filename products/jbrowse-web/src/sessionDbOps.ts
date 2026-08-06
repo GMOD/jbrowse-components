@@ -6,6 +6,37 @@ export type SessionDBHandle = IDBPDatabase<SessionDB>
 const BOTH_STORES = ['sessions', 'metadata'] as const
 
 /**
+ * The metadata row an autosave writes, given whatever row was already there.
+ *
+ * Two fields are carried over rather than recomputed, and getting either wrong
+ * is silent:
+ *
+ * - `favorite` lives only in this row, so a write that defaulted it to false
+ *   would un-star a session on its next autosave tick.
+ * - `createdAt` is pinned to the day the session first appeared. A session id
+ *   survives reloads, so that date says nothing about whether the session is
+ *   still in use; `updatedAt` is what the recent list, the pruner and the
+ *   age-based delete all rank by.
+ *
+ * Pure, and separate from the transaction, because jsdom has no IndexedDB —
+ * upsertSessionRows itself never executes under jest.
+ */
+export function nextSessionMetadata(
+  prev: SessionMetadata | undefined,
+  { id, name, configPath }: { id: string; name: string; configPath: string },
+): SessionMetadata {
+  const now = new Date()
+  return {
+    favorite: prev?.favorite ?? false,
+    createdAt: prev?.createdAt ?? now,
+    updatedAt: now,
+    name,
+    id,
+    configPath,
+  }
+}
+
+/**
  * The autosave write: the session snapshot plus the metadata row that indexes
  * it, in ONE readwrite transaction.
  *
@@ -23,23 +54,12 @@ const BOTH_STORES = ['sessions', 'metadata'] as const
 export async function upsertSessionRows(
   db: SessionDBHandle,
   snap: Session,
-  { id, name, configPath }: { id: string; name: string; configPath: string },
+  ident: { id: string; name: string; configPath: string },
 ) {
+  const { id } = ident
   const tx = db.transaction(BOTH_STORES, 'readwrite')
   const metadata = tx.objectStore('metadata')
-  const prev = await metadata.get(id)
-  const meta: SessionMetadata = {
-    favorite: prev?.favorite ?? false,
-    // a session id survives reloads, so createdAt is pinned to the day the
-    // session first appeared and says nothing about whether it is still in use.
-    // updatedAt is what the recent list, the pruner and the age-based delete all
-    // rank by.
-    createdAt: prev?.createdAt ?? new Date(),
-    updatedAt: new Date(),
-    name,
-    id,
-    configPath,
-  }
+  const meta = nextSessionMetadata(await metadata.get(id), ident)
   await Promise.all([
     tx.objectStore('sessions').put(snap, id),
     metadata.put(meta, id),

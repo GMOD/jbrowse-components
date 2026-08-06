@@ -299,12 +299,12 @@ export default function RootModel({
         // edit puts it back — with its favorite flag reset, since that lives in
         // the row just deleted. Say so instead of doing that.
         if (id === self.session?.id) {
-          await withErrorNotify(self, () => {
-            self.session?.notify(
-              'Cannot delete the session that is currently open',
-              'info',
-            )
-          })
+          // not wrapped in withErrorNotify: the only thing it does on failure
+          // is push a snackbar, which is the call being made here
+          self.session.notify(
+            'Cannot delete the session that is currently open',
+            'info',
+          )
           return
         }
         await withSessionDB(self, async sessionDB => {

@@ -128,8 +128,6 @@ function initSession(
       rootModel.setSession(sessionSource.snapshot)
     } else if (sessionSource?.type === 'hub') {
       void loadHubSpec(
-        // @ts-expect-error hubSpec is dynamic JSON (Record<string,unknown>); the
-        // required shape is validated at runtime inside loadHubSpec
         {
           ...sessionSource.hubSpec,
           sessionName,
