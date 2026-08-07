@@ -23,9 +23,12 @@ import {
 import { promotableSlotNames } from './promotableSlots.ts'
 import { isConfigurationModel } from './schemaTypes.ts'
 
-import type { AbstractSessionModel } from '../util/index.ts'
 import type { TrackConfigChange } from '../util/trackConfigDelta.ts'
-import type { CascadeContext, ResolvableDisplay } from './promotableResolve.ts'
+import type {
+  CascadeContext,
+  PromotedDefaultStore,
+  ResolvableDisplay,
+} from './promotableResolve.ts'
 import type { AnyConfigurationModel } from './types.ts'
 
 /**
@@ -112,15 +115,11 @@ function resolvePromotablesInto(
  * code path.
  *
  * **Writes every promotable slot, including the ones sitting at `promotedBase`,
- * and that is the decision — don't "align" it with the share bake.** The bake
- * writes only genuinely-inherited values, because a baked value reads as
- * customized on the recipient's side and an at-base slot needs nothing. A pasted
- * `config.json` is read by a *different mechanism* — there is no cascade there at
- * all — so writing only the inherited ones would leave every other slot to pick
- * up whatever the reader has promoted in their own browser. What a user copying a
- * config wants is the values they are looking at. The cost is that the pasted
- * track is customized on those slots and no longer follows a later promoted
- * default, which is what a config file means.
+ * and that is the decision — don't "align" it with the share bake.** A pasted
+ * `config.json` is read by a mechanism with no cascade in it at all, so writing
+ * only the inherited values would leave every other slot to pick up whatever the
+ * reader has promoted in their own browser. Pinned by
+ * `products/jbrowse-web/src/tests/CopyConfigPromotedDefaults.test.ts`.
  */
 export interface TrackConfigWithPromotables {
   config: Record<string, unknown>
@@ -133,7 +132,7 @@ export interface TrackConfigWithPromotables {
  * See {@link TrackConfigWithPromotables}.
  */
 export function getTrackConfigWithPromotables(
-  session: AbstractSessionModel,
+  session: PromotedDefaultStore,
   trackConfig: AnyConfigurationModel,
 ): TrackConfigWithPromotables {
   const config: Record<string, unknown> = structuredClone(
@@ -213,14 +212,10 @@ function openDisplaysOfType(self: ResolvableDisplay): ResolvableDisplay[] {
  * unset are skipped. Takes the display set explicitly so it's unit-testable.
  *
  * Clearing the slot is the whole of it — this is the subsystem's only write to a
- * display, and it goes through the config. It used to also lift a per-display
- * `ignorePromotedDefaults` opt-out, which is what made a write-capable
- * `PromotableDisplay` shape necessary; with that flag gone, a received track
- * rejoins the cascade by having nothing to reject it.
+ * display, and it goes through the config.
  *
- * Dead displays are skipped rather than trusted: the "apply to open tracks"
- * snackbar can outlive a track the user closes in the meantime, and both reads
- * and writes throw on a destroyed MST node.
+ * Skips dead displays, since the caller supplies the list and MST throws on any
+ * read or write to a destroyed node.
  */
 export function resetSlotToInherit(
   displays: ResolvableDisplay[],

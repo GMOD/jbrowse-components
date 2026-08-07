@@ -19,6 +19,8 @@ interface TestView {
 interface TestSession {
   views: TestView[]
   setDisplayTypeDefault: (type: string, slot: string, value: unknown) => void
+  // the reader is the half `getTrackConfigWithPromotables` actually takes
+  getDisplayTypeDefault: (type: string, slot: string) => unknown
 }
 
 beforeEach(() => {
@@ -60,7 +62,7 @@ test('a track following a promoted default copies the resolved value', () => {
   session.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)
 
   const { config, fromDisplayTypeDefaults } = getTrackConfigWithPromotables(
-    session as never,
+    session,
     trackConfig,
   )
 
@@ -78,7 +80,7 @@ test('resolves from the config alone once the track is closed again', () => {
   view.hideTrack(TRACK_ID)
 
   const { config, fromDisplayTypeDefaults } = getTrackConfigWithPromotables(
-    session as never,
+    session,
     trackConfig,
   )
 
@@ -90,7 +92,7 @@ test('with nothing promoted the copied value is the base, and nothing is flagged
   const { session, trackConfig } = openTrack()
 
   const { config, fromDisplayTypeDefaults } = getTrackConfigWithPromotables(
-    session as never,
+    session,
     trackConfig,
   )
 
@@ -104,7 +106,7 @@ test("a customized track copies its own value and isn't flagged as inherited", (
   displayConfig(trackConfig).setSlot(SLOT, 'superCompact')
 
   const { config, fromDisplayTypeDefaults } = getTrackConfigWithPromotables(
-    session as never,
+    session,
     trackConfig,
   )
 

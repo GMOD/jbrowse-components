@@ -1,4 +1,4 @@
-import { types } from '@jbrowse/mobx-state-tree'
+import { destroy, isAlive, types, unprotect } from '@jbrowse/mobx-state-tree'
 
 import PluginManager from '../PluginManager.ts'
 import { ConfigurationSchema } from './configurationSchema.ts'
@@ -159,6 +159,30 @@ describe('apply a promoted default to open tracks', () => {
     resetSlotToInherit(displays, 'customHeight')
     expect(isSlotCustomized(other, 'customHeight')).toBe(false)
     expect(resolveConf(other, 'customHeight')).toBe(10)
+  })
+
+  // The snackbar's "apply to open tracks" action captures a display set and can
+  // outlive a track the user closes while it is up, so by the time it runs one
+  // of them may be a destroyed node — and MST throws on both reads and writes to
+  // one of those. The `isAlive` filter is the whole defense, and without it the
+  // action throws on the dead display and never reaches the live ones.
+  test('a display closed while the snackbar was up is skipped, not thrown on', () => {
+    const { session, displays } = createDisplays(configSchema, [
+      { customHeight: 10 },
+      { customHeight: 20 },
+    ])
+    session.setDisplayTypeDefault('TestDisplay', 'customHeight', 10)
+    const stillOpen = displays[0]!
+    const closed = displays[1]!
+
+    unprotect(session)
+    destroy(closed)
+    expect(isAlive(closed)).toBe(false)
+
+    expect(() => {
+      resetSlotToInherit([stillOpen, closed], 'customHeight')
+    }).not.toThrow()
+    expect(isSlotCustomized(stillOpen, 'customHeight')).toBe(false)
   })
 
   // Session shaped as the real one is (isViewContainer + tracks-with-displays),
@@ -1082,11 +1106,8 @@ test('a promoted jexl string is rejected and falls back to the base', () => {
 // beyond "this setting won't stay put", so `ConfigSlot` rejects them at schema
 // construction rather than letting the resolver silently do the wrong thing.
 //
-// Two guards that used to live here are gone, and their absence is the point:
-// declaring `promotedBase` is now the only way to make a slot promotable, so
-// "promotable with no base" and "a base on a slot that never said promotable"
-// are states no schema can express. They existed to keep `promotedBase` and a
-// separate `promotable` boolean in agreement.
+// Declaring `promotedBase` is the only way to make a slot promotable, so the
+// authoring mistakes left to guard are about the slot's *type* and default.
 describe('promotable slot authoring guards', () => {
   test('rejects a non-maybe slot type', () => {
     // a plain enum has no spare value for "inherit", so `defaultValue` would
@@ -1227,10 +1248,8 @@ describe('promotable slot authoring guards', () => {
       expect(def.promotedBase).toEqual({ type: 'strand' })
     })
 
-    // `validate` is the whole of it now. This used to also assert an inherited
-    // `promotable: true` — the case that motivated the merge, since an override
-    // dropping the flag turned the slot off silently. There is no flag to drop:
-    // the override states `promotedBase`, which *is* what makes it promotable.
+    // an override states `promotedBase` and inherits the rest, `validate`
+    // included — the case that motivated the field-by-field merge.
     test('inherits the validate hook it left out', () => {
       expect(def.validate).toBe(
         getSlotDefinition(base.create(), 'colorBy').validate,

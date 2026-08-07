@@ -186,12 +186,6 @@ export interface ConfigSlotDefinition {
    * inherited promotable slot back into a plain one by stating
    * `promotedBase: undefined` — the definition merge is a spread, so a stated
    * `undefined` really does overwrite the base's value.
-   *
-   * There is deliberately no separate `promotable` boolean. It was one, and the
-   * two fields had to be kept in agreement by two `ConfigSlot` throws, because
-   * the type layer (`SlotValueResolvedFromDef`) keys off *this* field and always
-   * has — an override states `promotedBase` and leaves a boolean to the runtime
-   * merge, which a type mapping over the literal definition cannot see.
    */
   promotedBase?: unknown
   /**
@@ -245,10 +239,7 @@ export default function ConfigSlot(definition: ConfigSlotDefinition) {
     throw new Error("no 'defaultValue' provided")
   }
   // `promotedBase` is what makes a slot promotable, so its presence is the whole
-  // condition here — the two checks that used to reconcile it with a separate
-  // `promotable` boolean ("requires promotedBase", and the mirror mistake of
-  // `promotedBase` without the flag) describe states that can no longer be
-  // written.
+  // condition here (ADR-047).
   //
   // A promotable slot spends being-unset on the inherit sentinel, so it must be a
   // `maybe*` type. Any *concrete* default would double as the inherit signal,

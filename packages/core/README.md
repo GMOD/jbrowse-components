@@ -191,7 +191,7 @@ See TrackConfigWithPromotables.
 
 ```js
 // type signature
-(session: AbstractSessionModel, trackConfig: ModelInstanceTypeProps<…> & {…} & IStateTreeNode<…>) => TrackConfigWithPromotables
+(session: PromotedDefaultStore, trackConfig: ModelInstanceTypeProps<…> & {…} & IStateTreeNode<…>) => TrackConfigWithPromotables
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
@@ -348,14 +348,9 @@ inherit sentinel, so a display's value getter is
 `get displayMode(): DisplayMode { return resolveConf(self, 'displayMode') }`
 with no post-guard and no cast.
 
-Separate from `getConf` rather than folded into it, deliberately. Resolution is
-not free and not universal: it consults the session (so it's main-thread only,
-and throws on a detached node) and it means something only for the ~15
-promotable slots out of 1300-odd config reads in the repo. Hiding it inside
-`getConf` made every one of those reads a maybe-cascade whose behavior you
-couldn't see at the call site and which turned on a `promotedBase` declared in
-another file. Naming it at the call site costs one word and restores `getConf`
-to being what everyone already believed it was.
+Separate from `getConf` rather than folded into it, deliberately: resolution
+consults the session, so it is main-thread only and throws on a detached node.
+Folding it in was built and reverted — ADR-046.
 
 Throws if `slot` isn't promotable — the cascade has nothing to say about a plain
 slot, and `getConf` is what you want there.
@@ -419,15 +414,11 @@ is passed in. So an unopened track — which has no display state at all — sti
 has an answer to "what would this render as", by the same code path.
 
 **Writes every promotable slot, including the ones sitting at `promotedBase`,
-and that is the decision — don't "align" it with the share bake.** The bake
-writes only genuinely-inherited values, because a baked value reads as
-customized on the recipient's side and an at-base slot needs nothing. A pasted
-`config.json` is read by a _different mechanism_ — there is no cascade there at
-all — so writing only the inherited ones would leave every other slot to pick up
-whatever the reader has promoted in their own browser. What a user copying a
-config wants is the values they are looking at. The cost is that the pasted
-track is customized on those slots and no longer follows a later promoted
-default, which is what a config file means.
+and that is the decision — don't "align" it with the share bake.** A pasted
+`config.json` is read by a mechanism with no cascade in it at all, so writing
+only the inherited values would leave every other slot to pick up whatever the
+reader has promoted in their own browser. Pinned by
+`products/jbrowse-web/src/tests/CopyConfigPromotedDefaults.test.ts`.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 

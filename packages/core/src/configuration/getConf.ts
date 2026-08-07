@@ -56,14 +56,9 @@ export function getConf<
  * `get displayMode(): DisplayMode { return resolveConf(self, 'displayMode') }`
  * with no post-guard and no cast.
  *
- * Separate from `getConf` rather than folded into it, deliberately. Resolution
- * is not free and not universal: it consults the session (so it's main-thread
- * only, and throws on a detached node) and it means something only for the ~15
- * promotable slots out of 1300-odd config reads in the repo. Hiding it inside
- * `getConf` made every one of those reads a maybe-cascade whose behavior you
- * couldn't see at the call site and which turned on a `promotedBase` declared in
- * another file. Naming it at the call site costs one word and restores
- * `getConf` to being what everyone already believed it was.
+ * Separate from `getConf` rather than folded into it, deliberately: resolution
+ * consults the session, so it is main-thread only and throws on a detached node.
+ * Folding it in was built and reverted — ADR-046.
  *
  * Throws if `slot` isn't promotable — the cascade has nothing to say about a
  * plain slot, and `getConf` is what you want there.

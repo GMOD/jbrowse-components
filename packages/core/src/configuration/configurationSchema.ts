@@ -277,22 +277,12 @@ function makeConfigurationSchemaModel<
       // generic slot setter the config editor's slot facade routes through. A
       // slot is a bare value-union property, so this is a plain assignment.
       //
-      // The membership check is the only diagnostic an unknown slot name gets.
-      // Without it the assignment lands on an undeclared property: nothing
-      // throws, nothing persists, and the matching read keeps returning the
-      // default — the one config mistake that is silent at every layer. The
-      // compile-time guard on `setConf` catches this only where the schema is
-      // concrete, which measurably it often is not (a mixin or a widened
-      // factory erases it, see scripts/audit-config-read-types.ts), so the
-      // check has to be here to cover every write. `slotKeys` already has
+      // **Don't weaken the membership check to a warning, and don't check
+      // against `modelDefinition`** — that also holds the identifier and the
+      // sub-schema properties, neither of which is a write this action is for.
+      // Slot-name safety is a write guard (ADR-052); `setSlot`'s tests in
+      // `configurationSchema.test.ts` pin both halves. `slotKeys` already has
       // base-schema slots merged in, so an inherited slot passes.
-      //
-      // Against the slots, not against `modelDefinition`, which also holds the
-      // identifier and the sub-schema properties. Writing the identifier
-      // reached MST and threw its own error instead of this one; writing a
-      // sub-schema was accepted outright, silently doing setSubschema's job
-      // without setSubschema's array/map guard. Neither is a write this action
-      // is for, and both made the "Valid slots:" list a lie.
       setSlot(slotName: string, value: unknown) {
         if (!slotKeys.has(slotName)) {
           // the sub-schema branch re-classifies off the definition rather than

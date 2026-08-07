@@ -6,17 +6,11 @@
  * `resolveConf` and the control builders in `promotableDefaults.ts` each read a
  * field off the `SlotResolution` it returns.
  *
- * Mechanism: `agent-docs/reference/DISPLAY_TYPE_DEFAULTS.md`. Two decisions the
- * inline comments below defend: resolution is named at its call sites rather than
- * folded into `getConf` (ADR-046), and unset is the only inherit sentinel
- * (ADR-047) — every promotable slot is a `maybe*` type, so `undefined` is CSS
- * `inherit` and `promotedBase` is CSS `initial`, both enforced by `ConfigSlot`.
- *
- * **Declaring `promotedBase` is what makes a slot promotable — there is no
- * `promotable` flag.** The two coexisted, and the boolean's only job was to be
- * kept in agreement with the base by two `ConfigSlot` throws, because the type
- * layer keys off `promotedBase` and cannot see a boolean that arrives through the
- * schema merge (`types.ts`, `SlotValueResolvedFromDef`).
+ * Mechanism: `agent-docs/reference/DISPLAY_TYPE_DEFAULTS.md`. Two decisions this
+ * file rests on: resolution is named at its call sites rather than folded into
+ * `getConf` (ADR-046), and unset is the only inherit sentinel — so declaring
+ * `promotedBase` is what makes a slot promotable (ADR-047, enforced by
+ * `ConfigSlot`).
  *
  * Every comparison against a promoted or base value is `deepEqual`, never `===`:
  * an object-valued slot (`maybeFrozen`, e.g. alignments `colorBy`) reconstructs a
@@ -55,9 +49,12 @@ export type ResolvableDisplay = IStateTreeNode & {
 
 /**
  * Where the session-wide tier of the cascade is read from. Narrowed to the one
- * method so the resolver doesn't depend on the whole session type.
+ * method so the resolver doesn't depend on the whole session type — and exported
+ * for the same reason, so an entry point taking the store directly
+ * (`getTrackConfigWithPromotables`) can ask for what it uses instead of for a
+ * whole session a test then has to fake.
  */
-interface PromotedDefaultStore {
+export interface PromotedDefaultStore {
   getDisplayTypeDefault: (displayType: string, slot: string) => unknown
 }
 

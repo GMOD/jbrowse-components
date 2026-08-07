@@ -92,14 +92,10 @@ export type ConfigurationSlotName<SCHEMA> = SCHEMA extends undefined
 // consumer expecting a real mode, so tsc points at the call that should have
 // been `resolveConf`. A slot without `promotedBase` is unaffected either way.
 //
-// `promotedBase` is the marker at runtime too now, so this mapping and
-// `ConfigSlot` finally read the same field. They never used to: a separate
-// `promotable` boolean cannot be read here at all, because this sees the
-// subclass's *literal* definition while the boolean arrives through
-// `mergeSchemaDefinition` at runtime — a real override states `promotedBase` and
-// inherits the rest (`LGVSyntenyDisplay`'s `colorBy`). Two `ConfigSlot` throws
-// existed only to force the two fields to agree; deleting the boolean deleted
-// them.
+// This mapping sees the subclass's **literal** definition, so anything a schema
+// gains at runtime through `mergeSchemaDefinition` is invisible here — a real
+// override states `promotedBase` and inherits the rest (`LGVSyntenyDisplay`'s
+// `colorBy`), which is why the marker has to be a field this can read.
 //
 // **`promotedBase: undefined` has to be checked first, and it is not a no-op
 // branch.** It is how a subclass turns an inherited promotable slot back into a

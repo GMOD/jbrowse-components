@@ -56,9 +56,8 @@ const SHAPE_CHECKS: Record<
  * `SHAPE_CHECKS` entries, which is exactly the half that can be authored wrong
  * (an enum member that isn't in the vocabulary, a non-finite number).
  *
- * Can't delegate to the slot's MST `model.is(value)`: too permissive exactly
- * where this guard matters — `types.number.is(NaN)` and
- * `types.frozen().is('any-string')` are both `true`.
+ * Can't delegate to the slot's MST `model.is(value)`, which is too permissive
+ * exactly where this guard matters — `slotShape.test.ts` pins the two cases.
  */
 function matchesSlotShape(def: ConfigSlotDefinition, value: unknown): boolean {
   const { promotedBase } = def
@@ -81,10 +80,9 @@ function matchesSlotShape(def: ConfigSlotDefinition, value: unknown): boolean {
  * in lockstep.
  *
  * The `jexl:` check is the only place the subsystem handles a callback, and it
- * handles it by refusing it. Nothing in the app can author one, but a
- * hand-edited config or default store is untyped, and a `jexl:` string would
- * otherwise sail through `maybeColor`'s bare `typeof === 'string'` and reach a
- * renderer as a literal color. DISPLAY_TYPE_DEFAULTS.md §"No callbacks".
+ * handles it by refusing it — a hand-edited config or default store is untyped,
+ * and a callback string would otherwise reach a renderer as a literal value.
+ * DISPLAY_TYPE_DEFAULTS.md §"No callbacks".
  */
 export function isUsableValue(
   def: ConfigSlotDefinition,
