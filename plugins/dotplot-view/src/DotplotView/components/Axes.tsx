@@ -130,7 +130,7 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
             </text>
           )
         })}
-      {ticks.map(({ tick, alongPx: x }) => (
+      {ticks.map(({ tick, alongPx: x, labeled }) => (
         <Fragment key={tickKey(tick)}>
           <line
             x1={x}
@@ -140,7 +140,10 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
             strokeWidth={1}
             stroke={color}
           />
-          {tick.type === 'major' && x > 10 ? (
+          {/* `labeled` is the model's collision decision (major, and clear of
+              the last label); `x > 10` is this axis' own edge rule, keeping a
+              label off the region name drawn at the start of the axis. */}
+          {labeled && x > 10 ? (
             <text
               x={x - 7}
               y={0}
@@ -214,7 +217,7 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
             </text>
           )
         })}
-      {ticks.map(({ tick, alongPx }) => {
+      {ticks.map(({ tick, alongPx, labeled }) => {
         const y = viewHeight - alongPx
         return (
           <Fragment key={tickKey(tick)}>
@@ -226,7 +229,7 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
               strokeWidth={1}
               stroke={color}
             />
-            {tick.type === 'major' && alongPx > 10 ? (
+            {labeled && alongPx > 10 ? (
               <text
                 y={y - 3}
                 x={borderX - 7}

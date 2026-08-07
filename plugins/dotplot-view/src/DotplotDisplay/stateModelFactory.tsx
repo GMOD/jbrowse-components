@@ -1,4 +1,4 @@
-import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
 import { getContainingView } from '@jbrowse/core/util'
@@ -154,6 +154,18 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        */
       get trackId(): string {
         return self.parentTrack.configuration.trackId
+      },
+      /**
+       * #getter
+       * The parent track's adapter config. Same body as `BaseDisplay`'s, but
+       * annotated: that one infers `getConf`'s `any`, which switches off
+       * checking at every reader — the fetch autorun's RPC arg and the
+       * diagonalize adapter spec both take `Record<string, unknown>` and so
+       * accepted whatever was handed to them. Same annotation, same reason, as
+       * `LinearSyntenyDisplay.adapterConfig`.
+       */
+      get adapterConfig(): Record<string, unknown> {
+        return getConf(self.parentTrack, 'adapter')
       },
       /**
        * #getter

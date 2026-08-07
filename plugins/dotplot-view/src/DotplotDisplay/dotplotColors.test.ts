@@ -26,8 +26,10 @@ function fakeRpcData(overrides: Partial<DotplotRpcData> = {}): DotplotRpcData {
       dnds: new Float32Array([-1]),
     },
     attributeRanges: {},
-    refNames: ['chr1'],
-    mateRefNames: ['chr2'],
+    refNameDict: ['chr1'],
+    refNameIds: new Uint32Array([0]),
+    mateRefNameDict: ['chr2'],
+    mateRefNameIds: new Uint32Array([0]),
     totalFeatureCount: 1,
     skippedFeatureCount: 0,
     ...overrides,
@@ -138,11 +140,30 @@ describe('createDotplotColorFunction', () => {
     },
   )
 
-  test('query caches color by refName', () => {
-    const data = fakeRpcData({ refNames: ['chrX', 'chrX', 'chrY'] })
+  test('query gives every feature on one chromosome the same color', () => {
+    const data = fakeRpcData({
+      refNameDict: ['chrX', 'chrY'],
+      refNameIds: new Uint32Array([0, 0, 1]),
+    })
     const fn = createDotplotColorFunction('query', data, TRACK_COLOR)
-    // Same name → same color; different name → may differ.
     expect(fn(data, 0)).toBe(fn(data, 1))
+  })
+
+  // The color is hashed from the NAME, not from the dictionary index. That
+  // matters because the dictionary is built in feature-arrival order, so the
+  // same chromosome lands on a different id from one fetch window to the next —
+  // keyed on the id, a pan would repaint the whole plot in new colors.
+  test('a chromosome keeps its color when the dictionary reorders', () => {
+    const first = fakeRpcData({
+      refNameDict: ['chrX', 'chrY'],
+      refNameIds: new Uint32Array([0]),
+    })
+    const second = fakeRpcData({
+      refNameDict: ['chrY', 'chrX'],
+      refNameIds: new Uint32Array([1]),
+    })
+    expect(createDotplotColorFunction('query', first, TRACK_COLOR)(first, 0)) //
+      .toBe(createDotplotColorFunction('query', second, TRACK_COLOR)(second, 0))
   })
 })
 
@@ -166,8 +187,10 @@ describe('computeDotplotColors', () => {
         meanIdentity: new Float32Array([0.5, 0.5]),
         mappingQual: new Float32Array([30, 30]),
       },
-      refNames: ['chr1', 'chr2'],
-      mateRefNames: ['ctg1', 'ctg2'],
+      refNameDict: ['chr1', 'chr2'],
+      refNameIds: new Uint32Array([0, 1]),
+      mateRefNameDict: ['ctg1', 'ctg2'],
+      mateRefNameIds: new Uint32Array([0, 1]),
       cigarData: new Uint32Array([M(100), M(100), M(100), M(300)]),
       cigarOffsets: new Uint32Array([0, 3, 4]),
       totalFeatureCount: 2,
@@ -208,8 +231,10 @@ describe('computeDotplotColors', () => {
         meanIdentity: new Float32Array([0.5, 0.5]),
         mappingQual: new Float32Array([30, 30]),
       },
-      refNames: ['chr1', 'chr2'],
-      mateRefNames: ['ctg1', 'ctg2'],
+      refNameDict: ['chr1', 'chr2'],
+      refNameIds: new Uint32Array([0, 1]),
+      mateRefNameDict: ['ctg1', 'ctg2'],
+      mateRefNameIds: new Uint32Array([0, 1]),
       cigarOffsets: new Uint32Array([0, 0, 0]),
       totalFeatureCount: 2,
       skippedFeatureCount: 0,

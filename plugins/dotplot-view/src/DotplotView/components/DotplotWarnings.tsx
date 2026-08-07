@@ -1,11 +1,9 @@
 import { Suspense, lazy, useState } from 'react'
 
-import { getConf } from '@jbrowse/core/configuration'
 import { Alert, Button } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { DotplotViewModel } from '../model.ts'
-import type { TrackWarning } from './WarningDialog.tsx'
 
 // lazy components
 const WarningDialog = lazy(() => import('./WarningDialog.tsx'))
@@ -22,22 +20,10 @@ const DotplotWarnings = observer(function DotplotWarnings({
   // different message on the same track after a refetch.
   const [dismissedKey, setDismissedKey] = useState<string>()
 
-  // Read through dotplotDisplays (typed) rather than tracks[i].displays[0]
-  // (pluggable, so `any`), and resolve the track name here instead of in the
-  // dialog. The name comes off the display's own `parentTrack`, not
-  // `tracks[i]`: `dotplotDisplays` filters by display type, so pairing it with
-  // `tracks` positionally would label a warning with the wrong track's name the
-  // moment the two lists differ in length.
-  const rows: TrackWarning[] = model.dotplotDisplays.flatMap(display =>
-    display.warnings.length
-      ? [
-          {
-            name: getConf(display.parentTrack, 'name'),
-            warnings: display.warnings,
-          },
-        ]
-      : [],
-  )
+  // Resolved on the model (`trackWarnings`), where it is cached and where the
+  // "read through dotplotDisplays, never tracks[i]" rule lives with the list it
+  // is about.
+  const rows = model.trackWarnings
   const warningKey = rows.flatMap(r => r.warnings.map(w => w.message)).join('|')
 
   return warningKey && warningKey !== dismissedKey ? (

@@ -45,7 +45,8 @@ the whole surface.
 | <span id="getter-error">**error**</span><br><code>unknown</code> |  |
 | <span id="getter-assemblynames">**assemblyNames**</span><br><code>string[]</code> |  |
 | <span id="getter-allsyntenydisplays">**allSyntenyDisplays**</span><br><code>any[]</code> | Every synteny display across every level, flattened. One memoized getter for the view-wide aggregates that would otherwise each re-flatten the levels. |
-| <span id="getter-syntenywarnings">**syntenyWarnings**</span><br><code>SyntenyWarning[]</code> | Data-quality warnings raised by every synteny display, e.g. a reversed assembly row order. Surfaced by the header's warning button and its dialog, which both read this rather than re-deriving it. |
+| <span id="getter-syntenywarnings">**syntenyWarnings**</span><br><code>ComparativeWarning[]</code> | Data-quality warnings raised by every synteny display, e.g. a reversed assembly row order. What the header's warning button counts. |
+| <span id="getter-trackwarnings">**trackWarnings**</span><br><code>TrackWarning[]</code> | The same warnings grouped under the track that raised each, which is what the dialog reports. A stacked view's levels raise `swappedAssembliesWarning` verbatim, and so does every overlaid track that hits it, so the flat list above was N identical rows with nothing to tell the user which file to go fix. Shared with the dotplot's table so the two reports say the same thing. |
 
 ## Methods
 

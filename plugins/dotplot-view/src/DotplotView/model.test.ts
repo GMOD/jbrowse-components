@@ -117,6 +117,87 @@ test('addHighlightFromMouseCoords orders the band on a reversed region', () => {
   })
 })
 
+// Two regions on the h axis, the first reversed — the shape auto-diagonalize
+// leaves behind. A drag that runs off the first region and into the second is
+// clamped to the edge of the one it started in, and on a reversed region that
+// edge is `start`: bp decreases as the drag travels right. Clamping to `end`
+// unconditionally banded the complement of what was selected.
+function setupTwoHRegions() {
+  const session = createTestSession({
+    sessionSnapshot: {
+      views: [
+        {
+          type: 'DotplotView',
+          height: 600,
+          assemblyNames: ['volvox', 'volvox'],
+          hview: {
+            bpPerPx: 1,
+            offsetPx: 0,
+            displayedRegions: [
+              {
+                assemblyName: 'volvox',
+                refName: 'ctgA',
+                start: 0,
+                end: 1000,
+                reversed: true,
+              },
+              { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 1000 },
+            ],
+          },
+          vview: {
+            bpPerPx: 1,
+            offsetPx: 0,
+            displayedRegions: [
+              { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
+            ],
+          },
+        },
+      ],
+    },
+  }) as any
+  return session.views[0]
+}
+
+test('a drag off a reversed region clamps to the edge it was heading for', () => {
+  const model = setupTwoHRegions()
+  const { viewHeight } = model
+  // px 800 is bp 200 of the reversed ctgA; px 1500 is inside ctgB
+  model.addHighlightFromMouseCoords([800, viewHeight - 100], [1500, 0])
+  expect(model.highlight[0]).toEqual({
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start: 0,
+    end: 200,
+  })
+})
+
+// Wheel zoom anchors on a plot-area point in the same top-down component px the
+// drag handlers use, and the flip into the bottom-up vertical axis is the
+// model's — the handler used to do it against a separately measured element
+// height, which is the grid cell (it grows when an error banner appears), not
+// the plot.
+test('zoomAt zooms both axes and holds the locus under the anchor', () => {
+  const model = setup()
+  const { viewHeight } = model
+  const anchor: [number, number] = [200, viewHeight - 300]
+  const before = {
+    x: model.hview.pxToBp(anchor[0]).coord0,
+    y: model.vview.pxToBp(viewHeight - anchor[1]).coord0,
+  }
+
+  model.zoomAt(0.5, anchor)
+
+  // one factor for both axes, which is what keeps wheel zoom ratio-preserving
+  expect(model.hview.bpPerPx).toBe(0.5)
+  expect(model.vview.bpPerPx).toBe(0.5)
+  // offsetPx rounds to whole px, so the anchored locus can drift by under a px
+  expect(model.hview.pxToBp(anchor[0]).coord0).toBeCloseTo(before.x, 0)
+  expect(model.vview.pxToBp(viewHeight - anchor[1]).coord0).toBeCloseTo(
+    before.y,
+    0,
+  )
+})
+
 test('a drag under the 3px threshold adds no highlight', () => {
   const model = setup()
   model.addHighlightFromMouseCoords([100, 100], [102, 102])

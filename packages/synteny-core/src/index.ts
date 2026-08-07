@@ -116,6 +116,10 @@ export {
   swappedAssembliesWarning,
 } from './SyntenyFetchStateMixin.ts'
 export type { ComparativeWarning } from './SyntenyFetchStateMixin.ts'
+// Warning rows named by the track that raised them, shared so the dotplot's
+// table and the synteny view's dialog can't disagree about what a report says.
+export { collectTrackWarnings } from './trackWarnings.ts'
+export type { TrackWarning, WarningSource } from './trackWarnings.ts'
 // The per-display fetch status both comparative views render, so a first load
 // looks the same in each — see the component for the drift it ends.
 export { default as ComparativeFetchStatus } from './ComparativeFetchStatus.tsx'

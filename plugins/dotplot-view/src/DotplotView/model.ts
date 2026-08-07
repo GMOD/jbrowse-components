@@ -24,6 +24,7 @@ import { createKeyedUploadSync } from '@jbrowse/render-core/keyedUploadSync'
 import {
   DiagonalizeProgressMixin,
   TrackColorsMixin,
+  collectTrackWarnings,
   displaysSettled,
   lodMenuItems,
   regionSignature,
@@ -40,6 +41,7 @@ import {
   computeTickPositions,
   getBlockLabelKeysToHide,
   makeTicks,
+  thinTickPositions,
 } from './components/util.ts'
 import { DRAG_THRESHOLD_PX, LS_CURSOR_MODE } from './types.ts'
 
@@ -70,20 +72,21 @@ const ReturnToImportFormDialog = lazy(
 )
 type CursorMode = 'crosshair' | 'move'
 
-// Drop an axis' ticks entirely — lines as well as labels — once more than this
-// many blocks are visible. The reason is the labels, which overlap illegibly at
-// high chromosome counts; the tick lines go with them only because they share
-// this one list. Whether the lines should survive on their own (without them the
-// region-boundary grid is the only structure a whole-genome plot has left) is an
-// open UX question, not a settled decision — note that block *labels* get a real
-// greedy overlap-hider for the same problem, `getBlockLabelKeysToHide`.
-const MAX_TICK_BLOCKS = 5
-
+// Ticks for one axis. There used to be a cutoff here — more than five visible
+// blocks and the axis got no ticks at all — because at high chromosome counts
+// the labels overlap illegibly. It cost the lines too, and without them the
+// region-boundary grid is the only structure a whole-genome plot has left.
+//
+// It was also load-bearing in a way its comment didn't say: positioning a tick
+// meant a `bpToPx` scan of `displayedRegions`, so ticks x regions per pan, and
+// these axes carry one region per refName. The cutoff was the only thing
+// keeping that off a fragmented assembly. Both halves are now handled where
+// they belong — `makeTicks` resolves position from the block in O(1) and skips
+// sub-tick-width blocks, and `thinTickPositions` drops marks and labels that
+// would collide — so the axis can just always have ticks.
 function axisTicks(view: Dotplot1DViewModel) {
-  const { dynamicBlocks, staticBlocks, bpPerPx } = view
-  return dynamicBlocks.contentBlocks.length > MAX_TICK_BLOCKS
-    ? []
-    : makeTicks(staticBlocks.contentBlocks, bpPerPx)
+  const { staticBlocks, bpPerPx } = view
+  return makeTicks(staticBlocks.contentBlocks, bpPerPx)
 }
 
 // Resolve a region's refName to the assembly's canonical name, falling back to
@@ -118,10 +121,26 @@ function canonicalRegion(
 // bands still drew — getLayoutHighlightCoords is order-agnostic — but the
 // backwards region is what gets persisted to the session and read back by
 // everything downstream of it.
+//
+// The same reversal decides which edge a runaway drag clamps to: `b` past the
+// region means "as far along the axis as this region goes", and a reversed
+// region lays out right-to-left, so that edge is its `start`. Clamping to `end`
+// unconditionally pointed the band back at where the drag came FROM, so it
+// covered the complement of what was selected.
+//
+// Compared by displayed-region index rather than refName: an axis can show one
+// refName in two regions (a read-vs-ref h axis comes from gatherOverlaps, so a
+// read aligned twice to one chromosome yields two), and on refName alone a drag
+// that crossed between them read as staying put and clamped `b` into the wrong
+// one.
 function dragToHighlight(a: PxToBpResult, b: PxToBpResult): HighlightType {
   const [start, end] = minmax(
     clamp(a.coord0, a.start, a.end),
-    a.refName === b.refName ? clamp(b.coord0, a.start, a.end) : a.end,
+    a.index === b.index
+      ? clamp(b.coord0, a.start, a.end)
+      : a.reversed
+        ? a.start
+        : a.end,
   )
   return {
     assemblyName: a.assemblyName,
@@ -364,6 +383,18 @@ export default function stateModelFactory(pm: PluginManager) {
             name => assemblyManager.get(name)?.initialized,
           )
         },
+        /**
+         * #getter
+         * The view's terminal state: whatever the import form's submit threw,
+         * else whatever the assemblies did. Declared here rather than beside
+         * `menuItems` so every reader below is the same expression —
+         * `showImportForm` and `showLoading` each used to re-spell it, and
+         * `showLoading` spelled it as a two-term `&&` that a third source of
+         * error would have to be added to in three places.
+         */
+        get error(): unknown {
+          return self.volatileError ?? this.assemblyErrors
+        },
       }))
       .views(self => ({
         /**
@@ -423,10 +454,7 @@ export default function stateModelFactory(pm: PluginManager) {
          * Whether to show the import form
          */
         get showImportForm() {
-          return (
-            !this.hasSomethingToShow ||
-            !!(self.volatileError ?? self.assemblyErrors)
-          )
+          return !this.hasSomethingToShow || !!self.error
         },
         /**
          * #getter
@@ -435,10 +463,7 @@ export default function stateModelFactory(pm: PluginManager) {
         get showLoading() {
           return (
             self.awaitingAutoDiagonalize ||
-            (this.hasSomethingToShow &&
-              !this.initialized &&
-              !self.volatileError &&
-              !self.assemblyErrors)
+            (this.hasSomethingToShow && !this.initialized && !self.error)
           )
         },
         /**
@@ -512,15 +537,21 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #getter
-         * The h ticks that land on the drawn axis. `hTickPositions` comes from
-         * staticBlocks, which extend a screen past the viewport in both
-         * directions; clipping here rather than per element in the axis
-         * component keeps the SVG export from carrying a group per invisible
-         * tick, and is cached for the same reason hblockLabelKeysToHide is.
+         * The h ticks that land on the drawn axis, thinned to what can be read
+         * and flagged for labelling. `hTickPositions` comes from staticBlocks,
+         * which extend a screen past the viewport in both directions; clipping
+         * here rather than per element in the axis component keeps the SVG
+         * export from carrying a group per invisible tick, and is cached for
+         * the same reason hblockLabelKeysToHide is.
+         *
+         * Clip before thinning: spacing is a question about what is on screen,
+         * and offscreen ticks would otherwise claim slots from visible ones.
          */
         get visibleHTickPositions() {
-          return this.hTickPositions.filter(
-            t => t.alongPx > 0 && t.alongPx < this.viewWidth,
+          return thinTickPositions(
+            this.hTickPositions.filter(
+              t => t.alongPx > 0 && t.alongPx < this.viewWidth,
+            ),
           )
         },
         /**
@@ -528,8 +559,10 @@ export default function stateModelFactory(pm: PluginManager) {
          * The v ticks that land on the drawn axis. See visibleHTickPositions.
          */
         get visibleVTickPositions() {
-          return this.vTickPositions.filter(
-            t => t.alongPx > 0 && t.alongPx < this.viewHeight,
+          return thinTickPositions(
+            this.vTickPositions.filter(
+              t => t.alongPx > 0 && t.alongPx < this.viewHeight,
+            ),
           )
         },
         /**
@@ -596,6 +629,18 @@ export default function stateModelFactory(pm: PluginManager) {
             }
           }
           return out
+        },
+        /**
+         * #getter
+         * Every loaded track's render warnings, under the name to report them
+         * by. Shared with the synteny view's own report (see
+         * `collectTrackWarnings` for why the name has to come off the display's
+         * `parentTrack`), and a cached computed rather than a render-time
+         * flatMap: the header that reads it re-renders on every pointermove of
+         * a selection drag, and resolving a name is a `getConf` per track.
+         */
+        get trackWarnings() {
+          return collectTrackWarnings(this.dotplotDisplays)
         },
         /**
          * #getter
@@ -833,6 +878,15 @@ export default function stateModelFactory(pm: PluginManager) {
           // hasSomethingToShow, so leaving it here means "return to import form"
           // doesn't. Dropping the request is what returning to the form means.
           self.init = undefined
+          // Highlights are (assemblyName, refName, start, end) against the pair
+          // being cleared. Kept, they reappear over whatever pair is picked
+          // next, banding whichever refNames happen to share a name — and the
+          // chips offer to dismiss a region the plot no longer shows.
+          self.setHighlight([])
+          // View-local track configs exist only for the read-vs-ref plot that
+          // synthesized them; nothing can resolve them once its tracks are
+          // gone, and they persist into the session snapshot.
+          self.viewTrackConfigs.clear()
         },
         /**
          * #action
@@ -881,6 +935,38 @@ export default function stateModelFactory(pm: PluginManager) {
           for (const v of self.views) {
             v.zoomIn()
           }
+        },
+        /**
+         * #action
+         * Pan both axes one gesture step. Each delta is in its own axis'
+         * scroll direction, not screen px — the vertical axis lays out
+         * bottom-up, and both callers (wheel, drag) already hold the flipped
+         * value for their own reasons.
+         *
+         * One action rather than two `scroll` calls, because an MST action is
+         * a MobX action: unbatched, the render autorun ran twice per
+         * pointermove and drew a whole frame against a moved h axis and a
+         * stale v one.
+         */
+        scrollXY(dx: number, dy: number) {
+          self.hview.scroll(dx)
+          self.vview.scroll(dy)
+        },
+        /**
+         * #action
+         * Zoom both axes by `factor`, holding the locus under a plot-area
+         * point still. The anchor is the same component-px `Coord` the drag
+         * handlers pass around, so the vertical flip through `viewHeight`
+         * happens here — the way `getCoords` already does it — rather than at
+         * the call site against a separately measured element height.
+         *
+         * Multiplying both axes by one factor is what makes wheel zoom
+         * ratio-preserving, so the aspect lock never has to correct it. One
+         * action, for the reason `scrollXY` documents.
+         */
+        zoomAt(factor: number, [x, y]: Coord) {
+          self.hview.zoomTo(self.hview.bpPerPx * factor, x)
+          self.vview.zoomTo(self.vview.bpPerPx * factor, self.viewHeight - y)
         },
       }))
       .actions(self => ({
@@ -988,18 +1074,26 @@ export default function stateModelFactory(pm: PluginManager) {
          * #action
          */
         initializeDisplayedRegions() {
-          const { hview, vview, assemblyNames } = self
-          if (hview.displayedRegions.length && vview.displayedRegions.length) {
-            return
-          }
+          const { assemblyNames } = self
+          // Per axis, not "either axis is empty, rewrite both": the whole-genome
+          // default is only ever the fallback for an axis that has nothing, and
+          // an axis that does have regions has them because something chose
+          // them — `init.displayedRegionNames`, a diagonalize reorder, a
+          // restored snapshot. Rewriting it because its neighbour was empty
+          // threw that choice away.
           const { assemblyManager } = getSession(self)
-          hview.setDisplayedRegions(
-            assemblyManager.get(assemblyNames[0]!)?.regions ?? [],
-          )
-          vview.setDisplayedRegions(
-            assemblyManager.get(assemblyNames[1]!)?.regions ?? [],
-          )
-          this.showAllRegions()
+          let changed = false
+          for (const [i, axis] of self.views.entries()) {
+            if (axis.displayedRegions.length === 0) {
+              axis.setDisplayedRegions(
+                assemblyManager.get(assemblyNames[i]!)?.regions ?? [],
+              )
+              changed = true
+            }
+          }
+          if (changed) {
+            this.showAllRegions()
+          }
         },
         /**
          * #action
@@ -1223,12 +1317,6 @@ export default function stateModelFactory(pm: PluginManager) {
                 ]
               : []),
           ]
-        },
-        /**
-         * #getter
-         */
-        get error(): unknown {
-          return self.volatileError ?? self.assemblyErrors
         },
       }))
       .postProcessSnapshot(snap => {

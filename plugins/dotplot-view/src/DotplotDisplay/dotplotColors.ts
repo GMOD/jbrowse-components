@@ -66,19 +66,18 @@ function strandColorFn(): DotplotColorFn {
   return (d, i) => (d.strands[i] === -1 ? neg : pos)
 }
 
-function nameColorFn(
-  pick: (d: DotplotRpcData, i: number) => string,
-): DotplotColorFn {
-  const cache = new Map<string, number>()
-  return (d, i) => {
-    const name = pick(d, i)
-    let color = cache.get(name)
-    if (color === undefined) {
-      color = nameColorAbgr[hashString(name) % nameColorAbgr.length]!
-      cache.set(name, color)
-    }
-    return color
-  }
+// Chromosome painting against one axis' dictionary-encoded refNames. The
+// dictionary is at most a scaffold count long, so its colors resolve once into a
+// LUT — same shape as continuousColorFn's ramp — and the per-segment path is a
+// double array index, no hash and no Map probe. (It used to hash each name and
+// memoize in a `Map<string, number>`, i.e. rebuild the dictionary the worker now
+// ships, once per colorBy pass.)
+function nameColorFn(dict: string[], ids: Uint32Array): DotplotColorFn {
+  const lut = Uint32Array.from(
+    dict,
+    name => nameColorAbgr[hashString(name) % nameColorAbgr.length]!,
+  )
+  return (_data, i) => lut[ids[i]!]!
 }
 
 function constantColorFn(packed: number): DotplotColorFn {
@@ -108,9 +107,9 @@ export function createDotplotColorFunction(
     // dotplot has no anchor to key on, so it colors by query like 'query'.
     // falls through
     case 'reference':
-      return nameColorFn((d, i) => d.refNames[i]!)
+      return nameColorFn(data.refNameDict, data.refNameIds)
     case 'target':
-      return nameColorFn((d, i) => d.mateRefNames[i]!)
+      return nameColorFn(data.mateRefNameDict, data.mateRefNameIds)
     // Dotplot keeps a plain black default (its conventional line color) rather
     // than the synteny ribbon's red.
     default:

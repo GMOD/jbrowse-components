@@ -208,8 +208,10 @@ test('an exported attribute ramp is labelled with the loaded span, not 0', async
     cigarOffsets: new Uint32Array([0, 0]),
     attributes: { goc: new Float32Array([75]) },
     attributeRanges: { goc: { min: 0, max: 75 } },
-    refNames: ['ctgA'],
-    mateRefNames: ['ctgA'],
+    refNameDict: ['ctgA'],
+    refNameIds: new Uint32Array([0]),
+    mateRefNameDict: ['ctgA'],
+    mateRefNameIds: new Uint32Array([0]),
     totalFeatureCount: 1,
     skippedFeatureCount: 0,
   }

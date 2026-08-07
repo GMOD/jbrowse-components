@@ -38,8 +38,21 @@ export interface DotplotFeaturesAndPositionsResult {
   // the four presets plus whatever the track declares
   attributes: Record<string, Float32Array>
   attributeRanges: Record<string, AttributeRange>
-  refNames: string[]
-  mateRefNames: string[]
+  // Per-feature refNames, dictionary-encoded: `refNameIds[i]` indexes
+  // `refNameDict`. Two `string[]` of length n were the ONLY part of this
+  // payload that wasn't a zero-copy transfer — everything else is an
+  // ArrayBuffer in the transfer list — so a whole-genome PAF structured-cloned
+  // millions of short strings twice, per fetch. An axis holds at most a
+  // scaffold count's worth of distinct names, so the dictionary is negligible
+  // and the ids transfer with the rest.
+  //
+  // It is also what the only reader wanted: `nameColorFn` hashed each name and
+  // memoized the result in a Map, i.e. it was rebuilding this dictionary per
+  // colorBy pass. Against ids it is a straight LUT index.
+  refNameDict: string[]
+  refNameIds: Uint32Array
+  mateRefNameDict: string[]
+  mateRefNameIds: Uint32Array
   // Every feature's packed CIGAR ops concatenated into one transferable buffer,
   // with cigarOffsets[i]..cigarOffsets[i+1] delimiting feature i (length n+1).
   // An array-of-arrays would be structured-cloned per feature — the one thing on
@@ -71,6 +84,26 @@ interface FeatureMate {
   end: number
   refName: string
   assemblyName?: string
+}
+
+// Growable string dictionary: interns a name to a stable index. One per axis,
+// since the two axes are different assemblies and sharing would only make the
+// ids less local.
+function makeRefNameDict() {
+  const ids = new Map<string, number>()
+  const dict: string[] = []
+  return {
+    dict,
+    idFor(name: string) {
+      let id = ids.get(name)
+      if (id === undefined) {
+        id = dict.length
+        dict.push(name)
+        ids.set(name, id)
+      }
+      return id
+    },
+  }
 }
 
 export async function executeDotplotFeaturesAndPositions({
@@ -138,9 +171,9 @@ export async function executeDotplotFeaturesAndPositions({
   // (unmapped refName or unmappable position) leave no dead slots because the
   // write cursor only advances on a valid feature. The subarray'd buffers are
   // transferred whole — a zero-copy ownership move, so the trailing slack costs
-  // nothing at the RPC boundary. refNames/mateRefNames are pushed
-  // (structured-cloned, not transferred) so they stay exactly n long; CIGARs are
-  // collected per feature then concatenated into one transferable pair below.
+  // nothing at the RPC boundary. RefNames go the same way, as ids into a small
+  // dictionary; CIGARs are collected per feature then concatenated into one
+  // transferable pair below.
   const count = features.length
   const p11 = new Float64Array(count)
   const p12 = new Float64Array(count)
@@ -153,8 +186,10 @@ export async function executeDotplotFeaturesAndPositions({
     count,
   )
   const channelNames = Object.keys(channels.arrays)
-  const refNames: string[] = []
-  const mateRefNames: string[] = []
+  const refNameIds = new Uint32Array(count)
+  const mateRefNameIds = new Uint32Array(count)
+  const hDict = makeRefNameDict()
+  const vDict = makeRefNameDict()
   const cigarChunks: Uint32Array[] = []
   let cigarTotal = 0
 
@@ -233,8 +268,8 @@ export async function executeDotplotFeaturesAndPositions({
         name === 'dnds' ? dnDsRatio(f) : channels.read(f, name),
       )
     }
-    refNames.push(refName)
-    mateRefNames.push(mateRefName)
+    refNameIds[n] = hDict.idFor(refName)
+    mateRefNameIds[n] = vDict.idFor(mateRefName)
     // Parse only what the geometry builder could actually walk at this zoom. A
     // whole-genome PAF is mostly sub-pixel alignments whose parsed ops would be
     // built, shipped, and then ignored.
@@ -275,8 +310,10 @@ export async function executeDotplotFeaturesAndPositions({
     strands: strands.subarray(0, n),
     alignmentLengths: alignmentLengths.subarray(0, n),
     ...channels.finish(n),
-    refNames,
-    mateRefNames,
+    refNameDict: hDict.dict,
+    refNameIds: refNameIds.subarray(0, n),
+    mateRefNameDict: vDict.dict,
+    mateRefNameIds: mateRefNameIds.subarray(0, n),
     cigarData,
     cigarOffsets,
     totalFeatureCount: count,
@@ -292,6 +329,8 @@ export async function executeDotplotFeaturesAndPositions({
     result.p22.buffer,
     result.strands.buffer,
     result.alignmentLengths.buffer,
+    result.refNameIds.buffer,
+    result.mateRefNameIds.buffer,
     ...Object.values(result.attributes).map(a => a.buffer),
     result.cigarData.buffer,
     result.cigarOffsets.buffer,

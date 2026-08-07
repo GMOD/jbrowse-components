@@ -1,15 +1,19 @@
 import { measureText } from '@jbrowse/core/util'
 
+import { Dotplot1DView } from '../1dview.ts'
 import {
   AXIS_TITLE_FONT,
   axisBorderPx,
   fitAxisTitle,
   getBlockLabelKeysToHide,
+  locstr,
   makeTicks,
+  thinTickPositions,
   tickKey,
   truncateRefName,
 } from './util.ts'
 
+import type { Tick } from './util.ts'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 function region(refName: string, end: number, start = 0) {
@@ -83,6 +87,42 @@ describe('fitAxisTitle', () => {
 
   test('an axis with essentially no room still yields a nameable stub', () => {
     expect(fitAxisTitle('a_long_assembly_name', 1)).toBe('a_lo…name')
+  })
+})
+
+describe('locstr', () => {
+  function axis(reversed: boolean) {
+    const view = Dotplot1DView.create({
+      bpPerPx: 1,
+      offsetPx: 0,
+      displayedRegions: [
+        {
+          assemblyName: 'volvox',
+          refName: 'ctgA',
+          start: 0,
+          end: 1000,
+          reversed,
+        },
+      ],
+    })
+    view.setVolatileWidth(500)
+    return view
+  }
+
+  test('a forward region reads left to right', () => {
+    expect(locstr(100, axis(false))).toBe('{volvox}ctgA:100')
+  })
+
+  // auto-diagonalize flips query regions, so the vertical axis routinely has
+  // them. `offset` is bp from the region's LEFT SCREEN EDGE, which is its `end`
+  // when reversed — reading it as `start + offset` named bp 100 here, a
+  // position mirrored about the middle of the right contig.
+  test('a reversed region reads right to left', () => {
+    expect(locstr(100, axis(true))).toBe('{volvox}ctgA:900')
+  })
+
+  test('past the last region it says so rather than extrapolating', () => {
+    expect(locstr(1200, axis(false))).toBe('out of bounds')
   })
 })
 
@@ -183,6 +223,110 @@ describe('makeTicks', () => {
     ).map(t => t.base)
     const steps = new Set(bases.slice(1).map((base, i) => base - bases[i]!))
     expect([...steps]).toHaveLength(1)
+  })
+})
+
+// A tick's axis position used to come from `bpToPx`, a linear scan of
+// displayedRegions per tick; it now comes from the block that generated the
+// tick, in O(1). The two have to agree exactly — including across a region
+// boundary, on a reversed region (which lays out right-to-left), and for the
+// seam ticks whose base overshoots their own block but is still in the region.
+describe('makeTicks px agrees with bpToPx', () => {
+  function axis(bpPerPx: number, offsetPx: number) {
+    const view = Dotplot1DView.create({
+      bpPerPx,
+      offsetPx,
+      displayedRegions: [
+        { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 200_000 },
+        {
+          assemblyName: 'volvox',
+          refName: 'ctgB',
+          start: 5_000,
+          end: 300_000,
+          reversed: true,
+        },
+        { assemblyName: 'volvox', refName: 'ctgC', start: 0, end: 150_000 },
+      ],
+    })
+    view.setVolatileWidth(800)
+    return view
+  }
+
+  test.each([
+    [100, 0],
+    [100, 2_000],
+    [10, 3_500],
+    [1, 0],
+  ])('bpPerPx %p, offsetPx %p', (bpPerPx, offsetPx) => {
+    const view = axis(bpPerPx, offsetPx)
+    const ticks = makeTicks(view.staticBlocks.contentBlocks, view.bpPerPx)
+    expect(ticks.length).toBeGreaterThan(5)
+    for (const tick of ticks) {
+      expect(tick.px).toBe(
+        view.bpToPx({
+          refName: tick.refName,
+          coord: tick.base,
+          displayedRegionIndex: tick.displayedRegionIndex,
+        }),
+      )
+    }
+  })
+})
+
+describe('thinTickPositions', () => {
+  function tick(type: 'major' | 'minor', base: number): Tick {
+    return { type, base, refName: 'ctgA', displayedRegionIndex: 0 }
+  }
+  const at = (type: 'major' | 'minor', alongPx: number) => ({
+    tick: tick(type, alongPx),
+    alongPx,
+  })
+
+  // chooseGridPitch targets 15px minors and 60px majors within one region, so
+  // an ordinary single-region axis must come through untouched — this is what
+  // makes always generating ticks safe where the old block-count cutoff used to
+  // discard them.
+  test('an ordinary ruler is left alone', () => {
+    const input = [
+      at('major', 0),
+      at('minor', 15),
+      at('minor', 30),
+      at('minor', 45),
+      at('major', 60),
+    ]
+    const out = thinTickPositions(input)
+    expect(out.map(t => t.alongPx)).toEqual([0, 15, 30, 45, 60])
+    expect(out.filter(t => t.labeled).map(t => t.alongPx)).toEqual([0, 60])
+  })
+
+  // Where regions meet, ticks from different coordinate origins land on top of
+  // each other. Marks collapse to one per 4px, labels to one per font height.
+  test('a pile-up at a region boundary is thinned', () => {
+    const out = thinTickPositions([
+      at('major', 100),
+      at('major', 101),
+      at('minor', 102),
+      at('major', 103),
+      at('major', 130),
+    ])
+    expect(out.map(t => t.alongPx)).toEqual([100, 130])
+    expect(out.every(t => t.labeled)).toBe(true)
+  })
+
+  // A reversed region's ticks descend in alongPx, so an unsorted forward pass
+  // would measure spacing across the turnaround and thin the wrong ones.
+  test('descending input from a reversed region is handled', () => {
+    const out = thinTickPositions([
+      at('major', 60),
+      at('major', 30),
+      at('major', 0),
+    ])
+    expect(out.map(t => t.alongPx)).toEqual([0, 30, 60])
+  })
+
+  test('only major ticks are ever labeled', () => {
+    const out = thinTickPositions([at('minor', 0), at('minor', 40)])
+    expect(out.some(t => t.labeled)).toBe(false)
   })
 })
 

@@ -15,30 +15,44 @@ export async function runDotplotDiagonalize(
   model: DotplotViewModel,
   opts: DiagonalizeRunOpts = {},
 ): Promise<DiagonalizeStats | undefined> {
-  const display = model.tracks[0]?.displays[0]
-  if (display) {
-    // Reuse the same rpcSessionId the display renders with (it lives on the
+  // Every dotplot display, not `tracks[0].displays[0]`. Two reasons, and the
+  // reorder is silently wrong rather than broken under both: a plot can show
+  // several synteny tracks at once (the import form says so), and an ordering
+  // computed from one of them ignores the alignments the others contribute —
+  // the shared RPC takes an adapter list for exactly this, which is what the
+  // synteny level passes. `displays[0]` is also whatever a hand-written or
+  // legacy session snapshot happened to list first, which need not be the
+  // DotplotDisplay, or anything at all; `dotplotDisplays` is the type-filtered
+  // list the rest of the view already reads.
+  const displays = model.dotplotDisplays
+  const first = displays[0]
+  if (first) {
+    // Reuse the same rpcSessionId the displays render with (it lives on the
     // track), so this lands on the same sticky worker and hits its
     // already-parsed adapter instead of re-parsing the file into a fresh cache.
-    const sessionId = getRpcSessionId(display)
-    const { adapterConfig } = display
+    const sessionId = getRpcSessionId(first)
     const { assemblyManager, rpcManager } = getSession(model)
 
     // Both axes stay canonical: the worker matches against them and reorders
     // currentRegions back into the view. RefName reconciliation (the renamed
     // fetch regions + the per-axis adapter->canonical maps) is resolved here on
-    // the main thread, since the worker has no assemblyManager.
+    // the main thread, since the worker has no assemblyManager — and per
+    // adapter, since each has its own refName namespace.
     const referenceRegions = model.hview.displayedRegions
     const currentRegions = model.vview.displayedRegions
-    const adapter = await prepareDiagonalizeAdapter({
-      assemblyManager,
-      sessionId,
-      adapterConfig,
-      referenceRegions,
-      currentRegions,
-    })
+    const adapters = await Promise.all(
+      displays.map(d =>
+        prepareDiagonalizeAdapter({
+          assemblyManager,
+          sessionId,
+          adapterConfig: d.adapterConfig,
+          referenceRegions,
+          currentRegions,
+        }),
+      ),
+    )
     const result = await rpcManager.call(sessionId, 'DiagonalizeDotplot', {
-      adapters: [adapter],
+      adapters,
       referenceRegions,
       currentRegions,
       stopToken: opts.stopToken,

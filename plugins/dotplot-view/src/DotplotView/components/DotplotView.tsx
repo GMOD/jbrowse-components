@@ -36,10 +36,29 @@ const useStyles = makeStyles()(theme => ({
     gridColumn: '2/2',
     zIndex: 100,
   },
+  // Out of flow, so this layer's remaining children — the error banners — are
+  // laid out from the top of the plot rect and stack there, over the dots.
+  // In flow the canvas is an inline replaced element the banners came *after*,
+  // which grew the grid row by the banner's height: the horizontal axis slid
+  // down and left a gap under the plot, and the on-screen result stopped
+  // matching the top strip SVG export draws from the same state.
+  canvas: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+  },
   content: {
     position: 'relative',
     gridColumn: '2/2',
     gridRow: '1/2',
+  },
+  // `overlay` is pointer-events:none so the canvas stacked over the interaction
+  // layer doesn't swallow the drag, and pointer-events inherits — so anything
+  // in there with a BUTTON has to opt back in. The status overlays manage their
+  // own (LoadingOverlay re-enables its chip, ProgressChip stays inert);
+  // ErrorBanner doesn't, and its Retry is the only way out of a failed init.
+  interactive: {
+    pointerEvents: 'auto',
   },
 }))
 
@@ -49,6 +68,7 @@ const DotplotCanvas = observer(function DotplotCanvas({
   model: DotplotViewModel
 }) {
   const { viewWidth, viewHeight } = model
+  const { classes } = useStyles()
   const handle = useRenderingBackend(createDotplotRenderer, model)
   return (
     <>
@@ -58,6 +78,7 @@ const DotplotCanvas = observer(function DotplotCanvas({
         data-testid={
           model.settled ? 'dotplot_webgl_canvas_done' : 'dotplot_webgl_canvas'
         }
+        className={classes.canvas}
         style={{
           width: viewWidth,
           height: viewHeight,
@@ -73,7 +94,9 @@ const DotplotCanvas = observer(function DotplotCanvas({
         what `RenderCanvas` turns into a fresh element. Synteny's level banner
         has always passed it; this one was the odd one out. */}
       {handle.error ? (
-        <ErrorBanner error={handle.error} onReset={handle.retry} />
+        <div className={classes.interactive}>
+          <ErrorBanner error={handle.error} onReset={handle.retry} />
+        </div>
       ) : null}
     </>
   )

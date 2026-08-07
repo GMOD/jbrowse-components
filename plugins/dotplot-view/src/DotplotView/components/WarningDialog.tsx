@@ -5,7 +5,7 @@ import { DialogContentText } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
-import type { ComparativeWarning } from '@jbrowse/synteny-core'
+import type { TrackWarning } from '@jbrowse/synteny-core'
 
 const useStyles = makeStyles()({
   content: {
@@ -18,15 +18,8 @@ const useStyles = makeStyles()({
   },
 })
 
-// Already flattened to (track name, its warnings) by the caller, which is what
-// knows how to reach a display's warnings. The row type is the display's own
-// `ComparativeWarning`, so a field added there is a compile error here rather
-// than a column this grid silently drops.
-export interface TrackWarning {
-  name: string
-  warnings: ComparativeWarning[]
-}
-
+// Already flattened to (track name, its warnings) by the model, which is what
+// knows how to reach a display's warnings — see `DotplotView.trackWarnings`.
 function getTrackWarnings({
   trackWarnings,
 }: {

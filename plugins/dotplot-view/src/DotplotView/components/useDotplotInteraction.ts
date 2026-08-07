@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { transaction } from 'mobx'
-
 import { DRAG_THRESHOLD_PX } from '../types.ts'
 
 import type { DotplotViewModel } from '../model.ts'
+import type { Coord } from '../types.ts'
 import type React from 'react'
 
 // A pointer sample in both frames the UI needs: component-relative (bp math,
@@ -75,7 +74,7 @@ export interface DotplotInteraction {
 export function useDotplotInteraction(
   model: DotplotViewModel,
 ): DotplotInteraction {
-  const { hview, vview, cursorMode, lockAspectRatio } = model
+  const { cursorMode, lockAspectRatio } = model
 
   // eslint-disable-next-line @eslint-react/use-state -- callback ref (ref={el}), not a setState setter
   const [refEl, setRefEl] = useState<HTMLDivElement | null>(null)
@@ -149,23 +148,17 @@ export function useDotplotInteraction(
         scheduled = true
         // Anchor on the wheel event's own position, so zoom doesn't depend on
         // a pointermove having landed first.
-        const { left, top, height } = el.getBoundingClientRect()
-        const ax = event.clientX - left
-        const ay = event.clientY - top
+        const { left, top } = el.getBoundingClientRect()
+        const anchor: Coord = [event.clientX - left, event.clientY - top]
         window.requestAnimationFrame(() => {
-          transaction(() => {
-            if (Math.abs(dy) > Math.abs(dx) * 2) {
-              const val = dy < 0 ? 1.07 : 0.935
-              hview.zoomTo(hview.bpPerPx * val, ax)
-              vview.zoomTo(vview.bpPerPx * val, height - ay)
-            } else {
-              // dy is already sign-flipped, matching vview's bottom-up axis: a
-              // downward wheel moves the viewport toward the bottom of the
-              // plot, the opposite of a downward drag.
-              hview.scroll(dx)
-              vview.scroll(dy)
-            }
-          })
+          if (Math.abs(dy) > Math.abs(dx) * 2) {
+            model.zoomAt(dy < 0 ? 1.07 : 0.935, anchor)
+          } else {
+            // dy is already sign-flipped, matching vview's bottom-up axis: a
+            // downward wheel moves the viewport toward the bottom of the
+            // plot, the opposite of a downward drag.
+            model.scrollXY(dx, dy)
+          }
           scheduled = false
           dx = 0
           dy = 0
@@ -176,7 +169,7 @@ export function useDotplotInteraction(
     return () => {
       el.removeEventListener('wheel', onWheel)
     }
-  }, [refEl, hview, vview])
+  }, [refEl, model])
 
   return {
     containerProps: {
@@ -201,8 +194,10 @@ export function useDotplotInteraction(
         const panning = !!down && !up && !validSelect
         if (panning) {
           if (last) {
-            hview.scroll(last.clientX - s.clientX)
-            vview.scroll(s.clientY - last.clientY)
+            // vview lays out bottom-up, so its delta is the screen one
+            // unnegated while hview's is negated — both in axis-scroll
+            // direction, which is what scrollXY takes.
+            model.scrollXY(last.clientX - s.clientX, s.clientY - last.clientY)
           }
         } else {
           setCurr(s)

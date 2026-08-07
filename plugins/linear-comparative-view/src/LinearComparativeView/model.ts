@@ -5,6 +5,7 @@ import { avg, getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import { installLinkedViewSync } from '@jbrowse/plugin-linear-genome-view'
+import { collectTrackWarnings } from '@jbrowse/synteny-core'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { autorun } from 'mobx'
 
@@ -23,16 +24,17 @@ import type {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
 } from '@jbrowse/plugin-linear-genome-view'
+import type { ComparativeWarning } from '@jbrowse/synteny-core'
 
 // lazies
 const ReturnToImportFormDialog = lazy(
   () => import('@jbrowse/core/ui/ReturnToImportFormDialog'),
 )
 
-export interface SyntenyWarning {
-  message: string
-  effect: string
-}
+// The display's own warning row, not a second declaration of the same two
+// fields: the shape is `ComparativeWarning`, and a local copy meant a field
+// added there simply never reached this view's report.
+export type SyntenyWarning = ComparativeWarning
 
 /**
  * #stateModel LinearComparativeView
@@ -171,11 +173,22 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        * Data-quality warnings raised by every synteny display, e.g. a reversed
-       * assembly row order. Surfaced by the header's warning button and its
-       * dialog, which both read this rather than re-deriving it.
+       * assembly row order. What the header's warning button counts.
        */
       get syntenyWarnings(): SyntenyWarning[] {
         return this.allSyntenyDisplays.flatMap(d => d.warnings)
+      },
+      /**
+       * #getter
+       * The same warnings grouped under the track that raised each, which is
+       * what the dialog reports. A stacked view's levels raise
+       * `swappedAssembliesWarning` verbatim, and so does every overlaid track
+       * that hits it, so the flat list above was N identical rows with nothing
+       * to tell the user which file to go fix. Shared with the dotplot's table
+       * so the two reports say the same thing.
+       */
+      get trackWarnings() {
+        return collectTrackWarnings(this.allSyntenyDisplays)
       },
 
       /**

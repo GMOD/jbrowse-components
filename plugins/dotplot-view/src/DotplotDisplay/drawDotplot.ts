@@ -66,8 +66,9 @@ export function drawDotplotInstances(
   // meanQueryIdentity, mappingQuality) do not — there, neighbouring features
   // land on different LUT entries and every segment used to allocate its own
   // `rgba(...)`. A ramp is a 256-entry LUT, so this cache holds a few hundred
-  // strings at most; per call rather than module-level, since alpha is packed
-  // into the color and a slider drag would otherwise accumulate a set per stop.
+  // strings at most; per call rather than module-level, because the STRING (not
+  // the packed color, which is always opaque) carries `alpha` — keyed on abgr
+  // alone across calls it would hand back the previous slider stop's opacity.
   const cssByAbgr = new Map<number, string>()
   let currentAbgr: number | undefined
   for (let i = 0; i < instanceCount; i++) {

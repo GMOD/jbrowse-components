@@ -4,6 +4,7 @@ import {
   measureText,
   toLocale,
 } from '@jbrowse/core/util'
+import { bpOffsetInRegion } from '@jbrowse/core/util/Base1DUtils'
 import { chooseGridPitch } from '@jbrowse/core/util/chooseGridPitch'
 
 import type { Dotplot1DViewModel } from '../1dview.ts'
@@ -17,14 +18,38 @@ export interface Tick {
   // an axis may show the same refName in more than one displayed region (a
   // read-vs-ref dotplot's h axis is built from gatherOverlaps, so a read
   // aligned twice to one chromosome yields two regions on it), and refName
-  // alone then collides — bpToPx would place the second region's ticks on the
-  // first, the seam dedupe would drop them, and React would see duplicate keys.
+  // alone then collides — the seam dedupe would drop the second region's ticks
+  // and React would see duplicate keys.
   displayedRegionIndex?: number
+  // Position along the whole axis in px, before the viewport offset. Resolved
+  // by `makeTicks` from the block the tick came from, which already carries its
+  // own `offsetPx` — the running cumulative-bp total `calculateStaticBlocks`
+  // computed on the way past.
+  //
+  // It used to be resolved per tick by `bpToPx`, which is a LINEAR SCAN of
+  // `displayedRegions` accumulating that same total from zero. That made
+  // positioning O(ticks x regions) on every pan: the axis holds one region per
+  // refName, so zoomed into a contig partway down a fragmented assembly a few
+  // hundred ticks each walked past every region ahead of it, every frame.
+  //
+  // Undefined for a base outside the REGION, which is what `bpToPx` reported by
+  // returning undefined and what keeps a tick from being drawn onto the next
+  // chromosome. Outside the block but inside the region is fine and must stay
+  // fine: the pitch-aligned loop overshoots both block ends on purpose, and the
+  // seam tick that survives the dedupe is the first block's copy — the
+  // out-of-block one. Rejecting on block bounds silently dropped one tick per
+  // 800px block.
+  px?: number
 }
 
 export interface PositionedTick {
   tick: Tick
   alongPx: number
+}
+
+// A tick that survived clipping and thinning, and whether it gets a label.
+export interface VisibleTick extends PositionedTick {
+  labeled: boolean
 }
 
 // Identity of a tick within an axis: the region it belongs to plus its base.
@@ -33,12 +58,17 @@ export function tickKey(tick: Tick) {
   return `${tick.displayedRegionIndex}-${tick.refName}-${tick.base}`
 }
 
+// `coord0`, not a hand-rolled `start + offset`: `offset` is bp from the
+// region's LEFT SCREEN EDGE, which on a reversed region is its `end`. Both
+// dotplot axes routinely carry reversed regions — auto-diagonalize flips query
+// regions on the vertical axis — and there the two disagree by
+// `(end - start) - 2*offset`, so the tooltip named a mirrored position inside
+// the right contig. pxToBp already applies that reflection; read its answer.
 export function locstr(px: number, view: Dotplot1DViewModel) {
-  const { assemblyName, refName, start, offset, oob } = view.pxToBp(px)
-  const coord = Math.floor(start + offset)
+  const { assemblyName, refName, coord0, oob } = view.pxToBp(px)
   return oob
     ? 'out of bounds'
-    : `{${assemblyName}}${refName}:${toLocale(coord)}`
+    : `{${assemblyName}}${refName}:${toLocale(coord0)}`
 }
 
 // One source of truth for the axis label/tick font, imported by both the
@@ -115,23 +145,60 @@ export function axisBorderPx(
   return Math.max(labelWidth + BORDER_CHROME, MIN_BORDER)
 }
 
-// Maps each tick's (refName, base) to an `alongPx` offset within the view —
-// negative or out-of-range positions are kept so the caller can clip in one
-// place. Shared between HorizontalAxis and VerticalAxis to keep their tick
-// math identical.
+// Slide each tick's axis position into the viewport. Negative or out-of-range
+// results are kept so the caller can clip in one place. Shared between
+// HorizontalAxis and VerticalAxis to keep their tick math identical.
+//
+// The whole of the per-pan tick cost is this subtraction: `makeTicks` resolved
+// the axis position once, against the block, when it built the tick.
 export function computeTickPositions(
   view: Dotplot1DViewModel,
   ticks: Tick[],
 ): PositionedTick[] {
   const { offsetPx } = view
-  return ticks.flatMap(tick => {
-    const px = view.bpToPx({
-      refName: tick.refName,
-      coord: tick.base,
-      displayedRegionIndex: tick.displayedRegionIndex,
-    })
-    return px === undefined ? [] : [{ tick, alongPx: px - offsetPx }]
-  })
+  return ticks.flatMap(tick =>
+    tick.px === undefined ? [] : [{ tick, alongPx: tick.px - offsetPx }],
+  )
+}
+
+// Minimum on-screen spacing between two kept tick marks, and between two kept
+// tick labels. Both sit below what `chooseGridPitch`'s 15px-minor / 60px-major
+// targets produce inside a single region, so at ordinary zoom this thins
+// nothing at all; it bites only where regions meet, which is where ticks from
+// different coordinate origins pile up on one pixel.
+//
+// The label figure is a font HEIGHT, not a text width: both axes draw their tick
+// labels perpendicular to the axis they run along (the horizontal one rotates
+// them -90°), so what a label occupies *along* its own axis is one line of type.
+const MIN_TICK_MARK_PX = 4
+const MIN_TICK_LABEL_PX = AXIS_LABEL_FONT + 2
+
+// Thin a clipped tick list down to what can be read, and say which ticks keep a
+// label. This is what replaced dropping an axis' ticks wholesale past a block
+// count: the labels were the thing that became illegible, but the lines went
+// with them, and a whole-genome plot lost the only ruler it had.
+//
+// Sorted first because ticks arrive in block order while a reversed displayed
+// region lays out right-to-left — its ticks descend in `alongPx`, so a single
+// forward pass over the unsorted list would measure spacing across that
+// discontinuity and thin the wrong ones.
+export function thinTickPositions(positioned: PositionedTick[]): VisibleTick[] {
+  const out: VisibleTick[] = []
+  let lastMark = Number.NEGATIVE_INFINITY
+  let lastLabel = Number.NEGATIVE_INFINITY
+  const byPosition = [...positioned].sort((a, b) => a.alongPx - b.alongPx)
+  for (const { tick, alongPx } of byPosition) {
+    if (alongPx - lastMark >= MIN_TICK_MARK_PX) {
+      lastMark = alongPx
+      const labeled =
+        tick.type === 'major' && alongPx - lastLabel >= MIN_TICK_LABEL_PX
+      if (labeled) {
+        lastLabel = alongPx
+      }
+      out.push({ tick, alongPx, labeled })
+    }
+  }
+  return out
 }
 
 interface Interval {
@@ -180,6 +247,35 @@ export function getBlockLabelKeysToHide(
   return hide
 }
 
+// Where a base sits along the axis, in the same px `bpToPx` answered with, using
+// only the block it came from: a block's `offsetPx` is the cumulative-bp running
+// total at the moment it was cut, and layout is linear across a whole region, so
+// the offset from the block's LEFT SCREEN EDGE (`bpOffsetInRegion`, which
+// measures from `end` on a reversed block) extrapolates correctly past the
+// block's own bounds.
+//
+// Past the REGION's bounds it does not — there the next chromosome begins — so
+// those return undefined, as bpToPx did. Which of a block's two bp bounds is the
+// region's own depends on orientation: a reversed region's first block on screen
+// holds its HIGHEST coordinate.
+function tickPx(block: ContentBlock, coord: number, bpPerPx: number) {
+  const {
+    start,
+    end,
+    reversed,
+    isLeftEndOfDisplayedRegion: atScreenStart,
+  } = block
+  const atRegionMinBp = reversed
+    ? block.isRightEndOfDisplayedRegion
+    : atScreenStart
+  const atRegionMaxBp = reversed
+    ? atScreenStart
+    : block.isRightEndOfDisplayedRegion
+  return (coord < start && atRegionMinBp) || (coord > end && atRegionMaxBp)
+    ? undefined
+    : Math.round(block.offsetPx + bpOffsetInRegion(block, coord) / bpPerPx)
+}
+
 // makeTicks stores `base` as (true base − 1); re-add the 1 here so the single
 // off-by-one round-trip lives in one place shared by both axes.
 export function tickLabel(tick: Tick, bpPerPx: number) {
@@ -208,17 +304,28 @@ export function makeTicks(regions: ContentBlock[], bpPerPx: number) {
   const iterPitch = gridPitch.minorPitch || gridPitch.majorPitch
   for (const block of regions) {
     const { start, end, refName, displayedRegionIndex } = block
+    // A block too narrow to host a distinguishable tick contributes none. At
+    // whole-genome zoom on a fragmented assembly there are thousands of these,
+    // and each would still emit at least one tick from its own coordinate
+    // origin — which is what made the tick count scale with scaffold count
+    // instead of with the viewport. Same principle as axisBorderPx's LABEL_PX
+    // filter, and it is what makes dropping the old block-count cutoff safe.
+    if ((end - start) / bpPerPx < MIN_TICK_MARK_PX) {
+      continue
+    }
     const labelBase = block.reversed ? end : start
     for (
       let base = Math.floor(start / iterPitch) * iterPitch;
       base < Math.ceil(end / iterPitch) * iterPitch + 1;
       base += iterPitch
     ) {
+      const coord = base - 1
       const tick: Tick = {
         type: base % gridPitch.majorPitch === 0 ? 'major' : 'minor',
-        base: base - 1,
+        base: coord,
         refName,
         displayedRegionIndex,
+        px: tickPx(block, coord, bpPerPx),
       }
       // keyed on the region too, so the dedupe only ever collapses the shared
       // seam between two static blocks OF THE SAME region — not two regions

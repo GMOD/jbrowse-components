@@ -36,8 +36,9 @@ export interface DiagonalizeAdapterSpec {
 // back to the view.
 export interface DiagonalizeArgs {
   sessionId: string
-  // the alignment adapters drawn between this pair of axes; the synteny view
-  // passes one per display in a level, the dotplot passes its single display
+  // the alignment adapters drawn between this pair of axes; both callers pass
+  // one per display — a synteny level's, a dotplot's — since either can show
+  // several synteny tracks over the one pair
   adapters: DiagonalizeAdapterSpec[]
   // the axis that supplies the ordering (synteny: the row above; dotplot: the
   // horizontal axis)
@@ -57,8 +58,10 @@ export interface DiagonalizeArgs {
 /**
  * Fetch a pair of axes' alignments and run the shared `diagonalizeRegions` off
  * the main thread. Shared by the linear-synteny and dotplot diagonalize RPCs —
- * a dotplot is the single-adapter case of a synteny level — so the two can't
- * drift. They previously did: only the synteny copy forwarded
+ * a dotplot is the single-LEVEL case of a stacked synteny view, not the
+ * single-adapter one — so the two can't drift. They previously did: the
+ * dotplot caller reached one display deep and diagonalized against a single
+ * track's alignments, and before that only the synteny copy forwarded
  * `targetAssemblyName`, so a dotplot on a multi-genome track diagonalized
  * against the wrong pair's alignments.
  *
