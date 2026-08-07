@@ -1,0 +1,121 @@
+{
+  "assemblies": [
+    {
+      "name": "human",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "human-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "human.chrom.sizes"
+        }
+      }
+    },
+    {
+      "name": "rhesus",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "rhesus-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "uri": "rhesus.chrom.sizes"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "human_genes",
+      "name": "Human genes (GRCh38, Ensembl 116)",
+      "assemblyNames": [
+        "human"
+      ],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "human.pc.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "rhesus_genes",
+      "name": "Rhesus macaque genes (Mmul_10, Ensembl 116)",
+      "assemblyNames": [
+        "rhesus"
+      ],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "rhesus.pc.gff3.gz"
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "primate_orthologs",
+      "name": "Human / rhesus orthologs (dN/dS)",
+      "assemblyNames": [
+        "human",
+        "rhesus"
+      ],
+      "adapter": {
+        "type": "MCScanBlocksAdapter",
+        "uri": "primate.blocks.gz",
+        "blockAssemblies": [
+          "human",
+          "rhesus"
+        ],
+        "bedLocations": [
+          {
+            "uri": "human.bed.gz"
+          },
+          {
+            "uri": "rhesus.bed.gz"
+          }
+        ],
+        "assemblyNames": [
+          "human",
+          "rhesus"
+        ],
+        "attributeColumns": [
+          "dn",
+          "ds"
+        ]
+      }
+    }
+  ],
+  "defaultSession": {
+    "name": "Selection pressure across a primate gene neighbourhood",
+    "views": [
+      {
+        "type": "LinearSyntenyView",
+        "displayName": "Human vs rhesus macaque orthologs, coloured by dN/dS",
+        "showColorLegend": true,
+        "init": {
+          "views": [
+            {
+              "assembly": "human",
+              "loc": "12:68,790,000-69,880,000",
+              "tracks": [
+                "human_genes"
+              ]
+            },
+            {
+              "assembly": "rhesus",
+              "loc": "11:68,330,000-69,390,000",
+              "tracks": [
+                "rhesus_genes"
+              ]
+            }
+          ],
+          "tracks": [
+            [
+              "primate_orthologs"
+            ]
+          ],
+          "colorBy": "dnds",
+          "alpha": 0.95,
+          "drawCurves": true
+        }
+      }
+    ]
+  }
+}
