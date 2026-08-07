@@ -69,6 +69,7 @@ and the table below is generated from it. The categories:
 | `@jbrowse/core/ui` | Shared UI components — dialogs, menus, error and loading states |
 | `@jbrowse/core/ui/theme` | The JBrowse MUI theme |
 | `@jbrowse/core/ui/palette` | The same colors and `resolvePalette` without Material UI in the module graph, for worker and renderer code |
+| `@jbrowse/core/ui/BaseTooltip` | The hover tooltip, kept out of the `ui` barrel so @floating-ui stays off the startup path |
 | `@jbrowse/core/util` | Core helpers: `getSession`, `getContainingView`, `Feature`, region and coordinate utilities |
 | `@jbrowse/core/util/color` | Color parsing and manipulation helpers |
 | `@jbrowse/core/util/layouts` | Feature layout (packing) helpers |

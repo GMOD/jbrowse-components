@@ -131,6 +131,17 @@ const libs = {
   '@jbrowse/core/ui': coreUi,
   '@jbrowse/core/ui/theme': coreTheme,
   '@jbrowse/core/ui/palette': corePalette,
+  // BaseTooltip is deliberately absent from the '@jbrowse/core/ui' barrel: the
+  // re-export alone held @floating-ui (~266KB) on the startup path, since eager
+  // plugin entries import that barrel. Serving it as its own module behind
+  // React.lazy keeps it off that path while leaving external plugins a way to
+  // reach it -- published apollo deep-imports this exact path, and react-msaview
+  // (bundled by tview and msaview) reads it too, so dropping it from the barrel
+  // with no ABI home is what broke them.
+  ...lazyMap(
+    { BaseTooltip: React.lazy(() => import('../ui/BaseTooltip.tsx')) },
+    '@jbrowse/core/ui/',
+  ),
   '@jbrowse/core/util': coreUtil,
   '@jbrowse/core/util/color': coreColor,
   '@jbrowse/core/util/layouts': coreLayouts,

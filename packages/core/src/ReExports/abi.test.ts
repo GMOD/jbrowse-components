@@ -41,12 +41,20 @@ describe('external plugin ABI', () => {
 
   it('pins every @jbrowse/core module the host actually serves', () => {
     // a new namespace re-export should get a baseline entry rather than sit
-    // unguarded; modules exposing only a default export have no names to pin
+    // unguarded; modules exposing only a default export have no names to pin.
+    // A module served as the thing itself rather than as a namespace of names --
+    // a class (Plugin, the pluggable element types) or a component
+    // (ui/BaseTooltip) -- is the same case: there is one export and its name is
+    // whatever the importing bundler reads for a default import, so a per-name
+    // pin has nothing to say about it.
     const unpinned = Object.entries(libs)
       .filter(([name]) => name.startsWith('@jbrowse/core/'))
       .filter(
         ([name, mod]) =>
-          Object.keys(mod as object).length > 0 && !(name in baseline),
+          mod !== null &&
+          typeof mod === 'object' &&
+          Object.keys(mod).length > 0 &&
+          !(name in baseline),
       )
       .map(([name]) => name)
     expect(unpinned).toEqual([])

@@ -115,12 +115,13 @@ const KNOWN_REMOVALS: Record<string, string> = {
   '@jbrowse/core/util#findLast': 'Array.prototype.findLast',
   '@jbrowse/core/util#findLastIndex': 'Array.prototype.findLastIndex',
 
-  // BaseTooltip is still shipped, just not through this barrel: re-exporting it
-  // pulled @floating-ui (~266KB) onto the startup path. In-tree code deep-imports
-  // '@jbrowse/core/ui/BaseTooltip', but that path is not in ReExports/list.ts, so
-  // an external plugin bundles its own copy rather than externalizing it.
+  // Moved rather than dropped: re-exporting it from this barrel pulled
+  // @floating-ui (~266KB) onto the startup path, so it is served as its own
+  // '@jbrowse/core/ui/BaseTooltip' module behind React.lazy instead. A plugin
+  // built against the barrel still has to change the import, which is why
+  // apollo and react-msaview both had to.
   '@jbrowse/core/ui#BaseTooltip':
-    'dropped from the barrel for startup weight; deep-import path is not in the ABI',
+    'moved to its own @jbrowse/core/ui/BaseTooltip module to keep @floating-ui off the startup path',
 
   // Dropped with no replacement; the remaining callers inlined them.
   '@jbrowse/core/util#TextSearchManager':

@@ -195,6 +195,8 @@ export default [
   '@jbrowse/core/ui/theme',
   // #reexport The same colors and `resolvePalette` without Material UI in the module graph, for worker and renderer code
   '@jbrowse/core/ui/palette',
+  // #reexport The hover tooltip, kept out of the `ui` barrel so @floating-ui stays off the startup path
+  '@jbrowse/core/ui/BaseTooltip',
   // #reexport Core helpers: `getSession`, `getContainingView`, `Feature`, region and coordinate utilities
   '@jbrowse/core/util',
   // #reexport Color parsing and manipulation helpers
