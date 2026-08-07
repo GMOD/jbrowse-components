@@ -125,3 +125,59 @@ test('a sample without PS at this site does not inherit the previous site', () =
   reader.read(vcfFeature('1\t201\t.\tG\tA\t60\tPASS\t.\tGT:PS\t1|0:.', ['S1']))
   expect(reader.present[0]).toBe(0)
 })
+
+// `processFormatFields` numbers samples against the header of the file THIS
+// feature came from, exactly as `processGenotypes` does — so this reader needs
+// the same translation `computeSampleInfo` does, and for the same reason.
+// SplitVcfTabixAdapter opens one file per refName, so a view spanning two
+// contigs whose headers disagree hands both to one reader. Without the remap
+// every phase set after the first difference lands on a neighbouring sample:
+// the cells stay coloured, and each one is coloured by somebody else's phase
+// block.
+//
+// This is the fixture shape the genotype pass shipped a bug for want of, so it
+// is written here for the code that repeats the pattern rather than left for
+// the next person to rediscover.
+test('phase sets follow the sample when a later header orders them differently', () => {
+  // canonical order is the union in first-seen order: contig 1's header, then
+  // the sample contig 2 adds
+  const sampleNames = ['S1', 'S2', 'S0']
+  const reader = makePhaseSetReader(sampleNames)
+
+  reader.read(
+    vcfFeature('1\t101\t.\tG\tA\t60\tPASS\t.\tGT:PS\t1|0:11\t1|0:22', [
+      'S1',
+      'S2',
+    ]),
+  )
+  expect([...reader.value.slice(0, 2)]).toEqual([11, 22])
+
+  // contig 2's header puts S0 first, so header position 0/1/2 is canonical
+  // column 2/0/1. Indexing the union by sampleIdx would read 33/44/55 in place.
+  reader.read(
+    vcfFeature('2\t101\t.\tG\tA\t60\tPASS\t.\tGT:PS\t1|0:33\t1|0:44\t1|0:55', [
+      'S0',
+      'S1',
+      'S2',
+    ]),
+  )
+  expect({
+    S1: reader.value[0],
+    S2: reader.value[1],
+    S0: reader.value[2],
+  }).toEqual({ S1: 44, S2: 55, S0: 33 })
+})
+
+// A sample one file has and the canonical order does not know about is dropped
+// rather than written out of bounds or onto column 0.
+test('a header sample absent from the canonical order is skipped', () => {
+  const reader = makePhaseSetReader(['S1'])
+  reader.read(
+    vcfFeature('1\t101\t.\tG\tA\t60\tPASS\t.\tGT:PS\t1|0:11\t1|0:99', [
+      'S1',
+      'SX',
+    ]),
+  )
+  expect([...reader.present]).toEqual([1])
+  expect(reader.value[0]).toBe(11)
+})

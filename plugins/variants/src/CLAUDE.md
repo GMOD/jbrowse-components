@@ -62,9 +62,9 @@ prefers declarative iteration.
   an empty field and `.` all mean "no phase set" and fall back to allele
   coloring, while a present-but-unparseable id is NaN and paints hue 0 — which
   is what `SAMPLES()`' `+` coercion produced. GT is deliberately not read there;
-  it comes from the interned codes, so there is one source of it.
-  An adapter that can't report FORMAT ranges paints by allele, the same outcome
-  an absent `samples` field already gave.
+  it comes from the interned codes, so there is one source of it. An adapter
+  that can't report FORMAT ranges paints by allele, the same outcome an absent
+  `samples` field already gave.
 - Codes are **Uint32**. They were Uint16, which capped the dict at 65535
   distinct genotype strings — reachable on a decomposed pangenome callset, where
   a multiallelic site's genotypes grow with the square of the alt count. Past
