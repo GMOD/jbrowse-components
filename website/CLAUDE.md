@@ -22,6 +22,12 @@ immutable; git tracks `figures.lock` at the repo root, one line per figure.
   (`--base`, `--markdown`) is how you _look_ at one. Every revision ever pushed
   is still at its own URL, so it renders before/after side by side. The
   `Figures moved` CI job posts that to the run summary on every branch.
+- **`figures.lock` is also what a review compares against.** Nothing about a
+  figure is in the tree any more, so `git diff`/`git ls-tree` over `static/img`
+  answer "nothing there" — asked about figures they do not report "unchanged",
+  they report the state of a fresh clone. `review-screenshots-web` reads the
+  lock at `origin/main` instead, and points its before-image straight at the
+  store URL that line names.
 - **The line carries `WxH`**, which is the one change a pixel diff cannot see —
   `pngDiffFraction` returns null on a size mismatch. A resize shows up in
   `git diff` as `1400x900 -> 1400x1240`.
