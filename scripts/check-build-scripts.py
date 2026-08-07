@@ -732,6 +732,35 @@ else:
            [r.split("\t")[0] for r in rgfa_rows("outref.ref.segs.bed.gz")]),
           (0, ["K12#1#chr", "K12#1#chr"]))
 
+    # Three scripts write this one pair and nothing has pinned that they agree.
+    # build_rgfa_tabix.sh is the shape the adapter was built for; the two path
+    # walkers append tags AFTER it, one column on segs and two on links, so the
+    # shared prefix is positionally identical and a reader that stops at 5 or 13
+    # reads all three. A producer that inserted a column instead of appending one
+    # would keep every row well formed and every index valid, and move a
+    # coordinate under a rank.
+    def arity(rows):
+        return sorted({len(r.split("\t")) for r in rows})
+
+    def bed_rows(path):
+        return open(path).read().splitlines()
+
+    check("all three producers write the same segs columns, tags appended last",
+          [arity(rgfa_rows("out.segs.bed.gz")),
+           arity(bed_rows(f"{multi_prefix}.segs.bed")),
+           arity(bed_rows(f"{tier_prefix}.segs.bed"))], [[5], [6], [6]])
+    check("all three producers write the same links columns, tags appended last",
+          [arity(rgfa_rows("out.links.bed.gz")),
+           arity(bed_rows(f"{multi_prefix}.links.bed")),
+           arity(bed_rows(f"{tier_prefix}.links.bed"))], [[13], [15], [15]])
+    # The shared prefix is the same fields in the same places: chrom/start/end
+    # then the endpoint pair, then both endpoints stated in full.
+    check("the shared links prefix means the same thing in each",
+          [rgfa_rows("out.links.bed.gz")[0].split("\t")[:6],
+           bed_rows(f"{multi_prefix}.links.bed")[0].split("\t")[:6]],
+          [["K12#1#chr", "0", "5", "s1+", "s3+", "K12#1#chr"],
+           ["GRCh38#0#chr1", "0", "5", "s1+", "s2+", "GRCh38#0#chr1"]])
+
 # sv_multihop.py: reconstructs the COLO829 derivative allele the cancer_sv demo
 # serves. Three bugs here produced a plausible-looking but wrong figure rather
 # than an error, which is what these pin.
