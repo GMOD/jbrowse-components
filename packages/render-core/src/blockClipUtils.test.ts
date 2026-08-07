@@ -3,7 +3,9 @@ import {
   clipBlock,
   writeBpRangeUniforms,
 } from './blockClipUtils.ts'
+import { makeBpMapper } from './canvas2dUtils.ts'
 
+import type { BlockClipResult } from './blockClipUtils.ts'
 import type { BpRegionBounds } from './renderBlock.ts'
 
 function block(
@@ -67,6 +69,40 @@ test('bpRangeXTuple pivots on bpEnd with a negated length for reversed blocks', 
     -clip.clippedLengthBp,
   ])
 })
+
+// The shader half of the contract, in CSS px: `hpToClipX` maps bp to NDC over
+// the bpRangeX tuple, and the viewport is set to the block's clipped span, so
+// NDC -1/+1 land on the scissor's two edges.
+function gpuScreenPx(bp: number, clip: BlockClipResult, reversed: boolean) {
+  const [hi, lo, len] = bpRangeXTuple(clip, reversed)
+  const ndc = -1 + (2 * (bp - (hi + lo))) / len
+  return clip.scissorX + ((ndc + 1) / 2) * clip.scissorW
+}
+
+// The GPU and Canvas2D paths have to put a base on the same pixel column, and
+// the reversed case is the one that can drift: `clipBlock` derives the clipped
+// bp range from `screenStartPx` alone, which names the block's LOW bp forward
+// and its HIGH bp reversed. Any asymmetric clip then mirrors the range — and
+// `canvasWidth` is `view.trackWidthPx` (`view.width - 2` with track outlines on,
+// the default), so the rightmost block is asymmetrically clipped on every view.
+test.each([false, true])(
+  'GPU bp->px agrees with makeBpMapper on a clipped block (reversed=%s)',
+  reversed => {
+    const bounds = {
+      start: 1_000_000,
+      end: 1_001_000,
+      screenStartPx: 0,
+      screenEndPx: 1000,
+      reversed,
+    }
+    // view.width 1000 minus the 2px track outline: what every display passes
+    const clip = clipBlock(bounds, 998, 20, 1)!
+    const toX = makeBpMapper(bounds)
+    for (const bp of [1_000_000, 1_000_250, 1_000_500, 1_001_000]) {
+      expect(gpuScreenPx(bp, clip, reversed)).toBeCloseTo(toX(bp), 6)
+    }
+  },
+)
 
 test('writeBpRangeUniforms writes the tuple at offsetF32, leaving other slots untouched', () => {
   const clip = clipBlock(block(100, 900), 1000, 20, 1)!

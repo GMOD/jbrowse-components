@@ -100,10 +100,25 @@ export function clipBlock(
   const pxH = Math.round(canvasHeight * dpr)
 
   const bpPerPx = regionLengthBp / fullBlockWidth
-  const clippedBpStart =
-    block.start + (scissorX - block.screenStartPx) * bpPerPx
-  const clippedBpEnd =
-    block.start + (scissorEnd - block.screenStartPx) * bpPerPx
+  // bp at a screen px, in the block's OWN orientation: a reversed block runs bp
+  // leftward from `end`, so trimming its right edge cuts LOW bp away, not high.
+  // The two orientations agree exactly when the block is unclipped, which is why
+  // the forward-only spelling survived — but `canvasWidth` is `trackWidthPx`,
+  // i.e. `view.width - 2` whenever track outlines are on (the default), so the
+  // rightmost block is clipped on every view and a reversed one had its whole
+  // painting shifted 2px against `makeBpMapper` (the Canvas2D painter and every
+  // hit-test). Another member of the reversed-block family in this package's
+  // CLAUDE.md: invisible forward, only ever wrong on a flipped view.
+  const leftEdgeBp = block.reversed
+    ? block.end - (scissorX - block.screenStartPx) * bpPerPx
+    : block.start + (scissorX - block.screenStartPx) * bpPerPx
+  const rightEdgeBp = block.reversed
+    ? block.end - (scissorEnd - block.screenStartPx) * bpPerPx
+    : block.start + (scissorEnd - block.screenStartPx) * bpPerPx
+  // `bpStart*` is the LOW coordinate on both orientations and `bpEnd*` the high
+  // one, which is what `bpRangeXTuple` pivots on when reversed.
+  const clippedBpStart = block.reversed ? rightEdgeBp : leftEdgeBp
+  const clippedBpEnd = block.reversed ? leftEdgeBp : rightEdgeBp
   const [bpStartHi, bpStartLo] = splitPositionWithFrac(clippedBpStart)
   const [bpEndHi, bpEndLo] = splitPositionWithFrac(clippedBpEnd)
 
