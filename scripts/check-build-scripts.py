@@ -20,6 +20,7 @@ Usage: python3 scripts/check-build-scripts.py
 import ast
 import contextlib
 import glob
+import gzip
 import io
 import importlib.util
 import json
@@ -330,6 +331,43 @@ check("maf_to_bed spans row 0's interval", maf_to_bed.bed_line(blocks[0])[:3],
 check("maf_to_bed encodes every row, strand and srcSize kept",
       maf_to_bed.bed_line(blocks[0])[3],
       "REF.chr:500:10:+:1000:AAAAAAAAAA,other.chr:20:10:-:1000:CCCCCCCCCC")
+
+# flare_anc_to_bed.py: the painted ancestry BED behind local_ancestry.md. FLARE
+# calls ancestry per MARKER, so a run is a range of markers -- and it has to be
+# closed where the NEXT run begins, not at its own last marker. Closing it at its
+# own last marker leaves the entire inter-marker interval unpainted at every
+# ancestry switch, and the switch is the only place a gap can appear (a run of
+# equal calls just extends). Nothing reports it: the BED is well formed, tabix
+# indexes it, the summary this script prints is unchanged, and the multi-row
+# painter draws exactly what it is given -- so it surfaces only as white nicks
+# between blocks, scattered and sub-pixel at whole-chromosome zoom and wider
+# wherever the panel's markers thin out.
+with tempfile.TemporaryDirectory() as flare_dir:
+    anc = os.path.join(flare_dir, "t.anc.vcf.gz")
+    with gzip.open(anc, "wt") as fh:
+        fh.write("##fileformat=VCFv4.2\n##ANCESTRY=<Wolf=0,Dog=1>\n")
+        fh.write("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tS1\n")
+        # the call switches after 3000, and the next marker is 6 kb further on
+        for pos, anc_code in ((1000, 0), (2000, 0), (3000, 0), (9000, 1),
+                              (10000, 1)):
+            fh.write(f"chr1\t{pos}\t.\tA\tG\t.\t.\t.\tAN1:AN2\t"
+                     f"{anc_code}:{anc_code}\n")
+    labels = os.path.join(flare_dir, "labels.tsv")
+    with open(labels, "w") as fh:
+        fh.write("S1\tSample A\n")
+    painted = os.path.join(flare_dir, "out.bed")
+    sys.argv = ["flare_anc_to_bed.py", anc, labels, painted]
+    with contextlib.redirect_stdout(io.StringIO()):
+        load("scripts/flare_anc_to_bed.py", "flare_anc_to_bed")
+    hap = sorted(
+        (ln.split("\t") for ln in open(painted).read().splitlines()
+         if not ln.startswith("#") and ln.split("\t")[9] == "Sample A hap1"),
+        key=lambda r: int(r[1]))
+    check("flare runs close where the next one begins",
+          [(r[1], r[2], r[3]) for r in hap],
+          [("999", "8999", "Wolf"), ("8999", "10000", "Dog")])
+    check("flare leaves no unpainted bp between consecutive runs",
+          sum(int(b[1]) - int(a[2]) for a, b in zip(hap, hap[1:])), 0)
 
 # gfa_nodes_to_bed.py: itemRgb has to be the graph view's own viridis Depth ramp
 # sampled over the subgraph's min/max, or the linear strip stops matching the
@@ -1131,6 +1169,30 @@ sys.argv = ["compara_to_blocks.py", og_src, "--reference", "sorghum_bicolor=sorg
             "--species", "triticum_aestivum=wheat", "--outdir", outdir]
 with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
     cmp_mod.main()
+# A gene with dozens of orthologs in one partner is a family, and `copies` has no
+# declared domain — one such gene drags the ramp so the 1-vs-3 distinction the
+# polyploid case is about lands in its bottom twentieth.
+family_src = os.path.join(tempfile.mkdtemp(), "fam.tsv")
+with open(family_src, "w") as fh:
+    fh.write("gene_stable_id\tprotein_stable_id\tspecies\tidentity\thomology_type\t"
+             "homology_gene_stable_id\thomology_protein_stable_id\thomology_species\t"
+             "homology_identity\tdn\tds\tgoc_score\twga_coverage\tis_high_confidence\thomology_id\n")
+    for i in range(3):
+        fh.write(f"S1\tp\tsorghum_bicolor\t80\tortholog_one2many\tW{i}\tp\t"
+                 f"triticum_aestivum\t80\tNULL\tNULL\tNULL\tNULL\t1\t{i}\n")
+    for i in range(9):
+        fh.write(f"S2\tp\tsorghum_bicolor\t80\tortholog_one2many\tF{i}\tp\t"
+                 f"triticum_aestivum\t80\tNULL\tNULL\tNULL\tNULL\t1\t{100 + i}\n")
+famdir = tempfile.mkdtemp()
+sys.argv = ["compara_to_blocks.py", family_src, "--reference", "sorghum_bicolor=sorghum",
+            "--species", "triticum_aestivum=wheat", "--outdir", famdir]
+with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+    cmp_mod.main()
+check("a gene past --max-copies is a family and contributes no rows",
+      sorted({l.split("\t")[0] for l in
+              open(os.path.join(famdir, "sorghum.wheat.blocks")).read().splitlines()}),
+      ["S1"])
+
 check("every row of a fanned-out gene carries the whole copy count",
       [l.split("\t")[-1] for l in
        open(os.path.join(outdir, "sorghum.wheat.blocks")).read().splitlines()],

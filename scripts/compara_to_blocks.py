@@ -30,7 +30,8 @@ where the measurement is the point.
 A reference gene with several orthologs in one genome (`ortholog_one2many`)
 becomes several rows, the same choice `orthogroups_to_blocks.py --pick expand`
 makes: a cell holds one id, and dropping the rest would draw one confident link
-picked by file order.
+picked by file order. Past `--max-copies` it is a gene family rather than a set
+of copies and contributes nothing, which is the same line that script draws.
 
 Requires: python3 only.
 Usage:
@@ -40,6 +41,7 @@ Usage:
 """
 
 import argparse
+import collections
 import gzip
 import os
 import sys
@@ -132,6 +134,10 @@ def main():
                         "ortholog_one2one and ortholog_one2many")
     p.add_argument("--high-confidence-only", action="store_true",
                    help="keep only rows Compara flags is_high_confidence")
+    p.add_argument("--max-copies", type=int, default=4, metavar="N",
+                   help="drop a reference gene with more than N orthologs in "
+                        "one partner: that is a gene family rather than a set "
+                        "of copies (default 4, 0 to keep every one)")
     p.add_argument("--outdir", default=".")
     args = p.parse_args()
 
@@ -153,11 +159,12 @@ def main():
     # reference gene's orthologs in one partner, and that total is only known
     # once its last row has been read. A pairwise table is tens of thousands of
     # rows against an input of millions, so what is held is the small end.
-    rows = {}
-    copies = {}
-    seen = {n: set() for n in others.values()}
-    placed = {n: set() for n in others.values()}
-    ref_seen, ref_placed = set(), set()
+    rows = collections.defaultdict(list)
+    copies = collections.Counter()
+    # the reference is tracked in the same two dicts as its partners, so the
+    # report below has one shape rather than a special case for column 0
+    seen = {n: set() for n in names}
+    placed = {n: set() for n in names}
     counts = {"rows": 0, "kept": 0, "unresolved": 0}
     with opener(args.homologies) as fh:
         header = fh.readline().rstrip("\n").split("\t")
@@ -182,19 +189,18 @@ def main():
                 continue
             ref_gene = f[index["gene_stable_id"]]
             other_gene = f[index["homology_gene_stable_id"]]
-            ref_seen.add(ref_gene)
-            seen[other].add(other_gene)
-            ref_ok = ref_name not in beds or ref_gene in beds[ref_name]
-            other_ok = other not in beds or other_gene in beds[other]
-            if ref_ok:
-                ref_placed.add(ref_gene)
-            if other_ok:
-                placed[other].add(other_gene)
-            if not (ref_ok and other_ok):
+            ok = True
+            for name, gene in ((ref_name, ref_gene), (other, other_gene)):
+                seen[name].add(gene)
+                if name in beds and gene not in beds[name]:
+                    ok = False
+                else:
+                    placed[name].add(gene)
+            if not ok:
                 counts["unresolved"] += 1
                 continue
             # identity as a fraction: the ramp's domain, not Compara's percent
-            rows.setdefault(other, []).append((ref_gene, [
+            rows[other].append([
                 ref_gene, other_gene,
                 cell(f[index["identity"]], 0.01),
                 cell(f[index["homology_identity"]], 0.01),
@@ -202,33 +208,36 @@ def main():
                 cell(f[index["ds"]]),
                 cell(f[index["goc_score"]]),
                 cell(f[index["wga_coverage"]], 0.01),
-            ]))
-            copies.setdefault(other, {})
-            copies[other][ref_gene] = copies[other].get(ref_gene, 0) + 1
+            ])
+            copies[other, ref_gene] += 1
             counts["kept"] += 1
-    handles = {}
+    # A gene with dozens of "orthologs" in one genome is a family, not a set of
+    # copies, and it is not only noise: `copies` has no declared domain, so an
+    # attribute mode scales to what it sees, and one gene at 68 pushes the 1-vs-3
+    # distinction the polyploid case is about into the bottom twentieth of the
+    # ramp. Dropped rather than clamped, so the count stays a count.
+    counts["families"] = 0
     for other, table in rows.items():
-        path = os.path.join(args.outdir, f"{ref_name}.{other}.blocks")
-        handles[other] = path
-        with open(path, "w") as out:
-            for ref_gene, cells in table:
-                out.write("\t".join([*cells, str(copies[other][ref_gene])])
-                          + "\n")
+        with open(os.path.join(args.outdir,
+                               f"{ref_name}.{other}.blocks"), "w") as out:
+            for cells in table:
+                n = copies[other, cells[0]]
+                if args.max_copies and n > args.max_copies:
+                    counts["families"] += 1
+                    continue
+                # the count goes on last, once every row for the gene was read
+                out.write("\t".join([*cells, str(n)]) + "\n")
 
-    def share(name, seen_ids, placed_ids):
+    def share(name):
         if name not in beds:
-            return f"  {name}: {len(seen_ids)} ids, unchecked (pass --bed {name}=FILE)"
-        total, kept = len(seen_ids), len(placed_ids)
+            return f"  {name}: {len(seen[name])} ids, unchecked (pass --bed {name}=FILE)"
+        total, kept = len(seen[name]), len(placed[name])
         pct = f"{kept * 100 // total}%" if total else "no ids"
         return (f"  {name}: {kept}/{total} ids ({pct}) placed by "
                 f"{bed_files[name]}")
 
-    lines = [share(ref_name, ref_seen, ref_placed)]
-    lines += [share(n, seen[n], placed[n]) for n in others.values()]
-    dead = [n for n in names
-            if n in beds and (seen[n] if n != ref_name else ref_seen)
-            and not (placed[n] if n != ref_name else ref_placed)]
-    placed_report = "\n".join(lines)
+    dead = [n for n in names if n in beds and seen[n] and not placed[n]]
+    placed_report = "\n".join(share(n) for n in names)
     # Before the no-rows check below, not after: a BED keyed on the wrong ids
     # rejects every row, which leaves no table written and otherwise reports as
     # "nothing matched your species filter" — the one diagnosis that sends the
@@ -241,14 +250,17 @@ def main():
                  f"so BED column 4 has to carry those rather than transcript or "
                  f"protein ids.")
 
-    if not handles:
+    if not rows:
         sys.exit(f"no rows matched: reference species {ref_compara!r}, "
                  f"homology types {sorted(keep_types)}, partners "
                  f"{sorted(others)}. Check those against the file's own values.")
 
-    print(f"wrote {len(handles)} table(s) from {counts['rows']} rows: "
-          f"{counts['kept']} links kept, {counts['unresolved']} dropped for an "
-          f"id neither BED places\ngenes placed per assembly:\n{placed_report}",
+    print(f"wrote {len(rows)} table(s) from {counts['rows']} rows: "
+          f"{counts['kept'] - counts['families']} links kept, "
+          f"{counts['unresolved']} dropped for an id neither BED places, "
+          f"{counts['families']} for a gene with more than "
+          f"{args.max_copies} orthologs in one partner"
+          f"\ngenes placed per assembly:\n{placed_report}",
           file=sys.stderr)
     print(" ".join(ATTRS))
 

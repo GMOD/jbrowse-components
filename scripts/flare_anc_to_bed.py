@@ -86,6 +86,16 @@ with gzip.open(anc_vcf, 'rt') as fh:
                 if r is not None and r[0] == anc:
                     r[2] = pos
                 else:
+                    if r is not None:
+                        # Close the outgoing run where the incoming one begins,
+                        # not at its own last marker: a run ending at marker p_j
+                        # while the next starts at p_{j+1}-1 leaves the whole
+                        # inter-marker interval unpainted, so the painting shows
+                        # a white nick at every ancestry switch. The switch
+                        # happened somewhere in that interval and the markers
+                        # cannot say where, so the runs tile at the boundary
+                        # rather than each stopping short of it.
+                        r[2] = pos - 1
                     flush(key, chrom)
                     runs[key] = [anc, pos - 1, pos]
 
