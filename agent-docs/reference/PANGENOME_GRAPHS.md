@@ -252,10 +252,23 @@ Facts behind it, each measured rather than assumed:
   force-directed figures carried `diffThreshold: 0.1`. The engine's C++ is now
   in the plugin (`src/bandage/native`), seeded, with `pnpm test:wasm` asserting
   it. A `seed` option overrides per call.
-- **Sample rows stops aligning past ~12 rows.** Row spacing is 5% of the drawn
-  width and the pane caps at 600 px, so a taller-than-wide drawing gets fitted
-  to the pane's height and centred, and the backbone no longer sits under the
-  linear view's axis.
+- **A row is a row height, and the y axis is not scaled** — fixed 2026-08-06,
+  plugin `6684edb`. It used to be 5% of the *drawn width*, in bp, with one scale
+  drawing both axes, so a two-row graph got a ~46 px pitch for a 10 px tube and
+  a taller-than-wide drawing bound zoom-to-fit on its height and took the
+  backbone out from under the linear view's axis. `scaleX` now carries the zoom
+  and `scaleY` is pinned at 1; the pane is the row count times the pitch, and
+  rows past its ceiling are panned to.
+
+  **The cost is not in the layouts, it is in everything that mixes the axes.**
+  A chord length, a tangent projection, a deletion's bow, a mitre normal, an
+  arrowhead's angle and a hover distance are each one `hypot` over x and y, and
+  every one of them now takes `yToX` (`scaleY / scaleX`) and converts before it
+  measures. `yToX === 1` is the isotropic path and is asserted to be the
+  identity, which is what keeps every committed FMMM figure where it is. The one
+  place not converted is `graph.slang`, whose generated WGSL divides the vertex
+  normal by `scale.x` alone; it is dead until a GPU backend exists, and
+  `GraphRenderer.ts` says what to change.
 - **`odgi degree` is a dud**: over 500 bp windows, mean 3.82, max 4.79, no
   dynamic range. It does not make a graph-complexity track. The tutorial shipped
   one anyway for a while; it was removed 2026-08-05 with the measurement that

@@ -10,12 +10,17 @@ behind it are in
 [reference/PANGENOME_GRAPHS.md](../reference/PANGENOME_GRAPHS.md) — read that
 first, this file assumes it.
 
-**State as of 2026-08-05.** Closed: §1 deterministic layout, §2 pinned bundle,
+**State as of 2026-08-06.** Closed: §1 deterministic layout, §2 pinned bundle,
 §3 carriage read path, §5 the level-of-detail tier (producer, hosted files, and
-the browser bug that blocked it), §9 reference-only index (built and hosted, and
-its premise corrected — it is not a drop-in). Open: §4 colour/legend, §6 the
-axis, §7 in-view navigation, §8 the UI debts, and the demo list. Nothing is
-blocked.
+the browser bug that blocked it), §6's y axis, §9 reference-only index (built and
+hosted, and its premise corrected — it is not a drop-in). Open: §4 colour/legend,
+§6's remaining half (x from the connected linear view), §7 in-view navigation,
+§8 the UI debts, and the demo list.
+
+**One thing is blocked, and it is the same thing for both §2 and §6: a clean
+worktree to regenerate figures in.** §6 moves every anchored figure by design and
+the pin bump owed since 2026-08-06 moves them too, so both wait on the same
+sweep. Nothing else is blocked; the plugin work can go on without it.
 
 **Published 2026-08-06, latest `aee5e17f4b2c`** (which added `maxRegionBp`; the
 carriage read went out just before it as `bfe47428e7ae`). This clears the
@@ -23,13 +28,30 @@ betabuild this file had been asking for: the tier fix, two dependency bumps, the
 registration fix, the drawing-pane ceiling and the carriage read (§3) all went
 out together, and the unversioned entry point now serves them.
 
-**Still owed: bump the pin in the three fixtures and regenerate the graph figures
-in the same commit, per §2.** Not done here because the jbrowse-components
-worktree had 45 uncommitted source files from other agents at the time — a regen
-against that tree bakes somebody else's work in progress into the published
-figure set, which is exactly what a pin exists to prevent. The test for whether a
-given figure is safe to regenerate is whether an unfiltered sweep moves it at
-all: the graph figures all moved, so all of them are blocked on a clean tree.
+**Still owed: deploy §6, bump the pin in the three fixtures, and regenerate the
+graph figures — all in one commit, per §2.** Not done because the
+jbrowse-components worktree has been carrying 40-100 uncommitted source files
+from other agents throughout; a regen against that tree bakes somebody else's
+work in progress into the published figure set, which is exactly what a pin
+exists to prevent. The test for whether a given figure is safe to regenerate is
+whether an unfiltered sweep moves it at all: the graph figures all moved, so all
+of them are blocked on a clean tree.
+
+Deploying §6 ahead of the regen is safe but pointless-to-half-wrong: the
+fixtures pin a hash, so the screenshot generator would keep rendering the old
+bundle, while a reader clicking a published figure's LIVE LINK (which points at
+the unversioned entry point) would see rows a figure's caption does not describe.
+Do the three together.
+
+**The plugin e2e cannot verify this today**, and the reason is worth knowing
+before spending an hour on it: `test/` boots a real JBrowse from
+`.test-jbrowse-demos`, a copy taken 2026-07-24, and the current plugin calls
+`contributeToExtensionPoint`, which that host does not have — every suite fails
+in setup with `e.contributeToExtensionPoint is not a function`. A fresh host
+means building jbrowse-web, which means a clean tree, i.e. the same block. What
+stands in for it is `model.test.ts`'s "what the row axis draws, in pixels":
+`recordingCanvas` now records coordinates, so the whole pipeline can be asserted
+on the numbers the renderer was handed.
 
 Durable spillover from §5 lives outside this file and should not be copied back
 in: the wasm string-decode defect it turned up is ADR 0002 in the
@@ -313,38 +335,55 @@ pair, and this figure loads a GFA through `gfaLocation` because the tabix cut ha
 no P lines and `drawPaths` would have nothing to draw. A file has no tier to
 switch to, so its coarsening has to happen in the view.
 
-## 6. The axis: y in pixels, x from the linear view
+## 6. The axis: ~~y in pixels~~ done, x from the linear view still open
 
-**The highest-value change in this file, and it is one number becoming two.**
-Both reference-anchored layouts set row spacing in *bp*
-(`ROW_SPACING_SPAN_FRACTION = 0.05` of the backbone span, in `anchoredLayout.ts`
-and `sampleRowLayout.ts`), and the view scales both axes by one `self.scale`. So
-a row pitch is 5% of the drawn width — ~50 px in every published figure —
-whatever the rows contain, which is an ~8 px tall mark. Three separate
-complaints are that one decision:
+**y in px shipped 2026-08-06, plugin `6684edb` + `7821b77`.** Both anchored
+layouts now emit `ROW_HEIGHT_PX = 20`, `LayoutResult.pixelRows` says so, and the
+model exposes `scaleX` (the zoom) and `scaleY` (pinned at 1 there). The pane is
+the row count times the pitch — `MAX_CANVAS_HEIGHT`'s aspect-ratio derivation is
+gone for row layouts and the ceiling that used to squeeze the pitch is gone with
+it — and `zoomToFit` fits x alone, so no row count can take the backbone out
+from under the linear view's axis again. Two of the three complaints below are
+closed by that: the tall rows and the ~12-row misalignment.
 
-- the open `hprc_graph_vs_callset` review verdict ("the different rank rows are
-  quite tall, we need compressed visualizations with efficient use of y-axis real
-  estate, but particularly the backbone graph");
-- **the panels do not actually line up.** `hprc_mhc_anchored` is the figure whose
-  whole argument is a shared axis, and the segments lane above spans the full
-  pane while the backbone below starts after `FIT_PADDING` (40) plus the row-label
-  gutter and ends short of the right edge. Sharing a coordinate system is not
-  sharing a pixel mapping;
-- "sample rows stops aligning past ~12 rows" in
-  [reference/PANGENOME_GRAPHS.md](../reference/PANGENOME_GRAPHS.md) is the same
-  bug seen from the other end: rows in bp make a tall drawing, `canvasHeight`
-  caps at 600, and the fit then binds on height and centres.
+**What it actually cost, since this section said "one number becoming two" and
+that is the part to correct.** Most of the drawing mixes the axes in a single
+`hypot` — a chord length, a tangent projection, a deletion's bow, a mitred
+normal, an arrowhead's angle, a hover distance — and every one of those is
+nonsense the moment x is bp and y is px. They each take `yToX` (`scaleY/scaleX`)
+now and convert before measuring. `yToX === 1` is the isotropic path and
+`geometry.test.ts` asserts it is the *identity*, not merely close, which is what
+keeps the committed FMMM figures byte-stable. Details in
+[reference/PANGENOME_GRAPHS.md](../reference/PANGENOME_GRAPHS.md).
 
-The plumbing is already there: `Renderer.updateTransform` takes `scaleX` and
-`scaleY` separately and the model passes `self.scale` to both. Give the layouts a
-row pitch in px, drive `scaleX` from bp, and take `scaleX`/`translateX` from the
-connected LGV's `bpPerPx`/`offsetPx` when `connectedViewId` is set. Then rows are
-a track's row height, the backbone sits under the ruler that measures it, and
-`MAX_CANVAS_HEIGHT`/`canvasHeight`'s aspect-ratio derivation can go.
+Also worth not re-deriving: **the anisotropy does not belong in the transform
+uniform, even though the uniform has had `scaleX`/`scaleY` all along.** Putting
+it only there leaves every mixed-axis computation upstream still wrong. The
+uniform does carry it now, but the conversion has to happen where the geometry
+is built.
 
-Do this before item 5. It is also what makes a compact figure possible for the
-one verdict still open on that figure.
+Still open, and it is the half that was never about y:
+
+- **take `scaleX`/`translateX` from the connected LGV** (`bpPerPx`/`offsetPx`)
+  when `connectedViewId` is set. This is what closes the third complaint:
+  `hprc_mhc_anchored` is the figure whose whole argument is a shared axis, and
+  the segments lane above spans the full pane while the backbone below starts
+  after `FIT_PADDING` (40) plus the row-label gutter and ends short of the right
+  edge. Sharing a coordinate system is not sharing a pixel mapping. With
+  `scaleY` already independent this is now a change to x alone, and it is the
+  same read item 7 needs.
+- **the figures have not been regenerated**, so every published graph figure
+  still shows the old pitch. They are blocked on the same clean tree §2 is —
+  see the header. The change moves every anchored figure by design, which is
+  exactly why it must not go out piecemeal.
+- **`graph.slang` was not fixed** and would stretch every stroke's half-width by
+  `scaleY/scaleX` on a row layout. It is dead code — `createGraphRenderer`
+  returns Canvas2D unconditionally and only the generated module's vertex layout
+  constants are used — and the `.slang` is in neither repo. `GraphRenderer.ts`
+  states the one-token fix for whoever lands a GPU backend.
+
+Do the LGV half before item 5. It is also what makes a compact figure possible
+for the one verdict still open on `hprc_graph_vs_callset`.
 
 ## 7. The window is not navigable from inside the view
 
@@ -354,11 +393,12 @@ the *drawing*, so seeing the next 60 kb means going back to the linear view and
 rubberbanding again. Fetch cost does not scale with window size (~1.3 s,
 dominated by HTTP setup), so nothing about the data makes this expensive.
 
-Cheapest useful version: follow the connected LGV. With item 6 done the graph is
-already reading that view's transform, so a debounced refetch when its region
-leaves `loadedRegion` — under `MAX_GRAPH_REGION_BP`, showing the existing
-"zoom in to view graph" message past it — turns the graph into a second panel of
-one navigation. A locstring field plus widen/narrow buttons is the fallback if
+Cheapest useful version: follow the connected LGV. This wants §6's remaining
+half done first — once the graph takes `scaleX`/`translateX` from that view it is
+already reading the transform, and a debounced refetch when its region leaves
+`loadedRegion` — under `MAX_GRAPH_REGION_BP`, showing the existing "zoom in to
+view graph" message past it — turns the graph into a second panel of one
+navigation. A locstring field plus widen/narrow buttons is the fallback if
 following turns out to fight the user.
 
 ## 8. Small UI debts, each cheap
