@@ -168,8 +168,10 @@ export function stateModelFactory(
          * Overrides the base's `undefined`: this display draws the markers, so
          * it is the one that puts them in the legend. `getSession(self).palette`
          * rather than a React theme, because this is a model getter — and it is
-         * the same `palette.insertion` the overlay paints with, so the swatch
-         * cannot drift from the glyph.
+         * the same `palette.insertion` the on-screen overlay paints with (via
+         * `usePalette`), so the swatch cannot drift from the glyph there. The
+         * SVG export paints with the *export* theme's palette instead, and
+         * passes it to `legendSections` so the swatch follows it too.
          *
          * The condition is `markersForBlock` — the painter's own test, on the
          * painter's own blocks — because both cheaper approximations are wrong

@@ -19,7 +19,9 @@ export interface RenderSvgBaseModel
   lineZoneHeight: number
   sources: Source[] | undefined
   showLegend: boolean
-  legendSections(): LegendSection[]
+  // `insertionColor` overrides the marker swatch so it can follow the export
+  // theme's palette, which is what the exported glyphs are painted with.
+  legendSections(insertionColor?: string): LegendSection[]
   // Captioned above the exported tree: which locus and settings produced it.
   // Undefined when no clustering has been run.
   clusterProvenance?: ClusterProvenance

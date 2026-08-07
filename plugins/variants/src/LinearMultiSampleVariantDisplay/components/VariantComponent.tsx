@@ -124,7 +124,16 @@ function getFeatureUnderMouse(
     model.genotypeSampleIndex!,
     info.genotypeCodes,
     source.sampleName,
-  )!
+  )
+  // No tooltip rather than a crash when the code doesn't decode — the same
+  // answer the matrix display's hit test already gives. A drawn cell normally
+  // implies a genotype, so this is the one case where it doesn't: a payload
+  // whose genotype dict saturated interns the overflow strings to code 0 (see
+  // MAX_GENOTYPE_DICT_ENTRIES). `makeSimpleAltString` would have split
+  // undefined.
+  if (genotype === undefined) {
+    return undefined
+  }
   return {
     fields: buildVariantHit({
       info,

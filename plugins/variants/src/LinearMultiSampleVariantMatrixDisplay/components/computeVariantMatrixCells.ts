@@ -162,9 +162,12 @@ export function computeVariantMatrixCells({
       // non-VCF adapter, a sites-only record), so the fallback is keyed on the
       // field actually being there rather than on `hasPhaseSet` — reading the
       // flat map back through a `hasPhaseSet`-keyed `undefined` was a crash.
+      //
+      // Typed as the two fields this loop reads, at what they actually
+      // deserialize to — see the same spot in computeVariantCells.
       const samp = hasPhaseSet
         ? (feature.get('samples') as
-            | Record<string, Record<string, string[]>>
+            | Record<string, { GT?: string[]; PS?: (string | number)[] }>
             | undefined)
         : undefined
 

@@ -11,6 +11,23 @@
 // once). Code 0 = no genotype for that sample; otherwise the string is
 // dict[code - 1]. Lifecycle is the cellData payload itself — nothing cached.
 
+// How many distinct genotype strings one payload's dict can hold. Codes are
+// Uint16 and 0 is reserved for "no genotype", so the last usable code is 65535
+// and the dict tops out one short of the type's range.
+//
+// Reachable, if rarely: the dict is distinct genotype STRINGS across the whole
+// payload, which for a biallelic panel is a handful but at a multiallelic site
+// grows with the square of the alt count (`12|37` and `37|12` are two entries).
+// A decomposed pangenome callset with hundreds of alts per site can cross it.
+//
+// Past the cap a genotype interns to 0 rather than wrapping: `code + 1` at 65536
+// silently truncates to 0, and beyond that onto other codes, so an uncapped dict
+// decodes the WRONG genotype string in tooltips and buckets the anchored sort by
+// it. 0 is the one value every consumer already handles — it means "this sample
+// has no genotype at this site", so the cell is simply not hoverable and sorts
+// last, which is honest about knowing nothing rather than confidently wrong.
+export const MAX_GENOTYPE_DICT_ENTRIES = 65535
+
 export function internGenotype(
   genotype: string,
   dict: string[],
@@ -18,6 +35,9 @@ export function internGenotype(
 ) {
   let code = dictIndex.get(genotype)
   if (code === undefined) {
+    if (dict.length >= MAX_GENOTYPE_DICT_ENTRIES) {
+      return 0
+    }
     code = dict.length
     dict.push(genotype)
     dictIndex.set(genotype, code)

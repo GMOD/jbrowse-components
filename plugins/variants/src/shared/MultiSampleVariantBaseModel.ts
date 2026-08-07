@@ -1398,8 +1398,18 @@ export default function MultiSampleVariantBaseModelF(
          * Legend split into independently-closable sections: the genotype/cell
          * coloring and (when colorBy is set) the sample-grouping coloring shown
          * on the sidebar row labels. Dismissed sections are filtered out.
+         *
+         * `insertionColor` repaints the marker swatch without touching *whether*
+         * one is shown — that stays `insertionLegendColor`'s answer, which is the
+         * painter's own test on the painter's own blocks. Only the SVG export
+         * passes it, and it has to: the export draws its glyphs with the palette
+         * of the theme the user picked in the export dialog rather than the live
+         * session's (the rule plugin-maf's export follows too), so a session that
+         * themes `palette.insertion` would otherwise key an export in one color
+         * and draw it in another.
          */
-        legendSections(): LegendSection[] {
+        legendSections(insertionColor?: string): LegendSection[] {
+          const drawnColor = self.insertionLegendColor
           return getVariantLegendSections({
             renderingMode: self.renderingMode,
             hasSecondaryAlt: self.hasSecondaryAlt,
@@ -1409,7 +1419,10 @@ export default function MultiSampleVariantBaseModelF(
             svTypeColors: self.svTypeColors,
             colorBy: self.colorBy,
             sources: self.sources,
-            insertionColor: self.insertionLegendColor,
+            insertionColor:
+              drawnColor === undefined
+                ? undefined
+                : (insertionColor ?? drawnColor),
           }).filter(s => !self.dismissedLegendSections.includes(s.id))
         },
       }))

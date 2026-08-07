@@ -748,7 +748,15 @@ export default function sharedModelFactory(
           return
         }
         const regions = view.dynamicBlocks.contentBlocks
-        if (!self.showLDTriangle || self.regionTooLarge || !regions.length) {
+        // `regionTooLarge` is deliberately NOT a term here — see afterAttach.ts
+        // and RegionTooLargeMixin §"Measurement follows the viewport".
+        // `installGlobalFetchAutorun` owns that skip (`regionTooLarge &&
+        // !gateMeasurementStale`), which lets a blocked display run this once
+        // per settled viewport so `byteGateBlocksFetch` below can re-measure and
+        // release the banner. Restating it here returned before the gate, so the
+        // estimate froze at the viewport it was captured over and zooming in
+        // could never clear the banner.
+        if (!self.showLDTriangle || !regions.length) {
           return
         }
         // Capture the viewport this fetch is issued for. `setLastDrawnViewport`

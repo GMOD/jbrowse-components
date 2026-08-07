@@ -5,7 +5,10 @@ import { rpcResult } from '@jbrowse/core/util/librpc'
 
 import { computeVariantCells } from '../LinearMultiSampleVariantDisplay/components/computeVariantCells.ts'
 import { computeVariantMatrixCells } from '../LinearMultiSampleVariantMatrixDisplay/components/computeVariantMatrixCells.ts'
-import { internGenotype } from '../shared/genotypeCodec.ts'
+import {
+  MAX_GENOTYPE_DICT_ENTRIES,
+  internGenotype,
+} from '../shared/genotypeCodec.ts'
 import {
   PHASE_SET_COLOR,
   featureHasPhaseSet,
@@ -164,6 +167,19 @@ function internFeatureGenotypes(
     insertedBp: info.insertedBp,
     type: info.type,
     genotypeCodes,
+  }
+}
+
+// Say so, once per payload, when the genotype dict filled up. Interning stops
+// there and the overflow genotypes decode as "no genotype" (see
+// MAX_GENOTYPE_DICT_ENTRIES), which is silent on screen — the cells are painted
+// from the genotype strings themselves and look right; only hovering one of the
+// affected samples, and the anchored sort's view of it, quietly loses the call.
+function warnIfGenotypeDictSaturated(dict: string[]) {
+  if (dict.length >= MAX_GENOTYPE_DICT_ENTRIES) {
+    console.warn(
+      `This window holds more than ${MAX_GENOTYPE_DICT_ENTRIES} distinct genotype strings, the most one fetch can index. The cells are drawn correctly, but the rarest genotypes will show no call on hover and sort last under "Sort by genotype". Zoom in, or filter the multiallelic sites down.`,
+    )
   }
 }
 
@@ -560,6 +576,7 @@ export async function executeVariantCellData({
         rest.featureInsertedBp.buffer,
       )
     }
+    warnIfGenotypeDictSaturated(genotypeDict)
 
     return rpcResult(
       {
@@ -617,6 +634,7 @@ export async function executeVariantCellData({
       transferables.push(info.genotypeCodes.buffer)
       return { ...info, featureId: fd.featureId }
     })
+    warnIfGenotypeDictSaturated(genotypeDict)
 
     return rpcResult(
       {

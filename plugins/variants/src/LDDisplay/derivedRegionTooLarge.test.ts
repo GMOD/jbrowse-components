@@ -134,6 +134,46 @@ describe('LD derived regionTooLarge', () => {
     expect(display.regionTooLarge).toBe(true)
   })
 
+  // The release mechanism itself, driven through the fetch rather than through
+  // setByteEstimate: `installGlobalFetchAutorun` skips only on `regionTooLarge
+  // && !gateMeasurementStale`, so a blocked display still runs one fetch per
+  // settled viewport and that fetch's pre-flight is what re-measures. This
+  // pins that `performLDFetch` does not restate the too-large skip itself —
+  // when it did, the gate RPC was never reached and no amount of zooming could
+  // clear the banner (only force-load or chromosome nav could).
+  it('still measures while the banner holds, so a fresh estimate releases it', async () => {
+    const { display, view, mockRpcCall } =
+      createTestEnvironment().createDisplay()
+    // let afterAttach's dynamic import resolve and install its autoruns
+    await new Promise(res => setTimeout(res, 0))
+
+    view.zoomTo(100)
+    display.setByteEstimate({
+      bytes: 1_500_000,
+      viewport: display.gateViewport!,
+    })
+    expect(display.regionTooLarge).toBe(true)
+
+    // zoom in: the stored estimate is now about a viewport the user has left
+    view.zoomTo(10)
+    expect(display.gateMeasurementStale).toBe(true)
+    expect(display.regionTooLarge).toBe(true)
+
+    mockRpcCall.mockImplementation((_sessionId: string, method: string) =>
+      method === 'CoreGetRegionByteEstimate' ? 700_000 : null,
+    )
+    // counted from here, since the autorun installed above has already run one
+    // fetch of its own against the default (undefined-returning) mock
+    mockRpcCall.mockClear()
+    await display.performLDFetch()
+
+    expect(
+      mockRpcCall.mock.calls.filter(c => c[1] === 'CoreGetRegionByteEstimate'),
+    ).toHaveLength(1)
+    expect(display.estimatedFetchBytes).toBe(700_000)
+    expect(display.regionTooLarge).toBe(false)
+  })
+
   // afterAttach installs the onDisplayedRegionsChange autorun that drops the
   // cached estimate on chromosome navigation. Without it, a previous region's
   // estimate would gate the new region against the wrong stats and, because the

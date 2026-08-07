@@ -18,8 +18,15 @@ export const PHASE_SET_COLOR = 'phaseSet'
 // Whether a variant declares a phase set, i.e. carries PS in FORMAT. Gates both
 // the "Color by...→Phase set" menu entry and the heavier per-sample `samples`
 // read the coloring needs.
+//
+// An exact match against the colon-separated field list, not a substring of it:
+// FORMAT is a token list, so `includes('PS')` also answers yes to any field
+// merely spelled with those two letters in it. That enables the menu entry on a
+// file with no phase sets, and the coloring it then turns on reads `PS` out of
+// every sample, finds nothing, and silently falls back to allele colors — a
+// setting that appears to apply and does nothing.
 export function featureHasPhaseSet(format: string | undefined) {
-  return !!format?.includes('PS')
+  return format?.split(':').includes('PS') ?? false
 }
 
 // Fast-path diploid genotype split. The 3-char form "a|b" hits on the vast
@@ -120,7 +127,11 @@ export function getPhasedColor(
   alleles: string[],
   HP: number,
   mostFrequentAlt: string,
-  PS?: string,
+  // `string | number` because that is what a FORMAT field actually deserializes
+  // to: the VCF spec reserves PS as Type=Integer, so @gmod/vcf hands back a
+  // number, and a phase-set id written as a string is equally legal. Coerced
+  // below either way.
+  PS?: string | number,
   drawReference = true,
 ) {
   const allele = alleles[HP]

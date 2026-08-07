@@ -243,9 +243,14 @@ export function computeVariantCells({
       // non-VCF adapter, a sites-only record), so the fallback below is keyed on
       // the field actually being there rather than on `hasPhaseSet` — reading
       // the flat map back through a `hasPhaseSet`-keyed `undefined` was a crash.
+      //
+      // Typed as the two fields this loop reads, at what they actually
+      // deserialize to: the blanket `Record<string, string[]>` this replaced
+      // claimed PS was a string, where the spec reserves it as Type=Integer and
+      // @gmod/vcf duly hands back a number.
       const samp = hasPhaseSet
         ? (feature.get('samples') as
-            | Record<string, Record<string, string[]>>
+            | Record<string, { GT?: string[]; PS?: (string | number)[] }>
             | undefined)
         : undefined
       if (samp) {

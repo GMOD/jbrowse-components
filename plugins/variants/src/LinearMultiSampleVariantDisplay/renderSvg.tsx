@@ -71,6 +71,9 @@ function VariantSvgBody({
       idPrefix="variant-clip"
       width={canvasWidth}
       height={height}
+      // the same color the glyphs below are painted with, so the key can't
+      // describe the live session's theme while the markers show the export's
+      insertionColor={insertion}
     >
       <PaintLayer
         width={canvasWidth}

@@ -30,6 +30,7 @@ const SvgVariantOverlay = ({
   width,
   height,
   lineZone,
+  insertionColor,
   children,
 }: {
   model: RenderSvgBaseModel
@@ -37,6 +38,11 @@ const SvgVariantOverlay = ({
   width: number
   height: number
   lineZone?: React.ReactNode
+  // The export theme's `palette.insertion`, from the display that draws
+  // insertion markers, so the key matches the glyphs this same export painted
+  // rather than the live session's palette. Omitted by the matrix display,
+  // which draws no markers.
+  insertionColor?: string
   children: React.ReactNode
 }) => {
   const {
@@ -68,7 +74,7 @@ const SvgVariantOverlay = ({
       </g>
       {showLegend ? (
         <SvgVariantLegend
-          sections={model.legendSections()}
+          sections={model.legendSections(insertionColor)}
           canvasWidth={width}
           maxHeight={height}
         />
