@@ -111,6 +111,23 @@ question as a mean over fixed windows, so an accessory stretch shorter than one
 window is averaged into its neighbours. The lane is one box per segment, which is
 the unit the graph actually states carriage in.
 
+**Bundle lineage, because a commit message got it wrong on 2026-08-06.** The
+three bundles published that day are a straight line, each a superset of the one
+before:
+
+| bundle | built from | adds |
+| ------ | ---------- | ---- |
+| `bfe47428e7ae` | `418bf7c` | `SM:Z:` → `GraphNode.samples` (the popup's `carriedBy`) |
+| `aee5e17f4b2c` | `60a4049` | `maxRegionBp` |
+| `0093d998d280` | `f2108cc` | `samples`/`carriers` on the linear feature |
+
+`418bf7c` is an ancestor of `60a4049` (`git merge-base --is-ancestor`), and
+`grep carriedBy` finds it in **all three** served bundles. So the claim that
+`aee5e17f4b2c` "predates carriage entirely" is false, and a figure pinned to it
+showing `carriedBy` is not evidence of a bad pin. Check a bundle by grepping the
+served file rather than reasoning from publication order — the hashes are
+content-addressed and say nothing about lineage.
+
 **Carriage is per haplotype**, written `HG002.1`. Keying it on the PanSN sample
 alone merged a diploid sample's two haplotypes, so a segment carried only on the
 maternal copy read as "HG002 carries it". On haploid input the `.1` is accurate
