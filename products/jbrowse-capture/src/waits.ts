@@ -13,25 +13,44 @@ export const delay = (ms: number) =>
 // reliable signal. With `waitForDownloads`, also wait out adapter "Downloading…"
 // status text, which can linger after the overlay clears (e.g. a remote BAM
 // still fetching) so a capture doesn't catch a half-loaded track.
+// Every best-effort wait below runs through this. They swallow their own timeout
+// on purpose — a slow-but-finishing page should not be failed for being slow,
+// and a display in a terminal state publishes no attribute to wait on at all —
+// but swallowing it in silence is what makes a blank capture unattributable:
+// "everything settled" and "we gave up" become the same `void`. So the outcome
+// comes back as a boolean instead. Callers that only `await` are unaffected;
+// callers that care (see waitForJBrowseReady) can report or fail on it.
+async function settled(work: Promise<unknown>): Promise<boolean> {
+  try {
+    await work
+    return true
+  } catch {
+    return false
+  }
+}
+
 export async function waitForLoadingComplete(
   page: Page,
   {
     timeout = 30000,
     waitForDownloads = false,
   }: { timeout?: number; waitForDownloads?: boolean } = {},
-) {
+): Promise<boolean> {
+  // NOT best-effort: an overlay that never clears means a fetch that never
+  // finished, and there is no content behind it to fall through to.
   await page.waitForFunction(
     () =>
       document.querySelectorAll('[data-testid="loading-overlay"]').length === 0,
     { timeout },
   )
-  if (waitForDownloads) {
-    await page
-      .waitForFunction(() => !document.body.innerText.includes('Downloading'), {
-        timeout,
-      })
-      .catch(() => {})
-  }
+  return waitForDownloads
+    ? settled(
+        page.waitForFunction(
+          () => !document.body.innerText.includes('Downloading'),
+          { timeout },
+        ),
+      )
+    : true
 }
 
 // Wait until no element with a *visible* "Loading…/Rendering…/Computing…" label
@@ -69,9 +88,9 @@ export async function waitForQuiescent(
     timeout = 30000,
     pattern = /^(loading|rendering|computing|aligning)\b/i,
   }: { timeout?: number; pattern?: RegExp } = {},
-) {
-  await page
-    .waitForFunction(
+): Promise<boolean> {
+  return settled(
+    page.waitForFunction(
       (source: string, flags: string) => {
         const re = new RegExp(source, flags)
         const visible = (el: Element) => {
@@ -134,8 +153,8 @@ export async function waitForQuiescent(
       { timeout },
       pattern.source,
       pattern.flags,
-    )
-    .catch(() => {})
+    ),
+  )
 }
 
 // "Every display has painted" = no display is still reporting
@@ -172,14 +191,17 @@ export const PENDING_DISPLAYS = '[data-display-drawn="false"]'
 // Absence is only meaningful once the views have mounted (a track's display
 // wrapper mounts with its TrackRenderingContainer), so call this after the
 // readySelector / loading-overlay gates, not straight off a navigation.
-export async function waitForDisplaysDone(page: Page, timeoutMs: number) {
-  await page
-    .waitForFunction(
+export function waitForDisplaysDone(
+  page: Page,
+  timeoutMs: number,
+): Promise<boolean> {
+  return settled(
+    page.waitForFunction(
       (selector: string) => document.querySelector(selector) === null,
       { timeout: timeoutMs },
       PENDING_DISPLAYS,
-    )
-    .catch(() => {})
+    ),
+  )
 }
 
 // Wait until no display is in its `loading` phase.
@@ -200,13 +222,16 @@ export async function waitForDisplaysDone(page: Page, timeoutMs: number) {
 // Best-effort like its neighbours: a display that never leaves `loading` should
 // fail loudly through that settled check, with the frame to look at, rather than
 // as an opaque timeout here.
-export async function waitForDisplayPhases(page: Page, timeoutMs: number) {
-  await page
-    .waitForFunction(
+export function waitForDisplayPhases(
+  page: Page,
+  timeoutMs: number,
+): Promise<boolean> {
+  return settled(
+    page.waitForFunction(
       () => document.querySelector('[data-display-phase="loading"]') === null,
       { timeout: timeoutMs },
-    )
-    .catch(() => {})
+    ),
+  )
 }
 
 // The view-level counterpart: ViewContainer publishes `data-view-phase` from the

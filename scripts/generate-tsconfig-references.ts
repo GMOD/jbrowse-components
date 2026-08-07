@@ -23,6 +23,7 @@ const workspaceDirs = ['packages', 'plugins', 'products', 'example-plugins']
 // Packages that run in node and import `node:*`, so they need @types/node in
 // their build program. Everything else builds for the browser.
 const nodePackages = new Set([
+  '@jbrowse/capture',
   '@jbrowse/text-indexing-core',
   '@jbrowse/text-indexing',
 ])

@@ -1,3 +1,25 @@
+// The readiness waits, the session-spec encoding and the Chrome launch flags are
+// not internal to this repo: an agent driving a hosted JBrowse from its own
+// script needs exactly them, so they live in the published @jbrowse/capture and
+// are re-exported here. One home, so a change to what "finished rendering" means
+// reaches the figure generator, the browser tests and the outside world at once.
+// See website/docs/agents_capture.md.
+export {
+  BASE_CHROME_ARGS,
+  PENDING_DISPLAYS,
+  SANDBOX_CHROME_ARGS,
+  delay,
+  encodeSessionSpec,
+  findChromeExecutable,
+  isBrowserConsoleNoise,
+  sessionSpecQuery,
+  waitForDisplayPhases,
+  waitForDisplaysDone,
+  waitForLoadingComplete,
+  waitForQuiescent,
+  waitForViewPhases,
+} from '@jbrowse/capture'
+
 export { createTestServer } from './server.ts'
 export { DESKTOP_VIEWPORT, smokeExamplesSite } from './examplesSmoke.ts'
 export { measureDemoHeights } from './examplesDemoHeights.ts'
@@ -18,22 +40,6 @@ export {
   runExamplesSiteChecks,
   suggestDocLinks,
 } from './docLinks.ts'
-export { encodeSessionSpec, sessionSpecQuery } from './session.ts'
-export {
-  PENDING_DISPLAYS,
-  delay,
-  waitForDisplayPhases,
-  waitForDisplaysDone,
-  waitForLoadingComplete,
-  waitForQuiescent,
-  waitForViewPhases,
-} from './waits.ts'
-export {
-  BASE_CHROME_ARGS,
-  SANDBOX_CHROME_ARGS,
-  findChromeExecutable,
-  isBrowserConsoleNoise,
-} from './browser.ts'
 export {
   hashFile,
   isVerdictStale,

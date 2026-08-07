@@ -359,6 +359,9 @@ importers:
 
   packages/browser-test-utils:
     dependencies:
+      '@jbrowse/capture':
+        specifier: workspace:^
+        version: link:../../products/jbrowse-capture
       puppeteer:
         specifier: ^25.5.0
         version: 25.5.0(yauzl@2.10.0)
@@ -1867,6 +1870,16 @@ importers:
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
+
+  products/jbrowse-capture:
+    dependencies:
+      puppeteer:
+        specifier: ^25.5.0
+        version: 25.5.0(yauzl@2.10.0)
+    devDependencies:
+      '@jbrowse/core':
+        specifier: workspace:^
+        version: link:../../packages/core
 
   products/jbrowse-cli:
     dependencies:

@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Shared Puppeteer harness primitives for jbrowse-web browser tests and website screenshot generation",
+  "description": "Internal Puppeteer harness for jbrowse-web browser tests and website screenshot generation. The parts an outside consumer wants live in the published @jbrowse/capture",
   "license": "Apache-2.0",
   "main": "src/index.ts",
   "exports": {
@@ -11,6 +11,7 @@
     "./annotationOverlay": "./src/annotationOverlay.ts"
   },
   "dependencies": {
+    "@jbrowse/capture": "workspace:^",
     "puppeteer": "^25.5.0",
     "serve-handler": "^6.1.7"
   },

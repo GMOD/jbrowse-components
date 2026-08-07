@@ -50,6 +50,7 @@
     { "path": "plugins/trix/tsconfig.build.esm.json" },
     { "path": "plugins/variants/tsconfig.build.esm.json" },
     { "path": "plugins/wiggle/tsconfig.build.esm.json" },
+    { "path": "products/jbrowse-capture/tsconfig.build.esm.json" },
     { "path": "products/jbrowse-img/tsconfig.build.esm.json" },
     { "path": "products/jbrowse-react-app/tsconfig.build.esm.json" },
     {
