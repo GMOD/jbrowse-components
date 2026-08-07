@@ -1,6 +1,6 @@
 ---
 name: screenshot-callout-anchoring
-description: The screenshot-callout anchoring pass is done and unrendered — what changed in 20 specs, which figures the next sweep will move and by how much, which 40 raw coordinates are deliberate, and what is still unverified. Read before reviewing the sweep that renders these or before touching the residue.
+description: The screenshot-callout anchoring pass is done, --check-verified and unrendered — what changed in 20 specs, which figures the next sweep will move and by how much, which 40 raw coordinates are deliberate, and what is still unverified. Read before reviewing the sweep that renders these or before touching the residue.
 ---
 
 # Screenshot callout anchoring — converted, not yet rendered
@@ -40,13 +40,14 @@ Everything else (`multisv` ×3, `read_vs_ref_insertion`, `maf_codon_tooltip`,
 `add_track_form`, `drawer_widget_toggle`, `inverted_duplication`) resolves to
 the same point it did, within a pixel or two of rounding.
 
-`--check` (renders twice, commits nothing) passes at 0.000% on every changed
-spec but one: `linear_align_ctx_menu`, `customized_feature_details`,
+`--check` (renders twice, commits nothing) passes at 0.000% on **every changed
+spec**: `linear_align_ctx_menu`, `customized_feature_details`,
 `upstream_downstream_details`, `lgv_usage_guide`, `variant_panel`, `gc_content`,
 `read_vs_ref_insertion`, `add_track_form`, `drawer_widget_toggle`,
 `bookmark_widget_edit_label`, `trio-crossover-paternal`,
 `trio-crossover-maternal`, `genomes_synteny/launch_sequence`, `multisv`,
-`multisv_svtype`, `inverted_duplication`, and `maf_codon_tooltip` at 0.001%.
+`multisv_svtype`, `multisv_rhd`, `inverted_duplication`, and
+`maf_codon_tooltip` at 0.001%.
 
 A clean run is the proof every anchor resolved: `drawAnnotations` throws on one
 that doesn't, an action anchor fails the spec by name, and several of these gate
@@ -56,8 +57,8 @@ on what the click produced rather than only on where it landed —
 4px deep, and `maf_codon_tooltip` declares `expectTooltip`, so a hover into the
 gap between two 16px rows would have been reported.
 
-**Not verified:** `multisv_rhd` alone, whose render is a 300s ready gate plus a
-2504-row clustering RPC. Its right-click is the same shape as `multisv`'s.
+What is left is therefore only the sweep: these figures are correct in the spec
+and unrendered on disk.
 
 ## The 40 that stay, and why they are not a backlog
 
