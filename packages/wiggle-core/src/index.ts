@@ -35,7 +35,7 @@ export type { YScaleTicks } from './yScaleTicks.ts'
 
 export { CrossHatchLines, default as CrossHatches } from './CrossHatches.tsx'
 export { makeResolutionSubMenuItem } from './ResolutionStepper.tsx'
-export { makeScatterPointSizeMenuItem, makeSizeMenu } from './pointSizeMenu.tsx'
+export { makeScatterPointSizeMenuItem } from './pointSizeMenu.tsx'
 export {
   SMALL_POINT_MAX_DIAMETER_PX,
   appendPointMarker,

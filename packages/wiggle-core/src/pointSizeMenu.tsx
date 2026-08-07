@@ -1,9 +1,7 @@
-import { makePromotableSizeMenu, makeSizeMenu } from '@jbrowse/core/ui'
+import { makePromotableSizeMenu } from '@jbrowse/core/ui'
 
 import type { ResolvableDisplay } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-
-export { makeSizeMenu }
 
 // Wires a display's shared `scatterPointSize`/`setScatterPointSize` (from
 // WiggleScoreConfigMixin) to makePromotableSizeMenu. Used by both the wiggle
