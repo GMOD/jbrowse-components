@@ -12,12 +12,12 @@ displayed region, not the viewport, origin at `staticBlocks.offsetPx`. One
 element translated by `staticBlocks.offsetPx - view.offsetPx` places every tick
 at once, and a pan moves that transform instead of each tick.
 
-A region's name is drawn at `max(blockStartPx, 0)` and clipped at
-`view.scalebarRegionEndPx.get(index)`, so it rides the viewport edge and leaves
-with the region's right edge. Hang it on the region's _first_ block and it
-vanishes as soon as you zoom past that block — `staticBlocks` only covers what
-is on screen. Hang it on the rightmost block that has scrolled off the left
-edge, which is what JBrowse does.
+`view.scalebarRefNameLabels` hands back each region's name already placed —
+`{text, transform, maxWidth, paddingLeft}`, the set JBrowse's own scalebar
+draws. Three rules live inside it, each a bug you would otherwise ship once:
+which block carries the sliding label (not the region's _first_, which vanishes
+once you zoom past it), one label per run of a refName, and whole name or none,
+since `chr16` clipped reads as `chr1`.
 
 Drag across the row to zoom: `view.pxToBp(px)` turns a pixel offset into an
 anchor and `view.moveTo(start, end)` frames the span between two. Measure the

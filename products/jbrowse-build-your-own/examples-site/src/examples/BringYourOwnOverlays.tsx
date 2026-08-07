@@ -270,18 +270,25 @@ const overlayBox: React.CSSProperties = {
  *
  * Two things the contract asks of it, and both are easy to miss:
  *
- * - **Render `null` when there is no error.** The chrome mounts this
- *   unconditionally rather than switching it in, so it decides for itself
- *   whether it has anything to say.
+ * - **Gate on `visible`, never on `model.error`.** The chrome mounts this
+ *   unconditionally rather than switching it in -- that is what lets a
+ *   replacement keep state across one fetch and the next -- and passes
+ *   `visible`, which is `displayPhase === 'error'`, the display's own
+ *   mutually-exclusive state. Deciding for yourself from the error field
+ *   re-encodes the precedence that phase exists to keep in one place, and
+ *   agrees with it only by construction. Both sets JBrowse ships did that once;
+ *   both were changed to take the prop.
  * - **Offer the retry.** `model.reload()` is the display's own re-fetch. An
  *   error state with no way out of it is a dead track.
  */
 const MyErrorBar = observer(function MyErrorBar({
   model,
+  visible,
 }: {
   model: DisplayErrorBarModel
+  visible: boolean
 }) {
-  return model.error ? (
+  return visible && model.error ? (
     <div style={{ ...overlayBox, alignItems: 'flex-start' }} role="alert">
       <div style={card}>
         <span style={{ wordBreak: 'break-word' }}>
@@ -440,7 +447,16 @@ const BringYourOwnOverlays = observer(function BringYourOwnOverlays() {
           imports directly are the Material ones, so an embedder who installs
           nothing gets JBrowse's own look. One provider covers both seams --
           the status states and the corner controls -- because nobody wants
-          plain scrims with Material corner buttons. */}
+          plain scrims with Material corner buttons.
+
+          Note the cost of that third state being an *absence*: the element at
+          this position changes, so React remounts the tracks below it and all
+          three canvases are replaced, GPU contexts included. Only this radio
+          does it -- switching between the two sets above keeps them. There is
+          no argument meaning "the Material default", since mounting the
+          provider is itself the request for something else, so a demo that
+          offers the comparison at runtime pays a remount for it. Yours won't:
+          an app picks a set once. */}
       {overlays ? (
         <DisplayUIProvider overlays={overlays}>{stack}</DisplayUIProvider>
       ) : (

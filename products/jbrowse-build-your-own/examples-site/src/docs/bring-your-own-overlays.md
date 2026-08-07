@@ -25,11 +25,11 @@ about. `TrackControlComponent` takes props that _describe_ the control, an icon
 **name** and never an element, or every display imports an icon set again.
 
 Two obligations the types can't carry: the error bar and loading scrim mount
-**unconditionally** and decide for themselves whether to draw, which is what
-lets a replacement hold state across a fetch; and every state must offer its way
-out — `model.reload()`, including on the scrim's _canceled_ branch, since a
-canceled fetch is deliberately durable. Keep the plain set's `data-testid`
-values and JBrowse's own suites run against yours.
+**unconditionally** and gate on the `visible` prop, which is what lets a
+replacement hold state across a fetch; and every state must offer its way out —
+`model.reload()`, including on the scrim's _canceled_ branch, since a canceled
+fetch is deliberately durable. Keep the plain set's `data-testid` values and
+JBrowse's own suites run against yours.
 
 ## Reach, and weight
 

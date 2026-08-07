@@ -2,11 +2,13 @@ Having taken all the chrome off, add back only what your app wants. Both pieces
 read the same view model the tracks read, so neither needs telling when the user
 pans.
 
-The **ruler** needs two view methods: `dynamicBlocks.contentBlocks` is what is
-on screen right now, one entry per contiguous region, and `bpToPx` turns a
-coordinate into a pixel offset. `chooseGridPitch` from
+The **ruler** needs one view getter and one helper:
+`dynamicBlocks.contentBlocks` is what is on screen right now, one entry per
+contiguous region, and each block carries the `offsetPx` a tick's screen
+position is measured from. `chooseGridPitch` from
 `@jbrowse/core/util/chooseGridPitch` picks a round tick spacing for the zoom so
-labels don't collide.
+labels don't collide. Block coordinates are 0-based, so the label is `bp + 1` —
+every coordinate JBrowse shows a user is 1-based.
 
 The **labels** read `track.activeDisplay.height`, so they stay aligned when a
 track is resized or a display grows to fit.

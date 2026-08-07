@@ -15,8 +15,8 @@ import { observer } from 'mobx-react'
 // and knows nothing about regions. This is the rest of it: gridlines behind the
 // data, coordinate labels that don't collide, the region name kept on screen
 // while you pan past its start, and drag-to-zoom. Four getters on the view do
-// the work -- `gridlineTicks`, `scalebarLabels`, `scalebarRegionEndPx` and
-// `staticBlocks` -- so none of it is tick maths you have to get right.
+// the work -- `gridlineTicks`, `scalebarLabels`, `scalebarRefNameLabels` and
+// `paddingSpans` -- so none of it is tick maths you have to get right.
 //
 // Self-contained, like every page here: nothing below is imported from the rest
 // of this site, so you can copy the file and run it.
@@ -326,6 +326,8 @@ const RegionNames = observer(function RegionNames({
   )
 })
 
+const RUBBERBAND_MIN_PX = 4
+
 /**
  * Drag across the scalebar to zoom to what you dragged over.
  *
@@ -341,8 +343,6 @@ const RegionNames = observer(function RegionNames({
  * A drag shorter than a few pixels is a click, and zooming to it would land the
  * user somewhere absurd, so it is dropped.
  */
-const RUBBERBAND_MIN_PX = 4
-
 function useRubberband(view: BrowserView) {
   const [range, setRange] = useState<
     { left: number; right: number } | undefined

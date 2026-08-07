@@ -140,11 +140,18 @@ const TrackRow = observer(function TrackRow({
 // nothing needs it, and that is the point of putting it on its own page. You
 // add the pieces your app wants and skip the rest.
 //
-// The maths is two view methods. `dynamicBlocks.contentBlocks` is exactly what
-// is on screen right now (one entry per contiguous region, so a discontinuous
-// view gives several), and `bpToPx` turns a genomic coordinate into a pixel
-// offset. `chooseGridPitch` is a core helper that picks a round tick spacing
-// for the current zoom, so labels stay legible instead of colliding.
+// The maths is one view getter and one helper. `dynamicBlocks.contentBlocks` is
+// exactly what is on screen right now (one entry per contiguous region, so a
+// discontinuous view gives several), and each block carries the `offsetPx` its
+// own left edge sits at, so a tick's screen x is that minus `view.offsetPx`
+// plus how far into the block it falls -- the same subtraction the view model
+// does internally. `chooseGridPitch` is a core helper that picks a round tick
+// spacing for the current zoom, so labels stay legible instead of colliding.
+//
+// `bp + 1` on the label, because block coordinates are 0-based and every
+// coordinate JBrowse puts in front of a user is 1-based: a locstring, and the
+// scalebar on the next page, which would otherwise disagree with this ruler by
+// one base at the same tick.
 const Ruler = observer(function Ruler({ view }: { view: BrowserView }) {
   if (!view.ready) {
     return <div style={{ height: RULER_HEIGHT }} />
@@ -167,27 +174,27 @@ const Ruler = observer(function Ruler({ view }: { view: BrowserView }) {
         const first = Math.ceil(block.start / majorPitch) * majorPitch
         const ticks = []
         for (let bp = first; bp < block.end; bp += majorPitch) {
-          const px = view.bpToPx({ refName: block.refName, coord: bp })
-          if (px) {
-            ticks.push(
-              <span
-                key={`${block.key}-${bp}`}
-                style={{
-                  position: 'absolute',
-                  left: px.offsetPx - view.offsetPx,
-                  top: 0,
-                  paddingLeft: 3,
-                  borderLeft: '1px solid',
-                  borderColor:
-                    'color-mix(in srgb, currentColor 35%, transparent)',
-                  height: '100%',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {bp.toLocaleString()}
-              </span>,
-            )
-          }
+          ticks.push(
+            <span
+              key={`${block.key}-${bp}`}
+              style={{
+                position: 'absolute',
+                left:
+                  block.offsetPx -
+                  view.offsetPx +
+                  (bp - block.start) / view.bpPerPx,
+                top: 0,
+                paddingLeft: 3,
+                borderLeft: '1px solid',
+                borderColor:
+                  'color-mix(in srgb, currentColor 35%, transparent)',
+                height: '100%',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {(bp + 1).toLocaleString()}
+            </span>,
+          )
         }
         return ticks
       })}
@@ -226,6 +233,8 @@ const TrackLabel = observer(function TrackLabel({
   )
 })
 
+const RESIZE_HANDLE_HEIGHT = 4
+
 /**
  * Drag the bar under a track to resize it. Two model calls:
  *
@@ -247,8 +256,6 @@ const TrackLabel = observer(function TrackLabel({
  * instead — a plain `stopPropagation` would not do, since that handler runs on
  * the same pointer events this one needs.
  */
-const RESIZE_HANDLE_HEIGHT = 4
-
 const TrackResizeHandle = observer(function TrackResizeHandle({
   view,
   trackId,
