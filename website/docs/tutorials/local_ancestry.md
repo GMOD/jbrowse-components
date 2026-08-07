@@ -210,29 +210,13 @@ size: the small one is who, the big one is where.
 
 ## Reading the painting
 
-<Figure caption="Dog10K chr1 painted by FLARE against gray wolf and breed-dog panels, two rows per animal, in descending order of wolf fraction. Six of the eight held-out gray wolves paint near-solid wolf (orange), the wolfdogs below carry megabase blocks, the sweep breeds carry flecks, and the German Shepherd lineage at the foot is solid dog." src="/img/dog10k-wolfdog-ancestry.png" />
+<Figure caption="Dog10K chr1 painted by FLARE against gray wolf and breed-dog panels, two rows per animal, in descending order of wolf fraction." src="/img/dog10k-wolfdog-ancestry.png" />
 
 Read each pair of rows as one animal's two chromosome copies. Wolf on one row
 and dog on the other is a heterozygous stretch; both orange is homozygous
-wolf-derived. The breeds separate on block length as well as on total wolf
-fraction, and length is the more informative of the two: a recent cross leaves
-long founder haplotypes because recombination has had few generations to break
-them up.
-
-Every dog descends from wolves, so the orange is not that. Local ancestry is
-inference against the two panels it was given, and both of them are modern: gray
-wolves on one side, breed dogs on the other. Whatever the two share, which is
-everything domestication carried over, is in both panels and separates nothing,
-so it paints dog. Orange marks the stretches that still look like a present-day
-gray wolf and unlike a breed dog. A long run of that is hard to come by any way
-other than recently, for the reason above: recombination has had few generations
-to break it up. A short one is weaker evidence and need not be a cross at all,
-since some variation was never sorted cleanly between the two panels in the
-first place, which is why block length is read before wolf fraction. The
-20th-century crosses are what the method can see, and domestication is what it
-is blind to by construction. The German Shepherd lineage at the foot paints
-solid dog though it descends from wolves exactly as much as the Saarloos above
-it does.
+wolf-derived. A short block is weaker evidence than its color suggests and need
+not be a cross at all, since some variation was never sorted cleanly between the
+two panels in the first place.
 
 One feature of the painting is not about the dogs at all. Blocks break up
 towards the end of chr1, and that is the genetic map rather than the animals.
@@ -242,35 +226,27 @@ on the other. Where the map puts more recombination a block has more places to
 end, so block density in a window is worth reading against the map before it is
 read against the breed.
 
-Both ends of the figure are checks. The German Shepherd lineage at the foot
-takes almost no wolf on this chromosome under the same panel and the same run,
-so the orange elsewhere is signal rather than an artifact of the panels. The
-gray wolves at the head are the other end of the same check, and they are
-painted rather than asserted: each was removed from the wolf panel before the
-run, so it is painted by the twenty-eight that remain.
-
 ### Where the painting and the alleles disagree
 
-Six of those eight paint 98% wolf or better. **Two do not.** The two Swedish
-museum specimens come out about half dog, and that is a result about the method
-rather than about the animals. The build script prints a second, cruder
-measurement beside FLARE's: the fraction of chr1 sites where the two panels are
-nearly fixed for different alleles at which the animal carries the wolf one. The
-two Swedish wolves score 0.92 and 0.92 there, the highest of all eight, against
-0.06 for the German Shepherd. So the alleles say plainly that they are wolves
-while the painting says half dog, and this tutorial does not resolve which part
-of the inference gives way: the two measurements ask different questions, one
-about alleles one at a time and one about whole haplotypes matched against a
-panel of twenty-eight. What it does settle is which way to read the
-disagreement. Where a painting and the raw alleles disagree, the painting is the
-model's answer, and the reason to run the cruder measurement at all is that it
-has no model to be the answer of.
+Six of the eight held-out wolves paint 98% wolf or better. **Two do not.** The
+two Swedish museum specimens come out about half dog, and that is a result about
+the method rather than about the animals. The build script prints a second,
+cruder measurement beside FLARE's: the fraction of chr1 sites where the two
+panels are nearly fixed for different alleles at which the animal carries the
+wolf one. The two Swedish wolves score 0.92 and 0.92 there, the highest of all
+eight, against 0.06 for the German Shepherd. So the alleles say plainly that
+they are wolves while the painting says half dog, and this tutorial does not
+resolve which part of the inference gives way: the two measurements ask
+different questions, one about alleles one at a time and one about whole
+haplotypes matched against a panel of twenty-eight. What it does settle is which
+way to read the disagreement. Where a painting and the raw alleles disagree, the
+painting is the model's answer, and the reason to run the cruder measurement at
+all is that it has no model to be the answer of.
 
 ### What the two wolf-like breeds do
 
-Read the rows on block length as well as on colored fraction. The build script
-prints both, one line per animal, as a count of wolf blocks with their median
-and longest.
+The build script prints a count of wolf blocks with their median and longest,
+one line per animal, which is the same reading the figure asks for in numbers.
 
 The Tamaskan behaves like a dog that merely looks like a wolf. Its wolf
 assignments are many and short, and its longest is 1.5 Mb, inside the range an

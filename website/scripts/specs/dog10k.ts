@@ -10,6 +10,18 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 const DOG_CONFIG = 'test_data/dog10k/config.json'
 
+// Where the four local-ancestry pills start on the x axis. They name bands of
+// rows rather than loci, so this is a place to put a label and nothing else: one
+// shared value so they left-align into a single column instead of reading as
+// four unrelated marks.
+//
+// It has to clear ~220px, which is NOT the left edge of the data: a
+// LinearMultiRowFeatureDisplay draws its row labels as a translucent overlay on
+// top of its own painting, so the blocks run all the way to x=0 under them and a
+// locus that looks like it lands in empty margin actually lands on the names. 6
+// Mb put every pill over the labels. 20 Mb clears them.
+const WOLFDOG_PILL_X = 'chr1:20,000,000'
+
 // Row labels for the NHEJ1 SV figure, grouped so the Collie-clade breeds that
 // carry the deletion sit together above the breeds and wolves that do not. IDs
 // are the VCF's own, in its own order (the build script writes them); the swatch
@@ -430,26 +442,37 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // sharing / lookalike discussion raises. Built by
   // scripts/build_dog10k_wolfdog_ancestry.sh.
   //
-  // NOTHING IS MARKED ON IT. It used to carry the genotype window as an in-app
-  // highlight plus a callout naming the block edges inside it, and a red box
-  // over 1.2% of the frame reads as "something happens here" whatever the label
-  // says, when what is inside it is an ordinary window picked for being
-  // checkable (review: "if we are making up a story we should not do that ... i
-  // just wanted to show ancestry painting"). The painting is the figure.
+  // NO BOX IS DRAWN ON IT, AND NONE SHOULD BE. It used to carry the genotype
+  // window as an in-app highlight plus a callout naming the block edges inside
+  // it, and a red box over 1.2% of the frame reads as "something happens here"
+  // whatever the label says, when what is inside it is an ordinary window picked
+  // for being checkable (review: "if we are making up a story we should not do
+  // that ... i just wanted to show ancestry painting").
   //
-  // STILL NOTHING MARKED ON IT after the next review, which was not a request
-  // for a mark: "all dogs come from wolves so its just like, super recent in
-  // this case? can add text that says this if it makes sense". That is right and
-  // it is the one thing about this figure a reader cannot get from the pixels,
-  // but it is a paragraph rather than a label, so it went into
-  // local_ancestry.md under Reading the painting. The short version: FLARE
-  // infers against the two panels it was handed, both of them modern, so
-  // everything domestication carried into dogs is in BOTH panels, separates
-  // nothing, and paints dog. Orange is only what still looks like a present-day
-  // gray wolf and not like a breed dog, which after that much divergence means
-  // recently acquired. The figure already carries both controls for that
-  // reading: held-out wolves solid orange at the top, German Shepherd lineage
-  // solid dog at the foot.
+  // THE FOUR PILLS ARE A DIFFERENT THING and were asked for twice. First "all
+  // dogs come from wolves so its just like, super recent in this case? can add
+  // text that says this if it makes sense", which this spec answered by putting
+  // the explanation in local_ancestry.md instead, on the grounds that it was a
+  // paragraph rather than a label. Then, on being shown that: "if it helps add
+  // red text annotation blurbs to the screenshot and reduce prose. generally
+  // want more 'screenshots speak for themselves'". So the argument is on the
+  // figure now and the prose under Reading the painting is a third of what it
+  // was.
+  //
+  // Each pill names a BAND OF ROWS, not a locus, which is why none of them is a
+  // box: the y is what carries meaning here (fracY 0 plus a dy, so the pill
+  // tracks the band if the row count or track height changes) and the x is only
+  // a place to put the label. Anchored at 6 Mb so all four left-align into one
+  // column down the painting rather than reading as four separate marks.
+  //
+  // What they say between them is the answer to "but dogs all have wolf
+  // ancestry": FLARE infers against the two panels it was handed, both of them
+  // modern, so everything domestication carried into dogs is in BOTH panels,
+  // separates nothing, and paints dog. Orange is only what still looks like a
+  // present-day gray wolf and not like a breed dog. The figure carries both
+  // controls for that reading and each has a pill on it: held-out wolves solid
+  // orange at the top, German Shepherd lineage solid dog at the foot, descended
+  // from wolves exactly as much as the Saarloos rows above it.
   //
   // "IF GENOME WIDE THERE ARE INTERESTING PATTERNS, WE CAN CONSIDER ZOOMING OUT
   // GENOME WIDE" (same review). Not available as a spec edit, and not because of
@@ -495,6 +518,74 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     settleMs: 3000,
     // all 64 haplotype rows plus the color legend, no page background below
     viewportHeight: 905,
+    // Row pitch is 700px / 64 rows = 10.94px, and the bands the pills name are
+    // rows 0-15 (the held-out wolves), 16-31 (the eight wolfdogs, Czechoslovakian
+    // 2 excepted, plus the Shiloh Shepherd), 32-51 (the sweep) and 52-63 (the
+    // German Shepherd lineage). Each dy is a row index times that pitch, and it
+    // is the baseline of the pill's FIRST line, so a three-line pill hangs ~52px
+    // BELOW the number written here and has to be placed against the bottom of
+    // its band, not the middle of it. The last one is also the bottom of the
+    // capture: at dy 630 it ran off the frame and lost its last line.
+    //
+    // No pill carries a hard newline. The overlay wraps to maxWidth on its own
+    // and treats a \n as a hard break that then wraps again, so an authored
+    // break lands mid-thought and leaves a one-word line under a full one.
+    //
+    // The two long ones are WIDE (820) rather than narrow, which is not a
+    // typographic preference: a pill hides the rows behind it, the blocks it is
+    // describing run horizontally, and every line it sheds gives back ~2.5 rows
+    // of painting. At 640 both wrapped to four lines and swallowed ten rows of
+    // the band they name.
+    annotations: [
+      {
+        type: 'text',
+        text: 'Eight gray wolves, held out of the wolf panel before the run. Solid orange is what an all-wolf call looks like.',
+        fontSize: 21,
+        maxWidth: 600,
+        anchor: {
+          track: 'dog10k_wolfdog_named',
+          locus: WOLFDOG_PILL_X,
+          fracY: 0,
+          dy: 55,
+        },
+      },
+      {
+        type: 'text',
+        text: 'Saarloos and Czechoslovakian Wolfdogs, crossed to captive wolves in the 20th century. Blocks are megabases long because recombination has had few generations to break them up.',
+        fontSize: 21,
+        maxWidth: 820,
+        anchor: {
+          track: 'dog10k_wolfdog_named',
+          locus: WOLFDOG_PILL_X,
+          fracY: 0,
+          dy: 230,
+        },
+      },
+      {
+        type: 'text',
+        text: '219 breeds swept in with no wolf story: flecks, not blocks. Length is read before fraction.',
+        fontSize: 21,
+        maxWidth: 600,
+        anchor: {
+          track: 'dog10k_wolfdog_named',
+          locus: WOLFDOG_PILL_X,
+          fracY: 0,
+          dy: 440,
+        },
+      },
+      {
+        type: 'text',
+        text: 'The German Shepherd descends from wolves as much as the Saarloos does, and paints solid dog: both panels are modern, so what domestication carried into both separates nothing.',
+        fontSize: 21,
+        maxWidth: 820,
+        anchor: {
+          track: 'dog10k_wolfdog_named',
+          locus: WOLFDOG_PILL_X,
+          fracY: 0,
+          dy: 610,
+        },
+      },
+    ],
   },
 
   // dog10k-wolfdog-ancestry-clustered was here and is DELETED (review: "you can
