@@ -231,21 +231,33 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     crop: { x: 0, y: 0, width: 1500, height: 640 },
     // Name the two-arm skew profile: the leading replichore (origin→terminus)
     // runs mostly positive (blue), the lagging one mostly negative (red), the
-    // sign flipping at the two replication landmarks. Placed over each arm of
-    // the GC skew track (bottom).
+    // sign flipping at the two replication landmarks.
+    //
+    // Each label names a REGION of the skew track, so each is anchored on one:
+    // the locus is a point in the arm the label describes (167 kb is inside the
+    // leading arm, which runs oriC→0→terminus; 1.03 Mb is inside the lagging
+    // one, between terminus and oriC), and the fraction puts it in the half of
+    // the track that arm's curve occupies — above the zero line, which sits a
+    // third of the way down the -0.2..0.1 axis, and well below it.
     annotations: [
       {
         type: 'text',
         text: 'Mostly positive skew (leading strand)',
-        x: 150,
-        y: 430,
+        anchor: {
+          track: 'gc_skew_hpylori',
+          locus: 'NC_018939.1:166,800',
+          fracY: 0.11,
+        },
         maxWidth: 260,
       },
       {
         type: 'text',
         text: 'Mostly negative skew (lagging strand)',
-        x: 930,
-        y: 555,
+        anchor: {
+          track: 'gc_skew_hpylori',
+          locus: 'NC_018939.1:1,034,100',
+          fracY: 0.89,
+        },
         maxWidth: 260,
       },
     ],

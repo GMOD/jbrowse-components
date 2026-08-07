@@ -1,15 +1,18 @@
 import {
   DEMO_CONFIG,
   TRIO_MATERNAL_COLORS,
+  TRIO_PAINT_TRACK,
   TRIO_PATERNAL_COLORS,
   TRIO_VCF_DISPLAY_H,
+  TRIO_VCF_TRACK,
   crossoverHighlights,
   lgvSession,
   menuCascade,
   trioVcfLayout,
 } from '../screenshot-spec-helpers.ts'
 
-import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
+import type { TrioCrossover } from '../screenshot-spec-helpers.ts'
+import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 export const trioSpecs: ScreenshotSpec[] = [
   // ────────────────────────────────────────────────────────────────────────
@@ -186,8 +189,9 @@ export const trioSpecs: ScreenshotSpec[] = [
   // child stays on one copy straight across them), so this stays the featured
   // maternal example. Compare child HG02024 HP1 against mother HG02025's two rows.
   //
-  // Both crossovers sit at the horizontal center of their 400 kb window
-  // (crossover x ≈ 750 CSS px). The multi-sample VCF rows are relabeled via the
+  // Both crossovers sit at the horizontal center of their 400 kb window, and
+  // every callout below is placed from that coordinate rather than from the
+  // pixel it lands on. The multi-sample VCF rows are relabeled via the
   // display `layout` (trioVcfLayout — a friendly `label` per haplotype row,
   // leaving the stable `name`/`sampleName` identity intact) so the sidebar reads
   // Child/Mother/Father hapN, matching the hap-ibd painting's own row names.
@@ -206,12 +210,13 @@ export const trioSpecs: ScreenshotSpec[] = [
       {
         name: 'trio-crossover-paternal',
         loc: 'chr1:29,497,418-29,897,418',
+        crossover: 'chr1:29,697,418',
         // only paint the father's two haplotypes: the mother's rows
         // are solid across this window and just add noise. With the painting
         // filtered to the Father pair they sit at painting rows 0-1.
         paintingFilter: ['Father hap1', 'Father hap2'],
         // Child hap1 (paternal) matches Father hap2 left, Father hap1 right
-        annotations: crossoverHighlights({
+        highlights: {
           child: 'Child hap1',
           leftSource: 'Father hap2',
           rightSource: 'Father hap1',
@@ -223,16 +228,17 @@ export const trioSpecs: ScreenshotSpec[] = [
             'Left of the crossover (yellow frame), Child hap1 matches Father hap2',
           rightText:
             'Right of it (purple frame), Child hap1 matches Father hap1',
-        }),
+        },
       },
       {
         name: 'trio-crossover-maternal',
         loc: 'chr1:55,553,613-55,953,613',
+        crossover: 'chr1:55,753,613',
         // only paint the mother's two haplotypes; filtered to the
         // Mother pair they sit at painting rows 0-1.
         paintingFilter: ['Mother hap1', 'Mother hap2'],
         // Child hap2 (maternal) matches Mother hap2 left, Mother hap1 right
-        annotations: crossoverHighlights({
+        highlights: {
           child: 'Child hap2',
           leftSource: 'Mother hap2',
           rightSource: 'Mother hap1',
@@ -244,44 +250,49 @@ export const trioSpecs: ScreenshotSpec[] = [
             'Left of the crossover (green frame), Child hap2 matches Mother hap2',
           rightText:
             'Right of it (orange frame), Child hap2 matches Mother hap1',
-        }),
+        },
       },
     ] satisfies {
       name: string
       loc: string
+      crossover: string
       paintingFilter: string[]
-      annotations: Annotation[]
+      highlights: Omit<TrioCrossover, 'loc' | 'crossover'>
     }[]
-  ).map(({ name, loc, paintingFilter, annotations }) => ({
-    mode: 'url' as const,
-    name,
-    url: lgvSession(DEMO_CONFIG, {
-      assembly: 'hg38',
-      loc,
-      tracks: [
-        {
-          trackId: 'HG02024_VN049_KHVTrio.chr1.hapibd',
-          type: 'LinearMultiRowFeatureDisplay',
-          // show only this parent's haplotype rows
-          subtreeFilter: paintingFilter,
-        },
-        {
-          trackId: 'HG02024_VN049_KHVTrio.chr1.vcf',
-          type: 'LinearMultiSampleVariantDisplay',
-          renderingMode: 'phased',
-          height: TRIO_VCF_DISPLAY_H,
-          // relabel sidebar rows Child/Mother/Father hapN (keeps the
-          // canonical HG020xx HPn identity in `name`/`sampleName`)
-          layout: trioVcfLayout,
-        },
-      ],
-    }),
-    annotations,
-    readyText: 'chr1',
-    readyTimeout: 60000,
-    settleMs: 28000,
-    // sized to the content: the painting carries no color legend, so the
-    // default 800 left ~200 px of page background under the variant track
-    viewportHeight: 598,
-  })),
+  )
+    // the window and the crossover reach the callouts from the same place the
+    // view gets them, so a figure cannot be framed on one locus and annotated
+    // against another
+    .map(({ name, loc, crossover, paintingFilter, highlights }) => ({
+      mode: 'url' as const,
+      name,
+      url: lgvSession(DEMO_CONFIG, {
+        assembly: 'hg38',
+        loc,
+        tracks: [
+          {
+            trackId: TRIO_PAINT_TRACK,
+            type: 'LinearMultiRowFeatureDisplay',
+            // show only this parent's haplotype rows
+            subtreeFilter: paintingFilter,
+          },
+          {
+            trackId: TRIO_VCF_TRACK,
+            type: 'LinearMultiSampleVariantDisplay',
+            renderingMode: 'phased',
+            height: TRIO_VCF_DISPLAY_H,
+            // relabel sidebar rows Child/Mother/Father hapN (keeps the
+            // canonical HG020xx HPn identity in `name`/`sampleName`)
+            layout: trioVcfLayout,
+          },
+        ],
+      }),
+      annotations: crossoverHighlights({ loc, crossover, ...highlights }),
+      readyText: 'chr1',
+      readyTimeout: 60000,
+      settleMs: 28000,
+      // sized to the content: the painting carries no color legend, so the
+      // default 800 left ~200 px of page background under the variant track
+      viewportHeight: 598,
+    })),
 ]
