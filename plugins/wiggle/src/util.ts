@@ -43,23 +43,27 @@ export {
 export const WIGGLE_POS_COLOR_DEFAULT = '#0068d1'
 export const WIGGLE_NEG_COLOR_DEFAULT = '#e01e26'
 
-// There was confusion about whether source or name was required, and effort to
-// remove one or the other was thwarted. Adapters like BigWigAdapter, even in
-// the BigWigAdapter configSchema.ts, use a 'source' field though, while the
-// word 'name' still allowed in the config too. To solve, we made name===source.
-export interface Source {
-  baseUri?: string
-  name: string
-  source: string
-  color?: string
-  // Tint for this source's row-label box in the sidebar (multirow modes). Kept
-  // independent of `color` so density tracks can be color-coded by identity
-  // without changing the score→color ramp.
-  labelColor?: string
-  group?: string
-}
+// A row of a multi-wiggle display, which is exactly the metadata its adapter
+// reported — so this is `SourceInfo`, not a widened copy of it.
+//
+// It used to carry a second required field, `source`, always set equal to
+// `name`. That came from the adapter side, where `source` is a real and
+// different thing: BigWigAdapter's `source` config slot is what a subtrack is
+// *named by*, `MultiWiggleAdapter` disambiguates colliding ones, and every
+// feature is stamped with it. The display type mirrored the word and then had
+// to keep the two in lockstep, which is what `name === source` was: an
+// invariant standing in for a field that carried no information. Nothing ever
+// read it — not the tree sidebar (its helpers constrain on `{ name: string }`),
+// not clustering, not the legends, not the colour dialog — and every sibling
+// row display (variants, MAF, canvas's multi-row) declares its row type without
+// it. `layout` is `types.frozen`, so a saved session that still has the key
+// loads unchanged and simply carries a field no one asks for.
+export type Source = SourceInfo
 
-export interface EditableSource extends Source, SourceInfo {}
+// Kept as a name because it reads at the call sites that mean "adapter rows
+// merged with the user's saved arrangement, before filtering" — the shape is
+// the same one.
+export type EditableSource = SourceInfo
 
 // One score entry shown in a wiggle tooltip. `source`/`color` are populated
 // only for multi-wiggle (single-wiggle has no per-source identity). The summary

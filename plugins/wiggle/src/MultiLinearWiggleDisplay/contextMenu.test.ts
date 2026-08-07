@@ -88,10 +88,7 @@ test('acts on the column the menu was opened over, not the one it is closed from
 
 test('keeps a per-source color across the reorder', () => {
   const display = makeDisplay({ a: 1, b: 5 })
-  display.setLayout([
-    { name: 'a', source: 'a', color: 'red' },
-    { name: 'b', source: 'b' },
-  ])
+  display.setLayout([{ name: 'a', color: 'red' }, { name: 'b' }])
   display.openContextMenu({
     clientX: 0,
     clientY: 0,

@@ -19,6 +19,7 @@ import {
   TreeSidebarMixin,
   buildSpatialIndex,
   clusteringMenuItem,
+  reconcileLayout,
   computeClusterHierarchy,
   resetRowOrderMenuItems,
   setupRowSortAutorun,
@@ -47,11 +48,7 @@ import {
 } from '../shared/wiggleMenuItems.tsx'
 import { MULTI_WIGGLE_RENDERING_GROUPS } from '../util.ts'
 import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
-import {
-  buildEditableSources,
-  buildSources,
-  withSourceAlias,
-} from './sourcesLogic.ts'
+import { buildSources } from './sourcesLogic.ts'
 
 import type { SatisfiesComponentContract } from '../shared/componentContract.ts'
 import type { Source, SourceInfo, WiggleDataResult } from '../util.ts'
@@ -185,11 +182,19 @@ export default function stateModelFactory(
       // cluster RPC reads `name` and `buildClusteredLayout` maps order
       // indices into this list.
       get sourcesWithoutLayout(): Source[] {
-        return self.sourcesVolatile.map(withSourceAlias)
+        return self.sourcesVolatile
       },
 
+      // Adapter rows merged with the user's saved arrangement, in layout order —
+      // no subtree filter and no palette synthesis, so the edit dialog only
+      // persists colors the user actually chose. `reconcileLayout` owns the
+      // membership rules (drop layout entries the adapter no longer reports,
+      // append subtracks the layout never saw) and is shared with every other
+      // multi-row display, so this display has nothing of its own to keep in
+      // step. It used to, and that was the whole job of the wrapper this
+      // replaced: aliasing `source` onto `name` before handing the rows over.
       get editableSources(): Source[] {
-        return buildEditableSources(self.sourcesVolatile, self.layout)
+        return reconcileLayout(self.sourcesVolatile, self.layout)
       },
     }))
     .views(self => ({

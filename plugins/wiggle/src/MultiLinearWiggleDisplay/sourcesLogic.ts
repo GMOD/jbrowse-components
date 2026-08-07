@@ -1,17 +1,11 @@
 import { set1 as overlayColors } from '@jbrowse/core/ui/colors'
-import { filterRowsBySubtree, reconcileLayout } from '@jbrowse/tree-sidebar'
+import { filterRowsBySubtree } from '@jbrowse/tree-sidebar'
 
-import type { EditableSource, Source, SourceInfo } from '../util.ts'
+import type { Source } from '../util.ts'
 
 // Overlay palette color for a row/group index, wrapping modulo palette length.
 function paletteColor(index: number) {
   return overlayColors[index % overlayColors.length]!
-}
-
-// Treat raw adapter metadata as a Source by setting its `source` alias equal to
-// `name` (see Source docs: name===source is the invariant callers rely on).
-export function withSourceAlias(s: SourceInfo): EditableSource {
-  return { ...s, source: s.name }
 }
 
 // Synthesized colors for a source that has not set them. Priority mirrors the
@@ -69,24 +63,6 @@ function buildGroupColors(sources: readonly Source[]): Map<string, string> {
     }
   }
   return new Map(order.map((g, i) => [g, paletteColor(i)]))
-}
-
-// Merge adapter fields with the persisted layout, in layout order (or
-// adapter order when no layout has been set yet). No subtree filter and no
-// overlay-palette synthesis — this is what the edit dialog should see, so
-// Submit only persists colors the user actually chose.
-//
-// Membership is reconciled against the current adapter sources: a saved layout
-// is only an ordering/override hint, so entries whose source no longer exists
-// are dropped and adapter sources the layout never saw (e.g. a subtrack added
-// after the layout was saved) are appended in adapter order.
-export function buildEditableSources(
-  sourcesVolatile: SourceInfo[],
-  layout: Source[],
-): EditableSource[] {
-  // Apply the `source` alias up front so the discovered rows are full
-  // EditableSources; the persisted layout is a partial per-row override.
-  return reconcileLayout(sourcesVolatile.map(withSourceAlias), layout)
 }
 
 // What the canvas/SVG renderers consume: editable sources after subtree

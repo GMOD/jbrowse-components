@@ -33,7 +33,7 @@ function makeDisplay({
     // position a tree whose leaves aren't the rows on screen. `leafOrder` is
     // what the run would have persisted as `layout`.
     display.setLayoutAndClusterTree(
-      leafOrder.map(name => ({ name, source: name })),
+      leafOrder.map(name => ({ name })),
       clusterTree,
     )
   }
@@ -139,10 +139,7 @@ describe('multi-wiggle Clustering submenu', () => {
 
     // gated on `layout`, not on the tree: the score sort and the arrangement
     // dialog write an order without one, and this is what undoes those too
-    display.setLayout([
-      { name: 'b', source: 'b' },
-      { name: 'a', source: 'a' },
-    ])
+    display.setLayout([{ name: 'b' }, { name: 'a' }])
     expect(labels(display.trackMenuItems())).toContain('Reset row order')
 
     const item = itemIn(display.trackMenuItems(), 'Reset row order')

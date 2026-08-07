@@ -115,9 +115,9 @@ the whole surface.
 | --- | --- | --- |
 | <span id="getter-isdensitymode">**isDensityMode**</span><br><code>boolean</code> |  | MultiLinearWiggleDisplay |
 | <span id="getter-isoverlay">**isOverlay**</span><br><code>boolean</code> |  | MultiLinearWiggleDisplay |
-| <span id="getter-sourceswithoutlayout">**sourcesWithoutLayout**</span><br><code>Source[]</code> |  | MultiLinearWiggleDisplay |
-| <span id="getter-editablesources">**editableSources**</span><br><code>Source[]</code> |  | MultiLinearWiggleDisplay |
-| <span id="getter-sources">**sources**</span><br><code>Source[]</code> |  | MultiLinearWiggleDisplay |
+| <span id="getter-sourceswithoutlayout">**sourcesWithoutLayout**</span><br><code>SourceInfo[]</code> |  | MultiLinearWiggleDisplay |
+| <span id="getter-editablesources">**editableSources**</span><br><code>SourceInfo[]</code> |  | MultiLinearWiggleDisplay |
+| <span id="getter-sources">**sources**</span><br><code>SourceInfo[]</code> |  | MultiLinearWiggleDisplay |
 | <span id="getter-numsources">**numSources**</span><br><code>number</code> |  | MultiLinearWiggleDisplay |
 | <span id="getter-autoscalesourcenames">**autoscaleSourceNames**</span><br><code>Set&lt;string&gt;</code> |  | MultiLinearWiggleDisplay |
 | <span id="getter-effectiverowheight">**effectiveRowHeight**</span><br><code>number</code> | Resolved per-row height. This display is always fit-to-display-height — there is no pinned-height setting and so no `rowHeight` sentinel to resolve — but it carries the same name every row display exposes its resolved height under (see agent-docs/reference/ROW_HEIGHT_AND_FIT), which is also what tree-sidebar's `TreeDrawingModel` reads. | MultiLinearWiggleDisplay |
