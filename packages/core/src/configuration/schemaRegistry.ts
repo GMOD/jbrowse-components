@@ -1,7 +1,10 @@
+import { getType } from '@jbrowse/mobx-state-tree'
+
 import type {
   ConfigurationSchemaDefinition,
   ConfigurationSchemaOptions,
 } from './configurationSchema.ts'
+import type { AnyConfigurationModel } from './types.ts'
 import type { IAnyType } from '@jbrowse/mobx-state-tree'
 
 export interface ConfigurationSchemaMetadata {
@@ -36,4 +39,30 @@ export function getConfigurationSchemaMetadata(type: IAnyType) {
 
 export function isRegisteredConfigurationSchema(type: IAnyType) {
   return schemaRegistry.has(type)
+}
+
+// The three lookups above take a schema *type*; the two below take a live config
+// *node* and make the `getType` hop themselves, which is what every reader
+// actually wants — a node is what they hold. Leaving the hop to the call site is
+// how `slotFacade` came to reach the registry directly for `options` while going
+// through a helper for `definition`.
+
+/**
+ * The slot/sub-schema/constant table for a live config node (includes slots
+ * merged in from `baseConfiguration` at schema construction). Undefined when the
+ * node's type isn't a registered configuration schema. The single accessor for
+ * "what are this config's slots?" — shared by the slot facade, promotable
+ * defaults, and `fullConfSnapshot`.
+ */
+export function getConfigurationSchemaDefinition(node: AnyConfigurationModel) {
+  return getConfigurationSchemaMetadata(getType(node))?.definition
+}
+
+/**
+ * The construction options a live config node's schema was built with
+ * (identifier kind, `explicitlyTyped`, the `preProcessSnapshot` hook). Undefined
+ * when the node's type isn't a registered configuration schema.
+ */
+export function getConfigurationSchemaOptions(node: AnyConfigurationModel) {
+  return getConfigurationSchemaMetadata(getType(node))?.options
 }

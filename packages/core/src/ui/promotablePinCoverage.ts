@@ -22,7 +22,7 @@
  * opens one display of every type that declares a promotable slot and holds the
  * result against a baseline.
  */
-import { promotableSlotNames } from '../configuration/util.ts'
+import { promotableSlotNames } from '../configuration/promotableSlots.ts'
 
 import type { ResolvableDisplay } from '../configuration/promotableResolve.ts'
 import type { MenuItem } from './MenuTypes.ts'

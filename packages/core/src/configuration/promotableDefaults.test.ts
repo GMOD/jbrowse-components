@@ -12,8 +12,8 @@ import {
   getConfigSnapshotWithPromotables,
   tracksDifferingFrom,
 } from './promotableDefaults.ts'
+import { readConfObject } from './readConfObject.ts'
 import { getSlotDefinition } from './slotFacade.ts'
-import { readConfObject } from './util.ts'
 
 const pluginManager = new PluginManager([]).createPluggableElements()
 pluginManager.configure()

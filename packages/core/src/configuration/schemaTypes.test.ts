@@ -9,7 +9,7 @@ import {
   isConfigurationSchemaType,
   isConstantEntry,
   isSlotDefinitionEntry,
-} from './util.ts'
+} from './schemaTypes.ts'
 
 const pluginManager = new PluginManager([]).createPluggableElements()
 pluginManager.configure()

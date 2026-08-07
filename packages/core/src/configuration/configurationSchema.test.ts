@@ -11,8 +11,8 @@ import {
   ConfigurationSchema,
 } from './configurationSchema.ts'
 import { getConf, readConfObject } from './index.ts'
+import { isConfigurationModel } from './schemaTypes.ts'
 import { getSlotDefinition } from './slotFacade.ts'
-import { isConfigurationModel } from './util.ts'
 
 import type {
   AnyConfigurationModel,

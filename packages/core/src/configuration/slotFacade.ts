@@ -1,12 +1,12 @@
-import { getSnapshot, getType } from '@jbrowse/mobx-state-tree'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { getEnumerationValues } from '../util/mst-reflection.ts'
 import { getEnv } from '../util/mstUtils.ts'
-import { getConfigurationSchemaMetadata } from './schemaRegistry.ts'
 import {
   getConfigurationSchemaDefinition,
-  isSlotDefinitionEntry,
-} from './util.ts'
+  getConfigurationSchemaOptions,
+} from './schemaRegistry.ts'
+import { isSlotDefinitionEntry } from './schemaTypes.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type {
@@ -54,8 +54,7 @@ export function preProcessSlotValues(
   node: AnyConfigurationModel,
   values: Record<string, unknown>,
 ): Record<string, unknown> {
-  const preProcess = getConfigurationSchemaMetadata(getType(node))?.options
-    .preProcessSnapshot
+  const preProcess = getConfigurationSchemaOptions(node)?.preProcessSnapshot
   return preProcess ? preProcess(values) : values
 }
 

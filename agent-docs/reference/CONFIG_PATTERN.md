@@ -232,8 +232,8 @@ input to `readConfObject`".
 | Function                                | Location                                                  | Purpose                                                   |
 | --------------------------------------- | --------------------------------------------------------- | --------------------------------------------------------- |
 | `getConfigSnapshotWithPromotables(display)` | `packages/core/src/configuration/promotableDefaults.ts` | Snapshot with defaults included and every promotable slot resolved |
-| `fullConfSnapshot(config)`              | `packages/core/src/configuration/util.ts`                 | The walker under it. Not on the barrel — use the resolving form |
-| `readConfigValue(config, key, feature)` | `packages/core/src/configuration/util.ts`                 | Read from plain object, auto-evaluate JEXL                |
+| `fullConfSnapshot(config)`              | `packages/core/src/configuration/fullConfSnapshot.ts`     | The walker under it. Not on the barrel — use the resolving form |
+| `readConfigValue(config, key, feature)` | `packages/core/src/configuration/readConfObject.ts`       | Read from plain object, auto-evaluate JEXL                |
 | `createRenderConfigContext(config)`     | `plugins/canvas/src/RenderFeatureDataRPC/renderConfig.ts` | Extract frequently-accessed fields for the rendering loop |
 
 ## What this replaces

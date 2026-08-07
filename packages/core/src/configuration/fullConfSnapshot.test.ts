@@ -2,7 +2,8 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import PluginManager from '../PluginManager.ts'
 import { ConfigurationSchema } from './configurationSchema.ts'
-import { fullConfSnapshot, readConfObject, readConfigValue } from './util.ts'
+import { fullConfSnapshot } from './fullConfSnapshot.ts'
+import { readConfObject, readConfigValue } from './readConfObject.ts'
 
 function createPluginManager() {
   const pm = new PluginManager([])

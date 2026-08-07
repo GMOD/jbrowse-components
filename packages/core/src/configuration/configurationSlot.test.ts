@@ -6,7 +6,7 @@ import ConfigSlot, {
   toCallbackValue,
   toFixedValue,
 } from './configurationSlot.ts'
-import { readConfObject } from './util.ts'
+import { readConfObject } from './readConfObject.ts'
 
 const pluginManager = new PluginManager([]).createPluggableElements()
 pluginManager.configure()

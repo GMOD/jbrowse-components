@@ -12,6 +12,7 @@ import { getSession } from '../util/mstUtils.ts'
 import { isObject } from '../util/objectUtils.ts'
 import { openPromotableDisplays } from '../util/openDisplays.ts'
 import { pluralize } from '../util/stringUtils.ts'
+import { fullConfSnapshot } from './fullConfSnapshot.ts'
 import { setConf } from './getConf.ts'
 import {
   cascadeContextFor,
@@ -19,11 +20,8 @@ import {
   resolveSlotIn,
   storedSlotValue,
 } from './promotableResolve.ts'
-import {
-  fullConfSnapshot,
-  isConfigurationModel,
-  promotableSlotNames,
-} from './util.ts'
+import { promotableSlotNames } from './promotableSlots.ts'
+import { isConfigurationModel } from './schemaTypes.ts'
 
 import type { AbstractSessionModel } from '../util/index.ts'
 import type { TrackConfigChange } from '../util/trackConfigDelta.ts'

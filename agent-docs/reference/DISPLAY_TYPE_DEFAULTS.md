@@ -65,7 +65,8 @@ accidental.
 | --- | --- |
 | Read-time resolver (`resolveSlot`) + the `ResolvableDisplay` shape | `packages/core/src/configuration/promotableResolve.ts` |
 | The usable-value gate (`isUsableValue`, `SHAPE_CHECKS`), shared by the resolver and by `ConfigSlot`'s `promotedBase` guard | `packages/core/src/configuration/slotShape.ts` |
-| Cached per-schema promotable-slot list (`promotableSlotNames`) + the raw walker `fullConfSnapshot` and its nested-schema guard | `packages/core/src/configuration/util.ts` |
+| Cached per-schema promotable-slot list (`promotableSlotNames`) | `packages/core/src/configuration/promotableSlots.ts` |
+| The raw walker `fullConfSnapshot` and its nested-schema guard | `packages/core/src/configuration/fullConfSnapshot.ts` |
 | Resolution-aware reader (`resolveConf`; `getConf` alongside it stays raw) | `packages/core/src/configuration/getConf.ts` |
 | Pin builder + share/worker helpers (`makePin`, `getConfigSnapshotWithPromotables`, `getDisplayTypeDefaultChanges`) | `packages/core/src/configuration/promotableDefaults.ts` |
 | The "every display on an open track" walk (`openPromotableDisplays`) — not a cascade concern, shared with the share/export bake | `packages/core/src/util/openDisplays.ts` |

@@ -19,7 +19,7 @@ import {
   isConfigurationSchemaType,
   isConstantEntry,
   isSlotDefinitionEntry,
-} from './util.ts'
+} from './schemaTypes.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { ConfigSlotDefinition } from './configurationSlot.ts'

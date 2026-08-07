@@ -1,5 +1,5 @@
 import { resolveSlot } from './promotableResolve.ts'
-import { readConfObject } from './util.ts'
+import { readConfObject } from './readConfObject.ts'
 
 import type { ResolvableDisplay } from './promotableResolve.ts'
 import type {
