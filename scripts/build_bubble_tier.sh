@@ -24,6 +24,11 @@
 # at jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.bubbles.bed.gz.
 set -euo pipefail
 
+# Byte order, not the caller's collation: see the note in build_rgfa_tabix.sh.
+# A UTF-8 locale can rank two distinct PanSN names equal, which interleaves their
+# rows and leaves tabix unable to find the second sequence, with no error.
+export LC_ALL=C
+
 BUBBLES="${1:?usage: build_bubble_tier.sh <bubbles.bed[.gz]> [out-prefix] [min-content]}"
 PREFIX="${2:-${BUBBLES%.bubbles.bed*}.tier}"
 MIN_CONTENT="${3:-10000}"

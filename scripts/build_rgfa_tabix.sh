@@ -52,6 +52,16 @@
 #
 set -euo pipefail
 
+# tabix needs every row of one sequence contiguous, and whether `sort` delivers
+# that depends on the caller's locale. UTF-8 collation ignores punctuation at the
+# primary level, and `#` is what PanSN is built out of, so two distinct stable
+# names can compare EQUAL: the tie then falls to the numeric second key and the
+# two sequences interleave by position. bgzip and tabix both accept the result,
+# and queries for the later run come back empty. C collation is bytes, which is
+# also what rgfaBed.ts sorts the synthesized GFA under, and it is faster on the
+# 750k-line files this runs on.
+export LC_ALL=C
+
 GFA="${1:?usage: build_rgfa_tabix.sh <graph.rgfa[.gz]> [out-prefix] [ref-prefix]}"
 # `${GFA%.gfa*}` does not match `.rgfa`, which is the extension this script's own
 # usage line advertises, so the default prefix used to keep it: `graph.rgfa` in,

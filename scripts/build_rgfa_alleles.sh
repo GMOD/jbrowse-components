@@ -92,6 +92,11 @@
 #
 set -euo pipefail
 
+# Byte order, not the caller's collation: see the note in build_rgfa_tabix.sh.
+# A UTF-8 locale can rank two distinct PanSN names equal, which interleaves their
+# rows and leaves tabix unable to find the second sequence, with no error.
+export LC_ALL=C
+
 PREFIX="${1:?usage: build_rgfa_alleles.sh <prefix>}"
 SEGS="$PREFIX.segs.bed.gz"
 LINKS="$PREFIX.links.bed.gz"
