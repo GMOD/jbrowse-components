@@ -6,7 +6,9 @@ import type { MatrixFeature } from './buildMultiRowMatrix.ts'
 // contract the cluster `order` indexes back into. These tests read it
 // positionally, which asserts that order as a side effect.
 function buildRows(args: Parameters<typeof buildMultiRowMatrix>[0]) {
-  return [...buildMultiRowMatrix(args).values()]
+  // rows come back as Float32Array (see buildMultiRowMatrix); read them as
+  // plain arrays so the expectations below stay readable rgb triples
+  return [...buildMultiRowMatrix(args).values()].map(row => [...row])
 }
 
 const RED = [255, 0, 0]

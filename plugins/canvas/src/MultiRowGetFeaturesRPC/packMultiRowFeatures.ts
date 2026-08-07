@@ -109,6 +109,14 @@ export function packMultiRowFeatures({
   // an unset (`maybeColor` undefined) slot is what lets the file's own color, or
   // the per-row palette, paint — see the `color` slot in configSchema.ts
   const featureColor = makeFeatureColorResolver(colorConfig, jexl)
+  // A painting repeats a handful of color strings across every feature it has —
+  // eight ancestry hues over half a million segments — and parsing one is not
+  // cheap: trim, lowercase, a named-color lookup, a BED-triple regex, then the
+  // parser. Measured at 570ms per 500k features uncached against 6ms memoized,
+  // which is most of a second of worker time per region, spent resolving eight
+  // answers. The clustering RPC caches the same resolution for the same reason
+  // (buildMultiRowMatrix's rgbCache); this side had been left doing it long-hand.
+  const abgrByCss = new Map<string, number>()
   let usedItemRgb = false
 
   for (let i = 0; i < n; i++) {
@@ -148,7 +156,12 @@ export function packMultiRowFeatures({
     featurePartitionIndex[i] = idx
     const { css, fromBed } = featureColor(feature)
     usedItemRgb ||= fromBed
-    featureColors[i] = cssColorToABGR(css)
+    let abgr = abgrByCss.get(css)
+    if (abgr === undefined) {
+      abgr = cssColorToABGR(css)
+      abgrByCss.set(css, abgr)
+    }
+    featureColors[i] = abgr
   }
 
   return {

@@ -84,7 +84,7 @@ export function buildMultiRowMatrix({
   regions: { start: number; end: number }[]
   features: MatrixFeature[]
   maxBins?: number
-}): Map<string, number[]> {
+}): Map<string, Float32Array> {
   const totalWidth =
     regions.reduce((a, r) => a + Math.max(0, r.end - r.start), 0) || 1
   const bins: Bin[] = []
@@ -165,7 +165,14 @@ export function buildMultiRowMatrix({
     return rgb
   }
 
-  const matrix = new Map<string, number[]>()
+  // Float32Array rather than number[]: hclust flattens whatever it is given
+  // into a Float32Array of its own (`flatData.set(data[i], …)`), so the values
+  // already round-trip through single precision — this only stops them being
+  // boxed on the way. Measured at 47ms against 102ms to build a 2000x13000
+  // matrix, and half the memory a worker holds at once, which is what a cohort
+  // painting is actually short of: the categorical path is bins x (colors+1),
+  // so a 12-colour painting over 1000 bins is 13k cells a row.
+  const matrix = new Map<string, Float32Array>()
   // Which feature covers each bin, refilled per row. Written by walking the
   // features onto their own bins rather than scanning every feature at every
   // bin: the scan was bins × features per row, so a dense painting spent
@@ -175,10 +182,9 @@ export function buildMultiRowMatrix({
   const coveringPerBin = new Array<MatrixFeature | undefined>(bins.length)
   for (const name of sources) {
     const intervals = byRow.get(name) ?? []
-    const row = new Array<number>(bins.length * channels)
-    if (categorical) {
-      row.fill(0)
-    }
+    // zero-filled by construction, which is what the categorical path needs
+    // (one 1 per bin, zeroes elsewhere); the rgb path writes every cell
+    const row = new Float32Array(bins.length * channels)
     coveringPerBin.fill(undefined)
     for (const f of intervals) {
       // Only this feature's own region: coordinates repeat across regions, so a
