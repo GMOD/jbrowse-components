@@ -10,21 +10,41 @@ behind it are in
 [reference/PANGENOME_GRAPHS.md](../reference/PANGENOME_GRAPHS.md) — read that
 first, this file assumes it.
 
-**State as of 2026-08-06.** Closed: §1 deterministic layout, §2 pinned bundle,
+**State as of 2026-08-07.** Closed: §1 deterministic layout, §2 pinned bundle,
 §3 carriage read path, §4 colour default and ramp key, §5 the level-of-detail
 tier (producer, hosted files, and the browser bug that blocked it), §6's y axis,
 §9 reference-only index (built and hosted, and its premise corrected — it is not
-a drop-in), three of §8's four UI debts. Open: §6's remaining half (x from the
+a drop-in), three of §8's four UI debts, and the pin-and-regen sweep §2 and §6
+were both waiting on. Open: §6's remaining half (x from the
 connected linear view), §7 in-view navigation, §8's requestable row set, and the
 demo list.
 
-**One thing is blocked, and it is the same thing for both §2 and §6: a clean
-worktree to regenerate figures in.** §6 moves every anchored figure by design and
-the pin bump owed since 2026-08-06 moves them too, so both wait on the same
-sweep. Nothing else is blocked; the plugin work can go on without it.
+**~~One thing is blocked~~ — done 2026-08-07.** The pin is `b50dea1b8c90` and all
+31 graph figures are regenerated against it (1.3-14% moved, none by jitter). The
+worktree was never clean, and it did not have to be: **a figure whose spec mounts
+only a plugin pane is immune to the `build/` contamination that blocks the rest**
+(see `key_pattern_screenshot_regen_workflow`), and the graph set was scoped by
+name rather than by `--filter=pangenome/`, which would have swept in the linear
+`depth`/`pav`/`maf` figures that are not.
 
-**What that one deploy now carries has grown, 2026-08-07.** Four more plugin
-commits sit behind it, and two of them move drawings:
+Three things the regen turned up that were not in anyone's plan:
+
+- **`showPerf` took `graph-perf-stats` out of the DOM, and four readiness gates
+  were built on it** — including `TOOLBAR_READY`, which every graph spec uses.
+  All four became unsatisfiable the moment the pin moved. They gate on
+  `graph-stats` + `data-geometry-vertices` now, which GraphStats.tsx keeps
+  unconditional precisely so a test never rides a display setting.
+- **`graphAnchor.ts` projected a node's y with the x scale**, which was right
+  until a row became 20 px with `scaleY` pinned at 1. Every anchored figure's
+  callouts collapsed onto the top of the pane and nothing failed. Same one-line
+  shape as the rest of the axis split, in the one consumer living in this repo.
+- **A composed half should not be trimmed for blank below it.** `+append` pads
+  the shorter half against the taller, so the blank moves from inside the frame
+  to beside it. Only the standalone `hprc_cfhr_deletion` took its 118 px.
+
+**What that deploy carried, 2026-08-07.** Beyond §6's y-axis, §4's colour default
+and ramp key, and §8's view title and hidden timings, five fixes, two of which
+move drawings:
 
 - `39fff01` — `drawPaths` fanned an edge's ribbons perpendicular to its chord and
   dropped the edge when the chord had no length. In both anchored layouts
@@ -45,9 +65,22 @@ commits sit behind it, and two of them move drawings:
 - `8426209` — three scanning passes indexed instead (`deletionEdges` over the
   backbone, `placeOffReference`'s adjacency, the spatial grid's y axis, which had
   one cell size taken from two axes in different units). Nothing drawn changes.
+- `bc9fa8a` — a segment on no P/W line took `sampleRowLayout` down, since it has
+  no coordinate to assert. Legal GFA; `anchoredLayout` already read the same
+  field through `?.`.
+- `1c7337c` — one arrowhead per edge rather than one per haplotype crossing it.
+  72 heads plain, 155 with ribbons before this, 72 after. `39fff01` had walked
+  the anchored layouts into the confetti this file already recorded for force,
+  by making their abutting edges draw again.
 
-So the sweep is: betabuild, bump the pin in the three fixtures, regenerate. Same
-one commit, now with a reason beyond the row pitch.
+**Left for a reviewer, not blocked on anything.** The 31 figures are new bytes,
+so their `screenshot-review.json` verdicts have resurfaced by design — that is
+the mechanism working, and the row-pitch change is exactly the kind that wants a
+second pair of eyes. Two known nits in `hprc_mhc_layout_anchored`: badge ① is
+slightly clipped by the canvas top edge (the reference row sits one FIT_PADDING
+down and the badge offsets up by 34), and badge ② now lands near the Rank 1/3
+labels. `part()`'s offsets special-case `layoutMode === 'force'` for exactly this
+reason and the anchored branch was written when rows were far apart.
 
 **Published 2026-08-06, latest `aee5e17f4b2c`** (which added `maxRegionBp`; the
 carriage read went out just before it as `bfe47428e7ae`). This clears the
@@ -55,20 +88,23 @@ betabuild this file had been asking for: the tier fix, two dependency bumps, the
 registration fix, the drawing-pane ceiling and the carriage read (§3) all went
 out together, and the unversioned entry point now serves them.
 
-**Still owed: deploy §6, bump the pin in the three fixtures, and regenerate the
-graph figures — all in one commit, per §2.** Not done because the
-jbrowse-components worktree has been carrying 40-100 uncommitted source files
-from other agents throughout; a regen against that tree bakes somebody else's
-work in progress into the published figure set, which is exactly what a pin
-exists to prevent. The test for whether a given figure is safe to regenerate is
-whether an unfiltered sweep moves it at all: the graph figures all moved, so all
-of them are blocked on a clean tree.
+**~~Still owed: deploy §6, bump the pin, regenerate~~ — all three done together
+2026-08-07, per §2's rule, as `b50dea1b8c90`.** See the top of this file for what
+that carried and what it turned up.
 
-Deploying §6 ahead of the regen is safe but pointless-to-half-wrong: the
-fixtures pin a hash, so the screenshot generator would keep rendering the old
-bundle, while a reader clicking a published figure's LIVE LINK (which points at
-the unversioned entry point) would see rows a figure's caption does not describe.
-Do the three together.
+The reason it had sat is worth keeping, because it was half right. A regen
+against a worktree carrying another agent's 50 in-flight files bakes their work
+into the published figure set. But that hazard reaches a figure through
+`products/jbrowse-web/build`, so it reaches only the figures that render app
+chrome or a linear track — a spec mounting nothing but a `GraphGenomeView` pane
+cannot see it. Most of the graph set is not that pure, and those figures were
+regenerated against an 08:35 build of unknown provenance; the two-run check and
+the per-figure diffs say the movement is the bundle's, but a reviewer should know
+the base was not pristine.
+
+Deploying ahead of a regen is still pointless-to-half-wrong, for the reason it
+always was: the fixtures pin a hash, so the generator keeps rendering the old
+bundle while a reader clicking a figure's LIVE LINK gets the new one.
 
 **The plugin e2e does verify this, and it took fixing** — all 19 tests pass
 against a real browser, which is as close to seeing these changes as anything
@@ -156,6 +192,10 @@ unversioned entry point, verifies both resolve, and prints the pinnable url. The
 three fixtures (`test_data/graphgenomeview/{config,hprc,ecoli_pangenome}.json`)
 pin it; `test_data/graphgenomeview/README.md` states the rule. The unversioned
 url stays current, which is what the published figures' live links point at.
+
+**Superseded 2026-08-07 by `b50dea1b8c90`, which was bumped and regenerated in
+one commit. Kept because the A/B method below is the cheap way to settle the next
+one, and because it is the case where skipping was harmless.**
 
 **A bump that skipped the regen, and why it turned out not to matter
 (2026-08-06).** `0093d998d280` landed in the fixtures with no figure regenerated,
