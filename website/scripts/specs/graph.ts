@@ -48,13 +48,29 @@ const HOSTED_DEMO = 'https://jbrowse.org/demos/ecoli_pangenome'
 // UNFILTERED after a pin bump and let the gate answer, or accept that the
 // answer you get is not about the bundle.
 
-// Ready when the layout has landed (graph-perf-stats) AND the toolbar has
-// painted. Waiting on the stats alone raced: a slow subgraph fetch could leave
-// the Layout/Color selects unpainted in the captured frame, silently committing
-// a figure with half a toolbar. `body:has(A) B` is an AND; a bare `A, B` list
-// would be a CSS OR and fire on whichever landed first.
-const TOOLBAR_READY =
-  'body:has([data-testid="graph-perf-stats"]) [data-testid="graph-layout-select"]'
+// The graph has drawn: the geometry pass has run and reported its vertex count.
+//
+// **Not `graph-perf-stats`, which is what every gate here used to say.** Plugin
+// `34018b5` put the perf READOUT behind `showPerf`, default off, because a
+// machine's fetch time in the toolbar of a published figure is a number the
+// reader has to work out is not about them. That took the element out of the DOM
+// with it, so the moment the pin moved past that build, every selector below
+// became unsatisfiable and eleven graph figures failed to capture at once,
+// reading as a spec bug rather than as the bundle.
+//
+// The counts on `graph-stats` are unconditional by construction — GraphStats.tsx
+// says so, and puts them on that element rather than on the readout precisely so
+// switching the text off leaves them behind. `data-geometry-vertices` is empty
+// until buildGeometry has run, so it is the same signal without the setting.
+export const GRAPH_DRAWN =
+  '[data-testid="graph-stats"]:not([data-geometry-vertices=""])'
+
+// Ready when the layout has landed AND the toolbar has painted. Waiting on the
+// stats alone raced: a slow subgraph fetch could leave the Layout/Color selects
+// unpainted in the captured frame, silently committing a figure with half a
+// toolbar. `body:has(A) B` is an AND; a bare `A, B` list would be a CSS OR and
+// fire on whichever landed first.
+const TOOLBAR_READY = `body:has(${GRAPH_DRAWN}) [data-testid="graph-layout-select"]`
 
 // The tracked fixtures, whose `esmUrl` is the published, content-addressed
 // plugin bundle. Their `*_local.json` siblings point that url at a local
@@ -2513,7 +2529,7 @@ export const graphSpecs: ScreenshotSpec[] = [
     // Both, so the capture cannot land after the drawing and before the legend
     // that names its colours: the legend is DOM beside the canvas, and
     // perf-stats rather than a row label because force draws no rows.
-    readySelector: `body:has([data-testid="graph-path-legend"]) [data-testid="graph-perf-stats"]`,
+    readySelector: `body:has([data-testid="graph-path-legend"]) ${GRAPH_DRAWN}`,
     readyTimeout: 90000,
     allowUnsettled: true,
     settleMs: 8000,
@@ -3193,8 +3209,12 @@ export const graphSpecs: ScreenshotSpec[] = [
     settleMs: 8000,
     viewportWidth: 1000,
     // 1580 while the graph half was FMMM, whose drawing is squarer than 11 rows
-    // of backbone: the anchored pane came out 238 px shorter
-    viewportHeight: 1302,
+    // of backbone: the anchored pane came out 238 px shorter. Then 118 shorter
+    // again when a row became a 20 px pitch rather than a fraction of the drawn
+    // width — the run's own `blank below the last content` number, not measured
+    // off the image. Standalone, so unlike the two composed pairs in this file
+    // there is no taller sibling that would just absorb the trim as padding.
+    viewportHeight: 1184,
     hideTooltip: true,
     // What the reader is looking at, named on the rows themselves (review: "can
     // red boxes and text annotation be added"). The box wraps the two genes the
@@ -3887,7 +3907,7 @@ export const graphSpecs: ScreenshotSpec[] = [
     // paint, which an empty canvas flips on its own. A bare comma list would be
     // a CSS OR and fire on whichever landed first.
     readySelector:
-      'body:has([data-testid="graph-perf-stats"]):has([data-testid="graph-layout-select"]):has([data-testid="tree_sidebar_dendrogram"]) [data-testid="variant-display-done"][data-display-phase="ready"]',
+      `body:has(${GRAPH_DRAWN}):has([data-testid="graph-layout-select"]):has([data-testid="tree_sidebar_dendrogram"]) [data-testid="variant-display-done"][data-display-phase="ready"]`,
     readyTimeout: 360000,
     settleMs: 5000,
     viewportWidth: 1000,

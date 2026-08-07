@@ -14,6 +14,7 @@ import {
   sessionSpec,
 } from '../screenshot-spec-helpers.ts'
 import { ECOLI_DEMO_BASE } from './demoBase.ts'
+import { GRAPH_DRAWN } from './graph.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -1504,11 +1505,13 @@ export const syntenySpecs: ScreenshotSpec[] = [
       },
     ),
     viewportHeight: 1190,
-    // Both panes: the lanes' own done-marker AND the graph's layout timing.
+    // Both panes: the lanes' own done-marker AND the graph having drawn.
     // `body:has(A) B` is an AND — a bare list would be a CSS OR and fire on
     // whichever landed first, which here is always the lanes.
-    readySelector:
-      'body:has([data-testid="graph-perf-stats"]) [data-testid="pileup-display-done"]',
+    //
+    // GRAPH_DRAWN rather than the perf readout, which is behind a display
+    // setting now and stopped existing; graph.ts states the whole trap.
+    readySelector: `body:has(${GRAPH_DRAWN}) [data-testid="pileup-display-done"]`,
     readyTimeout: 120000,
     settleMs: 12000,
     // name the island, since "three lanes stop here" is only interesting once
