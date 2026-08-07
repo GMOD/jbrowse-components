@@ -1,6 +1,7 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
 import { createJBrowseThemeFromArgs } from '@jbrowse/core/ui'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
+import { resolveStyleTheme } from '@jbrowse/core/ui/styleTheme'
 import { BaseSessionModel } from '@jbrowse/product-core'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -39,6 +40,14 @@ export function EmbeddedSessionThemeMixin(pluginManager: PluginManager) {
        */
       get palette() {
         return resolvePalette(this.themeOptions)
+      },
+      /**
+       * #getter
+       * The palette plus the sizing tokens `makeStyles` reads. See the
+       * canonical `ThemeManagerSessionMixin` getter of the same name.
+       */
+      get styleTheme() {
+        return resolveStyleTheme(this.themeOptions)
       },
       /**
        * #getter

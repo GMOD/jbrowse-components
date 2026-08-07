@@ -170,13 +170,45 @@ export function augmentColor(input: ColorInput): ColorQuad {
 // this module owns them. They are the standard Material palette stops.
 // ---------------------------------------------------------------------------
 
-const green = { 300: '#81c784', 500: '#4caf50', 700: '#388e3c' }
+const green = {
+  300: '#81c784',
+  400: '#66bb6a',
+  500: '#4caf50',
+  700: '#388e3c',
+  800: '#2e7d32',
+  900: '#1b5e20',
+}
 const blue = { 300: '#64b5f6', 500: '#2196f3', 700: '#1976d2' }
-const orange = { 300: '#ffb74d', 500: '#ff9800', 700: '#f57c00' }
-const red = { 300: '#e57373', 500: '#f44336', 700: '#d32f2f' }
+const orange = {
+  300: '#ffb74d',
+  400: '#ffa726',
+  500: '#ff9800',
+  700: '#f57c00',
+  900: '#e65100',
+}
+const red = {
+  300: '#e57373',
+  400: '#ef5350',
+  500: '#f44336',
+  700: '#d32f2f',
+  800: '#c62828',
+}
+const lightBlue = {
+  300: '#4fc3f7',
+  400: '#29b6f6',
+  500: '#03a9f4',
+  700: '#0288d1',
+  900: '#01579b',
+}
 const brown = { 300: '#a1887f', 500: '#795548', 700: '#5d4037' }
 export const grey = {
+  50: '#fafafa',
+  100: '#f5f5f5',
+  200: '#eeeeee',
+  300: '#e0e0e0',
   400: '#bdbdbd',
+  500: '#9e9e9e',
+  600: '#757575',
   700: '#616161',
   800: '#424242',
   900: '#212121',
@@ -194,14 +226,51 @@ export interface NeutralTokens {
   background: { paper: string; default: string }
   divider: string
   common: { black: string; white: string }
+  grey: typeof grey
   action: {
     active: string
     hover: string
+    hoverOpacity: number
     selected: string
+    selectedOpacity: number
     disabled: string
     disabledBackground: string
+    disabledOpacity: number
+    focus: string
+    focusOpacity: number
+    activatedOpacity: number
   }
 }
+
+/**
+ * The four states a UI conveys with color rather than with words. Not domain
+ * colors — nothing renders a feature in `warning.main` — but the styling
+ * layer's, and JBrowse's own rather than borrowed from Material UI at read
+ * time, for the same reason every other color here is.
+ */
+export interface SemanticColors {
+  error: ColorQuad
+  warning: ColorQuad
+  info: ColorQuad
+  success: ColorQuad
+}
+
+// Material's own semantic stops, one set per mode. Stated with explicit
+// light/dark shades because MUI states them that way: `warning.main` in light
+// mode is not orange[800] but the nearest value that passes 3:1 against white.
+const lightSemantics = {
+  error: { main: red[700], light: red[400], dark: red[800] },
+  warning: { main: '#ed6c02', light: orange[500], dark: orange[900] },
+  info: { main: lightBlue[700], light: lightBlue[500], dark: lightBlue[900] },
+  success: { main: green[800], light: green[500], dark: green[900] },
+} satisfies Record<keyof SemanticColors, ShadeInput>
+
+const darkSemantics = {
+  error: { main: red[500], light: red[300], dark: red[700] },
+  warning: { main: orange[400], light: orange[300], dark: orange[700] },
+  info: { main: lightBlue[400], light: lightBlue[300], dark: lightBlue[700] },
+  success: { main: green[400], light: green[300], dark: green[700] },
+} satisfies Record<keyof SemanticColors, ShadeInput>
 
 // A theme that declares no primary/secondary at all (a config `extraThemes`
 // entry, in practice) falls back to the stock Material defaults rather than to
@@ -224,12 +293,19 @@ const lightNeutrals: NeutralTokens = {
   background: { paper: '#fff', default: '#fff' },
   divider: 'rgba(0, 0, 0, 0.12)',
   common: { black: '#000', white: '#fff' },
+  grey,
   action: {
     active: 'rgba(0, 0, 0, 0.54)',
     hover: 'rgba(0, 0, 0, 0.04)',
+    hoverOpacity: 0.04,
     selected: 'rgba(0, 0, 0, 0.08)',
+    selectedOpacity: 0.08,
     disabled: 'rgba(0, 0, 0, 0.26)',
     disabledBackground: 'rgba(0, 0, 0, 0.12)',
+    disabledOpacity: 0.38,
+    focus: 'rgba(0, 0, 0, 0.12)',
+    focusOpacity: 0.12,
+    activatedOpacity: 0.12,
   },
 }
 
@@ -242,12 +318,19 @@ const darkNeutrals: NeutralTokens = {
   background: { paper: '#121212', default: '#121212' },
   divider: 'rgba(255, 255, 255, 0.12)',
   common: { black: '#000', white: '#fff' },
+  grey,
   action: {
     active: '#fff',
     hover: 'rgba(255, 255, 255, 0.08)',
+    hoverOpacity: 0.08,
     selected: 'rgba(255, 255, 255, 0.16)',
+    selectedOpacity: 0.16,
     disabled: 'rgba(255, 255, 255, 0.3)',
     disabledBackground: 'rgba(255, 255, 255, 0.12)',
+    disabledOpacity: 0.38,
+    focus: 'rgba(255, 255, 255, 0.12)',
+    focusOpacity: 0.12,
+    activatedOpacity: 0.24,
   },
 }
 
@@ -515,7 +598,10 @@ const defaultFrames: FrameTuple<ShadeInput> = [
  * crosses the RPC worker boundary as itself rather than as arguments something
  * on the far side has to rebuild.
  */
-export interface JBrowsePalette extends StringColors, NeutralTokens {
+export interface JBrowsePalette
+  extends StringColors,
+    NeutralTokens,
+    SemanticColors {
   mode: 'light' | 'dark'
   primary: ColorQuad
   secondary: ColorQuad
@@ -542,6 +628,10 @@ export interface PaletteInput extends Partial<StringColors> {
   quaternary?: ShadeInput
   highlight?: ShadeInput
   textHighlight?: ShadeInput
+  error?: ShadeInput
+  warning?: ShadeInput
+  info?: ShadeInput
+  success?: ShadeInput
   bases?: Partial<Record<BaseKey, ShadeInput>>
   frames?: FrameTuple<ShadeInput>
   framesCDS?: FrameTuple<ShadeInput>
@@ -550,6 +640,7 @@ export interface PaletteInput extends Partial<StringColors> {
   background?: Partial<NeutralTokens['background']>
   divider?: string
   common?: Partial<NeutralTokens['common']>
+  grey?: Partial<NeutralTokens['grey']>
   action?: Partial<NeutralTokens['action']>
 }
 
@@ -658,6 +749,7 @@ export function resolvePalette(args: PaletteArgs = {}): JBrowsePalette {
   const isDark = mode === 'dark'
   const neutrals = isDark ? darkNeutrals : lightNeutrals
   const brandFallback = isDark ? darkBrandFallback : lightBrandFallback
+  const semantics = isDark ? darkSemantics : lightSemantics
   const strings: StringColors = {
     ...lightStringColors,
     ...(isDark ? darkStringColors : {}),
@@ -676,9 +768,14 @@ export function resolvePalette(args: PaletteArgs = {}): JBrowsePalette {
     background: { ...neutrals.background, ...input.background },
     divider: input.divider ?? neutrals.divider,
     common: { ...neutrals.common, ...input.common },
+    grey: { ...neutrals.grey, ...input.grey },
     action: { ...neutrals.action, ...input.action },
     primary: augmentColor(input.primary ?? brandFallback.primary),
     secondary: augmentColor(input.secondary ?? brandFallback.secondary),
+    error: augmentColor(input.error ?? semantics.error),
+    warning: augmentColor(input.warning ?? semantics.warning),
+    info: augmentColor(input.info ?? semantics.info),
+    success: augmentColor(input.success ?? semantics.success),
     tertiary: augmentColor(input.tertiary ?? lightgrey),
     quaternary: augmentColor(input.quaternary ?? lightgrey),
     highlight: augmentColor(input.highlight ?? { main: mandarin }),

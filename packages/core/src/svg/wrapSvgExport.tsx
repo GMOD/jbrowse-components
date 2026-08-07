@@ -1,5 +1,7 @@
 import { ThemeProvider } from '@mui/material'
 
+import { StyleThemeProvider } from '../ui/PaletteContext.tsx'
+import { resolveStyleTheme } from '../ui/styleTheme.ts'
 import { createJBrowseTheme } from '../ui/theme.ts'
 import { renderToStaticMarkup } from '../util/renderToStaticMarkup.ts'
 import { SVGExportRoot } from './SvgExport.tsx'
@@ -86,19 +88,25 @@ export function wrapSvgExport({
   Wrapper?: React.FC<{ children: React.ReactNode }>
   children: React.ReactNode
 }) {
+  // Both providers, from the same options — the export renders outside every
+  // React tree the app mounted, so a `makeStyles` component here would
+  // otherwise style itself from the *default* style theme and quietly ignore
+  // the theme the user picked in the export dialog.
   return roundSvgNumbers(
     renderToStaticMarkup(
       <ThemeProvider theme={createJBrowseTheme(theme)}>
-        <Wrapper>
-          <SVGExportRoot
-            width={width}
-            height={height}
-            margin={margin}
-            fontFamily={fontFamily}
-          >
-            {children}
-          </SVGExportRoot>
-        </Wrapper>
+        <StyleThemeProvider theme={resolveStyleTheme({ configTheme: theme })}>
+          <Wrapper>
+            <SVGExportRoot
+              width={width}
+              height={height}
+              margin={margin}
+              fontFamily={fontFamily}
+            >
+              {children}
+            </SVGExportRoot>
+          </Wrapper>
+        </StyleThemeProvider>
       </ThemeProvider>,
     ),
   )

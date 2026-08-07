@@ -36,9 +36,8 @@ const useStyles = makeStyles()(theme => ({
     borderRadius: '50%',
     overflow: 'visible',
     color: theme.palette.action.active,
-    transition: theme.transitions.create('background-color', {
-      duration: theme.transitions.duration.shortest,
-    }),
+    // Material's `shortest` duration and default easing, spelled out
+    transition: 'background-color 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms',
     '&:hover': {
       backgroundColor: alpha(
         theme.palette.action.active,

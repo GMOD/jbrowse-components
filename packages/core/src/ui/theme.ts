@@ -2,6 +2,7 @@ import { createTheme } from '@mui/material'
 import deepmerge from 'deepmerge'
 
 import { palettePresets, resolvePalette } from './palette.ts'
+import { DEFAULT_FONT_SIZE, DEFAULT_SPACING } from './styleTheme.ts'
 
 import type { AlignmentFill, StringColors } from './palette.ts'
 import type {
@@ -200,9 +201,9 @@ const darkModePrimaryIconOverride = {
 // merged over this by createJBrowseBaseTheme.
 const baseThemeOptions: ThemeOptions = {
   typography: {
-    fontSize: 12,
+    fontSize: DEFAULT_FONT_SIZE,
   },
-  spacing: 4,
+  spacing: DEFAULT_SPACING,
   components: {
     MuiTooltip: {
       styleOverrides: {

@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 
 import { App } from '@jbrowse/app-core'
-import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
+import { StyleThemeProvider } from '@jbrowse/core/ui/PaletteContext'
 import { CssBaseline } from '@mui/material'
 import { ThemeProvider } from '@mui/material/styles'
 import { observer } from 'mobx-react'
@@ -32,12 +32,12 @@ const JBrowseNonNullRoot = observer(function JBrowseNonNullRoot({
 
   return session ? (
     <ThemeProvider theme={session.theme}>
-      <PaletteProvider palette={session.palette}>
+      <StyleThemeProvider theme={session.styleTheme}>
         <CssBaseline />
         {/* key forces React to remount App when session changes (e.g.
           duplicate session) preventing stale references to old session views */}
         <App key={session.id} session={session} />
-      </PaletteProvider>
+      </StyleThemeProvider>
     </ThemeProvider>
   ) : null
 })

@@ -1,7 +1,7 @@
 import { Suspense, lazy } from 'react'
 
 import { LoadingEllipses } from '@jbrowse/core/ui'
-import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
+import { StyleThemeProvider } from '@jbrowse/core/ui/PaletteContext'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { ScopedCssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -44,7 +44,7 @@ const JBrowseApp = observer(function JBrowseApp({
 
   return (
     <ThemeProvider theme={session.theme}>
-      <PaletteProvider palette={session.palette}>
+      <StyleThemeProvider theme={session.styleTheme}>
         <div className={classes.avoidParentStyle}>
           <ScopedCssBaseline sx={{ height: '100%' }}>
             <Suspense fallback={<LoadingEllipses />}>
@@ -59,7 +59,7 @@ const JBrowseApp = observer(function JBrowseApp({
             </Suspense>
           </ScopedCssBaseline>
         </div>
-      </PaletteProvider>
+      </StyleThemeProvider>
     </ThemeProvider>
   )
 })

@@ -1,27 +1,56 @@
-import { createContext, useContext, useEffect } from 'react'
+import { createContext, useContext, useEffect, useMemo } from 'react'
 
-import { resolvePalette } from './palette.ts'
+import { defaultStyleTheme } from './styleTheme.ts'
 
 import type { JBrowsePalette } from './palette.ts'
+import type { JBrowseStyleTheme } from './styleTheme.ts'
 import type { ReactNode } from 'react'
 
 /**
- * How a React component asks for JBrowse's colors.
+ * How a React component asks for JBrowse's design tokens.
  *
  * This is the toolkit-free counterpart to Material UI's `useTheme`, and it is
  * the seam that lets a display component render without Material UI at all: a
- * display reads `usePalette()` for its content colors, and an embedding app
- * supplies them by mounting `PaletteProvider` rather than a `ThemeProvider`.
+ * display reads `usePalette()` for its content colors, an embedding app
+ * supplies them by mounting `PaletteProvider` rather than a `ThemeProvider`,
+ * and `makeStyles` reads the whole thing through `useStyleTheme`.
  *
  * JBrowse's own products mount both, from the same session, so the Material UI
  * chrome and the display content cannot disagree.
  *
- * With no provider above it this falls back to the default palette, mirroring
- * `useTheme`'s fall back to the default theme. That keeps a bare display
- * mountable in a test or a minimal host without ceremony.
+ * With no provider above it this falls back to the default style theme,
+ * mirroring `useTheme`'s fall back to the default theme. That keeps a bare
+ * display mountable in a test or a minimal host without ceremony.
  */
-const PaletteContext = createContext<JBrowsePalette | undefined>(undefined)
+const StyleThemeContext = createContext<JBrowseStyleTheme | undefined>(
+  undefined,
+)
 
+/**
+ * Supply the whole style theme — colors plus spacing and type scale. This is
+ * what JBrowse's own products mount, from `session.styleTheme`, so a config
+ * `theme` that sets `spacing` or `typography` reaches `makeStyles` and Material
+ * UI alike.
+ */
+export function StyleThemeProvider({
+  theme,
+  children,
+}: {
+  theme: JBrowseStyleTheme
+  children: ReactNode
+}) {
+  return (
+    <StyleThemeContext.Provider value={theme}>
+      {children}
+    </StyleThemeContext.Provider>
+  )
+}
+
+/**
+ * Supply colors only, leaving JBrowse's default sizing in place. The narrower
+ * of the two and the one an embedding app wants: a host mounting this is saying
+ * what JBrowse should draw *with*, not restating its type scale.
+ */
 export function PaletteProvider({
   palette,
   children,
@@ -29,20 +58,16 @@ export function PaletteProvider({
   palette: JBrowsePalette
   children: ReactNode
 }) {
-  return (
-    <PaletteContext.Provider value={palette}>
-      {children}
-    </PaletteContext.Provider>
-  )
+  const theme = useMemo(() => ({ ...defaultStyleTheme, palette }), [palette])
+  return <StyleThemeProvider theme={theme}>{children}</StyleThemeProvider>
 }
 
-// resolved once rather than per call: the default palette is a pure function of
-// no arguments, and a fresh object each render would defeat memoization in
-// every consumer that depends on palette identity
-const defaultPalette = resolvePalette()
+export function useStyleTheme(): JBrowseStyleTheme {
+  return useContext(StyleThemeContext) ?? defaultStyleTheme
+}
 
 export function usePalette(): JBrowsePalette {
-  return useContext(PaletteContext) ?? defaultPalette
+  return useStyleTheme().palette
 }
 
 /** What {@link useSessionPalette} needs of a session. */

@@ -1,7 +1,7 @@
 import { Suspense, lazy } from 'react'
 
 import { LoadingEllipses } from '@jbrowse/core/ui'
-import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
+import { StyleThemeProvider } from '@jbrowse/core/ui/PaletteContext'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { EmbeddedViewContainer } from '@jbrowse/embedded-core'
@@ -42,7 +42,7 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
   viewState: ViewModel
 }) {
   const { session } = viewState
-  const { view, theme, palette } = session
+  const { view, theme, styleTheme } = session
   const { pluginManager } = getEnv(session)
   const { ReactComponent } = pluginManager.getViewType(view.type)
   const { classes } = useStyles()
@@ -65,7 +65,7 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
 
   return (
     <ThemeProvider theme={theme}>
-      <PaletteProvider palette={palette}>
+      <StyleThemeProvider theme={styleTheme}>
         <div className={classes.avoidParentStyle}>
           <ScopedCssBaseline>
             <div className={classes.root} style={style}>
@@ -89,7 +89,7 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
             </div>
           </ScopedCssBaseline>
         </div>
-      </PaletteProvider>
+      </StyleThemeProvider>
     </ThemeProvider>
   )
 })

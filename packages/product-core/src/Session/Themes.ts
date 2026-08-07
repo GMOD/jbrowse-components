@@ -1,6 +1,7 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { createJBrowseThemeFromArgs, defaultThemes } from '@jbrowse/core/ui'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
+import { resolveStyleTheme } from '@jbrowse/core/ui/styleTheme'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
@@ -63,6 +64,18 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
          */
         get palette() {
           return resolvePalette(this.themeOptions)
+        },
+        /**
+         * #getter
+         * The palette plus the sizing tokens `makeStyles` reads — spacing,
+         * corner radius, type scale. This is what a product mounts on
+         * `StyleThemeProvider`; it costs no UI toolkit, and it is derived from
+         * the same `themeOptions` as `theme`, so a config `theme` that sets
+         * `spacing` moves JBrowse's own styles and its Material components
+         * together.
+         */
+        get styleTheme() {
+          return resolveStyleTheme(this.themeOptions)
         },
         /**
          * #getter

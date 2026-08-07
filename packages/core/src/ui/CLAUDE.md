@@ -28,6 +28,19 @@ builder that sets it drags its whole component graph into every caller. `icon`
 is still an element type, which is the one of these left; see
 `agent-docs/reference/EAGER_BUNDLE.md`.
 
+## Design tokens: `palette.ts` for colors, `styleTheme.ts` for the rest
+
+`makeStyles` hands a component **`JBrowseStyleTheme`** — palette, spacing,
+shape, type scale — not Material UI's `Theme`. It is deliberately a subset, so
+a call site reaching for `theme.zIndex` or `theme.shadows` is a compile error
+rather than a silent dependency on a component library; layering lives in
+`zIndexes.ts`. `PaletteProvider` supplies colors alone and is what an embedding
+app mounts; `StyleThemeProvider` supplies the whole thing and is what JBrowse's
+products mount, from `session.styleTheme`, so a config `theme` setting `spacing`
+or `typography` reaches both halves. `styleTheme.test.ts` holds the values to
+Material's, and `util/tss-react/muiFree.test.ts` fails if `makeStyles` reaches
+`@mui/*` again — see `agent-docs/reference/EAGER_BUNDLE.md` for why it must not.
+
 ## Colors
 
 `palette.ts` is the single source of truth — `theme.ts` builds the MUI theme

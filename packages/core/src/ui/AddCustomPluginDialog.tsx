@@ -13,7 +13,7 @@ import SubmitDialog from './SubmitDialog.tsx'
 
 import type { PluginDefinition } from '../pluginDefinitions.ts'
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   dialogContent: {
     display: 'flex',
     flexDirection: 'column',
@@ -21,14 +21,13 @@ const useStyles = makeStyles()(theme => ({
   expand: {
     transform: 'rotate(0deg)',
     marginLeft: 'auto',
-    transition: theme.transitions.create('transform', {
-      duration: theme.transitions.duration.shortest,
-    }),
+    // Material's `shortest` duration and default easing, spelled out
+    transition: 'transform 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms',
   },
   expandOpen: {
     transform: 'rotate(180deg)',
   },
-}))
+})
 
 /**
  * The "add a plugin by url" form, shared by every place a plugin can be

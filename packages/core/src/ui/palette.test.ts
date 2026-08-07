@@ -66,7 +66,13 @@ const quadKeys = [
   'quaternary',
   'highlight',
   'textHighlight',
+  'error',
+  'warning',
+  'info',
+  'success',
 ] as const
+
+const greyKeys = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900] as const
 
 // the MUI palette and JBrowsePalette are structurally the same for everything
 // asserted here, so one flattener serves both sides
@@ -97,12 +103,19 @@ function flatten(palette: PaletteLike) {
     },
     divider: palette.divider,
     common: { black: palette.common.black, white: palette.common.white },
+    grey: Object.fromEntries(greyKeys.map(k => [k, palette.grey[k]])),
     action: {
       active: palette.action.active,
       hover: palette.action.hover,
+      hoverOpacity: palette.action.hoverOpacity,
       selected: palette.action.selected,
+      selectedOpacity: palette.action.selectedOpacity,
       disabled: palette.action.disabled,
       disabledBackground: palette.action.disabledBackground,
+      disabledOpacity: palette.action.disabledOpacity,
+      focus: palette.action.focus,
+      focusOpacity: palette.action.focusOpacity,
+      activatedOpacity: palette.action.activatedOpacity,
     },
     colors: Object.fromEntries(quadKeys.map(k => [k, quad(palette[k])])),
     bases: Object.fromEntries(baseKeys.map(k => [k, quad(palette.bases[k])])),

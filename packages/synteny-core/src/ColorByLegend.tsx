@@ -27,7 +27,10 @@ const useStyles = makeStyles()(theme => ({
     border: `1px solid ${theme.palette.divider}`,
     background: theme.palette.background.paper,
     opacity: 0.9,
-    boxShadow: theme.shadows[2],
+    // Material's elevation-2 shadow, spelled out: the legend floats over a
+    // canvas and needs to read as a raised surface
+    boxShadow:
+      '0px 3px 1px -2px rgba(0,0,0,0.2),0px 2px 2px 0px rgba(0,0,0,0.14),0px 1px 5px 0px rgba(0,0,0,0.12)',
     fontSize: '0.7rem',
     // the box is shrink-to-fit, so without a floor the ramp collapses to
     // whatever the title row leaves over; a floor here rather than a width on

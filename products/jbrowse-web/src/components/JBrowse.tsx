@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { App } from '@jbrowse/app-core'
-import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
+import { StyleThemeProvider } from '@jbrowse/core/ui/PaletteContext'
 import { onSnapshot } from '@jbrowse/mobx-state-tree'
 import { CssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -24,7 +24,7 @@ const JBrowse = observer(function JBrowse({
   const { rootModel } = pluginManager
   const { error, jbrowse, session: s } = rootModel!
   const session = s as WebSessionModel
-  const { id, theme, palette } = session
+  const { id, theme, styleTheme } = session
 
   useEffect(() => {
     setQueryParams({ session: `local-${id}` })
@@ -63,7 +63,7 @@ const JBrowse = observer(function JBrowse({
 
   return (
     <ThemeProvider theme={theme}>
-      <PaletteProvider palette={palette}>
+      <StyleThemeProvider theme={styleTheme}>
         <CssBaseline />
         <FileHandleRestoreBanner session={session} />
         {/* key={id} forces React to remount App when session changes (e.g.
@@ -73,7 +73,7 @@ const JBrowse = observer(function JBrowse({
           session={session}
           HeaderButtons={<ShareButton session={session} />}
         />
-      </PaletteProvider>
+      </StyleThemeProvider>
     </ThemeProvider>
   )
 })

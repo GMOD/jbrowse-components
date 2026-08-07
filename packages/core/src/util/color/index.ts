@@ -1,19 +1,23 @@
+// The color math is `ui/palette.ts`'s, not Material UI's. Same values —
+// `palette.test.ts` asserts them against a real MUI theme, and `emphasize` is
+// checked against MUI's directly below — but this module is reached from a
+// plugin's eagerly-evaluated code, and the MUI import made it one of the
+// first-party edges keeping `@mui/material/styles` in every host's first paint.
+// See agent-docs/reference/EAGER_BUNDLE.md.
 import {
   darken,
   getContrastRatio,
   lighten,
-  emphasize as muiEmphasize,
-  getLuminance as muiGetLuminance,
-} from '@mui/material/styles'
-
+  getLuminance as luminanceOf,
+} from '../../ui/palette.ts'
 import * as convert from '../color-bits/convert.ts'
 import { cssColorToNormalizedRgb } from '../colorBits.ts'
 import { namedColorToHex } from './cssColorsLevel4.ts'
 
 /**
  * The relative brightness of any point in a color space,
- * normalized to 0 for darkest black and 1 for lightest white.
- * Uses MUI's `getLuminance`, but adds support for named colors
+ * normalized to 0 for darkest black and 1 for lightest white,
+ * with support for named colors on top.
  *
  * Formula: https://www.w3.org/TR/WCAG20-TECHS/G17.html#G17-tests
  *
@@ -23,13 +27,12 @@ import { namedColorToHex } from './cssColorsLevel4.ts'
  */
 function getLuminance(color: string): number {
   const convertedColor = namedColorToHex(color)
-  return muiGetLuminance(convertedColor || color)
+  return luminanceOf(convertedColor || color)
 }
 
 /**
  * Darken or lighten a color, depending on its luminance.
  * Light colors are darkened, dark colors are lightened.
- * Uses MUI's `emphasize`, but adds support for named colors
  *
  * @param color - CSS color, i.e. one of: #nnn, #nnnnnn, rgb(), rgba(),
  * hsl(), hsla(), or named color
@@ -37,8 +40,10 @@ function getLuminance(color: string): number {
  * @returns A CSS color string. Hex input values are returned as rgb
  */
 export function emphasize(color: string, coefficient = 0.15): string {
-  const convertedColor = namedColorToHex(color)
-  return muiEmphasize(convertedColor || color, coefficient)
+  const convertedColor = namedColorToHex(color) || color
+  return getLuminance(convertedColor) > 0.5
+    ? darken(convertedColor, coefficient)
+    : lighten(convertedColor, coefficient)
 }
 
 const CONTRAST_STEPS = 20

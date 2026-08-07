@@ -1,5 +1,5 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { alpha } from '@mui/material'
+import { alpha } from '@jbrowse/core/ui/palette'
 import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '../model.ts'

@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 
 import { LoadingEllipses } from '@jbrowse/core/ui'
-import { PaletteProvider } from '@jbrowse/core/ui/PaletteContext'
+import { StyleThemeProvider } from '@jbrowse/core/ui/PaletteContext'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { EmbeddedViewContainer } from '@jbrowse/embedded-core'
@@ -26,14 +26,14 @@ const JBrowseCircularGenomeView = observer(function JBrowseCircularGenomeView({
   viewState: ViewModel
 }) {
   const { session } = viewState
-  const { view, theme, palette } = session
+  const { view, theme, styleTheme } = session
   const { pluginManager } = getEnv(session)
   const { ReactComponent } = pluginManager.getViewType(view.type)
   const { classes } = useStyles()
 
   return (
     <ThemeProvider theme={theme}>
-      <PaletteProvider palette={palette}>
+      <StyleThemeProvider theme={styleTheme}>
         <div className={classes.avoidParentStyle}>
           <ScopedCssBaseline>
             <EmbeddedViewContainer key={`view-${view.id}`} view={view}>
@@ -51,7 +51,7 @@ const JBrowseCircularGenomeView = observer(function JBrowseCircularGenomeView({
             />
           </ScopedCssBaseline>
         </div>
-      </PaletteProvider>
+      </StyleThemeProvider>
     </ThemeProvider>
   )
 })

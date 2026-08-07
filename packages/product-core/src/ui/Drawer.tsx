@@ -1,4 +1,5 @@
 import ResizeHandle from '@jbrowse/core/ui/ResizeHandle'
+import { DRAWER_Z_INDEX } from '@jbrowse/core/ui/zIndexes'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -10,7 +11,7 @@ const useStyles = makeStyles()(theme => ({
     overflowY: 'auto',
     height: '100%',
     position: 'relative',
-    zIndex: theme.zIndex.drawer,
+    zIndex: DRAWER_Z_INDEX,
     outline: 'none',
     background: theme.palette.background.default,
   },
@@ -18,7 +19,7 @@ const useStyles = makeStyles()(theme => ({
     width: 4,
     position: 'fixed',
     top: 0,
-    zIndex: theme.zIndex.drawer + 1,
+    zIndex: DRAWER_Z_INDEX + 1,
   },
 }))
 

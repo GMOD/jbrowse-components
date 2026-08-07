@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { MUI_TOOLTIP_Z_INDEX } from '@jbrowse/core/ui/zIndexes'
 import { alpha } from '@mui/material'
 import { createPortal } from 'react-dom'
 
@@ -37,7 +38,7 @@ const useStyles = makeStyles()(theme => ({
   guideLabel: {
     position: 'fixed',
     transform: 'translateX(-50%)',
-    zIndex: theme.zIndex.tooltip,
+    zIndex: MUI_TOOLTIP_Z_INDEX,
   },
   leftOfEdge: {
     right: '100%',

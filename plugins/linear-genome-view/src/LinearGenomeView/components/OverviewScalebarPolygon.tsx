@@ -4,7 +4,7 @@ import {
   transformPxSpan,
 } from '@jbrowse/core/util/Base1DUtils'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { alpha } from '@mui/material'
+import { alpha } from '@jbrowse/core/ui/palette'
 import { observer } from 'mobx-react'
 
 import { HEADER_BAR_HEIGHT } from '../consts.ts'
