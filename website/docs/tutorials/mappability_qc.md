@@ -96,7 +96,7 @@ where that recovery is complete.
 
 ## What it does to a callset
 
-<Figure src="/img/qc/callsets_at_smn.png" caption="The same 2.5 Mb: RefSeq genes, the DGV structural-variant catalogue, the 1000 Genomes long-read (ONT) SV callset over 1,019 samples, and GIAB's low-mappability and segdup regions. DGV stacks records across the whole block; the long-read callset has a hole in exactly that span and resumes on both sides of it." />
+<Figure src="/img/qc/callsets_at_smn.png" caption="The same 2.5 Mb: RefSeq genes, the DGV structural-variant catalogue, the 1000 Genomes long-read (ONT) SV callset over 1,019 samples, and GIAB's low-mappability and segdup regions. Each callset is collapsed to one row so the two are directly comparable: DGV runs wall to wall, and the long-read callset has a hole in exactly the flagged span." />
 
 Two callsets asking the same question of the same sequence disagree completely
 about whether there is anything to report. Counting over the flagged block and

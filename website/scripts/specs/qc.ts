@@ -319,15 +319,33 @@ export const qcSpecs: ScreenshotSpec[] = [
             // the same question with reads that span the duplication. Neither
             // lane is the truth here — the figure shows that they disagree about
             // whether there is anything to report.
+            //
+            // BOTH COLLAPSED, and to the same height, on review ("these tracks
+            // are just too chaotic. need more clarity"). Packed, DGV was eight
+            // rows of blue/red/brown boxes wall to wall — a mat with no shape,
+            // since no individual record is the subject — and the long-read lane
+            // spent its height on a label per record ("DEL-58:263") that is
+            // unreadable at 2.5 Mb and unrelated to the claim. Collapsed, each
+            // callset is one row of ink over the same axis, which is the only
+            // comparison being made: one is continuous and the other has a hole.
+            // The record counts the prose quotes come from
+            // scan_mappability_qc.sh, which is where a number belongs.
             {
               trackId: 'hg38-dgvMerged',
               type: 'LinearBasicDisplay',
-              height: 160,
+              displayMode: 'collapsed',
+              height: 40,
             },
             {
+              // 70 where DGV takes 40, and the extra 30 is not for the data: a
+              // collapsed row needs none of it. It is so the callout below sits
+              // INSIDE the lane it is about, in the stretch of it that is empty,
+              // which is the thing being named. Anywhere else on this frame it
+              // would sit on another lane's ink.
               trackId: 'hg38-lrSv1kgOnt',
               type: 'LinearBasicDisplay',
-              height: 120,
+              displayMode: 'collapsed',
+              height: 70,
             },
             {
               trackId: 'hg38-alllowmapandsegdupregions',
@@ -338,6 +356,27 @@ export const qcSpecs: ScreenshotSpec[] = [
         },
       ],
     })}&sessionName=Screenshot`,
-    viewportHeight: 700,
+    // four one-row lanes and the gene lane, where the packed version needed 700
+    // (490 cut 27 css px once the long-read lane grew, per the run's own
+    // below-the-fold report)
+    viewportHeight: 520,
+    // The hole named, since an absence is the one thing on a genome browser that
+    // nothing draws. No arrow: the pill sits in the gap itself, centred on it,
+    // so it points by being there. The two runs of ticks at the frame's edges
+    // are what say the callset resumes, and they need no label.
+    annotations: [
+      {
+        type: 'text',
+        text: 'No long-read calls across the flagged block',
+        fontSize: 18,
+        maxWidth: 520,
+        anchor: {
+          track: 'hg38-lrSv1kgOnt',
+          locus: 'chr5:70,050,000',
+          fracY: 0.5,
+          dy: 8,
+        },
+      },
+    ],
   },
 ]
