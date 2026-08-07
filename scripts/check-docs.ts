@@ -53,7 +53,9 @@ const VALIDATORS: Validator[] = [
     // The spec-list mistakes that render a plausible figure instead of failing:
     // a duplicate name (one PNG, two specs), a compose part that names no spec
     // (keeps stacking the renamed part's stale image), fields an embedded
-    // capture ignores.
+    // capture ignores. Plus the ratchet on hand-placed viewport coordinates,
+    // which is the same shape of mistake one step earlier: a callout or a click
+    // that names a pixel renders a plausible figure of the wrong thing.
     name: 'screenshot specs are well formed',
     argv: web('check-specs.ts'),
   },

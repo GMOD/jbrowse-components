@@ -48,7 +48,11 @@ import { trioSpecs } from './specs/trio.ts'
 import { uiSpecs } from './specs/ui.ts'
 import { variantsSpecs } from './specs/variants.ts'
 
-import type { ScreenshotSpec } from './screenshot-spec-types.ts'
+import type {
+  Annotation,
+  ScreenshotAction,
+  ScreenshotSpec,
+} from './screenshot-spec-types.ts'
 
 export const specs: ScreenshotSpec[] = [
   ...syntenySpecs,
@@ -203,6 +207,69 @@ export function validateSpecs(list: ScreenshotSpec[] = specs) {
     }
   }
   return problems
+}
+
+// ── The raw-pixel ratchet ──────────────────────────────────────────────────
+//
+// `website/CLAUDE.md` says it twice — "never hand-measure a callout position —
+// every annotation `anchor`s" and "a click anchors too" — and a rule nothing
+// counts is a rule that drifts. This counts.
+//
+// It is a RATCHET, not a gate: the remaining entries are deliberate (see below),
+// so failing on their existence would fail every run. What it stops is number
+// 41. Lower BASELINE whenever a conversion lands — the check tells you to, and
+// tells you the number.
+//
+// What is left, and why each is not a bug:
+//
+// - a caption parked in a corner or a margin, which points at nothing, so the
+//   failure this rule guards against (a callout landing off its target) does
+//   not apply to it. Anchoring one RELOCATES it, which is a composition change
+//   dressed up as a cleanup.
+// - the tail of an arrow leaving one of those captions. The caption and its
+//   tail are one unit in page coordinates; anchoring only the tail pulls the
+//   arrow off the pill it leaves. Both or neither.
+// - `dismissMenus`, and the one other backdrop click: they hit nothing on
+//   purpose, since a menu's backdrop covers the viewport.
+//
+// Anything else is a callout that names a thing without saying which one, and
+// `scripts/locusAnchor.ts` explains what that has cost.
+const BASELINE = 40
+
+export function countRawCallouts(list: ScreenshotSpec[] = specs) {
+  const found: string[] = []
+  const annotations = (name: string, anns: Annotation[] | undefined) => {
+    for (const a of anns ?? []) {
+      const raw = [
+        (a.x !== undefined || a.y !== undefined) && !a.anchor && 'x/y',
+        a.from && !a.fromAnchor && 'from',
+        a.to && !a.anchor && 'to',
+      ].filter(Boolean)
+      if (raw.length > 0) {
+        found.push(`${name}: ${a.type} ${raw.join(' + ')}`)
+      }
+    }
+  }
+  const actions = (name: string, list: ScreenshotAction[] | undefined) => {
+    for (const action of list ?? []) {
+      // a rubberband drag genuinely is two viewport points
+      if (action.type !== 'drag' && action.from && !action.anchor) {
+        found.push(`${name}: ${action.type} from`)
+      }
+    }
+  }
+  for (const spec of list) {
+    if (spec.mode === 'cli' || spec.mode === 'compose') {
+      continue
+    }
+    annotations(spec.name, spec.annotations)
+    actions(spec.name, spec.mode === 'url' ? spec.actions : undefined)
+    for (const [i, stage] of (spec.stages ?? []).entries()) {
+      annotations(`${spec.name} stage ${i}`, stage.annotations)
+      actions(`${spec.name} stage ${i}`, stage.actions)
+    }
+  }
+  return { found, baseline: BASELINE }
 }
 
 // Split `--filter a,b,c` into trimmed, non-empty tokens. Takes an array because
