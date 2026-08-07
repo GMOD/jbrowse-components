@@ -20,6 +20,7 @@ import {
   writeFileSync,
 } from 'node:fs'
 import { dirname, join } from 'node:path'
+import { parseArgs } from 'node:util'
 
 import {
   type WorktreeState,
@@ -33,7 +34,6 @@ import {
   repoRoot,
   unpublishedFigures,
 } from './figure-paths.ts'
-import { matchesFilterTokens, parseFilterTokens } from './filter-tokens.ts'
 import {
   type FigureEntry,
   diffManifests,
@@ -50,19 +50,53 @@ import {
   storePrefix,
   storeUrl,
 } from './figure-store.ts'
+import { matchesFilterTokens, parseFilterTokens } from './filter-tokens.ts'
 
-const args = process.argv.slice(2)
-const command = args[0] ?? 'status'
-const flag = (name: string) => args.includes(`--${name}`)
-const option = (name: string) => {
-  const i = args.indexOf(`--${name}`)
-  return i === -1 ? undefined : args[i + 1]
-}
-// Every occurrence, so `--filter a --filter b` unions rather than keeping only
-// the last — same shape as the screenshot generator's flag, which is declared
-// `multiple` for the same reason.
-const repeatedOption = (name: string) =>
-  args.flatMap((a, i) => (a === `--${name}` ? (args[i + 1] ?? []) : []))
+const usage = `figures — the S3-backed figure store
+
+  status              compare the worktree against figures.lock
+  pull [--force]      install every figure figures.lock names
+  push [--dry-run] [--filter a,b]
+                      upload new bytes, then rewrite figures.lock. --filter
+                      scopes it to the figures named (substring, repeatable)
+                      and leaves every other manifest line untouched, which is
+                      what a worktree with someone else's regen in it needs
+  check [--remote]    fail if the manifest and the worktree disagree
+  report [--base ref] [--markdown] [--out file]
+                      what moved, with before/after store URLs
+  mirror --dest s3://…  copy the store to a second bucket (add-only)
+`
+
+// STRICT, and that is the whole point of parsing rather than scanning argv for
+// substrings. `--filter` decides whether push touches one figure or all 485, so
+// a flag this does not recognise has to stop the run: the hand-rolled version
+// answered a typo'd `--fliter foo` and a `--filter` with no value the same way
+// it answered no flag at all, by publishing the entire worktree without a word.
+// Same reasoning, and the same `multiple: true`, as screenshot-options.ts.
+const { values, positionals } = (() => {
+  try {
+    return parseArgs({
+      args: process.argv.slice(2),
+      allowPositionals: true,
+      options: {
+        help: { type: 'boolean', short: 'h', default: false },
+        // multiple, so `--filter a --filter b` unions rather than keeping only b
+        filter: { type: 'string', multiple: true },
+        'dry-run': { type: 'boolean', default: false },
+        force: { type: 'boolean', default: false },
+        remote: { type: 'boolean', default: false },
+        markdown: { type: 'boolean', default: false },
+        base: { type: 'string' },
+        out: { type: 'string' },
+        dest: { type: 'string' },
+      },
+    })
+  } catch (e) {
+    console.error(`${e instanceof Error ? e.message : String(e)}\n\n${usage}`)
+    process.exit(1)
+  }
+})()
+const command = positionals[0] ?? 'status'
 
 // A year, immutable: the URL names the bytes, so it can never be wrong.
 const CACHE_CONTROL = 'public, max-age=31536000, immutable'
@@ -158,7 +192,7 @@ async function isPublished(path: string, sha256: string): Promise<boolean> {
 
 async function pull() {
   const manifest = readManifest()
-  const force = flag('force')
+  const force = values.force
   const state = inspectWorktree(manifest)
 
   // "Differs from the manifest" is two situations that need opposite handling,
@@ -280,8 +314,8 @@ function readStoreKeys(): Set<string> | undefined {
 // paths. That is what you want here — the pair are copies and must move together
 // — and it is the opposite of what `figurePath` exists for elsewhere.
 function push() {
-  const dryRun = flag('dry-run')
-  const tokens = parseFilterTokens(repeatedOption('filter'))
+  const dryRun = values['dry-run']
+  const tokens = parseFilterTokens(values.filter)
   const before = readManifest()
   const paths = listFigureFiles()
   if (!paths.length) {
@@ -420,7 +454,7 @@ function push() {
 // which is the failure this is here to survive. That also makes it safe to
 // point at a bucket holding other things.
 function mirror() {
-  const dest = option('dest')
+  const dest = values.dest
   if (!dest?.startsWith('s3://')) {
     console.error('usage: figures mirror --dest s3://some-bucket/jb2-figures')
     process.exit(1)
@@ -472,7 +506,7 @@ function check() {
     )
   }
 
-  if (flag('remote')) {
+  if (values.remote) {
     const existing = readStoreKeys()
     if (!existing) {
       problems.push('could not list the store to verify blobs')
@@ -513,7 +547,7 @@ function baseManifest(ref: string) {
 }
 
 function report() {
-  const base = option('base') ?? 'origin/main'
+  const base = values.base ?? 'origin/main'
   // "Now", per figure, is its BYTES if they are on disk and its figures.lock
   // line if they are not. One rule, and each half of it is load-bearing.
   //
@@ -535,11 +569,11 @@ function report() {
   // hash) and that URL 404s, so the report has to say which ones those are
   // rather than hand over a broken image.
   const unpublished = new Set(unpublishedFigures())
-  const markdown = flag('markdown')
+  const markdown = values.markdown
   const text = markdown
     ? formatMarkdownReport(changes, { base, unpublished })
     : formatTextReport(changes, { base, unpublished })
-  const out = option('out')
+  const out = values.out
   if (out) {
     writeFileSync(out, text)
     console.log(`wrote ${out} (${changes.length} change(s))`)
@@ -550,20 +584,10 @@ function report() {
 
 // ---------------------------------------------------------------------------
 
-const usage = `figures — the S3-backed figure store
-
-  status              compare the worktree against figures.lock
-  pull [--force]      install every figure figures.lock names
-  push [--dry-run] [--filter a,b]
-                      upload new bytes, then rewrite figures.lock. --filter
-                      scopes it to the figures named (substring, repeatable)
-                      and leaves every other manifest line untouched, which is
-                      what a worktree with someone else's regen in it needs
-  check [--remote]    fail if the manifest and the worktree disagree
-  report [--base ref] [--markdown] [--out file]
-                      what moved, with before/after store URLs
-  mirror --dest s3://…  copy the store to a second bucket (add-only)
-`
+if (values.help) {
+  console.log(usage)
+  process.exit(0)
+}
 
 switch (command) {
   case 'status': {
@@ -591,7 +615,9 @@ switch (command) {
     break
   }
   default: {
+    // `--help` is a flag now, handled above; an unknown flag never reaches here
+    // at all (parseArgs throws). This is only an unknown COMMAND.
     console.log(usage)
-    process.exit(command === '--help' || command === 'help' ? 0 : 1)
+    process.exit(command === 'help' ? 0 : 1)
   }
 }
