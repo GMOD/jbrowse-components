@@ -629,8 +629,9 @@ describe('setSlot', () => {
   })
 
   test('an Object.prototype member is not mistaken for a slot', () => {
-    // the check is Object.hasOwn, not `in` — `'toString' in modelDefinition` is
-    // true for the plain object modelDefinition is built as
+    // the slot names are a Set, so `toString` is a miss structurally. It was a
+    // plain object once, where the answer turned on picking Object.hasOwn over
+    // `in` — `'toString' in modelDefinition` is true.
     const schema = ConfigurationSchema('Proto', {
       count: { type: 'integer', defaultValue: 1 },
     })
@@ -638,6 +639,48 @@ describe('setSlot', () => {
     expect(() => {
       node.setSlot('toString', 2)
     }).toThrow(/Proto has no config slot "toString"/)
+  })
+
+  // The check is against the slots, not against every model property. These two
+  // are properties, so they used to pass it: the sub-schema write then landed
+  // outright — doing setSubschema's job without its array/map guard — and the
+  // identifier write fell through to an MST error about identifiers, from a
+  // call whose whole purpose is to name the mistake.
+  describe('a property that is not a slot', () => {
+    const schema = ConfigurationSchema(
+      'NotSlots',
+      {
+        real: { type: 'integer', defaultValue: 1 },
+        sub: ConfigurationSchema('NotSlotsSub', {
+          x: { type: 'number', defaultValue: 1 },
+        }),
+        items: types.array(
+          ConfigurationSchema('NotSlotsItem', {
+            x: { type: 'number', defaultValue: 1 },
+          }),
+        ),
+      },
+      { explicitIdentifier: 'notSlotsId' },
+    )
+    const make = () => schema.create({ notSlotsId: 'one' }, { pluginManager })
+
+    test.each(['sub', 'items'])('%s points at setSubschema', key => {
+      expect(() => {
+        make().setSlot(key, { x: 2 })
+      }).toThrow(new RegExp(`${key} is a sub-schema on NotSlots.*setSubschema`))
+    })
+
+    test('the identifier is rejected here, not by MST', () => {
+      expect(() => {
+        make().setSlot('notSlotsId', 'two')
+      }).toThrow(/NotSlots has no config slot "notSlotsId"/)
+    })
+
+    test('the valid-slot list names only slots', () => {
+      expect(() => {
+        make().setSlot('nope', 1)
+      }).toThrow(/Valid slots: real$/)
+    })
   })
 })
 

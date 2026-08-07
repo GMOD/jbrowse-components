@@ -219,6 +219,10 @@ function makeConfigurationSchemaModel<
   // excluded here — collected as the loop classifies each entry rather than
   // re-scanning modelDefinition afterward.
   const subSchemaKeys = new Set<string>()
+  // The actual slots, which is a strictly smaller set than `modelDefinition`:
+  // that also holds the sub-schema properties and the identifier, neither of
+  // which setSlot may write. Same collect-as-you-classify as subSchemaKeys.
+  const slotKeys = new Set<string>()
   for (const [slotName, slotDefinition] of Object.entries(schemaDefinition)) {
     if (isConfigurationSchemaType(slotDefinition)) {
       // a sub-configuration. A bare sub-schema is already stripDefault-wrapped
@@ -237,6 +241,7 @@ function makeConfigurationSchemaModel<
       volatileConstants[slotName] = slotDefinition
     } else if (isSlotDefinitionEntry(slotDefinition)) {
       // slotDefinition is narrowed to ConfigSlotDefinition here (no cast)
+      slotKeys.add(slotName)
       try {
         modelDefinition[slotName] = ConfigSlot(slotDefinition)
       } catch (e) {
@@ -279,16 +284,28 @@ function makeConfigurationSchemaModel<
       // compile-time guard on `setConf` catches this only where the schema is
       // concrete, which measurably it often is not (a mixin or a widened
       // factory erases it, see scripts/audit-config-read-types.ts), so the
-      // check has to be here to cover every write. `modelDefinition` already
-      // has base-schema slots merged in, so an inherited slot passes.
+      // check has to be here to cover every write. `slotKeys` already has
+      // base-schema slots merged in, so an inherited slot passes.
+      //
+      // Against the slots, not against `modelDefinition`, which also holds the
+      // identifier and the sub-schema properties. Writing the identifier
+      // reached MST and threw its own error instead of this one; writing a
+      // sub-schema was accepted outright, silently doing setSubschema's job
+      // without setSubschema's array/map guard. Neither is a write this action
+      // is for, and both made the "Valid slots:" list a lie.
       setSlot(slotName: string, value: unknown) {
-        if (!Object.hasOwn(modelDefinition, slotName)) {
+        if (!slotKeys.has(slotName)) {
+          // the sub-schema branch re-classifies off the definition rather than
+          // carrying a second Set: it runs only on the way to a throw, and the
+          // predicate is the same one the loop above classified with
           throw new Error(
-            `${modelName} has no config slot "${slotName}". Valid slots: ${Object.keys(
-              modelDefinition,
-            )
-              .sort()
-              .join(', ')}`,
+            isConfigurationSchemaType(schemaDefinition[slotName])
+              ? `${slotName} is a sub-schema on ${modelName}, not a config slot — replace it with setSubschema`
+              : `${modelName} has no config slot "${slotName}". Valid slots: ${[
+                  ...slotKeys,
+                ]
+                  .sort()
+                  .join(', ')}`,
           )
         }
         self[slotName] = value
