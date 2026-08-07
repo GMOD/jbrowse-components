@@ -52,9 +52,9 @@ show that a documented cross leaves blocks. One dog from each of the 219 breeds
 the collection sequenced four or more of goes in as well, chosen on how well the
 breed was sequenced and on nothing about the breed, so the same run also says
 what a dog with no such cross looks like, and any breed that turns out to carry
-something is found rather than nominated. Eight European gray wolves are held
-out of the wolf panel and painted as targets, which is the only thing in the
-figure that says what a correct all-wolf call looks like.
+something is found rather than nominated. Eight European gray wolves go in as
+targets too, each removed from the wolf panel first, since an animal matched
+against itself paints solid by construction and says nothing.
 
 The [Dog10K consortium](https://www.dog10kgenomes.org/) publishes a phased
 reference panel of 1929 canids on the `UU_Cfam_GSD_1.0` assembly, which includes
