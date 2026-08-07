@@ -255,6 +255,16 @@ your own caller works as long as the rows carry `Chromosome`, `Start_Position`,
 the two allele columns, `Tumor_Sample_Barcode`, and `CONTEXT`. For the grouping,
 any TSV whose first column matches the VCF's sample names will do.
 
+## Where to go next
+
+- [](/docs/tutorials/tcga_cohort_cnv), the same tumors' copy number as a
+  one-row-per-tumor painting, plus the cohort recurrence track
+- **Allele-specific copy number** (ASCAT, open access at the GDC) reports major
+  and minor allele copy number separately, so it shows loss of heterozygosity
+  that a total copy-number segment call reads as balanced
+- **Methylation** (Beta Value arrays, open access) is probe level with genomic
+  coordinates, and loads as a multi-row track with beta as the color field
+
 ## Reproduce it end to end
 
 One script builds both files for any project id:
@@ -313,16 +323,6 @@ the same barcode, and merging both aliquots would make one tumor look mutated
 wherever either run called something. Sample names are truncated to the sample
 barcode, which is also what the copy-number cohort partitions its rows by, so
 the same tumor is one row name in both tracks.
-
-## Where to go next
-
-- [](/docs/tutorials/tcga_cohort_cnv), the same tumors' copy number as a
-  one-row-per-tumor painting, plus the cohort recurrence track
-- **Allele-specific copy number** (ASCAT, open access at the GDC) reports major
-  and minor allele copy number separately, so it shows loss of heterozygosity
-  that a total copy-number segment call reads as balanced
-- **Methylation** (Beta Value arrays, open access) is probe level with genomic
-  coordinates, and loads as a multi-row track with beta as the color field
 
 ## See also
 

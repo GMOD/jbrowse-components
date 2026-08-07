@@ -1,6 +1,5 @@
 ---
 title: LD across an inversion (mosquitoes)
-sidebar_label: LD across an inversion (mosquitoes)
 description:
   Read precomputed PLINK LD over a 22 Mb inversion, and test whether a locus
   will show up before building the figure
@@ -197,6 +196,22 @@ Raising the minor allele frequency filter
 thins dense callsets to the common, block-tagging variants. Push it too high and
 it deletes the tagging variants themselves, so the block fades.
 
+## Making an LD track from your own data
+
+Two ways to supply the data, both in the
+[variant track config guide](/docs/config_guides/variant_track#linkage-disequilibrium-ld-display):
+
+- **Computed live from a VCF**: attach an `LDDisplay` to a `VariantTrack`. No
+  extra files, and phased genotypes give exact haplotypic r². This is what
+  [](/docs/tutorials/ld_human) uses.
+- **Precomputed with PLINK**: point an `LDTrack` at `plink --r2` output, which
+  is the only option once the region is larger than a VCF's genotypes can be
+  correlated on the fly.
+
+Note that `plink --r2 dprime` does not merely add a column: the modifier also
+switches r² itself to the haplotype-frequency estimate. plink2 removed `--r2`
+and splits it into `--r2-phased` and `--r2-unphased`.
+
 ## Reproduce it end to end
 
 [`build_ag1000g_ld.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_ag1000g_ld.sh)
@@ -218,22 +233,6 @@ The data is Ag1000G phase 2 AR1. MalariaGEN opens its older releases, and phase
 registration or a data-access agreement. The current Ag3 release is not open
 access yet, which is why this tutorial builds on phase 2 while taking its
 karyotyping tag SNPs from the Ag3 method.
-
-## Making an LD track from your own data
-
-Two ways to supply the data, both in the
-[variant track config guide](/docs/config_guides/variant_track#linkage-disequilibrium-ld-display):
-
-- **Computed live from a VCF**: attach an `LDDisplay` to a `VariantTrack`. No
-  extra files, and phased genotypes give exact haplotypic r². This is what
-  [](/docs/tutorials/ld_human) uses.
-- **Precomputed with PLINK**: point an `LDTrack` at `plink --r2` output, which
-  is the only option once the region is larger than a VCF's genotypes can be
-  correlated on the fly.
-
-Note that `plink --r2 dprime` does not merely add a column: the modifier also
-switches r² itself to the haplotype-frequency estimate. plink2 removed `--r2`
-and splits it into `--r2-phased` and `--r2-unphased`.
 
 ## See also
 

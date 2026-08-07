@@ -1,6 +1,5 @@
 ---
 title: Local ancestry (Dog10K)
-sidebar_label: Local ancestry (Dog10K)
 description:
   Paint wolf-derived haplotype blocks in two wolfdog breeds, against 219 other
   breeds and eight held-out wolves, from the Dog10K phased panel
@@ -30,7 +29,8 @@ all of it, and the packaged `bcftools` is linked against libcurl, so it can
 slice the panel over HTTP. `flare.jar` is a single download from FLARE's
 [releases page](https://github.com/browning-lab/flare/releases). The painted BED
 the build writes is a local file, so [JBrowse Desktop](/docs/quickstart_desktop)
-opens it by path with no web server.
+opens it by path with no web server, and on JBrowse Web it goes in through **Add
+track** or a `config.json`.
 
 ## The dataset and the question
 

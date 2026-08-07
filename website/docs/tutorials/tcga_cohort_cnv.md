@@ -371,6 +371,23 @@ column to color by:
 [PURPLE](https://github.com/hartwigmedical/hmftools/tree/master/purple) segments
 all reshape into that shape with the same concatenate-and-tag step.
 
+## Where to go next
+
+The same one-row-per-sample pattern carries to other GDC open-access data:
+
+- **Allele-specific copy number** (ASCAT, open access at the GDC) is the closest
+  extension. It reports major and minor allele copy number separately, so it
+  shows loss-of-heterozygosity, which the plain segment file above cannot: a
+  copy-neutral LOH region looks balanced by total copy number but has lost a
+  parental allele. Same `.seg` shape, same display, only the coloring expression
+  changes.
+- **Methylation** (Beta Value arrays, open access) is probe-level with genomic
+  coordinates, and loads the same way with beta as the color field.
+
+Splice junction quantification is not open access at the GDC, so a cohort
+splicing view needs controlled-access RNA-seq and a dbGaP application. For open
+splicing data, look outside TCGA (GTEx and recount3 publish junction summaries).
+
 ## Reproduce it end to end
 
 One script builds both files for any project id, so nothing above depends on the
@@ -455,23 +472,6 @@ The clinical table comes from
 the same helper and the same arguments the
 [mutation cohort](/docs/tutorials/tcga_cohort_mutations) uses, so one file
 serves both tracks.
-
-## Where to go next
-
-The same one-row-per-sample pattern carries to other GDC open-access data:
-
-- **Allele-specific copy number** (ASCAT, open access at the GDC) is the closest
-  extension. It reports major and minor allele copy number separately, so it
-  shows loss-of-heterozygosity, which the plain segment file above cannot: a
-  copy-neutral LOH region looks balanced by total copy number but has lost a
-  parental allele. Same `.seg` shape, same display, only the coloring expression
-  changes.
-- **Methylation** (Beta Value arrays, open access) is probe-level with genomic
-  coordinates, and loads the same way with beta as the color field.
-
-Splice junction quantification is not open access at the GDC, so a cohort
-splicing view needs controlled-access RNA-seq and a dbGaP application. For open
-splicing data, look outside TCGA (GTEx and recount3 publish junction summaries).
 
 ## See also
 

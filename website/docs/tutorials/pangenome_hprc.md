@@ -24,6 +24,8 @@ welcome your [feedback](/contact).
 - the GraphGenomeView plugin, for the tracks below that use `RgfaTabixAdapter`
   and `MinigraphBubbleAdapter`; the rest need nothing
 
+## The dataset
+
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710) is roughly a
 fivefold expansion over release 1. This tutorial opens three of its products:
 the pangenome graph drawn as a graph, the variant callset (464 haplotypes as a

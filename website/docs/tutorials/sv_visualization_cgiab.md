@@ -373,32 +373,6 @@ minimap2's `target query`. An alignment run as
 [synteny track config guide](/docs/config_guides/synteny_track) and the
 [linear synteny view guide](/docs/user_guides/linear_synteny_view).
 
-## Reproduce it end to end
-
-[`build_sv_visualization_cgiab.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_sv_visualization_cgiab.sh)
-runs the whole data-preparation pipeline above in one shot:
-
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_sv_visualization_cgiab.sh
-bash build_sv_visualization_cgiab.sh   # builds ./cgiab_build/jbrowse2
-npx --yes serve cgiab_build/jbrowse2
-```
-
-It grabs the C-GIAB GRCh38 build and the V0.5 HG008-T benchmark calls, turns the
-tumor and normal HiFi BAMs into CRAMs, computes megadepth coverage, calls copy
-number with HiFiCNV, builds the BAF bigWig, and loads the published Wakhan
-haplotype-specific segments. It also aligns the T2T tumor assembly to GRCh38
-with minimap2 for the synteny and dotplot views, then downloads JBrowse and
-writes a `config.json` with everything loaded. The BAF and Wakhan tracks go in
-with `add-track-json` rather than `add-track`, since the settings that make them
-readable (`resolutionMultiplier` on one, `partitionField` on the other) are
-track config rather than command-line flags.
-
-It needs the tools listed under [Prerequisites](#prerequisites), plus `bcftools`
-and `bedGraphToBigWig`. Be warned that it pulls down more than 200 GB, wants
-roughly 1.5 TB of free disk and 32 GB of RAM, and the alignment and copy-number
-steps take hours.
-
 ## Walkthroughs
 
 Once your JBrowse 2 instance is live, the loaded data reads three complementary
@@ -678,6 +652,32 @@ Within C-GIAB itself there is more on the same FTP than this tutorial loads:
 Raw data from C-GIAB is under NCBI BioProject PRJNA200694. Processed data and
 benchmark call sets are available from the
 [NIST Cancer Genome in a Bottle page](https://www.nist.gov/programs-projects/cancer-genome-bottle).
+
+## Reproduce it end to end
+
+[`build_sv_visualization_cgiab.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_sv_visualization_cgiab.sh)
+runs the whole data-preparation pipeline above in one shot:
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_sv_visualization_cgiab.sh
+bash build_sv_visualization_cgiab.sh   # builds ./cgiab_build/jbrowse2
+npx --yes serve cgiab_build/jbrowse2
+```
+
+It grabs the C-GIAB GRCh38 build and the V0.5 HG008-T benchmark calls, turns the
+tumor and normal HiFi BAMs into CRAMs, computes megadepth coverage, calls copy
+number with HiFiCNV, builds the BAF bigWig, and loads the published Wakhan
+haplotype-specific segments. It also aligns the T2T tumor assembly to GRCh38
+with minimap2 for the synteny and dotplot views, then downloads JBrowse and
+writes a `config.json` with everything loaded. The BAF and Wakhan tracks go in
+with `add-track-json` rather than `add-track`, since the settings that make them
+readable (`resolutionMultiplier` on one, `partitionField` on the other) are
+track config rather than command-line flags.
+
+It needs the tools listed under [Prerequisites](#prerequisites), plus `bcftools`
+and `bedGraphToBigWig`. Be warned that it pulls down more than 200 GB, wants
+roughly 1.5 TB of free disk and 32 GB of RAM, and the alignment and copy-number
+steps take hours.
 
 ## See also
 

@@ -423,28 +423,6 @@ wedges inside the ribbons are the CIGAR's insertions and deletions.
 
 <Figure caption="Rubberband-select an 8 kb window of the shared backbone, then Launch → Linear synteny view." src="/img/multiway_synteny/ecoli_launch_from_selection.png" links="Selection=multiway_synteny/ecoli_launch_selection,Dialog=multiway_synteny/ecoli_launch_dialog,Result=multiway_synteny/ecoli_launch_result" />
 
-## Reproduce it end to end
-
-One script runs everything on this page, including the download and preparation
-steps described above but not pasted,
-[`build_ecoli_pangenome_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_ecoli_pangenome_synteny.sh):
-
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_ecoli_pangenome_synteny.sh
-bash build_ecoli_pangenome_synteny.sh          # builds ./ecoli_pangenome_build/jbrowse2
-npx --yes serve ecoli_pangenome_build/jbrowse2 # then open the printed URL
-```
-
-It downloads the five RefSeq genomes, self-aligns them into the all-vs-all PAF,
-downloads JBrowse, and writes a `config.json` with the five assemblies, the
-per-strain gene tracks, the all-vs-all synteny track, and a default session that
-opens on the stacked view. It needs everything under
-[Prerequisites](#prerequisites) on your `PATH`.
-
-For a whole-genome pangenome, swap the `add-track` step for the `make-pif` +
-`AllVsAllIndexedPAFAdapter` path from
-[Large files](#large-files-index-with-make-pif).
-
 ## Checking a gap against the PAF
 
 Every coordinate above is read off `all_vs_all.paf`, so the file can be asked
@@ -470,6 +448,28 @@ The block on the second line is the shared backbone the ribbon in the figure
 draws, and it ends at 1,246,166. Past a short scrap nothing aligns again until
 1,274,685, so `stx2A` and `stx2B` fall in a stretch of Sakai with no K-12
 counterpart at all. The gap in the figure is the gap in the file.
+
+## Reproduce it end to end
+
+One script runs everything on this page, including the download and preparation
+steps described above but not pasted,
+[`build_ecoli_pangenome_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_ecoli_pangenome_synteny.sh):
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_ecoli_pangenome_synteny.sh
+bash build_ecoli_pangenome_synteny.sh          # builds ./ecoli_pangenome_build/jbrowse2
+npx --yes serve ecoli_pangenome_build/jbrowse2 # then open the printed URL
+```
+
+It downloads the five RefSeq genomes, self-aligns them into the all-vs-all PAF,
+downloads JBrowse, and writes a `config.json` with the five assemblies, the
+per-strain gene tracks, the all-vs-all synteny track, and a default session that
+opens on the stacked view. It needs everything under
+[Prerequisites](#prerequisites) on your `PATH`.
+
+For a whole-genome pangenome, swap the `add-track` step for the `make-pif` +
+`AllVsAllIndexedPAFAdapter` path from
+[Large files](#large-files-index-with-make-pif).
 
 ## See also
 

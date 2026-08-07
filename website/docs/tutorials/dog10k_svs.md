@@ -18,7 +18,8 @@ way.
 
 To build the tracks:
 
-- the `UU_Cfam_GSD_1.0` dog assembly set up in JBrowse (UCSC calls it canFam4)
+- the `UU_Cfam_GSD_1.0` dog assembly set up in JBrowse (UCSC calls it canFam4,
+  see the [assemblies guide](/docs/config_guides/assemblies))
 - `bcftools` built with libcurl, `curl`, `python3`, and htslib (`tabix`)
 - `minimap2` and `samtools`, for the
   [FGF4 synteny half](#the-retrocopy-itself-as-sequence)
