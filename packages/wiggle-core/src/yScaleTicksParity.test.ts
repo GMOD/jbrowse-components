@@ -96,6 +96,47 @@ describe.each(CASES)('$name', ({ scaleType, raw, height }) => {
   })
 })
 
+// Every wiggle-family caller pre-nices, so this was latent rather than broken —
+// but the agreement should not depend on that. computeYTicks passes
+// `nice: false`, placing ticks in exactly the domain it was handed; re-nicing
+// put the axis up to half a pixel off the plot and, worse, invented an endpoint
+// outside it (raw [1, 1000] became [1, 1024], a labelled tick at a value the
+// data never reaches).
+describe('a raw, un-niced domain', () => {
+  const domain: [number, number] = [1, 1000]
+
+  test('no tick claims a value outside the domain', () => {
+    const ticks = computeYTicks({
+      height: 200,
+      domain,
+      scaleType: 'log',
+      minimalTicks: false,
+    })!
+    for (const { value } of ticks.items) {
+      expect(value).toBeGreaterThanOrEqual(domain[0])
+      expect(value).toBeLessThanOrEqual(domain[1])
+    }
+  })
+
+  test.each(['linear', 'log'])('%s ticks still land on the data', scaleType => {
+    const ticks = computeYTicks({
+      height: 200,
+      domain,
+      scaleType,
+      minimalTicks: false,
+    })!
+    const box = axisPlotBox(200, 5)
+    const normalize = makeScoreNormalizer(
+      domain[0],
+      domain[1],
+      scaleType === 'log',
+    )
+    for (const { value, y } of ticks.items) {
+      expect(y).toBeCloseTo(scoreToAxisY(normalize(value), box), 9)
+    }
+  })
+})
+
 describe('clampStrokeInsideAxis', () => {
   test('a tick above the bottom edge keeps its own stroke position', () => {
     expect(clampStrokeInsideAxis(20.5, 95)).toBe(20.5)

@@ -7,7 +7,7 @@
 // a 6-vert capsule per feature under premultiplied max-blend (round-joined SDF
 // line — see the RENDERING_TYPE_LINE_CENTER branch).
 //! targets: wgsl, glsl
-//! js-export: densityGradientT
+//! js-export: densityGradientT, normalizeScore
 // The rendering-mode and scale enums are the numeric contract between the
 // `renderingType` / `scaleType` uniforms and every TS path that sets them or
 // branches on them, and the sentinel is the same contract inside the instance

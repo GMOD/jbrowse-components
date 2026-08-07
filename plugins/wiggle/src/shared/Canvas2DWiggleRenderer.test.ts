@@ -6,6 +6,8 @@ import {
   RENDERING_TYPE_SCATTER,
   RENDERING_TYPE_XYPLOT,
   SCALE_TYPE_LINEAR,
+  SCALE_TYPE_LOG,
+  getNiceDomain,
 } from '@jbrowse/wiggle-core'
 
 import {
@@ -660,5 +662,80 @@ describe('drawLineCenter gap breaks', () => {
   test('a limit wider than every gap leaves the line whole', () => {
     const ctx = drawWithLimit(10_000)
     expect(ctx.moveTo.mock.calls).toHaveLength(1)
+  })
+})
+
+// The sub-1 log domain, end to end through the draw rather than through the
+// normalizer: getNiceDomain deliberately keeps a log domain under 1 (a
+// mappability track, a methylation fraction, any normalized ratio), and both
+// backends used to floor the log at 1, so every bar in such a track drew with
+// zero height along the baseline while the axis spread its ticks down the full
+// plot. Nothing in the repo renders one — no config, fixture or figure spec has
+// a log track under 1 — so this is where it gets looked at.
+describe('a log domain entirely under 1', () => {
+  const domainY = getNiceDomain({
+    scaleType: 'log',
+    domain: [0.01, 0.5],
+    bounds: [undefined, undefined],
+  })
+  const logState = {
+    domainY,
+    scaleType: SCALE_TYPE_LOG,
+    renderingType: RENDERING_TYPE_XYPLOT,
+    canvasWidth: 800,
+    canvasHeight: 200,
+    numRows: 1,
+    scatterPointSize: 2,
+    lineWidth: 1,
+    origin: 0,
+  }
+
+  function barHeights(scores: number[]) {
+    const { ctx } = createMockCanvas()
+    const starts = scores.map((_, i) => i * 100)
+    drawWiggleToCtx(
+      ctx as unknown as CanvasRenderingContext2D,
+      {
+        rpcDataMap: new Map([
+          [
+            0,
+            [
+              makeSource(
+                scores,
+                starts,
+                starts.map(s => s + 100),
+              ),
+            ],
+          ],
+        ]),
+        encode: (s: SourceRenderData[]) => s,
+      },
+      [lineBlock],
+      logState,
+    )
+    return (ctx.fillRect.mock.calls as [number, number, number, number][]).map(
+      ([, , , h]) => h,
+    )
+  }
+
+  test('the domain nices to a real span under 1', () => {
+    expect(domainY).toEqual([0.0078125, 0.5])
+  })
+
+  test('scans across the domain draw at increasing heights', () => {
+    // one octave apart, so on a base-2 log axis the steps are even
+    const heights = barHeights([0.015625, 0.0625, 0.25])
+    expect(heights).toHaveLength(3)
+    for (let i = 1; i < heights.length; i++) {
+      expect(heights[i]!).toBeGreaterThan(heights[i - 1]!)
+    }
+    // and none of them collapsed onto the baseline, which is the whole bug
+    expect(Math.min(...heights)).toBeGreaterThan(0)
+  })
+
+  test('the domain endpoints reach the floor and the ceiling', () => {
+    const [atMin, atMax] = barHeights([domainY[0], domainY[1]])
+    expect(atMin).toBe(0)
+    expect(atMax).toBe(200)
   })
 })

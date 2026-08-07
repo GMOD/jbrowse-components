@@ -4,6 +4,15 @@ export interface ScaleOpts {
   domain: number[]
   range: number[]
   scaleType: string
+  /**
+   * Round the domain to nice endpoints before building the scale. Defaults to
+   * true, which is what a caller handing over raw data wants. Pass false when
+   * the domain is already the one something else is drawing with — nicing it
+   * again moves the axis off that drawing, and can invent an endpoint outside
+   * it (a raw `[1, 1000]` nices to `[1, 1024]`, so the axis labels a tick at a
+   * value the data never reaches).
+   */
+  nice?: boolean
 }
 
 function createScaleForType(scaleType: string) {
@@ -21,9 +30,10 @@ function createScaleForType(scaleType: string) {
 
 /**
  * #api
- * Builds a niced d3 scale (linear/log/quantize) from a `ScaleOpts`.
+ * Builds a d3 scale (linear/log/quantize) from a `ScaleOpts`, nicing the domain
+ * unless `nice: false` says it is already the one being drawn with.
  */
-export function getScale({ domain, range, scaleType }: ScaleOpts) {
+export function getScale({ domain, range, scaleType, nice = true }: ScaleOpts) {
   const [min, max] = domain
   if (min === undefined || max === undefined) {
     throw new Error('invalid domain')
@@ -34,7 +44,9 @@ export function getScale({ domain, range, scaleType }: ScaleOpts) {
   }
   const scale = createScaleForType(scaleType)
   scale.domain([min, max])
-  scale.nice()
+  if (nice) {
+    scale.nice()
+  }
   scale.range(range)
   return scale
 }

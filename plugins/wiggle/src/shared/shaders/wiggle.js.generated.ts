@@ -4,6 +4,24 @@
 // Scalar twins of wiggle.slang, transliterated from slangc's WGSL so
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
+function _clamp(x: number, lo: number, hi: number) {
+  return Math.min(Math.max(x, lo), hi)
+}
+
+export function normalizeScore(score: number, domainMin: number, domainMax: number, scaleType: number): number {
+  if ((scaleType == 1)) {
+    let lo: number
+    if ((domainMin > 0.0)) {
+      lo = domainMin
+    } else {
+      lo = 1.0
+    }
+    let logMin = Math.log2(lo)
+    return _clamp(((Math.log2(Math.max(score, lo)) - logMin) / Math.max((Math.log2(Math.max(domainMax, lo)) - logMin), 9.99999997475242708e-07)), 0.0, 1.0)
+  }
+  return _clamp(((score - domainMin) / Math.max((domainMax - domainMin), 9.99999997475242708e-07)), 0.0, 1.0)
+}
+
 export function densityGradientT(norm: number, zeroNorm: number): number {
   return (Math.abs((norm - zeroNorm)) / Math.max(Math.max(zeroNorm, (1.0 - zeroNorm)), 0.00009999999747379))
 }

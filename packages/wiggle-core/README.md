@@ -153,11 +153,12 @@ The axis-origin baseline: `1` for log, `0` otherwise.
 
 ### getScale
 
-Builds a niced d3 scale (linear/log/quantize) from a `ScaleOpts`.
+Builds a d3 scale (linear/log/quantize) from a `ScaleOpts`, nicing the domain
+unless `nice: false` says it is already the one being drawn with.
 
 ```js
 // type signature
-({ domain, range, scaleType }: ScaleOpts) => Scale
+({ domain, range, scaleType, nice }: ScaleOpts) => Scale
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scale.ts)

@@ -31,10 +31,17 @@ export function computeYTicks(opts: {
   // multi-wiggle's row — that belongs in the drawing, and is now
   // `clampStrokeInsideAxis`.
   const { yTop, yBottom } = axisPlotBox(height, offset)
+  // `nice: false`: the caller's domain is the one the renderer is drawing with
+  // (every wiggle-family `domain` getter has already been through
+  // getNiceDomain), so nicing it a second time would move the axis off the
+  // plot. It was a no-op only because every caller pre-nices — hand this a raw
+  // [1, 1000] and it re-niced to [1, 1024], drawing a labelled tick at a value
+  // the data never reaches.
   const scale = getScale({
     scaleType,
     domain: [domainMin, domainMax],
     range: [yBottom, yTop],
+    nice: false,
   })
   const values =
     height < 100 || minimalTicks
