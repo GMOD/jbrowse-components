@@ -67,7 +67,7 @@ copy-paste and the answer is a different rule argued here, not more entries.
   attribute a new one. Don't raise a budget to make it pass, for the same reason
   `MUI_BUDGET` isn't raised.
 
-## `pnpm probe-eager-graph` answers *why*, and is the one to reach for first
+## `pnpm probe-eager-graph` answers _why_, and is the one to reach for first
 
 `measure-eager-bundle` gives a number; this gives the modules behind it. It
 rebuilds through `astro.config.probe.mjs` — the real config plus one Vite plugin

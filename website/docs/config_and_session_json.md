@@ -12,14 +12,14 @@ settings. You write or generate it and open it. There is no setup API to call.
 The same document is what every surface takes, so a config written for one of
 them is not rewritten for the next:
 
-| Surface                                                 | How it takes the document                                      |
-| ------------------------------------------------------- | -------------------------------------------------------------- |
-| [jbrowse-web](/docs/quickstart_web)                     | `config.json` beside the app, or `?config=` pointing at one      |
-| a link to jbrowse-web                                   | `&session=`, or the per-view parameters in [](/docs/urlparams)   |
-| [jbrowse-desktop](/docs/quickstart_desktop)             | an opened `.jbrowse` file: the same format with a session in it  |
-| [embedded components](/docs/embedded_components)        | the object passed to `createViewState`                           |
-| [](/docs/jbrowser) and [](/docs/jbrowse_anywidget)      | what the helper functions assemble for you                       |
-| [@jbrowse/img](/docs/jbrowse-img)                       | `--config`, and `--spec` for a whole session                     |
+| Surface                                            | How it takes the document                                       |
+| -------------------------------------------------- | --------------------------------------------------------------- |
+| [jbrowse-web](/docs/quickstart_web)                | `config.json` beside the app, or `?config=` pointing at one     |
+| a link to jbrowse-web                              | `&session=`, or the per-view parameters in [](/docs/urlparams)  |
+| [jbrowse-desktop](/docs/quickstart_desktop)        | an opened `.jbrowse` file: the same format with a session in it |
+| [embedded components](/docs/embedded_components)   | the object passed to `createViewState`                          |
+| [](/docs/jbrowser) and [](/docs/jbrowse_anywidget) | what the helper functions assemble for you                      |
+| [@jbrowse/img](/docs/jbrowse-img)                  | `--config`, and `--spec` for a whole session                    |
 
 ## What is in it
 
@@ -71,24 +71,24 @@ fields beside them — `plugins`, `connections`, `internetAccounts`,
 
 ## How the config and the session fit together
 
-They are two halves of one document, and most of what is confusing about
-JBrowse configuration is really about which half a thing belongs in.
+They are two halves of one document, and most of what is confusing about JBrowse
+configuration is really about which half a thing belongs in.
 
-**The config is the catalog. The session says what is open.** A session does
-not repeat a track definition — it names one, by the `trackId` the config gave
-it. In the example above the whole join is one string: the `"ncbi_genes"` in
-the view's `init.tracks` is the `trackId` of the track defined above it.
-Delete that track from `tracks` and the session is left naming something that
-does not exist, which is one of the things
-[`jbrowse validate`](#checking-a-document) reports.
+**The config is the catalog. The session says what is open.** A session does not
+repeat a track definition — it names one, by the `trackId` the config gave it.
+In the example above the whole join is one string: the `"ncbi_genes"` in the
+view's `init.tracks` is the `trackId` of the track defined above it. Delete that
+track from `tracks` and the session is left naming something that does not
+exist, which is one of the things [`jbrowse validate`](#checking-a-document)
+reports.
 
-**Write the `init` form.** The app's export-session option writes the other
-one: a raw state snapshot with every view, track and display spelled out, the
-same track named as `"configuration": "ncbi_genes"` and an `id` on everything.
-It pastes in and works, which is why it is easy to end up with, but it is
-dozens of lines for what `init` says in four, and it is far harder to edit
-afterwards. Prefer `init` for anything you write or generate yourself, and
-reach for the exported snapshot only to recover a view you built by clicking.
+**Write the `init` form.** The app's export-session option writes the other one:
+a raw state snapshot with every view, track and display spelled out, the same
+track named as `"configuration": "ncbi_genes"` and an `id` on everything. It
+pastes in and works, which is why it is easy to end up with, but it is dozens of
+lines for what `init` says in four, and it is far harder to edit afterwards.
+Prefer `init` for anything you write or generate yourself, and reach for the
+exported snapshot only to recover a view you built by clicking.
 
 **The config holds the settings; the session holds the state.** Color, height,
 display mode, color-by and filters are
@@ -97,9 +97,9 @@ the config, under `displayDefaults`. What is open, where it is scrolled to and
 how the panels are arranged is session state. So one view has its appearance
 described in one half of the document and its position in the other.
 
-An `init` entry can still set a display option per launch: write the entry as
-an object instead of a string — `{ "trackId": "ncbi_genes", "height": 250 }` —
-and the slot is routed onto the display's config, because those entries are
+An `init` entry can still set a display option per launch: write the entry as an
+object instead of a string — `{ "trackId": "ncbi_genes", "height": 250 }` — and
+the slot is routed onto the display's config, because those entries are
 arguments to the view's launcher.
 
 That same `"height": 250` on a raw snapshot's display node does nothing at all.
@@ -116,9 +116,9 @@ they travel with it when it is shared or saved, and never reach the
 `config.json` the server hands every visitor. It is how a link adds a track to
 somebody else's instance.
 
-**On desktop the halves are stored as one file.** A `.jbrowse` file is this
-same document with the session saved into it, which is why opening one restores
-the tracks and the view together.
+**On desktop the halves are stored as one file.** A `.jbrowse` file is this same
+document with the session saved into it, which is why opening one restores the
+tracks and the view together.
 
 **And the two are edited the same way.** Track settings are the same slots the
 track menu writes, so a setting you find by clicking around has a name you can

@@ -16,7 +16,7 @@ describe('scanMafTabixEntry over a comma-joined column', () => {
     'caeRem4.Crem_Contig89:203343:6:-:273340:gaattc'
   const scanAll = (text: string) => {
     const out = []
-    for (let from = 0; from < text.length; ) {
+    for (let from = 0; from < text.length;) {
       let to = text.indexOf(',', from)
       if (to === -1) {
         to = text.length
@@ -53,7 +53,8 @@ describe('scanMafTabixEntry over a comma-joined column', () => {
   // fields from the species after it — a real sequence filed under the wrong
   // genome at the wrong coordinate, which nothing downstream could detect.
   test('a truncated entry is rejected, not completed from the next one', () => {
-    const truncated = 'ce11.chrI:100:6,caeRem4.Crem_Contig89:203343:6:-:273340:gaattc'
+    const truncated =
+      'ce11.chrI:100:6,caeRem4.Crem_Contig89:203343:6:-:273340:gaattc'
     const [first, second] = scanAll(truncated)
     expect(first).toBeUndefined()
     // ...and the scan still picks the following entry up intact

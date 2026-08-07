@@ -22,6 +22,6 @@ Three things to know:
   `?session=spec-…`, documented under
   [URL query parameters](https://jbrowse.org/jb2/docs/urlparams/#session-spec).
 
-`<JBrowse>` also takes `plugins`, `makeWorkerInstance` and a `ref`.
-To read or drive the model from outside, use the unmanaged `createViewState` +
+`<JBrowse>` also takes `plugins`, `makeWorkerInstance` and a `ref`. To read or
+drive the model from outside, use the unmanaged `createViewState` +
 `<JBrowseApp>` flow instead.

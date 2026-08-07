@@ -44,8 +44,8 @@ Both add new view types, launched from a gene's right-click menu in JBrowse Web
 and Desktop. The single-view embedded components host only a linear genome view,
 so neither view type appears there. The full-app embedded components can host
 one in principle: [](/docs/jbrowser)'s `JBrowseRApp` takes both runtime plugins
-and a `views` list, while [anywidget](/docs/jbrowse_anywidget)'s `JBrowseApp` has
-no plugin loading yet.
+and a `views` list, while [anywidget](/docs/jbrowse_anywidget)'s `JBrowseApp`
+has no plugin loading yet.
 
 The approach is described in
 [_Proteins in the Genome Browser_](https://doi.org/10.1016/j.jmb.2026.169645)

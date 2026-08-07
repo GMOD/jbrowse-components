@@ -31,8 +31,8 @@ is still an element type, which is the one of these left; see
 ## Design tokens: `palette.ts` for colors, `styleTheme.ts` for the rest
 
 `makeStyles` hands a component **`JBrowseStyleTheme`** — palette, spacing,
-shape, type scale — not Material UI's `Theme`. It is deliberately a subset, so
-a call site reaching for `theme.zIndex` or `theme.shadows` is a compile error
+shape, type scale — not Material UI's `Theme`. It is deliberately a subset, so a
+call site reaching for `theme.zIndex` or `theme.shadows` is a compile error
 rather than a silent dependency on a component library; layering lives in
 `zIndexes.ts`. `PaletteProvider` supplies colors alone and is what an embedding
 app mounts; `StyleThemeProvider` supplies the whole thing and is what JBrowse's

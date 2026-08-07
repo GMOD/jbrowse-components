@@ -32,7 +32,10 @@ export function collectMafTransferables(regionData: MafWireRegionData) {
   ]) {
     if (value instanceof ArrayBuffer) {
       buffers.add(value)
-    } else if (ArrayBuffer.isView(value) && value.buffer instanceof ArrayBuffer) {
+    } else if (
+      ArrayBuffer.isView(value) &&
+      value.buffer instanceof ArrayBuffer
+    ) {
       buffers.add(value.buffer)
     }
   }

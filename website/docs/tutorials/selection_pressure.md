@@ -56,10 +56,9 @@ a denominator near zero on most genes.
 
 ### Orthologs
 
-The
-[end-to-end script](#reproduce-it-end-to-end)
-turns each GFF3 into the BED the adapter reads, translates each CDS to a
-proteome keyed the same way, and runs jcvi:
+The [end-to-end script](#reproduce-it-end-to-end) turns each GFF3 into the BED
+the adapter reads, translates each CDS to a proteome keyed the same way, and
+runs jcvi:
 
 ```bash
 diamond makedb --in rhesus.pep -d rhesus.pep
@@ -72,8 +71,8 @@ python -m jcvi.compara.catalog ortholog --no_strip_names --dbtype prot \
 Two traps, both silent.
 
 The alignment file has to be **query = the first species, subject = the
-second**, which is the order jcvi would have used had it run the aligner
-itself. Reversed, every id is looked up in the wrong BED and the run ends with
+second**, which is the order jcvi would have used had it run the aligner itself.
+Reversed, every id is looked up in the wrong BED and the run ends with
 `A total of 0 anchor was found`.
 
 Ensembl **versions transcript ids in its FASTA and not in its GFF3**, so the
@@ -108,7 +107,8 @@ job, because dS is per site and the same rate is much weaker evidence in a short
 gene than a long one.
 
 So every row also carries that count and a two-sided Fisher exact p, which is
-the test [MEGA](https://www.megasoftware.net/web_help_12/Analysis_Preferences_Fisher_s_Exact_Test.htm)
+the test
+[MEGA](https://www.megasoftware.net/web_help_12/Analysis_Preferences_Fisher_s_Exact_Test.htm)
 prescribes when the numbers of substitutions are small, where the large-sample
 Z-test over-rejects. They are `attributeColumns` like the rates, so clicking a
 link shows how much evidence is under its colour.
@@ -164,10 +164,10 @@ fermenters.
 does show.** Click the orange link and the detail panel gives the count and the
 p behind it: a handful of synonymous differences, and a Fisher p nowhere near
 significant. One pairwise comparison has very little power, and the published
-result rests on codon models across many primate lineages rather than on a
-ratio between two of them. What the figure shows is that this gene's ratio
-stands apart from every neighbour's, which is a hypothesis worth the codon
-model, not a substitute for it.
+result rests on codon models across many primate lineages rather than on a ratio
+between two of them. What the figure shows is that this gene's ratio stands
+apart from every neighbour's, which is a hypothesis worth the codon model, not a
+substitute for it.
 
 The colour that _is_ significant here is the blue. A conserved gene accumulates
 enough synonymous change to measure while holding non-synonymous change near
@@ -179,12 +179,12 @@ genuine genome-wide result and the reason the ramp is mostly blue.
 ## Checking it against the raw data
 
 The figure carries its own control. YEATS4 begins about eleven kilobases from
-where LYZ ends, so the two share a locus, a divergence time and a
-neighbourhood, and they land at opposite ends of the ramp. Anything that moved
-both genes together, an alignment artefact or a mis-set divergence, would not
-produce that. YEATS4 is also the case a floor on dS would have thrown away: it
-is conserved and compact, so its dS is low while its synonymous count is
-perfectly adequate, which is why the floor counts substitutions instead.
+where LYZ ends, so the two share a locus, a divergence time and a neighbourhood,
+and they land at opposite ends of the ramp. Anything that moved both genes
+together, an alignment artefact or a mis-set divergence, would not produce that.
+YEATS4 is also the case a floor on dS would have thrown away: it is conserved
+and compact, so its dS is low while its synonymous count is perfectly adequate,
+which is why the floor counts substitutions instead.
 
 The [script](#reproduce-it-end-to-end) prints the neighbourhood beside the
 genome-wide distribution, and the honest summary of that distribution is two
@@ -219,11 +219,10 @@ It needs the tools under [Prerequisites](#prerequisites) on PATH.
 
 ## References
 
-- Nei, M. & Gojobori, T. Simple methods for estimating the numbers of
-  synonymous and nonsynonymous nucleotide substitutions. _Molecular Biology and
-  Evolution_ 3, 418-426 (1986).
-  https://doi.org/10.1093/oxfordjournals.molbev.a040410
-- Messier, W. & Stewart, C.-B. Episodic adaptive evolution of primate
-  lysozymes. _Nature_ 385, 151-154 (1997). https://doi.org/10.1038/385151a0
+- Nei, M. & Gojobori, T. Simple methods for estimating the numbers of synonymous
+  and nonsynonymous nucleotide substitutions. _Molecular Biology and Evolution_
+  3, 418-426 (1986). https://doi.org/10.1093/oxfordjournals.molbev.a040410
+- Messier, W. & Stewart, C.-B. Episodic adaptive evolution of primate lysozymes.
+  _Nature_ 385, 151-154 (1997). https://doi.org/10.1038/385151a0
 - Tang, H. _et al._ jcvi: A versatile toolkit for comparative genomics analysis.
   _iMeta_ 3, e211 (2024). https://doi.org/10.1002/imt2.211

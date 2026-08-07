@@ -9,10 +9,7 @@ import type { AlignmentContext, EmptyRecord } from '../types.ts'
  * doesn't produce. `coverage` is computed *from* these columns, and
  * `refSampleId` is the RPC's resolution of which row is the reference.
  */
-export type MafWirePacked = Omit<
-  MafWireRegionData,
-  'coverage' | 'refSampleId'
->
+export type MafWirePacked = Omit<MafWireRegionData, 'coverage' | 'refSampleId'>
 
 /**
  * Up-front sizes for the packer's allocations. Every one is an exact count when
@@ -65,7 +62,8 @@ class Column<T extends Uint8Array | Int8Array | Uint32Array> {
   }
 }
 
-const u32 = (n: number) => new Column(new Uint32Array(n), c => new Uint32Array(c))
+const u32 = (n: number) =>
+  new Column(new Uint32Array(n), c => new Uint32Array(c))
 const u8 = (n: number) => new Column(new Uint8Array(n), c => new Uint8Array(c))
 const i8 = (n: number) => new Column(new Int8Array(n), c => new Int8Array(c))
 

@@ -92,7 +92,7 @@ export default class MafTabixAdapter extends BaseFeatureDataAdapter<MafTabixAdap
         // block — tens of thousands of throwaway strings per fetch, whose only
         // surviving content is the `seq` each one ends with. `scanMafTabixEntry`
         // slices out just that.
-        for (let from = 0, l = encoded.length; from < l; ) {
+        for (let from = 0, l = encoded.length; from < l;) {
           let to = encoded.indexOf(',', from)
           if (to === -1) {
             to = l

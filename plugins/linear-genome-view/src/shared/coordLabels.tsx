@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { MUI_TOOLTIP_Z_INDEX } from '@jbrowse/core/ui/zIndexes'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { alpha } from '@mui/material'
 import { createPortal } from 'react-dom'
 

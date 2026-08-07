@@ -40,9 +40,8 @@ Kinh-Vietnamese trio HG02024, chr1 only:
 - [Index (.tbi)](https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz.tbi)
 
 The finished tracks also render inline in a notebook through the
-[Python anywidget interface](/docs/jbrowse_anywidget), or
-[](/docs/jbrowser) in R. This tutorial builds its tracks on the command line,
-not in a notebook.
+[Python anywidget interface](/docs/jbrowse_anywidget), or [](/docs/jbrowser) in
+R. This tutorial builds its tracks on the command line, not in a notebook.
 
 Everything here is on `hg38`. Add the VCF with `jbrowse add-track` or the in-app
 "Add track" workflow. The

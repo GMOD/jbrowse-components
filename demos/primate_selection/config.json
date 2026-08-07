@@ -28,9 +28,7 @@
       "type": "FeatureTrack",
       "trackId": "human_genes",
       "name": "Human genes (GRCh38, Ensembl 116)",
-      "assemblyNames": [
-        "human"
-      ],
+      "assemblyNames": ["human"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "uri": "human.pc.gff3.gz"
@@ -40,9 +38,7 @@
       "type": "FeatureTrack",
       "trackId": "rhesus_genes",
       "name": "Rhesus macaque genes (Mmul_10, Ensembl 116)",
-      "assemblyNames": [
-        "rhesus"
-      ],
+      "assemblyNames": ["rhesus"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "uri": "rhesus.pc.gff3.gz"
@@ -52,17 +48,11 @@
       "type": "SyntenyTrack",
       "trackId": "primate_orthologs",
       "name": "Human / rhesus orthologs (dN/dS)",
-      "assemblyNames": [
-        "human",
-        "rhesus"
-      ],
+      "assemblyNames": ["human", "rhesus"],
       "adapter": {
         "type": "MCScanBlocksAdapter",
         "uri": "primate.blocks.gz",
-        "blockAssemblies": [
-          "human",
-          "rhesus"
-        ],
+        "blockAssemblies": ["human", "rhesus"],
         "bedLocations": [
           {
             "uri": "human.bed.gz"
@@ -71,16 +61,8 @@
             "uri": "rhesus.bed.gz"
           }
         ],
-        "assemblyNames": [
-          "human",
-          "rhesus"
-        ],
-        "attributeColumns": [
-          "dn",
-          "ds",
-          "syn_subs",
-          "fisher_p"
-        ]
+        "assemblyNames": ["human", "rhesus"],
+        "attributeColumns": ["dn", "ds", "syn_subs", "fisher_p"]
       }
     }
   ],
@@ -96,23 +78,15 @@
             {
               "assembly": "human",
               "loc": "12:68,790,000-69,880,000",
-              "tracks": [
-                "human_genes"
-              ]
+              "tracks": ["human_genes"]
             },
             {
               "assembly": "rhesus",
               "loc": "11:68,330,000-69,390,000",
-              "tracks": [
-                "rhesus_genes"
-              ]
+              "tracks": ["rhesus_genes"]
             }
           ],
-          "tracks": [
-            [
-              "primate_orthologs"
-            ]
-          ],
+          "tracks": [["primate_orthologs"]],
           "colorBy": "dnds",
           "alpha": 0.95,
           "drawCurves": true

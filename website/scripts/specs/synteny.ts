@@ -716,7 +716,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'homoeolog_synteny/oat_homoeologs',
     url: sessionSpec(
-      encodeURIComponent('https://jbrowse.org/demos/oat_homoeologs/config.json'),
+      encodeURIComponent(
+        'https://jbrowse.org/demos/oat_homoeologs/config.json',
+      ),
       {
         views: [
           {

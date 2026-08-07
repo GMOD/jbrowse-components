@@ -17,17 +17,11 @@
       "type": "SyntenyTrack",
       "trackId": "wheat_homoeologs",
       "name": "Bread wheat homoeologs (Ka/Ks)",
-      "assemblyNames": [
-        "wheat",
-        "wheat"
-      ],
+      "assemblyNames": ["wheat", "wheat"],
       "adapter": {
         "type": "MCScanBlocksAdapter",
         "uri": "wheat.homoeologs.blocks.gz",
-        "blockAssemblies": [
-          "wheat",
-          "wheat"
-        ],
+        "blockAssemblies": ["wheat", "wheat"],
         "bedLocations": [
           {
             "uri": "wheat.bed.gz"
@@ -36,16 +30,8 @@
             "uri": "wheat.bed.gz"
           }
         ],
-        "assemblyNames": [
-          "wheat",
-          "wheat"
-        ],
-        "attributeColumns": [
-          "dn",
-          "ds",
-          "syn_subs",
-          "fisher_p"
-        ]
+        "assemblyNames": ["wheat", "wheat"],
+        "attributeColumns": ["dn", "ds", "syn_subs", "fisher_p"]
       }
     }
   ],
@@ -65,11 +51,7 @@
               "assembly": "wheat"
             }
           ],
-          "tracks": [
-            [
-              "wheat_homoeologs"
-            ]
-          ],
+          "tracks": [["wheat_homoeologs"]],
           "colorBy": "dnds",
           "alpha": 0.15
         }

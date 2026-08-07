@@ -1,3 +1,9 @@
+import {
+  DEFAULT_FONT_FAMILY,
+  createSpacing,
+  createTypography,
+  resolveStyleTheme,
+} from './styleTheme.ts'
 /**
  * Parity between `resolveStyleTheme` (plain data, no toolkit) and the MUI theme
  * `createJBrowseTheme` builds.
@@ -10,12 +16,6 @@
  * fails here rather than as a slightly misaligned browser.
  */
 import { createJBrowseTheme } from './theme.ts'
-import {
-  DEFAULT_FONT_FAMILY,
-  createSpacing,
-  createTypography,
-  resolveStyleTheme,
-} from './styleTheme.ts'
 
 import type { JBrowseStyleTheme } from './styleTheme.ts'
 import type { Theme, ThemeOptions } from '@mui/material/styles'
@@ -90,9 +90,7 @@ test('a custom font family drops the Roboto letter-spacing', () => {
   expect(
     resolveStyleTheme({ configTheme }).typography.body1.letterSpacing,
   ).toBeUndefined()
-  expect(
-    resolveStyleTheme({}).typography.body1.letterSpacing,
-  ).toBe('0.00938em')
+  expect(resolveStyleTheme({}).typography.body1.letterSpacing).toBe('0.00938em')
 })
 
 test('spacing as an array is a lookup table, not a multiplier', () => {

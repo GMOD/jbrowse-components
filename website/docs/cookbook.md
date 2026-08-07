@@ -982,8 +982,8 @@ inline features in a config.
 
 ## Where to go next
 
-- [](/docs/config_and_session_json) - what this document is, and every surface that opens
-  one
+- [](/docs/config_and_session_json) - what this document is, and every surface
+  that opens one
 - [](/docs/config_guide) - structure of `config.json` and links to every
   per-track guide
 - [](/docs/config_guides/jexl) - full catalog of callback functions

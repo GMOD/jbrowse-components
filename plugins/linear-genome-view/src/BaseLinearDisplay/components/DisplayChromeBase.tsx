@@ -10,7 +10,10 @@ import DisplayStatusChromeBase from './DisplayStatusChromeBase.tsx'
 
 import type { StatusChromeModel } from './DisplayStatusChromeBase.tsx'
 import type { DisplayChromeOverlays } from './chromeOverlays.ts'
-import type { MouseState, MouseTracker } from '@jbrowse/core/ui/useMouseTracking'
+import type {
+  MouseState,
+  MouseTracker,
+} from '@jbrowse/core/ui/useMouseTracking'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 import type { RenderLifecycleModel } from '@jbrowse/render-core/useRenderingBackend'
 import type { ComponentPropsWithRef, ReactNode } from 'react'

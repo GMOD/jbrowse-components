@@ -54,7 +54,9 @@ describe('applyClusterOrder', () => {
   })
 
   it('rejects an out-of-range row', () => {
-    expect(() => apply([0, 1, 3])).toThrow('entry 3 is 4, outside the range 1-3')
+    expect(() => apply([0, 1, 3])).toThrow(
+      'entry 3 is 4, outside the range 1-3',
+    )
   })
 
   it('counts the expanded rows in phased mode, not the samples', () => {

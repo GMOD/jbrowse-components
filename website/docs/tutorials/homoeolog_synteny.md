@@ -22,8 +22,8 @@ karyotype.
 - `wget`
 - `node`, for the [JBrowse CLI](/docs/cli)
 
-jcvi builds C extensions and will not install against every python. If `pip
-install jcvi` fails compiling them, `uv venv --python 3.12` followed by
+jcvi builds C extensions and will not install against every python. If
+`pip install jcvi` fails compiling them, `uv venv --python 3.12` followed by
 `uv pip install jcvi biopython` gets an interpreter it does build on. DIAMOND
 ships a static binary in its GitHub releases.
 
@@ -69,8 +69,8 @@ one of which places nowhere on the plot.
 The proteome is translated from the CDS rather than downloaded. Ensembl's
 protein FASTA is keyed on protein ids, and every other id in this pipeline is a
 transcript id; translating keeps one namespace from the BED through the anchors
-to the codon alignments. The
-[end-to-end script](#reproduce-it-end-to-end) has the loop.
+to the codon alignments. The [end-to-end script](#reproduce-it-end-to-end) has
+the loop.
 
 No genome FASTA is needed. The assembly is a `ChromSizesAdapter` built from the
 GFF3's own `##sequence-region` header, which is all a gene-level view reads. Oat
@@ -156,8 +156,8 @@ in a short gene than in a long one.
 ## Loading it in JBrowse
 
 The output is a two-column pair table with the two rates after it, which is the
-`.blocks` shape [`MCScanBlocksAdapter`](/docs/config_guides/synteny_track) reads.
-A self-comparison names one assembly twice, in `blockAssemblies`, in
+`.blocks` shape [`MCScanBlocksAdapter`](/docs/config_guides/synteny_track)
+reads. A self-comparison names one assembly twice, in `blockAssemblies`, in
 `assemblyNames`, and in both entries of `bedLocations`:
 
 ```json addtrack
@@ -204,8 +204,8 @@ The [script](#reproduce-it-end-to-end) ends on the numbers behind the picture
 rather than on the picture.
 
 The control is dS. Oat's A and D subgenomes descend from closely related diploid
-_Avena_ species and its C subgenome from a more distant one, so A-D pairs have to
-come out at a lower synonymous divergence than A-C or C-D. If all three land
+_Avena_ species and its C subgenome from a more distant one, so A-D pairs have
+to come out at a lower synonymous divergence than A-C or C-D. If all three land
 together, the rates are measuring the pipeline rather than the polyploidy.
 
 The colour needs reading with more care than the structure does. Almost every
@@ -265,9 +265,8 @@ It needs the tools under [Prerequisites](#prerequisites) on PATH.
 - Peng, Y. _et al._ Reference genome assemblies reveal the origin and evolution
   of allohexaploid oat. _Nature Genetics_ 54, 1248-1258 (2022).
   https://doi.org/10.1038/s41588-022-01127-7
-- Nei, M. & Gojobori, T. Simple methods for estimating the numbers of
-  synonymous and nonsynonymous nucleotide substitutions. _Molecular Biology and
-  Evolution_ 3, 418-426 (1986).
-  https://doi.org/10.1093/oxfordjournals.molbev.a040410
+- Nei, M. & Gojobori, T. Simple methods for estimating the numbers of synonymous
+  and nonsynonymous nucleotide substitutions. _Molecular Biology and Evolution_
+  3, 418-426 (1986). https://doi.org/10.1093/oxfordjournals.molbev.a040410
 - Tang, H. _et al._ jcvi: A versatile toolkit for comparative genomics analysis.
   _iMeta_ 3, e211 (2024). https://doi.org/10.1002/imt2.211

@@ -188,7 +188,7 @@ measurements.
 
 Bread wheat is an allohexaploid, carrying three near-complete copies of its
 genome, so almost every gene exists three times. Compara types those trios as
-`homoeolog_one2one`, which makes bread wheat against *itself* a comparison of
+`homoeolog_one2one`, which makes bread wheat against _itself_ a comparison of
 69,940 gene pairs:
 
 ```bash

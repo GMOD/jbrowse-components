@@ -4,12 +4,11 @@ import { packTestWire } from './testWire.ts'
 const dec = new TextDecoder()
 
 /** The bytes the wire says belong to row `i`. */
-function rowSeq(
-  packed: ReturnType<typeof packTestWire>,
-  i: number,
-) {
+function rowSeq(packed: ReturnType<typeof packTestWire>, i: number) {
   const offset = packed.rowOffset[i]!
-  return dec.decode(packed.arena.subarray(offset, offset + packed.rowLength[i]!))
+  return dec.decode(
+    packed.arena.subarray(offset, offset + packed.rowLength[i]!),
+  )
 }
 
 function refSeq(packed: ReturnType<typeof packTestWire>, block: number) {
@@ -66,7 +65,11 @@ test('a row is bounded by its own length, not by the next row', () => {
 test('endBp counts reference bases, not reference columns', () => {
   // 3 insertion columns, so the block spans 4 genomic bp from 100.
   const packed = packTestWire([
-    { startBp: 100, refSeq: 'A---CGT', rows: [{ sampleId: 'a', seq: 'AGGGCGT' }] },
+    {
+      startBp: 100,
+      refSeq: 'A---CGT',
+      rows: [{ sampleId: 'a', seq: 'AGGGCGT' }],
+    },
   ])
   expect(packed.blockStartBp[0]).toBe(100)
   expect(packed.blockEndBp[0]).toBe(104)
@@ -182,7 +185,12 @@ test('columns and arena grow correctly when nothing is reserved', () => {
 })
 
 test('an exactly-reserved pack allocates once and still right-sizes', () => {
-  const packer = new MafWirePacker({ blocks: 1, rows: 2, empties: 0, bytes: 12 })
+  const packer = new MafWirePacker({
+    blocks: 1,
+    rows: 2,
+    empties: 0,
+    bytes: 12,
+  })
   packer.startBlock(0, 'ACGT')
   packer.addRow({ sampleId: 'a', seq: 'ACGT' })
   packer.addRow({ sampleId: 'b', seq: 'ACGT' })

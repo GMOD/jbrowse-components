@@ -1,10 +1,10 @@
+import { alpha } from '@jbrowse/core/ui/palette'
 import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
 import {
   regionBlocksPxExtent,
   transformPxSpan,
 } from '@jbrowse/core/util/Base1DUtils'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { alpha } from '@jbrowse/core/ui/palette'
 import { observer } from 'mobx-react'
 
 import { HEADER_BAR_HEIGHT } from '../consts.ts'

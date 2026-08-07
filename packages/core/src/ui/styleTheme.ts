@@ -122,9 +122,7 @@ function round(value: number) {
  */
 export function createSpacing(input: SizingInput['spacing']) {
   const step =
-    Array.isArray(input) || typeof input === 'number'
-      ? input
-      : DEFAULT_SPACING
+    Array.isArray(input) || typeof input === 'number' ? input : DEFAULT_SPACING
   const transform = (n: number) => {
     const value = typeof step === 'number' ? n * step : step[n]
     return typeof value === 'number' ? `${value}px` : (value ?? '')
@@ -196,7 +194,9 @@ export interface StyleThemeArgs {
  * does: only the `default` theme draws from the config, since the named presets
  * are fixed.
  */
-export function resolveStyleTheme(args: StyleThemeArgs = {}): JBrowseStyleTheme {
+export function resolveStyleTheme(
+  args: StyleThemeArgs = {},
+): JBrowseStyleTheme {
   const { configTheme, themeName = 'default', extraThemes } = args
   // only `extraThemes` is consulted for a preset: the built-in presets differ
   // from each other in color and in Material component overrides, never in

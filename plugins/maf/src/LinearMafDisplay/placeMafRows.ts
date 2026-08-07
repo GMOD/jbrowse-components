@@ -106,7 +106,11 @@ export function placeMafRegionData(
     }
 
     const empties: MafEmptyRow[] = []
-    for (let i = blockEmptyStart[block]!; i < blockEmptyStart[block + 1]!; i++) {
+    for (
+      let i = blockEmptyStart[block]!;
+      i < blockEmptyStart[block + 1]!;
+      i++
+    ) {
       const rowIndex = rowIndexBySample[emptySample[i]!]!
       const status = decodeMafStatus(emptyStatus[i]!)
       // An `e` line with no recognized status has nothing to draw — the status

@@ -599,9 +599,7 @@ const defaultFrames: FrameTuple<ShadeInput> = [
  * on the far side has to rebuild.
  */
 export interface JBrowsePalette
-  extends StringColors,
-    NeutralTokens,
-    SemanticColors {
+  extends StringColors, NeutralTokens, SemanticColors {
   mode: 'light' | 'dark'
   primary: ColorQuad
   secondary: ColorQuad

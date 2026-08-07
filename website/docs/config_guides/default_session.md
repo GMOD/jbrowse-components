@@ -48,11 +48,11 @@ already showing:
 }
 ```
 
-`init` is resolved when the view attaches: it works out the
-`displayedRegions`, `bpPerPx` and `offsetPx` that the locus implies, so you
-never write coordinates in pixels. [](/docs/automating) lists every field it
-takes — `grow` to pad the locus for context, `highlight`, `tracklist`, `nav`,
-and `displayedRegionNames` to open a whole-genome view of selected chromosomes.
+`init` is resolved when the view attaches: it works out the `displayedRegions`,
+`bpPerPx` and `offsetPx` that the locus implies, so you never write coordinates
+in pixels. [](/docs/automating) lists every field it takes — `grow` to pad the
+locus for context, `highlight`, `tracklist`, `nav`, and `displayedRegionNames`
+to open a whole-genome view of selected chromosomes.
 
 A track entry can be an object rather than a string when it needs display
 options: `{ "trackId": "volvox_genes", "height": 200 }` opens the track 200px
@@ -102,8 +102,8 @@ as a `defaultSession` and pastes straight in.
 Two things to know before doing that. It is long, and every coordinate in it is
 resolved, so re-aiming the view means editing pixel offsets rather than a
 locstring. And a snapshot's display node accepts only that display's state-model
-properties, so a config slot written there — `"height": 250` on the display —
-is dropped without warning, where the same key works in an `init` track entry.
+properties, so a config slot written there — `"height": 250` on the display — is
+dropped without warning, where the same key works in an `init` track entry.
 
 So reach for an export when you want to capture a view you built by clicking,
 and read the locus and track ids off it into an `init` block for anything you
@@ -128,11 +128,11 @@ without a link.
 }
 ```
 
-They are the same format as `defaultSession`, so each one is a `name` and a
-list of views with `init` blocks — which makes a set of them cheap to generate
-from whatever already knows the loci. The same `trackId` caveat applies: a
-session naming a track that is not in the top-level `tracks` array silently
-opens without it.
+They are the same format as `defaultSession`, so each one is a `name` and a list
+of views with `init` blocks — which makes a set of them cheap to generate from
+whatever already knows the loci. The same `trackId` caveat applies: a session
+naming a track that is not in the top-level `tracks` array silently opens
+without it.
 
 ## See also
 

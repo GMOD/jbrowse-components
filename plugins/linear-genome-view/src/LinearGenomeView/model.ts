@@ -627,7 +627,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // Tested before isTopLevelView, the order the guard used to impose — a
         // session without the preference is also the one least likely to have
         // anything useful behind `views`, and there is no reason to walk it
-        return getSession(self).stickyViewHeaders === true && this.isTopLevelView
+        return (
+          getSession(self).stickyViewHeaders === true && this.isTopLevelView
+        )
       },
 
       /**

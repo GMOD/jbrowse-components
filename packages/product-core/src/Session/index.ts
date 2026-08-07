@@ -39,9 +39,7 @@ export type {
 export { PreferencesSessionMixin } from './Preferences.ts'
 export { BaseSessionModel, isBaseSession, isSession } from './BaseSession.ts'
 export type { BaseSession, BaseSessionType } from './BaseSession.ts'
-export {
-  SessionTracksManagerSessionMixin,
-} from './SessionTracks.ts'
+export { SessionTracksManagerSessionMixin } from './SessionTracks.ts'
 export type {
   PlainTrackConfig,
   SessionWithSessionTracks,

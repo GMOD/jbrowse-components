@@ -84,7 +84,8 @@ Two things to know before writing one:
   the encoding.
 
 A `jexl:` color is a lookup table only its author can read, so declare what it
-means in the `legend` slot; the key is drawn over the track and can be dismissed.
+means in the `legend` slot; the key is drawn over the track and can be
+dismissed.
 
 ```json addtrack
 {

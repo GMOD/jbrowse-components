@@ -2,9 +2,7 @@
   "assemblies": [
     {
       "name": "hg38",
-      "aliases": [
-        "GRCh38"
-      ],
+      "aliases": ["GRCh38"],
       "sequence": {
         "type": "ReferenceSequenceTrack",
         "trackId": "hg38-ReferenceSequenceTrack",
@@ -26,12 +24,8 @@
       "type": "FeatureTrack",
       "trackId": "dtu_muscle_vs_liver",
       "name": "Transcript usage: skeletal muscle vs liver (satuRn)",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "Differential transcript usage"
-      ],
+      "assemblyNames": ["hg38"],
+      "category": ["Differential transcript usage"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "uri": "https://jbrowse.org/demos/dtu/dtu_muscle_vs_liver.gff3.gz"
@@ -82,13 +76,8 @@
       "type": "QuantitativeTrack",
       "trackId": "muscle_plus",
       "name": "Skeletal muscle RNA-seq, + strand (ENCSR609NZM)",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "Coverage",
-        "Skeletal muscle (gastrocnemius medialis)"
-      ],
+      "assemblyNames": ["hg38"],
+      "category": ["Coverage", "Skeletal muscle (gastrocnemius medialis)"],
       "adapter": {
         "type": "BigWigAdapter",
         "uri": "https://jbrowse.org/demos/dtu/ENCFF007ZBY.muscle.plus.bigWig"
@@ -98,13 +87,8 @@
       "type": "QuantitativeTrack",
       "trackId": "muscle_minus",
       "name": "Skeletal muscle RNA-seq, − strand (ENCSR609NZM)",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "Coverage",
-        "Skeletal muscle (gastrocnemius medialis)"
-      ],
+      "assemblyNames": ["hg38"],
+      "category": ["Coverage", "Skeletal muscle (gastrocnemius medialis)"],
       "adapter": {
         "type": "BigWigAdapter",
         "uri": "https://jbrowse.org/demos/dtu/ENCFF518WGP.muscle.minus.bigWig"
@@ -114,13 +98,8 @@
       "type": "QuantitativeTrack",
       "trackId": "liver_plus",
       "name": "Liver RNA-seq, + strand (ENCSR135IAL)",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "Coverage",
-        "Liver (right lobe)"
-      ],
+      "assemblyNames": ["hg38"],
+      "category": ["Coverage", "Liver (right lobe)"],
       "adapter": {
         "type": "BigWigAdapter",
         "uri": "https://jbrowse.org/demos/dtu/ENCFF565QRM.liver.plus.bigWig"
@@ -130,13 +109,8 @@
       "type": "QuantitativeTrack",
       "trackId": "liver_minus",
       "name": "Liver RNA-seq, − strand (ENCSR135IAL)",
-      "assemblyNames": [
-        "hg38"
-      ],
-      "category": [
-        "Coverage",
-        "Liver (right lobe)"
-      ],
+      "assemblyNames": ["hg38"],
+      "category": ["Coverage", "Liver (right lobe)"],
       "adapter": {
         "type": "BigWigAdapter",
         "uri": "https://jbrowse.org/demos/dtu/ENCFF253OSP.liver.minus.bigWig"

@@ -28,7 +28,11 @@ function makeBin(
   regionStart: number,
   regionEnd: number,
 ) {
-  const mafCov = computeMafCoverage(packTestWire(blocks), regionStart, regionEnd)
+  const mafCov = computeMafCoverage(
+    packTestWire(blocks),
+    regionStart,
+    regionEnd,
+  )
   const { mismatchPositions, mismatchBases } = mafCov
   return (pos: number) =>
     buildCoverageTooltipBin(

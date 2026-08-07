@@ -138,7 +138,10 @@ describe('a maf2bed --summary BED round-trips into summary records', () => {
       () =>
         new BgzipMafAdapter(
           BgzipMafConfigSchema.create({
-            mafGzLocation: { uri: 'unread.maf.gz', locationType: 'UriLocation' },
+            mafGzLocation: {
+              uri: 'unread.maf.gz',
+              locationType: 'UriLocation',
+            },
             summaryAdapter: { type: 'BedTabixAdapter' },
           }),
           () =>
@@ -153,7 +156,10 @@ describe('a maf2bed --summary BED round-trips into summary records', () => {
       () =>
         new BgzipTaffyAdapter(
           TaffyConfigSchema.create({
-            tafGzLocation: { uri: 'unread.taf.gz', locationType: 'UriLocation' },
+            tafGzLocation: {
+              uri: 'unread.taf.gz',
+              locationType: 'UriLocation',
+            },
             summaryAdapter: { type: 'BedTabixAdapter' },
           }),
           () =>
@@ -163,14 +169,17 @@ describe('a maf2bed --summary BED round-trips into summary records', () => {
             }),
         ),
     ],
-  ])('%s summarizes through its own getSummaryFeatures', async (_name, make) => {
-    const out = await firstValueFrom(
-      make().getSummaryFeatures(REGION).pipe(toArray()),
-    )
-    expect(new Set(out.map(r => r.src))).toEqual(
-      new Set(['volvox', 'simvolvox', 'microvolvox']),
-    )
-  })
+  ])(
+    '%s summarizes through its own getSummaryFeatures',
+    async (_name, make) => {
+      const out = await firstValueFrom(
+        make().getSummaryFeatures(REGION).pipe(toArray()),
+      )
+      expect(new Set(out.map(r => r.src))).toEqual(
+        new Set(['volvox', 'simvolvox', 'microvolvox']),
+      )
+    },
+  )
 
   // The mirror mistake to the one MafTabixAdapter.test.ts covers: the alignment
   // BED put into `summaryAdapter` instead of into `bedGzLocation`. It is

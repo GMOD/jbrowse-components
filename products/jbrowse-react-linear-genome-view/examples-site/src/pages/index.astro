@@ -24,7 +24,6 @@ const pmCommands = {
 }
 // see ExampleSection for why the source block advertises its length
 const sourceLines = code.trimEnd().split('\n').length
-
 ---
 
 <Shell
@@ -92,10 +91,10 @@ const sourceLines = code.trimEnd().split('\n').length
 
     <h2>Two things that cost people an hour</h2>
     <p>
-      <strong>It renders on the client only.</strong> The view needs a real DOM;
-      server-rendering and hydrating it are not supported. Vite, rsbuild and plain
-      script tags just work. In an SSR framework, mount it client-side — our Next.js
-      demo wraps it in a <code>'use client'</code> component loaded through{' '}
+      <strong>It renders on the client only.</strong> The view needs a real DOM; server-rendering
+      and hydrating it are not supported. Vite, rsbuild and plain script tags just
+      work. In an SSR framework, mount it client-side — our Next.js demo wraps it
+      in a <code>'use client'</code> component loaded through{' '}
       <a href="https://nextjs.org/docs/app/guides/lazy-loading"
         ><code>next/dynamic</code></a
       >{' '}
@@ -116,8 +115,8 @@ const sourceLines = code.trimEnd().split('\n').length
       <a href="https://jbrowse.org/jb2/docs/embedded_components/"
         >embedded components page</a
       >{' '}
-      compares the packages and lists a deployed starter repo per bundler (Vite,
-      rsbuild, Next.js, vanilla JS). The full assembly and track config shape is the{' '}
+      compares the packages and lists a deployed starter repo per bundler (Vite, rsbuild,
+      Next.js, vanilla JS). The full assembly and track config shape is the{' '}
       <a href="https://jbrowse.org/jb2/docs/config_guide/">config guide</a>.
     </p>
   </div>

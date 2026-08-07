@@ -65,14 +65,7 @@
               "assembly": "wheat"
             }
           ],
-          "tracks": [
-            [
-              "sorghum_tauschii"
-            ],
-            [
-              "sorghum_wheat"
-            ]
-          ],
+          "tracks": [["sorghum_tauschii"], ["sorghum_wheat"]],
           "colorBy": "attribute:copies",
           "autoDiagonalize": false
         }
@@ -84,17 +77,11 @@
       "type": "SyntenyTrack",
       "trackId": "sorghum_tauschii",
       "name": "Sorghum / Aegilops tauschii orthologs",
-      "assemblyNames": [
-        "tauschii",
-        "sorghum"
-      ],
+      "assemblyNames": ["tauschii", "sorghum"],
       "adapter": {
         "type": "MCScanBlocksAdapter",
         "uri": "sorghum.tauschii.blocks.gz",
-        "blockAssemblies": [
-          "sorghum",
-          "tauschii"
-        ],
+        "blockAssemblies": ["sorghum", "tauschii"],
         "bedLocations": [
           {
             "uri": "sorghum.bed.gz"
@@ -103,10 +90,7 @@
             "uri": "tauschii.bed.gz"
           }
         ],
-        "assemblyNames": [
-          "tauschii",
-          "sorghum"
-        ],
+        "assemblyNames": ["tauschii", "sorghum"],
         "attributeColumns": [
           "identity",
           "homology_identity",
@@ -122,17 +106,11 @@
       "type": "SyntenyTrack",
       "trackId": "sorghum_wheat",
       "name": "Sorghum / bread wheat orthologs",
-      "assemblyNames": [
-        "sorghum",
-        "wheat"
-      ],
+      "assemblyNames": ["sorghum", "wheat"],
       "adapter": {
         "type": "MCScanBlocksAdapter",
         "uri": "sorghum.wheat.blocks.gz",
-        "blockAssemblies": [
-          "sorghum",
-          "wheat"
-        ],
+        "blockAssemblies": ["sorghum", "wheat"],
         "bedLocations": [
           {
             "uri": "sorghum.bed.gz"
@@ -141,10 +119,7 @@
             "uri": "wheat.bed.gz"
           }
         ],
-        "assemblyNames": [
-          "sorghum",
-          "wheat"
-        ],
+        "assemblyNames": ["sorghum", "wheat"],
         "attributeColumns": [
           "identity",
           "homology_identity",

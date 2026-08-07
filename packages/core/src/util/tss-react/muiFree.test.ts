@@ -69,7 +69,5 @@ test('the style theme itself reaches no Material UI', () => {
 // builds the MUI theme, so it is the exact negative case.
 test('the tracer would catch it (ui/theme.ts fails)', () => {
   const bare = reach(path.join(__dirname, '../../ui/theme.ts'))
-  expect(
-    [...bare.keys()].filter(spec => isMui(spec)).length,
-  ).toBeGreaterThan(0)
+  expect([...bare.keys()].filter(spec => isMui(spec)).length).toBeGreaterThan(0)
 })

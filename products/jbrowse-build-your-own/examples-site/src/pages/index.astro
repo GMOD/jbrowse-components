@@ -58,15 +58,15 @@ const base = import.meta.env.BASE_URL
     Only one of them renders any Material UI, and on purpose: <a
       href={`${base}a-stack-of-tracks/`}>A stack of tracks</a
     > is left stock, so you can see what a display looks like before you swap anything.
-    Everywhere else the chrome around a track — its loading, error and too-large
-    states, the controls in its corner — is <strong
+    Everywhere else the chrome around a track — its loading, error and too-large states,
+    the controls in its corner — is <strong
       >{bundle.plainGzipKb} KB gzipped</strong
     > with plain components, {bundle.muiGzipKb} KB with Material ones.
   </p>
   <p class="note">
     An example imports from three published packages, all of which need to be on
-    the same version: <code>@jbrowse/react-linear-genome-view2</code> for the
-    engine, <code>@jbrowse/core</code> for the hooks and the palette, and <code
+    the same version: <code>@jbrowse/react-linear-genome-view2</code> for the engine,
+    <code>@jbrowse/core</code> for the hooks and the palette, and <code
       >@jbrowse/plugin-linear-genome-view</code
     > for the display seams.
   </p>

@@ -1,8 +1,8 @@
 import { MafWirePacker } from './mafWirePacker.ts'
 
-import type { MafWirePacked } from './mafWirePacker.ts'
 import type { MafWireRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { AlignmentContext, EmptyRecord } from '../types.ts'
+import type { MafWirePacked } from './mafWirePacker.ts'
 
 /**
  * Readable literal forms of a packed region, for tests.

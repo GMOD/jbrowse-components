@@ -203,17 +203,24 @@ console.log(
 )
 const byPackage = new Map()
 for (const [id, bytes] of eagerModules) {
-  const m = /node_modules\/(?:\.pnpm\/[^/]+\/node_modules\/)?((?:@[^/]+\/)?[^/]+)/.exec(
-    id,
-  )
+  const m =
+    /node_modules\/(?:\.pnpm\/[^/]+\/node_modules\/)?((?:@[^/]+\/)?[^/]+)/.exec(
+      id,
+    )
   const key = m ? m[1] : 'first-party'
   byPackage.set(key, (byPackage.get(key) ?? 0) + bytes)
 }
 console.log('by package:')
-for (const [pkg, bytes] of [...byPackage].sort((a, b) => b[1] - a[1]).slice(0, 15)) {
+for (const [pkg, bytes] of [...byPackage]
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 15)) {
   console.log(`  ${String(Math.round(bytes / 1024)).padStart(5)} KB  ${pkg}`)
 }
 console.log('\ncostliest modules:')
-for (const [id, bytes] of [...eagerModules].sort((a, b) => b[1] - a[1]).slice(0, 20)) {
-  console.log(`  ${String(Math.round(bytes / 1024)).padStart(5)} KB  ${short(id)}`)
+for (const [id, bytes] of [...eagerModules]
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 20)) {
+  console.log(
+    `  ${String(Math.round(bytes / 1024)).padStart(5)} KB  ${short(id)}`,
+  )
 }

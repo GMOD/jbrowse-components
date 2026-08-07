@@ -7,8 +7,8 @@ import {
 
 import { computeMafCoverage } from './computeMafCoverage.ts'
 
-import type { MafWireBlocksInput } from './computeMafCoverage.ts'
 import type { MafCoverageRegion } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
+import type { MafWireBlocksInput } from './computeMafCoverage.ts'
 
 /**
  * Build the packed coverage region (depth bars + SNP segments + interbase
