@@ -52,7 +52,7 @@ genes. Over a whole cell line the two files hold thousands of calls each, and a
 megabase taken at random draws domains wider than the frame and a fan of arcs
 with nothing under them. Score the two files against each other instead, taking
 every Arrowhead domain whose two corners carry a HiCCUPS loop and ranking by
-that loop's contact count, and this one comes fifteenth of the 1,142 domains
+that loop's contact count, and this one comes sixteenth of the 1,142 domains
 that carry one. Its left anchor is _MYC_. The
 [scoring script](https://github.com/GMOD/jbrowse-components/blob/main/scripts/hic_pick_loop.py)
 prints that ranking, and prints what a candidate window contains.
@@ -101,30 +101,33 @@ It would be easy to produce that figure dishonestly, and the two ways to do it
 are worth knowing because both fail silently.
 
 **Pick a shallow control and the difference is sequencing depth, not
-karyotype.** ENCODE has several GM12878 Hi-C experiments; the "supernatant"
-fraction (`ENCSR730CER`) has a couple of hundred occupied bins in this window
-with a maximum of 7 contacts. Against K562 it looks like a spectacular result,
-but an empty panel is empty because nothing was sequenced. The figure above uses
-`ENCSR410MDC`, which is the _deeper_ of the two files, and that is the point.
-Run the scan below and the totals come out the wrong way round from what the
-figure suggests: across the whole chr9–chr22 block GM12878 has **more** contact
-than K562, 2,072,975 against 1,539,676. It is only at the junction bin that the
-order inverts, 149 against 161,282. A focal difference against a higher
-background is an argument; a difference in totals is not.
+karyotype.** ENCODE has several GM12878 Hi-C experiments. Point the scan's
+`CTRL` at the "supernatant" fraction (`ENCSR730CER`, the alternative the script
+carries commented out) and its whole chr9–chr22 block holds 17,905 contacts
+against the deep in situ file's 2,072,975. Next to K562 that reads as a
+spectacular result, but an empty panel is empty because nothing was sequenced.
+The figure above uses `ENCSR410MDC`, the _deeper_ of the two files, and that is
+the point. Run the scan as it ships and the totals come out the wrong way round
+from what the figure suggests: across the whole chr9–chr22 block GM12878 has
+**more** contact than K562, 2,072,975 against 1,539,676. It is only at the
+junction bin that the order inverts, 149 against 161,282. A focal difference
+against a higher background is an argument; a difference in totals is not.
 
 **Normalize, and you delete the finding.** Matrix balancing exists to divide out
 per-bin coverage differences, and an amplified fusion _is_ a coverage
-difference. Under `INTER_SCALE` the K562 peak stops being at *ABL1*×*BCR* and
-moves to a mapping artifact at chr9:129.4 Mb × chr22:23.5 Mb that is present in
-both cell lines. Both Hi-C tracks in this demo therefore set
+difference. Re-run the scan below with `NORM=INTER_SCALE` and *ABL1*×*BCR* is
+gone from the top of the table, displaced by bins elsewhere on the two
+chromosomes that the control scores at zero. Both Hi-C tracks in this demo
+therefore set
 [`selectedNormalization`](/docs/config/linearhicdisplay/#slot-selectednormalization)
 to `NONE`. Balanced matrices are the right choice for reading domains and loops,
 and the wrong choice for reading rearrangements.
 
-That artifact is the reason a single ranked sample proves nothing. It is the
-hottest bin in this chromosome pair in GM12878 _and_ near the top in K562, and
-it is not a rearrangement. What identifies a breakpoint is a bin hot in the
-sample and cold in the control.
+A single ranked sample proves nothing either way, and the control's own ranking
+is what shows it. The scan prints that ranking below the case's, headed by
+chr9:129.25 Mb × chr22:23.5 Mb, a bin that is hot in GM12878, present in K562,
+and not a rearrangement. What identifies a breakpoint is a bin hot in the sample
+and cold in the control.
 
 ## Run the scan
 
@@ -139,11 +142,14 @@ bash scan_hic_translocation.sh
 ```
 
 It needs `java` and `curl` and downloads `juicer_tools` itself; `CASE`, `CTRL`,
-`CHR1`, `CHR2` and `RES` are all overridable, so the same scan applies to any
-two `.hic` files that hold inter-chromosomal blocks. The top row it prints is
-`chr9:130,750,000 × chr22:23,000,000`, _ABL1_ intron 1 against the _BCR_ major
-breakpoint cluster region, the canonical CML fusion, at 161,282 contacts against
-149 in GM12878.
+`CHR1`, `CHR2`, `RES` and `NORM` are all overridable, so the same scan applies
+to any two `.hic` files that hold inter-chromosomal blocks. The top row it
+prints is `chr9:130,750,000 × chr22:23,000,000` at 161,282 contacts against 149
+in GM12878: _ABL1_ intron 1 against the 5' end of _BCR_, which is the pair of
+bins the canonical CML fusion joins rather than the junction itself. Drop `RES`
+to `10000` and the top row lands on the junction,
+`chr9:130,730,000 × chr22:23,280,000`, _ABL1_ intron 1 against the _BCR_ major
+breakpoint cluster region.
 
 The scan also reports a second partner for chr9 at chr22:16.75 Mb, 22,278
 contacts against 10. K562's karyotype is complex and BCR-ABL1 is not its only
@@ -240,14 +246,21 @@ gives one box per domain, with nested domains stacking into rows. Loops, whose
 two mates really are different places, are the paired-arc case. See the
 [Hi-C track config guide](/docs/config_guides/hic_track#loops-and-interactions-as-arcs).
 
-For the loops file, set
-[`columnNames`](/docs/config/bedpeadapter/#slot-columnnames) explicitly if you
-want to color or filter by a column. The adapter otherwise takes column names
-from the file's own header line, and juicer writes its version banner _after_
-the defline; the last header line therefore has no tab-separated fields, name
-resolution gives up, and every extra column reads back as `undefined`, and a
-jexl expression on `observed` then silently evaluates against nothing. Listing
-the 24 columns in config skips the guesswork.
+To color or filter either track by a column, set
+[`columnNames`](/docs/config/bedpeadapter/#slot-columnnames) explicitly. The
+adapter otherwise takes column names from the file's own header line, and juicer
+writes its version banner _after_ the defline; the last header line therefore
+has no tab-separated fields, name resolution gives up, and every column past the
+tenth reads back as `undefined`, so a jexl expression on one silently evaluates
+against nothing. This is a property of both files, not just the loops: HiCCUPS
+writes 24 columns, Arrowhead 16, and only the first ten of either are positional
+and always parsed. Listing them in config skips the guesswork.
+
+Both callers also leave the standard BEDPE `name` and `score` columns at `.` and
+put what they rank by further along, which is why the two are worth naming
+rather than assumed: HiCCUPS' is `observed`, and Arrowhead's is a _second_
+column called `score`. Values past the tenth column arrive as strings, so
+compare them with `>` and `<`, which coerce, rather than with a jexl `==`.
 
 ## See also
 

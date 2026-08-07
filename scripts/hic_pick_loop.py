@@ -77,7 +77,9 @@ def main():
         start, end = (int(x.replace(',', '')) for x in span.split('-'))
         print(f'{args.window}  ({(end - start) / 1e6:.2f} Mb)\n')
         print('domains:')
-        for c, x1, x2, _y1, y2, score in domains:
+        # x1/x2 only: Arrowhead writes both bedpe mates as the same interval, so
+        # a domain's y1/y2 repeat its x1/x2 and carry nothing extra
+        for c, x1, x2, _y1, _y2, score in domains:
             if c == chrom and x2 > start and x1 < end:
                 whole = 'inside' if x1 >= start and x2 <= end else 'CROSSES EDGE'
                 print(f'  {x1:,}-{x2:,}  {(x2 - x1) // 1000:>4} kb  {whole}  score={score:.2f}')
@@ -93,7 +95,7 @@ def main():
         by_chrom[row[0]].append(row)
 
     ranked = []
-    for c, x1, x2, _dy1, dy2, score in domains:
+    for c, x1, x2, _dy1, _dy2, score in domains:
         size = x2 - x1
         if not MIN_DOMAIN <= size <= MAX_DOMAIN:
             continue

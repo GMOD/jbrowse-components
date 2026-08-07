@@ -35,17 +35,19 @@ const BCR = { refName: 'chr22', start: 23_180_509, end: 23_318_037 }
 //
 //  1. NORMALIZATION MUST BE `NONE`. Matrix balancing exists to divide out
 //     per-bin coverage differences, and an amplified fusion is exactly such a
-//     difference — under INTER_SCALE, K562's peak at 250kb drops from 161,282 at
-//     ABL1xBCR to 1,116 at an unrelated bin, i.e. the balancing removes the
-//     translocation. Both tracks set `selectedNormalization: NONE` in
-//     config_demo.json; it is repeated here so the figure does not depend on
-//     that default surviving.
-//  2. THE SHALLOW GM12878 FILE IS NOT A CONTROL. `hic_gm12878_encode`
-//     (ENCSR730CER, the "supernatant" fraction already in the config) has ~140
-//     occupied bin pairs in this whole window with a maximum of 7 contacts. Next
-//     to K562 it looks like a spectacular difference, but the difference would
-//     be sequencing depth, not karyotype. `hic_gm12878_insitu` (ENCSR410MDC) is
-//     the depth-matched one and is what this spec uses.
+//     difference. `NORM=INTER_SCALE bash scripts/scan_hic_translocation.sh`
+//     reproduces it: at 250kb the ABL1xBCR bin goes from first of the pair's
+//     55,376 to fifteenth, and the top of the table fills with low-mappability
+//     bins elsewhere on chr9 and chr22 that the control scores at zero. Both
+//     tracks set `selectedNormalization: NONE` in config_demo.json; it is
+//     repeated here so the figure does not depend on that default surviving.
+//  2. THE SHALLOW GM12878 FILE IS NOT A CONTROL. ENCSR730CER, the "supernatant"
+//     fraction `hic_gm12878_encode` is rebinned from, holds 17,905 contacts
+//     across the entire chr9 x chr22 block — 24 occupied bin pairs inside this
+//     window, none above 2. Next to K562 it looks like a spectacular difference,
+//     but the difference would be sequencing depth, not karyotype.
+//     `hic_gm12878_insitu` (ENCSR410MDC) is the depth-matched one and is what
+//     this spec uses.
 const JUNCTION_LOC = 'chr9:129,730,000-131,730,000 chr22:22,285,000-24,285,000'
 
 // Raw counts, linear ramp, 95th-percentile saturation. Log scale is wrong for
@@ -200,7 +202,7 @@ export const hicSpecs: ScreenshotSpec[] = [
   // Scored instead, by scripts/hic_pick_loop.py: for every Arrowhead domain of
   // 250-900 kb, the strongest HiCCUPS loop whose two anchors sit within 25 kb
   // of the domain's two corners — i.e. the loop the domain is bounded BY. 1,142
-  // domains carry one; chr8:127,735,000-128,335,000 ranks 15th by that loop's
+  // domains carry one; chr8:127,735,000-128,335,000 ranks 16th by that loop's
   // contact count (observed 1062) and is the first in the ranking whose anchor
   // is a gene most readers know, MYC, with the 600 kb of lymphoid enhancers and
   // PVT1 it contacts held inside the domain.
