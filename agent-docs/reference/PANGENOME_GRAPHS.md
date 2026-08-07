@@ -263,11 +263,24 @@ Facts behind it, each measured rather than assumed:
   **The cost is not in the layouts, it is in everything that mixes the axes.**
   A chord length, a tangent projection, a deletion's bow, a mitre normal, an
   arrowhead's angle and a hover distance are each one `hypot` over x and y, and
-  every one of them now takes `yToX` (`scaleY / scaleX`) and converts before it
-  measures. `yToX === 1` is the isotropic path and is asserted to be the
-  identity, which is what keeps every committed FMMM figure where it is. The one
-  place not converted is `graph.slang`, whose generated WGSL divides the vertex
-  normal by `scale.x` alone; it is dead until a GPU backend exists, and
+  every one of them converts before it measures. They take **one `AxisScale`**
+  (`{scaleX, scaleY}`, the model's own numbers) rather than a scale plus an
+  optional ratio: passing them separately let a caller supply x and default y,
+  which compiles and draws a wrong picture silently, and three of these have to
+  agree or a label lands where its arc is not. `scaleY === scaleX` is the
+  isotropic path and is asserted to be the *identity*, which is what keeps every
+  committed FMMM figure where it is.
+
+  **A drawing whose y is horizontal notices none of this**, which is worth
+  knowing before trusting a test: a row layout's node polylines are horizontal,
+  so their normals are (0,±1) under any axis and their positions come from the
+  transform. A deletion's BOW is the one shape whose geometry depends on the
+  ratio — get it wrong and it balloons by roughly `scaleY/scaleX`, ~100x at a
+  typical window. Any test meant to catch an axis mistake needs an arc with
+  backbone to bow around, or it passes either way.
+
+  The one place not converted is `graph.slang`, whose generated WGSL divides the
+  vertex normal by `scale.x` alone; it is dead until a GPU backend exists, and
   `GraphRenderer.ts` says what to change.
 - **`odgi degree` is a dud**: over 500 bp windows, mean 3.82, max 4.79, no
   dynamic range. It does not make a graph-complexity track. The tutorial shipped
