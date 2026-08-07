@@ -20,7 +20,18 @@ configuration and nothing to keep in sync by hand.
 Usage: gfa_nodes_to_bed.py <in.gfa> <reference-path-prefix> <out-refname>
        writes BED9 (unsorted; sort/bgzip/tabix downstream) to stdout
 """
+import gzip
 import sys
+
+
+# `odgi view -g` writes plain text, but a subgraph that has been passed around
+# usually arrives gzipped, and `open` on one raises UnicodeDecodeError from
+# inside the parse rather than saying what it read. Only .gz: this walks a cut
+# window, and the .zst its sibling reads is what the whole-chromosome pggb
+# graphs ship as.
+def open_maybe_gz(path):
+    return gzip.open(path, "rt") if path.endswith(".gz") else open(path)
+
 
 # jbrowse-plugin-graphgenomeview DEPTH_GRADIENT (viridis), from
 # src/GraphGenomeView/renderer/GeometryBuilder.ts
@@ -37,7 +48,7 @@ def sample_gradient(stops, t):
 
 def read_gfa(path):
     lengths, paths = {}, {}
-    with open(path) as fh:
+    with open_maybe_gz(path) as fh:
         for line in fh:
             f = line.rstrip("\n").split("\t")
             if f[0] == "S":

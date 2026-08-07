@@ -642,6 +642,16 @@ with open(nodes_bad, "w") as fh:
 check("gfa_nodes_to_bed refuses an elided sequence with no LN:i:, and says so",
       refusal(gfa_nodes, ["gfa_nodes_to_bed.py", nodes_bad, "K12#1#chr", "chr"],
               "no LN:i: tag"), "no LN:i: tag")
+# A subgraph that has been passed around arrives gzipped, and `open` on one threw
+# UnicodeDecodeError from inside the parse. Its sibling has read compressed input
+# all along.
+with gzip.open(f"{nodes_gfa}.gz", "wt") as fh:
+    fh.write(open(nodes_gfa).read())
+check("a gzipped subgraph reads the same as the plain one",
+      run_helper(gfa_nodes,
+                 ["gfa_nodes_to_bed.py", f"{nodes_gfa}.gz", "K12#1#chr", "chr"]),
+      run_helper(gfa_nodes,
+                 ["gfa_nodes_to_bed.py", nodes_gfa, "K12#1#chr", "chr"]))
 
 # build_rgfa_tabix.sh, run for real. bgzip and tabix both succeed on ZERO rows,
 # so every way this script can project nothing ends the same: four well-formed
@@ -760,6 +770,176 @@ else:
            bed_rows(f"{multi_prefix}.links.bed")[0].split("\t")[:6]],
           [["K12#1#chr", "0", "5", "s1+", "s3+", "K12#1#chr"],
            ["GRCh38#0#chr1", "0", "5", "s1+", "s2+", "GRCh38#0#chr1"]])
+
+# build_rgfa_alleles.sh: 250 lines of awk walking the graph bidirected, whose
+# output an AlignmentsTrack draws at jbrowse.org/demos/hprc. It had no behavior
+# coverage at all, and its own header records two bugs that produced a wrong file
+# rather than an error -- 237 HPRC walks dropped, AMY1's 41 kb insertion among
+# them. It reads only the two BEDs, so a fixture is a fixture: no graph, no
+# gfatools. The shapes below are the ones a real file has; counts against HPRC's
+# hosted pair over GRCh38#0#chr1:1-3,000,000 are in the comments.
+if rgfa_ran:
+    alleles_dir = tempfile.mkdtemp()
+    K, S = "K12#1#chr", "Sakai#1#chr"
+    #        id   chrom start  end   rank
+    fixture = [("s1", K, 0, 100, 0), ("s2", K, 100, 200, 0), ("s3", K, 200, 300, 0),
+               ("s4", K, 300, 400, 0), ("s5", K, 400, 500, 0), ("s6", K, 600, 700, 0),
+               ("s7", K, 800, 900, 0), ("s8", K, 1000, 1100, 0), ("s9", K, 1200, 1300, 0),
+               ("a1", S, 1000, 1500, 1), ("c1", S, 2000, 2100, 1), ("d1", S, 3000, 3050, 1),
+               ("f1", S, 4000, 4040, 1), ("f2", S, 4040, 4070, 2),
+               ("g1", S, 5000, 5010, 1), ("g2", S, 5010, 5040, 1), ("g3", S, 5040, 5050, 1)]
+    seg_by_id = {r[0]: r for r in fixture}
+    fixture_links = [
+        ("s1", "+", "a1", "+"), ("a1", "+", "s2", "+"),          # an insertion
+        ("s2", "+", "s4", "+"),                                  # a clean skip of s3
+        ("s2", "+", "c1", "+"), ("c1", "+", "s4", "+"),          # a same-length allele
+        ("s4", "+", "d1", "+"), ("s5", "-", "d1", "-"),          # rejoin stated backbone->allele
+        ("s7", "-", "s6", "-"),                                  # the skip written backwards
+        ("s8", "+", "s9", "-"),                                  # mixed orientation
+        ("s5", "+", "f1", "+"), ("f1", "+", "f2", "+"), ("f2", "+", "s6", "+"),
+        ("s6", "+", "g1", "+"), ("g1", "+", "g2", "+"), ("g1", "+", "g3", "+"),
+        ("g2", "+", "s7", "+"), ("g3", "+", "s7", "+")]          # a branch point
+    with open(os.path.join(alleles_dir, "f.segs.bed"), "w") as fh:
+        for i, c, s, e, r in sorted(fixture, key=lambda r: (r[1], r[2])):
+            fh.write(f"{c}\t{s}\t{e}\t{i}\t{r}\n")
+    # one row per link PER ENDPOINT, which is what build_rgfa_tabix.sh writes and
+    # what the script's own `seen` dedup exists to collapse
+    link_rows = []
+    for src, so, tgt, to in fixture_links:
+        a, b = seg_by_id[src], seg_by_id[tgt]
+        rec = (f"{src}{so}\t{tgt}{to}\t{a[1]}\t{a[2]}\t{a[3]}\t{a[4]}\t"
+               f"{b[1]}\t{b[2]}\t{b[3]}\t{b[4]}")
+        link_rows += [(a[1], a[2], a[3], rec), (b[1], b[2], b[3], rec)]
+    with open(os.path.join(alleles_dir, "f.links.bed"), "w") as fh:
+        for c, s, e, rec in sorted(link_rows, key=lambda r: (r[0], r[1])):
+            fh.write(f"{c}\t{s}\t{e}\t{rec}\n")
+    for kind in ("segs", "links"):
+        subprocess.run(f"bgzip -f f.{kind}.bed && tabix -f -p bed f.{kind}.bed.gz",
+                       shell=True, check=True, cwd=alleles_dir,
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    allele_run = subprocess.run(
+        ["bash", os.path.abspath("scripts/build_rgfa_alleles.sh"), "f"],
+        cwd=alleles_dir, capture_output=True, text=True)
+    allele_out = subprocess.run(
+        ["gzip", "-dc", os.path.join(alleles_dir, "f.alleles.bed.gz")],
+        capture_output=True, text=True).stdout.splitlines()
+    HEADER = ("#chrom start end name score strand thickStart thickEnd itemRgb class "
+              "delta altLen refLen CIGAR discoveryRank firstSeenIn nested segments")
+    allele_rows = [dict(zip(HEADER.split(), r.split("\t")))
+                   for r in allele_out if not r.startswith("#")]
+
+    def alleles(**want):
+        return [r for r in allele_rows
+                if all(r[k] == v for k, v in want.items())]
+
+    check("the run succeeds and the header is the 18-column contract",
+          (allele_run.returncode, allele_out[0].split("\t")), (0, HEADER.split()))
+    # A link between two backbone segments whose coordinates leave a gap is a
+    # deletion, and the CIGAR is what lets a 63 kb allele draw at its own size
+    # rather than as a 1 bp box.
+    check("a gap between two backbone segments is a deletion, with its CIGAR",
+          [(r["start"], r["end"], r["name"], r["CIGAR"], r["refLen"])
+           for r in alleles(**{"class": "del", "segments": "."})],
+          [("200", "300", "-100", "100D", "100"),
+           ("700", "800", "-100", "100D", "100")])
+    # The second of those is stated BACKWARDS (`L s7 - s6 -`). Ordering the two
+    # anchors rather than requiring tgt > src is what keeps it: 4 of the 98
+    # deletions in the five-strain E. coli graph are written that way.
+    check("a reverse-orientation backbone pair states the same skip",
+          len(alleles(**{"class": "del", "segments": ".", "start": "700"})), 1)
+    # ...but a MIXED-orientation pair is an inversion breakpoint, not a skip. The
+    # anchors it would span are s8's end and s9's end, since a '-' target is
+    # entered at its far side -- keying this on s8's START passed with the guard
+    # removed, because the phantom row lands at 1100 rather than 1000.
+    check("a mixed-orientation backbone pair is not a skip",
+          alleles(**{"class": "del", "start": "1100"}), [])
+    # An insertion consumes no reference, so its start and end cannot state its
+    # size. It is widened to 1 bp to be drawable and states the size in the CIGAR.
+    check("a pure insertion is 1 bp wide, with its magnitude in the CIGAR",
+          [(r["end"], r["name"], r["CIGAR"], r["refLen"])
+           for r in alleles(**{"class": "ins", "start": "100"})],
+          [("101", "+500", "500I", "0")])
+    # Equal lengths are a substitution, not a zero-length nothing.
+    check("an allele the same length as what it replaces is a sub",
+          [(r["start"], r["end"], r["CIGAR"], r["delta"])
+           for r in alleles(**{"class": "sub"})], [("200", "300", "100M", "0")])
+    # The walk continues past the first segment: altLen is the sum over the route
+    # and `segments` lists it in traversal order, the same ids the graph draws.
+    check("a multi-segment allele sums its route and lists the ids",
+          [(r["altLen"], r["refLen"], r["CIGAR"], r["segments"])
+           for r in alleles(segments=">f1>f2")], [("70", "100", "70M30D", ">f1>f2")])
+    # discoveryRank is the LOWEST rank on the walk (f1 is 1, f2 is 2), and
+    # firstSeenIn is that segment's PanSN sample -- discovery order, never carriage.
+    check("discoveryRank is the lowest rank on the route, named by its sample",
+          [(r["discoveryRank"], r["firstSeenIn"]) for r in alleles(segments=">f1>f2")],
+          [("1", "Sakai")])
+    # A branch point means this length is one route through a nested bubble
+    # rather than the only one, which is the caveat on the 95 alleles that
+    # disagree with `minigraph --call`.
+    check("a walk through a branch point is flagged nested",
+          [(r["nested"], r["segments"]) for r in alleles(start="700", nested="1")],
+          [("1", ">g1>g2")])
+    # The exit is found by testing the ARRIVAL. `succ` is bidirected so the walk
+    # reaches the backbone either way, but the file states only one of the two
+    # equivalent L-line directions; keying on departures made the exit invisible
+    # whenever the other one was written, and the walk then ran off down the
+    # backbone -- 237 HPRC walks dropped that way. This rejoin is spelled
+    # `L s5 - d1 -`, so nothing departs d1 toward the backbone.
+    check("an allele whose rejoin is spelled backbone-to-allele still resolves",
+          sorted({(r["start"], r["end"], r["class"], r["altLen"])
+                  for r in alleles(**{"class": "ins", "start": "400"})}),
+          [("400", "401", "ins", "50")])
+    # Missing inputs name the script that writes them rather than failing in awk.
+    missing = subprocess.run(
+        ["bash", os.path.abspath("scripts/build_rgfa_alleles.sh"), "nope"],
+        cwd=alleles_dir, capture_output=True, text=True)
+    check("a missing pair names build_rgfa_tabix.sh rather than failing in awk",
+          (missing.returncode, "run build_rgfa_tabix.sh first" in missing.stderr),
+          (1, True))
+
+# odgi_similarity_to_newick.py: orders and groups a MAF track's rows, and had a
+# bug fixed with no check behind it -- a sample odgi reports only as the second
+# member of a pair vanished from the tree while the track kept drawing it in
+# input order beneath the dendrogram, which reads as a tree that placed it.
+newick = load("scripts/odgi_similarity_to_newick.py", "odgi_similarity_to_newick")
+sim_dir = tempfile.mkdtemp()
+sim = os.path.join(sim_dir, "sim.tsv")
+with open(sim, "w") as fh:
+    fh.write("group.a\tgroup.b\testimated.identity\n")
+    # the upper triangle only, which is what leaves D as group.b and never
+    # group.a. A and B are near-identical, C and D are, and the pairs across are
+    # distant -- so the tree has to come back as ((A,B),(C,D)).
+    for a, b, identity in (("A", "B", 0.99), ("A", "C", 0.80), ("A", "D", 0.80),
+                           ("B", "C", 0.80), ("B", "D", 0.80), ("C", "D", 0.98)):
+        fh.write(f"{a}\t{b}\t{identity}\n")
+names, dist = newick.read_matrix(sim, "estimated.identity")
+check("a sample odgi only ever reports as group.b is still a sample",
+      names, ["A", "B", "C", "D"])
+check("the tree groups by similarity, with branch lengths half the merge",
+      newick.upgma(names, dist),
+      "((A:0.005000,B:0.005000):0.095000,(C:0.010000,D:0.010000):0.090000)")
+# odgi emits both orientations of each pair. Reading whichever arrived last would
+# give 0.100000 or 0.050000 here; the mean gives 0.075000.
+sim2 = os.path.join(sim_dir, "sim2.tsv")
+with open(sim2, "w") as fh:
+    fh.write("group.a\tgroup.b\testimated.identity\n"
+             "A\tB\t0.90\nB\tA\t0.80\n")
+check("both orientations of a pair are averaged, not last-wins",
+      newick.upgma(*newick.read_matrix(sim2, "estimated.identity")),
+      "(A:0.075000,B:0.075000)")
+check("a column the TSV does not have is named, not read as zeros",
+      refusal(newick, ["odgi_similarity_to_newick.py", sim,
+                       os.path.join(sim_dir, "bad.nh"), "--column", "nope"],
+              "no 'nope' column"), "no 'nope' column")
+# A one-sample graph reports only its self-pair, and UPGMA over one leaf loops
+# forever picking a pair that does not exist.
+solo = os.path.join(sim_dir, "solo.tsv")
+with open(solo, "w") as fh:
+    fh.write("group.a\tgroup.b\testimated.identity\nA\tA\t1.0\n")
+check("one sample is refused rather than written as a one-leaf tree",
+      refusal(newick, ["odgi_similarity_to_newick.py", solo,
+                       os.path.join(sim_dir, "bad2.nh")],
+              "need at least two samples"), "need at least two samples")
 
 # sv_multihop.py: reconstructs the COLO829 derivative allele the cancer_sv demo
 # serves. Three bugs here produced a plausible-looking but wrong figure rather
