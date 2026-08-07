@@ -1,0 +1,3 @@
+#chr1	x1	x2	chr2	y1	y2	name	score	strand1	strand2	color	score	uVarScore	lVarScore	upSign	loSign
+# juicer_tools version 2.13.05
+chr1	1000	2000	chr1	1000	2000	.	.	.	.	255,255,0	0.9421403213751463	0.2224905	0.2295338	0.5406976	0.6521373

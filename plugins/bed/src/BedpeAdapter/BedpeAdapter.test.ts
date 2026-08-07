@@ -14,6 +14,69 @@ function makeAdapter() {
     }),
   )
 }
+// juicer's Arrowhead output, which is what the Hi-C tutorial loads as a contact
+// domain track: '.' in the standard name and score columns, and the corner score
+// the caller ranks its calls by in column 12, also named `score`. Its last
+// header line is juicer's version banner, so name resolution gives up on the
+// file's own defline and `columnNames` is the only way to reach that column.
+const ARROWHEAD_COLUMNS = [
+  'chr1',
+  'x1',
+  'x2',
+  'chr2',
+  'y1',
+  'y2',
+  'name',
+  'score',
+  'strand1',
+  'strand2',
+  'color',
+  'score',
+  'uVarScore',
+  'lVarScore',
+  'upSign',
+  'loSign',
+]
+
+function makeArrowheadAdapter(columnNames: string[] = []) {
+  return new BedpeAdapter(
+    configSchema.create({
+      bedpeLocation: {
+        localPath: require.resolve('./test_data/arrowhead.bedpe'),
+        locationType: 'LocalPathLocation',
+      },
+      columnNames,
+    }),
+  )
+}
+
+async function firstArrowheadFeature(columnNames?: string[]) {
+  const features = await firstValueFrom(
+    makeArrowheadAdapter(columnNames)
+      .getFeatures({
+        assemblyName: 'volvox',
+        refName: 'chr1',
+        start: 0,
+        end: 10000,
+      })
+      .pipe(toArray()),
+  )
+  return features[0]!
+}
+
+test('a named score column past 10 is not shadowed by an unset column 8', async () => {
+  const feature = await firstArrowheadFeature(ARROWHEAD_COLUMNS)
+  // columns past 10 are unparsed, so this is the string as written
+  expect(feature.get('score')).toBe('0.9421403213751463')
+  expect(feature.get('uVarScore')).toBe('0.2224905')
+})
+
+test('unset name and score columns read as absent, not as "." and NaN', async () => {
+  const feature = await firstArrowheadFeature()
+  expect(feature.get('name')).toBeUndefined()
+  expect(feature.get('score')).toBeUndefined()
+})
+
 test('basic', async () => {
   const adapter = makeAdapter()
 
