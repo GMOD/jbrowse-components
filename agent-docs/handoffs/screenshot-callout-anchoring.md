@@ -40,24 +40,24 @@ Everything else (`multisv` ×3, `read_vs_ref_insertion`, `maf_codon_tooltip`,
 `add_track_form`, `drawer_widget_toggle`, `inverted_duplication`) resolves to
 the same point it did, within a pixel or two of rounding.
 
-`--check` (renders twice, commits nothing) passes at 0.000% on thirteen of them
-— `linear_align_ctx_menu`, `customized_feature_details`,
+`--check` (renders twice, commits nothing) passes at 0.000% on every changed
+spec but one: `linear_align_ctx_menu`, `customized_feature_details`,
 `upstream_downstream_details`, `lgv_usage_guide`, `variant_panel`, `gc_content`,
 `read_vs_ref_insertion`, `add_track_form`, `drawer_widget_toggle`,
 `bookmark_widget_edit_label`, `trio-crossover-paternal`,
-`trio-crossover-maternal`, and `maf_codon_tooltip` at 0.001%. A clean run is the
-proof every anchor resolved: `drawAnnotations` throws on one that doesn't, an
-action anchor fails the spec by name, and three of these gate on what the click
-produced — `read_vs_ref_insertion` drives a five-step launch chain off its
-right-click, `maf_codon_tooltip` declares `expectTooltip`, so a hover into a gap
-between rows would have been reported.
+`trio-crossover-maternal`, `genomes_synteny/launch_sequence`, `multisv`,
+`multisv_svtype`, `inverted_duplication`, and `maf_codon_tooltip` at 0.001%.
 
-**Not verified, and the one thing left to do here:** `multisv`, `multisv_svtype`,
-`multisv_rhd`, `genomes_synteny/launch_sequence`, `inverted_duplication`. All
-five are minutes-long remote renders. Their anchors are the same shapes as the
-verified ones, and the two riskiest bits are the launch sequence's `dy: 4` (the
-chain-block row is the top ~7px of its display) and `multisv_rhd`'s clustering
-gate, which is unrelated to this change.
+A clean run is the proof every anchor resolved: `drawAnnotations` throws on one
+that doesn't, an action anchor fails the spec by name, and several of these gate
+on what the click produced rather than only on where it landed —
+`read_vs_ref_insertion` drives a five-step launch chain off its right-click,
+`genomes_synteny/launch_sequence` opens a whole synteny view out of a block row
+4px deep, and `maf_codon_tooltip` declares `expectTooltip`, so a hover into the
+gap between two 16px rows would have been reported.
+
+**Not verified:** `multisv_rhd` alone, whose render is a 300s ready gate plus a
+2504-row clustering RPC. Its right-click is the same shape as `multisv`'s.
 
 ## The 40 that stay, and why they are not a backlog
 
