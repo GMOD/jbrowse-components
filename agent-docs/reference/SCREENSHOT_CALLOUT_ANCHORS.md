@@ -1,0 +1,135 @@
+---
+name: screenshot-callout-anchors
+description: How a screenshot callout or a driven click resolves its position at capture time, the four things about that resolution the types don't tell you, and how to convert a hand-placed coordinate into an anchor by measuring the committed PNG instead of re-rendering. Read before placing a callout, converting one, or diagnosing a figure whose annotation landed in the top-left corner.
+---
+
+# Anchoring a screenshot callout
+
+`website/CLAUDE.md` states the rule: **never hand-measure a callout position —
+every annotation `anchor`s, and a click anchors too.** This is the how, and the
+arithmetic you would otherwise re-derive with a render.
+
+The vocabulary is `AnnotationAnchor` in
+`packages/browser-test-utils/src/annotationOverlay.ts`, shared with the desktop
+selenium harness. Four kinds, in decreasing order of preference: `track`+`locus`
+(the live LGV model), `graphNode` (a GFA segment), `selector`, `text`. Actions
+take the same shape through `website/scripts/locusAnchor.ts`, whose header is
+the writeup of what a stale coordinate cost — `alignments_sort_by_base` kept a
+108bp-era right-click after its spec narrowed to 31bp and read as 17% render
+flakiness for months.
+
+`scripts/check-specs.ts` ratchets the count of what is left. The residue is
+deliberate; its comment says which kinds and why.
+
+## What the types don't say
+
+Four things, all of which produce a plausible-looking figure rather than an
+error:
+
+- **The anchor's `dx`/`dy` and the annotation's own `dx`/`dy` both apply, at
+  different stages.** The anchor's shifts the resolved rect *before* `alignX` /
+  `alignY` are read off it; the annotation's shifts the point afterwards. For a
+  point anchor they are equivalent, which is why the difference goes unnoticed
+  until an `alignX: 'right'` is involved.
+- **`alignX`/`alignY` are ignored on `fromAnchor`.** A tail is always the rect's
+  centre plus `dx`/`dy`. That is the only way to move it, so a tail that has to
+  sit at an element's edge carries half that element's width as a `dx`.
+- **A `box` whose anchor sets `fracY` gets a zero-height band**, so `height`
+  falls back to `2 * pad` (12px). Supply `height` explicitly. Omitting `fracY`
+  instead wraps the whole track band — right for a short track, wrong for a
+  130px display holding a 10px glyph.
+- **`pad` insets a box on every side** (default 6), and `width`/`height` given
+  explicitly are used verbatim while `x`/`y` still get the `pad`. Frames that
+  have to meet a row exactly, or meet each other at a breakpoint, want `pad: 0`.
+
+One trick worth reusing: `parseAnnotationLocus` accepts `..` as well as `-`, so
+a location string printed by the UI (`chr10:122,835,344..122,837,142`) works
+**both** as a `text` anchor finding that cell in the DOM and as a `locus`
+resolving to the feature's pixels. `sv_cgiab/deletion_sv_inspector_search`
+collapses five callouts onto one constant that way, and the callout on the row
+and the callout on the glyph then cannot drift apart.
+
+## Converting a hand-placed coordinate without rendering
+
+Rendering to see what happened is slow, and on a shared box a render bakes in
+whatever another agent last built. Everything below comes off the committed PNG.
+
+**Halve everything.** Captures are `deviceScaleFactor: 2`. A `stageColumns`
+grid also gives each panel a 12px white border (`GRID_GUTTER_PX / 2`) in
+captured pixels, so a stage's own (0,0) is at composed pixel (12,12); vertical
+stacks abut with no border.
+
+**x is a locus, and the mapping is exact.** The LGV's tracks container spans the
+capture width with its left edge at 0, so `locus = windowStart + x *
+(windowBp / viewportWidth)`. Verified three ways: `multisv`'s inversion band
+edges, `maf_codon_tooltip`'s tooltip printing the codon its hover landed on
+(`chrI:2,999,247`, from x=351 in a 1250px capture), and `linear_align_ctx_menu`'s
+ruler ticks.
+
+**y is a depth into a track, and the track's top is findable.** Track labels are
+**in flow by default** — `LinearGenomeViewPlugin`'s `trackLabels` slot defaults
+to `offset`, and `TrackContainer`'s `trackLabelOffset` adds `marginBottom: 4` —
+so the label chip pushes the content down and the rendering container starts at
+the chip's bottom edge plus 4. In a default 1500px-wide capture that puts the
+**first track's rendering container at y = 193**, which four unrelated figures
+agree on. Cross-check it against the display: an alignments track's coverage
+band is exactly `coverageHeight` (45 by default) from the container top to the
+first read row.
+
+Prefer `fracY: 0` plus a `dy` over a bare fraction whenever the display packs
+from its top (a pileup, a feature layout): 57px is the second read row whatever
+height the display is given, where a fraction is that row at one height only.
+Use a fraction when the rows genuinely divide the height (the trio VCF's six
+haplotype rows) or when the callout should stay proportional.
+
+**A committed figure already records what its anchors resolved to.** Two
+readings, both exact:
+
+- An **anchored arrowhead's tip is its element's centre**, because the marker is
+  placed base-first at the shortened line end and extends `ARROW_LEN *
+  strokeWidth` forward to the target. Ray-cast out of the known raw tail, keep
+  the longest run of callout red (`#e3242b`), and the far end is the anchor
+  point. That is how `lgv_usage_guide`'s six toolbar controls were placed — all
+  five in the toolbar tier came back at y=121.4, which is its own proof the
+  reading is sound.
+- A **`box` annotation's painted rectangle is its element's rect**, inset by
+  `pad + strokeWidth/2` on each side. The inset is symmetric, so the box's
+  centre *is* the element's centre with no arithmetic at all.
+
+**Then draw the predicted geometry over the committed PNG and look at it.** Ten
+lines of PIL. Catches an off-by-a-row before it costs a render.
+
+## When not to anchor
+
+Two cases, and converting them to satisfy a count makes the figure worse:
+
+- **A caption parked in a corner or a margin.** It points at nothing, so the
+  failure anchoring prevents — a callout landing off its target — cannot happen
+  to it, and anchoring *relocates* it: `sv_cgiab/translocation_sv_inspector_view`
+  puts its caption at (60,90) while the `SV_20` row it names is most of a view
+  further down. If one is worth touching it is because it collides with content,
+  and that is a composition fix.
+- **The tail of an arrow leaving one of those captions.** The caption and its
+  tail are one unit in page coordinates. Anchoring only the tail pulls the arrow
+  off the pill it leaves the first time a layout moves, which is worse than
+  either end being raw. Both or neither — and "both" means anchoring the pill to
+  the panel it sits over, the way `inverted_duplication`'s three callouts hang
+  off their pileup track's top edge.
+
+## Verifying
+
+`node --experimental-strip-types scripts/generate-screenshots.ts --check
+--filter <spec> --exact --localport 3355`, which renders twice and touches no
+committed file. `drawAnnotations` throws on any anchor that resolves to nothing
+and an action anchor fails the spec by name, so a clean run *is* the proof every
+anchor resolved; the percentage is the run-to-run drift.
+
+**Pass `--localport`** — another agent's run holds the default 3334, and the
+collision surfaces as a blank page and a ready-gate timeout long before it
+surfaces as `EADDRINUSE`.
+
+Don't regenerate the figure to prove the conversion. The worktree usually
+carries another agent's in-flight display edits and `products/jbrowse-web/build/`
+is whatever they last built; a figure rendered under that bakes their unlanded
+work into a committed PNG. Land the spec change and let the weekly sweep render
+it on a clean runner.
