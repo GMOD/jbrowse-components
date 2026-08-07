@@ -7,15 +7,41 @@
 # flat 'feature' per record. start is 0-based half-open (BED-style). rtracklayer
 # returns block ranges relative to the feature start and thick as absolute
 # 1-based coords; a zero-width thick range means non-coding (no CDS drawn).
-read_bed <- function(uri, chrom, start, end) {
-  g <- import(uri, which = GRanges(chrom, IRanges(start + 1, end)), format = "bed")
+# 'attrs' matches read_gff's signature so the gene panel can call either reader
+# the same way; BED carries no GFF attributes, so each becomes an all-NA column
+# (the jexl `undefined` case feature_filter() already handles).
+# format = "bigBed" reads the same schema out of an indexed .bb instead.
+read_bed <- function(uri, chrom, start, end, attrs = character(0),
+                     format = c("bed", "bigBed")) {
+  # NULL when the region held no features, which read_regions already treats as
+  # "contributed nothing"; adding a column to it would build a bare list instead
+  with_attrs <- function(df) {
+    if (is.null(df)) return(NULL)
+    for (a in attrs) df[[a]] <- rep(NA_character_, nrow(df))
+    df
+  }
+  gr <- GRanges(chrom, IRanges(start + 1, end))
+  g <- if (match.arg(format) == "bigBed") {
+    # Name the fields we draw rather than take the whole record: a BigBed's
+    # extra autoSql columns are read through the UCSC C library, and an itemRgb
+    # spelled "0,0,200" fails as a signed integer - which aborts the WHOLE
+    # import with "UCSC library operation failed", so every `bigBed 9 +` track
+    # (UCSC's SV, ClinVar and repeat tracks are all one) was unreadable.
+    # A file without blocks/thick just warns here; the flat-feature path below
+    # is what it needs anyway.
+    withCallingHandlers(
+      import(uri, selection = BigBedSelection(gr,
+        colnames = c("name", "score", "thick", "blocks"))),
+      warning = function(w)
+        if (grepl("Unavailable field", conditionMessage(w))) invokeRestart("muffleWarning"))
+  } else import(uri, which = gr, format = "bed")
   m <- mcols(g)
   nm <- if (is.null(m$name)) paste0("bed", seq_along(g)) else as.character(m$name)
   fs <- start(g); fe <- end(g); str <- as.character(strand(g))
   flat <- function(i) data.frame(start = fs[i] - 1L, end = fe[i], strand = str[i],
     type = "feature", id = nm[i], parent = NA_character_, name = nm[i],
     stringsAsFactors = FALSE)
-  if (is.null(m$blocks)) return(do.call(rbind, lapply(seq_along(g), flat)))
+  if (is.null(m$blocks)) return(with_attrs(do.call(rbind, lapply(seq_along(g), flat))))
   out <- vector("list", length(g))
   for (i in seq_along(g)) {
     bl <- m$blocks[[i]]
@@ -36,5 +62,5 @@ read_bed <- function(uri, chrom, start, end) {
     }
     out[[i]] <- do.call(rbind, parts)
   }
-  do.call(rbind, out)
+  with_attrs(do.call(rbind, out))
 }

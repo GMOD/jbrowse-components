@@ -26,7 +26,6 @@ import {
 } from '@jbrowse/browser-test-utils'
 import { launch } from 'puppeteer'
 
-import { CODE_BASE } from '../src/lib/code-base.ts'
 import { delay, runAction } from './actions.ts'
 import {
   clearAnnotations,
@@ -41,6 +40,7 @@ import {
   pngDiffFraction,
   trailingBackgroundPx,
 } from './image-pipeline.ts'
+import { rExportInvocation } from './rexportCommand.ts'
 import {
   assertRenderSettled,
   assertSamePageAsReady,
@@ -572,29 +572,14 @@ function missingRPackages(names: string[]) {
 // So the emitted script names public URLs, which is also what makes it
 // copy-pasteable: a reader can run the exact script the figure came from.
 function rExportArgs(spec: RExportSpec, workDir: string) {
-  const source = specs.find(s => s.name === spec.from)
-  if (!source || source.mode !== 'url') {
-    throw new Error(`from: "${spec.from}" is not a url spec`)
-  }
-  const query = new URLSearchParams(source.url.slice(1))
-  const config = query.get('config')
-  const session = query.get('session')
-  if (!config || !session?.startsWith('spec-')) {
-    throw new Error(`spec "${spec.from}" has no ?config=…&session=spec-… url`)
-  }
+  const { configUrl, sessionSpec, extraArgs } = rExportInvocation(spec)
   // --spec, not --session: the url carries a session *spec* (the declarative
   // `{views:[{type,assembly,loc,tracks}]}` the web resolves on attach), where
   // --session wants a saved session snapshot. jb2export takes that spec shape
   // verbatim for an LGV, so the two figures are built from one description.
   const specPath = path.join(workDir, 'spec.json')
-  fs.writeFileSync(specPath, decodeURIComponent(session.slice('spec-'.length)))
-  return [
-    '--config',
-    /^https?:/.test(config) ? config : `${CODE_BASE}${config}`,
-    '--spec',
-    specPath,
-    ...(spec.extraArgs ?? []),
-  ]
+  fs.writeFileSync(specPath, sessionSpec)
+  return ['--config', configUrl, '--spec', specPath, ...extraArgs]
 }
 
 async function renderRExportSpecToTemp(spec: RExportSpec, suffix = '') {

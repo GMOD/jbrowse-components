@@ -24,6 +24,7 @@ import {
 import { writeHelperPackageDocs } from './generateHelperPackageDocs.ts'
 import { writeJexlDocs } from './generateJexlDocs.ts'
 import { writePaletteDocs } from './generatePaletteDocs.ts'
+import { writeRExportCommandDocs } from './generateRExportCommands.ts'
 import { writeReExportDocs } from './generateReExportDocs.ts'
 import { accumulateModel, writeModelDocs } from './generateStateModelDocs.ts'
 import { createDocProgram, extractWithComment, getAllFiles } from './util.ts'
@@ -188,6 +189,7 @@ async function main() {
   writeFetchAutorunDocs()
   writePaletteDocs()
   writeHelperPackageDocs()
+  writeRExportCommandDocs()
   writeReExportDocs()
   writeFileTypeDocs(files)
   writeDisplayTypeDocs(displayTypesByTrack, configNames)

@@ -15,9 +15,16 @@ generator moves the picture.
 
 ## Quantitative
 
-A multi-wiggle track reads every BigWig into one long data.frame and facets by
-source. A single BigWig instead draws one panel, as `geom_rect` bars, a line, or
-a viridis density strip depending on the display's plot type.
+A multi-wiggle track reads every BigWig into one long data.frame. The multi-row
+XY and line modes facet one panel per source; density instead stacks the sources
+on one continuous axis, so a cohort of hundreds compresses and overplots the way
+the browser's fit-to-height display does. A single BigWig draws one panel, as
+`geom_rect` bars, a line, or a viridis density strip depending on the display's
+plot type.
+
+Each panel takes its height from the display it came from — a feature track from
+the rows it actually packs, a multi-wiggle from the track height the browser
+gave it — so a figure keeps the proportions of the view it was exported from.
 
 <Figure caption="Four BigWig sources faceted one per row, the multi-wiggle display's multi-row mode (volvox, ctgA:1-50,000)." src="/img/rexport/multiwiggle.png"/>
 
@@ -41,6 +48,13 @@ first as a block, then the rest fill in around them. The sort position is
 emitted as an editable `sort_pos` variable.
 
 <Figure caption="Sort by base at a SNP — reads carrying the alternate allele group at the top (volvox, ctgA:14,470-14,500)." src="/img/rexport/alignments_sort.png"/>
+
+Base modifications are read from the MM/ML tags and drawn as per-base ticks over
+the read body, coloured by modification and shaded by the ML probability. No
+reference file is needed here either: the tags are walked against the read's own
+CIGAR.
+
+<Figure caption="5mC calls from a modBAM at the SNRPN imprinting centre, one tick per methylated CpG (HG002 ONT, hg38 chr15:24,948,000-24,962,000)." src="/img/rexport/modifications.png"/>
 
 ## Genes and features
 
@@ -75,6 +89,25 @@ coloured per allele rather than by dosage.
 
 <Figure caption="A phased trio genotype matrix, each sample split into two haplotype rows (KHV trio, chr1:62,174,000-65,097,304)." src="/img/rexport/trio_phased.png"/>
 
+## Structural variants
+
+Clipped reads are drawn as coloured bars at the clip end, so a breakpoint reads
+as a column of them down the pileup — soft clips from the CIGAR's `S` operations
+and hard clips from `H`.
+
+<Figure caption="Soft- and hard-clip bars stacking at one breakpoint (volvox, ctgA:2,559-2,760)." src="/img/rexport/sv_clipping.png"/>
+
+A fusion puts its two partners in one multi-region view, so the reads that cross
+the junction run from the left panel into the right one on a shared axis.
+
+<Figure caption="BCR-ABL in K562 PacBio Iso-Seq: reads spanning chr22 BCR into chr9 ABL1 on one cumulative axis." src="/img/rexport/sv_fusion.png"/>
+
+A multi-sample SV callset draws as a genotype panel over the genes it hits, each
+row a sample and each column a call, coloured by dosage of the site's most
+frequent ALT.
+
+<Figure caption="1000 Genomes SV genotypes for 3,202 samples over the gene track (hg38, chr19:42.7-47.8 Mb)." src="/img/rexport/sv_multisample.png"/>
+
 ## Hi-C
 
 A `.hic` contact map is read with `strawr` and rotated 45° into the triangular
@@ -98,30 +131,16 @@ cumulative-bp axis — the layout JBrowse uses internally — with a region rule
 top, a divider between regions, and each region keeping its own coordinate
 labels. Every panel shares the axis, so rows stay aligned across the divider.
 
-<Figure caption="Two regions on one cumulative axis, each keeping its own genomic tick labels (hg19, chr8 in two windows)." src="/img/rexport/multiregion.png"/>
+A Hi-C panel is read pair-by-pair over the regions, so the block between two
+windows is drawn as well as each window's own — the contacts across the divider
+are the reason to put the two side by side.
+
+<Figure caption="Two chr8 windows on one cumulative axis, the Hi-C panel spanning the divider: the central pyramid is the contacts between the two windows, not within either (hg19)." src="/img/rexport/multiregion.png"/>
 
 This is most useful when the comparison is the point — two marker loci side by
 side, with every track faceted the same way across both.
 
 <Figure caption="Single-cell ATAC pseudobulk at CD8A and MS4A1, two regions on one axis: T-cell clusters open at the left locus, B-cell clusters at the right (10x 5k PBMC)." src="/img/rexport/scatac_multiregion.png"/>
-
-## Reproducing these
-
-Each figure is one `jb2export` command — the [CLI](/docs/cli) builds the same
-view headlessly and writes the script instead of an image:
-
-```bash
-jb2export --fasta ref.fa --bigwig signal.bw --loc chr1:1-50000 --out fig.R
-Rscript fig.R
-```
-
-`--out` ending in `.R` selects the script; any other extension renders an image
-as usual. It works for the linear genome view only — the dotplot, synteny and
-circular views have no R export.
-
-<!-- The size of each figure above is the script's own trailing ggsave() call,
-     untouched, so what you see is what running the download unmodified gives
-     you. -->
 
 ## What the script looks like
 
@@ -130,3 +149,230 @@ short: one `plot_regions(regions)` function that reads each track from source
 and stacks one ggplot panel per track with `patchwork`, plus every helper it
 needs emitted inline as a plain, editable R function. The current view is one
 call at the bottom, so looping it over a BED file batch-renders many loci.
+
+## Reproducing these
+
+Each figure above is one [`jb2export`](/docs/jbrowse-img) command, which builds
+the same view headlessly and writes the script instead of an image (`--out`
+ending in `.R` selects it). Each one names a public config and passes the view
+as a session spec — the same `{views:[…]}` JSON a `&session=spec-…` URL carries
+— so nothing here needs a checkout:
+
+```bash
+jb2export --config <config.json> --spec '<view JSON>' --out fig.R
+Rscript fig.R
+```
+
+The commands below are generated from the same specs the figure sweep runs, so
+each is literally what drew the picture above it. Requires `jb2export`
+(`npm install -g @jbrowse/img`), `Rscript`, and that figure's
+[packages](/docs/user_guides/r_export#requirements).
+
+<!-- The size of each figure above is the script's own trailing ggsave() call,
+     untouched, so what you see is what running the download unmodified gives
+     you. -->
+
+<!-- REXPORT_COMMANDS START -->
+
+### multiwiggle
+
+```bash
+jb2export \
+  --config https://jbrowse.org/code/jb2/main/test_data/volvox/config.json \
+  --spec '{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:1-50000","tracks":["volvox_microarray_multi"]}]}' \
+  --out multiwiggle.R
+Rscript multiwiggle.R
+```
+
+### alignments
+
+```bash
+jb2export \
+  --config https://jbrowse.org/code/jb2/main/test_data/volvox/config.json \
+  --spec '{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:1..8,000","tracks":["volvox_alignments_pileup_coverage"]}]}' \
+  --out alignments.R
+Rscript alignments.R
+```
+
+### alignments_sort
+
+```bash
+jb2export \
+  --config https://jbrowse.org/code/jb2/main/test_data/volvox/config.json \
+  --spec '{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:14470-14500","showCenterLine":true,"tracks":["volvox_bam"]}]}' \
+  --track volvox_bam '{"sortedBy":{"type":"basePair","pos":14480,"refName":"ctgA","assemblyName":"volvox"}}' \
+  --out alignments_sort.R
+Rscript alignments_sort.R
+```
+
+### long_reads
+
+```bash
+jb2export \
+  --config https://jbrowse.org/code/jb2/main/test_data/config_demo.json \
+  --spec '{"views":[{"type":"LinearGenomeView","assembly":"hg19","loc":"1:85,618,922-85,621,742","tracks":["ngmlr"]}]}' \
+  --out long_reads.R
+Rscript long_reads.R
+```
+
+### modifications
+
+```bash
+jb2export \
+  --config https://jbrowse.org/code/jb2/main/test_data/config_demo.json \
+  --spec '{"views":[{"type":"LinearGenomeView","assembly":"hg38","loc":"chr15:24,948,000-24,962,000","tracks":[{"trackId":"cpgisland_ucsc_hg38","type":"LinearBasicDisplay","height":40},{"trackId":"ncbi_refseq_109_hg38_latest","type":"LinearBasicDisplay","geneGlyphMode":"longestCoding","displayMode":"compact","height":90},{"trackId":"HG002_snrpn_5mC_reads","type":"LinearAlignmentsDisplay","height":320,"forceLoad":true,"colorBy":{"type":"modifications","modifications":{"fillUnmarked":true}}}]}]}' \
+  --out modifications.R
+Rscript modifications.R
+```
+
+### genes
+
+```bash
+jb2export \
+  --config https://jbrowse.org/code/jb2/main/test_data/volvox/config.json \
+  --spec '{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:17200-23200","tracks":[{"trackId":"gff3tabix_genes","height":300}]}]}' \
+  --out genes.R
+Rscript genes.R
+```
+
+### variants
+
+```bash
+jb2export \
+  --config https://jbrowse.org/code/jb2/main/test_data/volvox/config.json \
+  --spec '{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:5000-10000","tracks":["volvox_test_vcf"]}]}' \
+  --out variants.R
+Rscript variants.R
+```
+
+### variant_matrix
+
+```bash
+jb2export \
+  --config https://jbrowse.org/code/jb2/main/test_data/volvox/config.json \
+  --spec '{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:1-50000","tracks":[{"trackId":"volvox_test_vcf","type":"LinearMultiSampleVariantMatrixDisplay","height":400}]}]}' \
+  --out variant_matrix.R
+Rscript variant_matrix.R
+```
+
+### hic
+
+```bash
+jb2export \
+  --config https://jbrowse.org/code/jb2/main/test_data/config_demo.json \
+  --spec '{"views":[{"type":"LinearGenomeView","assembly":"hg19","loc":"chr8:52,000,000-56,200,000","trackLabels":"offset","tracks":[{"trackId":"hic","useColorPercentile":true,"height":330}]}]}' \
+  --out hic.R
+Rscript hic.R
+```
+
+### multiregion
+
+```bash
+jb2export \
+  --config https://jbrowse.org/code/jb2/main/test_data/config_demo.json \
+  --spec '{"views":[{"type":"LinearGenomeView","assembly":"hg19","loc":"chr8:52,000,000-54,000,000 chr8:54,200,000-56,200,000","trackLabels":"offset","tracks":["hic"]}]}' \
+  --out multiregion.R
+Rscript multiregion.R
+```
+
+### gwas
+
+```bash
+jb2export \
+  --config https://jbrowse.org/code/jb2/main/test_data/config_gwas.json \
+  --spec '{"views":[{"type":"LinearGenomeView","assembly":"hg19","loc":"2","tracks":[{"trackId":"gwas_track","type":"LinearManhattanDisplay","height":250}]}]}' \
+  --out gwas.R
+Rscript gwas.R
+```
+
+### genes_sarscov2
+
+```bash
+jb2export \
+  --config https://jbrowse.org/code/jb2/main/test_data/sars-cov2/config.json \
+  --spec '{"views":[{"assembly":"Wuhan-Hu-1","loc":"NC_045512.2:266-21555","type":"LinearGenomeView","colorByCDS":true,"tracks":[{"trackId":"ncbi_genes_with_mature_peptides","displaySnapshot":{"type":"LinearBasicDisplay","subfeatureLabels":"below"}}]}]}' \
+  --out genes_sarscov2.R
+Rscript genes_sarscov2.R
+```
+
+### scatac_multiregion
+
+```bash
+jb2export \
+  --config https://jbrowse.org/code/jb2/main/test_data/config_demo.json \
+  --spec '{"views":[{"assembly":"hg38","loc":"chr2:86,780,000-86,820,000 chr11:60,450,000-60,490,000","type":"LinearGenomeView","tracks":[{"trackId":"ncbi_refseq_109_hg38_latest","type":"LinearBasicDisplay","displayMode":"compact","showOnlyGenes":true,"height":80},{"trackId":"pbmc5k_scatac_pseudobulk_hg38","type":"MultiLinearWiggleDisplay","height":400}]}]}' \
+  --out scatac_multiregion.R
+Rscript scatac_multiregion.R
+```
+
+### trio_phased
+
+```bash
+jb2export \
+  --config https://jbrowse.org/code/jb2/main/test_data/config_demo.json \
+  --spec '{"views":[{"type":"LinearGenomeView","assembly":"hg38","loc":"chr1:62,174,000-65,097,304","tracks":[{"trackId":"ncbi_refseq_109_hg38_latest","type":"LinearBasicDisplay","displayMode":"compact","showOnlyGenes":true,"showLabels":"auto","height":80},{"trackId":"HG02024_VN049_KHVTrio.chr1.vcf","type":"LinearMultiSampleVariantMatrixDisplay","renderingMode":"phased"}]}]}' \
+  --out trio_phased.R
+Rscript trio_phased.R
+```
+
+### sv_clipping
+
+```bash
+jb2export \
+  --config https://jbrowse.org/code/jb2/main/test_data/volvox/config.json \
+  --spec '{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:2,560-2,760","tracks":[{"trackId":"volvox-long-reads-sv-bam","type":"LinearAlignmentsDisplay","coverageHeight":120}]}]}' \
+  --out sv_clipping.R
+Rscript sv_clipping.R
+```
+
+### sv_tumour_normal
+
+```bash
+jb2export \
+  --config https://jbrowse.org/demos/cancer_sv/config.json \
+  --spec '{"views":[{"type":"LinearGenomeView","assembly":"hg38","loc":"chr3:25,357,600-25,361,000","tracks":[{"trackId":"COLO829_somatic_sv","height":130},{"trackId":"COLO829_tumor_ont","forceLoad":true,"showSoftClipping":true,"height":470,"featureHeight":2},{"trackId":"COLO829BL_normal_ont","forceLoad":true,"showSoftClipping":true,"height":215,"featureHeight":2}]}]}' \
+  --out sv_tumour_normal.R
+Rscript sv_tumour_normal.R
+```
+
+### sv_foldback
+
+```bash
+jb2export \
+  --config https://jbrowse.org/demos/cancer_sv/config.json \
+  --spec '{"views":[{"type":"LinearGenomeView","assembly":"hg38","loc":"chr9:28,030,000-28,036,000","tracks":[{"trackId":"ncbi_refseq_hg38","geneGlyphMode":"longestCoding","height":60},{"trackId":"COLO829_tumor_ont","forceLoad":true,"showSoftClipping":true,"height":260,"featureHeight":1}]}]}' \
+  --out sv_foldback.R
+Rscript sv_foldback.R
+```
+
+### sv_fusion
+
+```bash
+jb2export \
+  --config https://jbrowse.org/demos/cancer_sv/config.json \
+  --spec '{"views":[{"type":"LinearGenomeView","assembly":"hg38","loc":"chr22:23,286,000-23,293,000 chr9:130,851,000-130,858,000","highlight":[{"refName":"chr22","start":23290313,"end":23290513},{"refName":"chr9","start":130853964,"end":130854164}],"tracks":[{"trackId":"ncbi_refseq_hg38","geneGlyphMode":"longestCoding","height":90},{"trackId":"K562_isoseq","height":700,"coverageHeight":190,"showBezierConnections":true,"showOnlySplitAlignments":true,"featureHeight":2}]}]}' \
+  --out sv_fusion.R
+Rscript sv_fusion.R
+```
+
+### sv_multisample
+
+```bash
+jb2export \
+  --config https://jbrowse.org/genomes/GRCh38/1000genomes/config_1000genomes.json \
+  --spec '{"views":[{"type":"LinearGenomeView","assembly":"hg38","loc":"19:42,749,096-47,802,386","tracks":[{"trackId":"1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf","type":"LinearMultiSampleVariantDisplay","forceLoad":true,"height":400,"featureColor":"svType"},{"trackId":"ncbi_refseq_109_hg38","type":"LinearBasicDisplay","height":140,"showLabels":"name","showOnlyGenes":true,"heightMode":"fit"}]}]}' \
+  --out sv_multisample.R
+Rscript sv_multisample.R
+```
+
+### sv_cnv
+
+```bash
+jb2export \
+  --config https://jbrowse.org/code/jb2/main/test_data/config_demo.json \
+  --spec '{"views":[{"type":"LinearGenomeView","assembly":"hg38","loc":"chr4:68,480,000-68,660,000","tracks":[{"trackId":"ncbi_refseq_109_hg38_latest","displayMode":"compact","height":80},{"trackId":"ALL.wgs.integrated_sv_map_v2_GRCh38.20130502.svs.genotypes.vcf","height":90},{"type":"MultiLinearWiggleDisplay","defaultRendering":"multirowdensity","bicolorPivot":2,"minScore":0,"maxScore":4,"posColor":"#b2182b","negColor":"#2166ac","trackId":"pur_copynumber_1000g","height":420,"runClustering":true,"showTree":false}]}]}' \
+  --out sv_cnv.R
+Rscript sv_cnv.R
+```
+
+<!-- REXPORT_COMMANDS END -->

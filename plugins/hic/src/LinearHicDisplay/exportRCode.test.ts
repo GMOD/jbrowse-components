@@ -12,13 +12,14 @@ const params = {
 test('emits a strawr-backed rotated triangular contact map fragment', () => {
   const f = hicFragment(params)
   expect(f.packages).toContain('strawr')
-  expect(f.helpers).toEqual(['hic_triangle'])
+  expect(f.helpers).toEqual(['hic_regions'])
   expect(f.plotExpr).toContain('geom_polygon')
-  expect(f.plotExpr).toContain('hic_triangle')
-  // read every region onto the cumulative axis, keeping diamond vertices intact
-  expect(f.plotExpr).toContain('read_regions(function(chrom, start, end)')
-  expect(f.plotExpr).toContain('clip = FALSE')
-  expect(f.plotExpr).toContain('group = interaction(.region, group)')
+  // the whole regions frame, NOT a read_regions() per-region read: a Hi-C
+  // matrix is fetched per PAIR of regions, which is the only way the
+  // cross-region contact block a discontiguous view exists to show gets drawn
+  expect(f.plotExpr).toContain('hic_regions(hic_track, regions,')
+  expect(f.plotExpr).not.toContain('read_regions(')
+  expect(f.plotExpr).toContain('group = group')
   // binsize + norm are visible, editable script variables (not inlined literals)
   expect(f.setup).toContain('hic_track_binsize <- 100000')
   expect(f.setup).toContain('hic_track_norm <- "KR"')
@@ -33,8 +34,12 @@ test('useLogScale picks the fill transform', () => {
   )
 })
 
+// A LETTER, not the `_` this used to pin: R rejects a leading underscore at
+// parse time exactly as it rejects a leading digit, so the old guard turned any
+// track id starting with one (`1KGP_3202…`, `1000g_…`) into a whole script that
+// would not run.
 test('sanitizes a track id that is not a valid R name', () => {
   const f = hicFragment({ ...params, trackId: '123 my.hic' })
-  expect(f.setup).toContain('_123_my_hic <-')
-  expect(f.plotVariable).toBe('p__123_my_hic')
+  expect(f.setup).toContain('x123_my_hic <-')
+  expect(f.plotVariable).toBe('p_x123_my_hic')
 })

@@ -10,9 +10,34 @@ cram_to_bam <- function(uri, chrom, start, end, ref = NULL) {
   if (!grepl("\\.cram$", uri, ignore.case = TRUE)) return(uri)
   out <- tempfile(fileext = ".bam")
   region <- sprintf("%s:%d-%d", chrom, start + 1, end)
-  args <- c("view", "-b", "-o", out,
-            if (!is.null(ref) && nzchar(ref)) c("-T", ref), uri, region)
-  if (system2("samtools", args) != 0) stop("samtools failed to decode CRAM: ", uri)
+  decode <- function(extra, env = character(0)) system2("samtools",
+    c("view", "-b", "-o", out, extra, uri, region), env = env) == 0
+  have_ref <- !is.null(ref) && nzchar(ref)
+  ok <- decode(if (have_ref) c("-T", ref) else character(0))
+  if (!ok) {
+    # Two ways a perfectly readable CRAM fails here, and a public one usually
+    # hits both:
+    #
+    #  - given -T, samtools uses ONLY that fasta, so a reference whose contigs
+    #    are named differently from the CRAM header ("1" vs "chr9") fails. A
+    #    JBrowse assembly routinely pairs a no-prefix fasta with refname
+    #    aliases, and that fasta is where `ref` comes from.
+    #  - unaided, samtools resolves each sequence by MD5 - starting from the
+    #    CRAM's UR header, which for a published file is typically the
+    #    producer's own cluster path and long gone. Modern htslib does not fall
+    #    back to a remote lookup by itself.
+    #
+    # So retry unaided with the ENA md5 service as REF_PATH, htslib's documented
+    # recipe for precisely this. An existing REF_PATH (a local REF_CACHE, an
+    # offline mirror) is left alone.
+    message("samtools could not decode ", uri,
+            if (have_ref) paste0(" against ", ref) else "",
+            " - retrying by MD5 reference lookup")
+    ok <- decode(character(0),
+      if (nzchar(Sys.getenv("REF_PATH"))) character(0)
+      else "REF_PATH=https://www.ebi.ac.uk/ena/cram/md5/%s")
+  }
+  if (!ok) stop("samtools failed to decode CRAM: ", uri)
   Rsamtools::indexBam(out)
   out
 }

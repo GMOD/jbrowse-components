@@ -24,10 +24,12 @@ import { readData } from './readData.ts'
 import { resolveConfigObject } from './resolveHub.ts'
 import { initFromSpec, parseSpec, specMode } from './spec.ts'
 import { trackType } from './trackFields.ts'
+import { filterInitTracks, trackSkipper } from './unsupportedTracks.ts'
 
 import type { ViewMode } from './modes.ts'
 import type { ViewSpec } from './spec.ts'
 import type { Config, Opts, Track } from './types.ts'
+import type { TrackSkipper } from './unsupportedTracks.ts'
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 import type {
   CircularViewInit,
@@ -141,6 +143,9 @@ interface ModeContext {
   opts: Opts
   width: number
   spec?: ViewSpec
+  // Is this a config track no bundled plugin can build? Every "open this track"
+  // path asks before opening, and asking is what reports it (unsupportedTracks.ts).
+  skipTrack: TrackSkipper
 }
 
 type ModeRenderer = (ctx: ModeContext) => Promise<string>
@@ -420,7 +425,13 @@ const renderLinear: ModeRenderer = async ctx => {
     }),
     ...(data.openTracks ?? []),
   ]
-  for (const { trackId, opts } of toOpen) {
+  // A track this build has no plugin for is dropped here rather than at the
+  // resolve above, so `--track cpgisland_ucsc_hg38` still resolves (and a typo
+  // still gets its near-match suggestion); the skip was already announced when
+  // the config was scanned.
+  for (const { trackId, opts } of toOpen.filter(
+    t => !ctx.skipTrack(t.trackId),
+  )) {
     applyDisplayOpts(
       view,
       trackId,
@@ -486,12 +497,17 @@ const renderSynteny: ModeRenderer = async ctx => {
 // entire render. Ask the question showTrackGeneric asks — does this track type
 // declare a display this view supports — and skip the ones it would reject, so
 // the chords still render. Warns per skipped track so the omission is visible.
-function circularTrackIds(model: Model, tracks: Track[]) {
+function circularTrackIds(model: Model, tracks: Track[], skip: TrackSkipper) {
   const { pluginManager } = getEnv(model)
   const supported = new Set(
     pluginManager.getViewType('CircularView').displayTypes.map(d => d.name),
   )
+  // A track with no plugin behind it reports itself, by name and reason — don't
+  // also claim the circular view is the thing that can't draw it.
   const compatible = tracks.filter(track => {
+    if (skip(track.trackId)) {
+      return false
+    }
     const type = trackType(track)
     let names: string[] = []
     try {
@@ -523,7 +539,7 @@ function circularTrackIds(model: Model, tracks: Track[]) {
 function circularInit(ctx: ModeContext): CircularViewInit {
   return {
     assembly: ctx.data.assembly.name,
-    tracks: circularTrackIds(ctx.model, ctx.data.tracks),
+    tracks: circularTrackIds(ctx.model, ctx.data.tracks, ctx.skipTrack),
   }
 }
 
@@ -594,7 +610,18 @@ export async function renderRegion(opts: Opts) {
   if (opts.themeName) {
     model.session.setThemeName(opts.themeName)
   }
+  // Which of the config's tracks this build has no plugin for, asked off the
+  // model's own type registries. Every path below that opens a track asks first,
+  // so an unbuildable one costs its own lane instead of the whole figure.
+  const { pluginManager } = getEnv(model)
+  const skipTrack = trackSkipper(data.tracks, pluginManager)
+  // A --spec names its tracks in the view's `init` snapshot, so the skip has to
+  // reach in there too — dropping them from data.tracks instead would only turn
+  // "invalid configuration" into `Could not resolve identifier`.
   const spec = parsed?.view
+  if (spec) {
+    spec.tracks = filterInitTracks(spec.tracks, skipTrack)
+  }
   // an explicit subcommand wins; otherwise a --spec selects its mode from the
   // view type, falling back to the default linear view
   const mode = opts.mode ?? (spec ? specMode(spec) : 'linear')
@@ -606,6 +633,7 @@ export async function renderRegion(opts: Opts) {
       opts,
       width: opts.width ?? DEFAULT_WIDTH,
       spec,
+      skipTrack,
     })
     // a failure reported to the session during the render (a bad track config,
     // a failed assembly load) means the SVG is incomplete — fail rather than

@@ -68,6 +68,6 @@ test('bicolor mode maps fill to the sign of the score', () => {
 
 test('non-identifier track ids become safe R variable names', () => {
   const f = wiggleFragment({ ...base, trackId: '1000g.cov-track' })
-  expect(f.plotVariable).toBe('p__1000g_cov_track')
-  expect(f.setup).toBe('_1000g_cov_track <- "https://example.com/cov.bw"')
+  expect(f.plotVariable).toBe('p_x1000g_cov_track')
+  expect(f.setup).toBe('x1000g_cov_track <- "https://example.com/cov.bw"')
 })

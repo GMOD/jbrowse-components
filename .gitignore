@@ -124,3 +124,11 @@ test_data/dog10k/dog10k_fgf4_cohort_samples.tsv
 # Tracking it would pin a 2504-row copy of somebody else's manifest that nothing
 # revalidates.
 test_data/1000g_cnv/samples.tsv
+
+# Rsamtools caches a remote BAM/CRAM index into the CURRENT DIRECTORY when it
+# reads one, so running an exported R script from the repo root leaves the
+# index behind. `jb2export`'s own gallery renders run from a temp dir
+# (renderRExportSpecToTemp) and never do this; a by-hand run does.
+*.bam.bai
+*.bam.csi
+*.cram.crai

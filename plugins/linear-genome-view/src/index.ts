@@ -213,8 +213,12 @@ export {
   resolveHelpers,
 } from './LinearGenomeView/exportR.ts'
 export {
+  FIGURE_DPI,
+  FIGURE_INCHES_PER_WEIGHT,
+  FIGURE_WIDTH_INCHES,
   firstUri,
   getTrackRMeta,
+  rDataVariable,
   rName,
   rStr,
   safeVarName,

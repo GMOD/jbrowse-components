@@ -14,10 +14,43 @@ export function rStr(s: string) {
   return `"${s.replaceAll('\\', '\\\\').replaceAll('"', '\\"')}"`
 }
 
-/** A safe R variable/identifier derived from a trackId (leading digit → _N). */
+/**
+ * A safe R variable/identifier derived from a trackId.
+ *
+ * The leading character is the whole subtlety: R accepts letters and `.` there
+ * but NOT a digit and NOT an underscore, so prefixing a digit with `_` (the
+ * obvious guard, and what this did) produces `_1KGP_3202…`, which R rejects at
+ * PARSE time — `unexpected numeric constant`. The whole script then fails to
+ * run, from any track whose id starts with a digit: `1000g_…`, `1KGP_…`, a
+ * chromosome-named track. Prefix with a letter instead.
+ */
 export function safeVarName(str: string) {
-  return str.replaceAll(/[^a-zA-Z0-9]/g, '_').replace(/^(\d)/, '_$1')
+  return str.replaceAll(/[^a-zA-Z0-9]/g, '_').replace(/^(?=[\d_])/, 'x')
 }
+
+/**
+ * The frame a panel was built from, for a fragment that binds its data
+ * (`RTrackFragment.dataExpr`): `p_foo` -> `d_foo`. One rule in one place,
+ * because two sides have to agree on the name — assembleRScript emits the
+ * assignment, and the fragment's own `plotExpr` reads it back.
+ */
+export function rDataVariable(plotVariable: string) {
+  return plotVariable.replace(/^p_/, 'd_')
+}
+
+/**
+ * The emitted figure's own geometry, single-sourced because two different
+ * decisions read it and neither fails loudly when it drifts: assembleRScript
+ * writes the trailing `ggsave()` from it, and a panel that has to estimate TEXT
+ * width — which a ggplot cannot do, living in data space — sizes its labels
+ * against it (`label_room`, and the multi-wiggle's per-source axis). Change the
+ * ggsave width alone and label decimation silently mis-tunes, with nothing
+ * anywhere saying so.
+ */
+export const FIGURE_WIDTH_INCHES = 12
+export const FIGURE_DPI = 150
+/** Inches of figure per unit of `RTrackFragment.heightWeight`. */
+export const FIGURE_INCHES_PER_WEIGHT = 2
 
 /** An R named-vector name in backticks — any string is valid when backtick
  * quoted, so strip stray backticks that would break the quoting. */

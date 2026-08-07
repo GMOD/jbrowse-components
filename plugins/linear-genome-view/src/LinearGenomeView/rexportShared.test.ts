@@ -62,9 +62,21 @@ describe('rStr', () => {
 })
 
 describe('safeVarName', () => {
-  it('replaces non-alphanumerics and guards a leading digit', () => {
+  it('replaces non-alphanumerics', () => {
     expect(safeVarName('volvox_microarray.bw')).toBe('volvox_microarray_bw')
-    expect(safeVarName('1000g')).toBe('_1000g')
+  })
+
+  // R accepts neither a digit nor an underscore as the first character of an
+  // identifier, so the obvious `_`-prefix guard emits a script that fails to
+  // PARSE — every track whose id starts with a digit (1000g_…, 1KGP_…) took the
+  // whole figure down with `unexpected numeric constant`.
+  it('makes a leading digit or underscore a legal R identifier', () => {
+    for (const name of ['1000g', '1KGP_3202', '_leading']) {
+      const v = safeVarName(name)
+      expect(v).toMatch(/^[a-zA-Z]/)
+    }
+    expect(safeVarName('1000g')).toBe('x1000g')
+    expect(safeVarName('_leading')).toBe('x_leading')
   })
 })
 

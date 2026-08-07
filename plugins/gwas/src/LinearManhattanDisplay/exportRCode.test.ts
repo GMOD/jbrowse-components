@@ -55,8 +55,8 @@ test('falls back to the default color for a jexl color callback', () => {
 
 test('non-identifier track ids become safe R variable names', () => {
   const f = manhattanFragment({ ...base, trackId: '1000g.gwas-hits' })
-  expect(f.plotVariable).toBe('p__1000g_gwas_hits')
+  expect(f.plotVariable).toBe('p_x1000g_gwas_hits')
   expect(f.setup).toBe(
-    '_1000g_gwas_hits <- "https://example.com/summary_stats.bed.gz"',
+    'x1000g_gwas_hits <- "https://example.com/summary_stats.bed.gz"',
   )
 })

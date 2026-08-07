@@ -1,4 +1,6 @@
 import {
+  FIGURE_DPI,
+  FIGURE_INCHES_PER_WEIGHT,
   firstUri,
   getTrackRMeta,
   rName,
@@ -79,6 +81,29 @@ export interface MultiWiggleRParams {
   sources: { name: string; uri: string; color: string }[]
   renderingType: string
   isOverlay: boolean
+  /** The display's own height in px — what the panel's height is scaled from. */
+  heightPx: number
+}
+
+// Pixels of display height per unit of `heightWeight` (one unit is ~2 inches of
+// the emitted figure, see assembleRScript).
+const PX_PER_HEIGHT_WEIGHT = 60
+
+// The figure's own row pitch in pixels, below which a per-source axis label is
+// noise rather than information. Derived from the emitted figure's geometry
+// rather than from a number written here, so changing the ggsave() size retunes
+// this with it instead of silently leaving it wrong.
+const MIN_LABELLED_ROW_PX = 10
+const FIGURE_PX_PER_WEIGHT = FIGURE_INCHES_PER_WEIGHT * FIGURE_DPI
+
+// How tall this panel gets, from the DISPLAY's pixel height rather than from its
+// source count. That is what JBrowse does — a multi-wiggle is always
+// fit-to-height (`effectiveRowHeight = getRowHeight(height, numSources)`), so a
+// 104-sample cohort in a 420px lane overplots into 4px rows instead of claiming
+// 104 rows of its own. Claiming one row each is how a 2504-sample copy-number
+// cohort came to ask ggsave() for a 5008-inch figure.
+function heightWeightFor(p: MultiWiggleRParams) {
+  return Math.max(1, Math.round(p.heightPx / PX_PER_HEIGHT_WEIGHT))
 }
 
 /**
@@ -102,15 +127,28 @@ export function multiWiggleFragment(p: MultiWiggleRParams): RTrackFragment {
     .join(', ')})`
   const isDensity = p.renderingType.includes('density')
   const facet = p.isOverlay ? '' : 'facet_grid(rows = vars(source)) +\n  '
+  const heightWeight = heightWeightFor(p)
 
   let body: string
   if (isDensity) {
-    // per-source viridis strip: score maps to fill, one row per source
-    body = `geom_rect(aes(xmin = start, xmax = end, ymin = 0, ymax = 1, fill = score)) +
+    // Per-source viridis strip, stacked on ONE continuous y axis rather than in
+    // one facet each. A facet per source is the same picture for 4 sources and
+    // an impossible one for 2504: each facet is a bare 0..1 strip, so the facet
+    // machinery buys nothing here, while the continuous axis lets the rows
+    // compress and overplot exactly as the browser's does.
+    //
+    // `match(source, <names>)` is the source's index in display order, so the
+    // rows keep the order the display (and any clustering it did) put them in
+    // rather than ggplot's alphabetical factor order.
+    const rowPx = (heightWeight * FIGURE_PX_PER_WEIGHT) / p.sources.length
+    const labelled = rowPx >= MIN_LABELLED_ROW_PX
+    body = `geom_rect(aes(xmin = start, xmax = end,
+    ymin = match(source, ${namesVar}) - 1L, ymax = match(source, ${namesVar}), fill = score)) +
   scale_fill_viridis_c() +
-  ${facet}labs(title = ${rStr(p.trackName)}, x = NULL, y = NULL, fill = "Score") +
+  scale_y_reverse(${labelled ? `breaks = seq_along(${namesVar}) - 0.5, labels = ${namesVar}, ` : ''}expand = c(0, 0)) +
+  labs(title = ${rStr(p.trackName)}, x = NULL, y = NULL, fill = "Score") +
   theme_minimal() +
-  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank(), strip.text.y = element_text(angle = 0))`
+  theme(${labelled ? 'axis.text.y = element_text(size = 4)' : 'axis.text.y = element_blank(), axis.ticks.y = element_blank()'})`
   } else {
     const geom = geomKind(p.renderingType)
     const usesFill = geom === 'area'
@@ -144,9 +182,7 @@ export function multiWiggleFragment(p: MultiWiggleRParams): RTrackFragment {
     setup: `${urisVar} <- c(${p.sources.map(s => rStr(s.uri)).join(', ')})
 ${namesVar} <- c(${p.sources.map(s => rStr(s.name)).join(', ')})`,
     plotVariable: `p_${pathVar}`,
-    // multi-row tracks earn vertical space proportional to their row count;
-    // an overlay is a single panel a touch taller than a lone wiggle
-    heightWeight: p.isOverlay ? 2 : Math.max(1, p.sources.length),
+    heightWeight,
     plotExpr: `ggplot(${data}) +
   ${body}`,
   }
@@ -169,6 +205,7 @@ export function exportRCode(
         sources,
         renderingType: self.renderingType,
         isOverlay: self.isOverlay,
+        heightPx: self.height,
       })
     : undefined
 }

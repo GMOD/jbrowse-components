@@ -48,6 +48,7 @@ const base: MultiWiggleRParams = {
   sources: sources(),
   renderingType: 'multirowxy',
   isOverlay: false,
+  heightPx: 200,
 }
 
 maybe(

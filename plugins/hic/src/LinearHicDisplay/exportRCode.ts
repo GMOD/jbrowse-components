@@ -27,16 +27,18 @@ export interface HicRParams {
 }
 
 /**
- * Pure builder for the R panel of a Hi-C track. Reads the contact matrix over
- * the region with the inline `hic_triangle()` helper (`strawr::straw`, the
- * reader from the .hic authors), rotates straw's upper triangle 45 degrees into
- * diamond polygons, and draws it as `geom_polygon` over a genomic x-axis — the
- * same triangular Hi-C view JBrowse shows, so the map shares its x-range with
- * the other stacked tracks (e.g. a gene track). `binsize` and `norm` are emitted
- * as visible script variables the user can edit. Pure ggplot2 + inline helper,
- * no bespoke package. `read_regions()` reads each region in the view onto one
- * cumulative-bp x-axis (each region draws its own triangle; cross-region
- * contacts are not shown); the shared axis + dividers come from plot_regions().
+ * Pure builder for the R panel of a Hi-C track. Reads the contact matrix with
+ * the inline `hic_regions()` helper (`strawr::straw`, the reader from the .hic
+ * authors), rotates straw's upper triangle 45 degrees into diamond polygons, and
+ * draws it as `geom_polygon` over a genomic x-axis — the same triangular Hi-C
+ * view JBrowse shows, so the map shares its x-range with the other stacked
+ * tracks (e.g. a gene track). `binsize` and `norm` are emitted as visible script
+ * variables the user can edit. Pure ggplot2 + inline helper, no bespoke package.
+ *
+ * `hic_regions()` takes the whole `regions` frame rather than going through
+ * `read_regions()` one region at a time, because a Hi-C matrix is read per PAIR
+ * of regions: a discontiguous view's cross-region block is the thing that view
+ * exists to show, and a per-region read cannot see it.
  */
 export function hicFragment(p: HicRParams): RTrackFragment {
   const pathVar = safeVarName(p.trackId)
@@ -48,19 +50,16 @@ export function hicFragment(p: HicRParams): RTrackFragment {
     trackId: p.trackId,
     trackName: p.trackName,
     packages: ['strawr', 'ggplot2'],
-    helpers: ['hic_triangle'],
+    helpers: ['hic_regions'],
     setup: `${pathVar} <- ${rStr(p.uri)}
 ${binsizeVar} <- ${p.binsize} # bin size in bp; use strawr::readHicBpResolutions(${pathVar}) for options
 ${normVar} <- ${rStr(p.norm)} # normalization; use strawr::readHicNormTypes(${pathVar}) for options`,
     plotVariable: `p_${pathVar}`,
-    // the rotated triangle rises to (region width)/2 at its apex; give it a few
-    // track-heights of vertical room (the y-axis is interaction distance)
+    // the rotated pyramid rises to (total axis width)/2 at its apex; give it a
+    // few track-heights of vertical room (the y-axis is interaction distance)
     heightWeight: 3,
-    // group by (.region, group) so a contact's diamond isn't merged with a
-    // same-numbered contact from another region; clip = FALSE keeps the diamond
-    // vertices undistorted at region edges
-    plotExpr: `ggplot(read_regions(function(chrom, start, end) hic_triangle(${pathVar}, chrom, start, end, ${binsizeVar}, ${normVar}), regions, c("gx"), clip = FALSE)) +
-  geom_polygon(aes(x = gx, y = gy, fill = counts, group = interaction(.region, group))) +
+    plotExpr: `ggplot(hic_regions(${pathVar}, regions, ${binsizeVar}, ${normVar})) +
+  geom_polygon(aes(x = gx, y = gy, fill = counts, group = group)) +
   scale_fill_viridis_c(trans = ${rStr(trans)}, name = "Contacts", na.value = "white") +
   scale_y_continuous(labels = scales::label_number(scale_cut = scales::cut_si("b")), expand = expansion(mult = c(0, 0.02))) +
   labs(title = ${rStr(p.trackName)}, x = NULL, y = "Distance") +

@@ -1,17 +1,22 @@
 import { getConf } from '@jbrowse/core/configuration'
-import {
-  awaitSvgReady,
-  awaitViewInitialized,
-} from '@jbrowse/core/svg/svgReady'
+import { awaitSvgReady, awaitViewInitialized } from '@jbrowse/core/svg/svgReady'
 import { getSession, saveAs } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
 import { HELPERS } from './rHelpers.generated.ts'
-import { rName, rStr, safeVarName } from './rexportShared.ts'
+import {
+  FIGURE_DPI,
+  FIGURE_INCHES_PER_WEIGHT,
+  FIGURE_WIDTH_INCHES,
+  rDataVariable,
+  rName,
+  rStr,
+  safeVarName,
+} from './rexportShared.ts'
 
-import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 import type { LinearGenomeViewModel } from './model.ts'
 import type { ExportRCodeOptions, RTrackFragment } from './types.ts'
+import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 
 interface ViewRegion {
   refName: string
@@ -32,6 +37,26 @@ function hasRExport(display: unknown): display is RExportDisplay {
     'exportRCode' in display &&
     typeof display.exportRCode === 'function'
   )
+}
+
+/** A shown track that contributed no panel, for the note in the script. */
+export interface SkippedTrack {
+  name: string
+  displayType: string
+}
+
+/** The track's display name, falling back to its id — as getTrackRMeta does. */
+function trackLabel(track: LinearGenomeViewModel['tracks'][number]) {
+  const trackId: string = track.configuration.trackId
+  const name: string = getConf(track, 'name')
+  return name || trackId
+}
+
+// track.displays[] is typed `any` at this boundary (pluggableMstType), so read
+// the discriminator through a guard rather than off it.
+function displayType(display: unknown) {
+  const { type } = (display ?? {}) as { type?: unknown }
+  return typeof type === 'string' ? type : 'this display'
 }
 
 /**
@@ -109,29 +134,43 @@ async function resolveRefNameMap(
   }
 }
 
-/** Collect one R fragment per track whose display knows how to export. */
+/**
+ * Collect one R fragment per track whose display knows how to export, plus the
+ * shown tracks that contributed nothing — a display type with no `exportRCode`
+ * at all, or one whose builder declined this particular track (the multi-wiggle
+ * exporter reads BigWigs, so a MultiQuantitativeTrack over a bedMethyl file
+ * yields no sources). Both used to leave the figure a track short with nothing
+ * anywhere saying so, which is the same silence `translateFeatureFilters`
+ * refuses for a filter it can't translate.
+ */
 async function collectFragments(
   model: LinearGenomeViewModel,
   opts: ExportRCodeOptions,
 ) {
   const fragments: RTrackFragment[] = []
+  const skipped: SkippedTrack[] = []
   for (const track of model.tracks) {
     const display = track.displays[0]
-    if (hasRExport(display)) {
-      const result = await display.exportRCode(opts)
-      // a display may contribute several stacked panels (e.g. alignments emit a
-      // coverage panel and a pileup panel); all panels of one track share the
-      // track file's refName aliases
-      const panels = Array.isArray(result) ? result : result ? [result] : []
-      if (panels.length > 0) {
-        const refNameMap = await resolveRefNameMap(model, track)
-        for (const panel of panels) {
-          fragments.push(refNameMap ? { ...panel, refNameMap } : panel)
-        }
+    const result = hasRExport(display)
+      ? await display.exportRCode(opts)
+      : undefined
+    // a display may contribute several stacked panels (e.g. alignments emit a
+    // coverage panel and a pileup panel); all panels of one track share the
+    // track file's refName aliases
+    const panels = Array.isArray(result) ? result : result ? [result] : []
+    if (panels.length > 0) {
+      const refNameMap = await resolveRefNameMap(model, track)
+      for (const panel of panels) {
+        fragments.push(refNameMap ? { ...panel, refNameMap } : panel)
       }
+    } else {
+      skipped.push({
+        name: trackLabel(track),
+        displayType: displayType(display),
+      })
     }
   }
-  return fragments
+  return { fragments, skipped }
 }
 
 // R infrastructure emitted into every script (not opt-in per fragment): the
@@ -178,9 +217,15 @@ export function resolveHelpers(requested: Iterable<string>) {
   return seen
 }
 
+// ggsave refuses a dimension over this many inches unless you pass
+// limitsize = FALSE, so an unclamped total is a script that dies at its very
+// last line, after every read.
+const MAX_GGSAVE_INCHES = 50
+
 export function assembleRScript(
   regionOrRegions: ViewRegion | ViewRegion[],
   fragments: RTrackFragment[],
+  skipped: SkippedTrack[] = [],
 ) {
   const regions = Array.isArray(regionOrRegions)
     ? regionOrRegions
@@ -229,42 +274,81 @@ export function assembleRScript(
 ${[...refNameVecs].map(([name, vec]) => `${name} <- ${vec}`).join('\n')}`
       : ''
 
-  // each panel builds a ggplot referencing `regions`; a refname-aliased track
-  // resolves the regions' chrom column to its file's names first. A cumulative-
-  // axis panel (the default) gets the shared genomic x-scale + inter-region
-  // dividers + coord range appended; a self-axis panel (the matrix) does not.
+  // each panel builds a ggplot referencing `regions`. A cumulative-axis panel
+  // (the default) gets the shared genomic x-scale + inter-region dividers +
+  // coord range appended; a self-axis panel (the matrix) does not.
   const decorate = (f: RTrackFragment) =>
     f.cumulativeAxis === false
       ? ''
       : ` +
   region_scale(regions) + region_dividers(regions) +
   coord_cartesian(xlim = region_xlim(regions))`
-  const panelBlocks = fragments
-    .map(f =>
-      hasRefNames(f)
-        ? `  ${f.plotVariable} <- local({
+  // A refname-aliased track resolves the regions' chrom column to its file's
+  // names before it reads; that wrapper goes around whichever statement does
+  // the reading — the bound data when there is one, the whole ggplot otherwise.
+  const dataVar = (f: RTrackFragment) => rDataVariable(f.plotVariable)
+  const aliased = (f: RTrackFragment, expr: string) =>
+    hasRefNames(f)
+      ? `local({
     regions$chrom <- vapply(regions$chrom, function(cc) resolve_chrom(cc, ${refNameVar(f)}), character(1))
-    ${f.plotExpr.replaceAll('\n', '\n    ')}
-  })${decorate(f).replaceAll('\n', '\n  ')}`
-        : `  ${f.plotVariable} <- ${`${f.plotExpr}${decorate(f)}`.replaceAll('\n', '\n  ')}`,
-    )
+    ${expr.replaceAll('\n', '\n    ')}
+  })`
+      : expr
+
+  const panelBlocks = fragments
+    .map(f => {
+      // the alias wrapper goes around whichever statement READS — the bound
+      // data when there is one, and only then the plot
+      const body = f.dataExpr ? f.plotExpr : aliased(f, f.plotExpr)
+      const plot = `  ${f.plotVariable} <- ${`${body}${decorate(f)}`.replaceAll('\n', '\n  ')}`
+      return f.dataExpr
+        ? `  ${dataVar(f)} <- ${aliased(f, f.dataExpr).replaceAll('\n', '\n  ')}\n${plot}`
+        : plot
+    })
     .join('\n\n')
 
-  const heights = fragments.map(f => f.heightWeight ?? 1).join(', ')
+  // A panel that knows its own size says so in R, where it has actually read
+  // the data: a feature track that packs 61 rows needs a panel 61 rows tall,
+  // and no codegen-time constant can know that. The rest keep their static
+  // weight — a coverage histogram is a coverage histogram.
+  const heights = fragments
+    .map(f => f.heightWeightExpr ?? f.heightWeight ?? 1)
+    .join(', ')
   const trackList = fragments.map(f => f.plotVariable).join(', ')
-  const totalHeight = Math.max(
-    3,
-    fragments.reduce((a, f) => a + (f.heightWeight ?? 1), 0) * 2,
-  )
   const regionsDf = `data.frame(
   chrom = c(${regions.map(r => JSON.stringify(r.refName)).join(', ')}),
   start = c(${regions.map(r => r.start).join(', ')}),
   end = c(${regions.map(r => r.end).join(', ')}),
   stringsAsFactors = FALSE)`
 
+  // Named in the script itself, not just in the app: the figure is one track
+  // short of the view it came from, and the person reading the .R later is the
+  // one who needs to know which.
+  const skippedNote = skipped.length
+    ? `
+#
+# Tracks shown in JBrowse but NOT in this figure - their display contributed no
+# R code, either because that display type has no R export or because its data
+# source is one the exporter cannot read:
+${skipped.map(s => `#   - ${s.name} (${s.displayType})`).join('\n')}`
+    : ''
+
+  // The other half of the same honesty: a track IS here, but a setting it was
+  // drawn with is not.
+  const unreproduced = fragments.flatMap(f =>
+    (f.unreproduced ?? []).map(note => `#   - ${f.trackName}: ${note}`),
+  )
+  const unreproducedNote = unreproduced.length
+    ? `
+#
+# Display settings this figure does not reproduce, so it differs from the
+# browser view it came from in these respects:
+${[...new Set(unreproduced)].join('\n')}`
+    : ''
+
   return `# ============================================================
 # JBrowse 2 - reproducible R figure (pure ggplot2 + rtracklayer)
-# Generated: ${new Date().toISOString()}
+# Generated: ${new Date().toISOString()}${skippedNote}${unreproducedNote}
 #
 # plot_regions() redraws every track across one or more regions, concatenated on
 # a single cumulative-bp x-axis (JBrowse's multi-region view). plot_region() is
@@ -276,6 +360,17 @@ ${[...refNameVecs].map(([name, vec]) => `${name} <- ${vec}`).join('\n')}`
 ${packages.map(p => `library(${p})`).join('\n')}
 
 ${helpers}
+
+# The figure's geometry, read by the ggsave() at the bottom AND by any panel
+# that has to estimate how wide a piece of TEXT will be - a ggplot lives in data
+# space, so the device's pixel width is the only thing that can answer that (see
+# label_room). Widen fig_width and the labels a dense track can afford widen
+# with it.
+fig_width <- ${FIGURE_WIDTH_INCHES}
+fig_dpi <- ${FIGURE_DPI}
+fig_inches_per_weight <- ${FIGURE_INCHES_PER_WEIGHT}
+# the plotting area, i.e. minus the y axis and its labels
+fig_width_px <- round(fig_width * fig_dpi * 0.96)
 
 # Data sources (local paths or URLs).
 ${setups}${refNameSetup}
@@ -296,8 +391,17 @@ ${panelBlocks}
     panels <- c(list(region_ruler(regions)), panels)
     heights <- c(0.4, heights)
   }
-  wrap_plots(panels, ncol = 1, heights = heights) +
+  out <- wrap_plots(panels, ncol = 1, heights = heights) +
     plot_annotation(title = region_title(regions))
+  # This figure's own height in inches, carried on the plot because only THIS
+  # call knows it: a panel is free to size itself from the data it just read
+  # (see the heights above), so the total is not a constant the generator could
+  # have written. ggsave refuses a dimension over ${MAX_GGSAVE_INCHES} inches, and 400 feet
+  # of PNG is not what anyone wanted either, so it is clamped - the panels keep
+  # their relative heights, so the figure is the same one at a size a device
+  # will make.
+  attr(out, "jb_height_in") <- min(${MAX_GGSAVE_INCHES}, max(3, sum(heights) * fig_inches_per_weight))
+  out
 }
 
 # Single-region shorthand.
@@ -308,17 +412,19 @@ plot_region <- function(chrom, start, end)
 p <- plot_regions(${regionsDf})
 print(p)
 
-ggsave("jbrowse_region.png", p, width = 12, height = ${totalHeight}, dpi = 150)
-ggsave("jbrowse_region.pdf", p, width = 12, height = ${totalHeight})
+fig_height <- attr(p, "jb_height_in")
+ggsave("jbrowse_region.png", p, width = fig_width, height = fig_height, dpi = fig_dpi)
+ggsave("jbrowse_region.pdf", p, width = fig_width, height = fig_height)
 
 # ---- Batch: plot many regions from a BED file ----
 # loci <- read.table("regions.bed", col.names = c("chrom", "start", "end"))
 # for (i in seq_len(nrow(loci))) {
 #   p <- plot_region(loci$chrom[i], loci$start[i], loci$end[i])
-#   ggsave(sprintf("region_%03d.png", i), p, width = 12, height = ${totalHeight}, dpi = 150)
+#   ggsave(sprintf("region_%03d.png", i), p, width = fig_width, height = attr(p, "jb_height_in"), dpi = fig_dpi)
 # }
 # A single multi-region figure: pass all the loci at once.
-# ggsave("multiregion.png", plot_regions(loci), width = 12, height = ${totalHeight}, dpi = 150)
+# p <- plot_regions(loci)
+# ggsave("multiregion.png", p, width = fig_width, height = attr(p, "jb_height_in"), dpi = fig_dpi)
 `
 }
 
@@ -353,9 +459,9 @@ export async function buildRScript(
     ),
   )
   const regions = getViewRegions(model)
-  const fragments = await collectFragments(model, opts)
+  const { fragments, skipped } = await collectFragments(model, opts)
   return regions.length > 0 && fragments.length > 0
-    ? assembleRScript(regions, fragments)
+    ? assembleRScript(regions, fragments, skipped)
     : '# No exportable tracks are shown. Add a supported track (e.g. a BigWig quantitative track) and try again.'
 }
 

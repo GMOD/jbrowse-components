@@ -47,11 +47,44 @@ export const rexportSpecs: RExportSpec[] = [
 
   // Sort by base at a SNP: reads carrying the alternate allele group at the
   // top, which is the whole point of the localized sort.
-  rexportSpec('alignments_sort', 'alignments_sort_by_base', { rPackages: BAM }),
+  //
+  // The sort has to be added here. `alignments_sort_by_base` deliberately
+  // STARTS unsorted — its two frames are the right-click and its effect — and
+  // an rexport spec re-exports the source's session, not the state its UI
+  // actions reach, so the R twin came out an ordinary unsorted pileup. Written
+  // as the display state the click produces rather than as `sort:base`, which
+  // anchors on the view centre (14,485 here): the SNP is at ctgA:14,481, the
+  // column the browser figure right-clicks, and sorting three bases off it
+  // would look exactly as unsorted as sorting nothing.
+  rexportSpec('alignments_sort', 'alignments_sort_by_base', {
+    rPackages: BAM,
+    extraArgs: [
+      '--track',
+      'volvox_bam',
+      // pos is 0-based genomic, as the context menu's own `genomicPos` is
+      '{"sortedBy":{"type":"basePair","pos":14480,"refName":"ctgA","assemblyName":"volvox"}}',
+    ],
+  }),
 
   // Long reads across an insertion: the CIGAR walk that draws deletions,
   // skipped introns and insertion ticks over the read body.
   rexportSpec('long_reads', 'read_vs_ref_insertion', { rPackages: BAM }),
+
+  // Base modifications from the MM/ML tags: each read's 5mC calls as per-base
+  // ticks, the one thing a modBAM figure is for.
+  //
+  // Sourced from the UNGROUPED half of the Group-by-HP pair rather than the
+  // grouped one or the four-track combined figure, because those two claim
+  // things this export cannot draw and the R twin would quietly contradict its
+  // source: `groupBy` has no R translation (the pileup comes out in one block),
+  // and the modkit lanes are MultiQuantitativeTracks over a BedTabix bedMethyl,
+  // which the multi-wiggle exporter — BigWig-only — contributes nothing for.
+  // The CpG-island lane all three carry is dropped either way: it is a
+  // `UCSCAdapter` from a plugin jb2export doesn't bundle, so the run warns and
+  // renders the rest (see products/jbrowse-img/src/unsupportedTracks.ts).
+  rexportSpec('modifications', 'methylation/hg002_snrpn_ungrouped', {
+    rPackages: BAM,
+  }),
 
   // ── Genes ───────────────────────────────────────────────────────────────
   rexportSpec('genes', 'customized_feature_details', { rPackages: BIGWIG }),
@@ -96,6 +129,49 @@ export const rexportSpecs: RExportSpec[] = [
   // A phased trio genotype matrix: each sample expanded into its two
   // haplotypes, which is the one case the matrix colours per allele.
   rexportSpec('trio_phased', 'trio-matrix-phased-clean', {
+    rPackages: [...TABIX, ...BIGWIG],
+  }),
+
+  // ── Structural variants ─────────────────────────────────────────────────
+  // Soft- and hard-clip indicator bars at a breakpoint: the first signal an SV
+  // gives you in a pileup, and the reason bam_clips exists.
+  rexportSpec('sv_clipping', 'alignment_clipping_indicators', {
+    rPackages: BAM,
+  }),
+
+  // Somatic SV calls over the tumour and matched-normal long reads they were
+  // called from — the comparison that says a call is real.
+  rexportSpec('sv_tumour_normal', 'cancer_sv/multihop_tumour_vs_normal', {
+    rPackages: [...TABIX, ...BAM],
+  }),
+
+  // A foldback inversion: reads whose two halves point the same way.
+  rexportSpec('sv_foldback', 'cancer_sv/foldback_reconstruction', {
+    rPackages: [...BAM, ...BIGWIG],
+  }),
+
+  // BCR-ABL, the two fusion partners side by side on one cumulative axis —
+  // multi-region doing the job it exists for.
+  rexportSpec('sv_fusion', 'cancer_sv/k562_bcr_abl_split', {
+    rPackages: [...BAM, ...BIGWIG],
+  }),
+
+  // 1000 Genomes SVs as a multi-sample genotype panel over the genes they hit.
+  rexportSpec('sv_multisample', 'multisv_svtype', {
+    rPackages: [...TABIX, ...BIGWIG],
+  }),
+
+  // `qc/callsets_at_smn` (three SV callsets at SMN) is deliberately NOT here.
+  // It exports correctly now — the BigBed reader and the label-room rule both
+  // came out of trying it — but the figure is unusable: DGV alone packs 1009
+  // overlapping records into 61 rows across that 2.5 Mb window, and a feature
+  // panel gets a fixed height weight however many rows it packs, so all 61 are
+  // squeezed into ~2 inches. The browser has a scrollable track and a fit
+  // ladder; the R panel would need its height weighted by the row count it
+  // discovers at draw time. Worth doing, and then this figure is worth adding.
+
+  // A biallelic CNV: copy number over the SV calls and the genes.
+  rexportSpec('sv_cnv', 'cnv1000g/ugt2b17_biallelic', {
     rPackages: [...TABIX, ...BIGWIG],
   }),
 ]

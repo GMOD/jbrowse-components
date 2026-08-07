@@ -9,8 +9,13 @@
 # that breaks readGAlignments' DataFrame, so this reads via scanBam (whose read
 # order matches read_bam's readGAlignments, so read_index joins to pileup rows).
 # Returns data.frame(read_index, refpos [0-based], modtype, prob, strand).
+# The path goes to scanBam as a bare string, not through BamFile(): BamFile()
+# resolves the index by looking for a sibling file, which finds nothing over
+# http and leaves index = NA, so every remote modBAM - the usual way a JBrowse
+# track names one - died on "valid 'index' file required" while every other
+# helper here read the same url fine.
 bam_modifications <- function(uri, chrom, start, end, min_prob = 0.1) {
-  b <- scanBam(BamFile(uri), param = ScanBamParam(
+  b <- scanBam(uri, param = ScanBamParam(
     which = GRanges(chrom, IRanges(start + 1, end)),
     what = c("strand", "pos", "cigar", "seq"),
     tag = c("MM", "ML", "Mm", "Ml")))[[1]]

@@ -59,8 +59,8 @@ test('emits editable MAF / missingness threshold variables from the slots', () =
 
 test('non-identifier track ids become safe R variable names', () => {
   const f = variantMatrixFragment({ ...base, trackId: '1000g.panel' })
-  expect(f.plotVariable).toBe('p__1000g_panel')
+  expect(f.plotVariable).toBe('p_x1000g_panel')
   expect(f.setup).toContain(
-    '_1000g_panel <- "https://example.com/panel.vcf.gz"',
+    'x1000g_panel <- "https://example.com/panel.vcf.gz"',
   )
 })

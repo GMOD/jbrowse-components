@@ -51,6 +51,38 @@ p <- plot_regions(data.frame(
   end   = c(6000, 17000)))
 ```
 
+## Headless, from the command line
+
+[`jb2export`](/docs/jbrowse-img) — the same CLI that renders PNG and SVG images —
+exports the identical script. It builds a real linear genome view headlessly and
+writes the `.R` instead of an image, selected by an `--out` ending in `.R`:
+
+```bash
+jb2export --fasta ref.fa --bigwig signal.bw --loc chr1:1-50000 --out fig.R
+Rscript fig.R
+```
+
+Any way of describing a view works — file flags as above, a `--config` plus
+`--track`, or a `--spec` holding the same `{views:[…]}` JSON a
+`&session=spec-…` URL carries, so a view you arranged in the browser can be
+exported from a script without rebuilding it by hand:
+
+```bash
+jb2export --config https://example.com/config.json \
+  --spec '{"type":"LinearGenomeView","assembly":"hg38","loc":"chr1:1-50000","tracks":["my_genes","my_reads"]}' \
+  --out fig.R
+```
+
+This is the linear genome view only — the dotplot, synteny and circular views
+have no R export, and `--out *.R` says so rather than writing an SVG into a file
+named `.R`. Every figure in the gallery below is one of these commands, and the
+gallery lists the exact command behind each one.
+
+A track this build has no plugin for (an adapter from a plugin `jb2export`
+doesn't bundle) is skipped with a warning rather than failing the run, and the
+emitted script names what it left out in its header comment — so a figure that
+is one track short says which.
+
 ## Requirements
 
 The script uses base R plus a handful of Bioconductor/CRAN packages, only the

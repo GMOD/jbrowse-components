@@ -80,6 +80,12 @@ export interface AlignmentsRParams {
   // strand / base call / interbase length / sort-tag value. undefined = plain
   // pileup_layout (no sort, or an unrecognized type)
   sortType?: RSortType
+  /**
+   * Settings the display was drawn with that this export cannot reproduce, so
+   * the script can say so. Built by the caller, which is the side that can see
+   * the model.
+   */
+  unreproduced?: string[]
   // the BAM tag the 'tag' sort reads (self.sortedBy.tag), e.g. HP for haplotype
   sortTag?: string
   // genomic column the sort anchors on (the center line at export); -1 (default)
@@ -469,13 +475,23 @@ ${filterConsts}
   if (!is.null(mm) && nrow(mm)) {
     mm$row <- reads$row[mm$read_index]
     fill <- base_colors[toupper(mm$base)]
-    if (filter_low_freq && bp_per_px > 1) {
-      alpha <- mismatch_fade_alpha(mm$refpos, mm$base, cov, bp_per_px)
-      fill <- paste0(fill, sprintf("%02X", pmin(255L, as.integer(round(alpha * 255)))))
+    # A base the palette has no entry for - an N, an IUPAC ambiguity code - is
+    # not a mismatch JBrowse paints either, and it has to be dropped BEFORE the
+    # alpha suffix below: paste0(NA, "B4") makes the string "NAB4", which ggplot
+    # accepts all the way to draw time and then fails the whole figure on
+    # "Unknown colour name", after every read has been fetched.
+    ok <- !is.na(fill)
+    hits <- mm[ok, , drop = FALSE]
+    fill <- fill[ok]
+    if (nrow(hits)) {
+      if (filter_low_freq && bp_per_px > 1) {
+        alpha <- mismatch_fade_alpha(hits$refpos, hits$base, cov, bp_per_px)
+        fill <- paste0(fill, sprintf("%02X", pmin(255L, as.integer(round(alpha * 255)))))
+      }
+      hits$fill <- fill
+      p <- p + geom_rect(data = hits,
+        aes(xmin = refpos, xmax = refpos + 1, ymin = row, ymax = row + 0.8, fill = fill))
     }
-    mm$fill <- fill
-    p <- p + geom_rect(data = mm,
-      aes(xmin = refpos, xmax = refpos + 1, ymin = row, ymax = row + 0.8, fill = fill))
   }`
     const overlay = isMods
       ? modsOverlay
@@ -533,6 +549,9 @@ ${filterConsts}
       setup,
       plotVariable: `p_${pathVar}_pileup`,
       heightWeight: 3,
+      // on the pileup, not the coverage panel: every one of these is a setting
+      // about how the READS are arranged or drawn
+      unreproduced: p.unreproduced,
       // read every region (renumbering read_index into the combined reads frame),
       // lay out over the combined reads, then draw the pileup + overlays
       plotExpr: `{
@@ -561,7 +580,12 @@ ${
 }    n <- nrow(reads)
     reads$start <- pmin(pmax(reads$start, start), end) + shift
     reads$end   <- pmin(pmax(reads$end, start), end) + shift
-    reads$.region <- ri
+    # rep(ri, n), not ri: a region with no reads is an ordinary thing to draw
+    # (an unmapped window, or one region of a multi-region view that this track
+    # has nothing in), and recycling a length-1 value into a 0-row frame is an
+    # error in R - so the whole figure died on "replacement has 1 row, data has
+    # 0" rather than drawing an empty lane
+    reads$.region <- rep(ri, n)
     indels <- bam_indels(bam, chrom, start, end)
     clips  <- bam_clips(bam, chrom, start, end)
 ${loopReads ? `${loopReads}\n` : ''}    parts[[ri]] <- list(reads = reads, indels = reg(indels, "refpos"), clips = reg(clips, "pos")${loopParts.length ? `,\n      ${loopParts.join(', ')}` : ''})
@@ -591,20 +615,39 @@ ${clipOverlay}
   return fragments
 }
 
+// What the display was drawn with that this export cannot draw. Reported rather
+// than silently dropped: the R twin of a grouped pileup came out as one
+// undifferentiated block, and neither the figure nor the script said the
+// grouping had been lost — which is exactly the case where a reader trusts the
+// picture.
+function unreproducedSettings(self: LinearAlignmentsDisplayModel) {
+  const notes: string[] = []
+  const group = self.groupBy
+  if (group) {
+    notes.push(
+      `"Group by" ${group.type}${group.tag ? ` ${group.tag}` : ''} — the pileup is drawn ungrouped`,
+    )
+  }
+  // a sort the R sorted_pileup_layout has no case for: resolveSortType returns
+  // undefined and the pileup comes out in plain position order
+  const sorted = self.sortedBy?.type
+  if (sorted !== undefined && resolveSortType(sorted) === undefined) {
+    notes.push(`"Sort by" ${sorted} — the pileup is drawn unsorted`)
+  }
+  return notes
+}
+
 /** Read the alignments display's source uri + subtrack visibility into R panels. */
 export function exportRCode(
   self: LinearAlignmentsDisplayModel,
 ): RTrackFragment[] {
   const { trackId, trackName, adapter } = getTrackRMeta<AdapterConf>(self)
-  const isCram = adapter.type === 'CramAdapter' || !!firstUri(adapter.cramLocation)
+  const isCram =
+    adapter.type === 'CramAdapter' || !!firstUri(adapter.cramLocation)
   return alignmentsFragments({
     trackId,
     trackName,
-    uri: firstUri(
-      adapter.bamLocation,
-      adapter.cramLocation,
-      adapter.uri,
-    ),
+    uri: firstUri(adapter.bamLocation, adapter.cramLocation, adapter.uri),
     isCram,
     reference: isCram ? referenceFastaUri(self) : '',
     showCoverage: self.showCoverage,
@@ -614,6 +657,7 @@ export function exportRCode(
     bpPerPx: (getContainingView(self) as { bpPerPx?: number }).bpPerPx ?? 1,
     linkReads: self.linkedReads !== 'off',
     sortType: resolveSortType(self.sortedBy?.type),
+    unreproduced: unreproducedSettings(self),
     sortPos: self.sortedBy?.pos ?? -1,
     sortTag: self.sortedBy?.tag,
     filterFlagInclude: self.filterBy.flagInclude,
