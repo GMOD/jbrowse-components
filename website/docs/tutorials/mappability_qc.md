@@ -73,7 +73,7 @@ reads were dropped before the average was taken.
 
 ## How far the region runs
 
-<Figure src="/img/qc/smn_problematic_regions.png" caption="2.5 Mb of chr5 with SMN2 and SMN1 banded. From the top: RefSeq genes, gnomAD mean coverage, GIAB's low-mappability and segmental-duplication regions, and the ENCODE Blacklist V2. The coverage lane is depressed across the whole span the two annotation lanes cover and recovers at both ends, and the two lanes disagree about where the region stops." />
+<Figure src="/img/qc/smn_problematic_regions.png" caption="2.5 Mb of chr5 with SMN2 and SMN1 banded. From the top: RefSeq genes, gnomAD mean coverage, GIAB's low-mappability regions, and the ENCODE Blacklist V2. The coverage is depressed across the whole span the two annotation lanes cover; they disagree about where it stops, and the arrow marks which one the coverage agrees with." />
 
 The affected sequence is not the gene, it is a block of about 1.5 Mb that
 contains it, so a locus can be inside one of these regions without being inside
@@ -83,8 +83,16 @@ ENCODE's continues to chr5:71,359,500. They were built for different purposes
 from different evidence, so a locus sitting between the two edges is one to
 check by hand.
 
-The control window in the first figure was chosen 500 kb past the further of the
-two, for that reason.
+Here the coverage lane settles which one to believe, and it does so on the
+image: it stays down through the whole 350 kb GIAB has already let go of and
+comes back at ENCODE's edge. That is one locus and not a verdict on either
+project, but it is the reason to treat the gap between two edges as unresolved
+rather than as the narrower interval being the current one.
+`scan_mappability_qc.sh` prints the same lane in 25 kb bins if you want the
+step as numbers.
+
+The control window in the first figure begins at 71,455,000, which is 40 kb past
+where that recovery is complete.
 
 ## What it does to a callset
 

@@ -19,15 +19,36 @@ const HG38_HUB = `?config=${encodeURIComponent('https://jbrowse.org/ucsc/hg38/co
 
 // SMN1 and SMN2 are 99.9% identical over ~28 kb and sit ~900 kb apart, inside a
 // segmental duplication that runs to about 1.5 Mb.
+//
+// STAYS 30 kb, and the review that asked to widen it ("it is just 'all bad
+// mappability', would be better to see 'island of badness'") was answered by
+// measuring rather than by zooming. Two facts, both checked at 200 kb before
+// this was put back:
+//
+//  - There is no edge within reach. gnomAD coverage over this block is under
+//    12x continuously from 69.5 Mb to 71.36 Mb, so the nearest place the reads
+//    recover is 410 kb past SMN1's end. 200 kb of extra width buys a wider red
+//    block, not a boundary.
+//  - A read panel cannot be that wide anyway. At 200 kb this window is a 4.61 Mb
+//    fetch and the control 3.93 Mb, so both tracks render the too-much-data
+//    banner instead of a pileup — the figure loses the only lane that shows one
+//    read at a time. The Umap lane goes with it: at 143 bp/px the absent
+//    stretches average in and it draws as a picket fence.
+//
+// The island's edge belongs to qc/smn_problematic_regions, which carries the
+// whole 2.5 Mb and now names where the coverage comes back.
 const SMN1_LOC = 'chr5:70,924,000-70,954,000'
 
 // The control, and the reason the pair of panels proves anything: 30 kb over
-// the 5' end of BDP1, 500 kb past the end of BOTH flagged intervals, on the
-// same chromosome and out of the same library as the SMN1 panel, at the same
-// width. scan_mappability_qc.sh measures 7,147 reads at SMN1 and 7,662 here, so
-// the panels differ in where the reads can be put and not in how many there are
-// — which is the entire claim, and it would not survive a control on another
-// chromosome or another sample.
+// the 5' end of BDP1, on the same chromosome and out of the same library as the
+// SMN1 panel, at the same width. scan_mappability_qc.sh measures 7,147 reads at
+// SMN1 and 7,662 here, so the panels differ in where the reads can be put and
+// not in how many there are — which is the entire claim, and it would not
+// survive a control on another chromosome or another sample.
+//
+// It is ordinary sequence by MEASUREMENT and not by margin: the script bins
+// gnomAD coverage across the block, and the depression that starts at 69.5 Mb
+// runs to 71.36 Mb and is over at 71.375. This window begins 40 kb past that.
 const CONTROL_LOC = 'chr5:71,455,000-71,485,000'
 
 // Wider than the whole flagged block (GIAB's low-mappability + segdup interval
@@ -152,6 +173,27 @@ export const qcSpecs: ScreenshotSpec[] = [
       views: [panel(SMN1_LOC)],
     })}&sessionName=Screenshot`,
     viewportHeight: 820,
+    // One label per panel, saying what its colour is (review: "unclear what we
+    // are showing ... need red text annotations if possible"). The legend gives
+    // the colours a name and the caption gives the lanes theirs; what neither
+    // says is why a wall of one colour is the whole result.
+    //
+    // Over the pileup rather than beside it: at 30 kb every lane above it is
+    // carrying signal, and a pileup is the one place on the frame where 400x50px
+    // covers nothing a reader is counting — no single read is the point here.
+    annotations: [
+      {
+        type: 'text',
+        text: 'Red is MAPQ 0 — each read fits SMN2 just as well',
+        fontSize: 20,
+        maxWidth: 430,
+        anchor: {
+          track: 'na12878_qc_reads',
+          locus: 'chr5:70,926,500',
+          fracY: 0.22,
+        },
+      },
+    ],
   },
   {
     mode: 'url',
@@ -161,6 +203,21 @@ export const qcSpecs: ScreenshotSpec[] = [
       views: [panel(CONTROL_LOC)],
     })}&sessionName=Screenshot`,
     viewportHeight: 820,
+    // The other half of the same sentence, at the same height in the lane so the
+    // two read as one comparison rather than as two remarks.
+    annotations: [
+      {
+        type: 'text',
+        text: 'Same library, same depth, 501 kb away — every read has one home',
+        fontSize: 20,
+        maxWidth: 430,
+        anchor: {
+          track: 'na12878_qc_reads',
+          locus: 'chr5:71,457,500',
+          fracY: 0.22,
+        },
+      },
+    ],
   },
   {
     mode: 'compose',
@@ -203,6 +260,46 @@ export const qcSpecs: ScreenshotSpec[] = [
       ],
     })}&sessionName=Screenshot`,
     viewportHeight: 570,
+    // THIS is the figure that shows the island, which is why the read panels
+    // above stay at 30 kb (see SMN1_LOC). What it did not say is where the
+    // island stops, and the coverage lane settles that: scan_mappability_qc.sh
+    // bins it across the block and it is under 12x continuously to 71.35 Mb,
+    // 20.2x at 71.35 and 30.0x from 71.375 — so the depression ends at ENCODE's
+    // boundary and not at GIAB's, 350 kb earlier. The page said the two
+    // disagreed; it can now say which one the reads agree with.
+    //
+    // The arrow head is on the recovery coordinate and the pill sits back over
+    // the depressed stretch, both in the lane's own upper fifth: the axis runs
+    // to 40x and the curve inside the block is under 12x, so the top half of
+    // that lane is white and a pill there covers nothing. Over the recovery
+    // itself it would cover the step it names, which is where it went first.
+    annotations: [
+      {
+        type: 'text',
+        text: "Coverage comes back here, at ENCODE's edge — 350 kb past GIAB's",
+        fontSize: 19,
+        maxWidth: 380,
+        textAlign: 'end',
+        anchor: {
+          track: 'hg38-gnomad3MeanCoverage',
+          locus: 'chr5:71,150,000',
+          fracY: 0.2,
+        },
+      },
+      {
+        type: 'arrow',
+        fromAnchor: {
+          track: 'hg38-gnomad3MeanCoverage',
+          locus: 'chr5:71,165,000',
+          fracY: 0.2,
+        },
+        anchor: {
+          track: 'hg38-gnomad3MeanCoverage',
+          locus: 'chr5:71,370,000',
+          fracY: 0.2,
+        },
+      },
+    ],
   },
 
   {

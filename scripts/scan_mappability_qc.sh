@@ -94,6 +94,22 @@ echo "$LOCI" | while IFS=: read -r chrom range label; do
 done
 
 echo
+echo "== 2b. Where the depression ends, in 25 kb bins of the same lane"
+# The two published region annotations disagree about the right-hand edge (GIAB
+# stops at 71,009,585, ENCODE continues to 71,359,500) and neither is evidence
+# on its own. The coverage is: binned across the block, it stays low well past
+# GIAB's edge and recovers to the genome-wide 30x at ENCODE's, which is what
+# qc/smn_problematic_regions now says on the image. Printed as bins rather than
+# as one number so the recovery can be seen to be a step and not a slope.
+bigWigToBedGraph -chrom=chr5 -start=70800000 -end=71600000 "$GNOMAD" stdout |
+  awk '
+    {b=int(($2-70800000)/25000); w=$3-$2; t[b]+=$4*w; c[b]+=w}
+    END {
+      for (i=0; i<32; i++) if (c[i]>0)
+        printf "   %.3f Mb  %5.1fx\n", (70800000+i*25000)/1e6, t[i]/c[i]
+    }'
+
+echo
 echo "== 3. Problematic-region tracks covering the SMN locus (chr5:70.0-71.0 Mb)"
 for bb in problematic/encBlacklist problematic/grcExclusions problematic/comments \
   problematic/GIAB/alllowmapandsegdupregions; do
