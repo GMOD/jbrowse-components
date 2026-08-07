@@ -646,14 +646,22 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // The colour is dN/dS, computed rather than downloaded: no source publishes
   // it (Ensembl declares the two columns and fills neither), so
   // scripts/kaks_from_pairs.py aligns each pair in codon space and runs
-  // Nei-Gojobori. 68,710 of the 69,940 pairs resolved, only 58 past saturation,
-  // because homoeologs are recent enough that dS stays near 0.05.
+  // Nei-Gojobori. 67,254 of the 69,940 pairs are written, only 58 past
+  // saturation, because homoeologs are recent enough that dS stays near 0.08.
   //
-  // Measured off that table: median 0.207, quartiles 0.112 and 0.347, and 839
-  // pairs above 1. The fixed 0..2 domain pivoted at 1 is what makes it read —
-  // the bulk shades through blue across a 3x interquartile range, and the 839
-  // genes under positive selection are the only warm ribbons in the frame. An
-  // auto-scaled attribute mode would stretch to the 7.05 outlier and flatten
+  // Two classes of pair are dropped rather than drawn, and both used to be in
+  // this figure. 234 came out at dS 0, where the ratio has no denominator and
+  // `dnDsRatio` paints nothing, so they sat in the plot as links that could
+  // never take a colour. 1,222 more came out under dS 0.02, where a high ratio
+  // is arithmetic rather than selection — they included every one of the
+  // largest ratios in the table, off dS values as low as 0.0014.
+  //
+  // Measured off what remains: median 0.205, quartiles 0.111 and 0.342, and 572
+  // pairs above 1 (it read 839 before the floor, so a third of the apparent
+  // positive selection was the artefact). The fixed 0..2 domain pivoted at 1 is
+  // what makes it read — the bulk shades through blue across a 3x interquartile
+  // range, and the genes over 1 are the only warm ribbons in the frame. An
+  // auto-scaled attribute mode would stretch to the largest outlier and flatten
   // all of it.
   {
     mode: 'url',
