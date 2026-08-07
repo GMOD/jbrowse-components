@@ -44,15 +44,41 @@ bundle, while a reader clicking a published figure's LIVE LINK (which points at
 the unversioned entry point) would see rows a figure's caption does not describe.
 Do the three together.
 
-**The plugin e2e cannot verify this today**, and the reason is worth knowing
-before spending an hour on it: `test/` boots a real JBrowse from
-`.test-jbrowse-demos`, a copy taken 2026-07-24, and the current plugin calls
-`contributeToExtensionPoint`, which that host does not have — every suite fails
-in setup with `e.contributeToExtensionPoint is not a function`. A fresh host
-means building jbrowse-web, which means a clean tree, i.e. the same block. What
-stands in for it is `model.test.ts`'s "what the row axis draws, in pixels":
-`recordingCanvas` now records coordinates, so the whole pipeline can be asserted
-on the numbers the renderer was handed.
+**The plugin e2e does verify this, and it took fixing** — all 19 tests pass
+against a real browser, which is as close to seeing these changes as anything
+gets without the figure regen.
+
+It had been dead for two weeks and looked like a plugin bug. `test/` boots a
+real JBrowse from a COPIED build dir that nothing refreshes, and
+`.test-jbrowse-demos` sat at 2026-07-24 while the plugin picked up two core APIs
+that landed after it (`contributeToExtensionPoint` 08-05, `requireAssembly`
+08-04). An older host makes the plugin throw while INSTALLING, so every suite
+died in setup with a minified `e.<something> is not a function` — no view type,
+no adapter, nothing pointing at the host. Three things came out of it:
+
+- the plugin now falls back to `addToExtensionPoint` when the host has no
+  `contributeToExtensionPoint`, which matters beyond the tests: **the bundle on
+  the CDN has that call in it**, so any JBrowse older than 08-05 loading it gets
+  no plugin at all. It is not a general compatibility claim — an older host still
+  fails further in on `requireAssembly` — but the plugin installs rather than
+  dying whole;
+- `setup.ts` greps the served bundles for those API names and throws with the
+  `cp -r` line, so a stale host says so in one sentence. `HOST_REQUIRES` is the
+  list to extend. Same lesson as `_localdist` in §5, from the other side;
+- two of the tests were pinning things this session changed (one `scale` where
+  the transform now carries two, alphabetical strain rows) and **one was a real
+  pre-existing bug**: the hover test aimed at the midpoint of a node's two
+  endpoints, which under FMMM is off the tube entirely, so it had been hovering
+  empty space. Confirmed against a worktree at the pre-change commit rather than
+  assumed.
+
+Note it flakes about one test in five whole-suite runs, never the same one, and
+always passes alone straight after. Re-run the file before believing a single
+failure.
+
+`model.test.ts`'s "what the row axis draws, in pixels" is the cheaper standing
+check: `recordingCanvas` records coordinates now, so the whole pipeline is
+asserted on the numbers the renderer was handed, with no browser.
 
 Durable spillover from §5 lives outside this file and should not be copied back
 in: the wasm string-decode defect it turned up is ADR 0002 in the
