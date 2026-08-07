@@ -163,7 +163,7 @@ describe('multi-sample variant row placement', () => {
       regularCellData(['S1 HP1', 'S0 HP0', 'S1 HP0', 'S0 HP1']),
     )
 
-    expect(display.sources?.map(s => s.name)).toEqual([
+    expect(display.sources.map(s => s.name)).toEqual([
       'S0 HP0',
       'S0 HP1',
       'S1 HP0',

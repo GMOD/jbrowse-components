@@ -29,7 +29,7 @@ const MafRowsCanvas = observer(function MafRowsCanvas({
     scrollTop,
     sources,
   } = model
-  const nRows = sources?.length ?? 0
+  const nRows = sources.length
   return (
     <TrackBandCanvas
       model={model}

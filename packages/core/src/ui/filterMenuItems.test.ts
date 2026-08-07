@@ -87,5 +87,7 @@ test('priority rides the top-level row in both shapes', () => {
     priority: -100,
   })
   expect(nested[0] && 'priority' in nested[0] && nested[0].priority).toBe(-100)
-  expect(subMenu(nested).every(i => !('priority' in i && i.priority))).toBe(true)
+  expect(subMenu(nested).every(i => !('priority' in i && i.priority))).toBe(
+    true,
+  )
 })

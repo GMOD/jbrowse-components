@@ -16,6 +16,9 @@ export interface SampleRowLabelsModel {
   treeAreaWidth: number
   canDisplayLabels: boolean
   effectiveRowHeight: number
-  sources?: Source[]
+  // Resolved, never absent — the model's `sources` getter answers `[]` before
+  // any fetch has landed. "No rows yet" is `loading` / `displayPhase`, not a
+  // missing array; see the getter's own note.
+  sources: Source[]
   showTree: boolean
 }

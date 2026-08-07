@@ -129,7 +129,8 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
        */
       setThemeMode(mode: 'light' | 'dark') {
         const { jbrowse } = asSession(self)
-        const theme: { palette?: PaletteInput } = getConf(jbrowse, 'theme') ?? {}
+        const theme: { palette?: PaletteInput } =
+          getConf(jbrowse, 'theme') ?? {}
         setConf(jbrowse, 'theme', {
           ...theme,
           palette: { ...theme.palette, mode },

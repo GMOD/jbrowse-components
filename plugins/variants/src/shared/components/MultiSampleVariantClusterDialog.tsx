@@ -29,7 +29,7 @@ const MultiSampleVariantClusterDialog = observer(
         matrixLabel="genotype matrix"
         tsvFilename="genotypes.tsv"
         // The same gate the auto path uses (`ready: () => self.clusteringReady`
-        // in getMultiSampleVariantClusterAutorun), not just "are there sources".
+        // in setupMultiSampleVariantAutoruns), not just "are there sources".
         // In phased mode the haplotype matrix needs `sampleInfo`, which arrives
         // with cellData; running before it builds a sample-level tree whose
         // leaves never match the haplotype rows, so the run appears to do

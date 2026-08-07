@@ -13,11 +13,11 @@ import { TrackHeightMixin } from '@jbrowse/plugin-linear-genome-view'
 import { ArcFetchModel } from '../shared/ArcFetchModel.ts'
 import { ARC_DISPLAY_MODE_OPTIONS } from './displayModes.ts'
 
-import type { ArcDisplayMode } from './displayModes.ts'
 import type {
   LinearArcDisplayConfig,
   LinearArcDisplayConfigModel,
 } from './configSchema.ts'
+import type { ArcDisplayMode } from './displayModes.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'

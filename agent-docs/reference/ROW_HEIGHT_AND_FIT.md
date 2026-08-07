@@ -34,6 +34,15 @@ the whole reason the three copies existed, and the copies had drifted — varian
 offered no presets and its dialog seeded from `effectiveRowHeight`, so
 "Custom..." in fit mode pinned the computed fractional height on submit.
 
+**`sources` is the row list, and it is a resolved array on every row display** —
+never `undefined`, so the count these heights divide is always readable. maf and
+the multi-sample variant displays used to answer `T[] | undefined`; nothing
+consumed the distinction (every reader collapsed it with `?.length` or `?? []`),
+and the two maf consumers that did were asking a different question, which is
+now `sourcesKnown`. An empty `sources` therefore means "no rows to draw" and
+nothing else — "no fetch has landed" is `sourcesKnown` / `loadedRegions` /
+`displayPhase`.
+
 `effectiveRowHeight` is not a style preference, it is the cross-plugin ABI. Two
 shared helpers in `packages/` read the resolved value under that name, and every
 row display has to satisfy them:
@@ -64,6 +73,21 @@ non-positive result — are `packages/core/src/util/resolveRowHeight.ts`, which
 maf, variants and canvas each call from their `effectiveRowHeight`. They used to
 spell it out individually and canvas's copy had lost the floor, which is exactly
 the drift a two-rules-pulling-opposite-ways invariant invites.
+
+### `setFitToHeight` seeds the height slot only where `height` is derived
+
+maf and canvas open `setFitToHeight` with
+`setConf(self, 'height', Math.max(self.height, MIN_DISPLAY_HEIGHT))`; variants
+does not, and that asymmetry is required rather than left over. Both of the
+first two **override the `height` getter** to a content-derived value (maf's
+`totalHeight`, canvas's `nrow * effectiveRowHeight`), so in fixed mode
+`self.height` is not what the `height` slot holds — entering fit mode without
+re-seeding drops the rows back onto a stale slot value and the track jumps.
+Variants leaves `height` to `TrackHeightMixin`, where the getter *is* the slot,
+so the same line would write it back to itself.
+
+**So the question to ask before copying either version is which `height` the
+display has**, not which neighbour it resembles.
 
 ### Drag-resize leaves a pinned height alone
 

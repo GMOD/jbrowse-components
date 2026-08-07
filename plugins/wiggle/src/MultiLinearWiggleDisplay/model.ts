@@ -28,6 +28,7 @@ import {
   resetRowOrderMenuItems,
   rowArrangementMenuItem,
   setupRowSortAutorun,
+  setupRunClusteringAutorun,
 } from '@jbrowse/tree-sidebar'
 import { computeYTicks, makeCrossHatchItem } from '@jbrowse/wiggle-core'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
@@ -124,20 +125,11 @@ export default function stateModelFactory(
       types.model({
         type: types.literal('MultiLinearWiggleDisplay'),
         configuration: ConfigurationReference(configSchema),
-        // Transient declarative launch spec, same idea as LinearGenomeView's
-        // `init`: session/config sets this to run the real "Cluster columns"
-        // RPC once automatically (no dialog), applied by
-        // getWiggleClusterAutorun and cleared afterwards so a saved session
-        // never re-triggers it.
-        runClustering: types.maybe(types.boolean),
-        // Where that run reads from, as a locstring (whitespace-separated for
-        // several). Clustering is region-scoped, so running it over the visible
-        // window feeds the estimator whatever is on screen; naming the locus
-        // instead lets a session cluster on the signal and show it against its
-        // context. Cleared with `runClustering`. The sampling density then
-        // comes from the named span rather than from the view's zoom, since the
-        // columns are pixel bins (clusterScoreMatrixArgs).
-        clusterRegion: types.maybe(types.string),
+        // `runClustering` / `clusterRegion` are TreeSidebarMixin's. The one
+        // thing specific to this display: naming a `clusterRegion` also moves
+        // where the sampling density comes from, since the matrix columns are
+        // pixel bins over the span rather than over the view's zoom
+        // (clusterScoreMatrixArgs).
         /**
          * #property
          * Transient declarative launch spec, the same idea as `runClustering`:
@@ -521,16 +513,6 @@ export default function stateModelFactory(
         closeContextMenu() {
           self.contextMenuInfo = undefined
         },
-
-        setRunClustering(arg?: boolean) {
-          self.runClustering = arg
-        },
-        /**
-         * #action
-         */
-        setClusterRegion(arg?: string) {
-          self.clusterRegion = arg
-        },
       }
     })
     .actions(self => {
@@ -602,15 +584,33 @@ export default function stateModelFactory(
             console.error(e)
           }
 
-          try {
-            const { getWiggleClusterAutorun } =
-              await import('./getWiggleClusterAutorun.ts')
-            if (isAlive(self)) {
-              getWiggleClusterAutorun(self)
-            }
-          } catch (e) {
-            console.error(e)
-          }
+          // The "Cluster columns" flavor of the shared declarative-clustering
+          // autorun: fires once on `runClustering: true` and runs the real
+          // score-matrix RPC over the `clusterRegion` locus if the session
+          // named one and the visible blocks if not. Refuses a single row,
+          // matching the track menu's gate.
+          //
+          // Installed synchronously; the heavy half is code-split inside `run`,
+          // so the clustering module loads when a run starts rather than on
+          // every attach.
+          setupRunClusteringAutorun(self, {
+            name: 'AutoRunMultiWiggleClustering',
+            ready: () => self.sourcesWithoutLayout.length > 1,
+            run: async args => {
+              const [{ runWiggleClustering }, { DEFAULT_SAMPLES_PER_PIXEL }] =
+                await Promise.all([
+                  import('./runWiggleClustering.ts'),
+                  import('./components/clusterOptions.ts'),
+                ])
+              await runWiggleClustering({
+                model: self,
+                // the default density, not the dialog's persisted preference —
+                // see DEFAULT_SAMPLES_PER_PIXEL for why this path ignores it
+                samplesPerPixel: DEFAULT_SAMPLES_PER_PIXEL,
+                ...args,
+              })
+            },
+          })
         },
       }
     })

@@ -34,6 +34,7 @@ const heightHost = (self: object) =>
 /**
  * #stateModel HeightModeMixin
  * #category display
+ * #crossCuttingMixin Track-height strategy; the one row that must compose **after** `TrackHeightMixin()`, whose `height` and `resizeHeight` it overrides. `growTargetHeight` (default = the raw slot). Brings `heightMode`/`autoHeight`/`fitHeightToDisplay`, `grownHeight`, the reactive `height` override, `setHeightMode`, and the grow-aware `resizeHeight`
  *
  * The whole track-height strategy every display with a promotable `heightMode`
  * config slot shares (the canvas feature display, the alignments display), so the

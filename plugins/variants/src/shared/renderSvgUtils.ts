@@ -1,6 +1,5 @@
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
 import type { SampleRowLabelsModel } from './components/types.ts'
-import type { Source } from './types.ts'
 import type {
   LegendSection,
   LgvSvgExportable,
@@ -17,7 +16,6 @@ export interface RenderSvgBaseModel
   // Top strip the rows sit below (the matrix display's connector-line zone,
   // always 0 for the regular display).
   lineZoneHeight: number
-  sources: Source[] | undefined
   showLegend: boolean
   // `insertionColor` overrides the marker swatch so it can follow the export
   // theme's palette, which is what the exported glyphs are painted with.

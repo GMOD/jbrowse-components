@@ -8,14 +8,18 @@ Astro, not Docusaurus. Frontmatter is `title` (required), `description`,
 `pnpm autogen` rebuilds `config/`, `models/`, `api/`, the guide indexes
 (`user_guide.md` etc.), `cli.md`, `jbrowse-img.md`, and every marker-pair block
 (`<!-- COLOR_TABLE … -->`, `FILE_TYPES`, `DISPLAY_TYPES`, `GOTCHA`,
-`PROMOTABLE_SLOTS`, `DISPLAY_FOUNDATIONS`, `FETCH_AUTORUNS`, `PALETTE_KEYS`,
-`HELPER_PACKAGES`, `REEXPORT_MODULES`). Each renders from a JSDoc tag, a
-registration, or a manifest at the definition site — document a new one by
-tagging the source. Everything else under `docs/` is hand-written.
+`PROMOTABLE_SLOTS`, `DISPLAY_FOUNDATIONS`, `CROSS_CUTTING_MIXINS`,
+`FETCH_AUTORUNS`, `PALETTE_KEYS`, `HELPER_PACKAGES`, `REEXPORT_MODULES`). Each
+renders from a JSDoc tag, a registration, or a manifest at the definition site —
+document a new one by tagging the source. Everything else under `docs/` is
+hand-written.
 
 The sweep also covers `agent-docs/`, which hosts the `DISPLAY_FOUNDATION_STACKS`
 and `FETCH_AUTORUNS` counterparts. A guide table and its architecture-spec twin
 come from one scan, so neither is a hand-mirror of the other.
+`CROSS_CUTTING_MIXINS` goes further and renders the _same_ block in both, since
+what a plugin author needs there ("which mixins can I compose, and what already
+does") is what the spec needs too.
 
 **A table a reader could check against the code is a generator waiting to be
 written**, and the strongest tell is a sentence pointing at a file: the

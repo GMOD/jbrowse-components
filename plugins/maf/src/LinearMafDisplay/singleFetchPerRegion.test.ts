@@ -105,7 +105,7 @@ describe('LinearMafDisplay alignment fetch count', () => {
     await settle(display)
 
     expect(alignmentCalls(mockRpcCall)).toHaveLength(1)
-    expect(display.sources?.map((s: { name: string }) => s.name)).toEqual([
+    expect(display.sources.map((s: { name: string }) => s.name)).toEqual([
       'hg38',
       'mm10',
     ])
@@ -149,7 +149,7 @@ describe('LinearMafDisplay alignment fetch count', () => {
     display.reload()
     await settle(display)
 
-    expect(display.sources?.map((s: { name: string }) => s.name)).toEqual([
+    expect(display.sources.map((s: { name: string }) => s.name)).toEqual([
       'rn6',
       'hg38',
       'mm10',
@@ -196,7 +196,7 @@ describe('LinearMafDisplay alignment fetch count', () => {
     })
     await settle(display, 2)
 
-    expect(display.sources?.map((s: { name: string }) => s.name)).toEqual([
+    expect(display.sources.map((s: { name: string }) => s.name)).toEqual([
       'hg38',
       'mm10',
       'rn6',
@@ -266,7 +266,7 @@ describe('LinearMafDisplay row placement', () => {
     const calls = alignmentCalls(mockRpcCall)
     expect(calls).toHaveLength(1)
     expect(calls[0]![2]).not.toHaveProperty('orderedSampleIds')
-    expect(display.sources?.map((s: { name: string }) => s.name)).toEqual([
+    expect(display.sources.map((s: { name: string }) => s.name)).toEqual([
       'mm10',
       'hg38',
     ])
@@ -331,7 +331,7 @@ describe('LinearMafDisplay row placement', () => {
 
     // rn6 is in the layout but not in the sample set, so it is not a drawn row;
     // the two that are drawn keep their layout positions rather than sliding up
-    expect(display.sources?.map((s: { name: string }) => s.name)).toEqual([
+    expect(display.sources.map((s: { name: string }) => s.name)).toEqual([
       'mm10',
       'hg38',
     ])
@@ -361,7 +361,7 @@ describe('LinearMafDisplay row placement', () => {
 
     const [first] = alignmentCalls(mockRpcCall)
     expect(first![2].subtreeFilter).toEqual(['hg38'])
-    expect(display.sources?.map((s: { name: string }) => s.name)).toEqual([
+    expect(display.sources.map((s: { name: string }) => s.name)).toEqual([
       'hg38',
     ])
   })

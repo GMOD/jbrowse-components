@@ -727,12 +727,31 @@ export default function stateModelFactory(
         /**
          * #getter
          * The display rows: `editableSources` narrowed to the selected subtree.
+         *
+         * **Resolved — an array, never `undefined`**, the shared spelling across
+         * the row displays. The two consumers that used to read the absent case
+         * were both asking "has the species list arrived", which is
+         * `sourcesKnown`; everything else already collapsed it with `?.length`
+         * or `?? 0`. An empty array reaches here two ways that must stay
+         * indistinguishable to a *renderer* — no fetch yet, and a subtree filter
+         * that matched nothing — which is exactly why the readiness question
+         * needs its own name rather than a truthiness test on this.
          */
-        get sources(): MafSource[] | undefined {
+        get sources(): MafSource[] {
           const base = self.editableSources
-          return base
-            ? filterRowsBySubtree(base, self.subtreeFilter)
-            : undefined
+          return base ? filterRowsBySubtree(base, self.subtreeFilter) : []
+        },
+
+        /**
+         * #getter
+         * The species list has arrived from the adapter. The readiness half of
+         * what `sources` used to answer by being `undefined`: `rowsVisible` and
+         * the render callback's first-paint gate both need "a fetch has landed",
+         * and neither can get it from an empty `sources`, which a subtree filter
+         * narrowing to nothing also produces.
+         */
+        get sourcesKnown(): boolean {
+          return self.sourcesVolatile.length > 0
         },
 
         /**
@@ -827,7 +846,7 @@ export default function stateModelFactory(
          * MafSequenceWidget, color legend, etc.
          */
         get samples(): Sample[] | undefined {
-          return self.sources?.map(s => ({
+          return self.sources.map(s => ({
             id: s.name,
             label: s.label ?? s.name,
             color: s.color,
@@ -862,8 +881,8 @@ export default function stateModelFactory(
          * left carrying row identity — and a 447-way cactus alignment at the
          * default fit height is 1.2px a row.
          */
-        get labelSources(): RowLabelSource[] | undefined {
-          return self.sources?.map(s => ({
+        get labelSources(): RowLabelSource[] {
+          return self.sources.map(s => ({
             name: s.name,
             label: s.label,
             labelColor: s.color,
@@ -877,7 +896,7 @@ export default function stateModelFactory(
          */
         get rowIndexBySrc(): Map<string, number> {
           return new Map(
-            self.sources?.map((s, i): [string, number] => [s.name, i]) ?? [],
+            self.sources.map((s, i): [string, number] => [s.name, i]),
           )
         },
         /**
@@ -934,7 +953,7 @@ export default function stateModelFactory(
          * Number of displayed rows (at least 1, so the fit-mode division is safe).
          */
         get nrow() {
-          return Math.max(1, self.sources?.length ?? 0)
+          return Math.max(1, self.sources.length)
         },
         /**
          * #getter
@@ -948,7 +967,9 @@ export default function stateModelFactory(
          * before the view was initialized.
          */
         get rowsVisible() {
-          return self.lgv.initialized && self.showAlignments && !!self.sources
+          return (
+            self.lgv.initialized && self.showAlignments && self.sourcesKnown
+          )
         },
         /**
          * #getter
@@ -1360,7 +1381,7 @@ export default function stateModelFactory(
         ) {
           const { sources } = self
           const region =
-            sources && rowIndex >= 0 && rowIndex < sources.length
+            rowIndex >= 0 && rowIndex < sources.length
               ? self.rpcDataMap.get(displayedRegionIndex)
               : undefined
           const hit = region
@@ -1372,7 +1393,7 @@ export default function stateModelFactory(
                 bpPerPx,
               )
             : undefined
-          if (!hit || !sources) {
+          if (!hit) {
             return undefined
           }
           const source = sources[rowIndex]!
@@ -1398,7 +1419,7 @@ export default function stateModelFactory(
         ) {
           const { sources } = self
           const source =
-            sources && rowIndex >= 0 && rowIndex < sources.length
+            rowIndex >= 0 && rowIndex < sources.length
               ? sources[rowIndex]!
               : undefined
           const region = source?.assemblyName
@@ -2127,7 +2148,8 @@ export default function stateModelFactory(
               // First-paint gate: no fetch has landed yet, so skip the tick
               // rather than flipping canvasDrawn on an empty frame. Zero sources
               // over a loaded region is NOT this state — see renderState.
-              const hasFetched = !!self.sources || self.loadedRegions.size > 0
+              const hasFetched =
+                self.sourcesKnown || self.loadedRegions.size > 0
               if (hasFetched) {
                 if (self.basesRenderingActive) {
                   return b.renderBlocks(

@@ -13,10 +13,18 @@ import {
 } from '@jbrowse/core/util'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
+  addDisposer,
+  cast,
+  getEnv,
+  isAlive,
+  types,
+} from '@jbrowse/mobx-state-tree'
+import {
+  MIN_DISPLAY_HEIGHT,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
+  installClearHoverOnViewportChange,
 } from '@jbrowse/plugin-linear-genome-view'
 import {
   TreeSidebarMixin,
@@ -44,7 +52,7 @@ import { getVariantLegendSections } from './variantLegend.ts'
 
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
 import type { SharedVariantConfigModel } from './SharedVariantConfigSchema.ts'
-import type { Source } from './types.ts'
+import type { ProcessedSource, Source } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature, Region } from '@jbrowse/core/util'
@@ -359,23 +367,8 @@ export default function MultiSampleVariantBaseModelF(
             types.maybe(types.array(types.string)),
             undefined,
           ),
-          // Transient declarative launch spec, same idea as LinearGenomeView's
-          // `init`: session/config sets this to run the real "Cluster by
-          // genotype" RPC once automatically (no dialog), applied by
-          // getMultiSampleVariantClusterAutorun and cleared afterwards so a
-          // saved session never re-triggers it.
-          runClustering: types.maybe(types.boolean),
-          /**
-           * #property
-           * Where that run reads its genotypes from, as a locstring
-           * (whitespace-separated for several). Clustering is region-scoped, so
-           * running it over the visible window feeds the estimator as many
-           * undifferentiated columns as separating ones; naming the locus
-           * instead lets a session cluster on the signal and then show it
-           * against its context, which is otherwise a zoom the user has to
-           * perform in the right order. Cleared with `runClustering`.
-           */
-          clusterRegion: types.maybe(types.string),
+          // `runClustering` / `clusterRegion` are TreeSidebarMixin's — they
+          // trigger a run whose output is that mixin's state.
         }),
       )
       // Unknown keys in an old display snapshot (blockState, showTooltips, the
@@ -758,16 +751,6 @@ export default function MultiSampleVariantBaseModelF(
         setShowBranchLength(arg: boolean) {
           setConf(self, 'showBranchLength', arg)
         },
-
-        setRunClustering(arg?: boolean) {
-          self.runClustering = arg
-        },
-        /**
-         * #action
-         */
-        setClusterRegion(arg?: string) {
-          self.clusterRegion = arg
-        },
         /**
          * #action
          */
@@ -812,7 +795,7 @@ export default function MultiSampleVariantBaseModelF(
          */
         resizeHeight(distance: number) {
           const oldHeight = self.height
-          const newHeight = Math.max(oldHeight + distance, 20)
+          const newHeight = Math.max(oldHeight + distance, MIN_DISPLAY_HEIGHT)
           setConf(self, 'height', newHeight)
           return newHeight - oldHeight
         },
@@ -961,16 +944,28 @@ export default function MultiSampleVariantBaseModelF(
       .views(self => ({
         /**
          * #getter
-         * sourcesBase expanded for phased rendering when sampleInfo is available.
-         * Sources already carrying HP (from clustering) pass through unchanged.
+         * The display rows: `sourcesBase` expanded for phased rendering when
+         * sampleInfo is available. Sources already carrying HP (from clustering)
+         * pass through unchanged.
+         *
+         * **Resolved — an array, never `undefined`**, which is the shared
+         * spelling across the row displays (canvas's multi-row painting and
+         * multi-wiggle already answered this way). `sourcesVolatile` and
+         * `sourcesBase` keep their `undefined`, because there it is genuinely
+         * load-bearing: `sampleFilter` and `fetchNeeded` both read
+         * `sourcesBase`, and its `undefined` → list transition is what wakes the
+         * fetch autorun (ARCHITECTURE.md, "the per-region twin"). Nothing reads
+         * *this* getter for that — every consumer immediately collapsed the
+         * absent case with `?.length`, `?? []` or `?? 0`, so the option was
+         * about eighteen defensive reads and no decision.
          */
-        get sources() {
+        get sources(): ProcessedSource[] {
           const base = self.sourcesBase
-          if (!base || self.renderingMode !== 'phased') {
-            return base
+          if (!base) {
+            return []
           }
           const sampleInfo = self.sampleInfo
-          if (!sampleInfo) {
+          if (self.renderingMode !== 'phased' || !sampleInfo) {
             return base
           }
           return expandSourcesToHaplotypes({ sources: base, sampleInfo })
@@ -1072,9 +1067,7 @@ export default function MultiSampleVariantBaseModelF(
          * than to a miss.
          */
         get sourceMap() {
-          return self.sources
-            ? new Map(self.sources.map(source => [source.name, source]))
-            : undefined
+          return new Map(self.sources.map(source => [source.name, source]))
         },
         /**
          * #getter
@@ -1111,7 +1104,7 @@ export default function MultiSampleVariantBaseModelF(
           if (!rowNames) {
             return undefined
           }
-          const sources = self.sources ?? []
+          const sources = self.sources
           const screenRowByName = new Map<string, number>()
           for (let i = 0; i < sources.length; i++) {
             screenRowByName.set(sources[i]!.name, i)
@@ -1141,7 +1134,7 @@ export default function MultiSampleVariantBaseModelF(
          * #getter
          */
         get nrow() {
-          return Math.max(1, self.sources?.length ?? 0)
+          return Math.max(1, self.sources.length)
         },
 
         /**
@@ -1200,7 +1193,7 @@ export default function MultiSampleVariantBaseModelF(
           if (!remap) {
             return undefined
           }
-          const out = new Int32Array(self.sources?.length ?? 0).fill(-1)
+          const out = new Int32Array(self.sources.length).fill(-1)
           for (let workerRow = 0; workerRow < remap.length; workerRow++) {
             const screenRow = remap[workerRow]!
             if (screenRow < out.length) {
@@ -1220,7 +1213,7 @@ export default function MultiSampleVariantBaseModelF(
           if (!hoveredGenotype) {
             return undefined
           }
-          const source = sourceMap?.get(hoveredGenotype.name)
+          const source = sourceMap.get(hoveredGenotype.name)
           return source ? { ...source, ...hoveredGenotype } : undefined
         },
       }))
@@ -1497,6 +1490,21 @@ export default function MultiSampleVariantBaseModelF(
       }))
       .actions(self => ({
         afterAttach() {
+          // Clear the hovered cell when the viewport moves under a stationary
+          // cursor. The matrix is a sticky canvas, so a pan, a zoom or an
+          // internal wheel-scroll fires no mousemove and no mouseleave, and
+          // `hoveredGenotype` goes on naming a cell that has moved out from
+          // under the pointer — the tooltip then reports another sample's
+          // genotype at the cursor. `useVariantCanvasInteraction` only covers
+          // the cases where the *pointer* moves, and `scrollTop` is the axis
+          // where this shows worst, since the highlight derived from the hover
+          // does follow the row and visibly separates from the tooltip.
+          addDisposer(
+            self,
+            installClearHoverOnViewportChange(self, () => {
+              self.setHoveredGenotype(undefined)
+            }),
+          )
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           ;(async () => {
             try {

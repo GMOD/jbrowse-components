@@ -89,9 +89,7 @@ test('only the dialog opener dismisses the menu', () => {
   const items = subMenu(makeModel(0))
   const custom = items.at(-1)!
   const rest = items.slice(0, -1)
-  expect(
-    rest.every(i => 'onClick' in i && staysOpenOnClick(i)),
-  ).toBe(true)
+  expect(rest.every(i => 'onClick' in i && staysOpenOnClick(i))).toBe(true)
   expect('onClick' in custom && staysOpenOnClick(custom)).toBe(false)
 })
 

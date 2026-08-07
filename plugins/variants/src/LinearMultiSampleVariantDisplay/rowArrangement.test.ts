@@ -21,8 +21,8 @@ function clusteredDisplay() {
   return display
 }
 
-function rowNames(display: { sources?: { name: string }[] }) {
-  return display.sources?.map(s => s.name)
+function rowNames(display: { sources: { name: string }[] }) {
+  return display.sources.map(s => s.name)
 }
 
 describe('recoloring does not disturb the arrangement', () => {
@@ -34,7 +34,7 @@ describe('recoloring does not disturb the arrangement', () => {
     expect(display.clusterTree).toBe(CLUSTERED_TREE)
     // the dendrogram still positions, i.e. its leaves are still these rows
     expect(display.hierarchy).toBeDefined()
-    expect(display.sources?.every(s => s.color)).toBe(true)
+    expect(display.sources.every(s => s.color)).toBe(true)
   })
 
   it('clearing the coloring strips the palette without resetting the order', () => {
@@ -44,7 +44,7 @@ describe('recoloring does not disturb the arrangement', () => {
 
     expect(rowNames(display)).toEqual(['S2', 'S0', 'S1'])
     expect(display.clusterTree).toBe(CLUSTERED_TREE)
-    expect(display.sources?.some(s => s.color)).toBe(false)
+    expect(display.sources.some(s => s.color)).toBe(false)
   })
 
   // Rows are haplotypes after a phased clustering run, while `sourcesVolatile`
@@ -126,7 +126,7 @@ describe('a rendering-mode switch renames the rows', () => {
     display.setPhasedMode('phased')
 
     expect(display.colorBy).toBe('population')
-    expect(display.sources?.every(s => s.color)).toBe(true)
+    expect(display.sources.every(s => s.color)).toBe(true)
     const byName = Object.fromEntries(
       display.layout.map(s => [s.name, s.color]),
     )

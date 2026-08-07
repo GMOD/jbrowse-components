@@ -12,8 +12,9 @@ export type ClusterGenotypeMatrixCaller =
 
 // The real "Cluster rows by genotype" -> "Run clustering" RPC, over the genotype
 // matrix, extracted so it has one home: the dialog button and a declarative
-// session-triggered run (getMultiSampleVariantClusterAutorun) call the exact
-// same code rather than two copies drifting apart.
+// session-triggered run (`setupRunClusteringAutorun`, installed in
+// setupMultiSampleVariantAutoruns) call the exact same code rather than two
+// copies drifting apart.
 export async function runGenotypeClustering({
   model,
   rpcManager,

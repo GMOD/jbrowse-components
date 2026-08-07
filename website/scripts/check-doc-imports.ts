@@ -238,6 +238,15 @@ function scanFilePaths(path: string, lines: string[]): Problem[] {
       if (/\/blob\/[^/]+\/$/.test(line.slice(0, match.index))) {
         continue
       }
+      // A path inside `git show <rev>:<path>` names a file at that revision,
+      // and the interesting ones are precisely the deleted files a doc is
+      // pointing at because they no longer exist — an ADR that a later commit
+      // removed, say. Resolving it against the worktree asks the wrong
+      // question, and the alternative is to stop citing the reasoning behind a
+      // decision once its file is gone.
+      if (/git show \S*:$/.test(line.slice(0, match.index))) {
+        continue
+      }
       const ref = match[0].replace(/[./]+$/, '')
       // Only hold a path to account when its package anchor really exists —
       // otherwise it's a placeholder/example path, not a live repo reference.

@@ -120,14 +120,14 @@ const SvgSampleRowLabels = observer(function SvgSampleRowLabels({
   const { canDisplayLabels, effectiveRowHeight: rowHeight, sources } = model
   const theme = useTheme()
 
-  const hasColors = sources?.some(s => s.color) ?? false
+  const hasColors = sources.some(s => s.color)
   const gutterWidth = labelWidth + (hasColors ? COLOR_BOX_WIDTH + 5 : 0)
 
   const fill = stripAlpha(theme.palette.text.primary)
 
-  const visibleSources = sources?.slice(startIdx, endIdx)
+  const visibleSources = sources.slice(startIdx, endIdx)
 
-  return visibleSources ? (
+  return (
     <>
       {canDisplayLabels ? (
         <RectBg
@@ -158,7 +158,7 @@ const SvgSampleRowLabels = observer(function SvgSampleRowLabels({
           ))
         : null}
     </>
-  ) : null
+  )
 })
 
 export default SvgSampleRowLabels

@@ -8,6 +8,8 @@ import type { HoveredTreeNode } from './types.ts'
 
 /**
  * #stateModel TreeSidebarMixin
+ * #category display
+ * #crossCuttingMixin Row set with a dendrogram sidebar. `sources` (the display rows, named), plus the `run` callback naming its own clustering RPC. Brings `layout` / `clusterTree` / `clusterProvenance` / `treeAreaWidth` / `subtreeFilter`, the `runClustering` / `clusterRegion` declarative launch pair `setupRunClusteringAutorun` consumes, the `root` and `willClearTree` getters, and the tree-hover and canvas-ref volatiles the shared sidebar draws through
  * Adds a dendrogram sidebar to a display: stores the leaf layout, newick cluster
  * tree, sidebar width and subtree filter, plus the hover/canvas volatile state
  * used while drawing the tree.
@@ -36,6 +38,35 @@ export function TreeSidebarMixin<
         types.maybe(types.array(types.string)),
         undefined,
       ),
+      /**
+       * #property
+       * Transient declarative launch spec, the same idea as
+       * `LinearGenomeView`'s `init`: a session or config sets this true and the
+       * real clustering RPC runs once automatically, with no dialog, as soon as
+       * the display reports itself ready. `setupRunClusteringAutorun` clears it
+       * afterwards, so a saved session never re-triggers.
+       *
+       * Lives here rather than on each display because it is the trigger for a
+       * run whose *output* — `clusterTree`, `clusterProvenance`, `layout` — is
+       * this mixin's state. Three displays declared it identically, each with
+       * its own wrapper module that existed to code-split the clustering code
+       * and, along the way, hand-wrote the same six-member duck type of the
+       * display. Splitting inside the `run` callback does the same job and
+       * loads on a run rather than on every attach. What each run actually
+       * *is* stays per display, in that callback.
+       */
+      runClustering: types.maybe(types.boolean),
+      /**
+       * #property
+       * Where that run reads from, as a locstring (whitespace-separated for
+       * several). Clustering is region-scoped, so running it over the visible
+       * window feeds the estimator whatever happens to be on screen; naming the
+       * locus instead lets a session cluster on the signal and then show it
+       * against its context — otherwise a zoom the user has to perform in the
+       * right order. Cleared with `runClustering`, since it is that flag's
+       * argument and a locus left standing describes a run that is not coming.
+       */
+      clusterRegion: types.maybe(types.string),
     })
     .volatile(() => ({
       hoveredTreeNode: undefined as HoveredTreeNode | undefined,
@@ -136,6 +167,12 @@ export function TreeSidebarMixin<
       setSubtreeFilter(names?: string[]) {
         // normalize empty to undefined so the field has a single stripped state
         self.subtreeFilter = names?.length ? cast(names) : undefined
+      },
+      setRunClustering(arg?: boolean) {
+        self.runClustering = arg
+      },
+      setClusterRegion(arg?: string) {
+        self.clusterRegion = arg
       },
       setHoveredTreeNode(node?: HoveredTreeNode) {
         self.hoveredTreeNode = node

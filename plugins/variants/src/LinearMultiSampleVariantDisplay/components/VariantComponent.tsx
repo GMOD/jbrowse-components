@@ -114,7 +114,7 @@ function getFeatureUnderMouse(
   // The cell row index maps directly into model.sources (same effectiveSources
   // ordering used to compute the cells), so no per-region sourceNameList is
   // shipped over RPC.
-  const source = model.sources?.[rowIndex]
+  const source = model.sources[rowIndex]
   if (!source) {
     return undefined
   }

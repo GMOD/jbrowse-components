@@ -173,6 +173,7 @@ mirroring step to forget. Don't hand-edit between a `<!-- NAME START -->` /
 | Marker | Renders | From |
 | --- | --- | --- |
 | `DISPLAY_FOUNDATIONS` / `DISPLAY_FOUNDATION_STACKS` | which displays compose which foundation ([Display stacks](#display-stacks)) | the `#displayFoundation` / `#displayFoundationDef` tags, plus each foundation's `types.compose(...)` |
+| `CROSS_CUTTING_MIXINS` | which displays compose which cross-cutting mixin ([Cross-cutting mixins](#cross-cutting-mixins-orthogonal-to-the-fetch-foundation)); the same block renders in `creating_display.md` | the `#crossCuttingMixin` tags, plus every `types.compose(...)` in the tree — no consumer-side tag |
 | `FETCH_AUTORUNS` | the fetch-lifecycle autoruns ([Data fetching pipeline](#data-fetching-pipeline)) | the install sites in `MultiRegionDisplayMixin.ts` and their `#autorun` tags |
 | `PALETTE_KEYS` | the settable theme palette keys | the `Palette` / `StringColors` interfaces |
 | `HELPER_PACKAGES` | the standalone npm helper packages | `packages/*/package.json` |
@@ -368,23 +369,45 @@ still runs the shared `computeSvgReady` / `awaitSvgReady` export gate
 
 ### Cross-cutting mixins, orthogonal to the fetch foundation
 
-Three concerns cut across the table above, and each is one mixin with one
+Several concerns cut across the table above, and each is one mixin with one
 overridable hook. Composing the mixin *is* the opt-in; a display that doesn't
 override the hook pays nothing.
 
-| Concern | Mixin | The display supplies |
+The table is **generated** from the `#crossCuttingMixin` tags and, unlike the
+foundations table, needs no tag on the consumer side: a display joins a row by
+composing the mixin, which is read off `types.compose(...)` directly. That is
+the whole reason the **Composed by** column exists. A foundation is a display's
+spine, so getting it wrong breaks the display and the table drifting is only a
+doc bug; a cross-cutting mixin is opt-in, so a display that should have one and
+doesn't just quietly does less — and this column is the only place that shows
+up. **Read the short rows as questions, not as facts.** A row is also allowed
+to name an intermediate mixin rather than a display (`WiggleScoreConfigMixin`
+composes `ScoreScaleMixin` on the whole wiggle family's behalf), because the
+column reports what actually composes what.
+
+<!-- CROSS_CUTTING_MIXINS START -->
+
+<!-- prettier-ignore -->
+| Mixin | The display supplies | Composed by |
 | --- | --- | --- |
-| Internal vertical scroll | `TrackHeightMixin` | `scrollableHeight` (default `Infinity` = doesn't scroll). Brings the clamped `setScrollTop` and the autorun that re-clamps when content shrinks |
-| Track-height strategy | `HeightModeMixin` | `growTargetHeight` (default = the raw slot). Brings `heightMode`/`autoHeight`/`fitHeightToDisplay`, `grownHeight`, the reactive `height` override, `setHeightMode`, and the grow-aware `resizeHeight` |
-| Score axis | `ScoreScaleMixin` (`@jbrowse/wiggle-core`) | nothing — the config slots. Brings `scaleType` / `autoscaleType` / `minScore` / `maxScore` / `*Bound` / `numStdDev` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume |
+| `TrackHeightMixin()` | Internal vertical scroll. `scrollableHeight` (default `Infinity` = doesn't scroll). Brings the clamped `setScrollTop` and the autorun that re-clamps when content shrinks | `LinearAlignmentsDisplay`, `LinearArcDisplay`, `LinearCanvasBaseDisplay`, `LinearHicDisplay`, `LinearMafDisplay`, `LinearManhattanDisplay`, `LinearMultiRowFeatureDisplay`, `LinearPairedArcDisplay`, `LinearReferenceSequenceDisplay`, `LinearWiggleDisplay`, `MultiLinearWiggleDisplay`, `MultiSampleVariantBaseModel`, `SharedLDModel` |
+| `TreeSidebarMixin()` | Row set with a dendrogram sidebar. `sources` (the display rows, named), plus the `run` callback naming its own clustering RPC. Brings `layout` / `clusterTree` / `clusterProvenance` / `treeAreaWidth` / `subtreeFilter`, the `runClustering` / `clusterRegion` declarative launch pair `setupRunClusteringAutorun` consumes, the `root` and `willClearTree` getters, and the tree-hover and canvas-ref volatiles the shared sidebar draws through | `LinearMafDisplay`, `LinearMultiRowFeatureDisplay`, `MultiLinearWiggleDisplay`, `MultiSampleVariantBaseModel` |
+| `HeightModeMixin()` | Track-height strategy; the one row that must compose **after** `TrackHeightMixin()`, whose `height` and `resizeHeight` it overrides. `growTargetHeight` (default = the raw slot). Brings `heightMode`/`autoHeight`/`fitHeightToDisplay`, `grownHeight`, the reactive `height` override, `setHeightMode`, and the grow-aware `resizeHeight` | `LinearAlignmentsDisplay`, `LinearCanvasBaseDisplay` |
+| `ScoreScaleMixin()` | Score axis. Nothing — the config slots. Brings `scaleType` / `autoscaleType` / `minScore` / `maxScore` / `*Bound` / `numStdDev` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume | `LinearAlignmentsDisplay`, `WiggleScoreConfigMixin` |
+| `StaleViewportRescaleMixin()` | Stale-pixel rescaling for a display whose worker output is in fetch-time pixel space. Nothing — the display records `lastDrawnOffsetPx`/`lastDrawnBpPerPx` from its render callback. Brings the `renderTransform` that keeps stale pixels aligned during a pan-during-fetch and the `viewportFresh` half of `dataCurrent` | `LinearHicDisplay`, `SharedLDModel` |
+
+<!-- CROSS_CUTTING_MIXINS END -->
 
 Each replaced a policy that had been written out per display — four copies of the
 scroll clamp, two character-identical copies of grow mode, two implementations of
-the score axis. **The interface existed before the implementation in all three
-cases** (`ScoreScaleModel`, `installGrowExitBake`'s structural param,
-`useVirtualScrollWheel`'s opts), which is the tell worth generalizing: a
+the score axis. **The interface existed before the implementation every time**
+(`ScoreScaleModel`, `installGrowExitBake`'s structural param,
+`useVirtualScrollWheel`'s opts, and `TreeSidebarModel` / `TreeDrawingModel` /
+`RowHeightModel` for the row family), which is the tell worth generalizing: a
 duck-typed contract that several displays satisfy by hand is a mixin that hasn't
-been written yet.
+been written yet. Look for the contract, not for the duplication — by the time
+the bodies look alike they have usually already drifted, and the interface is
+the thing that says what they were supposed to agree on.
 
 `HeightModeMixin` must compose **after** `TrackHeightMixin` — it overrides that
 mixin's `height` and `resizeHeight`, and `types.compose` resolves a collision to
@@ -1207,12 +1230,25 @@ that is what makes them worth listing rather than trusting to review.
   `session.palette`, not `session.theme`: the palette is the serializable,
   toolkit-free one that crosses the RPC boundary. See [theme-derived render
   inputs](#theme-derived-render-inputs-are-session-getters-not-pushed-volatiles).
-- Don't clear a hover on `bpPerPx` alone. Content moves under a stationary
-  cursor on three axes — zoom, `offsetPx` (a side-scroll or locstring pan fires
-  no pointer event at all), and the display's own `scrollTop` — and a sticky
-  canvas gets no `mousemove`/`mouseleave` for any of them. Use
-  `installClearHoverOnViewportChange`, which is a `reaction` precisely so its
-  effect can read hover state without setting a hover re-firing it.
+- Don't **store** a hover without clearing it on viewport change. Content moves
+  under a stationary cursor on three axes — zoom, `offsetPx` (a side-scroll or
+  locstring pan fires no pointer event at all), and the display's own
+  `scrollTop` — and a sticky canvas gets no `mousemove`/`mouseleave` for any of
+  them, so a hover held in a volatile goes on naming what *used* to be there.
+  `installClearHoverOnViewportChange` is the fix, and it is a `reaction`
+  precisely so its effect can read hover state without setting a hover
+  re-firing it. Clearing on `bpPerPx` alone is the same bug with two axes left
+  in it, which is where alignments started.
+
+  **A derived hover needs none of this, and that is the other correct design.**
+  MAF stores no hit: its body re-runs `mafHitTest` from the live pointer on
+  every render, so an observer re-resolves under a moving viewport by
+  construction. Store a hover when the hit is expensive or several components
+  read it (canvas, alignments, Manhattan, wiggle, the multi-row painting, the
+  multi-sample variant matrix); derive it when the hit test is a lookup and one
+  component consumes it. What is not allowed is the third thing — storing it and
+  leaving the clear to the pointer handlers, which cover only the case where
+  the pointer is what moved.
 
 ### Backends and generated code
 

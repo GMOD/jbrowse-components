@@ -42,7 +42,7 @@ test('a clustering run leaves a drawable dendrogram with no further fetch', asyn
   const display = await cluster()
 
   expect(display.clusterTree).toBe(RPC_RESULT.tree)
-  expect(display.sources?.map(s => s.name)).toEqual(['S2', 'S0', 'S1'])
+  expect(display.sources.map(s => s.name)).toEqual(['S2', 'S0', 'S1'])
   // positions, i.e. computeClusterHierarchy agrees the tree names these rows
   expect(display.hierarchy).toBeDefined()
 })

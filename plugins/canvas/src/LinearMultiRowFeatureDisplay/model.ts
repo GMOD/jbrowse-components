@@ -9,11 +9,12 @@ import { getSession, openFeatureWidget } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { isAlive, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   MIN_DISPLAY_HEIGHT,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
+  installClearHoverOnViewportChange,
 } from '@jbrowse/plugin-linear-genome-view'
 import { MAX_CANVAS_DIM_PX, getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import {
@@ -28,6 +29,7 @@ import {
   reconcileLayout,
   resetRowOrderMenuItems,
   setupRowSortAutorun,
+  setupRunClusteringAutorun,
   treeSidebarOffset,
   treeSidebarRightEdge,
 } from '@jbrowse/tree-sidebar'
@@ -117,23 +119,8 @@ export default function stateModelFactory(
          * #property
          */
         configuration: ConfigurationReference(configSchema),
-        /**
-         * #property
-         * Transient declarative launch spec (like LinearGenomeView's `init`): set
-         * true — from the track menu or a saved session — to run row clustering
-         * once as soon as the display is ready; getMultiRowClusterAutorun clears
-         * it afterward so a saved session never re-triggers.
-         */
-        runClustering: types.maybe(types.boolean),
-        /**
-         * #property
-         * Where that run reads from, as a locstring (whitespace-separated for
-         * several). Clustering is region-scoped, so running it over the visible
-         * window feeds the estimator whatever is on screen; naming the locus
-         * instead lets a session cluster on the signal and show it against its
-         * context. Cleared with `runClustering`.
-         */
-        clusterRegion: types.maybe(types.string),
+        // `runClustering` / `clusterRegion` are TreeSidebarMixin's — they
+        // trigger a run whose output is that mixin's state.
         /**
          * #property
          * Transient declarative launch spec (like `runClustering`): set
@@ -784,20 +771,6 @@ export default function stateModelFactory(
       },
       /**
        * #action
-       * Trigger (or clear) a one-shot row clustering run; consumed and reset by
-       * getMultiRowClusterAutorun.
-       */
-      setRunClustering(arg?: boolean) {
-        self.runClustering = arg
-      },
-      /**
-       * #action
-       */
-      setClusterRegion(arg?: string) {
-        self.clusterRegion = arg
-      },
-      /**
-       * #action
        * Trigger (or clear) a one-shot declarative row sort; consumed and reset
        * by `setupRowSortAutorun`. The right-click menu calls `sortRowsByValueAt`
        * directly (instant, data already loaded); this prop is the session-level
@@ -985,6 +958,19 @@ export default function stateModelFactory(
           // chromosome nav (CanvasFeatureGateMixin.afterAttach) — nothing to
           // wire up here.
 
+          // Clear hover when the viewport moves under a stationary cursor. The
+          // painting is a sticky canvas, so a pan or zoom fires no mousemove
+          // and no mouseleave and `hoveredFeature` keeps naming whatever used
+          // to be under the pointer — the tooltip and `MultiRowHoverHighlight`
+          // then describe a block that has scrolled away. The component's
+          // handlers cover only the cases where the *pointer* moves.
+          addDisposer(
+            self,
+            installClearHoverOnViewportChange(self, () => {
+              self.setHoveredFeature(undefined)
+            }),
+          )
+
           // Light autorun (mobx-only, already bundled): install synchronously.
           // The two below genuinely code-split heavy d3/clustering code.
           setupRowSortAutorun(self, {
@@ -1004,15 +990,28 @@ export default function stateModelFactory(
             console.error(e)
           }
 
-          try {
-            const { getMultiRowClusterAutorun } =
-              await import('./getMultiRowClusterAutorun.ts')
-            if (isAlive(self)) {
-              getMultiRowClusterAutorun(self)
-            }
-          } catch (e) {
-            console.error(e)
-          }
+          // The "Cluster rows by similarity" flavor of the shared declarative-
+          // clustering autorun: fires once when `runClustering` flips true
+          // (from the track menu or a saved session) and runs the real
+          // feature-matrix RPC over whatever the installer resolved -- the
+          // `clusterRegion` locus if the session named one, the visible blocks
+          // if not -- then clears the flag.
+          //
+          // Installed synchronously; the heavy half is code-split inside `run`,
+          // so the clustering module loads when a run actually starts rather
+          // than on every attach. This used to be a wrapper module imported for
+          // that split, which also carried a hand-written duck type of the six
+          // members the installer needs -- three copies of it, one per flavor,
+          // now that those members are declared on TreeSidebarMixin.
+          setupRunClusteringAutorun(self, {
+            name: 'AutoRunMultiRowClustering',
+            ready: () => self.sourcesWithoutLayout.length > 1,
+            run: async args => {
+              const { runMultiRowClustering } =
+                await import('./runMultiRowClustering.ts')
+              await runMultiRowClustering({ model: self, ...args })
+            },
+          })
         },
       }
     })

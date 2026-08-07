@@ -54,7 +54,7 @@ const VariantMatrixBody = observer(function VariantMatrixBody({
     const sources = model.sources
     if (
       cellData?.mode !== 'matrix' ||
-      !sources?.length ||
+      !sources.length ||
       cellData.numFeatures === 0
     ) {
       return undefined

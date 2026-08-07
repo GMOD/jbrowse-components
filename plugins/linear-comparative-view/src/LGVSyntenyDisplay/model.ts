@@ -32,10 +32,7 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { anchorPanelTracks } from '../LaunchSyntenyView/anchorPanelTracks.ts'
 import { canLaunchSyntenyForMate } from '../LaunchSyntenyView/canLaunchSyntenyForMate.ts'
 import { getMate } from '../syntenyMate.ts'
-import {
-  getSyntenyGroupByMenuItem,
-  getSyntenyShowMenuItems,
-} from './menus.ts'
+import { getSyntenyGroupByMenuItem, getSyntenyShowMenuItems } from './menus.ts'
 
 import type { LGVSyntenyDisplayConfigModel } from './configSchemaF.ts'
 import type { MenuItem } from '@jbrowse/core/ui'

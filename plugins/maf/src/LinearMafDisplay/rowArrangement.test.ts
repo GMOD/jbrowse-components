@@ -124,8 +124,12 @@ describe('the configured per-sample color reaches the sidebar', () => {
     ])
   })
 
-  it('is undefined before any fetch, like `sources`', () => {
+  // Resolved, like `sources` it is derived from — an empty row list, not an
+  // absent one. "Has the species list arrived" is `sourcesKnown`, and the
+  // label components take an array either way.
+  it('is empty before any fetch, like `sources`', () => {
     const { display } = createMafTestEnvironment().createDisplay()
-    expect(display.labelSources).toBeUndefined()
+    expect(display.labelSources).toEqual([])
+    expect(display.sourcesKnown).toBe(false)
   })
 })

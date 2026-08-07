@@ -10,6 +10,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 /**
  * #stateModel TrackHeightMixin
  * #category display
+ * #crossCuttingMixin Internal vertical scroll. `scrollableHeight` (default `Infinity` = doesn't scroll). Brings the clamped `setScrollTop` and the autorun that re-clamps when content shrinks
  *
  * The display height is stored directly on the `height` config slot (drag-resize
  * writes it via `setSlot`), so it survives a track being unticked and reticked —

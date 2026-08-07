@@ -12,6 +12,7 @@ import type { RenderTransform } from './renderTransform.ts'
 /**
  * #stateModel StaleViewportRescaleMixin
  * #category display
+ * #crossCuttingMixin Stale-pixel rescaling for a display whose worker output is in fetch-time pixel space. Nothing — the display records `lastDrawnOffsetPx`/`lastDrawnBpPerPx` from its render callback. Brings the `renderTransform` that keeps stale pixels aligned during a pan-during-fetch and the `viewportFresh` half of `dataCurrent`
  *
  * Records the viewport state (`offsetPx`, `bpPerPx`) at which the canvas was
  * last fully drawn, and derives the two things every consumer wants from it:

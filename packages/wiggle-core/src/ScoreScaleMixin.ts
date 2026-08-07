@@ -14,6 +14,7 @@ const confNode = (self: object) =>
 /**
  * #stateModel ScoreScaleMixin
  * #category display
+ * #crossCuttingMixin Score axis. Nothing — the config slots. Brings `scaleType` / `autoscaleType` / `minScore` / `maxScore` / `*Bound` / `numStdDev` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume
  *
  * The score axis every quantitative display shares: which scale, how to
  * autoscale it, and the manual min/max bounds. This is the runtime half of

@@ -30,7 +30,7 @@ const SvgSampleRowLabelGutter = observer(function SvgSampleRowLabelGutter({
     canDisplayLabels,
   })
 
-  const nrow = sources?.length ?? 0
+  const nrow = sources.length
   const startIdx =
     rowHeight > 0 ? Math.max(0, Math.floor(scrollTop / rowHeight)) : 0
   const endIdx =
@@ -42,7 +42,7 @@ const SvgSampleRowLabelGutter = observer(function SvgSampleRowLabelGutter({
   // collide (a duplicate clipPath id makes the second render unclipped). Uses
   // the same real id in tests as in production — the export duplicate-id guard
   // runs under jest, so a hardcoded test literal would defeat itself.
-  return sources ? (
+  return (
     <SvgClipRect id={`sample-row-labels-${id}`} width={1000} height={height}>
       <g transform={`translate(0,${-scrollTop})`}>
         <SvgSampleRowLabels
@@ -53,7 +53,7 @@ const SvgSampleRowLabelGutter = observer(function SvgSampleRowLabelGutter({
         />
       </g>
     </SvgClipRect>
-  ) : null
+  )
 })
 
 export default SvgSampleRowLabelGutter

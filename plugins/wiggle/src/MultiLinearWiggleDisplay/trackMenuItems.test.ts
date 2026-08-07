@@ -199,9 +199,9 @@ describe('multi-wiggle track menu', () => {
       sources: ['a'],
       renderingType: 'multixyplot',
     }).display
-    expect(labels(subMenuOf(oneSource.trackMenuItems(), 'Show...'))).not.toContain(
-      'Show legend',
-    )
+    expect(
+      labels(subMenuOf(oneSource.trackMenuItems(), 'Show...')),
+    ).not.toContain('Show legend')
 
     const row = makeDisplay({ renderingType: 'multirowxy' }).display
     expect(labels(subMenuOf(row.trackMenuItems(), 'Show...'))).not.toContain(

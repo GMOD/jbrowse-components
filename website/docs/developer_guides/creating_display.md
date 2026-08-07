@@ -84,6 +84,39 @@ Both walkthroughs, [Canvas2D](/docs/developer_guides/plotting_features) and
 `MultiRegionDisplayMixin`, the common case. New track types should compose one
 of these rather than emitting SVG per feature.
 
+## Cross-cutting mixins
+
+A foundation answers how your display _fetches_. These answer everything else,
+and they are orthogonal to it — compose any of them on top of whichever
+foundation you picked. Each is one mixin with one overridable hook, and
+composing it **is** the opt-in: a display that never overrides the hook gets the
+default and pays nothing.
+
+Reach for one of these before writing the behavior yourself. Each replaced
+several hand-written copies that had already drifted from each other — four
+spellings of the scroll clamp, two of grow mode — and the **Composed by** column
+is read off the `types.compose(...)` calls themselves, so it is also the honest
+answer to "does anything else already do this?"
+
+<!-- CROSS_CUTTING_MIXINS START -->
+
+<!-- prettier-ignore -->
+| Mixin | The display supplies | Composed by |
+| --- | --- | --- |
+| `TrackHeightMixin()` | Internal vertical scroll. `scrollableHeight` (default `Infinity` = doesn't scroll). Brings the clamped `setScrollTop` and the autorun that re-clamps when content shrinks | `LinearAlignmentsDisplay`, `LinearArcDisplay`, `LinearCanvasBaseDisplay`, `LinearHicDisplay`, `LinearMafDisplay`, `LinearManhattanDisplay`, `LinearMultiRowFeatureDisplay`, `LinearPairedArcDisplay`, `LinearReferenceSequenceDisplay`, `LinearWiggleDisplay`, `MultiLinearWiggleDisplay`, `MultiSampleVariantBaseModel`, `SharedLDModel` |
+| `TreeSidebarMixin()` | Row set with a dendrogram sidebar. `sources` (the display rows, named), plus the `run` callback naming its own clustering RPC. Brings `layout` / `clusterTree` / `clusterProvenance` / `treeAreaWidth` / `subtreeFilter`, the `runClustering` / `clusterRegion` declarative launch pair `setupRunClusteringAutorun` consumes, the `root` and `willClearTree` getters, and the tree-hover and canvas-ref volatiles the shared sidebar draws through | `LinearMafDisplay`, `LinearMultiRowFeatureDisplay`, `MultiLinearWiggleDisplay`, `MultiSampleVariantBaseModel` |
+| `HeightModeMixin()` | Track-height strategy; the one row that must compose **after** `TrackHeightMixin()`, whose `height` and `resizeHeight` it overrides. `growTargetHeight` (default = the raw slot). Brings `heightMode`/`autoHeight`/`fitHeightToDisplay`, `grownHeight`, the reactive `height` override, `setHeightMode`, and the grow-aware `resizeHeight` | `LinearAlignmentsDisplay`, `LinearCanvasBaseDisplay` |
+| `ScoreScaleMixin()` | Score axis. Nothing — the config slots. Brings `scaleType` / `autoscaleType` / `minScore` / `maxScore` / `*Bound` / `numStdDev` and their setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and `SetMinMaxDialog` consume | `LinearAlignmentsDisplay`, `WiggleScoreConfigMixin` |
+| `StaleViewportRescaleMixin()` | Stale-pixel rescaling for a display whose worker output is in fetch-time pixel space. Nothing — the display records `lastDrawnOffsetPx`/`lastDrawnBpPerPx` from its render callback. Brings the `renderTransform` that keeps stale pixels aligned during a pan-during-fetch and the `viewportFresh` half of `dataCurrent` | `LinearHicDisplay`, `SharedLDModel` |
+
+<!-- CROSS_CUTTING_MIXINS END -->
+
+`HeightModeMixin()` is the one with an ordering rule: compose it **after**
+`TrackHeightMixin()`, whose `height` and `resizeHeight` it overrides.
+`types.compose` gives a collision to the later argument, so the wrong order
+silently leaves grow mode inert — the mixin reports it at attach rather than
+letting you find out visually.
+
 The
 [architecture spec's display-stacks table](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#display-stacks)
 is the canonical version of this table and goes further into why the fetch and

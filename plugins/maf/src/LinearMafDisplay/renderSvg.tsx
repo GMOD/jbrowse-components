@@ -157,7 +157,7 @@ function MafSvgBody({
             const canvas2dState = {
               rowHeight: effectiveRowHeight,
               rowProportion,
-              nRows: sources?.length ?? 0,
+              nRows: sources.length,
               canvasWidth: width,
               canvasHeight: rowsHeight,
               scrollTop,
@@ -209,10 +209,10 @@ function MafSvgBody({
           showTree={showTree}
           hierarchy={hierarchy}
           // see `labelSources` — the sidebar tints from `labelColor`
-          sources={labelSources ?? []}
+          sources={labelSources}
           rowHeight={effectiveRowHeight}
           treeAreaWidth={treeAreaWidth}
-          showLabels={showRowLabels && !!sources?.length}
+          showLabels={showRowLabels && !!sources.length}
           scrollTop={scrollTop}
           availableHeight={rowsHeight}
         />

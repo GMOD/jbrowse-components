@@ -104,6 +104,10 @@ const GENERATORS: Generator[] = [
     name: 'display foundations table',
     argv: api('generateDisplayFoundationDocs.ts'),
   },
+  {
+    name: 'cross-cutting mixins table',
+    argv: api('generateCrossCuttingMixinDocs.ts'),
+  },
   { name: 'fetch autoruns table', argv: api('generateFetchAutorunDocs.ts') },
   { name: 'palette keys table', argv: api('generatePaletteDocs.ts') },
   { name: 'helper package table', argv: api('generateHelperPackageDocs.ts') },

@@ -64,7 +64,7 @@ const SvgVariantOverlay = ({
         <SvgTreeSidebar
           showTree={showTree}
           hierarchy={hierarchy}
-          sources={sources ?? []}
+          sources={sources}
           rowHeight={rowHeight}
           treeAreaWidth={treeAreaWidth}
           scrollTop={scrollTop}

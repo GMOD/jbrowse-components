@@ -3006,9 +3006,9 @@ export const configManifest: ConfigManifest = {
         "clusterProvenance",
         "treeAreaWidth",
         "subtreeFilter",
-        "configuration",
         "runClustering",
         "clusterRegion",
+        "configuration",
         "sortRowsBy",
         "hiddenCategories"
       ]
@@ -3822,10 +3822,10 @@ export const configManifest: ConfigManifest = {
         "clusterProvenance",
         "treeAreaWidth",
         "subtreeFilter",
-        "configuration",
-        "jexlFilters",
         "runClustering",
-        "clusterRegion"
+        "clusterRegion",
+        "configuration",
+        "jexlFilters"
       ]
     },
     "LinearMultiSampleVariantMatrixDisplay": {
@@ -3931,10 +3931,10 @@ export const configManifest: ConfigManifest = {
         "clusterProvenance",
         "treeAreaWidth",
         "subtreeFilter",
-        "configuration",
-        "jexlFilters",
         "runClustering",
-        "clusterRegion"
+        "clusterRegion",
+        "configuration",
+        "jexlFilters"
       ]
     },
     "LDDisplay": {
@@ -4349,9 +4349,9 @@ export const configManifest: ConfigManifest = {
         "clusterProvenance",
         "treeAreaWidth",
         "subtreeFilter",
-        "configuration",
         "runClustering",
         "clusterRegion",
+        "configuration",
         "sortRowsBy"
       ]
     },
@@ -4693,6 +4693,8 @@ export const configManifest: ConfigManifest = {
         "clusterProvenance",
         "treeAreaWidth",
         "subtreeFilter",
+        "runClustering",
+        "clusterRegion",
         "configuration"
       ]
     },

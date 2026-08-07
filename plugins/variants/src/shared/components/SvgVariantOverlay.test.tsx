@@ -40,7 +40,7 @@ test('sidebar row color swatches export', () => {
     { name: 'HG002', population: 'AFR' },
   ])
   model.setColorBy('population')
-  const colors = model.sources!.map(s => s.color)
+  const colors = model.sources.map(s => s.color)
   expect(new Set(colors).size).toBe(2)
 
   const { container } = renderOverlay(model)

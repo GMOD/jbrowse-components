@@ -13,6 +13,7 @@ import {
   writeConfigDocs,
   writePromotableSlotDocs,
 } from './generateConfigDocs.ts'
+import { writeCrossCuttingMixinDocs } from './generateCrossCuttingMixinDocs.ts'
 import { writeDisplayFoundationDocs } from './generateDisplayFoundationDocs.ts'
 import { writeExtensionPointDocs } from './generateExtensionPointDocs.ts'
 import { writeFetchAutorunDocs } from './generateFetchAutorunDocs.ts'
@@ -185,6 +186,7 @@ async function main() {
   writeJexlDocs()
   writeExtensionPointDocs()
   writeDisplayFoundationDocs()
+  writeCrossCuttingMixinDocs()
   writeFetchAutorunDocs()
   writePaletteDocs()
   writeHelperPackageDocs()

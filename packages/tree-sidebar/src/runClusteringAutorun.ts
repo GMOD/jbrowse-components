@@ -5,6 +5,7 @@ import {
 } from '@jbrowse/core/util'
 import { isAbortException } from '@jbrowse/core/util/aborting'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
@@ -53,16 +54,27 @@ export function setupRunClusteringAutorun(
   opts: {
     name: string
     ready: () => boolean
+    // Everything the flavor needs to make its RPC call, in one object.
+    //
     // `regions` is what to cluster over: the display's `clusterRegion`
     // resolved, or the visible blocks. Handed down rather than left for each
     // flavor to read off the view, which is also why none of them takes the
     // view any more -- resolving the regions was the only thing they used it
     // for, and two of the three already ignored it.
-    run: (
-      stopToken: StopToken,
-      statusCallback: (status: RpcStatus) => void,
-      regions: Region[],
-    ) => Promise<void>
+    //
+    // `rpcManager` / `sessionId` are here for the same reason one step later:
+    // all three flavors opened with the identical `getSession(self).rpcManager`
+    // + `getRpcSessionId(self)` pair, which was the bulk of what each wrapper
+    // module contained. Resolving them once also means a flavor cannot reach
+    // for a *different* session id and silently land its RPC on another
+    // worker's adapter cache.
+    run: (args: {
+      rpcManager: ReturnType<typeof getSession>['rpcManager']
+      sessionId: string
+      regions: Region[]
+      stopToken: StopToken
+      statusCallback: (status: RpcStatus) => void
+    }) => Promise<void>
   },
 ) {
   // Plain closure flag (not observable) guards re-entrant runs while the RPC is
@@ -84,15 +96,17 @@ export function setupRunClusteringAutorun(
         const report = self.makeStatusCallback()
         try {
           const regions = await clusterRegions(self, view)
-          await opts.run(
+          await opts.run({
+            rpcManager: getSession(self).rpcManager,
+            sessionId: getRpcSessionId(self),
+            regions,
             stopToken,
-            status => {
+            statusCallback: status => {
               if (applying) {
                 report(status)
               }
             },
-            regions,
-          )
+          })
         } catch (e) {
           if (!isAbortException(e) && isAlive(self)) {
             console.error(e)

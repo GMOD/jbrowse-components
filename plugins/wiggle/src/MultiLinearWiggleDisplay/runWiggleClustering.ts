@@ -13,9 +13,9 @@ import type { RpcMethodCaller } from '@jbrowse/tree-sidebar'
 type ClusterScoreMatrixCaller = RpcMethodCaller<'MultiWiggleClusterScoreMatrix'>
 
 // The real "Cluster columns" -> "Run clustering" RPC, extracted so it has one
-// home: the dialog button and a declarative session-triggered run
-// (getWiggleClusterAutorun) call the exact same code rather than two copies
-// drifting apart.
+// home: the dialog button and a declarative session-triggered run (the
+// `setupRunClusteringAutorun` install in the display's afterAttach) call the
+// exact same code rather than two copies drifting apart.
 export async function runWiggleClustering({
   model,
   rpcManager,
