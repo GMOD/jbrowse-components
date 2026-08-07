@@ -17,16 +17,32 @@ prefers declarative iteration.
   `slice`d when cells were skipped — read `numCells`, never `.length`.
 - **Genotype maps crossing RPC key by `sampleName`**, never `name` (HP-suffixed
   in phased mode).
-- **`featureGenotypeMap` is a genotype record, not a log of what got painted** —
-  both cell loops ship the adapter's whole genotype map for the feature, by
-  reference, so the two displays are handed the same object and cannot disagree.
-  Don't rebuild it from the rows being drawn: under the default
+- **`featureGenotypeMap` records every genotype, not what got painted** — both
+  cell loops ship the whole per-feature genotype array `computeSampleInfo`
+  interned, by reference, so the two displays are handed the same object and
+  cannot disagree. Don't rebuild it from the rows being drawn: under the default
   `referenceDrawingMode: 'skip'` a hom-ref call paints nothing, so a
   painted-cells copy made every hom-ref row decode as MISSING to the anchored
   sort — while the matrix, which always paints ref, sorted the same data
-  differently. It is also the largest single cost the loop can take on: a fresh
-  dictionary-mode object per feature with one insert per sample, which is
-  features × samples inserts to reproduce a map already in hand.
+  differently.
+- **Genotypes reach the cell loops as codes, never as strings.**
+  `computeSampleInfo` makes one `processGenotypes` pass per feature — the
+  `@gmod/vcf` callback that reports a genotype as a range into the line — and
+  from it interns `genotypeCodes`, accumulates `sampleInfo`, and folds the
+  legend flags. The cell loops then index those codes by a source's column
+  (`buildSourceSampleIndices`, resolved once per pass) and key their style memos
+  by code, so a genotype string is materialized once per (site, distinct
+  genotype) rather than once per cell. What this replaced was a
+  `Record<sampleName, genotype>` per feature, built by `GENOTYPES()` and walked
+  three more times — flags, colors, interning — to reproduce a payload the
+  worker only ever ships as codes: 611ms/214MB against 71ms/1MB on 2504 samples
+  × 400 variants. **A new consumer reads codes.** Reintroducing the record to
+  serve one is how the four passes come back.
+- Codes are **Uint32**. They were Uint16, which capped the dict at 65535
+  distinct genotype strings — reachable on a decomposed pangenome callset, where
+  a multiallelic site's genotypes grow with the square of the alt count. Past
+  the cap a genotype interned to 0, and 0 now means "this sample has no call",
+  so the cell loops would decline to paint it at all.
 - **`NaN` is the only missing marker** in genotype matrices. A sentinel on the
   value scale (`-1`) made samples cluster by missingness.
 - **`featureColor` is the single cell-coloring axis.** Add new modes there, not

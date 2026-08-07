@@ -113,7 +113,7 @@ const PORTABLE_CONFIG_KEYS = [
 // every fetched region, while the codes live per-region in regular mode and in
 // one flat array in matrix mode.
 function getOrderedGenotypeCodes(cellData: CellDataResult) {
-  const genotypeCodesByFeatureId = new Map<string, Uint16Array>()
+  const genotypeCodesByFeatureId = new Map<string, Uint32Array>()
   if (cellData.mode === 'regular') {
     for (const regionData of Object.values(cellData.perRegionCellData)) {
       for (const featureId in regionData.featureGenotypeMap) {

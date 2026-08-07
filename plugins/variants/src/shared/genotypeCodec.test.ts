@@ -1,5 +1,4 @@
 import {
-  MAX_GENOTYPE_DICT_ENTRIES,
   buildSampleIndex,
   decodeGenotype,
   internGenotype,
@@ -14,7 +13,7 @@ function pack(
   dictIndex: Map<string, number>,
 ) {
   const sampleIndex = buildSampleIndex(sampleNames)
-  const codes = new Uint16Array(sampleNames.length)
+  const codes = new Uint32Array(sampleNames.length)
   for (const sampleName in genotypes) {
     codes[sampleIndex.get(sampleName)!] = internGenotype(
       genotypes[sampleName]!,
@@ -63,11 +62,13 @@ describe('genotypeCodec', () => {
   })
 })
 
-// Codes are Uint16 with 0 reserved, so the dict tops out at 65535 entries.
-// Uncapped, `code + 1` truncated on the way into the Uint16Array and the
-// overflow genotypes decoded as OTHER genotypes' strings — a tooltip
-// confidently naming a call the VCF never made.
-describe('genotype dict overflow', () => {
+// The dict used to be capped at 65535 entries to fit a Uint16 code, and past
+// the cap a genotype interned to 0. That was survivable when the cells were
+// painted from the genotype strings and only the tooltip lost the call; it is
+// not now, because the cell loops color from the codes and would decline to
+// paint the overflow entirely. Codes are Uint32, so what these pin is that
+// there is no cap left to fall off.
+describe('genotype dict past 65535 entries', () => {
   function fillDict(n: number) {
     const dict: string[] = []
     const dictIndex = new Map<string, number>()
@@ -78,42 +79,30 @@ describe('genotype dict overflow', () => {
     return { dict, dictIndex, codes }
   }
 
-  test('every code fits a Uint16 up to the cap', () => {
-    const { dict, codes } = fillDict(MAX_GENOTYPE_DICT_ENTRIES)
-    expect(dict).toHaveLength(MAX_GENOTYPE_DICT_ENTRIES)
-    expect(Math.max(...codes)).toBe(MAX_GENOTYPE_DICT_ENTRIES)
-    // the round trip a Uint16Array does, which is where truncation would bite
-    const packed = Uint16Array.from(codes)
-    expect(packed[packed.length - 1]).toBe(MAX_GENOTYPE_DICT_ENTRIES)
+  test('a genotype past the old cap gets a real code, not 0', () => {
+    const { dict, dictIndex } = fillDict(65535)
+    const code = internGenotype('novel|genotype', dict, dictIndex)
+    expect(code).toBe(65536)
+    expect(dict).toHaveLength(65536)
   })
 
-  test('past the cap a new genotype interns to 0, not onto another code', () => {
-    const { dict, dictIndex } = fillDict(MAX_GENOTYPE_DICT_ENTRIES)
-    expect(internGenotype('novel|genotype', dict, dictIndex)).toBe(0)
-    // and it did not displace the dict or claim an existing entry
-    expect(dict).toHaveLength(MAX_GENOTYPE_DICT_ENTRIES)
-    expect(dict).not.toContain('novel|genotype')
+  test('codes past the old cap round-trip through the packed array', () => {
+    const { dict, dictIndex } = fillDict(65535)
+    const sampleIndex = buildSampleIndex(['A'])
+    // Two of them: the first overflow is 65536, which a Uint16Array truncated
+    // to 0 (the harmless absent-sample answer), but the second was 65537,
+    // truncating onto code 1 — a real, wrong genotype. Both decode themselves.
+    for (const gt of ['novel|genotype', 'another|novel|genotype']) {
+      const codes = Uint32Array.from([internGenotype(gt, dict, dictIndex)])
+      expect(decodeGenotype(dict, sampleIndex, codes, 'A')).toBe(gt)
+    }
   })
 
-  test('genotypes already in the dict keep decoding after it saturates', () => {
-    const { dict, dictIndex } = fillDict(MAX_GENOTYPE_DICT_ENTRIES)
+  test('genotypes interned before the old cap still decode', () => {
+    const { dict, dictIndex } = fillDict(65535)
     internGenotype('novel|genotype', dict, dictIndex)
     const sampleIndex = buildSampleIndex(['A'])
-    const codes = Uint16Array.from([internGenotype('7|7', dict, dictIndex)])
+    const codes = Uint32Array.from([internGenotype('7|7', dict, dictIndex)])
     expect(decodeGenotype(dict, sampleIndex, codes, 'A')).toBe('7|7')
-  })
-
-  // The failure the cap exists for. Uncapped, the FIRST overflow returned 65536,
-  // which a Uint16Array truncates to 0 — harmless, the absent-sample answer. The
-  // second returned 65537, truncating to 1, and code 1 is the first genotype in
-  // the dict: the tooltip then named a real, wrong call rather than declining to
-  // answer. So this has to walk past the first one.
-  test('overflowed codes decode to undefined, never onto another genotype', () => {
-    const { dict, dictIndex } = fillDict(MAX_GENOTYPE_DICT_ENTRIES)
-    const sampleIndex = buildSampleIndex(['A'])
-    for (const gt of ['novel|genotype', 'another|novel|genotype']) {
-      const codes = Uint16Array.from([internGenotype(gt, dict, dictIndex)])
-      expect(decodeGenotype(dict, sampleIndex, codes, 'A')).toBeUndefined()
-    }
   })
 })

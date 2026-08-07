@@ -17,7 +17,7 @@ test('a site with no ALT alleles builds a tooltip instead of throwing', () => {
     length: 1,
     insertedBp: 0,
     type: 'remark',
-    genotypeCodes: new Uint16Array(),
+    genotypeCodes: new Uint32Array(),
   }
   const fields = buildVariantHit({
     info,

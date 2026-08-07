@@ -1,3 +1,8 @@
+import {
+  buildSampleIndex,
+  decodeGenotype,
+  internGenotype,
+} from '../../shared/genotypeCodec.ts'
 import { computeVariantMatrixCells } from './computeVariantMatrixCells.ts'
 
 import type { ProcessedSource } from '../../shared/types.ts'
@@ -11,15 +16,60 @@ function makeFeature(props: Record<string, unknown>, id = 'f1'): Feature {
   } as unknown as Feature
 }
 
-// See computeVariantCells.test.ts — the worker hands the compute pass a lookup
-// computeSampleInfo already filled, so the test builds the same shape.
-function genotypeLookup(features: Feature[]) {
-  return new Map(
-    features.map(f => [
-      f.id(),
-      (f.get('genotypes') as Record<string, string> | undefined) ?? {},
-    ]),
-  )
+// See computeVariantCells.test.ts — the worker hands the compute pass the codes
+// computeSampleInfo already interned, so the test builds the same shape.
+function genotypeArgs(features: Feature[]) {
+  const genotypeDict: string[] = []
+  const dictIndex = new Map<string, number>()
+  const sampleNames: string[] = []
+  const sampleIndex = new Map<string, number>()
+  const featureGenotypeCodes = new Map<string, Uint32Array>()
+  const genotypesOf = (f: Feature) =>
+    (f.get('genotypes') as Record<string, string> | undefined) ?? {}
+  for (const f of features) {
+    for (const name in genotypesOf(f)) {
+      if (!sampleIndex.has(name)) {
+        sampleIndex.set(name, sampleNames.length)
+        sampleNames.push(name)
+      }
+    }
+  }
+  for (const f of features) {
+    const codes = new Uint32Array(sampleNames.length)
+    const gts = genotypesOf(f)
+    for (const name in gts) {
+      codes[sampleIndex.get(name)!] = internGenotype(
+        gts[name]!,
+        genotypeDict,
+        dictIndex,
+      )
+    }
+    featureGenotypeCodes.set(f.id(), codes)
+  }
+  return { featureGenotypeCodes, genotypeDict, sampleNames }
+}
+
+// Decode a shipped feature's codes back to the sampleName -> genotype map the
+// assertions read. Absent samples (code 0) drop out, exactly as the client's
+// `decodeGenotype` reports them.
+function decodeAll(
+  info: { genotypeCodes: Uint32Array },
+  args: { genotypeDict: string[]; sampleNames: string[] },
+) {
+  const sampleIndex = buildSampleIndex(args.sampleNames)
+  const out: Record<string, string> = {}
+  for (const sampleName of args.sampleNames) {
+    const genotype = decodeGenotype(
+      args.genotypeDict,
+      sampleIndex,
+      info.genotypeCodes,
+      sampleName,
+    )
+    if (genotype !== undefined) {
+      out[sampleName] = genotype
+    }
+  }
+  return out
 }
 
 describe('computeVariantMatrixCells phased genotypes', () => {
@@ -43,20 +93,21 @@ describe('computeVariantMatrixCells phased genotypes', () => {
   ]
 
   test('genotypes keyed by sampleName not HP-suffixed name', () => {
+    const args = genotypeArgs([feature])
     const result = computeVariantMatrixCells({
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
       renderingMode: 'phased',
-      featureGenotypes: genotypeLookup([feature]),
+      ...args,
     })
 
-    const genotypes = result.featureData[0]!.genotypes
-    expect(genotypes.S1).toBe('1|0')
-    expect(genotypes.S2).toBe('1|1')
-    expect(genotypes['S1 HP0']).toBeUndefined()
-    expect(genotypes['S1 HP1']).toBeUndefined()
-    expect(genotypes['S2 HP0']).toBeUndefined()
-    expect(genotypes['S2 HP1']).toBeUndefined()
+    // Same as computeVariantCells: the codes are aligned to the sample order,
+    // so the four HP-suffixed render rows share these two samples' calls.
+    expect(decodeAll(result.featureData[0]!, args)).toEqual({
+      S1: '1|0',
+      S2: '1|1',
+    })
+    expect(args.sampleNames).toEqual(['S1', 'S2'])
   })
 })
 
@@ -86,7 +137,7 @@ describe('computeVariantMatrixCells phased mode ploidy', () => {
         { name: 'S3 HP0', sampleName: 'S3', HP: 0 },
       ],
       renderingMode: 'phased',
-      featureGenotypes: genotypeLookup([feature]),
+      ...genotypeArgs([feature]),
     })
     const byRow = new Map<number, number>()
     for (let i = 0; i < result.numCells; i++) {
@@ -116,7 +167,7 @@ describe('computeVariantMatrixCells phased mode ploidy', () => {
         { name: `${s} HP2`, sampleName: s, HP: 2 },
       ]),
       renderingMode: 'phased',
-      featureGenotypes: genotypeLookup([feature]),
+      ...genotypeArgs([feature]),
     })
     const rows = [...result.cellRowIndices.slice(0, result.numCells)].sort()
     expect(rows).toEqual([0, 1, 2, 3, 4])
@@ -145,7 +196,7 @@ describe('computeVariantMatrixCells cell bucket ordering', () => {
       })),
       sources,
       renderingMode: 'alleleCount',
-      featureGenotypes: genotypeLookup(features),
+      ...genotypeArgs(features),
     })
     // reference cells are the grey ones; everything else carries an alt or a
     // no-call, which is exactly the ref/non-ref split addCell buckets on
@@ -232,7 +283,7 @@ test('a site with no ALT alleles reports an empty alt list', () => {
     filteredVariants: [{ feature, mostFrequentAlt: '1' }],
     sources: [{ name: 'S1', sampleName: 'S1' }],
     renderingMode: 'alleleCount',
-    featureGenotypes: genotypeLookup([feature]),
+    ...genotypeArgs([feature]),
   })
   expect(result.numCells).toBe(1)
   expect(result.featureData[0]!.alt).toEqual([])

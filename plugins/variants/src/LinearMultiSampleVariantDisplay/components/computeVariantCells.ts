@@ -1,5 +1,6 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 
+import { buildSourceSampleIndices } from '../../VariantRPC/computeSampleInfo.ts'
 import { getInsertedBp } from '../../shared/alleleLength.ts'
 import { BLACK_ABGR, NO_CALL_COLOR } from '../../shared/constants.ts'
 import {
@@ -18,10 +19,7 @@ import { getCachedABGR } from '../../shared/variantWebglUtils.ts'
 import { SHAPE_RECT, SHAPE_TRI_LEFT } from './variantShape.ts'
 
 import type { FilteredVariant } from '../../shared/minorAlleleFrequencyUtils.ts'
-import type {
-  ProcessedSource,
-  VariantFeatureGenotypes,
-} from '../../shared/types.ts'
+import type { ProcessedSource, VariantFeatureInfo } from '../../shared/types.ts'
 import type { VariantCellStyle } from '../../shared/variantCellStyles.ts'
 import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 
@@ -40,7 +38,7 @@ export interface VariantCellData {
   // also shades the marker, so a het draws paler than a hom.
   cellAltDosage: Uint8Array
   numCells: number
-  featureGenotypeMap: Record<string, VariantFeatureGenotypes>
+  featureGenotypeMap: Record<string, VariantFeatureInfo>
   cellFeatureIndices: Uint32Array
   featureIdList: string[]
   // Absolute genomic (start, end) interleaved per *feature*, aligned to
@@ -87,7 +85,9 @@ export function computeVariantCells({
   referenceDrawingMode,
   featureColor,
   colorByPhaseSet,
-  featureGenotypes,
+  featureGenotypeCodes,
+  genotypeDict,
+  sampleNames,
   report,
 }: {
   filteredVariants: FilteredVariant[]
@@ -103,15 +103,24 @@ export function computeVariantCells({
   // silently swapped the alt-allele colors the legend was describing, with no
   // way to switch back.
   colorByPhaseSet?: boolean
-  // featureId -> genotypes, resolved once for every filtered variant by
-  // `computeSampleInfo` (which returns this map for exactly that reason) so the
-  // per-cell loops never re-parse a feature's genotype block. Prepopulated for
-  // every entry of `filteredVariants` — a sites-only VCF normalizes to {}, not
-  // undefined.
-  featureGenotypes: ReadonlyMap<string, Record<string, string>>
+  // featureId -> interned genotype codes, aligned to the canonical sample order
+  // and resolved once for every filtered variant by `computeSampleInfo` (which
+  // returns this map for exactly that reason) so the per-cell loops never
+  // re-parse a feature's genotype block. Prepopulated for every entry of
+  // `filteredVariants` — a sites-only VCF gets an all-zero row, not undefined.
+  featureGenotypeCodes: ReadonlyMap<string, Uint32Array>
+  // The strings those codes resolve against: `genotypeDict[code - 1]`, with 0
+  // meaning the sample has no genotype at this site.
+  genotypeDict: readonly string[]
+  // The canonical sample order the code arrays are aligned to.
+  sampleNames: string[]
   report?: ProgressReporter
 }): VariantCellData {
   const drawRef = referenceDrawingMode === 'draw'
+  // Each source's column in the code arrays, resolved once for the whole pass:
+  // this loop indexes a typed array where it used to hash a sample name per
+  // cell. Phased mode puts several rows on one sample, and they share a column.
+  const sourceSampleIndices = buildSourceSampleIndices(sources, sampleNames)
   // Packed once — every no-call cell reuses it instead of a per-cell cache hit.
   const noCallAbgr = getCachedABGR(NO_CALL_COLOR)
 
@@ -137,7 +146,7 @@ export function computeVariantCells({
   const insertedBp = new Int32Array(filteredVariants.length)
   const featurePositions = new Uint32Array(filteredVariants.length * 2)
 
-  const featureGenotypeMap: Record<string, VariantFeatureGenotypes> = {}
+  const featureGenotypeMap: Record<string, VariantFeatureInfo> = {}
   // Write cursors for the two buckets. `refEnd` grows up from 0, `nonRefStart`
   // shrinks down from maxCells, so they can never collide before the buffer is
   // full: every genotype contributes at most one cell.
@@ -200,8 +209,19 @@ export function computeVariantCells({
   // override color). A site with thousands of samples carries a handful of
   // distinct genotype strings, so this is what keeps the color work O(sites x
   // distinct genotypes) instead of O(cells) — see shared/variantCellStyles.ts.
-  const alleleCountStyles = new Map<string, VariantCellStyle | null>()
-  const phasedStyles = new Map<string, (VariantCellStyle | null)[]>()
+  //
+  // Indexed by genotype code rather than keyed by genotype string: the dict is
+  // complete before this runs, so the memo is a plain array sized to it and the
+  // per-cell lookup is an array read. Only the codes a site actually used are
+  // cleared between features, which is that same handful.
+  const numCodes = genotypeDict.length + 1
+  const alleleCountStyles = new Array<VariantCellStyle | null | undefined>(
+    numCodes,
+  )
+  const phasedStyles = new Array<(VariantCellStyle | null)[] | undefined>(
+    numCodes,
+  )
+  const touchedCodes: number[] = []
 
   let featureIdx = 0
   for (const { feature, mostFrequentAlt } of filteredVariants) {
@@ -221,15 +241,19 @@ export function computeVariantCells({
     const ref = feature.get('REF') as string
     const featureName = feature.get('name')!
     const description = feature.get('description') as string
-    // This variant's genotypes, resolved once: the record shipped in
+    // This variant's genotypes, resolved once: the codes shipped in
     // `featureGenotypeMap` below, and the genotypes both non-phase-set loops
     // read. Prepopulated by `computeSampleInfo` for every filtered variant.
-    const stringGenotypes = featureGenotypes.get(featureId)!
+    const codes = featureGenotypeCodes.get(featureId)!
     // Per-variant override color, resolved once per feature (not per cell);
     // undefined when no override is set, so normal genotype coloring runs.
     const overrideColor = featureColor?.(feature)
-    alleleCountStyles.clear()
-    phasedStyles.clear()
+    for (let t = 0; t < touchedCodes.length; t++) {
+      const c = touchedCodes[t]!
+      alleleCountStyles[c] = undefined
+      phasedStyles[c] = undefined
+    }
+    touchedCodes.length = 0
 
     if (renderingMode === 'phased') {
       // PS (phase-set) coloring requires per-sample FORMAT data, which only the
@@ -312,21 +336,23 @@ export function computeVariantCells({
         }
       } else {
         for (let j = 0; j < numSources; j++) {
-          const { HP, sampleName } = sources[j]!
-          const genotype = stringGenotypes[sampleName]
-          if (!genotype) {
+          const { HP } = sources[j]!
+          const si = sourceSampleIndices[j]!
+          const code = si === -1 ? 0 : codes[si]!
+          if (code === 0) {
             continue
           }
-          let byHp = phasedStyles.get(genotype)
+          let byHp = phasedStyles[code]
           if (byHp === undefined) {
             byHp = buildPhasedStyles(
-              genotype,
+              genotypeDict[code - 1]!,
               mostFrequentAlt,
               numHaplotypes,
               drawRef,
               overrideColor,
             )
-            phasedStyles.set(genotype, byHp)
+            phasedStyles[code] = byHp
+            touchedCodes.push(code)
           }
           const style = byHp[HP!]
           if (style) {
@@ -345,18 +371,19 @@ export function computeVariantCells({
       }
     } else {
       for (let j = 0; j < numSources; j++) {
-        const { sampleName } = sources[j]!
-        const genotype = stringGenotypes[sampleName]
-        if (genotype) {
-          let style = alleleCountStyles.get(genotype)
+        const si = sourceSampleIndices[j]!
+        const code = si === -1 ? 0 : codes[si]!
+        if (code !== 0) {
+          let style = alleleCountStyles[code]
           if (style === undefined) {
             style = buildAlleleCountStyle(
-              genotype,
+              genotypeDict[code - 1]!,
               mostFrequentAlt,
               drawRef,
               overrideColor,
             )
-            alleleCountStyles.set(genotype, style)
+            alleleCountStyles[code] = style
+            touchedCodes.push(code)
           }
           if (style) {
             addCell(
@@ -383,7 +410,7 @@ export function computeVariantCells({
       length: bpLen,
       insertedBp: inserted,
       type: featureType,
-      genotypes: stringGenotypes,
+      genotypeCodes: codes,
     }
     insertedBp[featureIdx] = inserted
     featurePositions[featureIdx * 2] = start

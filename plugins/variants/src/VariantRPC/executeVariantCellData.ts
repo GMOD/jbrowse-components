@@ -5,41 +5,29 @@ import { rpcResult } from '@jbrowse/core/util/librpc'
 
 import { computeVariantCells } from '../LinearMultiSampleVariantDisplay/components/computeVariantCells.ts'
 import { computeVariantMatrixCells } from '../LinearMultiSampleVariantMatrixDisplay/components/computeVariantMatrixCells.ts'
-import {
-  MAX_GENOTYPE_DICT_ENTRIES,
-  internGenotype,
-} from '../shared/genotypeCodec.ts'
-import {
-  PHASE_SET_COLOR,
-  featureHasPhaseSet,
-} from '../shared/getPhasedColor.ts'
+import { PHASE_SET_COLOR } from '../shared/getPhasedColor.ts'
 import { buildCanonicalRows } from '../shared/getSources.ts'
 import { getFilteredVariants } from '../shared/minorAlleleFrequencyUtils.ts'
 import {
   CONSEQUENCE_IMPACT_JEXL,
-  featureHasConsequence,
   getVariantImpactColor,
 } from '../shared/variantConsequence.ts'
-import {
-  SV_TYPE_COLOR,
-  assignSvTypeColors,
-  getVariantSvType,
-} from '../shared/variantSvType.ts'
+import { SV_TYPE_COLOR, getVariantSvType } from '../shared/variantSvType.ts'
+import { computeSampleInfo } from './computeSampleInfo.ts'
 import { groupFeaturesByRegion } from './groupFeaturesByRegion.ts'
 import { orderByScreenPosition } from './orderByScreenPosition.ts'
 
 import type { VariantCellData } from '../LinearMultiSampleVariantDisplay/components/computeVariantCells.ts'
 import type { MatrixCellData } from '../LinearMultiSampleVariantMatrixDisplay/components/computeVariantMatrixCells.ts'
 import type { FilteredVariant } from '../shared/minorAlleleFrequencyUtils.ts'
-import type {
-  SampleInfo,
-  VariantFeatureGenotypes,
-  VariantFeatureInfo,
-} from '../shared/types.ts'
+import type { SampleInfo } from '../shared/types.ts'
+import type { SimplifiedVariantFeature } from './computeSampleInfo.ts'
 import type { GetCellDataArgs } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Feature, ProgressReporter } from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
+
+export type { SimplifiedVariantFeature }
 
 // Resolve the `featureColor` setting to a per-feature color function, or
 // undefined for the default genotype coloring. This runs once per *feature* (not
@@ -75,16 +63,6 @@ function makeFeatureColor(
   }
 }
 
-export interface SimplifiedVariantFeature {
-  id: string
-  data: {
-    start: unknown
-    end: unknown
-    refName: unknown
-    name: unknown
-  }
-}
-
 interface CellDataBase {
   sampleInfo: Record<string, SampleInfo>
   // Names the worker's row list, aligned to the `cellRowIndices` the cell arrays
@@ -116,19 +94,16 @@ interface CellDataBase {
   simplifiedFeatures: SimplifiedVariantFeature[]
   // Interned genotype payload (see shared/genotypeCodec.ts): the distinct
   // genotype strings, and the canonical sample order that each feature's
-  // `genotypeCodes` Uint16Array is aligned to.
+  // `genotypeCodes` Uint32Array is aligned to.
   genotypeDict: string[]
   sampleNames: string[]
 }
 
-// Shipped variants of the compute outputs: the per-feature genotype maps are
-// interned to `genotypeCodes` before crossing the RPC boundary.
-export type ShippedRegionData = Omit<VariantCellData, 'featureGenotypeMap'> & {
-  featureGenotypeMap: Record<string, VariantFeatureInfo>
-}
-type ShippedMatrixData = Omit<MatrixCellData, 'featureData'> & {
-  featureData: (VariantFeatureInfo & { featureId: string })[]
-}
+// The cell computations already emit the shipped shape — their genotypes are
+// the interned codes `computeSampleInfo` built, not a map to be converted at
+// the boundary.
+export type ShippedRegionData = VariantCellData
+type ShippedMatrixData = MatrixCellData
 
 export type CellDataResult =
   | (CellDataBase & {
@@ -136,183 +111,6 @@ export type CellDataResult =
       perRegionCellData: Record<number, ShippedRegionData>
     })
   | (CellDataBase & ShippedMatrixData & { mode: 'matrix' })
-
-// Intern one feature's sample→genotype map into a code array aligned to
-// `sampleNames` (0 = no genotype for that sample). Accumulates distinct strings
-// into the shared dict so the whole payload references one table.
-function internFeatureGenotypes(
-  info: VariantFeatureGenotypes,
-  sampleIndex: Map<string, number>,
-  numSamples: number,
-  dict: string[],
-  dictIndex: Map<string, number>,
-): VariantFeatureInfo {
-  const genotypeCodes = new Uint16Array(numSamples)
-  for (const sampleName in info.genotypes) {
-    const idx = sampleIndex.get(sampleName)
-    if (idx !== undefined) {
-      genotypeCodes[idx] = internGenotype(
-        info.genotypes[sampleName]!,
-        dict,
-        dictIndex,
-      )
-    }
-  }
-  return {
-    ref: info.ref,
-    alt: info.alt,
-    name: info.name,
-    description: info.description,
-    length: info.length,
-    insertedBp: info.insertedBp,
-    type: info.type,
-    genotypeCodes,
-  }
-}
-
-// Say so, once per payload, when the genotype dict filled up. Interning stops
-// there and the overflow genotypes decode as "no genotype" (see
-// MAX_GENOTYPE_DICT_ENTRIES), which is silent on screen — the cells are painted
-// from the genotype strings themselves and look right; only hovering one of the
-// affected samples, and the anchored sort's view of it, quietly loses the call.
-function warnIfGenotypeDictSaturated(dict: string[]) {
-  if (dict.length >= MAX_GENOTYPE_DICT_ENTRIES) {
-    console.warn(
-      `This window holds more than ${MAX_GENOTYPE_DICT_ENTRIES} distinct genotype strings, the most one fetch can index. The cells are drawn correctly, but the rarest genotypes will show no call on hover and sort last under "Sort by genotype". Zoom in, or filter the multiallelic sites down.`,
-    )
-  }
-}
-
-// Merge one sample's per-feature ploidy/phasing into the running sampleInfo
-// (max ploidy seen, phased if ever phased). Monomorphic: always called with
-// the same arg types from both genotype representations.
-function accumulateSampleInfo(
-  sampleInfo: Record<string, SampleInfo>,
-  key: string,
-  ploidy: number,
-  isPhased: boolean,
-) {
-  const existing = sampleInfo[key]
-  if (existing) {
-    if (ploidy > existing.maxPloidy) {
-      existing.maxPloidy = ploidy
-    }
-    existing.isPhased ||= isPhased
-  } else {
-    sampleInfo[key] = { maxPloidy: ploidy, isPhased }
-  }
-}
-
-function computeSampleInfo(
-  filteredVariants: FilteredVariant[],
-  genotypesCache: Map<string, Record<string, string>>,
-  report?: ProgressReporter,
-) {
-  const sampleInfo: Record<string, SampleInfo> = {}
-  let hasPhased = false
-  let hasSecondaryAlt = false
-  let hasUnphased = false
-  let hasNoCall = false
-  let hasConsequence = false
-  let hasPhaseSet = false
-  const svTypes = new Set<string>()
-
-  // Single pass: accumulate sampleInfo/legend flags and build the simplified
-  // feature list together. Avoids a second full iteration over the filtered
-  // variants, and lets the progress bar track the whole phase.
-  const simplifiedFeatures: SimplifiedVariantFeature[] = new Array(
-    filteredVariants.length,
-  )
-  for (let featureIdx = 0; featureIdx < filteredVariants.length; featureIdx++) {
-    report?.(featureIdx)
-    const { feature } = filteredVariants[featureIdx]!
-    const featureId = feature.id()
-    const alt = feature.get('ALT') as string[] | undefined
-    if (alt && alt.length > 1) {
-      hasSecondaryAlt = true
-    }
-    if (!hasConsequence && featureHasConsequence(feature)) {
-      hasConsequence = true
-    }
-    if (
-      !hasPhaseSet &&
-      featureHasPhaseSet(feature.get('FORMAT') as string | undefined)
-    ) {
-      hasPhaseSet = true
-    }
-    const svType = getVariantSvType(feature)
-    if (svType) {
-      svTypes.add(svType)
-    }
-    let samp = genotypesCache.get(featureId)
-    if (!samp) {
-      // Normalize the sites-only case to {} exactly as computeAlleleCounts
-      // does, so the cache never hands a later consumer an undefined — this
-      // pass is what the compute*Cells functions rely on having run.
-      samp =
-        (feature.get('genotypes') as Record<string, string> | undefined) ?? {}
-      genotypesCache.set(featureId, samp)
-    }
-    for (const key in samp) {
-      const val = samp[key]!
-      let ploidy = 1
-      let called = false
-      let missing = false
-      let phased = false
-      let unphased = false
-      for (let i = 0, l = val.length; i < l; i++) {
-        const char = val[i]
-        if (char === '|') {
-          ploidy++
-          phased = true
-        } else if (char === '/') {
-          ploidy++
-          unphased = true
-        } else if (char === '.') {
-          missing = true
-        } else {
-          called = true
-        }
-      }
-      hasPhased ||= phased
-      // A no-call carries a `/` separator but isn't unphased data, so only a
-      // genotype with an actual called allele counts toward "Unphased".
-      hasUnphased ||= unphased && called
-      // Mirror where the renderer actually draws a no-call cell: a phased
-      // genotype draws one per missing haplotype allele; an unphased genotype
-      // only when it's entirely missing (a partial `0/.` stays black/unphased).
-      hasNoCall ||= phased ? missing : !called
-      accumulateSampleInfo(sampleInfo, key, ploidy, phased)
-    }
-
-    simplifiedFeatures[featureIdx] = {
-      id: featureId,
-      data: {
-        start: feature.get('start'),
-        end: feature.get('end'),
-        refName: feature.get('refName'),
-        name: feature.get('name'),
-      },
-    }
-  }
-
-  return {
-    sampleInfo,
-    hasPhased,
-    hasSecondaryAlt,
-    hasUnphased,
-    hasNoCall,
-    hasConsequence,
-    hasPhaseSet,
-    svTypeColors: assignSvTypeColors([...svTypes]),
-    simplifiedFeatures,
-    // Handed back rather than left as a side effect on the caller's map: the
-    // compute*Cells passes read every filtered feature's genotypes out of it and
-    // have no fallback, so returning it makes "this pass populated the lookup" a
-    // data dependency the caller can't reorder away.
-    featureGenotypes: genotypesCache,
-  }
-}
 
 export async function executeVariantCellData({
   pluginManager,
@@ -449,7 +247,9 @@ export async function executeVariantCellData({
     hasPhaseSet,
     svTypeColors,
     simplifiedFeatures,
-    featureGenotypes,
+    featureGenotypeCodes,
+    genotypeDict,
+    sampleNames,
   } = await withProgress(
     {
       ...progressOpts,
@@ -494,16 +294,6 @@ export async function executeVariantCellData({
   })
   const rowNames = effectiveSources.map(s => s.name)
 
-  // Canonical sample order + shared dict for interning genotypes before
-  // transfer. sampleInfo keys are the universe of every sampleName any feature's
-  // genotype map can reference (built from the same genotypes), so the codes are
-  // always alignable. See shared/genotypeCodec.ts.
-  const sampleNames = Object.keys(sampleInfo)
-  const numSamples = sampleNames.length
-  const sampleIndex = new Map(sampleNames.map((name, i) => [name, i]))
-  const genotypeDict: string[] = []
-  const genotypeDictIndex = new Map<string, number>()
-
   if (mode === 'regular') {
     const perRegionCellData = await withProgress(
       {
@@ -525,7 +315,9 @@ export async function executeVariantCellData({
               referenceDrawingMode: referenceDrawingMode ?? 'skip',
               featureColor: featureColorFn,
               colorByPhaseSet,
-              featureGenotypes,
+              featureGenotypeCodes,
+              genotypeDict,
+              sampleNames,
               report,
             })
           }
@@ -539,44 +331,37 @@ export async function executeVariantCellData({
             referenceDrawingMode: referenceDrawingMode ?? 'skip',
             featureColor: featureColorFn,
             colorByPhaseSet,
-            featureGenotypes,
+            featureGenotypeCodes,
+            genotypeDict,
+            sampleNames,
             report,
           }),
         }
       },
     )
 
-    const transferables = []
+    // A Set, not a list: one `genotypeCodes` array is now shared by every
+    // reference to its feature rather than rebuilt per shipped entry, and
+    // `getFeaturesInMultipleRegions` merges its per-region queries without
+    // deduping, so a variant spanning two of them arrives twice. Handing the
+    // same buffer to postMessage twice is a structured-clone error.
+    const transferables = new Set<ArrayBufferLike>()
     const shippedPerRegion: Record<number, ShippedRegionData> = {}
-    for (const [k, { featureGenotypeMap, ...rest }] of Object.entries(
-      perRegionCellData,
-    )) {
-      const internedMap: Record<string, VariantFeatureInfo> = {}
-      for (const id in featureGenotypeMap) {
-        const info = internFeatureGenotypes(
-          featureGenotypeMap[id]!,
-          sampleIndex,
-          numSamples,
-          genotypeDict,
-          genotypeDictIndex,
-        )
-        internedMap[id] = info
-        transferables.push(info.genotypeCodes.buffer)
+    for (const [k, data] of Object.entries(perRegionCellData)) {
+      shippedPerRegion[Number(k)] = data
+      for (const id in data.featureGenotypeMap) {
+        transferables.add(data.featureGenotypeMap[id]!.genotypeCodes.buffer)
       }
-      shippedPerRegion[Number(k)] = { ...rest, featureGenotypeMap: internedMap }
-      transferables.push(
-        rest.cellPositions.buffer,
-        rest.cellRowIndices.buffer,
-        rest.cellColors.buffer,
-        rest.cellShapeTypes.buffer,
-        rest.cellAltDosage.buffer,
-        rest.cellFeatureIndices.buffer,
-        rest.featureIndexData,
-        rest.featurePositions.buffer,
-        rest.featureInsertedBp.buffer,
-      )
+      transferables.add(data.cellPositions.buffer)
+      transferables.add(data.cellRowIndices.buffer)
+      transferables.add(data.cellColors.buffer)
+      transferables.add(data.cellShapeTypes.buffer)
+      transferables.add(data.cellAltDosage.buffer)
+      transferables.add(data.cellFeatureIndices.buffer)
+      transferables.add(data.featureIndexData)
+      transferables.add(data.featurePositions.buffer)
+      transferables.add(data.featureInsertedBp.buffer)
     }
-    warnIfGenotypeDictSaturated(genotypeDict)
 
     return rpcResult(
       {
@@ -596,7 +381,7 @@ export async function executeVariantCellData({
         sampleNames,
         perRegionCellData: shippedPerRegion,
       },
-      transferables,
+      [...transferables],
     )
   } else {
     const cellData = await withProgress(
@@ -612,29 +397,24 @@ export async function executeVariantCellData({
           renderingMode,
           featureColor: featureColorFn,
           colorByPhaseSet,
-          featureGenotypes,
+          featureGenotypeCodes,
+          genotypeDict,
+          sampleNames,
           report,
         }),
     )
 
-    const { featureData, ...restMatrix } = cellData
-    const transferables = [
+    // See the regular branch: `featureData` is positional and its entries share
+    // one codes array per feature, so a variant that overlapped two displayed
+    // regions would otherwise offer the same buffer twice.
+    const transferables = new Set<ArrayBufferLike>([
       cellData.cellFeatureIndices.buffer,
       cellData.cellRowIndices.buffer,
       cellData.cellColors.buffer,
-    ]
-    const internedFeatureData = featureData.map(fd => {
-      const info = internFeatureGenotypes(
-        fd,
-        sampleIndex,
-        numSamples,
-        genotypeDict,
-        genotypeDictIndex,
-      )
-      transferables.push(info.genotypeCodes.buffer)
-      return { ...info, featureId: fd.featureId }
-    })
-    warnIfGenotypeDictSaturated(genotypeDict)
+    ])
+    for (const fd of cellData.featureData) {
+      transferables.add(fd.genotypeCodes.buffer)
+    }
 
     return rpcResult(
       {
@@ -652,10 +432,9 @@ export async function executeVariantCellData({
         simplifiedFeatures,
         genotypeDict,
         sampleNames,
-        ...restMatrix,
-        featureData: internedFeatureData,
+        ...cellData,
       },
-      transferables,
+      [...transferables],
     )
   }
 }

@@ -257,7 +257,7 @@ export function sortSourcesAroundVariant({
   genotypeDict: string[]
   // Loaded features in genomic order
   featureIds: string[]
-  genotypeCodesByFeatureId: Map<string, Uint16Array>
+  genotypeCodesByFeatureId: Map<string, Uint32Array>
   anchorFeatureId: string
   phased: boolean
   // How far out ties may be broken, in variants each side. This is a locality

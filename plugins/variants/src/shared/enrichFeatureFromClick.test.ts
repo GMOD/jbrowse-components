@@ -21,7 +21,7 @@ const featureInfo: VariantFeatureInfo = {
   length: 1,
   insertedBp: 0,
   type: 'breakend',
-  genotypeCodes: new Uint16Array(),
+  genotypeCodes: new Uint32Array(),
 }
 
 const clickResult = {

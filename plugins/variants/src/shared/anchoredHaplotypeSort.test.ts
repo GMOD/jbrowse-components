@@ -144,9 +144,9 @@ function makePayload(table: Record<string, Record<string, string>>) {
     ...new Set(featureIds.flatMap(f => Object.keys(table[f]!))),
   ]
   const genotypeDict: string[] = []
-  const genotypeCodesByFeatureId = new Map<string, Uint16Array>()
+  const genotypeCodesByFeatureId = new Map<string, Uint32Array>()
   for (const featureId of featureIds) {
-    const codes = new Uint16Array(sampleNames.length)
+    const codes = new Uint32Array(sampleNames.length)
     for (let i = 0; i < sampleNames.length; i++) {
       const genotype = table[featureId]![sampleNames[i]!]
       if (genotype !== undefined) {

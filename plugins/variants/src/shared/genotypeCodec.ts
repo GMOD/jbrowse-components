@@ -7,26 +7,19 @@
 //
 // Interning ships, once per payload, a shared `dict` of distinct genotype
 // strings plus a shared `sampleNames` order; each feature then carries a
-// Uint16Array of codes aligned to that order (transferable, sample keys sent
+// Uint32Array of codes aligned to that order (transferable, sample keys sent
 // once). Code 0 = no genotype for that sample; otherwise the string is
 // dict[code - 1]. Lifecycle is the cellData payload itself — nothing cached.
-
-// How many distinct genotype strings one payload's dict can hold. Codes are
-// Uint16 and 0 is reserved for "no genotype", so the last usable code is 65535
-// and the dict tops out one short of the type's range.
 //
-// Reachable, if rarely: the dict is distinct genotype STRINGS across the whole
-// payload, which for a biallelic panel is a handful but at a multiallelic site
-// grows with the square of the alt count (`12|37` and `37|12` are two entries).
-// A decomposed pangenome callset with hundreds of alts per site can cross it.
-//
-// Past the cap a genotype interns to 0 rather than wrapping: `code + 1` at 65536
-// silently truncates to 0, and beyond that onto other codes, so an uncapped dict
-// decodes the WRONG genotype string in tooltips and buckets the anchored sort by
-// it. 0 is the one value every consumer already handles — it means "this sample
-// has no genotype at this site", so the cell is simply not hoverable and sorts
-// last, which is honest about knowing nothing rather than confidently wrong.
-export const MAX_GENOTYPE_DICT_ENTRIES = 65535
+// Uint32 rather than Uint16, which the dict had to be capped at 65535 entries to
+// fit. The cap was reachable — the dict counts distinct genotype STRINGS across
+// the payload, and at a multiallelic site those grow with the square of the alt
+// count (`12|37` and `37|12` are two entries), so a decomposed pangenome callset
+// crosses it — and it degraded quietly: past the cap a genotype interned to 0,
+// which the cell loops read as "this sample has no call" and now decline to
+// paint at all, since the codes are what they color from. Four bytes a cell
+// against a silent hole in the render is not a trade worth making, and the array
+// is transferred rather than copied.
 
 export function internGenotype(
   genotype: string,
@@ -35,9 +28,6 @@ export function internGenotype(
 ) {
   let code = dictIndex.get(genotype)
   if (code === undefined) {
-    if (dict.length >= MAX_GENOTYPE_DICT_ENTRIES) {
-      return 0
-    }
     code = dict.length
     dict.push(genotype)
     dictIndex.set(genotype, code)
@@ -48,7 +38,7 @@ export function internGenotype(
 export function decodeGenotype(
   dict: string[],
   sampleIndex: Map<string, number>,
-  codes: Uint16Array,
+  codes: Uint32Array,
   sampleName: string,
 ) {
   const idx = sampleIndex.get(sampleName)

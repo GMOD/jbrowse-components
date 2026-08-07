@@ -1,3 +1,4 @@
+import { buildSourceSampleIndices } from '../../VariantRPC/computeSampleInfo.ts'
 import { getInsertedBp } from '../../shared/alleleLength.ts'
 import { BLACK_ABGR, NO_CALL_COLOR } from '../../shared/constants.ts'
 import {
@@ -15,19 +16,16 @@ import {
 import { getCachedABGR } from '../../shared/variantWebglUtils.ts'
 
 import type { FilteredVariant } from '../../shared/minorAlleleFrequencyUtils.ts'
-import type {
-  ProcessedSource,
-  VariantFeatureGenotypes,
-} from '../../shared/types.ts'
+import type { ProcessedSource, VariantFeatureInfo } from '../../shared/types.ts'
 import type { VariantCellStyle } from '../../shared/variantCellStyles.ts'
 import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 
-type FeatureData = VariantFeatureGenotypes & { featureId: string }
+type FeatureData = VariantFeatureInfo & { featureId: string }
 
 function makeFeatureData(
   feature: Feature,
   featureId: string,
-  genotypes: Record<string, string>,
+  genotypeCodes: Uint32Array,
 ): FeatureData {
   return {
     // A monomorphic record spells ALT '.', which @gmod/vcf parses to undefined.
@@ -43,7 +41,7 @@ function makeFeatureData(
     insertedBp: getInsertedBp(feature),
     type: feature.get('type') ?? '',
     featureId,
-    genotypes,
+    genotypeCodes,
   }
 }
 
@@ -62,7 +60,9 @@ export function computeVariantMatrixCells({
   renderingMode,
   featureColor,
   colorByPhaseSet,
-  featureGenotypes,
+  featureGenotypeCodes,
+  genotypeDict,
+  sampleNames,
   report,
 }: {
   filteredVariants: FilteredVariant[]
@@ -74,11 +74,16 @@ export function computeVariantMatrixCells({
   // computeVariantCells).
   colorByPhaseSet?: boolean
   // Prepopulated for every filtered variant — see computeVariantCells.
-  featureGenotypes: ReadonlyMap<string, Record<string, string>>
+  featureGenotypeCodes: ReadonlyMap<string, Uint32Array>
+  genotypeDict: readonly string[]
+  sampleNames: string[]
   report?: ProgressReporter
 }): MatrixCellData {
   // Packed once — every no-call cell reuses it instead of a per-cell cache hit.
   const noCallAbgr = getCachedABGR(NO_CALL_COLOR)
+  // See computeVariantCells: each source's column in the code arrays, resolved
+  // once instead of hashing a sample name per cell.
+  const sourceSampleIndices = buildSourceSampleIndices(sources, sampleNames)
 
   const numFeatures = filteredVariants.length
   const numSources = sources.length
@@ -136,17 +141,30 @@ export function computeVariantMatrixCells({
   // feature (their entries bake in that feature's `mostFrequentAlt` and
   // override color). Same reason as computeVariantCells: a site with thousands
   // of samples carries a handful of distinct genotype strings, so this keeps
-  // the color work O(sites x distinct genotypes) instead of O(cells).
-  const alleleCountStyles = new Map<string, VariantCellStyle | null>()
-  const phasedStyles = new Map<string, (VariantCellStyle | null)[]>()
+  // the color work O(sites x distinct genotypes) instead of O(cells) — and,
+  // same as there, they are indexed by genotype code rather than keyed by
+  // string, with only the codes a site used cleared between features.
+  const numCodes = genotypeDict.length + 1
+  const alleleCountStyles = new Array<VariantCellStyle | null | undefined>(
+    numCodes,
+  )
+  const phasedStyles = new Array<(VariantCellStyle | null)[] | undefined>(
+    numCodes,
+  )
+  const touchedCodes: number[] = []
 
   for (let idx = 0; idx < numFeatures; idx++) {
     report?.()
     const { feature, mostFrequentAlt } = filteredVariants[idx]!
     const featureId = feature.id()
     const overrideColor = featureColor?.(feature)
-    alleleCountStyles.clear()
-    phasedStyles.clear()
+    for (let t = 0; t < touchedCodes.length; t++) {
+      const c = touchedCodes[t]!
+      alleleCountStyles[c] = undefined
+      phasedStyles[c] = undefined
+    }
+    touchedCodes.length = 0
+    const codes = featureGenotypeCodes.get(featureId)!
 
     if (isPhasedMode) {
       // PS (phase-set) coloring requires per-sample FORMAT data, which only the
@@ -171,12 +189,11 @@ export function computeVariantMatrixCells({
             | undefined)
         : undefined
 
-      // The genotype record is the same either way — `samples` only carries the
-      // extra PS field the coloring needs — so both branches ship the flat map
-      // the filter pass already cached, rather than rebuilding it from
+      // The genotype codes are the same either way — `samples` only carries the
+      // extra PS field the coloring needs — so both branches ship the codes the
+      // analysis pass already interned, rather than rebuilding them from
       // `samples` on one path only.
-      const stringGenotypes = featureGenotypes.get(featureId)!
-      featureData.push(makeFeatureData(feature, featureId, stringGenotypes))
+      featureData.push(makeFeatureData(feature, featureId, codes))
 
       if (samp) {
         // Phase-set coloring: the hue comes from a per-(feature, sample) FORMAT
@@ -217,21 +234,23 @@ export function computeVariantMatrixCells({
         }
       } else {
         for (let j = 0; j < numSources; j++) {
-          const { HP, sampleName } = sources[j]!
-          const genotype = stringGenotypes[sampleName]
-          if (!genotype) {
+          const { HP } = sources[j]!
+          const si = sourceSampleIndices[j]!
+          const code = si === -1 ? 0 : codes[si]!
+          if (code === 0) {
             continue
           }
-          let byHp = phasedStyles.get(genotype)
+          let byHp = phasedStyles[code]
           if (byHp === undefined) {
             byHp = buildPhasedStyles(
-              genotype,
+              genotypeDict[code - 1]!,
               mostFrequentAlt,
               numHaplotypes,
               true,
               overrideColor,
             )
-            phasedStyles.set(genotype, byHp)
+            phasedStyles[code] = byHp
+            touchedCodes.push(code)
           }
           const style = byHp[HP!]
           if (style) {
@@ -240,22 +259,22 @@ export function computeVariantMatrixCells({
         }
       }
     } else {
-      const samp = featureGenotypes.get(featureId)!
-      featureData.push(makeFeatureData(feature, featureId, samp))
+      featureData.push(makeFeatureData(feature, featureId, codes))
 
       for (let j = 0; j < numSources; j++) {
-        const { sampleName } = sources[j]!
-        const genotype = samp[sampleName]
-        if (genotype) {
-          let style = alleleCountStyles.get(genotype)
+        const si = sourceSampleIndices[j]!
+        const code = si === -1 ? 0 : codes[si]!
+        if (code !== 0) {
+          let style = alleleCountStyles[code]
           if (style === undefined) {
             style = buildAlleleCountStyle(
-              genotype,
+              genotypeDict[code - 1]!,
               mostFrequentAlt,
               true,
               overrideColor,
             )
-            alleleCountStyles.set(genotype, style)
+            alleleCountStyles[code] = style
+            touchedCodes.push(code)
           }
           if (style) {
             addCell(idx, j, style.abgr, style.isRef)

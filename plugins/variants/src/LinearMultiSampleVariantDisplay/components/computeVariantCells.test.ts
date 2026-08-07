@@ -1,5 +1,10 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 
+import {
+  buildSampleIndex,
+  decodeGenotype,
+  internGenotype,
+} from '../../shared/genotypeCodec.ts'
 import { computeVariantCells } from './computeVariantCells.ts'
 
 import type { ProcessedSource } from '../../shared/types.ts'
@@ -13,16 +18,62 @@ function makeFeature(props: Record<string, unknown>, id = 'f1'): Feature {
   } as unknown as Feature
 }
 
-// The worker resolves every filtered variant's genotypes once (computeSampleInfo)
-// and hands the compute pass the finished lookup, so the tests build the same
-// thing rather than an empty map the compute pass would have to fill.
-function genotypeLookup(features: Feature[]) {
-  return new Map(
-    features.map(f => [
-      f.id(),
-      (f.get('genotypes') as Record<string, string> | undefined) ?? {},
-    ]),
-  )
+// The worker interns every filtered variant's genotypes once
+// (computeSampleInfo) and hands the compute pass the codes plus the dict they
+// resolve against, so the tests build the same thing rather than a lookup the
+// compute pass would have to fill.
+function genotypeArgs(features: Feature[]) {
+  const genotypeDict: string[] = []
+  const dictIndex = new Map<string, number>()
+  const sampleNames: string[] = []
+  const sampleIndex = new Map<string, number>()
+  const featureGenotypeCodes = new Map<string, Uint32Array>()
+  const genotypesOf = (f: Feature) =>
+    (f.get('genotypes') as Record<string, string> | undefined) ?? {}
+  for (const f of features) {
+    for (const name in genotypesOf(f)) {
+      if (!sampleIndex.has(name)) {
+        sampleIndex.set(name, sampleNames.length)
+        sampleNames.push(name)
+      }
+    }
+  }
+  for (const f of features) {
+    const codes = new Uint32Array(sampleNames.length)
+    const gts = genotypesOf(f)
+    for (const name in gts) {
+      codes[sampleIndex.get(name)!] = internGenotype(
+        gts[name]!,
+        genotypeDict,
+        dictIndex,
+      )
+    }
+    featureGenotypeCodes.set(f.id(), codes)
+  }
+  return { featureGenotypeCodes, genotypeDict, sampleNames }
+}
+
+// Decode a shipped feature's codes back to the sampleName -> genotype map the
+// assertions read. Absent samples (code 0) drop out, exactly as the client's
+// `decodeGenotype` reports them.
+function decodeAll(
+  info: { genotypeCodes: Uint32Array },
+  args: { genotypeDict: string[]; sampleNames: string[] },
+) {
+  const sampleIndex = buildSampleIndex(args.sampleNames)
+  const out: Record<string, string> = {}
+  for (const sampleName of args.sampleNames) {
+    const genotype = decodeGenotype(
+      args.genotypeDict,
+      sampleIndex,
+      info.genotypeCodes,
+      sampleName,
+    )
+    if (genotype !== undefined) {
+      out[sampleName] = genotype
+    }
+  }
+  return out
 }
 
 describe('computeVariantCells phased genotypes', () => {
@@ -47,21 +98,23 @@ describe('computeVariantCells phased genotypes', () => {
   ]
 
   test('featureGenotypeMap genotypes keyed by sampleName not HP-suffixed name', () => {
+    const args = genotypeArgs([feature])
     const result = computeVariantCells({
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
       renderingMode: 'phased',
       referenceDrawingMode: 'skip',
-      featureGenotypes: genotypeLookup([feature]),
+      ...args,
     })
 
-    const genotypes = result.featureGenotypeMap.f1!.genotypes
-    expect(genotypes.S1).toBe('1|0')
-    expect(genotypes.S2).toBe('1|1')
-    expect(genotypes['S1 HP0']).toBeUndefined()
-    expect(genotypes['S1 HP1']).toBeUndefined()
-    expect(genotypes['S2 HP0']).toBeUndefined()
-    expect(genotypes['S2 HP1']).toBeUndefined()
+    // The codes are aligned to the sample order, so the HP-suffixed row names
+    // are not addresses into them at all — which is the point: they are render
+    // rows, and four of them share these two samples' calls.
+    expect(decodeAll(result.featureGenotypeMap.f1!, args)).toEqual({
+      S1: '1|0',
+      S2: '1|1',
+    })
+    expect(args.sampleNames).toEqual(['S1', 'S2'])
   })
 })
 
@@ -94,7 +147,7 @@ describe('computeVariantCells phased no-call vs unphased', () => {
       sources,
       renderingMode: 'phased',
       referenceDrawingMode: 'skip',
-      featureGenotypes: genotypeLookup([feature]),
+      ...genotypeArgs([feature]),
     })
     const colors = [...result.cellColors]
     const noCallAbgr = getCachedABGR(NO_CALL_COLOR)
@@ -142,7 +195,7 @@ describe('computeVariantCells haploid genotypes in phased mode', () => {
       sources,
       renderingMode: 'phased',
       referenceDrawingMode: 'draw',
-      featureGenotypes: genotypeLookup([feature]),
+      ...genotypeArgs([feature]),
     })
     const byRow = new Map<number, number>()
     for (let i = 0; i < result.numCells; i++) {
@@ -185,7 +238,7 @@ describe('computeVariantCells mixed ploidy in phased mode', () => {
       sources,
       renderingMode: 'phased',
       referenceDrawingMode: 'draw',
-      featureGenotypes: genotypeLookup([feature]),
+      ...genotypeArgs([feature]),
     })
     const rows = [...result.cellRowIndices.slice(0, result.numCells)].sort()
     // S1 rows 0,1,2 and S2 rows 3,4 — never row 5 (S2 HP2).
@@ -215,7 +268,7 @@ describe('computeVariantCells insertion bounds', () => {
       sources,
       renderingMode: 'allele',
       referenceDrawingMode: 'skip',
-      featureGenotypes: genotypeLookup([feature]),
+      ...genotypeArgs([feature]),
     })
     expect(result.cellPositions[0]).toBe(100)
     expect(result.cellPositions[1]).toBe(101)
@@ -238,7 +291,7 @@ describe('computeVariantCells insertion bounds', () => {
       sources,
       renderingMode: 'allele',
       referenceDrawingMode: 'skip',
-      featureGenotypes: genotypeLookup([feature]),
+      ...genotypeArgs([feature]),
     })
     expect(result.cellPositions[0]).toBe(100)
     expect(result.cellPositions[1]).toBe(101)
@@ -274,7 +327,7 @@ describe('computeVariantCells featureColor override', () => {
       renderingMode: 'alleleCount',
       referenceDrawingMode: 'draw',
       featureColor: () => override,
-      featureGenotypes: genotypeLookup([feature]),
+      ...genotypeArgs([feature]),
     })
     const colors = [...result.cellColors]
     const overrideAbgr = getCachedABGR(override)
@@ -312,7 +365,7 @@ describe('insertion glyph inputs', () => {
       sources,
       renderingMode: 'phased',
       referenceDrawingMode: 'draw',
-      featureGenotypes: genotypeLookup([feature]),
+      ...genotypeArgs([feature]),
     })
   }
 
@@ -378,7 +431,7 @@ describe('spatial index', () => {
     sources,
     renderingMode: 'alleleCount',
     referenceDrawingMode: 'draw',
-    featureGenotypes: genotypeLookup([near, far]),
+    ...genotypeArgs([near, far]),
   })
 
   // The client rebuilds the index from the transferred buffer, so the element
@@ -462,7 +515,7 @@ describe('cell bucket ordering', () => {
       sources,
       renderingMode: 'alleleCount',
       referenceDrawingMode: 'draw',
-      featureGenotypes: genotypeLookup([a, b]),
+      ...genotypeArgs([a, b]),
     })
     // one hom-ref cell per site
     expect(result.refCellCount).toBe(2)
@@ -482,7 +535,7 @@ describe('cell bucket ordering', () => {
       sources,
       renderingMode: 'alleleCount',
       referenceDrawingMode: 'skip',
-      featureGenotypes: genotypeLookup([a, b]),
+      ...genotypeArgs([a, b]),
     })
     expect(result.refCellCount).toBe(0)
     expect(result.numCells).toBe(4)
@@ -516,7 +569,7 @@ describe('cell bucket ordering', () => {
       sources,
       renderingMode: 'alleleCount',
       referenceDrawingMode: 'draw',
-      featureGenotypes: genotypeLookup([a, sparse]),
+      ...genotypeArgs([a, sparse]),
     })
     // 6 slots, 5 cells: S2 has no call at the second site.
     expect(result.numCells).toBe(5)
@@ -563,7 +616,7 @@ describe('phase-set coloring is opt-in', () => {
       renderingMode: 'phased',
       referenceDrawingMode: 'skip',
       colorByPhaseSet,
-      featureGenotypes: genotypeLookup([feature]),
+      ...genotypeArgs([feature]),
     })
     return [...result.cellColors.slice(0, result.numCells)]
   }
@@ -605,7 +658,7 @@ describe('phase-set coloring is opt-in', () => {
         renderingMode: 'phased',
         referenceDrawingMode: 'skip',
         colorByPhaseSet,
-        featureGenotypes: genotypeLookup([feature, other]),
+        ...genotypeArgs([feature, other]),
       })
 
     const off = run(false)
@@ -637,7 +690,7 @@ test('a site with no ALT alleles reports an empty alt list', () => {
     sources: [{ name: 'S1', sampleName: 'S1' }],
     renderingMode: 'alleleCount',
     referenceDrawingMode: 'draw',
-    featureGenotypes: genotypeLookup([feature]),
+    ...genotypeArgs([feature]),
   })
   expect(result.numCells).toBe(1)
   expect(result.featureGenotypeMap.f1!.alt).toEqual([])
@@ -661,27 +714,28 @@ describe('featureGenotypeMap records every genotype, not only painted ones', () 
     start: 10,
     end: 11,
   })
+  const args = genotypeArgs([feature])
   const run = (referenceDrawingMode: string) =>
     computeVariantCells({
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
       renderingMode: 'alleleCount',
       referenceDrawingMode,
-      featureGenotypes: genotypeLookup([feature]),
+      ...args,
     })
 
   test('skip mode keeps the hom-ref genotype while drawing no cell for it', () => {
     const result = run('skip')
     expect(result.numCells).toBe(1)
-    expect(result.featureGenotypeMap.f1!.genotypes).toEqual({
+    expect(decodeAll(result.featureGenotypeMap.f1!, args)).toEqual({
       S1: '0/0',
       S2: '0/1',
     })
   })
 
   test('the genotype map is identical in draw mode', () => {
-    expect(run('draw').featureGenotypeMap.f1!.genotypes).toEqual(
-      run('skip').featureGenotypeMap.f1!.genotypes,
+    expect(decodeAll(run('draw').featureGenotypeMap.f1!, args)).toEqual(
+      decodeAll(run('skip').featureGenotypeMap.f1!, args),
     )
   })
 
@@ -696,10 +750,10 @@ describe('featureGenotypeMap records every genotype, not only painted ones', () 
       sources: [{ name: 'S2', sampleName: 'S2' }],
       renderingMode: 'alleleCount',
       referenceDrawingMode: 'skip',
-      featureGenotypes: genotypeLookup([feature]),
+      ...args,
     })
     expect(result.numCells).toBe(1)
-    expect(result.featureGenotypeMap.f1!.genotypes).toEqual({
+    expect(decodeAll(result.featureGenotypeMap.f1!, args)).toEqual({
       S1: '0/0',
       S2: '0/1',
     })
@@ -713,6 +767,7 @@ describe('featureGenotypeMap records every genotype, not only painted ones', () 
       start: 10,
       end: 11,
     })
+    const phasedArgs = genotypeArgs([phasedFeature])
     const result = computeVariantCells({
       filteredVariants: [{ feature: phasedFeature, mostFrequentAlt: '1' }],
       sources: [
@@ -723,10 +778,10 @@ describe('featureGenotypeMap records every genotype, not only painted ones', () 
       ],
       renderingMode: 'phased',
       referenceDrawingMode: 'skip',
-      featureGenotypes: genotypeLookup([phasedFeature]),
+      ...phasedArgs,
     })
     expect(result.numCells).toBe(1)
-    expect(result.featureGenotypeMap.f1!.genotypes).toEqual({
+    expect(decodeAll(result.featureGenotypeMap.f1!, phasedArgs)).toEqual({
       S1: '0|0',
       S2: '1|0',
     })
@@ -772,7 +827,7 @@ describe('computeVariantCells cellAltDosage', () => {
       sources: srcs,
       renderingMode,
       referenceDrawingMode: 'draw',
-      featureGenotypes: genotypeLookup([f]),
+      ...genotypeArgs([f]),
     })
     const byRow = new Map<number, number>()
     for (let i = 0; i < result.numCells; i++) {
@@ -888,7 +943,7 @@ describe('phase-set coloring classifies from the allele, not the color', () => {
       referenceDrawingMode: 'draw',
       colorByPhaseSet: true,
       featureColor,
-      featureGenotypes: genotypeLookup([feature]),
+      ...genotypeArgs([feature]),
     })
     const byRow = new Map<number, { dosage: number; color: number }>()
     for (let i = 0; i < result.numCells; i++) {

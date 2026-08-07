@@ -40,17 +40,14 @@ interface VariantFeatureBase {
   type: string
 }
 
-// Worker-internal shape produced by the cell computations: per-feature
-// genotypes keyed by `sampleName` (bare VCF identity, never the HP-suffixed
-// render `name` — see plugins/variants/src/CLAUDE.md).
-export interface VariantFeatureGenotypes extends VariantFeatureBase {
-  genotypes: Record<string, string>
-}
-
-// Shipped-to-client shape: genotype strings are interned into the shared
-// `CellDataResult.genotypeDict`; `genotypeCodes` is aligned to
-// `CellDataResult.sampleNames` (0 = none, else `dict[code - 1]`). Decode via
-// shared/genotypeCodec.ts. This keeps F×S sample-name keys off the RPC wire.
+// Genotype strings are interned into the shared `CellDataResult.genotypeDict`;
+// `genotypeCodes` is aligned to `CellDataResult.sampleNames` (0 = none, else
+// `dict[code - 1]`). Decode via shared/genotypeCodec.ts. This keeps F×S
+// sample-name keys off the RPC wire — and, since the codes are what
+// `computeSampleInfo` builds in its one pass over the genotypes, off the
+// worker's heap as well: the cell loops read this same array rather than a
+// per-feature `Record<sampleName, genotype>` that had to be built, walked
+// three times, and then interned into exactly this.
 export interface VariantFeatureInfo extends VariantFeatureBase {
-  genotypeCodes: Uint16Array
+  genotypeCodes: Uint32Array
 }
