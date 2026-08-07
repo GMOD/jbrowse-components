@@ -1,9 +1,11 @@
 import { BgzipIndexedFasta } from '@gmod/indexedfasta'
 import { openLocation } from '@jbrowse/core/util/io'
 
-import IndexedFasta from '../IndexedFastaAdapter/IndexedFastaAdapter.ts'
+import { FastaAdapterBase } from '../FastaAdapterBase.ts'
 
-export default class BgzipFastaAdapter extends IndexedFasta {
+import type { BgzipFastaAdapterConfig } from './configSchema.ts'
+
+export default class BgzipFastaAdapter extends FastaAdapterBase<BgzipFastaAdapterConfig> {
   public async setupPre() {
     return {
       fasta: new BgzipIndexedFasta({

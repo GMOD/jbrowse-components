@@ -51,4 +51,12 @@ test('adapter can fetch sequence from volvox.fa', async () => {
 
   const featuresArray3 = await firstValueFrom(features3.pipe(toArray()))
   expect(featuresArray3).toMatchSnapshot()
+
+  // wholly past the end of ctgA (50001bp): no residues, so no feature
+  const features4 = adapter.getFeatures({
+    refName: 'ctgA',
+    start: 60000,
+    end: 70000,
+  })
+  expect(await firstValueFrom(features4.pipe(toArray()))).toEqual([])
 })

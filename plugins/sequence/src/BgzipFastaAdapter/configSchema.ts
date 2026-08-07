@@ -2,6 +2,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 import { deriveFastaLocations } from '../chromSizesUtils.ts'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config BgzipFastaAdapter
  * #trackType ReferenceSequenceTrack
@@ -100,4 +102,5 @@ const BgzipFastaAdapter = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+export type BgzipFastaAdapterConfig = Instance<typeof BgzipFastaAdapter>
 export default BgzipFastaAdapter

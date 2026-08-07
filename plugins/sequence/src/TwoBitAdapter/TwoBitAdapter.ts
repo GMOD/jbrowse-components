@@ -2,19 +2,16 @@ import { TwoBitFile } from '@gmod/twobit'
 import { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { fetchAndMaybeUnzipText, updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
-import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import {
   isPlaceholderLocation,
   parseChromSizes,
   refSizesToRegions,
 } from '../chromSizesUtils.ts'
+import { sequenceFeatures } from '../sequenceFeatures.ts'
 
 import type { TwoBitAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
 export default class TwoBitAdapter extends BaseSequenceAdapter<TwoBitAdapterConfig> {
@@ -86,33 +83,11 @@ export default class TwoBitAdapter extends BaseSequenceAdapter<TwoBitAdapterConf
    * @param param -
    * @returns Observable of Feature objects in the region
    */
-  public getFeatures(
-    { refName, start, end }: NoAssemblyRegion,
-    opts?: BaseOptions,
-  ) {
-    const { statusCallback = () => {}, stopToken } = opts ?? {}
-    return ObservableCreate<Feature>(async observer => {
-      await updateStatus(
-        'Downloading sequence',
-        statusCallback,
-        async () => {
-          const { twobit } = await this.setup()
-          const size = await twobit.getSequenceSize(refName)
-          const regionEnd = size === undefined ? end : Math.min(size, end)
-          const seq = await twobit.getSequence(refName, start, regionEnd)
-          checkStopToken(stopToken)
-          if (seq) {
-            observer.next(
-              new SimpleFeature({
-                id: `${refName}-${start}-${regionEnd}`,
-                data: { refName, start, end: regionEnd, seq },
-              }),
-            )
-          }
-        },
-        stopToken,
-      )
-      observer.complete()
-    })
+  public getFeatures(region: NoAssemblyRegion, opts?: BaseOptions) {
+    return sequenceFeatures(
+      region,
+      opts,
+      async () => (await this.setup(opts)).twobit,
+    )
   }
 }

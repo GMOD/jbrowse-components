@@ -30,7 +30,6 @@
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/abortable-promise-cache": "^3.0.4",
     "@gmod/indexedfasta": "^5.0.9",
     "@gmod/twobit": "^6.0.11",
     "@jbrowse/core": "workspace:^",

@@ -1560,9 +1560,6 @@ importers:
 
   plugins/sequence:
     dependencies:
-      '@gmod/abortable-promise-cache':
-        specifier: ^3.0.4
-        version: 3.0.4
       '@gmod/indexedfasta':
         specifier: ^5.0.9
         version: 5.0.9

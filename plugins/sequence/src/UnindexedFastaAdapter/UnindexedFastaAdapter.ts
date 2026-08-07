@@ -1,28 +1,28 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import {
-  SimpleFeature,
-  fetchAndMaybeUnzipText,
-  updateStatus,
-} from '@jbrowse/core/util'
+import { fetchAndMaybeUnzipText, updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
-import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import { readOptionalMetadata } from '../chromSizesUtils.ts'
+import { sequenceFeatures } from '../sequenceFeatures.ts'
 
 import type { UnindexedFastaAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature } from '@jbrowse/core/util'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
+// Split on a '>' that starts a line, not on every '>': a description line is
+// free text and may well contain one ("gene A>B"), and splitting there both
+// invents a contig out of the tail of the description and leaves the real
+// contig with an empty sequence — silently, since every piece still parses.
 function parseSmallFasta(text: string) {
   return new Map(
     text
-      .split('>')
+      .split(/^>/m)
       .filter(t => /\S/.test(t))
       .map(entryText => {
         const [defLine, ...seqLines] = entryText.split(/\r?\n/)
-        const [id, ...description] = defLine!.split(' ')
+        // any whitespace ends the name, as samtools does it, so a tab-separated
+        // description doesn't get folded into the refName
+        const [id, ...description] = defLine!.split(/\s+/)
         const sequence = seqLines.join('').replaceAll(/\s/g, '')
         return [
           id!,
@@ -66,8 +66,7 @@ export default class UnindexedFastaAdapter extends BaseSequenceAdapter<Unindexed
 
     const fasta = new Map<string, { description: string; sequence: string }>()
     for (const [refName, val] of res) {
-      const name =
-        readConfObject(this.config, 'rewriteRefNames', { refName }) || refName
+      const name = this.getConf('rewriteRefNames', { refName }) || refName
       fasta.set(name, val)
     }
     return { fasta }
@@ -89,24 +88,13 @@ export default class UnindexedFastaAdapter extends BaseSequenceAdapter<Unindexed
   }
 
   public getFeatures(region: NoAssemblyRegion, opts?: BaseOptions) {
-    const { refName, start, end } = region
-    return ObservableCreate<Feature>(async observer => {
+    return sequenceFeatures(region, opts, async () => {
       const { fasta } = await this.setup(opts)
-      const entry = fasta.get(refName)
-      if (entry) {
-        observer.next(
-          new SimpleFeature({
-            id: `${refName}-${start}-${end}`,
-            data: {
-              refName,
-              start,
-              end,
-              seq: entry.sequence.slice(start, end),
-            },
-          }),
-        )
+      return {
+        getSequenceSize: async refName => fasta.get(refName)?.sequence.length,
+        getSequence: async (refName, start, end) =>
+          fasta.get(refName)?.sequence.slice(start, end),
       }
-      observer.complete()
     })
   }
 }
