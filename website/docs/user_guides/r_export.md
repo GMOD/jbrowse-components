@@ -1,7 +1,7 @@
 ---
 title: Export R script
 description: Redraw the current view as an editable ggplot2 figure
-guide_category: Other features
+guide_category: General usage
 ---
 
 The linear genome view's **Export R script** option (in the view's three-dot
