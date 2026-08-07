@@ -92,7 +92,11 @@
     "jbrowse_anywidget",
     "cli",
     "jbrowse-img",
-    "agents",
+    {
+      "type": "category",
+      "label": "AI agents",
+      "items": ["agents", "agents_hosted_data", "agents_capture"]
+    },
     "faq"
   ]
 }

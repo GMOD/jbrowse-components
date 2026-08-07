@@ -1244,3 +1244,13 @@ appears in the FASTA, or pass `--aliases` to reconcile differing naming styles
 Some track types (alignments, genes) refuse to render past a feature-density
 limit. Add `force:true` after the track to override it. See
 [Force render a large region](#force-render-a-large-region).
+
+## See also
+
+- [@jbrowse/capture](https://www.npmjs.com/package/@jbrowse/capture) drives a
+  real browser instead of rendering server-side. Slower, and it downloads
+  Chromium, but it photographs the whole application — canvas and WebGPU
+  displays, menus, dialogs — and can click through it. Use it when this tool's
+  static rendering path does not cover what you need to see.
+- [Using JBrowse with AI agents](https://jbrowse.org/jb2/docs/agents/) for the
+  loop these tools fit into.

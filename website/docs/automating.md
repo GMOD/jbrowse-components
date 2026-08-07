@@ -12,8 +12,10 @@ assembly, location, tracks, and highlights it shows. This page describes those
 fields and links to the reference for each one.
 
 This page covers launching and presetting views. For headless static-image
-export see [@jbrowse/img](/docs/jbrowse-img); for the Python/notebook API see
-[](/docs/jbrowse_anywidget).
+export see [@jbrowse/img](/docs/jbrowse-img); for screenshotting a real running
+instance see [](/docs/agents_capture); for the Python/notebook API see
+[](/docs/jbrowse_anywidget). If a coding agent is doing the automating, start at
+[](/docs/agents).
 
 ## The `init` fields
 

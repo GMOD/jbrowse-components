@@ -14,6 +14,8 @@ import {
 // One-line orientation under a section heading, keyed by sidebar label.
 // Additive: an absent or renamed key just prints its bullets, never a dead link.
 const sectionNotes: Record<string, string> = {
+  'AI agents':
+    'Written for you. How to author a config and check it, hosted assemblies and tracks you can use with no setup, and how to screenshot a view and know it finished rendering.',
   Configuration:
     'The config model: assemblies, then tracks; each track = one adapter (data) + display type(s), wired with JEXL. Per-type slots are under "Reference: Config schema".',
   'Reference: Config schema':
