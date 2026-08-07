@@ -7,14 +7,25 @@ import { useVirtualScrollWheel } from '../util/useVirtualScrollWheel.ts'
 
 import type React from 'react'
 
-const TRACK_WIDTH = 12
+/**
+ * How much of a display's right edge this occupies while it is drawn.
+ *
+ * Exported because the things that have to *clear* it are drawn by the displays
+ * that mount it, not by this file: the bottom-right indicator row and the
+ * alignments coverage axis label. Both kept a private copy of the number (and
+ * the alignments indicator row kept none at all, so its chips were drawn over
+ * the thumb), which is a copy that can only be checked by looking at two files
+ * at once.
+ */
+export const VERTICAL_SCROLLBAR_WIDTH = 12
+
 const MIN_THUMB_HEIGHT = 20
 
 const useStyles = makeStyles()(theme => ({
   track: {
     position: 'absolute',
     right: 0,
-    width: TRACK_WIDTH,
+    width: VERTICAL_SCROLLBAR_WIDTH,
     cursor: 'default',
     zIndex: 10,
     // theme-aware so the thumb stays visible in dark mode (a hardcoded black

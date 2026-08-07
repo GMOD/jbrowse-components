@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 
 import { ContextMenu, useMouseState } from '@jbrowse/core/ui'
+import { VERTICAL_SCROLLBAR_WIDTH } from '@jbrowse/core/ui/VerticalScrollbar'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isAlive } from '@jbrowse/mobx-state-tree'
@@ -9,11 +10,11 @@ import {
   DisplayChrome,
   TrackHeightIndicator,
 } from '@jbrowse/plugin-linear-genome-view'
-import { Link } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { AlignmentsRenderer } from '../renderers/AlignmentsRenderer.ts'
 import PileupBody from './PileupComponent.tsx'
+import PileupTruncatedIndicator from './PileupTruncatedIndicator.tsx'
 
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
 import type { MouseTracker } from '@jbrowse/core/ui'
@@ -31,7 +32,11 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // `useMouseTracking` publishes the position instead and coalesces it to one
 // update per frame. See there.
 
-const useStyles = makeStyles()(theme => ({
+// Layout only, and deliberately no `theme =>` argument: this is the alignments
+// entry in the "themed makeStyles in the display render path" list that
+// EAGER_BUNDLE.md keeps, and the truncation notice was the only thing here that
+// read a color. It reads the palette through `TrackControl` now.
+const useStyles = makeStyles()({
   display: {
     position: 'relative',
     whiteSpace: 'nowrap',
@@ -39,17 +44,7 @@ const useStyles = makeStyles()(theme => ({
     width: '100%',
     minHeight: '100%',
   },
-  maxHeight: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 4,
-    padding: '0 4px',
-    fontSize: 11,
-    color: theme.palette.text.secondary,
-    background: theme.palette.background.paper,
-    opacity: 0.9,
-  },
-}))
+})
 
 // maxHeight is in pixels; this is far above the Uint16 row ceiling so the
 // `maxRows` getter clamps to the real limit and every stacked read shows.
@@ -104,21 +99,21 @@ const AlignmentsDisplayComponent = observer(
         {({ canvasRef, canvas, mouseTracker }) => (
           <>
             <PileupBody model={model} canvasRef={canvasRef} canvas={canvas} />
-            <BottomRightIndicators>
+            {/* The pileup's own scrollbar sits on the same edge, so the row has
+                to clear it while it is drawn. Same expression as the canvas
+                display's: the scrollbar's track plus a hairline. Passing nothing
+                here drew these chips over the thumb. */}
+            <BottomRightIndicators
+              scrollbarWidth={
+                model.scrollableHeight > 0 ? VERTICAL_SCROLLBAR_WIDTH + 2 : 0
+              }
+            >
               {pileupTruncated ? (
-                <div className={classes.maxHeight}>
-                  <span>Max layout height reached</span>
-                  <Link
-                    component="button"
-                    variant="caption"
-                    underline="hover"
-                    onClick={() => {
-                      model.setMaxHeight(SHOW_ALL_MAX_HEIGHT)
-                    }}
-                  >
-                    Show all alignments
-                  </Link>
-                </div>
+                <PileupTruncatedIndicator
+                  onShowAll={() => {
+                    model.setMaxHeight(SHOW_ALL_MAX_HEIGHT)
+                  }}
+                />
               ) : null}
               <TrackHeightIndicator
                 heightMode={model.heightMode}

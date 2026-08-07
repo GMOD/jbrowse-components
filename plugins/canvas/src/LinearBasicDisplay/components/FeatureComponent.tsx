@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useId } from 'react'
 
 import { ContextMenu, VerticalScrollbar, useMouseState } from '@jbrowse/core/ui'
+import { VERTICAL_SCROLLBAR_WIDTH } from '@jbrowse/core/ui/VerticalScrollbar'
 import { capitalizeFirst, getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useVirtualScrollWheel } from '@jbrowse/core/util/useVirtualScrollWheel'
@@ -39,7 +40,7 @@ type LGV = LinearGenomeViewModel
 // Right-edge width the VerticalScrollbar overlay claims while the content
 // overflows, so the bottom-right indicators don't render underneath it. A shade
 // wider than the scrollbar's own track, which keeps a hairline between them.
-const SCROLLBAR_WIDTH = 14
+const SCROLLBAR_WIDTH = VERTICAL_SCROLLBAR_WIDTH + 2
 
 // The model type is the real MST instance (`LinearCanvasBaseDisplayModel`): the
 // display registers this component from index.ts, so nothing imports it back into

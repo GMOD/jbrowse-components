@@ -178,7 +178,7 @@ const PlainErrorBar = observer(function PlainErrorBar({
   visible: boolean
 }) {
   return visible && model.error ? (
-    <div style={{ ...overlayBox, alignItems: 'flex-start' }} role="alert">
+    <div style={overlayBox} role="alert">
       <div style={chip}>
         <span style={{ wordBreak: 'break-word' }}>
           {errorText(model.error)}

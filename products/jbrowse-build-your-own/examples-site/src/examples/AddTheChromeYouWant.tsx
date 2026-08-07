@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useRef, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 
 import {
   PaletteProvider,
@@ -7,6 +7,7 @@ import {
 import { chooseGridPitch } from '@jbrowse/core/util/chooseGridPitch'
 import { useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
+import { useResizeDrag } from '@jbrowse/core/util/useResizeDrag'
 import { DisplayUIProvider } from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
@@ -236,7 +237,13 @@ const TrackLabel = observer(function TrackLabel({
 const RESIZE_HANDLE_HEIGHT = 4
 
 /**
- * Drag the bar under a track to resize it. Two model calls:
+ * Drag the bar under a track to resize it. The bar is yours (it is a divider in
+ * your own row), the gesture is not: `useResizeDrag` hands back the props for a
+ * pointer-capture drag reported as one distance per animation frame, which is
+ * the same gesture JBrowse's own track dividers run. Spread them and style the
+ * div however your app wants.
+ *
+ * Two model calls do the rest:
  *
  * - `display.resizeHeight(deltaPx)` is the whole resize. It clamps to the
  *   display's minimum, and it also knows what a manual drag *means*: a display
@@ -247,14 +254,9 @@ const RESIZE_HANDLE_HEIGHT = 4
  *   use this to sit an expensive layer out of the drag. Skipping it costs you
  *   correctness nowhere and frames somewhere.
  *
- * The delta is derived from the last committed pointer position rather than
- * from where the press started, so a drag that runs into the minimum height
- * doesn't bank a debt the pointer has to pay back on the way up.
- *
- * `data-gesture-owner` is the marker `usePanZoom` tests for before it starts a
- * drag of its own. Without it, dragging this bar would pan the view sideways
- * instead — a plain `stopPropagation` would not do, since that handler runs on
- * the same pointer events this one needs.
+ * The one thing the hook can't do for you is `touchAction: 'none'`, because your
+ * own `style` would overwrite it. Without it the browser claims a touch drag as
+ * a page scroll and the pointer stream never arrives.
  */
 const TrackResizeHandle = observer(function TrackResizeHandle({
   view,
@@ -263,46 +265,30 @@ const TrackResizeHandle = observer(function TrackResizeHandle({
   view: BrowserView
   trackId: string
 }) {
-  const lastYRef = useRef(0)
-  const track = view.getTrack(trackId)
-  if (!track) {
-    return null
-  }
-  const display = track.activeDisplay
-  return (
+  const display = view.getTrack(trackId)?.activeDisplay
+  const handleProps = useResizeDrag({
+    onDrag: distance => {
+      display?.resizeHeight(distance)
+    },
+    onDragStart: () => {
+      display?.setResizing(true)
+    },
+    onDragEnd: () => {
+      display?.setResizing(false)
+    },
+  })
+  return display ? (
     <div
-      data-gesture-owner="true"
+      {...handleProps}
       aria-label={`Resize ${trackId}`}
       style={{
         height: RESIZE_HANDLE_HEIGHT,
         cursor: 'row-resize',
-        // or the browser turns a touch-drag into a scroll and the pointer
-        // stream never reaches this handler
         touchAction: 'none',
         background: 'color-mix(in srgb, currentColor 20%, transparent)',
       }}
-      onPointerDown={event => {
-        event.preventDefault()
-        lastYRef.current = event.clientY
-        display.setResizing(true)
-        event.currentTarget.setPointerCapture(event.pointerId)
-      }}
-      onPointerMove={event => {
-        if (!event.currentTarget.hasPointerCapture(event.pointerId)) {
-          return
-        }
-        display.resizeHeight(event.clientY - lastYRef.current)
-        lastYRef.current = event.clientY
-      }}
-      onPointerUp={event => {
-        event.currentTarget.releasePointerCapture(event.pointerId)
-        display.setResizing(false)
-      }}
-      onPointerCancel={() => {
-        display.setResizing(false)
-      }}
     />
-  )
+  ) : null
 })
 
 // A display paints no background of its own -- its labels are drawn straight

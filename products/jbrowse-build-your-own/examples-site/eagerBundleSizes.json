@@ -1,50 +1,50 @@
 {
   "index": {
-    "chunks": 263,
-    "gzipKb": 537
+    "chunks": 264,
+    "gzipKb": 538
   },
   "a-scalebar-not-a-ruler": {
-    "chunks": 263,
-    "gzipKb": 537
+    "chunks": 264,
+    "gzipKb": 538
   },
   "a-stack-of-tracks": {
-    "chunks": 220,
+    "chunks": 221,
     "gzipKb": 485
   },
   "add-the-chrome-you-want": {
-    "chunks": 263,
-    "gzipKb": 537
+    "chunks": 266,
+    "gzipKb": 538
   },
   "bring-your-own-overlays": {
-    "chunks": 263,
+    "chunks": 264,
     "gzipKb": 537
   },
   "drive-it-from-your-app": {
-    "chunks": 263,
+    "chunks": 264,
     "gzipKb": 537
   },
   "every-chromosome": {
-    "chunks": 263,
-    "gzipKb": 536
+    "chunks": 264,
+    "gzipKb": 537
   },
   "one-track": {
-    "chunks": 218,
-    "gzipKb": 482
+    "chunks": 219,
+    "gzipKb": 483
   },
   "pan-and-zoom": {
-    "chunks": 220,
+    "chunks": 221,
     "gzipKb": 485
   },
   "run-it-in-a-worker": {
-    "chunks": 263,
-    "gzipKb": 536
+    "chunks": 264,
+    "gzipKb": 537
   },
   "synteny-ribbons": {
-    "chunks": 304,
+    "chunks": 306,
     "gzipKb": 642
   },
   "your-own-feature-details": {
-    "chunks": 263,
-    "gzipKb": 536
+    "chunks": 264,
+    "gzipKb": 537
   }
 }

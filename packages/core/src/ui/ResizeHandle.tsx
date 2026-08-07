@@ -1,8 +1,5 @@
-import { useRef } from 'react'
-
 import { cx, makeStyles } from '../util/tss-react/index.ts'
-import { usePointerDrag } from '../util/usePointerDrag.ts'
-import { useRafCommit } from '../util/useRafCommit.ts'
+import { useResizeDrag } from '../util/useResizeDrag.ts'
 
 import type React from 'react'
 
@@ -47,63 +44,32 @@ function ResizeHandle({
   'onDrag' | 'onDragStart' | 'onDragEnd'
 >) {
   const { classes } = useStyles()
-  const prevPosRef = useRef(0)
-
-  const getPos = (event: React.PointerEvent) =>
-    vertical ? event.clientX : event.clientY
-
-  // Coalesced to one commit per frame: a pointermove stream (plus the browser's
-  // coalesced batches) outruns the frame rate, and each commit reruns the
-  // resize downstream. The scheduled value is the absolute pointer position —
-  // last-write-wins — and the delta against the previous commit is derived
-  // here, so a dropped intermediate position costs nothing.
-  const { schedule, flush } = useRafCommit(pos => {
-    const distance = pos - prevPosRef.current
-    prevPosRef.current = pos
-    onDrag(distance)
-  })
-
-  const handlers = usePointerDrag({
-    onDragStart: event => {
-      prevPosRef.current = getPos(event)
-      onDragStart?.()
-    },
-    onDrag: event => {
-      event.preventDefault()
-      // read the position synchronously — the deferred commit runs after React
-      // has nulled the event
-      schedule(getPos(event))
-    },
-    onDragEnd: () => {
-      // land the resting size exactly, rather than a frame late
-      flush()
-      onDragEnd?.()
-    },
+  // The gesture, including the per-frame coalescing, the delta measurement and
+  // the `data-gesture-owner` marker that keeps ancestor drags (the LGV
+  // click-drag pan, MAF's drag-selection) off this press. All of it is published
+  // as a hook rather than living here, because an embedder drawing their own
+  // track divider needs exactly this and none of the styling below.
+  const handleProps = useResizeDrag({
+    onDrag,
+    onDragStart,
+    onDragEnd,
+    vertical,
   })
 
   return (
     <div
-      // caller props first: spread after the handlers below, a stray
+      // caller props first: spread after the gesture props below, a stray
       // onPointerMove/onPointerUp would silently replace the drag's own and
       // leave a press that never resizes and never ends
       {...props}
-      // Claims the press: gesture ancestors (the LGV click-drag pan, MAF's
-      // drag-selection) test `closest('[data-gesture-owner]')` and don't begin
-      // their own drag. It's a marker rather than a `stopPropagation` because
-      // this drag runs on *pointer* events while those ancestors listen on
-      // *mouse* events, so there is no shared event to stop — and stopping the
-      // mousedown would also cost focus-on-click, whose document-level listener
-      // (`useFocusOnInteraction`) React's stopPropagation does block.
-      data-gesture-owner="true"
       className={cx(
         originalClassName,
         vertical ? classes.verticalHandle : classes.horizontalHandle,
         bar && (vertical ? classes.verticalBar : classes.horizontalBar),
       )}
-      {...handlers}
+      {...handleProps}
       onPointerDown={event => {
-        event.preventDefault()
-        handlers.onPointerDown(event)
+        handleProps.onPointerDown(event)
         onPointerDown?.(event)
       }}
     />

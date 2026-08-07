@@ -102,6 +102,7 @@
     "./ui/Snackbar": "./src/ui/Snackbar.tsx",
     "./ui/SnackbarModel": "./src/ui/SnackbarModel.tsx",
     "./ui/StackTraceButton": "./src/ui/StackTraceButton.tsx",
+    "./ui/VerticalScrollbar": "./src/ui/VerticalScrollbar.tsx",
     "./ui/buildExtraTrackMenuItems": "./src/ui/buildExtraTrackMenuItems.ts",
     "./ui/colors": "./src/ui/colors.ts",
     "./ui/filterMenuItems": "./src/ui/filterMenuItems.ts",
@@ -179,6 +180,7 @@
     "./util/useFetchPlugins": "./src/util/useFetchPlugins.ts",
     "./util/useMeasure": "./src/util/useMeasure.ts",
     "./util/usePanZoom": "./src/util/usePanZoom.ts",
+    "./util/useResizeDrag": "./src/util/useResizeDrag.ts",
     "./util/useRowVirtualScroll": "./src/util/useRowVirtualScroll.ts",
     "./util/useVirtualScrollWheel": "./src/util/useVirtualScrollWheel.ts",
     "./util/virtualRange": "./src/util/virtualRange.ts",
@@ -560,6 +562,10 @@
         "types": "./esm/ui/StackTraceButton.d.ts",
         "import": "./esm/ui/StackTraceButton.js"
       },
+      "./ui/VerticalScrollbar": {
+        "types": "./esm/ui/VerticalScrollbar.d.ts",
+        "import": "./esm/ui/VerticalScrollbar.js"
+      },
       "./ui/buildExtraTrackMenuItems": {
         "types": "./esm/ui/buildExtraTrackMenuItems.d.ts",
         "import": "./esm/ui/buildExtraTrackMenuItems.js"
@@ -868,6 +874,10 @@
         "types": "./esm/util/usePanZoom.d.ts",
         "import": "./esm/util/usePanZoom.js"
       },
+      "./util/useResizeDrag": {
+        "types": "./esm/util/useResizeDrag.d.ts",
+        "import": "./esm/util/useResizeDrag.js"
+      },
       "./util/useRowVirtualScroll": {
         "types": "./esm/util/useRowVirtualScroll.d.ts",
         "import": "./esm/util/useRowVirtualScroll.js"
@@ -1133,6 +1143,9 @@
         "ui/StackTraceButton": [
           "esm/ui/StackTraceButton.d.ts"
         ],
+        "ui/VerticalScrollbar": [
+          "esm/ui/VerticalScrollbar.d.ts"
+        ],
         "ui/buildExtraTrackMenuItems": [
           "esm/ui/buildExtraTrackMenuItems.d.ts"
         ],
@@ -1363,6 +1376,9 @@
         ],
         "util/usePanZoom": [
           "esm/util/usePanZoom.d.ts"
+        ],
+        "util/useResizeDrag": [
+          "esm/util/useResizeDrag.d.ts"
         ],
         "util/useRowVirtualScroll": [
           "esm/util/useRowVirtualScroll.d.ts"

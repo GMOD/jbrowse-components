@@ -520,6 +520,17 @@ Eight example pages each carried a hand-rolled copy of the first, all of them
 missing the rAF batching and the zoom rate limit; treat "the examples all write
 X" as a missing export rather than a duplication problem.
 
+`@jbrowse/core/util/useResizeDrag` is the third, and the one where the split
+between gesture and styling is sharpest. Per-track vertical resize is a divider
+in the *host's* track row, so the bar has to be theirs, but the gesture behind it
+is pointer capture, one commit per animation frame, and a delta measured from the
+last commit rather than from the press — which is what keeps a drag that runs
+into `resizeHeight`'s clamp from banking a debt the pointer pays back on the way
+out. The hook returns props to spread onto any element, `data-gesture-owner`
+among them, so a resize drag doesn't also pan the view. `ui/ResizeHandle` is that
+hook plus JBrowse's own 4px bar, and the build-your-own site's
+"Add the chrome you want" page is the same hook under a divider of its own.
+
 **A third seam was considered for the tooltip and rejected.** `BaseTooltip` is
 rendered by each display directly, behind neither provider, and it used to style
 itself through `makeStyles(theme => …)` — so in a host that mounts no

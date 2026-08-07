@@ -77,7 +77,7 @@ reference others may hold, not as free-form prose.
 - [Offline genome packages](#offline-genome-packages-for-jbrowse-desktop) —
   relocatable genome packs plus a download manager
 - [Deferred architecture-review items](#deferred-architecture-review-items-type-safety--displaychrome) —
-  and the two chrome loose ends left after it
+  and the chrome loose end left after it
 - [Interaction perf](#interaction-perf-which-components-re-render-per-frame) — the
   measured culprit is the coordinate ruler, not the alignments overlays
 - [Search / misc](#search--misc)
@@ -1909,7 +1909,7 @@ gap from the same pass is tracked in TODO.md.
   rules out the composition trick that would express it. Deferred; the default
   is fail-hung rather than fail-stale, which is the safe side.
 
-### Two loose ends from the bring-your-own chrome pass
+### One loose end from the bring-your-own chrome pass
 
 The idea this heading used to carry — a theme-free `makeStyles`, the
 build-your-own "weight" half — **shipped on 2026-08-06**. `makeStyles` hands a
@@ -1918,10 +1918,17 @@ component `ui/styleTheme.ts`'s plain-data theme and reaches no Material UI;
 `makeStyles`", has the census behind the design and the measurement, and the
 section after it has what is left, which is not what this proposal predicted.
 
-What did not travel with it, from the same pass: alignments' bottom-right row
-doesn't reserve its `VerticalScrollbar`'s 12px (canvas reserves 14), cosmetic
-overlap with the thumb only, left alone to avoid churning PNG goldens that
-weren't verifiable in-session; and `plainTrackControl` carries one literal colour
+The scrollbar-clearance half of what did not travel with it **shipped on
+2026-08-07**: alignments' bottom-right row reserved nothing for its
+`VerticalScrollbar` while canvas reserved 14, and the number was a private copy
+in each file. `VERTICAL_SCROLLBAR_WIDTH` is exported from `ui/VerticalScrollbar`
+now and both pass `VERTICAL_SCROLLBAR_WIDTH + 2`, which leaves canvas's pixel
+value exactly where it was (its 14 was a deliberate hairline, not a stale copy)
+and moves alignments' chips off the thumb. The PNG churn that argued for leaving
+it alone lands in the weekly non-gating figures sweep, with a BEFORE/AFTER to
+read it against, rather than in CI.
+
+What is still true from that pass: `plainTrackControl` carries one literal colour
 (`#d97706`) because there is no CSS system colour for "something is wrong" and
 the warning state exists precisely to be seen without hovering.
 

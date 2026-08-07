@@ -2,6 +2,7 @@ import { Fragment, useId } from 'react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import { ResizeHandle, VerticalScrollbar } from '@jbrowse/core/ui'
+import { VERTICAL_SCROLLBAR_WIDTH } from '@jbrowse/core/ui/VerticalScrollbar'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useVirtualScrollWheel } from '@jbrowse/core/util/useVirtualScrollWheel'
@@ -32,8 +33,6 @@ import { useAlignmentsBase } from './useAlignmentsBase.ts'
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 import type React from 'react'
 
-const SCROLLBAR_WIDTH = 12
-
 const useStyles = makeStyles()(theme => ({
   resizeHandle: {
     position: 'absolute' as const,
@@ -44,7 +43,7 @@ const useStyles = makeStyles()(theme => ({
   },
   compactAxisLabel: {
     position: 'absolute' as const,
-    right: SCROLLBAR_WIDTH + 2,
+    right: VERTICAL_SCROLLBAR_WIDTH + 2,
     fontSize: 9,
     lineHeight: '11px',
     fontFamily: 'sans-serif',
@@ -435,7 +434,7 @@ function GroupCoverageAxisBar({
       style={{
         position: 'absolute',
         top,
-        right: SCROLLBAR_WIDTH + 2,
+        right: VERTICAL_SCROLLBAR_WIDTH + 2,
         pointerEvents: 'none',
         height: coverageHeight,
         width: AXIS_SVG_WIDTH,
