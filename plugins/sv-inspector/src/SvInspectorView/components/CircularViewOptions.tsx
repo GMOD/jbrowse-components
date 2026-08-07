@@ -7,8 +7,16 @@ import { circularViewOptionsBarHeight } from '../model.ts'
 import type { SvInspectorViewModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
+  // the bar's height is a contract: the model subtracts exactly this much from
+  // the circular view's height. So the control is centered inside it rather
+  // than padded vertically, which stacked a medium checkbox's own 42px onto
+  // 16px of padding and bled 6px over the top of the circle
   circularViewOptions: {
-    padding: theme.spacing(1),
+    height: circularViewOptionsBarHeight,
+    display: 'flex',
+    alignItems: 'center',
+    padding: theme.spacing(0, 1),
+    overflow: 'hidden',
   },
 }))
 
@@ -20,10 +28,7 @@ const CircularViewOptions = observer(function CircularViewOptions({
   const { classes } = useStyles()
 
   return (
-    <div
-      className={classes.circularViewOptions}
-      style={{ height: circularViewOptionsBarHeight }}
-    >
+    <div className={classes.circularViewOptions}>
       <LabeledCheckbox
         checked={svInspector.onlyDisplayRelevantRegionsInCircularView}
         onChange={val => {

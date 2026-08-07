@@ -191,3 +191,61 @@ test('snapshot forwards init to child spreadsheet synchronously', () => {
   expect(snap.spreadsheetView.init).toBeUndefined()
   expect(snap.spreadsheetView.importWizard.cachedFileLocation).toBeDefined()
 }, 40000)
+
+// Regression: the region binding was gated on circularView.initialized, which
+// asks whether the assembly named by the regions the circle ALREADY holds has
+// loaded. A saved session whose persisted regions name an assembly the config no
+// longer has therefore pinned the circle to them: never initialized, so never
+// corrected, and showLoading true forever with no error to render.
+test('the circle recovers from regions naming an assembly that is gone', async () => {
+  const view = await loadedSvInspector()
+  const good = view.circularView.displayedRegions
+  expect(good.length).toBeGreaterThan(0)
+
+  // an assembly the config doesn't have is exactly what makes
+  // circularView.initialized read false, since that getter resolves the
+  // assemblies named by these regions. The binding corrects the list rather than
+  // waiting on them, so this lands within the setter's own action
+  view.circularView.setDisplayedRegions([
+    { refName: 'ctgA', start: 0, end: 100, assemblyName: 'assembly-that-left' },
+  ])
+
+  expect(view.circularView.displayedRegions).toEqual(good)
+  expect(view.circularView.initialized).toBe(true)
+}, 40000)
+
+// Regression: the whole circularView node was stripped from the snapshot, so a
+// reload reset the circle even though the circular view persists its own pan and
+// zoom on purpose. Only `tracks` can't be persisted, because the chord track
+// this view generates carries every visible feature inline in its configuration
+test('the snapshot keeps the circle but not its generated chord track', async () => {
+  const view = await loadedSvInspector()
+  await waitFor(
+    () => {
+      expect(view.circularView.tracks.length).toBe(1)
+    },
+    { timeout: 30000 },
+  )
+  view.circularView.zoomInButton()
+  const { bpPerPx } = view.circularView
+
+  const snap: {
+    circularView: {
+      tracks?: unknown[]
+      bpPerPx?: number
+      autoFit?: boolean
+      displayedRegions?: unknown[]
+      disableImportForm?: boolean
+    }
+  } = getSnapshot(view)
+
+  expect(snap.circularView.tracks).toBeUndefined()
+  expect(snap.circularView.bpPerPx).toBe(bpPerPx)
+  // the regions have to persist alongside the zoom: setDisplayedRegions refits,
+  // so a circle that rebuilt its region list on load would refit away the zoom
+  expect(snap.circularView.displayedRegions?.length).toBeGreaterThan(0)
+  expect(snap.circularView.autoFit).toBe(false)
+  // and the flags that make it an embedded circle rather than a standalone one,
+  // which used to come back from the default factory
+  expect(snap.circularView.disableImportForm).toBe(true)
+}, 40000)

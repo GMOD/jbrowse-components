@@ -1,23 +1,26 @@
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
-import { getSession } from '@jbrowse/core/util'
+import { clamp, getSession } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
-import { autorun, untracked } from 'mobx'
+import { autorun } from 'mobx'
 
 import { featureRefNames } from './featureRefNames.ts'
+import { sameCircularRegions } from './sameCircularRegions.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { CircularViewStateModel } from '@jbrowse/plugin-circular-view'
-import type { SpreadsheetViewStateModel } from '@jbrowse/plugin-spreadsheet-view'
+import type {
+  SpreadsheetViewInit,
+  SpreadsheetViewStateModel,
+} from '@jbrowse/plugin-spreadsheet-view'
 
-interface SvInspectorViewInit {
-  assembly: string
-  /** absent means "open the import form", pre-set to the assembly/fileType */
-  uri?: string
-  fileType?: string
-}
+// forwarded verbatim to the child spreadsheet view, so it extends that view's
+// init rather than restating it: a field added there arrives here too, where a
+// lookalike interface would still typecheck while silently dropping it
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface SvInspectorViewInit extends SpreadsheetViewInit {}
 
 /** height of the "show only regions with data" bar above the circular view */
 export const circularViewOptionsBarHeight = 52
@@ -57,6 +60,10 @@ function SvInspectorViewF(pluginManager: PluginManager) {
   const headerHeight = 52
   // the ResizeHandle `bar` that sits between the two subviews
   const dividerWidth = 4
+  // the divider stops short of either edge, so neither subview can be dragged
+  // down to nothing
+  const minWidthFraction = 0.2
+  const maxWidthFraction = 0.8
   return types
     .compose(
       'SvInspectorView',
@@ -185,18 +192,42 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * the regions the paired circular view should show. An empty relevant-set
-       * means the features aren't parsed yet, so show everything rather than an
-       * empty circle
+       * the regions the paired circular view should show, never narrowed to
+       * nothing: the relevant-set is empty until the features are parsed, and
+       * can also miss every region outright, since getCanonicalRefName2 hands
+       * back a refName the assembly doesn't know rather than dropping it. Both
+       * show everything rather than an empty circle
        */
       get circularDisplayedRegions() {
         const regions = this.currentAssembly?.regions
-        const relevant = self.onlyDisplayRelevantRegionsInCircularView
-          ? this.canonicalFeatureRefNameSet
-          : undefined
-        return regions && relevant?.size
-          ? regions.filter(r => relevant.has(r.refName))
-          : regions
+        if (!regions || !self.onlyDisplayRelevantRegionsInCircularView) {
+          return regions
+        }
+        const relevant = this.canonicalFeatureRefNameSet
+        const narrowed = regions.filter(r => relevant.has(r.refName))
+        return narrowed.length ? narrowed : regions
+      },
+      /**
+       * #getter
+       * the two subview widths, with the divider taken out of the total first:
+       * the two plus the divider have to add up to our own width, or the flex
+       * row overflows and squeezes the circle.
+       *
+       * The fraction is clamped on read as well as on write, so a session
+       * carrying an out-of-range one (hand-authored, or from a future default)
+       * can't drive the circle under the width floor it clamps itself to
+       */
+      get subviewWidths() {
+        const available = self.width - dividerWidth
+        const spreadsheet = Math.round(
+          available *
+            clamp(
+              self.spreadsheetWidthFraction,
+              minWidthFraction,
+              maxWidthFraction,
+            ),
+        )
+        return { spreadsheet, circular: available - spreadsheet }
       },
       /**
        * #getter
@@ -265,7 +296,11 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       resizeSpreadsheetWidth(distance: number) {
         const fraction =
           self.spreadsheetWidthFraction + distance / (self.width - dividerWidth)
-        self.spreadsheetWidthFraction = Math.min(Math.max(fraction, 0.2), 0.8)
+        self.spreadsheetWidthFraction = clamp(
+          fraction,
+          minWidthFraction,
+          maxWidthFraction,
+        )
       },
 
       /**
@@ -321,14 +356,9 @@ function SvInspectorViewF(pluginManager: PluginManager) {
           autorun(
             () => {
               if (self.showCircularView) {
-                // the two subviews plus the divider have to add up to our own
-                // width, or the flex row overflows and squeezes the circle
-                const available = self.width - dividerWidth
-                const spreadsheetWidth = Math.round(
-                  available * self.spreadsheetWidthFraction,
-                )
-                self.spreadsheetView.setWidth(spreadsheetWidth)
-                self.circularView.setWidth(available - spreadsheetWidth)
+                const { spreadsheet, circular } = self.subviewWidths
+                self.spreadsheetView.setWidth(spreadsheet)
+                self.circularView.setWidth(circular)
               } else {
                 self.spreadsheetView.setWidth(self.width)
               }
@@ -362,20 +392,30 @@ function SvInspectorViewF(pluginManager: PluginManager) {
               // setDisplayedRegions re-fits the circle, so only write when the
               // region list really changed. With the toggle on, the relevant-set
               // recomputes on every grid filter change and would otherwise
-              // throw away the user's pan and zoom on each keystroke
-              if (circularView.initialized && circularDisplayedRegions) {
-                const cur = circularView.displayedRegions
-                const changed =
-                  cur.length !== circularDisplayedRegions.length ||
-                  cur.some(
-                    (r, i) =>
-                      r.refName !== circularDisplayedRegions[i]!.refName,
-                  )
-                if (changed) {
-                  circularView.setDisplayedRegions(
-                    structuredClone(circularDisplayedRegions),
-                  )
-                }
+              // throw away the user's pan and zoom on each keystroke.
+              //
+              // The comparison is the whole guard. Gating on
+              // circularView.initialized as well reads as caution but inverts
+              // on the one case that needs the write most: that getter asks
+              // whether the assembly named by the regions the circle *already*
+              // holds has loaded, so a circle sitting on regions from an
+              // assembly the config no longer has can never be corrected, and
+              // its `showLoading` stays true forever with no error to show.
+              // Writing early costs nothing either way, since fitToWindow
+              // defers until the view has a measured width
+              if (
+                circularDisplayedRegions &&
+                !sameCircularRegions(
+                  circularView.displayedRegions,
+                  circularDisplayedRegions,
+                )
+              ) {
+                // displayedRegions is a frozen prop, and MST deep-freezes what
+                // it is handed: writing the assembly's own array would freeze
+                // the assembly's regions along with it
+                circularView.setDisplayedRegions(
+                  structuredClone(circularDisplayedRegions),
+                )
               }
             },
             { name: 'SvInspectorView displayed regions bind' },
@@ -389,11 +429,11 @@ function SvInspectorViewF(pluginManager: PluginManager) {
             () => {
               const { circularView, variantTrackId } = self
               const conf = self.featuresCircularTrackConfiguration
-              // hideTrack reads circularView.tracks internally; avoid tracking
-              // that dependency to prevent re-triggering on our own track changes
-              untracked(() => {
-                circularView.hideTrack(variantTrackId)
-              })
+              // the conf carries the feature list inline, so a changed feature
+              // set means a whole new track: drop the old one first. Both calls
+              // are MST actions, which run untracked, so neither one's read of
+              // circularView.tracks makes this autorun depend on its own writes
+              circularView.hideTrack(variantTrackId)
               if (conf) {
                 circularView.addTrackConf(conf)
               }
@@ -404,9 +444,21 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       },
     }))
     .postProcessSnapshot(snap => {
-      // xref https://github.com/mobxjs/mobx-state-tree/issues/1524
+      // `init` is forwarded to the child spreadsheet synchronously in
+      // afterAttach, and that view caches the file location just as
+      // synchronously, so this node's copy has nothing left to reconstruct.
+      //
+      // The circular view's only track is built here from the sheet's rows, and
+      // showTrackGeneric puts that config on the track *inline*, so persisting
+      // `tracks` would write every visible feature into the session a second
+      // time. Nothing else about the subview is derived: displayedRegions,
+      // bpPerPx, offsetRadians and autoFit are the user's own pan and zoom,
+      // which the circular view means to keep across a reload, and dropping the
+      // whole node used to reset the circle on every session load.
+      // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
       const { init, circularView, ...rest } = snap
-      return rest
+      const { tracks, ...circular } = circularView
+      return { ...rest, circularView: circular }
     })
 }
 
