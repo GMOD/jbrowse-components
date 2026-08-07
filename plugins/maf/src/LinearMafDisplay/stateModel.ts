@@ -21,7 +21,10 @@ import {
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 import { MAX_CANVAS_DIM_PX, getDpr } from '@jbrowse/render-core'
-import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
+import {
+  installPerRegionLifecycle,
+  regionDataMap,
+} from '@jbrowse/render-core/installPerRegionLifecycle'
 import {
   TreeSidebarMixin,
   buildSpatialIndex,
@@ -31,7 +34,7 @@ import {
 } from '@jbrowse/tree-sidebar'
 import { domainFromStats, getNiceDomain } from '@jbrowse/wiggle-core'
 import deepEqual from 'fast-deep-equal'
-import { autorun, observable } from 'mobx'
+import { autorun } from 'mobx'
 
 import { buildInstanceBuffer } from '../LinearMafRenderer/mafInstanceBuffer.ts'
 import {
@@ -205,14 +208,14 @@ export default function stateModelFactory(
          * position. `rpcDataMap` is this placed against the current row order,
          * and this is what a reorder re-places from instead of refetching.
          */
-        wireDataMap: observable.map<number, MafWireRegionData>(),
+        wireDataMap: regionDataMap<MafWireRegionData>(),
         /**
          * #volatile
          * `wireDataMap` with every row assigned its on-screen `rowIndex` (see
          * `placeMafRegionData`). Everything that draws, hit-tests or measures
          * rows reads this one.
          */
-        rpcDataMap: observable.map<number, MafRegionData>(),
+        rpcDataMap: regionDataMap<MafRegionData>(),
         /**
          * #volatile
          * Per-region `bigMafSummary` rows for the zoom-out path, populated by
@@ -220,7 +223,7 @@ export default function stateModelFactory(
          * from `rpcDataMap` so the GPU sequence canvas and the summary overlay
          * never read each other's data.
          */
-        summaryDataMap: observable.map<number, MafSummaryRecord[]>(),
+        summaryDataMap: regionDataMap<MafSummaryRecord[]>(),
         /**
          * #volatile
          * Per-region CDS frame rows (UCSC `mafFrames`) for the annotation overlay,
@@ -228,7 +231,7 @@ export default function stateModelFactory(
          * separate from the alignment/summary maps so the overlay survives the
          * summary↔detail data swap.
          */
-        framesDataMap: observable.map<number, MafFrameRecord[]>(),
+        framesDataMap: regionDataMap<MafFrameRecord[]>(),
         /**
          * #volatile
          */

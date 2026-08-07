@@ -16,7 +16,10 @@ import {
   installClearHoverOnViewportChange,
 } from '@jbrowse/plugin-linear-genome-view'
 import { WiggleScoreConfigMixin } from '@jbrowse/plugin-wiggle'
-import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
+import {
+  installPerRegionLifecycle,
+  regionDataMap,
+} from '@jbrowse/render-core/installPerRegionLifecycle'
 import {
   axisPlotBox,
   computeYTicks,
@@ -29,7 +32,7 @@ import {
 } from '@jbrowse/wiggle-core'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import ScatterPlotIcon from '@mui/icons-material/ScatterPlot'
-import { autorun, observable } from 'mobx'
+import { autorun } from 'mobx'
 
 import { isIndexSnpOffscreen } from './isIndexSnpOffscreen.ts'
 
@@ -88,11 +91,11 @@ export function stateModelFactory(
       )
       .volatile(() => ({
         // 1:1 points keyed by displayedRegionIndex.
-        rpcDataMap: observable.map<number, ManhattanRpcResult>(),
+        rpcDataMap: regionDataMap<ManhattanRpcResult>(),
         // Wrapped Flatbush per region. Kept in lockstep with rpcDataMap so
         // a single-region fetch only re-wraps that region (whole-genome views
         // land 20+ regions serially; a derived view would re-wrap them all).
-        flatbushes: observable.map<number, Flatbush>(),
+        flatbushes: regionDataMap<Flatbush>(),
         // Currently hovered point — drives the hover circle + tooltip.
         featureUnderMouse: undefined as ManhattanHit | undefined,
         showLdLegend: true,
@@ -263,12 +266,15 @@ export function stateModelFactory(
           let bestIdx = -1
           const indexes = [...self.rpcDataMap.keys()].sort((a, b) => a - b)
           for (const idx of indexes) {
-            const d = self.rpcDataMap.get(idx)!
-            for (let i = 0; i < d.numFeatures; i++) {
-              const s = d.scores[i]!
+            // hoisted out of the loop: this walks every SNP of every loaded
+            // region, and a whole-genome GWAS puts hundreds of thousands in
+            // each, so the two array lookups are the loop body
+            const { scores, positions, numFeatures } = self.rpcDataMap.get(idx)!
+            for (let i = 0; i < numFeatures; i++) {
+              const s = scores[i]!
               if (s > bestScore) {
                 bestScore = s
-                bestPos = d.positions[i]!
+                bestPos = positions[i]!
                 bestIdx = idx
               }
             }

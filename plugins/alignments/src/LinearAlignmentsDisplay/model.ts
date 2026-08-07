@@ -34,6 +34,7 @@ import {
   installClearHoverOnViewportChange,
   installGrowExitBake,
 } from '@jbrowse/plugin-linear-genome-view'
+import { regionDataMap } from '@jbrowse/render-core/installPerRegionLifecycle'
 import {
   ScoreScaleMixin,
   domainFromStats,
@@ -629,12 +630,7 @@ export default function stateModelFactory(
           // observability would recursively wrap every nested object/array on
           // insert and tax every property access (`getObservablePropValue_`) in
           // the layout/draw hot loops for zero benefit.
-          rpcDataMap: observable.map<number, GroupedAlignmentsResult>(
-            undefined,
-            {
-              deep: false,
-            },
-          ),
+          rpcDataMap: regionDataMap<GroupedAlignmentsResult>(),
           /**
            * #volatile
            * pileup vertical scroll offset in px. Also read by the

@@ -36,7 +36,7 @@ the whole surface.
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
-| <span id="volatile-rpcdatamap">**rpcDataMap**</span><br><code>rpcDataMap: observable.map&lt;number, WiggleDataResult&gt;()</code> |  | WiggleCommonMixin |
+| <span id="volatile-rpcdatamap">**rpcDataMap**</span><br><code>rpcDataMap: regionDataMap&lt;WiggleDataResult&gt;()</code> |  | WiggleCommonMixin |
 | <span id="volatile-featureundermouse">**featureUnderMouse**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>featureUnderMouse: undefined as WiggleFeatureUnderMouse &#124; undef…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>featureUnderMouse: undefined as WiggleFeatureUnderMouse &#124; undefined</code></pre></dialog></span> |  | WiggleCommonMixin |
 | <span id="volatile-loadedbpperpx">**loadedBpPerPx**</span><br><code>loadedBpPerPx: undefined as number &#124; undefined</code> |  | [WiggleScoreConfigMixin](../wigglescoreconfigmixin#volatile-loadedbpperpx) |
 

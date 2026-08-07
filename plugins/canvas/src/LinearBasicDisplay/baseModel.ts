@@ -29,8 +29,9 @@ import {
   installGrowExitBake,
   onDisplayedRegionsChange,
 } from '@jbrowse/plugin-linear-genome-view'
+import { regionDataMap } from '@jbrowse/render-core/installPerRegionLifecycle'
 import { createRegionUploadSync } from '@jbrowse/render-core/regionUploadSync'
-import { observable, toJS, untracked } from 'mobx'
+import { toJS, untracked } from 'mobx'
 
 import {
   FEATURE_DEFAULT_COLOR,
@@ -370,7 +371,7 @@ export default function baseStateModelFactory(
         /**
          * #volatile
          */
-        rpcDataMap: observable.map<number, LoadedFeatureData>(),
+        rpcDataMap: regionDataMap<LoadedFeatureData>(),
         /**
          * #volatile
          */

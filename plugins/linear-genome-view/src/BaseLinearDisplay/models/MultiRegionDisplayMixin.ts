@@ -10,8 +10,9 @@ import {
   computeDisplayPhase,
   computeLoadingTerm,
 } from '@jbrowse/render-core/displayPhase'
+import { regionDataMap } from '@jbrowse/render-core/installPerRegionLifecycle'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
-import { autorun, observable, untracked } from 'mobx'
+import { autorun, untracked } from 'mobx'
 
 import RegionTooLargeMixin from '../../shared/RegionTooLargeMixin.ts'
 import FetchMixin from './FetchMixin.ts'
@@ -80,7 +81,7 @@ export default function MultiRegionDisplayMixin() {
          * displayedRegionIndex; populated only after the fetch work callback
          * returns
          */
-        loadedRegions: observable.map<number, Region>(),
+        loadedRegions: regionDataMap<Region>(),
       }))
       .views(self => ({
         /**

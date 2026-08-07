@@ -979,6 +979,17 @@ single-section consumers.) Raw `rpcDataMap` is never mutated. Use derived maps
 when settings change the shape/contents of per-region data; use `gpuProps()` for
 scalars fed to an encoder.
 
+That the raw map is never mutated is also what fixes how it is *represented*:
+build it with `regionDataMap()` from
+[`installPerRegionLifecycle`](../packages/render-core/src/installPerRegionLifecycle.ts),
+which is a **shallow** `observable.map`. An entry that can never change has
+nothing for MobX's deep enhancer to observe, so the observable-object graph it
+builds per entry on insert — and the proxy hop it adds to every field read — buys
+no reactivity at all
+([ADR-060](architecture-decision-records/adr-060-region-data-maps-are-shallow-observable.md)).
+Every per-region volatile in tree goes through the helper; writing
+`observable.map<number, …>()` by hand is the thing to notice in review.
+
 **A derived map is a tier, so keep its cheap half out of its expensive half.**
 Alignments splits the one above in two: `laidOutByGroupUncolored` does row
 placement, and `laidOutByGroup` bakes the per-read color arrays over it. Nothing

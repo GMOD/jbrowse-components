@@ -2,7 +2,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import { getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import { onDisplayedRegionsChange } from '@jbrowse/plugin-linear-genome-view'
-import { observable } from 'mobx'
+import { regionDataMap } from '@jbrowse/render-core/installPerRegionLifecycle'
 
 import { screenDensity } from '../LinearBasicDisplay/baseModelHelpers.ts'
 
@@ -97,7 +97,7 @@ export default function CanvasFeatureGateMixin() {
        * never a stale fetch-time snapshot. Survives viewport-change clears; dropped
        * on chromosome nav by `clearGateMeasurements`.
        */
-      densityStatsPerRegion: observable.map<number, RegionDensityStats>(),
+      densityStatsPerRegion: regionDataMap<RegionDensityStats>(),
     }))
     .views(self => ({
       /**

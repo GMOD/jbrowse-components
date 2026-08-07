@@ -7,7 +7,7 @@ import {
 } from '@jbrowse/core/util'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { installClearHoverOnViewportChange } from '@jbrowse/plugin-linear-genome-view'
-import { observable } from 'mobx'
+import { regionDataMap } from '@jbrowse/render-core/installPerRegionLifecycle'
 
 import {
   autoscaleDomainFromStats,
@@ -83,19 +83,8 @@ export function WiggleCommonMixin() {
     .volatile(() => ({
       /**
        * #volatile
-       * Shallow: a region's payload is replaced via `.set`/`.clear`, never
-       * mutated in place, and installPerRegionLifecycle's per-key autorun
-       * tracks the map entry rather than anything inside it — so the deep
-       * enhancer's recursive wrap buys nothing and costs a full
-       * observable-object conversion per source per region on every fetch (a
-       * thousand-sample density track pays ~18 atoms × 1000 × regions per pan),
-       * plus a `getObservablePropValue_` on each field read in the encode and
-       * hit-test paths. Same call and same reasoning as
-       * LinearAlignmentsDisplay's rpcDataMap.
        */
-      rpcDataMap: observable.map<number, WiggleDataResult>(undefined, {
-        deep: false,
-      }),
+      rpcDataMap: regionDataMap<WiggleDataResult>(),
       /**
        * #volatile
        */

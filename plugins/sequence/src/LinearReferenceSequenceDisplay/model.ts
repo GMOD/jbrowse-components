@@ -24,8 +24,10 @@ import {
   TrackHeightMixin,
   fetchEachRegion,
 } from '@jbrowse/plugin-linear-genome-view'
-import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
-import { observable } from 'mobx'
+import {
+  installPerRegionLifecycle,
+  regionDataMap,
+} from '@jbrowse/render-core/installPerRegionLifecycle'
 
 import { buildTextColors } from './components/drawSequence.ts'
 import { buildColorPalette } from './components/sequenceGeometry.ts'
@@ -103,7 +105,7 @@ export function modelFactory(
       }),
     )
     .volatile(() => ({
-      sequenceData: observable.map<number, SequenceRegionData>(),
+      sequenceData: regionDataMap<SequenceRegionData>(),
     }))
     .views(self => ({
       /**

@@ -1,9 +1,49 @@
 import { addDisposer } from '@jbrowse/mobx-state-tree'
-import { autorun } from 'mobx'
+import { autorun, observable } from 'mobx'
 
 import type { RenderingBackendCallbacks } from './RenderLifecycleMixin.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { ObservableMap } from 'mobx'
+
+/**
+ * The volatile a display keys its per-region worker payloads by
+ * (`displayedRegionIndex` → result). Every one of them in tree is built with
+ * this, so "how is per-region data represented" has one answer — see
+ * ADR-060.
+ *
+ * **Shallow, and that follows from an invariant the codebase already states**:
+ * per-region values are freshly constructed and never mutated (agent-docs
+ * CLAUDE.md; backends diff by reference identity). Nothing inside an entry can
+ * therefore change, so the deep enhancer's field-level atoms can never fire —
+ * they are unreachable reactivity, not a safety margin. What they do cost is
+ * paid on every insert and every read:
+ *
+ * - **Insert.** `deepEnhancer` recursively rebuilds each payload as an
+ *   observable object graph — the stored value is not the object the worker
+ *   produced. A multi-wiggle region is one atom per field per source, so a
+ *   thousand-sample track pays ~18k on every pan; MAF pays the whole set again
+ *   for every cached region on every row reorder, since `placeFetchedRows`
+ *   re-places them all.
+ * - **Read.** Each field access goes through `getObservablePropValue_`. Hot
+ *   loops that hoist their typed arrays are fine, but the ones that don't were
+ *   paying it per iteration.
+ *
+ * Typed arrays and class instances (Flatbush) pass through the deep enhancer
+ * untouched, so the arrays were never the cost — the objects holding them were.
+ *
+ * Coarser tracking is the only behavioral difference, and it is unobservable
+ * here: `installPerRegionLifecycle`'s per-key autorun tracks `map.get(key)` —
+ * the entry, not its contents (ADR-017) — and a whole-map consumer tracks the
+ * keys atom. Both still fire on the `.set`/`.delete`/`.clear` that is the only
+ * way an entry ever changes.
+ *
+ * Not for maps of primitives (`groupMaxHeightOverrides`,
+ * `detectedModifications`), where the enhancer is a no-op, nor for UI state
+ * whose values are mutated in place.
+ */
+export function regionDataMap<T>(): ObservableMap<number, T> {
+  return observable.map<number, T>(undefined, { deep: false })
+}
 
 export interface LifecycleHost extends IStateTreeNode {
   attachRenderingBackend: <B>(b: B, cbs: RenderingBackendCallbacks<B>) => void
