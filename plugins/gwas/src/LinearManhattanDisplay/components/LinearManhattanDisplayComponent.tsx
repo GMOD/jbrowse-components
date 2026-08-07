@@ -56,13 +56,19 @@ const LinearManhattanDisplayComponent = observer(
       [model],
     )
 
-    const { onPointerPosition, onClick } = wiggleMouseHandlers(model, computeHit)
+    const { onPointerPosition, onClick } = wiggleMouseHandlers(
+      model,
+      computeHit,
+    )
 
     function handleContextMenu(event: React.MouseEvent<HTMLDivElement>) {
       // `currentTarget` is the chrome container — the box the tracker measures
       // against — so this needs no ref of its own
       const rect = event.currentTarget.getBoundingClientRect()
-      const hit = computeHit(event.clientX - rect.left, event.clientY - rect.top)
+      const hit = computeHit(
+        event.clientX - rect.left,
+        event.clientY - rect.top,
+      )
       if (hit) {
         event.preventDefault()
         // clear the hover tooltip so it doesn't stay stuck behind the menu

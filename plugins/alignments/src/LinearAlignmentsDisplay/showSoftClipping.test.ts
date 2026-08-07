@@ -442,7 +442,8 @@ describe('feature-height menu per-preset pins', () => {
     expect(pinProps(display, 'Normal')?.control.active).toBe(false)
     expect(pinProps(display, 'Super-compact')?.control.active).toBe(false)
     expect(
-      heightModePinProps(display, 'Fit read height to track height')?.control.active,
+      heightModePinProps(display, 'Fit read height to track height')?.control
+        .active,
     ).toBe(false)
     expect(
       heightModePinProps(display, 'Fixed read height + autogrow track height')

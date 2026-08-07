@@ -138,9 +138,7 @@ export function modificationsMenu(
   // The per-value session-default pin factory, absent for a display whose
   // colorBy slot isn't promotable. Spelled out rather than reached back for from
   // colorBy.ts's options bag, which would make the import cycle.
-  pin:
-    | ((colorBy: ColorBy) => Pin)
-    | undefined,
+  pin: ((colorBy: ColorBy) => Pin) | undefined,
 ): MenuItem {
   const mods = currentMods(model)
   const isActive = model.colorBy.type === 'modifications'

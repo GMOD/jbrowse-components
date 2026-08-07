@@ -165,9 +165,7 @@ function tagItem(
         { model, handleClose: onClose },
       ])
     },
-    pin: active
-      ? pin?.({ type: 'tag', tag: colorBy.tag })
-      : undefined,
+    pin: active ? pin?.({ type: 'tag', tag: colorBy.tag }) : undefined,
   })
 }
 
@@ -181,9 +179,7 @@ function pairedEndItem(
 ): MenuItem {
   return {
     label: 'Paired end',
-    subMenu: pairedEndColorOptions.map(o =>
-      colorRadio(model, o, pin),
-    ),
+    subMenu: pairedEndColorOptions.map(o => colorRadio(model, o, pin)),
   }
 }
 
@@ -208,9 +204,7 @@ function modificationsItems(
   const detected =
     model.modificationsReady && model.detectedModificationTypes.length > 0
   return [
-    ...(active || detected
-      ? [modificationsMenu(model, pin)]
-      : []),
+    ...(active || detected ? [modificationsMenu(model, pin)] : []),
     ...(detecting
       ? [{ label: 'Loading modifications...', disabled: true, onClick() {} }]
       : []),

@@ -27,9 +27,7 @@ const TooltipComponent = observer(function TooltipComponent({
 }) {
   const { featureUnderMouse } = model
   return featureUnderMouse && mouseState ? (
-    <BaseTooltip
-      clientPoint={{ x: mouseState.clientX, y: mouseState.clientY }}
-    >
+    <BaseTooltip clientPoint={{ x: mouseState.clientX, y: mouseState.clientY }}>
       <div>
         {featureUnderMouse.refName}:{formatCoord(featureUnderMouse)}
         <br />

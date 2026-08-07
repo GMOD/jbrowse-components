@@ -492,10 +492,7 @@ export default function stateModelFactory(
         // track's current resolved value, so either direction (below or above the
         // coverage band) can be made the session-wide default.
         get readConnectionsDownDisplayTypeDefault() {
-          return makePin(
-            self,
-            'readConnectionsDown',
-          )
+          return makePin(self, 'readConnectionsDown')
         },
         /** #getter */
         // Sentinel promotable slot: a track pins arcs on/off explicitly, else
@@ -509,10 +506,7 @@ export default function stateModelFactory(
          * control (pin) for the submenu's own checkbox.
          */
         get showSashimiArcsDisplayTypeDefault() {
-          return makePin(
-            self,
-            'showSashimiArcs',
-          )
+          return makePin(self, 'showSashimiArcs')
         },
         /** #getter */
         // Sentinel promotable slot (like linkedReads/readConnections): a track
@@ -559,10 +553,7 @@ export default function stateModelFactory(
         // control (pin): symmetric, so it promotes whichever value the track
         // currently shows.
         get softClippingDisplayTypeDefault() {
-          return makePin(
-            self,
-            'showSoftClipping',
-          )
+          return makePin(self, 'showSoftClipping')
         },
       }))
       .volatile(() => {
@@ -905,10 +896,7 @@ export default function stateModelFactory(
          * currently shows.
          */
         get showSashimiLabelsDisplayTypeDefault() {
-          return makePin(
-            self,
-            'showSashimiLabels',
-          )
+          return makePin(self, 'showSashimiLabels')
         },
 
         /**
@@ -954,10 +942,7 @@ export default function stateModelFactory(
         // control (pin): symmetric, so it promotes whichever value the track
         // currently shows.
         get mismatchAlphaDisplayTypeDefault() {
-          return makePin(
-            self,
-            'mismatchAlpha',
-          )
+          return makePin(self, 'mismatchAlpha')
         },
 
         /**
@@ -3584,8 +3569,7 @@ export default function stateModelFactory(
                   self.setColorSupplementaryChains(flag)
                 },
               },
-              pin: (colorBy: ColorBy) =>
-                makePin(self, 'colorBy', colorBy),
+              pin: (colorBy: ColorBy) => makePin(self, 'colorBy', colorBy),
             }),
             // Both reasons an ordering can't take effect live in
             // `canSortReads`; only the copy naming the one in force is here.

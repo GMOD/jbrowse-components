@@ -93,11 +93,7 @@ export function getFeatureHeightMenuItem(
           onClick: () => {
             model.setFeatureHeight(preset.featureHeight)
           },
-          pin: makePin(
-            model,
-            'featureHeight',
-            preset.featureHeight,
-          ),
+          pin: makePin(model, 'featureHeight', preset.featureHeight),
         }),
       ),
       // Custom is a peer radio in the size group: checked when the size matches

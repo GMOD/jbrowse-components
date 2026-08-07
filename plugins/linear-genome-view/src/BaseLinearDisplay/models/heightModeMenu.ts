@@ -40,11 +40,7 @@ export function heightModeMenuItems(
       onClick: () => {
         model.setHeightMode(option.value)
       },
-      pin: makePin(
-        model,
-        'heightMode',
-        option.value,
-      ),
+      pin: makePin(model, 'heightMode', option.value),
     }),
   )
 }

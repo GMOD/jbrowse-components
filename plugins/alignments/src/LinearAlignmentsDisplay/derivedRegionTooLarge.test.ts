@@ -216,7 +216,6 @@ describe('alignments derived regionTooLarge', () => {
     expect(display.regionTooLarge).toBe(false)
   })
 
-
   // Ordinary depth is nowhere near the cap at gene zoom, which is what makes the
   // opt-out safe without a coverage threshold. Measured for reference: the
   // BAI-derived estimate is flat below the index's 16kb minimum bin, so the cap

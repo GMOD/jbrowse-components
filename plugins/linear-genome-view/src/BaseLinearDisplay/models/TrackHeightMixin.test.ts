@@ -55,7 +55,11 @@ test('setHeight clamps to the minimum display height', () => {
 // ARCHITECTURAL_LIMITS.md listed this as the last unchecked ordering contract.
 const heightModeConfig = ConfigurationSchema('TestHeightMode', {
   height: { type: 'number', defaultValue: 100 },
-  heightMode: { type: 'stringEnum', model: types.enumeration(['fixed', 'grow', 'fit']), defaultValue: 'fixed' },
+  heightMode: {
+    type: 'stringEnum',
+    model: types.enumeration(['fixed', 'grow', 'fit']),
+    defaultValue: 'fixed',
+  },
 })
 
 function composeInOrder(...mixins: any[]) {
@@ -75,7 +79,9 @@ function composeInOrder(...mixins: any[]) {
 // standalone root.
 function mount(...mixins: any[]) {
   const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
-  const Parent = types.model('TestTrack', { display: composeInOrder(...mixins) })
+  const Parent = types.model('TestTrack', {
+    display: composeInOrder(...mixins),
+  })
   const { display } = Parent.create({
     display: { type: 'test', configuration: {} },
   })

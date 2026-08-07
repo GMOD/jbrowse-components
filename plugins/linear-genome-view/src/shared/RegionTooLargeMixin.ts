@@ -534,7 +534,9 @@ export default function RegionTooLargeMixin() {
         // Manhattan, sequence) and the simplified test models rely on.
         const byteActive = self.byteGateActive
         return evaluateRegionTooLarge({
-          estimatedFetchBytes: byteActive ? self.estimatedFetchBytes : undefined,
+          estimatedFetchBytes: byteActive
+            ? self.estimatedFetchBytes
+            : undefined,
           byteLimit: byteActive ? self.gateByteLimit : undefined,
           densityTooLarge: self.densityGateActive && self.densityTooLarge,
         })

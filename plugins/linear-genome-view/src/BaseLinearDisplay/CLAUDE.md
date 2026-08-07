@@ -17,10 +17,10 @@ and don't re-litigate the layering.
   super-capture.
 - **`HeightModeMixin()` composes after `TrackHeightMixin()`**, whose `height`
   and `resizeHeight` it overrides — `types.compose` gives the later argument the
-  collision. Checked at attach: both declare `supportsHeightModes` (false on
-  the base, true on the mode mixin) and `HeightModeMixin`'s `afterAttach` reads
-  it back, since the two `height` getters agree in fixed mode and no value can
-  tell the orders apart.
+  collision. Checked at attach: both declare `supportsHeightModes` (false on the
+  base, true on the mode mixin) and `HeightModeMixin`'s `afterAttach` reads it
+  back, since the two `height` getters agree in fixed mode and no value can tell
+  the orders apart.
 - **A super-captured view is called bare**, so a base must not reach siblings
   off `this`. Move the overridable view into its own later `.views()` block,
   placed after everything it reads.

@@ -84,9 +84,7 @@ describe('color by menu', () => {
     const strand = byLabel(model, 'Strand', {
       pin: fakePinFactory(model),
     })
-    expect(
-      strand && 'pin' in strand && strand.pin,
-    ).toBeTruthy()
+    expect(strand && 'pin' in strand && strand.pin).toBeTruthy()
   })
 
   test('paired-end radios (First of pair strand) carry a pin', () => {
@@ -123,9 +121,7 @@ describe('color by menu', () => {
   test('no pins when the display is not promotable (synteny omits pin)', () => {
     const model = makeModel()
     const strand = byLabel(model, 'Strand')
-    expect(
-      strand && 'pin' in strand && strand.pin,
-    ).toBeFalsy()
+    expect(strand && 'pin' in strand && strand.pin).toBeFalsy()
   })
 
   // The tag radio is the only scheme whose choice carries a parameter, and it
