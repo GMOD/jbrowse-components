@@ -68,6 +68,8 @@ const state: MultiRowRenderState = {
     ['mom', 0],
     ['dad', 1],
   ]),
+  rowColorsByIndex: [],
+  hiddenColors: new Set<number>(),
 }
 
 test('draws one rect per feature at its row + genomic span and color', () => {

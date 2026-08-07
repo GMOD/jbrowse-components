@@ -15,6 +15,7 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
+import { MAX_CANVAS_DIM_PX, getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import {
   installPerRegionLifecycle,
   regionDataMap,
@@ -41,11 +42,11 @@ import {
   buildColorLegend,
   resolveConfiguredLegend,
 } from './rendering/colorLegend.ts'
-import { buildMultiRowInstanceBuffer } from './rendering/multiRowInstanceBuffer.ts'
 import {
-  isFeatureColorHidden,
-  resolveLocalRowIndices,
-} from './rendering/resolveLocalRowIndices.ts'
+  drawnFeatureContext,
+  findTopDrawnFeature,
+} from './rendering/featurePainting.ts'
+import { buildMultiRowInstanceBuffer } from './rendering/multiRowInstanceBuffer.ts'
 import { rowOrderByValueAt } from './rowOrderByValueAt.ts'
 import {
   applyRowGroups,
@@ -58,6 +59,7 @@ import type {
   LinearMultiRowFeatureDisplayConfig,
   LinearMultiRowFeatureDisplayConfigModel,
 } from './configSchema.ts'
+import type { DrawnFeatureContext } from './rendering/featurePainting.ts'
 import type {
   MultiRowRegionData,
   MultiRowRenderState,
@@ -466,6 +468,28 @@ export default function stateModelFactory(
       get autoRowHeight(): number {
         return self.fitTargetHeight / self.nrow
       },
+      /**
+       * #getter
+       * Ceiling on the whole row stack in CSS px, because this display sizes its
+       * canvas to its *content* and never scrolls: `height` is the canvas, so
+       * nothing downstream bounds it.
+       *
+       * Past `MAX_CANVAS_DIM_PX` device px the backing store stops tracking the
+       * CSS size — `syncCanvasSize` clamps it — while the scissor/viewport rects
+       * are still derived as `cssPx * dpr`, so WebGPU rejects an out-of-bounds
+       * rect and blanks the frame, WebGL clamps and paints at the wrong scale,
+       * and the Canvas2D fallback stretches its top slice over the whole track.
+       * A pinned 14px row height over a 1,987-row cohort — two clicks in the Row
+       * height menu — is 27,818 CSS px, well past it.
+       *
+       * MAF meets the same limit with `maxRowsHeight`, but its canvas is a
+       * viewport it can scroll the overflow into. Here the cap has to land on
+       * the row height instead (below), so the rows thin out and every one of
+       * them stays on screen — which is what this display is for.
+       */
+      get maxCanvasHeight(): number {
+        return MAX_CANVAS_DIM_PX / getDpr()
+      },
     }))
     .views(self => ({
       /**
@@ -479,9 +503,17 @@ export default function stateModelFactory(
        * and `rowBand` divide by this, so a `height` slot configured to 0 must
        * not reach them as a 0. A genuine sub-pixel fit height passes through;
        * see `autoRowHeight`.
+       *
+       * Then capped so the stack fits `maxCanvasHeight`. It is not floored back
+       * up afterwards: a row below a pixel is legitimate here (see
+       * `autoRowHeight`), and `rowBand` is where a sub-pixel row is widened for
+       * drawing without changing how many of them fit.
        */
       get effectiveRowHeight(): number {
-        return resolveRowHeight(self.rowHeight, self.autoRowHeight)
+        return Math.min(
+          resolveRowHeight(self.rowHeight, self.autoRowHeight),
+          self.maxCanvasHeight / self.nrow,
+        )
       },
     }))
     .views(self => ({
@@ -494,6 +526,10 @@ export default function stateModelFactory(
        * fixed viewport, which is why a fixed-mode drag re-pins the row height
        * (see `setHeight`) instead of leaving it alone the way the scrolling row
        * displays do.
+       *
+       * Bounded by `maxCanvasHeight` through `effectiveRowHeight`, so growing
+       * to the content stops at the canvas limit rather than at nothing. A drag
+       * past it therefore returns 0 from `resizeHeight` and simply stalls.
        */
       get height(): number {
         return self.nrow * self.effectiveRowHeight
@@ -584,6 +620,32 @@ export default function stateModelFactory(
           colorConfig: self.colorConfig,
         }
       },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Per-region `DrawnFeatureContext`, keyed by displayedRegionIndex — the
+       * same thing the painters build per draw, off the same `renderState`, so
+       * the hit test cannot answer "is this feature drawn" differently from the
+       * paint that put it there.
+       *
+       * Memoized because the hit test needs it per *pointer frame*: `featureAt`
+       * runs on every rAF-coalesced mouse move, and building it inline meant
+       * resolving the region's whole partition list (a couple of thousand rows
+       * on a cohort painting) sixty times a second for a value that changes
+       * only when the rows, the colors or the data do.
+       */
+      get drawnFeatureContexts(): Map<number, DrawnFeatureContext> {
+        const state = self.renderState
+        return new Map(
+          [...self.rpcDataMap.entries()].map(([index, data]) => [
+            index,
+            drawnFeatureContext(data, state),
+          ]),
+        )
+      },
+    }))
+    .views(self => ({
       /**
        * #method
        * Hit-test the feature under a display-relative pixel: row from
@@ -614,42 +676,29 @@ export default function stateModelFactory(
         if (!region) {
           return undefined
         }
-        // the base drawn under the cursor, which the containment test below
-        // compares against; coord0 names the one to its right when reversed
+        const ctx = self.drawnFeatureContexts.get(p.index)
+        if (!ctx) {
+          return undefined
+        }
+        // the base drawn under the cursor, which the containment test compares
+        // against; coord0 names the one to its right when reversed
         const bp = basePaintedAt(p, p.offset)
-        const {
-          featureStarts,
-          featureEnds,
-          featureColors,
-          partitionValues,
-          featurePartitionIndex,
-          featureNames,
-          featureIds,
-        } = region
-        const hiddenColors = self.hiddenColors
-        // Resolve this region's local partition indices to global display rows
-        // via the same helper both render paths use, so the hit-test can't drift
-        // from where a feature actually paints.
-        const rowForLocal = resolveLocalRowIndices(
-          partitionValues,
-          self.rowIndexByValue,
-        )
-        // Iterate back-to-front: both render paths paint in array order, so a
-        // later feature sits on top of an overlapping earlier one — the hit must
-        // resolve to the one actually visible.
-        for (let i = featureStarts.length - 1; i >= 0; i--) {
-          if (
-            rowForLocal[featurePartitionIndex[i]!] === targetRow &&
+        const { featureStarts, featureEnds, featureNames, featureIds } = region
+        // `findTopDrawnFeature` owns both halves of "which feature is under
+        // this pixel" that the painters also own: which features are drawn at
+        // all, and which of two overlapping ones is on top. All this adds is
+        // the row and the span.
+        const i = findTopDrawnFeature(
+          region,
+          ctx,
+          (i, rowIndex) =>
+            rowIndex === targetRow &&
             featureStarts[i]! <= bp &&
-            bp < featureEnds[i]! &&
-            !isFeatureColorHidden(
-              targetRow,
-              featureColors[i]!,
-              hiddenColors,
-              self.rowColorsByIndex,
-            )
-          ) {
-            return {
+            bp < featureEnds[i]!,
+        )
+        return i === -1
+          ? undefined
+          : {
               id: featureIds[i]!,
               regionIndex: p.index,
               rowIndex: targetRow,
@@ -658,9 +707,6 @@ export default function stateModelFactory(
               start: featureStarts[i]!,
               end: featureEnds[i]!,
             }
-          }
-        }
-        return undefined
       },
     }))
     .views(self => ({
@@ -881,11 +927,11 @@ export default function stateModelFactory(
           self.rpcDataMap,
           backend,
           regionData => {
+            // read here, inside the per-region encode autorun, so a reorder /
+            // recolor / category toggle re-encodes without an RPC roundtrip
             const { buffer, count } = buildMultiRowInstanceBuffer(
               regionData,
-              self.rowIndexByValue,
-              self.rowColorsByIndex,
-              self.hiddenColors,
+              self.renderState,
             )
             return { instanceBuffer: buffer, instanceCount: count }
           },

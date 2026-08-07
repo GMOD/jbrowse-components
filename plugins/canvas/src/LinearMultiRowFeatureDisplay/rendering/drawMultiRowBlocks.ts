@@ -5,10 +5,7 @@ import {
   spanLeft,
 } from '@jbrowse/render-core/canvas2dUtils'
 
-import {
-  isFeatureColorHidden,
-  resolveLocalRowIndices,
-} from './resolveLocalRowIndices.ts'
+import { drawnFeatureContext, forEachDrawnFeature } from './featurePainting.ts'
 import { rowBand } from './rowBand.ts'
 
 import type {
@@ -27,15 +24,7 @@ export function drawMultiRowBlocks(
   renderBlocks: RenderBlock[],
   state: MultiRowRenderState,
 ) {
-  const {
-    canvasWidth,
-    canvasHeight,
-    rowHeight,
-    rowProportion,
-    rowIndexByValue,
-    rowColorsByIndex,
-    hiddenColors,
-  } = state
+  const { canvasWidth, canvasHeight, rowHeight, rowProportion } = state
   const { height: h, offset } = rowBand(rowHeight, rowProportion)
 
   forEachClippedBlock(
@@ -46,38 +35,30 @@ export function drawMultiRowBlocks(
     block => regions.get(block.displayedRegionIndex),
     (regionData, renderBlock) => {
       const bpToPx = makeBpMapper(renderBlock)
-      const {
-        featureStarts,
-        featureEnds,
-        featureColors,
-        partitionValues,
-        featurePartitionIndex,
-      } = regionData
-      const rowForLocal = resolveLocalRowIndices(
-        partitionValues,
-        rowIndexByValue,
-      )
-
-      for (let i = 0; i < featureStarts.length; i++) {
-        const rowIndex = rowForLocal[featurePartitionIndex[i]!]
-        if (
-          rowIndex !== undefined &&
-          !isFeatureColorHidden(
-            rowIndex,
-            featureColors[i]!,
-            hiddenColors,
-            rowColorsByIndex,
-          )
-        ) {
+      const { featureStarts, featureEnds } = regionData
+      // Tracked so a run of same-colored blocks — which is most of a painting —
+      // costs one `rgba()` string and one fillStyle write rather than one per
+      // feature. Same trick the manhattan and modification painters use.
+      let lastColor: number | undefined
+      forEachDrawnFeature(
+        regionData,
+        drawnFeatureContext(regionData, state),
+        (i, rowIndex, color) => {
           const xa = bpToPx(featureStarts[i]!)
           const xb = bpToPx(featureEnds[i]!)
           const width = Math.max(1, Math.abs(xb - xa))
-          const left = spanLeft(xa, xb, width)
-          const top = offset + rowHeight * rowIndex
-          setAbgrFill(ctx, rowColorsByIndex?.[rowIndex] ?? featureColors[i]!)
-          ctx.fillRect(left, top, width, h)
-        }
-      }
+          if (color !== lastColor) {
+            lastColor = color
+            setAbgrFill(ctx, color)
+          }
+          ctx.fillRect(
+            spanLeft(xa, xb, width),
+            offset + rowHeight * rowIndex,
+            width,
+            h,
+          )
+        },
+      )
     },
   )
 }

@@ -9,10 +9,7 @@ import {
   makeBpMapper,
 } from '@jbrowse/render-core/canvas2dUtils'
 
-import {
-  isFeatureColorHidden,
-  resolveLocalRowIndices,
-} from './resolveLocalRowIndices.ts'
+import { drawnFeatureContext, forEachDrawnFeature } from './featurePainting.ts'
 import { rowBand } from './rowBand.ts'
 
 import type {
@@ -78,15 +75,7 @@ export function drawMultiRowIndelGlyphs(
   state: MultiRowRenderState,
   insertionColor: string,
 ) {
-  const {
-    canvasWidth,
-    canvasHeight,
-    rowHeight,
-    rowProportion,
-    rowIndexByValue,
-    rowColorsByIndex,
-    hiddenColors,
-  } = state
+  const { canvasWidth, canvasHeight, rowHeight, rowProportion } = state
   const { height: h, offset } = rowBand(rowHeight, rowProportion)
   ctx.font = FONT
   ctx.textBaseline = 'middle'
@@ -99,18 +88,7 @@ export function drawMultiRowIndelGlyphs(
     block => regionWithDeltas(regions.get(block.displayedRegionIndex)),
     (regionData, renderBlock) => {
       const bpToPx = makeBpMapper(renderBlock)
-      const {
-        featureStarts,
-        featureEnds,
-        featureDeltas,
-        featureColors,
-        partitionValues,
-        featurePartitionIndex,
-      } = regionData
-      const rowForLocal = resolveLocalRowIndices(
-        partitionValues,
-        rowIndexByValue,
-      )
+      const { featureStarts, featureEnds, featureDeltas } = regionData
       // Exact for this block rather than the view's global bpPerPx, which is what
       // the bar-width and label-fit thresholds are calibrated against.
       const pxPerBp =
@@ -118,19 +96,16 @@ export function drawMultiRowIndelGlyphs(
         (renderBlock.end - renderBlock.start)
       const labelFits = h >= MIN_HEIGHT_FOR_TEXT
 
-      for (let i = 0; i < featureStarts.length; i++) {
-        const delta = featureDeltas[i]!
-        const rowIndex = rowForLocal[featurePartitionIndex[i]!]
-        if (
-          delta !== 0 &&
-          rowIndex !== undefined &&
-          !isFeatureColorHidden(
-            rowIndex,
-            featureColors[i]!,
-            hiddenColors,
-            rowColorsByIndex,
-          )
-        ) {
+      forEachDrawnFeature(
+        regionData,
+        drawnFeatureContext(regionData, state),
+        (i, rowIndex) => {
+          const delta = featureDeltas[i]!
+          if (delta === 0) {
+            // a reference-length allele: no glyph, and the block already says
+            // everything there is to say about it
+            return
+          }
           const xa = bpToPx(featureStarts[i]!)
           const xb = bpToPx(featureEnds[i]!)
           const top = offset + rowHeight * rowIndex
@@ -178,8 +153,8 @@ export function drawMultiRowIndelGlyphs(
               ctx.fillText(String(-delta), left + width / 2, yMid - h / 4)
             }
           }
-        }
-      }
+        },
+      )
     },
   )
 }

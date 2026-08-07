@@ -98,6 +98,7 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
         ['a', 0],
         ['b', 1],
       ]),
+      hiddenColors: new Set<number>(),
       rowColorsByIndex: [undefined, undefined],
     },
     sources: [{ name: 'a' }, { name: 'b' }],

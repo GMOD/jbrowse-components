@@ -67,6 +67,8 @@ const state: MultiRowRenderState = {
     ['mom', 0],
     ['dad', 1],
   ]),
+  rowColorsByIndex: [],
+  hiddenColors: new Set<number>(),
 }
 
 // Two 1bp features on two rows: x 100-110 (center 105) and x 500-510 (center

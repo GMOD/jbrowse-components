@@ -18,17 +18,23 @@ export interface MultiRowRenderState {
   canvasHeight: number
   rowHeight: number
   rowProportion: number
+  // The three inputs to "does this feature paint, and in what color" — always
+  // supplied together, because `featurePainting` reads them together and the
+  // rule inverts if one goes missing. Required rather than optional for that
+  // reason: an absent `rowColorsByIndex` used to mean "no row has an override",
+  // which is also what an empty array means, so the optionality bought a second
+  // spelling of one state and a `?.` at every use.
+  //
   // value -> global row index. Used by the Canvas2D fallback, which draws from
   // the raw region data and so resolves each feature's row here (the GPU path
   // bakes the row index into its uploaded buffer and ignores this).
   rowIndexByValue: ReadonlyMap<string, number>
   // per-row color override (ABGR) by global row index, from the arrangement
-  // dialog; `undefined` rows use the worker-baked per-feature color. The GPU
-  // path bakes this into its buffer and ignores it here.
-  rowColorsByIndex?: readonly (number | undefined)[]
-  // per-feature ABGR colors of legend categories toggled off; the Canvas2D
-  // fallback skips matching features (the GPU path omits them at encode time).
-  hiddenColors?: ReadonlySet<number>
+  // dialog; `undefined` entries use the worker-baked per-feature color.
+  rowColorsByIndex: readonly (number | undefined)[]
+  // per-feature ABGR colors of legend categories toggled off; matching features
+  // are skipped by the Canvas2D path and omitted by the GPU path at encode time.
+  hiddenColors: ReadonlySet<number>
 }
 
 // Pre-encoded GPU instance buffer ({startBp,endBp,rowIndex,color} per feature),

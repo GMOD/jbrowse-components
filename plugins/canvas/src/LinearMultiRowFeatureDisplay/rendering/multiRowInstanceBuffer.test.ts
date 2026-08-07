@@ -40,12 +40,32 @@ const region: MultiRowRegionData = {
   usedItemRgb: false,
 }
 
+// The three inputs to "does this feature paint, and in what color". Always
+// supplied together (see MultiRowRenderState), so the tests build them together
+// too rather than spelling an absent one as a second way of saying "none".
+function paintState(
+  rowIndexByValue: Map<string, number>,
+  opts?: {
+    rowColorsByIndex?: (number | undefined)[]
+    hiddenColors?: Set<number>
+  },
+) {
+  return {
+    rowIndexByValue,
+    rowColorsByIndex: opts?.rowColorsByIndex ?? [],
+    hiddenColors: opts?.hiddenColors ?? new Set<number>(),
+  }
+}
+
 test('maps partition values to global row indices', () => {
   const rowIndexByValue = new Map([
     ['dadHP1', 0],
     ['momHP0', 1],
   ])
-  const { buffer, count } = buildMultiRowInstanceBuffer(region, rowIndexByValue)
+  const { buffer, count } = buildMultiRowInstanceBuffer(
+    region,
+    paintState(rowIndexByValue),
+  )
   expect(count).toBe(3)
   expect(decode(buffer, count)).toEqual([
     { startBp: 10, endBp: 15, rowIndex: 1, color: 0xff0000ff },
@@ -56,7 +76,10 @@ test('maps partition values to global row indices', () => {
 
 test('skips features whose partition value has no assigned row', () => {
   const rowIndexByValue = new Map([['momHP0', 0]])
-  const { buffer, count } = buildMultiRowInstanceBuffer(region, rowIndexByValue)
+  const { buffer, count } = buildMultiRowInstanceBuffer(
+    region,
+    paintState(rowIndexByValue),
+  )
   expect(count).toBe(2)
   expect(decode(buffer, count).map(d => d.startBp)).toEqual([10, 30])
 })
@@ -69,9 +92,7 @@ test('skips features whose color is a hidden category', () => {
   // hide 0xff00ff00 (feature 1, on dadHP1); features 0 and 2 remain
   const { buffer, count } = buildMultiRowInstanceBuffer(
     region,
-    rowIndexByValue,
-    undefined,
-    new Set([0xff00ff00]),
+    paintState(rowIndexByValue, { hiddenColors: new Set([0xff00ff00]) }),
   )
   expect(count).toBe(2)
   expect(decode(buffer, count).map(d => d.startBp)).toEqual([10, 30])
@@ -87,9 +108,10 @@ test('a hidden category does not drop features on rows with a color override', (
   // color is not what the row paints and isn't in the legend.
   const { buffer, count } = buildMultiRowInstanceBuffer(
     region,
-    rowIndexByValue,
-    [0xff123456, undefined],
-    new Set([0xff0000ff]),
+    paintState(rowIndexByValue, {
+      rowColorsByIndex: [0xff123456, undefined],
+      hiddenColors: new Set([0xff0000ff]),
+    }),
   )
   expect(count).toBe(3)
   expect(decode(buffer, count).map(d => d.startBp)).toEqual([10, 20, 30])
@@ -103,8 +125,7 @@ test('rowColorsByIndex overrides the baked color for that row only', () => {
   // override row 0 (momHP0) only; row 1 keeps its baked feature color
   const { buffer, count } = buildMultiRowInstanceBuffer(
     region,
-    rowIndexByValue,
-    [0xff123456, undefined],
+    paintState(rowIndexByValue, { rowColorsByIndex: [0xff123456, undefined] }),
   )
   expect(decode(buffer, count).map(d => d.color)).toEqual([
     0xff123456, // feature 0, row 0 -> overridden
