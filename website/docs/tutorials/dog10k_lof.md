@@ -120,11 +120,11 @@ block, and the gene track still shows which exon it sits in.
 
 <Figure caption="The CYP1A2 stop-gained variant at base level: the reference sequence and its translation, the site itself as an ordinary variant lane (C → T), then one row per dog. Five breeds carry it heterozygous (light blue) or homozygous (dark blue); the Labrador Retrievers, Boxers, and all four wolves are homozygous reference." src="/img/dog10k-cyp1a2-nonsense.png" />
 
-The allele is carried by 76 of the collection's breeds and reaches homozygosity
+The build script genotypes the same site over every canid in the callset. The
+allele is carried by 74 of the collection's 324 breeds and reaches homozygosity
 in several: among the dogs sampled here, no German Hound and no Shetland
 Sheepdog is homozygous reference. It is absent from all 63 wolves and all four
-coyotes in the collection, which is the answer to the second question. The
-allele arose in dogs.
+coyotes, which is the answer to the second question. The allele arose in dogs.
 
 Two neighbours sit inside the same 101 bp, and the display filters them out:
 
@@ -236,8 +236,10 @@ bash build_dog10k_cyp1a2.sh   # writes ./dog10k_cyp1a2_build/
 ```
 
 It derives the stop codon's position from the reference, builds the sample list
-from the Dog10K sample table, slices the gene out of the callset, and prints the
-genotypes at the stop so you can check the figure against the data.
+from the Dog10K sample table, slices the gene out of the callset, prints the
+genotypes at the stop so you can check the figure against the data, then
+genotypes that one site over all 1,987 canids for the breed and wild-canid
+counts quoted above.
 
 [`build_dog10k_cyp1a2_cn.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_cyp1a2_cn.sh)
 builds the copy-number tracks:

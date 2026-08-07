@@ -351,7 +351,7 @@ their edges, and the short blocks in ordinary breeds do not.
 - Meadows et al. (2023).
   [Genome sequencing of 2000 canids by the Dog10K consortium advances the understanding of demography, genome function and architecture](https://doi.org/10.1186/s13059-023-03023-7)
 - Browning et al. (2023).
-  [Fast, accurate local ancestry inference with FLARE](https://doi.org/10.1016/j.ajhg.2023.02.010)
+  [Fast, accurate local ancestry inference with FLARE](https://doi.org/10.1016/j.ajhg.2022.12.010)
 - Lin et al. (2025).
   [A legacy of genetic entanglement with wolves shapes modern dogs](https://doi.org/10.1073/pnas.2421768122),
   local ancestry over the same collection

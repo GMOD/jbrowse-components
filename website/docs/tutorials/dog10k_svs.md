@@ -10,7 +10,7 @@ tutorial_category: Structural variation
 
 **TL;DR:** slice a locus out of the Dog10K structural-variant callsets over
 HTTP, load it as a `VariantTrack` in the multi-sample variant display with breed
-labels, and read the genotypes against the gene model above it. Four loci, one
+labels, and read the genotypes against the gene model above it. Five loci, one
 recipe, and each is a different class of variant that has to be read a different
 way.
 
@@ -285,28 +285,87 @@ The shipped slice keeps only these two variants. The locus carries seven others,
 one of which overlaps the first SINE, but a per-sample panel of all of them is
 unreadable and adds nothing the two do not already show.
 
-## Copy number, at SLC28A3
+## Two diet genes that run opposite ways
 
-A duplication is the one kind of variant a genotype column reads badly: two
-copies and four copies are both "present". The Dog10K paper reports one over
-_SLC28A3_, the transporter that moves gemcitabine into cells, carried by every
-Grand Basset Griffon Vendéen it sequenced. Its copy-number estimates were never
-released, but the SNV callset carries a per-sample `DP` at every site, and the
-ratio of a dog's depth over the element to its depth over the flanks is a copy
-number for all 1,987 canids.
+A 14.9 kb `DUP` at chr6:47,375,677 in the Michigan Manta callset spans the
+pancreatic amylase gene end to end. Extra copies of it are the starch-digestion
+signature of domestication
+([Axelsson et al. 2013](https://doi.org/10.1038/nature11837)), and the record
+separates dogs from wolves almost completely:
 
-[The CYP1A2 tutorial](/docs/tutorials/dog10k_lof) builds that estimate,
-validates it against read depth, and carries the figure it makes: a named panel
-of animals above the whole collection, at a locus where enough of the collection
-carries the duplication for the lower lane to hold a distribution rather than a
-single band. `dog10k_slc28a3_breed_cn` and `dog10k_slc28a3_cohort_cn` are in
-this tutorial's config, so the same pair of lanes opens here from the track
-selector.
+```
+  Breed_Dogs      1575 canids: 1568 hom alt, 6 hom ref, 1 het
+  Mixed/Other       12 canids: 12 hom alt
+  Village_Dogs     237 canids: 236 hom alt, 1 hom ref
+  Wolf              55 canids: 50 hom ref, 4 het, 1 hom alt
+```
+
+A 223 bp SINE insertion in pancreatic ribonuclease, chr15:18,164,072 in the
+Zenodo Paragraph set, runs the other way:
+
+```
+  Breed_Dogs      1575 canids: 1574 hom ref, 1 het
+  Mixed/Other       12 canids: 12 hom ref
+  Village_Dogs     237 canids: 236 hom ref, 1 het
+  Wolf              55 canids: 29 hom ref, 26 het
+```
+
+One panel is sliced from both callsets in the same order so the two lanes read
+row for row: two ordinary breeds, the three Arctic breeds, the two other breeds
+holding a dog that departs from the amylase rule, the Alaskan village dogs, and
+every gray wolf in the analysis set labelled by country.
+
+```json addtrack
+{
+  "type": "VariantTrack",
+  "trackId": "dog10k_amy2b_svs",
+  "name": "Dog10K structural variants at AMY2B (dogs and every wolf)",
+  "assemblyNames": ["UU_Cfam_GSD_1.0"],
+  "adapter": {
+    "type": "VcfTabixAdapter",
+    "uri": "dog10k_amy2b_svs.vcf.gz",
+    "samplesTsvLocation": { "uri": "dog10k_amy2b_samples.tsv" }
+  },
+  "displays": [
+    {
+      "type": "LinearMultiSampleVariantDisplay",
+      "colorBy": "group",
+      "height": 900
+    }
+  ]
+}
+```
+
+The RNASE1 track is that config with the other slice's `uri` and the same
+`samplesTsvLocation`.
+
+<Figure caption="Top: a 14.9 kb duplication over pancreatic amylase, dark blue where an animal carries it. Bottom: a 223 bp insertion in pancreatic ribonuclease, each carrier drawn as a marker sized by the inserted bases. Same 86 animals in the same order in both, so a row can be read against itself. The dogs carry the amylase duplication and the wolves carry the ribonuclease insertion, and the wolves that break each rule are not the same wolves." src="/img/dog10k-diet-genes.png" />
+
+The three Arctic breeds are drawn together to test a reading rather than to make
+one. Two of the three Greenland Dogs lack the duplication, but the third carries
+it and so does every Alaskan Malamute and every Samoyed, so "the sled breeds
+never got it" does not survive the three being in one frame. The grey
+Czechoslovakian Wolfdog row is CZEC000003, the animal
+[the local-ancestry tutorial](/docs/tutorials/local_ancestry) paints
+wolf-derived blocks on.
+
+Every wolf carrying the insertion is heterozygous, so the lower lane is one
+shade where the upper one has two. Three of the six Iranian wolves carry the
+amylase duplication and none of them the ribonuclease insertion, while the Greek
+and Swedish wolves do the reverse, which is why the panel is every wolf rather
+than an outgroup of four.
+
+Copy number is what amylase is known for and is the one thing a genotype column
+does not carry: four copies and twenty are both `1/1`.
+[The CYP1A2 tutorial](/docs/tutorials/dog10k_lof) builds that measurement from
+the SNV callset's per-sample `DP`, and `dog10k_slc28a3_breed_cn` and
+`dog10k_slc28a3_cohort_cn` in this tutorial's config are the same pair of lanes
+over a second duplication.
 
 ## A variant that is not there, at FGF4
 
-The three loci above are all variants at the locus you are looking at. This one
-is not: the variant is an insertion somewhere else in the genome, and what the
+The loci above are all variants at the locus you are looking at. This one is
+not: the variant is an insertion somewhere else in the genome, and what the
 callset holds here is its shadow.
 
 [Parker et al. (2009)](https://doi.org/10.1126/science.1173275) tied
@@ -564,6 +623,19 @@ and prints how many records each assembly contributed and how many the lift
 dropped. Rerunning it on another day gives a different count: the database is
 curated continuously.
 
+[`build_dog10k_amy2b_sv.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_amy2b_sv.sh)
+builds the amylase track:
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_dog10k_amy2b_sv.sh
+bash build_dog10k_amy2b_sv.sh   # writes ./dog10k_amy2b_build/
+```
+
+It derives the panel and the label TSV from the sample table, slices the one
+duplication record out of the Manta callset, then genotypes it over every canid
+in the callset rather than only the panel: the tally quoted above, all eight
+non-carrier dogs by name, all five carrier wolves, and the wolves by country.
+
 [`build_dog10k_slc28a3_cn.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_slc28a3_cn.sh)
 builds the copy-number tracks the same way, and prints each panel animal's copy
 number over the duplication. Its first route needs only `bcftools`; the second
@@ -606,10 +678,12 @@ on an annotated _FGF4_ intron and each deposited CDS is a single interval.
 
 ## References
 
+- Axelsson et al. (2013).
+  [The genomic signature of dog domestication reveals adaptation to a starch-rich diet](https://doi.org/10.1038/nature11837)
 - Schall & Kidd (2025).
   [Integrative genotyping and analysis of canine structural variation using long-read and short-read data](https://doi.org/10.1093/gbe/evaf173)
 - Parker et al. (2007).
-  [Breed relationships facilitate fine-mapping studies: a 7.8-kb deletion cosegregates with Collie eye anomaly across multiple dog breeds](https://doi.org/10.1101/gr.6086307)
+  [Breed relationships facilitate fine-mapping studies: a 7.8-kb deletion cosegregates with Collie eye anomaly across multiple dog breeds](https://doi.org/10.1101/gr.6772807)
 - Parker et al. (2009).
   [An expressed fgf4 retrogene is associated with breed-defining chondrodysplasia in domestic dogs](https://doi.org/10.1126/science.1173275)
 - Brown et al. (2017).

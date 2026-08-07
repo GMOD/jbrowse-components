@@ -82,6 +82,143 @@ const CYP_LAYOUT = CYP_GROUPS.flatMap(({ label, color, n, prefix, from = 1 }) =>
   })),
 )
 
+// Row labels for the AMY2B figure, in the order build_dog10k_amy2b_sv.sh writes
+// the slice. Ids are spelled out rather than derived from a prefix and a count
+// the way CYP_GROUPS does them, because two of these runs have holes in them:
+// there is no CLUPCN000008 in the callset, and the Tajikistan wolves are 3 and 5
+// with 4 and 6 in the sample table but not in the header.
+//
+// A `layout` replaces the sidebar sources wholesale, so supplying only labels
+// left every row with no color and took the swatch column away with it. The
+// group and its color are therefore repeated here, matching the `group` column
+// of dog10k_amy2b_samples.tsv that the track's `colorBy` reads. Wolves are
+// labelled by country, because which countries the five carriers come from is
+// the reading this panel supports.
+const AMY2B_COLORS: Record<string, string> = {
+  'Breed dog': '#0072B2',
+  'Village dog': '#009E73',
+  'Gray wolf': '#E69F00',
+}
+
+const AMY2B_GROUPS: [string, string[]][] = [
+  [
+    'Labrador Retriever',
+    [
+      'LABR000001',
+      'LABR000002',
+      'LABR000003',
+      'LABR000004',
+      'LABR000005',
+      'LABR000006',
+    ],
+  ],
+  [
+    'Boxer',
+    ['BOXR000001', 'BOXR000002', 'BOXR000003', 'BOXR000004', 'BOXR000005'],
+  ],
+  ['Greenland Dog', ['GREE000001', 'GREE000002', 'GREE000003']],
+  ['Alaskan Malamute', ['AMAL000001', 'AMAL000002', 'AMAL000003']],
+  ['Samoyed', ['SAMO000001', 'SAMO000002', 'SAMO000003', 'SAMO000004']],
+  ['English Springer Spaniel', ['ESSP000001', 'ESSP000002', 'ESSP000003']],
+  [
+    'Czechoslovakian Wolfdog',
+    ['CZEC000001', 'CZEC000002', 'CZEC000003', 'CZEC000004'],
+  ],
+  ['Alaska village dog', ['VILLAK000001', 'VILLAK000002', 'VILLAK000003']],
+  [
+    'Greece wolf',
+    [
+      'CLUPGR000001',
+      'CLUPGR000002',
+      'CLUPGR000003',
+      'CLUPGR000004',
+      'CLUPGR000005',
+      'CLUPGR000006',
+      'CLUPGR000007',
+      'CLUPGR000008',
+      'CLUPGR000009',
+      'CLUPGR000010',
+      'CLUPGR000011',
+      'CLUPGR000012',
+    ],
+  ],
+  [
+    'Sweden wolf',
+    [
+      'CLUPSE000001',
+      'CLUPSE000002',
+      'CLUPSE000003',
+      'CLUPSE000004',
+      'CLUPSE000005',
+      'CLUPSE000006',
+    ],
+  ],
+  ['Portugal wolf', ['CLUPPT000001', 'CLUPPT000002']],
+  [
+    'Russia wolf',
+    [
+      'CLUPRU000001',
+      'CLUPRU000002',
+      'CLUPRU000003',
+      'CLUPRU000004',
+      'CLUPRU000005',
+      'CLUPRU000006',
+      'CLUPRU000007',
+      'CLUPRU000008',
+      'CLUPRU000009',
+      'CLUPRU000010',
+      'CLUPRU000011',
+      'CLUPRU000012',
+      'CLUPRU000013',
+      'CLUPRU000014',
+    ],
+  ],
+  [
+    'China wolf',
+    [
+      'CLUPCN000001',
+      'CLUPCN000002',
+      'CLUPCN000003',
+      'CLUPCN000004',
+      'CLUPCN000005',
+      'CLUPCN000006',
+      'CLUPCN000007',
+      'CLUPCN000009',
+      'CLUPCN000010',
+    ],
+  ],
+  [
+    'Iran wolf',
+    [
+      'CLUPIR000001',
+      'CLUPIR000002',
+      'CLUPIR000003',
+      'CLUPIR000004',
+      'CLUPIR000005',
+      'CLUPIR000006',
+    ],
+  ],
+  ['Tajikistan wolf', ['CLUPTJ000003', 'CLUPTJ000005']],
+  ['Azerbaijan wolf', ['CLUPAZ000001']],
+  ['Eurasia wolf', ['CLUPEA000001']],
+  ['Europe wolf', ['CLUPEU000002']],
+  ['Kazakhstan wolf', ['CLUPKZ000002']],
+]
+
+const AMY2B_LAYOUT = AMY2B_GROUPS.flatMap(([label, ids]) => {
+  const group = label.endsWith(' wolf')
+    ? 'Gray wolf'
+    : label.includes('village')
+      ? 'Village dog'
+      : 'Breed dog'
+  return ids.map((name, i) => ({
+    name,
+    label: ids.length === 1 ? label : `${label} ${i + 1}`,
+    group,
+    color: AMY2B_COLORS[group],
+  }))
+})
+
 // Every animal of every breed, in the order the build script writes them: for
 // these two variants the distribution *within* a breed is the content, and a
 // head-N panel had 24 of 25 dogs het or hom-alt. Eight Mastiff/Terrier-clade
@@ -578,6 +715,204 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     settleMs: 6000,
     // gene track plus all 56 sample rows and the genotype legend
     viewportHeight: 1094,
+  },
+
+  // The pancreatic amylase duplication, genotyped across dogs and every wolf in
+  // the callset. The third kind of variant on the page: NHEJ1 is rare and
+  // clade-restricted, DENR is common with the reference carrying the rare
+  // allele, and this one is very nearly fixed in one of the two groups.
+  //
+  // The whole panel is the exceptions. 1,568 of 1,575 breed dogs are homozygous
+  // for it and 50 of 55 wolves are homozygous reference, so a figure that only
+  // showed the rule would be one blue block over one grey block and could have
+  // been a sentence. What earns the rows is that both groups leak: three of the
+  // six Iranian wolves carry it, and two of the three Greenland Dogs do not.
+  //
+  // The Arctic breeds are in the panel to STOP a reading, which is the reason
+  // they are worth their rows. Two of three Greenland Dogs being homozygous
+  // reference invites "the sled breeds never got the expansion", and that is
+  // wrong here: the third Greenland Dog carries it, and every Alaskan Malamute
+  // and every Samoyed carries it. Drawn together the three breeds say so
+  // without a caption having to.
+  //
+  // Built by scripts/build_dog10k_amy2b_sv.sh, which prints the whole-collection
+  // tally the tutorial quotes, names all eight non-carrier dogs and all five
+  // carrier wolves, and breaks the wolves down by country.
+  {
+    mode: 'url',
+    name: 'dog10k-amy2b-duplication',
+    url: lgvSession(DOG_CONFIG, {
+      assembly: 'UU_Cfam_GSD_1.0',
+      // The duplication is chr6:47,375,677-47,390,529 and the amylase gene it
+      // spans is chr6:47,381,289-47,388,484. The window puts ~15 kb of flank on
+      // the left and ~7 kb on the right, so both breakpoints are visibly inside
+      // the frame and the block is read as a bounded event rather than as a
+      // lane that runs off the edge.
+      loc: 'chr6:47,362,000-47,398,000',
+      tracks: [
+        // The RefSeq track calls the amylase gene LOC607460 (NCBI Gene 607460,
+        // "pancreatic alpha-amylase", aliases AMY2A and AMY2B), so the gene row
+        // does not say AMY2B and the annotation below is what supplies the
+        // name. RNPC3 starts inside the window and runs 94 kb past its right
+        // edge, which is why this is 100px rather than the 60 one gene needs.
+        {
+          trackId: 'canFam4_ncbi_refseq',
+          type: 'LinearBasicDisplay',
+          height: 100,
+        },
+        {
+          trackId: 'dog10k_amy2b_svs',
+          type: 'LinearMultiSampleVariantDisplay',
+          // 86 rows. The VCF holds one record, so every pixel of width is the
+          // one block and the height is all that has to be budgeted.
+          height: 900,
+          // Breed and country in the sidebar instead of the Dog10K ids. The
+          // panel's whole content is which animals sit on the wrong side of the
+          // split, and "GREE000001" and "CLUPIR000003" only say that to someone
+          // holding the prefix key.
+          layout: AMY2B_LAYOUT,
+        },
+      ],
+    }),
+    readyText: 'chr6',
+    readyTimeout: 90000,
+    settleMs: 6000,
+    // gene track, all 86 sample rows, the group swatch legend and the genotype
+    // legend under it
+    viewportHeight: 1240,
+    // The gene's name, because the RefSeq row cannot supply it, plus the caveat
+    // that is the reason this locus is on the page at all: the column is
+    // presence/absence, and the measurement AMY2B is known for is copies. A
+    // reader who takes "1/1" for "the published high copy number" has drawn the
+    // wrong conclusion from a correct figure. The pill sits left of the block
+    // over lane that paints nothing, so no cell is covered.
+    annotations: [
+      {
+        type: 'text',
+        text: 'LOC607460 is AMY2B.\nPresence or absence,\nnot copy number.',
+        fontSize: 22,
+        maxWidth: 300,
+        // Left of the block and low enough to clear the dog rows entirely: the
+        // lane paints nothing left of the duplication's left breakpoint, but the
+        // rows this figure is about are the Arctic breeds near the top of it, so
+        // the pill sits down in the wolf section where a covered row would only
+        // be more grey.
+        anchor: {
+          track: 'dog10k_amy2b_svs',
+          locus: 'chr6:47,375,677-47,390,529',
+          fracY: 0.62,
+          dx: -700,
+          dy: 0,
+        },
+      },
+      {
+        type: 'arrow',
+        fromAnchor: {
+          track: 'dog10k_amy2b_svs',
+          locus: 'chr6:47,375,677-47,390,529',
+          fracY: 0.62,
+          dx: -300,
+          dy: 0,
+        },
+        anchor: {
+          track: 'dog10k_amy2b_svs',
+          locus: 'chr6:47,375,677-47,390,529',
+          fracY: 0.62,
+          dx: -40,
+          dy: 0,
+        },
+      },
+    ],
+  },
+
+  // RNASE1, the mirror of the panel above and the bottom half of
+  // dog10k-diet-genes. Pancreatic ribonuclease, and a 223 bp SINE insertion in
+  // it that 26 of the 55 wolves carry against two canids in 1,824. Same panel,
+  // same order, same row height as the AMY2B part, which is the whole point of
+  // stacking them: a reader compares a row against itself.
+  //
+  // Every wolf carrier is heterozygous, so this lane is light blue where the
+  // one above is dark. That is a property of the data and not of the drawing.
+  //
+  // From the Zenodo Paragraph set rather than the Michigan Manta aggregate.
+  // Insertions are what the Paragraph genotyping added over Manta, and this
+  // record is not in the Manta set at all.
+  {
+    mode: 'url',
+    name: 'dog10k-rnase1-insertion',
+    url: lgvSession(DOG_CONFIG, {
+      assembly: 'UU_Cfam_GSD_1.0',
+      // LOC475395 is chr15:18,163,424-18,164,859 and the insertion is at
+      // 18,164,072, inside it. The window is tight because the gene is 1.4 kb:
+      // wider and both the gene and the insertion marker are slivers.
+      loc: 'chr15:18,161,500-18,167,000',
+      tracks: [
+        // LOC106557526 spans the whole window and LOC475395 sits inside it, so
+        // this needs two packed rows rather than the one the AMY2B part uses.
+        {
+          trackId: 'canFam4_ncbi_refseq',
+          type: 'LinearBasicDisplay',
+          height: 100,
+        },
+        {
+          trackId: 'dog10k_rnase1_svs',
+          type: 'LinearMultiSampleVariantDisplay',
+          height: 900,
+          layout: AMY2B_LAYOUT,
+        },
+      ],
+    }),
+    readyText: 'chr15',
+    readyTimeout: 90000,
+    settleMs: 6000,
+    viewportHeight: 1240,
+    // Same two facts as the AMY2B pill and the same height in the lane, so the
+    // pair reads as one figure: what the LOC symbol is, and which way this one
+    // runs. The offsets are smaller than the AMY2B part's because the anchor is
+    // an insertion near the middle of a 5.5 kb window rather than a block whose
+    // left breakpoint is most of the way across a 36 kb one, so -700 there and
+    // -700 here are not the same distance from the sidebar.
+    annotations: [
+      {
+        type: 'text',
+        text: 'LOC475395 is RNASE1.\nHere the wolves are\nthe carriers.',
+        fontSize: 22,
+        maxWidth: 300,
+        anchor: {
+          track: 'dog10k_rnase1_svs',
+          locus: 'chr15:18,164,072-18,164,074',
+          fracY: 0.62,
+          dx: -330,
+          dy: 0,
+        },
+      },
+      {
+        type: 'arrow',
+        fromAnchor: {
+          track: 'dog10k_rnase1_svs',
+          locus: 'chr15:18,164,072-18,164,074',
+          fracY: 0.62,
+          dx: -150,
+          dy: 0,
+        },
+        anchor: {
+          track: 'dog10k_rnase1_svs',
+          locus: 'chr15:18,164,072-18,164,074',
+          fracY: 0.62,
+          dx: -30,
+          dy: 0,
+        },
+      },
+    ],
+  },
+
+  // The two diet genes stacked. Neither half is on the page on its own: the
+  // result is that the colors swap between them over the same 86 animals in the
+  // same order, and two figures a scroll apart do not show that.
+  {
+    mode: 'compose',
+    name: 'dog10k-diet-genes',
+    parts: ['dog10k-amy2b-duplication', 'dog10k-rnase1-insertion'],
   },
 
   // The body-size selection scan, whole genome: the top half of

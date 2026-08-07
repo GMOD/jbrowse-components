@@ -1,0 +1,87 @@
+name	group	breed
+LABR000001	Breed dog	Labrador Retriever 1
+LABR000002	Breed dog	Labrador Retriever 2
+LABR000003	Breed dog	Labrador Retriever 3
+LABR000004	Breed dog	Labrador Retriever 4
+LABR000005	Breed dog	Labrador Retriever 5
+LABR000006	Breed dog	Labrador Retriever 6
+BOXR000001	Breed dog	Boxer 1
+BOXR000002	Breed dog	Boxer 2
+BOXR000003	Breed dog	Boxer 3
+BOXR000004	Breed dog	Boxer 4
+BOXR000005	Breed dog	Boxer 5
+GREE000001	Breed dog	Greenland Dog 1
+GREE000002	Breed dog	Greenland Dog 2
+GREE000003	Breed dog	Greenland Dog 3
+AMAL000001	Breed dog	Alaskan Malamute 1
+AMAL000002	Breed dog	Alaskan Malamute 2
+AMAL000003	Breed dog	Alaskan Malamute 3
+SAMO000001	Breed dog	Samoyed 1
+SAMO000002	Breed dog	Samoyed 2
+SAMO000003	Breed dog	Samoyed 3
+SAMO000004	Breed dog	Samoyed 4
+ESSP000001	Breed dog	English Springer Spaniel 1
+ESSP000002	Breed dog	English Springer Spaniel 2
+ESSP000003	Breed dog	English Springer Spaniel 3
+CZEC000001	Breed dog	Czechoslovakian Wolfdog 1
+CZEC000002	Breed dog	Czechoslovakian Wolfdog 2
+CZEC000003	Breed dog	Czechoslovakian Wolfdog 3
+CZEC000004	Breed dog	Czechoslovakian Wolfdog 4
+VILLAK000001	Village dog	Alaska village dog 1
+VILLAK000002	Village dog	Alaska village dog 2
+VILLAK000003	Village dog	Alaska village dog 3
+CLUPGR000001	Gray wolf	Greece wolf 1
+CLUPGR000002	Gray wolf	Greece wolf 2
+CLUPGR000003	Gray wolf	Greece wolf 3
+CLUPGR000004	Gray wolf	Greece wolf 4
+CLUPGR000005	Gray wolf	Greece wolf 5
+CLUPGR000006	Gray wolf	Greece wolf 6
+CLUPGR000007	Gray wolf	Greece wolf 7
+CLUPGR000008	Gray wolf	Greece wolf 8
+CLUPGR000009	Gray wolf	Greece wolf 9
+CLUPGR000010	Gray wolf	Greece wolf 10
+CLUPGR000011	Gray wolf	Greece wolf 11
+CLUPGR000012	Gray wolf	Greece wolf 12
+CLUPSE000001	Gray wolf	Sweden wolf 1
+CLUPSE000002	Gray wolf	Sweden wolf 2
+CLUPSE000003	Gray wolf	Sweden wolf 3
+CLUPSE000004	Gray wolf	Sweden wolf 4
+CLUPSE000005	Gray wolf	Sweden wolf 5
+CLUPSE000006	Gray wolf	Sweden wolf 6
+CLUPPT000001	Gray wolf	Portugal wolf 1
+CLUPPT000002	Gray wolf	Portugal wolf 2
+CLUPRU000001	Gray wolf	Russia wolf 1
+CLUPRU000002	Gray wolf	Russia wolf 2
+CLUPRU000003	Gray wolf	Russia wolf 3
+CLUPRU000004	Gray wolf	Russia wolf 4
+CLUPRU000005	Gray wolf	Russia wolf 5
+CLUPRU000006	Gray wolf	Russia wolf 6
+CLUPRU000007	Gray wolf	Russia wolf 7
+CLUPRU000008	Gray wolf	Russia wolf 8
+CLUPRU000009	Gray wolf	Russia wolf 9
+CLUPRU000010	Gray wolf	Russia wolf 10
+CLUPRU000011	Gray wolf	Russia wolf 11
+CLUPRU000012	Gray wolf	Russia wolf 12
+CLUPRU000013	Gray wolf	Russia wolf 13
+CLUPRU000014	Gray wolf	Russia wolf 14
+CLUPCN000001	Gray wolf	China wolf 1
+CLUPCN000002	Gray wolf	China wolf 2
+CLUPCN000003	Gray wolf	China wolf 3
+CLUPCN000004	Gray wolf	China wolf 4
+CLUPCN000005	Gray wolf	China wolf 5
+CLUPCN000006	Gray wolf	China wolf 6
+CLUPCN000007	Gray wolf	China wolf 7
+CLUPCN000009	Gray wolf	China wolf 8
+CLUPCN000010	Gray wolf	China wolf 9
+CLUPIR000001	Gray wolf	Iran wolf 1
+CLUPIR000002	Gray wolf	Iran wolf 2
+CLUPIR000003	Gray wolf	Iran wolf 3
+CLUPIR000004	Gray wolf	Iran wolf 4
+CLUPIR000005	Gray wolf	Iran wolf 5
+CLUPIR000006	Gray wolf	Iran wolf 6
+CLUPTJ000003	Gray wolf	Tajikistan wolf 1
+CLUPTJ000005	Gray wolf	Tajikistan wolf 2
+CLUPAZ000001	Gray wolf	Azerbaijan wolf 1
+CLUPEA000001	Gray wolf	Eurasia wolf 1
+CLUPEU000002	Gray wolf	Europe wolf 1
+CLUPKZ000002	Gray wolf	Kazakhstan wolf 1

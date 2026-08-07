@@ -100,6 +100,46 @@
       }
     },
     {
+      "type": "VariantTrack",
+      "trackId": "dog10k_amy2b_svs",
+      "name": "Dog10K structural variants at AMY2B (dogs and every wolf)",
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "dog10k_amy2b_svs.vcf.gz",
+        "samplesTsvLocation": {
+          "uri": "dog10k_amy2b_samples.tsv"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearMultiSampleVariantDisplay",
+          "colorBy": "group",
+          "height": 900
+        }
+      ]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "dog10k_rnase1_svs",
+      "name": "Dog10K structural variants at RNASE1 (dogs and every wolf)",
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "dog10k_rnase1_svs.vcf.gz",
+        "samplesTsvLocation": {
+          "uri": "dog10k_amy2b_samples.tsv"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearMultiSampleVariantDisplay",
+          "colorBy": "group",
+          "height": 900
+        }
+      ]
+    },
+    {
       "type": "GWASTrack",
       "trackId": "dog10k_size_fst",
       "name": "Fst, toy/small vs giant breeds (200 kb windows)",

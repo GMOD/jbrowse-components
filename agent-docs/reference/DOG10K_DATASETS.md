@@ -38,14 +38,28 @@ coordinate from a paper as canFam3.1 until proven otherwise.**
   from the Dog10K paper's Fig 10, built by `scripts/build_dog10k_cyp1a2.sh`.
   The coordinate is derived by translating the reference CDS rather than copied,
   which is worth repeating elsewhere: it re-checks against the assembly in use.
-  Fig 10a now sits under it too: `scripts/build_dog10k_cyp1a2_cn.sh` writes a
-  read-depth copy-number bigWig per published CRAM and the figure
-  (`dog10k-cyp1a2-copy-number`) stacks nine of them as a
-  `MultiQuantitativeTrack` on a fixed 0-6 axis. The Greenland Dog is flat at two
-  across the window while every other dog steps up over the gene, and every row
-  returns to two in the flanks, which is the control on the normalization. The
-  track config carries all nine rows; the script covers all 15 CRAMs and prints
-  each dog's CN over the element beside its CN in the flanks.
+  Fig 10a sits under it as `dog10k-cyp1a2-cohort-copy-number`, from
+  `scripts/build_dog10k_cyp1a2_cn.sh`: named animals over the whole collection,
+  both lanes from the callset's own per-sample `DP`.
+  **There is no `dog10k-cyp1a2-copy-number` figure** and this file used to say
+  there was. That was the 15-CRAM `MultiQuantitativeTrack` stack of read depth;
+  the track (`dog10k_cyp1a2_cn`) is still in the config and the script still
+  writes it, but it is deliberately not on the page, because which 15 dogs have
+  CRAMs is an accident of what the share published. It survives as the
+  validation of the callset-depth route (r = 0.92 over shared windows), not as a
+  picture. `specs/dog10k.ts` carries the same note where the figure would be.
+- `tutorials/dog10k_svs.md` also carries **AMY2B and RNASE1**, the two diet
+  genes, stacked as one composed figure (`dog10k-diet-genes`) over one panel
+  sliced from both callsets in the same order so the lanes read row for row.
+  Built by `scripts/build_dog10k_amy2b_sv.sh`. Measured 2026-08-07: the amylase
+  `DUP` (chr6:47,375,677, Manta aggregate) is 1568/1575 breed dogs hom alt
+  against 50/55 wolves hom ref, and the RNASE1 SINE insertion
+  (chr15:18,164,072, Paragraph) is 26/55 wolves het against 2 carriers in 1,824
+  dogs. **The Arctic-breed reading is a trap worth not re-deriving**: two of
+  three Greenland Dogs lack the duplication, which looks like the published
+  low-copy-number result for sled breeds, but the third carries it and so does
+  every Alaskan Malamute and Samoyed. The genotype is presence/absence, not
+  copies, so it cannot speak to that result either way.
 Both Dog10K tutorials close by putting the underlying genotypes under the derived
 track, and both carry a **built-in control** — the German Shepherd row in the
 wolfdog painting, the wolf rows in the SV panel. The 2026-08-04 rebuild of the
@@ -86,15 +100,14 @@ set it carries DUP and INV records. Each of these is the existing
   and Thai Ridgeback carries it (8 homozygous, 1 het), plus exactly the three
   African village dogs the paper names (VILLCG000006, VILLKE000001,
   VILLLR000017) — and one Schipperke it does not.
-- **AMY2B duplication**, chr6:47,375,677-47,390,529. 1581/1588 breed dogs
-  homozygous carrier; 50/55 wolves homozygous reference. Pairs with the CN
-  profile above: the same event as presence/absence and as copy number.
-- **RNASE1 exonic SINE insertion**, chr15:18,164,072 (Paragraph set). 26 of 55
-  wolves heterozygous, one dog in 1,588 — the mirror image, and both are diet
-  genes.
 - **SLC28A3 duplication**, chr1:75,578,115 (136 kb). GBGV000003 homozygous, four
   more GBGVs and a PBGV heterozygous: Fig 11 as genotypes when the CN route is
   out of reach.
+
+_AMY2B_ and _RNASE1_ are done (see above). The counts this file carried for them
+were close but not exact, so take the build script's output over any number
+written down: it was 1581/1588 breed dogs here and the script prints 1568/1575,
+the difference being which category the sample table files an animal under.
 
 **A selection scan is one download.** Per-clade AF from that same 1.08 GB
 callset (`bcftools +fill-tags -S`), Fst against the rest, written as a bgzipped

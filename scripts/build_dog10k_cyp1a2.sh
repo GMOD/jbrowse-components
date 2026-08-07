@@ -107,5 +107,47 @@ bcftools query -r chr30:38261635-38261636 -i 'POS=38261635' \
   -f '[%SAMPLE=%GT ]\n' dog10k_cyp1a2_snvs.vcf.gz \
   | tr ' ' '\n' | grep -v '=0/0' || true
 
+# The panel above answers "who carries it" for the animals the figure draws. The
+# tutorial's other claim is about the whole collection, and in particular that no
+# wild canid carries the allele, which is the control the page rests on. That is
+# one more query at the same single position with no -S, so it is derived here
+# rather than measured once and written into the prose.
+echo
+echo "The same site over every canid in the callset:"
+bcftools query -r chr30:38261635-38261636 -i 'POS=38261635' \
+  -f '[%SAMPLE=%GT\n]' "$SNVS" > cyp_all.gt
+
+python3 - <<'PY'
+import collections
+rows = [l.rstrip('\n').split('\t') for l in open('samples.txt')][1:]
+meta = {r[0]: (r[1], r[2]) for r in rows}
+gt = dict(l.rstrip('\n').split('=') for l in open('cyp_all.gt') if '=' in l)
+
+# This callset is phased, so its genotypes come back as 0|1 rather than 0/1.
+# Normalizing here rather than listing both spellings everywhere below.
+gt = {s: g.replace('|', '/') for s, g in gt.items()}
+
+NAMES = {'1/1': 'hom alt', '0/1': 'het', '0/0': 'hom ref', './.': 'no call'}
+tally = collections.defaultdict(collections.Counter)
+for s, g in gt.items():
+    tally[meta.get(s, ('?', '?'))[1]][g] += 1
+for cat, t in sorted(tally.items()):
+    parts = ', '.join(f'{n} {NAMES.get(g, g)}'
+                      for g, n in sorted(t.items(), key=lambda kv: -kv[1]))
+    print(f'  {cat:14s} {sum(t.values()):5d} canids: {parts}')
+
+carrier_breeds = {meta[s][0] for s, g in gt.items()
+                  if s in meta and g not in ('0/0', './.')}
+breeds = {meta[s][0] for s in gt if s in meta and meta[s][1] == 'Breed_Dogs'}
+print()
+print(f'  {len(carrier_breeds & breeds)} of {len(breeds)} breeds carry it in at '
+      'least one animal')
+wild = [s for s in gt if s in meta and meta[s][1] not in ('Breed_Dogs',
+        'Village_Dogs', 'Mixed/Other')]
+carrying = [s for s in wild if gt[s] not in ('0/0', './.')]
+groups = collections.Counter(meta[s][1] for s in wild)
+print(f'  wild canids: {dict(groups)}, {len(carrying)} of {len(wild)} carrying')
+PY
+
 echo
 echo "Wrote $(pwd)/dog10k_cyp1a2_snvs.vcf.gz (plus its .tbi)."
