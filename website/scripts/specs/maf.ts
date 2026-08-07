@@ -582,6 +582,17 @@ export const mafSpecs: ScreenshotSpec[] = [
               // grow so all 464 rows are on screen at once; the point of the
               // figure is the whole cohort, and a scrolled track shows half of it
               heightMode: 'grow',
+              // Identity heatmap, not the base/SNP coloring (review: "unclear
+              // what we are looking at. it just looks like bam or cram but it is
+              // pangenome"). It DID look like a pileup, and for a reason worth
+              // stating: 464 grey bands with sparse coloured ticks is what a
+              // read pileup looks like, and at 30 kb across the ticks are the
+              // only ink the base rendering can put down. The heatmap shades
+              // each row by its identity to GRCh38 over the pixel instead, so
+              // the panel becomes what it is about — which haplotypes match the
+              // reference here and which do not — rather than a wall of grey
+              // that happens to have SNPs in it.
+              rowIdentityMode: 'heatmap',
             },
           ],
         },
@@ -590,5 +601,23 @@ export const mafSpecs: ScreenshotSpec[] = [
     viewportHeight: 920,
     // the .tai alone is 4.98 MB and the first block read follows it
     actions: [{ type: 'delay' as const, ms: 25000 }],
+    // What the rows are, said on the image. The heatmap answers half the review
+    // note by not looking like a pileup; this answers the other half, which is
+    // that nothing on the frame said 464 rows were 464 PEOPLE. No arrow: the
+    // white gaps are everywhere in the field, so pointing at one of them would
+    // single out a haplotype the figure has no reason to name.
+    annotations: [
+      {
+        type: 'text' as const,
+        text: '464 human haplotypes, one row each. A white gap is a person who has no sequence here, not one whose sequence differs.',
+        fontSize: 18,
+        maxWidth: 330,
+        anchor: {
+          track: 'hprc_v2_0_mc_grch38',
+          locus: 'chr6:31,988,000',
+          fracY: 0.12,
+        },
+      },
+    ],
   },
 ]

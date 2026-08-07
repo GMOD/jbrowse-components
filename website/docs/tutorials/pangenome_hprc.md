@@ -374,10 +374,10 @@ at. With 464 it stops being a shape and becomes a list of donors, which is still
 the right answer to "whose sequence is this" and the wrong one to "what does
 this locus look like".
 
-LPA is the case for the shape instead. Its KIV-2 repeat sets the level of
-Lp(a), an inherited cardiovascular risk factor, and the number of copies a
-person carries differs from one person to the next — a difference that is not
-callable from short reads:
+LPA is the case for the shape instead. Its KIV-2 repeat sets the level of Lp(a),
+an inherited cardiovascular risk factor, and the number of copies a person
+carries differs from one person to the next — a difference that is not callable
+from short reads:
 
 <Figure caption="The KIV-2 repeat inside LPA as a force-directed graph, under the RefSeq genes, the bubbles lane and the rGFA segments for the same window. The bubble the lane reports across the repeat is the chain of loops below it, and each node carries the sequence it holds; the dashed arc, labelled with the size of the deletion it draws, is the route that bypasses the reference between two of them." src="/img/pangenome/hprc_lpa_kiv2.png" />
 
@@ -682,13 +682,15 @@ segment count as its `score`, so the only change is the track type, since a
 }
 ```
 
-<Figure caption="All 249 Mb of GRCh38 chr1 in three lanes off two files. Top, the bubble file as a curve: segments per bubble. Middle, the same bubbles as the tier's segments lane. Bottom, the tier as a graph, backbone nodes labelled with the megabases they span alternating with bubbles. All three go quiet over the centromere and the 1q12 heterochromatin." src="/img/pangenome/hprc_whole_chromosome.png" />
+<Figure caption="All 249 Mb of GRCh38 chr1 in three lanes off two files. Top, the bubble file as a curve: segments per bubble. Middle, the same bubbles as the tier's segments lane. Bottom, the tier as a graph, backbone nodes labelled with the megabases they span alternating with bubbles. The blank column is GRCh38's own heterochromatin gap on 1q." src="/img/pangenome/hprc_whole_chromosome.png" />
 
 The graph is 474 nodes against about 751,000 segments in the graph itself, laid
 out in 18 ms. The chain alternates strictly, 237 backbone nodes and 237 bubbles,
 because `gfatools bubble` reports top-level bubbles only and those never
 overlap, which is what makes one flat walk complete rather than lossy. The quiet
-stretch is one 18.7 Mb backbone node with no bubbles in it.
+stretch is GRCh38's heterochromatin gap on 1q, a run of N with nothing for a
+haplotype to align to, and the graph spends a single 18.7 Mb backbone node
+crossing it.
 
 This is the coarse end of a ladder, not a replacement: a tier node is a bubble,
 so it says where the graph varies and by how much, and nothing about the alleles
@@ -990,7 +992,7 @@ graph and the callset above come from; being nine times smaller to store and
 four times cheaper to read a locus out of is the second reason rather than the
 first.
 
-<Figure caption="The C4 locus in HPRC release 2's multiple alignment: 464 human haplotypes under MANE Select genes. Rows drop out where a haplotype does not carry the segment, so the white bands through the copy-number-variable C4A and C4B are absence rather than divergence." src="/img/maf_hprc_pangenome.png" />
+<Figure caption="The C4 locus in HPRC release 2's multiple alignment: 464 human haplotypes under MANE Select genes, each row shaded by its identity to GRCh38. Almost every row is conserved, so the white bands through the copy-number-variable C4A and C4B read as absence rather than divergence: those haplotypes carry no sequence there." src="/img/maf_hprc_pangenome.png" />
 
 The locus is C4, the example [HPRCv2](https://github.com/pangenome/HPRCv2)
 itself opens with. Every row is a human haplotype, so the rows say something

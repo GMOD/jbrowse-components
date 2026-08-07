@@ -811,6 +811,14 @@ and on `K12:997,574` 7.1 kb upstream, so those 75 bp stand in for 7.1 kb of K12
 and the bar is that 7.1 kb. It is a deletion, not a loop, and most of it is
 outside the frame.
 
+Zoom out to the whole event and it has an ordinary linear form. A segment with
+no reference coordinate still describes an event that has one, because the
+address of an event is the span it replaces, and that is what `pggb -V` writes
+through `vg deconstruct`: one record at `chr:997,575`, 7,112 bp of REF against a
+93 bp ALT, genotyped in CFT073 and in none of the other three.
+
+<Figure caption="The same detour on the K12 axis, 9.1 kb wide. The pggb VCF calls it once, in CFT073 alone; the seven genes under the record are the ones that go with it, between ssuE and pyrD; and the MAF's CFT073 row is empty across the same span where the other three strains stay filled." src="/img/pangenome/pggb_spur_linear.png" />
+
 In **Sample rows** the lanes take the MAF's own rows and order: the top row is
 the K12 backbone, and below it each strain's marks are the segments it takes
 instead. The MAF row above says the same thing base by base.

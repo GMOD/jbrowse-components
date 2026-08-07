@@ -1098,6 +1098,22 @@ const PGGB_MAF_SESSION_TRACK = {
   },
 }
 
+// The same graph read as a callset: `pggb -V K12:...` runs `vg deconstruct` over
+// the smoothed graph, so every bubble becomes a record on the K12 axis. It is
+// the one lane in this set that can state an alternate route the reference has
+// no coordinate for, because a record's ADDRESS is the span the route replaces.
+const PGGB_VARIANTS_TRACK = 'ecoli_pggb_variants'
+const PGGB_VARIANTS_SESSION_TRACK = {
+  type: 'VariantTrack',
+  trackId: PGGB_VARIANTS_TRACK,
+  name: 'pggb graph: variants (vg deconstruct, vs K12)',
+  assemblyNames: ['K12'],
+  adapter: {
+    type: 'VcfTabixAdapter',
+    uri: `${DATA}/ecoli_pggb.vcf.gz`,
+  },
+}
+
 // `mafLane` is stated rather than derived from `layoutMode`, because the two
 // halves of pangenome/pggb_locus_sample_rows differ ONLY in layoutMode: a lane
 // that appeared over one half and not the other would be a second difference
@@ -1109,13 +1125,20 @@ function pggbLocusSession(
     region,
     window,
     mafLane = false,
-  }: { region: typeof PGGB_LOCUS; window: string; mafLane?: boolean },
+    variantLane = false,
+  }: {
+    region: typeof PGGB_LOCUS
+    window: string
+    mafLane?: boolean
+    variantLane?: boolean
+  },
 ) {
   return sessionSpec(CONFIG, {
     sessionTracks: [
       K12_GENES_SESSION_TRACK,
       PGGB_SEGMENTS_SESSION_TRACK,
       ...(mafLane ? [PGGB_MAF_SESSION_TRACK] : []),
+      ...(variantLane ? [PGGB_VARIANTS_SESSION_TRACK] : []),
     ],
     views: [
       {
@@ -1124,6 +1147,20 @@ function pggbLocusSession(
         loc: window,
         tracks: [
           { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
+          // The graph's own alternate routes as records on the K12 axis, which
+          // is where a spur that has no reference coordinate of its own DOES
+          // get one: `vg deconstruct` states it as the reference span it
+          // replaces. One row per strain, so which strain takes the detour is
+          // in the lane rather than only in the drawer.
+          ...(variantLane
+            ? [
+                {
+                  trackId: PGGB_VARIANTS_TRACK,
+                  type: 'LinearMultiSampleVariantDisplay',
+                  height: 110,
+                },
+              ]
+            : []),
           ...(mafLane
             ? [
                 {
@@ -2129,6 +2166,13 @@ export const graphSpecs: ScreenshotSpec[] = [
               trackId: 'hprc_tier',
               type: 'LinearBasicDisplay',
               showLabels: 'none',
+              // PACKED, and collapsed was tried and reverted. Three rows of
+              // yellow boxes at 178 kb per pixel is close to a mat, so
+              // collapsing to one row looked like the same cleanup the qc
+              // callset lanes got — but it made the lane a solid bar edge to
+              // edge, including across the 1q gap the other two lanes go blank
+              // over. One row means one long bubble spanning the gap fills it,
+              // and the gap is the thing worth seeing. Packed keeps it.
               height: 60,
             },
           ],
@@ -2154,8 +2198,39 @@ export const graphSpecs: ScreenshotSpec[] = [
     settleMs: 15000,
     viewportWidth: 1400,
     // the variability curve, the tier lane, and a two-row anchored drawing
-    viewportHeight: 660,
+    viewportHeight: 685,
     hideTooltip: true,
+    // The blank is the loudest thing in the picture and nothing on the image
+    // said what it was. The caption used to call it the centromere and 1q12,
+    // which is both something a reader has to already know and not what the
+    // files say: bubbles ARE called across the centromere (21 in the 124th Mb,
+    // 40 in the 125th). The continuous blank runs 125,183,471 to 143,314,415 in
+    // the bubbles BED, and the tier BED carries exactly one node over it —
+    // `bb_GRCh38#0#chr1_125178636`, 125,178,636-143,831,879, which is the
+    // 18.7 Mb the graph pane labels. That is GRCh38's own heterochromatin gap
+    // on 1q: a run of N, so nothing aligns and no bubble is called, and the
+    // graph spends one backbone node crossing it.
+    //
+    // Naming the node is what makes the three lanes one picture rather than
+    // three, so the label says it and the caption says it.
+    //
+    // The pill sits IN the gap rather than above the lane: at this height a
+    // callout lifted clear of the curve lands on the view's own header, and the
+    // blank column is both where it belongs and the only place on the lane
+    // where it covers no data.
+    annotations: [
+      {
+        type: 'text',
+        text: "GRCh38's own gap on 1q: no bubbles, one 18.7 Mb backbone node instead",
+        fontSize: 18,
+        maxWidth: 250,
+        anchor: {
+          track: 'hprc_bubble_score',
+          locus: 'chr1:132,000,000',
+          fracY: 0.42,
+        },
+      },
+    ],
   },
 
   // Out of the graph and into the strain that carries the allele — the pggb
@@ -2260,21 +2335,11 @@ export const graphSpecs: ScreenshotSpec[] = [
   // the in-app P/W walk a file-loaded graph gets. Measured over this same window
   // at the time: 0 of 53 nodes carried samples, against 53 of 53 after.
   //
-  // NO, THE 75 bp SPUR CANNOT BE DRAWN IN THE LANE ABOVE, and a glyph is the
-  // wrong place to look for it (review: "hard to see the 75bp 'spur' in the
-  // linear view. is there any way to show that with a custom canvas track
-  // glyph?"). It is the grey branch leaving the backbone in the graph pane, and
-  // it has no K12 coordinate — `tabix ecoli_pggb.segs.bed.gz
-  // 'K12#1#chr:1004500-1004961'` returns 53 records, every one of them a K12
-  // interval, and no record of length 75 anywhere in the window. A glyph draws
-  // what the adapter emits, and the adapter cannot emit a span the reference
-  // does not have; that is the same fact this figure exists to make, one lane
-  // further down.
-  //
-  // What WOULD show it linearly is the bubbles-lane pattern the HPRC figures
-  // use: a record at the detour's reference attachment point carrying the
-  // alternate's length ("0-1,245 bp, 3 segments, up to 2 paths"). That is a
-  // build script and an upload for this graph, not a renderer change.
+  // The lane the 75 bp spur IS visible in is pggb_spur_linear, below, and not
+  // this one — deliberately, because a variant lane in this frame would argue
+  // against the frame's own point. This figure is here to say that carriedBy
+  // states something the flattened projections cannot, and a multi-sample
+  // variant row saying "CFT073 alone" sitting above it reads as a rebuttal.
   {
     mode: 'url',
     name: 'pangenome/pggb_carriage',
@@ -2301,6 +2366,135 @@ export const graphSpecs: ScreenshotSpec[] = [
       // would otherwise commit a figure of a graph with no panel open
       { type: 'waitForText', text: 'carriedBy' },
       { type: 'delay', ms: 1500 },
+    ],
+  },
+  // The 75 bp spur, on the reference axis (review: "hard to see the 75bp 'spur'
+  // in the linear view. is there any way to show that with a custom canvas
+  // track glyph?").
+  //
+  // No glyph, and no new file. The segments lane genuinely cannot draw the
+  // spur — its adapter emits K12 intervals, `tabix ecoli_pggb.segs.bed.gz
+  // 'K12#1#chr:1004500-1004961'` is 53 records and every one is a K12 span —
+  // and no glyph draws what the adapter does not emit. But a spur is only
+  // coordinate-less as a SEGMENT. As an EVENT it has a reference address: the
+  // span it replaces, which is what `pggb -V` has vg deconstruct write and what
+  // this demo's own VCF already holds.
+  //
+  //   tabix ecoli_pggb.vcf.gz chr:997575-997575
+  //   ID >176689>178029_217, REF 7,112 bp, ALT 93 bp, LEN=7019, GT 1 0 0 0
+  //
+  // The window is that record plus its two flanking genes, which is why it is
+  // ~20x the one the graph figures use: the event is 7.1 kb, so at 461 bp the
+  // bar runs off the left edge and the picture is of its right end only. Here
+  // both ends and the seven genes between them are in frame — ssuE and pyrD
+  // are the pair the strain-launch figure shows meeting on CFT073's contig.
+  //
+  // Three lanes, each a different kind of evidence for one event: the genes it
+  // removes, the graph's own call for it, and the alignment it was called from.
+  // The MAF's CFT073 row is the control — a deletion is only a deletion if the
+  // alignment has a gap there, and the other three strains' rows have to stay
+  // filled across the same span.
+  //
+  // The other route to a linear spur is real but is a build script and an
+  // upload: `LinearMultiRowFeatureDisplay`'s `lengthField` slot sizes an indel
+  // glyph by a feature's OWN length rather than by the reference span it
+  // covers, which is exactly "mark it as an insertion", and this same demo's
+  // `ecoli_minigraph_paths` uses it so Sakai's 113 kb allele stops drawing as a
+  // 3.4 kb box. The pggb side has no per-bubble row to hang it on, since its
+  // segs BED is reference intervals only.
+  {
+    mode: 'url',
+    name: 'pangenome/pggb_spur_linear',
+    url: sessionSpec(CONFIG, {
+      sessionTracks: [
+        K12_GENES_SESSION_TRACK,
+        PGGB_VARIANTS_SESSION_TRACK,
+        PGGB_MAF_SESSION_TRACK,
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: 'chr:996,800-1,005,900',
+          tracks: [
+            { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
+            {
+              trackId: PGGB_VARIANTS_TRACK,
+              type: 'LinearMultiSampleVariantDisplay',
+              // FILTERED to the structural record, and the unfiltered lane is
+              // why. `pggb -V` decomposes, so this window also holds several
+              // hundred SNPs and small indels between the same four strains,
+              // and they fill the lane wall to wall: the one 7 kb record is a
+              // column among hundreds of columns rather than the subject. This
+              // is the opposite call from pangenome/maf, where a length filter
+              // was REMOVED — there the fine tier is the subject and the filter
+              // was dropping real indels; here the fine tier is the noise.
+              // `jexl:` prefix, because this is the matrix display and its
+              // `jexlFilters` is a model PROPERTY that goes straight into a
+              // SerializableFilterChain — unlike the canvas LinearVariantDisplay,
+              // whose slot adds the prefix itself. Written bare here the display
+              // does not error, it sits in `loading` forever, which the capture
+              // reports as a 120s wait timeout and looks like a slow fetch.
+              jexlFilters: [
+                "jexl:get(feature,'end')-get(feature,'start') > 1000",
+              ],
+              height: 110,
+            },
+            {
+              trackId: PGGB_MAF_TRACK,
+              type: 'LinearMafDisplay',
+              layout: PGGB_STRAIN_ROWS,
+              height: 150,
+            },
+          ],
+        },
+      ],
+    }),
+    // a ruler tick, not the locus: at 9.1 kb the ticks are on the kilobase, so
+    // the window's own start never appears as text anywhere on the page
+    readyText: '1,000,000',
+    readyTimeout: 120000,
+    settleMs: 12000,
+    viewportWidth: 1100,
+    // 700 left 71 css px of blank under the MAF rows, per the run's own report
+    viewportHeight: 629,
+    hideTooltip: true,
+    // The genotype key STAYS, unlike pangenome/maf which dismisses it. Its
+    // "No call" swatch is what names the yellow across CFT073's row, and that
+    // row is half the figure's content: the strain that takes the detour has no
+    // genotype at the sites inside the span it does not carry.
+
+    // The pill goes INSIDE the variant lane, over the three rows the filter
+    // leaves empty, rather than above it: the gene track is the top lane, so a
+    // callout lifted clear of the record lands on the gene labels the figure
+    // needs. The empty rows are the one piece of genuinely blank canvas here,
+    // and they are blank for the reason the callout is about.
+    annotations: [
+      {
+        type: 'text',
+        text: 'One record: the 7.1 kb of K12 that CFT073 replaces with 75 bp',
+        fontSize: 18,
+        maxWidth: 340,
+        anchor: {
+          track: PGGB_VARIANTS_TRACK,
+          locus: 'chr:1,000,300',
+          fracY: 0.62,
+        },
+      },
+      {
+        type: 'arrow',
+        fromAnchor: {
+          track: PGGB_VARIANTS_TRACK,
+          locus: 'chr:1,000,300',
+          fracY: 0.62,
+          dy: -32,
+        },
+        anchor: {
+          track: PGGB_VARIANTS_TRACK,
+          locus: 'chr:1,000,300',
+          fracY: 0.13,
+        },
+      },
     ],
   },
   // Carriage as a lane rather than as a drawer field. The figure above answers
