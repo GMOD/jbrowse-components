@@ -13,6 +13,7 @@ into one color-coded row per cell type from a single track, adapter, and fetch.
 
 - `wget` and htslib (`bgzip`, `tabix`)
 - `node`, for the [JBrowse CLI](/docs/cli)
+- `python3`, for the [127-epigenome build](#reproduce-it-end-to-end) only
 
 On Debian/Ubuntu, `apt install wget tabix` covers `wget` and htslib; `node`
 comes from [nodejs.org](https://nodejs.org/).
@@ -77,7 +78,9 @@ The merged output is coordinate-sorted, so indexing it is just `bgzip` plus
 no autoSql schema, and no chrom.sizes file. To skip the build entirely, the
 finished 9-cell-type file is also hosted as a bigBed at
 `https://jbrowse.org/demos/chromhmm/wgEncodeBroadHmm.multirow.bb`, which carries
-the same column names in its embedded autoSql.
+the same column names in its embedded autoSql: swap the adapter below for a
+[`BigBedAdapter`](/docs/config/bigbedadapter) pointed at that URL and the rest
+of the track is unchanged.
 
 ## Configure the multi-row feature display
 
@@ -178,14 +181,53 @@ Two more track-menu actions turn the painting into a comparison:
 
 The same recipe scales to the
 [Roadmap Epigenomics](https://egg2.wustl.edu/roadmap/web_portal/chr_state_learning.html)
-15-state model across 127 epigenomes. The only difference is 127 input files and
-a longer `rowOrder`. Because the multi-row display fetches and lays out one
-file, 127 epigenomes is still one track, one adapter, one fetch, not 127 tracks.
+15-state model across 127 epigenomes. The only difference upstream is 127 input
+files. Because the multi-row display fetches and lays out one file, 127
+epigenomes is still one track, one adapter, one fetch, not 127 tracks.
 
 This track also fills in the `legend` slot, because the Roadmap file's state
 names are mnemonics (`12_EnhBiv`, `14_ReprPCWk`) and the auto-derived key would
 show them as they are. Fifteen `{label, color}` entries spell them out and fix
-their order at 1 to 15 rather than by how much of each is on screen.
+their order at 1 to 15 rather than by how much of each is on screen. The merged
+127-epigenome file is hosted, so the whole track is:
+
+```json
+{
+  "type": "FeatureTrack",
+  "trackId": "roadmap_chromhmm_multirow_hg19",
+  "name": "ChromHMM chromatin state (Roadmap, 127 epigenomes)",
+  "assemblyNames": ["hg19"],
+  "category": ["Roadmap Epigenomics", "Chromatin state"],
+  "adapter": {
+    "type": "BigBedAdapter",
+    "uri": "https://jbrowse.org/demos/chromhmm/roadmap_15state_127epigenomes.bb"
+  },
+  "displays": [
+    {
+      "type": "LinearMultiRowFeatureDisplay",
+      "partitionField": "cellType",
+      "legend": [
+        { "label": "1 Active TSS", "color": "rgb(255,0,0)" },
+        { "label": "2 Flanking active TSS", "color": "rgb(255,69,0)" },
+        { "label": "3 Transcribed 5'/3' flank", "color": "rgb(50,205,50)" },
+        { "label": "4 Strong transcription", "color": "rgb(0,128,0)" },
+        { "label": "5 Weak transcription", "color": "rgb(0,100,0)" },
+        { "label": "6 Genic enhancer", "color": "rgb(194,225,5)" },
+        { "label": "7 Enhancer", "color": "rgb(255,255,0)" },
+        { "label": "8 ZNF genes / repeats", "color": "rgb(102,205,170)" },
+        { "label": "9 Heterochromatin", "color": "rgb(138,145,208)" },
+        { "label": "10 Bivalent TSS", "color": "rgb(205,92,92)" },
+        { "label": "11 Flanking bivalent", "color": "rgb(233,150,122)" },
+        { "label": "12 Bivalent enhancer", "color": "rgb(189,183,107)" },
+        { "label": "13 Repressed Polycomb", "color": "rgb(128,128,128)" },
+        { "label": "14 Weak repressed Polycomb", "color": "rgb(192,192,192)" },
+        { "label": "15 Quiescent / low", "color": "rgb(255,255,255)" }
+      ],
+      "height": 700
+    }
+  ]
+}
+```
 
 Those colors are what the two blocks below are read by: red active TSS, yellow
 enhancer and green transcription in the upper one, grey Polycomb in the lower,
@@ -193,10 +235,11 @@ speckled olive where the same bases are bivalent.
 
 <Figure src="/img/chromhmm.png" caption="127 Roadmap epigenomes over HOXA with 500 kb of flank, one row each, ordered by Cluster rows by similarity so the dendrogram is in the sidebar. Boxed and labeled: the anterior genes HOXA1 to HOXA7, and the posterior HOXA9 to HOXA13. The clustering splits the rows in two, one block opening the cluster and one holding both boxes repressed."/>
 
-At that row count `rowOrder` is 127 lines of config whose only job is to keep
-related tissues adjacent, which is exactly what **Cluster rows by similarity**
-derives from the data. Leave `rowOrder` out and cluster instead when the
-grouping you want depends on the locus rather than on a fixed publication order.
+That config has no `rowOrder`, which is the other thing that changes at this
+scale. It would be 127 lines whose only job is to keep related tissues adjacent,
+and **Cluster rows by similarity** derives that from the data at whatever locus
+is in view. Leave it out and cluster instead when the grouping you want depends
+on the locus rather than on a fixed publication order.
 
 ## Reproduce it end to end
 
@@ -212,6 +255,34 @@ npx --yes serve chromhmm_build/jbrowse2 # then open the printed URL
 It downloads the nine segmentation BEDs, merges them into the `cellType`-tagged
 BED above, bgzips and tabixes it, downloads JBrowse, and writes the
 `config.json` from the section above, opening on the HOXA cluster.
+
+[`build_chromhmm_roadmap.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_chromhmm_roadmap.sh)
+builds the 127-epigenome track by the same steps, and ends in the same `bgzip`
+plus `tabix -p bed`:
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_chromhmm_roadmap.sh
+EIDS=E003,E116,E123,E127 bash build_chromhmm_roadmap.sh
+npx --yes serve chromhmm_roadmap_build/jbrowse2
+```
+
+`EIDS` picks a subset, here the four Roadmap re-analyses of the ENCODE lines the
+first track uses, which finishes in minutes. Leave it out for all 127 and the
+run takes about twenty minutes and wants ~12 GB of scratch. Every table it needs
+is one Roadmap publishes: the row labels come from `EID_metadata.tab`, the row
+order from that file's `GROUP` and `EID` columns, and the state colors from
+`colormap_15_coreMarks.tab`, since the segmentations themselves are BED4 and
+carry no color at all.
+
+127 epigenomes is 5.25 GB of merged text and still does not need a bigBed. The
+tabix index covers genomic bins rather than records, so stacking 127 rows into
+the same coordinates barely grows it, and the compressed file lands smaller than
+a bigBed of the same records while building in a fraction of the time. What a
+bigBed buys is bytes per view, and mostly when zoomed in: about a tenth as many
+at 20 kb, about half at the megabase scale this track is read at, against a 15%
+larger file and a second binary to install. The hosted copy above is a bigBed
+holding those same records, so either format loads the track with nothing else
+in it changing.
 
 ## See also
 

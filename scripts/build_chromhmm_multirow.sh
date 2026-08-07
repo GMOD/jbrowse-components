@@ -23,36 +23,43 @@ mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 APP=jbrowse2   # relative to $OUTDIR, so the [ -f ] guard resolves after the cd
 
-# ── Fetch the nine per-cell-type Broad HMM segmentation BEDs ──────────────────
+# ── The nine cell types, once ────────────────────────────────────────────────
+# `<UCSC filename token>:<canonical ENCODE label>`, in the order the rows are
+# drawn in. This one list decides which files are fetched, the label each row
+# gets, and the `rowOrder` written into config.json. It used to live in three
+# places that had to agree: a recursive wget over the whole UCSC directory, a
+# case statement mapping filename to label, and rowOrder typed out again in the
+# heredoc. A tenth file appearing upstream would have been pulled in by the
+# crawl with no label to give it.
 UCSC=http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHmm
-ls wgEncodeBroadHmm*HMM.bed.gz >/dev/null 2>&1 \
-  || wget -q -r -np -nd -A 'wgEncodeBroadHmm*HMM.bed.gz' "$UCSC/"
+CELL_TYPES=(
+  Gm12878:GM12878
+  H1hesc:H1-hESC
+  K562:K562
+  Hepg2:HepG2
+  Huvec:HUVEC
+  Hmec:HMEC
+  Hsmm:HSMM
+  Nhek:NHEK
+  Nhlf:NHLF
+)
+
+bed_file() { echo "wgEncodeBroadHmm${1%%:*}HMM.bed.gz"; }
+
+for entry in "${CELL_TYPES[@]}"; do
+  f=$(bed_file "$entry")
+  [ -f "$f" ] || wget -q -O "$f" "$UCSC/$f"
+done
 
 # ── Concatenate into one BED9 + a trailing `cellType` column, coordinate-sorted
-# Each UCSC filename token maps to its canonical ENCODE cell-line label, which is
-# what becomes a row label and what `rowOrder` in the config references.
-cell_type() {
-  case "$1" in
-  wgEncodeBroadHmmGm12878HMM.bed.gz) echo GM12878 ;;
-  wgEncodeBroadHmmH1hescHMM.bed.gz) echo H1-hESC ;;
-  wgEncodeBroadHmmK562HMM.bed.gz) echo K562 ;;
-  wgEncodeBroadHmmHepg2HMM.bed.gz) echo HepG2 ;;
-  wgEncodeBroadHmmHuvecHMM.bed.gz) echo HUVEC ;;
-  wgEncodeBroadHmmHmecHMM.bed.gz) echo HMEC ;;
-  wgEncodeBroadHmmHsmmHMM.bed.gz) echo HSMM ;;
-  wgEncodeBroadHmmNhekHMM.bed.gz) echo NHEK ;;
-  wgEncodeBroadHmmNhlfHMM.bed.gz) echo NHLF ;;
-  *) echo "unexpected file $1" >&2 && return 1 ;;
-  esac
-}
-
 # The `#`-prefixed defline names the columns, so the adapter reads them from the
 # file and the track config needs no `columnNames`. It is written outside the
 # sort so it stays the first line.
 {
   printf '#chrom\tchromStart\tchromEnd\tname\tscore\tstrand\tthickStart\tthickEnd\titemRgb\tcellType\n'
-  for f in wgEncodeBroadHmm*HMM.bed.gz; do
-    zcat "$f" | awk -v c="$(cell_type "$f")" 'BEGIN{OFS="\t"} {print $0, c}'
+  for entry in "${CELL_TYPES[@]}"; do
+    zcat "$(bed_file "$entry")" \
+      | awk -v c="${entry##*:}" 'BEGIN{OFS="\t"} {print $0, c}'
   done | sort -k1,1 -k2,2n
 } > wgEncodeBroadHmm.multirow.bed
 
@@ -76,7 +83,12 @@ cp wgEncodeBroadHmm.multirow.bed.gz wgEncodeBroadHmm.multirow.bed.gz.tbi "$APP"/
 # which of them partitions the rows; itemRgb paints each feature its state color
 # automatically. The CLI can't set partitionField/rowOrder, so the track is
 # written straight into config.json.
-cat > "$APP"/config.json <<'JSON'
+#
+# `rowOrder` is substituted from CELL_TYPES rather than typed out a second time.
+# The placeholder is a real JSON string so the heredoc still parses on its own,
+# which is what scripts/check-build-scripts.py validates it as.
+ROW_ORDER=$(printf '"%s", ' "${CELL_TYPES[@]#*:}")
+sed "s|\"@ROW_ORDER@\"|${ROW_ORDER%, }|" > "$APP"/config.json <<'JSON'
 {
   "assemblies": [
     {
@@ -113,10 +125,7 @@ cat > "$APP"/config.json <<'JSON'
         {
           "type": "LinearMultiRowFeatureDisplay",
           "partitionField": "cellType",
-          "rowOrder": [
-            "GM12878", "H1-hESC", "K562", "HepG2", "HUVEC",
-            "HMEC", "HSMM", "NHEK", "NHLF"
-          ],
+          "rowOrder": ["@ROW_ORDER@"],
           "height": 200
         }
       ]
