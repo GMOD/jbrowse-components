@@ -113,11 +113,19 @@ colors = dict(zip(cell_types, data.uns["cell_type_colors"]))
 # Rows sort by lineage, then by the order the map lists that lineage's labels
 # in, so naive sits beside memory. A label the map does not know keeps its
 # category position and lands after every label it does.
+#
+# The fallback position comes from `category_index`, not from
+# `cell_types.index(ct)`. `dict.get` evaluates its default eagerly, so that
+# lookup ran for every label rather than only for an unmapped one, and CPython
+# empties a list for the duration of its own `sort()`: the key function raised
+# `ValueError: 'CD4 Naive' is not in list` on the first comparison and the
+# script died before writing a single subadapter.
 order = {name: i for i, name in enumerate(LINEAGE)}
+category_index = {name: i for i, name in enumerate(cell_types)}
 cell_types.sort(
     key=lambda ct: (
         GROUP_ORDER.index(LINEAGE[ct]) if ct in LINEAGE else len(GROUP_ORDER),
-        order.get(ct, cell_types.index(ct)),
+        order.get(ct, category_index[ct]),
     )
 )
 

@@ -83,7 +83,8 @@ space and needing none.
 ## Loading the BigWigs
 
 One `MultiQuantitativeTrack` holds the whole set, one `BigWigAdapter` subadapter
-per cell type, each carrying the row's `name`, `color`, and `group`:
+per cell type, each carrying the row's `name`, `color`, and `group`. The
+figure's nine rows are nine such entries; here are the first three:
 
 ```json
 {
@@ -192,7 +193,7 @@ attributes of the store, written by the build step:
       "displayDefaults": {
         "defaultRendering": "multirowdensity",
         "minScore": 0,
-        "maxScore": 4,
+        "maxScore": 2,
         "height": 420
       }
     }

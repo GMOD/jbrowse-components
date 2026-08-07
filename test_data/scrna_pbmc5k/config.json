@@ -136,7 +136,7 @@
       "displayDefaults": {
         "defaultRendering": "multirowdensity",
         "minScore": 0,
-        "maxScore": 4,
+        "maxScore": 2,
         "height": 420
       }
     },
@@ -151,15 +151,6 @@
         "subadapters": [
           {
             "type": "BigWigAdapter",
-            "name": "CD4 Memory",
-            "group": "T cell",
-            "color": "#1f77b4",
-            "bigWigLocation": {
-              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD4_Memory.bw"
-            }
-          },
-          {
-            "type": "BigWigAdapter",
             "name": "CD4 Naive",
             "group": "T cell",
             "color": "#ff7f0e",
@@ -169,11 +160,11 @@
           },
           {
             "type": "BigWigAdapter",
-            "name": "CD8 Memory",
+            "name": "CD4 Memory",
             "group": "T cell",
-            "color": "#279e68",
+            "color": "#1f77b4",
             "bigWigLocation": {
-              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD8_Memory.bw"
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD4_Memory.bw"
             }
           },
           {
@@ -187,20 +178,11 @@
           },
           {
             "type": "BigWigAdapter",
-            "name": "CD14 Mono",
-            "group": "Myeloid",
-            "color": "#aa40fc",
+            "name": "CD8 Memory",
+            "group": "T cell",
+            "color": "#279e68",
             "bigWigLocation": {
-              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD14_Mono.bw"
-            }
-          },
-          {
-            "type": "BigWigAdapter",
-            "name": "CD16 Mono",
-            "group": "Myeloid",
-            "color": "#8c564b",
-            "bigWigLocation": {
-              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD16_Mono.bw"
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD8_Memory.bw"
             }
           },
           {
@@ -210,15 +192,6 @@
             "color": "#e377c2",
             "bigWigLocation": {
               "uri": "https://jbrowse.org/demos/scatac_pbmc5k/MAIT.bw"
-            }
-          },
-          {
-            "type": "BigWigAdapter",
-            "name": "Memory B",
-            "group": "B cell",
-            "color": "#b5bd61",
-            "bigWigLocation": {
-              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/Memory_B.bw"
             }
           },
           {
@@ -237,6 +210,33 @@
             "color": "#aec7e8",
             "bigWigLocation": {
               "uri": "https://jbrowse.org/demos/scatac_pbmc5k/Naive_B.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Memory B",
+            "group": "B cell",
+            "color": "#b5bd61",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/Memory_B.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD14 Mono",
+            "group": "Myeloid",
+            "color": "#aa40fc",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD14_Mono.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD16 Mono",
+            "group": "Myeloid",
+            "color": "#8c564b",
+            "bigWigLocation": {
+              "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD16_Mono.bw"
             }
           },
           {

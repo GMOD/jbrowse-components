@@ -338,14 +338,27 @@ MIN_MAPQ = 255
 # holds one window per chromosome and two markers on one chromosome would
 # collide. Ensembl-style refName (what the BAM uses) plus the UCSC name the
 # assembly and the other tracks use.
+#
+# Every window is named after the gene it is meant to cover, and the GRCh38 span
+# of that gene is written beside it, because a window that misses its marker
+# costs nothing visible: the rows still draw, they are just empty, and the
+# genome-wide pileup above them looks the same either way. Two of these did miss
+# -- chr1 covered FCGR2A rather than FCGR3A, and chr19 sat 3 Mb short of LILRA4.
 LOCI = [
-    ("1", "chr1", 161_505_000, 161_530_000),
+    # FCGR3A, CD16 Mono (chr1:161,541,738-161,550,968, - strand)
+    ("1", "chr1", 161_535_000, 161_555_000),
+    # CD8A, CD8 T (chr2:86,784,455-86,808,396, - strand)
     ("2", "chr2", 86_780_000, 86_820_000),
+    # PPBP, Platelet (chr4:73,985,966-73,988,276, - strand)
     ("4", "chr4", 73_980_000, 74_000_000),
+    # IL7R, CD4 T (chr5:35,852,695-35,879,603, + strand)
     ("5", "chr5", 35_855_000, 35_880_000),
+    # MS4A1, B (chr11:60,455,752-60,470,752, + strand)
     ("11", "chr11", 60_452_000, 60_475_000),
+    # LYZ, CD14 Mono (chr12:69,348,381-69,354,237, + strand)
     ("12", "chr12", 69_340_000, 69_360_000),
-    ("19", "chr19", 51_370_000, 51_390_000),
+    # LILRA4, pDC (chr19:54,333,185-54,339,162, - strand)
+    ("19", "chr19", 54_328_000, 54_345_000),
 ]
 
 # Row order, group and color, the same palette the UMAP and the pooled rows use.
@@ -456,7 +469,11 @@ with ProcessPoolExecutor(max_workers=int(os.environ["WORKERS"])) as pool:
     for ucsc, block in pool.map(scan, jobs):
         ref = refs[ucsc]
         matrix[:, ref["binOffset"] : ref["binOffset"] + ref["numBins"]] = block
-        print(f'  {ucsc}: {int((block > 0).any(1).sum())} cells with coverage')
+        covered = int((block > 0).any(1).sum())
+        print(f"  {ucsc}: {covered} cells with coverage")
+        # A window that misses its marker draws exactly like one whose marker is
+        # off in every cell, so it has to be an error rather than a row of white
+        assert covered, f"{ucsc} window covers no cell; check its LOCI entry"
 
 coarse_refs, coarse_total = layout(COARSE)
 coarse = np.zeros((ncells, coarse_total), dtype=np.float32)
