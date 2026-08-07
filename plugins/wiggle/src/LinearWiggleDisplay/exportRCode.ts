@@ -80,7 +80,7 @@ export function exportRCode(self: LinearWiggleDisplayModel): RTrackFragment {
   return wiggleFragment({
     trackId,
     trackName,
-    uri: firstUri(adapter.bigWigLocation?.uri, adapter.uri),
+    uri: firstUri(adapter.bigWigLocation, adapter.uri),
     isDensity: self.isDensityMode,
     isLine: self.renderingType === 'line',
     useBicolor: self.useBicolor,

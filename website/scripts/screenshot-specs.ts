@@ -7,6 +7,7 @@ export type {
   CommonSpecFields,
   ComposeSpec,
   EmbeddedSpec,
+  RExportSpec,
   ScreenshotAction,
   ScreenshotSpec,
   ScreenshotStage,
@@ -39,6 +40,7 @@ import { pangenomeCactusSpecs } from './specs/pangenome_cactus.ts'
 import { popgenSpecs } from './specs/popgen.ts'
 import { qcSpecs } from './specs/qc.ts'
 import { qtlSpecs } from './specs/qtl.ts'
+import { rexportSpecs } from './specs/rexport.ts'
 import { scatacSpecs } from './specs/scatac.ts'
 import { scrnaSpecs } from './specs/scrna.ts'
 import { svSpecs } from './specs/sv.ts'
@@ -87,6 +89,7 @@ export const specs: ScreenshotSpec[] = [
   ...cookbookSpecs,
   ...embeddedSpecs,
   ...jbrowseImgSpecs,
+  ...rexportSpecs,
 ]
 
 // jbrowse.org hosts the same test_data/ configs (and the cgiab/hpylori demos)
@@ -178,6 +181,22 @@ export function validateSpecs(list: ScreenshotSpec[] = specs) {
         if (!seen.has(part)) {
           problems.push(`${spec.name}: part "${part}" is not a spec`)
         }
+      }
+    } else if (spec.mode === 'rexport') {
+      // Same failure shape as a compose part naming nothing: the committed PNG
+      // is still on disk, so a renamed or deleted source spec reads as a
+      // current figure rather than as a broken one.
+      const source = list.find(s => s.name === spec.from)
+      if (!source) {
+        problems.push(`${spec.name}: from "${spec.from}" is not a spec`)
+      } else if (source.mode !== 'url') {
+        problems.push(
+          `${spec.name}: from "${spec.from}" is a ${source.mode} spec; only a url spec carries the ?config=&session= this re-exports`,
+        )
+      } else if (!/[?&]session=spec-/.test(source.url)) {
+        problems.push(
+          `${spec.name}: from "${spec.from}" has no session spec in its url`,
+        )
       }
     } else if (spec.mode === 'embedded') {
       const ignored = (

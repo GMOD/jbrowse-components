@@ -54,6 +54,11 @@ export interface Opts {
   showGridlines?: boolean
   trackLabels?: TrackLabelMode
   refseq?: boolean
+  // Emit the view's reproducible R script (the same one the browser's "Export R
+  // script" menu item downloads) instead of an SVG. Selected by an `--out`
+  // ending in `.R`, and linear-only — the comparative and circular views have no
+  // R export. See renderLinear.
+  emitR?: boolean
   mode?: ViewMode
   // The raw parsed CLI entries, in argv order. Comparative modes (dotplot /
   // synteny) build their stacked assemblies + per-level synteny tracks from this

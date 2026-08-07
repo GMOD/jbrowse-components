@@ -116,7 +116,7 @@ export function exportRCode(
   return variantMatrixFragment({
     trackId,
     trackName,
-    uri: firstUri(adapter.vcfGzLocation?.uri, adapter.uri),
+    uri: firstUri(adapter.vcfGzLocation, adapter.uri),
     minMaf: self.minorAlleleFrequencyFilter,
     maxMissing: self.maxMissingnessFilter,
     phased: self.renderingMode === 'phased',

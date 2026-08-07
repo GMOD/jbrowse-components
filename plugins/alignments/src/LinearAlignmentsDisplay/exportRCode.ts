@@ -41,7 +41,7 @@ function referenceFastaUri(self: LinearAlignmentsDisplayModel): string {
   const seq = assembly
     ? (getConf(assembly, ['sequence', 'adapter']) as SequenceAdapterConf)
     : undefined
-  return seq?.fastaLocation?.uri ?? seq?.uri ?? ''
+  return firstUri(seq?.fastaLocation, seq?.uri)
 }
 
 export interface AlignmentsRParams {
@@ -596,13 +596,13 @@ export function exportRCode(
   self: LinearAlignmentsDisplayModel,
 ): RTrackFragment[] {
   const { trackId, trackName, adapter } = getTrackRMeta<AdapterConf>(self)
-  const isCram = adapter.type === 'CramAdapter' || !!adapter.cramLocation?.uri
+  const isCram = adapter.type === 'CramAdapter' || !!firstUri(adapter.cramLocation)
   return alignmentsFragments({
     trackId,
     trackName,
     uri: firstUri(
-      adapter.bamLocation?.uri,
-      adapter.cramLocation?.uri,
+      adapter.bamLocation,
+      adapter.cramLocation,
       adapter.uri,
     ),
     isCram,

@@ -62,6 +62,6 @@ export function exportRCode(self: LinearVariantDisplayModel): RTrackFragment {
   return variantFragment({
     trackId,
     trackName,
-    uri: firstUri(adapter.vcfGzLocation?.uri, adapter.uri),
+    uri: firstUri(adapter.vcfGzLocation, adapter.uri),
   })
 }

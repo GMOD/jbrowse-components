@@ -75,8 +75,8 @@ export function geneFragment(p: GeneRParams): RTrackFragment {
  * a filename check) so a BED track is parsed as BED, not misread as GFF. */
 export function exportRCode(self: LinearBasicDisplayModel): RTrackFragment {
   const { trackId, trackName, adapter } = getTrackRMeta<AdapterConf>(self)
-  const gffUri = firstUri(adapter.gffGzLocation?.uri, adapter.gffLocation?.uri)
-  const bedUri = firstUri(adapter.bedGzLocation?.uri, adapter.bedLocation?.uri)
+  const gffUri = firstUri(adapter.gffGzLocation, adapter.gffLocation)
+  const bedUri = firstUri(adapter.bedGzLocation, adapter.bedLocation)
   const shorthand = adapter.uri ?? ''
   const isBed =
     bedUri !== '' || (gffUri === '' && /\.bed(\.gz)?$/i.test(shorthand))

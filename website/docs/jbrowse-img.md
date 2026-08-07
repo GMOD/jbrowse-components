@@ -1060,7 +1060,7 @@ Options:
   --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
   --session         Path to session JSON (or "-" for stdin)
   --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --hub)
-  --out             Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
+  --out             Output file path (SVG, PNG, or PDF by extension). A ".R" path writes the view's reproducible ggplot2 script instead of an image (linear view only). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
   --width           Width of output in pixels [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
   --defaultSession  Use default session from config [default: false]
@@ -1088,6 +1088,8 @@ Examples:
       Render from config with a JSON tracks file
   jb2export --fasta ref.fa.gz --cytobands cytobands.bed --bigwig signal.bw --loc chr1 --out out.svg
       Render BigWig with cytobands
+  jb2export --fasta ref.fa --bigwig signal.bw --loc chr1:1-50000 --out fig.R
+      Emit an editable ggplot2 script instead of an image, then Rscript fig.R
 
 Track options: --bam, --cram, --bigwig, --multiwig, --vcfgz, --gffgz, --hic, --bigbed, --bedgz
 
@@ -1107,7 +1109,7 @@ Options:
   --config              Path to JBrowse config.json (path, URL, or "-" for stdin)
   --session             Path to session JSON (or "-" for stdin)
   --loc                 Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --hub)
-  --out                 Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
+  --out                 Output file path (SVG, PNG, or PDF by extension). A ".R" path writes the view's reproducible ggplot2 script instead of an image (linear view only). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
   --width               Width of output in pixels [default: 1500]
   --noRasterize         Disable rasterization of pileup/coverage [default: false]
   --defaultSession      Use default session from config [default: false]
@@ -1151,7 +1153,7 @@ Options:
   --config              Path to JBrowse config.json (path, URL, or "-" for stdin)
   --session             Path to session JSON (or "-" for stdin)
   --loc                 Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --hub)
-  --out                 Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
+  --out                 Output file path (SVG, PNG, or PDF by extension). A ".R" path writes the view's reproducible ggplot2 script instead of an image (linear view only). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
   --width               Width of output in pixels [default: 1500]
   --noRasterize         Disable rasterization of pileup/coverage [default: false]
   --defaultSession      Use default session from config [default: false]
@@ -1199,7 +1201,7 @@ Options:
   --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
   --session         Path to session JSON (or "-" for stdin)
   --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --hub)
-  --out             Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
+  --out             Output file path (SVG, PNG, or PDF by extension). A ".R" path writes the view's reproducible ggplot2 script instead of an image (linear view only). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
   --width           Width of output in pixels [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
   --defaultSession  Use default session from config [default: false]

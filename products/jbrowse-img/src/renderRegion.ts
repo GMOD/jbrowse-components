@@ -4,6 +4,7 @@ import { renderToSvg as renderCircularToSvg } from '@jbrowse/plugin-circular-vie
 import { renderToSvg as renderDotplotToSvg } from '@jbrowse/plugin-dotplot-view'
 import { renderToSvg as renderSyntenyToSvg } from '@jbrowse/plugin-linear-comparative-view'
 import {
+  buildRScript,
   fetchResults,
   renderToSvg as renderLinearToSvg,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -331,11 +332,23 @@ const renderLinear: ModeRenderer = async ctx => {
   // before anything below reads the view's position — and before `--loc`, which
   // is an explicit instruction from the command line and so wins over whatever
   // the session's init navigated to.
-  const view = await readyView(
-    (session.views[0] ??
-      session.addView('LinearGenomeView', {})) as LinearGenomeViewModel,
-    ctx,
-  )
+  //
+  // A --spec wins over both, matching the comparative renderers: it describes a
+  // view to construct. Its fields ARE the LGV's `init` snapshot (assembly / loc
+  // / tracks / highlight), so `&session=spec-…` lifted out of a jbrowse URL
+  // renders unchanged — no translation, and nothing here to keep in step with
+  // InitState as it grows.
+  const view = ctx.spec
+    ? await addInitView<LinearGenomeViewModel>(
+        ctx,
+        'LinearGenomeView',
+        initFromSpec(ctx.spec),
+      )
+    : await readyView(
+        (session.views[0] ??
+          session.addView('LinearGenomeView', {})) as LinearGenomeViewModel,
+        ctx,
+      )
 
   if (loc) {
     const { name } = data.assembly
@@ -359,10 +372,10 @@ const renderLinear: ModeRenderer = async ctx => {
         !!data.aggregateTextSearchAdapters?.length,
       )
     }
-  } else if (!sessionParam && !defaultSession) {
+  } else if (!sessionParam && !defaultSession && !ctx.spec) {
     throw new Error(
       'No --loc specified (e.g. --loc chr1:1-10000 or --loc all). ' +
-        'Alternatively pass --session or --defaultSession.',
+        'Alternatively pass --session, --defaultSession or --spec.',
     )
   } else if (!view.displayedRegions.length) {
     // Without --loc the session IS the region, so a session that reaches here
@@ -414,6 +427,16 @@ const renderLinear: ModeRenderer = async ctx => {
       configTrackCategory(data.tracks, trackId),
       opts,
     )
+  }
+
+  // --out fig.R: the same script the browser's "Export R script" downloads, off
+  // the same fully-loaded view. Checked before renderToSvg because the two are
+  // alternative emitters for one view, not a render plus a side effect —
+  // rasterizing an SVG nobody asked for would just be slow.
+  if (opts.emitR) {
+    const script = await buildRScript(view)
+    throwOnDisplayError(view.tracks)
+    return script
   }
 
   const svg = await renderLinearToSvg(view, {
@@ -518,9 +541,17 @@ const renderCircular: ModeRenderer = async ctx => {
 // to a circular one, which always shows the whole assembly. main.ts warns about
 // the reverse — comparative flags in a linear run — so say this here rather than
 // leave the non-linear direction silent.
-function warnLinearOnlyOptions(mode: ViewMode, opts: Opts) {
+export function warnLinearOnlyOptions(mode: ViewMode, opts: Opts) {
   if (mode === 'linear') {
     return
+  }
+  // Not a warning like the rest: R export is the whole point of the run, and
+  // only the linear view has one. Falling back to SVG would write markup into a
+  // file named .R, which fails later and somewhere else.
+  if (opts.emitR) {
+    throw new Error(
+      `--out *.R exports the linear view's R script; a ${mode} view has no R export`,
+    )
   }
   const ignored = [
     opts.showTracks?.length ? '--track' : '',
@@ -544,7 +575,16 @@ const modeRenderers: Record<ViewMode, ModeRenderer> = {
 }
 
 export async function renderRegion(opts: Opts) {
+  // Parsed before the config is built: a spec's `sessionTracks` are track
+  // configs the app would add to the session, and the view names them by
+  // trackId, so they have to be in the config the model is created from.
+  // Prepended, the same order the session publishes them in (session tracks
+  // shadow a config track of the same id).
+  const parsed = opts.spec ? parseSpec(opts.spec) : undefined
   const data = readData(opts, await resolveConfigObject(opts))
+  if (parsed?.sessionTracks.length) {
+    data.tracks = [...parsed.sessionTracks, ...data.tracks]
+  }
   const model = createModel(data)
   // Set the theme on the session up front: worker-side label/feature colors
   // (e.g. gene-description blue) are baked at feature-fetch time from
@@ -554,7 +594,7 @@ export async function renderRegion(opts: Opts) {
   if (opts.themeName) {
     model.session.setThemeName(opts.themeName)
   }
-  const spec = opts.spec ? parseSpec(opts.spec) : undefined
+  const spec = parsed?.view
   // an explicit subcommand wins; otherwise a --spec selects its mode from the
   // view type, falling back to the default linear view
   const mode = opts.mode ?? (spec ? specMode(spec) : 'linear')

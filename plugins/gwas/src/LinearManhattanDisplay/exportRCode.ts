@@ -80,7 +80,7 @@ export function exportRCode(self: LinearManhattanDisplayModel): RTrackFragment {
   return manhattanFragment({
     trackId,
     trackName,
-    uri: firstUri(adapter.bedGzLocation?.uri, adapter.uri),
+    uri: firstUri(adapter.bedGzLocation, adapter.uri),
     scoreColumn: adapter.scoreColumn ?? DEFAULT_SCORE_COLUMN,
     scoreTransform: adapter.scoreTransform,
     color: self.color,

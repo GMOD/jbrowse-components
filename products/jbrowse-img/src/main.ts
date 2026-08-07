@@ -26,13 +26,15 @@ import {
   getTrackLabels,
   ignoredComparativeOptions,
   knownOptions,
+  wantsRScript,
 } from './options.ts'
 
 const scriptName = 'jb2export'
 
 // Write the rendered SVG: to stdout when no --out, else by extension. .png/.pdf
 // route through rsvg-convert (.pdf via the `-f pdf` flag); anything else is the
-// raw SVG. Both raster formats honor --width so PDF matches PNG.
+// raw SVG. Both raster formats honor --width so PDF matches PNG. `.R` is not an
+// image at all — the result is already R source, so it is written verbatim.
 function writeOutput(
   result: string,
   outFile: string | undefined,
@@ -42,7 +44,9 @@ function writeOutput(
     console.log(result)
   } else {
     const lower = outFile.toLowerCase()
-    if (lower.endsWith('.png')) {
+    if (wantsRScript(outFile)) {
+      fs.writeFileSync(outFile, result)
+    } else if (lower.endsWith('.png')) {
       convert(result, { out: outFile, width: String(width) })
     } else if (lower.endsWith('.pdf')) {
       convert(result, { out: outFile, width: String(width) }, ['-f', 'pdf'])
@@ -138,7 +142,9 @@ async function main() {
     }
 
     const width = getNumber(rest, 'width', DEFAULT_WIDTH)
+    const outFile = getString(rest, 'out')
     const result = await renderRegion({
+      emitR: wantsRScript(outFile),
       fasta: getString(rest, 'fasta'),
       aliases: getString(rest, 'aliases'),
       assembly: getString(rest, 'assembly'),
@@ -171,7 +177,7 @@ async function main() {
       trackList,
     })
 
-    writeOutput(result, getString(rest, 'out'), width)
+    writeOutput(result, outFile, width)
   }
 }
 

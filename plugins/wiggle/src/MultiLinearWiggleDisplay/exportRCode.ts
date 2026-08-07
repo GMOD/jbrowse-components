@@ -1,4 +1,5 @@
 import {
+  firstUri,
   getTrackRMeta,
   rName,
   rStr,
@@ -6,13 +7,16 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 
 import type { MultiLinearWiggleDisplayModel } from './model.ts'
-import type { RTrackFragment } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  RFileLocation,
+  RTrackFragment,
+} from '@jbrowse/plugin-linear-genome-view'
 
 interface SubadapterConf {
   type?: string
   source?: string
   name?: string
-  bigWigLocation?: { uri?: string; localPath?: string }
+  bigWigLocation?: RFileLocation
   uri?: string
 }
 
@@ -29,10 +33,6 @@ function baseName(uri: string) {
   return dot === -1 ? file : file.slice(0, dot)
 }
 
-function locationUri(loc?: { uri?: string; localPath?: string }) {
-  return loc?.uri ?? loc?.localPath
-}
-
 // Map each subtrack source name -> its BigWig uri, mirroring the adapter's own
 // source-name derivation (source || name || filename) so the map keys line up
 // with the display's `sources`.
@@ -41,7 +41,11 @@ function buildSourceUriMap(adapter: MultiAdapterConf) {
   const subs = adapter.subadapters
   if (subs?.length) {
     for (const sub of subs) {
-      const uri = locationUri(sub.bigWigLocation) ?? sub.uri
+      // firstUri, not a local reader: a subadapter location carries the same
+      // localPath / relative-uri-plus-baseUri cases the top-level ones do, and
+      // the hand-rolled version here missed both — a multi-wiggle over a
+      // url-loaded config emitted bare filenames R could not open.
+      const uri = firstUri(sub.bigWigLocation, sub.uri)
       if (uri) {
         map.set(sub.source || sub.name || baseName(uri), uri)
       }

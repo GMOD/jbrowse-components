@@ -79,7 +79,7 @@ export function exportRCode(
     return undefined
   }
   const { trackId, trackName, adapter } = getTrackRMeta<AdapterConf>(self)
-  const uri = firstUri(adapter.hicLocation?.uri, adapter.uri)
+  const uri = firstUri(adapter.hicLocation, adapter.uri)
   return uri
     ? hicFragment({
         trackId,

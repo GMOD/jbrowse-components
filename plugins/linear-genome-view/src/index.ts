@@ -207,7 +207,11 @@ export { renderToSvg } from './LinearGenomeView/svgcomponents/SVGLinearGenomeVie
 export { default as SVGTracks } from './LinearGenomeView/svgcomponents/SVGTracks.tsx'
 export { default as SVGView } from './LinearGenomeView/svgcomponents/SVGView.tsx'
 export { default as SVGRowHeader } from './LinearGenomeView/svgcomponents/SVGRowHeader.tsx'
-export { assembleRScript, resolveHelpers } from './LinearGenomeView/exportR.ts'
+export {
+  assembleRScript,
+  buildRScript,
+  resolveHelpers,
+} from './LinearGenomeView/exportR.ts'
 export {
   firstUri,
   getTrackRMeta,
@@ -215,7 +219,10 @@ export {
   rStr,
   safeVarName,
 } from './LinearGenomeView/rexportShared.ts'
-export type { RTrackMeta } from './LinearGenomeView/rexportShared.ts'
+export type {
+  RFileLocation,
+  RTrackMeta,
+} from './LinearGenomeView/rexportShared.ts'
 export { default as SVGHighlights } from './LinearGenomeView/svgcomponents/SVGHighlights.tsx'
 export { default as SVGHighlightsOverlay } from './LinearGenomeView/svgcomponents/SVGHighlightsOverlay.tsx'
 export { default as ExportSvgDialog } from './LinearGenomeView/components/ExportSvgDialog.tsx'

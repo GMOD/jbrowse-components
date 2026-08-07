@@ -1,10 +1,15 @@
 import { getConf } from '@jbrowse/core/configuration'
+import {
+  awaitSvgReady,
+  awaitViewInitialized,
+} from '@jbrowse/core/svg/svgReady'
 import { getSession, saveAs } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
 import { HELPERS } from './rHelpers.generated.ts'
 import { rName, rStr, safeVarName } from './rexportShared.ts'
 
+import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 import type { LinearGenomeViewModel } from './model.ts'
 import type { ExportRCodeOptions, RTrackFragment } from './types.ts'
 
@@ -81,7 +86,15 @@ async function resolveRefNameMap(
     const map = await assemblyManager.getRefNameMapForAdapter(
       getConf(track, 'adapter'),
       model.assemblyNames[0],
-      { sessionId: getRpcSessionId(model) },
+      // the TRACK, not the view: getRpcSessionId walks *up* the tree for a node
+      // carrying rpcSessionId, and that node is BaseTrackModel. Handed the view
+      // it reached the root and threw on every call, so the catch below turned
+      // every alias map into `undefined` and the emitted script read a file by
+      // its canonical refName — silently zero rows for any track whose file
+      // spells the contig differently. `exportRRefnames.test.ts` did not catch
+      // it: it hands assembleRScript a refNameMap directly, so it covers the
+      // codegen and never this resolution.
+      { sessionId: getRpcSessionId(track) },
     )
     const diff: Record<string, string> = {}
     for (const [canonical, name] of Object.entries(map)) {
@@ -309,20 +322,52 @@ ggsave("jbrowse_region.pdf", p, width = 12, height = ${totalHeight})
 `
 }
 
+/**
+ * The R script for the current view, as a string.
+ *
+ * Split out of `exportR` so a headless caller gets the script without a DOM:
+ * `jb2export --out fig.R` builds the same LGV model the browser does (main-thread
+ * RPC, no worker) and needs the text, not a download. That also makes every
+ * gallery figure reproducible from one command — `website/scripts/specs/rexport.ts`
+ * renders them by running this output through `Rscript`, so a codegen change
+ * moves the committed figure instead of silently disagreeing with it.
+ */
+export async function buildRScript(
+  model: LinearGenomeViewModel,
+  opts: ExportRCodeOptions = {},
+) {
+  // Same gate the SVG export waits on, for the same reason (see
+  // core/svg/svgReady): a fragment builder reads loaded display state, so
+  // reading it mid-fetch is the off-screen-renderer hazard that module exists
+  // to name. Interactively this is already satisfied — you export what you are
+  // looking at — but headlessly (`jb2export --out fig.R`) nothing else forces
+  // it: the Hi-C panel needs `effectiveResolution`, which arrives with the
+  // .hic header, so an unawaited export emitted "no exportable tracks are
+  // shown" for a track that was merely still loading.
+  await awaitViewInitialized(model)
+  await Promise.all(
+    model.tracks.flatMap(track =>
+      track.displays.map((display: { svgReady?: boolean }) =>
+        'svgReady' in display ? awaitSvgReady(display as SvgExportable) : null,
+      ),
+    ),
+  )
+  const regions = getViewRegions(model)
+  const fragments = await collectFragments(model, opts)
+  return regions.length > 0 && fragments.length > 0
+    ? assembleRScript(regions, fragments)
+    : '# No exportable tracks are shown. Add a supported track (e.g. a BigWig quantitative track) and try again.'
+}
+
 /** Build the R script for the current view and download it. */
 export async function exportR(
   model: LinearGenomeViewModel,
   opts: ExportRCodeOptions = {},
 ) {
-  const regions = getViewRegions(model)
-  const fragments = await collectFragments(model, opts)
-  const script =
-    regions.length > 0 && fragments.length > 0
-      ? assembleRScript(regions, fragments)
-      : '# No exportable tracks are shown. Add a supported track (e.g. a BigWig quantitative track) and try again.'
-
   saveAs(
-    new Blob([script], { type: 'text/plain;charset=utf-8' }),
+    new Blob([await buildRScript(model, opts)], {
+      type: 'text/plain;charset=utf-8',
+    }),
     opts.filename || 'jbrowse_view.R',
   )
 }

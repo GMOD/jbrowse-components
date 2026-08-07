@@ -274,5 +274,51 @@ export interface ComposeSpec extends BaseSpecFields {
   direction?: 'vertical' | 'horizontal'
 }
 
+// A gallery figure for the "Export R script" feature: `jb2export --out <tmp>.R`
+// builds the view headlessly and emits its reproducible ggplot2 script, then
+// `Rscript` runs that script to produce the PNG. So the committed figure is the
+// output of the real exporter, and a codegen change moves the image instead of
+// silently disagreeing with it — which is exactly what the hand-made originals
+// could not do (they were force-added past .gitignore, absent from figures.lock,
+// and reproducible only from prose in the gallery README).
+//
+// Deliberately NOT a browser capture: the script is a pure function of the view
+// config, so driving jb2export is both faster and closer to what a reader runs.
+// It is also why each figure's docs page can print the exact command that made
+// it.
+//
+// The size comes from the script's own trailing `ggsave` (fixed width, height
+// derived from the panel stack), untouched — the figure a reader sees is then
+// literally what they get by running the download unmodified.
+export interface RExportSpec extends BaseSpecFields {
+  mode: 'rexport'
+  // 'rexport/<basename>' — writes static/img/rexport/<basename>.png
+  name: string
+  // The name of an existing `url` spec whose session this re-exports. The
+  // generator decodes that spec's `?config=…&session=spec-…` and hands both to
+  // jb2export, so the R figure is the SAME view the site already shows rendered
+  // by JBrowse — the two images are directly comparable, and the R gallery
+  // cannot drift onto data no other figure uses.
+  //
+  // It also means these specs carry no dataset of their own: retargeting the
+  // browser figure retargets its R twin, and a spec deleted out from under one
+  // is a validateSpecs failure rather than a stale render.
+  from: string
+  // Extra jb2export args appended after --config/--session, for the rare figure
+  // that needs a display setting the source spec doesn't carry (e.g. the R
+  // gallery shows a strand-colored pileup where the browser figure is showing
+  // something else). Prefer changing nothing.
+  extraArgs?: string[]
+  // R packages the figure needs beyond the always-required ggplot2/patchwork.
+  // The spec is skipped, with the missing package named, rather than failing
+  // the run — strawr and the Bioconductor stack are a big ask for a routine
+  // regen, and a skipped figure keeps its committed PNG.
+  rPackages?: string[]
+}
+
 export type BrowserScreenshotSpec = SessionUrlSpec | EmbeddedSpec
-export type ScreenshotSpec = BrowserScreenshotSpec | CliSpec | ComposeSpec
+export type ScreenshotSpec =
+  | BrowserScreenshotSpec
+  | CliSpec
+  | ComposeSpec
+  | RExportSpec
