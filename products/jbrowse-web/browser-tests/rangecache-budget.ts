@@ -101,7 +101,7 @@ const tally = () => {
   return t
 }
 const urls = new Map<string, string>()
-const isData = (url: string) => /jb2bench_link/.test(url)
+const isData = (url: string) => url.includes('jb2bench_link')
 
 async function hookNetwork(session: CDPSession) {
   await session.send('Network.enable').catch(() => {})
