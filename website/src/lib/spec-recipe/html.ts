@@ -98,6 +98,14 @@ function panels(recipe: Recipe): Panel[] {
           },
         ]
       : []),
+    {
+      label: 'With an agent',
+      body: [
+        note('Hand this to a coding agent. It rebuilds the figure above headlessly, and the session file is then the thing to edit — swap an adapter <code>uri</code> for your own file and rerun.'),
+        copyableBlock(recipe.agentCommand, 'spec-json'),
+        note('<a href="/docs/agents/">Using JBrowse with AI agents</a> covers the rest: <a href="/docs/agents_hosted_data/">hosted genomes</a> to point it at, and <a href="/docs/agents_capture/">why waiting for the render</a> is the part that goes wrong.'),
+      ].join(''),
+    },
   ]
 }
 

@@ -39,6 +39,9 @@ export interface Recipe {
   specJson: string
   steps: RecipeStep[]
   python?: string
+  // the `npx @jbrowse/capture` invocation that rebuilds this figure, for an
+  // agent asked to make one like it
+  agentCommand: string
   // spec fields with no verified click-path yet (surfaced by check-spec-recipes)
   unmapped: string[]
 }
@@ -210,6 +213,28 @@ function viewSteps(
   return { steps, unmapped }
 }
 
+// The shell command that rebuilds this figure headlessly.
+//
+// A figure's `config=` is written as the live link needs it — usually relative
+// to the instance serving it (`test_data/volvox/config.json`) — and a command
+// run from anywhere else has to resolve that against the instance's own origin
+// or fetch nothing. The spec goes to a file rather than inline: it is a whole
+// JSON document, and quoting one into a shell argument is the step an agent
+// most reliably gets wrong.
+function agentCommandFor(base: string, config: string, specJson: string) {
+  const configUrl = new URL(config, base).href
+  const instance = base.endsWith('/') ? base : `${base}/`
+  return [
+    "cat > session.json <<'JSON'",
+    specJson,
+    'JSON',
+    '',
+    `npx @jbrowse/capture --instance ${instance} \\`,
+    `  --config ${configUrl} \\`,
+    '  --session session.json -o figure.png',
+  ].join('\n')
+}
+
 // Opening a figure in Desktop writes a real session to disk, so the name it
 // carries is the one the reader lives with — in the session UI, and in the
 // recent-sessions list once autosaves are shown. Every figure link says
@@ -237,11 +262,12 @@ export function buildRecipe(
   if (!decoded) {
     return undefined
   }
-  const { config, spec } = decoded
+  const { base, config, spec } = decoded
   const views = spec.views ?? []
   const collected = views.map(view => viewSteps(view, config))
   const firstView = views[0]
   const desktopWebUrl = withSessionName(liveUrl, figureName)
+  const specJson = JSON.stringify(spec, null, 2)
   return {
     liveUrl,
     desktopWebUrl,
@@ -249,9 +275,10 @@ export function buildRecipe(
     // one the app parses cannot drift apart
     desktopUrl: toProtocolUrl(desktopWebUrl),
     config,
-    specJson: JSON.stringify(spec, null, 2),
+    specJson,
     steps: collected.flatMap(c => c.steps),
     python: firstView ? pythonSnippet(firstView, config) : undefined,
+    agentCommand: agentCommandFor(base, config, specJson),
     unmapped: [...new Set(collected.flatMap(c => c.unmapped))],
   }
 }
