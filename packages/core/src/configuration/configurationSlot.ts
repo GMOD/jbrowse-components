@@ -43,42 +43,17 @@ const slotTypes = {
   color: { model: types.string, fallbackDefault: 'black' },
   integer: { model: types.integer, fallbackDefault: 1 },
   number: { model: types.number, fallbackDefault: 1 },
-  // a number that may be unset (`undefined`), so a display can distinguish "not
-  // explicitly set" (fall back to a computed/auto value) from an explicit
-  // number — e.g. a drag-resized track height. Defaults to `undefined`.
-  //
-  // There is still deliberately no `maybeString`/etc.: nullability is only
-  // warranted when the value space has no spare value to spend on "unset", and
-  // a type carrying a meaningful special should use that instead.
+  // The `maybe*` types spend `undefined` on "not explicitly set", which is the
+  // one value no config can spell and so the only reliable way to say it — a
+  // computed/auto fallback (a drag-resized track height), or the inherit
+  // sentinel every promotable slot needs (pair with `promotedBase`, and read
+  // with `resolveConf`).
   maybeNumber: { model: types.maybe(types.number) },
-  // a boolean that may be unset (`undefined`). Its reason to exist is
-  // `promotable` slots (see promotableDefaults.ts): a plain boolean spends its
-  // `false`-or-`true` default as the "inherit" signal, so a track can't pin that
-  // value back over an opposite session default. A boolean has no spare in-band
-  // value for "unset" — exactly the `maybeNumber` justification above — so an
-  // undefined-defaulted boolean lets `undefined` mean "inherit" while both `true`
-  // and `false` stay customizable. Pair with `promotedBase` for the value `undefined`
-  // resolves to. Read promotable slots with `resolveConf` (never raw), which
-  // always yields a concrete boolean.
   maybeBoolean: { model: types.maybe(types.boolean) },
-  // a color that may be unset (`undefined`), for a slot whose default isn't a
-  // color at all but "decide from the data" — a feature's own BED itemRgb, say.
-  //
-  // This type was once rejected on the grounds that a `color` slot has spare
-  // in-band values to spend on that role (`''` = no color, THEME_DERIVED_COLOR =
-  // follow the theme). Those specials work because they mean genuinely
-  // *non-color* things. "Not explicitly set" is different: it has to stay
-  // distinguishable from every real color, and `stripDefault` erases a slot
-  // value equal to its default — so with a concrete default, writing that exact
-  // color is indistinguishable from writing nothing, and the auto behavior
-  // silently claims it. That made `color: 'goldenrod'` unexpressible, the one
-  // color a user is most likely to write, because it *is* the documented
-  // default. `undefined` is the only value no config can spell, which is
-  // exactly the `maybeNumber` justification above.
+  // for a slot whose unset state means "decide from the data" — a feature's own
+  // BED itemRgb, say
   maybeColor: { model: types.maybe(types.string) },
-  // the `frozen` analogue of the above, for an object-valued slot that may be
-  // unset — alignments `colorBy`. Same justification: an object slot has no
-  // spare in-band value for "unset" that a config couldn't also spell.
+  // object-valued, e.g. alignments `colorBy`
   maybeFrozen: { model: types.maybe(types.frozen()) },
   string: { model: types.string, fallbackDefault: '' },
   text: { model: types.string, fallbackDefault: '' },

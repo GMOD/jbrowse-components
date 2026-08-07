@@ -87,22 +87,10 @@ const OVERRIDABLE_HOOK_KEYS = [
  * come along regardless: they're what marks an entry as a slot rather than a
  * nested sub-schema, per `isSlotDefinitionEntry`.)
  *
- * This used to be a flat `{...base, ...child}`, i.e. an override replaced the
- * slot's whole definition. Overriding a default meant restating the slot, and
- * every field left out was silently lost. Surveying all 32 real overrides in the
- * repo, 30 changed nothing but `defaultValue`/`description`, and three were
- * losing base metadata by accident: `LinearManhattanDisplay`'s `scatterPointSize`
- * dropped `advanced` (so it showed in the basic config editor there and nowhere
- * else), `LGVSyntenyDisplay`'s `mouseover` dropped `contextVariable` (the jexl
- * callback's parameter names), and eight slots dropped the base's `description`,
- * leaving the config editor and the generated docs blank for them.
- *
- * Merging also removes the sharpest edge for promotable slots: an override that
- * forgot `promotedBase` produced a slot that threw "not promotable" on every
- * `resolveConf` read. Now it inherits it, and a subclass that really wants a
- * plain slot states `promotedBase: undefined` — which works *because* this is a
- * spread: a stated `undefined` overwrites the base's value where an omitted key
- * would inherit it.
+ * A subclass that really wants a plain slot states `promotedBase: undefined`,
+ * which works *because* this is a spread: a stated `undefined` overwrites the
+ * base's value where an omitted key would inherit it. The four cases are pinned
+ * by the "baseConfiguration slot override merge" tests.
  */
 function mergeSchemaDefinition(
   baseDefinition: ConfigurationSchemaDefinition,
