@@ -1479,8 +1479,8 @@
     "name": "multiway_synteny/ecoli_one_vs_all",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-04T17:33:57.827Z",
-    "hash": "784b372709e92e60e7a27c6edb3be1b484540238"
+    "reviewedAt": "2026-08-07T16:14:34.930Z",
+    "hash": "d4cbe23d07db073275df36d36fe88be80f2848f4"
   },
   "popgen/genotype_matrix_in2lt": {
     "name": "popgen/genotype_matrix_in2lt",
@@ -1596,8 +1596,8 @@
     "name": "pangenome/maf",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-06T06:00:57.873Z",
-    "hash": "8f32a898f42121382bc7f36311f175b5d03bd047"
+    "reviewedAt": "2026-08-07T16:15:24.975Z",
+    "hash": "60351a681e532c4c22a7424b7ec04b701b750f2b"
   },
   "phylop_ncbi_refseq_tp53": {
     "name": "phylop_ncbi_refseq_tp53",
@@ -1926,8 +1926,8 @@
     "name": "pangenome/local_subgraph",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-07T03:41:40.490Z",
-    "hash": "72571088512d93a9eb683e8d31fe6be83694c4bc"
+    "reviewedAt": "2026-08-07T16:15:21.519Z",
+    "hash": "4991a938e7bb0247a4a303294ed5c5260e538e9a"
   },
   "pangenome/rgfa_subgraph_launch": {
     "name": "pangenome/rgfa_subgraph_launch",
@@ -2010,22 +2010,22 @@
     "name": "pangenome/hprc_c4_subgraph",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-07T03:40:02.663Z",
-    "hash": "850d7c4402634732231845f6093691ff907edbb0"
+    "reviewedAt": "2026-08-07T16:14:46.818Z",
+    "hash": "27960d709658263ad0ea82fe88ec10e5146cb47b"
   },
   "pangenome/hprc_graph_vs_callset": {
     "name": "pangenome/hprc_graph_vs_callset",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-07T03:40:16.780Z",
-    "hash": "e807ca78419b4631be743f41d96e3567ac63c6f4"
+    "reviewedAt": "2026-08-07T16:15:01.015Z",
+    "hash": "a5424fd3c6f0d88896be6ff63ba5605ce89d66e3"
   },
   "pangenome/hprc_mhc_anchored": {
     "name": "pangenome/hprc_mhc_anchored",
     "status": "good",
-    "note": "Absorbed pangenome/hprc_node_menu: the force half now also shows the right-click route and the band it writes, so the MHC subgraph is drawn once in that tutorial rather than twice.",
-    "reviewedAt": "2026-08-07T03:41:08.038Z",
-    "hash": "e0802b539ec0c354fee04bcf060d030a29bad600"
+    "note": "",
+    "reviewedAt": "2026-08-07T16:15:16.440Z",
+    "hash": "bf4fce7b72d28b224409f995e2656795b6de87fc"
   },
   "pangenome/hprc_mhc_sample_rows": {
     "name": "pangenome/hprc_mhc_sample_rows",
@@ -2036,10 +2036,10 @@
   },
   "pangenome/pggb_synteny": {
     "name": "pangenome/pggb_synteny",
-    "status": "bad",
-    "note": "some ribbons are darker than others weirdly. ",
-    "reviewedAt": "2026-08-07T03:42:05.119Z",
-    "hash": "1c4be7a9746407df822cd4f382982a7708f4bff5"
+    "status": "answered",
+    "note": "Not aesthetic - a real drawing bug, measured rather than guessed. The pale ribbons composite to alpha 0.2 and the dark ones to exactly 1-(1-0.2)^2: two coats of the same ribbon. markReciprocalDuplicates recognised a restatement only when both directions stated a homology as ONE block, and wfmash chains K12/NCTC86 as 12 blocks from K12 and 14 from NCTC86, so a 610 kb block scored 0.32 against either fragment covering it and all three drew. It now tests containment on both axes plus diagonal agreement at the shared end, keeping the longer chaining (82a1fbcd64). Cost measured too and written into the docstring: 0.037% of covered bp, 154 slivers, median 41 bp, every one abutting a kept block.",
+    "reviewedAt": "2026-08-07T18:45:29.599Z",
+    "hash": "6bc2845d165de4c15f807df94781ae8ff0fcd0f6"
   },
   "pangenome/rgfa_allele_inventory": {
     "name": "pangenome/rgfa_allele_inventory",
@@ -2100,9 +2100,9 @@
   "pangenome/hprc_lpa_kiv2": {
     "name": "pangenome/hprc_lpa_kiv2",
     "status": "bad",
-    "note": "mention that this is a heart/cardio risk factor that is polymorphic in the population in a red text blurb",
-    "reviewedAt": "2026-08-07T03:41:06.017Z",
-    "hash": "8829d3b795b7bbbaf2ac0f1e4af1e3ac3e9f1484"
+    "note": "the term 'hiv-2' is not visible in the screenshot, may be useful if there was a repeat track or specific location-of-kiv-2 track. also, reduce height of graph view",
+    "reviewedAt": "2026-08-07T16:45:13.178Z",
+    "hash": "2fc8844200e7581ecd8fdb589fae56cf9d4f11db"
   },
   "pangenome/rgfa_segment_neighbourhood": {
     "name": "pangenome/rgfa_segment_neighbourhood",
@@ -2178,8 +2178,8 @@
     "name": "dog10k-wolfdog-ancestry",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-05T03:43:41.580Z",
-    "hash": "38c99710801094942c6e7510ce1cec64e386a4de"
+    "reviewedAt": "2026-08-07T16:14:30.232Z",
+    "hash": "dadccf32bb3fdd86d99f007d593571bdef608e78"
   },
   "mcscan_anchors": {
     "name": "mcscan_anchors",
@@ -2206,8 +2206,8 @@
     "name": "pangenome/hprc_amylase_graph",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-07T03:40:00.976Z",
-    "hash": "40c474bca72ccd6c2150f1c1e0b66af5433c4536"
+    "reviewedAt": "2026-08-07T16:14:45.182Z",
+    "hash": "a86fec4be69a9fceaa99bc0673db7dd929b2ec83"
   },
   "dog10k-igf1-haplotype": {
     "name": "dog10k-igf1-haplotype",
@@ -2274,17 +2274,17 @@
   },
   "pangenome/rgfa_paa_bubble": {
     "name": "pangenome/rgfa_paa_bubble",
-    "status": "bad",
-    "note": "some ribbons darker than others, do not want this",
-    "reviewedAt": "2026-08-07T03:42:52.609Z",
-    "hash": "6e3ba664b20feb9f5f9852ad5bc1a5b947541de7"
+    "status": "answered",
+    "note": "Same fix as pangenome/pggb_synteny (82a1fbcd64): the dark ribbons were drawn twice, compositing to exactly 1-(1-0.2)^2 where the pale ones sit at 0.2. After it, 0 double-coat pixels in three of four bands and 19 of 3000 in the fourth, which are genuine crossings.",
+    "reviewedAt": "2026-08-07T18:45:29.845Z",
+    "hash": "4c9e3152be62121dd9832902db7aa3e7b7ec3bca"
   },
   "pangenome/hprc_cfhr_deletion": {
     "name": "pangenome/hprc_cfhr_deletion",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-07T03:40:07.837Z",
-    "hash": "b713ef59ed7cabcbf58db3d9f467827acc75c7f8"
+    "reviewedAt": "2026-08-07T16:14:48.522Z",
+    "hash": "1beef946a1d693d6d8d2d146ca8b368139713835"
   },
   "dog10k-fgf4-retrogene": {
     "name": "dog10k-fgf4-retrogene",
@@ -2296,8 +2296,8 @@
     "name": "pangenome/graph_context",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-07T03:39:51.034Z",
-    "hash": "7130ddce0a53d9094929016eb2f446d40be00cfe"
+    "reviewedAt": "2026-08-07T16:14:41.482Z",
+    "hash": "4071d61069aef89ae5c818d1b6d736b9b4b6165a"
   },
   "dog10k-size-fst-scan": {
     "name": "dog10k-size-fst-scan",
@@ -2401,8 +2401,8 @@
     "name": "tcga/cohort_cnv_recurrence_subtype",
     "status": "good",
     "note": "the arrow renders on top of the label. unclear why 16q is \"bad\", does it include HER2? put the ERRB2 annotation label to the right ALL THREE DONE. ARROW OVER LABEL: the callout emitted its text pill first and its arrow second, and the overlay draws in array order, so the shaft ran across the words. A tail has to start INSIDE the label to leave from it (the pill's width is only known at capture time, so no dx dodges it), which makes draw order the fix: the arrow goes first now and the opaque pill covers its own tail. ERBB2 LABEL RIGHT: it sits right of the locus, over chr18-22 where that row is flat, and the tail leaves from the pill's left edge instead of its right. 16q: no, ERBB2 is 17q12, which is the callout above it -- 16q loss is the HR+/HER2- signature the way 17q gain is HER2+'s. The label now reads \"16q loss (CDH1 arm)\": CDH1 is at 16q22.1, and it is the gene this tutorial's mutation figure is about, so the callout names something a reader can do anything with rather than an arm coordinate.",
-    "reviewedAt": "2026-08-02T20:05:35.490Z",
-    "hash": "2d21840c49987b074db2ca8f8feaf3510dc308bc"
+    "reviewedAt": "2026-08-07T16:17:30.745Z",
+    "hash": "eb66e6ec25d096ccf2c043cb25694252bebbd7d9"
   },
   "scrna/marker_panel": {
     "name": "scrna/marker_panel",
@@ -2464,8 +2464,8 @@
     "name": "pangenome/hprc_chm13_allele",
     "status": "good",
     "note": "HEIGHT FIXED AT THE SOURCE, and the fourth screenshot declined with the measurement. The graph pane is 420px rather than the 600px ceiling it pinned: paneHeight is a new GraphGenomeView prop (plugin commit 449bae4, published bundle 35eccae5db30, fixtures repinned) that replaces MAX_CANVAS_HEIGHT for one view while the MIN_CANVAS_HEIGHT hover floor still wins, with three tests. The drawing scales 24.6% to 16.1%, the boxed 142 kb arc is still what the eye lands on, the chain stays legible, and the figure is 2630px rather than 2990. bubbleSpread compress was tried first and is worse (the subject node becomes a 20px box at the end of a thin chain). The fourth panel was rendered too, an hs1 pane over the last 1.3 Mb of chr17, and it is nearly empty: CHM13 entered at rank 61 so almost no segments are credited to it. Widening the existing hs1 pane was already settled in an earlier round (tried at 360 and 627 kb; the LINE enrichment is a mean, not a shape, and past ~400 kb the RepeatMasker bigBed hits its byte budget).",
-    "reviewedAt": "2026-08-07T03:40:09.009Z",
-    "hash": "aa78d3ddda173b5c8be1ce5c038a14b60be5c0ef"
+    "reviewedAt": "2026-08-07T16:14:50.296Z",
+    "hash": "17967bd87fcaf2a6717353d408265007757828bf"
   },
   "dotplot_self_chry": {
     "name": "dotplot_self_chry",
@@ -2518,10 +2518,10 @@
   },
   "pangenome_cactus/builders": {
     "name": "pangenome_cactus/builders",
-    "status": "bad",
-    "note": "the red callouts are a little wordy. try to prune if possible. use technical terminology if it helps or other complementary info/tracks",
-    "reviewedAt": "2026-08-07T03:39:46.694Z",
-    "hash": "71403849e25b9779a51392563df42155ec03cbb1"
+    "status": "answered",
+    "note": "Callouts cut from three sentences each to one clause each.",
+    "reviewedAt": "2026-08-07T18:45:40.283Z",
+    "hash": "04d55948ec200602b05311e3ba8e83cc1ca70ecf"
   },
   "pangenome/long_reads": {
     "name": "pangenome/long_reads",
@@ -2576,8 +2576,8 @@
     "name": "pangenome/graph_resolution",
     "status": "good",
     "note": "layoutQuality 3 landed: both halves draw as smooth arcs, the pggb beads read as beads, and the caption sits inside the arc",
-    "reviewedAt": "2026-08-07T03:39:55.040Z",
-    "hash": "175bc0d6293edd2bc0faa30086014c2ec13dc37e"
+    "reviewedAt": "2026-08-07T16:14:43.389Z",
+    "hash": "51ed9d302142d6796f53afefe7daefcea675b7e4"
   },
   "cancer_sv/realigned_reads": {
     "name": "cancer_sv/realigned_reads",
@@ -2749,17 +2749,17 @@
   },
   "cancer_sv/multihop_reads": {
     "name": "cancer_sv/multihop_reads",
-    "status": "bad",
-    "note": "gene track height could be increased",
-    "reviewedAt": "2026-08-07T03:36:10.226Z",
-    "hash": "bc049384d4c0b038ac26d56dec4d54b71b8690ac"
+    "status": "answered",
+    "note": "Gene lanes raised; they were slicing TRHDE in half.",
+    "reviewedAt": "2026-08-07T18:45:40.553Z",
+    "hash": "03115d8468aededb98473d92736d813071b9e093"
   },
   "cnv1000g/genome_summary_bins": {
     "name": "cnv1000g/genome_summary_bins",
-    "status": "bad",
-    "note": "dont understand the two different levels (top and bottom) what is the point",
-    "reviewedAt": "2026-08-07T03:36:58.623Z",
-    "hash": "64a06522697577daf214a1ea997c650fb7061f4d"
+    "status": "answered",
+    "note": "Each half now says which slot it is (1cc1e3d1a9) - the two levels were the same track at two summarization tiers with nothing on the frame saying so.",
+    "reviewedAt": "2026-08-07T18:45:39.767Z",
+    "hash": "679170dddc2409b44d520032aef5eb43d7705486"
   },
   "dtu/atp5f1c_isoform_switch": {
     "name": "dtu/atp5f1c_isoform_switch",
@@ -2791,17 +2791,17 @@
   },
   "homoeolog_synteny/wheat_vs_oat": {
     "name": "homoeolog_synteny/wheat_vs_oat",
-    "status": "bad",
-    "note": "consider deleting...unclear why we need individual and multipart figs for these",
-    "reviewedAt": "2026-08-07T03:38:11.518Z",
-    "hash": "38d1ce45d1e7222731119cb66ae80ac3160287f4"
+    "status": "answered",
+    "note": "Both panels now carry the same callout, anchored by chromosome name rather than by pixel (anchor: {hLocus, vLocus}, scripts/dotplotAnchor.ts). Left, the two cells where wheat's 4A pairs with group 5 and group 7 - the 4AL/5AL and 4AL/7BS translocations. Right, one of oat's dozens of off-group cells. Cells picked off the data: 4A's links cluster at 600-645 Mb against 5B/5D's distal ends and 649-744 Mb against 7D's first 80 Mb. The duplicate standalone oat embed went in 82119ceec4, so the page carries one plot.",
+    "reviewedAt": "2026-08-07T18:43:48.101Z",
+    "hash": "91ac5a43631e77b6fcbd0edee1329e26719912c1"
   },
   "maf_hprc_pangenome": {
     "name": "maf_hprc_pangenome",
-    "status": "bad",
-    "note": "unclear what we are looking at. it just looks like bam or cram but it is pangenome. needs to communicate this better somehow. any better examples?",
-    "reviewedAt": "2026-08-07T03:38:56.300Z",
-    "hash": "bf1c281be93028f084991aa8bf5c5c2e667342ba"
+    "status": "answered",
+    "note": "It looked like a pileup for a reason: at 30 kb across, 464 grey bands with sparse mismatch ticks is exactly what a read pileup looks like, because ticks are the only ink the base rendering can put down at that width. Now rowIdentityMode heatmap, so each row is shaded by its identity to GRCh38 and an absent haplotype reads as white against blue rather than white against grey. A callout says what no rendering could: the rows are 464 people, and a white gap is one who has no sequence here.",
+    "reviewedAt": "2026-08-07T18:44:10.179Z",
+    "hash": "4e8184e52337fdf17fdc09124dbd621446052269"
   },
   "multiway_synteny/wheat_homoeolog_selection": {
     "name": "multiway_synteny/wheat_homoeolog_selection",
@@ -2812,17 +2812,17 @@
   },
   "pangenome/hprc_whole_chromosome": {
     "name": "pangenome/hprc_whole_chromosome",
-    "status": "bad",
-    "note": "are you happy with this figure? double check",
-    "reviewedAt": "2026-08-07T03:41:32.948Z",
-    "hash": "2208dd4c096844216e0e1859d4c4985c4e624a66"
+    "status": "answered",
+    "note": "No, and three things changed. The blank column was named only in the caption, as the centromere and 1q12 - which a reader has to already know and is not what the files say (bubbles ARE called across the centromere, 21 in the 124th Mb, 40 in the 125th). The continuous blank is 125,183,471-143,314,415, GRCh38's own heterochromatin gap on 1q, and the tier carries one node over it: bb_GRCh38#0#chr1_125178636, 18.65 Mb, which is the 18.7 Mb the graph pane already labels. That is on the image now, so the three lanes read as one picture. Collapsing the tier lane to one row was tried and reverted - it drew a solid bar across the gap.",
+    "reviewedAt": "2026-08-07T18:44:10.446Z",
+    "hash": "49ba83a1791f326373946ed1c82258139961eb26"
   },
   "pangenome/pggb_carriage": {
     "name": "pangenome/pggb_carriage",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-07T03:41:40.549Z",
-    "hash": "daa79ff5544e4dd59e9c1073dbe8c984e97de32b"
+    "status": "answered",
+    "note": "The spur IS visible in a linear view, and it needed no glyph and no new file: as an EVENT it has a reference address, and pggb -V already wrote it. tabix ecoli_pggb.vcf.gz chr:997575 is one record, 7,112 bp REF against a 93 bp ALT, CFT073 only. New figure pangenome/pggb_spur_linear draws it over the seven genes it removes with the MAF as control. Kept off THIS frame on purpose - a row reading 'CFT073 alone' above a figure whose point is that carriedBy says what the flattened lanes cannot argues with its own caption. On the dedupe: kept all three, each teaches something the others do not (carriedBy in the drawer; the layout trade; Launch view onto the carrying assembly).",
+    "reviewedAt": "2026-08-07T18:43:58.037Z",
+    "hash": "d3f56895c04498df0f47c87643470c9768cf7af4"
   },
   "pangenome/pggb_carriage_lane": {
     "name": "pangenome/pggb_carriage_lane",
@@ -2847,10 +2847,10 @@
   },
   "qc/callsets_at_smn": {
     "name": "qc/callsets_at_smn",
-    "status": "bad",
-    "note": "these tracks are just too chaotic. need more clarity.",
-    "reviewedAt": "2026-08-07T03:43:13.117Z",
-    "hash": "3d8ca47daacf6c6ff50b003e43f8cf825051299f"
+    "status": "answered",
+    "note": "Both callsets collapsed to one row each and the viewport cut to fit (e3549fdb91). Packed, DGV was eight rows of blue/red/brown boxes wall to wall - a mat with no shape, since no individual record is the subject - and the long-read lane spent its height on a per-record label unreadable at 2.5 Mb. Collapsed, each callset is one row of ink over the same axis, which is the only comparison being made: one is continuous and the other has a hole. The hole is named with an arrow anchored on the flagged block's own right edge.",
+    "reviewedAt": "2026-08-07T18:45:40.029Z",
+    "hash": "10790d731a6bdcd36f51ea669a52da14a676fdda"
   },
   "qc/smn_problematic_regions": {
     "name": "qc/smn_problematic_regions",
@@ -2861,10 +2861,10 @@
   },
   "qc/smn_vs_control": {
     "name": "qc/smn_vs_control",
-    "status": "bad",
-    "note": "look for improvements to figure. unclear what we are showing. need red text annotations if possible. zoom out fig 1 more, it is just 'all bad mappability' would be better to see 'island of badness'",
-    "reviewedAt": "2026-08-07T03:44:28.966Z",
-    "hash": "d1f55cfbd06126178e559ff163930d59a7635f08"
+    "status": "answered",
+    "note": "Red annotations added and the panels say what they show (9b225bf1e1). The zoom-out was NOT done, and the reason is measured rather than aesthetic: gnomAD coverage is under 12x continuously from 69.5 to 71.36 Mb, so the nearest edge is 410 kb past SMN1, and at 200 kb both panels trip the byte gate (4.61 Mb / 3.93 Mb) and lose the pileup entirely - the figure would lose the only lane that shows one read at a time. The island's edge went to qc/smn_problematic_regions instead, which carries the whole 2.5 Mb, and doing that turned up that the coverage recovers at ENCODE's boundary rather than GIAB's, 350 kb earlier.",
+    "reviewedAt": "2026-08-07T18:45:53.855Z",
+    "hash": "388af0aecc6221a1e294fd6dbd00a69286809d25"
   },
   "selection_pressure/lysozyme": {
     "name": "selection_pressure/lysozyme",
@@ -2879,5 +2879,19 @@
     "note": "",
     "reviewedAt": "2026-08-07T03:44:32.844Z",
     "hash": "186b20b7b4993250bd8c6ed15b1ca24f6637376d"
+  },
+  "dog10k-diet-genes": {
+    "name": "dog10k-diet-genes",
+    "status": "bad",
+    "note": "it may be useful to put the regular linearvariantdisplay above the multisamplevariantdisplay so users can see what type of feature everything is",
+    "reviewedAt": "2026-08-07T16:44:16.662Z",
+    "hash": "ca0ccd968559648da608b171bb28e741c3001bd0"
+  },
+  "dtu/dtu_colored_gene_glyph": {
+    "name": "dtu/dtu_colored_gene_glyph",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-07T16:14:32.776Z",
+    "hash": "acd21ffcda9093e68934e5603e68227d819ba15c"
   }
 }
