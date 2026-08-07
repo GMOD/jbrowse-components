@@ -138,6 +138,8 @@ explicit location slot, and derive the index location from it.
 - [BigWigAdapter](https://jbrowse.org/jb2/docs/config/bigwigadapter.md) —
   shorthands: uri, baseUri
 - [GCContentAdapter](https://jbrowse.org/jb2/docs/config/gccontentadapter.md)
+- [BgzipMafAdapter](https://jbrowse.org/jb2/docs/config/bgzipmafadapter.md) —
+  shorthands: uri, baseUri
 - [BgzipTaffyAdapter](https://jbrowse.org/jb2/docs/config/bgziptaffyadapter.md)
   — shorthands: uri, baseUri
 - [BigMafAdapter](https://jbrowse.org/jb2/docs/config/bigmafadapter.md)
