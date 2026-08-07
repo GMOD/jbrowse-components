@@ -16,8 +16,7 @@ multi-sample variant track with a sample-metadata TSV, and cluster the rows.
 
 ## Prerequisites
 
-To build the track:
-
+- nothing to read along. Everything below is for building the track yourself
 - the `UU_Cfam_GSD_1.0` dog assembly set up in JBrowse (UCSC calls it canFam4;
   its `chrom.sizes` is all this track needs, see the
   [assemblies guide](/docs/config_guides/assemblies))

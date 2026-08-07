@@ -16,8 +16,7 @@ way.
 
 ## Prerequisites
 
-To build the tracks:
-
+- nothing to read along. Everything below is for building the tracks yourself
 - the `UU_Cfam_GSD_1.0` dog assembly set up in JBrowse (UCSC calls it canFam4,
   see the [assemblies guide](/docs/config_guides/assemblies))
 - `bcftools` built with libcurl, `curl`, `python3`, and htslib (`tabix`)

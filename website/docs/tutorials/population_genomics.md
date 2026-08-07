@@ -16,8 +16,7 @@ population-genetic inference of its own.
 
 ## Prerequisites
 
-To build the tracks:
-
+- nothing to read along. Everything below is for building the tracks yourself
 - `curl`, and `node` for the [JBrowse CLI](/docs/cli)
 - [vcftools](https://vcftools.github.io/) - windowed Fst, π, and Tajima's D from
   a VCF

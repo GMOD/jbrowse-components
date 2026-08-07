@@ -15,8 +15,7 @@ and read crossovers straight off the track.
 
 ## Prerequisites
 
-To build the tracks:
-
+- nothing to read along. Everything below is for building the tracks yourself
 - the `hg38` assembly set up in JBrowse
   ([assemblies guide](/docs/config_guides/assemblies))
 - Java 8+, for hap-ibd

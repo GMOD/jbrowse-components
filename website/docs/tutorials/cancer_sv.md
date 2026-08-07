@@ -15,8 +15,7 @@ reconstruction against the reference as a synteny view.
 
 ## Prerequisites
 
-Nothing is needed to read along. To rebuild the data:
-
+- nothing to read along. Everything below is for rebuilding the data
 - [](/docs/cli)
 - [samtools](http://www.htslib.org/) (v1.21 or later) and
   [minimap2](https://github.com/lh3/minimap2)
