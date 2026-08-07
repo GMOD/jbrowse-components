@@ -103,13 +103,11 @@ An SNV VCF loads as an ordinary `VariantTrack`:
 }
 ```
 
-The multi-sample variant display draws one row per sample, and the rows keep the
-Dog10K IDs, which are the data's identity but say nothing to a reader. As in the
-other Dog10K tutorials, either mechanism relabels them without touching the VCF:
-the display's `layout` array for a handful of named animals (see
-[](/docs/tutorials/dog10k_svs)), or a `samplesTsvLocation` on the adapter for a
-panel large enough that a per-animal entry is not worth writing (see
-[Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection)).
+The display draws one row per sample, and the rows keep the Dog10K IDs, which
+say nothing to a reader. Either mechanism relabels them without touching the
+VCF: a `layout` array for named animals ([](/docs/tutorials/dog10k_svs)), or a
+`samplesTsvLocation` for a panel too large to write one entry each for
+([Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection)).
 
 Framing matters here. A SNV is one base wide however far you zoom out, so a
 whole-gene view of 490 of them is a field of ticks in which the interesting one
@@ -175,11 +173,8 @@ This needs no copy-number caller, and it carries its own check: the flanks have
 to come back out at two.
 
 Each window is 5 kb of depth stepped by 1 kb, so a call rests on 5 kb of
-evidence and is painted at 1 kb resolution. The width is what the counting noise
-sets: over the collection's own flanks, where the answer is two by construction,
-3.8% of 5 kb windows round off two against 13.7% of 2 kb ones, so a narrower
-window buys resolution by speckling the baseline. Sliding it buys the resolution
-without that.
+evidence and is painted at 1 kb resolution. A narrower window would buy that
+resolution by speckling the baseline, which sliding a wide one avoids.
 
 Callset depth is a different measurement from read depth, taken only where a
 variant was called, so the build script validates it rather than assuming. The
@@ -190,17 +185,16 @@ two agree at r = 0.92 with no bias. That painting is in the config as
 dogs have CRAMs is an accident of what the share published, so the picture
 invites a question about those breeds that the data cannot answer.
 
-Two lanes read below, each window colored by its rounded call and grey being two
-copies: named animals above, then all 1,987 canids clustered on their profiles,
-where the blue blocks to the right are deletions a few percent of them carry.
+Two lanes read below, each window colored by its rounded call with grey being
+two copies: named animals above, then all 1,987 canids clustered on their
+profiles.
 
 <Figure caption="Copy number over CYP1A2 and 185 kb around it, named animals above and the whole collection below. The expansion is a breed-level fact in some breeds and segregates one dog to the next in others." src="/img/dog10k-cyp1a2-cohort-copy-number.png" />
 
 The upper lane is whole groups, not picked animals: every Golden Retriever,
 Labrador Retriever and Boxer in the collection, plus the four wolves the figure
 above draws. Every Golden carries the expansion, every Boxer carries two copies,
-and the Labradors split one dog to the next: a genotype here is a breed-level
-fact in some breeds and segregating in others. Row labels come from the sample
+and the Labradors split one dog to the next. Row labels come from the sample
 column, the order from `rowOrder`. The wolves rest on callset depth alone, since
 none of the dogs with published reads is a wolf.
 

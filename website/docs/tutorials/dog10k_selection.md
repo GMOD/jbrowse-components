@@ -72,14 +72,11 @@ run of high windows on chr10 is one region's worth. At two megabases the same
 windows are drawn at their real width, against the neighbours that set the
 peak's scale.
 
-The rest of this tutorial takes the _IGF1_ peak rather than the taller one on
-chr10, because the next step needs a locus where there is something to draw per
-animal: _IGF1_ has a published shared haplotype, and a haplotype is what a
-genotype matrix shows.
-
 ## The locus
 
-_IGF1_ is a major determinant of body size in dogs: small breeds share a
+The rest of this tutorial takes the _IGF1_ peak rather than the taller one on
+chr10, because the next step needs a locus where there is something to draw per
+animal. _IGF1_ is a major determinant of body size in dogs: small breeds share a
 haplotype at the locus that large breeds largely lack
 ([Sutter et al. 2007](https://doi.org/10.1126/science.1137045)). Drawing that
 haplotype per animal rather than as an allele frequency shows how far along the
@@ -174,20 +171,14 @@ which sites actually separate the two size classes, 95 of the 606, spanning
 undifferentiated flank on each side. That flank is not padding. It is what the
 Fst lane needs in order to show a run rather than a level: framed on the
 differentiated sites alone, every point in view is high and nothing says where
-the signal starts or stops. Neither edge of the window is the gene's: _IGF1_ is
-41,495,479-41,567,874 and the haplotype runs 40 kb past it upstream and 44 kb
-past it downstream.
+the signal starts or stops.
 
 Clustering reads the region on screen, so where you run it matters as much as
-what you frame afterwards. Run it at the differentiated core and the estimator
-sees the separating columns; run it over the whole window and those columns are
+what you frame afterwards: over the whole window the separating columns are
 diluted by the flank around them. Zoom to the core, cluster there, then widen
-back out: the row order is kept, because it orders rows by name rather than
-being re-derived from what is in view.
-
-A session can say that instead of performing it. The display takes
-`clusterRegion` beside `runClustering`, so a link can open at the window you
-want to read and cluster on the locus you want the rows ordered by, which is
+back out, and the row order is kept because it orders rows by name rather than
+re-deriving from what is in view. A session can say that instead of performing
+it, since the display takes `clusterRegion` beside `runClustering`, which is
 what the figure below does.
 
 ## Reading it

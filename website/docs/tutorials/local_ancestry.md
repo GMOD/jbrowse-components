@@ -211,7 +211,7 @@ size: the small one is who, the big one is where.
 
 ## Reading the painting
 
-<Figure caption="Dog10K chr1 painted by FLARE against gray wolf and breed-dog panels, two rows per animal, in descending order of wolf fraction. Six of the eight held-out gray wolves paint near-solid wolf (orange); the wolfdogs below carry megabase blocks; the sweep breeds carry flecks, bar the Great Anglo-French Tricolour Hound's 11.4 Mb block; the German Shepherd lineage at the foot is solid dog." src="/img/dog10k-wolfdog-ancestry.png" />
+<Figure caption="Dog10K chr1 painted by FLARE against gray wolf and breed-dog panels, two rows per animal, in descending order of wolf fraction. Six of the eight held-out gray wolves paint near-solid wolf (orange), the wolfdogs below carry megabase blocks, the sweep breeds carry flecks, and the German Shepherd lineage at the foot is solid dog." src="/img/dog10k-wolfdog-ancestry.png" />
 
 Read each pair of rows as one animal's two chromosome copies. Wolf on one row
 and dog on the other is a heterozygous stretch; both orange is homozygous
@@ -230,12 +230,10 @@ other than recently, for the reason above: recombination has had few generations
 to break it up. A short one is weaker evidence and need not be a cross at all,
 since some variation was never sorted cleanly between the two panels in the
 first place, which is why block length is read before wolf fraction. The
-20th-century crosses are what the method can see; domestication is what it is
-blind to by construction. Both ends of the figure say so on their own: the
-held-out gray wolves paint near-solid orange, so the panels can tell wolf from
-dog where the difference is real, and the German Shepherd lineage at the foot
-paints solid dog, though it descends from wolves exactly as much as the Saarloos
-above it does.
+20th-century crosses are what the method can see, and domestication is what it
+is blind to by construction. The German Shepherd lineage at the foot paints
+solid dog though it descends from wolves exactly as much as the Saarloos above
+it does.
 
 One feature of the painting is not about the dogs at all. Blocks break up
 towards the end of chr1, and that is the genetic map rather than the animals.

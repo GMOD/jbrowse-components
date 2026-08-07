@@ -336,8 +336,10 @@ every gray wolf in the analysis set labelled by country.
 }
 ```
 
-The RNASE1 track is that config with the other slice's `uri` and the same
-`samplesTsvLocation`.
+Too many rows for a `layout` entry each, so the labels come from a TSV instead:
+first column the sample name, every other column an attribute, and `colorBy`
+naming the one that paints the swatch. The RNASE1 track is that same config with
+the other slice's `uri`.
 
 <Figure caption="Top: a 14.9 kb duplication over pancreatic amylase, dark blue where an animal carries it. Bottom: a 223 bp insertion in pancreatic ribonuclease, each carrier drawn as a marker sized by the inserted bases. Same 86 animals in the same order in both, so a row can be read against itself. The dogs carry the amylase duplication and the wolves carry the ribonuclease insertion, and the wolves that break each rule are not the same wolves." src="/img/dog10k-diet-genes.png" />
 
@@ -418,15 +420,10 @@ bcftools view -r chr18:48865000-48876000 -S fgf4.samples --force-samples \
 tabix -p vcf dog10k_fgf4_svs.vcf.gz
 ```
 
-`fgf4.samples` is whole breeds, not a few animals each: three breeds whose short
-legs are the trait Parker et al. mapped, two spaniel breeds, two
-standard-proportioned breeds with no reported association, and the Greek gray
-wolves.
-
-This panel is whole breeds rather than the handful of named animals the `layout`
-above relabels, so point the adapter at a samples TSV instead: its first column
-is the sample name and every other column is an attribute, and `colorBy` names
-the one that paints the sidebar swatch.
+`fgf4.samples` is whole breeds again: three breeds whose short legs are the
+trait Parker et al. mapped, two spaniel breeds, two standard-proportioned breeds
+with no reported association, and the Greek gray wolves. Labelled through a
+samples TSV as above, with `colorBy` on the breed group.
 
 ```json
 {
@@ -486,17 +483,13 @@ CFA12 one. That is unusual. Most candidate retrocopies have no sequenced insert,
 which is why the callset footprint above is the method that generalizes and this
 is a check available here rather than a recipe.
 
-Align with `minimap2 -x splice -c`. `-c` is what writes a base-level CIGAR into
-the PAF, and without it the ribbon is one block per alignment with no gaps in
-it. The query is a spliced transcript's worth of sequence and the reference has
-introns in the middle of it, so no genomic preset chains across the gaps
-(`asm5`, `asm10` and `asm20` all return the 3' exon alone). The default preset
-does chain across them, and puts the second gap a base off the annotated intron;
-`splice` scores the canonical splice sites and lands both on it.
+Align with `minimap2 -x splice -c`. `-c` writes the base-level CIGAR, without
+which the ribbon is one gapless block per alignment, and `splice` is the preset
+that chains across the introns and lands both gaps on the annotated ones. The
+build script records which presets do not and why. It also rewrites the `N`
+operations a splice preset emits to `D`, since this is genomic sequence against
+a genomic locus and those bases really are absent from the retrocopy.
 
-A splice preset calls those gaps `N`, meaning an intron removed by splicing from
-a transcript. This is genomic sequence against a genomic locus, so the build
-script rewrites them to `D`: those bases really are absent from the retrocopy.
 Load each retrocopy as a one-contig assembly and its alignment as a
 `SyntenyTrack`:
 
