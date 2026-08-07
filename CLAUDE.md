@@ -49,6 +49,14 @@ and the ADRs).
 
 - Avoid running tests frequently, they are slow. Use `pnpm test <directory>`,
   not the full suite. Lint with `--fix`.
+- **`pnpm format <paths>` — always pass paths in a shared worktree.** Bare
+  `pnpm format` rewrites all ~5800 files, so in a worktree several agents share
+  it lands another agent's reformatting in your diff under your commit message.
+  The path argument used to be silently ignored (`oxfmt .` hardcoded the dot and
+  the argument fell through to the astro pass); `oxfmt` now defaults to the cwd
+  on its own and the astro pass is a `postformat` hook, so an argument reaches
+  it. The hook still sweeps every `.astro`, which is a no-op unless one is
+  genuinely unformatted — they all live under `website/src`.
 - **`pnpm autogen` rewrites every generated-and-committed artifact** and is the
   answer to almost any "X is out of date" CI failure. It owns `package.json`
   `exports` maps, `tsconfig.build.esm.json` `references`, and the doc tables
