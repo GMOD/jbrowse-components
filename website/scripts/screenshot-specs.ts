@@ -23,6 +23,7 @@ import { cnv1000gSpecs } from './specs/cnv1000g.ts'
 import { conservationSpecs } from './specs/conservation.ts'
 import { cookbookSpecs } from './specs/cookbook.ts'
 import { dog10kSpecs } from './specs/dog10k.ts'
+import { dtuSpecs } from './specs/dtu.ts'
 import { embeddedSpecs } from './specs/embedded.ts'
 import { featuresSpecs } from './specs/features.ts'
 import { gallerySpecs } from './specs/gallery.ts'
@@ -53,6 +54,7 @@ export const specs: ScreenshotSpec[] = [
   ...syntenySpecs,
   ...alignmentsSpecs,
   ...variantsSpecs,
+  ...dtuSpecs,
   ...bigwigSpecs,
   ...conservationSpecs,
   ...featuresSpecs,

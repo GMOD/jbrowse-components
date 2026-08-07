@@ -1,0 +1,127 @@
+import { lgvSession } from '../screenshot-spec-helpers.ts'
+
+import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+
+// ──────────────────────────────────────────────────────────────────────────
+// Differential transcript usage — real ENCODE ENTEx data (hg38). satuRn tested
+// transcript *usage* (the fraction of a gene's reads assigned to each
+// transcript) between skeletal muscle and liver, 4 donors each, on RSEM
+// quantifications against GENCODE v29; the per-transcript result was written
+// back into the GFF3 attribute column, and the canvas gene glyph paints it
+// through a `jexl:` color callback. Data + config:
+// demos/dtu/config.json, hosted at jbrowse.org/demos/dtu/.
+//
+// What makes these figures worth having is that the color is not a category
+// someone assigned — it is a continuous statistic (ΔIF, the change in isoform
+// fraction) that came out of the analysis, so the glyph carries the result
+// rather than illustrating it. The `legend` slot on the display declares what
+// the ramp means, because a jexl expression is otherwise a lookup table only
+// its author can read.
+// ──────────────────────────────────────────────────────────────────────────
+
+const DTU_CONFIG = encodeURIComponent(
+  'https://jbrowse.org/demos/dtu/config.json',
+)
+
+// The cassette exon the whole figure is about. GENCODE v29 places it at
+// chr10:7,806,974-7,807,010 (37 bp): ATP5F1C-202 keeps it, ATP5F1C-201 skips
+// it. Written once and anchored from, rather than measured into viewport px —
+// the box then lands on the exon at any width or zoom (see locusAnchor.ts).
+const CASSETTE_EXON = 'chr10:7,806,974-7,807,010'
+
+// Both coverage tracks are pinned to the same 0–16 scale so the two bands are
+// comparable by height and not just by shape. They are one donor each (the
+// statistic behind the colors uses all eight), which is why the track names
+// carry their ENCODE accessions.
+const coverage = (trackId: string) => ({
+  trackId,
+  type: 'LinearWiggleDisplay',
+  height: 90,
+  minScore: 0,
+  maxScore: 16,
+})
+
+const glyph = {
+  trackId: 'dtu_muscle_vs_liver',
+  type: 'LinearBasicDisplay',
+  height: 285,
+}
+
+export const dtuSpecs: ScreenshotSpec[] = [
+  // The hero: one cassette exon, the read evidence for it in both tissues, and
+  // the two isoforms it distinguishes, colored by the statistic that called it.
+  // Muscle coverage is flat across the exon while liver peaks on it, and only
+  // the blue (liver-preferred) transcript draws a box there — the same fact
+  // three ways in one frame.
+  {
+    mode: 'url',
+    name: 'dtu/atp5f1c_isoform_switch',
+    url: lgvSession(DTU_CONFIG, {
+      assembly: 'hg38',
+      // the 3' third of ATP5F1C. Wide enough to hold three exons both tissues
+      // cover, so the empty muscle band over the cassette exon reads as
+      // *skipping* rather than as a track that failed to load or a gene that
+      // simply ended
+      // right edge carried ~1 kb past the gene so the shared final exon lands
+      // clear of the floating color key rather than behind it
+      loc: 'chr10:7,801,200..7,809,400',
+      tracks: [coverage('muscle_plus'), coverage('liver_plus'), glyph],
+    }),
+    readyText: 'Liver RNA-seq',
+    viewportHeight: 730,
+    annotations: [
+      {
+        // no `track`, so the ring spans the view's whole tracks area: one
+        // vertical band tying the absent muscle signal, the liver peak, and the
+        // exon box together
+        type: 'box',
+        anchor: { locus: CASSETTE_EXON },
+        pad: 9,
+        strokeWidth: 3,
+      },
+      // one label per coverage track, each right-aligned so its pill ENDS just
+      // left of the exon — the tracks are empty there, and the alternative (a
+      // single centered label above) lands on the location box
+      {
+        type: 'text',
+        text: 'no reads — exon skipped',
+        anchor: {
+          locus: CASSETTE_EXON,
+          track: 'muscle_plus',
+          fracY: 0.5,
+          alignX: 'left',
+        },
+        textAlign: 'end',
+        dx: -14,
+      },
+      {
+        type: 'text',
+        text: '37 bp exon retained',
+        anchor: {
+          locus: CASSETTE_EXON,
+          track: 'liver_plus',
+          fracY: 0.35,
+          alignX: 'left',
+        },
+        textAlign: 'end',
+        dx: -14,
+      },
+    ],
+  },
+
+  // The same locus pulled back to the whole gene, which is where the color
+  // encoding earns its keep: ten annotated isoforms, two of them called, and
+  // the eight the test could not separate staying neutral gray rather than
+  // competing for attention.
+  {
+    mode: 'url',
+    name: 'dtu/dtu_colored_gene_glyph',
+    url: lgvSession(DTU_CONFIG, {
+      assembly: 'hg38',
+      loc: 'chr10:7,787,600..7,808,400',
+      tracks: [coverage('muscle_plus'), coverage('liver_plus'), glyph],
+    }),
+    readyText: 'Liver RNA-seq',
+    viewportHeight: 730,
+  },
+]

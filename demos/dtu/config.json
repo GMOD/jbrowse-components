@@ -1,0 +1,148 @@
+{
+  "assemblies": [
+    {
+      "name": "hg38",
+      "aliases": ["GRCh38"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hg38-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "dtu_muscle_vs_liver",
+      "name": "Transcript usage: skeletal muscle vs liver (satuRn)",
+      "assemblyNames": ["hg38"],
+      "category": ["Differential transcript usage"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://jbrowse.org/demos/dtu/dtu_muscle_vs_liver.gff3.gz"
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "dtu_muscle_vs_liver-LinearBasicDisplay",
+          "height": 285,
+          "subfeatureLabels": "below",
+          "color": "jexl:get(feature,'dtu')=='muscle'?(parseFloat(get(feature,'dif'))>0.6?'#901e21':parseFloat(get(feature,'dif'))>0.3?'#c63335':'#d5716a'):get(feature,'dtu')=='liver'?(parseFloat(get(feature,'dif'))<-0.6?'#124f95':parseFloat(get(feature,'dif'))<-0.3?'#2370cc':'#6394d5'):'#b2b1ac'",
+          "utrColor": "jexl:get(feature,'dtu')=='muscle'?(parseFloat(get(feature,'dif'))>0.6?'#901e21':parseFloat(get(feature,'dif'))>0.3?'#c63335':'#d5716a'):get(feature,'dtu')=='liver'?(parseFloat(get(feature,'dif'))<-0.6?'#124f95':parseFloat(get(feature,'dif'))<-0.3?'#2370cc':'#6394d5'):'#b2b1ac'",
+          "mouseover": "jexl:get(feature,'transcript_name')+(get(feature,'dif')?' — ΔIF '+get(feature,'dif')+' (usage '+get(feature,'if_muscle')+' muscle vs '+get(feature,'if_liver')+' liver, FDR '+get(feature,'fdr')+')':' — not tested')",
+          "legend": [
+            { "label": "muscle-preferred, ΔIF > 0.6", "color": "#901e21" },
+            { "label": "muscle-preferred, ΔIF 0.3–0.6", "color": "#c63335" },
+            { "label": "muscle-preferred, ΔIF 0.1–0.3", "color": "#d5716a" },
+            { "label": "no usage shift (FDR ≥ 0.05)", "color": "#b2b1ac" },
+            { "label": "liver-preferred, ΔIF 0.1–0.3", "color": "#6394d5" },
+            { "label": "liver-preferred, ΔIF 0.3–0.6", "color": "#2370cc" },
+            { "label": "liver-preferred, ΔIF > 0.6", "color": "#124f95" }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "muscle_plus",
+      "name": "Skeletal muscle RNA-seq, + strand (ENCSR609NZM)",
+      "assemblyNames": ["hg38"],
+      "category": ["Coverage", "Skeletal muscle (gastrocnemius medialis)"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "uri": "https://jbrowse.org/demos/dtu/ENCFF007ZBY.muscle.plus.bigWig"
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "muscle_minus",
+      "name": "Skeletal muscle RNA-seq, − strand (ENCSR609NZM)",
+      "assemblyNames": ["hg38"],
+      "category": ["Coverage", "Skeletal muscle (gastrocnemius medialis)"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "uri": "https://jbrowse.org/demos/dtu/ENCFF518WGP.muscle.minus.bigWig"
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "liver_plus",
+      "name": "Liver RNA-seq, + strand (ENCSR135IAL)",
+      "assemblyNames": ["hg38"],
+      "category": ["Coverage", "Liver (right lobe)"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "uri": "https://jbrowse.org/demos/dtu/ENCFF565QRM.liver.plus.bigWig"
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "liver_minus",
+      "name": "Liver RNA-seq, − strand (ENCSR135IAL)",
+      "assemblyNames": ["hg38"],
+      "category": ["Coverage", "Liver (right lobe)"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "uri": "https://jbrowse.org/demos/dtu/ENCFF253OSP.liver.minus.bigWig"
+      }
+    }
+  ],
+  "defaultSession": {
+    "name": "ATP5F1C isoform switch",
+    "views": [
+      {
+        "id": "dtu",
+        "type": "LinearGenomeView",
+        "displayedRegions": [
+          {
+            "refName": "chr10",
+            "start": 7805000,
+            "end": 7808400,
+            "assemblyName": "hg38"
+          }
+        ],
+        "tracks": [
+          {
+            "type": "QuantitativeTrack",
+            "configuration": "muscle_plus",
+            "displays": [
+              {
+                "type": "LinearWiggleDisplay",
+                "configuration": "muscle_plus-LinearWiggleDisplay"
+              }
+            ]
+          },
+          {
+            "type": "QuantitativeTrack",
+            "configuration": "liver_plus",
+            "displays": [
+              {
+                "type": "LinearWiggleDisplay",
+                "configuration": "liver_plus-LinearWiggleDisplay"
+              }
+            ]
+          },
+          {
+            "type": "FeatureTrack",
+            "configuration": "dtu_muscle_vs_liver",
+            "displays": [
+              {
+                "type": "LinearBasicDisplay",
+                "configuration": "dtu_muscle_vs_liver-LinearBasicDisplay"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
