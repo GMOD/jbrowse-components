@@ -168,9 +168,9 @@ function buildFigureStatePayload() {
       // 14-spec run said "a full sweep" and the 300 figures it never opened
       // read as verified by it. Zero for a report written before this was
       // recorded, which the banner reports as unknown rather than as a sweep.
-      selected: run.selected?.length ?? 0,
-      skipped: run.skipped?.length ?? 0,
-      total: run.total ?? 0,
+      selected: run.selected.length,
+      skipped: run.skipped.length,
+      total: run.total,
     },
   }
 }
@@ -185,7 +185,25 @@ function buildFigureStatePayload() {
 // has no verdict here, and the UI must not draw it as passing.
 function loadRunReport(): RunReport | undefined {
   try {
-    return JSON.parse(fs.readFileSync(runReportPath, 'utf8')) as RunReport
+    // A report on disk can predate any given field — `selected`/`total` were
+    // added after reports were already being written — so the fields RunReport
+    // declares are filled in here rather than guarded at every read.
+    const parsed = JSON.parse(
+      fs.readFileSync(runReportPath, 'utf8'),
+    ) as Partial<RunReport>
+    return {
+      ...parsed,
+      finishedAt: parsed.finishedAt ?? '',
+      filter: parsed.filter ?? [],
+      check: parsed.check ?? false,
+      selected: parsed.selected ?? [],
+      total: parsed.total ?? 0,
+      skipped: parsed.skipped ?? [],
+      failures: parsed.failures ?? [],
+      flaky: parsed.flaky ?? [],
+      updated: parsed.updated ?? [],
+      suppressed: parsed.suppressed ?? [],
+    }
   } catch {
     return undefined
   }
@@ -217,10 +235,10 @@ function specRunStates(run: RunReport | undefined) {
   // the lists below only add what went wrong. A spec that rendered fine and
   // unchanged appears in none of them — most of a sweep does — so without this
   // pass "no entry" conflates "nothing to report" with "never opened".
-  for (const name of run.selected ?? []) {
+  for (const name of run.selected) {
     touch(name)
   }
-  for (const s of run.skipped ?? []) {
+  for (const s of run.skipped) {
     touch(s.name).skipped = s.reason
   }
   for (const f of run.failures) {
@@ -740,7 +758,11 @@ function describeRun(r) {
   const named = r.filter.length
     ? ', filtered to <code>' + r.filter.map(esc).join(',') + '</code>'
     : ''
-  const scope = !r.selected
+  // Both counts are needed to call it a sweep. A report that recorded
+  // selected but not total compares against 0 and reads as full, which is the
+  // same wrong direction filter was standing in for. (No backticks in here:
+  // this function lives inside the client template literal.)
+  const scope = !r.selected || !r.total
     ? 'scope not recorded (it predates this page asking)'
     : r.selected >= r.total
       ? 'a full sweep' + named

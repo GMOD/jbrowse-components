@@ -1206,8 +1206,8 @@
     "name": "multiway_synteny/ecoli_pangenome",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-04T17:34:03.812Z",
-    "hash": "0405a6f27c45d22cef8007c8c4a8221c144e1fd3"
+    "reviewedAt": "2026-08-07T03:38:58.590Z",
+    "hash": "390cbaaa38aaae05cd6076e0f85f3dc51b38c89e"
   },
   "multiway_synteny/grape_peach_cacao": {
     "name": "multiway_synteny/grape_peach_cacao",
@@ -1313,9 +1313,9 @@
   },
   "inversion_long_read": {
     "name": "inversion_long_read",
-    "status": "answered",
-    "note": "One frame now, 1800px wide, and the menu stage is gone. The session already carried groupBy:splitRead — which the live link has to open — so the menu frame showed the radio checked over the applied result and both frames were the same picture; the menu path is now a sentence in the section above the figure.",
-    "reviewedAt": "2026-08-06T19:42:31.500Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-07T03:38:13.703Z",
     "hash": "84fa8f598968fe1a232035a5a91e81e7b5dc3786"
   },
   "methylation/chromatin_accessibility_6ma": {
@@ -1663,15 +1663,15 @@
     "name": "pangenome_cactus/maf",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-06T18:40:32.285Z",
-    "hash": "79f7521ac841ebdccc0ba20efe520cabec7be572"
+    "reviewedAt": "2026-08-07T03:39:32.276Z",
+    "hash": "337a2836326c12dd72c82f347743c79464ca7cdc"
   },
   "pangenome_cactus/pav": {
     "name": "pangenome_cactus/pav",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-06T18:40:36.674Z",
-    "hash": "0b1a8e726b09bba71c97b2e4dfba0e48c54193b6"
+    "reviewedAt": "2026-08-07T03:39:34.484Z",
+    "hash": "ad1173f7a338e4d3dbf9cea1b563205af33aad29"
   },
   "pangenome_cactus/synteny": {
     "name": "pangenome_cactus/synteny",
@@ -1925,9 +1925,9 @@
   "pangenome/local_subgraph": {
     "name": "pangenome/local_subgraph",
     "status": "good",
-    "note": "Cut from an anchored+force pair to the anchored frame alone: its force half was a second drawing of the same ~50 nodes the pggb_locus_sample_rows force pane already shows one section up. The anchored layout is the half that carries this figure own claim, that anchoring on the K12 path puts the node strip and the graph backbone on one axis with one Depth ramp. Caption and the blunt-end paragraph rewritten to point at the earlier force pane.",
-    "reviewedAt": "2026-08-06T07:02:37.490Z",
-    "hash": "94e1a4cc76b4aeb76c5b4708a462304de071dcdc"
+    "note": "",
+    "reviewedAt": "2026-08-07T03:41:40.490Z",
+    "hash": "72571088512d93a9eb683e8d31fe6be83694c4bc"
   },
   "pangenome/rgfa_subgraph_launch": {
     "name": "pangenome/rgfa_subgraph_launch",
@@ -2010,22 +2010,22 @@
     "name": "pangenome/hprc_c4_subgraph",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-06T05:41:13.324Z",
-    "hash": "5d3edecdd714a693f40bdf04d09de8097008dd05"
+    "reviewedAt": "2026-08-07T03:40:02.663Z",
+    "hash": "850d7c4402634732231845f6093691ff907edbb0"
   },
   "pangenome/hprc_graph_vs_callset": {
     "name": "pangenome/hprc_graph_vs_callset",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-06T06:00:41.079Z",
-    "hash": "0d8cbc6fc5492ce7cf55c01b4a8c91dcdc9ae880"
+    "reviewedAt": "2026-08-07T03:40:16.780Z",
+    "hash": "e807ca78419b4631be743f41d96e3567ac63c6f4"
   },
   "pangenome/hprc_mhc_anchored": {
     "name": "pangenome/hprc_mhc_anchored",
     "status": "good",
     "note": "Absorbed pangenome/hprc_node_menu: the force half now also shows the right-click route and the band it writes, so the MHC subgraph is drawn once in that tutorial rather than twice.",
-    "reviewedAt": "2026-08-06T18:40:40.837Z",
-    "hash": "42f885073a806d7b7531194834d394f05552b801"
+    "reviewedAt": "2026-08-07T03:41:08.038Z",
+    "hash": "e0802b539ec0c354fee04bcf060d030a29bad600"
   },
   "pangenome/hprc_mhc_sample_rows": {
     "name": "pangenome/hprc_mhc_sample_rows",
@@ -2036,10 +2036,10 @@
   },
   "pangenome/pggb_synteny": {
     "name": "pangenome/pggb_synteny",
-    "status": "good",
-    "note": "ANSWERED and fixed: not the CIGAR mode. wfmash maps all-to-all in BOTH directions, so every pair is in the PAF twice over the same spans (measured on the published pif: K12->Sakai covers 4.379 Mb of the K12 axis, Sakai->K12 4.381 Mb, block starts within ~100 bp). Every ribbon was drawn twice, and two 0.2-alpha layers composite to #FFA3A3 where the minimap2 figure's single layer draws #FFCCCC. Halved the per-record alpha to 0.1, so the same correspondence now gets the same ink as its sibling (#FFCFCF measured). Also took collapseEmptyRows + viewportHeight 715 from the minimap2 spec, so the two figures are framed identically. The old comment (spec and tutorial) had the grain backwards: past the 10 kb cutoff minimap2 keeps 119 records on the K12/Sakai band and wfmash 41, half of those mirrors.",
-    "reviewedAt": "2026-08-04T08:11:45.765Z",
-    "hash": "0eb6b6fb1c8c7e5783f89990b1f400ada2dd343d"
+    "status": "bad",
+    "note": "some ribbons are darker than others weirdly. ",
+    "reviewedAt": "2026-08-07T03:42:05.119Z",
+    "hash": "1c4be7a9746407df822cd4f382982a7708f4bff5"
   },
   "pangenome/rgfa_allele_inventory": {
     "name": "pangenome/rgfa_allele_inventory",
@@ -2094,15 +2094,15 @@
     "name": "pangenome/rgfa_launch_out_menu",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-06T05:31:54.656Z",
-    "hash": "24b6e5c7245bfd988f2aa235cfa22d236efa599a"
+    "reviewedAt": "2026-08-07T03:42:35.294Z",
+    "hash": "be68ab6798225d2bfdede8fe9bc53b0c86e02e62"
   },
   "pangenome/hprc_lpa_kiv2": {
     "name": "pangenome/hprc_lpa_kiv2",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-06T05:30:06.487Z",
-    "hash": "aafca64061bc411c96c07471e14eb349d39a1a85"
+    "status": "bad",
+    "note": "mention that this is a heart/cardio risk factor that is polymorphic in the population in a red text blurb",
+    "reviewedAt": "2026-08-07T03:41:06.017Z",
+    "hash": "8829d3b795b7bbbaf2ac0f1e4af1e3ac3e9f1484"
   },
   "pangenome/rgfa_segment_neighbourhood": {
     "name": "pangenome/rgfa_segment_neighbourhood",
@@ -2205,9 +2205,9 @@
   "pangenome/hprc_amylase_graph": {
     "name": "pangenome/hprc_amylase_graph",
     "status": "good",
-    "note": "make sure people who dont know that amylase is a genome region with many structural and copy number variants (link to ",
-    "reviewedAt": "2026-08-06T05:41:36.374Z",
-    "hash": "8bbf216687305fd84fd6521b33196a32b63d4a09"
+    "note": "",
+    "reviewedAt": "2026-08-07T03:40:00.976Z",
+    "hash": "40c474bca72ccd6c2150f1c1e0b66af5433c4536"
   },
   "dog10k-igf1-haplotype": {
     "name": "dog10k-igf1-haplotype",
@@ -2274,17 +2274,17 @@
   },
   "pangenome/rgfa_paa_bubble": {
     "name": "pangenome/rgfa_paa_bubble",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-06T05:31:59.436Z",
-    "hash": "a241c8b12f8eeac0e31629ade4be00f7a6b838c6"
+    "status": "bad",
+    "note": "some ribbons darker than others, do not want this",
+    "reviewedAt": "2026-08-07T03:42:52.609Z",
+    "hash": "6e3ba664b20feb9f5f9852ad5bc1a5b947541de7"
   },
   "pangenome/hprc_cfhr_deletion": {
     "name": "pangenome/hprc_cfhr_deletion",
     "status": "good",
-    "note": "THE THIRD ROW STAYS, and its band is 40 px shorter. Its ribbon is the boring half and the note is right about that — one ribbon straight through — so levelHeights is [110,70] now, the carrier's band keeping its height because that is where the event is. What the row is FOR is its gene lane: CFHR3 and CFHR1 annotated on HG00099 are what make their absence from HG01109 a deletion rather than a hole in CAT's annotation of one assembly, and its ribbon running through the highlighted span is what makes the carrier's gap a deletion rather than an alignment dropout. Drop the row and the top row's 'no CFHR3, no CFHR1' is an unfalsifiable claim about a single assembly. (Same answer the sibling hprc_inversion figure's third row got this round, where the control is now visible as gene order rather than only as a ribbon.) THE BANDAGE HALF was answered in the previous pass and the figure already carries that answer: it is the ANCHORED layout, not the force one, because FMMM has no reference axis, so the deletion arc's endpoints and the deletionApex label sat in different places and the loop enclosed nothing. Cross-referenced against ~/src/vendor then: VRPG projects onto reference coordinates beside a linear panel, sequenceTubeMap orders nodes monotonically along x, odgi pav/viz drop to a path-by-position matrix, Bandage has no reference concept at all, and PangyPlot is the one force-directed viewer that solves it — by pushing the bypassed nodes off a straight deletion chord rather than bowing the edge. Written up in agent-docs/reference/PANGENOME_GRAPHS.md under Carriage, including why the arc is not linearized into a BEDPE track.",
-    "reviewedAt": "2026-08-06T05:41:15.337Z",
-    "hash": "184efaf8758dcac2b0ca313a6ad26a39eab8bd06"
+    "note": "",
+    "reviewedAt": "2026-08-07T03:40:07.837Z",
+    "hash": "b713ef59ed7cabcbf58db3d9f467827acc75c7f8"
   },
   "dog10k-fgf4-retrogene": {
     "name": "dog10k-fgf4-retrogene",
@@ -2296,8 +2296,8 @@
     "name": "pangenome/graph_context",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-06T05:41:06.894Z",
-    "hash": "566ffb1a79903f74cbabd137d9ed2072f1bd0a2d"
+    "reviewedAt": "2026-08-07T03:39:51.034Z",
+    "hash": "7130ddce0a53d9094929016eb2f446d40be00cfe"
   },
   "dog10k-size-fst-scan": {
     "name": "dog10k-size-fst-scan",
@@ -2329,9 +2329,9 @@
   },
   "pangenome/pggb_untangle": {
     "name": "pangenome/pggb_untangle",
-    "status": "answered",
-    "note": "Reframed onto one strain's two rRNA copies (d83aab8303), then the data under it changed: odgi untangle is rebuilt with -e 5000, so the projection is 3,923 records rather than 174 for all four pairs. Each Sakai copy is now two blocks and the second lands on K12's OTHER collapsed rRNA span 228 kb away, which left the old 6.6 kb Sakai windows drawing a wedge over their left half and dead white space over their right. Windows trimmed to the block that lands in the K12 window (4.2 kb each); the fact that the rest of the operon points at K12's second rRNA locus is stated in prose instead of half-drawn. Two figures added beside it rather than reworking this one further: pangenome/pggb_untangle_dotplot (same PIF, no new file, and it carries BOTH untangle claims at once -- a descending run is an inversion, two marks sharing an x are one span reached twice) and pangenome/pggb_untangle_rows (one lane per strain on K12, colored by orientation: IAI39 inverted over five long stretches, the other three over none). Both are new and unreviewed.",
-    "reviewedAt": "2026-08-06T20:05:28.525Z",
+    "status": "bad",
+    "note": "not a interesting figure, needs rethinking. previous notes:  Reframed onto one strain's two rRNA copies (d83aab8303), then the data under it changed: odgi untangle is rebuilt with -e 5000, so the projection is 3,923 records rather than 174 for all four pairs. Each Sakai copy is now two blocks and the second lands on K12's OTHER collapsed rRNA span 228 kb away, which left the old 6.6 kb Sakai windows drawing a wedge over their left half and dead white space over their right. Windows trimmed to the block that lands in the K12 window (4.2 kb each); the fact that the rest of the operon points at K12's second rRNA locus is stated in prose instead of half-drawn. Two figures added beside it rather than reworking this one further: pangenome/pggb_untangle_dotplot (same PIF, no new file, and it carries BOTH untangle claims at once -- a descending run is an inversion, two marks sharing an x are one span reached twice) and pangenome/pggb_untangle_rows (one lane per strain on K12, colored by orientation: IAI39 inverted over five long stretches, the other three over none). Both are new and unreviewed.",
+    "reviewedAt": "2026-08-07T03:42:25.038Z",
     "hash": "ff8da84a2c81ffca9ee094aa2c44644a92c454e6"
   },
   "tcga/mutations_cdh1_histology": {
@@ -2464,8 +2464,8 @@
     "name": "pangenome/hprc_chm13_allele",
     "status": "good",
     "note": "HEIGHT FIXED AT THE SOURCE, and the fourth screenshot declined with the measurement. The graph pane is 420px rather than the 600px ceiling it pinned: paneHeight is a new GraphGenomeView prop (plugin commit 449bae4, published bundle 35eccae5db30, fixtures repinned) that replaces MAX_CANVAS_HEIGHT for one view while the MIN_CANVAS_HEIGHT hover floor still wins, with three tests. The drawing scales 24.6% to 16.1%, the boxed 142 kb arc is still what the eye lands on, the chain stays legible, and the figure is 2630px rather than 2990. bubbleSpread compress was tried first and is worse (the subject node becomes a 20px box at the end of a thin chain). The fourth panel was rendered too, an hs1 pane over the last 1.3 Mb of chr17, and it is nearly empty: CHM13 entered at rank 61 so almost no segments are credited to it. Widening the existing hs1 pane was already settled in an earlier round (tried at 360 and 627 kb; the LINE enrichment is a mean, not a shape, and past ~400 kb the RepeatMasker bigBed hits its byte budget).",
-    "reviewedAt": "2026-08-06T08:18:53.734Z",
-    "hash": "fd00b14fc0a57b4b4f365da0407dbb7f72f93039"
+    "reviewedAt": "2026-08-07T03:40:09.009Z",
+    "hash": "aa78d3ddda173b5c8be1ce5c038a14b60be5c0ef"
   },
   "dotplot_self_chry": {
     "name": "dotplot_self_chry",
@@ -2518,9 +2518,9 @@
   },
   "pangenome_cactus/builders": {
     "name": "pangenome_cactus/builders",
-    "status": "answered",
-    "note": "A red callout on each row saying why that row does what it does: seqwish folds the rRNA copies onto one run of nodes and depth counts path steps, against Minigraph-Cactus keeping each copy at its own reference position. Both anchored to the track and a K12 coordinate, in the right flank where they cover no shape; viewport widened to 1200 so a pill wide enough for a sentence starts clear of the plateau. Caption no longer repeats them.",
-    "reviewedAt": "2026-08-06T19:42:31.801Z",
+    "status": "bad",
+    "note": "the red callouts are a little wordy. try to prune if possible. use technical terminology if it helps or other complementary info/tracks",
+    "reviewedAt": "2026-08-07T03:39:46.694Z",
     "hash": "71403849e25b9779a51392563df42155ec03cbb1"
   },
   "pangenome/long_reads": {
@@ -2576,8 +2576,8 @@
     "name": "pangenome/graph_resolution",
     "status": "good",
     "note": "layoutQuality 3 landed: both halves draw as smooth arcs, the pggb beads read as beads, and the caption sits inside the arc",
-    "reviewedAt": "2026-08-06T05:41:08.980Z",
-    "hash": "62f77cee48c91bb600ae98a495028d5d5631a91d"
+    "reviewedAt": "2026-08-07T03:39:55.040Z",
+    "hash": "175bc0d6293edd2bc0faa30086014c2ec13dc37e"
   },
   "cancer_sv/realigned_reads": {
     "name": "cancer_sv/realigned_reads",
@@ -2746,5 +2746,138 @@
     "note": "",
     "reviewedAt": "2026-08-06T07:40:13.197Z",
     "hash": "26c8d466903732facd71fcd0175ebd4f9ea6828d"
+  },
+  "cancer_sv/multihop_reads": {
+    "name": "cancer_sv/multihop_reads",
+    "status": "bad",
+    "note": "gene track height could be increased",
+    "reviewedAt": "2026-08-07T03:36:10.226Z",
+    "hash": "bc049384d4c0b038ac26d56dec4d54b71b8690ac"
+  },
+  "cnv1000g/genome_summary_bins": {
+    "name": "cnv1000g/genome_summary_bins",
+    "status": "bad",
+    "note": "dont understand the two different levels (top and bottom) what is the point",
+    "reviewedAt": "2026-08-07T03:36:58.623Z",
+    "hash": "64a06522697577daf214a1ea997c650fb7061f4d"
+  },
+  "dtu/atp5f1c_isoform_switch": {
+    "name": "dtu/atp5f1c_isoform_switch",
+    "status": "bad",
+    "note": "great work. are there any other simplifications, refactorings, bugfixes, or improvements you'd make to this",
+    "reviewedAt": "2026-08-07T03:37:18.447Z",
+    "hash": "e37a00f1971e86168ab3a29e8ba3466a325f2e85"
+  },
+  "feature_plotting_threads": {
+    "name": "feature_plotting_threads",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-07T03:37:33.792Z",
+    "hash": "ac1986723365ffbfe89bdeea0cd355101bfe437e"
+  },
+  "gpu_display_lifecycle": {
+    "name": "gpu_display_lifecycle",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-07T03:37:37.245Z",
+    "hash": "7890934387f20bd6bc450a26e4a92f1150f2dc75"
+  },
+  "homoeolog_synteny/oat_homoeologs": {
+    "name": "homoeolog_synteny/oat_homoeologs",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-07T03:37:39.576Z",
+    "hash": "d3b475c14bb07381be7b84892ddbbb30c579f5be"
+  },
+  "homoeolog_synteny/wheat_vs_oat": {
+    "name": "homoeolog_synteny/wheat_vs_oat",
+    "status": "bad",
+    "note": "consider deleting...unclear why we need individual and multipart figs for these",
+    "reviewedAt": "2026-08-07T03:38:11.518Z",
+    "hash": "38d1ce45d1e7222731119cb66ae80ac3160287f4"
+  },
+  "maf_hprc_pangenome": {
+    "name": "maf_hprc_pangenome",
+    "status": "bad",
+    "note": "unclear what we are looking at. it just looks like bam or cram but it is pangenome. needs to communicate this better somehow. any better examples?",
+    "reviewedAt": "2026-08-07T03:38:56.300Z",
+    "hash": "bf1c281be93028f084991aa8bf5c5c2e667342ba"
+  },
+  "multiway_synteny/wheat_homoeolog_selection": {
+    "name": "multiway_synteny/wheat_homoeolog_selection",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-07T03:39:00.358Z",
+    "hash": "3706cba1dca35854aceb901008b33cba664b8abd"
+  },
+  "pangenome/hprc_whole_chromosome": {
+    "name": "pangenome/hprc_whole_chromosome",
+    "status": "bad",
+    "note": "are you happy with this figure? double check",
+    "reviewedAt": "2026-08-07T03:41:32.948Z",
+    "hash": "2208dd4c096844216e0e1859d4c4985c4e624a66"
+  },
+  "pangenome/pggb_carriage": {
+    "name": "pangenome/pggb_carriage",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-07T03:41:40.549Z",
+    "hash": "daa79ff5544e4dd59e9c1073dbe8c984e97de32b"
+  },
+  "pangenome/pggb_carriage_lane": {
+    "name": "pangenome/pggb_carriage_lane",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-07T03:41:45.654Z",
+    "hash": "ab3f9e6b02f2a0e633040cd96f8d194d379c87d8"
+  },
+  "pangenome/pggb_untangle_dotplot": {
+    "name": "pangenome/pggb_untangle_dotplot",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-07T03:42:27.136Z",
+    "hash": "baa41270bb3ee86a138b8b5a3f1cf535388c182c"
+  },
+  "pangenome/pggb_untangle_rows": {
+    "name": "pangenome/pggb_untangle_rows",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-07T03:42:30.001Z",
+    "hash": "386da3bb5ee061cc35f247ef9297738dd287a228"
+  },
+  "qc/callsets_at_smn": {
+    "name": "qc/callsets_at_smn",
+    "status": "bad",
+    "note": "these tracks are just too chaotic. need more clarity.",
+    "reviewedAt": "2026-08-07T03:43:13.117Z",
+    "hash": "3d8ca47daacf6c6ff50b003e43f8cf825051299f"
+  },
+  "qc/smn_problematic_regions": {
+    "name": "qc/smn_problematic_regions",
+    "status": "bad",
+    "note": "if it helps show synteny view to t2t",
+    "reviewedAt": "2026-08-07T03:43:24.682Z",
+    "hash": "da74c73ba11b625e0e904ea113a2649fe8ca4d79"
+  },
+  "qc/smn_vs_control": {
+    "name": "qc/smn_vs_control",
+    "status": "bad",
+    "note": "look for improvements to figure. unclear what we are showing. need red text annotations if possible. zoom out fig 1 more, it is just 'all bad mappability' would be better to see 'island of badness'",
+    "reviewedAt": "2026-08-07T03:44:28.966Z",
+    "hash": "d1f55cfbd06126178e559ff163930d59a7635f08"
+  },
+  "selection_pressure/lysozyme": {
+    "name": "selection_pressure/lysozyme",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-07T03:44:30.914Z",
+    "hash": "59ddba40745010e8f5feb7c76a5d317191073d18"
+  },
+  "wolfdog_ancestry_pipeline": {
+    "name": "wolfdog_ancestry_pipeline",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-07T03:44:32.844Z",
+    "hash": "186b20b7b4993250bd8c6ed15b1ca24f6637376d"
   }
 }
