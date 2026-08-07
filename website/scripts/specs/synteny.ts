@@ -726,6 +726,62 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 767,
   },
 
+  // selection_pressure.md: the one figure here where the COLOUR is the result
+  // rather than the decoration. Human against rhesus macaque at the lysozyme
+  // locus on chr12, every ribbon an ortholog pair coloured by dN/dS.
+  //
+  // The locus was chosen on two measurements, not on the picture. It is
+  // collinear between the two species, so the ribbons run parallel and a
+  // colour difference is the only thing that varies; and LYZ comes out above 1
+  // with a dS near the genome-wide median, which is what makes it a measured
+  // signal rather than the artefact that fills the top of an unfiltered
+  // ranking (there, every leader has a dS an order of magnitude below the
+  // median, where the ratio has no denominator worth dividing by).
+  //
+  // Adaptive evolution of primate lysozyme is one of the oldest results in the
+  // field. YEATS4 sits immediately beside it at dN/dS 0, so the figure carries
+  // its own control: two neighbours, one at each end of the ramp.
+  //
+  // alpha at 0.95 rather than the 0.2 default, which is tuned for whole-genome
+  // hairballs and washes a dozen ribbons out to nothing.
+  {
+    mode: 'url',
+    name: 'selection_pressure/lysozyme',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/primate_selection/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearSyntenyView',
+            showColorLegend: true,
+            views: [
+              {
+                assembly: 'human',
+                loc: '12:68,790,000-69,880,000',
+                tracks: ['human_genes'],
+              },
+              {
+                assembly: 'rhesus',
+                loc: '11:68,330,000-69,390,000',
+                tracks: ['rhesus_genes'],
+              },
+            ],
+            tracks: [['primate_orthologs']],
+            colorBy: 'dnds',
+            alpha: 0.95,
+            drawCurves: true,
+          },
+        ],
+      },
+    ),
+    readyTimeout: 300000,
+    settleMs: 12000,
+    // 640 left 60 css px of blank under the bottom row, per the run's report
+    viewportHeight: 580,
+  },
+
   // The two hexaploid cereals side by side, which is the one framing that makes
   // either plot mean anything without knowing the genomes: wheat's subgenomes
   // step up the diagonal in near-collinear threes, oat's are scattered. Same

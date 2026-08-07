@@ -239,6 +239,14 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.14, 0.545],
     xband: [0, 0.36],
   },
+  selection_pressure: {
+    // The ribbon band with a gene row above it, past the app chrome and the
+    // locus boxes. The card's whole content is one orange ribbon among blue
+    // ones, so the crop has to keep enough width for the blue neighbours it is
+    // being contrasted against.
+    src: 'selection_pressure/lysozyme.png',
+    band: [0.22, 0.78],
+  },
   homoeolog_synteny: {
     // The dotplot itself, past the app chrome and the coordinate readout. A
     // dotplot card wants the plot area and nothing else: the scattered segments
