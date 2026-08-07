@@ -1,12 +1,10 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
-import { getContainingView } from '@jbrowse/core/util'
 import { OverlayCanvas } from '@jbrowse/render-core'
 import { observer } from 'mobx-react'
 
 import { drawMultiRowIndelGlyphs } from '../rendering/drawMultiRowIndelGlyphs.ts'
 
 import type { LinearMultiRowFeatureDisplayModel } from '../model.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * Alignment-style indel glyphs composited over the blocks, on whichever backend
@@ -20,12 +18,19 @@ const MultiRowIndelGlyphOverlay = observer(function MultiRowIndelGlyphOverlay({
 }: {
   model: LinearMultiRowFeatureDisplayModel
 }) {
-  const view = getContainingView(model) as LinearGenomeViewModel
   const palette = usePalette()
-  const { indelGlyphRegions, renderBlocks, renderState, height } = model
+  // canvasWidthPx, the same box renderState was mapped into — see the note in
+  // LinearMultiRowFeatureDisplayComponent
+  const {
+    indelGlyphRegions,
+    renderBlocks,
+    renderState,
+    height,
+    canvasWidthPx,
+  } = model
   return indelGlyphRegions ? (
     <OverlayCanvas
-      width={view.trackWidthPx}
+      width={canvasWidthPx}
       height={height}
       draw={ctx => {
         drawMultiRowIndelGlyphs(

@@ -36,7 +36,16 @@ export interface MultiRowGetFeaturesArgs {
   statusCallback?: StatusCallback
 }
 
-export interface MultiRowGetFeaturesResult {
+// One region's painting: absolute genomic positions, pre-resolved ABGR colors,
+// and rows referenced indirectly through a deduplicated `partitionValues` list
+// so row strings ship once rather than per feature.
+//
+// This is what the render side and the hit test read, and it is deliberately
+// NOT the whole RPC result — the gate telemetry the same message carries is the
+// size gate's, and a renderer has no business reading it. Defined here rather
+// than beside the renderers because the worker owns the shape; the rendering
+// module re-exports this name rather than aliasing a second one.
+export interface MultiRowRegionData {
   featureStarts: Uint32Array
   featureEnds: Uint32Array
   featureColors: Uint32Array
@@ -59,6 +68,13 @@ export interface MultiRowGetFeaturesResult {
   // The main thread reads this to suppress the per-row palette, which would
   // otherwise paint over the colors the BED explicitly asked for.
   usedItemRgb: boolean
+}
+
+// What the worker actually returns: the painting plus what the fetch measured on
+// the way past. The two travel together because the gate folds into this fetch
+// (there is no pre-flight call to carry them separately), which is exactly why
+// the render side gets the narrower half.
+export interface MultiRowGetFeaturesResult extends MultiRowRegionData {
   // index-only byte estimate for the region (absent when the adapter has none),
   // and the fetched feature count — the main-thread gate maxes/re-derives both.
   bytes?: number

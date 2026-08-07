@@ -7,7 +7,7 @@ import { observer } from 'mobx-react'
 // the two Row height menus read the same. Deliberately a local copy rather than
 // a shared component: the variants display's dialog sets only a height (no row
 // proportion), so a shared one would need a per-consumer opt-out.
-const SetRowHeightDialog = observer(function (props: {
+const SetRowHeightDialog = observer(function SetRowHeightDialog(props: {
   model: {
     // Seed from the raw setting (0 = squeeze to fit), never the resolved
     // effectiveRowHeight getter, which in fit mode returns the computed

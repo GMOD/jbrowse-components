@@ -1,17 +1,11 @@
-import type { MultiRowGetFeaturesResult } from '../../MultiRowGetFeaturesRPC/rpcTypes.ts'
+import type { MultiRowRegionData } from '../../MultiRowGetFeaturesRPC/rpcTypes.ts'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
-export type MultiRowRenderBlock = RenderBlock
-
-// Per-region feature data shipped by the worker (LinearMultiRowGetFeatures) and
-// consumed by the render side. Positions are absolute genomic uint32; colors are
-// pre-resolved ABGR. Rows are referenced indirectly: `partitionValues` lists the
-// distinct row keys seen in this region and `featurePartitionIndex[i]` indexes
-// into it, so the main thread can remap to a global, stable row index without
-// re-shipping strings per feature. Aliased to the RPC result so a new worker
-// field can't drift from the render type.
-export type MultiRowRegionData = MultiRowGetFeaturesResult
+// The worker's own per-region shape, re-exported rather than aliased: the
+// renderers want the feature arrays and not the size-gate fields the RPC result
+// adds, and that distinction lives in rpcTypes.ts where the shape is defined.
+export type { MultiRowRegionData } from '../../MultiRowGetFeaturesRPC/rpcTypes.ts'
 
 export interface MultiRowRenderState {
   canvasWidth: number
@@ -49,6 +43,6 @@ export interface MultiRowUploadPayload {
 export type MultiRowRenderingBackend = PerRegionRenderingBackend<
   MultiRowUploadPayload,
   MultiRowRenderState,
-  MultiRowRenderBlock,
+  RenderBlock,
   MultiRowRegionData
 >

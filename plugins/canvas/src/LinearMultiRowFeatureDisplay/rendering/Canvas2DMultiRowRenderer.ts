@@ -4,19 +4,19 @@ import { drawMultiRowBlocks } from './drawMultiRowBlocks.ts'
 
 import type {
   MultiRowRegionData,
-  MultiRowRenderBlock,
   MultiRowRenderState,
   MultiRowUploadPayload,
 } from './multiRowRenderingBackendTypes.ts'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 export class Canvas2DMultiRowRenderer extends Canvas2DPerRegionRenderingBackend<
   MultiRowUploadPayload,
   MultiRowRenderState,
-  MultiRowRenderBlock,
+  RenderBlock,
   MultiRowRegionData
 > {
   protected draw(
-    blocks: MultiRowRenderBlock[],
+    blocks: RenderBlock[],
     regions: ReadonlyMap<number, MultiRowRegionData>,
     state: MultiRowRenderState,
   ) {

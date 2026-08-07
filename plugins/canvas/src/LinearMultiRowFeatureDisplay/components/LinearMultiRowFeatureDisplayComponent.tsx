@@ -56,8 +56,12 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
   model: LinearMultiRowFeatureDisplayModel
   canvasRef: (node: HTMLCanvasElement | null) => void
 }) {
-  const view = getContainingView(model) as LinearGenomeViewModel
+  // `canvasWidthPx`, not `view.width` or a second `trackWidthPx` read: it is the
+  // width `renderState` carries, so every overlay below is positioned in the box
+  // the painting was actually mapped into. The getter exists to be the one
+  // answer — reading the view directly is how MAF drifted onto `view.width`.
   const {
+    canvasWidthPx,
     height,
     sources,
     effectiveRowHeight,
@@ -74,7 +78,7 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
         data-testid="multirow_canvas"
         ref={canvasRef}
         style={{
-          width: view.trackWidthPx,
+          width: canvasWidthPx,
           height,
           position: 'absolute',
           left: 0,
@@ -93,7 +97,7 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
             position: 'absolute',
             top: 0,
             left: 0,
-            width: view.trackWidthPx,
+            width: canvasWidthPx,
             height,
             pointerEvents: 'none',
           }}
@@ -101,7 +105,7 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
           <MultiRowSeparatorLines
             numRows={sources.length}
             rowHeight={effectiveRowHeight}
-            width={view.trackWidthPx}
+            width={canvasWidthPx}
           />
         </svg>
       ) : null}
@@ -119,17 +123,17 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
         sources={sources}
         rowHeight={effectiveRowHeight}
         labelOffset={sidebarOffset}
-        width={view.trackWidthPx}
+        width={canvasWidthPx}
         height={height}
         showLabels={showRowLabels}
       />
       {/* portaled above the inter-region masks (see FloatingSvgOverlay) so the
           legend isn't buried at multi-region scale */}
       {showLegend && colorLegend.length ? (
-        <FloatingSvgOverlay width={view.trackWidthPx} height={height}>
+        <FloatingSvgOverlay width={canvasWidthPx} height={height}>
           <MultiRowColorLegend
             entries={colorLegend}
-            canvasWidth={view.trackWidthPx}
+            canvasWidth={canvasWidthPx}
             maxHeight={height}
             hiddenLabels={hiddenCategorySet}
             onDismiss={() => {

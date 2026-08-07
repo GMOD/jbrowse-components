@@ -10,12 +10,12 @@ import {
 
 import type {
   MultiRowRegionData,
-  MultiRowRenderBlock,
   MultiRowRenderState,
   MultiRowUploadPayload,
 } from './multiRowRenderingBackendTypes.ts'
 import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
 import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 const PASS_RECT = 'rect'
 
@@ -28,7 +28,7 @@ const U = UNIFORM_OFFSET_F32
 export class GpuMultiRowRenderer extends GpuPerRegionRenderingBackend<
   MultiRowUploadPayload,
   MultiRowRenderState,
-  MultiRowRenderBlock,
+  RenderBlock,
   MultiRowRegionData
 > {
   private uniformF32: Float32Array
@@ -53,7 +53,7 @@ export class GpuMultiRowRenderer extends GpuPerRegionRenderingBackend<
   }
 
   protected drawRegion(
-    block: MultiRowRenderBlock,
+    block: RenderBlock,
     clip: BlockClipResult,
     _region: MultiRowRegionData,
     state: MultiRowRenderState,
