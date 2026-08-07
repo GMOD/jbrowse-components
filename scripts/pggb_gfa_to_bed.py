@@ -27,8 +27,14 @@ is build order, so there the most a segment says is which assembly contributed
 it first. bubbles_to_tier_bed.py uses the same column for a level-of-detail
 tier's collapse summary.
 
-Four decisions worth keeping:
+Six decisions worth keeping:
 
+* **The reference is an assembly, not a path.** A graph of a multi-contig genome
+  states its reference as one path per contig, so `--reference GRCh38` selects
+  all of them and they all walk first at rank 0. Anchoring on the single matched
+  path instead left every later reference contig to whichever donor path reached
+  its segments first, which placed them on that donor's contig at rank 1: the
+  index built and tabix-ed, and a reference query for chr2 returned nothing.
 * **A carrier is a haplotype, not a sample.** PanSN names an assembly with two
   fields (`HG002#1#chr1`), and keying carriage on the first alone silently
   merges a diploid sample's two haplotypes, so a segment carried only on the
@@ -168,8 +174,9 @@ def main():
     ap.add_argument("prefix")
     ap.add_argument(
         "--reference",
-        help="PanSN sample (or full path name) to treat as rank 0. "
-        "Default: the first P line, which is where pggb and odgi leave it.",
+        help="PanSN sample (or any one of its path names) to treat as rank 0. "
+        "Every path of that sample is reference. Default: the first P line's "
+        "sample, which is where pggb and odgi leave it.",
     )
     args = ap.parse_args()
 
@@ -248,7 +255,19 @@ def main():
                 f"--reference {args.reference} matches no path; have: "
                 + ", ".join(name for name, _, _ in paths)
             )
-    ordered = [paths[ref_index]] + [p for i, p in enumerate(paths) if i != ref_index]
+    # The reference is an ASSEMBLY, not one path, and a graph of a multi-contig
+    # genome states it as one path per contig. Taking only the matched path left
+    # every OTHER reference contig to whichever donor happened to reach its
+    # segments first: they were placed on that donor's contig at rank 1, so a
+    # reference query for chr2 came back empty while chr1 was fine — the index
+    # built, tabix-ed and drew, with one chromosome of the reference missing.
+    # Every path of the reference sample walks first, in file order, at rank 0.
+    ref_sample = pansn_sample(paths[ref_index][0])
+    is_ref = [pansn_sample(name) == ref_sample for name, _, _ in paths]
+    n_ref = sum(is_ref)
+    ordered = [p for p, r in zip(paths, is_ref) if r] + [
+        p for p, r in zip(paths, is_ref) if not r
+    ]
 
     # coords: segment id -> (stableName, start, rank). Written on first visit
     # only, so the reference pass (which runs first) wins over every other path
@@ -259,7 +278,7 @@ def main():
     for path_index, (name, base, steps) in enumerate(ordered):
         assembly = pansn_assembly(name)
         offset = base
-        rank = 0 if path_index == 0 else 1
+        rank = 0 if path_index < n_ref else 1
         for seg, _strand in steps:
             length = lengths.get(seg)
             if length is None:
@@ -308,7 +327,7 @@ def main():
 
     print(
         f"{len(coords)} segments, {len(links) - skipped} links, "
-        f"reference {ordered[0][0]}",
+        f"reference {ref_sample} ({n_ref} of {len(paths)} paths)",
         file=sys.stderr,
     )
     if skipped:

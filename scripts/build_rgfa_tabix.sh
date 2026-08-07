@@ -73,6 +73,21 @@ esac
 # segs.bed.gz — one row per segment, straight from gfatools:
 #   stableName  start  end  segmentId  rank
 gfatools gfa2bed -m <(gfa) | sort -k1,1 -k2,2n | bgzip > "$PREFIX.segs.bed.gz"
+
+# `gfa2bed -m` projects SN/SO/SR, which only an rGFA carries. Handed a plain GFA
+# it has nothing to read, exits 0, and writes NOTHING — and every step after it
+# succeeds on that: tabix indexes an empty BED and exits 0 too, the links pass
+# finds no segment to join, and the run ends with four well-formed files and a
+# track that draws nothing. That is the mistake this script's header spends three
+# lines warning about, because HPRC ships both flavours side by side under names
+# one character apart, so it is an error here rather than an empty index.
+if [ "$(gzip -dc "$PREFIX.segs.bed.gz" | wc -l)" -eq 0 ]; then
+  echo "$GFA projected to no segments: gfatools found no SN/SO/SR tags, so this" >&2
+  echo "is a plain GFA rather than an rGFA. A plain GFA states the same" >&2
+  echo "coordinates in its P/W lines instead. Build the identical pair with" >&2
+  echo "  bash scripts/build_pggb_tabix.sh $GFA $PREFIX" >&2
+  exit 1
+fi
 tabix -f -p bed "$PREFIX.segs.bed.gz"
 
 # links.bed.gz — one row per L-line *per endpoint*, so a region query finds an
@@ -112,6 +127,19 @@ if [ -n "$REF_PREFIX" ]; then
       bgzip > "$PREFIX.ref.$kind.bed.gz"
     tabix -f -p bed "$PREFIX.ref.$kind.bed.gz"
   done
+  # An unmatched prefix is a typo, not an empty result. `GRCh38#0`, `GRCh38#`
+  # and `chr` all keep zero rows, and both bgzip and tabix succeed on zero rows,
+  # so the pair ships as two valid indexes over nothing and the reference lane
+  # draws nothing. The argument is a PanSN sample, and the graph states which
+  # samples it has, so name them.
+  if [ "$(gzip -dc "$PREFIX.ref.segs.bed.gz" | wc -l)" -eq 0 ]; then
+    rm -f "$PREFIX".ref.*.bed.gz "$PREFIX".ref.*.bed.gz.tbi
+    echo "ref-prefix '$REF_PREFIX' matches no stable sequence in $GFA." >&2
+    echo "It is a PanSN sample, the part before the first '#'. This graph has:" >&2
+    gzip -dc "$PREFIX.segs.bed.gz" | cut -f1 |
+      awk -F'#' '{ print ($0 ~ /#/) ? $1 : $0 }' | sort -u | sed 's/^/  /' >&2
+    exit 1
+  fi
 fi
 
 ls -l "$PREFIX".segs.bed.gz* "$PREFIX".links.bed.gz*

@@ -557,6 +557,50 @@ check("a --reference matching no path is named, not ignored",
                          os.path.join(pangenome_dir, "bad2"),
                          "--reference", "NOPE"],
               "matches no path"), "matches no path")
+# The reference is an ASSEMBLY, not one path. A genome with more than one contig
+# states it as one path per contig, and taking only the matched path left every
+# LATER reference contig to whichever donor reached its segments first: they
+# were placed on that donor's contig at rank 1, so a reference query for chr2
+# came back empty. Nothing reports it -- the index builds, tabix accepts it, and
+# chr1 is correct -- so the whole symptom is one chromosome quietly missing.
+# The donor path is written FIRST here, which is what makes it win.
+multi = os.path.join(pangenome_dir, "multi.gfa")
+with open(multi, "w") as fh:
+    fh.write("S\ts1\t" + "A" * 5 + "\nS\ts2\t" + "C" * 5 + "\n"
+             "S\ts3\t" + "G" * 5 + "\nS\ts4\t" + "T" * 5 + "\n"
+             "P\tHG1#1#chr2\ts3+,s4+\t*,*\n"
+             "P\tGRCh38#0#chr1\ts1+,s2+\t*,*\n"
+             "P\tGRCh38#0#chr2\ts3+,s4+\t*,*\n"
+             "L\ts1\t+\ts2\t+\t0M\nL\ts3\t+\ts4\t+\t0M\n")
+
+
+def placed(prefix):
+    return {r[3]: (r[0], r[4]) for r in
+            (l.split("\t") for l in
+             open(f"{prefix}.segs.bed").read().splitlines())}
+
+
+multi_prefix = os.path.join(pangenome_dir, "multi")
+run_helper(pggb_bed, ["pggb_gfa_to_bed.py", multi, multi_prefix,
+                      "--reference", "GRCh38"])
+check("every contig of the reference is placed on itself, at rank 0",
+      placed(multi_prefix),
+      {"s1": ("GRCh38#0#chr1", "0"), "s2": ("GRCh38#0#chr1", "0"),
+       "s3": ("GRCh38#0#chr2", "0"), "s4": ("GRCh38#0#chr2", "0")})
+# ...and naming any one of its paths names the assembly, so the spelling a
+# reader copies off a P line does the same thing as the sample.
+one_path = os.path.join(pangenome_dir, "multi_one")
+run_helper(pggb_bed, ["pggb_gfa_to_bed.py", multi, one_path,
+                      "--reference", "GRCh38#0#chr1"])
+check("naming one path of the reference selects the whole assembly",
+      placed(one_path), placed(multi_prefix))
+# The default is still the FIRST path -- but its sample, for the same reason.
+default_prefix = os.path.join(pangenome_dir, "multi_default")
+run_helper(pggb_bed, ["pggb_gfa_to_bed.py", multi, default_prefix])
+check("with no --reference the first path's sample is the reference, whole",
+      placed(default_prefix),
+      {"s1": ("GRCh38#0#chr1", "1"), "s2": ("GRCh38#0#chr1", "1"),
+       "s3": ("HG1#1#chr2", "0"), "s4": ("HG1#1#chr2", "0")})
 # An elided sequence states its length in LN:i:. Defaulting to 0 without one
 # shifts every later segment on that path left, so it is refused the same way a
 # non-blunt overlap is; with the tag, the segment places normally.
@@ -598,6 +642,95 @@ with open(nodes_bad, "w") as fh:
 check("gfa_nodes_to_bed refuses an elided sequence with no LN:i:, and says so",
       refusal(gfa_nodes, ["gfa_nodes_to_bed.py", nodes_bad, "K12#1#chr", "chr"],
               "no LN:i: tag"), "no LN:i: tag")
+
+# build_rgfa_tabix.sh, run for real. bgzip and tabix both succeed on ZERO rows,
+# so every way this script can project nothing ends the same: four well-formed
+# files, exit 0, and a track that draws nothing. Two of them are reachable by
+# hand -- pointing it at a plain GFA (HPRC ships both flavours side by side
+# under names one character apart, which is what the script's header warns
+# about), and a `ref-prefix` that is not a PanSN sample. Neither is visible to
+# `bash -n` or shellcheck, and the third check here is the exit-1 bug itself,
+# which only a run can see. `gfatools` is stubbed to the one thing this uses:
+# `gfa2bed -m` projects SN/SO/SR, and writes nothing for a segment carrying none.
+rgfa_missing = [t for t in ("bgzip", "tabix") if shutil.which(t) is None]
+if rgfa_missing:
+    # Loud and counted, like the sv_multihop pipeline below: a check that
+    # quietly skips has stopped being one.
+    print(f"note: {', '.join(rgfa_missing)} not installed, "
+          f"SKIPPING the build_rgfa_tabix.sh guards")
+    rgfa_ran = False
+else:
+    rgfa_ran = True
+    rgfa_dir = tempfile.mkdtemp()
+    stub_dir = os.path.join(rgfa_dir, "bin")
+    os.mkdir(stub_dir)
+    stub = os.path.join(stub_dir, "gfatools")
+    with open(stub, "w") as fh:
+        fh.write(
+            "#!/usr/bin/env bash\n"
+            "awk -F'\\t' '$1 == \"S\" {\n"
+            '  sn = ""; so = ""; sr = ""\n'
+            "  for (i = 4; i <= NF; i++) {\n"
+            '    if ($i ~ /^SN:Z:/) sn = substr($i, 6)\n'
+            '    if ($i ~ /^SO:i:/) so = substr($i, 6)\n'
+            '    if ($i ~ /^SR:i:/) sr = substr($i, 6)\n'
+            "  }\n"
+            '  if (sn != "" && so != "" && sr != "")\n'
+            '    print sn "\\t" so "\\t" so + length($3) "\\t" $2 "\\t" sr\n'
+            "}' \"$3\"\n"
+        )
+    os.chmod(stub, 0o755)
+    with open(os.path.join(rgfa_dir, "in.rgfa"), "w") as fh:
+        fh.write("S\ts1\tAAAAA\tSN:Z:K12#1#chr\tSO:i:0\tSR:i:0\n"
+                 "S\ts2\tCCCCC\tSN:Z:K12#1#chr\tSO:i:5\tSR:i:0\n"
+                 "S\ts3\tGGGGG\tSN:Z:Sakai#1#chr\tSO:i:100\tSR:i:1\n"
+                 "L\ts1\t+\ts3\t+\t0M\nL\ts3\t+\ts2\t+\t0M\n")
+    with open(os.path.join(rgfa_dir, "in.gfa"), "w") as fh:
+        fh.write(re.sub(r"\tSN:Z:\S+\tSO:i:\S+\tSR:i:\S+", "",
+                        open(os.path.join(rgfa_dir, "in.rgfa")).read()))
+
+    def rgfa_run(*argv):
+        return subprocess.run(
+            ["bash", os.path.abspath("scripts/build_rgfa_tabix.sh"), *argv],
+            cwd=rgfa_dir, capture_output=True, text=True,
+            env={**os.environ, "PATH": stub_dir + os.pathsep + os.environ["PATH"]})
+
+    def rgfa_rows(name):
+        return subprocess.run(["gzip", "-dc", os.path.join(rgfa_dir, name)],
+                              capture_output=True, text=True).stdout.splitlines()
+
+    # The headline bug: the script ended on `[ -n "$REF_PREFIX" ] && ls -l`, and
+    # a failing test in an AND-list is exempt from errexit but is still the last
+    # command, so every run WITHOUT the optional third argument exited 1 with all
+    # four indexes written correctly -- which is how the tutorial documents it
+    # and how build_ecoli_pangenome_graph.sh calls it under `set -e`.
+    check("an rGFA with no ref-prefix succeeds, which is how the tutorial calls it",
+          rgfa_run("in.rgfa", "out").returncode, 0)
+    check("both indexes are written and carry every segment",
+          (len(rgfa_rows("out.segs.bed.gz")), len(rgfa_rows("out.links.bed.gz"))),
+          (3, 4))
+    # A plain GFA has no SN/SO/SR, so gfa2bed projects nothing and exits 0. Name
+    # the flavour and the sibling script rather than shipping an empty index.
+    plain = rgfa_run("in.gfa", "outplain")
+    check("a plain GFA is refused by flavour, not indexed as zero segments",
+          (plain.returncode, "plain GFA rather than an rGFA" in plain.stderr,
+           "build_pggb_tabix.sh" in plain.stderr),
+          (1, True, True))
+    # A prefix that matches nothing is a typo, not an empty result: `chr` and any
+    # non-sample spelling keep zero rows, and both bgzip and tabix accept that.
+    typo = rgfa_run("in.rgfa", "outtypo", "chr")
+    check("a ref-prefix matching no sequence is refused, and names the samples",
+          (typo.returncode, "matches no stable sequence" in typo.stderr,
+           re.findall(r"^  (\S+)$", typo.stderr, re.M)),
+          (1, True, ["K12", "Sakai"]))
+    check("the refused run leaves no empty ref pair behind",
+          sorted(os.path.basename(p) for p in
+                 glob.glob(os.path.join(rgfa_dir, "outtypo.ref.*"))), [])
+    # ...and the sample it does have keeps exactly that sample's rows.
+    check("a ref-prefix that is a sample keeps only that sample's rows",
+          (rgfa_run("in.rgfa", "outref", "K12").returncode,
+           [r.split("\t")[0] for r in rgfa_rows("outref.ref.segs.bed.gz")]),
+          (0, ["K12#1#chr", "K12#1#chr"]))
 
 # sv_multihop.py: reconstructs the COLO829 derivative allele the cancer_sv demo
 # serves. Three bugs here produced a plausible-looking but wrong figure rather
@@ -1231,4 +1364,5 @@ if failed:
     sys.exit(1)
 print(f"ok: {len(scripts)} build scripts + {len(helpers)} python helpers valid, "
       f"{behavior} helper behavior checks pass, {cited} doc curl targets exist, "
+      f"build_rgfa_tabix {'guards hold' if rgfa_ran else 'SKIPPED'}, "
       f"sv_multihop pipeline {'rebuilds its foldback' if pipeline_ran else 'SKIPPED'}")

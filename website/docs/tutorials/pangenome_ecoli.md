@@ -750,12 +750,14 @@ bash build_pggb_tabix.sh "$gfa" ecoli_pggb K12
 ```
 
 It produces `ecoli_pggb.segs.bed.gz` and `ecoli_pggb.links.bed.gz` with their
-indexes. The reference argument names the path to treat as rank 0, and every
-other path contributes the segments no earlier path reached, on its own
-coordinates. The walk agrees with the `odgi extract` route
-[below](#a-window-as-a-file): at that window every interval it derives matches
-the ones `gfa_nodes_to_bed.py` derives from the extracted subgraph. It reads P
-and W lines, so a graph carrying walks rather than paths indexes the same way.
+indexes. The reference argument names a sample rather than a path, so every
+path that sample contributes is treated as rank 0 and a multi-contig
+reference keeps all of its contigs. Every other path then contributes the
+segments no earlier path reached, on its own coordinates. The walk agrees
+with the `odgi extract` route [below](#a-window-as-a-file): at that window
+every interval it derives matches the ones `gfa_nodes_to_bed.py` derives from
+the extracted subgraph. It reads P and W lines, so a graph carrying walks
+rather than paths indexes the same way.
 
 Two decisions in that walk decide what the output can be trusted for. When a
 path reaches the same segment twice, the first visit wins: a node draws as one

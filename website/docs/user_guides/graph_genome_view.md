@@ -84,11 +84,17 @@ bash build_rgfa_tabix.sh ecoli_minigraph.rgfa ecoli_minigraph
 
 # plain GFA: walk the P (or W) lines to derive the same thing
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pggb_tabix.sh
-bash build_pggb_tabix.sh pggb/*.smooth.final.gfa ecoli_pggb K12
+gfa=$(ls pggb/*.smooth.final.gfa)
+bash build_pggb_tabix.sh "$gfa" ecoli_pggb K12
 ```
 
-The plain-GFA walk makes two choices worth knowing:
+The plain-GFA walk makes three choices worth knowing:
 
+- The third argument is a **sample**, not a path, so every path that sample
+  contributes is reference and walks first at rank 0. A genome with more than
+  one contig states its reference as one path per contig, and anchoring on a
+  single one of them leaves the rest to whichever donor path reaches their
+  segments first.
 - When a path reaches a segment twice, **the first visit wins**. A node draws as
   one tube at one x, so recording both would claim reference the segment does
   not occupy. The repeat stays visible as depth.

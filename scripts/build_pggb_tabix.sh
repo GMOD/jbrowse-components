@@ -14,7 +14,7 @@
 # a linear track on the reference.
 #
 # Requires: python3, sort, bgzip, tabix
-# Usage:    bash scripts/build_pggb_tabix.sh <graph.gfa[.gz]> [out-prefix] [reference-sample]
+# Usage:    bash scripts/build_pggb_tabix.sh <graph.gfa[.gz|.zst]> [out-prefix] [reference-sample]
 #
 # Produces <prefix>.segs.bed.gz{,.tbi} and <prefix>.links.bed.gz{,.tbi}.
 #
@@ -39,7 +39,7 @@
 # answer at both ends.
 set -euo pipefail
 
-GFA="${1:?usage: build_pggb_tabix.sh <graph.gfa[.gz]> [out-prefix] [reference-sample]}"
+GFA="${1:?usage: build_pggb_tabix.sh <graph.gfa[.gz|.zst]> [out-prefix] [reference-sample]}"
 PREFIX="${2:-${GFA%.gfa*}}"
 REFERENCE="${3:-}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
