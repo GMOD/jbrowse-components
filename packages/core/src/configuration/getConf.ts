@@ -100,9 +100,7 @@ export function resolveConf<
 /**
  * #api core/configuration
  * Write counterpart to `getConf`: sets a slot on a state model that has a
- * `.configuration` member (a track or display state model). Centralizes the
- * `configuration.setSlot` cast so mixins whose `self` isn't typed with
- * `configuration` don't each re-cast.
+ * `.configuration` member (a track or display state model).
  *
  * **Prefer this over a bare `self.configuration.setSlot('x', v)`.** The
  * constraint here mirrors `getConf`'s, so on a model with a concrete schema an
@@ -128,9 +126,5 @@ export function setConf<
   SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> =
     ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
 >(model: { configuration: CONFMODEL }, slotName: SLOT, value: unknown) {
-  ;(
-    model.configuration as CONFMODEL & {
-      setSlot: (slotName: string, value: unknown) => void
-    }
-  ).setSlot(slotName, value)
+  model.configuration.setSlot(slotName, value)
 }

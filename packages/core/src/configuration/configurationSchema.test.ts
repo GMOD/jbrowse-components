@@ -14,7 +14,10 @@ import { getConf, readConfObject } from './index.ts'
 import { getSlotDefinition } from './slotFacade.ts'
 import { isConfigurationModel } from './util.ts'
 
-import type { AnyConfigurationModel } from './types.ts'
+import type {
+  AnyConfigurationModel,
+  AnyConfigurationSchemaType,
+} from './types.ts'
 
 const pluginManager = new PluginManager([]).createPluggableElements()
 pluginManager.configure()
@@ -199,6 +202,42 @@ describe('configuration schemas', () => {
       // merge composes across different hook keys, only same-key overlap throws
       expect(node.baseAction()).toBe('base')
       expect(node.childView()).toBe('child')
+    })
+  })
+
+  // Only the type ConfigurationSchema() itself returns carries a slot table, and
+  // a base without one used to be skipped in silence — leaving a schema missing
+  // every inherited slot, with nothing thrown at any layer. Both wrappers below
+  // pass `isBareConfigurationSchemaType`, so neither looks wrong at the call
+  // site; `pluggableConfigSchemaType` returns the union form.
+  describe('baseConfiguration that carries no slot table', () => {
+    const base = ConfigurationSchema('RealBase', {
+      inherited: { type: 'number', defaultValue: 7 },
+    })
+
+    test.each([
+      ['a types.late wrapper', () => types.late(() => base)],
+      ['a union of schemas', () => types.union(base, base)],
+      ['a plain MST model', () => types.model('NotASchema', {})],
+    ])('throws for %s', (_label, makeBase) => {
+      expect(() =>
+        ConfigurationSchema(
+          'NoTable',
+          { own: { type: 'number', defaultValue: 1 } },
+          // the point is that these are accepted at compile time
+          { baseConfiguration: makeBase() as AnyConfigurationSchemaType },
+        ),
+      ).toThrow(/NoTable's baseConfiguration is not a configuration schema/)
+    })
+
+    test('the real schema still merges its slots in', () => {
+      const child = ConfigurationSchema(
+        'HasTable',
+        { own: { type: 'number', defaultValue: 1 } },
+        { baseConfiguration: base },
+      )
+      const node = child.create(undefined, { pluginManager })
+      expect(readConfObject(node, 'inherited')).toBe(7)
     })
   })
 
@@ -1095,6 +1134,18 @@ describe('readConfObject path resolution', () => {
     })
     const node = schema.create({ b: 'y' }, { pluginManager })
     expect(readConfObject(node)).toEqual({ b: 'y' })
+  })
+
+  // An empty array is a path naming no slot, so it means what no path means.
+  // It used to answer `undefined`: `[]` is truthy, so it took the array branch,
+  // whose `slotPath[0]!` was a lie and read `confObject[undefined]`.
+  test('an empty array path reads the whole config, same as no path', () => {
+    const schema = ConfigurationSchema('WholeEmptyPath', {
+      a: { type: 'number', defaultValue: 1 },
+      b: { type: 'string', defaultValue: 'x' },
+    })
+    const node = schema.create({ b: 'y' }, { pluginManager })
+    expect(readConfObject(node, [])).toEqual(readConfObject(node))
   })
 
   test('a nested array path evaluates a jexl callback with args', () => {

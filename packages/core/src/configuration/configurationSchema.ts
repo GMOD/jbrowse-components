@@ -141,6 +141,19 @@ function preprocessConfigurationSchemaArguments(
   const baseMeta = inputOptions.baseConfiguration
     ? getConfigurationSchemaMetadata(inputOptions.baseConfiguration)
     : undefined
+  // A base with no registry entry used to be skipped in silence, producing a
+  // schema missing every inherited slot with nothing thrown anywhere — the same
+  // class of quiet loss the hook check below exists to prevent, and reachable
+  // without doing anything obviously wrong: `isBareConfigurationSchemaType`
+  // answers true for a `types.late` wrapper, and
+  // `pluginManager.pluggableConfigSchemaType(…)` hands back a `types.union`.
+  // Neither is registered, because only the type `ConfigurationSchema` itself
+  // returns carries the slot table.
+  if (inputOptions.baseConfiguration && !baseMeta) {
+    throw new Error(
+      `${modelName}'s baseConfiguration is not a configuration schema: it has no registered slot table, so every slot it was meant to inherit would be dropped silently. Pass the type ConfigurationSchema() returned, not a types.late wrapper, a union (pluginManager.pluggableConfigSchemaType), or a plain MST model.`,
+    )
+  }
   if (baseMeta) {
     const clobberedHooks = OVERRIDABLE_HOOK_KEYS.filter(
       key => baseMeta.options[key] && inputOptions[key],

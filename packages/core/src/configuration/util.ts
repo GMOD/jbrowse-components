@@ -171,23 +171,36 @@ export function readConfObject(
   slotPath?: string | string[],
   args: Record<string, unknown> = {},
 ): any {
-  if (!slotPath) {
-    // the whole config as a plain object: the live, referentially-stable
-    // snapshot (frozen in dev), not a fresh clone — treat as read-only
-    return isStateTreeNode(confObject) ? getSnapshot(confObject) : confObject
-  } else if (typeof slotPath === 'string') {
+  // the single-slot read, first and allocation-free: it is the shape of nearly
+  // every one of the ~1300 call sites, so it doesn't get normalized into a
+  // one-element array on the way past
+  if (typeof slotPath === 'string') {
     return readSlot(confObject, slotPath, args)
-  } else if (Array.isArray(slotPath)) {
-    const slotName = slotPath[0]!
-    if (slotPath.length > 1) {
-      const subConf = rawSlotValue(confObject, slotName)
-      return subConf === undefined
-        ? undefined
-        : readConfObject(subConf, slotPath.slice(1), args)
-    }
-    return readSlot(confObject, slotName, args)
   }
-  throw new TypeError('slotPath must be a string or array')
+  if (slotPath !== undefined && !Array.isArray(slotPath)) {
+    throw new TypeError('slotPath must be a string or array')
+  }
+  // No path, or an empty one — which means the same thing, and used not to: `[]`
+  // is truthy, so it reached the walk below and read `confObject[undefined]`.
+  //
+  // Returns the whole config as a plain object: the live, referentially-stable
+  // snapshot (frozen in dev), not a fresh clone — treat as read-only.
+  if (!slotPath?.length) {
+    return isStateTreeNode(confObject) ? getSnapshot(confObject) : confObject
+  }
+  // every segment but the last names a sub-config, and only the last is a slot
+  // read — which is where jexl evaluation and snapshotting happen, and nowhere
+  // else. Iterative rather than a self-call per segment, which re-entered the
+  // whole argument-shape preamble above at each level.
+  let conf: ReadableConfig = confObject
+  for (let i = 0; i < slotPath.length - 1; i++) {
+    const subConf = rawSlotValue(conf, slotPath[i]!)
+    if (subConf === undefined) {
+      return undefined
+    }
+    conf = subConf
+  }
+  return readSlot(conf, slotPath[slotPath.length - 1]!, args)
 }
 
 /**

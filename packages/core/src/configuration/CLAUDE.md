@@ -33,6 +33,12 @@ slot from a sub-schema). The merge is a spread, so to turn a base field off,
 state it — including `promotedBase: undefined` to make an inherited promotable
 slot plain again.
 
+The base has to be **the type `ConfigurationSchema()` returned**, since that is
+the only handle registered against a slot table. A `types.late` wrapper or a
+union (`pluginManager.pluggableConfigSchemaType(…)`) type-checks and passes
+`isBareConfigurationSchemaType`, and used to drop every inherited slot in
+silence; it now throws at construction.
+
 ## A config snapshot is transport, not a value-read API
 
 `types.stripDefault` omits a slot still at its default, so reading a defaulted
