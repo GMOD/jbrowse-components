@@ -67,3 +67,86 @@ test('the session keeps every member a published plugin reaches for', () => {
 
   expect(missing).toEqual([])
 })
+
+// The same doctrine one level out, for the surface an automation SCRIPT reads
+// rather than a plugin. `components/JBrowse.tsx` assigns the live session to
+// `window.JBrowseSession`, and the walk below —
+// `views[].initialized`, `views[].assemblyNames`,
+// `views[].tracks[].configuration.trackId` — is what answers "did the thing I
+// asked for actually open". The positive readiness gate in `@jbrowse/capture`
+// is exactly this walk, and the published docs
+// (`website/docs/agents_capture.md`) and the `jbrowse-capture` skill both print
+// it for readers to paste.
+//
+// It fails even quieter than the plugin surface. A script has no import to break
+// and no capability check to go false: `views[].tracks[].configuration.trackId`
+// simply reads `undefined`, the gate never passes, and the symptom is a timeout
+// blamed on a slow network. Renaming any of these is a breaking change for every
+// agent script in the wild, so it should cost a deliberate edit here.
+const AUTOMATION_FACING = [
+  // window.JBrowseSession.views
+  'views',
+] as const
+
+function hasKey<K extends string>(
+  value: unknown,
+  key: K,
+): value is Record<K, unknown> {
+  return typeof value === 'object' && value !== null && key in value
+}
+
+// `views[].tracks[].configuration.trackId`, read the way an outside script reads
+// it: property by property, off `unknown`, with no help from the model's types.
+function openTrackIds(view: unknown): string[] {
+  const tracks = hasKey(view, 'tracks') ? view.tracks : undefined
+  return (Array.isArray(tracks) ? (tracks as unknown[]) : []).map(track => {
+    const conf = hasKey(track, 'configuration')
+      ? track.configuration
+      : undefined
+    const id = hasKey(conf, 'trackId') ? conf.trackId : undefined
+    return typeof id === 'string' ? id : '(unreadable)'
+  })
+}
+
+test('the automation-facing session walk still resolves', () => {
+  const session = createTestSession({
+    jbrowseConfig: {
+      assemblies: [
+        {
+          name: 'volvox',
+          sequence: {
+            type: 'ReferenceSequenceTrack',
+            trackId: 'volvox-ref',
+            adapter: { type: 'TwoBitAdapter', uri: 'volvox.2bit' },
+          },
+        },
+      ],
+      tracks: [
+        {
+          type: 'FeatureTrack',
+          trackId: 'volvox-genes',
+          assemblyNames: ['volvox'],
+          adapter: { type: 'Gff3TabixAdapter', uri: 'volvox.gff.gz' },
+        },
+      ],
+    },
+  })
+  for (const name of AUTOMATION_FACING) {
+    expect(name in session).toBe(true)
+  }
+  // The rest of the walk is per-view and per-track, so assert the shape rather
+  // than the names alone: a view reports whether it finished initializing and
+  // which assembly it is on, and an OPEN track (a track model on the view, not a
+  // config in the catalog) is identified by the trackId of the config behind it.
+  const view = session.addView('LinearGenomeView', { type: 'LinearGenomeView' })
+  expect('initialized' in view).toBe(true)
+  expect('assemblyNames' in view).toBe(true)
+
+  view.showTrack('volvox-genes')
+  // Walked blindly, exactly as a script in a `page.evaluate` walks it, rather
+  // than through the view's TypeScript types: those describe the model this repo
+  // compiles against, and what is being pinned here is what survives a property
+  // lookup from outside. A shape change reads as '(unreadable)' and fails on the
+  // value, which is the same way the script would experience it.
+  expect(openTrackIds(view)).toEqual(['volvox-genes'])
+})
