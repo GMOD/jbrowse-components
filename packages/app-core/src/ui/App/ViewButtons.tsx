@@ -1,3 +1,4 @@
+import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import AddIcon from '@mui/icons-material/Add'
 import CloseIcon from '@mui/icons-material/Close'
@@ -13,26 +14,39 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+// Acts on the view directly rather than taking onClose/onMinimize callbacks.
+// Those were written inline by ViewContainer, three components up, so they were
+// fresh on every one of its renders and mobx-react's memo could never hold for
+// this subtree. A resize of the view body re-rendered these MUI buttons along
+// with the header and the menu. There was nothing for the caller to decide
+// anyway: both handlers are the same two lines wherever they are written.
 const ViewButtons = observer(function ViewButtons({
   view,
-  onClose,
-  onMinimize,
 }: {
   view: IBaseViewModel
-  onClose: () => void
-  onMinimize: () => void
 }) {
   const { classes } = useStyles()
+  const session = getSession(view)
   return (
     <>
-      <IconButton data-testid="minimize_view" onClick={onMinimize}>
+      <IconButton
+        data-testid="minimize_view"
+        onClick={() => {
+          view.setMinimized(!view.minimized)
+        }}
+      >
         {view.minimized ? (
           <AddIcon className={classes.icon} fontSize="small" />
         ) : (
           <MinimizeIcon className={classes.icon} fontSize="small" />
         )}
       </IconButton>
-      <IconButton data-testid="close_view" onClick={onClose}>
+      <IconButton
+        data-testid="close_view"
+        onClick={() => {
+          session.removeView(view)
+        }}
+      >
         <CloseIcon className={classes.icon} fontSize="small" />
       </IconButton>
     </>

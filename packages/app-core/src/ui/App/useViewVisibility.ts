@@ -6,6 +6,13 @@ function intersectionObserverAvailable() {
   return typeof window !== 'undefined' && 'IntersectionObserver' in window
 }
 
+interface Visibility {
+  visible: boolean
+  // the body's own height, captured as it goes off-screen. Only read while
+  // hidden, to hold the scroll position the unmounted body used to occupy
+  height?: number
+}
+
 /**
  * View-level lazy mounting. A view only mounts its (GPU-heavy) body when it is
  * within `rootMargin` of the viewport, and collapses to a height-preserving
@@ -35,12 +42,22 @@ function intersectionObserverAvailable() {
  * Starts hidden so a cold load with N crammed views doesn't mount them all at
  * once; the observer's first callback mounts only what's near the viewport.
  */
-export function useViewVisibility(rootMargin: string, estimatedHeight: number) {
+export function useViewVisibility(rootMargin: string) {
   const ref = useRef<HTMLDivElement>(null)
-  const [visible, setVisible] = useState(() => !intersectionObserverAvailable())
-  const [rememberedHeight, setRememberedHeight] = useState<number>()
+  const [state, setState] = useState<Visibility>(() => ({
+    visible: !intersectionObserverAvailable(),
+  }))
 
-  // Toggle `visible` as the body scrolls in/out of the viewport (root: null).
+  // Toggle `visible` as the body scrolls in/out of the viewport (root: null),
+  // and record the height it had on the way out.
+  //
+  // The height comes off the entry the observer already handed us. At the
+  // moment the body stops intersecting it is still mounted at full height (the
+  // collapse is what this callback is about to cause), so the entry's rect is
+  // exactly what a ResizeObserver would have reported. Keeping one
+  // meant a second observer per view whose every fire re-rendered the whole
+  // view chrome, and a view's height moves constantly: every track added,
+  // resized, or grown by its own data.
   useEffect(() => {
     const node = ref.current
     if (node && intersectionObserverAvailable()) {
@@ -48,7 +65,20 @@ export function useViewVisibility(rootMargin: string, estimatedHeight: number) {
         entries => {
           const entry = entries.at(-1)
           if (entry) {
-            setVisible(entry.isIntersecting)
+            const { isIntersecting } = entry
+            setState(prev => {
+              if (prev.visible === isIntersecting) {
+                return prev
+              }
+              return {
+                visible: isIntersecting,
+                // a minimized view measures 0 here (it renders no body at
+                // all), which must not become its remembered height
+                height: isIntersecting
+                  ? prev.height
+                  : entry.boundingClientRect.height || prev.height,
+              }
+            })
           }
         },
         { rootMargin },
@@ -61,31 +91,11 @@ export function useViewVisibility(rootMargin: string, estimatedHeight: number) {
     return undefined
   }, [rootMargin])
 
-  // Only measure while visible, so we record the body's real content height and
-  // never the collapsed spacer height. Re-subscribing on the `visible`
-  // transition lets the callback record unconditionally, instead of reading the
-  // latest `visible` back through a render-written ref.
-  useEffect(() => {
-    const node = ref.current
-    if (node && visible && 'ResizeObserver' in window) {
-      const ro = new ResizeObserver(entries => {
-        const box = entries.at(-1)?.contentBoxSize[0]
-        // ignore a transient 0 measured before the body has laid out content
-        if (box && box.blockSize > 0) {
-          setRememberedHeight(box.blockSize)
-        }
-      })
-      ro.observe(node)
-      return () => {
-        ro.disconnect()
-      }
-    }
-    return undefined
-  }, [visible])
-
+  // `measuredHeight` is undefined until the body has been seen at least once.
+  // The caller supplies the estimate, and supplies it lazily. See ViewContainer
   return {
     ref,
-    visible,
-    placeholderHeight: rememberedHeight ?? estimatedHeight,
+    visible: state.visible,
+    measuredHeight: state.height,
   }
 }

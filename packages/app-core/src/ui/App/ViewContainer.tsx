@@ -34,6 +34,13 @@ const VIEW_VISIBILITY_ROOT_MARGIN = '150% 0px'
 // (which would mark them all visible and defeat the lazy mount).
 const ESTIMATED_VIEW_HEIGHT = 400
 
+// CALL THIS ONLY WHERE THE ESTIMATE IS ACTUALLY USED, i.e. under `reserveSpace`.
+// A view's `height` is a computed over its track heights (LinearGenomeView's
+// sums them), so reading it makes the caller an observer of every track resize
+// and every display that grows with its data. Called unconditionally during
+// render, that re-rendered the whole view chrome on each of those, to produce
+// a placeholder height that only a hidden view ever shows. Measured: 2 chrome
+// renders per height change became 0.
 function viewHeight(view: AbstractViewModel) {
   return 'height' in view && typeof view.height === 'number'
     ? view.height
@@ -83,8 +90,8 @@ const ViewContainer = observer(function ViewContainer({
   const {
     ref: bodyRef,
     visible,
-    placeholderHeight,
-  } = useViewVisibility(VIEW_VISIBILITY_ROOT_MARGIN, viewHeight(view))
+    measuredHeight,
+  } = useViewVisibility(VIEW_VISIBILITY_ROOT_MARGIN)
 
   useFocusOnInteraction(ref, () => {
     session.setFocusedViewId(view.id)
@@ -98,20 +105,20 @@ const ViewContainer = observer(function ViewContainer({
   const showBody = visible && !minimized
   const reserveSpace = !visible && !minimized
 
+  // Only this container tracks focus now, not its header: with the arrow icon
+  // in its own observer (ViewFocusIndicator) the header's props are unchanged
+  // for every view but the two the focus moved between, so mobx-react's memo
+  // holds and one click re-renders two headers rather than all of them.
   const backgroundColorClassName =
     session.focusedViewId === view.id
       ? classes.focusedView
       : classes.unfocusedView
-  const viewContainerClassName = cx(
-    classes.viewContainer,
-    backgroundColorClassName,
-  )
 
   return (
     <Paper
       ref={ref}
       elevation={12}
-      className={viewContainerClassName}
+      className={cx(classes.viewContainer, backgroundColorClassName)}
       data-testid={`view-container-${view.id}`}
       // the view-level counterpart of DisplayChrome's data-display-phase: while
       // this reads `loading` the view has no displays mounted, so every
@@ -121,12 +128,6 @@ const ViewContainer = observer(function ViewContainer({
     >
       <ViewHeader
         view={view}
-        onClose={() => {
-          session.removeView(view)
-        }}
-        onMinimize={() => {
-          view.setMinimized(!view.minimized)
-        }}
         className={backgroundColorClassName}
         scrollOnMount={scrollOnMount}
       />
@@ -135,7 +136,11 @@ const ViewContainer = observer(function ViewContainer({
         stable node to watch */}
         <div
           ref={bodyRef}
-          style={reserveSpace ? { height: placeholderHeight } : undefined}
+          style={
+            reserveSpace
+              ? { height: measuredHeight ?? viewHeight(view) }
+              : undefined
+          }
         >
           {showBody ? <ViewWrapper view={view} session={session} /> : null}
         </div>

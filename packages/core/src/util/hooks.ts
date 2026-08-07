@@ -54,11 +54,17 @@ export function useDebounce<T>(value: T, delay: number) {
 
 // used in ViewContainer files to get the width. useMeasure reports the content
 // box, so padding is already excluded from the measured width.
+//
+// Width-only on purpose: the observed element is the whole view container, so
+// its height moves whenever a track is added, resized or grows with its data.
+// Measuring both axes turned every one of those into a re-render of the view
+// chrome (two MUI Papers, the header and its buttons) for a number this hook
+// never reads.
 export function useWidthSetter(view: {
   setWidth: (arg: number) => void
   id?: string
 }) {
-  const [ref, { width }] = useMeasure()
+  const [ref, { width }] = useMeasure('width')
   useEffect(() => {
     let token: ReturnType<typeof requestAnimationFrame>
     if (width && isAlive(view)) {

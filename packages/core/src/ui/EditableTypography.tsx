@@ -43,7 +43,7 @@ interface Props {
 
 function EditableTypography(props: Props) {
   const { value, setValue, variant, ref, classes: overrides, ...other } = props
-  const [ref2, { width }] = useMeasure()
+  const [ref2, { width }] = useMeasure('width')
   const [editedValue, setEditedValue] = useState<string>()
   const inputRef = useRef<HTMLInputElement>(null)
   // set by Escape so the synchronous blur() it triggers discards the edit;

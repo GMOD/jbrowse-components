@@ -31,23 +31,36 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+// The one thing in the header that depends on which view has focus, kept in its
+// own observer so the header does not. Read from ViewHeader itself,
+// `focusedViewId` made a single click re-render every view's header and the MUI
+// subtree under it (a Tooltip, three IconButtons and the menu), because an
+// observer re-renders on its own observable change whatever its props say. Here
+// a click re-renders N nodes that mostly render nothing.
+const ViewFocusIndicator = observer(function ViewFocusIndicator({
+  view,
+  className,
+}: {
+  view: IBaseViewModel
+  className?: string
+}) {
+  return getSession(view).focusedViewId === view.id ? (
+    <KeyboardArrowRightIcon className={className} fontSize="small" />
+  ) : null
+})
+
 const ViewHeader = observer(function ViewHeader({
   view,
-  onClose,
-  onMinimize,
   className,
   scrollOnMount,
 }: {
   view: IBaseViewModel
-  onClose: () => void
-  onMinimize: () => void
   className?: string
   scrollOnMount?: boolean
 }) {
   const { classes } = useStyles()
   const scrollRef = useRef<HTMLDivElement>(null)
-  const session = getSession(view)
-  const stickyViewHeaders = session.stickyViewHeaders === true
+  const stickyViewHeaders = getSession(view).stickyViewHeaders === true
 
   // Scroll a newly-added view into view on mount. Gated on scrollOnMount so a
   // cold load / session restore with several views doesn't have every header
@@ -64,16 +77,14 @@ const ViewHeader = observer(function ViewHeader({
       className={cx(classes.viewHeader, className)}
       style={{ position: stickyViewHeaders ? 'sticky' : undefined }}
     >
-      <ViewMenu model={view} IconProps={{ className: classes.icon }} />
+      <ViewMenu model={view} className={classes.icon} />
       <div className={classes.grow} />
       <div className={classes.viewTitle}>
-        {session.focusedViewId === view.id ? (
-          <KeyboardArrowRightIcon className={classes.icon} fontSize="small" />
-        ) : null}
+        <ViewFocusIndicator view={view} className={classes.icon} />
         <ViewContainerTitle view={view} />
       </div>
       <div className={classes.grow} />
-      <ViewButtons onClose={onClose} onMinimize={onMinimize} view={view} />
+      <ViewButtons view={view} />
     </div>
   )
 })

@@ -19,30 +19,25 @@ import type { SessionWithDockviewLayout } from '../../DockviewLayout/index.ts'
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { ReorderDirection } from '@jbrowse/core/util'
 import type { SessionWithMultipleViews } from '@jbrowse/product-core'
-import type { SvgIconProps } from '@mui/material'
 
 type ViewMenuSession = SessionWithMultipleViews & SessionWithDockviewLayout
 
+// takes the icon's class, not an SvgIconProps object: the object was built
+// inline by ViewHeader and so was new on each of its renders, which defeated
+// mobx-react's memo for this whole menu (a Tooltip and an IconButton) every
+// time anything re-rendered the header
 const ViewMenu = observer(function ViewMenu({
   model,
-  IconProps,
+  className,
 }: {
   model: IBaseViewModel
-  IconProps: SvgIconProps
+  className?: string
 }) {
   const session = getSession(model) as unknown as ViewMenuSession
 
   const { moveViewToNewTab, moveViewToSplitRight } = useDockview()
   const usePanel =
     session.effectiveUseWorkspaces && isSessionWithDockviewLayout(session)
-  // The views this move is relative to: in a workspace, the ones sharing this
-  // view's panel; in the classic stack, all of them. `session.views` is the
-  // order either way, so the mode decides the SCOPE of a move and nothing else
-  // — there is one implementation of "move a view" again.
-  const scopeIds = usePanel
-    ? session.getPanelContainingView(model.id)?.viewIds.slice()
-    : undefined
-  const viewCount = scopeIds?.length ?? session.views.length
 
   const moves: Record<
     ReorderDirection,
@@ -52,10 +47,6 @@ const ViewMenu = observer(function ViewMenu({
     up: session.moveViewUp,
     down: session.moveViewDown,
     bottom: session.moveViewToBottom,
-  }
-
-  const moveView = (direction: ReorderDirection) => {
-    moves[direction](model.id, scopeIds)
   }
 
   // Give this view a home of its own: its own tab beside the rest, or its own
@@ -85,72 +76,91 @@ const ViewMenu = observer(function ViewMenu({
     session.setUseWorkspaces(true)
   }
 
-  // 'top'/'bottom' only mean something with a view above *and* below
-  const moveItems = (
-    [
-      ['top', 'Move view to top', KeyboardDoubleArrowUpIcon, 2],
-      ['up', 'Move view up', KeyboardArrowUpIcon, 1],
-      ['down', 'Move view down', KeyboardArrowDownIcon, 1],
-      ['bottom', 'Move view to bottom', KeyboardDoubleArrowDownIcon, 2],
-    ] as const
-  ).flatMap(([direction, label, icon, minViews]) =>
-    viewCount > minViews
-      ? [
-          {
-            label,
-            icon,
-            onClick: () => {
-              moveView(direction)
-            },
-          },
-        ]
-      : [],
-  )
-
   return (
     <CascadingMenuButton
       data-testid="view_menu_icon"
       tooltip="View menu"
-      menuItems={() => [
-        {
-          label: 'View options',
-          type: 'subMenu' as const,
-          subMenu: [
-            {
-              label: 'Copy view',
-              icon: ContentCopyIcon,
-              onClick: () => {
-                session.addView(
-                  model.type,
-                  renameIds(
-                    structuredClone(
-                      getSnapshot(model) as Record<string, unknown>,
+      menuItems={() => {
+        // The views this move is relative to: in a workspace, the ones sharing
+        // this view's panel; in the classic stack, all of them. `session.views`
+        // is the order either way, so the mode decides the SCOPE of a move and
+        // nothing else. There is one implementation of "move a view" again.
+        //
+        // Resolved here rather than during render. It scans every panel's
+        // assignment list and copies one of them, and reading those lists in
+        // render would also subscribe this menu to them, so a view moving
+        // between panels anywhere re-rendered every view's menu. None of it is
+        // needed until the menu opens.
+        const scopeIds = usePanel
+          ? session.getPanelContainingView(model.id)?.viewIds.slice()
+          : undefined
+        const viewCount = scopeIds?.length ?? session.views.length
+        return [
+          {
+            label: 'View options',
+            type: 'subMenu' as const,
+            subMenu: [
+              {
+                label: 'Copy view',
+                icon: ContentCopyIcon,
+                onClick: () => {
+                  session.addView(
+                    model.type,
+                    renameIds(
+                      structuredClone(
+                        getSnapshot(model) as Record<string, unknown>,
+                      ),
                     ),
-                  ),
-                )
+                  )
+                },
               },
-            },
-            {
-              label: 'Move to new tab',
-              icon: OpenInNewIcon,
-              onClick: () => {
-                moveViewOut('tabs')
+              {
+                label: 'Move to new tab',
+                icon: OpenInNewIcon,
+                onClick: () => {
+                  moveViewOut('tabs')
+                },
               },
-            },
-            {
-              label: 'Move to split view (right side of screen)',
-              icon: VerticalSplitIcon,
-              onClick: () => {
-                moveViewOut('horizontal')
+              {
+                label: 'Move to split view (right side of screen)',
+                icon: VerticalSplitIcon,
+                onClick: () => {
+                  moveViewOut('horizontal')
+                },
               },
-            },
-            ...moveItems,
-          ],
-        },
-        ...model.menuItems(),
-      ]}
+              // 'top'/'bottom' only mean something with a view above *and* below
+              ...(
+                [
+                  ['top', 'Move view to top', KeyboardDoubleArrowUpIcon, 2],
+                  ['up', 'Move view up', KeyboardArrowUpIcon, 1],
+                  ['down', 'Move view down', KeyboardArrowDownIcon, 1],
+                  [
+                    'bottom',
+                    'Move view to bottom',
+                    KeyboardDoubleArrowDownIcon,
+                    2,
+                  ],
+                ] as const
+              ).flatMap(([direction, label, icon, minViews]) =>
+                viewCount > minViews
+                  ? [
+                      {
+                        label,
+                        icon,
+                        onClick: () => {
+                          moves[direction](model.id, scopeIds)
+                        },
+                      },
+                    ]
+                  : [],
+              ),
+            ],
+          },
+          ...model.menuItems(),
+        ]
+      }}
     >
-      <MenuIcon {...IconProps} fontSize="small" />
+      <MenuIcon className={className} fontSize="small" />
     </CascadingMenuButton>
   )
 })

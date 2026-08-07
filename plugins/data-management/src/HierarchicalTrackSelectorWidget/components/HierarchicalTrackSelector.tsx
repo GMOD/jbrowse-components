@@ -27,7 +27,7 @@ const HierarchicalTrackSelector = observer(function HierarchicalTrackSelector({
   toolbarHeight?: number
 }) {
   const { classes } = useStyles()
-  const [ref, { height }] = useMeasure()
+  const [ref, { height }] = useMeasure('height')
   return (
     <div
       className={classes.container}
