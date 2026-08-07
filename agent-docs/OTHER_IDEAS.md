@@ -77,7 +77,7 @@ reference others may hold, not as free-form prose.
 - [Offline genome packages](#offline-genome-packages-for-jbrowse-desktop) —
   relocatable genome packs plus a download manager
 - [Deferred architecture-review items](#deferred-architecture-review-items-type-safety--displaychrome) —
-  including the theme-free `makeStyles` half
+  and the two chrome loose ends left after it
 - [Interaction perf](#interaction-perf-which-components-re-render-per-frame) — the
   measured culprit is the coordinate ruler, not the alignments overlays
 - [Search / misc](#search--misc)
@@ -1909,39 +1909,24 @@ gap from the same pass is tracked in TODO.md.
   rules out the composition trick that would express it. Deferred; the default
   is fail-hung rather than fail-stale, which is the safe side.
 
-### A theme-free `makeStyles` — the build-your-own "weight" half
+### Two loose ends from the bring-your-own chrome pass
 
-The two bring-your-own seams shipped and a stock wiggle, feature or alignments
-display now renders **nothing styled by Material UI** when an embedder installs
-both plain sets (`reference/DISPLAYCHROME.md`, "The bring-your-own seams", has
-the census that proves it). What did not ship is *weight*: `makeStyles` imports
-`useTheme` from `@mui/material/styles`
-(`packages/core/src/util/tss-react/mui/mui.ts`), and
-`grep -rn 'makeStyles(' --include='*.ts*' packages plugins products` is ~269 call
-sites. While that holds, "Material UI never enters the module graph" is
-unreachable for anyone rendering a stock display, no matter how many providers
-they install. The build-your-own site says so plainly under "What you do not get
-rid of"; that is honesty, not a solution.
+The idea this heading used to carry — a theme-free `makeStyles`, the
+build-your-own "weight" half — **shipped on 2026-08-06**. `makeStyles` hands a
+component `ui/styleTheme.ts`'s plain-data theme and reaches no Material UI;
+[reference/EAGER_BUNDLE.md](reference/EAGER_BUNDLE.md), "Theme-free
+`makeStyles`", has the census behind the design and the measurement, and the
+section after it has what is left, which is not what this proposal predicted.
 
-**Scope correction (2026-08-05):** a `makeStyles` that never reaches MUI would
-not on its own get Material UI out of an embedded host's bundle, because
-`makeStyles` was never the biggest edge into it. Three static pins from
-eagerly-evaluated modules were, worth 144 KB gzipped on the build-your-own
-site's sparsest page, and they are now cut —
-[reference/EAGER_BUNDLE.md](reference/EAGER_BUNDLE.md) has the measurements and
-what remains. Read that before costing this idea: the ~38 registration-time
-modules importing the `@jbrowse/core/ui` barrel for menu-item *descriptor*
-helpers are a cheaper and larger win than 269 `makeStyles` call sites, and they
-are the reason most of MUI is still eager.
+What did not travel with it, from the same pass: alignments' bottom-right row
+doesn't reserve its `VerticalScrollbar`'s 12px (canvas reserves 14), cosmetic
+overlap with the thumb only, left alone to avoid churning PNG goldens that
+weren't verifiable in-session; and `plainTrackControl` carries one literal colour
+(`#d97706`) because there is no CSS system colour for "something is wrong" and
+the warning state exists precisely to be seen without hovering.
 
-The fix, if it is worth it, is a theme-free `makeStyles` — or a
-`usePalette()`-backed styling helper — that stock display components are
-*required* to use. It would also close the census gap noted in DISPLAYCHROME.md
-(a themed `makeStyles` component that sets no typography passes both halves
-today). `pnpm measure-chrome-bundle` measures what the reach half costs now.
-
-**The examples site cannot demonstrate this half, and that was assessed rather
-than assumed.** `DisplayChromeBase` takes `model: ChromeModel &
+**The examples site still cannot demonstrate the seam, and that was assessed
+rather than assumed.** `DisplayChromeBase` takes `model: ChromeModel &
 RenderLifecycleModel<B>` plus a backend `factory`, so a page showing it needs a
 display *model* — a config schema, a display type and a plugin to register them,
 on top of the ~300 lines of view boilerplate every page there repeats. Most of
@@ -1949,13 +1934,6 @@ the file would be about how to write a display rather than about the seam, and
 the site's "one page adds one thing" arc has nowhere to put it. If it ever gets a
 demo it belongs outside the arc, and the honest scope is a custom-display page
 that happens to use `DisplayChromeBase` — not a `DisplayChromeBase` page.
-
-Two smaller loose ends from the same pass: alignments' bottom-right row doesn't
-reserve its `VerticalScrollbar`'s 12px (canvas reserves 14), cosmetic overlap
-with the thumb only, left alone to avoid churning PNG goldens that weren't
-verifiable in-session; and `plainTrackControl` carries one literal colour
-(`#d97706`) because there is no CSS system colour for "something is wrong" and
-the warning state exists precisely to be seen without hovering.
 
 ## Interaction perf: which components re-render per frame
 

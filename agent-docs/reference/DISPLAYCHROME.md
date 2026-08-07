@@ -533,15 +533,16 @@ census can only see a tooltip that a headless hover happened to raise.
 
 **Reach vs weight.** Both providers are *reach*: they redirect what stock
 displays render, but `DisplayChrome`/`TrackControl` still reference MUI, so it
-stays in the bundle. What the *host* pays either way — and the three pins that
-were making it pay much more than the chrome — is
+stays in the bundle. What the *host* pays either way — and the pins that were
+making it pay much more than the chrome — is
 [EAGER_BUNDLE.md](EAGER_BUNDLE.md). *Weight* is only available to code writing its own display
 component — `DisplayChromeBase` + a `TrackControlComponent` of its own import no
 toolkit at all. `pnpm measure-chrome-bundle` measures the first half of that and
-CI re-checks it. The weight half is blocked on `makeStyles` importing `useTheme`
-from `@mui/material/styles`
-(`packages/core/src/util/tss-react/mui/mui.ts`) — see OTHER_IDEAS.md, "A
-theme-free `makeStyles`", for what closing it would take.
+CI re-checks it. `makeStyles` no longer stands in the way of the second — it
+hands a component JBrowse's own plain-data theme (`ui/styleTheme.ts`) and
+reaches no Material UI — but that on its own did not get MUI out of a host's
+first paint, and EAGER_BUNDLE.md's "What still holds Material UI in the eager
+set" is the measured list of what does.
 
 **Counting `Mui*` classnames does not measure "no Material UI", and this is the
 one thing to know before trusting a census.** `@jbrowse/core/util/tss-react`'s

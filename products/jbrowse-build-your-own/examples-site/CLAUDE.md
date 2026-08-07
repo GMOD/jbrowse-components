@@ -67,5 +67,31 @@ copy-paste and the answer is a different rule argued here, not more entries.
   attribute a new one. Don't raise a budget to make it pass, for the same reason
   `MUI_BUDGET` isn't raised.
 
+## `pnpm probe-eager-graph` answers *why*, and is the one to reach for first
+
+`measure-eager-bundle` gives a number; this gives the modules behind it. It
+rebuilds through `astro.config.probe.mjs` — the real config plus one Vite plugin
+that dumps the pre-treeshake source graph (`buildEnd`) and the post-treeshake
+chunks with per-module byte counts (`generateBundle`) — and intersects them, so
+"is statically reachable" becomes "is actually paid for".
+
+    pnpm probe-eager-graph                          costliest eager modules, by package
+    pnpm probe-eager-graph --holds @mui/material/styles    who is keeping it here
+    pnpm probe-eager-graph --no-build               reuse the last dump
+
+It is committed because three sessions in a row rebuilt it from scratch, and
+because every wrong bundle number in EAGER_BUNDLE.md's history came from
+reasoning where this would have answered. Two of those traps are wired into it
+rather than left as advice: it attributes at module level, never by chunk name
+(a rolldown chunk is named after one of its modules and holds unrelated ones);
+and when nothing first-party names the target directly it falls back to listing
+the package's barrel importers, because `import { Button } from '@mui/material'`
+records an edge to the barrel and a direct-importer query would report "nothing
+to fix".
+
+The dump lands in `node_modules/.cache/`, and the probe build overwrites `dist/`
+like any other — re-run `pnpm build` before trusting a measurement taken after
+it.
+
 The chrome bundle figures in the prose come from the repo-root
 `scripts/measureChromeBundle.ts` and its `pnpm autogen` entry.

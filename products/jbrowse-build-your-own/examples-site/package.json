@@ -11,7 +11,8 @@
     "measure-eager-bundle": "node scripts/measureEagerBundle.mjs",
     "measure-demo-heights": "node scripts/measureDemoHeights.mjs",
     "smoke": "node scripts/measureEagerBundle.mjs --check && node scripts/smoke.mjs",
-    "check-links": "node scripts/check-doc-links.mjs && node scripts/check-duplication.mjs"
+    "check-links": "node scripts/check-doc-links.mjs && node scripts/check-duplication.mjs",
+    "probe-eager-graph": "node scripts/eagerGraph.mjs"
   },
   "dependencies": {
     "@astrojs/react": "^6.0.2",

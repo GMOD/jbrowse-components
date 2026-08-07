@@ -1,6 +1,6 @@
 ---
 name: eager-bundle
-description: What every JBrowse host downloads before it can run, why plugin registration makes most of it unavoidable, and the five pins that were making it pay for far more. Read before touching a plugin `exports` object, a state model's imports, or anything that claims a bundle number.
+description: What every JBrowse host downloads before it can run, why plugin registration makes most of it unavoidable, the six pins that were making it pay for far more, and the measured census of what still holds Material UI there. Read before touching a plugin `exports` object, a state model's imports, or anything that claims a bundle number.
 ---
 
 # The eager bundle
@@ -27,18 +27,25 @@ description: What every JBrowse host downloads before it can run, why plugin reg
   module names**. Three shapes cause almost all of it, none visible in a diff: a
   plugin's `exports` object, a state model importing a component, and a menu-item
   builder returning an element where a description would do.
+- `makeStyles` hands a component **JBrowse's own plain-data theme**
+  (`ui/styleTheme.ts`), not Material UI's. That is architecture, not a win: it
+  cost 1 KB. See "Theme-free `makeStyles`" below for why, and for the census
+  that says so.
 - Measured and guarded per page by
   `products/jbrowse-build-your-own/examples-site`'s
   `pnpm measure-eager-bundle`, run by that site's `pnpm smoke`. It is a
   **ceiling with a ratchet** — going far enough under a budget fails too.
+- **`pnpm probe-eager-graph` in that site answers *why*** — which module is
+  paying for what, and which first-party module holds a given dependency there.
+  Reach for it before any claim about a pin; every wrong number below came from
+  reasoning instead.
 - Don't reason from chunk *names*. A rolldown chunk is named after one of its
   modules and routinely contains unrelated ones; a chunk called
   `LinearGenomeView` turned out to be the `@jbrowse/core/ui` barrel.
 
 Related: `reference/DISPLAYCHROME.md` "Reach vs weight" (what the two
 bring-your-own seams do and don't buy), `reference/PLUGIN_ABI_STABILITY.md` (why
-an `exports` entry is hard to remove and easy to make lazy instead),
-`OTHER_IDEAS.md` "A theme-free `makeStyles`".
+an `exports` entry is hard to remove and easy to make lazy instead).
 
 ## The number
 
@@ -259,51 +266,116 @@ usually prevents that is one static import on a module that had no other reason
 to be light. Going further, to not *loading* it at all, is a separate and much
 riskier claim on a host whose workers share a chunk graph with its renderer.
 
-## What is left, and what is not worth chasing
+## Theme-free `makeStyles`
+
+`makeStyles` used to hand a component Material UI's `Theme`, fetched by a
+six-line shim (`util/tss-react/mui/mui.ts`) whose whole content was `import
+{ useTheme } from '@mui/material/styles'`. 268 call sites made that shim eager,
+and `useTheme` falls back to `createTheme()`'s default theme, so the theme
+factory was in every host's first paint.
+
+It now hands them **`ui/styleTheme.ts`'s `JBrowseStyleTheme`** — plain data, no
+toolkit — read through `useStyleTheme()` on the context `PaletteProvider`
+already published. `palette.ts` is the colour half and was already there; this is
+the rest, and it is deliberately a *subset* of MUI's theme rather than a copy, so
+a call site reaching further is a compile error naming the file.
+
+**What the 268 call sites actually read**, counted before designing anything —
+the hour of work the previous handoff said would settle it, and it did:
+
+| | call sites |
+| --- | --- |
+| read nothing from the theme | 111 |
+| `palette.*` and/or `spacing` only | 141 |
+| anything else | 16 |
+
+Of the 16: `shape.borderRadius` (5), `typography.*` (9), and five sites reaching
+`transitions`, `zIndex` or `shadows`. So the theme carries palette, spacing,
+shape and the type scale, and the last five were rewritten — two `transitions`
+to the literal Material emits, `shadows[2]` likewise, and the two `zIndex` reads
+to named constants in `ui/zIndexes.ts`, which is where layering was already
+decided.
+
+**`palette.ts` had to grow, and that is the half worth knowing about.** Its
+census covered the colors JBrowse *renders*; `error`, `warning`, `info`,
+`success`, the grey scale and the `action` opacities were never in it, because
+`createTheme` filled them in on the way past. 100 call sites read one. They are
+JBrowse's own now, at Material's values, and a config `theme` can override them
+where before only the Material half saw it.
+
+The values reproduce Material's exactly, because JBrowse's own chrome *is*
+Material UI and a `makeStyles` row sits next to a `<Typography>`.
+`styleTheme.test.ts` asserts that against a real MUI theme the way
+`palette.test.ts` does for colour, including under a config `theme` that sets
+`spacing` or `typography.fontSize` — both documented in the theming guide, both
+still reaching `makeStyles`, because a session's new `styleTheme` getter is
+derived from the same `themeOptions` as its `theme`.
+`util/tss-react/muiFree.test.ts` fails if anything reachable from `makeStyles`
+imports `@mui/*` again.
+
+**It cost 1 KB, and that is the point of the next section.** 470 KB gzipped
+before, 471 after, for the module the style theme adds. The 51 KB it was supposed
+to release did not move, because the premise was wrong.
+
+## What still holds Material UI in the eager set
+
+The claim above — "`@mui/material/styles` is held by `mui.ts`" — was checked the
+way this file recommends, by grepping for the first-party module that names it.
+That check is right and was run wrong: on **one** suspected module rather than
+over the whole eager set, which finds the holder you thought of and no others.
+`pnpm probe-eager-graph` now runs it over the set.
+
+Measured 2026-08-06 on the sparsest page, **48 first-party eager modules import
+Material UI**, and they hold overlapping parts of it, so cutting any one group
+banks nothing:
+
+| holder | count | what it names |
+| --- | --- | --- |
+| menu-item modules, plugin indexes, state models | 31 | `@mui/icons-material/*` |
+| the SVG export path, reached from the LGV plugin index | 9 | `useTheme`, `ThemeProvider` |
+| `ui/theme.ts` | 1 | `createTheme`, for the session's `theme` getter |
+| `ui/InlineMenuControls.tsx`, `wiggle-core/ResolutionStepper.tsx` | 2 | `Tooltip`, `IconButton`, `Button`, `Typography` |
+| the two auth account icons | 2 | `SvgIcon` |
+| `HoverPositionHighlight`, `OverviewScalebarPolygon` | 2 | `alpha` — **fixed**, `ui/palette` exports it |
+| `util/color/index.ts` | 1 | `lighten`/`darken`/`getLuminance` — **fixed**, same |
+
+That is ~277 KB uncompressed (`@mui/material` 159, `@mui/system` 78,
+`@mui/icons-material` 21, `@mui/utils` 19) and it comes out only if every group
+does. Two corrections fall out of it:
+
+- **`ButtonBase`, `Tooltip`, `Button`, `CircularProgress` (~58 KB) are not
+  chunk co-location**, which is what this file said. `Tooltip` is named by
+  `InlineMenuControls.tsx` and `Button` by `ResolutionStepper.tsx`, both eager
+  through a barrel. The earlier check asked which module imports
+  `@mui/material/Button/Button.mjs` and got node_modules only — a named import
+  from a package barrel records an edge to the barrel, and the barrel imports the
+  component. `probe-eager-graph --holds` reports the barrel importers as a
+  shortlist for exactly this reason.
+- **The icon-name registry stays decided-against**, and the reason it was
+  deferred is gone rather than satisfied. It was parked because it would be worth
+  ~72 KB *after* a theme-free `makeStyles` released `@mui/material/styles`;
+  `styles` is held by `ui/theme.ts` independently, so it is still worth its own
+  ~21 KB of source — under 10 KB gzipped — for a public ABI change across ~39
+  modules. Its design, if the whole knot is ever cut at once: follow
+  `TrackControlIcon`
+  (`plugins/linear-genome-view/src/BaseLinearDisplay/components/trackControl/types.ts`),
+  a closed string union with a `satisfies Record<Name, unknown>` map per
+  implementation, widening the field to `React.ElementType | MenuIconName` so
+  external plugins keep working (PLUGIN_ABI_STABILITY.md). The resolver goes on
+  the render side, which is already lazy — `CascadingMenu`, `MenuItems` and
+  `CascadingMenuButton` are all outside the eager set.
+
+**So the remaining work is one item, not three.** Get Material UI out of the
+eager set, which needs every row of that table, and the two hard ones are the
+SVG export path (its components are value exports of the LGV plugin index, so
+deferring them is an ABI change) and `session.theme` (a synchronous getter, so
+deferring it means moving theme construction to the products — which already
+import Material UI, and where it costs a bring-your-own host nothing). Neither
+is worth starting without deciding both.
+
+## What is not worth chasing
 
 **Not worth chasing:** the ~1.4 MB raw that remains is dominated by plugin
 registration — models, adapters, config schemas for all 18 core plugins — plus
 React and MST. That is the engine, and `createViewState`'s contract is that all
 of it is registered before a session snapshot can be read.
-
-**Also not worth chasing: `ButtonBase`, `Tooltip`, `Button`, `CircularProgress`
-(~58 KB).** As of pin 5, **no first-party eager module imports a
-`@mui/material` component at all** — checked, not assumed. These arrive by
-rolldown putting a module reached only through dynamic imports into a chunk
-something eager also imports. That is a chunking question, not a source one, and
-the answer would be `advancedChunks` config rather than an edit anyone can read.
-
-**An icon-name registry for `BaseMenuItem.icon` is NOT the next lever, and this
-is the correction to an earlier draft of this file that said it was.** The claim
-was that `icon` being a `React.ElementType` costs the ~51 KB
-`@mui/material/styles` graph. Measured 2026-08-05, it does not:
-
-- the 43 eager `@mui/icons-material` modules are **21 KB** of source between
-  them, plus `SvgIcon` (3 KB) reached through `createSvgIcon`;
-- `@mui/material/styles` is held by **`packages/core/src/util/tss-react/mui/mui.ts`**,
-  a six-line module whose only content is
-  `import { useTheme } from '@mui/material/styles'` feeding `createMakeStyles`.
-  It is eager because 268 `makeStyles` call sites are, and it has nothing to do
-  with icons.
-
-So a registry buys ~24 KB of source — well under 10 KB gzipped — in exchange for
-changing a **public ABI field** that external plugins set, across ~39 modules,
-plus a closed name union and a resolver to keep in step. The mechanism would
-work (`CascadingMenu`, `MenuItems` and `CascadingMenuButton` are all lazy
-already, so named icons would land in the menu chunk), and it is the right shape
-by the descriptor rule — it is simply not worth it at this size.
-
-**The ordering is the point: do the theme-free `makeStyles` first**
-(OTHER_IDEAS.md, "A theme-free `makeStyles`"). That is what releases the 51 KB,
-and it makes the icon registry worth ~72 KB instead of ~24 KB. Done in the other
-order, the icon work is a large ABI change for a small number and the big half
-stays put.
-
-**How the earlier draft got it wrong, since the same trap is easy to re-enter.**
-A module-level BFS "is `styles` still reachable if I refuse to walk through an
-icon?" answered *no* — because rolldown **inlines** barrels, so the surviving
-graph has no edge where the source has one, and the probe's regex was looking for
-`styles/useTheme.mjs` when the real edge is to `styles/index.mjs`. Two ways to be
-wrong at once, both silent. Check a suspected pin by finding the **first-party**
-module that names it (`grep` the source), not by trusting a graph walk that has
-been through a bundler.
