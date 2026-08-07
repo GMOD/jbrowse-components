@@ -117,6 +117,18 @@ changes every capture.
   108bp-era coordinate after the spec was narrowed to 31bp, which read as 17%
   render flakiness for months. Share one anchor between the action and the
   callouts that explain it.
+- **A dotplot cell is `anchor: {hLocus, vLocus}`** (`scripts/dotplotAnchor.ts`),
+  each a bare refName for the whole chromosome or `4A:600,000,000-645,000,000`
+  for part of one; naming one axis spans the plot on the other. That is the unit
+  an off-diagonal block wants — "this chromosome against that one" is a grid
+  cell, and a box on it needs no chromosome lengths in the spec.
+  `node scripts/probe-dotplot-axes.ts <spec>` prints both axes with the px each
+  region covers, which is also how you find out **which** assembly ended up on
+  which axis. Anchors on the two canvas view types are resolved node-side and
+  handed to the overlay as a rect, so a new one has to be added to `annotations`
+  _and_ to the pre-resolved branch in `annotationOverlay.ts`; the axis
+  `bpToPx` returns a bare number, and reading `.offsetPx` off it yields a NaN
+  that serializes to null and parks every callout in the top-left corner.
 - **Don't `convert -append` a before/after figure by hand** — use a `compose`
   spec, or `stages` when a state is only reachable through the UI.
 - **A UI click-chain waiting on a fixed timeout is a red flag.** Make the

@@ -7,6 +7,7 @@ import {
   parseAnnotationLocus,
 } from '@jbrowse/browser-test-utils/annotationOverlay'
 
+import { dotplotAnchorRect } from './dotplotAnchor.ts'
 import { graphNodeRect } from './graphAnchor.ts'
 
 import type {
@@ -18,22 +19,32 @@ import type {
 import type { Page } from 'puppeteer'
 
 // Attach the parsed region so page context never parses strings, plus the
-// viewport rect of a graphNode anchor (resolved out here, against the graph
-// view's own layout, because the graph is a canvas with nothing to measure).
+// viewport rect of the two anchor kinds that resolve out here rather than in
+// the overlay: a graph node, and a dotplot's pair of axes. Both draw into a
+// single canvas, so there is no element in the page for the overlay to measure
+// and the view's own layout is the only thing that knows where they went.
+//
+// `wantBounds` is a graph question only. A force-directed node bends, so the
+// centre of its bounding box can sit off the node and everything but a box
+// wants a point ON it; a dotplot block's cell is a rectangle either way.
 async function withRegion(
   page: Page,
   anchor: AnnotationAnchor | undefined,
   wantBounds: boolean,
 ): Promise<ResolvedAnnotationAnchor | undefined> {
-  return anchor
-    ? {
-        ...anchor,
-        region: anchor.locus ? parseAnnotationLocus(anchor.locus) : undefined,
-        rect: anchor.graphNode
-          ? await graphNodeRect(page, anchor, wantBounds)
-          : undefined,
-      }
-    : undefined
+  if (!anchor) {
+    return undefined
+  }
+  const isDotplot = anchor.hLocus !== undefined || anchor.vLocus !== undefined
+  return {
+    ...anchor,
+    region: anchor.locus ? parseAnnotationLocus(anchor.locus) : undefined,
+    rect: anchor.graphNode
+      ? await graphNodeRect(page, anchor, wantBounds)
+      : isDotplot
+        ? await dotplotAnchorRect(page, anchor)
+        : undefined,
+  }
 }
 
 // Remove any annotation overlay left over from a previous frame so staged

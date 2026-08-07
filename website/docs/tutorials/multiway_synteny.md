@@ -207,7 +207,7 @@ columns **Color by → dN/dS** divides, plus the substitution count and Fisher p
 that say whether a given ratio means anything. Homoeologs are recent enough that
 dS stays well short of where the method saturates.
 
-<Figure caption="Bread wheat against itself: homoeolog pairs coloured by dN/dS on a ramp pivoted at 1, where blue is purifying selection. Each homoeologous group makes three parallel segments, one per pair of subgenomes. The segments breaking that pattern at 4A are the 4AL/5AL and 4AL/7BS translocations." src="/img/multiway_synteny/wheat_homoeolog_selection.png" />
+<Figure caption="Bread wheat against itself: homoeolog pairs coloured by dN/dS on a ramp pivoted at 1, where blue is purifying selection. Each homoeologous group makes three parallel segments, one per pair of subgenomes. The two boxed cells are where 4A pairs with a group it does not belong to, the 4AL/5AL and 4AL/7BS translocations." src="/img/multiway_synteny/wheat_homoeolog_selection.png" />
 
 Three things read off one plot: the subgenome structure as parallel segments,
 the 4A translocations as segments leaving their group, and per-gene divergence

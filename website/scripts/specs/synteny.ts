@@ -698,6 +698,39 @@ export const syntenySpecs: ScreenshotSpec[] = [
     settleMs: 15000,
     // 1000 left 233 css px of blank under the plot, per the run's own report
     viewportHeight: 767,
+    // The two cells where 4A pairs with a group it does not belong to, boxed by
+    // chromosome name rather than by pixel: `hLocus`/`vLocus` resolve through
+    // the axes' own layout (scripts/dotplotAnchor.ts), so the boxes follow the
+    // plot if its width, its assembly order or its zoom ever move.
+    //
+    // Both are the published 4A rearrangements, and the caption already names
+    // them: the distal end of 4AL came from 5AL, so those genes' homoeologs sit
+    // on 5B and 5D, and a further piece came from 7BS, whose homoeolog is on 7D.
+    // A whole-chromosome cell is the right box here because the links inside it
+    // are one tight cluster rather than a scatter — the ~600-645 Mb end of 4A
+    // against the distal ends of 5B/5D, and the ~650-744 Mb end against the
+    // first 80 Mb of 7D.
+    annotations: [
+      { type: 'box', anchor: { hLocus: '5D', vLocus: '4A' } },
+      { type: 'box', anchor: { hLocus: '7D', vLocus: '4A' } },
+      {
+        type: 'text',
+        text: "4A's distal end pairs with group 5 and group 7: the 4AL/5AL and 4AL/7BS translocations",
+        fontSize: 18,
+        maxWidth: 320,
+        anchor: { hLocus: '5D', vLocus: '4A', dy: -170 },
+      },
+      {
+        type: 'arrow',
+        fromAnchor: { hLocus: '5D', vLocus: '4A', dy: -120 },
+        anchor: { hLocus: '5D', vLocus: '4A', alignY: 'top', dy: -10 },
+      },
+      {
+        type: 'arrow',
+        fromAnchor: { hLocus: '7D', vLocus: '4A', dy: -120 },
+        anchor: { hLocus: '7D', vLocus: '4A', alignY: 'top', dy: -10 },
+      },
+    ],
   },
 
   // homoeolog_synteny.md: hexaploid oat against itself, on the same shape as
@@ -739,6 +772,30 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readyTimeout: 300000,
     settleMs: 15000,
     viewportHeight: 767,
+    // The counterpart of the two boxes on the wheat plot, and the reason the two
+    // are composed side by side: same callout, same anchor kind, opposite
+    // answer. Wheat has a handful of off-group cells and every one of them is a
+    // named 4A rearrangement; oat's are ordinary. 4A/7C is only the largest, so
+    // the label says what boxing one cell cannot — that it is not the exception.
+    annotations: [
+      { type: 'box', anchor: { hLocus: '4A', vLocus: '7C' } },
+      // Beside the cell, not above it: 7C is two rows from the top of the plot,
+      // and a pill lifted clear of a box that high runs off the frame into the
+      // app header.
+      {
+        type: 'text',
+        text: 'One of dozens of cells like it: an oat segment sitting outside its own homoeologous group',
+        fontSize: 18,
+        maxWidth: 320,
+        textAlign: 'end',
+        anchor: { hLocus: '4A', vLocus: '7C', alignX: 'left', dx: -60 },
+      },
+      {
+        type: 'arrow',
+        fromAnchor: { hLocus: '4A', vLocus: '7C', alignX: 'left', dx: -50 },
+        anchor: { hLocus: '4A', vLocus: '7C', alignX: 'left', dx: -10 },
+      },
+    ],
   },
 
   // selection_pressure.md: the one figure here where the COLOUR is the result

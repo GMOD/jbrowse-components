@@ -35,6 +35,14 @@ export interface AnnotationAnchor {
   // GFA segment id in the `view`-th view, which must be a GraphGenomeView. The
   // resolved rect is the node's drawn polyline bounds in viewport px.
   graphNode?: string
+  // the two axes of a DotplotView, as `4A` (the whole chromosome) or
+  // `4A:1-5,000,000`. The resolved rect is the grid cell the pair makes, which
+  // for two bare refNames is the box an off-diagonal block sits in. Naming one
+  // axis spans the plot on the other. Resolved by the caller
+  // (`website/scripts/dotplotAnchor.ts`) — the plot is one canvas, so there is
+  // nothing here to measure.
+  hLocus?: string
+  vLocus?: string
   // which view to resolve against: an index into `session.views` (default 0).
   // An array descends through nested `.views` — `[0, 1]` is the second LGV of a
   // comparative/breakpoint-split view.
@@ -322,9 +330,14 @@ export function drawAnnotationOverlay(
     if (!anchor) {
       return undefined
     }
-    // a graphNode anchor arrives already resolved by the caller; an
-    // unresolved one carries no rect and falls through to the miss below
-    const rect = anchor.graphNode
+    // a graph-node or dotplot anchor arrives already resolved by the caller —
+    // both are one canvas with nothing per feature to measure in here — and an
+    // unresolved one carries no rect, so it falls through to the miss below
+    const preResolved =
+      anchor.graphNode !== undefined ||
+      anchor.hLocus !== undefined ||
+      anchor.vLocus !== undefined
+    const rect = preResolved
       ? anchor.rect
       : isModel(anchor)
         ? modelRect(anchor)
