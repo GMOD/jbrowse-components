@@ -156,7 +156,7 @@ labels from a two-column `labels.tsv` and coloring by ancestry via `itemRgb`:
 
 ```
 #chrom	chromStart	chromEnd	name	score	strand	thickStart	thickEnd	itemRgb	sample	ancestry
-chr1	49135137	57939479	Wolf	0	.	49135137	57939479	230,159,0	Czechoslovakian 1 hap1	Wolf
+chr1	49135137	57939751	Wolf	0	.	49135137	57939751	230,159,0	Czechoslovakian 1 hap1	Wolf
 ```
 
 The last two columns are the ones the display needs: the row this block belongs

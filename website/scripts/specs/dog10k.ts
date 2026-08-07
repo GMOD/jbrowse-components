@@ -392,7 +392,9 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // chr1:112,000,000-113,500,000 and prints, per painted block edge, how many
   // ancestry-informative markers a haplotype carries either side. Three of the
   // four wolfdog edges are exact (23/23 wolf alleles then 0/26 for both
-  // haplotypes ending at 112,576,175, and 41/43 then 0/6 for Saarloos 1 hap1),
+  // haplotypes whose wolf block ends at 112,579,995 -- the last wolf-called
+  // marker is 112,576,175 and the runs tile to the first dog-called one, with
+  // no informative marker in between -- and 41/43 then 0/6 for Saarloos 1 hap1),
   // the five sweep-breed edges are not (13/23 for the Chow Chow and the Kai Ken,
   // and the Thai Ridgeback's block ends before the first marker), and Saarloos 2
   // hap2 at 3/5 then 6/44 is a real drop that is not a coordinate. The lane that
