@@ -19,6 +19,8 @@
  * pulls its whole component graph back in.
  */
 export { checkboxItem, radioItems } from './toggleMenuItems.ts'
+export { makeRadioSubMenu } from './radioSubMenu.ts'
+export { showLegendCheckboxItem } from './legendMenuItem.ts'
 export {
   promotableRadioItem,
   promotableToggleItem,

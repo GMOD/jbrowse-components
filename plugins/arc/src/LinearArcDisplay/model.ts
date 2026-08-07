@@ -5,12 +5,15 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
+import { makeRadioSubMenu } from '@jbrowse/core/ui/menuItems'
 import { getSession, isFeature, openFeatureWidget } from '@jbrowse/core/util'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import { TrackHeightMixin } from '@jbrowse/plugin-linear-genome-view'
 
 import { ArcFetchModel } from '../shared/ArcFetchModel.ts'
+import { ARC_DISPLAY_MODE_OPTIONS } from './displayModes.ts'
 
+import type { ArcDisplayMode } from './displayModes.ts'
 import type {
   LinearArcDisplayConfig,
   LinearArcDisplayConfigModel,
@@ -94,7 +97,7 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
       /**
        * #getter
        */
-      get displayMode() {
+      get displayMode(): ArcDisplayMode {
         return getConf(self, 'displayMode')
       },
       // #endregion
@@ -146,8 +149,8 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
       /**
        * #action
        */
-      setDisplayMode(flag: string) {
-        setConf(self, 'displayMode', flag)
+      setDisplayMode(mode: ArcDisplayMode) {
+        setConf(self, 'displayMode', mode)
       },
     }))
     .actions(self => ({
@@ -184,27 +187,14 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
         trackMenuItems() {
           return [
             ...superMenuItems(),
-            {
+            makeRadioSubMenu({
               label: 'Display mode',
-              subMenu: [
-                {
-                  type: 'radio',
-                  label: 'Arcs',
-                  onClick: () => {
-                    self.setDisplayMode('arcs')
-                  },
-                  checked: self.displayMode === 'arcs',
-                },
-                {
-                  type: 'radio',
-                  label: 'Semi-circles',
-                  onClick: () => {
-                    self.setDisplayMode('semicircles')
-                  },
-                  checked: self.displayMode === 'semicircles',
-                },
-              ],
-            },
+              value: self.displayMode,
+              onChange: mode => {
+                self.setDisplayMode(mode)
+              },
+              options: ARC_DISPLAY_MODE_OPTIONS,
+            }),
           ]
         },
       }

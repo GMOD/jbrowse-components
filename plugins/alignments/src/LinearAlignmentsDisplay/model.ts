@@ -110,10 +110,10 @@ import {
   getContextMenuItems,
   getCoverageMenuItem,
   getFeatureHeightMenuItem,
-  getFiltersMenuItem,
+  getFiltersMenuItems,
   getGroupByMenuItem,
   getReadConnectionsMenuItem,
-  getReadsMenuItem,
+  getReadsMenuItems,
   getSashimiMenuItem,
   getSortByMenuItem,
 } from './menus/index.ts'
@@ -3575,9 +3575,9 @@ export default function stateModelFactory(
                 ? 'Chain rows are ordered by chain — turn off "View as pairs / link supplementary alignments" to sort reads'
                 : 'Turn on "Show pileup" to sort reads',
             }),
-            getFiltersMenuItem(self),
+            ...getFiltersMenuItems(self),
             getGroupByMenuItem(self),
-            getReadsMenuItem(self),
+            ...getReadsMenuItems(self),
             getFeatureHeightMenuItem(self, 'read', {
               disabled: !self.showPileup,
               disabledHelpText: 'Turn on "Show pileup" to change read height',

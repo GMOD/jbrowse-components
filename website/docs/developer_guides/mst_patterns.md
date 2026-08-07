@@ -182,7 +182,7 @@ across files obscures the composition order and which views depend on which.
   /**
    * #getter
    */
-  get displayMode() {
+  get displayMode(): ArcDisplayMode {
     return getConf(self, 'displayMode')
   },
 ```
@@ -333,7 +333,7 @@ should reset. The multi-row display's block, in full:
 <!-- include: plugins/canvas/src/LinearMultiRowFeatureDisplay/model.ts#volatile -->
 
 ```ts
-rpcDataMap: observable.map<number, MultiRowRegionData>(),
+rpcDataMap: regionDataMap<MultiRowRegionData>(),
 prefersOffset: true,
 /**
  * #volatile

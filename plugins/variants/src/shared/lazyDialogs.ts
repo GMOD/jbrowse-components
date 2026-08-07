@@ -28,9 +28,6 @@ export const LDFilterDialog = lazy(
 export const SetColorDialog = lazy(
   () => import('./components/SetColorDialog.tsx'),
 )
-export const SetRowHeightDialog = lazy(
-  () => import('./components/SetRowHeightDialog.tsx'),
-)
 export const MultiSampleVariantClusterDialog = lazy(
   () => import('./components/MultiSampleVariantClusterDialog.tsx'),
 )

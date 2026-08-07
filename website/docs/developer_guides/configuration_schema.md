@@ -318,7 +318,7 @@ getter:
   /**
    * #getter
    */
-  get displayMode() {
+  get displayMode(): ArcDisplayMode {
     return getConf(self, 'displayMode')
   },
 ```

@@ -1,13 +1,12 @@
 import { makePin } from '@jbrowse/core/configuration'
 import { Highlighter } from '@jbrowse/core/ui/Icons'
+import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
 import { checkboxItem, promotableRadioItem } from '@jbrowse/core/ui/menuItems'
+import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { pluralize } from '@jbrowse/core/util'
 import { heightModeMenuItems } from '@jbrowse/plugin-linear-genome-view'
-import FilterAltIcon from '@mui/icons-material/FilterAlt'
-import FilterAltOffIcon from '@mui/icons-material/FilterAltOff'
 import HeightIcon from '@mui/icons-material/Height'
 import PaletteIcon from '@mui/icons-material/Palette'
-import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { STRAND_COLOR_JEXL } from '../RenderFeatureDataRPC/featureColors.ts'
 import { inlineRadioGroup } from './baseModelHelpers.ts'
@@ -69,9 +68,9 @@ interface TrackMenuSelf {
   featureNoun: string
   hiddenFeatureCount: number
   featureHighlightCount: number
-  // the model's own answer (subclasses OR in their filters), not recomputed
-  // here from its parts — see hasFeatureFilters on the canvas base
-  hasFeatureFilters: () => boolean
+  // the model's own answer (subclasses add their own filters), not recomputed
+  // here from its parts — see featureFilterCount on the canvas base
+  featureFilterCount: () => number
   showSubmenuMenuItems: () => MenuItem[]
   featureHeightMenuItems: () => MenuItem[]
   colorMenuItems: () => MenuItem[]
@@ -230,60 +229,34 @@ export function featureHeightMenuItems(self: FeatureHeightSelf): MenuItem[] {
 // lands here.
 export function canvasTrackMenuItems(self: TrackMenuSelf): MenuItem[] {
   return [
-    {
-      label: 'Show...',
-      icon: VisibilityIcon,
-      subMenu: self.showSubmenuMenuItems(),
-    },
+    ...makeShowSubMenu(self.showSubmenuMenuItems()),
     ...self.featureHeightMenuItems(),
     ...self.colorMenuItems(),
     ...clearHighlightsMenuItems(self),
-    ...filterMenuItems(self),
+    ...canvasFilterMenuItems(self),
   ]
 }
 
-// The filter family. On an unfiltered track this is the single "Filter by..."
-// dialog opener, so it sits at the top level — an "Edit filters" submenu
-// wrapping one row is pure indirection (same rule copyItems applies to itself).
-// Once something is narrowing the view the recovery items join it and the group
-// earns its submenu.
-function filterMenuItems(self: TrackMenuSelf): MenuItem[] {
-  const filterBy = {
-    label: 'Filter by...',
-    icon: FilterAltIcon,
-    onClick: () => {
+// The filter family, in the shape shared with the alignments, LD and
+// multi-sample variant displays: one "Filter by... (n)" row that stays a plain
+// dialog opener until there is something to recover, then earns its submenu.
+// The priority rides the top-level row the builder returns, never the dialog
+// opener inside it — there it would sort below the recovery rows it heads.
+function canvasFilterMenuItems(self: TrackMenuSelf): MenuItem[] {
+  return filterMenuItems({
+    activeCount: self.featureFilterCount(),
+    onEdit: () => {
       self.openFilterDialog()
     },
-  }
-  const recovery = [
     // Track-level unhide: the per-feature "Show N hidden" item is only
     // reachable from a still-visible feature's menu, so this is the sole
     // recovery once every feature in view is hidden.
-    ...showHiddenFeaturesMenuItems(self),
-    ...(self.hasFeatureFilters()
-      ? [
-          {
-            label: 'Clear all filters',
-            icon: FilterAltOffIcon,
-            onClick: () => {
-              self.clearAllFeatureFilters()
-            },
-          },
-        ]
-      : []),
-  ]
-  // the priority rides the top-level row, never `filterBy` itself — inside the
-  // submenu it would sort the dialog opener below the recovery rows it heads
-  return recovery.length
-    ? [
-        {
-          label: 'Edit filters',
-          icon: FilterAltIcon,
-          priority: RECOVERY_PRIORITY,
-          subMenu: [filterBy, ...recovery],
-        },
-      ]
-    : [{ ...filterBy, priority: RECOVERY_PRIORITY }]
+    recoveryItems: showHiddenFeaturesMenuItems(self),
+    onClear: () => {
+      self.clearAllFeatureFilters()
+    },
+    priority: RECOVERY_PRIORITY,
+  })
 }
 
 // The color-related track-menu entry: a single "Color by..." whose "Solid

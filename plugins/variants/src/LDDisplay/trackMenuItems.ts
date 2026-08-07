@@ -1,8 +1,12 @@
-import { checkboxItem } from '@jbrowse/core/ui/menuItems'
+import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
+import {
+  checkboxItem,
+  showLegendCheckboxItem,
+} from '@jbrowse/core/ui/menuItems'
+import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getSession } from '@jbrowse/core/util'
 import { squashToHeightCheckboxItem } from '@jbrowse/plugin-linear-genome-view'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
-import VisibilityIcon from '@mui/icons-material/Visibility'
 
 // lazy: this builder is reached from a state model, so a dialog named here is
 // in every host's first paint — see ../shared/lazyDialogs.ts
@@ -129,7 +133,7 @@ function showMenuItems(self: LDMenuSelf): MenuItem[] {
           'Displays 1-r² between neighboring SNPs only (not all pairwise comparisons). Peaks indicate haplotype block boundaries where historical recombination has broken down LD between adjacent variants.',
       },
     ),
-    checkboxItem('Show legend', self.showLegend, () => {
+    showLegendCheckboxItem(self.showLegend, () => {
       self.setShowLegend(!self.showLegend)
     }),
     checkboxItem('Show variant labels', self.showLabels, () => {
@@ -161,38 +165,58 @@ function showMenuItems(self: LDMenuSelf): MenuItem[] {
   ]
 }
 
+// The three LD-specific thresholds plus the JEXL list, counted by whether each
+// is doing anything rather than by whether it was edited — `minorAlleleFrequencyFilter`
+// ships at 0.1 and IS dropping variants, which until this label existed the
+// display said nowhere at all. 0 is the off value for all three.
+function ldFilterCount(self: LDMenuSelf) {
+  return (
+    (self.minorAlleleFrequencyFilter > 0 ? 1 : 0) +
+    (self.hweFilterThreshold > 0 ? 1 : 0) +
+    (self.callRateFilter > 0 ? 1 : 0) +
+    (self.jexlFilters?.length ?? 0)
+  )
+}
+
 // Filters act on the genotypes LD is computed from, so a pre-computed file —
 // already thinned by whatever produced it — has nothing here to filter and gets
 // no menu at all.
-function filterMenuItems(self: LDMenuSelf): MenuItem[] {
+function ldFilterMenuItems(self: LDMenuSelf): MenuItem[] {
   return self.isPrecomputedLD
     ? []
-    : [
-        {
-          label: 'Filter by...',
-          icon: ClearAllIcon,
-          subMenu: [
-            {
-              label: 'LD-specific filters...',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  LDFilterDialog,
-                  { model: self, handleClose },
-                ])
-              },
+    : filterMenuItems({
+        activeCount: ldFilterCount(self),
+        subItems: [
+          {
+            label: 'LD-specific filters...',
+            icon: ClearAllIcon,
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                LDFilterDialog,
+                { model: self, handleClose },
+              ])
             },
-            {
-              label: 'General JEXL filters...',
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  AddFiltersDialog,
-                  { model: self, handleClose },
-                ])
-              },
+          },
+          {
+            label: 'General JEXL filters...',
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                AddFiltersDialog,
+                { model: self, handleClose },
+              ])
             },
-          ],
+          },
+        ],
+        // Every threshold back to its off value. Reachable from the dialogs too,
+        // one field at a time; this is the one action that clears the set the
+        // count above describes.
+        onClear: () => {
+          self.setMafFilter(0)
+          self.setHweFilter(0)
+          self.setCallRateFilter(0)
+          self.setJexlFilters(undefined)
         },
-      ]
+      })
 }
 
 /**
@@ -217,11 +241,7 @@ export function buildLDTrackMenuItems(self: LDMenuSelf): MenuItem[] {
       label: 'LD metric',
       subMenu: metricMenuItems(self),
     },
-    {
-      label: 'Show...',
-      icon: VisibilityIcon,
-      subMenu: showMenuItems(self),
-    },
-    ...filterMenuItems(self),
+    ...makeShowSubMenu(showMenuItems(self)),
+    ...ldFilterMenuItems(self),
   ]
 }

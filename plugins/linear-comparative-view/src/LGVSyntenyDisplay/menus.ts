@@ -1,10 +1,13 @@
-import { checkboxItem } from '@jbrowse/core/ui/menuItems'
+import {
+  checkboxItem,
+  showLegendCheckboxItem,
+} from '@jbrowse/core/ui/menuItems'
+import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import {
   collapseGroupRowsItems,
   groupByRadioMenuItem,
   pickGroupByOptions,
 } from '@jbrowse/plugin-alignments'
-import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 import type {
@@ -85,67 +88,62 @@ interface ShowModel extends CollapseGroupRowsModel {
 //
 // Toggles only, like its twin — the row cap lives in the shared feature-height
 // menu, which this display also builds.
-export function getSyntenyShowMenuItem(model: ShowModel) {
-  return {
-    label: 'Show...',
-    icon: VisibilityIcon,
-    type: 'subMenu' as const,
-    subMenu: [
-      checkboxItem('Show legend', model.showLegend, () => {
-        model.setShowLegend(!model.showLegend)
-      }),
-      checkboxItem(
-        'Show coverage',
-        model.showCoverage,
-        () => {
-          model.setShowCoverage(!model.showCoverage)
-        },
-        {
-          helpText:
-            'Draw a histogram of how deeply each reference base is covered by ' +
-            'the aligned blocks — the depth of syntenic coverage.',
-        },
-      ),
-      checkboxItem(
-        'Show alignments',
-        model.showPileup,
-        () => {
-          model.setShowPileup(!model.showPileup)
-        },
-        {
-          helpText:
-            'Uncheck to collapse the stacked alignment blocks, leaving just ' +
-            'the coverage histogram.',
-        },
-      ),
-      // Only while grouping is in effect — for an all-vs-all track grouped by
-      // mate assembly this is the default, one band per mate genome.
-      ...collapseGroupRowsItems(model),
-      checkboxItem(
-        'Show mismatches',
-        model.showMismatches,
-        () => {
-          model.setShowMismatches(!model.showMismatches)
-        },
-        {
-          helpText:
-            'Draw per-base differences between the two assemblies, read from ' +
-            "the alignment's cs tag or CIGAR.",
-        },
-      ),
-      checkboxItem(
-        'Show interbase indicators',
-        model.showInterbaseIndicators,
-        () => {
-          model.setShowInterbaseIndicators(!model.showInterbaseIndicators)
-        },
-        {
-          helpText:
-            'Mark insertions in the other assembly, which occupy no reference ' +
-            'base, with a between-base tick. Drawn in the coverage band, so it ' +
-            'needs "Show coverage" on.',
-        },
-      ),
-    ] satisfies MenuItem[],
-  }
+export function getSyntenyShowMenuItems(model: ShowModel) {
+  return makeShowSubMenu([
+    showLegendCheckboxItem(model.showLegend, () => {
+      model.setShowLegend(!model.showLegend)
+    }),
+    checkboxItem(
+      'Show coverage',
+      model.showCoverage,
+      () => {
+        model.setShowCoverage(!model.showCoverage)
+      },
+      {
+        helpText:
+          'Draw a histogram of how deeply each reference base is covered by ' +
+          'the aligned blocks — the depth of syntenic coverage.',
+      },
+    ),
+    checkboxItem(
+      'Show alignments',
+      model.showPileup,
+      () => {
+        model.setShowPileup(!model.showPileup)
+      },
+      {
+        helpText:
+          'Uncheck to collapse the stacked alignment blocks, leaving just ' +
+          'the coverage histogram.',
+      },
+    ),
+    // Only while grouping is in effect — for an all-vs-all track grouped by
+    // mate assembly this is the default, one band per mate genome.
+    ...collapseGroupRowsItems(model),
+    checkboxItem(
+      'Show mismatches',
+      model.showMismatches,
+      () => {
+        model.setShowMismatches(!model.showMismatches)
+      },
+      {
+        helpText:
+          'Draw per-base differences between the two assemblies, read from ' +
+          "the alignment's cs tag or CIGAR.",
+      },
+    ),
+    checkboxItem(
+      'Show interbase indicators',
+      model.showInterbaseIndicators,
+      () => {
+        model.setShowInterbaseIndicators(!model.showInterbaseIndicators)
+      },
+      {
+        helpText:
+          'Mark insertions in the other assembly, which occupy no reference ' +
+          'base, with a between-base tick. Drawn in the coverage band, so it ' +
+          'needs "Show coverage" on.',
+      },
+    ),
+  ] satisfies MenuItem[])
 }

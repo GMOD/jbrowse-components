@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 
+import { ARC_DISPLAY_MODES } from './displayModes.ts'
 import { migrateLegacyArcRendererConfig } from './migrate.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -96,7 +97,7 @@ export function configSchemaFactory() {
       displayMode: {
         type: 'stringEnum',
         defaultValue: 'arcs',
-        model: types.enumeration('DisplayMode', ['arcs', 'semicircles']),
+        model: types.enumeration('DisplayMode', [...ARC_DISPLAY_MODES]),
         description: 'render semi-circles instead of arcs',
       },
     },

@@ -250,7 +250,7 @@ the whole surface.
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="method-rpcprops">**rpcProps**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>() =&gt; { displayConfig: {…}; ... 5 more ...; theme: Serializable…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>() =&gt; { displayConfig: {…}; ... 5 more ...; theme: SerializableThemeArgs &#124; undefined; }</code></pre></dialog></span> |  | LinearBasicDisplay |
-| <span id="method-hasfeaturefilters">**hasFeatureFilters**</span><br><code>() =&gt; boolean</code> |  | LinearBasicDisplay |
+| <span id="method-featurefiltercount">**featureFilterCount**</span><br><code>() =&gt; number</code> |  | LinearBasicDisplay |
 | <span id="method-showsubmenucheckboxitems">**showSubmenuCheckboxItems**</span><br><code>() =&gt; MenuItem[]</code> |  | LinearBasicDisplay |
 | <span id="method-showsubmenuradiogroups">**showSubmenuRadioGroups**</span><br><code>() =&gt; MenuItem[]</code> |  | LinearBasicDisplay |
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>() =&gt; (MenuDivider &#124; MenuSubHeader &#124; NormalMenuItem &#124; CheckboxM…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>() =&gt; (MenuDivider &#124; MenuSubHeader &#124; NormalMenuItem &#124; CheckboxMenuItem &#124; RadioMenuItem &#124; SubMenuItem &#124; CustomMenuItem &#124; { ...; })[]</code></pre></dialog></span> |  | LinearBasicDisplay |

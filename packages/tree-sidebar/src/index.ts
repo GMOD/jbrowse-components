@@ -59,6 +59,12 @@ export {
   resetRowOrderMenuItems,
   treeBranchLengthMenuItem,
 } from './treeMenuItems.ts'
+export { rowArrangementMenuItem } from './rowArrangementMenuItem.ts'
+export { rowHeightMenuItem } from './rowHeight/rowHeightMenu.ts'
+export type {
+  RowHeightModel,
+  RowHeightPreset,
+} from './rowHeight/rowHeightMenu.ts'
 export {
   extraColumns,
   moveDown,

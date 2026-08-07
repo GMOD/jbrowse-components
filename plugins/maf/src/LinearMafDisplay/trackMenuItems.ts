@@ -1,16 +1,16 @@
 import { lazy } from 'react'
 
-import { checkboxItem } from '@jbrowse/core/ui/menuItems'
+import { checkboxItem, makeRadioSubMenu } from '@jbrowse/core/ui/menuItems'
+import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getSession } from '@jbrowse/core/util'
 import {
   clearSubtreeFilterMenuItems,
   resetRowOrderMenuItems,
+  rowArrangementMenuItem,
+  rowHeightMenuItem,
   treeBranchLengthMenuItem,
 } from '@jbrowse/tree-sidebar'
-import { makeRadioSubMenu } from '@jbrowse/wiggle-core'
-import HeightIcon from '@mui/icons-material/Height'
 import PaletteIcon from '@mui/icons-material/Palette'
-import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { CONSERVATION_MODES } from './conservationModes.ts'
 import { DEFAULTS } from './displayDefaults.ts'
@@ -22,9 +22,6 @@ import type { MafSource } from './stateModel.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-const SetRowHeightDialog = lazy(
-  () => import('./components/SetRowHeightDialog/SetRowHeightDialog.tsx'),
-)
 const SetRowArrangementDialog = lazy(
   () => import('./components/SetRowArrangementDialog.tsx'),
 )
@@ -40,11 +37,9 @@ function toggle(label: string, checked: boolean, set: (v: boolean) => void) {
   })
 }
 
-// Row-height presets. `rowHeight` is a single coupled axis — 0 is the
-// fit-to-view sentinel, any positive value is a fixed height — so unlike the
-// alignments display, whose size and sizing are separable, these are one
-// mutually-exclusive set expressed as radios. Each preset pairs a height with
-// the glyph proportion that reads best at it.
+// Row-height presets for the shared "Row height" menu. Each pairs a height with
+// the glyph proportion that reads best at it — maf is the one display that has
+// a second axis here, and the shared builder writes both.
 const HEIGHT_PRESETS = [
   { label: 'Normal', rowHeight: DEFAULTS.rowHeight, rowProportion: 0.8 },
   { label: 'Compact', rowHeight: 8, rowProportion: 0.9 },
@@ -71,7 +66,12 @@ interface MafMenuSelf extends IStateTreeNode {
   selectedRowRendering: RowRendering
   setRowRendering: (m: RowRendering) => void
   rowIdentityAutoZoom: boolean
+  // Both halves of maf's row-height axis, declared so the shared
+  // `rowHeightMenuItem` contract is checked here rather than only satisfied at
+  // runtime: maf is the one display with a proportion, and it is what makes the
+  // shared "Custom..." dialog grow its second field.
   rowHeight: number
+  rowProportion: number
   subtreeFilter?: readonly string[]
   editableSources?: MafSource[]
   setRowHeight: (n: number) => void
@@ -218,71 +218,23 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
   ]
 }
 
-function rowHeightMenuItems(self: MafMenuSelf): MenuItem[] {
-  const { rowHeight } = self
-  return [
-    {
-      label: 'Squeeze to fit view',
-      type: 'radio',
-      checked: rowHeight === 0,
-      onClick: () => {
-        self.setFitToHeight()
-      },
-    },
-    ...HEIGHT_PRESETS.map(preset => ({
-      label: preset.label,
-      type: 'radio' as const,
-      checked: rowHeight === preset.rowHeight,
-      onClick: () => {
-        self.setRowHeight(preset.rowHeight)
-        self.setRowProportion(preset.rowProportion)
-      },
-    })),
-    {
-      label: 'Custom...',
-      type: 'radio',
-      checked:
-        rowHeight !== 0 && !HEIGHT_PRESETS.some(p => p.rowHeight === rowHeight),
-      // a dialog opener, so it opts out of the checkbox/radio default
-      keepMenuOpen: false,
-      onClick: () => {
-        getSession(self).queueDialog(handleClose => [
-          SetRowHeightDialog,
-          { model: self, handleClose },
-        ])
-      },
-    },
-  ]
-}
-
 export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
   return [
-    {
-      label: 'Row height',
-      icon: HeightIcon,
-      type: 'subMenu',
-      subMenu: rowHeightMenuItems(self),
-    },
+    rowHeightMenuItem(self, HEIGHT_PRESETS),
     // Top level rather than inside "Show...": it is the one choice that decides
     // what the rows look like, and the neighbouring wiggle displays surface
     // their equivalent ("Plot type") at the top level too.
     rowRenderingMenuItem(self),
-    {
-      label: 'Show...',
-      icon: VisibilityIcon,
-      type: 'subMenu',
-      subMenu: showMenuItems(self),
-    },
-    {
-      label: 'Edit row arrangement...',
-      disabled: !self.editableSources?.length,
-      onClick: () => {
+    ...makeShowSubMenu(showMenuItems(self)),
+    rowArrangementMenuItem({
+      ready: !!self.editableSources?.length,
+      onOpen: () => {
         getSession(self).queueDialog(handleClose => [
           SetRowArrangementDialog,
           { model: self, handleClose },
         ])
       },
-    },
+    }),
     // maf has no "Clustering" submenu to file these under (its tree is the
     // adapter's guide tree, not a run), so it takes the shared items directly.
     // The reset is the way back from a drag-reorder in the dialog above, which

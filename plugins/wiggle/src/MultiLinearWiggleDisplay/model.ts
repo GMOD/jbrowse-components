@@ -6,7 +6,11 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { checkboxItem } from '@jbrowse/core/ui/menuItems'
+import {
+  checkboxItem,
+  showLegendCheckboxItem,
+} from '@jbrowse/core/ui/menuItems'
+import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
@@ -22,14 +26,10 @@ import {
   reconcileLayout,
   computeClusterHierarchy,
   resetRowOrderMenuItems,
+  rowArrangementMenuItem,
   setupRowSortAutorun,
 } from '@jbrowse/tree-sidebar'
-import {
-  computeYTicks,
-  makeCrossHatchItem,
-  makeShowSubMenu,
-} from '@jbrowse/wiggle-core'
-import PaletteIcon from '@mui/icons-material/Palette'
+import { computeYTicks, makeCrossHatchItem } from '@jbrowse/wiggle-core'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
@@ -632,7 +632,7 @@ export default function stateModelFactory(
           // the color key only renders as an overlay of >1 source
           ...(self.overlayLegendApplies
             ? [
-                checkboxItem('Show legend', self.showLegend, () => {
+                showLegendCheckboxItem(self.showLegend, () => {
                   self.setShowLegend(!self.showLegend)
                 }),
               ]
@@ -681,12 +681,9 @@ export default function stateModelFactory(
           // its respective scatter / line rendering
           ...makePointSizeMenuItems(self),
           ...makeLineWidthMenuItems(self),
-          {
-            label: 'Edit colors/arrangement...',
-            icon: PaletteIcon,
-            disabled: !self.sourcesVolatile.length,
-            disabledHelpText: 'Loading sources...',
-            onClick: () => {
+          rowArrangementMenuItem({
+            ready: !!self.sourcesVolatile.length,
+            onOpen: () => {
               getSession(self).queueDialog(handleClose => [
                 SetColorDialog,
                 {
@@ -695,7 +692,7 @@ export default function stateModelFactory(
                 },
               ])
             },
-          },
+          }),
         ]
       },
 

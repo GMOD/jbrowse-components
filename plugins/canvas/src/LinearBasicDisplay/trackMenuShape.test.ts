@@ -105,16 +105,17 @@ describe('canvas track menu shape', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
 
-    // nothing narrowing the view: one row, no submenu to hover into
+    // nothing narrowing the view: one row, no submenu to hover into, and no
+    // count on the label
     const items: MenuItem[] = display.trackMenuItems()
     expect(labelOf(find(items, 'Filter by...'))).toBe('Filter by...')
-    expect(items.some(i => labelOf(i) === 'Edit filters')).toBe(false)
 
-    // hiding a feature adds the unhide recovery, so the group earns a submenu
+    // hiding a feature adds the unhide recovery, so the group earns a submenu —
+    // and the label counts the one filter now hiding features
     display.hideFeature('gene1')
-    const filtering = subMenuOf(display.trackMenuItems(), 'Edit filters')
+    const filtering = subMenuOf(display.trackMenuItems(), 'Filter by... (1)')
     expect(filtering.map(labelOf)).toEqual([
-      'Filter by...',
+      'Edit filters...',
       'Show 1 hidden feature',
       'Clear all filters',
     ])
@@ -128,19 +129,36 @@ describe('canvas track menu shape', () => {
     // is filtered yet, so the track menu must not claim there are filters
     display.toggleSoloFeature('gene1')
     display.toggleSoloFeature('gene2')
-    expect(display.hasFeatureFilters()).toBe(false)
+    expect(display.featureFilterCount()).toBe(0)
     const collecting: MenuItem[] = display.trackMenuItems()
-    expect(collecting.some(i => labelOf(i) === 'Edit filters')).toBe(false)
+    expect(collecting.some(i => labelOf(i) === 'Filter by... (1)')).toBe(false)
 
     // applying it is what filters, and what earns the recovery
     display.applySolo()
-    expect(display.hasFeatureFilters()).toBe(true)
+    expect(display.featureFilterCount()).toBe(1)
     expect(
-      subMenuOf(display.trackMenuItems(), 'Edit filters').map(labelOf),
+      subMenuOf(display.trackMenuItems(), 'Filter by... (1)').map(labelOf),
     ).toContain('Clear all filters')
 
     display.clearAllFeatureFilters()
-    expect(display.hasFeatureFilters()).toBe(false)
+    expect(display.featureFilterCount()).toBe(0)
+  })
+
+  it('counts each independent filter, including a subclass own', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+
+    display.hideFeature('gene1')
+    expect(display.featureFilterCount()).toBe(1)
+    // "Show only genes" is a worker-side admission filter the subclass adds to
+    // the base count, so the label has to grow with it
+    display.setShowOnlyGenes(true)
+    expect(display.featureFilterCount()).toBe(2)
+    expect(
+      display
+        .trackMenuItems()
+        .some((i: MenuItem) => labelOf(i) === 'Filter by... (2)'),
+    ).toBe(true)
   })
 
   it('offers the label rungs as one flat radio group', () => {

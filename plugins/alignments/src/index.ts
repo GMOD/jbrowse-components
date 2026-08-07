@@ -48,7 +48,7 @@ export {
   copyFeatureInfo,
   getColorByMenuItem,
   getFeatureHeightMenuItem,
-  getFiltersMenuItem,
+  getFiltersMenuItems,
   getHitMenuItems,
   getMaxHeightMenuItem,
   getSortByMenuItem,

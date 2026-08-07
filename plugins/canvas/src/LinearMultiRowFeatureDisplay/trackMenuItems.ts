@@ -1,16 +1,19 @@
 import { lazy } from 'react'
 
-import { checkboxItem, radioItems } from '@jbrowse/core/ui/menuItems'
+import {
+  checkboxItem,
+  showLegendCheckboxItem,
+} from '@jbrowse/core/ui/menuItems'
+import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getSession } from '@jbrowse/core/util'
 import {
   clusteringMenuItem,
   resetRowOrderMenuItems,
+  rowArrangementMenuItem,
+  rowHeightMenuItem,
   treeBranchLengthMenuItem,
 } from '@jbrowse/tree-sidebar'
-import HeightIcon from '@mui/icons-material/Height'
 import LegendToggleIcon from '@mui/icons-material/LegendToggle'
-import PaletteIcon from '@mui/icons-material/Palette'
-import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { MIN_SEPARATOR_ROW_PX } from './rendering/rowBand.ts'
 
@@ -22,34 +25,14 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 const SetRowArrangementDialog = lazy(
   () => import('./components/SetRowArrangementDialog.tsx'),
 )
-const SetRowHeightDialog = lazy(
-  () => import('./components/SetRowHeightDialog.tsx'),
-)
 
-// Preset pixel row heights for the "Row height" menu (0 = auto-fit, handled
-// separately). The read (which preset is checked) and the write (setRowHeight)
-// must agree, so they share these.
-const ROW_HEIGHT_NORMAL = 14
-const ROW_HEIGHT_COMPACT = 8
-
+// Preset pixel row heights for the shared "Row height" menu (the fit sentinel
+// and the "Custom..." dialog are its, not ours). The read (which preset is
+// checked) and the write (setRowHeight) both go through this table.
 const ROW_HEIGHT_PRESETS = [
-  { value: 'fit', label: 'Squeeze to fit view' },
-  { value: 'normal', label: 'Normal' },
-  { value: 'compact', label: 'Compact' },
-] as const
-
-// Which preset the current setting is, or undefined for a hand-entered height
-// (the "Custom..." row). `rowHeight` is one coupled axis — 0 is the fit-to-view
-// sentinel, any positive value a pinned px height — so these are radios.
-function rowHeightPreset(rowHeight: number) {
-  return rowHeight === 0
-    ? 'fit'
-    : rowHeight === ROW_HEIGHT_NORMAL
-      ? 'normal'
-      : rowHeight === ROW_HEIGHT_COMPACT
-        ? 'compact'
-        : undefined
-}
+  { label: 'Normal', rowHeight: 14 },
+  { label: 'Compact', rowHeight: 8 },
+]
 
 interface MultiRowMenuSelf extends IStateTreeNode {
   showTree: boolean
@@ -102,7 +85,7 @@ function showMenuItems(self: MultiRowMenuSelf): MenuItem[] {
     }),
     ...(self.colorLegend.length
       ? [
-          checkboxItem('Show legend', self.showLegend, () => {
+          showLegendCheckboxItem(self.showLegend, () => {
             self.setShowLegend(!self.showLegend)
           }),
         ]
@@ -121,35 +104,6 @@ function showMenuItems(self: MultiRowMenuSelf): MenuItem[] {
         : undefined,
     ),
     treeBranchLengthMenuItem(self),
-  ]
-}
-
-function rowHeightMenuItems(self: MultiRowMenuSelf): MenuItem[] {
-  const preset = rowHeightPreset(self.rowHeight)
-  return [
-    ...radioItems(ROW_HEIGHT_PRESETS, preset, value => {
-      if (value === 'fit') {
-        self.setFitToHeight()
-      } else {
-        self.setRowHeight(
-          value === 'compact' ? ROW_HEIGHT_COMPACT : ROW_HEIGHT_NORMAL,
-        )
-      }
-    }),
-    // written out rather than going through radioItems because a dialog opener
-    // opts out of the checkbox/radio default and dismisses the menu
-    {
-      label: 'Custom...',
-      type: 'radio',
-      checked: preset === undefined,
-      keepMenuOpen: false,
-      onClick: () => {
-        getSession(self).queueDialog(handleClose => [
-          SetRowHeightDialog,
-          { model: self, handleClose },
-        ])
-      },
-    },
   ]
 }
 
@@ -205,31 +159,18 @@ export function buildMultiRowTrackMenuItems(
   self: MultiRowMenuSelf,
 ): MenuItem[] {
   return [
-    {
-      label: 'Show...',
-      icon: VisibilityIcon,
-      type: 'subMenu',
-      subMenu: showMenuItems(self),
-    },
-    {
-      label: 'Row height',
-      icon: HeightIcon,
-      type: 'subMenu',
-      subMenu: rowHeightMenuItems(self),
-    },
+    ...makeShowSubMenu(showMenuItems(self)),
+    rowHeightMenuItem(self, ROW_HEIGHT_PRESETS),
     ...categoriesMenuItems(self),
-    {
-      label: 'Edit colors/arrangement...',
-      icon: PaletteIcon,
-      disabled: !self.editableSources.length,
-      disabledHelpText: 'Loading rows...',
-      onClick: () => {
+    rowArrangementMenuItem({
+      ready: !!self.editableSources.length,
+      onOpen: () => {
         getSession(self).queueDialog(handleClose => [
           SetRowArrangementDialog,
           { model: self, handleClose },
         ])
       },
-    },
+    }),
     // top-level rather than nested under "Clustering", which is only one of the
     // three things that write `layout` — see resetRowOrderMenuItems
     ...resetRowOrderMenuItems(self),

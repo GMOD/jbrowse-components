@@ -5,6 +5,8 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { showLegendCheckboxItem } from '@jbrowse/core/ui/menuItems'
+import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getSession, openFeatureWidget, toLocale } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
@@ -27,7 +29,6 @@ import {
   makeCrossHatchItem,
   makeScatterPointSizeMenuItem,
   makeScoreSubMenu,
-  makeShowSubMenu,
   resolveRenderState,
 } from '@jbrowse/wiggle-core'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
@@ -422,16 +423,16 @@ export function stateModelFactory(
             },
             ...makeShowSubMenu([
               makeCrossHatchItem(self),
-              {
-                label: 'Show legend',
-                type: 'checkbox' as const,
-                checked: self.showLdLegend,
-                disabled: !self.ldColoringActive,
-                disabledHelpText: 'Requires LD coloring to be active',
-                onClick: () => {
+              showLegendCheckboxItem(
+                self.showLdLegend,
+                () => {
                   self.setShowLdLegend(!self.showLdLegend)
                 },
-              },
+                {
+                  disabled: !self.ldColoringActive,
+                  disabledHelpText: 'Requires LD coloring to be active',
+                },
+              ),
             ]),
             {
               // whole submenu greys out without a configured .ld adapter

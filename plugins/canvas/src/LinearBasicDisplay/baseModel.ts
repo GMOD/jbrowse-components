@@ -726,10 +726,18 @@ export default function baseStateModelFactory(
 
         /**
          * #method
-         * Whether anything is currently narrowing what the display shows, so the
-         * track menu can offer "Clear all filters" (and only then). Paired with
-         * `clearAllFeatureFilters`: every filter counted here must be reset
-         * there, or the menu offers a recovery that doesn't fully recover.
+         * How many independent things are currently narrowing what the display
+         * shows. Drives the shared "Filter by... (n)" label and gates "Clear all
+         * filters"; paired with `clearAllFeatureFilters`, since every filter
+         * counted here must be reset there or the menu offers a recovery that
+         * doesn't fully recover.
+         *
+         * A count rather than the boolean it used to be, because the count is
+         * the only affordance saying that a filter is silently hiding features —
+         * see `filterMenuItems` for the counting rule (a filter counts when its
+         * value is not the no-op one, which is why an empty
+         * `jexlFiltersSetting` still counts: an empty override still replaces
+         * the config default).
          *
          * `soloApplied`, not `soloFeatureIds.length` — while the user is still
          * collecting (ctrl+click, the right-click "Add to show-only list") the
@@ -737,15 +745,18 @@ export default function baseStateModelFactory(
          * the track menu offer to clear filters that weren't in effect. The
          * SoloSelectionChip's × is the recovery for an unapplied collection.
          *
-         * A method rather than a getter so a subclass can super-capture and OR in
+         * The hidden set is one filter however many features it holds: it is one
+         * thing to clear, and "Show N hidden features" already names N.
+         *
+         * A method rather than a getter so a subclass can super-capture and add
          * its own filters (LinearBasicDisplay's "Show only genes"), the same
          * extension seam the menu builders use.
          */
-        hasFeatureFilters(): boolean {
+        featureFilterCount(): number {
           return (
-            self.jexlFiltersSetting !== undefined ||
-            self.soloApplied ||
-            self.hiddenFeatureIds.length > 0
+            (self.jexlFiltersSetting === undefined ? 0 : 1) +
+            (self.soloApplied ? 1 : 0) +
+            (self.hiddenFeatureIds.length > 0 ? 1 : 0)
           )
         },
 

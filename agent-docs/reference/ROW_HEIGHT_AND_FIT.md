@@ -1,6 +1,6 @@
 ---
 name: row-height-and-fit
-description: The shared two-valued row-height convention every multi-row display implements — the `rowHeight` slot whose `0` means fit-to-height, the resolved `effectiveRowHeight` getter that is a cross-plugin ABI, and the two places a display legitimately differs. Read before adding a row-height setting or a fit-to-height mode.
+description: The shared two-valued row-height convention every multi-row display implements — the `rowHeight` slot whose `0` means fit-to-height, the resolved `effectiveRowHeight` getter that is a cross-plugin ABI, the shared menu row and dialog in tree-sidebar, and the two places a display legitimately differs. Read before adding a row-height setting or a fit-to-height mode.
 ---
 
 # Row height and fit-to-display-height
@@ -22,6 +22,17 @@ the shared spelling, and the two places a display legitimately differs.
 | menu row | `'Squeeze to fit view'`, radio | mutually exclusive with the pinned presets |
 
 Fit-to-height is the default everywhere — the slot ships at `0`.
+
+The menu row and the "Custom..." dialog are **shared**, not per display:
+`packages/tree-sidebar/src/rowHeight/` holds `rowHeightMenuItem(model, presets)`
+and the one `SetRowHeightDialog`. A display passes its own preset table (maf's
+Normal is 15px, the multi-row painting's is 14) and gets fit + presets + Custom
+as one radio group. `rowProportion` is the optional second axis, and only maf
+has it: expose the `rowProportion` / `setRowProportion` pair and the dialog
+grows a second field, omit it and the dialog is one field. That optionality is
+the whole reason the three copies existed, and the copies had drifted — variants
+offered no presets and its dialog seeded from `effectiveRowHeight`, so
+"Custom..." in fit mode pinned the computed fractional height on submit.
 
 `effectiveRowHeight` is not a style preference, it is the cross-plugin ABI. Two
 shared helpers in `packages/` read the resolved value under that name, and every

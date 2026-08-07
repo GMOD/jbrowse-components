@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 
+import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
 import { getSession } from '@jbrowse/core/util'
-import FilterAltIcon from '@mui/icons-material/FilterAlt'
 
 import { defaultFilterFlags } from '../../shared/util.ts'
 
@@ -16,8 +16,9 @@ interface FiltersModel {
 
 // How many independent filters `filterBy` currently applies, so the menu label
 // can say whether any are on. The flag masks are one filter each (they're edited
-// together and default non-zero, hence the compare against the default rather
-// than against 0), plus one per tag filter and one for a read name.
+// together and their no-op value is the non-zero default, hence the compare
+// against it rather than against 0), plus one per tag filter and one for a read
+// name.
 function activeFilterCount(filterBy: FilterBy) {
   const { flagInclude, flagExclude, readName, tagFilters } = filterBy
   return (
@@ -30,21 +31,23 @@ function activeFilterCount(filterBy: FilterBy) {
   )
 }
 
-// One item, not a submenu with one child: the read-category visibility toggles
+// One row, not a submenu with one child: the read-category visibility toggles
 // (proper pairs, singletons) live in "Show..." (reads.ts), so this only ever
 // opens the flag/tag/read-name dialog, and a submenu made that two hops. The
-// count is the only affordance telling the user a filter is silently hiding
+// shared builder keeps it flat for exactly that reason, and carries the count
+// that is the only affordance telling the user a filter is silently hiding
 // reads — nothing else in the track chrome says so.
-export function getFiltersMenuItem(model: FiltersModel) {
-  const count = activeFilterCount(model.filterBy)
-  return {
-    label: count > 0 ? `Filter by... (${count})` : 'Filter by...',
-    icon: FilterAltIcon,
-    onClick: () => {
+//
+// No "Clear all filters" row: the dialog owns the reset, and its own controls
+// are where a user who opened it expects to find one.
+export function getFiltersMenuItems(model: FiltersModel) {
+  return filterMenuItems({
+    activeCount: activeFilterCount(model.filterBy),
+    onEdit: () => {
       getSession(model).queueDialog(handleClose => [
         FilterByTagDialog,
         { model, handleClose },
       ])
     },
-  }
+  })
 }

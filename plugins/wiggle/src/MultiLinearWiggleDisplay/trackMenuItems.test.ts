@@ -165,7 +165,7 @@ describe('multi-wiggle track menu', () => {
 
   it('keeps the menu open on every toggle, like the rest of the app', () => {
     const { display } = makeDisplay({ renderingType: 'multirowxy' })
-    const items = subMenuOf(display.trackMenuItems(), 'Show')
+    const items = subMenuOf(display.trackMenuItems(), 'Show...')
 
     expect(items.every(i => 'onClick' in i && staysOpenOnClick(i))).toBe(true)
   })
@@ -190,7 +190,7 @@ describe('multi-wiggle track menu', () => {
 
   it('offers the overlay legend toggle only where a color key means anything', () => {
     const overlay = makeDisplay({ renderingType: 'multixyplot' }).display
-    expect(labels(subMenuOf(overlay.trackMenuItems(), 'Show'))).toContain(
+    expect(labels(subMenuOf(overlay.trackMenuItems(), 'Show...'))).toContain(
       'Show legend',
     )
 
@@ -199,12 +199,12 @@ describe('multi-wiggle track menu', () => {
       sources: ['a'],
       renderingType: 'multixyplot',
     }).display
-    expect(labels(subMenuOf(oneSource.trackMenuItems(), 'Show'))).not.toContain(
+    expect(labels(subMenuOf(oneSource.trackMenuItems(), 'Show...'))).not.toContain(
       'Show legend',
     )
 
     const row = makeDisplay({ renderingType: 'multirowxy' }).display
-    expect(labels(subMenuOf(row.trackMenuItems(), 'Show'))).not.toContain(
+    expect(labels(subMenuOf(row.trackMenuItems(), 'Show...'))).not.toContain(
       'Show legend',
     )
   })

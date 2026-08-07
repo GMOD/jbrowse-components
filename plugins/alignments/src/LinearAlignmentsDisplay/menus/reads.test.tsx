@@ -2,7 +2,7 @@ import { CascadingMenu, createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
 import { cleanup, fireEvent, render } from '@testing-library/react'
 
-import { getReadsMenuItem } from './reads.ts'
+import { getReadsMenuItems } from './reads.ts'
 
 import type { Pin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -48,7 +48,11 @@ function makeModel(overrides?: Partial<{ canCollapseGroupRows: boolean }>) {
 }
 
 function subMenuOf(model: ReturnType<typeof makeModel>) {
-  return getReadsMenuItem(model).subMenu as MenuItem[]
+  const [showItem] = getReadsMenuItems(model)
+  if (!showItem || !('subMenu' in showItem)) {
+    throw new Error('expected a "Show..." submenu')
+  }
+  return showItem.subMenu
 }
 
 function renderRows(items: MenuItem[]) {

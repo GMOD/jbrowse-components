@@ -1,7 +1,6 @@
 import { makePromotableSizeMenu } from '@jbrowse/core/ui'
-import { radioItems } from '@jbrowse/core/ui/menuItems'
+import { makeRadioSubMenu, radioItems } from '@jbrowse/core/ui/menuItems'
 import {
-  makeRadioSubMenu,
   makeResolutionSubMenuItem,
   makeScatterPointSizeMenuItem,
   makeScoreSubMenu,

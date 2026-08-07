@@ -104,9 +104,11 @@
     "./ui/StackTraceButton": "./src/ui/StackTraceButton.tsx",
     "./ui/buildExtraTrackMenuItems": "./src/ui/buildExtraTrackMenuItems.ts",
     "./ui/colors": "./src/ui/colors.ts",
+    "./ui/filterMenuItems": "./src/ui/filterMenuItems.ts",
     "./ui/getGraphicsCapabilities": "./src/ui/getGraphicsCapabilities.ts",
     "./ui/menuItems": "./src/ui/menuItems.ts",
     "./ui/palette": "./src/ui/palette.ts",
+    "./ui/showSubMenu": "./src/ui/showSubMenu.ts",
     "./ui/styleTheme": "./src/ui/styleTheme.ts",
     "./ui/theme": "./src/ui/theme.ts",
     "./ui/useGraphicsCapabilities": "./src/ui/useGraphicsCapabilities.ts",
@@ -566,6 +568,10 @@
         "types": "./esm/ui/colors.d.ts",
         "import": "./esm/ui/colors.js"
       },
+      "./ui/filterMenuItems": {
+        "types": "./esm/ui/filterMenuItems.d.ts",
+        "import": "./esm/ui/filterMenuItems.js"
+      },
       "./ui/getGraphicsCapabilities": {
         "types": "./esm/ui/getGraphicsCapabilities.d.ts",
         "import": "./esm/ui/getGraphicsCapabilities.js"
@@ -577,6 +583,10 @@
       "./ui/palette": {
         "types": "./esm/ui/palette.d.ts",
         "import": "./esm/ui/palette.js"
+      },
+      "./ui/showSubMenu": {
+        "types": "./esm/ui/showSubMenu.d.ts",
+        "import": "./esm/ui/showSubMenu.js"
       },
       "./ui/styleTheme": {
         "types": "./esm/ui/styleTheme.d.ts",
@@ -1129,6 +1139,9 @@
         "ui/colors": [
           "esm/ui/colors.d.ts"
         ],
+        "ui/filterMenuItems": [
+          "esm/ui/filterMenuItems.d.ts"
+        ],
         "ui/getGraphicsCapabilities": [
           "esm/ui/getGraphicsCapabilities.d.ts"
         ],
@@ -1137,6 +1150,9 @@
         ],
         "ui/palette": [
           "esm/ui/palette.d.ts"
+        ],
+        "ui/showSubMenu": [
+          "esm/ui/showSubMenu.d.ts"
         ],
         "ui/styleTheme": [
           "esm/ui/styleTheme.d.ts"

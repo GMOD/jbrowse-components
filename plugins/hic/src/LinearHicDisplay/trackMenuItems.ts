@@ -1,14 +1,16 @@
-import { checkboxItem, radioItems } from '@jbrowse/core/ui/menuItems'
+import {
+  checkboxItem,
+  makeRadioSubMenu,
+  radioItems,
+  showLegendCheckboxItem,
+} from '@jbrowse/core/ui/menuItems'
+import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getBpDisplayStr } from '@jbrowse/core/util'
 import { squashToHeightCheckboxItem } from '@jbrowse/plugin-linear-genome-view'
-import {
-  makeRadioSubMenu,
-  makeResolutionSubMenuItem,
-} from '@jbrowse/wiggle-core'
+import { makeResolutionSubMenuItem } from '@jbrowse/wiggle-core'
 import GridOnIcon from '@mui/icons-material/GridOn'
 import PaletteIcon from '@mui/icons-material/Palette'
 import TuneIcon from '@mui/icons-material/Tune'
-import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { HIC_COLOR_SCHEME_OPTIONS } from './components/colorRamp.ts'
 
@@ -87,7 +89,7 @@ function resolutionMenuItems(self: HicMenuSelf): MenuItem[] {
 
 function showMenuItems(self: HicMenuSelf): MenuItem[] {
   return [
-    checkboxItem('Show legend', self.showLegend, () => {
+    showLegendCheckboxItem(self.showLegend, () => {
       self.setShowLegend(!self.showLegend)
     }),
     ...(self.hasResolutions
@@ -164,11 +166,7 @@ function normalizationMenuItems(self: HicMenuSelf): MenuItem[] {
 export function buildHicTrackMenuItems(self: HicMenuSelf): MenuItem[] {
   return [
     ...resolutionMenuItems(self),
-    {
-      label: 'Show...',
-      icon: VisibilityIcon,
-      subMenu: showMenuItems(self),
-    },
+    ...makeShowSubMenu(showMenuItems(self)),
     makeRadioSubMenu({
       label: 'Color scheme',
       icon: PaletteIcon,

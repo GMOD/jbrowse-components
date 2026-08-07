@@ -1,19 +1,20 @@
 import { makeSizeMenu } from '@jbrowse/core/ui'
+import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
+import { showLegendCheckboxItem } from '@jbrowse/core/ui/menuItems'
+import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { assembleLocString, getSession } from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
 import {
   clusteringMenuItem,
   resetRowOrderMenuItems,
+  rowArrangementMenuItem,
+  rowHeightMenuItem,
 } from '@jbrowse/tree-sidebar'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
-import FilterAltIcon from '@mui/icons-material/FilterAlt'
-import HeightIcon from '@mui/icons-material/Height'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
 import SplitscreenIcon from '@mui/icons-material/Splitscreen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
-import TuneIcon from '@mui/icons-material/Tune'
-import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { capitalizeFirst } from './constants.ts'
 import { PHASE_SET_COLOR } from './getPhasedColor.ts'
@@ -23,7 +24,6 @@ import {
   AddFiltersDialog,
   MultiSampleVariantClusterDialog as ClusterDialog,
   SetColorDialog,
-  SetRowHeightDialog,
 } from './lazyDialogs.ts'
 import { CONSEQUENCE_IMPACT_JEXL } from './variantConsequence.ts'
 import { SV_TYPE_COLOR } from './variantSvType.ts'
@@ -47,14 +47,9 @@ export function variantShowSubmenuItems(
         self.setShowSidebarLabels(!self.showSidebarLabels)
       },
     },
-    {
-      label: 'Show legend',
-      type: 'checkbox',
-      checked: self.showLegend,
-      onClick: () => {
-        self.setShowLegend(!self.showLegend)
-      },
-    },
+    showLegendCheckboxItem(self.showLegend, () => {
+      self.setShowLegend(!self.showLegend)
+    }),
   ]
 }
 
@@ -71,46 +66,10 @@ export function variantTrackMenuItems(
   // menu, on a getter nothing else in this display reads.
   const loaded = !!self.cellData
   return [
-    {
-      label: 'Show...',
-      icon: VisibilityIcon,
-      type: 'subMenu',
-      subMenu: self.showSubmenuItems(),
-    },
-    {
-      label: 'Row height',
-      icon: HeightIcon,
-      // rowHeight is a single coupled axis: 0 is the fit-to-view sentinel, any
-      // positive value is a fixed row height. Expressed as one mutually-exclusive
-      // radio group; "Squeeze to fit view" shares the verb the MAF/multi-row
-      // displays use for the same idea.
-      subMenu: [
-        {
-          label: 'Squeeze to fit view',
-          type: 'radio',
-          checked: self.rowHeight === 0,
-          onClick: () => {
-            self.setFitToHeight()
-          },
-        },
-        {
-          label: 'Custom...',
-          type: 'radio',
-          checked: self.rowHeight !== 0,
-          // a dialog opener, so it opts out of the checkbox/radio default
-          keepMenuOpen: false,
-          onClick: () => {
-            getSession(self).queueDialog(handleClose => [
-              SetRowHeightDialog,
-              {
-                model: self,
-                handleClose,
-              },
-            ])
-          },
-        },
-      ],
-    },
+    ...makeShowSubMenu(self.showSubmenuItems()),
+    // No presets: a cohort's useful row heights depend on how many samples it
+    // has, so fit and a typed height are the two that mean anything here.
+    rowHeightMenuItem(self),
     {
       label: 'Rendering mode',
       icon: SplitscreenIcon,
@@ -257,10 +216,23 @@ export function variantTrackMenuItems(
           : []),
       ],
     },
-    {
-      label: 'Filter by...',
-      icon: FilterAltIcon,
-      subMenu: [
+    ...filterMenuItems({
+      // Each counted by whether it is doing anything, not by whether it was
+      // edited: MAF is off at 0 and missingness at 1 (keep every variant).
+      activeCount:
+        (self.minorAlleleFrequencyFilter > 0 ? 1 : 0) +
+        (self.maxMissingnessFilter < 1 ? 1 : 0) +
+        (self.jexlFilters?.length ?? 0),
+      onEdit: () => {
+        getSession(self).queueDialog(handleClose => [
+          AddFiltersDialog,
+          {
+            model: self,
+            handleClose,
+          },
+        ])
+      },
+      subItems: [
         // Both are bounded fractions tuned by feel, so they're inline sliders
         // rather than a dialog round-trip. They're fetch inputs (rpcProps), so
         // commitOnRelease keeps a drag from firing a worker refetch per step.
@@ -299,20 +271,15 @@ export function variantTrackMenuItems(
             self.setMaxMissingnessFilter(1)
           },
         }),
-        {
-          label: 'Edit filters...',
-          onClick: () => {
-            getSession(self).queueDialog(handleClose => [
-              AddFiltersDialog,
-              {
-                model: self,
-                handleClose,
-              },
-            ])
-          },
-        },
       ],
-    },
+      // Each slider resets individually; this is the one action that clears the
+      // whole set the count names, JEXL filters included.
+      onClear: () => {
+        self.setMafFilter(0)
+        self.setMaxMissingnessFilter(1)
+        self.setJexlFilters(undefined)
+      },
+    }),
     clusteringMenuItem(self, {
       label: 'Cluster rows by genotype...',
       onClick: () => {
@@ -325,11 +292,9 @@ export function variantTrackMenuItems(
         ])
       },
     }),
-    {
-      label: 'Edit colors/arrangement...',
-      icon: TuneIcon,
-      disabled: !self.sourcesVolatile?.length,
-      onClick: () => {
+    rowArrangementMenuItem({
+      ready: !!self.sourcesVolatile?.length,
+      onOpen: () => {
         getSession(self).queueDialog(handleClose => [
           SetColorDialog,
           {
@@ -338,7 +303,7 @@ export function variantTrackMenuItems(
           },
         ])
       },
-    },
+    }),
     // Three things write this display's row order — a clustering run, the
     // arrangement dialog, and the right-click "Sort by genotype" below — and
     // until now the only way back from any of them was the dialog's own reset,

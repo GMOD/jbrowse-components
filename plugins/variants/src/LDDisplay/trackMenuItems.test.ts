@@ -60,11 +60,48 @@ function subMenuOf(items: MenuItem[], label: string) {
 }
 
 test('the default menu is metric + show + filters', () => {
+  // (1) on a freshly opened track is correct and is the point: the slot ships
+  // at MAF 0.1, so a default LD display IS dropping variants, and until the
+  // count existed nothing in the track chrome said so.
   expect(labels(buildLDTrackMenuItems(makeSelf()))).toEqual([
     'LD metric',
     'Show...',
-    'Filter by...',
+    'Filter by... (1)',
   ])
+
+  expect(
+    labels(buildLDTrackMenuItems(makeSelf({ minorAlleleFrequencyFilter: 0 }))),
+  ).toEqual(['LD metric', 'Show...', 'Filter by...'])
+})
+
+test('the count adds up the thresholds and the jexl list', () => {
+  const items = buildLDTrackMenuItems(
+    makeSelf({
+      minorAlleleFrequencyFilter: 0.05,
+      hweFilterThreshold: 1e-6,
+      callRateFilter: 0.9,
+      jexlFilters: ["jexl:get(feature,'end')>100"],
+    }),
+  )
+  expect(labels(items)).toContain('Filter by... (4)')
+})
+
+// Each dialog resets one field at a time; this is the only row that clears the
+// set the count names.
+test('Clear all filters resets every threshold and the jexl list', () => {
+  const self = makeSelf()
+  const items = buildLDTrackMenuItems(self)
+  const clear = subMenuOf(items, 'Filter by... (1)')?.find(
+    i => labelOf(i) === 'Clear all filters',
+  )
+  if (!clear || !('onClick' in clear)) {
+    throw new Error('expected a Clear all filters row')
+  }
+  clear.onClick()
+  expect(self.setMafFilter).toHaveBeenCalledWith(0)
+  expect(self.setHweFilter).toHaveBeenCalledWith(0)
+  expect(self.setCallRateFilter).toHaveBeenCalledWith(0)
+  expect(self.setJexlFilters).toHaveBeenCalledWith(undefined)
 })
 
 // The clear row is the only way back out of a pinned focal SNP, so it appears

@@ -12,7 +12,7 @@ import {
   copyFeatureInfo,
   getColorByMenuItem,
   getFeatureHeightMenuItem,
-  getFiltersMenuItem,
+  getFiltersMenuItems,
   getHitMenuItems,
   getSortByMenuItem,
   linearAlignmentsDisplayStateModelFactory,
@@ -32,7 +32,10 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { anchorPanelTracks } from '../LaunchSyntenyView/anchorPanelTracks.ts'
 import { canLaunchSyntenyForMate } from '../LaunchSyntenyView/canLaunchSyntenyForMate.ts'
 import { getMate } from '../syntenyMate.ts'
-import { getSyntenyGroupByMenuItem, getSyntenyShowMenuItem } from './menus.ts'
+import {
+  getSyntenyGroupByMenuItem,
+  getSyntenyShowMenuItems,
+} from './menus.ts'
 
 import type { LGVSyntenyDisplayConfigModel } from './configSchemaF.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -352,9 +355,9 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
               noun: 'feature',
               modes: ['position', 'length', 'strand'],
             }),
-            getFiltersMenuItem(self),
+            ...getFiltersMenuItems(self),
             getSyntenyGroupByMenuItem(self),
-            getSyntenyShowMenuItem(self),
+            ...getSyntenyShowMenuItems(self),
             // Same submenu the synteny view and dotplot show, from one source, so
             // the three surfaces can't word the same setting differently
             ...lodMenuItems(self),

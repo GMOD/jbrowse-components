@@ -268,14 +268,14 @@ export default function stateModelFactory(
       const superShowSubmenuRadioGroups = self.showSubmenuRadioGroups
       const superTrackMenuItems = self.trackMenuItems
       const superContextMenuItems = self.contextMenuItems
-      const superHasFeatureFilters = self.hasFeatureFilters
+      const superFeatureFilterCount = self.featureFilterCount
       return {
         // "Show only genes" is a worker-side admission filter (see
         // featureAdmission.ts), so it counts here — otherwise a track showing
         // only genes reports nothing is filtering it and the track menu never
         // offers "Clear filters".
-        hasFeatureFilters() {
-          return superHasFeatureFilters() || self.showOnlyGenes
+        featureFilterCount() {
+          return superFeatureFilterCount() + (self.showOnlyGenes ? 1 : 0)
         },
 
         // Append gene-specific checkbox toggles after the base display toggles,
