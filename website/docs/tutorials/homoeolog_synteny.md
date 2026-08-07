@@ -132,7 +132,8 @@ Nothing publishes these. Ensembl declares `dn` and `ds` in every homology export
 and fills neither, in any division, so they are computed:
 
 ```bash
-python3 kaks_from_pairs.py oat.pairs.tsv oat.cds.fa.gz --key record -o oat.kaks.tsv
+python3 kaks_from_pairs.py oat.pairs.tsv oat.cds.fa.gz \
+  --key record --min-syn-subs 3 -o oat.kaks.tsv
 ```
 
 [`kaks_from_pairs.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/kaks_from_pairs.py)
@@ -145,6 +146,12 @@ It reports what it could not measure rather than writing a row that would draw
 without a colour. Two of those cases are the method's own edges: past dS around
 2 the correction has taken more than it can support, and at dS of 0 the ratio
 has no denominator at all.
+
+`--min-syn-subs` is the third, and it counts rather than thresholding a rate. A
+pair with one or two synonymous differences can return any ratio at all, and
+those pairs are exactly the ones that top an unfiltered table. A floor on dS
+cannot do this job, because dS is per site: the same rate is far weaker evidence
+in a short gene than in a long one.
 
 ## Loading it in JBrowse
 
@@ -165,14 +172,16 @@ A self-comparison names one assembly twice, in `blockAssemblies`, in
     "blockAssemblies": ["oat", "oat"],
     "bedLocations": [{ "uri": "oat.bed.gz" }, { "uri": "oat.bed.gz" }],
     "assemblyNames": ["oat", "oat"],
-    "attributeColumns": ["dn", "ds"]
+    "attributeColumns": ["dn", "ds", "syn_subs", "fisher_p"]
   }
 }
 ```
 
 `attributeColumns` names the columns after the two gene columns. Each becomes a
 feature attribute, so it shows in the detail panel when a link is clicked, and
-`dn` with `ds` together drive **Color by -> dN/dS**.
+`dn` with `ds` together drive **Color by -> dN/dS**. `syn_subs` and `fisher_p`
+are the evidence behind a colour: how many synonymous differences the ratio
+divided by, and a Fisher exact test against neutrality.
 
 That ramp is read against 1 rather than against its own maximum: below it a gene
 is under purifying selection, above it under positive selection, and which side
@@ -187,7 +196,7 @@ make.
 
 ## Reading the plot
 
-<Figure caption="Hexaploid oat against itself: syntenic anchors between its A, C and D subgenomes, coloured by dN/dS on a ramp pivoted at 1, where blue is purifying selection and red positive. Segments on the homoeologous-group diagonal are the collinear case; the segments far off it are the translocations that make oat's karyotype a mosaic." src="/img/homoeolog_synteny/oat_homoeologs.png" />
+<Figure caption="Hexaploid oat against itself: syntenic anchors between its A, C and D subgenomes, coloured by dN/dS on a ramp pivoted at 1, where blue is purifying selection. Segments on the homoeologous-group diagonal are the collinear case; the segments far off it are the translocations that make oat's karyotype a mosaic." src="/img/homoeolog_synteny/oat_homoeologs.png" />
 
 ## Checking it against the raw data
 
@@ -198,6 +207,17 @@ The control is dS. Oat's A and D subgenomes descend from closely related diploid
 _Avena_ species and its C subgenome from a more distant one, so A-D pairs have to
 come out at a lower synonymous divergence than A-C or C-D. If all three land
 together, the rates are measuring the pipeline rather than the polyploidy.
+
+The colour needs reading with more care than the structure does. Almost every
+pair here is blue, and that direction is solid: a conserved gene accumulates
+synonymous change while holding non-synonymous change down, and the Fisher test
+in the `fisher_p` column returns overwhelming support for the great majority of
+them. The warm pairs are the opposite case. A ratio over 1 between two copies
+this recently separated rests on few substitutions, hardly any of them clear the
+test, and the count that do is close to what that many tests would throw up by
+chance. Treat a warm link as a gene worth a codon model, not as a result. The
+[primate walkthrough](/docs/tutorials/selection_pressure) goes through that
+arithmetic on a locus small enough to check by eye.
 
 The claim about the karyotype is a count: how many anchors join two chromosomes
 from _different_ homoeologous groups, and how many chromosome pairs carry enough

@@ -203,15 +203,21 @@ once per column so the two sides stay distinguishable.
 Nothing publishes dN/dS for those pairs, so it is computed:
 [`kaks_from_pairs.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/kaks_from_pairs.py)
 aligns each pair in codon space and runs Nei-Gojobori, writing the `dn` and `ds`
-columns **Color by → dN/dS** divides. Homoeologs are recent enough that dS stays
-near 0.05, well short of where the method saturates.
+columns **Color by → dN/dS** divides, plus the substitution count and Fisher p
+that say whether a given ratio means anything. Homoeologs are recent enough that
+dS stays well short of where the method saturates.
 
-<Figure caption="Bread wheat against itself: 68,710 homoeolog pairs coloured by dN/dS on a ramp pivoted at 1, where blue is purifying selection and red positive. Each homoeologous group makes three parallel segments, one per pair of subgenomes. The segments breaking that pattern at 4A are the 4AL/5AL and 4AL/7BS translocations." src="/img/multiway_synteny/wheat_homoeolog_selection.png" />
+<Figure caption="Bread wheat against itself: homoeolog pairs coloured by dN/dS on a ramp pivoted at 1, where blue is purifying selection. Each homoeologous group makes three parallel segments, one per pair of subgenomes. The segments breaking that pattern at 4A are the 4AL/5AL and 4AL/7BS translocations." src="/img/multiway_synteny/wheat_homoeolog_selection.png" />
 
 Three things read off one plot: the subgenome structure as parallel segments,
-the 4A translocations as segments leaving their group, and per-gene selection as
-colour. 4A carries 359 links to 5D and 199 to 7D where an unrearranged
+the 4A translocations as segments leaving their group, and per-gene divergence
+as colour. 4A carries 359 links to 5D and 199 to 7D where an unrearranged
 chromosome carries about 20.
+
+The blue is the reliable part of that colour. Very few of the warm pairs survive
+the Fisher test in the table's own `fisher_p` column, which is what a pairwise
+ratio can and cannot support; see
+[Selection pressure](/docs/tutorials/selection_pressure).
 
 ### From reciprocal best BLAST hits
 
