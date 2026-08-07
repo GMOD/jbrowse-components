@@ -27,8 +27,9 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export default class PileupGetGlobalValueForTag extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'PileupGetGlobalValueForTag'
 
-  async execute(args: GetGlobalValueForTagArgs, _rpcDriver: string) {
-    const { sessionId, adapterConfig, regions, tag, stopToken } = args
+  async execute(args: GetGlobalValueForTagArgs, rpcDriverClassName: string) {
+    const { sessionId, adapterConfig, regions, tag, stopToken } =
+      await this.deserializeArguments(args, rpcDriverClassName)
 
     const dataAdapter = await getFeatureAdapter({
       pluginManager: this.pluginManager,

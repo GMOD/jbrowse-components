@@ -16,12 +16,16 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export default class RenderAlignmentData extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'RenderAlignmentData'
 
-  async execute(args: RenderAlignmentDataArgs, _rpcDriver: string) {
+  async execute(args: RenderAlignmentDataArgs, rpcDriverClassName: string) {
+    const deserializedArgs = await this.deserializeArguments(
+      args,
+      rpcDriverClassName,
+    )
     const { executeRenderAlignmentData } =
       await import('./executeRenderAlignmentData.ts')
     return executeRenderAlignmentData({
       pluginManager: this.pluginManager,
-      args,
+      args: deserializedArgs,
     })
   }
 }

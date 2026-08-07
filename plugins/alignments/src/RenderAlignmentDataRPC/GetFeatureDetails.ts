@@ -29,7 +29,7 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export default class GetFeatureDetails extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'GetPileupFeatureDetails'
 
-  async execute(args: GetFeatureDetailsArgs, _rpcDriver: string) {
+  async execute(args: GetFeatureDetailsArgs, rpcDriverClassName: string) {
     const {
       sessionId,
       adapterConfig,
@@ -37,7 +37,7 @@ export default class GetFeatureDetails extends RpcMethodTypeWithFiltersAndRename
       regions,
       featureId,
       lodMode,
-    } = args
+    } = await this.deserializeArguments(args, rpcDriverClassName)
 
     const region = regions[0]!
 

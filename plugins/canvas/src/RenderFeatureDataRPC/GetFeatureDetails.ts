@@ -6,8 +6,9 @@ import type { GetFeatureDetailsArgs } from './rpcTypes.ts'
 export default class GetFeatureDetails extends RpcMethodTypeWithRenameRegion {
   name = 'GetCanvasFeatureDetails'
 
-  async execute(args: GetFeatureDetailsArgs, _rpcDriver: string) {
-    const { sessionId, adapterConfig, featureId, region } = args
+  async execute(args: GetFeatureDetailsArgs, rpcDriverClassName: string) {
+    const { sessionId, adapterConfig, featureId, region } =
+      await this.deserializeArguments(args, rpcDriverClassName)
 
     const dataAdapter = await getFeatureAdapterOrThrow({
       pluginManager: this.pluginManager,

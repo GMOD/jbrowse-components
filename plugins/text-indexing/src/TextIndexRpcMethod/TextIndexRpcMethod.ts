@@ -29,7 +29,7 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export class TextIndexRpcMethod extends RpcMethodType {
   name = 'TextIndexRpcMethod'
 
-  async execute(args: TextIndexRpcMethodArgs, _rpcDriverClassName: string) {
+  async execute(args: TextIndexRpcMethodArgs, rpcDriverClassName: string) {
     const {
       tracks,
       outLocation,
@@ -39,7 +39,7 @@ export class TextIndexRpcMethod extends RpcMethodType {
       indexType,
       stopToken,
       statusCallback,
-    } = args
+    } = await this.deserializeArguments(args, rpcDriverClassName)
 
     checkStopToken(stopToken)
     await indexTracks({

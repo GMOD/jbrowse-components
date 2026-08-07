@@ -47,7 +47,7 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 export default class GetConsensusSequence extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'GetConsensusSequence'
 
-  async execute(args: GetConsensusSequenceArgs, _rpcDriver: string) {
+  async execute(args: GetConsensusSequenceArgs, rpcDriverClassName: string) {
     const {
       sessionId,
       adapterConfig,
@@ -59,7 +59,7 @@ export default class GetConsensusSequence extends RpcMethodTypeWithFiltersAndRen
       hetFract,
       includeInsertions,
       stopToken,
-    } = args
+    } = await this.deserializeArguments(args, rpcDriverClassName)
 
     const region = regions[0]!
 

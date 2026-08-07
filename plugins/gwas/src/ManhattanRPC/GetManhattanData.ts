@@ -57,12 +57,16 @@ export default class GetManhattanData extends RpcMethodType {
     )
   }
 
-  async execute(args: GetManhattanDataArgs, _rpcDriver: string) {
+  async execute(args: GetManhattanDataArgs, rpcDriverClassName: string) {
+    const deserializedArgs = await this.deserializeArguments(
+      args,
+      rpcDriverClassName,
+    )
     const { executeGetManhattanData } =
       await import('./executeGetManhattanData.ts')
     return executeGetManhattanData({
       pluginManager: this.pluginManager,
-      args,
+      args: deserializedArgs,
     })
   }
 }

@@ -257,6 +257,30 @@ export default abstract class RpcMethodType<
     return loc
   }
 
+  /**
+   * The far side of `serializeArguments`, and **every `execute` must call it**
+   * — `rpcDeserializeArguments.test.ts` fails for one that doesn't.
+   *
+   * Nothing calls it for you: the worker entry point invokes `execute` directly
+   * (`product-core/src/rpcWorker.ts`), so an `execute` that reads `args`
+   * straight through simply skips this step. What it skips is the blob map,
+   * which is how a `BlobLocation` — a file the user opened from their disk —
+   * resolves to a `File` in the worker realm. Subclasses add to it: the
+   * filters-and-regions base turns the on-wire `string[]` back into a
+   * `SerializableFilterChain` here.
+   *
+   * Skipping it *looks* harmless, which is the problem. The blob map is a
+   * module global in the worker, so whichever RPC deserialized last leaves one
+   * behind and the next method to skip this reads that one — right, usually, by
+   * accident. It goes wrong when the map it inherits is not the current one:
+   * `setBlobMap` replaces wholesale, and a worker that died and re-booted (the
+   * pool drops and re-boots the slot) starts with none at all.
+   *
+   * The only methods exempt are the ones with no adapter config and no
+   * locations in their arguments at all — `CoreFreeResources` frees caches by
+   * session id and has nothing to resolve — and that exemption is declared in
+   * the test rather than inferred.
+   */
   async deserializeArguments<T>(
     args: T & { blobMap?: Record<string, File> },
     _rpcDriverClassName: string,
