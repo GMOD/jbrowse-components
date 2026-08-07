@@ -6,6 +6,9 @@ import {
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
+import BgzipMafAdapter from '../BgzipMafAdapter/BgzipMafAdapter.ts'
+import BgzipMafConfigSchema from '../BgzipMafAdapter/configSchema.ts'
+import BgzipTaffyAdapter from '../BgzipTaffyAdapter/BgzipTaffyAdapter.ts'
 import TaffyConfigSchema from '../BgzipTaffyAdapter/configSchema.ts'
 import BigMafConfigSchema from '../BigMafAdapter/configSchema.ts'
 import { mafSummaryFeatures } from '../util/loadMafSummaryAdapter.ts'
@@ -124,6 +127,51 @@ describe('a maf2bed --summary BED round-trips into summary records', () => {
     expect(out).toEqual([])
   })
 
+  // Through the adapters' own `getSummaryFeatures`, not the shared helper: the
+  // slot and the method are two separate things to forget, and a track with the
+  // slot but no method summarizes to nothing with no error. Neither adapter's
+  // primary file is touched on this path, so the bogus location is honest about
+  // what is under test.
+  it.each([
+    [
+      'BgzipMafAdapter',
+      () =>
+        new BgzipMafAdapter(
+          BgzipMafConfigSchema.create({
+            mafGzLocation: { uri: 'unread.maf.gz', locationType: 'UriLocation' },
+            summaryAdapter: { type: 'BedTabixAdapter' },
+          }),
+          () =>
+            Promise.resolve({
+              dataAdapter: summaryAdapter() as BaseFeatureDataAdapter,
+              sessionIds: new Set<string>(),
+            }),
+        ),
+    ],
+    [
+      'BgzipTaffyAdapter',
+      () =>
+        new BgzipTaffyAdapter(
+          TaffyConfigSchema.create({
+            tafGzLocation: { uri: 'unread.taf.gz', locationType: 'UriLocation' },
+            summaryAdapter: { type: 'BedTabixAdapter' },
+          }),
+          () =>
+            Promise.resolve({
+              dataAdapter: summaryAdapter() as BaseFeatureDataAdapter,
+              sessionIds: new Set<string>(),
+            }),
+        ),
+    ],
+  ])('%s summarizes through its own getSummaryFeatures', async (_name, make) => {
+    const out = await firstValueFrom(
+      make().getSummaryFeatures(REGION).pipe(toArray()),
+    )
+    expect(new Set(out.map(r => r.src))).toEqual(
+      new Set(['volvox', 'simvolvox', 'microvolvox']),
+    )
+  })
+
   // The mirror mistake to the one MafTabixAdapter.test.ts covers: the alignment
   // BED put into `summaryAdapter` instead of into `bedGzLocation`. It is
   // headerless, so its columns are `field*` and there is no `src` — and `src` is
@@ -202,14 +250,32 @@ describe('the summaryAdapter slot exists where the display expects it', () => {
     expect(readConfObject(conf, 'summaryAdapter')).toBeNull()
   })
 
-  // Deliberately absent: TAF's `.tai` seeks within an alignment, so a read
-  // already costs what is on screen rather than what the blocks span, and the
-  // zoom-out problem the tier solves does not arise the same way. Pinned so the
-  // omission reads as a decision rather than an oversight.
-  it('BgzipTaffyAdapter has no summary slot, by decision', () => {
+  // These two used to be the exception: a `.tai` seeks within an alignment, so
+  // a read costs what is on screen rather than what the blocks span, and that
+  // read as "the zoom-out problem does not arise here". It arises anyway,
+  // because cost is span x depth and the `.tai` only fixes the first factor.
+  // Measured against HPRC's own indexes at 464 haplotypes, flat from 100 kb up:
+  // ~19 compressed bytes per bp for the v2.1 MAF, ~2 for the v2.0 TAF, so chr6
+  // whole is 3.2 GB and 354 MB respectively. These are also the two adapters
+  // that read *published* whole-genome alignments, which made them the worst two
+  // to leave without a tier.
+  it('BgzipMafAdapter round-trips one', () => {
+    const conf = BgzipMafConfigSchema.create({
+      mafGzLocation: { uri: 'x.maf.gz', locationType: 'UriLocation' },
+      summaryAdapter: { type: 'BedTabixAdapter' },
+    })
+    expect(readConfObject(conf, 'summaryAdapter')).toEqual({
+      type: 'BedTabixAdapter',
+    })
+  })
+
+  it('BgzipTaffyAdapter round-trips one', () => {
     const conf = TaffyConfigSchema.create({
       tafGzLocation: { uri: 'x.taf.gz', locationType: 'UriLocation' },
+      summaryAdapter: { type: 'BedTabixAdapter' },
     })
-    expect(Object.keys(conf)).not.toContain('summaryAdapter')
+    expect(readConfObject(conf, 'summaryAdapter')).toEqual({
+      type: 'BedTabixAdapter',
+    })
   })
 })

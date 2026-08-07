@@ -47,11 +47,10 @@ export interface MafSamplesResult {
 
 /**
  * Adapter contract the MAF RPC methods rely on: features plus `getSamples`.
- * `getSummaryFeatures` is optional — bigMaf and MAF-tabix both take a
- * `summaryAdapter` slot and implement it, while BgzipTaffyAdapter has no such
- * slot (TAF's `.tai` already makes a read cost the visible span rather than the
- * whole alignment). Absent, the summary RPC returns no rows and the display
- * falls back to the byte-estimate force-load gate.
+ * `getSummaryFeatures` is optional in the type and implemented by all four MAF
+ * adapters, each through the same `summaryAdapter` slot. It stays optional
+ * because the slot itself is: an unconfigured track returns no rows and the
+ * display falls back to the byte-estimate force-load gate.
  */
 export type MafSamplesAdapter = BaseFeatureDataAdapter & {
   getSamples: () => Promise<MafSamplesResult>

@@ -109,6 +109,19 @@ export function buildAdapterConfig(args: BuildArgs) {
         taiLocation: indexLoc,
         nhLocation: nhLoc,
         samples: sampleNames,
+        // Same summary BED and same sibling-.tbi assumption as the tabix
+        // branch. The .tai keeps a read proportional to the span on screen, not
+        // to the alignment — but a deep one still costs span x depth, so the
+        // zoom-out tier is worth offering here too.
+        ...(summaryLoc
+          ? {
+              summaryAdapter: {
+                type: 'BedTabixAdapter',
+                bedGzLocation: summaryLoc,
+                index: { location: makeIndex(summaryLoc, '.tbi') },
+              },
+            }
+          : {}),
       }
   }
 }

@@ -408,10 +408,10 @@ the force-load floor. That is the mechanism that makes a deep alignment
 affordable, and it is already built. The two real gaps are both in it, not in
 the draw loop:
 
-- The summary tier is opt-in and unconfigured tracks don't have it. Both
-  `MafTabixAdapter` and `BigMafAdapter` now take a `summaryAdapter` slot (see
-  "Still open" above), but a 470-way tabix MAF written without one still has no
-  cheap zoom-out path — the tier exists, the file it reads has to be produced.
+- The summary tier is opt-in and unconfigured tracks don't have it. All four MAF
+  adapters take a `summaryAdapter` slot now (see "Still open" above and "A `.tai`
+  is not a tier" below), but a 470-way written without one still has no cheap
+  zoom-out path — the tier exists, the file it reads has to be produced.
 - The identity plot is confined *below* the summary threshold — `showSummary`
   makes `activeRowRendering` fall back to the bases — so the per-species view
   built for "see all 470 species at once" is only available in the zoom range
@@ -434,6 +434,49 @@ gated now, each measured against the file it actually reads
 is bounded; measuring it doesn't have to** — and a genuinely small summary read
 is orders of magnitude under the cap, so nothing that worked before now sees a
 banner.
+
+### A `.tai` is not a tier — measured on HPRC's own indexes
+
+`BgzipMafAdapter` and `BgzipTaffyAdapter` shipped without the `summaryAdapter`
+slot, and the reason was written down as a decision rather than left implicit: a
+`.tai` seeks *within* an alignment, so a read costs the span on screen rather
+than the blocks that span lands in, and the block-quantization failure the rest
+of this document is about cannot happen. That much is true.
+
+It is also only one factor. A read costs **span × depth**, the index bounds the
+span, and nothing bounds the depth. Measured 2026-08-06 by running the repo's own
+`queryBlockSpan` — the same function `taiRegionByteSize` reports to the gate —
+over the two `.tai` files HPRC publishes, at 464 haplotypes, chr6 (the C4 locus
+the tutorial figure uses):
+
+| span | v2.1 MAF (53 GB) | v2.0 TAF (5.96 GB) |
+| --- | --- | --- |
+| 10 kb | 598 kB | 107 kB |
+| 100 kb | 2.2 MB | 301 kB |
+| 500 kb | 9.6 MB | 1.1 MB |
+| 1 Mb | 19.3 MB | 2.5 MB |
+| 10 Mb | 192 MB | 25.2 MB |
+| whole chr6, 170.8 Mb | **3.19 GB** | **354 MB** |
+
+Both are flat in bytes-per-bp from about 100 kb up — **19 for the MAF, 2.1 for
+the TAF** — which is the shape a span-bounded read should have, and exactly why
+it runs out: against the default 1 MB `fetchSizeLimit` the ceiling is ~50 kb of
+MAF and ~350 kb of TAF, and it moves linearly with the limit thereafter. TAF
+buys about 10x. It does not buy a chromosome.
+
+So the two adapters that read *published* whole-genome alignments were the two
+without a zoom-out tier, while the two that have it (`MafTabixAdapter`,
+`BigMafAdapter`) read formats you produce yourself by conversion. Both take the
+slot now, through the same `mafSummaryFeatures` and the same `getSummaryFeatures`
+as the other two — the display side needed no change at all, since `showSummary`
+only ever asked whether the slot was set.
+
+Two things this does *not* claim. It is a wire-bytes measurement off an index, not
+a download, so it says nothing about parse or render cost past the gate — those
+are the tables above. And it does not produce the summary file: HPRC publishes no
+`bigMafSummary`, so pointing the slot at one for this track means a
+`maf2bed --summary` pass over the published alignment, which is a 53 GB (or
+5.96 GB) stream done once, offline.
 
 ## Measurements from the design pass
 

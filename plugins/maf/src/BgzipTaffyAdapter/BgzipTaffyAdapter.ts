@@ -6,6 +6,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import MafFeature from '../MafFeature.ts'
 import { buildSampleFilter, getSamplesMemoized } from '../util/getSamples.ts'
+import { mafSummaryFeatures } from '../util/loadMafSummaryAdapter.ts'
 import { lazyInit } from '../util/loadSubAdapter.ts'
 import { makeSourceResolver } from '../util/parseAssemblyName.ts'
 import { readTaiSlice, taiRegionByteSize } from '../util/taiSlice.ts'
@@ -23,6 +24,7 @@ import { parseTaiIndex } from './taiIndex.ts'
 
 import type { MafAdapterOptions } from '../types.ts'
 import type { SamplesHolder } from '../util/getSamples.ts'
+import type { MafSummaryHolder } from '../util/loadMafSummaryAdapter.ts'
 import type { SourceResolver } from '../util/parseAssemblyName.ts'
 import type { AlignmentBlock, TafFeature } from './tafParsing.ts'
 import type { IndexData } from './types.ts'
@@ -44,6 +46,8 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
   public setupP?: Promise<SetupData>
 
   public samplesP?: SamplesHolder['samplesP']
+
+  public summaryAdapterP?: MafSummaryHolder['summaryAdapterP']
 
   // true once the index has downloaded (set by lazyInit); gates the status label
   // so pan/zoom re-entry into setup() doesn't re-flash "Downloading index"
@@ -254,6 +258,13 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
       this.getConf('nhLocation'),
       this.getConf('samples'),
     )
+  }
+
+  // The zoom-out tier, same slot and same reader as the other three adapters'.
+  // See the slot's own comment for why the `.tai` does not remove the need for
+  // one.
+  getSummaryFeatures(query: Region, opts?: BaseOptions) {
+    return mafSummaryFeatures(this, query, opts)
   }
 
   async getRegionByteSize(regions: Region[]) {

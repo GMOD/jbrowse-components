@@ -162,14 +162,28 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
             />
           </>
         ) : (
-          <FileSelector
-            location={indexLoc}
-            name="Path to TAF.gz.tai (TAF index)"
-            rootModel={rootModel}
-            setLocation={arg => {
-              setIndexLoc(arg)
-            }}
-          />
+          <>
+            <FileSelector
+              location={indexLoc}
+              name="Path to TAF.gz.tai (TAF index)"
+              rootModel={rootModel}
+              setLocation={arg => {
+                setIndexLoc(arg)
+              }}
+            />
+            {/* The .tai bounds a read to the span on screen, which is why this
+                was left off at first. Span is only half the cost — the other
+                half is depth, and a deep alignment runs out of it whatever the
+                index does. Same sibling-.tbi assumption as the tabix branch. */}
+            <FileSelector
+              location={summaryLoc}
+              name="Path to summary BED (.bed.gz from `maf2bed --summary`, optional — enables zoom-out rendering)"
+              rootModel={rootModel}
+              setLocation={arg => {
+                setSummaryLoc(arg)
+              }}
+            />
+          </>
         )}
       </div>
       <div>

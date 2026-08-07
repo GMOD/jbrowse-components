@@ -166,6 +166,45 @@ describe('buildAdapterConfig', () => {
     })
   })
 
+  // TAF was the one type the form's summary field stayed hidden for, on the
+  // grounds that a `.tai` bounds a read to the span on screen. It does, and the
+  // other factor is depth: at HPRC's 464 haplotypes a span-bounded read is still
+  // ~2 compressed bytes per bp, so there is a zoom past which no index helps —
+  // chr6 whole is 354 MB.
+  test('BgzipTaffyAdapter with summary emits a BedTabix summaryAdapter', () => {
+    const summaryBed: FileLocation = {
+      uri: 'data.summary.bed.gz',
+      locationType: 'UriLocation',
+    }
+    expect(
+      buildAdapterConfig({
+        fileTypeChoice: 'BgzipTaffyAdapter',
+        indexTypeChoice: 'TBI',
+        loc,
+        indexLoc,
+        nhLoc,
+        summaryLoc: summaryBed,
+        sampleNames,
+      }),
+    ).toEqual({
+      type: 'BgzipTaffyAdapter',
+      tafGzLocation: loc,
+      taiLocation: indexLoc,
+      nhLocation: nhLoc,
+      samples: sampleNames,
+      summaryAdapter: {
+        type: 'BedTabixAdapter',
+        bedGzLocation: summaryBed,
+        index: {
+          location: {
+            uri: 'data.summary.bed.gz.tbi',
+            locationType: 'UriLocation',
+          },
+        },
+      },
+    })
+  })
+
   test('throws when data file missing', () => {
     expect(() =>
       buildAdapterConfig({

@@ -22,11 +22,12 @@ For what the track looks like once loaded, see the
 <!-- FILE_TYPES maf START -->
 
 <!-- prettier-ignore -->
-| Format | Adapter | Track type |
-| --- | --- | --- |
-| BigMaf | [](/docs/config/bigmafadapter) | [](/docs/config/maftrack) |
-| MAF (tabix) | [](/docs/config/maftabixadapter) | [](/docs/config/maftrack) |
-| TAF (bgzipped Taffy) | [](/docs/config/bgziptaffyadapter) | [](/docs/config/maftrack) |
+| Format | Adapter | Track type | Notes |
+| --- | --- | --- | --- |
+| BigMaf | [](/docs/config/bigmafadapter) | [](/docs/config/maftrack) |  |
+| Indexed MAF (bgzip + .tai) | [](/docs/config/bgzipmafadapter) | [](/docs/config/maftrack) | A published whole-genome multiple alignment, read by locus |
+| MAF (tabix) | [](/docs/config/maftabixadapter) | [](/docs/config/maftrack) |  |
+| TAF (bgzipped Taffy) | [](/docs/config/bgziptaffyadapter) | [](/docs/config/maftrack) |  |
 
 <!-- FILE_TYPES maf END -->
 
@@ -231,10 +232,14 @@ the reference — but both are 0..1, both shade the same way, and neither is sho
 as a number. Both are distinct from the conservation band, which is computed
 from the alignment itself and needs no file.
 
-`BgzipTaffyAdapter` takes no `summaryAdapter`: TAF's `.tai` index already seeks
-within an alignment, so a read costs what is on screen rather than what the
-blocks happen to span, and the zoom-out problem this solves does not arise the
-same way.
+`BgzipMafAdapter` and `BgzipTaffyAdapter` take the same slot, and the same
+`maf2bed --summary` BED serves them. Their `.tai` index seeks within an
+alignment, so a read already costs what is on screen rather than what the blocks
+happen to span — but that bounds the span, not the depth, and a read costs both.
+Measured against HPRC's published indexes at 464 haplotypes, a span-bounded read
+settles at about 19 compressed bytes per bp for the MAF and 2 for the TAF, so
+whole-chromosome chr6 is 3.2 GB and 354 MB respectively. An index moves the
+ceiling; a summary file is what removes it.
 
 ## Display options
 

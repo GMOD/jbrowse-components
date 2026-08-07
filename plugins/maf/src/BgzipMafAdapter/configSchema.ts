@@ -83,6 +83,24 @@ const configSchema = ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
+    /**
+     * #slot
+     * The zoom-out tier. The `.tai` makes a read cost the span on screen rather
+     * than the blocks it lands in, which is why this slot was left off at first
+     * — but span is only half of it. Cost is span × depth, and measured against
+     * HPRC's own v2.1 index the constant is about **19 compressed bytes per bp**
+     * at 464 haplotypes, flat from 100 kb up: 1 Mb is a 19 MB read and chr1
+     * whole is 4.4 GB. So a deep alignment still runs out, just linearly instead
+     * of by block. Point it at a `BedTabixAdapter` over the summary BED `maf2bed
+     * --summary` writes, or at a `BigBedAdapter` over a UCSC `bigMafSummary.bb`
+     * covering the same alignment.
+     */
+    summaryAdapter: {
+      type: 'frozen',
+      description:
+        'optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; null disables it',
+      defaultValue: null,
+    },
   },
   {
     explicitlyTyped: true,
