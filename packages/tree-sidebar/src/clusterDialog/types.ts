@@ -12,7 +12,7 @@ import type { DialogProps } from '@mui/material'
  */
 export interface ClusterDialogProps {
   // read only for isAlive (a run whose display went away has no dialog to report
-  // into) and getSession (notifyError on a bad paste)
+  // into) and getContainingView (the region/zoom the exported matrix is keyed on)
   model: IAnyStateTreeNode
   handleClose: () => void
   title: string

@@ -155,6 +155,25 @@ and `0` is their default — reading it painted zero-height rects and the hover
 highlight silently did nothing. Structural typing let that through, so keep the
 contract field named for the resolved value.
 
+## …and `computeClusterHierarchy` takes the rows' _content_ height
+
+Same axis, one argument over. `rowsContentHeight` must be
+`rows.length × effectiveRowHeight` — the rows' full stacked extent, never the
+viewport they scroll inside. `clusterLayout` puts leaf _i_ at
+`(i + 0.5) × rowsContentHeight / n`, and everything drawn beside the tree puts
+row _i_ at `i × effectiveRowHeight`: the hover highlight, `SvgRowLabels`, the
+display's own painting. Pass the viewport and the dendrogram still draws, still
+looks plausible, and silently names the wrong rows — `treeDescribesRows`'
+failure mode on the pixel axis instead of the name axis, with no guard.
+
+It looks like an alias for `height`, and on two of the four consumers it is one:
+the multi-row feature display redefines `height` as exactly
+`nrow × effectiveRowHeight` (it grows to its content), and multi-wiggle is
+always fit-to-height. It is **not** one on a display that scrolls — maf passes
+`rowsContentHeight` and not `rowsHeight`, the variant displays spell the product
+out. "Simplify this to the display height" is the edit the parameter is named to
+refuse.
+
 ## `SvgRowLabels`: a sub-pixel row still draws
 
 Below `MIN_TEXT_ROW_HEIGHT` a row draws as a `labelColor` swatch rather than

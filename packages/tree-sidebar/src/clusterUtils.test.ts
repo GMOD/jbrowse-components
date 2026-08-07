@@ -144,16 +144,28 @@ test('validateClusterOrder accepts a full permutation', () => {
   }).not.toThrow()
 })
 
+// The message is the only feedback on a long paste, so it names the position in
+// the paste AND the offending value. "entry 2" used to be the value, printed
+// where a position reads.
 test('validateClusterOrder rejects out-of-range, duplicate, and wrong-length', () => {
   expect(() => {
     validateClusterOrder([0, 3], 3)
-  }).toThrow(/out of range/)
+  }).toThrow('entry 2 is 4, outside the range 1-3')
   expect(() => {
     validateClusterOrder([0, 1, 1], 3)
-  }).toThrow(/duplicated/)
+  }).toThrow('entry 3 repeats row 2')
   expect(() => {
     validateClusterOrder([0, 1], 3)
   }).toThrow(/expected 3 entries/)
+})
+
+// `parseClusterOrder` is a bare `+`, so a stray word in the paste reaches here
+// as NaN. It used to print as "entry NaN is out of range 1-3", naming neither
+// the position nor the value.
+test('validateClusterOrder names a non-numeric paste line by position', () => {
+  expect(() => {
+    validateClusterOrder([0, Number.NaN, 2], 3)
+  }).toThrow('entry 2 is not a whole number')
 })
 
 // hclust's `length` is an absolute merge height, so a collapsing unary node
@@ -250,6 +262,27 @@ describe('computeClusterHierarchy', () => {
     expect(
       computeClusterHierarchy(root, [...rows, { name: 'd' }], 90, 80, false),
     ).toBeUndefined()
+  })
+
+  // The contract on the third argument, made executable: given the rows' full
+  // stacked extent, leaf *i* has to land on the center of row *i*, because that
+  // is where everything drawn beside the tree puts it (the hover highlight in
+  // `treeDrawingAutorun`, `SvgRowLabels`, each display's own painting) — all of
+  // them off `i × effectiveRowHeight`, none of them reconciling by name.
+  //
+  // Passing a scrolling display's viewport height instead still produces a
+  // dendrogram, so nothing downstream can catch it: maf is the live case, and
+  // it deliberately passes `rowsContentHeight` rather than `rowsHeight`.
+  test('lands leaf i on the center of row i', () => {
+    const rowHeight = 30
+    const laid = computeClusterHierarchy(
+      root,
+      rows,
+      rows.length * rowHeight,
+      80,
+      false,
+    )
+    expect(leaves(laid!).map(l => l.x)).toEqual([15, 45, 75])
   })
 
   test('undefined with no tree and with no rows', () => {

@@ -88,15 +88,17 @@ test('the manual tab offers no downloads until the matrix arrives', async () => 
 })
 
 // A short or duplicated hand-pasted order would silently drop or double rows, so
-// applyOrder validates and the dialog stays open on the message.
-test('a bad pasted order keeps the manual tab open', async () => {
+// applyOrder validates and the dialog stays open on the message — beside the
+// paste box, not in a session snackbar somewhere else on screen while the dialog
+// covering it is the thing the user has to edit.
+test('a bad pasted order keeps the manual tab open and says why', async () => {
   const { createDisplay } = setup()
   const { display } = createDisplay()
   await loadSources(display)
   const before = display.layout.map(s => s.name)
 
   const handleClose = jest.fn()
-  const { getByLabelText, getByText } = render(
+  const { getByLabelText, getByText, findByText } = render(
     <WiggleClusterDialog model={display} handleClose={handleClose} />,
   )
   await userEvent.click(getByLabelText(/Download R script/))
@@ -105,6 +107,7 @@ test('a bad pasted order keeps the manual tab open', async () => {
 
   expect(handleClose).not.toHaveBeenCalled()
   expect(display.layout.map(s => s.name)).toEqual(before)
+  expect(await findByText(/expected 2 entries, got 1/)).toBeTruthy()
 })
 
 test('a complete pasted order applies and closes', async () => {

@@ -47,12 +47,14 @@ describe('applyClusterOrder', () => {
     expect(() => apply([0, 1])).toThrow(/expected 3 entries, got 2/)
   })
 
+  // the message names the position in the paste and the value at it, since on a
+  // 200-line paste neither alone says where to look
   it('rejects a duplicated row', () => {
-    expect(() => apply([0, 1, 1])).toThrow(/duplicated/)
+    expect(() => apply([0, 1, 1])).toThrow('entry 3 repeats row 2')
   })
 
   it('rejects an out-of-range row', () => {
-    expect(() => apply([0, 1, 3])).toThrow(/out of range 1-3/)
+    expect(() => apply([0, 1, 3])).toThrow('entry 3 is 4, outside the range 1-3')
   })
 
   it('counts the expanded rows in phased mode, not the samples', () => {

@@ -178,9 +178,9 @@ export function treeDescribesRows(
 }
 
 // Position the (filtered) cluster tree for drawing: leaves spaced over
-// `leafExtent` px along the row axis, branches over `treeAreaWidth` along the
-// depth axis. Undefined when there's no tree, no rows to align it against, or a
-// tree that no longer describes those rows (see `treeDescribesRows`). Every
+// `rowsContentHeight` px along the row axis, branches over `treeAreaWidth` along
+// the depth axis. Undefined when there's no tree, no rows to align it against,
+// or a tree that no longer describes those rows (see `treeDescribesRows`). Every
 // tree-sidebar consumer routes through this so the clusterLayout argument order,
 // the empty-state guard and the staleness gate can't drift between display
 // types.
@@ -188,15 +188,31 @@ export function treeDescribesRows(
 // `rows` are the rows actually drawn — the display's `sources`, after every
 // reorder, filter and decoration it applies — never the pre-filter or pre-layout
 // list.
+//
+// **`rowsContentHeight` must be `rows.length × effectiveRowHeight`** — the rows'
+// full stacked extent, never the viewport they scroll inside. Leaf *i* lands at
+// `(i + 0.5) × rowsContentHeight / n`, while everything drawn beside the tree
+// puts row *i* at `i × effectiveRowHeight`: the hover highlight in
+// `treeDrawingAutorun`, `SvgRowLabels`, and each display's own painting. Pass the
+// viewport instead and the dendrogram still draws, still looks plausible, and
+// silently names the wrong rows — the same failure `treeDescribesRows` guards
+// against on the name axis, on the pixel axis instead.
+//
+// It reads as an alias for `height` on a display that grows to its content (the
+// multi-row feature display redefines `height` as exactly `nrow ×
+// effectiveRowHeight`) or that is always fit-to-height (multi-wiggle). It is not
+// one on a display that scrolls: maf passes `rowsContentHeight` and NOT
+// `rowsHeight`, and the variant displays spell the product out. Changing a
+// caller to the viewport height is the tidy-up this parameter is named to refuse.
 export function computeClusterHierarchy(
   root: HierarchyNode<ClusterNodeData> | undefined,
   rows: readonly { name: string }[] | undefined,
-  leafExtent: number,
+  rowsContentHeight: number,
   treeAreaWidth: number,
   showBranchLength: boolean,
 ): ClusterHierarchyNode | undefined {
   return root && rows?.length && treeDescribesRows(root, rows)
-    ? clusterLayout(root, leafExtent, treeAreaWidth, showBranchLength)
+    ? clusterLayout(root, rowsContentHeight, treeAreaWidth, showBranchLength)
     : undefined
 }
 
@@ -215,18 +231,32 @@ export function parseClusterOrder(paste: string): number[] {
 // buildClusteredLayout catches out-of-range indices, but a partial paste or one
 // with duplicates would silently drop/duplicate subtracks. Throw a clear error
 // instead. `order` is 0-based.
+//
+// "entry N" is the **position** in the paste, and the value is reported beside
+// it. It used to be `${idx + 1}` alone, which reads like a position but is the
+// value — and `parseClusterOrder` is a bare `+`, so a stray word in the paste
+// arrives as NaN and printed as "entry NaN is out of range 1-40", naming
+// neither. This is the only feedback the user gets on a 200-line paste, so it
+// has to say where to look.
+//
+// Position, not line number: `parseClusterOrder` drops blank lines, so the two
+// disagree on exactly the pastes most likely to be malformed.
 export function validateClusterOrder(order: number[], length: number) {
   const seen = new Set<number>()
-  for (const idx of order) {
-    if (!Number.isInteger(idx) || idx < 0 || idx >= length) {
+  for (const [i, idx] of order.entries()) {
+    const at = `entry ${i + 1}`
+    if (!Number.isInteger(idx)) {
       throw new Error(
-        `Invalid clustering order: entry ${idx + 1} is out of range 1-${length}`,
+        `Invalid clustering order: ${at} is not a whole number. Paste only the row numbers printed by cat(resultClusters$order), one per line`,
+      )
+    }
+    if (idx < 0 || idx >= length) {
+      throw new Error(
+        `Invalid clustering order: ${at} is ${idx + 1}, outside the range 1-${length}`,
       )
     }
     if (seen.has(idx)) {
-      throw new Error(
-        `Invalid clustering order: entry ${idx + 1} is duplicated`,
-      )
+      throw new Error(`Invalid clustering order: ${at} repeats row ${idx + 1}`)
     }
     seen.add(idx)
   }

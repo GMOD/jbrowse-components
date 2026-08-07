@@ -6,7 +6,7 @@ import {
   LoadingEllipses,
   SubmitForm,
 } from '@jbrowse/core/ui'
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 import {
   Button,
@@ -55,6 +55,11 @@ const ClusterManualTab = observer(function ClusterManualTab({
 }: ClusterDialogProps & { children: React.ReactNode }) {
   const [paste, setPaste] = useState('')
   const [clusterMethod, setClusterMethod] = useState('average')
+  // A rejected paste reports beside the box it came from, the way the auto tab
+  // reports a failed run. It used to go to `session.notifyError`, i.e. a
+  // snackbar somewhere else on screen while this dialog stayed open on the paste
+  // that caused it — the one thing the message is asking the user to edit.
+  const [pasteError, setPasteError] = useState<unknown>()
 
   // The matrix is computed over the visible region at the current resolution, so
   // the key has to track both — otherwise panning or zooming while the dialog is
@@ -89,6 +94,7 @@ const ClusterManualTab = observer(function ClusterManualTab({
       }}
       onSubmit={() => {
         try {
+          setPasteError(undefined)
           // parseClusterOrder yields 1-based R indices; applyOrder takes
           // 0-based, and validates the order covers every row before
           // anything is applied
@@ -97,7 +103,7 @@ const ClusterManualTab = observer(function ClusterManualTab({
         } catch (e) {
           // a bad paste keeps the dialog open so the user can fix it
           console.error(e)
-          getSession(model).notifyError(`${e}`, e)
+          setPasteError(e)
         }
       }}
     >
@@ -164,10 +170,13 @@ const ClusterManualTab = observer(function ClusterManualTab({
           label="Paste result of the R script here"
           value={paste}
           onChange={event => {
+            // the message described the old paste, so it goes out with it
+            setPasteError(undefined)
             setPaste(event.target.value)
           }}
           slotProps={{ input: { style: { fontFamily: 'Courier New' } } }}
         />
+        {pasteError ? <ErrorBanner error={pasteError} /> : null}
       </Paper>
     </SubmitForm>
   )
