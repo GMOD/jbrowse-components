@@ -19,16 +19,14 @@ import libs from './modules.ts'
 // deliberate break, so give the reason and say which published plugins you
 // checked. Emptying it is not the goal -- reviewing what goes into it is.
 //
-// The v5 entries below were checked against all 17 bundles in the v2 plugin
-// store (jbrowse.org/plugin-store/v2/plugins.json) by extracting each one's
-// `JBrowseExports[...]` reads. Four link against something in this list:
-// jbrowse-plugin-gwas (FeatureRendererType, now vendored in-tree as
-// plugins/gwas), jbrowse-plugin-gdc and jbrowse-plugin-apollo
-// (getParentRenderProps, plus isContainedWithin and BaseTooltip for apollo), and
-// jbrowse-plugin-tview (BaseTooltip). jbrowse-plugin-multilevel-linear-view2
-// vendors its own copy of the util barrel, so it reads only getParentRenderProps
-// off the host. Store entries all declare `jbrowseRange: "*"`, so pinning them
-// is the other half of this.
+// What this list costs in the wild is a separate question, and the answer moves
+// as plugins are rebuilt, so it is not restated here. Run
+//   node --experimental-strip-types scripts/check-published-plugins.ts
+// which reads every bundle in the store and reports only the names each one
+// actually takes off JBrowseExports. As of the v5 work that was 6 of 17, all
+// declaring `jbrowseRange: "*"`, so the store offers them to a v5 user as
+// compatible -- pinning that range is the other half, and it lives in the
+// separate GMOD/jbrowse-plugin-list repo.
 const KNOWN_REMOVALS: Record<string, string> = {
   // The renderer registry is gone with the server-side rendering pipeline;
   // displays now compose RenderLifecycleMixin + DisplayChrome. No shim exists,
