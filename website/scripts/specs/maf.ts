@@ -204,7 +204,21 @@ export const mafSpecs: ScreenshotSpec[] = [
       // ce11 row, which is the reference: its tooltip necessarily reads
       // "Change: none", so the figure demonstrated the readout on the one case
       // where there is nothing to read. This is caePb3's S -> L against it.
-      { type: 'hover', from: { x: 351, y: 396 } },
+      //
+      // Both halves of that come off the figure itself rather than off a
+      // viewport point: the tooltip in the committed capture names the codon
+      // (chrI:2,999,247), and caePb3 is the second species row, 68px down from
+      // the display's top edge — the rows are 16px apart under a ~50px coverage
+      // summary, so this is the row and not the gap above or below it.
+      {
+        type: 'hover',
+        anchor: {
+          track: 'ce11.26way',
+          locus: 'chrI:2,999,247',
+          fracY: 0,
+          dy: 68,
+        },
+      },
       { type: 'delay', ms: 2000 },
     ],
   },

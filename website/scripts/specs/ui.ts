@@ -280,11 +280,11 @@ export const uiSpecs: ScreenshotSpec[] = [
   // is true independently of that, and it is what the display looks like at a
   // scale no other figure in the set reaches.
   //
-  // The right-click lands at x~1130 (genomic ~46.55Mb), an inversion-only gap
-  // where no other SV overlaps, so the sort reliably targets the inversion.
-  // forceLoad lifts the 1MB tabix fetch gate so the 5Mb window auto-loads
-  // headless instead of showing a force-load prompt. Remote 1000genomes data,
-  // so allow a long ready/settle.
+  // The right-click names 19:46,555,000, an inversion-only gap where no other SV
+  // overlaps, so the sort reliably targets the inversion. forceLoad lifts the
+  // 1MB tabix fetch gate so the 5Mb window auto-loads headless instead of
+  // showing a force-load prompt. Remote 1000genomes data, so allow a long
+  // ready/settle.
   {
     mode: 'url',
     name: 'multisv',
@@ -330,9 +330,20 @@ export const uiSpecs: ScreenshotSpec[] = [
     settleMs: 35000,
     hideTooltip: true,
     actions: [
-      // y=450 lands in the multi-sample matrix (proven coordinate); the dense
-      // 5Mb gene track never fully clears "Loading" headless, so don't gate on it
-      { type: 'rightclick', from: { x: 1130, y: 450 } },
+      // The variant under the pointer is what "Sort by genotype" keys on, so the
+      // x is the whole content of this click and it is a locus, not the x=1130 it
+      // used to be (that coordinate held only for this window at this width). The
+      // ROW is immaterial — every row is a sample's cell of the same variant — so
+      // the middle of the matrix is the safest place to be, and `fracY` puts it
+      // there whatever height the display is given.
+      {
+        type: 'rightclick',
+        anchor: {
+          track: '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
+          locus: '19:46,555,000',
+          fracY: 0.5,
+        },
+      },
       { type: 'waitForText', text: 'Sort by genotype' },
       { type: 'click', text: 'Sort by genotype' },
       { type: 'delay', ms: 6000 },
@@ -389,7 +400,16 @@ export const uiSpecs: ScreenshotSpec[] = [
     settleMs: 35000,
     hideTooltip: true,
     actions: [
-      { type: 'rightclick', from: { x: 1130, y: 450 } },
+      // the same inversion `multisv` sorts on, named the same way, so the two
+      // figures cannot drift into sorting on different variants
+      {
+        type: 'rightclick',
+        anchor: {
+          track: '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
+          locus: '19:46,555,000',
+          fracY: 0.5,
+        },
+      },
       { type: 'waitForText', text: 'Sort by genotype' },
       { type: 'click', text: 'Sort by genotype' },
       { type: 'delay', ms: 6000 },
@@ -435,9 +455,9 @@ export const uiSpecs: ScreenshotSpec[] = [
   // stop answering `onContextMenu`, so "Sort by genotype" never appears. One
   // matrix plus one ordinary display does not hit that.
   //
-  // The right-click lands at x~750, the deletion's midpoint in this window
-  // (fraction 0.50 of a 1500px capture), which is inside the deletion and clear
-  // of the smaller calls around it, so the sort reliably targets HGSV_1821.
+  // The right-click names HGSV_1821's own span, so it lands on the deletion's
+  // midpoint — inside it and clear of the smaller calls at either end, so the
+  // sort reliably targets HGSV_1821 — without writing down which pixel that is.
   // forceLoad lifts the 1MB tabix fetch gate. Remote 1000genomes data, so allow
   // a long ready/settle.
   {
@@ -582,7 +602,17 @@ export const uiSpecs: ScreenshotSpec[] = [
           '[data-testid="multi-wiggle-display-done"][data-clustered="true"]',
         timeout: 240000,
       },
-      { type: 'rightclick', from: { x: 750, y: 450 } },
+      // the matrix, at the middle of the deletion the sort is keyed on: a locus
+      // range resolves to its own centre, so this is HGSV_1821 naming itself
+      // rather than the 0.50-of-1500px the coordinate encoded
+      {
+        type: 'rightclick',
+        anchor: {
+          track: 'kgp_sv_matrix',
+          locus: '1:25,265,081-25,335,163',
+          fracY: 0.5,
+        },
+      },
       { type: 'waitForText', text: 'Sort by genotype' },
       { type: 'click', text: 'Sort by genotype' },
       { type: 'delay', ms: 6000 },
@@ -901,9 +931,10 @@ export const uiSpecs: ScreenshotSpec[] = [
   // there (up to 636bp on a couple of reads, within noise). Driven live via
   // rightclick -> Launch view -> Linear read vs ref (buildReadVsRefSpec.ts)
   // instead of a frozen share-link session, so the inline-config fix actually
-  // gets exercised. Read glyphs are canvas-drawn; the rightclick coordinate
-  // was located by probing this same session. "Show curved lines" is then
-  // turned on via the synteny view's "View options" menu.
+  // gets exercised. Read glyphs are canvas-drawn, so the rightclick names the
+  // insertion's coordinate and a depth into the pileup rather than a viewport
+  // point. "Show curved lines" is then turned on via the synteny view's "View
+  // options" menu.
   {
     mode: 'url',
     name: 'read_vs_ref_insertion',
@@ -921,7 +952,20 @@ export const uiSpecs: ScreenshotSpec[] = [
     // ~136px of page background under the launched view.
     viewportHeight: 820,
     actions: [
-      { type: 'rightclick', from: { x: 622, y: 249 } },
+      // 1:85,620,091 is the insertion site; 56px below the track's top edge is
+      // the second read row, since the coverage band above the pileup is
+      // `coverageHeight` (45) and the rows are 8px apart. Measured off the
+      // committed capture, but as a depth into the track: what used to move this
+      // click off its read was the view chrome above it, not the pileup.
+      {
+        type: 'rightclick',
+        anchor: {
+          track: 'ngmlr',
+          locus: '1:85,620,091',
+          fracY: 0,
+          dy: 56,
+        },
+      },
       { type: 'waitForText', text: 'Open feature details' },
       { type: 'hover', text: 'Launch view' },
       { type: 'waitForText', text: 'Linear read vs ref' },

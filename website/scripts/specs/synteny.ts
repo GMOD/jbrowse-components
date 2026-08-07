@@ -652,17 +652,21 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // Two classes of pair are dropped rather than drawn, and both used to be in
   // this figure. 234 came out at dS 0, where the ratio has no denominator and
   // `dnDsRatio` paints nothing, so they sat in the plot as links that could
-  // never take a colour. 1,222 more came out under dS 0.02, where a high ratio
-  // is arithmetic rather than selection — they included every one of the
-  // largest ratios in the table, off dS values as low as 0.0014.
+  // never take a colour. 1,325 more had under three synonymous differences,
+  // where a high ratio is arithmetic rather than selection — they included
+  // every one of the largest ratios in the table.
   //
-  // Measured off what remains: median 0.205, quartiles 0.111 and 0.342, and 572
-  // pairs above 1 (it read 839 before the floor, so a third of the apparent
-  // positive selection was the artefact). The fixed 0..2 domain pivoted at 1 is
-  // what makes it read — the bulk shades through blue across a 3x interquartile
-  // range, and the genes over 1 are the only warm ribbons in the frame. An
-  // auto-scaled attribute mode would stretch to the largest outlier and flatten
-  // all of it.
+  // Measured off what remains: median 0.205, quartiles 0.111 and 0.342, and 507
+  // pairs above 1. Of those 507, FIVE clear a Fisher exact p of 0.05, which at
+  // that many tests is what chance alone gives — one pairwise comparison has
+  // almost no power to call positive selection, and the table now carries the
+  // substitution count and the p so a reader can see that rather than infer it
+  // from the colour. What the ramp does show, overwhelmingly, is the other
+  // direction: the great majority of these pairs are significantly BELOW 1.
+  //
+  // The fixed 0..2 domain pivoted at 1 is what makes it read — the bulk shades
+  // through blue across a 3x interquartile range. An auto-scaled attribute mode
+  // would stretch to the largest outlier and flatten all of it.
   {
     mode: 'url',
     name: 'multiway_synteny/wheat_homoeolog_selection',
@@ -2077,12 +2081,13 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // RepeatMasker was a solid strip rather than repeats and the CIGAR wedges were
   // a mass of overlapping triangles.
   //
-  // The right-click is a viewport coordinate, not a selector: the chain-block
-  // canvas fills the display's whole height, so its center lands well below the
-  // row of blocks. The gene display carries an explicit height for the same
-  // reason — an auto height is a function of how many isoforms RefSeq draws
-  // here, and everything below it (the chain canvas the click lands in) moves
-  // with it.
+  // The right-click is a locus plus a depth, not a selector: the blocks are
+  // canvas-drawn, and the chain-block canvas fills the display's whole height,
+  // so a bare `fracY` (or a selector's centre) lands well below the row of
+  // blocks. The gene display carries an explicit height for a related reason —
+  // an auto height is a function of how many isoforms RefSeq draws here, and
+  // every track below it moves with it. That is what the depth is measured from
+  // the synteny track's own top edge for.
   {
     mode: 'url',
     name: 'genomes_synteny/launch_sequence',
@@ -2153,7 +2158,18 @@ export const syntenySpecs: ScreenshotSpec[] = [
     stages: [
       {
         actions: [
-          { type: 'rightclick', from: { x: 666, y: 396 } },
+          // chr16:54,049,320 is ~1.2 kb past the L1HS, inside the long conserved
+          // chain that flanks it — the big block the launch is aimed at — and
+          // 4px down is the block row, which is the top ~7px of the display.
+          {
+            type: 'rightclick',
+            anchor: {
+              track: 'hg38_to_panTro6_liftOver',
+              locus: 'chr16:54,049,320',
+              fracY: 0,
+              dy: 4,
+            },
+          },
           { type: 'waitForText', text: 'Open feature details' },
           // leave the item the reader is being pointed at under the cursor, so
           // it carries the menu's own hover highlight as well as the box below

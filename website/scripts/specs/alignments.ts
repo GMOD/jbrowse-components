@@ -30,6 +30,22 @@ const SORT_COLUMN = {
   fracY: 0.22,
 }
 
+// The read `linear_align_ctx_menu` right-clicks, and the read its caption's
+// arrow points at. One anchor for both: the figure's whole subject is that the
+// menu came from THAT read, so a caption pointing somewhere else is the failure
+// to design out.
+//
+// A depth in px rather than a `fracY`: the pileup packs from the top of the
+// track under a coverage band of a fixed `coverageHeight` (45), so 57px is the
+// second read row whatever height the display is given, where a fraction of the
+// height is only the second row at one height.
+const CTX_MENU_READ = {
+  track: 'volvox_sv_cram',
+  locus: 'ctgA:1633',
+  fracY: 0,
+  dy: 57,
+}
+
 // The surfeit locus, the most tightly-packed gene cluster in the vertebrate
 // genome, with genes on alternating strands (RPL7A +, SURF1 -, SURF2 +, SURF4 -)
 // sharing bidirectional promoters. The two halves are the same reads under the
@@ -390,27 +406,36 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     settleMs: 6000,
     hideTooltip: true,
     actions: [
-      { type: 'rightclick', from: { x: 400, y: 250 } },
+      { type: 'rightclick', anchor: CTX_MENU_READ },
       { type: 'waitForText', text: 'Open feature details' },
       { type: 'delay', ms: 800 },
     ],
-    // clarify the action (it's unclear this menu comes from
-    // right-clicking a read). Caption sits over the pileup just left of the menu
-    // with a short arrow at the right-clicked read row (y=250 = the click point);
-    // JBrowse intentionally clears the hover shading when the context menu opens,
-    // so the arrow stands in for the missing highlight.
+    // clarify the action (it's unclear this menu comes from right-clicking a
+    // read). Caption sits over the pileup just left of the menu with a short
+    // arrow at the right-clicked read; JBrowse intentionally clears the hover
+    // shading when the context menu opens, so the arrow stands in for the
+    // missing highlight.
+    //
+    // The arrow's head is the click, to the pixel, because it is the same anchor
+    // — which is the point of naming it once: a figure whose caption points at a
+    // different read than the menu came from is the failure mode here, and it
+    // can no longer happen. The pill hangs off the same anchor, a line below and
+    // to the left, so the two move together.
     annotations: [
       {
         type: 'text',
-        x: 165,
-        y: 285,
+        anchor: { ...CTX_MENU_READ, dx: -231, dy: 35 },
         maxWidth: 180,
         text: 'Right-click any read to open this menu',
       },
-      // start the arrow to the right of the text pill (which spans ~x165-345)
-      // so the line never crosses the callout box, then point up at the
-      // right-clicked read
-      { type: 'arrow', from: { x: 365, y: 300 }, to: { x: 392, y: 250 } },
+      // tail below and just left of the read, which is clear of the text pill
+      // above (~180px wide, ending ~50px short of the read), so the line never
+      // crosses the callout box
+      {
+        type: 'arrow',
+        fromAnchor: { ...CTX_MENU_READ, dx: -32, dy: 50 },
+        anchor: CTX_MENU_READ,
+      },
     ],
   },
 

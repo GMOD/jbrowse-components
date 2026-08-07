@@ -15,6 +15,18 @@ import {
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
+// The volvox Apple3 mRNA, which two figures below open the feature-details panel
+// on. Naming the mRNA's own span puts the click at its midpoint, so it is the
+// furthest it can be from either end of the feature it has to hit; the depth is
+// the row that mRNA packs into, measured from the track's top edge rather than
+// from the top of the page.
+const APPLE3_MRNA = {
+  track: 'gff3tabix_genes',
+  locus: 'ctgA:17,400-23,000',
+  fracY: 0,
+  dy: 121,
+}
+
 export const featuresSpecs: ScreenshotSpec[] = [
   {
     // The session-wide feature-height default on alignments tracks.
@@ -216,7 +228,12 @@ export const featuresSpecs: ScreenshotSpec[] = [
         actions: [
           { type: 'click', text: 'Color CDS by reading frame' },
           // dismiss through the backdrop rather than Escape, which returns
-          // focus to the hamburger and leaves its tooltip in the frame
+          // focus to the hamburger and leaves its tooltip in the frame.
+          //
+          // A bare coordinate on purpose, and not one that wants an anchor: the
+          // menu's backdrop covers the viewport, so this hits nothing in
+          // particular and any point off the menu would do. Same category as
+          // `dismissMenus`.
           { type: 'click', from: { x: 700, y: 550 } },
           { type: 'delay', ms: 5000 },
         ],
@@ -516,8 +533,9 @@ export const featuresSpecs: ScreenshotSpec[] = [
     viewportHeight: 680,
     actions: [
       // canvas-drawn gene glyph: at this zoom the label is baked into the canvas
-      // (no DOM text / overlay div to target), so a coordinate click is required
-      { type: 'click', from: { x: 430, y: 314 } },
+      // (no DOM text / overlay div to target), so the click resolves through the
+      // view instead of naming a viewport point
+      { type: 'click', anchor: APPLE3_MRNA },
       { type: 'waitForText', text: 'extrafield' },
       // the coordinate click leaves the cursor on the gene, so the hover overlay
       // shades it in the capture — move the pointer off the track to clear it
@@ -560,7 +578,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
     settleMs: 4000,
     viewportHeight: 900,
     actions: [
-      { type: 'click', from: { x: 430, y: 314 } },
+      { type: 'click', anchor: APPLE3_MRNA },
       { type: 'waitForText', text: 'Show feature sequence' },
       { type: 'delay', ms: 1000 },
       { type: 'click', text: 'Show feature sequence' },
