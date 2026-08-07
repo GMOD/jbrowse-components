@@ -1,13 +1,43 @@
 ---
-status: Accepted
-summary: "Variant display uses batch RPC and inputKey-gated uploads"
+status: Superseded
+summary: "The batch RPC held; the inputKey gate did not. `inputKey` exists nowhere — variants gate on reference identity like everything else, through render-core's createRegionUploadSync, which is the pattern ADR-004 declined to abandon"
 ---
 
 # ADR-002: Variant display uses batch RPC and inputKey-gated uploads
 
 ## Status
 
-Accepted
+**Superseded on the upload half; the batch RPC half stands.**
+
+`inputKey` appears nowhere in the tree. All three mechanics below are gone:
+
+- **The string gate.** `LinearMultiSampleVariantDisplay` uses
+  `createRegionUploadSync` from `@jbrowse/render-core/regionUploadSync` — a
+  **reference-identity** memo, which is exactly what this ADR replaced it with a
+  string comparison to avoid.
+- **The worker-side key.** Nothing computes a fingerprint from the filtered
+  feature array; no `inputKey` rides on `VariantCellData` across the RPC
+  boundary.
+- **Where the gate lives.** It is not a `Map` local to a `VariantComponent.tsx`
+  `useEffect` closure. Uploads are owned by `attachRenderingBackend` on the MST
+  model — "MST owns the upload + render autoruns, never a React `useEffect`" is
+  now an invariant in `agent-docs/CLAUDE.md`, so the *location* this ADR
+  specified is one the architecture has since ruled out on its own.
+
+Read together with [ADR-004](adr-004-inputkey-upload-gate.md) — which declined
+to spread `inputKey` beyond this display — the pair now says one thing:
+reference identity won everywhere, and `createRegionUploadSync` /
+`createGlobalUploadSync` / `createKeyedUploadSync` are the shape it settled
+into. ADR-004 was vindicated so completely that the exception it was carving
+out no longer exists.
+
+The batch RPC decision is untouched and still correct; see also
+[ADR-022](adr-022-no-batched-wiggle-rpc.md), whose own reversal is what taught
+the tree when batching is worth it.
+
+The reasoning below is retained for the history, and because its *problem*
+statement — that this display's RPC layout makes object identity hard to
+preserve — is what `createRegionUploadSync`'s docs now answer directly.
 
 ## Context
 

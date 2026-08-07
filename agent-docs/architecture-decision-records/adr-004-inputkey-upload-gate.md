@@ -9,6 +9,21 @@ summary: "Keep reference-identity upload gate; don't adopt inputKey pattern univ
 
 Rejected — keep the existing `uploadChangedRegions` reference-identity pattern.
 
+**Still the right call; both names in it are obsolete.** `uploadChangedRegions`
+and `inputKey` are each gone from the tree. Reference-identity gating survived
+and generalized: it now lives in `packages/render-core` as
+`createRegionUploadSync` / `createGlobalUploadSync` / `createKeyedUploadSync`,
+and `render-core/CLAUDE.md` makes reaching for one of them an invariant rather
+than a preference ("Upload memos are helpers, not hand-rolled `let`s" — they
+drop their memos on a backend swap, which is the part a hand-rolled version
+forgets).
+
+The exception this ADR carved out has closed too: the variant displays no longer
+use `inputKey` either — they use `createRegionUploadSync` like everything else,
+so [ADR-002](adr-002-variant-batch-rpc-and-inputkey-upload.md) is superseded on
+that half. Read the decision below as being about the *pattern*, which held
+everywhere, not about the two function names it happened to be spelled with.
+
 ## Context
 
 A Chrome performance trace of several alignments tracks during continuous zoom

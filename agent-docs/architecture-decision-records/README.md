@@ -13,7 +13,7 @@ action needed under current workloads), **Proposed** (not yet decided).
 | ADR | Status | Decision |
 | --- | --- | --- |
 | [001](adr-001-rpc-data-map-pattern.md) | Superseded | Keep `new Map()` reassignment pattern for volatile RPC data — superseded by ADR-017 (`rpcDataMap` is now `observable.map`) |
-| [002](adr-002-variant-batch-rpc-and-inputkey-upload.md) | Accepted | Variant display uses batch RPC and inputKey-gated uploads |
+| [002](adr-002-variant-batch-rpc-and-inputkey-upload.md) | Superseded | The batch RPC held; the inputKey gate did not. `inputKey` exists nowhere — variants gate on reference identity like everything else, through render-core's createRegionUploadSync, which is the pattern ADR-004 declined to abandon |
 | [003](adr-003-settings-invalidation-pattern.md) | Superseded | Settings-invalidation autorun pattern for withFetchLifecycle displays — mechanism replaced by the `rpcProps()`-reading `SettingsInvalidate` autorun; preserve-vs-clear revised by ADR-006 |
 | [004](adr-004-inputkey-upload-gate.md) | Rejected | Keep reference-identity upload gate; don't adopt inputKey pattern universally |
 | [005](adr-005-shader-codegen-slang.md) | Accepted | Author shaders in Slang, cross-compile to WGSL/GLSL + generate TS layout |
