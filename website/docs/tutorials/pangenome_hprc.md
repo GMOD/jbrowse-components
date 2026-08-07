@@ -374,8 +374,10 @@ at. With 464 it stops being a shape and becomes a list of donors, which is still
 the right answer to "whose sequence is this" and the wrong one to "what does
 this locus look like".
 
-LPA is the case for the shape instead, since its KIV-2 repeat sets Lp(a) level
-and copy number there is not callable from short reads:
+LPA is the case for the shape instead. Its KIV-2 repeat sets the level of
+Lp(a), an inherited cardiovascular risk factor, and the number of copies a
+person carries differs from one person to the next — a difference that is not
+callable from short reads:
 
 <Figure caption="The KIV-2 repeat inside LPA as a force-directed graph, under the RefSeq genes, the bubbles lane and the rGFA segments for the same window. The bubble the lane reports across the repeat is the chain of loops below it, and each node carries the sequence it holds; the dashed arc, labelled with the size of the deletion it draws, is the route that bypasses the reference between two of them." src="/img/pangenome/hprc_lpa_kiv2.png" />
 

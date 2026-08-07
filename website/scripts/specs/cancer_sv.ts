@@ -77,8 +77,20 @@ const DEEP_ONT = { forceLoad: true }
 // content, so the numbers come from the run's own reports rather than from a
 // shared round number.
 const MULTIHOP_HEIGHT = 1190
+// The chain half is the taller one, by the 100px its four gene lanes gained
+// (MULTIHOP_GENE_HEIGHT). Same budget rule as before: a panel's gene lane is
+// paid for four times, so the frame absorbs the growth rather than the pileups.
+const MULTIHOP_CHAIN_HEIGHT = 1290
 const MULTIHOP_WIDTH = 900
 const MULTIHOP_NARROW_WIDTH = 700
+
+// Per PANEL, so worth four times what it reads as, which is why it was 45 and
+// why the chain frame is 100px taller for it. 45 fitted one packed row: the
+// chr12 panel draws TRHDE-AS1 and TRHDE on two, and the second one's floating
+// label was sliced in half by the lane's bottom edge (review: "gene track
+// height could be increased"). A gene row with its label is ~30px, so 70 is two
+// rows and the header chip clear of both.
+const MULTIHOP_GENE_HEIGHT = 70
 
 // K562's Iso-Seq is ~600x over BCR and the split-read subset of it is still
 // ~250 rows, so the row height is what decides whether the pileup ends inside
@@ -466,7 +478,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'cancer_sv/multihop_split_view',
     viewportWidth: MULTIHOP_WIDTH,
-    viewportHeight: MULTIHOP_HEIGHT,
+    viewportHeight: MULTIHOP_CHAIN_HEIGHT,
     // the chr3 breakpoint window: every read carrying the chain clips here, so
     // this is where their SA tags are in view to be grouped
     url: lgvSession(CONFIG, {
@@ -477,7 +489,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         // builds, so they are per-panel budgets rather than this page's layout:
         // four panels have to fit the frame, and a tall track here is four tall
         // tracks there.
-        { ...GENE_TRACK, height: 45 },
+        { ...GENE_TRACK, height: MULTIHOP_GENE_HEIGHT },
         {
           trackId: TUMOUR,
           ...DEEP_ONT,

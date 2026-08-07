@@ -2668,8 +2668,13 @@ export const graphSpecs: ScreenshotSpec[] = [
           // perspectives of the anchor, so every band was two ribbons over one
           // span — the "polygons are oddly darker than expected" of two review
           // rounds. AllVsAll{,Indexed}PAFAdapter drops the second statement of a
-          // homology now (createReciprocalDedupe), so the compensation would be
+          // homology now (markReciprocalDuplicates), so the compensation would be
           // half the ink for one ribbon.
+          //
+          // A third round ("some ribbons darker than others, do not want this")
+          // was the same defect surviving in the cases where the two directions
+          // chain a homology into DIFFERENT numbers of blocks, which is most of
+          // this file's long alignments; the dedupe recognises those now too.
           levelHeights: [150, 150],
           views: [
             {
@@ -3795,6 +3800,26 @@ export const graphSpecs: ScreenshotSpec[] = [
     // against the run's own below-the-fold report, which caught 75px cut at 1090
     viewportHeight: 1170,
     hideTooltip: true,
+    // Why this locus and not another deeply traversed bubble: KIV-2 copy number
+    // is the reason anyone measures LPA, and nothing in a chain of loops says
+    // so. On review the figure read as an arbitrary tangle.
+    //
+    // Anchored on s110051+, the first node of the GRCh38 walk (12,567 bp at
+    // chr6:160,508,381), and dropped below it into the part of the canvas the
+    // force layout leaves empty. A graph node rather than a viewport
+    // coordinate, so re-running the layout carries the pill with the drawing.
+    annotations: [
+      {
+        type: 'text',
+        text: 'KIV-2 copy number varies between people and sets Lp(a), an inherited heart-disease risk factor.',
+        fontSize: 22,
+        // wrapped rather than hard-broken: a newline is a paragraph break that
+        // still wraps at maxWidth on its own, so authored line ends land in the
+        // middle of the pill
+        maxWidth: 420,
+        anchor: { view: 1, graphNode: 's110051+', dx: 20, dy: 320 },
+      },
+    ],
   },
 
   // The two products at one locus, which is the argument the HPRC tutorial
@@ -3906,8 +3931,7 @@ export const graphSpecs: ScreenshotSpec[] = [
     // dendrogram exists), and the callset's own fetch finished — not just first
     // paint, which an empty canvas flips on its own. A bare comma list would be
     // a CSS OR and fire on whichever landed first.
-    readySelector:
-      `body:has(${GRAPH_DRAWN}):has([data-testid="graph-layout-select"]):has([data-testid="tree_sidebar_dendrogram"]) [data-testid="variant-display-done"][data-display-phase="ready"]`,
+    readySelector: `body:has(${GRAPH_DRAWN}):has([data-testid="graph-layout-select"]):has([data-testid="tree_sidebar_dendrogram"]) [data-testid="variant-display-done"][data-display-phase="ready"]`,
     readyTimeout: 360000,
     settleMs: 5000,
     viewportWidth: 1000,

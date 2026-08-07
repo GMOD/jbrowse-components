@@ -397,26 +397,34 @@ export function sideDraws(
 }
 
 /**
- * How much two intervals coincide: shared length over combined extent (Jaccard).
- * 1 when they are identical, 0 when disjoint.
+ * How much of the SHORTER of two intervals the pair shares. 1 when either
+ * contains the other, 0 when disjoint.
  *
- * Over the shorter span rather than the union, this returned 1 whenever one
- * interval merely CONTAINED the other, so a short alignment nested inside a long
- * one on both of its spans — a repeat inside a syntenic block, a minimap2
- * secondary inside its primary — scored as a perfect reciprocal match and was
- * dropped. Against the union a 1 kb block inside a 100 kb one scores 0.01 and
- * survives, while a true reciprocal pair (which differs by hundreds of bases
- * over hundreds of kb) still scores >0.99.
+ * Containment rather than Jaccard, because the two directions of an all-vs-all
+ * mapping do not always CHAIN a homology the same way. wfmash states K12 against
+ * NCTC86 once from K12 — one 610 kb block — and twice from NCTC86, as 197 kb and
+ * 392 kb split at a joint the other pass ran straight through. Against the union
+ * the long side scores 0.32 against either fragment, so all three survive and
+ * every base a fragment covers is painted twice: exactly the doubled alpha this
+ * pass exists to remove, and the one that was left ("some ribbons are darker
+ * than others weirdly").
+ *
+ * What Jaccard was protecting was a short block nested inside a long one on both
+ * spans — a repeat inside a syntenic block, a minimap2 secondary inside its
+ * primary — which containment alone reads as a perfect match. {@link
+ * sharesBoundary} is what excludes those instead, and it is the better test: two
+ * rows are one homology because they sit on the same diagonal, not because one
+ * happens to fit inside the other.
  */
-function overlapFraction(
+function containedFraction(
   aStart: number,
   aEnd: number,
   bStart: number,
   bEnd: number,
 ) {
   const overlap = Math.min(aEnd, bEnd) - Math.max(aStart, bStart)
-  const union = Math.max(aEnd, bEnd) - Math.min(aStart, bStart)
-  return union > 0 ? Math.max(0, overlap) / union : 0
+  const shorter = Math.min(aEnd - aStart, bEnd - bStart)
+  return shorter > 0 ? Math.max(0, overlap) / shorter : 0
 }
 
 /**
@@ -424,17 +432,53 @@ function overlapFraction(
  * stated twice. Reciprocal alignments are the same aligner run from either end,
  * so they agree to within a few bases over hundreds of kb — the E. coli wfmash
  * pair that prompted this differs by 4 bp on one side and 513 on the other,
- * over 134 kb. Nothing short of near-identity on both sides qualifies, which is
- * what keeps real paralogy (same pair of contigs, different loci) out of it.
+ * over 134 kb. Nothing short of near-containment on both sides qualifies, which
+ * is what keeps real paralogy (same pair of contigs, different loci) out of it.
  */
 const RECIPROCAL_OVERLAP = 0.9
 
-/** Two sides are one homology stated twice when both spans nearly coincide. */
+/**
+ * How far two sides' ref-to-mate offsets may differ at the end they share, in
+ * bp, and still be one homology. Capped rather than purely proportional: the
+ * agreement is a property of the boundary, not of the block, so a longer
+ * alignment does not license a looser one. The fraction is what keeps the cap
+ * from swallowing short blocks — two 500 bp alignments nested in each other 800
+ * bp off the diagonal are two alignments.
+ */
+const BOUNDARY_SLACK_BP = 1000
+const BOUNDARY_SLACK_FRACTION = 0.02
+
+/**
+ * Whether two sides place the homology at the same offset at either of their
+ * ends. One chaining of an alignment and a longer chaining of the same one
+ * coincide exactly where they both begin (or both end) and diverge after that,
+ * so a fragment agrees with its parent at one end and nowhere else — which is
+ * why this takes the better of the two rather than requiring both.
+ *
+ * Indels are why it cannot be asked of the interior: over the 610 kb E. coli
+ * block the two passes drift ~12 kb apart in the middle while agreeing to
+ * within 40 bp at the shared end.
+ */
+function sharesBoundary(a: AlignedSide, b: AlignedSide) {
+  const atStart = Math.abs(b.start - a.start - (b.mateStart - a.mateStart))
+  const atEnd = Math.abs(b.end - a.end - (b.mateEnd - a.mateEnd))
+  const shorter = Math.min(a.end - a.start, b.end - b.start)
+  return (
+    Math.min(atStart, atEnd) <=
+    Math.min(BOUNDARY_SLACK_BP, BOUNDARY_SLACK_FRACTION * shorter)
+  )
+}
+
+/**
+ * Two sides are one homology stated twice when each span nearly contains the
+ * other and they meet on the same diagonal.
+ */
 function isRestatement(a: AlignedSide, b: AlignedSide) {
   return (
-    overlapFraction(a.start, a.end, b.start, b.end) >= RECIPROCAL_OVERLAP &&
-    overlapFraction(a.mateStart, a.mateEnd, b.mateStart, b.mateEnd) >=
-      RECIPROCAL_OVERLAP
+    containedFraction(a.start, a.end, b.start, b.end) >= RECIPROCAL_OVERLAP &&
+    containedFraction(a.mateStart, a.mateEnd, b.mateStart, b.mateEnd) >=
+      RECIPROCAL_OVERLAP &&
+    sharesBoundary(a, b)
   )
 }
 
@@ -464,13 +508,22 @@ function cmpSide(a: AlignedSide, b: AlignedSide) {
  * Drawing both is not more information — it is the same statement in two
  * coordinates — and it makes a band's colour a function of how the file was
  * generated rather than of what aligned. So one of each pair is dropped, by
- * near-identity on both spans rather than by direction: a file holding only one
+ * coincidence on both spans rather than by direction: a file holding only one
  * direction per pair (minimap2 `-X`, or a curated PAF) has no pairs to drop and
  * is untouched, which a "keep only the canonical direction" rule could not
  * promise.
  *
- * Returns a mask parallel to `sides`: true where that side restates one kept
- * earlier in its contig pair's own coordinate order.
+ * **The two directions need not pair up one for one.** A pass from either end
+ * chains the same alignments differently, so one direction's block can be
+ * another's two — the E. coli graph's own file states K12/NCTC86 as 12 blocks
+ * from K12 and 14 from NCTC86. A rule that only recognised equal spans left
+ * those and drew them over their parent, which is why the doubled ink survived a
+ * round of this. {@link isRestatement} therefore asks whether one side sits
+ * inside the other on both axes AND meets it on the same diagonal, and the
+ * longer chaining is the one kept.
+ *
+ * Returns a mask parallel to `sides`: true where that side restates another in
+ * its contig pair.
  *
  * A batch pass over a whole set rather than a predicate fed one side at a time,
  * because both properties of the streaming form were bugs:
@@ -526,10 +579,23 @@ export function markReciprocalDuplicates(sides: AlignedSide[]) {
           }
         }
         active.length = write
-        if (active.some(kept => isRestatement(sides[kept]!, side))) {
-          duplicate[i] = true
-        } else {
+        const slot = active.findIndex(kept => isRestatement(sides[kept]!, side))
+        if (slot === -1) {
           active.push(i)
+          continue
+        }
+        // The LONGER chaining wins, not the earlier one. A fragment sorts ahead
+        // of its parent whenever it starts a few bases sooner, so keeping the
+        // one already in hand would throw away the aligner's own chaining and
+        // leave the parent's span drawn as pieces with a hole where the two
+        // fragments meet. Length is a property of the alignment, so which member
+        // survives still does not depend on arrival order.
+        const kept = active[slot]!
+        const winner =
+          side.end - side.start > sides[kept]!.end - sides[kept]!.start
+        duplicate[winner ? kept : i] = true
+        if (winner) {
+          active[slot] = i
         }
       }
     }

@@ -341,7 +341,7 @@ first column the sample name, every other column an attribute, and `colorBy`
 naming the one that paints the swatch. The RNASE1 track is that same config with
 the other slice's `uri`.
 
-<Figure caption="Top: a 14.9 kb duplication over pancreatic amylase, dark blue where an animal carries it. Bottom: a 223 bp insertion in pancreatic ribonuclease, each carrier drawn as a marker sized by the inserted bases. Same 86 animals in the same order in both, so a row can be read against itself. The dogs carry the amylase duplication and the wolves carry the ribonuclease insertion, and the wolves that break each rule are not the same wolves." src="/img/dog10k-diet-genes.png" />
+<Figure caption="Left: a 14.9 kb duplication over pancreatic amylase, dark blue where an animal carries it. Right: a 223 bp insertion in pancreatic ribonuclease, each carrier drawn as a marker sized by the inserted bases. Same 86 animals in the same order in both, so a row can be read straight across. The dogs carry the amylase duplication and the wolves carry the ribonuclease insertion, and the wolves that break each rule are not the same wolves." src="/img/dog10k-diet-genes.png" />
 
 The three Arctic breeds are drawn together to test a reading rather than to make
 one. Two of the three Greenland Dogs lack the duplication, but the third carries

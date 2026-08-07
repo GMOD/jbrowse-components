@@ -422,7 +422,18 @@ export function drawAnnotationOverlay(
   // append the overlay now (before drawing) so text getBBox() resolves for
   // the optional background pill below
   document.body.append(svg)
-  for (const a of resolved) {
+  // Text pills paint last, over every arrow and box, whatever order the spec
+  // listed them in. An arrow that names a pill has to start inside it: the
+  // pill's width is only known once the text is measured in the page, so a
+  // spec can place the tail near the pill but never exactly at its edge, and
+  // the leftover line drawn across the white callout reads as a mistake.
+  // Sorting here rather than asking every spec to list its pills last, which
+  // is a rule nothing would check.
+  const drawOrder = [
+    ...resolved.filter(a => a.type !== 'text'),
+    ...resolved.filter(a => a.type === 'text'),
+  ]
+  for (const a of drawOrder) {
     const color = a.color ?? '#e3242b'
     const cx = a.x
     const cy = a.y

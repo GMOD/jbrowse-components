@@ -6,4 +6,7 @@
 # visual takeaway, and move the color/stroke/row glossary into the prose that
 # introduces the figure. Removing one is the win. A multi-panel figure that has
 # to name each panel is the legitimate reason to stay listed.
-
+tutorials/cancer_sv.md /img/cancer_sv/multihop_reads.png
+tutorials/dog10k_svs.md /img/dog10k-diet-genes.png
+tutorials/pangenome_ecoli.md /img/pangenome/pggb_untangle_rows.png
+tutorials/selection_pressure.md /img/selection_pressure/lysozyme.png

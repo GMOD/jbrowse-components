@@ -214,10 +214,17 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     // curve on purpose: a pill is opaque, and the flank is a wall of one value,
     // so it covers no shape. fracY is a fraction of the 300px track, i.e. 0.25
     // is the middle of the upper row and 0.75 the middle of the lower one.
+    //
+    // One clause each, naming the operation. They were three sentences apiece —
+    // the mechanism spelled out on the image (reviewer: "the red callouts are a
+    // little wordy ... use technical terminology if it helps"), which is what a
+    // caption is for. `collapses`/`keeps each copy at its own offset` is the
+    // whole difference between the two builders, and the pair of curves under
+    // them is the evidence.
     annotations: [
       {
         type: 'text',
-        text: 'The rRNA operon occurs in several near-identical copies per genome, and seqwish folds them onto one run of nodes. Depth counts path steps, so every copy walks that one run and the row climbs past the strain count.',
+        text: 'seqwish collapses the copies onto one run of nodes',
         maxWidth: 430,
         fontSize: 16,
         textAlign: 'end',
@@ -229,7 +236,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'Minigraph-Cactus builds outward from the reference and keeps each copy at its own position, so the copies never share nodes. Every strain walks this stretch once and the row does not move.',
+        text: 'Minigraph-Cactus keeps each copy at its own offset',
         maxWidth: 430,
         fontSize: 16,
         textAlign: 'end',

@@ -122,6 +122,7 @@ describe('markReciprocalDuplicates', () => {
   // short block nested inside a long one on BOTH spans — a repeat inside a
   // syntenic block, a minimap2 secondary inside its primary — was silently
   // dropped. Two homologies at very different scales are not one stated twice.
+  // It is off the long block's diagonal by 9 kb, which is what says so.
   test('keeps a short block nested inside a long one on both spans', () => {
     expect(
       markReciprocalDuplicates([
@@ -133,6 +134,66 @@ describe('markReciprocalDuplicates', () => {
           mateStart: 5000000,
           mateEnd: 5001000,
         },
+      ]),
+    ).toEqual([false, false])
+  })
+
+  // The other direction's chaining of one homology, from the E. coli graph's own
+  // file: wfmash states K12/NCTC86 once from K12 (610 kb) and twice from NCTC86,
+  // split at a joint the K12 pass ran through. The fragments are contained in the
+  // long block on both axes and meet it on its diagonal — the first shares its
+  // start, the second its end — so they are the same homology restated, and
+  // drawing all three painted every covered base twice.
+  const k12ToNctc = {
+    refName: 'K12#1#chr',
+    start: 1435000,
+    end: 2044664,
+    mateRefName: 'NCTC86#1#chr',
+    mateStart: 1698409,
+    mateEnd: 2292242,
+  }
+  const nctcHead = {
+    ...k12ToNctc,
+    start: 1434958,
+    end: 1632337,
+    mateStart: 1698328,
+    mateEnd: 1898776,
+  }
+  const nctcTail = {
+    ...k12ToNctc,
+    start: 1652745,
+    end: 2044577,
+    mateStart: 1898712,
+    mateEnd: 2292184,
+  }
+
+  test('drops the fragments of a block the other direction chained further', () => {
+    expect(markReciprocalDuplicates([k12ToNctc, nctcHead, nctcTail])).toEqual([
+      false,
+      true,
+      true,
+    ])
+  })
+
+  // The fragment sorts FIRST — it starts 42 bp sooner — so keeping whichever
+  // arrived first would drop the long block and leave the band drawn as pieces
+  // with a hole between them.
+  test('keeps the longer chaining however the sides are ordered', () => {
+    expect(markReciprocalDuplicates([nctcHead, nctcTail, k12ToNctc])).toEqual([
+      true,
+      true,
+      false,
+    ])
+  })
+
+  // Same containment, same contig pair, but 40 kb off the long block's diagonal
+  // at both ends: a second homology inside the span of the first, not a chaining
+  // of it.
+  test('keeps a contained block that is off the diagonal', () => {
+    expect(
+      markReciprocalDuplicates([
+        k12ToNctc,
+        { ...nctcHead, mateStart: 1738328, mateEnd: 1938776 },
       ]),
     ).toEqual([false, false])
   })

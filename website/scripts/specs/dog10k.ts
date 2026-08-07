@@ -797,11 +797,17 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         // rows this figure is about are the Arctic breeds near the top of it, so
         // the pill sits down in the wolf section where a covered row would only
         // be more grey.
+        //
+        // `textAlign: 'end'` so the offset places the pill's RIGHT edge, which
+        // is the edge the arrow below has to leave from. Left-aligned, the tail
+        // would have to encode the pill's measured width, and a pill is only
+        // measured in the page.
+        textAlign: 'end',
         anchor: {
           track: 'dog10k_amy2b_svs',
           locus: 'chr6:47,375,677-47,390,529',
           fracY: 0.62,
-          dx: -700,
+          dx: -430,
           dy: 0,
         },
       },
@@ -811,7 +817,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           track: 'dog10k_amy2b_svs',
           locus: 'chr6:47,375,677-47,390,529',
           fracY: 0.62,
-          dx: -300,
+          dx: -420,
           dy: 0,
         },
         anchor: {
@@ -825,11 +831,11 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // RNASE1, the mirror of the panel above and the bottom half of
+  // RNASE1, the mirror of the panel above and the right half of
   // dog10k-diet-genes. Pancreatic ribonuclease, and a 223 bp SINE insertion in
   // it that 26 of the 55 wolves carry against two canids in 1,824. Same panel,
   // same order, same row height as the AMY2B part, which is the whole point of
-  // stacking them: a reader compares a row against itself.
+  // pairing them: a reader compares a row against itself.
   //
   // Every wolf carrier is heterozygous, so this lane is light blue where the
   // one above is dark. That is a property of the data and not of the drawing.
@@ -870,19 +876,22 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     // pair reads as one figure: what the LOC symbol is, and which way this one
     // runs. The offsets are smaller than the AMY2B part's because the anchor is
     // an insertion near the middle of a 5.5 kb window rather than a block whose
-    // left breakpoint is most of the way across a 36 kb one, so -700 there and
-    // -700 here are not the same distance from the sidebar.
+    // left breakpoint is most of the way across a 36 kb one, so -430 there and
+    // -430 here are not the same distance from the sidebar.
     annotations: [
       {
         type: 'text',
         text: 'LOC475395 is RNASE1.\nHere the wolves are\nthe carriers.',
         fontSize: 22,
         maxWidth: 300,
+        // Right-aligned for the same reason as the AMY2B pill: the offset has
+        // to place the edge the arrow leaves from.
+        textAlign: 'end',
         anchor: {
           track: 'dog10k_rnase1_svs',
           locus: 'chr15:18,164,072-18,164,074',
           fracY: 0.62,
-          dx: -330,
+          dx: -180,
           dy: 0,
         },
       },
@@ -892,7 +901,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           track: 'dog10k_rnase1_svs',
           locus: 'chr15:18,164,072-18,164,074',
           fracY: 0.62,
-          dx: -150,
+          dx: -170,
           dy: 0,
         },
         anchor: {
@@ -906,12 +915,20 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The two diet genes stacked. Neither half is on the page on its own: the
-  // result is that the colors swap between them over the same 86 animals in the
-  // same order, and two figures a scroll apart do not show that.
+  // The two diet genes beside each other. Neither half is on the page on its
+  // own: the result is that the colors swap between them over the same 86
+  // animals in the same order, and two figures a scroll apart do not show that.
+  //
+  // Side by side rather than stacked because the two panels are alternatives to
+  // compare across, not steps to read down, and because the sample rows are the
+  // axis being compared: abutted vertically the two sidebars sit 1240px apart
+  // and a reader has to hold a row's place across the seam, where here the same
+  // row is on the same line in both halves. `direction: 'horizontal'` also puts
+  // the gutter in, so the pair does not read as one window with a seam.
   {
     mode: 'compose',
     name: 'dog10k-diet-genes',
+    direction: 'horizontal',
     parts: ['dog10k-amy2b-duplication', 'dog10k-rnase1-insertion'],
   },
 
