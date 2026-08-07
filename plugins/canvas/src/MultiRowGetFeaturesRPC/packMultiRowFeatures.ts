@@ -117,8 +117,17 @@ export function packMultiRowFeatures({
     featureStarts[i] = feature.get('start')
     featureEnds[i] = feature.get('end')
     featureIds[i] = feature.id()
-    const name = feature.get('name')
-    featureNames[i] = typeof name === 'string' ? name : ''
+    // Coerced the same way the partition value below is, and for the same
+    // reason: a BED column arrives as a string or a number depending on the
+    // parser, and a numeric name (a chromHMM state number, a numeric category)
+    // is a real label — dropped to '' it cost the tooltip its text and the
+    // legend its entry, since buildColorLegend skips unnamed features.
+    //
+    // Typed `unknown` because the `get('name')` overload's `string | undefined`
+    // is optimistic about exactly that: this coerced rather than trusted it even
+    // when it was throwing the number away.
+    const name: unknown = feature.get('name')
+    featureNames[i] = name === undefined || name === null ? '' : String(name)
 
     if (packDeltas) {
       // A BED column arrives as a string or a number depending on the parser, so

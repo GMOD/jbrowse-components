@@ -45,6 +45,23 @@ test('rows with a per-row color override contribute nothing', () => {
   ).toEqual([])
 })
 
+test('all rows overridden reads no features at all', () => {
+  // The default configuration (unset `color` slot, no itemRgb) gives every row
+  // a palette color, so this is the common case rather than an edge one — and
+  // it recomputes on every reorder and recolor. A generator body does not run
+  // until its first `next()`, so an unconsumed one is the assertion that the
+  // per-feature scan was skipped rather than merely returning nothing.
+  let consumed = false
+  function* regions() {
+    consumed = true
+    yield region
+  }
+  expect(
+    buildColorLegend(regions(), rowIndexByValue, [0xff123456, 0xff654321]),
+  ).toEqual([])
+  expect(consumed).toBe(false)
+})
+
 test('two names sharing a color collapse to one first-seen entry', () => {
   // TssA and TssAFlnk both painted red -> a single red row (keyed by color, so
   // one legend swatch and one toggle covers both)

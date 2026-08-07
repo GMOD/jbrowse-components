@@ -35,13 +35,29 @@ describe('applyRowGroups', () => {
     expect(row?.labelColor).toBe('rgb(27,120,55)')
   })
 
-  it('keeps an explicitly set labelColor', () => {
+  it('keeps an explicitly set labelColor but still joins the group', () => {
     const [row] = applyRowGroups(
       [{ name: 'CLUPGR000001', labelColor: 'rebeccapurple' }],
       [WOLF],
     )
     expect(row?.labelColor).toBe('rebeccapurple')
-    expect(row?.group).toBeUndefined()
+    expect(row?.group).toBe('Wolf')
+  })
+
+  it('a recolored row stays in its block rather than falling to the bottom', () => {
+    const rows = applyRowGroups(
+      [
+        { name: 'COLL000001' },
+        { name: 'CLUPGR000001', labelColor: 'rebeccapurple' },
+        { name: 'CLUPRU000001' },
+      ],
+      [WOLF],
+    )
+    expect(rows.map(r => r.name)).toEqual([
+      'CLUPGR000001',
+      'CLUPRU000001',
+      'COLL000001',
+    ])
   })
 
   it('costs only its own stripe when a pattern is not a valid regex', () => {

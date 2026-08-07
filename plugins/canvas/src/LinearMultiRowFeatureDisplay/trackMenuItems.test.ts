@@ -194,6 +194,21 @@ describe('multi-row track menu', () => {
     expect(labels(subMenu)).toContain('Show all categories')
   })
 
+  it('keeps a way back when the legend itself has gone away', () => {
+    // buildColorLegend gives up entirely past MAX_LEGEND_ENTRIES distinct
+    // colors, so a region loading in can take the color key — and every toggle
+    // with it — away from a user who has already hidden something. The hidden
+    // set stays in the session and re-applies later, so without this the state
+    // is both invisible and permanent.
+    const items = buildMultiRowTrackMenuItems(
+      makeSelf({ colorLegend: [], hiddenCategories: ['quiescent'] }),
+    )
+
+    expect(labels(subMenuOf(items, 'Categories (1 hidden)'))).toEqual([
+      'Show all categories',
+    ])
+  })
+
   it('resets the row order after any of the three reorders wrote a layout', () => {
     expect(labels(buildMultiRowTrackMenuItems(makeSelf()))).not.toContain(
       'Reset row order',

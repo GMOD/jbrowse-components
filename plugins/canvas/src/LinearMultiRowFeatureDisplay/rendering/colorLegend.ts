@@ -1,6 +1,6 @@
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
-import { resolveLocalRowIndices } from './resolveLocalRowIndices.ts'
+import { resolveLocalRowIndices } from './featurePainting.ts'
 
 import type { MultiRowRegionData } from './multiRowRenderingBackendTypes.ts'
 
@@ -75,6 +75,18 @@ export function buildColorLegend(
   rowIndexByValue: ReadonlyMap<string, number>,
   rowColorsByIndex: readonly (number | undefined)[],
 ): LegendEntry[] {
+  // Every row painting a per-row color contributes nothing (below), so when
+  // that is *all* of them there is no legend to find and the scan below is
+  // pure waste. That is not an edge case: it is the default configuration —
+  // an unset `color` slot over features with no itemRgb gives every row a
+  // palette color — so a default-config track was walking every feature of
+  // every region, on every reorder and recolor, to build an empty list.
+  if (
+    rowColorsByIndex.length > 0 &&
+    rowColorsByIndex.every(c => c !== undefined)
+  ) {
+    return []
+  }
   const entries: LegendEntry[] = []
   const seenColors = new Set<number>()
   const seenLabels = new Set<string>()

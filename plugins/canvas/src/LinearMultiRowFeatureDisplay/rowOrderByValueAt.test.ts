@@ -46,6 +46,42 @@ test('groups rows by the value at pos; absent rows sort last (stable)', () => {
   expect(order(['a', 'b', 'c', 'd'], regions, 50)).toEqual(['a', 'c', 'b', 'd'])
 })
 
+test('puts the commonest block first, whatever its color packs to', () => {
+  // b alone carries color 1; a,c,d share color 9. Ordering by the packed value
+  // would lead with the singleton purely because 1 < 9 — an artifact of how the
+  // color is stored, which also means a recolor would rearrange the same rows
+  // over the same locus.
+  const regions = [
+    region(
+      'chr4',
+      [
+        { start: 0, end: 100, color: 9, row: 0 }, // a
+        { start: 0, end: 100, color: 1, row: 1 }, // b
+        { start: 0, end: 100, color: 9, row: 2 }, // c
+        { start: 0, end: 100, color: 9, row: 3 }, // d
+      ],
+      ['a', 'b', 'c', 'd'],
+    ),
+  ]
+  expect(order(['a', 'b', 'c', 'd'], regions, 50)).toEqual(['a', 'c', 'd', 'b'])
+})
+
+test('equal-sized blocks stay deterministic', () => {
+  const regions = [
+    region(
+      'chr4',
+      [
+        { start: 0, end: 100, color: 7, row: 0 }, // a
+        { start: 0, end: 100, color: 3, row: 1 }, // b
+      ],
+      ['a', 'b'],
+    ),
+  ]
+  // nothing distinguishes a one-row block from another one-row block, so the
+  // color value breaks the tie rather than leaving it to sort implementation
+  expect(order(['a', 'b'], regions, 50)).toEqual(['b', 'a'])
+})
+
 test('ignores regions on other refNames (numeric pos overlap)', () => {
   const regions = [
     region('chr4', [{ start: 0, end: 100, color: 1, row: 0 }], ['a']),

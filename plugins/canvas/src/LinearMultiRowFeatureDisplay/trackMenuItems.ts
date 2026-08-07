@@ -153,39 +153,49 @@ function rowHeightMenuItems(self: MultiRowMenuSelf): MenuItem[] {
   ]
 }
 
+// The only recovery once the legend — where hidden categories render dimmed —
+// has been dismissed, and the only one at all when the legend is gone entirely
+// (below).
+function showAllCategoriesItem(self: MultiRowMenuSelf): MenuItem[] {
+  return self.hiddenCategories.length
+    ? [
+        {
+          label: 'Show all categories',
+          onClick: () => {
+            self.setHiddenCategories([])
+          },
+        },
+      ]
+    : []
+}
+
 // Per-category visibility. Stays its own submenu rather than folding into
 // "Show..." because a chromHMM painting has 15-25 states; the on-screen legend
 // truncates to what fits the track and delegates the full list here.
+//
+// The submenu survives an empty legend as long as anything is hidden, and that
+// case is real rather than defensive: `buildColorLegend` gives up entirely past
+// MAX_LEGEND_ENTRIES distinct colors, so a region loading in and pushing a
+// 29-color painting to 31 takes the whole color key away — and with it the
+// toggles, while `hiddenCategories` stays in the session and re-applies the
+// moment the count drops back. Hiding then had no visible cause and no way out.
 function categoriesMenuItems(self: MultiRowMenuSelf): MenuItem[] {
   const hidden = self.hiddenCategories.length
-  return self.colorLegend.length
+  const toggles = self.colorLegend.map(entry =>
+    checkboxItem(
+      entry.label,
+      !self.hiddenCategories.includes(entry.label),
+      () => {
+        self.toggleCategory(entry.label)
+      },
+    ),
+  )
+  return toggles.length || hidden
     ? [
         {
           label: hidden ? `Categories (${hidden} hidden)` : 'Categories',
           icon: LegendToggleIcon,
-          subMenu: [
-            ...self.colorLegend.map(entry =>
-              checkboxItem(
-                entry.label,
-                !self.hiddenCategories.includes(entry.label),
-                () => {
-                  self.toggleCategory(entry.label)
-                },
-              ),
-            ),
-            // the only recovery once the legend (where hidden rows render
-            // dimmed) has been dismissed
-            ...(hidden
-              ? [
-                  {
-                    label: 'Show all categories',
-                    onClick: () => {
-                      self.setHiddenCategories([])
-                    },
-                  },
-                ]
-              : []),
-          ],
+          subMenu: [...toggles, ...showAllCategoriesItem(self)],
         },
       ]
     : []

@@ -177,6 +177,24 @@ test('captures feature name for tooltips ("" when absent)', () => {
   expect(r.featureNames).toEqual(['mom_maternal', ''])
 })
 
+test('a numeric name column is a label, not an absent name', () => {
+  // same coercion the partition value gets, and for the same reason: which of
+  // string/number a BED column arrives as is the parser's business. Dropped to
+  // '' these lost the tooltip its text and the legend its entry, since
+  // buildColorLegend skips unnamed features.
+  const r = packMultiRowFeatures({
+    features: [
+      feat({ start: 0, end: 5, sample: 'mom', name: 12 }),
+      feat({ start: 5, end: 9, sample: 'mom', name: 0 }),
+    ],
+    partitionField: 'sample',
+    lengthField: '',
+    colorConfig: 'red',
+    jexl: createJexlInstance(),
+  })
+  expect(r.featureNames).toEqual(['12', '0'])
+})
+
 // `colorKey` in the clustering RPC is *defined* as the color painted on screen —
 // rows cluster by which colors fall where. makeFeatureColorResolver is shared
 // with executeMultiRowClusterFeatures so the two can't disagree; if they did, an

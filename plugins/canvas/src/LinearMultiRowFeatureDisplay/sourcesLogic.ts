@@ -31,9 +31,14 @@ export interface RowGroup {
  * the same reason.
  *
  * A row that already carries an explicit `labelColor` (set through the
- * arrangement dialog) keeps it. An entry whose `match` is not a valid regex
- * matches nothing, so one bad config line costs its own stripe rather than the
- * display.
+ * arrangement dialog, or written into a session's `layout`) keeps that color,
+ * but still joins the group and its block — the two are separate questions and
+ * only the color was ever the user's. Deciding both off the color put a row
+ * that had merely been recolored at the bottom of the list with the rows that
+ * matched nothing, which is the one place a reader would not look for it.
+ *
+ * An entry whose `match` is not a valid regex matches nothing, so one bad config
+ * line costs its own stripe rather than the display.
  */
 export function applyRowGroups(
   sources: MultiRowSource[],
@@ -50,13 +55,12 @@ export function applyRowGroups(
     return sources
   }
   const tagged = sources.map(s => {
-    const rank =
-      s.labelColor === undefined
-        ? compiled.findIndex(g => g.re.test(s.name))
-        : -1
+    const rank = compiled.findIndex(g => g.re.test(s.name))
     const hit = rank === -1 ? undefined : compiled[rank]!
     return {
-      source: hit ? { ...s, group: hit.group, labelColor: hit.color } : s,
+      source: hit
+        ? { ...s, group: hit.group, labelColor: s.labelColor ?? hit.color }
+        : s,
       // unmatched rows rank after every declared group
       rank: rank === -1 ? compiled.length : rank,
     }
