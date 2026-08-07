@@ -1,59 +1,8 @@
 import { getGeneticCode } from '@jbrowse/core/util/geneticCodes'
 
-import { hoverDetailForRow, rowLayout } from './sequenceHover.ts'
+import { hoverDetailForRow } from './sequenceHover.ts'
 
 const standard = getGeneticCode(1).codonTable
-
-test('rowLayout forward orientation stacks fwd frames, bases, rev frames', () => {
-  expect(
-    rowLayout({
-      showForward: true,
-      showReverse: true,
-      showTranslation: true,
-      reversed: false,
-    }),
-  ).toEqual([
-    { type: 'translation', frame: 3 },
-    { type: 'translation', frame: 2 },
-    { type: 'translation', frame: 1 },
-    { type: 'base', strand: 1 },
-    { type: 'base', strand: -1 },
-    { type: 'translation', frame: -1 },
-    { type: 'translation', frame: -2 },
-    { type: 'translation', frame: -3 },
-  ])
-})
-
-test('rowLayout reversed flips frame ordering', () => {
-  expect(
-    rowLayout({
-      showForward: true,
-      showReverse: true,
-      showTranslation: true,
-      reversed: true,
-    }),
-  ).toEqual([
-    { type: 'translation', frame: -3 },
-    { type: 'translation', frame: -2 },
-    { type: 'translation', frame: -1 },
-    { type: 'base', strand: 1 },
-    { type: 'base', strand: -1 },
-    { type: 'translation', frame: 1 },
-    { type: 'translation', frame: 2 },
-    { type: 'translation', frame: 3 },
-  ])
-})
-
-test('rowLayout without translation is just the base rows', () => {
-  expect(
-    rowLayout({
-      showForward: true,
-      showReverse: false,
-      showTranslation: false,
-      reversed: false,
-    }),
-  ).toEqual([{ type: 'base', strand: 1 }])
-})
 
 // ATG at coord0 0-2, forward strand
 const seq = 'ATGGCC'

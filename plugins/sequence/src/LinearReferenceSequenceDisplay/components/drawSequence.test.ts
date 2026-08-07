@@ -2,7 +2,7 @@ import { drawSequenceBlocks } from './drawSequence.ts'
 
 import type { SequenceRegionData } from '../model.ts'
 import type { DrawSequenceState } from './drawSequence.ts'
-import type { ColorEntry, ColorPalette } from './sequenceGeometry.ts'
+import type { ColorPalette, SeqColor } from './sequenceGeometry.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
@@ -50,17 +50,17 @@ function recordingCtx() {
   }
 }
 
-function colorEntry(): ColorEntry {
-  return { rgb: [0, 128, 0], style: 'rgb(0,128,0)' }
+function seqColor(): SeqColor {
+  return { fill: 'rgb(0,128,0)', text: '#000' }
 }
 
 function palette(): ColorPalette {
   return {
-    bases: new Map([['A', colorEntry()]]),
+    bases: new Map([['A', seqColor()]]),
     frames: new Map(),
-    start: colorEntry(),
-    stop: colorEntry(),
-    fallback: colorEntry(),
+    start: seqColor(),
+    stop: seqColor(),
+    fallback: seqColor(),
   }
 }
 
@@ -68,7 +68,6 @@ function regionData(): SequenceRegionData {
   return {
     seq: 'AAAAAAAAAA',
     start: START,
-    end: END,
     geneticCodeId: 1,
   }
 }
@@ -82,11 +81,6 @@ function state(): DrawSequenceState {
     isDna: true,
     rowHeight: 10,
     palette: palette(),
-    textColors: {
-      baseContrast: new Map(),
-      startContrast: '',
-      stopContrast: '',
-    },
     canvasWidth: BLOCK_WIDTH,
     canvasHeight: 100,
   }

@@ -1,16 +1,96 @@
 import { getGeneticCode } from '@jbrowse/core/util/geneticCodes'
 
 import {
+  baseRowComplemented,
   codonKind,
   frameShiftBounds,
+  rowCount,
+  rowLayout,
   visibleCodonRange,
   visibleRange,
 } from './sequenceGeometry.ts'
 
+import type { RowVisibility } from './sequenceGeometry.ts'
 import type { Frame } from '@jbrowse/core/util'
 
 const standard = getGeneticCode(1).codonTable
 const vertebrateMito = getGeneticCode(2).codonTable
+
+const all: RowVisibility = {
+  showForward: true,
+  showReverse: true,
+  showTranslation: true,
+}
+
+test('rowLayout forward orientation stacks fwd frames, bases, rev frames', () => {
+  expect(rowLayout(all, false)).toEqual([
+    { type: 'translation', frame: 3 },
+    { type: 'translation', frame: 2 },
+    { type: 'translation', frame: 1 },
+    { type: 'base', strand: 1 },
+    { type: 'base', strand: -1 },
+    { type: 'translation', frame: -1 },
+    { type: 'translation', frame: -2 },
+    { type: 'translation', frame: -3 },
+  ])
+})
+
+test('rowLayout reversed flips frame ordering', () => {
+  expect(rowLayout(all, true)).toEqual([
+    { type: 'translation', frame: -3 },
+    { type: 'translation', frame: -2 },
+    { type: 'translation', frame: -1 },
+    { type: 'base', strand: 1 },
+    { type: 'base', strand: -1 },
+    { type: 'translation', frame: 1 },
+    { type: 'translation', frame: 2 },
+    { type: 'translation', frame: 3 },
+  ])
+})
+
+test('rowLayout without translation is just the base rows', () => {
+  expect(
+    rowLayout(
+      { showForward: true, showReverse: false, showTranslation: false },
+      false,
+    ),
+  ).toEqual([{ type: 'base', strand: 1 }])
+})
+
+// rowCount is what sizes the track and divides its height into rows, so it has
+// to agree with the list the painter walks for every combination — not just the
+// ones someone thought to hard-code.
+test('rowCount matches the layout it counts, in both orientations', () => {
+  for (const showForward of [true, false]) {
+    for (const showReverse of [true, false]) {
+      for (const showTranslation of [true, false]) {
+        const visibility = { showForward, showReverse, showTranslation }
+        expect(rowCount(visibility)).toBe(rowLayout(visibility, false).length)
+        expect(rowCount(visibility)).toBe(rowLayout(visibility, true).length)
+      }
+    }
+  }
+})
+
+test('rowCount is zero only when both base rows are off', () => {
+  expect(
+    rowCount({
+      showForward: false,
+      showReverse: false,
+      showTranslation: true,
+    }),
+  ).toBe(0)
+  expect(
+    rowCount({ showForward: false, showReverse: true, showTranslation: true }),
+  ).toBe(4)
+})
+
+test('the base row showing the complement swaps under reversal', () => {
+  expect(baseRowComplemented(1, false)).toBe(false)
+  expect(baseRowComplemented(-1, false)).toBe(true)
+  expect(baseRowComplemented(1, true)).toBe(true)
+  expect(baseRowComplemented(-1, true)).toBe(false)
+})
 
 test('visibleRange clamps to sequence bounds', () => {
   // block fully inside the fetched region

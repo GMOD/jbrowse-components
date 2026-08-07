@@ -6,7 +6,6 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   addAndShowTrack,
-  dedupe,
   getContainingTrack,
   getSession,
   isSessionWithAddTracks,
@@ -29,12 +28,19 @@ import {
   regionDataMap,
 } from '@jbrowse/render-core/installPerRegionLifecycle'
 
-import { buildTextColors } from './components/drawSequence.ts'
-import { buildColorPalette } from './components/sequenceGeometry.ts'
-import { hoverDetailForRow, rowLayout } from './components/sequenceHover.ts'
+import {
+  buildColorPalette,
+  rowCount,
+  rowLayout,
+} from './components/sequenceGeometry.ts'
+import { hoverDetailForRow } from './components/sequenceHover.ts'
 
 import type { Canvas2DSequenceRenderer } from './components/Canvas2DSequenceRenderer.ts'
 import type { DrawSequenceState } from './components/drawSequence.ts'
+import type {
+  ColorPalette,
+  RowVisibility,
+} from './components/sequenceGeometry.ts'
 import type { SequenceHover } from './components/sequenceHover.ts'
 import type { LinearReferenceSequenceDisplayConfigModel } from './configSchema.ts'
 import type { Region } from '@jbrowse/core/util'
@@ -47,8 +53,9 @@ const COLLAPSED_HEIGHT_PX = 50
 
 export interface SequenceRegionData {
   seq: string
+  // absolute genomic start of `seq[0]`; the extent is `start + seq.length`, so
+  // there is no separate `end` to keep in agreement with the string
   start: number
-  end: number
   // NCBI genetic-code id for this region's refName (1 = standard); resolved from
   // the assembly's geneticCodes config so mitochondrial/plastid contigs
   // translate with the right table
@@ -134,15 +141,12 @@ export function modelFactory(
       },
       /**
        * #getter
-       * Theme-derived palette + text colors, derived from the session theme so
-       * they're always available — including headless SVG export and RPC, where
-       * no component mounts to seed them.
+       * Theme-derived fill + text color for every cell this display paints,
+       * derived from the session theme so it's always available — including
+       * headless SVG export and RPC, where no component mounts to seed it.
        */
-      get colorState() {
-        const { palette: sessionPalette } = getSession(self)
-        const view = self.lgv
-        const palette = buildColorPalette(sessionPalette, view.colorByCDS)
-        return { palette, textColors: buildTextColors(palette, sessionPalette) }
+      get colorPalette(): ColorPalette {
+        return buildColorPalette(getSession(self).palette, self.lgv.colorByCDS)
       },
     }))
     .views(self => ({
@@ -174,6 +178,23 @@ export function modelFactory(
     .views(self => ({
       /**
        * #getter
+       * Which rows the stack is showing, as the one value `rowLayout` takes.
+       * Every consumer — the row count, the render state, the hover's mouse-y
+       * lookup — goes through this rather than re-listing three booleans and
+       * having to remember which two of them are the DNA-gated `effective`
+       * ones.
+       */
+      get rowVisibility(): RowVisibility {
+        return {
+          showForward: self.showForward,
+          showReverse: self.effectiveShowReverse,
+          showTranslation: self.effectiveShowTranslation,
+        }
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * the view is too zoomed out to show individual bases
        */
       get zoomedOut() {
@@ -182,58 +203,78 @@ export function modelFactory(
       },
       /**
        * #getter
-       * zoomedOut is a terminal renderable state (static "zoom in" message, no
+       * The static message `SequenceDisplayComponent` renders where the
+       * `<canvas>` would go, or undefined when the sequence actually paints.
+       *
+       * Two states reach it, and having one term for both is the point. Zoomed
+       * past base resolution there is nothing to draw and nothing is fetched;
+       * with every row toggled off there is likewise nothing to draw, and that
+       * case used to reach only `computedHeight` — `numRows * ROW_HEIGHT_PX` is
+       * 0, so unticking both strand rows collapsed the track to a 0px sliver
+       * with no message and nothing left to grab.
+       */
+      get placeholderMessage(): string | undefined {
+        return this.zoomedOut
+          ? 'Zoom in to see sequence'
+          : this.numRows === 0
+            ? 'No sequence rows shown — enable one from the track menu'
+            : undefined
+      },
+      /**
+       * #getter
+       * A placeholder is a terminal renderable state (static message, no
        * fetch), so it makes `svgReady` resolve even though no data loads. See
        * MultiRegionDisplayMixin.svgReadyExtraTerminal.
        */
       get svgReadyExtraTerminal() {
-        return this.zoomedOut
+        return this.placeholderMessage !== undefined
       },
       /**
        * #getter
-       * Same fact on the other axis: zoomed past base resolution the body shows
-       * a static "zoom in" message and fetches nothing, so the loading scrim
-       * must not cover it. One term, not a `displayPhase` override — see
-       * MultiRegionDisplayMixin.loadingSuppressed.
+       * Same fact on the other axis: the body is deliberately showing a static
+       * message, so the loading scrim must not cover it. One term, not a
+       * `displayPhase` override — see MultiRegionDisplayMixin.loadingSuppressed.
        */
       get loadingSuppressed() {
-        return this.zoomedOut
+        return this.placeholderMessage !== undefined
       },
       /**
        * #getter
        * The same fact once more, on the axis every reader *outside* this
-       * display uses: zoomed out, `SequenceDisplayComponent` renders an
-       * `<Alert>` where the `<canvas>` would go, so `canvasRef` is never
-       * called and `canvasDrawn` can never flip. Overrides
-       * `RenderLifecycleMixin`'s default-true hook, which is what makes
-       * `painted` — and so `data-display-drawn`, which `PENDING_DISPLAYS`
-       * selects on — report finished instead of hanging every
-       * `waitForDisplaysDone` on a page that shows the reference sequence
-       * track zoomed out.
+       * display uses: showing the message means `canvasRef` is never called and
+       * `canvasDrawn` can never flip. Overrides `RenderLifecycleMixin`'s
+       * default-true hook, which is what makes `painted` — and so
+       * `data-display-drawn`, which `PENDING_DISPLAYS` selects on — report
+       * finished instead of hanging every `waitForDisplaysDone` on a page that
+       * shows the reference sequence track zoomed out.
        *
        * Three hooks for one condition looks redundant and isn't: they answer
        * the scrim, the SVG export and first paint, and each has a different
        * set of readers.
        */
       get rendersCanvas() {
-        return !this.zoomedOut
+        return this.placeholderMessage === undefined
       },
+      /**
+       * #getter
+       * height of the stack in rows, counted off the same `rowLayout` the
+       * painter walks and the hover indexes
+       */
       get numRows() {
-        const baseRows =
-          (self.showForward ? 1 : 0) + (self.effectiveShowReverse ? 1 : 0)
-        // each base row gains 3 stacked translation frames when enabled
-        return baseRows * (self.effectiveShowTranslation ? 4 : 1)
+        return rowCount(self.rowVisibility)
       },
       get sequenceHeight() {
         return this.numRows * ROW_HEIGHT_PX
       },
       /**
        * #getter
-       * collapses to 50px when zoomed out (no sequence visible) or before
-       * the view initializes; otherwise sized to fit the visible rows.
+       * collapses to 50px whenever the body is a static message instead of the
+       * sequence; otherwise sized to fit the visible rows.
        */
       get computedHeight() {
-        return this.zoomedOut ? COLLAPSED_HEIGHT_PX : this.sequenceHeight
+        return this.placeholderMessage !== undefined
+          ? COLLAPSED_HEIGHT_PX
+          : this.sequenceHeight
       },
       /**
        * #getter
@@ -253,17 +294,12 @@ export function modelFactory(
        * everything the Canvas2D backend needs to paint a frame
        */
       get renderState(): DrawSequenceState {
-        const view = self.lgv
-        const { palette, textColors } = self.colorState
         return {
-          bpPerPx: view.bpPerPx,
-          showForward: self.showForward,
-          showReverse: self.effectiveShowReverse,
-          showTranslation: self.effectiveShowTranslation,
+          ...self.rowVisibility,
+          bpPerPx: self.lgv.bpPerPx,
           isDna: self.isDna,
           rowHeight: self.rowHeight,
-          palette,
-          textColors,
+          palette: self.colorPalette,
           canvasWidth: self.canvasWidthPx,
           canvasHeight: self.height,
         }
@@ -338,14 +374,21 @@ export function modelFactory(
           backend,
           data => data,
           (b, regions) =>
-            self.zoomedOut
-              ? false
-              : b.renderBlocks(self.renderBlocks, regions, self.renderState),
+            self.rendersCanvas &&
+            b.renderBlocks(self.renderBlocks, regions, self.renderState),
         )
       },
       async fetchNeeded(
         needed: { region: Region; displayedRegionIndex: number }[],
       ) {
+        // `zoomedOut`, deliberately *not* the wider `rendersCanvas`: a
+        // `fetchNeeded` that declines has to be woken by something the
+        // FetchVisibleRegions autorun already tracks (see
+        // BaseLinearDisplay/CLAUDE.md). Zooming back in moves
+        // `view.visibleRegions`, which it does track; re-ticking a strand row
+        // moves nothing it watches, so skipping on no-rows would wedge the
+        // display until the user happened to pan. Fetching sequence nobody
+        // paints for as long as every row is off is the cheaper mistake.
         if (self.zoomedOut) {
           return
         }
@@ -372,15 +415,19 @@ export function modelFactory(
             return { features, geneticCodeId }
           },
           onResult: (idx, { features, geneticCodeId }) => {
-            for (const f of dedupe(features, f => f.id())) {
+            // every sequence adapter answers a region with a single feature
+            // carrying the whole string; take the first that has one rather
+            // than looping and overwriting the same key, which kept whichever
+            // happened to come last
+            for (const f of features) {
               const seq = f.get('seq') as string | undefined
               if (seq) {
                 self.setSequenceRegion(idx, {
                   seq,
                   start: f.get('start'),
-                  end: f.get('end'),
                   geneticCodeId,
                 })
+                break
               }
             }
           },
@@ -392,12 +439,14 @@ export function modelFactory(
        * #method
        * Resolve the genomic position, reference base, and codon/amino-acid under
        * a cursor at track-relative pixel `(offsetX, offsetY)`. Drives the hover
-       * tooltip; returns undefined when zoomed out, off a fetched region, or
-       * between rows.
+       * tooltip; returns undefined when no sequence is painted, off a fetched
+       * region, or between rows.
        */
       hoverAt(offsetX: number, offsetY: number): SequenceHover | undefined {
-        const view = self.lgv
-        const bp = self.zoomedOut ? undefined : view.pxToBp(offsetX)
+        // nothing painted, nothing under the cursor — and this is also what
+        // makes the `rowHeight` division below safe, since `rendersCanvas`
+        // false is exactly the zoomed-out and zero-row cases
+        const bp = self.rendersCanvas ? self.lgv.pxToBp(offsetX) : undefined
         if (bp && !bp.oob) {
           // basePaintedAt, not bp.coord0: this indexes the fetched sequence, so
           // it has to name the base drawn under the cursor. Reversed, coord0
@@ -407,13 +456,10 @@ export function modelFactory(
           const base = basePaintedAt(bp, bp.offset)
           const data = self.sequenceData.get(bp.index)
           const idx = data ? base - data.start : -1
-          if (data && idx >= 0 && idx < data.seq.length && self.numRows > 0) {
-            const row = rowLayout({
-              showForward: self.showForward,
-              showReverse: self.effectiveShowReverse,
-              showTranslation: self.effectiveShowTranslation,
-              reversed: !!bp.reversed,
-            })[Math.floor(offsetY / self.rowHeight)]
+          if (data && idx >= 0 && idx < data.seq.length) {
+            const row = rowLayout(self.rowVisibility, !!bp.reversed)[
+              Math.floor(offsetY / self.rowHeight)
+            ]
             return {
               refName: bp.refName,
               // 1-based display form of the base actually under the cursor

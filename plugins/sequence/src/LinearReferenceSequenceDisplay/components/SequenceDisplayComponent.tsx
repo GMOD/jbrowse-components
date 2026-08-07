@@ -18,8 +18,9 @@ const SequenceBody = observer(function SequenceBody({
   model: LinearReferenceSequenceDisplayModel
   canvasRef: (node: HTMLCanvasElement | null) => void
 }) {
-  return model.zoomedOut ? (
-    <Alert severity="info">Zoom in to see sequence</Alert>
+  const { placeholderMessage } = model
+  return placeholderMessage ? (
+    <Alert severity="info">{placeholderMessage}</Alert>
   ) : (
     <canvas
       ref={canvasRef}
@@ -32,11 +33,9 @@ function frameLabel(frame: number) {
   return frame > 0 ? `+${frame}` : `${frame}`
 }
 
-const HoverContents = observer(function HoverContents({
-  hover,
-}: {
-  hover: SequenceHover
-}) {
+// Not an observer: `hover` is a plain resolved object, so there is nothing here
+// to track — SequenceHoverTooltip did the reading.
+function HoverContents({ hover }: { hover: SequenceHover }) {
   const { refName, coord, detail } = hover
   return (
     <>
@@ -60,7 +59,7 @@ const HoverContents = observer(function HoverContents({
       ) : null}
     </>
   )
-})
+}
 
 // The hover tooltip, in its own component so that following the pointer
 // re-renders it alone.

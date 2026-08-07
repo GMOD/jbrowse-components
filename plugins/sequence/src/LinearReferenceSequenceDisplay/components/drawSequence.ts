@@ -1,96 +1,100 @@
-import { getContrastText } from '@jbrowse/core/ui/palette'
 import { complement, revcom } from '@jbrowse/core/util'
 import { getGeneticCode } from '@jbrowse/core/util/geneticCodes'
 import {
-  bpToScreenPx,
   forEachClippedBlock,
+  makeBpMapper,
 } from '@jbrowse/render-core/canvas2dUtils'
 
 import {
+  baseRowComplemented,
   codonKind,
   frameShiftBounds,
+  rowLayout,
   visibleCodonRange,
   visibleRange,
 } from './sequenceGeometry.ts'
 
 import type { SequenceRegionData } from '../model.ts'
-import type { ColorEntry, ColorPalette } from './sequenceGeometry.ts'
-import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
+import type {
+  ColorPalette,
+  RowVisibility,
+  SeqColor,
+} from './sequenceGeometry.ts'
 import type { Frame } from '@jbrowse/core/util'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 const BORDER_COLOR = 'rgb(85,85,85)'
 
-export interface TextColors {
-  baseContrast: Map<string, string>
-  startContrast: string
-  stopContrast: string
+interface BlockScale {
+  // width of one bp, in px — constant within a block
+  pxPerBp: number
+  // left edge of the `bpWidth`-bp span starting at `startBp`
+  left: (startBp: number, bpWidth: number) => number
 }
 
-function contrastColor({ rgb }: ColorEntry) {
-  const lum = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000
-  return lum < 128 ? '#fff' : '#000'
-}
-
-export function buildTextColors(
-  colors: ColorPalette,
-  palette: JBrowsePalette,
-): TextColors {
-  const baseContrast = new Map<string, string>()
-  for (const [base, color] of colors.bases) {
-    baseContrast.set(base, contrastColor(color))
-  }
+/**
+ * The bp→px scale for one block, resolved once per block rather than per base.
+ *
+ * The rows below paint one rect per base and run at up to ~10bp/px across the
+ * viewport, so this is deliberately scalar-in/scalar-out — it replaced a helper
+ * that re-derived the block scale and allocated an `{x, w}` object per base per
+ * row per frame. Same rule as canvas2dUtils' `spanLeft`.
+ *
+ * `left` takes a span's *start* plus its bp width because a reversed block runs
+ * bp leftward: the leftmost edge is then the span's end. That is the one-base
+ * pivot `makeCellLeftMapper` / `fillBpSpan` exist to get right, and filling
+ * rightward from the raw mapper would cover the neighboring base instead.
+ */
+function blockScale(block: RenderBlock): BlockScale {
+  const toX = makeBpMapper(block)
+  const { reversed } = block
   return {
-    baseContrast,
-    startContrast: getContrastText(palette.startCodon),
-    stopContrast: getContrastText(palette.stopCodon),
+    pxPerBp:
+      (block.screenEndPx - block.screenStartPx) / (block.end - block.start),
+    left: (startBp, bpWidth) => toX(reversed ? startBp + bpWidth : startBp),
   }
 }
 
-function bpRangeToScreen(block: RenderBlock, absBp: number, bpWidth: number) {
-  const x1 = bpToScreenPx(
-    absBp,
-    block.start,
-    block.end,
-    block.screenStartPx,
-    block.screenEndPx,
-    block.reversed,
-  )
-  const x2 = bpToScreenPx(
-    absBp + bpWidth,
-    block.start,
-    block.end,
-    block.screenStartPx,
-    block.screenEndPx,
-    block.reversed,
-  )
-  return x1 < x2 ? { x: x1, w: x2 - x1 } : { x: x2, w: x1 - x2 }
-}
-
-function centerText(
+/**
+ * Paint one cell of the stack. `label` is the glyph to center in it, or
+ * undefined for a plain fill (too zoomed out for letters, or a background band
+ * with no codon of its own).
+ *
+ * The one place a fill and a text color are written to the context, and it
+ * takes them as a single {@link SeqColor}: the letter's contrast color used to
+ * be looked up from a second structure keyed the same way as the fill, which is
+ * how a cell can end up drawing black-on-black.
+ */
+function paintCell(
   ctx: Ctx2D,
-  text: string,
+  color: SeqColor,
+  label: string | undefined,
   x: number,
   w: number,
   y: number,
   rowHeight: number,
-  color: string,
 ) {
-  ctx.fillStyle = color
-  ctx.fillText(text, x + w / 2, y + rowHeight / 2)
+  ctx.fillStyle = color.fill
+  ctx.fillRect(x, y, w, rowHeight)
+  if (label !== undefined) {
+    ctx.strokeRect(x, y, w, rowHeight)
+    ctx.fillStyle = color.text
+    ctx.fillText(label, x + w / 2, y + rowHeight / 2)
+  }
 }
 
 interface RowDrawCommon {
   ctx: Ctx2D
   block: RenderBlock
+  scale: BlockScale
   seq: string
   seqStart: number
   y: number
   rowHeight: number
+  // whether cells are wide enough to carry a border and a letter
   showBorders: boolean
   palette: ColorPalette
-  textColors: TextColors
   // case-insensitive codon -> amino acid for this region's genetic code, '*' for
   // a stop; varies per refName (e.g. mitochondrial contigs)
   codonTable: Record<string, string>
@@ -99,6 +103,7 @@ interface RowDrawCommon {
 function drawBaseRow({
   ctx,
   block,
+  scale,
   seq,
   seqStart,
   y,
@@ -106,7 +111,6 @@ function drawBaseRow({
   showBorders,
   isDna,
   palette,
-  textColors,
 }: RowDrawCommon & { isDna: boolean }) {
   const { start, end } = visibleRange(
     block.start,
@@ -114,57 +118,69 @@ function drawBaseRow({
     seqStart,
     seq.length,
   )
+  const { left, pxPerBp } = scale
 
   for (let i = start; i < end; i++) {
     const letter = seq[i]!
-    const upper = letter.toUpperCase()
-    const color = palette.bases.get(upper) ?? palette.fallback
-    const { x, w } = bpRangeToScreen(block, seqStart + i, 1)
-
-    ctx.fillStyle = color.style
-    ctx.fillRect(x, y, w, rowHeight)
-
-    if (showBorders) {
-      ctx.strokeRect(x, y, w, rowHeight)
-      const textColor = isDna
-        ? (textColors.baseContrast.get(upper) ?? '#000')
-        : '#000'
-      centerText(ctx, letter, x, w, y, rowHeight, textColor)
-    }
+    // a peptide track's residues are not nucleotides — its A/C/G/T are Ala,
+    // Cys, Gly and Thr — so only DNA consults the base palette, and everything
+    // else takes the neutral fallback rather than four residues at random
+    const color =
+      (isDna ? palette.bases.get(letter.toUpperCase()) : undefined) ??
+      palette.fallback
+    const x = left(seqStart + i, 1)
+    paintCell(
+      ctx,
+      color,
+      showBorders ? letter : undefined,
+      x,
+      pxPerBp,
+      y,
+      rowHeight,
+    )
   }
 }
 
 function drawTranslationRow({
   ctx,
   block,
+  scale,
   seq,
   seqStart,
   frame,
   y,
   rowHeight,
-  reversed,
   showBorders,
   palette,
-  textColors,
   codonTable,
-}: RowDrawCommon & { frame: Frame; reversed: boolean }) {
+}: RowDrawCommon & { frame: Frame }) {
+  const { left, pxPerBp } = scale
   const bg = palette.frames.get(frame) ?? palette.fallback
   const { frameShift, sliceEnd } = frameShiftBounds(seq, seqStart, frame)
+  const band = (startBp: number, bpWidth: number) => {
+    paintCell(
+      ctx,
+      bg,
+      undefined,
+      left(startBp, bpWidth),
+      bpWidth * pxPerBp,
+      y,
+      rowHeight,
+    )
+  }
 
-  ctx.fillStyle = bg.style
   if (showBorders) {
+    // the codon loop paints its own cells, so only the partial codons it skips
+    // at either edge need a background of their own
     if (frameShift > 0) {
-      const { x, w } = bpRangeToScreen(block, seqStart, frameShift)
-      ctx.fillRect(x, y, w, rowHeight)
+      band(seqStart, frameShift)
     }
     const trailing = seq.length - sliceEnd
     if (trailing > 0) {
-      const { x, w } = bpRangeToScreen(block, seqStart + sliceEnd, trailing)
-      ctx.fillRect(x, y, w, rowHeight)
+      band(seqStart + sliceEnd, trailing)
     }
   } else {
-    const { x, w } = bpRangeToScreen(block, seqStart, seq.length)
-    ctx.fillRect(x, y, w, rowHeight)
+    band(seqStart, seq.length)
   }
 
   const { start, end } = visibleCodonRange(
@@ -175,52 +191,50 @@ function drawTranslationRow({
     frameShift,
     sliceEnd,
   )
+  // a negative frame reads the other strand, so its triplet is the
+  // reverse-complement of the forward one — the sign of the frame decides this,
+  // not the block's display orientation (hoverDetailForRow says it the same way)
+  const revcomCodon = frame < 0
+  const codonWidth = 3 * pxPerBp
 
   for (let i = start; i < end; i += 3) {
-    const codon = seq.slice(i, i + 3)
-    const normalizedCodon = reversed ? revcom(codon) : codon
-    const kind = codonKind(normalizedCodon.toUpperCase(), codonTable)
-    const { x, w } = bpRangeToScreen(block, seqStart + i, 3)
-
-    // background was already painted for normal codons, so the no-border path
-    // only repaints start/stop highlights
+    const raw = seq.slice(i, i + 3)
+    const codon = revcomCodon ? revcom(raw) : raw
+    const kind = codonKind(codon.toUpperCase(), codonTable)
     const cell =
       kind === 'start' ? palette.start : kind === 'stop' ? palette.stop : bg
+
+    // the whole row's background was already painted for normal codons, so the
+    // no-border path only has start/stop highlights left to lay over it
     if (showBorders) {
-      ctx.fillStyle = cell.style
-      ctx.fillRect(x, y, w, rowHeight)
-      ctx.strokeRect(x, y, w, rowHeight)
-      const textColor =
-        kind === 'start'
-          ? textColors.startContrast
-          : kind === 'stop'
-            ? textColors.stopContrast
-            : '#000'
-      centerText(
+      paintCell(
         ctx,
-        codonTable[normalizedCodon] ?? '',
-        x,
-        w,
+        cell,
+        codonTable[codon] ?? '',
+        left(seqStart + i, 3),
+        codonWidth,
         y,
         rowHeight,
-        textColor,
       )
     } else if (kind !== 'normal') {
-      ctx.fillStyle = cell.style
-      ctx.fillRect(x, y, w, rowHeight)
+      paintCell(
+        ctx,
+        cell,
+        undefined,
+        left(seqStart + i, 3),
+        codonWidth,
+        y,
+        rowHeight,
+      )
     }
   }
 }
 
-export interface DrawSequenceState {
+export interface DrawSequenceState extends RowVisibility {
   bpPerPx: number
-  showForward: boolean
-  showReverse: boolean
-  showTranslation: boolean
   isDna: boolean
   rowHeight: number
   palette: ColorPalette
-  textColors: TextColors
   canvasWidth: number
   canvasHeight: number
 }
@@ -231,18 +245,8 @@ export function drawSequenceBlocks(
   blocks: RenderBlock[],
   state: DrawSequenceState,
 ) {
-  const {
-    bpPerPx,
-    showForward,
-    showReverse,
-    showTranslation,
-    isDna,
-    rowHeight,
-    palette,
-    textColors,
-    canvasWidth,
-    canvasHeight,
-  } = state
+  const { bpPerPx, isDna, rowHeight, palette, canvasWidth, canvasHeight } =
+    state
   const showBorders = 1 / bpPerPx >= 12
 
   if (showBorders) {
@@ -253,10 +257,6 @@ export function drawSequenceBlocks(
     ctx.lineWidth = 1
   }
 
-  const forwardFrames: Frame[] = showTranslation && showForward ? [3, 2, 1] : []
-  const reverseFrames: Frame[] =
-    showTranslation && showReverse ? [-1, -2, -3] : []
-
   forEachClippedBlock(
     ctx,
     blocks,
@@ -265,54 +265,30 @@ export function drawSequenceBlocks(
     block => sequenceData.get(block.displayedRegionIndex),
     (data, block) => {
       const { reversed } = block
-      const [topFrames, bottomFrames] = reversed
-        ? [reverseFrames.toReversed(), forwardFrames.toReversed()]
-        : [forwardFrames, reverseFrames]
-
-      let currentY = 0
       const common = {
         ctx,
         block,
+        scale: blockScale(block),
         seqStart: data.start,
         rowHeight,
         showBorders,
         palette,
-        textColors,
         codonTable: getGeneticCode(data.geneticCodeId).codonTable,
       }
 
-      for (const frame of topFrames) {
-        drawTranslationRow({
-          ...common,
-          seq: data.seq,
-          frame,
-          y: currentY,
-          reversed,
-        })
-        currentY += rowHeight
-      }
-
-      if (showForward) {
-        const fwdSeq = reversed ? complement(data.seq) : data.seq
-        drawBaseRow({ ...common, seq: fwdSeq, y: currentY, isDna })
-        currentY += rowHeight
-      }
-
-      if (showReverse) {
-        const revSeq = reversed ? data.seq : complement(data.seq)
-        drawBaseRow({ ...common, seq: revSeq, y: currentY, isDna })
-        currentY += rowHeight
-      }
-
-      for (const frame of bottomFrames) {
-        drawTranslationRow({
-          ...common,
-          seq: data.seq,
-          frame,
-          y: currentY,
-          reversed: !reversed,
-        })
-        currentY += rowHeight
+      // `state` supplies the three visibility flags structurally, so the stack
+      // painted here is the same list the model measures and the hover indexes
+      let y = 0
+      for (const row of rowLayout(state, reversed)) {
+        if (row.type === 'translation') {
+          drawTranslationRow({ ...common, seq: data.seq, frame: row.frame, y })
+        } else {
+          const seq = baseRowComplemented(row.strand, reversed)
+            ? complement(data.seq)
+            : data.seq
+          drawBaseRow({ ...common, seq, y, isDna })
+        }
+        y += rowHeight
       }
     },
   )

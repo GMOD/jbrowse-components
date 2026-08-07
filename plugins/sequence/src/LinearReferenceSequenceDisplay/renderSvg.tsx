@@ -6,10 +6,7 @@ import {
   renderDisplaySvg,
 } from '@jbrowse/plugin-linear-genome-view'
 
-import {
-  buildTextColors,
-  drawSequenceBlocks,
-} from './components/drawSequence.ts'
+import { drawSequenceBlocks } from './components/drawSequence.ts'
 import { buildColorPalette } from './components/sequenceGeometry.ts'
 
 import type { DrawSequenceState } from './components/drawSequence.ts'
@@ -27,9 +24,10 @@ interface SequenceDisplayModel extends SvgExportable {
   sequenceData: ReadonlyMap<number, SequenceRegionData>
   renderBlocks: RenderBlock[]
   renderState: DrawSequenceState
-  // terminal "zoom in" message state, folded into svgReady via
-  // svgReadyExtraTerminal; still read here to skip painting bases
-  zoomedOut: boolean
+  // terminal static-message state (zoomed past base resolution, or every row
+  // toggled off), folded into svgReady via svgReadyExtraTerminal; still read
+  // here to skip painting bases
+  placeholderMessage: string | undefined
 }
 
 export async function renderSvg(
@@ -47,24 +45,23 @@ function SequenceSvgBody({
   opts,
 }: LgvSvgBodyProps<SequenceDisplayModel>) {
   const { sequenceData } = model
-  // zoomedOut is the terminal "zoom in to see sequence" state (no fetch); an
-  // empty but loaded sequenceData still paints naturally below.
-  if (model.zoomedOut) {
+  // the terminal static-message state (no fetch); an empty but loaded
+  // sequenceData still paints naturally below.
+  if (model.placeholderMessage) {
     return null
   }
 
-  // The export theme can differ from the session theme, so rebuild the
-  // palette/text colors here and reuse the rest of the live renderState.
-  const exportPalette = resolvePalette({ configTheme: opts?.theme })
-  const palette = buildColorPalette(exportPalette, view.colorByCDS)
-  const textColors = buildTextColors(palette, exportPalette)
+  // The export theme can differ from the session theme, so rebuild the palette
+  // here and reuse the rest of the live renderState.
   const state: DrawSequenceState = {
     ...model.renderState,
     // canvasWidth is the block scissor bound, so it has to be the width this
     // layer is actually painted at — see LgvSvgBodyProps.canvasWidth.
     canvasWidth,
-    palette,
-    textColors,
+    palette: buildColorPalette(
+      resolvePalette({ configTheme: opts?.theme }),
+      view.colorByCDS,
+    ),
   }
 
   // Sequence is text-heavy; routed through PaintLayer so rasterizeLayers can
