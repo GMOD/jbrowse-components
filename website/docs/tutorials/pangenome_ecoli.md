@@ -302,7 +302,12 @@ and MAF projections cannot state at all.
 `untangle_to_bed.py` projects the PAF onto the per-strain BED schema
 [`build_minigraph_paths.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_minigraph_paths.sh)
 already defines, so this is a second producer of an existing format rather than
-a new one, and the same display config reads both:
+a new one. Every column of that schema is written in its own position, and the
+bubble-decomposition ones untangle does not report (`class`, `delta`, `path` and
+the rest) are left empty rather than dropped — a consumer that reads them
+positionally would otherwise pick up this file's `selfCov` as `class`. So
+`partitionField` and the colors carry across unchanged; `lengthField` has
+nothing to read here, because untangle reports no length change:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/untangle_to_bed.py

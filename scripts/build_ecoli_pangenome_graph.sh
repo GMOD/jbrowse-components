@@ -45,7 +45,13 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"   # so reroot_maf.py resolves after 
 # build_pggb_tabix.sh fetches its own helper the same way.
 HELPERS=(reroot_maf.py maf_to_bed.py gfa_nodes_to_bed.py build_pggb_tabix.sh
   build_rgfa_tabix.sh build_rgfa_alleles.sh build_minigraph_paths.sh
-  odgi_similarity_to_newick.py)
+  odgi_similarity_to_newick.py untangle_to_bed.py)
+# The JBrowse CLI, installed or via npx. Defined HERE rather than at the JBrowse
+# setup section far below, because `make-pif` runs during the projections and a
+# bare `jbrowse` there kills the script under `set -e` on an npx-only machine —
+# right after pggb has finished, which is the most expensive place to fail.
+if command -v jbrowse >/dev/null 2>&1; then jb() { jbrowse "$@"; }; else jb() { npx -y @jbrowse/cli "$@"; }; fi
+
 for h in "${HELPERS[@]}"; do
   [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
     "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
@@ -223,7 +229,7 @@ OG=$(ls pggb/*.smooth.final.og)
 # pggb's input, not a readout of the graph, and it is here because it is free
 # and because it is what the all-vs-all synteny tutorial loads.
 cp pggb/*.alignments.wfmash.paf ecoli_pggb_ava.paf
-jbrowse make-pif ecoli_pggb_ava.paf   # -> ecoli_pggb_ava.pif.gz (+ .tbi)
+jb make-pif ecoli_pggb_ava.paf   # -> ecoli_pggb_ava.pif.gz (+ .tbi)
 
 # (b) `odgi untangle`, which IS a readout of the graph: it walks each query path
 # and reports, segment by segment, which stretch of the reference path that
@@ -275,7 +281,7 @@ if [ ! -f ecoli_pggb_untangle.paf ]; then
     > ecoli_pggb_untangle.paf.tmp
   mv ecoli_pggb_untangle.paf.tmp ecoli_pggb_untangle.paf
 fi
-jbrowse make-pif ecoli_pggb_untangle.paf
+jb make-pif ecoli_pggb_untangle.paf
 
 # The same file as one lane per strain on REF's own axis, rather than as ribbons
 # between two genome rows. Two things a ribbon cannot show become readable there:
@@ -537,8 +543,7 @@ cp "$SCRIPT_DIR/build_minigraph_paths.sh" .
 in_cactus bash /data/build_minigraph_paths.sh /data/ecoli_minigraph.rgfa \
   /data/ecoli_minigraph_paths $PATHS_FA
 
-# ── Set up JBrowse (installed `jbrowse`, else the CLI via npx) ────────────────
-if command -v jbrowse >/dev/null 2>&1; then jb() { jbrowse "$@"; }; else jb() { npx -y @jbrowse/cli "$@"; }; fi
+# ── Set up JBrowse ────────────────────────────────────────────────────────────
 APP=jbrowse2
 [ -f "$APP/index.html" ] || jb create "$APP"
 
