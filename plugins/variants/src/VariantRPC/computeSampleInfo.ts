@@ -104,8 +104,9 @@ function collectSampleNames(filteredVariants: FilteredVariant[]) {
  * to intern it for transfer. Four traversals and F x S string allocations plus
  * a dictionary-mode object per feature, to reproduce a payload the worker only
  * ever ships as codes. Fusing them onto `processGenotypes`, which reports each
- * genotype as a range into the line, measured 611ms/214MB against 71ms/1MB on
- * 2504 samples x 400 variants.
+ * genotype as a range into the line, took the analyze+cells stage from 613ms to
+ * 168ms on 2504 samples x 400 variants — and the 168ms is the whole stage,
+ * including the cell painting the 613ms does not cover.
  *
  * The per-site memo is what removes the last allocation: a site carries a
  * handful of distinct genotypes across thousands of samples, so a linear scan

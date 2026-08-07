@@ -35,9 +35,10 @@ prefers declarative iteration.
   genotype) rather than once per cell. What this replaced was a
   `Record<sampleName, genotype>` per feature, built by `GENOTYPES()` and walked
   three more times — flags, colors, interning — to reproduce a payload the
-  worker only ever ships as codes: 611ms/214MB against 71ms/1MB on 2504 samples
-  × 400 variants. **A new consumer reads codes.** Reintroducing the record to
-  serve one is how the four passes come back.
+  worker only ever ships as codes: the analyze+cells stage went 613ms → 168ms on
+  2504 samples × 400 variants, and the 168ms covers the cell painting the 613ms
+  doesn't. **A new consumer reads codes.** Reintroducing the record to serve one
+  is how the four passes come back.
 - Codes are **Uint32**. They were Uint16, which capped the dict at 65535
   distinct genotype strings — reachable on a decomposed pangenome callset, where
   a multiallelic site's genotypes grow with the square of the alt count. Past
