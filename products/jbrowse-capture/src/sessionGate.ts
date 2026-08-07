@@ -1,0 +1,189 @@
+import type { Page } from 'puppeteer'
+
+// The readiness signals in waits.ts are all NEGATIVE: they pass when a selector
+// is absent. That is what you want once the app is up, and worthless before it
+// is — a page whose JavaScript has not yet built a session has no loading
+// overlay, no `data-view-phase="loading"` and no unpainted display either, so
+// every one of them passes on an empty page and a capture lands on the bare
+// chrome. Measured against jbrowse.org/code/jb2/latest: `networkidle2` returns
+// at ~350ms, the session model appears at ~880ms, the assembly and tracks land
+// at ~2500ms, and only THEN does the loading overlay go up. A wait chain with no
+// positive gate in front of it finishes in under a second and reports success.
+//
+// So this is the gate: a positive check, read off the live MST session model
+// that jbrowse-web publishes as `window.JBrowseSession`, that the thing you
+// asked for actually exists. It is also the only readiness signal that works
+// across releases — see PAINT_CONTRACT_NOTE.
+
+export interface SessionExpectations {
+  /** Assembly that must be open on some view. Usually the one you navigated to. */
+  assembly?: string
+  /**
+   * trackIds that must all be open. The exact ids, not a count: a hosted config
+   * usually ships a defaultSession, so `&tracks=` ADDS to tracks that are
+   * already there and a count is satisfied before your track arrives — or by
+   * the default set alone when the id you passed does not exist at all.
+   */
+  trackIds?: string[]
+}
+
+interface TrackState {
+  configuration?: { trackId?: string }
+}
+
+interface ViewState {
+  initialized?: boolean
+  assemblyNames?: string[]
+  tracks?: TrackState[]
+}
+
+// `window.JBrowseSession` is jbrowse-web's own devtools/automation handle
+// (products/jbrowse-web/src/components/JBrowse.tsx). It is declared `unknown`
+// there and is a live MST node here, so a cast at the page boundary is
+// unavoidable. It is repeated in each function below rather than shared: every
+// one of them is serialized into the page by puppeteer, so it can only call what
+// it declares inside itself.
+
+export interface SessionSummary {
+  views: number
+  assemblies: string[]
+  trackIds: string[]
+}
+
+/** What the page currently has open, or undefined if there is no session yet. */
+export function readSessionSummary(
+  page: Page,
+): Promise<SessionSummary | undefined> {
+  return page.evaluate(readSessionSummaryInPage)
+}
+
+// Serialized into the page, so it can only call what it declares — hence the
+// inlined copy of readViews rather than a shared import.
+function readSessionSummaryInPage(): SessionSummary | undefined {
+  const session = (
+    globalThis as {
+      JBrowseSession?: { views?: ViewState[] }
+    }
+  ).JBrowseSession
+  const views = session?.views
+  if (!views) {
+    return undefined
+  }
+  return {
+    views: views.length,
+    assemblies: [...new Set(views.flatMap(v => v.assemblyNames ?? []))],
+    trackIds: views.flatMap(v =>
+      (v.tracks ?? []).map(t => t.configuration?.trackId ?? '(unnamed)'),
+    ),
+  }
+}
+
+/**
+ * Wait until the session exists, every view reports itself initialized, and the
+ * assembly and tracks that were asked for are actually open.
+ *
+ * Throws on timeout rather than proceeding. A config URL that 404s, a trackId
+ * that does not exist in the config, and an assembly name that does not match
+ * the one the config declares all fail here, which is the only place they fail
+ * at all — each of them otherwise produces a browser that loads, paints its
+ * chrome, and photographs beautifully with nothing in it.
+ */
+export async function waitForSession(
+  page: Page,
+  {
+    assembly,
+    trackIds = [],
+    timeout = 60000,
+  }: SessionExpectations & { timeout?: number } = {},
+) {
+  try {
+    await page.waitForFunction(
+      (wantAssembly: string | null, wantTracks: string[]) => {
+        const session = (
+          globalThis as { JBrowseSession?: { views?: ViewState[] } }
+        ).JBrowseSession
+        const views = session?.views
+        if (!views?.length) {
+          return false
+        }
+        // `initialized` is an LGV getter; a view type without one is mounted
+        // content the moment it exists, so absent counts as initialized and
+        // only an explicit false is pending.
+        if (views.some(v => v.initialized === false)) {
+          return false
+        }
+        if (
+          wantAssembly !== null &&
+          !views.some(v => (v.assemblyNames ?? []).includes(wantAssembly))
+        ) {
+          return false
+        }
+        const open = new Set(
+          views.flatMap(v =>
+            (v.tracks ?? []).map(t => t.configuration?.trackId),
+          ),
+        )
+        return wantTracks.every(id => open.has(id))
+      },
+      { timeout, polling: 250 },
+      assembly ?? null,
+      trackIds,
+    )
+  } catch {
+    const summary = await readSessionSummary(page)
+    const found = summary
+      ? `${summary.views} view(s), assemblies [${summary.assemblies.join(', ')}], tracks [${summary.trackIds.join(', ')}]`
+      : 'no session on the page at all (is this a jbrowse-web instance?)'
+    const missing = summary
+      ? trackIds.filter(id => !summary.trackIds.includes(id))
+      : trackIds
+    const wanted = [
+      assembly ? `assembly "${assembly}"` : undefined,
+      missing.length ? `track(s) [${missing.join(', ')}]` : undefined,
+    ]
+      .filter(Boolean)
+      .join(' and ')
+    throw new Error(
+      `the session never reached the requested state after ${timeout}ms. ` +
+        `Wanted ${wanted || 'an initialized view'}; found ${found}. ` +
+        'A config URL that 404s, a trackId the config does not define, or an ' +
+        'assembly name that does not match the config all look like this.',
+    )
+  }
+}
+
+export const PAINT_CONTRACT_NOTE =
+  'this JBrowse build publishes no data-display-drawn attributes, so "every ' +
+  'display has painted" cannot be checked — only that nothing is still ' +
+  'loading. Raise --settle if the image looks half-drawn.'
+
+/**
+ * Whether every open display's paint state was actually measurable.
+ *
+ * The per-display paint attributes are not universal. Measured on 2026-08-07:
+ * jbrowse.org/code/jb2/main publishes `data-view-phase`, `data-display-phase`
+ * and `data-display-drawn`; jbrowse.org/code/jb2/latest — the released build,
+ * which is what every genomes.jbrowse.org link and every docs figure link opens
+ * — publishes none of them and exposes only the loading overlay. Against that
+ * instance the display-level waits are unfalsifiable rather than satisfied, so a
+ * caller has to be told which of the two it got instead of reading "0 displays
+ * pending" as good news.
+ *
+ * The absence of the attribute is NOT on its own the answer, which is the trap
+ * here: a page with no tracks open — an import form, a menu shot, a bare view —
+ * publishes none of it either, and reporting that as "this build cannot measure
+ * paint" is both wrong and alarming. So this asks the question only when there
+ * is something to measure, and answers true when there is not.
+ *
+ * Call it AFTER the session gate, so "no tracks open" means the page genuinely
+ * has none rather than not having got there yet.
+ */
+export async function hasPaintContract(page: Page): Promise<boolean> {
+  const summary = await readSessionSummary(page)
+  if (summary && summary.trackIds.length === 0) {
+    return true
+  }
+  return page.evaluate(
+    () => document.querySelector('[data-display-drawn]') !== null,
+  )
+}

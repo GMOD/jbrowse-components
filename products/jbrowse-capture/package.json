@@ -1,0 +1,59 @@
+{
+  "name": "@jbrowse/capture",
+  "version": "4.3.0",
+  "description": "Drive a JBrowse 2 instance with Puppeteer and screenshot it once it has actually finished rendering",
+  "keywords": [
+    "jbrowse",
+    "genomics",
+    "puppeteer",
+    "screenshot"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "products/jbrowse-capture"
+  },
+  "type": "module",
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "author": "JBrowse Team",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=23"
+  },
+  "bin": {
+    "jb2capture": "./esm/bin.js"
+  },
+  "files": [
+    "esm"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "clean": "rimraf esm *.tsbuildinfo",
+    "prebuild": "pnpm clean",
+    "build": "pnpm run /^build:/",
+    "build:esm": "node ../../node_modules/typescript7/bin/tsc --build tsconfig.build.esm.json",
+    "prepack": "pnpm build",
+    "preversion": "pnpm build",
+    "start": "node --experimental-strip-types src/bin.ts"
+  },
+  "dependencies": {
+    "puppeteer": "^25.5.0"
+  },
+  "devDependencies": {
+    "@jbrowse/core": "workspace:^"
+  },
+  "publishConfig": {
+    "access": "public",
+    "main": "esm/index.js",
+    "types": "esm/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./esm/index.d.ts",
+        "import": "./esm/index.js"
+      }
+    }
+  }
+}
