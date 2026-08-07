@@ -21,8 +21,16 @@ welcome your [feedback](/contact).
 
 ## Prerequisites
 
-- the GraphGenomeView plugin, for the tracks below that use `RgfaTabixAdapter`
-  and `MinigraphBubbleAdapter`; the rest need nothing
+- the GraphGenomeView plugin, for the tracks that use `RgfaTabixAdapter` and
+  `MinigraphBubbleAdapter`; every other track here is a URL you can paste
+- to rebuild the hosted files rather than read them: htslib (`bgzip`, `tabix`)
+  and [`gfatools`](https://github.com/lh3/gfatools) for the graph indexes and
+  the bubble file, plus `bedtools` and UCSC's `bedGraphToBigWig` and
+  `bigBedToBed` for the repeat-density lanes
+
+The two UCSC binaries are each a
+[single-binary download](https://hgdownload.soe.ucsc.edu/admin/exe/), and
+`build_repeat_density.sh`'s header carries the one-curl-each install for them.
 
 ## The dataset
 
@@ -376,7 +384,7 @@ this locus look like".
 
 LPA is the case for the shape instead. Its KIV-2 repeat sets the level of Lp(a),
 an inherited cardiovascular risk factor, and the number of copies a person
-carries differs from one person to the next — a difference that is not callable
+carries differs from one person to the next, a difference that is not callable
 from short reads:
 
 <Figure caption="The KIV-2 repeat inside LPA as a force-directed graph, under the RefSeq genes, the bubbles lane and the rGFA segments for the same window. The bubble the lane reports across the repeat is the chain of loops below it, and each node carries the sequence it holds; the dashed arc, labelled with the size of the deletion it draws, is the route that bypasses the reference between two of them." src="/img/pangenome/hprc_lpa_kiv2.png" />
@@ -1049,8 +1057,10 @@ hue as the segments above it.
 ## Reproduce it end to end
 
 Two scripts and one gfatools call rebuild the hosted files, or build the same
-set for a different graph. Their provenance (source, size, exact commands, build
-date) is in [README.txt](https://jbrowse.org/demos/hprc/README.txt) beside them.
+set for a different graph, with the tools listed under
+[Prerequisites](#prerequisites). Their provenance (source, size, exact commands,
+build date) is in [README.txt](https://jbrowse.org/demos/hprc/README.txt) beside
+them.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_rgfa_tabix.sh
@@ -1089,7 +1099,6 @@ haplotype per bubble for the guide's
 [per-strain paths](/docs/user_guides/graph_genome_view#which-strain-takes-which-path)
 lane. That costs a 464-assembly download and a mapping run, and is worth it only
 for a graph whose assemblies you have and whose carriage nobody has published.
-Both scripts need htslib (`bgzip`, `tabix`) on your `PATH`.
 
 `build_rgfa_tabix.sh` takes an optional third argument, the reference's PanSN
 sample, and writes a second index pair keyed only under that sample's sequences
@@ -1111,10 +1120,8 @@ bash build_repeat_density.sh out
 
 It writes the twelve bigWigs (six classes x two assemblies, genome-wide) and
 then prints the per-class table the section above quotes, so the numbers come
-out of the same run that builds the lanes. It needs `bedtools` plus UCSC's
-`bedGraphToBigWig` and `bigBedToBed`; the script's header has the one-curl-each
-install for those. First run downloads ~500 MB and re-running skips what is
-already built, so an interrupted run resumes.
+out of the same run that builds the lanes. First run downloads ~500 MB and
+re-running skips what is already built, so an interrupted run resumes.
 
 The two haplotype rows in the CFHR figure are a third script:
 [`build_hprc_cfhr_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc_cfhr_synteny.sh)

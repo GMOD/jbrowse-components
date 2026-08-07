@@ -362,8 +362,9 @@ which is what the [all-vs-all tutorial](/docs/tutorials/allvsall_synteny) puts
 beside its own graph panel.
 
 A hover lasts as long as the pointer does. **Right-click a node → Highlight in
-&lt;assembly&gt;** writes the same interval into the linear view's own highlight
-list instead, where it stays.
+&lt;assembly&gt;** <!-- menu-path-ok --> writes the same interval into the
+linear view's own highlight list instead, where it stays. The item names the
+assembly it will mark, so it reads **Highlight in hg38** on an HPRC session.
 
 ## From a node back to a genome
 

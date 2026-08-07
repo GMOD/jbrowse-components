@@ -224,9 +224,10 @@ jbrowse make-pif ecoli_pggb_untangle.paf
 `-m` merges runs shorter than it into the previous segment, since otherwise
 every SNP node starts a new one, and `-j` keeps mappings at or above a jaccard.
 untangle leaves PAF column 10 at 0 and writes no CIGAR, since it reports a
-jaccard over graph steps rather than a base alignment, so fill column 10 from
-its own `id:f:` tag before indexing or every block reads as 0% identity. The
-build script does that in one `awk` pass.
+jaccard over graph steps rather than a base alignment. It states its identity in
+an `id:f:` tag instead, which is what a synteny track reads on a record carrying
+no `de:f:`, so the blocks color by untangle's own number and nothing has to be
+filled in.
 
 `-e` is the one to think about. untangle starts a segment where the graph stops
 agreeing, and on a near-colinear bacterial pangenome that is rare, so without it
@@ -938,9 +939,12 @@ of a segment into the index as an `SM:Z:` tag, per haplotype, which is the one
 thing an rGFA cannot state: there `SR` is build order, so the popup reports
 `contributingAssembly` instead and means "first contributed", not "carried by".
 
-The two panes are comparable but two orders of magnitude apart in span: the
-minigraph side covers three whole backbone segments, the pggb side the stretch
-banded on its ruler.
+That is worth seeing rather than taking on the word of a paragraph, so the
+[build script](#reproduce-it-end-to-end) also runs `minigraph -cxggs` over the
+same five strains and indexes the rGFA it emits the same way. The figure below
+puts one locus through both graphs. The two panes are comparable but two orders
+of magnitude apart in span: the minigraph side covers three whole backbone
+segments, the pggb side the stretch banded on its ruler.
 
 <Figure caption="One stretch of K12 at the colanic acid cluster, cut from the two graphs this build produces, each over the window its own graph can draw. Left, the minigraph rGFA: a chain with alternate segments hanging off it. Right, the pggb graph: a node at every variant." src="/img/pangenome/graph_resolution.png" links="minigraph=pangenome/graph_resolution_minigraph,pggb=pangenome/graph_resolution_pggb" />
 

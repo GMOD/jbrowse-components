@@ -23,7 +23,7 @@
 // costs nothing real.
 //
 // Run: `pnpm check-menu-labels`, or the root `pnpm check-docs`.
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { docFiles, reportProblems, walkFiles } from './check-utils.ts'
@@ -32,20 +32,33 @@ import { docRelative, docsDir, repoRoot } from './paths.ts'
 const GENERATED_PREFIXES = ['config/', 'models/', 'api/']
 const SUPPRESS = '<!-- menu-path-ok -->'
 
-// Pages whose subject plugin is not in this repo, so none of their labels can
-// resolve here. A page-level fact, kept in one place rather than as a
-// suppression comment on each of the ~15 paths they contain.
+// Pages whose subject plugin is not in this repo, mapped to the sibling checkout
+// that does render their labels. A page-level fact, kept in one place rather
+// than as a suppression comment on each of the ~15 paths they contain.
 //
-// Every entry is asserted to exist below. An exemption list is the one part of
-// a check that can rot without anyone hearing about it: rename the page and the
-// entry silently stops applying to anything, and the page it now names — none —
-// goes unchecked forever. Same reason spec-recipe-unmapped.txt is a checked-in
-// list of names rather than a count.
-const EXTERNAL_PLUGIN_PAGES = new Set([
-  'user_guides/graph_genome_view.md',
-  'tutorials/pangenome_ecoli.md',
-  'tutorials/pangenome_hprc.md',
-  'tutorials/protein_structure.md',
+// These used to be a flat exemption set, which made the graph-view pages the
+// least-checked prose in the docs and the most exposed to drift: the plugin is
+// deployed from its own repo, so a renamed dropdown changes every page that
+// walks a reader to it with no commit here to attribute it to. The same sibling
+// checkout is already how `specs/graph.ts` picks up a locally built bundle, so
+// reading its `src/` for label literals adds no dependency that the figure
+// pipeline does not already have.
+//
+// Every entry is asserted below to name a page that exists, and every present
+// root is asserted to yield labels. An exemption list is the one part of a check
+// that can rot without anyone hearing about it: rename the page and the entry
+// silently stops applying to anything, and the page it now names — none — goes
+// unchecked forever. Same reason spec-recipe-unmapped.txt is a checked-in list
+// of names rather than a count.
+const PLUGIN_SRC = (name: string) =>
+  join(repoRoot, '..', 'jb2plugins', `jbrowse-plugin-${name}`, 'src')
+
+const EXTERNAL_PLUGIN_PAGES = new Map([
+  ['user_guides/graph_genome_view.md', PLUGIN_SRC('graphgenomeview')],
+  ['tutorials/pangenome_ecoli.md', PLUGIN_SRC('graphgenomeview')],
+  ['tutorials/pangenome_hprc.md', PLUGIN_SRC('graphgenomeview')],
+  ['tutorials/pangenome_cactus.md', PLUGIN_SRC('graphgenomeview')],
+  ['tutorials/protein_structure.md', PLUGIN_SRC('protein3d')],
 ])
 
 // Prose names for an affordance rather than labels the app renders: the docs
@@ -63,6 +76,9 @@ const STRUCTURAL_MENU_NAMES = new Set([
   'launch',
   'launch view',
   'help',
+  // The graph view answers a right-click on a node rather than a menu button,
+  // so the docs name the gesture where other pages name a menu.
+  'right click a node',
 ])
 
 // Build output. Gitignored, so CI has none of it, and a `.d.ts` there would
@@ -74,7 +90,11 @@ const BUILD_DIRS = new Set(['node_modules', 'dist', 'esm', 'cjs', 'build'])
 const MAX_SEGMENT = 60
 const MAX_PATH = 160
 
-function sourceLabels() {
+// Every string literal and JSX text node under the given roots, which is the
+// closest thing to "what the app renders" that a static scan can produce. Takes
+// its roots rather than hardcoding them, so an out-of-repo plugin checkout is
+// read by the same extraction as `plugins/` and cannot answer differently.
+function sourceLabels(roots: string[]) {
   const labels = new Set<string>()
   const add = (raw: string) => {
     const t = raw
@@ -89,9 +109,9 @@ function sourceLabels() {
       labels.add(t)
     }
   }
-  for (const dir of ['plugins', 'products', 'packages']) {
+  for (const dir of roots) {
     for (const file of walkFiles(
-      join(repoRoot, dir),
+      dir,
       name => /\.tsx?$/.test(name) && !/\.test\.tsx?$/.test(name),
       // Source only. `esm/` carries a `.d.ts` per module, which matched this
       // filter, so a renamed menu label went on being "found" in a stale local
@@ -125,22 +145,58 @@ const norm = (s: string) =>
     .replaceAll(/\s+/g, ' ')
     .trim()
 
-const normSet = new Set([...sourceLabels()].map(norm))
-const resolves = (segment: string) => {
-  const n = norm(segment)
-  return n === '' || normSet.has(n)
+const REPO_LABELS = new Set(
+  [
+    ...sourceLabels(
+      ['plugins', 'products', 'packages'].map(d => join(repoRoot, d)),
+    ),
+  ].map(norm),
+)
+
+// One extra label set per external checkout that is actually on disk, unioned
+// with the repo's. A page that names a plugin item usually also names a core
+// one on the way to it (`Track menu → Launch view → Graph genome view (this
+// region)`), so neither set alone can answer for a path.
+const errorLines: string[] = []
+const skippedPages: string[] = []
+const externalLabels = new Map<string, Set<string>>()
+for (const root of new Set(EXTERNAL_PLUGIN_PAGES.values())) {
+  if (!existsSync(root)) {
+    continue
+  }
+  const found = sourceLabels([root])
+  if (found.size === 0) {
+    // The directory is there and holds no label at all, which means it moved
+    // rather than that the plugin renders nothing. Silently returning an empty
+    // set would fail every path on the page as a rename.
+    errorLines.push(
+      `  ${root} exists but yields no label literals.\n      Point EXTERNAL_PLUGIN_PAGES at the checkout's source directory.`,
+    )
+    continue
+  }
+  externalLabels.set(root, new Set([...REPO_LABELS, ...[...found].map(norm)]))
 }
 
-const errorLines: string[] = []
 const seenPages = new Set<string>()
 for (const file of docFiles(docsDir)) {
   const rel = docRelative(file)
   seenPages.add(rel)
-  if (
-    GENERATED_PREFIXES.some(p => rel.startsWith(p)) ||
-    EXTERNAL_PLUGIN_PAGES.has(rel)
-  ) {
+  if (GENERATED_PREFIXES.some(p => rel.startsWith(p))) {
     continue
+  }
+  const external = EXTERNAL_PLUGIN_PAGES.get(rel)
+  const normSet =
+    external === undefined ? REPO_LABELS : externalLabels.get(external)
+  if (normSet === undefined) {
+    // The checkout this page's labels live in is not here. Skipped rather than
+    // passed, and counted, because a check that quietly covers less than it did
+    // yesterday is the failure mode this whole file exists to avoid.
+    skippedPages.push(`${rel} (needs ${external})`)
+    continue
+  }
+  const resolves = (segment: string) => {
+    const n = norm(segment)
+    return n === '' || normSet.has(n)
   }
   // Paths wrap at 80 columns, so match over a joined paragraph and report the
   // paragraph's first line.
@@ -208,12 +264,23 @@ for (const file of docFiles(docsDir)) {
   flush()
 }
 
-for (const page of EXTERNAL_PLUGIN_PAGES) {
+for (const page of EXTERNAL_PLUGIN_PAGES.keys()) {
   if (!seenPages.has(page)) {
     errorLines.push(
       `  EXTERNAL_PLUGIN_PAGES names ${JSON.stringify(page)}, which no longer exists.\n      Drop it, or point it at the page's new path.`,
     )
   }
+}
+
+// Said on a pass as well as a failure. These pages are the ones whose labels
+// drift without a commit in this repo, so "checked" and "skipped for want of a
+// checkout" have to be told apart at a glance rather than inferred from a
+// silence that also means "all good".
+if (skippedPages.length > 0) {
+  console.log(
+    `Skipped ${skippedPages.length} page(s) whose plugin checkout is absent:\n` +
+      skippedPages.map(p => `  ${p}`).join('\n'),
+  )
 }
 
 reportProblems(
@@ -222,9 +289,13 @@ reportProblems(
         `Found ${errorLines.length} problem(s) in documented menu paths:\n`,
         ...errorLines,
         `\nFor a label the source no longer renders, rename it in the docs to match.`,
-        `If it belongs to a plugin outside this repo, add the page to`,
-        `EXTERNAL_PLUGIN_PAGES, or add ${SUPPRESS} to the line for a one-off.`,
+        `If it belongs to a plugin outside this repo, map the page to that`,
+        `checkout's src/ in EXTERNAL_PLUGIN_PAGES. For a templated label`,
+        `(\`Highlight in \${assembly}\`) or a data value that is not a label at`,
+        `all, add ${SUPPRESS} to the line.`,
       ]
     : [],
-  'All menu-path labels resolve to a string the app renders.',
+  `All menu-path labels resolve to a string the app renders${
+    skippedPages.length > 0 ? ', in the pages that could be checked' : ''
+  }.`,
 )

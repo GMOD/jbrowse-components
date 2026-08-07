@@ -260,11 +260,16 @@ jb make-pif ecoli_pggb_ava.paf   # -> ecoli_pggb_ava.pif.gz (+ .tbi)
 # filter, and keep the ADR's advice for a human-scale graph.
 #
 # untangle leaves PAF column 10 (residue matches) at 0 and writes no CIGAR --
-# it reports a jaccard over graph steps, not a base alignment -- so a consumer
-# that derives percent identity from col10/col11 reads every block as 0%. It
-# does state an identity in its own `id:f:` tag, so fill column 10 from that;
-# the block then colors by identity like any other synteny track, and the number
-# is untangle's rather than one this script invented.
+# it reports a jaccard over graph steps, not a base alignment -- and nothing
+# here fills it in. Percent identity does NOT come from col10/col11: the synteny
+# adapters read it through packages/cigar-utils `pafIdentity`, whose chain is
+# `de:f:` then odgi's own `id:f:` then col10/col11, so untangle's tag is picked
+# up two rungs before the empty column is reached. This used to synthesize a
+# col10 from that same tag, which was dead work at best (make-pif preserves
+# `id:f:` into the PIF, and the coarse tier's `de:f:` is derived from the same
+# chain) and wrong at worst, since it assumed `id:f:` was a percent and would
+# have been 100x low on a fraction. Removing it leaves col10 at 0, which is what
+# untangle actually reports.
 if [ ! -f ecoli_pggb_untangle.paf ]; then
   printf '%s#1#chr\n' "$REF" > untangle_target.txt
   : > untangle_query.txt
@@ -273,11 +278,6 @@ if [ ! -f ecoli_pggb_untangle.paf ]; then
   done
   in_pggb odgi untangle -i "/data/$OG" -R /data/untangle_target.txt \
     -Q /data/untangle_query.txt -m 1000 -j 0.5 -e 5000 -p -t "$(nproc)" \
-    | awk -F'\t' -v OFS='\t' '
-        { id = ""
-          for (i = 13; i <= NF; i++) if ($i ~ /^id:f:/) { id = substr($i, 6) }
-          if (id != "") { $10 = int(id / 100 * $11 + 0.5) }
-          print }' \
     > ecoli_pggb_untangle.paf.tmp
   mv ecoli_pggb_untangle.paf.tmp ecoli_pggb_untangle.paf
 fi
