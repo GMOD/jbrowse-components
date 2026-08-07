@@ -227,31 +227,6 @@ with one getter:
 get byteGateEnabled() {
   return true
 },
-/**
- * #getter
- * Keep gating below `AUTO_FORCE_LOAD_BP`. The floor's premise is "a small
- * span is a small fetch", and depth breaks it exactly as row count breaks
- * it for MAF: reads cost ~coverage bytes per reference base, so an
- * amplicon panel, a mitochondrial pileup or a targeted deep-sequencing
- * run is tens of MB inside a gene-sized window. The floor declined to
- * look at precisely that fetch.
- *
- * **This blocks nothing that previously worked at every zoom.** The
- * estimate comes from the BAI/CRAI, and a wider query overlaps a superset
- * of index bins, so it is monotone non-decreasing in span: a region whose
- * estimate clears the cap below the floor cleared it at 20kb too. Every
- * file this newly stops is therefore one that already banners the moment
- * you zoom out past 20kb — the floor was a way to *bypass* that verdict by
- * zooming in, which downloaded the same bytes the gate had just refused.
- *
- * No coverage threshold is needed to make this safe for ordinary data:
- * the estimate is still what gets compared against the adapter's
- * `fetchSizeLimit` (5 Mb for BAM, 3 Mb for CRAM), and a 30x genome at
- * gene zoom is far under it.
- */
-get gateBelowForceLoadFloor() {
-  return true
-},
 ```
 
 `fetchRegions` then calls `CoreGetRegionByteEstimate` before your work callback.

@@ -318,11 +318,12 @@ band, per-row identity, and codon-view options.
 <!-- FILE_TYPES maf START -->
 
 <!-- prettier-ignore -->
-| Format | Adapter | Track type |
-| --- | --- | --- |
-| BigMaf | [](/docs/config/bigmafadapter) | [](/docs/config/maftrack) |
-| MAF (tabix) | [](/docs/config/maftabixadapter) | [](/docs/config/maftrack) |
-| TAF (bgzipped Taffy) | [](/docs/config/bgziptaffyadapter) | [](/docs/config/maftrack) |
+| Format | Adapter | Track type | Notes |
+| --- | --- | --- | --- |
+| BigMaf | [](/docs/config/bigmafadapter) | [](/docs/config/maftrack) |  |
+| Indexed MAF (bgzip + .tai) | [](/docs/config/bgzipmafadapter) | [](/docs/config/maftrack) | A published whole-genome multiple alignment, read by locus |
+| MAF (tabix) | [](/docs/config/maftabixadapter) | [](/docs/config/maftrack) |  |
+| TAF (bgzipped Taffy) | [](/docs/config/bgziptaffyadapter) | [](/docs/config/maftrack) |  |
 
 <!-- FILE_TYPES maf END -->
 

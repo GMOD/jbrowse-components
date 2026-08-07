@@ -140,7 +140,7 @@ them. The MAF alignment method returns several typed arrays this way:
 <!-- include: plugins/maf/src/LinearMafGetAlignmentDataRpc/executeMafAlignmentData.ts#zeroCopy -->
 
 ```ts
-const regionData: MafWireRegionData = { blocks, coverage, refSampleId }
+const regionData: MafWireRegionData = { ...packed, coverage, refSampleId }
 const result: LinearMafGetAlignmentDataResult = {
   samples,
   treeNewick,
@@ -149,7 +149,9 @@ const result: LinearMafGetAlignmentDataResult = {
 }
 // second arg is the transfer list: these buffers are moved to the main
 // thread, not structured-cloned. collectMafTransferables walks the result and
-// gathers every ArrayBuffer in it.
+// gathers every ArrayBuffer in it — a fixed handful, because the wire is
+// columnar; see that function for why the length of this list is what the
+// whole shape is designed around.
 return rpcResult(result, collectMafTransferables(regionData))
 ```
 

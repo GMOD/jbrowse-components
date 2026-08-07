@@ -512,9 +512,9 @@ LGV displays (alignments, canvas, wiggle, variants) via these autoruns:
 | Autorun | Fires on | Action |
 | --- | --- | --- |
 | `DisplayedRegionsChange` | `view.displayedRegions` changes | `clearAllRpcData()` **+ `clearByteEstimate()`** — one of the two places the cached byte estimate is dropped (the other is a tier swap) |
-| `FetchVisibleRegions` | the viewport, or `fetchGeneration` after a fetch ends (debounced 600 ms) | `fetchNeeded(needed)` for the visible blocks loaded data doesn't cover. Skipped while `error` / `regionTooLarge` / `fetchCanceled` is set, while a fetch is in flight, and while the track is minimized |
+| `FetchVisibleRegions` | the viewport, or `fetchGeneration` after a fetch ends (debounced 600 ms) | `fetchNeeded(needed)` for the visible blocks loaded data doesn't cover, or `remeasureByteEstimate()` instead while `regionTooLarge` holds. Skipped while `error` / `fetchCanceled` is set, while a fetch is in flight, and while the track is minimized |
 | `SettingsInvalidate` | `rpcPropsCacheKey`, the serialized `rpcProps()` return | `clearAllRpcData()`. Installed only when the display defines `rpcProps()` |
-| `ClearBlockingStateOnViewportChange` | `view.visibleRegions` | `clearAllRpcData()` when `error` or `fetchCanceled` is set, so the fetch autorun retries. Not `regionTooLarge`, which is derived and self-releasing |
+| `ClearBlockingStateOnViewportChange` | `view.visibleRegions` | `clearAllRpcData()` when `error` or `fetchCanceled` is set, so the fetch autorun retries. Not `regionTooLarge`, which is derived and re-measured by the fetch autorun itself |
 | `ClearHoverOnRegionTooLarge` | `regionTooLarge` becoming true | the overridable `onRegionTooLarge()` hook — a no-op unless the display overrides it |
 
 <!-- FETCH_AUTORUNS END -->

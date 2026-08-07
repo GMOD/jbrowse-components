@@ -106,6 +106,28 @@ reader named that column.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorLegend.ts)
 
+### ComparativeTrackModel
+
+Whether a track's adapter offers level-of-detail tiers to switch between —
+PAFAdapter and BlastTabularAdapter do not.
+
+Tested by the presence of the threshold slot rather than by a separate `'lod'`
+adapter capability, so there is one signal instead of two that can disagree: the
+display cannot resolve a tier without the threshold, so a capability flag on an
+adapter missing the slot would offer a menu whose 'auto' never switches. The
+slice of a track model a comparative view reads off its track list.
+
+Annotated at every site that walks a synteny view's `levels[].tracks` or a
+dotplot's `tracks`, because those arrays type out as `any`: the level model is
+deliberately `IAnyModelType` to break a real type cycle, and `any` propagates
+through the array and switches off checking on everything read from it. That is
+not theoretical — it let `getConf(t.configuration, ...)` compile where getConf
+wants the MODEL, and it threw at runtime reading
+`configuration.configuration.adapter`. Naming the shape is what makes the
+compiler check those calls again.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/lodTier.ts)
+
 ### LEGEND_CHIP_ALPHA_FLOOR
 
 Composite a CSS color over white by `a`, returning an opaque `rgb(...)`. The
