@@ -23,6 +23,32 @@ worktree to regenerate figures in.** §6 moves every anchored figure by design a
 the pin bump owed since 2026-08-06 moves them too, so both wait on the same
 sweep. Nothing else is blocked; the plugin work can go on without it.
 
+**What that one deploy now carries has grown, 2026-08-07.** Four more plugin
+commits sit behind it, and two of them move drawings:
+
+- `39fff01` — `drawPaths` fanned an edge's ribbons perpendicular to its chord and
+  dropped the edge when the chord had no length. In both anchored layouts
+  consecutive segments meet at one point, so that is EVERY backbone link: the
+  chain came back with no curve, no arrowhead and nothing to hover, and the
+  abutting nodes hid it. `pangenome/pggb_haplotype_paths` is the figure that
+  moves. The offsets are one function in `geometry.ts` now, since the hit test
+  held a second copy and so shared the give-up.
+- `c35323e` — `zoomToFit` centred a row layout taller than its pane, which spends
+  the loss at both ends: at 41 rows the reference row landed 100 px ABOVE the
+  pane. It pins at the padding when there is no leftover to centre. Only bites
+  past ~30 rows, so no current figure moves, but `hprc_mhc_sample_rows` is one
+  window away from it.
+- `16ddb2b` — a W record was named for its assembly rather than for itself, so
+  one haplotype walking two contigs became one path: the legend drew it twice in
+  two colours and the ribbon on an edge disagreed with the stripe on its node.
+  Minigraph-Cactus only, so no shipped figure moves.
+- `8426209` — three scanning passes indexed instead (`deletionEdges` over the
+  backbone, `placeOffReference`'s adjacency, the spatial grid's y axis, which had
+  one cell size taken from two axes in different units). Nothing drawn changes.
+
+So the sweep is: betabuild, bump the pin in the three fixtures, regenerate. Same
+one commit, now with a reason beyond the row pitch.
+
 **Published 2026-08-06, latest `aee5e17f4b2c`** (which added `maxRegionBp`; the
 carriage read went out just before it as `bfe47428e7ae`). This clears the
 betabuild this file had been asking for: the tier fix, two dependency bumps, the hoverSync
@@ -180,7 +206,10 @@ Left to do:
   described: `sampleRowLayout` emits one position per node id and the renderer
   keys geometry by that id, so real multi-row carriage needs synthetic
   per-carrier ids plus hit detection resolving them back. Its own comment block
-  says so.
+  says so, and `graph_genome_view.md` said the opposite until 2026-08-07 —
+  "Sample rows then draws real carriage" — which is the sentence to keep an eye
+  on, since it is the natural thing to write about a layout with one row per
+  assembly.
 
 ## ~~4. Two small view improvements~~ — done, 2026-08-06, plugin `5960af0`
 
