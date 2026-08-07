@@ -14,7 +14,49 @@ import {
   trackMenuIcon,
 } from '../screenshot-spec-helpers.ts'
 
-import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
+
+// One labelled control in `lgv_usage_guide`: a pill in the clear strip above a
+// toolbar control, and a short arrow down into the control it names.
+//
+// Every number here is an offset from THE CONTROL, which the arrow's head
+// already resolved against, so the label, the arrow and the button move
+// together — the strip is 59px above whatever row the toolbar is on rather than
+// y=62 on the page, which is what the pills used to say. `pillDx`/`tailDx` are
+// the horizontal stagger, and they are the only thing here that is a design
+// decision rather than a measurement: the five toolbar controls resolve to
+// x 37..1067 and their labels are wider than the gaps between them, so the pills
+// have to be slid along the strip to clear each other.
+function toolbarCallout(opts: {
+  selector: string
+  text: string
+  pillDx: number
+  tailDx: number
+  // the toolbar tier's own; the ruler strip above the track header is tighter
+  lift?: number
+}): Annotation[] {
+  const lift = opts.lift ?? 59
+  const { selector } = opts
+  return [
+    {
+      type: 'text',
+      text: opts.text,
+      fontSize: 16,
+      anchor: { selector, dx: opts.pillDx, dy: -lift },
+    },
+    {
+      type: 'arrow',
+      // the tail hangs 8px under the pill's own baseline, so a re-tuned lift
+      // moves both
+      fromAnchor: { selector, dx: opts.tailDx, dy: -(lift - 8) },
+      anchor: { selector },
+    },
+  ]
+}
+
+// The bookmark widget's editable Label cell. `.MuiDataGrid-cell` is what tells
+// it from the column header, which carries the same `data-field`.
+const BOOKMARK_LABEL_CELL = '.MuiDataGrid-cell[data-field="label"]'
 
 // The 1000 Genomes ensemble SV callset, 3202 samples, read straight from EBI.
 // Declared twice below, once per display: `showTrack` resolves by trackId and
@@ -839,7 +881,15 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
     annotations: [
       { type: 'box', anchor: { text: SPLIT_VIEW_LINK_LABEL } },
-      // arrow + explanatory callout pointing at the boxed split-view link
+      // arrow + explanatory callout pointing at the boxed split-view link.
+      //
+      // The tail stays a raw point ON PURPOSE, and so does the pill below it:
+      // the pill is parked in the LGV's empty top-left, 700px above the link it
+      // explains, so its position is a decision about this frame rather than
+      // about the link. Anchoring only the tail would be worse than leaving
+      // both — it would unglue the arrow from the pill it leaves. If this pair
+      // is ever worth anchoring it is to the view they sit over, the way
+      // sv.ts's inverted_duplication callouts hang off their pileup track.
       {
         type: 'arrow',
         from: { x: 760, y: 300 },
@@ -1015,71 +1065,53 @@ export const uiSpecs: ScreenshotSpec[] = [
     // Each label sits in the clear band immediately next to the control it names,
     // with a SHORT arrow into it (minimize arrow length, place text next
     // to its target, don't pile every pill at the top). Two tiers track the
-    // two real control rows: the clear strip just above the navigation toolbar
-    // (track selector / scroll-zoom toggle / pan / search / zoom, controls at
-    // y~122), and the ruler strip just above the track header (drag handle + track
-    // menu, controls at y~178). Arrow heads are anchored so they track the real
-    // element; pill/tail coords are absolute viewport CSS px (1500x800 capture)
-    // tuned to the live control positions. The "Add view" app-bar callout was
-    // dropped (reviewer) in favor of pointing out the scroll-zoom toggle here too
-    // — scroll_zoom_toggle (just above this in the docs) is still the dedicated
-    // close-up figure for that control.
+    // two real control rows: the clear strip above the navigation toolbar
+    // (track selector / scroll-zoom toggle / pan / search / zoom) and the ruler
+    // strip above the track header (drag handle + track menu). The "Add view"
+    // app-bar callout was dropped (reviewer) in favor of pointing out the
+    // scroll-zoom toggle here too — scroll_zoom_toggle (just above this in the
+    // docs) is still the dedicated close-up figure for that control.
     annotations: [
-      // toolbar tier: labels in the clear strip at y~62, short arrows down into
-      // the navigation controls at y~122
-      {
-        type: 'text',
+      ...toolbarCallout({
+        selector: 'button[title="Open track selector"]',
         text: 'Open track selector',
-        x: 22,
-        y: 62,
-        fontSize: 16,
-      },
-      {
-        type: 'arrow',
-        from: { x: 40, y: 70 },
-        anchor: { selector: 'button[title="Open track selector"]' },
-      },
-      {
-        type: 'text',
+        pillDx: -15,
+        tailDx: 3,
+      }),
+      ...toolbarCallout({
+        selector: 'button[title="Toggle scroll zoom on WebGL tracks"]',
         text: 'Toggle scroll-zoom',
-        x: 200,
-        y: 62,
-        fontSize: 16,
-      },
-      {
-        type: 'arrow',
-        from: { x: 220, y: 70 },
-        anchor: {
-          selector: 'button[title="Toggle scroll zoom on WebGL tracks"]',
-        },
-      },
-      { type: 'text', text: 'Pan', x: 545, y: 62, fontSize: 16 },
-      {
-        type: 'arrow',
-        from: { x: 560, y: 70 },
-        anchor: { selector: 'button[aria-label="Pan left"]' },
-      },
-      { type: 'text', text: 'Search box', x: 690, y: 62, fontSize: 16 },
-      {
-        type: 'arrow',
-        from: { x: 730, y: 70 },
-        anchor: { selector: 'input[placeholder="Search for location"]' },
-      },
-      { type: 'text', text: 'Zoom', x: 968, y: 62, fontSize: 16 },
-      {
-        type: 'arrow',
-        from: { x: 990, y: 70 },
-        anchor: { selector: '[data-testid="zoom_in"]' },
-      },
-
-      // ruler tier: label in the strip at y~152, short arrow down into the
-      // track-menu control at y~178
-      { type: 'text', text: 'Track menu', x: 360, y: 152, fontSize: 16 },
-      {
-        type: 'arrow',
-        from: { x: 360, y: 160 },
-        anchor: { selector: '[data-testid="track_menu_icon"]' },
-      },
+        // this control is 38px from the one before it and its label is 150px
+        // wide, so the pill sits well right of it and the arrow is a long
+        // diagonal back — the one callout here that isn't short
+        pillDx: 125,
+        tailDx: 144,
+      }),
+      ...toolbarCallout({
+        selector: 'button[aria-label="Pan left"]',
+        text: 'Pan',
+        pillDx: 30,
+        tailDx: 45,
+      }),
+      ...toolbarCallout({
+        selector: 'input[placeholder="Search for location"]',
+        text: 'Search box',
+        pillDx: -32,
+        tailDx: 8,
+      }),
+      ...toolbarCallout({
+        selector: '[data-testid="zoom_in"]',
+        text: 'Zoom',
+        pillDx: -99,
+        tailDx: -77,
+      }),
+      ...toolbarCallout({
+        selector: '[data-testid="track_menu_icon"]',
+        text: 'Track menu',
+        pillDx: 42,
+        tailDx: 42,
+        lift: 25,
+      }),
     ],
   },
 
@@ -1153,10 +1185,15 @@ export const uiSpecs: ScreenshotSpec[] = [
       { type: 'box', anchor: { selector: '[data-testid="addTrackWorkflow"]' } },
       // arrow from the "Open track..." menu item to the "Enter track data"
       // heading of the panel it opens; head nudged left so it stops short of
-      // the field instead of pointing into the middle of the widget
+      // the field instead of pointing into the middle of the widget.
+      //
+      // Both ends resolve, so the arrow states "this item opens that form"
+      // rather than joining two page coordinates: the tail leaves the boxed menu
+      // item's own right edge (96px past its centre, which is where the box
+      // ends), and moves with it.
       {
         type: 'arrow',
-        from: { x: 222, y: 262 },
+        fromAnchor: { text: 'Open track...', dx: 96 },
         anchor: { text: 'Enter track data' },
         dx: -30,
       },
@@ -1394,12 +1431,17 @@ export const uiSpecs: ScreenshotSpec[] = [
             anchor: { selector: '[data-testid="drawer-position-button"]' },
           },
           { type: 'box', anchor: { text: 'left' } },
-          // arrow drawing the eye from the ringed position button down to the
-          // boxed "left" option. Head is nudged left of the word so it points at
-          // the item without covering the "left" label text.
+          // long arrow drawing the eye across the frame to the boxed "left"
+          // option. Head is nudged left of the word so it points at the item
+          // without covering the "left" label text.
+          //
+          // There is nothing at the tail — it starts in the empty pileup, half a
+          // frame down and left, and that distance IS the callout. So it is
+          // placed off the head's own anchor: the arrow keeps its length and its
+          // angle when the menu moves, instead of stretching to reach it.
           {
             type: 'arrow',
-            from: { x: 560, y: 230 },
+            fromAnchor: { text: 'left', dx: -526, dy: 167 },
             anchor: { text: 'left' },
             dx: -55,
           },
@@ -1510,13 +1552,18 @@ export const uiSpecs: ScreenshotSpec[] = [
       { type: 'type', text: 'Add label...', value: 'my region' },
       { type: 'delay', ms: 1500 },
     ],
-    // anchor to the "Label" column header in the bookmark widget (the edited
-    // value lives in an <input>, which has no textContent to anchor to, so the
-    // old anchor fell back to the top-left corner). The callout text is
-    // left-aligned, so it's pulled well left of the right-side widget header and
-    // width-clamped to keep it from running off the right edge
-    // moved down + right and given an arrow pointing up at the "my region"
-    // label input
+    // The pill anchors to the "Label" column header in the bookmark widget. The
+    // callout text is left-aligned, so it's pulled well left of the right-side
+    // widget header and width-clamped to keep it from running off the right
+    // edge.
+    //
+    // The arrow points at the label CELL, which is the one thing here with no
+    // text to anchor to: it is an <input> while it is being edited, which is the
+    // state this figure is about, and an earlier `text` anchor on its value
+    // resolved to nothing and parked the callout in the top-left corner. The
+    // DataGrid's own `data-field` survives the switch to edit mode, so the head
+    // (and with it the tail, off the same cell) resolves either way. Nudged
+    // below the cell so the arrowhead doesn't cover the value it names.
     annotations: [
       {
         type: 'text',
@@ -1526,7 +1573,13 @@ export const uiSpecs: ScreenshotSpec[] = [
         dy: 170,
         maxWidth: 230,
       },
-      { type: 'arrow', from: { x: 1230, y: 275 }, to: { x: 1385, y: 168 } },
+      {
+        type: 'arrow',
+        fromAnchor: { selector: BOOKMARK_LABEL_CELL, dx: -162, dy: 125 },
+        anchor: { selector: BOOKMARK_LABEL_CELL },
+        dx: -7,
+        dy: 18,
+      },
     ],
   },
 

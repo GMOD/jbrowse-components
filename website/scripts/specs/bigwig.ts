@@ -475,6 +475,11 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           { type: 'waitForText', text: 'Add multi-wiggle track' },
           { type: 'delay', ms: 800 },
         ],
+        // Each stage's pill sits over the empty LGV to the left of the drawer,
+        // with a raw tail leaving it and an anchored head on the control it
+        // names. The pill and the tail stay raw together: they are placed
+        // against this frame, not against the widget, and splitting them would
+        // pull the arrow off the pill the first time the drawer's layout moved.
         annotations: [
           {
             type: 'text',

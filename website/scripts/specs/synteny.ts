@@ -1353,6 +1353,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
         // names and the arrow now runs right-to-left; `textAlign: 'end'` is what
         // pins the pill's RIGHT edge at x, since its width is only known once
         // the text is measured in the page.
+        //
+        // x is the FRAME's right edge, not the gene's position, which is why it
+        // and the tail beside it stay raw while the head anchors: anchoring the
+        // pill to stx2B would move it off that edge, which is the one thing its
+        // placement is about.
         type: 'text',
         text: 'stx2 (Shiga toxin) prophage island\npresent in Sakai, absent from K-12',
         x: 1470,
@@ -1703,6 +1708,12 @@ export const syntenySpecs: ScreenshotSpec[] = [
       },
       { type: 'delay', ms: 1000 },
     ],
+    // Both pills sit in the import form's empty right half, with their arrows
+    // running left into the controls they name. Heads anchor; the pills and the
+    // tails stay raw and stay together — a pill placed against THIS frame's
+    // empty space, with the arrow leaving its edge, is one unit in page
+    // coordinates, and anchoring only the tail would pull the arrow off the pill
+    // the first time the form's layout moved.
     annotations: [
       {
         type: 'text',

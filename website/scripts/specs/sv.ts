@@ -44,6 +44,17 @@ const MANE_TRACK = {
 // deletion and cannot drift apart.
 const SV_85_DEL = 'chr10:122,835,344..122,837,142'
 
+// The pileup band `inverted_duplication`'s three callouts sit in, as an origin:
+// the track's own top edge (`fracY: 0`) at the view's left edge, with each
+// callout a dx/dy into it. The band is 2000px of arcs and reads in a 2010px
+// capture, so a fraction of the track's height means nothing here and a viewport
+// y means whatever the arc band happened to be that day.
+const INVDUP_PILEUP = {
+  track: 'HG02768.final',
+  locus: '1:39,658,200',
+  fracY: 0,
+}
+
 // hg19 main chromosomes (1..22, X, Y) in karyotype order. A plain whole-genome
 // showAllRegionsInAssembly also appends the *_hap / *_random / Un contigs, whose
 // far-right elided-block column reads as clutter in a genome-wide overview.
@@ -433,54 +444,43 @@ export const svSpecs: ScreenshotSpec[] = [
     // annotation and the data it describes are visibly linked
     annotations: [
       {
-        // sits in the empty white pileup band (so it doesn't cover the arcs at the
-        // top of the pileup — the key INVdup evidence) and at the same height as
-        // the CPX_TYPE field, so the connector to it is short
+        // sits in the empty white pileup band (so it doesn't cover the arcs at
+        // the top of the pileup — the key INVdup evidence), anchored to that
+        // band the same way the two evidence callouts below are: a depth into
+        // the pileup track rather than a viewport y. It lands between them,
+        // which is what the three dy values say and what a page coordinate did
+        // not.
         type: 'text',
-        x: 640,
-        y: 840,
+        anchor: { ...INVDUP_PILEUP, dx: 632, dy: 511 },
         text: 'Annotated as "INVdup" (inverted duplication)',
         fontSize: 26,
         maxWidth: 360,
       },
       {
-        // tail at the callout's right edge, head anchored on the CPX_TYPE field
+        // tail at the callout's right edge — off the SAME anchor, so the pill
+        // and the line leaving it stay one piece — and the head on the CPX_TYPE
+        // field across in the sidebar
         type: 'arrow',
-        from: { x: 1015, y: 850 },
+        fromAnchor: { ...INVDUP_PILEUP, dx: 1007, dy: 521 },
         anchor: { text: 'CPX_TYPE' },
       },
-      // Both evidence callouts anchor to the pileup track's own top edge
-      // (fracY 0 + dy), so they sit a fixed distance below the arc band however
-      // tall it is, instead of encoding the whole layout in a viewport y. The
-      // locus is the view's left edge, which puts each pill at the track's left
-      // margin.
+      // All three callouts anchor to the pileup track's own top edge (fracY 0 +
+      // dy), so they sit a fixed distance below the arc band however tall it is,
+      // instead of encoding the whole layout in a viewport y. The locus is the
+      // view's left edge, which puts a pill at the track's left margin.
       {
         // inversion evidence, just below the arc band (coverage 120 + arcs 200)
         type: 'text',
-        anchor: {
-          track: 'HG02768.final',
-          locus: '1:39,658,200',
-          fracY: 0,
-          // in off the track's left edge, so the pill's border clears the app
-          // frame rather than being clipped by it
-          dx: 50,
-          dy: 360,
-        },
+        // in off the track's left edge, so the pill's border clears the app
+        // frame rather than being clipped by it
+        anchor: { ...INVDUP_PILEUP, dx: 50, dy: 360 },
         text: 'Green (LL), navy (RR), and magenta split reads flag the inverted segment.',
         maxWidth: 470,
       },
       {
         // duplication evidence, stacked below with a gap
         type: 'text',
-        anchor: {
-          track: 'HG02768.final',
-          locus: '1:39,658,200',
-          fracY: 0,
-          // in off the track's left edge, so the pill's border clears the app
-          // frame rather than being clipped by it
-          dx: 50,
-          dy: 530,
-        },
+        anchor: { ...INVDUP_PILEUP, dx: 50, dy: 530 },
         text: 'Elevated coverage and arcs mark the duplicated copy.',
         maxWidth: 470,
       },

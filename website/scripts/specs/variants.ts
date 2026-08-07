@@ -198,11 +198,13 @@ export const variantsSpecs: ScreenshotSpec[] = [
         text: 'Per-sample genotypes',
       },
       // head nudged left of the SAMPLES header so the arrow points at it
-      // without covering the word; tail sits just right of the pill on the same
-      // baseline so the arrow reads as a short horizontal connector
+      // without covering the word; tail sits just right of the pill (which
+      // anchors to the same header, 230px out) on the header's own baseline, so
+      // the arrow reads as a short horizontal connector and stays horizontal
+      // wherever the panel puts the header
       {
         type: 'arrow',
-        from: { x: 680, y: 741 },
+        fromAnchor: { text: 'SAMPLES', dx: -122 },
         anchor: { text: 'SAMPLES' },
         dx: -60,
       },
