@@ -17,7 +17,7 @@ function regionIndexOf(snp: LDSnp, regions: Region[]) {
  * reads columns in `snps[]` array order, so the axis is expressed by putting
  * that array in the order the view draws it: regions in the order `regions`
  * lists them, and inside a **reversed** region bp running the other way. That is
- * the index-space form of hic's `mirrorUInRegion`
+ * the index-space form of hic's `mirrorU`
  * (`plugins/hic/src/regionOffsets.ts`) and of the variant matrix's
  * `orderByScreenPosition`, and it shares their one load-bearing property: the
  * reflection maps each region **onto itself**, so region layout is untouched and

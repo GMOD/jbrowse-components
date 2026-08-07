@@ -9,7 +9,7 @@ import type { Feature, Region } from '@jbrowse/core/util'
  * order. Anything else draws the connectors crossed.
  *
  * This is the LD display's convention (`RenderLDDataRPC/reversedRegions.ts`) and
- * hic's (`mirrorUInRegion`), and it is the reason the matrix no longer carries a
+ * hic's (`mirrorU`), and it is the reason the matrix no longer carries a
  * `flipped` mirror of its own: the reflection maps each region **onto itself**,
  * so a view with some regions reversed and some not comes out right, which one
  * global mirror of the whole column axis cannot express.

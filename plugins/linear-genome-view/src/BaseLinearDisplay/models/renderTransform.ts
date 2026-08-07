@@ -22,7 +22,7 @@
  * displayed-region `reversed`: one linear map can't express a reversed — let
  * alone mixed-orientation — axis, so orientation belongs upstream, mirrored into
  * the data before it ever reaches here (hic does this per region in its worker,
- * see `hic/regionOffsets.ts` `mirrorUInRegion`). LD, the other consumer, does
+ * see `hic/regionOffsets.ts` `mirrorU`). LD, the other consumer, does
  * the same in index space, reordering its SNP axis in the worker
  * (`variants/RenderLDDataRPC/reversedRegions.ts`).
  */
