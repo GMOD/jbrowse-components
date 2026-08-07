@@ -1,4 +1,4 @@
-import { getConf } from '@jbrowse/core/configuration'
+import { getConf, setConf } from '@jbrowse/core/configuration'
 import { createJBrowseThemeFromArgs, defaultThemes } from '@jbrowse/core/ui'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { resolveStyleTheme } from '@jbrowse/core/ui/styleTheme'
@@ -11,6 +11,7 @@ import { isBaseSession } from './BaseSession.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { SerializableThemeArgs, ThemeMap } from '@jbrowse/core/ui'
+import type { PaletteInput } from '@jbrowse/core/ui/palette'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -105,6 +106,35 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
        */
       setThemeName(name: string) {
         self.sessionThemeName = name
+      },
+      /**
+       * #action
+       * Point the session at light or dark, for a host that follows its own
+       * dark-mode state rather than offering JBrowse's theme menu. Satisfies
+       * `ThemeModeSession`, so `useSessionPalette` works against an app
+       * session and an embedded one alike.
+       *
+       * Expressed as a write to the config `theme` slot plus a return to the
+       * `default` theme, not as `setThemeName('darkStock')`. Only the
+       * `default` theme merges `configTheme.palette` (see `resolvePalette`),
+       * so selecting a stock theme would discard whatever the host passed as
+       * `configuration.theme` — their brand `primary`, say — the first time
+       * their toggle fired. Merging at both levels for the same reason:
+       * `theme` is a frozen slot, and `mode` and `primary` are siblings under
+       * `palette`.
+       *
+       * One write, not two: `themeOptions` is derived from the same slot and
+       * is what ships to the RPC worker, so the labels baked into a rendered
+       * image follow the mode along with what React draws.
+       */
+      setThemeMode(mode: 'light' | 'dark') {
+        const { jbrowse } = asSession(self)
+        const theme: { palette?: PaletteInput } = getConf(jbrowse, 'theme') ?? {}
+        setConf(jbrowse, 'theme', {
+          ...theme,
+          palette: { ...theme.palette, mode },
+        })
+        self.sessionThemeName = 'default'
       },
       afterAttach() {
         addDisposer(
