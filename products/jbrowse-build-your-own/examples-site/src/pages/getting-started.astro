@@ -1,0 +1,22 @@
+---
+import OneTrack from '../examples/OneTrack.tsx'
+import OneTrackCode from '../examples/OneTrack.tsx?raw'
+import PanAndZoom from '../examples/PanAndZoom.tsx'
+import PanAndZoomCode from '../examples/PanAndZoom.tsx?raw'
+import { getPage, section } from '../examples.ts'
+import Layout from '../layouts/ExampleLayout.astro'
+import Section from '../layouts/ExampleSection.astro'
+
+const page = getPage('getting-started')
+const panAndZoom = section(page, 'pan-and-zoom')
+const oneTrack = section(page, 'one-track')
+---
+
+<Layout page={page}>
+  <Section {...panAndZoom} code={PanAndZoomCode}>
+    <PanAndZoom client:only="react" />
+  </Section>
+  <Section {...oneTrack} code={OneTrackCode}>
+    <OneTrack client:only="react" />
+  </Section>
+</Layout>

@@ -178,12 +178,27 @@ function makeView() {
                 },
               ],
               tracks: ['hg38_mm39'],
+              // Bezier ribbons rather than straight chords. Two rows opened at
+              // orthologous genes are offset from each other, so every chord
+              // runs at a slant; curves leave the two ends vertical and only
+              // bend in the middle, which is what makes a stack of them
+              // readable instead of a hatch pattern.
+              drawCurves: true,
+              // 'matches' leaves the indel wedges see-through and paints only
+              // the aligned runs. Human BRCA1 is ~25% longer than the mouse
+              // copy, so at 'full' the wedges for that extra sequence are the
+              // largest coloured areas on screen and the conserved exons --
+              // the thing worth seeing -- are the thin bits between them.
+              cigarMode: 'matches',
             },
           },
         ],
       },
     },
   })
+  // see the Pan and zoom example: scroll-to-zoom is a session preference, so
+  // this one call covers both rows and the band between them
+  state.session.setScrollZoom(true)
   // `views` is a pluggable MST array, so its element type is resolved at
   // runtime and there is nothing narrower than this to assert. The published
   // `LinearSyntenyViewModel` is the type to assert to.
@@ -406,7 +421,7 @@ const SyntenyRibbons = observer(function SyntenyRibbons() {
           {view.initialized ? (
             view.views.map((row, i) => (
               <div key={row.id}>
-                {i > 0 ? <Ribbons level={view.levels[i - 1]!} /> : null}
+                {i > 0 ? <Ribbons level={view.levels[i - 1]} /> : null}
                 <SyntenyRow
                   view={row}
                   label={row.assemblyNames[0] ?? `row ${i + 1}`}

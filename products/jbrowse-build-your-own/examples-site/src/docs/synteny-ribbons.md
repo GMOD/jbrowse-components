@@ -8,16 +8,20 @@ Each row carries a plain RefSeq `FeatureTrack` — the same config it was five
 pages ago, twice, because there are two genomes.
 
 What the synteny view adds is `levels` — one band between each pair of rows.
-`LevelSyntenyCanvas` draws that band's ribbons, and it is the single piece here
-you could not write yourself: it drives the same GPU backend the rest of JBrowse
-renders with. The interactive half — tooltip, right-click menu, fetch status —
-is the per-display `RenderingComponent`, which comes off the model like a
-track's does.
+`LevelSyntenyCanvas` draws that band's ribbons on the same GPU backend the rest
+of JBrowse renders with, and is the single piece here you could not write
+yourself. The interactive half — tooltip, right-click menu, fetch status — is
+the per-display `RenderingComponent`, off the model like a track's.
 
 The alignment is a **PIF**: a PAF sorted and indexed on both sides, so the view
-fetches only what covers the window rather than reading a whole-genome alignment
-into memory. `jbrowse make-pif` builds one from any PAF, and the index here is a
-`.csi`, hence `csi: true`.
+fetches only what covers the window instead of the whole file.
+`jbrowse make-pif` builds one from any PAF; the index here is a `.csi`, hence
+`csi: true`.
+
+Two `init` fields decide how it reads. `drawCurves: true` bends the ribbons,
+which matters once the rows are offset and every chord is on a slant.
+`cigarMode: 'matches'` leaves the indel wedges see-through, so the conserved
+exons are what you see.
 
 ## A different package for the engine
 

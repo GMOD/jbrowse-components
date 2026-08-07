@@ -1,6 +1,6 @@
-Having taken all the chrome off, add back only what your app wants. Both pieces
-read the same view model the tracks read, so neither needs telling when the user
-pans.
+Nothing above this page draws anything around a track. Add back only what your
+app wants: all three pieces here read the same view model the tracks read, so
+none of them needs telling when the user pans.
 
 The **ruler** needs one view getter and one helper:
 `dynamicBlocks.contentBlocks` is what is on screen right now, one entry per
@@ -27,6 +27,7 @@ those props; it is the marker the page's pan handler tests before starting a
 drag of its own, and without it dragging to resize pans the view sideways
 instead.
 
-If you find yourself adding back a fourth or fifth piece of chrome, switch to
+If you find yourself adding back a fourth or fifth piece of surrounding UI,
+switch to
 [`@jbrowse/react-linear-genome-view2`](https://jbrowse.org/storybook/lgv/) and
 theme it instead.

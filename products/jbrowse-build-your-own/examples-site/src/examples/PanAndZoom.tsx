@@ -21,7 +21,7 @@ import { observer } from 'mobx-react'
 // click-to-select-a-feature stops selecting.
 //
 // Self-contained, like every page here: nothing is imported from elsewhere in
-// this site, so this file runs on its own. The One track page repeats the
+// this site, so this file runs on its own. The One track example repeats the
 // engine and mounting parts below with the interactivity stripped back out.
 
 const volvox = {

@@ -50,7 +50,8 @@ an `exports` entry is hard to remove and easy to make lazy instead).
 ## The number
 
 Measured 2026-08-05 on the build-your-own examples site, whose sparsest page
-("One track, no interaction") is a measured div, one wiggle track, and no
+("Getting started", whose second demo is the bare one) is a measured div, one
+wiggle track, and no
 JBrowse chrome at all:
 
 | | eager chunks | gzipped |

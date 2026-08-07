@@ -1,0 +1,22 @@
+---
+import RulerAndLabels from '../examples/RulerAndLabels.tsx'
+import RulerAndLabelsCode from '../examples/RulerAndLabels.tsx?raw'
+import Scalebar from '../examples/Scalebar.tsx'
+import ScalebarCode from '../examples/Scalebar.tsx?raw'
+import { getPage, section } from '../examples.ts'
+import Layout from '../layouts/ExampleLayout.astro'
+import Section from '../layouts/ExampleSection.astro'
+
+const page = getPage('rulers-and-labels')
+const rulerAndLabels = section(page, 'ruler-and-labels')
+const scalebar = section(page, 'scalebar')
+---
+
+<Layout page={page}>
+  <Section {...rulerAndLabels} code={RulerAndLabelsCode}>
+    <RulerAndLabels client:only="react" />
+  </Section>
+  <Section {...scalebar} code={ScalebarCode}>
+    <Scalebar client:only="react" />
+  </Section>
+</Layout>

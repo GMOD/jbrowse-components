@@ -198,13 +198,21 @@ gets a second, separated run of entries.
   `dist/` is the pattern** — serve `dist/`, strip the Astro base,
   `--use-gl=swiftshader`, settle ~7s, then measure. Write it as a `.tmp.mjs`
   **inside the site directory** (workspace module resolution does not reach
-  `/tmp`) and delete it after; `oxlint` will flag it if you forget. Two traps
+  `/tmp`) and delete it after; `oxlint` will flag it if you forget. Three traps
   that cost time: `page.mouse.click` uses **viewport** coordinates, so
   `scrollIntoView` the element and re-read its `boundingBox()` first or every
-  click lands on `<html>`; and whether a hover lands on a feature in a headless
-  swiftshader render is luck, which is why `BaseTooltip.test.tsx` in
-  `@jbrowse/core` is the deterministic half of the tooltip's coverage and the
-  half to extend first.
+  click lands on `<html>`; **that `scrollIntoView` needs
+  `behavior: 'instant'`** rather than the page's own, since under
+  `scroll-behavior: smooth` the scroll is still animating when the box is read
+  and the click lands wherever the page has slid to by then — reported as the
+  same "landed on `<html>`", which reads like a pan handler eating the click and
+  is not, and which appears only once a page is long enough to have somewhere to
+  scroll. `Shell.astro` set exactly that until 2026-08-07 and it cost a debug
+  cycle; the rule survives the removal, because a harness that scrolls at the
+  page's pace is depending on CSS it does not own. And whether a hover lands
+  on a feature in a headless swiftshader render is luck, which is why
+  `BaseTooltip.test.tsx` in `@jbrowse/core` is the deterministic half of the
+  tooltip's coverage and the half to extend first.
 - Each site is in `push.yml` **twice** — the deploy loop and the
   `examples_site_smoke` matrix — and both enumerate sites by name, so a new site
   is invisible to CI until it is added to both.

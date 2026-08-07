@@ -93,7 +93,7 @@ function makeView() {
     loc: 'ctgA:1..20,000',
     tracks: trackIds,
   })
-  // see the Pan and zoom page: scroll-to-zoom is a session preference, and the
+  // see the Pan and zoom example: scroll-to-zoom is a session preference, and the
   // pileup below reads the same one to know the plain wheel is spoken for
   view.setScrollZoom(true)
   return { view, session: state.session }
@@ -151,8 +151,8 @@ const TrackRow = observer(function TrackRow({
 //
 // `bp + 1` on the label, because block coordinates are 0-based and every
 // coordinate JBrowse puts in front of a user is 1-based: a locstring, and the
-// scalebar on the next page, which would otherwise disagree with this ruler by
-// one base at the same tick.
+// scalebar below, which would otherwise disagree with this ruler by one base
+// at the same tick.
 const Ruler = observer(function Ruler({ view }: { view: BrowserView }) {
   if (!view.ready) {
     return <div style={{ height: RULER_HEIGHT }} />
@@ -342,7 +342,7 @@ function useSiteMode() {
 // displays read the palette for their own content colours. See the previous
 // two pages.
 
-const AddTheChromeYouWant = observer(function AddTheChromeYouWant() {
+const RulerAndLabels = observer(function RulerAndLabels() {
   const [{ view, session }] = useState(makeView)
   const ref = useWidthSetter(view)
   const { containerProps } = usePanZoom(ref, view)
@@ -391,4 +391,4 @@ const AddTheChromeYouWant = observer(function AddTheChromeYouWant() {
   )
 })
 
-export default AddTheChromeYouWant
+export default RulerAndLabels

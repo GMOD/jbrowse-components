@@ -25,40 +25,44 @@ const here = path.dirname(fileURLToPath(import.meta.url))
 // corner controls). Those pages render JBrowse's own stock wiggle, feature and
 // alignments displays, unforked, and nothing Material reaches the screen.
 //
-// `a-stack-of-tracks` is the deliberate exception: it comes before the page that
+// `multiple-tracks` is the deliberate exception: it comes before the page that
 // introduces the swap, so it shows what a stock display looks like out of the
 // box. Its three are the ambient bottom-right controls — every display with a
 // `heightMode` slot draws a track-sizing button, and the feature display adds
 // the isoform-collapse notice while genes are collapsed.
 //
-// **`pan-and-zoom` and `one-track` install no provider either, and their zero is
-// unearned.** Both show a lone wiggle track, and the corner controls come from
+// **This budget is per document, which is what decides where a page boundary
+// may go.** Several demos share a page now (`src/examples.ts` says why), and
+// two demos on one page report one number for both. So a stock demo may not
+// share a page with a plain one: the merged page would carry the sum, the plain
+// half's zero would stop being stated anywhere, and the site's central claim
+// would be resting on a number that no longer isolates it. That is the whole
+// reason `multiple-tracks` is still a page of its own.
+//
+// **`getting-started` installs no provider either, and its zero is unearned.**
+// Both its demos show a lone wiggle track, and the corner controls come from
 // canvas's FeatureComponent and the alignments component — wiggle draws none. So
-// those two score zero by having no Material widget to suppress, not by
-// suppressing one. The day a wiggle display grows an ambient control they will
-// fail this budget for a reason that has nothing to do with what they teach, and
-// the obvious fix — installing DisplayUIProvider on the page whose whole point is
-// "no chrome at all" — would be the wrong one. Raise it to what wiggle actually
-// draws and say so here instead.
+// it scores zero by having no Material widget to suppress, not by suppressing
+// one. The day a wiggle display grows an ambient control it will fail this
+// budget for a reason that has nothing to do with what it teaches, and the
+// obvious fix — installing DisplayUIProvider on the page whose whole point is
+// that nothing is drawn around the track — would be the wrong one. Raise it to
+// what wiggle actually draws and say so here instead.
 //
 // Exact equality, in both directions. A new Material widget appearing in a
 // display's render path has to be noticed here; so does one disappearing,
 // because that is the moment the prose needs rewriting too.
 const MUI_BUDGET = {
-  // the landing page, which runs the Pan and zoom demo rather than describing it
+  // the landing page, which runs the scalebar demo rather than describing it
   '': 0,
-  'pan-and-zoom': 0,
-  'one-track': 0,
-  'a-stack-of-tracks': 3,
-  'bring-your-own-overlays': 0,
-  'add-the-chrome-you-want': 0,
-  'a-scalebar-not-a-ruler': 0,
-  'drive-it-from-your-app': 0,
-  'every-chromosome': 0,
-  'your-own-feature-details': 0,
-  'run-it-in-a-worker': 0,
+  'getting-started': 0,
+  'multiple-tracks': 3,
+  'removing-material-ui': 0,
+  'rulers-and-labels': 0,
+  'controlling-the-view': 0,
+  'web-workers': 0,
   // measured, not chosen -- see the note below the budget
-  'synteny-ribbons': 0,
+  synteny: 0,
 }
 
 // Count the outermost MUI-classed elements (an icon button and the svg inside it
@@ -105,7 +109,7 @@ async function muiBudget(page, slug) {
 // the MUI theme.
 //
 // Elements inside a `Mui*`-classed subtree are excluded: those are counted
-// above, by name, and double-reporting them would make `a-stack-of-tracks`
+// above, by name, and double-reporting them would make `multiple-tracks`
 // (which shows stock chrome on purpose) fail twice for one control. **Zero is
 // the bar on every page**, that one included — its three Material widgets are
 // unstyled by typography, and a tooltip is not one of them.
@@ -142,7 +146,7 @@ async function muiThemedStyling(page, when) {
 // `BaseTooltip.test.tsx` in `@jbrowse/core` is the deterministic half of this.
 //
 // The sweep stays out of the bottom-right quadrant on purpose: the corner
-// controls live there, and hovering one on `a-stack-of-tracks` would mount a
+// controls live there, and hovering one on `multiple-tracks` would mount a
 // Material popover that the at-rest count above has no entry for.
 // The census runs per track rather than once at the end, because a tooltip is
 // only up while the pointer is on the thing that raised it: sweeping every
@@ -150,8 +154,13 @@ async function muiThemedStyling(page, when) {
 async function censusWhileHovering(page) {
   const found = new Set()
   for (const canvas of await page.$$('canvas')) {
+    // `behavior: 'instant'` is not a default worth relying on: a stylesheet
+    // that sets `scroll-behavior: smooth` leaves the scroll still animating
+    // when `boundingBox()` is read below, and the coordinates are stale by the
+    // time the pointer reaches them — see `clicksReachTheTrack`, where the same
+    // thing fails loudly.
     await canvas.evaluate(el => {
-      el.scrollIntoView({ block: 'center' })
+      el.scrollIntoView({ block: 'center', behavior: 'instant' })
     })
     await new Promise(r => setTimeout(r, 200))
     const box = await canvas.boundingBox()
@@ -188,8 +197,16 @@ async function clicksReachTheTrack(page) {
   if (!canvas) {
     return ['no track canvas on the page']
   }
+  // `behavior: 'instant'`, pinned rather than left to the page: under a
+  // stylesheet that sets `scroll-behavior: smooth` this scroll is still
+  // animating when `boundingBox()` is read, and on a page tall enough to have
+  // somewhere to scroll — which, since demos started sharing pages, is most of
+  // them — the click lands wherever the page has slid to by then. It reports as
+  // "landed on <html>", which reads like a pan handler eating the click and is
+  // not. The shell no longer sets smooth scrolling, and this still does not
+  // depend on that.
   await canvas.evaluate(el => {
-    el.scrollIntoView({ block: 'center' })
+    el.scrollIntoView({ block: 'center', behavior: 'instant' })
   })
   await new Promise(r => setTimeout(r, 500))
   await page.evaluate(() => {
@@ -228,7 +245,7 @@ const failures = await smokeExamplesSite({
   // main-thread RPC, so this slug is the site's only guard on the Rollup
   // circular-dependency TDZ that webpack tolerates and Vite does not — and the
   // page's own claim is that a worker spawns, which loading it cannot show.
-  workerSlug: 'run-it-in-a-worker',
+  workerSlug: 'web-workers',
   //
   // The census runs before the click: opening one of those bottom-right menus
   // mounts a Material popover, which would land in the count. It runs twice,

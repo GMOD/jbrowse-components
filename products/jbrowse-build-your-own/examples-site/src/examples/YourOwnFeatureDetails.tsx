@@ -54,7 +54,7 @@ function makeView() {
     loc: 'ctgA:1..20,000',
     tracks: ['volvox_genes'],
   })
-  // see the Pan and zoom page: scroll-to-zoom is a session preference, shared
+  // see the Pan and zoom example: scroll-to-zoom is a session preference, shared
   // with any display that scrolls vertically inside itself
   view.setScrollZoom(true)
   return { view, session: state.session }

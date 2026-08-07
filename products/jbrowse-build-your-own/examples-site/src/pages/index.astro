@@ -1,5 +1,5 @@
 ---
-import AScalebarNotARuler from '../examples/AScalebarNotARuler.tsx'
+import Scalebar from '../examples/Scalebar.tsx'
 import { examples } from '../examples.ts'
 import Gallery from '../layouts/Gallery.astro'
 import Shell from '../layouts/Shell.astro'
@@ -7,6 +7,7 @@ import {
   componentLabel,
   demoHeights,
   landingDemo,
+  landingDemoHref,
   mainMaxWidth,
 } from '../siteMeta.ts'
 // Measured, not asserted. `pnpm measure-chrome-bundle` bundles both chrome
@@ -46,20 +47,20 @@ const base = import.meta.env.BASE_URL
   */
   }
   <div class="demo reserved" style={`min-height:${demoHeights[landingDemo]}px`}>
-    <AScalebarNotARuler client:only="react" scrollZoom={false} />
+    <Scalebar client:only="react" scrollZoom={false} />
   </div>
 
   <p class="note">
-    That is the <a href={`${base}${landingDemo}/`}>scalebar</a> example, running its
-    own source. Every page below is one file like it; the first strips this back to
-    a measured div and one track.
+    That is the <a href={`${base}${landingDemoHref}`}>scalebar</a> example, running
+    its own source. Every page below is one file like it; the first strips this back
+    to a measured div and one track.
   </p>
   <p class="note">
     Only one of them renders any Material UI, and on purpose: <a
-      href={`${base}a-stack-of-tracks/`}>A stack of tracks</a
+      href={`${base}multiple-tracks/`}>Multiple tracks</a
     > is left stock, so you can see what a display looks like before you swap anything.
-    Everywhere else the chrome around a track — its loading, error and too-large states,
-    the controls in its corner — is <strong
+    Everywhere else what a track draws around its data — its loading, error and too-large
+    states, the controls in its corner — is <strong
       >{bundle.plainGzipKb} KB gzipped</strong
     > with plain components, {bundle.muiGzipKb} KB with Material ones.
   </p>

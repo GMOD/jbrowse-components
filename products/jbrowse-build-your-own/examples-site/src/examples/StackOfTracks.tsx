@@ -17,7 +17,7 @@ import { observer } from 'mobx-react'
 // between a BigWig and a BAM are entirely inside the engine. Adding a display
 // type to this page means adding a string to `trackIds`.
 //
-// Self-contained: the parts introduced on the two previous pages are repeated
+// Self-contained: the parts introduced before it are repeated
 // here rather than imported, so this file runs on its own.
 
 const volvox = {
@@ -80,7 +80,7 @@ function makeView() {
     loc: 'ctgA:1..20,000',
     tracks: trackIds,
   })
-  // see the Pan and zoom page: scroll-to-zoom is a session preference, and the
+  // see the Pan and zoom example: scroll-to-zoom is a session preference, and the
   // pileup below reads the same one to know the plain wheel is spoken for
   view.setScrollZoom(true)
   return { view, session: state.session }

@@ -507,8 +507,8 @@ structurally in `DisplayChromeOverlays` is not enough: a component wrapped in
 `observer()` gets no contextual type for its props, so without the export the
 only way to write a replacement is to redeclare the shape and drift from it.
 The build-your-own site's overlays page now writes a set this way, in the page's
-own source — until 2026-08 the page called "Bring your own overlays" only ever
-swapped in JBrowse's *other* set.
+own source — until 2026-08 that page (then called "Bring your own overlays",
+now "Removing Material UI") only ever swapped in JBrowse's *other* set.
 
 **Gestures are published too, and are not a seam.** An embedder drawing their
 own chrome still has to get a wheel and a drag into `zoomTo`/`horizontalScroll`,
@@ -529,7 +529,7 @@ into `resizeHeight`'s clamp from banking a debt the pointer pays back on the way
 out. The hook returns props to spread onto any element, `data-gesture-owner`
 among them, so a resize drag doesn't also pan the view. `ui/ResizeHandle` is that
 hook plus JBrowse's own 4px bar, and the build-your-own site's
-"Add the chrome you want" page is the same hook under a divider of its own.
+"Rulers and labels" page is the same hook under a divider of its own.
 
 **A third seam was considered for the tooltip and rejected.** `BaseTooltip` is
 rendered by each display directly, behind neither provider, and it used to style

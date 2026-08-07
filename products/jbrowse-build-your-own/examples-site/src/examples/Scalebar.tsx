@@ -11,8 +11,8 @@ import { DisplayUIProvider } from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
-// The ruler on the Add the chrome you want page is a loop over one tick pitch
-// and knows nothing about regions. This is the rest of it: gridlines behind the
+// The ruler in the example above is a loop over one tick pitch and knows
+// nothing about regions. This is the rest of it: gridlines behind the
 // data, coordinate labels that don't collide, the region name kept on screen
 // while you pan past its start, and drag-to-zoom. Four getters on the view do
 // the work -- `gridlineTicks`, `scalebarLabels`, `scalebarRefNameLabels` and
@@ -74,7 +74,7 @@ function makeView(scrollZoom: boolean) {
     loc: 'ctgA:1..15,000 ctgA:17,400..23,000',
     tracks: trackIds,
   })
-  // see the Pan and zoom page: scroll-to-zoom is a session preference, shared
+  // see the Pan and zoom example: scroll-to-zoom is a session preference, shared
   // with any display that scrolls vertically inside itself
   view.setScrollZoom(scrollZoom)
   return { view, session: state.session }
@@ -118,7 +118,7 @@ const TrackRow = observer(function TrackRow({
 })
 
 // the prompt for a wheel the view ignored; `showZoomHint` is raised for
-// exactly that and clears itself. See the Pan and zoom page.
+// exactly that and clears itself. See the Pan and zoom example.
 function ZoomHint({ show }: { show: boolean }) {
   return (
     <div
@@ -428,7 +428,7 @@ function RangeSelection({ range }: { range: { left: number; right: number } }) {
  * the view sideways at the same time. JBrowse's own scalebar carries the same
  * attribute for the same reason.
  */
-const Scalebar = observer(function Scalebar({
+const ScalebarRow = observer(function ScalebarRow({
   view,
   ...handlers
 }: { view: BrowserView } & React.ComponentProps<'div'>) {
@@ -554,7 +554,7 @@ function useSiteMode() {
   return mode
 }
 
-const AScalebarNotARuler = observer(function AScalebarNotARuler({
+const Scalebar = observer(function Scalebar({
   scrollZoom = true,
 }: {
   // Which gesture a bare wheel is. On by default, because a browser that owns
@@ -591,7 +591,7 @@ const AScalebarNotARuler = observer(function AScalebarNotARuler({
           {view.ready ? (
             <>
               <Gridlines view={view} />
-              <Scalebar view={view} {...rubberband.props} />
+              <ScalebarRow view={view} {...rubberband.props} />
               {trackIds.map(id => (
                 <TrackRow key={id} view={view} trackId={id} />
               ))}
@@ -607,4 +607,4 @@ const AScalebarNotARuler = observer(function AScalebarNotARuler({
   )
 })
 
-export default AScalebarNotARuler
+export default Scalebar

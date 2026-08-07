@@ -93,7 +93,7 @@ function makeView() {
     loc: 'ctgA:1..20,000',
     tracks: trackIds,
   })
-  // see the Pan and zoom page: scroll-to-zoom is a session preference, and the
+  // see the Pan and zoom example: scroll-to-zoom is a session preference, and the
   // pileup below reads the same one to know the plain wheel is spoken for
   view.setScrollZoom(true)
   return { view, session: state.session }

@@ -28,6 +28,6 @@ on near-black. `useSessionPalette` writes the one slot both derive from, which
 is why it hands back the palette rather than taking one.
 
 Hovering still gets you Material UI in the bottom-right corner: the track-sizing
-button and the isoform notice. Deliberately, so the
-[next page](../bring-your-own-overlays/#bring-your-own-overlays) has something
-to swap.
+button and the isoform notice. Deliberately: this is the one page left stock, so
+[Removing Material UI](../removing-material-ui/#bring-your-own-overlays) has
+something to swap.

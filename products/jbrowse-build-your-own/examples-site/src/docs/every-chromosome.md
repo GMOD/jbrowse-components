@@ -11,13 +11,13 @@ all but the 24 land sub-pixel and elide. Which sequences are "the chromosomes"
 is a choice a human makes; no field in the file records it.
 
 Regions lay out contiguously, so at this width the view is one continuous strip
-unless you draw the boundaries. `RegionBoundaries` is the component from
-[Drive it from your app](../drive-it-from-your-app/#drive-it-from-your-app);
-`RegionNames` is the one the [scalebar page](../a-scalebar-not-a-ruler/)
-explains, and it is what turns bands into chromosomes. Both read geometry the
-view already computed — `paddingSpans` and `scalebarRefNameLabels` — rather than
-deriving it from block flags, which is how the narrowest bands here end up with
-no name at all instead of an ambiguous `2…`.
+unless you draw the boundaries. `RegionBoundaries` is the component from the
+[section above](#drive-it-from-your-app); `RegionNames` is the one the
+[scalebar](../rulers-and-labels/#scalebar) explains, and it is what turns bands
+into chromosomes. Both read geometry the view already computed — `paddingSpans`
+and `scalebarRefNameLabels` — rather than deriving it from block flags, which is
+how the narrowest bands here end up with no name at all instead of an ambiguous
+`2…`.
 
 The track still draws because a bigWig carries precomputed summaries, so phyloP
 across 3.1Gb is one cheap read per region. A track with no summary tier — a BAM,

@@ -20,5 +20,5 @@ that gap and a failed assembly load, and it is the gate anything of yours that
 reads block geometry needs too.
 
 The track is a BigWig, so this is a real fetch through a real adapter, laid out
-by the same code that runs in the full product.
-[Pan and zoom](../pan-and-zoom/#pan-and-zoom) adds the gestures.
+by the same code that runs in the full product. The demo above is this file with
+the gesture hook added back.

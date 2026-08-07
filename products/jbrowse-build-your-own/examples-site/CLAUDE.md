@@ -67,15 +67,15 @@ copy-paste and the answer is a different rule argued here, not more entries.
   attribute a new one. Don't raise a budget to make it pass, for the same reason
   `MUI_BUDGET` isn't raised.
 
-  **Every budget stepped up ~11 KB when `synteny-ribbons` landed, and that one
-  is not a regression to hunt.** That page is the only one on a second product
+  **Every budget stepped up ~11 KB when the synteny page landed, and that one is
+  not a regression to hunt.** That page is the only one on a second product
   (`@jbrowse/react-app2`, for a session whose views are an array), and a second
   entry graph makes rolldown re-partition chunks across the whole site: pages
   that import nothing new now download co-located modules they don't use.
   Measured rather than assumed —
-  `pnpm probe-eager-graph --page one-track --holds jbrowse-react-app` reports
-  **zero** eager modules importing the app product, so nothing leaked as a
-  static import. The bytes are still real, because whole chunks are fetched,
+  `pnpm probe-eager-graph --page getting-started --holds jbrowse-react-app`
+  reports **zero** eager modules importing the app product, so nothing leaked as
+  a static import. The bytes are still real, because whole chunks are fetched,
   which is why the figures moved rather than being waived.
 
   So the step is banked once, with this note, and the ratchet goes back to
