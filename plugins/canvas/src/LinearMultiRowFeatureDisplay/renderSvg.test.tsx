@@ -165,6 +165,28 @@ describe('LinearMultiRowFeatureDisplay renderSvg', () => {
     expect(html.match(/<line /g)?.length).toBe(1)
   })
 
+  // rowHeight is fractional whenever the display auto-fits, and the blocks
+  // either side of a boundary already blend into the single pixel that boundary
+  // falls in. The line has to cover that pixel: at 6.84 the boundaries are
+  // 6.84 / 13.68 / 20.52, so pixels 6 / 13 / 20, where rounding would put the
+  // last two at 14 and 21 -- a pixel below the color change they divide, which
+  // leaves the blend showing as a stripe of the neighbouring row.
+  it('puts each separator on the pixel its row boundary falls in', async () => {
+    const html = renderResult(
+      await renderSvg(
+        makeModel({
+          showRowSeparators: true,
+          effectiveRowHeight: 6.84,
+          sources: [{ name: 'a' }, { name: 'b' }, { name: 'c' }, { name: 'd' }],
+        }),
+        {},
+      ),
+    )
+    expect(
+      [...html.matchAll(/<line x1="0" y1="([\d.]+)"/g)].map(m => Number(m[1])),
+    ).toEqual([6.5, 13.5, 20.5])
+  })
+
   it('omits the row names when showRowLabels is off', async () => {
     const on = renderResult(await renderSvg(makeModel(), {}))
     expect(on).toContain('>a<')

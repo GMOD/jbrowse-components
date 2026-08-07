@@ -53,9 +53,13 @@ export default observer(function MultiWiggleOverlayLines({
   const separators =
     !isOverlay && showRowSeparators && numRows > 1
       ? Array.from({ length: numRows - 1 }).map((_, idx) => {
-          // +0.5 lands the 1px stroke on a device-pixel boundary so it renders
-          // crisp instead of anti-aliased across two rows.
-          const y = Math.round(getRowTop(idx + 1, effectiveRowHeight)) + 0.5
+          // floor, not round: the line covers the pixel the boundary falls in,
+          // and round is a pixel too low once the fractional part reaches 0.5
+          // — visible in density mode, where the rows are saturated fills that
+          // blend into that pixel. Half-pixel offset so the 1px stroke fills
+          // one pixel rather than straddling two. Same reasoning as the
+          // multi-row painter's MultiRowSeparatorLines.
+          const y = Math.floor(getRowTop(idx + 1, effectiveRowHeight)) + 0.5
           return (
             <line
               // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed positional list, one separator per row boundary

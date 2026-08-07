@@ -68,6 +68,14 @@ describe('row separators', () => {
     expect(svg).toContain('x2="800"')
   })
 
+  // An auto-fit row height is fractional, and a boundary at 20.52 falls in
+  // pixel 20 -- where the two rows' fills already blend. Rounding would put the
+  // line on 21, a pixel below the boundary it divides.
+  it('puts each line on the pixel its boundary falls in at a fractional row height', () => {
+    const svg = render(makeModel({ effectiveRowHeight: 6.84, numRows: 4 }))
+    expect(separatorYs(svg)).toEqual([6.5, 13.5, 20.5])
+  })
+
   // Overlay collapses every source onto one plot, so there is no boundary to
   // draw even with the setting on.
   it('draws none in an overlay rendering', () => {

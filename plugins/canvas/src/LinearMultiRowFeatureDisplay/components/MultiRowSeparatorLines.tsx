@@ -25,9 +25,16 @@ export default function MultiRowSeparatorLines({
   return (
     <>
       {Array.from({ length: numRows - 1 }).map((_, idx) => {
-        // +0.5 lands the 1px stroke on a device-pixel boundary so it renders
-        // crisp instead of anti-aliased across the two rows it divides.
-        const y = Math.round(rowHeight * (idx + 1)) + 0.5
+        // The line has to cover the pixel the boundary falls in, which is
+        // `floor(boundary)` — not `round(boundary)`, which is a pixel too low
+        // for every boundary whose fractional part is >= 0.5. rowHeight is
+        // fractional whenever the display auto-fits (`fitTargetHeight / nrow`),
+        // so the blocks either side of a boundary already share, and blend
+        // into, that one pixel; a line one pixel below it leaves the blend
+        // showing as a stripe of the neighbouring row's color and reads as the
+        // grid being out of step with the painting. Half-pixel offset so the
+        // 1px stroke fills that pixel rather than straddling two.
+        const y = Math.floor(rowHeight * (idx + 1)) + 0.5
         return (
           <line
             // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed positional list, one separator per row boundary
