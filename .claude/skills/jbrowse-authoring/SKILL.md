@@ -35,6 +35,16 @@ Steps 4 and 5 are the ones people skip. Don't. Step 4 catches a class of error
 nothing downstream reports (below), and step 6 is the only thing that
 distinguishes "config loaded" from "the track has data in it".
 
+**Before step 1, check whether the assembly already exists.** Every UCSC and
+GenArk genome is published as a ready-made config at genomes.jbrowse.org, with
+its sequence, refName aliases, cytobands, track catalog and gene search index —
+and your own file can ride on top of it as a session track with no config
+authored at all. See the `jbrowse-hosted-data` skill. Downloading and indexing
+hg38 to show a gene is the most common way to turn a short task into a long one.
+
+For step 6, see the `jbrowse-capture` skill: `@jbrowse/img` renders without a
+browser, `@jbrowse/capture` drives a real one and knows when it has finished.
+
 ## Minimum viable config
 
 ```json
@@ -154,9 +164,20 @@ jbrowse-desktop config.json
 `?config=<url>&session=spec-<uri-encoded JSON>` — see
 `references/session-spec.md`.
 
-To **verify** rather than assume, launch with `--remote-debugging-port=9222` and
-attach: `window.JBrowseSession` is the live session model in both desktop and
-web, so you can read back which tracks actually opened, and screenshot it.
+To **verify** rather than assume, read `window.JBrowseSession` — the live
+session model, exposed in both desktop and web — and check that the tracks you
+named are the ones actually open. Launch Desktop with
+`--remote-debugging-port=9222` and attach, or let `@jbrowse/capture` do it
+against web:
+
+```bash
+npx @jbrowse/capture --config <url> --assembly <name> --loc <where> --track <id> -o out.png
+```
+
+It gates on exactly that model read, so a trackId the config does not define
+fails loudly instead of producing a picture of an empty browser. The
+`jbrowse-capture` skill explains why that gate is necessary and what to do
+without it.
 
 ## Things that bite
 

@@ -88,14 +88,19 @@ test_data/volvox/*.og
 # read a config from here; neither is part of the suite, and neither dataset is
 # small enough to commit.
 test_data/jb2bench_link/
-# Local agent settings stay untracked, but the jbrowse-authoring skill is a
-# shared tool (its validate-config.mjs is what the FAQ tells people to run), so
-# it is committed. Re-including a path needs its parent directories un-ignored
-# first — git never descends into an excluded directory.
+# Local agent settings stay untracked, but the three jbrowse-* skills are shared
+# tools: the docs point readers at them, scripts/sync-skills-repo.ts publishes
+# them to cmdcolin/jbrowse-skills, and jbrowse-authoring's config-types.md is
+# written by `pnpm autogen`. So they are committed and anything else a
+# contributor keeps here is not. Re-including a path needs its parent
+# directories un-ignored first — git never descends into an excluded directory,
+# and the allowlist is per-skill so a new local one is untracked by default.
 .claude/*
 !.claude/skills/
 .claude/skills/*
 !.claude/skills/jbrowse-authoring/
+!.claude/skills/jbrowse-capture/
+!.claude/skills/jbrowse-hosted-data/
 
 # component_tests install npm packages without a committed lockfile (see
 # .github/workflows/push.yml); yarn.lock here is a local-only generated artifact
