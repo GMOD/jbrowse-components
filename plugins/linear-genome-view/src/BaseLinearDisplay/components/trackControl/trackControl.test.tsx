@@ -110,4 +110,21 @@ describe('plainTrackControl', () => {
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(screen.queryByRole('menu')).toBeNull()
   })
+
+  it('closes its menu when an ancestor scrolls', () => {
+    // The menu is `position: fixed` at coordinates measured off the trigger once
+    // at open time, so a scroll leaves it floating somewhere of its own. Fired
+    // on the container rather than on document because a scroll event does not
+    // bubble from an element — only the capture-phase listener sees this one,
+    // which is the half that makes a scroll in any ancestor count.
+    const { container } = renderPlain({
+      icon: 'height',
+      tooltip: 'Track sizing',
+      options: options(() => {}),
+    })
+    fireEvent.click(screen.getByLabelText('Track sizing'))
+    expect(screen.queryByRole('menu')).toBeTruthy()
+    fireEvent.scroll(container)
+    expect(screen.queryByRole('menu')).toBeNull()
+  })
 })

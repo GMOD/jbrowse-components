@@ -126,9 +126,20 @@ function OptionsMenu({
     }
     document.addEventListener('keydown', onKey)
     document.addEventListener('pointerdown', onPointerDown, true)
+    // The `fixed` position below is measured off the trigger once, at open
+    // time, so anything that moves the trigger afterwards leaves this menu
+    // floating somewhere of its own. Close rather than re-measure: the trigger
+    // is on a track's bottom edge and a page scroll usually takes it off screen
+    // entirely, so a re-measured menu would follow it out of view instead of
+    // going away. Capture phase, so a scroll in any ancestor counts and not
+    // just one on the document.
+    window.addEventListener('scroll', onClose, true)
+    window.addEventListener('resize', onClose)
     return () => {
       document.removeEventListener('keydown', onKey)
       document.removeEventListener('pointerdown', onPointerDown, true)
+      window.removeEventListener('scroll', onClose, true)
+      window.removeEventListener('resize', onClose)
     }
   }, [anchor, onClose])
 
