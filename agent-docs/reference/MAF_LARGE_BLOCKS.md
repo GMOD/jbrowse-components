@@ -498,13 +498,18 @@ The `src` column matches the display's row names with no mapping: MAF rows are
 `rowIndexBySrc` makes, and the failure mode when it doesn't hold is a fully
 "loaded" track with no bars.
 
-**The producer is the gap, and it fails silently.** `--summary` is committed in
-`~/src/maf2bed` and **not pushed** — GitHub master and the published crate are
-both v0.5.1, which has no such flag. v0.5.1 also parses only `args[1]` and
-ignores everything after it, so `maf2bed hg38 --summary summary.bed < file.maf`
-**exits 0, writes the alignment BED, and writes no summary at all**. Anyone
-following the MAF track guide today gets exactly that. Publishing maf2bed is what
-closes this; until then, check the summary file exists before wiring the slot.
+**The producer was the gap and is now published.** `--summary` sat committed and
+unpushed in `~/src/maf2bed` while every doc here told users to run it; the
+released crate was v0.5.1, which has no such flag *and* parses only `args[1]`,
+ignoring everything after — so `maf2bed hg38 --summary summary.bed < file.maf`
+exited 0, wrote the alignment BED, and wrote no summary at all. **maf2bed v0.6.0
+is on crates.io** (tag `v0.6.0`, `cargo install maf2bed`), and the numbers in the
+table above were re-derived with it: the published binary's output over the C4
+slice is identical to the local build's, 915 rows.
+
+v0.6.0 also exits 1 on an unknown option, so the silent-ignore failure cannot
+recur. It is still worth checking the summary file exists before wiring the slot,
+because a stale v0.5.x on `PATH` behaves the old way.
 
 ## Measurements from the design pass
 

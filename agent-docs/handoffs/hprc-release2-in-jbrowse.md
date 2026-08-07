@@ -170,14 +170,19 @@ MAF and ~2.1 for the v2.0 TAF, flat from 100 kb up, so whole chr6 is 3.19 GB and
 summary**, all 464 haplotypes present, `src` joining to the display's rows with
 no mapping.
 
-**What is left is producing the file, and it is blocked on a publish.**
-`maf2bed --summary` is committed in `~/src/maf2bed` and not pushed; the released
-v0.5.1 has no such flag and silently ignores it. Once it is published, a
-whole-genome HPRC summary is one streaming pass (the 5.96 GB TAF through `taffy
-view`, not the 53 GB MAF) and lands at roughly 75 MB bgzipped — at which point
-the tutorial's track gets a zoom-out tier and `fetchSizeLimit` stops being what
-holds the figure together. Hosting it is an S3 write to the jbrowse.org bucket,
-so it wants asking first.
+**The producer is published.** `maf2bed --summary` had been committed and
+unpushed in `~/src/maf2bed` while every doc here told users to run it, and the
+released v0.5.1 both lacked the flag and ignored unknown arguments, so the
+documented command exited 0 and wrote nothing. **v0.6.0 is on crates.io**, tests
+green, and its output over the cached C4 slice is identical to the local build's.
+
+**What is left is producing and hosting the HPRC summary itself.** One streaming
+pass over the 5.96 GB TAF (`taffy view` into `maf2bed --summary`, not the 53 GB
+MAF), landing at roughly 75 MB bgzipped for the whole genome — at which point the
+tutorial's track gets a real zoom-out tier. Hosting is an S3 write to the
+jbrowse.org bucket. Nobody has needed it yet: the tutorial reads the v2.0 TAF,
+which draws at gene scale within the default gate, so this buys whole-chromosome
+navigation rather than fixing anything broken.
 
 **A contribution to `pangenome/jbrowse-visualization`.** Their guide stops at
 one MAF view via `wgatools` + `mafchunk` + `maf2bed` + a plugin-store install;

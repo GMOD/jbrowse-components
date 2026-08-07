@@ -203,9 +203,9 @@ sort -k1,1 -k2,2n summary.bed | bgzip > summary.bed.gz
 tabix -p bed summary.bed.gz
 ```
 
-Check that `summary.bed` exists before wiring the slot. `maf2bed` ignores
-arguments it does not recognize, so a build without `--summary` exits 0 and
-writes only the alignment BED.
+`--summary` needs maf2bed v0.6.0 or newer. Versions before that read only the
+first argument and ignore the rest, so the command above exits 0 and writes only
+the alignment BED; check that `summary.bed` exists before wiring the slot.
 
 Its `#` header names the columns, so the sub-adapter needs no `columnNames`:
 
