@@ -2259,6 +2259,22 @@ export const graphSpecs: ScreenshotSpec[] = [
   // node of every INDEXED graph, because node.samples was only ever populated by
   // the in-app P/W walk a file-loaded graph gets. Measured over this same window
   // at the time: 0 of 53 nodes carried samples, against 53 of 53 after.
+  //
+  // NO, THE 75 bp SPUR CANNOT BE DRAWN IN THE LANE ABOVE, and a glyph is the
+  // wrong place to look for it (review: "hard to see the 75bp 'spur' in the
+  // linear view. is there any way to show that with a custom canvas track
+  // glyph?"). It is the grey branch leaving the backbone in the graph pane, and
+  // it has no K12 coordinate — `tabix ecoli_pggb.segs.bed.gz
+  // 'K12#1#chr:1004500-1004961'` returns 53 records, every one of them a K12
+  // interval, and no record of length 75 anywhere in the window. A glyph draws
+  // what the adapter emits, and the adapter cannot emit a span the reference
+  // does not have; that is the same fact this figure exists to make, one lane
+  // further down.
+  //
+  // What WOULD show it linearly is the bubbles-lane pattern the HPRC figures
+  // use: a record at the detour's reference attachment point carrying the
+  // alternate's length ("0-1,245 bp, 3 segments, up to 2 paths"). That is a
+  // build script and an upload for this graph, not a renderer change.
   {
     mode: 'url',
     name: 'pangenome/pggb_carriage',

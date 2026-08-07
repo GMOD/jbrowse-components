@@ -196,7 +196,19 @@ make.
 
 ## Reading the plot
 
-<Figure caption="Hexaploid oat against itself: syntenic anchors between its A, C and D subgenomes, coloured by dN/dS on a ramp pivoted at 1, where blue is purifying selection. Segments on the homoeologous-group diagonal are the collinear case; the segments far off it are the translocations that make oat's karyotype a mosaic." src="/img/homoeolog_synteny/oat_homoeologs.png" />
+Oat's plot is on the right below, and bread wheat's on the left is what makes it
+readable. Both are hexaploids drawn against themselves the same way, so the
+difference between them is the karyotype and not the method: on the left each
+homoeologous group is three near-collinear segments stepping up the diagonal,
+which is what a plot like this looks like when the subgenomes stayed put.
+
+<Figure caption="Two hexaploid cereals drawn against themselves, syntenic anchors coloured by dN/dS on a ramp pivoted at 1, where blue is purifying selection. Left, bread wheat: each homoeologous group is three near-collinear segments on the diagonal. Right, oat: segments repeatedly leave their group, the mosaic karyotype its assembly paper describes." src="/img/homoeolog_synteny/wheat_vs_oat.png" links="Open the oat plot=homoeolog_synteny/oat_homoeologs" />
+
+The wheat panel comes from
+[the Compara route](/docs/tutorials/multiway_synteny#selection-pressure-between-a-polyploids-own-copies),
+so the two sides differ in assembly and in how the pairs were called as well as
+in species. That the segments still read as collinear on one side and scattered
+on the other is the point: neither pipeline put the pattern there.
 
 ## Checking it against the raw data
 
@@ -223,18 +235,10 @@ The claim about the karyotype is a count: how many anchors join two chromosomes
 from _different_ homoeologous groups, and how many chromosome pairs carry enough
 of them to be a segment rather than noise.
 
-That count is what separates oat from the other hexaploid cereal, and the
-comparison is the clearest reading of either plot. Bread wheat carries three
-subgenomes too, and drawn the same way its homoeologous groups step up the
-diagonal in threes, interrupted only by the translocations involving 4A:
-
-<Figure caption="Two hexaploid cereals drawn against themselves the same way, coloured by dN/dS. Left, bread wheat: each homoeologous group is three near-collinear segments stepping up the diagonal. Right, oat: segments repeatedly leave their group, which is the mosaic karyotype its assembly paper describes." src="/img/homoeolog_synteny/wheat_vs_oat.png" />
-
-The wheat panel comes from
-[the Compara route](/docs/tutorials/multiway_synteny#selection-pressure-between-a-polyploids-own-copies),
-so the two sides differ in assembly and in how the pairs were called as well as
-in species. That the segments still read as collinear on one side and scattered
-on the other is the point: neither pipeline put the pattern there.
+That count is what separates oat from the other hexaploid cereal, and it is the
+arithmetic behind what the two panels above already show: wheat's translocations
+are the ones involving 4A and nothing else, where oat's segments leave their
+group repeatedly.
 
 ## Reproduce it end to end
 
