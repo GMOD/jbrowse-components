@@ -15,6 +15,7 @@ import {
   RESOLUTION_MIN,
   RESOLUTION_STEP,
 } from './WiggleScoreConfigMixin.ts'
+import { isLineMode, isScatterMode } from './wiggleComponentUtils.ts'
 
 import type { ResolvableDisplay } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -88,7 +89,9 @@ export function makePointSizeMenuItems(
   } & ResolvableDisplay,
 ): MenuItem[] {
   return sizeSubMenu(
-    self.renderingType.includes('scatter'),
+    // the rendering-type table both backends branch on, not a substring test:
+    // whether a plot draws points is the same question the encoder asks
+    isScatterMode(self.renderingType),
     'Scatter point size',
     ScatterPlotIcon,
     // shared with the GWAS Manhattan point-size row, so the two can't drift
@@ -104,7 +107,7 @@ export function makeLineWidthMenuItems(
   } & ResolvableDisplay,
 ): MenuItem[] {
   return sizeSubMenu(
-    self.renderingType.includes('line'),
+    isLineMode(self.renderingType),
     'Line width',
     LineWeightIcon,
     () =>

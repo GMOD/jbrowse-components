@@ -9,6 +9,8 @@ import {
   scaleTypeFromString,
 } from '@jbrowse/wiggle-core'
 
+import { MULTI_WIGGLE_OVERLAY_TYPES } from '../renderingTypes.ts'
+
 import type {
   FeatureArrays,
   WiggleFeatureUnderMouse,
@@ -66,12 +68,7 @@ export function getRowTop(rowIndex: number, rowHeight: number) {
   return rowIndex * rowHeight
 }
 
-const overlayTypes = new Set([
-  'multixyplot',
-  'multiline',
-  'multilinecenter',
-  'multiscatter',
-])
+const overlayTypes: ReadonlySet<string> = new Set(MULTI_WIGGLE_OVERLAY_TYPES)
 
 export function isOverlayMode(renderingType: string) {
   return overlayTypes.has(renderingType)
@@ -79,6 +76,13 @@ export function isOverlayMode(renderingType: string) {
 
 export function isScatterMode(renderingType: string) {
   return renderingTypeToInt(renderingType) === RENDERING_TYPE_SCATTER
+}
+
+// Both line renderings — the stepped bar-tops and the interpolated
+// point-to-point one — since they are exactly the ones `lineWidth` applies to.
+export function isLineMode(renderingType: string) {
+  const type = renderingTypeToInt(renderingType)
+  return type === RENDERING_TYPE_LINE || type === RENDERING_TYPE_LINE_CENTER
 }
 
 const renderingTypeMap: Record<string, WiggleRenderingType> = {

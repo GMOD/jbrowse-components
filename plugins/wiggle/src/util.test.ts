@@ -1,4 +1,9 @@
-import { computeAutoscaleDomain, getNiceDomain, getScale } from './util.ts'
+import {
+  computeAutoscaleDomain,
+  formatScore,
+  getNiceDomain,
+  getScale,
+} from './util.ts'
 
 test('linear scale', () => {
   const scaleType = 'linear'
@@ -214,5 +219,24 @@ describe('computeAutoscaleDomain', () => {
     ]
     const result = computeAutoscaleDomain('local', 'avg', 3, entries)
     expect(result).toEqual([2, 10])
+  })
+})
+
+describe('formatScore', () => {
+  test('drops the padding toPrecision adds', () => {
+    expect(formatScore(10)).toBe('10')
+    expect(formatScore(2.5)).toBe('2.5')
+    expect(formatScore(0.001)).toBe('0.001')
+  })
+
+  test('keeps a value toPrecision rounds up out of the fractional form', () => {
+    // "100", with no decimal point for a trailing-zero strip to anchor on
+    expect(formatScore(99.95)).toBe('100')
+    expect(formatScore(-99.999)).toBe('-100')
+  })
+
+  test('passes the >=100 and zero branches through', () => {
+    expect(formatScore(0)).toBe('0')
+    expect(formatScore(1500.4)).toBe('1500')
   })
 })

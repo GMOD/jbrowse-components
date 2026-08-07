@@ -6,9 +6,14 @@ import {
 } from '@jbrowse/wiggle-core'
 
 import {
+  MULTI_WIGGLE_RENDERING_GROUPS,
+  MULTI_WIGGLE_RENDERING_TYPES,
+} from '../renderingTypes.ts'
+import {
   getRowHeight,
   getRowTop,
   hitTestMouse,
+  isLineMode,
   isOverlayMode,
   isScatterMode,
   legendRightEdgePx,
@@ -33,6 +38,16 @@ describe('isOverlayMode', () => {
   test('density is not an overlay type', () => {
     expect(isOverlayMode('density')).toBe(false)
   })
+
+  // The set is derived from the menu table, so this is what catches an
+  // overlapping plot type added there and silently laid out as multi-row.
+  test('covers exactly the Overlapping menu group', () => {
+    const [, overlapping] = MULTI_WIGGLE_RENDERING_GROUPS[1]
+    expect(overlapping.map(([value]) => value).every(isOverlayMode)).toBe(true)
+    expect(MULTI_WIGGLE_RENDERING_TYPES.filter(isOverlayMode)).toHaveLength(
+      overlapping.length,
+    )
+  })
 })
 
 describe('isScatterMode', () => {
@@ -45,6 +60,21 @@ describe('isScatterMode', () => {
     expect(isScatterMode('multixyplot')).toBe(false)
     expect(isScatterMode('multiline')).toBe(false)
     expect(isScatterMode('multirowxy')).toBe(false)
+  })
+})
+
+describe('isLineMode', () => {
+  test('both line renderings return true', () => {
+    expect(isLineMode('line')).toBe(true)
+    expect(isLineMode('linecenter')).toBe(true)
+    expect(isLineMode('multirowline')).toBe(true)
+    expect(isLineMode('multilinecenter')).toBe(true)
+  })
+
+  test('non-line types return false', () => {
+    expect(isLineMode('multirowxy')).toBe(false)
+    expect(isLineMode('multirowdensity')).toBe(false)
+    expect(isLineMode('multiscatter')).toBe(false)
   })
 })
 

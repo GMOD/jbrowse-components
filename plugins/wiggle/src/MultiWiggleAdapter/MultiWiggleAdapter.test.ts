@@ -114,6 +114,28 @@ describe('MultiWiggleAdapter.getAdapters with bigWigs config', () => {
     const adapters = await adapter.getAdapters()
     expect(adapters[0]!.source).toBe('sample.data')
   })
+
+  // The memo is what keeps every fetch, stats call and clustering run on a
+  // track from rebuilding the subadapters; caching the rejection too meant one
+  // failing subadapter permanently broke the track, with no way back short of
+  // recreating it.
+  it('does not cache a failed subadapter build', async () => {
+    const mockGetSubAdapter = jest
+      .fn()
+      .mockRejectedValueOnce(new Error('adapter type not registered yet'))
+      .mockImplementation(async (conf: { source?: string }) => ({
+        dataAdapter: { id: conf.source ?? 'mock' },
+      }))
+    const adapter = new MultiWiggleAdapter(
+      configSchema.create({ bigWigs: ['https://example.com/path/sample.bw'] }),
+      mockGetSubAdapter,
+    )
+    await expect(adapter.getAdapters()).rejects.toThrow(
+      'adapter type not registered yet',
+    )
+    const adapters = await adapter.getAdapters()
+    expect(adapters[0]!.source).toBe('sample')
+  })
 })
 
 describe('MultiWiggleAdapter.getSources', () => {

@@ -32,23 +32,6 @@ interface AdapterConfig {
   [key: string]: unknown
 }
 
-function getFilenameFromAdapterConfig(config: AdapterConfig) {
-  if (config.type === 'BigWigAdapter' && config.bigWigLocation) {
-    const location = config.bigWigLocation
-    if ('uri' in location && location.uri) {
-      return getFilename(location.uri)
-    }
-    if ('localPath' in location && location.localPath) {
-      return getFilename(location.localPath)
-    }
-    if ('blob' in location && location.blob) {
-      const blob = location.blob as File
-      return blob.name ? getFilename(blob.name) : undefined
-    }
-  }
-  return undefined
-}
-
 function getLocationPath(location?: FileLocation) {
   return location === undefined
     ? undefined
@@ -59,6 +42,18 @@ function getLocationPath(location?: FileLocation) {
         : 'blob' in location && location.blob instanceof File
           ? location.blob.name || undefined
           : undefined
+}
+
+// The basename a BigWig subadapter falls back to when its config names no
+// `source`/`name` — the same path `disambiguateSources` reads below, so the
+// derived label and the label that gets qualified on a collision are one walk
+// over the location rather than two that can disagree about which forms count.
+function getFilenameFromAdapterConfig(config: AdapterConfig) {
+  if (config.type !== 'BigWigAdapter') {
+    return undefined
+  }
+  const path = getLocationPath(config.bigWigLocation)
+  return path ? getFilename(path) : undefined
 }
 
 // Grow a colliding label leftward to include its parent directory, e.g. the
@@ -112,7 +107,16 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
   private adaptersP?: Promise<AdapterEntry[]>
 
   public async getAdapters(): Promise<AdapterEntry[]> {
-    this.adaptersP ??= this.getAdaptersImpl()
+    // Drop the memo on failure, the same way BigWigAdapter.setup does: a
+    // subadapter that throws once — a plugin whose adapter type has not
+    // registered yet, a transient failure inside getSubAdapter — otherwise
+    // leaves a rejected promise cached forever, so every later fetch, stats
+    // call and clustering run on this track rejects with the original error and
+    // a retry is impossible without rebuilding the adapter.
+    this.adaptersP ??= this.getAdaptersImpl().catch((e: unknown) => {
+      this.adaptersP = undefined
+      throw e
+    })
     return this.adaptersP
   }
 
