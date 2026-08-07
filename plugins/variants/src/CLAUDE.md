@@ -39,6 +39,18 @@ prefers declarative iteration.
   2504 samples × 400 variants, and the 168ms covers the cell painting the 613ms
   doesn't. **A new consumer reads codes.** Reintroducing the record to serve one
   is how the four passes come back.
+- **A code's column is the canonical `sampleNames` position, never
+  `processGenotypes`' `sampleIdx`.** That callback numbers samples against the
+  header of the file _its own_ feature came from; `sampleNames` is the union of
+  every header in the fetch. The two are the same list for a single-header
+  adapter — which is all of them but `SplitVcfTabixAdapter` — and are not the
+  same list when per-contig files order or omit samples differently, which is
+  the case the union exists for. `buildHeaderRemap` translates header position
+  to column and answers `undefined` when they already agree, so the common fetch
+  keeps its direct index and pays no extra read. Writing `codes[sampleIdx]`
+  filed each genotype, and each sample's ploidy, against a neighbouring sample
+  on any multi-contig view over such files — silently, since every row still
+  held a real genotype.
 - Codes are **Uint32**. They were Uint16, which capped the dict at 65535
   distinct genotype strings — reachable on a decomposed pangenome callset, where
   a multiallelic site's genotypes grow with the square of the alt count. Past

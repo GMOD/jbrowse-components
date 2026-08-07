@@ -64,24 +64,27 @@ export interface AnalyzedVariants {
   sampleNames: string[]
 }
 
-// Canonical sample order for the code arrays: the VCF header order that
-// `processGenotypes` reports its `sampleIdx` against. Read per feature rather
-// than from the first one because SplitVcfTabixAdapter opens a different file,
-// and so a different header, per refName. The array is identity-stable per
-// parser, so the union runs once per distinct header, not once per variant.
+// Canonical sample order for the code arrays: the union of every header sample
+// list in the fetch, in first-seen order. Read per feature rather than from the
+// first one because SplitVcfTabixAdapter opens a different file, and so a
+// different header, per refName. The array is identity-stable per parser, so
+// this walks each distinct header once, not once per variant — tracked as a set
+// of identities rather than just the previous one, because
+// `getFeaturesInMultipleRegions` merges the per-region streams and a view
+// spanning two contigs hands back their features interleaved.
 //
 // Empty for an adapter whose features carry no header sample list at all; that
 // path takes its order from the genotype records instead, after the pass.
 function collectSampleNames(filteredVariants: FilteredVariant[]) {
   const sampleNames: string[] = []
   const seen = new Set<string>()
-  let lastNames: string[] | undefined
+  const seenHeaders = new Set<string[]>()
   for (let i = 0; i < filteredVariants.length; i++) {
     const names = filteredVariants[i]!.feature.get('sampleNames') as
       | string[]
       | undefined
-    if (names !== undefined && names !== lastNames) {
-      lastNames = names
+    if (names !== undefined && !seenHeaders.has(names)) {
+      seenHeaders.add(names)
       for (const name of names) {
         if (!seen.has(name)) {
           seen.add(name)
@@ -91,6 +94,44 @@ function collectSampleNames(filteredVariants: FilteredVariant[]) {
     }
   }
   return sampleNames
+}
+
+/**
+ * Where each slot of one feature's own header lands in the canonical order, or
+ * `undefined` when the two already agree position for position.
+ *
+ * `processGenotypes` documents `sampleIdx` as "the 0-based position in the
+ * header sample list" — the header of the file THAT feature came from. The
+ * canonical order is a union across every header in the fetch, so the two are
+ * the same list only while every header agrees with the union. That is the case
+ * for every adapter with one header, which is every adapter but
+ * SplitVcfTabixAdapter, and for split files that all share a sample list.
+ *
+ * It is not the case for the very thing the union exists to handle: two files
+ * whose headers order their samples differently, or where one omits a sample
+ * another has (a chrY file called on the male subset, say). Then union position
+ * and header position part company after the first difference, and indexing the
+ * union by `sampleIdx` silently files each genotype — and each sample's ploidy —
+ * against a neighbouring sample. `undefined` for the agreeing case keeps the hot
+ * callback's read count unchanged there.
+ */
+export function buildHeaderRemap(
+  names: string[] | undefined,
+  columnByName: Map<string, number>,
+) {
+  if (names === undefined) {
+    return undefined
+  }
+  const out = new Int32Array(names.length)
+  let identity = true
+  for (let i = 0; i < names.length; i++) {
+    const column = columnByName.get(names[i]!) ?? -1
+    out[i] = column
+    if (column !== i) {
+      identity = false
+    }
+  }
+  return identity ? undefined : out
 }
 
 /**
@@ -154,6 +195,12 @@ export function computeSampleInfo(
   // the no-header-sample-list path below.
   const pendingRecords: [string, Record<string, string>][] = []
 
+  // The header the last remap was built for, and the remap itself. Held across
+  // features because a header array is identity-stable per parser, so a fetch
+  // rebuilds this once per file rather than once per variant.
+  let lastHeaderNames: string[] | undefined
+  let lastHeaderRemap: Int32Array | undefined
+
   const simplifiedFeatures: SimplifiedVariantFeature[] = new Array(
     filteredVariants.length,
   )
@@ -182,10 +229,24 @@ export function computeSampleInfo(
     if (hasProcessGenotypes(feature) && numSamples > 0) {
       const codes = new Uint32Array(numSamples)
       featureGenotypeCodes.set(featureId, codes)
+      // `sampleIdx` counts against this feature's own header; `codes` and
+      // `sampleNames` are the canonical union. Rebuilt only when the header
+      // array identity changes, so it is one pass per distinct header, and it
+      // is `undefined` — the direct-index fast path — whenever the two orders
+      // already agree, which is every single-header adapter.
+      const headerNames = feature.get('sampleNames') as string[] | undefined
+      if (headerNames !== lastHeaderNames) {
+        lastHeaderNames = headerNames
+        lastHeaderRemap = buildHeaderRemap(headerNames, sampleIndexByName)
+      }
+      // snapshotted into a const so the hot callback closes over a binding that
+      // cannot change under it
+      const remap = lastHeaderRemap
       let memoN = 0
       let memoStr: string | undefined
       feature.processGenotypes((str, start, end, sampleIdx) => {
-        const sampleName = sampleNames[sampleIdx]
+        const column = remap === undefined ? sampleIdx : remap[sampleIdx]!
+        const sampleName = sampleNames[column]
         if (sampleName === undefined) {
           return
         }
@@ -205,7 +266,7 @@ export function computeSampleInfo(
               }
             }
             if (eq) {
-              codes[sampleIdx] = memoCode[m]!
+              codes[column] = memoCode[m]!
               // The legend flags are global ORs already folded in on this
               // genotype's first sighting at this site; only the per-sample
               // ploidy/phasing still has to be recorded.
@@ -271,7 +332,7 @@ export function computeSampleInfo(
           memoPhased[memoN] = phased ? 1 : 0
           memoN++
         }
-        codes[sampleIdx] = code
+        codes[column] = code
       })
     } else {
       // Normalize the sites-only case to {} exactly as computeAlleleCounts
