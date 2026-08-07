@@ -21,6 +21,7 @@ import {
   formatManifest,
   formatTextReport,
   imageSize,
+  mergeManifest,
   parseManifest,
   resolveNow,
   storeKey,
@@ -76,6 +77,67 @@ test('a malformed line throws rather than dropping a figure', () => {
 
 test('comments and blank lines are ignored', () => {
   expect(parseManifest(`# header\n\na.png - 5 ${A}\n`).size).toBe(1)
+})
+
+// mergeManifest decides which lines survive a push, and every way of getting it
+// wrong deletes figures from the only record that they exist — silently, since a
+// manifest is valid at any size and the bytes stay in the store. The damage
+// surfaces one `pull` later, as a site built with images missing.
+test('an unfiltered merge writes the worktree, dropping what is gone', () => {
+  const before = parseManifest(`a.png - 1 ${A}\ngone.png - 1 ${A}\n`)
+  const merged = mergeManifest(before, [entry('a.png', B)], [])
+  expect([...merged.keys()]).toStrictEqual(['a.png'])
+  expect(merged.get('a.png')?.sha256).toBe(B)
+})
+
+test('a filtered merge updates its selection and carries the rest through', () => {
+  const before = parseManifest(
+    `website/static/img/wolf.png 10x20 1 ${A}\n` +
+      `website/static/img/other.png 10x20 1 ${A}\n`,
+  )
+  const merged = mergeManifest(
+    before,
+    [entry('website/static/img/wolf.png', B)],
+    ['wolf'],
+  )
+  expect(merged.size).toBe(2)
+  expect(merged.get('website/static/img/wolf.png')?.sha256).toBe(B)
+  // byte-identical to the old line, not re-derived: this is the half that makes
+  // a one-figure push safe in a worktree holding somebody else's regen
+  expect(merged.get('website/static/img/other.png')).toStrictEqual(
+    before.get('website/static/img/other.png'),
+  )
+})
+
+test('a filtered merge still drops a selected figure that left the disk', () => {
+  const before = parseManifest(
+    `website/static/img/wolf.png - 1 ${A}\nwebsite/static/img/other.png - 1 ${A}\n`,
+  )
+  const merged = mergeManifest(before, [], ['wolf'])
+  expect([...merged.keys()]).toStrictEqual(['website/static/img/other.png'])
+})
+
+// figureName is not injective: jb2export renders to products/jbrowse-img/img and
+// the website keeps a mirror of every one. They are copies and have to move
+// together, so one token selecting both paths is the behaviour we want here.
+test('a filter token selects both paths a figure name maps to', () => {
+  const before = parseManifest(
+    `products/jbrowse-img/img/insertion.png - 1 ${A}\n` +
+      `website/static/img/insertion.png - 1 ${A}\n` +
+      `website/static/img/unrelated.png - 1 ${A}\n`,
+  )
+  const merged = mergeManifest(
+    before,
+    [
+      entry('products/jbrowse-img/img/insertion.png', B),
+      entry('website/static/img/insertion.png', B),
+    ],
+    ['insertion'],
+  )
+  expect(merged.size).toBe(3)
+  expect(merged.get('products/jbrowse-img/img/insertion.png')?.sha256).toBe(B)
+  expect(merged.get('website/static/img/insertion.png')?.sha256).toBe(B)
+  expect(merged.get('website/static/img/unrelated.png')?.sha256).toBe(A)
 })
 
 test('diff separates added, changed and removed', () => {

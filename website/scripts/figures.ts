@@ -3,6 +3,7 @@
 //   pnpm figures status              what the worktree and figures.lock disagree about
 //   pnpm figures:pull                fetch every figure the manifest names (no credentials)
 //   pnpm figures:push                upload new bytes, rewrite figures.lock (needs AWS)
+//   pnpm figures:push --filter x     ...only the figures matching x
 //   pnpm figures:check               CI gate: manifest and worktree agree
 //   pnpm figures:report              what moved, with before/after images
 //
@@ -32,6 +33,7 @@ import {
   repoRoot,
   unpublishedFigures,
 } from './figure-paths.ts'
+import { matchesFilterTokens, parseFilterTokens } from './filter-tokens.ts'
 import {
   type FigureEntry,
   diffManifests,
@@ -41,6 +43,7 @@ import {
   formatMarkdownReport,
   formatTextReport,
   hashBuffer,
+  mergeManifest,
   resolveNow,
   storeBucket,
   storeKey,
@@ -55,6 +58,11 @@ const option = (name: string) => {
   const i = args.indexOf(`--${name}`)
   return i === -1 ? undefined : args[i + 1]
 }
+// Every occurrence, so `--filter a --filter b` unions rather than keeping only
+// the last — same shape as the screenshot generator's flag, which is declared
+// `multiple` for the same reason.
+const repeatedOption = (name: string) =>
+  args.flatMap((a, i) => (a === `--${name}` ? (args[i + 1] ?? []) : []))
 
 // A year, immutable: the URL names the bytes, so it can never be wrong.
 const CACHE_CONTROL = 'public, max-age=31536000, immutable'
@@ -256,8 +264,24 @@ function readStoreKeys(): Set<string> | undefined {
   }
 }
 
+// `push` publishes THE WHOLE WORKTREE by default, which is the right default for
+// one person on one branch and the wrong one for a worktree several agents share:
+// the manifest is rewritten from every figure on disk, so a regen of one figure
+// carries whatever anyone else has left lying around into the same figures.lock
+// diff, under whichever commit message happens to be written next. `--filter`
+// scopes both halves of the operation — the blobs uploaded AND the lines
+// rewritten — to the figures named, and every other line is copied through from
+// the existing manifest untouched. Matching is on `figureName`, the same
+// `dog10k-wolfdog-ancestry` / `tutorial-thumbs/foo` the generator and the reports
+// print, substring by default.
+//
+// One consequence worth stating: `figureName` is not injective (a jbrowse-img
+// figure and the website's mirror of it share a name), so a filter selects BOTH
+// paths. That is what you want here — the pair are copies and must move together
+// — and it is the opposite of what `figurePath` exists for elsewhere.
 function push() {
   const dryRun = flag('dry-run')
+  const tokens = parseFilterTokens(repeatedOption('filter'))
   const before = readManifest()
   const paths = listFigureFiles()
   if (!paths.length) {
@@ -267,10 +291,26 @@ function push() {
     )
     process.exit(1)
   }
+  const selected = paths.filter(p =>
+    matchesFilterTokens(figureName(p), tokens, false),
+  )
+  if (!selected.length) {
+    console.error(`no figures on disk match --filter ${tokens.join(',')}`)
+    process.exit(1)
+  }
 
-  console.log(`hashing ${paths.length} figure(s)…`)
-  const entries = paths.map(describeFile)
-  const after = new Map(entries.map(e => [e.path, e]))
+  // Only the selection is hashed. Hashing every figure is 62 MB of reads and the
+  // most expensive thing this tool does, so a one-figure push is now instant
+  // rather than a full sweep that happens to change one line.
+  console.log(`hashing ${selected.length} figure(s)…`)
+  const entries = selected.map(describeFile)
+  const after = mergeManifest(before, entries, tokens)
+  if (tokens.length) {
+    console.log(
+      `--filter ${tokens.join(',')}: ${entries.length} figure(s) selected, ` +
+        `${after.size - entries.length} figures.lock line(s) left untouched`,
+    )
+  }
   const changes = diffManifests(before, after)
 
   const existing = readStoreKeys()
@@ -346,14 +386,17 @@ function push() {
   // figures.lock reading as ` M` in `git status` with an empty `git diff` — and
   // in a worktree several agents share, a file that looks modified but has no
   // diff is precisely what gets swept into somebody else's commit.
-  const next = formatManifest(entries)
+  // `after`, not `entries`: under --filter those differ by every line carried
+  // through from the old manifest, and writing the selection alone would delete
+  // the other 450 figures from the store's index in the name of publishing one.
+  const next = formatManifest([...after.values()])
   if (readFileSync(manifestPath, 'utf8') === next) {
-    console.log(`figures.lock already matches (${entries.length} figures)`)
+    console.log(`figures.lock already matches (${after.size} figures)`)
     return
   }
   writeFileSync(manifestPath, next)
   console.log(
-    `wrote figures.lock (${entries.length} figures)\n` +
+    `wrote figures.lock (${after.size} figures)\n` +
       'Commit it — that diff is the record of what moved.',
   )
 }
@@ -511,7 +554,11 @@ const usage = `figures — the S3-backed figure store
 
   status              compare the worktree against figures.lock
   pull [--force]      install every figure figures.lock names
-  push [--dry-run]    upload new bytes, then rewrite figures.lock
+  push [--dry-run] [--filter a,b]
+                      upload new bytes, then rewrite figures.lock. --filter
+                      scopes it to the figures named (substring, repeatable)
+                      and leaves every other manifest line untouched, which is
+                      what a worktree with someone else's regen in it needs
   check [--remote]    fail if the manifest and the worktree disagree
   report [--base ref] [--markdown] [--out file]
                       what moved, with before/after store URLs

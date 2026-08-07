@@ -18,6 +18,14 @@ immutable; git tracks `figures.lock` at the repo root, one line per figure.
   manifest line whose bytes were never pushed breaks `pull` for everyone. CI
   catches that anyway — a fresh runner has no figures, so its `pull` verifies
   every entry.
+- **`push --filter <name>` when the worktree is shared.** A bare `push`
+  publishes the whole worktree and rewrites `figures.lock` from every figure on
+  disk, so another agent's un-pushed regen lands in your lock diff under
+  whichever commit message is written next. `--filter` scopes both the upload
+  and the rewrite to the figures named (substring on the `figureName` the
+  reports print, `a,b` or repeated) and copies every other line through
+  untouched. It also skips hashing the rest, which is the 62 MB of reads that
+  makes an unfiltered push slow. `--dry-run` shows the selection first.
 - **A figure change is now a one-line hash swap**, so `pnpm figures:report`
   (`--base`, `--markdown`) is how you _look_ at one. Every revision ever pushed
   is still at its own URL, so it renders before/after side by side. The
@@ -126,9 +134,9 @@ changes every capture.
   region covers, which is also how you find out **which** assembly ended up on
   which axis. Anchors on the two canvas view types are resolved node-side and
   handed to the overlay as a rect, so a new one has to be added to `annotations`
-  _and_ to the pre-resolved branch in `annotationOverlay.ts`; the axis
-  `bpToPx` returns a bare number, and reading `.offsetPx` off it yields a NaN
-  that serializes to null and parks every callout in the top-left corner.
+  _and_ to the pre-resolved branch in `annotationOverlay.ts`; the axis `bpToPx`
+  returns a bare number, and reading `.offsetPx` off it yields a NaN that
+  serializes to null and parks every callout in the top-left corner.
 - **Don't `convert -append` a before/after figure by hand** — use a `compose`
   spec, or `stages` when a state is only reachable through the UI.
 - **A UI click-chain waiting on a fixed timeout is a red flag.** Make the

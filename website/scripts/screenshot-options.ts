@@ -11,7 +11,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
 
-import { parseFilterTokens } from './screenshot-specs.ts'
+import { parseFilterTokens } from './filter-tokens.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 

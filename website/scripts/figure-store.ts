@@ -46,6 +46,8 @@
 // filesystem half is figure-paths.ts.
 import { createHash } from 'node:crypto'
 
+import { matchesFilterTokens } from './filter-tokens.ts'
+
 // Repo-relative, and the only definition of "is this a figure". Both are swept
 // together by generate-screenshots.ts, so they share a store.
 export const figureRoots = [
@@ -318,6 +320,33 @@ export function resolveNow(
     now.set(entry.path, entry)
   }
   return now
+}
+
+// The manifest `push` is about to write: the figures it selected as they are on
+// disk, plus — when a --filter narrowed the selection — every line the filter did
+// not name, carried through from the old manifest untouched.
+//
+// Pure, and separated from `push` for one reason: getting it wrong is silent and
+// destructive in the same direction every time. `push` already had the shape
+// where the manifest is written from "everything hashed this run", so a --filter
+// bolted on without this would have written a figures.lock holding one line and
+// deleted 484 figures from the site's only record that they exist. Nothing would
+// have failed — a manifest is valid at any size, and the bytes stay in the store
+// — until the next `pull` installed nothing and the build shipped without them.
+//
+// Unfiltered (no tokens) nothing is carried and the result is exactly the
+// worktree, which is what push has always written.
+export function mergeManifest(
+  before: Map<string, FigureEntry>,
+  selected: Iterable<FigureEntry>,
+  tokens: string[],
+): Map<string, FigureEntry> {
+  const carried = tokens.length
+    ? [...before].filter(
+        ([path]) => !matchesFilterTokens(figureName(path), tokens, false),
+      )
+    : []
+  return new Map([...carried, ...[...selected].map(e => [e.path, e] as const)])
 }
 
 export function diffManifests(

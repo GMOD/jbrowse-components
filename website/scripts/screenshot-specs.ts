@@ -271,30 +271,3 @@ export function countRawCallouts(list: ScreenshotSpec[] = specs) {
   }
   return { found, baseline: BASELINE }
 }
-
-// Split `--filter a,b,c` into trimmed, non-empty tokens. Takes an array because
-// the flag is declared `multiple`, so repeating it (`--filter a --filter b`)
-// unions the tokens. It used to be a plain string, where node's parseArgs keeps
-// only the last occurrence — a repeated flag silently rendered one spec and
-// skipped the other, which reads as the skipped one being up to date.
-export function parseFilterTokens(filter: string[] | undefined) {
-  return (filter ?? []).flatMap(f =>
-    f
-      .split(',')
-      .map(t => t.trim())
-      .filter(Boolean),
-  )
-}
-
-// True when `name` matches any filter token (exact name or substring). An empty
-// token list matches everything, so an absent --filter selects all specs.
-export function matchesFilterTokens(
-  name: string,
-  tokens: string[],
-  exact: boolean,
-) {
-  return (
-    tokens.length === 0 ||
-    tokens.some(t => (exact ? name === t : name.includes(t)))
-  )
-}

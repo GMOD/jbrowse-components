@@ -32,6 +32,7 @@ import {
   hideLingeringTooltip,
 } from './annotations.ts'
 import { fileExists, readManifest } from './figure-paths.ts'
+import { matchesFilterTokens } from './filter-tokens.ts'
 import {
   IM,
   commitScreenshot,
@@ -93,11 +94,7 @@ import {
   recordTooltip,
   recordUnpainted,
 } from './screenshot-report.ts'
-import {
-  matchesFilterTokens,
-  specs,
-  validateSpecs,
-} from './screenshot-specs.ts'
+import { specs, validateSpecs } from './screenshot-specs.ts'
 
 import type { CommitResult } from './image-pipeline.ts'
 import type { RunTotals } from './screenshot-report.ts'
