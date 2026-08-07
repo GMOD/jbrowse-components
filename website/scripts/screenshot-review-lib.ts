@@ -243,6 +243,17 @@ const jbrowseImgSrcDir = path.resolve(
 // hash and the bytes a reviewer is served have to agree, and a jb2export run
 // mid-session is exactly the case this exists for. Two stats when there is
 // nothing to do.
+//
+// mtime is the trigger, CONTENT is the decision — the same rule as `mirrorFile`
+// in generate-screenshots.ts, which is the other half of this mirror and the
+// reason the two must not drift. On mtime alone this was a write to the
+// worktree performed by a GET, on a heuristic that `figures:pull` can lose:
+// pull fetches both paths of a pair concurrently, so the mirror can land a
+// millisecond before its source, and the next page load would then copy over it.
+// Byte-identical today, so nothing moved — but the day the two manifest entries
+// legitimately differ, opening the review page would silently overwrite one
+// with the other and banner the result as a figure that exists only on this
+// machine, which the reviewer never touched.
 export function syncJbrowseImgMirror(name: string) {
   if (!name.startsWith(jbrowseImgPrefix)) {
     return
@@ -261,9 +272,17 @@ export function syncJbrowseImgMirror(name: string) {
   ) {
     return
   }
-  const srcMtime = fs.statSync(src).mtimeMs
-  if (!fs.existsSync(dest) || fs.statSync(dest).mtimeMs < srcMtime) {
+  if (!fs.existsSync(dest)) {
     fs.mkdirSync(path.dirname(dest), { recursive: true })
+    fs.copyFileSync(src, dest)
+    return
+  }
+  // Reading both is the point, but only for a pair the cheap check already
+  // flagged: an unchanged mirror costs two stats, not two megabytes.
+  if (
+    fs.statSync(dest).mtimeMs < fs.statSync(src).mtimeMs &&
+    !fs.readFileSync(dest).equals(fs.readFileSync(src))
+  ) {
     fs.copyFileSync(src, dest)
   }
 }
@@ -426,7 +445,18 @@ export function collectScreenshots(specs: ScreenshotSpec[]): Screenshot[] {
   const names = new Set(specNames)
   for (const [name, usages] of index) {
     const liveUsages = usages.filter(u => !u.file.startsWith('blog/'))
-    if (liveUsages.length > 0 && disk.has(figurePath(name))) {
+    // On disk OR named by figures.lock. The `missing` half is what keeps a
+    // figure this checkout has not pulled reachable: the seven figures with no
+    // spec (product_architecture, pangenome/graph, …) get in only through this
+    // scan, so gating on the disk alone dropped them from the review entirely on
+    // an unpulled checkout — while the banner above the cards was promising
+    // "their cards are blank until you do". The unpulled card, with `pnpm
+    // figures:pull` on it, is exactly the thing that was silently absent. A
+    // doc-referenced name in neither is a third-party remote image and stays out.
+    if (
+      liveUsages.length > 0 &&
+      (disk.has(figurePath(name)) || unpulled.has(figurePath(name)))
+    ) {
       names.add(name)
     }
   }

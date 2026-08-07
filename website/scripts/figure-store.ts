@@ -55,6 +55,22 @@ export const figureRoots = [
 
 export const figureExtRe = /\.(png|webp|jpe?g|gif|svg|ico)$/i
 
+// What a figure is served as, by extension, for both things that serve one: the
+// `push` upload (explicit rather than left to the aws CLI's mimetypes guess,
+// which differs by platform and has historically not known about webp) and the
+// review server's /img route. One table, because a figure type this does not
+// know about is served as a download by one of them and as octet-stream by the
+// other, and finding out costs a round trip through S3 either way.
+export const figureContentTypes: Record<string, string> = {
+  '.png': 'image/png',
+  '.webp': 'image/webp',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
+}
+
 // Derived-and-gitignored output that happens to live under a figure root.
 // gallery-thumbs is regenerated from figures already in the store by
 // gen-gallery-thumbs.ts; the other two are transient by construction (see

@@ -35,6 +35,7 @@ import {
 import {
   type FigureEntry,
   diffManifests,
+  figureContentTypes,
   figureName,
   formatManifest,
   formatMarkdownReport,
@@ -53,16 +54,6 @@ const flag = (name: string) => args.includes(`--${name}`)
 const option = (name: string) => {
   const i = args.indexOf(`--${name}`)
   return i === -1 ? undefined : args[i + 1]
-}
-
-const CONTENT_TYPES: Record<string, string> = {
-  '.png': 'image/png',
-  '.webp': 'image/webp',
-  '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
-  '.gif': 'image/gif',
-  '.svg': 'image/svg+xml',
-  '.ico': 'image/x-icon',
 }
 
 // A year, immutable: the URL names the bytes, so it can never be wrong.
@@ -336,7 +327,7 @@ function push() {
         // Explicit rather than left to the CLI's mimetypes guess, which differs
         // by platform and has historically not known about webp.
         '--content-type',
-        CONTENT_TYPES[ext] ?? 'application/octet-stream',
+        figureContentTypes[ext] ?? 'application/octet-stream',
         '--cache-control',
         CACHE_CONTROL,
         '--only-show-errors',

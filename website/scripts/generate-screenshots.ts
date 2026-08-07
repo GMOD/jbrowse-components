@@ -800,9 +800,14 @@ async function main() {
   let passed = 0
   let failed = 0
   let kept = 0
-  let skipped = 0
   let started = 0
   const total = renderSpecs.length + composeSpecs.length
+  // What this run set out to render, recorded rather than inferred. Every other
+  // list below is an exception, so a spec that renders fine and unchanged leaves
+  // no trace — and the review UI cannot tell that from a spec the run never
+  // reached unless the selection itself is written down. See RunReport.selected.
+  const runSelection = [...renderSpecs, ...composeSpecs].map(s => s.name)
+  const skipped: RunTotals['skipped'] = []
   const failures: RunTotals['failures'] = []
   const flaky: RunTotals['flaky'] = []
   const changed: RunTotals['changed'] = []
@@ -900,28 +905,27 @@ async function main() {
     }
   }
 
+  // Selected and then not rendered. Recorded with its reason, not just counted:
+  // the committed PNG stays, so the figure looks current, and only this list
+  // says the run declined to check it.
+  function skip(spec: ScreenshotSpec, reason: string) {
+    console.log(`${progress()} ⊘ ${spec.name} (${reason})`)
+    skipped.push({ name: spec.name, reason })
+  }
+
   async function runSpec(spec: ScreenshotSpec) {
     if (spec.curated) {
-      console.log(
-        `${progress()} ⊘ ${spec.name} (curated, keeping committed image)`,
-      )
-      skipped++
+      skip(spec, 'curated, keeping committed image')
       return
     }
     // Not gated on --filter, unlike heavyNetwork: naming this one in a
     // headless run does not make it renderable, it just fails more explicitly.
     if (spec.headedOnly && !headed) {
-      console.log(
-        `${progress()} ⊘ ${spec.name} (needs a real GPU; re-run with --headed)`,
-      )
-      skipped++
+      skip(spec, 'needs a real GPU; re-run with --headed')
       return
     }
     if (spec.heavyNetwork && !filterTokens.length) {
-      console.log(
-        `${progress()} ⊘ ${spec.name} (heavy remote data; name it in --filter to re-render)`,
-      )
-      skipped++
+      skip(spec, 'heavy remote data; name it in --filter to re-render')
       return
     }
     // Stacking a part that just failed to render would publish a figure half
@@ -1014,6 +1018,7 @@ async function main() {
     passed,
     failed,
     kept,
+    selected: runSelection,
     skipped,
     failures,
     flaky,

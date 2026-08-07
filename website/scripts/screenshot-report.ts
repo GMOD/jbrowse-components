@@ -128,7 +128,14 @@ export interface RunTotals {
   passed: number
   failed: number
   kept: number
-  skipped: number
+  // Every spec the run intended to render, after --filter/--affected/--cover
+  // have all had their say. The only honest answer to "what did this run
+  // cover" — see RunReport.selected.
+  selected: string[]
+  // Selected and then deliberately not rendered, with why. A count was enough
+  // for the console line; the review UI needs the names, because a figure kept
+  // because its spec is `curated` looks exactly like one the app still produces.
+  skipped: { name: string; reason: string }[]
   failures: { name: string; error: string }[]
   flaky: { name: string; frac: number }[]
   changed: { name: string; result: CommitResult }[]
@@ -146,7 +153,7 @@ export function printSummary(totals: RunTotals) {
   console.log(
     `\n${passed} ${check ? 'checked' : 'succeeded'}, ${failed} failed${
       check ? `, ${flaky.length} flaky` : `, ${kept} unchanged`
-    }${skipped > 0 ? `, ${skipped} skipped (curated / heavy remote data / needs a GPU)` : ''}`,
+    }${skipped.length > 0 ? `, ${skipped.length} skipped (curated / heavy remote data / needs a GPU)` : ''}`,
   )
   if (changed.length > 0) {
     printReport(
@@ -250,10 +257,27 @@ export function printSummary(totals: RunTotals) {
 // filtered run says nothing about the specs it skipped, and only a --check run
 // can populate `flaky` at all — without both, a reviewer cannot tell "not
 // flaky" from "never tested for flakiness".
+//
+// `selected` is the same argument taken to its conclusion. Everything else here
+// is exceptions — a spec that rendered fine and unchanged leaves no trace at
+// all, which is most of them — so "no entry" can only be read as "nothing went
+// wrong" if something else says the run reached it. `filter` was standing in for
+// that and got it wrong in the direction that matters: --affected and --cover
+// narrow just as hard and leave `filter` empty, so a 14-spec --affected run (the
+// workflow website/CLAUDE.md actually recommends) reported as a full sweep and
+// the other 300 figures read as verified by it.
 export interface RunReport {
   finishedAt: string
   filter: string[]
   check: boolean
+  // every spec this run intended to render, however it was narrowed
+  selected: string[]
+  // how many specs existed at the time, so a reader can size `selected`
+  // against the corpus rather than against today's spec list
+  total: number
+  // selected, then deliberately not rendered — the committed image is kept and
+  // says nothing about the current app
+  skipped: { name: string; reason: string }[]
   failures: { name: string; error: string }[]
   flaky: { name: string; frac: number }[]
   updated: { name: string; detail: string }[]
@@ -267,6 +291,9 @@ function writeRunReport(totals: RunTotals) {
     finishedAt: new Date().toISOString(),
     filter: filterTokens,
     check,
+    selected: totals.selected,
+    total: specs.length,
+    skipped: totals.skipped,
     failures: totals.failures,
     flaky: totals.flaky,
     updated: totals.changed.map(({ name, result }) => ({
