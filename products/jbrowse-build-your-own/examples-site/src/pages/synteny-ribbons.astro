@@ -1,0 +1,16 @@
+---
+import SyntenyRibbons from '../examples/SyntenyRibbons.tsx'
+import SyntenyRibbonsCode from '../examples/SyntenyRibbons.tsx?raw'
+import { getPage, section } from '../examples.ts'
+import Layout from '../layouts/ExampleLayout.astro'
+import Section from '../layouts/ExampleSection.astro'
+
+const page = getPage('synteny-ribbons')
+const sec = section(page, 'synteny-ribbons')
+---
+
+<Layout page={page}>
+  <Section {...sec} code={SyntenyRibbonsCode}>
+    <SyntenyRibbons client:only="react" />
+  </Section>
+</Layout>

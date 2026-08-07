@@ -21,6 +21,16 @@ import type { AbstractSessionModel } from '@jbrowse/core/util'
 export type { LinearSyntenyImportFormSyntenyOption } from './LinearSyntenyView/components/ImportForm/ImportSyntenyTrackSelectorArea.tsx'
 export { renderToSvg } from './LinearSyntenyView/svgcomponents/SVGLinearSyntenyView.tsx'
 export type { LinearSyntenyViewModel } from './LinearSyntenyView/model.ts'
+// The ribbon layer for one band, and the model it takes. A host drawing its own
+// comparative chrome needs this: the two genome rows are ordinary LGVs it
+// already knows how to mount, and the per-display `RenderingComponent` (tooltip,
+// context menu, fetch status) comes off the display model — but the ribbons are
+// drawn here, over `useRenderingBackend` and `SyntenyRendererFactory`, and there
+// is no way to write a substitute that isn't a worse copy of the GPU path. Same
+// argument as `usePanZoom`: an embedder would *have to* rebuild it, so it is a
+// missing export rather than something the reader owns.
+export { default as LevelSyntenyCanvas } from './LinearSyntenyViewHelper/LevelSyntenyCanvas.tsx'
+export type { LinearSyntenyViewHelperModel } from './LinearSyntenyViewHelper/stateModelFactory.ts'
 // The view's `init` snapshot contract, so a programmatic caller (jbrowse-img,
 // an embedded host) builds it against the same type applyInitSettings reads
 // rather than a hand-copied shape.

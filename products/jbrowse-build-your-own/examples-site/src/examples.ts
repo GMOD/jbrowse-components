@@ -11,8 +11,11 @@ export { section } from './exampleModel.ts'
 // and One track follows to show the bare view it's built from. The last two
 // turn around: everything up to them is about getting data onto the screen,
 // then one is about driving it from outside and the last about getting a click
-// back off it. The worker page sits outside that arc, on the end: it changes
-// nothing you can see, and every page before it defers to it in a comment.
+// back off it. The worker page sits outside that arc: it changes nothing you
+// can see, and every page before it defers to it in a comment. The synteny page
+// is last and is its own group because it is the one page on a different
+// product -- two views need a session with a views array, which the single-view
+// engine every page above it uses does not have.
 export const pages: ExamplePage[] = [
   {
     slug: 'pan-and-zoom',
@@ -106,6 +109,16 @@ export const pages: ExamplePage[] = [
       'Move fetching, parsing and layout off the main thread with one option to createViewState.',
     group: 'In production',
     sections: [{ slug: 'run-it-in-a-worker', title: 'One option, one worker' }],
+  },
+  {
+    slug: 'synteny-ribbons',
+    title: 'Two genomes, and the ribbons',
+    description:
+      'Human and mouse at BRCA1: a synteny view is two ordinary linear views plus a ribbon band, so every page above applies to each row.',
+    group: 'Beyond one view',
+    sections: [
+      { slug: 'synteny-ribbons', title: 'Rows you already know how to draw' },
+    ],
   },
 ]
 

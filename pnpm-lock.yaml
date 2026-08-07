@@ -1821,12 +1821,18 @@ importers:
       '@jbrowse/plugin-alignments':
         specifier: workspace:*
         version: link:../../../plugins/alignments
+      '@jbrowse/plugin-linear-comparative-view':
+        specifier: workspace:*
+        version: link:../../../plugins/linear-comparative-view
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:*
         version: link:../../../plugins/linear-genome-view
       '@jbrowse/plugin-wiggle':
         specifier: workspace:*
         version: link:../../../plugins/wiggle
+      '@jbrowse/react-app2':
+        specifier: workspace:*
+        version: link:../../jbrowse-react-app
       '@jbrowse/react-linear-genome-view2':
         specifier: workspace:*
         version: link:../../jbrowse-react-linear-genome-view

@@ -57,6 +57,8 @@ const MUI_BUDGET = {
   'every-chromosome': 0,
   'your-own-feature-details': 0,
   'run-it-in-a-worker': 0,
+  // measured, not chosen -- see the note below the budget
+  'synteny-ribbons': 0,
 }
 
 // Count the outermost MUI-classed elements (an icon button and the svg inside it
