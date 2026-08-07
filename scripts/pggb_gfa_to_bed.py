@@ -29,12 +29,17 @@ tier's collapse summary.
 
 Six decisions worth keeping:
 
-* **The reference is an assembly, not a path.** A graph of a multi-contig genome
-  states its reference as one path per contig, so `--reference GRCh38` selects
-  all of them and they all walk first at rank 0. Anchoring on the single matched
-  path instead left every later reference contig to whichever donor path reached
-  its segments first, which placed them on that donor's contig at rank 1: the
-  index built and tabix-ed, and a reference query for chr2 returned nothing.
+* **The reference is an assembly: not one path, and not a whole sample either.**
+  A graph of a multi-contig genome states its reference as one path per contig,
+  so `--reference GRCh38` selects all of them and they all walk first at rank 0.
+  Anchoring on the single matched path instead left every later reference contig
+  to whichever donor path reached its segments first, which placed them on that
+  donor's contig at rank 1: the index built and tabix-ed, and a reference query
+  for chr2 returned nothing. Widening it to the whole SAMPLE would go too far the
+  other way on a diploid reference, putting both haplotypes on rank 0 and leaving
+  the graph view a backbone made of two interleaved chains. `HG002#1` names the
+  one to take, and a sample with more than one is reported rather than picked
+  from in silence.
 * **A carrier is a haplotype, not a sample.** PanSN names an assembly with two
   fields (`HG002#1#chr1`), and keying carriage on the first alone silently
   merges a diploid sample's two haplotypes, so a segment carried only on the
@@ -174,9 +179,11 @@ def main():
     ap.add_argument("prefix")
     ap.add_argument(
         "--reference",
-        help="PanSN sample (or any one of its path names) to treat as rank 0. "
-        "Every path of that sample is reference. Default: the first P line's "
-        "sample, which is where pggb and odgi leave it.",
+        help="PanSN sample (GRCh38), assembly (HG002#1), or any one path name, "
+        "to treat as rank 0. Every path of the ASSEMBLY it resolves to is "
+        "reference, so a multi-contig genome anchors on all of its contigs and a "
+        "diploid sample does not anchor on both haplotypes at once. Default: the "
+        "first P line, which is where pggb and odgi leave the reference.",
     )
     args = ap.parse_args()
 
@@ -242,11 +249,17 @@ def main():
     # over its W-line haplotypes.
     ref_index = 0
     if args.reference:
+        # Sample (`GRCh38`), assembly (`HG002#1`), or a whole path name. The
+        # middle one is how a diploid graph's reference is named, and it is the
+        # spelling to reach for once the note below says the sample was
+        # ambiguous.
         ref_index = next(
             (
                 i
                 for i, (name, _, _) in enumerate(paths)
-                if pansn_sample(name) == args.reference or name == args.reference
+                if pansn_sample(name) == args.reference
+                or name == args.reference
+                or name.startswith(f"{args.reference}#")
             ),
             None,
         )
@@ -261,10 +274,38 @@ def main():
     # segments first: they were placed on that donor's contig at rank 1, so a
     # reference query for chr2 came back empty while chr1 was fine — the index
     # built, tabix-ed and drew, with one chromosome of the reference missing.
-    # Every path of the reference sample walks first, in file order, at rank 0.
-    ref_sample = pansn_sample(paths[ref_index][0])
-    is_ref = [pansn_sample(name) == ref_sample for name, _, _ in paths]
+    # Every path of the reference assembly walks first, in file order, at rank 0.
+    #
+    # An assembly, not a sample, for the same reason carriage is keyed per
+    # haplotype below: PanSN spells an assembly with two fields, and a diploid
+    # reference matched by sample alone puts BOTH haplotypes at rank 0. Rank 0 is
+    # the backbone the graph view draws its x axis on, and a backbone spread over
+    # two stable sequences is two chains interleaved on one row. Naming a bare
+    # sample still works — the match below finds a path, and its assembly is what
+    # the pass then uses — so `--reference GRCh38` is unchanged on the haploid
+    # references these graphs are built against.
+    ref_assembly = pansn_assembly(paths[ref_index][0])
+    is_ref = [pansn_assembly(name) == ref_assembly for name, _, _ in paths]
     n_ref = sum(is_ref)
+    # A sample with more than one haplotype is the case the line above just
+    # narrowed, and silently taking the first is how it would be missed. Only
+    # when the caller named a bare sample (or named nothing): naming `HG002#1`
+    # outright has already made the choice, and repeating it back is noise.
+    others = sorted(
+        {
+            pansn_assembly(name)
+            for name, _, _ in paths
+            if pansn_sample(name) == pansn_sample(paths[ref_index][0])
+        }
+        - {ref_assembly}
+    )
+    if others and "#" not in (args.reference or ""):
+        print(
+            f"note: reference assembly {ref_assembly}; "
+            f"{', '.join(others)} of the same sample stay rank 1. "
+            "Name one of them to anchor on it instead.",
+            file=sys.stderr,
+        )
     ordered = [p for p, r in zip(paths, is_ref) if r] + [
         p for p, r in zip(paths, is_ref) if not r
     ]
@@ -327,7 +368,7 @@ def main():
 
     print(
         f"{len(coords)} segments, {len(links) - skipped} links, "
-        f"reference {ref_sample} ({n_ref} of {len(paths)} paths)",
+        f"reference {ref_assembly} ({n_ref} of {len(paths)} paths)",
         file=sys.stderr,
     )
     if skipped:

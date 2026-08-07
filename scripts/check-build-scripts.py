@@ -398,13 +398,18 @@ check("path_start reads an odgi extract window, and defaults to 0 without one",
 pangenome_dir = tempfile.mkdtemp()
 
 
-def run_helper(mod, argv):
-    """Drive a helper's main() the way a build script does, capturing its report."""
+def run_helper(mod, argv, want_err=False):
+    """Drive a helper's main() the way a build script does, capturing its report.
+
+    `want_err` returns stderr instead, for the helpers whose report or whose
+    advice to the caller goes there rather than to stdout.
+    """
     sys.argv = argv
     out = io.StringIO()
-    with contextlib.redirect_stdout(out), contextlib.redirect_stderr(io.StringIO()):
+    err = io.StringIO()
+    with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
         mod.main()
-    return out.getvalue()
+    return err.getvalue() if want_err else out.getvalue()
 
 
 def refusal(mod, argv, expect):
@@ -597,6 +602,38 @@ run_helper(pggb_bed, ["pggb_gfa_to_bed.py", multi, one_path,
                       "--reference", "GRCh38#0#chr1"])
 check("naming one path of the reference selects the whole assembly",
       placed(one_path), placed(multi_prefix))
+# ...but an assembly is where it stops. A diploid reference matched by SAMPLE
+# would put both haplotypes at rank 0, and rank 0 is the backbone the graph view
+# draws its x axis on, so that is one row holding two interleaved chains. The
+# bare sample resolves to one assembly and says which on stderr; naming the
+# haplotype outright picks it and says nothing, having been told.
+diploid = os.path.join(pangenome_dir, "diploid.gfa")
+with open(diploid, "w") as fh:
+    fh.write("S\ts1\t" + "A" * 5 + "\nS\ts2\t" + "C" * 5 + "\n"
+             "S\ts3\t" + "G" * 5 + "\n"
+             "P\tHG2#1#chr1\ts1+,s2+\t*,*\n"
+             "P\tHG2#2#chr1\ts1+,s3+\t*,*\n"
+             "L\ts1\t+\ts2\t+\t0M\nL\ts1\t+\ts3\t+\t0M\n")
+dip_prefix = os.path.join(pangenome_dir, "diploid")
+run_helper(pggb_bed, ["pggb_gfa_to_bed.py", diploid, dip_prefix,
+                      "--reference", "HG2"])
+check("a diploid reference anchors on ONE haplotype, not both",
+      placed(dip_prefix),
+      {"s1": ("HG2#1#chr1", "0"), "s2": ("HG2#1#chr1", "0"),
+       "s3": ("HG2#2#chr1", "1")})
+check("and says which one it took, since the sample did not settle it",
+      "HG2.2 of the same sample stay rank 1" in
+      run_helper(pggb_bed, ["pggb_gfa_to_bed.py", diploid,
+                            os.path.join(pangenome_dir, "diploid_note"),
+                            "--reference", "HG2"], want_err=True), True)
+dip_hap = os.path.join(pangenome_dir, "diploid_hap")
+run_helper(pggb_bed, ["pggb_gfa_to_bed.py", diploid, dip_hap,
+                      "--reference", "HG2#2"])
+check("naming the haplotype anchors on that one instead",
+      placed(dip_hap),
+      {"s1": ("HG2#2#chr1", "0"), "s3": ("HG2#2#chr1", "0"),
+       "s2": ("HG2#1#chr1", "1")})
+
 # The default is still the FIRST path -- but its sample, for the same reason.
 default_prefix = os.path.join(pangenome_dir, "multi_default")
 run_helper(pggb_bed, ["pggb_gfa_to_bed.py", multi, default_prefix])
