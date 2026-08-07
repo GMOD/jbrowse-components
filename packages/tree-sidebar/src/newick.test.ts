@@ -58,6 +58,13 @@ test('ignores whitespace around delimiters and newlines between tokens', () => {
   })
 })
 
+// A one-row track serializes to a bare root leaf. The name was dropped, so the
+// leaf matched no row and `treeDescribesRows` declined a tree that was correct.
+test('names a tree that is a single bare node', () => {
+  expect(parseNewick('A;')).toEqual({ name: 'A' })
+  expect(parseNewick("'has, a comma';")).toEqual({ name: 'has, a comma' })
+})
+
 test('parses unlabelled tree', () => {
   expect(parseNewick('((,),,(,));')).toEqual({
     children: [{ children: [{}, {}] }, {}, { children: [{}, {}] }],

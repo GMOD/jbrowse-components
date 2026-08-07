@@ -136,6 +136,13 @@ quote. Quoting also carries meaning the bare form can't — a **quoted**
 post-paren token is a name whatever it looks like, the only way to call a node
 `1.5`.
 
+"Don't escape here as well" is about the **newick** grammar, and does not
+generalize: `generateClusterRScript` writes the same names into R single-quoted
+literals, which nobody else quotes for, so `o'brien` closed the string and the
+whole `rownames(...)` line became a syntax error the user only met in R. That
+one escapes here (`quoteRName`), for the same reason the newick half doesn't —
+exactly one side of each grammar owns it.
+
 Whitespace is deliberately outside the quoted set on both sides. The tokenizer
 reads a bare space as part of the label (variants' phased `NA18536 HP0` rows
 depend on it), so quoting it would rewrite the serialized form of nearly every

@@ -1,15 +1,14 @@
-type NumericRow = Iterable<number>
+import type { ClusterMatrix, NumericRow } from './clusterMatrix.ts'
 
-// A Map, not a Record, because the row order IS the contract: `order` comes back
-// as indices into it and every caller maps those straight into its own source
-// list. A plain object cannot carry that — it hoists integer-like keys ahead of
-// the rest, so rows named "1", "2", "10" (numbered bigWigs, numeric VCF sample
-// IDs, a numeric partition field) arrived at the clusterer in numeric order and
-// the indices it returned pointed at the wrong sources. What made that expensive
-// to notice is that it fails twice over: the rows reorder to the wrong
-// identities, and the tree's leaf names then disagree with them, so
-// `treeDescribesRows` refuses to draw the dendrogram that would have shown it.
-export type ClusterMatrix = Map<string, NumericRow>
+// A row name is an arbitrary string from somebody's data file, and it goes into
+// the script as an R single-quoted literal — so `o'brien` (a name the newick
+// half already quotes, see `newick.ts`) closed the string early and the whole
+// `rownames(...)` line became an R syntax error. The user only finds that out in
+// R, several steps from the dialog that wrote it. Backslash first, or escaping
+// the quote would then escape its own escape.
+function quoteRName(name: string) {
+  return `'${name.replaceAll('\\', '\\\\').replaceAll("'", "\\'")}'`
+}
 
 // A genotype matrix marks a no-call with NaN, which neither R nor a TSV reader
 // understands. `NA` is the value both do: R's `dist()` drops that column from
@@ -32,7 +31,7 @@ export function generateClusterRScript(matrix: ClusterMatrix, method: string) {
   const names: string[] = []
   for (const [name, row] of matrix) {
     values.push(formatRow(row, ','))
-    names.push(`'${name}'`)
+    names.push(quoteRName(name))
   }
   return String.raw`inputMatrix<-matrix(c(${values.join(',\n')}
 ),nrow=${matrix.size},byrow=TRUE)

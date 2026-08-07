@@ -23,6 +23,23 @@ test('generateClusterRScript accepts Float32Array rows', () => {
   expect(script).toContain('c(1,2')
 })
 
+// A row name is an arbitrary string, and `newick.test.ts` already treats
+// `o'brien` as one that turns up. Written bare into an R single-quoted literal
+// it closed the string early, so `rownames(inputMatrix)<-c('o'brien','b')` is an
+// R syntax error and the dialog's whole script fails several steps away from it.
+test('generateClusterRScript escapes quotes and backslashes in row names', () => {
+  const script = generateClusterRScript(
+    new Map([
+      ["o'brien", [1]],
+      ['back\\slash', [2]],
+    ]),
+    'average',
+  )
+  expect(script).toContain(
+    String.raw`rownames(inputMatrix)<-c('o\'brien','back\\slash')`,
+  )
+})
+
 test('matrixToTsv prefixes each row with its name', () => {
   expect(
     matrixToTsv(

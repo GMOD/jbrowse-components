@@ -63,6 +63,21 @@ describe('StaleTreeHint', () => {
     expect(draw({ root: buildTree('((c,a),b);'), showTree: false })).toBeNull()
   })
 
+  // `lineZoneHeight` is the band a display reserves above its rows (the variants
+  // matrix display's connector zone, which the user can drag arbitrarily tall).
+  // At top:0 the hint floated that far above the rows it is describing, while
+  // every other thing the sidebar paints — including its sibling
+  // `ClusterProvenanceHint` — starts at the same offset.
+  it('sits at the top of the rows, not of the line zone above them', () => {
+    const { getByTestId } = render(
+      <StaleTreeHint
+        model={model({ root: buildTree('((c,a),b);') })}
+        top={40}
+      />,
+    )
+    expect(getByTestId('stale_tree_hint').style.top).toBe('40px')
+  })
+
   it('can be dismissed, since one display holds this state permanently', () => {
     const { view, hint } = drawWithView({ root: buildTree('((c,a),b);') })
     fireEvent.click(hint!)

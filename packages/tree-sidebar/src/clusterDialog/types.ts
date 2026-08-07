@@ -1,4 +1,4 @@
-import type { ClusterMatrix } from '../clusterRScript.ts'
+import type { ClusterMatrix } from '../clusterMatrix.ts'
 import type { RpcStatus } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'

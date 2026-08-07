@@ -10,7 +10,6 @@ import type { TreeSidebarModel } from './types.ts'
 const useStyles = makeStyles()(theme => ({
   hint: {
     position: 'absolute',
-    top: 0,
     left: 0,
     zIndex: 100,
     padding: '1px 6px',
@@ -55,8 +54,16 @@ const useStyles = makeStyles()(theme => ({
  */
 export const StaleTreeHint = observer(function StaleTreeHint({
   model,
+  top = 0,
 }: {
   model: TreeSidebarModel
+  // Top of the hint, matching the top of the tree canvas (the display's
+  // `lineZoneHeight`), so it sits at the head of the sidebar rather than up in
+  // whatever the display reserves above its rows — the variants matrix display's
+  // connector zone is user-draggable, so at 0 the hint floated arbitrarily far
+  // above the rows it is talking about. Same contract as
+  // `ClusterProvenanceHint`, which is its sibling in that gutter.
+  top?: number
 }) {
   const { classes } = useStyles()
   const [dismissed, setDismissed] = useState(false)
@@ -72,6 +79,7 @@ export const StaleTreeHint = observer(function StaleTreeHint({
   return stale && !dismissed ? (
     <div
       className={classes.hint}
+      style={{ top }}
       data-testid="stale_tree_hint"
       title="Re-run clustering, or reset the row order, to bring the tree back. Click to dismiss."
       onClick={() => {

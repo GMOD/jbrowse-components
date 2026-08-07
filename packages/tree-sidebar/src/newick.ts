@@ -145,7 +145,15 @@ export default function parseNewick(s: string): NewickNode {
       } else {
         tree.name = token.text
       }
-    } else if (prevDelim === '(' || prevDelim === ',') {
+    } else if (
+      prevDelim === '(' ||
+      prevDelim === ',' ||
+      // nothing before it at all: the whole tree is one bare node (`A;`), which
+      // is what a one-row track serializes to. Without this the name was
+      // dropped, and a root leaf with no name matches no row, so
+      // `treeDescribesRows` declined the tree rather than drawing it.
+      prevDelim === undefined
+    ) {
       tree.name = token.text
     }
   }

@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
@@ -131,20 +131,6 @@ const TreeSidebar = observer(function TreeSidebar({
     spatialIndex,
   } = model
 
-  const treeCanvasRef = useCallback(
-    (ref: HTMLCanvasElement | null) => {
-      model.setTreeCanvasRef(ref)
-    },
-    [model],
-  )
-
-  const mouseoverCanvasRef = useCallback(
-    (ref: HTMLCanvasElement | null) => {
-      model.setMouseoverCanvasRef(ref)
-    },
-    [model],
-  )
-
   function hitTestNode(event: React.MouseEvent) {
     if (spatialIndex) {
       const rect = event.currentTarget.getBoundingClientRect()
@@ -218,7 +204,7 @@ const TreeSidebar = observer(function TreeSidebar({
     return (
       <TrackOverlayPortal>
         <GutterLayer top={top}>
-          <StaleTreeHint model={model} />
+          <StaleTreeHint model={model} top={lineZoneHeight} />
         </GutterLayer>
       </TrackOverlayPortal>
     )
@@ -239,9 +225,11 @@ const TreeSidebar = observer(function TreeSidebar({
             }}
           />
           <ClusterProvenanceHint model={model} top={lineZoneHeight} />
+          {/* the ref callbacks are the model's own actions, which are stable per
+              instance — wrapping them in useCallback([model]) bought nothing */}
           <canvas
             data-testid="tree_sidebar_dendrogram"
-            ref={treeCanvasRef}
+            ref={model.setTreeCanvasRef}
             style={{
               width: treeAreaWidth,
               height: contentHeight,
@@ -252,7 +240,7 @@ const TreeSidebar = observer(function TreeSidebar({
             }}
           />
           <canvas
-            ref={mouseoverCanvasRef}
+            ref={model.setMouseoverCanvasRef}
             style={{
               width: viewWidth,
               height: contentHeight,

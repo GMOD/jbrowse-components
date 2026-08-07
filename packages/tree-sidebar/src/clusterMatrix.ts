@@ -6,6 +6,24 @@ import { clusterProgressStatus } from './clusterProgressStatus.ts'
 import type { StatusCallback } from '@jbrowse/core/util'
 import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
 
+// One matrix row. Both halves of the clustering path read it and they read it
+// differently — hclust indexes it, the R-script and TSV serializers iterate it —
+// so the contract is the intersection rather than whichever half a caller
+// happened to be written against. `number[]` and every TypedArray satisfy both;
+// a bare generator does not, and it could not have been handed to hclust anyway.
+export type NumericRow = ArrayLike<number> & Iterable<number>
+
+// A Map, not a Record, because the row order IS the contract: `order` comes back
+// as indices into it and every caller maps those straight into its own source
+// list. A plain object cannot carry that — it hoists integer-like keys ahead of
+// the rest, so rows named "1", "2", "10" (numbered bigWigs, numeric VCF sample
+// IDs, a numeric partition field) arrived at the clusterer in numeric order and
+// the indices it returned pointed at the wrong sources. What made that expensive
+// to notice is that it fails twice over: the rows reorder to the wrong
+// identities, and the tree's leaf names then disagree with them, so
+// `treeDescribesRows` refuses to draw the dendrogram that would have shown it.
+export type ClusterMatrix = Map<string, NumericRow>
+
 /**
  * The tail every clustering RPC shares: hand a name→values matrix to hclust,
  * forward its progress onto the status channel, and return the row `order` plus
@@ -27,7 +45,7 @@ export async function clusterMatrix({
   statusCallback,
   stopTokenCheck,
 }: {
-  data: Map<string, ArrayLike<number>>
+  data: ClusterMatrix
   statusCallback?: StatusCallback
   stopTokenCheck?: StopTokenChecker
 }) {
