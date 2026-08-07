@@ -189,7 +189,7 @@ For a **BigMaf** track, UCSC ships one alongside the alignment:
 }
 ```
 
-For a **tabix MAF**, `maf2bed --summary` writes one in the same pass that
+For the other three, `maf2bed --summary` writes one in the same pass that
 converts the alignment, so it costs no extra scan of the MAF:
 
 ```bash
@@ -202,6 +202,10 @@ tabix -p bed file.bed.gz
 sort -k1,1 -k2,2n summary.bed | bgzip > summary.bed.gz
 tabix -p bed summary.bed.gz
 ```
+
+Check that `summary.bed` exists before wiring the slot. `maf2bed` ignores
+arguments it does not recognize, so a build without `--summary` exits 0 and
+writes only the alignment BED.
 
 Its `#` header names the columns, so the sub-adapter needs no `columnNames`:
 
@@ -235,11 +239,12 @@ from the alignment itself and needs no file.
 `BgzipMafAdapter` and `BgzipTaffyAdapter` take the same slot, and the same
 `maf2bed --summary` BED serves them. Their `.tai` index seeks within an
 alignment, so a read already costs what is on screen rather than what the blocks
-happen to span — but that bounds the span, not the depth, and a read costs both.
-Measured against HPRC's published indexes at 464 haplotypes, a span-bounded read
-settles at about 19 compressed bytes per bp for the MAF and 2 for the TAF, so
-whole-chromosome chr6 is 3.2 GB and 354 MB respectively. An index moves the
-ceiling; a summary file is what removes it.
+happen to span. That bounds the span a read covers, not the number of rows it
+covers it with, and a read costs both. On a deep alignment an index moves the
+zoom-out ceiling; the summary file is what removes it. Each slot doc quotes the
+bytes per base measured for that format on HPRC's published alignment:
+[`BgzipMafAdapter`](/docs/config/bgzipmafadapter/#slot-summaryadapter),
+[`BgzipTaffyAdapter`](/docs/config/bgziptaffyadapter/#slot-summaryadapter).
 
 ## Display options
 

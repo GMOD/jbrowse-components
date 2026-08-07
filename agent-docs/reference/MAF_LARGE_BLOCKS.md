@@ -471,12 +471,40 @@ slot now, through the same `mafSummaryFeatures` and the same `getSummaryFeatures
 as the other two — the display side needed no change at all, since `showSummary`
 only ever asked whether the slot was set.
 
-Two things this does *not* claim. It is a wire-bytes measurement off an index, not
+One thing this does *not* claim: it is a wire-bytes measurement off an index, not
 a download, so it says nothing about parse or render cost past the gate — those
-are the tables above. And it does not produce the summary file: HPRC publishes no
-`bigMafSummary`, so pointing the slot at one for this track means a
-`maf2bed --summary` pass over the published alignment, which is a 53 GB (or
-5.96 GB) stream done once, offline.
+are the tables above.
+
+### What the tier is worth on this alignment, and the producer gap
+
+HPRC publishes no `bigMafSummary`, so the slot has to be pointed at a
+`maf2bed --summary` BED produced offline. Both halves were run for real
+(2026-08-06), on the 200 kb of chr6 around C4 that the tutorial figure uses,
+range-read out of the published v2.1 MAF at the offsets `queryBlockSpan` gives:
+
+| | alignment | summary |
+| --- | --- | --- |
+| bgzipped | **4.35 MB** | **3.5 kB** |
+| uncompressed BED | 105.9 MB | 35.7 kB |
+
+**~1,250x on the wire for the same span**, and the summary carries all 464
+haplotypes — extrapolated flat, whole chr6 is about 3 MB of summary against
+3.19 GB of alignment. That is the whole-chromosome view of a 464-haplotype
+alignment, and it is a 3 MB file.
+
+The `src` column matches the display's row names with no mapping: MAF rows are
+`HG00408.1.CM085956.1`, `maf2bed` writes `HG00408.1`, and
+`parseAssemblyAndChr` resolves the row to `HG00408.1` as well. That is the join
+`rowIndexBySrc` makes, and the failure mode when it doesn't hold is a fully
+"loaded" track with no bars.
+
+**The producer is the gap, and it fails silently.** `--summary` is committed in
+`~/src/maf2bed` and **not pushed** — GitHub master and the published crate are
+both v0.5.1, which has no such flag. v0.5.1 also parses only `args[1]` and
+ignores everything after it, so `maf2bed hg38 --summary summary.bed < file.maf`
+**exits 0, writes the alignment BED, and writes no summary at all**. Anyone
+following the MAF track guide today gets exactly that. Publishing maf2bed is what
+closes this; until then, check the summary file exists before wiring the slot.
 
 ## Measurements from the design pass
 
