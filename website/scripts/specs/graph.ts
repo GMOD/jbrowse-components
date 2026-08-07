@@ -4007,7 +4007,17 @@ export const graphSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     // the linear stack plus the graph pane, which the force drawing fills rather
     // than leaving flat (990 for the eleven sample rows this replaces); measured
-    // against the run's own below-the-fold report, which caught 75px cut at 1090
+    // against the run's own below-the-fold report, which caught 75px cut at 1090.
+    //
+    // STAYS 1170, and "reduce height of graph view" was tried three ways before
+    // being written down. The graph pane is a fixed 625 css px at this pinned
+    // bundle: the page measures 1,165 css px tall at viewportWidth 1000 and at
+    // 1400 alike, a `height` on the view entry changes nothing, and a 1010
+    // frame reports exactly 155 px cut in both cases -- the same number, which
+    // is what says the pane is not responding rather than fitting. A shorter
+    // frame crops the drawing; it does not scale it. Nor does a wider one
+    // spread it: the force layout is fixed in graph units and auto-fits at
+    // 50%, so 1400 px of frame only adds empty canvas to the right.
     viewportHeight: 1170,
     hideTooltip: true,
     // Why this locus and not another deeply traversed bubble: KIV-2 copy number
@@ -4028,6 +4038,38 @@ export const graphSpecs: ScreenshotSpec[] = [
         // middle of the pill
         maxWidth: 420,
         anchor: { view: 1, graphNode: 's110051+', dx: 20, dy: 320 },
+      },
+      // WHERE it is, which the pill above never said (review: "the term
+      // 'KIV-2' is not visible in the screenshot, may be useful if there was a
+      // repeat track or specific location-of-kiv-2 track"). No new track is
+      // needed: the array already IS the widest bar in the bubbles lane, the
+      // one labelled 33 segments and up to 584 paths, and that bubble's own
+      // record is `chr6:160,606,991-160,639,012` — the coordinates this whole
+      // figure was picked on. Boxing it names the bar and locates the repeat in
+      // one mark, and a repeat track would restate what the graph already says.
+      {
+        type: 'box',
+        anchor: {
+          track: 'hprc_minigraph_bubbles',
+          locus: 'chr6:160,606,991-160,639,012',
+        },
+        pad: 3,
+      },
+      {
+        type: 'text',
+        text: 'the KIV-2 array',
+        fontSize: 18,
+        // right-aligned so the offset places the pill's own right edge against
+        // the box's left one; its width is only known once the text is measured
+        textAlign: 'end',
+        anchor: {
+          track: 'hprc_minigraph_bubbles',
+          locus: 'chr6:160,606,991-160,639,012',
+          alignX: 'left',
+          fracY: 0,
+          dx: -16,
+          dy: 12,
+        },
       },
     ],
   },

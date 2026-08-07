@@ -2099,10 +2099,10 @@
   },
   "pangenome/hprc_lpa_kiv2": {
     "name": "pangenome/hprc_lpa_kiv2",
-    "status": "bad",
-    "note": "the term 'hiv-2' is not visible in the screenshot, may be useful if there was a repeat track or specific location-of-kiv-2 track. also, reduce height of graph view",
-    "reviewedAt": "2026-08-07T16:45:13.178Z",
-    "hash": "2fc8844200e7581ecd8fdb589fae56cf9d4f11db"
+    "status": "answered",
+    "note": "KIV-2 is now located as well as named: the array is boxed in the bubbles lane at chr6:160,606,991-160,639,012, the bubble labelled 33 segments and up to 584 paths, which is the record this whole figure was picked on. No repeat track needed - the graph already draws the array, it just was not labelled. The height is unchanged and that is measured, not skipped: the graph pane is a fixed 625 css px at the pinned bundle. The page is 1,165 css px tall at viewportWidth 1000 and 1400 alike, a height prop on the view entry changes nothing, and a 1010 frame reports exactly 155 px cut in both cases. A shorter frame crops the drawing rather than scaling it, and a wider one only adds empty canvas: the force layout is fixed in graph units and auto-fits at 50%.",
+    "reviewedAt": "2026-08-07T18:56:13.526Z",
+    "hash": "2765eaaa82cb79b31dfc15856fe39f92062bfb35"
   },
   "pangenome/rgfa_segment_neighbourhood": {
     "name": "pangenome/rgfa_segment_neighbourhood",
