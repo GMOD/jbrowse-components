@@ -89,13 +89,18 @@ gfa=$(ls pggb/*.smooth.final.gfa)
 bash build_pggb_tabix.sh "$gfa" ecoli_pggb K12
 ```
 
-The plain-GFA walk makes three choices worth knowing:
+The plain-GFA walk makes four choices worth knowing:
 
-- The third argument is a **sample**, not a path, so every path that sample
-  contributes is reference and walks first at rank 0. A genome with more than
-  one contig states its reference as one path per contig, and anchoring on a
-  single one of them leaves the rest to whichever donor path reaches their
-  segments first.
+- The third argument names an **assembly**, not a path, so every contig that
+  assembly contributes is reference and walks first at rank 0. A genome with
+  more than one contig states its reference as one path per contig, and
+  anchoring on a single one of them leaves the rest to whichever donor path
+  reaches their segments first. A bare sample (`GRCh38`) is enough where the
+  reference is haploid; on a diploid one, write the haplotype (`HG002#1`), or
+  the script picks one and says on stderr which.
+- The walk also records **who carries each segment**, as `SM:Z:` in the index,
+  which is the one thing rGFA cannot state. That is what fills `carriedBy` in
+  the node popup on this route.
 - When a path reaches a segment twice, **the first visit wins**. A node draws as
   one tube at one x, so recording both would claim reference the segment does
   not occupy. The repeat stays visible as depth.
@@ -165,12 +170,23 @@ whole-genome path simply starts at zero.
 
 Anchoring on paths is also what answers "which samples go through this node".
 The `P` and `W` lines state every traversal, so each node knows its visitors and
-**Node details** lists them under `carriedBy`; **Sample rows** then draws real
-carriage. A track anchored on rGFA tags instead (route 1) has no traversals to
+**Node details** lists them under `carriedBy`. A true rGFA has no traversals to
 read: `carriedBy` is empty there and the panel reports `contributingAssembly`,
 the one assembly `SN` credits the segment to. That is the file rather than the
-view, and it is why the two routes answer different questions about the same
+view, and it is why the two formats answer different questions about the same
 graph.
+
+Route 1 gets the same answer without the file, as long as the index came from a
+plain GFA: `build_pggb_tabix.sh` does the traversal walk offline and writes each
+segment's carriers into the index as `SM:Z:`, which the view reads back into
+`carriedBy` exactly as if it had walked the paths itself. So the split is by
+format rather than by route, and only a minigraph rGFA is without it.
+
+**Sample rows** is a row per contributing assembly rather than a drawing of that
+whole set: a node is drawn once, on the row of the first path that reaches it,
+and the other carriers stay in `carriedBy`. Reading across a row still says what
+one assembly does to the reference, which is what the layout is for, but a
+segment several haplotypes share appears on one of their rows and not the rest.
 
 ## Three layouts
 
@@ -226,14 +242,28 @@ mark where it attaches, with its size in the tooltip.
 
 ## Two settings that decide what is drawn
 
-**View menu → Settings → Bubble spread** sets a floor on how long a node is
-drawn in the force layout (the anchored layouts place a node from its
+**View menu → Settings → Bubble spread** decides how a node's bp becomes its
+drawn length in the force layout (the anchored layouts place a node from its
 coordinates, so it does nothing there). The engine comes from Bandage, whose
-graphs are assembled contigs of kb to Mb, so its own floor is tiny: a pangenome
-allele of a few bases clamps to a stub, both arms of a bubble land inside one
-node thickness of each other, and the window draws as a single thread. **Open
-bubbles** and **Wide bubbles** give every allele a drawn length instead, at the
-cost that below the floor a node no longer draws proportional to its length.
+graphs are assembled contigs of kb to Mb, so it maps length linearly with a tiny
+floor: a pangenome allele of a few bases clamps to a stub, both arms of a bubble
+land inside one node thickness of each other, and the window draws as a single
+thread.
+
+Two instruments fix that, and they are alternatives rather than a stack:
+
+- **Open bubbles** and **Wide bubbles** raise the floor, so every allele gets a
+  drawn length while everything above the floor stays proportional. Take one of
+  these when a long node has to stay long, which is the case when a path ribbon
+  has to run along it. The floor is per node, so it lifts a graph's
+  non-branching chain nodes too and the drawing inflates with node count.
+- **Compress lengths** pulls both ends towards the graph's own mean instead, so
+  a cut spanning kilobases and single bases fits one pane at any node count.
+  This is Bandage's own power law, moved onto the axis a pangenome needs it on.
+  It costs the top end: a node that should read as long no longer does.
+
+**Proportional** is the untouched Bandage map, and what to keep when a figure is
+about relative length rather than about bubble shape.
 
 **View menu → Settings → Graph context** is how far the cut follows links past
 the region, defaulting to **1 hop**. It is the in-app counterpart of
