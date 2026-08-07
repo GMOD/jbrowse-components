@@ -1,8 +1,8 @@
 ---
 title: Pangenome (HPRC)
 description:
-  Open HPRC release 2's Minigraph-Cactus graph as a graph in the browser, then
-  its 464-haplotype variant callset
+  Open HPRC release 2's Minigraph-Cactus graph as a graph in the browser, its
+  464-haplotype variant callset, and the multiple alignment both come from
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
@@ -21,13 +21,13 @@ welcome your [feedback](/contact).
 
 ## Prerequisites
 
-- the GraphGenomeView plugin, for the two tracks below that use
-  `RgfaTabixAdapter` and `MinigraphBubbleAdapter`; the rest need nothing
+- the GraphGenomeView plugin, for the tracks below that use `RgfaTabixAdapter`
+  and `MinigraphBubbleAdapter`; the rest need nothing
 
 [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710) is roughly a
-fivefold expansion over release 1. This tutorial opens two of its products: the
-pangenome graph drawn as a graph, and the variant callset (464 haplotypes as a
-genotype matrix).
+fivefold expansion over release 1. This tutorial opens three of its products:
+the pangenome graph drawn as a graph, the variant callset (464 haplotypes as a
+genotype matrix), and the multiple alignment both are derived from.
 
 Every track below is a URL you can paste. The callset ships tabix-indexed, so
 JBrowse reads the slice in view straight off HPRC's S3. The graph route reads
@@ -71,6 +71,12 @@ The `sv.gfa` is the graph route; the VCF is the variant route. Both open without
 downloading the whole file: the VCF ships its index, and we host small BED
 projections of the graph (below). Release 3 has no graphs at all (it is the
 verkko assembly and QC release), so release 2 is the one for this.
+
+Two subdirectories sit beside those files, `v2.0/` and `v2.1/`, holding the
+fuller per-build set. The alignment the graph and the callset are derived from
+is only there: `v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.full.maf.gz`, 53 GB
+with a `.tai` index, which [the last section](#the-alignment-underneath-both)
+opens.
 
 Every file above is published twice, once per reference. This page uses the
 GRCh38 build because that is the assembly most readers already have loaded,
@@ -621,7 +627,7 @@ segments, and the graph has about 751,000 of them.
 
 The bubble file is also a level of detail. Collapsing each bubble to a single
 node, with the invariant reference between bubbles as backbone, turns the same
-graph into something that fits on a screen —
+graph into something that fits on a screen.
 [`build_bubble_tier.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_bubble_tier.sh)
 does that in one pass over the file you already have:
 
@@ -637,8 +643,8 @@ GRCh38 and thresholding on `end - start` would drop every one of them, including
 the 100 kb insertions that are the whole point. Content is the larger of the
 reference span and the longest allele.
 
-The result reads through the same adapter as the fine index — a tier is a
-prefix, so choosing a level of detail is choosing a file:
+The result reads through the same adapter as the fine index. A tier is a prefix,
+so choosing a level of detail is choosing a file:
 
 ```json addtrack
 {
@@ -655,13 +661,14 @@ prefix, so choosing a level of detail is choosing a file:
 ```
 
 One setting has to move with it. The view refuses a cut over 5 Mb, which is a
-proxy for node count and a fair one at segment granularity — but a tier breaks
-the proxy, so a view pointed at one raises **`maxRegionBp`**. The real ceiling
-is unchanged: `maxGraphNodes` counts what actually came back.
+proxy for node count and a fair one at segment granularity, but a tier breaks
+the proxy. A `GraphGenomeView` pointed at one carries **`maxRegionBp`** raised
+to the span it is drawing, which the figure below links a session for. The real
+ceiling is unchanged: `maxGraphNodes` counts what actually came back.
 
 The same bubble file also plots directly as a curve, which is where the graph
 varies and by how much. `MinigraphBubbleAdapter` already reports each bubble's
-segment count as its `score`, so the only change is the track type — a
+segment count as its `score`, so the only change is the track type, since a
 `FeatureTrack` does not offer a wiggle display to pick:
 
 ```json addtrack
@@ -678,11 +685,13 @@ segment count as its `score`, so the only change is the track type — a
 }
 ```
 
-<Figure caption="All 249 Mb of GRCh38 chr1 in three lanes off two files. Top, the bubble file as a curve: segments per bubble, a variability profile. Middle, the same bubbles as the tier's segments lane. Bottom, the tier as a graph — 474 nodes against about 751,000 segments in the graph itself, laid out in 18 ms, alternating 237 backbone nodes labelled with the megabases they span and 237 bubbles. All three go quiet across the same stretch: the curve has no bubbles there, and the graph spends one 18.7 Mb backbone node on it, the centromere and the 1q12 heterochromatin." src="/img/pangenome/hprc_whole_chromosome.png" />
+<Figure caption="All 249 Mb of GRCh38 chr1 in three lanes off two files. Top, the bubble file as a curve: segments per bubble. Middle, the same bubbles as the tier's segments lane. Bottom, the tier as a graph, backbone nodes labelled with the megabases they span alternating with bubbles. All three go quiet over the centromere and the 1q12 heterochromatin." src="/img/pangenome/hprc_whole_chromosome.png" />
 
-The chain alternates strictly, 237 of each, because `gfatools bubble` reports
-top-level bubbles only and those never overlap — which is what makes one flat
-walk complete rather than lossy.
+The graph is 474 nodes against about 751,000 segments in the graph itself, laid
+out in 18 ms. The chain alternates strictly, 237 backbone nodes and 237 bubbles,
+because `gfatools bubble` reports top-level bubbles only and those never
+overlap, which is what makes one flat walk complete rather than lossy. The quiet
+stretch is one 18.7 Mb backbone node with no bubbles in it.
 
 This is the coarse end of a ladder, not a replacement: a tier node is a bubble,
 so it says where the graph varies and by how much, and nothing about the alleles
@@ -956,7 +965,7 @@ haplotypes actually walk it.
 ## The alignment underneath both
 
 The graph and the callset are both derived. The thing they are derived _from_ is
-the multiple alignment, and release 2 publishes that too —
+the multiple alignment, and release 2 publishes that too:
 `hprc-v2.1-mc-grch38.full.maf.gz`, 53 GB, 464 haplotypes, beside a `.tai` index
 written by [taffy](https://github.com/ComparativeGenomicsToolkit/taffy). The
 index makes it addressable, so a locus is a ranged read rather than a download:
@@ -970,24 +979,37 @@ index makes it addressable, so a locus is a ranged read rather than a download:
   "adapter": {
     "type": "BgzipMafAdapter",
     "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.full.maf.gz"
+  },
+  "displayDefaults": {
+    "fetchSizeLimit": 50000000
   }
 }
 ```
 
 The `uri` shorthand resolves the sibling `.tai`. That index is 5.35 MB and
 downloads once; after it, a 10 kb locus is about a 670 KB range request.
+[`fetchSizeLimit`](/docs/config/baselineardisplay/#slot-fetchsizelimit) is
+raised because 464 rows of sequence is a large read and the gate is measuring it
+correctly; left at its default the track banners and waits for a force load.
 
-![](/img/maf_hprc_pangenome.png)
+The alignment is published for the v2.1 build, one revision on from the v2.0
+graph and callset above, so match an event between the lanes by interval rather
+than expecting the same segment ids.
+
+<Figure caption="The C4 locus in HPRC release 2's multiple alignment: 464 human haplotypes under MANE Select genes. Rows drop out where a haplotype does not carry the segment, so the white bands through the copy-number-variable C4A and C4B are absence rather than divergence." src="/img/maf_hprc_pangenome.png" />
 
 The locus is C4, the example [HPRCv2](https://github.com/pangenome/HPRCv2)
-itself opens with. Every row is a human haplotype, so what the rows say is
+itself opens with. Every row is a human haplotype, so the rows say something
 different from the cross-species alignments elsewhere in these docs: a row that
 drops out has not diverged past alignment, it belongs to a person who does not
-carry that segment. C4A and C4B are copy-number variable, and the white bands
-are exactly that — read down a column to see who carries what, and across to see
-where each segment starts and stops.
+carry that segment. Read down a column to see who carries what, and across to
+see where each segment starts and stops.
 
-This is also the level the other two tracks lose. The graph collapses these
+The [MAF track guide](/docs/user_guides/maf_track) covers the conservation band,
+per-row identity and codon view, all derived from the alignment with no extra
+files.
+
+This is the level the graph and the callset both lose. The graph collapses these
 haplotypes into segments and the callset reduces them to genotypes; here each
 one is still its own row of sequence.
 
@@ -1111,4 +1133,5 @@ gene lane per haplotype.
 - [](/docs/tutorials/pangenome_ecoli)
 - [](/docs/user_guides/graph_genome_view)
 - [](/docs/user_guides/multivariant_track)
+- [](/docs/user_guides/maf_track)
 - [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710)

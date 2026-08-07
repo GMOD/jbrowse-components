@@ -10,6 +10,8 @@ colorDomain
 connectedView
 gfaLocation
 height
+legend
+maxRegionBp
 paneHeight
 sideBySide
 transcriptId

@@ -1195,6 +1195,14 @@ export const trackFields: Record<string, FieldRecipe> = {
           note: 'Loads the region even past the byte-size limit, which can be slow.',
         }
       : undefined,
+  // The limit that message is measured against. No menu sets a byte count, so
+  // the click path is the same banner forceLoad names, and the number itself is
+  // a config slot. Said together because a reader who only clicks pays the
+  // click on every region.
+  fetchSizeLimit: numberField(n => ({
+    path: 'Click Force load in the track\'s "Zoom in to see features or force load" message, or set fetchSizeLimit in the track config to stop being asked.',
+    note: `This figure raises the limit to ${n.toLocaleString('en-US')} bytes because the region is a genuinely large read.`,
+  })),
   // The two ways a multi-row display derives its row order, as opposed to a
   // `layout`/`rowOrder` that states one outright. They are easy to confuse, so
   // each note says what the order is computed FROM: clustering uses the whole
