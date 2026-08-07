@@ -17,7 +17,7 @@ import {
 import { createGlobalUploadSync } from '@jbrowse/render-core/globalUploadSync'
 import { autorun } from 'mobx'
 
-import { calcRegionScreenOffsetsPx } from '../regionOffsets.ts'
+import { calcViewBlocks } from '../regionOffsets.ts'
 import { generateColorRamp } from './components/colorRamp.ts'
 import { findContactAt } from './contactLookup.ts'
 import { buildHicTrackMenuItems } from './trackMenuItems.ts'
@@ -32,6 +32,7 @@ import type {
   HicRenderingBackend,
 } from './components/hicRenderingBackendTypes.ts'
 import type { HicTrackConfigModel } from './configSchema.ts'
+import type { RpcStatus } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 import type React from 'react'
@@ -211,15 +212,28 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       get showLegend(): boolean {
         return getConf(self, 'showLegend')
       },
-      get colorMaxScore() {
+      /**
+       * #getter
+       * Where the color ramp saturates. `0` is the "no data to scale against"
+       * sentinel; `hasLegendData` is the one place it's interpreted.
+       *
+       * The linear branch saturates at a twentieth of the max rather than the
+       * max itself. Contact counts are heavily skewed — a handful of very hot
+       * bins near the diagonal against a long tail near zero (see
+       * `countStats.ts`) — so scaling to the true max leaves everything
+       * off-diagonal at the bottom of the ramp. Log scale needs no such
+       * correction, and `useColorPercentile` is the principled version of the
+       * same fix.
+       */
+      get colorMaxScore(): number {
         const data = self.rpcData
-        return data
-          ? self.useColorPercentile
-            ? data.percentile95
-            : self.useLogScale
-              ? data.maxScore
-              : data.maxScore / 20
-          : 0
+        if (!data) {
+          return 0
+        }
+        if (self.useColorPercentile) {
+          return data.percentile95
+        }
+        return self.useLogScale ? data.maxScore : data.maxScore / 20
       },
       /**
        * #getter
@@ -230,6 +244,16 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        */
       get hasLegendData(): boolean {
         return this.colorMaxScore > 0
+      },
+      /**
+       * #getter
+       * Whether a legend is drawn: the setting is on AND there is a scale worth
+       * drawing one for. Read by both the on-screen overlay panel and the SVG
+       * export, so an export can't disagree with the figure it is exporting.
+       * `svgLegendWidth()` deliberately does not gate on this — see its note.
+       */
+      get showLegendArea(): boolean {
+        return this.showLegend && this.hasLegendData
       },
       /**
        * #getter
@@ -594,13 +618,10 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
         // `svgReady`) would call them current.
         const { bpPerPx, offsetPx } = view
         const { adapterConfig } = self
-        // Read the layout's own offsets here, alongside the viewport capture:
-        // the worker can't re-derive them from region widths, because
-        // `contentBlocks` omits elided regions that still take up screen space.
-        const regionOffsetsPx = calcRegionScreenOffsetsPx(
-          contentBlocks,
-          offsetPx,
-        )
+        // Capture what only the view knows, alongside the viewport capture and
+        // for the same reason — the worker sees neither the block layout nor the
+        // pre-rename refNames. See HicViewBlock.
+        const viewBlocks = calcViewBlocks(contentBlocks, offsetPx)
         await self.runFetch(async ctx => {
           const sessionId = getRpcSessionId(self)
           const { rpcManager } = getSession(self)
@@ -610,7 +631,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
             {
               adapterConfig,
               regions: [...contentBlocks],
-              regionOffsetsPx,
+              viewBlocks,
               bpPerPx,
               resolution,
               ...self.rpcProps(),
@@ -646,6 +667,24 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
             rpcSessionId,
             'CoreGetInfo',
             { adapterConfig: self.adapterConfig },
+            // This call happens inside the pre-first-paint window, where the
+            // scrim is up because `canvasDrawn` is still false rather than
+            // because `isLoading` is — so `statusMessage` is the only thing that
+            // can say what is happening. Without it, opening a v8 `.hic` whose
+            // norm-vector index has to be discovered by walking the file sits on
+            // a bare "Loading..." for the whole chain of range reads.
+            //
+            // `setStatusMessage` directly rather than `makeStatusCallback`: this
+            // emits a handful of phase labels, not a progress stream, so the
+            // throttle sized for ~40 events/s would swallow most of them — the
+            // final clearing write included, leaving the last label stuck.
+            {
+              statusCallback: (status: RpcStatus) => {
+                if (isAlive(self)) {
+                  self.setStatusMessage(status)
+                }
+              },
+            },
           )) as { norms?: string[]; resolutions?: number[] }
           if (isAlive(self)) {
             if (norms) {

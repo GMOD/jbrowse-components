@@ -6,7 +6,7 @@ const W = 4 // binWidth in pre-rotation px
 
 /**
  * Build an `HicDataResult` directly, inverting the worker's own position math
- * (`positions[i*2] = (bin + regionCombinedOffsets[r]) * binWidth`) so a hover at
+ * (`positions[i*2] = (bin + regions[r].combinedOffset) * binWidth`) so a hover at
  * a known cell center must land on a known contact. `reversedMirror.test.ts`
  * already drives the real worker for the orientation/mirror cases; this fixture
  * exists to stress the lookup table itself — collisions at scale, misses, and
@@ -22,7 +22,6 @@ function makeData(
 ) {
   const n = contacts.length
   const offsets = binBase.map((base, r) => r * span - base)
-  const bounds = binBase.flatMap((_, r) => [r * span * W, (r + 1) * span * W])
   const positions = new Float32Array(n * 2)
   const counts = new Float32Array(n)
   const contactBin1 = new Uint32Array(n)
@@ -47,14 +46,17 @@ function makeData(
     binWidth: W,
     resolution: 1000,
     appliedNormalization: 'KR',
-    regionRefNames: binBase.map((_, r) => `chr${r + 1}`),
+    regions: binBase.map((_, r) => ({
+      refName: `chr${r + 1}`,
+      dataXStart: r * span * W,
+      dataXEnd: (r + 1) * span * W,
+      combinedOffset: offsets[r]!,
+      reversed: false,
+    })),
     contactBin1,
     contactBin2,
     contactRegion1,
     contactRegion2,
-    regionDataXBounds: bounds,
-    regionCombinedOffsets: offsets,
-    regionReversed: binBase.map(() => false),
   } satisfies HicDataResult
 }
 

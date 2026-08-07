@@ -32,7 +32,7 @@ async function run(
       sessionId: 'test',
       adapterConfig: {},
       regions: [region],
-      regionOffsetsPx: [0],
+      viewBlocks: [{ refName: region.refName, offsetPx: 0 }],
       bpPerPx,
       resolution: res,
       normalization: 'KR',

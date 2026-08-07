@@ -37,7 +37,10 @@ async function run(regions: Region[], records: TestContact[]) {
       adapterConfig: {},
       regions,
       // every region here is SPAN wide and they tile the axis contiguously
-      regionOffsetsPx: regions.map((_, i) => (i * SPAN) / BP_PER_PX),
+      viewBlocks: regions.map((r, i) => ({
+        refName: r.refName,
+        offsetPx: (i * SPAN) / BP_PER_PX,
+      })),
       bpPerPx: BP_PER_PX,
       resolution: RES,
       normalization: 'KR',
@@ -125,7 +128,7 @@ describe('reversed hic regions', () => {
     }
     // region 1 is reversed, so its intra-region contacts mirror within region
     // 1's own span and stay inside it
-    const [s1, e1] = [rev.regionDataXBounds[2]!, rev.regionDataXBounds[3]!]
+    const { dataXStart: s1, dataXEnd: e1 } = rev.regions[1]!
     for (const i of [4, 5]) {
       const { ux, uy } = cellCenter(rev, i)
       expect(ux).toBeGreaterThanOrEqual(s1)

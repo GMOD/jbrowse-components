@@ -35,7 +35,7 @@ async function statsFor(counts: number[]) {
       sessionId: 'test',
       adapterConfig: {},
       regions: [{ refName: 'a', start: 0, end: 1000, assemblyName: 'a' }],
-      regionOffsetsPx: [0],
+      viewBlocks: [{ refName: 'a', offsetPx: 0 }],
       bpPerPx: 1,
       resolution: RES,
       normalization: 'KR',

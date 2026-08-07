@@ -1,8 +1,9 @@
-import { mirrorUInRegion } from '../regionOffsets.ts'
+import { mirrorU } from '../regionOffsets.ts'
 
 import type {
   HicContactItem,
   HicDataResult,
+  HicResultRegion,
 } from '../RenderHicDataRPC/types.ts'
 
 /**
@@ -118,16 +119,15 @@ function probe(
 }
 
 /**
- * Bucket a pre-rotation data-x coordinate into a region index against
- * `regionDataXBounds` (`[start0, end0, start1, end1, …]`). Returns the last
- * region whose start is ≤ `u`, clamping to region 0 for coordinates left of the
- * first region — so a cursor in a gap between two regions (an elided region, or
- * padding) reads as the region on its left, which is what the probe below then
- * fails to match on, yielding no contact.
+ * Bucket a pre-rotation data-x coordinate into a region index. Returns the last
+ * region whose `dataXStart` is ≤ `u`, clamping to region 0 for coordinates left
+ * of the first region — so a cursor in a gap between two regions (an elided
+ * region, or padding) reads as the region on its left, which is what the probe
+ * below then fails to match on, yielding no contact.
  */
-function findRegion(bounds: number[], u: number) {
-  for (let i = bounds.length / 2 - 1; i >= 0; i--) {
-    if (u >= bounds[i * 2]!) {
+function findRegion(regions: HicResultRegion[], u: number) {
+  for (let i = regions.length - 1; i > 0; i--) {
+    if (u >= regions[i]!.dataXStart) {
       return i
     }
   }
@@ -137,35 +137,30 @@ function findRegion(bounds: number[], u: number) {
 /**
  * Given pre-rotation data-space coords (`ux`, `uy` — the same space
  * `positions[]` live in), return the contact bin under the cursor or undefined.
- * Inverts `positions[i] = (bin + regionCombinedOffsets[r]) * binWidth` exactly
- * the way the worker built it, so a hover always matches what was drawn.
+ * Inverts `positions[i] = (bin + combinedOffset) * binWidth` exactly the way the
+ * worker built it, so a hover always matches what was drawn.
  */
 export function findContactAt(
   data: HicDataResult,
   ux: number,
   uy: number,
 ): HicContactItem | undefined {
-  const {
-    binWidth,
-    regionDataXBounds,
-    regionCombinedOffsets,
-    regionReversed,
-    counts,
-  } = data
+  const { binWidth, regions, counts } = data
+  if (regions.length === 0) {
+    return undefined
+  }
   // Bucketing needs no un-mirroring first: a reversed region reflects onto its
   // own span, so the cursor already sits in the right region either way.
-  const regionX = findRegion(regionDataXBounds, ux)
-  const regionY = findRegion(regionDataXBounds, uy)
+  const regionX = findRegion(regions, ux)
+  const regionY = findRegion(regions, uy)
+  const rx = regions[regionX]!
+  const ry = regions[regionY]!
   // Undo the reflection the worker baked into positions[] (it is its own
   // inverse) to land back in the forward space the bin math assumes.
-  const fx = regionReversed[regionX]
-    ? mirrorUInRegion(regionDataXBounds, regionX, ux)
-    : ux
-  const fy = regionReversed[regionY]
-    ? mirrorUInRegion(regionDataXBounds, regionY, uy)
-    : uy
-  const binX = Math.floor(fx / binWidth - regionCombinedOffsets[regionX]!)
-  const binY = Math.floor(fy / binWidth - regionCombinedOffsets[regionY]!)
+  const fx = rx.reversed ? mirrorU(rx, ux) : ux
+  const fy = ry.reversed ? mirrorU(ry, uy) : uy
+  const binX = Math.floor(fx / binWidth - rx.combinedOffset)
+  const binY = Math.floor(fy / binWidth - ry.combinedOffset)
   // The index stores contacts as the adapter emitted them (region1Idx ≤
   // region2Idx, and bin1 ≤ bin2 within a region), but reflecting a region
   // reverses which endpoint the worker put on the x axis. Restore that order

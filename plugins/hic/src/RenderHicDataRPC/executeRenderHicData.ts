@@ -2,10 +2,7 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
-import {
-  calcRegionCombinedOffsets,
-  calcRegionDataXBounds,
-} from '../regionOffsets.ts'
+import { buildResultRegions } from '../regionOffsets.ts'
 import { computeCountStats } from './countStats.ts'
 
 import type HicAdapter from '../HicAdapter/HicAdapter.ts'
@@ -23,7 +20,7 @@ export async function executeRenderHicData({
     sessionId,
     adapterConfig,
     regions,
-    regionOffsetsPx,
+    viewBlocks,
     bpPerPx,
     resolution,
     normalization,
@@ -58,18 +55,10 @@ export async function executeRenderHicData({
   checkStopToken(stopToken)
 
   const w = res / (bpPerPx * Math.SQRT2)
-  const regionCombinedOffsets = calcRegionCombinedOffsets(
-    regions,
-    regionOffsetsPx,
-    bpPerPx,
-    res,
-  )
-  const regionDataXBounds = calcRegionDataXBounds(
-    regions,
-    regionOffsetsPx,
-    bpPerPx,
-  )
-  const regionReversed = regions.map(r => !!r.reversed)
+  // The regions arrive split in two — the framework's renamed `regions` and the
+  // view-side `viewBlocks` it can't carry — and are one thing again from here
+  // on. Everything downstream, on both sides of the worker boundary, reads this.
+  const resultRegions = buildResultRegions(regions, viewBlocks, bpPerPx, res)
 
   // `contactBin1`/`contactBin2`/`counts` arrive from the adapter already in
   // their final layout and are forwarded untouched — only the projected
@@ -88,20 +77,16 @@ export async function executeRenderHicData({
     // instead of once per contact — four indexed loads and two unpredictable
     // branches that used to sit in the inner loop purely because region
     // membership was stored per contact.
-    const off1 = regionCombinedOffsets[region1Idx]!
-    const off2 = regionCombinedOffsets[region2Idx]!
-    const rev1 = regionReversed[region1Idx]!
-    const rev2 = regionReversed[region2Idx]!
+    const r1 = resultRegions[region1Idx]!
+    const r2 = resultRegions[region2Idx]!
+    const off1 = r1.combinedOffset
+    const off2 = r2.combinedOffset
+    const rev1 = r1.reversed
+    const rev2 = r2.reversed
     // A cell spans `[u, u+w]`, so its reflection's *min* corner is
-    // `mirrorUInRegion(u) - w`, which folds to `mirrorBase - u`.
-    const mirrorBase1 =
-      regionDataXBounds[region1Idx * 2]! +
-      regionDataXBounds[region1Idx * 2 + 1]! -
-      w
-    const mirrorBase2 =
-      regionDataXBounds[region2Idx * 2]! +
-      regionDataXBounds[region2Idx * 2 + 1]! -
-      w
+    // `mirrorU(u) - w`, which folds to `mirrorBase - u`.
+    const mirrorBase1 = r1.dataXStart + r1.dataXEnd - w
+    const mirrorBase2 = r2.dataXStart + r2.dataXEnd - w
 
     for (let i = start; i < end; i++) {
       const u1 = (contactBin1[i]! + off1) * w
@@ -131,14 +116,11 @@ export async function executeRenderHicData({
     binWidth: w,
     resolution: res,
     appliedNormalization,
-    regionRefNames: regions.map(r => r.refName),
+    regions: resultRegions,
     contactBin1,
     contactBin2,
     contactRegion1,
     contactRegion2,
-    regionDataXBounds,
-    regionCombinedOffsets,
-    regionReversed,
   }
   // Move the per-contact buffers zero-copy instead of structured-cloning them.
   return rpcResult(result, [

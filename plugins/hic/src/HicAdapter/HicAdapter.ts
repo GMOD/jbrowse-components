@@ -128,8 +128,18 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
   }
 
   public async getHeader(opts?: BaseOptions) {
+    const { statusCallback = () => {}, stopToken } = opts ?? {}
     const { resolutions } = await this.setup(opts)
-    const norms = await this.hic.getNormalizationOptions()
+    // Its own phase, and not folded into `setup`'s: on a v8 file with no
+    // recorded index position this walks the whole normalized-expected-values
+    // section with a chain of sequential range reads, which is the slowest part
+    // of opening a `.hic` and the part that used to sit under a bare "Loading".
+    const norms = await updateStatus(
+      'Reading normalization index',
+      statusCallback,
+      () => this.hic.getNormalizationOptions(),
+      stopToken,
+    )
     return { norms, resolutions }
   }
 

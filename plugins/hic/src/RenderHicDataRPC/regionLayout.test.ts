@@ -1,6 +1,6 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
-import { calcRegionScreenOffsetsPx } from '../regionOffsets.ts'
+import { calcViewBlocks } from '../regionOffsets.ts'
 import { executeRenderHicData } from './executeRenderHicData.ts'
 import { toContacts } from './testContacts.ts'
 
@@ -34,7 +34,10 @@ async function run(
       sessionId: 'test',
       adapterConfig: {},
       regions,
-      regionOffsetsPx,
+      viewBlocks: regions.map((r, i) => ({
+        refName: r.refName,
+        offsetPx: regionOffsetsPx[i]!,
+      })),
       bpPerPx: BP_PER_PX,
       resolution: RES,
       normalization: 'KR',
@@ -86,12 +89,11 @@ describe('region layout follows the view, not a running sum of widths', () => {
       { refName: 'c', start: 0, end: 500, assemblyName: 'asm' },
     ]
     const d = await run(regions, [0, 502], [diagonal(0, 0)])
-    const [s0, e0, s1, e1] = d.regionDataXBounds
-    expect(s0).toBeCloseTo(0, 6)
-    expect(e0).toBeCloseTo(500 * ROT_45, 6)
+    expect(d.regions[0]!.dataXStart).toBeCloseTo(0, 6)
+    expect(d.regions[0]!.dataXEnd).toBeCloseTo(500 * ROT_45, 6)
     // region 1 starts past where region 0 ends — the 2px elided gap
-    expect(s1).toBeCloseTo(502 * ROT_45, 6)
-    expect(e1).toBeCloseTo(1002 * ROT_45, 6)
+    expect(d.regions[1]!.dataXStart).toBeCloseTo(502 * ROT_45, 6)
+    expect(d.regions[1]!.dataXEnd).toBeCloseTo(1002 * ROT_45, 6)
   })
 
   test('contiguous regions are unchanged', async () => {
@@ -107,19 +109,39 @@ describe('region layout follows the view, not a running sum of widths', () => {
 
 // The apex the offsets are measured from is `max(0, view.offsetPx)`, which is
 // exactly what `renderTransform` maps data-x = 0 back to.
-describe('calcRegionScreenOffsetsPx', () => {
+describe('calcViewBlocks', () => {
+  const offsets = (
+    blocks: { refName: string; offsetPx: number }[],
+    at: number,
+  ) => calcViewBlocks(blocks, at).map(b => b.offsetPx)
+
   test('the first content block sits at the apex', () => {
-    expect(calcRegionScreenOffsetsPx([{ offsetPx: 300 }], 300)).toEqual([0])
+    expect(offsets([{ refName: 'a', offsetPx: 300 }], 300)).toEqual([0])
   })
 
   test('scrolled left of genome start, the apex is still 0', () => {
     // the view is at -40, but block layout clamps the first block to 0
-    expect(calcRegionScreenOffsetsPx([{ offsetPx: 0 }], -40)).toEqual([0])
+    expect(offsets([{ refName: 'a', offsetPx: 0 }], -40)).toEqual([0])
   })
 
   test('a later region keeps its distance from the apex', () => {
     expect(
-      calcRegionScreenOffsetsPx([{ offsetPx: 300 }, { offsetPx: 812 }], 300),
+      offsets(
+        [
+          { refName: 'a', offsetPx: 300 },
+          { refName: 'b', offsetPx: 812 },
+        ],
+        300,
+      ),
     ).toEqual([0, 512])
+  })
+
+  // the view's names, not the adapter's: the RPC framework renames
+  // `regions[].refName` on the way out, so hover labels would otherwise read
+  // the .hic file's chromosome names under a ruler showing the assembly's
+  test('carries the refName the view displays', () => {
+    expect(
+      calcViewBlocks([{ refName: 'chr1', offsetPx: 0 }], 0)[0]!.refName,
+    ).toBe('chr1')
   })
 })

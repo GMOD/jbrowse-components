@@ -416,7 +416,12 @@ export default class HicFile {
     binsize: number,
   ) {
     let result:
-      | { v1: number[]; v2: number[]; offset1: number; offset2: number }
+      | {
+          v1: Float64Array
+          v2: Float64Array
+          offset1: number
+          offset2: number
+        }
       | undefined
     if (normalization && normalization !== 'NONE') {
       const chr1 = this.getFileChrName(r1.chr)

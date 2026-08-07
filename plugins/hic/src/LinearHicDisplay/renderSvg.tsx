@@ -37,10 +37,9 @@ function HicSvgBody({
   const {
     rpcData,
     colorScheme,
-    showLegend,
+    showLegendArea,
     useLogScale,
     colorMaxScore,
-    hasLegendData,
     renderState,
   } = self
   // svgReady + SvgChrome already guarantee a loaded, non-terminal state here, so
@@ -71,7 +70,7 @@ function HicSvgBody({
           }}
         />
       </SvgClipRect>
-      {showLegend && hasLegendData ? (
+      {showLegendArea ? (
         <HicSVGColorLegend
           maxScore={colorMaxScore}
           colorScheme={colorScheme}

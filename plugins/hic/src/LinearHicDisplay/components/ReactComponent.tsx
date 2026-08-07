@@ -12,7 +12,7 @@ import type { LinearHicDisplayModel } from '../model.ts'
 import type { MouseTracker } from '@jbrowse/core/ui'
 
 function formatLocus(data: HicDataResult, regionIdx: number, bin: number) {
-  const refName = data.regionRefNames[regionIdx]
+  const refName = data.regions[regionIdx]?.refName
   const start = bin * data.resolution
   const end = start + data.resolution
   return `${refName}:${toLocale(start + 1)}-${toLocale(end)}`
