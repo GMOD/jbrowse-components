@@ -13,6 +13,13 @@ A tier is browsed by pointing a track at its prefix, so choosing a level of
 detail is choosing a file. Nothing downstream changes: a collapsed bubble has a
 reference span, an id and a rank, which is all the segs/links contract asks for.
 
+The tier ends at the last bubble on each sequence. There is no backbone node
+past it, because a bubble BED does not state how long the sequence is, and this
+takes no other input. On HPRC release 2 that leaves the telomere and nothing
+else: measured on the hosted bubble file, chr1's last bubble ends at 248,945,016
+of 248,956,422, chr2's at 242,182,782 of 242,193,529 and chr21's at 46,699,325
+of 46,709,983 — about 11 kb in each case, which is the assembly gap itself.
+
 Requires: python3 only.
 Usage:    python3 bubbles_to_tier_bed.py <bubbles.bed[.gz]> <prefix> [--min-content N]
 

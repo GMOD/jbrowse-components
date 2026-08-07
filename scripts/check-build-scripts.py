@@ -430,7 +430,10 @@ def refusal(mod, argv, expect):
 
 # bubbles_to_tier_bed.py: the coarse level-of-detail tier behind the whole-chromosome
 # figure. gfatools bubble BED is chrom/start/end/segments/walks/inversion/shortest/
-# longest, three debug columns, then the segment list whose first member is the source.
+# longest, three debug columns, then the segment list whose first member is the
+# source -- and then two more, the shortest and longest allele sequences, so the
+# list is column 11 of 14 rather than the last one. Read off gfatools 0.5-r296
+# below when it is installed, rather than off a file.
 tier = load("scripts/bubbles_to_tier_bed.py", "bubbles_to_tier_bed")
 bubbles = os.path.join(pangenome_dir, "bubbles.bed")
 with open(bubbles, "w") as fh:
@@ -662,6 +665,7 @@ check("a gzipped subgraph reads the same as the plain one",
 # `bash -n` or shellcheck, and the third check here is the exit-1 bug itself,
 # which only a run can see. `gfatools` is stubbed to the one thing this uses:
 # `gfa2bed -m` projects SN/SO/SR, and writes nothing for a segment carrying none.
+gfatools_ran = shutil.which("gfatools") is not None
 rgfa_missing = [t for t in ("bgzip", "tabix") if shutil.which(t) is None]
 if rgfa_missing:
     # Loud and counted, like the sv_multihop pipeline below: a check that
@@ -672,6 +676,14 @@ if rgfa_missing:
 else:
     rgfa_ran = True
     rgfa_dir = tempfile.mkdtemp()
+    # The real binary when it is there, the stub when it is not. The stub models
+    # exactly one command: `gfa2bed -m` projects SN/SO/SR and writes nothing for
+    # a segment carrying none, which is what the plain-GFA guard rests on.
+    # Verified against gfatools 0.5-r296 rather than assumed -- handed a plain
+    # GFA it writes no rows, exits 0, and says nothing on stderr, and on the
+    # rGFA fixture below its output is byte-identical to the stub's. CI has no
+    # gfatools, so the stub keeps these guards covered there; a machine that has
+    # it runs the real thing, and drift between them surfaces here.
     stub_dir = os.path.join(rgfa_dir, "bin")
     os.mkdir(stub_dir)
     stub = os.path.join(stub_dir, "gfatools")
@@ -699,11 +711,14 @@ else:
         fh.write(re.sub(r"\tSN:Z:\S+\tSO:i:\S+\tSR:i:\S+", "",
                         open(os.path.join(rgfa_dir, "in.rgfa")).read()))
 
+    rgfa_env = {**os.environ}
+    if not gfatools_ran:
+        rgfa_env["PATH"] = stub_dir + os.pathsep + os.environ["PATH"]
+
     def rgfa_run(*argv):
         return subprocess.run(
             ["bash", os.path.abspath("scripts/build_rgfa_tabix.sh"), *argv],
-            cwd=rgfa_dir, capture_output=True, text=True,
-            env={**os.environ, "PATH": stub_dir + os.pathsep + os.environ["PATH"]})
+            cwd=rgfa_dir, capture_output=True, text=True, env=rgfa_env)
 
     def rgfa_rows(name):
         return subprocess.run(["gzip", "-dc", os.path.join(rgfa_dir, name)],
@@ -896,6 +911,55 @@ if rgfa_ran:
     check("a missing pair names build_rgfa_tabix.sh rather than failing in awk",
           (missing.returncode, "run build_rgfa_tabix.sh first" in missing.stderr),
           (1, True))
+
+# bubbles_to_tier_bed.py reads `gfatools bubble` POSITIONALLY, and that layout
+# was written down from a file rather than from the tool. With gfatools present
+# the two ends can be joined: generate the bubbles, run the tier over them, and
+# check that the numbers the tier states are the ones the graph has.
+if not gfatools_ran:
+    print("note: gfatools not installed, "
+          "SKIPPING the gfatools bubble column contract")
+else:
+    bub_dir = tempfile.mkdtemp()
+    bub_rgfa = os.path.join(bub_dir, "bub.rgfa")
+    with open(bub_rgfa, "w") as fh:
+        # one bubble: s2 and s3 are the anchors, a1 the 20 bp alternative the
+        # reference does not carry, so the reference span is ZERO and the
+        # content is the allele. That is the shape 53,293 of HPRC's 130,510
+        # bubbles have, and the one a span filter would drop.
+        fh.write("S\ts1\t" + "A" * 10 + "\tSN:Z:K12#1#chr\tSO:i:0\tSR:i:0\n"
+                 "S\ts2\t" + "C" * 10 + "\tSN:Z:K12#1#chr\tSO:i:10\tSR:i:0\n"
+                 "S\ts3\t" + "G" * 10 + "\tSN:Z:K12#1#chr\tSO:i:20\tSR:i:0\n"
+                 "S\ts4\t" + "T" * 10 + "\tSN:Z:K12#1#chr\tSO:i:30\tSR:i:0\n"
+                 "S\ta1\t" + "ACGT" * 5 + "\tSN:Z:Sakai#1#chr\tSO:i:100\tSR:i:1\n"
+                 "L\ts1\t+\ts2\t+\t0M\nL\ts2\t+\ts3\t+\t0M\nL\ts3\t+\ts4\t+\t0M\n"
+                 "L\ts2\t+\ta1\t+\t0M\nL\ta1\t+\ts3\t+\t0M\n")
+    bubble_bed = os.path.join(bub_dir, "b.bed")
+    with open(bubble_bed, "w") as fh:
+        fh.write(subprocess.run(["gfatools", "bubble", bub_rgfa],
+                                capture_output=True, text=True).stdout)
+    bubble_cols = [r.split("\t") for r in open(bubble_bed).read().splitlines()]
+    # The segment list is NOT the last column: gfatools writes the shortest and
+    # longest allele SEQUENCES after it, so the row is 14 wide. Indexing from
+    # the left is what makes that harmless, and what makes it worth stating.
+    check("gfatools bubble writes 14 columns, with the segment list at 11",
+          sorted({len(r) for r in bubble_cols}), [14])
+    real = next(r for r in bubble_cols if r[11] == "s2,a1,s3")
+    check("the columns the tier reads by index are the ones it names",
+          [real[1], real[2], real[3], real[4], real[5], real[6], real[7]],
+          # start end #segments #walks inversion shortest longest
+          ["20", "20", "3", "2", "0", "0", "20"])
+    tier_real = os.path.join(bub_dir, "real")
+    run_helper(tier, ["bubbles_to_tier_bed.py", bubble_bed, tier_real,
+                      "--min-content", "1"])
+    # End to end: the tier node for that bubble is 1 bp wide because the
+    # reference has nowhere to put the insertion, and carries the 20 bp in cl:i:.
+    check("the tier states the graph's own numbers, from gfatools to BED",
+          [r.split("\t")[1:6] for r in
+           open(f"{tier_real}.segs.bed").read().splitlines()
+           if r.split("\t")[3] == "s2"],
+          [["20", "21", "s2", "1",
+            "ct:Z:bubble cn:i:3 cw:i:2 cs:i:0 cl:i:20 cv:i:0"]])
 
 # odgi_similarity_to_newick.py: orders and groups a MAF track's rows, and had a
 # bug fixed with no check behind it -- a sample odgi reports only as the second
@@ -1598,5 +1662,6 @@ if failed:
     sys.exit(1)
 print(f"ok: {len(scripts)} build scripts + {len(helpers)} python helpers valid, "
       f"{behavior} helper behavior checks pass, {cited} doc curl targets exist, "
-      f"build_rgfa_tabix {'guards hold' if rgfa_ran else 'SKIPPED'}, "
+      f"build_rgfa_tabix {'guards hold' if rgfa_ran else 'SKIPPED'}"
+      f"{' (real gfatools)' if gfatools_ran else ' (gfa2bed stubbed)'}, "
       f"sv_multihop pipeline {'rebuilds its foldback' if pipeline_ran else 'SKIPPED'}")

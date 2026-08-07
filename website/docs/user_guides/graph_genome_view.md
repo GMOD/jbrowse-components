@@ -74,7 +74,8 @@ Index the graph once and it becomes an ordinary `FeatureTrack`, with the graph a
 menu item away from whatever is on screen. Which script builds the index depends
 on the format, and nothing after that does. Both live in the repo's
 [`scripts/`](https://github.com/GMOD/jbrowse-components/tree/main/scripts)
-directory and need `bgzip` and `tabix`, plus `gfatools` for the rGFA route or
+directory and need `bgzip` and `tabix`, plus
+[`gfatools`](https://github.com/lh3/gfatools) for the rGFA route or
 `python3` for the plain-GFA one:
 
 ```bash

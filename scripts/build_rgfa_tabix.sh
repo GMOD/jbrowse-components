@@ -75,12 +75,13 @@ esac
 gfatools gfa2bed -m <(gfa) | sort -k1,1 -k2,2n | bgzip > "$PREFIX.segs.bed.gz"
 
 # `gfa2bed -m` projects SN/SO/SR, which only an rGFA carries. Handed a plain GFA
-# it has nothing to read, exits 0, and writes NOTHING — and every step after it
-# succeeds on that: tabix indexes an empty BED and exits 0 too, the links pass
-# finds no segment to join, and the run ends with four well-formed files and a
-# track that draws nothing. That is the mistake this script's header spends three
-# lines warning about, because HPRC ships both flavours side by side under names
-# one character apart, so it is an error here rather than an empty index.
+# it has nothing to read and writes NOTHING — measured on gfatools 0.5-r296, not
+# assumed: no rows, exit 0, and nothing on stderr either. Every step after it
+# then succeeds on that: tabix indexes an empty BED and exits 0 too, the links
+# pass finds no segment to join, and the run ends with four well-formed files and
+# a track that draws nothing. That is the mistake this script's header spends
+# three lines warning about, because HPRC ships both flavours side by side under
+# names one character apart, so it is an error here rather than an empty index.
 if [ "$(gzip -dc "$PREFIX.segs.bed.gz" | wc -l)" -eq 0 ]; then
   echo "$GFA projected to no segments: gfatools found no SN/SO/SR tags, so this" >&2
   echo "is a plain GFA rather than an rGFA. A plain GFA states the same" >&2
