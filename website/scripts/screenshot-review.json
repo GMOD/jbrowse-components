@@ -2882,10 +2882,10 @@
   },
   "dog10k-diet-genes": {
     "name": "dog10k-diet-genes",
-    "status": "bad",
-    "note": "it may be useful to put the regular linearvariantdisplay above the multisamplevariantdisplay so users can see what type of feature everything is",
-    "reviewedAt": "2026-08-07T16:44:16.662Z",
-    "hash": "ca0ccd968559648da608b171bb28e741c3001bd0"
+    "status": "answered",
+    "note": "Each record now draws once above its own genotype rows, so the lane says what kind of variant the column below it is: AMY2B as a DUP block over the 14.9 kb it duplicates, RNASE1 as an insertion marker at a point. The two halves now differ in the glyph as well as in the genotypes. It needed a second trackId rather than a second display entry - a session spec that names the same track twice keeps only the last display, which silently replaced the 86 sample rows with the one-row lane. Same pattern the CYP1A2 figure already uses (dog10k_cyp1a2_snvs_positional).",
+    "reviewedAt": "2026-08-07T18:51:20.647Z",
+    "hash": "f5c70d2819497be45f85ae51a16ff6af1b733ebb"
   },
   "dtu/dtu_colored_gene_glyph": {
     "name": "dtu/dtu_colored_gene_glyph",

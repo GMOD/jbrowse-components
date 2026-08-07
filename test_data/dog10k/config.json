@@ -121,6 +121,16 @@
     },
     {
       "type": "VariantTrack",
+      "trackId": "dog10k_amy2b_svs_positional",
+      "name": "Dog10K structural variants at AMY2B (the record itself)",
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "dog10k_amy2b_svs.vcf.gz"
+      }
+    },
+    {
+      "type": "VariantTrack",
       "trackId": "dog10k_rnase1_svs",
       "name": "Dog10K structural variants at RNASE1 (dogs and every wolf)",
       "assemblyNames": ["UU_Cfam_GSD_1.0"],
@@ -138,6 +148,16 @@
           "height": 900
         }
       ]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "dog10k_rnase1_svs_positional",
+      "name": "Dog10K structural variants at RNASE1 (the record itself)",
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "dog10k_rnase1_svs.vcf.gz"
+      }
     },
     {
       "type": "GWASTrack",

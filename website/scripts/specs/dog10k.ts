@@ -760,6 +760,18 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           type: 'LinearBasicDisplay',
           height: 100,
         },
+        // The record itself, above the 86 rows of it (review: "put the regular
+        // linearvariantdisplay above the multisamplevariantdisplay so users can
+        // see what type of feature everything is"). The matrix below paints a
+        // genotype per dog and never says WHAT is being genotyped; this lane is
+        // the one feature, drawn and labelled as the duplication it is, over
+        // exactly the span the columns below cover. Same track, so nothing new
+        // is fetched.
+        {
+          trackId: 'dog10k_amy2b_svs_positional',
+          type: 'LinearVariantDisplay',
+          height: 50,
+        },
         {
           trackId: 'dog10k_amy2b_svs',
           type: 'LinearMultiSampleVariantDisplay',
@@ -777,9 +789,10 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     readyText: 'chr6',
     readyTimeout: 90000,
     settleMs: 6000,
-    // gene track, all 86 sample rows, the group swatch legend and the genotype
-    // legend under it
-    viewportHeight: 1240,
+    // gene track, the positional lane, all 86 sample rows, the group swatch
+    // legend and the genotype legend under it. Both halves stay the same
+    // height, since the pair is read across.
+    viewportHeight: 1323,
     // The gene's name, because the RefSeq row cannot supply it, plus the caveat
     // that is the reason this locus is on the page at all: the column is
     // presence/absence, and the measurement AMY2B is known for is copies. A
@@ -860,6 +873,15 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           type: 'LinearBasicDisplay',
           height: 100,
         },
+        // the same positional lane as the AMY2B half, and the pairing is the
+        // reason it earns its place twice: one record draws as a block over the
+        // span it duplicates, the other as an insertion marker at a point, so
+        // the two halves differ in the glyph as well as in the genotypes
+        {
+          trackId: 'dog10k_rnase1_svs_positional',
+          type: 'LinearVariantDisplay',
+          height: 50,
+        },
         {
           trackId: 'dog10k_rnase1_svs',
           type: 'LinearMultiSampleVariantDisplay',
@@ -871,7 +893,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     readyText: 'chr15',
     readyTimeout: 90000,
     settleMs: 6000,
-    viewportHeight: 1240,
+    viewportHeight: 1323,
     // Same two facts as the AMY2B pill and the same height in the lane, so the
     // pair reads as one figure: what the LOC symbol is, and which way this one
     // runs. The offsets are smaller than the AMY2B part's because the anchor is
