@@ -217,6 +217,7 @@ def main():
     # distinction the polyploid case is about into the bottom twentieth of the
     # ramp. Dropped rather than clamped, so the count stays a count.
     counts["families"] = 0
+    written = collections.Counter()
     for other, table in rows.items():
         with open(os.path.join(args.outdir,
                                f"{ref_name}.{other}.blocks"), "w") as out:
@@ -227,6 +228,7 @@ def main():
                     continue
                 # the count goes on last, once every row for the gene was read
                 out.write("\t".join([*cells, str(n)]) + "\n")
+                written[other] += 1
 
     def share(name):
         if name not in beds:
@@ -255,11 +257,33 @@ def main():
                  f"homology types {sorted(keep_types)}, partners "
                  f"{sorted(others)}. Check those against the file's own values.")
 
+    # `rows` is filled before --max-copies runs, so the guard above passes and
+    # the filter can still leave a table with nothing in it. A zero-byte .blocks
+    # indexes and loads fine and draws a blank track, which is the same silent
+    # wrong picture --max-copies exists to prevent — so an emptied table is
+    # named, and an entirely emptied run is fatal rather than an exit 0 over
+    # files nothing will report on again.
+    empty = [n for n in rows if not written[n]]
+    if len(empty) == len(rows):
+        sys.exit(f"--max-copies {args.max_copies} dropped every row: each of "
+                 f"{', '.join(sorted(empty))} has more than {args.max_copies} "
+                 f"orthologs per reference gene throughout. Raise it, or pass "
+                 f"0 to keep every copy.")
+
+    # only when the filter is on: "0 dropped for a gene with more than 0
+    # orthologs" is what `--max-copies 0` otherwise reports, which reads as a
+    # threshold of zero rather than as the filter being off
+    families = (f", {counts['families']} for a gene with more than "
+                f"{args.max_copies} orthologs in one partner"
+                if args.max_copies else "")
+    # a blank track among several is as silent as a blank run
+    emptied = (f"\n{', '.join(sorted(empty))}: emptied by --max-copies, written "
+               f"as a 0-byte table that will load as a blank track"
+               if empty else "")
     print(f"wrote {len(rows)} table(s) from {counts['rows']} rows: "
           f"{counts['kept'] - counts['families']} links kept, "
-          f"{counts['unresolved']} dropped for an id neither BED places, "
-          f"{counts['families']} for a gene with more than "
-          f"{args.max_copies} orthologs in one partner"
+          f"{counts['unresolved']} dropped for an id neither BED places"
+          f"{families}{emptied}"
           f"\ngenes placed per assembly:\n{placed_report}",
           file=sys.stderr)
     print(" ".join(ATTRS))

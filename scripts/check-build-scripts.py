@@ -1535,6 +1535,31 @@ check("a gene past --max-copies is a family and contributes no rows",
               open(os.path.join(famdir, "sorghum.wheat.blocks")).read().splitlines()}),
       ["S1"])
 
+# `rows` is filled before --max-copies runs, so the converter's own "no rows
+# matched" guard has already passed by the time the filter can empty a table.
+# Left alone that is an exit 0 over a 0-byte .blocks, which tabix indexes and
+# JBrowse loads as a blank track -- the same silent wrong picture --max-copies
+# was added to prevent. Against a polyploid partner it is reachable rather than
+# theoretical: every reference gene there can sit above the threshold.
+allfam_src = os.path.join(tempfile.mkdtemp(), "allfam.tsv")
+with open(allfam_src, "w") as fh:
+    fh.write("gene_stable_id\tprotein_stable_id\tspecies\tidentity\thomology_type\t"
+             "homology_gene_stable_id\thomology_protein_stable_id\thomology_species\t"
+             "homology_identity\tdn\tds\tgoc_score\twga_coverage\tis_high_confidence\thomology_id\n")
+    for i in range(9):
+        fh.write(f"S1\tp\tsorghum_bicolor\t80\tortholog_one2many\tF{i}\tp\t"
+                 f"triticum_aestivum\t80\tNULL\tNULL\tNULL\tNULL\t1\t{i}\n")
+sys.argv = ["compara_to_blocks.py", allfam_src, "--reference", "sorghum_bicolor=sorghum",
+            "--species", "triticum_aestivum=wheat", "--outdir", tempfile.mkdtemp()]
+try:
+    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+        cmp_mod.main()
+    emptied_exit = "exit 0"
+except SystemExit as e:
+    emptied_exit = "fatal" if str(e.code).startswith("--max-copies") else str(e.code)
+check("a run --max-copies empties entirely is fatal, not a 0-byte table",
+      emptied_exit, "fatal")
+
 check("every row of a fanned-out gene carries the whole copy count",
       [l.split("\t")[-1] for l in
        open(os.path.join(outdir, "sorghum.wheat.blocks")).read().splitlines()],
