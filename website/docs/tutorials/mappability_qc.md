@@ -88,8 +88,8 @@ image: it stays down through the whole 350 kb GIAB has already let go of and
 comes back at ENCODE's edge. That is one locus and not a verdict on either
 project, but it is the reason to treat the gap between two edges as unresolved
 rather than as the narrower interval being the current one.
-`scan_mappability_qc.sh` prints the same lane in 25 kb bins if you want the
-step as numbers.
+`scan_mappability_qc.sh` prints the same lane in 25 kb bins if you want the step
+as numbers.
 
 The control window in the first figure begins at 71,455,000, which is 40 kb past
 where that recovery is complete.
