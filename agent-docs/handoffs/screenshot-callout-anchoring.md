@@ -1,6 +1,6 @@
 ---
 name: screenshot-callout-anchoring
-description: The screenshot-callout anchoring pass is done, --check-verified and unrendered — what changed in 20 specs, which figures the next sweep will move and by how much, which 40 raw coordinates are deliberate, and what is still unverified. Read before reviewing the sweep that renders these or before touching the residue.
+description: The screenshot-callout anchoring pass is done and --check-verified, and the figures it moves are still unrendered — which five the next sweep will move and by how much, and which 40 raw coordinates are deliberate rather than a backlog. Read before reviewing the sweep that renders these or before touching the residue.
 ---
 
 # Screenshot callout anchoring — converted, not yet rendered
@@ -11,8 +11,8 @@ across 38 specs**, against a rule `website/CLAUDE.md` states twice. It is now
 `website/scripts/check-specs.ts` ratchets the count in `pnpm check-docs` so
 number 41 fails.
 
-Landed in four commits: the targeted actions, the trio crossover callouts,
-the arrow tails, and the ratchet.
+Landed in four commits — the targeted actions, the trio crossover callouts,
+the arrow tails, the ratchet — plus the docs.
 
 The method — how an anchor resolves, the four things about that the types don't
 say, and how to convert a coordinate by measuring the committed PNG instead of
