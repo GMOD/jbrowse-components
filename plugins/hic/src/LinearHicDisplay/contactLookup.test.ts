@@ -1,5 +1,6 @@
 import { findContactAt } from './contactLookup.ts'
 
+import type { RegionPairRun } from '../HicAdapter/HicAdapter.ts'
 import type { HicDataResult } from '../RenderHicDataRPC/types.ts'
 
 const W = 4 // binWidth in pre-rotation px
@@ -26,16 +27,21 @@ function makeData(
   const counts = new Float32Array(n)
   const contactBin1 = new Uint32Array(n)
   const contactBin2 = new Uint32Array(n)
-  const contactRegion1 = new Uint16Array(n)
-  const contactRegion2 = new Uint16Array(n)
+  // region membership as runs, cut wherever the pair changes — the shape the
+  // adapter emits and the worker forwards
+  const pairRuns: RegionPairRun[] = []
   contacts.forEach(({ r1, r2, bin1, bin2 }, i) => {
     positions[i * 2] = (bin1 + offsets[r1]!) * W
     positions[i * 2 + 1] = (bin2 + offsets[r2]!) * W
     counts[i] = i + 1 // unique, so a hover identifies exactly one contact
     contactBin1[i] = bin1
     contactBin2[i] = bin2
-    contactRegion1[i] = r1
-    contactRegion2[i] = r2
+    const open = pairRuns.at(-1)
+    if (open && open.region1Idx === r1 && open.region2Idx === r2) {
+      open.end = i + 1
+    } else {
+      pairRuns.push({ region1Idx: r1, region2Idx: r2, start: i, end: i + 1 })
+    }
   })
   return {
     positions,
@@ -55,8 +61,7 @@ function makeData(
     })),
     contactBin1,
     contactBin2,
-    contactRegion1,
-    contactRegion2,
+    pairRuns,
   } satisfies HicDataResult
 }
 

@@ -60,19 +60,12 @@ export async function executeRenderHicData({
   // on. Everything downstream, on both sides of the worker boundary, reads this.
   const resultRegions = buildResultRegions(regions, viewBlocks, bpPerPx, res)
 
-  // `contactBin1`/`contactBin2`/`counts` arrive from the adapter already in
-  // their final layout and are forwarded untouched — only the projected
-  // positions and the region columns are built here.
+  // `contactBin1`/`contactBin2`/`counts` and the `pairs` run table all arrive
+  // from the adapter in their final layout and are forwarded untouched — only
+  // the projected positions are built here.
   const positions = new Float32Array(numContacts * 2)
-  const contactRegion1 = new Uint16Array(numContacts)
-  const contactRegion2 = new Uint16Array(numContacts)
 
   for (const { region1Idx, region2Idx, start, end } of pairs) {
-    // Region membership is constant across the run, so it is filled rather
-    // than assigned per contact.
-    contactRegion1.fill(region1Idx, start, end)
-    contactRegion2.fill(region2Idx, start, end)
-
     // Every layout term below is pair-invariant, so it resolves once per run
     // instead of once per contact — four indexed loads and two unpredictable
     // branches that used to sit in the inner loop purely because region
@@ -119,8 +112,7 @@ export async function executeRenderHicData({
     regions: resultRegions,
     contactBin1,
     contactBin2,
-    contactRegion1,
-    contactRegion2,
+    pairRuns: pairs,
   }
   // Move the per-contact buffers zero-copy instead of structured-cloning them.
   return rpcResult(result, [
@@ -128,7 +120,5 @@ export async function executeRenderHicData({
     counts.buffer,
     contactBin1.buffer,
     contactBin2.buffer,
-    contactRegion1.buffer,
-    contactRegion2.buffer,
   ]) as unknown as HicDataResult
 }

@@ -4,7 +4,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import { openHicFilehandle } from './HicFilehandle.ts'
-import HicStraw, { NO_DATA_FOR_RESOLUTION } from './hic-straw/index.ts'
+import HicFile, { NO_DATA_FOR_RESOLUTION } from './hic-straw/index.ts'
 
 import type { ContactRecords } from './hic-straw/contactRecords.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -102,7 +102,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     pluginManager?: PluginManager,
   ) {
     super(config, getSubAdapter, pluginManager)
-    this.hic = new HicStraw({
+    this.hic = new HicFile({
       file: openHicFilehandle(this.getConf('hicLocation'), this.pluginManager),
     })
   }

@@ -9,6 +9,18 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // Maps a region's refName to the track adapter's name (via refNameMap), and
 // sets originalRefName to the seq adapter (FASTA) name so that CRAM/BAM
 // adapters can fetch reference sequence correctly.
+//
+// This is DESTRUCTIVE, and it runs inside `serializeArguments` — so the array
+// that reaches a worker is not the one the display handed to `rpcManager.call`,
+// with no cue at the call site. `refName` means the assembly's canonical name
+// before this and the track adapter's name after, in the same field of the same
+// type. Renaming is required for anything the worker compares or fetches
+// against the file, and wrong for anything it hands back as user-facing text: a
+// worker that labels a locus from its own output must be given the view's names
+// separately, captured before the call (hic's `HicViewBlock` does this, because
+// its hover prints a locus directly under the ruler). `originalRefName` is NOT
+// that name — it is a third scheme, the FASTA's, load-bearing for CRAM/BAM
+// reference fetch.
 export function renameRegionIfNeeded(
   refNameMap: Record<string, string> | undefined,
   region: Region | Instance<typeof MUIRegion>,

@@ -1,3 +1,4 @@
+import type { RegionPairRun } from '../HicAdapter/HicAdapter.ts'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
@@ -49,8 +50,8 @@ export interface HicContactItem {
 
 /**
  * Everything the main thread needs to read a region back out of `positions[]`,
- * one record per region index — the index `contactRegion1`/`contactRegion2`
- * carry, and the one `HicContactItem` reports.
+ * one record per region index — the index `pairRuns` carries, and the one
+ * `HicContactItem` reports.
  *
  * One array of records rather than four parallel columns: every consumer reads
  * several of these fields for the *same* region at once (hover un-mirrors, then
@@ -128,9 +129,25 @@ export interface HicDataResult {
    * build the hover hit-test index (`contactLookup.ts`) lazily on the main
    * thread. Kept as transferable typed arrays rather than a string-keyed
    * Record so the index costs nothing to serialize across the worker boundary.
+   *
+   * These two genuinely have to be per-contact. They are not recoverable from
+   * `positions`: a bin index is chromosome-absolute (~10^6 at a fine binsize)
+   * and `positions` is Float32Array, whose ~7 significant digits cannot
+   * round-trip that back to an exact integer.
    */
   contactBin1: Uint32Array
   contactBin2: Uint32Array
-  contactRegion1: Uint16Array
-  contactRegion2: Uint16Array
+  /**
+   * Which region pair each stretch of contacts came from, forwarded from the
+   * adapter — see {@link RegionPairRun}, whose note explains why membership is a
+   * property of the query rather than of a contact.
+   *
+   * Kept as runs the whole way rather than expanded into per-contact region
+   * columns for the hover index, which is what this used to do. Two `Uint16Array`
+   * columns are 4 bytes per contact held for the lifetime of the viewport, and a
+   * matrix is routinely millions of contacts (~18 MB at 4.5M) — against a handful
+   * of objects here, since the pair count is O(regions²). Hover resolves a
+   * candidate's pair by binary-searching these, which only runs on a bin match.
+   */
+  pairRuns: RegionPairRun[]
 }

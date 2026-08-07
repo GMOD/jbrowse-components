@@ -8,7 +8,7 @@ import type {
 
 /**
  * Scatter a grid cell across the table. Deliberately NOT injective: `probe`
- * re-compares all four coordinate arrays, so a collision only costs a step. That
+ * re-compares the full cell identity, so a collision only costs a step. That
  * is what makes this safe where packing the tuple into one number is not — bins
  * are absolute chromosome indices (~10^6 at fine binsizes), so a `bin1 * K +
  * bin2` key needs ~2^52 and stops being an exact integer.
@@ -46,33 +46,54 @@ interface ContactTable {
 // below: at least one slot is always empty, so a full-table walk can't spin. It
 // holds for an empty result too (capacity floors at 1).
 function buildContactTable(data: HicDataResult): ContactTable {
-  const {
-    numContacts,
-    contactBin1,
-    contactBin2,
-    contactRegion1,
-    contactRegion2,
-  } = data
+  const { numContacts, contactBin1, contactBin2, pairRuns } = data
   let capacity = 1
   while (capacity < numContacts * 1.5) {
     capacity *= 2
   }
   const slots = new Uint32Array(capacity)
   const mask = capacity - 1
-  for (let i = 0; i < numContacts; i++) {
-    let h =
-      hashCell(
-        contactRegion1[i]!,
-        contactRegion2[i]!,
-        contactBin1[i]!,
-        contactBin2[i]!,
-      ) & mask
-    while (slots[h] !== 0) {
-      h = (h + 1) & mask
+  // Iterating the runs rather than `[0, numContacts)` is what lets the region
+  // pair be read once per run instead of once per contact — the same hoist the
+  // worker does over the same table, and the reason neither side needs a
+  // per-contact region column.
+  for (const { region1Idx, region2Idx, start, end } of pairRuns) {
+    for (let i = start; i < end; i++) {
+      let h =
+        hashCell(region1Idx, region2Idx, contactBin1[i]!, contactBin2[i]!) &
+        mask
+      while (slots[h] !== 0) {
+        h = (h + 1) & mask
+      }
+      slots[h] = i + 1
     }
-    slots[h] = i + 1
   }
   return { slots, mask }
+}
+
+/**
+ * The run holding contact `i`. The runs tile `[0, numContacts)` in ascending
+ * order, so this is a binary search over a list whose length is O(regions²) —
+ * a handful of steps, and only paid on a bin-coordinate match.
+ *
+ * A run per pair is not guaranteed unique (only contiguous), so this resolves
+ * the run rather than assuming one entry per pair.
+ */
+function runOf(runs: HicDataResult['pairRuns'], i: number) {
+  let lo = 0
+  let hi = runs.length - 1
+  while (lo <= hi) {
+    const mid = (lo + hi) >>> 1
+    const run = runs[mid]!
+    if (i < run.start) {
+      hi = mid - 1
+    } else if (i >= run.end) {
+      lo = mid + 1
+    } else {
+      return run
+    }
+  }
+  return undefined
 }
 
 // Built lazily from the worker's per-contact arrays and memoized against the
@@ -99,18 +120,19 @@ function probe(
   bin2: number,
 ) {
   const { slots, mask } = getContactTable(data)
-  const { contactBin1, contactBin2, contactRegion1, contactRegion2 } = data
+  const { contactBin1, contactBin2, pairRuns } = data
   let h = hashCell(r1, r2, bin1, bin2) & mask
   let slot = slots[h]!
   while (slot !== 0) {
     const i = slot - 1
-    if (
-      contactBin1[i] === bin1 &&
-      contactBin2[i] === bin2 &&
-      contactRegion1[i] === r1 &&
-      contactRegion2[i] === r2
-    ) {
-      return i
+    // Bins first, then the pair: the bin pair discriminates on all but a
+    // genuine collision, so `runOf`'s search is only reached by a candidate
+    // that already matched both coordinates.
+    if (contactBin1[i] === bin1 && contactBin2[i] === bin2) {
+      const run = runOf(pairRuns, i)
+      if (run?.region1Idx === r1 && run.region2Idx === r2) {
+        return i
+      }
     }
     h = (h + 1) & mask
     slot = slots[h]!

@@ -1,7 +1,7 @@
 import { fstatSync, openSync, readSync } from 'node:fs'
 import path from 'node:path'
 
-import HicStraw from './index.ts'
+import HicFile from './index.ts'
 
 import type { Filehandle } from './types.ts'
 
@@ -27,7 +27,7 @@ test('parses real .hic file', async () => {
   const file = openLocal(
     path.join(__dirname, '../../../../../extra_test_data/test.hic'),
   )
-  const straw = new HicStraw({ file })
+  const straw = new HicFile({ file })
   const meta = await straw.getMetaData()
   expect(meta.version).toBe(8)
   expect(meta.resolutions).toEqual([2500000, 100000])
