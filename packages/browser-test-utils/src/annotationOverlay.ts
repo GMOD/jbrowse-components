@@ -93,8 +93,14 @@ export interface AnnotationAnchor {
 export interface Annotation {
   // arrow: tail -> head; box/highlight: x/y/width/height (ring around a region);
   // text: x/y baseline; circle: filled numbered badge (with text) or an outline
-  // ring around the anchored element (without text)
-  type: 'arrow' | 'box' | 'text' | 'circle'
+  // ring around the anchored element (without text); legend: a color key pill,
+  // one swatch-and-label row per `entries` item
+  type: 'arrow' | 'box' | 'text' | 'circle' | 'legend'
+  // for 'legend': the color key itself. A display that identifies its rows by a
+  // color the figure never names (thousands of sub-pixel rows, an overlay whose
+  // in-app legend is off screen) needs the mapping in the frame; authoring it
+  // from the track's own subadapter colors keeps it from drifting off the data.
+  entries?: { label: string; color: string }[]
   from?: { x: number; y: number }
   to?: { x: number; y: number }
   x?: number
@@ -442,9 +448,10 @@ export function drawAnnotationOverlay(
   // the leftover line drawn across the white callout reads as a mistake.
   // Sorting here rather than asking every spec to list its pills last, which
   // is a rule nothing would check.
+  const isPill = (t: string) => t === 'text' || t === 'legend'
   const drawOrder = [
-    ...resolved.filter(a => a.type !== 'text'),
-    ...resolved.filter(a => a.type === 'text'),
+    ...resolved.filter(a => !isPill(a.type)),
+    ...resolved.filter(a => isPill(a.type)),
   ]
   for (const a of drawOrder) {
     const color = a.color ?? '#e3242b'
@@ -515,6 +522,73 @@ export function drawAnnotationOverlay(
         text.textContent = a.text
         svg.append(text)
       }
+    } else if (a.type === 'legend' && a.entries?.length) {
+      // A color key: swatch + label per row, in one white pill styled like the
+      // text callout so the two read as the same annotation vocabulary. The
+      // pill's width comes from the measured labels, so nothing here is a
+      // hand-tuned box that goes stale when an entry is renamed.
+      const fontFamily = 'system-ui, sans-serif'
+      const fontSize = Math.max(a.fontSize ?? 20, 13)
+      const swatch = fontSize
+      const gap = Math.round(fontSize * 0.5)
+      const rowHeight = Math.round(fontSize * 1.5)
+      const padX = 12
+      const padY = 10
+      const group = document.createElementNS(NS, 'g')
+      svg.append(group)
+      const labels = document.createElementNS(NS, 'text')
+      labels.setAttribute('fill', '#000')
+      labels.setAttribute('font-family', fontFamily)
+      labels.setAttribute('font-size', String(fontSize))
+      labels.setAttribute('font-weight', '600')
+      labels.setAttribute('dominant-baseline', 'central')
+      group.append(labels)
+      for (const [i, entry] of a.entries.entries()) {
+        const tspan = document.createElementNS(NS, 'tspan')
+        tspan.setAttribute('x', '0')
+        tspan.setAttribute('y', String(i * rowHeight + rowHeight / 2))
+        tspan.textContent = entry.label
+        labels.append(tspan)
+      }
+      const labelWidth = labels.getBBox().width
+      // right-align the whole pill on x when asked, which is what a key placed
+      // against the frame's right edge needs: its width is only known here
+      const width = padX * 2 + swatch + gap + labelWidth
+      const height = padY * 2 + a.entries.length * rowHeight
+      const left = a.textAlign === 'end' ? cx - width : cx
+      const top = cy
+      const rect = document.createElementNS(NS, 'rect')
+      rect.setAttribute('x', String(left))
+      rect.setAttribute('y', String(top))
+      rect.setAttribute('width', String(width))
+      rect.setAttribute('height', String(height))
+      rect.setAttribute('rx', '6')
+      rect.setAttribute('fill', '#fff')
+      rect.setAttribute('stroke', color)
+      rect.setAttribute('stroke-width', '3')
+      group.prepend(rect)
+      for (const [i, entry] of a.entries.entries()) {
+        const sw = document.createElementNS(NS, 'rect')
+        sw.setAttribute('x', String(left + padX))
+        sw.setAttribute(
+          'y',
+          String(top + padY + i * rowHeight + (rowHeight - swatch) / 2),
+        )
+        sw.setAttribute('width', String(swatch))
+        sw.setAttribute('height', String(swatch))
+        sw.setAttribute('rx', '3')
+        sw.setAttribute('fill', entry.color)
+        sw.setAttribute('stroke', '#0006')
+        sw.setAttribute('stroke-width', '1')
+        group.append(sw)
+      }
+      labels.setAttribute(
+        'transform',
+        `translate(${left + padX + swatch + gap},${top + padY})`,
+      )
+      // the labels were appended before the swatches so getBBox measured them
+      // in isolation; move them back on top so nothing overlaps a swatch
+      group.append(labels)
     } else if (a.type === 'text' && a.text) {
       // Uniform callout style: white pill, red border, black text, larger
       // default font, with word-wrapping once a line exceeds maxWidth.

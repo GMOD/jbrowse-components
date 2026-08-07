@@ -1,6 +1,11 @@
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+
+const repoRoot = fileURLToPath(new URL('../../../', import.meta.url))
 
 // The tutorial's own config, rather than config_demo: the per-cell track needs
 // the Zarr plugin declared, which is a config-level thing. It carries the RefSeq
@@ -15,6 +20,22 @@ const CONFIG = 'test_data/scrna_pbmc5k/config.json'
 // v3 clustered and labeled with scanpy, then pooled into one coverage track per
 // cell type. They are hosted rather than in test_data because they are the same
 // files the embedded UMAP demo fetches.
+
+// The cell-type color key, read out of the config rather than restated here.
+// The per-cell rows are well under a pixel each, so the display draws no row
+// labels for them and the block colors are the only thing naming a cell type in
+// that figure; a hand-copied key would be the one thing in it that could
+// disagree with the data.
+const cellTypeLegend = (
+  JSON.parse(readFileSync(`${repoRoot}${CONFIG}`, 'utf8')) as {
+    tracks: {
+      trackId: string
+      adapter: { subadapters?: { name: string; color: string }[] }
+    }[]
+  }
+).tracks
+  .find(t => t.trackId === 'pbmc5k_scrna_pseudobulk_hg38')!
+  .adapter.subadapters!.map(s => ({ label: s.name, color: s.color }))
 
 const genes = {
   trackId: 'ncbi_refseq_hg38',
@@ -154,6 +175,26 @@ export const scrnaSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
+    // The nine blocks of cells are in the same order and the same colors as the
+    // nine pseudobulk rows above them, but nothing in the frame says which is
+    // which: the per-cell rows are sub-pixel, so the display draws no labels for
+    // them. Top-right of the per-cell track, which is the CD4 T block — speckle,
+    // so the key covers no peak.
+    annotations: [
+      {
+        type: 'legend',
+        entries: cellTypeLegend,
+        fontSize: 17,
+        textAlign: 'end',
+        anchor: {
+          track: 'pbmc5k_scrna_percell_hg38',
+          alignX: 'right',
+          alignY: 'top',
+          dx: -12,
+          dy: 12,
+        },
+      },
+    ],
     readyTimeout: 120000,
     settleMs: 20000,
     // the per-cell track's 620 rows have to reach their own bottom edge: the
