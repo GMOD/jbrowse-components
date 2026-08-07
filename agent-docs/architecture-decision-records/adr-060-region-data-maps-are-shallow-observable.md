@@ -93,10 +93,8 @@ describes, and makes divergence greppable: a display that writes
   `LinearAlignmentsDisplay`'s hand-rolled `{ deep: false }` and its comment are
   replaced by the call.
 - A new per-region display uses the helper and inherits the decision instead of
-  inheriting a default.
-- `plugins/canvas/src/LinearMultiRowFeatureDisplay/model.ts` was mid-refactor in
-  another session when this landed and still constructs its own map; it is the
-  one straggler.
+  inheriting a default. `observable.map<number, …>()` written by hand no longer
+  appears outside the helper itself, so the grep is the check.
 
 ## Not in scope
 

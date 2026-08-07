@@ -15,7 +15,10 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
-import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
+import {
+  installPerRegionLifecycle,
+  regionDataMap,
+} from '@jbrowse/render-core/installPerRegionLifecycle'
 import {
   TreeSidebarMixin,
   buildSpatialIndex,
@@ -29,7 +32,6 @@ import {
 } from '@jbrowse/tree-sidebar'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
-import { observable } from 'mobx'
 
 import { fetchCanvasFeatureDetails } from '../LinearBasicDisplay/baseModelHelpers.ts'
 import CanvasFeatureGateMixin from '../shared/CanvasFeatureGateMixin.ts'
@@ -155,7 +157,7 @@ export default function stateModelFactory(
     )
     .volatile(() => ({
       // #region volatile
-      rpcDataMap: observable.map<number, MultiRowRegionData>(),
+      rpcDataMap: regionDataMap<MultiRowRegionData>(),
       prefersOffset: true,
       /**
        * #volatile
