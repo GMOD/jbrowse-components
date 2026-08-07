@@ -51,7 +51,6 @@ export {
   isSessionWithDrawerWidgets,
   isSessionWithMultipleViews,
   isSessionWithReferenceManagement,
-  isSessionWithSessionTracks,
   isSessionWithThemes,
   isSessionWithTracks,
   pluginExtraTrackItems,

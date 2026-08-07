@@ -34,7 +34,6 @@
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^6.1.0",
     "@jbrowse/plugin-config": "workspace:^",
-    "@jbrowse/product-core": "workspace:^",
     "@mui/icons-material": "^9.3.0",
     "@mui/material": "^9.3.0",
     "@mui/x-data-grid": "^9.10.1",

@@ -1,4 +1,3 @@
-export { PreferencesDialog } from '@jbrowse/product-core'
 export {
   WebSessionConnectionsMixin,
   isWebSessionWithConnections,

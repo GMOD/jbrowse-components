@@ -3,10 +3,10 @@ import { useMemo, useState } from 'react'
 import {
   getEnv,
   getSession,
+  isSessionModelWithConnectionEditing,
   isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { isSessionWithConnections } from '@jbrowse/product-core'
 import { Button, Step, StepContent, StepLabel, Stepper } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -57,7 +57,7 @@ const AddConnectionWidget = observer(function AddConnectionWidget({
 
   function handleNext() {
     if (isLastStep) {
-      if (isSessionWithConnections(session)) {
+      if (isSessionModelWithConnectionEditing(session)) {
         session.makeConnection(session.addConnectionConf(configModel))
       } else {
         session.notify('This session does not support connections')

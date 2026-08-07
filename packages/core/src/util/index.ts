@@ -95,6 +95,7 @@ export {
   isSessionWithAddTracks,
   isSessionWithDeleteTrackConf,
   isSessionWithSessionPlugins,
+  isSessionWithSessionTracks,
   isSessionWithShareURL,
   isSessionWithViewReplacement,
   isTrackModel,

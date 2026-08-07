@@ -48,7 +48,7 @@ import type { BaseRootModel, BaseSession } from '@jbrowse/product-core'
 // last one named directly here, which put AddGenomePane and the assembly-config
 // builders in the root model — as eager a module as this app has.
 const PreferencesDialog = lazy(
-  () => import('@jbrowse/product-core/src/ui/PreferencesDialog'),
+  () => import('../components/PreferencesDialog.tsx'),
 )
 const OpenSequenceDialog = lazy(
   () => import('../components/OpenSequenceDialog.tsx'),

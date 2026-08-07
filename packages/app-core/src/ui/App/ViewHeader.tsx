@@ -3,7 +3,6 @@ import { useEffect, useRef } from 'react'
 import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
-import { isSessionWithMultipleViews } from '@jbrowse/product-core'
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
 import { observer } from 'mobx-react'
 
@@ -48,9 +47,7 @@ const ViewHeader = observer(function ViewHeader({
   const { classes } = useStyles()
   const scrollRef = useRef<HTMLDivElement>(null)
   const session = getSession(view)
-  const stickyViewHeaders = isSessionWithMultipleViews(session)
-    ? session.stickyViewHeaders
-    : false
+  const stickyViewHeaders = session.stickyViewHeaders === true
 
   // Scroll a newly-added view into view on mount. Gated on scrollOnMount so a
   // cold load / session restore with several views doesn't have every header

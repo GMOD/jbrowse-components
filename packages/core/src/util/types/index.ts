@@ -134,6 +134,12 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   getTracksById: () => Record<string, AnyConfigurationModel>
   jbrowse: IAnyStateTreeNode
   drawerPosition?: string
+  // per-browser UI preference (localStorage-backed, stripped from snapshots by
+  // MultipleViewsSessionMixin). Optional here rather than behind a guard: the
+  // two readers — a view deciding whether to pin its own header, and the app
+  // shell's ViewHeader — both want "false when the session has no such notion",
+  // which is what a plain `=== true` read of an absent member already gives
+  stickyViewHeaders?: boolean
   configuration: AnyConfigurationModel
   rpcManager: RpcManager
   assemblyNames: string[]
@@ -348,6 +354,22 @@ export function isSessionWithAddTracks(t: unknown): t is SessionWithAddTracks {
     'addTrackConf' in t &&
     !('disableAddTracks' in t && t.disableAddTracks)
   )
+}
+
+/**
+ * abstract interface for a session that keeps a user's own added/copied tracks
+ * separate from the ones the config ships. `AbstractSessionModel` already
+ * declares `sessionTracks` optionally; this is the narrowing a caller needs to
+ * read it, and it lives here rather than in product-core so a plugin — in-tree
+ * or external — can ask the question through the ABI it already depends on.
+ */
+export interface SessionWithSessionTracks extends AbstractSessionModel {
+  sessionTracks: AnyConfigurationModel[]
+}
+export function isSessionWithSessionTracks(
+  t: unknown,
+): t is SessionWithSessionTracks {
+  return isSessionModel(t) && 'sessionTracks' in t
 }
 
 /** abstract interface for a session that allows adding session assemblies */

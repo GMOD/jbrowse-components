@@ -42,7 +42,6 @@ import {
   isAlive,
   types,
 } from '@jbrowse/mobx-state-tree'
-import { isSessionWithMultipleViews } from '@jbrowse/product-core'
 import { when } from 'mobx'
 
 import { handleSelectedRegion } from '../searchUtils.ts'
@@ -622,10 +621,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * session allows it
        */
       get stickyViewHeaders() {
-        const session = getSession(self)
-        return isSessionWithMultipleViews(session)
-          ? this.isTopLevelView && session.stickyViewHeaders
-          : false
+        // `=== true` rather than a session guard: the member is optional on
+        // AbstractSessionModel, and a session with no such notion (the embedded
+        // products) should read as "don't pin", which is what absent gives.
+        // Tested before isTopLevelView, the order the guard used to impose — a
+        // session without the preference is also the one least likely to have
+        // anything useful behind `views`, and there is no reason to walk it
+        return getSession(self).stickyViewHeaders === true && this.isTopLevelView
       },
 
       /**

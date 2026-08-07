@@ -11,7 +11,6 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import { compareStructural } from 'mobx'
 
-import { isBaseSession } from './BaseSession.ts'
 import { TracksManagerSessionMixin } from './Tracks.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -510,9 +509,8 @@ export type SessionWithSessionTracksType = ReturnType<
 /** Instance of a session that has `sessionTracks` */
 export type SessionWithSessionTracks = Instance<SessionWithSessionTracksType>
 
-/** Type guard for SessionWithSessionTracks */
-export function isSessionWithSessionTracks(
-  thing: IAnyStateTreeNode,
-): thing is SessionWithSessionTracks {
-  return isBaseSession(thing) && 'sessionTracks' in thing
-}
+// The `isSessionWithSessionTracks` guard that used to live here now lives in
+// `@jbrowse/core/util/types` beside the rest of the session capability guards.
+// Its only caller was the hierarchical track selector — a plugin, which could
+// not reach product-core through the ABI it publishes against, so this package
+// was a runtime dependency of two shipped plugins for three type guards.

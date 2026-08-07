@@ -2,13 +2,13 @@ import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import {
   dedupe,
   getSession,
+  isSessionWithSessionTracks,
   localStorageGetJSON,
   localStorageSetJSON,
   notEmpty,
 } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
-import { isSessionWithSessionTracks } from '@jbrowse/product-core'
 import { autorun, observable } from 'mobx'
 
 import { configScopedKey, keyConfigPostFix } from '../shared/configScopedKey.ts'
