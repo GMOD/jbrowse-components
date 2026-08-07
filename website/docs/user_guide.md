@@ -65,7 +65,9 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/pangenome_ecoli)
 - [](/docs/tutorials/pangenome_cactus)
 - [](/docs/tutorials/pangenome_hprc)
+- [](/docs/tutorials/selection_pressure)
 - [](/docs/tutorials/genomes_synteny)
+- [](/docs/tutorials/homoeolog_synteny)
 - [](/docs/tutorials/mcscan_synteny)
 - [](/docs/tutorials/orthofinder_synteny)
 
@@ -73,6 +75,7 @@ How to drive JBrowse once it is running. New here? Start with the
 
 - [](/docs/tutorials/sv_multisamples)
 - [](/docs/tutorials/population_cnv)
+- [](/docs/tutorials/mappability_qc)
 - [](/docs/tutorials/dog10k_svs)
 - [](/docs/tutorials/hic_structural_variants)
 
