@@ -82,6 +82,17 @@ three fixtures (`test_data/graphgenomeview/{config,hprc,ecoli_pangenome}.json`)
 pin it; `test_data/graphgenomeview/README.md` states the rule. The unversioned
 url stays current, which is what the published figures' live links point at.
 
+**A bump that skipped the regen, and why it turned out not to matter
+(2026-08-06).** `0093d998d280` landed in the fixtures with no figure regenerated,
+which breaks the rule above. Measured rather than argued: the same two graph
+figures rendered in one build at the old pin and the new one differ by **0.054%**
+(`pggb_carriage`) and **0.036%** (`pggb_locus_graph`), against a 0.5% gate — so
+an unfiltered sweep keeps the committed images and nothing visible changed. That
+is the specific delta of `f2108cc`, which adds fields to LINEAR features and
+touches no graph drawing; do not generalise it to the next bump. The way to
+settle one is this A/B, not a full sweep: flip the fixture, render two figures,
+call `pngDiffFraction`.
+
 The pinned hash lives in the three fixtures, and only there — don't restate it
 here, it has drifted twice already. Bumping it is a one-line diff; regenerate the
 graph figures in the same commit.
