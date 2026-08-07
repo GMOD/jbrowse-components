@@ -9,6 +9,11 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Built into
 JBrowse core.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/ScoreScaleMixin.ts).
 
+#crossCuttingMixin Score axis. Nothing — the config slots. Brings `scaleType` /
+`autoscaleType` / `minScore` / `maxScore` / `*Bound` / `numStdDev` and their
+setters, i.e. the whole `ScoreScaleModel` interface the shared score menu and
+`SetMinMaxDialog` consume
+
 The score axis every quantitative display shares: which scale, how to autoscale
 it, and the manual min/max bounds. This is the runtime half of ScoreScaleModel
 in `scoreMenuItems.ts` — that interface is what the shared Score menu, the

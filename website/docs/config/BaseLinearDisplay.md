@@ -23,6 +23,7 @@ that identifies it (not one of the config slots below).
 
 ## Related links
 
+- **Extended by:** [SharedVariantDisplay](../sharedvariantdisplay)
 - **Extended by:** [LinearAlignmentsDisplay](../linearalignmentsdisplay)
 - **Extended by:** [LinearArcDisplay](../lineararcdisplay)
 - **Extended by:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
@@ -30,7 +31,6 @@ that identifies it (not one of the config slots below).
 - **Extended by:** [LinearManhattanDisplay](../linearmanhattandisplay)
 - **Extended by:** [LinearHicDisplay](../linearhicdisplay)
 - **Extended by:** [SharedLDDisplay](../sharedlddisplay)
-- **Extended by:** [SharedVariantDisplay](../sharedvariantdisplay)
 
 ## Config slots
 

@@ -41,10 +41,10 @@ the BedTabixAdapter for large files.
 ## Related links
 
 - **Track:** [FeatureTrack](../featuretrack)
+- **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
 - **Display:** [LinearScoreDisplay](../linearscoredisplay)
 - **Display:** [LinearArcDisplay](../lineararcdisplay)
 - **Display:** [LinearBasicDisplay](../linearbasicdisplay)
-- **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
 
 ## Config slots
 

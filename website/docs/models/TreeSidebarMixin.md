@@ -9,9 +9,13 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Built into
 JBrowse core.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/tree-sidebar/src/TreeSidebarMixin.ts).
 
-Adds a dendrogram sidebar to a display: stores the leaf layout, newick cluster
-tree, sidebar width and subtree filter, plus the hover/canvas volatile state
-used while drawing the tree.
+#crossCuttingMixin Row set with a dendrogram sidebar. `sources` (the display
+rows, named). Brings `layout` / `clusterTree` / `clusterProvenance` /
+`treeAreaWidth` / `subtreeFilter`, the `root` and `willClearTree` getters, and
+the tree-hover and canvas-ref volatiles the shared sidebar draws through Adds a
+dendrogram sidebar to a display: stores the leaf layout, newick cluster tree,
+sidebar width and subtree filter, plus the hover/canvas volatile state used
+while drawing the tree.
 
 ## Properties
 
@@ -23,6 +27,8 @@ used while drawing the tree.
 | <span id="property-clusterprovenance">**clusterProvenance**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>clusterProvenance: types.stripDefault( types.maybe(types.frozen…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>clusterProvenance: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.maybe(types.frozen&lt;ClusterProvenance&gt;()),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;undefined,&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> | What `clusterTree` was computed from — the locus and the settings. Set only for a tree this app computed; a supplied phylogeny (maf's `.nh`) leaves it undefined. Persisted with the tree so it survives a session snapshot, which is the case that most needs it: a shared link otherwise hands over a dendrogram with no way to learn its locus. |
 | <span id="property-treeareawidth">**treeAreaWidth**</span><br><code>treeAreaWidth: types.stripDefault(types.number, 80)</code> |  |
 | <span id="property-subtreefilter">**subtreeFilter**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>subtreeFilter: types.stripDefault( types.maybe(types.array(type…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>subtreeFilter: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.maybe(types.array(types.string)),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;undefined,&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> |  |
+| <span id="property-runclustering">**runClustering**</span><br><code>runClustering: types.maybe(types.boolean)</code> | Transient declarative launch spec, the same idea as `LinearGenomeView`'s `init`: a session or config sets this true and the real clustering RPC runs once automatically, with no dialog, as soon as the display reports itself ready. `setupRunClusteringAutorun` clears it afterwards, so a saved session never re-triggers.<br><br>Lives here rather than on each display because it is the trigger for a run whose *output* — `clusterTree`, `clusterProvenance`, `layout` — is this mixin's state. Three displays declared it identically, each with its own wrapper module that existed to code-split the clustering code and, along the way, hand-wrote the same six-member duck type of the display. Splitting inside the `run` callback does the same job and loads on a run rather than on every attach. What each run actually *is* stays per display, in that callback. |
+| <span id="property-clusterregion">**clusterRegion**</span><br><code>clusterRegion: types.maybe(types.string)</code> | Where that run reads from, as a locstring (whitespace-separated for several). Clustering is region-scoped, so running it over the visible window feeds the estimator whatever happens to be on screen; naming the locus instead lets a session cluster on the signal and then show it against its context — otherwise a zoom the user has to perform in the right order. Cleared with `runClustering`, since it is that flag's argument and a locus left standing describes a run that is not coming. |
 
 ## Volatiles
 
@@ -60,6 +66,8 @@ used while drawing the tree.
 | <span id="action-setlayoutandclustertree">**setLayoutAndClusterTree**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(layout: S[], tree?: string &#124; undefined, provenance?: ClusterPr…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(layout: S[], tree?: string &#124; undefined, provenance?: ClusterProvenance &#124; undefined) =&gt; void</code></pre></dialog></span> |  |
 | <span id="action-settreeareawidth">**setTreeAreaWidth**</span><br><code>(width: number) =&gt; void</code> |  |
 | <span id="action-setsubtreefilter">**setSubtreeFilter**</span><br><code>(names?: string[] &#124; undefined) =&gt; void</code> |  |
+| <span id="action-setrunclustering">**setRunClustering**</span><br><code>(arg?: boolean &#124; undefined) =&gt; void</code> |  |
+| <span id="action-setclusterregion">**setClusterRegion**</span><br><code>(arg?: string &#124; undefined) =&gt; void</code> |  |
 | <span id="action-sethoveredtreenode">**setHoveredTreeNode**</span><br><code>(node?: HoveredTreeNode &#124; undefined) =&gt; void</code> |  |
 | <span id="action-settreecanvasref">**setTreeCanvasRef**</span><br><code>(ref: HTMLCanvasElement &#124; null) =&gt; void</code> |  |
 | <span id="action-setmouseovercanvasref">**setMouseoverCanvasRef**</span><br><code>(ref: HTMLCanvasElement &#124; null) =&gt; void</code> |  |

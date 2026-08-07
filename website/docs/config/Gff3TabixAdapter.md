@@ -33,10 +33,10 @@ used to load bgzip-compressed, tabix-indexed GFF3 files
 ## Related links
 
 - **Track:** [FeatureTrack](../featuretrack)
+- **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
 - **Display:** [LinearScoreDisplay](../linearscoredisplay)
 - **Display:** [LinearArcDisplay](../lineararcdisplay)
 - **Display:** [LinearBasicDisplay](../linearbasicdisplay)
-- **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
 
 ## Config slots
 

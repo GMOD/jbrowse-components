@@ -9,6 +9,10 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 `linear-genome-view` plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/BaseLinearDisplay/models/TrackHeightMixin.tsx).
 
+#crossCuttingMixin Internal vertical scroll. `scrollableHeight` (default
+`Infinity` = doesn't scroll). Brings the clamped `setScrollTop` and the autorun
+that re-clamps when content shrinks
+
 The display height is stored directly on the `height` config slot (drag-resize
 writes it via `setSlot`), so it survives a track being unticked and reticked —
 the config node outlives the ephemeral display instance. Displays with an

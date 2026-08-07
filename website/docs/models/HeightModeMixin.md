@@ -9,6 +9,12 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 `linear-genome-view` plugin.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/BaseLinearDisplay/models/HeightModeMixin.ts).
 
+#crossCuttingMixin Track-height strategy; the one row that must compose
+**after** `TrackHeightMixin()`, whose `height` and `resizeHeight` it overrides.
+`growTargetHeight` (default = the raw slot). Brings
+`heightMode`/`autoHeight`/`fitHeightToDisplay`, `grownHeight`, the reactive
+`height` override, `setHeightMode`, and the grow-aware `resizeHeight`
+
 The whole track-height strategy every display with a promotable `heightMode`
 config slot shares (the canvas feature display, the alignments display), so the
 fixed/grow/fit vocabulary is identical by construction rather than by two call
