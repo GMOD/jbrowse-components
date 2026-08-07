@@ -195,3 +195,11 @@ hold-out set used to measure composition recall, the untangle PAF, and the
 built `impg` binary. In `~/scratch/hprc-gfa`: `chrY.gfa.zst`. Per
 `feedback-big-scratch-goes-in-home-scratch`, keep large artifacts there and not
 in the session `/tmp` scratchpad.
+
+Added for the summary-tier work, same directory: both published indexes
+(`hprc.tai` 5.35 MB v2.1 MAF, `hprc_v20.tai` 4.98 MB v2.0 TAF), which answer any
+"what does a read of span X cost" question offline through `queryBlockSpan`; the
+200 kb C4 slice `hprc_c4_slice.maf.gz` (4.35 MB, chr6:31.9–32.1 Mb, all 464
+haplotypes); and what `maf2bed --summary` made of it, `hprc_c4.summary.bed.gz`
+plus its `.tbi`. The slice is enough to wire a real `summaryAdapter` against a
+real HPRC region without touching the network.
