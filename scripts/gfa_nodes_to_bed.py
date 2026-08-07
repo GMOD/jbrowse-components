@@ -41,7 +41,24 @@ def read_gfa(path):
         for line in fh:
             f = line.rstrip("\n").split("\t")
             if f[0] == "S":
-                lengths[f[1]] = len(f[2])
+                # `*` is an elided sequence, whose length is in LN:i:. `len("*")`
+                # is 1, which places the node and every node after it on the
+                # path at the wrong coordinate, in a BED that indexes and draws.
+                # Same guard, same wording, as pggb_gfa_to_bed.py.
+                if f[2] == "*":
+                    length = next(
+                        (int(c[5:]) for c in f[3:] if c.startswith("LN:i:")), None
+                    )
+                    if length is None:
+                        sys.exit(
+                            f"segment {f[1]} has no sequence and no LN:i: tag, so "
+                            "its length is unknown and every segment after it on "
+                            "the path would be misplaced. Write the graph with "
+                            "sequences (`odgi view -g`) or add LN:i: tags."
+                        )
+                else:
+                    length = len(f[2])
+                lengths[f[1]] = length
             elif f[0] == "P":
                 paths[f[1]] = [(s[:-1], s[-1]) for s in f[2].split(",") if s]
             elif f[0] == "W":
@@ -49,7 +66,24 @@ def read_gfa(path):
     return lengths, paths
 
 
+def path_start(name):
+    """`odgi extract` writes the window it cut into the path name
+    (`K12#1#chr:1004500-1004961`), and that suffix is the only statement of
+    where the cut sits. A whole graph's path carries no suffix and starts at 0;
+    reading it as `name.rsplit(':')[1]` raised IndexError on exactly that case,
+    which is what running this over an unextracted graph does.
+    """
+    _, sep, tail = name.rpartition(":")
+    start, _, end = tail.partition("-")
+    if sep and start.isdigit() and end.isdigit():
+        return int(start)
+    return 0
+
+
 def main():
+    if len(sys.argv) != 4:
+        sys.exit("usage: gfa_nodes_to_bed.py <in.gfa> <reference-path-prefix> "
+                 "<out-refname>")
     gfa, prefix, refname = sys.argv[1], sys.argv[2], sys.argv[3]
     lengths, paths = read_gfa(gfa)
     refs = [p for p in paths if p.startswith(prefix)]
@@ -66,8 +100,7 @@ def main():
     lo, hi = min(depths), max(depths)
 
     # the P line name carries the path's span in its own sequence: sample#hap#seq:start-end
-    start = int(ref.rsplit(":", 1)[1].split("-")[0])
-    pos = start
+    pos = path_start(ref)
     for node, orientation in paths[ref]:
         d = max(depth[node], 1)
         rgb = sample_gradient(DEPTH_GRADIENT, (d - lo) / (hi - lo) if hi > lo else 0.5)

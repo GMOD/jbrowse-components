@@ -81,6 +81,20 @@ for f in scripts:
             print(f"FAIL HELPERS in {f} names scripts/{name}, which is absent")
             failed = True
 
+    # A conditional AND-list as the LAST command is the script's exit status, and
+    # a failing test makes that 1 with every output written correctly. errexit
+    # does not fire (a command before the final `&&` is exempt), shellcheck says
+    # nothing, and the caller sees a build that "failed" at the end of a run it
+    # completed. build_rgfa_tabix.sh ended on `[ -n "$REF_PREFIX" ] && ls -l`,
+    # which is the argument its own tutorial omits, so every documented
+    # invocation exited 1 and build_ecoli_pangenome_graph.sh died on it under
+    # `set -e` after pggb and minigraph had already run. Use `if`.
+    tail = [ln for ln in lines if ln.strip() and not ln.strip().startswith("#")]
+    if tail and re.match(r'\s*(\[\[?|test)\s.*\s&&\s', tail[-1]):
+        print(f"FAIL conditional AND-list is the last command in {f}: "
+              f"`{tail[-1].strip()}` exits 1 when the test fails; use `if`")
+        failed = True
+
     # tabix without -f aborts under `set -e` on a re-run ("index exists").
     for i, ln in enumerate(lines):
         code = ln.split("#", 1)[0]
@@ -286,6 +300,15 @@ check("blanking the pad leaves each row at its declared size",
       [r[3] for r in trimmed], ["5", "5", "5"])
 check("blanking the pad leaves each row's start alone",
       [r[2] for r in trimmed], ["100", "50", "70"])
+# The PanSN -> `sample.contig` rename the MAF display splits species on. It was
+# `name.replace("#1#chr", ".chr")`, so it fired only for haplotype 1 on a contig
+# spelled `chr`, while the reference path itself is an argument. Anything else
+# kept its `#` and every row landed in one lane, silently.
+check("dotted renames whatever the haplotype and contig are called",
+      [reroot_maf.dotted(n) for n in
+       ("K12#1#chr", "HG002#2#chr1", "Sakai#0#ctg_7", "already.chr")],
+      ["K12.chr", "HG002.chr1", "Sakai.ctg_7", "already.chr"])
+
 check("a column left gap in every row is dropped",
       [r[6] for r in reroot_maf.crop_to_reference(
           [["s", "REF#1#chr", "100", "2", "+", "1000", "A--C"],
@@ -321,6 +344,222 @@ check("depth ramp midpoint is the middle stop",
       gfa_nodes.sample_gradient(ramp, 0.5), (33, 145, 140))
 check("depth ramp clamps out-of-range t",
       gfa_nodes.sample_gradient(ramp, 2.0), (253, 231, 37))
+# `odgi extract` writes its window into the path name and that suffix is the only
+# statement of where the cut sits. A path without one starts at 0; reading it as
+# rsplit(':')[1] raised IndexError, which is what pointing this at an
+# unextracted graph did.
+check("path_start reads an odgi extract window, and defaults to 0 without one",
+      [gfa_nodes.path_start(n) for n in
+       ("K12#1#chr:1004500-1004961", "K12#1#chr", "HG002#1#chr1")],
+      [1004500, 0, 0])
+
+# The three pangenome graph helpers whose output is hosted and read by a figure.
+# Each encodes a decision whose failure is a wrong picture rather than an error
+# -- a lane that draws, indexes and registers fine while saying the wrong thing
+# -- so what is pinned here is the decision, not the plumbing.
+pangenome_dir = tempfile.mkdtemp()
+
+
+def run_helper(mod, argv):
+    """Drive a helper's main() the way a build script does, capturing its report."""
+    sys.argv = argv
+    out = io.StringIO()
+    with contextlib.redirect_stdout(out), contextlib.redirect_stderr(io.StringIO()):
+        mod.main()
+    return out.getvalue()
+
+
+def refusal(mod, argv, expect):
+    """`expect` when a helper refuses this input FOR THAT REASON, else what it did.
+
+    Asserting the message rather than the exit status is the point. Removing
+    pggb_gfa_to_bed's LN:i: guard left the run still exiting nonzero, three
+    steps later, on "visits segment s2, which has no S line" -- a segment that
+    has one. A bare `exits nonzero` check passed either way, which is the same
+    plausible-wrong-answer shape the rest of this file exists to catch.
+    """
+    sys.argv = argv
+    try:
+        with contextlib.redirect_stdout(io.StringIO()), \
+                contextlib.redirect_stderr(io.StringIO()):
+            mod.main()
+    except SystemExit as exit_:
+        if not exit_.code:
+            return "exited 0"
+        return expect if expect in str(exit_.code) else f"refused: {exit_.code}"
+    return "wrote a file"
+
+
+# bubbles_to_tier_bed.py: the coarse level-of-detail tier behind the whole-chromosome
+# figure. gfatools bubble BED is chrom/start/end/segments/walks/inversion/shortest/
+# longest, three debug columns, then the segment list whose first member is the source.
+tier = load("scripts/bubbles_to_tier_bed.py", "bubbles_to_tier_bed")
+bubbles = os.path.join(pangenome_dir, "bubbles.bed")
+with open(bubbles, "w") as fh:
+    fh.write("chr1\t1000\t2000\t5\t9\t0\t900\t1100\tx\ty\tz\ts10,s11,s12\n"
+             # a PURE INSERTION: zero-length on the reference, 60 kb of allele.
+             # 53,293 of HPRC's 130,510 bubbles are this shape.
+             "chr1\t5000\t5000\t7\t3\t0\t0\t60000\tx\ty\tz\ts20,s21\n"
+             "chr1\t9000\t9500\t3\t2\t1\t400\t600\tx\ty\tz\ts30,s31\n")
+tier_prefix = os.path.join(pangenome_dir, "tier")
+run_helper(tier, ["bubbles_to_tier_bed.py", bubbles, tier_prefix,
+                  "--min-content", "1000"])
+tier_segs = [l.split("\t") for l in
+             open(f"{tier_prefix}.segs.bed").read().splitlines()]
+tier_bubbles = [r for r in tier_segs if r[4] == "1"]
+# Filtering on `end - start` would drop every pure insertion, including the
+# 100 kb+ ones that are the pangenome's whole claim. Content is
+# max(reference span, longest allele), so an insertion is kept on what it inserts.
+check("the content filter keeps a pure insertion and drops a small bubble",
+      [r[3] for r in tier_bubbles], ["s10", "s20"])
+# A reference axis has nowhere to put sequence the reference does not have, so a
+# zero-span bubble draws 1 bp wide and states its magnitude in the tag instead.
+check("a zero-span bubble is 1 bp wide, with its size in cl:i:",
+      [tier_bubbles[1][1], tier_bubbles[1][2], "cl:i:60000" in tier_bubbles[1][5]],
+      ["5000", "5001", True])
+# The node id is the bubble's own source segment, not a synthesized counter, so
+# expanding a tier node is a query of the fine index over the same span.
+check("a tier node's id is the bubble's source segment, so it joins back",
+      [r[3] for r in tier_segs],
+      ["bb_chr1_0", "s10", "bb_chr1_2000", "s20"])
+check("backbone and bubble alternate, which is what makes one walk complete",
+      [r[4] for r in tier_segs], ["0", "1", "0", "1"])
+# One row per link per endpoint, matching build_rgfa_tabix.sh: a neighbour can
+# sit outside the queried region, so the row states it rather than pointing at it.
+check("each tier link is written under both of its endpoints",
+      len(open(f"{tier_prefix}.links.bed").read().splitlines()), 6)
+
+# untangle_to_bed.py: a second producer of build_minigraph_paths.sh's schema.
+# Consumers reach these columns POSITIONALLY as well as by name, so a dropped
+# blank slides selfCov into `class` and a jexl on class reads a float.
+untangle = load("scripts/untangle_to_bed.py", "untangle_to_bed")
+paf = os.path.join(pangenome_dir, "untangle.paf")
+with open(paf, "w") as fh:
+    fh.write("Sakai#1#chr\t5000000\t100\t2100\t+\tK12#1#chr\t4641652\t500\t2500"
+             "\t2000\t2000\t60\tid:f:99.5\tsc:f:1\n"
+             "IAI39#1#chr\t5100000\t9000\t9500\t-\tK12#1#chr\t4641652\t8000\t8500"
+             "\t500\t500\t60\tid:f:87.25\tsc:f:2.5\n")
+rows = [l.split("\t") for l in
+        run_helper(untangle, ["untangle_to_bed.py", paf, "chr"]).splitlines()]
+check("every row fills the shared 17 columns plus selfCov",
+      sorted({len(r) for r in rows}), [18])
+check("the columns untangle cannot supply are blank, in their own positions",
+      rows[1][10:17], [""] * 7)
+check("selfCov is appended after the shared 17, so nothing shifts",
+      [rows[0][17], rows[1][17], rows[2][17]], ["selfCov", "1", "2.5"])
+# Orientation is the one thing this lane exists for, and the color is in the file
+# so the track needs no color config.
+check("orientation rides in itemRgb, grey forward and red reverse",
+      [(r[5], r[8]) for r in rows[1:]],
+      [("+", "153,153,153"), ("-", "214,39,40")])
+# Without -p odgi writes its own 10-column TSV, every line fails the field guard,
+# and the result is a header-only BED that indexes and draws an empty lane.
+tsv = os.path.join(pangenome_dir, "untangle.tsv")
+with open(tsv, "w") as fh:
+    fh.write("Sakai\t1\t2\t3\t4\t5\t6\t7\t8\t9\n")
+check("a non-PAF input is refused rather than written as an empty lane",
+      refusal(untangle, ["untangle_to_bed.py", tsv, "chr"],
+              "no PAF records parsed"), "no PAF records parsed")
+# untangle takes -R as a LIST, and <out-refname> renames every target, so two
+# reference paths would stack unrelated coordinates on one axis silently.
+two_targets = os.path.join(pangenome_dir, "two.paf")
+with open(two_targets, "w") as fh:
+    fh.write(open(paf).read().replace("K12#1#chr\t4641652\t8000",
+                                      "OTHER#1#chr\t4641652\t8000"))
+check("two target paths are refused, since out-refname renames all of them",
+      refusal(untangle, ["untangle_to_bed.py", two_targets, "chr"],
+              "more than one target path"), "more than one target path")
+
+# pggb_gfa_to_bed.py: the index behind every by-locus graph cut on a plain GFA.
+pggb_bed = load("scripts/pggb_gfa_to_bed.py", "pggb_gfa_to_bed")
+gfa = os.path.join(pangenome_dir, "graph.gfa")
+with open(gfa, "w") as fh:
+    fh.write("H\tVN:Z:1.0\n"
+             "S\ts1\t" + "A" * 10 + "\nS\ts2\t" + "C" * 5 + "\n"
+             "S\ts3\t" + "G" * 10 + "\nS\ts4\t" + "T" * 7 + "\n"
+             # the reference visits s2 TWICE: a collapsed repeat
+             "P\tK12#1#chr\ts1+,s2+,s3+,s2+\t*,*,*\n"
+             # Sakai contributes s4, which the reference never visits
+             "P\tSakai#1#chr\ts1+,s4+,s3+\t*,*\n"
+             # a W line, the spelling vg and base-level Minigraph-Cactus use
+             "W\tCFT073\t1\tchr\t0\t20\t>s1>s3\n"
+             "L\ts1\t+\ts2\t+\t0M\nL\ts1\t+\ts4\t+\t0M\nL\ts4\t+\ts3\t+\t0M\n")
+walk_prefix = os.path.join(pangenome_dir, "walk")
+run_helper(pggb_bed, ["pggb_gfa_to_bed.py", gfa, walk_prefix, "--reference", "K12"])
+walk = {r[3]: r for r in (l.split("\t") for l in
+                          open(f"{walk_prefix}.segs.bed").read().splitlines())}
+# A node draws as one tube at one x, so recording both visits would claim
+# reference the segment does not occupy. The repeat stays visible as depth.
+check("first visit wins, so a collapsed repeat does not span both copies",
+      walk["s2"][:3], ["K12#1#chr", "10", "15"])
+# The same asymmetry rGFA has: an off-reference segment sits on its own carrier,
+# and a reference query reaches it through the links file.
+check("a segment the reference never visits sits on its carrier's coordinates",
+      walk["s4"][:3], ["Sakai#1#chr", "10", "17"])
+check("rank is 0 or 1 and nothing more, since a path GFA has no build order",
+      sorted({r[4] for r in walk.values()}), ["0", "1"])
+# PanSN names an assembly with two fields, and keying carriage on the sample
+# alone merges a diploid's two haplotypes.
+check("a carrier is a haplotype, not a sample, and W lines carry too",
+      walk["s1"][5], "SM:Z:K12.1,Sakai.1,CFT073.1")
+check("carriage names only the paths that actually walk the segment",
+      walk["s2"][5], "SM:Z:K12.1")
+# Summing lengths along a path is the path's coordinate only when segments abut.
+# On an overlapped graph every segment after the first is misplaced, in a BED
+# that indexes and draws, so the script refuses instead of guessing.
+overlapped = os.path.join(pangenome_dir, "overlapped.gfa")
+with open(overlapped, "w") as fh:
+    fh.write(open(gfa).read().replace("L\ts1\t+\ts2\t+\t0M", "L\ts1\t+\ts2\t+\t5M"))
+check("a non-blunt graph is refused rather than silently misplaced",
+      refusal(pggb_bed, ["pggb_gfa_to_bed.py", overlapped,
+                         os.path.join(pangenome_dir, "bad")],
+              "non-blunt overlap"), "non-blunt overlap")
+check("a --reference matching no path is named, not ignored",
+      refusal(pggb_bed, ["pggb_gfa_to_bed.py", gfa,
+                         os.path.join(pangenome_dir, "bad2"),
+                         "--reference", "NOPE"],
+              "matches no path"), "matches no path")
+# An elided sequence states its length in LN:i:. Defaulting to 0 without one
+# shifts every later segment on that path left, so it is refused the same way a
+# non-blunt overlap is; with the tag, the segment places normally.
+elided = os.path.join(pangenome_dir, "elided.gfa")
+with open(elided, "w") as fh:
+    fh.write(open(gfa).read().replace("S\ts2\t" + "C" * 5, "S\ts2\t*"))
+check("a segment with no sequence and no LN:i: is refused, and says so",
+      refusal(pggb_bed, ["pggb_gfa_to_bed.py", elided,
+                         os.path.join(pangenome_dir, "bad3")],
+              "no LN:i: tag"), "no LN:i: tag")
+tagged = os.path.join(pangenome_dir, "tagged.gfa")
+with open(tagged, "w") as fh:
+    fh.write(open(gfa).read().replace("S\ts2\t" + "C" * 5, "S\ts2\t*\tLN:i:5"))
+tagged_prefix = os.path.join(pangenome_dir, "tagged")
+run_helper(pggb_bed, ["pggb_gfa_to_bed.py", tagged, tagged_prefix,
+                      "--reference", "K12"])
+check("an elided sequence with LN:i: places exactly as the spelled-out one does",
+      [l.split("\t")[:3] for l in
+       open(f"{tagged_prefix}.segs.bed").read().splitlines()],
+      [l.split("\t")[:3] for l in
+       open(f"{walk_prefix}.segs.bed").read().splitlines()])
+
+# gfa_nodes_to_bed.py walks a cut subgraph rather than a whole graph, but it
+# places segments by summing lengths the same way, so `len("*")` == 1 misplaces
+# the node and everything after it. Same guard, same wording, as its sibling.
+nodes_gfa = os.path.join(pangenome_dir, "nodes.gfa")
+with open(nodes_gfa, "w") as fh:
+    fh.write("S\t1\tACGTA\nS\t2\t*\tLN:i:3\nS\t3\tGG\n"
+             "P\tK12#1#chr:100-110\t1+,2+,3+\t*,*\n")
+check("an elided sequence with LN:i: takes its declared length, not 1",
+      [l.split("\t")[:4] for l in
+       run_helper(gfa_nodes,
+                  ["gfa_nodes_to_bed.py", nodes_gfa, "K12#1#chr", "chr"]).splitlines()],
+      [["chr", "100", "105", "1"], ["chr", "105", "108", "2"],
+       ["chr", "108", "110", "3"]])
+nodes_bad = os.path.join(pangenome_dir, "nodes_bad.gfa")
+with open(nodes_bad, "w") as fh:
+    fh.write(open(nodes_gfa).read().replace("S\t2\t*\tLN:i:3", "S\t2\t*"))
+check("gfa_nodes_to_bed refuses an elided sequence with no LN:i:, and says so",
+      refusal(gfa_nodes, ["gfa_nodes_to_bed.py", nodes_bad, "K12#1#chr", "chr"],
+              "no LN:i: tag"), "no LN:i: tag")
 
 # sv_multihop.py: reconstructs the COLO829 derivative allele the cancer_sv demo
 # serves. Three bugs here produced a plausible-looking but wrong figure rather

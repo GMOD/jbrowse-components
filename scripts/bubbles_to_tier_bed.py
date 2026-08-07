@@ -176,4 +176,5 @@ def write_link(out, chrom, src, tgt):
     return 1
 
 
-main()
+if __name__ == "__main__":
+    main()

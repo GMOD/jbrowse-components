@@ -36,7 +36,11 @@ def read_matrix(path, column):
             if len(cols) > v_i:
                 similarity[cols[a_i], cols[b_i]] = float(cols[v_i])
 
-    names = sorted({a for a, _ in similarity})
+    # both columns, not just group.a: a sample odgi only ever reports as the
+    # second member of a pair is still a sample, and taking group.a alone
+    # dropped it from the tree with no warning. The MAF track then draws it in
+    # input order beneath the dendrogram, which looks like a tree that placed it.
+    names = sorted({name for pair in similarity for name in pair})
     # odgi emits both orientations of each pair, but read the mean rather than
     # whichever arrived last: jaccard is symmetric while the length-normalized
     # columns need not be to the last bit.

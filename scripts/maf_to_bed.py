@@ -42,6 +42,8 @@ def bed_line(rows):
 
 
 def main():
+    if len(sys.argv) != 3:
+        sys.exit("usage: maf_to_bed.py <in.maf> <out.bed>")
     with open(sys.argv[1]) as fh:
         lines = [bed_line(rows) for rows in parse_blocks(fh)]
     lines.sort(key=lambda line: (line[0], line[1]))

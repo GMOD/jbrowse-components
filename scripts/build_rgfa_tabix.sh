@@ -53,7 +53,13 @@
 set -euo pipefail
 
 GFA="${1:?usage: build_rgfa_tabix.sh <graph.rgfa[.gz]> [out-prefix] [ref-prefix]}"
-PREFIX="${2:-${GFA%.gfa*}}"
+# `${GFA%.gfa*}` does not match `.rgfa`, which is the extension this script's own
+# usage line advertises, so the default prefix used to keep it: `graph.rgfa` in,
+# `graph.rgfa.segs.bed.gz` out. Strip either spelling, with or without `.gz`.
+DEFAULT_PREFIX=${GFA%.gz}
+DEFAULT_PREFIX=${DEFAULT_PREFIX%.gfa}
+DEFAULT_PREFIX=${DEFAULT_PREFIX%.rgfa}
+PREFIX="${2:-$DEFAULT_PREFIX}"
 REF_PREFIX="${3:-}"
 
 # HPRC ships its minigraph graphs gzipped, so read through a decompressor when
@@ -109,4 +115,11 @@ if [ -n "$REF_PREFIX" ]; then
 fi
 
 ls -l "$PREFIX".segs.bed.gz* "$PREFIX".links.bed.gz*
-[ -n "$REF_PREFIX" ] && ls -l "$PREFIX".ref.*.bed.gz*
+# `if`, not `[ -n "$REF_PREFIX" ] && ls`: an AND-list whose test fails is exempt
+# from errexit but still the script's last command, so the whole run exited 1
+# with every index written correctly. The tutorial's own invocation omits this
+# argument, and build_ecoli_pangenome_graph.sh calls it that way under `set -e`,
+# so the E. coli build died here after pggb and minigraph had already run.
+if [ -n "$REF_PREFIX" ]; then
+  ls -l "$PREFIX".ref.*.bed.gz*
+fi

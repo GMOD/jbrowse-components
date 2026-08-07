@@ -10,8 +10,8 @@ be rooted on the same genome. This:
   - emits one block per reference row, each rooted on its own copy,
   - crops each block's columns to the reference row's declared interval,
   - sorts blocks by reference start (what an interval index needs),
-  - renames PanSN 'sample#1#contig' -> 'sample.contig' (JBrowse splits the
-    species off on the first '.').
+  - renames PanSN 'sample#hap#contig' -> 'sample.contig' (JBrowse splits the
+    species off on the first '.'), whatever the haplotype and contig are called.
 
 Feed the output to maf_to_bed.py, then bgzip + tabix, for a MafTabixAdapter track.
 
@@ -57,6 +57,21 @@ import sys
 
 REF = sys.argv[3] if len(sys.argv) > 3 else "K12#1#chr"
 _comp = str.maketrans("ACGTacgtNn", "TGCAtgcaNn")
+
+
+def dotted(name):
+    """PanSN `sample#hap#contig` -> `sample.contig`, which is where the MAF
+    display splits a row's species off.
+
+    Derived from the name's own structure, not by substituting a literal
+    `#1#chr`: the reference path is an argument, so a graph on haplotype 0, or
+    one whose contigs are not spelled `chr`, left every row still named
+    `sample#hap#contig`. Nothing failed. maf_to_bed.py then took the whole
+    `K12#0#ctg_7` as the refName, and the track indexed onto a sequence the
+    assembly does not have, so it loaded and drew nothing.
+    """
+    fields = name.split("#", 2)
+    return f"{fields[0]}.{fields[2]}" if len(fields) == 3 else name
 
 
 def parse_blocks(fh):
@@ -214,6 +229,9 @@ def reroot(rows):
 
 
 def main():
+    if not 3 <= len(sys.argv) <= 4:
+        sys.exit("usage: reroot_maf.py <in.maf> <out.maf> [reference_path]"
+                 f"   (reference defaults to {REF})")
     with open(sys.argv[1]) as fh:
         parsed = [rows for rows in parse_blocks(fh) if any(r[1] == REF for r in rows)]
     blocks = [b for rows in parsed for b in reroot(rows)]
@@ -229,8 +247,7 @@ def main():
             out.write("a\n")
             for r in rows:
                 out.write("s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (
-                    r[1].replace("#1#chr", ".chr"),
-                    r[2], r[3], r[4], r[5], r[6]))
+                    dotted(r[1]), r[2], r[3], r[4], r[5], r[6]))
             out.write("\n")
     overlaps = sum(1 for i in range(1, len(blocks))
                    if int(blocks[i][0][2])

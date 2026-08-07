@@ -68,8 +68,17 @@ import sys
 # to touch disk.
 def open_maybe_gz(path):
     if path.endswith(".zst"):
-        from compression import zstd
-
+        # stdlib zstd landed in 3.14. Say so, rather than letting a reader on
+        # the distro python meet `No module named 'compression'` while holding
+        # a file the script's own docstring told them it reads.
+        try:
+            from compression import zstd
+        except ImportError:
+            sys.exit(
+                f"{path}: reading .zst needs python 3.14 or newer (this is "
+                f"{sys.version_info.major}.{sys.version_info.minor}). "
+                "Decompress it first: `zstd -d <file>`."
+            )
         return zstd.open(path, "rt")
     return gzip.open(path, "rt") if path.endswith(".gz") else open(path)
 
@@ -174,9 +183,21 @@ def main():
                 cols = line.rstrip("\n").split("\t")
                 seq = cols[2]
                 if seq == "*":
+                    # A segment whose sequence is elided states its length in
+                    # LN:i:. Without one there is nothing to place it by, and
+                    # falling back to 0 is the same silent-and-total failure as
+                    # a non-blunt overlap: every segment after it on the path
+                    # shifts left, in a BED that indexes and draws.
                     length = next(
-                        (int(c[5:]) for c in cols[3:] if c.startswith("LN:i:")), 0
+                        (int(c[5:]) for c in cols[3:] if c.startswith("LN:i:")), None
                     )
+                    if length is None:
+                        sys.exit(
+                            f"segment {cols[1]} has no sequence and no LN:i: tag, "
+                            "so its length is unknown and every segment after it "
+                            "on a path would be misplaced. Write the graph with "
+                            "sequences (`odgi view -g`) or add LN:i: tags."
+                        )
                 else:
                     length = len(seq)
                 lengths[cols[1]] = length
@@ -245,9 +266,12 @@ def main():
                 sys.exit(f"path {name} visits segment {seg}, which has no S line")
             if seg not in coords:
                 coords[seg] = (name, offset, rank)
-            bucket = carriers.setdefault(seg, [])
-            if assembly not in bucket:
-                bucket.append(assembly)
+            # a dict, not a list with `in`: membership is O(1) and insertion
+            # order is preserved, so the tag still reads in path order. The list
+            # form was O(haplotypes) per step, and this is the inner loop of the
+            # whole walk, so it was the shape that scaled worst on the graphs
+            # this script is most likely to be pointed at.
+            carriers.setdefault(seg, {})[assembly] = None
             offset += length
 
     with open(f"{args.prefix}.segs.bed", "w") as out:

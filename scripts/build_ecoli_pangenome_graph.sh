@@ -355,7 +355,7 @@ REFLEN=$(awk -v p="${REF}#1#chr" '$1 == p {print $2}' all.fa.gz.fai)
 awk -v p="${REF}#1#chr" -v len="$REFLEN" -v w=500 \
   'BEGIN { for (s = 0; s < len; s += w) { e = s + w; if (e > len) e = len; print p "\t" s "\t" e } }' \
   > depth_windows.bed
-in_pggb odgi depth -i "/data/$GFA" -b /data/depth_windows.bed \
+in_pggb odgi depth -i "/data/$OG" -b /data/depth_windows.bed \
   | awk -v p="${REF}#1#chr" -v OFS='\t' '$1 == p && $4 + 0 == $4 { print "chr", $2, $3, $4 }' \
   | sort -k1,1 -k2,2n > ecoli_pggb_depth.bedgraph
 printf 'chr\t%s\n' "$REFLEN" > chrom.sizes
@@ -368,7 +368,7 @@ bedGraphToBigWig ecoli_pggb_depth.bedgraph chrom.sizes ecoli_pggb_depth.bw
 # strain). Slice each non-REF strain's rows into their own bigWig and load the set
 # as one MultiQuantitativeTrack. pav's default TSV is chrom/start/end/name/group/
 # pav, so filter on the group column (= the PanSN path). Reuses depth_windows.bed.
-in_pggb odgi pav -i "/data/$GFA" -b /data/depth_windows.bed > pav.tsv
+in_pggb odgi pav -i "/data/$OG" -b /data/depth_windows.bed > pav.tsv
 for strain in $STRAINS; do
   [ "$strain" = "$REF" ] && continue   # REF is present over its own windows by construction
   awk -F'\t' -v OFS='\t' -v g="${strain}#1#chr" \

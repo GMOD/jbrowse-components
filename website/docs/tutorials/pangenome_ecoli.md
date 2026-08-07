@@ -146,6 +146,10 @@ gfa=$(ls pggb/*.smooth.final.gfa)
 og=$(ls pggb/*.smooth.final.og)
 ```
 
+`.og` is odgi's own succinct serialization of that same graph, so every odgi
+command below reads it rather than reparsing the GFA. The GFA is what the tabix
+index is built from, since that walk reads P and W lines as text.
+
 ## Synteny projection
 
 Two files answer this, and the difference between them is worth a track each.
@@ -304,7 +308,7 @@ and MAF projections cannot state at all.
 already defines, so this is a second producer of an existing format rather than
 a new one. Every column of that schema is written in its own position, and the
 bubble-decomposition ones untangle does not report (`class`, `delta`, `path` and
-the rest) are left empty rather than dropped — a consumer that reads them
+the rest) are left empty rather than dropped: a consumer that reads them
 positionally would otherwise pick up this file's `selfCov` as `class`. So
 `partitionField` and the colors carry across unchanged; `lengthField` has
 nothing to read here, because untangle reports no length change:
@@ -312,9 +316,10 @@ nothing to read here, because untangle reports no length change:
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/untangle_to_bed.py
 python3 untangle_to_bed.py ecoli_pggb_untangle.paf chr > ecoli_pggb_untangle_rows.bed
+# keep the header first, sort the rest
 (head -1 ecoli_pggb_untangle_rows.bed
- tail -n +2 ecoli_pggb_untangle_rows.bed | sort -k1,1 -k2,2n) | bgzip > rows.bed.gz
-mv rows.bed.gz ecoli_pggb_untangle_rows.bed.gz
+ tail -n +2 ecoli_pggb_untangle_rows.bed | sort -k1,1 -k2,2n) \
+  | bgzip > ecoli_pggb_untangle_rows.bed.gz
 tabix -p bed ecoli_pggb_untangle_rows.bed.gz
 ```
 
@@ -352,9 +357,8 @@ is the same accessory sequence the depth and presence projections below measure.
 The same inversions are in the synteny figures above as ribbon crossings, but
 only whole-genome and only between the two rows in view. `selfCov` is in the
 popup and carries the other half: above 1 where a segment lands on a reference
-span the same strain also lands on elsewhere, so
-`jexl:feature.selfCov>1` in **Edit filters** cuts the lane to the collapsed
-repeats.
+span the same strain also lands on elsewhere, so `jexl:feature.selfCov>1` in
+**Edit filters** cuts the lane to the collapsed repeats.
 
 ## Pangenome variants projection
 
@@ -455,7 +459,7 @@ row's species off on the `.`:
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/reroot_maf.py
 # reroot_maf.py keeps K12-containing blocks, puts K12 first (+ strand), sorts by
 # K12 position, and gives each K12 row in a repeat-collapsed block its own block
-python3 reroot_maf.py pggb/*.smooth.maf ecoli_pggb.maf
+python3 reroot_maf.py pggb/*.smooth.maf ecoli_pggb.maf K12#1#chr
 ```
 
 [`reroot_maf.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/reroot_maf.py)
@@ -558,8 +562,8 @@ reflen=$(awk '$1 == "K12#1#chr" {print $2}' all.fa.gz.fai)
 awk -v len="$reflen" 'BEGIN{for(s=0;s<len;s+=500){e=s+500; if(e>len)e=len; print "K12#1#chr\t"s"\t"e}}' \
   > depth_windows.bed
 
-in_pggb odgi depth -i "/data/$gfa" -b /data/depth_windows.bed \
-  | awk -v OFS='\t' '$1 == "K12#1#chr" {print "chr", $2, $3, $4}' \
+in_pggb odgi depth -i "/data/$og" -b /data/depth_windows.bed \
+  | awk -v OFS='\t' '$1 == "K12#1#chr" && $4 + 0 == $4 {print "chr", $2, $3, $4}' \
   | sort -k1,1 -k2,2n > ecoli_pggb_depth.bedgraph
 
 printf 'chr\t%s\n' "$reflen" > chrom.sizes
@@ -632,7 +636,7 @@ own bigWig and load the set as one
 
 ```bash
 # cols: chrom start end name group pav
-in_pggb odgi pav -i "/data/$gfa" -b /data/depth_windows.bed > pav.tsv
+in_pggb odgi pav -i "/data/$og" -b /data/depth_windows.bed > pav.tsv
 for strain in Sakai CFT073 NCTC86 IAI39; do
   awk -v OFS='\t' -v g="$strain#1#chr" '$5 == g && $6 + 0 == $6 { print "chr", $2, $3, $6 }' \
     pav.tsv | sort -k1,1 -k2,2n > "ecoli_pggb_pav_$strain.bedgraph"
@@ -742,7 +746,7 @@ once, offline, and writing the result as the two tabix-indexed BEDs that
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pggb_tabix.sh
-bash build_pggb_tabix.sh pggb/*.smooth.final.gfa ecoli_pggb K12
+bash build_pggb_tabix.sh "$gfa" ecoli_pggb K12
 ```
 
 It produces `ecoli_pggb.segs.bed.gz` and `ecoli_pggb.links.bed.gz` with their
@@ -815,8 +819,8 @@ instead. The MAF row above says the same thing base by base.
 
 Clicking a node opens its details, and on a graph indexed this way they include
 **`carriedBy`**: every haplotype whose path walks that segment.
-`build_pggb_tabix.sh` records them as an `SM:Z:` tag while it walks the paths, so
-the answer travels with the index rather than being recomputed.
+`build_pggb_tabix.sh` records them as an `SM:Z:` tag while it walks the paths,
+so the answer travels with the index rather than being recomputed.
 
 This is the one thing none of the projections above can state. They all flatten
 onto K12, and an allele no reference carries has no K12 coordinate to be drawn
@@ -866,11 +870,12 @@ list and `carriers` is its length, which is the one a color expression wants:
 
 <Figure caption="The IS5 element at K12 chr:1,299,499-1,300,693 in three lanes. The gene track names it insH21, the odgi depth curve steps from the strain count down to 1 across its span, and the carriage lane draws that same span as one box carried by K12 alone, with the core band either side." src="/img/pangenome/pggb_carriage_lane.png" />
 
-Read it against the [depth track](#pangenome-depth-projection-core-vs-accessory).
-Both answer core versus accessory, and they differ in unit: depth is a mean over
-the windows tiled above, so an accessory stretch shorter than one window is
-averaged into its neighbours, while the lane is one box per segment, which is
-where the graph states carriage in the first place.
+Read it against the
+[depth track](#pangenome-depth-projection-core-vs-accessory). Both answer core
+versus accessory, and they differ in unit: depth is a mean over the windows
+tiled above, so an accessory stretch shorter than one window is averaged into
+its neighbours, while the lane is one box per segment, which is where the graph
+states carriage in the first place.
 
 The last color in the chain is the fallback. An rGFA has no tag column at all,
 so `carriers` is absent rather than 0 and the whole lane comes out in that
@@ -886,15 +891,16 @@ gene track.
 
 That is the deletion read from the donor's side, and it is checkable against
 annotation neither the graph nor the index has seen. The two links bridge
-`K12:997,574` to `K12:1,004,667`, and seven K12 genes sit inside that span —
-`elfA`, `elfD`, `elfC`, `elfG`, `ycbU`, `ycbV`, `ycbF`, the _elf_ fimbrial
-operon and its neighbours — with `ssuE` ending just before it and `pyrD`
+`K12:997,574` to `K12:1,004,667`, and seven K12 genes sit inside that span
+(`elfA`, `elfD`, `elfC`, `elfG`, `ycbU`, `ycbV`, `ycbF`, the _elf_ fimbrial
+operon and its neighbours), with `ssuE` ending just before it and `pyrD`
 starting just after. So if the graph is right, CFT073 should run `ssuE` straight
 into `pyrD`. It does.
 
 <Figure caption="The 75 bp CFT073 segment ringed in the graph, and the linear view its menu entry opens: CFT073 on its own coordinates, carrying CFT073's genes. ssuE runs into pyrD with nothing between them, where K12 has seven genes across 7.1 kb. The graph stated that as a link between two coordinates; this is the same event on the assembly that carries it." src="/img/pangenome/pggb_strain_launch.png" />
 
-The [graph genome view guide](/docs/user_guides/graph_genome_view#from-a-node-back-to-a-genome)
+The
+[graph genome view guide](/docs/user_guides/graph_genome_view#from-a-node-back-to-a-genome)
 covers the rest of that menu, including the synteny entry that opens every
 contributing strain at once.
 
@@ -1088,15 +1094,16 @@ It downloads the RefSeq genomes, runs pggb, converts the wfmash PAF,
 `odgi untangle`, both VCF tiers, the MAF, `odgi similarity`, `odgi depth` and
 `odgi pav` into the projections above, downloads JBrowse, and writes a
 `config.json` with the assemblies, per-strain gene tracks, the graph-derived
-tracks, and a default session. It also writes the `odgi viz` raster, the two
-graph-view subgraphs (`ecoli_pggb_subgraph.gfa` and `ecoli_rgfa_slice.gfa`), and
-the rGFA tabix indexes behind the segments track, all of which need the cactus
-image for minigraph and gfatools. The `config.json` declares the graph genome
-view plugin, so the graph track and its launch menu item work without adding the
-plugin by hand. It needs the same tools listed under
-[Prerequisites](#prerequisites), and picks its container runtime from what is on
-`PATH`, docker first and then singularity or apptainer. Force one with
-`CONTAINER=singularity`.
+tracks, and a default session. It also writes the `odgi viz` raster and one cut
+GFA per graph-view figure on this page: `ecoli_pggb_subgraph.gfa`,
+`ecoli_pggb_is5.gfa` and `ecoli_pggb_rrna.gfa` out of odgi, then
+`ecoli_rgfa_slice.gfa`, `ecoli_paa_subgraph.gfa` and the rGFA tabix indexes
+behind the segments track out of the cactus image, which is where minigraph and
+gfatools live. The `config.json` declares the graph genome view plugin, so the
+graph track and its launch menu item work without adding the plugin by hand. It
+needs the same tools listed under [Prerequisites](#prerequisites), and picks its
+container runtime from what is on `PATH`, docker first and then singularity or
+apptainer. Force one with `CONTAINER=singularity`.
 
 Everything downstream is derived from the strain table at the top of the script,
 so adding genomes there is the only edit an expanded pangenome needs. Watch two

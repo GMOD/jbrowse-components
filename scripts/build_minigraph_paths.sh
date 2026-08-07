@@ -196,5 +196,5 @@ awk -f "$TMP/context.awk" "$TMP/$REF_NAME.call.bed" $CALLS > "$TMP/context.tsv"
 tabix -f -p bed "$PREFIX.bed.gz"
 
 echo "== $PREFIX.bed.gz"
-zcat "$PREFIX.bed.gz" | awk -F'\t' 'NR > 1 { c[$10 " " $11]++ }
+gzip -dc "$PREFIX.bed.gz" | awk -F'\t' 'NR > 1 { c[$10 " " $11]++ }
   END { for (k in c) print "   " c[k], k }' | sort -k2,2 -k1,1rn
