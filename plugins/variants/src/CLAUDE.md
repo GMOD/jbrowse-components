@@ -50,7 +50,21 @@ prefers declarative iteration.
   keeps its direct index and pays no extra read. Writing `codes[sampleIdx]`
   filed each genotype, and each sample's ploidy, against a neighbouring sample
   on any multi-contig view over such files — silently, since every row still
-  held a real genotype.
+  held a real genotype. `phaseSetReader` reads PS through the same callback and
+  so needs the same translation.
+- **Phase-set coloring reads PS through `processFormatFields`, not `samples`.**
+  `feature.get('samples')` parses every FORMAT field of every sample — an object
+  and an array apiece — to reach one: 343ms/239MB per fetch on a 100-sample
+  phased callset over 2k variants, 1686ms/1.17GB at 500 samples, against
+  33ms/113ms and 4MB. `makePhaseSetReader` is shared by both cell loops rather
+  than written twice, because the two displays paint the same phase sets and a
+  second copy of the absent/malformed rules is how they drift: an absent column,
+  an empty field and `.` all mean "no phase set" and fall back to allele
+  coloring, while a present-but-unparseable id is NaN and paints hue 0 — which
+  is what `SAMPLES()`' `+` coercion produced. GT is deliberately not read there;
+  it comes from the interned codes, so there is one source of it.
+  An adapter that can't report FORMAT ranges paints by allele, the same outcome
+  an absent `samples` field already gave.
 - Codes are **Uint32**. They were Uint16, which capped the dict at 65535
   distinct genotype strings — reachable on a decomposed pangenome callset, where
   a multiallelic site's genotypes grow with the square of the alt count. Past

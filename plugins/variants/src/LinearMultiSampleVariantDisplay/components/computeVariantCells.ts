@@ -10,6 +10,7 @@ import {
   isPhasedOrHaploid,
   splitPhasedAlleles,
 } from '../../shared/getPhasedColor.ts'
+import { makePhaseSetReader } from '../../shared/phaseSetReader.ts'
 import {
   buildAlleleCountStyle,
   buildPhasedStyles,
@@ -214,6 +215,9 @@ export function computeVariantCells({
   // complete before this runs, so the memo is a plain array sized to it and the
   // per-cell lookup is an array read. Only the codes a site actually used are
   // cleared between features, which is that same handful.
+  // Per-sample phase sets, filled per feature only when phase-set coloring is
+  // on. Allocated once here so the fill reuses one pair of typed arrays.
+  const phaseSets = makePhaseSetReader(sampleNames)
   const numCodes = genotypeDict.length + 1
   const alleleCountStyles = new Array<VariantCellStyle | null | undefined>(
     numCodes,
@@ -256,38 +260,27 @@ export function computeVariantCells({
     touchedCodes.length = 0
 
     if (renderingMode === 'phased') {
-      // PS (phase-set) coloring requires per-sample FORMAT data, which only the
-      // heavier `samples` field preserves — the flat `genotypes` map doesn't
-      // carry it. So the slower samples path runs only when the user asked for
-      // phase-set coloring AND this feature actually declares PS.
-      const hasPhaseSet =
+      // PS (phase-set) coloring reads a second FORMAT field per sample, so it
+      // runs only when the user asked for it AND this feature declares PS.
+      // `read` answers false for a feature that can't report FORMAT ranges (a
+      // non-VCF adapter, a sites-only record), and the loop then paints by
+      // allele — the same fallback an absent `samples` field used to give.
+      const usePhaseSet =
         colorByPhaseSet &&
-        featureHasPhaseSet(feature.get('FORMAT') as string | undefined)
-      // `samples` can be absent even on a feature whose FORMAT declares PS (a
-      // non-VCF adapter, a sites-only record), so the fallback below is keyed on
-      // the field actually being there rather than on `hasPhaseSet` — reading
-      // the flat map back through a `hasPhaseSet`-keyed `undefined` was a crash.
-      //
-      // Typed as the two fields this loop reads, at what they actually
-      // deserialize to: the blanket `Record<string, string[]>` this replaced
-      // claimed PS was a string, where the spec reserves it as Type=Integer and
-      // @gmod/vcf duly hands back a number.
-      const samp = hasPhaseSet
-        ? (feature.get('samples') as
-            | Record<string, { GT?: string[]; PS?: (string | number)[] }>
-            | undefined)
-        : undefined
-      if (samp) {
-        // Phase-set coloring: the hue comes from a per-(feature, sample) FORMAT
-        // field, so there is nothing site-wide to memoize and this stays on the
-        // per-cell color call.
+        featureHasPhaseSet(feature.get('FORMAT') as string | undefined) &&
+        phaseSets.read(feature)
+      if (usePhaseSet) {
+        // The hue comes from a per-(feature, sample) FORMAT field, so there is
+        // nothing site-wide to memoize and this stays on the per-cell color
+        // call. GT comes from the interned codes, same as every other branch.
         for (let j = 0; j < numSources; j++) {
-          const { HP, sampleName } = sources[j]!
-          const s = samp[sampleName]
-          const genotype = s?.GT?.[0]
-          if (!genotype) {
+          const { HP } = sources[j]!
+          const si = sourceSampleIndices[j]!
+          const code = si === -1 ? 0 : codes[si]!
+          if (code === 0) {
             continue
           }
+          const genotype = genotypeDict[code - 1]!
           if (isPhasedOrHaploid(genotype)) {
             const alleles = splitPhasedAlleles(genotype)
             const allele = alleles[HP!]
@@ -295,7 +288,7 @@ export function computeVariantCells({
               alleles,
               HP!,
               mostFrequentAlt,
-              s.PS?.[0],
+              phaseSets.present[si] ? phaseSets.value[si] : undefined,
               drawRef,
             )
             if (c) {

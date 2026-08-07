@@ -1,5 +1,7 @@
+import VcfParser from '@gmod/vcf'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
+import VcfFeature from '../../VcfFeature/index.ts'
 import {
   buildSampleIndex,
   decodeGenotype,
@@ -9,6 +11,22 @@ import { computeVariantCells } from './computeVariantCells.ts'
 
 import type { ProcessedSource } from '../../shared/types.ts'
 import type { Feature } from '@jbrowse/core/util'
+
+// A real VcfFeature, for the phase-set tests. PS reaches the cell loops through
+// `processFormatFields`, so a plain-object mock with a `samples` field would no
+// longer exercise the path at all — it would silently fall back to allele
+// coloring and keep passing. Parsing a line is also the only way the FORMAT
+// column, the GT and the PS stay consistent with each other by construction.
+function vcfFeature(line: string, samples: string[], id = 'f1'): Feature {
+  const parser = new VcfParser({
+    header:
+      '##fileformat=VCFv4.2\n' +
+      '##FORMAT=<ID=GT,Number=1,Type=String,Description="gt">\n' +
+      '##FORMAT=<ID=PS,Number=1,Type=Integer,Description="ps">\n' +
+      `#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t${samples.join('\t')}\n`,
+  })
+  return new VcfFeature({ variant: parser.parseLine(line), parser, id })
+}
 
 function makeFeature(props: Record<string, unknown>, id = 'f1'): Feature {
   return {
@@ -596,18 +614,10 @@ describe('phase-set coloring is opt-in', () => {
     { name: 'S1 HP0', sampleName: 'S1', HP: 0 },
     { name: 'S1 HP1', sampleName: 'S1', HP: 1 },
   ]
-  const feature = makeFeature({
-    genotypes: { S1: '1|0' },
-    samples: { S1: { GT: ['1|0'], PS: ['4815162342'] } },
-    FORMAT: 'GT:PS',
-    ALT: ['A'],
-    REF: 'G',
-    name: 'v1',
-    description: '',
-    type: 'SNV',
-    start: 100,
-    end: 101,
-  })
+  const feature = vcfFeature(
+    '1\t101\tv1\tG\tA\t60\tPASS\t.\tGT:PS\t1|0:4815162342',
+    ['S1'],
+  )
 
   function altColors(colorByPhaseSet: boolean) {
     const result = computeVariantCells({
@@ -633,19 +643,9 @@ describe('phase-set coloring is opt-in', () => {
   test('the hue is derived from the PS id, not the allele', () => {
     // Two samples on the same allele but different phase sets must not share a
     // color under phase-set coloring, and must share one without it.
-    const other = makeFeature(
-      {
-        genotypes: { S1: '1|0' },
-        samples: { S1: { GT: ['1|0'], PS: ['999'] } },
-        FORMAT: 'GT:PS',
-        ALT: ['A'],
-        REF: 'G',
-        name: 'v2',
-        description: '',
-        type: 'SNV',
-        start: 200,
-        end: 201,
-      },
+    const other = vcfFeature(
+      '1\t201\tv2\tG\tA\t60\tPASS\t.\tGT:PS\t1|0:999',
+      ['S1'],
       'f2',
     )
     const run = (colorByPhaseSet: boolean) =>
@@ -919,21 +919,10 @@ describe('phase-set coloring classifies from the allele, not the color', () => {
   ]
   // S1 carries the insertion on one haplotype and no-calls the other; S2 is
   // hom-ref. A PS is declared, so the per-cell colour path runs.
-  const feature = makeFeature({
-    genotypes: { S1: '1|.', S2: '0|0' },
-    samples: {
-      S1: { GT: ['1|.'], PS: ['77'] },
-      S2: { GT: ['0|0'], PS: ['77'] },
-    },
-    FORMAT: 'GT:PS',
-    ALT: ['ACGTACGTACGT'],
-    REF: 'A',
-    name: 'ins1',
-    description: '',
-    type: 'insertion',
-    start: 100,
-    end: 101,
-  })
+  const feature = vcfFeature(
+    '1\t101\tins1\tA\tACGTACGTACGT\t60\tPASS\t.\tGT:PS\t1|.:77\t0|0:77',
+    ['S1', 'S2'],
+  )
 
   function run(featureColor?: () => string) {
     const result = computeVariantCells({

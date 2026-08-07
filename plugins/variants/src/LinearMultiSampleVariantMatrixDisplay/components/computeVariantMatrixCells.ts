@@ -8,6 +8,7 @@ import {
   isPhasedOrHaploid,
   splitPhasedAlleles,
 } from '../../shared/getPhasedColor.ts'
+import { makePhaseSetReader } from '../../shared/phaseSetReader.ts'
 import {
   buildAlleleCountStyle,
   buildPhasedStyles,
@@ -152,6 +153,9 @@ export function computeVariantMatrixCells({
     numCodes,
   )
   const touchedCodes: number[] = []
+  // Per-sample phase sets, filled per feature only when phase-set coloring is
+  // on. Allocated once so the fill reuses one pair of typed arrays.
+  const phaseSets = makePhaseSetReader(sampleNames)
 
   for (let idx = 0; idx < numFeatures; idx++) {
     report?.()
@@ -167,49 +171,40 @@ export function computeVariantMatrixCells({
     const codes = featureGenotypeCodes.get(featureId)!
 
     if (isPhasedMode) {
-      // PS (phase-set) coloring requires per-sample FORMAT data, which only the
-      // heavier `samples` field preserves — the flat `genotypes` map doesn't
-      // carry it. So the slower samples path runs only when the user asked for
-      // phase-set coloring AND this feature actually declares PS. Resolved
-      // inside the phased branch (as computeVariantCells does) because a phase
-      // set is a per-haplotype fact and only this loop paints one.
-      const hasPhaseSet =
+      // PS (phase-set) coloring reads a second FORMAT field per sample, so it
+      // runs only when the user asked for it AND this feature declares PS.
+      // Resolved inside the phased branch (as computeVariantCells does) because
+      // a phase set is a per-haplotype fact and only this loop paints one.
+      // `read` answers false for a feature that can't report FORMAT ranges, and
+      // the loop then paints by allele.
+      const usePhaseSet =
         colorByPhaseSet &&
-        featureHasPhaseSet(feature.get('FORMAT') as string | undefined)
-      // `samples` can be absent even on a feature whose FORMAT declares PS (a
-      // non-VCF adapter, a sites-only record), so the fallback is keyed on the
-      // field actually being there rather than on `hasPhaseSet` — reading the
-      // flat map back through a `hasPhaseSet`-keyed `undefined` was a crash.
-      //
-      // Typed as the two fields this loop reads, at what they actually
-      // deserialize to — see the same spot in computeVariantCells.
-      const samp = hasPhaseSet
-        ? (feature.get('samples') as
-            | Record<string, { GT?: string[]; PS?: (string | number)[] }>
-            | undefined)
-        : undefined
+        featureHasPhaseSet(feature.get('FORMAT') as string | undefined) &&
+        phaseSets.read(feature)
 
-      // The genotype codes are the same either way — `samples` only carries the
-      // extra PS field the coloring needs — so both branches ship the codes the
-      // analysis pass already interned, rather than rebuilding them from
-      // `samples` on one path only.
       featureData.push(makeFeatureData(feature, featureId, codes))
 
-      if (samp) {
-        // Phase-set coloring: the hue comes from a per-(feature, sample) FORMAT
-        // field, so there is nothing site-wide to memoize and this stays on the
-        // per-cell color call.
+      if (usePhaseSet) {
+        // The hue comes from a per-(feature, sample) FORMAT field, so there is
+        // nothing site-wide to memoize and this stays on the per-cell color
+        // call. GT comes from the interned codes, same as every other branch.
         for (let j = 0; j < numSources; j++) {
-          const { HP, sampleName } = sources[j]!
-          const s = samp[sampleName]
-          const genotype = s?.GT?.[0]
-          if (!genotype) {
+          const { HP } = sources[j]!
+          const si = sourceSampleIndices[j]!
+          const code = si === -1 ? 0 : codes[si]!
+          if (code === 0) {
             continue
           }
+          const genotype = genotypeDict[code - 1]!
           if (isPhasedOrHaploid(genotype)) {
             const alleles = splitPhasedAlleles(genotype)
             const allele = alleles[HP!]
-            const c = getPhasedColor(alleles, HP!, mostFrequentAlt, s.PS?.[0])
+            const c = getPhasedColor(
+              alleles,
+              HP!,
+              mostFrequentAlt,
+              phaseSets.present[si] ? phaseSets.value[si] : undefined,
+            )
             if (c) {
               // From the ALLELE, not from the color `getPhasedColor` returned
               // for it — see the same spot in computeVariantCells, and

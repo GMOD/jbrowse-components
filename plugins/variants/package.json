@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@gmod/tabix": "^3.6.0",
-    "@gmod/vcf": "^7.0.10",
+    "@gmod/vcf": "^7.1.0",
     "@jbrowse/alignments-core": "workspace:^",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/ld-core": "workspace:^",

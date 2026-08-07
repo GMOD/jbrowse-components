@@ -1,7 +1,7 @@
 import { getEnd, getSOTermAndDescription } from './util.ts'
 
 import type VCFParser from '@gmod/vcf'
-import type { GenotypeCallback, Variant } from '@gmod/vcf'
+import type { FormatFieldsCallback, GenotypeCallback, Variant } from '@gmod/vcf'
 import type { Feature } from '@jbrowse/core/util'
 
 type FeatureData = ReturnType<typeof dataFromVariant>
@@ -76,6 +76,10 @@ export default class VCFFeature implements Feature {
 
   processGenotypes(callback: GenotypeCallback) {
     this.variant.processGenotypes(callback)
+  }
+
+  processFormatFields(keys: string[], callback: FormatFieldsCallback) {
+    this.variant.processFormatFields(keys, callback)
   }
 
   toJSON() {

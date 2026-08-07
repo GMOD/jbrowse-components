@@ -1606,8 +1606,8 @@ importers:
   plugins/spreadsheet-view:
     dependencies:
       '@gmod/vcf':
-        specifier: ^7.0.10
-        version: 7.0.10
+        specifier: ^7.1.0
+        version: 7.1.0
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1711,8 +1711,8 @@ importers:
         specifier: ^3.6.0
         version: 3.6.0
       '@gmod/vcf':
-        specifier: ^7.0.10
-        version: 7.0.10
+        specifier: ^7.1.0
+        version: 7.1.0
       '@jbrowse/alignments-core':
         specifier: workspace:^
         version: link:../../packages/alignments-core
@@ -4284,6 +4284,9 @@ packages:
 
   '@gmod/vcf@7.0.10':
     resolution: {integrity: sha512-Rv1JZ4kOwyiFZwQSVV8J/4xnM1Bk9to+KCgQwo1zfYmo6v13RdD/kXzbOqo2d1DaepnL67eQkprpxuMe13b1nA==}
+
+  '@gmod/vcf@7.1.0':
+    resolution: {integrity: sha512-8b/r+fOgKHDdJyQpfvaQNKGqWf1xIdIHVMqk0o1Tq3WU7oIVDdxf3eFIIEGYJatVS4MDWTig0dAemhod/BsCsA==}
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -12211,6 +12214,8 @@ snapshots:
   '@gmod/ucsc-hub@2.0.12': {}
 
   '@gmod/vcf@7.0.10': {}
+
+  '@gmod/vcf@7.1.0': {}
 
   '@humanfs/core@0.19.2':
     dependencies:
