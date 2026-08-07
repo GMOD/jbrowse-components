@@ -242,34 +242,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * The span each numeric channel actually covered, unioned over the loaded
-       * displays. An `attribute:<column>` mode has no declared domain, so this
-       * is what it scales to and what the legend labels its ramp with — one
-       * answer for the whole stack, since the legend is one box for all of it.
-       */
-      get attributeRanges(): Record<string, AttributeRange> {
-        const out: Record<string, AttributeRange> = {}
-        for (const d of self.allSyntenyDisplays) {
-          // allSyntenyDisplays is another of the untyped model arrays, so the
-          // entries come back `unknown` without this annotation
-          const ranges = (d.featureData?.attributeRanges ?? {}) as Record<
-            string,
-            AttributeRange
-          >
-          for (const [name, range] of Object.entries(ranges)) {
-            const prev = out[name]
-            out[name] = prev
-              ? {
-                  min: Math.min(prev.min, range.min),
-                  max: Math.max(prev.max, range.max),
-                }
-              : range
-          }
-        }
-        return out
-      },
-      /**
-       * #getter
        * Union across every loaded synteny display of which CIGAR indel ops are
        * actually drawn on screen. The floating legend lists an indel chip only
        * when a visible-width op of that kind is painted somewhere in the view.
@@ -368,6 +340,19 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 | undefined
               return declared ?? []
             })
+        )
+      },
+      /**
+       * #method
+       * Each loaded display's observed attribute spans, which the mixin unions
+       * into the domain the legend labels its ramp with.
+       */
+      loadedAttributeRanges(): Record<string, AttributeRange>[] {
+        // The declared return type is what pins these entries:
+        // `allSyntenyDisplays` is one of the untyped model arrays, so `d` is
+        // `any` and the property access alone would infer `any[]`.
+        return self.allSyntenyDisplays.map(
+          d => d.featureData?.attributeRanges ?? {},
         )
       },
     }))

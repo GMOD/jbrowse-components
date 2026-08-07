@@ -93,6 +93,7 @@ export async function renderToSvg(
               viewWidth={viewWidth}
               maxHeight={viewHeight}
               alpha={model.alpha}
+              attributeRanges={model.attributeRanges}
               pointBased
             />
           ) : null}

@@ -55,7 +55,11 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { PxToBpResult } from '@jbrowse/core/util/Base1DUtils'
 import type { HighlightType } from '@jbrowse/core/util/highlights'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
-import type { ComparativeTrackModel, LodMode } from '@jbrowse/synteny-core'
+import type {
+  AttributeRange,
+  ComparativeTrackModel,
+  LodMode,
+} from '@jbrowse/synteny-core'
 import type { ComponentType, ReactNode } from 'react'
 import type React from 'react'
 
@@ -634,6 +638,14 @@ export default function stateModelFactory(pm: PluginManager) {
               | undefined
             return declared ?? []
           })
+        },
+        /**
+         * #method
+         * Each loaded display's observed attribute spans, which the mixin
+         * unions into the domain the legend labels its ramp with.
+         */
+        loadedAttributeRanges(): Record<string, AttributeRange>[] {
+          return this.dotplotDisplays.map(d => d.rpcData?.attributeRanges ?? {})
         },
 
         /**

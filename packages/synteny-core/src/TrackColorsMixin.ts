@@ -5,6 +5,7 @@ import { coerceColorBy } from './colorUtils.ts'
 import { assignTrackColors, syntenyTrackPalette } from './trackColors.ts'
 
 import type { ColorChip } from './colorLegend.ts'
+import type { AttributeRange } from './colorRamps.ts'
 import type { SyntenyColorBy } from './colorUtils.ts'
 import type { ColorableTrack } from './trackColors.ts'
 
@@ -72,6 +73,19 @@ export function TrackColorsMixin() {
       colorableAttributeNames(): string[] {
         return []
       },
+      /**
+       * #method
+       * One entry per loaded display: the span each numeric channel actually
+       * covered in the data that display fetched. Overridden by the composing
+       * view, which is the only thing that can reach the displays.
+       *
+       * From loaded DATA rather than from the config, unlike
+       * `colorableAttributeNames` — a column's observed span is not declared
+       * anywhere, so nothing before the first fetch can answer it.
+       */
+      loadedAttributeRanges(): Record<string, AttributeRange>[] {
+        return []
+      },
     }))
     .views(self => ({
       /**
@@ -79,6 +93,35 @@ export function TrackColorsMixin() {
        * Distinct numeric columns across the overlaid tracks, in first-seen
        * order — two tracks declaring `dn` offer one `dn` mode, not two.
        */
+      get colorableAttributes(): string[] {
+        return [...new Set(self.colorableAttributeNames())]
+      },
+      /**
+       * #getter
+       * The span each numeric channel covered, unioned over the loaded
+       * displays. An `attribute:<column>` mode has no declared domain, so this
+       * is what its ramp scales to and what the legend labels it with.
+       *
+       * View-wide rather than per display because the floating legend is one
+       * box for the whole view: two displays labelling the same ramp from
+       * different spans would make that one legend lie. The renderers scale
+       * per display, so this is a labelling domain, not a painting one.
+       */
+      get attributeRanges(): Record<string, AttributeRange> {
+        const out: Record<string, AttributeRange> = {}
+        for (const ranges of self.loadedAttributeRanges()) {
+          for (const [name, range] of Object.entries(ranges)) {
+            const prev = out[name]
+            out[name] = prev
+              ? {
+                  min: Math.min(prev.min, range.min),
+                  max: Math.max(prev.max, range.max),
+                }
+              : range
+          }
+        }
+        return out
+      },
       /**
        * #getter
        * `colorableTrackConfigs` paired with whatever color the user pinned.
@@ -86,9 +129,6 @@ export function TrackColorsMixin() {
        * palette, the legend and the palette menu all read it, so they cannot
        * disagree about which tracks are in play.
        */
-      get colorableAttributes(): string[] {
-        return [...new Set(self.colorableAttributeNames())]
-      },
       get colorableTracks(): ColorableTrack[] {
         return self.colorableTrackConfigs().map(({ trackId, name }) => ({
           trackId,

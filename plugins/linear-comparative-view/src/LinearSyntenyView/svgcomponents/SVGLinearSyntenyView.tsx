@@ -167,6 +167,7 @@ export async function renderToSvg(
                       maxHeight={level.height}
                       alpha={model.alpha}
                       cigarOps={model.presentCigarKinds}
+                      attributeRanges={model.attributeRanges}
                     />
                   ) : undefined
                 }

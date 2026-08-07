@@ -96,6 +96,7 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
             trackChips={model.colorLegendChips}
             pointBased
             alpha={model.alpha}
+            attributeRanges={model.attributeRanges}
             onClose={() => {
               model.setShowColorLegend(false)
             }}
