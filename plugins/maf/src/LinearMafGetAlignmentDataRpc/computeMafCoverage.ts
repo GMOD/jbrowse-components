@@ -158,6 +158,15 @@ export interface MafCoverageResult {
  * column lands on the same three array slots, so depth and the two identity
  * counters are summed in locals and folded in once per column instead of once
  * per cell. That plus the `NO_BASE` sentinel is ~1.3x over the same data.
+ *
+ * The other idea worth heading off is SWAR — reading the arena as `Uint32` and
+ * classifying four columns at a time. A kernel doing just the depth and match
+ * counts measures 4.5x, which is what makes it tempting, but that number is
+ * bought by testing "is this a base" as `folded >= 0x40`. That threshold quietly
+ * reclassifies `.` and `*`, which today count as bases. Testing for `-` and ` `
+ * exactly costs three lane-wise zero-byte tests per word where the threshold
+ * costs one add, and the whole arithmetic advantage goes with it: a full
+ * exact-semantics SWAR walk, output-identical to this one, measured 0.51x.
  */
 export function computeMafCoverage(
   data: MafWireBlocksInput,
