@@ -700,7 +700,15 @@ export function computeSNPCoverage(
   // position order. That is a change only for a caller whose mismatches did not
   // arrive sorted (the alignments pipeline, where they come per read): the
   // segments are the same set, and the stacking within a position is built here
-  // either way, so nothing downstream reads the order.
+  // either way.
+  //
+  // Nothing downstream *depends* on the order — but the SVG export snapshots
+  // record it, since a painter emits one `<rect>` per segment in the order it
+  // reads them, and four of them went red on the switch. They were regenerated
+  // as pure reorderings (same element multiset, byte-identical length). Position
+  // order is also the better of the two: it does not vary with read arrival, and
+  // where two adjacent sub-pixel columns are widened to the 1px floor and
+  // overlap, it paints them consistently left to right.
   let count = 0
   for (let offset = 0; offset < windowLength; offset++) {
     if (coverageDepths[offset]! > 0) {
