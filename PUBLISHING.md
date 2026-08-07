@@ -33,6 +33,18 @@ Steps 1, 2 and 4 are yours; step 3 is CI running unattended off the tag.
    is the go/no-go gate: it fires both the announcements below and the website
    deploy, so the blog post goes live exactly when the release assets it links
    to become public.
+5. **Re-point the ABI fixture** at what you just shipped, so the next cycle is
+   checked against it rather than against a stale release:
+
+   ```bash
+   node --experimental-strip-types scripts/gen-abi-previous-release.ts <version>
+   ```
+
+   `abiPreviousRelease.test.ts` then fails on any `@jbrowse/core/*` export
+   dropped since that version unless the removal is declared in its
+   `KNOWN_REMOVALS`. Do this after the npm publish in step 3 has landed, since
+   it downloads the published tarball. Clear out the `KNOWN_REMOVALS` entries
+   the new fixture makes stale — the test tells you which.
 
 `pnpm releasenotes [--tag v4.3.1]` prints the same body `release.yml` generates,
 to eyeball locally.
