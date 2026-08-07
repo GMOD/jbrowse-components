@@ -143,9 +143,9 @@ async function twoOverlaidTracks() {
   // torn the environment down, and its dynamic `import()` of the adapter
   // resolves to nothing — "require a file after the Jest environment has been
   // torn down", then assembly.ts logging "CLASS is not a constructor" into a
-  // dead console. Nothing here is destroyed at the end of a test
-  // (agent-docs/handoffs/jest-worker-teardown.md), so letting the work settle
-  // inside the test body is what keeps it off the end of the run.
+  // dead console. Nothing destroys the root model at the end of a test, so
+  // letting the work settle inside the test body is what keeps it off the end
+  // of the run.
   await waitFor(
     () => {
       expect(view.tracks.length).toBe(2)
