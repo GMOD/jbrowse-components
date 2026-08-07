@@ -281,6 +281,14 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
   // takes the coarsest level whose bins fit in a pixel, so anything narrower
   // than about 42Mb lands on the base level, which has no summary arrays, and
   // the two halves would be identical.
+  //
+  // EACH HALF SAYS WHICH ONE IT IS, on review ("dont understand the two
+  // different levels (top and bottom) what is the point"). The two panels are
+  // the same store at the same window and the track carries the same name in
+  // both, so the only thing distinguishing them was the ink — the reader was
+  // being asked to infer the slot from the result it produces. The labels name
+  // the operation; the speckle that appears only in the lower half is then the
+  // answer to "what is the point" rather than the question.
   ...(['avg', 'max'] as const).map(mode => ({
     mode: 'url' as const,
     name: `cnv1000g/genome_${mode}`,
@@ -308,9 +316,32 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyTimeout: 300000,
-    viewportHeight: 560,
+    // 560 cut 62 css px off the bottom of the 420px lane in both halves, per
+    // the run's own below-the-fold report — so the stacked figure was losing a
+    // strip of the same rows twice
+    viewportHeight: 625,
     settleMs: 10000,
     diffThreshold: 0.02,
+    // Top left of the heatmap, which is the one part of chr1 that is pale in
+    // BOTH panels: the first 10 Mb carries no block wide enough to survive
+    // averaging and no stripe narrow enough to need the maximum, so a pill
+    // there covers nothing in either half and lands in the same place in both.
+    annotations: [
+      {
+        type: 'text' as const,
+        text:
+          mode === 'avg'
+            ? 'Each 100 kb bin drawn as its MEAN'
+            : 'The same bins as their MAXIMUM: gains narrower than one bin survive',
+        fontSize: 20,
+        maxWidth: 430,
+        anchor: {
+          track: 'cnv_1000g_zarr_wg',
+          locus: 'chr1:6,000,000',
+          fracY: 0.06,
+        },
+      },
+    ],
   })),
 
   {
