@@ -3,7 +3,7 @@ title: Selection pressure between two genomes (dN/dS)
 sidebar_label: Selection pressure (dN/dS)
 description:
   Colour an ortholog track by the ratio of non-synonymous to synonymous
-  substitution, and read positive selection off a gene neighbourhood
+  substitution, and read selection pressure off a gene neighbourhood
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
@@ -92,19 +92,26 @@ python3 kaks_from_pairs.py pairs.tsv both.cds.fa.gz \
 aligns each pair as protein, back-translates to codons so that nothing shifts
 frame, and runs Nei-Gojobori.
 
-### Keeping the pairs that are orthologs
+### Keeping the pairs the counts can support
 
 Two species diverged once, so their true orthologs share a divergence time and
 their dS values cluster. A pair whose dS comes out an order of magnitude above
 that cluster is not an ortholog, it is a paralog the aligner preferred, and the
 script's `--max-ds` doubles as the filter that removes it.
 
-The same reasoning cuts the other end, and it matters more. Sorting the table by
-dN/dS and reading off the top gives a list whose every member has a dS far
-_below_ the median, because a ratio with almost no denominator is not a
-measurement. Nothing in the ratio itself says which of those it is, so a figure
-built on an unfiltered ranking is built on noise. The locus below was chosen
-from pairs whose dS sits near the median.
+The other end matters more, and it is a matter of counting rather than of rate.
+Sorting the table by dN/dS and reading off the top returns the pairs with almost
+nothing to divide by: HBA1, about as strongly conserved as a gene gets, comes
+out over 2 off a single synonymous difference, and so do the others near the
+top. `--min-syn-subs` is the floor, on the count itself. A rate cannot do this
+job, because dS is per site and the same rate is much weaker evidence in a short
+gene than a long one.
+
+So every row also carries that count and a two-sided Fisher exact p, which is
+the test [MEGA](https://www.megasoftware.net/web_help_12/Analysis_Preferences_Fisher_s_Exact_Test.htm)
+prescribes when the numbers of substitutions are small, where the large-sample
+Z-test over-rejects. They are `attributeColumns` like the rates, so clicking a
+link shows how much evidence is under its colour.
 
 ## Loading it in JBrowse
 
@@ -124,14 +131,15 @@ is the `.blocks` shape
     "blockAssemblies": ["human", "rhesus"],
     "bedLocations": [{ "uri": "human.bed.gz" }, { "uri": "rhesus.bed.gz" }],
     "assemblyNames": ["human", "rhesus"],
-    "attributeColumns": ["dn", "ds"]
+    "attributeColumns": ["dn", "ds", "syn_subs", "fisher_p"]
   }
 }
 ```
 
 `attributeColumns` names the columns after the two gene columns, so each becomes
 a feature attribute visible in the detail panel, and `dn` with `ds` together
-drive **Color by -> dN/dS**.
+drive **Color by -> dN/dS**. `syn_subs` and `fisher_p` are what a reader checks
+a colour against once the ramp has drawn their eye to it.
 
 That ramp's middle is 1 and its top is 2, fixed rather than scaled to the data:
 which side of 1 a pair falls on is the question being asked, and an auto-scaled
@@ -144,13 +152,29 @@ links as beziers, which separates neighbours that would otherwise stack.
 
 ## Reading the plot
 
-<Figure caption="Human against rhesus macaque across a collinear neighbourhood on human chromosome 12, each ribbon one ortholog pair coloured by dN/dS. Every gene here is blue, under purifying selection, except lysozyme (LYZ), which is above the ramp's pivot of 1. Its immediate neighbour YEATS4 is at the other end of the ramp." src="/img/selection_pressure/lysozyme.png" />
+<Figure caption="Human against rhesus macaque across a collinear neighbourhood on human chromosome 12, each ribbon one ortholog pair coloured by dN/dS. Every gene here is blue, under purifying selection, except lysozyme (LYZ), whose ratio is above the ramp's pivot of 1. Its immediate neighbour YEATS4 is at the other end of the ramp. The detail panel carries the substitution count and Fisher p behind each colour, which is where a ratio over 1 has to be checked." src="/img/selection_pressure/lysozyme.png" />
 
 The neighbourhood is collinear, so the ribbons run parallel and colour is the
-only thing that varies across them. Adaptive evolution of primate lysozyme is
-one of the older results in molecular evolution: the enzyme was recruited as a
-digestive protein in foregut fermenters, and the amino acid changes that took it
-there fixed faster than silent changes could accumulate.
+only thing that varies across them. Lysozyme is a good gene to find there:
+adaptive evolution of primate lysozyme is one of the older results in molecular
+evolution, the enzyme having been recruited as a digestive protein in foregut
+fermenters.
+
+**The plot does not establish that, and it is worth being exact about what it
+does show.** Click the orange link and the detail panel gives the count and the
+p behind it: a handful of synonymous differences, and a Fisher p nowhere near
+significant. One pairwise comparison has very little power, and the published
+result rests on codon models across many primate lineages rather than on a
+ratio between two of them. What the figure shows is that this gene's ratio
+stands apart from every neighbour's, which is a hypothesis worth the codon
+model, not a substitute for it.
+
+The colour that _is_ significant here is the blue. A conserved gene accumulates
+enough synonymous change to measure while holding non-synonymous change near
+zero, and that asymmetry tests overwhelmingly: ACTB elsewhere in this table
+reaches p of about 1e-20. Across the whole table the great majority of pairs are
+significantly _below_ 1 and almost none significantly above, which is the
+genuine genome-wide result and the reason the ramp is mostly blue.
 
 ## Checking it against the raw data
 
@@ -158,11 +182,15 @@ The figure carries its own control. YEATS4 begins about eleven kilobases from
 where LYZ ends, so the two share a locus, a divergence time and a
 neighbourhood, and they land at opposite ends of the ramp. Anything that moved
 both genes together, an alignment artefact or a mis-set divergence, would not
-produce that.
+produce that. YEATS4 is also the case a floor on dS would have thrown away: it
+is conserved and compact, so its dS is low while its synonymous count is
+perfectly adequate, which is why the floor counts substitutions instead.
 
-The [script](#reproduce-it-end-to-end) prints the neighbourhood as a table of
-rates beside the genome-wide distribution, which is the reading that matters:
-the ratio above 1 is unusual, and the count of genes reaching it is small.
+The [script](#reproduce-it-end-to-end) prints the neighbourhood beside the
+genome-wide distribution, and the honest summary of that distribution is two
+numbers rather than one: how many pairs exceed 1, and how many of those survive
+the Fisher test. The first is a small percentage. The second is close to what
+chance alone would give at that many tests.
 
 ## Reproduce it end to end
 

@@ -17,14 +17,35 @@
       "type": "SyntenyTrack",
       "trackId": "oat_homoeologs",
       "name": "Oat homoeologs (dN/dS)",
-      "assemblyNames": ["oat", "oat"],
+      "assemblyNames": [
+        "oat",
+        "oat"
+      ],
       "adapter": {
         "type": "MCScanBlocksAdapter",
         "uri": "oat.homoeologs.blocks.gz",
-        "blockAssemblies": ["oat", "oat"],
-        "bedLocations": [{ "uri": "oat.bed.gz" }, { "uri": "oat.bed.gz" }],
-        "assemblyNames": ["oat", "oat"],
-        "attributeColumns": ["dn", "ds"]
+        "blockAssemblies": [
+          "oat",
+          "oat"
+        ],
+        "bedLocations": [
+          {
+            "uri": "oat.bed.gz"
+          },
+          {
+            "uri": "oat.bed.gz"
+          }
+        ],
+        "assemblyNames": [
+          "oat",
+          "oat"
+        ],
+        "attributeColumns": [
+          "dn",
+          "ds",
+          "syn_subs",
+          "fisher_p"
+        ]
       }
     }
   ],
@@ -36,8 +57,17 @@
         "displayName": "Hexaploid oat against itself, coloured by dN/dS",
         "showColorLegend": true,
         "init": {
-          "views": [{ "assembly": "oat" }, { "assembly": "oat" }],
-          "tracks": ["oat_homoeologs"],
+          "views": [
+            {
+              "assembly": "oat"
+            },
+            {
+              "assembly": "oat"
+            }
+          ],
+          "tracks": [
+            "oat_homoeologs"
+          ],
           "colorBy": "dnds"
         }
       }

@@ -16,14 +16,23 @@ what keeps the alignment in frame - a nucleotide aligner is free to open a
 one-base gap and shift every codon after it. A pair whose CDS is not a clean
 multiple of three, or holds an internal stop, is skipped rather than guessed at.
 
-**Both ends of the dS range destroy the ratio, for opposite reasons, and a high
-dN/dS on its own does not say which end you are looking at.** Sorting a
-whole-genome table by the ratio and reading off the top returns the pairs with
-almost no dS, not the pairs under selection: on a human/rhesus run the leaders
-included HBA1, which is under about as strong purifying selection as a gene
-gets, on a dS of 0.012 against a median of 0.105. `--min-ds` is the guard, and
-the report prints the dS quartiles of what it wrote so a run tells you where to
-set it. `--max-ds` is the same line at the other end.
+**A ratio is only as good as the number of substitutions under it.** Sorting a
+whole-genome table by dN/dS and reading off the top returns the pairs with
+almost nothing to divide by, not the pairs under selection: on a human/rhesus
+run the leaders included HBA1, about as strongly conserved as a gene gets, whose
+2.29 rested on ONE synonymous difference. The guard is `--min-syn-subs`, a floor
+on that count. A count is the right unit and a rate is not - dS is per site, so
+a short gene and a long one at the same dS carry very different evidence.
+
+So each row also carries the synonymous-difference count and a two-sided Fisher
+exact p, which is MEGA's codon-based test and the one it prescribes when the
+counts are small, where a large-sample Z-test over-rejects. **The p is what says
+whether a ratio over 1 means anything, and usually it does not**: a single
+pairwise comparison has little power, so a gene at 1.5 off four synonymous
+differences is not distinguishable from neutral. Published positive selection
+comes from codon models across many lineages, not from one pair. Both numbers
+ride out as columns so the answer is in the detail panel rather than in a
+threshold somebody picked.
 
 For two species that diverged once, `--max-ds` doubles as an orthology check:
 true orthologs share a divergence time, so a pair whose dS lands well above the
@@ -57,6 +66,7 @@ Usage:
 
 import argparse
 import gzip
+import math
 import multiprocessing
 import os
 import sys
@@ -65,8 +75,19 @@ import warnings
 warnings.filterwarnings("ignore")
 
 from Bio.Align import PairwiseAligner  # noqa: E402
-from Bio.codonalign.codonseq import CodonSeq, cal_dn_ds  # noqa: E402
+# the counting half of NG86, which `cal_dn_ds` runs and then throws away. The
+# four numbers it drops - synonymous and non-synonymous SITES, and the
+# differences at each - are what a significance test needs, and MEGA says so:
+# below a handful of substitutions the large-sample Z-test is too liberal and
+# only a method that counts directly, which NG86 is, can be tested exactly.
+from Bio.codonalign.codonseq import (  # noqa: E402
+    _count_diff_NG86,
+    _count_site_NG86,
+)
+from Bio.Data.CodonTable import unambiguous_dna_by_id  # noqa: E402
 from Bio.Seq import Seq  # noqa: E402
+
+CODON_TABLE = unambiguous_dna_by_id[1]
 
 
 def opener(path):
@@ -152,8 +173,63 @@ def codon_align(cds_a, cds_b, aligner):
 _CDS = {}
 _ALIGNER = None
 _MIN_CODONS = 0
-_MIN_DS = 0.0
+_MIN_SYN_SUBS = 0.0
 _MAX_DS = 2.0
+
+
+def ng86(codons_a, codons_b):
+    """dN and dS, and the four counts they were computed from.
+
+    Biopython's `cal_dn_ds` returns only the two rates. This is the same
+    calculation kept open, because the rates alone cannot say whether they mean
+    anything: a ratio of 3 off one synonymous difference and a ratio of 3 off
+    thirty are the same number and not the same claim.
+    """
+    s1, n1 = _count_site_NG86(codons_a, codon_table=CODON_TABLE, k=1)
+    s2, n2 = _count_site_NG86(codons_b, codon_table=CODON_TABLE, k=1)
+    syn_sites, non_sites = (s1 + s2) / 2, (n1 + n2) / 2
+    syn_diff = non_diff = 0.0
+    for x, y in zip(codons_a, codons_b):
+        s, n = _count_diff_NG86(x, y, codon_table=CODON_TABLE)
+        syn_diff += s
+        non_diff += n
+    if syn_sites <= 0 or non_sites <= 0:
+        return None
+    ps, pn = syn_diff / syn_sites, non_diff / non_sites
+    # Jukes-Cantor; past p = 3/4 the correction has no answer
+    if ps >= 0.75 or pn >= 0.75:
+        return None
+    ds = abs(-0.75 * math.log(1 - 4 / 3 * ps))
+    dn = abs(-0.75 * math.log(1 - 4 / 3 * pn))
+    return dn, ds, syn_sites, non_sites, syn_diff, non_diff
+
+
+def fisher_p(syn_diff, syn_same, non_diff, non_same):
+    """Two-sided Fisher exact p on the 2x2 table of synonymous and
+    non-synonymous sites against whether they differ. This is MEGA's codon-based
+    Fisher test, and it is the one to use here: the counts are small, which is
+    exactly where the large-sample Z-test over-rejects.
+
+    Computed in log space, because the run does this a hundred thousand times
+    and the factorials of a few thousand sites are not small.
+    """
+    a, b = round(syn_diff), round(syn_same)
+    c, d = round(non_diff), round(non_same)
+    total, row1, row2, col1 = a + b + c + d, a + b, c + d, a + c
+    if min(row1, row2, col1, total - col1) < 0 or total == 0:
+        return 1.0
+    lf = math.lgamma
+    const = (lf(row1 + 1) + lf(row2 + 1) + lf(col1 + 1)
+             + lf(total - col1 + 1) - lf(total + 1))
+
+    def log_p(x):
+        return const - (lf(x + 1) + lf(row1 - x + 1) + lf(col1 - x + 1)
+                        + lf(row2 - col1 + x + 1))
+
+    observed = log_p(a)
+    low, high = max(0, col1 - row2), min(row1, col1)
+    return min(1.0, sum(math.exp(log_p(x)) for x in range(low, high + 1)
+                        if log_p(x) <= observed + 1e-9))
 
 
 def measure(pair):
@@ -168,28 +244,31 @@ def measure(pair):
         return pair, "unusable"
     if len(aligned[0]) < _MIN_CODONS * 3:
         return pair, "too_short"
+    codons_a = [aligned[0][i:i + 3] for i in range(0, len(aligned[0]), 3)]
+    codons_b = [aligned[1][i:i + 3] for i in range(0, len(aligned[1]), 3)]
     try:
-        dn, ds = cal_dn_ds(CodonSeq(aligned[0]), CodonSeq(aligned[1]),
-                           method="NG86")
+        result = ng86(codons_a, codons_b)
     except Exception:
         return pair, "unusable"
-    # -1 is what NG86 answers when a rate is undefined
-    if ds is None or ds < 0 or dn is None or dn < 0:
+    if result is None:
         return pair, "unusable"
+    dn, ds, syn_sites, non_sites, syn_diff, non_diff = result
     if ds == 0:
         return pair, "identical" if dn == 0 else "no_synonymous"
-    if ds < _MIN_DS:
+    if syn_diff < _MIN_SYN_SUBS:
         return pair, "too_few_synonymous"
     if ds > _MAX_DS:
         return pair, "saturated"
-    return pair, (dn, ds)
+    p = fisher_p(syn_diff, syn_sites - syn_diff, non_diff,
+                 non_sites - non_diff)
+    return pair, (dn, ds, syn_diff, p)
 
 
-def worker_init(cds, min_codons, min_ds, max_ds):
-    global _CDS, _ALIGNER, _MIN_CODONS, _MIN_DS, _MAX_DS
+def worker_init(cds, min_codons, min_syn_subs, max_ds):
+    global _CDS, _ALIGNER, _MIN_CODONS, _MIN_SYN_SUBS, _MAX_DS
     _CDS = cds
     _MIN_CODONS = min_codons
-    _MIN_DS = min_ds
+    _MIN_SYN_SUBS = min_syn_subs
     _MAX_DS = max_ds
     _ALIGNER = PairwiseAligner(scoring="blastp")
     _ALIGNER.mode = "global"
@@ -221,17 +300,16 @@ def main():
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("pairs", help="TSV of gene pairs, two columns")
     p.add_argument("cds", help="CDS FASTA (plain or .gz)")
-    p.add_argument("-o", "--out", required=True, help="output TSV: pair + dn + ds")
-    p.add_argument("--min-ds", type=float, default=0.0, metavar="X",
-                   help="drop a pair whose dS is below this, where the ratio "
-                        "rests on too few synonymous changes to mean anything. "
-                        "The guard is really on the UPPER tail: a small "
-                        "denominator inflates a high ratio and cannot inflate "
-                        "a low one, so this also drops well-measured pairs near "
-                        "0, which is the cost of keeping it one number. Around "
-                        "0.02-0.03 is where a gene of a few hundred codons "
-                        "stops expecting a handful of synonymous changes "
-                        "(default 0, no floor)")
+    p.add_argument("-o", "--out", required=True,
+                   help="output TSV: pair + dn + ds + synonymous differences + "
+                        "Fisher p")
+    p.add_argument("--min-syn-subs", type=float, default=0.0, metavar="N",
+                   help="drop a pair with fewer than N synonymous differences, "
+                        "which is the evidence the whole ratio divides by. 3 "
+                        "clears the pairs whose ratio comes off one "
+                        "substitution while keeping genuinely conserved short "
+                        "genes, which a floor on dS cannot do because dS is per "
+                        "site (default 0, no floor)")
     p.add_argument("--max-ds", type=float, default=2.0, metavar="X",
                    help="drop a pair whose dS is above this, where NG86 has "
                         "saturated and the ratio is noise. Between two species "
@@ -257,7 +335,7 @@ def main():
     args = p.parse_args()
 
     cds = read_cds(args.cds, args.key, args.strip_version)
-    worker_init(cds, args.min_codons, args.min_ds, args.max_ds)
+    worker_init(cds, args.min_codons, args.min_syn_subs, args.max_ds)
     total = 0
     counts = {"written": 0, "no_cds": 0, "unusable": 0, "too_short": 0,
               "identical": 0, "no_synonymous": 0, "too_few_synonymous": 0,
@@ -271,7 +349,8 @@ def main():
             if isinstance(result, str):
                 counts[result] += 1
             else:
-                out.write(f"{a}\t{b}\t{result[0]:.5f}\t{result[1]:.5f}\n")
+                out.write(f"{a}\t{b}\t{result[0]:.5f}\t{result[1]:.5f}\t"
+                          f"{result[2]:g}\t{result[3]:.4g}\n")
                 counts["written"] += 1
                 written_ds.append(result[1])
 
@@ -282,7 +361,8 @@ def main():
           f"  {counts['identical']} had no coding difference and "
           f"{counts['no_synonymous']} had no synonymous one, so dS is 0 and the "
           f"ratio has no denominator\n"
-          f"  {counts['too_few_synonymous']} were under dS {args.min_ds} and "
+          f"  {counts['too_few_synonymous']} had under "
+          f"{args.min_syn_subs} synonymous differences and "
           f"{counts['saturated']} were past dS {args.max_ds}",
           file=sys.stderr)
     if written_ds:
@@ -290,9 +370,8 @@ def main():
         n = len(written_ds)
         print(f"  dS of what was written: 5th pct {written_ds[n // 20]:.4f}, "
               f"quartiles {written_ds[n // 4]:.4f} and "
-              f"{written_ds[3 * n // 4]:.4f}, median {written_ds[n // 2]:.4f}"
-              f"\n  a --min-ds under the 5th percentile drops the ratios that "
-              f"have no denominator worth dividing by", file=sys.stderr)
+              f"{written_ds[3 * n // 4]:.4f}, median {written_ds[n // 2]:.4f}",
+              file=sys.stderr)
 
 
 if __name__ == "__main__":

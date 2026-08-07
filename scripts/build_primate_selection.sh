@@ -199,16 +199,17 @@ fi
 # species diverged once, so their orthologs share a divergence time and their dS
 # clusters; a pair well above that cluster is a paralog the aligner preferred.
 #
-# `--min-ds 0.025` is the guard that matters for a figure. Below it the ratio
-# rests on almost no synonymous change, and sorting an unfiltered table by dN/dS
-# returns those pairs rather than the selected ones: HBA1, about as strongly
-# conserved as a gene gets, came out at 2.29 on a dS of 0.012. The floor is set
-# just under where a gene of a few hundred codons stops expecting a handful of
-# synonymous changes, which keeps YEATS4 (dS 0.029, dN/dS 0) - the control the
-# session's locus is read against.
+# `--min-syn-subs 3` is the guard that matters for a figure, and it counts
+# substitutions rather than thresholding a rate. Sorting an unfiltered table by
+# dN/dS returns the pairs with nothing to divide by rather than the selected
+# ones: HBA1, about as strongly conserved as a gene gets, came out at 2.29 off a
+# SINGLE synonymous difference, as did CAST at 3.27 and COX20 at 2.76. Every
+# credible pair here clears three - YEATS4 has 3, LYZ 4, ACTB 30 - so the floor
+# separates them, and unlike a floor on dS it does not punish a short gene for
+# being short.
 if [ ! -f primate.blocks ]; then
   python3 "$SCRIPT_DIR/kaks_from_pairs.py" pairs.tsv both.cds.fa.gz \
-    --key record --strip-version --min-ds 0.025 --max-ds 0.3 \
+    --key record --strip-version --min-syn-subs 3 --max-ds 0.3 \
     -o primate.blocks.part
   mv primate.blocks.part primate.blocks
 fi
