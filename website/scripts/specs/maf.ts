@@ -515,8 +515,22 @@ export const mafSpecs: ScreenshotSpec[] = [
     parts: ['maf_summary_zoomed_out', 'maf_summary_zoomed_in'],
   },
   // HPRC release 2's minigraph-cactus multiple alignment, read straight off the
-  // human-pangenomics bucket by BgzipMafAdapter: a 53 GB MAF plus its taffy
+  // human-pangenomics bucket by BgzipTaffyAdapter: a 5.96 GB TAF plus its taffy
   // .tai, no conversion step and no local copy.
+  //
+  // TAF rather than the 53 GB MAF beside it, and the reason is the build rather
+  // than the size. The alignment is published as MAF only under v2.1, while the
+  // graph and the callset the tutorial pairs this with are v2.0 — and v2.0
+  // publishes the same alignment as `full.taf.gz` + `.tai`. So the TAF is the
+  // one that matches the rest of the page. Both index the same 195 GRCh38
+  // contigs and name sequences the same way (`GRCh38.chr6`), so the swap is the
+  // adapter and the URL.
+  //
+  // Measured off the two .tai files with the repo's own queryBlockSpan, chr6:
+  // the 30 kb window below is a 189 KB read against the MAF's 878 KB, and a
+  // 10 kb locus is 134 KB against 598 KB. That is also why no fetchSizeLimit is
+  // set here any more: the read is an order of magnitude under the 1 MB default
+  // the byte gate uses, where the MAF needed the gate raised to draw at all.
   //
   // The locus is C4, which is the example HPRCv2's own README reaches for
   // (GRCh38#0#chr6:31972057-32055418, narrowed here to the C4A/CYP21A1P core so
@@ -530,10 +544,6 @@ export const mafSpecs: ScreenshotSpec[] = [
   // carries hundreds of `biological region` features (every CH-n recombination
   // sub-region), which in grow mode filled the figure and left no room for the
   // alignment it was supposed to caption.
-  //
-  // fetchSizeLimit raised because the gate is measuring something real: 464
-  // haplotypes over a duplicated locus is ~1.4 MB compressed, and the default
-  // ceiling is there for tracks that would pull that by accident.
   {
     mode: 'url' as const,
     name: 'maf_hprc_pangenome',
@@ -551,21 +561,20 @@ export const mafSpecs: ScreenshotSpec[] = [
               heightMode: 'grow',
             },
             {
-              trackId: 'hprc_v2_1_mc_grch38',
+              trackId: 'hprc_v2_0_mc_grch38',
               type: 'LinearMafDisplay',
               rowHeight: 2,
               rowProportion: 1,
               // grow so all 464 rows are on screen at once; the point of the
               // figure is the whole cohort, and a scrolled track shows half of it
               heightMode: 'grow',
-              fetchSizeLimit: 50_000_000,
             },
           ],
         },
       ],
     }),
     viewportHeight: 920,
-    // the .tai alone is 5.35 MB and the first block read follows it
+    // the .tai alone is 4.98 MB and the first block read follows it
     actions: [{ type: 'delay' as const, ms: 25000 }],
   },
 ]

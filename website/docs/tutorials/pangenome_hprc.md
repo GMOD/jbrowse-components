@@ -74,8 +74,8 @@ verkko assembly and QC release), so release 2 is the one for this.
 
 Two subdirectories sit beside those files, `v2.0/` and `v2.1/`, holding the
 fuller per-build set. The alignment the graph and the callset are derived from
-is only there: `v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.full.maf.gz`, 53 GB
-with a `.tai` index, which [the last section](#the-alignment-underneath-both)
+is only there: `v2.0/hprc-v2.0-mc-grch38/hprc-v2.0-mc-grch38.full.taf.gz`, 5.9
+GB with a `.tai` index, which [the last section](#the-alignment-underneath-both)
 opens.
 
 Every file above is published twice, once per reference. This page uses the
@@ -537,33 +537,25 @@ class, on GRCh38 and CHM13 alike:
         "type": "BigWigAdapter",
         "name": "LINE",
         "color": "rgb(200,60,45)",
-        "bigWigLocation": {
-          "uri": "https://jbrowse.org/demos/hprc/repeat_density/hs1_repeat_density_LINE.bw"
-        }
+        "uri": "https://jbrowse.org/demos/hprc/repeat_density/hs1_repeat_density_LINE.bw"
       },
       {
         "type": "BigWigAdapter",
         "name": "SINE",
         "color": "rgb(60,110,180)",
-        "bigWigLocation": {
-          "uri": "https://jbrowse.org/demos/hprc/repeat_density/hs1_repeat_density_SINE.bw"
-        }
+        "uri": "https://jbrowse.org/demos/hprc/repeat_density/hs1_repeat_density_SINE.bw"
       },
       {
         "type": "BigWigAdapter",
         "name": "LTR",
         "color": "rgb(70,150,90)",
-        "bigWigLocation": {
-          "uri": "https://jbrowse.org/demos/hprc/repeat_density/hs1_repeat_density_LTR.bw"
-        }
+        "uri": "https://jbrowse.org/demos/hprc/repeat_density/hs1_repeat_density_LTR.bw"
       },
       {
         "type": "BigWigAdapter",
         "name": "DNA",
         "color": "rgb(230,150,40)",
-        "bigWigLocation": {
-          "uri": "https://jbrowse.org/demos/hprc/repeat_density/hs1_repeat_density_DNA.bw"
-        }
+        "uri": "https://jbrowse.org/demos/hprc/repeat_density/hs1_repeat_density_DNA.bw"
       }
     ]
   },
@@ -966,35 +958,32 @@ haplotypes actually walk it.
 
 The graph and the callset are both derived. The thing they are derived _from_ is
 the multiple alignment, and release 2 publishes that too:
-`hprc-v2.1-mc-grch38.full.maf.gz`, 53 GB, 464 haplotypes, beside a `.tai` index
+`hprc-v2.0-mc-grch38.full.taf.gz`, 5.9 GB, 464 haplotypes, beside a `.tai` index
 written by [taffy](https://github.com/ComparativeGenomicsToolkit/taffy). The
 index makes it addressable, so a locus is a ranged read rather than a download:
 
 ```json
 {
   "type": "MafTrack",
-  "trackId": "hprc_v2_1_mc_grch38",
+  "trackId": "hprc_v2_0_mc_grch38",
   "name": "HPRC release 2 pangenome alignment (464 haplotypes)",
   "assemblyNames": ["hg38"],
   "adapter": {
-    "type": "BgzipMafAdapter",
-    "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.full.maf.gz"
-  },
-  "displayDefaults": {
-    "fetchSizeLimit": 50000000
+    "type": "BgzipTaffyAdapter",
+    "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.0/hprc-v2.0-mc-grch38/hprc-v2.0-mc-grch38.full.taf.gz"
   }
 }
 ```
 
-The `uri` shorthand resolves the sibling `.tai`. That index is 5.35 MB and
-downloads once; after it, a 10 kb locus is about a 670 KB range request.
-[`fetchSizeLimit`](/docs/config/baselineardisplay/#slot-fetchsizelimit) is
-raised because 464 rows of sequence is a large read and the gate is measuring it
-correctly; left at its default the track banners and waits for a force load.
+The `uri` shorthand resolves the sibling `.tai`. That index is 4.98 MB and
+downloads once; after it, a 10 kb locus is about a 134 KB range request.
 
-The alignment is published for the v2.1 build, one revision on from the v2.0
-graph and callset above, so match an event between the lanes by interval rather
-than expecting the same segment ids.
+TAF is taffy's own column-oriented format, and the same alignment is published
+as a 53 GB MAF under `v2.1/`, which `BgzipMafAdapter` reads with the same `uri`
+shorthand. The v2.0 file is the one this page uses because it is the build the
+graph and the callset above come from; being nine times smaller to store and
+four times cheaper to read a locus out of is the second reason rather than the
+first.
 
 <Figure caption="The C4 locus in HPRC release 2's multiple alignment: 464 human haplotypes under MANE Select genes. Rows drop out where a haplotype does not carry the segment, so the white bands through the copy-number-variable C4A and C4B are absence rather than divergence." src="/img/maf_hprc_pangenome.png" />
 

@@ -1,6 +1,6 @@
 ---
 name: hprc-release2-in-jbrowse
-description: What HPRC release 2 publishes, which of it JBrowse can open today, and the four measurements a next session should not re-derive — impg's PAF is projections not compositions, the vs-GRCh38 PAF is a star, the pggb chromosome graphs do not fit, and the published MAF is tab-separated. Read before touching the pangenome MAF/synteny path.
+description: What HPRC release 2 publishes, which of it JBrowse can open today, why the alignment is a v2.0 TAF rather than the v2.1 MAF, and the four measurements a next session should not re-derive — impg's PAF is projections not compositions, the vs-GRCh38 PAF is a star, the pggb chromosome graphs do not fit, and the published MAF is tab-separated. Read before touching the pangenome MAF/synteny path.
 ---
 
 # HPRC release 2 in JBrowse
@@ -15,7 +15,8 @@ can open:
 
 | artifact | opens? |
 | --- | --- |
-| `hprc-v2.1-mc-grch38.full.maf.gz` + `.tai` (53 GB, 464 haplotypes) | **yes**, `BgzipMafAdapter`, added this session |
+| `v2.0/…/hprc-v2.0-mc-grch38.full.taf.gz` + `.tai` (5.96 GB, 464 haplotypes) | **yes**, `BgzipTaffyAdapter`, and this is the one the tutorial uses |
+| `hprc-v2.1-mc-grch38.full.maf.gz` + `.tai` (53 GB, 464 haplotypes) | yes, `BgzipMafAdapter` — same alignment, different build, see below |
 | `sv.gfa` (minigraph rGFA) | yes, graph view plugin — see `pangenome_hprc.md` |
 | `wave.vcf.gz` (464-haplotype callset) | yes, genotype matrix |
 | `hprc25272.aln.paf.gz` (complete all-vs-all, 310 GB) | yes in principle, never tried at that size |
@@ -26,6 +27,47 @@ can open:
 `website/docs/tutorials/pangenome_hprc.md` now covers graph, callset and
 alignment. Its alignment section was committed 2026-08-06 and **is not yet
 deployed** — `/jb2` lags, so confirm before citing that page for the MAF claim.
+
+## The alignment is published twice, and the flat prefix is not the whole story
+
+The listing everyone reads,
+`pangenomes/freeze/release2/minigraph-cactus/`, is 12 flat files. Beside them are
+`v2.0/` and `v2.1/` subdirectories holding the full per-build set, and what is in
+them changes which file to reach for:
+
+- **v2.0 publishes the alignment as TAF, v2.1 as MAF, and neither publishes
+  both.** `v2.0/hprc-v2.0-mc-grch38/hprc-v2.0-mc-grch38.full.taf.gz` is 5.96 GB
+  with a 4.98 MB `.tai`; `v2.1/…full.maf.gz` is 53.4 GB with a 5.35 MB `.tai`.
+  Both index the same 195 GRCh38 contigs, both name sequences `GRCh38.chr6`, and
+  the v2.0 TAF's header is `#taf run_length_encode_bases:1 version:1`, which
+  `BgzipTaffyAdapter.ts` handles explicitly. The bucket serves CORS `*` with
+  `Content-Range` exposed on both.
+- **The graph and the callset are v2.0**, so the TAF is the alignment of the same
+  build and the MAF is one revision on. That, not the size, is why the tutorial
+  reads the TAF.
+- **Locus reads, measured with the repo's own `queryBlockSpan` over the two
+  `.tai` files** (chr6): 10 kb is 134 KB from the TAF against 598 KB from the
+  MAF, 30 kb is 189 KB against 878 KB, 100 kb is 1.4 MB against 3.1 MB. That is
+  the read for the window itself; the display fetches the LGV block region, which
+  is wider. The MAF spec carried `fetchSizeLimit: 50_000_000` to draw the C4
+  figure at all, and the TAF one carries none and draws, which is the only
+  end-to-end statement here — the per-window numbers above explain why but do not
+  on their own predict the gate.
+- **The v2.1 README lists fixes that apply to files this page uses**: a sample
+  name typo in `sv.gfa.gz`, and a missing-genotypes bug in vcfwave output. Both
+  are worth knowing before treating a v2.0 oddity as a JBrowse bug.
+- **The flat `wave.vcf.gz` is older than the one in `v2.0/`.** The flat copy is
+  the March 2025 build (2,275,985,017 bytes, `bcftools annotate` dated
+  2025-03-18); `v2.0/hprc-v2.0-mc-grch38/hprc-v2.0-mc-grch38.wave.vcf.gz` is a
+  January 2026 rewave (2,261,483,979 bytes, dated 2026-01-23), with
+  `-rewave.log` and a `.old` beside it. All three wave VCFs (flat, v2.0, v2.1)
+  carry the same 232 sample columns and all three strip `INFO/AT`. The tutorial
+  still points at the flat one; moving it is a URL change plus a regen of two
+  matrix figures.
+- **The snarl-level carriage file is in the release tree now.**
+  `v2.0/hprc-v2.0-mc-grch38/hprc-v2.0-mc-grch38.pgbi.vcf.gz` is the same size as
+  the `submissions/671F0A25-…--hprc_v2.0_mc_grch38_index/` copy the tutorial
+  links, which is a UUID path rather than a discoverable one.
 
 ## Four things measured here — do not re-derive
 
@@ -75,8 +117,7 @@ vanishes and the track draws nothing without erroring. Cost a debug cycle;
 
 Incidental but load-bearing: the human-pangenomics bucket serves
 `Access-Control-Allow-Origin: *` with `Content-Range` exposed, so browsers can
-range-request it. The `.tai` is 5.35 MB and downloads once; a 10 kb locus is then
-a ~670 KB read.
+range-request it. Per-file index and read sizes are in the section above.
 
 ## Open threads
 
