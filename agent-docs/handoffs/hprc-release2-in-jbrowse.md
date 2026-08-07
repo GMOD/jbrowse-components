@@ -208,3 +208,15 @@ Added for the summary-tier work, same directory: both published indexes
 haplotypes); and what `maf2bed --summary` made of it, `hprc_c4.summary.bed.gz`
 plus its `.tbi`. The slice is enough to wire a real `summaryAdapter` against a
 real HPRC region without touching the network.
+
+Two traps when cutting a slice like that, both of which look like tool bugs and
+are not. **`taffy` dies on a byte-cut slice**: on a MAF whose last block is
+truncated it aborts on `maf_read_block`'s
+`column_number == strlen(row->bases)` assertion, and on a headerless mid-file TAF
+range it segfaults outright. Cut at a block boundary — `awk 'f||/^a/{f=1;print}'`
+for the head, drop everything from the last `^a` for the tail — and it is fine.
+And **the route the maf2bed README recommends for TAF is verified**: from that
+same clean slice, `taffy view -m` into `maf2bed --summary` produces a summary
+byte-identical to running `maf2bed --summary` on the MAF directly, 915 rows over
+464 haplotypes. A summary difference between two runs of the same region is a
+truncated block in one of the inputs, not a disagreement between the formats.
