@@ -163,6 +163,9 @@ fs.writeFileSync(
   )}\n`,
 )
 fs.rmSync(tmp, { recursive: true, force: true })
+// JSON.stringify's array wrapping is not oxfmt's, and the Format job checks
+// every file, so a regeneration would otherwise land red.
+execFileSync('npx', ['oxfmt', OUT], { stdio: 'inherit' })
 
 const total = Object.values(modules).reduce((a, b) => a + b.length, 0)
 console.log(

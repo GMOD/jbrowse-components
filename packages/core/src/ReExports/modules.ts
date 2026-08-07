@@ -26,7 +26,6 @@ import * as corePalette from '../ui/palette.ts'
 import * as coreTheme from '../ui/theme.ts'
 import Base1DView from '../util/Base1DViewModel.ts'
 import * as coreColor from '../util/color/index.ts'
-import * as coreUtil from '../util/index.ts'
 import * as coreIo from '../util/io/index.ts'
 import * as coreLayouts from '../util/layouts/index.ts'
 import * as coreMstReflection from '../util/mst-reflection.ts'
@@ -40,6 +39,7 @@ import { Entries } from './MuiReExports.ts'
 import { MUIStyles } from './MuiStylesReExports.ts'
 import { lazyMap } from './lazify.tsx'
 import reExportsList from './list.ts'
+import * as coreUtil from './publicUtil.ts'
 
 function makeLegacyMakeStyles() {
   return (args: Parameters<ReturnType<typeof makeStyles>>[0]) => {

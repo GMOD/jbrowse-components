@@ -1,8 +1,6 @@
 {
   "version": "4.3.0",
-  "addedSinceModules": [
-    "@jbrowse/core/ui/palette"
-  ],
+  "addedSinceModules": ["@jbrowse/core/ui/palette"],
   "shapeMismatchModules": [
     "@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail",
     "@jbrowse/core/Plugin",
@@ -11,6 +9,7 @@
     "@jbrowse/core/pluggableElementTypes/TrackType",
     "@jbrowse/core/pluggableElementTypes/ViewType",
     "@jbrowse/core/pluggableElementTypes/WidgetType",
+    "@jbrowse/core/ui/BaseTooltip",
     "@jbrowse/core/util/Base1DViewModel"
   ],
   "modules": {
@@ -314,9 +313,7 @@
       "getUnionSubTypes",
       "resolveLateType"
     ],
-    "@jbrowse/core/util/rxjs": [
-      "ObservableCreate"
-    ],
+    "@jbrowse/core/util/rxjs": ["ObservableCreate"],
     "@jbrowse/core/util/tracks": [
       "UNKNOWN",
       "UNSUPPORTED",
