@@ -15,7 +15,35 @@ A worker process has failed to exit gracefully and has been force exited.
 
 Nothing is committed for this. A spike was run on 2026-08-04 and reverted; this
 file is what it measured so the next attempt starts from the answer rather than
-from the experiment.
+from the experiment. (A later run reported the force-exit warning no longer
+firing; that was not re-measured here, so treat the paragraph above as the state
+the spike ran against, not as today's output.)
+
+## The symptom you will actually hit first, and its cheap fix
+
+The visible cost of the never-destroyed engine is usually not the warning, it is
+console noise at the *end of a suite*:
+
+```
+ReferenceError: You are trying to `require` a file after the Jest environment has been torn down.
+  ...at instantiateAdapter (packages/core/src/assemblyManager/assemblyAdapters.ts)
+[TypeError: CLASS is not a constructor]   at packages/core/src/assemblyManager/assembly.ts:304
+```
+
+That is one assembly load still inside `Promise.all` when jest pulls the module
+registry: every adapter's `getAdapterClass()` dynamic import resolves to nothing,
+`new CLASS(...)` throws, and `load()`'s `.catch` logs into a dead console. The
+same shape produces `[TypeError: <rpcMethod> is not a function]` from
+`comparativeFetchAutorun` for a fetch that outlived the test.
+
+**It is caused by a test that stops waiting too early, and it is fixed there, not
+by teardown.** `DotplotColorRecompute.test.tsx` awaited only
+`view.tracks.length === 2` — true long before the assemblies resolve — so the
+last test in the file returned with the load in flight. Awaiting
+`view.initialized` plus each display's `instanceData` in the same `waitFor`
+silences all four blocks and costs ~0.6s on the suite. Check for this before
+concluding a suite needs the teardown project: a suite whose async work settles
+inside its test bodies has nothing to log afterwards, destroyed tree or not.
 
 ## The cause, confirmed
 

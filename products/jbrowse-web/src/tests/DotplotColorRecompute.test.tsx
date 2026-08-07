@@ -137,9 +137,23 @@ async function twoOverlaidTracks() {
     },
   })
   view.setWidth(800)
+  // both displays are awaited all the way to their data even though the color
+  // assertions below never read it: an assembly load or a feature fetch still
+  // in flight when the last test in the file returns finishes after jest has
+  // torn the environment down, and its dynamic `import()` of the adapter
+  // resolves to nothing — "require a file after the Jest environment has been
+  // torn down", then assembly.ts logging "CLASS is not a constructor" into a
+  // dead console. Nothing here is destroyed at the end of a test
+  // (agent-docs/handoffs/jest-worker-teardown.md), so letting the work settle
+  // inside the test body is what keeps it off the end of the run.
   await waitFor(
     () => {
       expect(view.tracks.length).toBe(2)
+      expect(view.initialized).toBe(true)
+      expect(view.dotplotDisplays.length).toBe(2)
+      for (const d of view.dotplotDisplays) {
+        expect(d.instanceData).toBeDefined()
+      }
     },
     { timeout: 30000 },
   )
