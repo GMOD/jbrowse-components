@@ -37,6 +37,7 @@ import type {
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
+  AttributeRange,
   CigarOpMask,
   ComparativeTrackModel,
   LodMode,
@@ -238,6 +239,34 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       get hasCigarData() {
         return self.allSyntenyDisplays.some(displayCanShowCigar)
+      },
+      /**
+       * #getter
+       * The span each numeric channel actually covered, unioned over the loaded
+       * displays. An `attribute:<column>` mode has no declared domain, so this
+       * is what it scales to and what the legend labels its ramp with — one
+       * answer for the whole stack, since the legend is one box for all of it.
+       */
+      get attributeRanges(): Record<string, AttributeRange> {
+        const out: Record<string, AttributeRange> = {}
+        for (const d of self.allSyntenyDisplays) {
+          // allSyntenyDisplays is another of the untyped model arrays, so the
+          // entries come back `unknown` without this annotation
+          const ranges = (d.featureData?.attributeRanges ?? {}) as Record<
+            string,
+            AttributeRange
+          >
+          for (const [name, range] of Object.entries(ranges)) {
+            const prev = out[name]
+            out[name] = prev
+              ? {
+                  min: Math.min(prev.min, range.min),
+                  max: Math.max(prev.max, range.max),
+                }
+              : range
+          }
+        }
+        return out
       },
       /**
        * #getter

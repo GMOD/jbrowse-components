@@ -95,6 +95,7 @@ const LevelSection = observer(function LevelSection({
             colorBy={legendModel.uniformColorBy}
             trackChips={legendModel.colorLegendChips}
             cigarOps={legendModel.presentCigarKinds}
+            attributeRanges={legendModel.attributeRanges}
             alpha={legendModel.alpha}
             onClose={() => {
               legendModel.setShowColorLegend(false)
