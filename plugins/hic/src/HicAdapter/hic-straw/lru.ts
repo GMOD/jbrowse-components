@@ -33,10 +33,9 @@ export default class LRU<K, V> {
     this.map.set(key, val)
   }
 
-  // Only `matrixCache` needs this: it caches `undefined` for a chr pair the file
-  // has no matrix for, so a miss and a cached absence are different answers
-  // there. The other two caches read through a plain `get`.
-  has(key: K) {
-    return this.map.has(key)
+  // Used to evict a rejected in-flight promise so the next caller retries
+  // rather than resolving against a cached failure forever.
+  delete(key: K) {
+    this.map.delete(key)
   }
 }

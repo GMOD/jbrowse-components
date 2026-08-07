@@ -108,9 +108,17 @@ export default class HicFile {
   private config: HicConfig
   private file: Filehandle
 
-  private normVectorCache = new LRU<string, NormalizationVector>(10)
+  // Both caches hold the in-flight PROMISE, not the resolved value. A
+  // multi-region fetch runs its region pairs concurrently and they share
+  // chromosomes, so caching only the result had every concurrent pair miss and
+  // re-issue the same reads — measured +12 range requests on a 6-pair fetch.
+  // Same shape as `initPromise`/`normVectorIndexP`, rejection eviction included.
+  private normVectorCache = new LRU<
+    string,
+    Promise<NormalizationVector | undefined>
+  >(10)
   private normalizationTypes = ['NONE']
-  private matrixCache = new LRU<string, Matrix | undefined>(10)
+  private matrixCache = new LRU<string, Promise<Matrix | undefined>>(10)
   private blockCache = new LRU<string, Block>(BLOCK_CACHE_SIZE)
   private normVectorIndexPosition = -1
   private normVectorIndexSize = -1
@@ -273,13 +281,15 @@ export default class HicFile {
 
   async getMatrix(chrIdx1: number, chrIdx2: number) {
     const key = Matrix.getKey(chrIdx1, chrIdx2)
-    if (this.matrixCache.has(key)) {
-      return this.matrixCache.get(key)
-    } else {
-      const matrix = await this.readMatrix(chrIdx1, chrIdx2)
-      this.matrixCache.set(key, matrix)
-      return matrix
+    let p = this.matrixCache.get(key)
+    if (!p) {
+      p = this.readMatrix(chrIdx1, chrIdx2).catch((e: unknown) => {
+        this.matrixCache.delete(key)
+        throw e
+      })
+      this.matrixCache.set(key, p)
     }
+    return p
   }
 
   async readMatrix(chrIdx1: number, chrIdx2: number) {
@@ -635,35 +645,41 @@ export default class HicFile {
     }
     const key = getNormalizationVectorKey(type, chrIdx, unit, binSize)
 
-    // A plain `get` rather than has/get: unlike `matrixCache`, nothing is ever
-    // cached as undefined here, so a miss and a cached absence are the same
-    // answer.
-    let result = this.normVectorCache.get(key)
-    if (!result) {
+    // Caching the promise is what keeps concurrent region pairs sharing one
+    // vector: a chromosome appears in every pair it takes part in, so with a
+    // result-only cache each of those pairs missed while the first was still in
+    // flight and read the header again — and then held its own
+    // `NormalizationVector`, whose value cache is per instance, so the whole
+    // vector was re-read too.
+    let p = this.normVectorCache.get(key)
+    if (!p) {
       // A file with no vectors at all, or none for this (type, chr, unit,
       // binsize), simply answers undefined and the caller falls back to raw
       // counts. hic-straw warned to the console here; that fires once per
       // chromosome per region pair per fetch, and the console is the wrong place
       // for it anyway — `getContactRecords` reports the normalization it
       // actually applied so the display can tell the user.
-      const idx = (await this.getNormVectorIndex())?.[key]
-      if (idx) {
-        const data = await this.file.read(idx.filePosition, 8)
-        const parser = new BinaryParser(new DataView(data))
-        const nValues = this.version < 9 ? parser.getInt() : parser.getLong()
-        const dataType = this.version < 9 ? DOUBLE : FLOAT
-        const filePosition =
-          this.version < 9 ? idx.filePosition + 4 : idx.filePosition + 8
-        result = new NormalizationVector(
-          this.file,
-          filePosition,
-          nValues,
-          dataType,
-        )
-        this.normVectorCache.set(key, result)
-      }
+      p = this.readNormalizationVector(key).catch((e: unknown) => {
+        this.normVectorCache.delete(key)
+        throw e
+      })
+      this.normVectorCache.set(key, p)
     }
-    return result
+    return p
+  }
+
+  private async readNormalizationVector(key: string) {
+    const idx = (await this.getNormVectorIndex())?.[key]
+    if (!idx) {
+      return undefined
+    }
+    const data = await this.file.read(idx.filePosition, 8)
+    const parser = new BinaryParser(new DataView(data))
+    const nValues = this.version < 9 ? parser.getInt() : parser.getLong()
+    const dataType = this.version < 9 ? DOUBLE : FLOAT
+    const filePosition =
+      this.version < 9 ? idx.filePosition + 4 : idx.filePosition + 8
+    return new NormalizationVector(this.file, filePosition, nValues, dataType)
   }
 
   async getNormVectorIndex() {
