@@ -18,13 +18,13 @@ and then **read it**.
 
 ## Pick the tool
 
-| | `@jbrowse/img` | `@jbrowse/capture` |
-| --- | --- | --- |
-| how | server-side React, no browser | Puppeteer against a real instance |
-| output | SVG or PNG | PNG |
-| cost | fast | launches Chromium |
-| shows | the tracks | the whole app: chrome, menus, dialogs, ideogram |
-| covers | the SVG-export path | canvas / WebGPU rendering, as a user sees it |
+|        | `@jbrowse/img`                | `@jbrowse/capture`                              |
+| ------ | ----------------------------- | ----------------------------------------------- |
+| how    | server-side React, no browser | Puppeteer against a real instance               |
+| output | SVG or PNG                    | PNG                                             |
+| cost   | fast                          | launches Chromium                               |
+| shows  | the tracks                    | the whole app: chrome, menus, dialogs, ideogram |
+| covers | the SVG-export path           | canvas / WebGPU rendering, as a user sees it    |
 
 Default to `@jbrowse/img`. Use `@jbrowse/capture` when the answer needs the real
 application: a canvas-rendered display, a view type the static exporter does not
@@ -35,16 +35,16 @@ npx @jbrowse/img --hub hg38 --track hg38-ncbiRefSeqCurated --loc BRCA1 --out out
 npx @jbrowse/capture --hub hg38 --track hg38-ncbiRefSeqCurated --loc BRCA1 -o out.png
 ```
 
-Both take `--hub` (a hosted assembly), `--config <url>`, `--loc` (locstring, or a
-gene name where the config has a text index), and repeatable `--track`.
-`npx @jbrowse/capture --help` for the rest; `--session <file.json>` takes a whole
-session spec.
+Both take `--hub` (a hosted assembly), `--config <url>`, `--loc` (locstring, or
+a gene name where the config has a text index), and repeatable `--track`.
+`npx @jbrowse/capture --help` for the rest; `--session <file.json>` takes a
+whole session spec.
 
 ## The one thing that goes wrong
 
-**Every readiness signal JBrowse publishes is negative** — no loading overlay, no
-display in its loading phase, no unpainted canvas — so all of them pass on a page
-whose app has not started yet. The order of events is:
+**Every readiness signal JBrowse publishes is negative** — no loading overlay,
+no display in its loading phase, no unpainted canvas — so all of them pass on a
+page whose app has not started yet. The order of events is:
 
 ```
 navigation resolves -> session exists -> assembly and tracks land -> loading overlay goes up -> displays draw
@@ -64,8 +64,11 @@ await page.waitForFunction(
   (assembly, trackIds) => {
     const views = window.JBrowseSession?.views
     if (!views?.length || views.some(v => v.initialized === false)) return false
-    if (!views.some(v => (v.assemblyNames ?? []).includes(assembly))) return false
-    const open = new Set(views.flatMap(v => v.tracks.map(t => t.configuration.trackId)))
+    if (!views.some(v => (v.assemblyNames ?? []).includes(assembly)))
+      return false
+    const open = new Set(
+      views.flatMap(v => v.tracks.map(t => t.configuration.trackId)),
+    )
     return trackIds.every(id => open.has(id))
   },
   { timeout: 60000, polling: 250 },
@@ -80,13 +83,13 @@ name all fail there and nowhere else.
 Then the negative signals, in this order — each is only meaningful once the
 previous has passed:
 
-| Wait until absent | Means |
-| --- | --- |
-| `[data-view-phase="loading"]` | no view still resolving its assembly (until then it has mounted no displays and every row below is silent) |
-| `[data-view-component-pending]` | no view still waiting on its lazy React component |
-| `[data-testid="loading-overlay"]` | no track still fetching |
-| `[data-display-phase="loading"]` | no display still in its own fetch |
-| `[data-display-drawn="false"]` | every display has painted — flips on FIRST paint, so it proves nothing until the fetch rows above have cleared |
+| Wait until absent                 | Means                                                                                                          |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `[data-view-phase="loading"]`     | no view still resolving its assembly (until then it has mounted no displays and every row below is silent)     |
+| `[data-view-component-pending]`   | no view still waiting on its lazy React component                                                              |
+| `[data-testid="loading-overlay"]` | no track still fetching                                                                                        |
+| `[data-display-phase="loading"]`  | no display still in its own fetch                                                                              |
+| `[data-display-drawn="false"]`    | every display has painted — flips on FIRST paint, so it proves nothing until the fetch rows above have cleared |
 
 These attributes are absent on older deployments, which publish only the loading
 overlay; there the display rows are unfalsifiable rather than satisfied, and a
@@ -97,7 +100,11 @@ bounded settle is all you have.
 `@jbrowse/capture` is all of the above, done:
 
 ```js
-import { captureJBrowse, openJBrowse, waitForJBrowseReady } from '@jbrowse/capture'
+import {
+  captureJBrowse,
+  openJBrowse,
+  waitForJBrowseReady,
+} from '@jbrowse/capture'
 
 // launch, wait, shoot, close
 const { pending, paintContract } = await captureJBrowse({
@@ -114,7 +121,8 @@ await page.screenshot({ path: 'menu.png' })
 await browser.close()
 ```
 
-`waitForJBrowseReady(page)` is the wait alone, for a page you navigated yourself.
+`waitForJBrowseReady(page)` is the wait alone, for a page you navigated
+yourself.
 
 **A stage that times out throws** rather than handing back a half-drawn frame,
 naming which gate it was. Pass `allowUnsettled` / `--allowUnsettled` if you
@@ -141,5 +149,5 @@ empty `pending` there means "cannot tell", not "all done".
 
 - <https://jbrowse.org/jb2/docs/agents_capture.md>
 - <https://jbrowse.org/jb2/docs/jbrowse-img.md>
-- Related skills: `jbrowse-authoring` (write the config),
-  `jbrowse-hosted-data` (data to point it at)
+- Related skills: `jbrowse-authoring` (write the config), `jbrowse-hosted-data`
+  (data to point it at)

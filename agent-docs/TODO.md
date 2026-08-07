@@ -30,6 +30,7 @@ Exploratory concepts that are *not* committed work live in
 | [Alignments main-thread repack](#alignments-still-repacks-every-row-instanced-pass-on-the-main-thread) | alignments, GPU | profile the pack/upload/clone split first |
 | [Stop rewriting the worker's arrays](#stop-rewriting-the-workers-arrays-to-lay-out-features) | canvas | count the consumers — they decide if it is worth it |
 | [`featureItemMap` O(N) build](#featureitemmap-is-an-on-build-serving-a-handful-of-point-queries) | canvas | pairs with the entry above |
+| [What is left of the row-display family](#what-is-left-of-the-row-display-family-and-the-one-part-not-worth-sharing) | maf, variants, canvas, wiggle | settle `sources`' nullability first |
 
 ## Ready to build: small and self-contained
 
@@ -250,6 +251,60 @@ minimap2. wasm in the browser is not itself exotic here — `@gmod/bgzf-filehand
 ships a 29 KB inflate wasm that every BAM/VCF read goes through — but a minimap2
 build is megabytes, so it belongs in an external plugin rather than in core for
 one menu item.
+
+### What is left of the row-display family, and the one part not worth sharing
+
+The four row displays — `LinearMafDisplay`, `MultiSampleVariantBaseModel` (two
+displays), `LinearMultiRowFeatureDisplay`, `MultiLinearWiggleDisplay` — all
+compose `TreeSidebarMixin`, which is now the row in the cross-cutting table
+naming them. Landed 2026-08-07: the declarative clustering trigger
+(`runClustering` / `clusterRegion` and their setters) moved onto that mixin, and
+the three `getXxxClusterAutorun.ts` wrapper modules are gone —
+`setupRunClusteringAutorun` resolves `rpcManager` / `sessionId` itself and each
+display passes a `run` callback that code-splits its own RPC module.
+
+Also landed 2026-08-07: **`sources` is a resolved array on all four**. maf and
+variants returned `T[] | undefined`; every consumer collapsed the absent case
+immediately (`?.length`, `?? []`, `?? 0`) — about twenty defensive reads and no
+decision behind any of them, which is why `TreeSidebarModel.sources` had to be
+optional. Two maf consumers *were* reading the tri-state, and both were asking
+"has the species list arrived", so that got its own name (`sourcesKnown`, over
+`sourcesVolatile.length`). The distinction it preserves is real and has a
+regression test: an empty `sources` arrives both from "no fetch yet" and from a
+fetch that found no rows, and the render callback's first-paint gate must open
+for the second (`emptyRegionLoading.test.ts`). The load-bearing `undefined`
+stays where it always was, on `sourcesVolatile` / `sourcesBase` — `sampleFilter`
+and `fetchNeeded` read those, and the `undefined` → list transition is what
+wakes the fetch autorun (ARCHITECTURE.md, "the per-region twin").
+
+Still per display:
+
+- **`hierarchy`**, four copies of one `computeClusterHierarchy(...)` call
+  differing only in which expression supplies the content height (and
+  multi-wiggle's `isOverlay` short-circuit). Small, and the shared part is
+  already the function; a mixin getter would need three hooks it can't type.
+
+**The row-height ladder is deliberately not on this list, and the reasons are
+structural rather than stylistic** — worth stating, because two of the three
+differences look like drift and are not:
+
+- Canvas caps `effectiveRowHeight` at `maxCanvasHeight / nrow`. It sizes its
+  canvas to its content, so nothing downstream bounds the stack.
+- Multi-wiggle has no `rowHeight` sentinel at all (always fit) and branches on
+  `isOverlay`, which collapses every source onto one plot.
+- maf and canvas seed the `height` slot in `setFitToHeight` and variants does
+  not. **This is the one that looks like a bug and isn't:** both of those
+  *override* the `height` getter to a content-derived value, so `self.height` in
+  fixed mode is not the slot and entering fit mode without re-seeding jumps.
+  Variants leaves `height` to `TrackHeightMixin`, so the same line would write
+  the slot back to itself. Check which `height` a display has before copying
+  either one.
+
+What is shared is the part with an actual rule: `resolveRowHeight` (the `0`
+sentinel plus the non-positive floor) and the menu row and dialog. A mixin over
+the rest is two hooks plus two override points wrapping about four lines of
+arithmetic. See
+[reference/ROW_HEIGHT_AND_FIT.md](reference/ROW_HEIGHT_AND_FIT.md).
 
 ## Measure first: the premise or the cost attribution is unconfirmed
 

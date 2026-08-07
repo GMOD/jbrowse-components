@@ -179,7 +179,7 @@ reads. A self-comparison names one assembly twice, in `blockAssemblies`, in
 
 `attributeColumns` names the columns after the two gene columns. Each becomes a
 feature attribute, so it shows in the detail panel when a link is clicked, and
-`dn` with `ds` together drive **Color by -> dN/dS**. `syn_subs` and `fisher_p`
+`dn` with `ds` together drive **Color by → dN/dS**. `syn_subs` and `fisher_p`
 are the evidence behind a colour: how many synonymous differences the ratio
 divided by, and a Fisher exact test against neutrality.
 

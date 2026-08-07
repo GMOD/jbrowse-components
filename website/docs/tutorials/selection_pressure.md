@@ -138,8 +138,8 @@ is the `.blocks` shape
 
 `attributeColumns` names the columns after the two gene columns, so each becomes
 a feature attribute visible in the detail panel, and `dn` with `ds` together
-drive **Color by -> dN/dS**. `syn_subs` and `fisher_p` are what a reader checks
-a colour against once the ramp has drawn their eye to it.
+drive **Color by → dN/dS**. `syn_subs` and `fisher_p` are what a reader checks a
+colour against once the ramp has drawn their eye to it.
 
 That ramp's middle is 1 and its top is 2, fixed rather than scaled to the data:
 which side of 1 a pair falls on is the question being asked, and an auto-scaled

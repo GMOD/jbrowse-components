@@ -127,7 +127,8 @@ config the CLI wrote rather than assumed.
 
 `waitForAppReady` in `test/harness.ts` replaces the `delay(3000) // let the track
 paint` guesses. It reads the same signals the web screenshot generator waits on
-(`packages/browser-test-utils/src/waits.ts`), through `executeScript` because
+(`products/jbrowse-capture/src/waits.ts`, re-exported through
+`packages/browser-test-utils`), through `executeScript` because
 this harness drives selenium rather than puppeteer:
 
 - `data-view-phase=loading` — the view is still waiting on its assembly, has
