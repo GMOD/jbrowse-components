@@ -256,14 +256,16 @@ converges on an exact slice. For an exact slice, cut one with
 ## Colors that mean the same thing in both panels
 
 A graph panel and a linear panel show the same segments, so the useful question
-is which coloring survives the trip between them. Three of the **Color**
-dropdown's schemes are worth knowing:
+is which coloring survives the trip between them. The **Color** dropdown opens on
+**Auto**, which is Reference position on any graph carrying reference coordinates
+and Uniform on one carrying none. Three of its schemes are worth knowing:
 
 - **Reference position** ramps hue over the window the subgraph was cut from,
-  red at its start to magenta at its end. A segment with no reference coordinate
-  of its own comes off the ramp and draws flat charcoal, so a hue always states
-  a position on the reference. It is the one scheme a linear track can reproduce
-  exactly, because it is a function of two numbers and a midpoint.
+  red at its start to magenta at its end, with a key in the top right naming the
+  interval. A segment with no reference coordinate of its own comes off the ramp
+  and draws flat charcoal, so a hue always states a position on the reference. It
+  is the one scheme a linear track can reproduce exactly, because it is a
+  function of two numbers and a midpoint.
 - **Stable rank** is the rank ladder above: rank 0 blue, then a ramp for the
   rest.
 - **Depth** is how many paths walk each segment, which is core-versus-accessory

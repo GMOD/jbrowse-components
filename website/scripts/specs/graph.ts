@@ -2864,13 +2864,30 @@ export const graphSpecs: ScreenshotSpec[] = [
           },
         ],
       },
-      // A launch through the menu opens on the view's own defaults, so the graph
-      // arrives in one uniform color; the colors the sibling figures were given
-      // declaratively are a Color-dropdown step here, and the tutorials tell the
-      // reader to take it. Driving it keeps the two halves of this
-      // figure comparable and makes the step itself part of what is documented.
-      // The dropdown has no testid, so it goes by its current value, which
-      // appears nowhere else on the page.
+      // A launch through the menu opens on the view's own defaults, and as of
+      // the 'auto' color scheme those now include the reference-position ramp
+      // whenever the graph carries reference coordinates — which an rGFA always
+      // does. So this stage no longer drives the Color dropdown, and the
+      // tutorials no longer tell the reader to.
+      //
+      // What it used to do, and why it is worth not putting back: two clicks,
+      // 'Uniform' (the dropdown goes by its current value, having no testid)
+      // then 'Reference position'. REFERENCE POSITION, not Rainbow, and that was
+      // a correction rather than a preference. Rainbow was taken for an earlier
+      // review ("consider using rainbow coloring for the segments?") because
+      // Stable rank is two colours on a 16-node neighbourhood and the arms all
+      // painted alike. It does give every segment its own hue — but the hue is
+      // the node's INDEX in the fetched node list (GeometryBuilder's 'rainbow'
+      // case), so it means nothing, it changes when the window changes, and
+      // nothing outside the pane can reproduce it. That last part is what the
+      // next review round hit: "the lineargenomeview doesnt seem to be using
+      // rainbow", and with rainbow it never could. Reference position is the
+      // rainbow that survives all three: a hue ramp along the same coordinates
+      // the lane above is drawn on, so the lane can be painted with the
+      // identical jexl and the clicked segment is the same colour in both
+      // frames. What it costs is the off-reference arms, which go charcoal
+      // because they have no reference position — which is what they are, and
+      // what every HPRC figure on the site already says.
       //
       // The layout is the view's default too, which is now the Bandage
       // force-directed drawing. Review, on the anchored frame this used to
@@ -2892,26 +2909,6 @@ export const graphSpecs: ScreenshotSpec[] = [
               '[data-testid="cascading-menuitem-graph_genome_view_(this_segment)"]',
           },
           { type: 'waitForSelector', selector: TOOLBAR_READY },
-          { type: 'click', text: 'Uniform' },
-          // REFERENCE POSITION, not Rainbow, and this is a correction rather
-          // than a preference. Rainbow was taken for an earlier review ("consider
-          // using rainbow coloring for the segments?") because Stable rank is two
-          // colours on a 16-node neighbourhood and the arms all painted alike.
-          // It does give every segment its own hue — but the hue is the node's
-          // INDEX in the fetched node list (GeometryBuilder's 'rainbow' case), so
-          // it means nothing, it changes when the window changes, and nothing
-          // outside the pane can reproduce it. That last part is what the next
-          // review round hit: "the lineargenomeview doesnt seem to be using
-          // rainbow", and with rainbow it never could.
-          //
-          // Reference position is the rainbow that survives all three. It is a
-          // hue ramp along the same coordinates the lane above is drawn on, so
-          // the lane can be painted with the identical jexl and the clicked
-          // segment is the same colour in both frames. What it costs is the
-          // off-reference arms, which go charcoal because they have no reference
-          // position — which is what they are, and what every HPRC figure on the
-          // site already says.
-          { type: 'click', text: 'Reference position' },
           { type: 'delay', ms: 2000 },
           // close the linear view it was launched from, so this frame is the
           // subgraph rather than mostly its source. The window it cut stays

@@ -11,11 +11,11 @@ behind it are in
 first, this file assumes it.
 
 **State as of 2026-08-06.** Closed: §1 deterministic layout, §2 pinned bundle,
-§3 carriage read path, §5 the level-of-detail tier (producer, hosted files, and
-the browser bug that blocked it), §6's y axis, §9 reference-only index (built and
-hosted, and its premise corrected — it is not a drop-in). Open: §4 colour/legend,
-§6's remaining half (x from the connected linear view), §7 in-view navigation,
-§8 the UI debts, and the demo list.
+§3 carriage read path, §4 colour default and ramp key, §5 the level-of-detail
+tier (producer, hosted files, and the browser bug that blocked it), §6's y axis,
+§9 reference-only index (built and hosted, and its premise corrected — it is not
+a drop-in). Open: §6's remaining half (x from the connected linear view), §7
+in-view navigation, §8 the UI debts, and the demo list.
 
 **One thing is blocked, and it is the same thing for both §2 and §6: a clean
 worktree to regenerate figures in.** §6 moves every anchored figure by design and
@@ -123,7 +123,9 @@ This is what the old failure mode looked like, so it is recognisable if the pin
 is ever dropped: the deployed bundle's Color dropdown said "Stable rank (rGFA)"
 while the plugin source said "Stable rank", so publishing the source's own label
 broke `pangenome/rgfa_segment_neighbourhood`, whose spec clicked the old text.
-It read as a spec bug and was not.
+It read as a spec bug and was not. No spec drives that dropdown any more (§4
+retired the last one), so this exact break cannot recur — but the class can, on
+any label a spec still clicks by text.
 
 ## 3. Carriage: the read path is wired, the display is not
 
@@ -153,24 +155,26 @@ Left to do:
   per-carrier ids plus hit detection resolving them back. Its own comment block
   says so.
 
-## 4. Two small view improvements, started and parked
+## ~~4. Two small view improvements~~ — done, 2026-08-06, plugin `5960af0`
 
-Both are cheap, and together they are one deploy.
+Both shipped as described, with one correction worth keeping.
 
-- **Default the colour scheme when the graph is anchored.** `colorScheme`
-  defaults to `'uniform'`, so a launched graph opens flat grey and both
-  tutorials spend a step saying "now pick a colour"
-  (`pangenome/rgfa_segment_neighbourhood` literally drives that click as part of
-  the figure). Mirror `layoutModes`' `'auto'`: add an `'auto'` entry to
-  `COLOR_SCHEMES`, default to it, and resolve through an
-  `effectiveColorScheme` getter — a bare getter must return a resolved value
-  (root `CLAUDE.md`), so the renderer reads the getter and the dropdown reads
-  the raw prop. Anchored resolves to `reference-position`, unanchored keeps
-  `uniform`. Then drop the colour-click stage from that spec.
-- **Draw a key for the reference-position ramp.** Nothing on screen says
-  red-to-magenta means left-to-right of the cut window; two tutorials carry that
-  sentence in prose instead. A gradient strip labelled with the window's ends,
-  shown only when that scheme is active, retires the sentence.
+- **The colour default is `'auto'`**, resolved by `effectiveColorScheme` the way
+  `layoutModes`' `'auto'` is. The colour-click stage is gone from
+  `pangenome/rgfa_segment_neighbourhood`, and its long comment about *why*
+  reference position rather than rainbow stayed with the spec — that reasoning
+  survived three review rounds and outlives the click it was written for.
+
+  **The correction: `'auto'` asks the GRAPH, not the layout.** This section said
+  "anchored resolves to `reference-position`", meaning the layout mode, and that
+  would have retired nothing — the figure that drives the click is a
+  *force-directed* drawing of an rGFA, which is exactly the case where the
+  layout has no reference axis and the ramp is still the only quantity the
+  linear lane beside it can share. The condition is `graph.anchoredBy`.
+- **The ramp has a key**, top right, shown only while the ramp is what is
+  painted, built from the same three numbers `getNodeColor` uses rather than
+  from picked hex stops. The path legend moved into a stack with it, since a
+  path-coloured graph can be reference-position coloured too.
 
 ## 5. Level of detail: producer done, and the browser blocker is FIXED 2026-08-05
 

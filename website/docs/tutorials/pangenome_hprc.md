@@ -178,11 +178,12 @@ The subgraph is cut from the same two files the track reads.
 <Figure caption="The C4 locus as a graph, in force-directed layout, under three lanes of the same window. The bubbles track reports a single bubble spanning the locus, and the graph below is what that bubble contains: a colored reference thread with charcoal allele loops over it." src="/img/pangenome/hprc_c4_subgraph.png" />
 
 A force layout has no x axis to share with the linear view, so color is the only
-thing that can carry the correspondence. **Reference position** in the **Color**
-dropdown is built for that: it ramps hue over the window the subgraph was cut
-from, red at its start to magenta at its end. A segment with no reference
-coordinate of its own comes off the ramp and draws flat charcoal, so a hue
-always states a position on GRCh38 rather than an allele's attachment point.
+thing that can carry the correspondence. **Reference position** is built for
+that, and it is what the graph opens on: it ramps hue over the window the
+subgraph was cut from, red at its start to magenta at its end, and the key in
+the top right of the pane names the interval it runs over. A segment with no
+reference coordinate of its own comes off the ramp and draws flat charcoal, so a
+hue always states a position on GRCh38 rather than an allele's attachment point.
 
 The ramp is two numbers and a midpoint, so a linear track can paint the same
 colors. This is the segments track above with the ramp in place of its rank
