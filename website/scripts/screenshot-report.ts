@@ -1,5 +1,5 @@
 import { writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { join, relative } from 'node:path'
 
 // What the run noticed while it was capturing, and how it says so at the end.
 //
@@ -14,7 +14,10 @@ import { join } from 'node:path'
 import { PENDING_DISPLAYS } from '@jbrowse/browser-test-utils'
 
 import { visibleTooltipText } from './annotations.ts'
-import { unpublishedFigures } from './figure-paths.ts'
+import {
+  repoRoot as figureRepoRoot,
+  unpublishedFigures,
+} from './figure-paths.ts'
 import { figureName } from './figure-store.ts'
 import { websiteDir } from './paths.ts'
 import {
@@ -239,7 +242,11 @@ export function printSummary(totals: RunTotals) {
       ),
     )
   }
-  printUnpublished()
+  printUnpublished(
+    changed.flatMap(({ result }) =>
+      result.status === 'kept' ? [] : result.path,
+    ),
+  )
   writeRunReport(totals)
 }
 
@@ -324,14 +331,51 @@ function writeRunReport(totals: RunTotals) {
 // run should still say so. Saying "nothing outstanding" out loud matters as
 // much as the warning — it is how a regen ends in a known state rather than an
 // assumed one.
-function printUnpublished() {
+//
+// The LIST is the whole worktree and the COMMAND is not, which is the one place
+// those two have to disagree. A bare `pnpm figures:push` publishes everything in
+// that list and rewrites figures.lock from all of it, so in a worktree several
+// agents share, following this report's own advice sweeps somebody else's
+// unpushed regen into your commit. That is not hypothetical — it is how this
+// paragraph came to be written. So the report names what YOU are looking at and
+// hands you a command scoped to what THIS run wrote.
+//
+// The tokens are figureNames of the paths the run actually committed, matched
+// --exact. Spec names would be the obvious thing to print and are wrong: 27 of
+// 349 of them are a substring of some other figure's name, so a printed
+// `--filter dotplot` selects eleven figures this run never touched, which is the
+// same over-publishing the flag exists to stop.
+//
+// --exact is safe for the mirrored pair despite `figureName` not being
+// injective, and it is worth knowing WHY, because the surface reading says the
+// opposite. products/jbrowse-img/img/x.png and website/static/img/jbrowse-img/x.png
+// normalize to the SAME name, `jbrowse-img/x` — that is what the normalization
+// is for — so one exact token selects both halves and they move together. The
+// names are deduped because both halves being outstanding would otherwise print
+// that one token twice.
+function printUnpublished(writtenThisRun: string[]) {
   const outstanding = unpublishedFigures()
   if (outstanding.length === 0) {
     console.log('\nEvery figure on disk is published. Nothing to push.')
     return
   }
+  const mine = new Set(
+    writtenThisRun.map(p => relative(figureRepoRoot, p).replaceAll('\\', '/')),
+  )
+  const ours = [
+    ...new Set(outstanding.filter(p => mine.has(p)).map(figureName)),
+  ]
   printReport(
-    `NOT IN THE FIGURE STORE (${outstanding.length}) — these exist only on this machine; run \`pnpm figures:push\` and commit figures.lock, or they are silently dropped`,
-    outstanding.map(p => `• ${figureName(p)}`),
+    `NOT IN THE FIGURE STORE (${outstanding.length}) — these exist only on this machine; push them and commit figures.lock, or they are silently dropped`,
+    outstanding.map(
+      p => `• ${figureName(p)}${mine.has(p) ? '  (this run)' : ''}`,
+    ),
+  )
+  console.log(
+    ours.length === 0
+      ? 'None of them is from this run. Publish with `pnpm figures:push --filter <name>`,\n' +
+          'or a bare `pnpm figures:push` if you mean to publish every figure above.'
+      : `To publish what this run wrote and leave the rest alone:\n\n` +
+          `  pnpm figures:push --exact --filter ${ours.join(',')}\n`,
   )
 }

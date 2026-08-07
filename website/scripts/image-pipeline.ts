@@ -155,10 +155,15 @@ function moveIntoPlace(tmpPath: string, outputPath: string) {
   }
 }
 
+// `path` is the figure this call wrote (or would have), carried on the result
+// because the caller cannot re-derive it: most specs land in outDir under their
+// own name, jbrowse-img specs land in jbrowseImgOutDir, and a compose spec is
+// assembled from several. The end-of-run push hint needs the exact set of files
+// the run touched, and a name-to-path guess is what it is here to avoid.
 export type CommitResult =
-  | { status: 'new' }
-  | { status: 'updated'; detail: string }
-  | { status: 'kept'; frac: number; raisedGate: boolean }
+  | { status: 'new'; path: string }
+  | { status: 'updated'; detail: string; path: string }
+  | { status: 'kept'; frac: number; raisedGate: boolean; path: string }
 
 // Move a freshly captured PNG into place only when its content actually changed
 // (or with force / for a brand-new spec), so a regen doesn't rewrite every PNG.
@@ -184,7 +189,9 @@ export function commitScreenshot(
   if (force || isNew) {
     moveIntoPlace(tmpPath, outputPath)
     console.log(`  ✓ ${name}.png${isNew ? ' (new)' : ''}`)
-    return isNew ? { status: 'new' } : { status: 'updated', detail: 'forced' }
+    return isNew
+      ? { status: 'new', path: outputPath }
+      : { status: 'updated', detail: 'forced', path: outputPath }
   } else {
     const frac = pngDiffFraction(tmpPath, outputPath)
     if (frac !== null && frac < diffThreshold) {
@@ -196,13 +203,13 @@ export function commitScreenshot(
           ? `  ⚠ ${name}.png (kept; ${pct(frac)} exceeds the ${pct(baseThreshold)} default and was kept only by this spec's diffThreshold ${pct(diffThreshold)} — re-run with --force if the change was intended)`
           : `  ≈ ${name}.png (kept; ${pct(frac)} < ${pct(diffThreshold)} threshold)`,
       )
-      return { status: 'kept', frac, raisedGate }
+      return { status: 'kept', frac, raisedGate, path: outputPath }
     } else {
       moveIntoPlace(tmpPath, outputPath)
       const detail =
         frac === null ? 'resized' : `${(frac * 100).toFixed(2)}% diff`
       console.log(`  ✓ ${name}.png (updated, ${detail})`)
-      return { status: 'updated', detail }
+      return { status: 'updated', detail, path: outputPath }
     }
   }
 }

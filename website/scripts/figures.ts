@@ -56,11 +56,12 @@ const usage = `figures — the S3-backed figure store
 
   status              compare the worktree against figures.lock
   pull [--force]      install every figure figures.lock names
-  push [--dry-run] [--filter a,b]
+  push [--dry-run] [--filter a,b] [--exact]
                       upload new bytes, then rewrite figures.lock. --filter
-                      scopes it to the figures named (substring, repeatable)
-                      and leaves every other manifest line untouched, which is
-                      what a worktree with someone else's regen in it needs
+                      scopes it to the figures named (substring, repeatable,
+                      --exact for whole-name) and leaves every other manifest
+                      line untouched, which is what a worktree with someone
+                      else's regen in it needs
   check [--remote]    fail if the manifest and the worktree disagree
   report [--base ref] [--markdown] [--out file]
                       what moved, with before/after store URLs
@@ -83,6 +84,7 @@ const { values, positionals } = (() => {
         // multiple, so `--filter a --filter b` unions rather than keeping only b
         filter: { type: 'string', multiple: true },
         'dry-run': { type: 'boolean', default: false },
+        exact: { type: 'boolean', default: false },
         force: { type: 'boolean', default: false },
         remote: { type: 'boolean', default: false },
         markdown: { type: 'boolean', default: false },
@@ -326,7 +328,7 @@ function push() {
     process.exit(1)
   }
   const selected = paths.filter(p =>
-    matchesFilterTokens(figureName(p), tokens, false),
+    matchesFilterTokens(figureName(p), tokens, values.exact),
   )
   if (!selected.length) {
     console.error(`no figures on disk match --filter ${tokens.join(',')}`)
@@ -338,7 +340,7 @@ function push() {
   // rather than a full sweep that happens to change one line.
   console.log(`hashing ${selected.length} figure(s)…`)
   const entries = selected.map(describeFile)
-  const after = mergeManifest(before, entries, tokens)
+  const after = mergeManifest(before, entries, tokens, values.exact)
   if (tokens.length) {
     console.log(
       `--filter ${tokens.join(',')}: ${entries.length} figure(s) selected, ` +

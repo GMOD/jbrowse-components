@@ -140,6 +140,40 @@ test('a filter token selects both paths a figure name maps to', () => {
   expect(merged.get('website/static/img/unrelated.png')?.sha256).toBe(A)
 })
 
+// --exact is what the end-of-run push hint emits, because a spec name is often a
+// substring of another figure's name. The mirrored pair still moves together
+// under it, and that is not luck: both paths normalize to the one name.
+test('an exact filter takes the mirrored pair but not a longer neighbour', () => {
+  const before = parseManifest(
+    `products/jbrowse-img/img/insertion.png - 1 ${A}\n` +
+      `website/static/img/jbrowse-img/insertion.png - 1 ${A}\n` +
+      `website/static/img/insertion_expanded.png - 1 ${A}\n`,
+  )
+  expect(
+    [...before.keys()]
+      .map(figureName)
+      .filter(n => n === 'jbrowse-img/insertion').length,
+  ).toBe(2)
+  const merged = mergeManifest(
+    before,
+    [
+      entry('products/jbrowse-img/img/insertion.png', B),
+      entry('website/static/img/jbrowse-img/insertion.png', B),
+    ],
+    ['jbrowse-img/insertion'],
+    true,
+  )
+  expect(merged.size).toBe(3)
+  expect(merged.get('products/jbrowse-img/img/insertion.png')?.sha256).toBe(B)
+  expect(
+    merged.get('website/static/img/jbrowse-img/insertion.png')?.sha256,
+  ).toBe(B)
+  // the substring neighbour is untouched, which is the whole reason for --exact
+  expect(merged.get('website/static/img/insertion_expanded.png')?.sha256).toBe(
+    A,
+  )
+})
+
 test('diff separates added, changed and removed', () => {
   const before = parseManifest(
     `old.png - 1 ${A}\nsame.png - 1 ${A}\nmoved.png - 1 ${A}\n`,

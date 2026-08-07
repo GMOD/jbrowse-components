@@ -18,14 +18,20 @@ immutable; git tracks `figures.lock` at the repo root, one line per figure.
   manifest line whose bytes were never pushed breaks `pull` for everyone. CI
   catches that anyway — a fresh runner has no figures, so its `pull` verifies
   every entry.
-- **`push --filter <name>` when the worktree is shared.** A bare `push`
-  publishes the whole worktree and rewrites `figures.lock` from every figure on
-  disk, so another agent's un-pushed regen lands in your lock diff under
-  whichever commit message is written next. `--filter` scopes both the upload
-  and the rewrite to the figures named (substring on the `figureName` the
-  reports print, `a,b` or repeated) and copies every other line through
-  untouched. It also skips hashing the rest, which is the 62 MB of reads that
-  makes an unfiltered push slow. `--dry-run` shows the selection first.
+- **`push --filter <name>` when the worktree is shared, and the sweep prints the
+  exact command.** A bare `push` publishes the whole worktree and rewrites
+  `figures.lock` from every figure on disk, so another agent's un-pushed regen
+  lands in your lock diff under whichever commit message is written next.
+  `--filter` scopes both the upload and the rewrite to the figures named
+  (substring on the `figureName` the reports print, `a,b` or repeated, `--exact`
+  for whole-name) and copies every other line through untouched. It also skips
+  hashing the rest, which is the 62 MB of reads that makes an unfiltered push
+  slow. `--dry-run` shows the selection first. **Don't hand-assemble the token
+  list from spec names** — 27 of 349 spec names are a substring of some other
+  figure's name, so `--filter dotplot` reaches eleven figures you did not touch.
+  The end-of-run report already emits the correct `--exact` command for what
+  that run wrote; the figure list above it is still the whole worktree, and that
+  disagreement is deliberate.
 - **A figure change is now a one-line hash swap**, so `pnpm figures:report`
   (`--base`, `--markdown`) is how you _look_ at one. Every revision ever pushed
   is still at its own URL, so it renders before/after side by side. The

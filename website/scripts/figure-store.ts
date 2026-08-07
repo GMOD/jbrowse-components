@@ -340,10 +340,11 @@ export function mergeManifest(
   before: Map<string, FigureEntry>,
   selected: Iterable<FigureEntry>,
   tokens: string[],
+  exact = false,
 ): Map<string, FigureEntry> {
   const carried = tokens.length
     ? [...before].filter(
-        ([path]) => !matchesFilterTokens(figureName(path), tokens, false),
+        ([path]) => !matchesFilterTokens(figureName(path), tokens, exact),
       )
     : []
   return new Map([...carried, ...[...selected].map(e => [e.path, e] as const)])
