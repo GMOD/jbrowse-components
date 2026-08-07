@@ -42,6 +42,16 @@ async function graphNodeGeometry(
         id: string
         views?: GraphView[]
         scale?: number
+        // The two axis scales, which are NOT always the same number: a
+        // reference-anchored layout states y as a row pitch in screen px and
+        // pins scaleY at 1, while scaleX is the zoom (1.2% on the MHC window).
+        // `scale` is the x one. Projecting y through it collapsed every row of
+        // an anchored drawing onto the top of the pane, so two landmark rings a
+        // dozen rows apart came out on top of each other and one badge hid the
+        // other. Optional because a bundle older than the row-pitch change has
+        // neither, and there scale is both.
+        scaleX?: number
+        scaleY?: number
         translateX?: number
         translateY?: number
         nodePositions?: Record<string, { x: number; y: number }[]>
@@ -69,11 +79,12 @@ async function graphNodeGeometry(
         return undefined
       }
       const r = canvas.getBoundingClientRect()
-      const scale = view.scale ?? 1
+      const scaleX = view.scaleX ?? view.scale ?? 1
+      const scaleY = view.scaleY ?? view.scale ?? 1
       const tx = view.translateX ?? 0
       const ty = view.translateY ?? 0
-      const xs = pts.map(p => p.x * scale + tx)
-      const ys = pts.map(p => p.y * scale + ty)
+      const xs = pts.map(p => p.x * scaleX + tx)
+      const ys = pts.map(p => p.y * scaleY + ty)
       const left = Math.min(...xs)
       const top = Math.min(...ys)
       const mid = pts[Math.floor((pts.length - 1) / 2)]!
@@ -82,8 +93,8 @@ async function graphNodeGeometry(
         top: r.top + top,
         width: Math.max(...xs) - left,
         height: Math.max(...ys) - top,
-        midX: r.left + mid.x * scale + tx,
-        midY: r.top + mid.y * scale + ty,
+        midX: r.left + mid.x * scaleX + tx,
+        midY: r.top + mid.y * scaleY + ty,
       }
     },
     path,

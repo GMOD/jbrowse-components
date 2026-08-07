@@ -98,6 +98,10 @@ const dump = await withHarness(
         translateY?: number
         graph?: { nodes: Node[] }
         nodePositions?: Record<string, { x: number; y: number }[]>
+        // see graphAnchor.ts: an anchored layout's y is a row pitch in screen
+        // px with scaleY pinned at 1, so `scale` (the x zoom) is not it
+        scaleX?: number
+        scaleY?: number
       }
       const session = (window as unknown as { JBrowseSession?: GraphView })
         .JBrowseSession
@@ -108,7 +112,8 @@ const dump = await withHarness(
           )
         : undefined
       const r = canvas?.getBoundingClientRect()
-      const scale = view?.scale ?? 1
+      const scaleX = view?.scaleX ?? view?.scale ?? 1
+      const scaleY = view?.scaleY ?? view?.scale ?? 1
       const tx = view?.translateX ?? 0
       const ty = view?.translateY ?? 0
       return {
@@ -118,8 +123,8 @@ const dump = await withHarness(
           : undefined,
         nodes: (view?.graph?.nodes ?? []).map(n => {
           const pts = view?.nodePositions?.[n.id] ?? []
-          const xs = pts.map(p => p.x * scale + tx + (r?.left ?? 0))
-          const ys = pts.map(p => p.y * scale + ty + (r?.top ?? 0))
+          const xs = pts.map(p => p.x * scaleX + tx + (r?.left ?? 0))
+          const ys = pts.map(p => p.y * scaleY + ty + (r?.top ?? 0))
           return {
             id: n.id,
             length: n.length,
