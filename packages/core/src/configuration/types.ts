@@ -70,25 +70,14 @@ export type ConfigurationSlotName<SCHEMA> = SCHEMA extends undefined
             : never)
     : never
 
-// Value type of a single slot. Keyed on the slot's literal `type`, which the
-// `const DEFINITION` param on `ConfigurationSchema` preserves through inference.
-// - `stringEnum` carries its literal union on `model` (a `types.enumeration`),
-//   so prefer that — recovers e.g. 'normal' | 'compact' instead of `string`.
-// - array/map/fileLocation/maybe* map to their runtime value types
-//   (`configurationSlot.ts` typeModels); `maybe*` become `T | undefined`, which
-//   surfaces the unset state at every read instead of hiding it behind `any`.
-// - scalars key on `type` directly (string/text/color → string; number/integer
-//   → number; boolean → boolean). A numeric/boolean slot can carry a jexl-string
-//   `defaultValue` (e.g. arc `thickness`'s `jexl:logThickness(...)`), so deriving
-//   the value type from the default would mistype it as `string`. `readConfObject`
-//   evaluates the jexl on read and returns the slot's declared value type, so the
-//   `type`-keyed result is exactly what a read yields.
-// - a slot with an unrecognized `type` (a custom `model` whose value isn't a
-//   string enum) falls back to re-widening its literal `defaultValue` to the base
-//   scalar type.
-// - `frozen` stays `any` deliberately: it's the escape hatch for arbitrary
-//   dynamic JSON, so callers assert its shape at the read boundary; `unknown`
-//   would only add cast ceremony on legitimately-dynamic values.
+// Value type of a single slot, keyed on the slot's literal `type` — which the
+// `const DEFINITION` param on `ConfigurationSchema` is what preserves through
+// inference. `SlotValueRawFromDef` and `SlotValueByType` below are the mapping;
+// two things it does that aren't obvious from reading them:
+// - a `stringEnum` is read off `model` (the author's `types.enumeration`) rather
+//   than the table, which recovers 'normal' | 'compact' instead of `string`.
+// - every `maybe*` type becomes `T | undefined`, surfacing the unset state at
+//   each read instead of hiding it behind `any`.
 // jexl callbacks are declared to return the slot's own type, correct here too.
 //
 // A slot declaring `promotedBase` is a *sentinel* slot: being unset is the
@@ -125,6 +114,47 @@ type SlotValueResolvedFromDef<DEF> = DEF extends { promotedBase: undefined }
     ? Exclude<SlotValueRawFromDef<DEF>, undefined>
     : SlotValueRawFromDef<DEF>
 
+/**
+ * The value each builtin slot `type` reads as — the type-level twin of
+ * `slotTypes` in `configurationSlot.ts`, which is the same list as MST models.
+ * A table rather than the fourteen-deep conditional staircase this used to be:
+ * adding a slot type is now one row here and one there, and the two tables sit
+ * side by side where a name present in one and missing from the other is
+ * visible. Missing a row is not silent either — it drops the slot to the
+ * `defaultValue` fallback below, which is what `SlotValueRawFromDef` documents.
+ *
+ * `stringEnum`/`maybeStringEnum` are deliberately absent: their value type comes
+ * from the author's own `types.enumeration`, read off `model` before this table
+ * is consulted.
+ */
+interface SlotValueByType {
+  stringArray: string[]
+  stringArrayMap: Record<string, string[]>
+  numberMap: Record<string, number>
+  fileLocation: FileLocation
+  maybeNumber: number | undefined
+  maybeBoolean: boolean | undefined
+  maybeColor: string | undefined
+  /**
+   * `frozen` and its `maybe*` form are `any` deliberately — arbitrary dynamic
+   * JSON whose shape the caller asserts at the read boundary. `unknown` would
+   * only add cast ceremony on values that are legitimately dynamic.
+   *
+   * Stated here rather than left to the `defaultValue` fallback, which reaches
+   * `any` for these only by accident: it lands there because no `frozen` slot in
+   * the repo happens to default to a scalar, and a promotable slot's default is
+   * always the `undefined` sentinel.
+   */
+  frozen: any
+  maybeFrozen: any
+  number: number
+  integer: number
+  boolean: boolean
+  string: string
+  text: string
+  color: string
+}
+
 // A sub-schema entry, not a slot: the read yields that sub-config's snapshot.
 // Typed rather than left to fall through to `any`, so the snapshot can't be fed
 // back into `readConfObject` — see its doc comment.
@@ -138,43 +168,31 @@ type SlotValueRawFromDef<DEF> = DEF extends AnyConfigurationSchemaType
       DEF extends { type: 'maybeStringEnum' }
       ? T | undefined
       : T
-    : DEF extends { type: 'stringArray' }
-      ? string[]
-      : DEF extends { type: 'stringArrayMap' }
-        ? Record<string, string[]>
-        : DEF extends { type: 'numberMap' }
-          ? Record<string, number>
-          : DEF extends { type: 'fileLocation' }
-            ? FileLocation
-            : DEF extends { type: 'maybeNumber' }
-              ? number | undefined
-              : DEF extends { type: 'maybeBoolean' }
-                ? boolean | undefined
-                : DEF extends { type: 'maybeColor' }
-                  ? string | undefined
-                  : // the `maybe*` form of `frozen`, and `any` for the same
-                    // reason: arbitrary dynamic JSON whose shape the caller
-                    // asserts at the read boundary. Listed rather than left to
-                    // the `defaultValue` fallback below, which only lands on
-                    // `any` by accident (a promotable slot's default is always
-                    // the `undefined` sentinel).
-                    DEF extends { type: 'maybeFrozen' }
-                    ? any
-                    : DEF extends { type: 'number' | 'integer' }
-                      ? number
-                      : DEF extends { type: 'boolean' }
-                        ? boolean
-                        : DEF extends { type: 'string' | 'text' | 'color' }
-                          ? string
-                          : DEF extends { defaultValue: infer V }
-                            ? [V] extends [boolean]
-                              ? boolean
-                              : [V] extends [string]
-                                ? string
-                                : [V] extends [number]
-                                  ? number
-                                  : any
-                            : any
+    : // A slot whose `type` names a row of the table above. The constrained
+      // `infer` is what makes this one branch instead of fourteen, and it keeps
+      // a multi-name row honest: `type: 'number' | 'integer'` infers that union
+      // and indexes to `number | number`, i.e. `number`. A `type` that isn't a
+      // row — a custom `model` whose value isn't a string enum, or a `type`
+      // widened to `string` because the schema wasn't inferred `const` — fails
+      // the constraint and falls through.
+      DEF extends { type: infer T extends keyof SlotValueByType }
+      ? SlotValueByType[T]
+      : // Last resort: re-widen the slot's literal `defaultValue` to its base
+        // scalar type. Only reached by a slot the table doesn't name, and note
+        // it is *not* how the scalar rows are served — a numeric or boolean slot
+        // can carry a jexl-string `defaultValue` (arc `thickness`'s
+        // `jexl:logThickness(...)`), which this would mistype as `string`.
+        // `readConfObject` evaluates the jexl on read and yields the slot's
+        // declared type, so the table's answer is the one that matches runtime.
+        DEF extends { defaultValue: infer V }
+        ? [V] extends [boolean]
+          ? boolean
+          : [V] extends [string]
+            ? string
+            : [V] extends [number]
+              ? number
+              : any
+        : any
 
 /** what a raw read (`getConf` / `readConfObject`) of this slot yields */
 export type ConfigurationSlotValue<SCHEMA, K extends string> =

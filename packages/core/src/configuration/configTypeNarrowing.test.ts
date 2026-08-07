@@ -7,6 +7,7 @@ import {
 } from './configurationSchema.ts'
 import { getConf, readConfObject, resolveConf, setConf } from './index.ts'
 
+import type { FileLocation } from '../util/types/index.ts'
 import type { IConfigurationReference } from './configurationSchema.ts'
 import type {
   AnyConfigurationSchemaType,
@@ -139,6 +140,74 @@ describe('getConf slot-value type narrowing', () => {
     assertType<Equal<typeof enabled, boolean>>()
     assertType<Equal<typeof mode, 'a' | 'b'>>()
     assertType<Equal<typeof thickness, number>>()
+  })
+
+  // One row of `SlotValueByType` per read. The mapping used to be a fourteen-deep
+  // conditional staircase where a branch's *position* was load-bearing, and the
+  // only coverage was the handful of types above; it is a table now, so pin the
+  // whole table. A row that changes or goes missing lands the slot on the
+  // `defaultValue` fallback, which for most of these means silently becoming
+  // `any` — assignable everywhere, so nothing else in the repo would notice.
+  test('every builtin slot type reads as its declared value type', () => {
+    const all = ConfigurationSchema('ConfigNarrowingAllTypes', {
+      stringArray: { type: 'stringArray', defaultValue: [] },
+      stringArrayMap: { type: 'stringArrayMap', defaultValue: {} },
+      numberMap: { type: 'numberMap', defaultValue: {} },
+      fileLocation: {
+        type: 'fileLocation',
+        defaultValue: { uri: 'x.txt', locationType: 'UriLocation' },
+      },
+      maybeNumber: { type: 'maybeNumber', defaultValue: undefined },
+      maybeBoolean: { type: 'maybeBoolean', defaultValue: undefined },
+      maybeColor: { type: 'maybeColor', defaultValue: undefined },
+      frozen: { type: 'frozen', defaultValue: {} },
+      maybeFrozen: { type: 'maybeFrozen', defaultValue: undefined },
+      number: { type: 'number', defaultValue: 1 },
+      integer: { type: 'integer', defaultValue: 1 },
+      boolean: { type: 'boolean', defaultValue: false },
+      string: { type: 'string', defaultValue: '' },
+      text: { type: 'text', defaultValue: '' },
+      color: { type: 'color', defaultValue: 'red' },
+    })
+    const node = all.create(undefined, { pluginManager })
+
+    const stringArray = readConfObject(node, 'stringArray')
+    const stringArrayMap = readConfObject(node, 'stringArrayMap')
+    const numberMap = readConfObject(node, 'numberMap')
+    const fileLocation = readConfObject(node, 'fileLocation')
+    const maybeNumber = readConfObject(node, 'maybeNumber')
+    const maybeBoolean = readConfObject(node, 'maybeBoolean')
+    const maybeColor = readConfObject(node, 'maybeColor')
+    const frozen = readConfObject(node, 'frozen')
+    const maybeFrozen = readConfObject(node, 'maybeFrozen')
+    const number = readConfObject(node, 'number')
+    const integer = readConfObject(node, 'integer')
+    const boolean = readConfObject(node, 'boolean')
+    const string = readConfObject(node, 'string')
+    const text = readConfObject(node, 'text')
+    const color = readConfObject(node, 'color')
+
+    assertType<Equal<typeof stringArray, string[]>>()
+    assertType<Equal<typeof stringArrayMap, Record<string, string[]>>>()
+    assertType<Equal<typeof numberMap, Record<string, number>>>()
+    assertType<Equal<typeof fileLocation, FileLocation>>()
+    assertType<Equal<typeof maybeNumber, number | undefined>>()
+    assertType<Equal<typeof maybeBoolean, boolean | undefined>>()
+    assertType<Equal<typeof maybeColor, string | undefined>>()
+    // the escape hatch for dynamic JSON, `any` on purpose in both forms
+    assertType<Equal<typeof frozen, any>>()
+    assertType<Equal<typeof maybeFrozen, any>>()
+    assertType<Equal<typeof number, number>>()
+    assertType<Equal<typeof integer, number>>()
+    assertType<Equal<typeof boolean, boolean>>()
+    assertType<Equal<typeof string, string>>()
+    assertType<Equal<typeof text, string>>()
+    assertType<Equal<typeof color, string>>()
+
+    // the values round-trip too, so this isn't purely a type fixture
+    expect(integer).toBe(1)
+    expect(maybeNumber).toBeUndefined()
+    expect(color).toBe('red')
   })
 
   // The two readers differ in exactly one way on a promotable slot, and that
