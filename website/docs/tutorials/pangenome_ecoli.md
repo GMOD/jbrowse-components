@@ -964,8 +964,8 @@ the route for a graph too large to index, or for a window someone hands you.
 Three odgi commands cut one: `extract -E` takes every node between the first and
 last in the range, `sort -O` compacts the node ids, and `view -g` writes GFA.
 `-E` is the aggressive option; `-c`/`-d` expand by a bounded number of steps or
-bp instead, which is what the view's own **Graph context: N hops** setting does
-when it cuts from an index:
+bp instead, which is what the view's own **Graph context** setting does when it
+cuts from an index:
 
 ```bash
 in_pggb bash -c "odgi extract -i /data/$og -r K12#1#chr:1004500-1004900 -E -o - \

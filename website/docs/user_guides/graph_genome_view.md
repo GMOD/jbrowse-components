@@ -193,11 +193,11 @@ segment several haplotypes share appears on one of their rows and not the rest.
 The **Layout** dropdown draws the same subgraph three ways, differing in what
 the axes mean:
 
-| Layout             | x              | y                       |
-| ------------------ | -------------- | ----------------------- |
-| Anchored           | reference bp   | one row per stable rank |
-| Sample rows        | reference bp   | one row per assembly    |
-| **Force-directed** | nothing (FMMM) | nothing                 |
+| Layout                    | x              | y                       |
+| ------------------------- | -------------- | ----------------------- |
+| Anchored                  | reference bp   | one row per stable rank |
+| Sample rows               | reference bp   | one row per assembly    |
+| **Force-directed layout** | nothing (FMMM) | nothing                 |
 
 Force-directed is the default, and the one most of these figures use: an
 anchored drawing flattens both routes through a locus onto the reference axis,
