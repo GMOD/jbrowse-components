@@ -586,6 +586,8 @@ describe('sessionConnections', () => {
     const { session, pluginManager, connections } = setupWithHub([], {
       throwOnAdd: true,
     })
+    // the rejected config is console.errored as well as notified; expected here
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {})
 
     await loadSessionSpec(
       {
@@ -601,6 +603,7 @@ describe('sessionConnections', () => {
     )
     expect(connections.made).toEqual([])
     expect(session.views).toHaveLength(1)
+    error.mockRestore()
   })
 })
 

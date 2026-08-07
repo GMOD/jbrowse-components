@@ -11,6 +11,10 @@ import type { LinearSyntenyViewModel } from '../../model.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
+afterEach(() => {
+  jest.restoreAllMocks()
+})
+
 const assembly = (name: string) => ({
   name,
   sequence: {
@@ -80,6 +84,15 @@ function setup({
     // array, and this connection stub has no dataDirLocation for connect()
     // to fetch from.
     loadConnection: () => {
+      // the connection connect()s on attach and rejects without an assembly
+      // name; the tracks it carries are handed over below, so keep that one
+      // error quiet while letting every other console.error through
+      const realError = console.error
+      jest.spyOn(console, 'error').mockImplementation((...args) => {
+        if (!`${args[0]}`.includes('JBrowse 1 connection')) {
+          realError(...args)
+        }
+      })
       act(() => {
         session.makeConnection(session.connections[0]!, {
           tracks: connectionTracks ?? [],

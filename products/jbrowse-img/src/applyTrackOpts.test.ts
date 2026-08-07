@@ -201,9 +201,14 @@ describe('feature modifiers', () => {
   })
 
   test('heightMode is ignored on a display type without the notion', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
     expect(
       buildDisplaySnapshot('wiggle', ['heightMode:fixed']).snap.heightMode,
     ).toBeUndefined()
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('"heightMode" has no effect on a wiggle track'),
+    )
+    warn.mockRestore()
   })
 })
 

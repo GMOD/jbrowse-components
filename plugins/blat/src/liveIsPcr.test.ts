@@ -101,12 +101,18 @@ const describeProduct = (f: SimpleFeatureSerialized) =>
 // the product spanning the window the primers came from, named so a run that
 // amplifies something unexpected says what it got instead of failing on [0]
 function productAtLocus(products: SimpleFeatureSerialized[]) {
-  // eslint-disable-next-line no-console
-  console.log(products.map(describeProduct).join('\n'))
   const found = products.find(
     f => f.refName === CHROM && f.start === START && f.end === END,
   )
-  expect(found).toBeDefined()
+  if (!found) {
+    // what it amplified instead, so the failure says something; a passing run
+    // stays quiet
+    throw new Error(
+      `no product at ${CHROM}:${START}-${END}, got:\n${products
+        .map(describeProduct)
+        .join('\n')}`,
+    )
+  }
   return found!
 }
 

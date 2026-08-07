@@ -299,6 +299,7 @@ describe('installComparativeFetchAutorun', () => {
 // Retry a button that does nothing, and why the counter is read unconditionally
 // rather than inside any display's `prepare`.
 test('reload() refires the fetch with no input change', async () => {
+  const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
   let attempt = 0
   const { display, prepared } = setup({
     run: () => {
@@ -317,6 +318,7 @@ test('reload() refires the fetch with no input change', async () => {
 
   expect(prepared).toHaveLength(2)
   expect(display.error).toBeUndefined()
+  spy.mockRestore()
 })
 
 test('reload() refires even while the gate is closed, so the wake chain holds', async () => {

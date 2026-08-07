@@ -23,6 +23,7 @@ function pluginPair() {
 }
 
 test('installs a plugin once, whichever copy arrives first', () => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
   const { installed, bundled, downloaded } = pluginPair()
   const pluginManager = new PluginManager([bundled])
   pluginManager.addPlugin(downloaded)
@@ -35,6 +36,10 @@ test('installs a plugin once, whichever copy arrives first', () => {
     pluginManager.plugins.filter(p => p.name === 'DuplicatePlugin'),
   ).toEqual([bundled])
   expect(pluginManager.getPlugin('DuplicatePlugin')).toBe(bundled)
+  expect(warn).toHaveBeenCalledWith(
+    expect.stringContaining('already installed'),
+  )
+  warn.mockRestore()
 })
 
 test('a skipped duplicate is not reported as an installed runtime plugin', () => {

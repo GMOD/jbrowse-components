@@ -194,10 +194,14 @@ test('destroy stops the read-backs', () => {
   })
   controller.destroy()
 
+  // touching the controller after destroy reads a dead node, and MST warns to
+  // the console on its way to throwing — the throw is what's under test here
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
   const after = locations.length
   expect(() => {
     controller.addView({ type: 'CircularView' })
   }).toThrow()
+  warn.mockRestore()
   expect(locations).toHaveLength(after)
 })
 

@@ -11,6 +11,10 @@ import type { DotplotViewModel } from '../../model.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
+afterEach(() => {
+  jest.restoreAllMocks()
+})
+
 const assembly = (name: string) => ({
   name,
   sequence: {
@@ -75,6 +79,15 @@ function setup({
     // the observable change. The conf is hydrated from config, so it is a real
     // configuration model rather than a plain snapshot.
     loadConnection: () => {
+      // the connection connect()s on attach and rejects without an assembly
+      // name; the tracks it carries are handed over below, so keep that one
+      // error quiet while letting every other console.error through
+      const realError = console.error
+      jest.spyOn(console, 'error').mockImplementation((...args) => {
+        if (!`${args[0]}`.includes('JBrowse 1 connection')) {
+          realError(...args)
+        }
+      })
       act(() => {
         const conn = session.makeConnection(session.connections[0]!)
         conn.addTrackConfs(connectionTracks ?? [])
