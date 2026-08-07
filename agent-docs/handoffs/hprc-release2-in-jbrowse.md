@@ -156,9 +156,28 @@ genuinely differentiating rather than catching up.
 
 **464 rows in `LinearMafDisplay`.** The C4 figure needed `heightMode: 'grow'`,
 `rowHeight: 2` and a 920 px viewport to fit the cohort, and `fetchSizeLimit`
-raised because the byte gate was correctly measuring a large read. What the
-summary tier does past a few hundred kb is unexamined, and that is where a
-whole-chromosome view of this track lives or dies.
+raised because the byte gate was correctly measuring a large read.
+
+**The summary-tier half of that is answered, and the answer was that there was
+no tier.** `BgzipMafAdapter` and `BgzipTaffyAdapter` had no `summaryAdapter`
+slot, deliberately, because a `.tai` bounds a read to the span on screen. It
+does — and a read costs span × depth, so the index bounds one factor and nothing
+bounds the other. Both take the slot now (`3e25ca40ce`). The measurements are in
+[reference/MAF_LARGE_BLOCKS.md](../reference/MAF_LARGE_BLOCKS.md) §"A `.tai` is
+not a tier" and should not be re-derived: ~19 compressed bytes/bp for the v2.1
+MAF and ~2.1 for the v2.0 TAF, flat from 100 kb up, so whole chr6 is 3.19 GB and
+354 MB. The same 200 kb of chr6 is 4.35 MB as alignment and **3.5 kB as
+summary**, all 464 haplotypes present, `src` joining to the display's rows with
+no mapping.
+
+**What is left is producing the file, and it is blocked on a publish.**
+`maf2bed --summary` is committed in `~/src/maf2bed` and not pushed; the released
+v0.5.1 has no such flag and silently ignores it. Once it is published, a
+whole-genome HPRC summary is one streaming pass (the 5.96 GB TAF through `taffy
+view`, not the 53 GB MAF) and lands at roughly 75 MB bgzipped — at which point
+the tutorial's track gets a zoom-out tier and `fetchSizeLimit` stops being what
+holds the figure together. Hosting it is an S3 write to the jbrowse.org bucket,
+so it wants asking first.
 
 **A contribution to `pangenome/jbrowse-visualization`.** Their guide stops at
 one MAF view via `wgatools` + `mafchunk` + `maf2bed` + a plugin-store install;
