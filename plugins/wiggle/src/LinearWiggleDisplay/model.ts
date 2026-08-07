@@ -15,6 +15,7 @@ import {
   fetchAllRegions,
 } from '@jbrowse/plugin-linear-genome-view'
 import {
+  axisPlotBox,
   computeYTicks,
   makeCrossHatchItem,
   makeShowSubMenu,
@@ -32,11 +33,7 @@ import {
   makeResolutionSubMenu,
   makeWiggleScoreSubMenu,
 } from '../shared/wiggleMenuItems.tsx'
-import {
-  SINGLE_WIGGLE_SOURCE_NAME,
-  WIGGLE_RENDERINGS,
-  YSCALEBAR_LABEL_OFFSET,
-} from '../util.ts'
+import { SINGLE_WIGGLE_SOURCE_NAME, WIGGLE_RENDERINGS } from '../util.ts'
 
 import type { SatisfiesComponentContract } from '../shared/componentContract.ts'
 import type { WiggleDataResult } from '../util.ts'
@@ -178,8 +175,9 @@ export default function stateModelFactory(
         return makeWiggleRenderState(self, {
           width: self.canvasWidthPx,
           // inset by the scalebar label gutter at top and bottom so the plot
-          // never overlaps the axis labels drawn in those bands
-          height: self.height - 2 * YSCALEBAR_LABEL_OFFSET,
+          // never overlaps the axis labels drawn in those bands — the same box
+          // `ticks` places itself in, which is why both read it from one helper
+          height: axisPlotBox(self.height).plotHeight,
           numRows: 1,
         })
       },

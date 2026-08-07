@@ -1,4 +1,6 @@
-import type { YScaleTicks } from './index.ts'
+import { clampStrokeInsideAxis } from './yScaleTicks.ts'
+
+import type { YScaleTicks } from './yScaleTicks.ts'
 
 // Bare <line> set for the Y-scale tick guide lines, no wrapping <svg>. Shared by
 // the absolutely-positioned on-screen CrossHatches overlay and the flat SVG
@@ -15,21 +17,28 @@ export function CrossHatchLines({
 }) {
   return (
     <>
-      {ticks.items.map(({ value, y }) => (
-        <line
-          key={`${value}-${y}`}
-          x1={0}
-          x2={width}
-          y1={offsetY + y}
-          y2={offsetY + y}
-          stroke="rgb(200,200,200)"
-          // a separate stroke-opacity attribute (not baked into an rgba()
-          // string) survives the SVG export, whose renderToStaticMarkup strips
-          // rgba() alpha
-          strokeOpacity={0.8}
-          strokeWidth={1}
-        />
-      ))}
+      {ticks.items.map(({ value, y }) => {
+        // Same clamp the axis ticks take, so a guide line and the tick it
+        // belongs to can't disagree at the bottom edge — where, in multi-wiggle,
+        // "one pixel lower" is the next sample's row. Only that edge moves; the
+        // guide lines don't crispen to a half pixel the way the axis does.
+        const lineY = offsetY + clampStrokeInsideAxis(y, ticks.yBottom)
+        return (
+          <line
+            key={`${value}-${y}`}
+            x1={0}
+            x2={width}
+            y1={lineY}
+            y2={lineY}
+            stroke="rgb(200,200,200)"
+            // a separate stroke-opacity attribute (not baked into an rgba()
+            // string) survives the SVG export, whose renderToStaticMarkup strips
+            // rgba() alpha
+            strokeOpacity={0.8}
+            strokeWidth={1}
+          />
+        )
+      })}
     </>
   )
 }

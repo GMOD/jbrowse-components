@@ -100,9 +100,15 @@ float normalizeScore(float score, float domainMin, float domainMax, int scaleTyp
   // zero — the JS makeScoreNormalizer returns 0 in that case; here we just
   // avoid NaN propagating into the vertex position.
   if (scaleType == SCALE_TYPE_LOG) {
-    float logMin = log2(max(domainMin, 1.0));
-    float logMax = log2(max(domainMax, 1.0));
-    float logScore = log2(max(score, 1.0));
+    // Floor at the domain's own min, not at 1, so a domain sitting entirely
+    // below 1 (mappability, a methylation fraction, any normalized ratio) still
+    // has a range to spread over instead of collapsing to a flat baseline. Same
+    // rule and same reasoning as JS `makeScoreNormalizer`; the two are hand-kept
+    // in lockstep because this function is not `//! js-export`ed.
+    float lo = domainMin > 0.0 ? domainMin : 1.0;
+    float logMin = log2(lo);
+    float logMax = log2(max(domainMax, lo));
+    float logScore = log2(max(score, lo));
     return clamp((logScore - logMin) / max(logMax - logMin, 1e-6), 0.0, 1.0);
   }
   return clamp((score - domainMin) / max(domainMax - domainMin, 1e-6), 0.0, 1.0);

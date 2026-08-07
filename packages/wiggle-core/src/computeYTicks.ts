@@ -1,7 +1,8 @@
 import { YSCALEBAR_LABEL_OFFSET } from './constants.ts'
 import { getScale } from './scale.ts'
+import { axisPlotBox } from './yScaleTicks.ts'
 
-import type { YScaleTicks } from './index.ts'
+import type { YScaleTicks } from './yScaleTicks.ts'
 
 // Builds Y-axis tick positions for a wiggle-family display: tick values come
 // from d3's scale.ticks(4) at normal heights, or fall back to the domain
@@ -25,8 +26,11 @@ export function computeYTicks(opts: {
   if (domainMin === undefined || domainMax === undefined) {
     return undefined
   }
-  const yTop = offset
-  const yBottom = height - offset - 1
+  // The same box the renderer paints into, so a tick lands on its own data. It
+  // used to end a pixel short of it, to keep the spine's 1px stroke inside
+  // multi-wiggle's row — that belongs in the drawing, and is now
+  // `clampStrokeInsideAxis`.
+  const { yTop, yBottom } = axisPlotBox(height, offset)
   const scale = getScale({
     scaleType,
     domain: [domainMin, domainMax],

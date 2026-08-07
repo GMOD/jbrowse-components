@@ -5,8 +5,8 @@ import { getContainingView } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import {
   CrossHatches,
-  YSCALEBAR_LABEL_OFFSET,
   YScaleBarOverlay,
+  axisPlotBox,
 } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
@@ -103,16 +103,18 @@ const WiggleBody = observer(function WiggleBody({
   // read here rather than beside the handlers, so a mousemove re-renders this
   // body instead of the whole DisplayChrome above it
   const mouseState = useMouseState(mouseTracker)
+  const plotBox = axisPlotBox(height)
   return (
     <>
       <canvas
         ref={canvasRef}
         style={{
           width,
-          height: height - 2 * YSCALEBAR_LABEL_OFFSET,
+          // the box `model.ticks` places itself in, so a tick lands on its data
+          height: plotBox.plotHeight,
           position: 'absolute',
           left: 0,
-          top: YSCALEBAR_LABEL_OFFSET,
+          top: plotBox.yTop,
         }}
       />
       {model.isDensityMode && model.domain ? (
@@ -136,7 +138,7 @@ const WiggleBody = observer(function WiggleBody({
           />
         </svg>
       ) : model.ticks ? (
-        <YScaleBarOverlay ticks={model.ticks} height={height} />
+        <YScaleBarOverlay ticks={model.ticks} height={height} width={width} />
       ) : null}
       {model.showCrossHatches && model.ticks ? (
         <CrossHatches ticks={model.ticks} width={width} height={height} />

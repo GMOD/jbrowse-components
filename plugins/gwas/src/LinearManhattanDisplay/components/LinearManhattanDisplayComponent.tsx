@@ -7,6 +7,7 @@ import {
   CrossHatches,
   YSCALEBAR_LABEL_OFFSET,
   YScaleBarOverlay,
+  axisPlotBox,
 } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
@@ -138,13 +139,16 @@ const ManhattanBody = observer(function ManhattanBody({
         ref={canvasRef}
         style={{
           width,
-          height: height - 2 * YSCALEBAR_LABEL_OFFSET,
+          // the box `ticks` places itself in, so a tick lands on its data
+          height: axisPlotBox(height).plotHeight,
           position: 'absolute',
           left: 0,
           top: YSCALEBAR_LABEL_OFFSET,
         }}
       />
-      {ticks ? <YScaleBarOverlay ticks={ticks} height={height} /> : null}
+      {ticks ? (
+        <YScaleBarOverlay ticks={ticks} height={height} width={width} />
+      ) : null}
       {showCrossHatches && ticks ? (
         <CrossHatches ticks={ticks} width={width} height={height} />
       ) : null}

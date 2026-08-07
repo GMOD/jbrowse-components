@@ -1,7 +1,7 @@
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
-import { CrossHatchLines, YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'
+import { CrossHatchLines, axisPlotBox } from '@jbrowse/wiggle-core'
 
 import { legendRightEdgePx } from './wiggleComponentUtils.ts'
 
@@ -80,8 +80,10 @@ export function WiggleFamilySvgFrame({
 }) {
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
   // the plot itself is inset by the scalebar label gutter at top and bottom, so
-  // it never overlaps the axis labels drawn in those bands
-  const drawHeight = height - 2 * YSCALEBAR_LABEL_OFFSET
+  // it never overlaps the axis labels drawn in those bands — the same box
+  // `ticks` places itself in, which is why both read it from one helper
+  const plotBox = axisPlotBox(height)
+  const drawHeight = plotBox.plotHeight
   const { ticks, showCrossHatches } = model
   return (
     <>
@@ -90,7 +92,7 @@ export function WiggleFamilySvgFrame({
         width={canvasWidth}
         height={height}
       >
-        <g transform={`translate(0,${YSCALEBAR_LABEL_OFFSET})`}>
+        <g transform={`translate(0,${plotBox.yTop})`}>
           <PaintLayer
             width={canvasWidth}
             height={drawHeight}

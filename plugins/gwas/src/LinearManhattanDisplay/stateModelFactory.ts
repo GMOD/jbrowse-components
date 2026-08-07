@@ -18,7 +18,7 @@ import {
 import { WiggleScoreConfigMixin } from '@jbrowse/plugin-wiggle'
 import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
 import {
-  YSCALEBAR_LABEL_OFFSET,
+  axisPlotBox,
   computeYTicks,
   getNiceDomain,
   makeCrossHatchItem,
@@ -221,7 +221,7 @@ export function stateModelFactory(
          */
         get renderState(): ManhattanRenderState {
           const canvasWidth = self.canvasWidthPx
-          const canvasHeight = self.height - 2 * YSCALEBAR_LABEL_OFFSET
+          const canvasHeight = axisPlotBox(self.height).plotHeight
           return resolveRenderState(self.domain, domainY => ({
             domainY,
             canvasWidth,

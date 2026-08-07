@@ -109,9 +109,14 @@ describe('cross hatches', () => {
   // One set per row, each offset to its row's top — the same numRows the
   // separators count boundaries from, so the two can't disagree about where a
   // row starts.
+  //
+  // The bottom line of each row draws at 29.5, not at its tick's y of 30:
+  // `clampStrokeInsideAxis` puts the 1px stroke marking a row's bottom edge on
+  // the last pixel inside that row. Centered on 30 it straddled 29 and 30, and
+  // rows stack edge to edge, so half of it landed in the next sample.
   it('repeats the tick levels once per row', () => {
     const svg = render(makeModel({ showCrossHatches: true, numRows: 2, ticks }))
-    expect(hatchYs(svg)).toEqual([30, 0, 60, 30])
+    expect(hatchYs(svg)).toEqual([29.5, 0, 59.5, 30])
   })
 
   // Overlay is one row over the full height, so its hatches draw once.
@@ -124,7 +129,7 @@ describe('cross hatches', () => {
         ticks,
       }),
     )
-    expect(hatchYs(svg)).toEqual([30, 0])
+    expect(hatchYs(svg)).toEqual([29.5, 0])
   })
 
   it('draws none without ticks or with the setting off', () => {

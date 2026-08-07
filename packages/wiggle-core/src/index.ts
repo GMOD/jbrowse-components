@@ -26,11 +26,12 @@ export { computeYTicks } from './computeYTicks.ts'
 
 export { resolveRenderState } from './resolveRenderState.ts'
 
-export interface YScaleTicks {
-  items: { value: number; y: number; label?: string }[]
-  yTop: number
-  yBottom: number
-}
+export {
+  axisPlotBox,
+  clampStrokeInsideAxis,
+  scoreToAxisY,
+} from './yScaleTicks.ts'
+export type { YScaleTicks } from './yScaleTicks.ts'
 
 export { CrossHatchLines, default as CrossHatches } from './CrossHatches.tsx'
 export { makeRadioSubMenu } from './radioSubMenu.ts'
