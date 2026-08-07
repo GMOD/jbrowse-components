@@ -60,7 +60,7 @@ def opener(path):
     return gzip.open(path, "rt") if path.endswith(".gz") else open(path)
 
 
-def read_cds(path, key="gene"):
+def read_cds(path, key="gene", strip_version=False):
     """The CDS each id in the pair table names.
 
     `gene` keys on the Ensembl `gene:` tag and keeps the longest record per
@@ -71,6 +71,11 @@ def read_cds(path, key="gene"):
     naming TRANSCRIPTS wants - jcvi's anchors do, and there the two sequences
     are the exact pair the synteny was called on rather than the longest
     isoform of each gene, which need not be the corresponding one.
+
+    `strip_version` drops a trailing `.N`. Ensembl VERSIONS its transcript ids
+    in the FASTA (`ENST00000641515.7`) and not in the GFF3 the BED and the
+    anchors come from, so without this every human pair resolves to no CDS and
+    the run reports the whole table as unmeasurable.
     """
     best = {}
     name = None
@@ -89,6 +94,8 @@ def read_cds(path, key="gene"):
                 tag = [f for f in line.split() if f.startswith("gene:")]
                 name = (tag[0][5:] if tag and key == "gene"
                         else line[1:].split()[0])
+                if strip_version:
+                    name = name.rsplit(".", 1)[0]
                 seq = []
             else:
                 seq.append(line.strip())
@@ -209,13 +216,18 @@ def main():
                    help="what the pair table's ids are: `gene` reads Ensembl's "
                         "`gene:` tag and takes the longest transcript, `record` "
                         "takes the FASTA id as it stands (default gene)")
+    p.add_argument("--strip-version", action="store_true",
+                   help="drop a trailing `.N` from the FASTA id. Ensembl "
+                        "versions transcript ids in its FASTA and not in its "
+                        "GFF3, so a pair table built from the GFF3 needs this "
+                        "or nothing resolves")
     p.add_argument("-j", "--jobs", type=int, default=os.cpu_count() or 1,
                    metavar="N", help="alignments to run at once (default: one "
                                      "per core). Output order does not depend "
                                      "on it")
     args = p.parse_args()
 
-    cds = read_cds(args.cds, args.key)
+    cds = read_cds(args.cds, args.key, args.strip_version)
     worker_init(cds, args.min_codons, args.max_ds)
     total = 0
     counts = {"written": 0, "no_cds": 0, "unusable": 0, "too_short": 0,
