@@ -16,6 +16,19 @@ what keeps the alignment in frame - a nucleotide aligner is free to open a
 one-base gap and shift every codon after it. A pair whose CDS is not a clean
 multiple of three, or holds an internal stop, is skipped rather than guessed at.
 
+**Both ends of the dS range destroy the ratio, for opposite reasons, and a high
+dN/dS on its own does not say which end you are looking at.** Sorting a
+whole-genome table by the ratio and reading off the top returns the pairs with
+almost no dS, not the pairs under selection: on a human/rhesus run the leaders
+included HBA1, which is under about as strong purifying selection as a gene
+gets, on a dS of 0.012 against a median of 0.105. `--min-ds` is the guard, and
+the report prints the dS quartiles of what it wrote so a run tells you where to
+set it. `--max-ds` is the same line at the other end.
+
+For two species that diverged once, `--max-ds` doubles as an orthology check:
+true orthologs share a divergence time, so a pair whose dS lands well above the
+cluster is a paralog the aligner preferred.
+
 NG86 saturates at both ends, and neither end is written:
 
 - Past roughly dS = 2 the correction has taken more than it can support and the
@@ -139,6 +152,7 @@ def codon_align(cds_a, cds_b, aligner):
 _CDS = {}
 _ALIGNER = None
 _MIN_CODONS = 0
+_MIN_DS = 0.0
 _MAX_DS = 2.0
 
 
@@ -164,15 +178,18 @@ def measure(pair):
         return pair, "unusable"
     if ds == 0:
         return pair, "identical" if dn == 0 else "no_synonymous"
+    if ds < _MIN_DS:
+        return pair, "too_few_synonymous"
     if ds > _MAX_DS:
         return pair, "saturated"
     return pair, (dn, ds)
 
 
-def worker_init(cds, min_codons, max_ds):
-    global _CDS, _ALIGNER, _MIN_CODONS, _MAX_DS
+def worker_init(cds, min_codons, min_ds, max_ds):
+    global _CDS, _ALIGNER, _MIN_CODONS, _MIN_DS, _MAX_DS
     _CDS = cds
     _MIN_CODONS = min_codons
+    _MIN_DS = min_ds
     _MAX_DS = max_ds
     _ALIGNER = PairwiseAligner(scoring="blastp")
     _ALIGNER.mode = "global"
@@ -205,9 +222,21 @@ def main():
     p.add_argument("pairs", help="TSV of gene pairs, two columns")
     p.add_argument("cds", help="CDS FASTA (plain or .gz)")
     p.add_argument("-o", "--out", required=True, help="output TSV: pair + dn + ds")
+    p.add_argument("--min-ds", type=float, default=0.0, metavar="X",
+                   help="drop a pair whose dS is below this, where the ratio "
+                        "rests on too few synonymous changes to mean anything. "
+                        "The guard is really on the UPPER tail: a small "
+                        "denominator inflates a high ratio and cannot inflate "
+                        "a low one, so this also drops well-measured pairs near "
+                        "0, which is the cost of keeping it one number. Around "
+                        "0.02-0.03 is where a gene of a few hundred codons "
+                        "stops expecting a handful of synonymous changes "
+                        "(default 0, no floor)")
     p.add_argument("--max-ds", type=float, default=2.0, metavar="X",
                    help="drop a pair whose dS is above this, where NG86 has "
-                        "saturated and the ratio is noise (default 2)")
+                        "saturated and the ratio is noise. Between two species "
+                        "that diverged once it also drops the paralogs, whose "
+                        "dS sits well above the ortholog cluster (default 2)")
     p.add_argument("--min-codons", type=int, default=0, metavar="N",
                    help="drop a pair whose ungapped codon alignment is shorter "
                         "than this, where a handful of sites can put the ratio "
@@ -228,10 +257,14 @@ def main():
     args = p.parse_args()
 
     cds = read_cds(args.cds, args.key, args.strip_version)
-    worker_init(cds, args.min_codons, args.max_ds)
+    worker_init(cds, args.min_codons, args.min_ds, args.max_ds)
     total = 0
     counts = {"written": 0, "no_cds": 0, "unusable": 0, "too_short": 0,
-              "identical": 0, "no_synonymous": 0, "saturated": 0}
+              "identical": 0, "no_synonymous": 0, "too_few_synonymous": 0,
+              "saturated": 0}
+    # every written dS, for the quartiles the report ends on: the domain
+    # `--min-ds` is set against, and it is only knowable after a run
+    written_ds = []
     with open(args.out, "w") as out:
         for (a, b), result in measured(read_pairs(args.pairs), args.jobs):
             total += 1
@@ -240,6 +273,7 @@ def main():
             else:
                 out.write(f"{a}\t{b}\t{result[0]:.5f}\t{result[1]:.5f}\n")
                 counts["written"] += 1
+                written_ds.append(result[1])
 
     print(f"{counts['written']} of {total} pairs measured\n"
           f"  {counts['no_cds']} had no CDS, {counts['unusable']} could not "
@@ -248,8 +282,17 @@ def main():
           f"  {counts['identical']} had no coding difference and "
           f"{counts['no_synonymous']} had no synonymous one, so dS is 0 and the "
           f"ratio has no denominator\n"
-          f"  {counts['saturated']} were past dS {args.max_ds}",
+          f"  {counts['too_few_synonymous']} were under dS {args.min_ds} and "
+          f"{counts['saturated']} were past dS {args.max_ds}",
           file=sys.stderr)
+    if written_ds:
+        written_ds.sort()
+        n = len(written_ds)
+        print(f"  dS of what was written: 5th pct {written_ds[n // 20]:.4f}, "
+              f"quartiles {written_ds[n // 4]:.4f} and "
+              f"{written_ds[3 * n // 4]:.4f}, median {written_ds[n // 2]:.4f}"
+              f"\n  a --min-ds under the 5th percentile drops the ratios that "
+              f"have no denominator worth dividing by", file=sys.stderr)
 
 
 if __name__ == "__main__":

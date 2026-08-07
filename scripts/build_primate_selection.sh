@@ -191,18 +191,25 @@ fi
 # One CDS file for both species: the pairs cross them, and the id namespaces
 # (ENST..., ENSMMUT...) do not collide.
 [ -f both.cds.fa.gz ] || cat human.cds.fa.gz rhesus.cds.fa.gz > both.cds.fa.gz
-if [ ! -f kaks.tsv ]; then
-  python3 "$SCRIPT_DIR/kaks_from_pairs.py" pairs.tsv both.cds.fa.gz \
-    --key record --strip-version -o kaks.tsv.part
-  mv kaks.tsv.part kaks.tsv
-fi
-
-# Two species diverged once, so their orthologs share a divergence time and
-# their dS values cluster. A pair whose dS lands well above that cluster is a
-# paralog the aligner preferred rather than an ortholog, and dropping it is the
-# same line `--max-ds` draws for saturation.
+#
+# Both ends of the dS range are cut, and a run prints the quartiles these were
+# picked from.
+#
+# `--max-ds 0.3` is an orthology check here rather than a saturation one. Two
+# species diverged once, so their orthologs share a divergence time and their dS
+# clusters; a pair well above that cluster is a paralog the aligner preferred.
+#
+# `--min-ds 0.025` is the guard that matters for a figure. Below it the ratio
+# rests on almost no synonymous change, and sorting an unfiltered table by dN/dS
+# returns those pairs rather than the selected ones: HBA1, about as strongly
+# conserved as a gene gets, came out at 2.29 on a dS of 0.012. The floor is set
+# just under where a gene of a few hundred codons stops expecting a handful of
+# synonymous changes, which keeps YEATS4 (dS 0.029, dN/dS 0) - the control the
+# session's locus is read against.
 if [ ! -f primate.blocks ]; then
-  awk -F'\t' '$4 <= 0.3' kaks.tsv > primate.blocks.part
+  python3 "$SCRIPT_DIR/kaks_from_pairs.py" pairs.tsv both.cds.fa.gz \
+    --key record --strip-version --min-ds 0.025 --max-ds 0.3 \
+    -o primate.blocks.part
   mv primate.blocks.part primate.blocks
 fi
 

@@ -247,9 +247,16 @@ PY
 fi
 
 # ── dN and dS per pair ───────────────────────────────────────────────────────
+#
+# `--min-ds 0.02` is the guard the ratio needs. Below it a pair has almost no
+# synonymous change to divide by, and a high ratio there is arithmetic rather
+# than selection: unfiltered, 703 of the 1458 pairs over dN/dS 1 sat under that
+# floor, and the highest ratios in the table came off dS values near 0.002. The
+# floor costs some genuine A-D pairs too, since that subgenome pair is the
+# shallowest and sits lowest, which is the price of one number rather than two.
 if [ ! -f oat.kaks.tsv ]; then
   python3 "$SCRIPT_DIR/kaks_from_pairs.py" oat.pairs.tsv oat.cds.fa.gz \
-    --key record -o oat.kaks.tsv.part
+    --key record --min-ds 0.02 -o oat.kaks.tsv.part
   mv oat.kaks.tsv.part oat.kaks.tsv
 fi
 
