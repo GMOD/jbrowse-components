@@ -58,7 +58,8 @@
               "assembly": "tauschii"
             },
             {
-              "assembly": "sorghum"
+              "assembly": "sorghum",
+              "loc": "1"
             },
             {
               "assembly": "wheat"
@@ -73,7 +74,7 @@
             ]
           ],
           "colorBy": "attribute:copies",
-          "autoDiagonalize": true
+          "autoDiagonalize": false
         }
       }
     ]
