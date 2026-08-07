@@ -31,7 +31,7 @@ action needed under current workloads), **Proposed** (not yet decided).
 | [019](adr-019-synteny-cpu-picking.md) | Accepted | Synteny picking moves from GPU framebuffer readback to CPU (supersedes ADR-012 picking) |
 | [020](adr-020-wiggle-line-plot-encoding.md) | Accepted | Wiggle line-plot single-polyline encoding |
 | [021](adr-021-getfeaturearrays-stays-duck-typed.md) | Accepted | Wiggle adapter fast path stays duck-typed; bicolor split lives at the executor |
-| [022](adr-022-no-batched-wiggle-rpc.md) | Accepted | No batched wiggle RPC; per-region parallel dispatch is the right shape |
+| [022](adr-022-no-batched-wiggle-rpc.md) | Superseded | Reversed — wiggle now batches every visible region into one RPC, because the adapter can coalesce adjacent on-disk blocks across region boundaries, which this ADR priced at zero. The dispatch-overhead reasoning below was right and was never the deciding term |
 | [023](adr-023-synteny-per-instance-pad-memory.md) | Closed | Per-instance pad memory — no action |
 | [024](adr-024-per-backend-snapshots-real-gpu.md) | Accepted | Browser-test snapshots are per-backend, rendered on a real GPU, run locally |
 | [025](adr-025-gpu-canvas-stays-mounted-not-xor-error.md) | Superseded | GPU canvas stays mounted across error/retry — superseded by the DisplayChrome unification |

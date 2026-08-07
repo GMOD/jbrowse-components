@@ -1,13 +1,48 @@
 ---
-status: Accepted
-summary: "No batched wiggle RPC; per-region parallel dispatch is the right shape"
+status: Superseded
+summary: "Reversed — wiggle now batches every visible region into one RPC, because the adapter can coalesce adjacent on-disk blocks across region boundaries, which this ADR priced at zero. The dispatch-overhead reasoning below was right and was never the deciding term"
 ---
 
 # ADR-022: No batched wiggle RPC; per-region parallel dispatch is the right shape
 
 ## Status
 
-Accepted
+**Superseded.** Both wiggle displays now batch: `fetchNeeded` calls
+`fetchAllRegions`, and `RenderWiggleData` / `RenderMultiWiggleData` take
+`regions: Region[]` and return one `WiggleDataResult` per region. The API this
+ADR declined to add exists (`2e232b3793`), and the coarser cancellation unit it
+warned about is real — one stop token per batch.
+
+**What changed is not on this ADR's "When this would change" list**, and that is
+the useful part. That list is about *dispatch*: fetches ceasing to overlap,
+per-call setup growing, RPC dispatch dominating a profile. None of them
+happened. The deciding term was a fourth thing, priced at zero throughout the
+reasoning below: **what the adapter can do once it can see every region at
+once.** `BigWigAdapter.getFeatureArraysMulti` routes to bbi's
+`getFeaturesAsArraysMulti`, which merges adjacent on-disk blocks *across region
+boundaries* — so a collapsed-intron or whole-genome view issues far fewer range
+requests, not merely the same requests with fewer `postMessage`s. A per-region
+fan-out cannot express that at all: each call sees one region and has nothing to
+coalesce against.
+
+So the arithmetic below — batch saving is microseconds, cost is serialized fetch
+latency — was answering the wrong question, not answering it wrongly. It
+compared a *naive* batch (sequential loop) and a *smart* batch (parallel inside
+one call) and found the second merely converged on the fan-out. The shipped
+shape is a third one the taxonomy has no room for: one adapter pass over the
+union of the regions, where the regions inform each other.
+
+The live rule now lives at the definition site rather than here — see
+`fetchAllRegions`'s JSDoc in `MultiRegionDisplayMixin.ts`: batch when the
+adapter serves all regions in one pass more cheaply than N independent calls,
+fan out when it cannot. `fetchEachRegion` remains correct and remains the
+default; GWAS, the reference sequence display and canvas's multi-row display all
+still use it, because their adapters gain nothing from adjacency.
+
+The original reasoning is retained below because its *mechanism* section is
+still true and still non-obvious — in particular that a track's per-region calls
+all land on one sticky worker, so batching never bought worker parallelism and
+still doesn't.
 
 ## Context
 
@@ -27,6 +62,8 @@ fan-out is "wasteful" because chromosome navigation can invalidate many regions
 simultaneously, producing N parallel RPC dispatches.
 
 ## Decision
+
+*(Reversed — see Status.)*
 
 **Do not add a batched RPC.** Keep per-region parallel dispatch. The TODO entry
 was removed.
@@ -92,6 +129,9 @@ Only revisit if **all** of these become true simultaneously:
   during chromosome navigation.
 
 None of these apply. Don't pre-emptively add the API.
+
+*(None of them ever did apply. The API was added anyway, for the adapter-side
+reason this list does not contain — see Status.)*
 
 ## Related
 
