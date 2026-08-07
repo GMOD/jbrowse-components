@@ -83,10 +83,13 @@ interface HicParser {
     ref2: Ref,
     units: string,
     binsize: number,
-  ) => Promise<{ records: ContactRecords; appliedNormalization: string }>
+  ) => Promise<{
+    records: ContactRecords
+    appliedNormalization: string
+    transposed: boolean
+  }>
   getMetaData: () => Promise<HicMetadata>
   getNormalizationOptions: () => Promise<string[]>
-  getChromosomeIndex: (chrAlias: string) => Promise<number | undefined>
 }
 
 export default class HicAdapter extends BaseFeatureDataAdapter {
@@ -170,13 +173,6 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     // a real state, not a theoretical one.
     let appliedNormalization = normalization
 
-    // Resolve each region's file chromosome index once (O(n)) rather than
-    // re-deriving it inside every region pair (O(n²)) — it's fixed per region
-    // and drives the transpose un-swap in fetchRegionPairRecords.
-    const regionChrIdxs = await Promise.all(
-      regions.map(r => this.hic.getChromosomeIndex(r.refName)),
-    )
-
     // One entry per non-empty pair, holding that pair's own decode buffers. The
     // pair count is O(regions²) — tiny — so this is a handful of objects, not
     // per-contact overhead, and it buys the exact total needed to size the
@@ -200,21 +196,23 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
             const pair = await this.fetchRegionPairRecords({
               region1: regions[i]!,
               region2: regions[j]!,
-              chr1Idx: regionChrIdxs[i],
-              chr2Idx: regionChrIdxs[j],
               normalization,
               resolution: res,
             })
-            if (pair === undefined) {
+            if (pair === undefined || pair.recs.bin1.length === 0) {
               continue
             }
+            // Only a pair that contributed contacts gets to downgrade this. An
+            // empty pair reports NONE whenever the file has no vector for one of
+            // its chromosomes at this binsize — routine for the small scaffolds
+            // and inter-chromosomal pairs a multi-region view sweeps up — and
+            // letting it speak ticked NONE in the track menu while every contact
+            // on screen was in fact KR-normalized.
             if (pair.appliedNormalization !== normalization) {
               appliedNormalization = pair.appliedNormalization
             }
-            if (pair.recs.bin1.length > 0) {
-              perPair.push({ region1Idx: i, region2Idx: j, recs: pair.recs })
-              numContacts += pair.recs.bin1.length
-            }
+            perPair.push({ region1Idx: i, region2Idx: j, recs: pair.recs })
+            numContacts += pair.recs.bin1.length
           }
         }
       },
@@ -267,22 +265,25 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
   private async fetchRegionPairRecords({
     region1,
     region2,
-    chr1Idx,
-    chr2Idx,
     normalization,
     resolution,
   }: {
     region1: Region
     region2: Region
-    chr1Idx: number | undefined
-    chr2Idx: number | undefined
     normalization: string
     resolution: number
   }): Promise<
     { recs: ContactRecords; appliedNormalization: string } | undefined
   > {
     try {
-      const { records, appliedNormalization } =
+      // hic-straw transposes the query when idx1 > idx2 (or same chr, region1
+      // starts after region2), swapping bin1/bin2 relative to our (i, j) order —
+      // un-swap before storing. `transposed` comes back from the query that made
+      // the decision rather than being re-derived here off the region pair: the
+      // condition is over hic-straw's own alias table and chromosome indices, so
+      // a second derivation could disagree on a refName the file serves under a
+      // different name and un-swap the wrong axis.
+      const { records, appliedNormalization, transposed } =
         await this.hic.getContactRecords(
           normalization,
           { chr: region1.refName, start: region1.start, end: region1.end },
@@ -290,17 +291,6 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
           'BP',
           resolution,
         )
-      // hic-straw transposes the query when idx1 > idx2 (or same chr, region1
-      // starts after region2), swapping bin1/bin2 relative to our (i, j)
-      // order — un-swap before storing. The indices come from hic-straw's own
-      // alias table (resolved once per region by the caller) so this condition
-      // matches its transpose exactly (a divergent chr-name scheme could throw
-      // on a region it would have served).
-      const transposed =
-        chr1Idx !== undefined &&
-        chr2Idx !== undefined &&
-        (chr1Idx > chr2Idx ||
-          (chr1Idx === chr2Idx && region1.start >= region2.end))
       return {
         recs: transposed
           ? { bin1: records.bin2, bin2: records.bin1, counts: records.counts }

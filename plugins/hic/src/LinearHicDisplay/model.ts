@@ -258,11 +258,11 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * dragging taller than the natural triangle height stretches to fill
        * rather than leaving a blank band below.
        *
-       * WithoutBorders, because the base is the *content* the worker packed
-       * (`regionOffsets` lays contentBlocks out contiguously). `totalWidthPx`
-       * also counts the boundary padding blocks dynamicBlocks adds when
-       * scrolled left of genome start / past the end, which would overstate the
-       * base and leave fit-to-height short of the display.
+       * WithoutBorders, because the base is the axis the *content* occupies —
+       * the span the worker can put contacts on. `totalWidthPx` also counts the
+       * boundary padding blocks dynamicBlocks adds when scrolled left of genome
+       * start / past the end, which carry no data, so including them would
+       * overstate the base and leave fit-to-height short of the display.
        */
       get yScalar() {
         return computeTriangleYScalar({

@@ -36,8 +36,4 @@ export default class Straw {
   async getNormalizationOptions() {
     return this.hicFile.getNormalizationOptions()
   }
-
-  async getChromosomeIndex(chrAlias: string) {
-    return this.hicFile.getChromosomeIndex(chrAlias)
-  }
 }

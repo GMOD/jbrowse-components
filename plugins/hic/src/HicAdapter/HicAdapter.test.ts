@@ -15,32 +15,48 @@ const metadata = {
   resolutions: [100000],
 }
 
-// Mock parser whose inter-chromosomal query throws (mirrors hic-straw throwing
-// when a chr-pair matrix lacks the requested resolution), while intra-chrom
-// queries succeed.
-// Resolve a refName to the file chromosome index the way hic-straw does, so the
-// adapter's transpose detection matches its query transpose.
-function chrIndex(chr: string) {
-  return Promise.resolve(metadata.chromosomes.find(c => c.name === chr)?.index)
-}
-
-// hic-straw hands back struct-of-arrays; spell one contact out readably
-function oneContact(bin1: number, bin2: number, counts: number) {
+// hic-straw hands back struct-of-arrays plus the two things only it can answer:
+// which normalization it actually applied, and whether it transposed the query.
+// Spell one contact out readably.
+function oneContact(
+  bin1: number,
+  bin2: number,
+  counts: number,
+  {
+    appliedNormalization = 'NONE',
+    transposed = false,
+  }: { appliedNormalization?: string; transposed?: boolean } = {},
+) {
   return {
     records: {
       bin1: Int32Array.of(bin1),
       bin2: Int32Array.of(bin2),
       counts: Float32Array.of(counts),
     },
-    appliedNormalization: 'NONE',
+    appliedNormalization,
+    transposed,
   }
 }
 
+function noContacts({ appliedNormalization = 'NONE' } = {}) {
+  return {
+    records: {
+      bin1: new Int32Array(0),
+      bin2: new Int32Array(0),
+      counts: new Float32Array(0),
+    },
+    appliedNormalization,
+    transposed: false,
+  }
+}
+
+// Mock parser whose inter-chromosomal query throws (mirrors hic-straw throwing
+// when a chr-pair matrix lacks the requested resolution), while intra-chrom
+// queries succeed.
 function makeMockParser() {
   return {
     getMetaData: () => Promise.resolve(metadata),
     getNormalizationOptions: () => Promise.resolve(['NONE']),
-    getChromosomeIndex: chrIndex,
     getContactRecords: (
       _norm: string,
       ref: { chr: string },
@@ -54,18 +70,25 @@ function makeMockParser() {
   }
 }
 
-function makeAdapter(hic: {
+// The slice of hic-straw the adapter actually calls, spelled out so the stubs
+// below are checked against it rather than typed through `never[]`/`unknown`.
+interface MockParser {
   getMetaData: () => Promise<typeof metadata>
   getNormalizationOptions: () => Promise<string[]>
-  getChromosomeIndex: (chr: string) => Promise<number | undefined>
-  getContactRecords: (...args: never[]) => Promise<unknown>
-}) {
+  getContactRecords: (
+    norm: string,
+    ref: { chr: string },
+    ref2: { chr: string },
+  ) => Promise<ReturnType<typeof oneContact>>
+}
+
+function makeAdapter(hic: MockParser) {
   const adapter = new HicAdapter(
     configSchema.create({
       hicLocation: { uri: 'test.hic', locationType: 'UriLocation' },
     }),
   )
-  ;(adapter as unknown as { hic: typeof hic }).hic = hic
+  ;(adapter as unknown as { hic: MockParser }).hic = hic
   return adapter
 }
 
@@ -111,15 +134,15 @@ test('an already-stopped stopToken aborts the multi-region fetch', async () => {
   expect(isAbortException(err)).toBe(true)
 })
 
-test('un-swaps bin1/bin2 when hic-straw transposed the query (idx1 > idx2)', async () => {
+test('un-swaps bin1/bin2 when hic-straw transposed the query', async () => {
   // region1 is the higher-index chromosome, so hic-straw transposes and returns
-  // bins along the swapped axis; the adapter must un-swap using the index it
-  // resolves through getChromosomeIndex so bin1 maps back to region1.
+  // bins along the swapped axis, saying so in `transposed`; the adapter must
+  // un-swap so bin1 maps back to region1.
   const adapter = makeAdapter({
     getMetaData: () => Promise.resolve(metadata),
     getNormalizationOptions: () => Promise.resolve(['NONE']),
-    getChromosomeIndex: chrIndex,
-    getContactRecords: () => Promise.resolve(oneContact(7, 3, 9)),
+    getContactRecords: () =>
+      Promise.resolve(oneContact(7, 3, 9, { transposed: true })),
   })
   const regions: Region[] = [
     { assemblyName: 'test', refName: '2', start: 0, end: 1000000 },
@@ -138,4 +161,61 @@ test('un-swaps bin1/bin2 when hic-straw transposed the query (idx1 > idx2)', asy
   expect(interPair!.end - at).toBe(1)
   // bin1 maps back to region1 ('2', the higher-index chr) despite the transpose
   expect([bin1[at], bin2[at], counts[at]]).toEqual([3, 7, 9])
+})
+
+// Normalization vectors are stored per (type, chr, unit, binsize), so a pair
+// that carries no contacts at this binsize routinely also carries no vector and
+// reports NONE. It has no data on screen to describe, so it must not be what the
+// track menu ticks.
+test('an empty pair does not downgrade the reported normalization', async () => {
+  const adapter = makeAdapter({
+    getMetaData: () => Promise.resolve(metadata),
+    getNormalizationOptions: () => Promise.resolve(['NONE', 'KR']),
+    getContactRecords: (_norm, ref, ref2) =>
+      Promise.resolve(
+        ref.chr === ref2.chr
+          ? oneContact(0, 0, 5, { appliedNormalization: 'KR' })
+          : noContacts(),
+      ),
+  })
+  const regions: Region[] = [
+    { assemblyName: 'test', refName: '1', start: 0, end: 1000000 },
+    { assemblyName: 'test', refName: '2', start: 0, end: 1000000 },
+  ]
+
+  const { numContacts, appliedNormalization } =
+    await adapter.getMultiRegionContactRecords(regions, {
+      resolution: 100000,
+      normalization: 'KR',
+    })
+
+  expect(numContacts).toBe(2)
+  expect(appliedNormalization).toBe('KR')
+})
+
+// But a pair that did contribute contacts still speaks: partial coverage is a
+// real state, and the display must not claim a normalization only some of the
+// matrix received.
+test('a non-empty pair that fell back does downgrade the reported normalization', async () => {
+  const adapter = makeAdapter({
+    getMetaData: () => Promise.resolve(metadata),
+    getNormalizationOptions: () => Promise.resolve(['NONE', 'KR']),
+    getContactRecords: (_norm, ref, ref2) =>
+      Promise.resolve(
+        oneContact(0, 0, 5, {
+          appliedNormalization: ref.chr === ref2.chr ? 'KR' : 'NONE',
+        }),
+      ),
+  })
+  const regions: Region[] = [
+    { assemblyName: 'test', refName: '1', start: 0, end: 1000000 },
+    { assemblyName: 'test', refName: '2', start: 0, end: 1000000 },
+  ]
+
+  const { appliedNormalization } = await adapter.getMultiRegionContactRecords(
+    regions,
+    { resolution: 100000, normalization: 'KR' },
+  )
+
+  expect(appliedNormalization).toBe('NONE')
 })

@@ -72,9 +72,4 @@ export default class BinaryParser {
     this.position += 8
     return ret
   }
-
-  skip(n: number) {
-    this.position += n
-    return this.position
-  }
 }

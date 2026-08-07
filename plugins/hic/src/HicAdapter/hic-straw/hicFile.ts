@@ -27,9 +27,9 @@ import type {
 
 /**
  * Prefix of the error thrown when a region pair has no matrix at the requested
- * binsize. `HicAdapter.getRegionPairRecords` degrades that pair to `[]` rather
- * than failing a whole multi-region fetch, and it can only tell this apart from
- * a real failure by the message — so the two share this constant instead of
+ * binsize. `HicAdapter.fetchRegionPairRecords` drops that pair rather than
+ * failing a whole multi-region fetch, and it can only tell this apart from a
+ * real failure by the message — so the two share this constant instead of
  * matching a hand-copied string.
  */
 export const NO_DATA_FOR_RESOLUTION = 'No data available for resolution'
@@ -153,6 +153,17 @@ export default class HicFile {
   }
 
   async readHeaderAndFooter() {
+    // `init` clears its memoized promise on failure so a transient read error
+    // retries, and this parse appends as it goes — so a retry has to start from
+    // empty or a failure part-way through the chromosome loop leaves the second
+    // run appending to the first's partial output (duplicate refNames out of
+    // `getRefNames`, a duplicated binsize list out of `getMetaData`).
+    this.chromosomes = []
+    this.chromosomeIndexMap = {}
+    this.chrAliasTable = {}
+    this.bpResolutions = []
+    this.masterIndex = {}
+
     // Read initial fields magic, version, and footer position
     let data = await this.file.read(0, 16)
     if (data.byteLength === 0) {
@@ -384,9 +395,16 @@ export default class HicFile {
     // can offer KR at 5kb and nothing at 2.5Mb. hic-straw's answer was to warn to
     // the console and silently hand back raw counts; reporting it lets the
     // display tell the user which scheme they're looking at.
+    //
+    // `transposed` says the query was swapped, so `bin1` runs along `region2`.
+    // Reported rather than left for the caller to re-derive: it is decided here
+    // from this file's own alias table and chromosome indices, and a caller
+    // re-deriving it off a divergent chr-name scheme would silently un-swap the
+    // wrong axis.
     return {
       records: contactRecords,
       appliedNormalization: norm ? normalization : 'NONE',
+      transposed: transpose,
     }
   }
 
@@ -607,12 +625,16 @@ export default class HicFile {
     await this.init()
 
     const chrIdx = this.chromosomeIndexMap[this.getFileChrName(chr)]
-    const key = getNormalizationVectorKey(type, chrIdx!, unit, binSize)
+    if (chrIdx === undefined) {
+      return undefined
+    }
+    const key = getNormalizationVectorKey(type, chrIdx, unit, binSize)
 
-    let result: NormalizationVector | undefined
-    if (this.normVectorCache.has(key)) {
-      result = this.normVectorCache.get(key)
-    } else {
+    // A plain `get` rather than has/get: unlike `matrixCache`, nothing is ever
+    // cached as undefined here, so a miss and a cached absence are the same
+    // answer.
+    let result = this.normVectorCache.get(key)
+    if (!result) {
       // A file with no vectors at all, or none for this (type, chr, unit,
       // binsize), simply answers undefined and the caller falls back to raw
       // counts. hic-straw warned to the console here; that fires once per
@@ -805,15 +827,6 @@ export default class HicFile {
 
   getFileChrName(chrAlias: string) {
     return this.chrAliasTable[chrAlias] ?? chrAlias
-  }
-
-  // File chromosome index for a refName, resolved through the same alias table
-  // getContactRecords uses to decide its transpose. Exposed so callers can
-  // reproduce that transpose exactly instead of re-deriving it with a divergent
-  // alias scheme.
-  async getChromosomeIndex(chrAlias: string) {
-    await this.init()
-    return this.chromosomeIndexMap[this.getFileChrName(chrAlias)]
   }
 }
 
