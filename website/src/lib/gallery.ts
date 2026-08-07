@@ -447,6 +447,13 @@ export const gallerySections: readonly GallerySection[] = [
           "Per-codon amino-acid lettering on GPX1, where the in-frame UGA shows as selenocysteine on orange rather than a stop. Translation follows the annotation's exception instead of a fixed codon table.",
       },
       {
+        label: 'Differential transcript usage',
+        spec: 'dtu/atp5f1c_isoform_switch',
+        guide: 'user_guides/gene_track',
+        description:
+          'ATP5F1C with ENCODE muscle and liver RNA-seq coverage over GENCODE transcripts colored by the change in isoform fraction satuRn measured between the two tissues. The boxed exon has no muscle reads and a liver peak, and only the liver-preferred transcript draws an exon there.',
+      },
+      {
         label: 'Genome linked to a 3D structure',
         spec: 'protein/connected',
         guide: 'tutorials/protein_structure',

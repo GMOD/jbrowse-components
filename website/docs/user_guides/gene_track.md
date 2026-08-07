@@ -2,14 +2,16 @@
 title: Gene track
 description:
   Transcript display modes, collapsing introns, color by CDS reading frame,
-  peptide lettering, and mature peptides on gene/transcript tracks
+  coloring transcripts from a file attribute, peptide lettering, and mature
+  peptides on gene/transcript tracks
 guide_category: Track types
 ---
 
 **TL;DR:** Gene and transcript features (GFF3, GTF, BED12, and similar) render
 as glyphs with their exons, UTRs, and CDS segments. Beyond that the track can
 translate the CDS in place (reading frame colors, amino-acid lettering, mature
-peptides) and reshape the view around a gene by collapsing its introns.
+peptides), color each transcript from a value carried in the file, and reshape
+the view around a gene by collapsing its introns.
 
 ## Choosing which transcripts to show
 
@@ -65,6 +67,58 @@ frame**. The setting applies to every gene track in that view and is remembered
 across sessions.
 
 <Figure caption="Turning on Color by CDS for the human BRCA1 gene (hg19, NCBI RefSeq). Top: the view's hamburger menu with the 'Color CDS by reading frame' toggle. Bottom: the result at base-pair resolution, each CDS codon tinted by its reading frame with its amino acid drawn over it, lined up to the codons in the reference sequence track above." src="/img/gene_track_color_by_cds.png" />
+
+## Color transcripts by a value in the file
+
+The `color` slot takes a jexl expression evaluated against each drawn part, so a
+per-transcript number carried in the GFF3 attribute column can drive the fill.
+Two things to know before writing one:
+
+- **Attribute names arrive lowercased**, and their values arrive as strings. An
+  attribute written `dIF=0.79` is read as `feature.dif`, and comparing it
+  numerically needs `parseFloat`.
+- **The expression is evaluated against the box being painted** — an exon, CDS,
+  or UTR — not against the transcript above it. Repeat the attribute onto those
+  children when you write the file. Set `utrColor` to the same expression too,
+  or UTRs keep the default contrasting fill and only part of each glyph carries
+  the encoding.
+
+A `jexl:` color is a lookup table only its author can read, so declare what it
+means in the `legend` slot; the key is drawn over the track and can be dismissed.
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "dtu_muscle_vs_liver",
+  "name": "Transcript usage: skeletal muscle vs liver",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "uri": "https://jbrowse.org/demos/dtu/dtu_muscle_vs_liver.gff3.gz"
+  },
+  "displayDefaults": {
+    "subfeatureLabels": "below",
+    "color": "jexl:parseFloat(feature.dif)>0.3?'#901e21':parseFloat(feature.dif)<-0.3?'#124f95':'#b2b1ac'",
+    "utrColor": "jexl:parseFloat(feature.dif)>0.3?'#901e21':parseFloat(feature.dif)<-0.3?'#124f95':'#b2b1ac'",
+    "legend": [
+      { "label": "muscle-preferred", "color": "#901e21" },
+      { "label": "no usage shift", "color": "#b2b1ac" },
+      { "label": "liver-preferred", "color": "#124f95" }
+    ]
+  }
+}
+```
+
+See the [jexl configuration guide](/docs/config_guides/jexl) for the expression
+syntax.
+
+<Figure caption="ATP5F1C in the hosted differential-transcript-usage demo (hg38). ENCODE skeletal-muscle and liver RNA-seq coverage on a shared scale, over GENCODE transcripts colored by the change in isoform fraction that satuRn measured between the two tissues. The boxed 37 bp exon has no muscle reads and a clear liver peak, and only the liver-preferred (blue) transcript draws an exon there." src="/img/dtu/atp5f1c_isoform_switch.png" />
+
+Pulled back to the whole gene, the same track shows why the encoding is worth
+the trouble: ten annotated isoforms, the two the test separated colored, and the
+eight it could not staying neutral rather than competing for attention.
+
+<Figure caption="The whole ATP5F1C locus in the same demo. Every GENCODE isoform is drawn; ATP5F1C-201 (muscle-preferred) and ATP5F1C-202 (liver-preferred) carry the color, and the remaining eight are gray because the usage test did not separate them." src="/img/dtu/dtu_colored_gene_glyph.png" />
 
 ## Peptide lettering
 
