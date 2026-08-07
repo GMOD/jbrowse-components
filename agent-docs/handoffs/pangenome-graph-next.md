@@ -14,8 +14,9 @@ first, this file assumes it.
 §3 carriage read path, §4 colour default and ramp key, §5 the level-of-detail
 tier (producer, hosted files, and the browser bug that blocked it), §6's y axis,
 §9 reference-only index (built and hosted, and its premise corrected — it is not
-a drop-in). Open: §6's remaining half (x from the connected linear view), §7
-in-view navigation, §8 the UI debts, and the demo list.
+a drop-in), three of §8's four UI debts. Open: §6's remaining half (x from the
+connected linear view), §7 in-view navigation, §8's requestable row set, and the
+demo list.
 
 **One thing is blocked, and it is the same thing for both §2 and §6: a clean
 worktree to regenerate figures in.** §6 moves every anchored figure by design and
@@ -405,30 +406,32 @@ view graph" message past it — turns the graph into a second panel of one
 navigation. A locstring field plus widen/narrow buttons is the fallback if
 following turns out to fight the user.
 
-## 8. Small UI debts, each cheap
+## 8. Small UI debts — three closed 2026-08-06 (plugin `34018b5`), one left
 
-- **A declaratively launched graph view is titled "Untitled view."** Every HPRC
-  figure shows it. `viewTitle` (`packages/app-core/src/ui/App/viewTitle.ts`)
-  falls back through `assemblyNames`, which this model does not expose;
-  `launchSubgraphView` only avoids it by writing `displayName`. One getter
-  returning `[loadedRegion.assemblyName]` fixes both the title and any other
-  assembly-aware app machinery.
-- **The perf readout is published.** `fetch 12371ms · layout 4ms · geom 9ms` sits
-  in the toolbar of every graph figure. Keep the `data-*` attributes browser
-  tests assert on; put the text behind the settings menu.
-- **The hover tooltip is pinned bottom-left**, where it covers a row label. It
-  first turned up as an unverified observation on `rgfa_hover_sync`, whose
-  tooltip overlapped the `Sakai` row label in both frames; it is real, it is not
-  the colour change that figure was regenerated for, and it is this.
-- **Sample rows are sorted alphabetically** (`contributingSamples`), so a row's
-  neighbours mean nothing. Sorting by the allele length or leftmost position a
-  row carries reads the way a sorted pileup does.
-- **A row set cannot be requested.** Rows come from whoever contributed here, so
-  the graph in `hprc_graph_vs_callset` cannot be made to line up row-for-row with
-  a genotype matrix of chosen donors, which is exactly what that figure's open
-  verdict asks for. An explicit list of samples to row (empty rows included)
-  would make the two panels comparable, and would also let the graph label
-  `HG00642.1` where the callset labels `HG00642 HP0`.
+- ~~**A declaratively launched graph view is titled "Untitled view."**~~ Done.
+  The model exposes `assemblyNames` now (`[loadedRegion.assemblyName]`, empty for
+  a whole-file import), which `viewTitle`
+  (`packages/app-core/src/ui/App/viewTitle.ts`) and any other assembly-aware app
+  machinery reads.
+- ~~**The perf readout is published.**~~ Done. Behind `showPerf` / "Show
+  timings" in the settings menu, off by default. The `data-*` attributes stay
+  unconditional, so no browser test moved.
+- ~~**The hover tooltip is pinned bottom-left**, where it covers a row label.~~
+  Already fixed before this section was read — `tooltipStyle` in
+  `GraphCanvas.tsx` is bottom RIGHT and its comment states exactly this reason.
+  The `rgfa_hover_sync` observation that raised it was real when written.
+- ~~**Sample rows are sorted alphabetically.**~~ Done, by contributed
+  off-reference sequence, most first, with the name breaking ties. Which measure
+  is a judgement call and the comment in `contributingSamples` states the
+  tradeoff it takes: the order is now a fact about the WINDOW, so a sample is not
+  in the same place in two of them.
+- **A row set cannot be requested** — still open, and the item above just made it
+  matter more. Rows come from whoever contributed here, so the graph in
+  `hprc_graph_vs_callset` cannot be made to line up row-for-row with a genotype
+  matrix of chosen donors, which is exactly what that figure's open verdict asks
+  for. An explicit list of samples to row (empty rows included) would make the
+  two panels comparable, would pin the order across windows, and would also let
+  the graph label `HG00642.1` where the callset labels `HG00642 HP0`.
 
 ## ~~9. Rebuild the hosted index reference-only~~ — built 2026-08-05, and it does **not** buy the 12 s
 
