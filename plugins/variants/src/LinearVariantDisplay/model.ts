@@ -227,7 +227,7 @@ export default function stateModelFactory(
        * Build the R ggplot fragment for this track, used by the view's "Export
        * R script" to regenerate the variant panel from source in ggplot2.
        */
-      exportRCode(): RTrackFragment {
+      exportRCode(): RTrackFragment | undefined {
         return exportRCode(self as LinearVariantDisplayModel)
       },
     }))

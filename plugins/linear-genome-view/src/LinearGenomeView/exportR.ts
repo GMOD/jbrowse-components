@@ -5,6 +5,10 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
 import { HELPERS } from './rHelpers.generated.ts'
 import {
+  BROWSER_LOCAL_FILE_REASON,
+  readsBrowserLocalFile,
+} from './rexportLocalFiles.ts'
+import {
   FIGURE_DPI,
   FIGURE_INCHES_PER_WEIGHT,
   FIGURE_WIDTH_INCHES,
@@ -43,6 +47,11 @@ function hasRExport(display: unknown): display is RExportDisplay {
 export interface SkippedTrack {
   name: string
   displayType: string
+  /**
+   * Why, where something more specific than "this display contributed no R
+   * code" can be said — and, for the local-file case, what to do about it.
+   */
+  reason?: string
 }
 
 /** The track's display name, falling back to its id — as getTrackRMeta does. */
@@ -151,9 +160,15 @@ async function collectFragments(
   const skipped: SkippedTrack[] = []
   for (const track of model.tracks) {
     const display = track.displays[0]
-    const result = hasRExport(display)
-      ? await display.exportRCode(opts)
-      : undefined
+    // Declined before the display is even asked, and centrally rather than in
+    // each exportRCode: a local file chosen in jbrowse-web is a blob/handle
+    // with no path, so EVERY exporter would resolve it to '' — including ones
+    // added after this was written.
+    const localFile = readsBrowserLocalFile(getConf(track, 'adapter'))
+    const result =
+      !localFile && hasRExport(display)
+        ? await display.exportRCode(opts)
+        : undefined
     // a display may contribute several stacked panels (e.g. alignments emit a
     // coverage panel and a pileup panel); all panels of one track share the
     // track file's refName aliases
@@ -167,6 +182,7 @@ async function collectFragments(
       skipped.push({
         name: trackLabel(track),
         displayType: displayType(display),
+        reason: localFile ? BROWSER_LOCAL_FILE_REASON : undefined,
       })
     }
   }
@@ -215,6 +231,28 @@ export function resolveHelpers(requested: Iterable<string>) {
     visit(name)
   }
   return seen
+}
+
+/**
+ * Wrap a skipped track's reason into the script's comment column. The reason is
+ * one sentence in one place (rexportLocalFiles) so the dialog and the script
+ * can't drift; only this side has to fit it into a generated file.
+ */
+function wrapComment(text: string, indent = '#       ', width = 79) {
+  const lines: string[] = []
+  let line = ''
+  for (const word of text.split(' ')) {
+    if (line && `${indent}${line} ${word}`.length > width) {
+      lines.push(indent + line)
+      line = word
+    } else {
+      line = line ? `${line} ${word}` : word
+    }
+  }
+  if (line) {
+    lines.push(indent + line)
+  }
+  return lines.join('\n')
 }
 
 // ggsave refuses a dimension over this many inches unless you pass
@@ -330,7 +368,12 @@ ${[...refNameVecs].map(([name, vec]) => `${name} <- ${vec}`).join('\n')}`
 # Tracks shown in JBrowse but NOT in this figure - their display contributed no
 # R code, either because that display type has no R export or because its data
 # source is one the exporter cannot read:
-${skipped.map(s => `#   - ${s.name} (${s.displayType})`).join('\n')}`
+${skipped
+        .map(
+          s =>
+            `#   - ${s.name} (${s.displayType})${s.reason ? `\n${wrapComment(s.reason)}` : ''}`,
+        )
+        .join('\n')}`
     : ''
 
   // The other half of the same honesty: a track IS here, but a setting it was

@@ -617,7 +617,7 @@ export function stateModelFactory(
          * "Export R script" to regenerate the Manhattan panel from source in
          * ggplot2.
          */
-        exportRCode(): RTrackFragment {
+        exportRCode(): RTrackFragment | undefined {
           return exportRCode(self as LinearManhattanDisplayModel)
         },
       }))

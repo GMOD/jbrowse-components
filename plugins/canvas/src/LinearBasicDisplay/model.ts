@@ -272,7 +272,7 @@ export default function stateModelFactory(
        * Build the R ggplot gene-model panel for the view's "Export R script",
        * regenerating this feature track from source in ggplot2.
        */
-      exportRCode(): RTrackFragment {
+      exportRCode(): RTrackFragment | undefined {
         return exportRCode(self as LinearBasicDisplayModel)
       },
     }))

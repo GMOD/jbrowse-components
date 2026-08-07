@@ -1,5 +1,6 @@
 import { assembleRScript, resolveHelpers } from './exportR.ts'
 import { HELPERS } from './rHelpers.generated.ts'
+import { BROWSER_LOCAL_FILE_REASON } from './rexportLocalFiles.ts'
 
 import type { RTrackFragment } from './types.ts'
 
@@ -230,4 +231,33 @@ test('nothing is said when every setting made it across', () => {
     },
   ])
   expect(script).not.toContain('does not reproduce')
+})
+
+// The other silence: a track that isn't in the figure at all. A local file
+// opened in jbrowse-web can never be — the browser gives it no path — so the
+// header has to say which track, and what to do instead, or the only symptom
+// is a figure one panel short.
+test('a skipped track carries its reason into the header', () => {
+  const script = assembleRScript(
+    { refName: 'chr1', start: 0, end: 1000 },
+    [fragment([])],
+    [
+      {
+        name: 'My local reads',
+        displayType: 'LinearAlignmentsDisplay',
+        reason: BROWSER_LOCAL_FILE_REASON,
+      },
+      { name: 'Something else', displayType: 'LinearFooDisplay' },
+    ],
+  )
+  expect(script).toContain(
+    '#   - My local reads (LinearAlignmentsDisplay)\n#       opened from a local file',
+  )
+  expect(script).toContain('JBrowse Desktop')
+  // a reasonless skip still gets its line, and gains nothing else
+  expect(script).toContain('#   - Something else (LinearFooDisplay)\n')
+  // the reason is wrapped into the comment column, not run off the side
+  for (const line of script.split('\n')) {
+    expect(line.startsWith('#       ') ? line.length : 0).toBeLessThan(80)
+  }
 })

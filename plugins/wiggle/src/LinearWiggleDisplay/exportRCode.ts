@@ -75,12 +75,19 @@ export function wiggleFragment(p: WiggleRParams): RTrackFragment {
 }
 
 /** Read the display model's resolved styling + source uri into an R fragment. */
-export function exportRCode(self: LinearWiggleDisplayModel): RTrackFragment {
+export function exportRCode(
+  self: LinearWiggleDisplayModel,
+): RTrackFragment | undefined {
   const { trackId, trackName, adapter } = getTrackRMeta<AdapterConf>(self)
+  const uri = firstUri(adapter.bigWigLocation, adapter.uri)
+  // no path to read: decline the track rather than emit `path <- ""` (firstUri)
+  if (!uri) {
+    return undefined
+  }
   return wiggleFragment({
     trackId,
     trackName,
-    uri: firstUri(adapter.bigWigLocation, adapter.uri),
+    uri,
     isDensity: self.isDensityMode,
     isLine: self.renderingType === 'line',
     useBicolor: self.useBicolor,

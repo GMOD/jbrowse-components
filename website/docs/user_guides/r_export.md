@@ -83,6 +83,19 @@ doesn't bundle) is skipped with a warning rather than failing the run, and the
 emitted script names what it left out in its header comment — so a figure that
 is one track short says which.
 
+## Local files: use JBrowse Desktop
+
+The script reads each track from its own path, so every track in the figure
+needs one an R session can open — a URL or a file on disk. A track opened with
+"Choose File" in jbrowse-web has neither: the browser hands JBrowse a handle
+that only that tab can redeem, with no path attached. Those tracks are left out
+of the script, named in the export dialog before you download it and again in
+the script's header comment.
+
+[JBrowse Desktop](/docs/quickstart_desktop) opens the same file by its
+filesystem path, which the exported script uses directly, so export from there
+when your data is local. Tracks read over HTTP are unaffected in either product.
+
 ## Requirements
 
 The script uses base R plus a handful of Bioconductor/CRAN packages, only the

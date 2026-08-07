@@ -111,12 +111,17 @@ ${v}_max_missing <- ${p.maxMissing}    # drop sites with more than this no-call 
 /** Read the variant matrix display's source uri + filters into an R fragment. */
 export function exportRCode(
   self: LinearMultiSampleVariantMatrixDisplayModel,
-): RTrackFragment {
+): RTrackFragment | undefined {
   const { trackId, trackName, adapter } = getTrackRMeta<AdapterConf>(self)
+  const uri = firstUri(adapter.vcfGzLocation, adapter.uri)
+  // no path to read: decline the track rather than emit `path <- ""` (firstUri)
+  if (!uri) {
+    return undefined
+  }
   return variantMatrixFragment({
     trackId,
     trackName,
-    uri: firstUri(adapter.vcfGzLocation, adapter.uri),
+    uri,
     minMaf: self.minorAlleleFrequencyFilter,
     maxMissing: self.maxMissingnessFilter,
     phased: self.renderingMode === 'phased',

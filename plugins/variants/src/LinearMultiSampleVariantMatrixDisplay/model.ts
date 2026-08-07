@@ -181,7 +181,7 @@ export default function stateModelFactory(
         },
         // explicit return type breaks the self-referential MST model-type cycle
         // (same trick as renderSvg); builds the R panel for this track
-        exportRCode(): RTrackFragment {
+        exportRCode(): RTrackFragment | undefined {
           return exportRCode(self as LinearMultiSampleVariantMatrixDisplayModel)
         },
       }))

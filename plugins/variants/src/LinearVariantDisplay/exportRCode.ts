@@ -57,11 +57,20 @@ export function variantFragment(p: VariantRParams): RTrackFragment {
 }
 
 /** Read the variant display's source uri into an R fragment. */
-export function exportRCode(self: LinearVariantDisplayModel): RTrackFragment {
+export function exportRCode(
+  self: LinearVariantDisplayModel,
+): RTrackFragment | undefined {
   const { trackId, trackName, adapter } = getTrackRMeta<AdapterConf>(self)
+  const uri = firstUri(adapter.vcfGzLocation, adapter.uri)
+  // no path to read — a blob/handle location, or an adapter spelling its source
+  // in a slot with no case here (an unindexed VcfAdapter's vcfLocation).
+  // Decline rather than emit `path <- ""`; exportR names the track instead.
+  if (!uri) {
+    return undefined
+  }
   return variantFragment({
     trackId,
     trackName,
-    uri: firstUri(adapter.vcfGzLocation, adapter.uri),
+    uri,
   })
 }

@@ -1,8 +1,10 @@
 import { useState } from 'react'
 
+import { getConf } from '@jbrowse/core/configuration'
 import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import { useLocalStorage } from '@jbrowse/core/util'
 import {
+  Alert,
   Button,
   CircularProgress,
   DialogActions,
@@ -12,15 +14,34 @@ import {
   Typography,
 } from '@mui/material'
 
-import type { ExportRCodeOptions } from '../types.ts'
+import {
+  BROWSER_LOCAL_FILE_ADVICE,
+  readsBrowserLocalFile,
+} from '../rexportLocalFiles.ts'
+
+import type { LinearGenomeViewModel } from '../model.ts'
+
+/**
+ * Shown tracks the script will have to leave out, named here rather than only
+ * in the downloaded file's header: the export otherwise succeeds, so the
+ * missing track is discovered later, in R.
+ */
+function localFileTrackNames(model: LinearGenomeViewModel) {
+  return model.tracks
+    .filter(track => readsBrowserLocalFile(getConf(track, 'adapter')))
+    .map(
+      (track): string => getConf(track, 'name') || track.configuration.trackId,
+    )
+}
 
 export default function ExportRDialog({
   model,
   handleClose,
 }: {
-  model: { exportR: (opts: ExportRCodeOptions) => Promise<void> }
+  model: LinearGenomeViewModel
   handleClose: () => void
 }) {
+  const localFileTracks = localFileTrackNames(model)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<unknown>()
   const [filename, setFilename] = useLocalStorage(
@@ -38,6 +59,17 @@ export default function ExportRDialog({
     >
       <DialogContent>
         {error ? <ErrorMessage error={error} /> : null}
+        {localFileTracks.length > 0 ? (
+          <Alert severity="warning" style={{ marginBottom: 16 }}>
+            <Typography variant="body2">
+              {localFileTracks.length === 1
+                ? `The track "${localFileTracks[0]}" was opened from a local file, so it cannot be included: `
+                : `${localFileTracks.length} tracks were opened from local files, so they cannot be included (${localFileTracks.join(', ')}): `}
+              the script reads each track from its own path, and a file opened
+              in the browser has none. {BROWSER_LOCAL_FILE_ADVICE}
+            </Typography>
+          </Alert>
+        ) : null}
         {loading ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <CircularProgress size={20} />

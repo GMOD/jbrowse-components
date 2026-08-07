@@ -644,10 +644,15 @@ export function exportRCode(
   const { trackId, trackName, adapter } = getTrackRMeta<AdapterConf>(self)
   const isCram =
     adapter.type === 'CramAdapter' || !!firstUri(adapter.cramLocation)
+  const uri = firstUri(adapter.bamLocation, adapter.cramLocation, adapter.uri)
+  // no path to read: decline the track rather than emit `path <- ""` (firstUri)
+  if (!uri) {
+    return []
+  }
   return alignmentsFragments({
     trackId,
     trackName,
-    uri: firstUri(adapter.bamLocation, adapter.cramLocation, adapter.uri),
+    uri,
     isCram,
     reference: isCram ? referenceFastaUri(self) : '',
     showCoverage: self.showCoverage,

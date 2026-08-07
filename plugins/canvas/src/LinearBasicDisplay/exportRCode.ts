@@ -282,12 +282,21 @@ function geneLikeTypes(self: LinearBasicDisplayModel) {
  * decided by which adapter location is set (the `uri` shorthand falls back to a
  * filename check) so a BED or BigBed track is parsed as one, not misread as
  * GFF. */
-export function exportRCode(self: LinearBasicDisplayModel): RTrackFragment {
+export function exportRCode(
+  self: LinearBasicDisplayModel,
+): RTrackFragment | undefined {
   const { trackId, trackName, adapter } = getTrackRMeta<AdapterConf>(self)
   const gffUri = firstUri(adapter.gffGzLocation, adapter.gffLocation)
   const bedUri = firstUri(adapter.bedGzLocation, adapter.bedLocation)
   const bigBedUri = firstUri(adapter.bigBedLocation)
   const shorthand = adapter.uri ?? ''
+  const uri = firstUri(gffUri, bedUri, bigBedUri, shorthand)
+  // no path to read — a blob/handle location, or an adapter spelling its source
+  // in a slot with no case here (a plain GtfAdapter). Decline the track rather
+  // than emit `path <- ""`; exportR names it in the script instead.
+  if (!uri) {
+    return undefined
+  }
   const unslotted = gffUri === '' && bedUri === '' && bigBedUri === ''
   const format =
     bigBedUri !== '' || (unslotted && /\.(bb|bigbed)$/i.test(shorthand))
@@ -307,7 +316,7 @@ export function exportRCode(self: LinearBasicDisplayModel): RTrackFragment {
   return geneFragment({
     trackId,
     trackName,
-    uri: firstUri(gffUri, bedUri, bigBedUri, shorthand),
+    uri,
     format,
     filters: rules,
     untranslatedFilters: untranslated,

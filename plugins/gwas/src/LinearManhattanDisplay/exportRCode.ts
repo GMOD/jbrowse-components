@@ -75,12 +75,19 @@ export function manhattanFragment(p: ManhattanRParams): RTrackFragment {
 }
 
 /** Read the Manhattan display's resolved styling + source uri into a fragment. */
-export function exportRCode(self: LinearManhattanDisplayModel): RTrackFragment {
+export function exportRCode(
+  self: LinearManhattanDisplayModel,
+): RTrackFragment | undefined {
   const { trackId, trackName, adapter } = getTrackRMeta<AdapterConf>(self)
+  const uri = firstUri(adapter.bedGzLocation, adapter.uri)
+  // no path to read: decline the track rather than emit `path <- ""` (firstUri)
+  if (!uri) {
+    return undefined
+  }
   return manhattanFragment({
     trackId,
     trackName,
-    uri: firstUri(adapter.bedGzLocation, adapter.uri),
+    uri,
     scoreColumn: adapter.scoreColumn ?? DEFAULT_SCORE_COLUMN,
     scoreTransform: adapter.scoreTransform,
     color: self.color,
