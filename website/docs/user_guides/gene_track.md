@@ -82,6 +82,10 @@ Two things to know before writing one:
   children when you write the file. Set `utrColor` to the same expression too,
   or UTRs keep the default contrasting fill and only part of each glyph carries
   the encoding.
+- **Test the significance flag, not the magnitude.** A large effect on a
+  transcript the test could not separate is not a result, so the expression
+  below branches on a `dtu` attribute the analysis wrote and only then reads the
+  size. Thresholding on the number alone colors those too.
 
 A `jexl:` color is a lookup table only its author can read, so declare what it
 means in the `legend` slot; the key is drawn over the track and can be
@@ -91,7 +95,7 @@ dismissed.
 {
   "type": "FeatureTrack",
   "trackId": "dtu_muscle_vs_liver",
-  "name": "Transcript usage: skeletal muscle vs liver",
+  "name": "Transcript usage: skeletal muscle vs liver (satuRn)",
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "Gff3TabixAdapter",
@@ -99,16 +103,25 @@ dismissed.
   },
   "displayDefaults": {
     "subfeatureLabels": "below",
-    "color": "jexl:parseFloat(feature.dif)>0.3?'#901e21':parseFloat(feature.dif)<-0.3?'#124f95':'#b2b1ac'",
-    "utrColor": "jexl:parseFloat(feature.dif)>0.3?'#901e21':parseFloat(feature.dif)<-0.3?'#124f95':'#b2b1ac'",
+    "color": "jexl:feature.dtu=='muscle'?(parseFloat(feature.dif)>0.6?'#901e21':parseFloat(feature.dif)>0.3?'#c63335':'#d5716a'):feature.dtu=='liver'?(parseFloat(feature.dif)<-0.6?'#124f95':parseFloat(feature.dif)<-0.3?'#2370cc':'#6394d5'):'#b2b1ac'",
+    "utrColor": "jexl:feature.dtu=='muscle'?(parseFloat(feature.dif)>0.6?'#901e21':parseFloat(feature.dif)>0.3?'#c63335':'#d5716a'):feature.dtu=='liver'?(parseFloat(feature.dif)<-0.6?'#124f95':parseFloat(feature.dif)<-0.3?'#2370cc':'#6394d5'):'#b2b1ac'",
+    "mouseover": "jexl:feature.transcript_name+(feature.dif?' — ΔIF '+feature.dif+' (usage '+feature.if_muscle+' muscle vs '+feature.if_liver+' liver, FDR '+feature.fdr+')':' — not tested')",
     "legend": [
-      { "label": "muscle-preferred", "color": "#901e21" },
-      { "label": "no usage shift", "color": "#b2b1ac" },
-      { "label": "liver-preferred", "color": "#124f95" }
+      { "label": "muscle-preferred, ΔIF > 0.6", "color": "#901e21" },
+      { "label": "muscle-preferred, ΔIF 0.3–0.6", "color": "#c63335" },
+      { "label": "muscle-preferred, ΔIF 0.1–0.3", "color": "#d5716a" },
+      { "label": "no usage shift (FDR ≥ 0.05)", "color": "#b2b1ac" },
+      { "label": "liver-preferred, ΔIF 0.1–0.3", "color": "#6394d5" },
+      { "label": "liver-preferred, ΔIF 0.3–0.6", "color": "#2370cc" },
+      { "label": "liver-preferred, ΔIF > 0.6", "color": "#124f95" }
     ]
   }
 }
 ```
+
+`mouseover` is the other half of the encoding: the ramp gives a reader the
+direction and roughly the size at a glance, and hovering a transcript reads back
+the numbers behind its color.
 
 See the [jexl configuration guide](/docs/config_guides/jexl) for the expression
 syntax.

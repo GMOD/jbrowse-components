@@ -1,4 +1,4 @@
-import { lgvSession } from '../screenshot-spec-helpers.ts'
+import { displayReady, lgvSession } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -41,11 +41,24 @@ const coverage = (trackId: string) => ({
   maxScore: 16,
 })
 
+// `grow`, not the demo config's pinned 285. The lane packs ten transcripts and
+// the packing depends on the window, so a pinned height is right for exactly one
+// of the two figures below: at the 8 kb window it left ~40 css px of empty lane
+// under the last row, and at the whole-gene one it is the height the config was
+// tuned for. Growing to the content is right for both and takes the blank with
+// it.
 const glyph = {
   trackId: 'dtu_muscle_vs_liver',
   type: 'LinearBasicDisplay',
-  height: 285,
+  heightMode: 'grow',
 }
+
+// Both figures gate on the gene lane having actually painted rather than on the
+// liver track's NAME appearing, which is in the DOM as soon as the track opens
+// and says nothing about the three canvases under it. Neither spec carried a
+// settleMs either, so the capture's only protection was the run's own
+// paint check.
+const DTU_READY = displayReady('feature-display')
 
 export const dtuSpecs: ScreenshotSpec[] = [
   // The hero: one cassette exon, the read evidence for it in both tissues, and
@@ -67,7 +80,8 @@ export const dtuSpecs: ScreenshotSpec[] = [
       loc: 'chr10:7,801,200..7,809,400',
       tracks: [coverage('muscle_plus'), coverage('liver_plus'), glyph],
     }),
-    readyText: 'Liver RNA-seq',
+    readySelector: DTU_READY,
+    settleMs: 4000,
     viewportHeight: 730,
     annotations: [
       {
@@ -121,7 +135,8 @@ export const dtuSpecs: ScreenshotSpec[] = [
       loc: 'chr10:7,787,600..7,808,400',
       tracks: [coverage('muscle_plus'), coverage('liver_plus'), glyph],
     }),
-    readyText: 'Liver RNA-seq',
+    readySelector: DTU_READY,
+    settleMs: 4000,
     viewportHeight: 730,
   },
 ]

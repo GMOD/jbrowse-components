@@ -2749,10 +2749,10 @@
   },
   "dtu/atp5f1c_isoform_switch": {
     "name": "dtu/atp5f1c_isoform_switch",
-    "status": "bad",
-    "note": "great work. are there any other simplifications, refactorings, bugfixes, or improvements you'd make to this",
-    "reviewedAt": "2026-08-07T03:37:18.447Z",
-    "hash": "e37a00f1971e86168ab3a29e8ba3466a325f2e85"
+    "status": "answered",
+    "note": "Three, and one of them was a real defect. (1) The config fence in gene_track.md was NOT the config the figure renders: it declared a three-color ramp thresholded on parseFloat(feature.dif) alone with a three-entry legend, where the deployed track branches on a 'dtu' significance attribute first and then on magnitude, with seven legend entries and a mouseover. A reader pasting the fence got a different picture from the one above it, and a worse one: thresholding on the number alone colors transcripts the test could not separate, which is the exact reading the whole-gene figure is there to prevent. The fence is now the deployed expression, with a bullet saying to test the significance flag rather than the magnitude. (2) The gene lane was pinned to 285 px, which is right for exactly one of the two figures: at the 8 kb window it left an empty strip under the last transcript. heightMode grow. (3) Both specs gated on readyText 'Liver RNA-seq', which is the track NAME and is in the DOM as soon as the track opens, with no settleMs at all, so the only thing standing between the capture and three unpainted canvases was the run's own paint check. They wait on the display's own done testid now.",
+    "reviewedAt": "2026-08-08T01:20:21.997Z",
+    "hash": "50b150771c7f5caabe37cbd6e05614f5fd90d3ac"
   },
   "feature_plotting_threads": {
     "name": "feature_plotting_threads",
@@ -2784,10 +2784,10 @@
   },
   "maf_hprc_pangenome": {
     "name": "maf_hprc_pangenome",
-    "status": "bad",
-    "note": "need to zoom out more",
-    "reviewedAt": "2026-08-08T01:11:27.962Z",
-    "hash": "72ec81aa29bf8e7a8d9e816d9606ae0bad0a38c8"
+    "status": "answered",
+    "note": "Zoomed out to the HPRCv2 README's own C4 window, chr6:31,972,057-32,055,418 (was a 30 kb slice). The narrow window was a real defect, not just a framing preference: C4A is chr6:31,982,057-32,002,681 and C4B is chr6:32,014,795-32,035,418, so it held C4A alone while the caption claimed 'the blank rows through the copy-number-variable C4A and C4B'. Both modules are on the frame now and the missing-haplotype blocks read as two separate columns. Cost measured off the .tai with the repo's own queryBlockSpan rather than guessed: 292 KB against the old 189 KB, because the read is bgzf-block granular -- 70 kb and 90 kb windows both resolve to the same 292 KB -- so it stays well under the 1 MB byte gate and needs no fetchSizeLimit.",
+    "reviewedAt": "2026-08-08T01:19:53.049Z",
+    "hash": "077c6d91a879a2b58ccecf7fdd0b78f7526a9640"
   },
   "multiway_synteny/wheat_homoeolog_selection": {
     "name": "multiway_synteny/wheat_homoeolog_selection",
@@ -2868,10 +2868,10 @@
   },
   "dtu/dtu_colored_gene_glyph": {
     "name": "dtu/dtu_colored_gene_glyph",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-07T16:14:32.776Z",
-    "hash": "acd21ffcda9093e68934e5603e68227d819ba15c"
+    "status": "answered",
+    "note": "Same three fixes as dtu/atp5f1c_isoform_switch, which this shares its spec helpers with.",
+    "reviewedAt": "2026-08-08T01:20:22.251Z",
+    "hash": "aa790429fb0667fc53cd06d960949807c29d0b28"
   },
   "genomes_basics/phylop_bases": {
     "name": "genomes_basics/phylop_bases",
