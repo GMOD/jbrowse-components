@@ -1145,6 +1145,88 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     settleMs: 15000,
   })),
+  // The fourth frame: where a triaged row GOES (review: "this is uninteresting
+  // by itself, consider launching the breakpointsplitview"). Three frames of
+  // narrowing ended on a table with two rows in it and nothing following from
+  // them, and every row of that table carries the menu that opens this -- its
+  // caret, then "Open in breakpoint split view" (spreadsheet-view's
+  // FeatureMenu), which is what `displayName` records here in the same way the
+  // import-form frame records its own menu path.
+  //
+  // NUP214--XKR3, NOT BCR--ABL1, and the choice is what keeps this from being a
+  // duplicate. The search leaves two rows because the Philadelphia
+  // translocation is in the file from both sides; the rest of the page follows
+  // the BCR--ABL1 side (`k562_bcr_abl_split`, which is deliberately a
+  // two-region LGV rather than this view type, for the reason recorded there).
+  // Opening the OTHER row shows the reciprocal side, which nothing else on the
+  // page draws, and it is the row a reader is most likely to be curious about
+  // after the search.
+  //
+  // Breakpoints are the call's own, `chr9:131199015:+` and `chr22:16808083:-`
+  // from K562.star-fusion.tsv, +/- 5 kb. The STAR-Fusion track rides above the
+  // reads in both panels so the junction the reads support is marked on each.
+  {
+    mode: 'url' as const,
+    name: 'cancer_sv/k562_fusion_inspector_split',
+    // 830 cut 269 css px off the bottom, from the run's own report
+    viewportHeight: 1100,
+    url: sessionSpec(CONFIG, {
+      views: [
+        {
+          type: 'BreakpointSplitView',
+          displayName:
+            'Row menu → Open in breakpoint split view (NUP214--XKR3)',
+          views: [
+            {
+              loc: 'chr9:131,194,015-131,204,015',
+              assembly: 'hg38',
+              tracks: [
+                GENE_TRACK,
+                {
+                  trackId: 'K562_star_fusion',
+                  type: 'LinearVariantDisplay',
+                  height: 40,
+                },
+                {
+                  trackId: 'K562_isoseq',
+                  height: 260,
+                  coverageHeight: 80,
+                  showOnlySplitAlignments: true,
+                  ...SPLIT_READS,
+                },
+              ],
+            },
+            {
+              loc: 'chr22:16,803,083-16,813,083',
+              assembly: 'hg38',
+              tracks: [
+                GENE_TRACK,
+                {
+                  trackId: 'K562_star_fusion',
+                  type: 'LinearVariantDisplay',
+                  height: 40,
+                },
+                {
+                  trackId: 'K562_isoseq',
+                  height: 260,
+                  coverageHeight: 80,
+                  showOnlySplitAlignments: true,
+                  ...SPLIT_READS,
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    }),
+    // the track name in the second panel's header, not a gene symbol: the
+    // 10 kb windows sit INSIDE NUP214 and XKR3, so neither glyph has an end in
+    // frame for its floating label to hang under, and a gene-name readyText
+    // waits out its whole timeout on a view that has already drawn
+    readyText: 'K562 PacBio Iso-Seq (ENCODE)',
+    readyTimeout: 120000,
+    settleMs: 15000,
+  },
   {
     mode: 'compose',
     name: 'cancer_sv/k562_starfusion_triage',
@@ -1152,6 +1234,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
       'cancer_sv/k562_fusion_inspector_form',
       'cancer_sv/k562_fusion_inspector_all',
       'cancer_sv/k562_fusion_inspector_pair',
+      'cancer_sv/k562_fusion_inspector_split',
     ],
     // stacked, not side by side: each frame is a wide table plus a circle, and
     // two of those in a row would put the pair of circles a screen apart

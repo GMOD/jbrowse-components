@@ -268,6 +268,16 @@ export const qcSpecs: ScreenshotSpec[] = [
               // 650 kb of 30x Illumina is past every byte budget in the stack,
               // and a capture has nobody to click the banner
               forceLoad: true,
+              // The coverage band's own axis, which `local` autoscale had
+              // running to 1,600 (review: "the 1600 is drowning out the
+              // signal"). A handful of collapsed-repeat pile-ups set that
+              // ceiling, so a 30x library drew as a 2%-height line and the
+              // band carried nothing. `localsd` is the display's own answer to
+              // peaky data — mean +/- numStdDev over what is in view — and it
+              // is preferred here over a hand-picked maxScore because the
+              // ceiling then comes from the window rather than from a number
+              // somebody chose, and it survives the window being moved.
+              autoscale: 'localsd',
               height: 380,
             },
           ],

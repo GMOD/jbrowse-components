@@ -693,7 +693,8 @@ export const mafSpecs: ScreenshotSpec[] = [
     // the gene lane, the coverage band and the filtered rows at 15 px (700 cut
     // 103, per the run's own below-the-fold report; the extra 25 is the last
     // row's own bottom edge, which the report does not count)
-    viewportHeight: 830,
+    // 830 cut 74 css px off the bottom, from the run's own report
+    viewportHeight: 905,
     // the .tai alone is 4.98 MB and the first block read follows it
     actions: [{ type: 'delay' as const, ms: 25000 }],
     // A KEY for the two fills, where this was one sentence arguing against a
@@ -709,15 +710,30 @@ export const mafSpecs: ScreenshotSpec[] = [
     // white legible as an absence rather than as a background the row is drawn
     // on. The sidebar already says what a row is (`HG00099.1` is a person and
     // which of their two haplotypes), so nothing here has to.
+    //
+    // The FILE heads the pill because the review asked what the picture is of,
+    // and the track name in the sidebar ("HPRC release 2 pangenome alignment")
+    // does not answer that: it is a name someone wrote in a config. The file is
+    // the published artifact, and a reader who wants this locus for themselves
+    // needs its name, not its label. TAF rather than MAF is worth the four
+    // characters — the same alignment is published both ways, this is the
+    // column-oriented one, and the page's config block reads BgzipTaffyAdapter
+    // a few lines above.
     annotations: [
       {
         type: 'text' as const,
-        text: 'Grey: aligned to GRCh38\nWhite: no aligned sequence for that haplotype',
+        text: 'hprc-v2.0-mc-grch38.full.taf.gz (HPRC release 2, minigraph-cactus)\n\nGrey: aligned to GRCh38\nWhite: no aligned sequence for that haplotype',
         fontSize: 18,
-        maxWidth: 330,
+        maxWidth: 380,
+        // right-aligned against the frame's right edge: naming the file made
+        // the pill wide enough that centring it on a locus ran it off the
+        // capture. `textAlign: 'end'` ends it at the anchor, and the pill's own
+        // width -- which is only known once the text is measured in the page --
+        // is what decides where it starts.
+        textAlign: 'end' as const,
         anchor: {
           track: 'hprc_v2_0_mc_grch38',
-          locus: 'chr6:32,036,000',
+          locus: 'chr6:32,053,500',
           fracY: 0.12,
         },
       },

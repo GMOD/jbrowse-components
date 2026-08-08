@@ -6,6 +6,7 @@
 # Adding a name here is a coverage regression — prefer a verified click-path in
 # src/lib/spec-recipe/fields.ts. Removing one is the win.
 arcHeight
+autoscale
 bubbleSpread
 color
 colorDomain
@@ -19,6 +20,7 @@ legend
 maxRegionBp
 paneHeight
 sideBySide
+subtreeFilter
 thickness
 transcriptId
 uniprotId

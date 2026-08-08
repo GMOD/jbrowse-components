@@ -40,12 +40,19 @@ annotation files derived from the same matrix:
   of convergent CTCF sites. ENCODE calls them with
   [HiCCUPS](https://github.com/aidenlab/juicer/wiki/HiCCUPS), also a BEDPE.
 
-<Figure src="/img/hic/loops_and_domains.png" caption="GM12878 in situ Hi-C over 2.5 Mb of chr8 in coarse bins, with the Arrowhead contact domains and HiCCUPS loops called from the same matrix stacked above, one arc each. MYC is banded, and the domain springing from it is 600 kb wide: the dark red arc below is the HiCCUPS loop between that domain's two corners, and the block it bounds is the denser triangle in the matrix. RefSeq genes on top, which here are mostly the lncRNAs the domain contains." links="Open this view=hic/loops_and_domains" />
+<Figure src="/img/hic/loops_and_domains.png" caption="GM12878 in situ Hi-C over 2.5 Mb of chr8 in coarse bins, with the Arrowhead contact domains and HiCCUPS loops called from the same matrix stacked above, one arc each. MYC is banded, and the domain springing from it is 600 kb wide: the dark red arc below is the HiCCUPS loop between that domain's two corners, and the block it bounds is the denser triangle in the matrix. RefSeq genes on top, which here are mostly the lncRNAs the domain contains, and B-cell ATAC accessibility under them: its peaks fall inside the domain and thin out to the right of it." links="Open this view=hic/loops_and_domains" />
 
 The dark arc is the point of the figure. A contact domain and the loop at its
 corner are the same object seen two ways. The block in the matrix and the arc
 above it end at the same two coordinates, because the loop is what holds the
 domain together.
+
+The ATAC lane is the one thing in the frame that is not derived from the contact
+map. GM12878 is a B-lymphoblastoid line, so B-cell accessibility is the nearest
+public annotation of which sequence in this window is regulatory, and it is what
+turns a gene desert into something the domain has a reason to contain. Adding a
+lane like it is the general habit: everything else stacked here comes out of one
+file, and a picture made only of one file's own derivatives cannot check itself.
 
 The window is one such pair rather than a slice of chromosome chosen for its
 genes. Over a whole cell line the two files hold thousands of calls each, and a

@@ -1146,11 +1146,15 @@ function pggbLocusSession(
     window,
     mafLane = false,
     variantLane = false,
+    bubbleSpread,
   }: {
     region: typeof PGGB_LOCUS
     window: string
     mafLane?: boolean
     variantLane?: boolean
+    // omitted leaves the view's own 'auto' (proportional) default; see
+    // BUBBLE_SPREADS in the plugin for what each one is an instrument for
+    bubbleSpread?: 'auto' | 'open' | 'wide' | 'compress'
   },
 ) {
   return sessionSpec(CONFIG, {
@@ -1209,6 +1213,7 @@ function pggbLocusSession(
         loadedRegion: region,
         layoutMode,
         colorScheme: 'reference-position',
+        ...(bubbleSpread ? { bubbleSpread } : {}),
       },
     ],
   })
@@ -2080,6 +2085,23 @@ export const graphSpecs: ScreenshotSpec[] = [
     url: pggbLocusSession('force', {
       region: PGGB_LOCUS,
       window: PGGB_LOCUS_WINDOW,
+      // COMPRESS, where this drew proportionally (review: "kind of a chaotic
+      // image. the green is a very large loop. unclear why it is a loop? any
+      // better layout?"). It is a loop because it is one 1,199 bp segment
+      // attached at two points a few tens of bp apart -- which is what an
+      // insertion IS -- but under the proportional law it is drawn 20-70x
+      // longer than every other node in the cut (17-73 bp), so the only place
+      // the layout can put it is a circle that swallows the rest of the
+      // drawing, crossing the very arm it is meant to be paired with.
+      //
+      // `compress` is the instrument for exactly this: the power law pulls the
+      // longest and shortest nodes towards the graph's mean, so a cut spanning
+      // kb and bp fits one pane, and the two arms of the bubble come out as a
+      // lens the reader can see is a bubble. What it costs is that the long
+      // node no longer READS as long -- which costs nothing here, because the
+      // node carries its own "1.2 kb" label and the lane above it is drawn on
+      // the coordinates that say the same thing.
+      bubbleSpread: 'compress',
     }),
     readySelector: TOOLBAR_READY,
     readyTimeout: 120000,
@@ -2089,6 +2111,38 @@ export const graphSpecs: ScreenshotSpec[] = [
     // for a force drawing where the anchored one was two rows
     viewportHeight: 1050,
     hideTooltip: true,
+    // NAME THE OTHER ARM. The view already labels the link the other four
+    // strains take "1.2 kb deletion", so one arm of the bubble said what it was
+    // and the other said nothing -- which is most of "unclear why it is a
+    // loop". It is a loop because two routes leave one junction and meet at the
+    // next, and a reader can only see that once both routes are named.
+    //
+    // `196827-` is the segment itself (K12#1#chr:1,299,498 +1,199 bp, from
+    // `probe-graph-nodes.ts pangenome/pggb_locus_graph --view=1`, and the same
+    // row the segs BED gives as K12-only), so the callout follows the FMMM
+    // layout instead of a pixel. The offset puts it inside the ring, which is
+    // the only white space near the lens.
+    annotations: [
+      // The arrow starts INSIDE the pill and the pill is drawn over it (text
+      // callouts paint last whatever order they are listed in), so the leader
+      // emerges from the label's edge. Both ends are the same node anchor, one
+      // offset by the pill's own placement, so the pair follows the FMMM layout
+      // together and cannot drift apart.
+      {
+        type: 'arrow' as const,
+        strokeWidth: 3,
+        fromAnchor: { view: 1, graphNode: '196827-', dx: 150, dy: -34 },
+        anchor: { view: 1, graphNode: '196827-' },
+      },
+      {
+        type: 'text' as const,
+        text: 'IS5, K12 only',
+        fontSize: 18,
+        anchor: { view: 1, graphNode: '196827-' },
+        dx: 150,
+        dy: -34,
+      },
+    ],
   },
   // The same locus per strain, which is where a path GFA says something an rGFA
   // cannot. Sample rows put each segment on the row of the assembly its stable
@@ -2642,9 +2696,48 @@ export const graphSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'pangenome/pggb_haplotype_paths',
     url: sessionSpec(CONFIG, {
+      sessionTracks: [K12_GENES_SESSION_TRACK, PGGB_MAF_SESSION_TRACK],
       views: [
+        // THE SAME EVENT IN COORDINATES, ABOVE THE GRAPH (review: "showing the
+        // lineargenomeview with MAF at same time might help"). The graph pane
+        // has no axis -- that is what a force drawing gives up -- so on its own
+        // it says four strains take an arc past a node without saying where in
+        // K12 that is or what is there. The MAF answers both from a file the
+        // graph had no part in: over `chr:1,299,498-1,300,697` the four rows
+        // that skip the element go white and K12's stays, which is the same
+        // carriage the coloured strokes below draw, arrived at through an
+        // alignment rather than through P records.
+        //
+        // The gene lane makes it the IS5 element by name (`insH21`), so the
+        // bubble is an object rather than a shape.
+        //
+        // The graph is a GFA FILE and the lane is the tabix index, which is why
+        // this figure is two views of the same locus rather than a launch: the
+        // indexed route rebuilds segments and links only, so it carries no P
+        // records and `drawPaths` would have nothing to draw. That is also the
+        // answer to "showing how this was launched might help" -- there is no
+        // launch to show here, the route is Add -> Graph genome view with the
+        // `.gfa`, which the user guide's Route 2 documents.
+        {
+          type: 'LinearGenomeView',
+          displayName: 'The same 1.4 kb in K12 coordinates',
+          assembly: 'K12',
+          loc: PGGB_LOCUS_WINDOW,
+          tracks: [
+            { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
+            {
+              trackId: PGGB_MAF_TRACK,
+              type: 'LinearMafDisplay',
+              layout: PGGB_STRAIN_ROWS,
+              showTree: true,
+              height: 150,
+            },
+          ],
+        },
         {
           type: 'GraphGenomeView',
+          displayName:
+            'The graph over that interval, coloured by which strain walks each edge',
           gfaLocation: { uri: `${DATA}/ecoli_pggb_is5.gfa` },
           layoutMode: 'force',
           layoutQuality: 4,
@@ -2672,13 +2765,14 @@ export const graphSpecs: ScreenshotSpec[] = [
     // that names its colours: the legend is DOM beside the canvas, and
     // perf-stats rather than a row label because force draws no rows.
     readySelector: `body:has([data-testid="graph-path-legend"]) ${GRAPH_DRAWN}`,
-    readyTimeout: 90000,
+    readyTimeout: 120000,
     allowUnsettled: true,
-    settleMs: 8000,
+    settleMs: 10000,
     viewportWidth: 1000,
-    // the force pane runs to its 600px cap here, and the five-row legend fits
-    // inside it
-    viewportHeight: 763,
+    // the force pane runs to its 600px cap here and the five-row legend fits
+    // inside it, plus the gene lane and the five MAF rows above; 1130 cut 15
+    // css px, from the run's own report
+    viewportHeight: 1145,
     hideTooltip: true,
   },
   // pangenome/pggb_collapsed_repeat was here and is RETIRED (review:
@@ -2963,6 +3057,9 @@ export const graphSpecs: ScreenshotSpec[] = [
       views: [
         {
           type: 'LinearGenomeView',
+          // the other direction of the round trip this is now composed into;
+          // see the matching displayName on rgfa_strain_launch's graph view
+          displayName: 'Linear genome view → graph',
           assembly: 'K12',
           loc: SEGMENT_WINDOW,
           tracks: [
@@ -3081,6 +3178,37 @@ export const graphSpecs: ScreenshotSpec[] = [
         ],
       },
     ],
+  },
+
+  // THE ROUND TRIP, as one figure, which is what the two halves are for
+  // (review, on the neighbourhood half: "this is just 'yet another spur' image.
+  // is there anything interesting here? seems like it is the inverse of
+  // [rgfa_strain_launch]. if it is that related, consider combining into a side
+  // by side 4-part image, clearly saying that it is shared (e.g. graph ->linear,
+  // linear->graph)"). It is exactly that related, and separately neither half
+  // said so: one was a menu over a graph and a launched linear view, the other a
+  // menu over a linear view and a launched graph, in two different sections of
+  // the same page, and a reader met the second as a third spur drawing.
+  //
+  // Each half is already a two-stage capture (menu, then result), so composing
+  // the two horizontally IS the 2x2: left column graph -> linear, right column
+  // linear -> graph, each column reading down from the click to what it opened.
+  // The direction is in each half's own view header rather than in a callout,
+  // see the `displayName`s.
+  //
+  // The two halves are coloured differently on purpose and the caption says so:
+  // stable rank on the left, because the question there is WHOSE sequence the
+  // arm is, and the reference-position ramp on the right, because the question
+  // there is WHERE the segments are -- which is also the ramp the lane above it
+  // is painted with, so the clicked segment is the same hue in both frames.
+  {
+    mode: 'compose',
+    name: 'pangenome/rgfa_launch_roundtrip',
+    parts: [
+      'pangenome/rgfa_strain_launch',
+      'pangenome/rgfa_segment_neighbourhood',
+    ],
+    direction: 'horizontal',
   },
 
   ...mhcLayoutPartSpecs(),
@@ -4452,6 +4580,15 @@ export const graphSpecs: ScreenshotSpec[] = [
           // the launch adds below it
           id: 'pks_graph',
           type: 'GraphGenomeView',
+          // WHICH DIRECTION THIS HALF IS, in the app's own title bar rather
+          // than as a fifth red rectangle over the drawing. This figure and
+          // rgfa_segment_neighbourhood are the two directions of one round
+          // trip and are now composed side by side, so each half has to say
+          // which way it runs (review: "consider combining into a side by side
+          // 4-part image, clearly saying that it is shared (e.g. graph
+          // ->linear, linear->graph)"). A view header falls back to the
+          // assembly name, which was `E. coli K12` on both halves.
+          displayName: 'Graph → linear genome view',
           loadedTrackId: ECOLI_SEGMENTS_TRACK,
           loadedRegion: PKS_REGION,
           // The view's own default drawing. This was one row per strain, so that
@@ -4533,30 +4670,27 @@ export const graphSpecs: ScreenshotSpec[] = [
           { type: 'box', anchor: { text: 'Launch view' } },
           { type: 'box', anchor: { text: 'Linear genome view' } },
           { type: 'box', anchor: { text: 'CFT073 chr:' } },
-          // ...and which nodes that last row is about. s2132 is
-          // CFT073#1#chr:2,258,597 +58,610 bp -- 58.6 kb of the 64.7 kb window
-          // the launched view's header shows in the frame below, so the arm IS
-          // very nearly the path and the rest of it is backbone CFT073 shares
-          // with K12. Both anchored by node NAME through the view's
-          // nodePositions (probe-graph-nodes.ts prints the ids with their ranks
-          // and lengths), so they follow the FMMM layout rather than a pixel
-          // measured off a PNG.
+          // ...and WHICH node that last row is about, in three words. This was
+          // two sentences -- the arm's share of the launched window, and a key
+          // reading "blue = shared with K12" on the other node -- and the review
+          // that followed was "it has text annotation on the graph and the menu
+          // items. that is too much". Both were true and neither was needed at
+          // that length: the menu row this figure boxes already names the strain
+          // and its coordinates, so the arm only has to be identified as the
+          // same one, and the caption carries what stable rank means. The
+          // arithmetic (s2132 is CFT073#1#chr:2,258,597 +58,610 bp against the
+          // 64.7 kb the launched view's header shows) moved to the prose beside
+          // the figure, where a sentence belongs.
+          //
+          // Anchored by node NAME through the view's nodePositions
+          // (probe-graph-nodes.ts prints the ids with their ranks and lengths),
+          // so it follows the FMMM layout rather than a pixel measured off a PNG.
           {
             type: 'text',
-            text: 'CFT073 only: 58.6 kb of the 64.7 kb the launch opens',
+            text: 'CFT073 only',
             fontSize: 17,
             anchor: { view: 0, graphNode: 's2132' },
             dy: -70,
-          },
-          {
-            type: 'text',
-            // short, and right-aligned to the node: the pill grows leftwards
-            // from s659 and the full sentence ran off the pane's own left edge
-            text: 'blue = shared with K12',
-            fontSize: 17,
-            textAlign: 'end',
-            anchor: { view: 0, graphNode: 's659' },
-            dx: -20,
           },
         ],
       },

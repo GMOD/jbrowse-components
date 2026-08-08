@@ -258,6 +258,35 @@ export const hicSpecs: ScreenshotSpec[] = [
           showLabels: 'name',
           height: 90,
         },
+        // WHAT THE DOMAIN CONTAINS (review: "are there other tracks like known
+        // gene enhancers that would corroborate what is shown here?"). This is
+        // the one lane in the frame that is not derived from the contact map:
+        // the matrix, the Arrowhead domains and the HiCCUPS loops are all the
+        // same file read three ways, so nothing here said the contacted
+        // sequence was anything in particular. B-cell accessibility does, and
+        // it is the right cell type -- GM12878 is an EBV-transformed
+        // B-lymphoblastoid line, and this window's 600 kb gene desert is the
+        // MYC enhancer cluster.
+        //
+        // Two rows, not twelve: the pseudobulk track carries T, NK, B and
+        // myeloid, and `subtreeFilter` is the display's own "show these leaves"
+        // (matched on the source NAME, no tree involved). Naming both B rows
+        // also keeps the lane honest about being two independent pseudobulks
+        // rather than one curve.
+        //
+        // ENCODE's cCRE registry (`encodeCcreCombined`, also in this config)
+        // was the first thing tried here and does NOT work at this width --
+        // recorded so it is not re-tried. It is cell-type agnostic and covers
+        // several percent of the genome, so over 2.5 Mb it draws as an
+        // unbroken yellow strip edge to edge: it says every base of the frame
+        // is near a candidate element, which corroborates nothing. A sparse,
+        // quantitative, cell-type-matched lane is what the question wanted.
+        {
+          trackId: 'pbmc5k_scatac_pseudobulk_hg38',
+          type: 'MultiLinearWiggleDisplay',
+          subtreeFilter: ['Naive B', 'Memory B'],
+          height: 120,
+        },
         // Contact domains as ARCS (review: "delete the 'contact domains', just
         // change that into an arc track. it is not sensible as is being orange
         // boxes IMO"). One arc per domain, springing from its two corners, which
@@ -317,7 +346,9 @@ export const hicSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    viewportHeight: 1090,
+    // +120 for the B-cell ATAC lane, +33 the run reported clipped; the run's
+    // own clipped/blank-below report is what corrects this
+    viewportHeight: 1243,
     readySelector: '[data-testid="hic-display-done"]',
     readyTimeout: 240000,
     settleMs: 20000,

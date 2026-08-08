@@ -141,14 +141,11 @@ half its length on each side so it opens with context rather than clipped to its
 own ends. Dragging across the ruler and picking **Graph genome view (this
 selection)** does the same for a window you choose, with no track menu involved.
 
-<Figure caption="Right-click on backbone segment s1277 (glnA to yihN) → Launch view → Graph genome view (this segment). The launched window is the segment plus half its length on each side, colored Rainbow so each of the sixteen segments takes its own hue, with one line per graph link." src="/img/pangenome/rgfa_segment_neighbourhood.png" />
-
-Each line is one graph link, drawn when both of its endpoints are inside the
-cut. Every allele here has two links, one leaving the backbone and one
-rejoining, so s1814 and s1815 draw two lines while s1813, s1816 and the rank-2
-s2272 draw one, their other neighbour falling outside the window. The leftmost
-mark carries three because it is two alleles at once, s1813 and s1814, both a
-few tens of bp and so too short to draw apart at this zoom.
+Each line in the launched graph is one graph link, drawn when both of its
+endpoints are inside the cut, so an allele near the window's edge draws only the
+link that stays inside it. That direction is the right-hand half of the
+[round-trip figure](#from-a-node-back-to-a-genome) below; the left-hand half is
+the same journey the other way.
 
 ## Route 2: a GFA file
 
@@ -393,12 +390,23 @@ window the graph gives CFT073 tens of kilobases the reference does not have.
 Clicking that strain's entry opens the sequence on CFT073's own coordinates,
 where its gene track names it: `clbA` to `clbS`, the colibactin island.
 
-The colors below are **Stable rank**, so the labeled orange arm is the segment
-only CFT073 carries and the blue is backbone it shares with K12; between them
-they are the window the menu row names. No alignment is consulted, the launched
-coordinates come from the segments' own `SN`/`SO` tags.
+The colors in the left half below are **Stable rank**, so the labeled orange arm
+is the segment only CFT073 carries and the blue is backbone it shares with K12.
+That arm is `CFT073#1#chr:2,258,597` plus 58,610 bp, against the 64,668 bp
+window the menu row and the launched view's header both show, so the launch is
+very nearly the arm and the rest of it is shared backbone. No alignment is
+consulted, the launched coordinates come from the segments' own `SN`/`SO` tags.
 
-<Figure caption="Top: the graph at K12's asnW/asnU/asnV tRNA cluster, with the strain list open and the CFT073 entry boxed. Bottom: the view that entry launches, the same sequence on CFT073's own coordinates, holding the clb genotoxin operon." src="/img/pangenome/rgfa_strain_launch.png" />
+The two halves are the same journey in opposite directions, which is why they
+are one figure. Left, a graph launching a linear view; right, a linear view
+launching a graph — the right-click on segment `s1277` from
+[Route 1](#route-1-a-graph-track-browsable-by-locus) above. Their colorings
+differ because the questions do: stable rank on the left says _whose_ sequence
+an arm is, while the reference-position ramp on the right says _where_ each
+segment sits, which is also what the lane above it is painted with, so a segment
+is the same hue in the lane and in the graph it launches.
+
+<Figure caption="The round trip between the two views. Left: the graph at K12's asnW/asnU/asnV tRNA cluster with the CFT073 entry boxed, above the view that entry launches, on CFT073's own coordinates and holding the clb operon. Right: a right-click on segment s1277 in a linear view, above the subgraph it cuts." src="/img/pangenome/rgfa_launch_roundtrip.png" links="Graph → linear=pangenome/rgfa_strain_launch,Linear → graph=pangenome/rgfa_segment_neighbourhood" />
 
 ## Building the rGFA these figures use
 

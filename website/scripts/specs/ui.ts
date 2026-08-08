@@ -737,34 +737,61 @@ export const uiSpecs: ScreenshotSpec[] = [
               type: 'LinearAlignmentsDisplay',
               forceLoad: true,
               showPileup: false,
-              // The arc band the review asked for, under each coverage curve.
-              // It is the second, independent reading of the same event: the
-              // coverage says how much sequence is there, the arcs say what the
-              // mates think the distance across it is, so a deletion shows as a
-              // hole AND as a fan of long-insert pairs bridging that hole.
-              // `showPileup: false` still holds -- a 30x pileup at this width is
-              // a solid mass -- so these two bands are the whole track.
+              // The mate-pair band under each coverage curve: the second,
+              // independent reading of the same event. The coverage says how
+              // much sequence is there, the mates say what distance they think
+              // they are apart, so a deletion shows as a hole AND as pairs whose
+              // insert spans that hole. `showPileup: false` still holds -- a 30x
+              // pileup at this width is a solid mass -- so these two bands are
+              // the whole track.
               //
-              // The band is DENSE, and that is the data rather than a setting
-              // left wrong: at 30x every ordinary mate pair is an arc a few
-              // hundred bp wide, which draws as a near-vertical tick, so the
-              // informative long-range arcs ride over a picket fence of them.
+              // ON-SCREEN PAIRS ONLY, and this is the whole of the review's
+              // objection -- "an unexpectedly large number of 'vertical line'
+              // connections in the arc field, and ... unexpectedly placed arcs,
+              // i expected them over the deletion region but they are not". Both
+              // were settings rather than properties of 30x data, and the
+              // vertical lines were not arcs at all:
               //
-              // `drawProperPairs: false` is the filter that would clear it, and
-              // it is deliberately NOT set here. It drops whole read-name chains
-              // in `filterChainFeatures`, which runs before the coverage
-              // pipeline and not merely before layout -- so on an ordinary
-              // sample it takes ~all the reads, and the three coverage curves
-              // this figure exists to compare go with them. The arcs are the
-              // supporting evidence here and the coverage is the claim, so the
-              // noisier arc band is the right trade.
+              // - An INTERCHROMOSOMAL pair is never drawn as an arc. It drops a
+              //   tick at each endpoint in one dedicated colour, because insert
+              //   size and pair orientation mean nothing across refNames
+              //   (compute.ts, `if (p1Ref !== p2Ref)`). A 270 kb window of
+              //   segmental duplication at 30x holds thousands of reads whose
+              //   mate is called on another chromosome, so the band filled with
+              //   ticks -- the picket fence, drawn correctly and saying only
+              //   "these mates are elsewhere". `drawInter: false` removes it.
+              // - `drawLongRange` also draws a read whose RNEXT/PNEXT names a
+              //   locus OUTSIDE the window (`offScreenMateArcs`), at that
+              //   recorded position. Those were the widest curves in every lane,
+              //   they ran to places the frame does not show, and the control
+              //   sample had as many as the carrier -- which is exactly "not
+              //   over the deletion".
               //
-              // The long arcs stay traceable because arcColorByType's default
-              // colors them by insert size and orientation.
+              // With both off, what is left is pairs with both ends in frame, so
+              // the arcs that remain are the ones the deletion produces.
+              //
+              // `drawProperPairs: false` is a third filter and is deliberately
+              // NOT set: it drops whole read-name chains in
+              // `filterChainFeatures`, which runs before the COVERAGE pipeline
+              // and not merely before layout, so on an ordinary sample it takes
+              // ~all the reads and the three coverage curves this figure exists
+              // to compare go with them. It is also unnecessary now -- a
+              // concordant ~500 bp pair draws as a 3 px dome against the band's
+              // floor, not as a tick.
+              //
+              // Read cloud was tried here and is worse, so don't re-try it: its
+              // y axis is `arcsYDomainBp`, a per-TRACK maximum, so three
+              // separate CRAM tracks got three different insert-size scales
+              // (149 kb / 19 Mb / 8.4 Mb in the capture) and the one thing the
+              // figure exists to do -- compare the three samples -- is the one
+              // thing that band cannot do. It shares a domain across GROUPS of
+              // one track, not across tracks.
               readConnections: 'arc',
-              readConnectionsHeight: 70,
-              height: 240,
-              coverageHeight: 150,
+              drawInter: false,
+              drawLongRange: false,
+              readConnectionsHeight: 110,
+              height: 260,
+              coverageHeight: 140,
               minScore: 0,
               maxScore: 70,
             })),
@@ -773,10 +800,12 @@ export const uiSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'HG00097.final',
-    // 2.7x the span at 30x across three CRAMs, and the arcs need every mate
-    // rather than just the coverage summary
+    // 2.7x the span at 30x across three CRAMs, and the mate band needs every
+    // mate rather than just the coverage summary
     readyTimeout: 600000,
-    viewportHeight: 1120,
+    // three 260px tracks over the grown gene lane; the run's own
+    // clipped/blank-below report is what corrects this
+    viewportHeight: 1180,
     settleMs: 90000,
   },
 

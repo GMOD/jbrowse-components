@@ -344,7 +344,16 @@ the circle draws the rows the search leaves. `chr9` leaves `BCR--ABL1` and
 `NUP214--XKR3`, one junction seen from both sides, carrying an order of
 magnitude more junction reads than anything else in the file.
 
-<Figure caption="K562 STAR-Fusion calls in the SV inspector. Top, the import form. Middle, all 44 calls, with the artifact tail converging on chrM between chrY and chr1. Bottom, after searching the table for chr9: two rows left, and the single chord they draw between 22q11 and 9q34." src="/img/cancer_sv/k562_starfusion_triage.png" links="Import form=cancer_sv/k562_fusion_inspector_form,All 44 calls=cancer_sv/k562_fusion_inspector_all,Searched for chr9=cancer_sv/k562_fusion_inspector_pair" />
+A triaged row is not the end of the table. Every row carries a menu on its
+caret, and **Open in breakpoint split view** takes that call's two breakpoints
+into one view with the reads under both, which is where a call stops being a
+line in a file.
+
+<Figure caption="K562 STAR-Fusion calls in the SV inspector, top to bottom: the import form; all 44 calls, with the artifact tail converging on chrM between chrY and chr1; the table searched for chr9, leaving two rows and the single chord they draw between 22q11 and 9q34; and the NUP214--XKR3 row opened in a breakpoint split view, its two breakpoints banded green with the Iso-Seq reads that cross between them." src="/img/cancer_sv/k562_starfusion_triage.png" links="Import form=cancer_sv/k562_fusion_inspector_form,All 44 calls=cancer_sv/k562_fusion_inspector_all,Searched for chr9=cancer_sv/k562_fusion_inspector_pair,Breakpoint split view=cancer_sv/k562_fusion_inspector_split" />
+
+That split view is the `NUP214--XKR3` side of the pair. The `BCR--ABL1` side
+gets the rest of this section, laid out as two regions of one view rather than
+two stacked panels.
 
 ```json
 {

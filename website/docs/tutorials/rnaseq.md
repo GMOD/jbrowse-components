@@ -90,7 +90,7 @@ control: the coloring is derived from the reads alone, so where it switches has
 to agree with an annotation that was no part of computing it. Open the track
 menu and pick **Color by... → Paired end → First of pair strand**:
 
-<Figure caption="The same reads under the two colorings at the surfeit locus. Default coloring is one grey pileup across the cluster; first-of-pair strand splits it into two colors that switch where the genes do." src="/img/rnaseq/strand_specific.png" links="Default=rnaseq/strand_specific_default,First of pair strand=rnaseq/strand_specific_pair" />
+<Figure caption="The surfeit locus colored by first-of-pair strand. The pileup splits into two colors, and the switch falls where the genes change strand: RPL7A forward, SURF1 reverse, SURF2 forward." src="/img/rnaseq/strand_specific.png" />
 
 Coloring answers the question one read at a time. The coverage histogram answers
 it for a whole gene: pick **Group by... → First-of-pair strand**, then turn off

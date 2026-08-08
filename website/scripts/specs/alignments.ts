@@ -59,10 +59,17 @@ const CTX_MENU_READ = {
 // result had nowhere to show. The click path is not lost: it is in the recipe
 // dialog beside the figure's live links, derived from `colorBy` on the session.
 //
-// Both colorings are written into their own session (never driven by a menu),
-// so each half's live link opens the state it shows.
-function strandSpecificParts(): ScreenshotSpec[] {
-  const part = (
+// ONE FRAME, not the two-half compose it was (reviewer: "might just skip first
+// screenshot, only use second"). The "before" half was the default grey pileup,
+// and grey is what every other alignments figure on the site already shows, so
+// it spent half the figure's height restating the reader's starting point. What
+// makes the coloring legible is the switch landing on the gene boundaries, and
+// that is visible in the colored frame alone with the strand arrows over it.
+//
+// The coloring is written into the session (never driven by a menu), so the
+// figure's live link opens the state it shows.
+function strandSpecificSpec(): ScreenshotSpec {
+  const spec = (
     name: string,
     colorBy: { type: string },
     label: string,
@@ -111,12 +118,25 @@ function strandSpecificParts(): ScreenshotSpec[] {
     readyText: 'RPL7A',
     readyTimeout: 60000,
     settleMs: 15000,
-    // the gene track, the sashimi/coverage band and the pileup, with no room to
-    // spare: two of these stack into one figure
+    // the gene track, the sashimi/coverage band and the pileup
     viewportHeight: 718,
     hideTooltip: true,
     annotations: [
-      { type: 'text', x: 24, y: 56, fontSize: 22, maxWidth: 700, text: label },
+      // Which setting this is, anchored in the gene lane's empty band rather
+      // than at the old raw (24, 56) -- that coordinate was chosen when this
+      // figure was two stacked halves and each needed naming above its own
+      // chrome; on one frame it lands on the app's FILE/ADD/TOOLS menu.
+      {
+        type: 'text' as const,
+        fontSize: 22,
+        maxWidth: 700,
+        text: label,
+        anchor: {
+          track: 'ncbi_gff_hg19',
+          locus: 'chr9:136,216,000',
+          fracY: 0.6,
+        },
+      },
       // Which way each gene points, said big (reviewer: "make it clear with
       // extra annotation arrows which genes are forward and which are reverse").
       // The gene glyphs already carry per-exon chevrons, but they are 6px marks
@@ -149,18 +169,11 @@ function strandSpecificParts(): ScreenshotSpec[] {
       })),
     ],
   })
-  return [
-    part(
-      'rnaseq/strand_specific_default',
-      { type: 'normal' },
-      'Default coloring: strand is not in the picture',
-    ),
-    part(
-      'rnaseq/strand_specific_pair',
-      { type: 'firstOfPairStrand' },
-      'Color by first of pair strand',
-    ),
-  ]
+  return spec(
+    'rnaseq/strand_specific',
+    { type: 'firstOfPairStrand' },
+    'Color by first of pair strand',
+  )
 }
 
 export const alignmentsSpecs: ScreenshotSpec[] = [
@@ -1400,12 +1413,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     viewportHeight: 960,
   },
 
-  ...strandSpecificParts(),
-  {
-    mode: 'compose',
-    name: 'rnaseq/strand_specific',
-    parts: ['rnaseq/strand_specific_default', 'rnaseq/strand_specific_pair'],
-  },
+  strandSpecificSpec(),
 
   // Strand-split coverage: grouping splits the coverage band as well as the
   // pileup — each section's band is computed from only that section's reads — so

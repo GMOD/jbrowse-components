@@ -226,6 +226,51 @@ export const methylationSpecs: ScreenshotSpec[] = [
     // taller so both alignment tracks' full pileup (compact mode still stacks
     // many rows for this depth) fit below the gene + promoter context tracks
     viewportHeight: 1000,
+    // WHICH SAMPLE IS WHICH, on the drawing (reviewer). The figure's whole
+    // claim is a contrast between two pileups, and the only thing that said
+    // which was which was two config track names in the header — `PAY22766`
+    // and `PBA15131` are accession ids, so a reader had to know the dataset to
+    // know which lane was the treatment. Boxing each band and naming the
+    // treatment inside it makes the comparison readable without the header.
+    //
+    // The box wraps the track's whole rendering container (no fracY), so it
+    // follows the pileup's height; the pill sits inside it at a fracY, over
+    // the left flank where the 6mA density is lowest, so it covers reads
+    // rather than the promoter peak the figure is about.
+    annotations: [
+      {
+        type: 'box' as const,
+        anchor: { track: 'PAY22766-nanopore' },
+        strokeWidth: 4,
+      },
+      {
+        type: 'text' as const,
+        text: 'Hia5-treated: purple 6mA calls mark accessible chromatin',
+        fontSize: 20,
+        maxWidth: 360,
+        anchor: {
+          track: 'PAY22766-nanopore',
+          locus: 'chr12:6,530,200',
+          fracY: 0.28,
+        },
+      },
+      {
+        type: 'box' as const,
+        anchor: { track: 'PBA15131-nanopore' },
+        strokeWidth: 4,
+      },
+      {
+        type: 'text' as const,
+        text: 'No-enzyme control: the same window, with scattered background 6mA only',
+        fontSize: 20,
+        maxWidth: 360,
+        anchor: {
+          track: 'PBA15131-nanopore',
+          locus: 'chr12:6,530,200',
+          fracY: 0.28,
+        },
+      },
+    ],
   },
 
   // The two halves of Group by HP, composed into one before/after (reviewer:

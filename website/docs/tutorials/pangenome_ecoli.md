@@ -787,6 +787,14 @@ view → Graph genome view (this region)** cuts a subgraph from the index with n
 
 <Figure caption="An IS5 element at K12 chr:1,299,499-1,300,693, cut from the index rather than from a file prepared beforehand. The 1.2 kb arm of the bubble is the element, which only K12 carries; the other arm is the edge the other four strains take straight past it. Both panels are colored by reference position, so a node's color says where in the window it sits." src="/img/pangenome/pggb_locus_graph.png" />
 
+One setting is doing work in that pane. A node's drawn length is proportional to
+its sequence by default, and here one arm is 1,199 bp against neighbours of one
+to seventy: proportionally drawn, that arm is a circle wide enough to swallow
+the rest of the drawing. **Bubble spread → Compress lengths** pulls the longest
+and shortest nodes towards the graph's mean, which is what leaves the bubble as
+a lens you can see is a bubble. Use it whenever a cut spans kilobases and single
+bases at once; leave it off when one node has to _read_ as long.
+
 Switching **Layout** to **Sample rows** gives each strain its own row. On this
 graph a row means carriage, since it names a path that actually walks the
 segment. On an rGFA it means build order instead, because minigraph's `SR` names
@@ -1058,7 +1066,19 @@ in_pggb bash -c "odgi extract -i /data/$og -r K12#1#chr:1299400-1300800 -E -o - 
   | odgi view -i - -g" > ecoli_pggb_is5.gfa
 ```
 
-<Figure caption="The IS5 bubble with the strain paths drawn, nodes grey. One arm is the 1.2 kb element and the other is the edge past it, labelled as the 1.2 kb deletion it is on the reference. Four strokes run along that arc; the missing one is K12, the strain that walks the element." src="/img/pangenome/pggb_haplotype_paths.png" />
+The figure keeps the same interval in K12 coordinates above the graph, because a
+force drawing has no axis of its own. There the gene lane names the element
+(`insH21`, the IS5 transposase) and the whole-genome alignment shows the four
+strains that skip it with no aligned sequence across its span, while K12's row
+runs through. That is the same carriage the colored strokes below draw, reached
+through an alignment the graph had no part in.
+
+The broken line is the drawing's only one, and it means what it looks like:
+sequence that is not there. Weight and color could not carry it on their own,
+since an off-reference node is already charcoal and the arc is already
+near-black.
+
+<Figure caption="Top: the same interval in K12 coordinates, the gene lane naming the element insH21 and the four strains that skip it showing no aligned sequence across it. Bottom: the bubble with the strain paths drawn, nodes grey. One arm is the 1.2 kb element, the other the deletion edge past it, drawn broken. Four strokes run along that arc; the missing one is K12." src="/img/pangenome/pggb_haplotype_paths.png" />
 
 ### A collapsed repeat
 
