@@ -23,6 +23,23 @@ function makeData(): WiggleDataResult {
   return { sources: [{ name: 'default', ...arrays }] }
 }
 
+// Two all-positive features, the ordinary coverage shape: nothing crosses the
+// pivot, so a sign split has only one side to emit.
+function makePositiveData(): WiggleDataResult {
+  const arrays = processFeaturesFromArrays(
+    {
+      starts: new Int32Array([0, 10]),
+      ends: new Int32Array([10, 20]),
+      scores: new Float32Array([5, 7]),
+      minScores: new Float32Array([2, 4]),
+      maxScores: new Float32Array([9, 11]),
+      count: 2,
+    },
+    0,
+  )
+  return { sources: [{ name: 'default', ...arrays }] }
+}
+
 const baseGpuProps: WiggleGpuProps = {
   sources: [{ name: 'default' }],
   posColor: '#0068d1',
@@ -82,22 +99,64 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
     ])
   })
 
-  test('min mode renders a single min-score layer', () => {
+  // Regression: min/max used to emit one layer in posColor, so a signed track
+  // set to Minimum drew its below-pivot features in the positive color. The one
+  // band is now colored by its own sign, like every whiskers band. A lone filled
+  // band needs no split — its pos and neg bars grow away from the pivot in
+  // opposite directions and never overlap — so the sign rides on the instance
+  // colors and the layer count stays at one.
+  test.each(['min', 'max'] as const)(
+    '%s mode colors its band by sign (xyplot)',
+    mode => {
+      const out = buildSourceRenderData(makeData(), {
+        ...baseGpuProps,
+        summaryScoreMode: mode,
+      })
+      expect(out).toHaveLength(1)
+      expect([...out[0]!.featureScores]).toEqual(
+        mode === 'min' ? [2, -8] : [9, -1],
+      )
+      const colors = out[0]!.colorsAbgr!
+      expect(colors[0]).not.toEqual(colors[1])
+    },
+  )
+
+  // Line keeps one layer so the polyline stays continuous across the pivot.
+  test('min mode colors per instance in line mode', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
       summaryScoreMode: 'min',
+      renderingType: 'line',
     })
     expect(out).toHaveLength(1)
-    expect(out[0]!.featureScores).toEqual(new Float32Array([2, -8]))
+    const colors = out[0]!.colorsAbgr!
+    expect(colors[0]).not.toEqual(colors[1])
   })
 
-  test('max mode renders a single max-score layer', () => {
+  // Density paints a row from the layer color alone (drawDensity has no
+  // per-instance path), so there the band is split into two solid layers.
+  test('min mode splits the band into pos/neg layers in density', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      summaryScoreMode: 'max',
+      summaryScoreMode: 'min',
+      isDensityMode: true,
+      renderingType: 'density',
+    })
+    expect(out.map(s => [...s.featureScores])).toEqual([[2], [-8]])
+    expect(out[0]!.color).not.toEqual(out[1]!.color)
+    expect(out[0]!.colorsAbgr).toBeUndefined()
+  })
+
+  // An all-positive band (ordinary coverage) has no negative side to draw.
+  test('min mode in density emits one layer when the band stays above the pivot', () => {
+    const out = buildSourceRenderData(makePositiveData(), {
+      ...baseGpuProps,
+      summaryScoreMode: 'min',
+      isDensityMode: true,
+      renderingType: 'density',
     })
     expect(out).toHaveLength(1)
-    expect(out[0]!.featureScores).toEqual(new Float32Array([9, -1]))
+    expect([...out[0]!.featureScores]).toEqual([2, 4])
   })
 
   // density has no whiskers variant: it falls through to the avg pos/neg split.

@@ -77,13 +77,21 @@ function disambiguateSources(entries: AdapterEntry[]): AdapterEntry[] {
   for (const { source } of entries) {
     counts.set(source, (counts.get(source) ?? 0) + 1)
   }
-  const used = new Set<string>()
+  // Every already-unique name is reserved up front, not just the ones handed
+  // out so far: a duplicate resolving to `sample (2)` must not take that name
+  // from an entry genuinely called `sample (2)`, which would then be pushed out
+  // to `sample (2) (2)` — renaming the subtrack that was never ambiguous. Those
+  // entries return untouched below, so reserving them can't rename them either.
+  const used = new Set(
+    entries.map(e => e.source).filter(s => counts.get(s) === 1),
+  )
   return entries.map(entry => {
-    const collides = (counts.get(entry.source) ?? 0) > 1
-    const preferred = collides
-      ? (parentDirLabel(entry.source, getLocationPath(entry.bigWigLocation)) ??
-        entry.source)
-      : entry.source
+    if (!(counts.get(entry.source)! > 1)) {
+      return entry
+    }
+    const preferred =
+      parentDirLabel(entry.source, getLocationPath(entry.bigWigLocation)) ??
+      entry.source
     let source = preferred
     let n = 2
     while (used.has(source)) {

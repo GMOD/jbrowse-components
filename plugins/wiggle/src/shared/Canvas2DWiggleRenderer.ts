@@ -7,7 +7,7 @@ import {
   RENDERING_TYPE_SCATTER,
 } from '@jbrowse/wiggle-core'
 
-import { getRowHeight } from './wiggleComponentUtils.ts'
+import { getRowHeight, getRowTop } from './wiggleComponentUtils.ts'
 import {
   drawDensity,
   drawLine,
@@ -43,9 +43,10 @@ function drawWiggleBlocks(
     lineWidth,
     origin,
   } = state
-  // getRowHeight, not a bare divide: a source list that filters to empty (a
-  // subtree filter naming nothing present) leaves numRows 0, and Infinity here
-  // would propagate to NaN rect geometry.
+  // getRowHeight, not a bare divide: makeWiggleRenderState floors numRows at 1
+  // for the shader's sake, but this function is also reached from the SVG
+  // export with a hand-built state, and Infinity here would propagate to NaN
+  // rect geometry.
   const rowHeight = getRowHeight(canvasHeight, numRows)
 
   forEachClippedBlock(
@@ -59,7 +60,7 @@ function drawWiggleBlocks(
     },
     (sources, block) => {
       for (const source of sources) {
-        const rowTop = source.rowIndex * rowHeight
+        const rowTop = getRowTop(source.rowIndex, rowHeight)
         const r = Math.round(source.color[0] * 255)
         const g = Math.round(source.color[1] * 255)
         const b = Math.round(source.color[2] * 255)

@@ -1,5 +1,5 @@
 import { abgrToCssRgba, setAbgrFill } from '@jbrowse/core/util/colorBits'
-import { bpToScreenPx, spanLeft } from '@jbrowse/render-core/canvas2dUtils'
+import { makeBpMapper, spanLeft } from '@jbrowse/render-core/canvas2dUtils'
 import { appendPointMarker } from '@jbrowse/wiggle-core'
 import { SCALE_TYPE_LOG } from '@jbrowse/wiggle-core'
 
@@ -69,7 +69,7 @@ export function drawXYPlot({
   if (!colorsAbgr) {
     ctx.fillStyle = rgb
   }
-  const { screenStartPx, screenEndPx, reversed, start, end } = block
+  const toX = makeBpMapper(block)
   const n = source.numFeatures
   for (let i = 0; i < n; i++) {
     if (colorsAbgr) {
@@ -79,22 +79,8 @@ export function drawXYPlot({
         lastAbgr = c
       }
     }
-    const x1 = bpToScreenPx(
-      positions[i * 2]!,
-      start,
-      end,
-      screenStartPx,
-      screenEndPx,
-      reversed,
-    )
-    const x2 = bpToScreenPx(
-      positions[i * 2 + 1]!,
-      start,
-      end,
-      screenStartPx,
-      screenEndPx,
-      reversed,
-    )
+    const x1 = toX(positions[i * 2]!)
+    const x2 = toX(positions[i * 2 + 1]!)
     const scoreY = scoreToY(scores[i]!) + rowTop
     const w = Math.max(WIGGLE_MIN_PX, Math.abs(x2 - x1) + WIGGLE_FUDGE_FACTOR)
     // bar grows from the score baseline (originY) up or down to the score
@@ -131,25 +117,11 @@ export function drawDensity({
   )
   const positions = source.featurePositions
   const scores = source.featureScores
-  const { screenStartPx, screenEndPx, reversed, start, end } = block
+  const toX = makeBpMapper(block)
   const n = source.numFeatures
   for (let i = 0; i < n; i++) {
-    const x1 = bpToScreenPx(
-      positions[i * 2]!,
-      start,
-      end,
-      screenStartPx,
-      screenEndPx,
-      reversed,
-    )
-    const x2 = bpToScreenPx(
-      positions[i * 2 + 1]!,
-      start,
-      end,
-      screenStartPx,
-      screenEndPx,
-      reversed,
-    )
+    const x1 = toX(positions[i * 2]!)
+    const x2 = toX(positions[i * 2 + 1]!)
     const w = Math.max(WIGGLE_MIN_PX, Math.abs(x2 - x1) + WIGGLE_FUDGE_FACTOR)
     ctx.fillStyle = colorFn(scores[i]!)
     ctx.fillRect(spanLeft(x1, x2, w), rowTop, w, rowHeight)
@@ -193,7 +165,7 @@ export function drawLine({
   const zeroY = scoreToY(0) + rowTop
   const positions = source.featurePositions
   const scores = source.featureScores
-  const { screenStartPx, screenEndPx, reversed, start, end } = block
+  const toX = makeBpMapper(block)
 
   let inRun = false
   let lastAbgr = NO_COLOR
@@ -202,22 +174,8 @@ export function drawLine({
   for (let i = 0; i < n; i++) {
     const startBp = positions[i * 2]!
     const endBp = positions[i * 2 + 1]!
-    const x1 = bpToScreenPx(
-      startBp,
-      start,
-      end,
-      screenStartPx,
-      screenEndPx,
-      reversed,
-    )
-    const x2 = bpToScreenPx(
-      endBp,
-      start,
-      end,
-      screenStartPx,
-      screenEndPx,
-      reversed,
-    )
+    const x1 = toX(startBp)
+    const x2 = toX(endBp)
     const scoreY = scoreToY(scores[i]!) + rowTop
 
     if (colorsAbgr) {
@@ -295,30 +253,14 @@ export function drawLineCenter({
   const scoreToY = makeScoreToY(rowHeight, domainY, scaleType)
   const positions = source.featurePositions
   const scores = source.featureScores
-  const { screenStartPx, screenEndPx, reversed, start, end } = block
+  const toX = makeBpMapper(block)
   const gapLimitBp = source.gapLimitBp ?? Number.POSITIVE_INFINITY
   let lastAbgr = NO_COLOR
   let penX = 0
   let penY = 0
   for (let i = 0; i < n; i++) {
     const pi = i * 2
-    const x1 = bpToScreenPx(
-      positions[pi]!,
-      start,
-      end,
-      screenStartPx,
-      screenEndPx,
-      reversed,
-    )
-    const x2 = bpToScreenPx(
-      positions[pi + 1]!,
-      start,
-      end,
-      screenStartPx,
-      screenEndPx,
-      reversed,
-    )
-    const cx = (x1 + x2) / 2
+    const cx = (toX(positions[pi]!) + toX(positions[pi + 1]!)) / 2
     const cy = scoreToY(scores[i]!) + rowTop
     // Measured in bp, not px: the GPU encodes the same break from bp positions,
     // and a px comparison would drift from it wherever a block is clipped.
@@ -375,7 +317,7 @@ export function drawScatter({
   const scoreToY = makeScoreToY(rowHeight, domainY, scaleType)
   const positions = source.featurePositions
   const scores = source.featureScores
-  const { screenStartPx, screenEndPx, reversed, start, end } = block
+  const toX = makeBpMapper(block)
   const n = source.numFeatures
   // Every feature draws as a point marker (square/disc via appendPointMarker)
   // centered on the bp midpoint. Mirrors the GPU wiggle.slang scatter branch.
@@ -395,24 +337,8 @@ export function drawScatter({
         lastAbgr = c
       }
     }
-    const x1 = bpToScreenPx(
-      positions[i * 2]!,
-      start,
-      end,
-      screenStartPx,
-      screenEndPx,
-      reversed,
-    )
-    const x2 = bpToScreenPx(
-      positions[i * 2 + 1]!,
-      start,
-      end,
-      screenStartPx,
-      screenEndPx,
-      reversed,
-    )
+    const cx = (toX(positions[i * 2]!) + toX(positions[i * 2 + 1]!)) / 2
     const scoreY = scoreToY(scores[i]!) + rowTop
-    const cx = (x1 + x2) / 2
     appendPointMarker(ctx, cx, scoreY, pointSize)
   }
   ctx.fill()

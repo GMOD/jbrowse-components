@@ -5,6 +5,7 @@ import {
   RENDERING_TYPE_LINE_CENTER,
   RENDERING_TYPE_SCATTER,
   RENDERING_TYPE_XYPLOT,
+  getEffectiveScores,
   resolveRenderState,
   scaleTypeFromString,
 } from '@jbrowse/wiggle-core'
@@ -142,17 +143,60 @@ function bandColorsAbgr(
   return out
 }
 
-const noTint = (c: [number, number, number]) => c
-const lighten = (c: [number, number, number]) => lightenColor(c, 0.4)
-const darken = (c: [number, number, number]) => darkenColor(c, 0.4)
+// How a band's base color is shifted to convey magnitude. See summaryBands.
+type Tint = (c: [number, number, number]) => [number, number, number]
 
-// One whisker band split into its above-pivot and below-pivot solid-color
-// layers, `undefined` for an empty side. Filled rendering splits each band by
-// sign because the two sides must stack in opposite order (see
-// makeWhiskersLayers) — a split can't be avoided the way per-instance coloring
-// avoids it for line/scatter. Both sides come out of one counting pass plus one
-// fill pass, and a single-sided band (all-positive coverage, the common case)
-// aliases the band arrays instead of copying them.
+const noTint: Tint = c => c
+const lighten: Tint = c => lightenColor(c, 0.4)
+const darken: Tint = c => darkenColor(c, 0.4)
+
+// One score band to draw, and the tint each side of the pivot takes.
+interface ScoreBand {
+  scores: Float32Array
+  posTint: Tint
+  negTint: Tint
+}
+
+// The bands a summary mode draws, ordered outermost-first (max, avg, min).
+//
+// The tint is mirrored across the pivot so lightness always tracks magnitude,
+// not signed value: on the positive side the max band lightens and the min band
+// darkens (biggest positive = lightest); on the negative side that flips, so the
+// most-negative min band lightens and the least-negative max band darkens (most
+// negative = lightest red, not a dark brown).
+//
+// min/max draw the one band the user picked, untinted: with no sibling band
+// beside it there is no magnitude relationship for a tint to carry. Whiskers
+// collapses to the avg band alone when the data has no summary variation, since
+// processFeaturesFromArrays aliases min/max onto featureScores there and the
+// other two bands would paint the same values twice more.
+function summaryBands(
+  data: FeatureArrays,
+  summaryScoreMode: string,
+): ScoreBand[] {
+  const avg = { scores: data.featureScores, posTint: noTint, negTint: noTint }
+  if (summaryScoreMode !== 'whiskers') {
+    return [
+      {
+        scores: getEffectiveScores(data, summaryScoreMode),
+        posTint: noTint,
+        negTint: noTint,
+      },
+    ]
+  }
+  return data.hasSummaryScores
+    ? [
+        { scores: data.featureMaxScores, posTint: lighten, negTint: darken },
+        avg,
+        { scores: data.featureMinScores, posTint: darken, negTint: lighten },
+      ]
+    : [avg]
+}
+
+// One band split into its above-pivot and below-pivot solid-color layers,
+// `undefined` for an empty side. Both sides come out of one counting pass plus
+// one fill pass, and a single-sided band (all-positive coverage, the common
+// case) aliases the band arrays instead of copying them.
 function whiskerBandSides(
   featurePositions: Uint32Array,
   bandScores: Float32Array,
@@ -222,133 +266,86 @@ function whiskerBandSides(
   }
 }
 
-// The min/avg/max whisker layers for one source. Each band is bicolor: colored
-// by its own value's sign vs the pivot (posColor above, negColor below), so
-// signed data (e.g. phyloP) reads as pos/neg while a magnitude-based tint conveys
-// the whisker range. The tint mirrors across the pivot so the largest magnitude
-// in either direction is always the lightest.
+// The render layers one source contributes under a summary presentation
+// (whiskers, or a single min/max band), colored by each value's sign vs the
+// pivot so signed data (e.g. phyloP) reads as pos/neg. `summaryBands` above
+// decides which bands there are and how each is tinted; this decides how a band
+// becomes layers.
 //
-// Filled (xyplot) bars nest around the pivot — every band shares the pivot edge
-// and extends to its value — so they must paint back-to-front, largest magnitude
-// first. That order is opposite between the two sides (positive: max..min;
-// negative: min..max), which a single band order can't express, so filled
-// rendering splits each band by sign into solid-color layers. Line/scatter don't
-// overpaint, so they keep the bands whole (a split would break line continuity
-// at pivot crossings) and color per instance; scatter draws back-to-front, so
-// its layer order is reversed. Collapses to just the avg layer when the data
-// carries no summary variation.
-//
-// Density never reaches here: `sourceLayers` gates the whole whiskers branch on
-// `!isDensityMode` and falls through to the avg split, so this doesn't take (or
-// re-decide) that flag.
-export function makeWhiskersLayers({
+// Density never reaches here with whiskers: `sourceLayers` gates that on
+// `!isDensityMode` and falls through to the avg split. It does reach here with
+// min/max, which is why the density flag is taken rather than assumed false.
+export function makeSummaryLayers({
   data,
+  summaryScoreMode,
   posColor,
   negColor,
   pivot,
   isScatter,
   isFilled,
+  isDensityMode,
 }: {
   data: FeatureArrays
+  summaryScoreMode: string
   posColor: [number, number, number]
   negColor: [number, number, number]
   pivot: number
   isScatter: boolean
   isFilled: boolean
+  isDensityMode: boolean
 }): WiggleLayer[] {
   const { featurePositions, numFeatures } = data
+  const bands = summaryBands(data, summaryScoreMode)
 
-  // Handled ahead of the avg layer, not after it: this branch returns the split
-  // sides and never reads `avg`, so building `avg` first spent a
-  // Uint32Array(numFeatures) plus a full pass per source per region on every
-  // xyplot render — the default rendering under the default summary mode.
-  if (isFilled && data.hasSummaryScores) {
-    // Each band's positive and negative tints, ordered max..avg..min. Lightest at
-    // the extreme (max above the pivot, min below), darkening toward the pivot.
-    const bands = [
-      {
-        scores: data.featureMaxScores,
-        pos: lighten(posColor),
-        neg: darken(negColor),
-      },
-      { scores: data.featureScores, pos: posColor, neg: negColor },
-      {
-        scores: data.featureMinScores,
-        pos: darken(posColor),
-        neg: lighten(negColor),
-      },
-    ]
-    // Positive side back-to-front: max (light, tallest) painted first, min (dark)
-    // on top near the pivot. Negative side reverses: min (light, deepest) first,
-    // max (dark) on top near the pivot.
+  // Split each band into solid-color pos/neg layers, or keep it whole and color
+  // per instance? Two things force the split:
+  //   - density paints a row from the layer color alone (`drawDensity` builds
+  //     one gradient function per layer and has no per-instance path), and
+  //   - filled bars of MORE THAN ONE band nest around the pivot — every band
+  //     shares the pivot edge and extends to its value — so they must paint
+  //     back-to-front, largest magnitude first. That order is opposite between
+  //     the two sides (positive: max..min; negative: min..max), which a single
+  //     band order can't express.
+  // Everything else keeps the band whole and colors per instance: line/scatter
+  // don't overpaint, and a split would break line continuity at every pivot
+  // crossing. A lone filled band is in that group too — its pos and neg bars
+  // grow away from the pivot in opposite directions and never overlap.
+  if (isDensityMode || (isFilled && bands.length > 1)) {
     const sides = bands.map(b =>
       whiskerBandSides(
         featurePositions,
         b.scores,
         numFeatures,
         pivot,
-        b.pos,
-        b.neg,
+        b.posTint(posColor),
+        b.negTint(negColor),
       ),
     )
+    // Positive side back-to-front: max (light, tallest) painted first, min
+    // (dark) on top near the pivot. Negative side reverses: min (light,
+    // deepest) first, max (dark) on top near the pivot.
     return [
       ...sides.map(s => s.pos),
       ...[...sides].reverse().map(s => s.neg),
     ].filter(l => l !== undefined)
   }
 
-  const avg = {
+  const layers = bands.map(b => ({
     featurePositions,
-    featureScores: data.featureScores,
+    featureScores: b.scores,
     numFeatures,
-    color: posColor,
+    color: b.posTint(posColor),
     colorsAbgr: bandColorsAbgr(
-      data.featureScores,
+      b.scores,
       numFeatures,
       pivot,
       posColor,
       negColor,
-      noTint,
-      noTint,
+      b.posTint,
+      b.negTint,
     ),
-  }
-  if (!data.hasSummaryScores) {
-    return [avg]
-  }
-
-  const layers = [
-    {
-      featurePositions,
-      featureScores: data.featureMaxScores,
-      numFeatures,
-      color: lighten(posColor),
-      colorsAbgr: bandColorsAbgr(
-        data.featureMaxScores,
-        numFeatures,
-        pivot,
-        posColor,
-        negColor,
-        lighten,
-        darken,
-      ),
-    },
-    avg,
-    {
-      featurePositions,
-      featureScores: data.featureMinScores,
-      numFeatures,
-      color: darken(posColor),
-      colorsAbgr: bandColorsAbgr(
-        data.featureMinScores,
-        numFeatures,
-        pivot,
-        posColor,
-        negColor,
-        darken,
-        lighten,
-      ),
-    },
-  ]
+  }))
+  // scatter draws back-to-front, so its layer order is reversed
   return isScatter ? layers.reverse() : layers
 }
 

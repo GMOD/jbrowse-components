@@ -5,11 +5,10 @@ import {
   gapBreakLimit,
 } from '@jbrowse/wiggle-core'
 
-import { getEffectiveScores } from '../util.ts'
 import {
   isOverlayMode,
   isScatterMode,
-  makeWhiskersLayers,
+  makeSummaryLayers,
   renderingTypeToInt,
 } from './wiggleComponentUtils.ts'
 
@@ -39,51 +38,54 @@ function sourceLayers({
   negColor: [number, number, number]
   pivot: number
 }): WiggleLayer[] {
-  // summaryScoreMode selects the presentation. whiskers is bicolor per band
-  // (colored by each band's value vs the pivot). min/max read the full (unsplit)
-  // score arrays as a single color; 'avg' uses the worker's pos/neg split.
-  // density has no whiskers variant, so it falls through to the avg split.
-  if (summaryScoreMode === 'whiskers' && !isDensityMode) {
-    return makeWhiskersLayers({
+  // whiskers draws three bands, min/max the one the user picked; both are
+  // colored by each value's own sign against the pivot, so signed data keeps
+  // reading as pos/neg. The worker only splits `featureScores` (ADR-016), so
+  // that partition is re-derived per band on the main thread — without it,
+  // switching a signed track to Minimum turned its negative bars blue and cost
+  // a diverging density heatmap the loss/gain split it is read by.
+  //
+  // Density has no whiskers presentation, so it falls through to the avg split
+  // below (which is what `effectiveSummaryScoreMode` reports it as drawing).
+  const drawsSummaryBands =
+    summaryScoreMode === 'min' ||
+    summaryScoreMode === 'max' ||
+    (summaryScoreMode === 'whiskers' && !isDensityMode)
+  if (drawsSummaryBands) {
+    return makeSummaryLayers({
       data: source,
+      summaryScoreMode,
       posColor,
       negColor,
       pivot,
       isScatter: scatter,
       isFilled: filled,
+      isDensityMode,
     })
-  } else if (summaryScoreMode === 'min' || summaryScoreMode === 'max') {
-    return [
-      {
-        featurePositions: source.featurePositions,
-        featureScores: getEffectiveScores(source, summaryScoreMode),
-        numFeatures: source.numFeatures,
-        color: posColor,
-      },
-    ]
-  } else {
-    // avg: pos/neg split, each side colored by sign. A solid color is encoded
-    // upstream by the worker placing every feature in the pos arrays, so this
-    // same branch renders it as one color.
-    const layers: WiggleLayer[] = []
-    if (source.posNumFeatures > 0) {
-      layers.push({
-        featurePositions: source.posFeaturePositions,
-        featureScores: source.posFeatureScores,
-        numFeatures: source.posNumFeatures,
-        color: posColor,
-      })
-    }
-    if (source.negNumFeatures > 0) {
-      layers.push({
-        featurePositions: source.negFeaturePositions,
-        featureScores: source.negFeatureScores,
-        numFeatures: source.negNumFeatures,
-        color: negColor,
-      })
-    }
-    return layers
   }
+
+  // avg: the worker's pos/neg split, each side colored by sign — no main-thread
+  // partition needed. A solid color is encoded upstream by the worker placing
+  // every feature in the pos arrays, so this same branch renders it as one
+  // color.
+  const layers: WiggleLayer[] = []
+  if (source.posNumFeatures > 0) {
+    layers.push({
+      featurePositions: source.posFeaturePositions,
+      featureScores: source.posFeatureScores,
+      numFeatures: source.posNumFeatures,
+      color: posColor,
+    })
+  }
+  if (source.negNumFeatures > 0) {
+    layers.push({
+      featurePositions: source.negFeaturePositions,
+      featureScores: source.negFeatureScores,
+      numFeatures: source.negNumFeatures,
+      color: negColor,
+    })
+  }
+  return layers
 }
 
 // The shape of `model.gpuProps` — single source of truth for "settings that

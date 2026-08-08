@@ -332,8 +332,14 @@ export const WIGGLE_MIN_PX = 1.5
 // Shared by MultiWiggleAdapter (bigWigs shorthand entries) and the multiwiggle
 // add-track drop zone, so a dropped file and a pasted URL with the same
 // basename derive the same display name.
+//
+// Query and fragment come off before the extension does. They are part of the
+// URL, not the name, and they routinely carry dots of their own — a presigned S3
+// link or a `?v=1.2` cache-buster left `sample.bw?v=1` as the subtrack label,
+// since the last dot in the whole string sat inside the query.
 export function getFilename(uriOrName: string) {
-  const filename = uriOrName.slice(uriOrName.lastIndexOf('/') + 1)
+  const path = uriOrName.split(/[?#]/, 1)[0]!
+  const filename = path.slice(path.lastIndexOf('/') + 1)
   const dotIdx = filename.lastIndexOf('.')
   return dotIdx !== -1 ? filename.slice(0, dotIdx) : filename
 }
