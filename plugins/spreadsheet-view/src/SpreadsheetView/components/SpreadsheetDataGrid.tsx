@@ -1,8 +1,11 @@
 import { useEffect } from 'react'
 
-import { MenuItem, TextField } from '@mui/material'
+import { Chip, MenuItem, TextField } from '@mui/material'
 import { DataGrid, useGridApiRef } from '@mui/x-data-grid'
-import { gridVisibleRowsLookupSelector } from '@mui/x-data-grid/hooks'
+import {
+  gridQuickFilterValuesSelector,
+  gridVisibleRowsLookupSelector,
+} from '@mui/x-data-grid/hooks'
 import { observer } from 'mobx-react'
 
 import type { SpreadsheetModel } from '../SpreadsheetModel.tsx'
@@ -23,6 +26,8 @@ const SpreadsheetDataGrid = observer(function SpreadsheetDataGrid({
     svTypeColumnField,
     svTypeOptions,
     svTypeFilter,
+    filterText,
+    visibleRows,
   } = model
   const apiRef = useGridApiRef()
   // gate the subscription on the grid actually being rendered: rows start
@@ -70,27 +75,88 @@ const SpreadsheetDataGrid = observer(function SpreadsheetDataGrid({
     }
   }, [apiRef, gridReady, svTypeColumnField, svTypeFilter])
 
+  // The search box is the grid's own uncontrolled state, so the persisted
+  // `filterText` is pushed in rather than passed as a prop: the two effects are
+  // the two directions of one binding. Both compare before writing, so the
+  // round trip settles after one pass instead of ping-ponging — and the push
+  // has to survive a remount (session reload, StrictMode) rather than only
+  // running on a change, which is why it reads the grid's current values
+  // instead of trusting a ref.
+  useEffect(() => {
+    const api = apiRef.current
+    if (gridReady && api) {
+      const wanted = filterText?.split(' ').filter(Boolean) ?? []
+      const current = gridQuickFilterValuesSelector(apiRef) ?? []
+      if (current.join(' ') !== wanted.join(' ')) {
+        api.setQuickFilterValues(wanted)
+      }
+    }
+  }, [apiRef, gridReady, filterText])
+
+  useEffect(() => {
+    if (gridReady) {
+      return apiRef.current?.subscribeEvent(
+        'filterModelChange',
+        filterModel => {
+          model.setFilterText(
+            filterModel.quickFilterValues?.join(' ') || undefined,
+          )
+        },
+      )
+    }
+    return undefined
+  }, [apiRef, model, gridReady])
+
+  const showSvTypeFilter = !!svTypeColumnField && svTypeOptions.length > 0
   return rows && dataGridColumns ? (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {svTypeColumnField && svTypeOptions.length > 0 ? (
-        <TextField
-          select
-          variant="outlined"
-          size="small"
-          label="Filter by SV type"
-          value={svTypeFilter ?? ''}
-          onChange={event => {
-            model.setSvTypeFilter(event.target.value || undefined)
+      {showSvTypeFilter || filterText ? (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            margin: 8,
           }}
-          sx={{ m: 1, minWidth: 160, alignSelf: 'flex-start' }}
         >
-          <MenuItem value="">All</MenuItem>
-          {svTypeOptions.map(opt => (
-            <MenuItem key={opt} value={opt}>
-              {opt}
-            </MenuItem>
-          ))}
-        </TextField>
+          {showSvTypeFilter ? (
+            <TextField
+              select
+              variant="outlined"
+              size="small"
+              label="Filter by SV type"
+              value={svTypeFilter ?? ''}
+              onChange={event => {
+                model.setSvTypeFilter(event.target.value || undefined)
+              }}
+              sx={{ minWidth: 160 }}
+            >
+              <MenuItem value="">All</MenuItem>
+              {svTypeOptions.map(opt => (
+                <MenuItem key={opt} value={opt}>
+                  {opt}
+                </MenuItem>
+              ))}
+            </TextField>
+          ) : null}
+          {/* The search itself lives in the grid's own toolbar, which collapses
+              to a magnifier once it loses focus — so with a search applied the
+              rows are gone and nothing on screen says why. That is worst
+              exactly where the search matters most: a session or a link that
+              restores one, and the SV inspector's circle, which draws the rows
+              the search leaves and would otherwise read as a smaller callset.
+              The count is of rows actually shown, so it stays true when a
+              column filter is narrowing things as well. */}
+          {filterText ? (
+            <Chip
+              size="small"
+              label={`Search "${filterText}": showing ${visibleRows?.length ?? 0} of ${rows.length} rows`}
+              onDelete={() => {
+                model.setFilterText(undefined)
+              }}
+            />
+          ) : null}
+        </div>
       ) : null}
       <div style={{ flex: 1, minHeight: 0 }}>
         <DataGrid

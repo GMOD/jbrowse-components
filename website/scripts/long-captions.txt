@@ -8,5 +8,8 @@
 # to name each panel is the legitimate reason to stay listed.
 tutorials/cancer_sv.md /img/cancer_sv/multihop_reads.png
 tutorials/dog10k_svs.md /img/dog10k-diet-genes.png
+tutorials/hic_structural_variants.md /img/hic/loops_and_domains.png
+tutorials/homoeolog_synteny.md /img/homoeolog_synteny/wheat_vs_oat.png
+tutorials/mappability_qc.md /img/qc/smn_problematic_regions.png
 tutorials/pangenome_ecoli.md /img/pangenome/pggb_untangle_rows.png
 tutorials/selection_pressure.md /img/selection_pressure/lysozyme.png

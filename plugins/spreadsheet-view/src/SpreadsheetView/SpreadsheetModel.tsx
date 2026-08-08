@@ -79,6 +79,16 @@ export default function stateModelFactory() {
        * all); applied to the INFO.SVTYPE column when the imported data has one
        */
       svTypeFilter: types.maybe(types.string),
+      /**
+       * #property
+       * the search box's text (undefined = show all), applied as the grid's
+       * quick filter across every visible column. Persisted so the search
+       * survives a session reload, and so a session spec can open the sheet
+       * already narrowed — the SV inspector's circular view mirrors the rows
+       * the search leaves, which is the only way a link can carry a chord
+       * subset
+       */
+      filterText: types.maybe(types.string),
     })
     .volatile(() => ({
       /**
@@ -241,6 +251,12 @@ export default function stateModelFactory() {
        */
       setSvTypeFilter(arg?: string) {
         self.svTypeFilter = arg
+      },
+      /**
+       * #action
+       */
+      setFilterText(arg?: string) {
+        self.filterText = arg
       },
       /**
        * #action

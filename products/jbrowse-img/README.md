@@ -984,7 +984,7 @@ jb2export --fasta data/volvox/volvox.fa \
   --width 1200 --out snpcov.png
 ```
 
-![The same volvox alignments as a coverage histogram alone, with the read pileup hidden](https://jbrowse.org/jb2-figures/jbrowse-img/snpcov.94bebdfc8dbb.png)
+![The same volvox alignments as a coverage histogram alone, with the read pileup hidden](https://jbrowse.org/jb2-figures/jbrowse-img/snpcov.38194d761a26.png)
 
 ## Parameters
 

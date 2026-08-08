@@ -120,21 +120,10 @@ const GENE_TRACK = {
   height: 60,
 }
 
-// hg38's primary chromosomes, in order, for the whole-genome views. The
-// assembly is the full GRCh38 with alts and random scaffolds, and laying those
-// out too spends most of the circle on contigs no fusion call touches.
-const HG38_MAIN_CHROMS = [
-  ...Array.from({ length: 22 }, (_, i) => `chr${i + 1}`),
-  'chrX',
-  'chrY',
-  // 16 kb against 3.1 Gb, so it is a hairline, but ten of the 44 calls end on
-  // it, and those arcs are the artefact tail the figure is about
-  'chrM',
-]
-
-// Triage is the point of the whole-callset figure, so the support level has to
-// be visible: StarFusionAdapter puts JunctionReadCount on the feature's score,
-// and three calls clear 100 against a tail in single digits.
+// Support level, as a colour, for the arcs in the amplicon figure: three
+// windows hold five arcs there, with no room for a column of numbers beside
+// them. StarFusionAdapter puts JunctionReadCount on the feature's score, and
+// three calls clear 100 against a tail in single digits.
 const FUSION_ARC_COLOR =
   "jexl:get(feature,'score') > 100 ? '#c62828' : '#9e9e9e'"
 
@@ -1056,79 +1045,117 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     direction: 'horizontal',
   },
 
-  // K562: the caller's whole output at once, as chords on a circle. Every call
-  // is a chord from its left breakpoint to its right, so the two reciprocal
-  // chr9<->chr22 calls (BCR--ABL1 and NUP214--XKR3, the Philadelphia
-  // translocation from both sides) cross the middle in red while the artefact
-  // tail runs into chrM.
+  // K562: the caller's whole output, triaged in the SV inspector -- the table of
+  // calls beside the circle those same rows draw as chords, one chord per row
+  // from its left breakpoint to its right.
   //
-  // Circular rather than a whole-genome linear view: laid out linearly the same
-  // 44 arcs all bow the same way and overlap into a single grey mat, and the
-  // ones worth reading are the tall ones, which are also the ones most
-  // overdrawn. On a circle a chord's length is its span and the crossings sit in
-  // the middle, away from the chromosome names.
+  // The SV inspector rather than a bare circular view, and this is a rebuild
+  // (review: "it is not just 'filtering' but it is 'only showing chr9 and
+  // chr22'. that is confusing probably without close examination. ideally,
+  // instead of just plain-old-circular view, using sv inspector might be better
+  // here also"). The old pair of circles narrowed by dropping chromosomes, so
+  // the two frames shared no geometry: the axis itself moved between them, and
+  // nothing in the picture said so. Here the circle is the same circle in both
+  // frames, at the same rotation, over the same 455 hg38 contigs. What changes
+  // is which rows are in the table, and the chords are exactly those rows.
   //
-  // TWO circles, side by side, not one (review: "i still think it would be
-  // useful to make a multi-part figure. the circular view is generally not that
-  // strong on its own"). Triage is a narrowing, and one circle can only show the
-  // wide end of it. The second is the same track on a circle of chr9 and chr22
-  // alone -- which is what a reader does next, and is a `displayedRegionNames`
-  // change rather than a new file. On it the reciprocal pair is two chords
-  // across an otherwise empty circle, the artefact tail is gone with chrM, and
-  // the chord ends land on 9q34 and 22q11 where the next two figures work.
+  // "chr9" as the search term is the whole triage, and the data is what makes it
+  // one term: of the 44 calls only BCR--ABL1 and NUP214--XKR3 name chr9
+  // anywhere, and each names chr22 as its other end -- the Philadelphia
+  // translocation from both sides. The grid's quick filter matches every visible
+  // column at once, so one term reads breakpoints, gene names and annotations
+  // alike; on this file it is the breakpoint columns that hit.
   //
-  // Not a filtered circle, which would have been the other way to narrow:
-  // ChordVariantDisplay has four config slots (onChordClick and three stroke
-  // colors) and no `jexlFilters`, so support is expressible as a COLOR here and
-  // not as a filter. That is also why the left circle carries the color
-  // expression and the right one still does -- the two red chords are the same
-  // two on both.
-  ...(
-    [
-      [
-        'cancer_sv/k562_fusion_circle_all',
-        HG38_MAIN_CHROMS,
-        'All 44 calls, every chromosome',
-      ],
-      [
-        'cancer_sv/k562_fusion_circle_pair',
-        ['chr9', 'chr22'],
-        'The same track on chr9 and chr22 alone',
-      ],
-    ] as const
-  ).map(([name, regions, label]) => ({
+  // `filterText` is a session-spec field as of this figure, so both frames are
+  // openable links rather than one link and one scripted keystroke. Before it,
+  // the search box was uncontrolled DataGrid state and a filtered SV inspector
+  // could only be reached by typing into a live app.
+  //
+  // No stroke-colour expression here, unlike the old circles: the SV inspector
+  // builds its own chord track (featuresCircularTrackConfiguration) and that
+  // snapshot has no colour slot to set. Support is not lost by dropping it --
+  // JunctionReadCount is a column in the table, which states 182 and 154 against
+  // the single digits below rather than encoding the same thing as red.
+  //
+  // A third frame on the front, the import form itself, because the route in is
+  // the one part of this that was prose: Add -> SV inspector, then a file type
+  // the wizard cannot infer from a `.tsv` extension. Seeded with the assembly
+  // and that file type and no uri, which is exactly what the launcher does with
+  // a partial init, so the frame is the form as a reader meets it with the two
+  // dropdowns already answered.
+  {
     mode: 'url' as const,
-    name,
-    // square-ish, so two of them side by side is one wide frame rather than two
-    // tall ones with the drawing floating in the middle
-    viewportHeight: 800,
-    viewportWidth: 760,
+    name: 'cancer_sv/k562_fusion_inspector_form',
+    // the form sizes to its own content, so this is trimmed to it rather than
+    // to the two frames it composes with
+    viewportHeight: 390,
     url: sessionSpec(CONFIG, {
       views: [
         {
-          type: 'CircularView',
+          type: 'SvInspectorView',
+          displayName: 'Add → SV inspector, File Type → STAR-Fusion',
           assembly: 'hg38',
-          displayedRegionNames: regions,
-          // the circle auto-fits its container, so this is the drawing's size
-          height: 720,
-          tracks: [
-            { trackId: 'K562_star_fusion', strokeColor: FUSION_ARC_COLOR },
-          ],
+          fileType: 'STAR-Fusion',
+          height: 620,
         },
       ],
     }),
-    annotations: [
-      { type: 'text' as const, x: 24, y: 56, fontSize: 20, text: label },
-    ],
+    readyText: 'Open from track',
+    readyTimeout: 60000,
+  },
+  ...(
+    [
+      [
+        'cancer_sv/k562_fusion_inspector_all',
+        undefined,
+        'All 44 STAR-Fusion calls',
+      ],
+      [
+        'cancer_sv/k562_fusion_inspector_pair',
+        'chr9',
+        'Search "chr9": the reciprocal pair',
+      ],
+    ] as const
+  ).map(([name, filterText, displayName]) => ({
+    mode: 'url' as const,
+    name,
+    // sized off the wider frame: 20 of the 44 rows is enough to read the tail
+    // off, and the filtered frame's remaining white space is the narrowing
+    viewportHeight: 700,
+    url: sessionSpec(CONFIG, {
+      views: [
+        {
+          type: 'SvInspectorView',
+          displayName,
+          assembly: 'hg38',
+          // the same file the K562_star_fusion track in the config below reads;
+          // the inspector's import form can also open it straight off that
+          // track, which is how a reader gets here without typing a URL
+          uri: `${CANCER_SV_BASE}/K562.star-fusion.tsv`,
+          // no extension the wizard can infer from (`.tsv`), so name the parser
+          fileType: 'STAR-Fusion',
+          filterText,
+          height: 620,
+        },
+      ],
+    }),
+    // the first column header, so this waits on the parsed sheet rather than on
+    // the view's own chrome
+    readyText: 'JunctionReadCount',
+    readyTimeout: 60000,
+    settleMs: 15000,
   })),
   {
     mode: 'compose',
     name: 'cancer_sv/k562_starfusion_triage',
     parts: [
-      'cancer_sv/k562_fusion_circle_all',
-      'cancer_sv/k562_fusion_circle_pair',
+      'cancer_sv/k562_fusion_inspector_form',
+      'cancer_sv/k562_fusion_inspector_all',
+      'cancer_sv/k562_fusion_inspector_pair',
     ],
-    direction: 'horizontal',
+    // stacked, not side by side: each frame is a wide table plus a circle, and
+    // two of those in a row would put the pair of circles a screen apart
+    direction: 'vertical',
   },
 
   // BCR beside ABL1 in one row, the way FusionInspector lays a fusion out: two
@@ -1164,7 +1191,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         // the fan between the two regions is that read set, read by read.
         {
           trackId: 'K562_isoseq',
-          height: 700,
+          height: 620,
           coverageHeight: 190,
           showBezierConnections: true,
           showOnlySplitAlignments: true,

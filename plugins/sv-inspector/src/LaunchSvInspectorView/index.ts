@@ -8,6 +8,10 @@ export interface LaunchSvInspectorViewArgs {
   // a uri the view opens on the import form
   uri?: string
   fileType?: string
+  // search-box text for the spreadsheet half, applied once the file is loaded.
+  // The circular half draws the rows it leaves, so this is what makes a chord
+  // subset reachable from a link
+  filterText?: string
   height?: number
   // optional explicit view id, so another view in the same session spec can
   // reference this one
@@ -26,7 +30,7 @@ declare module '@jbrowse/core/PluginManager' {
 export default function LaunchSvInspectorViewF(pluginManager: PluginManager) {
   /** #extensionPoint LaunchView-SvInspectorView | async | Programmatically launch the SV inspector view */
   pluginManager.addToExtensionPoint('LaunchView-SvInspectorView', args => {
-    const { session, id, assembly, uri, fileType, height } = args
+    const { session, id, assembly, uri, fileType, filterText, height } = args
     // carry an init whenever the caller named anything to apply. With a uri it
     // imports the file; with only an assembly it still lands on the import
     // form, but with that assembly selected rather than the first one. An
@@ -35,7 +39,9 @@ export default function LaunchSvInspectorViewF(pluginManager: PluginManager) {
     session.addView('SvInspectorView', {
       id,
       ...(height ? { height } : {}),
-      ...(assembly || uri ? { init: { assembly, uri, fileType } } : {}),
+      ...(assembly || uri
+        ? { init: { assembly, uri, fileType, filterText } }
+        : {}),
     })
     return args
   })

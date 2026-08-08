@@ -15,6 +15,8 @@ export interface SpreadsheetViewInit {
   /** absent means "open the import form", pre-set to the assembly/fileType */
   uri?: string
   fileType?: string
+  /** search-box text to open the sheet already narrowed to matching rows */
+  filterText?: string
 }
 
 const minHeight = 40
@@ -137,6 +139,7 @@ export default function stateModelFactory() {
                     ...spreadsheet,
                     visibleColumns: prev.visibleColumns,
                     svTypeFilter: prev.svTypeFilter,
+                    filterText: prev.filterText,
                   }
                 : spreadsheet,
             )
@@ -181,7 +184,7 @@ export default function stateModelFactory() {
            */
           async applyInit(init: SpreadsheetViewInit) {
             const { importWizard } = self
-            const { assembly, uri, fileType } = init
+            const { assembly, uri, fileType, filterText } = init
             importWizard.setSelectedAssemblyName(assembly)
             if (uri) {
               const fileLocation = {
@@ -203,6 +206,11 @@ export default function stateModelFactory() {
             }
             if (uri) {
               await self.loadSpreadsheet(assembly)
+              // after the load, because the sheet the filter belongs to does
+              // not exist until then: displaySpreadsheet replaces the whole
+              // node, so a filter set before it would be thrown away with the
+              // sheet it was set on
+              self.spreadsheet?.setFilterText(filterText)
             }
           },
         }))

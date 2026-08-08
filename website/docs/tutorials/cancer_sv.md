@@ -338,28 +338,13 @@ The COLO829 event is genomic. What a fusion looks like in RNA, and how a
 caller's output relates to the reads under it, is easier to follow on a known
 fusion.
 
-Loading DepMap's STAR-Fusion output through `StarFusionAdapter` and opening it
-in a circular view draws the whole call set at once, each call a chord from its
-left breakpoint to its right. A chord needs both of its ends on the circle, so
-the track is opened in a circular view (**Add → Circular view**) rather than a
-window: in a single-locus linear view every interchromosomal call is dropped and
-the track shows a lone breakend glyph. Most of the output is noise, ten of
-K562's calls being mitochondrial artifacts, while `BCR--ABL1` and `NUP214--XKR3`
-carry an order of magnitude more support than the rest and are the two sides of
-the same chr9/chr22 junction.
+The SV inspector opens DepMap's STAR-Fusion output as a table beside a circular
+view of it, one chord per row. Searching the table narrows both halves, since
+the circle draws the rows the search leaves. `chr9` leaves `BCR--ABL1` and
+`NUP214--XKR3`, one junction seen from both sides, carrying an order of
+magnitude more junction reads than anything else in the file.
 
-Narrowing the circle to the two chromosomes those calls name is a view setting,
-not a filter: type them into the view's region selector, or open the view on
-them. The chord display has no `jexlFilters` slot, so support is expressible
-here as a color and not as a filter, which is why both circles below carry the
-same `strokeColor` expression.
-
-Red is the reciprocal chr9/chr22 pair plus one intrachromosomal call on chr6,
-and the fan converging on chrM, between chrY and chr1, is the artifact tail.
-Displaying only chr9 and chr22 is the next step of the triage, and a change to
-the view rather than to the data: the artifact tail goes with chrM.
-
-<Figure caption="Left: K562 STAR-Fusion calls as chords over every chromosome, colored by junction-read support. Right: the same track with only chr9 and chr22 displayed, leaving the reciprocal pair with its ends on 9q34 and 22q11." src="/img/cancer_sv/k562_starfusion_triage.png" links="Every chromosome=cancer_sv/k562_fusion_circle_all,chr9 and chr22 only=cancer_sv/k562_fusion_circle_pair" />
+<Figure caption="K562 STAR-Fusion calls in the SV inspector. Top, the import form. Middle, all 44 calls, with the artifact tail converging on chrM between chrY and chr1. Bottom, after searching the table for chr9: two rows left, and the single chord they draw between 22q11 and 9q34." src="/img/cancer_sv/k562_starfusion_triage.png" links="Import form=cancer_sv/k562_fusion_inspector_form,All 44 calls=cancer_sv/k562_fusion_inspector_all,Searched for chr9=cancer_sv/k562_fusion_inspector_pair" />
 
 ```json
 {

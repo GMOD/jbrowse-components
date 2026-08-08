@@ -1496,6 +1496,32 @@ export const viewFields: Record<string, FieldRecipe> = {
         }
       : undefined
   },
+  // The parser the import form applies to the file, which it otherwise infers
+  // from the extension. Named in the same form as `uri`, one radio row above
+  // the Assembly dropdown (ImportWizard.tsx's RadioSelector, legend "File
+  // Type", options from the `fileTypes` list).
+  fileType: value => {
+    const type = asString(value)
+    return type
+      ? {
+          path: `Import form → File Type → ${type}`,
+          note: 'Only needed when the filename does not end in the type, which is why a STAR-Fusion `.tsv` has to be named and a `.vcf.gz` does not.',
+        }
+      : undefined
+  },
+  // The same search box the user types in, which is why this reads as an action
+  // rather than a setting: the grid's quick filter matches the text against
+  // every visible column at once, so one term can select rows by chromosome, by
+  // gene name or by SV type depending on what the file carries.
+  filterText: value => {
+    const text = asString(value)
+    return text
+      ? {
+          path: `Type "${text}" into the table's search box (the magnifier above the grid)`,
+          note: "In the SV inspector the circular view draws only the rows the search leaves, so this narrows the chords too — it does not change which regions the circle shows, which is the 'show only regions with data' checkbox beside it.",
+        }
+      : undefined
+  },
   // not a menu item: ViewContainerTitle renders the header title as an
   // EditableTypography whose tooltip is "(click to rename)"
   displayName: value => {

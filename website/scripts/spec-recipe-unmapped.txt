@@ -5,15 +5,21 @@
 #
 # Adding a name here is a coverage regression — prefer a verified click-path in
 # src/lib/spec-recipe/fields.ts. Removing one is the win.
+arcHeight
 bubbleSpread
+color
 colorDomain
 connectedView
+displayMode
+featureHighlights
 gfaLocation
 height
+label
 legend
 maxRegionBp
 paneHeight
 sideBySide
+thickness
 transcriptId
 uniprotId
 zoomToBaseLevel

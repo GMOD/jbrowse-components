@@ -62,6 +62,8 @@ export interface LaunchSpreadsheetViewArgs {
   // a uri the view opens on the import form
   uri?: string
   fileType?: string
+  // search-box text, applied once the file is loaded
+  filterText?: string
   // optional explicit view id, so another view in the same session spec can
   // reference this one
   id?: string
