@@ -220,38 +220,76 @@ export const hicSpecs: ScreenshotSpec[] = [
     name: 'hic/loops_and_domains',
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
-      loc: 'chr8:127,620,000-128,620,000',
+      // 2.5 Mb where this was 1 Mb (review: "zoom out more. show more genes").
+      // The old window was cropped to a single domain plus its flanks, which
+      // made every lane a picture of one object and left the gene lane with
+      // four names on it. Wider, the domain that is the subject sits among its
+      // neighbours, which is the only way a reader can tell a domain from a
+      // window someone chose.
+      loc: 'chr8:126,900,000-129,400,000',
       trackLabels: 'offset',
-      // the looped domain itself, banded across every lane, so the arc, the
-      // Arrowhead box, the matrix triangle and the genes inside it are one
-      // object rather than four coincidences
+      // MYC ITSELF (review: "dont filter out just myc, but highlight myc").
+      // The band used to be the 600 kb contact domain, which the domain lane
+      // now draws as its own arc; banding it twice said the same thing twice
+      // and left the gene the figure is named for unmarked. MYC's own span is
+      // 7.5 kb, so at this width it is a hairline -- which is the honest scale
+      // of it against a 600 kb domain, and the label carries the name.
       highlight: [
         {
           refName: 'chr8',
-          start: 127_735_000,
-          end: 128_335_000,
-          label: 'MYC contact domain',
-          color: 'rgba(30,110,190,0.13)',
+          start: 127_735_434,
+          end: 127_742_951,
+          label: 'MYC',
+          color: 'rgba(214,137,16,0.45)',
         },
       ],
       tracks: [
+        // RefSeq, not MANE (review: "show more genes"). MANE is one transcript
+        // per protein-coding gene, and this window is a gene desert by
+        // construction -- that is WHY MYC's enhancers have 600 kb to live in --
+        // so MANE drew exactly two names across 2.5 Mb. RefSeq adds the
+        // non-coding neighbours the domain is actually full of, PVT1 above all,
+        // which is the lncRNA the domain's right half is.
         {
-          trackId: 'mane_hg38',
+          trackId: 'ncbi_refseq_109_hg38_latest',
           type: 'LinearBasicDisplay',
+          showOnlyGenes: true,
+          geneGlyphMode: 'longestCoding',
           showLabels: 'name',
-          height: 68,
+          height: 90,
         },
-        // Contact domains are a FEATURE track, not a paired-arc one. Arrowhead
-        // writes each domain with both bedpe mates set to the same interval
-        // (x1,x2 == y1,y2), so a paired arc runs from the domain to itself and
-        // draws nothing at all — the first cut of this figure had an empty
-        // 78px lane. Read as plain features the same file gives one box per
-        // domain, nested ones stacking into rows, which is also how a
-        // publication draws TADs.
+        // Contact domains as ARCS (review: "delete the 'contact domains', just
+        // change that into an arc track. it is not sensible as is being orange
+        // boxes IMO"). One arc per domain, springing from its two corners, which
+        // is the shape the matrix triangle underneath already has.
+        //
+        // `LinearArcDisplay`, NOT `LinearPairedArcDisplay`, and the difference
+        // is why this lane was boxes in the first place. Arrowhead writes each
+        // domain with both bedpe mates set to the same interval (x1,x2 ==
+        // y1,y2), so a PAIRED arc runs from the domain to itself and draws
+        // nothing at all -- the first cut of this figure had an empty 78px lane,
+        // and boxes were the retreat from that. The unpaired display asks a
+        // different question: it draws one arc from each feature's own start to
+        // its own end, which for a domain record is exactly corner to corner.
+        // No new file, no rebuild of the bedpe.
+        //
+        // `thickness` and `label` both default to jexl over `score`, which
+        // Arrowhead's domain records do not carry -- left alone the arcs come
+        // out hairline-thin with `undefined` printed at every apex.
         {
           trackId: 'hic_gm12878_domains',
-          type: 'LinearBasicDisplay',
-          height: 62,
+          type: 'LinearArcDisplay',
+          displayMode: 'arcs',
+          thickness: 2,
+          label: '',
+          color: '#d68910',
+          // arcHeight defaults to `log10(span)*50`, which is 289px for a 600 kb
+          // domain and so drew every arc with its apex cut off by the lane. The
+          // *12 keeps the same log shape -- a wider domain still springs higher,
+          // which is what makes the nesting readable -- and lands the widest one
+          // in frame at ~70px inside a 150px lane.
+          arcHeight: "jexl:log10(get(feature,'end')-get(feature,'start'))*12",
+          height: 150,
         },
         // Colour is the filter here, because LinearPairedArcDisplay has no
         // filter slot: HiCCUPS' `observed` column is the raw count at the
@@ -266,7 +304,7 @@ export const hicSpecs: ScreenshotSpec[] = [
         // jexl `==`, which would not.
         {
           trackId: 'hic_gm12878_loops',
-          height: 84,
+          height: 110,
           color: "jexl:get(feature,'observed')>200?'#8b1a1a':'rgba(0,0,0,0)'",
         },
         {
@@ -279,7 +317,7 @@ export const hicSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    viewportHeight: 962,
+    viewportHeight: 1090,
     readySelector: '[data-testid="hic-display-done"]',
     readyTimeout: 240000,
     settleMs: 20000,

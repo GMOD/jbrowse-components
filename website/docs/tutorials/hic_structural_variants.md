@@ -40,7 +40,7 @@ annotation files derived from the same matrix:
   of convergent CTCF sites. ENCODE calls them with
   [HiCCUPS](https://github.com/aidenlab/juicer/wiki/HiCCUPS), also a BEDPE.
 
-<Figure src="/img/hic/loops_and_domains.png" caption="GM12878 in situ Hi-C over 1 Mb of chr8 in coarse bins, with the Arrowhead contact domains and HiCCUPS loops called from the same matrix stacked above. The banded interval is a 600 kb contact domain whose left anchor is MYC; the dark red arc above it is the HiCCUPS loop between its two corners, and the block it bounds is the denser triangle in the matrix below. MANE genes on top." links="Open this view=hic/loops_and_domains" />
+<Figure src="/img/hic/loops_and_domains.png" caption="GM12878 in situ Hi-C over 2.5 Mb of chr8 in coarse bins, with the Arrowhead contact domains and HiCCUPS loops called from the same matrix stacked above, one arc each. MYC is banded, and the domain springing from it is 600 kb wide: the dark red arc below is the HiCCUPS loop between that domain's two corners, and the block it bounds is the denser triangle in the matrix. RefSeq genes on top, which here are mostly the lncRNAs the domain contains." links="Open this view=hic/loops_and_domains" />
 
 The dark arc is the point of the figure. A contact domain and the loop at its
 corner are the same object seen two ways. The block in the matrix and the arc
