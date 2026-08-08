@@ -382,52 +382,15 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
   },
 
-  // Projection 4: the two odgi projections in one whole-chromosome view — the
-  // aggregate depth curve (odgi depth) over the per-strain presence rows (odgi
-  // pav). They were two figures; alone, the depth wiggle is a solid blue wall
-  // that says nothing about WHICH strain is missing, which is exactly what the
-  // rows below it answer, so one dip and its explanation now sit in one frame.
-  {
-    mode: 'url',
-    name: 'pangenome_cactus/pav',
-    url: sessionSpec(CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'K12',
-          loc: 'chr:1-4,641,652',
-          tracks: [
-            {
-              trackId: 'ecoli_cactus_depth',
-              type: 'LinearWiggleDisplay',
-              height: 150,
-            },
-            {
-              trackId: 'ecoli_cactus_pav',
-              type: 'MultiLinearWiggleDisplay',
-              // Density rather than the default stacked XY, and the pggb
-              // sibling (pangenome/pav) takes the same change so the two
-              // builders stay comparable. pav is a presence fraction per
-              // window, so at 4.6 Mb in 1000 px the XY rendering spent a row's
-              // height on a quantity that is 1 almost everywhere and drew each
-              // absence as a hairline slit; density spends colour on it
-              // instead, so an accessory stretch is a white column.
-              defaultRendering: 'multirowdensity',
-              // 4 strains at 60px a row, enough for the accessory dips to read
-              // without the stack dominating the frame
-              height: 240,
-            },
-          ],
-        },
-      ],
-    }),
-    readyText: 'per-strain presence',
-    readyTimeout: 90000,
-    viewportWidth: 1000,
-    // fits the 150px depth track plus the whole 240px stack
-    viewportHeight: 640,
-    settleMs: 15000,
-    hideTooltip: true,
-    actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
-  },
+  // `pangenome_cactus/pav` was here and is DELETED. It drew the aggregate odgi
+  // depth curve over the per-strain presence rows for the whole chromosome, and
+  // the pggb tutorial's `pangenome/pav` draws the identical composition from the
+  // identical odgi commands -- this section's own prose opens by saying so
+  // ("the same commands ... only the path names differ").
+  //
+  // The one place the two builders disagree is the rRNA operons, and that has
+  // its own figure: `pangenome_cactus/builders` puts both curves on one fixed
+  // axis over the banded operon, where the difference is legible. At
+  // whole-chromosome scale it is two spikes. So the comparative figure keeps the
+  // comparison and this one kept only the restatement.
 ]

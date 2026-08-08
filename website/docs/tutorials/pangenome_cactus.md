@@ -391,7 +391,13 @@ for strain in Sakai CFT073 NCTC86 IAI39; do
 done
 ```
 
-<Figure caption="Both odgi projections over all of K12. On top, odgi depth: near 5 where every strain traverses the graph, dropping toward 1 over accessory stretches. Below it, odgi pav, one row per non-K12 strain, near 1 where that strain is present and 0 over its own accessory stretches, so every dip in the curve above resolves into which strain accounts for it." src="/img/pangenome_cactus/pav.png" />
+Drawn under the aggregate curve, the rows say which strain accounts for each
+dip: one falls to 0 over its own accessory stretch while the others hold at 1.
+The picture is the one the pggb tutorial already shows
+([per-strain presence](/docs/tutorials/pangenome_ecoli#per-strain-presence)),
+because at this scale the two graphs give the same answer. Where they do not is
+the rRNA operons, and that is the figure above rather than this one: the Cactus
+depth curve holds at 5 across them where the pggb curve doubles.
 
 ## Mapping a new isolate through the graph
 
