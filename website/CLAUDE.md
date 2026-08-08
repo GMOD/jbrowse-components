@@ -66,9 +66,9 @@ immutable; git tracks `figures.lock` at the repo root, one line per figure.
 
 `scripts/generate-screenshots.ts`, run with `node` — **not `npx tsx`**, whose
 `keepNames` breaks `page.evaluate`'d functions. Specs in
-`scripts/screenshot-specs.ts`. A new `screenshot-*` module must be added to
-`GLOBAL_TRIGGERS` in `screenshot-impact.ts`, or `--affected` will not know it
-changes every capture.
+`scripts/screenshot-specs.ts`. A new `scripts/screenshot-*` module needs no
+bookkeeping: `GLOBAL_TRIGGERS` in `screenshot-impact.ts` matches that prefix, so
+`--affected` knows it changes every capture the day it is added.
 
 - **Display config in a session spec goes on the track**, inside its own
   `displays: [{ type, ...slots }]`. Slots on the view's `tracks` entry are

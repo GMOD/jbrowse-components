@@ -9,9 +9,11 @@ import fs from 'node:fs'
 import http from 'node:http'
 
 import { optimizePng } from './image-pipeline.ts'
+import { assertRenderSettled } from './screenshot-asserts.ts'
 import { EMBED_UMD_PATH, tempPath } from './screenshot-options.ts'
 import { waitForRasterize } from './screenshot-page.ts'
 import { waitForReady } from './screenshot-ready.ts'
+import { recordUnpainted } from './screenshot-report.ts'
 
 import type { EmbeddedSpec } from './screenshot-specs.ts'
 import type { Server } from 'node:http'
@@ -113,6 +115,23 @@ export async function captureEmbeddedToTemp(
     })
     await waitForReady(page, spec)
     await waitForRasterize(page)
+
+    // The same last gate `shoot` applies to every other capture. It used to be
+    // skipped here purely because this function is reached by an early return
+    // that steps over the shared path, so an embedded frame holding an error
+    // banner, a stuck spinner or a region-too-large message would have been
+    // written and reported as a success, which is the one outcome
+    // screenshot-asserts.ts exists to prevent.
+    //
+    // Its two siblings stay out, and not by oversight. assertViewsPresent reads
+    // the view tree out of a `session=spec-` query this harness has no URL for,
+    // and assertViewsRendered looks for view-container test-ids the bare
+    // component does not render. Both would be vacuous here rather than
+    // permissive, and a check that cannot fail is worse than no check.
+    if (!spec.allowUnsettled) {
+      await assertRenderSettled(page, spec)
+    }
+    await recordUnpainted(page, spec.name)
 
     const renderPath = tempPath('jb-final', spec.name, suffix)
     const el = await page.$('#root')

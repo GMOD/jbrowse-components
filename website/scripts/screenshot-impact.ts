@@ -462,17 +462,25 @@ export async function specFileOwners(): Promise<Map<string, string>> {
 // Files that change how EVERY capture is produced rather than what any one of
 // them shows: the generator, the shared action/annotation/image vocabulary, the
 // spec helpers every session is built with, and the browser harness.
+// Matched as PREFIXES, so a trailing '/' names a directory, a trailing '-'
+// names a module family, and a full filename still matches only itself.
 const GLOBAL_TRIGGERS = [
-  // the generator and the modules it is split across (options, ready, asserts,
-  // page, report, embedded) — a prefix, so a new one is covered the day it is
-  // added rather than the day somebody notices it isn't
   'website/scripts/generate-screenshots.ts',
-  'website/scripts/screenshot-options.ts',
-  'website/scripts/screenshot-ready.ts',
-  'website/scripts/screenshot-asserts.ts',
-  'website/scripts/screenshot-page.ts',
-  'website/scripts/screenshot-report.ts',
-  'website/scripts/screenshot-embedded.ts',
+  // The generator's modules (options, ready, asserts, page, report, embedded,
+  // impact, specs, spec-types, spec-helpers) as one prefix rather than ten
+  // filenames. The list form claimed in its own comment to be a prefix and was
+  // not, so the rule lived in website/CLAUDE.md instead ("a new screenshot-*
+  // module must be added to GLOBAL_TRIGGERS") and depended on somebody reading
+  // it at the moment they split a file out. A missed entry is silent and
+  // one-directional: --affected renders too little, the sweep it is measured
+  // against renders everything, and the gap only shows up as a figure that
+  // stayed stale.
+  //
+  // It over-selects on the two review-only modules that happen to share the
+  // prefix (screenshot-review-lib, screenshot-impact itself). That is the safe
+  // direction for a tool whose only job is to narrow, and --affected already
+  // answers "all" about half the time.
+  'website/scripts/screenshot-',
   'website/scripts/actions.ts',
   'website/scripts/annotations.ts',
   // where a click or a callout lands, for the anchor kinds that ask the model
@@ -481,9 +489,6 @@ const GLOBAL_TRIGGERS = [
   'website/scripts/graphAnchor.ts',
   'website/scripts/locusAnchor.ts',
   'website/scripts/image-pipeline.ts',
-  'website/scripts/screenshot-spec-helpers.ts',
-  'website/scripts/screenshot-specs.ts',
-  'website/scripts/screenshot-spec-types.ts',
   'packages/browser-test-utils/',
   'config/webpack/',
 ]
@@ -497,7 +502,7 @@ export async function selectAffected(
   const reasons: string[] = []
 
   const global = changedFiles.filter(f =>
-    GLOBAL_TRIGGERS.some(t => (t.endsWith('/') ? f.startsWith(t) : f === t)),
+    GLOBAL_TRIGGERS.some(t => f.startsWith(t)),
   )
   if (global.length > 0) {
     return {

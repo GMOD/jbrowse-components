@@ -94,9 +94,18 @@ async function overflowPx(page: Page) {
 }
 
 const clippedPx = new Map<string, number>()
-// spec name -> the tooltip text on screen at capture, or undefined for none.
-// Only populated for specs that did not ask for suppression.
-const tooltipSeen = new Map<string, string | undefined>()
+// spec name -> the tooltip text seen at any of that spec's captures. A staged
+// spec shoots several frames under one name, so this accumulates the way
+// unpaintedDisplays and clippedPx do rather than keeping only the last: a stray
+// tooltip left on stage 1 is in the published figure whether or not stage 3
+// still has it, and `expectTooltip` is satisfied by any frame showing one.
+// Last-write-wins got both of those backwards, in the quiet direction: it
+// reported nothing.
+//
+// An empty array is "this spec was shot and no frame had a tooltip", which is
+// distinct from an absent key ("never shot"), and both readers below depend on
+// the difference.
+const tooltipSeen = new Map<string, string[]>()
 // spec name -> displays that had not painted when its frame was taken
 const unpaintedDisplays = new Map<string, string[]>()
 
@@ -105,7 +114,12 @@ const unpaintedDisplays = new Map<string, string[]>()
 // demonstrating, so the interesting cases are the one nobody asked for (a click
 // sequence that ended on a hoverable control) and the one a tooltip figure lost.
 export async function recordTooltip(page: Page, name: string) {
-  tooltipSeen.set(name, await visibleTooltipText(page))
+  const text = await visibleTooltipText(page)
+  const seen = tooltipSeen.get(name) ?? []
+  tooltipSeen.set(
+    name,
+    text !== undefined && !seen.includes(text) ? [...seen, text] : seen,
+  )
 }
 
 // Specs that declare a tooltip belongs in their frame. Looked up by name rather
@@ -198,16 +212,19 @@ export function printSummary(totals: RunTotals) {
     )
   }
   const strayTooltips = [...tooltipSeen].filter(
-    ([name, text]) => text !== undefined && !tooltipExpected.has(name),
+    ([name, texts]) => texts.length > 0 && !tooltipExpected.has(name),
   )
   if (strayTooltips.length > 0) {
     printReport(
       `TOOLTIP LEFT IN THE CAPTURE (${strayTooltips.length}) — a hover the actions ended on; park the cursor or set hideTooltip, or set expectTooltip if the figure is about it`,
-      strayTooltips.map(([name, text]) => `• ${name}.png: "${text}"`),
+      strayTooltips.map(
+        ([name, texts]) =>
+          `• ${name}.png: ${texts.map(t => `"${t}"`).join(', ')}`,
+      ),
     )
   }
   const missingTooltips = [...tooltipSeen].filter(
-    ([name, text]) => text === undefined && tooltipExpected.has(name),
+    ([name, texts]) => texts.length === 0 && tooltipExpected.has(name),
   )
   if (missingTooltips.length > 0) {
     printReport(

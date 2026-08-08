@@ -174,6 +174,8 @@ async function renderSpecToTemp(
 ) {
   // Embedded captures run their own harness server + element screenshot, so
   // they bypass the jbrowse-web goto and the shared shoot/stages path entirely.
+  // The gates they must not bypass with it are applied inside that function,
+  // where they can still run before the frame is written.
   if (spec.mode === 'embedded') {
     return captureEmbeddedToTemp(page, spec, suffix)
   }
@@ -974,7 +976,7 @@ async function main() {
           // framing choice around a dialog or an empty state. Reporting all of
           // it every run would be noise nobody reads; reporting the ones that
           // just moved is the signal.
-          const slack = trailingBackgroundPx(
+          const slack = await trailingBackgroundPx(
             path.join(outDir, `${spec.name}.png`),
           )
           if (slack !== null && slack > SLACK_WARN_PX) {
