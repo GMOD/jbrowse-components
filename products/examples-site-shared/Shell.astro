@@ -8,6 +8,7 @@ interface ExampleMeta {
   slug: string
   title: string
   group: string
+  sections: { slug: string; title: string }[]
 }
 
 interface Props {
@@ -49,6 +50,23 @@ const isActive = (slug: string) => trimSlash(`${base}${slug}`) === here
 // sidebar is grouped by each page's `group`, in first-appearance order (the
 // pages list is already group-contiguous), mirroring the index Gallery
 const groups = [...new Set(examples.map(e => e.group))]
+
+// A multi-section page nests its sections under its own entry, expanded, with
+// no disclosure to open — the page you are on is the one place the extra demos
+// are worth a nav line, and a control that has to be clicked before it shows
+// them is worse than the scroll it replaces.
+//
+// **Only the current page's, and that is the whole design.** Sections exist so
+// several demos can share one sidebar entry (EXAMPLES_SITES.md, "Pages and
+// groups"); rendering every page's would undo exactly that — the LGV site is 18
+// pages and 44 sections, so its sidebar would go to 62 lines and the mechanism
+// that keeps it short would be doing nothing. Nesting the current page's costs
+// at most four.
+//
+// A single-section page nests nothing: its one section is the page, and the
+// same rule already governs the "On this page" card in ExampleLayout.
+const sectionLinks = (e: ExampleMeta) =>
+  isActive(e.slug) && e.sections.length > 1 ? e.sections : []
 
 // Which commit produced the page you are looking at. These sites deploy to a
 // fixed, unversioned S3 prefix (/storybook/<site>/) behind CloudFront, so there
@@ -288,6 +306,23 @@ try {
       aside.sidebar a[aria-current='page'] {
         color: var(--accent);
         font-weight: bold;
+      }
+      /* the current page's sections. Indented against a rule rather than by
+      padding alone, so a section title that wraps to two lines still reads as
+      one entry under its page instead of as two entries. */
+      aside.sidebar .nav-sections {
+        margin: 2px 0 6px 8px;
+        padding-left: 10px;
+        border-left: 1px solid var(--border);
+      }
+      aside.sidebar .nav-sections a {
+        font-size: 0.88em;
+        color: var(--muted);
+        line-height: 1.35;
+        padding: 3px 6px;
+      }
+      aside.sidebar .nav-sections a:hover {
+        color: var(--fg);
       }
       main {
         flex: 1 1 auto;
@@ -574,6 +609,17 @@ try {
                         >
                           {e.title}
                         </a>
+                        {sectionLinks(e).length > 0 && (
+                          <ul class="nav-sections">
+                            {sectionLinks(e).map(s => (
+                              <li>
+                                <a href={`${base}${e.slug}/#${s.slug}`}>
+                                  {s.title}
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
                       </li>
                     ))}
                 </ul>

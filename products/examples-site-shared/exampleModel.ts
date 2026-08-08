@@ -53,14 +53,21 @@ export function section(page: ExamplePage, slug: string): ExampleSection {
 }
 
 // flat, one-entry-per-page list for the shared Shell sidebar + Gallery grid and
-// the build smoke test, which only need {slug, title, description, group} (plus
-// skipSmoke, honored by the linear-genome-view smoke script)
+// the build smoke test, which need {slug, title, description, group} (plus
+// skipSmoke, honored by the linear-genome-view smoke script).
+//
+// `sections` rides along for the sidebar, which nests them under the page you
+// are currently on — see Shell.astro. It carries only what a nav link needs, so
+// a section `description` (page-TOC prose) stays out of the shell's props.
 export function flattenExamples(pages: ExamplePage[]) {
-  return pages.map(({ slug, title, description, group, skipSmoke }) => ({
-    slug,
-    title,
-    description,
-    group,
-    skipSmoke,
-  }))
+  return pages.map(
+    ({ slug, title, description, group, skipSmoke, sections }) => ({
+      slug,
+      title,
+      description,
+      group,
+      skipSmoke,
+      sections: sections.map(s => ({ slug: s.slug, title: s.title })),
+    }),
+  )
 }

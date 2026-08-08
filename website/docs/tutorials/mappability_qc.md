@@ -66,9 +66,9 @@ That is not the block being inverted — the gene order is the same in both
 (_SMN2_ first, then _SMN1_). It is two copies similar enough that a whole-genome
 chainer can join either one to either one, which is the same fact the Umap and
 MAPQ lanes below state per base, arrived at from an independent direction. The
-array is not even the same length in the two assemblies: the two genes are 875 kb
-apart in GRCh38 and 572 kb apart in CHM13, which is what a copy-number-variable
-region does between any two haplotypes.
+array is not even the same length in the two assemblies: the two genes are 875
+kb apart in GRCh38 and 572 kb apart in CHM13, which is what a
+copy-number-variable region does between any two haplotypes.
 
 So the ambiguity is a property of the sequence rather than of the assembly, and
 finishing the assembly does not remove it. What removes it is a read long enough

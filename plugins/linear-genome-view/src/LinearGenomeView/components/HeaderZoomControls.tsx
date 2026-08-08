@@ -7,6 +7,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreVert from '@mui/icons-material/MoreVert'
 import { observer } from 'mobx-react'
 
+import { scrollZoomMenuItem } from '../menuItems.ts'
 import ZoomButton from './ZoomButton.tsx'
 
 import type { LinearGenomeViewModel } from '../index.ts'
@@ -53,6 +54,9 @@ function getZoomMenuItems(model: LinearGenomeViewModel) {
         ])
       },
     },
+    // the one menu in the app that someone reaching for zoom already has open —
+    // the toggle is worth more here than anywhere it could be filed by category
+    scrollZoomMenuItem(model),
   ]
 }
 

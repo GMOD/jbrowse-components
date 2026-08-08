@@ -4,7 +4,6 @@ import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { useFocusOnInteraction } from '@jbrowse/core/util/hooks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { useWheelZoom } from '@jbrowse/core/util/usePanZoom'
 import Paper from '@mui/material/Paper'
 import { observer } from 'mobx-react'
 
@@ -12,11 +11,13 @@ import { SCALE_BAR_HEIGHT } from '../consts.ts'
 import Scalebar from './Scalebar.tsx'
 import TrackContainer from './TrackContainer.tsx'
 import TracksContainer from './TracksContainer.tsx'
+import { useScrollZoomHint } from './useScrollZoomHint.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 
 // lazies
 const NoTracksActiveButton = lazy(() => import('./NoTracksActiveButton.tsx'))
+const ScrollZoomHint = lazy(() => import('./ScrollZoomHint.tsx'))
 
 const useStyles = makeStyles()(theme => ({
   header: {
@@ -59,8 +60,16 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
   const MiniControlsComponent = model.MiniControlsComponent()
   const HeaderComponent = model.HeaderComponent()
   // wheel on the whole view; the click-drag half is on the tracks area, so a
-  // drag over the header doesn't pan (see TracksContainer's useSideScroll)
-  useWheelZoom(ref, model)
+  // drag over the header doesn't pan (see TracksContainer's useSideScroll).
+  // Binds the gestures and reports the wheel that meant "zoom" and moved
+  // nothing, which is what the hint below is for.
+  const {
+    showZoomHint,
+    zoomHintAt,
+    zoomHintMounted,
+    dismissZoomHint,
+    setZoomHintHeld,
+  } = useScrollZoomHint(ref, model)
   useEffect(() => {
     const curr = ref.current
     if (!curr) {
@@ -107,6 +116,19 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
         <HeaderComponent model={model} />
         {hideHeader ? <MiniControlsComponent model={model} /> : null}
       </div>
+      {/* portals itself to the body and positions in viewport coordinates, so
+      it sits outside the tracks rather than inside them — see ScrollZoomHint */}
+      {zoomHintMounted ? (
+        <Suspense fallback={null}>
+          <ScrollZoomHint
+            model={model}
+            show={showZoomHint}
+            at={zoomHintAt}
+            onDismiss={dismissZoomHint}
+            onHeldChange={setZoomHintHeld}
+          />
+        </Suspense>
+      ) : null}
       {model.scalebarOnly ? (
         <Scalebar
           model={model}

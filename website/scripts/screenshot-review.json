@@ -1206,8 +1206,8 @@
     "name": "multiway_synteny/ecoli_pangenome",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-08T00:12:54.423Z",
-    "hash": "16fda2c50ea257202d8affeb2265f057bd94bade"
+    "reviewedAt": "2026-08-08T02:35:15.074Z",
+    "hash": "2f1f7a37fc79e3e6e9371d9f0505079d1468a307"
   },
   "multiway_synteny/grape_peach_cacao": {
     "name": "multiway_synteny/grape_peach_cacao",
@@ -1905,8 +1905,8 @@
     "name": "multiway_synteny/ecoli_one_vs_all_whole_genome",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-08T00:12:52.001Z",
-    "hash": "c68e7b90e0006ec691befc1e045700b2dfabd402"
+    "reviewedAt": "2026-08-08T02:35:10.629Z",
+    "hash": "e39b44a0a36cfc2de87cb539cf722e84f6bb6970"
   },
   "pangenome/hprc_mhc_bandage": {
     "name": "pangenome/hprc_mhc_bandage",
@@ -1954,8 +1954,8 @@
     "name": "multiway_synteny/ecoli_launch_from_selection",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-08T00:12:49.614Z",
-    "hash": "0b72fa3357c0394e55734446d42239be22df24b0"
+    "reviewedAt": "2026-08-08T02:35:13.096Z",
+    "hash": "4d4697744f3f28b74dcfc0cc7c810f49f59bef09"
   },
   "desktop-ispcr-results": {
     "name": "desktop-ispcr-results",
@@ -2029,9 +2029,9 @@
   },
   "pangenome/pggb_synteny": {
     "name": "pangenome/pggb_synteny",
-    "status": "answered",
-    "note": "Second half of the same bug, and it could only ever show in an inversion. sharesBoundary subtracted the ref and mate deltas, which cancel only when the two sequences run the same way; on a reverse-strand alignment the anchor's low end is the mate's HIGH end, so a fragment of a reversed block measured a mismatch the size of the block and every inverted restatement was kept. AlignedSide carries strand now (unflipped, since it is a property of the pair), the boundary offsets add rather than subtract when reversed, and two sides that disagree about orientation are never one homology. Measured on the file: 490 sides dropped where the forward-only form dropped 474, all sixteen in the four pairs carrying an inversion, the six without a reversed side byte-identical. On this figure the inverted band went from 8.32% double-coated red area to 2.95% and from 1% triple-coated to 0, the three collinear bands unmoved. What is left is ribbons genuinely crossing at the inversion.",
-    "reviewedAt": "2026-08-08T01:11:07.000Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-08T02:36:20.511Z",
     "hash": "332cd03f7c4a89385515318f26447aa43c0cec91"
   },
   "pangenome/rgfa_allele_inventory": {
@@ -2336,9 +2336,9 @@
   },
   "scrna/percell_lyz": {
     "name": "scrna/percell_lyz",
-    "status": "answered",
+    "status": "good",
     "note": "Both halves. The pseudobulk lane is multi-row again, and the density track draws the key itself: overlayLegendApplies used to be 'isOverlay && numSources > 1', on the reasoning that a multi-row track names its sources in the sidebar -- which stops being true below the 6px SvgRowLabels needs for text, and at 4,390 rows over 620px this one is 0.14px a row, so its sidebar is an unlabelled stripe of nine colors. It now asks whether anything else on the frame names the colors, and guards on the COLLAPSED entry count (a key longer than a reader can scan is worse than the stripe it would explain). The collapse also had to widen: it folded per group only when a group's colors agreed, and this store groups 4,390 cells into six lineages while coloring them by nine cell types, so 'T cell' fell apart into 2,436 rows. One row per (group, color) pair is nine.\n\nONE THING IS NOT FIXED AND NEEDS YOUR CALL. The key reads 'T cell' twice, 'Monocyte' twice and 'Dendritic' twice, because the coarse lineage is what the hosted store's samples carry as their group; the cell type exists only as the color. scripts/build_scrna_pseudobulk.sh now writes the cell type there instead, so the next build is right, but the fix for the live figure is a re-upload of percell.zarr's root zarr.json to jbrowse.org/demos/scrna_pbmc5k/ -- metadata only, no array data, and I have not touched the bucket.",
-    "reviewedAt": "2026-08-08T01:43:36.560Z",
+    "reviewedAt": "2026-08-08T02:37:47.357Z",
     "hash": "9fdf598fe245e7189e4172a5fbcf595c9acda9d8"
   },
   "cancer_sv/k562_bcr_abl_split": {
@@ -2504,9 +2504,9 @@
   },
   "pangenome_cactus/builders": {
     "name": "pangenome_cactus/builders",
-    "status": "answered",
-    "note": "Neither tool is correct and the page now says so: seqwish merges identical sequence wherever it occurs so a path walks the rRNA run once per copy, a reference-anchored build keeps each copy at its own coordinate. A collapsed repeat is where to look for variation WITHIN an array; a reference-anchored one is where to ask which copy a read came from. What follows for this projection is only that odgi depth counts steps, so it is a strain tally on the Cactus graph and not on the pggb one. Deliberately not a third pill: it is a paragraph, and a pill saying 'neither' over one of two rows reads as being about that row.",
-    "reviewedAt": "2026-08-08T01:10:29.380Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-08T02:35:27.257Z",
     "hash": "04d55948ec200602b05311e3ba8e83cc1ca70ecf"
   },
   "pangenome/long_reads": {
@@ -2735,16 +2735,16 @@
   },
   "cancer_sv/multihop_reads": {
     "name": "cancer_sv/multihop_reads",
-    "status": "answered",
-    "note": "The route is on the image: 'Track menu -> Launch view -> Reconstruct derivative allele... -> Replace with split view', with an arrow to the frame edge where the other half is appended. Those are the same four clicks the right half's spec actually drives, so pill and capture cannot drift. Placed over the matched-normal pileup, the one lane here whose content is that it has none.",
-    "reviewedAt": "2026-08-08T01:10:29.593Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-08T02:33:20.917Z",
     "hash": "8156dfe1d881c4927631178f39b282dc34babbd2"
   },
   "dtu/atp5f1c_isoform_switch": {
     "name": "dtu/atp5f1c_isoform_switch",
-    "status": "answered",
-    "note": "Yes, three, and the first is a real bug in the renderer this figure exercises rather than anything about the figure.\n\n1. BUGFIX, plugins/canvas getBoxColor: a set `color` did not reach a transcript's UTRs. Read as coding-only it broke its own stated rule (\"the config beats the file\") in the worst direction -- with color:'red' on a BED12 track the exon took red while the UTR of the SAME transcript took the file's itemRgb, so the config won at one end of a gene and lost at the other; with no itemRgb it was a red gene with fixed teal ends. A UTR now falls through to `color` when `utrColor` is unset, and both-unset still lands on the UTR default because the fallback keys off the box rather than off the slot it read. New test pins it; 961 canvas tests pass. This is exactly why the DTU demo carries the same 300-character jexl TWICE (`color` and `utrColor`) and why the copy in the docs had already drifted from the copy in the figure (18a40ce025) -- the duplication was forced, not stylistic. The hosted config's `utrColor` line is now redundant and can be dropped on the next demos/dtu upload; left in place since it is byte-identical and an upload is not mine to make.\n\nNEEDS A REGEN AFTER THE NEXT jbrowse-web BUILD: cookbook_color_by_strand is the one committed figure whose pixels this moves (its RefSeq UTRs go from the teal default to the strand color, which is what that recipe means). Not built here because another agent's regen has been in flight for 40 min and a mid-flight rebuild fails it with ChunkLoadError.\n\n2. dtu/dtu_colored_gene_glyph had the defect THIS figure's own spec comment says it fixed. FloatingLegend is pinned to the track's top-right with an opaque background and no placement slot, so on a window that ends where the gene ends it sat on the 3' end of every row -- it covered the last exon of both colored transcripts and five gray ones. Right edge carried ~4 kb past the gene, same lever, regenerated.\n\n3. Not done, flagged: the seven colors are declared twice more than they need to be -- once in the jexl and once in the `legend` list -- so a palette edit is two edits that nothing checks agree. Item 1 removes the third copy. A `legend` that could be derived from a lookup-table jexl would remove the second, but that is a config-schema design question rather than a fix.",
-    "reviewedAt": "2026-08-08T01:43:36.567Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-08T02:33:47.834Z",
     "hash": "50b150771c7f5caabe37cbd6e05614f5fd90d3ac"
   },
   "feature_plotting_threads": {
@@ -2770,16 +2770,16 @@
   },
   "homoeolog_synteny/wheat_vs_oat": {
     "name": "homoeolog_synteny/wheat_vs_oat",
-    "status": "answered",
-    "note": "Both plots restricted to homoeologous groups 4, 5 and 7 (displayedRegionNames per axis), which turns a 441-cell grid into an 81-cell one, about 5x the area per cell, and the frame narrowed to 900 so the cells are square and a self-self diagonal runs at 45 degrees. Not an arbitrary third: 4A's two published translocations go to group 5 and group 7, so the three groups that make the wheat result are exactly the ones whose cells have to be in frame. Oat takes the same three so the pair stays like-for-like, and its answer is unchanged because its off-group cells are everywhere. The oat pill moved right of its cell, which is now the leftmost column.",
-    "reviewedAt": "2026-08-08T01:10:49.785Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-08T02:34:33.623Z",
     "hash": "bd6394262f1f9dfa40f05b7ae0e8d39d24db85bf"
   },
   "maf_hprc_pangenome": {
     "name": "maf_hprc_pangenome",
-    "status": "answered",
-    "note": "Zoomed out to the HPRCv2 README's own C4 window, chr6:31,972,057-32,055,418 (was a 30 kb slice). The narrow window was a real defect, not just a framing preference: C4A is chr6:31,982,057-32,002,681 and C4B is chr6:32,014,795-32,035,418, so it held C4A alone while the caption claimed 'the blank rows through the copy-number-variable C4A and C4B'. Both modules are on the frame now and the missing-haplotype blocks read as two separate columns. Cost measured off the .tai with the repo's own queryBlockSpan rather than guessed: 292 KB against the old 189 KB, because the read is bgzf-block granular -- 70 kb and 90 kb windows both resolve to the same 292 KB -- so it stays well under the 1 MB byte gate and needs no fetchSizeLimit.",
-    "reviewedAt": "2026-08-08T01:19:53.049Z",
+    "status": "bad",
+    "note": "need to use ncbi gene track, this has NM_ transcriptid instead of gene symbols",
+    "reviewedAt": "2026-08-08T02:35:04.564Z",
     "hash": "077c6d91a879a2b58ccecf7fdd0b78f7526a9640"
   },
   "multiway_synteny/wheat_homoeolog_selection": {
@@ -2798,9 +2798,9 @@
   },
   "pangenome/pggb_carriage": {
     "name": "pangenome/pggb_carriage",
-    "status": "answered",
-    "note": "Two rings, anchored on node ids so they follow the drawing if the layout re-runs. The drawer named 119715 and listed its four carriers while the graph beside it drew 61 nodes with nothing saying which one that was, so the corner tooltip was the only tie and it reads as a hover artefact. The second ring is the other half of the note: 118465 is CFT073's 75 bp detour, the one rank-1 node in the window and the reason 119715's carriage is a proper subset. The graph already labels it '75 bp', so the pill only says whose it is.",
-    "reviewedAt": "2026-08-08T01:26:40.608Z",
+    "status": "bad",
+    "note": "may benefit from showing maf track here also, so we see the detour. if other figure already shows this, deduplicate",
+    "reviewedAt": "2026-08-08T02:35:53.810Z",
     "hash": "043a20f6f5cecc5368ddc4a9640a201ed2cc7adf"
   },
   "pangenome/pggb_carriage_lane": {
@@ -2826,16 +2826,16 @@
   },
   "qc/smn_problematic_regions": {
     "name": "qc/smn_problematic_regions",
-    "status": "answered",
-    "note": "Done as a new figure beside this one rather than a change to it: qc/smn_vs_t2t, hg38 over T2T-CHM13 framed on each assembly's own SMN2-to-SMN1 span, with a new 'Would a finished assembly fix it?' section between 'Zooming out first' and 'Zooming back in'. It helps, and it answers a question the page was leaving open -- GRCh38 is not finished here and CHM13 is, so 'would a better assembly fix it' is the reader's obvious next thought. It does not. No new file: the same UCSC hg38ToHs1 liftOver PIF and hg38_hs1_synteny config the genomes_synteny figures already read. Read off it with tabix rather than asserted -- over tchr5:69200000-71700000 three chains are longer than 800 kb, all three overlap each other on both sides and two run backwards, so UCSC's own chainer could not resolve the block to one correspondence. Deliberately NOT claimed: that the block is inverted between the assemblies. Gene order rules that out (SMN2 before SMN1 in both), so the reverse chains are copy-to-copy. Two levers were needed to make it read: cigarMode 'off' (the default 'full' draws every CIGAR block of every chain and over a segdup that is a hairball) and heightMode 'fixed' on both gene lanes (both tracks are configured grow, and the hs1 GFF's pseudogene rows grew the bottom lane to ~450px, taller than the ribbon band it is context for). This figure itself is unchanged.",
-    "reviewedAt": "2026-08-08T01:34:23.941Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-08T02:36:43.757Z",
     "hash": "6c5042a945c3e9489d1d0e6ddd7dc17d63a92219"
   },
   "qc/smn_vs_control": {
     "name": "qc/smn_vs_control",
-    "status": "answered",
-    "note": "The zoom-out is now the page's FIRST figure and this pair is the zoom-in under it, which is the structural half of the ask. The reads still cannot be that wide (2.5 Mb of ONT-free 30x Illumina is a 57 Mb fetch), but the wide figure had a rendering fault that hid the very thing you wanted: at 2 kb a pixel the wiggle's default whiskers mode drew each pixel's min AND max, so a stretch averaging 4x but touching 40x somewhere inside every pixel painted full height and the island came out the same height as the sequence either side of it. summaryScoreMode avg draws the mean, and the block is now a plainly shorter plateau between two full-height flanks.",
-    "reviewedAt": "2026-08-08T01:11:07.227Z",
+    "status": "bad",
+    "note": "need to zoom out even further till we see non-problematic region. then we will see good and bad areas in same screenshot and can delete part 2 of screenshot",
+    "reviewedAt": "2026-08-08T02:37:18.484Z",
     "hash": "388af0aecc6221a1e294fd6dbd00a69286809d25"
   },
   "selection_pressure/lysozyme": {
@@ -2854,17 +2854,17 @@
   },
   "dog10k-diet-genes": {
     "name": "dog10k-diet-genes",
-    "status": "answered",
-    "note": "Real miss: the lane holds one record, so a row paints only where that animal carries it, and fracY 0.62 is 30 rows of non-carrier wolves. Moved to 0.41, the middle of the 13-row unbroken run of carriers (Boxer 1 to Alaska village dog 3), measured off the capture rather than derived. The RNASE1 half already landed on ink.",
-    "reviewedAt": "2026-08-08T01:10:29.165Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-08T02:33:40.693Z",
     "hash": "76867ba77501c3440c5c4a072c7ffa327b5db8aa"
   },
   "dtu/dtu_colored_gene_glyph": {
     "name": "dtu/dtu_colored_gene_glyph",
-    "status": "answered",
-    "note": "Same three fixes as dtu/atp5f1c_isoform_switch, which this shares its spec helpers with.",
-    "reviewedAt": "2026-08-08T01:20:22.251Z",
-    "hash": "aa790429fb0667fc53cd06d960949807c29d0b28"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-08T02:34:09.429Z",
+    "hash": "0c818ca41d1976f5192066bf868ee5b197a2378a"
   },
   "genomes_basics/phylop_bases": {
     "name": "genomes_basics/phylop_bases",
@@ -2882,9 +2882,16 @@
   },
   "pangenome/pggb_spur_linear": {
     "name": "pangenome/pggb_spur_linear",
-    "status": "answered",
-    "note": "A LinearVariantDisplay lane above the matrix, which is what makes the frame readable: it draws the one call as '>176689>178029_217, 7.11Kbp -> 93bp' over exactly the reference span the genotype columns below cover, where the matrix alone painted a colour per strain and never said what was being genotyped. It needs a second trackId rather than a second displays entry, since a session spec naming the same track twice keeps only the last display and the positional lane would silently replace the matrix (same trap dog10k-amy2b-duplication met). Both lanes take the same structural filter, in the two spellings the two displays need: the matrix's jexlFilters is a model property and wants the jexl: prefix written out, the canvas display's slot adds it. On the combo-display idea: the two-trackId recipe is what the app supports today and three figures now use it.",
-    "reviewedAt": "2026-08-08T01:26:40.838Z",
+    "status": "bad",
+    "note": "delete figure",
+    "reviewedAt": "2026-08-08T02:36:10.643Z",
     "hash": "a97dc78a44143429818f62b1d2316fa6c217352f"
+  },
+  "qc/smn_vs_t2t": {
+    "name": "qc/smn_vs_t2t",
+    "status": "bad",
+    "note": "confusing screenshot. this needs to be improved somehow, maybe with transparent cigar indels and showcurves",
+    "reviewedAt": "2026-08-08T02:37:42.934Z",
+    "hash": "850edaade26372a9636c2e241a1d1e1f6f71bccf"
   }
 }

@@ -13,6 +13,7 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import LabelIcon from '@mui/icons-material/Label'
 import LaunchIcon from '@mui/icons-material/Launch'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import MouseIcon from '@mui/icons-material/Mouse'
 import PaletteIcon from '@mui/icons-material/Palette'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import SearchIcon from '@mui/icons-material/Search'
@@ -33,6 +34,32 @@ import type { MenuItem } from '@jbrowse/core/ui'
 
 function toLocaleRounded(n: number) {
   return toLocale(Math.round(n))
+}
+
+/**
+ * The scroll-to-zoom toggle, shared by the view menu and the header's zoom menu
+ * so the two can't drift apart in label or wording.
+ *
+ * Both places earn it. The zoom menu is where someone already fiddling with
+ * zoom will look, and it is where this belongs on the merits; the view menu is
+ * the only one of the two that survives `hideHeader`, since MiniControls
+ * renders `menuItems()` and not the header's zoom controls.
+ *
+ * Writes a *session* preference, not view state — every wheel-zoom view in the
+ * app follows it (see BaseSession's `scrollZoom`).
+ */
+export function scrollZoomMenuItem(self: LinearGenomeViewModel): MenuItem {
+  return {
+    label: 'Scroll wheel zooms',
+    type: 'checkbox',
+    checked: self.scrollZoom,
+    icon: MouseIcon,
+    onClick: () => {
+      self.setScrollZoom(!self.scrollZoom)
+    },
+    helpText:
+      'When enabled, the mouse wheel zooms in and out over a view instead of scrolling the page, and shift+scroll scrolls the page. When disabled, ctrl+scroll still zooms. Applies to every view in the app.',
+  }
 }
 
 /**
@@ -108,6 +135,10 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
         self.horizontallyFlip()
       },
     },
+    // top level, not under "Show...": that submenu is visibility toggles, and
+    // this is a navigation gesture — the label was also the only thing naming
+    // it, so it was findable only by someone who already knew it existed
+    scrollZoomMenuItem(self),
     {
       label: 'Color CDS by reading frame',
       type: 'checkbox',
@@ -189,16 +220,6 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
           onClick: () => {
             self.setShowGridlines(!self.showGridlines)
           },
-        },
-        {
-          label: 'Scroll zoom on WebGL tracks',
-          type: 'checkbox',
-          checked: self.scrollZoom,
-          onClick: () => {
-            self.setScrollZoom(!self.scrollZoom)
-          },
-          helpText:
-            'When enabled, scrolling on WebGL tracks zooms in and out without needing to hold Ctrl. When disabled, Ctrl+scroll is still available for zooming.',
         },
         ...(self.canShowCytobands
           ? [

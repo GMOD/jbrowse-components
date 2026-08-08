@@ -113,7 +113,7 @@ function productAtLocus(products: SimpleFeatureSerialized[]) {
         .join('\n')}`,
     )
   }
-  return found!
+  return found
 }
 
 const maybe = apiKey ? describe : describe.skip

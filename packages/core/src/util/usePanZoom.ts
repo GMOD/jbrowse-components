@@ -52,17 +52,19 @@ export interface PanZoomView extends WheelZoomView {
  * nothing — scroll-to-zoom off, no ctrl/meta held, a vertical gesture. That
  * mode's well-known failure is that it is undiscoverable, and this is the hook
  * for the prompt that fixes it (`usePanZoom` builds one on top). Nothing else
- * can see the moment: doing nothing leaves no trace on the view.
+ * can see the moment: doing nothing leaves no trace on the view. It is handed
+ * the event because a prompt worth showing is shown where the user is looking,
+ * and the wheel is the only thing that knows where that is.
  */
 export function useWheelZoom(
   ref: React.RefObject<HTMLElement | null>,
   view: PanZoomView,
-  onModifierNeeded?: () => void,
+  onModifierNeeded?: (event: WheelEvent) => void,
 ) {
   // stable, so a host passing an inline closure doesn't rebind the listener
   // every render
-  const notify = useEventCallback(() => {
-    onModifierNeeded?.()
+  const notify = useEventCallback((event: WheelEvent) => {
+    onModifierNeeded?.(event)
   })
   useEffect(() => {
     const element = ref.current
@@ -82,9 +84,17 @@ export function useWheelZoom(
               !view.scrollZoom &&
               !event.ctrlKey &&
               !event.metaKey &&
-              Math.abs(event.deltaY) > Math.abs(event.deltaX)
+              Math.abs(event.deltaY) > Math.abs(event.deltaX) &&
+              // Nothing inside the view already claimed the gesture. Wheel
+              // events bubble, so a display that scrolls something of its own
+              // (a pileup's reads, a variant matrix's rows — anything on
+              // useVirtualScrollWheel) has already preventDefault'd by the time
+              // this outer listener runs. Those scrolls are virtual, painted
+              // from a model offset rather than a DOM scroller, so nothing else
+              // downstream can tell they happened.
+              !event.defaultPrevented
             ) {
-              notify()
+              notify(event)
             }
           },
         })
