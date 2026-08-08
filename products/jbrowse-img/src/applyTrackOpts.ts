@@ -581,14 +581,22 @@ const modifiers: Record<string, Modifier> = {
   },
 
   // ——— wiggle / score ———
+  //
+  // These three are `alignments` as well as `wiggle`, and it is the same slot in
+  // both cases rather than a translation: LinearAlignmentsDisplay's coverage
+  // band carries its own `autoscale` / `minScore` / `maxScore` / `scaleType`,
+  // spelled identically and with the same enums. Restricting them to wiggle left
+  // an RNA-seq coverage band no way to ask for a log axis from the CLI, which is
+  // exactly where one is wanted: junction depth spans two orders of magnitude, so
+  // a linear axis puts the whole picture in the first exon.
   autoscale: {
-    on: ['wiggle'],
+    on: ['wiggle', 'alignments'],
     apply: (r, v) => {
       r.snap.autoscale = parseStr('autoscale', v, 'autoscale type')
     },
   },
   minmax: {
-    on: ['wiggle'],
+    on: ['wiggle', 'alignments'],
     apply: (r, min, max) => {
       if (min) {
         r.snap.minScore = parseNum('minmax', min)
@@ -603,7 +611,7 @@ const modifiers: Record<string, Modifier> = {
   // reaches jb2export as a fatal render error, so a local copy of the list would
   // only add a way for the CLI to drift out of step with the display.
   scaletype: {
-    on: ['wiggle'],
+    on: ['wiggle', 'alignments'],
     apply: (r, v) => {
       r.snap.scaleType = parseStr('scaletype', v, 'linear or log')
     },

@@ -1293,6 +1293,12 @@ export const jbrowseImgSpecs: CliSpec[] = [
     'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/paired_end_rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.bam',
     'sashimi:auto',
     'coverageHeight:170',
+    // LOG, because junction depth here spans three orders of magnitude: the
+    // last exon peaks near 4000 and the first two sit in the low hundreds, so a
+    // linear axis drew them as a flat line and the band was one spike with the
+    // arcs floating over nothing (reviewer). Log puts every exon on the plot,
+    // which is what the arcs are meant to be read against.
+    'scaletype:log',
     'featureHeight:super-compact',
     'height:420',
     '--loc',

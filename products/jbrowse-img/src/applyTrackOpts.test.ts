@@ -236,14 +236,31 @@ describe('wiggle / score modifiers', () => {
     expect(snap.useBicolor).toBeUndefined()
   })
 
-  test('score settings warn and are ignored on a non-score (alignments) track', () => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+  // The coverage-band axis is the same four slots under the same names, so these
+  // three apply to alignments too. The rest of the score group is genuinely
+  // wiggle-only and still warns.
+  test('the axis trio reaches an alignments coverage band', () => {
     const { snap } = buildDisplaySnapshot('alignments', [
       'scaletype:log',
-      'fill:false',
+      'autoscale:localsd',
+      'minmax:1:4000',
     ])
-    expect(snap.scaleType).toBeUndefined()
+    expect(snap).toMatchObject({
+      scaleType: 'log',
+      autoscale: 'localsd',
+      minScore: 1,
+      maxScore: 4000,
+    })
+  })
+
+  test('the drawing settings still warn and are ignored on an alignments track', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+    const { snap } = buildDisplaySnapshot('alignments', [
+      'fill:false',
+      'crosshatch:true',
+    ])
     expect(snap.defaultRendering).toBeUndefined()
+    expect(snap.displayCrossHatches).toBeUndefined()
     expect(warn).toHaveBeenCalledTimes(2)
     warn.mockRestore()
   })

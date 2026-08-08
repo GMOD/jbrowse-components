@@ -74,12 +74,34 @@ function strandSpecificParts(): ScreenshotSpec[] {
       loc: 'chr9:136,214,000-136,229,000',
       trackLabels: 'offset',
       tracks: [
-        'ncbi_gff_hg19',
+        // What reserves the strip the three strand arrows below are drawn in,
+        // and BOTH settings are load-bearing. Raising `height` alone does not
+        // work: this display grows to its content, so a taller lane packed two
+        // more snoRNA rows into the space and the arrows landed on their
+        // descriptions again. `heightMode: 'fixed'` is what turns the number
+        // into a reservation, and `showLabels: 'name'` drops the blue second
+        // line under every feature, which here is four "small nucleolar RNA,
+        // C/D box 36x" strings saying nothing the figure is about.
+        {
+          trackId: 'ncbi_gff_hg19',
+          type: 'LinearBasicDisplay',
+          showLabels: 'name',
+          heightMode: 'fixed',
+          height: 150,
+        },
         {
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
           type: 'LinearAlignmentsDisplay',
           colorBy,
-          coverageHeight: 90,
+          // 120, not the 90 this had: a log axis prints a tick per power of two
+          // rather than three round numbers, and at 90px they overlapped into an
+          // unreadable column down the left of the band
+          coverageHeight: 120,
+          // LOG on the coverage band (reviewer). RPL7A is a ribosomal protein
+          // running ~100x the surfeit genes beside it, so on a linear axis its
+          // exons are the only thing with height and SURF1/SURF2 read as having
+          // no expression at all, which is not what the file says.
+          scaleType: 'log',
           height: 330,
           maxHeight: 2000,
           minSashimiScore: 3,
@@ -91,10 +113,40 @@ function strandSpecificParts(): ScreenshotSpec[] {
     settleMs: 15000,
     // the gene track, the sashimi/coverage band and the pileup, with no room to
     // spare: two of these stack into one figure
-    viewportHeight: 668,
+    viewportHeight: 718,
     hideTooltip: true,
     annotations: [
       { type: 'text', x: 24, y: 56, fontSize: 22, maxWidth: 700, text: label },
+      // Which way each gene points, said big (reviewer: "make it clear with
+      // extra annotation arrows which genes are forward and which are reverse").
+      // The gene glyphs already carry per-exon chevrons, but they are 6px marks
+      // on a 15 kb frame and the whole section turns on the reader seeing that
+      // the middle gene runs the other way from its two neighbours.
+      //
+      // Anchored on interior coordinates rather than on the gene bounds: the
+      // arrow only has to sit unambiguously inside one gene, and a span pinned
+      // to a boundary would need re-checking against the annotation release.
+      ...(
+        [
+          ['RPL7A', 136_215_300, 136_218_000],
+          // tail right, head left: SURF1 is the minus-strand gene
+          ['SURF1', 136_222_900, 136_219_000],
+          ['SURF2', 136_223_800, 136_227_500],
+        ] as const
+      ).map(([, from, to]) => ({
+        type: 'arrow' as const,
+        strokeWidth: 9,
+        fromAnchor: {
+          track: 'ncbi_gff_hg19',
+          locus: `chr9:${from}`,
+          fracY: 0.86,
+        },
+        anchor: {
+          track: 'ncbi_gff_hg19',
+          locus: `chr9:${to}`,
+          fracY: 0.86,
+        },
+      })),
     ],
   })
   return [

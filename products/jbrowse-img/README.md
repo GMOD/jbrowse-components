@@ -284,8 +284,11 @@ jb2export --fasta https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz \
 
 `sashimi:auto` overlays splice-junction arcs on the coverage band, sized by the
 number of reads spanning each junction: the standard RNA-seq splice view.
-`coverageHeight:` makes the coverage/sashimi band tall so the arcs are legible.
-This strand-specific paired-end RNA-seq (hg19, public) over `B2M` shows the long
+`coverageHeight:` makes the coverage/sashimi band tall so the arcs are legible,
+and `scaletype:log` is what puts every exon on the plot: RNA-seq depth here
+spans three orders of magnitude, so on a linear axis the tallest exon is the
+only one with any height and the arcs land over a flat line. This
+strand-specific paired-end RNA-seq (hg19, public) over `B2M` shows the long
 first intron as one big arc and the closely-spaced downstream exons as smaller
 arcs, with the spliced read pairs (green mate lines) below:
 
@@ -293,11 +296,11 @@ arcs, with the spliced read pairs (green mate lines) below:
 
 ```bash
 jb2export --hub hg19 --track hg19-ncbiRefSeqCurated height:90 \
-  --bam https://s3.amazonaws.com/jbrowse.org/genomes/hg19/paired_end_rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.bam sashimi:auto coverageHeight:170 featureHeight:super-compact height:420 \
+  --bam https://s3.amazonaws.com/jbrowse.org/genomes/hg19/paired_end_rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.bam sashimi:auto coverageHeight:170 scaletype:log featureHeight:super-compact height:420 \
   --loc B2M --width 1400 --out sashimi_junctions.png
 ```
 
-![RNA-seq sashimi plot over B2M: splice-junction arcs on the coverage band sized by junction read depth, over the spliced read pileup](https://jbrowse.org/jb2-figures/jbrowse-img/sashimi_junctions.2a5e16caccdf.png)
+![RNA-seq sashimi plot over B2M: splice-junction arcs on the coverage band sized by junction read depth, over the spliced read pileup](https://jbrowse.org/jb2-figures/jbrowse-img/sashimi_junctions.42adbc12cc98.png)
 
 `arcs:up` / `arcs:down` draws a read-connection arc for every split
 (supplementary) read, linking its two alignment segments; the arc color encodes
@@ -594,6 +597,10 @@ These share one display base, so every modifier below applies to both.
 | `heightMode:<fixed\|grow\|fit>[:N]` | `heightMode:fit:200`    | Track-height strategy: `fixed` scrolls to see all features, `grow` resizes the track to fit every feature, `fit` shrinks glyphs so every row fits without scrolling; an optional number sets the track height too |
 
 **BigWig tracks**
+
+The first three name a score axis rather than a BigWig, so they also apply to a
+BAM/CRAM track's coverage band, where `scaletype:log` is usually what an RNA-seq
+figure wants. The rest are BigWig-only and warn on any other track type.
 
 | Modifier                 | Example                | Description                                               |
 | ------------------------ | ---------------------- | --------------------------------------------------------- |
