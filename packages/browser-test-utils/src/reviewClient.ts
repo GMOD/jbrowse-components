@@ -21,7 +21,7 @@
 //                     filter; clearJustActed() on a filter change
 //   $ esc pill        the DOM/HTML helpers every card renderer needs
 //   cardOf cardEl     find a card element by name, or from a button inside it
-//   setVerdict saveNote clearVerdict   the inline button/field handlers
+//   setVerdict saveNote clearVerdict addNote   the inline button/field handlers
 //   updateCard        re-render one card in place, held until after the click
 //                     if a pointer is down (see the comment on it)
 //   harvestNotes applyPendingNotes     call around a full #main repaint
@@ -191,8 +191,9 @@ function applyPendingNotes() {
 // which it scrolls: the note sits under the figure it is about, and a box that
 // grew without limit would push that figure off the screen.
 //
-// Guarded on textarea because the other review UI's note field is an <input>,
-// which has no content height to grow to.
+// Guarded on textarea because an <input> has no content height to grow to.
+// Both review UIs render a textarea today; the guard is what lets a third
+// renderer use an input without this silently pinning it to one scrollHeight.
 const NOTE_MAX_PX = 320
 function autosizeNote(el) {
   if (!el || el.tagName !== 'TEXTAREA') {
@@ -423,6 +424,45 @@ async function saveNote(input) {
     paintDraft(name)
     paintMessage(name)
   })
+}
+
+// Start a new note without throwing the last one away.
+//
+// The manual version is retyping "the new thing. previous notes: <the old
+// text>" every time, and the friction of that is why the old note usually just
+// gets overwritten instead. That loses the wrong thing: a denial reason is the
+// record of WHY a figure was rejected, and the second look at a figure is
+// exactly when the first look's reasoning is worth having in front of you.
+//
+// Newest on top, because that is the order the reviewer wrote it in and the
+// order a truncated box shows. Repeated adds nest, which is honest: three
+// rounds of review read as three entries rather than as one merged paragraph
+// nobody can date.
+//
+// Nothing is written to the server here, and that is deliberate: a bare
+// "previous notes:" header with nothing above it is not a note. The field goes
+// dirty on the first keystroke and saves on blur like any other edit. What IS
+// recorded is the draft, so a reload between clicking this and typing does not
+// lose the restructuring.
+function addNote(btn) {
+  const el = cardEl(btn)
+  const note = el && el.querySelector('.note')
+  if (!note) {
+    return
+  }
+  const old = note.value.trim()
+  note.value = old ? '\\n\\nprevious notes:\\n' + old : ''
+  note.focus()
+  // caret above the divider, which is the whole point, and scrollTop with it,
+  // because a box at its NOTE_MAX_PX cap otherwise opens showing the bottom of
+  // the old note rather than the empty line the cursor is on
+  note.setSelectionRange(0, 0)
+  autosizeNote(note)
+  note.scrollTop = 0
+  // a programmatic write fires no 'input', so the draft bookkeeping that typing
+  // gets for free has to be done by hand
+  setDraft(el.dataset.name, note.value)
+  paintDraft(el.dataset.name)
 }
 
 async function clearVerdict(btn) {

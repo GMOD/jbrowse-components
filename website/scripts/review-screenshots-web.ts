@@ -491,6 +491,7 @@ const PAGE = /* html */ `<!doctype html>
   button.deny { border-color: #ef4444; color: #dc2626; }
   button.deny.active { background: #ef4444; color: #fff; }
   button.clear { border-color: ButtonBorder; color: GrayText; }
+  button.addnote { border-color: ButtonBorder; color: GrayText; }
   /* height is set by the client's autosizeNote as you type; min-height keeps an
      empty box the two rows it was, and overflow-y lets it scroll once it hits
      the cap rather than clipping. No resize handle: autosize owns the height,
@@ -903,6 +904,12 @@ function renderCard(spec) {
         '<button class="approve ' + (status === 'good' ? 'active' : '') + '" onclick="setVerdict(this,\\'good\\')">✓ Approve</button>' +
         '<button class="deny ' + (status === 'bad' ? 'active' : '') + '" onclick="setVerdict(this,\\'bad\\')">✗ Deny</button>' +
         (v ? '<button class="clear" onclick="clearVerdict(this)">clear</button>' : '') +
+        // Always rendered, including on an empty box where it only focuses the
+        // field. The alternative (show it once there is text to preserve)
+        // would have to appear and disappear as the note is typed, and the
+        // note field deliberately does not re-render as you type, so it would
+        // go stale immediately.
+        '<button class="addnote" onclick="addNote(this)" title="Keep this note and start a new one above it">+ add note</button>' +
         (v ? '<span class="reviewedAt">' + new Date(v.reviewedAt).toLocaleString() + '</span>' : '') +
       '</div>' +
       // Below the buttons, not under the box it describes: this line appears
