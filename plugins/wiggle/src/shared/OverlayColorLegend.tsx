@@ -13,48 +13,52 @@ interface LegendEntry {
   color?: string
 }
 
-// Each group's shared color, or `consistent: false` when its sources disagree
-// (e.g. the user explicitly overrode one sample) and so can't be collapsed.
-function groupColors(sources: LegendSource[]) {
-  const out = new Map<string, { color?: string; consistent: boolean }>()
-  for (const { group, color } of sources) {
-    if (group !== undefined) {
-      const seen = out.get(group)
-      out.set(group, {
-        color: seen ? seen.color : color,
-        consistent: seen ? seen.consistent && seen.color === color : true,
-      })
-    }
-  }
-  return out
-}
-
-// When sources have groups and every source within a group shares the same
-// color, collapse to one legend entry per group (showing the group name) so
-// a 50-source track with 2 groups shows 2 legend rows, not 50.
-// Ungrouped sources and inconsistent groups keep their per-source entries.
-function buildLegendEntries(sources: LegendSource[]): LegendEntry[] {
-  const groups = groupColors(sources)
-  const emitted = new Set<string>()
+// A grouped track's key is one row per (group, color) pair, in first-appearance
+// order. Almost always that is one row per group, since a group normally shares
+// a color — the pair is what a group whose sources DISAGREE about their color
+// collapses to instead of falling apart.
+//
+// Both halves are real and the second is not a corner case. A user overriding
+// one sample's color splits its group in two, and a store may simply carry a
+// coloring finer than its grouping: the per-cell PBMC store groups its 4,390
+// cells into six lineages and colors them by nine cell types, so 'T cell' is
+// two blues. Per-source entries there would be 2,436 rows for that one group,
+// which is not a key; two swatches labelled 'T cell' is, and it says something
+// true about the data rather than hiding it.
+// The key a color legend draws, in first-appearance order over the sources.
+//
+// A grouped source contributes one row per (group, color) pair. Almost always
+// that is one row per group, since a group normally shares a color — the pair
+// is what a group whose sources DISAGREE about their color collapses to
+// instead of falling apart.
+//
+// Both halves are real and the second is not a corner case. A user overriding
+// one sample's color splits its group in two, and a store may simply carry a
+// coloring finer than its grouping: the per-cell PBMC store groups its 4,390
+// cells into six lineages and colors them by nine cell types, so 'T cell' is
+// two blues. Per-source entries there would be 2,436 rows for that one group,
+// which is not a key; two swatches labelled 'T cell' is, and it says something
+// true about the data rather than hiding it.
+//
+// An ungrouped source keeps an entry of its own, since nothing else identifies
+// it.
+//
+// Exported so a caller can COUNT the entries before deciding to draw a key at
+// all: the collapse is what makes a 4,390-row track's key nine rows, and
+// whether it collapses is a property of the data rather than of the row count.
+// `overlayLegendApplies` asks this rather than guessing from `numSources`.
+export function buildLegendEntries(sources: LegendSource[]): LegendEntry[] {
+  const seen = new Set<string>()
   const entries: LegendEntry[] = []
   for (const s of sources) {
-    const group = s.group
-    const shared = group === undefined ? undefined : groups.get(group)
-    if (group !== undefined && shared?.consistent) {
-      if (!emitted.has(group)) {
-        emitted.add(group)
-        entries.push({
-          key: `group:${group}`,
-          label: group,
-          color: shared.color,
-        })
-      }
-    } else {
-      entries.push({
-        key: s.name,
-        label: s.label ?? s.name,
-        color: s.color,
-      })
+    if (s.group === undefined) {
+      entries.push({ key: s.name, label: s.label ?? s.name, color: s.color })
+      continue
+    }
+    const key = `group:${s.group}:${s.color ?? ''}`
+    if (!seen.has(key)) {
+      seen.add(key)
+      entries.push({ key, label: s.group, color: s.color })
     }
   }
   return entries

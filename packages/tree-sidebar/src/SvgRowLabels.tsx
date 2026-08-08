@@ -3,11 +3,18 @@ import { alpha, useTheme } from '@mui/material'
 
 import type { RowLabelSource } from './types.ts'
 
-// Below this a label's text is illegible, so the row draws as a color swatch
-// only. It is not a gate on drawing anything at all: a clustered track can sit
-// at a fraction of a pixel a row (1,987 canids in 640px is 0.32px) and the tint
-// is still the only thing carrying row identity there, so it has to survive.
-const MIN_TEXT_ROW_HEIGHT = 6
+/**
+ * Below this a label's text is illegible, so the row draws as a color swatch
+ * only. It is not a gate on drawing anything at all: a clustered track can sit
+ * at a fraction of a pixel a row (1,987 canids in 640px is 0.32px) and the tint
+ * is still the only thing carrying row identity there, so it has to survive.
+ *
+ * Exported because it is also the answer to "can this track's sidebar name its
+ * own rows" — which is what decides whether a display needs a color key beside
+ * the plot. A display asking that on its own would pick a second number and the
+ * two would drift.
+ */
+export const MIN_TEXT_ROW_HEIGHT = 6
 const SWATCH_WIDTH = 8
 
 // Consecutive rows sharing a color paint as one rect. At sub-pixel row heights
