@@ -76,25 +76,48 @@ track data may never go idle at all.
 
 So put a **positive gate** in front: wait until the thing you asked for exists.
 jbrowse-web publishes its live session model as `window.JBrowseSession`, which
-makes that a direct read rather than a guess:
+makes that a direct read rather than a guess. This is the gate
+`@jbrowse/capture` runs, spliced from its own source so the two cannot drift:
 
-```js
+<!-- include: products/jbrowse-capture/src/sessionGate.ts#session-gate -->
+<!-- prettier-ignore -->
+```ts
 await page.waitForFunction(
-  (assembly, trackIds) => {
-    const views = window.JBrowseSession?.views
-    if (!views?.length || views.some(v => v.initialized === false)) return false
-    if (!views.some(v => (v.assemblyNames ?? []).includes(assembly)))
+  (wantAssembly: string | null, wantTracks: string[]) => {
+    const session = (
+      globalThis as { JBrowseSession?: { views?: ViewState[] } }
+    ).JBrowseSession
+    const views = session?.views
+    if (!views?.length) {
       return false
+    }
+    // `initialized` is an LGV getter; a view type without one is mounted
+    // content the moment it exists, so absent counts as initialized and
+    // only an explicit false is pending.
+    if (views.some(v => v.initialized === false)) {
+      return false
+    }
+    if (
+      wantAssembly !== null &&
+      !views.some(v => (v.assemblyNames ?? []).includes(wantAssembly))
+    ) {
+      return false
+    }
     const open = new Set(
-      views.flatMap(v => v.tracks.map(t => t.configuration.trackId)),
+      views.flatMap(v =>
+        (v.tracks ?? []).map(t => t.configuration?.trackId),
+      ),
     )
-    return trackIds.every(id => open.has(id))
+    return wantTracks.every(id => open.has(id))
   },
-  { timeout: 60000, polling: 250 },
-  'hg38',
-  ['hg38-ncbiRefSeqCurated'],
+  { timeout, polling: 250 },
+  assembly ?? null,
+  trackIds,
 )
 ```
+
+`tracks` and `configuration` are guarded because a view can exist before either
+does, which the hand-written version of this snippet used to get wrong.
 
 A config URL that 404s, a `trackId` the config does not define, and an assembly
 name that does not match all fail there — and only there. Each of them otherwise

@@ -97,6 +97,7 @@ export async function waitForSession(
   }: SessionExpectations & { timeout?: number } = {},
 ) {
   try {
+    // #region session-gate
     await page.waitForFunction(
       (wantAssembly: string | null, wantTracks: string[]) => {
         const session = (
@@ -129,6 +130,7 @@ export async function waitForSession(
       assembly ?? null,
       trackIds,
     )
+    // #endregion session-gate
   } catch {
     const summary = await readSessionSummary(page)
     const found = summary
