@@ -1,13 +1,7 @@
-Nothing above this page draws anything around a track. Add back only what your
-app wants: all three pieces here read the same view model the tracks read, so
-none needs telling when the user pans.
-
-The ruler needs one view getter and one helper. `dynamicBlocks.contentBlocks` is
-what is on screen right now, one entry per contiguous region, each carrying the
-`offsetPx` a tick's position is measured from. `chooseGridPitch` from
-`@jbrowse/core/util/chooseGridPitch` picks a round tick spacing for the zoom.
-Block coordinates are 0-based, so the label is `bp + 1`: every coordinate
-JBrowse shows a user is 1-based.
+The other half of what an app draws around its data, and much less code than the
+row above: a column of labels beside the tracks, and a bar to drag each one
+taller. Both read the same view model the tracks read, so neither needs telling
+when the user pans.
 
 The labels read `track.activeDisplay.height`, so they stay aligned when a track
 is resized or a display grows to fit.

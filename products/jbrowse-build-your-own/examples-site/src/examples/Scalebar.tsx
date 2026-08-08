@@ -11,12 +11,14 @@ import { DisplayUIProvider } from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
-// The ruler in the example above is a loop over one tick pitch and knows
-// nothing about regions. This is the rest of it: gridlines behind the
-// data, coordinate labels that don't collide, the region name kept on screen
-// while you pan past its start, and drag-to-zoom. Four getters on the view do
-// the work -- `gridlineTicks`, `scalebarLabels`, `scalebarRefNameLabels` and
-// `paddingSpans` -- so none of it is tick maths you have to get right.
+// A coordinate row is easy to start and hard to finish: a loop over one tick
+// pitch gets you ticks, and then labels collide, a second region arrives with
+// no name on it, and the chromosome scrolls off the moment you pan into it.
+// This is the finished one -- gridlines behind the data, coordinate labels that
+// don't collide, the region name kept on screen while you pan past its start,
+// and drag-to-zoom. Four getters on the view do the work --
+// `gridlineTicks`, `scalebarLabels`, `scalebarRefNameLabels` and `paddingSpans`
+// -- so none of it is tick maths you have to get right.
 //
 // Self-contained, like every page here: nothing below is imported from the rest
 // of this site, so you can copy the file and run it.

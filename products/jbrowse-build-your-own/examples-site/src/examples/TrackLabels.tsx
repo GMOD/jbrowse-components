@@ -4,7 +4,6 @@ import {
   PaletteProvider,
   useSessionPalette,
 } from '@jbrowse/core/ui/PaletteContext'
-import { chooseGridPitch } from '@jbrowse/core/util/chooseGridPitch'
 import { useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
 import { useResizeDrag } from '@jbrowse/core/util/useResizeDrag'
@@ -12,9 +11,14 @@ import { DisplayUIProvider } from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
-// Pan, zoom, three kinds of track, your own status overlays, your own ruler,
-// your own track labels. Everything the browser draws is now either data or
-// yours. The page after this one goes the other way, and reads a click back out.
+// Pan, zoom, three kinds of track, your own status overlays, your own track
+// labels, your own resize bars. Everything the browser draws is now either data
+// or yours. The page after this one goes the other way, and reads a click back
+// out.
+//
+// Nothing here draws coordinates: that is the scalebar above, and the view
+// computes all of it. A column of labels beside the tracks is the other half of
+// what an app usually wants around the data, and it is much less code.
 //
 // The labels are a plain flex row next to each track, which is the cheapest
 // thing that works. JBrowse's own label layer does more (drag to reorder, a
@@ -80,7 +84,6 @@ const tracks = [
 const trackIds = tracks.map(t => t.id)
 
 const LABEL_WIDTH = 90
-const RULER_HEIGHT = 22
 
 function makeView() {
   const state = createViewState({
@@ -132,73 +135,6 @@ const TrackRow = observer(function TrackRow({
           onHorizontalScroll={view.horizontalScroll}
         />
       </Suspense>
-    </div>
-  )
-})
-
-// A coordinate ruler, written against the same view model the tracks use. This
-// is chrome (UI drawn around the data, as opposed to the engine underneath it):
-// nothing needs it, and that is the point of putting it on its own page. You
-// add the pieces your app wants and skip the rest.
-//
-// The maths is one view getter and one helper. `dynamicBlocks.contentBlocks` is
-// exactly what is on screen right now (one entry per contiguous region, so a
-// discontinuous view gives several), and each block carries the `offsetPx` its
-// own left edge sits at, so a tick's screen x is that minus `view.offsetPx`
-// plus how far into the block it falls -- the same subtraction the view model
-// does internally. `chooseGridPitch` is a core helper that picks a round tick
-// spacing for the current zoom, so labels stay legible instead of colliding.
-//
-// `bp + 1` on the label, because block coordinates are 0-based and every
-// coordinate JBrowse puts in front of a user is 1-based: a locstring, and the
-// scalebar below, which would otherwise disagree with this ruler by one base
-// at the same tick.
-const Ruler = observer(function Ruler({ view }: { view: BrowserView }) {
-  if (!view.ready) {
-    return <div style={{ height: RULER_HEIGHT }} />
-  }
-  const { majorPitch } = chooseGridPitch(view.bpPerPx, 100, 15)
-
-  return (
-    <div
-      style={{
-        position: 'relative',
-        height: RULER_HEIGHT,
-        overflow: 'hidden',
-        borderBottom: '1px solid',
-        borderColor: 'color-mix(in srgb, currentColor 25%, transparent)',
-        fontSize: '0.7rem',
-        userSelect: 'none',
-      }}
-    >
-      {view.dynamicBlocks.contentBlocks.flatMap(block => {
-        const first = Math.ceil(block.start / majorPitch) * majorPitch
-        const ticks = []
-        for (let bp = first; bp < block.end; bp += majorPitch) {
-          ticks.push(
-            <span
-              key={`${block.key}-${bp}`}
-              style={{
-                position: 'absolute',
-                left:
-                  block.offsetPx -
-                  view.offsetPx +
-                  (bp - block.start) / view.bpPerPx,
-                top: 0,
-                paddingLeft: 3,
-                borderLeft: '1px solid',
-                borderColor:
-                  'color-mix(in srgb, currentColor 35%, transparent)',
-                height: '100%',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {(bp + 1).toLocaleString()}
-            </span>,
-          )
-        }
-        return ticks
-      })}
     </div>
   )
 })
@@ -342,7 +278,7 @@ function useSiteMode() {
 // displays read the palette for their own content colours. See the previous
 // two pages.
 
-const RulerAndLabels = observer(function RulerAndLabels() {
+const TrackLabels = observer(function TrackLabels() {
   const [{ view, session }] = useState(makeView)
   const ref = useWidthSetter(view)
   const { containerProps } = usePanZoom(ref, view)
@@ -353,7 +289,6 @@ const RulerAndLabels = observer(function RulerAndLabels() {
       <DisplayUIProvider>
         <div style={{ display: 'flex' }}>
           <div style={{ width: LABEL_WIDTH, flex: 'none' }}>
-            <div style={{ height: RULER_HEIGHT }} />
             {tracks.map(t => (
               // one spacer per resize bar, so a label stays level with its
               // track as the stack grows
@@ -364,7 +299,6 @@ const RulerAndLabels = observer(function RulerAndLabels() {
             ))}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <Ruler view={view} />
             <div
               ref={ref}
               {...containerProps}
@@ -391,4 +325,4 @@ const RulerAndLabels = observer(function RulerAndLabels() {
   )
 })
 
-export default RulerAndLabels
+export default TrackLabels

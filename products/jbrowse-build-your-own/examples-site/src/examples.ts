@@ -31,11 +31,17 @@ export { section } from './exampleModel.ts'
 // a section costs a re-measure too.
 export const pages: ExamplePage[] = [
   {
-    slug: 'getting-started',
-    title: 'Getting started',
+    slug: 'ultraminimal',
+    title: 'Ultraminimal',
     description:
       'A measured div, one track, and the hook that turns a wheel and a drag into the two calls that move it.',
     group: 'Basics',
+    // Not "Getting started": the landing page already is that, and it runs a
+    // demo above the fold rather than describing one. A second entry by the same
+    // name asked a reader arriving at the site to pick between two front doors.
+    // What this page actually is, is the floor -- the least code that is still a
+    // genome browser -- so it says so.
+    //
     // Pan and zoom leads, not the bare view: panning is the point of a genome
     // browser, so the first thing on the site should move. The bare view
     // follows as the same file with the gesture hook taken back out.
@@ -80,23 +86,29 @@ export const pages: ExamplePage[] = [
     ],
   },
   {
-    slug: 'rulers-and-labels',
-    title: 'Rulers and labels',
+    slug: 'scalebar-and-labels',
+    title: 'Scalebar and track labels',
     description:
-      'Draw the parts around the tracks yourself: a coordinate ruler, track labels, resize bars, and a scalebar that survives more than one region.',
+      'Draw the parts around the tracks yourself: a scalebar with gridlines, region names and drag-to-zoom, plus labels and resize bars down the side.',
     group: 'Your own UI',
+    // The scalebar leads, and there is no longer a hand-rolled coordinate ruler
+    // in front of it. That ruler was a `for` loop over one tick pitch, shown so
+    // the scalebar could be "what it becomes" -- but it collided its own labels,
+    // knew nothing about a second region, and was the worse of two demos a
+    // reader met first. The view already computes all of it, so the tick maths
+    // is not a thing anyone here should be copying.
     sections: [
-      {
-        slug: 'ruler-and-labels',
-        title: 'A coordinate ruler, track labels and resize bars',
-        description:
-          'One view getter and one helper for the ticks; `display.height` for the labels.',
-      },
       {
         slug: 'scalebar',
         title: 'A scalebar: gridlines, region names, drag to zoom',
         description:
-          'What a ruler becomes once more than one region is on screen — and the view has already worked it out.',
+          'Four view getters place every tick, label and region name, including the cases a hand-rolled ruler gets wrong.',
+      },
+      {
+        slug: 'track-labels',
+        title: 'Track labels and resize bars',
+        description:
+          '`display.height` for the labels; one core hook and two model calls for the drag.',
       },
     ],
   },
@@ -124,6 +136,12 @@ export const pages: ExamplePage[] = [
         title: 'Feature details on click',
         description:
           'The display writes the clicked feature to the session selection. The panel is yours.',
+      },
+      {
+        slug: 'your-own-track-selector',
+        title: 'A track selector sidebar',
+        description:
+          'Categories, a filter box and checkboxes, built from `session.tracks` rather than a list beside the UI.',
       },
     ],
   },

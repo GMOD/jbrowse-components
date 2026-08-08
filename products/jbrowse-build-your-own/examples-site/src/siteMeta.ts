@@ -9,7 +9,7 @@ export const demoFillHeight = false
 // describing. A section slug (that is what `demoHeights` is keyed by), so it
 // does not name the page it now shares — hence `landingDemoHref` alongside it.
 export const landingDemo = 'scalebar'
-export const landingDemoHref = 'rulers-and-labels/#scalebar'
+export const landingDemoHref = 'scalebar-and-labels/#scalebar'
 
 // What each demo settles at, in px. Every demo here is `client:only`, so the
 // server sends an empty `<div class="demo">` — `astro-island` is

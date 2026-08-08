@@ -2,7 +2,7 @@
 //
 //   pnpm probe-eager-graph                     rebuild with the probe, list the
 //                                              20 costliest eager modules
-//   pnpm probe-eager-graph --page getting-started...for a page other than the
+//   pnpm probe-eager-graph --page ultraminimal...for a page other than the
 //                                              sparsest one
 //   pnpm probe-eager-graph --holds @mui/material/styles
 //                                              which first-party eager modules
@@ -42,7 +42,7 @@ const flag = name => {
   const i = argv.indexOf(name)
   return i === -1 ? undefined : argv[i + 1]
 }
-const page = flag('--page') ?? 'getting-started'
+const page = flag('--page') ?? 'ultraminimal'
 const holds = flag('--holds')
 
 if (!argv.includes('--no-build')) {

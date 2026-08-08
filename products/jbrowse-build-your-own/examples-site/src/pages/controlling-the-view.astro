@@ -3,6 +3,8 @@ import DriveItFromYourApp from '../examples/DriveItFromYourApp.tsx'
 import DriveItFromYourAppCode from '../examples/DriveItFromYourApp.tsx?raw'
 import EveryChromosome from '../examples/EveryChromosome.tsx'
 import EveryChromosomeCode from '../examples/EveryChromosome.tsx?raw'
+import TrackSelectorSidebar from '../examples/TrackSelectorSidebar.tsx'
+import TrackSelectorSidebarCode from '../examples/TrackSelectorSidebar.tsx?raw'
 import YourOwnFeatureDetails from '../examples/YourOwnFeatureDetails.tsx'
 import YourOwnFeatureDetailsCode from '../examples/YourOwnFeatureDetails.tsx?raw'
 import { getPage, section } from '../examples.ts'
@@ -13,6 +15,7 @@ const page = getPage('controlling-the-view')
 const driveIt = section(page, 'drive-it-from-your-app')
 const everyChromosome = section(page, 'every-chromosome')
 const featureDetails = section(page, 'your-own-feature-details')
+const trackSelector = section(page, 'your-own-track-selector')
 ---
 
 <Layout page={page}>
@@ -24,5 +27,8 @@ const featureDetails = section(page, 'your-own-feature-details')
   </Section>
   <Section {...featureDetails} code={YourOwnFeatureDetailsCode}>
     <YourOwnFeatureDetails client:only="react" />
+  </Section>
+  <Section {...trackSelector} code={TrackSelectorSidebarCode}>
+    <TrackSelectorSidebar client:only="react" />
   </Section>
 </Layout>

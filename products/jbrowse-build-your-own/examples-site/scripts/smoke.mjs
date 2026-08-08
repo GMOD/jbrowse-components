@@ -39,7 +39,7 @@ const here = path.dirname(fileURLToPath(import.meta.url))
 // would be resting on a number that no longer isolates it. That is the whole
 // reason `multiple-tracks` is still a page of its own.
 //
-// **`getting-started` installs no provider either, and its zero is unearned.**
+// **`ultraminimal` installs no provider either, and its zero is unearned.**
 // Both its demos show a lone wiggle track, and the corner controls come from
 // canvas's FeatureComponent and the alignments component — wiggle draws none. So
 // it scores zero by having no Material widget to suppress, not by suppressing
@@ -55,10 +55,10 @@ const here = path.dirname(fileURLToPath(import.meta.url))
 const MUI_BUDGET = {
   // the landing page, which runs the scalebar demo rather than describing it
   '': 0,
-  'getting-started': 0,
+  ultraminimal: 0,
   'multiple-tracks': 3,
   'removing-material-ui': 0,
-  'rulers-and-labels': 0,
+  'scalebar-and-labels': 0,
   'controlling-the-view': 0,
   'web-workers': 0,
   // measured, not chosen -- see the note below the budget

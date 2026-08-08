@@ -73,7 +73,7 @@ copy-paste and the answer is a different rule argued here, not more entries.
   entry graph makes rolldown re-partition chunks across the whole site: pages
   that import nothing new now download co-located modules they don't use.
   Measured rather than assumed —
-  `pnpm probe-eager-graph --page getting-started --holds jbrowse-react-app`
+  `pnpm probe-eager-graph --page ultraminimal --holds jbrowse-react-app`
   reports **zero** eager modules importing the app product, so nothing leaked as
   a static import. The bytes are still real, because whole chunks are fetched,
   which is why the figures moved rather than being waived.

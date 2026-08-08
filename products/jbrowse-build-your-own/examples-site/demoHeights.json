@@ -5,9 +5,10 @@
   "every-chromosome": 140,
   "one-track": 102,
   "pan-and-zoom": 155,
-  "ruler-and-labels": 406,
   "run-it-in-a-worker": 372,
   "scalebar": 242,
   "synteny-ribbons": 365,
-  "your-own-feature-details": 182
+  "track-labels": 384,
+  "your-own-feature-details": 182,
+  "your-own-track-selector": 342
 }

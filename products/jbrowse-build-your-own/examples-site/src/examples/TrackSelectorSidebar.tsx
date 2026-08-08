@@ -1,0 +1,515 @@
+import { Suspense, useEffect, useState } from 'react'
+
+import { readConfObject } from '@jbrowse/core/configuration'
+import {
+  PaletteProvider,
+  useSessionPalette,
+} from '@jbrowse/core/ui/PaletteContext'
+import { useWidthSetter } from '@jbrowse/core/util/hooks'
+import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
+import { DisplayUIProvider } from '@jbrowse/plugin-linear-genome-view'
+import { createViewState } from '@jbrowse/react-linear-genome-view2'
+import { observer } from 'mobx-react'
+
+// A track selector: categories, a filter box, and a checkbox per track.
+//
+// The previous page drives the view from a toolbar whose track list is an array
+// written beside it. That is fine for three tracks and wrong for thirty, and it
+// is wrong the moment a track arrives that your source file did not know about.
+// So this one builds its list from `session.tracks` -- every track config the
+// session holds -- and groups it on the `category` slot, which is the same slot
+// JBrowse's own hierarchical selector nests on.
+//
+// The "Add a variant track" button is the payoff: it puts a config into the
+// session and nothing in this selector is told. The new category appears
+// because the list is derived rather than declared.
+//
+// Self-contained, like every page here: nothing below is imported from the rest
+// of this site, so you can copy the file and run it.
+
+const volvox = {
+  name: 'volvox',
+  uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+}
+
+// `category` is a `stringArray` on every track config, and it is a path rather
+// than a label: JBrowse's own selector reads `['RNA-seq', 'Brain']` as a folder
+// inside a folder. This selector is one level deep and takes the first entry,
+// which is the honest simplification -- say so rather than pretending a
+// one-level list is the whole slot.
+const catalogueTracks = [
+  {
+    type: 'QuantitativeTrack',
+    trackId: 'volvox_microarray',
+    name: 'Microarray signal',
+    category: ['Signal'],
+    assemblyNames: ['volvox'],
+    adapter: {
+      type: 'BigWigAdapter',
+      uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox_microarray.bw',
+    },
+    displayDefaults: {
+      defaultRendering: 'xyplot',
+      height: 80,
+      color: '#3a7ca5',
+      minScore: 0,
+      maxScore: 1000,
+    },
+  },
+  {
+    type: 'QuantitativeTrack',
+    trackId: 'volvox_sine',
+    name: 'A sine wave',
+    category: ['Signal'],
+    assemblyNames: ['volvox'],
+    adapter: {
+      type: 'BigWigAdapter',
+      uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox_sine.bw',
+    },
+    displayDefaults: { defaultRendering: 'xyplot', height: 80 },
+  },
+  {
+    type: 'QuantitativeTrack',
+    trackId: 'volvox_read_coverage',
+    name: 'Read coverage',
+    category: ['Signal'],
+    assemblyNames: ['volvox'],
+    adapter: {
+      type: 'BigWigAdapter',
+      uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox-sorted.bam.coverage.bw',
+    },
+    displayDefaults: { defaultRendering: 'xyplot', height: 80 },
+  },
+  {
+    type: 'FeatureTrack',
+    trackId: 'volvox_genes',
+    name: 'Genes',
+    category: ['Annotation'],
+    assemblyNames: ['volvox'],
+    adapter: {
+      type: 'Gff3TabixAdapter',
+      uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+    },
+    displayDefaults: { height: 120 },
+  },
+  {
+    type: 'FeatureTrack',
+    trackId: 'volvox_bed12',
+    name: 'BED12 features',
+    category: ['Annotation'],
+    assemblyNames: ['volvox'],
+    adapter: {
+      type: 'BedTabixAdapter',
+      uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox-bed12.bed.gz',
+    },
+    displayDefaults: { height: 100 },
+  },
+  {
+    type: 'AlignmentsTrack',
+    trackId: 'volvox_bam',
+    name: 'Reads',
+    category: ['Alignments'],
+    assemblyNames: ['volvox'],
+    adapter: {
+      type: 'BamAdapter',
+      uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox-sorted.bam',
+    },
+    displayDefaults: { height: 150 },
+  },
+  // No category at all, which is the common case in a real config and the one a
+  // selector has to have an answer for. It lands under `UNFILED` below.
+  {
+    type: 'VariantTrack',
+    trackId: 'volvox_filtered_vcf',
+    name: 'Filtered variants',
+    assemblyNames: ['volvox'],
+    adapter: {
+      type: 'VcfTabixAdapter',
+      uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.filtered.vcf.gz',
+    },
+    displayDefaults: { height: 80 },
+  },
+]
+
+// Not in `catalogueTracks`: the button below adds it at runtime, and the
+// selector shows it without being told.
+const laterTrack = {
+  type: 'VariantTrack',
+  trackId: 'volvox_sv_vcf',
+  name: 'Structural variants',
+  category: ['Variants'],
+  assemblyNames: ['volvox'],
+  adapter: {
+    type: 'VcfTabixAdapter',
+    uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sv.vcf.gz',
+  },
+  displayDefaults: { height: 90 },
+}
+
+function makeView() {
+  const state = createViewState({
+    assembly: volvox,
+    tracks: catalogueTracks,
+  })
+  const { view } = state.session
+  view.setInit({
+    assembly: volvox.name,
+    loc: 'ctgA:1..20,000',
+    tracks: ['volvox_microarray', 'volvox_genes'],
+  })
+  // see the Pan and zoom example: scroll-to-zoom is a session preference, shared
+  // with any display that scrolls vertically inside itself
+  view.setScrollZoom(true)
+  return { view, session: state.session }
+}
+
+type BrowserView = ReturnType<typeof makeView>['view']
+type BrowserSession = ReturnType<typeof makeView>['session']
+
+const TrackRow = observer(function TrackRow({
+  view,
+  trackId,
+}: {
+  view: BrowserView
+  trackId: string
+}) {
+  // `view.getTrack(id)`, not a scan of `view.tracks` comparing
+  // `configuration.trackId` by hand: the view keeps a map for exactly this. The
+  // guard stays -- `view.ready` says the view can draw, not that your track is
+  // instantiated yet.
+  const track = view.getTrack(trackId)
+  if (!track) {
+    return null
+  }
+  const display = track.activeDisplay
+  const { RenderingComponent } = display
+  return (
+    <div
+      style={{
+        position: 'relative',
+        height: display.height,
+        contain: 'strict',
+      }}
+    >
+      <Suspense fallback={null}>
+        <RenderingComponent
+          model={display}
+          onHorizontalScroll={view.horizontalScroll}
+        />
+      </Suspense>
+    </div>
+  )
+})
+
+// Where a track with no `category` goes. Every real config has some.
+const UNFILED = 'Uncategorized'
+
+interface CatalogueEntry {
+  trackId: string
+  name: string
+  category: string
+}
+
+/**
+ * The catalogue, read out of the session instead of written beside the UI.
+ *
+ * `session.tracks` is every track config the session knows: the ones you passed
+ * to `createViewState`, plus anything added since. It is a list of *config
+ * models*, not of instantiated tracks -- `view.tracks` is that, and it holds
+ * only what is currently on screen. Confusing the two is the one mistake worth
+ * naming here, because both are arrays of things called tracks and only one of
+ * them answers "what could I show".
+ *
+ * `readConfObject(conf, slot)`, not `getConf`: these are raw configuration
+ * models with no `.configuration` of their own, and `getConf` exists for models
+ * that *contain* one. `name` falls back to the id, which is what the config
+ * schema itself does when a track declares no name.
+ */
+function catalogueEntries(session: BrowserSession): CatalogueEntry[] {
+  return session.tracks.map(conf => {
+    const path: string[] = readConfObject(conf, 'category')
+    const trackId: string = readConfObject(conf, 'trackId')
+    const name: string = readConfObject(conf, 'name')
+    return {
+      trackId,
+      name: name || trackId,
+      category: path[0] ?? UNFILED,
+    }
+  })
+}
+
+/**
+ * Group in first-appearance order, which means the config file's order. Sorting
+ * the categories alphabetically is the obvious next line and is worth not
+ * writing: whoever wrote the config put the important tracks at the top, and an
+ * alphabetical selector throws that away for a property nobody asked for.
+ */
+function byCategory(entries: CatalogueEntry[]) {
+  const groups = new Map<string, CatalogueEntry[]>()
+  for (const entry of entries) {
+    const existing = groups.get(entry.category)
+    if (existing) {
+      existing.push(entry)
+    } else {
+      groups.set(entry.category, [entry])
+    }
+  }
+  return [...groups]
+}
+
+const checkboxRow: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 6,
+  padding: '1px 0',
+  cursor: 'pointer',
+  lineHeight: 1.3,
+}
+
+/**
+ * The selector.
+ *
+ * Three things it does NOT keep in React state, and each would be a bug:
+ *
+ * - **which tracks are on.** `view.tracks` is that, so the checkbox reads it
+ *   back. A `useState` beside it goes stale the first time anything else shows
+ *   a track: a bookmark that arrives with its own list, a restored session, a
+ *   second panel in your app.
+ * - **the catalogue.** `session.tracks` is observable, so the button at the
+ *   bottom needs no callback into this component. Snapshotting it into
+ *   `useState` on mount is the version that looks like it works.
+ * - **the groups.** Derived from the two above on every render, which is what
+ *   `observer` makes cheap enough to stop thinking about.
+ *
+ * The filter *is* state, because it is this component's own.
+ */
+const TrackSelector = observer(function TrackSelector({
+  view,
+  session,
+}: {
+  view: BrowserView
+  session: BrowserSession
+}) {
+  const [filter, setFilter] = useState('')
+  const needle = filter.trim().toLowerCase()
+  const onScreen = new Set(view.tracks.map(t => t.configuration.trackId))
+  const matching = catalogueEntries(session).filter(
+    e =>
+      e.name.toLowerCase().includes(needle) ||
+      e.category.toLowerCase().includes(needle),
+  )
+  const groups = byCategory(matching)
+  const alreadyAdded = session.tracks.some(
+    conf => readConfObject(conf, 'trackId') === laterTrack.trackId,
+  )
+
+  return (
+    <div
+      style={{
+        width: 220,
+        flex: 'none',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+        padding: 10,
+        borderRight: '1px solid',
+        borderColor: 'color-mix(in srgb, currentColor 25%, transparent)',
+        fontSize: '0.8rem',
+        overflow: 'auto',
+      }}
+    >
+      <input
+        aria-label="Filter tracks"
+        placeholder="Filter tracks"
+        value={filter}
+        style={{
+          font: 'inherit',
+          padding: '3px 5px',
+          width: '100%',
+        }}
+        onChange={event => {
+          setFilter(event.target.value)
+        }}
+      />
+
+      {groups.length === 0 ? (
+        <div style={{ opacity: 0.7 }}>No track matches “{filter}”.</div>
+      ) : null}
+
+      {groups.map(([category, entries]) => (
+        <div key={category}>
+          <div
+            style={{
+              fontSize: '0.7rem',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              opacity: 0.65,
+              paddingBottom: 2,
+            }}
+          >
+            {category}
+          </div>
+          {entries.map(({ trackId, name }) => (
+            <label key={trackId} style={checkboxRow}>
+              <input
+                type="checkbox"
+                checked={onScreen.has(trackId)}
+                onChange={() => {
+                  if (onScreen.has(trackId)) {
+                    view.hideTrack(trackId)
+                  } else {
+                    view.showTrack(trackId)
+                  }
+                }}
+              />
+              {name}
+            </label>
+          ))}
+        </div>
+      ))}
+
+      {/* `addSessionTrackConf`, not `addTrackConf`: the latter routes an
+       * admin's track into the shared config and everyone else's into the
+       * session, which is two destinations behind one name and the wrong one
+       * to reach for when you mean "add it for this visitor". The selector
+       * above re-renders because `session.tracks` moved, not because anything
+       * here called it. */}
+      <button
+        type="button"
+        disabled={alreadyAdded}
+        style={{ font: 'inherit', marginTop: 'auto', cursor: 'pointer' }}
+        onClick={() => {
+          session.addSessionTrackConf(laterTrack)
+        }}
+      >
+        {alreadyAdded ? 'Variant track added' : 'Add a variant track'}
+      </button>
+    </div>
+  )
+})
+
+/**
+ * The column, drawn in catalogue order rather than in `view.tracks` order.
+ *
+ * `showTrack` **appends**, so `view.tracks` is in the order the boxes were
+ * ticked. Mapping it straight out gives a column that reshuffles as the user
+ * clicks, and the reads landing above the genes because that is the order
+ * somebody happened to tick them in is not a bug anyone reports -- it just
+ * reads as a browser that cannot keep still.
+ *
+ * So the order comes from the catalogue and `TrackRow` skips what is not
+ * showing. Whichever order you want, decide it here: this is the only place
+ * that knows.
+ *
+ * **The catalogue is `session.tracks`, not the array at the top of this file.**
+ * Ordering off that array instead reads identically until something adds a
+ * track at runtime, at which point the new track ticks on in the selector and
+ * draws nothing, because the loop placing rows has never heard of it. Nothing
+ * errors and the checkbox looks right. It cost this page a debugging session,
+ * and it is the same mistake the selector avoids one component up.
+ *
+ * A session track sorts ahead of the config ones, which is `session.tracks`'
+ * own order rather than a choice made here -- so the added track arrives at the
+ * top of both the sidebar and the column, and the two agree because they read
+ * the same list.
+ */
+const TrackColumn = observer(function TrackColumn({
+  view,
+  session,
+}: {
+  view: BrowserView
+  session: BrowserSession
+}) {
+  const ref = useWidthSetter(view)
+  const { containerProps } = usePanZoom(ref, view)
+  return (
+    <div
+      ref={ref}
+      {...containerProps}
+      style={{
+        flex: 1,
+        minWidth: 0,
+        position: 'relative',
+        overflow: 'hidden',
+        touchAction: 'none',
+        cursor: 'grab',
+      }}
+    >
+      {view.ready
+        ? catalogueEntries(session).map(({ trackId }) => (
+            <TrackRow key={trackId} view={view} trackId={trackId} />
+          ))
+        : null}
+    </div>
+  )
+})
+
+// A display paints no background of its own -- its labels are drawn straight
+// onto whatever is behind them, so light-theme text on a dark page is near-black
+// on near-black. This is the page's own answer to "which mode am I in".
+function readSiteMode(): 'light' | 'dark' {
+  const chosen = document.documentElement.dataset.theme
+  if (chosen === 'light' || chosen === 'dark') {
+    return chosen
+  }
+  return window.matchMedia('(prefers-color-scheme: dark)').matches
+    ? 'dark'
+    : 'light'
+}
+
+/**
+ * Follow whatever the page around this demo is themed as. All of this is the
+ * *host's* half, and yours will look nothing like it -- the toggle writes an
+ * attribute on <html>, the OS preference arrives as a media query, and either
+ * can move without the other, so both are watched. Swap it for however your app
+ * already knows it is in dark mode.
+ *
+ * JBrowse's half is one call, `useSessionPalette` below. It writes the config
+ * slot that *both* halves of the rendering derive from -- the palette React
+ * draws with, and the theme shipped to the worker that bakes feature labels
+ * into the image -- and hands back the palette. Mounting `PaletteProvider`
+ * alone would leave those baked labels in the old mode.
+ */
+function useSiteMode() {
+  const [mode, setMode] = useState(readSiteMode)
+  useEffect(() => {
+    const update = () => {
+      setMode(readSiteMode())
+    }
+    const observer = new MutationObserver(update)
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme'],
+    })
+    const media = window.matchMedia('(prefers-color-scheme: dark)')
+    media.addEventListener('change', update)
+    return () => {
+      observer.disconnect()
+      media.removeEventListener('change', update)
+    }
+  }, [])
+  return mode
+}
+
+const TrackSelectorSidebar = observer(function TrackSelectorSidebar() {
+  const [{ view, session }] = useState(makeView)
+  const palette = useSessionPalette(session, useSiteMode())
+
+  return (
+    <PaletteProvider palette={palette}>
+      <DisplayUIProvider>
+        {/* minHeight, not height: the sidebar is taller than two tracks and
+         * shorter than seven, so the row has to be able to grow past it. A
+         * fixed height would either clip the column or leave a gap under it
+         * depending on how many boxes are ticked. */}
+        <div style={{ display: 'flex', minHeight: 330 }}>
+          <TrackSelector view={view} session={session} />
+          <TrackColumn view={view} session={session} />
+        </div>
+      </DisplayUIProvider>
+    </PaletteProvider>
+  )
+})
+
+export default TrackSelectorSidebar

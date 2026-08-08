@@ -12,9 +12,9 @@ in the file records it.
 Regions lay out contiguously, so this is one continuous strip unless you draw
 the boundaries. `RegionBoundaries` and `RegionNames` are the components the
 [section above](#drive-it-from-your-app) and the
-[scalebar](../rulers-and-labels/#scalebar) explain. Both read geometry the view
-already computed, rather than deriving it from block flags, which is how the
-narrowest bands end up with no name at all instead of an ambiguous `2…`.
+[scalebar](../scalebar-and-labels/#scalebar) explain. Both read geometry the
+view already computed, rather than deriving it from block flags, which is how
+the narrowest bands end up with no name at all instead of an ambiguous `2…`.
 
 The track still draws because a bigWig carries precomputed summaries. A track
 with no summary tier (a BAM, a tabix GFF) refuses this width instead, which is

@@ -1,6 +1,7 @@
-A ruler is a `for` loop over one tick pitch. A scalebar is that plus what
-happens once more than one region is on screen, and the view has worked all of
-it out already.
+A coordinate row starts as a `for` loop over one tick pitch and ends somewhere
+else: labels that avoid each other, a second region with its own name on it, a
+chromosome that stays legible while you pan into it. The view has worked all of
+that out already, so none of it is yours to get right.
 
 `view.gridlineTicks` gives `{x, major}` per tick and `view.scalebarLabels` gives
 `{x, label, key}` per label, off the same formula, so a number always sits on a
