@@ -27,6 +27,41 @@ let hadDevice = false
 const REACQUIRE_TRIES = 3
 const REACQUIRE_DELAY_MS = 700
 
+// Nothing here calls `device.destroy()`, and nothing should. It is not an
+// omission.
+//
+// Destroying a device that has presented frames stops the browser delivering
+// animation frames to the whole *tab*, permanently: the tab still reports
+// `visible`, the browser stays responsive, and a reload lands in the same dead
+// tab because the damage outlives the document. Only a new tab clears it.
+// Measured on Firefox Nightly / Linux in a sibling WebGPU app (phosphene,
+// `docs/adr/0004-never-destroy-a-presenting-device.md`, repro
+// `scripts/devicetear.mjs`), with the controls that pin the mechanism: creating
+// and destroying devices with no canvas is free, so is configuring a swapchain
+// and destroying without presenting. Presenting and then destroying is the one
+// arm that kills the tab. So this is about pulling a live swapchain out from
+// under the compositor, not about devices being scarce.
+//
+// Two edits reintroduce it, and both read as tidying up rather than as a
+// regression, which is why this comment is here instead of a code guard:
+//
+//  - a `destroyGpuDevice()` mirroring `resetGpuDeviceForTests` below.
+//  - releasing the device on `pagehide` or on the last display unmounting. That
+//    exact one-liner is what made every refresh cost a tab in the app that
+//    measured this.
+//
+// Letting go is the whole recovery story instead. A lost device is already
+// gone (the `.lost` handler drops the reference and the next ask acquires a
+// fresh one), and an abandoned one is reclaimed when the document goes, so the
+// leak is bounded by a reload rather than accumulating over a session. Its
+// pipelines and shader modules live until then, while the large VRAM is
+// returned either way because `WebGPUHal.dispose` destroys its own buffers and
+// textures.
+//
+// `WebGPUHal.dispose`'s `context.unconfigure()` is not this and is fine to
+// keep: dropping a swapchain is the sanctioned way to release one, and every
+// track unmount already does it many times a session without consequence.
+
 export function onDeviceLost(listener: () => void) {
   deviceLostListeners.add(listener)
   return () => {
@@ -167,6 +202,10 @@ export function isGpuRenderingDisabled() {
  * `device` and `devicePromise` so the next `getGpuDevice()` call starts
  * fresh rather than returning the cached (possibly null) promise from a
  * previous test.
+ *
+ * It drops references and deliberately does not destroy the device, so this is
+ * not the half of a pair that a `destroyGpuDevice()` completes. See the comment
+ * above `onDeviceLost` for what destroying one costs.
  */
 export function resetGpuDeviceForTests() {
   device = null
