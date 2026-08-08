@@ -880,7 +880,32 @@ export const svSpecs: ScreenshotSpec[] = [
           loc: 'chr10:122,823,828-122,852,611',
           tracks: [
             'hg38_ncbiRefSeq_ucsc',
-            'GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf',
+            {
+              trackId:
+                'GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf',
+              type: 'LinearVariantDisplay',
+              // The box around the deletion, drawn by the DISPLAY rather than
+              // by the annotation overlay (review: "the red box isnt really
+              // quite surrounding the DEL feature"). The overlay box it
+              // replaces could only be positioned by hand -- a `dy` into the
+              // track and a literal `height` -- because getHighlightCoords
+              // answers in x only, so its vertical extent was a guess that had
+              // drifted off the glyph and through the SV_85 label.
+              //
+              // `featureHighlights` is resolved against the fetched features
+              // and boxed by whatever laid them out, so it surrounds what was
+              // actually painted at whatever row and height that turned out to
+              // be. This is the "utils that help find the right place for box"
+              // the review asked for, and it already existed: it is the same
+              // state the right-click "Highlight feature" item writes.
+              //
+              // By NAME, not span: the matcher takes either, but a span has to
+              // agree with the record's own coordinates to within a base, and
+              // the location string this figure shares with the spreadsheet
+              // cell is 1-based display text rather than the interbase pair the
+              // matcher compares against.
+              featureHighlights: [{ refName: 'chr10', name: 'SV_85' }],
+            },
           ],
         },
       ],
@@ -940,23 +965,8 @@ export const svSpecs: ScreenshotSpec[] = [
           dy: 14,
         },
       },
-      // The SV_85 <DEL> glyph in the VCF track below. Its width is the
-      // deletion's own, so only the height is written down, and as a depth into
-      // the track rather than a viewport y: 50px from the track's top edge is
-      // the glyph row plus the "SV_85" and "<DEL> 1.8Kbp" labels the display
-      // draws under it — the second of those is what the callout beside it is
-      // pointing at, so the box has to reach it.
-      {
-        type: 'box',
-        anchor: {
-          view: 1,
-          track: 'GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf',
-          locus: SV_85_DEL,
-          fracY: 0,
-          dy: 24,
-        },
-        height: 50,
-      },
+      // (The box around the SV_85 <DEL> glyph is not here: it is the track's own
+      // `featureHighlights`, see the view above.)
       {
         type: 'text',
         text: 'The location link opens the region below, where SVTYPE=DEL draws as the <DEL> allele',
