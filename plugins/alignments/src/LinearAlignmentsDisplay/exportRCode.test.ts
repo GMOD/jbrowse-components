@@ -53,7 +53,7 @@ test('both panels draw MD-tag mismatches (reference-free SNP coloring)', () => {
   expect(pileup!.plotExpr).toContain('scale_fill_identity()')
 })
 
-test('coverage panel carves deletions and draws interbase indicators', () => {
+test('coverage panel carves deletions and draws the interbase marks', () => {
   const [cov] = alignmentsFragments(base)
   // bam_coverage now drops D ranges so the grey total dips at deletions like
   // JBrowse (helper body lives in exportR.ts; the panel just calls it)
@@ -61,24 +61,67 @@ test('coverage panel carves deletions and draws interbase indicators', () => {
     expect.arrayContaining([
       'bam_indels',
       'bam_clips',
+      'interbase_counts',
       'interbase_indicators',
       'gap_colors',
       'clip_colors',
     ]),
   )
-  // the SV-breakpoint indicators (insertion/soft-/hard-clip pileups) above the
-  // bars, over the filtered reads like the depth beneath them
+  // one per-column tally of insertions + soft/hard clips, over the filtered reads
+  // like the depth beneath them, feeding BOTH interbase marks
   expect(cov!.plotExpr).toContain(
-    'interbase_indicators(keep_rows(bam_indels(bam, chrom, start, end), keep)',
+    'interbase_counts(keep_rows(bam_indels(bam, chrom, start, end), keep)',
   )
   expect(cov!.plotExpr).toContain(
-    'keep_rows(bam_clips(bam, chrom, start, end), keep), cov0)',
+    'keep_rows(bam_clips(bam, chrom, start, end), keep))',
   )
-  // colored by the dominant event, drawn as a down-triangle above the histogram
+  // events anchored outside the region are dropped before they are counted, not
+  // piled onto the edge column
   expect(cov!.plotExpr).toContain(
-    'c(I = gap_colors[["I"]], S = clip_colors[["S"]], H = clip_colors[["H"]])',
+    'ibc <- ibc[ibc$pos >= start & ibc$pos < end, , drop = FALSE]',
+  )
+  // the significance gate is JBrowse's own constants, emitted as editable
+  // variables rather than left buried in the helper's defaults
+  expect(cov!.plotExpr).toContain('indicator_min_depth <- 8')
+  expect(cov!.plotExpr).toContain('indicator_threshold <- 0.3')
+  expect(cov!.plotExpr).toContain(
+    'ind <- interbase_indicators(ibc, cov0, indicator_min_depth, indicator_threshold)',
+  )
+  // the stacked count histogram, hanging down from the top of the depth axis at
+  // JBrowse's half-the-coverage-height scale, clamped where the band clips it
+  expect(cov!.plotExpr).toContain('interbase_scale <- 0.5')
+  expect(cov!.plotExpr).toContain('cov_top <- max(cov$depth, 1)')
+  expect(cov!.plotExpr).toContain(
+    'ymin = pmax(cov_top - ytop * interbase_scale, 0)',
+  )
+  expect(cov!.plotExpr).toContain(
+    'ymax = pmax(cov_top - ybase * interbase_scale, 0)',
+  )
+  // colored by event type, shared by the bars and the down-triangles above them
+  expect(cov!.plotExpr).toContain(
+    'ib_colors <- c(I = gap_colors[["I"]], S = clip_colors[["S"]], H = clip_colors[["H"]])',
   )
   expect(cov!.plotExpr).toContain('shape = 25')
+  // both marks sit on the interbase boundary, so the triangle caps its own bar
+  expect(cov!.plotExpr).toContain('aes(pos, cov_top * 1.06, fill = fill)')
+})
+
+test('showInterbaseIndicators off drops both interbase marks and their reads', () => {
+  // one JBrowse toggle governs the count histogram AND the indicator triangles,
+  // and with it off the panel should not pay for the CIGAR walk that feeds them
+  const [cov] = alignmentsFragments({
+    ...base,
+    showInterbaseIndicators: false,
+  })
+  expect(cov!.helpers).not.toContain('interbase_counts')
+  expect(cov!.helpers).not.toContain('interbase_indicators')
+  expect(cov!.helpers).not.toContain('bam_indels')
+  expect(cov!.helpers).not.toContain('bam_clips')
+  expect(cov!.plotExpr).not.toContain('interbase')
+  expect(cov!.plotExpr).not.toContain('shape = 25')
+  // the depth + SNP panel is untouched
+  expect(cov!.plotExpr).toContain('bam_coverage(bam, chrom, start, end, keep)')
+  expect(cov!.plotExpr).toContain('aggregate(read_index ~ refpos + base')
 })
 
 test('pileup colors reads by the resolved color-by scheme', () => {
@@ -131,6 +174,62 @@ test('modifications scheme overlays MM/ML mod ticks instead of mismatches', () =
   expect(
     alignmentsFragments({ ...base, colorBy: 'methylation' })[1]!.helpers,
   ).toContain('bam_modifications')
+})
+
+test('modifications scheme stacks mod counts on the coverage panel too', () => {
+  // the point of a modBAM coverage lane: JBrowse's band carries per-column MM/ML
+  // counts over the grey depth, and this panel dropped them silently
+  const [cov] = alignmentsFragments({ ...base, colorBy: 'modifications' })
+  expect(cov!.helpers).toEqual(
+    expect.arrayContaining([
+      'bam_modifications',
+      'read_base_counts',
+      'mod_coverage',
+      'mod_simplex_types',
+      'mod_colors',
+    ]),
+  )
+  expect(cov!.plotExpr).toContain('min_prob <- 0.1')
+  expect(cov!.plotExpr).toContain(
+    'bam_modifications(bam, chrom, start, end, min_prob)',
+  )
+  // the denominator is read off the reads themselves, at the modified columns
+  expect(cov!.plotExpr).toContain(
+    'read_base_counts(bam, chrom, start, end, unique(mods$refpos), keep)',
+  )
+  // fractions of the column's own depth bar, so the segments ride the grey total
+  expect(cov!.plotExpr).toContain('ymin = ybase * depth, ymax = ytop * depth')
+
+  // mm_strands must be read off bam_modifications' result BEFORE keep_rows and
+  // the region clip: both are row subsets, and a row subset drops attributes
+  const attrAt = cov!.plotExpr.indexOf('attr(modsraw, "mm_strands")')
+  expect(attrAt).toBeGreaterThan(-1)
+  expect(attrAt).toBeLessThan(cov!.plotExpr.indexOf('keep_rows(modsraw, keep)'))
+  // simplex/duplex is a protocol property, so it is resolved once over every
+  // region's MM groups rather than inside the per-region loop
+  expect(cov!.plotExpr).toContain(
+    'mod_simplex_types(unlist(lapply(parts, `[[`, "mmstr")))',
+  )
+
+  // JBrowse mutes the band's mismatch bars under a modification scheme so the
+  // mod colors are the only color in it, which leaves base_colors unreachable
+  expect(cov!.plotExpr).toContain('snp$fill <- "#555555"')
+  expect(cov!.plotExpr).not.toContain('base_colors')
+  expect(cov!.helpers).not.toContain('base_colors')
+})
+
+test('a non-modification scheme leaves the coverage panel alone', () => {
+  const [cov] = alignmentsFragments(base)
+  expect(cov!.helpers).toContain('base_colors')
+  expect(cov!.helpers).not.toContain('mod_coverage')
+  expect(cov!.plotExpr).toContain('snp$fill <- base_colors[toupper(snp$base)]')
+  expect(cov!.plotExpr).not.toContain('mod_coverage')
+  expect(cov!.plotExpr).not.toContain('min_prob')
+  // perBaseQuality greys the read bodies like modifications does, but it is not
+  // a modification scheme and must not put mod bars in the band
+  expect(
+    alignmentsFragments({ ...base, colorBy: 'perBaseQuality' })[0]!.plotExpr,
+  ).not.toContain('mod_coverage')
 })
 
 test('perBaseQuality scheme overlays per-base Phred-colored rects', () => {
@@ -385,7 +484,11 @@ test('low-frequency fade lives on the pileup, not the coverage panel', () => {
   expect(pileup!.plotExpr).toContain('filter_low_freq <- TRUE')
   expect(pileup!.plotExpr).toContain('bp_per_px <- 5')
   expect(pileup!.plotExpr).toContain('filter_low_freq && bp_per_px > 1')
-  expect(pileup!.plotExpr).toContain('mismatch_fade_alpha(mm$refpos, mm$base,')
+  // over `hits`, not `mm`: the palette-less bases are dropped first, so the
+  // alpha vector lines up with the rows that actually get a fill suffix
+  expect(pileup!.plotExpr).toContain(
+    'mismatch_fade_alpha(hits$refpos, hits$base,',
+  )
 
   // showLowFreqMismatches turns the fade off (every tick opaque)
   const [, keepAll] = alignmentsFragments({

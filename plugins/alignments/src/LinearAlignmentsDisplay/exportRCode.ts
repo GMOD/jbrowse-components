@@ -1,3 +1,7 @@
+import {
+  INDICATOR_THRESHOLD,
+  MINIMUM_INDICATOR_READ_DEPTH,
+} from '@jbrowse/alignments-core'
 import { getConf } from '@jbrowse/core/configuration'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import {
@@ -91,6 +95,12 @@ export interface AlignmentsRParams {
   // genomic column the sort anchors on (the center line at export); -1 (default)
   // when no center line, which leaves every read in genomic order
   sortPos?: number
+  // JBrowse's "Show interbase counts / indicators" toggle
+  // (config showInterbaseIndicators, default on). The one switch governs both
+  // coverage-band interbase marks, so when it is off the panel draws neither the
+  // stacked count histogram nor the indicator triangles — and skips the CIGAR
+  // walk that feeds them.
+  showInterbaseIndicators?: boolean
   // JBrowse "Filter by" (read_filter): SAM flag include/exclude bitmasks, an
   // optional exact read-name match, and AND-ed tag filters (value "*" = has tag).
   // Applied to the pileup; a filtered read gets an NA row and goes undrawn.
@@ -239,6 +249,144 @@ export function alignmentsFragments(p: AlignmentsRParams): RTrackFragment[] {
       flag_include, flag_exclude, read_name, tag_filters)`
 
   if (p.showCoverage) {
+    // A modification color scheme puts a second stacked layer in the coverage
+    // band: per-column MM/ML counts over the grey depth (mod_coverage), which is
+    // the whole point of a modBAM coverage lane. JBrowse simultaneously mutes the
+    // band's mismatch bars to grey (mutedSnpBase) so the mod colors are the only
+    // color in it, and this panel does the same.
+    const covMods = scheme === 'modifications'
+    // Emitted once before the loop; the pileup's copy of this constant lives in
+    // its own plotExpr, so the two panels can be re-thresholded independently.
+    const modConsts = covMods
+      ? `
+  # minimum MM/ML call probability counted, like JBrowse's modification threshold
+  min_prob <- ${p.modificationThreshold}`
+      : ''
+    // The mm_strands attribute is read straight off bam_modifications' result:
+    // it must be captured BEFORE keep_rows / the region clip, both of which are
+    // row subsets and drop attributes.
+    const modRead = covMods
+      ? `
+    # base modifications (MM/ML) over the filtered reads, clipped to the region
+    modsraw <- bam_modifications(bam, chrom, start, end, min_prob)
+    mmstr <- attr(modsraw, "mm_strands")
+    mods <- keep_rows(modsraw, keep)
+    # a read overlapping the region carries its whole MM tag, so most of a long
+    # read's calls are anchored outside it — and on this cumulative axis an
+    # uncropped one would land inside the NEXT region's slice
+    if (!is.null(mods)) mods <- mods[mods$refpos >= start & mods$refpos < end, , drop = FALSE]
+    modbc <- NULL
+    if (!is.null(mods) && nrow(mods)) {
+      # the modifiable/detectable denominator: per-strand read bases at the
+      # modified columns only, read off the reads themselves (no reference)
+      modbc <- read_base_counts(bam, chrom, start, end, unique(mods$refpos), keep)
+      mods$refpos <- mods$refpos + shift
+      if (!is.null(modbc) && nrow(modbc)) modbc$pos <- modbc$pos + shift else modbc <- NULL
+    } else mods <- NULL`
+      : ''
+    const modCombine = covMods
+      ? `
+  mods <- do.call(rbind, Filter(Negate(is.null), lapply(parts, \`[[\`, "mods")))
+  modbc <- do.call(rbind, Filter(Negate(is.null), lapply(parts, \`[[\`, "modbc")))
+  # simplex vs duplex is a property of the protocol, so resolve it once over every
+  # region's MM groups rather than per region
+  modcov <- if (!is.null(mods) && nrow(mods))
+    mod_coverage(mods, modbc, cov, mod_simplex_types(unlist(lapply(parts, \`[[\`, "mmstr"))))
+  else NULL`
+      : ''
+    // Drawn after the SNP bars and before the interbase marks, which is JBrowse's
+    // own coverage pass order (coverage -> SNP -> mod -> interbase).
+    const modPlot = covMods
+      ? `
+  # base-modification counts, stacked up from the bottom of each column's depth
+  # bar like JBrowse's coverage band: a type's share of the bar is the reads that
+  # called it, corrected for the reads that could have carried it at all. The
+  # segment's alpha is the mean call likelihood, baked into the fill hex so one
+  # scale_fill_identity() still covers the area, the SNP bars and these.
+  if (!is.null(modcov) && nrow(modcov)) {
+    modcov$fill <- paste0(mod_colors(modcov$modtype),
+      sprintf("%02X", pmin(255L, as.integer(round(modcov$prob * 255)))))
+    p <- p + geom_rect(data = modcov,
+      aes(xmin = pos, xmax = pos + 1, ymin = ybase * depth, ymax = ytop * depth,
+          fill = fill))
+  }`
+      : ''
+    // JBrowse's showInterbaseIndicators is one switch over both coverage-band
+    // interbase marks — the stacked count histogram and the triangles above it —
+    // so with it off the panel emits neither, and skips the CIGAR walk (bam_indels
+    // / bam_clips) that is only there to feed them.
+    const interbase = p.showInterbaseIndicators !== false
+    // Emitted once before the loop. JBrowse sizes the count bars against half the
+    // coverage drawing height (drawInterbaseSegments' `effectiveH / 2` over the
+    // same depth domain the bars use), which on this panel's depth axis is half a
+    // depth unit per event.
+    const interbaseConsts = interbase
+      ? `
+  # height of one interbase event on the depth axis: JBrowse draws the count
+  # histogram against half the coverage height, so an event is half a read deep.
+  # Raise it to make a breakpoint over shallow coverage stand out.
+  interbase_scale <- 0.5
+  # when a column earns an indicator triangle, from JBrowse's
+  # MINIMUM_INDICATOR_READ_DEPTH / INDICATOR_THRESHOLD. Lower both to flag
+  # breakpoints in a shallow or downsampled library.
+  indicator_min_depth <- ${MINIMUM_INDICATOR_READ_DEPTH}
+  indicator_threshold <- ${INDICATOR_THRESHOLD}`
+      : ''
+    const interbaseRead = interbase
+      ? `
+    # interbase events per column (insertions + soft/hard clips) over the filtered
+    # reads, clipped to the region before they are drawn. A read overlapping the
+    # region carries its whole CIGAR, so most of a long read's events are anchored
+    # outside it — JBrowse's worker drops the ones before the region and culls the
+    # rest off-screen, and on this cumulative axis an uncropped event would land
+    # inside the NEXT region's slice.
+    ibc <- interbase_counts(keep_rows(bam_indels(bam, chrom, start, end), keep),
+                            keep_rows(bam_clips(bam, chrom, start, end), keep))
+    ibc <- ibc[ibc$pos >= start & ibc$pos < end, , drop = FALSE]
+    ind <- interbase_indicators(ibc, cov0, indicator_min_depth, indicator_threshold)`
+      : ''
+    const interbaseShift = interbase
+      ? `
+    if (nrow(ibc)) { ibc$pos <- ibc$pos + shift; ibc$.region <- ri } else ibc <- NULL
+    if (nrow(ind)) { ind$pos <- ind$pos + shift; ind$.region <- ri } else ind <- NULL`
+      : ''
+    const interbaseCombine = interbase
+      ? `
+  ibc <- do.call(rbind, Filter(Negate(is.null), lapply(parts, \`[[\`, "ibc")))
+  ind <- do.call(rbind, Filter(Negate(is.null), lapply(parts, \`[[\`, "ind")))
+  # top of the depth axis, where both interbase marks are anchored
+  cov_top <- max(cov$depth, 1)
+  ib_colors <- c(I = gap_colors[["I"]], S = clip_colors[["S"]], H = clip_colors[["H"]])`
+      : ''
+    // The histogram hangs DOWN from the top of the panel (JBrowse's inverted
+    // bars), stacked insertion -> softclip -> hardclip, each bar a 1bp-wide mark
+    // centered on the interbase boundary it belongs to. pmax(..., 0) reproduces
+    // the clip at the bottom of the coverage band: a column with more events than
+    // there is room for runs out of band in JBrowse rather than rescaling the
+    // axis, and without the clamp it would drag this panel's y axis negative.
+    const interbasePlot = interbase
+      ? `
+  # interbase count histogram: how many reads have an insertion / soft clip / hard
+  # clip anchored at each column, stacked and hanging down from the top of the
+  # panel (insertion purple / softclip blue / hardclip red), like JBrowse's
+  # inverted bars. Clamped at 0, where JBrowse's band clips them.
+  if (!is.null(ibc) && nrow(ibc)) {
+    ibc$fill <- ib_colors[ibc$type]
+    p <- p + geom_rect(data = ibc,
+      aes(xmin = pos - 0.5, xmax = pos + 0.5,
+          ymin = pmax(cov_top - ytop * interbase_scale, 0),
+          ymax = pmax(cov_top - ybase * interbase_scale, 0), fill = fill))
+  }
+  # interbase indicators: a triangle over the histogram at a column where those
+  # events pass 30% of local depth (JBrowse's breakpoint flags), colored by the
+  # dominant event
+  if (!is.null(ind) && nrow(ind)) {
+    ind$fill <- ib_colors[ind$type]
+    p <- p + geom_point(data = ind, aes(pos, cov_top * 1.06, fill = fill),
+      shape = 25, size = 2, color = "black", stroke = 0.2)
+  }`
+      : ''
+
     fragments.push({
       trackId: p.trackId,
       trackName: p.trackName,
@@ -250,21 +398,41 @@ export function alignmentsFragments(p: AlignmentsRParams): RTrackFragment[] {
         'keep_rows',
         'bam_coverage',
         'bam_mismatches',
-        'base_colors',
-        'bam_indels',
-        'bam_clips',
-        'interbase_indicators',
-        'gap_colors',
-        'clip_colors',
+        // the mismatch bars are drawn in one muted grey under a modification
+        // scheme, so the per-base palette isn't reached at all
+        ...(covMods
+          ? [
+              'bam_modifications',
+              'read_base_counts',
+              'mod_coverage',
+              'mod_simplex_types',
+              'mod_colors',
+            ]
+          : ['base_colors']),
+        ...(interbase
+          ? [
+              'bam_indels',
+              'bam_clips',
+              'interbase_counts',
+              'interbase_indicators',
+              'gap_colors',
+              'clip_colors',
+            ]
+          : []),
       ],
       setup,
       plotVariable: `p_${pathVar}_coverage`,
       heightWeight: 1,
-      // read every region's coverage / SNP counts / interbase indicators, shift
-      // each onto the cumulative axis, then draw one continuous SNP-coverage panel
+      // Also on the coverage panel, not just the pileup: a modification sub-mode
+      // moves this panel's stacked mod bars too, and a display can be coverage-
+      // only (showPileup off), which would otherwise drop the note entirely.
+      // assembleRScript dedups, so listing it twice costs nothing.
+      unreproduced: p.unreproduced,
+      // read every region's coverage / SNP counts / interbase counts, shift each
+      // onto the cumulative axis, then draw one continuous SNP-coverage panel
       plotExpr: `{
 ${pathAlias}
-${filterConsts}
+${filterConsts}${interbaseConsts}${modConsts}
   parts <- list()
   for (ri in seq_len(nrow(regions))) {
     chrom <- regions$chrom[ri]; start <- regions$start[ri]; end <- regions$end[ri]
@@ -276,9 +444,7 @@ ${filterConsts}
     # readGAlignments order, so it subsets each overlay by its read_index.
     ${readFilteredReads}
     keep <- reads$keep
-    cov0 <- bam_coverage(bam, chrom, start, end, keep)
-    ind <- interbase_indicators(keep_rows(bam_indels(bam, chrom, start, end), keep),
-                                keep_rows(bam_clips(bam, chrom, start, end), keep), cov0)
+    cov0 <- bam_coverage(bam, chrom, start, end, keep)${interbaseRead}
     mm <- keep_rows(bam_mismatches(bam, chrom, start, end), keep)
     snp <- NULL
     if (!is.null(mm) && nrow(mm)) {
@@ -293,30 +459,27 @@ ${filterConsts}
         snp$refpos <- snp$refpos + shift; snp$.region <- ri
       }
     }
-    cov0$pos <- cov0$pos + shift; cov0$.region <- ri
-    if (nrow(ind)) { ind$pos <- ind$pos + shift; ind$.region <- ri } else ind <- NULL
-    parts[[ri]] <- list(cov = cov0, snp = snp, ind = ind)
+    cov0$pos <- cov0$pos + shift; cov0$.region <- ri${interbaseShift}${modRead}
+    parts[[ri]] <- list(cov = cov0, snp = snp${interbase ? ', ind = ind, ibc = ibc' : ''}${covMods ? ', mods = mods, modbc = modbc, mmstr = mmstr' : ''})
   }
   cov <- do.call(rbind, lapply(parts, \`[[\`, "cov"))
-  snp <- do.call(rbind, Filter(Negate(is.null), lapply(parts, \`[[\`, "snp")))
-  ind <- do.call(rbind, Filter(Negate(is.null), lapply(parts, \`[[\`, "ind")))
+  snp <- do.call(rbind, Filter(Negate(is.null), lapply(parts, \`[[\`, "snp")))${modCombine}${interbaseCombine}
   p <- ggplot() +
     geom_area(data = cov, aes(pos, depth, group = .region), fill = "#888888") +
     scale_fill_identity() +
     labs(title = ${rStr(`${p.trackName} coverage`)}, x = NULL, y = "Depth") +
     theme_minimal()
   if (!is.null(snp) && nrow(snp)) {
-    snp$fill <- base_colors[toupper(snp$base)]
+    ${
+      covMods
+        ? `# JBrowse greys the band's mismatch bars out under a modification scheme
+    # (mutedSnpBase) so the mod colors below are the only color in it. Darker
+    # than this panel's coverage grey, which is already #888888.
+    snp$fill <- "#555555"`
+        : `snp$fill <- base_colors[toupper(snp$base)]`
+    }
     p <- p + geom_col(data = snp, aes(refpos + 0.5, count, fill = fill), width = 1)
-  }
-  # interbase indicators: a marker above the coverage where insertions / soft- or
-  # hard-clips pile up past 30% of local depth (JBrowse's breakpoint flags),
-  # colored by the dominant event (insertion purple / softclip blue / hardclip red)
-  if (!is.null(ind) && nrow(ind)) {
-    ind$fill <- c(I = gap_colors[["I"]], S = clip_colors[["S"]], H = clip_colors[["H"]])[ind$type]
-    p <- p + geom_point(data = ind, aes(pos + 0.5, max(cov$depth, 1) * 1.06, fill = fill),
-      shape = 25, size = 2, color = "black", stroke = 0.2)
-  }
+  }${modPlot}${interbasePlot}
   p
 }`,
     })
@@ -549,8 +712,9 @@ ${filterConsts}
       setup,
       plotVariable: `p_${pathVar}_pileup`,
       heightWeight: 3,
-      // on the pileup, not the coverage panel: every one of these is a setting
-      // about how the READS are arranged or drawn
+      // the same list the coverage panel carries — the sort/group notes are about
+      // how the READS are arranged, the modification ones about which calls both
+      // panels count. Deduped in assembleRScript.
       unreproduced: p.unreproduced,
       // read every region (renumbering read_index into the combined reads frame),
       // lay out over the combined reads, then draw the pileup + overlays
@@ -634,6 +798,34 @@ function unreproducedSettings(self: LinearAlignmentsDisplayModel) {
   if (sorted !== undefined && resolveSortType(sorted) === undefined) {
     notes.push(`"Sort by" ${sorted} — the pileup is drawn unsorted`)
   }
+  // Modification sub-modes. Each of these changes WHICH calls are counted, so it
+  // moves the coverage panel's stacked mod bars as well as the pileup's ticks —
+  // a reader comparing the R figure against the browser would see different
+  // methylation levels, not just a different palette.
+  if (self.colorBy.type === 'bisulfite') {
+    notes.push(
+      '"Color by" bisulfite — the C→T conversion calls need the reference sequence; the reads are drawn plain and the coverage panel carries no methylation bars',
+    )
+  }
+  const mods = self.colorBy.modifications
+  if (mods?.fillUnmarked) {
+    notes.push(
+      '"Color by" modifications with the unmarked-base fill — only the MM/ML calls at or above the threshold are drawn, not the implicit unmodified (blue) cytosines JBrowse fills in',
+    )
+  }
+  if (mods?.twoColor) {
+    notes.push(
+      '"Color by" modifications in two-color mode — the low-probability half of each call is dropped rather than drawn in the unmodified (blue) color',
+    )
+  }
+  if (
+    mods?.shownModifications !== undefined ||
+    mods?.hiddenModifications?.length
+  ) {
+    notes.push(
+      '"Color by" modifications with a per-type filter — every modification type present in the reads is drawn',
+    )
+  }
   return notes
 }
 
@@ -657,6 +849,7 @@ export function exportRCode(
     reference: isCram ? referenceFastaUri(self) : '',
     showCoverage: self.showCoverage,
     showPileup: self.showPileup,
+    showInterbaseIndicators: self.showInterbaseIndicators,
     colorBy: self.colorBy.type,
     showLowFreqMismatches: self.showLowFreqMismatches,
     bpPerPx: (getContainingView(self) as { bpPerPx?: number }).bpPerPx ?? 1,

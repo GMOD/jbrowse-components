@@ -8,7 +8,16 @@
 # combined codes like "C+mh" interleave ML per position. ML is a B:C array tag
 # that breaks readGAlignments' DataFrame, so this reads via scanBam (whose read
 # order matches read_bam's readGAlignments, so read_index joins to pileup rows).
-# Returns data.frame(read_index, refpos [0-based], modtype, prob, strand).
+# Returns data.frame(read_index, refpos [0-based], modtype, prob, strand, base) -
+# 'base' is the MM group's target base as written in the tag (never complemented,
+# like getModPositions), which is what mod_coverage's modifiable/detectable
+# denominator keys off.
+#
+# The result also carries an "mm_strands" attribute: the "<sign><type>" pairs of
+# every MM group seen, INCLUDING groups whose calls all fell below min_prob, so
+# mod_simplex_types can tell simplex from duplex over the whole read set. It is
+# an attribute rather than a column because it must survive the threshold filter;
+# read it off the returned frame directly, since any row subset drops it.
 # The path goes to scanBam as a bare string, not through BamFile(): BamFile()
 # resolves the index by looking for a sibling file, which finds nothing over
 # http and leaves index = NA, so every remote modBAM - the usual way a JBrowse
@@ -23,7 +32,8 @@ bam_modifications <- function(uri, chrom, start, end, min_prob = 0.1) {
   ml_all <- if (!is.null(b$tag$ML)) b$tag$ML else b$tag$Ml
   if (is.null(mm_all)) return(NULL)
   compl <- c(A = "T", T = "A", C = "G", G = "C", U = "A", N = "N")
-  seqs <- as.character(b$seq); strands <- as.character(b$strand); out <- list()
+  seqs <- as.character(b$seq); strands <- as.character(b$strand)
+  out <- list(); seen <- character(0)
   for (i in seq_along(mm_all)) {
     mm <- mm_all[i]; if (is.na(mm) || mm == "") next
     ml <- if (is.null(ml_all)) integer(0) else as.integer(ml_all[[i]])
@@ -46,13 +56,15 @@ bam_modifications <- function(uri, chrom, start, end, min_prob = 0.1) {
       f <- strsplit(g, ",", fixed = TRUE)[[1]]
       h <- regmatches(f[1], regexec("([ACGTUN])([-+])([a-z]+|[A-Z]|[0-9]+)", f[1]))[[1]]
       if (length(h) < 4L) next
-      base <- h[2]; typestr <- h[4]; deltas <- as.integer(f[-1]); ndelta <- length(deltas)
+      base <- h[2]; mmsign <- h[3]; typestr <- h[4]
+      deltas <- as.integer(f[-1]); ndelta <- length(deltas)
       if (!ndelta) next
       # combined lowercase codes (mh) are one type per char; a ChEBI number or a
       # single uppercase ambiguity code is one type (mirrors getModPositions)
       single <- utf8ToInt(substr(typestr, 1, 1))[1] < 97L || nchar(typestr) == 1L
       types <- if (single) typestr else strsplit(typestr, "", fixed = TRUE)[[1]]
       ntypes <- length(types)
+      seen <- c(seen, paste0(mmsign, types))
       target <- if (isrev) compl[[base]] else base
       idx <- if (base == "N") seq_len(n) else which(s == target)
       if (isrev) idx <- rev(idx)                       # count from the read 5' end
@@ -63,10 +75,14 @@ bam_modifications <- function(uri, chrom, start, end, min_prob = 0.1) {
         keep <- !is.na(refp) & !is.na(probs) & probs >= min_prob
         if (any(keep)) out[[length(out) + 1L]] <- data.frame(
           read_index = i, refpos = refp[keep] - 1L, modtype = types[tj],
-          prob = probs[keep], strand = if (isrev) -1L else 1L, stringsAsFactors = FALSE)
+          prob = probs[keep], strand = if (isrev) -1L else 1L, base = base,
+          stringsAsFactors = FALSE)
       }
       mlbase <- mlbase + ndelta * ntypes
     }
   }
-  if (length(out)) do.call(rbind, out) else NULL
+  if (!length(out)) return(NULL)
+  res <- do.call(rbind, out)
+  attr(res, "mm_strands") <- unique(seen)
+  res
 }

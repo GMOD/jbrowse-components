@@ -5,8 +5,7 @@ import { join, resolve } from 'node:path'
 
 import { assembleRScript } from '@jbrowse/plugin-linear-genome-view'
 
-import { featureFrequencyThreshold } from './constants.ts'
-import { alignmentsFragments } from './exportRCode.ts'
+import { computeModificationCoverage } from '../features/modCoverage/compute.ts'
 import {
   applyDepthDependentThreshold,
   computeMismatchFrequencies,
@@ -15,6 +14,10 @@ import {
   classifyInsertSize,
   getInsertSizeStats,
 } from '../shared/insertSizeStats.ts'
+import { featureFrequencyThreshold } from './constants.ts'
+import { alignmentsFragments } from './exportRCode.ts'
+
+import type { StrandBaseCounts } from '../shared/calculateModificationCounts.ts'
 
 const baseParams = {
   isCram: false,
@@ -79,51 +82,228 @@ maybe(
   90000,
 )
 
-// interbase_indicators reproduces JBrowse's coverage-band breakpoint flags:
-// significant only where local depth >= 8 and the interbase events exceed 30% of
-// it, typed by the dominant event (insertion, else softclip, else hardclip).
-// Synthetic inputs make the expected significant set deterministic.
-maybe(
-  'interbase_indicators applies the depth/threshold gate and dominant type',
-  () => {
-    // any coverage fragment emits the interbase_indicators helper def; reuse it
-    const [cov] = alignmentsFragments({
-      ...baseParams,
-      trackId: 'aln',
-      trackName: 'x',
-      uri: '/dev/null',
-      showCoverage: true,
-      showPileup: false,
-      colorBy: 'normal',
-    })
-    const script = assembleRScript({ refName: 'ctgA', start: 100, end: 110 }, [
-      cov!,
-    ])
-    const helpers = script.split('# Data sources')[0]!
-    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-interbase-'))
-    // depth 10 everywhere except pos 109 (5, below the min-depth gate). Events:
-    // 105 = 4 ins (sig, I); 106 = 3 ins + 4 soft (sig, soft dominates → S);
-    // 107 = 5 soft (sig, S); 103 = 2 ins (< 30% of 10, dropped); 109 = 4 hard
-    // (depth 5 < 8, dropped)
-    const probe = `${helpers}
+// The interbase helper library, plus the synthetic tally the tests below run on.
+// Events: 103 = 2 ins; 105 = 4 ins; 106 = 3 ins + 4 soft; 107 = 5 soft;
+// 109 = 4 hard. Depth is 10 everywhere except 108 and 109, which are 5 — both,
+// because an interbase position's local depth is the larger of the two bases it
+// sits between, so leaving 108 at 10 would put 109 over the gate.
+function interbaseProbePreamble() {
+  // any coverage fragment emits the interbase helper defs; reuse them
+  const [cov] = alignmentsFragments({
+    ...baseParams,
+    trackId: 'aln',
+    trackName: 'x',
+    uri: '/dev/null',
+    showCoverage: true,
+    showPileup: false,
+    colorBy: 'normal',
+  })
+  const script = assembleRScript({ refName: 'ctgA', start: 100, end: 110 }, [
+    cov!,
+  ])
+  return `${script.split('# Data sources')[0]!}
 cov <- data.frame(pos = 100:110, depth = rep(10, 11))
-cov$depth[cov$pos == 109] <- 5
+cov$depth[cov$pos %in% c(108, 109)] <- 5
 indels <- data.frame(
   refpos = c(105L, 105L, 105L, 105L, 103L, 103L, 106L, 106L, 106L),
   length = 1L, type = "I", stringsAsFactors = FALSE)
 clips <- data.frame(
   pos = c(rep(107L, 5), rep(106L, 4), rep(109L, 4)),
   type = c(rep("S", 5), rep("S", 4), rep("H", 4)), stringsAsFactors = FALSE)
-ind <- interbase_indicators(indels, clips, cov)
-o <- order(ind$pos)
-cat(paste(ind$pos[o], ind$type[o], sep = ":"), "\\n")
+ibc <- interbase_counts(indels, clips)
 `
-    writeFileSync(join(dir, 'probe.R'), probe)
-    const out = execFileSync('Rscript', [join(dir, 'probe.R')], {
-      cwd: dir,
-      encoding: 'utf8',
-    }).trim()
-    expect(out).toBe('105:I 106:S 107:S')
+}
+
+function runR(prefix: string, probe: string) {
+  const dir = mkdtempSync(join(tmpdir(), prefix))
+  writeFileSync(join(dir, 'probe.R'), probe)
+  return execFileSync('Rscript', [join(dir, 'probe.R')], {
+    cwd: dir,
+    encoding: 'utf8',
+  }).trim()
+}
+
+// interbase_counts is the tally the coverage band's count histogram is drawn
+// from: one row per (column, event type) that actually occurred, stacked
+// insertion -> softclip -> hardclip into the half-open count range JBrowse's
+// yOffset/segHeight pair encodes (computeInterbaseCoverage's segment pass).
+maybe(
+  'interbase_counts stacks each column insertion, softclip, hardclip',
+  () => {
+    const out = runR(
+      'jb-rexport-interbase-counts-',
+      `${interbaseProbePreamble()}
+cat(paste(ibc$pos, ibc$type, ibc$count, ibc$ybase, ibc$ytop, ibc$total, sep = ":"), "\\n")
+`,
+    )
+    // 106 stacks 3 insertions under 4 soft clips: the softclip bar starts at 3
+    // and ends at 7, and both rows report the column total of 7. A type with no
+    // event at a column emits no row at all (109 is hardclip-only).
+    expect(out).toBe(
+      '103:I:2:0:2:2 105:I:4:0:4:4 106:I:3:0:3:7 106:S:4:3:7:7 107:S:5:0:5:5 109:H:4:0:4:4',
+    )
+  },
+  90000,
+)
+
+// interbase_indicators reproduces JBrowse's coverage-band breakpoint flags over
+// that same tally: significant only where local depth >= 8 and the interbase
+// events exceed 30% of it, typed by the dominant event (insertion, else
+// softclip, else hardclip). Synthetic inputs make the significant set
+// deterministic: 105 (4 ins, I); 106 (3 ins + 4 soft, soft dominates → S); 107
+// (5 soft, S); 103 dropped (2 ins < 30% of 10); 109 dropped (both its flanking
+// bases are at depth 5, under the min of 8).
+maybe(
+  'interbase_indicators applies the depth/threshold gate and dominant type',
+  () => {
+    const out = runR(
+      'jb-rexport-interbase-',
+      `${interbaseProbePreamble()}
+ind <- interbase_indicators(ibc, cov)
+o <- order(ind$pos)
+cat(paste(ind$pos[o], ind$type[o], ind$count[o], sep = ":"), "\\n")
+`,
+    )
+    // the count reported is the column total across types, not the dominant
+    // type's own count — 106 flags as S and reports all 7 events
+    expect(out).toBe('105:I:4 106:S:7 107:S:5')
+  },
+  90000,
+)
+
+// The count histogram over a real breakpoint: volvox-long-reads-sv ctgA:2559-2760
+// is the clipping locus the gallery figure uses, so the helper chain the coverage
+// panel runs must find stacked soft clips there. Also pins the two properties the
+// panel's geometry depends on — the stack is contiguous within a column, and an
+// event anchored outside the region is dropped rather than drawn on the shared axis.
+maybe(
+  'interbase_counts stacks real clips at the volvox breakpoint',
+  () => {
+    const bam = resolve(
+      process.cwd(),
+      'test_data/volvox/volvox-long-reads-sv.bam',
+    )
+    const out = runR(
+      'jb-rexport-interbase-bam-',
+      `${interbaseProbePreamble()}
+start <- 2559; end <- 2760
+ibc <- interbase_counts(bam_indels(${JSON.stringify(bam)}, "ctgA", start, end),
+                        bam_clips(${JSON.stringify(bam)}, "ctgA", start, end))
+cat("outside", sum(ibc$pos < start | ibc$pos >= end), "\\n")
+ibc <- ibc[ibc$pos >= start & ibc$pos < end, , drop = FALSE]
+cat("rows", nrow(ibc), "\\n")
+# within a column the stack is contiguous and starts at 0: ybase[1] == 0 and each
+# ytop is the next ybase, which is what makes the hanging bars abut
+cat("contiguous", all(unlist(by(ibc, ibc$pos, function(g)
+  c(g$ybase[1] == 0, head(g$ytop, -1) == tail(g$ybase, -1),
+    tail(g$ytop, 1) == g$total[1])))), "\\n")
+top <- ibc[which.max(ibc$count), ]
+cat("top", top$pos, top$type, top$count, "\\n")
+cov0 <- bam_coverage(${JSON.stringify(bam)}, "ctgA", start, end, NULL)
+ind <- interbase_indicators(ibc, cov0)
+cat("flagged", paste(ind$pos, ind$type, sep = ":"), "\\n")
+`,
+    )
+    // a long read overlapping the region carries its whole CIGAR, so most of its
+    // events are anchored outside it — the crop the panel does is not vacuous
+    expect(out).toMatch(/outside [1-9]/)
+    expect(out).toMatch(/rows [1-9]/)
+    expect(out).toContain('contiguous TRUE')
+    // the breakpoint column itself: a stack of soft clips, not a lone event
+    expect(out).toMatch(/top 2700 S \d\d/)
+    // and it is the one column significant enough for an indicator. Coverage
+    // falls off a cliff there — depth 0 at 2700, 17 to its left — so this only
+    // holds with the interbase depth rule.
+    expect(out).toContain('flagged 2700:S')
+  },
+  90000,
+)
+
+// The whole coverage panel over that same breakpoint (so the histogram branch
+// actually has rows to draw), both ways round: the histogram is drawn with a geom
+// whose y aesthetics are computed from columns interbase_counts supplies, so a
+// rename or a missing column is a ggplot error at draw time — after every read
+// has been fetched — not a codegen one.
+maybe(
+  'the coverage panel draws with and without the interbase marks',
+  () => {
+    const bam = resolve(
+      process.cwd(),
+      'test_data/volvox/volvox-long-reads-sv.bam',
+    )
+    for (const showInterbaseIndicators of [true, false]) {
+      const fragments = alignmentsFragments({
+        ...baseParams,
+        trackId: 'aln',
+        trackName: 'Volvox reads',
+        uri: bam,
+        showCoverage: true,
+        showPileup: false,
+        showInterbaseIndicators,
+        colorBy: 'normal',
+      })
+      const script = assembleRScript(
+        { refName: 'ctgA', start: 2559, end: 2760 },
+        fragments,
+      )
+      const dir = mkdtempSync(
+        join(tmpdir(), `jb-rexport-ib-${showInterbaseIndicators}-`),
+      )
+      writeFileSync(join(dir, 'view.R'), script)
+      execFileSync('Rscript', [join(dir, 'view.R')], {
+        cwd: dir,
+        stdio: 'pipe',
+      })
+      expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+    }
+  },
+  120000,
+)
+
+// The breakpoint case the indicator exists for, and the one a right-hand-only
+// depth lookup silently drops: every read's soft clip is anchored where the
+// alignments stop, so the base to the RIGHT of that column has depth 0. JBrowse's
+// interbaseDepthAt takes the larger of the two bases the interbase position sits
+// between, which is the full depth on the left.
+maybe(
+  'interbase_indicators flags a breakpoint at the edge of a coverage cliff',
+  () => {
+    const out = runR(
+      'jb-rexport-interbase-cliff-',
+      `${interbaseProbePreamble()}
+# coverage runs out after column 299: 300 onward is zero
+cliff_cov <- data.frame(pos = 290:310, depth = c(rep(20, 10), rep(0, 11)))
+cliff_clips <- data.frame(pos = rep(300L, 17), type = "S", stringsAsFactors = FALSE)
+cliff <- interbase_indicators(interbase_counts(NULL, cliff_clips), cliff_cov)
+cat(nrow(cliff), paste(cliff$pos, cliff$type, cliff$count, sep = ":"), "\\n")
+`,
+    )
+    expect(out).toBe('1 300:S:17')
+  },
+  90000,
+)
+
+// A tie between two types at one column: JBrowse only upgrades the dominant type
+// on a strict majority (`entry.softclip > dominantCount`), so equal counts keep
+// the earlier of insertion, softclip, hardclip.
+maybe(
+  'interbase_indicators keeps the earlier type on a tie',
+  () => {
+    const out = runR(
+      'jb-rexport-interbase-tie-',
+      `${interbaseProbePreamble()}
+tie_indels <- data.frame(refpos = rep(200L, 4L),
+  length = 1L, type = "I", stringsAsFactors = FALSE)
+tie_clips <- data.frame(pos = c(rep(200L, 4), rep(201L, 4)),
+  type = c(rep("S", 4), rep("H", 4)), stringsAsFactors = FALSE)
+tie_cov <- data.frame(pos = 200:201, depth = c(10, 10))
+tie <- interbase_indicators(interbase_counts(tie_indels, tie_clips), tie_cov)
+o <- order(tie$pos)
+cat(paste(tie$pos[o], tie$type[o], sep = ":"), "\\n")
+`,
+    )
+    // 200: 4 ins vs 4 soft → I wins the tie. 201: 4 hard alone → H.
+    expect(out).toBe('200:I 201:H')
   },
   90000,
 )
@@ -399,6 +579,209 @@ cat(nrow(mm), paste(unique(mm$modtype), collapse = ","), "\\n")
     expect(types).toBe('m')
   },
   90000,
+)
+
+// The modification COVERAGE panel is the other half of a modBAM figure, and its
+// arithmetic is the part a reader would trust without being able to check: the
+// bar heights are read counts corrected by a denominator (which reads even carry
+// the base, and of those which were examined at all). Run the generated panel end
+// to end, then check each helper against an independent oracle — mod_coverage
+// against the TypeScript computeModificationCoverage the browser draws with, and
+// read_base_counts against Rsamtools' own pileup().
+const MOD_COV_BAM = 'test_data/modifications_test/methylation_clip.bam'
+
+function modCoverageFragment(uri: string) {
+  const [cov] = alignmentsFragments({
+    ...baseParams,
+    trackId: 'aln',
+    trackName: 'ONT modBAM',
+    uri,
+    showCoverage: true,
+    showPileup: false,
+    colorBy: 'modifications',
+    modificationThreshold: 0.5,
+  })
+  return cov!
+}
+
+maybe(
+  'modifications coverage panel runs and stacks mod bars over the depth',
+  () => {
+    const bam = resolve(process.cwd(), MOD_COV_BAM)
+    const script = assembleRScript({ refName: '20', start: 0, end: 12000 }, [
+      modCoverageFragment(bam),
+    ])
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-modcov-'))
+    writeFileSync(join(dir, 'view.R'), script)
+    execFileSync('Rscript', [join(dir, 'view.R')], { cwd: dir, stdio: 'pipe' })
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+
+    // this modBAM's MM groups are all 'C+m' with no '-' partner, so 5mC resolves
+    // simplex — the case where dividing by every read carrying the base would
+    // halve each bar
+    const out = runR(
+      'jb-rexport-modcov-probe-',
+      `${script.split('# Data sources')[0]!}
+bam <- ${JSON.stringify(bam)}
+mods <- bam_modifications(bam, "20", 0, 12000, 0.5)
+at <- sort(unique(mods$refpos)); at <- at[at >= 0 & at < 12000]
+mods <- mods[mods$refpos %in% at, , drop = FALSE]
+cat(paste(attr(mods, "mm_strands"), collapse = ","),
+    paste(sort(unique(mods$base)), collapse = ","),
+    paste(mod_simplex_types(attr(mods, "mm_strands")), collapse = ","), "\\n")
+`,
+    )
+    // the MM group strand rides on the result as an attribute (it must survive
+    // the threshold filter, so it cannot be a column), and 'base' is the group's
+    // target base as written in the tag
+    expect(out.split(/\s+/)).toEqual(['+m', 'C', 'm'])
+  },
+  120000,
+)
+
+// mod_coverage against the browser's own computeModificationCoverage, on one
+// hand-built frame covering all three things the R rewrite could get wrong: the
+// simplex denominator, the fixed stack order, and the mean-likelihood alpha.
+maybe(
+  'mod_coverage reproduces computeModificationCoverage exactly',
+  () => {
+    // (position, modType, base, probability) — 5mC and 5hmC competing at one
+    // column plus a 6mA on a different base, so the stack has to order them
+    const calls: [number, string, string, number][] = [
+      [100, 'm', 'C', 0.9],
+      [100, 'm', 'C', 0.8],
+      [100, 'm', 'C', 0.7],
+      [100, 'h', 'C', 0.6],
+      [100, 'a', 'A', 0.95],
+      [101, 'm', 'C', 0.55],
+      [101, 'm', 'C', 0.65],
+      [102, 'm', 'C', 0.5],
+    ]
+    const baseCounts: Record<number, StrandBaseCounts> = {
+      100: {
+        C: { fwd: 4, rev: 1 },
+        G: { fwd: 2, rev: 3 },
+        A: { fwd: 3, rev: 2 },
+        T: { fwd: 1, rev: 0 },
+      },
+      101: { C: { fwd: 2, rev: 2 }, G: { fwd: 1, rev: 1 } },
+      102: { C: { fwd: 1, rev: 0 }, G: { fwd: 0, rev: 1 } },
+    }
+    const depths = [11, 8, 4]
+    // 'm' simplex, 'a' duplex, so one bar in the same column takes each branch
+    const simplex = ['m']
+
+    const browserCoverage = (simplexTypes: string[]) =>
+      computeModificationCoverage(
+        calls.map(([position, modType, base, prob], readIndex) => ({
+          readIndex,
+          position,
+          base,
+          modType,
+          strand: 1 as const,
+          color: 0,
+          prob,
+          noMod: false,
+        })),
+        new Map(Object.entries(baseCounts).map(([k, v]) => [Number(k), v])),
+        100,
+        { depths: Float32Array.from(depths), maxDepth: 11, startPos: 100 },
+        new Set(simplexTypes),
+      )
+
+    const packed = browserCoverage(simplex)
+    const expected = Array.from({ length: packed.count }, (_, i) => ({
+      pos: packed.positions[i]!,
+      ybase: packed.yOffsets[i]!,
+      ytop: packed.yOffsets[i]! + packed.heights[i]!,
+      // the segment's alpha byte IS the mean call likelihood
+      alpha: (packed.colors[i]! >>> 24) & 0xff,
+    }))
+
+    const rVec = (xs: (string | number)[]) =>
+      `c(${xs.map(x => (typeof x === 'string' ? JSON.stringify(x) : x)).join(', ')})`
+    const bcRows = Object.entries(baseCounts).flatMap(([pos, sc]) =>
+      Object.entries(sc).map(([b, c]) => ({ pos: +pos, base: b, ...c })),
+    )
+    const out = runR(
+      'jb-rexport-modcov-parity-',
+      `${assembleRScript({ refName: '20', start: 0, end: 1 }, [modCoverageFragment('/dev/null')]).split('# Data sources')[0]!}
+mods <- data.frame(read_index = ${rVec(calls.map((_, i) => i + 1))},
+  refpos = ${rVec(calls.map(c => c[0]))}, modtype = ${rVec(calls.map(c => c[1]))},
+  base = ${rVec(calls.map(c => c[2]))}, prob = ${rVec(calls.map(c => c[3]))},
+  stringsAsFactors = FALSE)
+counts <- data.frame(pos = ${rVec(bcRows.map(r => r.pos))}, base = ${rVec(bcRows.map(r => r.base))},
+  fwd = ${rVec(bcRows.map(r => r.fwd))}, rev = ${rVec(bcRows.map(r => r.rev))},
+  stringsAsFactors = FALSE)
+cov <- data.frame(pos = ${rVec([100, 101, 102])}, depth = ${rVec(depths)})
+mc <- mod_coverage(mods, counts, cov, ${rVec(simplex)})
+for (i in seq_len(nrow(mc))) cat(mc$pos[i], sprintf("%.9f", mc$ybase[i]),
+  sprintf("%.9f", mc$ytop[i]), as.integer(round(mc$prob[i] * 255)), "\\n")
+`,
+    )
+    const rows = out.split('\n').map(l => {
+      const [pos, ybase, ytop, alpha] = l.trim().split(/\s+/)
+      return {
+        pos: Number(pos),
+        ybase: Number(ybase),
+        ytop: Number(ytop),
+        alpha: Number(alpha),
+      }
+    })
+    expect(rows).toHaveLength(expected.length)
+    for (const [i, want] of expected.entries()) {
+      expect(rows[i]!.pos).toBe(want.pos)
+      expect(rows[i]!.ybase).toBeCloseTo(want.ybase, 6)
+      expect(rows[i]!.ytop).toBeCloseTo(want.ytop, 6)
+      expect(rows[i]!.alpha).toBe(want.alpha)
+    }
+    // the simplex correction is the part of the formula a rewrite is most likely
+    // to drop, and dropping it is silent — the bars just come out half height.
+    // Pin that the two branches actually differ on this input.
+    expect(rows[0]!.ytop).toBeGreaterThan(
+      browserCoverage([]).heights[0] ?? Infinity,
+    )
+  },
+  120000,
+)
+
+// read_base_counts is a hand-rolled CIGAR walk over each read's own SEQ, so check
+// it against Rsamtools' pileup() — an independent implementation of the same
+// per-strand base tally — at exactly the columns a modification was called on.
+maybe(
+  'read_base_counts agrees with Rsamtools pileup at the modified columns',
+  () => {
+    const bam = resolve(process.cwd(), MOD_COV_BAM)
+    const out = runR(
+      'jb-rexport-basecounts-',
+      `${assembleRScript({ refName: '20', start: 0, end: 1 }, [modCoverageFragment(bam)]).split('# Data sources')[0]!}
+bam <- ${JSON.stringify(bam)}
+mods <- bam_modifications(bam, "20", 0, 12000, 0.5)
+# a read overlapping the window carries its whole CIGAR, so clip to the window
+# the pileup below covers - which is what the generated panel does too
+at <- sort(unique(mods$refpos)); at <- at[at >= 0 & at < 12000]
+mine <- read_base_counts(bam, "20", 0, 12000, at)
+pu <- pileup(bam, scanBamParam = ScanBamParam(which = GRanges("20", IRanges(1, 12000))),
+  pileupParam = PileupParam(distinguish_strands = TRUE, distinguish_nucleotides = TRUE,
+    min_base_quality = 0, min_mapq = 0, min_nucleotide_depth = 1, max_depth = 100000,
+    include_deletions = FALSE, include_insertions = FALSE))
+pu$pos0 <- pu$pos - 1L
+pu <- pu[pu$pos0 %in% at & pu$nucleotide %in% c("A", "C", "G", "T"), ]
+pu$fwd <- ifelse(pu$strand == "+", pu$count, 0L)
+pu$rev <- ifelse(pu$strand == "-", pu$count, 0L)
+ref <- aggregate(cbind(fwd, rev) ~ pos0 + nucleotide, data = pu, FUN = sum)
+names(ref) <- c("pos", "base", "fwd", "rev"); ref$base <- as.character(ref$base)
+cols <- c("pos", "base", "fwd", "rev")
+a <- mine[order(mine$pos, mine$base), cols]; rownames(a) <- NULL
+b <- ref[order(ref$pos, ref$base), cols]; rownames(b) <- NULL
+cat(nrow(a), isTRUE(all.equal(a, b)), "\\n")
+`,
+    )
+    const [rows, identical] = out.split(/\s+/)
+    expect(Number(rows)).toBeGreaterThan(50)
+    expect(identical).toBe('TRUE')
+  },
+  180000,
 )
 
 // perBaseQuality: the generated pileup must run, and bam_base_quality must map a

@@ -101,7 +101,11 @@ export {
   packModCovSegmentsForGpu,
   packSnpSegmentsForGpu,
 } from './coverageGpuPacking.ts'
-export { computeInterbaseCoverage } from './interbaseCoverage.ts'
+export {
+  INDICATOR_THRESHOLD,
+  MINIMUM_INDICATOR_READ_DEPTH,
+  computeInterbaseCoverage,
+} from './interbaseCoverage.ts'
 export type { ClipEntry, InsertionEntry } from './interbaseCoverage.ts'
 export { computeCoverage } from './coverageCompute.ts'
 export type { CoverageGap } from './coverageCompute.ts'
