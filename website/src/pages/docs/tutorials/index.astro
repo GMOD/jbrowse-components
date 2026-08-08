@@ -29,10 +29,10 @@ const EXTRA_DOCS = new Map([
 ])
 
 // Curated order within each section, shared with the user guide index. Getting
-// started is just the two quickstarts; the domain analysis sections follow; and
-// the more advanced, developer/admin-oriented configuration work (display
-// defaults, embedding, CLI-config walkthroughs) sits last in its own
-// Configuration & embedding section.
+// started is the hosted-site walkthrough and the two quickstarts; the domain
+// analysis sections follow; and the more advanced, developer/admin-oriented
+// configuration work (display defaults, embedding, CLI-config walkthroughs)
+// sits last in its own Configuration & embedding section.
 const ORDER = TUTORIAL_ORDER
 const rank = (key: string) => {
   const i = ORDER.indexOf(key)

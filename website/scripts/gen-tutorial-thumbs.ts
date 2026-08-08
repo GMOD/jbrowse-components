@@ -169,7 +169,7 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     // the Fst plot only, left half of the genome: a centered crop lands on
     // 2R/3L and drops the 2L plateau that is the whole point of the figure
     src: 'popgen/fst_in2lt_2L.png',
-    band: [0.36, 0.95],
+    band: [0.36, 0.93],
     xband: [0, 0.5],
     position: 'left',
   },
@@ -292,6 +292,19 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     // the two gene panels and the ribbons between them; the [0, 0.95] band drops
     // the app header, which also carries the figure's baked-in callout text
     band: [0.28, 0.95],
+  },
+  genomes_basics: {
+    // The finished phyloP-over-TP53 view, which is also this page's gallery
+    // card. The click-path figure above it on the page is two frames of app
+    // chrome with a track drawer down one side, unreadable at card size.
+    src: 'genomes_basics/phylop_tp53.png',
+    // the stacked transcript rows and the phyloP band under them, which is the
+    // pairing the page is about, starting below the app header and the ruler
+    band: [0.36, 0.93],
+    // the coding exons and the peaks over them; the left third of the figure is
+    // the 3' UTR and one lone exon, which is the page's control rather than its
+    // picture
+    xband: [0.45, 1],
   },
   genomes_msa: {
     // The last of the click-path figure's three frames: the ortholog alignment

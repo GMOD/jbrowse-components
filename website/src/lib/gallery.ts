@@ -539,22 +539,25 @@ export const gallerySections: readonly GallerySection[] = [
     ],
   },
   {
-    id: 'conservation',
-    title: 'Conservation',
+    // Was two one-card sections, `conservation` and `hubs`. They are the same
+    // capability seen twice: UCSC's catalog reached with no config written, once
+    // through the hosted per-genome configs and once through a hub.txt. The
+    // phyloP card only read as its own subject while its figure was built from
+    // session tracks; now that it comes from the hosted hg38 config, filing it
+    // under Conservation named the dataset rather than what the card shows.
+    //
+    // Keeps the `hubs` id: /gallery/#hubs is linked from hub_url.md and
+    // connections.md, and check-links would fail on a rename.
+    id: 'hubs',
+    title: 'Hosted genomes and track hubs',
     items: [
       {
         label: 'phyloP conservation',
-        spec: 'phylop_ncbi_refseq_tp53',
-        guide: 'user_guides/quantitative_track',
+        spec: 'genomes_basics/phylop_tp53',
+        guide: 'tutorials/genomes_basics',
         description:
-          'The UCSC phyloP conservation score over TP53 as a quantitative track above the NCBI RefSeq gene model, its per-base peaks lining up with the coding exons.',
+          'The UCSC phyloP conservation score over TP53 as a quantitative track under the NCBI RefSeq gene model, its per-base peaks lining up with the coding exons. Both tracks come from the hosted hg38 config on genomes.jbrowse.org, opened from the track selector with no display settings changed.',
       },
-    ],
-  },
-  {
-    id: 'hubs',
-    title: 'Track hubs',
-    items: [
       {
         label: 'UCSC GenArk hub import',
         session:

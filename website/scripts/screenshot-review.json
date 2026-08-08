@@ -1599,13 +1599,6 @@
     "reviewedAt": "2026-08-07T16:15:24.975Z",
     "hash": "60351a681e532c4c22a7424b7ec04b701b750f2b"
   },
-  "phylop_ncbi_refseq_tp53": {
-    "name": "phylop_ncbi_refseq_tp53",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-06T05:32:11.372Z",
-    "hash": "764a7b07bf07c91f4dfdea7a39f8a7b779a624ea"
-  },
   "methylation/hg002_snrpn_combined": {
     "name": "methylation/hg002_snrpn_combined",
     "status": "good",

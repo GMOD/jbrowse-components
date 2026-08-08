@@ -138,6 +138,8 @@ Both views map a genomic position to a residue the same way, described under
 ## See also
 
 - [](/docs/tutorials/protein_structure)
+- [](/docs/tutorials/genomes_basics), navigating the same site and opening its
+  tracks
 - [](/docs/tutorials/genomes_synteny)
 - [](/docs/user_guides/gene_track)
 - [](/docs/user_guides/plugin_store)

@@ -161,6 +161,8 @@ Then use `jbrowse add-assembly` — see the `jbrowse-authoring` skill.
 ## Reference
 
 - <https://jbrowse.org/jb2/docs/agents_hosted_data.md>
+- <https://jbrowse.org/jb2/docs/tutorials/genomes_basics/> — the click-path
+  version, for when a human has to drive it
 - <https://jbrowse.org/jb2/docs/urlparams.md> — every parameter, including
   `&sessionTracks=` and `&hubURL=`
 - <https://jbrowse.org/jb2/docs/jbrowse-img.md> — the static exporter

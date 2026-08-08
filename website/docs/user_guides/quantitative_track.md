@@ -94,6 +94,8 @@ change.
 
 ## See also
 
+- [](/docs/tutorials/genomes_basics), a worked example on a hosted BigWig, from
+  finding the track to reading it against the gene model
 - [](/docs/user_guides/multiquantitative_track)
 - [](/docs/user_guides/gwas_track)
 - [SV visualization: working with large SVs](/docs/user_guides/sv_visualization#working-with-large-svs)

@@ -460,13 +460,16 @@ thinning, use `jexlFiltersSetting: ["jexl:...", ...]` on its display snapshot
   then a ready-gate timeout, which reads like a data or CORS problem in the
   spec's own track. `curl -sI` the 2bit before believing the spec is broken.
 
-  The specs that go dark with it: the four naming `hgdownload` directly
-  (`phylop_ncbi_refseq_tp53`, `pangenome/hprc_chm13_allele`,
-  `embed_linear_genome_view/final`, `jbrowse-img/1`) and the eight reaching it
-  through a UCSC hub config, whose hg19 `TwoBitAdapter` points there
-  (`genomes_synteny/launch_sequence`, `ld/lct_pooled_vs_panel`,
-  `ld/anopheles_2la`, `ld/lct_lactase`, `ld/lct_haploblock`,
-  `popgen/fst_in2lt_2L`, `popgen/tajimad_cyp6g1`, `popgen/in2lt_per_sample`).
+  The specs that go dark with it: the three naming `hgdownload` directly
+  (`pangenome/hprc_chm13_allele`, `embed_linear_genome_view/final`,
+  `jbrowse-img/1`) and the eleven reaching it through a UCSC hub config, whose
+  `TwoBitAdapter` points there (`genomes_synteny/launch_sequence`,
+  `genomes_basics/turn_on_phylop`, `genomes_basics/phylop_tp53`,
+  `genomes_basics/phylop_bases`, `ld/lct_pooled_vs_panel`, `ld/anopheles_2la`,
+  `ld/lct_lactase`, `ld/lct_haploblock`, `popgen/fst_in2lt_2L`,
+  `popgen/tajimad_cyp6g1`, `popgen/in2lt_per_sample`). The three
+  `genomes_basics` ones go dark twice over: the hg38 hub's own 2bit, and the
+  phyloP BigWig the hub's track points at.
 
   **`hgdownload2.soe.ucsc.edu` serves the same paths** (200 on the 2bit,
   chromAlias, cytoBand and the gbdb bigBeds, with ranges and

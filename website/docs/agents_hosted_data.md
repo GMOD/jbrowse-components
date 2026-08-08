@@ -239,6 +239,8 @@ contigs are `chr1`.
 
 ## See also
 
+- [](/docs/tutorials/genomes_basics), the same catalog driven by clicking rather
+  than by URL, which is the page to send a human to
 - [](/docs/agents) — the loop this fits into
 - [](/docs/agents_capture) — turning one of these views into an image
 - [](/docs/jbrowse-img) — the full static-export reference

@@ -87,6 +87,11 @@ export const TUTORIAL_FALLBACK = 'More tutorials'
 // a few slugs that only the landing page shows (the quickstarts, the cookbook,
 // the external examples card); they are inert for the user guide index.
 export const TUTORIAL_ORDER = [
+  // Leads Getting started, ahead of the two quickstarts: both of those are
+  // "install JBrowse and load data into it", and this one is the page that
+  // needs neither, so it is the shortest path from the tutorials index to a
+  // reader looking at real data in a real browser.
+  'genomes_basics',
   'quickstart_web',
   'quickstart_desktop',
   'synteny_visualization',

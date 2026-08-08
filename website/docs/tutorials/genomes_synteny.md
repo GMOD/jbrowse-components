@@ -142,6 +142,8 @@ exist.
 
 ## See also
 
+- [](/docs/tutorials/genomes_basics), the same site's track selector and the
+  hosted catalog these liftOver tracks are part of
 - [Synteny visualization](/docs/tutorials/synteny_visualization) for loading
   your own alignments and configuring the views
 - [Synteny from ortholog tables](/docs/tutorials/multiway_synteny) and
