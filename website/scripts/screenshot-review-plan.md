@@ -295,6 +295,43 @@ tolerance ball for "did this figure move".
   inside the display rather than below the fold. Long item labels ellipsize
   rather than wrap, so the tail of a label is lost silently too. Look at the
   legend after a change that adds to it.
+- **A declared legend sits ON the data unless the window makes room.**
+  `FloatingLegend` is pinned `right: 10, top: 10` with an opaque paper
+  background and there is no placement slot, so on a track whose content runs to
+  the right edge it covers the top-right corner of every row — on
+  `dtu/dtu_colored_gene_glyph` that was the last exon of seven transcripts, and
+  the run's own reports cannot see it (the occlusion is inside the display, not
+  below the fold). The only lever a spec has is where the data is: carry the
+  window a few kb past the end of the thing being drawn. Budget ~210 css px of
+  frame width for the box and convert that to bp at the figure's own scale.
+- **Two ways to find a window's real cost before rendering it.** A locus that
+  "feels" too wide usually is not, and the check is cheap in both directions:
+  - **bgzf-block granular reads do not scale with span.** Measured off the HPRC
+    `.tai` with the repo's own `queryBlockSpan`, chr6 at C4: 30 kb is a 189 KB
+    read, and 70 kb, 83 kb and 90 kb are all the same 292 KB. So a window
+    narrowed "so the fetch stays sane" can usually be widened for nothing —
+    `maf_hprc_pangenome` was cropped to a third of its subject on that guess and
+    excluded the second gene its own caption named. Run the index through
+    `taiRegionByteSize`/`queryBlockSpan` in node rather than estimating.
+  - **`tabix` reads the hosted PIF/GFF directly**, so "what will this synteny
+    figure actually draw" is answerable before a spec exists:
+    `tabix hg38ToHs1.over.pif.gz tchr5:69200000-71700000`. PIF indexes both
+    sides — `t`-prefixed names are the target, `q`-prefixed the query — and
+    `tabix -l` tells you which are present.
+- **Over a segmental duplication a synteny track needs `cigarMode: 'off'`.** The
+  default `'full'` draws every CIGAR block of every chain; where several chains
+  overlap the same span that is thousands of slivers and the band renders as a
+  hairball. `'off'` gives one ribbon per chain, which is the level a claim about
+  chains is made at. Pair it with `minAlignmentLength` to drop the sub-kb chains
+  a segdup throws off, and with `alpha` well above the 0.2 default — that
+  default protects against pile-up, and three ribbons are not a pile-up.
+- **`heightMode: 'fixed'` + `height` is how a session spec pins a lane whose
+  track config says `grow`.** Worth reaching for before assuming a `height` was
+  ignored: `hs1-genes` is configured to grow, and over a segdup its RefSeq-All
+  pseudogene rows grew the lane to ~450 px — taller than the synteny band it was
+  context for. The mirror-image trap is `geneGlyphMode: 'all'` on a grow track,
+  where it is not a lane setting but a lane SIZE (one gene with ~25 transcripts
+  took `qc/smn_vs_t2t`'s hg38 lane past 400 px and pushed the band off frame).
 - **A Hi-C figure's locus should be scored out of the call files, not picked.**
   `scripts/hic_pick_loop.py` (new) ranks every 250-900 kb Arrowhead domain by
   the strongest HiCCUPS loop sitting on its two corners, which is the pair worth
