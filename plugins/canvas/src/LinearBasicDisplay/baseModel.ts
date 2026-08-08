@@ -963,6 +963,20 @@ export default function baseStateModelFactory(
           //   maxLabelFeatureDensity/maxDescriptionFeatureDensity
           //                                the two rungs of the main-thread
           //                                `showLabels` auto gate
+          //   legend                       the declared color key, drawn by the
+          //                                `colorLegend` chrome hook — editing a
+          //                                color key used to clear and refetch
+          //                                every region to redraw a floating box
+          //   showOnlyGenes                a real worker input, but one that
+          //                                travels as its own top-level RPC arg
+          //                                (what buildFeatureAdmission reads);
+          //                                here it was a second copy that
+          //                                `DisplayConfig` doesn't declare
+          // The last two are `LinearBasicDisplay`'s slots rather than this base's,
+          // so they are absent from the variant display's snapshot and destructure
+          // to undefined there — harmless, and worth keeping the whole list in one
+          // place. `DisplayConfig` has no index signature, so a subclass doing its
+          // own removal downstream would need a cast to reach them.
           // Both gate budgets — `resolvedByteLimit()` and `maxFeatureDensity` —
           // are added at the CALL SITE, not here, so neither is a cache key. Both
           // are resolved values that go undefined the moment their axis stops
@@ -992,6 +1006,8 @@ export default function baseStateModelFactory(
             growMaxHeight: _gmh,
             maxLabelFeatureDensity: _mlfd,
             maxDescriptionFeatureDensity: _mdfd,
+            legend: _lg,
+            showOnlyGenes: _sog,
             ...rest
           } = getConfigSnapshotWithPromotables(self)
           return {
@@ -2084,7 +2100,7 @@ export default function baseStateModelFactory(
         // Reset every feature-level filter: the show-only collection, the hidden
         // set, and the runtime "Filter by..." jexl override. Backs the track
         // menu's "Clear filters" item, which is offered only when
-        // `hasFeatureFilters()` says something is narrowing the view — so the two
+        // `featureFilterCount()` counts something narrowing the view — so the two
         // must stay in step, including through a subclass's overrides of both.
         clearAllFeatureFilters() {
           self.clearSolo()

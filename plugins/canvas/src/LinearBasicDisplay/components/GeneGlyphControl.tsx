@@ -2,23 +2,9 @@ import { TrackControl } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import { GENE_GLYPH_MODE_OPTIONS } from '../geneGlyphMode.ts'
+import { geneGlyphTooltip } from './geneGlyphTooltip.ts'
 
 import type { GeneGlyphMode } from '../geneGlyphMode.ts'
-
-// The chip carries the (×) to minimize itself; the minimized icon button has no
-// (×), so its tooltip drops that clause.
-function getTooltip(
-  mode: GeneGlyphMode,
-  collapsed: boolean,
-  dismissed: boolean,
-) {
-  const showing = collapsed
-    ? 'Showing the longest coding transcript per gene'
-    : 'Showing all transcripts per gene'
-  const auto = mode === 'auto' ? ' — chosen automatically at this zoom' : ''
-  const minimize = dismissed ? '' : '; × to minimize this notice to an icon'
-  return `${showing}${auto}. Click to change${minimize}.`
-}
 
 // Bottom-right control for isoform collapse, shown (see showGeneGlyphNotice)
 // only while genes are collapsed to their longest coding transcript, so the user
@@ -54,7 +40,11 @@ const GeneGlyphControl = observer(function GeneGlyphControl({
   return (
     <TrackControl
       icon="isoform"
-      tooltip={getTooltip(geneGlyphMode, collapsed, dismissed)}
+      tooltip={geneGlyphTooltip({
+        mode: geneGlyphMode,
+        collapsed,
+        noticeShowing,
+      })}
       label={noticeShowing ? 'Longest isoform' : undefined}
       onDelete={noticeShowing ? onDismiss : undefined}
       options={GENE_GLYPH_MODE_OPTIONS.map(option => ({

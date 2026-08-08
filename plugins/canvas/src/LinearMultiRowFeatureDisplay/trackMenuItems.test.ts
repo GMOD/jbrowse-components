@@ -12,7 +12,7 @@ function makeSelf(
   overrides: Partial<Parameters<typeof buildMultiRowTrackMenuItems>[0]> = {},
 ) {
   const rows: MultiRowSource[] = [{ name: 'a' }, { name: 'b' }]
-  return {
+  const self = {
     showTree: true,
     showLegend: true,
     showRowSeparators: false,
@@ -42,6 +42,9 @@ function makeSelf(
     setRunClustering: () => {},
     ...overrides,
   }
+  // Derived rather than defaulted, so a case overriding `hiddenCategories` can't
+  // leave the Set behind disagreeing with it — the model derives it the same way.
+  return { ...self, hiddenCategorySet: new Set(self.hiddenCategories) }
 }
 
 function labels(items: MenuItem[]) {

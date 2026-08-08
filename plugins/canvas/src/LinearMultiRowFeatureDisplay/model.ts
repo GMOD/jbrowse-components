@@ -415,8 +415,11 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * `hiddenCategories` as a Set for O(1) membership; shared by the on-screen
-       * and SVG-export legends (dimmed rows) and by `hiddenColors`.
+       * `hiddenCategories` as a Set, and the single place "is this category
+       * hidden?" is answered: the on-screen and SVG-export legends (dimmed rows),
+       * `hiddenColors`, and the track menu's category checkboxes all read it.
+       * One derivation rather than four, so a change to how a label is matched
+       * can't reach some of the legends and miss the rest.
        */
       get hiddenCategorySet(): ReadonlySet<string> {
         return new Set(self.hiddenCategories)
@@ -901,11 +904,23 @@ export default function stateModelFactory(
        * Set the track height. In auto-fit mode the rows restretch to it; in fixed
        * mode it's distributed across the current rows as a pinned row height.
        */
+      // Both branches floor the TRACK at MIN_DISPLAY_HEIGHT, never the row.
+      // Flooring the row instead (`Math.max(1, newHeight / nrow)`) got both ends
+      // wrong at once: on a 1,987-row painting it stalled a shrink drag at 1,987
+      // px — a height auto-fit reaches freely, since `autoRowHeight` is
+      // deliberately not floored and `rowBand` widens a sub-pixel row to
+      // MIN_DRAWN_ROW_PX for drawing — while on a 3-row one it let the same drag
+      // collapse the track to 3 px, past the point where its own resize handle
+      // can be grabbed again. A sub-pixel row is legitimate here (see
+      // `autoRowHeight` and `resolveRowHeight`, which passes one through and
+      // floors only a non-positive); a sub-MIN_DISPLAY_HEIGHT track is not, in
+      // either mode.
       setHeight(newHeight: number) {
+        const clamped = Math.max(newHeight, MIN_DISPLAY_HEIGHT)
         if (self.rowHeight === 0) {
-          setConf(self, 'height', Math.max(newHeight, MIN_DISPLAY_HEIGHT))
+          setConf(self, 'height', clamped)
         } else {
-          setConf(self, 'rowHeight', Math.max(1, newHeight / self.nrow))
+          setConf(self, 'rowHeight', clamped / self.nrow)
         }
         return self.height
       },

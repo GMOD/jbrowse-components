@@ -1,4 +1,5 @@
 import { LABEL_FONT_SIZE } from '../constants.ts'
+import { readConfigValueSafe } from '../renderConfig.ts'
 import { getSubfeatures, isCDS } from '../util.ts'
 
 import type { DisplayMode } from '../renderConfig.ts'
@@ -50,6 +51,53 @@ export function labelFontSize(displayMode: DisplayMode) {
   return LABEL_FONT_SIZE * LABEL_FONT_MULTIPLIERS[displayMode]
 }
 
+// Fallback when `featureHeight` resolves to something that isn't a drawable
+// number. Matches the config slot's own default, so a broken expression degrades
+// to the standard row rather than to nothing.
+const FALLBACK_FEATURE_HEIGHT = 10
+
+// The body height (px) one feature is laid out at.
+//
+// `featureHeight` is a per-feature callback slot (`contextVariable: ['feature']`,
+// like `color`/`utrColor`/`mouseover`), so it can hold a `jexl:` expression —
+// but layout used to read `config.featureHeight` as a bare number. A jexl slot
+// then flowed the raw expression STRING into every height: `rectHeights` is a
+// Float32Array, so each box came out NaN and the track painted nothing, while
+// `flatbushItems[].bottomPx` carried the expression text into the row packer.
+// Failing to draw is the one outcome a per-feature height must not have, and the
+// slot advertises the capability in the config editor, so resolve it here.
+//
+// `feature` is passed alongside `args` rather than read off it because the
+// callers disagree about which one to resolve against — a child's own box vs.
+// the container row its children ride on — and that choice is the whole point of
+// the parameter. Everything else (the config, the jexl) comes from `args`, so no
+// caller can pair a feature with the wrong config.
+//
+// The `typeof raw === 'number'` fast path is what keeps this free: it is the
+// shape of every default config and of every config that isn't using the
+// callback, so the jexl reader is reached only by the configs that asked for it.
+// The result is re-checked for finiteness because an expression is free to
+// return a string, a null, or a divide-by-zero.
+export function featureHeightPx(feature: Feature, args: LayoutArgs): number {
+  const { config, jexl } = args
+  const raw = config.featureHeight
+  if (typeof raw === 'number') {
+    return raw
+  }
+  const value = jexl
+    ? readConfigValueSafe<unknown>(
+        config,
+        'featureHeight',
+        feature,
+        jexl,
+        FALLBACK_FEATURE_HEIGHT,
+      )
+    : undefined
+  return typeof value === 'number' && Number.isFinite(value)
+    ? value
+    : FALLBACK_FEATURE_HEIGHT
+}
+
 // Sort children left-to-right; ties broken by longest first
 export function sortByPosition(children: FeatureLayout[]) {
   return [...children].sort((a, b) => {
@@ -88,7 +136,8 @@ export function hasCodingSubfeature(feature: Feature): boolean {
 export const STRAND_ARROW_WIDTH = 8
 
 export function layoutChild(child: Feature, args: LayoutArgs): FeatureLayout {
-  const height = args.config.featureHeight
+  // resolved against the CHILD, not `args.feature`: this is the child's own box
+  const height = featureHeightPx(child, args)
   return {
     feature: child,
     glyphType: 'Box',
@@ -106,7 +155,10 @@ export function layoutContainerGlyph(
   args: LayoutArgs,
   subfeatures: Feature[],
 ): FeatureLayout {
-  const heightPx = args.config.featureHeight
+  // the container's own row (a transcript). Its children draw at THIS height in
+  // the transcript path — emitExonRects passes `transcript.height`, not the
+  // child's — so an exon never outgrows the row its introns are drawn on.
+  const heightPx = featureHeightPx(args.feature, args)
   const children = sortByPosition(
     subfeatures.map(child => layoutChild(child, args)),
   )

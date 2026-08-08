@@ -1,5 +1,5 @@
 import { featureType, getSubfeatures, isCDS } from '../util.ts'
-import { layoutChild, sortByPosition } from './glyphUtils.ts'
+import { featureHeightPx, layoutChild, sortByPosition } from './glyphUtils.ts'
 
 import type { FeatureLayout, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -67,7 +67,9 @@ export function collectPolyproteinCDS(feature: Feature): Feature[] {
 export function layoutMatureProteinRegion(args: LayoutArgs): FeatureLayout {
   const { feature, config } = args
   const { subfeatureLabels } = config
-  const heightPx = config.featureHeight
+  // the polyprotein CDS's own resolved height; every cleavage-product row is a
+  // uniform slice of it, so the rows stay even whatever the expression returns
+  const heightPx = featureHeightPx(feature, args)
 
   const matureProteins = getMatureProteinChildren(feature)
   const sortedChildren = sortByPosition(

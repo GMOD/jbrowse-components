@@ -101,7 +101,14 @@ export interface DisplayConfig {
   // omits the `jexl:` prefix (deferred-evaluation convention); the runtime
   // "Filter by..." override carries it. buildFeatureAdmission normalizes both.
   jexlFilters: string[]
-  featureHeight: number
+  // `number | string`, not `number`, because the slot declares
+  // `contextVariable: ['feature']` — so it may hold a `jexl:` expression, exactly
+  // like `color`/`utrColor`/`mouseover` beside it. Typing it as a bare number is
+  // what let layout read the expression straight into a Float32Array and paint a
+  // track of NaN-height boxes. Read it through `featureHeightPx`, which resolves
+  // the callback and guards the result; the union makes any new direct read a
+  // type error rather than a silent one.
+  featureHeight: number | string
   // `maybeColor` slots: undefined = unset, meaning the feature's own BED color
   // paints it (see getBoxColor). Not the same as any concrete color.
   color: string | undefined

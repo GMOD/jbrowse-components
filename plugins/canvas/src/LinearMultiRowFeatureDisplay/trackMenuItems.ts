@@ -43,6 +43,10 @@ interface MultiRowMenuSelf extends IStateTreeNode {
   effectiveRowHeight: number
   colorLegend: LegendEntry[]
   hiddenCategories: readonly string[]
+  // the model's derived Set of the above, which is where every other consumer
+  // asks whether a category is hidden — the checkbox below has to agree with the
+  // legend row it mirrors, so it reads the same derivation rather than its own
+  hiddenCategorySet: ReadonlySet<string>
   showBranchLength: boolean
   treeHasBranchLengths: boolean
   subtreeFilter?: readonly string[]
@@ -135,14 +139,11 @@ function showAllCategoriesItem(self: MultiRowMenuSelf): MenuItem[] {
 // moment the count drops back. Hiding then had no visible cause and no way out.
 function categoriesMenuItems(self: MultiRowMenuSelf): MenuItem[] {
   const hidden = self.hiddenCategories.length
+  const hiddenSet = self.hiddenCategorySet
   const toggles = self.colorLegend.map(entry =>
-    checkboxItem(
-      entry.label,
-      !self.hiddenCategories.includes(entry.label),
-      () => {
-        self.toggleCategory(entry.label)
-      },
-    ),
+    checkboxItem(entry.label, !hiddenSet.has(entry.label), () => {
+      self.toggleCategory(entry.label)
+    }),
   )
   return toggles.length || hidden
     ? [

@@ -1,5 +1,6 @@
 import type { DisplayConfig } from './renderConfig.ts'
 import type { Feature } from '@jbrowse/core/util'
+import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
 export interface PeptideData {
   protein: string
@@ -36,6 +37,12 @@ export interface LayoutArgs {
   feature: Feature
   config: DisplayConfig
   parentFeature?: Feature
+  // Worker jexl, for the one layout-time slot that is a per-feature callback:
+  // `featureHeight` (see featureHeightPx). Optional so the layout functions stay
+  // directly callable from a test with nothing but a feature and a config —
+  // `featureHeightPx` only needs it when the slot actually holds an expression,
+  // and a plain numeric slot (every default config) never reaches for it.
+  jexl?: JexlInstance
 }
 
 export type GlyphType =

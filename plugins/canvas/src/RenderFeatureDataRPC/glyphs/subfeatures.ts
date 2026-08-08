@@ -1,7 +1,7 @@
 import { applyLabelDimensions } from '../labelUtils.ts'
 import { featureType, getSubfeatures, isCDS } from '../util.ts'
 import { findGlyph } from './findGlyph.ts'
-import { hasCodingSubfeature } from './glyphUtils.ts'
+import { featureHeightPx, hasCodingSubfeature } from './glyphUtils.ts'
 
 import type { FeatureLayout, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -85,7 +85,9 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
   const { feature, config } = args
   const { geneGlyphMode, transcriptTypes, subfeatureLabels } = config
 
-  const heightPx = config.featureHeight
+  // the gene's own resolved height, used only for the inter-transcript gap below
+  // — each stacked child carries whatever height its own glyph resolved
+  const heightPx = featureHeightPx(feature, args)
 
   let subfeatures = [...getSubfeatures(feature)]
 

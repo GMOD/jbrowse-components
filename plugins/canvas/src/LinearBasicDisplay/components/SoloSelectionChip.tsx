@@ -5,7 +5,7 @@ import { TrackControl } from '@jbrowse/plugin-linear-genome-view'
 // (ctrl/cmd+click or the right-click "Add to show-only list" item) it shows the
 // count and is clickable to isolate the view to the list; once applied it
 // reports what's shown and its delete (×) restores everything. Nothing is
-// filtered until it's applied — that's why `hasFeatureFilters` keys off
+// filtered until it's applied — that's why `featureFilterCount` counts
 // `soloApplied` and this × is the only recovery while still collecting.
 export default function SoloSelectionChip({
   count,

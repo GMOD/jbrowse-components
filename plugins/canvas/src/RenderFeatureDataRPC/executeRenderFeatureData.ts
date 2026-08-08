@@ -180,6 +180,8 @@ export async function executeRenderFeatureData({
           )({
             feature,
             config: displayConfig,
+            // for the one layout-time per-feature callback slot, `featureHeight`
+            jexl: pluginManager.jexl,
           }),
         )
       }
@@ -234,7 +236,6 @@ export async function executeRenderFeatureData({
   const result: FeatureDataResult = {
     ...packed,
     featureCount: features.size,
-    isoformsCollapsed: layouts.some(layout => layout.isoformsCollapsed),
     hasMultiIsoformGenes: layouts.some(layout => layout.hasMultipleIsoforms),
     bytes,
   }

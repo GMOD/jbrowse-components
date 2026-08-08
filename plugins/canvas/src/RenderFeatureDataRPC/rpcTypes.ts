@@ -152,15 +152,16 @@ export interface FeatureDataResult {
   // Number of top-level features in this region (used for density calculations)
   featureCount: number
 
-  // True when at least one gene in this region had >1 isoform and
-  // geneGlyphMode === 'longestCoding' collapsed it down to one transcript —
-  // drives the dismissible "Isoforms collapsed" notice. Undefined in fixtures
-  // that predate this field; treat the same as false.
-  isoformsCollapsed?: boolean
-
   // True when at least one gene in this region has >1 isoform, independent of
   // the current geneGlyphMode — drives the always-visible gene-glyph control.
   // Undefined in fixtures that predate this field; treat the same as false.
+  //
+  // There is no per-region "and the collapse actually fired" companion to this.
+  // There was, and nothing on the main thread ever read it: the control is shown
+  // whenever switching modes would change something (this flag), and whether it
+  // draws the loud chip or the quiet icon is decided from the display's OWN
+  // resolved `effectiveGeneGlyphMode` — which is where it has to come from, since
+  // that mode is zoom-dependent and would otherwise lag a region behind.
   hasMultiIsoformGenes?: boolean
 
   // Index-estimated compressed bytes for this region (when the adapter offers a

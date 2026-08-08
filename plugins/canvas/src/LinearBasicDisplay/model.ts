@@ -454,9 +454,9 @@ export default function stateModelFactory(
     .actions(self => {
       const superClearAllFeatureFilters = self.clearAllFeatureFilters
       return {
-        // The other half of the hasFeatureFilters override above: "Clear
+        // The other half of the featureFilterCount override above: "Clear
         // filters" has to actually clear the gene-only view too, or it leaves
-        // the one filter it was offered for still in effect.
+        // the one filter it was counted for still in effect.
         clearAllFeatureFilters() {
           superClearAllFeatureFilters()
           self.setShowOnlyGenes(false)
