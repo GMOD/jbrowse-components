@@ -10,12 +10,14 @@ JBrowse core.
 [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/tree-sidebar/src/TreeSidebarMixin.ts).
 
 #crossCuttingMixin Row set with a dendrogram sidebar. `sources` (the display
-rows, named). Brings `layout` / `clusterTree` / `clusterProvenance` /
-`treeAreaWidth` / `subtreeFilter`, the `root` and `willClearTree` getters, and
-the tree-hover and canvas-ref volatiles the shared sidebar draws through Adds a
-dendrogram sidebar to a display: stores the leaf layout, newick cluster tree,
-sidebar width and subtree filter, plus the hover/canvas volatile state used
-while drawing the tree.
+rows, named), plus the `run` callback naming its own clustering RPC. Brings
+`layout` / `clusterTree` / `clusterProvenance` / `treeAreaWidth` /
+`subtreeFilter`, the `runClustering` / `clusterRegion` declarative launch pair
+`setupRunClusteringAutorun` consumes, the `root` and `willClearTree` getters,
+and the tree-hover and canvas-ref volatiles the shared sidebar draws through
+Adds a dendrogram sidebar to a display: stores the leaf layout, newick cluster
+tree, sidebar width and subtree filter, plus the hover/canvas volatile state
+used while drawing the tree.
 
 ## Properties
 

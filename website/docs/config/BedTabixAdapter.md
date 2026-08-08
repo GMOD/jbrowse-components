@@ -31,10 +31,10 @@ _See the **Config slots** section below for all available configuration fields._
 ## Related links
 
 - **Track:** [FeatureTrack](../featuretrack)
-- **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
 - **Display:** [LinearScoreDisplay](../linearscoredisplay)
 - **Display:** [LinearArcDisplay](../lineararcdisplay)
 - **Display:** [LinearBasicDisplay](../linearbasicdisplay)
+- **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
 - **Extended by:** [GWASAdapter](../gwasadapter)
 
 ## Config slots
