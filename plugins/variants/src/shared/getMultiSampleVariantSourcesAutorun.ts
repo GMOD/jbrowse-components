@@ -9,14 +9,13 @@ import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import type { Source } from './types.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { RpcStatus } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export function getMultiSampleVariantSourcesAutorun(
   self: IStateTreeNode & {
-    adapterConfig: AnyConfigurationModel
+    adapterConfig: Record<string, unknown>
     isMinimized: boolean
     reloadCount: number
     setError: (error?: unknown) => void

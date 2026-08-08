@@ -276,7 +276,7 @@ export default function sharedModelFactory(
        * has a `getFeatures` to measure with.
        */
       get isPrecomputedLD() {
-        return isPrecomputedLDAdapter(self.adapterConfig?.type)
+        return isPrecomputedLDAdapter(self.adapterConfig.type)
       },
       /**
        * #getter

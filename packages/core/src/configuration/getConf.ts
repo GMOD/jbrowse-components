@@ -17,7 +17,8 @@ import type {
  * `readConfObject` instead.
  *
  * **This is exactly `readConfObject(model.configuration, path)`** — sugar for
- * the `.configuration` hop, plus a stricter slot-name check (see ./CLAUDE.md).
+ * the `.configuration` hop, and nothing more. The two readers carry the same
+ * slot-name check, so reaching for the other one does not get a typo past tsc.
  * It does not consult the session and has no per-slot behavior; what you read is
  * what the track stores.
  *

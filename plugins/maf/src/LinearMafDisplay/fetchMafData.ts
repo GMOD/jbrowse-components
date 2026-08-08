@@ -4,7 +4,6 @@ import { callEachRegion } from '@jbrowse/plugin-linear-genome-view'
 
 import type { MafWireRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafFrameRecord, MafSummaryRecord, Sample } from '../types.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Region, RpcStatus } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { FetchContext } from '@jbrowse/plugin-linear-genome-view'
@@ -14,7 +13,7 @@ import type { FetchContext } from '@jbrowse/plugin-linear-genome-view'
 // whose whole job is to be the one expression the payload and the cache key
 // share. See the root CLAUDE.md.
 interface MafFetchSelf extends IStateTreeNode {
-  adapterConfig: AnyConfigurationModel
+  adapterConfig: Record<string, unknown>
   // The sorted-set form, never the raw `subtreeFilter` node: this is also what
   // `rpcProps()` returns, so the payload and the cache key it is stored under
   // are one expression. See the getter for why the sort is load-bearing.

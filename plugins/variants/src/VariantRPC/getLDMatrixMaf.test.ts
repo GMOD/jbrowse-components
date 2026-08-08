@@ -3,7 +3,6 @@ import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeature
 import { getLDMatrix } from './getLDMatrix.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 
 jest.mock('@jbrowse/core/data_adapters/getFeatureAdapter', () => ({
@@ -52,7 +51,7 @@ async function mafsFor(
     args: {
       adapterConfig: {
         type: 'VcfTabixAdapter',
-      } as unknown as AnyConfigurationModel,
+      },
       sessionId: 'test',
       regions,
       bpPerPx: 1,

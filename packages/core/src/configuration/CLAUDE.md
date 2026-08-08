@@ -3,9 +3,14 @@
 Full model: `agent-docs/reference/CONFIG_PATTERN.md` and
 `DISPLAY_TYPE_DEFAULTS.md`.
 
-- `getConf` (model with `.configuration`) is the **stricter** reader — it
-  catches slot-name typos, where `readConfObject`'s loose overload launders them
-  into `any`. Don't switch readers to make a slot-name error go away.
+- `getConf` (model with `.configuration`) is exactly
+  `readConfObject(model.configuration, path)` — the two readers are equally
+  strict about slot names, so **switching readers cannot make a slot-name error
+  go away.** It used to: `readConfObject`'s map overload also admitted
+  `AnyConfigurationModel`, so a typo failed the `ConfigurationSlotName`
+  constraint, fell through to it, and compiled as `any`. That overload takes
+  only `IMSTMap` now. Don't re-widen it — the map case is a top-level
+  `types.map` of sub-schemas, which no production schema declares.
 - **`setSlot` throws on a name the schema doesn't declare**, which is what makes
   a misspelled _write_ diagnosable at all — the compile-time guard on `setConf`
   only covers writes whose schema is concrete, and a mixin or a widened factory

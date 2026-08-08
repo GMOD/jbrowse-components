@@ -1,7 +1,6 @@
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BlockSet } from '@jbrowse/core/util/blockTypes'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
@@ -12,7 +11,7 @@ export async function getUniqueTags({
   opts,
 }: {
   self: {
-    adapterConfig: AnyConfigurationModel
+    adapterConfig: Record<string, unknown>
     effectiveRpcDriverName?: string
   }
   tag: string

@@ -63,6 +63,12 @@ describe('showInsertionGlyphs is a regular-display slot', () => {
       type: 'LinearMultiSampleVariantMatrixDisplay',
       displayId: 'matrix',
     })
+    // reading a slot this schema doesn't declare is the point of the assertion,
+    // and `readConfObject` now rejects an undeclared name the same way `getConf`
+    // does (line 49 above) — so the error is the compile-time half of the same
+    // guard, and the runtime half still has to show it answers `undefined`
+    // rather than throwing.
+    // @ts-expect-error
     expect(readConfObject(conf, 'showInsertionGlyphs')).toBeUndefined()
   })
 })

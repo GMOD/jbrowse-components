@@ -1,5 +1,4 @@
 import type { Source } from '../util.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
   LastStopTokenCheck,
   Region,
@@ -8,7 +7,7 @@ import type {
 } from '@jbrowse/core/util'
 
 export interface GetScoreMatrixArgs {
-  adapterConfig: AnyConfigurationModel
+  adapterConfig: Record<string, unknown>
   stopToken?: StopToken
   stopTokenCheck?: LastStopTokenCheck
   sessionId: string

@@ -4,7 +4,6 @@ import { executeRenderLDData } from './executeRenderLDData.ts'
 import type { LDMatrixResult, LDSnp } from '../VariantRPC/getLDMatrix.ts'
 import type { LDDataResult } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
 
 jest.mock('../VariantRPC/getLDMatrix.ts', () => ({
@@ -76,7 +75,7 @@ function run(regions: Region[], snps: LDSnp[], useGenomicPositions: boolean) {
       sessionId: 'test',
       adapterConfig: {
         type: 'VcfTabixAdapter',
-      } as unknown as AnyConfigurationModel,
+      },
       regions,
       bpPerPx: BP_PER_PX,
       ldMetric: 'r2',

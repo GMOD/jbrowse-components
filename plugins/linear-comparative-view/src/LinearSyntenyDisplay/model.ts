@@ -261,10 +261,9 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       },
       /**
        * #getter
-       * The track's adapter config verbatim. The **body is now identical to
-       * `BaseDisplayModel.adapterConfig`** — this override survives only to
-       * narrow the return to `Record<string, unknown>` for the RPC arg, and to
-       * hold the note below where someone would go to re-add a key.
+       * The track's adapter config verbatim. The **body and return type are now
+       * identical to `BaseDisplayModel.adapterConfig`** — this override survives
+       * only to hold the note below where someone would go to re-add a key.
        *
        * Byte-identical is the point: the worker's adapter cache keys on the
        * config object, so a key the adapter never reads still forks the cache.
@@ -279,6 +278,10 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * RPC arg, the way `sequenceAdapter` does.
        */
       get adapterConfig(): Record<string, unknown> {
+        // Body and annotation are both identical to `BaseDisplay`'s now that the
+        // base is annotated too, so this override survives only to hold the note
+        // above at the spot someone would edit. `DotplotDisplay` had the same
+        // override for the annotation alone, and it is gone.
         return getConf(self.parentTrack, 'adapter')
       },
       /**

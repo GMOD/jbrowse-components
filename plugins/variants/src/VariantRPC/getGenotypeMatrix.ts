@@ -8,7 +8,6 @@ import { MISSING, readAltDosages } from './genotypeMatrixEncoding.ts'
 
 import type { Source } from '../shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import type {
   LastStopTokenCheck,
@@ -22,7 +21,7 @@ export async function getGenotypeMatrix({
 }: {
   pluginManager: PluginManager
   args: {
-    adapterConfig: AnyConfigurationModel
+    adapterConfig: Record<string, unknown>
     stopTokenCheck?: LastStopTokenCheck
     sessionId: string
     headers?: Record<string, string>

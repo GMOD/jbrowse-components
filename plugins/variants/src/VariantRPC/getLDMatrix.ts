@@ -21,7 +21,6 @@ import {
 } from './getLDMatrixGPU.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken, StopTokenChecker } from '@jbrowse/core/util/stopToken'
 import type { PackedHaplotypes } from '@jbrowse/ld-core'
@@ -329,7 +328,7 @@ export async function getLDMatrix({
 }: {
   pluginManager: PluginManager
   args: {
-    adapterConfig: AnyConfigurationModel
+    adapterConfig: Record<string, unknown>
     stopToken?: StopToken
     sessionId: string
     headers?: Record<string, string>

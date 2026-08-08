@@ -34,7 +34,7 @@ that multiple displayed tracks could use the same configuration.
 | <span id="getter-rpcsessionid">**rpcSessionId**</span><br><code>string</code> | determines which webworker to send the track to, currently based on trackId |
 | <span id="getter-name">**name**</span><br><code>string</code> |  |
 | <span id="getter-textsearchadapter">**textSearchAdapter**</span><br><code>any</code> |  |
-| <span id="getter-adapterconfig">**adapterConfig**</span><br><code>any</code> |  |
+| <span id="getter-adapterconfig">**adapterConfig**</span><br><code>Record&lt;string, unknown&gt;</code> |  |
 | <span id="getter-activedisplay">**activeDisplay**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>DisplayModel &amp; IStateTreeNode&lt;IType&lt;unknown, unknown, DisplayMo…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>DisplayModel &amp; IStateTreeNode&lt;IType&lt;unknown, unknown, DisplayModel&gt;&gt;</code></pre></dialog></span> | a shown track always has at least one display |
 | <span id="getter-canconfigure">**canConfigure**</span><br><code>boolean</code> |  |
 | <span id="getter-adaptertype">**adapterType**</span><br><code>AdapterType</code> |  |

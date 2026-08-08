@@ -35,8 +35,9 @@ member (a track or display state model). For a raw configuration model, use
 `readConfObject` instead.
 
 **This is exactly `readConfObject(model.configuration, path)`** — sugar for the
-`.configuration` hop, plus a stricter slot-name check (see ./CLAUDE.md). It does
-not consult the session and has no per-slot behavior; what you read is what the
+`.configuration` hop, and nothing more. The two readers carry the same slot-name
+check, so reaching for the other one does not get a typo past tsc. It does not
+consult the session and has no per-slot behavior; what you read is what the
 track stores.
 
 A `promotable` slot read this way therefore yields the raw stored value,

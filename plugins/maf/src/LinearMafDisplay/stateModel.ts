@@ -7,7 +7,6 @@ import {
 import {
   ConfigurationReference,
   getConf,
-  readConfObject,
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -668,10 +667,35 @@ export default function stateModelFactory(
          * or undefined when unset. Read from the MAF *adapter* config as a swappable
          * sub-adapter (alongside `summaryAdapter`), not the display — a frozen slot,
          * so this is a plain snapshot the frames RPC hands straight to `getAdapter`.
+         *
+         * Read with an array slot path off the **live** parent track, not as
+         * `readConfObject(self.adapterConfig, …)`. `adapterConfig` is itself a
+         * snapshot, and a slot read against a snapshot is the case
+         * `core/configuration/CLAUDE.md` warns about: `types.stripDefault` omits a
+         * slot sitting at its default, so the read reports a defaulted slot as
+         * absent. Harmless for these two — they default to null and are only
+         * tested for presence — but the array path costs nothing and doesn't
+         * depend on that staying true.
          */
         get annotationAdapterConfig(): Record<string, unknown> | undefined {
           return (
-            readConfObject(self.adapterConfig, 'annotationAdapter') ?? undefined
+            getConf(self.parentTrack, ['adapter', 'annotationAdapter']) ??
+            undefined
+          )
+        },
+        /**
+         * #getter
+         * The configured `bigMafSummary` sub-adapter snapshot, or undefined when
+         * unset. Same journey as `annotationAdapterConfig`.
+         *
+         * Declared here, beside its sibling, so the slot is read in one place:
+         * `showSummary` asks whether it exists and `byteGateAdapterConfig` wants
+         * the value, and those two used to read the slot separately.
+         */
+        get summaryAdapterConfig(): Record<string, unknown> | undefined {
+          return (
+            getConf(self.parentTrack, ['adapter', 'summaryAdapter']) ??
+            undefined
           )
         },
       }))
@@ -807,10 +831,7 @@ export default function stateModelFactory(
          * there is nothing to order it after.
          */
         get showSummary() {
-          return (
-            !!readConfObject(self.adapterConfig, 'summaryAdapter') &&
-            self.aboveForceLoadFloor
-          )
+          return !!self.summaryAdapterConfig && self.aboveForceLoadFloor
         },
       }))
       .views(self => ({
@@ -2257,7 +2278,7 @@ export default function stateModelFactory(
          */
         get byteGateAdapterConfig(): Record<string, unknown> {
           const summary = self.showSummary
-            ? readConfObject(self.adapterConfig, 'summaryAdapter')
+            ? self.summaryAdapterConfig
             : undefined
           return summary ?? self.adapterConfig
         },

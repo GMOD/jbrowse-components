@@ -147,9 +147,14 @@ export function readConfObject<
 // A top-level types.map of sub-schemas (e.g. an assembly's per-key configs)
 // carries no resolvable schema type, so slot names/values aren't checked
 // (returns any); rawSlotValue falls back to map.get() for these. Deliberately
-// does NOT admit `AnyConfigurationSnapshot` — see the doc comment above.
+// admits ONLY the map — not `AnyConfigurationModel`, and not
+// `AnyConfigurationSnapshot` (see the doc comment above). Admitting the model
+// here made this overload a catch-all: a slot-name typo failed overload 2's
+// `ConfigurationSlotName` constraint, fell through to here, and compiled clean
+// as `any`. That is the whole reason `readConfObject` used to be the looser
+// reader of the pair; it is now exactly as strict as `getConf`.
 export function readConfObject(
-  confObject: IMSTMap<AnyConfigurationSchemaType> | AnyConfigurationModel,
+  confObject: IMSTMap<AnyConfigurationSchemaType>,
   slotPath?: string | string[],
   args?: Record<string, unknown>,
 ): any

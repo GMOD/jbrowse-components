@@ -1,7 +1,7 @@
 import { getConf } from '@jbrowse/core/configuration'
 
 import type { ComparativeWarning } from './SyntenyFetchStateMixin.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -24,9 +24,18 @@ export interface TrackWarning {
  * `parentTrack` is named by what `getConf` needs of it rather than as a node —
  * `AbstractTrackModel` carries no MST brand, so requiring one here rejects both
  * views' real displays.
+ *
+ * Its config is pinned to `BaseTrackConfig` rather than left at
+ * `AnyConfigurationModel`, which is what makes the `name` read below checked
+ * instead of `any` (and is why it needs no `as string`). Safe to pin here for the
+ * reason core/configuration/CLAUDE.md gives for *not* pinning a shared base in
+ * general: the caution is against a consumer that reads its own non-shared slots
+ * through the base, and `name` is a base track slot. A subclass track schema
+ * still satisfies it structurally. Don't read a synteny-specific slot through
+ * this member — widen at that point instead.
  */
 export interface WarningSource extends IStateTreeNode {
-  parentTrack: { configuration: AnyConfigurationModel }
+  parentTrack: { configuration: BaseTrackConfig }
   warnings: ComparativeWarning[]
 }
 
@@ -58,7 +67,7 @@ export function collectTrackWarnings(
     display.warnings.length > 0
       ? [
           {
-            name: getConf(display.parentTrack, 'name') as string,
+            name: getConf(display.parentTrack, 'name'),
             warnings: display.warnings,
           },
         ]

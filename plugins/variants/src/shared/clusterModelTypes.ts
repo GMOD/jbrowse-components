@@ -1,5 +1,4 @@
 import type { ProcessedSource, SampleInfo, Source } from './types.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import type { ClusterProvenance } from '@jbrowse/tree-sidebar'
 
@@ -18,7 +17,7 @@ export interface ReducedModel {
   minorAlleleFrequencyFilter: number
   maxMissingnessFilter: number
   filters?: SerializableFilterChain
-  adapterConfig: AnyConfigurationModel
+  adapterConfig: Record<string, unknown>
   renderingMode: string
   sampleInfo?: Record<string, SampleInfo>
   // Whether the fetched inputs clustering needs have arrived. Phased mode

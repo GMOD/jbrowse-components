@@ -6,7 +6,6 @@ import { imputeMissingToSiteMean } from './genotypeMatrixEncoding.ts'
 
 import type { SampleInfo, Source } from '../shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import type { Region, StatusCallback, StopToken } from '@jbrowse/core/util'
 
@@ -16,7 +15,7 @@ export async function executeClusterGenotypeMatrix({
 }: {
   pluginManager: PluginManager
   args: {
-    adapterConfig: AnyConfigurationModel
+    adapterConfig: Record<string, unknown>
     stopToken?: StopToken
     sessionId: string
     headers?: Record<string, string>

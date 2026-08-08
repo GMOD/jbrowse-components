@@ -1,10 +1,9 @@
 import type { SampleInfo, Source } from '../shared/types.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import type { Region, RpcStatus, StopToken } from '@jbrowse/core/util'
 
 interface BaseVariantRpcArgs {
-  adapterConfig: AnyConfigurationModel
+  adapterConfig: Record<string, unknown>
   stopToken?: StopToken
   sessionId: string
   headers?: Record<string, string>
@@ -52,7 +51,7 @@ export interface GetCellDataArgs extends BaseVariantRpcArgs {
 }
 
 export interface MultiSampleVariantGetSourcesArgs {
-  adapterConfig: AnyConfigurationModel
+  adapterConfig: Record<string, unknown>
   stopToken?: StopToken
   sessionId: string
   headers?: Record<string, string>

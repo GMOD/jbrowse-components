@@ -138,7 +138,18 @@ export function createBaseTrackModel(
       /**
        * #getter
        */
-      get adapterConfig() {
+      get adapterConfig(): Record<string, unknown> {
+        // Annotated, not left to infer `getConf`'s `any`, which switches off
+        // checking at every reader downstream.
+        //
+        // NOT `| undefined`, which was tried and measured. `adapter` is a bare
+        // `types.union` of the registered adapter schemas
+        // (`pluggableConfigSchemaType`) with no `maybe` and no default — which
+        // looks absent-able, but every member is an all-optional config schema,
+        // so MST creates the first one rather than leaving the slot empty. Probed
+        // both ways: omitting `adapter` entirely, and passing it explicitly as
+        // `undefined`, each read back as an object. So `| undefined` propagates a
+        // case that cannot happen to ~33 call sites.
         return getConf(self, 'adapter')
       },
 
@@ -169,11 +180,21 @@ export function createBaseTrackModel(
        * #getter
        */
       get adapterType() {
-        const { adapterConfig } = self
-        if (!adapterConfig) {
-          throw new Error(`no adapter configuration provided for ${self.type}`)
+        // Checks the adapter's `type`, not the adapter config's presence. The
+        // config is always an object (see `adapterConfig`), so the old
+        // `if (!adapterConfig) throw` could not fire; what genuinely can be
+        // missing is `type`, and it is a string only by convention since the slot
+        // holds an arbitrary sub-config. Unchecked it reached
+        // `getAdapterType(undefined)`, which is a bare `Map.get` and answers
+        // `undefined` rather than throwing — so the track failed later and
+        // somewhere else.
+        const { type } = self.adapterConfig
+        if (typeof type !== 'string') {
+          throw new Error(
+            `no adapter type in the adapter configuration for ${self.type} (got ${typeof type})`,
+          )
         }
-        return pm.getAdapterType(adapterConfig.type)
+        return pm.getAdapterType(type)
       },
     }))
     .actions(self => ({

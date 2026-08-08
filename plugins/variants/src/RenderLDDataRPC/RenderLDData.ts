@@ -2,13 +2,12 @@ import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/
 
 import type { LDMetric } from '../VariantRPC/getLDMatrix.ts'
 import type { LDDataResult } from './types.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface RenderLDDataArgs {
   sessionId: string
-  adapterConfig: AnyConfigurationModel
+  adapterConfig: Record<string, unknown>
   regions: Region[]
   bpPerPx: number
   ldMetric: LDMetric

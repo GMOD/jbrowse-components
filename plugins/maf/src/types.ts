@@ -1,4 +1,3 @@
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
   BaseFeatureDataAdapter,
   BaseOptions,
@@ -20,7 +19,7 @@ import type { Observable } from 'rxjs'
  * (e.g. `5` vs `chr5`).
  */
 export interface BaseMafRpcArgs {
-  adapterConfig: AnyConfigurationModel
+  adapterConfig: Record<string, unknown>
   sessionId: string
   regions: Region[]
   stopToken?: StopToken

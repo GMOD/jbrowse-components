@@ -110,7 +110,22 @@ function stateModelFactory() {
       /**
        * #getter
        */
-      get adapterConfig() {
+      get adapterConfig(): Record<string, unknown> {
+        // `Record<string, unknown>` is as narrow as this can honestly get: which
+        // adapter a track uses is open-ended, so the *contents* are
+        // unpredictable. The *shape* is not, and that is the part worth
+        // declaring. Leaving it to infer `getConf`'s `any` was the status quo and
+        // it propagated: every consumer's RPC arg and adapter spec takes
+        // `Record<string, unknown>`, so they accepted whatever they were handed,
+        // and two displays re-declared this getter locally just to annotate it.
+        //
+        // Not `| undefined` — see `BaseTrackModel.adapterConfig` for the probe
+        // showing the slot always materializes an object.
+        //
+        // This is a snapshot, so read a specific slot with an array path off the
+        // live node (`getConf(track, ['adapter', 'x'])`) rather than off this —
+        // `types.stripDefault` omits a slot at its default. See
+        // ../../configuration/CLAUDE.md.
         return getConf(self.parentTrack, 'adapter')
       },
 

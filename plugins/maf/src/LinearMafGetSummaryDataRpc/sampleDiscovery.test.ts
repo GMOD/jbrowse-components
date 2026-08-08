@@ -4,7 +4,6 @@ import { executeMafSummaryData } from './executeMafSummaryData.ts'
 
 import type { MafSummaryRecord, Sample } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 // `mock`-prefixed so the jest.mock factory below may close over it (the factory
 // is hoisted above the file's other declarations).
@@ -43,7 +42,7 @@ function run({
   return executeMafSummaryData({
     pluginManager: {} as PluginManager,
     args: {
-      adapterConfig: {} as AnyConfigurationModel,
+      adapterConfig: {},
       sessionId: 'test',
       regions: [
         { refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' },

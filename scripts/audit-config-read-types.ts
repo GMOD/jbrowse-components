@@ -63,8 +63,11 @@ function createProgram() {
 }
 
 // The four config accessors. `readConfObject` takes a config node directly
-// rather than a model with `.configuration`, and has a deliberate loose overload
-// for dynamic paths, so it is reported separately and not part of the gate.
+// rather than a model with `.configuration`; it is otherwise held to the same
+// standard and its source-bucket gaps DO count toward the gate. It used to have a
+// model-shaped loose overload that laundered any typo into `any`, which is gone —
+// the remaining loose path is an ARRAY slot path, and those never reach this list
+// because only string-literal slot args are recorded (see `isLiteralSlot`).
 const READERS = new Set(['getConf', 'resolveConf', 'readConfObject'])
 const WRITERS = new Set(['setConf'])
 
@@ -215,8 +218,11 @@ function main() {
 
     if (write) {
       fs.writeFileSync(BASELINE, body)
+      // both counts, labelled: the gate compares the SOURCE number, so printing a
+      // bare source+test total here is what made a 5-site drift read as a 178-site
+      // one in the failure message below
       console.log(
-        `wrote ${BASELINE}: ${gaps.length} unchecked of ${total} calls`,
+        `wrote ${BASELINE}: ${sourceGaps.length} unchecked in source (+${gaps.length - sourceGaps.length} in tests) of ${total} calls`,
       )
       return 0
     }
@@ -233,7 +239,7 @@ function main() {
     )
     if (sourceGaps.length > prevCount) {
       console.error(
-        `\nUnchecked config slot names grew from ${prevCount} to ${gaps.length}.\n` +
+        `\nUnchecked config slot names grew from ${prevCount} to ${sourceGaps.length}.\n` +
           `A new call site is reading config through a widened schema, so its\n` +
           `slot name is unchecked and a typo there fails silently at runtime.\n` +
           `Type the model's configSchema param to its concrete type, or — if it\n` +

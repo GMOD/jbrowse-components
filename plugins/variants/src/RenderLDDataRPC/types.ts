@@ -18,9 +18,17 @@ const PRECOMPUTED_LD_ADAPTERS = [
  * byte gate. The membership test lives here rather than at each of its three
  * call sites, all of which had to widen the `as const` list back to
  * `readonly string[]` to ask.
+ *
+ * Takes `unknown`, because two of the three callers read `type` off an adapter
+ * config — an open-ended object whose contents no type can predict — so
+ * `unknown` is what they honestly hold. Checking it here beats making each
+ * caller cast, and subsumes the old `?? ''` absent-sentinel.
  */
-export function isPrecomputedLDAdapter(type: string | undefined) {
-  return (PRECOMPUTED_LD_ADAPTERS as readonly string[]).includes(type ?? '')
+export function isPrecomputedLDAdapter(type: unknown) {
+  return (
+    typeof type === 'string' &&
+    (PRECOMPUTED_LD_ADAPTERS as readonly string[]).includes(type)
+  )
 }
 
 export interface LDFlatbushItem {

@@ -27,7 +27,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // surface while the dialog stays free of menu-only state.
 export type GroupByDialogModel = {
   id: string
-  adapterConfig: AnyConfigurationModel
+  adapterConfig: Record<string, unknown>
   configuration: AnyConfigurationModel
   colorBy: ColorBy
   filterBy: FilterBy

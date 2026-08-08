@@ -5,7 +5,6 @@ import { fetchEachRegion } from '@jbrowse/plugin-linear-genome-view'
 import type { MultiRowGetFeaturesArgs } from '../MultiRowGetFeaturesRPC/rpcTypes.ts'
 import type { RegionGateMeasurement } from '../shared/CanvasFeatureGateMixin.ts'
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Region, RpcStatus } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type {
@@ -23,7 +22,7 @@ type Needed = { region: Region; displayedRegionIndex: number }[]
 // assignable to every `getSession`/`addDisposer`-style helper) while keeping the
 // shape checked. Applies to every `interface …Self` in the repo.
 interface FetchSelf extends IStateTreeNode {
-  adapterConfig: AnyConfigurationModel
+  adapterConfig: Record<string, unknown>
   // The whole user-settings payload, never the individual slots: spreading it
   // is what keeps the bytes sent and the cache key they are stored under one
   // expression. Re-listing the fields here let the two drift — a field added to

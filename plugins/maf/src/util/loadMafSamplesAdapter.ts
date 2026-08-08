@@ -2,7 +2,6 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 import type { MafSamplesAdapter } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 /**
  * Shared prologue for the alignment + summary RPCs: resolve the MAF adapter and
@@ -13,7 +12,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 export async function loadMafSamplesAdapter(
   pluginManager: PluginManager,
   sessionId: string,
-  adapterConfig: AnyConfigurationModel,
+  adapterConfig: Record<string, unknown>,
 ) {
   const { dataAdapter } = await getAdapter(
     pluginManager,

@@ -1,7 +1,6 @@
 import {
   ConfigurationReference,
   getConf,
-  readConfObject,
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -132,7 +131,13 @@ export function stateModelFactory(
          * to undefined for "absent")
          */
         get ldAdapterConfig(): Record<string, unknown> | undefined {
-          return readConfObject(self.adapterConfig, 'ldAdapter') ?? undefined
+          // array slot path off the LIVE parent track, not a read against
+          // `self.adapterConfig` — that is itself a snapshot, and
+          // `types.stripDefault` omits a slot at its default, so a slot read
+          // against a snapshot can report a defaulted slot as absent
+          return (
+            getConf(self.parentTrack, ['adapter', 'ldAdapter']) ?? undefined
+          )
         },
         /**
          * #getter

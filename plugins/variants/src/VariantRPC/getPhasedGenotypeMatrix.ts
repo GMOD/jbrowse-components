@@ -11,7 +11,6 @@ import {
 
 import type { SampleInfo, Source } from '../shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import type {
   LastStopTokenCheck,
@@ -25,7 +24,7 @@ export async function getPhasedGenotypeMatrix({
 }: {
   pluginManager: PluginManager
   args: {
-    adapterConfig: AnyConfigurationModel
+    adapterConfig: Record<string, unknown>
     stopTokenCheck?: LastStopTokenCheck
     sessionId: string
     headers?: Record<string, string>
