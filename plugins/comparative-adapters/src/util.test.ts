@@ -198,6 +198,72 @@ describe('markReciprocalDuplicates', () => {
     ).toEqual([false, false])
   })
 
+  // AN INVERTED HOMOLOGY, chained two ways, which is the shape the forward-only
+  // boundary test could not see. Modelled on the same K12/NCTC86 split above but
+  // on a reverse diagonal: the fragment starting 42 bp before the parent ends
+  // 42 bp AFTER the parent's mateEnd, and its mateStart belongs to the other end
+  // of the block entirely. Read forwards, the two deltas differ by the whole
+  // block and every one of these drew twice.
+  const invParent = {
+    refName: 'NCTC86#1#chr',
+    start: 1435000,
+    end: 2044664,
+    mateRefName: 'IAI39#1#chr',
+    mateStart: 1698409,
+    mateEnd: 2292242,
+    strand: -1,
+  }
+  const invHead = {
+    ...invParent,
+    start: 1434958,
+    // reverse diagonal: the anchor's low end is the mate's high end
+    end: 1632337,
+    mateStart: 2091815,
+    mateEnd: 2292284,
+  }
+  const invTail = {
+    ...invParent,
+    start: 1652745,
+    end: 2044577,
+    mateStart: 1698496,
+    mateEnd: 2091751,
+  }
+
+  test('drops the fragments of an INVERTED block chained further', () => {
+    expect(markReciprocalDuplicates([invParent, invHead, invTail])).toEqual([
+      false,
+      true,
+      true,
+    ])
+  })
+
+  test('keeps the longer chaining of an inverted block whatever the order', () => {
+    expect(markReciprocalDuplicates([invHead, invTail, invParent])).toEqual([
+      true,
+      true,
+      false,
+    ])
+  })
+
+  // Same spans, opposite orientations: a forward and a reverse alignment of one
+  // pair of loci are two statements, not one restated, and no amount of span
+  // containment makes them one.
+  test('keeps two sides that disagree about orientation', () => {
+    expect(
+      markReciprocalDuplicates([invParent, { ...invParent, strand: 1 }]),
+    ).toEqual([false, false])
+  })
+
+  // A side with no strand is forward, which is what every caller assumed before
+  // the field existed.
+  test('treats a missing strand as forward', () => {
+    expect(markReciprocalDuplicates([k12ToNctc, nctcHead, nctcTail])).toEqual([
+      false,
+      true,
+      true,
+    ])
+  })
+
   // A different contig pair is never a candidate, however similar the coords
   test('keeps identical coordinates on a different contig pair', () => {
     expect(

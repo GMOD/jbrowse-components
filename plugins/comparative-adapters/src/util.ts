@@ -368,6 +368,14 @@ export interface AlignedSide {
   mateRefName: string
   mateStart: number
   mateEnd: number
+  /**
+   * +1/-1 from the PAF/PIF record, and it is orientation-symmetric: flipping a
+   * record to the other perspective does not change whether the two sequences
+   * run the same way. Only {@link sharesBoundary} reads it, which is why it is
+   * optional -- a side built without it is treated as forward, the behaviour
+   * every caller had before the field existed.
+   */
+  strand?: number
 }
 
 /**
@@ -458,10 +466,40 @@ const BOUNDARY_SLACK_FRACTION = 0.02
  * Indels are why it cannot be asked of the interior: over the 610 kb E. coli
  * block the two passes drift ~12 kb apart in the middle while agreeing to
  * within 40 bp at the shared end.
+ *
+ * **ORIENTATION IS PART OF THE TEST, and getting it wrong is invisible except
+ * in an inversion.** The offsets above only cancel when the two sequences run
+ * the same way. On a reverse-strand alignment the anchor's low end is the
+ * mate's HIGH end, so a fragment that starts 10 kb into its parent ends 10 kb
+ * short of the parent's `mateEnd` and has a `mateStart` belonging to the
+ * opposite end of the block entirely — the forward form then measures a
+ * mismatch the size of the block and reports "not a restatement" for every
+ * inverted pair. That is exactly the residue this left behind: after the
+ * forward-only version of this test, `pangenome/pggb_synteny`'s three
+ * collinear bands composited at the intended 0.2 alpha and its one inverted
+ * band (NCTC86/IAI39) still ran 8.3% of its red area at 1-(1-0.2)^2 and 1% at
+ * three coats — "there are still darker-than-normal lines in the last row of
+ * inversion".
+ *
+ * A side with no `strand` is read as forward, which is what every caller that
+ * does not set it already assumed.
  */
 function sharesBoundary(a: AlignedSide, b: AlignedSide) {
-  const atStart = Math.abs(b.start - a.start - (b.mateStart - a.mateStart))
-  const atEnd = Math.abs(b.end - a.end - (b.mateEnd - a.mateEnd))
+  // Two sides that disagree about orientation are not one homology however
+  // well their spans nest: a forward and a reverse alignment of the same pair
+  // of loci are two different statements.
+  if ((a.strand ?? 1) !== (b.strand ?? 1)) {
+    return false
+  }
+  const reversed = (a.strand ?? 1) < 0
+  // On a reverse diagonal the anchor's start pairs with the mate's END, so the
+  // two deltas ADD to zero where a forward pair's SUBTRACT to zero.
+  const atStart = reversed
+    ? Math.abs(b.start - a.start + (b.mateEnd - a.mateEnd))
+    : Math.abs(b.start - a.start - (b.mateStart - a.mateStart))
+  const atEnd = reversed
+    ? Math.abs(b.end - a.end + (b.mateStart - a.mateStart))
+    : Math.abs(b.end - a.end - (b.mateEnd - a.mateEnd))
   const shorter = Math.min(a.end - a.start, b.end - b.start)
   return (
     Math.min(atStart, atEnd) <=
@@ -533,6 +571,16 @@ function cmpSide(a: AlignedSide, b: AlignedSide) {
  * as 154 slivers with a median of 41 bp, where the dropped chaining reached a
  * little past the kept one. They abut a kept block rather than opening a hole in
  * one, and every one of them is sub-pixel at any width a band is read at.
+ *
+ * **A reversed restatement was invisible to the first version of this** — see
+ * {@link sharesBoundary}. Over the same file, making the boundary test
+ * orientation-aware drops 490 sides where the forward-only form dropped 474,
+ * and all sixteen are in the four pairs that carry an inversion (IAI39 against
+ * K12, NCTC86 and Sakai, plus NCTC86/Sakai); the six pairs with no reversed
+ * side are byte-identical. On `pangenome/pggb_synteny` the inverted band's
+ * double-coated red area went 8.32% -> 2.95% and its triple-coated area 1% ->
+ * 0, with the three collinear bands unmoved. What is left is ribbons genuinely
+ * crossing each other at the inversion, which is what alpha is for.
  *
  * Returns a mask parallel to `sides`: true where that side restates another in
  * its contig pair.

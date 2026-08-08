@@ -120,7 +120,11 @@ export async function loadPafRecords<T extends PAFRecord>({
  * in-memory PAF adapters, which each spelled out the same six ternaries.
  */
 export function orientPafRecord(record: PAFRecord, flip: boolean) {
-  const { qname, qstart, qend, tname, tstart, tend } = record
+  const { qname, qstart, qend, tname, tstart, tend, strand } = record
+  // `strand` rides along unflipped: it says whether the two sequences run the
+  // same way, which is a property of the pair and not of which end you read it
+  // from. markReciprocalDuplicates needs it to test the boundary offsets on the
+  // right diagonal.
   return flip
     ? {
         refName: qname,
@@ -129,6 +133,7 @@ export function orientPafRecord(record: PAFRecord, flip: boolean) {
         mateRefName: tname,
         mateStart: tstart,
         mateEnd: tend,
+        strand,
       }
     : {
         refName: tname,
@@ -137,6 +142,7 @@ export function orientPafRecord(record: PAFRecord, flip: boolean) {
         mateRefName: qname,
         mateStart: qstart,
         mateEnd: qend,
+        strand,
       }
 }
 

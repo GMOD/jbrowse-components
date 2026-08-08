@@ -41,6 +41,7 @@ function pifSide(line: PifLine): AlignedSide {
     mateRefName: line.mateName,
     mateStart: line.mateStart,
     mateEnd: line.mateEnd,
+    strand: line.strand,
   }
 }
 
