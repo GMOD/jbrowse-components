@@ -33,9 +33,23 @@ cram_to_bam <- function(uri, chrom, start, end, ref = NULL) {
     message("samtools could not decode ", uri,
             if (have_ref) paste0(" against ", ref) else "",
             " - retrying by MD5 reference lookup")
-    ok <- decode(character(0),
+    # That lookup returns a WHOLE reference sequence, so it is minutes per
+    # chromosome, and this helper runs once per panel per region - a coverage +
+    # pileup view of one CRAM region fetched the same ~200 Mb chromosome twice,
+    # and a multi-region view once more per region. REF_CACHE is htslib's own
+    # answer: it stores what it fetched and reuses it, so only the first call
+    # pays. Scoped to the R session's tempdir, which keeps a large download off
+    # the user's disk for good; point REF_CACHE at a persistent directory (or
+    # populate one with samtools' seq_cache_populate.pl) to keep it across runs.
+    cache <- Sys.getenv("REF_CACHE")
+    if (!nzchar(cache)) {
+      dir.create(file.path(tempdir(), "hts-ref"), showWarnings = FALSE, recursive = TRUE)
+      cache <- file.path(tempdir(), "hts-ref", "%2s", "%2s", "%s")
+    }
+    ok <- decode(character(0), c(
       if (nzchar(Sys.getenv("REF_PATH"))) character(0)
-      else "REF_PATH=https://www.ebi.ac.uk/ena/cram/md5/%s")
+      else "REF_PATH=https://www.ebi.ac.uk/ena/cram/md5/%s",
+      paste0("REF_CACHE=", cache)))
   }
   if (!ok) stop("samtools failed to decode CRAM: ", uri)
   Rsamtools::indexBam(out)
