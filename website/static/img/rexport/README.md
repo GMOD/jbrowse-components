@@ -38,6 +38,37 @@ whose rows come from `IRanges::disjointBins()`.
 
 ![alignments](./alignments.png)
 
+### Interbase counts and breakpoint indicators
+
+The coverage panel carries JBrowse's two interbase marks, both fed by one
+`interbase_counts()` tally of how many reads have an insertion (`bam_indels()`
+type `I`) or a soft/hard clip (`bam_clips()`) anchored at each reference column —
+a port of `computeInterbaseCoverage`'s bucket pass, over the filtered reads and
+clipped to the region first, so a clip on a read starting left of the view
+doesn't pile onto the first column.
+
+The **count histogram** hangs down from the top of the depth axis, stacked
+insertion `#800080` → soft clip `#0000ff` → hard clip `#ff0000` in JBrowse's
+order, one 1 bp bar centered on the interbase boundary. JBrowse sizes these
+against half the coverage drawing height, which on the R panel's depth axis is
+half a depth unit per event — emitted as an editable `interbase_scale` variable,
+worth raising to make a breakpoint over shallow coverage stand out. Bars are
+clamped at 0, where JBrowse's coverage band clips them.
+
+The **indicator triangles** sit above the histogram at the columns
+`interbase_indicators()` calls significant — local depth ≥ 8 and the interbase
+events over 30% of it, emitted as editable `indicator_min_depth` /
+`indicator_threshold` variables and taken from the browser's own constants so the
+two gates cannot drift. Local depth at an interbase position is the larger of the
+two bases it sits between (`interbaseDepthAt`), which is what makes a breakpoint
+flag at all: every read's soft clip is anchored where the alignments stop, so the
+base to its right has depth 0. Each triangle is colored by the dominant event,
+with a tie keeping the earlier of insertion, soft clip, hard clip (JBrowse only
+upgrades the type on a strict majority).
+
+JBrowse's single `showInterbaseIndicators` toggle governs both, so turning it off
+emits neither mark and skips the CIGAR walk that feeds them.
+
 ### Modifications / methylation (MM/ML)
 
 `colorBy: 'modifications'` (and `'methylation'`) keeps grey read bodies and
