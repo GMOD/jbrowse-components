@@ -44,23 +44,30 @@ const HG38_HUB = `?config=${encodeURIComponent('https://jbrowse.org/ucsc/hg38/co
 // on either side of this problematic region").
 const SMN1_LOC = 'chr5:70,924,000-70,954,000'
 
-// The control, and the reason the pair of panels proves anything: 30 kb over
-// the 5' end of BDP1, on the same chromosome and out of the same library as the
-// SMN1 panel, at the same width. scan_mappability_qc.sh measures 7,147 reads at
-// SMN1 and 7,662 here, so the panels differ in where the reads can be put and
-// not in how many there are — which is the entire claim, and it would not
-// survive a control on another chromosome or another sample.
+// The control is chr5:71,455,000-71,485,000 — 30 kb over the 5' end of BDP1, on
+// the same chromosome and out of the same library as SMN1, at the same width. It
+// has no const of its own any more because no spec here frames on it: it is the
+// right-hand fifth of WIDE_LOC below. The coordinate is written down because
+// scan_mappability_qc.sh counts reads in it and the tutorial quotes the count —
+// 7,147 at SMN1 against 7,662 here, so the two ends of that frame differ in
+// where the reads can be put and not in how many there are, which is the entire
+// claim and would not survive a control on another chromosome or sample.
 //
 // It is ordinary sequence by MEASUREMENT and not by margin: the script bins
 // gnomAD coverage across the block, and the depression that starts at 69.5 Mb
 // runs to 71.36 Mb and is over at 71.375. This window begins 40 kb past that.
-const CONTROL_LOC = 'chr5:71,455,000-71,485,000'
 
 // Wider than the whole flagged block (GIAB's low-mappability + segdup interval
 // is chr5:69,533,889-71,009,585, ENCODE's blacklist interval is
 // 69,540,700-71,359,500) so both edges are in frame. Cropped to the block, a
 // reader cannot tell a flagged region from a track that covers everything.
 const OVERVIEW_LOC = 'chr5:69,200,000-71,700,000'
+
+// The read panel's own window, sized by where the reads recover rather than by
+// what looks tidy: SMN1 sits at ~11% from the left, gnomAD coverage steps back
+// up at 71.375 Mb (79%), and the BDP1 sequence the deleted control panel used is
+// the right-hand fifth. See the note on the qc/smn_vs_control spec.
+const WIDE_LOC = 'chr5:70,850,000-71,500,000'
 
 // The two genes, banded in-app rather than annotated, so the reader can see
 // which part of a 2.5 Mb frame is the pair everything else is about.
@@ -211,34 +218,67 @@ export const qcSpecs: ScreenshotSpec[] = [
       },
     ],
   },
+  // qc/control_evidence was here and is DELETED (review: "zoom out even further
+  // till we see non-problematic region ... and can delete part 2 of
+  // screenshot"). It was the lower half of the compose below, a second 30 kb
+  // panel over BDP1; that sequence is now the right-hand fifth of the single
+  // frame, where the reader gets the comparison without a seam. CONTROL_LOC
+  // survives as the coordinate `scan_mappability_qc.sh` counts reads in, which
+  // is where the tutorial's 7,662 comes from.
+  // ONE frame, where this was a two-part compose (review: "zoom out even further
+  // till we see non-problematic region, then we will see good and bad areas in
+  // same screenshot and can delete part 2").
+  //
+  // The objection recorded at SMN1_LOC above was that a wide read panel banners
+  // instead of drawing — true when it was written, and no longer, because
+  // `forceLoad` is the declarative half of the FORCE LOAD button. The rest of
+  // that note still holds and is why this window is 650 kb rather than 200: the
+  // depression runs continuously to 71.36 Mb, so the nearest sequence where the
+  // reads recover is 410 kb past SMN1's end and anything narrower is a wider red
+  // block with no edge in it.
+  //
+  // Two lanes came out on the way. Umap k100 is per-base and at 464 bp/px the
+  // absent stretches average in with the present ones (the same reason it is not
+  // in the 2.5 Mb figure). The gnomAD lane stays but switches to `avg` for the
+  // same reason `whiskers` failed there: one 40x pixel inside a 4x stretch
+  // paints the block full height.
+  //
+  // What is left is the comparison the compose made across a seam, made instead
+  // across the x axis of one picture: a red pileup, the edge, and a
+  // multi-coloured one, over a coverage lane that steps up at the same place.
   {
     mode: 'url',
-    name: 'qc/control_evidence',
+    name: 'qc/smn_vs_control',
     url: `${HG38_HUB}&session=${encodeSessionSpec({
       sessionTracks: [na12878Track],
-      views: [panel(CONTROL_LOC)],
-    })}&sessionName=Screenshot`,
-    viewportHeight: 820,
-    // The other half of the same sentence, at the same height in the lane so the
-    // two read as one comparison rather than as two remarks.
-    annotations: [
-      {
-        type: 'text',
-        text: 'Same library, same depth, 501 kb away — every read has one home',
-        fontSize: 20,
-        maxWidth: 430,
-        anchor: {
-          track: 'na12878_qc_reads',
-          locus: 'chr5:71,457,500',
-          fracY: 0.22,
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: WIDE_LOC,
+          highlight: [SMN_HIGHLIGHT[0]!],
+          tracks: [
+            geneTrack(60, true),
+            gnomadCoverageTrack(90, 'avg'),
+            {
+              trackId: 'na12878_qc_reads',
+              type: 'LinearAlignmentsDisplay',
+              colorBy: { type: 'mappingQuality' },
+              showLegend: true,
+              // 650 kb of 30x Illumina is past every byte budget in the stack,
+              // and a capture has nobody to click the banner
+              forceLoad: true,
+              height: 380,
+            },
+          ],
         },
-      },
-    ],
-  },
-  {
-    mode: 'compose',
-    name: 'qc/smn_vs_control',
-    parts: ['qc/smn1_evidence', 'qc/control_evidence'],
+      ],
+    })}&sessionName=Screenshot`,
+    // 760 cut 42 css px off the bottom, from the run's own report
+    viewportHeight: 805,
+    readySelector: '[data-testid="pileup-display-done"]',
+    readyTimeout: 600000,
+    settleMs: 30000,
   },
 
   {
@@ -419,7 +459,11 @@ export const qcSpecs: ScreenshotSpec[] = [
             views: [
               {
                 assembly: 'hg38',
-                loc: 'chr5:69,800,000-71,200,000',
+                // 600 kb of padding either side of the SMN2..SMN1 span, where
+                // this was 250 (review: "zoom out more please"). The three
+                // chains all end inside the old frame, so their ends were the
+                // frame's edges and could not be told apart from clipping.
+                loc: 'chr5:69,450,000-71,550,000',
                 tracks: [
                   {
                     trackId: 'hg38-genes',
@@ -440,12 +484,28 @@ export const qcSpecs: ScreenshotSpec[] = [
               },
               {
                 assembly: 'hs1',
-                loc: 'chr5:70,560,000-71,660,000',
+                // the same 600 kb of padding, on this assembly's own (shorter)
+                // SMN2..SMN1 span — the two windows are deliberately not the
+                // same width, see the note above
+                loc: 'chr5:70,210,000-71,980,000',
                 tracks: [
                   {
                     trackId: 'hs1-genes',
                     showOnlyGenes: true,
                     geneGlyphMode: 'longestCoding',
+                    // review: "hide descriptions from t2t gene track". This is
+                    // RefSeq All, so every pseudogene under the segdup carries a
+                    // full product name in a second line of blue text, and at
+                    // this width they run together into a band of unreadable
+                    // type under a lane that is here for its gene ORDER.
+                    //
+                    // `showLabels: 'name'`, not `showDescriptions: false`: the
+                    // two legacy slots were folded into one enum, and the old
+                    // pair is converted by the schema's preprocessSnapshot at
+                    // create time only. A session spec routes inline keys
+                    // through `setSlot`, which needs a slot that still exists —
+                    // so the legacy spelling would be dropped in silence here.
+                    showLabels: 'name',
                     // PINNED, where the hg38 lane is merely capped. Both tracks
                     // are configured `grow`, and the hs1 GFF is RefSeq All: over
                     // this segdup it lays out seven rows of GUSB/POM121/cadherin

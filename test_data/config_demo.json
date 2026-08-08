@@ -4902,6 +4902,12 @@
             "Mother hap1",
             "Mother hap2"
           ],
+          "sampleColorMap": {
+            "Father hap1": "#2e6da4",
+            "Father hap2": "#8ec3e8",
+            "Mother hap1": "#d1495b",
+            "Mother hap2": "#f4a698"
+          },
           "rowHeight": 20
         }
       ]

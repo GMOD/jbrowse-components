@@ -46,11 +46,19 @@ const configSchema = ConfigurationSchema(
     /**
      * #slot fetchSizeLimit
      */
+    // 5MB, the same budget BamAdapter declares. It was 3MB, and the difference
+    // was never a decision about CRAM — it just made an ordinary window over a
+    // deep long-read CRAM banner where the same window over a BAM does not,
+    // which is backwards: CRAM is the more compressed of the two, so 3MB of it
+    // is MORE alignment data than 3MB of BAM, not less. The number is a warning
+    // threshold rather than a cap (the banner offers force-load either way), so
+    // matching them costs a slower render on the loci between the two values and
+    // buys one budget to reason about.
     fetchSizeLimit: {
       type: 'number',
       description:
         'size in bytes over which to display a warning to the user that too much data will be fetched',
-      defaultValue: 3_000_000,
+      defaultValue: 5_000_000,
       advanced: true,
     },
 

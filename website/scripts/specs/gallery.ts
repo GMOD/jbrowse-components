@@ -117,6 +117,10 @@ export const gallerySpecs: ScreenshotSpec[] = [
               type: 'LinearAlignmentsDisplay',
               // taller than the 250 default so the deep fiber-seq pileup reads
               height: 450,
+              // ~50 reads of ONT fiber-seq over 9kb is past the BAM budget, so
+              // the pileup banners instead of drawing. Nothing can click FORCE
+              // LOAD in a capture; this is its declarative half.
+              forceLoad: true,
               // fiber-seq is a 6mA (code 'a') assay — allow-list only 6mA so
               // the incidental 5mC/5hmC calls the caller also emits are never
               // drawn and the legend shows only 6mA
@@ -140,7 +144,8 @@ export const gallerySpecs: ScreenshotSpec[] = [
     }),
     readyTimeout: 120000,
     settleMs: 15000,
-    viewportHeight: 1150,
+    // 1150 left 65px of blank once forceLoad let the pileup fill its lane
+    viewportHeight: 1085,
   },
   {
     mode: 'url',
@@ -167,6 +172,11 @@ export const gallerySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'gallery/nanopore_methylation',
+    // NO forceLoad, deliberately, and this spec is the thing that checks it: a
+    // 6 kb window estimates 3.34MB, which bannered "Requested too much data"
+    // against CramAdapter's old 3MB budget and draws against its current 5MB
+    // one. It is an ordinary locus on an ordinary CRAM, so if it ever needs
+    // force-loading again the default is wrong rather than the spec.
     url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"20:18,503,000-18,509,000","type":"LinearGenomeView","tracks":["cpgisland_ucsc_hg38",{"trackId":"human_chr20_mod_call_5mC_5hmC_CG_cram","displaySnapshot":{"type":"LinearAlignmentsDisplay","colorBy":{"type":"methylation"}}}]}]}',
     // the remote CRAM's first fetch takes long enough that settleMs alone once
     // committed a loading screen; wait on the pileup canvas actually drawing

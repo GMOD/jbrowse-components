@@ -11,8 +11,8 @@ tutorial_category: Structural variation
 **TL;DR:** a pileup looks the same whether its reads belong at a locus or merely
 landed there. Four tracks tell the difference, and genomes.jbrowse.org already
 publishes all of them for hg38, so this is a click-path rather than a pipeline.
-At _SMN1_ every one of them says the reads cannot be placed; at a control 30 kb
-window 500 kb away, out of the same sample, every one says the opposite.
+At _SMN1_ every one of them says the reads cannot be placed; 500 kb away in the
+same frame, out of the same sample, every one says the opposite.
 
 ## Prerequisites
 
@@ -76,11 +76,12 @@ to span from inside one copy to sequence outside it.
 
 ## Zooming back in
 
-Reads are what the block does to a sample, and no read track spans 2.5 Mb, so
-this is two 30 kb windows: one inside the block and one 40 kb past where the
-coverage above recovers.
+Reads are what the block does to a sample. The nearest sequence where they
+recover is 410 kb past the end of _SMN1_, so this is one 650 kb window with the
+edge inside it rather than a pair of panels that a reader has to hold in mind at
+once.
 
-<Figure src="/img/qc/smn_vs_control.png" caption="Top, 30 kb over SMN1; bottom, the same width 500 kb away over BDP1, from the same sample. Per panel: RefSeq genes, Umap k100 mappability, gnomAD v3 mean coverage, and NA12878 reads colored by mapping quality. Two pileups of the same depth, in opposite colors." links="Open the SMN1 panel=qc/smn1_evidence,Open the control panel=qc/control_evidence" />
+<Figure src="/img/qc/smn_vs_control.png" caption="650 kb on chromosome 5, SMN1 banded at the left. RefSeq genes, gnomAD v3 mean coverage, and NA12878 reads colored by mapping quality. The pileup is red for four fifths of the frame and then multi-colored, and the coverage lane steps up at the same place." links="Open this view=qc/smn_vs_control,Open a 30 kb window over SMN1=qc/smn1_evidence" />
 
 The lanes are independent of each other, which is what makes them worth
 stacking:
@@ -89,7 +90,10 @@ stacking:
   each position it gives the fraction of overlapping 100-mers that are unique in
   the genome. Positions where no 100-mer is unique are absent from the file
   rather than stored as zero, so the lane goes blank rather than to the floor.
-  Over the genome its mean is 0.98, so a blank stretch is unusual.
+  Over the genome its mean is 0.98, so a blank stretch is unusual. It is a
+  per-base track, so it is in the 30 kb view linked above rather than in the
+  figure. At 464 bp a pixel the absent stretches average in with the present
+  ones and the lane says nothing.
 - **gnomAD v3 mean genome coverage** is the outcome of that annotation on real
   data, averaged over 76,156 sequenced genomes. gnomAD drops non-uniquely-placed
   reads before computing it, so wherever the lane above is blank this one falls.
@@ -107,11 +111,11 @@ high-coverage CRAM, added to the session; the figure's link opens both together.
 
 ## The depth is not the problem
 
-The two pileups have the same depth. `scan_mappability_qc.sh` counts 7,147 reads
-in the _SMN1_ window and 7,662 in the control, from the same library, so a
-coverage track built without a MAPQ filter draws a flat 30x across both. What
-differs is that 83.2% of the _SMN1_ reads are at MAPQ 0 against 0.8% of the
-control's.
+The two ends of that pileup have the same depth. `scan_mappability_qc.sh` counts
+7,147 reads in a 30 kb window over _SMN1_ and 7,662 in one the same width at the
+right-hand end of the frame, from the same library, so a coverage track built
+without a MAPQ filter draws a flat 30x across both. What differs is that 83.2%
+of the _SMN1_ reads are at MAPQ 0 against 0.8% of the control's.
 
 The gnomAD lane is what that filter does to a depth track, in a different set of
 samples: it reads 4.5x at _SMN1_ against 30.6x at the control, because MAPQ 0

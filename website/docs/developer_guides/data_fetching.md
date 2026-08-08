@@ -89,10 +89,11 @@ it. `LinearScoreDisplay`'s is a whole one, sitting in an
 // called by the fetch autorun for the regions that need loading;
 // fetchEachRegion handles cancellation, stop tokens and staleness
 fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
+  // no `if (!adapterConfig)` guard: the `adapter` slot is a union of the
+  // registered adapter schemas, all of which are creatable from an empty
+  // snapshot, so MST always materializes an object there and the guard
+  // could never fire
   const { adapterConfig } = self
-  if (!adapterConfig) {
-    return undefined
-  }
   const sessionId = getRpcSessionId(self)
   const { rpcManager } = getSession(self)
   return fetchEachRegion(self, needed, {

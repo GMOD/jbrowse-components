@@ -180,6 +180,11 @@ export const methylationSpecs: ScreenshotSpec[] = [
             {
               trackId: 'PAY22766-nanopore',
               type: 'LinearAlignmentsDisplay',
+              // deep ONT over a 15kb window is past the BAM byte budget, so
+              // both lanes banner "Requested too much data" rather than draw
+              // (reviewer). forceLoad is the declarative FORCE LOAD button,
+              // which nothing in a capture can click.
+              forceLoad: true,
               // this is a 6mA chromatin-accessibility assay; the basecaller
               // also emits 5mC/5hmC calls on the same reads, but those
               // aren't what this figure is about (reviewer: 6mA only). An
@@ -202,6 +207,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
             {
               trackId: 'PBA15131-nanopore',
               type: 'LinearAlignmentsDisplay',
+              forceLoad: true,
               colorBy: {
                 type: 'modifications',
                 modifications: { shownModifications: ['a'] },
