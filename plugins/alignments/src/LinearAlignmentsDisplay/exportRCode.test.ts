@@ -19,6 +19,18 @@ const base: AlignmentsRParams = {
   bpPerPx: 1,
 }
 
+test('both panels concatenate their per-region frames with bind_parts', () => {
+  // every panel loops the regions and stashes per-region frames in parts[[ri]];
+  // bind_parts is the one step that turns those into the frame it draws. Asserted
+  // because a fragment that uses it without declaring it emits a script calling an
+  // undefined function — an R error thrown after every read has been fetched.
+  for (const fragment of alignmentsFragments(base)) {
+    expect(fragment.plotExpr).toContain('bind_parts(parts, "')
+    expect(fragment.helpers).toContain('bind_parts')
+    expect(fragment.plotExpr).not.toContain('do.call(rbind, lapply(parts')
+  }
+})
+
 test('emits a coverage panel and a pileup panel, coverage on top', () => {
   const [cov, pileup] = alignmentsFragments(base)
   expect(cov!.plotVariable).toBe('p_aln_coverage')

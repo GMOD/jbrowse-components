@@ -286,8 +286,8 @@ export function alignmentsFragments(p: AlignmentsRParams): RTrackFragment[] {
       : ''
     const modCombine = covMods
       ? `
-  mods <- do.call(rbind, Filter(Negate(is.null), lapply(parts, \`[[\`, "mods")))
-  modbc <- do.call(rbind, Filter(Negate(is.null), lapply(parts, \`[[\`, "modbc")))
+  mods <- bind_parts(parts, "mods")
+  modbc <- bind_parts(parts, "modbc")
   # simplex vs duplex is a property of the protocol, so resolve it once over every
   # region's MM groups rather than per region
   modcov <- if (!is.null(mods) && nrow(mods))
@@ -352,8 +352,8 @@ export function alignmentsFragments(p: AlignmentsRParams): RTrackFragment[] {
       : ''
     const interbaseCombine = interbase
       ? `
-  ibc <- do.call(rbind, Filter(Negate(is.null), lapply(parts, \`[[\`, "ibc")))
-  ind <- do.call(rbind, Filter(Negate(is.null), lapply(parts, \`[[\`, "ind")))
+  ibc <- bind_parts(parts, "ibc")
+  ind <- bind_parts(parts, "ind")
   # top of the depth axis, where both interbase marks are anchored
   cov_top <- max(cov$depth, 1)
   ib_colors <- c(I = gap_colors[["I"]], S = clip_colors[["S"]], H = clip_colors[["H"]])`
@@ -396,6 +396,7 @@ export function alignmentsFragments(p: AlignmentsRParams): RTrackFragment[] {
         'read_bam',
         'read_filter',
         'keep_rows',
+        'bind_parts',
         'bam_coverage',
         'bam_mismatches',
         // the mismatch bars are drawn in one muted grey under a modification
@@ -462,8 +463,8 @@ ${filterConsts}${interbaseConsts}${modConsts}
     cov0$pos <- cov0$pos + shift; cov0$.region <- ri${interbaseShift}${modRead}
     parts[[ri]] <- list(cov = cov0, snp = snp${interbase ? ', ind = ind, ibc = ibc' : ''}${covMods ? ', mods = mods, modbc = modbc, mmstr = mmstr' : ''})
   }
-  cov <- do.call(rbind, lapply(parts, \`[[\`, "cov"))
-  snp <- do.call(rbind, Filter(Negate(is.null), lapply(parts, \`[[\`, "snp")))${modCombine}${interbaseCombine}
+  cov <- bind_parts(parts, "cov")
+  snp <- bind_parts(parts, "snp")${modCombine}${interbaseCombine}
   p <- ggplot() +
     geom_area(data = cov, aes(pos, depth, group = .region), fill = "#888888") +
     scale_fill_identity() +
@@ -525,16 +526,10 @@ ${filterConsts}${interbaseConsts}${modConsts}
       isQual ? `bq = reg(bq, "refpos")` : '',
     ].filter(Boolean)
     const combine = [
-      needsMm
-        ? `  mm <- do.call(rbind, Filter(Negate(is.null), lapply(parts, \`[[\`, "mm")))`
-        : '',
-      needsCov ? `  cov <- do.call(rbind, lapply(parts, \`[[\`, "cov"))` : '',
-      isMods
-        ? `  mods <- do.call(rbind, Filter(Negate(is.null), lapply(parts, \`[[\`, "mods")))`
-        : '',
-      isQual
-        ? `  bq <- do.call(rbind, Filter(Negate(is.null), lapply(parts, \`[[\`, "bq")))`
-        : '',
+      needsMm ? `  mm <- bind_parts(parts, "mm")` : '',
+      needsCov ? `  cov <- bind_parts(parts, "cov")` : '',
+      isMods ? `  mods <- bind_parts(parts, "mods")` : '',
+      isQual ? `  bq <- bind_parts(parts, "bq")` : '',
     ]
       .filter(Boolean)
       .join('\n')
@@ -679,6 +674,7 @@ ${filterConsts}${interbaseConsts}${modConsts}
         ...cramHelpers,
         'read_bam',
         'read_filter',
+        'bind_parts',
         p.linkReads
           ? 'link_reads'
           : sortType !== undefined
@@ -755,9 +751,9 @@ ${
 ${loopReads ? `${loopReads}\n` : ''}    parts[[ri]] <- list(reads = reads, indels = reg(indels, "refpos"), clips = reg(clips, "pos")${loopParts.length ? `,\n      ${loopParts.join(', ')}` : ''})
     racc <- racc + n
   }
-  reads  <- do.call(rbind, lapply(parts, \`[[\`, "reads"))
-  indels <- do.call(rbind, Filter(Negate(is.null), lapply(parts, \`[[\`, "indels")))
-  clips  <- do.call(rbind, Filter(Negate(is.null), lapply(parts, \`[[\`, "clips")))
+  reads  <- bind_parts(parts, "reads")
+  indels <- bind_parts(parts, "indels")
+  clips  <- bind_parts(parts, "clips")
 ${combine ? `${combine}\n` : ''}${layout}
   # color reads by the track's color-by scheme (edit to try another scheme)
   reads$fill <- read_fill_colors(reads, ${rStr(bodyScheme)})
