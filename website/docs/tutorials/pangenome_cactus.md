@@ -362,12 +362,18 @@ single frame. seqwish folds the rRNA copies together, so the pggb curve runs
 above the strain count there; the reference-first graph keeps them apart and its
 curve never exceeds the strain count anywhere on the chromosome.
 
-<Figure caption="odgi depth over the banded rrnC operon, the same command over the same K12 windows against each builder's graph, on one fixed axis. The pggb row doubles over the operon and the Minigraph-Cactus row does not move; the callout on each row names the operation that decides it." src="/img/pangenome_cactus/builders.png" />
+<Figure caption="odgi depth over the banded rrnC operon, the same command over the same K12 windows against each builder's graph, on one fixed axis. The pggb row doubles over the operon and the Minigraph-Cactus row does not move. Both are correct about their own graph: the callout on each row names the operation that decides it." src="/img/pangenome_cactus/builders.png" />
 
-So read the aggregate curve as relative rather than as an exact strain tally on
-a graph that collapses repeats. On this one it is a tally, and that is a
-property of the builder rather than of the projection. The pggb tutorial reads
-the same operon the other way, as
+Neither curve is wrong, and neither builder is the correct one. They were asked
+different questions: seqwish merges identical sequence wherever it occurs, so
+the rRNA copies become one run of nodes and a path carrying all of them walks
+that run once per copy, while a reference-anchored build keeps each copy at its
+own coordinate and never merges them. A collapsed repeat is where to look for
+variation _within_ an array, since every copy's bases stack on the same nodes; a
+reference-anchored one is where to ask which copy a read came from. What follows
+for this projection is only that `odgi depth` counts steps, so it is a strain
+tally on the Minigraph-Cactus graph and not on the pggb one. The pggb tutorial
+reads the same operon the other way, as
 [several query segments landing on one reference span](/docs/tutorials/pangenome_ecoli#the-same-picture-read-out-of-the-graph).
 
 [`odgi pav`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_pav.html)

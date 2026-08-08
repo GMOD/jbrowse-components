@@ -265,9 +265,8 @@ A pyramid of means alone would lose whatever is narrower than a bin, so every
 level above the finest also stores the minimum and maximum of the bins it
 averages, the way a BigWig zoom record carries all three.
 [`summaryScoreMode`](/docs/config/multilinearwiggledisplay/#slot-summaryscoremode)
-picks which one a view draws:
-
-<Figure caption="The same 2504 individuals across chr1, read from the whole-genome store at 100kb bins, drawn from each bin's mean above and its maximum below. The centromeric block is identical in both, because a signal wider than a bin survives averaging. The stripes that appear only in the lower half are amplifications narrower than one bin, which the mean returns to the diploid baseline." src="/img/cnv1000g/genome_summary_bins.png" />
+picks which one a view draws, so an amplification narrower than a bin is visible
+under `max` and averaged back to the diploid baseline under `avg`.
 
 The finest level is the one to choose deliberately, because it is the only one
 held whole in memory while the rest derive from it. That, rather than the

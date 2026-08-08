@@ -1000,7 +1000,7 @@ graph and the callset above come from; being nine times smaller to store and
 four times cheaper to read a locus out of is the second reason rather than the
 first.
 
-<Figure caption="The C4 locus in HPRC release 2's multiple alignment: 464 human haplotypes under MANE Select genes, each row shaded by its identity to GRCh38. Almost every row is conserved, so the white bands through the copy-number-variable C4A and C4B read as absence rather than divergence: those haplotypes carry no sequence there." src="/img/maf_hprc_pangenome.png" />
+<Figure caption="The C4 locus in HPRC release 2's multiple alignment. Thirty-two of the 464 haplotypes, one row each and named in the sidebar, under MANE Select genes, with GRCh38 on top and mismatches ticked against it. The blank rows through the copy-number-variable C4A and C4B are haplotypes carrying no sequence there rather than haplotypes that match." src="/img/maf_hprc_pangenome.png" />
 
 The locus is C4, the example [HPRCv2](https://github.com/pangenome/HPRCv2)
 itself opens with. Every row is a human haplotype, so the rows say something
@@ -1008,6 +1008,11 @@ different from the cross-species alignments elsewhere in these docs: a row that
 drops out has not diverged past alignment, it belongs to a person who does not
 carry that segment. Read down a column to see who carries what, and across to
 see where each segment starts and stops.
+
+The figure draws sixteen samples rather than all 232, because a row needs about
+six pixels of height before its name can be drawn beside it and 464 named rows
+is a track several screens tall. Drop `subtreeFilter` from the session and the
+whole cohort is there, at whatever height it fits in.
 
 The [MAF track guide](/docs/user_guides/maf_track) covers the conservation band,
 per-row identity and codon view, all derived from the alignment with no extra

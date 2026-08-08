@@ -100,27 +100,23 @@ const CLUSTERED_READY =
 // graphgenomeviewer, so the figures below need network for the plugin itself.
 const CNV_CONFIG = 'test_data/1000g_cnv/config.json'
 
-// One chromosome, not the whole genome, and chr1 because it is the longest: the
-// view's bp-per-pixel is fixed by what it holds, so this is the coarsest level
-// a single region can reach (bin100000, where a 20-50kb event is a fifth of its
-// bin and the mean genuinely dilutes it).
+// Kept although nothing uses it now (the whole-chromosome figures went with
+// cnv1000g/genome_summary_bins), because both halves cost a session to learn:
 //
-// Whole-genome would be coarser still and was tried first. It renders fine in a
-// real browser, on WebGL and on WebGPU, and it is only this harness that cannot
-// capture it: the capture runs headless on swiftshader, and 2504 rows x ~3100
-// bins is ~7.8M quads into a 1400x420 box, which a software rasterizer will not
-// finish (34 minutes, then puppeteer's protocolTimeout). Don't read the missing
-// figure as a limit users hit — check `--use-angle=gl` (cancel-bench.ts does)
-// before believing any "this is too much data to draw" story told by a capture.
+// A whole-genome view of this store renders fine in a real browser, on WebGL
+// and on WebGPU, and only this harness cannot capture it -- the capture runs
+// headless on swiftshader, and 2504 rows x ~3100 bins is ~7.8M quads into a
+// 1400x420 box, which a software rasterizer will not finish (34 minutes, then
+// puppeteer's protocolTimeout). Check `--use-angle=gl` (cancel-bench.ts does)
+// before believing any "too much data to draw" story told by a capture.
 //
-// Unprefixed, which this config's filename argues against: its assembly is
-// hg38.prefix.fa.gz, whose index reads `1`, `10`, `11`, not `chr1`. The store's
-// own refNames ARE chr-prefixed and refNameAliases reconcile them per query,
-// but `displayedRegionNames` resolves against the assembly's regions before any
-// adapter is asked, so it has to be spelled the assembly's way. Spelled wrong,
-// the view launches with no regions and the capture is blank rather than an
-// error naming the contig.
-const CHR1 = ['1']
+// And `displayedRegionNames` here is UNPREFIXED, which this config's filename
+// argues against: its assembly is hg38.prefix.fa.gz, whose index reads `1`,
+// `10`, `11`. The store's own refNames ARE chr-prefixed and refNameAliases
+// reconcile them per query, but displayedRegionNames resolves against the
+// assembly's regions before any adapter is asked. Spelled wrong, the view
+// launches with no regions and the capture is blank rather than an error
+// naming the contig.
 
 export const cnv1000gSpecs: ScreenshotSpec[] = [
   // The hero figure. 104 individuals as one row each, clustered on this window
@@ -274,83 +270,11 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
     diffThreshold: 0.02,
   },
 
-  // The two halves of the summary-bin figure. Same store, same window, same
-  // settings, one slot apart: the top reads each bin's mean, the bottom its max.
-  //
-  // A wide view is the only zoom where this can be shown at all. The adapter
-  // takes the coarsest level whose bins fit in a pixel, so anything narrower
-  // than about 42Mb lands on the base level, which has no summary arrays, and
-  // the two halves would be identical.
-  //
-  // EACH HALF SAYS WHICH ONE IT IS, on review ("dont understand the two
-  // different levels (top and bottom) what is the point"). The two panels are
-  // the same store at the same window and the track carries the same name in
-  // both, so the only thing distinguishing them was the ink — the reader was
-  // being asked to infer the slot from the result it produces. The labels name
-  // the operation; the speckle that appears only in the lower half is then the
-  // answer to "what is the point" rather than the question.
-  ...(['avg', 'max'] as const).map(mode => ({
-    mode: 'url' as const,
-    name: `cnv1000g/genome_${mode}`,
-    url: sessionSpec(CNV_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          displayedRegionNames: CHR1,
-          tracks: [
-            {
-              ...CN_HEATMAP_SETTINGS,
-              trackId: 'cnv_1000g_zarr_wg',
-              summaryScoreMode: mode,
-              height: 420,
-              // Not clustered, unlike the window figures. Clustering is scoped
-              // to the visible region, so genome-wide it would order the rows
-              // by whole-genome similarity and the two halves would sort
-              // differently, which is the one thing this figure cannot afford:
-              // a row has to be the same individual in both.
-              showTree: false,
-            },
-          ],
-        },
-      ],
-    }),
-    readyTimeout: 300000,
-    // 560 cut 62 css px off the bottom of the 420px lane in both halves, per
-    // the run's own below-the-fold report — so the stacked figure was losing a
-    // strip of the same rows twice
-    viewportHeight: 625,
-    settleMs: 10000,
-    diffThreshold: 0.02,
-    // Top left of the heatmap, which is the one part of chr1 that is pale in
-    // BOTH panels: the first 10 Mb carries no block wide enough to survive
-    // averaging and no stripe narrow enough to need the maximum, so a pill
-    // there covers nothing in either half and lands in the same place in both.
-    annotations: [
-      {
-        type: 'text' as const,
-        text:
-          mode === 'avg'
-            ? 'Each 100 kb bin drawn as its MEAN'
-            : 'The same bins as their MAXIMUM: gains narrower than one bin survive',
-        fontSize: 20,
-        maxWidth: 430,
-        anchor: {
-          track: 'cnv_1000g_zarr_wg',
-          locus: 'chr1:6,000,000',
-          fracY: 0.06,
-        },
-      },
-    ],
-  })),
-
-  {
-    mode: 'compose',
-    name: 'cnv1000g/genome_summary_bins',
-    parts: ['cnv1000g/genome_avg', 'cnv1000g/genome_max'],
-    // Stacked rather than side by side, against the usual rule for one view
-    // drawn two ways: the x axis is genomic coordinate, so stacking is what
-    // puts a locus in the top half directly above itself in the bottom.
-    direction: 'vertical',
-  },
+  // cnv1000g/genome_summary_bins and its two halves (genome_avg, genome_max)
+  // were here and are DELETED (review: "this figure is kind of unclear, i dont
+  // think users will understand the different between these. probably just
+  // delete or something"). It was the whole-genome store drawn twice at one
+  // slot's difference, mean over max, and the difference is a speckle of narrow
+  // stripes in the lower half that a reader has to be told to look for. The
+  // prose above the embed already says what summaryScoreMode does.
 ]

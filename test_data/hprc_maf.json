@@ -13,7 +13,7 @@
     {
       "type": "MafTrack",
       "trackId": "hprc_v2_0_mc_grch38",
-      "name": "HPRC release 2 pangenome alignment (464 haplotypes)",
+      "name": "HPRC release 2 pangenome alignment",
       "assemblyNames": ["hg38"],
       "adapter": {
         "type": "BgzipTaffyAdapter",

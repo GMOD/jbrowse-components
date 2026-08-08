@@ -822,6 +822,17 @@ const LPA_REGION = {
   end: 160655000,
 }
 
+// The whole of chr1, for the figure that loads a subgraph over all of it. One
+// constant for both views there: the graph's loadedRegion IS the domain of the
+// reference-position ramp, so a second copy of these numbers is a way for the
+// lane's colors and the graph's to silently disagree.
+const CHR1_REGION = {
+  refName: 'chr1',
+  assemblyName: 'hg38',
+  start: 0,
+  end: 248956422,
+}
+
 // MHC class II, the densest window in the tutorial's locus table, and the one
 // where the graph and the callset are worth putting in one frame.
 const MHC_CLASSII_REGION = {
@@ -2164,6 +2175,12 @@ export const graphSpecs: ScreenshotSpec[] = [
               trackId: 'hprc_tier',
               type: 'LinearBasicDisplay',
               showLabels: 'none',
+              // The graph pane's own reference-position ramp, over the same
+              // 249 Mb the subgraph is cut from, so a block up here and the
+              // node it is is the same color (review: "the canvas nodes are not
+              // rainbow colored like the graph is"). Same helper the LPA and
+              // MHC segment lanes use; this lane simply never got it.
+              color: referencePositionColor(CHR1_REGION),
               // PACKED, and collapsed was tried and reverted. Three rows of
               // yellow boxes at 178 kb per pixel is close to a mat, so
               // collapsing to one row looked like the same cleanup the qc
@@ -2178,12 +2195,7 @@ export const graphSpecs: ScreenshotSpec[] = [
         {
           type: 'GraphGenomeView',
           loadedTrackId: 'hprc_tier',
-          loadedRegion: {
-            refName: 'chr1',
-            assemblyName: 'hg38',
-            start: 0,
-            end: 248956422,
-          },
+          loadedRegion: CHR1_REGION,
           // the whole point: 249 Mb past the 5 Mb default
           maxRegionBp: 250000000,
           layoutMode: 'auto',
@@ -4054,8 +4066,11 @@ export const graphSpecs: ScreenshotSpec[] = [
         pad: 3,
       },
       {
+        // KIV-2 is kringle IV type 2, and "kringle repeat" is what the array is
+        // called outside the Lp(a) literature -- the label carries both so a
+        // reader who knows one name recognises the other
         type: 'text',
-        text: 'the KIV-2 array',
+        text: 'the KIV-2 array, aka the kringle repeat',
         fontSize: 18,
         // right-aligned so the offset places the pill's own right edge against
         // the box's left one; its width is only known once the text is measured

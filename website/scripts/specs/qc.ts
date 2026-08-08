@@ -35,8 +35,11 @@ const HG38_HUB = `?config=${encodeURIComponent('https://jbrowse.org/ucsc/hg38/co
 //    read at a time. The Umap lane goes with it: at 143 bp/px the absent
 //    stretches average in and it draws as a picket fence.
 //
-// The island's edge belongs to qc/smn_problematic_regions, which carries the
-// whole 2.5 Mb and now names where the coverage comes back.
+// The island's edges belong to qc/smn_problematic_regions, which carries the
+// whole 2.5 Mb and names both of them. The page now leads with that figure and
+// treats this pair as the zoom-in, which is the structural half of the same
+// review ("i suggested zooming out, i need to see the assembly quality increase
+// on either side of this problematic region").
 const SMN1_LOC = 'chr5:70,924,000-70,954,000'
 
 // The control, and the reason the pair of panels proves anything: 30 kb over
@@ -90,12 +93,23 @@ const mappabilityTrack = {
 // measurement, not a second view of the same file. Fixed 0..40 so the two panels
 // share a scale and "a fraction of the depth next door" is legible without
 // reading the axis.
-const gnomadCoverageTrack = (height = 70) => ({
+//
+// `summaryScoreMode` matters only in the 2.5 Mb frame and it is the difference
+// between the figure working and not. At 2 kb a pixel the default `whiskers`
+// draws each pixel's min AND max, so a stretch that averages 4x but touches 40x
+// somewhere inside every pixel paints full height: the island came out as a
+// blue wall of the same height as the sequence either side of it, with only the
+// texture differing. `avg` draws the mean, and the block is then a plainly
+// shorter plateau between two full-height flanks, which is what the figure is
+// for (review: "i need to see the assembly quality increase on either side of
+// this problematic region").
+const gnomadCoverageTrack = (height = 70, summaryScoreMode?: string) => ({
   trackId: 'hg38-gnomad3MeanCoverage',
   type: 'LinearWiggleDisplay',
   minScore: 0,
   maxScore: 40,
   height,
+  ...(summaryScoreMode ? { summaryScoreMode } : {}),
 })
 
 const geneTrack = (height: number, showOnlyGenes: boolean) => ({
@@ -240,7 +254,7 @@ export const qcSpecs: ScreenshotSpec[] = [
             // Reads well at this width where the mappability lane does not: the
             // depth collapse is a broad plateau rather than per-base structure,
             // so summarizing it into 2 kb pixels keeps it.
-            gnomadCoverageTrack(90),
+            gnomadCoverageTrack(120, 'avg'),
             // Two groups' opinions of the same sequence, as separate lanes: they
             // were drawn by different projects for different purposes and they
             // do not agree on where the region ends, which is only visible with
@@ -255,128 +269,83 @@ export const qcSpecs: ScreenshotSpec[] = [
               type: 'LinearBasicDisplay',
               height: 40,
             },
+            // Folded in from qc/callsets_at_smn, which this replaces: what the
+            // block does to a callset, over the same axis as the coverage that
+            // explains it. PACKED, not collapsed — collapsed put a 2 kb record
+            // and a 300 kb one on the same y and said nothing about either's
+            // size (review: "it shouldnt even be collapsing large sv,
+            // collapsing automatically was only meant for e.g. 1bp snps").
+            {
+              trackId: 'hg38-lrSv1kgOnt',
+              type: 'LinearBasicDisplay',
+              height: 130,
+            },
           ],
         },
       ],
     })}&sessionName=Screenshot`,
-    viewportHeight: 570,
+    viewportHeight: 780,
     // THIS is the figure that shows the island, which is why the read panels
-    // above stay at 30 kb (see SMN1_LOC). What it did not say is where the
-    // island stops, and the coverage lane settles that: scan_mappability_qc.sh
-    // bins it across the block and it is under 12x continuously to 71.35 Mb,
-    // 20.2x at 71.35 and 30.0x from 71.375 — so the depression ends at ENCODE's
-    // boundary and not at GIAB's, 350 kb earlier. The page said the two
-    // disagreed; it can now say which one the reads agree with.
+    // above stay at 30 kb (see SMN1_LOC), and it now carries the callset lane
+    // too. Where the island stops is settled by the coverage lane:
+    // scan_mappability_qc.sh bins it across the block and it is under 12x
+    // continuously to 71.35 Mb, 20.2x at 71.35 and 30.0x from 71.375 — so the
+    // depression ends at ENCODE's boundary and not at GIAB's, 350 kb earlier.
     //
-    // The arrow head is on the recovery coordinate and the pill sits back over
-    // the depressed stretch, both in the lane's own upper fifth: the axis runs
-    // to 40x and the curve inside the block is under 12x, so the top half of
-    // that lane is white and a pill there covers nothing. Over the recovery
-    // itself it would cover the step it names, which is where it went first.
+    // ONE pill on the coverage lane, not one per edge. Under `avg` the lane is
+    // a full-height plateau, a low block and a full-height plateau, so where
+    // the depth drops and where it returns need no labelling; what the picture
+    // cannot say is WHICH annotation edge the return lands on. Both pills sit
+    // in the lane's upper fifth, where the axis runs to 40x and the mean inside
+    // the block is under 12x, so nothing is covered.
     annotations: [
       {
         type: 'text',
-        text: "Coverage comes back here, at ENCODE's edge — 350 kb past GIAB's",
+        text: "Coverage returns at ENCODE's edge, 350 kb past GIAB's",
         fontSize: 19,
-        maxWidth: 380,
+        maxWidth: 330,
         textAlign: 'end',
         anchor: {
           track: 'hg38-gnomad3MeanCoverage',
-          locus: 'chr5:71,150,000',
-          fracY: 0.2,
+          locus: 'chr5:71,160,000',
+          fracY: 0.16,
         },
       },
       {
         type: 'arrow',
         fromAnchor: {
           track: 'hg38-gnomad3MeanCoverage',
-          locus: 'chr5:71,165,000',
-          fracY: 0.2,
+          locus: 'chr5:71,175,000',
+          fracY: 0.16,
         },
         anchor: {
           track: 'hg38-gnomad3MeanCoverage',
           locus: 'chr5:71,370,000',
-          fracY: 0.2,
+          fracY: 0.16,
+        },
+      },
+      {
+        type: 'text',
+        text: 'No long-read SV calls across the flagged block',
+        fontSize: 18,
+        maxWidth: 520,
+        anchor: {
+          track: 'hg38-lrSv1kgOnt',
+          locus: 'chr5:70,300,000',
+          fracY: 0.55,
         },
       },
     ],
   },
 
-  {
-    mode: 'url',
-    name: 'qc/callsets_at_smn',
-    url: `${HG38_HUB}&session=${encodeSessionSpec({
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: OVERVIEW_LOC,
-          highlight: SMN_HIGHLIGHT,
-          tracks: [
-            geneTrack(60, true),
-            // DGV pools published CNV studies, most of them array-based, and
-            // stacks its records; the long-read callset over 1,019 samples asks
-            // the same question with reads that span the duplication. Neither
-            // lane is the truth here — the figure shows that they disagree about
-            // whether there is anything to report.
-            //
-            // BOTH COLLAPSED, and to the same height, on review ("these tracks
-            // are just too chaotic. need more clarity"). Packed, DGV was eight
-            // rows of blue/red/brown boxes wall to wall — a mat with no shape,
-            // since no individual record is the subject — and the long-read lane
-            // spent its height on a label per record ("DEL-58:263") that is
-            // unreadable at 2.5 Mb and unrelated to the claim. Collapsed, each
-            // callset is one row of ink over the same axis, which is the only
-            // comparison being made: one is continuous and the other has a hole.
-            // The record counts the prose quotes come from
-            // scan_mappability_qc.sh, which is where a number belongs.
-            {
-              trackId: 'hg38-dgvMerged',
-              type: 'LinearBasicDisplay',
-              displayMode: 'collapsed',
-              height: 40,
-            },
-            {
-              // 70 where DGV takes 40, and the extra 30 is not for the data: a
-              // collapsed row needs none of it. It is so the callout below sits
-              // INSIDE the lane it is about, in the stretch of it that is empty,
-              // which is the thing being named. Anywhere else on this frame it
-              // would sit on another lane's ink.
-              trackId: 'hg38-lrSv1kgOnt',
-              type: 'LinearBasicDisplay',
-              displayMode: 'collapsed',
-              height: 70,
-            },
-            {
-              trackId: 'hg38-alllowmapandsegdupregions',
-              type: 'LinearBasicDisplay',
-              height: 40,
-            },
-          ],
-        },
-      ],
-    })}&sessionName=Screenshot`,
-    // four one-row lanes and the gene lane, where the packed version needed 700
-    // (490 cut 27 css px once the long-read lane grew, per the run's own
-    // below-the-fold report)
-    viewportHeight: 520,
-    // The hole named, since an absence is the one thing on a genome browser that
-    // nothing draws. No arrow: the pill sits in the gap itself, centred on it,
-    // so it points by being there. The two runs of ticks at the frame's edges
-    // are what say the callset resumes, and they need no label.
-    annotations: [
-      {
-        type: 'text',
-        text: 'No long-read calls across the flagged block',
-        fontSize: 18,
-        maxWidth: 520,
-        anchor: {
-          track: 'hg38-lrSv1kgOnt',
-          locus: 'chr5:70,050,000',
-          fracY: 0.5,
-          dy: 8,
-        },
-      },
-    ],
-  },
+  // qc/callsets_at_smn was here and is DELETED (review: "this is not a good
+  // figure. i would suggest deleting ... furthermore this should just be
+  // combined"). It was the same 2.5 Mb window as the figure above with DGV and
+  // the long-read callset both collapsed to one row. Collapsing was the
+  // complaint and the merge is the fix: the long-read lane moved up into the
+  // island figure PACKED, where it sits under the coverage that explains its
+  // hole, and DGV did not come with it. DGV's disagreement with the long-read
+  // set is a count, not a picture -- packed it was eight rows of boxes wall to
+  // wall with no individual record as the subject -- so it stays in the prose,
+  // where scan_mappability_qc.sh's numbers already carry it.
 ]

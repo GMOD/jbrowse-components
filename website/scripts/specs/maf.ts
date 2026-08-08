@@ -57,6 +57,52 @@ const CE11_GENE_TRACK = {
   },
 }
 
+// The rows maf_hprc_pangenome draws, out of the alignment's 464. Sixteen
+// samples, both haplotypes each, in the order the callset lists them, plus the
+// reference. Not a curated set: nothing about C4 picks these, and saying "the
+// first sixteen" is honest where "a representative selection" would not be.
+//
+// `<sample>.<haplotype>` is what the display calls a row here. The TAF's source
+// tokens are `HG00235.2.CM094400.1` and parseAssemblyAndChr keeps a numeric
+// second field with the genome, so the haplotype is part of the row name and
+// the contig is the rest. The sample ids come from the wave VCF's own header
+// (the same 232 samples), not from a hand-typed list.
+const HPRC_MAF_ROWS = [
+  'GRCh38',
+  'CHM13.1',
+  'CHM13.2',
+  'HG00097.1',
+  'HG00097.2',
+  'HG00099.1',
+  'HG00099.2',
+  'HG00126.1',
+  'HG00126.2',
+  'HG00128.1',
+  'HG00128.2',
+  'HG00133.1',
+  'HG00133.2',
+  'HG00140.1',
+  'HG00140.2',
+  'HG00146.1',
+  'HG00146.2',
+  'HG002.1',
+  'HG002.2',
+  'HG00232.1',
+  'HG00232.2',
+  'HG00235.1',
+  'HG00235.2',
+  'HG00253.1',
+  'HG00253.2',
+  'HG00280.1',
+  'HG00280.2',
+  'HG00290.1',
+  'HG00290.2',
+  'HG00320.1',
+  'HG00320.2',
+  'HG00321.1',
+  'HG00321.2',
+]
+
 // The 26-way alignment's rows minus `ce11` itself, for the two figures that
 // show the whole stack (review: "consider removing the ce11 row"). The
 // reference is one of the MAF's own `s` lines, so it draws as a row — and under
@@ -577,44 +623,65 @@ export const mafSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hprc_v2_0_mc_grch38',
               type: 'LinearMafDisplay',
-              rowHeight: 2,
+              // A NAMED SUBSET, and the row height follows from it. Two
+              // reviews pull in opposite directions here and both are right:
+              // 464 rows at 2 px is "unclear what we are looking at. it just
+              // looks like bam or cram", and the identity heatmap that
+              // answered it lost the thing worth keeping -- "I actually liked
+              // it when it was a pileup, but it needs like, row labels, so you
+              // can see that they are individual samples, not super compresse
+              // rowheights. no one can tell what anything is that way."
+              //
+              // Both are satisfiable at once only by drawing fewer rows: a
+              // label needs 6 px (SvgRowLabels' MIN_TEXT_ROW_HEIGHT) and 464
+              // of those is a 2,800 px track. So the base rendering is back,
+              // at the default 15 px a row, over the first sixteen samples of
+              // the alignment's own order.
+              //
+              // Row names are `<sample>.<haplotype>`: the TAF's source tokens
+              // are `HG00235.2.CM094400.1` and parseAssemblyAndChr takes the
+              // numeric second field as part of the genome. The sample ids are
+              // the callset's, read off the wave VCF's header, which is the
+              // same 232 samples the alignment holds two haplotypes of each.
+              //
+              // GRCh38 first, because it is the row everything else is a
+              // difference from and subtreeFilter drops any row it does not
+              // name -- including the reference. The filter selects; it does
+              // NOT order. Rows come out in the alignment's own discovery
+              // order, so a sample's two haplotypes are not adjacent, and
+              // CHM13 is listed but never drawn (its rows are not named that
+              // way in this file), which is why the label is what identifies a
+              // row rather than its position.
+              subtreeFilter: HPRC_MAF_ROWS,
               rowProportion: 1,
-              // grow so all 464 rows are on screen at once; the point of the
-              // figure is the whole cohort, and a scrolled track shows half of it
+              // grow: the filtered rows all fit, so this is the track sizing
+              // to its own content rather than the cohort being scrolled
               heightMode: 'grow',
-              // Identity heatmap, not the base/SNP coloring (review: "unclear
-              // what we are looking at. it just looks like bam or cram but it is
-              // pangenome"). It DID look like a pileup, and for a reason worth
-              // stating: 464 grey bands with sparse coloured ticks is what a
-              // read pileup looks like, and at 30 kb across the ticks are the
-              // only ink the base rendering can put down. The heatmap shades
-              // each row by its identity to GRCh38 over the pixel instead, so
-              // the panel becomes what it is about — which haplotypes match the
-              // reference here and which do not — rather than a wall of grey
-              // that happens to have SNPs in it.
-              rowIdentityMode: 'heatmap',
             },
           ],
         },
       ],
     }),
-    viewportHeight: 920,
+    // the gene lane, the coverage band and the filtered rows at 15 px (700 cut
+    // 103, per the run's own below-the-fold report; the extra 25 is the last
+    // row's own bottom edge, which the report does not count)
+    viewportHeight: 830,
     // the .tai alone is 4.98 MB and the first block read follows it
     actions: [{ type: 'delay' as const, ms: 25000 }],
-    // What the rows are, said on the image. The heatmap answers half the review
-    // note by not looking like a pileup; this answers the other half, which is
-    // that nothing on the frame said 464 rows were 464 PEOPLE. No arrow: the
-    // white gaps are everywhere in the field, so pointing at one of them would
-    // single out a haplotype the figure has no reason to name.
+    // One line, because the sidebar now says what the rows are: `HG00099.1`
+    // names a person and which of their two haplotypes, which is what no
+    // amount of on-image text conveyed while the rows were 2 px tall. What a
+    // label still cannot say is what an EMPTY row means, so that is all this
+    // says.
     annotations: [
       {
         type: 'text' as const,
-        text: '464 human haplotypes, one row each. A white gap is a person who has no sequence here, not one whose sequence differs.',
+        text: 'A blank row is a haplotype with no sequence here, not one whose sequence matches',
         fontSize: 18,
         maxWidth: 330,
         anchor: {
           track: 'hprc_v2_0_mc_grch38',
-          locus: 'chr6:31,988,000',
+          locus: 'chr6:32,003,000',
           fracY: 0.12,
         },
       },

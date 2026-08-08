@@ -32,11 +32,29 @@ either copy has two equally good places to put it.
 
 An aligner reports that as MAPQ 0. Nothing about the pileup itself announces it.
 
-## Four ways to see it
+## Zooming out first
+
+<Figure src="/img/qc/smn_problematic_regions.png" caption="2.5 Mb of chr5 with SMN2 and SMN1 banded. From the top: RefSeq genes, gnomAD mean coverage, GIAB's low-mappability regions, the ENCODE Blacklist V2, and the 1000 Genomes long-read (ONT) SV callset over 1,019 samples. Coverage runs at full depth into the block, drops across the whole span the two annotation lanes cover, and returns at the right-hand edge. The callset lane has a hole over the same span." />
+
+The affected sequence is not the gene, it is a block of about 1.5 Mb that
+contains it, so a locus can be inside one of these regions without being inside
+anything that carries the gene's name. Neither boundary is sharp, and the two
+projects drew them differently: GIAB's interval ends at chr5:71,009,585 and
+ENCODE's continues to chr5:71,359,500, so a locus sitting between the two edges
+is one to check by hand. The coverage lane settles which edge to believe here,
+and does so on the image: it stays down through the 350 kb GIAB has let go of
+and comes back at ENCODE's. `scan_mappability_qc.sh` prints the same lane in 25
+kb bins if you want the step as numbers.
+
+## Zooming back in
+
+Reads are what the block does to a sample, and no read track spans 2.5 Mb, so
+this is two 30 kb windows: one inside the block and one 40 kb past where the
+coverage above recovers.
 
 <Figure src="/img/qc/smn_vs_control.png" caption="Top, 30 kb over SMN1; bottom, the same width 500 kb away over BDP1, from the same sample. Per panel: RefSeq genes, Umap k100 mappability, gnomAD v3 mean coverage, and NA12878 reads colored by mapping quality. Two pileups of the same depth, in opposite colors." links="Open the SMN1 panel=qc/smn1_evidence,Open the control panel=qc/control_evidence" />
 
-The four lanes are independent of each other, which is what makes them worth
+The lanes are independent of each other, which is what makes them worth
 stacking:
 
 - **Umap k100 multi-read mappability** is computed from the reference alone. For
@@ -50,7 +68,7 @@ stacking:
 - **Mapping quality on the reads** is the aligner's own account, one read at a
   time, in the sample on screen. Red is MAPQ 0, meaning the aligner found
   another place the read fits equally well; yellow is MAPQ 60 and above.
-- The **problematic-region annotations** in the next figure are three projects'
+- The **problematic-region annotations** in the figure above are two projects'
   published opinions of the same sequence.
 
 Everything on this page except the read track comes out of the hosted hg38
@@ -71,50 +89,23 @@ The gnomAD lane is what that filter does to a depth track, in a different set of
 samples: it reads 4.5x at _SMN1_ against 30.6x at the control, because MAPQ 0
 reads were dropped before the average was taken.
 
-## How far the region runs
-
-<Figure src="/img/qc/smn_problematic_regions.png" caption="2.5 Mb of chr5 with SMN2 and SMN1 banded. From the top: RefSeq genes, gnomAD mean coverage, GIAB's low-mappability regions, and the ENCODE Blacklist V2. The coverage is depressed across the whole span the two annotation lanes cover; they disagree about where it stops, and the arrow marks which one the coverage agrees with." />
-
-The affected sequence is not the gene, it is a block of about 1.5 Mb that
-contains it, so a locus can be inside one of these regions without being inside
-anything that carries the gene's name. Neither boundary is sharp, and the two
-projects drew them differently: GIAB's interval ends at chr5:71,009,585 and
-ENCODE's continues to chr5:71,359,500. They were built for different purposes
-from different evidence, so a locus sitting between the two edges is one to
-check by hand.
-
-Here the coverage lane settles which one to believe, and it does so on the
-image: it stays down through the whole 350 kb GIAB has already let go of and
-comes back at ENCODE's edge. That is one locus and not a verdict on either
-project, but it is the reason to treat the gap between two edges as unresolved
-rather than as the narrower interval being the current one.
-`scan_mappability_qc.sh` prints the same lane in 25 kb bins if you want the step
-as numbers.
-
-The control window in the first figure begins at 71,455,000, which is 40 kb past
-where that recovery is complete.
-
 ## What it does to a callset
 
-<Figure src="/img/qc/callsets_at_smn.png" caption="The same 2.5 Mb: RefSeq genes, the DGV structural-variant catalogue, the 1000 Genomes long-read (ONT) SV callset over 1,019 samples, and GIAB's low-mappability and segdup regions. Each callset is collapsed to one row so the two are directly comparable: DGV runs wall to wall, and the long-read callset has a hole in exactly the flagged span." />
+The long-read lane in the wide figure is empty across the block. Counting over
+the flagged block and the equal-width flank on either side of it,
+`scan_mappability_qc.sh` gives that callset 81, 2 and 40 records, against DGV's
+345, 688 and 376 for the same three spans.
 
-Two callsets asking the same question of the same sequence disagree completely
-about whether there is anything to report. Counting over the flagged block and
-the equal-width flank on either side of it, `scan_mappability_qc.sh` gives DGV
-345, 688 and 376 records, and the long-read callset 81, 2 and 40.
+That is not evidence the DGV records are wrong. Across the whole of chr5 the
+flagged regions cover 8.2% of the chromosome and hold 18.3% of DGV's call
+midpoints and 15.9% of the long-read callset's, so both technologies are
+enriched there by about the same factor: segmental duplications are copy-number
+variable, and this is where real variation lives as well as where artifacts do.
+Enrichment across a callset is not a false-positive rate.
 
-That is not evidence the DGV records are wrong, and the same script says why
-not. Across the whole of chr5 the flagged regions cover 8.2% of the chromosome
-and hold 18.3% of DGV's call midpoints; they also hold 15.9% of the long-read
-callset's. Both technologies are enriched there by about the same factor,
-because segmental duplications are copy-number variable: this is where real
-variation lives as well as where artifacts do. Enrichment across a callset is
-not a false-positive rate.
-
-What the lanes do support is narrower: at this locus, in this sample, a
-short-read call cannot be checked against the reads, because the reads carry no
-information about which copy they came from. That is a statement about the
-evidence, not about the variant.
+What the lanes support is narrower: at this locus, in this sample, a short-read
+call cannot be checked against the reads, because the reads carry no information
+about which copy they came from.
 
 :::note
 

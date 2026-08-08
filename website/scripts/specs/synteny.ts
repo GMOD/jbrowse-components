@@ -333,6 +333,30 @@ function launchFromSelectionParts(): ScreenshotSpec[] {
   ]
 }
 
+// THREE HOMOEOLOGOUS GROUPS PER SPECIES, NOT ALL SEVEN. Both plots used to
+// draw the whole genome, a 21x21 grid in wheat and 21x21 in oat, and at that
+// scale everything the figures are about is a few pixels: "these are too
+// subtle ... a couple random dots in the wheat self alignment? who cares? ...
+// can zoom in if it makes more sense zoomed in ... i dont like subtle."
+//
+// Groups 4, 5 and 7 in both, which is not an arbitrary third: 4A's two
+// published translocations go to group 5 and group 7, so the three groups
+// that make the wheat result are exactly the three whose cells have to be in
+// frame, and cutting the other four turns a 441-cell grid into an 81-cell one
+// (each cell about 5x the area). The oat plot takes the SAME three groups so
+// the pair stays a comparison of like with like, and its answer is unchanged
+// by the restriction: oat's off-group cells are everywhere, so any subset
+// shows them.
+//
+// A restriction and not a zoom: `displayedRegionNames` per axis changes WHAT
+// the axis holds, the axes relayout, and showAllRegions fits the result, so
+// the ribbons are re-drawn rather than magnified.
+const HOMOEOLOG_GROUPS = {
+  wheat: ['4A', '4B', '4D', '5A', '5B', '5D', '7A', '7B', '7D'],
+  // hexaploid oat's subgenomes are A, C and D rather than wheat's A, B and D
+  oat: ['4A', '4C', '4D', '5A', '5C', '5D', '7A', '7C', '7D'],
+}
+
 export const syntenySpecs: ScreenshotSpec[] = [
   // Human vs chimp synteny (hosted liftOver chain, zoomed to an RB1 intron with
   // a human-specific L1HS insertion). 'full' cigarMode paints the indel as a
@@ -686,7 +710,16 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // subgenomes against each other.
             type: 'DotplotView',
             showColorLegend: true,
-            views: [{ assembly: 'wheat' }, { assembly: 'wheat' }],
+            views: [
+              {
+                assembly: 'wheat',
+                displayedRegionNames: HOMOEOLOG_GROUPS.wheat,
+              },
+              {
+                assembly: 'wheat',
+                displayedRegionNames: HOMOEOLOG_GROUPS.wheat,
+              },
+            ],
             tracks: ['wheat_homoeologs'],
             colorBy: 'dnds',
           },
@@ -698,6 +731,12 @@ export const syntenySpecs: ScreenshotSpec[] = [
     settleMs: 15000,
     // 1000 left 233 css px of blank under the plot, per the run's own report
     viewportHeight: 767,
+    // Narrower than the 1400 default, and it is the CELLS this is for: the
+    // dotplot's height is set by the view rather than by the frame, so a 1400
+    // frame draws a 9x9 grid as wide rectangles and a self-self diagonal comes
+    // out shallow. At 900 the plot area is close to square, the diagonals run
+    // at about 45 degrees, and the composed pair is still 1800 px wide.
+    viewportWidth: 900,
     // The two cells where 4A pairs with a group it does not belong to, boxed by
     // chromosome name rather than by pixel: `hLocus`/`vLocus` resolve through
     // the axes' own layout (scripts/dotplotAnchor.ts), so the boxes follow the
@@ -761,7 +800,10 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // the table reads as a barcode.
             type: 'DotplotView',
             showColorLegend: true,
-            views: [{ assembly: 'oat' }, { assembly: 'oat' }],
+            views: [
+              { assembly: 'oat', displayedRegionNames: HOMOEOLOG_GROUPS.oat },
+              { assembly: 'oat', displayedRegionNames: HOMOEOLOG_GROUPS.oat },
+            ],
             tracks: ['oat_homoeologs'],
             colorBy: 'dnds',
           },
@@ -772,6 +814,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readyTimeout: 300000,
     settleMs: 15000,
     viewportHeight: 767,
+    // square-ish cells, same reason as the wheat plot above
+    viewportWidth: 900,
     // The counterpart of the two boxes on the wheat plot, and the reason the two
     // are composed side by side: same callout, same anchor kind, opposite
     // answer. Wheat has a handful of off-group cells and every one of them is a
@@ -779,21 +823,21 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // the label says what boxing one cell cannot — that it is not the exception.
     annotations: [
       { type: 'box', anchor: { hLocus: '4A', vLocus: '7C' } },
-      // Beside the cell, not above it: 7C is two rows from the top of the plot,
-      // and a pill lifted clear of a box that high runs off the frame into the
-      // app header.
+      // To the RIGHT of the cell. 7C is one row from the top, so a pill lifted
+      // clear of it runs into the app header, and 4A is now the leftmost column
+      // (the axes hold three groups, not seven), so a pill to its left runs off
+      // the frame -- which is where this one was.
       {
         type: 'text',
         text: 'One of dozens of cells like it: an oat segment sitting outside its own homoeologous group',
         fontSize: 18,
         maxWidth: 320,
-        textAlign: 'end',
-        anchor: { hLocus: '4A', vLocus: '7C', alignX: 'left', dx: -60 },
+        anchor: { hLocus: '4A', vLocus: '7C', alignX: 'right', dx: 230 },
       },
       {
         type: 'arrow',
-        fromAnchor: { hLocus: '4A', vLocus: '7C', alignX: 'left', dx: -50 },
-        anchor: { hLocus: '4A', vLocus: '7C', alignX: 'left', dx: -10 },
+        fromAnchor: { hLocus: '4A', vLocus: '7C', alignX: 'right', dx: 60 },
+        anchor: { hLocus: '4A', vLocus: '7C', alignX: 'right', dx: 10 },
       },
     ],
   },

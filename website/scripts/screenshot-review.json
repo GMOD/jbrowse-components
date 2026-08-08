@@ -1206,8 +1206,8 @@
     "name": "multiway_synteny/ecoli_pangenome",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-07T03:38:58.590Z",
-    "hash": "390cbaaa38aaae05cd6076e0f85f3dc51b38c89e"
+    "reviewedAt": "2026-08-08T00:12:54.423Z",
+    "hash": "16fda2c50ea257202d8affeb2265f057bd94bade"
   },
   "multiway_synteny/grape_peach_cacao": {
     "name": "multiway_synteny/grape_peach_cacao",
@@ -1568,8 +1568,8 @@
     "name": "multiway_synteny/ecoli_stx_island",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-04T09:18:39.391Z",
-    "hash": "33e995bd8014df26beada2629a4b07199716a06d"
+    "reviewedAt": "2026-08-08T00:12:56.407Z",
+    "hash": "5ecc219a2a6e90abc652c563595518493ac3a029"
   },
   "cookbook_color_by_type": {
     "name": "cookbook_color_by_type",
@@ -1905,8 +1905,8 @@
     "name": "multiway_synteny/ecoli_one_vs_all_whole_genome",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-04T17:34:00.654Z",
-    "hash": "fb5bea839248dd23e8062b08422f08f44fb55d27"
+    "reviewedAt": "2026-08-08T00:12:52.001Z",
+    "hash": "c68e7b90e0006ec691befc1e045700b2dfabd402"
   },
   "pangenome/hprc_mhc_bandage": {
     "name": "pangenome/hprc_mhc_bandage",
@@ -1954,8 +1954,8 @@
     "name": "multiway_synteny/ecoli_launch_from_selection",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-05T00:00:30.350Z",
-    "hash": "796c13304884f61273910fedc959f04f59dd0702"
+    "reviewedAt": "2026-08-08T00:12:49.614Z",
+    "hash": "0b72fa3357c0394e55734446d42239be22df24b0"
   },
   "desktop-ispcr-results": {
     "name": "desktop-ispcr-results",
@@ -2030,9 +2030,9 @@
   "pangenome/pggb_synteny": {
     "name": "pangenome/pggb_synteny",
     "status": "answered",
-    "note": "Not aesthetic - a real drawing bug, measured rather than guessed. The pale ribbons composite to alpha 0.2 and the dark ones to exactly 1-(1-0.2)^2: two coats of the same ribbon. markReciprocalDuplicates recognised a restatement only when both directions stated a homology as ONE block, and wfmash chains K12/NCTC86 as 12 blocks from K12 and 14 from NCTC86, so a 610 kb block scored 0.32 against either fragment covering it and all three drew. It now tests containment on both axes plus diagonal agreement at the shared end, keeping the longer chaining (82a1fbcd64). Cost measured too and written into the docstring: 0.037% of covered bp, 154 slivers, median 41 bp, every one abutting a kept block.",
-    "reviewedAt": "2026-08-07T18:45:29.599Z",
-    "hash": "6bc2845d165de4c15f807df94781ae8ff0fcd0f6"
+    "note": "Second half of the same bug, and it could only ever show in an inversion. sharesBoundary subtracted the ref and mate deltas, which cancel only when the two sequences run the same way; on a reverse-strand alignment the anchor's low end is the mate's HIGH end, so a fragment of a reversed block measured a mismatch the size of the block and every inverted restatement was kept. AlignedSide carries strand now (unflipped, since it is a property of the pair), the boundary offsets add rather than subtract when reversed, and two sides that disagree about orientation are never one homology. Measured on the file: 490 sides dropped where the forward-only form dropped 474, all sixteen in the four pairs carrying an inversion, the six without a reversed side byte-identical. On this figure the inverted band went from 8.32% double-coated red area to 2.95% and from 1% triple-coated to 0, the three collinear bands unmoved. What is left is ribbons genuinely crossing at the inversion.",
+    "reviewedAt": "2026-08-08T01:11:07.000Z",
+    "hash": "332cd03f7c4a89385515318f26447aa43c0cec91"
   },
   "pangenome/rgfa_allele_inventory": {
     "name": "pangenome/rgfa_allele_inventory",
@@ -2087,15 +2087,15 @@
     "name": "pangenome/rgfa_launch_out_menu",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-07T03:42:35.294Z",
-    "hash": "be68ab6798225d2bfdede8fe9bc53b0c86e02e62"
+    "reviewedAt": "2026-08-08T00:17:00.463Z",
+    "hash": "c78b7d4002dac4e5ae7476651139524b95d35bbf"
   },
   "pangenome/hprc_lpa_kiv2": {
     "name": "pangenome/hprc_lpa_kiv2",
-    "status": "answered",
-    "note": "KIV-2 is now located as well as named: the array is boxed in the bubbles lane at chr6:160,606,991-160,639,012, the bubble labelled 33 segments and up to 584 paths, which is the record this whole figure was picked on. No repeat track needed - the graph already draws the array, it just was not labelled. The height is unchanged and that is measured, not skipped: the graph pane is a fixed 625 css px at the pinned bundle. The page is 1,165 css px tall at viewportWidth 1000 and 1400 alike, a height prop on the view entry changes nothing, and a 1010 frame reports exactly 155 px cut in both cases. A shorter frame crops the drawing rather than scaling it, and a wider one only adds empty canvas: the force layout is fixed in graph units and auto-fits at 50%.",
-    "reviewedAt": "2026-08-07T18:56:13.526Z",
-    "hash": "2765eaaa82cb79b31dfc15856fe39f92062bfb35"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-08T01:11:54.483Z",
+    "hash": "b8148206d03f0370d1f2b6d60d2efb7a47d62439"
   },
   "pangenome/rgfa_segment_neighbourhood": {
     "name": "pangenome/rgfa_segment_neighbourhood",
@@ -2115,8 +2115,8 @@
     "name": "pangenome/rgfa_hover_sync",
     "status": "good",
     "note": "ADDED THE MAF LANE, and it does clarify it. The band the hover draws is the graph asserting that 65.4 kb of CFT073 attaches across 2.1 kb of K12; pggb whole-genome alignment of the same five strains says the same event base by base, and the data backs the caption (tabix over chr:1,094,245-1,097,564 returns blocks holding only K12 and NCTC86, so CFT073, IAI39 and Sakai have no aligned bases across the band while NCTC86 aligns straight through, and all five resume just past it with a 308 bp insertion on three). Same five rows in the same order as the other E. coli figures. Guide caption updated.",
-    "reviewedAt": "2026-08-06T06:58:10.720Z",
-    "hash": "483e0f2ac7f46567b64eec63b07c839ed7933219"
+    "reviewedAt": "2026-08-08T00:16:56.926Z",
+    "hash": "54985eb017643f69a130c00af9ed85295ddd662c"
   },
   "pangenome/rgfa_sample_rows": {
     "name": "pangenome/rgfa_sample_rows",
@@ -2128,9 +2128,9 @@
   "pangenome/pggb_locus_sample_rows": {
     "name": "pangenome/pggb_locus_sample_rows",
     "status": "good",
-    "note": "PARTLY A DUPE, AND THE DUPLICATED HALF IS GONE — from the other figure, not this one. The two sit ~100 lines apart in the E. coli tutorial on the same 460 bp at ycbF/pyrD, and their force panes drew nearly the same nodes twice (54 nodes / 70 edges from the tabix index here, 48 / 63 from the odgi-extracted file there). What does not duplicate is each figure route: this one is the whole graph queried by locus through the index, with the MAF lane and reference-position colors; local_subgraph is a GFA cut as a FILE, with the Depth ramp shared between the graph and a companion BED. So local_subgraph lost its force half and is now the anchored frame alone (its own claim needs that layout: the strip and the backbone share an axis), and the tutorial prose about the blunt 93 bp end points at THIS figure force pane, which draws it. This figure is unchanged.",
-    "reviewedAt": "2026-08-06T07:02:37.244Z",
-    "hash": "b959bd77f4f59563f0a142d8e0fa13a94a477a37"
+    "note": "",
+    "reviewedAt": "2026-08-08T01:12:27.979Z",
+    "hash": "5efacf90902dc257aaf6cc140b7b086f9553b97c"
   },
   "scatac/pbmc5k_cd8a": {
     "name": "scatac/pbmc5k_cd8a",
@@ -2169,10 +2169,10 @@
   },
   "dog10k-wolfdog-ancestry": {
     "name": "dog10k-wolfdog-ancestry",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-07T16:14:30.232Z",
-    "hash": "dadccf32bb3fdd86d99f007d593571bdef608e78"
+    "status": "answered",
+    "note": "Four pills, one line each, naming the four bands and nothing more. Two of them were three lines over 820px and each hid about seven of the rows it described. The modern-panels argument (orange means looks-like-a-present-day-wolf, not descended-from-wolves) is a sentence in local_ancestry.md instead.",
+    "reviewedAt": "2026-08-08T01:10:28.941Z",
+    "hash": "9f31dd662eb5f992349d78a573f468addf571281"
   },
   "mcscan_anchors": {
     "name": "mcscan_anchors",
@@ -2267,9 +2267,9 @@
   },
   "pangenome/rgfa_paa_bubble": {
     "name": "pangenome/rgfa_paa_bubble",
-    "status": "answered",
+    "status": "good",
     "note": "Same fix as pangenome/pggb_synteny (82a1fbcd64): the dark ribbons were drawn twice, compositing to exactly 1-(1-0.2)^2 where the pale ones sit at 0.2. After it, 0 double-coat pixels in three of four bands and 19 of 3000 in the fourth, which are genuine crossings.",
-    "reviewedAt": "2026-08-07T18:45:29.845Z",
+    "reviewedAt": "2026-08-08T00:17:05.103Z",
     "hash": "4c9e3152be62121dd9832902db7aa3e7b7ec3bca"
   },
   "pangenome/hprc_cfhr_deletion": {
@@ -2343,10 +2343,10 @@
   },
   "scrna/percell_lyz": {
     "name": "scrna/percell_lyz",
-    "status": "good",
-    "note": "this is sort of interesting but its somewhat unclear why the purple labels have brown color, and the orange lael has purple color, etc. REAL BUG, FIXED IN THE PLUGIN, and the two palettes were exactly what you were seeing. In multirow DENSITY mode a source's `color` is the score ramp (white at the pivot, saturating toward it), so buildSources routed identity to `labelColor` instead -- but it took the SYNTHESIZED group color there and ignored the source's own. This store ships both: each cell carries the scanpy color for its cell type (CD14 Mono #8c564b brown, cDC #9467bd purple) and a coarser `group` (Monocyte, Dendritic), so the ramp painted the store's color while the sidebar painted set1 by group index. Monocyte's set1 entry is #984ea3 purple against a brown block; Dendritic's is #ff7f00 orange against a purple one. sourcesLogic now falls back to the source's own color before the group palette (labelColor = labelColor ?? color ?? groupColor), so the strip is the color the rows are, and it gains resolution as a side effect: nine cell-type colors where there were six group colors. Test added. Nothing else moves -- the 1000 Genomes CNV store has groups and no colors, so its population strip is still the group palette. The figure is regenerated on the fix (--force: the strip is 0.22% of the frame).",
-    "reviewedAt": "2026-08-02T20:05:35.428Z",
-    "hash": "7f648f678503b580bdb01e4fdb30ed53279eb47a"
+    "status": "bad",
+    "note": "i do not like the multixyplot remove, we need to make it so density can show legend also ideally because the left side labels are too small to see",
+    "reviewedAt": "2026-08-08T01:13:24.887Z",
+    "hash": "a55aa886442af38b600ae29e2f46910a2e0884c8"
   },
   "cancer_sv/k562_bcr_abl_split": {
     "name": "cancer_sv/k562_bcr_abl_split",
@@ -2512,8 +2512,8 @@
   "pangenome_cactus/builders": {
     "name": "pangenome_cactus/builders",
     "status": "answered",
-    "note": "Callouts cut from three sentences each to one clause each.",
-    "reviewedAt": "2026-08-07T18:45:40.283Z",
+    "note": "Neither tool is correct and the page now says so: seqwish merges identical sequence wherever it occurs so a path walks the rRNA run once per copy, a reference-anchored build keeps each copy at its own coordinate. A collapsed repeat is where to look for variation WITHIN an array; a reference-anchored one is where to ask which copy a read came from. What follows for this projection is only that odgi depth counts steps, so it is a strain tally on the Cactus graph and not on the pggb one. Deliberately not a third pill: it is a paragraph, and a pill saying 'neither' over one of two rows reads as being about that row.",
+    "reviewedAt": "2026-08-08T01:10:29.380Z",
     "hash": "04d55948ec200602b05311e3ba8e83cc1ca70ecf"
   },
   "pangenome/long_reads": {
@@ -2743,16 +2743,9 @@
   "cancer_sv/multihop_reads": {
     "name": "cancer_sv/multihop_reads",
     "status": "answered",
-    "note": "Gene lanes raised; they were slicing TRHDE in half.",
-    "reviewedAt": "2026-08-07T18:45:40.553Z",
-    "hash": "03115d8468aededb98473d92736d813071b9e093"
-  },
-  "cnv1000g/genome_summary_bins": {
-    "name": "cnv1000g/genome_summary_bins",
-    "status": "answered",
-    "note": "Each half now says which slot it is (1cc1e3d1a9) - the two levels were the same track at two summarization tiers with nothing on the frame saying so.",
-    "reviewedAt": "2026-08-07T18:45:39.767Z",
-    "hash": "679170dddc2409b44d520032aef5eb43d7705486"
+    "note": "The route is on the image: 'Track menu -> Launch view -> Reconstruct derivative allele... -> Replace with split view', with an arrow to the frame edge where the other half is appended. Those are the same four clicks the right half's spec actually drives, so pill and capture cannot drift. Placed over the matched-normal pileup, the one lane here whose content is that it has none.",
+    "reviewedAt": "2026-08-08T01:10:29.593Z",
+    "hash": "8156dfe1d881c4927631178f39b282dc34babbd2"
   },
   "dtu/atp5f1c_isoform_switch": {
     "name": "dtu/atp5f1c_isoform_switch",
@@ -2785,36 +2778,36 @@
   "homoeolog_synteny/wheat_vs_oat": {
     "name": "homoeolog_synteny/wheat_vs_oat",
     "status": "answered",
-    "note": "Both panels now carry the same callout, anchored by chromosome name rather than by pixel (anchor: {hLocus, vLocus}, scripts/dotplotAnchor.ts). Left, the two cells where wheat's 4A pairs with group 5 and group 7 - the 4AL/5AL and 4AL/7BS translocations. Right, one of oat's dozens of off-group cells. Cells picked off the data: 4A's links cluster at 600-645 Mb against 5B/5D's distal ends and 649-744 Mb against 7D's first 80 Mb. The duplicate standalone oat embed went in 82119ceec4, so the page carries one plot.",
-    "reviewedAt": "2026-08-07T18:43:48.101Z",
-    "hash": "91ac5a43631e77b6fcbd0edee1329e26719912c1"
+    "note": "Both plots restricted to homoeologous groups 4, 5 and 7 (displayedRegionNames per axis), which turns a 441-cell grid into an 81-cell one, about 5x the area per cell, and the frame narrowed to 900 so the cells are square and a self-self diagonal runs at 45 degrees. Not an arbitrary third: 4A's two published translocations go to group 5 and group 7, so the three groups that make the wheat result are exactly the ones whose cells have to be in frame. Oat takes the same three so the pair stays like-for-like, and its answer is unchanged because its off-group cells are everywhere. The oat pill moved right of its cell, which is now the leftmost column.",
+    "reviewedAt": "2026-08-08T01:10:49.785Z",
+    "hash": "bd6394262f1f9dfa40f05b7ae0e8d39d24db85bf"
   },
   "maf_hprc_pangenome": {
     "name": "maf_hprc_pangenome",
-    "status": "answered",
-    "note": "It looked like a pileup for a reason: at 30 kb across, 464 grey bands with sparse mismatch ticks is exactly what a read pileup looks like, because ticks are the only ink the base rendering can put down at that width. Now rowIdentityMode heatmap, so each row is shaded by its identity to GRCh38 and an absent haplotype reads as white against blue rather than white against grey. A callout says what no rendering could: the rows are 464 people, and a white gap is one who has no sequence here.",
-    "reviewedAt": "2026-08-07T18:44:10.179Z",
-    "hash": "4e8184e52337fdf17fdc09124dbd621446052269"
+    "status": "bad",
+    "note": "need to zoom out more",
+    "reviewedAt": "2026-08-08T01:11:27.962Z",
+    "hash": "72ec81aa29bf8e7a8d9e816d9606ae0bad0a38c8"
   },
   "multiway_synteny/wheat_homoeolog_selection": {
     "name": "multiway_synteny/wheat_homoeolog_selection",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-07T03:39:00.358Z",
-    "hash": "3706cba1dca35854aceb901008b33cba664b8abd"
+    "status": "bad",
+    "note": "looks like dupe of homoeolog_synteny/wheat_vs_oat ",
+    "reviewedAt": "2026-08-08T01:11:44.164Z",
+    "hash": "6f458d63a5e0675bc66e5d1bc5eb4a7d106289d6"
   },
   "pangenome/hprc_whole_chromosome": {
     "name": "pangenome/hprc_whole_chromosome",
-    "status": "answered",
-    "note": "No, and three things changed. The blank column was named only in the caption, as the centromere and 1q12 - which a reader has to already know and is not what the files say (bubbles ARE called across the centromere, 21 in the 124th Mb, 40 in the 125th). The continuous blank is 125,183,471-143,314,415, GRCh38's own heterochromatin gap on 1q, and the tier carries one node over it: bb_GRCh38#0#chr1_125178636, 18.65 Mb, which is the 18.7 Mb the graph pane already labels. That is on the image now, so the three lanes read as one picture. Collapsing the tier lane to one row was tried and reverted - it drew a solid bar across the gap.",
-    "reviewedAt": "2026-08-07T18:44:10.446Z",
-    "hash": "49ba83a1791f326373946ed1c82258139961eb26"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-08T01:12:03.496Z",
+    "hash": "3f81d7f202bece3df039f4112436da0a49e8804a"
   },
   "pangenome/pggb_carriage": {
     "name": "pangenome/pggb_carriage",
-    "status": "answered",
-    "note": "The spur IS visible in a linear view, and it needed no glyph and no new file: as an EVENT it has a reference address, and pggb -V already wrote it. tabix ecoli_pggb.vcf.gz chr:997575 is one record, 7,112 bp REF against a 93 bp ALT, CFT073 only. New figure pangenome/pggb_spur_linear draws it over the seven genes it removes with the MAF as control. Kept off THIS frame on purpose - a row reading 'CFT073 alone' above a figure whose point is that carriedBy says what the flattened lanes cannot argues with its own caption. On the dedupe: kept all three, each teaches something the others do not (carriedBy in the drawer; the layout trade; Launch view onto the carrying assembly).",
-    "reviewedAt": "2026-08-07T18:43:58.037Z",
+    "status": "bad",
+    "note": "It is not obvious though??? where?? it could be interesting to show 'insertions' like this in the pggb graph segments chart. previous notes: The spur IS visible in a linear view, and it needed no glyph and no new file: as an EVENT it has a reference address, and pggb -V already wrote it. tabix ecoli_pggb.vcf.gz chr:997575 is one record, 7,112 bp REF against a 93 bp ALT, CFT073 only. New figure pangenome/pggb_spur_linear draws it over the seven genes it removes with the MAF as control. Kept off THIS frame on purpose - a row reading 'CFT073 alone' above a figure whose point is that carriedBy says what the flattened lanes cannot argues with its own caption. On the dedupe: kept all three, each teaches something the others do not (carriedBy in the drawer; the layout trade; Launch view onto the carrying assembly).",
+    "reviewedAt": "2026-08-08T00:15:42.689Z",
     "hash": "d3f56895c04498df0f47c87643470c9768cf7af4"
   },
   "pangenome/pggb_carriage_lane": {
@@ -2838,25 +2831,18 @@
     "reviewedAt": "2026-08-07T03:42:30.001Z",
     "hash": "386da3bb5ee061cc35f247ef9297738dd287a228"
   },
-  "qc/callsets_at_smn": {
-    "name": "qc/callsets_at_smn",
-    "status": "answered",
-    "note": "Both callsets collapsed to one row each and the viewport cut to fit (e3549fdb91). Packed, DGV was eight rows of blue/red/brown boxes wall to wall - a mat with no shape, since no individual record is the subject - and the long-read lane spent its height on a per-record label unreadable at 2.5 Mb. Collapsed, each callset is one row of ink over the same axis, which is the only comparison being made: one is continuous and the other has a hole. The hole is named with an arrow anchored on the flagged block's own right edge.",
-    "reviewedAt": "2026-08-07T18:45:40.029Z",
-    "hash": "10790d731a6bdcd36f51ea669a52da14a676fdda"
-  },
   "qc/smn_problematic_regions": {
     "name": "qc/smn_problematic_regions",
     "status": "bad",
     "note": "if it helps show synteny view to t2t",
-    "reviewedAt": "2026-08-07T03:43:24.682Z",
-    "hash": "da74c73ba11b625e0e904ea113a2649fe8ca4d79"
+    "reviewedAt": "2026-08-08T01:12:28.074Z",
+    "hash": "6c5042a945c3e9489d1d0e6ddd7dc17d63a92219"
   },
   "qc/smn_vs_control": {
     "name": "qc/smn_vs_control",
     "status": "answered",
-    "note": "Red annotations added and the panels say what they show (9b225bf1e1). The zoom-out was NOT done, and the reason is measured rather than aesthetic: gnomAD coverage is under 12x continuously from 69.5 to 71.36 Mb, so the nearest edge is 410 kb past SMN1, and at 200 kb both panels trip the byte gate (4.61 Mb / 3.93 Mb) and lose the pileup entirely - the figure would lose the only lane that shows one read at a time. The island's edge went to qc/smn_problematic_regions instead, which carries the whole 2.5 Mb, and doing that turned up that the coverage recovers at ENCODE's boundary rather than GIAB's, 350 kb earlier.",
-    "reviewedAt": "2026-08-07T18:45:53.855Z",
+    "note": "The zoom-out is now the page's FIRST figure and this pair is the zoom-in under it, which is the structural half of the ask. The reads still cannot be that wide (2.5 Mb of ONT-free 30x Illumina is a 57 Mb fetch), but the wide figure had a rendering fault that hid the very thing you wanted: at 2 kb a pixel the wiggle's default whiskers mode drew each pixel's min AND max, so a stretch averaging 4x but touching 40x somewhere inside every pixel painted full height and the island came out the same height as the sequence either side of it. summaryScoreMode avg draws the mean, and the block is now a plainly shorter plateau between two full-height flanks.",
+    "reviewedAt": "2026-08-08T01:11:07.227Z",
     "hash": "388af0aecc6221a1e294fd6dbd00a69286809d25"
   },
   "selection_pressure/lysozyme": {
@@ -2876,9 +2862,9 @@
   "dog10k-diet-genes": {
     "name": "dog10k-diet-genes",
     "status": "answered",
-    "note": "Each record now draws once above its own genotype rows, so the lane says what kind of variant the column below it is: AMY2B as a DUP block over the 14.9 kb it duplicates, RNASE1 as an insertion marker at a point. The two halves now differ in the glyph as well as in the genotypes. It needed a second trackId rather than a second display entry - a session spec that names the same track twice keeps only the last display, which silently replaced the 86 sample rows with the one-row lane. Same pattern the CYP1A2 figure already uses (dog10k_cyp1a2_snvs_positional).",
-    "reviewedAt": "2026-08-07T18:51:20.647Z",
-    "hash": "f5c70d2819497be45f85ae51a16ff6af1b733ebb"
+    "note": "Real miss: the lane holds one record, so a row paints only where that animal carries it, and fracY 0.62 is 30 rows of non-carrier wolves. Moved to 0.41, the middle of the 13-row unbroken run of carriers (Boxer 1 to Alaska village dog 3), measured off the capture rather than derived. The RNASE1 half already landed on ink.",
+    "reviewedAt": "2026-08-08T01:10:29.165Z",
+    "hash": "76867ba77501c3440c5c4a072c7ffa327b5db8aa"
   },
   "dtu/dtu_colored_gene_glyph": {
     "name": "dtu/dtu_colored_gene_glyph",
@@ -2886,5 +2872,26 @@
     "note": "",
     "reviewedAt": "2026-08-07T16:14:32.776Z",
     "hash": "acd21ffcda9093e68934e5603e68227d819ba15c"
+  },
+  "genomes_basics/phylop_bases": {
+    "name": "genomes_basics/phylop_bases",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-08T00:06:48.622Z",
+    "hash": "e8770bcef31bb9bb418c5b5acbbf2e37e32ba29d"
+  },
+  "genomes_basics/phylop_tp53": {
+    "name": "genomes_basics/phylop_tp53",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-08T00:07:00.485Z",
+    "hash": "24324459b80a24ad2587c75b3af758c23afc6327"
+  },
+  "pangenome/pggb_spur_linear": {
+    "name": "pangenome/pggb_spur_linear",
+    "status": "bad",
+    "note": "unclear what is being plotted here. need the linearvariantdisplay to go along side it. potentially, we need to enhance multisamplevariantdisplay to draw linearvariantdisplay above it as a combo display",
+    "reviewedAt": "2026-08-08T00:16:31.544Z",
+    "hash": "7c6aaef4ef11e38f2eb316d00cc8eb47f9b068b8"
   }
 }

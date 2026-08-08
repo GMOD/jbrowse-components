@@ -16,11 +16,6 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // viewed region downloads despite the file's size. hgdownload is also the
 // slowest host any of these figures touch, hence the raised ready timeouts.
 
-// The whole TP53 locus, which is where searching the gene symbol lands: RefSeq
-// spans it 7,668,420-7,687,490. The click-path figure opens here, because that
-// is the view a reader is looking at when they go to the track selector.
-const TP53_WINDOW = 'chr17:7,668,400-7,687,550'
-
 // The transcript body alone, for the figure that reads the signal against the
 // exons. Collapsed to one transcript, TP53's drawn 5' end is whichever of the
 // five transcripts tying at a 1182 bp CDS the collapse picks (this one stops at
@@ -53,86 +48,14 @@ const GENE_TRACK_COLLAPSED = {
   geneGlyphMode: 'longestCoding',
 }
 
-const TP53_GENES_ONLY = sessionSpec(UCSC_HG38_CONFIG, {
-  views: [
-    {
-      type: 'LinearGenomeView',
-      assembly: 'hg38',
-      loc: TP53_WINDOW,
-      tracks: [GENE_TRACK],
-    },
-  ],
-})
-
-// The tree row for the 100-way track, addressed by testid rather than by its
-// name: the name carries parentheses ("Basewise Conservation (phyloP) - …"),
-// which a `::-p-text()` click cannot be trusted to parse. The id is
-// `<groupId>,<trackId>` with the main group's id being the literal `Tracks`
-// (HierarchicalTrackSelectorWidget/model.ts).
-const PHYLOP_ROW = '[data-testid="htsTrackLabel-Tracks,hg38-phyloP100way"]'
-
-const OPEN_TRACK_SELECTOR = [
-  // the header button, not the view hamburger: the hamburger's menu would still
-  // be standing over the frame when it is captured
-  { type: 'click' as const, selector: 'button[title="Open track selector"]' },
-  {
-    type: 'waitForSelector' as const,
-    selector: '[data-testid="hierarchical_track_selector"]',
-  },
-]
+// genomes_basics/turn_on_phylop was here and is DELETED (review: "this is just
+// too boring and detailed i think. consider delete"). It was the click path
+// drawn as two stacked frames -- the filter box with two red boxes on the
+// filtered row and its category, then the same view with the track open. Every
+// pixel of it was JBrowse chrome, and the one result frame was already the next
+// figure on the page, better. Two clicks are a sentence.
 
 export const conservationSpecs: ScreenshotSpec[] = [
-  // The click-path: filter the catalog down to the conservation tracks, then
-  // tick the one this page is about and watch it arrive above the genes. Two
-  // stages of one spec rather than two specs, because the second is only
-  // reachable by driving the first.
-  {
-    mode: 'url',
-    name: 'genomes_basics/turn_on_phylop',
-    url: TP53_GENES_ONLY,
-    readyText: 'TP53',
-    readyTimeout: 120000,
-    settleMs: 8000,
-    hideTooltip: true,
-    viewportHeight: 620,
-    stages: [
-      {
-        actions: [
-          ...OPEN_TRACK_SELECTOR,
-          { type: 'type', text: 'Filter tracks', value: 'phyloP' },
-          { type: 'waitForSelector', selector: PHYLOP_ROW },
-        ],
-        // shorter than the frame below it: with one track open this frame is
-        // the gene band and the filtered list, and the spec's own height would
-        // pad it with a third of a viewport of page background
-        viewportHeight: 360,
-        // Both boxes are assertions as much as callouts: an anchor that
-        // resolves to nothing throws. The category box is what tells a reader
-        // the filter is a shortcut through a tree they could also have walked.
-        annotations: [
-          { type: 'box', anchor: { selector: PHYLOP_ROW } },
-          { type: 'box', anchor: { text: 'Comparative Genomics' } },
-        ],
-      },
-      {
-        actions: [
-          { type: 'click', selector: PHYLOP_ROW },
-          // gate on the track being in the view, not on a timer
-          {
-            type: 'waitForSelector',
-            selector:
-              '[data-testid^="trackRenderingContainer-"][data-testid$="-hg38-phyloP100way"]',
-          },
-          { type: 'delay', ms: 6000 },
-        ],
-        viewportHeight: 450,
-      },
-    ],
-    // Remote UCSC/NCBI range fetches introduce render-timing jitter; loosen the
-    // content-stable gate so an unchanged capture isn't re-committed each regen.
-    diffThreshold: 0.02,
-  },
-
   // The result on its own, declared as a session rather than clicked together:
   // the figure the tutorial reads, and the one the gallery card is cut from.
   {

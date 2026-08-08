@@ -4,11 +4,11 @@
     "gzipBytes": 141193
   },
   "plain": {
-    "bytes": 57611,
-    "gzipBytes": 17614
+    "bytes": 57582,
+    "gzipBytes": 17613
   },
-  "savedBytes": 363921,
-  "savedGzipBytes": 123579,
+  "savedBytes": 363950,
+  "savedGzipBytes": 123580,
   "muiKb": 412,
   "plainKb": 56,
   "muiGzipKb": 138,

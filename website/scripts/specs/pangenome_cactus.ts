@@ -221,6 +221,12 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     // caption is for. `collapses`/`keeps each copy at its own offset` is the
     // whole difference between the two builders, and the pair of curves under
     // them is the evidence.
+    //
+    // "which tool is correct?" (later review) is deliberately NOT a third pill.
+    // The answer is neither -- the two builders were asked different questions
+    // and each curve is right about its own graph -- and that is a paragraph,
+    // which is what the caption and the prose under it now carry. A pill saying
+    // "neither" over one of the two rows would read as being about that row.
     annotations: [
       {
         type: 'text',

@@ -446,6 +446,43 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
+    // THE ROUTE FROM THIS HALF TO THE OTHER ONE, on the image (review: "need
+    // more info on how you got from left side to right side"). The two halves
+    // are one event twice and the caption said so, but nothing on the frame
+    // said the right half is something this view PRODUCES rather than a second
+    // window somebody opened. It is four clicks and they are the four the other
+    // spec's `actions` drive, so the pill and the capture cannot drift apart.
+    //
+    // Over the matched-normal pileup, which is the one lane here whose content
+    // is that it has no content: it is a grey wall by construction, and no
+    // individual read in it is the subject. The arrow runs to the frame's right
+    // edge, where the other half is appended.
+    annotations: [
+      {
+        type: 'text',
+        text: 'Track menu → Launch view → Reconstruct derivative allele... → Replace with split view',
+        fontSize: 17,
+        maxWidth: 420,
+        anchor: {
+          track: NORMAL,
+          locus: 'chr3:25,358,500',
+          fracY: 0.4,
+        },
+      },
+      {
+        type: 'arrow',
+        fromAnchor: {
+          track: NORMAL,
+          locus: 'chr3:25,360,150',
+          fracY: 0.4,
+        },
+        anchor: {
+          track: NORMAL,
+          locus: 'chr3:25,360,900',
+          fracY: 0.4,
+        },
+      },
+    ],
   },
 
   // The other half: the same event as the chain of loci it visits, built by the

@@ -231,6 +231,20 @@ const AMY2B_LAYOUT = AMY2B_GROUPS.flatMap(([label, ids]) => {
   }))
 })
 
+// Where the AMY2B pill and its arrow sit in the 86-row lane. It was 0.62,
+// which is blank: the lane holds one record, so a row is painted only where
+// that animal carries it, and rows 32 to 61 of this order are wolves that do
+// not (review: "arrow on left side of the screen points at blank grey space").
+// 0.23 is the middle of the widest unbroken run of carriers, the 13 rows from
+// Boxer 1 to Alaska village dog 3, so the head lands on ink with ~75px of
+// margin either way. Measured off the capture rather than derived from the row
+// order: the lane's painted bands are at image y 826-1057, 1098-1371 and three
+// slivers below, against a track top of 822 and a height of 1800 image px.
+//
+// The pill needs no such care -- nothing paints left of the duplication's left
+// breakpoint at any row, which is why it sits there.
+const AMY2B_CALLOUT_FRAC_Y = 0.23
+
 // Every animal of every breed, in the order the build script writes them: for
 // these two variants the distribution *within* a breed is the content, and a
 // head-N panel had 24 of 25 dogs het or hom-alt. Eight Mastiff/Terrier-clade
@@ -449,30 +463,16 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // for being checkable (review: "if we are making up a story we should not do
   // that ... i just wanted to show ancestry painting").
   //
-  // THE FOUR PILLS ARE A DIFFERENT THING and were asked for twice. First "all
-  // dogs come from wolves so its just like, super recent in this case? can add
-  // text that says this if it makes sense", which this spec answered by putting
-  // the explanation in local_ancestry.md instead, on the grounds that it was a
-  // paragraph rather than a label. Then, on being shown that: "if it helps add
-  // red text annotation blurbs to the screenshot and reduce prose. generally
-  // want more 'screenshots speak for themselves'". So the argument is on the
-  // figure now and the prose under Reading the painting is a third of what it
-  // was.
+  // THE FOUR PILLS NAME THE FOUR BANDS AND NOTHING ELSE. They used to carry the
+  // argument too, which made two of them three lines over 820px, each hiding
+  // about seven of the rows it was describing (review: "much less text
+  // annotation please"). One line each now; the modern-panels argument is a
+  // sentence in local_ancestry.md.
   //
-  // Each pill names a BAND OF ROWS, not a locus, which is why none of them is a
-  // box: the y is what carries meaning here (fracY 0 plus a dy, so the pill
-  // tracks the band if the row count or track height changes) and the x is only
-  // a place to put the label. Anchored at 6 Mb so all four left-align into one
-  // column down the painting rather than reading as four separate marks.
-  //
-  // What they say between them is the answer to "but dogs all have wolf
-  // ancestry": FLARE infers against the two panels it was handed, both of them
-  // modern, so everything domestication carried into dogs is in BOTH panels,
-  // separates nothing, and paints dog. Orange is only what still looks like a
-  // present-day gray wolf and not like a breed dog. The figure carries both
-  // controls for that reading and each has a pill on it: held-out wolves solid
-  // orange at the top, German Shepherd lineage solid dog at the foot, descended
-  // from wolves exactly as much as the Saarloos rows above it.
+  // Each pill names a BAND OF ROWS, not a locus, which is why none is a box:
+  // the y carries the meaning (fracY 0 plus a dy, so a pill tracks its band if
+  // the row count or track height changes) and the x is only a place to put the
+  // label. Anchored at 6 Mb so all four left-align into one column.
   //
   // "IF GENOME WIDE THERE ARE INTERESTING PATTERNS, WE CAN CONSIDER ZOOMING OUT
   // GENOME WIDE" (same review). Not available as a spec edit, and not because of
@@ -527,19 +527,13 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     // its band, not the middle of it. The last one is also the bottom of the
     // capture: at dy 630 it ran off the frame and lost its last line.
     //
-    // No pill carries a hard newline. The overlay wraps to maxWidth on its own
-    // and treats a \n as a hard break that then wraps again, so an authored
-    // break lands mid-thought and leaves a one-word line under a full one.
-    //
-    // The two long ones are WIDE (820) rather than narrow, which is not a
-    // typographic preference: a pill hides the rows behind it, the blocks it is
-    // describing run horizontally, and every line it sheds gives back ~2.5 rows
-    // of painting. At 640 both wrapped to four lines and swallowed ten rows of
-    // the band they name.
+    // Every pill is one line, so `maxWidth` is a ceiling none of them reaches
+    // and each `dy` is where that single line sits inside its band rather than
+    // where a three-line block has to start to end inside it.
     annotations: [
       {
         type: 'text',
-        text: 'Eight gray wolves, held out of the wolf panel before the run. Solid orange is what an all-wolf call looks like.',
+        text: 'Eight held-out gray wolves',
         fontSize: 21,
         maxWidth: 600,
         anchor: {
@@ -551,21 +545,21 @@ export const dog10kSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'Saarloos and Czechoslovakian Wolfdogs, crossed to captive wolves in the 20th century. Blocks are megabases long because recombination has had few generations to break them up.',
+        text: 'Saarloos and Czechoslovakian Wolfdogs: blocks, megabases long',
         fontSize: 21,
         maxWidth: 820,
         anchor: {
           track: 'dog10k_wolfdog_named',
           locus: WOLFDOG_PILL_X,
           fracY: 0,
-          dy: 230,
+          dy: 250,
         },
       },
       {
         type: 'text',
-        text: '219 breeds swept in with no wolf story: flecks, not blocks. Length is read before fraction.',
+        text: '219 breeds with no wolf story: flecks, not blocks',
         fontSize: 21,
-        maxWidth: 600,
+        maxWidth: 700,
         anchor: {
           track: 'dog10k_wolfdog_named',
           locus: WOLFDOG_PILL_X,
@@ -575,14 +569,14 @@ export const dog10kSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'The German Shepherd descends from wolves as much as the Saarloos does, and paints solid dog: both panels are modern, so what domestication carried into both separates nothing.',
+        text: 'German Shepherd lineage: solid dog',
         fontSize: 21,
-        maxWidth: 820,
+        maxWidth: 600,
         anchor: {
           track: 'dog10k_wolfdog_named',
           locus: WOLFDOG_PILL_X,
           fracY: 0,
-          dy: 610,
+          dy: 640,
         },
       },
     ],
@@ -896,12 +890,6 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         text: 'LOC607460 is AMY2B.\nPresence or absence,\nnot copy number.',
         fontSize: 22,
         maxWidth: 300,
-        // Left of the block and low enough to clear the dog rows entirely: the
-        // lane paints nothing left of the duplication's left breakpoint, but the
-        // rows this figure is about are the Arctic breeds near the top of it, so
-        // the pill sits down in the wolf section where a covered row would only
-        // be more grey.
-        //
         // `textAlign: 'end'` so the offset places the pill's RIGHT edge, which
         // is the edge the arrow below has to leave from. Left-aligned, the tail
         // would have to encode the pill's measured width, and a pill is only
@@ -910,7 +898,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         anchor: {
           track: 'dog10k_amy2b_svs',
           locus: 'chr6:47,375,677-47,390,529',
-          fracY: 0.62,
+          fracY: AMY2B_CALLOUT_FRAC_Y,
           dx: -430,
           dy: 0,
         },
@@ -920,14 +908,14 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         fromAnchor: {
           track: 'dog10k_amy2b_svs',
           locus: 'chr6:47,375,677-47,390,529',
-          fracY: 0.62,
+          fracY: AMY2B_CALLOUT_FRAC_Y,
           dx: -420,
           dy: 0,
         },
         anchor: {
           track: 'dog10k_amy2b_svs',
           locus: 'chr6:47,375,677-47,390,529',
-          fracY: 0.62,
+          fracY: AMY2B_CALLOUT_FRAC_Y,
           dx: -40,
           dy: 0,
         },

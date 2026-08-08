@@ -1,7 +1,3 @@
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
-
-import { repoRoot } from '../paths.ts'
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -19,22 +15,6 @@ const CONFIG = 'test_data/scrna_pbmc5k/config.json'
 // v3 clustered and labeled with scanpy, then pooled into one coverage track per
 // cell type. They are hosted rather than in test_data because they are the same
 // files the embedded UMAP demo fetches.
-
-// The cell-type color key, read out of the config rather than restated here.
-// The per-cell rows are well under a pixel each, so the display draws no row
-// labels for them and the block colors are the only thing naming a cell type in
-// that figure; a hand-copied key would be the one thing in it that could
-// disagree with the data.
-const cellTypeLegend = (
-  JSON.parse(readFileSync(join(repoRoot, CONFIG), 'utf8')) as {
-    tracks: {
-      trackId: string
-      adapter: { subadapters?: { name: string; color: string }[] }
-    }[]
-  }
-).tracks
-  .find(t => t.trackId === 'pbmc5k_scrna_pseudobulk_hg38')!
-  .adapter.subadapters!.map(s => ({ label: s.name, color: s.color }))
 
 const genes = {
   trackId: 'ncbi_refseq_hg38',
@@ -162,6 +142,23 @@ export const scrnaSpecs: ScreenshotSpec[] = [
               trackId: 'pbmc5k_scrna_pseudobulk_hg38',
               type: 'MultiLinearWiggleDisplay',
               height: 150,
+              // OVERLAY, and this is what supplies the figure's color key
+              // (review: "the legend should be made by our app itself, not
+              // custom overlay"). The app draws one only in an overlay mode --
+              // `overlayLegendApplies` is `isOverlay && numSources > 1`, since
+              // a multi-row track normally names its sources in the sidebar --
+              // and the per-cell track below cannot use that: its 4,390 rows
+              // are far under the 6 px a label needs, so the sidebar there is
+              // a color stripe with nothing naming it.
+              //
+              // These are the same nine cell types in the same nine colors, so
+              // one key serves both lanes, and the key is now the app's own
+              // rather than a hand-built list read out of the config. Overlay
+              // costs this lane nothing at this locus: two of the nine rows
+              // carry signal over LYZ and the other seven are flat, so nine
+              // superimposed curves is two curves.
+              defaultRendering: 'xyplot',
+              showLegend: true,
             },
             {
               trackId: 'pbmc5k_scrna_percell_hg38',
@@ -174,26 +171,8 @@ export const scrnaSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    // The nine blocks of cells are in the same order and the same colors as the
-    // nine pseudobulk rows above them, but nothing in the frame says which is
-    // which: the per-cell rows are sub-pixel, so the display draws no labels for
-    // them. Top-right of the per-cell track, which is the CD4 T block — speckle,
-    // so the key covers no peak.
-    annotations: [
-      {
-        type: 'legend',
-        entries: cellTypeLegend,
-        fontSize: 17,
-        textAlign: 'end',
-        anchor: {
-          track: 'pbmc5k_scrna_percell_hg38',
-          alignX: 'right',
-          alignY: 'top',
-          dx: -12,
-          dy: 12,
-        },
-      },
-    ],
+    // No overlay key here any more: the pseudobulk lane above draws the app's
+    // own, over the same nine colors. See its `showLegend`.
     readyTimeout: 120000,
     settleMs: 20000,
     // the per-cell track's 620 rows have to reach their own bottom edge: the

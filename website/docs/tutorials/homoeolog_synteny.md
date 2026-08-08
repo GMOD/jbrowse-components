@@ -197,12 +197,13 @@ make.
 ## Reading the plot
 
 Oat's plot is on the right below, and bread wheat's on the left is what makes it
-readable. Both are hexaploids drawn against themselves the same way, so the
-difference between them is the karyotype and not the method: on the left each
-homoeologous group is three near-collinear segments stepping up the diagonal,
-which is what a plot like this looks like when the subgenomes stayed put.
+readable. Both are hexaploids drawn against themselves the same way and over the
+same three homoeologous groups, so the difference between them is the karyotype
+and not the method: on the left each group is three near-collinear segments in
+its own block, which is what a plot like this looks like when the subgenomes
+stayed put.
 
-<Figure caption="Two hexaploid cereals drawn against themselves, syntenic anchors coloured by dN/dS on a ramp pivoted at 1, where blue is purifying selection. Left, bread wheat: each homoeologous group is three near-collinear segments on the diagonal, and the two boxed cells are where 4A pairs outside its group. Right, oat: the boxed cell is one of dozens, the mosaic karyotype its assembly paper describes." src="/img/homoeolog_synteny/wheat_vs_oat.png" links="Open the oat plot=homoeolog_synteny/oat_homoeologs" />
+<Figure caption="Two hexaploid cereals drawn against themselves over homoeologous groups 4, 5 and 7, syntenic anchors coloured by dN/dS on a ramp pivoted at 1, where blue is purifying selection. Left, bread wheat: each group is three near-collinear segments in its own block, and the two boxed cells are where 4A pairs outside its group. Right, oat: the boxed cell is one of dozens, the mosaic karyotype its assembly paper describes." src="/img/homoeolog_synteny/wheat_vs_oat.png" links="Open the oat plot=homoeolog_synteny/oat_homoeologs" />
 
 The wheat panel comes from
 [the Compara route](/docs/tutorials/multiway_synteny#selection-pressure-between-a-polyploids-own-copies),
