@@ -583,10 +583,10 @@ K12:
 ```
 
 Zoomed out, the track is the pangenome's core/accessory landscape along K12: a
-plateau near the strain count, dropping over the accessory stretches the variant
-and MAF projections zoom into.
-
-<Figure caption="odgi depth over the whole K12 chromosome: a plateau near the strain count over core sequence, troughs at 1 over the stretches only K12 carries, and spikes past the strain count over the rRNA operons the graph collapses into one copy." src="/img/pangenome/depth.png" />
+plateau near the strain count, troughs at 1 over the stretches only K12 carries,
+and spikes past the strain count over the rRNA operons the graph collapses into
+one copy. It is drawn [at the end of this section](#per-strain-presence), under
+the per-strain rows that say which strain each trough is missing.
 
 The troughs sit at depth 1 where no other strain traverses the graph. Those
 stretches are K12's private sequence: mostly cryptic prophages and IS elements,
@@ -807,13 +807,13 @@ and on `K12:997,574` 7.1 kb upstream, so those 75 bp stand in for 7.1 kb of K12
 and the bar is that 7.1 kb. It is a deletion, not a loop, and most of it is
 outside the frame.
 
-Zoom out to the whole event and it has an ordinary linear form. A segment with
-no reference coordinate still describes an event that has one, because the
-address of an event is the span it replaces, and that is what `pggb -V` writes
-through `vg deconstruct`: one record at `chr:997,575`, 7,112 bp of REF against a
-93 bp ALT, genotyped in CFT073 and in none of the other three.
-
-<Figure caption="The same detour on the K12 axis, 9.1 kb wide. The pggb VCF calls it once, in CFT073 alone; the seven genes under the record are the ones that go with it, between ssuE and pyrD; and the MAF's CFT073 row is empty across the same span where the other three strains stay filled." src="/img/pangenome/pggb_spur_linear.png" />
+A segment with no reference coordinate still describes an event that has one,
+because the address of an event is the span it replaces, and that is what
+`pggb -V` writes through `vg deconstruct`: one record at `chr:997,575`, 7,112 bp
+of REF against a 93 bp ALT, genotyped in CFT073 and in none of the other three.
+The same detour is drawn [below](#out-of-the-graph-into-the-strain), from the
+side that settles it: CFT073's own coordinates, where the seven K12 genes it
+replaces are simply absent.
 
 In **Sample rows** the lanes take the MAF's own rows and order: the top row is
 the K12 backbone, and below it each strain's marks are the segments it takes

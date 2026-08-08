@@ -1123,39 +1123,16 @@ const PGGB_VARIANTS_SESSION_TRACK = {
   },
 }
 
-// The SAME VCF under a second trackId, so one window can carry the record and
-// the genotypes of it as two lanes (review on pggb_spur_linear: "unclear what
-// is being plotted here. need the linearvariantdisplay to go along side it").
-// The genotype matrix paints a colour per strain and never says WHAT is being
-// genotyped; this lane draws the one record as the deletion it is, over exactly
-// the reference span the columns below cover.
-//
-// A second trackId rather than a second `displays` entry, which is not a style
-// choice: a session spec that names the same track twice keeps only the LAST
-// display, so the positional lane would silently replace the matrix. Same
-// pattern as dog10k-amy2b-duplication, which met it first.
-const PGGB_VARIANTS_POSITIONAL_TRACK = `${PGGB_VARIANTS_TRACK}_positional`
-const PGGB_VARIANTS_POSITIONAL_SESSION_TRACK = {
-  ...PGGB_VARIANTS_SESSION_TRACK,
-  trackId: PGGB_VARIANTS_POSITIONAL_TRACK,
-  name: 'pggb graph: the record itself',
-}
-
-// The structural tier of that VCF, as both lanes read it. `pggb -V` decomposes,
-// so this window also holds several hundred SNPs and small indels between the
-// same four strains; unfiltered they fill the lane wall to wall and the one
-// 7 kb record is a column among hundreds rather than the subject.
-//
-// TWO SPELLINGS OF ONE FILTER, and they are not interchangeable. The matrix
-// display's `jexlFilters` is a model PROPERTY that goes straight into a
-// SerializableFilterChain, so it needs the `jexl:` prefix written out; the
-// canvas LinearVariantDisplay's slot adds the prefix itself and a doubled one
-// is a parse error. Written the wrong way round the matrix does not error -- it
-// sits in `loading` forever, which the capture reports as a wait timeout and
-// reads as a slow fetch.
-const PGGB_SV_FILTER_EXPR = "get(feature,'end')-get(feature,'start') > 1000"
-const PGGB_SV_FILTERS_MATRIX = [`jexl:${PGGB_SV_FILTER_EXPR}`]
-const PGGB_SV_FILTERS_CANVAS = [PGGB_SV_FILTER_EXPR]
+// The positional-variant track and the two structural-filter spellings that
+// used to live here went with `pangenome/pggb_spur_linear`, which was their only
+// consumer. Worth knowing if a variant lane comes back to this file: the two
+// spellings were NOT interchangeable. The matrix display's `jexlFilters` is a
+// model property feeding a SerializableFilterChain and needs the `jexl:` prefix
+// written out, while the canvas LinearVariantDisplay's slot adds the prefix
+// itself and a doubled one is a parse error -- which does not throw, it sits in
+// `loading` forever and reads as a slow fetch. The same VCF under a second
+// trackId was also deliberate, since a session spec naming one track twice keeps
+// only the LAST display.
 
 // `mafLane` is stated rather than derived from `layoutMode`, because the two
 // halves of pangenome/pggb_locus_sample_rows differ ONLY in layoutMode: a lane
@@ -2379,11 +2356,17 @@ export const graphSpecs: ScreenshotSpec[] = [
   // the in-app P/W walk a file-loaded graph gets. Measured over this same window
   // at the time: 0 of 53 nodes carried samples, against 53 of 53 after.
   //
-  // The lane the 75 bp spur IS visible in is pggb_spur_linear, below, and not
-  // this one — deliberately, because a variant lane in this frame would argue
-  // against the frame's own point. This figure is here to say that carriedBy
-  // states something the flattened projections cannot, and a multi-sample
-  // variant row saying "CFT073 alone" sitting above it reads as a rebuttal.
+  // NO MAF or variant lane in this frame, and the review that asked for one
+  // ("may benefit from showing maf track here also, so we see the detour. if
+  // other figure already shows this, deduplicate") answered itself with its
+  // second sentence. `pangenome/pggb_strain_launch` already draws that detour,
+  // and draws it better: on CFT073's own coordinates, where the seven K12 genes
+  // are absent rather than merely unaligned.
+  //
+  // Adding a lane here would also argue against this frame's own point. The
+  // figure exists to say that `carriedBy` states something the flattened
+  // projections cannot, so a projected row saying "CFT073 alone" sitting above
+  // it reads as a rebuttal rather than as support.
   {
     mode: 'url',
     name: 'pangenome/pggb_carriage',
@@ -2434,137 +2417,18 @@ export const graphSpecs: ScreenshotSpec[] = [
       },
     ],
   },
-  // The 75 bp spur, on the reference axis (review: "hard to see the 75bp 'spur'
-  // in the linear view. is there any way to show that with a custom canvas
-  // track glyph?").
+  // `pangenome/pggb_spur_linear` was here and is DELETED (review: "delete
+  // figure"). It drew CFT073's 7.1 kb deletion on the K12 axis: the pggb VCF
+  // record, the seven genes it spans, and the MAF row that goes blank under it.
   //
-  // No glyph, and no new file. The segments lane genuinely cannot draw the
-  // spur — its adapter emits K12 intervals, `tabix ecoli_pggb.segs.bed.gz
-  // 'K12#1#chr:1004500-1004961'` is 53 records and every one is a K12 span —
-  // and no glyph draws what the adapter does not emit. But a spur is only
-  // coordinate-less as a SEGMENT. As an EVENT it has a reference address: the
-  // span it replaces, which is what `pggb -V` has vg deconstruct write and what
-  // this demo's own VCF already holds.
-  //
-  //   tabix ecoli_pggb.vcf.gz chr:997575-997575
-  //   ID >176689>178029_217, REF 7,112 bp, ALT 93 bp, LEN=7019, GT 1 0 0 0
-  //
-  // The window is that record plus its two flanking genes, which is why it is
-  // ~20x the one the graph figures use: the event is 7.1 kb, so at 461 bp the
-  // bar runs off the left edge and the picture is of its right end only. Here
-  // both ends and the seven genes between them are in frame — ssuE and pyrD
-  // are the pair the strain-launch figure shows meeting on CFT073's contig.
-  //
-  // Three lanes, each a different kind of evidence for one event: the genes it
-  // removes, the graph's own call for it, and the alignment it was called from.
-  // The MAF's CFT073 row is the control — a deletion is only a deletion if the
-  // alignment has a gap there, and the other three strains' rows have to stay
-  // filled across the same span.
-  //
-  // The other route to a linear spur is real but is a build script and an
-  // upload: `LinearMultiRowFeatureDisplay`'s `lengthField` slot sizes an indel
-  // glyph by a feature's OWN length rather than by the reference span it
-  // covers, which is exactly "mark it as an insertion", and this same demo's
-  // `ecoli_minigraph_paths` uses it so Sakai's 113 kb allele stops drawing as a
-  // 3.4 kb box. The pggb side has no per-bubble row to hang it on, since its
-  // segs BED is reference intervals only.
-  {
-    mode: 'url',
-    name: 'pangenome/pggb_spur_linear',
-    url: sessionSpec(CONFIG, {
-      sessionTracks: [
-        K12_GENES_SESSION_TRACK,
-        PGGB_VARIANTS_POSITIONAL_SESSION_TRACK,
-        PGGB_VARIANTS_SESSION_TRACK,
-        PGGB_MAF_SESSION_TRACK,
-      ],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'K12',
-          loc: 'chr:996,800-1,005,900',
-          tracks: [
-            { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
-            // The record, then the genotypes of it, in that order. The matrix
-            // alone paints a colour per strain and never says what is being
-            // genotyped, which is what "unclear what is being plotted here"
-            // was; this lane draws the one call as the 7.1 kb deletion it is,
-            // over exactly the span the columns below cover. Same VCF, so
-            // nothing new is fetched. Both lanes take the structural filter —
-            // in the two spellings the two displays need, see
-            // PGGB_SV_FILTERS_MATRIX.
-            {
-              trackId: PGGB_VARIANTS_POSITIONAL_TRACK,
-              type: 'LinearVariantDisplay',
-              jexlFilters: PGGB_SV_FILTERS_CANVAS,
-              height: 55,
-            },
-            {
-              trackId: PGGB_VARIANTS_TRACK,
-              type: 'LinearMultiSampleVariantDisplay',
-              // The opposite call from pangenome/maf, where a length filter was
-              // REMOVED: there the fine tier is the subject and the filter was
-              // dropping real indels, here the fine tier is the noise.
-              jexlFilters: PGGB_SV_FILTERS_MATRIX,
-              height: 110,
-            },
-            {
-              trackId: PGGB_MAF_TRACK,
-              type: 'LinearMafDisplay',
-              layout: PGGB_STRAIN_ROWS,
-              height: 150,
-            },
-          ],
-        },
-      ],
-    }),
-    // a ruler tick, not the locus: at 9.1 kb the ticks are on the kilobase, so
-    // the window's own start never appears as text anywhere on the page
-    readyText: '1,000,000',
-    readyTimeout: 120000,
-    settleMs: 12000,
-    viewportWidth: 1100,
-    // 629 before the positional lane went in above the matrix
-    viewportHeight: 693,
-    hideTooltip: true,
-    // The genotype key STAYS, unlike pangenome/maf which dismisses it. Its
-    // "No call" swatch is what names the yellow across CFT073's row, and that
-    // row is half the figure's content: the strain that takes the detour has no
-    // genotype at the sites inside the span it does not carry.
-
-    // The pill goes INSIDE the variant lane, over the three rows the filter
-    // leaves empty, rather than above it: the gene track is the top lane, so a
-    // callout lifted clear of the record lands on the gene labels the figure
-    // needs. The empty rows are the one piece of genuinely blank canvas here,
-    // and they are blank for the reason the callout is about.
-    annotations: [
-      {
-        type: 'text',
-        text: 'One record: the 7.1 kb of K12 that CFT073 replaces with 75 bp',
-        fontSize: 18,
-        maxWidth: 340,
-        anchor: {
-          track: PGGB_VARIANTS_TRACK,
-          locus: 'chr:1,000,300',
-          fracY: 0.62,
-        },
-      },
-      {
-        type: 'arrow',
-        fromAnchor: {
-          track: PGGB_VARIANTS_TRACK,
-          locus: 'chr:1,000,300',
-          fracY: 0.62,
-          dy: -32,
-        },
-        anchor: {
-          track: PGGB_VARIANTS_TRACK,
-          locus: 'chr:1,000,300',
-          fracY: 0.13,
-        },
-      },
-    ],
-  },
+  // Nothing about that claim is lost, because `pangenome/pggb_strain_launch`
+  // below makes it from the side that settles it -- CFT073's OWN coordinates,
+  // where ssuE runs straight into pyrD and the seven genes are simply not
+  // there. A deletion argued from the reference's absence of sequence is the
+  // weaker of the two pictures, and the tutorial was drawing this one event
+  // four times (here, the sample-rows pair, the carriage drawer, and the strain
+  // launch). The VCF record's coordinates stay in the prose, which is where a
+  // number belongs.
   // Carriage as a lane rather than as a drawer field. The figure above answers
   // "who carries this segment" for one node someone clicked; this answers it for
   // every segment across a window at once, which is what the tutorial's

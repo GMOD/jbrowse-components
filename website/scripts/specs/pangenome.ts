@@ -341,34 +341,12 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
   // The data does not support it: over the build's 9,284 windows degree is flat
   // (p5 2.85 / p95 4.05) and correlates with depth at r = 0.78, so the second
   // lane was a near-copy of the first. Both the track and its section are gone.
-  {
-    mode: 'url',
-    name: 'pangenome/depth',
-    url: sessionSpec(CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'K12',
-          loc: 'chr:1-4,641,652',
-          tracks: [
-            {
-              trackId: 'ecoli_pggb_depth',
-              type: 'LinearWiggleDisplay',
-              height: 200,
-            },
-          ],
-        },
-      ],
-    }),
-    readyText: 'pangenome depth',
-    readyTimeout: 90000,
-    viewportWidth: 1000,
-    // one 200px wiggle lane plus its axis and the view chrome
-    viewportHeight: 400,
-    settleMs: 15000,
-    hideTooltip: true,
-    actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
-  },
+  // `pangenome/depth` was here and is DELETED. It drew the aggregate odgi depth
+  // curve alone over the whole chromosome, and the pav figure below draws that
+  // same curve as its top lane with the per-strain rows under it -- the caption
+  // said "the aggregate depth curve again" out loud. The long-read figure draws
+  // it a third time, zoomed into one trough. Three figures of one curve is two
+  // too many, and the one that was only the curve is the one that says least.
 
   // Projection 4b: per-strain presence from `odgi pav` as a MultiQuantitativeTrack
   // — one bigWig subtrack per non-K12 strain, whole-chromosome so each strain's
