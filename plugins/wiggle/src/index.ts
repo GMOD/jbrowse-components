@@ -75,7 +75,6 @@ export {
 } from './util.ts'
 export type {
   Dataset,
-  EditableSource,
   FeatureArrays,
   RawFeatureArrays,
   ScaleOpts,

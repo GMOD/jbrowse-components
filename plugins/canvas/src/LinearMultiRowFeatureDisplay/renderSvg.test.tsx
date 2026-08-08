@@ -110,6 +110,7 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     showRowSeparators: false,
     showRowLabels: true,
     colorLegend: [],
+    rowGroupLegend: [],
     hiddenCategorySet: new Set<string>(),
     ...overrides,
   }
@@ -206,6 +207,50 @@ describe('LinearMultiRowFeatureDisplay renderSvg', () => {
       ),
     )
     expect(html).not.toContain('<line ')
+  })
+
+  // The group stripe is the only thing carrying row identity once the rows are
+  // too short to write their names, so the key naming its colors has to reach
+  // the exported figure too — the frame is where this class of bug is visible
+  // at all, a getter test can't see a legend that never got rendered.
+  it('carries the row-group key into the export', async () => {
+    const html = renderResult(
+      await renderSvg(
+        makeModel({
+          showLegend: true,
+          rowGroupLegend: [
+            { color: '#e41a1c', label: 'Village dog' },
+            { color: '#377eb8', label: 'Wolf' },
+          ],
+        }),
+        {},
+      ),
+    )
+    expect(html).toContain('>Village dog</text>')
+    expect(html).toContain('>Wolf</text>')
+    expect(html).toContain('fill="#e41a1c"')
+    // a lone surviving section stays untitled, per legendEntries' shared rule
+    expect(html).not.toContain('>Row groups</text>')
+  })
+
+  // With both vocabularies present each gets its heading, so a reader can tell
+  // which axis a swatch is about.
+  it('titles both sections when the feature key and the group key coexist', async () => {
+    const html = renderResult(
+      await renderSvg(
+        makeModel({
+          showLegend: true,
+          colorLegend: [{ label: 'exon', color: 0xff0000ff }],
+          rowGroupLegend: [
+            { color: '#e41a1c', label: 'Village dog' },
+            { color: '#377eb8', label: 'Wolf' },
+          ],
+        }),
+        {},
+      ),
+    )
+    expect(html).toContain('>Feature colors</text>')
+    expect(html).toContain('>Row groups</text>')
   })
 
   it('renders the error box instead of the body when model.error is set', async () => {

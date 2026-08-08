@@ -19,6 +19,7 @@ import type {
 } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { MultiRowSource } from './sourcesLogic.ts'
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
+import type { LegendItem } from '@jbrowse/core/ui'
 import type {
   ExportSvgDisplayOptions,
   LgvSvgBodyProps,
@@ -51,6 +52,7 @@ export interface RenderSvgModel extends SvgExportable {
   showRowSeparators: boolean
   showRowLabels: boolean
   colorLegend: LegendEntry[]
+  rowGroupLegend: LegendItem[]
   hiddenCategorySet: ReadonlySet<string>
 }
 
@@ -122,9 +124,11 @@ function MultiRowSvgBody({
         availableHeight={height}
         clusterProvenance={self.clusterProvenance}
       />
-      {self.showLegend && self.colorLegend.length ? (
+      {self.showLegend &&
+      (self.colorLegend.length || self.rowGroupLegend.length) ? (
         <MultiRowColorLegend
           entries={self.colorLegend}
+          rowGroupItems={self.rowGroupLegend}
           canvasWidth={canvasWidth}
           maxHeight={height}
           hiddenLabels={self.hiddenCategorySet}

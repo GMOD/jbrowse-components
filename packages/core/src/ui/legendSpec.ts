@@ -60,3 +60,38 @@ export function legendEntries(spec: LegendSpec): ColorLegendEntry[] {
     ]),
   ]
 }
+
+/**
+ * How many rows a color key may have and still be one. Past this it is a list
+ * of every row, which is the thing a key exists instead of.
+ */
+export const MAX_LEGEND_ITEMS = 20
+
+/**
+ * Whether a key built from these items is worth the rows it costs, for a
+ * display that has to *decide* — one whose key is only sometimes the thing
+ * naming its colors, and which therefore asks before drawing.
+ *
+ * Two questions, and both have drawn a useless key on a real track:
+ *
+ * - **Short enough to read?** A list longer than a reader can scan is worse
+ *   than whatever it was going to explain. Ask this of the collapsed items, not
+ *   of the row count — a cohort track's key is one row per group, so 4,390
+ *   cells in nine cell types is nine rows and passes, while the same cells
+ *   ungrouped are 4,390 and do not.
+ * - **Does it distinguish anything?** A key maps colors to names, so it needs
+ *   more than one color to map. Items that all share one — every swatch having
+ *   resolved to the same fallback, which is what a track carrying no identity
+ *   color produces — spend rows over the plot to say nothing. This is why
+ *   `LegendItem.color` should be resolved before it gets here: an unresolved
+ *   `undefined` compares equal to every other `undefined` only by accident.
+ *
+ * Displays whose key is unconditional (alignments, variants) don't need this;
+ * their vocabulary is always worth naming.
+ */
+export function legendIsReadable(
+  items: LegendItem[],
+  maxItems = MAX_LEGEND_ITEMS,
+) {
+  return items.length <= maxItems && new Set(items.map(i => i.color)).size > 1
+}

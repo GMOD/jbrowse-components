@@ -12,7 +12,7 @@ import { TrackOverlayContext } from './TrackOverlayContext.ts'
 // anything rendered inline there gets buried at whole-genome / multi-region
 // scale. Wrapping it here lifts it above the masks without the display knowing
 // how the LGV lays them out — the single reusable answer to that recurring
-// problem (previously re-solved per-display: MultiWiggleLegendOverlay,
+// problem (previously re-solved per-display: the multi-wiggle color key,
 // FloatingLegend).
 //
 // The sandbox is `contain: strict`, and the obvious simplification — drop the
@@ -29,7 +29,7 @@ import { TrackOverlayContext } from './TrackOverlayContext.ts'
 // positioned box, or hovering them falls through to feature tooltips / click
 // actions on the canvas below. It can't be defaulted here: the value must live
 // on the positioned element itself, and full-span SVG overlays deliberately
-// stay `none` except on their sub-content (see MultiWiggleLegendOverlay).
+// stay `none` except on their sub-content (see FloatingLegend).
 //
 // `TrackOverlayContext` is null outside a TrackContainer (some tests, or a
 // display used standalone). `fallbackInline` (default) then renders the children

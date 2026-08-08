@@ -12,9 +12,9 @@ const TRACK_COLOR: ColorColumn<Source> = {
   bulkLabel: 'Change track color of selected',
 }
 
-// Row-label sidebar tint. Only meaningful in multirow modes (overlay has no
-// sidebar); the headline case is density, where the score→color ramp is the
-// data color, so identity coding happens via the label instead.
+// Row-label sidebar tint, and in density the channel a row's identity color
+// lives in — which is why it is the default column there. See the color-model
+// table in sourcesLogic.ts; this dialog does not re-decide any of it.
 const LABEL_COLOR: ColorColumn<Source> = {
   field: 'labelColor',
   headerName: 'Label color',

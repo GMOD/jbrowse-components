@@ -2,7 +2,7 @@ import type { ScoreRamp } from '../../shared/ScoreLegend.tsx'
 import type { WiggleGpuProps } from '../../shared/buildSourceRenderData.ts'
 import type { WiggleDataResult, WiggleFeatureUnderMouse } from '../../util.ts'
 import type { MultiWiggleContextHit } from './findHit.ts'
-import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
+import type { ContextMenuAnchor, LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type {
   ClusterHierarchyNode,
   HoveredTreeNode,
@@ -17,6 +17,9 @@ export interface MultiWiggleDisplayModel
   configuration: { displayId: string }
   rpcDataMap: Map<number, WiggleDataResult>
   sources: { name: string; color?: string; labelColor?: string }[]
+  // the color key, collapsed and color-resolved by the model — the one list
+  // both the on-screen FloatingLegend and the export draw
+  legendItems: LegendItem[]
   sourcesWithoutLayout: { name: string }[]
   domain: [number, number] | undefined
   scaleType: string

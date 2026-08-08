@@ -70,6 +70,7 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
     showRowSeparators,
     showRowLabels,
     colorLegend,
+    rowGroupLegend,
     hiddenCategorySet,
   } = model
   return (
@@ -129,10 +130,11 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
       />
       {/* portaled above the inter-region masks (see FloatingSvgOverlay) so the
           legend isn't buried at multi-region scale */}
-      {showLegend && colorLegend.length ? (
+      {showLegend && (colorLegend.length || rowGroupLegend.length) ? (
         <FloatingSvgOverlay width={canvasWidthPx} height={height}>
           <MultiRowColorLegend
             entries={colorLegend}
+            rowGroupItems={rowGroupLegend}
             canvasWidth={canvasWidthPx}
             maxHeight={height}
             hiddenLabels={hiddenCategorySet}

@@ -115,6 +115,45 @@ describe('buildSources', () => {
     }
   })
 
+  // A MultiWiggleAdapter where only some subadapters set `group`. Both palettes
+  // used to index from 0, so the first group and the first ungrouped row came
+  // out the same color — two different things one hue, in the plot and in the
+  // legend naming it.
+  it('never reuses a group color for an ungrouped row in overlay mode', () => {
+    const editable = reconcileLayout(
+      [
+        { name: 'a' },
+        { name: 'b', group: 'tumor' },
+        { name: 'c' },
+        { name: 'd', group: 'normal' },
+      ],
+      [],
+    )
+    const out = buildSources(editable, undefined, true, false)
+    expect(new Set(out.map(s => s.color)).size).toBe(4)
+    // groups take the head of the palette, ungrouped rows continue past them
+    expect(out[1]!.color).toBe(overlayColors[0])
+    expect(out[3]!.color).toBe(overlayColors[1])
+    expect(out[0]!.color).toBe(overlayColors[2])
+    expect(out[2]!.color).toBe(overlayColors[3])
+  })
+
+  // The split leaves an all-ungrouped track exactly where it was: no groups
+  // means the row range starts at 0, which is the source index.
+  it('leaves the ungrouped palette at the source index when nothing is grouped', () => {
+    const out = buildSources(
+      reconcileLayout(adapter(3), []),
+      undefined,
+      true,
+      false,
+    )
+    expect(out.map(s => s.color)).toEqual([
+      overlayColors[0],
+      overlayColors[1],
+      overlayColors[2],
+    ])
+  })
+
   it('explicit color takes priority over group color', () => {
     const editable = reconcileLayout(
       [{ name: 'a', color: '#ff0000', group: 'tumor' }],

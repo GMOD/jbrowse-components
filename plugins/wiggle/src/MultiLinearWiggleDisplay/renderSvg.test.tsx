@@ -131,6 +131,10 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     hierarchy: undefined,
     clusterProvenance: undefined,
     sources: [{ name: 'a' }, { name: 'b' }],
+    legendItems: [
+      { color: '#0068d1', label: 'a' },
+      { color: '#0068d1', label: 'b' },
+    ],
     isOverlay: false,
     isDensityMode: false,
     effectiveRowHeight: 50,
@@ -144,7 +148,6 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     showRowSeparators: false,
     showCrossHatches: false,
     hasOverlayLegend: false,
-    posColor: '#0068d1',
     ...overrides,
   }
 }
@@ -218,7 +221,7 @@ describe('MultiLinearWiggleDisplay renderSvg', () => {
     expect(html).toContain('ctgA')
   })
 
-  // On screen the color key is the hoisted MultiWiggleLegendOverlay; here it is
+  // On screen the same `legendItems` go to FloatingLegend; here they are drawn
   // inline. Both read hasOverlayLegend, so a legend the user dismissed stays out
   // of the export rather than reappearing in the figure.
   it('draws the overlay color key only when it applies', async () => {
@@ -231,6 +234,28 @@ describe('MultiLinearWiggleDisplay renderSvg', () => {
     )
     // overlay draws no row labels, so with the key off there is no 'a' anywhere
     expect(dismissed).not.toContain('>a</text>')
+  })
+
+  // Both legends are pinned to the content's right edge and both draw from
+  // y=0, so the density case — which is exactly when a short-rowed track gets
+  // BOTH a score legend and a color key — used to print the key on top of the
+  // score range.
+  it('stacks the color key below the score legend rather than over it', async () => {
+    const html = render(
+      await renderSvg(
+        makeModel({
+          isDensityMode: true,
+          hasOverlayLegend: true,
+          legendItems: [
+            { color: '#f00', label: 'a' },
+            { color: '#00f', label: 'b' },
+          ],
+        }),
+      ),
+    )
+    // the score range text legend, then the key pushed clear of its 16px band
+    expect(html).toContain('[0, 10]')
+    expect(html).toContain('<g transform="translate(0 16)">')
   })
 
   // Shared with the on-screen path so an exported figure matches the track.

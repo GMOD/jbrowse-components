@@ -15,7 +15,6 @@ const useStyles = makeStyles()(theme => ({
   legend: {
     position: 'absolute',
     right: 10,
-    top: 10,
     background: theme.palette.background.paper,
     padding: 3,
     fontSize: 10,
@@ -149,6 +148,7 @@ const FloatingLegend = observer(function FloatingLegend({
   onDismiss,
   onDismissSection,
   maxItems = DEFAULT_MAX_ITEMS,
+  top = 10,
 }: {
   items?: LegendItem[]
   sections?: LegendSection[]
@@ -156,6 +156,12 @@ const FloatingLegend = observer(function FloatingLegend({
   onDismiss?: () => void
   onDismissSection?: (id: string) => void
   maxItems?: number
+  // Distance from the top of the display box. Raise it for a display that
+  // already draws something in that corner — multi-wiggle's score legend is
+  // pinned to the same right edge and drawn from y=0, so the two overprint at
+  // the default. Every other display has the corner to itself and leaves this
+  // alone.
+  top?: number
 }) {
   const { classes } = useStyles()
 
@@ -169,7 +175,10 @@ const FloatingLegend = observer(function FloatingLegend({
   // whole-genome / multi-region scale (see TrackOverlayPortal)
   return (
     <TrackOverlayPortal>
-      <div className={cx(classes.legend, onDismiss && classes.withClose)}>
+      <div
+        className={cx(classes.legend, onDismiss && classes.withClose)}
+        style={{ top }}
+      >
         {onDismiss ? (
           <IconButton
             className={classes.closeButton}

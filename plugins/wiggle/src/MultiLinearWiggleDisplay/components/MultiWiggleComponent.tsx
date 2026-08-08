@@ -2,7 +2,10 @@ import { useCallback } from 'react'
 
 import { ContextMenu, useMouseState } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
-import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
+import {
+  DisplayChrome,
+  FloatingLegend,
+} from '@jbrowse/plugin-linear-genome-view'
 import {
   DisplayCrosshairs,
   TreeSidebar,
@@ -16,9 +19,10 @@ import WiggleTooltip from '../../shared/WiggleTooltip.tsx'
 import { legendRightEdgePx } from '../../shared/wiggleComponentUtils.ts'
 import { wiggleMouseHandlers } from '../../shared/wiggleMouseHandlers.ts'
 import MultiWiggleOverlayLines from '../MultiWiggleOverlayLines.tsx'
-import MultiWiggleSvgScales from '../MultiWiggleSvgScales.tsx'
+import MultiWiggleSvgScales, {
+  scoreLegendReservedPx,
+} from '../MultiWiggleSvgScales.tsx'
 import MultiWiggleHint from './MultiWiggleHint.tsx'
-import MultiWiggleLegendOverlay from './MultiWiggleLegendOverlay.tsx'
 import { findMultiWiggleContextHit, findMultiWiggleHit } from './findHit.ts'
 
 import type { MultiWiggleDisplayModel } from './multiWiggleDisplayTypes.ts'
@@ -29,6 +33,10 @@ import type React from 'react'
 export type { MultiWiggleDisplayModel } from './multiWiggleDisplayTypes.ts'
 
 type LGV = LinearGenomeViewModel
+
+// FloatingLegend's own default inset from the display's top-right corner, which
+// the score legend's reserved band is added to rather than replacing.
+const LEGEND_TOP_PX = 10
 
 const MultiWiggleComponent = observer(function MultiWiggleComponent({
   model,
@@ -186,8 +194,19 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
       {/* inline hint when the plot would otherwise be a silent blank */}
       <MultiWiggleHint model={model} />
 
-      {/* portals the overlay color legend above the inter-region masks */}
-      <MultiWiggleLegendOverlay model={model} />
+      {/* The shared color key every display publishes, portaled above the
+          inter-region masks by FloatingLegend itself. Pushed down past the
+          score legend, which is pinned to the same right edge and drawn from
+          y=0 inside the <svg> above (see scoreLegendReservedPx). */}
+      {model.hasOverlayLegend ? (
+        <FloatingLegend
+          items={model.legendItems}
+          top={LEGEND_TOP_PX + scoreLegendReservedPx(model)}
+          onDismiss={() => {
+            model.setShowLegend(false)
+          }}
+        />
+      ) : null}
 
       {/* the full crosshair, not just a genomic guide: cursor y picks the row
           being read in multi-row mode and a score level in overlay mode, and

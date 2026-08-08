@@ -60,11 +60,6 @@ export const WIGGLE_NEG_COLOR_DEFAULT = '#e01e26'
 // loads unchanged and simply carries a field no one asks for.
 export type Source = SourceInfo
 
-// Kept as a name because it reads at the call sites that mean "adapter rows
-// merged with the user's saved arrangement, before filtering" — the shape is
-// the same one.
-export type EditableSource = SourceInfo
-
 // One score entry shown in a wiggle tooltip. `source`/`color` are populated
 // only for multi-wiggle (single-wiggle has no per-source identity). The summary
 // variant carries min/max together so consumers narrow on `summary` alone.

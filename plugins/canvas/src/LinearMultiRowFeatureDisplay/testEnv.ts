@@ -26,6 +26,12 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // setByteEstimate / setDensityStats and read the derived regionTooLarge.
 export function createTestEnvironment(opts?: {
   adapterFetchSizeLimit?: number
+  // Display-level config slots, written into the track config's own `displays`
+  // entry — the long form of the `displayDefaults` shorthand, and the only way
+  // to reach a slot with no setter (`rowGroups`). The shorthand itself is
+  // expanded by a Core-preProcessTrackConfig handler this bare harness doesn't
+  // install, so spell it out.
+  displayConfig?: Record<string, unknown>
 }) {
   console.warn = jest.fn()
   console.error = jest.fn()
@@ -94,6 +100,13 @@ export function createTestEnvironment(opts?: {
         type: 'TestFeatureAdapter',
         fetchSizeLimit: opts?.adapterFetchSizeLimit ?? 0,
       },
+      displays: [
+        {
+          type: 'LinearMultiRowFeatureDisplay',
+          displayId: 'test_track-LinearMultiRowFeatureDisplay',
+          ...opts?.displayConfig,
+        },
+      ],
     },
     { pluginManager },
   )
@@ -152,7 +165,12 @@ export function createTestEnvironment(opts?: {
           {
             type: 'FeatureTrack',
             configuration: 'test_track',
-            displays: [{ type: 'LinearMultiRowFeatureDisplay' }],
+            displays: [
+              {
+                type: 'LinearMultiRowFeatureDisplay',
+                configuration: 'test_track-LinearMultiRowFeatureDisplay',
+              },
+            ],
           },
         ],
       }),

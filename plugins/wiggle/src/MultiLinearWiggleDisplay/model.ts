@@ -6,6 +6,7 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { legendIsReadable } from '@jbrowse/core/ui'
 import {
   checkboxItem,
   showLegendCheckboxItem,
@@ -20,13 +21,13 @@ import {
   fetchAllRegions,
 } from '@jbrowse/plugin-linear-genome-view'
 import {
-  MIN_TEXT_ROW_HEIGHT,
   TreeSidebarMixin,
   buildSpatialIndex,
   clusteringMenuItem,
   reconcileLayout,
   computeClusterHierarchy,
   resetRowOrderMenuItems,
+  rowLabelsCarryText,
   rowArrangementMenuItem,
   setupRowSortAutorun,
   setupRunClusteringAutorun,
@@ -34,7 +35,6 @@ import {
 import { computeYTicks, makeCrossHatchItem } from '@jbrowse/wiggle-core'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 
-import { buildLegendEntries } from '../shared/OverlayColorLegend.tsx'
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { installWiggleRenderingBackend } from '../shared/installWiggleRenderingBackend.ts'
 import {
@@ -50,6 +50,7 @@ import {
   makeWiggleScoreSubMenu,
 } from '../shared/wiggleMenuItems.tsx'
 import { MULTI_WIGGLE_RENDERING_GROUPS } from '../util.ts'
+import { buildLegendItems } from './legendItems.ts'
 import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
 import { buildSources } from './sourcesLogic.ts'
 
@@ -58,7 +59,7 @@ import type { Source, SourceInfo, WiggleDataResult } from '../util.ts'
 import type { MultiWiggleContextHit } from './components/findHit.ts'
 import type { MultiWiggleDisplayModel } from './components/multiWiggleDisplayTypes.ts'
 import type { MultiLinearWiggleDisplayConfigModel } from './configSchema.ts'
-import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
+import type { ContextMenuAnchor, LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
@@ -69,13 +70,6 @@ const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 const WiggleClusterDialog = lazy(
   () => import('./components/WiggleClusterDialog.tsx'),
 )
-
-/**
- * How many rows a color key may have and still be one. Past this it is a list
- * of every source, which is the thing a key exists instead of; a multi-row
- * track that long is better read off its own sidebar even at a swatch.
- */
-const MAX_COLOR_KEY_ENTRIES = 20
 
 /**
  * #stateModel MultiLinearWiggleDisplay
@@ -218,6 +212,18 @@ export default function stateModelFactory(
       get autoscaleSourceNames() {
         return new Set(self.sources.map(s => s.name))
       },
+
+      /**
+       * #getter
+       * The color key, as the shared `LegendSpec` items every other display
+       * publishes — one row per (group, color) pair, colors resolved. The
+       * on-screen `FloatingLegend`, the SVG export and `overlayLegendApplies`
+       * all read this one list, so what is drawn and what was counted before
+       * deciding to draw cannot disagree. See `buildLegendItems`.
+       */
+      get legendItems(): LegendItem[] {
+        return buildLegendItems(self.sources, self.isDensityMode, self.posColor)
+      },
     }))
     .views(self => ({
       /**
@@ -355,27 +361,28 @@ export default function stateModelFactory(
        * Whether the source color key applies at all. Gates the menu checkbox,
        * which has to stay visible while the legend is toggled off.
        *
-       * One source needs no key. Beyond that the question is whether anything
-       * ELSE on the frame names the colors:
+       * Four questions in order, each with its own guard below:
        *
-       * - overlay collapses every source onto one plot, so nothing does, and a
-       *   key is the only identification there has ever been;
-       * - a multi-row track normally names its rows in the sidebar, so a key
-       *   would restate it — but only while the rows are tall enough to carry
-       *   text. Below `MIN_TEXT_ROW_HEIGHT` `SvgRowLabels` drops to an unlabelled
-       *   color swatch, and a per-cell density track at 0.14 px a row is then a
-       *   stripe of nine colors with nothing saying what any of them is. That is
-       *   the case this getter was widened for ("we need to make it so density
-       *   can show legend also ideally because the left side labels are too
-       *   small to see"), and the threshold is imported rather than restated so
-       *   the two cannot drift.
-       *
-       * The entry COUNT is the other half, and it is asked of the collapsed
-       * list rather than of `numSources`: `buildLegendEntries` folds sources
-       * into one row per group where a group's colors agree, so 4,390 cells in
-       * nine cell types are nine entries — and a track whose groups disagree,
-       * or which has none, would be 4,390, which is not a key. A list longer
-       * than a reader can scan is worse than the swatch stripe it would explain.
+       * 1. **Is there anything to key?** One source names itself by the track
+       *    name.
+       * 2. **Does anything ELSE on the frame name the colors?** Overlay
+       *    collapses every source onto one plot, so nothing does and a key is
+       *    the only identification there has ever been. A multi-row track names
+       *    its rows beside them — but only while they carry text
+       *    (`rowLabelsCarryText`, asked of the drawing side rather than
+       *    restated). Below that `SvgRowLabels` drops to an unlabelled swatch,
+       *    and a per-cell density track at 0.14 px a row is then a stripe of
+       *    nine colors with nothing saying what any of them is; that is the case
+       *    this was widened for ("we need to make it so density can show legend
+       *    also ideally because the left side labels are too small to see").
+       *    `showTree` is deliberately no part of this: the labels are
+       *    `MultiWiggleSvgScales`' own and draw whether or not a dendrogram
+       *    does, so reading it here drew a key restating labels still on screen.
+       * 3. **Is the key worth its rows?** Short enough to read, and made of
+       *    more than one color — both `legendIsReadable`, shared with the other
+       *    display that has to decide. Asked of `legendItems`, the very list
+       *    that gets drawn, so a key can't be counted in one form and rendered
+       *    in another.
        */
       get overlayLegendApplies() {
         if (self.numSources < 2) {
@@ -384,16 +391,10 @@ export default function stateModelFactory(
         if (self.isOverlay) {
           return true
         }
-        // `getConf` rather than the `showTree` getter beside this one: both
-        // are declared in the same `.views` block, so `self` here does not
-        // carry it yet.
-        if (
-          getConf(self, 'showTree') &&
-          self.effectiveRowHeight >= MIN_TEXT_ROW_HEIGHT
-        ) {
+        if (rowLabelsCarryText(self.effectiveRowHeight)) {
           return false
         }
-        return buildLegendEntries(self.sources).length <= MAX_COLOR_KEY_ENTRIES
+        return legendIsReadable(self.legendItems)
       },
 
       /**

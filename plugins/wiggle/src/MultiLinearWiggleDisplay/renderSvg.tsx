@@ -1,4 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
+import { SvgColorLegend, legendEntries } from '@jbrowse/core/ui'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
   SvgClipRect,
@@ -12,18 +13,20 @@ import {
 } from '@jbrowse/tree-sidebar'
 
 import { drawWiggleToCtx } from '../shared/Canvas2DWiggleRenderer.ts'
-import OverlayColorLegend from '../shared/OverlayColorLegend.tsx'
 import {
   svgLegendRightPx,
   svgScalebarLeftPx,
 } from '../shared/WiggleFamilySvg.tsx'
 import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
 import MultiWiggleOverlayLines from './MultiWiggleOverlayLines.tsx'
-import MultiWiggleSvgScales from './MultiWiggleSvgScales.tsx'
+import MultiWiggleSvgScales, {
+  scoreLegendReservedPx,
+} from './MultiWiggleSvgScales.tsx'
 
 import type { ScoreRamp } from '../shared/ScoreLegend.tsx'
 import type { WiggleGpuProps } from '../shared/buildSourceRenderData.ts'
 import type { WiggleDataResult } from '../util.ts'
+import type { LegendItem } from '@jbrowse/core/ui'
 import type {
   ExportSvgDisplayOptions,
   LgvSvgBodyProps,
@@ -63,6 +66,10 @@ export interface RenderSvgModel extends LgvSvgExportable {
     labelColor?: string
     group?: string
   }[]
+  // the color key, already collapsed and color-resolved by the model — never
+  // rebuilt from `sources` here, so the export can't key a different list than
+  // the one `overlayLegendApplies` counted
+  legendItems: LegendItem[]
   isOverlay: boolean
   isDensityMode: boolean
   effectiveRowHeight: number
@@ -81,7 +88,6 @@ export interface RenderSvgModel extends LgvSvgExportable {
   // the overlay color key, which reads `hasOverlayLegend` so a dismissed legend
   // stays out of the export too
   hasOverlayLegend: boolean
-  posColor: string
 }
 
 export async function renderSvg(
@@ -117,6 +123,7 @@ function MultiWiggleSvgBody({
 
   const props = model.gpuProps()
   const legendRight = svgLegendRightPx(view, canvasWidth)
+  const legendTop = scoreLegendReservedPx(model)
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
   const state = {
     ...renderState,
@@ -157,18 +164,20 @@ function MultiWiggleSvgBody({
         scalebarLeft={scalebarLeft}
         labelOffset={labelOffset}
       />
-      {/* Overlay-mode color legend, drawn inline here. On screen this same
-          legend is the hoisted MultiWiggleLegendOverlay instead (lifted above
-          the inter-region masks, which the flat export SVG doesn't have); both
-          read `hasOverlayLegend`, so a dismissed legend stays out of the
-          export. */}
+      {/* The color key, drawn inline here; on screen the same `legendItems` go
+          to `FloatingLegend` instead (which portals above the inter-region
+          masks the flat export SVG doesn't have). Both read `hasOverlayLegend`,
+          so a dismissed legend stays out of the export, and both push it below
+          the score legend by the same `scoreLegendReservedPx`. */}
       {model.hasOverlayLegend ? (
-        <OverlayColorLegend
-          sources={model.sources}
-          fallbackColor={model.posColor}
-          canvasWidth={legendRight}
-          maxHeight={height}
-        />
+        <g transform={`translate(0 ${legendTop})`}>
+          <SvgColorLegend
+            entries={legendEntries({ items: model.legendItems })}
+            canvasWidth={legendRight}
+            maxHeight={height - legendTop}
+            testid="multiwiggle-color-legend"
+          />
+        </g>
       ) : null}
       {labelOffset && hierarchy ? (
         <>

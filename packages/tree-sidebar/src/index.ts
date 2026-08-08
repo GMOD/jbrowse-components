@@ -7,7 +7,11 @@ export {
   treeSidebarOffset,
   treeSidebarRightEdge,
 } from './treeSidebarGeometry.ts'
-export { MIN_TEXT_ROW_HEIGHT, SvgRowLabels } from './SvgRowLabels.tsx'
+export {
+  MIN_TEXT_ROW_HEIGHT,
+  SvgRowLabels,
+  rowLabelsCarryText,
+} from './SvgRowLabels.tsx'
 export { RowLabelsOverlay } from './RowLabelsOverlay.tsx'
 export { StaleTreeHint } from './StaleTreeHint.tsx'
 export { ClusterProvenanceHint } from './ClusterProvenanceHint.tsx'

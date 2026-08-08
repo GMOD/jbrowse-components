@@ -9,12 +9,29 @@ import type { RowLabelSource } from './types.ts'
  * at a fraction of a pixel a row (1,987 canids in 640px is 0.32px) and the tint
  * is still the only thing carrying row identity there, so it has to survive.
  *
- * Exported because it is also the answer to "can this track's sidebar name its
- * own rows" — which is what decides whether a display needs a color key beside
- * the plot. A display asking that on its own would pick a second number and the
- * two would drift.
+ * Prefer `rowLabelsCarryText` to the bare number — see there.
  */
 export const MIN_TEXT_ROW_HEIGHT = 6
+
+/**
+ * Whether a row of this height draws its NAME rather than a bare color swatch.
+ *
+ * This is the one question, asked by the one function, in both places that need
+ * it: `SvgRowLabels` below, deciding what to draw, and a display deciding
+ * whether it needs a color key beside the plot — because a key exists to name
+ * colors, and while the rows name themselves it would only restate them.
+ *
+ * A predicate rather than the exported constant on purpose. The constant lets
+ * each caller re-type the comparison, and re-typing it is how the answer drifts:
+ * multi-wiggle's key asked `showTree && height >= MIN_TEXT_ROW_HEIGHT` for a
+ * while, conflating the dendrogram with the labels, which draw whether or not a
+ * tree does — so hiding the tree drew a key restating labels still on screen.
+ * There is nothing to conflate with a call.
+ */
+export function rowLabelsCarryText(rowHeight: number) {
+  return rowHeight >= MIN_TEXT_ROW_HEIGHT
+}
+
 const SWATCH_WIDTH = 8
 
 // Consecutive rows sharing a color paint as one rect. At sub-pixel row heights
@@ -64,7 +81,7 @@ export function SvgRowLabels({
   const fontSize = Math.min(rowHeight, 12)
   const boxHeight = Math.min(rowHeight, 20)
   const defaultBackground = alpha(theme.palette.background.paper, 0.8)
-  const textFits = rowHeight >= MIN_TEXT_ROW_HEIGHT
+  const textFits = rowLabelsCarryText(rowHeight)
   // Without a tint there is nothing left once the text is gone, so a track whose
   // rows carry no color draws nothing rather than a bare stripe of the default
   // background.

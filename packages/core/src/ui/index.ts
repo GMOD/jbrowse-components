@@ -163,6 +163,11 @@ export {
 } from './SvgColorLegend.tsx'
 export type { ColorLegendEntry } from './SvgColorLegend.tsx'
 export { measureLegendText } from './measureLegendText.ts'
-export { legendEntries, nonEmptyLegendSections } from './legendSpec.ts'
+export {
+  MAX_LEGEND_ITEMS,
+  legendEntries,
+  legendIsReadable,
+  nonEmptyLegendSections,
+} from './legendSpec.ts'
 export type { LegendItem, LegendSection, LegendSpec } from './legendSpec.ts'
 export { checkboxItem, radioItems } from './toggleMenuItems.ts'

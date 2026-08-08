@@ -28,6 +28,15 @@ it('does not apply to a multi-row track whose rows can carry their labels', () =
   expect(display.overlayLegendApplies).toBe(false)
 })
 
+// Hiding the dendrogram does not hide the row labels — those are
+// MultiWiggleSvgScales' own and draw for every multi-row track — so the key
+// would restate names still on screen. Row height is the whole test.
+it('does not apply to a labellable multi-row track with the tree hidden', () => {
+  const display = makeDisplay(cells(9, 9), 600)
+  display.setShowTree(false)
+  expect(display.overlayLegendApplies).toBe(false)
+})
+
 // The case this was widened for: 4,390 cells over 620px is 0.14px a row, where
 // SvgRowLabels drops to an unlabelled colour swatch. Nothing else on the frame
 // names the colours, so the key is the only identification there is.
@@ -60,6 +69,47 @@ it('applies in overlay mode regardless of row height', () => {
 it('never applies to a single source', () => {
   const display = makeDisplay(cells(1, 1), 620)
   expect(display.overlayLegendApplies).toBe(false)
+})
+
+// Density spends `color` on the score ramp, so a row's identity colour is its
+// `labelColor` — which is where a grouped-but-uncoloured cohort's group palette
+// lands. The key has to draw the colour the rows actually are.
+describe('density mode keys off the row identity colour', () => {
+  // no `color` of their own, which is what a MultiWiggleAdapter that sets
+  // `group` and nothing else produces
+  function groupedUncoloured(n: number, groups: number) {
+    return Array.from({ length: n }, (_, i) => ({
+      ...makeSource(`cell${i}`),
+      group: `g${i % groups}`,
+    })) as WiggleSourceData[]
+  }
+
+  it('draws the swatches the rows are tinted with, not the pos colour', () => {
+    const display = makeDisplay(groupedUncoloured(4390, 4), 620)
+    display.setRenderingType('multirowdensity')
+    // the ramp still owns `color`; identity moved to labelColor
+    expect(display.sources.every(s => !s.color)).toBe(true)
+    const colors = display.legendItems.map(i => i.color)
+    expect(new Set(colors).size).toBe(4)
+    expect(colors[0]).toBe(display.sources[0]!.labelColor)
+    expect(display.overlayLegendApplies).toBe(true)
+  })
+
+  // Nothing carries an identity colour, so every swatch would fall back to the
+  // one posColor: rows over the plot naming sources they cannot tell apart.
+  // Sized so the entry count alone would let the key through (20 rows at 5px is
+  // under both the label threshold and MAX_LEGEND_ITEMS), leaving the
+  // one-colour test as the only thing refusing it.
+  it('does not apply when every entry would share one colour', () => {
+    const display = makeDisplay(
+      Array.from({ length: 20 }, (_, i) => makeSource(`cell${i}`)),
+      100,
+    )
+    display.setRenderingType('multirowdensity')
+    expect(display.effectiveRowHeight).toBeLessThan(6)
+    expect(display.legendItems).toHaveLength(20)
+    expect(display.overlayLegendApplies).toBe(false)
+  })
 })
 
 // A group whose sources disagree about their colour still collapses, to one row

@@ -2,7 +2,7 @@ import { SvgRowLabels } from '@jbrowse/tree-sidebar'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
-import ScoreLegend from '../shared/ScoreLegend.tsx'
+import ScoreLegend, { scoreLegendHeight } from '../shared/ScoreLegend.tsx'
 import { getRowTop } from '../shared/wiggleComponentUtils.ts'
 
 import type { ScoreRamp } from '../shared/ScoreLegend.tsx'
@@ -10,14 +10,47 @@ import type { YScaleTicks } from '@jbrowse/wiggle-core'
 
 const AXIS_TO_LABEL_GAP_PX = 4
 
+// Whether the one-line score legend takes the place of the per-row axes.
+// Density encodes score as color, and a short row has no room for an axis, so
+// both fall back to it — and a domain is what makes any scale real.
+function scoreLegendShown(model: ScoreLegendModel) {
+  return (
+    !!model.domain &&
+    (model.isDensityMode || model.rowHeightTooSmallForScalebar)
+  )
+}
+
+interface ScoreLegendModel {
+  domain: [number, number] | undefined
+  isDensityMode: boolean
+  rowHeightTooSmallForScalebar: boolean
+  scoreRamp: ScoreRamp | undefined
+}
+
+/**
+ * Px the score legend occupies at the top-right, which the source color key has
+ * to start below.
+ *
+ * Both are pinned to the content's right edge and both draw from y=0, so
+ * whenever they apply together the key lands on top of the score range — and
+ * they apply together in exactly the case the key was widened for: a density
+ * track whose rows are too short to label falls back to the score legend AND
+ * gets a key. Exported so the two callers that draw the key (the on-screen
+ * `FloatingLegend`, the inline one in `renderSvg`) offset it by the
+ * same number this component lays the score legend out with.
+ */
+export function scoreLegendReservedPx(model: ScoreLegendModel) {
+  return scoreLegendShown(model) ? scoreLegendHeight(model.scoreRamp) : 0
+}
+
 // Row labels (non-overlay mode) plus the Y-scale legend, shared by the live
 // MultiWiggleComponent and the SVG export path so the two can't drift. The
 // overlay-mode color legend is NOT here: it's composed by each path directly —
-// on screen via the hoisted MultiWiggleLegendOverlay (which paints above the
+// on screen via the shared FloatingLegend (which portals above the
 // inter-region separators), in export inline in renderSvg. Callers pass their
 // own `legendRight`/`scalebarLeft`/`labelOffset` (the axis indent differs
 // between screen and export, see ONSCREEN_AXIS_LEFT_PX).
-interface ScaleModel {
+interface ScaleModel extends ScoreLegendModel {
   sources: {
     name: string
     label?: string
@@ -27,14 +60,10 @@ interface ScaleModel {
   }[]
   isOverlay: boolean
   effectiveRowHeight: number
-  isDensityMode: boolean
-  domain: [number, number] | undefined
   scaleType: string
   ticks?: YScaleTicks
-  rowHeightTooSmallForScalebar: boolean
   numSources: number
   numRows: number
-  scoreRamp: ScoreRamp | undefined
 }
 
 export default observer(function MultiWiggleSvgScales({
@@ -56,20 +85,15 @@ export default observer(function MultiWiggleSvgScales({
     sources,
     isOverlay,
     effectiveRowHeight,
-    isDensityMode,
     domain,
     scaleType,
     ticks,
-    rowHeightTooSmallForScalebar,
     numSources,
     numRows,
     scoreRamp,
   } = model
 
-  // Density encodes score as color, and a short row has no room for an axis, so
-  // both fall back to the one-line score legend.
-  const scoreLegendOnly = isDensityMode || rowHeightTooSmallForScalebar
-  const scalebarsShown = !!domain && !scoreLegendOnly
+  const scalebarsShown = !!domain && !scoreLegendShown(model)
 
   // The axes are left-oriented, so their ticks and numbers occupy the strip
   // that ends at `scalebarLeft`. Row labels start after that strip rather than
@@ -89,10 +113,11 @@ export default observer(function MultiWiggleSvgScales({
     ) : null
 
   // A domain is what makes any scale real (`ticks` derives from it, so the axis
-  // branch needs no separate tick guard). Overlay is one row over the full
-  // height (rowHeight === height, so getRowTop(0) === 0); multi-row draws one
-  // scalebar per source down the track.
-  const scalebars = scalebarsShown ? (
+  // branch needs no separate tick guard), which is why the no-domain case is one
+  // early null rather than a guard on each branch. Overlay is one row over the
+  // full height (rowHeight === height, so getRowTop(0) === 0); multi-row draws
+  // one scalebar per source down the track.
+  const scalebars = !domain ? null : scalebarsShown ? (
     <g transform={`translate(${scalebarLeft})`}>
       {Array.from({ length: numRows }).map((_, idx) => (
         <g
@@ -104,14 +129,14 @@ export default observer(function MultiWiggleSvgScales({
         </g>
       ))}
     </g>
-  ) : domain ? (
+  ) : (
     <ScoreLegend
       domain={domain}
       scaleType={scaleType}
       canvasWidth={legendRight}
       ramp={scoreRamp}
     />
-  ) : null
+  )
 
   return (
     <>

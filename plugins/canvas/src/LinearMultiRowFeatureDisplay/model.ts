@@ -5,6 +5,7 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { legendIsReadable } from '@jbrowse/core/ui'
 import { getSession, openFeatureWidget } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
@@ -28,6 +29,7 @@ import {
   filterRowsBySubtree,
   reconcileLayout,
   resetRowOrderMenuItems,
+  rowLabelsCarryText,
   setupRowSortAutorun,
   setupRunClusteringAutorun,
   treeSidebarOffset,
@@ -68,7 +70,7 @@ import type {
   MultiRowRenderingBackend,
 } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { MultiRowSource, RowGroup } from './sourcesLogic.ts'
-import type { MenuItem } from '@jbrowse/core/ui'
+import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
@@ -501,6 +503,43 @@ export default function stateModelFactory(
           resolveRowHeight(self.rowHeight, self.autoRowHeight),
           self.maxCanvasHeight / self.nrow,
         )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Key for the `rowGroups` stripe: one row per (group, color) pair present,
+       * in first-appearance order, in the color the sidebar swatch is painted.
+       *
+       * **Empty unless that stripe is the only thing carrying row identity.**
+       * Above `rowLabelsCarryText` the sidebar writes each row's name beside it
+       * and a key would restate them. Below it `RowLabelsOverlay` drops to an
+       * unlabelled swatch, and 1,987 canids at 0.32 px a row are then five
+       * group colors with nothing saying what any of them is — the same hole
+       * multi-wiggle's key closed, on the display whose figure the swatch
+       * stripe was built for.
+       *
+       * A different vocabulary from `colorLegend`, which keys the per-feature
+       * painting and drives the category toggles; these rows name rows, and are
+       * not togglable. `legendIsReadable` refuses the degenerate cases — one
+       * group, or more groups than a reader can scan.
+       */
+      get rowGroupLegend(): LegendItem[] {
+        if (rowLabelsCarryText(self.effectiveRowHeight)) {
+          return []
+        }
+        const seen = new Set<string>()
+        const items: LegendItem[] = []
+        for (const { group, labelColor } of self.sources) {
+          if (group !== undefined && labelColor !== undefined) {
+            const key = `${group} ${labelColor}`
+            if (!seen.has(key)) {
+              seen.add(key)
+              items.push({ color: labelColor, label: group })
+            }
+          }
+        }
+        return legendIsReadable(items) ? items : []
       },
     }))
     .views(self => ({
