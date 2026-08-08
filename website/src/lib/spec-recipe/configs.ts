@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
+
+import { repoRoot } from '../../../scripts/paths.ts'
 
 // Most figures load a `test_data/…` config that lives in this repo, so a spec's
 // bare `"tracks": ["ncbi_gff_hg19"]` can be resolved at build time into the
@@ -8,8 +9,6 @@ import { fileURLToPath } from 'node:url'
 // do the same thing with a file of their own. Figures pointing at a hosted
 // config (jbrowse.org/demos/…) stay unresolved and fall back to generic wording
 // rather than triggering a network fetch during the site build.
-
-const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '../../../..')
 
 interface RawAdapter {
   type?: string

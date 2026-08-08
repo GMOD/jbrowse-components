@@ -5,8 +5,9 @@ import {
   rmSync,
   writeFileSync,
 } from 'node:fs'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 
+import { repoRoot } from '../paths.ts'
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
 import { ECOLI_DEMO_BASE, usingLocalDemo } from './demoBase.ts'
 
@@ -89,9 +90,6 @@ const TOOLBAR_READY = `body:has(${GRAPH_DRAWN}) [data-testid="graph-layout-selec
 // worst possible failure for the one switch you flip only when hunting one.
 const localEsmUrl =
   '/test_data/graphgenomeview/_localdist/jbrowse-plugin-graphgenomeviewer.esm.js'
-// Repo root, off this module rather than off cwd: the spec paths are stated
-// relative to the root and this file is imported by more than the generator.
-const repoRoot = fileURLToPath(new URL('../../../', import.meta.url))
 
 // `_localdist` is COPIED from the plugin's dist/ on every GRAPH_PLUGIN_LOCAL
 // run, for the same reason the `_local.json` siblings above are written rather
@@ -108,13 +106,13 @@ const repoRoot = fileURLToPath(new URL('../../../', import.meta.url))
 if (process.env.GRAPH_PLUGIN_LOCAL) {
   const pluginDist =
     process.env.GRAPH_PLUGIN_DIST ??
-    `${repoRoot}../jb2plugins/jbrowse-plugin-graphgenomeview/dist`
+    join(repoRoot, '..', 'jb2plugins', 'jbrowse-plugin-graphgenomeview', 'dist')
   if (!existsSync(pluginDist)) {
     throw new Error(
       `GRAPH_PLUGIN_LOCAL is set but no plugin build at ${pluginDist} — run \`pnpm build\` in the plugin, or set GRAPH_PLUGIN_DIST`,
     )
   }
-  const dest = `${repoRoot}test_data/graphgenomeview/_localdist`
+  const dest = join(repoRoot, 'test_data/graphgenomeview/_localdist')
   rmSync(dest, { force: true, recursive: true })
   cpSync(pluginDist, dest, { recursive: true })
 }
@@ -127,7 +125,7 @@ const rewriteFixture = usingLocalDemo || process.env.GRAPH_PLUGIN_LOCAL
 const local = rewriteFixture
   ? (name: string) => {
       const derived = name.replace(/\.json$/, '_local.json')
-      let text = readFileSync(`${repoRoot}${name}`, 'utf8')
+      let text = readFileSync(join(repoRoot, name), 'utf8')
       if (usingLocalDemo) {
         text = text.replaceAll(HOSTED_DEMO, ECOLI_DEMO_BASE)
       }
@@ -138,7 +136,7 @@ const local = rewriteFixture
         }
       }
       writeFileSync(
-        `${repoRoot}${derived}`,
+        join(repoRoot, derived),
         `${JSON.stringify(config, null, 2)}\n`,
       )
       return derived

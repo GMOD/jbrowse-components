@@ -1,11 +1,10 @@
 import { readFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 
+import { repoRoot } from '../paths.ts'
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
-
-const repoRoot = fileURLToPath(new URL('../../../', import.meta.url))
 
 // The tutorial's own config, rather than config_demo: the per-cell track needs
 // the Zarr plugin declared, which is a config-level thing. It carries the RefSeq
@@ -27,7 +26,7 @@ const CONFIG = 'test_data/scrna_pbmc5k/config.json'
 // that figure; a hand-copied key would be the one thing in it that could
 // disagree with the data.
 const cellTypeLegend = (
-  JSON.parse(readFileSync(`${repoRoot}${CONFIG}`, 'utf8')) as {
+  JSON.parse(readFileSync(join(repoRoot, CONFIG), 'utf8')) as {
     tracks: {
       trackId: string
       adapter: { subadapters?: { name: string; color: string }[] }
