@@ -28,8 +28,8 @@
 #     taken from `pluginManager.getDisplayType(…).configSchema` poisons the
 #     whole schema through GetBase and has to be re-plumbed first.
 #
-# 148 unchecked in source, 173 in tests,
-# of 879 total config accessor calls. The gate counts source only.
+# 147 unchecked in source, 176 in tests,
+# of 881 total config accessor calls. The gate counts source only.
 
 packages/app-core/src/Assemblies/AssembliesMixin.ts  (1)
   166	readConfObject('name')
@@ -121,15 +121,18 @@ packages/core/src/configuration/promotedValueCloneable.test.ts  (3)  [test]
   73	resolveConf('colorBy')
   85	resolveConf('colorBy')
   108	resolveConf('colorBy')
+packages/core/src/pluggableElementTypes/models/adapterSlotAlwaysMaterializes.test.ts  (3)  [test]
+  71	readConfObject('adapter')
+  82	readConfObject('adapter')
+  93	readConfObject('adapter')
 packages/core/src/pluggableElementTypes/models/BaseDisplayModel.tsx  (2)
   129	getConf('adapter')
   155	getConf('rpcDriverName')
-packages/core/src/pluggableElementTypes/models/BaseTrackModel.ts  (5)
-  122	getConf('adapter')
-  129	getConf('name')
-  135	getConf('textSearchAdapter')
-  153	getConf('adapter')
-  301	getConf('rpcDriverName')
+packages/core/src/pluggableElementTypes/models/BaseTrackModel.ts  (4)
+  135	getConf('name')
+  141	getConf('textSearchAdapter')
+  159	getConf('adapter')
+  307	getConf('rpcDriverName')
 packages/core/src/pluggableElementTypes/models/expandTrackConfigShorthandE2e.test.ts  (9)  [test]
   67	readConfObject('type')
   80	readConfObject('color')

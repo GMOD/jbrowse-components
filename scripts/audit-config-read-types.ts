@@ -31,7 +31,14 @@
  * api-docs gap files already state: a warning fails nothing and scrolls past in
  * a CI log.
  *
- * Run: `node scripts/audit-config-read-types.ts [--write]`
+ * Run: `pnpm check-config-read-types` (or `node scripts/audit-config-read-types.ts
+ * [--write]` to re-baseline).
+ *
+ * Gated in CI, as a step on the `typecheck` job in push.yml — it builds a program
+ * from the same root tsconfig, so it wants that job's checkout and toolchain. It
+ * spent a while as a script nothing ran, which is how the baseline came to sit 5
+ * behind the tree with nobody noticing; the gate language below was aspirational
+ * until then and is now literal.
  */
 import fs from 'fs'
 import path from 'path'

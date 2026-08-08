@@ -119,8 +119,14 @@ export function createBaseTrackModel(
        * determines which webworker to send the track to, currently based on trackId
        */
       get rpcSessionId() {
-        const adapter = getConf(self, 'adapter')
-        return adapter ? adapterConfigCacheKey(adapter) : this.trackId
+        // no `adapter ? … : this.trackId` fallback: the slot always materializes
+        // an object (see `adapterConfig` below, and
+        // adapterSlotAlwaysMaterializes.test.ts), so the trackId arm was dead and
+        // read as though a track could have no adapter.
+        //
+        // `this`, not `self` — `adapterConfig` is declared in this same `.views`
+        // block, so `self` does not carry it yet.
+        return adapterConfigCacheKey(this.adapterConfig)
       },
       /**
        * #getter

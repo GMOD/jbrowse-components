@@ -66,16 +66,18 @@ base from `pluginManager.getDisplayType(…).configSchema` has unchecked reads o
 its _own_ slots, and no downstream annotation can recover them. Import the base
 schema directly instead. gccontent hit exactly this.
 
-`node scripts/audit-config-read-types.ts` is the other half: the narrowing test
-proves the machinery works on a concrete schema, this counts how many real call
-sites reach it (baselined in `scripts/configReadTypeGaps.txt`; run with
-`--write` to re-baseline). Note the baseline groups by file, which hides that
-many per-display gaps are reads against the _track_ schema and so unreachable by
-narrowing the display. **The signal is the read's return type, not the config
-node's** — `AnyConfigurationModel` is a real object type rather than `any`, so a
-widened holder looks concrete while `ConfigurationSlotName` of it has already
-degraded to `string`. A `@ts-expect-error` probe on the mixin idiom compiles
-clean; only the `any` return gives it away.
+`pnpm check-config-read-types` is the other half: the narrowing test proves the
+machinery works on a concrete schema, this counts how many real call sites reach
+it (baselined in `scripts/configReadTypeGaps.txt`; run the script with `--write`
+to re-baseline, and say why in the commit). **Gated in CI** on the `typecheck`
+job; it fails only when the source count grows. Note the baseline groups by
+file, which hides that many per-display gaps are reads against the _track_
+schema and so unreachable by narrowing the display. **The signal is the read's
+return type, not the config node's** — `AnyConfigurationModel` is a real object
+type rather than `any`, so a widened holder looks concrete while
+`ConfigurationSlotName` of it has already degraded to `string`. A
+`@ts-expect-error` probe on the mixin idiom compiles clean; only the `any`
+return gives it away.
 
 ## Frozen tracks + hydration
 

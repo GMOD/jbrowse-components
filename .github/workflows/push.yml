@@ -115,6 +115,17 @@ jobs:
       - uses: ./.github/actions/setup
       - name: Typecheck codebase
         run: pnpm typecheck
+      # Rides this job rather than earning its own: it builds a program from the
+      # same root tsconfig `typecheck:web` does, so it wants exactly this
+      # checkout and toolchain, and takes ~10s on top.
+      #
+      # A ratchet over a committed baseline, like check-gated-adapter-budgets —
+      # so it is deliberately not a scripts/autogen.ts generator, which would
+      # silently write a new unchecked read into the baseline instead of forcing
+      # the decision. It only fails when the count GROWS; lowering the baseline
+      # is a `--write` and a reason in the commit.
+      - name: Check config reads did not lose their slot-name checking
+        run: pnpm check-config-read-types
 
   lint:
     name: Lint
