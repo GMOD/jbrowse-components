@@ -212,6 +212,83 @@ describe('feature modifiers', () => {
   })
 })
 
+describe('alignments settings a static export cannot reach any other way', () => {
+  test('the display-chrome and sashimi numbers accumulate', () => {
+    const { snap } = buildDisplaySnapshot('alignments', [
+      'legend',
+      'maxHeight:4000',
+      'sashimiScore:3',
+      'sashimiHeight:120',
+      'arcColor:insertSize',
+    ])
+    expect(snap).toMatchObject({
+      showLegend: true,
+      maxHeight: 4000,
+      minSashimiScore: 3,
+      sashimiArcsHeight: 120,
+      arcColorByType: 'insertSize',
+    })
+  })
+
+  test('legend reads as a flag, like coverage and force', () => {
+    expect(
+      buildDisplaySnapshot('alignments', ['legend:false']).snap.showLegend,
+    ).toBe(false)
+  })
+
+  test('the read-set filters are plain booleans', () => {
+    expect(
+      buildDisplaySnapshot('alignments', ['properPairs:false', 'splitOnly'])
+        .snap,
+    ).toMatchObject({ drawProperPairs: false, showOnlySplitAlignments: true })
+  })
+
+  // samtools' -f / -F, in that order
+  test('flags sets the two masks', () => {
+    expect(
+      buildDisplaySnapshot('alignments', ['flags:2:1540']).snap.filterBy,
+    ).toEqual({ flagInclude: 2, flagExclude: 1540 })
+  })
+
+  // An omitted half has to leave the display's own default alone rather than
+  // become 0 -- `flags::256` reading as "include nothing" would silently drop
+  // every read.
+  test('an omitted half of flags is left unset', () => {
+    expect(
+      buildDisplaySnapshot('alignments', ['flags::256']).snap.filterBy,
+    ).toEqual({ flagExclude: 256 })
+    expect(
+      buildDisplaySnapshot('alignments', ['flags:2']).snap.filterBy,
+    ).toEqual({ flagInclude: 2 })
+  })
+
+  // AND-ed, so a second one is a second condition rather than a replacement
+  test('tag filters accumulate, and coexist with the flag masks', () => {
+    expect(
+      buildDisplaySnapshot('alignments', [
+        'flags:2',
+        'filterTag:HP:1',
+        'filterTag:RG:lane3',
+      ]).snap.filterBy,
+    ).toEqual({
+      flagInclude: 2,
+      tagFilters: [
+        { tag: 'HP', value: '1' },
+        { tag: 'RG', value: 'lane3' },
+      ],
+    })
+  })
+
+  test('the new alignments modifiers warn on a wiggle track', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+    const { snap } = buildDisplaySnapshot('wiggle', ['legend', 'flags:2:1540'])
+    expect(snap.showLegend).toBeUndefined()
+    expect(snap.filterBy).toBeUndefined()
+    expect(warn).toHaveBeenCalledTimes(2)
+    warn.mockRestore()
+  })
+})
+
 describe('wiggle / score modifiers', () => {
   test('score settings accumulate into the snapshot', () => {
     const { snap } = buildDisplaySnapshot('wiggle', [

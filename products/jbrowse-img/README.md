@@ -268,7 +268,10 @@ jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
 (`MM`/`ML`) BAM/CRAM: methylated cytosines red, unmethylated blue. This COLO829
 nanopore CRAM (hg38, streamed from the ONT open-data S3) with the UCSC
 CpG-island BED on top shows the methylated flanks giving way to the unmethylated
-island cores, read against the annotated island boundaries:
+island cores, read against the annotated island boundaries. `legend` draws the
+color key, which is worth adding to any export whose coloring is not the default
+one: the app leaves it off because a reader can open the track menu, and that is
+the one thing a PNG cannot offer:
 
 <!-- jb2export: methylation -->
 
@@ -276,11 +279,11 @@ island cores, read against the annotated island boundaries:
 jb2export --fasta https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz \
   --aliases https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt \
   --bedgz https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz index:https://jbrowse.org/ucsc/hg38/cpgIslandExt.bed.gz.csi \
-  --bam https://jbrowse.org/demos/ont/COLO829_tumor.ht.chr20_18.5Mb.bam color:methylation height:350 \
+  --bam https://jbrowse.org/demos/ont/COLO829_tumor.ht.chr20_18.5Mb.bam color:methylation legend height:350 \
   --loc chr20:18,503,000-18,509,000 --width 1200 --out methylation.png
 ```
 
-![COLO829 nanopore reads colored by per-base CpG methylation over a CpG island](https://jbrowse.org/jb2-figures/jbrowse-img/methylation.feaea7c613e9.png)
+![COLO829 nanopore reads colored by per-base CpG methylation over a CpG island](https://jbrowse.org/jb2-figures/jbrowse-img/methylation.0cbc3e895e78.png)
 
 `sashimi:auto` overlays splice-junction arcs on the coverage band, sized by the
 number of reads spanning each junction: the standard RNA-seq splice view.
@@ -550,16 +553,30 @@ Reads & coloring:
 | `sort:type` or `sort:type:tag`   | `sort:strand`, `sort:tag:RG`   | Sort reads (`position`, `strand`, `basePair`, or `tag:<TAG>`)                                                                      |
 | `group:type` or `group:type:tag` | `group:strand`, `group:tag:HP` | Group reads into in-track stacked sections (`strand`, `firstOfPairStrand`, `pairOrientation`, `splitRead`, `mapq`, or `tag:<TAG>`) |
 | `softClipping:true\|false`       | `softClipping:true`            | Show soft-clipped bases                                                                                                            |
+| `legend:true\|false`             | `legend`                       | Draw the color key. Off by default in the app, where the reader can open the track menu instead                                    |
+
+Which reads are drawn. These filter before the coverage pipeline as well as
+before layout, so a filter that removes reads removes them from the coverage
+band too:
+
+| Modifier                  | Example             | Description                                                                                                     |
+| ------------------------- | ------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `flags:include:exclude`   | `flags:2:1540`      | SAM flag masks, `samtools -f` then `-F`. Either half may be empty to keep the default (include 0, exclude 1540) |
+| `filterTag:TAG:value`     | `filterTag:HP:1`    | Keep only reads whose tag has this value. Repeatable, and every one must pass                                   |
+| `properPairs:true\|false` | `properPairs:false` | Draw properly-paired reads. Off leaves the discordant and split chains, which is an SV view                     |
+| `splitOnly:true\|false`   | `splitOnly`         | Only reads that are part of a split/chimeric alignment (SAM flag 0x800)                                         |
 
 Overlays & subtracks:
 
-| Modifier               | Example              | Description                                                            |
-| ---------------------- | -------------------- | ---------------------------------------------------------------------- |
-| `arcs:mode`            | `arcs:cloud`         | Read-connection arcs / read-cloud panel (`off`, `up`, `down`, `cloud`) |
-| `linkedReads:mode`     | `linkedReads:normal` | Linked-read chains (`off`, `normal`, `bezier`)                         |
-| `sashimi:mode`         | `sashimi:up`         | Sashimi splice-junction arcs (`off`, `up`, `down`, `auto`)             |
-| `coverage:true\|false` | `coverage:false`     | Toggle coverage subtrack                                               |
-| `snpcov`               | `snpcov`             | Coverage-only view — resizes the coverage band to fill the track       |
+| Modifier               | Example               | Description                                                                            |
+| ---------------------- | --------------------- | -------------------------------------------------------------------------------------- |
+| `arcs:mode`            | `arcs:cloud`          | Read-connection arcs / read-cloud panel (`off`, `up`, `down`, `cloud`)                 |
+| `linkedReads:mode`     | `linkedReads:normal`  | Linked-read chains (`off`, `normal`, `bezier`)                                         |
+| `sashimi:mode`         | `sashimi:up`          | Sashimi splice-junction arcs (`off`, `up`, `down`, `auto`)                             |
+| `coverage:true\|false` | `coverage:false`      | Toggle coverage subtrack                                                               |
+| `snpcov`               | `snpcov`              | Coverage-only view — resizes the coverage band to fill the track                       |
+| `sashimiScore:N`       | `sashimiScore:3`      | Minimum reads a splice junction needs before its arc is drawn                          |
+| `arcColor:mode`        | `arcColor:insertSize` | Read-connection arc coloring (`insertSizeAndOrientation`, `insertSize`, `orientation`) |
 
 Layout & sizing:
 
@@ -569,6 +586,8 @@ Layout & sizing:
 | `coverageHeight:N`           | `coverageHeight:200`                             | Height of the coverage subtrack (also the height of the read-cloud overlay)                                                 |
 | `readConnectionsHeight:N`    | `readConnectionsHeight:120`                      | Height of the paired-arcs panel — only applies to `arcs:up` / `arcs:down`                                                   |
 | `readConnectionsLineWidth:N` | `readConnectionsLineWidth:2`                     | Stroke width for read-connection arcs/lines in pixels                                                                       |
+| `sashimiHeight:N`            | `sashimiHeight:120`                              | Height of the sashimi arc band                                                                                              |
+| `maxHeight:N`                | `maxHeight:4000`                                 | Row cap for the pileup, in pixels. Raise it when the export shows the "Max height reached" notice                           |
 
 Available `color:type` values:
 

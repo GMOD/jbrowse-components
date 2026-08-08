@@ -749,11 +749,18 @@ export const uiSpecs: ScreenshotSpec[] = [
               // left wrong: at 30x every ordinary mate pair is an arc a few
               // hundred bp wide, which draws as a near-vertical tick, so the
               // informative long-range arcs ride over a picket fence of them.
-              // There is no "long-range only" slot to turn that off --
-              // `drawLongRange` adds the long arcs, it does not subtract the
-              // short ones -- and the long arcs stay traceable because
-              // arcColorByType's default colors them by insert size and
-              // orientation. Worth re-checking if a filter ever lands.
+              //
+              // `drawProperPairs: false` is the filter that would clear it, and
+              // it is deliberately NOT set here. It drops whole read-name chains
+              // in `filterChainFeatures`, which runs before the coverage
+              // pipeline and not merely before layout -- so on an ordinary
+              // sample it takes ~all the reads, and the three coverage curves
+              // this figure exists to compare go with them. The arcs are the
+              // supporting evidence here and the coverage is the claim, so the
+              // noisier arc band is the right trade.
+              //
+              // The long arcs stay traceable because arcColorByType's default
+              // colors them by insert size and orientation.
               readConnections: 'arc',
               readConnectionsHeight: 70,
               height: 240,

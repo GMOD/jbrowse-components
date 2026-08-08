@@ -1228,6 +1228,11 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '--bam',
     'https://jbrowse.org/demos/ont/COLO829_tumor.ht.chr20_18.5Mb.bam',
     'color:methylation',
+    // The key for that coloring. It is off by default in the app because the
+    // reader can open the track menu, which is the one thing nobody looking at
+    // a PNG can do -- so red and blue were two unexplained colors and the
+    // caption had to carry them.
+    'legend',
     'height:350',
     '--loc',
     'chr20:18,503,000-18,509,000',

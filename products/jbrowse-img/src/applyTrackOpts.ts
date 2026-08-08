@@ -217,6 +217,21 @@ interface DisplaySnapshot {
   showPileup?: boolean
   coverageHeight?: number
   showSoftClipping?: boolean
+  showLegend?: boolean
+  maxHeight?: number
+  minSashimiScore?: number
+  sashimiArcsHeight?: number
+  arcColorByType?: string
+  drawProperPairs?: boolean
+  showOnlySplitAlignments?: boolean
+  // `{ flagInclude, flagExclude, tagFilters }`. Partial by design — the display
+  // runs every read of it through `normalizeFilterBy`, which fills whichever
+  // masks a hand-written config left out.
+  filterBy?: {
+    flagInclude?: number
+    flagExclude?: number
+    tagFilters?: { tag: string; value: string }[]
+  }
   // wiggle / score
   color?: string
   useBicolor?: boolean
@@ -528,6 +543,100 @@ const modifiers: Record<string, Modifier> = {
     on: ['alignments'],
     apply: (r, v) => {
       r.snap.showSoftClipping = parseBool('softClipping', v)
+    },
+  },
+  // The color key. Off by default in the app because a reader can open the
+  // track menu, which is exactly what nobody looking at a PNG can do — same
+  // argument as `force`, and the reason a modification or MAPQ export is close
+  // to unreadable without it.
+  legend: {
+    on: ['alignments'],
+    apply: (r, v) => {
+      r.snap.showLegend = parseBool('legend', v)
+    },
+  },
+  maxHeight: {
+    on: ['alignments'],
+    apply: (r, v) => {
+      r.snap.maxHeight = parseNum('maxHeight', v)
+    },
+  },
+  // Sashimi band controls. `sashimiScore` is the junction-support floor, which
+  // is what separates real splice junctions from one-read aligner noise, and
+  // there is no way to raise it after the fact in a static image.
+  sashimiScore: {
+    on: ['alignments'],
+    apply: (r, v) => {
+      r.snap.minSashimiScore = parseNum('sashimiScore', v)
+    },
+  },
+  sashimiHeight: {
+    on: ['alignments'],
+    apply: (r, v) => {
+      r.snap.sashimiArcsHeight = parseNum('sashimiHeight', v)
+    },
+  },
+  arcColor: {
+    on: ['alignments'],
+    apply: (r, v) => {
+      r.snap.arcColorByType = parseEnum('arcColor', v, [
+        'insertSizeAndOrientation',
+        'insertSize',
+        'orientation',
+      ] as const)
+    },
+  },
+  // The two read-set filters an SV export wants, both of which drop whole
+  // read-name chains rather than individual reads.
+  //
+  // They filter BEFORE the coverage pipeline, not just before layout, so
+  // `properPairs:false` on an ordinary sample removes almost every read and the
+  // coverage band goes with them. That is the right behaviour (the band should
+  // describe the reads that are drawn) and it is the thing to know before
+  // reaching for this to tidy up an arc band.
+  properPairs: {
+    on: ['alignments'],
+    apply: (r, v) => {
+      r.snap.drawProperPairs = parseBool('properPairs', v)
+    },
+  },
+  splitOnly: {
+    on: ['alignments'],
+    apply: (r, v) => {
+      r.snap.showOnlySplitAlignments = parseBool('splitOnly', v)
+    },
+  },
+  // samtools' own vocabulary, because it is the one a reader of this flag
+  // already has: `flags:include:exclude` is `-f` then `-F`. The display's
+  // default is include 0 / exclude 1540 (unmapped, duplicate, failed-QC), so
+  // both halves are optional and an omitted one keeps that default rather than
+  // silently becoming 0.
+  flags: {
+    on: ['alignments'],
+    apply: (r, include, exclude) => {
+      r.snap.filterBy = {
+        ...r.snap.filterBy,
+        ...(include ? { flagInclude: parseNum('flags', include) } : {}),
+        ...(exclude ? { flagExclude: parseNum('flags', exclude) } : {}),
+      }
+    },
+  },
+  // AND-ed with any other tag filter and with the flag masks above, which is
+  // why this appends rather than assigns: `filterTag:HP:1 filterTag:RG:x` is two
+  // conditions, not the second one.
+  filterTag: {
+    on: ['alignments'],
+    apply: (r, tag, value) => {
+      r.snap.filterBy = {
+        ...r.snap.filterBy,
+        tagFilters: [
+          ...(r.snap.filterBy?.tagFilters ?? []),
+          {
+            tag: parseStr('filterTag', tag, 'a SAM tag name'),
+            value: value ?? '',
+          },
+        ],
+      }
     },
   },
   // snpcov collapses an alignments display to coverage-only: hide the pileup
