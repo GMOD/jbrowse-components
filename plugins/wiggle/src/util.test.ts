@@ -1,6 +1,7 @@
 import {
   computeAutoscaleDomain,
   formatScore,
+  getFilename,
   getNiceDomain,
   getScale,
 } from './util.ts'
@@ -238,5 +239,35 @@ describe('formatScore', () => {
   test('passes the >=100 and zero branches through', () => {
     expect(formatScore(0)).toBe('0')
     expect(formatScore(1500.4)).toBe('1500')
+  })
+})
+
+describe('getFilename', () => {
+  test.each([
+    ['https://example.com/data/sample.bw', 'sample'],
+    ['sample.bw', 'sample'],
+    ['sample', 'sample'],
+    // the last dot in the whole string sits inside the query, so the extension
+    // strip used to leave the cache-buster on the label
+    ['https://example.com/sample.bw?v=1.2', 'sample'],
+    // a presigned link's query carries slashes of its own, so the basename has
+    // to be taken after the query comes off, not before
+    [
+      'https://s3.amazonaws.com/b/sample.bw?X-Amz-Credential=k/20260808/us-east-1/s3/aws4_request',
+      'sample',
+    ],
+    ['https://example.com/sample.bw#frag', 'sample'],
+  ])('%s -> %s', (input, expected) => {
+    expect(getFilename(input)).toBe(expected)
+  })
+
+  // `#` is legal in a filename, and the drop zone passes a bare `File.name`
+  // (and the adapter a localPath). No scheme, so nothing is a fragment there.
+  test.each([
+    ['sample#2.bw', 'sample#2'],
+    ['/home/me/data/sample#2.bw', 'sample#2'],
+    ['C:\\data\\sample#2.bw', 'C:\\data\\sample#2'],
+  ])('local %s -> %s', (input, expected) => {
+    expect(getFilename(input)).toBe(expected)
   })
 })

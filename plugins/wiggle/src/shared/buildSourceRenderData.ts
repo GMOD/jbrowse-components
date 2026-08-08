@@ -45,13 +45,13 @@ function sourceLayers({
   // switching a signed track to Minimum turned its negative bars blue and cost
   // a diverging density heatmap the loss/gain split it is read by.
   //
-  // Density has no whiskers presentation, so it falls through to the avg split
-  // below (which is what `effectiveSummaryScoreMode` reports it as drawing).
-  const drawsSummaryBands =
-    summaryScoreMode === 'min' ||
-    summaryScoreMode === 'max' ||
-    (summaryScoreMode === 'whiskers' && !isDensityMode)
-  if (drawsSummaryBands) {
+  // Every other mode is 'avg'. Density is the one that gets there without the
+  // user picking it, and the model resolves that (see
+  // `effectiveSummaryScoreMode`, which is what gpuProps carries) rather than
+  // this re-deciding it. The autoscale domain, the track menu's radio and the
+  // tooltip all read that same resolved mode, so a copy of the rule here could
+  // only drift from them.
+  if (summaryScoreMode !== 'avg') {
     return makeSummaryLayers({
       data: source,
       summaryScoreMode,
@@ -98,7 +98,11 @@ export interface WiggleGpuProps {
   sources: { name: string; color?: string }[]
   posColor: string
   negColor: string
-  summaryScoreMode: string
+  // The mode actually drawn, never the raw config slot, since density has no
+  // whiskers presentation and resolves to 'avg'. Named for the model getter
+  // that produces it so a new caller cannot skip the resolution.
+  // `sourceLayers` treats anything but 'avg' as a mode that draws bands.
+  effectiveSummaryScoreMode: string
   renderingType: string
   isDensityMode: boolean
   // Threshold the whiskers bands are colored around, and the baseline bars
@@ -146,7 +150,7 @@ export function buildSourceRenderData(
     sources,
     posColor: defaultPosColorStr,
     negColor: defaultNegColorStr,
-    summaryScoreMode,
+    effectiveSummaryScoreMode: summaryScoreMode,
     renderingType,
     isDensityMode,
     bicolorPivot,

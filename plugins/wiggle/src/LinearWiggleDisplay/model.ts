@@ -202,24 +202,36 @@ export default function stateModelFactory(
        *   non-density modes use the user's color; density uses posColor
        *   (multi default, so leave source.color undefined)
        *
-       * Solid mode overrides `negColor` too, not just the source color. The
-       * worker's pos/neg split only covers the 'avg' path; whiskers (the
-       * default summaryScoreMode) re-derives the split on the main thread from
-       * bicolorPivot and would otherwise paint every sub-pivot band in the
-       * negColor slot, so `color: 'green'` on signed data came back green/red.
+       * Solid mode overrides `negColor` too, not just the source color, and it
+       * does so in density as well, where the source color is deliberately left
+       * alone. The worker's pos/neg split only covers the 'avg' path. Every
+       * mode that draws a summary band (whiskers, min, max) re-derives the
+       * split on the main thread from bicolorPivot, and a negColor slot that
+       * does not match paints the sub-pivot half in an unrelated color:
+       * `color: 'green'` on signed data came back green/red, and a solid-color
+       * density track set to Minimum came back posColor above the pivot and
+       * negColor below it, against a legend describing a single ramp.
        */
       gpuProps() {
-        const wantsSolidColor = !self.useBicolor && !self.isDensityMode
+        // The one color the plot draws in when bicolor is off. Density ignores
+        // the `color` slot and always draws from posColor (see that slot's
+        // config doc, and `scoreRamp`, which describes no negative side there).
+        const solidColor = self.isDensityMode ? self.posColor : self.color
         return {
           sources: [
             {
               name: SINGLE_WIGGLE_SOURCE_NAME,
-              color: wantsSolidColor ? self.color : undefined,
+              // no override in density: solidColor is already the posColor the
+              // build falls back to
+              color:
+                !self.useBicolor && !self.isDensityMode
+                  ? self.color
+                  : undefined,
             },
           ],
           posColor: self.posColor,
-          negColor: wantsSolidColor ? self.color : self.negColor,
-          summaryScoreMode: self.summaryScoreMode,
+          negColor: self.useBicolor ? self.negColor : solidColor,
+          effectiveSummaryScoreMode: self.effectiveSummaryScoreMode,
           isDensityMode: self.isDensityMode,
           renderingType: self.renderingType,
           bicolorPivot: self.bicolorPivot,

@@ -44,7 +44,7 @@ const baseGpuProps: WiggleGpuProps = {
   sources: [{ name: 'default' }],
   posColor: '#0068d1',
   negColor: '#e01e26',
-  summaryScoreMode: 'avg',
+  effectiveSummaryScoreMode: 'avg',
   renderingType: 'xyplot',
   isDensityMode: false,
   bicolorPivot: 0,
@@ -55,7 +55,7 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
   test('avg mode splits into pos/neg layers', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      summaryScoreMode: 'avg',
+      effectiveSummaryScoreMode: 'avg',
     })
     expect(out).toHaveLength(2)
     expect(out[0]!.featureScores).toEqual(new Float32Array([5]))
@@ -71,7 +71,7 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
   test('whiskers mode splits each band by sign for stacking (xyplot)', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      summaryScoreMode: 'whiskers',
+      effectiveSummaryScoreMode: 'whiskers',
     })
     expect(out.map(s => [...s.featureScores])).toEqual([
       [9], // pos max
@@ -88,7 +88,7 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
   test('whiskers mode keeps whole bands for line rendering', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      summaryScoreMode: 'whiskers',
+      effectiveSummaryScoreMode: 'whiskers',
       renderingType: 'line',
     })
     expect(out).toHaveLength(3)
@@ -110,7 +110,7 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
     mode => {
       const out = buildSourceRenderData(makeData(), {
         ...baseGpuProps,
-        summaryScoreMode: mode,
+        effectiveSummaryScoreMode: mode,
       })
       expect(out).toHaveLength(1)
       expect([...out[0]!.featureScores]).toEqual(
@@ -125,7 +125,7 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
   test('min mode colors per instance in line mode', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      summaryScoreMode: 'min',
+      effectiveSummaryScoreMode: 'min',
       renderingType: 'line',
     })
     expect(out).toHaveLength(1)
@@ -138,7 +138,7 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
   test('min mode splits the band into pos/neg layers in density', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      summaryScoreMode: 'min',
+      effectiveSummaryScoreMode: 'min',
       isDensityMode: true,
       renderingType: 'density',
     })
@@ -151,7 +151,7 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
   test('min mode in density emits one layer when the band stays above the pivot', () => {
     const out = buildSourceRenderData(makePositiveData(), {
       ...baseGpuProps,
-      summaryScoreMode: 'min',
+      effectiveSummaryScoreMode: 'min',
       isDensityMode: true,
       renderingType: 'density',
     })
@@ -159,11 +159,13 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
     expect([...out[0]!.featureScores]).toEqual([2, 4])
   })
 
-  // density has no whiskers variant: it falls through to the avg pos/neg split.
-  test('density + whiskers falls through to the avg split', () => {
+  // density has no whiskers variant. The model resolves that before this ever
+  // sees it (`effectiveSummaryScoreMode`, covered in densityMode.test.ts), so
+  // what arrives here is 'avg' and takes the worker's pos/neg split.
+  test('density + avg takes the worker split', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
-      summaryScoreMode: 'whiskers',
+      effectiveSummaryScoreMode: 'avg',
       isDensityMode: true,
       renderingType: 'density',
     })

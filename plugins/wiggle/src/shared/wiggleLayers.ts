@@ -89,7 +89,6 @@ function summaryBands(
   data: FeatureArrays,
   summaryScoreMode: string,
 ): ScoreBand[] {
-  const avg = { scores: data.featureScores, posTint: noTint, negTint: noTint }
   if (summaryScoreMode !== 'whiskers') {
     return [
       {
@@ -99,6 +98,7 @@ function summaryBands(
       },
     ]
   }
+  const avg = { scores: data.featureScores, posTint: noTint, negTint: noTint }
   return data.hasSummaryScores
     ? [
         { scores: data.featureMaxScores, posTint: lighten, negTint: darken },

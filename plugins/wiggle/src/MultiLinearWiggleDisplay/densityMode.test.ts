@@ -43,6 +43,10 @@ it('scales a density domain to the averages it actually paints', () => {
   display.setRenderingType('multirowdensity')
   expect(display.effectiveSummaryScoreMode).toBe('avg')
   expect(display.domain).toEqual([0, 1])
+
+  // and the render path is handed the same resolved mode, so it cannot draw a
+  // presentation the domain and the score legend were not scaled for
+  expect(display.gpuProps().effectiveSummaryScoreMode).toBe('avg')
 })
 
 it('stops drawing cross hatches in density mode', () => {

@@ -336,9 +336,22 @@ export const WIGGLE_MIN_PX = 1.5
 // Query and fragment come off before the extension does. They are part of the
 // URL, not the name, and they routinely carry dots of their own — a presigned S3
 // link or a `?v=1.2` cache-buster left `sample.bw?v=1` as the subtrack label,
-// since the last dot in the whole string sat inside the query.
+// since the last dot in the whole string sat inside the query. It has to happen
+// before the basename too, because a presigned query carries slashes of its own.
+//
+// Only for something that is actually a URL, which is what the scheme test is
+// for. The other half of the callers pass a bare `File.name` or a localPath,
+// and `#` is a legal filename character on every platform this runs on. There
+// the whole string is the name: `sample#2.bw` is a file called `sample#2`, not
+// a file called `sample` with a fragment.
+//
+// Two or more characters before the colon, so a Windows drive letter is not
+// read as a scheme. `C:\data\sample#2.bw` is a localPath, and one-letter
+// schemes do not exist in practice.
 export function getFilename(uriOrName: string) {
-  const path = uriOrName.split(/[?#]/, 1)[0]!
+  const path = /^[a-z][a-z\d+.-]+:/i.test(uriOrName)
+    ? uriOrName.split(/[?#]/, 1)[0]!
+    : uriOrName
   const filename = path.slice(path.lastIndexOf('/') + 1)
   const dotIdx = filename.lastIndexOf('.')
   return dotIdx !== -1 ? filename.slice(0, dotIdx) : filename

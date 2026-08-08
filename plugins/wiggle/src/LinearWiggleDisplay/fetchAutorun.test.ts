@@ -282,6 +282,33 @@ describe('LinearWiggleDisplay solid color', () => {
     },
   )
 
+  // Density is the case the hue assertion above cannot make. It ignores the
+  // `color` slot entirely and always draws from posColor (the `color` config
+  // doc says so, and `scoreRamp` returns undefined with bicolor off, so the
+  // legend describes no negative side). The claim here is therefore only that
+  // one color comes out, not which. min/max re-derive the pos/neg split on the
+  // main thread from bicolorPivot, which is where a second color got in.
+  test.each(['avg', 'min', 'max'])(
+    'density with bicolor off stays one color in %s mode',
+    mode => {
+      const { createDisplay } = createTestEnvironment()
+      const { display } = createDisplay()
+      display.setUseBicolor(false)
+      display.setColor('green')
+      display.setRenderingType('density')
+      display.setSummaryScoreMode(mode)
+
+      const layers = buildSourceRenderData(
+        makeSignedWiggleData(false),
+        display.gpuProps(),
+      )
+
+      expect(layers.length).toBeGreaterThan(0)
+      const colors = new Set(layers.map(l => JSON.stringify(l.color)))
+      expect(colors.size).toBe(1)
+    },
+  )
+
   test('bicolor still splits the whisker bands by sign', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()

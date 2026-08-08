@@ -331,7 +331,7 @@ export default function stateModelFactory(
           sources: self.sources,
           posColor: self.posColor,
           negColor: self.negColor,
-          summaryScoreMode: self.summaryScoreMode,
+          effectiveSummaryScoreMode: self.effectiveSummaryScoreMode,
           renderingType: self.renderingType,
           isDensityMode: self.isDensityMode,
           bicolorPivot: self.bicolorPivot,

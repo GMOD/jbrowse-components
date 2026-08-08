@@ -1,10 +1,6 @@
-import { DEFAULT_GAP_BREAK_MULTIPLE } from '@jbrowse/wiggle-core'
-
 import { buildSourceRenderData } from '../../shared/buildSourceRenderData.ts'
-import {
-  SINGLE_WIGGLE_SOURCE_NAME,
-  WIGGLE_POS_COLOR_DEFAULT,
-} from '../../util.ts'
+import { SINGLE_WIGGLE_SOURCE_NAME } from '../../util.ts'
+import { createTestEnvironment } from '../testEnv.ts'
 
 import type { WiggleGpuProps } from '../../shared/buildSourceRenderData.ts'
 import type { WiggleDataResult } from '../../util.ts'
@@ -39,49 +35,38 @@ function makeData(numFeatures = 2, withNeg = false): WiggleDataResult {
   }
 }
 
-interface SingleModelLike {
-  useBicolor: boolean
-  color: string
-  posColor: string
-  negColor: string
-  renderingType: string
-  isDensityMode: boolean
-  summaryScoreMode: string
-  bicolorPivot: number
+interface SingleSettings {
+  useBicolor?: boolean
+  color?: string
+  posColor?: string
+  negColor?: string
+  // isDensityMode is not a setting: the model derives it from this
+  renderingType?: string
+  summaryScoreMode?: string
+  bicolorPivot?: number
 }
 
-// Mirror LinearWiggleDisplay.gpuProps() so tests exercise the same formula
-// the model uses to drive the unified multi build path.
-function singleGpuProps(
-  overrides: Partial<SingleModelLike> = {},
-): WiggleGpuProps {
-  const m: SingleModelLike = {
-    useBicolor: true,
-    color: WIGGLE_POS_COLOR_DEFAULT,
-    posColor: WIGGLE_POS_COLOR_DEFAULT,
-    negColor: '#e10000',
-    renderingType: 'xyplot',
-    isDensityMode: false,
-    summaryScoreMode: 'avg',
-    bicolorPivot: 0,
-    ...overrides,
-  }
-  const wantsSolidColor = !m.useBicolor && !m.isDensityMode
-  return {
-    sources: [
-      {
-        name: SINGLE_WIGGLE_SOURCE_NAME,
-        color: wantsSolidColor ? m.color : undefined,
-      },
-    ],
-    posColor: m.posColor,
-    negColor: m.negColor,
-    summaryScoreMode: m.summaryScoreMode,
-    isDensityMode: m.isDensityMode,
-    maxGapMultiple: DEFAULT_GAP_BREAK_MULTIPLE,
-    renderingType: m.renderingType,
-    bicolorPivot: m.bicolorPivot,
-  }
+// The real model's gpuProps(), driven through the same setters the track menu
+// uses. This used to restate the formula instead, so the tests below asserted
+// against a copy, and a copy cannot notice the model growing a case it does not
+// have. The case it was missing (density plus solid color, a second color
+// creeping into a single-ramp track) was a live bug.
+//
+// The two settings without a config default worth inheriting are named
+// explicitly. Single-wiggle defaults summaryScoreMode to whiskers, and these
+// tests are about color, not bands.
+function singleGpuProps(settings: SingleSettings = {}): WiggleGpuProps {
+  const { display } = createTestEnvironment().createDisplay()
+  // undefined clears the slot back to its default, which a fresh display is
+  // already at, so every optional setting can go through unconditionally
+  display.setUseBicolor(settings.useBicolor)
+  display.setColor(settings.color)
+  display.setPosColor(settings.posColor)
+  display.setNegColor(settings.negColor)
+  display.setBicolorPivot(settings.bicolorPivot)
+  display.setRenderingType(settings.renderingType ?? 'xyplot')
+  display.setSummaryScoreMode(settings.summaryScoreMode ?? 'avg')
+  return display.gpuProps()
 }
 
 describe('LinearWiggleDisplay gpuProps + buildSourceRenderData', () => {
@@ -159,7 +144,7 @@ describe('LinearWiggleDisplay gpuProps + buildSourceRenderData', () => {
     const data = makeData()
     const sources = buildSourceRenderData(
       data,
-      singleGpuProps({ isDensityMode: true, renderingType: 'density' }),
+      singleGpuProps({ renderingType: 'density' }),
     )
     expect(sources).toHaveLength(1)
   })
@@ -169,7 +154,6 @@ describe('LinearWiggleDisplay gpuProps + buildSourceRenderData', () => {
     const props = singleGpuProps({
       useBicolor: false,
       color: '#00ff00',
-      isDensityMode: true,
       renderingType: 'density',
       posColor: '#0068d1',
     })

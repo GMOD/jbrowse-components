@@ -86,7 +86,7 @@ function disambiguateSources(entries: AdapterEntry[]): AdapterEntry[] {
     entries.map(e => e.source).filter(s => counts.get(s) === 1),
   )
   return entries.map(entry => {
-    if (!(counts.get(entry.source)! > 1)) {
+    if (counts.get(entry.source) === 1) {
       return entry
     }
     const preferred =

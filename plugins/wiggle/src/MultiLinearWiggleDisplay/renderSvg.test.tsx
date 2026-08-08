@@ -120,7 +120,7 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
       sources: [{ name: 'a' }, { name: 'b' }],
       posColor: '#0068d1',
       negColor: '#e01e26',
-      summaryScoreMode: 'avg',
+      effectiveSummaryScoreMode: 'avg',
       renderingType: 'multirowxy',
       isDensityMode: false,
       bicolorPivot: 0,
