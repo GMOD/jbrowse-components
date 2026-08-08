@@ -442,3 +442,8 @@ With it gone the map is built for roughly five lookups, so replace it with an
 on-demand region scan or a lazily-populated per-id cache. Worth pairing with the
 `cloneMutableFields` item above, since both are per-layout allocation over the same
 arrays.
+
+## Auto-detect when to use first-of-pair strand?
+
+we already have smart 'sashimi' settings
+could add a 'token' on bottom right of display similar to auto for gene glyphs

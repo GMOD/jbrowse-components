@@ -114,8 +114,8 @@
     "name": "bigwig/whole_genome_coverage",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-01T11:45:26.538Z",
-    "hash": "4df092eeb5854bc644aaac574959a19b87608793"
+    "reviewedAt": "2026-08-08T15:18:23.702Z",
+    "hash": "0630add459a07c2067e07a88c73b9a5d29aabdaa"
   },
   "sv_inspector_begin": {
     "name": "sv_inspector_begin",
@@ -180,8 +180,8 @@
     "name": "inverted_duplication",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-04T20:18:43.699Z",
-    "hash": "45181d33d678a9ee64bd400e29eef3fa082ead4a"
+    "reviewedAt": "2026-08-08T15:21:45.555Z",
+    "hash": "79713616536455fd7d5ae59bf39dc039bf142e1d"
   },
   "sv_cgiab/translocation_sv_inspector_view": {
     "name": "sv_cgiab/translocation_sv_inspector_view",
@@ -201,8 +201,8 @@
     "name": "sv_cgiab/deletion_linear_view",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-27T12:51:20.643Z",
-    "hash": "719488e4c8f966e4fc8a51ab218b0fc4b07e67fc"
+    "reviewedAt": "2026-08-08T15:21:51.791Z",
+    "hash": "25ca7138cd8a2363b94ee67ca1b4c492de5c4a1e"
   },
   "sv_cgiab/cnv_with_bed_track": {
     "name": "sv_cgiab/cnv_with_bed_track",
@@ -362,8 +362,8 @@
     "name": "linear_align_ctx_menu",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-27T01:28:08.272Z",
-    "hash": "ec9cf10a2148f6e586253bf5b54484316bfae60c"
+    "reviewedAt": "2026-08-08T15:21:39.737Z",
+    "hash": "d6ce7ccafa7c67b7a100a134cf5d25f33f7b7e77"
   },
   "methylation/arabidopsis_bisulfite_chh": {
     "name": "methylation/arabidopsis_bisulfite_chh",
@@ -394,8 +394,8 @@
     "name": "plugin_store",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-06T05:32:13.895Z",
-    "hash": "2e2b0b2c48af3928a54694c44878d06833211dd2"
+    "reviewedAt": "2026-08-08T15:20:49.863Z",
+    "hash": "bd855bba2a708eb8e3ba4f1e118577426bad116c"
   },
   "add_track_tracklist": {
     "name": "add_track_tracklist",
@@ -862,8 +862,8 @@
     "name": "gene_track_color_by_cds",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-01T07:21:22.025Z",
-    "hash": "b47e1965fad63b005ea9b1ecd9b0c5d8cbdca11d"
+    "reviewedAt": "2026-08-08T15:19:35.215Z",
+    "hash": "0a79ec522b01b09af62f1d86411b1929734cce22"
   },
   "gene_track_mature_peptides": {
     "name": "gene_track_mature_peptides",
@@ -880,10 +880,10 @@
   },
   "sv_cgiab/deletion_sv_inspector_search": {
     "name": "sv_cgiab/deletion_sv_inspector_search",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-06T05:33:24.698Z",
-    "hash": "920775fa2847245ebe9924344b2e2873c269f487"
+    "status": "bad",
+    "note": "the red box isnt really quite surrounding the DEL feature. if needed we should create utils on window.JBrowseSession that helps find the right place for box",
+    "reviewedAt": "2026-08-08T15:22:31.853Z",
+    "hash": "697e7eb3543f0727efb7071a68d939b875b74f94"
   },
   "sv_cgiab/translocation_breakpoint_split": {
     "name": "sv_cgiab/translocation_breakpoint_split",
@@ -900,17 +900,17 @@
   },
   "trio-crossover-paternal": {
     "name": "trio-crossover-paternal",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-04T12:25:14.028Z",
-    "hash": "354178de2197929e59ee0c54de1206581699e435"
+    "status": "bad",
+    "note": "at some point i think we made the blue even darker, should be a bit lighter",
+    "reviewedAt": "2026-08-08T15:30:45.659Z",
+    "hash": "a8fe8f00ff64d44705d34c177315ebcbf8a75b3c"
   },
   "trio-crossover-maternal": {
     "name": "trio-crossover-maternal",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-04T12:25:10.411Z",
-    "hash": "d66a0c814a1f177ee08a9636595c18d736c0109d"
+    "status": "bad",
+    "note": "at some point i think we made the dark red even darker, should be lighter the dark red is a muddy brown...",
+    "reviewedAt": "2026-08-08T15:30:30.237Z",
+    "hash": "50149182331d565c1dfda34f8ab73d6f30a66e57"
   },
   "maf_track": {
     "name": "maf_track",
@@ -1245,10 +1245,10 @@
   },
   "gallery/fiberseq_gapdh": {
     "name": "gallery/fiberseq_gapdh",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-27T12:48:03.822Z",
-    "hash": "fb944700b86540e9ecd6fe1ec282f8236751d0ed"
+    "status": "bad",
+    "note": "the nanopore track needs a forceLoad:true",
+    "reviewedAt": "2026-08-08T15:28:39.457Z",
+    "hash": "3770a18cdfe31cd4b477dc61ab91418099f59095"
   },
   "gallery/gwas_bmi_fto": {
     "name": "gallery/gwas_bmi_fto",
@@ -1320,10 +1320,10 @@
   },
   "methylation/chromatin_accessibility_6ma": {
     "name": "methylation/chromatin_accessibility_6ma",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-27T05:00:12.799Z",
-    "hash": "9a697d2e0e548e2b64b8641b85f74fc17ffda2bd"
+    "status": "bad",
+    "note": "this shows a 'requested too much data' overlay, please fix. it needs to 'forceLoad:true' or something",
+    "reviewedAt": "2026-08-08T15:20:09.812Z",
+    "hash": "f03fa7e722ecf12bec25f633a2bee540aa82c272"
   },
   "multiway_synteny/ecoli_import_form": {
     "name": "multiway_synteny/ecoli_import_form",
@@ -1391,8 +1391,8 @@
     "name": "qtl/bxd_tyrp1_locus",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-06T18:41:16.444Z",
-    "hash": "94df902c485570c2488a0944cf3b2628640eb6d0"
+    "reviewedAt": "2026-08-08T15:29:36.248Z",
+    "hash": "6b76e26f4ff5ceb6d7990e6b0c9df129337b0dd4"
   },
   "encode_hic_loops_arcs": {
     "name": "encode_hic_loops_arcs",
@@ -1414,10 +1414,10 @@
   },
   "jbrowse-img/sashimi_junctions": {
     "name": "jbrowse-img/sashimi_junctions",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-27T04:21:52.310Z",
-    "hash": "e801970eaae720b4c9e41651ac66d83bc8a598dd"
+    "status": "bad",
+    "note": "might consider rendering with log scale coverage",
+    "reviewedAt": "2026-08-08T15:35:42.288Z",
+    "hash": "2a1782abd2d6e0130d76849bbd7ec588ef3dc3af"
   },
   "jbrowse-img/scatac_multiwiggle": {
     "name": "jbrowse-img/scatac_multiwiggle",
@@ -1506,8 +1506,8 @@
     "name": "qtl/bxd_painting_sorted",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-06T18:41:06.949Z",
-    "hash": "56e188a41789fd4e19016b117f6fd1bb56a56b3c"
+    "reviewedAt": "2026-08-08T15:29:32.369Z",
+    "hash": "40ee8753a7aa76284aff91bda4982c6a2a65a8ac"
   },
   "rnaseq/pkm_mutually_exclusive": {
     "name": "rnaseq/pkm_mutually_exclusive",
@@ -1518,10 +1518,10 @@
   },
   "rnaseq/strand_specific": {
     "name": "rnaseq/strand_specific",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-31T21:50:14.162Z",
-    "hash": "1dade106fddad12ab0407fd6fddbeda099b195d2"
+    "status": "bad",
+    "note": "might use 'log scale' coverage, and even make it clear with  extra annotation arrows which genes are forward and which are reverse so a big ----> in the left region, a big <---- in the middle region and a big ----> on the right region",
+    "reviewedAt": "2026-08-08T15:35:28.473Z",
+    "hash": "70b9dfabbd8449b0c476bacf2325b007ee6b6434"
   },
   "trio-ancestry": {
     "name": "trio-ancestry",
@@ -1560,9 +1560,9 @@
   "feature_height_default": {
     "name": "feature_height_default",
     "status": "good",
-    "note": "stageColumns 2, so the menu frame and the result frame sit side by side with the grid's gutter between them; viewport narrowed 1100 -> 950 so the pair is not a 4400px-wide PNG the page scales the menu text out of.",
-    "reviewedAt": "2026-08-06T06:16:49.644Z",
-    "hash": "8ffe574c6d72847d8feb0688fd37e17ea136417c"
+    "note": "",
+    "reviewedAt": "2026-08-08T15:19:35.151Z",
+    "hash": "667a114dae1cf9b25f61f5ce56ee002fbfd68604"
   },
   "multiway_synteny/ecoli_stx_island": {
     "name": "multiway_synteny/ecoli_stx_island",
@@ -2156,9 +2156,9 @@
   "dog10k-cyp1a2-nonsense": {
     "name": "dog10k-cyp1a2-nonsense",
     "status": "good",
-    "note": "DONE as asked: a second copy of the same VCF (dog10k_cyp1a2_snvs_positional in test_data/dog10k/config.json) drawn with LinearVariantDisplay, above the matrix and under the same jexlFilter, so the site carries the description a reader gets from any other variant track (C -> T). Two notes for next time: a track shows one display at a time, so the second lane has to be a second track config; and a session track was the wrong way to do it here, since its relative uri resolves against the RPC WORKER's url, not the config's baseUri. The canvas display's jexlFilters slot also takes BARE expressions (ensureJexlPrefix adds the prefix) where the matrix takes 'jexl:...' -- written with the prefix the track errors on 'jexl:jexl:'.",
-    "reviewedAt": "2026-08-01T14:39:25.623Z",
-    "hash": "4c0ffcae615ac46d034e1122bad137cfbf63fb6a"
+    "note": "consider turning on colorByCDS:true. previous notes: DONE as asked: a second copy of the same VCF (dog10k_cyp1a2_snvs_positional in test_data/dog10k/config.json) drawn with LinearVariantDisplay, above the matrix and under the same jexlFilter, so the site carries the description a reader gets from any other variant track (C -> T). Two notes for next time: a track shows one display at a time, so the second lane has to be a second track config; and a session track was the wrong way to do it here, since its relative uri resolves against the RPC WORKER's url, not the config's baseUri. The canvas display's jexlFilters slot also takes BARE expressions (ensureJexlPrefix adds the prefix) where the matrix takes 'jexl:...' -- written with the prefix the track errors on 'jexl:jexl:'.",
+    "reviewedAt": "2026-08-08T15:26:52.732Z",
+    "hash": "8c288fdb898aedbffcd0db07f7907691fc0b36ae"
   },
   "dog10k-denr-sine-deletions": {
     "name": "dog10k-denr-sine-deletions",
@@ -2169,10 +2169,10 @@
   },
   "dog10k-wolfdog-ancestry": {
     "name": "dog10k-wolfdog-ancestry",
-    "status": "bad",
-    "note": "remove german shepherd and 219 breeds note. the saarloos speaks for its own, just say saarloos recent wolf ancestry shown large recent wolf introgression or something like this, very brief, very clear. unclear what term 'held out' means here might not use that term or clarify",
-    "reviewedAt": "2026-08-08T14:43:52.276Z",
-    "hash": "9f31dd662eb5f992349d78a573f468addf571281"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-08T15:27:24.887Z",
+    "hash": "af87c46691d3dc3fadd9496070ae70ba8f352f28"
   },
   "mcscan_anchors": {
     "name": "mcscan_anchors",
@@ -2262,8 +2262,8 @@
     "name": "sv_synteny/assembly_order_warning",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-30T20:33:38.018Z",
-    "hash": "6cfcd4a28f940e3d1230a3afc155476894618e30"
+    "reviewedAt": "2026-08-08T15:21:30.241Z",
+    "hash": "827a2c2ab460f1e24e37e13989d6a43cfe70985a"
   },
   "pangenome/rgfa_paa_bubble": {
     "name": "pangenome/rgfa_paa_bubble",
@@ -2350,10 +2350,10 @@
   },
   "cancer_sv/k562_starfusion_triage": {
     "name": "cancer_sv/k562_starfusion_triage",
-    "status": "good",
-    "note": "Multi-part now, and the second part is the triage step rather than a restatement of the first. Two circles side by side: the 44 calls over every chromosome, then the SAME track with only chr9 and chr22 displayed. That is a displayedRegionNames change, not a new file and not a different track -- which is the point, since narrowing a circle is what a reader does next. On the right circle the artefact tail goes with chrM and what is left is the reciprocal pair as two red chords across an otherwise empty circle, their ends on 9q34 and 22q11, which is exactly where the next two figures work. Each half carries a label so the pair reads without the caption. WHY NOT A FILTERED CIRCLE, which was the other way to narrow: ChordVariantDisplay has four config slots -- onChordClick and three stroke colors -- and no jexlFilters, so junction-read support is expressible here as a COLOR and not as a filter. Both halves therefore keep the same strokeColor expression and the two red chords are the same two on both. That limitation is now in the prose rather than being something a reader has to discover. WHY NOT THE OTHER PAIRINGS: a zoomed linear view of the pair is k562_bcr_abl_split and the copy-number context is k562_cn_amplicon, both immediately below on the same page, so composing either in would republish a figure a reader is about to scroll to. Figure links point at the two PART specs, since a compose has no session of its own.",
-    "reviewedAt": "2026-08-04T23:31:37.905Z",
-    "hash": "0858158a2add552a22c7bb2e1a5d05c2a7db8a54"
+    "status": "bad",
+    "note": "this is a confusing figure since the figures look so different. it is not just 'filtering' but it is 'only showing chr9 and chr22. that is confusing probably without close examination. ideally, instead of just plain-old-circular view, using sv inspector might be better here also. and then just filter in the sv inspector. if needed we can add new filtering functions to sv inspector to make things like this easier",
+    "reviewedAt": "2026-08-08T15:34:02.927Z",
+    "hash": "38d1246ad8a24379333f938010751ccaaa3365b5"
   },
   "desktop-add-track-steps": {
     "name": "desktop-add-track-steps",
@@ -2630,10 +2630,10 @@
   },
   "hic/loops_and_domains": {
     "name": "hic/loops_and_domains",
-    "status": "good",
-    "note": "REBUILT ON A LOCUS CHOSEN FROM THE CALL FILES. The chr18 window was 2.4 Mb of whatever the callers had there — every Arrowhead domain in frame was wider than the frame, so the lane was bars edge to edge, and ~40 HiCCUPS calls fanned across the arc lane with nothing under them. scripts/hic_pick_loop.py (new) scores every 250-900 kb domain against the strongest loop sitting on its two corners: 1,142 domains carry one, and chr8:127,735,000-128,335,000 ranks 15th (observed 1062) and is the first whose anchor is a gene most readers know — MYC, with PVT1 and the lymphoid enhancers inside the domain. The window frames that domain so both drawn domains stay whole, the domain is banded across every lane, and loops under observed 200 are transparent (the arc display has no filter slot), leaving one dark arc over the block it bounds.",
-    "reviewedAt": "2026-08-06T06:30:47.041Z",
-    "hash": "390c3a510ffcc4af7ff6b60b4cf4fafb23957e22"
+    "status": "bad",
+    "note": "zoom out more. show more genes, dont filter out just myc, but highlight myc. delete the 'contact domains', just change that into an arc track. it is not sensible as is being orange boxes IMO, it is just like boring. previous notes:REBUILT ON A LOCUS CHOSEN FROM THE CALL FILES. The chr18 window was 2.4 Mb of whatever the callers had there — every Arrowhead domain in frame was wider than the frame, so the lane was bars edge to edge, and ~40 HiCCUPS calls fanned across the arc lane with nothing under them. scripts/hic_pick_loop.py (new) scores every 250-900 kb domain against the strongest loop sitting on its two corners: 1,142 domains carry one, and chr8:127,735,000-128,335,000 ranks 15th (observed 1062) and is the first whose anchor is a gene most readers know — MYC, with PVT1 and the lymphoid enhancers inside the domain. The window frames that domain so both drawn domains stay whole, the domain is banded across every lane, and loops under observed 200 are transparent (the arc display has no filter slot), leaving one dark arc over the block it bounds.",
+    "reviewedAt": "2026-08-08T15:28:21.008Z",
+    "hash": "cc98cd75a7d266affe7ea91030630834be8f6f44"
   },
   "jbrowse-img/gene_name_search": {
     "name": "jbrowse-img/gene_name_search",
@@ -2667,8 +2667,8 @@
     "name": "jbrowse-img/snpcov",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-06T05:24:19.153Z",
-    "hash": "a169c2de8e44f6d67821167dbfbdec29e8a6e1c2"
+    "reviewedAt": "2026-08-08T15:35:44.870Z",
+    "hash": "e3efa65330fa4cc3649f369ebe4bda8aaf4a0295"
   },
   "jbrowse-img/volvox_config": {
     "name": "jbrowse-img/volvox_config",
@@ -2714,10 +2714,10 @@
   },
   "multisv_rhd_dosage": {
     "name": "multisv_rhd_dosage",
-    "status": "good",
-    "note": "KEPT after all. It was deleted per the note, then restored: two sections of the tutorial read off it — the dosage series itself, and 'Look again at the top row and the deleted span is not at zero', which opens the RHCE mismapping section. Removing the picture left both narrating a frame that was no longer there, which is worse than an unexciting figure.",
-    "reviewedAt": "2026-08-06T06:10:30.441Z",
-    "hash": "3fce39522e0d2b74314ddfc2ed0f4f63f19cafb6"
+    "status": "bad",
+    "note": "if we are going to keep this we need to (a) zoom out more and (b) add read arcs. previous notes: KEPT after all. It was deleted per the note, then restored: two sections of the tutorial read off it — the dosage series itself, and 'Look again at the top row and the deleted span is not at zero', which opens the RHCE mismapping section. Removing the picture left both narrating a frame that was no longer there, which is worse than an unexciting figure.",
+    "reviewedAt": "2026-08-08T15:20:42.235Z",
+    "hash": "6edca6e052ca6eec102aa3cffbd15c9d5d2d4f4c"
   },
   "genomes_msa/launch_sequence": {
     "name": "genomes_msa/launch_sequence",
@@ -2778,9 +2778,9 @@
   "maf_hprc_pangenome": {
     "name": "maf_hprc_pangenome",
     "status": "bad",
-    "note": "need to use ncbi gene track, this has NM_ transcriptid instead of gene symbols",
-    "reviewedAt": "2026-08-08T02:35:04.564Z",
-    "hash": "077c6d91a879a2b58ccecf7fdd0b78f7526a9640"
+    "note": "the text annotation is confusing \"no sequence here, not one whose sequence matches\"? and what is blank e.g. 'white' deletions? clarify better, but reduce wordiness.",
+    "reviewedAt": "2026-08-08T15:29:21.266Z",
+    "hash": "97dbbc675bbf4c440ff144b5d3f54f0445e0a20a"
   },
   "multiway_synteny/wheat_homoeolog_selection": {
     "name": "multiway_synteny/wheat_homoeolog_selection",
@@ -2890,8 +2890,8 @@
   "qc/smn_vs_t2t": {
     "name": "qc/smn_vs_t2t",
     "status": "bad",
-    "note": "confusing screenshot. this needs to be improved somehow, maybe with transparent cigar indels and showcurves",
-    "reviewedAt": "2026-08-08T02:37:42.934Z",
-    "hash": "850edaade26372a9636c2e241a1d1e1f6f71bccf"
+    "note": "zoom out more please and hide descriptions from t2t gene track",
+    "reviewedAt": "2026-08-08T15:21:27.932Z",
+    "hash": "313072c2a59bd3d24f7843f1c1d29da334edb464"
   }
 }
