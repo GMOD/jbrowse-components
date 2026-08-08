@@ -12,6 +12,39 @@ Steps 1, 2 and 4 are yours; step 3 is CI running unattended off the tag.
    lands above `## Downloads`, which is the cut `splitReleaseBody` uses to
    separate your summary from the changelog. See
    [Figures in a draft](#figures-in-a-draft) if the post has screenshots.
+
+   `pnpm check-release-drafts` validates it, and `pnpm check-docs` runs the same
+   check in CI, so a draft is checked from the day it lands rather than on
+   release day. It catches the mistakes that are unfixable once the tag is
+   pushed: a figure that doesn't exist (deleted in a screenshot-review pass
+   after the draft was written is the common one), a duplicated `## Downloads`
+   that silently truncates the summary, its own frontmatter. `pnpm release` runs
+   it again before it writes anything.
+
+   Check the published plugins too, on a major release — nothing else does:
+
+   ```bash
+   node --experimental-strip-types scripts/check-published-plugins.ts
+   ```
+
+   It reports which plugin-store plugins read a `@jbrowse/core/*` name this
+   build no longer serves. Needs the network, so it isn't a test.
+
+   **Optionally**, write
+   `website/release_announcement_drafts/v<version>.changelog.md` to replace the
+   generated changelog for that one release. `pnpm release` uses it verbatim in
+   place of `generate-changelog.sh` and consumes it the same way as the draft,
+   so it is per-release rather than a permanent fork of the generator. It has to
+   start with a `## Changes since …` heading — `splitReleaseBody` keys the
+   section off that, and without it the changelog silently vanishes from the
+   GitHub release body and the newsletter, which is why `check-release-drafts`
+   checks it.
+
+   Reach for this when the generated list would misrepresent the release. The
+   generator lists merged PRs, so it is only as complete as the workflow that
+   produced the release: v5.0.0 is 9051 commits behind 16 PRs, because most of
+   the work landed on `main` directly. Nothing warns you about that ratio.
+
 2. **Run** `pnpm release <patch|minor|major>`. It checks you're on a clean, up
    to date `main` with green CI, bumps every package version and `version.ts`,
    prepends the PR changelog to `CHANGELOG.md`, turns the draft into a dated
@@ -25,6 +58,14 @@ Steps 1, 2 and 4 are yours; step 3 is CI running unattended off the tag.
    `push.yml` uses `cancel-in-progress`, so pushing again cancels the previous
    run's jobs, and a cancelled job is not a green one. On a busy day, push and
    then leave `main` alone until the run completes.
+
+   Everything that can fail is checked before the first file is written — the
+   tag is free locally and on origin, the draft exists and validates, `gh` can
+   generate the changelog — because the write half runs straight into a commit,
+   tag and push with no chance to intervene. If the **push** at the end fails
+   anyway (someone landed on `main` during the install), the commit and tag are
+   local: follow the recovery it prints, don't re-run, which would cut a second
+   release commit on top of the first.
 
 3. **CI runs off the `v*` tag**, unattended: `publish.yml` → npm (`next` for
    prereleases, else `latest`), and `release.yml` → draft GitHub release with

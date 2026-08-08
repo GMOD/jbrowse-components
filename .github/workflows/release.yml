@@ -37,6 +37,20 @@ jobs:
             *-*) echo 'prerelease=true' >> "$GITHUB_OUTPUT" ;;
             *) echo 'prerelease=false' >> "$GITHUB_OUTPUT" ;;
           esac
+      # The desktop jobs derive their upload target from package.json, not from
+      # the tag — `gh release upload "v$VERSION" --clobber`. A tag that doesn't
+      # match the tree's version therefore uploads this build's binaries over
+      # *another* release's assets, silently and irreversibly. Nothing
+      # downstream can catch that, so fail the whole run here before any job
+      # that uploads has started.
+      - name: Check the tag matches the version in the tree
+        run: |
+          VERSION=$(node -p "require('./products/jbrowse-desktop/package.json').version")
+          if [ "v$VERSION" != "${RELEASE_VERSION}" ]; then
+            echo "Tag ${RELEASE_VERSION} does not match package.json version v$VERSION."
+            echo "Tags are cut by 'pnpm release', which bumps both together — this tag was not."
+            exit 1
+          fi
       - name: Build jbrowse-web
         uses: ./.github/actions/build-jbrowse-web
       # Upload the pristine build (before the versioned zip is added to it) so

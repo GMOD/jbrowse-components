@@ -390,12 +390,24 @@ export const qcSpecs: ScreenshotSpec[] = [
           {
             type: 'LinearSyntenyView',
             colorBy: 'strand',
-            drawCurves: false,
-            // ONE RIBBON PER CHAIN. The default 'full' draws every CIGAR block
-            // of every chain, which over a segmental duplication is thousands
-            // of slivers and came out as a hairball; the claim is about whole
-            // chains, so the CIGAR is noise here.
-            cigarMode: 'off',
+            // CURVES, and they are what makes three overlapping chains
+            // separable (review: "confusing screenshot ... maybe with
+            // transparent cigar indels and showcurves"). Straight ribbons over
+            // this block are three quadrilaterals that each span most of the
+            // frame's width at both ends, so they overlap almost everywhere and
+            // the band is a wash of blended colour with no edge to follow. A
+            // curve pinches in the middle, so each ribbon has a waist the other
+            // two do not share and the crossing reads as a crossing.
+            drawCurves: true,
+            // 'matches' is the menu's "Transparent indels": the ribbon is drawn
+            // per CIGAR match block with the gaps left open, so the parts of a
+            // chain that genuinely align are separated from the parts that only
+            // sit between them. The previous 'off' drew each chain as one solid
+            // slab hull, which is what made the band opaque; 'full' is the other
+            // extreme and was rejected earlier for being a hairball of coloured
+            // slivers over a segmental duplication. This is the middle setting
+            // and the one the review asked for.
+            cigarMode: 'matches',
             // drops the sub-kb chains the segdup throws off, leaving the three
             // that span the block
             minAlignmentLength: 10000,

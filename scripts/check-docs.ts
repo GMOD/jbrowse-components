@@ -114,6 +114,13 @@ const VALIDATORS: Validator[] = [
     argv: web('check-remote-hosts.ts', '--check'),
   },
   {
+    // The one doc `pnpm release` renders, commits, tags and pushes in a single
+    // run — so unlike every other page here, a mistake in it is published
+    // before anyone can read it back. Checked from the day the draft lands.
+    name: 'release announcement drafts are well formed',
+    argv: web('check-release-drafts.ts'),
+  },
+  {
     name: 'tutorial build scripts are valid',
     argv: ['python3', 'scripts/check-build-scripts.py'],
   },

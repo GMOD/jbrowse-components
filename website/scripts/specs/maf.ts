@@ -606,15 +606,35 @@ export const mafSpecs: ScreenshotSpec[] = [
   // contrast: there a missing row means a species diverged past alignment, here
   // it means a person does not have that segment.
   //
-  // MANE Select rather than the full UCSC gene set: at C4 the RefSeq track
-  // carries hundreds of `biological region` features (every CH-n recombination
-  // sub-region), which in grow mode filled the figure and left no room for the
-  // alignment it was supposed to caption.
+  // THE UCSC NCBI RefSeq SET, NOT MANE, AND THE REASON IS THE LABELS (review:
+  // "need to use ncbi gene track, this has NM_ transcriptid instead of gene
+  // symbols"). The MANE bigBed's `name` field is the RefSeq transcript
+  // accession, so the lane over the C4 module read NM_007293.3, NM_001002029.4,
+  // NM_000500.9 — the module's own genes, spelled in a namespace nobody reads
+  // the figure in. The GFF3 set names features by symbol, so the same lane now
+  // reads C4A, CYP21A1P, TNXA, C4B, CYP21A2, TNXB, which is the vocabulary the
+  // caption and the surrounding prose already use.
+  //
+  // It was MANE for a real reason and that reason is now handled rather than
+  // avoided: the RefSeq set does carry every recombination sub-region here, and
+  // in grow mode they filled the figure. Over this window
+  // (`tabix hg38.gff.gz NC_000006.12:31972057-32055418`) that is 24
+  // non_allelic_homologous_recombination_region, 10 enhancer, 9
+  // nucleotide_motif, 9 biological_region and 5 meiotic_recombination_region
+  // against 6 genes and 3 pseudogenes. `showOnlyGenes` admits gene/pseudogene/
+  // transcript/container/CDS types and nothing else (featureAdmission.ts), so
+  // the nine are all that reach the lane; `longestCoding` keeps each of them to
+  // one glyph. Same pair maf_470way already uses on the same track.
+  //
+  // The GFF3's refNames are RefSeq accessions (NC_000006.12), which is why this
+  // works at all: hprc_maf.json's hg38 carries the standard hg38_aliases.txt,
+  // whose chr6 row lists NC_000006.12, so a `chr6:` locus and the track's own
+  // contig resolve to the same thing.
   {
     mode: 'url' as const,
     name: 'maf_hprc_pangenome',
     url: sessionSpec('test_data/hprc_maf.json', {
-      sessionTracks: [HG38_MANE_TRACK],
+      sessionTracks: [HG38_NCBI_GENE_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
@@ -622,8 +642,10 @@ export const mafSpecs: ScreenshotSpec[] = [
           loc: 'chr6:31,972,057-32,055,418',
           tracks: [
             {
-              trackId: 'mane_hg38',
+              trackId: 'ncbi_genes_hg38_ucsc',
               type: 'LinearBasicDisplay',
+              showOnlyGenes: true,
+              geneGlyphMode: 'longestCoding',
               heightMode: 'grow',
             },
             {

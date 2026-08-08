@@ -2169,9 +2169,9 @@
   },
   "dog10k-wolfdog-ancestry": {
     "name": "dog10k-wolfdog-ancestry",
-    "status": "answered",
-    "note": "Four pills, one line each, naming the four bands and nothing more. Two of them were three lines over 820px and each hid about seven of the rows it described. The modern-panels argument (orange means looks-like-a-present-day-wolf, not descended-from-wolves) is a sentence in local_ancestry.md instead.",
-    "reviewedAt": "2026-08-08T01:10:28.941Z",
+    "status": "bad",
+    "note": "remove german shepherd and 219 breeds note. the saarloos speaks for its own, just say saarloos recent wolf ancestry shown large recent wolf introgression or something like this, very brief, very clear. unclear what term 'held out' means here might not use that term or clarify",
+    "reviewedAt": "2026-08-08T14:43:52.276Z",
     "hash": "9f31dd662eb5f992349d78a573f468addf571281"
   },
   "mcscan_anchors": {

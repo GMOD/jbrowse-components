@@ -242,32 +242,40 @@ if (dryRun) {
   console.log(`\n--- email html ---\n${htmlBody}`)
 }
 
-if (process.env.BLUESKY_APP_PASSWORD) {
-  if (dryRun) {
-    console.log('\n[dry-run] would post to Bluesky')
-  } else {
-    await postBluesky()
+// Each channel runs even if an earlier one failed. These are three independent
+// sends with no transaction between them, and a throw partway used to take the
+// remaining channels down with it — leaving the only fix a re-run that posts
+// again to whichever channels had already succeeded. Failures are collected and
+// reported at the end, so the run is still red and it names what to retry (with
+// the credentials for the channels that already went out unset).
+const failures: string[] = []
+
+async function channel(
+  name: string,
+  credential: string,
+  send: () => void | Promise<void>,
+) {
+  if (!process.env[credential]) {
+    console.log(`  – ${name} skipped (no ${credential})`)
+    return
   }
-} else {
-  console.log('  – Bluesky skipped (no BLUESKY_APP_PASSWORD)')
+  if (dryRun) {
+    console.log(`[dry-run] would send to ${name}`)
+    return
+  }
+  try {
+    await send()
+  } catch (e) {
+    console.error(`  ✗ ${name}: ${e instanceof Error ? e.message : e}`)
+    failures.push(name)
+  }
 }
 
-if (process.env.MASTODON_ACCESS_TOKEN) {
-  if (dryRun) {
-    console.log('[dry-run] would post to Mastodon')
-  } else {
-    await postMastodon()
-  }
-} else {
-  console.log('  – Mastodon skipped (no MASTODON_ACCESS_TOKEN)')
-}
+await channel('Bluesky', 'BLUESKY_APP_PASSWORD', postBluesky)
+await channel('Mastodon', 'MASTODON_ACCESS_TOKEN', postMastodon)
+await channel('Newsletter', 'NEWSLETTER_LAMBDA', sendNewsletter)
 
-if (process.env.NEWSLETTER_LAMBDA) {
-  if (dryRun) {
-    console.log('[dry-run] would invoke newsletter Lambda')
-  } else {
-    sendNewsletter()
-  }
-} else {
-  console.log('  – Newsletter skipped (no NEWSLETTER_LAMBDA)')
+if (failures.length > 0) {
+  console.error(`\nFailed to announce on: ${failures.join(', ')}`)
+  process.exit(1)
 }

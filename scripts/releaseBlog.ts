@@ -17,6 +17,22 @@ export function releasePostFilename(tag: string, date: string) {
   return `${date}-${tag}-release.md`
 }
 
+export const DRAFTS_DIR = 'website/release_announcement_drafts'
+
+// The two files a release can be handed, both consumed by the run that ships
+// them. `notes` is required and becomes the human summary; `changelog` is
+// optional and replaces the generated PR list when the generated one would
+// misrepresent the release — v5.0.0 is 9051 commits behind 16 PRs, because the
+// work landed on main directly rather than through pull requests.
+export const releaseDraftPaths = (tag: string) => ({
+  notes: `${DRAFTS_DIR}/${tag}.md`,
+  changelog: `${DRAFTS_DIR}/${tag}.changelog.md`,
+})
+
+// splitReleaseBody finds the changelog section by this heading, so an override
+// that omits it silently drops the whole section from the GitHub release body.
+export const CHANGELOG_HEADING = /^#+\s+Changes since\b/
+
 // Where the site serves website/static/img once deployed.
 const SITE_IMG = 'https://jbrowse.org/jb2/img/'
 

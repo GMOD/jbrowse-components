@@ -9,7 +9,11 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { releasePostFilename, renderReleasePost } from './releaseBlog.ts'
+import {
+  releaseDraftPaths,
+  releasePostFilename,
+  renderReleasePost,
+} from './releaseBlog.ts'
 import {
   isPrerelease,
   nextVersion,
@@ -48,7 +52,24 @@ function assertReleasableTree() {
     )
   }
   if (capture('git', ['status', '--short']) !== '') {
-    throw new Error('Please discard or stash changes and try again.')
+    throw new Error('Please discard or commit your changes and try again.')
+  }
+}
+
+// `git tag` refuses to overwrite, but it runs *after* the commit, so hitting
+// that leaves a release commit sitting on main with no tag and no way to
+// re-run — the second attempt sees a dirty-free tree whose versions are
+// already bumped and cuts a second commit. Checked up front instead, on both
+// sides: a tag pushed by someone else is just as fatal, and only shows up when
+// the push at the end is rejected.
+function assertTagFree(tag: string) {
+  if (capture('git', ['tag', '--list', tag]) !== '') {
+    throw new Error(
+      `Tag ${tag} already exists locally. Delete it (git tag -d ${tag}) or pick another version.`,
+    )
+  }
+  if (capture('git', ['ls-remote', '--tags', 'origin', `refs/tags/${tag}`])) {
+    throw new Error(`Tag ${tag} is already on origin — ${tag} is released.`)
   }
 }
 
@@ -105,30 +126,71 @@ function assertCiGreen(head: string) {
 // blog post (so no announcement, and releasenotes.ts finds nothing for the
 // GitHub release body), no CHANGELOG entry, and must not move currentVersion,
 // which drives the download page's asset links.
-function writeReleaseDocs(releaseTag: string, date: string, datetime: string) {
-  const draft = `website/release_announcement_drafts/${releaseTag}.md`
-  if (!fs.existsSync(draft)) {
-    throw new Error(`No blogpost draft found at ${draft}, please write one.`)
+//
+// Split read-then-write on purpose. Both of these can fail — a missing draft, a
+// gh that isn't authenticated — and the write half is followed immediately by a
+// commit, tag and push, so a throw *between* writes leaves the tree half
+// released: currentVersion moved, the draft deleted, no post. Everything that
+// can fail is done here, before the first byte is written.
+function readReleaseDocs(releaseTag: string) {
+  const paths = releaseDraftPaths(releaseTag)
+  if (!fs.existsSync(paths.notes)) {
+    throw new Error(
+      `No blogpost draft found at ${paths.notes}, please write one.`,
+    )
   }
+  const notes = fs.readFileSync(paths.notes, 'utf8')
+  // Also a check-docs validator, so this normally passed hours ago — but
+  // --skip-ci-check exists, and this is the last moment a broken figure path
+  // or a duplicated `## Downloads` can still be fixed.
+  console.log('Checking the drafts...')
+  run('node', ['website/scripts/check-release-drafts.ts'])
 
+  const override = fs.existsSync(paths.changelog)
+  const changelog = override
+    ? fs.readFileSync(paths.changelog, 'utf8').trim()
+    : capture('scripts/generate-changelog.sh', [])
+  console.log(
+    override
+      ? `Using the hand-written changelog at ${paths.changelog}`
+      : 'Generated the changelog from merged PRs',
+  )
+  // Both are consumed, so neither can be mistaken for a pending release.
+  const consumed = [paths.notes, ...(override ? [paths.changelog] : [])]
+  return { consumed, notes, changelog }
+}
+
+// Returns the paths it touched, so the format and commit below can name them
+// rather than sweeping the worktree.
+function writeReleaseDocs({
+  consumed,
+  notes,
+  changelog,
+  releaseTag,
+  date,
+  datetime,
+}: {
+  consumed: string[]
+  notes: string
+  changelog: string
+  releaseTag: string
+  date: string
+  datetime: string
+}) {
   fs.writeFileSync(
     'website/src/config.ts',
     `export const currentVersion = '${releaseTag}'\n`,
   )
-
-  console.log('Generating changelog...')
-  const changelog = capture('scripts/generate-changelog.sh', [])
   fs.writeFileSync(
     'CHANGELOG.md',
     `${changelog}\n\n${fs.readFileSync('CHANGELOG.md', 'utf8')}`,
   )
-
-  // Consume the draft so it can't be mistaken for a pending release
-  const notes = fs.readFileSync(draft, 'utf8')
-  fs.rmSync(draft)
-
+  for (const file of consumed) {
+    fs.rmSync(file)
+  }
+  const post = path.join('website/blog', releasePostFilename(releaseTag, date))
   fs.writeFileSync(
-    path.join('website/blog', releasePostFilename(releaseTag, date)),
+    post,
     renderReleasePost({
       template: fs.readFileSync('scripts/blog_template.txt', 'utf8'),
       tag: releaseTag,
@@ -137,6 +199,7 @@ function writeReleaseDocs(releaseTag: string, date: string, datetime: string) {
       changelog,
     }),
   )
+  return ['website/src/config.ts', 'CHANGELOG.md', ...consumed, post]
 }
 
 const workspaceManifests = () =>
@@ -165,6 +228,7 @@ function bumpVersions(version: string) {
   console.log(
     `  ${manifests.length} packages and ${versionFiles.length} version.ts files -> ${version}`,
   )
+  return [...manifests, ...versionFiles]
 }
 
 function main() {
@@ -179,9 +243,6 @@ function main() {
     assertCiGreen(capture('git', ['rev-parse', 'HEAD']))
   }
 
-  // `pnpm format` below runs out of node_modules; keep it matching the lockfile
-  run('pnpm', ['install', '--frozen-lockfile'])
-
   const previousVersion: string = readJson(VERSION_SOURCE).version
   const version = nextVersion({ previousVersion, level, explicitVersion })
   const releaseTag = `v${version}`
@@ -190,26 +251,62 @@ function main() {
     `Releasing ${releaseTag}${prerelease ? ' (prerelease)' : ''} (from ${previousVersion})`,
   )
 
+  assertTagFree(releaseTag)
+
   const now = new Date()
   const p = (n: number) => String(n).padStart(2, '0')
   const date = `${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())}`
   const time = `${p(now.getHours())}:${p(now.getMinutes())}:${p(now.getSeconds())}`
 
-  if (prerelease) {
-    console.log('  skipping blog post, changelog, and currentVersion bump')
+  // Read (and so fail) before installing, which is the slow step.
+  const docs = prerelease ? undefined : readReleaseDocs(releaseTag)
+
+  // `pnpm format` below runs out of node_modules; keep it matching the lockfile
+  run('pnpm', ['install', '--frozen-lockfile'])
+
+  if (docs) {
+    console.log('Writing release docs...')
   } else {
-    writeReleaseDocs(releaseTag, date, `${date} ${time}`)
+    console.log('  skipping blog post, changelog, and currentVersion bump')
   }
+  const written = [
+    ...(docs
+      ? writeReleaseDocs({
+          ...docs,
+          releaseTag,
+          date,
+          datetime: `${date} ${time}`,
+        })
+      : []),
+    ...bumpVersions(version),
+  ]
 
-  bumpVersions(version)
-
+  // Named paths, not a bare `pnpm format` + `git add .`. The clean-tree check
+  // ran minutes ago, before the install and the format; in a worktree several
+  // people or agents share, a sweep here lands their in-flight edits under the
+  // release commit. `git commit -- <paths>` takes the working tree at those
+  // paths and ignores the index, which also stages the deleted draft.
+  //
   // CI publishes from the tag. The website deploy is not tied to this commit
   // message: update-docs.yml runs on release publish.
-  run('pnpm', ['format'])
-  run('git', ['add', '.'])
-  run('git', ['commit', '--message', releaseTag])
+  run('pnpm', ['format', ...written])
+  run('git', ['commit', '--message', releaseTag, '--', ...written])
   run('git', ['tag', '-a', releaseTag, '-m', releaseTag])
-  run('git', ['push', '--follow-tags'])
+  try {
+    run('git', ['push', '--follow-tags'])
+  } catch (e) {
+    // The commit and tag are local at this point, so the release is recoverable
+    // — but only if you know not to re-run and cut a second one. The tag has to
+    // come off before the rebase and go back on after: an annotated tag names a
+    // commit, and the rebase replaces the one it names.
+    throw new Error(
+      `Push failed (${e instanceof Error ? e.message : e}).\n` +
+        `${releaseTag} is committed and tagged LOCALLY. Do not re-run pnpm release.\n` +
+        'Rebase onto whatever landed, then re-tag and push:\n' +
+        `  git tag -d ${releaseTag} && git pull --rebase && git tag -a ${releaseTag} -m ${releaseTag} && git push --follow-tags\n` +
+        `To abandon instead: git tag -d ${releaseTag} && git reset --hard origin/main`,
+    )
+  }
 
   console.log(`✓ Released ${releaseTag}`)
 }

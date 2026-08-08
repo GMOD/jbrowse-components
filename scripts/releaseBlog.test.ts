@@ -9,6 +9,9 @@ import {
   parseReleasePost,
   releasePostFilename,
   renderReleasePost,
+  DRAFTS_DIR,
+  CHANGELOG_HEADING,
+  releaseDraftPaths,
   splitReleaseBody,
   stripImages,
 } from './releaseBlog.ts'
@@ -128,4 +131,41 @@ test('findReleasePost selects by tag, not recency', () => {
   expect(findReleasePost(undefined, dir)).toBe('2026-07-22-v4.4.0-release.md')
   expect(findReleasePost('v4.3.0', dir)).toBe('2026-07-01-v4.3.0-release.md')
   expect(() => findReleasePost('v9.9.9', dir)).toThrow('no release blog post')
+})
+
+// check-release-drafts.ts gates a hand-written changelog override on
+// CHANGELOG_HEADING, but what the section has to survive is splitReleaseBody's
+// own regex. Two regexes for one heading, in two files, is exactly the pair
+// that drifts — and the failure is silent: the override renders into the post
+// and then vanishes from the GitHub release body and the newsletter.
+test('CHANGELOG_HEADING accepts what splitReleaseBody finds, and no more', () => {
+  const accepted = ['## Changes since v4.3.0 (2026-05-21)', '### Changes since']
+  for (const heading of accepted) {
+    expect(CHANGELOG_HEADING.test(heading)).toBe(true)
+    expect(
+      splitReleaseBody(`prose\n\n## Downloads\n\nlinks\n\n${heading}\n\n- a`)
+        .changelog,
+    ).toBe(`${heading}\n\n- a`)
+  }
+  for (const heading of [
+    'Changes since v4.3.0',
+    '## Changelog',
+    '## Changes',
+  ]) {
+    expect(CHANGELOG_HEADING.test(heading)).toBe(false)
+    expect(
+      splitReleaseBody(`prose\n\n## Downloads\n\nlinks\n\n${heading}\n\n- a`)
+        .changelog,
+    ).toBe('')
+  }
+})
+
+// release.ts derives both from the tag; check-release-drafts.ts recognizes the
+// override by pattern. A rename on either side orphans the file, and the
+// release silently falls back to the generated PR list.
+test('releaseDraftPaths names the two files a release consumes', () => {
+  expect(releaseDraftPaths('v5.0.0')).toEqual({
+    notes: `${DRAFTS_DIR}/v5.0.0.md`,
+    changelog: `${DRAFTS_DIR}/v5.0.0.changelog.md`,
+  })
 })

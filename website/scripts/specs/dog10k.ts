@@ -463,16 +463,32 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   // for being checkable (review: "if we are making up a story we should not do
   // that ... i just wanted to show ancestry painting").
   //
-  // THE FOUR PILLS NAME THE FOUR BANDS AND NOTHING ELSE. They used to carry the
-  // argument too, which made two of them three lines over 820px, each hiding
-  // about seven of the rows it was describing (review: "much less text
-  // annotation please"). One line each now; the modern-panels argument is a
-  // sentence in local_ancestry.md.
+  // TWO PILLS, ON THE TWO BANDS THAT ARE NOT SELF-EVIDENT. There were four, one
+  // per band, and the two that went are the two whose row labels already said
+  // the same thing: "219 breeds with no wolf story: flecks, not blocks" over a
+  // field of flecks, and "German Shepherd lineage: solid dog" over rows the
+  // sidebar names German Shepherd (review: "remove german shepherd and 219
+  // breeds note"). A pill that repeats the sidebar spends a band of rows to say
+  // nothing.
   //
-  // Each pill names a BAND OF ROWS, not a locus, which is why none is a box:
+  // The wolfdog pill names Saarloos only and says what the blocks ARE rather
+  // than how big they are (review: "the saarloos speaks for its own, just say
+  // saarloos recent wolf ancestry ... very brief, very clear"). Megabase-long
+  // blocks IS recent introgression — the length is the evidence, not the claim
+  // — and the Czechoslovakian rows directly under it show the same pattern
+  // under their own labels.
+  //
+  // "HELD OUT" IS GONE FROM THE PILL (review: "unclear what term 'held out'
+  // means here"). It is a term about the panel, not about the animals: the
+  // build script REMOVES these eight from the wolf reference panel so FLARE has
+  // to paint them like anything else, which makes them the figure's positive
+  // control. The pill now says that instead of naming it. local_ancestry.md
+  // still uses the term, where it is defined.
+  //
+  // Each pill names a BAND OF ROWS, not a locus, which is why neither is a box:
   // the y carries the meaning (fracY 0 plus a dy, so a pill tracks its band if
   // the row count or track height changes) and the x is only a place to put the
-  // label. Anchored at 6 Mb so all four left-align into one column.
+  // label. Anchored at 6 Mb so both left-align into one column.
   //
   // "IF GENOME WIDE THERE ARE INTERESTING PATTERNS, WE CAN CONSIDER ZOOMING OUT
   // GENOME WIDE" (same review). Not available as a spec edit, and not because of
@@ -518,24 +534,26 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     settleMs: 3000,
     // all 64 haplotype rows plus the color legend, no page background below
     viewportHeight: 905,
-    // Row pitch is 700px / 64 rows = 10.94px, and the bands the pills name are
-    // rows 0-15 (the held-out wolves), 16-31 (the eight wolfdogs, Czechoslovakian
-    // 2 excepted, plus the Shiloh Shepherd), 32-51 (the sweep) and 52-63 (the
-    // German Shepherd lineage). Each dy is a row index times that pitch, and it
-    // is the baseline of the pill's FIRST line, so a three-line pill hangs ~52px
-    // BELOW the number written here and has to be placed against the bottom of
-    // its band, not the middle of it. The last one is also the bottom of the
-    // capture: at dy 630 it ran off the frame and lost its last line.
+    // Row pitch is 700px / 64 rows = 10.94px, and the two bands the pills name
+    // are rows 0-15 (the gray wolves) and 16-31 (the eight wolfdogs,
+    // Czechoslovakian 2 excepted, plus the Shiloh Shepherd); the two unlabelled
+    // bands below them are the 219-breed sweep (32-51) and the German Shepherd
+    // lineage (52-63). Each dy is a row index times that pitch, and it is the
+    // baseline of the pill's FIRST line, so a wrapped pill hangs ~52px BELOW the
+    // number written here and has to be placed against the bottom of its band,
+    // not the middle of it.
     //
-    // Every pill is one line, so `maxWidth` is a ceiling none of them reaches
-    // and each `dy` is where that single line sits inside its band rather than
-    // where a three-line block has to start to end inside it.
+    // Both pills are one line, so `maxWidth` is a ceiling neither reaches and
+    // each `dy` is where that single line sits inside its band rather than where
+    // a wrapped block has to start to end inside it. The wolf pill grew by half
+    // its length when "held-out" became what held-out means, so its ceiling went
+    // up with it — at 600 it wrapped onto the rows it labels.
     annotations: [
       {
         type: 'text',
-        text: 'Eight held-out gray wolves',
+        text: 'Eight gray wolves, left out of the reference panel',
         fontSize: 21,
-        maxWidth: 600,
+        maxWidth: 760,
         anchor: {
           track: 'dog10k_wolfdog_named',
           locus: WOLFDOG_PILL_X,
@@ -545,38 +563,14 @@ export const dog10kSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'Saarloos and Czechoslovakian Wolfdogs: blocks, megabases long',
-        fontSize: 21,
-        maxWidth: 820,
-        anchor: {
-          track: 'dog10k_wolfdog_named',
-          locus: WOLFDOG_PILL_X,
-          fracY: 0,
-          dy: 250,
-        },
-      },
-      {
-        type: 'text',
-        text: '219 breeds with no wolf story: flecks, not blocks',
+        text: 'Saarloos Wolfdogs: recent wolf introgression',
         fontSize: 21,
         maxWidth: 700,
         anchor: {
           track: 'dog10k_wolfdog_named',
           locus: WOLFDOG_PILL_X,
           fracY: 0,
-          dy: 440,
-        },
-      },
-      {
-        type: 'text',
-        text: 'German Shepherd lineage: solid dog',
-        fontSize: 21,
-        maxWidth: 600,
-        anchor: {
-          track: 'dog10k_wolfdog_named',
-          locus: WOLFDOG_PILL_X,
-          fracY: 0,
-          dy: 640,
+          dy: 250,
         },
       },
     ],
