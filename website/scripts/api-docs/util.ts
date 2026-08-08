@@ -49,6 +49,14 @@ export interface ExtractedNode {
   // derive the composition graph from code instead of a hand-authored
   // `composed of` comment, the same way `baseDeclId` derives config inheritance.
   composedOf?: ComposedRef[]
+  // For `#stateModel` nodes only: whether the annotated declaration actually
+  // contains a `types.model` / `types.compose` call. False means the tag is
+  // attached to something else — the failure this catches is a declaration
+  // sliding in between the JSDoc and its factory, which still renders a page
+  // (the header parses from the comment) while `composedOf` resolves empty, so
+  // every inherited member silently vanishes from the table. See the
+  // misattached-#stateModel gap section in generate.ts.
+  definesModel?: boolean
 }
 
 // A model referenced inside a `types.compose(...)` call, identified two ways so
@@ -191,6 +199,9 @@ export function extractWithComment(
             : undefined,
         composedOf: tags.includes('stateModel')
           ? resolveComposedModels(checker, node)
+          : undefined,
+        definesModel: tags.includes('stateModel')
+          ? definesStateModel(node)
           : undefined,
       }
       for (const type of tags) {
@@ -654,6 +665,57 @@ function resolveBaseConfigDeclId(checker: ts.TypeChecker, node: ts.Node) {
 // Deduped by declId/name, in source order. Requires the #stateModel JSDoc to sit
 // on the model's factory (or its `types.compose`), not an unrelated preceding
 // declaration.
+// Whether a `#stateModel` tag landed on something that can plausibly BUILD a
+// model, as opposed to a plain piece of data.
+//
+// This checks tag ATTACHMENT, not content. TypeScript binds a JSDoc block to
+// whatever declaration follows it, so a `const` that lands between a
+// `#stateModel` block and its factory quietly takes the tag. The page still
+// renders — name and prose come from the comment — but the composition walk now
+// searches that `const` instead of the factory and finds no compose call, so
+// every inherited member row vanishes with no warning. That is what happened to
+// MultiLinearWiggleDisplay (17 rows, silently, for who knows how long).
+//
+// Three shapes all count as correctly attached, and the middle one is why this
+// can't just look for a `types.*` call: a factory may build its model by chaining
+// `.views()/.actions()` onto ANOTHER factory's result and never mention `types`
+// itself (LinearBasicDisplay, WiggleCommonMixin, the OAuth accounts).
+//   - function-like: `function F() {…}` / `const F = () => …`
+//   - a variable initialized from a call: `const M = someFactory(…)`
+//   - anything containing a literal `types.compose(…)` / `types.model(…)`
+//
+// Deliberately not `composedOf.length === 0`: a bare `types.model` composes
+// nothing legitimately, so an empty composedOf can't tell the two cases apart.
+function definesStateModel(node: ts.Node) {
+  if (factoryFunction(node)) {
+    return true
+  }
+  if (
+    ts.isVariableDeclaration(node) &&
+    node.initializer &&
+    ts.isCallExpression(node.initializer)
+  ) {
+    return true
+  }
+  let found = false
+  const walk = (n: ts.Node) => {
+    if (found) {
+      return
+    }
+    if (
+      ts.isCallExpression(n) &&
+      (isTypesMember(n.expression, 'compose') ||
+        isTypesMember(n.expression, 'model'))
+    ) {
+      found = true
+      return
+    }
+    ts.forEachChild(n, walk)
+  }
+  walk(node)
+  return found
+}
+
 function resolveComposedModels(checker: ts.TypeChecker, node: ts.Node) {
   const out: ComposedRef[] = []
   const seen = new Set<string>()

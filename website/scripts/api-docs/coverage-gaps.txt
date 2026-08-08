@@ -150,3 +150,6 @@ TimeTraveller
 
 # adapters whose #example defaulted to FeatureTrack (0)
 # fix: add #trackType to the adapter’s #config JSDoc
+
+# #stateModel tags attached to a declaration that builds no model (0)
+# fix: move the #stateModel JSDoc back onto its factory — a declaration in between takes the tag, and every inherited member row silently disappears

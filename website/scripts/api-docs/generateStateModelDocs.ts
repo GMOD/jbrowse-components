@@ -107,6 +107,10 @@ interface ModelHeader {
   // heuristic in stateModelCategory() when present (except *Mixin names, which
   // always bucket under "Mixin" regardless of this tag)
   category?: string
+  // false when the #stateModel JSDoc is attached to a declaration that builds no
+  // MST model, so its composition chain (and every inherited member row) is
+  // silently empty — see definesStateModel in util.ts
+  definesModel?: boolean
 }
 export interface StateModel {
   header?: ModelHeader
@@ -152,6 +156,7 @@ export function accumulateModel(
       selfDeclId: obj.selfDeclId,
       composedOf: obj.composedOf ?? [],
       category: member.category,
+      definesModel: obj.definesModel,
     }
   } else {
     const def = MEMBER_KINDS.find(k => k.tag === obj.type)
@@ -400,11 +405,18 @@ export function writeModelDocs(
       renderModel(model, ancestors, configNames),
     )
   }
-  return headerGaps({
-    items: withHeader,
-    getName: m => m.header.name,
-    hasExample: m => m.header.examples.length > 0,
-    isGeneralCategory: m =>
-      stateModelCategory(m.header.name, m.header.category) === 'General',
-  })
+  return {
+    ...headerGaps({
+      items: withHeader,
+      getName: m => m.header.name,
+      hasExample: m => m.header.examples.length > 0,
+      isGeneralCategory: m =>
+        stateModelCategory(m.header.name, m.header.category) === 'General',
+    }),
+    // Reported as a name plus the file, because the fix is positional and the
+    // name alone doesn't say where to look.
+    misattached: withHeader
+      .filter(m => m.header.definesModel === false)
+      .map(m => `${m.header.name}\t${m.filename}`),
+  }
 }

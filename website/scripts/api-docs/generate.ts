@@ -179,6 +179,11 @@ async function main() {
       fix: 'add #trackType to the adapter’s #config JSDoc',
       names: configGaps.adapterNoTrackType,
     },
+    {
+      title: '#stateModel tags attached to a declaration that builds no model',
+      fix: 'move the #stateModel JSDoc back onto its factory — a declaration in between takes the tag, and every inherited member row silently disappears',
+      names: modelGaps.misattached,
+    },
   ])
   writeApiDocs(api)
   writeApiReadmes(api)

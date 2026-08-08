@@ -71,6 +71,13 @@ const WiggleClusterDialog = lazy(
 )
 
 /**
+ * How many rows a color key may have and still be one. Past this it is a list
+ * of every source, which is the thing a key exists instead of; a multi-row
+ * track that long is better read off its own sidebar even at a swatch.
+ */
+const MAX_COLOR_KEY_ENTRIES = 20
+
+/**
  * #stateModel MultiLinearWiggleDisplay
  * #displayFoundation MultiRegionDisplayMixin
  * Wiggle display overlaying/stacking multiple quantitative subtracks in one
@@ -112,13 +119,7 @@ const WiggleClusterDialog = lazy(
  *   ],
  * }
  * ```
- *//**
- * How many rows a color key may have and still be one. Past this it is a list
- * of every source, which is the thing a key exists instead of; a multi-row
- * track that long is better read off its own sidebar even at a swatch.
  */
-const MAX_COLOR_KEY_ENTRIES = 20
-
 export default function stateModelFactory(
   configSchema: MultiLinearWiggleDisplayConfigModel,
 ) {
