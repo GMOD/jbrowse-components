@@ -5,12 +5,12 @@ import {
   SvgClipRect,
   renderDisplaySvg,
 } from '@jbrowse/plugin-linear-genome-view'
-import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
+import { RowSeparatorLines, SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
 import MultiRowColorLegend from './components/MultiRowColorLegend.tsx'
-import MultiRowSeparatorLines from './components/MultiRowSeparatorLines.tsx'
 import { drawMultiRowBlocks } from './rendering/drawMultiRowBlocks.ts'
 import { drawMultiRowIndelGlyphs } from './rendering/drawMultiRowIndelGlyphs.ts'
+import { MIN_SEPARATOR_ROW_PX, SEPARATOR_OPACITY } from './rendering/rowBand.ts'
 
 import type { LegendEntry } from './rendering/colorLegend.ts'
 import type {
@@ -108,10 +108,12 @@ function MultiRowSvgBody({
       {/* before the sidebar, matching the live display's stacking: the tree
           panel paints over the lines rather than the lines over the tree */}
       {self.showRowSeparators ? (
-        <MultiRowSeparatorLines
+        <RowSeparatorLines
           numRows={self.sources.length}
           rowHeight={self.effectiveRowHeight}
           width={canvasWidth}
+          opacity={SEPARATOR_OPACITY}
+          minRowPx={MIN_SEPARATOR_ROW_PX}
         />
       ) : null}
       <SvgTreeSidebar

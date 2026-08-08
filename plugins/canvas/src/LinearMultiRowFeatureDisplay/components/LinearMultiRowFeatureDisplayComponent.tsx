@@ -8,16 +8,20 @@ import {
 import {
   DisplayCrosshairs,
   RowLabelsOverlay,
+  RowSeparatorLines,
   TreeSidebar,
   treeSidebarRightEdge,
 } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import { MultiRowRendererFactory } from '../rendering/MultiRowRendererFactory.ts'
+import {
+  MIN_SEPARATOR_ROW_PX,
+  SEPARATOR_OPACITY,
+} from '../rendering/rowBand.ts'
 import MultiRowColorLegend from './MultiRowColorLegend.tsx'
 import MultiRowHoverHighlight from './MultiRowHoverHighlight.tsx'
 import MultiRowIndelGlyphOverlay from './MultiRowIndelGlyphOverlay.tsx'
-import MultiRowSeparatorLines from './MultiRowSeparatorLines.tsx'
 import MultiRowTooltip from './MultiRowTooltip.tsx'
 
 import type { LinearMultiRowFeatureDisplayModel } from '../model.ts'
@@ -103,10 +107,12 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
             pointerEvents: 'none',
           }}
         >
-          <MultiRowSeparatorLines
+          <RowSeparatorLines
             numRows={sources.length}
             rowHeight={effectiveRowHeight}
             width={canvasWidthPx}
+            opacity={SEPARATOR_OPACITY}
+            minRowPx={MIN_SEPARATOR_ROW_PX}
           />
         </svg>
       ) : null}
