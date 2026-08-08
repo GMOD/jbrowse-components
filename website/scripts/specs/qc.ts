@@ -530,18 +530,31 @@ export const qcSpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 180000,
     settleMs: 15000,
-    // Placed rather than anchored: the subject is the ribbon BAND, which is not
-    // a track and so has no model element to anchor to (annotationOverlay's
-    // model path resolves an LGV's trackRefs). Fixed css coordinates against a
-    // pinned viewportWidth/Height and pinned lane heights, all four of which
-    // this spec sets, so nothing under it can move without the numbers moving.
+    // ANCHORED to the ribbon band, which this used to say was impossible: the
+    // band is not a track, so annotationOverlay's model path (which resolves an
+    // LGV's trackRefs) cannot reach it, and the caption was fixed css
+    // coordinates justified by "this spec pins viewportWidth/Height and both
+    // lane heights, so nothing under it can move".
+    //
+    // The band does have an element, and this spec was already waiting on it:
+    // `synteny_canvas_done` is the readySelector above, so a `{selector}` anchor
+    // resolves against the same canvas. The pinning argument was also weaker
+    // than it read -- it held only while all four numbers stayed put, and three
+    // of the four are the kind of thing a later edit changes for reasons that
+    // have nothing to do with a caption. This one is the ratchet's own preferred
+    // fix (`{selector}` for chrome) rather than a raised baseline.
     annotations: [
       {
         type: 'text',
-        x: 36,
-        y: 372,
         fontSize: 20,
         maxWidth: 420,
+        anchor: {
+          selector: '[data-testid="synteny_canvas_done"]',
+          alignX: 'left',
+          alignY: 'top',
+          dx: 24,
+          dy: 30,
+        },
         text: 'The same GRCh38 sequence chains to more than one place in T2T',
       },
     ],
