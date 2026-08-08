@@ -8,12 +8,12 @@ import {
 import {
   isOverlayMode,
   isScatterMode,
-  makeSummaryLayers,
   renderingTypeToInt,
 } from './wiggleComponentUtils.ts'
+import { makeSummaryLayers } from './wiggleLayers.ts'
 
 import type { WiggleDataResult } from '../util.ts'
-import type { WiggleLayer } from './wiggleComponentUtils.ts'
+import type { WiggleLayer } from './wiggleLayers.ts'
 import type { SourceRenderData, WiggleSourceData } from '@jbrowse/wiggle-core'
 
 // The render layers one source contributes, chosen by summaryScoreMode but

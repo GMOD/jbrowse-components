@@ -5,9 +5,9 @@ import {
   findSourceHit,
   hitTestMouse,
   makeTooltipRow,
-} from '../../shared/wiggleComponentUtils.ts'
+} from '../../shared/wiggleHitTest.ts'
 
-import type { MouseRegion } from '../../shared/wiggleComponentUtils.ts'
+import type { MouseRegion } from '../../shared/wiggleHitTest.ts'
 import type {
   WiggleDataResult,
   WiggleFeatureUnderMouse,

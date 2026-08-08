@@ -1,4 +1,4 @@
-import { findSourceHit } from '../../shared/wiggleComponentUtils.ts'
+import { findSourceHit } from '../../shared/wiggleHitTest.ts'
 
 import type { WiggleSourceData } from '../../util.ts'
 

@@ -1,4 +1,4 @@
-import { findFeatureAtBp } from '../shared/wiggleComponentUtils.ts'
+import { findFeatureAtBp } from '../shared/wiggleHitTest.ts'
 
 import type { WiggleDataResult } from '../util.ts'
 

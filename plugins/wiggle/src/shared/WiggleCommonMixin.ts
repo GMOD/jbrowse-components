@@ -20,7 +20,7 @@ import {
   WiggleScoreConfigMixin,
   confNode,
 } from './WiggleScoreConfigMixin.ts'
-import { wiggleFeatureWidgetData } from './wiggleComponentUtils.ts'
+import { wiggleFeatureWidgetData } from './wiggleHitTest.ts'
 
 import type { WiggleDataResult, WiggleFeatureUnderMouse } from '../util.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
