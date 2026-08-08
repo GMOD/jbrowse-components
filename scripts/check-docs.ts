@@ -66,6 +66,12 @@ const VALIDATORS: Validator[] = [
     argv: web('check-live-configs.ts'),
   },
   {
+    // Reads figures.lock, not the disk: figure bytes are gitignored, so a
+    // checkout that has not pulled would report every figure as missing.
+    name: 'doc figure references name a figure in the store',
+    argv: web('check-figure-refs.ts'),
+  },
+  {
     // Round-trips every `json addtrack`/`json addassembly` doc block through
     // the real `jbrowse add-track`/`add-assembly`.
     name: 'addtrack config/CLI blocks round-trip',

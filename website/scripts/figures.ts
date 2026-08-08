@@ -56,12 +56,13 @@ const usage = `figures — the S3-backed figure store
 
   status              compare the worktree against figures.lock
   pull [--force]      install every figure figures.lock names
-  push [--dry-run] [--filter a,b] [--exact]
+  push [--dry-run] [--filter a,b] [--exact] [--allow-deletions]
                       upload new bytes, then rewrite figures.lock. --filter
                       scopes it to the figures named (substring, repeatable,
                       --exact for whole-name) and leaves every other manifest
                       line untouched, which is what a worktree with someone
-                      else's regen in it needs
+                      else's regen in it needs. Refuses to drop a manifest line
+                      whose figure is missing from disk unless --allow-deletions
   check [--remote]    fail if the manifest and the worktree disagree
   report [--base ref] [--markdown] [--out file]
                       what moved, with before/after store URLs
@@ -85,6 +86,7 @@ const { values, positionals } = (() => {
         filter: { type: 'string', multiple: true },
         'dry-run': { type: 'boolean', default: false },
         exact: { type: 'boolean', default: false },
+        'allow-deletions': { type: 'boolean', default: false },
         force: { type: 'boolean', default: false },
         remote: { type: 'boolean', default: false },
         markdown: { type: 'boolean', default: false },
@@ -348,6 +350,39 @@ function push() {
     )
   }
   const changes = diffManifests(before, after)
+
+  // A REMOVAL IS THE ONE CHANGE THIS CANNOT UNDO, so it is the one that has to
+  // be asked for.
+  //
+  // mergeManifest carries untouched lines through under --filter, which closes
+  // that half of the hole. Unfiltered, the manifest is rewritten from whatever
+  // is on disk, so a worktree that is merely INCOMPLETE writes a lock that
+  // drops the figures it happens not to have. `pull` exiting 1 partway through,
+  // an interrupted checkout, an rm -rf of one figure directory all produce that
+  // state, and none of them looks like a request to unpublish anything.
+  //
+  // Nothing downstream notices, which is why this is a hard stop rather than a
+  // warning: the bytes stay in the store, so no fetch fails; the site keeps
+  // building, because a manifest is valid at any size; and the figures simply
+  // stop being installed, for everyone, until somebody reads a `git diff` that
+  // is mostly deletions and understands what it means. The `- name` lines in
+  // the report below said so all along and are easy to scroll past.
+  //
+  // Deliberately not gated on `--force`, which pull uses for "discard my local
+  // bytes". A flag that means two different destructive things is worse than
+  // two flags.
+  const removals = changes.filter(c => c.kind === 'removed')
+  if (removals.length > 0 && !values['allow-deletions']) {
+    console.error(
+      `refusing to drop ${removals.length} figure(s) from figures.lock:\n` +
+        removals.map(c => `  - ${figureName(c.path)}`).join('\n') +
+        '\n\nTheir bytes are in the store; only the manifest line would go, and ' +
+        'nothing downstream would report them missing.\n' +
+        'If this worktree is incomplete, `pnpm figures:pull` first.\n' +
+        'If you really mean to unpublish them, re-run with --allow-deletions.',
+    )
+    process.exit(1)
+  }
 
   const existing = readStoreKeys()
   // Deduplicated by key: two figures with identical bytes are one blob, and a
