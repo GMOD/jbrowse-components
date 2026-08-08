@@ -224,62 +224,15 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
   // its right. Trimming to the block that lands here is the fix; the fact that
   // the rest of the operon points at K12's OTHER rRNA locus is the same collapse
   // one level up, and the prose says it rather than the picture.
-  {
-    mode: 'url',
-    name: 'pangenome/pggb_untangle',
-    url: sessionSpec(CONFIG, {
-      views: [
-        {
-          type: 'LinearSyntenyView',
-          views: [
-            {
-              assembly: 'Sakai',
-              loc: 'chr:4,734,300-4,738,500',
-              tracks: [
-                {
-                  trackId: 'Sakai_genes',
-                  type: 'LinearBasicDisplay',
-                  height: 70,
-                },
-              ],
-            },
-            {
-              assembly: 'K12',
-              loc: 'chr:3,936,100-3,952,100',
-              tracks: [
-                {
-                  trackId: 'K12_genes',
-                  type: 'LinearBasicDisplay',
-                  height: 130,
-                },
-              ],
-            },
-            {
-              assembly: 'Sakai',
-              loc: 'chr:4,974,970-4,979,180',
-              tracks: [
-                {
-                  trackId: 'Sakai_genes',
-                  type: 'LinearBasicDisplay',
-                  height: 70,
-                },
-              ],
-            },
-          ],
-          tracks: [['ecoli_pggb_untangle'], ['ecoli_pggb_untangle']],
-          drawCurves: false,
-          colorBy: 'default',
-          levelHeights: [150, 150],
-        },
-      ],
-    }),
-    // three rows with a gene lane each plus two 150px bands, from the run's own
-    // "79 css px of page below the viewport" at 800
-    viewportHeight: 880,
-    readySelector: '[data-testid="synteny_canvas_done"]',
-    readyTimeout: 120000,
-    settleMs: 15000,
-  },
+  // pangenome/pggb_untangle was here and is DELETED. It drew Sakai's two rRNA
+  // operons above and below one K12 span, so the collapse read as two pale
+  // wedges converging over three gene lanes -- a shape a reader has to be told
+  // to look for, on a figure that had already been reframed twice. Review:
+  // "not a interesting figure, needs rethinking." What it was for is now two
+  // figures that each carry a whole claim on their own: pggb_untangle_dotplot
+  // (a descending run IS an inversion, two marks sharing an x ARE one span
+  // reached twice) and pggb_untangle_rows (one lane per strain, coloured by
+  // orientation, with three flat strains as the control).
 
   // Projection 1c: the same untangle file as one lane per strain on the K12
   // axis, rather than as ribbons between two genome rows.

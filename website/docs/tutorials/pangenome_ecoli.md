@@ -273,15 +273,10 @@ zcat ecoli_pggb_untangle.pif.gz | awk -F'\t' 'substr($1,1,1)=="q"' \
 
 Two K12 spans come back that way, `chr:3,941,447-3,944,255` and
 `chr:4,169,192-4,171,723`, and Sakai, NCTC86 and IAI39 each reach both of them
-from two places. CFT073 reaches neither twice, which is the control. Put the
-same strain in the rows above and below K12, each opened on one of its two
-copies, and both bands narrow onto the one K12 span.
-
-<Figure caption="Sakai's rrnC operon above K12 and its rrnB operon below, both drawn against the same K12 span. The gene lanes name the two copies (rrsC/gltU/rrlC/rrfC and rrsB/gltT/rrlB/rrfB) and the K12 span they both land on: seqwish collapsed them into one set of nodes, so the graph has one place where the genome has several." src="/img/pangenome/pggb_untangle.png" />
-
-A pairwise PAF has no way to say this. Its records are one query interval
-against one target interval, so a collapsed repeat is either dropped or
-arbitrarily assigned to one copy.
+from two places. CFT073 reaches neither twice, which is the control. A pairwise
+PAF has no way to say this: its records are one query interval against one
+target interval, so a collapsed repeat is either dropped or arbitrarily assigned
+to one copy.
 
 A [dotplot](/docs/user_guides/dotplot_view) of the same file answers a different
 question, and needs no extra file since it reads the same PIF: how the two

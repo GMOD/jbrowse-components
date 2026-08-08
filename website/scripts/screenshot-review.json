@@ -2320,13 +2320,6 @@
     "reviewedAt": "2026-08-04T08:11:25.592Z",
     "hash": "e779d0771326b97082de585e68783faddd2fc40b"
   },
-  "pangenome/pggb_untangle": {
-    "name": "pangenome/pggb_untangle",
-    "status": "bad",
-    "note": "not a interesting figure, needs rethinking. previous notes:  Reframed onto one strain's two rRNA copies (d83aab8303), then the data under it changed: odgi untangle is rebuilt with -e 5000, so the projection is 3,923 records rather than 174 for all four pairs. Each Sakai copy is now two blocks and the second lands on K12's OTHER collapsed rRNA span 228 kb away, which left the old 6.6 kb Sakai windows drawing a wedge over their left half and dead white space over their right. Windows trimmed to the block that lands in the K12 window (4.2 kb each); the fact that the rest of the operon points at K12's second rRNA locus is stated in prose instead of half-drawn. Two figures added beside it rather than reworking this one further: pangenome/pggb_untangle_dotplot (same PIF, no new file, and it carries BOTH untangle claims at once -- a descending run is an inversion, two marks sharing an x are one span reached twice) and pangenome/pggb_untangle_rows (one lane per strain on K12, colored by orientation: IAI39 inverted over five long stretches, the other three over none). Both are new and unreviewed.",
-    "reviewedAt": "2026-08-07T03:42:25.038Z",
-    "hash": "ff8da84a2c81ffca9ee094aa2c44644a92c454e6"
-  },
   "tcga/mutations_cdh1_histology": {
     "name": "tcga/mutations_cdh1_histology",
     "status": "good",
@@ -2791,9 +2784,9 @@
   },
   "multiway_synteny/wheat_homoeolog_selection": {
     "name": "multiway_synteny/wheat_homoeolog_selection",
-    "status": "bad",
-    "note": "looks like dupe of homoeolog_synteny/wheat_vs_oat ",
-    "reviewedAt": "2026-08-08T01:11:44.164Z",
+    "status": "answered",
+    "note": "Right, and literally so: homoeolog_synteny/wheat_vs_oat COMPOSES this frame (parts: [wheat_homoeolog_selection, oat_homoeologs]), so the same PNG was embedded twice -- standalone in multiway_synteny.md and as the left panel in homoeolog_synteny.md. Kept the composed one, since it makes a comparison this frame cannot make alone (two hexaploids, same three homoeologous groups, so what differs is karyotype not method) and that page's prose already leans on the wheat side as its control. multiway_synteny.md's polyploid section now points at that pair instead of repeating its left half; the wheat plot stays openable live as a second links= target on it. Same treatment homoeolog_synteny/oat_homoeologs already had. No pixels moved -- the PNG is unchanged and still rendered as a composition part.",
+    "reviewedAt": "2026-08-08T01:21:48.779Z",
     "hash": "6f458d63a5e0675bc66e5d1bc5eb4a7d106289d6"
   },
   "pangenome/hprc_whole_chromosome": {
@@ -2805,10 +2798,10 @@
   },
   "pangenome/pggb_carriage": {
     "name": "pangenome/pggb_carriage",
-    "status": "bad",
-    "note": "It is not obvious though??? where?? it could be interesting to show 'insertions' like this in the pggb graph segments chart. previous notes: The spur IS visible in a linear view, and it needed no glyph and no new file: as an EVENT it has a reference address, and pggb -V already wrote it. tabix ecoli_pggb.vcf.gz chr:997575 is one record, 7,112 bp REF against a 93 bp ALT, CFT073 only. New figure pangenome/pggb_spur_linear draws it over the seven genes it removes with the MAF as control. Kept off THIS frame on purpose - a row reading 'CFT073 alone' above a figure whose point is that carriedBy says what the flattened lanes cannot argues with its own caption. On the dedupe: kept all three, each teaches something the others do not (carriedBy in the drawer; the layout trade; Launch view onto the carrying assembly).",
-    "reviewedAt": "2026-08-08T00:15:42.689Z",
-    "hash": "d3f56895c04498df0f47c87643470c9768cf7af4"
+    "status": "answered",
+    "note": "Two rings, anchored on node ids so they follow the drawing if the layout re-runs. The drawer named 119715 and listed its four carriers while the graph beside it drew 61 nodes with nothing saying which one that was, so the corner tooltip was the only tie and it reads as a hover artefact. The second ring is the other half of the note: 118465 is CFT073's 75 bp detour, the one rank-1 node in the window and the reason 119715's carriage is a proper subset. The graph already labels it '75 bp', so the pill only says whose it is.",
+    "reviewedAt": "2026-08-08T01:26:40.608Z",
+    "hash": "043a20f6f5cecc5368ddc4a9640a201ed2cc7adf"
   },
   "pangenome/pggb_carriage_lane": {
     "name": "pangenome/pggb_carriage_lane",
@@ -2889,9 +2882,9 @@
   },
   "pangenome/pggb_spur_linear": {
     "name": "pangenome/pggb_spur_linear",
-    "status": "bad",
-    "note": "unclear what is being plotted here. need the linearvariantdisplay to go along side it. potentially, we need to enhance multisamplevariantdisplay to draw linearvariantdisplay above it as a combo display",
-    "reviewedAt": "2026-08-08T00:16:31.544Z",
-    "hash": "7c6aaef4ef11e38f2eb316d00cc8eb47f9b068b8"
+    "status": "answered",
+    "note": "A LinearVariantDisplay lane above the matrix, which is what makes the frame readable: it draws the one call as '>176689>178029_217, 7.11Kbp -> 93bp' over exactly the reference span the genotype columns below cover, where the matrix alone painted a colour per strain and never said what was being genotyped. It needs a second trackId rather than a second displays entry, since a session spec naming the same track twice keeps only the last display and the positional lane would silently replace the matrix (same trap dog10k-amy2b-duplication met). Both lanes take the same structural filter, in the two spellings the two displays need: the matrix's jexlFilters is a model property and wants the jexl: prefix written out, the canvas display's slot adds it. On the combo-display idea: the two-trackId recipe is what the app supports today and three figures now use it.",
+    "reviewedAt": "2026-08-08T01:26:40.838Z",
+    "hash": "a97dc78a44143429818f62b1d2316fa6c217352f"
   }
 }

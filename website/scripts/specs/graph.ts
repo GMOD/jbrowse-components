@@ -1123,6 +1123,40 @@ const PGGB_VARIANTS_SESSION_TRACK = {
   },
 }
 
+// The SAME VCF under a second trackId, so one window can carry the record and
+// the genotypes of it as two lanes (review on pggb_spur_linear: "unclear what
+// is being plotted here. need the linearvariantdisplay to go along side it").
+// The genotype matrix paints a colour per strain and never says WHAT is being
+// genotyped; this lane draws the one record as the deletion it is, over exactly
+// the reference span the columns below cover.
+//
+// A second trackId rather than a second `displays` entry, which is not a style
+// choice: a session spec that names the same track twice keeps only the LAST
+// display, so the positional lane would silently replace the matrix. Same
+// pattern as dog10k-amy2b-duplication, which met it first.
+const PGGB_VARIANTS_POSITIONAL_TRACK = `${PGGB_VARIANTS_TRACK}_positional`
+const PGGB_VARIANTS_POSITIONAL_SESSION_TRACK = {
+  ...PGGB_VARIANTS_SESSION_TRACK,
+  trackId: PGGB_VARIANTS_POSITIONAL_TRACK,
+  name: 'pggb graph: the record itself',
+}
+
+// The structural tier of that VCF, as both lanes read it. `pggb -V` decomposes,
+// so this window also holds several hundred SNPs and small indels between the
+// same four strains; unfiltered they fill the lane wall to wall and the one
+// 7 kb record is a column among hundreds rather than the subject.
+//
+// TWO SPELLINGS OF ONE FILTER, and they are not interchangeable. The matrix
+// display's `jexlFilters` is a model PROPERTY that goes straight into a
+// SerializableFilterChain, so it needs the `jexl:` prefix written out; the
+// canvas LinearVariantDisplay's slot adds the prefix itself and a doubled one
+// is a parse error. Written the wrong way round the matrix does not error -- it
+// sits in `loading` forever, which the capture reports as a wait timeout and
+// reads as a slow fetch.
+const PGGB_SV_FILTER_EXPR = "get(feature,'end')-get(feature,'start') > 1000"
+const PGGB_SV_FILTERS_MATRIX = [`jexl:${PGGB_SV_FILTER_EXPR}`]
+const PGGB_SV_FILTERS_CANVAS = [PGGB_SV_FILTER_EXPR]
+
 // `mafLane` is stated rather than derived from `layoutMode`, because the two
 // halves of pangenome/pggb_locus_sample_rows differ ONLY in layoutMode: a lane
 // that appeared over one half and not the other would be a second difference
@@ -2377,6 +2411,28 @@ export const graphSpecs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'carriedBy' },
       { type: 'delay', ms: 1500 },
     ],
+    // WHERE, which the frame never said (review: "It is not obvious though???
+    // where??"). The drawer names 119715 and lists its four carriers, and the
+    // graph beside it drew 61 nodes with nothing marking which one that is —
+    // the tooltip in the corner is the only tie, and it reads as a hover
+    // artefact. A ring anchored on the node id follows the drawing if the
+    // layout re-runs, which a viewport coordinate could not.
+    //
+    // The second ring is the other half of the same review ("it could be
+    // interesting to show 'insertions' like this"): 118465 is CFT073's 75 bp
+    // detour, the one rank-1 node here and the reason 119715's carriage is a
+    // proper subset. The graph already labels it `75 bp`, so the pill only has
+    // to say whose it is.
+    annotations: [
+      { type: 'circle', anchor: { view: 1, graphNode: '119715-' }, radius: 22 },
+      { type: 'circle', anchor: { view: 1, graphNode: '118465-' }, radius: 22 },
+      {
+        type: 'text',
+        text: "CFT073's detour",
+        fontSize: 17,
+        anchor: { view: 1, graphNode: '118465-', dx: 20, dy: -46 },
+      },
+    ],
   },
   // The 75 bp spur, on the reference axis (review: "hard to see the 75bp 'spur'
   // in the linear view. is there any way to show that with a custom canvas
@@ -2418,6 +2474,7 @@ export const graphSpecs: ScreenshotSpec[] = [
     url: sessionSpec(CONFIG, {
       sessionTracks: [
         K12_GENES_SESSION_TRACK,
+        PGGB_VARIANTS_POSITIONAL_SESSION_TRACK,
         PGGB_VARIANTS_SESSION_TRACK,
         PGGB_MAF_SESSION_TRACK,
       ],
@@ -2428,26 +2485,27 @@ export const graphSpecs: ScreenshotSpec[] = [
           loc: 'chr:996,800-1,005,900',
           tracks: [
             { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
+            // The record, then the genotypes of it, in that order. The matrix
+            // alone paints a colour per strain and never says what is being
+            // genotyped, which is what "unclear what is being plotted here"
+            // was; this lane draws the one call as the 7.1 kb deletion it is,
+            // over exactly the span the columns below cover. Same VCF, so
+            // nothing new is fetched. Both lanes take the structural filter —
+            // in the two spellings the two displays need, see
+            // PGGB_SV_FILTERS_MATRIX.
+            {
+              trackId: PGGB_VARIANTS_POSITIONAL_TRACK,
+              type: 'LinearVariantDisplay',
+              jexlFilters: PGGB_SV_FILTERS_CANVAS,
+              height: 55,
+            },
             {
               trackId: PGGB_VARIANTS_TRACK,
               type: 'LinearMultiSampleVariantDisplay',
-              // FILTERED to the structural record, and the unfiltered lane is
-              // why. `pggb -V` decomposes, so this window also holds several
-              // hundred SNPs and small indels between the same four strains,
-              // and they fill the lane wall to wall: the one 7 kb record is a
-              // column among hundreds of columns rather than the subject. This
-              // is the opposite call from pangenome/maf, where a length filter
-              // was REMOVED — there the fine tier is the subject and the filter
-              // was dropping real indels; here the fine tier is the noise.
-              // `jexl:` prefix, because this is the matrix display and its
-              // `jexlFilters` is a model PROPERTY that goes straight into a
-              // SerializableFilterChain — unlike the canvas LinearVariantDisplay,
-              // whose slot adds the prefix itself. Written bare here the display
-              // does not error, it sits in `loading` forever, which the capture
-              // reports as a 120s wait timeout and looks like a slow fetch.
-              jexlFilters: [
-                "jexl:get(feature,'end')-get(feature,'start') > 1000",
-              ],
+              // The opposite call from pangenome/maf, where a length filter was
+              // REMOVED: there the fine tier is the subject and the filter was
+              // dropping real indels, here the fine tier is the noise.
+              jexlFilters: PGGB_SV_FILTERS_MATRIX,
               height: 110,
             },
             {
@@ -2466,8 +2524,8 @@ export const graphSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     settleMs: 12000,
     viewportWidth: 1100,
-    // 700 left 71 css px of blank under the MAF rows, per the run's own report
-    viewportHeight: 629,
+    // 629 before the positional lane went in above the matrix
+    viewportHeight: 693,
     hideTooltip: true,
     // The genotype key STAYS, unlike pangenome/maf which dismisses it. Its
     // "No call" swatch is what names the yellow across CFT073's row, and that
