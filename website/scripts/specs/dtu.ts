@@ -127,12 +127,20 @@ export const dtuSpecs: ScreenshotSpec[] = [
   // encoding earns its keep: ten annotated isoforms, two of them called, and
   // the eight the test could not separate staying neutral gray rather than
   // competing for attention.
+  //
+  // Right edge carried ~4 kb past the gene, the same lever the figure above
+  // documents and this one did not have. The floating color key is pinned to
+  // the track's top-right corner (FloatingLegend's `right: 10, top: 10`) with an
+  // opaque paper background and no placement slot, so on a window that ends
+  // where the gene ends it sits ON the 3' end of every row — here it covered the
+  // last exon of both colored transcripts and five of the gray ones. The only
+  // lever a spec has is where the data is, so the window carries past it.
   {
     mode: 'url',
     name: 'dtu/dtu_colored_gene_glyph',
     url: lgvSession(DTU_CONFIG, {
       assembly: 'hg38',
-      loc: 'chr10:7,787,600..7,808,400',
+      loc: 'chr10:7,787,600..7,812,400',
       tracks: [coverage('muscle_plus'), coverage('liver_plus'), glyph],
     }),
     readySelector: DTU_READY,

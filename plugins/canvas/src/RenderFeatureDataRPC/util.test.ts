@@ -289,6 +289,22 @@ describe('getBoxColor (BED itemRgb)', () => {
     expect(boxColor(bed12Child('exon', '227,26,28'), config)).toBe('red')
   })
 
+  // A `color` expression describes the FEATURE, not the coding part of it, so
+  // it has to reach the UTR when nothing else claims the UTR. Without this,
+  // "the config beats the file" holds for the exon and not for the UTR of the
+  // same transcript, and a per-feature color has to be written out twice —
+  // which is exactly what the hosted DTU demo does, carrying the same
+  // 300-character jexl in `color` and `utrColor` (review, on
+  // dtu/atp5f1c_isoform_switch: "are there any other simplifications,
+  // refactorings, bugfixes, or improvements you'd make to this").
+  it('a set `color` reaches the UTR when `utrColor` is unset', () => {
+    const config = mockDisplayConfig({ color: 'red' })
+    expect(boxColor(bed12Child('five_prime_UTR', '227,26,28'), config)).toBe(
+      'red',
+    )
+    expect(boxColor(bed12Child('five_prime_UTR'), config)).toBe('red')
+  })
+
   it('an explicit utrColor restores the contrasting-UTR look', () => {
     const config = mockDisplayConfig({ utrColor: 'cyan' })
     expect(boxColor(bed12Child('five_prime_UTR', '227,26,28'), config)).toBe(

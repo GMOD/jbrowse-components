@@ -133,11 +133,28 @@ export function getBoxColor({
   // utrColor deferring too is what reproduces UCSC's whole-item coloring, where
   // a thin block is thinner but not a different color; setting utrColor restores
   // the contrasting-UTR look.
-  const slot = isUTR(feature) ? 'utrColor' : 'color'
+  //
+  // A UTR falls through to `color` when `utrColor` is unset, and this is what
+  // makes the rule above hold for a whole transcript rather than for its coding
+  // part. `color` describes the FEATURE; read as coding-only it broke its own
+  // rule in the worst direction — with `color: 'red'` on a BED12 track, the
+  // exon took red and the UTR of the same transcript took the file's itemRgb,
+  // so the config beat the file at one end of a gene and lost to it at the
+  // other. With no itemRgb it was worse-looking rather than incoherent: a red
+  // gene with fixed teal ends. The visible cost was that a per-feature color had
+  // to be authored TWICE — the hosted DTU demo carries the same 300-character
+  // jexl in `color` and in `utrColor`, and the copy in the docs had already
+  // drifted from the copy in the figure (18a40ce025).
+  // Only a UTR that has a `utrColor` of its own reads that slot; every other box
+  // reads `color`. When both are unset this still lands on the UTR default,
+  // because the fallback below keys off the box and not off the slot it read.
+  const isUtrBox = isUTR(feature)
+  const slot = isUtrBox && config.utrColor !== undefined ? 'utrColor' : 'color'
 
   let fill =
     config[slot] === undefined
-      ? (inheritedBedColor(feature) ?? BOX_COLOR_SLOTS[slot])
+      ? (inheritedBedColor(feature) ??
+        BOX_COLOR_SLOTS[isUtrBox ? 'utrColor' : 'color'])
       : readConfigValueSafe<string>(config, slot, feature, jexl, INVALID_COLOR)
 
   const featureStrand = feature.get('strand')
