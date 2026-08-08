@@ -259,8 +259,14 @@ def main():
     sys.stderr.write("%d of %d input rows declared a size their sequence did not "
                      "match (smoothxg's block padding); cropped to the reference "
                      "interval\n" % (padded, rows_in))
-    # should be 0: the kept rows are one per block, anchored on the leftmost copy.
-    # A nonzero count means the .tai's ordering assumption is broken again.
+    # Should be 0, and NOT because blocks anchor on the leftmost copy -- they
+    # anchor in row order and are sorted afterwards, which is the same choice
+    # the module docstring records rejecting leftmost for. What makes them
+    # disjoint is the crop: every emitted block covers exactly its own reference
+    # row's declared interval, and those intervals already partition the
+    # reference. A nonzero count means a crop stopped doing that, so the row-0
+    # interval index this file is retrieved through can no longer find
+    # everything.
     sys.stderr.write("%d blocks overlap their predecessor on %s\n" % (overlaps, REF))
 
 
