@@ -274,6 +274,51 @@ export interface ComposeSpec extends BaseSpecFields {
   direction?: 'vertical' | 'horizontal'
 }
 
+// One track of an `RExportCli` invocation: the jb2export track-type flag that
+// opens it and the file that flag names. Only the LOCATION is declared here —
+// the loc, the panel order and every display setting still come from the source
+// spec, so retargeting the browser figure still retargets its R twin.
+export interface RExportCliTrack {
+  // The trackId the source spec shows, which this replaces.
+  trackId: string
+  // A jb2export track-type flag without its dashes: bam, cram, gff, gffgz,
+  // vcfgz, bigwig, multiwig, hic, bigbed, bedgz.
+  flag: string
+  // What the flag names. A repo-relative path is rewritten onto CODE_BASE, the
+  // hosted mirror of test_data — the same rewrite the config form's --config
+  // gets, and for the same reason: the emitted script is read by
+  // Rsamtools/rtracklayer, so the file has to be fetchable over https. A list is
+  // joined with commas, which is the one shape `--multiwig` takes.
+  file: string | string[]
+  // Modifier tokens appended after the file — `index:` for a non-default index,
+  // `name:` for a panel title the filename doesn't give, or a `{json}` for
+  // display state the CONFIG supplied and a bare file therefore doesn't.
+  opts?: string[]
+}
+
+// Publish (and run) this figure as an ordinary file-flag command — `--fasta …
+// --bam …` — rather than `--config … --spec …`. That is what a reader typing
+// jb2export writes, and it names the data outright instead of behind a trackId,
+// so prefer it wherever the file list is short enough to read. A figure whose
+// tracks carry per-source metadata no flag can express (the 12-sample scATAC
+// multi-wiggle) or whose adapter has no flag at all (the GWAS track) keeps the
+// config form; there is nothing to configure for that, just leave `cli` off.
+export interface RExportCli {
+  // --fasta. The config's own assembly is a JBrowse one and may be a .2bit,
+  // which no CLI flag builds, so the indexed FASTA beside it is named here.
+  fasta: string
+  // --aliases, needed when the source spec's loc uses a name the FASTA doesn't
+  // (`1` against a chr-prefixed hg19).
+  aliases?: string
+  // One entry per track the source spec shows, in the order it shows them.
+  tracks: RExportCliTrack[]
+  // Tracks the source spec shows that this command deliberately does not open,
+  // each with the reason. Listing them is the point: an unlisted track is an
+  // error, so a track added to the browser figure can't silently vanish from
+  // its R twin.
+  dropTracks?: { trackId: string; why: string }[]
+}
+
 // A gallery figure for the "Export R script" feature: `jb2export --out <tmp>.R`
 // builds the view headlessly and emits its reproducible ggplot2 script, then
 // `Rscript` runs that script to produce the PNG. So the committed figure is the
@@ -304,6 +349,11 @@ export interface RExportSpec extends BaseSpecFields {
   // browser figure retargets its R twin, and a spec deleted out from under one
   // is a validateSpecs failure rather than a stale render.
   from: string
+  // Build the command from raw file paths instead of the source spec's config.
+  // See RExportCli — the view still comes from `from`, only the files are named
+  // here. Mutually exclusive with extraArgs, whose `--track <id>` addresses a
+  // trackId this form does not have.
+  cli?: RExportCli
   // Extra jb2export args appended after --config/--session, for the rare figure
   // that needs a display setting the source spec doesn't carry (e.g. the R
   // gallery shows a strand-colored pileup where the browser figure is showing

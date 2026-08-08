@@ -553,35 +553,15 @@ function missingRPackages(names: string[]) {
 // only has to point that write at `renderPath` — no re-sizing here, which is
 // what makes the committed figure identical to what a reader gets by running
 // the downloaded script unmodified.
-// The jb2export invocation that reproduces `spec.from`'s view: that spec's
-// config and its decoded session spec.
 //
-// A repo-relative config is rewritten onto CODE_BASE — the hosted mirror of
-// this same test_data, which is also what the figure's "Open in JBrowse" link
-// opens. Two reasons it is not the local server:
-//
-//  - a JBrowse config addresses its data with uris RELATIVE TO ITSELF
-//    (test_data/volvox/config.json says `volvox.2bit`), so whatever base the
-//    config is fetched from is the base every track file inherits; and
-//  - those uris are then read by rtracklayer / Rsamtools / samtools, not by
-//    JBrowse. They are built for remote genomics files over https and are
-//    markedly less happy range-reading a BigWig or CRAM off the local dev
-//    server — which showed up as "UCSC library operation failed" and a
-//    cram_to_bam that could not decode.
-//
-// So the emitted script names public URLs, which is also what makes it
-// copy-pasteable: a reader can run the exact script the figure came from.
-function rExportArgs(spec: RExportSpec, workDir: string) {
-  const { configUrl, sessionSpec, extraArgs } = rExportInvocation(spec)
-  // --spec, not --session: the url carries a session *spec* (the declarative
-  // `{views:[{type,assembly,loc,tracks}]}` the web resolves on attach), where
-  // --session wants a saved session snapshot. jb2export takes that spec shape
-  // verbatim for an LGV, so the two figures are built from one description.
-  const specPath = path.join(workDir, 'spec.json')
-  fs.writeFileSync(specPath, sessionSpec)
-  return ['--config', configUrl, '--spec', specPath, ...extraArgs]
-}
-
+// `rExportInvocation` is the whole argv, published verbatim by the gallery page
+// and run verbatim here, so the two cannot disagree about what drew the figure.
+// Whichever form it takes, the files it names are public URLs rather than the
+// local dev server: they are read by rtracklayer / Rsamtools / samtools, not by
+// JBrowse, and those are built for remote genomics files over https and are
+// markedly less happy range-reading a BigWig or CRAM off localhost — which
+// showed up as "UCSC library operation failed" and a cram_to_bam that could not
+// decode. It is also what makes the emitted script copy-pasteable.
 async function renderRExportSpecToTemp(spec: RExportSpec, suffix = '') {
   const renderPath = tempPath('jb-rexport', spec.name, suffix)
   const workDir = fs.mkdtempSync(path.join(os.tmpdir(), 'jb-rexport-'))
@@ -592,7 +572,7 @@ async function renderRExportSpecToTemp(spec: RExportSpec, suffix = '') {
       [
         '--experimental-strip-types',
         jb2exportBin,
-        ...rExportArgs(spec, workDir),
+        ...rExportInvocation(spec),
         '--out',
         scriptPath,
       ],

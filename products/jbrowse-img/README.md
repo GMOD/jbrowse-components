@@ -390,6 +390,16 @@ jb2export --hub hg38 --multiwig a.bw,b.bw,c.bw height:300 --loc GAPDH --out mult
 jb2export --hub hg38 --multiwig sources.json height:520 --loc GCG --out multi.png
 ```
 
+**Give it a `name:`.** Every other track flag labels its panel with the file it
+opened, but a comma-separated list has no one filename to be named after — it
+falls back to `multiwig`, so the panel says nothing about what the rows are, and
+a second list is only `multiwig-2`:
+
+```bash
+jb2export --hub hg38 --multiwig a.bw,b.bw,c.bw 'name:PBMC accessibility' \
+  height:300 --loc GAPDH --out multi.png
+```
+
 This example renders the CATlas single-cell ATAC accessibility-by-cell-type data
 (Zhang et al 2021): 16 human cell types, each a BigWig, wired up with per-row
 labels/colors/groups in
@@ -463,14 +473,14 @@ jb2export --hub hg19 --track hg19-ncbiRefSeqCurated \
 
 ### Gene tracks and the reference sequence
 
-Feature tracks (`--gffgz`, `--bigbed`, `--bedgz`, or a hosted `--track`) render
-their glyphs with labels, and `--refseq` adds the assembly's reference-sequence
-track. Zoomed to base level, it shows the DNA bases and the six-frame
-translation (green start codons, red stops). This human example zooms into a
-`TP53` intron/CDS boundary so the gene track's structure reads at base level:
-the intron thins to a connector line, the coding exon begins as a solid CDS
-block, and that block edge lines up with a specific reference base and reading
-frame. `showOnlyGenes` keeps the RefSeq track to its gene features:
+Feature tracks (`--gffgz`, `--gff`, `--bigbed`, `--bedgz`, or a hosted
+`--track`) render their glyphs with labels, and `--refseq` adds the assembly's
+reference-sequence track. Zoomed to base level, it shows the DNA bases and the
+six-frame translation (green start codons, red stops). This human example zooms
+into a `TP53` intron/CDS boundary so the gene track's structure reads at base
+level: the intron thins to a connector line, the coding exon begins as a solid
+CDS block, and that block edge lines up with a specific reference base and
+reading frame. `showOnlyGenes` keeps the RefSeq track to its gene features:
 
 <!-- jb2export: gene_track -->
 
@@ -991,6 +1001,9 @@ of the same type, e.g. `--bam file1.bam --bam file2.bam`
   [MultiWiggle](#multiwiggle-many-bigwigs-in-one-track)
 - `--vcfgz`
 - `--gffgz`
+- `--gff` — a plain, unindexed GFF3, read whole and filtered in memory. For the
+  small annotation files that come without a tabix index (a virus genome, a
+  plasmid); a chromosome-scale file wants `--gffgz`
 - `--bigbed`
 - `--bedgz`
 - `--hic`
@@ -1081,7 +1094,7 @@ Examples:
   jb2export --fasta ref.fa --bigwig signal.bw --loc chr1:1-50000 --out fig.R
       Emit an editable ggplot2 script instead of an image, then Rscript fig.R
 
-Track options: --bam, --cram, --bigwig, --multiwig, --vcfgz, --gffgz, --hic, --bigbed, --bedgz
+Track options: --bam, --cram, --bigwig, --multiwig, --vcfgz, --gffgz, --gff, --hic, --bigbed, --bedgz
 
 Comparative subcommands (run "jb2export dotplot --help"): dotplot, synteny, circular
 

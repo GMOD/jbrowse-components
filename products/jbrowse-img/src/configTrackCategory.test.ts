@@ -38,7 +38,13 @@ test('every CLI file-type flag resolves to its display category', () => {
         fasta: '/ref.fa',
         trackList: [[flag, [file]]],
       })
-      return [flag, configTrackCategory(data.tracks, file)]
+      // the id readData actually assigned, not one recomputed from the file:
+      // that derivation is the flag's business (a --multiwig list has no single
+      // filename to be named after), and this test is about the category.
+      return [
+        flag,
+        configTrackCategory(data.tracks, data.openTracks![0]!.trackId),
+      ]
     }),
   )
   expect(byFlag).toEqual({
@@ -48,6 +54,7 @@ test('every CLI file-type flag resolves to its display category', () => {
     multiwig: 'wiggle',
     vcfgz: 'variant',
     gffgz: 'feature',
+    gff: 'feature',
     bigbed: 'feature',
     bedgz: 'feature',
     hic: 'hic',

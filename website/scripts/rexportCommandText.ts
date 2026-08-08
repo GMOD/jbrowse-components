@@ -1,6 +1,4 @@
-import type { RExportInvocation } from './rexportCommand.ts'
-
-// Render one gallery figure's jb2export invocation as a pasteable shell block.
+// Render one gallery figure's jb2export argv as a pasteable shell block.
 //
 // Pure, and split from rexportCommand.ts for that reason: looking an invocation
 // up needs the whole spec registry, which reaches puppeteer through
@@ -15,10 +13,10 @@ export function shellSingleQuote(s: string) {
   return `'${s.replaceAll("'", `'\\''`)}'`
 }
 
-// The spec's own extra argv, regrouped one flag per line: `['--track', 'id',
-// '{json}']` reads as `--track id '{json}'`. A value that needs no quoting keeps
-// none, so the display state a figure adds stays legible.
-export function renderExtraArgs(args: string[]) {
+// The argv regrouped one flag per line: `['--bam', 'reads.bam', '{json}']` reads
+// as `--bam reads.bam '{json}'`. A value that needs no quoting keeps none, so a
+// url or a locstring stays legible.
+export function renderArgLines(args: string[]) {
   const lines: string[] = []
   for (const arg of args) {
     if (arg.startsWith('--') || lines.length === 0) {
@@ -36,16 +34,10 @@ export function renderExtraArgs(args: string[]) {
  * basename, which is also what the emitted script's own ggsave() is retargeted
  * at during a sweep, so the `.R` and the `.png` share it.
  */
-export function rExportCommandBlock(
-  name: string,
-  { configUrl, sessionSpec, extraArgs }: RExportInvocation,
-) {
+export function rExportCommandBlock(name: string, args: string[]) {
   const lines = [
     'jb2export \\',
-    `  --config ${configUrl} \\`,
-    // compacted onto one line; the specs run 100-500 characters
-    `  --spec ${shellSingleQuote(JSON.stringify(JSON.parse(sessionSpec)))} \\`,
-    ...renderExtraArgs(extraArgs).map(l => `${l} \\`),
+    ...renderArgLines(args).map(l => `${l} \\`),
     `  --out ${name}.R`,
     `Rscript ${name}.R`,
   ]
