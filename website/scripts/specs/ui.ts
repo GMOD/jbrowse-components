@@ -692,7 +692,14 @@ export const uiSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: '1:25,250,000-25,350,000',
+          // 270kb where this was 100kb (review: "zoom out more"). The extra
+          // width is chosen rather than generous: RHCE sits at 25,362,249 to
+          // 25,430,192, just off the right edge of the old frame, and it is the
+          // gene the tutorial's next section is about -- reads that cannot be
+          // placed in RHD land there, because the two are a 97% identical
+          // inverted pair. Framing them together means the arcs below have
+          // somewhere to point.
+          loc: '1:25,200,000-25,470,000',
           // RHD's own span, from the RefSeq annotation the gene lane draws
           // (chr1:25,272,393-25,330,445), taken from the annotation rather than
           // measured. It bands the coverage hole in all three read tracks at
@@ -730,7 +737,26 @@ export const uiSpecs: ScreenshotSpec[] = [
               type: 'LinearAlignmentsDisplay',
               forceLoad: true,
               showPileup: false,
-              height: 160,
+              // The arc band the review asked for, under each coverage curve.
+              // It is the second, independent reading of the same event: the
+              // coverage says how much sequence is there, the arcs say what the
+              // mates think the distance across it is, so a deletion shows as a
+              // hole AND as a fan of long-insert pairs bridging that hole.
+              // `showPileup: false` still holds -- a 30x pileup at this width is
+              // a solid mass -- so these two bands are the whole track.
+              //
+              // The band is DENSE, and that is the data rather than a setting
+              // left wrong: at 30x every ordinary mate pair is an arc a few
+              // hundred bp wide, which draws as a near-vertical tick, so the
+              // informative long-range arcs ride over a picket fence of them.
+              // There is no "long-range only" slot to turn that off --
+              // `drawLongRange` adds the long arcs, it does not subtract the
+              // short ones -- and the long arcs stay traceable because
+              // arcColorByType's default colors them by insert size and
+              // orientation. Worth re-checking if a filter ever lands.
+              readConnections: 'arc',
+              readConnectionsHeight: 70,
+              height: 240,
               coverageHeight: 150,
               minScore: 0,
               maxScore: 70,
@@ -740,9 +766,11 @@ export const uiSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'HG00097.final',
-    readyTimeout: 240000,
-    viewportHeight: 875,
-    settleMs: 60000,
+    // 2.7x the span at 30x across three CRAMs, and the arcs need every mate
+    // rather than just the coverage summary
+    readyTimeout: 600000,
+    viewportHeight: 1120,
+    settleMs: 90000,
   },
 
   // Trio SV: the Kinh-Vietnamese trio (HG02030 child / HG02031 mother / HG02032
