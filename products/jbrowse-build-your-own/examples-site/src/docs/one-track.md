@@ -3,22 +3,14 @@ adapter per file, fetches and parses in the background, and holds `bpPerPx`,
 `offsetPx` and `displayedRegions`. It draws nothing. Two things turn it into a
 picture:
 
-1. **Tell it how wide it is.** Everything downstream derives from pixel width,
-   so nothing renders until one is measured. `useWidthSetter` from
-   `@jbrowse/core/util/hooks` is the hook JBrowse's own views use — put the ref
-   it returns on the element to measure.
-2. **Mount a display** once `view.ready` says there is something to draw. Every
-   track carries an `activeDisplay` exposing a `RenderingComponent`; give it a
-   box with a height and a positioning context.
+1. Tell it how wide it is. Everything downstream derives from pixel width.
+   `useWidthSetter` from `@jbrowse/core/util/hooks` hands back a ref to put on
+   the element to measure.
+2. Mount a display once `view.ready`. Every track carries an `activeDisplay`
+   exposing a `RenderingComponent`. Give it a box with a height and a
+   positioning context.
 
-**`view.ready`, not `view.initialized`** — the difference has cost people an
-afternoon. `initialized` answers "have the assembly's regions loaded", the first
-of two async steps; navigating then populates `displayedRegions`, and in the
-window between them `initialized` is already true with nothing on screen, so a
-display mounted there runs its block reads against no regions. `ready` folds in
-that gap and a failed assembly load, and it is the gate anything of yours that
-reads block geometry needs too.
-
-The track is a BigWig, so this is a real fetch through a real adapter, laid out
-by the same code that runs in the full product. The demo above is this file with
-the gesture hook added back.
+**`view.ready`, not `view.initialized`.** `initialized` covers only the first of
+two async steps, loading the assembly's regions. Navigating then populates
+`displayedRegions`. Between them `initialized` is true with nothing on screen,
+and a display mounted there reads blocks against no regions.

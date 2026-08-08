@@ -60,7 +60,7 @@ const trackIds = ['volvox_microarray', 'volvox_genes']
 
 const SCALEBAR_HEIGHT = 20
 
-function makeView(scrollZoom: boolean) {
+function makeView() {
   const state = createViewState({
     assembly: volvox,
     tracks: [wiggleTrack, featureTrack],
@@ -76,7 +76,7 @@ function makeView(scrollZoom: boolean) {
   })
   // see the Pan and zoom example: scroll-to-zoom is a session preference, shared
   // with any display that scrolls vertically inside itself
-  view.setScrollZoom(scrollZoom)
+  view.setScrollZoom(true)
   return { view, session: state.session }
 }
 
@@ -116,32 +116,6 @@ const TrackRow = observer(function TrackRow({
     </div>
   )
 })
-
-// the prompt for a wheel the view ignored; `showZoomHint` is raised for
-// exactly that and clears itself. See the Pan and zoom example.
-function ZoomHint({ show }: { show: boolean }) {
-  return (
-    <div
-      aria-hidden={!show}
-      style={{
-        position: 'absolute',
-        inset: 0,
-        zIndex: 3,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        pointerEvents: 'none',
-        background: 'color-mix(in srgb, Canvas 62%, transparent)',
-        color: 'CanvasText',
-        fontSize: '0.95rem',
-        opacity: show ? 1 : 0,
-        transition: 'opacity 150ms ease',
-      }}
-    >
-      Use ctrl + scroll to zoom
-    </div>
-  )
-}
 
 /**
  * Background gridlines, drawn once for the whole stack -- scalebar included, so
@@ -554,19 +528,13 @@ function useSiteMode() {
   return mode
 }
 
-const Scalebar = observer(function Scalebar({
-  scrollZoom = true,
-}: {
-  // Which gesture a bare wheel is. On by default, because a browser that owns
-  // its area of the page should zoom the way a map does. The landing page
-  // passes `false`, since it sits above a long document where a wheel that
-  // swallowed the page scroll would trap the reader -- see the Pan and zoom
-  // page, which is about that decision.
-  scrollZoom?: boolean
-}) {
-  const [{ view, session }] = useState(() => makeView(scrollZoom))
+const Scalebar = observer(function Scalebar() {
+  const [{ view, session }] = useState(makeView)
   const ref = useWidthSetter(view)
-  const { containerProps, showZoomHint } = usePanZoom(ref, view)
+  // `usePanZoom` also returns `showZoomHint`, unused here: it is raised only
+  // when a wheel was ignored for want of ctrl, which cannot happen with
+  // scroll-to-zoom on. The Pan and zoom example has the toggle, and draws it.
+  const { containerProps } = usePanZoom(ref, view)
   const rubberband = useRubberband(view)
   const palette = useSessionPalette(session, useSiteMode())
 
@@ -583,7 +551,6 @@ const Scalebar = observer(function Scalebar({
             cursor: 'grab',
           }}
         >
-          <ZoomHint show={showZoomHint} />
           {/* every piece below reads block geometry, and `staticBlocks`
            * *throws* until the ResizeObserver has reported a width -- so all
            * of it sits inside one gate rather than each guarding itself. See

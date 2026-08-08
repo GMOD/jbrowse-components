@@ -1,24 +1,21 @@
-A whole-genome view is not a mode. It is the same view every other page here
-builds, with 24 displayed regions instead of one.
+A whole-genome view is the same view every other page builds, just with 24
+displayed regions instead of one. `init.loc` is handed straight to
+`navToLocString`, and a locstring takes as many regions as you give it, so
+`chr1 chr2 … chrX chrY` is the whole mechanism. `init.displayedRegionNames`
+takes the same list as an array.
 
-`init.loc` is handed straight to `navToLocString`, and a locstring takes as many
-regions as you give it — so `chr1 chr2 … chrX chrY` is the whole mechanism.
-`init.displayedRegionNames` takes the same list as an array.
+Avoid `view.showAllRegionsInAssembly()`. hg38 has 455 sequences counting every
+`_alt`, `_random` and `chrUn_` scaffold, and all but the 24 land sub-pixel and
+elide. Which sequences are "the chromosomes" is a choice a human makes. No field
+in the file records it.
 
-What you probably want is **not** `view.showAllRegionsInAssembly()`. hg38 has
-455 sequences in it counting every `_alt`, `_random` and `chrUn_` scaffold, and
-all but the 24 land sub-pixel and elide. Which sequences are "the chromosomes"
-is a choice a human makes; no field in the file records it.
+Regions lay out contiguously, so this is one continuous strip unless you draw
+the boundaries. `RegionBoundaries` and `RegionNames` are the components the
+[section above](#drive-it-from-your-app) and the
+[scalebar](../rulers-and-labels/#scalebar) explain. Both read geometry the view
+already computed, rather than deriving it from block flags, which is how the
+narrowest bands end up with no name at all instead of an ambiguous `2…`.
 
-Regions lay out contiguously, so at this width the view is one continuous strip
-unless you draw the boundaries. `RegionBoundaries` is the component from the
-[section above](#drive-it-from-your-app); `RegionNames` is the one the
-[scalebar](../rulers-and-labels/#scalebar) explains, and it is what turns bands
-into chromosomes. Both read geometry the view already computed — `paddingSpans`
-and `scalebarRefNameLabels` — rather than deriving it from block flags, which is
-how the narrowest bands here end up with no name at all instead of an ambiguous
-`2…`.
-
-The track still draws because a bigWig carries precomputed summaries, so phyloP
-across 3.1Gb is one cheap read per region. A track with no summary tier — a BAM,
-a tabix GFF — refuses this width instead, which is correct and not a bug.
+The track still draws because a bigWig carries precomputed summaries. A track
+with no summary tier (a BAM, a tabix GFF) refuses this width instead, which is
+correct and not a bug.

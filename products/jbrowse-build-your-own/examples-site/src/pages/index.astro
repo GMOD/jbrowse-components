@@ -29,45 +29,42 @@ const base = import.meta.env.BASE_URL
   <h1>Build your own genome browser</h1>
   <p class="lead">
     JBrowse's engine — assemblies, adapters, workers, coordinates — with your
-    own UI around it. Drag to pan, ctrl + wheel to zoom, drag the scalebar to
-    zoom to a range.
+    own UI around it. Drag to pan, wheel to zoom, drag the scalebar to zoom to a
+    range.
   </p>
 
   {
     /*
-    The example runs here rather than being described, with `scrollZoom` off:
-    a bare wheel that zoomed would swallow the page scroll of the reader on
-    their way down to the gallery, so here the wheel scrolls and ctrl + wheel
-    zooms. The Pan and zoom page is where that decision is explained, and its
-    own demo has the checkbox that flips it.
+    `scrollZoom` on, the same default every other page takes -- the first
+    browser a reader touches shouldn't be the one exception. A wheel over the
+    demo zooms; shift + wheel scrolls inside a display. Pan and zoom explains
+    the choice and has the checkbox that flips it.
 
-    Its box is held open at the height it settles at, because this is the first
-    thing on the page and everything below it would otherwise drop when the
-    island mounts. See `demoHeights`.
+    Its box is held open at the height it settles at, because everything below
+    it would otherwise drop when the island mounts. See `demoHeights`.
   */
   }
   <div class="demo reserved" style={`min-height:${demoHeights[landingDemo]}px`}>
-    <Scalebar client:only="react" scrollZoom={false} />
+    <Scalebar client:only="react" />
   </div>
 
   <p class="note">
     That is the <a href={`${base}${landingDemoHref}`}>scalebar</a> example, running
-    its own source. Every page below is one file like it; the first strips this back
-    to a measured div and one track.
+    its own source. Every page below is one file like it.
   </p>
   <p class="note">
-    Only one of them renders any Material UI, and on purpose: <a
+    Only one of them renders any Material UI: <a
       href={`${base}multiple-tracks/`}>Multiple tracks</a
-    > is left stock, so you can see what a display looks like before you swap anything.
-    Everywhere else what a track draws around its data — its loading, error and too-large
-    states, the controls in its corner — is <strong
-      >{bundle.plainGzipKb} KB gzipped</strong
-    > with plain components, {bundle.muiGzipKb} KB with Material ones.
+    > is left stock, so you can see a display before you swap anything. Everywhere
+    else a track's chrome — its loading, error and too-large states, the controls
+    in its corner — is <strong>{bundle.plainGzipKb} KB gzipped</strong> with plain
+    components, {bundle.muiGzipKb} KB with Material ones.
   </p>
   <p class="note">
-    An example imports from three published packages, all of which need to be on
-    the same version: <code>@jbrowse/react-linear-genome-view2</code> for the engine,
-    <code>@jbrowse/core</code> for the hooks and the palette, and <code
+    An example imports three published packages, all on the same version:
+    <code>@jbrowse/react-linear-genome-view2</code> for the engine, <code
+      >@jbrowse/core</code
+    > for the hooks and the palette, and <code
       >@jbrowse/plugin-linear-genome-view</code
     > for the display seams.
   </p>
