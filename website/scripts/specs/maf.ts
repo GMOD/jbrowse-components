@@ -696,15 +696,23 @@ export const mafSpecs: ScreenshotSpec[] = [
     viewportHeight: 830,
     // the .tai alone is 4.98 MB and the first block read follows it
     actions: [{ type: 'delay' as const, ms: 25000 }],
-    // One line, because the sidebar now says what the rows are: `HG00099.1`
-    // names a person and which of their two haplotypes, which is what no
-    // amount of on-image text conveyed while the rows were 2 px tall. What a
-    // label still cannot say is what an EMPTY row means, so that is all this
-    // says.
+    // A KEY for the two fills, where this was one sentence arguing against a
+    // wrong reading of one of them ("A blank row is a haplotype with no sequence
+    // here, not one whose sequence matches"). Two things were wrong with that
+    // and the review named both. It was a double negative, so it spent its
+    // length on the reading it was ruling out rather than on the one it meant.
+    // And it said ROW, while what the reader is actually looking at is white
+    // spans INSIDE rows that are otherwise grey, so the sentence did not appear
+    // to be about anything on screen ("what is blank e.g. 'white'").
+    //
+    // Naming both fills is shorter than arguing about one, and it makes the
+    // white legible as an absence rather than as a background the row is drawn
+    // on. The sidebar already says what a row is (`HG00099.1` is a person and
+    // which of their two haplotypes), so nothing here has to.
     annotations: [
       {
         type: 'text' as const,
-        text: 'A blank row is a haplotype with no sequence here, not one whose sequence matches',
+        text: 'Grey: aligned to GRCh38\nWhite: no aligned sequence for that haplotype',
         fontSize: 18,
         maxWidth: 330,
         anchor: {

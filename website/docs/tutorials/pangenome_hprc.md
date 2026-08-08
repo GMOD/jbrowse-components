@@ -1000,7 +1000,7 @@ graph and the callset above come from; being nine times smaller to store and
 four times cheaper to read a locus out of is the second reason rather than the
 first.
 
-<Figure caption="The C4 locus in HPRC release 2's multiple alignment. Thirty-two of the 464 haplotypes, one row each and named in the sidebar, under the NCBI RefSeq genes, with GRCh38 on top and mismatches ticked against it. The blank rows through the copy-number-variable C4A and C4B are haplotypes carrying no sequence there rather than haplotypes that match." src="/img/maf_hprc_pangenome.png" />
+<Figure caption="The C4 locus in HPRC release 2's multiple alignment. Thirty-two of the 464 haplotypes, one row each and named in the sidebar, under the NCBI RefSeq genes, with GRCh38 on top and mismatches ticked against it. Grey is aligned sequence and white is none, so the white spans through the copy-number-variable C4A and C4B are haplotypes that carry nothing there." src="/img/maf_hprc_pangenome.png" />
 
 The locus is C4, the example [HPRCv2](https://github.com/pangenome/HPRCv2)
 itself opens with. Every row is a human haplotype, so the rows say something
