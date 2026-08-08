@@ -240,6 +240,44 @@ test('buildRawDataByGroup regroups regions into per-group region maps', () => {
   expect(byGroup.get('-')!.has(1)).toBe(false)
 })
 
+// The source-level filter every cross-group walk of this map then inherits —
+// the arc scale pooling and the derivative-path chain scan alike, neither of
+// which re-applies `hiddenGroupKeys` on its own.
+test('buildRawDataByGroup drops hidden group keys entirely', () => {
+  const shown = data(['a'])
+  const hidden = data(['b'])
+  const byGroup = buildRawDataByGroup(
+    new Map([
+      [
+        0,
+        grouped([
+          { key: '+', data: shown },
+          { key: '-', data: hidden },
+        ]),
+      ],
+    ]),
+    new Set(['-']),
+  )
+  expect([...byGroup.keys()]).toEqual(['+'])
+  expect(byGroup.has('-')).toBe(false)
+})
+
+test('buildRawDataByGroup keeps every group when nothing is hidden', () => {
+  const byGroup = buildRawDataByGroup(
+    new Map([
+      [
+        0,
+        grouped([
+          { key: '+', data: data(['a']) },
+          { key: '-', data: data(['b']) },
+        ]),
+      ],
+    ]),
+    new Set<string>(),
+  )
+  expect([...byGroup.keys()]).toEqual(['+', '-'])
+})
+
 test('buildRawDataByGroup keeps the single ungrouped group under key ""', () => {
   const d = data(['a', 'b'])
   const byGroup = buildRawDataByGroup(

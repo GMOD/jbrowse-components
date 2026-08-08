@@ -1571,7 +1571,6 @@ describe('computeArcsByGroup', () => {
       ]),
       regions,
       settings,
-      new Set<string>(),
     )
     // Only the 60kb pair flips; the 15kb control stays default, so this isn't a
     // blanket repaint of the lane.
@@ -1580,19 +1579,16 @@ describe('computeArcsByGroup', () => {
     expect(colorTypesOf(byGroup, 'a').every(c => c === 0)).toBe(true)
   })
 
-  test('a hidden lane neither renders nor shifts the pooled scale', () => {
-    // Same two lanes, but A is hidden. Dropping it before pooling leaves B
-    // scaled to itself alone, so its 60kb pair falls back to COLOR_DEFAULT —
-    // proving the hidden lane was excluded from the scale, not merely from the
-    // output.
+  test('a lane left out of the map does not shift the pooled scale', () => {
+    // B alone. This is what a hidden lane looks like from here — the display
+    // drops those in `buildRawDataByGroup` (covered in groupedDataMaps.test),
+    // so what arrives is already the drawn lanes. Scaled to itself, B's 60kb
+    // pair falls back to COLOR_DEFAULT, so the omission really did move the
+    // threshold rather than only the output.
     const byGroup = computeArcsByGroup(
-      new Map([
-        ['a', laneA()],
-        ['b', laneB()],
-      ]),
+      new Map([['b', laneB()]]),
       regions,
       settings,
-      new Set(['a']),
     )
     expect(byGroup.has('a')).toBe(false)
     expect(colorTypesOf(byGroup, 'b')).toEqual([0, 0])
@@ -1604,7 +1600,6 @@ describe('computeArcsByGroup', () => {
       new Map([['only', new Map([[0, data]])]]),
       regions,
       settings,
-      new Set<string>(),
     )
     const { arcs, lines } = computeArcsFromPileupData(
       new Map([[0, data]]),

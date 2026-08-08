@@ -83,6 +83,7 @@ import {
 } from './components/alignmentComponentUtils.ts'
 import { computeHighlightBoxes } from './components/computeHighlightBoxes.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
+import { splitArcsBySide } from './components/sashimiArcs.ts'
 import { ColorScheme } from './constants.ts'
 import { GROUP_LABEL_HEIGHT } from './groupLabelStyle.ts'
 import {
@@ -1561,9 +1562,56 @@ export default function stateModelFactory(
          * insertion-ordered so the first key is the primary group. The arc
          * compute and the per-section sashimi overlay both read one group's raw
          * map from here; ungrouped is the single key `''`.
+         *
+         * Hidden lanes are already gone, like `groupOrder` — so a walk of every
+         * entry here is a walk of every DRAWN lane, and no consumer has to
+         * re-apply `hiddenGroupKeys`. See `buildRawDataByGroup`.
          */
         get rawDataByGroup() {
-          return buildRawDataByGroup(self.rpcDataMap)
+          return buildRawDataByGroup(self.rpcDataMap, self.hiddenGroupKeys)
+        },
+
+        /**
+         * #getter
+         * The fetched regions as `{refName,start,end,displayedRegionIndex}` —
+         * the shape every per-read region scan takes (`computeArcsByGroup`,
+         * `computeReadChains`). Regions whose fetch hasn't landed are dropped,
+         * so a scan never has to test for a missing entry, and the list is
+         * memoized once rather than rebuilt by each consumer.
+         */
+        get loadedRegionInfos() {
+          return [...self.loadedRegions.entries()]
+            .filter(([idx]) => self.rpcDataMap.has(idx))
+            .map(([displayedRegionIndex, r]) => ({
+              refName: r.refName,
+              start: r.start,
+              end: r.end,
+              displayedRegionIndex,
+            }))
+        },
+
+        /**
+         * #getter
+         * Normalizer for a refName that arrives in the BAM's own spelling (an SA
+         * tag's or RNEXT's `chr1`) rather than the assembly-canonical one a
+         * fetched read carries (`1`). Undefined when no assembly is resolved,
+         * where the consumers fall back to identity — `getCanonicalRefName2`
+         * throws before `refNameAliases` load, hence the `initialized` gate. In
+         * practice `rpcDataMap` only holds data once the assembly is loaded.
+         *
+         * Shared rather than resolved per consumer because both need it for the
+         * same reason: without it a same-chromosome split junction reads as
+         * inter-chromosomal, and a derivative path names refNames the view
+         * doesn't have.
+         */
+        get canonicalRefName() {
+          const firstRegion = self.loadedRegions.values().next().value
+          const assembly = firstRegion
+            ? getSession(self).assemblyManager.get(firstRegion.assemblyName)
+            : undefined
+          return assembly?.initialized
+            ? (refName: string) => assembly.getCanonicalRefName2(refName)
+            : undefined
         },
 
         /**
@@ -1583,53 +1631,33 @@ export default function stateModelFactory(
          * follows for `arcsYDomainBp`. Computing it needs every group's arcs in
          * hand, which a per-group loop can't provide.
          *
-         * Hidden lanes are passed in rather than pre-filtered so they're dropped
-         * before that pooling. They must be skipped, not just left unread: the
+         * Hidden lanes never reach it, because `rawDataByGroup` has already
+         * dropped them. They must be skipped, not just left unread: the
          * per-section consumers look this up by an already-filtered `groupOrder`
          * key, but the cross-group scans (`arcsYDomainBp`, `arcLegendCategories`)
          * walk every entry — so a hidden lane's arcs would size the read-cloud Y
          * axis the visible lanes share and key legend swatches for arcs nothing
-         * draws. Skipping also saves the whole per-read arc pass over a lane no
-         * section renders.
+         * draws, and its reads would shift `poolArcScale` for everyone. Skipping
+         * also saves the whole per-read arc pass over a lane no section renders.
          */
         get arcsByGroup() {
           if (self.readConnections === 'off' || self.rpcDataMap.size === 0) {
             return new Map<string, Map<number, ArcsUploadData>>()
           }
-          const regionInfos = [...self.loadedRegions.entries()]
-            .filter(([idx]) => self.rpcDataMap.has(idx))
-            .map(([displayedRegionIndex, r]) => ({
-              refName: r.refName,
-              start: r.start,
-              end: r.end,
-              displayedRegionIndex,
-            }))
-          // SA-tag / RNEXT refNames use the BAM's own naming (e.g. `chr1`);
-          // fetched reads carry the assembly-canonical name (e.g. `1`). Pass the
-          // assembly's normalizer so a same-chr split junction to an SA segment
-          // isn't misclassified inter-chromosomal.
-          const firstRegion = self.loadedRegions.values().next().value
-          const assembly = firstRegion
-            ? getSession(self).assemblyManager.get(firstRegion.assemblyName)
-            : undefined
           const settings = {
             colorByType: self.arcColorByType,
             cloud: self.readConnections === 'cloud',
             drawInter: self.drawInter,
             drawLongRange: self.drawLongRange,
-            // gate on `initialized` (== refNameAliases loaded): getCanonicalRefName
-            // throws otherwise. In practice rpcDataMap only has data once the
-            // assembly is loaded; when absent the arc compute falls back to
-            // identity (no aliasing).
-            canonicalRefName: assembly?.initialized
-              ? (refName: string) => assembly.getCanonicalRefName2(refName)
-              : undefined,
+            // SA-tag / RNEXT refNames use the BAM's own naming, so a same-chr
+            // split junction to an SA segment would otherwise be misclassified
+            // inter-chromosomal. Undefined = no aliasing (identity).
+            canonicalRefName: this.canonicalRefName,
           }
           return computeArcsByGroup(
             this.rawDataByGroup,
-            regionInfos,
+            this.loadedRegionInfos,
             settings,
-            self.hiddenGroupKeys,
           )
         },
 
@@ -1663,24 +1691,6 @@ export default function stateModelFactory(
           if (!this.hasReadsForDerivativePaths) {
             return []
           }
-          const regionInfos = [...self.loadedRegions.entries()]
-            .filter(([idx]) => self.rpcDataMap.has(idx))
-            .map(([displayedRegionIndex, r]) => ({
-              refName: r.refName,
-              start: r.start,
-              end: r.end,
-              displayedRegionIndex,
-            }))
-          const firstRegion = self.loadedRegions.values().next().value
-          const assembly = firstRegion
-            ? getSession(self).assemblyManager.get(firstRegion.assemblyName)
-            : undefined
-          // same normalizer the arcs use: an SA tag names refNames in the BAM's
-          // own spelling, and a path whose segments disagree with the view's
-          // refNames navigates nowhere
-          const canonicalRefName = assembly?.initialized
-            ? (refName: string) => assembly.getCanonicalRefName2(refName)
-            : undefined
           // Per group, then concatenated. Grouping (by HP tag, by strand, ...)
           // partitions reads for display and says nothing about which molecule
           // carries which junction, so it must not partition the evidence: a
@@ -1688,8 +1698,22 @@ export default function stateModelFactory(
           // four. Chaining within a group loses nothing, because a segment
           // sitting in another lane is named by the read's own SA tag and
           // `unpairedReadChain` folds it in from there.
+          //
+          // A HIDDEN lane is not that question and is already gone from
+          // `rawDataByGroup`: those reads aren't partitioned away from the
+          // evidence, they are excluded from the display outright (the
+          // all-vs-all self-alignment lane), so counting their chains would rank
+          // paths on reads the track never draws.
+          //
+          // `canonicalRefName` is the same normalizer the arcs use: an SA tag
+          // names refNames in the BAM's own spelling, and a path whose segments
+          // disagree with the view's refNames navigates nowhere.
           const chains = [...this.rawDataByGroup.values()].flatMap(byRegion =>
-            computeReadChains(byRegion, regionInfos, canonicalRefName),
+            computeReadChains(
+              byRegion,
+              this.loadedRegionInfos,
+              this.canonicalRefName,
+            ),
           )
           return computeDerivativePaths({ chains })
         },
@@ -2027,8 +2051,7 @@ export default function stateModelFactory(
             arcs.sort((a, b) => a.score - b.score)
             return {
               groupKey: sec.groupKey,
-              up: arcs.filter(a => a.side === 'up'),
-              down: arcs.filter(a => a.side === 'down'),
+              ...splitArcsBySide(arcs),
               // Content-space band tops; the overlay scrolls them for grouped,
               // the export reads them as-is (scrollTop 0).
               coverageOverlayTop: sec.coverageTop + YSCALEBAR_LABEL_OFFSET,

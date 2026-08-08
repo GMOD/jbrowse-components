@@ -482,6 +482,28 @@ describe('color by menu curation', () => {
   test('curated colorOptions replace the basic radios', () => {
     expect(
       labelsFor({ colorOptions: pickColorOptions('normal', 'mateRefName') }),
+    ).toEqual(['Normal', 'Mate chromosome'])
+  })
+
+  test('a curated entry can relabel one scheme for its own display', () => {
+    expect(
+      labelsFor({
+        colorOptions: pickColorOptions('normal', {
+          type: 'mateRefName',
+          label: 'Query name',
+        }),
+      }),
     ).toEqual(['Normal', 'Query name'])
+  })
+
+  // Everything behind the scheme is already wired for a BAM (the worker reads
+  // the mate refName off next_ref, readTagColors bakes it, the legend names its
+  // empty bucket "No mate"); it just had no row to reach it from.
+  test('mate chromosome is reachable from the paired-end submenu', () => {
+    const model = makeModel()
+    // clickRadio throws if the row isn't there or isn't clickable, so reaching
+    // the assertion is itself the "it is offered" half
+    clickRadio(model, 'Mate chromosome')
+    expect(model.colorBy).toEqual({ type: 'mateRefName' })
   })
 })

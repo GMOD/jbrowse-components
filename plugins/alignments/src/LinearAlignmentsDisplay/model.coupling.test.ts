@@ -10,7 +10,10 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { SimpleFeature, getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
-import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
+import {
+  heightModeLabel,
+  linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory,
+} from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 
 import configSchemaFactory from './configSchema.ts'
@@ -317,24 +320,73 @@ describe('Arc color menu visibility', () => {
   })
 })
 
-// Sort and feature-height act only on the pileup rows, so they grey out (with a
-// tip) when the pileup band is hidden — mirrors the disabled band-options
-// pattern. Group-by and filters are NOT gated: both still affect the coverage
-// band when the pileup is off.
+// Sort and the read SIZE rows act only on the pileup rows, so they grey out
+// (with a tip) when the pileup band is hidden — mirrors the disabled
+// band-options pattern. Group-by and filters are NOT gated: both still affect
+// the coverage band when the pileup is off.
 describe('pileup-only menus grey out when the pileup is hidden', () => {
-  test.each(['Sort by...', 'Read height'])(
-    '%s is enabled with the pileup shown, disabled when hidden',
+  test('Sort by... is enabled with the pileup shown, disabled when hidden', () => {
+    const display = createDisplay()
+    display.setShowPileup(true)
+    expect(
+      findMenu(display.trackMenuItems(), 'Sort by...')?.disabled,
+    ).toBeFalsy()
+
+    display.setShowPileup(false)
+    const item = findMenu(display.trackMenuItems(), 'Sort by...')
+    expect(item?.disabled).toBe(true)
+    expect(item?.disabledHelpText).toBeTruthy()
+  })
+
+  // The size presets and the row cap need rows to act on; the "Track sizing"
+  // modes do not — grow sizes the TRACK, and with the pileup off it collapses
+  // the track to its coverage band, which is exactly when you want it. So the
+  // gate is per row, and "Read height" itself stays open to reach them.
+  //
+  // Scoped to that submenu rather than searched from the root: 'Normal' is also
+  // a Color by... scheme, and the root-first search would answer with that one.
+  function readHeightRow(
+    display: ReturnType<typeof createDisplay>,
+    label: string,
+  ) {
+    const menu = findMenu(display.trackMenuItems(), 'Read height')
+    return menu?.subMenu ? findMenu(menu.subMenu, label) : undefined
+  }
+
+  test.each(['Normal', 'Compact', 'Custom...', 'Set max layout height...'])(
+    'Read height row %s greys out with the pileup hidden',
     label => {
       const display = createDisplay()
       display.setShowPileup(true)
-      expect(findMenu(display.trackMenuItems(), label)?.disabled).toBeFalsy()
+      expect(readHeightRow(display, label)?.disabled).toBeFalsy()
 
       display.setShowPileup(false)
-      const item = findMenu(display.trackMenuItems(), label)
+      const item = readHeightRow(display, label)
       expect(item?.disabled).toBe(true)
       expect(item?.disabledHelpText).toBeTruthy()
     },
   )
+
+  test.each([
+    // from the shared builder, so this can't drift from the rendered wording
+    heightModeLabel('fixed', 'read'),
+    heightModeLabel('grow', 'read'),
+    heightModeLabel('fit', 'read'),
+  ])('Track sizing row %s stays live with the pileup hidden', label => {
+    const display = createDisplay()
+    display.setShowPileup(false)
+    const item = readHeightRow(display, label)
+    expect(item).toBeDefined()
+    expect(item?.disabled).toBeFalsy()
+  })
+
+  test('Read height itself stays open so those rows are reachable', () => {
+    const display = createDisplay()
+    display.setShowPileup(false)
+    expect(
+      findMenu(display.trackMenuItems(), 'Read height')?.disabled,
+    ).toBeFalsy()
+  })
 
   test.each(['Group by...', 'Filter by...'])(
     '%s stays enabled with the pileup hidden (still affects coverage)',

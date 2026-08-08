@@ -959,7 +959,7 @@ export function computeArcsFromPileupData(
 }
 
 /**
- * The full arc upload feed for every visible group of one fetch.
+ * The full arc upload feed for every group of one fetch.
  *
  * Resolution runs per group (a read belongs to exactly one lane, and each lane
  * draws its own band), but the color scale is characterized ONCE across all of
@@ -967,31 +967,30 @@ export function computeArcsFromPileupData(
  * makes that possible at no extra cost: the expensive half already had to run
  * per group.
  *
- * Hidden lanes are dropped before pooling, not after, so a lane the display
- * never draws can't shift the scale the visible ones share.
+ * Every group handed in is pooled, so a lane the display doesn't draw must not
+ * be in the map: it would shift the scale the visible lanes share. That is the
+ * caller's `rawDataByGroup`, which drops `hiddenGroupKeys` at the source
+ * (`buildRawDataByGroup`) precisely so no walk of it — this one included — has
+ * to re-apply the rule.
  */
 export function computeArcsByGroup(
   rawDataByGroup: ReadonlyMap<string, Map<number, PileupDataResult>>,
   regions: RegionInfo[],
   settings: ArcSettings,
-  hiddenGroupKeys: ReadonlySet<string>,
 ): Map<string, Map<number, ArcsUploadData>> {
-  const visible = [...rawDataByGroup].filter(
-    ([key]) => !hiddenGroupKeys.has(key),
+  // Each group carries its own collected input rather than sitting in a second
+  // array indexed in step with this one: the pooling in between is the whole
+  // reason collection and resolution are separate passes, and two parallel
+  // arrays make "same index" an invariant to hold rather than one to read.
+  const groups = [...rawDataByGroup].map(([key, rawMap]) => ({
+    key,
+    input: collectArcInputs(rawMap, regions, settings),
+  }))
+  const scale = poolArcScale(groups.map(g => g.input))
+  return new Map(
+    groups.map(({ key, input }) => [
+      key,
+      arcsToRegionMap(resolveArcs(input.pendingArcs, scale, settings), regions),
+    ]),
   )
-  const inputs = visible.map(([, rawMap]) =>
-    collectArcInputs(rawMap, regions, settings),
-  )
-  const scale = poolArcScale(inputs)
-  const out = new Map<string, Map<number, ArcsUploadData>>()
-  for (let i = 0; i < visible.length; i++) {
-    out.set(
-      visible[i]![0],
-      arcsToRegionMap(
-        resolveArcs(inputs[i]!.pendingArcs, scale, settings),
-        regions,
-      ),
-    )
-  }
-  return out
 }

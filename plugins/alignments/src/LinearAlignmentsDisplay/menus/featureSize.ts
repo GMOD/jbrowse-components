@@ -9,6 +9,7 @@ import HeightIcon from '@mui/icons-material/Height'
 import { COMPACTNESS_PRESETS } from './compactnessPresets.ts'
 
 import type { ResolvableDisplay } from '@jbrowse/core/configuration'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { HeightMode } from '@jbrowse/plugin-linear-genome-view'
 
 const SetFeatureHeightDialog = lazy(
@@ -41,6 +42,25 @@ export function getMaxHeightMenuItem(model: MaxHeightModel) {
 
 const PRESETS = Object.values(COMPACTNESS_PRESETS)
 
+// Rows that need laid-out content to act on, greyed out together.
+//
+// A helper rather than two fields spread at each site: which rows are
+// content-dependent is then a list of `needsContent(...)` calls a reader can
+// scan, and the gate can't be half-applied (a `disabled` without its
+// `disabledHelpText` is a row that greys out and won't say why). Takes the whole
+// gate so an enabled menu passes `undefined` for both by construction.
+interface ContentGate {
+  disabled?: boolean
+  disabledHelpText?: string
+}
+function needsContent<T extends MenuItem>(item: T, gate: ContentGate): T {
+  return {
+    ...item,
+    disabled: gate.disabled,
+    disabledHelpText: gate.disabledHelpText,
+  }
+}
+
 // The preset vocabulary lives in a UI-free leaf module so non-UI readers (the
 // website's figure recipes) can name a featureHeight by its menu label without
 // importing React. Re-exported here, where it has always been imported from.
@@ -66,7 +86,14 @@ interface FeatureHeightModel extends ResolvableDisplay, MaxHeightModel {
 export function getFeatureHeightMenuItem(
   model: FeatureHeightModel,
   noun: string,
-  opts?: { disabled?: boolean; disabledHelpText?: string },
+  // Greys out the rows that need something laid out to act on — the size
+  // presets and the row cap (see `needsContent`). Deliberately NOT applied to
+  // the parent submenu: "Track sizing" below is about how the TRACK absorbs its
+  // content, and grow still fits the track to a pileup-less stack
+  // (`growTargetHeight` collapses to the coverage bands), so disabling the whole
+  // menu took the one control that helps a coverage-only track with it. The
+  // canvas display's twin (`featureHeightMenuItems`) disables neither half.
+  gate: ContentGate = {},
 ) {
   const mode = model.heightMode
   // fit derives the size, so no size reads as selected while fitting; picking one
@@ -79,50 +106,56 @@ export function getFeatureHeightMenuItem(
     label: `${capitalizeFirst(noun)} height`,
     icon: HeightIcon,
     type: 'subMenu' as const,
-    disabled: opts?.disabled,
-    disabledHelpText: opts?.disabledHelpText,
     subMenu: [
       // Size presets: each writes its exact height (preserving grow, dropping fit
       // back to fixed); the pin promotes that height as the session default. The
       // rows stay open (promotableRadioItem's default) so size + mode can both be
       // set in one visit.
       ...PRESETS.map(preset =>
-        promotableRadioItem({
-          label: preset.label,
-          checked: sizeActive && matchesPreset(preset),
-          onClick: () => {
-            model.setFeatureHeight(preset.featureHeight)
-          },
-          pin: makePin(model, 'featureHeight', preset.featureHeight),
-        }),
+        needsContent(
+          promotableRadioItem({
+            label: preset.label,
+            checked: sizeActive && matchesPreset(preset),
+            onClick: () => {
+              model.setFeatureHeight(preset.featureHeight)
+            },
+            pin: makePin(model, 'featureHeight', preset.featureHeight),
+          }),
+          gate,
+        ),
       ),
       // Custom is a peer radio in the size group: checked when the size matches
       // no preset. It opens a dialog, so it closes the menu.
-      {
-        label: 'Custom...',
-        type: 'radio' as const,
-        checked: sizeActive && !PRESETS.some(matchesPreset),
-        keepMenuOpen: false,
-        onClick: () => {
-          getSession(model).queueDialog(handleClose => [
-            SetFeatureHeightDialog,
-            {
-              model,
-              handleClose,
-            },
-          ])
+      needsContent(
+        {
+          label: 'Custom...',
+          type: 'radio' as const,
+          checked: sizeActive && !PRESETS.some(matchesPreset),
+          keepMenuOpen: false,
+          onClick: () => {
+            getSession(model).queueDialog(handleClose => [
+              SetFeatureHeightDialog,
+              {
+                model,
+                handleClose,
+              },
+            ])
+          },
         },
-      },
+        gate,
+      ),
       { type: 'subHeader' as const, label: 'Track sizing' },
       // The fixed/grow/fit modes as an explicit radio group, from the same
       // shared builder the canvas display uses so the two menus are identical by
       // construction. The `fixed` mode is its own row — not folded into the size
-      // presets — so this group stays a plain, complete "pick one".
+      // presets — so this group stays a plain, complete "pick one". Never
+      // greyed out: see the note on `gate`.
       ...heightModeMenuItems(model, noun),
       // The row cap is the third sizing axis (how many rows, vs how tall each
       // read and how the track absorbs them), so it closes this menu rather
-      // than sitting among the "Show..." checkboxes.
-      getMaxHeightMenuItem(model),
+      // than sitting among the "Show..." checkboxes. Rows-dependent, so it
+      // greys out with the size presets.
+      needsContent(getMaxHeightMenuItem(model), gate),
     ],
   }
 }

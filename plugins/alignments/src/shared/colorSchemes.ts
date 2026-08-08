@@ -7,10 +7,7 @@ import type {
   ShaderScheme,
 } from './types.ts'
 
-// 'synteny' schemes are radios like any other, but they answer questions only a
-// synteny/PAF block poses (what does this block align to?), so no menu renders
-// that group wholesale — LGVSyntenyDisplay names them via pickColorOptions.
-export type ColorGroup = 'basic' | 'pairedEnd' | 'synteny'
+export type ColorGroup = 'basic' | 'pairedEnd'
 
 // Menu placement for a color scheme. Discriminated so a scheme is either a plain
 // radio (shown in the 'basic' top-level list or the 'pairedEnd' submenu) or
@@ -134,14 +131,26 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
     menu: { kind: 'special', label: 'Tag' },
     workerExtracts: true,
   },
-  // Chromosome painting: hash the mate's refName to a stable color, matching
-  // the synteny view's 'query' mode (both go through core's getQueryColor, so
-  // one contig paints the same color in both views). Rides the 'tag' shader
-  // path — the color is baked per-read on the CPU either way.
+  // Chromosome painting: hash the name of whatever this feature aligns TO — a
+  // read's RNEXT, a PAF block's query contig — to a stable color, matching the
+  // synteny view's 'query' mode (both go through core's getQueryColor, so one
+  // contig paints the same color in both views). Rides the 'tag' shader path —
+  // the color is baked per-read on the CPU either way.
+  //
+  // In the 'pairedEnd' group because on a BAM the name it paints is the MATE's
+  // reference (`getMateRefName` reads `next_ref`), which makes it the standard
+  // translocation view: reads whose mate landed on another chromosome each take
+  // that chromosome's color. Not `pairedOnly` — that flag resets a scheme when
+  // "view as pairs" is switched off, and this is an explicit categorical choice
+  // like `tag`, which draws on an ordinary pileup too.
+  //
+  // LGVSyntenyDisplay spells its own label for it ("Query name"): a PAF block
+  // has no mate, and on a BAM "query name" means QNAME, i.e. the read name —
+  // the one thing this scheme does not color by.
   mateRefName: {
     type: 'mateRefName',
     shaderScheme: 'tag',
-    menu: { kind: 'radio', label: 'Query name', group: 'synteny' },
+    menu: { kind: 'radio', label: 'Mate chromosome', group: 'pairedEnd' },
     workerExtracts: true,
   },
   // methylation/bisulfite reuse the modifications shader path with different
@@ -256,6 +265,18 @@ export function radioColorOptions(group: ColorGroup): ColorOption[] {
 // Curated subset of schemes, in the given order, with labels sourced from the
 // registry — for consumers (e.g. synteny) that support only a handful of schemes
 // and shouldn't re-spell the labels at the call site.
-export function pickColorOptions(...types: ColorSchemeType[]): ColorOption[] {
-  return types.map(type => ({ type, label: colorSchemeLabel(type) }))
+//
+// An entry may instead be a whole `{type,label}` to override the label for one
+// display, which is for the case where the registry name is right in one domain
+// and wrong in another (`mateRefName`: a mate's chromosome on a BAM, a query
+// contig on a PAF). Taking it inline keeps the curated list one ordered call
+// rather than a `pickColorOptions(...)` spread with a literal appended, so the
+// menu order stays visible in one place; `type` is still a `ColorSchemeType`, so
+// an override can't name a scheme the registry doesn't have.
+export function pickColorOptions(
+  ...types: (ColorSchemeType | ColorOption)[]
+): ColorOption[] {
+  return types.map(t =>
+    typeof t === 'string' ? { type: t, label: colorSchemeLabel(t) } : t,
+  )
 }

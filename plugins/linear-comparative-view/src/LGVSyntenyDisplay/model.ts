@@ -326,14 +326,15 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
           return [
             // Paired-end and modification/bisulfite coloring are deliberately
             // not opted into: a PAF block has no mate pair and no basecaller
-            // tags. 'mateRefName' ("Query name") is the synteny-only scheme —
+            // tags. 'mateRefName' is named for the mate a BAM read has, so it
+            // is relabelled here for the thing a PAF block aligns to —
             // chromosome painting, matching the synteny view's Query mode.
             getColorByMenuItem(self, {
               colorOptions: pickColorOptions(
                 'normal',
                 'strand',
                 'mappingQuality',
-                'mateRefName',
+                { type: 'mateRefName', label: 'Query name' },
               ),
               // This display's `colorBy` is promotable in its own right — the
               // schema override in configSchemaF.ts exists precisely to give it

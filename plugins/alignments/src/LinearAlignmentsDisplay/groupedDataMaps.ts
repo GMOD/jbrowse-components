@@ -194,6 +194,16 @@ export function buildChainIdMap(
 // arc compute (`computeArcsFromPileupData`) consumes one of these per-group maps,
 // so this is what lets arcs run per group.
 //
+// `hidden` is dropped HERE, not by each consumer, and that is the point. The
+// per-lane consumers look a key up by an already-filtered `groupOrder`, so they
+// never noticed; the cross-group ones (`derivativePathCandidates`, and the arc
+// scale pooling) walk every entry, and each had to remember the rule on its own
+// — `derivativePathCandidates` didn't, and ranked derivative-allele paths on
+// chains from a lane the display never draws. Filtering the source makes every
+// present and future walk of this map correct by construction, the same way
+// `orderedGroups` → `groupOrder` does for the stacking order. `rpcDataMap` stays
+// the unfiltered escape hatch for anything that genuinely wants every lane.
+//
 // Key order here is first-seen-across-regions, which is NOT the stacking order:
 // a group absent from an early region lands later than it should, the very case
 // `orderedGroups` re-sorts to fix. Every consumer looks a key up (`.get(key)`,
@@ -201,9 +211,13 @@ export function buildChainIdMap(
 // don't start depending on it.
 export function buildRawDataByGroup(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
+  hidden?: ReadonlySet<string>,
 ): Map<string, Map<number, PileupDataResult>> {
   const out = new Map<string, Map<number, PileupDataResult>>()
-  for (const { displayedRegionIndex, key, data } of eachGroup(rpcDataMap)) {
+  for (const { displayedRegionIndex, key, data } of eachGroup(
+    rpcDataMap,
+    hidden,
+  )) {
     getOrCreate(out, key, () => new Map()).set(displayedRegionIndex, data)
   }
   return out

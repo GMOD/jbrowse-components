@@ -27,6 +27,33 @@ export function sashimiSideTop(section: SashimiArcSection, side: SashimiSide) {
   return side === 'up' ? section.coverageOverlayTop : section.sashimiBandTop
 }
 
+/**
+ * Split one group's arcs into the two sub-band buckets, preserving order.
+ *
+ * `SashimiSide` has exactly two members, so a single pass with an else IS the
+ * complete partition — which two `filter` calls only were by inspection, and
+ * only as long as nobody added a third side. Returning the section's own
+ * `up`/`down` pair (rather than a fresh shape) is the other half: the caller
+ * spreads it, so a bucket can't be dropped or crossed on the way in.
+ *
+ * One pass also matters here — `sashimiArcSections` recomputes per section on
+ * every pan/zoom.
+ */
+export function splitArcsBySide(
+  arcs: SashimiArc[],
+): Pick<SashimiArcSection, 'up' | 'down'> {
+  const up: SashimiArc[] = []
+  const down: SashimiArc[] = []
+  for (const arc of arcs) {
+    if (arc.side === 'up') {
+      up.push(arc)
+    } else {
+      down.push(arc)
+    }
+  }
+  return { up, down }
+}
+
 // Stable React key, shared by overlay and export. Unique within one group
 // section + side: the compute layer emits one arc per refName:start:end, so the
 // strand here only records which tint that junction resolved to.
