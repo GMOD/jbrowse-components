@@ -42,7 +42,7 @@ const Controls = observer(function Controls({
       <ToggleButton
         value="scrollZoom"
         selected={model.scrollZoom}
-        title="Toggle scroll zoom on WebGL tracks"
+        title="Toggle scroll wheel zoom"
         className={classes.scrollZoomButton}
         size="small"
         onChange={() => {

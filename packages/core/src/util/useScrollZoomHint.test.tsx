@@ -2,14 +2,14 @@ import { useRef } from 'react'
 
 import { act, render } from '@testing-library/react'
 
-import { useScrollZoomHint } from './useScrollZoomHint.ts'
+import { useScrollZoomHint } from './usePanZoom.ts'
 
-// The wheel decision matrix belongs to wheelZoom.test and the raw
-// `onModifierNeeded` signal to usePanZoom.test; what is tested here is the
-// second gate — that the prompt appears only for a wheel that moved *nothing* —
-// and that it holds and clears the way the UI needs it to.
+// The wheel decision matrix belongs to wheelZoom.test and the drag half to
+// usePanZoom.test; what is tested here is the second gate — that the prompt
+// appears only for a wheel that moved *nothing* — and that it holds and clears
+// the way the UI needs it to.
 
-// must match the hook's own constants
+// must match the hook's own SETTLE_MS; the linger is the one the harness passes
 const SETTLE_MS = 150
 const LINGER_MS = 5000
 
@@ -55,11 +55,20 @@ function makeView(scrollZoom = false) {
 let held: (value: boolean) => void
 let dismiss: () => void
 
-function Harness({ view }: { view: ReturnType<typeof makeView> }) {
+function Harness({
+  view,
+  enabled = true,
+  onShow,
+}: {
+  view: ReturnType<typeof makeView>
+  enabled?: boolean
+  onShow?: () => void
+}) {
   const ref = useRef<HTMLDivElement>(null)
   const { showZoomHint, dismissZoomHint, setZoomHintHeld } = useScrollZoomHint(
     ref,
     view,
+    { lingerMs: LINGER_MS, enabled, onShow },
   )
   held = setZoomHintHeld
   dismiss = dismissZoomHint
@@ -228,6 +237,52 @@ test('dismissing clears it immediately', () => {
     dismiss()
   })
   expect(el.textContent).toBe('')
+})
+
+// The caller owns the budget (JBrowse spends one session-wide across every
+// view), so what is checked here is that the hook asks and reports honestly.
+test('a spent budget raises nothing', () => {
+  const { getByTestId } = render(<Harness view={makeView()} enabled={false} />)
+  const el = getByTestId('c')
+  wheel(el)
+  settle()
+  expect(el.textContent).toBe('')
+  // and nothing is left pending to fire if the budget comes back
+  expect(jest.getTimerCount()).toBe(0)
+})
+
+test('one raise is charged once, however long the user keeps pushing', () => {
+  const onShow = jest.fn()
+  const { getByTestId } = render(<Harness view={makeView()} onShow={onShow} />)
+  const el = getByTestId('c')
+  wheel(el)
+  settle()
+  expect(onShow).toHaveBeenCalledTimes(1)
+
+  // still pushing at the bottom of the page: the prompt is held up, not
+  // re-raised, so the budget is not spent again mid-gesture
+  for (let i = 0; i < 5; i++) {
+    wheel(el)
+    advance(100)
+  }
+  expect(getByTestId('c').textContent).toBe('hint')
+  expect(onShow).toHaveBeenCalledTimes(1)
+
+  // a fresh attempt after it has cleared is a second interruption, and is
+  // charged as one
+  advance(LINGER_MS)
+  wheel(el)
+  settle()
+  expect(onShow).toHaveBeenCalledTimes(2)
+})
+
+test('a wheel the page scrolled is not charged', () => {
+  const onShow = jest.fn()
+  const { getByTestId } = render(<Harness view={makeView()} onShow={onShow} />)
+  wheel(getByTestId('c'))
+  pageScrolls()
+  settle()
+  expect(onShow).not.toHaveBeenCalled()
 })
 
 test('a pending verdict is dropped on unmount', () => {

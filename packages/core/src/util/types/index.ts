@@ -156,6 +156,11 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   themeOptions?: SerializableThemeArgs
   animationMode: AnimationMode
   scrollZoom: boolean
+  // budget for the scroll-to-zoom prompt, spent session-wide rather than per
+  // view — see BaseSessionModel's `canShowScrollZoomHint`
+  canShowScrollZoomHint: boolean
+  scrollZoomHintCount: number
+  setScrollZoomHintCount: (n: number) => void
   // whether region highlight bands (URL/view highlights and bookmark overlays)
   // are drawn; one session-wide toggle shared by all views
   highlightsVisible: boolean

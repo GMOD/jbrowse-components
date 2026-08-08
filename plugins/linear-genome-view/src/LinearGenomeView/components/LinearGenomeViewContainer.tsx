@@ -4,6 +4,7 @@ import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { useFocusOnInteraction } from '@jbrowse/core/util/hooks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { useScrollZoomHint } from '@jbrowse/core/util/usePanZoom'
 import Paper from '@mui/material/Paper'
 import { observer } from 'mobx-react'
 
@@ -11,13 +12,17 @@ import { SCALE_BAR_HEIGHT } from '../consts.ts'
 import Scalebar from './Scalebar.tsx'
 import TrackContainer from './TrackContainer.tsx'
 import TracksContainer from './TracksContainer.tsx'
-import { useScrollZoomHint } from './useScrollZoomHint.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 
 // lazies
 const NoTracksActiveButton = lazy(() => import('./NoTracksActiveButton.tsx'))
-const ScrollZoomHint = lazy(() => import('./ScrollZoomHint.tsx'))
+const ScrollZoomHint = lazy(() => import('@jbrowse/core/ui/ScrollZoomHint'))
+
+// Core's default is sized for the bare caption an embedder draws. This prompt
+// carries a button, so it has to outlast the trip from "I read it" to "my
+// cursor is on it".
+const HINT_LINGER_MS = 5000
 
 const useStyles = makeStyles()(theme => ({
   header: {
@@ -69,7 +74,15 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
     zoomHintMounted,
     dismissZoomHint,
     setZoomHintHeld,
-  } = useScrollZoomHint(ref, model)
+  } = useScrollZoomHint(ref, model, {
+    lingerMs: HINT_LINGER_MS,
+    // one budget for the whole session, not one per view: a synteny view is
+    // three of these side by side
+    enabled: session.canShowScrollZoomHint,
+    onShow: () => {
+      session.setScrollZoomHintCount(session.scrollZoomHintCount + 1)
+    },
+  })
   useEffect(() => {
     const curr = ref.current
     if (!curr) {
@@ -94,80 +107,87 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
   })
 
   return (
-    <div
-      className={classes.rel}
-      ref={ref}
-      onMouseLeave={() => {
-        session.setHovered(undefined)
-      }}
-      onMouseMove={event => {
-        const leftPx = event.clientX - rectLeftRef.current
-        const hoverPosition = model.pxToBp(leftPx)
-        const hoverFeature = tracks
-          .map(t => t.displays[0]?.featureUnderMouse)
-          .find(Boolean)
-        session.setHovered({ hoverPosition, hoverFeature })
-      }}
-    >
+    <>
       <div
-        className={classes.header}
-        style={{ position: stickyViewHeaders ? 'sticky' : undefined }}
+        className={classes.rel}
+        ref={ref}
+        onMouseLeave={() => {
+          session.setHovered(undefined)
+        }}
+        onMouseMove={event => {
+          const leftPx = event.clientX - rectLeftRef.current
+          const hoverPosition = model.pxToBp(leftPx)
+          const hoverFeature = tracks
+            .map(t => t.displays[0]?.featureUnderMouse)
+            .find(Boolean)
+          session.setHovered({ hoverPosition, hoverFeature })
+        }}
       >
-        <HeaderComponent model={model} />
-        {hideHeader ? <MiniControlsComponent model={model} /> : null}
+        <div
+          className={classes.header}
+          style={{ position: stickyViewHeaders ? 'sticky' : undefined }}
+        >
+          <HeaderComponent model={model} />
+          {hideHeader ? <MiniControlsComponent model={model} /> : null}
+        </div>
+        {model.scalebarOnly ? (
+          <Scalebar
+            model={model}
+            style={{ height: SCALE_BAR_HEIGHT, boxSizing: 'border-box' }}
+          />
+        ) : (
+          <TracksContainer model={model}>
+            {!tracks.length ? (
+              <Suspense fallback={null}>
+                <NoTracksActiveButton model={model} />
+              </Suspense>
+            ) : (
+              <>
+                {pinnedTracks.length ? (
+                  <Paper
+                    elevation={6}
+                    className={classes.pinnedTracks}
+                    style={{
+                      top: pinnedTracksTop,
+                      maxHeight: `calc(100vh - ${pinnedTracksTop}px)`,
+                    }}
+                  >
+                    {pinnedTracks.map(track => (
+                      <TrackContainer
+                        key={track.id}
+                        model={model}
+                        track={track}
+                      />
+                    ))}
+                  </Paper>
+                ) : null}
+                {unpinnedTracks.map(track => (
+                  <TrackContainer key={track.id} model={model} track={track} />
+                ))}
+              </>
+            )}
+          </TracksContainer>
+        )}
       </div>
-      {/* portals itself to the body and positions in viewport coordinates, so
-      it sits outside the tracks rather than inside them — see ScrollZoomHint */}
+      {/* Portals itself to the body and positions in viewport coordinates, so
+      it sits outside the tracks rather than inside them — see ScrollZoomHint.
+      Kept a sibling of the view rather than a child: a portal's events still
+      bubble along the *React* tree, so nested here it would drive the hover
+      handler above from wherever on screen it happens to be drawn. */}
       {zoomHintMounted ? (
         <Suspense fallback={null}>
           <ScrollZoomHint
-            model={model}
             show={showZoomHint}
             at={zoomHintAt}
-            onDismiss={dismissZoomHint}
+            onEnable={() => {
+              model.setScrollZoom(true)
+              dismissZoomHint()
+            }}
             onHeldChange={setZoomHintHeld}
           />
         </Suspense>
       ) : null}
-      {model.scalebarOnly ? (
-        <Scalebar
-          model={model}
-          style={{ height: SCALE_BAR_HEIGHT, boxSizing: 'border-box' }}
-        />
-      ) : (
-        <TracksContainer model={model}>
-          {!tracks.length ? (
-            <Suspense fallback={null}>
-              <NoTracksActiveButton model={model} />
-            </Suspense>
-          ) : (
-            <>
-              {pinnedTracks.length ? (
-                <Paper
-                  elevation={6}
-                  className={classes.pinnedTracks}
-                  style={{
-                    top: pinnedTracksTop,
-                    maxHeight: `calc(100vh - ${pinnedTracksTop}px)`,
-                  }}
-                >
-                  {pinnedTracks.map(track => (
-                    <TrackContainer
-                      key={track.id}
-                      model={model}
-                      track={track}
-                    />
-                  ))}
-                </Paper>
-              ) : null}
-              {unpinnedTracks.map(track => (
-                <TrackContainer key={track.id} model={model} track={track} />
-              ))}
-            </>
-          )}
-        </TracksContainer>
-      )}
-    </div>
+    </>
   )
 })
 

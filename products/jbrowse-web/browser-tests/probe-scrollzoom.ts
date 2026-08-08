@@ -1,10 +1,31 @@
+// Drives the scroll-to-zoom prompt against a real browser, which is the only
+// place its gate can be observed: the verdict is "did anything actually
+// scroll", and jsdom has no layout, so useScrollZoomHint.test can dispatch a
+// scroll event but cannot tell you whether jbrowse-web produces one.
+//
+// Run against a dev server or a built preview on :3000. Prints one line per
+// stage; the interesting transition is `bottomed` (scrolls still arriving, no
+// hint) to `dead wheel` (nothing scrolling, hint up).
+//
+// The prompt is budgeted session-wide (BaseSessionModel's
+// `canShowScrollZoomHint`), so a run that pokes at it more than a few times
+// stops seeing it — that is the budget working, not a failure. Reload for a
+// fresh one; the count is volatile.
+//
+//     node browser-tests/probe-scrollzoom.ts
+//     OUT=/tmp/shots HEADLESS=0 node browser-tests/probe-scrollzoom.ts
+
+import { tmpdir } from 'os'
+import { join } from 'path'
+
 import puppeteer from 'puppeteer'
 
 const encodeSessionSpec = (o: object) =>
   encodeURIComponent(`spec-${JSON.stringify(o)}`)
 
-const OUT =
-  '/tmp/claude-1001/-home-cdiesh-src-jbrowse-components/99c813f1-54d7-4a7d-87d4-b08c7d376e69/scratchpad'
+const OUT = process.env.OUT || tmpdir()
+const HEADLESS = process.env.HEADLESS !== '0'
+const PORT = Number(process.env.PORT || 3000)
 
 const spec = {
   views: [
@@ -21,12 +42,12 @@ const delay = (ms: number) => new Promise(r => setTimeout(r, ms))
 
 async function main() {
   const browser = await puppeteer.launch({
-    headless: true,
+    headless: HEADLESS,
     args: ['--no-sandbox', '--window-size=1400,900'],
     defaultViewport: { width: 1400, height: 900 },
   })
   const page = await browser.newPage()
-  const url = `http://localhost:3000/?config=test_data/volvox/config.json&session=${encodeSessionSpec(spec)}&sessionName=Verify`
+  const url = `http://localhost:${PORT}/?config=test_data/volvox/config.json&session=${encodeSessionSpec(spec)}&sessionName=Verify`
   await page.goto(url, { waitUntil: 'networkidle2', timeout: 120000 })
   await delay(8000)
 
@@ -82,7 +103,9 @@ async function main() {
   await delay(700)
   const dead = await state()
   console.log('dead wheel ', JSON.stringify(dead))
-  await page.screenshot({ path: `${OUT}/hint-shown.png` })
+  const shot = join(OUT, 'scrollzoom-hint.png')
+  await page.screenshot({ path: shot })
+  console.log('screenshot ', shot)
 
   if (dead.hint.length) {
     const clicked = await page.evaluate(() => {
@@ -106,6 +129,8 @@ async function main() {
     const before = await loc()
     await page.mouse.wheel({ deltaY: -300 })
     await delay(1500)
+    // the point of the button: the very next wheel zooms, so the locstring has
+    // to have moved
     console.log(
       `clicked=${clicked} hintAfter=${JSON.stringify((await state()).hint)} loc ${before} -> ${await loc()}`,
     )

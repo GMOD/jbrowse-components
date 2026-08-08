@@ -115,13 +115,15 @@ const TrackRow = observer(function TrackRow({
 /**
  * The prompt that makes ctrl-to-zoom discoverable, and the reason that mode is
  * usable at all: without it a wheel over the browser just does nothing visible.
- * `showZoomHint` is raised for exactly that -- a wheel the view ignored because
- * the modifier wasn't held -- and clears itself.
+ * `showZoomHint` is raised for exactly that -- a wheel the view ignored for want
+ * of the modifier, *and* that the page did not scroll either, so it moved
+ * nothing at all -- and clears itself. The scroll half of that gate is why this
+ * doesn't flash on every wheel while a reader scrolls down the page.
  *
  * Stays mounted and fades rather than mounting on demand, so it can't flash a
  * layout change into the middle of a gesture. Needs a `position: relative`
  * container, and does not take pointer events -- it is a label, not a shield,
- * and the wheel that summoned it is still scrolling the page underneath.
+ * and the gesture that summoned it must keep reaching whatever is underneath.
  */
 function ZoomHint({ show }: { show: boolean }) {
   return (

@@ -26,6 +26,10 @@ function isAnimationMode(val: unknown): val is AnimationMode {
   return val === 'system' || val === 'enabled' || val === 'disabled'
 }
 
+// How many times a session will raise the scroll-to-zoom prompt before it stops
+// offering (see `canShowScrollZoomHint`).
+const MAX_SCROLL_ZOOM_HINTS = 3
+
 // Promoted per-display-type slot defaults live flat in `preferencesOverrides`
 // under one composite key each (`displayTypeDefault\0<type>\0<slot>`), not under
 // a single nested `displayTypeDefaults` object. Flat keys make each promoted
@@ -160,6 +164,22 @@ export function BaseSessionModel<
       preferencesOverrides: observable.map<string, unknown>(undefined, {
         deep: false,
       }),
+      /**
+       * #volatile
+       * how many times the scroll-to-zoom prompt has been raised this session
+       * (see `canShowScrollZoomHint`).
+       *
+       * Session-wide rather than per view, because the thing being budgeted is
+       * the user's attention and they only have one: a synteny view is two
+       * genome views and a ribbon band, each with its own copy of the prompt,
+       * and three independent counters would spend the budget three times over.
+       *
+       * Volatile, so it resets on reload. That is the intent — a persisted
+       * count would silence the prompt for good after one afternoon of
+       * ignoring it, and a user who never enabled the preference is exactly the
+       * one who might still want to know.
+       */
+      scrollZoomHintCount: 0,
     }))
     .views(self => ({
       /**
@@ -314,6 +334,20 @@ export function BaseSessionModel<
       },
       /**
        * #getter
+       * whether the scroll-to-zoom prompt may still be raised. It is shown for
+       * a wheel that did nothing at all, which in a view that has run out of
+       * page to scroll is *every* wheel — so without a budget the prompt is not
+       * a hint, it is a recurring interruption for anyone who has decided they
+       * don't want the preference.
+       *
+       * A few is the whole design: enough that missing the first one doesn't
+       * mean never being told, few enough that ignoring them ends it.
+       */
+      get canShowScrollZoomHint(): boolean {
+        return self.scrollZoomHintCount < MAX_SCROLL_ZOOM_HINTS
+      },
+      /**
+       * #getter
        * resolved thousand-separator preference. Read for display in the
        * Preferences dialog; the formatter itself reads a plain module variable
        * set at startup in each realm (see `setNumberGrouping`), because worker-
@@ -438,6 +472,15 @@ export function BaseSessionModel<
        */
       setScrollZoom(flag: boolean) {
         this.setPreferenceOverride('scrollZoom', flag)
+      },
+      /**
+       * #action
+       * spend one of the scroll-to-zoom prompt's showings (see
+       * `canShowScrollZoomHint`). A setter rather than an increment so a test
+       * can put the budget wherever it needs it.
+       */
+      setScrollZoomHintCount(n: number) {
+        self.scrollZoomHintCount = n
       },
       /**
        * #action

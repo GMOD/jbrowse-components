@@ -6,9 +6,22 @@ import { usePanZoom } from './usePanZoom.ts'
 
 import type React from 'react'
 
-// createWheelZoomController's own decision matrix is covered in wheelZoom.test;
-// what is tested here is the composition — the drag loop, the modifier hint,
-// and that both come undone on unmount.
+// createWheelZoomController's own decision matrix is covered in wheelZoom.test
+// and the did-it-scroll gate behind the hint in useScrollZoomHint.test; what is
+// tested here is the composition — the drag loop, that the hint reaches the
+// embedder at all, and that both come undone on unmount.
+
+// the hint waits for the wheel to go quiet before it judges the gesture, so
+// every assertion about it has to get past that first (useScrollZoomHint's
+// SETTLE_MS)
+const SETTLE_MS = 150
+const HINT_LINGER_MS = 1200
+
+function settle() {
+  act(() => {
+    jest.advanceTimersByTime(SETTLE_MS + 1)
+  })
+}
 
 // The controller batches every model write into a rAF, so drive frames
 // deterministically rather than waiting on jsdom's timer-backed rAF.
@@ -17,12 +30,16 @@ const realRaf = window.requestAnimationFrame
 const realCancel = window.cancelAnimationFrame
 
 beforeEach(() => {
+  // fake timers first: they replace rAF too, and the stub below has to be the
+  // one that survives
+  jest.useFakeTimers()
   rafCallbacks = []
   window.requestAnimationFrame = cb => rafCallbacks.push(cb)
   window.cancelAnimationFrame = () => {}
 })
 
 afterEach(() => {
+  jest.useRealTimers()
   window.requestAnimationFrame = realRaf
   window.cancelAnimationFrame = realCancel
 })
@@ -230,28 +247,46 @@ test('the wheel is bound to the element, and unbound on unmount', () => {
 })
 
 test('a wheel that needed ctrl raises the hint, and it clears itself', () => {
-  jest.useFakeTimers()
   const view = makeView(false)
   const { getByTestId } = render(<Harness view={view} />)
   const el = getByTestId('c')
 
   wheel(el, { deltaY: 40 })
   flushRaf()
-  // the page keeps the gesture — the view is what didn't move
+  // the page was offered the gesture and took nothing — the view is what didn't
+  // move
   expect(view.zoomTo).not.toHaveBeenCalled()
+  settle()
   expect(el.textContent).toBe('hint')
 
+  // the embedder's prompt is a caption, so it clears on core's short default
+  // rather than a linger of its own
   act(() => {
-    jest.runAllTimers()
+    jest.advanceTimersByTime(HINT_LINGER_MS)
   })
   expect(el.textContent).toBe('')
-  jest.useRealTimers()
+})
+
+test('a wheel the page scrolled raises no hint', () => {
+  const { getByTestId } = render(<Harness view={makeView(false)} />)
+  const el = getByTestId('c')
+
+  wheel(el, { deltaY: 40 })
+  flushRaf()
+  // an embedded view usually sits on a page that scrolls, and a gesture the
+  // page took is exactly what scroll-to-zoom being off is for
+  act(() => {
+    document.body.dispatchEvent(new Event('scroll'))
+  })
+  settle()
+  expect(el.textContent).toBe('')
 })
 
 test('a wheel that did zoom raises no hint', () => {
   const scrollZoomOn = render(<Harness view={makeView(true)} />)
   wheel(scrollZoomOn.getByTestId('c'), { deltaY: 40 })
   flushRaf()
+  settle()
   expect(scrollZoomOn.getByTestId('c').textContent).toBe('')
   scrollZoomOn.unmount()
 
@@ -259,6 +294,7 @@ test('a wheel that did zoom raises no hint', () => {
   const ctrl = render(<Harness view={makeView(false)} />)
   wheel(ctrl.getByTestId('c'), { deltaY: 40, ctrlKey: true })
   flushRaf()
+  settle()
   expect(ctrl.getByTestId('c').textContent).toBe('')
 })
 
@@ -269,6 +305,7 @@ test('a horizontal wheel with scroll-zoom off pans, and raises no hint', () => {
 
   wheel(el, { deltaX: 40, deltaY: 0 })
   flushRaf()
+  settle()
   expect(view.horizontalScroll).toHaveBeenCalledWith(40)
   expect(el.textContent).toBe('')
 })

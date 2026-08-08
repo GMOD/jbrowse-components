@@ -1079,7 +1079,7 @@ export const uiSpecs: ScreenshotSpec[] = [
         tailDx: 3,
       }),
       ...toolbarCallout({
-        selector: 'button[title="Toggle scroll zoom on WebGL tracks"]',
+        selector: 'button[title="Toggle scroll wheel zoom"]',
         text: 'Toggle scroll-zoom',
         // this control is 38px from the one before it and its label is 150px
         // wide, so the pill sits well right of it and the arrow is a long
@@ -1135,14 +1135,14 @@ export const uiSpecs: ScreenshotSpec[] = [
       {
         type: 'circle',
         anchor: {
-          selector: 'button[title="Toggle scroll zoom on WebGL tracks"]',
+          selector: 'button[title="Toggle scroll wheel zoom"]',
         },
       },
       {
         type: 'text',
         text: 'Click to enable scroll-to-zoom',
         anchor: {
-          selector: 'button[title="Toggle scroll zoom on WebGL tracks"]',
+          selector: 'button[title="Toggle scroll wheel zoom"]',
         },
         dx: 70,
       },

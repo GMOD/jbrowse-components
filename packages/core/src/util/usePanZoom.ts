@@ -5,12 +5,14 @@
 // and it is the part of embedding a view that has no interesting variants: a
 // wheel means the same thing in every genome browser, and getting it wrong is
 // mostly invisible until a trackpad or a touchscreen is involved. JBrowse's own
-// LinearGenomeView binds `useWheelZoom` to its container, and an embedder
+// LinearGenomeView binds `useScrollZoomHint` to its container, and an embedder
 // building their own chrome around a view binds `usePanZoom` to theirs — same
 // gestures, same feel, one implementation.
 //
 // The wheel half is `createWheelZoomController` (wheelZoom.ts), which is where
 // the gesture decision matrix, the rAF batching and the zoom rate limit live.
+// The scroll-to-zoom prompt every one of these raises is `useScrollZoomHint`,
+// below the two gesture hooks.
 
 import { useEffect, useRef, useState } from 'react'
 
@@ -48,13 +50,14 @@ export interface PanZoomView extends WheelZoomView {
  * `preventDefault`, and the gesture would drive the page out from under you at
  * the same time as it drove the view.
  *
- * `onModifierNeeded` fires when the user wheeled expecting a zoom and got
- * nothing — scroll-to-zoom off, no ctrl/meta held, a vertical gesture. That
- * mode's well-known failure is that it is undiscoverable, and this is the hook
- * for the prompt that fixes it (`usePanZoom` builds one on top). Nothing else
- * can see the moment: doing nothing leaves no trace on the view. It is handed
- * the event because a prompt worth showing is shown where the user is looking,
- * and the wheel is the only thing that knows where that is.
+ * `onModifierNeeded` is the controller's `onUnhandled` — the user wheeled
+ * expecting a zoom and got nothing, because scroll-to-zoom is off and no
+ * modifier was held. That mode's well-known failure is that it is
+ * undiscoverable, and this is the hook for the prompt that fixes it
+ * (`useScrollZoomHint` builds one on top). Nothing else can see the moment:
+ * doing nothing leaves no trace on the view. It is handed the event because a
+ * prompt worth showing is shown where the user is looking, and the wheel is the
+ * only thing that knows where that is.
  */
 export function useWheelZoom(
   ref: React.RefObject<HTMLElement | null>,
@@ -79,24 +82,7 @@ export function useWheelZoom(
             scrollZoom: !!view.scrollZoom,
             originElement: () => element,
           }),
-          onEvent: event => {
-            if (
-              !view.scrollZoom &&
-              !event.ctrlKey &&
-              !event.metaKey &&
-              Math.abs(event.deltaY) > Math.abs(event.deltaX) &&
-              // Nothing inside the view already claimed the gesture. Wheel
-              // events bubble, so a display that scrolls something of its own
-              // (a pileup's reads, a variant matrix's rows — anything on
-              // useVirtualScrollWheel) has already preventDefault'd by the time
-              // this outer listener runs. Those scrolls are virtual, painted
-              // from a model offset rather than a DOM scroller, so nothing else
-              // downstream can tell they happened.
-              !event.defaultPrevented
-            ) {
-              notify(event)
-            }
-          },
+          onUnhandled: notify,
         })
       : undefined
   }, [ref, view, notify])
@@ -107,9 +93,237 @@ export function useWheelZoom(
 // gets to keep it.
 const DRAG_THRESHOLD_PX = 4
 
-// How long `showZoomHint` stays raised after the last wheel event. Long enough
-// to read four words, short enough to be gone before the next gesture.
+// How long the prompt stays raised after the last dead wheel. Long enough to
+// read four words, short enough to be gone before the next gesture. A prompt
+// that carries a control rather than a caption wants longer, and passes its own
+// — see `lingerMs`.
 const HINT_LINGER_MS = 1200
+
+// Quiet needed after a wheel before its verdict is taken. Same idiom (and order
+// of magnitude) as wheelZoom's ZOOM_ACTIVE_WINDOW_MS and scrollLatch's
+// LATCH_TIMEOUT_MS: continuous trackpad or inertial scrolling fires every ~16ms,
+// so this much silence means the user stopped pushing.
+const SETTLE_MS = 150
+
+// How long after a wheel its scroll may still arrive and count as caused by it.
+// Bigger than it looks: measured in Chrome against jbrowse-web, a wheel at
+// t=48.0ms had its animation frame at t=48.4ms and its *scroll event* only at
+// t=65.1ms — a whole frame later. Anything that decides within one frame reads
+// "nothing scrolled" for a gesture that scrolled perfectly well.
+const SCROLL_LAG_MS = 100
+
+/**
+ * Binds the view's wheel gestures and, when a wheel plainly meant "zoom" and
+ * did nothing, raises the prompt that says so — the discoverability half of
+ * scroll-to-zoom being off by default.
+ *
+ * The signal is the controller's `onUnhandled`: a vertical wheel over the view,
+ * scroll-to-zoom off, no modifier, and nothing inside the view having already
+ * claimed the gesture. That is a statement of intent rather than a guess about
+ * one, which is why the prompt can be gated on it instead of shown to everyone
+ * on first visit — nobody who wasn't reaching for zoom ever sees it.
+ *
+ * Then gated a second time on whether the page actually scrolled. If it did,
+ * nothing was lost and there is nothing to say — that is the case
+ * scroll-to-zoom being off is *for*, and the prompt has no business arguing with
+ * it. Only a wheel that moved nothing at all raises it.
+ *
+ * The gate is deliberately "did it scroll", not "could it scroll". They sound
+ * interchangeable and are not: jbrowse-web's view container overflows its
+ * viewport by a couple of hundred pixels with a *single* alignments track open,
+ * so a can-it-scroll test is true on nearly every page and the prompt would
+ * never appear. Did-it-scroll also lands the behavior in the right place on its
+ * own — someone on a long page scrolls freely and sees nothing, and is offered
+ * the zoom once scrolling has run out of page to give.
+ *
+ * And it is asked per wheel rather than per gesture, which matters for the exact
+ * case this exists to catch: scrolling to the bottom of a view and continuing to
+ * push is one unbroken run of wheel events, and judging the run as a whole lets
+ * its scrolling first half acquit its dead second half.
+ *
+ * How often it may fire is the caller's to decide, through `enabled`/`onShow`.
+ * That policy is deliberately not here: the budget worth enforcing is
+ * session-wide (JBrowse spends one across every view — see the session's
+ * `canShowScrollZoomHint`), and this hook is duck-typed on the view, like the
+ * rest of the wheel-zoom layer, so it can't see a session and shouldn't learn
+ * to.
+ *
+ * This is the state machine on its own, for a caller that binds the wheel some
+ * other way — the synteny ribbon band drives one controller across a whole
+ * stack of views, so it hands `noteDeadWheel` to `createWheelZoomController`'s
+ * `onUnhandled` directly. A caller with a plain element and one view wants
+ * `useScrollZoomHint` below, which binds the gestures too.
+ */
+export function useScrollZoomHintState({
+  lingerMs = HINT_LINGER_MS,
+  enabled = true,
+  onShow,
+}: {
+  lingerMs?: number
+  /** false to stop raising it at all — a spent budget, usually */
+  enabled?: boolean
+  /** one raise, for the caller to charge against whatever budget it keeps */
+  onShow?: () => void
+} = {}) {
+  const [show, setShow] = useState(false)
+  // Where the prompt is drawn: the viewport point of the gesture that earned
+  // it. Not a decoration — this fires most often once the view has been
+  // scrolled past, so anything anchored to the view itself is off-screen at the
+  // one moment it is needed.
+  const [at, setAt] = useState({ x: 0, y: 0 })
+  // Latches on the first hint and stays on, so the prompt can fade *out*
+  // instead of blinking away: `show` alone would unmount it the instant it
+  // expires. A view that has never hinted renders (and downloads) nothing.
+  const [mounted, setMounted] = useState(false)
+  // Mirrors `show` for the wheel handler, which can't see a state update that
+  // hasn't rendered yet — a wheel burst delivers dozens of events before React
+  // commits once.
+  const shown = useRef(false)
+  const cursor = useRef({ x: 0, y: 0 })
+  // Both off `performance.now()` at handling time, so directly comparable —
+  // and not off `event.timeStamp`, which is the same thing in a browser but is
+  // wall-clock in jsdom and so can't be driven by a test's clock. The gap
+  // between an event and its handler is sub-millisecond either way, against a
+  // window of SCROLL_LAG_MS.
+  const lastWheelAt = useRef(0)
+  const lastScrollAt = useRef(Number.NEGATIVE_INFINITY)
+  const settleTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  )
+  const lingerTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  )
+  // suppresses the linger timer while the pointer rests on the prompt, so it
+  // can't vanish from under a click
+  const held = useRef(false)
+
+  // One passive stamp on the document, in capture phase: it sees a scroll on any
+  // ancestor, however deeply nested the scroller is and whichever one the
+  // browser chained to. Capture because scroll events on an element don't
+  // bubble, and passive because this only reads the clock.
+  useEffect(() => {
+    const onScroll = () => {
+      lastScrollAt.current = performance.now()
+    }
+    document.addEventListener('scroll', onScroll, {
+      capture: true,
+      passive: true,
+    })
+    return () => {
+      document.removeEventListener('scroll', onScroll, { capture: true })
+    }
+  }, [])
+
+  function restartLinger() {
+    clearTimeout(lingerTimer.current)
+    lingerTimer.current = setTimeout(() => {
+      shown.current = false
+      setShow(false)
+    }, lingerMs)
+  }
+
+  function dismiss() {
+    clearTimeout(lingerTimer.current)
+    shown.current = false
+    // the prompt unmounts under the pointer that was holding it open, so its
+    // `mouseleave` never arrives — release the hold here or it stays latched
+    // and the next prompt can't be kept up by wheeling on
+    held.current = false
+    setShow(false)
+  }
+
+  // the wheel has gone quiet: if nothing scrolled around the time of the last
+  // one, that wheel was dead, and this is what the prompt is for
+  function takeVerdict() {
+    if (
+      !enabled ||
+      lastScrollAt.current > lastWheelAt.current - SCROLL_LAG_MS
+    ) {
+      return
+    }
+    shown.current = true
+    setAt(cursor.current)
+    setMounted(true)
+    setShow(true)
+    restartLinger()
+    onShow?.()
+  }
+
+  function noteDeadWheel(event: WheelEvent) {
+    cursor.current = { x: event.clientX, y: event.clientY }
+    lastWheelAt.current = performance.now()
+    if (shown.current) {
+      // still trying — keep it up rather than letting it expire mid-gesture.
+      // Not charged again: one raise is one interruption however long the user
+      // keeps pushing.
+      if (!held.current) {
+        restartLinger()
+      }
+      return
+    }
+    if (!enabled) {
+      return
+    }
+    clearTimeout(settleTimer.current)
+    settleTimer.current = setTimeout(takeVerdict, SETTLE_MS)
+  }
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(lingerTimer.current)
+      clearTimeout(settleTimer.current)
+    }
+  }, [])
+
+  return {
+    /**
+     * The user wheeled expecting a zoom, scroll-to-zoom was off, and nothing
+     * scrolled either — so the gesture did nothing at all. Draw the prompt; it
+     * clears itself.
+     */
+    showZoomHint: show,
+    /** viewport point to draw it at — see `at` */
+    zoomHintAt: at,
+    /** whether the prompt has ever been raised — see `mounted` */
+    zoomHintMounted: mounted,
+    dismissZoomHint: dismiss,
+    /**
+     * Hold the prompt open while the pointer is on it, and start it expiring
+     * again on the way out.
+     */
+    setZoomHintHeld: (value: boolean) => {
+      held.current = value
+      if (value) {
+        clearTimeout(lingerTimer.current)
+      } else if (shown.current) {
+        restartLinger()
+      }
+    },
+    /**
+     * A wheel that did nothing, from whatever bound the gesture — the
+     * controller's `onUnhandled`. Every gate above runs from here.
+     */
+    noteDeadWheel,
+  }
+}
+
+/**
+ * `useScrollZoomHintState` plus the gestures, for the usual case: one element,
+ * one view. Binds what `useWheelZoom` binds — call this *or* that, never both.
+ *
+ * `usePanZoom` and JBrowse's own LinearGenomeView both come through here, so
+ * the two prompts differ only in what they draw: a caption for the embedder, a
+ * portalled card with the setting on it for the app.
+ */
+export function useScrollZoomHint(
+  ref: React.RefObject<HTMLElement | null>,
+  view: PanZoomView,
+  opts: Parameters<typeof useScrollZoomHintState>[0] = {},
+) {
+  const hint = useScrollZoomHintState(opts)
+  useWheelZoom(ref, view, hint.noteDeadWheel)
+  return hint
+}
 
 /**
  * Every navigation gesture for a view, on one element: wheel zoom, side-scroll,
@@ -130,7 +344,7 @@ const HINT_LINGER_MS = 1200
  *
  * JBrowse's own view splits these across two elements (the wheel on the whole
  * view, the drag on the tracks area, so a drag over the header does nothing) and
- * so binds `useWheelZoom` plus its own `useSideScroll`. One element is the
+ * so binds `useScrollZoomHint` plus its own `useSideScroll`. One element is the
  * normal case for an embedder, and this is it.
  */
 export function usePanZoom(
@@ -140,22 +354,9 @@ export function usePanZoom(
   // `x` is the last position a pan was applied from; `panning` is whether the
   // press has travelled far enough to be a drag at all
   const dragRef = useRef<{ x: number; panning: boolean } | undefined>(undefined)
-  const [showZoomHint, setShowZoomHint] = useState(false)
-  const hintTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
-
-  useWheelZoom(ref, view, () => {
-    setShowZoomHint(true)
-    clearTimeout(hintTimer.current)
-    hintTimer.current = setTimeout(() => {
-      setShowZoomHint(false)
-    }, HINT_LINGER_MS)
-  })
-
-  useEffect(() => {
-    return () => {
-      clearTimeout(hintTimer.current)
-    }
-  }, [])
+  // binds the wheel half, and reports the wheel that meant "zoom" and moved
+  // nothing at all
+  const { showZoomHint } = useScrollZoomHint(ref, view)
 
   function endDrag(event: React.PointerEvent<HTMLElement>) {
     dragRef.current = undefined
@@ -168,9 +369,11 @@ export function usePanZoom(
 
   return {
     /**
-     * The user wheeled, scroll-to-zoom was off and no modifier was held, so the
-     * page scrolled and the view did not move. Draw a prompt saying what it
-     * would have taken; it clears itself.
+     * The user wheeled, scroll-to-zoom was off and no modifier was held, and
+     * the page did not scroll either — so the gesture did nothing at all. Draw
+     * a prompt saying what it would have taken; it clears itself. See
+     * `useScrollZoomHint` for why the page-scrolled case is deliberately
+     * excluded, and for the richer state a prompt with a control on it needs.
      */
     showZoomHint,
     containerProps: {

@@ -1,11 +1,9 @@
-import { MUI_TOOLTIP_Z_INDEX } from '@jbrowse/core/ui/zIndexes'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MouseIcon from '@mui/icons-material/Mouse'
 import { Button, Fade, Paper, Typography } from '@mui/material'
-import { observer } from 'mobx-react'
 import { createPortal } from 'react-dom'
 
-import type { LinearGenomeViewModel } from '../index.ts'
+import { makeStyles } from '../util/tss-react/index.ts'
+import { MUI_TOOLTIP_Z_INDEX } from './zIndexes.ts'
 
 // roughly half the prompt's width and its height, used only to keep it clear of
 // the window edges — being a few pixels out just shifts it, so this doesn't
@@ -54,18 +52,20 @@ const useStyles = makeStyles()(theme => ({
  * a view, so anything positioned inside the view is off-screen at the one
  * moment it matters — and `contain`/`transform` on the containers between here
  * and the body would capture a plain `position: fixed` anyway.
+ *
+ * Takes an `onEnable` rather than a view: nothing here reads model state, and
+ * scroll-to-zoom is a session preference every wheel-zoom view shares, so the
+ * card is the same card whichever one raised it.
  */
-const ScrollZoomHint = observer(function ScrollZoomHint({
-  model,
+function ScrollZoomHint({
   show,
   at,
-  onDismiss,
+  onEnable,
   onHeldChange,
 }: {
-  model: LinearGenomeViewModel
   show: boolean
   at: { x: number; y: number }
-  onDismiss: () => void
+  onEnable: () => void
   onHeldChange: (held: boolean) => void
 }) {
   const { classes } = useStyles()
@@ -88,19 +88,13 @@ const ScrollZoomHint = observer(function ScrollZoomHint({
       >
         <MouseIcon fontSize="small" className={classes.icon} />
         <Typography variant="body2">ctrl + scroll to zoom</Typography>
-        <Button
-          size="small"
-          onClick={() => {
-            model.setScrollZoom(true)
-            onDismiss()
-          }}
-        >
+        <Button size="small" onClick={onEnable}>
           Always zoom on scroll
         </Button>
       </Paper>
     </Fade>,
     document.body,
   )
-})
+}
 
 export default ScrollZoomHint

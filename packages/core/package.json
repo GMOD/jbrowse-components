@@ -98,6 +98,7 @@
     "./ui/ResizeHandle": "./src/ui/ResizeHandle.tsx",
     "./ui/ReturnToImportFormDialog": "./src/ui/ReturnToImportFormDialog.tsx",
     "./ui/SanitizedHTML": "./src/ui/SanitizedHTML.tsx",
+    "./ui/ScrollZoomHint": "./src/ui/ScrollZoomHint.tsx",
     "./ui/ShareLinkField": "./src/ui/ShareLinkField.tsx",
     "./ui/Snackbar": "./src/ui/Snackbar.tsx",
     "./ui/SnackbarModel": "./src/ui/SnackbarModel.tsx",
@@ -545,6 +546,10 @@
       "./ui/SanitizedHTML": {
         "types": "./esm/ui/SanitizedHTML.d.ts",
         "import": "./esm/ui/SanitizedHTML.js"
+      },
+      "./ui/ScrollZoomHint": {
+        "types": "./esm/ui/ScrollZoomHint.d.ts",
+        "import": "./esm/ui/ScrollZoomHint.js"
       },
       "./ui/ShareLinkField": {
         "types": "./esm/ui/ShareLinkField.d.ts",
@@ -1130,6 +1135,9 @@
         ],
         "ui/SanitizedHTML": [
           "esm/ui/SanitizedHTML.d.ts"
+        ],
+        "ui/ScrollZoomHint": [
+          "esm/ui/ScrollZoomHint.d.ts"
         ],
         "ui/ShareLinkField": [
           "esm/ui/ShareLinkField.d.ts"
