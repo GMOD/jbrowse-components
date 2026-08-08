@@ -498,10 +498,19 @@ write_json(
         "attributes": {
             "jbrowse_signal_matrix": {
                 "version": 1,
+                # `group` is the CELL TYPE, not STYLE[ct][0]'s coarser lineage,
+                # and the difference is the whole per-cell color key. The
+                # display collapses a legend to one row per (group, color)
+                # pair, so a lineage carrying two cell-type colors comes out as
+                # two rows both labelled "T cell". Keyed on the cell type the
+                # colors are actually per, the same nine rows read CD4 T, CD8 T,
+                # and so on. The lineage buys nothing here: the group palette is
+                # only a fallback for stores that supply no color, and this one
+                # does.
                 "samples": [
                     {
                         "name": bc.replace("-1", ""),
-                        "group": STYLE[ct][0],
+                        "group": ct,
                         "color": STYLE[ct][1],
                     }
                     for bc, ct in rows

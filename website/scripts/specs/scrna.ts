@@ -142,23 +142,6 @@ export const scrnaSpecs: ScreenshotSpec[] = [
               trackId: 'pbmc5k_scrna_pseudobulk_hg38',
               type: 'MultiLinearWiggleDisplay',
               height: 150,
-              // OVERLAY, and this is what supplies the figure's color key
-              // (review: "the legend should be made by our app itself, not
-              // custom overlay"). The app draws one only in an overlay mode --
-              // `overlayLegendApplies` is `isOverlay && numSources > 1`, since
-              // a multi-row track normally names its sources in the sidebar --
-              // and the per-cell track below cannot use that: its 4,390 rows
-              // are far under the 6 px a label needs, so the sidebar there is
-              // a color stripe with nothing naming it.
-              //
-              // These are the same nine cell types in the same nine colors, so
-              // one key serves both lanes, and the key is now the app's own
-              // rather than a hand-built list read out of the config. Overlay
-              // costs this lane nothing at this locus: two of the nine rows
-              // carry signal over LYZ and the other seven are flat, so nine
-              // superimposed curves is two curves.
-              defaultRendering: 'xyplot',
-              showLegend: true,
             },
             {
               trackId: 'pbmc5k_scrna_percell_hg38',
@@ -171,8 +154,18 @@ export const scrnaSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    // No overlay key here any more: the pseudobulk lane above draws the app's
-    // own, over the same nine colors. See its `showLegend`.
+    // NO OVERLAY ANNOTATION HERE: the color key is the app's own, drawn by the
+    // per-cell track itself. It could not be, until this round -- the display
+    // offered a key in overlay mode only, on the reasoning that a multi-row
+    // track names its sources in the sidebar. At 4,390 rows over 620 px that is
+    // 0.14 px a row, far under the 6 px SvgRowLabels needs for text, so the
+    // sidebar is an unlabelled stripe of nine colors and the reasoning does not
+    // hold. `overlayLegendApplies` now asks whether anything else on the frame
+    // names the colors, and the collapsed key is nine rows because the store
+    // groups its cells.
+    //
+    // The pseudobulk lane above stays multi-row (review: "i do not like the
+    // multixyplot remove"), where its own sidebar names its nine rows.
     readyTimeout: 120000,
     settleMs: 20000,
     // the per-cell track's 620 rows have to reach their own bottom edge: the
