@@ -2826,9 +2826,9 @@
   },
   "qc/smn_problematic_regions": {
     "name": "qc/smn_problematic_regions",
-    "status": "bad",
-    "note": "if it helps show synteny view to t2t",
-    "reviewedAt": "2026-08-08T01:12:28.074Z",
+    "status": "answered",
+    "note": "Done as a new figure beside this one rather than a change to it: qc/smn_vs_t2t, hg38 over T2T-CHM13 framed on each assembly's own SMN2-to-SMN1 span, with a new 'Would a finished assembly fix it?' section between 'Zooming out first' and 'Zooming back in'. It helps, and it answers a question the page was leaving open -- GRCh38 is not finished here and CHM13 is, so 'would a better assembly fix it' is the reader's obvious next thought. It does not. No new file: the same UCSC hg38ToHs1 liftOver PIF and hg38_hs1_synteny config the genomes_synteny figures already read. Read off it with tabix rather than asserted -- over tchr5:69200000-71700000 three chains are longer than 800 kb, all three overlap each other on both sides and two run backwards, so UCSC's own chainer could not resolve the block to one correspondence. Deliberately NOT claimed: that the block is inverted between the assemblies. Gene order rules that out (SMN2 before SMN1 in both), so the reverse chains are copy-to-copy. Two levers were needed to make it read: cigarMode 'off' (the default 'full' draws every CIGAR block of every chain and over a segdup that is a hairball) and heightMode 'fixed' on both gene lanes (both tracks are configured grow, and the hs1 GFF's pseudogene rows grew the bottom lane to ~450px, taller than the ribbon band it is context for). This figure itself is unchanged.",
+    "reviewedAt": "2026-08-08T01:34:23.941Z",
     "hash": "6c5042a945c3e9489d1d0e6ddd7dc17d63a92219"
   },
   "qc/smn_vs_control": {

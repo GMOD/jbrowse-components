@@ -207,12 +207,14 @@ columns **Color by → dN/dS** divides, plus the substitution count and Fisher p
 that say whether a given ratio means anything. Homoeologs are recent enough that
 dS stays well short of where the method saturates.
 
-<Figure caption="Bread wheat against itself over homoeologous groups 4, 5 and 7: homoeolog pairs coloured by dN/dS on a ramp pivoted at 1, where blue is purifying selection. Each group makes three parallel segments, one per pair of subgenomes. The two boxed cells are where 4A pairs with a group it does not belong to, the 4AL/5AL and 4AL/7BS translocations." src="/img/multiway_synteny/wheat_homoeolog_selection.png" />
-
-Three things read off one plot: the subgenome structure as parallel segments,
-the 4A translocations as segments leaving their group, and per-gene divergence
-as colour. 4A carries 359 links to 5D and 199 to 7D where an unrearranged
-chromosome carries about 20.
+The plot that comes out is the left panel of
+[the wheat-and-oat figure](/docs/tutorials/homoeolog_synteny#reading-the-plot),
+where it sits beside a second hexaploid and is worth more than it is alone: the
+two are the same picture of the same three homoeologous groups, so what differs
+between them is the karyotype rather than the method. Three things read off the
+wheat side: the subgenome structure as parallel segments, the 4A translocations
+as segments leaving their group, and per-gene divergence as colour. 4A carries
+359 links to 5D and 199 to 7D where an unrearranged chromosome carries about 20.
 
 The blue is the reliable part of that colour. Very few of the warm pairs survive
 the Fisher test in the table's own `fisher_p` column, which is what a pairwise

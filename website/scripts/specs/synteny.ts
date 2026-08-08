@@ -663,6 +663,16 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 428,
   },
 
+  // A COMPOSITION PART, no longer embedded on its own (review: "looks like dupe
+  // of homoeolog_synteny/wheat_vs_oat" — and it was the same PNG twice, since
+  // wheat_vs_oat composes this frame beside the oat one). multiway_synteny.md
+  // now points at that pair instead of repeating its left half, and the wheat
+  // plot stays reachable live as a second `links=` target on it. The composed
+  // figure is the one that earns the page: it makes a comparison this frame
+  // cannot make alone. Same treatment homoeolog_synteny/oat_homoeologs already
+  // has, so the spec stays — parts still render, and audit-figures only walks
+  // figures docs actually embed.
+  //
   // Bread wheat against itself: it carries three near-complete copies of its
   // genome, so almost every gene exists three times, and Compara curates those
   // trios as `homoeolog_one2one` — 69,940 pairs, every one within a

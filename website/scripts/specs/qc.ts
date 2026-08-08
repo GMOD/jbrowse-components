@@ -1,5 +1,7 @@
 import { encodeSessionSpec } from '@jbrowse/browser-test-utils'
 
+import { HG38_HS1_CONFIG } from '../screenshot-spec-helpers.ts'
+
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 // website/docs/tutorials/mappability_qc.md — whether a locus can support the
@@ -348,4 +350,128 @@ export const qcSpecs: ScreenshotSpec[] = [
   // set is a count, not a picture -- packed it was eight rows of boxes wall to
   // wall with no individual record as the subject -- so it stays in the prose,
   // where scan_mappability_qc.sh's numbers already carry it.
+
+  // The T2T control (review, on smn_problematic_regions: "if it helps show
+  // synteny view to t2t"). It answers the question the page otherwise leaves
+  // open -- whether the block is GRCh38's fault -- and the answer is no.
+  //
+  // Not a new file: the same UCSC hg38->hs1 liftOver PIF the genomes_synteny
+  // figures already read, and the same test_data/hg38_hs1_synteny config.
+  //
+  // What the ribbons show, read out of that file rather than asserted (`tabix
+  // hg38ToHs1.over.pif.gz tchr5:69200000-71700000`, chr5-to-chr5 records only):
+  //   hg38 69,587,387-71,030,474  ->  hs1 70,423,158-71,497,205  REVERSE
+  //   hg38 69,899,105-71,274,620  ->  hs1 70,662,997-71,697,444  REVERSE
+  //   hg38 69,756,883-70,592,745  ->  hs1 71,089,404-71,778,022  forward
+  // Three chains over one span, two of them inverted and all three overlapping
+  // each other: the same GRCh38 sequence chains to more than one place in a
+  // finished assembly, which is the same fact the Umap and MAPQ lanes state
+  // per-base, arrived at from an independent direction.
+  //
+  // What the figure claims is only that: UCSC's own liftOver could not resolve
+  // this block to ONE correspondence. It does NOT claim the block is inverted
+  // between the two assemblies, and the gene order rules that out -- SMN2 comes
+  // before SMN1 in both (hg38 70,049,523 then 70,924,940; hs1 70,809,743 then
+  // 71,381,728). The reverse chains are copy-to-copy, which is what 99.9%
+  // identity between an inverted pair of copies produces. colorBy 'strand' is
+  // on so the two reverse chains are separable from the forward one, not as an
+  // argument about the block's orientation.
+  //
+  // The two windows are each framed on their own SMN2..SMN1 span with 250 kb of
+  // padding rather than on one shared width, because the array is not the same
+  // size in the two assemblies -- 875 kb apart in hg38 against 572 kb in hs1 --
+  // and that difference is a second thing the figure gets for free.
+  {
+    mode: 'url',
+    name: 'qc/smn_vs_t2t',
+    url: `?config=${encodeURIComponent(HG38_HS1_CONFIG)}&session=${encodeSessionSpec(
+      {
+        views: [
+          {
+            type: 'LinearSyntenyView',
+            colorBy: 'strand',
+            drawCurves: false,
+            // ONE RIBBON PER CHAIN. The default 'full' draws every CIGAR block
+            // of every chain, which over a segmental duplication is thousands
+            // of slivers and came out as a hairball; the claim is about whole
+            // chains, so the CIGAR is noise here.
+            cigarMode: 'off',
+            // drops the sub-kb chains the segdup throws off, leaving the three
+            // that span the block
+            minAlignmentLength: 10000,
+            // three ribbons, so the 0.2 default is pure washout here -- there
+            // is nothing piling up for it to protect
+            alpha: 0.5,
+            levelHeights: [300],
+            tracks: [['hg38_hs1_synteny']],
+            views: [
+              {
+                assembly: 'hg38',
+                loc: 'chr5:69,800,000-71,200,000',
+                tracks: [
+                  {
+                    trackId: 'hg38-genes',
+                    showOnlyGenes: true,
+                    // COLLAPSED to one transcript, the opposite of what
+                    // geneTrack() above does, and for the opposite reason. Both
+                    // tracks here are configured autoHeight, so 'all' is not a
+                    // lane setting but a lane SIZE: GTF2H2 alone carries ~25
+                    // transcripts and the hg38 lane grew past 400 px, taking the
+                    // ribbon band off the bottom of the frame. The "Longest
+                    // isoform" chip it costs lands on empty lane at this width.
+                    geneGlyphMode: 'longestCoding',
+                    heightMode: 'fixed',
+                    height: 120,
+                  },
+                ],
+                trackLabels: 'offset',
+              },
+              {
+                assembly: 'hs1',
+                loc: 'chr5:70,560,000-71,660,000',
+                tracks: [
+                  {
+                    trackId: 'hs1-genes',
+                    showOnlyGenes: true,
+                    geneGlyphMode: 'longestCoding',
+                    // PINNED, where the hg38 lane is merely capped. Both tracks
+                    // are configured `grow`, and the hs1 GFF is RefSeq All: over
+                    // this segdup it lays out seven rows of GUSB/POM121/cadherin
+                    // pseudogenes and their descriptions, which grew the bottom
+                    // lane to ~450 px and made the gene context taller than the
+                    // ribbon band it is context FOR.
+                    heightMode: 'fixed',
+                    height: 200,
+                  },
+                ],
+                trackLabels: 'offset',
+              },
+            ],
+          },
+        ],
+      },
+    )}&sessionName=Screenshot`,
+    viewportWidth: 1200,
+    // two gene lanes plus the 300px band, from the run's own "170 css px of
+    // blank below the last content" at 1070
+    viewportHeight: 900,
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 180000,
+    settleMs: 15000,
+    // Placed rather than anchored: the subject is the ribbon BAND, which is not
+    // a track and so has no model element to anchor to (annotationOverlay's
+    // model path resolves an LGV's trackRefs). Fixed css coordinates against a
+    // pinned viewportWidth/Height and pinned lane heights, all four of which
+    // this spec sets, so nothing under it can move without the numbers moving.
+    annotations: [
+      {
+        type: 'text',
+        x: 36,
+        y: 372,
+        fontSize: 20,
+        maxWidth: 420,
+        text: 'The same GRCh38 sequence chains to more than one place in T2T',
+      },
+    ],
+  },
 ]

@@ -46,6 +46,34 @@ and does so on the image: it stays down through the 350 kb GIAB has let go of
 and comes back at ENCODE's. `scan_mappability_qc.sh` prints the same lane in 25
 kb bins if you want the step as numbers.
 
+## Would a finished assembly fix it?
+
+It is the obvious next question, since GRCh38 is not a finished assembly of this
+chromosome and T2T-CHM13 is. UCSC publishes an hg38 to CHM13 liftOver chain set,
+and over this block that chain set does not resolve to one correspondence:
+
+```bash
+tabix https://jbrowse.org/ucsc/hg38/liftOver/hg38ToHs1.over.pif.gz \
+  tchr5:69200000-71700000
+```
+
+Three of the chains it returns are longer than 800 kb, all three overlap each
+other on both sides, and two of the three run backwards.
+
+<Figure src="/img/qc/smn_vs_t2t.png" caption="GRCh38 above, T2T-CHM13 below, each framed on its own SMN2-to-SMN1 span, ribbons from UCSC's hg38 to CHM13 liftOver chains and colored by strand. Three chains cross rather than stack: the same GRCh38 sequence is joined to more than one place in a finished assembly." links="Open this view=qc/smn_vs_t2t" />
+
+That is not the block being inverted — the gene order is the same in both
+(_SMN2_ first, then _SMN1_). It is two copies similar enough that a whole-genome
+chainer can join either one to either one, which is the same fact the Umap and
+MAPQ lanes below state per base, arrived at from an independent direction. The
+array is not even the same length in the two assemblies: the two genes are 875 kb
+apart in GRCh38 and 572 kb apart in CHM13, which is what a copy-number-variable
+region does between any two haplotypes.
+
+So the ambiguity is a property of the sequence rather than of the assembly, and
+finishing the assembly does not remove it. What removes it is a read long enough
+to span from inside one copy to sequence outside it.
+
 ## Zooming back in
 
 Reads are what the block does to a sample, and no read track spans 2.5 Mb, so

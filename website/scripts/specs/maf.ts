@@ -587,18 +587,24 @@ export const mafSpecs: ScreenshotSpec[] = [
   // adapter and the URL.
   //
   // Measured off the two .tai files with the repo's own queryBlockSpan, chr6:
-  // the 30 kb window below is a 189 KB read against the MAF's 878 KB, and a
+  // the 83 kb window below is a 292 KB read against the MAF's 878 KB, and a
   // 10 kb locus is 134 KB against 598 KB. That is also why no fetchSizeLimit is
-  // set here any more: the read is an order of magnitude under the 1 MB default
-  // the byte gate uses, where the MAF needed the gate raised to draw at all.
+  // set here any more: the read is well under the 1 MB default the byte gate
+  // uses, where the MAF needed the gate raised to draw at all.
   //
-  // The locus is C4, which is the example HPRCv2's own README reaches for
-  // (GRCh38#0#chr6:31972057-32055418, narrowed here to the C4A/CYP21A1P core so
-  // the fetch stays sane). C4A/C4B are copy-number variable in humans, so the
-  // thing to see is not phylogeny — every row is a human — but which haplotypes
-  // carry which copies. The 470-way figures above are the contrast: there a
-  // missing row means a species diverged past alignment, here it means a person
-  // does not have that segment.
+  // The locus is C4, which is the example HPRCv2's own README reaches for, and
+  // the window is the README's own: GRCh38#0#chr6:31972057-32055418. It used to
+  // be narrowed to a 30 kb C4A/CYP21A1P core "so the fetch stays sane", which
+  // was a guess and a costly one — C4A is chr6:31,982,057-32,002,681 and C4B is
+  // chr6:32,014,795-32,035,418, so the narrow window held C4A alone while the
+  // figure's whole claim (and its caption) is about copy number ACROSS C4A and
+  // C4B. Widening to the full module costs 103 KB more, measured above, because
+  // the read is bgzf-block granular rather than proportional to span: 70 kb and
+  // 90 kb both resolve to the same 292 KB. C4A/C4B are copy-number variable in
+  // humans, so the thing to see is not phylogeny — every row is a human — but
+  // which haplotypes carry which copies. The 470-way figures above are the
+  // contrast: there a missing row means a species diverged past alignment, here
+  // it means a person does not have that segment.
   //
   // MANE Select rather than the full UCSC gene set: at C4 the RefSeq track
   // carries hundreds of `biological region` features (every CH-n recombination
@@ -613,7 +619,7 @@ export const mafSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: 'chr6:31,980,000-32,010,000',
+          loc: 'chr6:31,972,057-32,055,418',
           tracks: [
             {
               trackId: 'mane_hg38',
@@ -681,7 +687,7 @@ export const mafSpecs: ScreenshotSpec[] = [
         maxWidth: 330,
         anchor: {
           track: 'hprc_v2_0_mc_grch38',
-          locus: 'chr6:32,003,000',
+          locus: 'chr6:32,036,000',
           fracY: 0.12,
         },
       },
