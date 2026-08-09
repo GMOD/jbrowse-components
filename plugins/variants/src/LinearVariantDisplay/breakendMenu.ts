@@ -7,6 +7,7 @@ import {
 } from '@jbrowse/sv-core'
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
 
+import { makeFindJunctionsNear } from './findJunctionsNear.ts'
 import { SPLIT_VIEW_MENU_LABEL } from './labels.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -24,6 +25,8 @@ interface BreakendMenuSelf extends IStateTreeNode {
     featureId: string,
     displayedRegionIndex: number,
   ) => Promise<Feature | undefined>
+  // what `makeFindJunctionsNear` queries to continue a chain past the record
+  adapterConfig: Record<string, unknown>
 }
 
 // One row, appended to the variant feature menu on a breakend record.
@@ -69,6 +72,9 @@ export function breakendMenuItems(self: BreakendMenuSelf): MenuItem[] {
               view,
               assemblyName,
               feature,
+              // this display reads the callset, so the dialog can offer to open
+              // the whole chain of junctions rather than this one record's ends
+              findJunctionsNear: makeFindJunctionsNear(self, assemblyName),
             })
           }
         })()

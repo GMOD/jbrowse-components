@@ -18,8 +18,10 @@ import { observer } from 'mobx-react'
 
 import { navToMultiLevelBreak } from './navToMultiLevelBreak.ts'
 import { navToSingleLevelBreak } from './navToSingleLevelBreak.ts'
+import { junctionFromFeature, walkBreakendChain } from './walkBreakendChain.ts'
 
 import type { Track } from './types.ts'
+import type { FindJunctionsNear } from './walkBreakendChain.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -48,6 +50,7 @@ const BreakpointSplitViewChoiceDialog = observer(
     assemblyName,
     stableViewId,
     view,
+    findJunctionsNear,
   }: {
     session: AbstractSessionModel
     handleClose: () => void
@@ -55,6 +58,7 @@ const BreakpointSplitViewChoiceDialog = observer(
     view?: LinearGenomeViewModel
     assemblyName: string
     stableViewId?: string
+    findJunctionsNear?: FindJunctionsNear
   }) {
     // ONE STEP. This dialog used to ask its two questions on two screens --
     // shape, then options -- so opening a split view took a right-click, a menu
@@ -69,12 +73,22 @@ const BreakpointSplitViewChoiceDialog = observer(
     const [copyTracks, setCopyTracks] = useState(true)
     const [mirror, setMirror] = useState(true)
     const [focusOnBreakends, setFocusOnBreakends] = useState(true)
+    // A record describes one junction, and a rearrangement is often several that
+    // leave from each other's loci. Default ON where it is offered at all: the
+    // walk stops on its own at a locus with nothing else there, so on an
+    // isolated translocation it changes nothing, and where it does add a panel
+    // that panel is part of the same shape.
+    const [followChain, setFollowChain] = useState(true)
     const [windowSize, setWindowSize] = useLocalStorage(
       'breakpointWindowSize',
       '5000',
     )
 
     const isSplitLevel = viewType === 'split'
+    // Only for the stacked shape. A single-level view lays its loci along one
+    // row, so a third one is more of the row rather than another panel, and
+    // `navToSingleLevelBreak` frames the record's own pair.
+    const canFollowChain = findJunctionsNear !== undefined && isSplitLevel
 
     const handleLaunch = () => {
       const tracks =
@@ -84,6 +98,14 @@ const BreakpointSplitViewChoiceDialog = observer(
         stableViewId === undefined ? undefined : `${stableViewId}_${suffix}`
       void (async () => {
         try {
+          const start =
+            canFollowChain && followChain
+              ? junctionFromFeature(feature)
+              : undefined
+          const stops =
+            start && findJunctionsNear
+              ? await walkBreakendChain({ start, findJunctionsNear })
+              : undefined
           await (isSplitLevel
             ? navToMultiLevelBreak({
                 stableViewId: suffixedId('multilevel'),
@@ -93,6 +115,7 @@ const BreakpointSplitViewChoiceDialog = observer(
                 feature,
                 assemblyName,
                 windowSize: windowSizeNum,
+                stops,
               })
             : navToSingleLevelBreak({
                 feature,
@@ -151,6 +174,16 @@ const BreakpointSplitViewChoiceDialog = observer(
                 label="Copy tracks into the new view"
                 onChange={val => {
                   setCopyTracks(val)
+                }}
+              />
+            ) : null}
+
+            {canFollowChain ? (
+              <LabeledCheckbox
+                checked={followChain}
+                label="Follow further breakends at each end"
+                onChange={val => {
+                  setFollowChain(val)
                 }}
               />
             ) : null}

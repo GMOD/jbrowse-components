@@ -14,6 +14,7 @@ jest.mock('@jbrowse/sv-core', () => ({
   hasBreakpointSplitView: jest.fn(() => true),
   launchBreakpointSplitView: jest.fn(),
   getAssemblyName: jest.fn(() => 'hg38'),
+  junctionFromFeature: jest.fn(),
 }))
 
 jest.mock('@jbrowse/core/util', () => ({
@@ -46,6 +47,8 @@ function fakeSelf({
             displayedRegionIndex: 0,
           },
     fetchFullFeature,
+    // what makeFindJunctionsNear queries; the mock below never calls it
+    adapterConfig: { type: 'VcfTabixAdapter' },
   }
 }
 
@@ -92,4 +95,9 @@ test('one row on a breakend, which launches with the refetched feature', async (
   expect(jest.mocked(launchBreakpointSplitView)).toHaveBeenCalledWith(
     expect.objectContaining({ feature, assemblyName: 'hg38' }),
   )
+  // and it hands the dialog a way to read the callset, which is what turns
+  // "Follow further breakends at each end" on in there
+  expect(
+    jest.mocked(launchBreakpointSplitView).mock.calls[0]![0].findJunctionsNear,
+  ).toEqual(expect.any(Function))
 })

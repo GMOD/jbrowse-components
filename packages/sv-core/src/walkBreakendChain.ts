@@ -1,0 +1,227 @@
+import { parseSvAlt } from './util.ts'
+
+import type { Feature } from '@jbrowse/core/util'
+
+/**
+ * One junction, reduced to what a chain walk needs: where its two ends are, and
+ * the two record ids that let the walk tell "the way I came" from "another
+ * junction that happens to be here".
+ */
+export interface Junction {
+  id?: string
+  mateId?: string
+  refName: string
+  pos: number
+  mateRefName: string
+  matePos: number
+}
+
+/** A stop on the chain: one panel of the split view. */
+export interface ChainStop {
+  refName: string
+  pos: number
+  /** id of the junction crossed to arrive here; undefined for the first stop */
+  viaId?: string
+}
+
+/**
+ * The caller's read of the callset the starting record came from. Supplying one
+ * is what opts an entry point into chain walking, so a launch site with no way
+ * to query the track (a read's SA mate, a spreadsheet row) simply opens the two
+ * ends it does know.
+ */
+export type FindJunctionsNear = (region: {
+  refName: string
+  start: number
+  end: number
+}) => Promise<Junction[]>
+
+/**
+ * How close two breakends have to be to count as the same place.
+ *
+ * NOT the same number as the reconstruction's junction tolerance (20 bp, which
+ * asks whether two READS describe one junction). This asks whether two DIFFERENT
+ * junctions leave from one locus, and they leave from either side of whatever
+ * short piece of sequence the rearrangement kept there, so the gap is the piece
+ * and not caller jitter. Measured on the COLO829 nanomonsv calls, whose der(3)
+ * is a closed chr3-chr10-chr12 triangle: 198 bp between the two chr10
+ * breakends, 182 bp between the two chr12 ones, 457 bp between the two chr3
+ * ones. 1 kb covers those with room and is still far below the 5 kb window a
+ * panel defaults to, so a hop always lands inside the panel it came from.
+ */
+export const BREAKEND_COLOCATION_BP = 1000
+
+/**
+ * The junction a VCF SV/BND feature describes, or undefined when it names no
+ * mate position (a single breakend, or a symbolic ALT with no END).
+ */
+export function junctionFromFeature(feature: Feature): Junction | undefined {
+  const alt = (feature.get('ALT') as string[] | undefined)?.[0]
+  const parsed = parseSvAlt(feature, alt)
+  if (!parsed) {
+    return undefined
+  }
+  const info = feature.get('INFO') as Record<string, unknown> | undefined
+  const mateId = (info?.MATEID as string[] | undefined)?.[0]
+  return {
+    id: feature.get('name'),
+    ...(mateId !== undefined && { mateId }),
+    refName: feature.get('refName'),
+    pos: feature.get('start'),
+    mateRefName: parsed.mateRefName,
+    // parseSvAlt reports the VCF 1-based coordinate; every position here is
+    // 0-based, the way getBreakendCoveringRegions hands them to the panels.
+    matePos: parsed.matePos - 1,
+  }
+}
+
+function near(a: number, b: number, tolerance: number) {
+  return Math.abs(a - b) <= tolerance
+}
+
+function sameLocus(
+  a: { refName: string; pos: number },
+  b: { refName: string; pos: number },
+  tolerance: number,
+) {
+  return a.refName === b.refName && near(a.pos, b.pos, tolerance)
+}
+
+/**
+ * Which junction the chain leaves this stop by, given every junction with an end
+ * at it. Pure, and the whole of the walk's judgment.
+ *
+ * Returns `undefined` — i.e. the chain ends here — in three cases, and each is a
+ * deliberate refusal rather than a missing feature:
+ *
+ * - **nothing else is here.** The stop is the end of the rearrangement as the
+ *   caller described it.
+ * - **the only continuation goes back somewhere the chain has already been.**
+ *   That is a closed cycle, which the COLO829 der(3) is: chr3 to chr10 to chr12
+ *   and the third junction returns to chr3. Following it would add a fourth
+ *   panel of a locus panel one already shows.
+ * - **more than one junction leaves this stop.** Two continuations mean the
+ *   records cannot say which molecule carries which, and picking the closer or
+ *   the better-supported one would be this code inventing an answer the caller
+ *   declined to give. A reader who wants that comparison has the reads, via
+ *   Reconstruct derivative allele, which ranks routes by how many molecules take
+ *   each.
+ */
+export function nextJunctionFrom({
+  stop,
+  arrivedBy,
+  candidates,
+  visited,
+  tolerance = BREAKEND_COLOCATION_BP,
+}: {
+  stop: { refName: string; pos: number }
+  /** the junction crossed to reach `stop`, whose own record is not a way onward */
+  arrivedBy?: Junction
+  /** every junction with an end near `stop`, in any order */
+  candidates: Junction[]
+  /** stops already on the chain, `stop` included */
+  visited: { refName: string; pos: number }[]
+  tolerance?: number
+}): { junction: Junction; next: { refName: string; pos: number } } | undefined {
+  // A junction is reachable from either end, so each candidate is first turned
+  // around to leave from `stop`.
+  const onward = candidates.flatMap(j => {
+    const fromThisEnd = sameLocus(j, stop, tolerance)
+    const fromMateEnd = sameLocus(
+      { refName: j.mateRefName, pos: j.matePos },
+      stop,
+      tolerance,
+    )
+    const next = fromThisEnd
+      ? { refName: j.mateRefName, pos: j.matePos }
+      : fromMateEnd
+        ? { refName: j.refName, pos: j.pos }
+        : undefined
+    return next === undefined ? [] : [{ junction: j, next }]
+  })
+
+  const arrivalIds = new Set(
+    [arrivedBy?.id, arrivedBy?.mateId].filter(id => id !== undefined),
+  )
+  const fresh = onward.filter(
+    o =>
+      // not the record we arrived on, nor its own mate record: a reciprocal
+      // pair is one junction written twice and both spellings sit at this locus
+      !(o.junction.id !== undefined && arrivalIds.has(o.junction.id)) &&
+      // and not a second copy of the arrival junction filed under other ids,
+      // which is what a callset with no MATEID gives instead
+      !(arrivedBy !== undefined && sameLocus(o.next, arrivedBy, tolerance)),
+  )
+  const open = fresh.filter(
+    o => !visited.some(v => sameLocus(o.next, v, tolerance)),
+  )
+  // Ambiguity is measured over DESTINATIONS, not over records. A reciprocal pair
+  // is one junction written twice, so both spellings are here and both lead to
+  // the same next locus: counted as records that is two ways onward and the walk
+  // stops, which on the COLO829 triangle lost chr12 to a junction it had
+  // correctly found. Counted as places it is one.
+  //
+  // Ambiguity is also measured over what is genuinely OPEN. A branch that only
+  // leads back into the chain is not a second answer, so a closed cycle must not
+  // read as "too many ways onward" either.
+  const destinations: typeof open = []
+  for (const o of open) {
+    if (!destinations.some(d => sameLocus(d.next, o.next, tolerance))) {
+      destinations.push(o)
+    }
+  }
+  return destinations.length === 1 ? destinations[0] : undefined
+}
+
+/**
+ * Walk a chain of co-located junctions outward from one, and return the stops a
+ * breakpoint split view should show. Always at least two: the record's own two
+ * ends.
+ *
+ * `findJunctionsNear` is the caller's read of the same callset the starting
+ * record came from — the walk does no fetching of its own, which is what keeps
+ * `nextJunctionFrom` a pure decision the tests can hold.
+ *
+ * Bounded by `maxStops` because the input is somebody's VCF: a callset dense in
+ * breakends within a kilobase of each other (an amplicon, a chromothriptic
+ * shard) is a chain the walk can follow much further than a reader can take in,
+ * and every stop is another panel dividing the same viewport height.
+ */
+export async function walkBreakendChain({
+  start,
+  findJunctionsNear,
+  tolerance = BREAKEND_COLOCATION_BP,
+  maxStops = 4,
+}: {
+  start: Junction
+  findJunctionsNear: FindJunctionsNear
+  tolerance?: number
+  maxStops?: number
+}): Promise<ChainStop[]> {
+  const stops: ChainStop[] = [
+    { refName: start.refName, pos: start.pos },
+    { refName: start.mateRefName, pos: start.matePos, viaId: start.id },
+  ]
+  let arrivedBy = start
+  while (stops.length < maxStops) {
+    const stop = stops.at(-1)!
+    const candidates = await findJunctionsNear({
+      refName: stop.refName,
+      start: Math.max(0, stop.pos - tolerance),
+      end: stop.pos + tolerance,
+    })
+    const hop = nextJunctionFrom({
+      stop,
+      arrivedBy,
+      candidates,
+      visited: stops,
+      tolerance,
+    })
+    if (!hop) {
+      break
+    }
+    stops.push({ ...hop.next, viaId: hop.junction.id })
+    arrivedBy = hop.junction
+  }
+  return stops
+}

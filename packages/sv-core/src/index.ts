@@ -23,3 +23,14 @@ export {
   singleLevelFocusedSnapshotFromBreakendFeature,
 } from './navToSingleLevelBreak.ts'
 export { navToMultiLevelBreak } from './navToMultiLevelBreak.ts'
+export {
+  BREAKEND_COLOCATION_BP,
+  junctionFromFeature,
+  nextJunctionFrom,
+  walkBreakendChain,
+} from './walkBreakendChain.ts'
+export type {
+  ChainStop,
+  FindJunctionsNear,
+  Junction,
+} from './walkBreakendChain.ts'
