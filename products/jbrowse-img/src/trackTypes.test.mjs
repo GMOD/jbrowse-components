@@ -82,6 +82,9 @@ const fillCounts = svg => {
   return counts
 }
 const GOLDENROD = 'rgb(218,165,32)'
+// The UTR default (#357089). A gene glyph draws its transcripts' UTRs from the
+// `utrColor` slot, so an untouched track has TWO default fills, not one.
+const UTR_TEAL = 'rgb(53,112,137)'
 const MAGENTA = 'rgb(255,0,255)'
 const TOMATO = 'rgb(255,99,71)'
 const CORNFLOWER = 'rgb(100,149,237)'
@@ -94,13 +97,19 @@ const renderGff = (...opts) =>
     trackList: [['gffgz', [gff, 'force:true', ...opts]]],
   })
 
-test('color:<css color> repaints a feature track', async () => {
+// `color` describes the FEATURE, so it reaches a transcript's UTRs too and the
+// whole track lands on one color; only an explicit `utrColor` contrasts them
+// again. That rule is getBoxColor's (plugins/canvas), and this asserts the
+// end-to-end consequence of it — which is why the count to match is BOTH
+// defaults and not just the goldenrod one.
+test('color:<css color> repaints a feature track, UTRs included', async () => {
   const plain = fillCounts(await renderGff())
   const magenta = fillCounts(await renderGff('color:magenta'))
   assert.ok(plain[GOLDENROD] > 0, 'baseline features are the goldenrod default')
+  assert.ok(plain[UTR_TEAL] > 0, 'baseline UTRs are the utrColor default')
   assert.equal(
     magenta[MAGENTA],
-    plain[GOLDENROD],
+    plain[GOLDENROD] + plain[UTR_TEAL],
     'every default-colored glyph should now be magenta',
   )
   assert.equal(
@@ -108,6 +117,7 @@ test('color:<css color> repaints a feature track', async () => {
     undefined,
     'no goldenrod glyph should remain',
   )
+  assert.equal(magenta[UTR_TEAL], undefined, 'no teal UTR should remain')
 })
 
 // `color:strand` names a scheme on alignments; on the canvas displays it is the
