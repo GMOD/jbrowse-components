@@ -70,19 +70,23 @@ const BP_UNITS: Record<string, number> = {
  * coordinate is a mistake, and it should stay an error rather than silently
  * yielding a fractional coordinate.
  */
-export const BP_QUANTITY_SOURCE = String.raw`(?:-?\d+(?:\.\d+)?[kmg]b?|-?\d+)`
+export const BP_QUANTITY_SOURCE = String.raw`(?:-?\d+(?:\.\d+)?[kmg](?:bp?)?|-?\d+(?:bp)?)`
 
 const BP_QUANTITY_REGEX = new RegExp(
-  String.raw`^(?:(-?\d+(?:\.\d+)?)([kmg])b?|(-?\d+))$`,
+  String.raw`^(?:(-?\d+(?:\.\d+)?)([kmg])(?:bp?)?|(-?\d+)(?:bp)?)$`,
   'i',
 )
 
 /**
  * Parse a base-pair count written the way people type one: plain digits, with
- * optional thousand separators, and with an optional metric unit suffix whose
- * trailing "b" is optional because both spellings are in common use. So
- * "150", "1,500", "1500", "1.5kb", "1.5k", "34Mb" and "2G" are all accepted.
- * Loosely the inverse of {@link getBpDisplayStr}.
+ * optional thousand separators, and with an optional metric unit suffix. So
+ * "150", "1,500", "1.5kb", "1.5k", "34Mb" and "2G" are all accepted.
+ *
+ * The unit's tail is loose because both "kb" and "k" are in common use, and
+ * because everything {@link getBpDisplayStr} prints has to come back in. The
+ * app shows a window size as "1.5Mbp" in the zoom slider tooltip and over a
+ * rubberband selection, so a user who reads one off the screen and types it
+ * into a bp field has typed a string this must accept.
  *
  * Returns undefined, rather than NaN or a throw, when the string is not a bp
  * quantity, so that callers validating a text field can test it directly.

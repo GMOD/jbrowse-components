@@ -41,7 +41,7 @@ export default function RegionWidthEditorDialog({
       <div style={{ display: 'flex', flexDirection: 'column', gap: 30 }}>
         <Typography>
           Enter a specific number of base pairs to change the viewport to show,
-          either in full or abbreviated as e.g. 500kb or 1.5Mb. This is
+          either in full or abbreviated as e.g. 500kb or 1.5Mbp. This is
           approximate and does not account for padding between regions or
           off-screen scrolling
         </Typography>

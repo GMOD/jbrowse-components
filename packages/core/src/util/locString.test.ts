@@ -57,6 +57,8 @@ describe('parseLocString', () => {
       { start: 33_999_999, end: 35_000_000, refName: 'chr1' },
     ],
     ['chr1:1kb-2kb', { start: 999, end: 2000, refName: 'chr1' }],
+    ['chr1:1Kbp-2Kbp', { start: 999, end: 2000, refName: 'chr1' }],
+    ['chr1:1000bp-2000bp', { start: 999, end: 2000, refName: 'chr1' }],
     ['chr1:1.5M-2M', { start: 1_499_999, end: 2_000_000, refName: 'chr1' }],
     // mixed spellings across the two ends of the range
     ['chr1:1000-2kb', { start: 999, end: 2000, refName: 'chr1' }],

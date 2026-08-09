@@ -83,8 +83,14 @@ Example strings
 &loc=chr1:7000 // centered on this position
 &loc=chr1 // the whole of one chromosome
 &loc=chr1%206000%207000 // refName, start and end, whitespace separated
+&loc=chr1:34M-35M // coordinates abbreviated with a unit suffix
 &loc=GENEID // if you have used `jbrowse text-index`
 ```
+
+A coordinate may be written with a `k`, `M` or `G` suffix, optionally followed
+by `b` or `bp`, so `chr1:34M-35M`, `chr1:1.5Mb-2Mb` and `chr1:500kb-600kb` are
+all accepted. These are expanded to whole base pairs on load, and the location
+box then reads back the full number.
 
 Navigating via `&loc=GENEID` requires a text index built with
 `jbrowse text-index`.
