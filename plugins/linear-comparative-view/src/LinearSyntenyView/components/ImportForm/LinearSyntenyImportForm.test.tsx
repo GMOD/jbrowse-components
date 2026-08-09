@@ -342,12 +342,20 @@ test('Reverse rows flips the stack, keeping every pair connected', () => {
   pickAssembly(2, 'rn7')
   expect(rowSelects().map(s => s.textContent)).toEqual(['hg38', 'mm39', 'rn7'])
 
+  // configuring the second pair (mm39/rn7) when the reversal happens
+  fireEvent.click(screen.getAllByTestId('synbutton')[1]!)
+  expect(pairHeading()).toHaveTextContent('between mm39 and rn7')
+
   fireEvent.click(screen.getByRole('button', { name: /Reverse the row order/ }))
   expect(rowSelects().map(s => s.textContent)).toEqual(['rn7', 'mm39', 'hg38'])
   // the same adjacencies, so nothing has come unconnected
   expect(
     screen.queryByRole('button', { name: /No synteny dataset connects/ }),
   ).not.toBeInTheDocument()
+  // and the panel stays on the pair it was configuring, which is now first.
+  // Auto-arrange resets to pair 0 because its new ordering has no
+  // correspondence to the old one; a reversal does, so it keeps it.
+  expect(pairHeading()).toHaveTextContent('between rn7 and mm39')
 })
 
 test('Auto-arrange reorders rows so adjacent pairs share a dataset', () => {

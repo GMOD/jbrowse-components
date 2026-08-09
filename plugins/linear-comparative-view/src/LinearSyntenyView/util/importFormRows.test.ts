@@ -1,4 +1,4 @@
-import { planRowRemoval } from './importFormRows.ts'
+import { planRowRemoval, reversedPairIndex } from './importFormRows.ts'
 
 test('removing a middle row drops the pair below it', () => {
   expect(
@@ -34,4 +34,16 @@ test('dropping to a single row clamps both to 0 rather than going negative', () 
   expect(
     planRowRemoval({ rowCount: 2, removedRow: 1, selectedPair: 0 }),
   ).toEqual({ removedPair: 0, nextSelectedPair: 0 })
+})
+
+test('reversing maps a pair to the same two rows counted from the other end', () => {
+  // 5 rows, 4 pairs: pair 0 (rows 1-2) becomes pair 3 (rows 4-5)
+  expect(reversedPairIndex({ rowCount: 5, selectedPair: 0 })).toBe(3)
+  expect(reversedPairIndex({ rowCount: 5, selectedPair: 3 })).toBe(0)
+  // the middle pair of an odd count is its own mirror
+  expect(reversedPairIndex({ rowCount: 4, selectedPair: 1 })).toBe(1)
+})
+
+test('reversing a two-row stack keeps the only pair there is', () => {
+  expect(reversedPairIndex({ rowCount: 2, selectedPair: 0 })).toBe(0)
 })

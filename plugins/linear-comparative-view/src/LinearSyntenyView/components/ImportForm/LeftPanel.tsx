@@ -17,7 +17,7 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber'
 import { Button, IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { planRowRemoval } from '../../util/importFormRows.ts'
+import { planRowRemoval, reversedPairIndex } from '../../util/importFormRows.ts'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
 import type { PairStatus } from '@jbrowse/synteny-core'
@@ -230,7 +230,7 @@ const LeftPanel = observer(function LeftPanel({
   // dropped so doSubmit auto-picks for the new ordering, but an upload carries a
   // file location the user entered by hand, so it follows its own assemblies to
   // wherever the reorder put them.
-  function applyRowOrder(reordered: string[]) {
+  function applyRowOrder(reordered: string[], nextSelectedPair: number) {
     const uploads = remapUploadsToPairs(
       model.importFormSyntenyTrackSelections,
       reordered,
@@ -242,7 +242,7 @@ const LeftPanel = observer(function LeftPanel({
       }
     }
     setSelectedAssemblyNames(reordered)
-    setSelectedRow(0)
+    setSelectedRow(nextSelectedPair)
   }
 
   function autoArrangeRows() {
@@ -251,11 +251,13 @@ const LeftPanel = observer(function LeftPanel({
     // self-alignment pair is connected exactly when a track names the assembly
     // twice, and the guard would pull apart a self-alignment adjacency this same
     // panel calls valid
+    // a whole new ordering, so no pair of the old one survives to stay on
     applyRowOrder(
       planSyntenyChain(
         selectedAssemblyNames,
         (a, b) => getSyntenyTracks(tracks, [a, b]).length > 0,
       ),
+      0,
     )
   }
 
@@ -294,7 +296,13 @@ const LeftPanel = observer(function LeftPanel({
           <Button
             variant="outlined"
             onClick={() => {
-              applyRowOrder([...selectedAssemblyNames].reverse())
+              applyRowOrder(
+                [...selectedAssemblyNames].reverse(),
+                reversedPairIndex({
+                  rowCount: selectedAssemblyNames.length,
+                  selectedPair: selectedRow,
+                }),
+              )
             }}
           >
             Reverse rows
