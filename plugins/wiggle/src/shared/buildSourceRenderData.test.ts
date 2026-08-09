@@ -246,8 +246,20 @@ describe('buildSourceRenderData gapLimitBp', () => {
     const [layer] = buildSourceRenderData(spacedData(), {
       ...baseGpuProps,
       renderingType: 'linecenter',
+      // an explicit multiple: the DEFAULT is 0 (never break), so the default
+      // path is the test below and this one is what a track that opts in gets
+      maxGapMultiple: 20,
     })
-    expect(layer!.gapLimitBp).toBe(100 * DEFAULT_GAP_BREAK_MULTIPLE)
+    expect(layer!.gapLimitBp).toBe(100 * 20)
+  })
+
+  test('the default multiple leaves the line unbroken', () => {
+    const [layer] = buildSourceRenderData(spacedData(), {
+      ...baseGpuProps,
+      renderingType: 'linecenter',
+      maxGapMultiple: DEFAULT_GAP_BREAK_MULTIPLE,
+    })
+    expect(layer!.gapLimitBp).toBe(Number.POSITIVE_INFINITY)
   })
 
   test('left unset for renderings that never bridge bins', () => {

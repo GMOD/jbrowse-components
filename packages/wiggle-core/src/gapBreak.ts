@@ -50,20 +50,31 @@ export function gapBreakLimit({
 /**
  * #api
  * Default `multiple` for the wiggle interpolated line — the `maxGapMultiple`
- * config slot's default, so a track can override or disable it with 0.
+ * config slot's default. 0 means the line never breaks: one connected polyline
+ * across every hole, which is how the interpolated line behaved before gap
+ * breaking existed.
  *
- * Deliberately far out. A hole worth breaking on runs orders of magnitude past
- * the mean, not a couple of multiples, so this only has to sit clear of ordinary
- * spacing variation rather than track it closely. BigWig data makes that easy:
- * bbi's reduced zoom levels emit fixed-width summary bins, so the series tiles.
- * Measured on volvox_microarray.bw over the range its docs figure renders, at
+ * OFF BY DEFAULT, deliberately and after having been on. It shipped at 20 and
+ * the calibration behind that number still holds — a hole worth breaking on runs
+ * orders of magnitude past the mean, and bbi's reduced zoom levels emit
+ * fixed-width bins so the series tiles (measured on volvox_microarray.bw at
  * three zooms: 500 bins, every gap exactly 1.0x the mean, no break at any
- * threshold. What is left to catch is a stretch bbi emitted no bin for at all
- * (unmappable, uncovered), which is hundreds of times the bin width.
+ * threshold). What changed is the call about whether a reader wants the break at
+ * all: "we added this feature awhile back but i dont think i like it now. might
+ * consider going back to not skipping, for both the ld recombination and
+ * plugins/wiggle line mode". A broken line reads as missing data whether or not
+ * data is missing there, and the chord across a hole is at least continuous with
+ * what the neighbouring points say.
  *
- * Not shared with the LD recombination curve, which calibrates its own — see
- * RECOMBINATION_GAP_MULTIPLE there. The two callers plot different kinds of
- * series (tiled bins vs an irregular point process), so one number serving both
- * meant retuning for one silently retuned the other.
+ * The mechanism stays, whole, because it is the only way to get the other
+ * behavior back: set `maxGapMultiple` on the track, 20 being the calibrated
+ * value. Nothing about `gapBreakLimit` itself changes — a caller passing a
+ * positive multiple gets exactly what it always got.
+ *
+ * Not shared with the LD recombination curve, which carries its own constant —
+ * see RECOMBINATION_GAP_MULTIPLE there, now 0 for the same reason. The two
+ * callers plot different kinds of series (tiled bins vs an irregular point
+ * process), so one number serving both meant retuning for one silently retuned
+ * the other.
  */
-export const DEFAULT_GAP_BREAK_MULTIPLE = 20
+export const DEFAULT_GAP_BREAK_MULTIPLE = 0

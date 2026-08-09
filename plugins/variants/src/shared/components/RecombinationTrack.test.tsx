@@ -25,7 +25,13 @@ function runCount(d: string) {
   return d.split('M').length - 1
 }
 
-describe('RecombinationTrack gap breaks', () => {
+// RECOMBINATION_GAP_MULTIPLE is 0, so the curve never breaks on a gap: one
+// connected run across every hole, which is what review asked for ("i dont think
+// i like it now ... going back to not skipping"). These tests pin that, and they
+// are also the tests that flip back if the constant is ever restored — the
+// arithmetic in each comment is what it was calibrated against, so a re-enable
+// has the cases already written.
+describe('RecombinationTrack, one run across every hole', () => {
   test('evenly spaced points stay one connected run', () => {
     const positions = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90]
     const { line, area } = paths(
@@ -37,9 +43,10 @@ describe('RecombinationTrack gap breaks', () => {
   })
 
   // 30 points at a 10bp pitch, a 1000bp hole, then 10 more. Mean spacing works
-  // out at (290 + 1000 + 90) / 39 = 35bp, so the limit is ~708 and only the hole
-  // clears it.
-  test('a hole far past the typical spacing breaks the line instead of drawing a chord', () => {
+  // out at (290 + 1000 + 90) / 39 = 35bp, so at the calibrated multiple of 20
+  // the limit was ~708 and this hole was the one case that cleared it. At 0 it
+  // is drawn as a chord like any other span.
+  test('a hole far past the typical spacing is bridged, not broken', () => {
     const positions = [
       ...Array.from({ length: 30 }, (_, i) => i * 10),
       ...Array.from({ length: 10 }, (_, i) => 1290 + i * 10),
@@ -48,19 +55,15 @@ describe('RecombinationTrack gap breaks', () => {
       positions.map(() => 0.5),
       positions,
     )
-    expect(runCount(line)).toBe(2)
-    // the fill closes per run too, so it doesn't sweep under the hole
-    expect(runCount(area)).toBe(2)
-    // no segment spans the hole: the run ends at 290 and the next one *starts*
-    // (moveTo, not lineTo) at 1290
-    expect(line).not.toContain('L 290.0 5.0 L 1290.0')
-    expect(line).toContain('L 290.0 5.0 M 1290.0')
+    expect(runCount(line)).toBe(1)
+    expect(runCount(area)).toBe(1)
+    // the chord itself: a lineTo across the hole rather than a moveTo
+    expect(line).toContain('L 290.0 5.0 L 1290.0')
   })
 
-  // A hole inflates the mean it is measured against, so with few points it can
-  // never clear the threshold. That is the safe direction on purpose: a series
-  // too short to have a typical spacing has nothing to call unusual, and a
-  // wrongly-broken curve destroys data the reader can see nowhere else.
+  // A hole inflates the mean it is measured against, so with few points it could
+  // never clear the threshold even when breaking was on. Kept because it is the
+  // case that behaves the same either way.
   test('a lone hole among few points does not break', () => {
     const positions = [0, 10, 20, 30, 40, 2500, 2510, 2520, 2530, 2540]
     expect(
@@ -73,21 +76,22 @@ describe('RecombinationTrack gap breaks', () => {
     ).toBe(1)
   })
 
-  // Long runs of unmeasured (NaN) pairs are the way a thresholded pre-computed
-  // LD file expresses a hole; a couple in a row is still jitter to span.
-  test('a long NaN run breaks, a short one does not', () => {
+  // Unmeasured (NaN) pairs are still SKIPPED — that is a separate rule from gap
+  // breaking and it stays: plotting a NaN would draw a spurious spike. What has
+  // changed is that the hole they leave is now spanned however long it is, so a
+  // 60-pair run (610bp against a ~25bp mean plotted spacing) is one run.
+  test('a NaN run leaves a hole that is spanned, short or long', () => {
     const positions = Array.from({ length: 100 }, (_, i) => i * 10)
 
     const short = positions.map(() => 0.5)
     short[5] = Number.NaN
     expect(runCount(paths(short, positions).line)).toBe(1)
 
-    // 60 skipped pairs leaves a 610bp hole against a ~25bp mean plotted spacing
     const long = positions.map(() => 0.5)
     for (let i = 20; i < 80; i++) {
       long[i] = Number.NaN
     }
-    expect(runCount(paths(long, positions).line)).toBe(2)
+    expect(runCount(paths(long, positions).line)).toBe(1)
   })
 
   test('too few measured points renders nothing', () => {

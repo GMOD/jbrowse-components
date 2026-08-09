@@ -29,7 +29,18 @@ const STROKE_COLOR = 'rgb(59, 130, 246)'
 // If a future dataset over-breaks, this is the one number to move, and the
 // figure is the way to check it — the shape of the tail is not something the
 // unit tests can tell you.
-const RECOMBINATION_GAP_MULTIPLE = 20
+// 0 = never break, which is where this ends up (reviewer, on
+// ld/lct_pooled_vs_panel: "the 'recombination' track has a thing where the line
+// track 'skips'. we added this feature awhile back but i dont think i like it
+// now. might consider going back to not skipping, for both the ld recombination
+// and plugins/wiggle line mode"). The wiggle default went with it, see
+// DEFAULT_GAP_BREAK_MULTIPLE.
+//
+// The calibration above is kept because it is what a future re-enable has to
+// start from, and because the shape of the tail is not something a unit test can
+// tell you: 20 broke exactly the two longest bridged spans (73.1 kb and 66.6 kb)
+// on this dataset, with the next gap down at 43.7 kb.
+const RECOMBINATION_GAP_MULTIPLE = 0
 
 /**
  * Recombination rate track displayed above the LD matrix. Shows 1 - r² between

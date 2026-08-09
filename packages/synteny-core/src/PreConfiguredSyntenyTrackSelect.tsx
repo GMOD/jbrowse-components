@@ -2,6 +2,7 @@ import { useId } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { FormControl, InputLabel, MenuItem, Paper, Select } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -10,6 +11,16 @@ import { pickSyntenyTrackId } from './getSyntenyTracks.ts'
 import type { ImportFormSyntenyModel } from './SelectorTypes.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
+
+const useStyles = makeStyles()({
+  // same reasoning as QuickStartPanel's Select: one short control, so it stops
+  // at a readable width instead of stretching the width of the window away from
+  // the assembly selectors it belongs with
+  track: {
+    marginBottom: 10,
+    maxWidth: 500,
+  },
+})
 
 /**
  * Pre-configured track picker shared by the synteny and dotplot import forms: a
@@ -32,6 +43,7 @@ const PreConfiguredSyntenyTrackSelect = observer(
     emptyState: React.ReactNode
     children?: React.ReactNode
   }) {
+    const { classes } = useStyles()
     const session = getSession(model)
     // one per instance: the synteny form has one of these per row pair and two
     // views can have an import form open at once, so a fixed id would point
@@ -44,7 +56,7 @@ const PreConfiguredSyntenyTrackSelect = observer(
       <Paper style={{ padding: 12 }}>
         {tracks.length ? (
           <>
-            <FormControl fullWidth style={{ marginBottom: 10 }}>
+            <FormControl fullWidth className={classes.track}>
               <InputLabel id={labelId}>Synteny track</InputLabel>
               <Select
                 labelId={labelId}
