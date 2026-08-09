@@ -243,6 +243,30 @@ long read spanning a breakpoint, where the order the read visits those loci in
 is the structure of the rearrangement. See
 [one read against the reference](/docs/user_guides/alignments_track#one-read-against-the-reference).
 
+## Reconstructing a derivative allele
+
+A split read is an ordered, oriented list of reference intervals, which is what
+a derivative allele is. The alignments track menu's **Launch view → Reconstruct
+derivative allele...** groups the reads in the window by the route their split
+alignments describe and lists each route with the number of reads that
+independently take it. Picking one draws it: **Draw in new view** as a synteny
+view with the allele along the bottom and the loci it visits along the top, or
+**Replace with split view** as one panel per segment, in the order the reads
+cross them.
+
+It reads SA tags, so the far side of a junction does not have to be on screen.
+It needs reads long enough to carry more than one junction, which in practice
+means long reads: a route whose segments are each about one read long is an
+aligner splitting a short read across the genome rather than an allele, and the
+strip and segment sizes beside each row are what separate the two.
+
+A read count ranks the routes; it does not vouch for them. Reads mismapped into
+a repeat produce a confident-looking route, so the output is a proposal to check
+against the reads rather than a call.
+[Complex rearrangements and gene fusions](/docs/tutorials/cancer_sv) works
+through both shapes it produces, a two-segment fold-back and a four-segment
+allele across three chromosomes.
+
 ## Breakpoint split view
 
 The breakpoint split view opens two synchronized panels side-by-side, each
@@ -328,18 +352,19 @@ walks through this workflow end-to-end with the HG008 phased tumor assembly.
 
 ## Summary
 
-| Display / setting         | How to enable                   | Best for                                           |
-| ------------------------- | ------------------------------- | -------------------------------------------------- |
-| Pileup (default)          | Default lower panel             | Base-level detail, individual reads                |
-| Color by pair orientation | Color scheme in track menu      | Abnormal orientation patterns (RL/LL/RR)           |
-| Color by insert size      | Color scheme in track menu      | Insert size anomalies (pileup)                     |
-| Read arcs                 | Read connections in track menu  | Overview of long-range connections                 |
-| Read cloud                | Read connections in track menu  | Counting discordant pairs, orientation per read    |
-| Linear read vs ref        | Right-click on any read         | Complex alignment of a single long read            |
-| Breakpoint split view     | Feature details or SV inspector | Side-by-side inspection of both breakpoint loci    |
-| Sort/color by HP tag      | Sort/color by tag in track menu | Confirming heterozygous SVs on one haplotype       |
-| Dotplot view              | Launch from the Add menu        | Chromosome-scale rearrangements (de novo assembly) |
-| Linear synteny view       | Add menu or dotplot selection   | Base-level alignment between two genomes           |
+| Display / setting             | How to enable                   | Best for                                           |
+| ----------------------------- | ------------------------------- | -------------------------------------------------- |
+| Pileup (default)              | Default lower panel             | Base-level detail, individual reads                |
+| Color by pair orientation     | Color scheme in track menu      | Abnormal orientation patterns (RL/LL/RR)           |
+| Color by insert size          | Color scheme in track menu      | Insert size anomalies (pileup)                     |
+| Read arcs                     | Read connections in track menu  | Overview of long-range connections                 |
+| Read cloud                    | Read connections in track menu  | Counting discordant pairs, orientation per read    |
+| Linear read vs ref            | Right-click on any read         | Complex alignment of a single long read            |
+| Reconstruct derivative allele | Launch view in the track menu   | The route several long reads agree on              |
+| Breakpoint split view         | Feature details or SV inspector | Side-by-side inspection of both breakpoint loci    |
+| Sort/color by HP tag          | Sort/color by tag in track menu | Confirming heterozygous SVs on one haplotype       |
+| Dotplot view                  | Launch from the Add menu        | Chromosome-scale rearrangements (de novo assembly) |
+| Linear synteny view           | Add menu or dotplot selection   | Base-level alignment between two genomes           |
 
 ## Limitations
 

@@ -184,7 +184,17 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
   const candidates = ranked.slice(0, MAX_SHOWN)
   // decided once, for the list, because that is what it is a property of
   const showOffScreen = showsOffScreenFlag(candidates)
-  const [selected, setSelected] = useState(0)
+  // The chosen ROUTE, not a row number. `derivativePathCandidates` is computed
+  // from the reads in view, so it re-ranks whenever more of them land -- and
+  // this dialog is opened over a pileup that is often still streaming, which is
+  // exactly when a new route can outrank the one under the cursor. Holding an
+  // index means the selection silently slides onto a different allele between
+  // the click and the draw. `locString` names the route itself.
+  const [selectedLoc, setSelectedLoc] = useState<string>()
+  const selected = Math.max(
+    0,
+    candidates.findIndex(c => c.locString === selectedLoc),
+  )
   const [error, setError] = useState<unknown>()
   const canReplace = isSessionWithViewReplacement(getSession(track))
 
@@ -448,7 +458,7 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
                 data-testid="derivative-path-candidates"
                 value={selected}
                 onChange={event => {
-                  setSelected(+event.target.value)
+                  setSelectedLoc(candidates[+event.target.value]?.locString)
                 }}
               >
                 {candidates.map((candidate, idx) => (
