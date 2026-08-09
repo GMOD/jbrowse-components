@@ -1,6 +1,8 @@
 {
   "name": "@jbrowse/website-astro",
   "type": "module",
+  "//": "private, like every other unpublished workspace package: it is in pnpm-workspace.yaml, so `pnpm publish -r` in publish.yml walks it. It survives today only because it carries no version and pnpm skips it for that reason rather than on purpose.",
+  "private": true,
   "scripts": {
     "dev": "pnpm figures:pull && pnpm gen:gallery-thumbs && astro dev",
     "build": "pnpm figures:pull && pnpm gen:gallery-thumbs && astro build && pagefind --site dist",
