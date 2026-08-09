@@ -129,7 +129,7 @@ collision surfaces as a blank page and a ready-gate timeout long before it
 surfaces as `EADDRINUSE`.
 
 Don't regenerate the figure to prove the conversion. The worktree usually
-carries another agent's in-flight display edits and `products/jbrowse-web/build/`
-is whatever they last built; a figure rendered under that bakes their unlanded
+carries another agent's in-flight display edits and `products/jbrowse-web`'s
+build output is whatever they last built; a figure rendered under that bakes their unlanded
 work into a committed PNG. Land the spec change and let the weekly sweep render
 it on a clean runner.

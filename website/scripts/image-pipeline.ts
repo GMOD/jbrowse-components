@@ -1,7 +1,7 @@
 import { execFileSync, spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 
-import sharp from 'sharp'
+import sharp, { type OutputInfo } from 'sharp'
 
 // A regen re-renders every spec, but an unchanged spec re-renders byte-for-byte
 // identical (rendering is deterministic). Writing them all back would churn the
@@ -125,7 +125,7 @@ export async function trailingBackgroundPx(
   // a broken spec. The shelled-out version got this for free by returning empty
   // stdout; sharp rejects, so it has to be said.
   let data: Buffer
-  let info: sharp.OutputInfo
+  let info: OutputInfo
   try {
     ;({ data, info } = await sharp(file)
       .grayscale()

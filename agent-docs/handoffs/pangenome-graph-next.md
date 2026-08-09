@@ -95,7 +95,7 @@ that carried and what it turned up.
 The reason it had sat is worth keeping, because it was half right. A regen
 against a worktree carrying another agent's 50 in-flight files bakes their work
 into the published figure set. But that hazard reaches a figure through
-`products/jbrowse-web/build`, so it reaches only the figures that render app
+`products/jbrowse-web`'s build output, so it reaches only the figures that render app
 chrome or a linear track — a spec mounting nothing but a `GraphGenomeView` pane
 cannot see it. Most of the graph set is not that pure, and those figures were
 regenerated against an 08:35 build of unknown provenance; the two-run check and

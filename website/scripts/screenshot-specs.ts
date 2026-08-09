@@ -141,9 +141,11 @@ const SLOW_TIMEOUT_MS = 120000
 // The longest an action is allowed to wait, across a spec's own actions and
 // every stage's. A stage frame is part of the same live session.
 function longestActionTimeout(spec: ScreenshotSpec) {
+  const stages =
+    spec.mode === 'url' || spec.mode === 'embedded' ? spec.stages ?? [] : []
   const actions = [
     ...(spec.mode === 'url' ? (spec.actions ?? []) : []),
-    ...(spec.stages ?? []).flatMap(stage => stage.actions ?? []),
+    ...stages.flatMap(stage => stage.actions ?? []),
   ]
   return Math.max(0, ...actions.map(action => action.timeout ?? 0))
 }
