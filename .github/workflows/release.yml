@@ -42,15 +42,9 @@ jobs:
       # match the tree's version therefore uploads this build's binaries over
       # *another* release's assets, silently and irreversibly. Nothing
       # downstream can catch that, so fail the whole run here before any job
-      # that uploads has started.
+      # that uploads has started. See check-tag-version.ts.
       - name: Check the tag matches the version in the tree
-        run: |
-          VERSION=$(node -p "require('./products/jbrowse-desktop/package.json').version")
-          if [ "v$VERSION" != "${RELEASE_VERSION}" ]; then
-            echo "Tag ${RELEASE_VERSION} does not match package.json version v$VERSION."
-            echo "Tags are cut by 'pnpm release', which bumps both together — this tag was not."
-            exit 1
-          fi
+        run: node scripts/check-tag-version.ts "${RELEASE_VERSION}"
       - name: Build jbrowse-web
         uses: ./.github/actions/build-jbrowse-web
       # Upload the pristine build (before the versioned zip is added to it) so
@@ -80,13 +74,27 @@ jobs:
       #
       # Stays a draft: the desktop jobs upload binaries into it long after this
       # job ends, and publishing fires announce.yml. That click is the gate.
+      #
+      # Idempotent, because re-running this job is the obvious recovery from a
+      # transient failure in it — and `gh release create` refuses outright once
+      # the release exists, so the recovery used to be the one thing that could
+      # not work.
       - name: Create draft release with jbrowse-web artifact
         run: |
-          gh release create "${RELEASE_VERSION}" \
-            ./products/jbrowse-web/build/jbrowse-web-${RELEASE_VERSION}.zip \
-            --draft ${PRERELEASE_FLAG} \
-            --title "Release ${RELEASE_VERSION}" \
-            --notes-file /tmp/notes.md
+          ZIP=./products/jbrowse-web/build/jbrowse-web-${RELEASE_VERSION}.zip
+          if gh release view "${RELEASE_VERSION}" >/dev/null 2>&1; then
+            # Only the artifact. Not --draft, --title or --notes-file: by the
+            # time a re-run happens the release may have been published or its
+            # notes edited by hand, and re-asserting --draft would silently
+            # unpublish it.
+            echo "::notice::Release ${RELEASE_VERSION} already exists; refreshing its jbrowse-web artifact only."
+            gh release upload "${RELEASE_VERSION}" "$ZIP" --clobber
+          else
+            gh release create "${RELEASE_VERSION}" "$ZIP" \
+              --draft ${PRERELEASE_FLAG} \
+              --title "Release ${RELEASE_VERSION}" \
+              --notes-file /tmp/notes.md
+          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PRERELEASE_FLAG:

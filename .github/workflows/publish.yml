@@ -24,21 +24,14 @@ jobs:
         with:
           registry-url: 'https://registry.npmjs.org'
       # The dist-tag below is read off the tag name, but the version actually
-      # published is each package.json's. A tag that disagrees with the tree
-      # therefore picks the wrong dist-tag from the right version — tagging a
-      # `5.0.0-beta.1` tree as `v5.0.0` serves a beta to every `npm install` and
-      # to the unpkg @latest URLs in the docs. Unpublishing is only possible for
-      # 72 hours, so this is checked before, not noticed after.
+      # published is each package.json's — and `pnpm publish -r` ships every
+      # package at whatever its own manifest says. See check-tag-version.ts;
+      # unpublishing is only possible for 72 hours, so this is checked before,
+      # not noticed after.
       - name: Check the tag matches the version in the tree
         env:
           RELEASE_TAG: ${{ github.ref_name }}
-        run: |
-          VERSION=$(node -p "require('./plugins/alignments/package.json').version")
-          if [ "v$VERSION" != "$RELEASE_TAG" ]; then
-            echo "Tag $RELEASE_TAG does not match package.json version v$VERSION."
-            echo "Tags are cut by 'pnpm release', which bumps both together — this tag was not."
-            exit 1
-          fi
+        run: node scripts/check-tag-version.ts "$RELEASE_TAG"
       # npm never infers a dist-tag from prerelease semver, it publishes as
       # 'latest' unless told otherwise, which would serve a beta to every
       # `npm install` and to the unpkg @latest URLs in the docs. 'latest' is
