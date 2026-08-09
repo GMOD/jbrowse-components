@@ -8,6 +8,7 @@ import {
   parseReleaseFilename,
   parseReleasePost,
   releasePostFilename,
+  releaseTimestamp,
   renderReleasePost,
   DRAFTS_DIR,
   CHANGELOG_HEADING,
@@ -49,6 +50,27 @@ test('a rendered post parses back into the same notes and changelog', () => {
   const { title, body } = parseReleasePost(post, file)
   expect(title).toBe('v4.4.0 Release')
   expect(splitReleaseBody(body)).toEqual({ notes, changelog })
+})
+
+// getMonth() is 0-based, and a release runs once a month with no dry run: an
+// off-by-one here dates the post a month out and, because the date prefix is
+// what orders the blog, files it in the wrong place too.
+test('releaseTimestamp pads, and does not lose the month off-by-one', () => {
+  expect(releaseTimestamp(new Date(2026, 0, 3, 9, 4, 5))).toEqual({
+    date: '2026-01-03',
+    datetime: '2026-01-03 09:04:05',
+  })
+  expect(releaseTimestamp(new Date(2026, 11, 31, 23, 59, 59))).toEqual({
+    date: '2026-12-31',
+    datetime: '2026-12-31 23:59:59',
+  })
+  // local, not UTC: an evening release must not be dated tomorrow
+  const evening = new Date(2026, 6, 22, 21, 30, 0)
+  expect(releaseTimestamp(evening).date).toBe('2026-07-22')
+  // and it is exactly what the post filename is built from
+  expect(releasePostFilename('v4.4.0', releaseTimestamp(evening).date)).toBe(
+    '2026-07-22-v4.4.0-release.md',
+  )
 })
 
 // release.ts writes the post and pushes in one run, so a draft that kept the

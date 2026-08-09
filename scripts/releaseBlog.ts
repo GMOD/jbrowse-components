@@ -17,6 +17,22 @@ export function releasePostFilename(tag: string, date: string) {
   return `${date}-${tag}-release.md`
 }
 
+// The two shapes a release needs a clock in: `date` names the post file and
+// orders the blog, `datetime` is its frontmatter. Local time on purpose — the
+// post is dated the day whoever cut it cut it.
+//
+// A helper rather than four lines at the call site because getMonth() is
+// 0-based and getDate()/getDay() differ by one letter, and a release runs once
+// a month with no dry run. `Intl`/`toISOString` are not alternatives: the first
+// is locale-dependent and the second is UTC, which puts an evening release on
+// tomorrow's date.
+export function releaseTimestamp(now: Date) {
+  const p = (n: number) => String(n).padStart(2, '0')
+  const date = `${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())}`
+  const time = `${p(now.getHours())}:${p(now.getMinutes())}:${p(now.getSeconds())}`
+  return { date, datetime: `${date} ${time}` }
+}
+
 export const DRAFTS_DIR = 'website/release_announcement_drafts'
 
 // The two files a release can be handed, both consumed by the run that ships

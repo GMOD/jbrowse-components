@@ -2,7 +2,7 @@
 
 ## Main Release
 
-Steps 1, 2 and 4 are yours; step 3 is CI running unattended off the tag.
+Steps 1-3 and 5 are yours; step 4 is CI running unattended off the tag.
 
 1. **Write** `website/release_announcement_drafts/v<version>.md`. It becomes the
    summary of both the blog post and the GitHub release body; `pnpm release`
@@ -45,7 +45,30 @@ Steps 1, 2 and 4 are yours; step 3 is CI running unattended off the tag.
    produced the release: v5.0.0 is 9051 commits behind 16 PRs, because most of
    the work landed on `main` directly. Nothing warns you about that ratio.
 
-2. **Run** `pnpm release <patch|minor|major>`. It checks you're on a clean, up
+   The generated list covers everything merged since the previous release **tag
+   was cut** — not since its draft was published, which is up to hours later and
+   would leave the gap between the two in no changelog at all. Consecutive
+   releases therefore abut exactly, and the boundary is still right if the
+   previous draft was never published.
+
+   A draft named after a prerelease (`v5.0.0-beta.1.md`) is rejected:
+   prereleases get no blog post, so nothing would ever consume it. Name it after
+   the stable release the beta series lands on.
+
+2. **Look first** — `pnpm release <patch|minor|major> --dry-run`.
+
+   It runs every check a real release runs, renders the blog post, the changelog
+   and the version bump into a throwaway directory, formats them exactly as the
+   real path would, prints the finished post and the list of files that would be
+   committed, and stops. Nothing in the repo is touched and the draft stays put.
+
+   The one difference between a dry run and a release is which directory the
+   writers write into, so what it prints is the bytes that would be committed
+   rather than a description of them. Worth doing every time: the post is the
+   artifact with no second chance, and this is the only way to read it before it
+   is public.
+
+3. **Run** `pnpm release <patch|minor|major>`. It checks you're on a clean, up
    to date `main` with green CI, bumps every package version and `version.ts`,
    prepends the PR changelog to `CHANGELOG.md`, turns the draft into a dated
    `website/blog/*.md` post, updates `website/src/config.ts`, then commits,
@@ -53,6 +76,13 @@ Steps 1, 2 and 4 are yours; step 3 is CI running unattended off the tag.
 
    It doesn't re-run lint/tests locally; the push build already covers those and
    more. `--skip-ci-check` overrides the green-CI requirement.
+
+   "Clean" means the files the release itself writes — `CHANGELOG.md`,
+   `website/src/config.ts`, `website/blog`, the drafts directory, the manifests
+   and the `version.ts` files. Those are exactly what `git commit -- <paths>`
+   would pick up, so an uncommitted edit to one could ride into the release
+   commit or be destroyed by it. Anything else in the worktree is left alone,
+   which matters when several people or agents share one.
 
    The commit you're releasing has to be pushed and have a **finished** run.
    `push.yml` uses `cancel-in-progress`, so pushing again cancels the previous
@@ -67,14 +97,24 @@ Steps 1, 2 and 4 are yours; step 3 is CI running unattended off the tag.
    local: follow the recovery it prints, don't re-run, which would cut a second
    release commit on top of the first.
 
-3. **CI runs off the `v*` tag**, unattended: `publish.yml` → npm (`next` for
+4. **CI runs off the `v*` tag**, unattended: `publish.yml` → npm (`next` for
    prereleases, else `latest`), and `release.yml` → draft GitHub release with
    the notes already filled in, plus the web artifact and desktop binaries.
-4. **Publish the draft** once the desktop binaries have landed in it. That click
+
+   Both start by running `scripts/check-tag-version.ts`, which fails the run if
+   the tag disagrees with **any** package version in the tree it points at.
+   Neither workflow can recover from getting this wrong — npm only allows
+   unpublishing for 72 hours, and the desktop jobs derive their upload target
+   from `package.json`, so a mismatched tag clobbers another release's assets.
+   Each desktop job then requires every artifact it is supposed to have built to
+   be on disk before it uploads any of them, so a packaging step that quietly
+   produced nothing fails its job instead of leaving a short release.
+
+5. **Publish the draft** once the desktop binaries have landed in it. That click
    is the go/no-go gate: it fires both the announcements below and the website
    deploy, so the blog post goes live exactly when the release assets it links
    to become public.
-5. **Re-point the ABI fixture** at what you just shipped, so the next cycle is
+6. **Re-point the ABI fixture** at what you just shipped, so the next cycle is
    checked against it rather than against a stale release:
 
    ```bash
@@ -83,7 +123,7 @@ Steps 1, 2 and 4 are yours; step 3 is CI running unattended off the tag.
 
    `abiPreviousRelease.test.ts` then fails on any `@jbrowse/core/*` export
    dropped since that version unless the removal is declared in its
-   `KNOWN_REMOVALS`. Do this after the npm publish in step 3 has landed, since
+   `KNOWN_REMOVALS`. Do this after the npm publish in step 4 has landed, since
    it downloads the published tarball. Clear out the `KNOWN_REMOVALS` entries
    the new fixture makes stale — the test tells you which.
 
@@ -103,16 +143,16 @@ the release (placeholders, what still needs filling in) can live in the draft.
 The same text reaches three places that resolve URLs differently, each handled
 on the way out, so the draft only has to be right once:
 
-| Consumer            | Rendered by                 | Gets                                                         |
-| ------------------- | --------------------------- | ------------------------------------------------------------ |
-| `website/blog/*.md` | the Astro site              | `/img/…`, with the base prefix added at build time           |
-| GitHub release body | GitHub                      | absolute `https://jbrowse.org/jb2/img/…` (`releasenotes.ts`) |
-| Email newsletter    | `mdToHtml` in `announce.ts` | prose only — figures are stripped                            |
+| Consumer            | Rendered by         | Gets                                                         |
+| ------------------- | ------------------- | ------------------------------------------------------------ |
+| `website/blog/*.md` | the Astro site      | `/img/…`, with the base prefix added at build time           |
+| GitHub release body | GitHub              | absolute `https://jbrowse.org/jb2/img/…` (`releasenotes.ts`) |
+| Email newsletter    | `announceFormat.ts` | prose only — figures are stripped                            |
 
 Figures are dropped from the newsletter rather than converted because `mdToHtml`
 has no image case and the mail links out to the full post anyway, so keep the
-summary paragraphs readable without them. `releaseBlog.test.ts` covers all
-three.
+summary paragraphs readable without them. `releaseBlog.test.ts` covers the first
+two, `announceFormat.test.ts` the newsletter.
 
 Once the post is on the site you can upgrade `![caption](src)` to
 `<Figure caption="…" src="…" />`, which adds a lightbox and, for any image

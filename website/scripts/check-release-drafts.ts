@@ -98,6 +98,16 @@ for (const file of drafts) {
     flag('name is not `v<version>.md`, so `pnpm release` will never find it')
     continue
   }
+  // A prerelease ships packages and binaries but gets no blog post, so
+  // release.ts never calls readReleaseDocs for one and a draft named after a
+  // prerelease tag is read by nothing, ever. The draft that matters is the
+  // stable one the beta series lands on.
+  if (file.includes('-')) {
+    flag(
+      `is named after a prerelease tag; prereleases get no blog post, so this is never consumed. Name it after the stable release it describes (${file.split('-')[0]}.md)`,
+    )
+    continue
+  }
   // Check what release.ts will actually write, not the source: a repo-relative
   // figure path is legal in the draft and normalized on the way in.
   const notes = prepareDraftNotes(readFileSync(join(DRAFTS, file), 'utf8'))
