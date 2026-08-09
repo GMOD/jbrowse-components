@@ -62,6 +62,21 @@ Both structures are described in the T2T-CHM13 Y chromosome paper
 ([Rhie et al. 2023](https://www.nature.com/articles/s41586-023-06457-y)), which
 is where the coordinates the boxes use come from.
 
+The plot says where the palindromes are and not what one is, and for that the
+same track opens in a
+[linear synteny view](/docs/user_guides/linear_synteny_view) instead. One
+palindrome, both panels framing it, colored by strand: the arms draw as a single
+minus-strand crossing over the plus-strand band of the sequence matching itself,
+which is a palindrome stated rather than inferred from a shape.
+
+<Figure caption="One Yq palindrome from the boxed family, the same self-alignment track in a linear synteny view with both panels on chrY:22.33 to 22.81 Mb, colored by strand at a 100 kb minimum length. The magenta crossing is the 402 kb inverted alignment at chrY:22,368,211 to 22,769,851, an interval aligned to its own reverse complement. The pink band under it is the plus-strand self match." src="/img/synteny_self_chry_palindromes.png" />
+
+Which view to reach for is a question of how many alignments are in frame. Every
+ribbon spans the full height of the strip, so ribbons stack rather than
+separate: the same track over the whole 4.8 Mb box above is a mat, where a
+dotplot gives each alignment its own place on two axes. Use the plot to find the
+structures and a synteny view on one of them.
+
 Producing the alignment takes one extra minimap2 flag:
 
 ```bash

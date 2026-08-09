@@ -22,6 +22,20 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // which is what the self-alignment covers (Yq12 beyond it is DYZ satellite).
 const CHRY_MSY_LOCUS = 'chrY:2,700,000-26,600,000'
 
+// The P1-P5 Yq palindrome family, from the T2T-CHM13 Y paper (Rhie et al. 2023)
+// rather than read off a picture. Shared by the box on the whole-MSY dotplot and
+// by the synteny view that frames only this, so the two figures are provably
+// about the same interval.
+const CHRY_YQ_PALINDROMES = 'chrY:21,200,000-26,000,000'
+
+// One palindrome out of that family, framed with ~30 kb of flank. Read off the
+// alignment rather than off a paper: `tabix hs1_chrY_self.pif.gz
+// tchrY:21200000-26000000` has exactly four inverted alignments over 100 kb
+// whose ends both land inside the box above, and this is the 401,640 bp one at
+// chrY:22,368,211-22,769,851 -- an interval aligned to its own reverse
+// complement, which is what a palindrome is.
+const CHRY_P_PALINDROME_WINDOW = 'chrY:22,330,000-22,810,000'
+
 // hg38 vs T2T-CHM13 (hs1) at TNNT3, the locus the genomes.jbrowse.org demo
 // session parks on. `view` carries the ribbon-drawing settings that differ
 // between the default figure and the curved/transparent-indel one.
@@ -3233,8 +3247,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
       {
         type: 'box',
         anchor: {
-          hLocus: 'chrY:21,200,000-26,000,000',
-          vLocus: 'chrY:21,200,000-26,000,000',
+          hLocus: CHRY_YQ_PALINDROMES,
+          vLocus: CHRY_YQ_PALINDROMES,
         },
       },
       {
@@ -3242,13 +3256,70 @@ export const syntenySpecs: ScreenshotSpec[] = [
         text: 'Yq palindromes',
         fontSize: 17,
         anchor: {
-          hLocus: 'chrY:21,200,000-26,000,000',
-          vLocus: 'chrY:21,200,000-26,000,000',
+          hLocus: CHRY_YQ_PALINDROMES,
+          vLocus: CHRY_YQ_PALINDROMES,
           alignX: 'left',
           dx: -130,
         },
       },
     ],
+  },
+
+  // The reviewer's own alternative to the plot above: "this is kind of chaotic,
+  // we might need to cross reference paper or make linearsyntenyview of same
+  // thing." The paper is cited on the page now, and this is the other half --
+  // the SAME track and the SAME minimum length as the dotplot, over the interval
+  // that plot boxes as `Yq palindromes`, drawn as ribbons instead of points.
+  //
+  // Three things do the de-cluttering, and none of them filters any alignment
+  // the dotplot draws:
+  //
+  //  - THE WINDOW. 4.8 Mb rather than the whole 23.9 Mb MSY, so the dispersed
+  //    repeat content that IS the scatter is ~a fifth as much of it.
+  //  - `colorBy: 'strand'`, which is the one encoding a dotplot cannot spare an
+  //    axis for. A palindrome arm meets its partner inverted, so the crossings
+  //    the plot draws as an X are the minus-strand colour and the collinear
+  //    self-match running the length of the panel is the plus-strand one.
+  //  - `drawCurves: false`. An inverted ribbon drawn straight is a bow tie whose
+  //    waist is the palindrome's own centre, which is the shape being pointed
+  //    at; as a curve the same pair is two arcs and the crossing is where they
+  //    happen to overlap.
+  //
+  // Both panels frame the same interval, so every ribbon has both corners in
+  // frame -- the off-frame-corner failure that made `cancer_sv/derivative_inserts`
+  // draw nothing is not reachable here.
+  {
+    mode: 'url',
+    name: 'synteny_self_chry_palindromes',
+    url: sessionSpec('test_data/chry_self/config.json', {
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          tracks: ['hs1_chrY_self'],
+          colorBy: 'strand',
+          drawCurves: false,
+          minAlignmentLength: 100000,
+          alpha: 0.4,
+          levelHeights: [220],
+          collapseEmptyRows: true,
+          views: [
+            { assembly: 'T2T_chrY', loc: CHRY_P_PALINDROME_WINDOW, tracks: [] },
+            {
+              assembly: 'T2T_chrY_self',
+              loc: CHRY_P_PALINDROME_WINDOW,
+              tracks: [],
+            },
+          ],
+        },
+      ],
+    }),
+    // same width as the dotplot it is read beside
+    viewportWidth: 1000,
+    viewportHeight: 420,
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    // 21 MB PIF plus the hs1 chrom.sizes, both remote
+    readyTimeout: 180000,
+    settleMs: 10000,
   },
 
   {
