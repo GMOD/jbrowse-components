@@ -1,14 +1,22 @@
 digraph gpu_display_lifecycle {
-  rankdir=LR
+  rankdir=TB
   labelloc=t
   fontname="Helvetica"
   fontsize=18
   label="GPU display: worker data to a drawn frame"
-  nodesep=0.35
-  ranksep=0.6
+  compound=true
+  nodesep=0.4
+  ranksep=0.55
 
   node [shape=box, fontname="Helvetica", fontsize=12, style=filled, fillcolor="#ffffff"]
   edge [fontname="Helvetica", fontsize=10, color="#555555"]
+
+  // TOP TO BOTTOM rather than left to right. As three side-by-side lanes this
+  // came out about 7:1, which on a docs page is a strip with unreadable text,
+  // and the renderTick edge, the loop the caption says the figure is OF, had
+  // to run the whole width back under everything with its label parked in the
+  // middle of the frame, attached to neither end. Stacked, each lane is a band
+  // and that edge is one rank tall.
 
   // ── Worker ───────────────────────────────────────────────────────
   subgraph cluster_worker {
@@ -34,14 +42,25 @@ digraph gpu_display_lifecycle {
     color="#aed581"
 
     rpcdata [label="rpcDataMap\none entry per region", fillcolor="#dcedc8"]
+    uploadrun [label="upload autorun\none per region key", shape=ellipse]
+    // Scroll and zoom are why renderState exists. Without them it reads as a
+    // node nothing feeds, and the render autorun looks like it has one trigger
+    // when the whole point of the pair is that it has two. Inside this lane
+    // because they are main-thread view state; outside it, the edge crossed
+    // the cluster's own label on the way in.
+    viewstate [label="scroll, zoom, config", shape=plaintext, fillcolor="#ffffff"]
     renderstate [label="renderState\nframe uniforms, no fetch"]
-    uploadrun [label="upload autorun\nper region key", shape=ellipse]
-    renderrun [label="render autorun", shape=ellipse]
+    renderrun [label="render autorun\nobserves renderTick", shape=ellipse]
   }
 
   // ── GPU / Canvas ─────────────────────────────────────────────────
   subgraph cluster_gpu {
-    label="GPU / Canvas (the HAL)"
+    // The runtime choice belongs in the lane's own name. As a separate dashed
+    // node with a "dispatch" edge it took the rank directly under
+    // renderBlocks(), which pushed both outputs two ranks further down and
+    // made their edges cross the lane on the way there, and it drew the HAL
+    // as something the renderer calls out to, when the HAL is the lane.
+    label="GPU / Canvas: the HAL, dispatching to WebGPU | WebGL2 | Canvas2D at runtime"
     labelloc=t
     fontname="Helvetica"
     fontsize=13
@@ -51,18 +70,38 @@ digraph gpu_display_lifecycle {
 
     upload [label="backend.uploadRegion()"]
     render [label="backend.renderBlocks()"]
-    frame [label="frame", fillcolor="#ffe0b2", peripheries=2]
-    hal [label="WebGPU  |  WebGL2  |  Canvas2D\nchosen at runtime", shape=box, style="filled,dashed", fillcolor="#fff8e1"]
   }
 
-  exec -> rpcdata [label="structured clone"]
+  // The two things a finished frame produces. `canvasDrawn` was missing
+  // entirely, and it is the half of the answer anything outside the display
+  // reads: markCanvasDrawn() flips it when renderBlocks() reports it drew, and
+  // that flag is what the readiness testids and DisplayChrome's loading state
+  // are waiting on. A figure that ends at "frame" says a picture appeared but
+  // not how the rest of the app finds out.
+  frame [label="frame", fillcolor="#ffe0b2", peripheries=2]
+  drawn [label="canvasDrawn = true\n(readiness testids, DisplayChrome)", fillcolor="#ffe0b2"]
 
-  rpcdata -> uploadrun [label="entry changed"]
+  exec -> rpcdata [label="  structured clone"]
+  rpcdata -> uploadrun [label="  entry changed"]
   uploadrun -> upload
-  upload -> renderstate [label="renderTick++", style=dashed, constraint=false]
 
-  renderstate -> renderrun [label="tick, or scroll"]
+  // renderNow() bumps renderTick on the MODEL and the RENDER AUTORUN is what
+  // observes it (`void self.renderTick`). The old edge landed on renderState
+  // instead, which is not a thing renderNow() touches, and renderState is
+  // read by the render callback, so pointing the tick there implied the upload
+  // path recomputes frame uniforms.
+  upload -> renderrun [
+    label="  renderNow(): renderTick++"
+    style=dashed
+    constraint=false
+  ]
+
+  viewstate -> renderstate
+  renderstate -> renderrun [label="  or a frame-level change"]
   renderrun -> render
   render -> frame
-  render -> hal [style=dashed, label="dispatch"]
+  render -> drawn [label="  if it drew"]
+  // Both outputs on one rank under the lanes, so neither lands inside the GPU
+  // cluster's box and reads as another thing the HAL owns.
+  { rank=same; frame; drawn }
 }

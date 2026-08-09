@@ -6,23 +6,34 @@ digraph products_and_plugins {
   label="Products and plugins"
   compound=true
   nodesep=0.25
-  ranksep=1.6
+  ranksep=2.0
 
   node [shape=box, fontname="Helvetica", fontsize=12, style=filled, fillcolor="#ffffff"]
   edge [fontname="Helvetica", fontsize=11, color="#555555"]
 
   // ── Product ──────────────────────────────────────────────────────
   product [
-    label="Product\n(e.g. jbrowse-web,\njbrowse-desktop)\n\nPluginManager\nloads plugins\nat runtime"
+    label="Product\n(jbrowse-web, jbrowse-desktop,\nan embedded component ...)\n\nOwns a PluginManager"
     shape=box
     fillcolor="#e3f2fd"
-    width=2.4
+    width=2.6
     height=2.2
   ]
 
   // ── A plugin and the pluggable elements it encapsulates ──────────
   // No edges between the elements, so in rankdir=LR they stack as a
-  // single vertical column inside the plugin cluster.
+  // single vertical column inside the plugin cluster. Declaration order
+  // is bottom-to-top in that column, so they are declared in reverse of
+  // the reading order wanted: Views first at the top, then Tracks,
+  // Display types, Adapters, autoruns. That is the order the caption
+  // lists them in and the order product_architecture.dot nests them in,
+  // and it used to be upside down.
+  //
+  // ONE FILL for all five, deliberately. They were five different
+  // pastels, which reads as five different KINDS of thing when the
+  // point of the box is that they are five instances of one kind: a
+  // pluggable element. The product keeps its own color because it is
+  // the other side of the relationship.
   subgraph cluster_plugin {
     label="Plugin (encapsulates pluggable elements)"
     labelloc=t
@@ -32,16 +43,24 @@ digraph products_and_plugins {
     fillcolor="#f5f5f5"
     color="#bdbdbd"
 
+    autoruns [label="MST autoruns / reactions\n(e.g. add context menus,\nextend other parts of the app)", fillcolor="#e8f5e9"]
+    adapters [label="Adapters\nBamAdapter, VcfTabixAdapter ...", fillcolor="#e8f5e9"]
+    displays [label="Display types\nLinearPileupDisplay, LinearVariantDisplay ...", fillcolor="#e8f5e9"]
+    tracks   [label="Tracks\nAlignmentsTrack, VariantTrack ...", fillcolor="#e8f5e9"]
     views    [label="Views\nLinearGenomeView, DotplotView ...", fillcolor="#e8f5e9"]
-    tracks   [label="Tracks\nAlignmentsTrack, VariantTrack ...", fillcolor="#fff8e1"]
-    displays [label="Display types\nLinearPileupDisplay, LinearVariantDisplay ...", fillcolor="#ede7f6"]
-    adapters [label="Adapters\nBamAdapter, VcfTabixAdapter ...", fillcolor="#fce4ec"]
-    autoruns [label="MST autoruns / reactions\n(e.g. add context menus,\nextend other parts of the app)", fillcolor="#e0f7fa"]
   }
 
-  // The whole plugin plugs into the product at runtime; one clean edge
+  // TWO edges, because the relationship runs both ways and a single
+  // "product -> plugin: register pluggable elements at runtime" had the
+  // registration pointing the wrong way. The product loads the plugin;
+  // the plugin's own install() is what registers anything, and it
+  // registers INTO the product's PluginManager.
   product -> views [
     lhead=cluster_plugin
-    label="register pluggable\nelements at runtime"
+    label="loads at runtime"
+  ]
+  displays -> product [
+    ltail=cluster_plugin
+    label="install(pluginManager)\nregisters each element"
   ]
 }

@@ -14,7 +14,7 @@ create new plugins and pluggable elements.
 The JBrowse 2 ecosystem has two main types of top-level artifacts that are
 published on their own: products and plugins.
 
-<Figure src="/img/products_and_plugins.png" caption="Architecture diagram of JBrowse 2, showing how plugins encapsulate views (e.g. LinearGenomeView, DotplotView etc.), tracks (AlignmentsTrack, VariantTrack, etc.), adapters (BamAdapter, VcfTabixAdapter, etc.) and other logic like mobx state tree autoruns that add logic to other parts of the app (e.g. adding context menus)"/>
+<Figure src="/img/products_and_plugins.png" caption="A product owns a PluginManager and loads plugins into it at runtime; each plugin's install() registers the pluggable elements it packages: views, tracks, display types, adapters, and mobx-state-tree autoruns that extend parts of the app the plugin does not own, such as context menus."/>
 
 A "product" is an application of some kind that is published on its own (a web
 app, an electron app, a CLI app, etc). `jbrowse-web`, `jbrowse-desktop`, and

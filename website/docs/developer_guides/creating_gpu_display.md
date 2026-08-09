@@ -44,7 +44,7 @@ runtime `ReExports` registry), so a GPU display must be a
 
 JBrowse GPU displays follow a three-layer model:
 
-<Figure caption="Two autoruns, each with its own trigger: a per-region-key upload autorun on an rpcDataMap entry changing, and a render autorun on renderTick or a frame-level change like scroll. Every upload bumps renderTick, which is what closes the loop back to a drawn frame." src="/img/gpu_display_lifecycle.png" />
+<Figure caption="Two autoruns, each with its own trigger: a per-region-key upload autorun on an rpcDataMap entry changing, and a render autorun on renderTick or a frame-level change like scroll. Every upload calls renderNow(), which bumps renderTick and closes the loop; a draw that reports it painted also flips canvasDrawn, which readiness testids and DisplayChrome wait on." src="/img/gpu_display_lifecycle.png" />
 
 The model keeps two autoruns running at all times (owned by
 `RenderLifecycleMixin`, installed by `installPerRegionLifecycle`):
