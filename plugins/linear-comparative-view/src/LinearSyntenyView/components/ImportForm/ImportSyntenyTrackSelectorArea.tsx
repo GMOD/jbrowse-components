@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
 
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { getEnv, getSession } from '@jbrowse/core/util'
 import {
   ImportFormOpenCustomTrack,
@@ -10,7 +11,7 @@ import {
   getSyntenyTracks,
   useImportFormSyntenyChoice,
 } from '@jbrowse/synteny-core'
-import { CircularProgress } from '@mui/material'
+import { CircularProgress, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
@@ -56,11 +57,14 @@ const ImportSyntenyTrackSelectorArea = observer(
     assembly1,
     assembly2,
     selectedRow,
+    labelledBy,
   }: {
     model: LinearSyntenyViewModel
     assembly1: string
     assembly2: string
     selectedRow: number
+    /** id of the form's per-pair heading, which names this radio group */
+    labelledBy: string
   }) {
     const { pluginManager } = getEnv(model)
     const session = getSession(model)
@@ -81,6 +85,7 @@ const ImportSyntenyTrackSelectorArea = observer(
           choice={choice}
           onChange={setChoice}
           customOptions={customOptions}
+          labelledBy={labelledBy}
         />
         {choice === 'custom' ? (
           <ImportFormOpenCustomTrack
@@ -107,7 +112,15 @@ const ImportSyntenyTrackSelectorArea = observer(
                 remedy='Choose "New track" above to add one, or launch anyway to stack these rows with no ribbons between them.'
               />
             }
-          />
+          >
+            {/* the same note the dotplot form carries: the import form picks
+            one track per band, and everything else is a track-selector click
+            away once the view is open */}
+            <Typography variant="body2" color="text.secondary">
+              More synteny tracks can be turned on per band from the track
+              selector <TrackSelectorIcon /> once the view is open.
+            </Typography>
+          </PreConfiguredSyntenyTrackSelect>
         ) : null}
         {selectedCustomOption ? (
           <Suspense fallback={<CircularProgress size={20} />}>

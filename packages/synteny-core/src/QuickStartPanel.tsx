@@ -30,6 +30,9 @@ const useStyles = makeStyles()({
     marginBottom: 10,
     maxWidth: 500,
   },
+  emptyText: {
+    marginBottom: 10,
+  },
 })
 
 /**
@@ -50,6 +53,7 @@ const QuickStartPanel = observer(function QuickStartPanel({
   onChange,
   onLaunch,
   onSwap,
+  onSwitchToManual,
   swapTitle,
   children,
 }: {
@@ -59,6 +63,7 @@ const QuickStartPanel = observer(function QuickStartPanel({
   onChange: (trackId: string) => void
   onLaunch: () => void
   onSwap: () => void
+  onSwitchToManual: () => void
   swapTitle: string
   children?: React.ReactNode
 }) {
@@ -113,10 +118,22 @@ const QuickStartPanel = observer(function QuickStartPanel({
       </Button>
     </div>
   ) : (
-    <Typography color="text.secondary">
-      No synteny tracks are configured in this session. Switch to Manual to pick
-      assemblies and open a synteny file.
-    </Typography>
+    // the way out is a button rather than an instruction to go press one: Quick
+    // start with nothing to launch is a dead end, and the panel is where the
+    // user already is
+    <div>
+      <Typography color="text.secondary" className={classes.emptyText}>
+        No synteny tracks are configured in this session.
+      </Typography>
+      <Button
+        variant="outlined"
+        onClick={() => {
+          onSwitchToManual()
+        }}
+      >
+        Pick assemblies manually
+      </Button>
+    </div>
   )
 })
 

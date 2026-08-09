@@ -32,6 +32,7 @@ function makeSimpleFormat(
   extension: string,
   adapterType: string,
   locationKey: string,
+  producer: string,
 ): SyntenyFileFormatOption {
   const Component = observer(function SyntenyFormat({
     assembly1,
@@ -74,7 +75,7 @@ function makeSimpleFormat(
       />
     )
   })
-  return { extension, Component }
+  return { extension, producer, Component }
 }
 // #endregion
 
@@ -82,6 +83,7 @@ function makeAnchorsFormat(
   extension: string,
   adapterType: string,
   locationKey: string,
+  producer: string,
 ): SyntenyFileFormatOption {
   const Component = observer(function AnchorsFormat({
     assembly1,
@@ -145,7 +147,7 @@ function makeAnchorsFormat(
       />
     )
   })
-  return { extension, Component }
+  return { extension, producer, Component }
 }
 
 function makePifGzFormat(): SyntenyFileFormatOption {
@@ -203,23 +205,25 @@ function makePifGzFormat(): SyntenyFileFormatOption {
       />
     )
   })
-  return { extension: '.pif.gz', Component }
+  return { extension: '.pif.gz', producer: 'jbrowse make-pif', Component }
 }
 
 export const defaultSyntenyFileFormats: SyntenyFileFormatOption[] = [
-  makeSimpleFormat('.paf', 'PAFAdapter', 'pafLocation'),
-  makeSimpleFormat('.delta', 'DeltaAdapter', 'deltaLocation'),
-  makeSimpleFormat('.out', 'MashMapAdapter', 'outLocation'),
-  makeSimpleFormat('.chain', 'ChainAdapter', 'chainLocation'),
+  makeSimpleFormat('.paf', 'PAFAdapter', 'pafLocation', 'minimap2'),
+  makeSimpleFormat('.delta', 'DeltaAdapter', 'deltaLocation', 'MUMmer'),
+  makeSimpleFormat('.out', 'MashMapAdapter', 'outLocation', 'MashMap'),
+  makeSimpleFormat('.chain', 'ChainAdapter', 'chainLocation', 'UCSC liftOver'),
   makeAnchorsFormat(
     '.anchors',
     'MCScanAnchorsAdapter',
     'mcscanAnchorsLocation',
+    'MCScan',
   ),
   makeAnchorsFormat(
     '.anchors.simple',
     'MCScanSimpleAnchorsAdapter',
     'mcscanSimpleAnchorsLocation',
+    'MCScan',
   ),
   makePifGzFormat(),
 ]

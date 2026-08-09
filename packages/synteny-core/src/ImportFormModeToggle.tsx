@@ -9,6 +9,11 @@ export type ImportFormMode = 'quick' | 'manual'
  * the full assembly-by-assembly form. Making the two an explicit mode is what
  * keeps Quick start's track picker from silently rewriting the fields of a form
  * the user thought they were filling in.
+ *
+ * Quick start is deliberately not disabled when the session has no synteny
+ * track: ToggleButtonGroup clones props onto its direct children, so the
+ * wrapper a Tooltip needs to explain a disabled button can't go here. The empty
+ * Quick start panel carries the way out instead. See QuickStartPanel.
  */
 export default function ImportFormModeToggle({
   mode,

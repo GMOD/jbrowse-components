@@ -205,6 +205,20 @@ test('a same-assembly pair names the self-alignment case', () => {
   ).toBeInTheDocument()
 })
 
+test('an unfinished new-track upload blocks launch', () => {
+  // picking "New track" starts an upload with no file yet. Launching would
+  // resolve to no action and open an empty dotplot with nothing saying why,
+  // which is the same case the synteny import form refuses.
+  setup({ assemblyNames: ['hg38', 'mm39'] })
+  fireEvent.click(screen.getByRole('radio', { name: 'New track' }))
+  expect(launchButton()).toBeDisabled()
+  expect(screen.getByText(/new synteny track is unfinished/)).toBeVisible()
+
+  // clearing it back to None makes the trackless launch available again
+  fireEvent.click(screen.getByRole('radio', { name: 'None' }))
+  expect(launchButton()).toBeEnabled()
+})
+
 test('None leaves the launch without a track', () => {
   const { model } = setup({
     tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])],

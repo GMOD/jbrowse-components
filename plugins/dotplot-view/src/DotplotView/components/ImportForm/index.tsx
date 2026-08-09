@@ -7,11 +7,13 @@ import {
   ImportFormModeToggle,
   QuickStartPanel,
   allSessionTracks,
+  blockedByUnfinishedUpload,
   dotplotAxesFromRows,
   getSyntenyTracks,
+  syntenyPairStatuses,
   useQuickStartState,
 } from '@jbrowse/synteny-core'
-import { Button, Container, Grid, Paper, Typography } from '@mui/material'
+import { Button, Container, Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import TrackSelector from './TrackSelector.tsx'
@@ -26,6 +28,28 @@ const useStyles = makeStyles()(theme => ({
   },
   toggle: {
     marginBottom: theme.spacing(2),
+  },
+  // left-aligned like the rest of the form and like the synteny import form.
+  // Centering only these two fields put them alone in the middle of a wide
+  // window, away from the toggle above and the radios below that govern them.
+  axes: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: theme.spacing(1),
+    alignItems: 'center',
+    marginBottom: theme.spacing(2),
+  },
+  // Launch below the track picker, not beside the axis selectors: picking a
+  // track is the last thing configured, and a primary action above its own last
+  // input reads as premature
+  footer: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(2),
+    marginTop: theme.spacing(2),
+  },
+  header: {
+    marginBottom: theme.spacing(1),
   },
 }))
 
@@ -52,6 +76,17 @@ const DotplotImportForm = observer(function DotplotImportForm({
   const quickX = quickAxes.x ?? firstAssembly
 
   const syntenyTracks = getSyntenyTracks(tracks, [assemblyX, assemblyY])
+
+  // the single-pair case of the check the synteny form runs per row pair: a
+  // "New track" with no file yet resolves to no action, and launching on it
+  // would open an empty dotplot with nothing saying why
+  const canLaunch = !blockedByUnfinishedUpload(
+    syntenyPairStatuses({
+      tracks,
+      selections: model.importFormSyntenyTrackSelections,
+      assemblyNames: [assemblyX, assemblyY],
+    }),
+  )
 
   // a dotplot is one pair, so the chosen Quick start track is the selection for
   // the form's single row
@@ -107,6 +142,9 @@ const DotplotImportForm = observer(function DotplotImportForm({
             onSwap={() => {
               quick.swap()
             }}
+            onSwitchToManual={() => {
+              quick.setMode('manual')
+            }}
             onLaunch={() => {
               applyQuickSelection()
               launch(quickX, quickY)
@@ -132,14 +170,10 @@ const DotplotImportForm = observer(function DotplotImportForm({
           </QuickStartPanel>
         ) : (
           <>
-            <Typography style={{ textAlign: 'center' }}>
+            <Typography className={classes.header}>
               Select assemblies for dotplot view
             </Typography>
-            <Grid
-              container
-              spacing={1}
-              sx={{ justifyContent: 'center', alignItems: 'center' }}
-            >
+            <div className={classes.axes}>
               <AssemblySelector
                 label="X-axis assembly"
                 helperText=""
@@ -158,7 +192,17 @@ const DotplotImportForm = observer(function DotplotImportForm({
                   setAssemblyY(asm)
                 }}
               />
+            </div>
+            <TrackSelector
+              key={`${assemblyX}-${assemblyY}`}
+              model={model}
+              assemblyX={assemblyX}
+              assemblyY={assemblyY}
+              syntenyTracks={syntenyTracks}
+            />
+            <div className={classes.footer}>
               <Button
+                disabled={!canLaunch}
                 onClick={() => {
                   launch(assemblyX, assemblyY)
                 }}
@@ -167,14 +211,13 @@ const DotplotImportForm = observer(function DotplotImportForm({
               >
                 Launch
               </Button>
-            </Grid>
-            <TrackSelector
-              key={`${assemblyX}-${assemblyY}`}
-              model={model}
-              assemblyX={assemblyX}
-              assemblyY={assemblyY}
-              syntenyTracks={syntenyTracks}
-            />
+              {canLaunch ? null : (
+                <Typography variant="body2" color="warning.main">
+                  The new synteny track is unfinished. Choose a file, or set
+                  the track to None.
+                </Typography>
+              )}
+            </div>
           </>
         )}
       </Paper>

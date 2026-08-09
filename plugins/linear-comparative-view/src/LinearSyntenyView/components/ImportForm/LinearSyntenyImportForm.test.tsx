@@ -108,6 +108,9 @@ const rowSelects = () =>
 
 const launchButton = () => screen.getByRole('button', { name: 'Launch' })
 
+// the per-pair heading, which is also the track radio group's accessible name
+const pairHeading = () => screen.getByRole('status')
+
 // the assembly each row was built for. A row's `assemblyNames` derives from
 // displayedRegions, which its afterAttach autorun loads asynchronously, so the
 // declarative init is what a synchronous launch can be checked against.
@@ -273,6 +276,24 @@ test('Add row defaults to an assembly connected to the current bottom row', () =
   ).not.toBeInTheDocument()
 })
 
+test('Add row selects the pair it just created', () => {
+  // otherwise the track panel keeps showing the pair the user had been on, and
+  // the row they asked for is configured only if they go find its chain icon
+  setup({
+    assemblyNames: ['hg38', 'mm39', 'rn7'],
+    tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])],
+  })
+  goManual()
+  expect(pairHeading()).toHaveTextContent('rows 1 and 2')
+  fireEvent.click(screen.getByRole('button', { name: 'Add row' }))
+  expect(pairHeading()).toHaveTextContent('rows 2 and 3')
+})
+
+test('the pair heading names the assemblies, not only the row numbers', () => {
+  setup({ assemblyNames: ['hg38', 'mm39'] })
+  expect(pairHeading()).toHaveTextContent('between hg38 and mm39')
+})
+
 test('removing a row drops that pair selection and keeps the others', () => {
   const { model } = setup({
     assemblyNames: ['hg38', 'mm39', 'rn7'],
@@ -303,6 +324,30 @@ test('the last two rows cannot be removed', () => {
   setup({ tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])] })
   goManual()
   expect(screen.getByRole('button', { name: 'Remove row 1' })).toBeDisabled()
+})
+
+test('Reverse rows flips the stack, keeping every pair connected', () => {
+  // Auto-arrange only fires for a pair with no dataset, so a fully connected
+  // stack had no reordering control at all before this. Which genome is on top
+  // is the user's call, not a property of the track.
+  setup({
+    assemblyNames: ['hg38', 'mm39', 'rn7'],
+    tracks: [
+      syntenyTrack('hg38_mm39', ['hg38', 'mm39']),
+      syntenyTrack('mm39_rn7', ['mm39', 'rn7']),
+    ],
+  })
+  goManual()
+  fireEvent.click(screen.getByRole('button', { name: 'Add row' }))
+  pickAssembly(2, 'rn7')
+  expect(rowSelects().map(s => s.textContent)).toEqual(['hg38', 'mm39', 'rn7'])
+
+  fireEvent.click(screen.getByRole('button', { name: /Reverse the row order/ }))
+  expect(rowSelects().map(s => s.textContent)).toEqual(['rn7', 'mm39', 'hg38'])
+  // the same adjacencies, so nothing has come unconnected
+  expect(
+    screen.queryByRole('button', { name: /No synteny dataset connects/ }),
+  ).not.toBeInTheDocument()
 })
 
 test('Auto-arrange reorders rows so adjacent pairs share a dataset', () => {

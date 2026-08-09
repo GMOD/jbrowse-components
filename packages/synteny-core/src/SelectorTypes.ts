@@ -49,6 +49,12 @@ export interface SelectorProps {
 export interface SyntenyFileFormatOption {
   /** label and radio button value, e.g. '.maf' */
   extension: string
+  /**
+   * the tool that emits this format, e.g. 'minimap2'. Shown under the radio, so
+   * a user who knows what produced their file can find it without matching
+   * extensions. Optional: a format nobody would name by tool just omits it.
+   */
+  producer?: string
   Component: React.FC<{
     assembly1: string
     assembly2: string
