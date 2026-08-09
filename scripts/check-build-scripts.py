@@ -97,9 +97,18 @@ for f in scripts:
         failed = True
 
     # tabix without -f aborts under `set -e` on a re-run ("index exists").
+    # Only indexing invocations can hit that. The read-only modes never write an
+    # index, so -f is meaningless on them and requiring it reads as cargo cult:
+    # build_hprc_kiv2_copynumber.sh pulls the sample list out of a remote VCF
+    # header with `tabix -H`, which creates nothing and is safe to re-run.
+    readonly_mode = re.compile(r"\s-(?:H|l)\b|\s--(?:only-header|list-chroms)\b")
     for i, ln in enumerate(lines):
         code = ln.split("#", 1)[0]
-        if re.search(r"(^|[|;&]|\bthen\b)\s*tabix\b", code) and "-f" not in code:
+        if (
+            re.search(r"(^|[|;&]|\bthen\b)\s*tabix\b", code)
+            and "-f" not in code
+            and not readonly_mode.search(code)
+        ):
             print(f"FAIL tabix without -f in {f}:{i + 1}: `{ln.strip()}`")
             failed = True
 
