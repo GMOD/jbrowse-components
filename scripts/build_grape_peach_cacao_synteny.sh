@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
 #
-# Reproducibly build the three-way grape / peach / cacao MCScan .blocks synteny
-# view shown in website/docs/tutorials/multiway_synteny.md, then wire up a
-# runnable JBrowse.
+# Reproducibly build the multi-way MCScan .blocks synteny view shown in
+# website/docs/tutorials/multiway_synteny.md, then wire up a runnable JBrowse.
 #
-# It downloads the grape, peach, and cacao genomes (dna, CDS, GFF3) from Ensembl
-# Plants release 58, runs the jcvi ortholog pipeline into one reference-anchored
-# grape.blocks table, downloads JBrowse, and writes a config.json with the three
-# assemblies, per-genome gene tracks, the MCScanBlocksAdapter synteny track, and
-# a default session that stacks the three genomes peach - cacao - grape.
+# Everything comes from NCBI datasets: one accession per species supplies the
+# genome, the annotation and (through gffread) the CDS, so an assembly and the
+# annotation drawn on it can never be two different builds. That is not a
+# preference, it is the bug this script was rewritten to remove -- the previous
+# Ensembl Plants version produced a cacao BED whose chromosomes were 1..10 while
+# the hosted cacao assembly called them I..X, and those two builds disagree on
+# all ten chromosome LENGTHS. Renaming across that gap draws genes at plausible
+# wrong coordinates. One accession per species makes the question impossible.
 #
-# Everything is pinned (fixed release, fixed jcvi thresholds), so re-running
-# reproduces the same view.
-#
-# Requires: jcvi + the LAST aligner, samtools, bgzip/tabix (htslib), wget, and
-#           node (JBrowse CLI, fetched via npx unless `jbrowse` is on PATH).
+# Requires: the NCBI `datasets` CLI, jcvi + the LAST aligner, gffread, samtools,
+#           bgzip/tabix (htslib), and node (JBrowse CLI, via npx unless
+#           `jbrowse` is on PATH).
 # Usage:    bash scripts/build_grape_peach_cacao_synteny.sh [outdir]
 #
 set -euo pipefail
@@ -23,80 +23,114 @@ OUTDIR="${1:-grape_peach_cacao_build}"
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 
-BASE=http://ftp.ensemblgenomes.org/pub/plants/release-58
-
-# Species table: short name, Ensembl species name, assembly version.
+# Species table: short name, RefSeq accession.
 #
 # The first three carry a genome because the stacked three-genome figure draws
 # their gene tracks, so they are loaded as JBrowse assemblies. The rest are
 # BLOCKS-ONLY mates: they appear solely as lanes on the grape axis in the
 # one-vs-all figure, and MCScanBlocksAdapter resolves a lane entirely from the
-# .blocks table plus that species' BED, so nothing reads their sequence. That is
-# the difference between tens of MB of CDS and GFF3 per species and a genome
-# download each.
+# .blocks table plus that species' BED, so nothing reads their sequence. They
+# still need the genome downloaded, because the CDS is extracted from it.
 ASSEMBLY_SPECIES='
-grape  Vitis_vinifera   PN40024.v4
-peach  Prunus_persica   Prunus_persica_NCBIv2
-cacao  Theobroma_cacao  Theobroma_cacao_20110822
+grape  GCF_030704535.1
+peach  GCF_000346465.2
+cacao  GCF_000208745.1
 '
 # Grape is a basal rosid, so these span the divergences rather than repeating
 # one: two more rosid orders, and tomato as an asterid outgroup where the
-# expectation is visibly fewer blocks. Fragaria and Malus are NOT in plants
-# release 58; citrus is.
+# expectation is visibly fewer blocks.
 BLOCKS_ONLY_SPECIES='
-arabidopsis  Arabidopsis_thaliana   TAIR10
-poplar       Populus_trichocarpa    Pop_tri_v4
-tomato       Solanum_lycopersicum   SL3.0
-citrus       Citrus_clementina      Citrus_clementina_v1.0
+arabidopsis  GCF_000001735.4
+poplar       GCF_000002775.5
+tomato       GCF_036512215.1
+citrus       GCF_000493195.1
 '
 MATES="peach cacao arabidopsis poplar tomato citrus"
 
-# ── Fetch CDS + GFF3 per species, and the genome for the assembly ones ───────
-while read -r name prefix asm; do
+ASSEMBLY_NAMES=$(echo $ASSEMBLY_SPECIES | awk '{for(i=1;i<=NF;i+=2) printf "%s ", $i}')
+
+# ── Fetch genome + annotation + sequence report, one accession per species ───
+while read -r name acc; do
   [ -z "$name" ] && continue
-  species=$(echo "$prefix" | tr '[:upper:]' '[:lower:]')
-  [ -f "$name.cds.fa.gz" ] || wget -O "$name.cds.fa.gz" "$BASE/fasta/$species/cds/$prefix.$asm.cds.all.fa.gz"
-  [ -f "$name.gff3.gz" ]   || wget -O "$name.gff3.gz"   "$BASE/gff3/$species/$prefix.$asm.58.gff3.gz"
-  case " $(echo $ASSEMBLY_SPECIES | awk '{for(i=1;i<=NF;i+=3) printf "%s ", $i}') " in
-    *" $name "*)
-      [ -f "$name.dna.fa.gz" ] || wget -O "$name.dna.fa.gz" "$BASE/fasta/$species/dna/$prefix.$asm.dna.toplevel.fa.gz"
-      [ -f "$name.fa" ]        || gunzip -c "$name.dna.fa.gz" > "$name.fa"
-      [ -f "$name.fa.fai" ]    || samtools faidx "$name.fa"   # add-assembly needs the .fai
-      ;;
-  esac
+  if [ ! -d "dl_$name" ]; then
+    datasets download genome accession "$acc" \
+      --include genome,gff3,seq-report --filename "$name.zip"
+    unzip -oq "$name.zip" -d "dl_$name"
+    rm -f "$name.zip"
+  fi
+  d="dl_$name/ncbi_dataset/data/$acc"
+  [ -f "$name.fa" ]     || cp "$d"/*_genomic.fna "$name.fa"
+  [ -f "$name.fa.fai" ] || samtools faidx "$name.fa"
+  [ -f "$name.seqreport.jsonl" ] || cp "$d/sequence_report.jsonl" \
+    "$name.seqreport.jsonl"
+  # ORGANELLES AND `?` STRAND ARE BOTH DROPPED before anything reads this GFF,
+  # and both because gffread treats them as fatal rather than skippable:
+  #   - strand `?` is what NCBI gives a trans-spliced plastid gene (rps12), and
+  #     gffread exits with "Error parsing strand (?)" having written an EMPTY
+  #     CDS file, which reads as a silent pipeline failure three steps later
+  #   - a mitochondrial gene can carry a coordinate past the end of its own
+  #     circular sequence (arabidopsis rna-DA397_mgp37 on NC_037304.1) and
+  #     gffread exits with "improper genomic coordinate"
+  # Dropping them is right on the merits anyway: an organelle gene has no place
+  # in a nuclear synteny table. The list is NCBI's own classification from the
+  # sequence report, not a guess from the accession.
+  if [ ! -f "$name.gff3" ]; then
+    python3 -c "
+import json, sys
+sp = sys.argv[1]
+drop = set()
+for line in open(sp + '.seqreport.jsonl'):
+    d = json.loads(line)
+    if d.get('assignedMoleculeLocationType') in (
+            'Mitochondrion', 'Chloroplast', 'Plastid', 'Apicoplast'):
+        a = d.get('refseqAccession') or d.get('genbankAccession')
+        if a:
+            drop.add(a)
+open(sp + '.organelles.txt', 'w').write('\\n'.join(sorted(drop)) + '\\n')
+" "$name"
+    awk -F'\t' -v drops="$name.organelles.txt" 'BEGIN{OFS="\t"
+        while ((getline l < drops) > 0) if (l != "") skip[l]=1 }
+      /^#/{print;next} !($1 in skip) && ($7=="+"||$7=="-"){print}' \
+      "$d/genomic.gff" > "$name.gff3"
+  fi
 done <<EOF
 $ASSEMBLY_SPECIES
 $BLOCKS_ONLY_SPECIES
 EOF
 
-# ── jcvi: GFF3 -> BED (one primary isoform/gene) + CDS matching the BED names ─
-# Every derive step below is guarded on its output file, the same as the
-# downloads above: the LAST alignment inside `catalog ortholog` is the long step
-# here, and a re-run that redoes it pays for the whole pipeline again.
+# ── BED + CDS, keyed identically ─────────────────────────────────────────────
+# BOTH are keyed on the mRNA's GFF3 `ID`, which is what makes the join work:
+# gffread names each extracted CDS after that ID (`rna-XM_007225519.2`), and
+# jcvi's default `--key=ID` writes the same string into BED column 4. Checked on
+# peach, where all 23,134 BED names are present in the CDS set. Do NOT reach for
+# `--key=transcript_id` or `--key=Name` here even though NCBI carries both: jcvi
+# silently falls back to a generated `mrna_494685` when it cannot resolve the
+# key, and a BED full of those joins to nothing.
 for sp in grape $MATES; do
-  [ -f "$sp.bed" ] || python -m jcvi.formats.gff bed --type=mRNA \
-    --key=transcript_id --primary_only "$sp.gff3.gz" -o "$sp.bed"
-  [ -f "$sp.cds" ] || python -m jcvi.formats.fasta format "$sp.cds.fa.gz" "$sp.cds"
+  [ -f "$sp.cds.fa" ] || gffread "$sp.gff3" -g "$sp.fa" -x "$sp.cds.fa"
+  [ -f "$sp.bed" ] || python -m jcvi.formats.gff bed --type=mRNA --key=ID \
+    --primary_only "$sp.gff3" -o "$sp.bed"
+  [ -f "$sp.cds" ] || python -m jcvi.formats.fasta format "$sp.cds.fa" "$sp.cds"
 done
 
-# NO refName translation anywhere in here, deliberately. The demo used to host a
-# cacao assembly whose chromosomes are I..X where this Ensembl release calls them
-# 1..10, and renaming the BED to match looked like a naming difference and is
-# not one: the ten chromosome LENGTHS disagree, every one of them (chr1
-# 38,988,864 here against 37,323,695 there), so they are different cacao builds
-# and a rename would have placed these genes at another assembly's coordinates.
-# Grape and peach needed no such thing -- their hosted FASTAs match this release
-# name for name and length for length, 22/22 and 191/191. The fix was to host
-# the cacao assembly this release annotates, so all three species and the BEDs
-# come from one release.
-#
-# Renaming a refName is only ever legitimate when the mapping is UNAMBIGUOUS --
-# an NCBI accession to a chromosome name, say, where the accession already
-# identifies that exact sequence and `refNameAliases` is the right tool because
-# the accession is unreadable rather than uncertain. "I" to "1" across two
-# builds is not that: it is a guess that two sequences are the same one, and it
-# fails silently by drawing genes at plausible wrong coordinates. Check the
-# lengths before translating anything.
+# ── refNameAliases, so the accessions are readable ───────────────────────────
+# NCBI names sequences by accession (NC_083631.1), which is correct and
+# unreadable. The sequence report carries that accession's chromosome name, so
+# the alias is a lookup rather than a guess -- the one case where renaming a
+# refName is safe, as against mapping between two assemblies.
+for sp in grape $MATES; do
+  [ -f "$sp.aliases.txt" ] || python3 - "$sp" <<'PY'
+import json, sys
+sp = sys.argv[1]
+with open(f'{sp}.aliases.txt', 'w') as out:
+    for line in open(f'{sp}.seqreport.jsonl'):
+        d = json.loads(line)
+        acc = d.get('refseqAccession') or d.get('genbankAccession')
+        name = d.get('chrName') or d.get('ucscStyleName')
+        if acc and name and name != 'Un':
+            out.write(f'{acc}\t{name}\n')
+PY
+done
 
 # ── jcvi: orthologs vs grape, MCScan each pair, join into one .blocks table ───
 for sp in $MATES; do
@@ -136,15 +170,20 @@ APP=jbrowse2
 # shellcheck disable=SC2086
 cp grape.blocks.gz grape.bed.gz $(for sp in $MATES; do printf '%s.bed.gz ' "$sp"; done) "$APP"/
 
-# One assembly per genome (copies each .fa + .fa.fai into the app dir)
-for sp in grape peach cacao; do
-  jb add-assembly "$sp.fa" --name "$sp" --load copy --force --out "$APP"
+# One assembly per genome, each with the accession-to-chromosome aliases so the
+# location box takes `11` and the ruler does not read NC_083631.1.
+# shellcheck disable=SC2086
+for sp in $ASSEMBLY_NAMES; do
+  cp "$sp.aliases.txt" "$APP"/
+  jb add-assembly "$sp.fa" --name "$sp" --load copy --force --out "$APP" \
+    --refNameAliases "$sp.aliases.txt" --refNameAliasesType custom
 done
 
 # Per-genome gene tracks, so "Show only genes" has something to draw
-for sp in grape peach cacao; do
+# shellcheck disable=SC2086
+for sp in $ASSEMBLY_NAMES; do
   if [ ! -f "$sp.sorted.gff3.gz.tbi" ]; then
-    gunzip -c "$sp.gff3.gz" | jb sort-gff | bgzip > "$sp.sorted.gff3.gz"
+    jb sort-gff "$sp.gff3" | bgzip > "$sp.sorted.gff3.gz"
     tabix -f -p gff "$sp.sorted.gff3.gz"
   fi
   jb add-track "$sp.sorted.gff3.gz" -a "$sp" --name "$sp genes" \
@@ -155,15 +194,21 @@ done
 # literal: blockAssemblies and bedLocations have to list grape then the mates in
 # exactly the .blocks column order, and a hand-kept copy of that list is the one
 # mistake the adapter's own error message calls out.
-python3 - "$MATES" > blocks_track.json <<'PY'
+python3 - "$MATES" "$ASSEMBLY_NAMES" > blocks_track.json <<'PY'
 import json, sys
 mates = sys.argv[1].split()
+declared = sys.argv[2].split()
 names = ['grape'] + mates
 print(json.dumps({
     'type': 'SyntenyTrack',
     'trackId': 'grape_peach_cacao_blocks',
     'name': 'Grape vs %s (MCScan blocks)' % ', '.join(mates),
-    'assemblyNames': names,
+    # ONLY the assemblies this config declares, never the full column list. A
+    # track naming an assembly the config does not define makes the stacked
+    # LinearSyntenyView fail to resolve it and all three rows come up "No
+    # tracks active". The blocks-only mates live in the adapter below, which is
+    # what draws their lanes in an LGV.
+    'assemblyNames': declared,
     'adapter': {
         'type': 'MCScanBlocksAdapter',
         'uri': 'grape.blocks.gz',
