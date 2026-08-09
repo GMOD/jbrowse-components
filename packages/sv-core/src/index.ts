@@ -23,6 +23,7 @@ export {
   singleLevelFocusedSnapshotFromBreakendFeature,
 } from './navToSingleLevelBreak.ts'
 export { navToMultiLevelBreak } from './navToMultiLevelBreak.ts'
+export { makeFindJunctionsNear } from './findJunctionsNear.ts'
 export {
   BREAKEND_COLOCATION_BP,
   junctionFromFeature,

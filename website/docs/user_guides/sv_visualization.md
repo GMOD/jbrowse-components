@@ -262,8 +262,7 @@ strip and segment sizes beside each row are what separate the two.
 
 A read count ranks the routes; it does not vouch for them. Reads mismapped into
 a repeat produce a confident-looking route, so the output is a proposal to check
-against the reads rather than a call.
-[Complex rearrangements and gene fusions](/docs/tutorials/cancer_sv) works
+against the reads rather than a call. [](/docs/tutorials/cancer_sv) works
 through both shapes it produces, a two-segment fold-back and a four-segment
 allele across three chromosomes.
 
@@ -317,7 +316,9 @@ layout, the tool is
 which ranks whole routes by how many molecules independently take each.
 
 The option appears only for a launch that can read the callset, and only for the
-stacked shape.
+stacked shape. Two launches can: a variant track's right-click menu, and a click
+on a chord in the SV inspector or a circular view, where the chord was drawn
+from that same file.
 
 ## Phasing heterozygous SVs
 

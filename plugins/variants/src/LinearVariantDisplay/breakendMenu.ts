@@ -4,10 +4,10 @@ import {
   getAssemblyName,
   hasBreakpointSplitView,
   launchBreakpointSplitView,
+  makeFindJunctionsNear,
 } from '@jbrowse/sv-core'
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
 
-import { makeFindJunctionsNear } from './findJunctionsNear.ts'
 import { SPLIT_VIEW_MENU_LABEL } from './labels.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'

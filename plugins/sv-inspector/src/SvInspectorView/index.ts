@@ -6,6 +6,7 @@ import { getParent } from '@jbrowse/mobx-state-tree'
 import {
   breakpointSplitViewId,
   launchBreakpointSplitView,
+  makeFindJunctionsNear,
 } from '@jbrowse/sv-core'
 
 import stateModelFactory from './model.ts'
@@ -15,7 +16,10 @@ import type { Feature } from '@jbrowse/core/util'
 
 // `chordTrack` is the ChordVariantDisplay: the display is what the
 // onChordClick config slot is read from, and it passes itself as `track`
-function defaultOnChordClick(feature: Feature, chordTrack: object) {
+function defaultOnChordClick(
+  feature: Feature,
+  chordTrack: { adapterConfig?: Record<string, unknown> },
+) {
   const session = getSession(chordTrack)
   try {
     const view = getContainingView(chordTrack)
@@ -34,6 +38,19 @@ function defaultOnChordClick(feature: Feature, chordTrack: object) {
       session,
       feature,
       assemblyName,
+      // A chord click has the whole callset behind it -- the display's own
+      // adapter is the file the chord was drawn from -- so this is the launch
+      // site where "Follow further breakends at each end" is most obviously
+      // wanted: the reader is already looking at every junction at once. Without
+      // it the dialog does not offer the option at all.
+      ...(chordTrack.adapterConfig
+        ? {
+            findJunctionsNear: makeFindJunctionsNear(
+              chordTrack as Parameters<typeof makeFindJunctionsNear>[0],
+              assemblyName,
+            ),
+          }
+        : {}),
       // in the SV inspector, reuse the same view the sheet's own row menu opens
       // so a chord click and a row click don't stack two of them. Other
       // circular views get a fresh view per click

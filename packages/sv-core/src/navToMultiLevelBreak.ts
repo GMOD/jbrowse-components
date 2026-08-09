@@ -55,12 +55,13 @@ export async function navToMultiLevelBreak({
   // so the two-panel case resolves exactly as it always did; a longer chain
   // resolves its extra stops against the same assembly.
   const assembly = await session.assemblyManager.waitForAssembly(assemblyName)
-  const chain = stops?.length
-    ? stops
-    : [
-        { refName, pos },
-        { refName: mateRefName, pos: matePos },
-      ]
+  const chain =
+    stops !== undefined && stops.length > 0
+      ? stops
+      : [
+          { refName, pos },
+          { refName: mateRefName, pos: matePos },
+        ]
   const panels = chain.map((stop, idx) => {
     const region =
       idx === 0 && stop.refName === refName

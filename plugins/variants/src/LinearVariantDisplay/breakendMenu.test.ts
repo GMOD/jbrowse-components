@@ -15,6 +15,9 @@ jest.mock('@jbrowse/sv-core', () => ({
   launchBreakpointSplitView: jest.fn(),
   getAssemblyName: jest.fn(() => 'hg38'),
   junctionFromFeature: jest.fn(),
+  // the module now also supplies the callset reader the dialog needs to offer
+  // "Follow further breakends"; the row just hands it along
+  makeFindJunctionsNear: jest.fn(() => jest.fn()),
 }))
 
 jest.mock('@jbrowse/core/util', () => ({
