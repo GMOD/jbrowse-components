@@ -43,6 +43,20 @@ const HERO: ImageSpec = {
   width: 1400,
 }
 
+// Homepage figures that are the same picture as a committed capture, only in
+// webp. Derived for exactly the reason the hero is, and it had already
+// happened: measured 2026-08-08, static/img/desktop-available-genomes.webp was
+// a hand-made copy dated Jul 19 sitting beside a desktop capture recaptured
+// Aug 1, and 26% of its pixels disagreed with it. Nothing reported that. The
+// review tooling reads the png, the homepage serves the webp, and only the png
+// gets recaptured. Keyed by output name under static/img.
+const DERIVED: Record<string, ImageSpec> = {
+  'desktop-available-genomes': {
+    src: 'desktop-available-genomes.png',
+    width: 1400,
+  },
+}
+
 // Card aspect is ~2.16:1 at the 4-up desktop layout.
 const THUMB_WIDTH = 700
 const THUMB_HEIGHT = 324
@@ -181,6 +195,10 @@ async function emit(label: string, out: string, spec: ImageSpec) {
 }
 
 await emit('screenshot', join(imgDir, 'screenshot.webp'), HERO)
+
+for (const [key, spec] of Object.entries(DERIVED)) {
+  await emit(key, join(imgDir, `${key}.webp`), spec)
+}
 
 for (const [key, spec] of Object.entries(THUMBS)) {
   await emit(key, join(thumbDir, `${key}.webp`), spec)

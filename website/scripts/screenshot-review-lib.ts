@@ -34,8 +34,12 @@ export const reportPath = path.resolve(
   'screenshot-review.json',
 )
 
-// Directories scanned for doc usages of each image
-const docRoots = ['docs', 'blog', 'src/pages'].map(d =>
+// Directories scanned for doc usages of each image. `src/components` is here
+// for the homepage: HomePage.astro embeds figures directly, and with only the
+// markdown roots scanned every image the homepage owns reported ZERO usages,
+// i.e. read as a deletion candidate while being the most-seen picture on the
+// site.
+const docRoots = ['docs', 'blog', 'src/pages', 'src/components'].map(d =>
   path.resolve(websiteDir, d),
 )
 
@@ -76,10 +80,13 @@ export interface Screenshot extends ScreenshotPart {
   parts: ScreenshotPart[]
 }
 
-function findMarkdownFiles() {
+// Markdown plus the Astro components that embed figures (the homepage). The
+// scan is line-based and extension-agnostic below this point, so an .astro file
+// costs nothing beyond being read.
+function findDocFiles() {
   return docRoots
     .filter(d => fs.existsSync(d))
-    .flatMap(d => walkFiles(d, n => /\.mdx?$/.test(n)))
+    .flatMap(d => walkFiles(d, n => /\.(mdx?|astro)$/.test(n)))
 }
 
 // gallery.ts is the single source of truth for /gallery/ (see
@@ -100,15 +107,42 @@ function extractMarkdownAlt(line: string) {
   return m?.[1] ?? ''
 }
 
+// An attribute of the same element, when it sits on a later line than `src`.
+// Markdown figures are one line and carry their caption there; a prettier-
+// formatted Astro `<img>` puts every attribute on its own, so the alt text
+// (the only sentence saying what the homepage claims that picture shows) is
+// several lines below the src that named it. Stops at the element's own close
+// so it can't borrow the next element's alt.
+function extractAttrBelow(lines: string[], start: number, attr: string) {
+  const re = new RegExp(`\\b${attr}=("|')([\\s\\S]*?)\\1`)
+  for (let i = start; i < Math.min(start + 12, lines.length); i++) {
+    const line = lines[i]!
+    const m = re.exec(line)
+    if (m) {
+      return m[2]!
+    }
+    if (i > start && /\/>|<\//.test(line)) {
+      return ''
+    }
+  }
+  return ''
+}
+
 // Every image-name a single line references. Matches the `/img/<name>.png`
 // segment in any form the docs use — <Figure src="/img/x.png"/>,
 // ![alt](/jb2/img/x.png), and absolute github-raw URLs that point back at this
 // repo's website/static/img/x.png (used in blog posts so external aggregators
 // resolve the image). Third-party github-raw images (jb2export, plugin-list)
 // also match here but get dropped later because their PNG isn't on disk.
+// `.webp` counts as a usage of the base name, not as a name of its own. The
+// homepage serves webp, and for the ones derived from a capture (see
+// gen-home-images.ts) the reviewable figure is the .png the webp was built
+// from, so a webp reference has to credit that png or the png reads as unused.
+// A webp with no png twin (the generated hero, `screenshot.webp`) resolves to a
+// name no figure has, which is simply no usage.
 function imageNamesOnLine(line: string): string[] {
   const names: string[] = []
-  const re = /\/img\/([A-Za-z0-9_/-]+)\.png/g
+  const re = /\/img\/([A-Za-z0-9_/-]+)\.(?:png|webp)/g
   let m: RegExpExecArray | null = re.exec(line)
   while (m) {
     names.push(m[1]!)
@@ -184,7 +218,7 @@ function scanGalleryUsages(): Map<string, DocUsage[]> {
 // would be O(names × files); this is O(files).
 function buildUsageIndex(): Map<string, DocUsage[]> {
   const index = scanGalleryUsages()
-  for (const file of findMarkdownFiles()) {
+  for (const file of findDocFiles()) {
     // a doc file can be deleted/regenerated between the directory walk and now
     // (e.g. autogen rewriting docs/config/*.md); a vanished file is just not a
     // usage, so skip it rather than crashing
@@ -202,9 +236,10 @@ function buildUsageIndex(): Map<string, DocUsage[]> {
         const usage: DocUsage = {
           file: rel,
           line: i + 1,
-          caption: isFigure
-            ? extractFigureCaption(line)
-            : extractMarkdownAlt(line),
+          caption:
+            (isFigure
+              ? extractFigureCaption(line)
+              : extractMarkdownAlt(line)) || extractAttrBelow(lines, i, 'alt'),
         }
         for (const name of names) {
           addUsage(index, name, usage)
