@@ -1,13 +1,14 @@
 ---
 name: ortholog-tables-and-ncbi-demo
-description: What a .blocks ortholog table can and cannot express (the adapter pairs any two columns, so all-vs-all is a producer question and not a format one), which all-vs-all ortholog formats are worth adding, and the state of the in-flight migration of the grape/peach/cacao demo off Ensembl Plants and onto NCBI datasets. Read before adding an ortholog format, before touching demos/grape_peach_cacao, or before renaming a refName to make a track resolve.
+description: What a .blocks ortholog table can and cannot express (the adapter pairs any two columns, so all-vs-all is a producer question and not a format one), which all-vs-all ortholog formats are worth adding, and the migration of the grape/peach/cacao demo off Ensembl Plants and onto NCBI datasets (done 2026-08-09). Read before adding an ortholog format, before touching demos/grape_peach_cacao, or before renaming a refName to make a track resolve.
 ---
 
 # Ortholog tables, all-vs-all, and the NCBI migration
 
 Two threads that turned out to be one: the grape/peach/cacao demo needed more
 genomes, and chasing that surfaced both an assembly-provenance bug and a
-long-standing misstatement about what `.blocks` can hold.
+long-standing misstatement about what `.blocks` can hold. Both are resolved; the
+first section is the durable part.
 
 ## What a `.blocks` table can express
 
@@ -67,7 +68,7 @@ Ranked by what they would add that the two above do not:
 one-cell-per-genome shape is what makes the N-genome stack cheap. Anything
 needing per-pair attributes wants a different structure.
 
-## The NCBI migration (in flight)
+## The NCBI migration
 
 `scripts/build_grape_peach_cacao_synteny.sh` is committed and fully NCBI-derived
 (`3e97aa1999`). One RefSeq accession per species supplies genome, annotation and
