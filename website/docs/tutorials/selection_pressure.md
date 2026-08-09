@@ -213,9 +213,10 @@ It needs the tools under [Prerequisites](#prerequisites) on PATH.
 
 - [](/docs/tutorials/homoeolog_synteny) - the same measurement between the
   subgenomes a polyploid carries of itself
-- [](/docs/tutorials/multiway_synteny_grape_peach_cacao) - ortholog tables from Ensembl Compara,
-  OrthoFinder and reciprocal best hits
-- [](/docs/tutorials/mcscan_synteny_grape_peach) - the two MCScan adapters on two genomes
+- [](/docs/tutorials/multiway_synteny_grape_peach_cacao) - ortholog tables from
+  Ensembl Compara, OrthoFinder and reciprocal best hits
+- [](/docs/tutorials/mcscan_synteny_grape_peach) - the two MCScan adapters on
+  two genomes
 
 ## References
 

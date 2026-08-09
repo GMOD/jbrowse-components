@@ -278,8 +278,7 @@ for (const page of EXTERNAL_PLUGIN_PAGES.keys()) {
 // silence that also means "all good".
 if (skippedPages.length > 0) {
   console.log(
-    `Skipped ${skippedPages.length} page(s) whose plugin checkout is absent:\n` +
-      skippedPages.map(p => `  ${p}`).join('\n'),
+    `Skipped ${skippedPages.length} page(s) whose plugin checkout is absent:\n${skippedPages.map(p => `  ${p}`).join('\n')}`,
   )
 }
 

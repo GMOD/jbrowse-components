@@ -79,11 +79,11 @@ kb apart in GRCh38 and 572 kb apart in CHM13, which is what a
 copy-number-variable region does between any two haplotypes.
 
 The chains are an argument. The reads are the measurement, and it agrees with
-them. The 1000 Genomes ONT release, which is the same project as the long-read SV
-callset in the wide figure, aligned some of its samples to both references with
-the same minimap2 pipeline, so one sample can be asked the same question twice.
-`scan_mappability_qc.sh` counts GM18501's records over _SMN1_ in each assembly's
-own coordinates:
+them. The 1000 Genomes ONT release, which is the same project as the long-read
+SV callset in the wide figure, aligned some of its samples to both references
+with the same minimap2 pipeline, so one sample can be asked the same question
+twice. `scan_mappability_qc.sh` counts GM18501's records over _SMN1_ in each
+assembly's own coordinates:
 
 | reference | records | MAPQ 0 | MAPQ 60 |
 | --------- | ------: | -----: | ------: |

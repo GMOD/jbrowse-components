@@ -80,10 +80,11 @@ for (const file of docFiles(docsDir)) {
     }
     const sameName = byName.get(figureName(path))
     problems.push(
-      `${docRelative(file)}: <Figure src="${src}"> names no figure in figures.lock` +
-        (sameName
+      `${docRelative(file)}: <Figure src="${src}"> names no figure in figures.lock${
+        sameName
           ? `\n    (the manifest has ${sameName}, so check the extension)`
-          : '\n    Render it, then `pnpm figures:push` and commit figures.lock.'),
+          : '\n    Render it, then `pnpm figures:push` and commit figures.lock.'
+      }`,
     )
   }
 }

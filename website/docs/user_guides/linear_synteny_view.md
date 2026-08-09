@@ -38,8 +38,8 @@ not claim which genome belongs on top. Switch to **Manual** to select the two
 assemblies yourself and optionally add a .paf, .out (MashMap), .delta (MUMmer),
 .chain, .anchors, or .anchors.simple (MCScan) file. Manual also stacks more than
 two genomes, from an [all-vs-all PAF](/docs/tutorials/allvsall_synteny), an
-[MCScan ortholog table](/docs/tutorials/multiway_synteny_grape_peach_cacao), or a
-[pangenome graph's linear projections](/docs/tutorials/pangenome_ecoli).
+[MCScan ortholog table](/docs/tutorials/multiway_synteny_grape_peach_cacao), or
+a [pangenome graph's linear projections](/docs/tutorials/pangenome_ecoli).
 
 <Figure caption="Synteny and dotplot views share an import form, reached from the Add menu (shown here via Dotplot view; Linear synteny view opens the same form). Its Manual mode, shown here, is where you select two different assemblies and can supply an additional file." src="/img/dotplot_add.png" />
 
@@ -126,8 +126,8 @@ carries a **Show color legend** toggle:
 - dN/dS - the ratio of non-synonymous to synonymous substitution rate, on a
   diverging blue-yellow-red ramp whose pale middle is 1. Blue below it is
   purifying selection, red above it positive selection, clamped at 2. It needs
-  an [ortholog table](/docs/tutorials/multiway_synteny_grape_peach_cacao) carrying `dn` and `ds`
-  per link
+  an [ortholog table](/docs/tutorials/multiway_synteny_grape_peach_cacao)
+  carrying `dn` and `ds` per link
 
 A mode whose number a track does not carry leaves every ribbon the default color
 rather than painting them all at zero.

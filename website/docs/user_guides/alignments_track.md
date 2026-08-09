@@ -55,12 +55,11 @@ Three schemes surface per-read or per-base signal directly on the pileup:
 
 - Mapping quality shades each read by its MAPQ, so poorly-mapped reads (often in
   repeats or segmental duplications) fade out and confidently-placed reads stay
-  solid. The
-  [SAM specification](https://samtools.github.io/hts-specs/SAMv1.pdf) defines
-  MAPQ as `-10 log10 Pr{mapping position is wrong}`, so MAPQ 0 does not mean a
-  read failed to align: it is aligned, and drawn where it aligned, but the
-  aligner puts no better than even odds on that being the right copy. Aligners
-  assign it when the best alignment score is tied across positions
+  solid. The [SAM specification](https://samtools.github.io/hts-specs/SAMv1.pdf)
+  defines MAPQ as `-10 log10 Pr{mapping position is wrong}`, so MAPQ 0 does not
+  mean a read failed to align: it is aligned, and drawn where it aligned, but
+  the aligner puts no better than even odds on that being the right copy.
+  Aligners assign it when the best alignment score is tied across positions
   ([Li, Ruan and Durbin 2008](https://doi.org/10.1101/gr.078212.108), which
   introduced the estimator). This is separate from a **secondary** alignment
   (FLAG `0x100`), which is one of the competing placements recorded as its own

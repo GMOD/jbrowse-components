@@ -38,12 +38,12 @@ container works too, wrapped as a shim; the
 ## Orthology where alignment runs out
 
 [Pairwise minimap2](/docs/tutorials/synteny_visualization) aligns sequence to
-sequence, and [MCScan](/docs/tutorials/mcscan_synteny_grape_peach) compares annotations but
-still asks for collinear runs of genes. Both have a divergence past which they
-return nothing. Orthology has no such limit: OrthoFinder clusters proteins into
-orthogroups without reference to where those genes sit, so a table of
-orthogroups is a synteny track for a human against a zebrafish, where a
-whole-genome aligner produces an empty file.
+sequence, and [MCScan](/docs/tutorials/mcscan_synteny_grape_peach) compares
+annotations but still asks for collinear runs of genes. Both have a divergence
+past which they return nothing. Orthology has no such limit: OrthoFinder
+clusters proteins into orthogroups without reference to where those genes sit,
+so a table of orthogroups is a synteny track for a human against a zebrafish,
+where a whole-genome aligner produces an empty file.
 
 Nothing in an orthogroup asserts synteny. Any collinearity in the ribbons is a
 property of the genomes rather than of the method, which is the opposite of an
@@ -308,8 +308,8 @@ timopheevii's chromosomes from its
 
 ## See also
 
-- [](/docs/tutorials/multiway_synteny_grape_peach_cacao) for the same adapter from a jcvi MCScan
-  run
+- [](/docs/tutorials/multiway_synteny_grape_peach_cacao) for the same adapter
+  from a jcvi MCScan run
 - [](/docs/tutorials/mcscan_synteny_grape_peach)
 - [](/docs/tutorials/synteny_visualization)
 - [](/docs/user_guides/linear_synteny_view)

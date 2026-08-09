@@ -267,8 +267,8 @@ otherwise bury the shared backbone under a dense noise band. Tune it to taste.
 its own, so without it each opens with a "No tracks active" block where a
 ribbon-only row wants a bare scalebar. Every one of these is a one-time load
 setting and goes under `init`. See the
-[ortholog-tables tutorial](/docs/tutorials/multiway_synteny_grape_peach_cacao) for a fuller
-walk-through of the `defaultSession` structure.
+[ortholog-tables tutorial](/docs/tutorials/multiway_synteny_grape_peach_cacao)
+for a fuller walk-through of the `defaultSession` structure.
 
 The row order here is a free choice. Unlike a reference-anchored `.blocks`
 table, an all-vs-all file is a complete graph, so every adjacent pair you happen
