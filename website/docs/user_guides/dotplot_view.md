@@ -66,10 +66,10 @@ The plot says where the palindromes are and not what one is, and for that the
 same track opens in a
 [linear synteny view](/docs/user_guides/linear_synteny_view) instead. One
 palindrome, both panels framing it, colored by strand: the arms draw as a single
-minus-strand crossing over the plus-strand band of the sequence matching itself,
-which is a palindrome stated rather than inferred from a shape.
+minus-strand ribbon over the plus-strand match of the sequence to itself, which
+is a palindrome stated rather than inferred from a shape.
 
-<Figure caption="One Yq palindrome from the boxed family, the same self-alignment track in a linear synteny view with both panels on chrY:22.33 to 22.81 Mb, colored by strand at a 100 kb minimum length. The magenta crossing is the 402 kb inverted alignment at chrY:22,368,211 to 22,769,851, an interval aligned to its own reverse complement. The pink band under it is the plus-strand self match." src="/img/synteny_self_chry_palindromes.png" />
+<Figure caption="One Yq palindrome from the boxed family, the same self-alignment track in a linear synteny view with both panels on chrY:22.33 to 22.81 Mb, colored by strand at a 100 kb minimum length. Drawn as curves, the magenta ribbon pinched at its centre is the 402 kb inverted alignment at chrY:22,368,211 to 22,769,851, an interval aligned to its own reverse complement. The salmon it sits on is the plus-strand self match, which covers the whole window." src="/img/synteny_self_chry_palindromes.png" />
 
 Which view to reach for is a question of how many alignments are in frame. Every
 ribbon spans the full height of the strip, so ribbons stack rather than

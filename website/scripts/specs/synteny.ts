@@ -3280,10 +3280,12 @@ export const syntenySpecs: ScreenshotSpec[] = [
   //    axis for. A palindrome arm meets its partner inverted, so the crossings
   //    the plot draws as an X are the minus-strand colour and the collinear
   //    self-match running the length of the panel is the plus-strand one.
-  //  - `drawCurves: false`. An inverted ribbon drawn straight is a bow tie whose
-  //    waist is the palindrome's own centre, which is the shape being pointed
-  //    at; as a curve the same pair is two arcs and the crossing is where they
-  //    happen to overlap.
+  //  - `drawCurves` with `cigarMode: 'matches'` (the menu's "Transparent
+  //    indels"). Bezier edges leave and arrive perpendicular to their panels, so
+  //    the two arms pinch at the palindrome's own centre and flare against the
+  //    panel edges rather than crossing as one hard X; the indels inside each
+  //    arm are left as gaps in the fill instead of being drawn in their own
+  //    colour over it.
   //
   // Both panels frame the same interval, so every ribbon has both corners in
   // frame -- the off-frame-corner failure that made `cancer_sv/derivative_inserts`
@@ -3297,7 +3299,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
           type: 'LinearSyntenyView',
           tracks: ['hs1_chrY_self'],
           colorBy: 'strand',
-          drawCurves: false,
+          drawCurves: true,
+          cigarMode: 'matches',
           minAlignmentLength: 100000,
           alpha: 0.4,
           levelHeights: [220],
