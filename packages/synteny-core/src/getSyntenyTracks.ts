@@ -28,14 +28,6 @@ export function sameAssemblySet(a: string[], b: string[]) {
 }
 
 /**
- * Synteny tracks in the session whose `assemblyNames` cover every one of the
- * given assemblies, counting multiplicity: a duplicated request like `[a, a]`
- * (a self-alignment row pair) only matches a track that references `a` twice,
- * not an arbitrary `a`↔`b` cross-species track that happens to include `a`.
- * Shared by the linear-synteny and dotplot import forms (the per-level/per-pair
- * track selectors) and the "add assembly row" dialog.
- */
-/**
  * Cheap type test, no config read. Gates the `readConfObject` in every scan
  * below: resolving `assemblyNames` on every track in the session is wasted work
  * for the non-synteny majority.
@@ -44,22 +36,27 @@ export function isSyntenyTrack(track: AnyConfigurationModel) {
   return track.type.includes('Synteny')
 }
 
+/**
+ * Synteny tracks in the session whose `assemblyNames` cover every one of the
+ * given assemblies, counting multiplicity: a duplicated request like `[a, a]`
+ * (a self-alignment row pair) only matches a track that references `a` twice,
+ * not an arbitrary `a`↔`b` cross-species track that happens to include `a`.
+ * Shared by the linear-synteny and dotplot import forms (the per-level/per-pair
+ * track selectors) and the "add assembly row" dialog.
+ */
 export function getSyntenyTracks(
   tracks: AnyConfigurationModel[],
   assemblies: string[],
 ) {
   const needed = [...countByName(assemblies)]
   return tracks.filter(track => {
-    let matches = false
-    if (isSyntenyTrack(track)) {
-      const available = countByName(
-        readConfObject(track, 'assemblyNames') as string[],
-      )
-      matches = needed.every(
-        ([name, count]) => (available.get(name) ?? 0) >= count,
-      )
+    if (!isSyntenyTrack(track)) {
+      return false
     }
-    return matches
+    const available = countByName(
+      readConfObject(track, 'assemblyNames') as string[],
+    )
+    return needed.every(([name, count]) => (available.get(name) ?? 0) >= count)
   })
 }
 

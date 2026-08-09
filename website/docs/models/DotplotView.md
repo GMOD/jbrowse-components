@@ -153,6 +153,7 @@ the whole surface.
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="action-setimportformsyntenytrack">**setImportFormSyntenyTrack**</span><br><code>(arg: number, val: ImportFormSyntenyTrack) =&gt; void</code> |  | DotplotView |
+| <span id="action-clearimportformsyntenytracks">**clearImportFormSyntenyTracks**</span><br><code>() =&gt; void</code> | Drop the import form's pending selections once they have been applied. Left in place they outlive the form: "return to import form" would reopen on a finished upload from the previous launch, and a pair whose assemblies no longer match it reads as an unfinished upload and disables Launch for something this visit never started. | DotplotView |
 | <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: DotplotRenderingBackend) =&gt; void</code> |  | DotplotView |
 | <span id="action-setcursormode">**setCursorMode**</span><br><code>(mode: CursorMode) =&gt; void</code> |  | DotplotView |
 | <span id="action-setdrawcigar">**setDrawCigar**</span><br><code>(flag: boolean) =&gt; void</code> |  | DotplotView |

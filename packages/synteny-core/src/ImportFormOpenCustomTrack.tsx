@@ -8,7 +8,7 @@ import type {
   ImportFormSyntenyModel,
   SyntenyFileFormatsExtensionPoint,
 } from './SelectorTypes.ts'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
  * Binds the shared ImportSyntenyOpenCustomTrack uploader to an import-form
@@ -23,7 +23,10 @@ const ImportFormOpenCustomTrack = observer(function ImportFormOpenCustomTrack({
   assembly1,
   assembly2,
 }: {
-  model: ImportFormSyntenyModel & IAnyStateTreeNode
+  // IStateTreeNode, not IAnyStateTreeNode: the latter resolves to `any`, and an
+  // intersection with `any` is `any`, so the ImportFormSyntenyModel half stops
+  // being checked at all
+  model: ImportFormSyntenyModel & IStateTreeNode
   rowIndex: number
   extensionPoint: SyntenyFileFormatsExtensionPoint
   assembly1: string

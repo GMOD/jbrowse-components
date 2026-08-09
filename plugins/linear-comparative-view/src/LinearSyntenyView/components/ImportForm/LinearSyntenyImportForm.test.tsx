@@ -320,6 +320,52 @@ test('removing a row drops that pair selection and keeps the others', () => {
   expect(levelTrackIds(model)).toEqual([['hg38_mm39']])
 })
 
+test('a None does not slide onto a different pair when a row is removed', () => {
+  // selections are indexed by pair position but are about a pair of
+  // assemblies. Removing row 3 used to splice the list by index, leaving the
+  // None chosen for mm39/rn7 sitting on the mm39/panTro6 pair that replaced it
+  const { model } = setup({
+    assemblyNames: ['hg38', 'mm39', 'rn7', 'panTro6'],
+    tracks: [syntenyTrack('mm39_panTro6', ['mm39', 'panTro6'])],
+  })
+  // the one track opens the form in Quick start on its own two rows, so Manual
+  // starts from those and every row is set explicitly here
+  goManual()
+  fireEvent.click(screen.getByRole('button', { name: 'Add row' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Add row' }))
+  pickAssembly(0, 'hg38')
+  pickAssembly(1, 'mm39')
+  pickAssembly(2, 'rn7')
+  pickAssembly(3, 'panTro6')
+
+  // silence the middle pair, mm39/rn7
+  fireEvent.click(screen.getAllByTestId('synbutton')[1]!)
+  fireEvent.click(screen.getByRole('radio', { name: 'None' }))
+  expect(model.importFormSyntenyTrackSelections[1]).toEqual({ type: 'none' })
+
+  fireEvent.click(screen.getByRole('button', { name: 'Remove row 3' }))
+  expect(rowSelects().map(s => s.textContent)).toEqual([
+    'hg38',
+    'mm39',
+    'panTro6',
+  ])
+  // the silenced pair is gone, so mm39/panTro6 is free to find its own track
+  fireEvent.click(launchButton())
+  expect(levelTrackIds(model)).toEqual([[], ['mm39_panTro6']])
+})
+
+test('changing an assembly releases the pending upload for the old pair', () => {
+  // the upload was started for hg38/mm39. Once row 2 is something else it can
+  // never be finished for this pair, so leaving it in place only disabled
+  // Launch and offered "finish the upload" for a pair that no longer exists
+  setup({ assemblyNames: ['hg38', 'mm39', 'rn7'] })
+  fireEvent.click(screen.getByRole('radio', { name: 'New track' }))
+  expect(launchButton()).toBeDisabled()
+
+  pickAssembly(1, 'rn7')
+  expect(launchButton()).toBeEnabled()
+})
+
 test('the last two rows cannot be removed', () => {
   setup({ tracks: [syntenyTrack('hg38_mm39', ['hg38', 'mm39'])] })
   goManual()

@@ -152,6 +152,21 @@ test('an all-vs-all track says which assemblies a dotplot leaves out', () => {
   expect(screen.getByText(/This track spans 3 assemblies/)).toBeInTheDocument()
 })
 
+test('Swap on an all-vs-all track transposes the pair, not which pair', () => {
+  // Swap used to reverse the row list, so on a 3-assembly track it swapped in
+  // rn7 and dropped hg38 — a different pair, not the transpose of this one
+  setup({
+    assemblyNames: ['hg38', 'mm39', 'rn7'],
+    tracks: [syntenyTrack('all', ['hg38', 'mm39', 'rn7'])],
+  })
+  fireEvent.click(
+    screen.getByRole('button', { name: /Put each assembly on the other axis/ }),
+  )
+  const axes = screen.getByTestId('quick-start-axes')
+  expect(axes).toHaveTextContent('X-axis: hg38')
+  expect(axes).toHaveTextContent('Y-axis: mm39')
+})
+
 test('Manual opens on two different assemblies, not the same one twice', () => {
   // both axes on one assembly would open on an empty track picker. This is the
   // opens-directly-in-Manual case; with a track present the form opens in Quick

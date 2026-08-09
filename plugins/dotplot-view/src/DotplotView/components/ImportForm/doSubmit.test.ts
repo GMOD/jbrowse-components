@@ -17,13 +17,14 @@ interface Calls {
   toggled: string[]
   added: { trackId: string }[]
   assemblyNames?: [string, string]
+  cleared: number
 }
 
 function setup(
   selection: ImportFormSyntenyTrack | undefined,
   tracks: AnyConfigurationModel[] = [],
 ) {
-  const calls: Calls = { shown: [], toggled: [], added: [] }
+  const calls: Calls = { shown: [], toggled: [], added: [], cleared: 0 }
   const model = {
     importFormSyntenyTrackSelections: [selection],
     setError() {},
@@ -31,6 +32,9 @@ function setup(
     toggleTrack: (trackId: string) => calls.toggled.push(trackId),
     setAssemblyNames: (x: string, y: string) => {
       calls.assemblyNames = [x, y]
+    },
+    clearImportFormSyntenyTracks: () => {
+      calls.cleared++
     },
   } as unknown as DotplotViewModel
 
@@ -65,7 +69,7 @@ describe('doSubmit', () => {
     expect(calls.assemblyNames).toEqual(['hg38', 'mm10'])
   })
 
-  test('userOpened selection adds a track conf and toggles it on', () => {
+  test('userOpened selection adds a track conf and shows it', () => {
     const conf = {
       trackId: 'opened',
       name: 'x',
@@ -75,7 +79,19 @@ describe('doSubmit', () => {
     const { calls, model, session } = setup({ type: 'userOpened', value: conf })
     doSubmit({ model, session, assemblyX: 'hg38', assemblyY: 'mm10' })
     expect(calls.added).toEqual([conf])
-    expect(calls.toggled).toEqual(['opened'])
+    // showTrack, not toggleTrack: addTrackConf dedupes, so a re-submit would
+    // otherwise hide the track it just added
+    expect(calls.shown).toEqual(['opened'])
+    expect(calls.toggled).toEqual([])
+  })
+
+  test('the pending selections are cleared once applied', () => {
+    const { calls, model, session } = setup(
+      { type: 'preConfigured', value: 'picked' },
+      [track('picked')],
+    )
+    doSubmit({ model, session, assemblyX: 'hg38', assemblyY: 'mm10' })
+    expect(calls.cleared).toBe(1)
   })
 
   test('userOpened whose assemblies no longer match is ignored', () => {
@@ -102,14 +118,16 @@ describe('doSubmit', () => {
     expect(calls.assemblyNames).toEqual(['hg38', 'mm10'])
   })
 
-  test('session that cannot add tracks still sets assemblies', () => {
+  test('session that cannot add tracks says so, and still sets assemblies', () => {
     const { calls, model } = setup({ type: 'preConfigured', value: 'picked' }, [
       track('picked'),
     ])
+    const notified: string[] = []
     const sessionNoAdd = {
       rpcManager: {},
       configuration: {},
       tracks: [track('picked')],
+      notify: (message: string) => notified.push(message),
     } as unknown as AbstractSessionModel
     doSubmit({
       model,
@@ -118,6 +136,9 @@ describe('doSubmit', () => {
       assemblyY: 'mm10',
     })
     expect(calls.shown).toEqual([])
+    // opening the plot without the track the user picked, and saying nothing,
+    // is what the synteny form already refused to do
+    expect(notified).toEqual(["Can't add tracks"])
     expect(calls.assemblyNames).toEqual(['hg38', 'mm10'])
   })
 })

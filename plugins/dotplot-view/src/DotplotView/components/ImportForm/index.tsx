@@ -4,12 +4,10 @@ import { AssemblySelector, ErrorBanner } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
-  ImportFormModeToggle,
-  QuickStartPanel,
+  ImportFormModes,
   allSessionTracks,
   blockedByUnfinishedUpload,
   dotplotAxesFromRows,
-  getSyntenyTracks,
   syntenyPairStatuses,
   useQuickStartState,
 } from '@jbrowse/synteny-core'
@@ -25,9 +23,6 @@ const useStyles = makeStyles()(theme => ({
   importFormContainer: {
     padding: theme.spacing(4),
     margin: '0 auto',
-  },
-  toggle: {
-    marginBottom: theme.spacing(2),
   },
   // left-aligned like the rest of the form and like the synteny import form.
   // Centering only these two fields put them alone in the middle of a wide
@@ -71,11 +66,12 @@ const DotplotImportForm = observer(function DotplotImportForm({
   // from there hands over that track's axes.
   const [assemblyY, setAssemblyY] = useState(assemblyNames[1] ?? firstAssembly)
 
-  const quickAxes = dotplotAxesFromRows(quick.rows)
+  // the track's own row order plus the Swap flag, not `quick.rows`: Swap
+  // transposes the pair on the axes rather than reversing the row list, which
+  // for an all-vs-all track would have picked out a different pair entirely
+  const quickAxes = dotplotAxesFromRows(quick.trackRows, quick.swapped)
   const quickY = quickAxes.y ?? firstAssembly
   const quickX = quickAxes.x ?? firstAssembly
-
-  const syntenyTracks = getSyntenyTracks(tracks, [assemblyX, assemblyY])
 
   // the single-pair case of the check the synteny form runs per row pair: a
   // "New track" with no file yet resolves to no action, and launching on it
@@ -116,110 +112,88 @@ const DotplotImportForm = observer(function DotplotImportForm({
       {model.error ? <ErrorBanner error={model.error} /> : null}
 
       <Paper style={{ padding: 12 }}>
-        <div className={classes.toggle}>
-          <ImportFormModeToggle
-            mode={quick.mode}
-            onChange={newMode => {
-              // switching to Manual hands over what Quick start had set up, so
-              // the axes open on the chosen track instead of resetting
-              if (newMode === 'manual' && quick.track) {
-                setAssemblyX(quickX)
-                setAssemblyY(quickY)
-                applyQuickSelection()
-              }
-              quick.setMode(newMode)
-            }}
-          />
-        </div>
-        {quick.mode === 'quick' ? (
-          <QuickStartPanel
-            model={model}
-            tracks={quick.quickTracks}
-            trackId={quick.trackId}
-            onChange={newTrackId => {
-              quick.setTrackId(newTrackId)
-            }}
-            onSwap={() => {
-              quick.swap()
-            }}
-            onSwitchToManual={() => {
-              quick.setMode('manual')
-            }}
-            onLaunch={() => {
-              applyQuickSelection()
-              launch(quickX, quickY)
-            }}
-            swapTitle="Put each assembly on the other axis (transposes the plot)"
-          >
-            {/* Only the track's first two assemblies are used, since a dotplot
+        <ImportFormModes
+          model={model}
+          quick={quick}
+          onHandoverToManual={() => {
+            // the axes open on the chosen track instead of resetting
+            setAssemblyX(quickX)
+            setAssemblyY(quickY)
+            applyQuickSelection()
+          }}
+          onQuickLaunch={() => {
+            applyQuickSelection()
+            launch(quickX, quickY)
+          }}
+          swapTitle="Put each assembly on the other axis (transposes the plot)"
+          quickSummary={
+            /* Only the track's first two assemblies are used, since a dotplot
             is one pair; an all-vs-all track's extras are called out rather than
             silently dropped. Which assembly lands on which axis is the user's
             choice, not a fact about the track (it answers in either direction),
-            which is what Swap is for — see dotplotAxesFromRows. */}
+            which is what Swap is for — see dotplotAxesFromRows. */
             <div data-testid="quick-start-axes">
               <Typography variant="body2">X-axis: {quickX}</Typography>
               <Typography variant="body2">Y-axis: {quickY}</Typography>
-              {quick.rows.length > 2 ? (
+              {quick.trackRows.length > 2 ? (
                 <Typography variant="body2" color="text.secondary">
-                  This track spans {quick.rows.length} assemblies; a dotplot
-                  shows one pair, so the other {quick.rows.length - 2} are not
-                  used. Switch to Manual to plot a different pair.
+                  This track spans {quick.trackRows.length} assemblies; a
+                  dotplot shows one pair, so the other{' '}
+                  {quick.trackRows.length - 2} are not used. Switch to Manual to
+                  plot a different pair.
                 </Typography>
               ) : null}
             </div>
-          </QuickStartPanel>
-        ) : (
-          <>
-            <Typography className={classes.header}>
-              Select assemblies for dotplot view
-            </Typography>
-            <div className={classes.axes}>
-              <AssemblySelector
-                label="X-axis assembly"
-                helperText=""
-                selected={assemblyX}
-                session={session}
-                onChange={asm => {
-                  setAssemblyX(asm)
-                }}
-              />
-              <AssemblySelector
-                label="Y-axis assembly"
-                helperText=""
-                selected={assemblyY}
-                session={session}
-                onChange={asm => {
-                  setAssemblyY(asm)
-                }}
-              />
-            </div>
-            <TrackSelector
-              key={`${assemblyX}-${assemblyY}`}
-              model={model}
-              assemblyX={assemblyX}
-              assemblyY={assemblyY}
-              syntenyTracks={syntenyTracks}
+          }
+        >
+          <Typography className={classes.header}>
+            Select assemblies for dotplot view
+          </Typography>
+          <div className={classes.axes}>
+            <AssemblySelector
+              label="X-axis assembly"
+              helperText=""
+              selected={assemblyX}
+              session={session}
+              onChange={asm => {
+                setAssemblyX(asm)
+              }}
             />
-            <div className={classes.footer}>
-              <Button
-                disabled={!canLaunch}
-                onClick={() => {
-                  launch(assemblyX, assemblyY)
-                }}
-                variant="contained"
-                color="primary"
-              >
-                Launch
-              </Button>
-              {canLaunch ? null : (
-                <Typography variant="body2" color="warning.main">
-                  The new synteny track is unfinished. Choose a file, or set
-                  the track to None.
-                </Typography>
-              )}
-            </div>
-          </>
-        )}
+            <AssemblySelector
+              label="Y-axis assembly"
+              helperText=""
+              selected={assemblyY}
+              session={session}
+              onChange={asm => {
+                setAssemblyY(asm)
+              }}
+            />
+          </div>
+          <TrackSelector
+            key={`${assemblyX}-${assemblyY}`}
+            model={model}
+            assemblyX={assemblyX}
+            assemblyY={assemblyY}
+          />
+          <div className={classes.footer}>
+            <Button
+              disabled={!canLaunch}
+              onClick={() => {
+                launch(assemblyX, assemblyY)
+              }}
+              variant="contained"
+              color="primary"
+            >
+              Launch
+            </Button>
+            {canLaunch ? null : (
+              <Typography variant="body2" color="warning.main">
+                The new synteny track is unfinished. Choose a file, or set the
+                track to None.
+              </Typography>
+            )}
+          </div>
+        </ImportFormModes>
       </Paper>
     </Container>
   )

@@ -1,17 +1,7 @@
-import { Suspense } from 'react'
-
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
-import { getEnv, getSession } from '@jbrowse/core/util'
-import {
-  ImportFormOpenCustomTrack,
-  ImportFormSyntenyChoiceRadioGroup,
-  NoSyntenyTrackMessage,
-  PreConfiguredSyntenyTrackSelect,
-  allSessionTracks,
-  getSyntenyTracks,
-  useImportFormSyntenyChoice,
-} from '@jbrowse/synteny-core'
-import { CircularProgress, Typography } from '@mui/material'
+import { getEnv } from '@jbrowse/core/util'
+import { ImportFormSyntenyTrackPanel } from '@jbrowse/synteny-core'
+import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
@@ -51,6 +41,11 @@ declare module '@jbrowse/core/PluginManager' {
   }
 }
 
+/**
+ * The synteny view's binding of the shared import-form track panel: it declares
+ * this view's options extension point (whose props carry `selectedRow`, which is
+ * why the point stays here) and hands the panel this form's wording.
+ */
 const ImportSyntenyTrackSelectorArea = observer(
   function ImportSyntenyTrackSelectorArea({
     model,
@@ -67,8 +62,6 @@ const ImportSyntenyTrackSelectorArea = observer(
     labelledBy: string
   }) {
     const { pluginManager } = getEnv(model)
-    const session = getSession(model)
-    const { choice, setChoice } = useImportFormSyntenyChoice(model, selectedRow)
 
     const customOptions = pluginManager.evaluateExtensionPoint(
       /** #extensionPoint LinearSyntenyView-ImportFormSyntenyOptions | sync | Add options to the linear synteny view import form */
@@ -77,62 +70,37 @@ const ImportSyntenyTrackSelectorArea = observer(
       { model, assembly1, assembly2, selectedRow },
     )
 
-    const selectedCustomOption = customOptions.find(opt => opt.value === choice)
-
     return (
-      <div>
-        <ImportFormSyntenyChoiceRadioGroup
-          choice={choice}
-          onChange={setChoice}
-          customOptions={customOptions}
-          labelledBy={labelledBy}
-        />
-        {choice === 'custom' ? (
-          <ImportFormOpenCustomTrack
-            model={model}
-            rowIndex={selectedRow}
-            /** #extensionPoint LinearSyntenyView-SyntenyFileFormats | sync | Add synteny file formats to the linear synteny import form */
-            extensionPoint="LinearSyntenyView-SyntenyFileFormats"
-            assembly1={assembly1}
-            assembly2={assembly2}
-          />
-        ) : null}
-        {choice === 'tracklist' ? (
-          <PreConfiguredSyntenyTrackSelect
-            model={model}
-            tracks={getSyntenyTracks(allSessionTracks(session), [
-              assembly1,
-              assembly2,
-            ])}
-            rowIndex={selectedRow}
-            emptyState={
-              <NoSyntenyTrackMessage
-                assembly1={assembly1}
-                assembly2={assembly2}
-                remedy='Choose "New track" above to add one, or launch anyway to stack these rows with no ribbons between them.'
-              />
-            }
-          >
-            {/* the same note the dotplot form carries: the import form picks
-            one track per band, and everything else is a track-selector click
-            away once the view is open */}
-            <Typography variant="body2" color="text.secondary">
-              More synteny tracks can be turned on per band from the track
-              selector <TrackSelectorIcon /> once the view is open.
-            </Typography>
-          </PreConfiguredSyntenyTrackSelect>
-        ) : null}
-        {selectedCustomOption ? (
-          <Suspense fallback={<CircularProgress size={20} />}>
-            <selectedCustomOption.ReactComponent
+      <ImportFormSyntenyTrackPanel
+        model={model}
+        rowIndex={selectedRow}
+        assembly1={assembly1}
+        assembly2={assembly2}
+        /** #extensionPoint LinearSyntenyView-SyntenyFileFormats | sync | Add synteny file formats to the linear synteny import form */
+        fileFormatsExtensionPoint="LinearSyntenyView-SyntenyFileFormats"
+        labelledBy={labelledBy}
+        customOptions={customOptions}
+        renderCustomOption={value => {
+          const option = customOptions.find(opt => opt.value === value)
+          return option ? (
+            <option.ReactComponent
               model={model}
               assembly1={assembly1}
               assembly2={assembly2}
               selectedRow={selectedRow}
             />
-          </Suspense>
-        ) : null}
-      </div>
+          ) : null
+        }}
+        emptyRemedy='Choose "New track" above to add one, or launch anyway to stack these rows with no ribbons between them.'
+      >
+        {/* the same note the dotplot form carries: the import form picks one
+        track per band, and everything else is a track-selector click away once
+        the view is open */}
+        <Typography variant="body2" color="text.secondary">
+          More synteny tracks can be turned on per band from the track selector{' '}
+          <TrackSelectorIcon /> once the view is open.
+        </Typography>
+      </ImportFormSyntenyTrackPanel>
     )
   },
 )

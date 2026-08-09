@@ -1,19 +1,10 @@
-import { Suspense } from 'react'
-
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { getEnv } from '@jbrowse/core/util'
-import {
-  ImportFormOpenCustomTrack,
-  ImportFormSyntenyChoiceRadioGroup,
-  NoSyntenyTrackMessage,
-  PreConfiguredSyntenyTrackSelect,
-  useImportFormSyntenyChoice,
-} from '@jbrowse/synteny-core'
-import { CircularProgress, Typography } from '@mui/material'
+import { ImportFormSyntenyTrackPanel } from '@jbrowse/synteny-core'
+import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { DotplotViewModel } from '../../model.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 // #region option
 export interface DotplotImportFormSyntenyOption {
@@ -47,16 +38,19 @@ declare module '@jbrowse/core/PluginManager' {
   }
 }
 
+/**
+ * The dotplot's binding of the shared import-form track panel: it declares this
+ * view's options extension point (whose props differ from the synteny view's,
+ * which is why the point stays here) and hands the panel the dotplot's wording.
+ */
 const TrackSelector = observer(function TrackSelector({
   model,
   assemblyX,
   assemblyY,
-  syntenyTracks,
 }: {
   model: DotplotViewModel
   assemblyX: string
   assemblyY: string
-  syntenyTracks: AnyConfigurationModel[]
 }) {
   const { pluginManager } = getEnv(model)
 
@@ -65,8 +59,6 @@ const TrackSelector = observer(function TrackSelector({
   const assembly1 = assemblyY
   const assembly2 = assemblyX
 
-  const { choice, setChoice } = useImportFormSyntenyChoice(model, 0)
-
   const customOptions = pluginManager.evaluateExtensionPoint(
     /** #extensionPoint DotplotView-ImportFormSyntenyOptions | sync | Add options to the dotplot view import form */
     'DotplotView-ImportFormSyntenyOptions',
@@ -74,55 +66,33 @@ const TrackSelector = observer(function TrackSelector({
     { model, assembly1, assembly2 },
   )
 
-  const selectedCustomOption = customOptions.find(opt => opt.value === choice)
-
   return (
-    <>
-      <ImportFormSyntenyChoiceRadioGroup
-        choice={choice}
-        onChange={setChoice}
-        customOptions={customOptions}
-        label="(Optional) Select or add a synteny track"
-      />
-      {choice === 'custom' ? (
-        <ImportFormOpenCustomTrack
-          model={model}
-          rowIndex={0}
-          /** #extensionPoint DotplotView-SyntenyFileFormats | sync | Add synteny file formats to the dotplot import form */
-          extensionPoint="DotplotView-SyntenyFileFormats"
-          assembly1={assembly1}
-          assembly2={assembly2}
-        />
-      ) : null}
-      {choice === 'tracklist' ? (
-        <PreConfiguredSyntenyTrackSelect
-          model={model}
-          tracks={syntenyTracks}
-          rowIndex={0}
-          emptyState={
-            <NoSyntenyTrackMessage
-              assembly1={assembly1}
-              assembly2={assembly2}
-              remedy='Choose "New track" above to add one.'
-            />
-          }
-        >
-          <Typography variant="body2" color="text.secondary">
-            More synteny tracks can be toggled inside the dotplot from the track
-            selector <TrackSelectorIcon />; multiple can show at once.
-          </Typography>
-        </PreConfiguredSyntenyTrackSelect>
-      ) : null}
-      {selectedCustomOption ? (
-        <Suspense fallback={<CircularProgress size={20} />}>
-          <selectedCustomOption.ReactComponent
+    <ImportFormSyntenyTrackPanel
+      model={model}
+      rowIndex={0}
+      assembly1={assembly1}
+      assembly2={assembly2}
+      /** #extensionPoint DotplotView-SyntenyFileFormats | sync | Add synteny file formats to the dotplot import form */
+      fileFormatsExtensionPoint="DotplotView-SyntenyFileFormats"
+      label="(Optional) Select or add a synteny track"
+      customOptions={customOptions}
+      renderCustomOption={value => {
+        const option = customOptions.find(opt => opt.value === value)
+        return option ? (
+          <option.ReactComponent
             model={model}
             assembly1={assembly1}
             assembly2={assembly2}
           />
-        </Suspense>
-      ) : null}
-    </>
+        ) : null
+      }}
+      emptyRemedy='Choose "New track" above to add one.'
+    >
+      <Typography variant="body2" color="text.secondary">
+        More synteny tracks can be toggled inside the dotplot from the track
+        selector <TrackSelectorIcon />; multiple can show at once.
+      </Typography>
+    </ImportFormSyntenyTrackPanel>
   )
 })
 

@@ -4,8 +4,7 @@ import { ErrorBanner } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
-  ImportFormModeToggle,
-  QuickStartPanel,
+  ImportFormModes,
   allSessionTracks,
   blockedByUnfinishedUpload,
   syntenyPairStatuses,
@@ -38,9 +37,6 @@ const useStyles = makeStyles()(theme => ({
   leftPanel: {
     flexGrow: 4,
     flexShrink: 0,
-  },
-  toggle: {
-    marginBottom: theme.spacing(2),
   },
   // Launch sits below both columns rather than under the assembly rows: the
   // last thing configured is the track for a pair, which is in the right
@@ -127,45 +123,25 @@ const LinearSyntenyViewImportForm = observer(
         data-testid="import-form"
       >
         {model.error ? <ErrorBanner error={model.error} /> : null}
-        <div className={classes.toggle}>
-          <ImportFormModeToggle
-            mode={quick.mode}
-            onChange={newMode => {
-              // switching to Manual hands over what Quick start had set up, so
-              // the rows open on the chosen track instead of resetting
-              if (newMode === 'manual' && quick.track) {
-                setSelectedAssemblyNames(quick.rows)
-                setSelectedRow(0)
-                applyQuickSelections()
-              }
-              quick.setMode(newMode)
-            }}
-          />
-        </div>
-        {quick.mode === 'quick' ? (
-          <QuickStartPanel
-            model={model}
-            tracks={quick.quickTracks}
-            trackId={quick.trackId}
-            onChange={newTrackId => {
-              quick.setTrackId(newTrackId)
-            }}
-            onSwap={() => {
-              quick.swap()
-            }}
-            onSwitchToManual={() => {
-              quick.setMode('manual')
-            }}
-            onLaunch={() => {
-              applyQuickSelections()
-              launch(quick.rows)
-            }}
-            swapTitle="Reverse the row order (flips the stack top to bottom)"
-          >
-            {/* the rows the chosen track implies, shown where the picker is
+        <ImportFormModes
+          model={model}
+          quick={quick}
+          onHandoverToManual={() => {
+            // the rows open on the chosen track instead of resetting
+            setSelectedAssemblyNames(quick.rows)
+            setSelectedRow(0)
+            applyQuickSelections()
+          }}
+          onQuickLaunch={() => {
+            applyQuickSelections()
+            launch(quick.rows)
+          }}
+          swapTitle="Reverse the row order (flips the stack top to bottom)"
+          quickSummary={
+            /* the rows the chosen track implies, shown where the picker is
             rather than written into a form elsewhere on the page. A synteny
             track is queryable in either direction, so the order it implies is a
-            starting point the user can flip, not a property of the track. */}
+            starting point the user can flip, not a property of the track. */
             <div data-testid="quick-start-rows" className={classes.rows}>
               <Typography variant="body2" color="text.secondary">
                 Opens {quick.rows.length} rows, top to bottom:
@@ -177,72 +153,69 @@ const LinearSyntenyViewImportForm = observer(
                 </Typography>
               ))}
             </div>
-          </QuickStartPanel>
-        ) : (
-          <>
-            <div className={classes.flex}>
-              <div className={classes.leftPanel}>
-                <LeftPanel
-                  model={model}
-                  statusByPair={statusByPair}
-                  selectedAssemblyNames={selectedAssemblyNames}
-                  setSelectedAssemblyNames={setSelectedAssemblyNames}
-                  selectedRow={selectedRow}
-                  setSelectedRow={setSelectedRow}
-                />
-              </div>
-              <div className={classes.rightPanel}>
-                {/* names the assemblies, not just the row numbers: with five
+          }
+        >
+          <div className={classes.flex}>
+            <div className={classes.leftPanel}>
+              <LeftPanel
+                model={model}
+                statusByPair={statusByPair}
+                selectedAssemblyNames={selectedAssemblyNames}
+                setSelectedAssemblyNames={setSelectedAssemblyNames}
+                selectedRow={selectedRow}
+                setSelectedRow={setSelectedRow}
+              />
+            </div>
+            <div className={classes.rightPanel}>
+              {/* names the assemblies, not just the row numbers: with five
                 similarly-named rows on screen the numbers alone make the user
                 count. aria-live so switching pairs is announced, and the id is
                 what labels the radio group below it. */}
-                <Typography
-                  id={pairHeadingId}
-                  className={classes.header}
-                  role="status"
-                  aria-live="polite"
-                >
-                  Synteny dataset between {selectedAssemblyNames[selectedRow]}{' '}
-                  and {selectedAssemblyNames[selectedRow + 1]} (rows{' '}
-                  {selectedRow + 1} and {selectedRow + 2})
-                </Typography>
-                {/* the selector area holds local radio-choice state per pair, so
+              <Typography
+                id={pairHeadingId}
+                className={classes.header}
+                role="status"
+                aria-live="polite"
+              >
+                Synteny dataset between {selectedAssemblyNames[selectedRow]} and{' '}
+                {selectedAssemblyNames[selectedRow + 1]} (rows {selectedRow + 1}{' '}
+                and {selectedRow + 2})
+              </Typography>
+              {/* the selector area holds local radio-choice state per pair, so
                 it remounts whenever the pair being configured changes. This key
                 is the only thing resetting it */}
-                <ImportSyntenyTrackSelectorArea
-                  key={`${selectedRow}-${selectedAssemblyNames[selectedRow]}-${selectedAssemblyNames[selectedRow + 1]}`}
-                  model={model}
-                  selectedRow={selectedRow}
-                  labelledBy={pairHeadingId}
-                  assembly1={selectedAssemblyNames[selectedRow]!}
-                  assembly2={selectedAssemblyNames[selectedRow + 1]!}
-                />
-              </div>
+              <ImportSyntenyTrackSelectorArea
+                key={`${selectedRow}-${selectedAssemblyNames[selectedRow]}-${selectedAssemblyNames[selectedRow + 1]}`}
+                model={model}
+                selectedRow={selectedRow}
+                labelledBy={pairHeadingId}
+                assembly1={selectedAssemblyNames[selectedRow]!}
+                assembly2={selectedAssemblyNames[selectedRow + 1]!}
+              />
             </div>
-            <div className={classes.footer}>
-              <Button
-                disabled={!canLaunch}
-                onClick={() => {
-                  launch(selectedAssemblyNames)
-                }}
-                variant="contained"
-                color="primary"
-              >
-                Launch
-              </Button>
-              {/* why the button is off, in text next to it. The row's warning
+          </div>
+          <div className={classes.footer}>
+            <Button
+              disabled={!canLaunch}
+              onClick={() => {
+                launch(selectedAssemblyNames)
+              }}
+              variant="contained"
+              color="primary"
+            >
+              Launch
+            </Button>
+            {/* why the button is off, in text next to it. The row's warning
                 icon says which pair, but it is at the far edge of the other
                 column and only speaks on hover. */}
-              {canLaunch ? null : (
-                <Typography variant="body2" color="warning.main">
-                  Rows {blockedPair + 1} and {blockedPair + 2} have an
-                  unfinished new synteny track. Finish the upload, or set that
-                  pair to None.
-                </Typography>
-              )}
-            </div>
-          </>
-        )}
+            {canLaunch ? null : (
+              <Typography variant="body2" color="warning.main">
+                Rows {blockedPair + 1} and {blockedPair + 2} have an unfinished
+                new synteny track. Finish the upload, or set that pair to None.
+              </Typography>
+            )}
+          </div>
+        </ImportFormModes>
       </Container>
     )
   },

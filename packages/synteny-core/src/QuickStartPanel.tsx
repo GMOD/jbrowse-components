@@ -16,7 +16,7 @@ import {
 import { observer } from 'mobx-react'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const useStyles = makeStyles()({
   summary: {
@@ -57,7 +57,9 @@ const QuickStartPanel = observer(function QuickStartPanel({
   swapTitle,
   children,
 }: {
-  model: IAnyStateTreeNode
+  // only read for getSession, so node-ness is the whole requirement.
+  // IStateTreeNode rather than IAnyStateTreeNode, which resolves to `any`
+  model: IStateTreeNode
   tracks: AnyConfigurationModel[]
   trackId: string
   onChange: (trackId: string) => void

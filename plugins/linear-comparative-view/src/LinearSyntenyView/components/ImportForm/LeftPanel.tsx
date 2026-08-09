@@ -8,7 +8,7 @@ import {
   getConnectedAssemblies,
   getSyntenyTracks,
   planSyntenyChain,
-  remapUploadsToPairs,
+  remapSelectionsToPairs,
 } from '@jbrowse/synteny-core'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import CloseIcon from '@mui/icons-material/Close'
@@ -17,7 +17,10 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber'
 import { Button, IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { planRowRemoval, reversedPairIndex } from '../../util/importFormRows.ts'
+import {
+  pairIndexAfterRowRemoval,
+  reversedPairIndex,
+} from '../../util/importFormRows.ts'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
 import type { PairStatus } from '@jbrowse/synteny-core'
@@ -70,28 +73,28 @@ const AssemblyRows = observer(function AssemblyRows({
   selectedRow,
   selectedAssemblyNames,
   statusByPair,
+  applyRows,
   setSelectedRow,
-  setSelectedAssemblyNames,
   model,
 }: {
   selectedRow: number
   selectedAssemblyNames: string[]
   statusByPair: PairStatus[]
+  applyRows: (rows: string[], nextSelectedPair: number) => void
   setSelectedRow: (idx: number) => void
-  setSelectedAssemblyNames: (assemblies: string[]) => void
   model: LinearSyntenyViewModel
 }) {
   const { classes } = useStyles()
   const session = getSession(model)
   function removeRow(idx: number) {
-    const { removedPair, nextSelectedPair } = planRowRemoval({
-      rowCount: selectedAssemblyNames.length,
-      removedRow: idx,
-      selectedPair: selectedRow,
-    })
-    model.importFormRemoveRow(removedPair)
-    setSelectedAssemblyNames(selectedAssemblyNames.filter((_, i) => i !== idx))
-    setSelectedRow(nextSelectedPair)
+    applyRows(
+      selectedAssemblyNames.filter((_, i) => i !== idx),
+      pairIndexAfterRowRemoval({
+        rowCount: selectedAssemblyNames.length,
+        removedRow: idx,
+        selectedPair: selectedRow,
+      }),
+    )
   }
   return selectedAssemblyNames.map((assemblyName, idx) => {
     const isPairRow = idx !== selectedAssemblyNames.length - 1
@@ -121,10 +124,14 @@ const AssemblyRows = observer(function AssemblyRows({
             helperText=""
             selected={assemblyName}
             onChange={newAssembly => {
-              setSelectedAssemblyNames(
+              // through applyRows like every other row edit: the pairs this row
+              // is part of are now different pairs, and whatever was configured
+              // for the old ones has to go with them
+              applyRows(
                 selectedAssemblyNames.map((asm, idx2) =>
                   idx2 === idx ? newAssembly : asm,
                 ),
+                selectedRow,
               )
             }}
             session={session}
@@ -210,39 +217,42 @@ const LeftPanel = observer(function LeftPanel({
     selectedAssemblyNames.length > 2 &&
     statusByPair.includes('noTrackAvailable')
 
+  // The one way the assembly rows change — add, remove, reorder, or retype one
+  // in a Select. Selections are indexed by row-pair position but are *about* a
+  // pair of assemblies, so every edit has to re-match the two; doing it here
+  // means no caller can forget. See remapSelectionsToPairs for what that
+  // silently cost when only the reordering paths did it.
+  function applyRows(rows: string[], nextSelectedPair: number) {
+    const remapped = remapSelectionsToPairs(
+      model.importFormSyntenyTrackSelections,
+      selectedAssemblyNames,
+      rows,
+    )
+    model.clearImportFormSyntenyTracks()
+    for (const [pairIdx, selection] of remapped.entries()) {
+      if (selection) {
+        model.setImportFormSyntenyTrack(pairIdx, selection)
+      }
+    }
+    setSelectedAssemblyNames(rows)
+    setSelectedRow(nextSelectedPair)
+  }
+
   // default the new row to an assembly that already has a synteny track to the
   // current bottom row, so the added pair actually draws ribbons rather than
   // stacking blank
   function addRow() {
     const bottom = selectedAssemblyNames.at(-1)!
     const connected = getConnectedAssemblies(allSessionTracks(session), bottom)
-    setSelectedAssemblyNames([
-      ...selectedAssemblyNames,
-      connected[0] ?? session.assemblyNames[0] ?? bottom,
-    ])
-    // and select the pair it created, so the track panel is already showing the
-    // thing the user just asked for rather than the pair they had been on
-    setSelectedRow(selectedAssemblyNames.length - 1)
-  }
-
-  // Every row reordering goes through here. Per-pair selections are indexed by
-  // row position, so any reorder invalidates them: pre-configured picks are
-  // dropped so doSubmit auto-picks for the new ordering, but an upload carries a
-  // file location the user entered by hand, so it follows its own assemblies to
-  // wherever the reorder put them.
-  function applyRowOrder(reordered: string[], nextSelectedPair: number) {
-    const uploads = remapUploadsToPairs(
-      model.importFormSyntenyTrackSelections,
-      reordered,
+    applyRows(
+      [
+        ...selectedAssemblyNames,
+        connected[0] ?? session.assemblyNames[0] ?? bottom,
+      ],
+      // select the pair it created, so the track panel is already showing the
+      // thing the user just asked for rather than the pair they had been on
+      selectedAssemblyNames.length - 1,
     )
-    model.clearImportFormSyntenyTracks()
-    for (const [pairIdx, upload] of uploads.entries()) {
-      if (upload) {
-        model.setImportFormSyntenyTrack(pairIdx, upload)
-      }
-    }
-    setSelectedAssemblyNames(reordered)
-    setSelectedRow(nextSelectedPair)
   }
 
   function autoArrangeRows() {
@@ -251,8 +261,12 @@ const LeftPanel = observer(function LeftPanel({
     // self-alignment pair is connected exactly when a track names the assembly
     // twice, and the guard would pull apart a self-alignment adjacency this same
     // panel calls valid
-    // a whole new ordering, so no pair of the old one survives to stay on
-    applyRowOrder(
+    //
+    // The arrow resets to pair 0: this is a whole new ordering, so there is no
+    // "the pair I was on" to stay with, unlike a reversal. Whatever was
+    // configured for a pair that survives the reordering still follows it —
+    // that part is applyRows' job, not this one's.
+    applyRows(
       planSyntenyChain(
         selectedAssemblyNames,
         (a, b) => getSyntenyTracks(tracks, [a, b]).length > 0,
@@ -271,7 +285,7 @@ const LeftPanel = observer(function LeftPanel({
           model={model}
           selectedAssemblyNames={selectedAssemblyNames}
           statusByPair={statusByPair}
-          setSelectedAssemblyNames={setSelectedAssemblyNames}
+          applyRows={applyRows}
           selectedRow={selectedRow}
           setSelectedRow={setSelectedRow}
         />
@@ -296,7 +310,7 @@ const LeftPanel = observer(function LeftPanel({
           <Button
             variant="outlined"
             onClick={() => {
-              applyRowOrder(
+              applyRows(
                 [...selectedAssemblyNames].reverse(),
                 reversedPairIndex({
                   rowCount: selectedAssemblyNames.length,

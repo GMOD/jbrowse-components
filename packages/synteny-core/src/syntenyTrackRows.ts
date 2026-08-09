@@ -31,11 +31,17 @@ export function syntenyTrackRows(track: AnyConfigurationModel) {
  *
  * There is no deeper truth to recover here: a synteny track answers in either
  * direction, so this is a defensible default rather than a fact about the track.
- * That is why the import form offers Swap — pass already-reversed rows for the
- * swapped orientation.
+ * That is why the import form offers Swap, which is the `swapped` argument here.
+ *
+ * Swap is applied to the axes rather than to the rows, and `rows` must be the
+ * track's own order. Reversing the row list instead only agrees with this for a
+ * pairwise track: reversing an all-vs-all track's `[a, b, c]` yields `[c, b, a]`,
+ * whose first two are a *different pair*, so Swap silently re-picked which pair
+ * the dotplot showed instead of transposing the one it was showing.
  */
-export function dotplotAxesFromRows(rows: string[]) {
-  return { y: rows[0], x: rows[1] }
+export function dotplotAxesFromRows(rows: string[], swapped = false) {
+  const [first, second] = rows
+  return swapped ? { y: second, x: first } : { y: first, x: second }
 }
 
 /**

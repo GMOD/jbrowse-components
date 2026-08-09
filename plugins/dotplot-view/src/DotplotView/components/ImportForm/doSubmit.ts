@@ -1,9 +1,5 @@
-import { isSessionWithAddTracks } from '@jbrowse/core/util'
-import {
-  allSessionTracks,
-  resolveSyntenyTrackActions,
-} from '@jbrowse/synteny-core'
-import { toJS, transaction } from 'mobx'
+import { applySyntenyTrackSelections } from '@jbrowse/synteny-core'
+import { transaction } from 'mobx'
 
 import type { DotplotViewModel } from '../../model.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
@@ -21,21 +17,19 @@ export function doSubmit({
 }) {
   model.setError(undefined)
   transaction(() => {
-    if (isSessionWithAddTracks(session)) {
-      // a dotplot is the single-pair case of the same resolution the synteny
-      // form runs per row pair
-      const [action] = resolveSyntenyTrackActions({
-        tracks: allSessionTracks(session),
-        selections: model.importFormSyntenyTrackSelections,
-        assemblyNames: [assemblyX, assemblyY],
-      })
-      if (action?.kind === 'open') {
-        session.addTrackConf(toJS(action.conf))
-        model.toggleTrack(action.conf.trackId)
-      } else if (action?.kind === 'show') {
-        model.showTrack(action.trackId)
-      }
-    }
+    // a dotplot is the single-pair case of the same resolution the synteny form
+    // runs per row pair, so it is the same call with one pair's worth of rows
+    applySyntenyTrackSelections({
+      session,
+      selections: model.importFormSyntenyTrackSelections,
+      assemblyNames: [assemblyX, assemblyY],
+      showTrack: trackId => {
+        model.showTrack(trackId)
+      },
+    })
     model.setAssemblyNames(assemblyX, assemblyY)
+    // applied now, so they don't outlive the form — see
+    // clearImportFormSyntenyTracks
+    model.clearImportFormSyntenyTracks()
   })
 }

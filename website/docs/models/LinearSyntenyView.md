@@ -131,8 +131,7 @@ the whole surface.
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
-| <span id="action-importformremoverow">**importFormRemoveRow**</span><br><code>(pairIdx: number) =&gt; void</code> | Remove the pair-selection at the given index — the pair that vanishes when an assembly row is removed. The caller computes which pair index that is, since the row-to-pair mapping lives with the React-side assembly list. | LinearSyntenyView |
-| <span id="action-clearimportformsyntenytracks">**clearImportFormSyntenyTracks**</span><br><code>() =&gt; void</code> |  | LinearSyntenyView |
+| <span id="action-clearimportformsyntenytracks">**clearImportFormSyntenyTracks**</span><br><code>() =&gt; void</code> | Drop every pending pair-selection. The import form rewrites the whole list through this whenever its assembly rows change (a selection is about a pair of assemblies, not a row index — see `remapSelectionsToPairs`), and again once they have been applied. | LinearSyntenyView |
 | <span id="action-setimportformsyntenytrack">**setImportFormSyntenyTrack**</span><br><code>(arg: number, val: ImportFormSyntenyTrack) =&gt; void</code> |  | LinearSyntenyView |
 | <span id="action-setdrawcurves">**setDrawCurves**</span><br><code>(arg: boolean) =&gt; void</code> |  | LinearSyntenyView |
 | <span id="action-setcigarmode">**setCigarMode**</span><br><code>(arg: CigarMode) =&gt; void</code> |  | LinearSyntenyView |

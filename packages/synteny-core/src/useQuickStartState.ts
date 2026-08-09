@@ -16,10 +16,12 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
  *
  * A synteny track answers in either direction, so the row order it implies is a
  * starting point the user can flip, not a property of the track — hence `swap`.
- * The reversal is applied here rather than by each form, so "swapped" can't mean
- * two different things in two places. The forms differ only in how they present
- * `rows` (a stack for synteny, X/Y axes for dotplot) and what Launch does with
- * them.
+ * The flag is held here rather than by each form, so the two can't disagree
+ * about whether Swap is on, but *what* it flips is the form's own business:
+ * synteny reverses the whole stack (`rows`), while a dotplot transposes the one
+ * pair it shows and so reads `trackRows` + `swapped` through
+ * `dotplotAxesFromRows`. Reversing the stack is not the same operation once a
+ * track names more than two assemblies.
  *
  * The opening mode is Quick start when there is a launchable track and Manual
  * otherwise, so an empty session opens on the form that can actually do
@@ -48,6 +50,10 @@ export function useQuickStartState(tracks: AnyConfigurationModel[]) {
     trackId,
     setTrackId,
     track,
+    /** the track's own assembly order, before Swap */
+    trackRows,
+    swapped,
+    /** `trackRows` in the order the form should present them */
     rows: swapped ? [...trackRows].reverse() : trackRows,
     swap: () => {
       setSwapped(!swapped)

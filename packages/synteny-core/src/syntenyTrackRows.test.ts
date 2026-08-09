@@ -59,9 +59,17 @@ test('the query (first assembly) goes on the y-axis, the target on x', () => {
   })
 })
 
-test('reversed rows put each assembly on the other axis (Swap)', () => {
-  expect(dotplotAxesFromRows([...syntenyTrackRows(cross)].reverse())).toEqual({
+test('Swap puts each assembly on the other axis', () => {
+  expect(dotplotAxesFromRows(syntenyTrackRows(cross), true)).toEqual({
     y: 'b',
     x: 'a',
   })
+})
+
+// Swap used to be applied by reversing the row list, which for this track means
+// ['d','c','b','a'] and so plots (c, d) rather than transposing (a, b).
+test('Swap on an all-vs-all track transposes its pair, not which pair', () => {
+  const rows = syntenyTrackRows(ava)
+  expect(dotplotAxesFromRows(rows)).toEqual({ y: 'a', x: 'b' })
+  expect(dotplotAxesFromRows(rows, true)).toEqual({ y: 'b', x: 'a' })
 })
