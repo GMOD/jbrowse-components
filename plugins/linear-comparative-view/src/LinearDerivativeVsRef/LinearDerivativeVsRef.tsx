@@ -454,6 +454,18 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
                 {candidates.map((candidate, idx) => (
                   <FormControlLabel
                     key={candidate.locString}
+                    // Names the ROUTE, not the row number, so a caller that
+                    // wants a particular allele asks for it rather than for
+                    // whatever currently sorts to position N. Rank is not
+                    // stable: two routes tied on support are ordered by segment
+                    // count, so at COLO829's chr9 fold-back the two-segment
+                    // allele the tutorial is about sits under a three-segment
+                    // one. A spec keyed on the index silently captures the
+                    // wrong allele under the right caption, which is the
+                    // failure this exists to prevent.
+                    data-testid={`derivative-path-${
+                      candidate.segments.length
+                    }-${candidate.refNames.join('-')}`}
                     value={idx}
                     control={<Radio />}
                     label={

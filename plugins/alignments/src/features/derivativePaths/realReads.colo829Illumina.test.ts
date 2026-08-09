@@ -2880,13 +2880,13 @@ describe('COLO829 der(3) in short reads', () => {
 
   it('puts the three published junctions at the top of the list', () => {
     const [first, second, third] = run().candidates
-    expect([first, second, third].map(c => c!.readCount)).toEqual([44, 24, 17])
+    expect([first, second, third].map(c => c!.readCount)).toEqual([45, 24, 17])
 
     // Each candidate's junction against the truth set's breakends. Asserted as a
     // neighbourhood, not a base: a breakend is one side of a cut and a segment
     // edge is the last aligned base, so the two differ by one where the aligner
     // agrees exactly and by a few where it placed the join in a microhomology.
-    // Twenty is the bucketing tolerance, i.e. the width at which this code
+    // Twenty is the clustering tolerance, i.e. the width at which this code
     // already calls two junctions the same one.
     const near = (a: number | undefined, b: number) =>
       Math.abs((a ?? Number.NaN) - b) < 20

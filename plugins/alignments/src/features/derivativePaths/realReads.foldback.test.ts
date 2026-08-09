@@ -367,9 +367,22 @@ function run() {
   return { chains, candidates: computeDerivativePaths({ chains }) }
 }
 
+// The two alleles this window holds, picked by SHAPE rather than by rank,
+// because their ranks are a genuine tie: both are described by nine reads, and
+// which one sorts first is then decided by the segment-count tiebreak. A test
+// saying `candidates[0]` is asserting that tiebreak, and would report a change
+// to it as a change to the reconstruction.
+function outerFoldback() {
+  return run().candidates.find(c => c.segments.length === 2)
+}
+
+function innerFoldback() {
+  return run().candidates.find(c => c.segments.length === 3)
+}
+
 describe('a fold-back allele', () => {
   it('keeps two segments of one chromosome apart by orientation', () => {
-    const [top] = run().candidates
+    const top = outerFoldback()
     expect(top!.refNames).toEqual(['chr9'])
     expect(top!.segments.map(seg => seg.strand)).toEqual([1, -1])
     // out along chr9, then back down it from further along: the second segment
@@ -381,12 +394,14 @@ describe('a fold-back allele', () => {
   })
 
   it('offers the neighbouring fold-back as its own allele, not the same one', () => {
-    // Two anchors 28 bp apart, which is inside the default bucketing tolerance
-    // for a single coordinate but not for a path: the routes differ in segment
-    // count and orientation, so they must not collapse together.
-    const { candidates } = run()
-    expect(candidates.length).toBeGreaterThan(1)
-    const [top, next] = candidates
+    // Two anchors 28 bp apart, which is more than the default tolerance and so
+    // must not collapse -- and this is the fixture that decides HOW endpoints
+    // get clustered. Linking each to the PREVIOUS endpoint within the tolerance,
+    // rather than to the one that opened its cluster, lets the jittered reads
+    // between these two anchors chain them together, and these two alleles are
+    // then reported as one.
+    const top = outerFoldback()
+    const next = innerFoldback()
     expect(top!.locString).not.toBe(next!.locString)
     expect(next!.segments).toHaveLength(3)
     expect(next!.segments.map(seg => seg.strand)).toEqual([-1, 1, 1])
@@ -403,10 +418,22 @@ describe('a fold-back allele', () => {
     ).toBe(true)
   })
 
+  it('reports one path once, however each read placed its junctions', () => {
+    // These nine reads were reported as two candidates, at eight reads and one,
+    // describing the same three segments -- rounding endpoints into fixed cells
+    // let a coordinate's absolute value decide whether two reads agreed. Nothing
+    // about the allele separates them, so a picker offering both was offering
+    // one route twice with its support divided between the copies.
+    expect(innerFoldback()!.readCount).toBe(9)
+    expect(run().candidates.filter(c => c.segments.length === 3)).toHaveLength(
+      1,
+    )
+  })
+
   it('reconstructs from SA tags alone, without the returning arm on screen', () => {
     // Every segment the fold-back returns from is outside the fetched window,
     // so the candidate is built from tags rather than from reads on screen.
-    const [top] = run().candidates
+    const top = outerFoldback()
     expect(top!.extendsOffScreen).toBe(true)
     expect(top!.segments[1]!.start).toBeGreaterThan(REGION.end)
     expect(top!.readCount).toBe(9)

@@ -179,6 +179,62 @@ describe('computeDerivativePaths', () => {
     ).toHaveLength(0)
   })
 
+  // The three checks below are one property in three shapes, and the property is
+  // that the tolerance is a DISTANCE. It was a grid — `Math.round(bp/tolerance)`
+  // — which asks which fixed cell a coordinate falls in, so two endpoints merged
+  // or not depending on where the locus sat rather than on how far apart they
+  // were. A single hard-coded pair cannot see that (the old code passed the case
+  // above), so each of these sweeps the offset instead.
+
+  it('merges a within-tolerance pair wherever the locus sits', () => {
+    // Half the default tolerance apart, swept across one whole bucket width. The
+    // grid split exactly half of these; every one has to merge.
+    for (let offset = 0; offset < 40; offset++) {
+      const a = der3Chain()
+      const b = der3Chain()
+      a[1] = seg('chr10', 58_717_463, 58_717_600 + offset, 1, 32_732)
+      b[1] = seg('chr10', 58_717_463, 58_717_610 + offset, 1, 32_732)
+      expect(computeDerivativePaths({ chains: [a, b] })).toHaveLength(1)
+    }
+  })
+
+  it('reports the same support wherever the whole event sits', () => {
+    // Translation invariance, which is what the property amounts to for a
+    // caller: the same reads at a different absolute coordinate are the same
+    // answer. On the real COLO829 records the grid reported anything from 24 to
+    // 28 reads across these 20 offsets, and grew a spurious second candidate at
+    // 14 of them.
+    for (let offset = 0; offset < 20; offset++) {
+      const chains = [0, 3, -2].map(jitter =>
+        der3Chain(jitter).map(s => ({
+          ...s,
+          start: s.start + offset,
+          end: s.end + offset,
+        })),
+      )
+      const candidates = computeDerivativePaths({ chains })
+      expect(candidates).toHaveLength(1)
+      expect(candidates[0]!.readCount).toBe(3)
+    }
+  })
+
+  it('keeps two junctions further apart than the tolerance apart', () => {
+    // The converse, and the reason the clustering is a leader sweep rather than
+    // single linkage: linking each endpoint to the PREVIOUS one lets a run of
+    // jittered reads chain two distinct junctions into one cluster. COLO829's
+    // chr9 fold-back has exactly that shape, two junctions 28 bp apart, and
+    // single linkage merged its two alleles into one candidate.
+    const chains = []
+    for (const at of [58_717_662, 58_717_690]) {
+      for (let jitter = 0; jitter < 12; jitter += 4) {
+        const chain = der3Chain()
+        chain[1] = seg('chr10', 58_717_463, at + jitter, 1, 32_732)
+        chains.push(chain)
+      }
+    }
+    expect(computeDerivativePaths({ chains })).toHaveLength(2)
+  })
+
   it('returns every supported path, so a caller can say how many there were', () => {
     // How many paths a window produces is evidence about all of them: one or two
     // is an event, forty is a repeat. Truncating here would hand the picker a

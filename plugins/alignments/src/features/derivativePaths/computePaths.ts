@@ -41,10 +41,12 @@ export interface DerivativeCandidate {
 export interface ComputeDerivativePathsOpts {
   chains: SegAln[][]
   /**
-   * Junction coordinates from two reads describing one event agree only to
-   * within the aligner's placement of the breakpoint, so they are bucketed
-   * before being compared. Too tight and one event splits into many
-   * one-read candidates; too loose and neighbouring events merge.
+   * How far apart two reads may place one junction and still be describing the
+   * same one, in bp. They agree only to within the aligner's placement of the
+   * breakpoint, so endpoints are clustered at this width before being compared
+   * (`buildClusterOf`). Too tight and one event splits into many one-read
+   * candidates; too loose and neighbouring events merge, which on COLO829's
+   * chr9 fold-back means two real alleles reported as one.
    */
   tolerance?: number
   /** Drop paths with less support than this. */
@@ -75,21 +77,88 @@ function exitBp(seg: SegAln) {
   return seg.strand === -1 ? seg.start : seg.end
 }
 
+// Where a junction endpoint sits, to within the tolerance. A lookup rather than
+// arithmetic, because arithmetic cannot express "within N bp of each other":
+// `Math.round(bp / tolerance)` asks which fixed bucket a coordinate falls in, so
+// two endpoints 1 bp apart get different answers whenever they straddle a bucket
+// edge, and two 10 bp apart do so half the time. The failure is silent and it
+// bites real data — swept over the 20 offsets of one bucket, the COLO829 der(3)
+// fixture reports its support as anything from 24 to 28 reads and grows a
+// spurious second candidate at 14 of them, purely from where the locus sits
+// relative to a multiple of 20.
+//
+// So the endpoints are collected up front and clustered per refName: sorted,
+// then swept, opening a new cluster whenever the endpoint is further than the
+// tolerance from the one that OPENED the current cluster. The cut points are
+// then decided by the data's own gaps, so the answer no longer moves when the
+// whole locus does.
+//
+// Measured against the alternative, and this is why it is a leader sweep rather
+// than single linkage: linking on the PREVIOUS endpoint instead of the
+// cluster's first lets clusters chain, and COLO829's chr9 fold-back is a real
+// case where they do. Two distinct junctions sit 28 bp apart there (the
+// breakage-fusion-bridge re-break `realReads.foldback` is about), and
+// read-placement jitter between them bridges the two into one cluster, merging
+// two alleles into one candidate. Capping a cluster's width at the tolerance
+// keeps them apart, which is what the tolerance is being asked for.
+type ClusterOf = (refName: string, bp: number) => number
+
+function junctionEndpoints(chain: SegAln[]) {
+  const out: { refName: string; bp: number }[] = []
+  for (let i = 0; i < chain.length - 1; i++) {
+    const a = chain[i]!
+    const b = chain[i + 1]!
+    out.push({ refName: a.refName, bp: exitBp(a) })
+    out.push({ refName: b.refName, bp: entryBp(b) })
+  }
+  return out
+}
+
+function buildClusterOf(chains: SegAln[][], tolerance: number): ClusterOf {
+  const byRef = new Map<string, number[]>()
+  for (const chain of chains) {
+    for (const { refName, bp } of junctionEndpoints(chain)) {
+      let bps = byRef.get(refName)
+      if (!bps) {
+        bps = []
+        byRef.set(refName, bps)
+      }
+      bps.push(bp)
+    }
+  }
+  const ids = new Map<string, number>()
+  for (const [refName, bps] of byRef) {
+    const sorted = [...new Set(bps)].sort((a, b) => a - b)
+    let anchor = sorted[0]!
+    for (const bp of sorted) {
+      if (bp - anchor > tolerance) {
+        anchor = bp
+      }
+      ids.set(`${refName}:${bp}`, anchor)
+    }
+  }
+  // The fallback is unreachable by construction — a chain and its reverse
+  // complement ask about the same coordinates, since reversing swaps which
+  // segment's entry and which segment's exit a junction is named by without
+  // moving either — and is here so that a caller passing a chain the clusters
+  // were not built from degrades to exact matching rather than to `undefined`.
+  return (refName, bp) => ids.get(`${refName}:${bp}`) ?? bp
+}
+
 // Identity of a path, and the one piece of judgement in this file. It is built
 // from the JUNCTIONS only, never from the chain's outer edges: two reads
 // crossing the same rearrangement agree on where the pieces join and disagree on
 // where each read happens to start and stop, so folding the outer edges in would
 // give every read its own signature and every candidate a support of 1.
-function pathSignature(chain: SegAln[], tolerance: number) {
-  const bucket = (bp: number) => Math.round(bp / tolerance)
+function pathSignature(chain: SegAln[], clusterOf: ClusterOf) {
   const parts: string[] = []
   for (let i = 0; i < chain.length - 1; i++) {
     const a = chain[i]!
     const b = chain[i + 1]!
     parts.push(
-      `${a.refName}:${bucket(exitBp(a))}:${a.strand}>${b.refName}:${bucket(
-        entryBp(b),
-      )}:${b.strand}`,
+      `${a.refName}:${clusterOf(a.refName, exitBp(a))}:${a.strand}>${
+        b.refName
+      }:${clusterOf(b.refName, entryBp(b))}:${b.strand}`,
     )
   }
   return parts.join('|')
@@ -129,11 +198,11 @@ function reverseComplementChain(chain: SegAln[]): SegAln[] {
 // Which of the two readings wins is arbitrary — an allele and its reverse
 // complement are the same allele — so the presentation orientation is chosen
 // separately, per candidate, in `orientForDisplay`.
-function canonicalize(chain: SegAln[], tolerance: number) {
-  const forward = { signature: pathSignature(chain, tolerance), chain }
+function canonicalize(chain: SegAln[], clusterOf: ClusterOf) {
+  const forward = { signature: pathSignature(chain, clusterOf), chain }
   const reversed = reverseComplementChain(chain)
   const reverse = {
-    signature: pathSignature(reversed, tolerance),
+    signature: pathSignature(reversed, clusterOf),
     chain: reversed,
   }
   return forward.signature <= reverse.signature ? forward : reverse
@@ -215,12 +284,11 @@ export function computeDerivativePaths(
   const minReads = opts.minReads ?? DEFAULTS.minReads
   const flank = opts.flank ?? DEFAULTS.flank
 
+  const linked = chains.filter(chain => chain.length > 1)
+  const clusterOf = buildClusterOf(linked, tolerance)
   const groups = new Map<string, { chains: SegAln[][] }>()
-  for (const chain of chains) {
-    if (chain.length < 2) {
-      continue
-    }
-    const { signature, chain: oriented } = canonicalize(chain, tolerance)
+  for (const chain of linked) {
+    const { signature, chain: oriented } = canonicalize(chain, clusterOf)
     let group = groups.get(signature)
     if (!group) {
       group = { chains: [] }
