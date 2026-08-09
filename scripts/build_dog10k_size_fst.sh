@@ -16,6 +16,21 @@
 # Requires: bcftools (>= 1.17, with libcurl support), htslib (tabix, bgzip),
 #           curl, python3.
 # Usage:    bash scripts/build_dog10k_size_fst.sh [outdir]
+#
+# WINDOW, REGIONS and OUTBED are overridable, which is how the SAME panel and the
+# same estimator also produce the fine-binned slice the zoom half of
+# dog10k-size-fst-scan draws. A whole-genome scan has to bin wide enough to hold
+# down twelve thousand windows' worth of noise; two megabases does not, and at
+# 200 kb the zoom drew ten points across the view, which is a bar chart of the
+# lane above rather than a look inside it. 10 kb is the floor that still clears
+# MIN_SITES: this panel carries ~1056 informative sites per 200 kb genome-wide
+# and ~850 across the IGF1 window, so a 10 kb bin holds ~42 and a 5 kb bin ~21,
+# right on the threshold where windows start dropping out and the lane goes
+# patchy.
+#
+#   WINDOW=10000 REGIONS=chr15:40600000-42600000 \
+#     OUTBED=dog10k_size_fst_igf1_10kb.bed \
+#     bash scripts/build_dog10k_size_fst.sh
 set -euo pipefail
 
 OUTDIR="${1:-dog10k_size_fst_build}"
@@ -24,14 +39,18 @@ PANEL=$SHARE/phased-imputation-panel/AutoAndXPAR.Dog10K.phased.bcf
 
 # 200 kb is wide enough that a window carries hundreds of sites at this panel
 # size and narrow enough to resolve one gene's sweep from its neighbors.
-WINDOW=200000
+WINDOW="${WINDOW:-200000}"
 
 # Windows carrying fewer sites than this are dropped rather than drawn: a
 # handful of sites gives a ratio that swings on any one of them.
-MIN_SITES=20
+MIN_SITES="${MIN_SITES:-20}"
 
-# The panel is autosomal, and chrX would need its own ploidy handling.
-CHROMS=$(seq 1 38 | sed 's/^/chr/')
+# The panel is autosomal, and chrX would need its own ploidy handling. Any
+# bcftools -r target works here, so a single `chr15:40600000-42600000` slices one
+# window instead of scanning the genome.
+REGIONS="${REGIONS:-$(seq 1 38 | sed 's/^/chr/')}"
+
+OUTBED="${OUTBED:-dog10k_size_fst.bed}"
 
 # One HTTP stream per chromosome. The panel is remote, so this is bound by the
 # transfer rather than by the arithmetic.
@@ -133,40 +152,47 @@ PY
 # over HTTP once.
 cat > scan_chrom.sh <<'SH'
 set -euo pipefail
-chrom=$1
-bcftools view -r "$chrom" -S size.samples --force-samples -Ou "$PANEL" \
+region=$1
+# The BED's chrom column and the windows' names are the refName alone: a region
+# may carry a range (chr15:40600000-42600000), and writing that whole string
+# where a refName belongs produces a BED no assembly can resolve. The output file
+# is keyed on the same string with the range punctuation flattened, so two
+# regions on one chromosome cannot land in each other's file.
+chrom=${region%%:*}
+bcftools view -r "$region" -S size.samples --force-samples -Ou "$PANEL" \
   | bcftools +fill-tags -Ou -- -S size.groups -t AN,AC \
   | bcftools query -f '%POS\t%AN_SMALL\t%AC_SMALL\t%AN_GIANT\t%AC_GIANT\n' \
   | python3 fst_windows.py \
   | awk -v c="$chrom" 'BEGIN{OFS="\t"} {print c, $1, $2, c":"$1"-"$2, $3, $4}' \
-  > "win.$chrom.bed"
+  > "win.$(echo "$region" | tr ':-' '__').bed"
 SH
 
 export PANEL
-echo "scanning ${WINDOW} bp windows across 38 autosomes, $JOBS at a time"
-echo "$CHROMS" | xargs -P "$JOBS" -I{} bash scan_chrom.sh {}
+echo "scanning ${WINDOW} bp windows over $(echo "$REGIONS" | wc -w) region(s), $JOBS at a time"
+echo "$REGIONS" | xargs -P "$JOBS" -I{} bash scan_chrom.sh {}
 
-# Concatenated in chromosome order, which is the order the assembly lays them
-# out in, so the track needs no sorting beyond this.
-for chrom in $CHROMS; do
-  cat "win.$chrom.bed"
-done > dog10k_size_fst.bed
+# Concatenated in the order the regions were given, which for the default is
+# chromosome order — the order the assembly lays them out in, so the track needs
+# no sorting beyond this.
+for region in $REGIONS; do
+  cat "win.$(echo "$region" | tr ':-' '__').bed"
+done > "$OUTBED"
 
-bgzip -f dog10k_size_fst.bed
-tabix -f -p bed dog10k_size_fst.bed.gz
+bgzip -f "$OUTBED"
+tabix -f -p bed "$OUTBED.gz"
 
 # ── Check it against the numbers ────────────────────────────────────────────
 # Print the ranked windows rather than asserting anything about them: which loci
 # top a scan is the result, and a script that checked for IGF1 would be checking
 # its own expectation.
 echo
-echo "windows scored: $(zcat dog10k_size_fst.bed.gz | wc -l)"
+echo "windows scored: $(zcat "$OUTBED.gz" | wc -l)"
 echo
 echo "top 20 windows by Fst:"
 # awk does the head: `| head -20` closes the pipe on sort, which dies of
 # SIGPIPE, and under `set -o pipefail` the script exits 141 right here.
-zcat dog10k_size_fst.bed.gz | sort -k5,5gr |
+zcat "$OUTBED.gz" | sort -k5,5gr |
   awk 'BEGIN{OFS="\t"} NR<=20 {print NR, $1":"$2"-"$3, $5, $6" sites"}'
 
 echo
-echo "Wrote $(pwd)/dog10k_size_fst.bed.gz (plus its .tbi)"
+echo "Wrote $(pwd)/$OUTBED.gz (plus its .tbi)"

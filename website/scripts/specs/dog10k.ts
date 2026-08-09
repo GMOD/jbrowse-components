@@ -1230,13 +1230,36 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           height: 90,
         },
         {
-          trackId: 'dog10k_size_fst',
+          // THE 20 KB REBIN, not the 200 kb track the half above draws
+          // (review: "is there more fine-grained fst? dog10k-igf1-haplotype
+          // shows fine-grained fst"). At 200 kb this view held ten points, so
+          // the zoom changed the window without changing the resolution and the
+          // peak stayed a single bar. Same panel and same Hudson estimator,
+          // rebinned by build_dog10k_size_fst.sh over this window alone
+          // (WINDOW=20000 REGIONS=chr15:40600000-42600000), which is what makes
+          // the two halves one scan at two scales rather than two datasets.
+          //
+          // 20 kb rather than 10: the genome-wide bin averages ~1056 informative
+          // sites per 200 kb but this window runs leaner (~425 across
+          // 41.4-41.6 Mb), so a 10 kb bin puts the peak windows on 20-26 sites,
+          // right at the MIN_SITES=20 floor the estimator drops below, and 24 of
+          // 200 windows fall out entirely. At 20 kb the peak carries 34-49 sites
+          // and 99 of 100 windows score, for the same peak height (0.587 vs
+          // 0.576) and the same shape.
+          //
+          // What the rebin buys is the shape: the 200 kb lane states one window
+          // at 0.367, and this one resolves a contiguous block from 41.44 to
+          // 41.58 Mb rising to 0.587 at 41.50-41.52 Mb, sitting on IGF1
+          // (41,495,479-41,567,874) with flanks at ~0.1. That block is also the
+          // 140 kb core dog10k-igf1-haplotype declares as its `clusterRegion`,
+          // arrived at from the genotype matrix rather than from Fst.
+          trackId: 'dog10k_size_fst_igf1_20kb',
           type: 'LinearManhattanDisplay',
           height: 380,
-          // ten windows across this view against twelve thousand across the
-          // genome, so the points carry the figure at a size the whole-genome
-          // half could not use
-          scatterPointSize: 9,
+          // a hundred windows across this view rather than the ten the 200 kb
+          // lane drew, so the points come down from 9: at that size a hundred of
+          // them merge into a band and the sweep stops having edges
+          scatterPointSize: 6,
           ...FST_AXIS,
         },
       ],

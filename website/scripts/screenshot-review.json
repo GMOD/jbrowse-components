@@ -1597,10 +1597,10 @@
   },
   "methylation/hg002_snrpn_combined": {
     "name": "methylation/hg002_snrpn_combined",
-    "status": "good",
+    "status": "bad",
     "note": "just use shorter labels of just HP1 (no added text about 'methylated across the island' and same for HP2 and unknown. then add same hp1 and hp2 tags to the multiwiggle also  FIXED, both halves. HP1 / HP2 / HP-unknown now carry the same three pills as methylation/hg002_snrpn_group_by_hp, anchored to the display's own group labels by text so they follow the pack. And the two modkit tracks are ONE multi-wiggle now: a MultiQuantitativeTrack whose MultiWiggleAdapter takes the two bedMethyl files as subadapters, multirowxy on a pinned 0-100 axis. Worth knowing for the next one: a MultiWiggleAdapter subadapter does not have to be a BigWig, and the row label has to come from the subadapter's `name` because bedMethyl features carry a `source` of their own (the modification code).",
-    "reviewedAt": "2026-08-09T03:58:00.000Z",
-    "hash": "07d47635c5513287aea87c65085959090c921241"
+    "reviewedAt": "2026-08-09T05:47:12.923Z",
+    "hash": "e5a7ba27ace4ced25d1e42c874f2fd8d0fee9bab"
   },
   "ld/lct_haplotype_matrix": {
     "name": "ld/lct_haplotype_matrix",
@@ -2273,10 +2273,10 @@
   },
   "dog10k-size-fst-scan": {
     "name": "dog10k-size-fst-scan",
-    "status": "bad",
-    "note": "is there more fine-grained fst?dog10k-igf1-haplotype  shows fine-grained fst.",
-    "reviewedAt": "2026-08-08T23:57:09.410Z",
-    "hash": "d0dc240232cb0bc8f440e214898f7cdbd30c8f42"
+    "status": "good",
+    "note": "is there more fine-grained fst?dog10k-igf1-haplotype  shows fine-grained fst. FIXED 2026-08-09: yes, and the zoom half now draws it. The bottom panel was showing the SAME 200 kb track as the whole-genome half, so it changed the window without changing the resolution -- ten points across two megabases, and the IGF1 peak stayed the single bar it is genome-wide. It now draws a 20 kb rebin: same phased panel, same two breed panels, same Hudson estimator, just narrower bins over this one window. build_dog10k_size_fst.sh got WINDOW/REGIONS/OUTBED overrides so it is the one script producing both scans rather than a second copy of the estimator, and the tutorial shows the one-line invocation. WHY 20 kb AND NOT PER-SITE OR 10 kb: the genome-wide bin averages ~1056 informative sites per 200 kb, but this window runs leaner (~425 across 41.4-41.6 Mb), so a 10 kb bin puts the peak windows on 20-26 sites -- right at the MIN_SITES=20 floor the script drops below, on its own stated grounds that a ratio over a handful of sites swings on any one of them -- and 24 of 200 windows fall out entirely, leaving gaps in the lane. Both were built and compared: 20 kb scores 99 of 100 windows with 34-49 sites at the peak, for the same peak height (0.587 vs 0.576) and the same shape. WHAT IT BUYS: the 200 kb lane states one window at 0.367; the rebin resolves a contiguous block from 41.44 to 41.58 Mb rising to 0.587 at 41.50-41.52 Mb, sitting on IGF1 (41,495,479-41,567,874), with flanks at 0.05-0.2. That block is also, independently, the 140 kb core that dog10k-igf1-haplotype declares as its clusterRegion from the genotype matrix -- so the scan and the clustering now agree in the figures. The highlight stays the 200 kb window, which reads as the bin the top half scored it as, with the structure inside it visible. Point size 9 -> 6, since a hundred points at 9 merge into a band.",
+    "reviewedAt": "2026-08-09T05:49:49.049Z",
+    "hash": "1cb5d493f8e254ba95518a3182d1f088f5030aad"
   },
   "dog10k-fgf4-retrogene-synteny": {
     "name": "dog10k-fgf4-retrogene-synteny",
@@ -2294,9 +2294,9 @@
   },
   "pangenome/pggb_haplotype_paths": {
     "name": "pangenome/pggb_haplotype_paths",
-    "status": "bad",
-    "note": "kind of a chaotic image. any way to improve? do we really want dashed line? showing the lineargenomeview with MAF at same time might help. also showing how this was 'launched' might help.  DONE 2026-08-08: The MAF suggestion was the right one and it is in. The figure is now two views: the same 1.4 kb in K12 coordinates on top -- gene lane naming the element `insH21`, and the pggb whole-genome alignment showing the four strains that skip it with NO aligned sequence across chr:1,299,498-1,300,697 while K12's row runs through -- over the graph. Same carriage the coloured strokes draw, reached through an alignment the graph had no part in, and it gives the force drawing the axis it gives up. THE DASHED LINE STAYS, and it is not decoration: it is the only broken line in the drawing and it means sequence that is not there. Weight and darkness were measured insufficient (an off-reference node is charcoal rgb(60,65,72) against an arc at rgb(24,24,28), ~25 points a channel, and on hprc_lpa_kiv2 the node outdraws the arc 7,411 px to ~5,000). Hue cannot separate them either, since hue means reference position and charcoal means having none. NO LAUNCH TO SHOW: the indexed route rebuilds segments and links only, so it carries no P records and drawPaths would have nothing to draw -- this graph has to be the GFA file, which is the user guide's Route 2. Recorded in the spec so it is not re-asked.",
-    "reviewedAt": "2026-08-09T00:35:08.757Z",
+    "status": "good",
+    "note": "kind of a chaotic image. any way to improve? do we really want dashed line? showing the lineargenomeview with MAF at same time might help. also showing how this was 'launched' might help.  DONE 2026-08-08: The MAF suggestion was the right one and it is in. The figure is now two views: the same 1.4 kb in K12 coordinates on top -- gene lane naming the element `insH21`, and the pggb whole-genome alignment showing the four strains that skip it with NO aligned sequence across chr:1,299,498-1,300,697 while K12's row runs through -- over the graph. Same carriage the coloured strokes draw, reached through an alignment the graph had no part in, and it gives the force drawing the axis it gives up. THE DASHED LINE STAYS, and it is not decoration: it is the only broken line in the drawing and it means sequence that is not there. Weight and darkness were measured insufficient (an off-reference node is charcoal rgb(60,65,72) against an arc at rgb(24,24,28), ~25 points a channel, and on hprc_lpa_kiv2 the node outdraws the arc 7,411 px to ~5,000). Hue cannot separate them either, since hue means reference position and charcoal means having none. NO LAUNCH TO SHOW: the indexed route rebuilds segments and links only, so it carries no P records and drawPaths would have nothing to draw -- this graph has to be the GFA file, which is the user guide's Route 2. Recorded in the spec so it is not re-asked. VERIFIED 2026-08-09: read the current PNG against every claim in the DONE reply and they all hold. Top view is the 1.4 kb in K12 coordinates with the gene lane naming insH21; the pggb MAF lane under it draws K12's row continuously across chr:1,299,498-1,300,697 while CFT073, IAI39, NCTC86 and Sakai are blank through the whole interval and pick up again at the 309 label on its right edge. Graph below, force-directed, no backbone, the one dashed stroke still the only broken line in the drawing.",
+    "reviewedAt": "2026-08-09T05:36:49.204Z",
     "hash": "d8b4f590698a5e6a569ad92f2dd6ecccaa18b438"
   },
   "tcga/mutations_cdh1_histology": {
@@ -2336,9 +2336,9 @@
   },
   "desktop-add-track-steps": {
     "name": "desktop-add-track-steps",
-    "status": "bad",
-    "note": "reduce width and height of the app in all screenshots here. add margin on all sides. and make each row the same 'dimensions'...the varying height of each screenshot make it confusing. also the 'title bar' (minimize,expand,close) should be on right. ALL THREE DONE in composeProcedure, so every procedure figure gets them. MARGIN: the 26px transparent gap that was only between frames now surrounds the figure too (transparent, not a page color, since these render on a page with a light and a dark theme). TITLE BAR: the cluster moved to the right of the bar and its order changed with it -- minimize, maximize, close, close outermost, which is what a GNOME or Windows decoration draws. UNIFORM ROWS: the frames were each trimmed to their own content, which is what made them three different heights; now the slack is measured on every frame and all of them lose the SMALLEST amount, so the rows are identical and the dead page every frame shares still goes. The cost is deliberate: the app window is a fixed 1400x763 and cannot be resized (chromedriver's setRect throws on electron), so a state with short content -- the File menu over an empty view -- now keeps the blank page under it rather than being cropped to fit. Uniform windows were the ask and that blank is what the app really shows. Caption also fixed: it still narrated a (4) and a (5) that were removed last round.",
-    "reviewedAt": "2026-08-08T23:43:08.095Z",
+    "status": "answered",
+    "note": "reduce width and height of the app in all screenshots here. add margin on all sides. and make each row the same 'dimensions'...the varying height of each screenshot make it confusing. also the 'title bar' (minimize,expand,close) should be on right. ALL THREE DONE in composeProcedure, so every procedure figure gets them. MARGIN: the 26px transparent gap that was only between frames now surrounds the figure too (transparent, not a page color, since these render on a page with a light and a dark theme). TITLE BAR: the cluster moved to the right of the bar and its order changed with it -- minimize, maximize, close, close outermost, which is what a GNOME or Windows decoration draws. UNIFORM ROWS: the frames were each trimmed to their own content, which is what made them three different heights; now the slack is measured on every frame and all of them lose the SMALLEST amount, so the rows are identical and the dead page every frame shares still goes. The cost is deliberate: the app window is a fixed 1400x763 and cannot be resized (chromedriver's setRect throws on electron), so a state with short content -- the File menu over an empty view -- now keeps the blank page under it rather than being cropped to fit. Uniform windows were the ask and that blank is what the app really shows. Caption also fixed: it still narrated a (4) and a (5) that were removed last round. ANSWERED 2026-08-09 on the one remaining ask, and the answer is measured off the committed PNG rather than argued. REDUCING THE APP HEIGHT CANNOT MOVE THIS FIGURE. The composite is 1454x1952: strip the 26px border and the two 26px gaps and the three rows are 616.0px each, which is a 586px capture under a 28px title bar and a 1px border. The native capture is 763px, so trimFrames already removed 177px from every frame -- i.e. it cropped to the tallest frame's content plus exactly the keep=20 slack it aims for. The binding frame is the Add-a-track widget, whose content ends 566px down (Confirm track type lands at y=561 of the capture, measured on the composite). A shorter window would just capture fewer dead pixels that the crop was going to discard anyway; the composed rows come out 586px either way. So the height ask is already fully paid, by the crop rather than by the window. REDUCING THE WIDTH IS COUNTERPRODUCTIVE. Rendered into a fixed-width docs column the figure is scaled to that column, so the only thing width changes is aspect: a narrower window with the same 566px of widget content makes each row squarer and the three-row stack TALLER on the page. That is the opposite of the ask. Width also carries the 1400px convention every web figure shares. THE DEAD PAGE IN ROWS 1 AND 3 IS STRUCTURAL, not slack the crop missed: uniform rows plus one frame needing 566px and two needing ~300px is 266px of empty view in the short ones, and the only ways out are to shrink the widget's own UI or to give up uniform rows, which was the ask that created them. Window sizing IS available if it is ever wanted for another figure -- windowStateKeeper reads window-state.json from app.getPath('userData'), which electron maps onto the harness's throwaway --user-data-dir, and isValidState takes any bounds overlapping a display, so seeding {x:0,y:0,width,height} picks the size that setRect cannot. Not built here because it would not change a pixel of this figure.",
+    "reviewedAt": "2026-08-09T05:40:09.832Z",
     "hash": "6d9291f9e8e252f35a0b186fdf42a77cda7c2cb7"
   },
   "desktop-available-genomes-steps": {
@@ -2568,9 +2568,9 @@
   "multisv_rhd": {
     "name": "multisv_rhd",
     "status": "good",
-    "note": "this is a somewhat complex figure now. if possible, reduce height of both the multisamplevariantdisplay, the multiwiggledisplay, put them stacked. previous notes. and potentially, dont use all the colors on the vcf, it is confusing and distracting.   THE ZARR COPY-NUMBER LANE IS IN, and it is the tall screenshot you expected (1490px). The store already existed for the CNV tutorial — 2504 individuals of QuicK-mer2 1 kb copy number — but only over the two windows those figures visit, so scripts/build_1000g_cnv_zarr.sh now also builds chr1:25,150,000-25,450,000 and the committed store grew 1.4 to 1.7 MB. The figure had to move off the remote 1000genomes config onto test_data/1000g_cnv/config.json, because a plugin can only be declared by a config; the ensemble callset comes in as two session tracks, one per display. Clustered on the window, the depth lane separates the same three dosage classes the matrix sorts into, and it answers the nested call the VCF cannot: the olive no-call column of HGSV_1823 is a red gain in the depth lane. The capture now waits on data-clustered=true rather than a settle, after a first render came back mid-clustering at 62%. The four cnv1000g figures were re-rendered and reverted: chunks 0-12 of the store are byte-identical and their windows come first in the region list, so their pixels did not need to move.  FIXED, all three. Matrix 400 -> 290 and the Zarr depth lane 480 -> 330, and the depth lane moved DIRECTLY under the matrix with the record lane below the pair rather than between them -- the two are the same 3202 individuals measured two ways, so they are the comparison and belong adjacent. The record lane is one colour now: it was the `svTypeColor` jexl painting six classes over 26 overlapping records, and every record already carries its class IN its label (`<DEL> 70.1Kbp`), so the colour was a weaker copy of text already there. That also retires the floating key this spec had to hide by selector. Whole figure 1490 -> 1230.",
-    "reviewedAt": "2026-08-09T03:58:00.000Z",
-    "hash": "d3ffd1d97a3eaa450536d4546d12ad949171b13a"
+    "note": "",
+    "reviewedAt": "2026-08-09T05:47:36.702Z",
+    "hash": "4cd5aac57fba1f0463b4af15b7e54e1c2782f784"
   },
   "tcga/cohort_cnv_zarr_genome": {
     "name": "tcga/cohort_cnv_zarr_genome",
@@ -2595,17 +2595,17 @@
   },
   "hic/compartment_switch": {
     "name": "hic/compartment_switch",
-    "status": "good",
-    "note": "i dont like the silly colors of the subcompartment tracks. also, we need to see the hi-c to get confirmatory. also, this just confuses me in general. do we need loop or enhancer tracks? I need clarity and obviousness. this is just crazy colors and the text annotations dont help me understand. previous notes: CUT DOWN, not deleted. The matrix lane is gone: it was 300 squashed px arguing for the one thing the guide own paragraph says a raw contact map cannot show (compartments only become a checkerboard in an observed/expected matrix, which JBrowse does not compute), so a reader was asked to take a faint plaid on trust under four lanes that state the answer outright. The window is 4 Mb rather than 10, which is what makes the 100 kb subcompartment strips read as blocks instead of alternating every few pixels, and both edges still carry the two eigenvectors on the same side as the control. Two callouts name the compartment per lane (GM12878 B across TCF4, K562 A) so positive/negative does not have to be decoded. Captions in hic_track.md and hic_structural_variants.md updated.  FIXED by deleting the noise rather than adding to it. BOTH subcompartment strips are gone: they were the only categorical encoding in the frame (A1/A2/B1/B2/B3 as yellow, red, grey, green, with the key off the figure) and a coarser second copy of the sign the two eigenvector lanes already draw as red against blue -- which is most of 'the text annotations dont help me understand', since a reader had to decide which encoding to believe. Three lanes now: genes, GM12878 eigenvector, K562 eigenvector, with the band between them. The pills say what the sign means rather than naming a letter ('eigenvector negative across the band, the B (closed) compartment'). ON THE HI-C: the answer is still no and it is now IN THE CAPTION rather than only in the spec, so it does not get asked a third time -- a compartment only appears once a matrix is divided by its distance expectation, which JBrowse does not compute, and the eigenvector IS that computation, published. -60px.",
-    "reviewedAt": "2026-08-09T04:45:00.000Z",
-    "hash": "0b2798c0d4f9d2910098a8458db0c243261fc33f"
+    "status": "bad",
+    "note": "are there any other 'interesting' tracks that complement or enhance result? why are we even comparing gm12878 and k562, ostensibly normal vs cancer? elaborate on this context in red annotation box very briefly. previous notes: i dont like the silly colors of the subcompartment tracks. also, we need to see the hi-c to get confirmatory. also, this just confuses me in general. do we need loop or enhancer tracks? I need clarity and obviousness. this is just crazy colors and the text annotations dont help me understand. previous notes: CUT DOWN, not deleted. The matrix lane is gone: it was 300 squashed px arguing for the one thing the guide own paragraph says a raw contact map cannot show (compartments only become a checkerboard in an observed/expected matrix, which JBrowse does not compute), so a reader was asked to take a faint plaid on trust under four lanes that state the answer outright. The window is 4 Mb rather than 10, which is what makes the 100 kb subcompartment strips read as blocks instead of alternating every few pixels, and both edges still carry the two eigenvectors on the same side as the control. Two callouts name the compartment per lane (GM12878 B across TCF4, K562 A) so positive/negative does not have to be decoded. Captions in hic_track.md and hic_structural_variants.md updated.  FIXED by deleting the noise rather than adding to it. BOTH subcompartment strips are gone: they were the only categorical encoding in the frame (A1/A2/B1/B2/B3 as yellow, red, grey, green, with the key off the figure) and a coarser second copy of the sign the two eigenvector lanes already draw as red against blue -- which is most of 'the text annotations dont help me understand', since a reader had to decide which encoding to believe. Three lanes now: genes, GM12878 eigenvector, K562 eigenvector, with the band between them. The pills say what the sign means rather than naming a letter ('eigenvector negative across the band, the B (closed) compartment'). ON THE HI-C: the answer is still no and it is now IN THE CAPTION rather than only in the spec, so it does not get asked a third time -- a compartment only appears once a matrix is divided by its distance expectation, which JBrowse does not compute, and the eigenvector IS that computation, published. -60px.",
+    "reviewedAt": "2026-08-09T05:45:58.932Z",
+    "hash": "012f21b20aee0381d2c39d2b07651475e95e9a16"
   },
   "hic/loops_and_domains": {
     "name": "hic/loops_and_domains",
-    "status": "good",
-    "note": "the naive and memory tracks look almost exactly the same. i cant see difference. previous notes; are there other tracks like \"known gene enhancers\" that would corroborate what is shown here? do we need to create a method to compare .hic files? can .hic files store the 'difference' between two conditions? we could make a tutorial for this or cross referenced ~/src/vendor juicebox.js.   FIXED, and the answer is that there IS no difference -- so the figure stopped drawing two rows that invite one. Measured all twelve PBMC pseudobulks over this window with bigWigToBedGraph (mean signal inside the 600 kb domain against the rest of the 2.5 Mb frame): Naive B 0.0385 and Memory B 0.0342 against flanks of 0.0094 and 0.0084. The lane is one row now. The same table also settles what the lane may CLAIM, which is less than a cell-type-matched lane looks like it claims: every lineage is enriched inside the domain, 3.6x (NK) to 5.2x (CD4 Naive), with B mid-table at 4.1x. So this is not a B-specific domain and is no longer captioned as one. What is true of B is the absolute level -- Naive B carries the most signal inside the domain of the twelve, which is why it is the row kept, GM12878 being a B-lymphoblastoid line.",
-    "reviewedAt": "2026-08-09T04:45:00.000Z",
-    "hash": "684dde18f1a6f3c348f38c4e0a1f1d839ff27e78"
+    "status": "bad",
+    "note": "we apparently switched to some 10x single cell but i dont get it still. this one single bigwig does not help me to see pattern. seeing a bunch of accessibility biwigs as a multiwig might help, and generate the 'frssion' that i like to see. previous notes: the naive and memory tracks look almost exactly the same. i cant see difference. previous notes; are there other tracks like \"known gene enhancers\" that would corroborate what is shown here? do we need to create a method to compare .hic files? can .hic files store the 'difference' between two conditions? we could make a tutorial for this or cross referenced ~/src/vendor juicebox.js.   FIXED, and the answer is that there IS no difference -- so the figure stopped drawing two rows that invite one. Measured all twelve PBMC pseudobulks over this window with bigWigToBedGraph (mean signal inside the 600 kb domain against the rest of the 2.5 Mb frame): Naive B 0.0385 and Memory B 0.0342 against flanks of 0.0094 and 0.0084. The lane is one row now. The same table also settles what the lane may CLAIM, which is less than a cell-type-matched lane looks like it claims: every lineage is enriched inside the domain, 3.6x (NK) to 5.2x (CD4 Naive), with B mid-table at 4.1x. So this is not a B-specific domain and is no longer captioned as one. What is true of B is the absolute level -- Naive B carries the most signal inside the domain of the twelve, which is why it is the row kept, GM12878 being a B-lymphoblastoid line.",
+    "reviewedAt": "2026-08-09T05:46:56.155Z",
+    "hash": "191e3231f1e0891b90aca3f14dcd6884b1aaae03"
   },
   "jbrowse-img/gene_name_search": {
     "name": "jbrowse-img/gene_name_search",
@@ -2742,10 +2742,10 @@
   },
   "homoeolog_synteny/wheat_vs_oat": {
     "name": "homoeolog_synteny/wheat_vs_oat",
-    "status": "good",
+    "status": "bad",
     "note": "might need to clearly label wheat self-alignment on left using red annotation boxes, and oat self-alignment on right with red annotation boxes. also \"one of dozens like it\" is way too vague.  FIXED: each half's view header now reads 'Bread wheat aligned against itself' / 'Oat aligned against itself' instead of `wheat,wheat` and `oat,oat` -- a displayName is the one label in a compose that sits at the same height in both halves and cannot land on the data. The on-image text is short now too ('4AL/5AL and 4AL/7BS', 'one of dozens like it'). Why a self-alignment is the right comparison for a hexaploid is a new paragraph in homoeolog_synteny.md: each genome already holds three copies of nearly every gene, so the plot that says where the subgenomes went is the genome against itself, and aligning to a diploid relative cannot see the copies at all.",
-    "reviewedAt": "2026-08-09T03:58:00.000Z",
-    "hash": "f71486b61a6fd80163fdf2b2ef21031c2302a842"
+    "reviewedAt": "2026-08-09T05:41:52.495Z",
+    "hash": "af6974950a48373ca14a102dd6d35cc60d937533"
   },
   "maf_hprc_pangenome": {
     "name": "maf_hprc_pangenome",
@@ -2775,10 +2775,10 @@
   },
   "pangenome/pggb_carriage_lane": {
     "name": "pangenome/pggb_carriage_lane",
-    "status": "good",
-    "note": "please make it clear how this figure was made, it is a very cool and important track. add small red box text annotation if needed  FIXED: two pills naming where each quantitative lane comes from -- 'odgi depth, windowed' and 'GFA carriers tag, per segment'. The tutorial prints the whole track config in the fence directly above the figure, but the picture gave no hint that the red band is a per-segment tag rather than a called annotation, and the two lanes are computed differently from the same graph (a windowed mean above, one box per segment below), which is what the paragraph under the figure spends itself on. Caption now says so too.",
-    "reviewedAt": "2026-08-09T03:58:00.000Z",
-    "hash": "ab3f9e6b02f2a0e633040cd96f8d194d379c87d8"
+    "status": "bad",
+    "note": "is this a specific GFA 'tag' like a sam tag? use full naming. also say it is a custom linearcanvasdisplay or something with custom settings if so (and user can see caption for how to set it up) but be brief. previous notes: please make it clear how this figure was made, it is a very cool and important track. add small red box text annotation if needed  FIXED: two pills naming where each quantitative lane comes from -- 'odgi depth, windowed' and 'GFA carriers tag, per segment'. The tutorial prints the whole track config in the fence directly above the figure, but the picture gave no hint that the red band is a per-segment tag rather than a called annotation, and the two lanes are computed differently from the same graph (a windowed mean above, one box per segment below), which is what the paragraph under the figure spends itself on. Caption now says so too.",
+    "reviewedAt": "2026-08-09T05:41:18.904Z",
+    "hash": "649eb063ca4dc5732eb378985372362161d9a15e"
   },
   "pangenome/pggb_untangle_dotplot": {
     "name": "pangenome/pggb_untangle_dotplot",
@@ -2796,10 +2796,10 @@
   },
   "qc/smn_problematic_regions": {
     "name": "qc/smn_problematic_regions",
-    "status": "good",
-    "note": "could add mappability wiggle files even as a multiwiggle since there are multiple  ANSWERED BY MEASUREMENT, and the answer is no for THIS window. The hosted hub does carry an `hg38-umap` MultiWiggleAdapter with all four read lengths (k24/36/50/100), and it was rendered here two ways. `min` at 2 kb a pixel is on the floor almost everywhere -- practically every 2 kb window in this part of chr5 holds at least one badly-mappable base, so the block does not separate from the flanks. `avg` with a density ramp is vertical stripes at every k. The summarization that works at 464 bp a pixel does not survive being widened four times. It IS in qc/smn_vs_control now (see that entry), which is the frame it belongs in, and the tutorial says where the limit is.",
-    "reviewedAt": "2026-08-09T03:58:00.000Z",
-    "hash": "6c5042a945c3e9489d1d0e6ddd7dc17d63a92219"
+    "status": "bad",
+    "note": "please make the gene track compact. also the segdup is sort of hard to see because there are long and short features that all get collapsed to layout at y=0. is this intended? previous notes: could add mappability wiggle files even as a multiwiggle since there are multiple  ANSWERED BY MEASUREMENT, and the answer is no for THIS window. The hosted hub does carry an `hg38-umap` MultiWiggleAdapter with all four read lengths (k24/36/50/100), and it was rendered here two ways. `min` at 2 kb a pixel is on the floor almost everywhere -- practically every 2 kb window in this part of chr5 holds at least one badly-mappable base, so the block does not separate from the flanks. `avg` with a density ramp is vertical stripes at every k. The summarization that works at 464 bp a pixel does not survive being widened four times. It IS in qc/smn_vs_control now (see that entry), which is the frame it belongs in, and the tutorial says where the limit is.",
+    "reviewedAt": "2026-08-09T05:48:24.991Z",
+    "hash": "66d010363528cfd675e7bb6bb306608878e8aa98"
   },
   "qc/smn_vs_control": {
     "name": "qc/smn_vs_control",
@@ -2882,9 +2882,9 @@
   },
   "pangenome/pggb_strain_launch": {
     "name": "pangenome/pggb_strain_launch",
-    "status": "bad",
-    "note": "see notes in pangenome/rgfa_segment_neighbourhood ",
-    "reviewedAt": "2026-08-08T20:31:58.701Z",
+    "status": "answered",
+    "note": "see notes in pangenome/rgfa_segment_neighbourhood ANSWERED 2026-08-09: that combination was built -- pangenome/rgfa_launch_roundtrip, the 4-part side-by-side, graph -> linear on the left and linear -> graph on the right, each half naming its own direction in its view header. It was composed from rgfa_strain_launch + rgfa_segment_neighbourhood rather than from THIS figure, because this one is not the inverse the note took it for: pggb_strain_launch runs graph -> linear, the SAME direction as rgfa_strain_launch, so folding it in would be a third panel of a direction the round trip already shows, on a different dataset and in a different document. There is no pggb linear -> graph figure to pair it with (the launch-direction specs are rgfa_subgraph_launch, rgfa_launch_out_menu, rgfa_strain_launch and rgfa_segment_neighbourhood; the pggb set has no menu-driven linear -> graph capture). It also earns its place unpaired, and on a different point: rgfa_strain_launch launches an INSERTION (CFT073's 58.6 kb arm at K12's tRNA cluster), this one launches a DELETION -- s118465 is 75 bp on CFT073 where K12 carries 7.1 kb, and the launched view shows ssuE running straight into pyrD with the seven K12 genes between them simply absent. Verified the current PNG: graph on top at 61 nodes/80 edges with the 75 bp segment ringed, CFT073 at chr:1,048,053-1,049,053 below it carrying its own gene track.",
+    "reviewedAt": "2026-08-09T05:41:43.114Z",
     "hash": "9d48d2516c4fb3d54f71f58d0fea601c18538050"
   },
   "genomes_basics/multiz_alignment": {
@@ -2913,5 +2913,19 @@
     "note": "are there any other changes you think would help us convey to users the aggregate quality? would the coverage track benefit from getting per-base quality historgram? would changing the coloring of the quality scores help make things easyier to see? avoid discussion about smn2 in the red call out, just discuss the 'big picture' about what we are seeing. also zoom out more.  consider setting compact featureheight. and reference this from the qc doc?",
     "reviewedAt": "2026-08-09T02:38:13.196Z",
     "hash": "9fb9c07d170a3fa1da6d0d75ab36dcf5433ba6fc"
+  },
+  "gpu_display_tldr": {
+    "name": "gpu_display_tldr",
+    "status": "bad",
+    "note": "'once per region' is a hard to understand claim. might just not even say it. data returned in 'absolute bp' unclear what that means like...just normal coordinates? its not a unambigous term...unless we define glossary or make better term or say uint32 genomic coordinates. the way it says 'kept' is weird. also even saying 'uploaded once' is weird. i know what it means kinda, but we want it to be easy for someone that doesnt know gpu",
+    "reviewedAt": "2026-08-09T05:44:20.811Z",
+    "hash": "c16fe53f0627da694c6ea3b5935748e9051ac4c1"
+  },
+  "dtu/atp5f1c_dtu": {
+    "name": "dtu/atp5f1c_dtu",
+    "status": "bad",
+    "note": "i dont think this strongly benefits from the two part figure. i think we just can add the box to the part 1 figure and delete part 2 figure.",
+    "reviewedAt": "2026-08-09T05:44:54.497Z",
+    "hash": "1595eb91554830fdf2b08e664197b31a63b0f00c"
   }
 }

@@ -191,6 +191,26 @@
     },
     {
       "type": "GWASTrack",
+      "trackId": "dog10k_size_fst_igf1_20kb",
+      "name": "Fst, toy/small vs giant breeds (20 kb windows)",
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
+      "adapter": {
+        "type": "GWASAdapter",
+        "uri": "dog10k_size_fst_igf1_20kb.bed.gz",
+        "columnNames": [
+          "chrom",
+          "chromStart",
+          "chromEnd",
+          "name",
+          "fst",
+          "sites"
+        ],
+        "scoreColumn": "fst",
+        "scoreTransform": "none"
+      }
+    },
+    {
+      "type": "GWASTrack",
       "trackId": "dog10k_igf1_fst",
       "name": "Fst per site, toy/small vs giant breeds",
       "assemblyNames": ["UU_Cfam_GSD_1.0"],

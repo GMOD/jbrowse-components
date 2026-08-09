@@ -65,12 +65,22 @@ on the scale the plot draws, so only the column has to be named.
 Opening the assembly without a location shows all of its regions at once, so the
 display lays the autosomes out side by side rather than one at a time.
 
-<Figure caption="Top: Fst between the toy/small and giant panels in 200 kb windows across the 38 autosomes, drawn as a Manhattan track, with three body-size genes labelled at the windows they fall in. Bottom: two megabases of chr15 on the same axis, the highlighted band the IGF1 window and the gene track naming what it sits on." src="/img/dog10k-size-fst-scan.png" links="Whole genome=dog10k-size-fst-scan-genome,IGF1 window=dog10k-size-fst-scan-igf1" />
+<Figure caption="Top: Fst between the toy/small and giant panels in 200 kb windows across the 38 autosomes, drawn as a Manhattan track, with three body-size genes labelled at the windows they fall in. Bottom: two megabases of chr15, the same scan rebinned to 20 kb, where the labelled point above resolves into a sweep sitting on IGF1. The highlighted band is the single 200 kb window the top half scored it as." src="/img/dog10k-size-fst-scan.png" links="Whole genome=dog10k-size-fst-scan-genome,IGF1 window=dog10k-size-fst-scan-igf1" />
 
 Each point is a window, so a peak names a region rather than a variant, and the
-run of high windows on chr10 is one region's worth. At two megabases the same
-windows are drawn at their real width, against the neighbours that set the
-peak's scale.
+run of high windows on chr10 is one region's worth. A genome-wide scan has to
+bin wide enough to hold down twelve thousand windows' worth of noise, which is
+what makes the _IGF1_ peak a single bar up there. Two megabases does not, so the
+lower half is the same panel and the same estimator rebinned to 20 kb, and the
+peak turns out to have a shape: a block of high windows sitting on the gene,
+falling away into flanks the 200 kb bin had averaged it together with. Rerunning
+the build script over one region is all that takes:
+
+```bash
+WINDOW=20000 REGIONS=chr15:40600000-42600000 \
+  OUTBED=dog10k_size_fst_igf1_20kb.bed \
+  bash scripts/build_dog10k_size_fst.sh
+```
 
 ## The locus
 
