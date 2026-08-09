@@ -181,9 +181,7 @@ whenever the session holds a track whose adapter can cut a subgraph. Selecting
 more than the view will draw greys the item out and displays its limit. The
 track menu's **Launch view → Graph genome view (this region)** takes whatever is
 on screen instead, and right-clicking one segment cuts the graph around that
-segment.
-
-The subgraph is cut from the same two files the track reads.
+segment. The subgraph is cut from the same two files the track reads.
 
 <Figure caption="The C4 locus as a graph, in force-directed layout, under three lanes of the same window. The bubbles track reports a single bubble spanning the locus, and the graph below is what that bubble contains: a colored reference thread with charcoal allele loops over it." src="/img/pangenome/hprc_c4_subgraph.png" />
 
@@ -251,8 +249,7 @@ hundred kb.
 ### What the graph shows that a linear view cannot
 
 Every node and every deletion arc carries its own size, so the drawing states
-what each alternative is worth without a hover. Labels appear when the thing
-they name is large enough on screen to hold one and disappear as you zoom out.
+what each alternative is worth without a hover.
 
 Extra sequence is a node in the graph, so it draws as a tube. Missing sequence
 is an **edge**: a link from one backbone segment to another that is not its
@@ -274,10 +271,9 @@ wherever the simulation puts them.
 
 <Figure caption="The complement factor H cluster on chr1: two HPRC haplotypes aligned to GRCh38, above the same window as an anchored graph. Each row carries its own CAT gene annotation, so the boxed CFHR3 and CFHR1 sit on the reference and on HG00099 and are absent from HG01109, whose alignment stops and resumes across the span. The dashed arc under the graph's reference row is that same gap, labelled 84.7 kb." src="/img/pangenome/hprc_cfhr_deletion.png" />
 
-Hovering one of these edges gives the interval and the bp it removes. This is
-the event a linear view is worst at, because a deletion has nothing to draw at
-the position it occurs, and the one a graph is best at, because the alternative
-route is a real part of the structure.
+Hovering one of these edges gives the interval and the bp it removes. A deletion
+has nothing to draw at the position it occurs, which is what a linear view is
+worst at and what the alternative route in a graph is.
 
 Release 2 annotates every assembly with CAT, on the assembly's own contigs, so a
 haplotype row can carry its own gene models instead of borrowing the
@@ -286,16 +282,14 @@ reference's. The index
 gives one GFF3 per haplotype; load a slice of one as an ordinary `FeatureTrack`
 on that haplotype's assembly.
 
-Chromosome size does not enter into any of this. The amylase locus sits on chr1,
-the longest human chromosome, and the graph holds 464 haplotypes of it. Only the
-window is cut, so an allele whose interior falls outside it draws as a short arm
-off the backbone rather than as a closed loop.
-
-The figure below is cut from `chr1:103,500,000-103,850,000`, wider than the
-amylase entry in the table further down. At the table's window the bubble fills
-the pane with no flank beside it, so the drawing does not say where in the locus
-the complexity sits. Widening until the backbone chain is in frame is the usual
-remedy when a cut comes back as a single tangle.
+Chromosome size does not enter into any of this: only the window is cut, so an
+allele whose interior falls outside it draws as a short arm off the backbone
+rather than as a closed loop. The figure below is cut from
+`chr1:103,500,000-103,850,000`, wider than the amylase entry in the table
+further down, because at the table's window the bubble fills the pane with no
+flank beside it and the drawing cannot say where in the locus the complexity
+sits. Widening until the backbone chain is in frame is the usual remedy when a
+cut comes back as a single tangle.
 
 <Figure caption="The amylase locus on chr1 as a force-directed graph, under the RefSeq genes and the rGFA segments for the same window. The flanks draw as one chain of backbone segments, and every crossing in the 126-node drawing is inside the amylase bubble at the end of that chain, so the window says where the complexity is as well as what it is." src="/img/pangenome/hprc_amylase_graph.png" />
 
@@ -389,9 +383,9 @@ from short reads:
 
 <Figure caption="The KIV-2 repeat inside LPA as a force-directed graph, under the RefSeq genes, the bubbles lane and the rGFA segments for the same window. The bubble the lane reports across the repeat is the chain of loops below it, and each node carries the sequence it holds; the dashed arc, labelled with the size of the deletion it draws, is the route that bypasses the reference between two of them." src="/img/pangenome/hprc_lpa_kiv2.png" />
 
-Either way a donor row names the haplotype the sequence was taken from, the same
-attribution the [allele inventory](#the-allele-inventory)'s `discoveryRank` and
-`firstSeenIn` carry, and not the set of haplotypes carrying it.
+Either way a donor row names the haplotype the sequence was taken from rather
+than the set carrying it, which is
+[attribution rather than carriage](#from-a-node-back-to-a-coordinate).
 
 ### From a node back to a coordinate
 
@@ -530,12 +524,11 @@ tabix https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.links.bed.gz \
 
 ### What kind of sequence GRCh38 was missing
 
-The lane above says the inserted sequence is tiled by L1, but at 180 bp/px it
-cannot say whether that is unusual, since a subtelomere is repeat-dense either
-way. To answer that you need the same measurement on both assemblies at the same
-scale, which is a quantitative track rather than a display setting. This one is
-the fraction of each 5 kb bin covered by one RepeatMasker class, one lane per
-class, on GRCh38 and CHM13 alike:
+The lane above says the inserted sequence is tiled by L1, but not whether that
+is unusual, since a subtelomere is repeat-dense either way. Answering that takes
+the same measurement on both assemblies at the same scale: the fraction of each
+5 kb bin covered by one RepeatMasker class, one lane per class, on GRCh38 and
+CHM13 alike.
 
 ```json addtrack
 {
@@ -563,12 +556,6 @@ class, on GRCh38 and CHM13 alike:
         "name": "LTR",
         "color": "rgb(70,150,90)",
         "uri": "https://jbrowse.org/demos/hprc/repeat_density/hs1_repeat_density_LTR.bw"
-      },
-      {
-        "type": "BigWigAdapter",
-        "name": "DNA",
-        "color": "rgb(230,150,40)",
-        "uri": "https://jbrowse.org/demos/hprc/repeat_density/hs1_repeat_density_DNA.bw"
       }
     ]
   },
@@ -580,12 +567,14 @@ class, on GRCh38 and CHM13 alike:
 }
 ```
 
-Swap `hs1` for `hg38` in both the `trackId`/`assemblyNames` and the four URLs
-for the GRCh38 copy; `Satellite` and `Simple_repeat` are hosted under the same
-names if you want them (they are near zero here, but a window on a centromere is
-all Satellite). Pin `minScore`/`maxScore` to 0 and 1 rather than autoscaling, or
-each row rescales to its own maximum and the comparison the track exists for
-disappears.
+Swap `hs1` for `hg38` in the `trackId`/`assemblyNames` and the URLs for the
+GRCh38 copy. `DNA`, `Satellite` and `Simple_repeat` are hosted under the same
+names if you want them, near zero here but the whole story on a centromere. The
+pinned `minScore`/`maxScore` are load-bearing for the same reason they are in
+the
+[cookbook recipe](/docs/cookbook#multiple-signals-on-one-track-each-its-own-color)
+this follows: autoscale runs per row, so each class would rescale to its own
+maximum and the comparison the track exists for would disappear.
 
 Open the track on each assembly's last 650 kb of chr17, which is what each one
 ends the chromosome with rather than a lifted-over interval: there is no
@@ -695,10 +684,8 @@ segment count as its `score`, so the only change is the track type, since a
 The graph is 474 nodes against about 751,000 segments in the graph itself, laid
 out in 18 ms. The chain alternates strictly, 237 backbone nodes and 237 bubbles,
 because `gfatools bubble` reports top-level bubbles only and those never
-overlap, which is what makes one flat walk complete rather than lossy. The quiet
-stretch is GRCh38's heterochromatin gap on 1q, a run of N with nothing for a
-haplotype to align to, and the graph spends a single 18.7 Mb backbone node
-crossing it.
+overlap, which is what makes one flat walk complete rather than lossy. The
+heterochromatin gap the caption names costs it a single backbone node.
 
 This is the coarse end of a ladder, not a replacement: a tier node is a bubble,
 so it says where the graph varies and by how much, and nothing about the alleles
@@ -822,15 +809,15 @@ the build script's closing summary prints how many rows carry it, and on the
 HPRC graph that is a large minority. Add `jexl:feature.nested==0` to the filter
 above before reading lengths off this lane in bulk.
 
-Read `discoveryRank` and `firstSeenIn` as the first haplotype to contribute an
-allele rather than as who carries it. minigraph collapses, so an allele many
+`discoveryRank` and `firstSeenIn` carry the same
+[attribution](#from-a-node-back-to-a-coordinate) the node panel does, on the
+allele rather than the segment. minigraph collapses, so an allele many
 haplotypes share is credited to whichever was added first, and one sample can
 end up named on half the rows in a dense window purely by build order. Nor does
 a high rank mean the earlier haplotypes lack the sequence: they may have lacked
 it, or had their copy merged into an existing path, or simply not aligned there.
-It bounds discovery and nothing else. Carriage is a different file's job, and at
-this graph's own granularity that file is published:
-[below](#carriage-at-the-graphs-own-granularity).
+It bounds discovery and nothing else. Carriage is
+[a different file](#carriage-at-the-graphs-own-granularity).
 
 ## The variant callset
 
@@ -884,9 +871,7 @@ insertion consumes no reference. `LV` is the record's level in vg's snarl tree,
 and `LV==0` keeps the top-level sites. Without it the panel paints some events
 twice at two positions, because this file writes a nested child as its own
 record beside its parent, with `PS` naming that parent, and a reader counting
-columns counts those events twice. The pair is the standard idiom for a
-pangenome VCF and belongs in the filter the same way `renderingMode: "phased"`
-belongs in the config.
+columns counts those events twice.
 
 One thing the filter cannot promise is what a given cell holds. It admits a
 record on its longest allele, and most records it admits here are multi-allelic,
@@ -908,10 +893,10 @@ filter for exactly that, which matters where assembly coverage is thin (KIR,
 LPA) more than it does here. `CONFLICT` names samples the graph gives two
 disagreeing paths, and it fires on no record in this window.
 
-Because an insertion consumes no reference, it would not otherwise draw at its
-true width. The display widens each insertion cell to a marker sized by the
-inserted bp, in that haplotype's own genotype color
-([`showInsertionGlyphs`](/docs/config/linearmultisamplevariantdisplay/#slot-showinsertionglyphs)).
+The display widens each insertion cell to a marker sized by the inserted bp, in
+that haplotype's own genotype color
+([`showInsertionGlyphs`](/docs/config/linearmultisamplevariantdisplay/#slot-showinsertionglyphs)),
+since it consumes no reference and would not otherwise draw at its true width.
 Only haplotypes carrying the allele widen, so the marker never implies a sample
 has sequence it does not.
 
@@ -951,23 +936,20 @@ window is a couple of seconds over HTTP. It carries 231 sample columns rather
 than the wave file's 232, because CHM13 is not among them, so phased mode draws
 462 rows and `AN` tops out there too.
 
-Two fields are why this file answers what the graph cannot. `AT` states each
-allele as the **traversal** it takes through the graph, the same statement the
-`AT` in a pggb VCF makes, which the wave file drops
-(`bcftools annotate -x INFO/AT` is in its own header). And `LV`/`PS` place each
-record in the snarl tree, so `jexl:feature.INFO.LV[0]==0` cuts the lane to
-top-level sites, the same tier the [bubble track](#the-bubble-track) holds.
+`AT` is why this file answers what the graph cannot: it states each allele as
+the **traversal** it takes through the graph, the same statement the `AT` in a
+pggb VCF makes, which the wave file drops (`bcftools annotate -x INFO/AT` is in
+its own header). The [same `LV==0` filter](#the-variant-callset) cuts this lane
+to top-level sites, the tier the [bubble track](#the-bubble-track) holds.
 
 One join does not work and is worth not attempting: `ID` and `AT` name
 **base-level integer nodes** (`>161001867>161004536`), not the `sNNNNN` segment
 ids of `sv.gfa`. Match a record to a bubble by interval, not by id.
 
-With this lane loaded, the reading the rest of this page has to keep qualifying
-becomes direct. `discoveryRank` and `firstSeenIn` on the
-[allele inventory](#the-allele-inventory) remain attribution, and a genotype
-column here is carriage, so the two sit over one coordinate and say different,
-compatible things: which haplotype the graph credits an allele to, and which
-haplotypes actually walk it.
+With this lane loaded the two readings sit over one coordinate and say
+different, compatible things: the [allele inventory](#the-allele-inventory)
+gives the haplotype the graph credits an allele to, and a genotype column here
+gives the haplotypes that walk it.
 
 ## The alignment underneath both
 
@@ -1032,25 +1014,19 @@ ends. The graph states an allele and its length but cannot say whose it is,
 since collapsing is what let it be found at all, while the callset never lost
 the samples.
 
-They still do not line up row for row, for two reasons, in this order.
-
-The first is decomposition, and the file states it outright. `ORIGIN` on a
-record names the position of the complex record vcfwave split it out of, so one
-graph bubble arrives as many VCF records, and `LV`/`PS` are the file's own map
-of that fan-out. Counting records against bubbles compares a decomposed callset
-with an undecomposed graph, which is what the `LV==0` filter above undoes.
-
-The second is attribution against carriage. rGFA's `SN` tag names the assembly a
-segment was **first contributed by**, so a graph row is attribution, and a
-genotype names every haplotype that **carries** an allele, so a matrix row is
-carriage. A donor can appear on one haplotype in the graph and carry the same
-event on the other in the callset.
+They still do not line up row for row. The rows differ because one lane is
+[attribution and the other carriage](#from-a-node-back-to-a-coordinate), so a
+donor can appear on one haplotype in the graph and carry the same event on the
+other in the callset. The records differ because of decomposition, which the
+file states outright: `ORIGIN` names the position of the complex record vcfwave
+split each one out of, so one graph bubble arrives as many VCF records, and that
+is what the `LV==0` filter above undoes.
 
 The word "bubble" also covers two different decompositions here. The bubble lane
-is `gfatools bubble`'s top-level superbubbles over the rGFA; `LV`/`PS` are vg's
-snarl tree over the graph the callset was deconstructed from. They agree about
-where the graph varies without being in one-to-one correspondence, so match a
-bubble to a record by interval rather than by count.
+is `gfatools bubble`'s top-level superbubbles over the rGFA, where `LV`/`PS` are
+vg's snarl tree over the graph the callset was deconstructed from. They agree
+about where the graph varies without being in one-to-one correspondence, so
+match a bubble to a record by interval rather than by count.
 
 What does line up is the event: mark an interval in the linear view and it
 crosses the genes, the segments lane and the genotype matrix in one column, and
@@ -1079,6 +1055,11 @@ writes the two tabix indexes `RgfaTabixAdapter` reads, straight from the gzipped
 rGFA (nothing to unpack), using gfatools for the segment projection. It needs an
 **rGFA**: `sv.gfa.gz` is one, the `.gfa.gz` beside it is not (see
 [Regular GFA vs rGFA](#regular-gfa-vs-rgfa)).
+[`build_rgfa_alleles.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_alleles.sh)
+then reads only those two indexes and never the graph, so the allele inventory
+takes seconds off the small index pair rather than the 842 MB download they came
+from, and works with no assemblies loaded, which is the normal situation with
+someone else's graph.
 
 The [bubble track](#the-bubble-track) is neither script but one gfatools call
 over the same graph:
@@ -1089,21 +1070,14 @@ gzip -dc hprc-v2.0-mc-grch38.sv.gfa.gz | gfatools bubble - \
 tabix -p bed out.bubbles.bed.gz
 ```
 
-[`build_rgfa_alleles.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_alleles.sh)
-reads only those two indexes, never the graph, and writes the allele inventory
-in seconds off the small index pair rather than the 842 MB download they came
-from. It therefore works with no assemblies loaded, which is the normal
-situation with someone else's graph.
-
 Carriage needs no rebuilding at all: it is
 [a published file](#carriage-at-the-graphs-own-granularity), tabix-indexed like
-the callset. The route that does rebuild it is
+the callset. The route that does rebuild it,
 [`build_minigraph_paths.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_minigraph_paths.sh),
-which runs `minigraph --call` over the assemblies and writes one row per
-haplotype per bubble for the guide's
+runs `minigraph --call` over the assemblies and writes one row per haplotype per
+bubble for the guide's
 [per-strain paths](/docs/user_guides/graph_genome_view#which-strain-takes-which-path)
-lane. That costs a 464-assembly download and a mapping run, and is worth it only
-for a graph whose assemblies you have and whose carriage nobody has published.
+lane, at the cost of a 464-assembly download and a mapping run.
 
 `build_rgfa_tabix.sh` takes an optional third argument, the reference's PanSN
 sample, and writes a second index pair keyed only under that sample's sequences
@@ -1114,9 +1088,10 @@ hop follows an allele's interior segments, and those are indexed under the donor
 contig the small pair drops, so the graph comes back as though the setting were
 **None**.
 
-The [repeat-density lanes](#what-kind-of-sequence-grch38-was-missing) are their
-own script, and the only one here that touches neither the graph nor HPRC. It
-reads UCSC's RepeatMasker for the two assemblies and bins it:
+Two figures have a script of their own. The
+[repeat-density lanes](#what-kind-of-sequence-grch38-was-missing) come from the
+only one here that touches neither the graph nor HPRC, which bins UCSC's
+RepeatMasker for both assemblies:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_repeat_density.sh
@@ -1126,14 +1101,12 @@ bash build_repeat_density.sh out
 It writes the twelve bigWigs (six classes x two assemblies, genome-wide) and
 then prints the per-class table the section above quotes, so the numbers come
 out of the same run that builds the lanes. First run downloads ~500 MB and
-re-running skips what is already built, so an interrupted run resumes.
-
-The two haplotype rows in the CFHR figure are a third script:
-[`build_hprc_cfhr_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc_cfhr_synteny.sh)
-picks a carrier and a non-carrier of the deletion out of the callset, slices
-their alignments out of release 2's own all-vs-GRCh38 PAF, and slices each
-haplotype's CAT annotation to the same window, giving one synteny row and one
-gene lane per haplotype.
+re-running skips what is already built, so an interrupted run resumes. The two
+haplotype rows in the CFHR figure come from
+[`build_hprc_cfhr_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc_cfhr_synteny.sh),
+which picks a carrier and a non-carrier of the deletion out of the callset,
+slices their alignments out of release 2's own all-vs-GRCh38 PAF, and slices
+each haplotype's CAT annotation to the same window.
 
 ## See also
 

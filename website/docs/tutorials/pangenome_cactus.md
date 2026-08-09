@@ -49,9 +49,8 @@ the result into a graph.
 
 This tutorial builds a graph from five _E. coli_ strains and loads it in JBrowse
 as synteny, variants, a whole-genome alignment, depth and presence, then maps a
-new isolate's reads through the finished graph.
-
-The graph is built here, not downloaded.
+new isolate's reads through the finished graph. The graph is built here, not
+downloaded.
 
 The [pggb tutorial](/docs/tutorials/pangenome_ecoli) uses the same five strains
 and the same projections onto K12, so the two pages compare the builders on
@@ -365,15 +364,14 @@ curve never exceeds the strain count anywhere on the chromosome.
 <Figure caption="odgi depth over the banded rrnC operon, the same command over the same K12 windows against each builder's graph, on one fixed axis. The pggb row doubles over the operon and the Minigraph-Cactus row does not move. Both are correct about their own graph: the callout on each row names the operation that decides it." src="/img/pangenome_cactus/builders.png" />
 
 Neither curve is wrong, and neither builder is the correct one. They were asked
-different questions: seqwish merges identical sequence wherever it occurs, so
-the rRNA copies become one run of nodes and a path carrying all of them walks
-that run once per copy, while a reference-anchored build keeps each copy at its
-own coordinate and never merges them. A collapsed repeat is where to look for
-variation _within_ an array, since every copy's bases stack on the same nodes; a
-reference-anchored one is where to ask which copy a read came from. What follows
-for this projection is only that `odgi depth` counts steps, so it is a strain
-tally on the Minigraph-Cactus graph and not on the pggb one. The pggb tutorial
-reads the same operon the other way, as
+different questions: seqwish merges identical sequence wherever it occurs, while
+a reference-anchored build keeps each copy at its own coordinate. A collapsed
+repeat is where to look for variation _within_ an array, since every copy's
+bases stack on the same nodes, and a reference-anchored one is where to ask
+which copy a read came from. What follows for this projection is only that
+`odgi depth` counts steps, so it is a strain tally on the Minigraph-Cactus graph
+and not on the pggb one. The pggb tutorial reads the same operon the other way,
+as
 [several query segments landing on one reference span](/docs/tutorials/pangenome_ecoli#the-same-picture-read-out-of-the-graph).
 
 [`odgi pav`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_pav.html)

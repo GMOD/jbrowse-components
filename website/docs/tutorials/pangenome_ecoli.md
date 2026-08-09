@@ -868,7 +868,7 @@ list and `carriers` is its length, which is the one a color expression wants:
 }
 ```
 
-<Figure caption="Who carries the IS5 element at K12 chr:1,299,499-1,300,693 — the question a graph can answer and a reference cannot. The carriage lane is an ordinary feature track colored by a jexl expression over the GFA SM:Z: tag (the config is above), so one red box means a segment K12 alone walks, against the core band either side." src="/img/pangenome/pggb_carriage_lane.png" />
+<Figure caption="Who carries the IS5 element at K12 chr:1,299,499-1,300,693, the question a graph can answer and a reference cannot. The carriage lane is an ordinary feature track colored by a jexl expression over the GFA SM:Z: tag (the config is above), so one red box means a segment K12 alone walks, against the core band either side." src="/img/pangenome/pggb_carriage_lane.png" />
 
 Read it against the
 [depth track](#pangenome-depth-projection-core-vs-accessory). Both answer core
@@ -1049,12 +1049,18 @@ strains that skip it with no aligned sequence across its span, while K12's row
 runs through. That is the same carriage the colored strokes below draw, reached
 through an alignment the graph had no part in.
 
+The two panes are different cuts of the same bubble rather than one subgraph
+drawn twice, and each pane header states its own node and edge counts. This one
+is a file, cut with `odgi extract -E` over a slightly narrower range, where the
+figure above is the index cut expanded from its window by **Graph context**.
+Same element, a different neighbourhood drawn around it.
+
 The broken line is the drawing's only one, and it means what it looks like:
 sequence that is not there. Weight and color could not carry it on their own,
 since an off-reference node is already charcoal and the arc is already
 near-black.
 
-<Figure caption="Top: the same interval in K12 coordinates, the gene lane naming the element insH21 and the four strains that skip it showing no aligned sequence across it. Bottom: the bubble with the strain paths drawn, nodes grey. One arm is the 1.2 kb element, the other the deletion edge past it, drawn broken. Four strokes run along that arc; the missing one is K12." src="/img/pangenome/pggb_haplotype_paths.png" />
+<Figure caption="The same IS5 bubble as the index figure above, cut as a file so its P lines survive. Top, the interval in K12 coordinates. Bottom, the bubble with the strain paths drawn and the nodes grey: one arm is the 1.2 kb element, the other the deletion edge past it, drawn broken. Four strokes run along that arc, and the missing one is K12." src="/img/pangenome/pggb_haplotype_paths.png" />
 
 ### A collapsed repeat
 
