@@ -1,5 +1,8 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import {
+  ConfigurationSchema,
+  FormatAboutConfigSchemaFactory,
+} from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { getAboutDialogConfig } from './util.ts'
@@ -25,10 +28,7 @@ const corePluginManager = new PluginManager([]).createPluggableElements()
 corePluginManager.configure()
 const SessionModel = types.model('Session', {
   configuration: ConfigurationSchema('Root', {
-    formatAbout: ConfigurationSchema('FormatAbout', {
-      config: { type: 'frozen', defaultValue: {}, contextVariable: ['config'] },
-      hideUris: { type: 'boolean', defaultValue: false },
-    }),
+    formatAbout: FormatAboutConfigSchemaFactory(),
   }),
 })
 const session = SessionModel.create(

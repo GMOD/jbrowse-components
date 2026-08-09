@@ -142,15 +142,29 @@ test('callback can hide the derived Length row', async () => {
   expect(queryByText('Length')).toBeNull()
 })
 
-test('formatted value can be an html link', async () => {
+// a bare URL is linkified on the way to the panel, so the common link-out
+// recipe needs no <a> markup in the callback. Documented in the config guide
+test('a formatted value that is just a URL renders as a link', async () => {
   const { findByText } = setup({
     ...base,
     __jbrowsefmt: { homepage: 'https://example.com/gene' },
   })
   const link = await findByText('https://example.com/gene')
-  expect(link.closest('a')?.getAttribute('href')).toBe(
-    'https://example.com/gene',
-  )
+  const anchor = link.closest('a')
+  expect(anchor?.getAttribute('href')).toBe('https://example.com/gene')
+  // a same-tab navigation would discard the session, and in an embedded
+  // JBrowse it would take the host page with it
+  expect(anchor?.getAttribute('target')).toBe('_blank')
+  expect(anchor?.getAttribute('rel')).toBe('noopener noreferrer')
+})
+
+// the same courtesy for a value that came straight out of the file, with no
+// formatDetails callback involved: a GFF3 attribute holding a URL is a link
+test('a raw attribute that is just a URL renders as a link', async () => {
+  const { findByText } = setup({ ...base, homepage: 'https://example.com/raw' })
+  const anchor = (await findByText('https://example.com/raw')).closest('a')
+  expect(anchor?.getAttribute('href')).toBe('https://example.com/raw')
+  expect(anchor?.getAttribute('target')).toBe('_blank')
 })
 
 // FeatureDetails recurses for each subfeature card; a subfeature's fields are

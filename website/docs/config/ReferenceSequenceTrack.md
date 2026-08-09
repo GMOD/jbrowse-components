@@ -68,5 +68,4 @@ surface.
 | <span id="slot-sequencetype">**sequenceType**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'dna'</code> | either dna or pep |
 | <span id="slot-description">**description**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | a description of the track |
 | <span id="slot-metadata">**metadata**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>{}</code> | anything to add about this track |
-| <span id="slot-formataboutconfig">**formatAbout.config**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>{}</code> | formats configuration in about dialog<br>_callback args:_ `config` |
-| <span id="slot-formatabouthideuris">**formatAbout.hideUris**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | leave the sequence file's locations out of the About dialog, for a deployment that would rather not show users where the data sits |
+| <span id="slot-formatabout">**formatAbout**</span><br><code>FormatAboutConfigSchemaFactory()</code> | jexl callbacks that add, rewrite or hide fields in this track's About dialog. Two slots, listed at [FormatAbout](/docs/config/formatabout). |

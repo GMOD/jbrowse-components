@@ -1646,11 +1646,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "depth",
-              "type": "(JexlString | number)"
+              "type": "(JexlString | (number | undefined))"
             },
             {
               "name": "maxDepth",
-              "type": "(JexlString | number)"
+              "type": "(JexlString | (number | undefined))"
             }
           ]
         },
@@ -1749,11 +1749,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "depth",
-              "type": "(JexlString | number)"
+              "type": "(JexlString | (number | undefined))"
             },
             {
               "name": "maxDepth",
-              "type": "(JexlString | number)"
+              "type": "(JexlString | (number | undefined))"
             }
           ]
         },
@@ -1850,11 +1850,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "depth",
-              "type": "(JexlString | number)"
+              "type": "(JexlString | (number | undefined))"
             },
             {
               "name": "maxDepth",
-              "type": "(JexlString | number)"
+              "type": "(JexlString | (number | undefined))"
             }
           ]
         },
@@ -2007,11 +2007,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "depth",
-              "type": "(JexlString | number)"
+              "type": "(JexlString | (number | undefined))"
             },
             {
               "name": "maxDepth",
-              "type": "(JexlString | number)"
+              "type": "(JexlString | (number | undefined))"
             }
           ]
         },
@@ -2113,11 +2113,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "depth",
-              "type": "(JexlString | number)"
+              "type": "(JexlString | (number | undefined))"
             },
             {
               "name": "maxDepth",
-              "type": "(JexlString | number)"
+              "type": "(JexlString | (number | undefined))"
             }
           ]
         },
@@ -2214,11 +2214,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "depth",
-              "type": "(JexlString | number)"
+              "type": "(JexlString | (number | undefined))"
             },
             {
               "name": "maxDepth",
-              "type": "(JexlString | number)"
+              "type": "(JexlString | (number | undefined))"
             }
           ]
         },
@@ -2315,11 +2315,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "depth",
-              "type": "(JexlString | number)"
+              "type": "(JexlString | (number | undefined))"
             },
             {
               "name": "maxDepth",
-              "type": "(JexlString | number)"
+              "type": "(JexlString | (number | undefined))"
             }
           ]
         },
@@ -2416,11 +2416,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "depth",
-              "type": "(JexlString | number)"
+              "type": "(JexlString | (number | undefined))"
             },
             {
               "name": "maxDepth",
-              "type": "(JexlString | number)"
+              "type": "(JexlString | (number | undefined))"
             }
           ]
         },
@@ -2517,11 +2517,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "depth",
-              "type": "(JexlString | number)"
+              "type": "(JexlString | (number | undefined))"
             },
             {
               "name": "maxDepth",
-              "type": "(JexlString | number)"
+              "type": "(JexlString | (number | undefined))"
             }
           ]
         },
@@ -2618,11 +2618,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "depth",
-              "type": "(JexlString | number)"
+              "type": "(JexlString | (number | undefined))"
             },
             {
               "name": "maxDepth",
-              "type": "(JexlString | number)"
+              "type": "(JexlString | (number | undefined))"
             }
           ]
         },
@@ -2719,11 +2719,11 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "depth",
-              "type": "(JexlString | number)"
+              "type": "(JexlString | (number | undefined))"
             },
             {
               "name": "maxDepth",
-              "type": "(JexlString | number)"
+              "type": "(JexlString | (number | undefined))"
             }
           ]
         },

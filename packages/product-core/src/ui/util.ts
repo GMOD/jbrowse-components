@@ -2,9 +2,9 @@ import {
   evaluateJexl,
   getConf,
   isCallbackValue,
+  mergeFormatCallbacks,
   readConfObject,
 } from '@jbrowse/core/configuration'
-import { isObject } from '@jbrowse/core/util'
 import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -120,11 +120,12 @@ export function getAboutDialogConfig({
   const sessionFormatAbout = getConf(session, ['formatAbout', 'config'], {
     config: conf,
   })
+  // same two-tier merge the feature-details panel runs on `formatDetails`,
+  // session first so a track can override individual keys
   const merged: { config: Record<string, unknown> } = {
     config: {
       ...conf,
-      ...(isObject(sessionFormatAbout) ? sessionFormatAbout : {}),
-      ...(isObject(trackFormatAbout) ? trackFormatAbout : {}),
+      ...mergeFormatCallbacks(sessionFormatAbout, trackFormatAbout),
     },
   }
   return pluginManager.evaluateExtensionPoint(

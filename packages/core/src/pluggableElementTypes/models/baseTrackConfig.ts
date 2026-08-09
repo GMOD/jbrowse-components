@@ -1,6 +1,10 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { ConfigurationSchema } from '../../configuration/index.ts'
+import {
+  ConfigurationSchema,
+  FormatAboutConfigSchemaFactory,
+  FormatDetailsConfigSchemaFactory,
+} from '../../configuration/index.ts'
 import { expandTrackConfigShorthand } from './expandTrackConfigShorthand.ts'
 import { liftLegacyRendererConfig } from './migrateTrackConfig.ts'
 
@@ -252,64 +256,23 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
        */
       displays: types.array(pluginManager.pluggableConfigSchemaType('display')),
 
-      formatDetails: ConfigurationSchema('FormatDetails', {
-        /**
-         * #slot formatDetails.feature
-         */
-        feature: {
-          type: 'frozen',
-          description: 'adds extra fields to the feature details',
-          defaultValue: {},
-          contextVariable: ['feature'],
-        },
-        /**
-         * #slot formatDetails.subfeatures
-         */
-        subfeatures: {
-          type: 'frozen',
-          description: 'adds extra fields to the subfeatures of a feature',
-          defaultValue: {},
-          contextVariable: ['feature'],
-        },
-        /**
-         * #slot formatDetails.depth
-         */
-        depth: {
-          type: 'number',
-          defaultValue: 2,
-          description:
-            'depth of subfeatures to iterate the formatter on formatDetails.subfeatures (e.g. you may not want to format the exon/cds subfeatures, so limited to 2',
-        },
-        /**
-         * #slot formatDetails.maxDepth
-         */
-        maxDepth: {
-          type: 'number',
-          defaultValue: 99999,
-          description: 'Maximum depth to render subfeatures',
-        },
-      }),
-      formatAbout: ConfigurationSchema('FormatAbout', {
-        /**
-         * #slot formatAbout.config
-         */
-        config: {
-          type: 'frozen',
-          description: 'formats configuration object in about dialog',
-          defaultValue: {},
-          contextVariable: ['config'],
-        },
+      /**
+       * #slot
+       * jexl callbacks that add, rewrite or hide fields in this track's
+       * feature-details panel. Four slots, listed at
+       * [FormatDetails](/docs/config/formatdetails), and the same schema exists
+       * session-wide as `configuration.formatDetails`.
+       */
+      formatDetails: FormatDetailsConfigSchemaFactory(),
 
-        /**
-         * #slot formatAbout.hideUris
-         * leave this track's file locations out of its About dialog, for a
-         * deployment that would rather not show users where the data sits
-         */
-        hideUris: {
-          type: 'boolean',
-          defaultValue: false,
-        },
-      }),
+      /**
+       * #slot
+       * jexl callbacks that add, rewrite or hide fields in this track's About
+       * dialog. Two slots, listed at
+       * [FormatAbout](/docs/config/formatabout), and the same schema exists
+       * session-wide as `configuration.formatAbout`.
+       */
+      formatAbout: FormatAboutConfigSchemaFactory(),
     },
     {
       preProcessSnapshot: s2 =>

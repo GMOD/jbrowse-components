@@ -181,6 +181,27 @@ viewable via the clock icon in the Available tracks widget.
 
 <Figure caption="Selected tracks will be added to a recently used list, then they can be viewed using the top right menu." src="/img/recent_tracks.png" />
 
+## Feature details
+
+Clicking a feature opens its details panel in the drawer. The Attributes section
+lists the fields as they came out of the file, so a GFF3 attribute, a BED extra
+column, or a VCF INFO key appears under its own name.
+
+Two things happen to the values on the way in, with no configuration:
+
+- **A value that is just a URL becomes a link**, opening in a new tab. So a GFF3
+  attribute like `url=https://www.uniprot.org/uniprotkb/P12345` is clickable as
+  it stands.
+- **HTML is rendered rather than escaped**, after being run through a sanitizer.
+  Text that only looks like a tag is left alone, which is why a VCF `<TRA>`
+  allele still reads as `<TRA>`.
+
+To add fields, rename them, or hide the ones a file carries that your users
+don't need, see
+[customizing feature details](/docs/config_guides/customizing_feature_details).
+Gene and transcript features also have a sequence panel, covered in
+[](/docs/user_guides/feature_sequence).
+
 ## About track dialog
 
 The track menu provides access to the "About track" dialog.

@@ -1,11 +1,11 @@
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import { getConf } from '../configuration/index.ts'
 import { getSession } from '../util/index.ts'
 import { ElementId } from '../util/types/mst.ts'
 import { SequenceFeatureDetailsF } from './SequenceFeatureDetails/model.ts'
-import { formatSubfeatures, nullReplacer } from './util.tsx'
+import { applyFormatDetails, formatDetailsNumber } from './formatDetails.ts'
+import { nullReplacer } from './util.tsx'
 
 import type PluginManager from '../PluginManager.ts'
 import type { SimpleFeatureSerialized } from '../util/index.ts'
@@ -147,9 +147,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setExtra(type?: string, trackId?: string, maxDepth?: number) {
+      setTrackInfo(type?: string, trackId?: string) {
         self.trackId = trackId
         self.trackType = type
+      },
+      /**
+       * #action
+       */
+      setMaxDepth(maxDepth?: number) {
         self.maxDepth = maxDepth
       },
       /**
@@ -165,48 +170,44 @@ export function stateModelFactory(pluginManager: PluginManager) {
           self,
           autorun(
             function featureWidgetAutorun() {
+              const { track } = self
+              // read before any config read so the catch below can attribute
+              // the failure without repeating one that may be what threw
+              let trackId: string | undefined
               try {
-                const { unformattedFeatureData, track } = self
+                const { unformattedFeatureData } = self
                 const session = getSession(self)
-                // the track's slot wins where it has one, otherwise the
-                // session-wide `configuration.formatDetails` applies on its own
-                // -- a widget can outlive its track (safeReference) or never
-                // have had one, and the global config still means something
-                const conf = (slot: string, args?: Record<string, unknown>) =>
-                  track
-                    ? getConf(track, ['formatDetails', slot], args)
-                    : getConf(session, ['formatDetails', slot], args)
                 if (track) {
-                  self.setExtra(
-                    track.type,
-                    track.configuration.trackId,
-                    conf('maxDepth'),
+                  trackId = track.configuration.trackId
+                  self.setTrackInfo(track.type, trackId)
+                }
+                // both tiers apply: a widget can outlive its track
+                // (safeReference) or never have had one, and the session-wide
+                // `configuration.formatDetails` still means something. The
+                // reads stay here in the autorun body rather than moving into
+                // an action, which would run untracked
+                const tiers = { session, track }
+                // an unset maxDepth is the meaningful value, not a missing one:
+                // the panel reads it as no nesting limit
+                self.setMaxDepth(formatDetailsNumber(tiers, 'maxDepth'))
+                if (unformattedFeatureData) {
+                  self.setFormattedData(
+                    applyFormatDetails(tiers, unformattedFeatureData),
                   )
                 }
-                if (unformattedFeatureData) {
-                  const feature = structuredClone(unformattedFeatureData)
-
-                  const combine = (
-                    scope: string,
-                    feature: Record<string, unknown>,
-                  ) => ({
-                    ...getConf(session, ['formatDetails', scope], { feature }),
-                    ...(track
-                      ? getConf(track, ['formatDetails', scope], { feature })
-                      : {}),
-                  })
-
-                  feature.__jbrowsefmt = combine('feature', feature)
-
-                  formatSubfeatures(feature, conf('depth'), sub => {
-                    sub.__jbrowsefmt = combine('subfeatures', sub)
-                  })
-
-                  self.setFormattedData(feature)
-                }
               } catch (e) {
-                console.error(e)
-                self.setError(e)
+                // jexl throws a bare parse/eval message with nothing naming the
+                // slot or the config it came from, and this banner replaces the
+                // whole panel -- say where to look
+                const where = trackId
+                  ? `track "${trackId}"`
+                  : 'the session configuration'
+                const err = new Error(
+                  `Error running the formatDetails callbacks for ${where}: ${e}`,
+                  { cause: e },
+                )
+                console.error(err)
+                self.setError(err)
               }
             },
             { name: 'FeatureWidget' },

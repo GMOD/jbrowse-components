@@ -18,13 +18,24 @@ const useStyles = makeStyles()(theme => ({
 
 export default function BasicValue({ value }: { value: unknown }) {
   const { classes } = useStyles()
+  // a value that is nothing but a URL is a link, whether it came from the file
+  // or from a formatDetails callback -- the same courtesy `linkify` does for a
+  // URL sitting inside a longer string, one layer down in SanitizedHTML.
+  //
+  // New tab, matching `rewriteExternalAnchors` on that other path. Navigating
+  // in place discards the session, and in an embedded JBrowse it takes the host
+  // page with it.
   const isLink = /^https?:\/\//.test(`${value}`)
   return (
     <div className={classes.fieldValue}>
       {isValidElement(value) ? (
         value
       ) : isLink ? (
-        <Link href={`${value}`}>{`${value}`}</Link>
+        <Link
+          href={`${value}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >{`${value}`}</Link>
       ) : (
         <SanitizedHTML
           html={isObject(value) ? JSON.stringify(value) : String(value)}

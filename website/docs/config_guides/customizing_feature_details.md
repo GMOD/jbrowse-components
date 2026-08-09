@@ -34,14 +34,21 @@ Here is an example track with a formatter:
 
 This formatter links the `name` field to a Google search (useful for linking to
 gene pages), adds a custom `newfield`, and removes `type` by setting it to
-`undefined`.
+`undefined`. The `<a>` markup is needed here only because the link text (the
+gene name) differs from the URL. A value that is nothing but a URL is
+[linked for you](#bare-urls).
 
 The `formatDetails` slots are:
 
-- `feature` - customizes the top-level feature
-- `subfeatures` - customizes the subfeatures, recursively up to `depth`
-- [`depth`](/docs/config/formatdetails/#slot-configurationformatdetailsdepth) -
-  depth to customize the subfeatures to
+- [`feature`](/docs/config/formatdetails/#slot-formatdetailsfeature) -
+  customizes the top-level feature
+- [`subfeatures`](/docs/config/formatdetails/#slot-formatdetailssubfeatures) -
+  customizes the subfeatures, recursively up to `depth`
+- [`depth`](/docs/config/formatdetails/#slot-formatdetailsdepth) - how many
+  levels of subfeature `subfeatures` runs on
+- [`maxDepth`](/docs/config/formatdetails/#slot-formatdetailsmaxdepth) - how
+  many levels of subfeature card the panel renders at all, which is a separate
+  question from how deep `subfeatures` formats
 
 Use a jexl callback for `feature`, `subfeatures`, or both. Each returns an
 object with the fields to replace.
@@ -64,11 +71,122 @@ row, `{name: ...}` rewrites the Name row, and so on. `length` counts as one,
 even though the panel computes it from `start`/`end` rather than reading it off
 the feature: name it and your value is shown, set it null and the row is gone.
 
-The same slots exist session-wide as
+If the callback returns something that is not an object, the tier is dropped
+rather than merged. `"jexl:feature.name"` where `"jexl:{name:feature.name}"` was
+meant produces no rows, not a row per character.
+
+### Values are HTML, and bare URLs become links {#bare-urls}
+
+Every value is run through an HTML sanitizer before it is shown, so `<b>`,
+`<a>`, `<table>` and friends render as markup. A value that is not recognizable
+HTML is escaped instead, which is why a VCF `<TRA>` allele still reads as
+`<TRA>`.
+
+**A value that is just a URL is turned into a link for you.** Most link-out
+recipes need no `<a>` markup at all:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "genes_ncbi_link",
+  "name": "Genes",
+  "assemblyNames": ["hg19"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "uri": "volvox.sort.gff3.gz"
+  },
+  "formatDetails": {
+    "feature": "jexl:{NCBI:'https://www.ncbi.nlm.nih.gov/gene/?term='+feature.name}"
+  }
+}
+```
+
+Write the anchor by hand only when the link text has to differ from the URL.
+
+### A plain object works too, with no jexl
+
+The slot holds any JSON value, and only a string starting with `jexl:` is
+evaluated. For fields that are the same on every feature, write the object
+directly:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "genes_static_fields",
+  "name": "Genes",
+  "assemblyNames": ["hg19"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "uri": "volvox.sort.gff3.gz"
+  },
+  "formatDetails": {
+    "feature": {
+      "Source": "GENCODE v44",
+      "Contact": "helpdesk@example.org",
+      "phase": null
+    }
+  }
+}
+```
+
+## The track and the session both apply
+
+The same four slots exist session-wide under
 [`configuration.formatDetails`](/docs/config/formatdetails/), which applies to
-every track. Where both are set, the track's `feature`/`subfeatures` object is
-merged over the session's, so a track can override individual fields the global
-callback added.
+every track at once:
+
+```json
+{
+  "configuration": {
+    "formatDetails": {
+      "feature": "jexl:{Assembly:'hg19', score:undefined}",
+      "subfeatures": "jexl:{Assembly:'hg19'}",
+      "maxDepth": 2
+    }
+  }
+}
+```
+
+Where both tiers are set:
+
+- `feature` and `subfeatures` are **merged**, the track's object over the
+  session's, so a track can rewrite individual keys the global callback added
+  and leave the rest.
+- `depth` and `maxDepth` **override**: a track's value wins, and the
+  session-wide one applies to every track that doesn't set its own.
+
+`formatAbout` works the same way, except that `hideUris` is OR'd rather than
+overridden, so a session-wide `true` cannot be turned back on by a track.
+
+### depth and maxDepth
+
+The two are easy to confuse. Take a GFF3 gene, which nests three levels deep:
+gene, then mRNA, then exon and CDS.
+
+- `depth` bounds the **callback**. It defaults to 2, so `subfeatures` runs on
+  the mRNAs and their exons and CDSs, but not deeper. Set it to 1 to reformat
+  only the transcript rows.
+- `maxDepth` bounds the **panel**. Unset there is no limit. Set it to 1 and the
+  panel shows the transcript cards but not the exon and CDS cards inside them,
+  whether or not anything reformatted them.
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "genes_transcripts_only",
+  "name": "Genes",
+  "assemblyNames": ["hg19"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "uri": "volvox.sort.gff3.gz"
+  },
+  "formatDetails": {
+    "subfeatures": "jexl:{Transcript:feature.name, phase:undefined}",
+    "depth": 1,
+    "maxDepth": 1
+  }
+}
+```
 
 ## Making sophisticated customizations to feature detail panels
 
@@ -211,13 +329,13 @@ for how this differs across callback types.
 track's own configuration rather than a feature. It has two slots, on the track
 or session-wide as [`configuration.formatAbout`](/docs/config/formatabout/):
 
-- [`hideUris`](/docs/config/basetrack/#slot-formatabouthideuris) drops every
+- [`hideUris`](/docs/config/formatabout/#slot-formatabouthideuris) drops every
   file location from the dialog. Session-wide and per-track are OR'd, so a
   session-wide `true` cannot be turned back on by a track. It hides the URLs
   from the dialog only, not from `config.json`, which the browser downloads
   either way.
-- [`config`](/docs/config/basetrack/#slot-formataboutconfig) is a jexl callback
-  returning an object merged over the config shown, applied exactly as
+- [`config`](/docs/config/formatabout/#slot-formataboutconfig) is a jexl
+  callback returning an object merged over the config shown, applied exactly as
   `formatDetails.feature` is: a new key adds a row, an existing one overrides,
   `undefined`/`null` hides. Where both are set, the track's object is merged
   over the session's.

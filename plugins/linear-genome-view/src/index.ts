@@ -201,6 +201,14 @@ export type {
   TrackLabelMode,
   VolatileGuide,
 } from './LinearGenomeView/types.ts'
+// Not for consumers to import — it is the element type of the view model's
+// `scalebarRefNameLabels` getter, so tsc has to name it when it serializes the
+// model's inferred type into every downstream `.d.ts`. With no path to it from
+// this entry, tsc falls back to the source path
+// (`@jbrowse/plugin-linear-genome-view/src/LinearGenomeView/util.ts`), which
+// tarballs don't ship and consumers can't resolve. check-declaration-leaks
+// guards this; see issue #4678.
+export type { ScalebarRefNameLabel } from './LinearGenomeView/util.ts'
 export { renderToSvg } from './LinearGenomeView/svgcomponents/SVGLinearGenomeView.tsx'
 export { default as SVGTracks } from './LinearGenomeView/svgcomponents/SVGTracks.tsx'
 export { default as SVGView } from './LinearGenomeView/svgcomponents/SVGView.tsx'

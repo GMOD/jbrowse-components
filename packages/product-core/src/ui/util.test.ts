@@ -1,5 +1,8 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import {
+  ConfigurationSchema,
+  FormatAboutConfigSchemaFactory,
+} from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { getAboutDialogConfig, readConfSlot } from './util.ts'
@@ -10,22 +13,20 @@ import type { AbstractSessionModel } from '@jbrowse/core/util'
 const corePluginManager = new PluginManager([]).createPluggableElements()
 corePluginManager.configure()
 
-const FormatAbout = ConfigurationSchema('FormatAbout', {
-  config: { type: 'frozen', defaultValue: {}, contextVariable: ['config'] },
-  hideUris: { type: 'boolean', defaultValue: false },
-})
-
+// the shipped schema, the same one a track and the root config both carry
 const TrackConf = ConfigurationSchema(
   'TestTrack',
   {
     name: { type: 'string', defaultValue: '' },
-    formatAbout: FormatAbout,
+    formatAbout: FormatAboutConfigSchemaFactory(),
   },
   { explicitIdentifier: 'trackId' },
 )
 
 const SessionModel = types.model('Session', {
-  configuration: ConfigurationSchema('Root', { formatAbout: FormatAbout }),
+  configuration: ConfigurationSchema('Root', {
+    formatAbout: FormatAboutConfigSchemaFactory(),
+  }),
 })
 
 // extension point passthrough so getAboutDialogConfig returns its input
@@ -140,6 +141,26 @@ describe('getAboutDialogConfig', () => {
     // track formatAbout wins over session formatAbout
     expect(out.config.source).toBe('track')
     expect(out.config.sessionOnly).toBe(true)
+  })
+
+  // `jexl:config.name` where `jexl:{Name:config.name}` was meant. Spread, the
+  // string became dialog rows keyed 0, 1, 2
+  it('drops a callback that returns something other than an object', () => {
+    const config = TrackConf.create(
+      {
+        trackId: 't1',
+        name: 'Track 1',
+        formatAbout: { config: 'jexl:config.name' },
+      },
+      { pluginManager: corePluginManager },
+    )
+    const out = getAboutDialogConfig({
+      config,
+      session: makeSession(),
+      pluginManager: passthroughPluginManager,
+    })
+    expect(out.config).not.toHaveProperty('0')
+    expect(out.config.name).toBe('Track 1')
   })
 
   it('routes the merged config through Core-customizeAbout', () => {

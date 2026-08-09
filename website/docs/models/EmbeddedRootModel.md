@@ -45,7 +45,7 @@ the whole surface.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="getter-jbrowse">**jbrowse**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>ModelPropertiesDeclarationToProperties&lt;…&gt;; session: SESSION; as…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>ModelPropertiesDeclarationToProperties&lt;…&gt;; session: SESSION; assemblyManager: IOptionalIType&lt;IModelType&lt;…&gt;, [undefined]&gt;; }&gt;["config"]["Type"]</code></pre></dialog></span> |  |
+| <span id="getter-jbrowse">**jbrowse**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>ModelPropertiesDeclarationToProperties&lt;{ config: IModelType&lt;…&gt;;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>ModelPropertiesDeclarationToProperties&lt;{ config: IModelType&lt;…&gt;; session: SESSION; assemblyManager: IOptionalIType&lt;IModelType&lt;…&gt;, [undefined]&gt;; }&gt;["config"]["Type"]</code></pre></dialog></span> |  |
 | <span id="getter-pluginmanager">**pluginManager**</span><br><code>PluginManager</code> |  |
 
 ## Actions

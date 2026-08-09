@@ -48,7 +48,7 @@ rather than a silent one.
 
 ```js
 // type signature
-<…>(model: { ...; }, slotPath?: SLOT | undefined, args?: Record<...>) => SLOT extends string ? ConfigurationSlotValue<...> : any
+{ (model: {…}): ModelSnapshotType<…>; <…>(model: {…}, slotPath: SLOT, args?: Record<…> | undefined): SLOT extends string ? ConfigurationSlotValue<…> : any; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)

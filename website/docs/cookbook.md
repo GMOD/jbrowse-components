@@ -399,7 +399,8 @@ and links all work:
 `formatDetails` sits at the top level of the track, not in `displayDefaults`.
 Its `feature` callback returns an object that gets merged into what's shown.
 Name an existing field to rewrite it, add a new one for an extra row, or set a
-field to `undefined` to hide it.
+field to `undefined` to hide it. A value that is just a URL is turned into a
+link, so linking out needs no `<a>` markup:
 
 ```json addtrack
 {
@@ -409,12 +410,82 @@ field to `undefined` to hide it.
   "assemblyNames": ["volvox"],
   "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
   "formatDetails": {
-    "feature": "jexl:{name:'<a href=https://www.ncbi.nlm.nih.gov/gene/?term='+feature.name+'>'+feature.name+'</a>', type:undefined}"
+    "feature": "jexl:{NCBI:'https://www.ncbi.nlm.nih.gov/gene/?term='+feature.name, type:undefined}"
   }
 }
 ```
 
-`subfeatures` (with `depth`) reshapes subfeature rows the same way. See
+Fields that are the same on every feature need no callback at all. The slot
+holds any JSON, and only a string starting with `jexl:` is evaluated:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "genes_static_details",
+  "name": "Genes",
+  "assemblyNames": ["volvox"],
+  "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
+  "formatDetails": {
+    "feature": { "Source": "GENCODE v44", "phase": null }
+  }
+}
+```
+
+`subfeatures` reshapes the nested rows. `depth` bounds how far down it runs and
+`maxDepth` bounds how many levels of subfeature card the panel draws at all, so
+this track relabels the transcripts of a gene and hides their exon and CDS
+cards:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "genes_transcript_details",
+  "name": "Genes",
+  "assemblyNames": ["volvox"],
+  "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
+  "formatDetails": {
+    "subfeatures": "jexl:{Transcript:feature.name, phase:undefined}",
+    "depth": 1,
+    "maxDepth": 1
+  }
+}
+```
+
+The same four slots exist session-wide under `configuration.formatDetails` and
+apply to every track. `feature` and `subfeatures` merge with the track's object
+on top, so a track can rewrite one key the global callback added; `depth` and
+`maxDepth` are overridden outright by a track that sets its own.
+
+```json
+{
+  "configuration": {
+    "formatDetails": {
+      "feature": "jexl:{Assembly:'volvox', score:undefined}",
+      "maxDepth": 2
+    }
+  }
+}
+```
+
+`formatAbout` is the same mechanism for the About track dialog, which shows the
+track's config rather than a feature, so its callback variable is `config`.
+`hideUris` drops the file locations from the dialog:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "genes_about",
+  "name": "Genes",
+  "assemblyNames": ["volvox"],
+  "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
+  "formatAbout": {
+    "hideUris": true,
+    "config": "jexl:{Source:'GENCODE v44', Contact:'helpdesk@example.org'}"
+  }
+}
+```
+
+See
 [customizing feature details](/docs/config_guides/customizing_feature_details).
 
 ## Feature tracks
@@ -874,8 +945,9 @@ only `assemblyNames`, with the query first:
 }
 ```
 
-See the [ortholog-tables tutorial](/docs/tutorials/multiway_synteny_grape_peach_cacao), which also
-covers `MCScanBlocksAdapter` for a `.blocks` table.
+See the
+[ortholog-tables tutorial](/docs/tutorials/multiway_synteny_grape_peach_cacao),
+which also covers `MCScanBlocksAdapter` for a `.blocks` table.
 
 ### Stacking more than two genomes {#synteny-stacking}
 
@@ -918,7 +990,8 @@ per band, so three rows means two bands:
 `minAlignmentLength` hides the short alignments that would otherwise bury the
 shared backbone. For full walkthroughs, see
 [all-vs-all synteny](/docs/tutorials/allvsall_synteny) from one PAF and
-[ortholog tables](/docs/tutorials/multiway_synteny_grape_peach_cacao) from a jcvi `.blocks` file.
+[ortholog tables](/docs/tutorials/multiway_synteny_grape_peach_cacao) from a
+jcvi `.blocks` file.
 
 ### Related views {#synteny-related}
 

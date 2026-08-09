@@ -52,9 +52,10 @@ export function getStrandStr(strand: number | undefined) {
 export const nullReplacer = (_: string, v: unknown) =>
   v === undefined ? null : v
 
-// `currentDepth < depth` rather than a `depth <= currentDepth` bail so a config
-// with no formatDetails schema at all (depth reads back undefined) formats
-// nothing, instead of every level -- NaN comparisons are false either way round
+// `depth` is how many levels of subfeature the `formatDetails.subfeatures`
+// callback runs on, counted from the clicked feature. The caller resolves it
+// across the session and track tiers and passes 0 when neither declares one, so
+// a config with no formatDetails schema formats nothing rather than every level
 export function formatSubfeatures(
   obj: SerializedFeat,
   depth: number,

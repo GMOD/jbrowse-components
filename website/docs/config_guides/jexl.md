@@ -80,6 +80,20 @@ Label with a fallback. The first non-empty attribute wins:
 "name": "jexl:feature.name || feature.id"
 ```
 
+Add a row to the click-details panel. `formatDetails` is the one slot family
+whose callback returns an **object** rather than a single value: each key
+becomes a field, and a key set to `undefined` hides one. Returning a bare value
+here does nothing, so the missing braces are the mistake to watch for:
+
+```json
+"formatDetails": {
+  "feature": "jexl:{UniProt:'https://www.uniprot.org/uniprotkb/'+feature.uniprot_id, phase:undefined}"
+}
+```
+
+See
+[customizing feature details](/docs/config_guides/customizing_feature_details).
+
 The "Jexl callback examples" track in `test_data/config_demo.json` is a live
 example combining a lookup-table color with a template-string mouseover.
 

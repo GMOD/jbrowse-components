@@ -3,7 +3,10 @@ import { ThemeProvider } from '@mui/material'
 import { act, render } from '@testing-library/react'
 
 import PluginManager from '../PluginManager.ts'
-import { ConfigurationSchema } from '../configuration/index.ts'
+import {
+  ConfigurationSchema,
+  FormatDetailsConfigSchemaFactory,
+} from '../configuration/index.ts'
 import { createJBrowseTheme } from '../ui/index.ts'
 import BaseFeatureDetails from './BaseFeatureDetail/index.tsx'
 import { stateModelFactory } from './index.ts'
@@ -52,19 +55,7 @@ test('session-level formatDetails applies with no track', async () => {
   const Session = types.model({
     rpcManager: types.optional(types.frozen(), {}),
     configuration: ConfigurationSchema('test', {
-      formatDetails: ConfigurationSchema('FormatDetails', {
-        feature: {
-          type: 'frozen',
-          defaultValue: {},
-          contextVariable: ['feature'],
-        },
-        subfeatures: {
-          type: 'frozen',
-          defaultValue: {},
-          contextVariable: ['feature'],
-        },
-        depth: { type: 'number', defaultValue: 2 },
-      }),
+      formatDetails: FormatDetailsConfigSchemaFactory(),
     }),
     widget: stateModelFactory(pluginManager),
   })

@@ -1,4 +1,7 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import {
+  ConfigurationSchema,
+  FormatAboutConfigSchemaFactory,
+} from '@jbrowse/core/configuration'
 import {
   preprocessTrackConfigSnapshot,
   trackConfigActions,
@@ -84,27 +87,13 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
         defaultValue: {},
       },
 
-      formatAbout: ConfigurationSchema('FormatAbout', {
-        /**
-         * #slot formatAbout.config
-         */
-        config: {
-          type: 'frozen',
-          description: 'formats configuration in about dialog',
-          defaultValue: {},
-          contextVariable: ['config'],
-        },
-
-        /**
-         * #slot formatAbout.hideUris
-         * leave the sequence file's locations out of the About dialog, for a
-         * deployment that would rather not show users where the data sits
-         */
-        hideUris: {
-          type: 'boolean',
-          defaultValue: false,
-        },
-      }),
+      /**
+       * #slot
+       * jexl callbacks that add, rewrite or hide fields in this track's About
+       * dialog. Two slots, listed at
+       * [FormatAbout](/docs/config/formatabout).
+       */
+      formatAbout: FormatAboutConfigSchemaFactory(),
     },
     {
       preProcessSnapshot: s => preprocessTrackConfigSnapshot(pluginManager, s),
