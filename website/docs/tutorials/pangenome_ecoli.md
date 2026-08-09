@@ -56,12 +56,10 @@ these tracks for where the sequence sits: a gene cluster no reference carries
 has no reference coordinate and cannot be drawn on the K12 axis at all, while
 the projections here place every base of the graph that K12 shares.
 
-The graph is built here, not downloaded.
-
-Most of what JBrowse draws are the graph's **linear projections**: the same
-graph flattened onto one reference genome's coordinates. Every builder can emit
-them, so a graph built with any of these tools lands on track types you already
-have:
+The graph is built here, not downloaded. Most of what JBrowse draws are the
+graph's **linear projections**: the same graph flattened onto one reference
+genome's coordinates. Every builder can emit them, so a graph built with any of
+these tools lands on track types you already have:
 
 | Projection             | What it shows                                               | From the graph                                        | JBrowse track                                                      |
 | ---------------------- | ----------------------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------ |
@@ -519,14 +517,13 @@ python3 odgi_similarity_to_newick.py ecoli_pggb_similarity.tsv ecoli_pggb.nh
 the track working.
 
 A cell in the variant lane is grey where that strain matches K12, blue where it
-carries the alternate allele, and olive where the site is uncalled.
-
-The numbered purple boxes in the variant lane are insertion markers, and the
-number on one is how many bases that strain's allele adds beyond K12. They need
-a marker because an insertion consumes no reference: the record spans a single
-base, so without one it would draw at the width of a SNP whatever its length.
-Each strain carrying an insertion at this point has its own record, of its own
-length, rather than all of them sharing one.
+carries the alternate allele, and olive where the site is uncalled. The numbered
+purple boxes are insertion markers, the number being how many bases that
+strain's allele adds beyond K12. They need a marker because an insertion
+consumes no reference: the record spans a single base, so without one it would
+draw at the width of a SNP whatever its length. Each strain carrying an
+insertion here has its own record, of its own length, rather than all of them
+sharing one.
 
 Nothing in the alignment below corresponds to those markers, and the two lanes
 are not disagreeing. A MAF can carry an insertion, as columns the reference row
@@ -583,27 +580,23 @@ K12:
 ```
 
 Zoomed out, the track is the pangenome's core/accessory landscape along K12: a
-plateau near the strain count, troughs at 1 over the stretches only K12 carries,
-and spikes past the strain count over the rRNA operons the graph collapses into
-one copy. It is drawn [at the end of this section](#per-strain-presence), under
-the per-strain rows that say which strain each trough is missing.
-
-The troughs sit at depth 1 where no other strain traverses the graph. Those
-stretches are K12's private sequence: mostly cryptic prophages and IS elements,
-which is where a bacterial accessory genome usually lives. There is no gene lane
-at this zoom, since 4.6 Mb of K12 is more features than a `FeatureTrack` will
-draw; zoom into one trough and the lane names it, which is what the figure below
-does for the widest of them.
+plateau near the strain count, spikes past it over the rRNA operons the graph
+collapses into one copy, and troughs at 1 over K12's private sequence, which is
+mostly cryptic prophages and IS elements. It is drawn
+[at the end of this section](#per-strain-presence), under the per-strain rows
+that say which strain each trough is missing. There is no gene lane at that
+zoom, since 4.6 Mb of K12 is more features than a `FeatureTrack` will draw, so
+zoom into one trough and the lane names it, which is what the figure below does
+for the widest of them.
 
 An unrelated isolate's long reads say the same thing without the graph. These
 are nanopore reads from _E. coli_ E146
 ([ENA DRR193901](https://www.ebi.ac.uk/ena/browser/view/DRR193901)), a
 carbapenem-resistant clinical isolate that is not one of the five, mapped
-straight onto K12 with `minimap2 -ax map-ont`:
-
-The pileup is drawn with supplementary segments linked, so a read split at the
-prophage boundary is joined to its other half rather than read as two, and reads
-long enough to cross the element carry it as a single labelled deletion.
+straight onto K12 with `minimap2 -ax map-ont`. The pileup is drawn with
+supplementary segments linked, so a read split at the prophage boundary is
+joined to its other half rather than read as two, and reads long enough to cross
+the element carry it as a single labelled deletion.
 
 <Figure caption="Nanopore reads from an unrelated E. coli isolate over one K12 depth trough, with the graph's depth curve and its MAF below. Coverage stops dead at the edges of the cryptic prophage CPZ-55, the depth curve steps 5 to 1 across the same span, and all four non-K12 MAF rows go blank there. Four files, one event." src="/img/pangenome/long_reads.png" />
 
@@ -691,21 +684,17 @@ and in 2D with
 [`odgi layout`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_layout.html)
 before it finished, and the output directory holds both: `*.viz_*.png` (one per
 coloring, including position, depth and inversion) and `*.lay.draw.png`. The
-figure below is `odgi viz` re-run only at a size worth printing.
-
-It draws the graph the way the graph is stored, rather than projected onto a
-reference.
+figure below is `odgi viz` re-run only at a size worth printing. It draws the
+graph the way the graph is stored, rather than projected onto a reference.
 
 <Figure caption="The same five-strain graph drawn by odgi viz: one row per strain, filled where the strain traverses the graph and white over accessory sequence. The axis is graph node order, not K12 coordinates, so nothing lines up with a gene or a chromosome position." src="/img/pangenome/graph.png" />
 
-`odgi viz` gives one row per strain, as the MAF and per-strain-presence tracks
-do, but its horizontal axis is the graph's node order (the "pangenome
-sequence"), not any genome's coordinates. Sequence every strain walks is a
-filled column across all rows; accessory sequence is a gap in the rows that skip
-it. The brackets under the rows are the graph's links, each spanning the stretch
-of node order it jumps; a near-colinear bacterial graph has few long ones, so
-that band is mostly empty here. All of it is the graph's real structure, but no
-gene is numbered in node order.
+It gives one row per strain, as the MAF and per-strain-presence tracks do, but
+its horizontal axis is the graph's node order (the "pangenome sequence"), not
+any genome's coordinates. The brackets under the rows are the graph's links,
+each spanning the stretch of node order it jumps, and a near-colinear bacterial
+graph has few long ones, so that band is mostly empty here. All of it is the
+graph's real structure, but no gene is numbered in node order.
 
 The JBrowse projections keep the one-row-per-strain idea and re-draw everything
 on K12's coordinates. Depth is the raster's column coverage summed into one
@@ -813,15 +802,12 @@ bar labelled `7 kb deletion` running off the left edge: its segment is 75 bp on
 CFT073's own contig, and its two links land on `K12:1,004,667` inside the window
 and on `K12:997,574` 7.1 kb upstream, so those 75 bp stand in for 7.1 kb of K12
 and the bar is that 7.1 kb. It is a deletion, not a loop, and most of it is
-outside the frame.
-
-A segment with no reference coordinate still describes an event that has one,
-because the address of an event is the span it replaces, and that is what
-`pggb -V` writes through `vg deconstruct`: one record at `chr:997,575`, 7,112 bp
-of REF against a 93 bp ALT, genotyped in CFT073 and in none of the other three.
-The same detour is drawn [below](#out-of-the-graph-into-the-strain), from the
-side that settles it: CFT073's own coordinates, where the seven K12 genes it
-replaces are simply absent.
+outside the frame. `pggb -V` writes the same event through `vg deconstruct`, one
+record at `chr:997,575` with 7,112 bp of REF against a 93 bp ALT, genotyped in
+CFT073 and in none of the other three, and it is drawn again
+[below](#out-of-the-graph-into-the-strain) from the side that settles it:
+CFT073's own coordinates, where the seven K12 genes it replaces are simply
+absent.
 
 In **Sample rows** the lanes take the MAF's own rows and order: the top row is
 the K12 backbone, and below it each strain's marks are the segments it takes
@@ -882,7 +868,7 @@ list and `carriers` is its length, which is the one a color expression wants:
 }
 ```
 
-<Figure caption="The IS5 element at K12 chr:1,299,499-1,300,693 in three lanes, drawn from the track config above. The gene track names it insH21; the odgi depth curve, a mean over tiled windows, steps from the strain count down to 1 across its span; and the carriage lane colors one box per graph segment by its carriers tag, so the same span is a single red box carried by K12 alone with the core band either side." src="/img/pangenome/pggb_carriage_lane.png" />
+<Figure caption="Who carries the IS5 element at K12 chr:1,299,499-1,300,693 — the question a graph can answer and a reference cannot. The carriage lane is an ordinary feature track colored by a jexl expression over the GFA SM:Z: tag (the config is above), so one red box means a segment K12 alone walks, against the core band either side." src="/img/pangenome/pggb_carriage_lane.png" />
 
 Read it against the
 [depth track](#pangenome-depth-projection-core-vs-accessory). Both answer core
@@ -893,7 +879,7 @@ states carriage in the first place.
 
 The last color in the chain is the fallback. An rGFA has no tag column at all,
 so `carriers` is absent rather than 0 and the whole lane comes out in that
-color; the popup's `contributingAssembly` is all such a graph can report.
+color.
 
 #### Out of the graph, into the strain
 
@@ -920,10 +906,9 @@ contributing strain at once.
 
 #### Where this stops, and what to do instead
 
-This gives browsing by locus rather than seamless browsing of any graph.
-
-The index is built once, offline, and nothing reads the GFA live, so it has to
-be rebuilt when the graph changes. It grows with total sequence rather than with
+This gives browsing by locus rather than seamless browsing of any graph. The
+index is built once, offline, and nothing reads the GFA live, so it has to be
+rebuilt when the graph changes. It grows with total sequence rather than with
 variation: a pggb graph runs about 17 bp per segment, so a five-strain bacterial
 pangenome is a few hundred thousand segments and a human pangenome at base level
 is orders of magnitude past that. That is also how pggb itself is run at that
@@ -937,17 +922,13 @@ At 17 bp per segment, 1 kb is around 150 nodes and 3 kb is a solid braid, and
 the view declines past its node budget rather than drawing something unreadable.
 Finally, a segment carried by several assemblies draws on one row: sample rows
 put it on the first path that walks it, and the rest are in the node popup under
-`carriedBy`. That works here because `build_pggb_tabix.sh` writes every carrier
-of a segment into the index as an `SM:Z:` tag, per haplotype, which is the one
-thing an rGFA cannot state: there `SR` is build order, so the popup reports
-`contributingAssembly` instead and means "first contributed", not "carried by".
+[`carriedBy`](#who-carries-a-segment).
 
-That is worth seeing rather than taking on the word of a paragraph, so the
-[build script](#reproduce-it-end-to-end) also runs `minigraph -cxggs` over the
-same five strains and indexes the rGFA it emits the same way. The figure below
-puts one locus through both graphs. The two panes are comparable but two orders
-of magnitude apart in span: the minigraph side covers three whole backbone
-segments, the pggb side the stretch banded on its ruler.
+The [build script](#reproduce-it-end-to-end) also runs `minigraph -cxggs` over
+the same five strains and indexes the rGFA it emits the same way, so the figure
+below can put one locus through both graphs. The two panes are comparable but
+two orders of magnitude apart in span: the minigraph side covers three whole
+backbone segments, the pggb side the stretch banded on its ruler.
 
 <Figure caption="One stretch of K12 at the colanic acid cluster, cut from the two graphs this build produces, each over the window its own graph can draw. Left, the minigraph rGFA: a chain with alternate segments hanging off it. Right, the pggb graph: a node at every variant." src="/img/pangenome/graph_resolution.png" links="minigraph=pangenome/graph_resolution_minigraph,pggb=pangenome/graph_resolution_pggb" />
 
@@ -1000,23 +981,18 @@ tooltip gives.
 
 One of them is worth naming, because a cut graph always has ends and this one
 has a conspicuous one: the 93 bp node at the green-to-yellow junction, ringed in
-the figure below and drawn with its free end hanging off the junction in the
-force pane of the [sample-rows figure](#browsing-the-whole-graph-by-locus)
-above, which covers the same 460 bp. It is where CFT073 rejoins, and in the
-whole graph that segment links to `K12:1,004,686` **and** to `K12:997,574`, so
-CFT073 carries 93 bp where K12 carries 7.1 kb. The open end is the far side of
-that deletion, 7 kb outside the window `odgi extract -E` was given. A one-sided
-node in any extracted subgraph means the same thing: sequence continuing past
-the window, not a dead end in the graph.
+the figure below, is where CFT073 rejoins. It is the near side of
+[the same deletion](#out-of-the-graph-into-the-strain) drawn above, and its
+second link falls 7 kb outside the window `odgi extract -E` was given, so it
+draws with one end open. A one-sided node in any extracted subgraph means that
+and not a dead end in the graph.
 
-Widening until it closes is the obvious next move and the index says what it
-costs before you spend it on. Both anchors are in view only from
-`K12#1#chr:997,574-1,004,961`, and `-E` over a window that size returns
-thousands of segments where this one returns 48, because a base-level graph
-averages ~17 bp per segment. `-c 1` fetches the far anchor without everything
-between, and moves the problem rather than solving it: that node's own two ends
-are then open, and anchored on K12 it sits 7 kb off the left edge of the linear
-view above.
+Widening until it closes is the obvious next move, and the index says what it
+costs first. Both anchors are in view only from `K12#1#chr:997,574-1,004,961`,
+and `-E` over a window that size returns thousands of segments where this one
+returns 48, because a base-level graph averages ~17 bp per segment. `-c 1`
+fetches the far anchor without everything between, and moves the problem rather
+than solving it: that node's own two ends are then open.
 
 The same event is four nodes in the
 [minigraph graph](/docs/user_guides/graph_genome_view) of these same five

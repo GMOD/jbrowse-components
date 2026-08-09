@@ -2574,7 +2574,15 @@ export const graphSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text' as const,
-        text: 'GFA carriers tag, per segment',
+        // NAMED IN FULL (review: "is this a specific GFA 'tag' like a sam tag?
+        // use full naming"). It is: `SM:Z:`, a GFA optional tag in the same
+        // TYPE:VALUE form SAM uses, holding the haplotypes that walk the
+        // segment. RgfaTabixAdapter puts it on the feature as `samples` and
+        // `carriers`, and the colour is a jexl expression over `carriers` --
+        // an ordinary FeatureTrack and LinearBasicDisplay with a `color` and a
+        // `legend`, NOT a custom display type, which is the other half of the
+        // note and is what the tutorial's config fence shows.
+        text: 'GFA SM:Z: tag, per segment',
         fontSize: 15,
         anchor: {
           track: PGGB_CARRIAGE_TRACK,
