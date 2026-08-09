@@ -1,14 +1,14 @@
 ---
-name: ortholog-tables-and-ncbi-demo
-description: What a .blocks ortholog table can and cannot express (the adapter pairs any two columns, so all-vs-all is a producer question and not a format one), which all-vs-all ortholog formats are worth adding, and the migration of the grape/peach/cacao demo off Ensembl Plants and onto NCBI datasets (done 2026-08-09). Read before adding an ortholog format, before touching demos/grape_peach_cacao, or before renaming a refName to make a track resolve.
+name: ORTHOLOG_TABLES
+description: What a .blocks ortholog table can and cannot express - MCScanBlocksAdapter pairs any two columns, so all-vs-all is a question about the producer (jcvi MCScan anchors on one genome, OrthoFinder does not) and not about the format. Also the NCBI-datasets recipe behind the grape/peach/cacao demo, and the rule that a refName rename needs a chromosome-length check first because a name mismatch is usually two different assemblies. Read before adding an ortholog format, before touching demos/grape_peach_cacao, or before renaming a refName to make a track resolve.
 ---
 
-# Ortholog tables, all-vs-all, and the NCBI migration
+# Ortholog tables and the NCBI demo pipeline
 
-Two threads that turned out to be one: the grape/peach/cacao demo needed more
-genomes, and chasing that surfaced both an assembly-provenance bug and a
-long-standing misstatement about what `.blocks` can hold. Both are resolved; the
-first section is the durable part.
+How `.blocks` ortholog tables actually work, which producers give you all-vs-all,
+and the NCBI pipeline behind `demos/grape_peach_cacao`. Written after a round
+that added four species to that demo and, in doing so, hit an
+assembly-provenance bug worth never repeating.
 
 ## What a `.blocks` table can express
 
