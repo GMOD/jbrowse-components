@@ -126,8 +126,27 @@ export const screenshotLiveUrls: Record<string, string> = Object.fromEntries(
 // the reader pays for in their own browser. The Figure macro annotates their
 // "Open in JBrowse" link so a reader who clicks it knows to expect a wait rather
 // than a broken page. Derived from the spec, not a hand-kept list, so it can't
-// drift: readyTimeout is the spec's own statement that this one is slow.
-const SLOW_READY_TIMEOUT_MS = 120000
+// drift: a raised timeout is the spec's own statement that this one is slow.
+//
+// Both kinds of timeout count, because a spec can put its whole wait in either.
+// `readyTimeout` covers getting to a session, but a session spec that launches
+// work — an MsaView building an alignment out of NCBI and EBI, an rGFA graph
+// assembling itself — reaches "ready" quickly and then waits on the result in an
+// action. Reading readyTimeout alone classified genomes_msa/pyrin_residues as
+// slow only by luck (its 120000 is the ~570-track UCSC config, not the ~3 minute
+// alignment), and would have said "fast" outright for the same spec against a
+// cheaper config.
+const SLOW_TIMEOUT_MS = 120000
+
+// The longest an action is allowed to wait, across a spec's own actions and
+// every stage's. A stage frame is part of the same live session.
+function longestActionTimeout(spec: ScreenshotSpec) {
+  const actions = [
+    ...(spec.mode === 'url' ? (spec.actions ?? []) : []),
+    ...(spec.stages ?? []).flatMap(stage => stage.actions ?? []),
+  ]
+  return Math.max(0, ...actions.map(action => action.timeout ?? 0))
+}
 
 export const screenshotSlowSpecNames = new Set(
   specs
@@ -135,7 +154,8 @@ export const screenshotSlowSpecNames = new Set(
       spec =>
         spec.mode === 'url' &&
         (spec.heavyNetwork ||
-          (spec.readyTimeout ?? 0) >= SLOW_READY_TIMEOUT_MS),
+          (spec.readyTimeout ?? 0) >= SLOW_TIMEOUT_MS ||
+          longestActionTimeout(spec) >= SLOW_TIMEOUT_MS),
     )
     .map(spec => spec.name),
 )
