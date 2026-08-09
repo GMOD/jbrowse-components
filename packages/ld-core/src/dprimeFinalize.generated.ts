@@ -8,21 +8,21 @@ export function dprimeFinalize(D: number, pA: number, pB: number, signedLD: bool
   let qA = (1.0 - pA)
   let qB = (1.0 - pB)
   if ((D > 0.0)) {
-    let _S1 = Math.min((pA * qB), (qA * pB))
-    if ((_S1 > 0.0)) {
-      return Math.min(1.0, (D / _S1))
+    let _t0 = Math.min((pA * qB), (qA * pB))
+    if ((_t0 > 0.0)) {
+      return Math.min(1.0, (D / _t0))
     }
   } else {
     if ((D < 0.0)) {
-      let _S2 = Math.min((pA * pB), (qA * qB))
-      if ((_S2 > 0.0)) {
-        let _S3: number
+      let _t1 = Math.min((pA * pB), (qA * qB))
+      if ((_t1 > 0.0)) {
+        let _t2: number
         if (signedLD) {
-          _S3 = Math.max(-1.0, (D / _S2))
+          _t2 = Math.max(-1.0, (D / _t1))
         } else {
-          _S3 = Math.min(1.0, (Math.abs(D) / _S2))
+          _t2 = Math.min(1.0, (Math.abs(D) / _t1))
         }
-        return _S3
+        return _t2
       }
     }
   }

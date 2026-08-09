@@ -282,6 +282,138 @@ describe('integer division', () => {
   })
 })
 
+// slangc annotates a `var` and leaves a `let` bare. The bare one used to be
+// TYPED as f32 rather than left unknown, which is a fabricated answer, not a
+// missing one — so every refusal phrased as "I could not infer" was satisfied
+// by it and the integer paths below silently took the float branch.
+describe('an un-annotated let takes its type from its initializer', () => {
+  test('a u32 sum stays a u32, so dividing by it truncates', () => {
+    const out = emit(
+      `fn f_0( a_0 : u32) -> u32 { let t_0 = a_0 + 1u; return t_0 / 2u; }`,
+      ['f'],
+    )
+    expect(out).toContain('Math.trunc')
+    // Was 2.5 while the GPU said 2.
+    expect(evaluate(out, 'f')(4)).toBe(2)
+  })
+
+  test('a u32 sum can still be shifted, which needs its signedness', () => {
+    const out = emit(
+      `fn f_0( a_0 : u32) -> u32 { let t_0 = a_0 | 2147483648u; return t_0 >> 4u; }`,
+      ['f'],
+    )
+    expect(evaluate(out, 'f')(0)).toBe(0x8000000)
+  })
+
+  test('a float initializer still reads as a float', () => {
+    const out = emit(
+      `fn f_0( a_0 : f32) -> f32 { let t_0 = a_0 * 2.0f; return t_0 / 4.0f; }`,
+      ['f'],
+    )
+    expect(out).not.toContain('Math.trunc')
+    expect(evaluate(out, 'f')(3)).toBe(1.5)
+  })
+
+  test('an uninferable initializer refuses rather than assuming float', () => {
+    // A module-scope `const` is skipped rather than parsed, so a local seeded
+    // from one has no type the emitter can see. Guessing f32 would have made
+    // the mask below a "bitwise op on a float" refusal — right answer, wrong
+    // reason — and the divide case above emit silently.
+    expect(() =>
+      emit(
+        `const K_0 : u32 = 4u;
+         fn f_0( a_0 : u32) -> u32 { let t_0 = K_0; return t_0 >> 1u; }`,
+        ['f'],
+      ),
+    ).toThrow(/signed/)
+  })
+})
+
+// WGSL wraps integer arithmetic at the type's width and JS grows the number
+// instead. Subtraction is the one that matters: it underflows at ordinary
+// values, not at 2^32-scale ones.
+describe('integer wraparound', () => {
+  test('an unsigned difference wraps instead of going negative', () => {
+    const out = emit(
+      `fn f_0( a_0 : u32, b_0 : u32) -> u32 { return a_0 - b_0; }`,
+      ['f'],
+    )
+    expect(evaluate(out, 'f')(1, 2)).toBe(4294967295)
+    expect(evaluate(out, 'f')(7, 2)).toBe(5)
+  })
+
+  test('an unsigned sum stays in range', () => {
+    const out = emit(`fn f_0( a_0 : u32) -> u32 { return a_0 + 1u; }`, ['f'])
+    expect(evaluate(out, 'f')(0xffffffff)).toBe(0)
+  })
+
+  test('an integer product uses Math.imul, which a trailing mask cannot fix', () => {
+    // The true product reaches 2^64 and loses its low bits in float64 before
+    // any `>>> 0` could see them: 0x10001 * 0x10001 is 0x20001 as a u32, and
+    // 4295098369 unwrapped.
+    const out = emit(
+      `fn f_0( a_0 : u32, b_0 : u32) -> u32 { return a_0 * b_0; }`,
+      ['f'],
+    )
+    expect(out).toContain('Math.imul')
+    expect(evaluate(out, 'f')(0x10001, 0x10001)).toBe(0x20001)
+  })
+
+  test('float arithmetic is untouched', () => {
+    const out = emit(
+      `fn f_0( a_0 : f32, b_0 : f32) -> f32 { return (a_0 - b_0) * 0.5f; }`,
+      ['f'],
+    )
+    expect(out).not.toContain('>>>')
+    expect(out).not.toContain('Math.imul')
+    expect(evaluate(out, 'f')(1, 2)).toBe(-0.5)
+  })
+})
+
+test('slangc’s scratch locals are renumbered per function', () => {
+  // Their numbering comes from a counter slangc keeps across the whole module,
+  // so an unrelated edit renumbers them in every twin lifted from it and the
+  // generated diff shows churn in functions nobody touched.
+  const out = emit(
+    `fn f_0( a_0 : f32) -> f32 {
+       var _S7 : f32;
+       if((a_0 > 0.0f)) { _S7 = a_0; } else { _S7 = 0.0f; }
+       return _S7;
+     }`,
+    ['f'],
+  )
+  expect(out).toContain('_t0')
+  expect(out).not.toContain('_S7')
+  expect(evaluate(out, 'f')(-2)).toBe(0)
+})
+
+test('refuses a local that would shadow an emitted helper', () => {
+  // `let _clamp = _clamp(x, 0, 1)` is a TDZ throw, and renaming around it would
+  // be the emitter guessing at a name the shader author chose.
+  expect(() =>
+    emit(
+      `fn f_0( x_0 : f32) -> f32 { let _clamp = clamp(x_0, 0.0f, 1.0f); return _clamp; }`,
+      ['f'],
+    ),
+  ).toThrow(/_clamp.*helper/s)
+})
+
+test('refuses one name declared twice with different types', () => {
+  // The emitter's scope is flat where WGSL's is nested, so the second
+  // declaration used to win and silently retype every earlier reference.
+  expect(() =>
+    emit(
+      `fn f_0( c_0 : bool) -> f32 {
+         var r_0 : f32;
+         if(c_0) { var t_0 : u32; t_0 = 7u; r_0 = f32(t_0 / 2u); }
+         else { var t_0 : f32; t_0 = 7.0f; r_0 = t_0 / 2.0f; }
+         return r_0;
+       }`,
+      ['f'],
+    ),
+  ).toThrow(/declares 't_0' twice/)
+})
+
 test('folds a literal scalar constructor instead of wrapping it', () => {
   // slangc spells every integer literal as a constructor call, so leaving these
   // alone buries the code in `((10) >>> 0)` — and a reviewable twin is the

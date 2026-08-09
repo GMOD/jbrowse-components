@@ -5,13 +5,13 @@
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
 export function qualityFade(qual: number, enabled: boolean): number {
-  let _S7: boolean
+  let _t0: boolean
   if (enabled) {
-    _S7 = (qual > 0.0)
+    _t0 = (qual > 0.0)
   } else {
-    _S7 = false
+    _t0 = false
   }
-  if (_S7) {
+  if (_t0) {
     return Math.min(1.0, (qual / 50.0))
   }
   return 1.0

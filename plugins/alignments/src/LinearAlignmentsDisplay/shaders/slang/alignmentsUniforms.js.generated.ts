@@ -9,32 +9,32 @@ export function frequencyAlpha(base: number, freq: number): number {
 }
 
 export function frequencyFadeGate(base: number, freq: number, filterByFrequency: boolean): number {
-  let _S1: boolean
+  let _t0: boolean
   if (filterByFrequency) {
-    _S1 = (base < 1.0)
+    _t0 = (base < 1.0)
   } else {
-    _S1 = false
+    _t0 = false
   }
-  let _S2: number
-  if (_S1) {
-    _S2 = frequencyAlpha(base, freq)
+  let _t1: number
+  if (_t0) {
+    _t1 = frequencyAlpha(base, freq)
   } else {
-    _S2 = 1.0
+    _t1 = 1.0
   }
-  return _S2
+  return _t1
 }
 
 export function arcYFraction(yBp: number, arcsYDomainBp: number, useLog: boolean): number {
   if (useLog) {
     return (Math.log2(Math.max(1.0, (yBp))) / Math.log2(Math.max(2.0, arcsYDomainBp)))
   }
-  let _S3: number
+  let _t0: number
   if ((arcsYDomainBp > 0.0)) {
-    _S3 = ((yBp) / arcsYDomainBp)
+    _t0 = ((yBp) / arcsYDomainBp)
   } else {
-    _S3 = 0.0
+    _t0 = 0.0
   }
-  return _S3
+  return _t0
 }
 
 export function arcYOffsetPx(yBp: number, arcsYDomainBp: number, useLog: boolean, availH: number): number {

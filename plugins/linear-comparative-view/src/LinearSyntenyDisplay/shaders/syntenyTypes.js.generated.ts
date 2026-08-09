@@ -18,33 +18,33 @@ export function isMarkerKind(kind: number): boolean {
 
 export function fillShade(colorAlpha: number, displayAlpha: number, isHovered: boolean): number {
   let a = (colorAlpha * displayAlpha)
-  let _S1: number
+  let _t0: number
   if (isHovered) {
-    _S1 = Math.min((a * 5.0), 0.34999999403953552)
+    _t0 = Math.min((a * 5.0), 0.34999999403953552)
   } else {
-    _S1 = a
+    _t0 = a
   }
-  return _S1
+  return _t0
 }
 
 export function hoverDarken(isHovered: boolean): number {
-  let _S2: number
+  let _t0: number
   if (isHovered) {
-    _S2 = 0.69999998807907104
+    _t0 = 0.69999998807907104
   } else {
-    _S2 = 1.0
+    _t0 = 1.0
   }
-  return _S2
+  return _t0
 }
 
 export function thinWidthFade(perpW: number, applies: boolean): number {
-  let _S3: number
+  let _t0: number
   if (applies) {
-    _S3 = _clamp(perpW, 0.15000000596046448, 1.0)
+    _t0 = _clamp(perpW, 0.15000000596046448, 1.0)
   } else {
-    _S3 = 1.0
+    _t0 = 1.0
   }
-  return _S3
+  return _t0
 }
 
 export function sBlend(t: number): number {

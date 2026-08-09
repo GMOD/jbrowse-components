@@ -6,24 +6,24 @@
 
 export function snapBoxHeightPx(heightPx: number): number {
   let hPx = Math.floor((heightPx + 0.5))
-  let _S1: boolean
+  let _t0: boolean
   if (((hPx - (2.0 * Math.floor((hPx * 0.5)))) == 0.0)) {
-    _S1 = (hPx >= 2.0)
+    _t0 = (hPx >= 2.0)
   } else {
-    _S1 = false
+    _t0 = false
   }
-  if (_S1) {
-    _S1 = (hPx <= 4.0)
+  if (_t0) {
+    _t0 = (hPx <= 4.0)
   } else {
-    _S1 = false
+    _t0 = false
   }
-  let _S2: number
-  if (_S1) {
-    _S2 = (hPx + 1.0)
+  let _t1: number
+  if (_t0) {
+    _t1 = (hPx + 1.0)
   } else {
-    _S2 = hPx
+    _t1 = hPx
   }
-  return _S2
+  return _t1
 }
 
 export function snapBoxCenterYPx(centerY: number, heightPx: number, scrollY: number): number {
@@ -32,16 +32,16 @@ export function snapBoxCenterYPx(centerY: number, heightPx: number, scrollY: num
 
 export function extendToMinWidthPx(x1: number, x2: number, minWidth: number): number {
   let dx = (x2 - x1)
-  let _S3: number
+  let _t0: number
   if ((Math.abs(dx) < minWidth)) {
     if ((dx < 0.0)) {
-      _S3 = -minWidth
+      _t0 = -minWidth
     } else {
-      _S3 = minWidth
+      _t0 = minWidth
     }
-    _S3 = (x1 + _S3)
+    _t0 = (x1 + _t0)
   } else {
-    _S3 = x2
+    _t0 = x2
   }
-  return _S3
+  return _t0
 }

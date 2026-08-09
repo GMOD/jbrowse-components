@@ -346,6 +346,36 @@ exists" is a claim to re-check, not a category to file things in.
   signedness work is the model — it was built because `showChevron` needed it,
   not because a sweep found it — so the standing job is to look for the next
   such construct before an export reaches it, rather than after.
+- **A default type defeats a refusal, because a refusal can only fire on
+  "unknown".** The next sweep found the integer-`/` fix reachable *around*: an
+  un-annotated `let` was TYPED as `f32` on the reasoning that slangc annotates
+  every `var` and leaves only float temporaries bare. That is a fabricated
+  answer where the emitter's whole safety story is phrased as "I could not
+  infer", so `let t = a + 1u; t / 2u` satisfied `divideIsIntegral` and emitted a
+  float divide — 2 on the GPU, 2.5 in the twin. The fix is to infer the type
+  from the initializer, as WGSL itself does, and leave it genuinely unknown when
+  that fails; the existing twins are byte-identical afterwards, because every
+  bare `let` in them really was float. **Look for other places a plausible
+  default stands where an absence should.**
+- **Unsigned subtraction underflows at ordinary values**, which is what
+  separates it from the `+`/`*` overflow the emitter had documented as needing
+  2^32-scale inputs and therefore left alone. `1u - 2u` is 4294967295 on the GPU
+  and -1 unwrapped. `+` and `-` now re-wrap exactly through JS's coercions
+  (`>>> 0` / `| 0`); `*` cannot be fixed that way — the true product reaches
+  2^64 and loses its low bits in float64 before a mask could see them — so it
+  goes through `Math.imul`, which is the exact 32-bit multiply and settles the
+  case the old note called unmodelable.
+- **Two smaller guards, both loud rather than clever.** A local whose name
+  collides with an emitted helper (`let _clamp = _clamp(x, 0, 1)`) now throws
+  instead of emitting a TDZ error, and one name declared twice with different
+  types in sibling branches throws instead of the flat scope silently keeping
+  the later one. Neither occurs today; both would have been silent.
+- **slangc's scratch locals are renumbered per function.** `_S1`, `_S4`, `_S7`
+  in the committed twins are positions in a counter slangc keeps across the
+  whole module, so adding an unrelated function to a `.slang` — or to a module
+  it imports — renumbers them in every twin lifted from it, and the generated
+  diff then shows changes in functions nobody touched. They are emitted as
+  `_t0`, `_t1`, … in first-declaration order instead.
 - Scope is deliberately capped: this covers scalar decisions, not the ~5,400
   lines of hand-written canvas drawing repo-wide. Roughly 1,200 of those lines
   have no shader counterpart at all (the Canvas2D-only sequence display, MAF's

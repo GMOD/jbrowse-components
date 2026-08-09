@@ -5,13 +5,13 @@
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
 export function markerDirection(screenStrand: number, edgeSide: number): number {
-  let _S4: number
+  let _t0: number
   if ((screenStrand == 0.0)) {
-    _S4 = edgeSide
+    _t0 = edgeSide
   } else {
-    _S4 = screenStrand
+    _t0 = screenStrand
   }
-  return _S4
+  return _t0
 }
 
 export function strandMatchesEdge(screenStrand: number, edgeSide: number): number {

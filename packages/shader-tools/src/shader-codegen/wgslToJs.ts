@@ -145,7 +145,10 @@ type Expr =
   | { k: 'call'; name: string; args: Expr[]; line: number }
 
 type Stmt =
-  | { k: 'var'; name: string; type: WgslType; init?: Expr }
+  // `type` is absent for an un-annotated `let`, whose type the emitter infers
+  // from `init` — see the parser's `var`/`let` case. A declaration with no
+  // initializer always carries one; the parser refuses the other spelling.
+  | { k: 'var'; name: string; type?: WgslType; init?: Expr }
   | { k: 'assign'; name: string; value: Expr }
   | { k: 'if'; cond: Expr; thenBody: Stmt[]; else?: Stmt[] }
   | { k: 'return'; value?: Expr }
@@ -439,13 +442,24 @@ class Parser {
     if (t.text === 'var' || t.text === 'let') {
       this.next()
       const name = this.next().text
-      // A `let` with an inferred type: slangc always annotates `var`, and an
-      // un-annotated binding is only ever an f32 temporary in the output seen
-      // so far. Anything relying on its being an integer would have to be
-      // written by slangc as an explicit `u32(...)`, which types itself.
-      const type = this.eat(':') ? this.parseType() : 'f32'
+      // An un-annotated `let` is left UNTYPED here for the emitter to infer
+      // from its initializer, which is what WGSL itself does. It used to
+      // default to `f32` on the reasoning that slangc always annotates a `var`
+      // and only ever leaves float temporaries un-annotated — but that default
+      // is a fabricated type, not an unknown one, and the emitter's refusals
+      // are all phrased as "I could not infer". `let t = a + 1u; t / 2u` was
+      // therefore emitted as a FLOAT division: 1 on the GPU, 1.5 in the twin,
+      // silently, for ordinary inputs. Nothing exported today reaches it,
+      // which is exactly why it survived.
+      const type = this.eat(':') ? this.parseType() : undefined
       const init = this.eat('=') ? this.parseExpr() : undefined
       this.expect(';')
+      if (type === undefined && init === undefined) {
+        this.unsupported(
+          t,
+          `'${t.text}' with neither a type nor an initializer`,
+        )
+      }
       return { k: 'var', name, type, init }
     }
     if (t.text === 'if') {
@@ -706,7 +720,11 @@ class Emitter {
   private renames: Map<string, string>
   private moduleFns: ReadonlySet<string>
   private returnTypes: ReadonlyMap<string, WgslType | 'void'>
-  private scopeTypes: ReadonlyMap<string, WgslType> = new Map()
+  // Mutable, and filled in as the body is emitted: an un-annotated `let` gets
+  // its type from its initializer, which can only be evaluated in the scope the
+  // statements before it built. Statements are emitted in source order, so a
+  // name is always typed before anything can read it.
+  private scopeTypes = new Map<string, WgslType>()
 
   constructor(
     renames: Map<string, string>,
@@ -721,7 +739,7 @@ class Emitter {
   /** Swap in the current function's local scope before emitting its body. */
   setScope(renames: Map<string, string>, types: ReadonlyMap<string, WgslType>) {
     this.renames = renames
-    this.scopeTypes = types
+    this.scopeTypes = new Map(types)
   }
 
   /**
@@ -801,6 +819,42 @@ class Emitter {
       )
     }
     return t === 'u32' || t === 'i32'
+  }
+
+  /**
+   * `'u32'` / `'i32'` when `+ - *` is integer arithmetic here, `undefined` when
+   * it is float or the emitter cannot tell.
+   *
+   * Not a refusal, unlike `/` and the bitwise operators: those diverge for
+   * ordinary in-range inputs, so guessing is a wrong answer, while these two
+   * agree everywhere except at the wrap. Emitting the plain form when the type
+   * is unknown is the behavior every twin generated so far already has.
+   */
+  private intArithType(e: Expr & { k: 'bin' }) {
+    const t = this.typeOf(e.l) ?? this.typeOf(e.r)
+    return t === 'u32' || t === 'i32' ? t : undefined
+  }
+
+  /**
+   * WGSL wraps integer arithmetic modulo the type's width; JS grows the number
+   * instead. `-` is the case that matters and the one previously left alone:
+   * unsigned SUBTRACTION underflows at ordinary values, not at 2^32-scale ones
+   * — `1u - 2u` is 4294967295 on the GPU and -1 in an unwrapped twin — so the
+   * old note about needing enormous inputs held only for `+` and `*`.
+   *
+   * `+` and `-` re-wrap exactly through the JS coercions, since a sum or
+   * difference of two 32-bit values is far inside float64's exact range.
+   * `*` is not: the true product reaches 2^64 and loses low bits before any
+   * mask could see them, which is why the plain form cannot be fixed by a
+   * trailing `>>> 0`. `Math.imul` is the exact 32-bit multiply and settles it.
+   */
+  private intArith(op: string, type: 'u32' | 'i32', l: string, r: string) {
+    const raw = op === '*' ? `Math.imul(${l}, ${r})` : `${l} ${op} ${r}`
+    if (type === 'u32') {
+      return `((${raw}) >>> 0)`
+    }
+    // Math.imul already yields a wrapped signed int32.
+    return op === '*' ? `(${raw})` : `((${raw}) | 0)`
   }
 
   /** The operand type a bitwise operator acts on, or a refusal naming why. */
@@ -921,12 +975,14 @@ class Emitter {
         if (e.op === '/' && this.divideIsIntegral(e)) {
           return `Math.trunc(${this.expr(e.l)} / ${this.expr(e.r)})`
         }
+        if (e.op === '+' || e.op === '-' || e.op === '*') {
+          const int = this.intArithType(e)
+          if (int) {
+            return this.intArith(e.op, int, this.expr(e.l), this.expr(e.r))
+          }
+        }
         // WGSL and JS agree on the remaining arithmetic and comparison
-        // operators, up to the float64-vs-float32 width the ADR accepts. They
-        // do NOT agree on integer overflow — a u32 `+`/`*` wraps on the GPU and
-        // grows in JS — but that needs 2^32-scale inputs, which no exported
-        // decision goes anywhere near, and float64 cannot model the wrap
-        // faithfully anyway (the product loses bits before it could be masked).
+        // operators, up to the float64-vs-float32 width the ADR accepts.
         return `(${this.expr(e.l)} ${e.op} ${this.expr(e.r)})`
       }
       case 'call': {
@@ -996,11 +1052,21 @@ class Emitter {
     for (const s of list) {
       switch (s.k) {
         case 'var': {
-          out.push(
-            s.init === undefined
-              ? `${indent}let ${this.id(s.name)}: ${tsTypeOf(s.type)}`
-              : `${indent}let ${this.id(s.name)} = ${this.expr(s.init)}`,
-          )
+          if (s.init === undefined) {
+            // The parser refuses a declaration with neither, so this one is
+            // annotated.
+            out.push(`${indent}let ${this.id(s.name)}: ${tsTypeOf(s.type!)}`)
+            break
+          }
+          // Emit first, then type: the initializer is read in the scope as it
+          // stood before this statement, and `x` is not in scope in its own
+          // initializer.
+          const value = this.expr(s.init)
+          const type = s.type ?? this.typeOf(s.init)
+          if (type !== undefined) {
+            this.scopeTypes.set(s.name, type)
+          }
+          out.push(`${indent}let ${this.id(s.name)} = ${value}`)
           break
         }
         case 'assign': {
@@ -1060,16 +1126,73 @@ function buildRenames(names: Iterable<string>, reserved?: ReadonlySet<string>) {
   return new Map(all.map(n => [n, demangle(n)]))
 }
 
-/** Every name this function declares — parameters and locals — with its type. */
+// slangc's own scratch locals: `_S1`, `_S2`, … numbered from a counter it keeps
+// across the WHOLE module, not per function.
+const SLANGC_TEMP_RE = /^_S\d+$/
+
+/**
+ * Renumber slangc's scratch locals per function, so `continuation.js.generated`
+ * stops opening with `_S4` and `mismatch` with `_S7`.
+ *
+ * The numbers are not the shader author's and carry no meaning, but they DO
+ * churn: the counter is module-wide, so adding an unrelated function to a
+ * `.slang` — or to a module it imports — renumbers the temporaries in every
+ * twin lifted from it, and the generated diff then shows changes in functions
+ * nobody touched. First-declaration order within the function is stable under
+ * exactly the edits that were shifting the slangc counter.
+ *
+ * All-or-nothing, like `buildRenames`: if a target name is already spoken for,
+ * every temp keeps its mangled spelling rather than one aliasing another.
+ */
+function stabilizeTemps(
+  renames: Map<string, string>,
+  declared: Iterable<string>,
+  reserved: ReadonlySet<string>,
+) {
+  const temps = [...declared].filter(n => SLANGC_TEMP_RE.test(n))
+  if (temps.length === 0) {
+    return renames
+  }
+  const taken = new Set([...reserved, ...renames.values()])
+  const stable = temps.map((n, i) => [n, `_t${i}`] as const)
+  if (stable.some(([, to]) => taken.has(to))) {
+    return renames
+  }
+  return new Map([...renames, ...stable])
+}
+
+/**
+ * Every name this function declares — parameters and locals — in declaration
+ * order, carrying the type where the source states one. An un-annotated `let`
+ * maps to `undefined`: the emitter infers it from the initializer when it gets
+ * there, and until then nothing may assume a type for it.
+ *
+ * The map is flat, where WGSL scopes are nested, so two branches declaring the
+ * same name would collapse onto whichever came last — and a type silently
+ * changed from `u32` to `f32` that way is a wrong `/` or a wrong shift, not a
+ * compile error. slangc's SSA-ish naming makes it very unlikely; say so anyway,
+ * because the alternative is silent.
+ */
 function collectDeclared(fn: WgslFn) {
-  const into = new Map<string, WgslType>()
+  const into = new Map<string, WgslType | undefined>()
+  const declare = (name: string, type: WgslType | undefined) => {
+    if (into.has(name) && into.get(name) !== type) {
+      throw new Error(
+        `wgslToJs: '${fn.name}' declares '${name}' twice with different types ` +
+          `(${into.get(name) ?? 'inferred'} and ${type ?? 'inferred'}). The ` +
+          `emitter's scope is flat, so it cannot tell which one a later ` +
+          `reference means.`,
+      )
+    }
+    into.set(name, type)
+  }
   for (const p of fn.params) {
-    into.set(p.name, p.type)
+    declare(p.name, p.type)
   }
   const walk = (list: Stmt[]) => {
     for (const s of list) {
       if (s.k === 'var') {
-        into.set(s.name, s.type)
+        declare(s.name, s.type)
       } else if (s.k === 'if') {
         walk(s.thenBody)
         if (s.else) {
@@ -1228,17 +1351,33 @@ export function emitJsTwins(
     needed,
     new Map(fns.map(f => [f.name, f.returnType])),
   )
+  // Every identifier the module ends up binding, so the helper check below can
+  // see a local that would shadow one.
+  const emittedNames = new Set(reserved)
   const bodies = fns
     .filter(f => needed.has(f.name))
     .map(f => {
       // Locals resolve per function, and never onto a name a module function
       // already holds — that would turn a call into a reference to the local.
       const declared = collectDeclared(f)
-      em.setScope(
-        new Map([...fnRenames, ...buildRenames(declared.keys(), reserved)]),
-        declared,
+      const localRenames = stabilizeTemps(
+        buildRenames(declared.keys(), reserved),
+        declared.keys(),
+        reserved,
       )
+      // setScope takes only the names the source annotates; an un-annotated
+      // `let` is typed by `stmts` when it reaches the declaration.
+      const annotated = new Map<string, WgslType>()
+      for (const [name, type] of declared) {
+        if (type !== undefined) {
+          annotated.set(name, type)
+        }
+      }
+      em.setScope(new Map([...fnRenames, ...localRenames]), annotated)
       const short = (n: string) => em.rename(n)
+      for (const n of declared.keys()) {
+        emittedNames.add(short(n))
+      }
       const exp = exportNames.has(f.name) ? 'export ' : ''
       const params = f.params
         .map(p => `${short(p.name)}: ${tsTypeOf(p.type)}`)
@@ -1249,6 +1388,19 @@ export function emitJsTwins(
         '}',
       ].join('\n')
     })
+
+  // The builtin helpers are emitted at module scope under fixed names, so a
+  // shader-side identifier spelled `_clamp` would shadow the one its own body
+  // calls — `let _clamp = _clamp(x, 0, 1)`, which is a TDZ throw at best and a
+  // wrong answer at worst. Nothing in the tree does it and nothing should, so
+  // say so rather than renaming around it.
+  const shadowed = [...em.usedHelpers].filter(h => emittedNames.has(h))
+  if (shadowed.length > 0) {
+    throw new Error(
+      `wgslToJs: ${shadowed.join(', ')} is both a name this module binds and a ` +
+        `helper the emitter needs at module scope. Rename it in the .slang.`,
+    )
+  }
 
   const helpers = [...em.usedHelpers].sort().map(h => HELPERS[h]!)
   return [
