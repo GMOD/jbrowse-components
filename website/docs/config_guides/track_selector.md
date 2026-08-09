@@ -29,8 +29,6 @@ options control sorting and default collapse behavior.
 
 <Figure caption="Example showing all the top-level categories collapsed" src="/img/hierarchical/collapse_toplevelcategories-fs8.png"/>
 
-<Figure caption="Example showing all the sub-categories collapsed. The sub-category names remain visible as headers even when collapsed." src="/img/hierarchical/collapse_subcategories-fs8.png"/>
-
 <Figure caption="Screenshot showing that the end-user can toggle these options as well" src="/img/hierarchical/hierarchical_user_menu-fs8.png"/>
 
 Example config.json with examples of these hierarchical settings:

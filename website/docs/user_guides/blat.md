@@ -40,7 +40,7 @@ BLAT returns every placement of a query. The best-scoring one is primary and the
 rest are marked secondary, so competing mappings of one sequence stay off the
 best hit's row instead of stacking under it.
 
-<Figure src="/img/desktop-blat-results.png" caption="A BLAT search on hg19, its two hits drawn as alignments against TP53. The best hit is a single ungapped block with two mismatch ticks, matching the 98.7% identity the Search results panel reports for it. Captured against a stand-in server, since UCSC's is CAPTCHA-gated."/>
+<Figure src="/img/desktop-blat-steps.png" caption="A BLAT search on hg19: the dialog with a query pasted (1), and the hit it produces, opened from the Search results list. The best hit is a single ungapped block with two mismatch ticks, matching the 98.7% identity the panel reports for it. Captured against a stand-in server, since UCSC's is CAPTCHA-gated."/>
 
 Pasting FASTA searches each record separately, up to 25 records and 25 kb of
 sequence in total. Records keep their own names, so hits from different queries
@@ -76,8 +76,6 @@ it in the window that opens, or paste a UCSC apiKey (generate one from a UCSC
 Genome Browser account under Hub Development → API key) to skip it. On desktop,
 entering a key moves the server field to UCSC, because the proxy replaces a key
 you send with its own — so a key only spends against UCSC directly.
-
-<Figure src="/img/desktop-blat-search.png" caption="The BLAT search dialog on hg19. Paste a DNA sequence or FASTA and pick the assembly; 'Show advanced settings' reveals the UCSC database, server URL, and apiKey field."/>
 
 ## In-silico PCR
 

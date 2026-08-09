@@ -51,6 +51,23 @@ directories. Both are wrapped by `hubUrl` in `@jbrowse/core/util/fetchHub`, and
 by the `--hub` flag on the two command-line tools below, so most of the time you
 name the assembly and never see the URL.
 
+### One config with all the UCSC assemblies in it
+
+`https://jbrowse.org/ucsc/all.json` is the union of the per-database configs:
+every UCSC assembly declared in one document, each one's tracks, and **both**
+directions of every pairwise liftOver. `hg38_to_mm39_liftOver` and
+`mm39_to_hg38_liftOver` are both in it, each naming both assemblies.
+
+That last part is the reason to reach for it. A per-assembly config declares one
+assembly, so a synteny track naming a second one has to be resolved at run time
+by the site's hub plugin. Against `all.json` both are already declared and
+nothing has to resolve. It ships no `defaultSession`, so it opens on whatever
+you point it at.
+
+The cost is the fetch: it is every assembly's whole track list where a
+per-assembly config is one assembly's. Use it for a session that spans two
+genomes, and the per-assembly config otherwise.
+
 ## Finding the assembly
 
 The UCSC databases are the small, familiar set — `hg38`, `mm39`, `danRer11` and

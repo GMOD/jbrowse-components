@@ -196,6 +196,14 @@ make.
 
 ## Reading the plot
 
+A self-alignment is what a hexaploid needs, and no second species substitutes
+for it. Each of these genomes already contains three copies of nearly every
+gene, so the comparison that says where the subgenomes went is the genome
+against itself: every point off the diagonal is one chromosome's gene paired
+with its own copy on another chromosome, and the pattern those points make is
+the karyotype. Aligning either one to a diploid relative answers a different
+question and cannot see the copies at all.
+
 Oat's plot is on the right below, and bread wheat's on the left is what makes it
 readable. Both are hexaploids drawn against themselves the same way and over the
 same three homoeologous groups, so the difference between them is the karyotype
@@ -203,7 +211,7 @@ and not the method: on the left each group is three near-collinear segments in
 its own block, which is what a plot like this looks like when the subgenomes
 stayed put.
 
-<Figure caption="Two hexaploid cereals drawn against themselves over homoeologous groups 4, 5 and 7, syntenic anchors coloured by dN/dS on a ramp pivoted at 1, where blue is purifying selection. Left, bread wheat: each group is three near-collinear segments in its own block, and the two boxed cells are where 4A pairs outside its group. Right, oat: the boxed cell is one of dozens, the mosaic karyotype its assembly paper describes." src="/img/homoeolog_synteny/wheat_vs_oat.png" links="Open the oat plot=homoeolog_synteny/oat_homoeologs,Open the wheat plot=multiway_synteny/wheat_homoeolog_selection" />
+<Figure caption="Left, bread wheat aligned against itself; right, oat aligned against itself. Both hexaploids, both over homoeologous groups 4, 5 and 7, syntenic anchors coloured by dN/dS on a ramp pivoted at 1 where blue is purifying selection. Wheat's groups are three near-collinear segments in their own blocks, and the two boxed cells are the only places 4A pairs outside its group. Oat's boxed cell is one of dozens, the mosaic karyotype its assembly paper describes." src="/img/homoeolog_synteny/wheat_vs_oat.png" links="Open the oat plot=homoeolog_synteny/oat_homoeologs,Open the wheat plot=multiway_synteny/wheat_homoeolog_selection" />
 
 The wheat panel comes from
 [the Compara route](/docs/tutorials/multiway_synteny#selection-pressure-between-a-polyploids-own-copies),

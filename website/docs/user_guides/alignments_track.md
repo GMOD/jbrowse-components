@@ -95,7 +95,7 @@ because the assay adds 6mA to accessible DNA the density of those calls doubles
 as a chromatin-accessibility readout. Use **Modification types** to restrict the
 track to one code when the basecaller emitted several.
 
-<Figure caption="ONT HG002 fiber-seq at the GAPDH promoter in modifications mode: the enzyme-treated sample (top, PAY22766) carries 6mA (A+a) calls that the native no-enzyme control (bottom, PBA15131) does not." src="/img/methylation/chromatin_accessibility_6ma.png" />
+<Figure caption="ONT HG002 fiber-seq at the GAPDH promoter in modifications mode: purple marks are 6mA (A+a) calls, which the Hia5 methyltransferase leaves on accessible DNA. The treated sample (top, PAY22766) piles them over the promoter; the native no-enzyme control (bottom, PBA15131) carries only scattered background." src="/img/methylation/chromatin_accessibility_6ma.png" />
 
 ### Bisulfite and EM-seq
 
@@ -160,7 +160,7 @@ transcript strand is which mate the read is; the
 [RNA-seq tutorial](/docs/tutorials/rnaseq#strand-specific-rna-seq) shows that on
 a pair of genes transcribed in opposite directions.
 
-<Figure caption="HG002 nanopore reads grouped by strand with the pileup hidden. Nanopore mismatches are frequent, so both bands are speckled, but each band's coloring is computed from only its own strand's reads: the two tall columns here are each carried by one strand and barely register in the other, which is the pattern that separates a systematic basecalling error from a real variant." src="/img/alignments/strand_split_coverage.png" />
+<Figure caption="HG002 nanopore reads grouped by strand, each band colored from only its own strand's reads. Nanopore mismatches are frequent, so both bands are speckled, but the two tall columns here are each carried by one strand and barely register in the other, which is what separates a systematic basecalling error from a real variant." src="/img/alignments/strand_split_coverage.png" />
 
 ## Read height and track sizing
 

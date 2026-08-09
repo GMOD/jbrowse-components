@@ -313,6 +313,46 @@ signal to go back and check that list.
 [Reading the type list off the file](/docs/config_guides/customizing_feature_colors#reading-the-type-list-off-the-file)
 works one of these through end to end.
 
+### The same category as a row instead of a color
+
+A color puts every category in one packed lane, which answers "what is this
+block" but not "how much of the window is each class, and does any of them
+cluster". Give
+[`partitionField`](/docs/config/linearmultirowfeaturedisplay/#slot-partitionfield)
+the same attribute the lookup table keys on and the display assigns each feature
+to the row named by that value, one lane per category.
+[`sampleColorMap`](/docs/config/linearmultirowfeaturedisplay/#slot-samplecolormap)
+is the row-keyed form of the same table, so the colors carry over without the
+jexl.
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "rmsk_hg38_rows",
+  "name": "RepeatMasker by class",
+  "assemblyNames": ["hg38"],
+  "adapter": { "type": "BedTabixAdapter", "uri": "rmsk.bed.gz" },
+  "displays": [
+    {
+      "type": "LinearMultiRowFeatureDisplay",
+      "displayId": "rmsk_hg38_rows-LinearMultiRowFeatureDisplay",
+      "partitionField": "repClass",
+      "sampleColorMap": {
+        "SINE": "#e41a1c",
+        "LINE": "#377eb8",
+        "LTR": "#4daf4a",
+        "DNA": "#984ea3",
+        "Simple_repeat": "#ff7f00",
+        "Low_complexity": "#a65628"
+      },
+      "showRowSeparators": true
+    }
+  ]
+}
+```
+
+<Figure caption="The same RepeatMasker track and window as above, partitioned on repClass instead of colored by it. SINE fills the window, LINE comes in clusters, and the sparse classes are visible as classes rather than as stray blocks. The LTR? and Unknown lanes are values in the file that the lookup table does not name, which is the same list the awk above prints." src="/img/cookbook_color_by_type_rows.png"/>
+
 ## Labels, tooltips & details {#labels-tooltips-details}
 
 Labels go in `displayDefaults` the same way `color` does.
@@ -708,7 +748,7 @@ display. Autoscale runs per row, so a sample whose signal never leaves the
 baseline is drawn at the same full height as one with a real amplification, and
 the rows stop being comparable.
 
-<Figure caption="An eight-sample MultiQuantitativeTrack over the AMY1 cluster (multirowline), each 1000 Genomes individual its own color on a shared 0 to 5 copy-number scale: the rows step between copy-number levels at different places." src="/img/cookbook_multiwig.png"/>
+<Figure caption="An eight-sample MultiQuantitativeTrack across 1.5 Mb of chr1 (multirowline), each 1000 Genomes individual its own color on a shared 0 to 5 copy-number scale. Every row sits at two copies through the flanks; only the amylase cluster in the middle separates them, from one copy to four." src="/img/cookbook_multiwig.png"/>
 
 ## Variant tracks
 

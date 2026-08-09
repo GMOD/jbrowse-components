@@ -69,9 +69,10 @@ the tracks each panel ends up with are worth following. Every click is the same
 on the hs1 track this page opened with.
 
 The last frame also switches the ribbon to curves and to **Transparent indels**,
-which turns the one gap in it into a hole that lines up against the RepeatMasker
-track above. The element under it is an L1HS, the youngest human LINE-1
-subfamily, and the chimp panel keeps every flanking repeat but not that one.
+both covered [below](#ribbon-display-settings), which turns the one gap in it
+into a hole that lines up against the RepeatMasker track above. The element
+under it is an L1HS, the youngest human LINE-1 subfamily, and the chimp panel
+keeps every flanking repeat but not that one.
 
 <Figure caption="The four steps on the hg38-to-panTro6 liftOver track across an FTO intron: right-click a chain block, confirm the framing, launch, then add the chimp panel's genes and repeats." src="/img/genomes_synteny/launch_sequence.png" />
 
@@ -89,15 +90,6 @@ connection** as a JBrowse 2 hub at
 `https://jbrowse.org/ucsc/panTro6/config.json` when you want its conservation or
 expression tracks too.
 
-The last frame also switches the two ribbon settings covered
-[below](#ribbon-display-settings), which on a liftOver chain is the difference
-between a picture and a puzzle: across this 20 kb the chain carries one gap of
-about 6 kb and four of six bases or fewer, so the single hole in the ribbon is
-the single transposon, sitting under the block RepeatMasker labels `L1HS`.
-
-Set the ribbon coloring to **Strand** from the palette button in the synteny
-track header.
-
 A locus that no single chain block covers (a gene that several blocks tile, or
 one you have only navigated to) takes a second route: drag-select it on the
 scale bar and pick **Launch → Linear synteny view**, whose dialog picks the
@@ -108,7 +100,7 @@ use it when more than one liftOver track is on. See
 
 ## Ribbon display settings
 
-Two settings change how the ribbons read, both on the synteny view's **View
+Three settings change how the ribbons read. Two are on the synteny view's **View
 options** button:
 
 - **Show...** → **Show curved lines** draws each ribbon as a curve instead of a
@@ -117,6 +109,10 @@ options** button:
 - **CIGAR display mode** → **Transparent indels** stops painting the insertions
   and deletions inside each block, leaving them as see-through gaps. With strand
   coloring on, that keeps color meaning only one thing.
+
+The third is the palette button further along the same header, whose menu sets
+what every ribbon is colored by. **Strand** paints each block by the orientation
+it landed in, and is the setting the last two figures on this page use.
 
 <Figure src="/img/genomes_synteny/ribbon_settings.png" links="As it opens=genomes_synteny/ribbons_default,Curved + transparent indels=genomes_synteny/ribbons_curved" caption="The same TNNT3 comparison before and after both settings, with the menu that holds them open on top. Top: straight ribbons with colored indels. Bottom: curved ribbons with transparent indels, where the indels drop out to white and the reverse-strand segment is a single blue sweep crossing the forward-strand pink." />
 
@@ -136,9 +132,14 @@ The same click-path works for any liftOver track under **Pairwise alignments** �
 **liftOver**. The one thing that changes is how much of the chain survives: a
 close comparison like hs1 or panTro6 gives long collinear blocks, while a
 distant one gives short scattered ones, and the CIGAR option matters more the
-more diverged the pair is. The site's
-[synteny pair index](https://genomes.jbrowse.org/synteny) lists which pairs
-exist.
+more diverged the pair is. That **liftOver** category is itself the index of
+which pairs exist, since there is one track in it per chain file UCSC publishes
+against the genome you are in.
+
+To come at it from a gene rather than from a pair of assemblies, the site's
+[ortholog search](https://genomes.jbrowse.org/orthologs) takes a gene symbol and
+lists its NCBI orthologs among the hosted genomes, with a synteny view per row
+wherever the two assemblies have an alignment.
 
 ## See also
 

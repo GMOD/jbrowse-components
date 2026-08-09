@@ -101,7 +101,7 @@ is two histograms, forward and reverse, sharing one autoscaled axis.
 The MHC class III region is the most gene-dense stretch of the human genome, and
 `NELFE` and `SKIV2L` sit back to back there on opposite strands:
 
-<Figure caption="NELFE and SKIV2L, adjacent and on opposite strands, in stranded RNA-seq with the pileup hidden. The forward band is empty over NELFE and carries the signal over SKIV2L; the reverse band does the opposite, and the switch falls on the boundary between the two genes." src="/img/rnaseq/strand_split_coverage.png" />
+<Figure caption="NELFE and SKIV2L, adjacent and on opposite strands, in stranded RNA-seq grouped by first-of-pair strand. The forward band is empty over NELFE and carries the signal over SKIV2L; the reverse band does the opposite, and the switch falls on the boundary between the two genes." src="/img/rnaseq/strand_split_coverage.png" />
 
 Nothing about the two bands knows where the genes are, so the boundary is a
 result rather than a setting. Swapping to **Strand** groups on the read's own

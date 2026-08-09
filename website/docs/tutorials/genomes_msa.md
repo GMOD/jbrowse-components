@@ -105,6 +105,24 @@ statement from the sequence being absent. One row is gap.
 
 <Figure src="/img/genomes_msa/pyrin_residues.png" caption="The same alignment at the residue zoom it opens on, over the columns the pyrin block covers. The block is on the human query row alone; dog, cattle and pig carry ordinary residues under it with nothing called over them, and mouse is the one row that is gap there." />
 
+## The same domains in genome coordinates
+
+The overlay's calls come from NCBI's conserved-domain database. UniProt
+annotates the same proteins independently, and UCSC projects those annotations
+back onto the genome, so the hosted config already carries them as ordinary
+tracks: **UniProt - Domains**, under Genes and Gene Predictions, is the domain
+architecture in genomic coordinates instead of in alignment columns.
+
+Turn it on in the linear view you launched from and the human row's blocks have
+a counterpart under the gene, from a different database and reached by a
+different route. _NLRP1_ is transcribed right to left, so the pyrin block sits
+at the right-hand end of the gene, where its N terminus is, and NACHT, FIIND and
+CARD follow it leftward. They are projections of protein spans through exons, so
+a domain drawn once in the alignment is drawn once per isoform here, and the
+ones that share exons overlap. The neighbouring **UniProt - Chains**,
+**Mutations** and **AA Modifications** tracks are the same projection of the
+rest of the record.
+
 ## Trying other genes
 
 The same click-path works on any gene in the view whose symbol NCBI recognises.
@@ -120,11 +138,12 @@ a dialog whose **Launch 3D protein structure view** renders the AlphaFold model
 of the same protein, mapped back to the genome the way the alignment is.
 
 That dialog has two more options here than it would on a site running protein3d
-alone: it checks whether msaview is loaded, and offers **Launch MSA view
-(AlphaFold a3m)** and **Launch 3D structure + MSA view** when it is, for a
-protein AlphaFold also publishes its input alignment for. Both build an MSA view
-from that alignment rather than from orthologs, which is what the a3m in the
-label is there to warn you about.
+alone: it checks whether msaview is loaded, and offers **Launch MSA view** and
+**Launch 3D structure + MSA view** when it is, for a protein AlphaFold also
+publishes its input alignment for. Both build an MSA view from that alignment
+rather than from orthologs. The first carries the same name as the right-click
+launcher this page opened with and does something different, so read the
+description under it, which is where the a3m is named.
 
 The two alignments answer different questions. The ortholog panel is one row per
 named species, which is what makes a present-or-absent domain call readable
@@ -143,6 +162,8 @@ Both views map a genomic position to a residue the same way, described under
 - [](/docs/tutorials/genomes_synteny)
 - [](/docs/user_guides/gene_track)
 - [](/docs/user_guides/plugin_store)
+- [Ortholog search on genomes.jbrowse.org](https://genomes.jbrowse.org/orthologs),
+  the same NCBI lookup as a gene-first web page rather than a right-click
 - [JBrowseMSA](https://gmod.org/JBrowseMSA/)
 
 ## References

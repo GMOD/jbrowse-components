@@ -79,9 +79,9 @@ resolves it.
 The matrix is fetched for every _pair_ of displayed regions, not just each
 region against itself. Open a second region in the same view and the contacts
 between the two fill the space between their triangles — the same geometry that
-puts a bright off-diagonal block at a translocation's partner loci.
-
-<Figure caption="Two windows on hg19 chr8 open in one linear genome view. Each window has its own triangle; the signal between them is the contacts between the two windows, fetched as a region pair." src="/img/hic/two_regions.png" />
+puts a bright off-diagonal block at a translocation's partner loci. The
+[Hi-C structural variants tutorial](/docs/tutorials/hic_structural_variants)
+shows that block on a real one, chr9 against chr22 in K562.
 
 Inter-chromosomal matrices are commonly only stored at coarse binsizes. When the
 auto-picked resolution is finer than anything the file holds for that pair, the

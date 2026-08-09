@@ -8,10 +8,10 @@ tutorial_category: Getting started
 ---
 
 **TL;DR:** genomes.jbrowse.org hosts a ready-made JBrowse config for every UCSC
-genome, and each one already carries that genome's whole UCSC track catalog. Any
-of those tracks is a checkbox away, with nothing to download, index or
-configure. This page turns on hg38's phyloP conservation over _TP53_ and then
-reads it against the gene model it lands next to.
+genome, and each one already carries that genome's UCSC track catalog. Any of
+those tracks is a checkbox away, with nothing to download, index or configure.
+This page turns on hg38's phyloP conservation over _TP53_ and then reads it
+against the gene model it lands next to.
 
 ## Prerequisites
 
@@ -21,8 +21,11 @@ reads it against the gene model it lands next to.
 ## Opening a genome
 
 [genomes.jbrowse.org](https://genomes.jbrowse.org) indexes every UCSC database
-plus the GenArk assemblies. Picking one loads a JBrowse instance at a plain URL,
-so wherever you end up is shareable as a link.
+plus the GenArk assemblies. The front page lists the handful most people want,
+[/ucsc](https://genomes.jbrowse.org/ucsc) lists the UCSC databases in full, and
+the search box in the header takes a common name, a species, an assembly name or
+an accession and covers all of them at once. Picking one loads a JBrowse
+instance at a plain URL, so wherever you end up is shareable as a link.
 
 Open hg38 and type `TP53` into the location box. The hosted config ships a name
 index, so gene symbols resolve with no setup, and coordinates like
@@ -74,6 +77,35 @@ on the protein rather than on the DNA, since most third-position changes leave
 the amino acid alone. The handful of bars that go red here are third positions
 too. Hovering a bar reads back its score.
 
+## The alignment the score came from
+
+phyloP scores a base by comparing a multiple alignment against the tree, and on
+this config that alignment is a checkbox too. UCSC publishes no bigMaf for the
+100-way, so this section switches to the 470-way pair, both under Comparative
+Genomics: **Multiz Alignments - 470-way Mammal Alignment (Hiller lab)** and
+**Basewise Conservation (phyloP) - 470 phyloP**. Leave the window where it is.
+
+<Figure src="/img/genomes_basics/multiz_alignment.png" caption="TP53's DNA binding domain at base zoom: the gene collapsed to one transcript, phyloP 470-way, and the 470-way multiz alignment it was computed from, one row per species down the tree. A base is drawn only where it differs from human. The near-solid single-color column under S240 keeps a positive score, while the sparser mixed columns under T256 and G244 are where it goes red." />
+
+Each row is one species, ordered by the tree drawn at the left, and a base is
+only drawn where it differs from human. Most columns are therefore blank, which
+is what a positive score is made of.
+
+The columns that are not blank come in two kinds, and they do not score the way
+their density suggests. Under S240 nearly every species carries a base that
+differs from human, but they all carry the **same** one, and the score there
+stays above the line. That pattern is what a single substitution on the human
+branch looks like, however many rows show it. Under T256 and G244 far fewer rows
+differ, but the ones that do disagree with each other as well as with human, and
+those are the two columns where the score goes red. What phyloP counts is
+substitution events on the tree, not rows that differ from the reference.
+
+This track only opens at this zoom. Its whole-genome file is read by byte range
+like the phyloP one, but a MAF block carries a row per species, so the estimate
+crosses the too-much-data limit within a few kb and a gene-wide view asks you to
+confirm before fetching. Zoomed further out it swaps to a precomputed summary
+and draws a conservation bar per species instead of bases.
+
 ## Other tracks, same two clicks
 
 Nothing above was specific to conservation. Some others worth opening, with the
@@ -104,8 +136,9 @@ is why a genome-wide signal track opens at gene zoom without downloading it.
 ## Trying another genome
 
 The GenArk assemblies behave the same way, with two differences: their configs
-carry a smaller track set, and many ship no name index, so a gene symbol may not
-resolve and coordinates are the way in.
+carry a smaller track set, and their name index is built from an assembly's NCBI
+RefSeq annotation, so one that has no such annotation ships no index and
+coordinates are the way in.
 
 ## See also
 
