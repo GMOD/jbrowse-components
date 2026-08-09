@@ -15,8 +15,13 @@ digraph gpu_display_tldr {
     fillcolor="#ffffff"
     margin="0.28,0.20"
     // A floor, not a fixed size, so the three read as one stack rather than as
-    // three boxes sized by how long their text happens to be.
-    width=3.6
+    // three boxes sized by how long their text happens to be. Wide enough that
+    // the boxes reach about as far right as the edge labels do: graphviz centers
+    // each box on the edge and hangs the label to its right, so a box narrower
+    // than its label leaves the stack sitting in the left two thirds of the
+    // frame with text floating off it. 3.6 did that once the labels were
+    // rewritten longer.
+    width=5.1
   ]
   edge [fontname="Helvetica", fontsize=11, color="#555555"]
 
@@ -28,9 +33,28 @@ digraph gpu_display_tldr {
   //
   // So: three boxes and two arrows, and the ARROWS carry the idea. What makes
   // a GPU display different from a Canvas2D one is not any box here -- it is
-  // that the two edges run at different rates. Data crosses to the GPU once per
-  // region; frames after that are redraws of what is already there. Every name
-  // in the detailed figure is a mechanism for keeping that true.
+  // that the two edges run at different rates. Data crosses to the GPU when the
+  // region changes; frames after that are redraws of what is already there.
+  // Every name in the detailed figure is a mechanism for keeping that true.
+  //
+  // WORDED FOR A READER WHO HAS NEVER WRITTEN GPU CODE, which is the whole
+  // point of a TLDR and is what the first pass got wrong (review: "i know what
+  // it means kinda, but we want it to be easy for someone that doesnt know
+  // gpu"). Four changes, each to a phrase that only reads if you already know
+  // the answer:
+  //   - "once per region" said a RATE where the reader needs an EVENT. It is
+  //     now "sent once, when the region changes", which also answers the
+  //     question the phrase provoked -- once per region as opposed to what?
+  //   - "absolute bp" is not a term anyone outside this codebase shares, and it
+  //     looks like it is distinguishing itself from something unnamed. It is
+  //     "uint32 genomic coordinates" now, which is both what the buffers hold
+  //     and unambiguous on its own.
+  //   - "uploaded once, kept" described the transfer from the GPU's side and
+  //     left "kept" doing the load-bearing work. The box says what is true of
+  //     it instead: "the data stays here".
+  //   - "drawn from those buffers" leaned on the previous box's wording. The
+  //     boxes now share one noun, GPU memory, so the pair reads without having
+  //     to hold "buffers" and "those buffers" together.
   //
   // Same three lane colors as the detailed figure, in the same order, so the
   // two read as the same picture at two zooms rather than as two diagrams.
@@ -46,9 +70,9 @@ digraph gpu_display_tldr {
   // label, not a paragraph.
 
   worker [label="Worker\nfetch and parse the file", fillcolor="#e3f2fd", color="#90caf9"]
-  buffers [label="GPU buffers\nuploaded once, kept", fillcolor="#f1f8e9", color="#aed581"]
-  canvas [label="Canvas\ndrawn from those buffers", fillcolor="#ffe0b2", color="#ffcc80"]
+  buffers [label="GPU memory\nthe data stays here", fillcolor="#f1f8e9", color="#aed581"]
+  canvas [label="Canvas\nredrawn from GPU memory", fillcolor="#ffe0b2", color="#ffcc80"]
 
-  worker -> buffers [label="  once per region  \l  typed arrays, absolute bp  \l"]
-  buffers -> canvas [label="  every frame  \l  scroll, zoom, recolor  \l"]
+  worker -> buffers [label="  sent once, when the region changes  \l  typed arrays, uint32 genomic coordinates  \l"]
+  buffers -> canvas [label="  redrawn every frame  \l  scroll, zoom, recolor  \l"]
 }

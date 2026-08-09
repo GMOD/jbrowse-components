@@ -2909,9 +2909,9 @@
   },
   "gpu_display_tldr": {
     "name": "gpu_display_tldr",
-    "status": "bad",
-    "note": "'once per region' is a hard to understand claim. might just not even say it. data returned in 'absolute bp' unclear what that means like...just normal coordinates? its not a unambigous term...unless we define glossary or make better term or say uint32 genomic coordinates. the way it says 'kept' is weird. also even saying 'uploaded once' is weird. i know what it means kinda, but we want it to be easy for someone that doesnt know gpu",
-    "reviewedAt": "2026-08-09T05:44:20.811Z",
-    "hash": "c16fe53f0627da694c6ea3b5935748e9051ac4c1"
+    "status": "good",
+    "note": "'once per region' is a hard to understand claim. might just not even say it. data returned in 'absolute bp' unclear what that means like...just normal coordinates? its not a unambigous term...unless we define glossary or make better term or say uint32 genomic coordinates. the way it says 'kept' is weird. also even saying 'uploaded once' is weird. i know what it means kinda, but we want it to be easy for someone that doesnt know gpu FIXED 2026-08-09: every phrase named, plus the caption, which repeated two of them. 'once per region' stated a RATE where the reader needs an EVENT, and invited the question 'as opposed to what?' -- it is 'sent once, when the region changes'. 'absolute bp' is not a term anyone outside this codebase shares and reads as distinguishing itself from something unnamed -- it is 'uint32 genomic coordinates', your wording, which stands on its own. 'uploaded once, kept' described the transfer from the GPU's side and left 'kept' load-bearing -- the box now says what is true of it, 'the data stays here'. 'drawn from those buffers' leaned on the previous box's noun, so both boxes now share one, GPU memory, and the pair reads without holding 'buffers' and 'those buffers' together. The boxes also went from 3.6 to 5.1 wide: graphviz centers a box on its edge and hangs the label to the right, so once the labels got longer the stack sat in the left two thirds with text floating off it. 912x812 now, still no page scaling.",
+    "reviewedAt": "2026-08-09T05:57:32.645Z",
+    "hash": "63f074b6b18929aa66bd422e6700fe93f6b429f0"
   }
 }

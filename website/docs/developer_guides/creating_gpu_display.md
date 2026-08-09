@@ -44,7 +44,7 @@ runtime `ReExports` registry), so a GPU display must be a
 
 JBrowse GPU displays follow a three-layer model:
 
-<Figure caption="The whole idea, before any of the machinery: data crosses to the GPU once per region, and every frame after that is a redraw of buffers that are already there. Panning, zooming and recoloring never refetch or reparse — that is what makes a GPU display different from a Canvas2D one, and everything named in the next figure exists to keep it true." src="/img/gpu_display_tldr.png" />
+<Figure caption="The whole idea, before any of the machinery. The worker sends the data to the GPU when the region changes, and it stays there; every frame after that just redraws what the GPU already holds. Panning, zooming and recoloring never refetch or reparse — that is what makes a GPU display different from a Canvas2D one, and everything named in the next figure exists to keep it true." src="/img/gpu_display_tldr.png" />
 
 The rest of this section is that same picture with the mechanisms in it.
 
