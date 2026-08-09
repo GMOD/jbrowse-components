@@ -233,10 +233,14 @@ export async function openJBrowse(
     args = [],
     onConsole,
     timeout,
-    waitForDownloads,
-    settleMs,
-    expectSession,
     trackIds,
+    // Pulled out only to keep them out of `urlOptions`, which becomes the
+    // query string. They reach the ready wait through the `...options` spread
+    // below rather than from here.
+    waitForDownloads: _waitForDownloads,
+    settleMs: _settleMs,
+    expectSession: _expectSession,
+    allowUnsettled: _allowUnsettled,
     // `assembly` is deliberately NOT pulled out here: it is both a URL option
     // (which assembly to open) and the session gate's expectation (which
     // assembly must end up open), and destructuring it for the second use would
@@ -265,10 +269,14 @@ export async function openJBrowse(
     // signal than the absence of requests.
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout })
     const report = await waitForJBrowseReady(page, {
-      timeout,
-      waitForDownloads,
-      settleMs,
-      expectSession,
+      // Spread, not a hand-copied field list. `OpenOptions extends
+      // ReadyOptions`, so every present and future ready option arrives here by
+      // construction. Listing them by hand is what dropped `allowUnsettled`:
+      // it was declared, documented, recommended by this function's own timeout
+      // message, and silently never forwarded, so `--allowUnsettled` did
+      // nothing and a timing-out stage always threw. Only the two options
+      // derived from the URL are overridden below.
+      ...options,
       // A session spec's own assembly wins over the hub name. `--hub hg38
       // --session spec.json` where the spec opens something else is legitimate
       // (the hub is just supplying the config), and expecting the hub name there
