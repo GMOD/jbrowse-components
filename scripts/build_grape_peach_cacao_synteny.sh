@@ -175,8 +175,11 @@ cp grape.blocks.gz grape.bed.gz $(for sp in $MATES; do printf '%s.bed.gz ' "$sp"
 # shellcheck disable=SC2086
 for sp in $ASSEMBLY_NAMES; do
   cp "$sp.aliases.txt" "$APP"/
+  # No --refNameAliasesType: it defaults to a tab-separated aliases file, which
+  # is what this is. Passing `custom` makes the CLI parse the TSV as JSON and
+  # die on "Unexpected token 'N'" -- `custom` means an inline adapter config.
   jb add-assembly "$sp.fa" --name "$sp" --load copy --force --out "$APP" \
-    --refNameAliases "$sp.aliases.txt" --refNameAliasesType custom
+    --refNameAliases "$sp.aliases.txt"
 done
 
 # Per-genome gene tracks, so "Show only genes" has something to draw
