@@ -37,12 +37,19 @@ export interface RowGroup {
  * that had merely been recolored at the bottom of the list with the rows that
  * matched nothing, which is the one place a reader would not look for it.
  *
+ * `partition` is what makes the groups contiguous blocks, and the caller turns
+ * it off when something else already owns the row order — in practice a cluster
+ * tree, which the swatch stripe is then read ACROSS rather than instead of.
+ * Grouping and ordering are two questions about one axis, and only ordering can
+ * have a second claimant.
+ *
  * An entry whose `match` is not a valid regex matches nothing, so one bad config
  * line costs its own stripe rather than the display.
  */
 export function applyRowGroups(
   sources: MultiRowSource[],
   rowGroups: RowGroup[],
+  { partition = true }: { partition?: boolean } = {},
 ): MultiRowSource[] {
   const compiled = rowGroups.flatMap(g => {
     try {
@@ -65,6 +72,9 @@ export function applyRowGroups(
       rank: rank === -1 ? compiled.length : rank,
     }
   })
+  if (!partition) {
+    return tagged.map(t => t.source)
+  }
   // Stable partition into contiguous blocks, in the order the entries are
   // declared. Marking alone does not survive this scale: 63 wolves spread
   // through 1,987 sorted rows land as five specks that read as noise, where the

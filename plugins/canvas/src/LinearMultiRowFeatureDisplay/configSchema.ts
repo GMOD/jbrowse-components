@@ -257,20 +257,32 @@ export default function configSchemaF(pluginManager: PluginManager) {
        * Within a block the incoming order is kept, so a `sortRowsBy` still
        * orders each block by the value it sorted on.
        *
+       * **Except under a cluster tree, where it marks without grouping.**
+       * Clustering already owns the row order, so partitioning on top of it used
+       * to trade the dendrogram away silently (the tree stops describing the
+       * rows, and `StaleTreeHint` replaces it). That is also the case where a
+       * stripe is worth most: the groups are an axis the clustering never saw,
+       * so reading them down the blocks it did find is what says whether the two
+       * agree. Both together now means both.
+       *
        * Use this when the row identity encodes a grouping the painting does not
        * — cohort IDs whose prefix names a population, say — and the cohort is
        * far too large to enumerate in `layout`. The color tints the swatch only,
        * never the blocks, so it composes with an `itemRgb` painting instead of
        * overwriting it.
        *
-       * **Mark the small group, not the big one.** Rows matching nothing get no
-       * swatch, and that is the point: below a pixel a row the swatch is floored
-       * to a pixel so it stays visible, which makes every mark taller than the
-       * row it points at. The stripe is then a marker, not a proportional
-       * encoding — 307 of 1,987 rows (15%) came out as 48% of the stripe's ink,
-       * which reads as a majority. Marking 63 wolves out of the same 1,987 costs
-       * 10% of the ink and reads correctly, as sparse ticks. Keep the matched
-       * groups to the ones a reader is hunting for.
+       * **Below a pixel a row, mark the small group and not the big one.** The
+       * swatch is floored to a whole pixel so it survives at all, which makes
+       * every mark taller than the row it points at, so the stripe is a marker
+       * rather than a proportional encoding: 307 of 1,987 rows (15%) came out as
+       * 48% of the stripe's ink, which reads as a majority, where 63 wolves out
+       * of the same 1,987 cost 10% and read correctly as sparse ticks.
+       *
+       * The floor is the whole of that caveat, so it stops applying once a row
+       * clears a pixel. 127 Roadmap epigenomes in 480px is 3.7px a row, and
+       * there every one of the 19 published tissue groups can be declared and
+       * the stripe stays proportional. Check the row height before deciding how
+       * much to mark.
        *
        * #example
        * ```js

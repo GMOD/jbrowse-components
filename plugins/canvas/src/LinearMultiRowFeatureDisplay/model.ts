@@ -32,6 +32,7 @@ import {
   rowLabelsCarryText,
   setupRowSortAutorun,
   setupRunClusteringAutorun,
+  treeDescribesRows,
   treeSidebarOffset,
   treeSidebarRightEdge,
 } from '@jbrowse/tree-sidebar'
@@ -325,12 +326,24 @@ export default function stateModelFactory(
        * The display rows: `editableSources` narrowed by the active subtree
        * filter. Render order, label order, and `rowIndexByValue` all key off
        * this, so reordering/filtering flows through to the painting.
+       *
+       * `rowGroups` decorates them here, and **partitions them into blocks only
+       * when no cluster tree already names this order**. Grouping and ordering
+       * are two questions about one axis, and a config carrying both used to
+       * resolve them by having `rowGroups` win and the dendrogram vanish behind
+       * `StaleTreeHint` — a silent trade of the tree for a stripe. A clustered
+       * track is exactly where the stripe is worth most: it is the axis the
+       * clustering did NOT see, so reading it across the blocks the tree found
+       * is what says whether they correspond.
        */
       get sources(): MultiRowSource[] {
-        return applyRowGroups(
-          filterRowsBySubtree(self.editableSources, self.subtreeFilter),
-          self.rowGroups,
+        const rows = filterRowsBySubtree(
+          self.editableSources,
+          self.subtreeFilter,
         )
+        return applyRowGroups(rows, self.rowGroups, {
+          partition: !(self.root && treeDescribesRows(self.root, rows)),
+        })
       },
     }))
     .views(self => ({
@@ -571,11 +584,13 @@ export default function stateModelFactory(
        * rows on screen). Leaves spaced over `height`, branches over
        * `treeAreaWidth`.
        *
-       * Passes the *drawn* row names, so a `rowGroups` partition — which
-       * reorders `sources` downstream of `layout`, where `setLayout`'s
-       * invalidation can't see it — drops the dendrogram rather than drawing it
-       * against the regrouped order. The two orderings genuinely conflict:
-       * clustering decides an order and `rowGroups` overrides it.
+       * Passes the *drawn* row names, which is the backstop for anything that
+       * reorders `sources` downstream of `layout` where `setLayout`'s
+       * invalidation cannot see it: such a reorder drops the dendrogram rather
+       * than drawing it against rows it does not name. `rowGroups` used to be
+       * the way to reach that state, and no longer is — it declines to partition
+       * while a tree describes the rows (see `sources`), so the two now compose
+       * instead of one silently costing the other.
        */
       get hierarchy() {
         return computeClusterHierarchy(
