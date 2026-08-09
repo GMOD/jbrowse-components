@@ -3,6 +3,7 @@ import type {
   ConfigurationSchemaOptions,
   ConfigurationSchemaType,
 } from './configurationSchema.ts'
+import type { BuiltinSlotTypeName } from './configurationSlot.ts'
 import type {
   ISimpleType,
   IStateTreeNode,
@@ -150,6 +151,29 @@ interface SlotValueByType {
   text: string
   color: string
 }
+
+/**
+ * The two tables name the same builtin slot types, checked rather than
+ * remembered.
+ *
+ * A row present in one and missing from the other is otherwise **not** an
+ * error: the slot drops through to `SlotValueRawFromDef`'s `defaultValue`
+ * fallback, which re-widens a scalar default but reaches `any` for everything
+ * else — so a new `stringArray`-shaped type would silently read as `any` at
+ * every call site. The "every builtin slot type reads as its declared value
+ * type" case in `configTypeNarrowing.test.ts` lists the rows by hand, so it
+ * only catches the drift if whoever adds the type also edits the test; this
+ * catches it either way.
+ */
+type MutuallyExtends<A, B> = [A] extends [B]
+  ? [B] extends [A]
+    ? true
+    : false
+  : false
+type Assert<T extends true> = T
+export type SlotValueTableCoversBuiltinSlotTypes = Assert<
+  MutuallyExtends<BuiltinSlotTypeName, keyof SlotValueByType>
+>
 
 // A sub-schema entry, not a slot: the read yields that sub-config's snapshot.
 // Typed rather than left to fall through to `any`, so the snapshot can't be fed

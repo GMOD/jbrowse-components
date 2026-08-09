@@ -140,6 +140,14 @@ describe('getConf slot-value type narrowing', () => {
     assertType<Equal<typeof enabled, boolean>>()
     assertType<Equal<typeof mode, 'a' | 'b'>>()
     assertType<Equal<typeof thickness, number>>()
+
+    // A whole-config read is the snapshot, and needs its own overload to say
+    // so: with `slotPath` omitted, SLOT falls back to the union of every slot
+    // name and the return conditional distributes over it, typing the read as a
+    // union of every slot's VALUE. The twin assertion for `readConfObject` is
+    // in the sub-config test below.
+    const whole: AnyConfigurationSnapshot = getConf(model)
+    expect(whole.color).toBe('blue')
   })
 
   // One row of `SlotValueByType` per read. The mapping used to be a fourteen-deep

@@ -4,12 +4,21 @@ import { readConfObject } from './readConfObject.ts'
 import type { ResolvableDisplay } from './promotableResolve.ts'
 import type {
   AnyConfigurationModel,
+  AnyConfigurationSnapshot,
   ConfigurationSchemaForModel,
   ConfigurationSlotName,
   ConfigurationSlotValue,
   ConfigurationSlotValueResolved,
 } from './types.ts'
 
+// Two overloads, in the same order and for the same reason as
+// `readConfObject`'s: without the whole-config one, omitting `slotPath` leaves
+// SLOT at its default (the union of every slot name) and the
+// `SLOT extends string ? … : any` conditional below distributes over that
+// union, so the declared return is a union of every slot's VALUE type rather
+// than the snapshot the call actually produces. That typechecked anyway
+// wherever the holder's schema was widened to `any`, which is why it survived.
+// Pinning a factory's `configSchema` is what surfaces it.
 /**
  * #api core/configuration
  * Reads a configuration value from a state model that has a `.configuration`
@@ -33,6 +42,9 @@ import type {
  * @param args - extra arguments e.g. for a feature callback,
  *   will be sent to each of the slotNames
  */
+export function getConf(model: {
+  configuration: AnyConfigurationModel
+}): AnyConfigurationSnapshot
 export function getConf<
   CONFMODEL extends AnyConfigurationModel,
   SLOT extends
@@ -40,11 +52,16 @@ export function getConf<
     | string[] = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
 >(
   model: { configuration: CONFMODEL },
-  slotPath?: SLOT,
-  args: Record<string, unknown> = {},
+  slotPath: SLOT,
+  args?: Record<string, unknown>,
 ): SLOT extends string
   ? ConfigurationSlotValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT>
-  : any {
+  : any
+export function getConf(
+  model: { configuration: AnyConfigurationModel },
+  slotPath?: string | string[],
+  args: Record<string, unknown> = {},
+): any {
   return readConfObject(model.configuration, slotPath, args)
 }
 

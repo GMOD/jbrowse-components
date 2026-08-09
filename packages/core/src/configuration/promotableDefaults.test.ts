@@ -1213,6 +1213,24 @@ describe('promotable slot authoring guards', () => {
     ).toThrow(/must leave 'defaultValue' undefined/)
   })
 
+  // The cascade refuses a `jexl:` value at every tier (isUsableValue), so a
+  // callback written into a promotable slot is discarded back to the base.
+  // `contextVariable` is what raises the config editor's jexl toggle, so the
+  // pair ships a control whose writes vanish — the one authoring mistake here
+  // that shows up as UI rather than as a setting that won't stay put.
+  test('rejects contextVariable, which would offer a callback the cascade drops', () => {
+    expect(() =>
+      ConfigurationSchema('PromotableCallback', {
+        size: {
+          type: 'maybeNumber',
+          defaultValue: undefined,
+          promotedBase: 7,
+          contextVariable: ['feature'],
+        },
+      }),
+    ).toThrow(/cannot declare 'contextVariable'/)
+  })
+
   // a subclass overriding an inherited slot merges over the base's definition
   // rather than replacing it, so an override that moves one field keeps the rest
   // — including the promotable machinery, which is otherwise easy to drop and

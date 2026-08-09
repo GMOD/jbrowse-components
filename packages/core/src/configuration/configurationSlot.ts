@@ -67,6 +67,13 @@ const slotTypes = {
   frozen: { model: types.frozen(), fallbackDefault: {} },
 } satisfies Record<string, SlotTypeSpec>
 
+/**
+ * The builtin table's own names — every slot type whose MST model this module
+ * supplies, so excluding the two enum types. Exported for `SlotValueByType` in
+ * `types.ts`, which has to name the same set and is checked against this.
+ */
+export type BuiltinSlotTypeName = keyof typeof slotTypes
+
 // The two types with no builtin table entry, because the author supplies the
 // `types.enumeration` as `model`. Named once, and spliced into both the type
 // union and the runtime set below so those two cannot drift apart.
@@ -241,6 +248,19 @@ export default function ConfigSlot(definition: ConfigSlotDefinition) {
     if (!isUsableValue(definition, promotedBase)) {
       throw new Error(
         `a 'promotedBase' must be a value the slot can hold: ${JSON.stringify(promotedBase)} is not a valid "${type}"`,
+      )
+    }
+    // A promotable slot cannot hold a callback: `isUsableValue` refuses a
+    // `jexl:` value at both cascade tiers, so one written into the slot is
+    // discarded straight back to the base. `contextVariable` is the only thing
+    // that offers writing one — it is what raises the config editor's jexl
+    // toggle (`SlotEditor`) — so the pair is a control whose every write the
+    // cascade throws away, with nothing thrown anywhere. Nothing else in the
+    // system states this; DISPLAY_TYPE_DEFAULTS.md §"No callbacks" only
+    // describes the read side.
+    if (definition.contextVariable?.length) {
+      throw new Error(
+        "a promotable slot ('promotedBase') cannot declare 'contextVariable': the cascade refuses a jexl: callback, so the config editor would offer a toggle whose writes silently degrade back to the base",
       )
     }
     // The resolver hands `promotedBase` out by reference, so an object-valued one

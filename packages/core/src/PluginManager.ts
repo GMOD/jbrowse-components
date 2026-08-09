@@ -732,7 +732,12 @@ export default class PluginManager {
     if (pluggableTypes.length === 0) {
       pluggableTypes.push(ConfigurationSchema('Null', {}))
     }
-    return types.union(...pluggableTypes) as IAnyModelType
+    // deliberately unannotated: this really is a union, not a model type, and
+    // the `as IAnyModelType` it used to carry was checked against the whole
+    // repo and needed by nothing. Claiming model-ness here is also what makes a
+    // schema taking its base from this look concrete while its own slot reads
+    // have already degraded to `any` — see configuration/CLAUDE.md.
+    return types.union(...pluggableTypes)
   }
 
   jbrequireCache = new Map()
