@@ -32,7 +32,7 @@
     "clean": "rimraf esm dist *.tsbuildinfo"
   },
   "devDependencies": {
-    "esbuild": "^0.28.1"
+    "esbuild": "^0.28.2"
   },
   "dependencies": {
     "@jbrowse/core": "workspace:^",

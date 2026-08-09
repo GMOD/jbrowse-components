@@ -47,7 +47,7 @@
     "@jbrowse/plugin-linear-comparative-view": "workspace:^",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@jbrowse/react-app2": "workspace:^",
-    "@types/jsdom": "^28.0.3",
+    "@types/jsdom": "^30.0.0",
     "canvas": "^3.2.3",
     "jsdom": "^30.0.1",
     "mobx": "^7.0.0",
