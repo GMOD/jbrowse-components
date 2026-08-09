@@ -112,10 +112,10 @@ chain visits and draws the reads that leave one panel and arrive in another.
 The reads already know which loci those are and in what order, so the view is
 built from them rather than typed in. On the tumor track, **Launch view →
 Reconstruct derivative allele...** groups the reads in the window by their split
-alignments and lists the routes through the reference they describe; picking one
-and choosing **Replace with split view** puts a panel per segment of that route
-in the launching view's place, in the order the reads cross it, carrying the
-tracks that view had. That is how the panels above were made, with no locus
+alignments and lists the routes through the reference they describe; picking one,
+setting **Draw as** to **Breakpoint split view** and choosing **Replace current
+view** puts a panel per segment of that route in the launching view's place, in
+the order the reads cross it, carrying the tracks that view had. That is how the panels above were made, with no locus
 typed anywhere; the dialog itself is the top frame of
 [the reconstruction figure below](#reconstructing-the-derivative-allele-in-the-browser).
 
@@ -192,7 +192,7 @@ vs ref** on it is then the single-molecule evidence behind one candidate.
 Whatever else was open in the view comes along onto the reference panel, so the
 path is read against the genes it runs through.
 
-The dialog offers two destinations. **Draw in new view** appends the
+The dialog offers two destinations. **Open in new view** appends the
 reconstruction below the pileup it came from; **Replace current view** puts it
 in that view's place, which is what the figures here use, since the window the
 pileup is showing is the window the reconstruction is anchored on.

@@ -16,8 +16,9 @@ import {
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import {
-  Button,
+  FormControl,
   FormControlLabel,
+  FormLabel,
   Radio,
   RadioGroup,
   Typography,
@@ -57,6 +58,18 @@ const useStyles = makeStyles()(theme => ({
   // already is, with the buttons below acting on it.
   soleCandidate: {
     marginTop: theme.spacing(1),
+  },
+  // Set off from the route list above it, which is the dialog's other radio
+  // group: a rule and a label say these are two questions, not eleven rows of
+  // one.
+  drawAs: {
+    // full width, so the rule reads as a divider across the dialog rather than
+    // as an underline under the label — a FormControl is only as wide as the
+    // radio row inside it
+    width: '100%',
+    marginTop: theme.spacing(1),
+    paddingTop: theme.spacing(1),
+    borderTop: `1px solid ${theme.palette.divider}`,
   },
   caveat: {
     color: theme.palette.text.secondary,
@@ -161,9 +174,10 @@ function CandidateRow({
 }
 
 // The picker for "Reconstruct derivative allele". Every row is a path some set
-// of reads describes, ranked by how many of them do; picking one draws it as a
-// synteny view. Nothing here decides whether a path is real — the read count is
-// the evidence offered, and the view is where a person judges it.
+// of reads describes, ranked by how many of them do; picking one draws it, as
+// either of the two pictures under "Draw as". Nothing here decides whether a
+// path is real — the read count is the evidence offered, and the view is where a
+// person judges it.
 const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
   model,
   track,
@@ -196,6 +210,12 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
     candidates.findIndex(c => c.locString === selectedLoc),
   )
   const [error, setError] = useState<unknown>()
+  // WHAT to draw, kept here beside WHICH route because both are properties of
+  // the reconstruction; the buttons then answer only where it goes, in the same
+  // two words every other launch dialog uses. Three buttons that mixed the two
+  // questions could not be labelled (review: "'replace with split view' and
+  // 'replace current view' are unclear what they would do").
+  const [drawAs, setDrawAs] = useState<'synteny' | 'split'>('synteny')
   const canReplace = isSessionWithViewReplacement(getSession(track))
 
   // The same candidate, drawn the other way the tutorial contrasts: stacked
@@ -204,7 +224,7 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
   // chromosome by hand -- which loses the ORDER the reads cross the loci in, and
   // silently merges a path that visits one chromosome twice into a single
   // panel. The candidate already knows both, so nothing here is typed.
-  async function onOpenSplitView() {
+  async function onOpenSplitView(replace: boolean) {
     try {
       const candidate = candidates[selected]
       if (!candidate) {
@@ -240,19 +260,18 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
       // Read BEFORE the replace below, like `onSubmit` reads its carried track
       // list: replacing destroys the launching view, and `track` lives in it.
       const [trackAssembly] = getConf(track, 'assemblyNames') as string[]
-      // Replaces the launching view rather than opening below it, which is why
-      // this button says so. Unlike the synteny destinations, the split view
-      // this builds carries the launching view's OWN tracks and its first panel
-      // opens on the segment the pileup is already showing -- so leaving that
-      // view standing above it is a second copy of the same locus with the same
-      // tracks, one scroll apart. (Reviewer, on the figure of exactly that:
-      // "too chaotic ... should also use 'replace view'".) A session that
-      // refuses replacement, e.g. embedded, falls back to adding.
+      // "Replace current view" is the destination this drawing is usually
+      // wanted at, and the one the docs and figures take: unlike the synteny
+      // reconstruction, the split view carries the launching view's OWN tracks
+      // and its first panel opens on the segment the pileup is already showing,
+      // so leaving that view standing above it is a second copy of the same
+      // locus with the same tracks, one scroll apart. (Reviewer, on the figure
+      // of exactly that: "too chaotic ... should also use 'replace view'".)
       const created = addOrReplaceView({
         session,
         typeName: 'BreakpointSplitView',
         initialState: viewSnapshot,
-        replacing: canReplace ? (view as AbstractViewModel) : undefined,
+        replacing: replace ? (view as AbstractViewModel) : undefined,
       }) as unknown as {
         views: { navToLocString: (l: string, asm: string) => Promise<void> }[]
       }
@@ -337,59 +356,37 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
     }
   }
 
+  // The one thing both buttons do, differing only in where the drawing lands.
+  function draw(replace: boolean) {
+    void (drawAs === 'split' ? onOpenSplitView(replace) : onSubmit(replace))
+  }
+
   return (
     <SubmitDialog
       open
       title="Reconstruct derivative allele"
-      // The dialog's own verb, with the destination named now that there are
-      // two of them. The reconstruction is anchored on the window the pileup is
-      // already showing, so putting it in that view's place is as reasonable an
-      // outcome as adding it below, the same offer the synteny and read-vs-ref
-      // launches make.
-      submitText={canReplace ? 'Draw in new view' : 'Draw it'}
+      // The two destinations every launch dialog offers, worded as they word
+      // them (the synteny launches, "read vs ref"), because that is all these
+      // buttons decide now: what gets drawn is the "Draw as" choice in the body,
+      // beside the route it is drawn from. A session that cannot replace a view
+      // is left with this one, which is still what it does.
+      submitText="Open in new view"
       submitDisabled={candidates.length === 0}
       actions={
-        <>
-          <Button
-            // SubmitForm renders `actions` inside its <form>, where a button
-            // with no type is a submit button: without this the click runs this
-            // handler AND the form's, so the dialog draws the synteny view too
-            type="button"
-            // Same variant as the other two destinations. It is one of three
-            // things this dialog can draw, and left on the default text variant
-            // it read as a link between two filled buttons -- three ways to say
-            // "draw it" in three different weights (review: "i do not like the
-            // look of the dialog box").
-            variant="contained"
-            color="primary"
+        canReplace ? (
+          <ReplaceCurrentViewButton
             disabled={candidates.length === 0}
             onClick={() => {
-              void onOpenSplitView()
+              draw(true)
             }}
-          >
-            {/* Names the destination AND what happens to this view, because
-                what happens differs from the other buttons': the split view
-                carries these very tracks at this very locus, so it takes this
-                view's place rather than stacking under it (see
-                onOpenSplitView). A session that cannot replace gets the
-                "Open as" wording, since there it does open below. */}
-            {canReplace ? 'Replace with split view' : 'Open as split view'}
-          </Button>
-          {canReplace ? (
-            <ReplaceCurrentViewButton
-              disabled={candidates.length === 0}
-              onClick={() => {
-                void onSubmit(true)
-              }}
-            />
-          ) : null}
-        </>
+          />
+        ) : null
       }
       onCancel={() => {
         handleClose()
       }}
       onSubmit={() => {
-        void onSubmit()
+        draw(false)
       }}
     >
       <div className={classes.root}>
@@ -417,9 +414,9 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
           <>
             {/*
               One line, then the list. This used to open with two paragraphs
-              explaining what each destination button draws (review: "i do not
-              like the look of the dialog box"), which is eight lines of grey
-              text above three short rows -- the buttons already carry those
+              explaining what each drawing looks like (review: "i do not like
+              the look of the dialog box"), which is eight lines of grey text
+              above three short rows -- the "Draw as" options below carry those
               names, and the tutorial carries the rest. What stays is the
               sentence that says what a row IS, and the one caveat that changes
               which row a reader picks.
@@ -473,9 +470,20 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
                     // one. A spec keyed on the index silently captures the
                     // wrong allele under the right caption, which is the
                     // failure this exists to prevent.
-                    data-testid={`derivative-path-${
-                      candidate.segments.length
-                    }-${candidate.refNames.join('-')}`}
+                    //
+                    // Every segment in derivative order, with `rev` on the
+                    // flipped ones, rather than the deduplicated `refNames` and
+                    // a count. On that same fold-back, `9 -> 9 (inverted)` and
+                    // `9 -> 9` are both two segments on one chromosome, so the
+                    // deduplicated form gave the two rows ONE id and a spec
+                    // asking for it got whichever came first — the failure
+                    // above, in the id meant to prevent it.
+                    data-testid={`derivative-path-${candidate.segments
+                      .map(
+                        seg =>
+                          `${seg.refName}${seg.strand === -1 ? 'rev' : ''}`,
+                      )
+                      .join('-')}`}
                     value={idx}
                     control={<Radio />}
                     label={
@@ -495,6 +503,37 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
                 this many is usually repetitive rather than rearranged.
               </Typography>
             ) : null}
+            <FormControl className={classes.drawAs}>
+              <FormLabel>Draw as</FormLabel>
+              {/* Named as the VIEW TYPES they open, the names the Add menu and
+                  every other launch already use, rather than as descriptions of
+                  what each one draws (review: "is it breakpoint split view? or
+                  synteny view? ... it helps to use our existing wording"). A row
+                  rather than a column: it is a second question, not two more
+                  rows of the first. */}
+              <RadioGroup
+                row
+                value={drawAs}
+                onChange={event => {
+                  setDrawAs(
+                    event.target.value === 'split' ? 'split' : 'synteny',
+                  )
+                }}
+              >
+                <FormControlLabel
+                  data-testid="derivative-draw-as-synteny"
+                  value="synteny"
+                  control={<Radio />}
+                  label="Linear synteny view"
+                />
+                <FormControlLabel
+                  data-testid="derivative-draw-as-split"
+                  value="split"
+                  control={<Radio />}
+                  label="Breakpoint split view"
+                />
+              </RadioGroup>
+            </FormControl>
           </>
         )}
       </div>
