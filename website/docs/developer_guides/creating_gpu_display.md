@@ -44,6 +44,10 @@ runtime `ReExports` registry), so a GPU display must be a
 
 JBrowse GPU displays follow a three-layer model:
 
+<Figure caption="The whole idea, before any of the machinery: data crosses to the GPU once per region, and every frame after that is a redraw of buffers that are already there. Panning, zooming and recoloring never refetch or reparse — that is what makes a GPU display different from a Canvas2D one, and everything named in the next figure exists to keep it true." src="/img/gpu_display_tldr.png" />
+
+The rest of this section is that same picture with the mechanisms in it.
+
 <Figure caption="Two autoruns, each with its own trigger: a per-region-key upload autorun on an rpcDataMap entry changing, and a render autorun on renderTick or a frame-level change like scroll. Every upload calls renderNow(), which bumps renderTick and closes the loop; a draw that reports it painted also flips canvasDrawn, which readiness testids and DisplayChrome wait on." src="/img/gpu_display_lifecycle.png" />
 
 The model keeps two autoruns running at all times (owned by

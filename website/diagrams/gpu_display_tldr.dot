@@ -1,0 +1,54 @@
+digraph gpu_display_tldr {
+  rankdir=TB
+  labelloc=t
+  fontname="Helvetica"
+  fontsize=18
+  label="GPU display, in three boxes"
+  nodesep=0.5
+  ranksep=0.75
+
+  node [
+    shape=box
+    fontname="Helvetica"
+    fontsize=14
+    style=filled
+    fillcolor="#ffffff"
+    margin="0.28,0.20"
+    // A floor, not a fixed size, so the three read as one stack rather than as
+    // three boxes sized by how long their text happens to be.
+    width=3.6
+  ]
+  edge [fontname="Helvetica", fontsize=11, color="#555555"]
+
+  // The TLDR companion to gpu_display_lifecycle.dot, which is the same
+  // architecture with every mechanism in it: two autoruns, rpcDataMap,
+  // renderTick, canvasDrawn, the HAL. That figure answers "what fires what",
+  // and a reader who does not yet know there are two autoruns cannot use it to
+  // find out whether this page is even about their problem.
+  //
+  // So: three boxes and two arrows, and the ARROWS carry the idea. What makes
+  // a GPU display different from a Canvas2D one is not any box here -- it is
+  // that the two edges run at different rates. Data crosses to the GPU once per
+  // region; frames after that are redraws of what is already there. Every name
+  // in the detailed figure is a mechanism for keeping that true.
+  //
+  // Same three lane colors as the detailed figure, in the same order, so the
+  // two read as the same picture at two zooms rather than as two diagrams.
+  //
+  // Stacked, for the reason the detailed one is: as a left-to-right row this
+  // measured 2312x211, an 11:1 strip whose text lands at ~10px once the docs
+  // page scales it to column width. Three boxes is not few enough to make a row
+  // work -- the two-line edge labels are most of the width. Top to bottom it is
+  // 571x812, which needs no scaling at all.
+  //
+  // No sentence on the image: the takeaway (panning and zooming do not refetch)
+  // is the Figure caption's job. See website/CLAUDE.md -- on-image text is a
+  // label, not a paragraph.
+
+  worker [label="Worker\nfetch and parse the file", fillcolor="#e3f2fd", color="#90caf9"]
+  buffers [label="GPU buffers\nuploaded once, kept", fillcolor="#f1f8e9", color="#aed581"]
+  canvas [label="Canvas\ndrawn from those buffers", fillcolor="#ffe0b2", color="#ffcc80"]
+
+  worker -> buffers [label="  once per region  \l  typed arrays, absolute bp  \l"]
+  buffers -> canvas [label="  every frame  \l  scroll, zoom, recolor  \l"]
+}

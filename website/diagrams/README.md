@@ -14,6 +14,7 @@ that mapping, so nothing here needs to restate it.
 | `wolfdog_ancestry_pipeline.dot` | `docs/tutorials/local_ancestry.md` (The pipeline) |
 | `feature_plotting_threads.dot`  | `docs/developer_guides/plotting_features.md`      |
 | `gpu_display_lifecycle.dot`     | `docs/developer_guides/creating_gpu_display.md`   |
+| `gpu_display_tldr.dot`          | same page, the simplified version above it        |
 
 ## Editing one
 
