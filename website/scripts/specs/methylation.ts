@@ -413,32 +413,29 @@ export const methylationSpecs: ScreenshotSpec[] = [
     settleMs: 15000,
     // cpg(40) + gene(90) + reads(320) + chrome
     viewportHeight: 730,
-    // The result, said out loud (reviewer: "may want red annotation text saying
-    // HP1,HP2,HP unknown in bottom"). The display already writes `HP: 1` /
-    // `HP: 2` / `HP: none` at each group's top left, but in small grey type that
-    // a reader scanning the figure does not stop on -- and those labels name
-    // the group without naming what it shows, which is the whole result here.
+    // Three pills, one word each (review: "just use shorter labels of just HP1
+    // (no added text about 'methylated across the island'"). The display writes
+    // `HP: 1` / `HP: 2` / `HP: none` itself, but in small grey type a reader
+    // scanning the figure does not stop on. What each haplotype SHOWS is the
+    // picture's job -- red across the island against blue -- so the pill only
+    // has to say which group is which.
     //
-    // Anchored to those labels by text, so the callouts follow the groups
-    // wherever the layout puts them; `dx` only clears the "Show all reads"
-    // control that sits beside each one. Which haplotype is which is read off
-    // this capture (HP1 red across the island, HP2 blue) rather than assumed:
-    // the tags are arbitrary, so a rebuild of the BAM could swap them, and the
-    // pills are checked against the render on regen.
+    // Anchored to those labels by text, so they follow the groups wherever the
+    // layout puts them; `dx` clears the "Show all reads" control beside each.
     annotations: [
       {
         type: 'text',
-        text: 'HP1: methylated across the island',
+        text: 'HP1',
         anchor: { text: 'HP: 1', alignX: 'right', dx: 90 },
       },
       {
         type: 'text',
-        text: 'HP2: unmethylated',
+        text: 'HP2',
         anchor: { text: 'HP: 2', alignX: 'right', dx: 90 },
       },
       {
         type: 'text',
-        text: 'HP unknown: reads with no haplotype tag',
+        text: 'HP unknown',
         anchor: { text: 'HP: none', alignX: 'right', dx: 90 },
       },
     ],
@@ -528,7 +525,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
     annotations: [
       {
         type: 'text',
-        text: 'HP1: methylated across the island',
+        text: 'HP1',
         // dy only on this one: HP: 1 is the FIRST group, so its label sits
         // against the top of the track and a pill centred on it overhangs the
         // track header above. The other two have reads above them already.
@@ -536,12 +533,12 @@ export const methylationSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'HP2: unmethylated',
+        text: 'HP2',
         anchor: { text: 'HP: 2', alignX: 'right', dx: 90 },
       },
       {
         type: 'text',
-        text: 'HP unknown: reads with no haplotype tag',
+        text: 'HP unknown',
         anchor: { text: 'HP: none', alignX: 'right', dx: 90 },
       },
     ],

@@ -1597,10 +1597,10 @@
   },
   "methylation/hg002_snrpn_combined": {
     "name": "methylation/hg002_snrpn_combined",
-    "status": "bad",
-    "note": "just use shorter labels of just HP1 (no added text about 'methylated across the island' and same for HP2 and unknown. then add same hp1 and hp2 tags to the multiwiggle also  FIXED, both halves. HP1 / HP2 / HP-unknown now carry the same three pills as methylation/hg002_snrpn_group_by_hp, anchored to the display's own group labels by text so they follow the pack. And the two modkit tracks are ONE multi-wiggle now: a MultiQuantitativeTrack whose MultiWiggleAdapter takes the two bedMethyl files as subadapters, multirowxy on a pinned 0-100 axis. Worth knowing for the next one: a MultiWiggleAdapter subadapter does not have to be a BigWig, and the row label has to come from the subadapter's `name` because bedMethyl features carry a `source` of their own (the modification code).",
-    "reviewedAt": "2026-08-09T05:47:12.923Z",
-    "hash": "e5a7ba27ace4ced25d1e42c874f2fd8d0fee9bab"
+    "status": "good",
+    "note": "just use shorter labels of just HP1 (no added text about 'methylated across the island' and same for HP2 and unknown. then add same hp1 and hp2 tags to the multiwiggle also  FIXED, both halves. HP1 / HP2 / HP-unknown now carry the same three pills as methylation/hg002_snrpn_group_by_hp, anchored to the display's own group labels by text so they follow the pack. And the two modkit tracks are ONE multi-wiggle now: a MultiQuantitativeTrack whose MultiWiggleAdapter takes the two bedMethyl files as subadapters, multirowxy on a pinned 0-100 axis. Worth knowing for the next one: a MultiWiggleAdapter subadapter does not have to be a BigWig, and the row label has to come from the subadapter's `name` because bedMethyl features carry a `source` of their own (the modification code). 2026-08-09: the pills were still the long ones -- shortened now to 'HP1', 'HP2', 'HP unknown' at both sites (this figure and methylation/hg002_snrpn_grouped, which the group_by_hp compose uses), so all three figures agree. They were also covering reads at the left edge, which they no longer do. The multiwiggle half was already done and verified here: HP1 and HP2 label the two rows of the merged modkit track. Caption cut to why the figure exists rather than what each lane is.",
+    "reviewedAt": "2026-08-09T06:09:59.613Z",
+    "hash": "c81dd6b47615127b5513f124b01dac018ff42c32"
   },
   "ld/lct_haplotype_matrix": {
     "name": "ld/lct_haplotype_matrix",

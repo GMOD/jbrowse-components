@@ -118,7 +118,7 @@ not.
 Loading the two per-haplotype bedMethyl files above the reads puts the summary
 and its source in the same view, on one x scale.
 
-<Figure caption="Allele-specific methylation at the SNRPN / Prader-Willi imprinting center in HG002 ONT data. Top: modkit's phased bedMethyl loaded as one MultiQuantitativeTrack per haplotype (HP1, HP2), each a 0-100% 5mC profile. Bottom: the ONT reads those profiles summarize, grouped by HP and colored by methylation, HP1 methylated (red) and HP2 unmethylated (blue) read by read." src="/img/methylation/hg002_snrpn_combined.png" />
+<Figure caption="Imprinting at the SNRPN / Prader-Willi center: one haplotype methylated, the other not. Averaging the two would show half-methylation and hide it — the point of grouping reads by HP is that the summary profile on top and the individual reads below it are the same data, and you can check one against the other." src="/img/methylation/hg002_snrpn_combined.png" />
 
 Reading the figure top to bottom is the check worth making: the aggregate says
 one allele is methylated over the island and the other is not, and the reads
