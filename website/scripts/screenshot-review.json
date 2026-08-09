@@ -1919,10 +1919,10 @@
   },
   "genomes_synteny/launch_sequence": {
     "name": "genomes_synteny/launch_sequence",
-    "status": "good",
-    "note": "please make the red textboxes larger. DONE 2026-08-08: all three step labels are fontSize 30, up from 20 -- which was BELOW the annotation overlay's own default of 22, on the four-panel grid's only signposts, read at whatever size a 2x2 of 900px frames lands at on the page.",
-    "reviewedAt": "2026-08-09T00:05:34.896Z",
-    "hash": "6c5d7eef51b97b9d514c50378619328dbbf202ab"
+    "status": "bad",
+    "note": "i do not like the 'varying' text sizes'. previous notes: please make the red textboxes larger. DONE 2026-08-08: all three step labels are fontSize 30, up from 20 -- which was BELOW the annotation overlay's own default of 22, on the four-panel grid's only signposts, read at whatever size a 2x2 of 900px frames lands at on the page.",
+    "reviewedAt": "2026-08-09T06:24:40.610Z",
+    "hash": "930b5d4f187f2373a273611c9d493b46625a3632"
   },
   "pangenome/pangenome_variants": {
     "name": "pangenome/pangenome_variants",
@@ -2142,8 +2142,8 @@
   "dog10k-denr-sine-deletions": {
     "name": "dog10k-denr-sine-deletions",
     "status": "bad",
-    "note": "this is a somewhat chaotic screenshot, unsure what i should be getting from this. might need a linearvariantdisplay of same data. we might actually need to design a system to show multisamplevariantdisplay+linearvariantdisplay automatically when multisamplevariantdisplay is shown. previous notes:  Zoomed out from 6.5 kb to 18 kb, which is all of DENR (chr26:6,929,118-6,943,861 in the canFam4 RefSeq the figure already loads) plus flanks: the old window cut the gene at both edges, so the transcript rows ran off both sides and there was nothing to be 'in an intron' OF. Free to do here because the track holds exactly the two SINE records the build script selected (POS 6931055 and 6933974), so the matrix keeps its two columns however wide the window is. The second half of 'unclear what is going on': a matrix lays columns out by feature index, so the only thing saying which column is which repeat is the band of connector lines above the rows, and at the 20px schema default that band was a sliver. lineZoneHeight 60 gives it a real diagonal, and over a whole-gene window the two lines visibly land in the first two introns. Caption updated to point at them.  FIXED as asked: a LinearVariantDisplay of the same callset now sits under the matrix, so each column can be NAMED (`chr26:6931055:221:DEL 222bp -> G`) instead of traced back through the connector band. Mechanics worth reusing: two displays of one callset need the VCF declared twice, and it has to be in the CONFIG rather than as a sessionTrack -- a session track does not inherit the config's baseUri, so its adapter needs an absolute url and this VCF exists only in the repo's test_data. On the 'design a system to show both automatically': not built, and it is a real product question rather than a figure one -- worth its own issue.",
-    "reviewedAt": "2026-08-09T06:23:11.416Z",
+    "note": "this is a somewhat chaotic screenshot, unsure what i should be getting from this. are there 'giant' SV overshadowing the ones that are intending to be shown? might need a linearvariantdisplay of same data. we might actually need to design a system to show multisamplevariantdisplay+linearvariantdisplay automatically when multisamplevariantdisplay is shown. previous notes:  Zoomed out from 6.5 kb to 18 kb, which is all of DENR (chr26:6,929,118-6,943,861 in the canFam4 RefSeq the figure already loads) plus flanks: the old window cut the gene at both edges, so the transcript rows ran off both sides and there was nothing to be 'in an intron' OF. Free to do here because the track holds exactly the two SINE records the build script selected (POS 6931055 and 6933974), so the matrix keeps its two columns however wide the window is. The second half of 'unclear what is going on': a matrix lays columns out by feature index, so the only thing saying which column is which repeat is the band of connector lines above the rows, and at the 20px schema default that band was a sliver. lineZoneHeight 60 gives it a real diagonal, and over a whole-gene window the two lines visibly land in the first two introns. Caption updated to point at them.  FIXED as asked: a LinearVariantDisplay of the same callset now sits under the matrix, so each column can be NAMED (`chr26:6931055:221:DEL 222bp -> G`) instead of traced back through the connector band. Mechanics worth reusing: two displays of one callset need the VCF declared twice, and it has to be in the CONFIG rather than as a sessionTrack -- a session track does not inherit the config's baseUri, so its adapter needs an absolute url and this VCF exists only in the repo's test_data. On the 'design a system to show both automatically': not built, and it is a real product question rather than a figure one -- worth its own issue.",
+    "reviewedAt": "2026-08-09T06:23:53.011Z",
     "hash": "36dca8c6b78a00914e8677fd69788573c41e5952"
   },
   "dog10k-wolfdog-ancestry": {
@@ -2434,10 +2434,10 @@
   },
   "dotplot_self_chry": {
     "name": "dotplot_self_chry",
-    "status": "good",
-    "note": "this is kind of chaotic, we might need to cross reference paper or make linearsyntenyview of same thing. is the liftover even accurately representing this or do we need different dataset for the alignment? if we cant do it right, we may need to delete this screenshot  FIXED without new data, and the answer to 'is the liftover even accurately representing this' is that it is -- the scatter is real. The MSY is dense in dispersed repeats, and at any minimum length that keeps the palindromes those blocks are drawn too, so no filter separates them. What was missing is that nothing said which parts are the subject. Both are boxed now, as dotplot CELLS so they follow the plot at any zoom: TSPY at chrY:9.05-9.75 Mb and the P1-P5 Yq palindromes at 21.2-26.0 Mb, coordinates from the T2T-CHM13 Y paper (Rhie et al. 2023), which the page now cites.",
-    "reviewedAt": "2026-08-09T03:58:00.000Z",
-    "hash": "43afd1257c73cd9a34cd30fcbf4666615aab7344"
+    "status": "bad",
+    "note": "this is kind of chaotic, we might need to cross reference paper or make linearsyntenyview of same thing. previousnotes: is the liftover even accurately representing this or do we need different dataset for the alignment? if we cant do it right, we may need to delete this screenshot  FIXED without new data, and the answer to 'is the liftover even accurately representing this' is that it is -- the scatter is real. The MSY is dense in dispersed repeats, and at any minimum length that keeps the palindromes those blocks are drawn too, so no filter separates them. What was missing is that nothing said which parts are the subject. Both are boxed now, as dotplot CELLS so they follow the plot at any zoom: TSPY at chrY:9.05-9.75 Mb and the P1-P5 Yq palindromes at 21.2-26.0 Mb, coordinates from the T2T-CHM13 Y paper (Rhie et al. 2023), which the page now cites.",
+    "reviewedAt": "2026-08-09T06:24:23.613Z",
+    "hash": "c599b9aa140ce8cef161ece00a41470eee6d5539"
   },
   "orthofinder_synteny/grasses": {
     "name": "orthofinder_synteny/grasses",
@@ -2902,10 +2902,10 @@
   },
   "qc/smn1_evidence": {
     "name": "qc/smn1_evidence",
-    "status": "bad",
-    "note": "are there any other changes you think would help us convey to users the aggregate quality? would the coverage track benefit from getting per-base quality historgram? would changing the coloring of the quality scores help make things easyier to see? avoid discussion about smn2 in the red call out, just discuss the 'big picture' about what we are seeing. also zoom out more.  consider setting compact featureheight. and reference this from the qc doc?",
-    "reviewedAt": "2026-08-09T02:38:13.196Z",
-    "hash": "9fb9c07d170a3fa1da6d0d75ab36dcf5433ba6fc"
+    "status": "answered",
+    "note": "are there any other changes you think would help us convey to users the aggregate quality? would the coverage track benefit from getting per-base quality historgram? would changing the coloring of the quality scores help make things easyier to see? avoid discussion about smn2 in the red call out, just discuss the 'big picture' about what we are seeing. also zoom out more.  consider setting compact featureheight. and reference this from the qc doc? 2026-08-09. COMPACT FEATUREHEIGHT: done, and it is the aggregate that gained. At the default the lane ran out of rows and printed 'Max layout height reached', so the pileup was a cropped sample with no way to tell how much was dropped, which is the opposite of conveying aggregate quality. At featureHeight 2 the whole stack fits, the depth profile is visible, and so is the yellow MAPQ 60 patch at the right edge where mappability recovers. Viewport 820 -> 790. CALLOUT: off SMN2 and onto the frame. It first read 'reads are here and none of them can be placed', which you correctly rejected -- they are all mapped. It now reads 'Red is MAPQ 0: mapped here, but they fit elsewhere just as well'. CITATIONS: added, since the MAPQ claim was doing real work uncited. The SAM spec defines MAPQ as -10 log10 Pr(mapping position is wrong) and Li, Ruan and Durbin 2008 introduced the estimator; both are now in a new References section on mappability_qc.md along with the Umap paper, and the alignments guide carries the definition inline. ON SECONDARY MAPPING, since you asked: related, not the same. MAPQ 0 is a confidence score on the alignment that IS reported; a secondary alignment (FLAG 0x100) is a competing placement recorded as its own row. Neither implies the other -- bwa-mem reports one primary at MAPQ 0 and emits no secondary records unless asked for all hits, which is why this pileup has no secondary rows in it. Worth knowing separately: JBrowse's default flagExclude is 1540 (duplicate, QC-fail, unmapped), so secondary records are NOT filtered out when a file does carry them. Written into the alignments guide. STILL OPEN, your call: (a) per-base quality histogram on the coverage row is not a thing the coverage lane computes, and per-base Phred is a different signal from MAPQ -- it would say the base calls are fine here, which is true and not the problem; (b) the MAPQ ramp stays red/orange/yellow, since the figure's whole content is one saturated colour and a rescale would only make the 17% of non-zero reads louder than the 83% that are the result. ZOOM OUT: still no, and for the reason recorded before rather than a new one -- gnomAD coverage is under 12x continuously to 71.36 Mb, so the nearest edge is 410 kb past SMN1 and no pileup renders that wide. qc/smn_vs_control is the 650 kb frame that holds the edge and the page leads with it.",
+    "reviewedAt": "2026-08-09T06:44:43.833Z",
+    "hash": "75d2f9622a09d20d662581c7968fe9be56cc771b"
   },
   "gpu_display_tldr": {
     "name": "gpu_display_tldr",

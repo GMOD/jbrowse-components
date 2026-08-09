@@ -11,8 +11,8 @@ tutorial_category: Structural variation
 **TL;DR:** a pileup looks the same whether its reads belong at a locus or merely
 landed there. Four tracks tell the difference, and genomes.jbrowse.org already
 publishes all of them for hg38, so this is a click-path rather than a pipeline.
-At _SMN1_ every one of them says the reads cannot be placed; 500 kb away in the
-same frame, out of the same sample, every one says the opposite.
+At _SMN1_ every one of them says the placement cannot be trusted; 500 kb away in
+the same frame, out of the same sample, every one says the opposite.
 
 ## Prerequisites
 
@@ -30,7 +30,12 @@ spinal muscular atrophy turns on, and it is also the question a 150 bp read
 cannot answer: the same sequence exists twice, so an aligner given a read from
 either copy has two equally good places to put it.
 
-An aligner reports that as MAPQ 0. Nothing about the pileup itself announces it.
+An aligner reports that as MAPQ 0. The read is still aligned and still drawn
+where it aligned; MAPQ is
+`-10 log10 Pr{mapping position is wrong}`
+([SAM specification](https://samtools.github.io/hts-specs/SAMv1.pdf)), so 0 is
+the aligner saying the position it chose is about as likely wrong as right.
+Nothing about the pileup itself announces it.
 
 ## Zooming out first
 
@@ -193,3 +198,18 @@ list is measured the same way.
   options the read lane here uses two of
 - [](/docs/tutorials/genomes_synteny), another walkthrough built entirely on the
   hosted UCSC configs
+
+## References
+
+- Li H, Handsaker B, Wysoker A, et al.
+  [The Sequence Alignment/Map format and SAMtools](https://doi.org/10.1093/bioinformatics/btp352).
+  _Bioinformatics_ 25:2078-2079 (2009), and the current
+  [SAM specification](https://samtools.github.io/hts-specs/SAMv1.pdf), which
+  defines MAPQ as `-10 log10 Pr{mapping position is wrong}`.
+- Li H, Ruan J, Durbin R.
+  [Mapping short DNA sequencing reads and calling variants using mapping quality scores](https://doi.org/10.1101/gr.078212.108).
+  _Genome Research_ 18:1851-1858 (2008), which introduced that estimator.
+- Karimzadeh M, Ernst C, Kundaje A, Hoffman MM.
+  [Umap and Bismap: quantifying genome and methylome mappability](https://doi.org/10.1093/nar/gky677).
+  _Nucleic Acids Research_ 46:e120 (2018), the source of the k100 mappability
+  track.

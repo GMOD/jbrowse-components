@@ -55,7 +55,21 @@ Three schemes surface per-read or per-base signal directly on the pileup:
 
 - Mapping quality shades each read by its MAPQ, so poorly-mapped reads (often in
   repeats or segmental duplications) fade out and confidently-placed reads stay
-  solid.
+  solid. The
+  [SAM specification](https://samtools.github.io/hts-specs/SAMv1.pdf) defines
+  MAPQ as `-10 log10 Pr{mapping position is wrong}`, so MAPQ 0 does not mean a
+  read failed to align: it is aligned, and drawn where it aligned, but the
+  aligner puts no better than even odds on that being the right copy. Aligners
+  assign it when the best alignment score is tied across positions
+  ([Li, Ruan and Durbin 2008](https://doi.org/10.1101/gr.078212.108), which
+  introduced the estimator). This is separate from a **secondary** alignment
+  (FLAG `0x100`), which is one of the competing placements recorded as its own
+  record. A MAPQ 0 read does not imply secondary records exist — bwa-mem reports
+  one primary with MAPQ 0 unless asked for all hits — and JBrowse's default
+  `flagExclude` of 1540 (duplicate, QC-fail, unmapped) does not filter secondary
+  records out when a file does carry them. The
+  [mappability QC tutorial](/docs/tutorials/mappability_qc) works through a
+  locus where MAPQ 0 covers a whole gene.
 - Per-base quality colors every base by its Phred score on a red→yellow→green
   ramp (low-quality bases run red, high-quality bases green), which is the
   quickest way to tell a real variant from a run of low-confidence base calls.

@@ -202,6 +202,16 @@ const panel = (loc: string) => ({
       // told what red means, which is exactly the caption-rescues-the-figure
       // failure the house rule names.
       showLegend: true,
+      // Compact rows (review: "consider setting compact featureheight"), and it
+      // is the aggregate that gains. At the default height the lane ran out of
+      // rows and printed "Max layout height reached", so the pileup was a
+      // cropped sample of the evidence with no way to tell how much had been
+      // dropped -- which is the opposite of conveying aggregate quality. The
+      // row gap that pairs with a small height is derived, not set here (see
+      // featureSpacingForHeight), the same as cancer_sv's SUPER_COMPACT.
+      // Nothing in this figure is read one read at a time: the claim is the
+      // colour of the whole block.
+      featureHeight: 2,
       height: 300,
     },
   ],
@@ -215,7 +225,12 @@ export const qcSpecs: ScreenshotSpec[] = [
       sessionTracks: [na12878Track],
       views: [panel(SMN1_LOC)],
     })}&sessionName=Screenshot`,
-    viewportHeight: 820,
+    // Compact rows let the whole pileup fit where it used to hit the layout
+    // ceiling, so this came down from 820. Not to the 723 the blank-below
+    // report suggested: at 723 the run reports 110 px CLIPPED instead, the two
+    // heuristics disagreeing by more than either's slack, so this is set from
+    // the render.
+    viewportHeight: 790,
     // One label per panel, saying what its colour is (review: "unclear what we
     // are showing ... need red text annotations if possible"). The legend gives
     // the colours a name and the caption gives the lanes theirs; what neither
@@ -224,10 +239,23 @@ export const qcSpecs: ScreenshotSpec[] = [
     // Over the pileup rather than beside it: at 30 kb every lane above it is
     // carrying signal, and a pileup is the one place on the frame where 400x50px
     // covers nothing a reader is counting — no single read is the point here.
+    //
+    // The pill says what the WHOLE FRAME shows, not which paralog the reads
+    // also fit (review: "avoid discussion about smn2 in the red call out, just
+    // discuss the 'big picture' about what we are seeing"). Naming SMN2 made it
+    // a fact about one gene family; the reusable point is that depth is not
+    // evidence -- the reads are stacked deep and the aligner still cannot say
+    // which copy they came from, so anything called here inherits that.
+    //
+    // NOT "cannot be placed", which a first pass said and which is wrong on its
+    // face (review: "they are all ostensibly mapped"). Every read in this lane
+    // IS mapped, and drawn where it was mapped. MAPQ 0 says the aligner found
+    // at least one other position that fits equally well, so the placement is
+    // arbitrary among those -- a statement about confidence, not about failure.
     annotations: [
       {
         type: 'text',
-        text: 'Red is MAPQ 0 — each read fits SMN2 just as well',
+        text: 'Red is MAPQ 0: mapped here, but they fit elsewhere just as well',
         fontSize: 20,
         maxWidth: 430,
         anchor: {
