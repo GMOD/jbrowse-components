@@ -553,7 +553,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             views: [
               {
                 assembly: 'peach',
-                loc: 'G7:19,290,000-19,362,000',
+                loc: 'G7:18,555,000-18,653,000',
                 tracks: [
                   {
                     trackId: 'peach_genes',
@@ -577,7 +577,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               },
               {
                 assembly: 'grape',
-                loc: '11:1,840,000-1,927,000',
+                loc: '11:778,000-866,000',
                 tracks: [
                   {
                     trackId: 'grape_genes',
@@ -592,7 +592,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               },
               {
                 assembly: 'cacao',
-                loc: 'IX:4,665,000-4,743,000',
+                loc: '9:3,890,000-3,960,000',
                 tracks: [
                   {
                     trackId: 'cacao_genes',
@@ -644,7 +644,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           {
             type: 'LinearGenomeView',
             assembly: 'grape',
-            loc: '11:1,840,000-1,927,000',
+            loc: '11:778,000-866,000',
             tracks: [
               {
                 trackId: 'grape_genes',

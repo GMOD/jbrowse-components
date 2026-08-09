@@ -19,12 +19,16 @@ genome, while OrthoFinder orthogroups do not.
 - Or any other ortholog table, including an
   [MCScanX](https://github.com/wyp1125/MCScanX) run
   ([converting one](#from-mcscanx) needs only python3)
-- `samtools`, htslib (`bgzip`, `tabix`), `wget`
+- the NCBI
+  [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
+  CLI, and [gffread](https://github.com/gpertea/gffread)
+- `samtools`, htslib (`bgzip`, `tabix`)
 - `node`, for the [JBrowse CLI](/docs/cli)
 
-On Debian/Ubuntu, `apt install samtools tabix wget last-align` covers the
-aligner and the file tools; jcvi installs with `pip install jcvi` and `node`
-comes from [nodejs.org](https://nodejs.org/).
+On Debian/Ubuntu, `apt install samtools tabix last-align gffread` covers the
+aligner and the file tools; jcvi installs with `pip install jcvi`, `datasets` is
+a single-binary download, and `node` comes from
+[nodejs.org](https://nodejs.org/).
 
 ## Three genomes from one ortholog table
 
@@ -85,14 +89,25 @@ loads, whatever produced it. See
 
 ## Producing the data
 
-`grape.blocks` and the three BED files come from
+`grape.blocks` and the BED files come from
 [jcvi](https://github.com/tanghaibao/jcvi) and the
-[LAST](https://gitlab.com/mcfrith/last) aligner: for each species, download the
-genome, CDS, and GFF3 from
-[Ensembl Plants release 58](http://ftp.ensemblgenomes.org/pub/plants/release-58),
-convert the GFF3 to a jcvi BED, catalog orthologs against grape, MCScan each
-pair, and join the results into one reference-anchored table. The
-[end-to-end script](#reproduce-it-end-to-end) at the bottom runs every command.
+[LAST](https://gitlab.com/mcfrith/last) aligner. Every species is one NCBI
+RefSeq accession, fetched with the `datasets` CLI: grape `GCF_030704535.1`,
+peach `GCF_000346465.2`, cacao `GCF_000208745.1`, and for the extra lanes
+arabidopsis `GCF_000001735.4`, poplar `GCF_000002775.5`, tomato
+`GCF_036512215.1` and citrus `GCF_000493195.1`. One accession supplies the
+genome, the annotation and (through `gffread`) the CDS, so an assembly and the
+annotation drawn on it cannot be two different builds — which is the failure
+this is worth being careful about, because it shows up as features that quietly
+fail to resolve rather than as an error. From there: convert each GFF3 to a jcvi
+BED, catalog orthologs against grape, MCScan each pair, and join the results.
+The [end-to-end script](#reproduce-it-end-to-end) at the bottom runs every
+command.
+
+NCBI names sequences by accession, so each assembly also gets a `refNameAliases`
+file built from the accession-to-chromosome mapping in the download's own
+sequence report. That is a lookup rather than a guess, which is what makes it
+safe: the accession already identifies that exact sequence.
 
 The adapter reads `.blocks` and BED files plain or gzipped, and the config below
 uses the gzipped `.gz` names.
@@ -461,14 +476,14 @@ of these kept it".
 ## Reproduce it end to end
 
 [`build_grape_peach_cacao_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_grape_peach_cacao_synteny.sh)
-runs everything above in one shot. It downloads the genomes from Ensembl Plants,
-runs the jcvi ortholog pipeline into one `grape.blocks` table, downloads
-JBrowse, and writes a `config.json` with the assemblies, per-genome gene tracks,
-the MCScan blocks synteny track, and a default session that stacks the three
-genomes. Its `BLOCKS_ONLY_SPECIES` list is where the extra lanes come from: a
-genome added there needs only CDS and GFF3, because a lane on the grape axis is
-resolved from the blocks table and that genome's BED and never reads its
-sequence.
+runs everything above in one shot. It downloads each genome from NCBI by
+accession, runs the jcvi ortholog pipeline into one `grape.blocks` table,
+downloads JBrowse, and writes a `config.json` with the assemblies and their
+refName aliases, per-genome gene tracks, the MCScan blocks synteny track, and a
+default session that stacks the three genomes. Its `BLOCKS_ONLY_SPECIES` list is
+where the extra lanes come from: a genome added there needs only CDS and GFF3,
+because a lane on the grape axis is resolved from the blocks table and that
+genome's BED and never reads its sequence.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_grape_peach_cacao_synteny.sh

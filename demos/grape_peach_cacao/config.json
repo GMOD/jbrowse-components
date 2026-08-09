@@ -20,6 +20,15 @@
             "locationType": "UriLocation"
           }
         }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "location": {
+            "uri": "https://jbrowse.org/demos/grape_peach_cacao/grape.aliases.txt",
+            "locationType": "UriLocation"
+          }
+        }
       }
     },
     {
@@ -39,6 +48,15 @@
           },
           "gziLocation": {
             "uri": "https://jbrowse.org/demos/grape_peach_cacao/peach.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "location": {
+            "uri": "https://jbrowse.org/demos/grape_peach_cacao/peach.aliases.txt",
             "locationType": "UriLocation"
           }
         }
@@ -64,6 +82,15 @@
             "locationType": "UriLocation"
           }
         }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "location": {
+            "uri": "https://jbrowse.org/demos/grape_peach_cacao/cacao.aliases.txt",
+            "locationType": "UriLocation"
+          }
+        }
       }
     }
   ],
@@ -74,7 +101,7 @@
     {
       "type": "FeatureTrack",
       "trackId": "grape_genes",
-      "name": "Grape genes (Ensembl Plants r58)",
+      "name": "Grape genes (NCBI RefSeq GCF_030704535.1)",
       "assemblyNames": ["grape"],
       "category": ["Genes"],
       "adapter": {
@@ -95,7 +122,7 @@
     {
       "type": "FeatureTrack",
       "trackId": "peach_genes",
-      "name": "Peach genes (Ensembl Plants r58)",
+      "name": "Peach genes (NCBI RefSeq GCF_000346465.2)",
       "assemblyNames": ["peach"],
       "category": ["Genes"],
       "adapter": {
@@ -116,7 +143,7 @@
     {
       "type": "FeatureTrack",
       "trackId": "cacao_genes",
-      "name": "Cacao genes (Ensembl Plants r58)",
+      "name": "Cacao genes (NCBI RefSeq GCF_000208745.1)",
       "assemblyNames": ["cacao"],
       "category": ["Genes"],
       "adapter": {
