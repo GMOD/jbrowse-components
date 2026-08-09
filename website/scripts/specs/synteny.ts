@@ -662,7 +662,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 // an anchor block is short at this zoom, and what the figure is
                 // about is which lane has one, so the bars get some thickness
                 featureHeight: 14,
-                height: 90,
+                // SIX lanes now, not two (review: "it would be cool if we had
+                // even more plants"). At 90 the last of them was cut off by the
+                // lane's own bottom edge; 200 left 108 px of empty lane under
+                // it, which the run reports.
+                height: 140,
               },
             ],
           },
@@ -672,7 +676,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="pileup-display-done"]',
     readyTimeout: 120000,
     settleMs: 12000,
-    viewportHeight: 428,
+    viewportHeight: 478,
   },
 
   // A COMPOSITION PART, no longer embedded on its own (review: "looks like dupe

@@ -137,7 +137,8 @@
     {
       "type": "SyntenyTrack",
       "trackId": "grape_peach_cacao_blocks",
-      "name": "Grape / peach / cacao (MCScan blocks)",
+      "name": "Grape vs peach, cacao, arabidopsis, poplar, tomato, citrus (MCScan blocks)",
+      "_comment_assemblyNames": "The three assemblies this config DECLARES, not the seven columns the table has. A track whose assemblyNames name an assembly the config does not define makes the stacked LinearSyntenyView fail to resolve it, and all three rows come up 'No tracks active'. The extra four are blocks-only mates: they exist in the adapter below, which is what draws their lanes in an LGV, and they need no assembly because a lane is resolved from the table plus that genome's BED.",
       "assemblyNames": ["grape", "peach", "cacao"],
       "category": ["Synteny"],
       "adapter": {
@@ -146,7 +147,15 @@
           "uri": "https://jbrowse.org/demos/grape_peach_cacao/grape.blocks.gz",
           "locationType": "UriLocation"
         },
-        "blockAssemblies": ["grape", "peach", "cacao"],
+        "blockAssemblies": [
+          "grape",
+          "peach",
+          "cacao",
+          "arabidopsis",
+          "poplar",
+          "tomato",
+          "citrus"
+        ],
         "bedLocations": [
           {
             "uri": "https://jbrowse.org/demos/grape_peach_cacao/grape.bed.gz",
@@ -159,9 +168,33 @@
           {
             "uri": "https://jbrowse.org/demos/grape_peach_cacao/cacao.bed.gz",
             "locationType": "UriLocation"
+          },
+          {
+            "uri": "https://jbrowse.org/demos/grape_peach_cacao/arabidopsis.bed.gz",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "https://jbrowse.org/demos/grape_peach_cacao/poplar.bed.gz",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "https://jbrowse.org/demos/grape_peach_cacao/tomato.bed.gz",
+            "locationType": "UriLocation"
+          },
+          {
+            "uri": "https://jbrowse.org/demos/grape_peach_cacao/citrus.bed.gz",
+            "locationType": "UriLocation"
           }
         ],
-        "assemblyNames": ["grape", "peach", "cacao"]
+        "assemblyNames": [
+          "grape",
+          "peach",
+          "cacao",
+          "arabidopsis",
+          "poplar",
+          "tomato",
+          "citrus"
+        ]
       }
     }
   ],

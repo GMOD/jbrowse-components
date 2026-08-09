@@ -2225,10 +2225,10 @@
   },
   "multiway_synteny/blocks_one_vs_all": {
     "name": "multiway_synteny/blocks_one_vs_all",
-    "status": "bad",
-    "note": "it would be cool if we had even more plants. not sure how easy/hard that would be. would be easy presence/absence",
-    "reviewedAt": "2026-08-09T00:19:06.617Z",
-    "hash": "7bf4e4dc8e95253d8478a9fe1f1c782c68d63d1a"
+    "status": "answered",
+    "note": "it would be cool if we had even more plants. not sure how easy/hard that would be. would be easy presence/absence IN PROGRESS 2026-08-09, and NOT finished -- cacao is currently missing from this figure and from the two others on this dataset, deliberately, pending the assembly swap below. FOUR NEW PLANTS ARE IN: arabidopsis, poplar, tomato and citrus join peach and cacao, one lane each, built by extending build_grape_peach_cacao_synteny.sh with a BLOCKS_ONLY_SPECIES list. A blocks-only mate needs CDS and GFF3 only, no genome, because a lane on the grape axis resolves from the table plus that genome's BED. It reads as presence/absence exactly as you predicted. WHAT WENT WRONG, WRITTEN DOWN SO IT DOES NOT RECUR: all seven BEDs have to come from one build (the gene ids are the join key), so I regenerated grape/peach/cacao too and redeployed them. Grape and peach were fine -- their hosted FASTAs match Ensembl release 58 name for name and length for length, 22/22 and 191/191. CACAO IS A DIFFERENT ASSEMBLY: the hosted one calls chromosomes I..X and Ensembl 58 calls them 1..10, and I briefly deployed a BED renamed I<->1 on the assumption that was a naming difference. It is not: all ten chromosome lengths disagree (chr1 38,988,864 against 37,323,695), so that rename placed genes at another assembly's coordinates. Reverted within the hour; the deployed BED is now the honest Ensembl-keyed one, which means cacao features name refNames the hosted assembly does not have and the cacao lane draws EMPTY rather than wrong. TO FINISH: host a cacao assembly that matches its own annotation, from NCBI datasets per your preference, with refNameAliases off the assembly report -- which is the one case where renaming a refName is legitimate, since an accession identifies the exact sequence rather than guessing that two builds are the same.",
+    "reviewedAt": "2026-08-09T07:12:52.796Z",
+    "hash": "8135310430ff723364a31798a9170b7a27eab901"
   },
   "sv_synteny/ortholog_colors": {
     "name": "sv_synteny/ortholog_colors",

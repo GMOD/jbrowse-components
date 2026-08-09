@@ -424,20 +424,25 @@ direct.
 
 The same track dropped into a plain linear genome view (as an
 `LGVSyntenyDisplay`) draws every pair at once rather than one, so a grape row
-shows both its peach and its cacao links; **Group by... → Mate assembly** splits
-them into a lane per genome. That is the one-genome reading of the same table:
-no second row to frame, and a lane per genome that has an ortholog there.
+shows its links to every genome in the table; **Group by... → Mate assembly**
+splits them into a lane per genome. That is the one-genome reading of the same
+table, and it is the reading that scales: adding a genome adds a lane, not a
+panel, so the question stops being "how do these two compare" and becomes "which
+of these kept it".
 
-<Figure caption="The same block on grape alone, with the MCScan blocks track grouped by mate assembly. The peach and cacao lanes carry the anchors each genome shares with the grape genes above, so a gene with an ortholog in one of them draws a bar in one lane." src="/img/multiway_synteny/blocks_one_vs_all.png" />
+<Figure caption="One grape locus against six other plants, the same MCScan blocks track grouped by mate assembly. Each lane is one genome, and a bar means that grape gene has a syntenic partner there, so the lanes read as presence and absence down a column: the four rosids keep most of the block, tomato keeps one gene of it, and arabidopsis keeps a scattered few." src="/img/multiway_synteny/blocks_one_vs_all.png" />
 
 ## Reproduce it end to end
 
 [`build_grape_peach_cacao_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_grape_peach_cacao_synteny.sh)
-runs everything above in one shot. It downloads the grape, peach, and cacao
-genomes from Ensembl Plants, runs the jcvi ortholog pipeline into one
-`grape.blocks` table, downloads JBrowse, and writes a `config.json` with the
-three assemblies, per-genome gene tracks, the MCScan blocks synteny track, and a
-default session that stacks the three genomes.
+runs everything above in one shot. It downloads the genomes from Ensembl
+Plants, runs the jcvi ortholog pipeline into one `grape.blocks` table, downloads
+JBrowse, and writes a `config.json` with the assemblies, per-genome gene tracks,
+the MCScan blocks synteny track, and a default session that stacks the three
+genomes. Its `BLOCKS_ONLY_SPECIES` list is where the extra lanes come from: a
+genome added there needs only CDS and GFF3, because a lane on the grape axis is
+resolved from the blocks table and that genome's BED and never reads its
+sequence.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_grape_peach_cacao_synteny.sh
