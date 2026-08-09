@@ -31,13 +31,22 @@ const UcscQueryFields = observer(function UcscQueryFields({
   const searchable = !!ucscDbStamp(session, assembly) || looksLikeUcscDb(db)
   return (
     <>
-      <AssemblySelector
-        session={session}
-        selected={assembly}
-        onChange={arg => {
-          query.changeAssembly(arg)
-        }}
-      />
+      {/* Sized to itself rather than stretched across the dialog. Both dialogs
+          lay their content out as a flex column, whose default `stretch` runs
+          a one-word select the full `maxWidth="md"`, beside a 200px "Max
+          product size" and a left-aligned advanced-settings button, which is
+          how it read as a mistake. The primer pair is the only row that wants
+          the whole width. */}
+      <div style={{ alignSelf: 'flex-start', minWidth: 260 }}>
+        <AssemblySelector
+          session={session}
+          selected={assembly}
+          onChange={arg => {
+            query.changeAssembly(arg)
+          }}
+          fullWidth
+        />
+      </div>
       {searchable ? null : (
         <Alert severity="warning">
           {`${assembly} has no UCSC database, so this would search "${db}". A genome opened from your own files is not hosted at UCSC; set the database under advanced settings if one exists.`}
