@@ -233,13 +233,25 @@ Those colors are what the two blocks below are read by: red active TSS, yellow
 enhancer and green transcription in the upper one, grey Polycomb in the lower,
 speckled olive where the same bases are bivalent.
 
-<Figure src="/img/chromhmm.png" caption="127 Roadmap epigenomes over HOXA with 500 kb of flank, one row each, ordered by Cluster rows by similarity so the dendrogram is in the sidebar. Boxed and labeled: the anterior genes HOXA1 to HOXA7, and the posterior HOXA9 to HOXA13. The clustering splits the rows in two and that split is what the figure is for: one block of epigenomes opens the cluster, carrying active-TSS red and transcription green across both boxes, and the rest hold the same sequence in Polycomb orange and quiescent grey. A HOX cluster is repressed in most tissues and opened in the ones that use it."/>
+<Figure src="/img/chromhmm.png" caption="127 Roadmap epigenomes over HOXA with 500 kb of flank, one row each, ordered by Cluster rows by similarity so the dendrogram is in the sidebar. Boxed and labeled: the anterior genes HOXA1 to HOXA7, and the posterior HOXA9 to HOXA13. The clustering splits the rows in two and that split is what the figure is for: one block of epigenomes opens the cluster, carrying active-TSS red and transcription green across both boxes, and the rest hold the same sequence in Polycomb orange and quiescent grey. A HOX cluster is repressed in most tissues and opened in the ones that use it. The stripe between the dendrogram and the painting is each row's Roadmap tissue group in Roadmap's own group color, keyed under Row groups, so which tissues fall either side of the split can be read off an axis the clustering never saw."/>
 
 That config has no `rowOrder`, which is the other thing that changes at this
 scale. It would be 127 lines whose only job is to keep related tissues adjacent,
 and **Cluster rows by similarity** derives that from the data at whatever locus
 is in view. Leave it out and cluster instead when the grouping you want depends
 on the locus rather than on a fixed publication order.
+
+Clustering costs the tissue names, though, and that is what the stripe in the
+figure above buys back. At this scale a row is a few pixels tall and carries no
+text, so the only thing that can say which epigenome it is, is a color. The
+[`rowGroups`](/docs/config/linearmultirowfeaturedisplay/#slot-rowgroups) slot
+takes one `{ match, group, color }` per Roadmap tissue group, tints each
+matching row's sidebar swatch and keys it beside the state colors. The build
+script writes those entries from the `GROUP` and `COLOR` columns of the same
+`EID_metadata.tab` the labels come from, so nothing about the assignment is
+hand-made. Reading the stripe down the clustered blocks is then the point: the
+tissue is an axis the clustering never saw, so where the two agree it is the
+data saying so and not the ordering.
 
 ## Reproduce it end to end
 

@@ -2208,6 +2208,25 @@ export const uiSpecs: ScreenshotSpec[] = [
     // HOXA separates the epigenomes into blocks, because the anterior half of
     // the cluster is active only in lineages with a matching positional
     // identity, and it is the same column boundary in every one of them.
+    //
+    // WHICH epigenomes those are is the sidebar's job, and the answer comes
+    // from the config rather than from here: the track's `rowGroups` carries one
+    // entry per Roadmap tissue group in Roadmap's own group color, so the
+    // sidebar draws a swatch stripe beside the dendrogram and the key names it
+    // (review: "use labelColor to categorize the cell types in the treesidebar
+    // to see the pattern of the cell types that are open and close"). The
+    // entries are generated from `EID_metadata.tab` by
+    // scripts/build_chromhmm_roadmap.sh, which also asserts that all 127 rows
+    // match exactly one group; nothing here is hand-assigned.
+    //
+    // Two things had to be true for that to work and both are measured. A
+    // `rowGroups` partition used to reorder the rows out from under a cluster
+    // tree, which silently replaced the dendrogram with `StaleTreeHint`; it now
+    // declines to partition while a tree names the rows. And the swatch is
+    // floored to a whole pixel, which is why the slot's own docs say to mark the
+    // small group only -- at 127 rows in 520px a row is 4.1px and the floor
+    // never bites, so every group can be declared and the stripe stays
+    // proportional.
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg19',
       // 500 kb rather than the cluster's own 180 kb. Inside the cluster every
@@ -2248,10 +2267,15 @@ export const uiSpecs: ScreenshotSpec[] = [
           // the display puts them. Unclustered the same window is 127 rows of
           // scattered red with no block in it.
           runClustering: true,
-          // 480, not the config's 700: 127 rows fill whatever height they are
-          // given, so the extra 220px bought no detail, only more area of the
-          // same painting to take in at once.
-          height: 480,
+          // 520, not the config's 700: 127 rows fill whatever height they are
+          // given, so most of that extra bought no detail, only more area of the
+          // same painting to take in at once. The 40px over the 480 this used to
+          // be is the KEY rather than the painting: it now carries two sections,
+          // 15 states and 19 tissue groups, and `SvgColorLegend` collapses
+          // whatever does not fit in `floor(height / 14)` rows into a "+N more"
+          // line. At 480 that hid three groups, i.e. three colors on screen that
+          // nothing named.
+          height: 520,
         },
       ],
     }),
@@ -2367,7 +2391,9 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyText: 'ChromHMM',
     readyTimeout: 120000,
     settleMs: 6000,
-    viewportHeight: 840,
+    // 880, tracking the display's own 520 (was 840 for 480). The painting grows
+    // to its content here, so a track height change is a page height change.
+    viewportHeight: 880,
   },
 
   // The "Display types" submenu, with the multi-row display boxed: the

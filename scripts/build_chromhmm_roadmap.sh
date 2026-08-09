@@ -42,6 +42,9 @@
 #     MNEMONIC in parentheses;
 #   * the row ORDER is GROUP then EID, which is what keeps a tissue's
 #     epigenomes adjacent without a hand-written list;
+#   * the row GROUP and its swatch color are GROUP and COLOR from the same
+#     table, written out as `rowGroups` so the sidebar can say which tissue a
+#     row is at a row height far too short to write its name;
 #   * the state COLOR is colormap_15_coreMarks.tab. The segmentation BEDs
 #     themselves are BED4 -- chrom/start/end/state and nothing else -- so the
 #     itemRgb column that paints the track does not exist until this script
@@ -98,12 +101,13 @@ fi
 
 # ── Resolve labels, row order and state colors from those tables ─────────────
 # Writes labels.tsv (EID -> row label, in draw order) for the merge below, and
-# roworder.json / legend.json for the config at the end.
+# roworder.json / rowgroups.json / legend.json for the config at the end.
 EIDS="$EIDS" python3 - <<'PY'
 import collections
 import csv
 import json
 import os
+import re
 from pathlib import Path
 
 rows = list(csv.DictReader(open('EID_metadata.tab'), delimiter='\t'))
@@ -133,6 +137,37 @@ Path('labels.tsv').write_text(
     ''.join(f'{r["EID"]}\t{label(r)}\n' for r in rows)
 )
 Path('roworder.json').write_text(json.dumps(labels, indent=2))
+
+# One `rowGroups` entry per GROUP, in Roadmap's own group COLOR. The display
+# tints each row's sidebar swatch from this and keys it, so the tissue a row
+# belongs to is on screen at a row height far too short to write its name --
+# which is the axis the clustering never saw, and therefore the one worth
+# reading down the blocks it finds.
+#
+# `match` is a regex on the row name, and the row names are these labels, so
+# each entry is an anchored alternation of its own members. Verbose, and exact:
+# the alternative is a pattern guessed from how the names happen to read, which
+# puts a row in the wrong tissue silently. Only regex metacharacters are escaped
+# (several labels carry parentheses, dots and a `+`), and the assert below is the
+# actual guarantee -- every row matches exactly one entry, and it is the group
+# Roadmap assigned it.
+groups = collections.OrderedDict()
+for r in rows:
+    groups.setdefault(r['GROUP'], []).append(r)
+row_groups = [
+    {
+        'match': '^(%s)$' % '|'.join(
+            re.sub(r'([.()+*?\[\]^$|\\{}])', r'\\\1', label(r)) for r in members
+        ),
+        'group': group,
+        'color': members[0]['COLOR'],
+    }
+    for group, members in groups.items()
+]
+for r in rows:
+    hits = [g['group'] for g in row_groups if re.match(g['match'], label(r))]
+    assert hits == [r['GROUP']], f'{label(r)} matched {hits}, wanted {r["GROUP"]}'
+Path('rowgroups.json').write_text(json.dumps(row_groups, indent=2))
 
 # The mnemonics BEDs name states as `<n>_<mnemonic>`; the colormap keys on <n>.
 colors = dict(
@@ -224,6 +259,7 @@ legend = [
     for n in sorted(colors, key=int)
 ]
 row_order = json.loads(Path('roworder.json').read_text())
+row_groups = json.loads(Path('rowgroups.json').read_text())
 
 config = {
     'assemblies': [
@@ -264,6 +300,7 @@ config = {
                     'partitionField': 'cellType',
                     'legend': legend,
                     'rowOrder': row_order,
+                    'rowGroups': row_groups,
                     'height': 700,
                 }
             ],

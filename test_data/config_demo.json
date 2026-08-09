@@ -508,6 +508,103 @@
             },
             { "label": "15 Quiescent / low", "color": "rgb(255,255,255)" }
           ],
+          "rowGroups": [
+            {
+              "match": "^(Adipose Nuclei)$",
+              "group": "Adipose",
+              "color": "#AF5B39"
+            },
+            {
+              "match": "^(Primary T cells from cord blood|Primary T cells from peripheral blood|Primary T helper memory cells from peripheral blood 2|Primary T helper naive cells from peripheral blood \\(BLD\\.CD4\\.NPC\\)|Primary T helper naive cells from peripheral blood \\(BLD\\.CD4\\.CD25M\\.CD45RA\\.NPC\\)|Primary T helper memory cells from peripheral blood 1|Primary T helper cells PMA-I stimulated|Primary T helper 17 cells PMA-I stimulated|Primary T helper cells from peripheral blood|Primary T regulatory cells from peripheral blood|Primary T cells effector/memory enriched from peripheral blood|Primary T CD8\\+ naive cells from peripheral blood|Primary T CD8\\+ memory cells from peripheral blood|Primary mononuclear cells from peripheral blood)$",
+              "group": "Blood & T-cell",
+              "color": "#55A354"
+            },
+            {
+              "match": "^(Brain Angular Gyrus|Brain Anterior Caudate|Brain Cingulate Gyrus|Brain Germinal Matrix|Brain Hippocampus Middle|Brain Inferior Temporal Lobe|Brain_Dorsolateral_Prefrontal_Cortex|Brain Substantia Nigra|Fetal Brain Male|Fetal Brain Female)$",
+              "group": "Brain",
+              "color": "#C5912B"
+            },
+            {
+              "match": "^(Colonic Mucosa|Duodenum Mucosa|Esophagus|Fetal Intestine Large|Fetal Intestine Small|Fetal Stomach|Gastric|Rectal Mucosa Donor 29|Rectal Mucosa Donor 31|Sigmoid Colon|Small Intestine|Stomach Mucosa)$",
+              "group": "Digestive",
+              "color": "#C58DAA"
+            },
+            {
+              "match": "^(A549 EtOH 0\\.02pct Lung Carcinoma Cell Line|Dnd41 TCell Leukemia Cell Line|GM12878 Lymphoblastoid Cells|HeLa-S3 Cervical Carcinoma Cell Line|HepG2 Hepatocellular Carcinoma Cell Line|HMEC Mammary Epithelial Primary Cells|HSMM Skeletal Muscle Myoblasts Cells|HSMM cell derived Skeletal Muscle Myotubes Cells|HUVEC Umbilical Vein Endothelial Primary Cells|K562 Leukemia Cells|Monocytes-CD14\\+ RO01746 Primary Cells|NH-A Astrocytes Primary Cells|NHDF-Ad Adult Dermal Fibroblast Primary Cells|NHEK-Epidermal Keratinocyte Primary Cells|NHLF Lung Fibroblast Primary Cells|Osteoblast Primary Cells)$",
+              "group": "ENCODE2012",
+              "color": "#000000"
+            },
+            {
+              "match": "^(H1 BMP4 Derived Mesendoderm Cultured Cells|H1 BMP4 Derived Trophoblast Cultured Cells|H1 Derived Mesenchymal Stem Cells|H1 Derived Neuronal Progenitor Cultured Cells|H9 Derived Neuronal Progenitor Cultured Cells|H9 Derived Neuron Cultured Cells|hESC Derived CD184\\+ Endoderm Cultured Cells|hESC Derived CD56\\+ Ectoderm Cultured Cells|hESC Derived CD56\\+ Mesoderm Cultured Cells)$",
+              "group": "ES-deriv",
+              "color": "#4178AE"
+            },
+            {
+              "match": "^(ES-I3 Cells|ES-WA7 Cells|H1 Cells|H9 Cells|HUES48 Cells|HUES6 Cells|HUES64 Cells|ES-UCSF4 Cells)$",
+              "group": "ESC",
+              "color": "#924965"
+            },
+            {
+              "match": "^(Breast Myoepithelial Primary Cells|Breast variant Human Mammary Epithelial Cells \\(vHMEC\\)|Foreskin Fibroblast Primary Cells skin01|Foreskin Fibroblast Primary Cells skin02|Foreskin Keratinocyte Primary Cells skin02|Foreskin Keratinocyte Primary Cells skin03|Foreskin Melanocyte Primary Cells skin01|Foreskin Melanocyte Primary Cells skin03)$",
+              "group": "Epithelial",
+              "color": "#FF9D0C"
+            },
+            {
+              "match": "^(Primary monocytes from peripheral blood|Primary neutrophils from peripheral blood|Primary B cells from cord blood|Primary B cells from peripheral blood|Primary hematopoietic stem cells|Primary hematopoietic stem cells short term culture|Primary Natural Killer cells from peripheral blood|Primary hematopoietic stem cells G-CSF-mobilized Female|Primary hematopoietic stem cells G-CSF-mobilized Male)$",
+              "group": "HSC & B-cell",
+              "color": "#678C69"
+            },
+            {
+              "match": "^(Aorta|Fetal Heart|Left Ventricle|Right Atrium|Right Ventricle)$",
+              "group": "Heart",
+              "color": "#D56F80"
+            },
+            {
+              "match": "^(IMR90 fetal lung fibroblasts Cell Line)$",
+              "group": "IMR90",
+              "color": "#E41A1C"
+            },
+            {
+              "match": "^(Mesenchymal Stem Cell Derived Adipocyte Cultured Cells|Adipose Derived Mesenchymal Stem Cell Cultured Cells|Bone Marrow Derived Cultured Mesenchymal Stem Cells|Mesenchymal Stem Cell Derived Chondrocyte Cultured Cells)$",
+              "group": "Mesench",
+              "color": "#B65C73"
+            },
+            {
+              "match": "^(Fetal Muscle Trunk|Fetal Muscle Leg|Psoas Muscle|Skeletal Muscle Male|Skeletal Muscle Female)$",
+              "group": "Muscle",
+              "color": "#C2655D"
+            },
+            {
+              "match": "^(Muscle Satellite Cultured Cells)$",
+              "group": "Myosat",
+              "color": "#E67326"
+            },
+            {
+              "match": "^(Cortex derived primary cultured neurospheres|Ganglion Eminence derived primary cultured neurospheres)$",
+              "group": "Neurosph",
+              "color": "#FFD924"
+            },
+            {
+              "match": "^(Liver|Fetal Adrenal Gland|Fetal Kidney|Pancreatic Islets|Fetal Lung|Placenta|Lung|Ovary|Pancreas|Placenta Amnion|Spleen)$",
+              "group": "Other",
+              "color": "#999999"
+            },
+            {
+              "match": "^(Colon Smooth Muscle|Duodenum Smooth Muscle|Rectal Smooth Muscle|Stomach Smooth Muscle)$",
+              "group": "Sm. Muscle",
+              "color": "#F182BC"
+            },
+            {
+              "match": "^(Fetal Thymus|Thymus)$",
+              "group": "Thymus",
+              "color": "#DAB92E"
+            },
+            {
+              "match": "^(iPS-15b Cells|iPS-18 Cells|iPS-20b Cells|iPS DF 6\\.9 Cells|iPS DF 19\\.11 Cells)$",
+              "group": "iPSC",
+              "color": "#69608A"
+            }
+          ],
           "height": 700
         }
       ]
