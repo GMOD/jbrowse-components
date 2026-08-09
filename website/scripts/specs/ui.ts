@@ -1719,7 +1719,14 @@ export const uiSpecs: ScreenshotSpec[] = [
       // filter the (virtualized) list so the target row is rendered, then open
       // it through the UI (by name) so it lands in "recently used"
       { type: 'type', text: 'Filter tracks', value: 'NCBI RefSeq' },
-      { type: 'delay', ms: 800 },
+      // Wait for the row, do not sleep for it. The list is virtualized, so the
+      // row does not exist until the filter has re-rendered, and 800ms was a
+      // guess about how long that takes on the machine the spec was written on.
+      // On a loaded one it is not enough, and the failure names the label
+      // ("click target not found") rather than the wait, so it reads as a track
+      // that was renamed out from under the spec. It was in config_demo.json
+      // the whole time. website/CLAUDE.md calls this shape a red flag.
+      { type: 'waitForText', text: 'NCBI RefSeq w/ top-level feature details' },
       { type: 'click', text: 'NCBI RefSeq w/ top-level feature details' },
       { type: 'delay', ms: 1500 },
       // clear the filter (target the actual input, not the floating label, so

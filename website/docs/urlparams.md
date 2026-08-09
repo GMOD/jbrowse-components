@@ -804,6 +804,9 @@ detected from the extension and falls back to `VCF`, so name it for a file the
 extension doesn't identify — a URL with no extension, or the `STAR-Fusion`
 output, which has none of its own.
 
+`filterText` presets the search box, applied once the file has loaded, so a link
+can open on a subset of the rows rather than on the whole callset.
+
 ### SV inspector
 
 ```json live config=test_data/volvox/config.json
@@ -818,8 +821,9 @@ output, which has none of its own.
 }
 ```
 
-It takes the same optional `uri` and `fileType` as the spreadsheet view above,
-plus a `height`.
+It takes the same optional `uri`, `fileType` and `filterText` as the spreadsheet
+view above, plus a `height`. The circular view draws the rows the filter leaves,
+so `filterText` is what makes a chord subset reachable from a link.
 
 ### Linear synteny view
 
