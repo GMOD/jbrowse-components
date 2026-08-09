@@ -324,7 +324,7 @@ export const qcSpecs: ScreenshotSpec[] = [
           loc: OVERVIEW_LOC,
           highlight: SMN_HIGHLIGHT,
           tracks: [
-            geneTrack(60, true),
+            { ...geneTrack(60, true), displayMode: 'compact' },
             // Reads well at this width where a mappability lane does not (see
             // the note above the mappability consts): the depth collapse is a
             // broad plateau rather than per-base structure, so summarizing it
