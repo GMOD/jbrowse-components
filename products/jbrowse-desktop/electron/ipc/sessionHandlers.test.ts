@@ -42,14 +42,27 @@ afterEach(() => {
   fs.rmSync(dir, { recursive: true, force: true })
 })
 
-// Yields to the microtask/IO queue until `pred` holds. Causal, not timed: the
-// work it waits on is already started, so this only lets the loop drain.
+// Waits until `pred` holds, bounded in WALL CLOCK and not in event-loop turns.
+//
+// This used to spin 100 `setImmediate`s on the theory that the work is already
+// started so the loop only has to drain. Draining the loop does not drain
+// libuv's threadpool, which is where `writeFile`/`rename` actually run: four
+// threads for the whole process, shared with every other fs op jest has in
+// flight. And 100 turns of an otherwise-idle loop is ~1ms — so the bound was
+// not "let the started work finish", it was "give it one millisecond", which
+// held on an idle laptop and lost on a loaded CI runner. It failed there as
+// `condition never held`, then afterEach deleted the directory under the write
+// that was still queued, whose rejection nobody was awaiting — taking the whole
+// jest worker down with it and burying the cause under an ENOENT.
+const WAIT_BUDGET_MS = 5000
+
 async function waitFor(pred: () => boolean) {
-  for (let i = 0; i < 100 && !pred(); i++) {
-    await new Promise(resolve => setImmediate(resolve))
+  const deadline = Date.now() + WAIT_BUDGET_MS
+  while (!pred() && Date.now() < deadline) {
+    await new Promise(resolve => setTimeout(resolve, 1))
   }
   if (!pred()) {
-    throw new Error('condition never held')
+    throw new Error(`condition never held within ${WAIT_BUDGET_MS}ms`)
   }
 }
 
@@ -371,6 +384,11 @@ test('the session is written without waiting for the thumbnail capture', async (
     assemblies: [],
     defaultSession: { name: 'quitting' },
   })
+  // Marks `save` handled without consuming it: an assertion that throws below
+  // leaves it pending, afterEach then deletes the directory it is writing into,
+  // and an unhandled rejection kills the jest worker rather than reporting the
+  // assertion. `await save` at the end still surfaces a genuine failure.
+  save.catch(() => {})
 
   // the capture is in flight and has not resolved; the session file is already
   // on disk rather than queued behind it
