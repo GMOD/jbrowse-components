@@ -776,6 +776,61 @@ view → Graph genome view (this region)** cuts a subgraph from the index with n
 
 <Figure caption="An IS5 element at K12 chr:1,299,499-1,300,693, cut from the index rather than from a file prepared beforehand. The 1.2 kb arm of the bubble is the element, which only K12 carries; the other arm is the edge the other four strains take straight past it. Both panels are colored by reference position, so a node's color says where in the window it sits." src="/img/pangenome/pggb_locus_graph.png" />
 
+#### One node per bubble, when the window is wider than the graph can draw
+
+The index above draws one node per GFA segment, and a pggb graph runs about 17
+bp per segment, so the drawable window is the kilobase the figure above opens
+on. It is also where the reviewer's complaint about that figure lives: most of
+what a 1.6 kb cut draws is single-base alternatives, one small lens each.
+
+A coarse tier draws one node per **bubble** instead, with the invariant
+reference between bubbles as backbone, and it needs no new adapter or renderer:
+a collapsed bubble is a reference span with an id and a rank, which is all the
+segments and links files state. What it needs is a bubble decomposition, and
+this graph already ships one. `pggb -V` writes a `vg deconstruct` snarl VCF,
+whose `LV=0` records are the top-level bubbles with their own reference spans,
+allele traversals and allele sequences, so
+[`snarls_to_bubble_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/snarls_to_bubble_bed.py)
+turns it into the bubble BED the tier builder reads:
+
+```bash
+python3 snarls_to_bubble_bed.py ecoli_pggb_snarls.vcf.gz ecoli_pggb.bubbles.bed
+bash build_bubble_tier.sh ecoli_pggb.bubbles.bed ecoli_pggb.tier50 50
+```
+
+`gfatools bubble` cannot do this job here: it places a bubble on a reference by
+reading rGFA `SN`/`SO`/`SR` tags, and a pggb graph states the same information
+in its paths instead, so on this GFA it reports nothing at all.
+
+The third argument is the threshold, in bp of content, and it is the setting
+that decides what the picture is about. At 0 every single-base alternative is
+its own node, which over 20 kb is hundreds of them and reads worse than the fine
+tier. At 50 those are absorbed into the backbone and every indel is kept. The
+whole 4.64 Mb graph is then 1,088 nodes in 51 kB of index, against 606k segments
+in the fine one, so a window sixty times wider than the figure above becomes
+drawable:
+
+```json
+{
+  "type": "FeatureTrack",
+  "trackId": "ecoli_pggb_tier50",
+  "name": "pggb graph bubbles (coarse tier, one node per bubble)",
+  "assemblyNames": ["K12"],
+  "adapter": {
+    "type": "RgfaTabixAdapter",
+    "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb.tier50"
+  }
+}
+```
+
+<Figure caption="100 kb around the same IS5 element, one node per bubble: the K12 backbone on rank 0 with its invariant stretches labelled, and eleven bubbles below it, each an indel some strain carries and K12 does not. The element the figure below opens is the arrowed node. 27 nodes here against 53 for the 1.6 kb cut below, and the single-base alternatives are in the backbone rather than drawn." src="/img/pangenome/pggb_bubble_tier.png" />
+
+Every surviving node states what it stands for, so nothing a reader was reading
+is hidden: hover one for the segments it collapsed, how many traversals cross
+it, and its shortest and longest allele. The two tiers are read together, the
+coarse one to find an event and the fine one to open it, which is why they are
+the same adapter pointed at a different prefix.
+
 One setting is doing work in that pane. A node's drawn length is proportional to
 its sequence by default, and here one arm is 1,199 bp against neighbours of one
 to seventy: proportionally drawn, that arm is a circle wide enough to swallow

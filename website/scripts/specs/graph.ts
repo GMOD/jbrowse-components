@@ -332,6 +332,50 @@ const PGGB_LOCUS = {
 }
 const PGGB_LOCUS_WINDOW = 'chr:1,299,300-1,300,900'
 
+// 100 kb of the same graph, centred on the same insertion. The window the fine
+// index can draw is the 1.6 kb above; this one is 60x it, and is drawable only
+// because the track below draws one node per BUBBLE.
+const PGGB_TIER_WINDOW = 'chr:1,250,000-1,350,000'
+const PGGB_TIER_REGION = {
+  refName: 'chr',
+  assemblyName: 'K12',
+  start: 1250000,
+  end: 1350000,
+}
+const PGGB_TIER_TRACK = 'ecoli_pggb_tier50'
+
+// The coarse level-of-detail tier of the pggb graph: one node per bubble, with
+// the invariant reference between bubbles as backbone. Same two files and same
+// adapter as the fine tier, so nothing in the view, the glyphs or the renderer
+// knows the difference -- a collapsed bubble is a reference span with an id and
+// a rank, which is the whole segs/links contract.
+//
+// It exists because `gfatools bubble` returns NOTHING on a pggb GFA (it reads
+// rGFA SN/SO/SR to place a bubble on a reference), which left the graph that
+// most needs coarsening as the one that could not be coarsened. The
+// decomposition this is built from is the one the graph already ships:
+// `scripts/snarls_to_bubble_bed.py` turns the hosted `vg deconstruct` snarl VCF
+// into the bubble BED `bubbles_to_tier_bed.py` reads, and `build_bubble_tier.sh`
+// does the rest. Measured: 143,964 top-level snarls over the whole 4.64 Mb
+// graph, 544 of them at `--min-content 50`, so the ENTIRE pangenome is 1,088
+// nodes in 51 kB against 606k segments in the fine index.
+//
+// 50 rather than the HPRC tier's 10,000, and the threshold is what the figure
+// turns on: at 0 every SNP is its own node (462 bubbles in 20 kb, which is worse
+// than the fine tier), and at 1,000 the 1.2 kb insertion this locus is about is
+// the only thing left in 50 kb. 50 keeps every indel and absorbs the
+// single-base alternatives into backbone, which is the cut a reader wants.
+const PGGB_TIER_SESSION_TRACK = {
+  type: 'FeatureTrack',
+  trackId: PGGB_TIER_TRACK,
+  name: 'pggb graph bubbles (coarse tier, one node per bubble)',
+  assemblyNames: ['K12'],
+  adapter: {
+    type: 'RgfaTabixAdapter',
+    uri: `${DATA}/ecoli_pggb.tier50`,
+  },
+}
+
 // The per-strain window, which cannot be the kilobase above (review of the sample
 // rows figure: "too chaotic. too many tiny segments ... I know it shows the per
 // sample rows but i just dont get it"). pggb cuts a segment at every variant, so
@@ -2064,6 +2108,107 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
 }
 
 export const graphSpecs: ScreenshotSpec[] = [
+  // THE OTHER END OF THE LADDER from pggb_locus_graph below: the same graph and
+  // the same insertion, 60x wider, drawn one node per bubble instead of one node
+  // per segment. This is the answer to the second report on that figure ("the
+  // large green loop is small now but figure still has many small bubbles. we
+  // may want to look at mechanisms to 'pop' the bubbles similar to pangyplot"),
+  // and pangyplot's mechanism is exactly this: decompose once offline, draw the
+  // collapsed graph, open one bubble when a reader asks.
+  //
+  // What the collapse does to the thing being complained about: the fine cut at
+  // 1.6 kb is 53 nodes and 68 edges, of which 15 are single-base alternatives
+  // strung along the backbone as lenses. Here 100 kb is **11 bubbles and 12
+  // backbone nodes**, because a `--min-content 50` tier absorbs every one of
+  // those single-base bubbles into the backbone and keeps every indel. Nothing
+  // is hidden that a reader was reading: each surviving node states what it
+  // collapsed (`cn` segments, `cw` traversals, `cs`/`cl` shortest and longest
+  // allele), and the insertion the figure below opens is `cl:i:1200` here.
+  //
+  // Anchored rather than force-directed, which is the opposite choice from the
+  // fine figure and for the reason the layout note gives: a tier IS a chain
+  // (backbone, bubble, backbone, ...), so there is no graph shape for a force
+  // layout to find, and an anchored row puts each bubble under its own
+  // coordinate in the lane above it.
+  {
+    mode: 'url',
+    name: 'pangenome/pggb_bubble_tier',
+    url: sessionSpec(CONFIG, {
+      sessionTracks: [K12_GENES_SESSION_TRACK, PGGB_TIER_SESSION_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: PGGB_TIER_WINDOW,
+          tracks: [
+            { trackId: 'K12_genes', type: 'LinearBasicDisplay', height: 70 },
+            {
+              trackId: PGGB_TIER_TRACK,
+              type: 'LinearBasicDisplay',
+              showLabels: 'none',
+              height: 50,
+              color: referencePositionColor(PGGB_TIER_REGION),
+            },
+          ],
+        },
+        {
+          type: 'GraphGenomeView',
+          loadedTrackId: PGGB_TIER_TRACK,
+          loadedRegion: PGGB_TIER_REGION,
+          // 'auto' IS the anchored layout; the enum spells the mode and the
+          // menu spells the label (layoutModes.ts). There is no 'anchored'
+          // value, and a snapshot naming one is rejected by MST with the view
+          // never mounting -- which reads as the tier failing to load.
+          layoutMode: 'auto',
+          colorScheme: 'reference-position',
+        },
+      ],
+    }),
+    readySelector: TOOLBAR_READY,
+    readyTimeout: 120000,
+    settleMs: 5000,
+    viewportWidth: 1000,
+    // 640: the run's own `blank below the last content` said 160 at 800. The
+    // anchored drawing is two rank rows and the pane sizes to them.
+    viewportHeight: 640,
+    hideTooltip: true,
+    // THE SAME EVENT the fine figure below opens, named on the node that stands
+    // for it here, so the two figures are visibly about one locus. The id is the
+    // tier's own -- source segment qualified by reference start, which is what
+    // snarls_to_bubble_bed.py emits and what `tabix ecoli_pggb.tier50.segs.bed.gz
+    // chr:1250000-1350000` prints -- so the callout follows the layout rather
+    // than a pixel.
+    annotations: [
+      {
+        type: 'text',
+        text: 'IS5, one node (1.2 kb allele)',
+        fontSize: 16,
+        maxWidth: 220,
+        anchor: {
+          view: 1,
+          graphNode: '79945@1299497',
+          alignY: 'bottom',
+          dy: 70,
+        },
+      },
+      {
+        type: 'arrow',
+        strokeWidth: 2,
+        fromAnchor: {
+          view: 1,
+          graphNode: '79945@1299497',
+          alignY: 'bottom',
+          dy: 66,
+        },
+        anchor: {
+          view: 1,
+          graphNode: '79945@1299497',
+          alignY: 'bottom',
+          dy: 6,
+        },
+      },
+    ],
+  },
   // A pggb graph opened at a locus, with no window cut beforehand. Until this
   // existed the pggb tutorial had to send the reader to `odgi extract` for
   // every look, which is why its one graph figure (local_subgraph) is a
