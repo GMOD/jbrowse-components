@@ -22,6 +22,20 @@
 #
 # The bubble BED is what `gfatools bubble` writes, which for HPRC is published
 # at jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.bubbles.bed.gz.
+#
+# For a pggb / Minigraph-Cactus graph there is no such file: `gfatools bubble`
+# places a bubble on a reference by reading rGFA SN/SO/SR and returns nothing at
+# all on a GFA that states the same thing in its paths. Run
+# snarls_to_bubble_bed.py over the graph's `vg deconstruct` snarl VCF first, which
+# writes this same BED from the decomposition pggb -V already produced:
+#
+#   python3 snarls_to_bubble_bed.py graph_snarls.vcf.gz graph.bubbles.bed
+#   bash build_bubble_tier.sh graph.bubbles.bed graph.tier50 50
+#
+# The threshold is lower there for a reason. A pggb graph's bubbles are mostly
+# single-base alternatives, so 0 gives one node per SNP (worse than the fine
+# index) and 50 keeps every indel with those absorbed into the backbone: 143,964
+# bubbles down to 544 for a whole 4.64 Mb E. coli pangenome.
 set -euo pipefail
 
 # Byte order, not the caller's collation: see the note in build_rgfa_tabix.sh.

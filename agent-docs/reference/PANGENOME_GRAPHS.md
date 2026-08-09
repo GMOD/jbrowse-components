@@ -176,11 +176,49 @@ The launch menus keep the constant deliberately.
 `scoresToStats` — only the track *type* changes, since a `FeatureTrack` offers
 no wiggle display. chr1 is 9,444 bubbles, scores into the hundreds.
 
-**Two negatives, each expensive to re-find.** `gfatools bubble` returns **0
-bubbles on a pggb GFA** — it needs rGFA `SN`/`SO`/`SR` to place a bubble on a
-reference — so the graph that most needs coarsening cannot be coarsened this
-way, and a pggb tier needs `vg snarls`/BubbleGun at the costs recorded below.
-And the tier is **a dud on a bacterial rGFA**: the five-strain E. coli minigraph
+**`gfatools bubble` returns 0 bubbles on a pggb GFA** — it needs rGFA
+`SN`/`SO`/`SR` to place a bubble on a reference. That used to mean the graph most
+needing coarsening could not be coarsened; **it can now, and from a file the
+graph already ships** (2026-08-09). `pggb -V` writes a `vg deconstruct` snarl VCF
+whose `LV=0` records are the top-level bubbles, each with a reference span, an
+`AT` traversal per allele and the allele sequences, so
+`scripts/snarls_to_bubble_bed.py` emits the bubble BED `bubbles_to_tier_bed.py`
+reads and nothing downstream changes. No BubbleGun run, no re-running pggb.
+
+Measured on the hosted E. coli `ecoli_pggb_snarls.vcf.gz`: 174,528 records,
+**143,964 top level, 0 of them overlapping**, so the tier's one-sorted-walk
+assumption holds on snarls as it does on gfatools bubbles. Hosted as
+`ecoli_pggb.tier50`:
+
+| `--min-content` | bubbles in 20 kb | whole graph |
+| --------------- | ---------------- | ----------- |
+| 0               | 462              | 143,964     |
+| 50              | 2                | 544         |
+
+At 0 every single-base alternative is a node and the tier is worse than the fine
+index; at 50 those go into the backbone and every indel survives, which makes the
+whole 4.64 Mb graph **1,088 nodes in 51 kB** against 606k fine segments. 100 kb
+draws as 27 nodes (`pangenome/pggb_bubble_tier`).
+
+**The node id needs qualifying on a pggb graph, and gfatools' does not.** pggb
+folds repeats, so the reference path can walk one snarl more than once and `vg
+deconstruct` reports it once per visit: `>544433>544462` appears at chr:3,943,364
+and again 225 kb later. 67 of 143,897 sources are used twice, 134 rows in all, in
+one repeat cluster. So the converter emits `<source>@<refStart>`, and
+`bubbles_to_tier_bed.py`'s uniqueness assert is what found this rather than a
+silently merged pair of loci. The cost is that the id no longer joins straight
+back to the fine tier the way an rGFA tier's does, which for a repeat-folded
+graph was never single-valued anyway.
+
+**Still not built: popping a bubble open in the app.** pangyplot's `/pop` swaps
+one collapsed node for its internal subgraph, which here would be a second
+`GetSubgraph` over the popped bubble's span against the FINE prefix, spliced into
+the tier GFA by dropping the collapsed node's S-line (the fine cut supplies a real
+one for the same id) and letting the tier's links attach to it. That plus a node
+menu item and a `popped` set on the model. Until then the ladder is two figures,
+coarse to find and fine to open.
+And the tier is **a dud on a bacterial rGFA**, which is the minigraph half of
+the same graph rather than the pggb half above: the five-strain E. coli minigraph
 graph gives 601 bubbles → 358 nodes at `--min-content 2000`, but its fine index
 is already only 1,508 segments for the whole 4.64 Mb chromosome, so the tier
 buys ~4× where HPRC gets ~1,600×.
