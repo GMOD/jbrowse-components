@@ -1,4 +1,8 @@
-import { parseLocString, parseLocStringOneBased } from './locString.ts'
+import {
+  assembleLocStringRaw,
+  parseLocString,
+  parseLocStringOneBased,
+} from './locString.ts'
 
 import type { ParsedLocString } from './locString.ts'
 
@@ -46,6 +50,21 @@ describe('parseLocString', () => {
     ],
     ['chr2:1000-', { refName: 'chr2', start: 999 }],
     ['chr2:1,000-', { refName: 'chr2', start: 999 }],
+    // metric unit suffixes, resolved to whole bp during the parse
+    ['chr1:34M-35M', { start: 33_999_999, end: 35_000_000, refName: 'chr1' }],
+    [
+      'chr1:34Mb..35Mb',
+      { start: 33_999_999, end: 35_000_000, refName: 'chr1' },
+    ],
+    ['chr1:1kb-2kb', { start: 999, end: 2000, refName: 'chr1' }],
+    ['chr1:1.5M-2M', { start: 1_499_999, end: 2_000_000, refName: 'chr1' }],
+    // mixed spellings across the two ends of the range
+    ['chr1:1000-2kb', { start: 999, end: 2000, refName: 'chr1' }],
+    ['chr1:1,000-2Kb', { start: 999, end: 2000, refName: 'chr1' }],
+    // a single suffixed position, and an open-ended suffixed start
+    ['chr1:5k', { start: 4999, end: 5000, refName: 'chr1' }],
+    ['chr2:1M-', { refName: 'chr2', start: 999_999 }],
+    ['chr2:1M..', { refName: 'chr2', start: 999_999 }],
     ['chr1', { refName: 'chr1' }],
     ['{hg19}chr1', { assemblyName: 'hg19', refName: 'chr1' }],
   ]
@@ -84,6 +103,31 @@ describe('parseLocString', () => {
     expect(() => {
       parseLocString('', refName => refName === 'chr1')
     }).toThrow('no location string provided, could not parse')
+  })
+
+  test('a bare decimal coordinate is an error, not a truncation', () => {
+    expect(() => {
+      parseLocString('chr1:1.5-2.5', refName => refName === 'chr1')
+    }).toThrow('could not parse range "1.5-2.5" on location "chr1:1.5-2.5"')
+  })
+
+  test('an unrecognized unit suffix is an error', () => {
+    expect(() => {
+      parseLocString('chr1:1T-2T', refName => refName === 'chr1')
+    }).toThrow('could not parse range')
+  })
+
+  test('a suffix on a colon-containing refName does not shift the split', () => {
+    const isValid = (refName: string) => ['chr1:test', 'chr1'].includes(refName)
+    const result = parseLocString('chr1:test:1M..2M', isValid)
+    expect(result.refName).toBe('chr1:test')
+    expect(result.start).toBe(999_999)
+    expect(result.end).toBe(2_000_000)
+  })
+
+  test('assembleLocString never emits the shorthand it accepts', () => {
+    const parsed = parseLocString('chr1:34M-35M', refName => refName === 'chr1')
+    expect(assembleLocStringRaw(parsed)).toBe('chr1:34000000..35000000')
   })
 
   test('test unknown reference sequence', () => {
@@ -149,6 +193,27 @@ describe('parseLocString regex security tests', () => {
       }).toThrow()
       const duration = Date.now() - start
       expect(duration).toBeLessThan(100)
+    }
+  })
+
+  test('coordinate parsing stays linear on unmatchable input', () => {
+    // the unit-suffix alternation gives the coordinate regex a second way to
+    // match each number, so a long coordinate-shaped string that ultimately
+    // fails has more to backtrack through than it used to
+    const testCases = [
+      `chr1:${'1'.repeat(20000)}x`,
+      `chr1:${'1'.repeat(10000)}-${'1'.repeat(10000)}x`,
+      `chr1:${'1-'.repeat(10000)}x`,
+      `chr1:${'1.'.repeat(10000)}x`,
+      `chr1:${'1M-'.repeat(6000)}x`,
+    ]
+
+    for (const testCase of testCases) {
+      const start = Date.now()
+      expect(() => {
+        parseLocString(testCase, validRefName)
+      }).toThrow()
+      expect(Date.now() - start).toBeLessThan(100)
     }
   })
 

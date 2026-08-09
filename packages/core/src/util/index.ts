@@ -190,6 +190,7 @@ export {
   featureSpanPx,
   getBpDisplayStr,
   getTickDisplayStr,
+  parseBpString,
 } from './bpUtils.ts'
 export {
   type BasicFeature,

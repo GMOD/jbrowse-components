@@ -1,3 +1,4 @@
+import { BP_QUANTITY_SOURCE, parseBpString } from './bpUtils.ts'
 import { toLocale } from './numericUtils.ts'
 import { shorten } from './stringUtils.ts'
 
@@ -17,9 +18,16 @@ export class UnknownRefNameError extends Error {
   name = 'UnknownRefNameError'
 }
 
-// matches coordinate strings: "100", "100-200", "100..200", "100.." (open-ended)
+// matches coordinate strings: "100", "100-200", "100..200", "100.." (open-ended).
+// Each coordinate may carry a metric unit suffix, so "34M-35M" and "1.5kb..2kb"
+// parse too; the numbers are converted eagerly here and nothing downstream ever
+// sees the shorthand. Assembled locStrings are always plain digits, so this is
+// a spelling the parser accepts and the formatter never emits.
 // groups: [1]=start [2]=end (if range) [3]=trailing separator (if open-ended)
-const COORD_REGEX = /^(-?\d+)(?:(?:\.\.|[-–])(-?\d+))?(\.\.|[-–])?$/
+const COORD_REGEX = new RegExp(
+  String.raw`^(${BP_QUANTITY_SOURCE})(?:(?:\.\.|[-–])(${BP_QUANTITY_SOURCE}))?(\.\.|[-–])?$`,
+  'i',
+)
 
 // matches optional "{assemblyName}" prefix followed by the rest of the location
 // groups: [1]=assemblyName (without braces) [2]=remainder
@@ -28,14 +36,17 @@ const ASSEMBLY_REGEX = /^(?:\{([^}]+)\})?(.+)/
 function parseCoords(suffix: string, locString: string) {
   // strip commas before matching so regex only needs to handle plain digits
   const match = COORD_REGEX.exec(suffix.replaceAll(',', ''))
-  if (!match) {
+  const [, startStr, endStr, trailing] = match ?? []
+  const start = startStr === undefined ? undefined : parseBpString(startStr)
+  if (start === undefined) {
     throw new Error(
       `could not parse range "${suffix}" on location "${locString}"`,
     )
   }
-  const [, startStr, endStr, trailing] = match
-  const start = +startStr!
-  return { start, end: endStr ? +endStr : trailing ? undefined : start }
+  return {
+    start,
+    end: endStr ? parseBpString(endStr) : trailing ? undefined : start,
+  }
 }
 
 export function parseLocStringOneBased(

@@ -4,6 +4,7 @@ import {
   refNameLabelFitsInView,
   runRefNameLabelPx,
   makeBlockTicks,
+  parseLocStrings,
   makeOverviewTickLabels,
   makeOverviewTicks,
   makeTicks,
@@ -961,5 +962,49 @@ describe('region list transforms', () => {
     expect(flipped.map(r => r.reversed)).toEqual([undefined, true, undefined])
     // flipping twice returns to forward, not to `undefined`
     expect(withRegionReversed(flipped, 1)[1]!.reversed).toBe(false)
+  })
+})
+
+describe('parseLocStrings', () => {
+  const isValidRefName = (refName: string) => ['chr1', 'chr2'].includes(refName)
+
+  test('parses a colon-form locString with unit suffixes', () => {
+    expect(parseLocStrings('chr1:34M-35M', 'hg38', isValidRefName)).toEqual([
+      { refName: 'chr1', start: 33_999_999, end: 35_000_000, reversed: false },
+    ])
+  })
+
+  test('parses several space-separated locStrings', () => {
+    expect(
+      parseLocStrings('chr1:1M-2M chr2:1-100', 'hg38', isValidRefName),
+    ).toEqual([
+      { refName: 'chr1', start: 999_999, end: 2_000_000, reversed: false },
+      { refName: 'chr2', start: 0, end: 100, reversed: false },
+    ])
+  })
+
+  // the refName/start/end triplet is a separate fallback path, reached only
+  // once the whole-string parse has thrown UnknownRefNameError, so it needs its
+  // own coverage of the spellings the colon form accepts
+  test.each([
+    ['chr1 34000000 35000000'],
+    ['chr1 34M 35M'],
+    ['chr1 34,000,000 35,000,000'],
+  ])('%p is the same triplet', input => {
+    expect(parseLocStrings(input, 'hg38', isValidRefName)).toEqual([
+      { refName: 'chr1', start: 33_999_999, end: 35_000_000, reversed: false },
+    ])
+  })
+
+  test('a triplet whose coordinates are not bp quantities still throws', () => {
+    expect(() => {
+      parseLocStrings('chr1 foo bar', 'hg38', isValidRefName)
+    }).toThrow()
+  })
+
+  test('an unknown refName throws rather than falling through', () => {
+    expect(() => {
+      parseLocStrings('chr3:1M-2M', 'hg38', isValidRefName)
+    }).toThrow()
   })
 })

@@ -58,6 +58,9 @@ menu (hamburger icon) and select "Move up"/"Move down".
 The location search box at the top of the LGV accepts several search formats:
 
 - Region and location, e.g. `chr1:1..100` or `chr1:1-100` or `chr1 1 100`
+- Coordinates abbreviated with a unit suffix, e.g. `chr1:34M-35M` or
+  `chr1:1.5Mb-2Mb` or `chr1 500kb 600kb`. These are expanded to whole base pairs
+  on navigation, so the search box reads back `chr1:34,000,000..35,000,000`
 - Assembly, region, and location, e.g. `{hg19}chr1:1-100`
 - Discontinuous regions (space-delimited, opened side-by-side), e.g.
   `chr1:1..100 chr2:1..100`

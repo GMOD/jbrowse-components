@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { SubmitDialog } from '@jbrowse/core/ui'
-import { toLocale } from '@jbrowse/core/util'
+import { parseBpString, toLocale } from '@jbrowse/core/util'
 import { TextField, Typography } from '@mui/material'
 
 import type { LinearGenomeViewModel } from '../model.ts'
@@ -20,8 +20,8 @@ export default function RegionWidthEditorDialog({
   handleClose: () => void
 }) {
   const [val, setVal] = useState(() => format(model.bpPerPx * model.width))
-  const bp = +val.replaceAll(',', '')
-  const valid = Number.isFinite(bp) && bp > 0
+  const bp = parseBpString(val)
+  const valid = bp !== undefined && bp > 0
 
   return (
     <SubmitDialog
@@ -32,15 +32,18 @@ export default function RegionWidthEditorDialog({
       onCancel={handleClose}
       submitDisabled={!valid}
       onSubmit={() => {
-        model.zoomTo(bp / model.width)
+        if (valid) {
+          model.zoomTo(bp / model.width)
+        }
         handleClose()
       }}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 30 }}>
         <Typography>
-          Enter a specific number of base pairs to change the viewport to show.
-          This is approximate and does not account for padding between regions
-          or off-screen scrolling
+          Enter a specific number of base pairs to change the viewport to show,
+          either in full or abbreviated as e.g. 500kb or 1.5Mb. This is
+          approximate and does not account for padding between regions or
+          off-screen scrolling
         </Typography>
         <TextField
           label="Zoom level (bp)"

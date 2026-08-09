@@ -3,6 +3,7 @@ import {
   assembleLocString,
   getTickDisplayStr,
   measureText,
+  parseBpString,
   parseLocString,
 } from '@jbrowse/core/util'
 import { bpOffsetInRegion } from '@jbrowse/core/util/Base1DUtils'
@@ -657,6 +658,7 @@ export async function generateLocations({
  * "chr1 chr2"
  * "chr1:1-100 chr2:1-100"
  * "chr1 100 200" equivalent to "chr1:100-200"
+ * "chr1:34M-35M" equivalent to "chr1:34000000-35000000"
  *
  * Used by navToLocString
  */
@@ -677,12 +679,15 @@ export function parseLocStrings(
     )
   } catch (e) {
     // if this fails, try interpreting as a whitespace-separated refname,
-    // start, end if start and end are integer inputs
-    const [refName, start, end] = inputs
+    // start, end if start and end are base-pair quantities. The tokens are
+    // handed on verbatim rather than as the numbers they parsed to, so the
+    // shorthands parseLocString accepts ("34M", "1,000") mean the same thing
+    // in this form as in the colon form.
+    const [refName, start = '', end = ''] = inputs
     if (
       e instanceof UnknownRefNameError &&
-      Number.isInteger(+start!) &&
-      Number.isInteger(+end!)
+      parseBpString(start) !== undefined &&
+      parseBpString(end) !== undefined
     ) {
       return [
         parseLocString(`${refName}:${start}..${end}`, ref =>

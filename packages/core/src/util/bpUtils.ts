@@ -54,6 +54,52 @@ export function getBpDisplayStr(total: number) {
       : `${Math.floor(total)}bp`
 }
 
+const BP_UNITS: Record<string, number> = {
+  k: 1_000,
+  m: 1_000_000,
+  g: 1_000_000_000,
+}
+
+/**
+ * The grammar of a single base-pair quantity, as a regex source fragment so
+ * that callers matching it in a larger pattern (a locString coordinate range,
+ * say) stay in step with {@link parseBpString}. Match case-insensitively.
+ *
+ * A decimal point is allowed only on the unit-suffixed alternative. That is
+ * deliberate: "1.5Mb" is a number a user means, whereas a bare "1.5" as a
+ * coordinate is a mistake, and it should stay an error rather than silently
+ * yielding a fractional coordinate.
+ */
+export const BP_QUANTITY_SOURCE = String.raw`(?:-?\d+(?:\.\d+)?[kmg]b?|-?\d+)`
+
+const BP_QUANTITY_REGEX = new RegExp(
+  String.raw`^(?:(-?\d+(?:\.\d+)?)([kmg])b?|(-?\d+))$`,
+  'i',
+)
+
+/**
+ * Parse a base-pair count written the way people type one: plain digits, with
+ * optional thousand separators, and with an optional metric unit suffix whose
+ * trailing "b" is optional because both spellings are in common use. So
+ * "150", "1,500", "1500", "1.5kb", "1.5k", "34Mb" and "2G" are all accepted.
+ * Loosely the inverse of {@link getBpDisplayStr}.
+ *
+ * Returns undefined, rather than NaN or a throw, when the string is not a bp
+ * quantity, so that callers validating a text field can test it directly.
+ */
+export function parseBpString(str: string) {
+  const match = BP_QUANTITY_REGEX.exec(str.replaceAll(',', ''))
+  if (!match) {
+    return undefined
+  }
+  const [, scaled, unit, plain] = match
+  return plain === undefined
+    ? // rounded because the scaled value can land off an integer ("1.0000001M"),
+      // and a coordinate is a whole number of bases
+      Math.round(+scaled! * BP_UNITS[unit!.toLowerCase()]!)
+    : +plain
+}
+
 export function getTickDisplayStr(totalBp: number, bpPerPx: number) {
   return Math.floor(bpPerPx / 1_000) > 0
     ? `${toLocale(Number.parseFloat((totalBp / 1_000_000).toFixed(2)))}M`
