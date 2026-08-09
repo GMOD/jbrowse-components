@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 
+import { macArtifacts } from './artifacts.ts'
 import { APP_NAME, DIST, PRODUCT_NAME, VERSION } from './config.ts'
 import { packageApp } from './packager.ts'
 import { notarizeMac, stapleMac, verifyMacCodesign } from './signing.ts'
@@ -33,8 +34,11 @@ export async function buildMac({ noInstaller = false } = {}) {
     stapleMac(appPath)
   }
 
-  const dmgName = `${APP_NAME}-v${VERSION}-mac.dmg`
-  const zipName = `${APP_NAME}-v${VERSION}-mac.zip`
+  const {
+    dmg: dmgName,
+    zip: zipName,
+    manifest,
+  } = macArtifacts({ appName: APP_NAME, version: VERSION })
   const dmgPath = path.join(DIST, dmgName)
   const zipPath = path.join(DIST, zipName)
 
@@ -69,15 +73,11 @@ export async function buildMac({ noInstaller = false } = {}) {
   // Cleanup
   fs.rmSync(electronAppDir, { recursive: true })
 
-  // Generate latest-mac.yml
-  fs.writeFileSync(
-    path.join(DIST, 'latest-mac.yml'),
-    generateLatestYml([zipName]),
-  )
+  fs.writeFileSync(path.join(DIST, manifest), generateLatestYml([zipName]))
 
   log(`Created: ${dmgName} (${fileSizeMB(dmgPath)})`)
   log(`Created: ${zipName} (${fileSizeMB(zipPath)})`)
-  log('Created: latest-mac.yml')
+  log(`Created: ${manifest}`)
 
   return { dmgPath, zipPath }
 }

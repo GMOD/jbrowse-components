@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 
 import { JBROWSE_PROTOCOL } from '../../electron/launchTarget.ts'
+import { winArtifacts } from './artifacts.ts'
 import { APP_NAME, ASSETS, DIST, PRODUCT_NAME, VERSION } from './config.ts'
 import { packageApp } from './packager.ts'
 import { signWindowsFile } from './signing.ts'
@@ -141,7 +142,10 @@ function getNsisCommand(): { cmd: string; useWine: boolean } {
 }
 
 async function createWindowsInstaller(electronAppDir: string) {
-  const exeName = `${APP_NAME}-v${VERSION}-win.exe`
+  const { exe: exeName } = winArtifacts({
+    appName: APP_NAME,
+    version: VERSION,
+  })
   const exePath = path.join(DIST, exeName)
   const nsis = getNsisCommand()
 
@@ -182,11 +186,12 @@ export async function buildWindows({ noInstaller = false } = {}) {
   const installerPath = await createWindowsInstaller(electronAppDir)
   fs.rmSync(electronAppDir, { recursive: true })
 
+  const { manifest } = winArtifacts({ appName: APP_NAME, version: VERSION })
   fs.writeFileSync(
-    path.join(DIST, 'latest.yml'),
+    path.join(DIST, manifest),
     generateLatestYml([path.basename(installerPath)]),
   )
-  log('Created: latest.yml')
+  log(`Created: ${manifest}`)
 
   return installerPath
 }

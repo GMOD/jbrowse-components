@@ -6,50 +6,40 @@
  * Uploads packaged artifacts to GitHub releases using the gh CLI.
  * Pass --publish along with a platform flag (--linux, --mac, --win).
  */
-import { execSync } from 'child_process'
+import { execFileSync } from 'child_process'
 import fs from 'fs'
 import path from 'path'
 
-import { DIST, VERSION, parsePackagingArgs } from './packaging/config.ts'
+import { releaseArtifacts } from './packaging/artifacts.ts'
+import {
+  APP_NAME,
+  DIST,
+  VERSION,
+  parsePackagingArgs,
+} from './packaging/config.ts'
 
-function getArtifacts(platforms: string[]) {
-  if (!fs.existsSync(DIST)) {
-    return []
+import type { Platform } from './packaging/config.ts'
+
+// The artifacts this run must upload, by name — not whatever in dist/ matches a
+// pattern. Anything the packager was supposed to write and didn't is named
+// here, while the upload has still not started.
+function resolveArtifacts(platforms: Platform[]) {
+  const expected = releaseArtifacts(platforms, {
+    appName: APP_NAME,
+    version: VERSION,
+  })
+  const missing = expected.filter(name => !fs.existsSync(path.join(DIST, name)))
+  if (missing.length > 0) {
+    console.error(
+      `Error: ${missing.length} of ${expected.length} expected artifacts are not in ${DIST}:`,
+    )
+    for (const name of missing) {
+      console.error(`  ${name}`)
+    }
+    console.error('\nDid the packaging step for this platform run and succeed?')
+    process.exit(1)
   }
-
-  return fs
-    .readdirSync(DIST)
-    .filter(file => {
-      const filePath = path.join(DIST, file)
-      if (!fs.statSync(filePath).isFile()) {
-        return false
-      }
-      if (file.endsWith('.yml')) {
-        return true
-      }
-      if (
-        platforms.includes('win') &&
-        (file.endsWith('.exe') || file.includes('-win'))
-      ) {
-        return true
-      }
-      if (
-        platforms.includes('linux') &&
-        (file.endsWith('.AppImage') || file.includes('-linux'))
-      ) {
-        return true
-      }
-      if (
-        platforms.includes('mac') &&
-        (file.endsWith('.dmg') ||
-          file.endsWith('.zip') ||
-          file.includes('-mac'))
-      ) {
-        return true
-      }
-      return false
-    })
-    .map(file => path.join(DIST, file))
+  return expected.map(name => path.join(DIST, name))
 }
 
 function uploadToGitHub(artifacts: string[]) {
@@ -63,7 +53,10 @@ function uploadToGitHub(artifacts: string[]) {
     console.log(`  Uploading: ${filename}`)
 
     try {
-      execSync(`gh release upload "${tag}" "${artifact}" --clobber`, {
+      // execFileSync, not a shell string: an artifact name is composed from
+      // productName and version, so a space or a quote in either would resplit
+      // the command rather than fail.
+      execFileSync('gh', ['release', 'upload', tag, artifact, '--clobber'], {
         stdio: 'inherit',
       })
     } catch (e) {
@@ -97,19 +90,19 @@ function main() {
     process.exit(1)
   }
 
+  // --publish was asked for, so every way of not uploading is a failure, not a
+  // skip. Exiting 0 here left the release.yml desktop job green with nothing
+  // uploaded, and the only thing standing between that and a release shipped
+  // without binaries is a human noticing the draft is empty. `pnpm package:<os>`
+  // is the build-without-uploading entry point.
   if (!process.env.GH_TOKEN && !process.env.GITHUB_TOKEN) {
-    console.warn(
-      'Warning: GH_TOKEN or GITHUB_TOKEN environment variable not set. Skipping publishing.',
+    console.error(
+      'Error: --publish needs GH_TOKEN or GITHUB_TOKEN. Use `pnpm package:<platform>` to build without uploading.',
     )
-    return
+    process.exit(1)
   }
 
-  const artifacts = getArtifacts(platforms)
-
-  if (artifacts.length === 0) {
-    console.log('No artifacts found to upload')
-    return
-  }
+  const artifacts = resolveArtifacts(platforms)
 
   console.log('Found artifacts:')
   for (const a of artifacts) {

@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 
 import { JBROWSE_PROTOCOL } from '../../electron/launchTarget.ts'
+import { linuxArtifacts } from './artifacts.ts'
 import { APP_NAME, ASSETS, DIST, PRODUCT_NAME, VERSION } from './config.ts'
 import { packageApp } from './packager.ts'
 import { ensureDir, fileSizeMB, generateLatestYml, log, run } from './utils.ts'
@@ -18,7 +19,10 @@ export async function buildLinux({ noInstaller = false } = {}) {
   }
 
   log('Creating AppImage...')
-  const appImageName = `${APP_NAME}-v${VERSION}-linux.AppImage`
+  const { appImage: appImageName, manifest } = linuxArtifacts({
+    appName: APP_NAME,
+    version: VERSION,
+  })
   const appImagePath = path.join(DIST, appImageName)
 
   // Create AppDir structure
@@ -89,14 +93,10 @@ MimeType=application/x-jbrowse;x-scheme-handler/${JBROWSE_PROTOCOL};
   fs.rmSync(appDir, { recursive: true })
   fs.rmSync(electronAppDir, { recursive: true })
 
-  // Generate latest-linux.yml
-  fs.writeFileSync(
-    path.join(DIST, 'latest-linux.yml'),
-    generateLatestYml([appImageName]),
-  )
+  fs.writeFileSync(path.join(DIST, manifest), generateLatestYml([appImageName]))
 
   log(`Created: ${appImageName} (${fileSizeMB(appImagePath)})`)
-  log('Created: latest-linux.yml')
+  log(`Created: ${manifest}`)
 
   return appImagePath
 }
