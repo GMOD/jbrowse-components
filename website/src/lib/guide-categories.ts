@@ -120,6 +120,25 @@ export const TUTORIAL_ORDER = [
   'cli_desktop',
 ]
 
+// Tutorial cards that deliberately render the compact chromeless card instead
+// of a thumbnail. Every other card's thumb is derived from a figure its page
+// embeds (scripts/gen-tutorial-thumbs.ts); there are no hand-made ones, which is
+// why a page with no figure to derive from goes here rather than getting a
+// stand-in.
+//
+// - cli_desktop is the text-only CLI walkthrough.
+// - embedding_examples links out to the Storybook. Nothing in the repo is a
+//   capture of that site, and any doc figure would be a picture of something
+//   else.
+//
+// Shared with the generator rather than kept next to the <img>, because the two
+// halves of "does this card have a thumbnail" have to be the same list. They
+// weren't: the landing page rendered an <img> for any key not listed here, while
+// the generator only checked that its own specs still had pages. A new tutorial
+// with no spec therefore linked a webp nobody had generated, and the first thing
+// to notice was the website link checker.
+export const TUTORIAL_NO_THUMB = new Set(['cli_desktop', 'embedding_examples'])
+
 // Curated lead pages within a `guide_category`, by slug — the same idea as
 // TUTORIAL_ORDER above, for the same reason. A category sorted purely
 // alphabetically leads with whichever page happens to start with an early

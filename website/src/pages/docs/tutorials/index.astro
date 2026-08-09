@@ -7,6 +7,7 @@ import { entrySlug } from '../../../lib/docs-sidebar.ts'
 import {
   TUTORIAL_CATEGORIES,
   TUTORIAL_FALLBACK,
+  TUTORIAL_NO_THUMB,
   TUTORIAL_ORDER,
 } from '../../../lib/guide-categories.ts'
 
@@ -111,16 +112,10 @@ const grouped = [...CATEGORY_ORDER, FALLBACK]
   .filter(group => group.items.length > 0)
 
 // Pages with no generated thumbnail render a compact chromeless card instead of
-// a broken image. Every other card's thumb is generated from a figure that page
-// embeds (gen-tutorial-thumbs.ts); there are no hand-made ones, which is why a
-// page with no figure to derive from goes here rather than getting a stand-in.
-// - cli_desktop is the text-only CLI walkthrough.
-// - embedding_examples links out to the Storybook. Nothing in the repo is a
-//   capture of that site, and any doc figure would be a picture of something
-//   else.
-const NO_THUMB = new Set(['cli_desktop', 'embedding_examples'])
+// a broken image; see TUTORIAL_NO_THUMB for which and why. gen-tutorial-thumbs
+// reads the same set, so a card here always has a webp to ask for.
 const HAS_THUMB = new Set(
-  tutorials.map(t => t.key).filter(k => !NO_THUMB.has(k)),
+  tutorials.map(t => t.key).filter(k => !TUTORIAL_NO_THUMB.has(k)),
 )
 ---
 

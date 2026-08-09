@@ -142,7 +142,7 @@ const SLOW_TIMEOUT_MS = 120000
 // every stage's. A stage frame is part of the same live session.
 function longestActionTimeout(spec: ScreenshotSpec) {
   const stages =
-    spec.mode === 'url' || spec.mode === 'embedded' ? spec.stages ?? [] : []
+    spec.mode === 'url' || spec.mode === 'embedded' ? (spec.stages ?? []) : []
   const actions = [
     ...(spec.mode === 'url' ? (spec.actions ?? []) : []),
     ...stages.flatMap(stage => stage.actions ?? []),

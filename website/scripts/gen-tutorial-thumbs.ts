@@ -4,6 +4,8 @@ import { fileURLToPath } from 'node:url'
 
 import sharp from 'sharp'
 
+import { TUTORIAL_NO_THUMB } from '../src/lib/guide-categories.ts'
+
 // Regenerates the tutorial landing-page card thumbnails
 // (static/img/tutorial-thumbs/<key>.webp) from the same figure PNGs the
 // tutorials themselves show, so a card can't drift from its tutorial. Each card
@@ -373,6 +375,15 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     src: 'cookbook_multiwig.png',
     band: [0.24, 1],
   },
+  // The partitioned track, which is the page's whole result, from its track
+  // header down. Anchored left because the class names down the gutter are the
+  // half that says what happened — the same window packed into one lane is the
+  // figure just above it on the page.
+  repeatmasker_classes: {
+    src: 'cookbook_color_by_type_rows.png',
+    band: [0.42, 1],
+    position: 'left',
+  },
 }
 
 const WIDTH = 600
@@ -434,6 +445,23 @@ const orphans = Object.keys(THUMB_SPECS).filter(k => !slugs.has(k))
 if (orphans.length > 0) {
   console.error(
     `✗ no docs/tutorials page for: ${orphans.join(', ')} — drop the spec (and its webp), or point it at the page's new slug`,
+  )
+  process.exit(1)
+}
+
+// And the other direction. index.astro renders an <img> for every card key it
+// does not find in TUTORIAL_NO_THUMB, so a tutorial page with no spec here isn't
+// a missing card — it is a card pointing at a webp that does not exist, which
+// nothing reported until the website link checker found the 404 on a built site.
+// Only tutorials/ is checked: the root-level pages index.astro also pulls onto
+// the landing page (EXTRA_DOCS) are a hand-picked few among all of docs/, so the
+// slug list alone can't tell which of those are cards.
+const uncarded = (await mdSlugs(join(docsDir, 'tutorials'))).filter(
+  s => !(s in THUMB_SPECS) && !TUTORIAL_NO_THUMB.has(s),
+)
+if (uncarded.length > 0) {
+  console.error(
+    `✗ no thumbnail spec for: ${uncarded.join(', ')} — add one pointing at a figure the page embeds, or add the slug to TUTORIAL_NO_THUMB for the chromeless card`,
   )
   process.exit(1)
 }
