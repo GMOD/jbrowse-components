@@ -35,7 +35,7 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * per other genome. Group the display by mate assembly to read them as a lane
  * apiece.
  *
- * See the [ortholog tables tutorial](/docs/tutorials/multiway_synteny), which
+ * See the [ortholog tables tutorial](/docs/tutorials/multiway_synteny_grape_peach_cacao), which
  * covers building the table from jcvi, OrthoFinder, reciprocal best hits or
  * MCScanX, and stacking the genomes in one view.
  *

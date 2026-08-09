@@ -874,7 +874,7 @@ only `assemblyNames`, with the query first:
 }
 ```
 
-See the [ortholog-tables tutorial](/docs/tutorials/multiway_synteny), which also
+See the [ortholog-tables tutorial](/docs/tutorials/multiway_synteny_grape_peach_cacao), which also
 covers `MCScanBlocksAdapter` for a `.blocks` table.
 
 ### Stacking more than two genomes {#synteny-stacking}
@@ -918,7 +918,7 @@ per band, so three rows means two bands:
 `minAlignmentLength` hides the short alignments that would otherwise bury the
 shared backbone. For full walkthroughs, see
 [all-vs-all synteny](/docs/tutorials/allvsall_synteny) from one PAF and
-[ortholog tables](/docs/tutorials/multiway_synteny) from a jcvi `.blocks` file.
+[ortholog tables](/docs/tutorials/multiway_synteny_grape_peach_cacao) from a jcvi `.blocks` file.
 
 ### Related views {#synteny-related}
 

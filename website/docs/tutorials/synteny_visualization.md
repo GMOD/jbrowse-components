@@ -180,7 +180,7 @@ same tools listed under [Prerequisites](#prerequisites).
 - [](/docs/tutorials/genomes_synteny), the same views on UCSC's hosted liftOver
   chains
 - [All-vs-all synteny](/docs/tutorials/allvsall_synteny)
-- [Synteny from ortholog tables](/docs/tutorials/multiway_synteny)
+- [Synteny from ortholog tables](/docs/tutorials/multiway_synteny_grape_peach_cacao)
 - [MAF track config guide](/docs/config_guides/maf_track) for multiway alignment
   data rather than pairwise
 

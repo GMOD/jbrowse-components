@@ -30,12 +30,14 @@ Three things the two disagree on:
 * **Score.** MCScanX scores a pair with an e-value where jcvi writes a bit
   score, so the anchors score is `-log10(e_value)` capped at 1000 (also what
   `e_value=0` becomes). The simple file's score is the block's anchor count,
-  matching jcvi.
+  matching jcvi. A `.blocks` table has nowhere to put a score, so it is dropped
+  unless `--blocks-score` appends it as the column
+  `attributeColumns: ["score"]` names.
 
 Requires: python3 only.
 Usage:
   python3 mcscanx_to_anchors.py --gff xyz.gff --collinearity xyz.collinearity \\
-      --species at=grape --species pp=peach [--species tc=cacao] [--outdir DIR]
+      --species vv=grape --species pp=peach [--species tc=cacao] [--outdir DIR]
 
 Writes one <name>.bed per genome, plus <sp1>.<sp2>.anchors and
 <sp1>.<sp2>.anchors.simple for one or two genomes, or <sp1>.blocks for more.
@@ -43,6 +45,7 @@ Writes one <name>.bed per genome, plus <sp1>.<sp2>.anchors and
 
 import argparse
 import gzip
+import itertools
 import math
 import os
 import re
@@ -87,7 +90,11 @@ def read_gff3_strands(path):
                 for key, _, val in (a.partition("=") for a in f[8].split(";")):
                     if key.strip() in ID_ATTRS:
                         val = val.strip()
-                        strands[val] = strands[val.split(":")[-1]] = f[6]
+                        # under both spellings, because the MCScanX gff's ids
+                        # may or may not carry Ensembl's `gene:`/`mRNA:`
+                        # namespace and only one of the two will be looked up
+                        strands[val] = f[6]
+                        strands[val.split(":")[-1]] = f[6]
     return strands
 
 
@@ -118,6 +125,19 @@ def read_collinearity(path):
 def species_of(genes, tags, gene):
     chrom = genes.get(gene, ("",))[0]
     return next((i for i, t in enumerate(tags) if chrom.startswith(t)), None)
+
+
+def check_tags_unambiguous(tags):
+    """A genome is recognized by its chromosome-name prefix, so no tag may be a
+    prefix of another: `a` and `ab` would put every `ab*` gene in the first
+    genome that matched, silently, and the wrong BED is the mistake that draws
+    a plausible picture rather than an error. MCScanX's own two-letter tags
+    cannot collide, but nothing here requires two letters.
+    """
+    for a, b in itertools.permutations(tags, 2):
+        if b.startswith(a):
+            sys.exit(f"--species tag {a!r} is a prefix of {b!r}, so a "
+                     f"chromosome starting {b!r} would be read as {a!r}")
 
 
 def convert_blocks(blocks, genes, tags):
@@ -155,7 +175,7 @@ def convert_blocks(blocks, genes, tags):
     return out, counts
 
 
-def build_table(blocks, genes, tags):
+def build_table(blocks, genes, tags, with_score=False):
     """([row, ...], counts) for the reference-anchored ortholog table.
 
     Column 0 is the first --species. Only a pair that includes it can fill a
@@ -164,6 +184,11 @@ def build_table(blocks, genes, tags):
     to go here. Where the reference gene has several orthologs in one genome
     (MCScanX will report a gene in more than one block), the best-scoring wins,
     since a cell holds one id.
+
+    `with_score` appends one numeric column past the gene columns, the weakest
+    of the row's kept pairings, for the adapter's `attributeColumns` to name.
+    The measurement MCScanX made is otherwise discarded at the point the table
+    is written, and a row is only as well supported as its worst cell.
     """
     best = {}
     counts = {"kept": 0, "indirect": 0, "unknown": 0}
@@ -183,8 +208,11 @@ def build_table(blocks, genes, tags):
     rows = []
     for ref in sorted(best, key=lambda g: genes[g]):
         cells = best[ref]
-        rows.append([ref] + [cells[c][1] if c in cells else "."
-                             for c in range(1, len(tags))])
+        row = [ref] + [cells[c][1] if c in cells else "."
+                       for c in range(1, len(tags))]
+        if with_score:
+            row.append(str(min(score for score, _ in cells.values())))
+        rows.append(row)
         counts["kept"] += 1
     return rows, counts
 
@@ -226,11 +254,17 @@ def main():
     p.add_argument("--fai", action="append", default=[], metavar="NAME=FILE",
                    help="that assembly's .fa.fai, to check the BED refNames "
                         "against before a track draws nothing")
+    p.add_argument("--blocks-score", action="store_true",
+                   help="append a `score` column to the .blocks table, the "
+                        "weakest pairing in each row, for the adapter's "
+                        "attributeColumns to name. off by default, since jcvi's "
+                        "own .blocks is gene ids and nothing else")
     p.add_argument("--outdir", default=".")
     args = p.parse_args()
 
     species = parse_kv(args.species, "species")
     tags, names = list(species), list(species.values())
+    check_tags_unambiguous(tags)
     prefixes = parse_kv(args.chr_prefix, "chr-prefix")
     fais = parse_kv(args.fai, "fai")
     strands = {n: read_gff3_strands(f)
@@ -258,8 +292,9 @@ def main():
 
     blocks = read_collinearity(args.collinearity)
     written = [os.path.join(args.outdir, f"{n}.bed") for n in names]
+    trailer = ""
     if len(names) > 2:
-        rows, counts = build_table(blocks, genes, tags)
+        rows, counts = build_table(blocks, genes, tags, args.blocks_score)
         table = os.path.join(args.outdir, f"{names[0]}.blocks")
         with open(table, "w") as fh:
             fh.writelines("\t".join(r) + "\n" for r in rows)
@@ -267,6 +302,8 @@ def main():
         summary = (f"{counts['kept']} reference genes in the table, "
                    f"{counts['indirect']} pairs between two non-reference "
                    f"genomes dropped")
+        if args.blocks_score:
+            trailer = '\nthe trailing column is attributeColumns: ["score"]'
     else:
         converted, counts = convert_blocks(blocks, genes, tags)
         stem = os.path.join(args.outdir, f"{names[0]}.{names[-1]}")
@@ -281,7 +318,7 @@ def main():
                    f"not joining {' and '.join(dict.fromkeys(names))} skipped")
 
     print(f"wrote {' '.join(written)}\n{summary}, {counts['unknown']} pairs on "
-          f"unlisted genomes skipped", file=sys.stderr)
+          f"unlisted genomes skipped{trailer}", file=sys.stderr)
 
 
 if __name__ == "__main__":

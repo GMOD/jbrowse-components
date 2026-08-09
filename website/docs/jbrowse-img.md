@@ -765,10 +765,10 @@ pairwise track lands in the one gap between the two genomes it names, and a
 track listing three or more (an `AllVsAllPAFAdapter` or `MCScanBlocksAdapter`
 file covering N genomes, as built in the
 [all-vs-all](https://jbrowse.org/jb2/docs/tutorials/allvsall_synteny/) and
-[multiway](https://jbrowse.org/jb2/docs/tutorials/multiway_synteny/) synteny
-tutorials) backs every band whose pair it covers. A track covering no adjacent
-pair — an A-vs-C alignment in an A/B/C stack — is reported and skipped rather
-than drawn between the wrong two genomes.
+[multiway](https://jbrowse.org/jb2/docs/tutorials/multiway_synteny_grape_peach_cacao/)
+synteny tutorials) backs every band whose pair it covers. A track covering no
+adjacent pair — an A-vs-C alignment in an A/B/C stack — is reported and skipped
+rather than drawn between the wrong two genomes.
 
 A whole-genome example (peach vs grape, the chrom.sizes come from this repo and
 the alignment PAF from S3):

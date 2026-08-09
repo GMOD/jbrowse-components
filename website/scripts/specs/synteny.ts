@@ -2182,7 +2182,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The pairwise MCScan figure for tutorials/mcscan_synteny.md: peach Pp05 vs
+  // The pairwise MCScan figure for tutorials/mcscan_synteny_grape_peach.md: peach Pp05 vs
   // grape chr2, the per-gene .anchors ribbons between them and the
   // .anchors.simple blocks (red collinear / blue inverted) as an
   // LGVSyntenyDisplay row in each panel — both adapters in one view, which is

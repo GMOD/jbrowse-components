@@ -247,7 +247,7 @@ which is the one mismatch that still draws nothing rather than erroring.
 <!-- GOTCHA MCScanBlocksAdapter END -->
 
 Both tutorials that build these files check the ids before loading anything:
-[MCScan anchors](/docs/tutorials/mcscan_synteny) and
+[MCScan anchors](/docs/tutorials/mcscan_synteny_grape_peach) and
 [OrthoFinder orthogroups](/docs/tutorials/orthofinder_synteny), whose converter
 reports how many ids each column resolved.
 

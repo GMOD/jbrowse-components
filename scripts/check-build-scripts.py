@@ -103,6 +103,20 @@ for f in scripts:
             print(f"FAIL tabix without -f in {f}:{i + 1}: `{ln.strip()}`")
             failed = True
 
+    # add-track-json without --update throws "a track with that trackId already
+    # exists" on a re-run, the same shape as tabix above and with a worse cost:
+    # every download and alignment has already been paid for by the time the
+    # config steps are reached. add-track and add-assembly take --force for this;
+    # add-track-json spells it --update. build_grape_peach_anchors.sh was the one
+    # script of twenty-one that omitted it, so a second run of the MCScan
+    # tutorial died after re-running the whole jcvi pipeline.
+    for i, ln in enumerate(lines):
+        code = ln.split("#", 1)[0]
+        if re.search(r"\badd-track-json\b", code) and "--update" not in code:
+            print(f"FAIL add-track-json without --update in {f}:{i + 1}: "
+                  f"`{ln.strip()}`; a re-run fails on the existing trackId")
+            failed = True
+
     # each quoted heredoc: <<'TAG' ... TAG. Validate the JSON/PY ones (skip data
     # heredocs like STRAINS). Non-greedy body, backreference closes on the tag.
     for tag, body in re.findall(r"<<'(\w+)'\n(.*?)\n\1\b", src, re.S):
@@ -1694,6 +1708,105 @@ check("the column order goes to stdout whitespace-separated, one line",
 check("the .blocks columns are in that order, not the caller's",
       open(os.path.join(d, "out.blocks")).read().splitlines(),
       ["Zm01a\tOs01g1", "Zm01b\tOs01g1"])
+
+# mcscanx_to_anchors.py: the one converter a reader is told to curl and run on
+# their own MCScanX output, and the only helper here with four output modes. Each
+# is driven end to end against a synthetic run, because the mistakes it can make
+# are all of the kind that writes a plausible file: the wrong genome's genes in a
+# BED, a block kept that joins the wrong pair, a coordinate off by one.
+mcx = load("scripts/mcscanx_to_anchors.py", "mcscanx_to_anchors")
+d = tempfile.mkdtemp()
+gff = os.path.join(d, "xyz.gff")
+with open(gff, "w") as fh:
+    # MCScanX's own 4-column gff: tagged chromosome, gene, start, end. g003 is
+    # written end-before-start, which is how a minus-strand gene can arrive.
+    fh.write("vv1\tVIT_g001\t1000\t2000\n"
+             "vv1\tVIT_g002\t3000\t4000\n"
+             "vv1\tVIT_g003\t6000\t5000\n"
+             "pp1\tPrupe_g001\t11000\t12000\n"
+             "pp1\tPrupe_g002\t13000\t14000\n"
+             "pp1\tPrupe_g003\t15000\t16000\n")
+coll = os.path.join(d, "xyz.collinearity")
+with open(coll, "w") as fh:
+    fh.write("############### Parameters ###############\n"
+             "# MATCH_SCORE: 50\n"
+             "## Alignment 0: score=300.0 e_value=1e-30 N=3 vv1&pp1 plus\n"
+             "  0-  0:\tVIT_g001\tPrupe_g001\t  1e-30\n"
+             "  0-  1:\tVIT_g002\tPrupe_g002\t  1e-40\n"
+             "  0-  2:\tVIT_g003\tPrupe_g003\t  0\n"
+             # a self-synteny block, which the two-genome conversion drops and
+             # the one-genome conversion is entirely made of
+             "## Alignment 1: score=100.0 e_value=1e-10 N=2 vv1&vv1 minus\n"
+             "  1-  0:\tVIT_g001\tVIT_g003\t  1e-10\n")
+
+
+def run_mcx(*argv):
+    sys.argv = ["mcscanx_to_anchors.py", "--gff", gff, "--collinearity", coll,
+                *argv]
+    with contextlib.redirect_stderr(io.StringIO()):
+        mcx.main()
+
+
+def lines(*parts):
+    return open(os.path.join(d, *parts)).read().splitlines()
+
+
+run_mcx("--species", "vv=grape", "--species", "pp=peach", "--outdir",
+        os.path.join(d, "pair"))
+# BED is 0-based half-open where MCScanX's gff is 1-based inclusive, and the
+# reversed row is normalized rather than written as a negative-length feature
+check("the BED strips the chromosome tag and converts to 0-based",
+      lines("pair", "grape.bed"),
+      ["1\t999\t2000\tVIT_g001\t0\t+", "1\t2999\t4000\tVIT_g002\t0\t+",
+       "1\t4999\t6000\tVIT_g003\t0\t+"])
+# the cross-species block only, with the self-synteny one dropped, and scores as
+# -log10(e_value) with e_value=0 capped
+check("only the cross-species block reaches the anchors file",
+      lines("pair", "grape.peach.anchors"),
+      ["###", "VIT_g001\tPrupe_g001\t30", "VIT_g002\tPrupe_g002\t40",
+       "VIT_g003\tPrupe_g003\t1000"])
+# a simple row names the first and last gene of the block on each side, each by
+# its own coordinates, and takes its orientation from the block header
+check("the simple file reduces that block to one row",
+      lines("pair", "grape.peach.anchors.simple"),
+      ["VIT_g001\tVIT_g003\tPrupe_g001\tPrupe_g003\t3\t+"])
+
+# one --species keeps exactly what the two-genome case threw away
+run_mcx("--species", "vv=grape", "--outdir", os.path.join(d, "self"))
+check("a self-alignment run keeps the same-genome block and drops the rest",
+      lines("self", "grape.grape.anchors"), ["###", "VIT_g001\tVIT_g003\t10"])
+
+# strand comes from the annotation the MCScanX input was built from, since
+# MCScanX's own gff has no strand column and every BED row would be `+`
+gff3 = os.path.join(d, "peach.gff3")
+with open(gff3, "w") as fh:
+    fh.write("##gff-version 3\n"
+             "1\tx\tmRNA\t11000\t12000\t.\t-\t.\tID=mRNA:Prupe_g001\n")
+run_mcx("--species", "vv=grape", "--species", "pp=peach",
+        "--strand-gff3", "peach=" + gff3, "--outdir", os.path.join(d, "strand"))
+check("--strand-gff3 recovers strand through the namespaced id too",
+      lines("strand", "peach.bed")[0], "1\t10999\t12000\tPrupe_g001\t0\t-")
+
+# a refName the assembly does not have is the one mistake that draws an empty
+# track rather than erroring, so --fai turns it into a failure here instead
+fai = os.path.join(d, "peach.fa.fai")
+with open(fai, "w") as fh:
+    fh.write("Pp01\t1000000\t10\t60\t61\n")
+try:
+    run_mcx("--species", "vv=grape", "--species", "pp=peach",
+            "--fai", "peach=" + fai, "--outdir", os.path.join(d, "fai"))
+    check("--fai rejects a BED refName the assembly lacks", "no exit", "SystemExit")
+except SystemExit as e:
+    check("--fai rejects a BED refName the assembly lacks",
+          "not in" in str(e) and "Pp01" in str(e), True)
+
+# a tag that prefixes another silently files that genome's genes under the first
+try:
+    run_mcx("--species", "v=grape", "--species", "vv=peach",
+            "--outdir", os.path.join(d, "ambig"))
+    check("an ambiguous --species tag is rejected", "no exit", "SystemExit")
+except SystemExit as e:
+    check("an ambiguous --species tag is rejected", "is a prefix of" in str(e), True)
 
 if failed:
     sys.exit(1)

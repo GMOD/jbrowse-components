@@ -38,7 +38,7 @@ container works too, wrapped as a shim; the
 ## Orthology where alignment runs out
 
 [Pairwise minimap2](/docs/tutorials/synteny_visualization) aligns sequence to
-sequence, and [MCScan](/docs/tutorials/mcscan_synteny) compares annotations but
+sequence, and [MCScan](/docs/tutorials/mcscan_synteny_grape_peach) compares annotations but
 still asks for collinear runs of genes. Both have a divergence past which they
 return nothing. Orthology has no such limit: OrthoFinder clusters proteins into
 orthogroups without reference to where those genes sit, so a table of
@@ -208,7 +208,7 @@ duplicated gene and became several rows.
 ## Loading it
 
 One track backs every band of the stack, the same as the
-[MCScan blocks track](/docs/tutorials/multiway_synteny#loading-it-in-jbrowse-with-mcscanblocksadapter):
+[MCScan blocks track](/docs/tutorials/multiway_synteny_grape_peach_cacao#loading-it-in-jbrowse-with-mcscanblocksadapter):
 
 ```json
 {
@@ -263,7 +263,7 @@ conversion printed: get it wrong and every gene lookup reads another genome's
 BED, which the adapter catches and reports as a track error naming both lists.
 
 Unlike a
-[jcvi `.blocks` table](/docs/tutorials/multiway_synteny#direct-vs-transitive-pairs),
+[jcvi `.blocks` table](/docs/tutorials/multiway_synteny_grape_peach_cacao#direct-vs-transitive-pairs),
 no column anchors this one. An orthogroup is a set, so any two columns filled on
 a row are a direct statement about that pair, and a row with nothing in column 0
 is kept like any other. That is why row order in the stack is free, and why any
@@ -308,9 +308,9 @@ timopheevii's chromosomes from its
 
 ## See also
 
-- [](/docs/tutorials/multiway_synteny) for the same adapter from a jcvi MCScan
+- [](/docs/tutorials/multiway_synteny_grape_peach_cacao) for the same adapter from a jcvi MCScan
   run
-- [](/docs/tutorials/mcscan_synteny)
+- [](/docs/tutorials/mcscan_synteny_grape_peach)
 - [](/docs/tutorials/synteny_visualization)
 - [](/docs/user_guides/linear_synteny_view)
 - [Synteny track config guide](/docs/config_guides/synteny_track)

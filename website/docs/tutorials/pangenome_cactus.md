@@ -531,7 +531,7 @@ crossing this 100 kb of K12 costs the other strains substantially more of their
 own sequence. The
 [all-vs-all tutorial's stx2 figure](/docs/tutorials/allvsall_synteny) opens the
 locus two rows deep with the gene lane on, and
-[Synteny from ortholog tables](/docs/tutorials/multiway_synteny) covers the
+[Synteny from ortholog tables](/docs/tutorials/multiway_synteny_grape_peach_cacao) covers the
 gene-level version of that zoom.
 
 ## Reproduce it end to end

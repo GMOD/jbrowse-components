@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 #
 # Reproducibly build the multi-way MCScan .blocks synteny view shown in
-# website/docs/tutorials/multiway_synteny.md, then wire up a runnable JBrowse.
+# website/docs/tutorials/multiway_synteny_grape_peach_cacao.md, then wire up a
+# runnable JBrowse.
 #
 # Everything comes from NCBI datasets: one accession per species supplies the
 # genome, the annotation and (through gffread) the CDS, so an assembly and the
@@ -45,9 +46,19 @@ poplar       GCF_000002775.5
 tomato       GCF_036512215.1
 citrus       GCF_000493195.1
 '
-MATES="peach cacao arabidopsis poplar tomato citrus"
-
-ASSEMBLY_NAMES=$(echo $ASSEMBLY_SPECIES | awk '{for(i=1;i<=NF;i+=2) printf "%s ", $i}')
+# Every list below is derived from the two tables above rather than hand-kept,
+# and each is an array rather than a space-separated string: they are expanded
+# into command arguments, and the string form needed an unquoted `$(for ...)` at
+# every one of those points, which is word splitting shellcheck is right to flag.
+# NF, because each table above opens with a blank line
+names_of() { awk 'NF {print $1}' <<<"$1"; }
+mapfile -t ASSEMBLY_NAMES < <(names_of "$ASSEMBLY_SPECIES")
+mapfile -t BLOCKS_ONLY_NAMES < <(names_of "$BLOCKS_ONLY_SPECIES")
+# grape is the reference, so the mates are every other genome. This is the
+# .blocks column order the join below writes, and therefore the order
+# blockAssemblies and bedLocations have to list.
+MATES=("${ASSEMBLY_NAMES[@]:1}" "${BLOCKS_ONLY_NAMES[@]}")
+COLUMNS=("${ASSEMBLY_NAMES[0]}" "${MATES[@]}")
 
 # ── Fetch genome + annotation + sequence report, one accession per species ───
 while read -r name acc; do
@@ -106,7 +117,7 @@ EOF
 # `--key=transcript_id` or `--key=Name` here even though NCBI carries both: jcvi
 # silently falls back to a generated `mrna_494685` when it cannot resolve the
 # key, and a BED full of those joins to nothing.
-for sp in grape $MATES; do
+for sp in "${COLUMNS[@]}"; do
   [ -f "$sp.cds.fa" ] || gffread "$sp.gff3" -g "$sp.fa" -x "$sp.cds.fa"
   [ -f "$sp.bed" ] || python -m jcvi.formats.gff bed --type=mRNA --key=ID \
     --primary_only "$sp.gff3" -o "$sp.bed"
@@ -118,7 +129,7 @@ done
 # unreadable. The sequence report carries that accession's chromosome name, so
 # the alias is a lookup rather than a guess -- the one case where renaming a
 # refName is safe, as against mapping between two assemblies.
-for sp in grape $MATES; do
+for sp in "${COLUMNS[@]}"; do
   [ -f "$sp.aliases.txt" ] || python3 - "$sp" <<'PY'
 import json, sys
 sp = sys.argv[1]
@@ -133,7 +144,7 @@ PY
 done
 
 # ── jcvi: orthologs vs grape, MCScan each pair, join into one .blocks table ───
-for sp in $MATES; do
+for sp in "${MATES[@]}"; do
   [ -f "grape.$sp.lifted.anchors" ] || \
     python -m jcvi.compara.catalog ortholog --no_strip_names grape "$sp"
   [ -f "grape.$sp.i1.blocks" ] || \
@@ -146,15 +157,54 @@ done
 # is the order blockAssemblies and bedLocations have to list.
 if [ ! -f grape.blocks ]; then
   keep=1; col=2
-  for _ in $MATES; do keep="$keep,$col"; col=$((col + 2)); done
-  # shellcheck disable=SC2086
-  python -m jcvi.formats.base join $(for sp in $MATES; do printf 'grape.%s.i1.blocks ' "$sp"; done) \
+  tables=()
+  for sp in "${MATES[@]}"; do
+    keep="$keep,$col"
+    col=$((col + 2))
+    tables+=("grape.$sp.i1.blocks")
+  done
+  python -m jcvi.formats.base join "${tables[@]}" \
     --noheader | cut -f"$keep" > grape.blocks
 fi
 
 # ── Compress blocks + BEDs (the adapter reads plain or gzipped) ──────────────
-# shellcheck disable=SC2086
-gzip -kf grape.blocks grape.bed $(for sp in $MATES; do printf '%s.bed ' "$sp"; done)
+gzip -kf grape.blocks "${COLUMNS[@]/%/.bed}"
+
+# ── What the reference column costs the non-reference bands ──────────────────
+# The tutorial's "direct vs transitive pairs" section, read off the table
+# instead of asserted: a band between two mates can only draw a row where BOTH
+# of them resolve, and this table has a row only where GRAPE had an ortholog to
+# anchor it. So for each pair the count below is an upper bound the reference
+# imposed, not a measurement of the two genomes. Grape's own pairs are the
+# control: they are direct MCScan alignments, so they are what the same table
+# looks like when nothing is lost in the middle.
+python3 - "${COLUMNS[*]}" <<'PY'
+import gzip
+import itertools
+import sys
+
+names = sys.argv[1].split()
+resolved = [0] * len(names)
+both = {}
+with gzip.open('grape.blocks.gz', 'rt') as fh:
+    for line in fh:
+        cols = line.rstrip('\n').split('\t')
+        present = [i for i, c in enumerate(cols[:len(names)]) if c and c != '.']
+        for i in present:
+            resolved[i] += 1
+        for pair in itertools.combinations(present, 2):
+            both[pair] = both.get(pair, 0) + 1
+
+print()
+print('rows per genome, and rows per pair (what each band can draw):')
+for i, name in enumerate(names):
+    print(f'  {name:12s} {resolved[i]:6d} rows')
+for (i, j), n in sorted(both.items(), key=lambda kv: -kv[1]):
+    direct = ' (direct)' if 0 in (i, j) else ''
+    share = n / min(resolved[i], resolved[j]) if min(resolved[i], resolved[j]) else 0
+    print(f'  {names[i]:12s} {names[j]:12s} {n:6d} rows, '
+          f'{share:.0%} of the smaller column{direct}')
+PY
 
 # ── Set up JBrowse (uses an installed `jbrowse`, else the CLI via npx) ────────
 if command -v jbrowse >/dev/null 2>&1; then
@@ -167,13 +217,11 @@ APP=jbrowse2
 [ -f "$APP/index.html" ] || jb create "$APP"
 
 # The .blocks + BEDs must sit beside config.json (add-track-json won't copy them)
-# shellcheck disable=SC2086
-cp grape.blocks.gz grape.bed.gz $(for sp in $MATES; do printf '%s.bed.gz ' "$sp"; done) "$APP"/
+cp grape.blocks.gz "${COLUMNS[@]/%/.bed.gz}" "$APP"/
 
 # One assembly per genome, each with the accession-to-chromosome aliases so the
 # location box takes `11` and the ruler does not read NC_083631.1.
-# shellcheck disable=SC2086
-for sp in $ASSEMBLY_NAMES; do
+for sp in "${ASSEMBLY_NAMES[@]}"; do
   cp "$sp.aliases.txt" "$APP"/
   # No --refNameAliasesType: it defaults to a tab-separated aliases file, which
   # is what this is. Passing `custom` makes the CLI parse the TSV as JSON and
@@ -183,8 +231,7 @@ for sp in $ASSEMBLY_NAMES; do
 done
 
 # Per-genome gene tracks, so "Show only genes" has something to draw
-# shellcheck disable=SC2086
-for sp in $ASSEMBLY_NAMES; do
+for sp in "${ASSEMBLY_NAMES[@]}"; do
   if [ ! -f "$sp.sorted.gff3.gz.tbi" ]; then
     jb sort-gff "$sp.gff3" | bgzip > "$sp.sorted.gff3.gz"
     tabix -f -p gff "$sp.sorted.gff3.gz"
@@ -197,11 +244,11 @@ done
 # literal: blockAssemblies and bedLocations have to list grape then the mates in
 # exactly the .blocks column order, and a hand-kept copy of that list is the one
 # mistake the adapter's own error message calls out.
-python3 - "$MATES" "$ASSEMBLY_NAMES" > blocks_track.json <<'PY'
+python3 - "${COLUMNS[*]}" "${ASSEMBLY_NAMES[*]}" > blocks_track.json <<'PY'
 import json, sys
-mates = sys.argv[1].split()
+names = sys.argv[1].split()
 declared = sys.argv[2].split()
-names = ['grape'] + mates
+mates = names[1:]
 print(json.dumps({
     'type': 'SyntenyTrack',
     'trackId': 'grape_peach_cacao_blocks',

@@ -1,6 +1,10 @@
 import { SimpleFeature, doesIntersect2 } from '@jbrowse/core/util'
 
+import { parseBed, readFiles } from './util.ts'
+
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
+import type { GenericFilehandle } from 'generic-filehandle2'
 
 // A BED gene row parsed by parseBed: one endpoint of a synteny link.
 export interface BareFeature {
@@ -57,6 +61,66 @@ export function checkAnyRowsJoined(rows: BlockRow[], sourceRows: number) {
     )
   }
   return rows
+}
+
+// The score column of an anchors row. A column the file never wrote, or wrote
+// as `.`, is a missing value rather than a zero, and `+undefined` is a NaN that
+// rode all the way out onto the feature and into the detail panel. Undefined
+// instead leaves the BED's own score in place, which is the same call parseBed
+// already makes for the BED's score column.
+export function anchorScore(raw: string | undefined) {
+  const value = Number(raw)
+  return Number.isFinite(value) ? value : undefined
+}
+
+// One joined row of an anchors file, given that row's columns and a join bound
+// to the two BEDs. The two anchors formats differ in nothing else: `.anchors`
+// names one gene pair per row, `.anchors.simple` names the four genes bounding
+// a block.
+export type AnchorsRowParser = (
+  cols: string[],
+  join: (
+    nameA: string | undefined,
+    nameB: string | undefined,
+  ) => { a: BareFeature; b: BareFeature } | undefined,
+  rowNum: number,
+) => BlockRow | undefined
+
+// The shared body of both anchors adapters: read the anchors file and its two
+// BEDs together, drop the `###` block separators, and join every row through
+// the BEDs. Only `parseRow` differs between them, so it is the only thing each
+// adapter supplies. Free function rather than a shared base class for the
+// reason util.ts's getAssemblyNamesFromConf documents: a base generic over the
+// config cannot prove its slot names to getConf, and each adapter keeps its own
+// concrete config type this way.
+export async function readAnchorsPair(
+  {
+    bed1,
+    bed2,
+    anchors,
+  }: {
+    bed1: GenericFilehandle
+    bed2: GenericFilehandle
+    anchors: GenericFilehandle
+  },
+  opts: BaseOptions | undefined,
+  parseRow: AnchorsRowParser,
+) {
+  const [bed1text, bed2text, anchorstext] = await readFiles(
+    [bed1, bed2, anchors],
+    opts,
+  )
+  const bed1Map = parseBed(bed1text!)
+  const bed2Map = parseBed(bed2text!)
+  const join = (nameA: string | undefined, nameB: string | undefined) =>
+    joinBedPair(bed1Map, bed2Map, nameA, nameB)
+  const lines = anchorstext!.split(/\n|\r\n|\r/).filter(f => !!f && f !== '###')
+  return checkAnyRowsJoined(
+    lines
+      .map((line, rowNum) => parseRow(line.split('\t'), join, rowNum))
+      .filter(f => f !== undefined),
+    lines.length,
+  )
 }
 
 // The sides of a link that face `assemblyName`. Normally one, but a

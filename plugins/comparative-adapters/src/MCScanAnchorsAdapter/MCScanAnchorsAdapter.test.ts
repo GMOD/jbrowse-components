@@ -153,6 +153,15 @@ test('serves a self-alignment naming one assembly twice', async () => {
   ])
 })
 
+// a row without a usable score column is a missing value, not a NaN: `+score`
+// on an absent column put NaN on the feature and into the detail panel, which
+// is the same case parseBed already guards for the BED's own score column
+test('falls back to the BED score when the anchors row has none', async () => {
+  const fa = await gets(makeInlineAdapter(['g1\tg2', 'g1\tg2\t.'].join('\n')))
+  expect(fa.length).toBe(2)
+  expect(fa.map(f => f.get('score'))).toEqual([0, 0])
+})
+
 test('throws when no anchor joins at all', async () => {
   await expect(gets(makeInlineAdapter('nope1\tnope2\t10'))).rejects.toThrow(
     /name genes present in both BED files/,

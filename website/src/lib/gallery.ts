@@ -165,7 +165,7 @@ export const gallerySections: readonly GallerySection[] = [
       {
         label: 'Multi-way synteny',
         spec: 'multiway_synteny/grape_peach_cacao',
-        guide: 'tutorials/multiway_synteny',
+        guide: 'tutorials/multiway_synteny_grape_peach_cacao',
         description:
           'Grape, peach, and cacao stacked in one synteny view from MCScan gene pairs, one track per adjacent pair of genomes, auto-diagonalized and colored by the genome shared between both tracks.',
       },

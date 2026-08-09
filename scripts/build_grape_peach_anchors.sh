@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
 # Reproducibly build the pairwise grape vs peach MCScan anchors synteny view
-# shown in website/docs/tutorials/mcscan_synteny.md, then wire up a runnable
-# JBrowse.
+# shown in website/docs/tutorials/mcscan_synteny_grape_peach.md, then wire up
+# a runnable JBrowse.
 #
 # It downloads the grape and peach genomes (dna, CDS, GFF3) from Ensembl Plants
 # release 58, runs the jcvi ortholog pipeline to produce grape.peach.anchors and
@@ -42,9 +42,9 @@ EOF
 
 # ── jcvi: GFF3 -> BED (one primary isoform/gene) + CDS matching the BED names ─
 for sp in grape peach; do
-  python -m jcvi.formats.gff bed --type=mRNA --key=transcript_id \
-    --primary_only "$sp.gff3.gz" -o "$sp.bed"
-  python -m jcvi.formats.fasta format "$sp.cds.fa.gz" "$sp.cds"
+  [ -f "$sp.bed" ] || python -m jcvi.formats.gff bed --type=mRNA \
+    --key=transcript_id --primary_only "$sp.gff3.gz" -o "$sp.bed"
+  [ -f "$sp.cds" ] || python -m jcvi.formats.fasta format "$sp.cds.fa.gz" "$sp.cds"
 done
 
 # ── jcvi: one ortholog run writes both anchor files ──────────────────────────
@@ -52,7 +52,12 @@ done
 # adapters drop every row whose gene neither BED has, which for a whole-file
 # suffix mismatch is every row, and the track fails with "none of the N rows
 # ... name genes present in both BED files".
-python -m jcvi.compara.catalog ortholog --no_strip_names grape peach
+#
+# Guarded like every other step, because this one is the LAST alignment and by
+# far the longest: an unguarded re-run paid for it again before reaching the
+# config steps below.
+[ -f grape.peach.anchors ] || \
+  python -m jcvi.compara.catalog ortholog --no_strip_names grape peach
 
 # ── Compress anchors + BEDs (the adapters read plain or gzipped) ─────────────
 gzip -kf grape.peach.anchors grape.peach.anchors.simple grape.bed peach.bed
@@ -114,13 +119,17 @@ done
 
 # Per-genome gene tracks, so "Show only genes" has something to draw
 for sp in grape peach; do
-  gunzip -c "$sp.gff3.gz" | jb sort-gff | bgzip > "$sp.sorted.gff3.gz"
-  tabix -f -p gff "$sp.sorted.gff3.gz"
+  if [ ! -f "$sp.sorted.gff3.gz.tbi" ]; then
+    gunzip -c "$sp.gff3.gz" | jb sort-gff | bgzip > "$sp.sorted.gff3.gz"
+    tabix -f -p gff "$sp.sorted.gff3.gz"
+  fi
   jb add-track "$sp.sorted.gff3.gz" -a "$sp" --name "$sp genes" \
     --trackId "${sp}_genes" --load copy --force --out "$APP"
 done
 
-# The gene-pair track (ribbons) and the block track (one feature per block)
+# The gene-pair track (ribbons) and the block track (one feature per block).
+# --update, so a second run overwrites each track rather than failing the build
+# on "a track with that trackId already exists"
 cat > anchors_track.json <<'JSON'
 {
   "type": "SyntenyTrack",
@@ -136,7 +145,7 @@ cat > anchors_track.json <<'JSON'
   }
 }
 JSON
-jb add-track-json anchors_track.json --out "$APP"
+jb add-track-json anchors_track.json --update --out "$APP"
 
 cat > anchors_simple_track.json <<'JSON'
 {
@@ -153,7 +162,7 @@ cat > anchors_simple_track.json <<'JSON'
   }
 }
 JSON
-jb add-track-json anchors_simple_track.json --out "$APP"
+jb add-track-json anchors_simple_track.json --update --out "$APP"
 
 # Default session: peach over grape, gene-pair ribbons between the panels and
 # the block track as an LGVSyntenyDisplay row inside each one

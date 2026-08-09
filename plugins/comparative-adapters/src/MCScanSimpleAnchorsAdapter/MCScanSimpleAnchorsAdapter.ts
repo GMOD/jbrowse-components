@@ -4,12 +4,11 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import {
-  checkAnyRowsJoined,
+  anchorScore,
   getBlockRefNames,
-  joinBedPair,
   makeBlockFeatures,
+  readAnchorsPair,
 } from '../mcscanUtil.ts'
-import { parseBed, readFiles } from '../util.ts'
 
 import type { BareFeature } from '../mcscanUtil.ts'
 import type { MCScanSimpleAnchorsAdapterConfig } from './configSchema.ts'
@@ -42,41 +41,29 @@ export default class MCScanSimpleAnchorsAdapter extends BaseFeatureDataAdapter<M
   async setupPre(opts: BaseOptions) {
     const assemblyNames = this.getConf('assemblyNames')
     const pm = this.pluginManager
-    const [bed1text, bed2text, mcscantext] = await readFiles(
-      [
-        openLocation(this.getConf('bed1Location'), pm),
-        openLocation(this.getConf('bed2Location'), pm),
-        openLocation(this.getConf('mcscanSimpleAnchorsLocation'), pm),
-      ],
+    const feats = await readAnchorsPair(
+      {
+        bed1: openLocation(this.getConf('bed1Location'), pm),
+        bed2: openLocation(this.getConf('bed2Location'), pm),
+        anchors: openLocation(this.getConf('mcscanSimpleAnchorsLocation'), pm),
+      },
       opts,
-    )
-
-    const bed1Map = parseBed(bed1text!)
-    const bed2Map = parseBed(bed2text!)
-    const lines = mcscantext!
-      .split(/\n|\r\n|\r/)
-      .filter(f => !!f && f !== '###')
-    const feats = checkAnyRowsJoined(
-      lines
-        .map((line, rowNum) => {
-          const [n11, n12, n21, n22, score, strand] = line.split('\t')
-          const starts = joinBedPair(bed1Map, bed2Map, n11, n21)
-          const ends = joinBedPair(bed1Map, bed2Map, n12, n22)
-          return starts === undefined || ends === undefined
-            ? undefined
-            : {
-                a: spanBetween(starts.a, ends.a),
-                b: spanBetween(starts.b, ends.b),
-                rowNum,
-                // the file states the block's orientation, so unlike the
-                // gene-to-gene anchors format this is not the product of the
-                // two BED strands
-                strand: strand === '-' ? -1 : 1,
-                score: +score!,
-              }
-        })
-        .filter(f => f !== undefined),
-      lines.length,
+      ([n11, n12, n21, n22, score, strand], join, rowNum) => {
+        const starts = join(n11, n21)
+        const ends = join(n12, n22)
+        return starts === undefined || ends === undefined
+          ? undefined
+          : {
+              a: spanBetween(starts.a, ends.a),
+              b: spanBetween(starts.b, ends.b),
+              rowNum,
+              // the file states the block's orientation, so unlike the
+              // gene-to-gene anchors format this is not the product of the
+              // two BED strands
+              strand: strand === '-' ? -1 : 1,
+              score: anchorScore(score),
+            }
+      },
     )
 
     return {

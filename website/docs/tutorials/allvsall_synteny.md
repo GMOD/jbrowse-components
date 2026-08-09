@@ -31,7 +31,7 @@ single all-vs-all PAF, with every genome aligned to every other. This tutorial
 builds a five-strain _E. coli_ pangenome view from one such file.
 
 For cross-species comparisons built from gene-level ortholog tables instead, see
-[Synteny from ortholog tables](/docs/tutorials/multiway_synteny).
+[Synteny from ortholog tables](/docs/tutorials/multiway_synteny_grape_peach_cacao).
 
 ## Producing an all-vs-all PAF
 
@@ -267,7 +267,7 @@ otherwise bury the shared backbone under a dense noise band. Tune it to taste.
 its own, so without it each opens with a "No tracks active" block where a
 ribbon-only row wants a bare scalebar. Every one of these is a one-time load
 setting and goes under `init`. See the
-[ortholog-tables tutorial](/docs/tutorials/multiway_synteny) for a fuller
+[ortholog-tables tutorial](/docs/tutorials/multiway_synteny_grape_peach_cacao) for a fuller
 walk-through of the `defaultSession` structure.
 
 The row order here is a free choice. Unlike a reference-anchored `.blocks`
@@ -476,7 +476,7 @@ For a whole-genome pangenome, swap the `add-track` step for the `make-pif` +
 - [](/docs/tutorials/pangenome_ecoli)
 - [](/docs/tutorials/pangenome_cactus)
 - [Synteny visualization](/docs/tutorials/synteny_visualization)
-- [Synteny from ortholog tables](/docs/tutorials/multiway_synteny)
+- [Synteny from ortholog tables](/docs/tutorials/multiway_synteny_grape_peach_cacao)
 - [](/docs/user_guides/dotplot_view)
 - [Synteny track config guide](/docs/config_guides/synteny_track)
 - [AllVsAllPAFAdapter config](/docs/config/allvsallpafadapter)

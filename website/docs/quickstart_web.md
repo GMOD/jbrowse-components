@@ -240,7 +240,7 @@ See also the [linear synteny view](/docs/user_guides/linear_synteny_view),
 [dotplot view](/docs/user_guides/dotplot_view),
 [synteny visualization tutorial](/docs/tutorials/synteny_visualization),
 [all-vs-all synteny](/docs/tutorials/allvsall_synteny), and
-[multi-way synteny](/docs/tutorials/multiway_synteny).
+[multi-way synteny](/docs/tutorials/multiway_synteny_grape_peach_cacao).
 
 ## Hosting your own data
 

@@ -224,14 +224,14 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     src: 'sv_synteny/linear_synteny_genes.png',
     band: [0.2, 1],
   },
-  mcscan_synteny: {
+  mcscan_synteny_grape_peach: {
     // Both panels' block rows plus the ribbon fan between them — the two
     // adapters together, which is what the tutorial is about. Starts below the
     // app header so the card isn't a third menu bar.
     src: 'mcscan_anchors.png',
     band: [0.12, 0.95],
   },
-  multiway_synteny: {
+  multiway_synteny_grape_peach_cacao: {
     // Left third only: the per-row "No tracks active / Open track selector"
     // blocks are horizontally centered, so a left frame gets the ribbons and the
     // genome labels without them.
@@ -257,10 +257,11 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.152, 0.86],
   },
   orthofinder_synteny: {
-    // Left third only, same reason as multiway_synteny below: the per-row "No
-    // tracks active / Open track selector" chip is horizontally centered, so a
-    // left frame keeps the ribbons and genome labels without it. Taller band
-    // than that one (five rows here, not three) to carry two ribbon fans.
+    // Left third only, same reason as the grape/peach/cacao card below: the
+    // per-row "No tracks active / Open track selector" chip is horizontally
+    // centered, so a left frame keeps the ribbons and genome labels without it.
+    // Taller band than that one (five rows here, not three) to carry two ribbon
+    // fans.
     src: 'orthofinder_synteny/vertebrates.png',
     band: [0.13, 0.6],
     xband: [0, 0.36],
@@ -268,8 +269,9 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
   allvsall_synteny: {
     // The five-strain stack, past the app chrome. collapseEmptyRows on this
     // figure's own spec dropped every row's "No tracks active" chip to a bare
-    // scalebar, so unlike multiway_synteny above there's no centered label to
-    // dodge — the crop can run wide and read as whole-genome zoomed out.
+    // scalebar, so unlike the grape/peach/cacao card above there's no centered
+    // label to dodge — the crop can run wide and read as whole-genome zoomed
+    // out.
     src: 'multiway_synteny/ecoli_pangenome.png',
     band: [0.17, 1],
     position: 'left',

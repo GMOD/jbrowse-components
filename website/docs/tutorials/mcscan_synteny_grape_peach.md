@@ -1,6 +1,6 @@
 ---
-title: Synteny visualization (MCScan anchors)
-sidebar_label: Synteny (MCScan anchors)
+title: Synteny from MCScan anchors (grape, peach)
+sidebar_label: MCScan anchors (grape, peach)
 description:
   Load a pairwise jcvi MCScan run as gene-level and block-level synteny tracks,
   and convert an MCScanX run into the same files
@@ -33,15 +33,14 @@ comes from [nodejs.org](https://nodejs.org/).
 
 ## Why MCScan rather than a whole-genome aligner
 
-Unlike [pairwise minimap2](/docs/tutorials/synteny_visualization), which aligns
-sequence to sequence, MCScan compares two genomes through their gene
-annotations, so it still finds synteny between species too divergent for a
-whole-genome aligner to line up base by base. The cost is resolution: an anchor
+Unlike [pairwise minimap2](/docs/tutorials/synteny_visualization), MCScan
+compares two genomes through their gene annotations, so it finds synteny between
+species too divergent to line up base by base. The cost is resolution: an anchor
 is a gene pair, so there is no CIGAR and nothing to draw below the gene.
 
 For three or more genomes from one MCScan run, see
-[ortholog tables](/docs/tutorials/multiway_synteny), which loads a `.blocks`
-table with one track backing every band.
+[ortholog tables](/docs/tutorials/multiway_synteny_grape_peach_cacao), which
+loads a `.blocks` table with one track backing every band.
 
 ## The two files
 
@@ -66,8 +65,8 @@ VIT_201s0011g02300.1	VIT_201s0011g02530.1	Prupe.1G299800.1	Prupe.1G303200.1	39	+
 
 The adapter turns those four gene ids into one feature spanning the block on
 each genome, so `.anchors.simple` draws one ribbon per block where `.anchors`
-draws one per gene pair. Neither file carries coordinates: the gene ids are
-whatever your annotation used, and the BED files are what resolve them.
+draws one per gene pair. Neither file carries coordinates, which is what the BED
+files are for.
 
 <Figure src="/img/mcscan_synteny/anchors_vs_simple.png" links="Gene pairs=mcscan_synteny/anchors,Blocks=mcscan_synteny/anchors_simple" caption="A run of MCScan blocks on grape chr9 against peach Pp03. Top: .anchors alone, one ribbon per orthologous gene pair. Bottom: both files on the same band, the .anchors.simple block ribbons pale underneath and their gene pairs drawn over them, so each block is the bundle of pairs it was reduced from." />
 
@@ -84,12 +83,11 @@ chr1	33170	35791	VIT_201s0011g00030.1	0	+
 
 Column 1 must use the same reference sequence names as the JBrowse assembly.
 
-A row naming a gene neither BED carries is dropped, so a partial mismatch draws
-fewer ribbons than the file holds rather than erroring; a file where no row
-resolves at all fails the track, naming the two BED slots. Ids get mangled by
-isoform suffixes and by jcvi stripping suffixes unless run with
-`--no_strip_names`, which is why the [script](#reproduce-it-end-to-end) passes
-it.
+Which mismatches are loud and which are silent is the
+[adapters' own gotcha](/docs/config_guides/synteny_track#gene-ids-are-the-join-in-the-mcscan-adapters).
+The one that bites this pipeline is jcvi stripping isoform suffixes unless run
+with `--no_strip_names`, which is why the [script](#reproduce-it-end-to-end)
+passes it: strip them on one side only and no row resolves at all.
 
 ## Producing the data
 
@@ -154,25 +152,22 @@ Both BEDs are `jbrowse add-track` flags, which is the CLI tab on each block
 above: `--bed1` and `--bed2` beside the anchors file, and `--load copy` copies
 all three into the config's directory.
 
-Both adapters read the whole file into memory. That is fine at MCScan's scale,
-where a whole-genome anchor set is a small text file, but it is why there is no
-indexed variant the way PAF has [PIF](/docs/config_guides/synteny_track).
+Both adapters read the whole file into memory, which is fine at MCScan's scale
+and is why there is no indexed variant the way PAF has
+[PIF](/docs/config_guides/synteny_track).
 
 ## Using both at once
 
-The two tracks describe the same run at different granularity, so they
-complement each other in one view. Add a linear synteny view (**Add → Linear
-synteny view**), pick peach and grape, and turn on both tracks.
+The two tracks describe the same run at different granularity. Add a linear
+synteny view (**Add → Linear synteny view**), pick peach and grape, and turn on
+both.
 
 <Figure caption="Peach and grape with both MCScan tracks loaded. The ribbons between the panels are the per-gene .anchors pairs; the strand-colored bars inside each panel are the .anchors.simple blocks, red where the block is collinear and blue where it is inverted." src="/img/mcscan_anchors.png" />
 
-The block track is shown here as an `LGVSyntenyDisplay`, a synteny track dropped
-into an ordinary linear genome view row and drawn as features rather than as a
-ribbon band. Set that up by adding the track to a panel and picking the display
-type, or declaratively. This is the simple-anchors config again with a
-`displays` array, which no `add-track` flag covers, so it goes in with
-`jbrowse add-track-json`: that inserts a config verbatim and copies no data
-files, so the anchors and BEDs have to already sit where their `uri`s point.
+The block track is drawn here as an `LGVSyntenyDisplay`: a synteny track in an
+ordinary linear genome view row, drawn as features rather than a ribbon band.
+The `displays` array no `add-track` flag covers, so this goes in with
+`jbrowse add-track-json`, which copies no data files.
 
 ```json
 {
@@ -197,57 +192,46 @@ files, so the anchors and BEDs have to already sit where their `uri`s point.
 }
 ```
 
-Read the two together: a bar states that a block is there and which way round it
-runs, and the ribbons above it show whether the genes inside it hold their
-order. Strand is the `LGVSyntenyDisplay` **Color by** default, and the menu
-offers the other modes.
+Read the two together: a bar says a block is there and which way round it runs,
+and the ribbons above it say whether the genes inside hold their order.
 
 ## What an anchor looks like up close
 
-At whole-chromosome zoom a ribbon is a hairline. Zoom to one block, turn each
-genome's gene track on and set it to **Show only genes**, and the unit the file
-is made of is on screen: one ribbon per `.anchors` line, spanning the gene it
-starts from and the gene it ends at.
+Zoom to one block with both gene tracks on and set to **Show only genes**, and
+the unit the file is made of is on screen.
 
 <Figure caption="One MCScan block on grape chr19 against peach Pp04, both gene tracks set to Show only genes. Each ribbon is one .anchors line, one grape gene to one peach gene, drawn across each gene's own extent. The genes between them have no anchor in this run, so nothing is drawn for them." src="/img/mcscan_synteny/gene_level.png" />
 
-Most of the genes in these two windows carry no ribbon, which is the ordinary
-case inside a block: MCScan anchors the ones it could pair confidently and says
-nothing about the rest. This is also the resolution limit from the top of the
-page made concrete. Zooming further widens the ribbons and adds nothing, because
-the anchors file has nothing finer to say than which gene pairs with which.
+Most genes in these windows carry no ribbon, the ordinary case inside a block:
+MCScan anchors what it could pair confidently and says nothing about the rest.
+Zooming further only widens the ribbons, since the file has nothing finer to say
+than which gene pairs with which.
 
 ## The same anchors as a dotplot
 
-Either anchor track also loads in a dotplot (**Add → Dotplot view**, then pick
-it in Quick start), where a gene pair is one point and a synteny block is a run
-of them.
-
-The two axes start in the order each assembly's index has, which for 19 grape
-chromosomes against 8 peach ones scatters the runs over the plot. **Re-order
-chromosomes** in the view menu sorts the vertical axis to follow the horizontal
-one, using the alignments themselves.
+Either track also loads in a dotplot (**Add → Dotplot view**), where a gene pair
+is one point and a block is a run of them. The axes start in each assembly's
+index order, which scatters the runs; **Re-order chromosomes** sorts the
+vertical axis to follow the horizontal one, using the alignments themselves.
 
 <Figure caption="Grape against peach after Re-order chromosomes, every point one orthologous gene pair from the .anchors file. Each run of points is one MCScan block, and a peach column crossing several grape rows is one peach chromosome matching several grape ones." src="/img/mcscan_synteny/dotplot.png" />
 
 Reordering puts each peach chromosome's strongest grape partner on the diagonal
-and leaves the rest of its partners off it, which is a property of these two
-genomes rather than of the ordering. The [script](#reproduce-it-end-to-end)
-reads that off the `.anchors.simple` file directly: for each peach chromosome it
-prints the grape chromosomes it shares blocks with and how many anchors each
-pairing carries, and every one of the eight answers to several. Both genomes
-descend from the ancestral eudicot hexaploidy (Jaillon et al.) and have
-rearranged differently since, so a one-to-one dotplot was never available to
-order into.
+and leaves its other partners off it, which is a property of these genomes
+rather than of the ordering. The [script](#reproduce-it-end-to-end) reads that
+off `.anchors.simple` directly, printing per peach chromosome the grape
+chromosomes it shares blocks with and the anchors each pairing carries; every
+one of the eight answers to several. Both genomes descend from the ancestral
+eudicot hexaploidy (Jaillon et al.) and have rearranged differently since, so a
+one-to-one dotplot was never available to order into.
 
 ## Coming from MCScanX
 
 [MCScanX](https://github.com/wyp1125/MCScanX) is a different program from jcvi's
-MCScan and neither adapter reads its output as it stands. It writes one
-`.collinearity` file holding every block it found, self-synteny and
-cross-species together, and tells the genomes apart only by the two-letter tag
-it requires on each chromosome name in its `.gff`.
-
+MCScan and neither adapter reads its output as it stands: it writes one
+`.collinearity` holding every block it found, self-synteny and cross-species
+together, telling the genomes apart only by the two-letter tag it requires on
+each chromosome name.
 [`mcscanx_to_anchors.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/mcscanx_to_anchors.py)
 splits a run into the same four files jcvi writes, in place of the
 [jcvi step](#producing-the-data):
@@ -258,45 +242,32 @@ python3 mcscanx_to_anchors.py --gff xyz.gff --collinearity xyz.collinearity \
   --species vv=grape --species pp=peach --strand-gff3 peach=peach.gff3.gz
 ```
 
-That writes `grape.bed`, `peach.bed`, `grape.peach.anchors` and
-`grape.peach.anchors.simple`, which the track configs
-[above](#loading-both-tracks) load unchanged. `--species` is given twice, and
-its order is the anchors column order, so it has to match the track's
-`assemblyNames`.
-
-Two options decide whether the result draws:
+That writes the four files the track configs [above](#loading-both-tracks) load
+unchanged. `--species` order is the anchors column order, so it has to match the
+track's `assemblyNames`. Two options decide whether the result draws:
 
 - `--chr-prefix peach=Pp0` prepends to the refNames, and `--keep-chr-tag` leaves
   MCScanX's tag on them. The tag is stripped by default (`vv1` becomes `1`),
-  because it is a requirement of MCScanX rather than a name the assembly knows,
-  and BED column 1 has to match the assembly byte for byte.
+  being a requirement of MCScanX rather than a name the assembly knows.
 - `--strand-gff3 peach=peach.gff3.gz` recovers strand from the annotation the
-  MCScanX input came from. MCScanX's `.gff` has no strand column, so without it
-  every BED row is `+` and no `.anchors` pair draws as inverted. Block
-  orientation is unaffected either way: `.anchors.simple` takes it from the
-  plus/minus on the collinearity block header.
+  MCScanX input came from. Without it every BED row is `+` and no `.anchors`
+  pair draws as inverted. Block orientation is unaffected either way, being
+  taken from the collinearity block header.
 
-Pass `--fai peach=peach.fa.fai` to have the refNames checked against the
-assembly rather than finding out in the browser: a name the assembly does not
-have resolves to nothing, so the track draws empty instead of erroring. The
-script names the mismatched sequences and what the assembly does have.
+`--fai peach=peach.fa.fai` checks the refNames against the assembly rather than
+leaving you to find out in the browser, where a name it does not have draws
+empty instead of erroring. Scores are converted too, an anchors score becoming
+`-log10` of MCScanX's e-value where jcvi writes a bit score.
 
-Scores are converted too, since the two formats mean different things by that
-column: an anchors score becomes `-log10` of MCScanX's e-value, where jcvi
-writes a bit score, and a simple row is scored with the block's anchor count, as
-jcvi scores it.
-
-A MCScanX run of three or more genomes is one `.collinearity` covering every
-pair, so naming a third `--species` writes an ortholog table instead of the
-anchor files. See
-[ortholog tables](/docs/tutorials/multiway_synteny#from-mcscanx), which stacks
-those genomes in one view.
+Naming a third `--species` writes an ortholog table instead, since one
+`.collinearity` covers every pair. See
+[ortholog tables](/docs/tutorials/multiway_synteny_grape_peach_cacao#from-mcscanx).
 
 ### A genome against itself
 
-MCScanX is as often run on one genome to find its own duplicated blocks, which
-is the case the two-genome conversion above discards. Name a single `--species`
-and the script keeps those blocks instead:
+MCScanX is as often run on one genome to find its own duplicated blocks, the
+case the two-genome conversion discards. Name a single `--species` and the
+script keeps those blocks instead:
 
 ```bash
 python3 mcscanx_to_anchors.py --gff grape.gff --collinearity grape.collinearity \
@@ -322,18 +293,17 @@ assembly twice and both rows of the synteny view are the same genome:
 }
 ```
 
-Both copies of a block are served, so either one draws its link to the other
-wherever you are looking. A dotplot of the track puts the genome on both axes,
-where each duplicated block is a run of points away from the diagonal: there is
-no diagonal itself, since a gene is not its own anchor.
+Both copies of a block are served, so either one draws its link to the other. A
+dotplot of the track puts the genome on both axes, each duplicated block a run
+of points away from the diagonal, and no diagonal itself, since a gene is not
+its own anchor.
 
 ## Reproduce it end to end
 
 [`build_grape_peach_anchors.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_grape_peach_anchors.sh)
-runs everything above in one shot. It downloads the grape and peach genomes from
-Ensembl Plants, runs the jcvi ortholog pipeline, downloads JBrowse, and writes a
-`config.json` with the two assemblies, gene tracks, both MCScan tracks, and a
-default session opening them together.
+runs everything above in one shot: the grape and peach genomes from Ensembl
+Plants, the jcvi ortholog pipeline, and a `config.json` with both assemblies,
+gene tracks, both MCScan tracks and a default session opening them together.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_grape_peach_anchors.sh
@@ -348,7 +318,7 @@ whatever the GFF3 carried.
 ## See also
 
 - [](/docs/tutorials/synteny_visualization)
-- [](/docs/tutorials/multiway_synteny)
+- [](/docs/tutorials/multiway_synteny_grape_peach_cacao)
 - [](/docs/user_guides/linear_synteny_view)
 - [Synteny track config guide](/docs/config_guides/synteny_track)
 - [MCScanAnchorsAdapter config](/docs/config/mcscananchorsadapter)

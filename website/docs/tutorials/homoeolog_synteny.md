@@ -213,8 +213,8 @@ stayed put.
 
 <Figure caption="Left, bread wheat aligned against itself; right, oat aligned against itself. Both hexaploids, both over homoeologous groups 4, 5 and 7, syntenic anchors coloured by dN/dS on a ramp pivoted at 1 where blue is purifying selection. Wheat's groups are three near-collinear segments in their own blocks, and the two boxed cells are the only places 4A pairs outside its group. On the same nine chromosomes oat has 18 such cross-group pairs — chromosome pairs whose members belong to different homoeologous groups — and the boxed 4A/7C is simply the largest: the mosaic karyotype its assembly paper describes." src="/img/homoeolog_synteny/wheat_vs_oat.png" links="Open the oat plot=homoeolog_synteny/oat_homoeologs,Open the wheat plot=multiway_synteny/wheat_homoeolog_selection" />
 
-The wheat panel comes from
-[the Compara route](/docs/tutorials/multiway_synteny#selection-pressure-between-a-polyploids-own-copies),
+The wheat panel comes from Ensembl Compara's own homoeolog calls
+([`compara_to_blocks.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/compara_to_blocks.py)),
 so the two sides differ in assembly and in how the pairs were called as well as
 in species. That the segments still read as collinear on one side and scattered
 on the other is the point: neither pipeline put the pattern there.
@@ -267,10 +267,11 @@ It needs the tools under [Prerequisites](#prerequisites) on PATH.
 
 ## See also
 
-- [](/docs/tutorials/mcscan_synteny) - the same adapter on two genomes, and the
-  config shape for a genome against its own ancient duplications
-- [](/docs/tutorials/multiway_synteny) - ortholog tables from Ensembl Compara,
-  OrthoFinder and reciprocal best hits
+- [](/docs/tutorials/mcscan_synteny_grape_peach) - the same adapter on two
+  genomes, and the config shape for a genome against its own ancient
+  duplications
+- [](/docs/tutorials/multiway_synteny_grape_peach_cacao) - ortholog tables from
+  Ensembl Compara, OrthoFinder and reciprocal best hits
 - [](/docs/tutorials/orthofinder_synteny) - orthogroups across five vertebrates
 
 ## References

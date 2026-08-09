@@ -4,12 +4,11 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import {
-  checkAnyRowsJoined,
+  anchorScore,
   getBlockRefNames,
-  joinBedPair,
   makeBlockFeatures,
+  readAnchorsPair,
 } from '../mcscanUtil.ts'
-import { parseBed, readFiles } from '../util.ts'
 
 import type { MCScanAnchorsAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -23,36 +22,26 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter<MCScanA
   async setupPre(opts: BaseOptions) {
     const assemblyNames = this.getConf('assemblyNames')
     const pm = this.pluginManager
-    const [bed1text, bed2text, mcscantext] = await readFiles(
-      [
-        openLocation(this.getConf('bed1Location'), pm),
-        openLocation(this.getConf('bed2Location'), pm),
-        openLocation(this.getConf('mcscanAnchorsLocation'), pm),
-      ],
+    const feats = await readAnchorsPair(
+      {
+        bed1: openLocation(this.getConf('bed1Location'), pm),
+        bed2: openLocation(this.getConf('bed2Location'), pm),
+        anchors: openLocation(this.getConf('mcscanAnchorsLocation'), pm),
+      },
       opts,
-    )
-
-    const bed1Map = parseBed(bed1text!)
-    const bed2Map = parseBed(bed2text!)
-    const lines = mcscantext!
-      .split(/\n|\r\n|\r/)
-      .filter(f => !!f && f !== '###')
-    const feats = checkAnyRowsJoined(
-      lines
-        .map((line, rowNum) => {
-          const [name1, name2, score] = line.split('\t')
-          const pair = joinBedPair(bed1Map, bed2Map, name1, name2)
-          return pair === undefined
-            ? undefined
-            : {
-                ...pair,
-                rowNum,
-                strand: pair.a.strand * pair.b.strand,
-                score: +score!,
-              }
-        })
-        .filter(f => f !== undefined),
-      lines.length,
+      // one orthologous gene pair per row, so the link's orientation is the
+      // product of the two BED strands
+      ([name1, name2, score], join, rowNum) => {
+        const pair = join(name1, name2)
+        return pair === undefined
+          ? undefined
+          : {
+              ...pair,
+              rowNum,
+              strand: pair.a.strand * pair.b.strand,
+              score: anchorScore(score),
+            }
+      },
     )
 
     return {

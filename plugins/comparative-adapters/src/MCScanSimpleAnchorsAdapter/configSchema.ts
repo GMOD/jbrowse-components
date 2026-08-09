@@ -8,7 +8,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #fileFormat synteny | MCScan simple anchors | Gene-level synteny; also needs one BED per assembly
  * used to load MCScan (jcvi) `.anchors.simple` files with their two BED files
  *
- * See the [MCScan anchors tutorial](/docs/tutorials/mcscan_synteny), which
+ * See the [MCScan anchors tutorial](/docs/tutorials/mcscan_synteny_grape_peach), which
  * also covers converting an MCScanX run into these files.
  *
  * #gotcha A block row names four genes, the first and last on each side, and

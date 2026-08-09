@@ -44,8 +44,8 @@ the assembly does not have draws nothing at all.
 
 used to load MCScan (jcvi) `.anchors` files with their two BED files
 
-See the [MCScan anchors tutorial](/docs/tutorials/mcscan_synteny), which also
-covers converting an MCScanX run into these files.
+See the [MCScan anchors tutorial](/docs/tutorials/mcscan_synteny_grape_peach),
+which also covers converting an MCScanX run into these files.
 
 ## Related links
 
