@@ -35,6 +35,17 @@ slot from a sub-schema). The merge is a spread, so to turn a base field off,
 state it — including `promotedBase: undefined` to make an inherited promotable
 slot plain again.
 
+`actions` / `views` / `extend` / `preProcessSnapshot` are the exception to the
+spread: they **compose** with the base's rather than replacing them. The first
+three chain through separate MST calls, so the base's members are on `self`
+inside the subclass's function and a subclass overrides one by redeclaring its
+name. `preProcessSnapshot` folds to `child(base(snapshot))`, base normalizes
+first. This used to throw instead, which made `createBaseTrackConfig`'s two
+hooks a hard ceiling: no track config schema could declare either.
+`ReferenceSequenceTrack/configSchema.ts` hand-rolls a copy of the base's slots
+for a _different_ reason (it wants a subset, and `baseConfiguration` only ever
+adds), so composition does not retire it.
+
 The base has to be **the type `ConfigurationSchema()` returned**, since that is
 the only handle registered against a slot table. A `types.late` wrapper or a
 union (`pluginManager.pluggableConfigSchemaType(…)`) type-checks and passes
