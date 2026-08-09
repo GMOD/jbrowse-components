@@ -5,7 +5,7 @@ export interface BpIndexViewSnap {
   displayedRegions: Region[]
 }
 
-interface RegionIndexEntry {
+export interface RegionIndexEntry {
   index: number
   region: Region
   bpBefore: number
@@ -60,4 +60,53 @@ export function bpToCumBp(
     }
   }
   return undefined
+}
+
+// The displayed region an alignment block belongs to: of the regions showing
+// this refName, the one its genomic span [lo,hi] overlaps most, or undefined
+// when it overlaps none of them.
+//
+// `bpToCumBp` answers a different question — "which region CONTAINS this one
+// coordinate" — and returns undefined for a coordinate outside every region.
+// That is right for a point lookup and wrong for a block: an alignment that
+// straddles a displayed region's edge has one endpoint outside it, and asking
+// per-endpoint drops the whole block rather than drawing the part that is in
+// view. Resolving the region from the span once, then projecting both endpoints
+// into it, is what lets the caller clamp instead of drop.
+//
+// Overlap is compared rather than containment because a refName can be shown at
+// several loci at once (a multi-locus view, a dispersed duplication), and a
+// block that straddles one of them is not contained by any.
+export function findRegionEntry(
+  idx: BpRegionIndex,
+  refName: string,
+  lo: number,
+  hi: number,
+): RegionIndexEntry | undefined {
+  const list = idx.entries.get(refName)
+  if (!list) {
+    return undefined
+  }
+  let best: RegionIndexEntry | undefined
+  let bestOverlap = 0
+  for (const entry of list) {
+    const r = entry.region
+    const overlap = Math.min(hi, r.end) - Math.max(lo, r.start)
+    if (overlap > bestOverlap || (best === undefined && overlap >= 0)) {
+      bestOverlap = overlap
+      best = entry
+    }
+  }
+  return best
+}
+
+// Cumulative bp of a coordinate within one already-resolved region, clamped to
+// that region's own span. Unlike `bpToCumBp` this cannot fail: the caller has
+// already decided which region the block belongs to, so a coordinate past the
+// edge projects to the edge — a ribbon that runs off the side of the region
+// rather than a ribbon that is not drawn.
+export function cumBpInEntry(entry: RegionIndexEntry, coord: number) {
+  const r = entry.region
+  const clamped = Math.min(Math.max(coord, r.start), r.end)
+  return entry.bpBefore + (r.reversed ? r.end - clamped : clamped - r.start)
 }

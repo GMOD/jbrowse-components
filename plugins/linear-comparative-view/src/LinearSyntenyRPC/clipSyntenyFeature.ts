@@ -180,10 +180,10 @@ export function clipLargeBlockToWindow({
   // span overlaps the window most (for the common single-region case, just that
   // region; no overlap = the block is off-screen, leave it untouched). Assumes
   // the same-refName regions are genomically DISJOINT (which the duplication
-  // case is): the downstream projection resolves the clipped coords with
-  // bpToCumBp, which picks the first region CONTAINING them — the same region we
-  // clipped to only when the genomic ranges don't overlap. Overlapping copies of
-  // one locus would need a region index threaded through the projection.
+  // case is): the downstream projection re-resolves the clipped coords with
+  // findRegionEntry, which picks the region their span overlaps MOST — the same
+  // region we clipped to only when the genomic ranges don't overlap. Overlapping
+  // copies of one locus would need a region index threaded through.
   const entries = v1Index.entries.get(refName) ?? []
   let r0: (typeof entries)[number] | undefined
   let bestOverlap = 0
@@ -214,13 +214,25 @@ export function clipLargeBlockToWindow({
   // cumBp - bpBefore + start (monotonic up). Reversed: local =
   // end - (cumBp - bpBefore) (monotonic down), so the low/high cumBp bounds map
   // to the high/low local bp — winStart takes winCumHi and winEnd winCumLo.
+  //
+  // Clamped to the region, because the cumBp window spans every displayed
+  // region and this maps it through one of them: on a multi-region view the
+  // window is wider than the region it is being expressed in, so an unclamped
+  // winStart lands outside and the re-anchored block keeps an endpoint the
+  // projection cannot place.
   const { region, bpBefore } = r0
-  const winStart = region.reversed
-    ? Math.floor(region.end - (winCumHi - bpBefore))
-    : Math.floor(winCumLo - bpBefore + region.start)
-  const winEnd = region.reversed
-    ? Math.ceil(region.end - (winCumLo - bpBefore))
-    : Math.ceil(winCumHi - bpBefore + region.start)
+  const clampToRegion = (bp: number) =>
+    Math.min(Math.max(bp, region.start), region.end)
+  const winStart = clampToRegion(
+    region.reversed
+      ? Math.floor(region.end - (winCumHi - bpBefore))
+      : Math.floor(winCumLo - bpBefore + region.start),
+  )
+  const winEnd = clampToRegion(
+    region.reversed
+      ? Math.ceil(region.end - (winCumLo - bpBefore))
+      : Math.ceil(winCumHi - bpBefore + region.start),
+  )
   return clipSyntenyFeature(
     parseCigar2Typed(cigar),
     start,

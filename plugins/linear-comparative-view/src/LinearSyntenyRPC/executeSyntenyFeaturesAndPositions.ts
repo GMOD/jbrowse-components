@@ -10,11 +10,13 @@ import { rpcResult } from '@jbrowse/core/util/librpc'
 import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 import {
   PRESET_ATTRIBUTES,
-  bpToCumBp,
   buildBpRegionIndex,
+  clampBlockToRegions,
   createAttributeChannels,
+  cumBpInEntry,
   declaredAttributes,
   dnDsRatio,
+  findRegionEntry,
   syntenyPanBufferPx,
 } from '@jbrowse/synteny-core'
 
@@ -23,7 +25,10 @@ import {
   MIN_CIGAR_PX_WIDTH,
   buildSyntenyGeometry,
 } from './buildSyntenyGeometry.ts'
-import { clipLargeBlockToWindow } from './clipSyntenyFeature.ts'
+import {
+  clipLargeBlockToWindow,
+  clipSyntenyFeature,
+} from './clipSyntenyFeature.ts'
 
 import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
 import type { SyntenyMate } from '../syntenyMate.ts'
@@ -307,28 +312,82 @@ export async function executeSyntenyFeaturesAndPositions({
       windowSpan,
       spanRatio: CLIP_SPAN_RATIO,
     })
-    const fStart = clip?.start ?? start
-    const fEnd = clip?.end ?? end
-    const mStart = clip?.mateStart ?? mate.start
-    const mEnd = clip?.mateEnd ?? mate.end
-    const clippedCigar = clip?.cigar
+    let fStart = clip?.start ?? start
+    let fEnd = clip?.end ?? end
+    let mStart = clip?.mateStart ?? mate.start
+    let mEnd = clip?.mateEnd ?? mate.end
+    let clippedCigar = clip?.cigar
+
+    // The displayed region each axis shows this block in, resolved once from the
+    // block's span. A block that overlaps no displayed region on either axis is
+    // genuinely not in view and drops here — the same features the per-endpoint
+    // bpToCumBp used to drop, minus the ones that merely straddled an edge.
+    const e1 = findRegionEntry(
+      v1Index,
+      refName,
+      Math.min(fStart, fEnd),
+      Math.max(fStart, fEnd),
+    )
+    const e2 = findRegionEntry(
+      v2Index,
+      mateRefName,
+      Math.min(mStart, mEnd),
+      Math.max(mStart, mEnd),
+    )
+    if (!e1 || !e2) {
+      continue
+    }
+
+    // Trim to the part both regions can show. `a` is the pair (f1s, mStart) and
+    // `b` the pair (f1e, mEnd), which is the corner pairing the ribbon draws.
+    const trim = clampBlockToRegions({
+      a1: strand === -1 ? fEnd : fStart,
+      b1: strand === -1 ? fStart : fEnd,
+      r1Start: e1.region.start,
+      r1End: e1.region.end,
+      a2: mStart,
+      b2: mEnd,
+      r2Start: e2.region.start,
+      r2End: e2.region.end,
+    })
+    if (!trim) {
+      continue
+    }
+    if (trim.trimmed) {
+      const qLo = Math.min(trim.a1, trim.b1)
+      const qHi = Math.max(trim.a1, trim.b1)
+      // Re-derive the trimmed span from the CIGAR where there is one: the walk
+      // follows the block's real indels, where the proportional trim can only
+      // assume the linear correspondence. Without a CIGAR (or when the walk
+      // keeps no op) the proportional endpoints stand and the block draws as
+      // base ribbon only, which is what an untrimmed no-CIGAR block does too.
+      const cig =
+        clippedCigar ?? (cigarStr ? parseCigar2Typed(cigarStr) : undefined)
+      const re = cig
+        ? clipSyntenyFeature(cig, fStart, mStart, mEnd, strand, qLo, qHi)
+        : undefined
+      if (re) {
+        fStart = re.start
+        fEnd = re.end
+        mStart = re.mateStart
+        mEnd = re.mateEnd
+        clippedCigar = re.cigar
+      } else {
+        fStart = qLo
+        fEnd = qHi
+        mStart = Math.min(trim.a2, trim.b2)
+        mEnd = Math.max(trim.a2, trim.b2)
+        clippedCigar = cig ? EMPTY_CIGAR : clippedCigar
+      }
+    }
 
     const f1s = strand === -1 ? fEnd : fStart
     const f1e = strand === -1 ? fStart : fEnd
 
-    const p11 = bpToCumBp(v1Index, refName, f1s)
-    const p12 = bpToCumBp(v1Index, refName, f1e)
-    const p21 = bpToCumBp(v2Index, mateRefName, mStart)
-    const p22 = bpToCumBp(v2Index, mateRefName, mEnd)
-
-    if (
-      p11 === undefined ||
-      p12 === undefined ||
-      p21 === undefined ||
-      p22 === undefined
-    ) {
-      continue
-    }
+    const p11 = cumBpInEntry(e1, f1s)
+    const p12 = cumBpInEntry(e1, f1e)
+    const p21 = cumBpInEntry(e2, mStart)
+    const p22 = cumBpInEntry(e2, mEnd)
 
     // Cull features where BOTH view projections are entirely off-screen.
     // Convert cumBp to screen px for the check.

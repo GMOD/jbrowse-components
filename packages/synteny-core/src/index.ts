@@ -1,5 +1,16 @@
-export { bpToCumBp, buildBpRegionIndex } from './bpRegionIndex.ts'
-export type { BpIndexViewSnap, BpRegionIndex } from './bpRegionIndex.ts'
+export {
+  bpToCumBp,
+  buildBpRegionIndex,
+  cumBpInEntry,
+  findRegionEntry,
+} from './bpRegionIndex.ts'
+export type {
+  BpIndexViewSnap,
+  BpRegionIndex,
+  RegionIndexEntry,
+} from './bpRegionIndex.ts'
+export { clampBlockToRegions } from './clampBlockToRegions.ts'
+export type { ClampedBlock } from './clampBlockToRegions.ts'
 export {
   PAN_BUFFER_PX,
   syntenyFetchRegions,
@@ -149,6 +160,11 @@ export {
   resolveSyntenyTrackActions,
 } from './resolveRowTrackAction.ts'
 export type { RowTrackAction } from './resolveRowTrackAction.ts'
+export {
+  blockedByUnfinishedUpload,
+  syntenyPairStatuses,
+} from './syntenyPairStatuses.ts'
+export type { PairStatus } from './syntenyPairStatuses.ts'
 // Promoted to core (any feature listing tracks wants it, not just synteny);
 // re-exported here so the synteny/comparative consumers keep one import.
 export { allSessionTracks } from '@jbrowse/core/util/tracks'

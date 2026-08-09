@@ -4,11 +4,13 @@ import { createProgressReporter, dedupe } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
   PRESET_ATTRIBUTES,
-  bpToCumBp,
   buildBpRegionIndex,
+  clampBlockToRegions,
   createAttributeChannels,
+  cumBpInEntry,
   declaredAttributes,
   dnDsRatio,
+  findRegionEntry,
 } from '@jbrowse/synteny-core'
 
 import { cigarWorthParsing } from './dotplotCigarDetail.ts'
@@ -240,20 +242,45 @@ export async function executeDotplotFeaturesAndPositions({
     const f1s = strand === -1 ? end : start
     const f1e = strand === -1 ? start : end
 
-    const c11 = bpToCumBp(hIndex, refName, f1s)
-    const c12 = bpToCumBp(hIndex, refName, f1e)
-    const c21 = bpToCumBp(vIndex, mateRefName, mate.start)
-    const c22 = bpToCumBp(vIndex, mateRefName, mate.end)
-    if (
-      c11 === undefined ||
-      c12 === undefined ||
-      c21 === undefined ||
-      c22 === undefined
-    ) {
+    // Resolved from each axis' whole span, then trimmed to the part both axes
+    // can show. Asking bpToCumBp per endpoint instead drops any block with one
+    // endpoint outside its displayed region, which on a dotplot narrowed to a
+    // locus is most of the blocks crossing the edge. Same defect, same fix as
+    // the synteny projection — see clampBlockToRegions.
+    const hEntry = findRegionEntry(
+      hIndex,
+      refName,
+      Math.min(start, end),
+      Math.max(start, end),
+    )
+    const vEntry = findRegionEntry(
+      vIndex,
+      mateRefName,
+      Math.min(mate.start, mate.end),
+      Math.max(mate.start, mate.end),
+    )
+    const trim =
+      hEntry && vEntry
+        ? clampBlockToRegions({
+            a1: f1s,
+            b1: f1e,
+            r1Start: hEntry.region.start,
+            r1End: hEntry.region.end,
+            a2: mate.start,
+            b2: mate.end,
+            r2Start: vEntry.region.start,
+            r2End: vEntry.region.end,
+          })
+        : undefined
+    if (!hEntry || !vEntry || !trim) {
       skippedFeatureCount++
       continue
     }
 
+    const c11 = cumBpInEntry(hEntry, trim.a1)
+    const c12 = cumBpInEntry(hEntry, trim.b1)
+    const c21 = cumBpInEntry(vEntry, trim.a2)
+    const c22 = cumBpInEntry(vEntry, trim.b2)
     p11[n] = c11
     p12[n] = c12
     p21[n] = c21
@@ -273,7 +300,14 @@ export async function executeDotplotFeaturesAndPositions({
     // Parse only what the geometry builder could actually walk at this zoom. A
     // whole-genome PAF is mostly sub-pixel alignments whose parsed ops would be
     // built, shipped, and then ignored.
-    const cigarStr = f.get('CIGAR') as string | undefined
+    // A trimmed block keeps no CIGAR: the detail walk starts from the corners
+    // and steps op by op, so a full-block CIGAR over a shortened span lays every
+    // op down in the wrong place. The base line still draws, which is the whole
+    // point of trimming rather than dropping. (The synteny path re-trims the
+    // CIGAR instead — it has clipSyntenyFeature; there is no dotplot twin.)
+    const cigarStr = trim.trimmed
+      ? undefined
+      : (f.get('CIGAR') as string | undefined)
     const cigar =
       cigarStr &&
       cigarWorthParsing(
