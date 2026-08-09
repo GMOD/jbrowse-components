@@ -304,12 +304,14 @@ the very same runs stayed at their usual 1.99 / 0.71 / 0.65 / 0.62 / 0.23.
 
 ### What it is not
 
-- **Not capture flake.** Two runs, byte-identical. Blank captures fail a test;
-  they do not produce a stable 3.88%.
-- **Not the read fills.** The diff images show read bodies uniformly grey —
-  pixel-identical. The whole of `targeted_alignments-bam`'s 3.46% is the band at
-  the top of the view (coverage strip + ruler), which is ~40px of 600 with about
-  half its pixels differing. That arithmetic accounts for the number.
+- **Not capture flake.** Two runs, byte-identical. Blank captures fail a test,
+  and they do not produce a stable 3.88%. (It did turn out to be the capture,
+  just a perfectly deterministic part of it. See the verdict below before
+  reading this list as ruling the capture out.)
+- **Not the read fills.** The diff images show read bodies uniformly grey and
+  pixel-identical. The whole of `targeted_alignments-bam`'s 3.46% is a band at
+  the top of the view, measured below as exactly 37 rows of 600 with 94% of each
+  row differing. That arithmetic accounts for the number.
 - **Not webgpu generally.** Synteny under the same invocation: 64 pairs, 0 over
   threshold, webgpu tracking webgl (1.58 / 1.50 / 1.13 / 0.90).
 - **Not the coverage strip as such.** `pileup + coverage track` — the
