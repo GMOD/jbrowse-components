@@ -1,16 +1,14 @@
 import {
-  evaluateJexl,
   getConf,
-  isCallbackValue,
   mergeFormatCallbacks,
   readConfObject,
+  readConfSlot,
 } from '@jbrowse/core/configuration'
 import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
-import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 import type { ComponentType } from 'react'
 
 // #region aboutPanelProps
@@ -58,41 +56,6 @@ declare module '@jbrowse/core/PluginManager' {
   }
 }
 // #endregion
-
-/**
- * Read a single config slot from either a live MST config or a plain snapshot
- * object, evaluating the value if it is a `jexl:` expression. A plain snapshot
- * routes through the same `isCallbackValue`/`evaluateJexl` boundary as the MST
- * path, so callback handling (empty-body guard, feature proxy) stays identical.
- */
-export function readConfSlot<T = unknown>(
-  config: AnyConfigurationModel | Record<string, unknown>,
-  slotPath: string | string[],
-  args: Record<string, unknown> = {},
-  jexl?: JexlInstance,
-): T {
-  const path = typeof slotPath === 'string' ? [slotPath] : slotPath
-  if (isStateTreeNode(config)) {
-    return readConfObject(config, path, args) as T
-  }
-  const value = path.reduce<unknown>(
-    (node, key) => (node as Record<string, unknown> | undefined)?.[key],
-    config,
-  )
-  // A plain-object config has no MST env, so the realm's jexl instance can't be
-  // resolved automatically — callers reading a callback slot must pass it. Only
-  // reached when the slot actually holds a `jexl:` value (trackId/adapter/etc.
-  // never do), so non-callback readers need not supply it.
-  if (isCallbackValue(value)) {
-    if (!jexl) {
-      throw new Error(
-        `cannot evaluate jexl config slot ${JSON.stringify(slotPath)} on a plain-object config: no jexl instance provided`,
-      )
-    }
-    return evaluateJexl(value, args, jexl) as T
-  }
-  return value as T
-}
 
 /**
  * Build the config object shown in a track's About dialog: the base config

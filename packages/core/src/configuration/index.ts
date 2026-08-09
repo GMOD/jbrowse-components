@@ -29,7 +29,11 @@ export {
   FormatDetailsConfigSchemaFactory,
 } from './formatDetailsConfigSchema.ts'
 export { mergeFormatCallbacks } from './mergeFormatCallbacks.ts'
-export { readConfObject, readConfigValue } from './readConfObject.ts'
+export {
+  readConfObject,
+  readConfSlot,
+  readConfigValue,
+} from './readConfObject.ts'
 export { getConf, resolveConf, setConf } from './getConf.ts'
 export { evaluateJexl, isCallbackValue } from './slotValueUtils.ts'
 export { toCallbackValue, toFixedValue } from './configurationSlot.ts'

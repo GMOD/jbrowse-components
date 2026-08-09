@@ -1,9 +1,8 @@
 import Attributes from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
+import { readConfSlot } from '@jbrowse/core/configuration'
 import { ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
 import { useFetch } from '@jbrowse/core/util/useFetch'
-
-import { readConfSlot } from './util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'

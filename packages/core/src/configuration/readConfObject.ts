@@ -1,9 +1,11 @@
 /**
  * @module
- * The config **readers**: `readConfObject` off a live MST config node, and
- * `readConfigValue` off a plain snapshot object in a worker or a renderer. Both
- * exist to evaluate a slot's `jexl:...` callback on read; they differ only in
- * where the jexl instance comes from (the node's env vs. an explicit argument).
+ * The config **readers**: `readConfObject` off a live MST config node,
+ * `readConfigValue` off a plain snapshot object in a worker or a renderer, and
+ * `readConfSlot` for the callers that hold either and don't know which. All
+ * three exist to evaluate a slot's `jexl:...` callback on read; they differ only
+ * in where the jexl instance comes from (the node's env vs. an explicit
+ * argument) and in how much of that they are willing to decide at runtime.
  */
 import {
   getEnv,
@@ -198,6 +200,10 @@ export function readConfObject(
   return readSlot(conf, slotPath[slotPath.length - 1]!, args)
 }
 
+// The plain-object half of the slot walk, shared by readConfigValue and
+// readConfSlot. The MST half is readSlot/rawSlotValue above. A plain object has
+// no map entries and no sub-config nodes to snapshot, so it is just a path
+// reduce.
 function resolveConfigValue(
   config: Record<string, unknown>,
   key: string | string[],
@@ -228,4 +234,50 @@ export function readConfigValue<T>(
   return (
     isCallbackValue(raw) ? evaluateJexl(raw, { feature }, jexl) : raw
   ) as T
+}
+
+/**
+ * #api core/configuration
+ * Read a single config slot from a config that may be **either** a live MST
+ * node or a plain snapshot object, evaluating the value if it is a `jexl:`
+ * expression. For the dialogs and panels that are handed a track config without
+ * knowing which of the two they got. An About panel gets a hydrated track
+ * config from the session and a bare object from an embedded caller.
+ *
+ * Reach for `readConfObject` or `readConfigValue` when the shape is known:
+ * this one decides at runtime, and the plain branch inherits the snapshot
+ * caveat (a slot at its default is absent from a snapshot, so it reads
+ * `undefined`).
+ *
+ * @param config - live config model or plain config object
+ * @param slotPath - slot name, or path of sub-config names ending in a slot
+ * @param args - extra arguments for a callback slot, e.g. `{ feature }`
+ * @param jexl - realm jexl instance, required only to evaluate a callback slot
+ *  on a plain object (a live node resolves its own from env)
+ */
+export function readConfSlot<T = unknown>(
+  config: AnyConfigurationModel | Record<string, unknown>,
+  slotPath: string | string[],
+  args: Record<string, unknown> = {},
+  jexl?: JexlInstance,
+): T {
+  if (isStateTreeNode(config)) {
+    // pass slotPath through rather than normalizing a string into a one-element
+    // array: readConfObject keeps the single-slot read allocation-free
+    return readConfObject(config, slotPath, args) as T
+  }
+  const value = resolveConfigValue(config, slotPath)
+  // A plain-object config has no MST env, so the realm's jexl instance can't be
+  // resolved automatically — callers reading a callback slot must pass it. Only
+  // reached when the slot actually holds a `jexl:` value (trackId/adapter/etc.
+  // never do), so non-callback readers need not supply it.
+  if (isCallbackValue(value)) {
+    if (!jexl) {
+      throw new Error(
+        `cannot evaluate jexl config slot ${JSON.stringify(slotPath)} on a plain-object config: no jexl instance provided`,
+      )
+    }
+    return evaluateJexl(value, args, jexl) as T
+  }
+  return value as T
 }

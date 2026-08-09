@@ -5,6 +5,7 @@ import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard
 import {
   getConf,
   getTrackConfigWithPromotables,
+  readConfSlot,
 } from '@jbrowse/core/configuration'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -14,7 +15,7 @@ import { observer } from 'mobx-react'
 import FileInfoPanel from './FileInfoPanel.tsx'
 import HeaderButtons from './HeaderButtons.tsx'
 import RefNameInfoDialog from './RefNameInfoDialog.tsx'
-import { getAboutDialogConfig, readConfSlot } from './util.ts'
+import { getAboutDialogConfig } from './util.ts'
 
 import type { AboutPanelProps } from './util.ts'
 

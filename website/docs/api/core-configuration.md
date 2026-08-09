@@ -188,6 +188,25 @@ indistinguishable at runtime from the broken spelling.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/readConfObject.ts)
 
+## readConfSlot
+
+Read a single config slot from a config that may be **either** a live MST node
+or a plain snapshot object, evaluating the value if it is a `jexl:` expression.
+For the dialogs and panels that are handed a track config without knowing which
+of the two they got. An About panel gets a hydrated track config from the
+session and a bare object from an embedded caller.
+
+Reach for `readConfObject` or `readConfigValue` when the shape is known: this
+one decides at runtime, and the plain branch inherits the snapshot caveat (a
+slot at its default is absent from a snapshot, so it reads `undefined`).
+
+```js
+// type signature
+<…>(config: Record<…> | (ModelInstanceTypeProps<…> & {…} & IStateTreeNode<…>), slotPath: string | string[], args?: Record<…>, jexl?: JexlInstance | undefined) => T
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/readConfObject.ts)
+
 ## resolveConf
 
 Reads a `promotable` slot through the display-type-default cascade — the track's

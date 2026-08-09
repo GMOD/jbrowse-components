@@ -1,3 +1,4 @@
+import { readConfSlot } from '@jbrowse/core/configuration'
 import {
   CopyToClipboardButton,
   Dialog,
@@ -8,8 +9,6 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 import { DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
-
-import { readConfSlot } from './util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'

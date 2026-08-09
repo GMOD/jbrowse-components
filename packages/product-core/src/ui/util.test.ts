@@ -5,7 +5,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { getAboutDialogConfig, readConfSlot } from './util.ts'
+import { getAboutDialogConfig } from './util.ts'
 
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
@@ -41,59 +41,8 @@ function makeSession(formatAboutConfig: Record<string, unknown> = {}) {
   ) as unknown as AbstractSessionModel
 }
 
-describe('readConfSlot', () => {
-  it('walks a path on a plain object', () => {
-    expect(readConfSlot({ foo: { bar: 5 } }, ['foo', 'bar'])).toBe(5)
-  })
-
-  it('evaluates a jexl string on a plain object', () => {
-    expect(
-      readConfSlot({ foo: 'jexl:1+2' }, 'foo', {}, corePluginManager.jexl),
-    ).toBe(3)
-  })
-
-  it('passes context args to a jexl string on a plain object', () => {
-    expect(
-      readConfSlot(
-        { foo: 'jexl:config.name' },
-        'foo',
-        { config: { name: 'hello' } },
-        corePluginManager.jexl,
-      ),
-    ).toBe('hello')
-  })
-
-  it('returns an empty jexl body literally instead of throwing', () => {
-    expect(
-      readConfSlot({ foo: 'jexl:' }, 'foo', {}, corePluginManager.jexl),
-    ).toBe('jexl:')
-  })
-
-  it('reads a slot from a state tree node', () => {
-    const config = TrackConf.create(
-      { trackId: 't1', name: 'Track 1' },
-      { pluginManager: corePluginManager },
-    )
-    expect(readConfSlot(config, 'name')).toBe('Track 1')
-  })
-
-  it('passes context args to a callback slot on a state tree node', () => {
-    const config = TrackConf.create(
-      {
-        trackId: 't1',
-        name: 'Track 1',
-        formatAbout: { config: "jexl:{'Computed': config.name}" },
-      },
-      { pluginManager: corePluginManager },
-    )
-    expect(
-      readConfSlot(config, ['formatAbout', 'config'], {
-        config: { name: 'Track 1' },
-      }),
-    ).toEqual({ Computed: 'Track 1' })
-  })
-})
-
+// readConfSlot itself is covered in
+// packages/core/src/configuration/readConfSlot.test.ts
 describe('getAboutDialogConfig', () => {
   it('merges the base config for a plain object', () => {
     const config = { trackId: 't1', name: 'Track 1' }
