@@ -83,18 +83,38 @@ const SMN_HIGHLIGHT = [
 // absent scales to whatever few values survive and the collapse reads as an
 // ordinary wiggle.
 //
-// ONLY LEGIBLE AT THE 30 kb PANELS. At the 2.5 Mb overview each pixel summarizes
-// ~2 kb, the absent stretches average in with the present ones, and the lane
-// renders as a solid blue wall that says nothing — it was in that figure for one
-// round and had to come out. If a wide-window version is ever wanted, it needs a
-// different track (a binned mappability average), not this one.
+// LEGIBLE AT ANY WIDTH, WITH `summaryScoreMode: 'min'` — which is the whole of
+// the answer to "should we show just plain mappability tracks?" and to the
+// round after it ("consider adding mappability again. is it really a bad idea?
+// i am confused why not"). The previous answer was that it is only readable at
+// the 30 kb panels, and that was true of the DEFAULT summarization and only of
+// that: a bigWig zoom bin carries min/avg/max, `avg` over a bin that is mostly
+// absent is the average of the few present positions, and the lane came out a
+// solid wall near 1 across a region where almost nothing maps. `min` over the
+// same bin is the worst position in it, so the lane sits on the floor for the
+// whole low-mappability block and steps to 1 at its edge — measured against the
+// read track in qc/smn_vs_control, where the step lands at the same coordinate
+// as the MAPQ 0 to MAPQ 60 transition and the gnomAD coverage step.
 const mappabilityTrack = {
   trackId: 'hg38-umap100Quantitative',
   type: 'LinearWiggleDisplay',
   minScore: 0,
   maxScore: 1,
+  summaryScoreMode: 'min' as const,
   height: 70,
 }
+
+// TRIED AT 2.5 Mb AND REMOVED, so it is not re-attempted. The hosted hub
+// carries an `hg38-umap` MultiWiggleAdapter with all four read lengths (k24,
+// k36, k50, k100), which is what "could add mappability wiggle files even as a
+// multiwiggle since there are multiple" asks for, and it was rendered in the
+// overview figure two ways. `min` at 2 kb a pixel is on the floor almost
+// everywhere -- practically every 2 kb window in this part of chr5 contains at
+// least one badly-mappable base, so the block does not stand out from the
+// flanks. `avg` with a density ramp is vertical stripes at every k. The
+// summarization that works at 464 bp a pixel (qc/smn_vs_control) does not
+// survive being widened four times, and the overview figure keeps gnomAD
+// coverage as its mappability-shaped lane instead.
 
 // gnomAD's mean genome coverage over 76,156 samples. gnomAD discards
 // non-uniquely-placed reads before computing it, so this lane is the Umap lane's
@@ -259,6 +279,7 @@ export const qcSpecs: ScreenshotSpec[] = [
           highlight: [SMN_HIGHLIGHT[0]!],
           tracks: [
             geneTrack(60, true),
+            mappabilityTrack,
             gnomadCoverageTrack(90, 'avg'),
             {
               trackId: 'na12878_qc_reads',
@@ -284,8 +305,9 @@ export const qcSpecs: ScreenshotSpec[] = [
         },
       ],
     })}&sessionName=Screenshot`,
-    // 760 cut 42 css px off the bottom, from the run's own report
-    viewportHeight: 805,
+    // 760 cut 42 css px off the bottom, from the run's own report; +95 more
+    // for the mappability lane
+    viewportHeight: 925,
     readySelector: '[data-testid="pileup-display-done"]',
     readyTimeout: 600000,
     settleMs: 30000,
@@ -303,9 +325,10 @@ export const qcSpecs: ScreenshotSpec[] = [
           highlight: SMN_HIGHLIGHT,
           tracks: [
             geneTrack(60, true),
-            // Reads well at this width where the mappability lane does not: the
-            // depth collapse is a broad plateau rather than per-base structure,
-            // so summarizing it into 2 kb pixels keeps it.
+            // Reads well at this width where a mappability lane does not (see
+            // the note above the mappability consts): the depth collapse is a
+            // broad plateau rather than per-base structure, so summarizing it
+            // into 2 kb pixels keeps it.
             gnomadCoverageTrack(120, 'avg'),
             // Two groups' opinions of the same sequence, as separate lanes: they
             // were drawn by different projects for different purposes and they

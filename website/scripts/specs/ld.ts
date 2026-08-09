@@ -395,6 +395,21 @@ export const ldSpecs: ScreenshotSpec[] = [
             // the most frequency-differentiated in the frame, which is the other
             // half of a sweep. Scatter over a fixed 0..0.5, because the value is
             // one point per variant and the spread IS the signal.
+            // THE AXIS STARTS AT 0.1, NOT 0 (reviewer: "i can't see the Fst
+            // pattern. need to zoom out way more if we want to see this i
+            // think? either that or the Fst data is bad"). Zooming out is the
+            // wrong lever and would make it worse: 93,876 variants across
+            // 1400 px is 67 a pixel, and almost all of them sit under 0.05, so
+            // a 0-0.5 axis spent its bottom fifth on a saturated blue bar and
+            // drew the one differentiated variant as an indistinguishable speck
+            // above it. Nothing about the data changed -- the floor is a
+            // display window, and every point that survives it is a variant
+            // more differentiated than 95% of the frame. rs4988235 at 0.472 is
+            // then a point near the top of an otherwise sparse lane.
+            //
+            // Taller too (110 -> 170): with the haze gone the lane has to
+            // resolve the spread between 0.1 and 0.5 rather than just show that
+            // something is there.
             {
               trackId: 'kgp_lct_fst',
               type: 'LinearWiggleDisplay',
@@ -402,9 +417,9 @@ export const ldSpecs: ScreenshotSpec[] = [
               useBicolor: false,
               scatterPointSize: 2,
               summaryScoreMode: 'max',
-              minScore: 0,
+              minScore: 0.1,
               maxScore: 0.5,
-              height: 110,
+              height: 170,
             },
             { trackId: 'kgp_lct_pooled', type: 'LDDisplay', height: 250 },
             { trackId: 'kgp_lct_panel', type: 'LDDisplay', height: 250 },
@@ -421,9 +436,44 @@ export const ldSpecs: ScreenshotSpec[] = [
     // recombination zone each) + headers + ruler/overview. The triangles came
     // down from 330 (reviewer: "reduce heights of the linkage tracks"), which
     // costs nothing legible: the block is a shape, not a height, and the room
-    // it frees is what the Fst lane takes.
-    viewportHeight: 1000,
+    // it frees is what the Fst lane takes. +60 for that lane's second growth.
+    viewportHeight: 1060,
     settleMs: 8000,
+    // The one variant the lane exists for, named on it. With the floor raised
+    // the lane is legible, but it is still ~4,000 surviving points and nothing
+    // in it says which one is the lactase-persistence allele; a reader would
+    // have to take the caption's word and count pixels off the highlight band.
+    // rs4988235 is chr2:136,608,646 in hg19, so the pill anchors to the
+    // coordinate rather than to a measured x.
+    annotations: [
+      {
+        type: 'text',
+        text: 'rs4988235',
+        fontSize: 16,
+        anchor: {
+          track: 'kgp_lct_fst',
+          locus: 'chr2:136,608,646',
+          fracY: 0.42,
+          alignX: 'left',
+          dx: -150,
+        },
+      },
+      {
+        type: 'arrow',
+        fromAnchor: {
+          track: 'kgp_lct_fst',
+          locus: 'chr2:136,608,646',
+          fracY: 0.38,
+          alignX: 'left',
+          dx: -80,
+        },
+        anchor: {
+          track: 'kgp_lct_fst',
+          locus: 'chr2:136,608,646',
+          fracY: 0.09,
+        },
+      },
+    ],
   },
   {
     mode: 'url',
@@ -734,7 +784,56 @@ export const ldSpecs: ScreenshotSpec[] = [
     readyTimeout: 300000,
     settleMs: 8000,
     // gene(60) + clinvar(70) + the 360px LD band + the 700px matrix, their
-    // headers and the ruler. Sized from the run's own clipped/blank report.
-    viewportHeight: 1498,
+    // headers and the ruler. Sized from the run's own clipped/blank report;
+    // +20 for the 4 px of extra clearance every offset track label now takes.
+    viewportHeight: 1518,
+    // WHAT THE CLUSTERING PRODUCED, marked (reviewer: "does this figure
+    // somewhat 'clearly' show the clustering? please analyze. if needed add red
+    // text annotation to figure showing groupings in the multi-sample variant
+    // view").
+    //
+    // It does, and the thing to look at is a shape rather than the dendrogram:
+    // the clustered rows resolve into one band that is uniform straight across
+    // the block while every row outside it is speckled, which is what a
+    // haplotype that travelled as one piece looks like on a matrix. The
+    // dendrogram beside it is 550 rows deep in ~40 px of gutter and can only
+    // ever be a texture at this height, so it is not what the pill points at.
+    //
+    // The pills carry NUMBERS, not adjectives (reviewer: "the text 'one
+    // clustered haplotype' is too vague ... i need more detail"). Both come
+    // from the file this figure reads: at rs4988235 (2:136,608,646) the slice
+    // carries AC=90 / AN=300, i.e. 150 samples, 300 haplotype rows, 90 of them
+    // carrying the persistence allele -- checkable with
+    // `bcftools view -H -r 2:136608646-136608646` on the hosted VCF. That the
+    // clustering puts all 90 in one clade is the measurement recorded on
+    // clusterRegion above, and the render agrees with it: the uniform band the
+    // first pill sits beside is ~31% of the matrix's height, i.e. ~92 of 300
+    // rows, which is the carrier count and not a coincidence.
+    annotations: [
+      {
+        type: 'text',
+        text: 'One clade: the 90 of 300 haplotypes carrying rs4988235-A, unbroken across the block',
+        fontSize: 17,
+        maxWidth: 330,
+        anchor: {
+          track: 'kgp_lct_haplotypes',
+          locus: 'chr2:135,120,000',
+          fracY: 0.3,
+          alignX: 'left',
+        },
+      },
+      {
+        type: 'text',
+        text: 'The other 210: no block shared across the window',
+        fontSize: 17,
+        maxWidth: 300,
+        anchor: {
+          track: 'kgp_lct_haplotypes',
+          locus: 'chr2:135,120,000',
+          fracY: 0.72,
+          alignX: 'left',
+        },
+      },
+    ],
   },
 ]

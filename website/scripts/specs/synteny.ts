@@ -3023,6 +3023,56 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // 21 MB PIF plus the hs1 chrom.sizes, both remote
     readyTimeout: 180000,
     settleMs: 10000,
+    // THE TWO STRUCTURES, BOXED (reviewer: "this is kind of chaotic, we might
+    // need to cross reference paper ... is the liftover even accurately
+    // representing this"). The caption already named both, but a reader has to
+    // find them among a few hundred dispersed-repeat blocks that are real
+    // alignments at this minimum length and cannot be filtered away without
+    // taking the palindromes with them. Boxing them is what a caption cannot
+    // do.
+    //
+    // Cells, not pixels: a dotplot anchor takes a locstring per axis, so these
+    // follow the plot at any width or zoom. The coordinates are the published
+    // ones -- TSPY at chrY:9.05-9.75 Mb and the P1-P5 palindrome family across
+    // Yq at 21.2-26.0 Mb in T2T-CHM13v2 -- rather than read off the picture.
+    annotations: [
+      {
+        type: 'box',
+        anchor: {
+          hLocus: 'chrY:9,050,000-9,750,000',
+          vLocus: 'chrY:9,050,000-9,750,000',
+        },
+      },
+      {
+        type: 'text',
+        text: 'TSPY array',
+        fontSize: 17,
+        anchor: {
+          hLocus: 'chrY:9,050,000-9,750,000',
+          vLocus: 'chrY:9,050,000-9,750,000',
+          alignY: 'bottom',
+          dy: 40,
+        },
+      },
+      {
+        type: 'box',
+        anchor: {
+          hLocus: 'chrY:21,200,000-26,000,000',
+          vLocus: 'chrY:21,200,000-26,000,000',
+        },
+      },
+      {
+        type: 'text',
+        text: 'Yq palindromes',
+        fontSize: 17,
+        anchor: {
+          hLocus: 'chrY:21,200,000-26,000,000',
+          vLocus: 'chrY:21,200,000-26,000,000',
+          alignX: 'left',
+          dx: -130,
+        },
+      },
+    ],
   },
 
   {

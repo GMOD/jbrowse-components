@@ -541,22 +541,12 @@ export const uiSpecs: ScreenshotSpec[] = [
               trackId: 'kgp_sv_matrix',
               type: 'LinearMultiSampleVariantDisplay',
               forceLoad: true,
-              height: 400,
-            },
-            {
-              trackId: 'kgp_sv_records',
-              type: 'LinearVariantDisplay',
-              forceLoad: true,
-              // enough for the four rows the 26 records pack into plus their
-              // name/type labels; at 130 the last row was under the lane's fold
-              height: 170,
-              // the same `svTypeColor` jexl the SV-type cell preset is built on
-              // (SV_TYPE_COLOR_JEXL in plugins/variants/src/shared/
-              // variantSvType.ts -- written out rather than imported, since that
-              // module pulls the core util barrel and specs are read under
-              // plain node), so a record's colour and the legend agree with the
-              // multi-variant guide's SV-type figure
-              color: 'jexl:svTypeColor(feature)',
+              // 400 -> 290 (reviewer: "reduce height of both the
+              // multisamplevariantdisplay, the multiwiggledisplay"). 3202
+              // samples in 290 px is 0.09 px a row, which is already past what
+              // a row can be: what this lane draws is three BANDS, and a band
+              // is legible at any height that leaves it more than a few pixels.
+              height: 290,
             },
             // THE DEPTH LANE, which is what the callset cannot draw. A VCF
             // states a genotype per record, so a locus carrying nested and
@@ -589,9 +579,34 @@ export const uiSpecs: ScreenshotSpec[] = [
               maxScore: 4,
               posColor: '#b2182b',
               negColor: '#2166ac',
-              height: 480,
+              // 480 -> 330, and directly under the matrix rather than with the
+              // record lane between them (reviewer: "reduce height of both ...
+              // put them stacked"). The two lanes are the same 3202 individuals
+              // measured two ways, so they are the comparison and they belong
+              // adjacent; the record lane is a legend for both of them and now
+              // sits under the pair rather than inside it.
+              height: 330,
               runClustering: true,
               showTree: false,
+            },
+            {
+              trackId: 'kgp_sv_records',
+              type: 'LinearVariantDisplay',
+              forceLoad: true,
+              // enough for the four rows the 26 records pack into plus their
+              // name/type labels; at 130 the last row was under the lane's fold
+              height: 170,
+              // ONE COLOUR (reviewer: "dont use all the colors on the vcf, it
+              // is confusing and distracting"). This lane used the `svTypeColor`
+              // jexl the SV-type cell preset is built on, which paints six
+              // classes over 26 overlapping records -- and every record already
+              // carries its class IN its own label (`<DEL> 70.1Kbp`), so the
+              // colour was a second, weaker copy of text that was already
+              // there. The class-coloured version of this idea is multisv_svtype
+              // in the multi-variant guide, on a window whose classes are the
+              // subject. Dropping the jexl also drops the floating key this
+              // spec used to have to hide by selector.
+              color: '#4a5568',
             },
             // showLabels:'on' forces gene names on at this zoom; showOnlyGenes
             // drops the per-transcript subfeatures so RHD/RHCE read as single
@@ -599,7 +614,7 @@ export const uiSpecs: ScreenshotSpec[] = [
             {
               trackId: 'ncbi_refseq_hg38',
               type: 'LinearBasicDisplay',
-              height: 140,
+              height: 120,
               // 'on' + showDescriptions:false is the retired pair;
               // migrateBasicConfigSnapshot folds exactly that into 'name'
               showLabels: 'name',
@@ -613,25 +628,12 @@ export const uiSpecs: ScreenshotSpec[] = [
     // the 2504-row store is clustered on this window as well as fetched, and
     // the callset itself is a remote EBI tabix read
     readyTimeout: 300000,
-    viewportHeight: 1490,
+    // 1490 -> 1230: 110 off the matrix, 150 off the depth lane, 20 off the gene
+    // lane. The record lane's floating SV-type key used to be hidden by
+    // selector here; it is gone with the jexl that produced it.
+    viewportHeight: 1230,
     settleMs: 35000,
     hideTooltip: true,
-    // The record lane's SV-type key floats at its own top-right, on top of the
-    // last two records' labels (HGSV_1832 and HGSV_1835 came out as `HGS… <DU…`
-    // and a clipped `<DEL> 18.2Kb`). It is also the one key here that names
-    // nothing new: every record is drawn with its class IN its label (`<DEL>`,
-    // `<CNV>`, `<INS:ME:ALU>`), where a matrix cell carries no text at all and
-    // the genotype key above it is the only thing naming those fills. So the
-    // record lane's key goes and the matrix's stays.
-    //
-    // Scoped through the record track's own rendering container: both tracks
-    // portal a `Hide legend` box into their own TrackContainer overlay (a
-    // sibling of that container inside the track Paper — see
-    // TrackOverlayPortal), so a bare `[title="Hide legend"]` would take the
-    // genotype key instead, being first in the DOM.
-    hideSelectors: [
-      '[data-testid$="-kgp_sv_records"] ~ div div:has(> button[title="Hide legend"])',
-    ],
     actions: [
       // the clustering RPC over 2504 rows finishes well after first paint, and
       // a capture taken before it lands shows the store in panel order under a

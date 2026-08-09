@@ -330,7 +330,7 @@ against the reference. Both tracks below are real alignments with soft clipping
 shown, over the same 380 bp of the event: `derive`'s realigned BAM on the
 derivative, and the tumour BAM on hg38.
 
-<Figure caption="COLO829 tumour ONT reads over one junction, twice. Against hg38 (left, a breakpoint split view) they stop at chr3:25,359,568 with their tails clipped, and the curves are the same molecules continuing on chr10:58,717,464. Realigned to the derivative (right) they cross that junction at flat depth, with no curve to draw." src="/img/cancer_sv/realigned_reads.png" links="hg38=cancer_sv/realigned_reads_reference,derivative=cancer_sv/realigned_reads_derivative" />
+<Figure caption="COLO829 tumour ONT reads over one junction, twice. Against hg38 (left, split alignments only) they stop at chr3:25,359,568 with their tails clipped, and the curves are the same molecules landing on 199 bp of chr10. Realigned to the derivative (right) they cross the junction at flat depth. The panes are at different zooms and each carries its own scale bar." src="/img/cancer_sv/realigned_reads.png" links="hg38=cancer_sv/realigned_reads_reference,derivative=cancer_sv/realigned_reads_derivative" />
 
 ## The transcript view
 

@@ -748,52 +748,79 @@ export const dog10kSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'dog10k-denr-sine-deletions',
-    url: lgvSession(DOG_CONFIG, {
-      assembly: 'UU_Cfam_GSD_1.0',
-      // All of DENR (chr26:6,929,118-6,943,861 in canFam4 RefSeq) plus flanks,
-      // per review ("need to zoom out more"). The old 6.5 kb window cut the gene
-      // at both edges, so the transcript rows ran off both sides and the
-      // connector zone pointed into a gene the reader could not see the shape
-      // of. Zooming out costs nothing here: the track holds exactly the two SINE
-      // records the build script selected, so the matrix still has two columns
-      // however wide the window is.
-      loc: 'chr26:6,927,500-6,945,500',
-      tracks: [
+    // The VCF is declared TWICE in test_data/dog10k/config.json, as
+    // `dog10k_denr_svs` and `dog10k_denr_svs_records`, which is the only way to
+    // get two displays of one callset into one view: showTrack resolves by
+    // trackId and hands back the display already open. In the CONFIG rather
+    // than as a sessionTrack the way multisv_rhd does it, because a session
+    // track does not inherit the config's baseUri -- its adapter would need an
+    // absolute url, and this VCF exists only in the repo's test_data.
+    url: sessionSpec(DOG_CONFIG, {
+      views: [
         {
-          trackId: 'canFam4_ncbi_refseq',
-          type: 'LinearBasicDisplay',
-          height: 100,
-        },
-        {
-          trackId: 'dog10k_denr_svs',
-          type: 'LinearMultiSampleVariantMatrixDisplay',
-          // 56 rows. 700 divided to exactly 12.5px a row and cut the last one
-          // against the track's own bottom border, which no viewportHeight can
-          // fix -- the clipping is inside the track box, not below the fold.
-          height: 730,
-          // The two columns are laid out by feature index, so the only thing
-          // saying which repeat is which is the band of lines tying each column
-          // back to its position in the gene above. At the 20px default that
-          // band is a sliver; over a whole-gene window it has to carry a real
-          // diagonal, which is what makes the left column the first intron's
-          // repeat rather than just the left half of a panel.
-          lineZoneHeight: 60,
-          layout: DENR_LAYOUT,
-          // Draw reference alleles instead of filling the lane grey. The default
-          // 'skip' paints the whole background REFERENCE_COLOR and omits
-          // homozygous-reference cells, which is the right default when a cell
-          // means "carries the variant" — but here the reference allele is the
-          // SINE being present, so an omitted cell is the state the figure is
-          // about and it was indistinguishable from empty lane.
-          referenceDrawingMode: 'draw',
+          type: 'LinearGenomeView',
+          assembly: 'UU_Cfam_GSD_1.0',
+          // All of DENR (chr26:6,929,118-6,943,861 in canFam4 RefSeq) plus flanks,
+          // per review ("need to zoom out more"). The old 6.5 kb window cut the gene
+          // at both edges, so the transcript rows ran off both sides and the
+          // connector zone pointed into a gene the reader could not see the shape
+          // of. Zooming out costs nothing here: the track holds exactly the two SINE
+          // records the build script selected, so the matrix still has two columns
+          // however wide the window is.
+          loc: 'chr26:6,927,500-6,945,500',
+          tracks: [
+            {
+              trackId: 'canFam4_ncbi_refseq',
+              type: 'LinearBasicDisplay',
+              height: 100,
+            },
+            {
+              trackId: 'dog10k_denr_svs',
+              type: 'LinearMultiSampleVariantMatrixDisplay',
+              // 56 rows. 700 divided to exactly 12.5px a row and cut the last one
+              // against the track's own bottom border, which no viewportHeight can
+              // fix -- the clipping is inside the track box, not below the fold.
+              height: 730,
+              // The two columns are laid out by feature index, so the only thing
+              // saying which repeat is which is the band of lines tying each column
+              // back to its position in the gene above. At the 20px default that
+              // band is a sliver; over a whole-gene window it has to carry a real
+              // diagonal, which is what makes the left column the first intron's
+              // repeat rather than just the left half of a panel.
+              lineZoneHeight: 60,
+              layout: DENR_LAYOUT,
+              // Draw reference alleles instead of filling the lane grey. The default
+              // 'skip' paints the whole background REFERENCE_COLOR and omits
+              // homozygous-reference cells, which is the right default when a cell
+              // means "carries the variant" — but here the reference allele is the
+              // SINE being present, so an omitted cell is the state the figure is
+              // about and it was indistinguishable from empty lane.
+              referenceDrawingMode: 'draw',
+            },
+            // THE SAME TWO RECORDS AS RECORDS (reviewer: "this is a somewhat
+            // chaotic screenshot, unsure what i should be getting from this. might
+            // need a linearvariantdisplay of same data"). A matrix lays its columns
+            // out by feature INDEX, so a column's genomic position is carried only
+            // by the connector band above it; an ordinary variant display puts each
+            // record at its own coordinate and labels it with its id and size, so a
+            // reader can name the column instead of tracing a line. Under the
+            // matrix rather than over it, so the connector band still lands on the
+            // gene it points into.
+            {
+              trackId: 'dog10k_denr_svs_records',
+              type: 'LinearVariantDisplay',
+              height: 90,
+            },
+          ],
         },
       ],
     }),
     readyText: 'chr26',
     readyTimeout: 90000,
     settleMs: 6000,
-    // gene track plus all 56 sample rows and the genotype legend
-    viewportHeight: 1094,
+    // gene track plus all 56 sample rows, the genotype legend and the record
+    // lane under them
+    viewportHeight: 1200,
   },
 
   // The pancreatic amylase duplication, genotyped across dogs and every wolf in

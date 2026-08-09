@@ -147,4 +147,28 @@ export const dtuSpecs: ScreenshotSpec[] = [
     settleMs: 4000,
     viewportHeight: 730,
   },
+
+  // The two above as ONE figure (reviewer, on the wide one: "this is very
+  // similar to dtu/atp5f1c_isoform_switch, might make multi-part figure, or
+  // delete dtu/atp5f1c_isoform_switch entirely"). They are the same track over
+  // the same gene at two zooms, and side by side in a page they read as a
+  // repeat; stacked in one frame they read as one zoom, which is what they are.
+  //
+  // Whole gene on TOP, and that order is the answer to the other note on this
+  // pair ("there are weird 'gaps' between the gene glyphs. might want to find a
+  // way to fix this. can we sort or pack transcripts in a glyph automatically
+  // in cases like this?"). Checked against the whole-gene frame: the empty rows
+  // are ATP5F1C-203, -204, -205 and -207, all four of which END before the 8 kb
+  // window starts. The layout is computed per BLOCK rather than per visible
+  // window -- which is what keeps rows from renumbering as you pan -- so a
+  // feature just off the left edge keeps its row and the row draws empty.
+  // Nothing declarative removes them, and packing them out would mean a layout
+  // that reshuffles on every scroll. The whole-gene frame above names every one
+  // of those rows instead, so the gaps read as isoforms that ended rather than
+  // as something having gone wrong.
+  {
+    mode: 'compose',
+    name: 'dtu/atp5f1c_dtu',
+    parts: ['dtu/dtu_colored_gene_glyph', 'dtu/atp5f1c_isoform_switch'],
+  },
 ]

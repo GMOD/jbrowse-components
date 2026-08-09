@@ -81,7 +81,7 @@ recover is 410 kb past the end of _SMN1_, so this is one 650 kb window with the
 edge inside it rather than a pair of panels that a reader has to hold in mind at
 once.
 
-<Figure src="/img/qc/smn_vs_control.png" caption="650 kb on chromosome 5, SMN1 banded at the left. RefSeq genes, gnomAD v3 mean coverage, and NA12878 reads colored by mapping quality. The pileup is red for four fifths of the frame and then multi-colored, and the coverage lane steps up at the same place." links="Open this view=qc/smn_vs_control,Open a 30 kb window over SMN1=qc/smn1_evidence" />
+<Figure src="/img/qc/smn_vs_control.png" caption="650 kb on chromosome 5, SMN1 banded at the left. RefSeq genes, Umap k100 multi-read mappability summarized by minimum, gnomAD v3 mean coverage, and NA12878 reads colored by mapping quality. The mappability lane is on the floor for four fifths of the frame; the pileup over it is red (MAPQ 0) across the same span and multi-colored after it, and the coverage lane steps up at the same coordinate." links="Open this view=qc/smn_vs_control,Open a 30 kb window over SMN1=qc/smn1_evidence" />
 
 The lanes are independent of each other, which is what makes them worth
 stacking:
@@ -91,9 +91,14 @@ stacking:
   the genome. Positions where no 100-mer is unique are absent from the file
   rather than stored as zero, so the lane goes blank rather than to the floor.
   Over the genome its mean is 0.98, so a blank stretch is unusual. It is a
-  per-base track, so it is in the 30 kb view linked above rather than in the
-  figure. At 464 bp a pixel the absent stretches average in with the present
-  ones and the lane says nothing.
+  per-base track, and how it summarizes decides whether it survives a wide
+  window: with the default **avg** a zoom bin that is mostly absent averages the
+  few present positions and the lane draws a wall near 1, while **min** takes
+  the worst position in the bin and the lane sits on the floor across the block
+  and steps to 1 at its edge. That step lands at the same coordinate as the MAPQ
+  0 to MAPQ 60 transition in the reads and the gnomAD coverage step. Past about
+  a kilobase a pixel even **min** saturates low, so this lane belongs in the 650
+  kb frame and not in the 2.5 Mb one above it.
 - **gnomAD v3 mean genome coverage** is the outcome of that annotation on real
   data, averaged over 76,156 sequenced genomes. gnomAD drops non-uniquely-placed
   reads before computing it, so wherever the lane above is blank this one falls.

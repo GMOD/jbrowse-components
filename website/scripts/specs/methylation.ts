@@ -56,6 +56,52 @@ const WGBS_CONTEXT_COPIES = (['CG', 'CHG', 'CHH'] as const).map(c =>
   wgbsContextTrack(c),
 )
 
+function snrpnModkitSubadapter(hp: 'hp1' | 'hp2', color: string) {
+  const uri = `https://jbrowse.org/demos/methylation/HG002_SNRPN_${hp}.modkit.bed.gz`
+  return {
+    type: 'BedTabixAdapter',
+    name: hp === 'hp1' ? 'HP1' : 'HP2',
+    color,
+    bedGzLocation: { uri, locationType: 'UriLocation' },
+    index: {
+      location: { uri: `${uri}.tbi`, locationType: 'UriLocation' },
+      indexType: 'TBI',
+    },
+  }
+}
+
+// The two per-haplotype modkit bedMethyl files as ONE multi-wiggle track
+// (reviewer: "consider making the modkit a multi-wiggle"). config_demo.json
+// declares them as two separate MultiQuantitativeTracks, which is right for a
+// track list but wrong for this figure: two lanes, two headers, two independent
+// autoscales, and the comparison the figure exists to make happens across a
+// track boundary. Merged, the two haplotypes are two rows of one lane on one
+// pinned 0-100 axis.
+//
+// A MultiWiggleAdapter's subadapters do not have to be BigWigs — anything
+// quantitative works, and each subadapter's `name` becomes the row's source
+// label. That matters here because bedMethyl features carry a `source` of their
+// own (the modification code, from generateBedMethylFeature), so the row
+// identity has to come from the outer fan-out rather than from the file.
+//
+// The colours match the read lanes below: at this locus HP1 is the methylated
+// haplotype and its reads are red, HP2 the unmethylated one and its reads are
+// blue. That agreement is a property of this locus, not a rule — which is why
+// the row labels, not the colours, are what says which is which.
+const SNRPN_MODKIT_MULTI_TRACK = {
+  type: 'MultiQuantitativeTrack',
+  trackId: 'HG002_snrpn_modkit_multi',
+  name: 'HG002 5mC by haplotype (modkit)',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'MultiWiggleAdapter',
+    subadapters: [
+      snrpnModkitSubadapter('hp1', '#d62728'),
+      snrpnModkitSubadapter('hp2', '#1f77b4'),
+    ],
+  },
+}
+
 // Arabidopsis WGBS (Col-0 DRR029742, bwameth-aligned) over
 // NC_003070.9:4,398,000-4,412,000, a window that pairs two methylation regimes:
 // the expressed ARM-repeat gene AT1G12930 (~4.398-4.406 Mb) carries gene-body
@@ -410,63 +456,94 @@ export const methylationSpecs: ScreenshotSpec[] = [
   // Allele-specific methylation at the SNRPN / PWS-IC imprinting center
   // (chr15:24.95Mb) from HG002 ONT data, in one view (reviewer: don't compose two
   // screenshots — add the bedMethyl track as another track in the single view).
-  // Top-to-bottom: CpG island + SNRPN gene, the two per-haplotype modkit 5mC
-  // profiles (aggregate summary), then the same HG002 ONT reads grouped by HP and
-  // colored by methylation (the read-level source). One assembly, one locus, one
-  // x-scale — the aggregate profile and the reads that produce it line up
-  // column-for-column down the figure.
+  // Top-to-bottom: CpG island + SNRPN gene, the per-haplotype modkit 5mC
+  // profiles in ONE multi-wiggle lane (aggregate summary), then the same HG002
+  // ONT reads grouped by HP and colored by methylation (the read-level source).
+  // One assembly, one locus, one x-scale — the aggregate profile and the reads
+  // that produce it line up column-for-column down the figure.
   {
     mode: 'url',
     name: 'methylation/hg002_snrpn_combined',
-    url: lgvSession(DEMO_CONFIG, {
-      assembly: 'hg38',
-      loc: 'chr15:24,948,000-24,962,000',
-      tracks: [
+    url: sessionSpec(DEMO_CONFIG, {
+      sessionTracks: [SNRPN_MODKIT_MULTI_TRACK],
+      views: [
         {
-          trackId: 'cpgisland_ucsc_hg38',
-          type: 'LinearBasicDisplay',
-          height: 40,
-        },
-        {
-          trackId: 'ncbi_refseq_109_hg38_latest',
-          type: 'LinearBasicDisplay',
-          geneGlyphMode: 'longestCoding',
-          displayMode: 'compact',
-          height: 90,
-        },
-        {
-          trackId: 'HG002_snrpn_modkit_hp1',
-          type: 'MultiLinearWiggleDisplay',
-          defaultRendering: 'multirowxy',
-          minScore: 0,
-          maxScore: 100,
-          height: 90,
-        },
-        {
-          trackId: 'HG002_snrpn_modkit_hp2',
-          type: 'MultiLinearWiggleDisplay',
-          defaultRendering: 'multirowxy',
-          minScore: 0,
-          maxScore: 100,
-          height: 90,
-        },
-        {
-          trackId: 'HG002_snrpn_5mC_reads',
-          type: 'LinearAlignmentsDisplay',
-          height: 460,
-          forceLoad: true,
-          groupBy: { type: 'tag', tag: 'HP' },
-          colorBy: {
-            type: 'modifications',
-            modifications: { fillUnmarked: true },
-          },
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr15:24,948,000-24,962,000',
+          tracks: [
+            {
+              trackId: 'cpgisland_ucsc_hg38',
+              type: 'LinearBasicDisplay',
+              height: 40,
+            },
+            {
+              trackId: 'ncbi_refseq_109_hg38_latest',
+              type: 'LinearBasicDisplay',
+              geneGlyphMode: 'longestCoding',
+              displayMode: 'compact',
+              height: 90,
+            },
+            {
+              trackId: 'HG002_snrpn_modkit_multi',
+              type: 'MultiLinearWiggleDisplay',
+              defaultRendering: 'multirowxy',
+              // one scale for both haplotypes, which is the point of merging
+              // them: a per-track autoscale would put each haplotype's own
+              // maximum at the top of its own lane
+              minScore: 0,
+              maxScore: 100,
+              height: 170,
+            },
+            {
+              trackId: 'HG002_snrpn_5mC_reads',
+              type: 'LinearAlignmentsDisplay',
+              height: 460,
+              forceLoad: true,
+              groupBy: { type: 'tag', tag: 'HP' },
+              colorBy: {
+                type: 'modifications',
+                modifications: { fillUnmarked: true },
+              },
+            },
+          ],
         },
       ],
     }),
     readySelector: '[data-testid="pileup-display-done"]',
     readyTimeout: 90000,
     settleMs: 15000,
-    // cpg(40) + gene(90) + two aggregate profiles(90 each) + reads(460) + chrome
-    viewportHeight: 1115,
+    // cpg(40) + gene(90) + the merged aggregate(170) + reads(460) + chrome
+    viewportHeight: 1085,
+    // THE THREE GROUPS, NAMED (reviewer: "Please label HP1, HP2, and HP
+    // none/unknown with red annotation boxes similar to
+    // methylation/hg002_snrpn_group_by_hp"). Same three pills, same anchors and
+    // the same wording as that figure, so the two read the same way; the
+    // display's own `HP: 1` / `HP: 2` / `HP: none` headers are small grey type
+    // that names the group without saying what it shows.
+    //
+    // Anchored by text, so they follow the groups wherever the pack puts them.
+    // Which haplotype is methylated is read off the render rather than assumed
+    // -- the HP tags are arbitrary and a rebuild of the BAM could swap them.
+    annotations: [
+      {
+        type: 'text',
+        text: 'HP1: methylated across the island',
+        // dy only on this one: HP: 1 is the FIRST group, so its label sits
+        // against the top of the track and a pill centred on it overhangs the
+        // track header above. The other two have reads above them already.
+        anchor: { text: 'HP: 1', alignX: 'right', dx: 90, dy: 18 },
+      },
+      {
+        type: 'text',
+        text: 'HP2: unmethylated',
+        anchor: { text: 'HP: 2', alignX: 'right', dx: 90 },
+      },
+      {
+        type: 'text',
+        text: 'HP unknown: reads with no haplotype tag',
+        anchor: { text: 'HP: none', alignX: 'right', dx: 90 },
+      },
+    ],
   },
 ]

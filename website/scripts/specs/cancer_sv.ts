@@ -120,6 +120,26 @@ const GENE_TRACK = {
   height: 60,
 }
 
+// Close the reference-sequence lane the reconstruction ships on its reference
+// panel (reviewer, on the fold-back figure: "also remove the 'reference
+// sequence' track"). `LinearDerivativeVsRef` opens the view fit to the whole
+// allele -- `bpPerPx: refLen / viewWidth` -- so on a 48 kb derivative the
+// sequence display can only draw its "Zoom in to see sequence" banner, and it
+// costs 35 px plus a track header on both frames it appears in. It is not
+// removed in the app because the same lane IS legible for a short allele, where
+// the fit zoom lands under 1 bp/px.
+//
+// The trackId is the launching assembly's sequence track, which
+// buildDerivativeVsRefSpec carries over verbatim. `track-close-<trackId>` is a
+// testid TrackLabelButtons now publishes; before it the only handle was the
+// shared `title="close this track"`, and picking one track's copy out of it
+// meant a `:has()` walk up to the Paper the label shares with the rendering
+// container.
+const CLOSE_REF_SEQUENCE_TRACK = {
+  type: 'click' as const,
+  selector: '[data-testid="track-close-hg38-ReferenceSequenceTrack"]',
+}
+
 // Support level, as a colour, for the arcs in the amplicon figure: three
 // windows hold five arcs there, with no room for a column of numbers beside
 // them. StarFusionAdapter puts JunctionReadCount on the feature's score, and
@@ -142,11 +162,31 @@ const FUSION_ARC_COLOR =
 // allele has no bases, so a read's own sequence never touches it and no
 // junction error can show.
 //
-// The chr3 junction at 25,359,568, which is the first one the allele takes, at
-// 380 bp on both sides so a pane's width is the same number of bases. The
-// derivative's own coordinate for it is 32,732 (der3_RARB.vs_reference.paf:
-// segment 1 is 0-32,732 + -> chr3:25,326,821-25,359,568), and the two windows
-// are centred on the pair.
+// The chr3 junction at 25,359,568, which is the first one the allele takes.
+// The derivative's own coordinate for it is 32,732 (der3_RARB.vs_reference.paf:
+// segment 1 is 0-32,732 + -> chr3:25,326,821-25,359,568), and both panes are
+// centred on the pair.
+//
+// THE TWO PANES ARE NO LONGER THE SAME WIDTH, and that is deliberate. The
+// reference pane is 5 kb a panel where it used to be 380 bp, which is what
+// fixes the second glitch report on this figure. A BreakpointSplitView
+// connector runs between two SEGMENT ENDS, so if either end falls outside its
+// panel the curve is still drawn -- from a coordinate far off the left edge to
+// one on screen. At 380 bp most of these reads had one end outside, and forty
+// such curves at once came out as a diagonal comb crossing the lower panel with
+// no read at either end of it, which is what "weird glitchy lines in figure 1
+// on left" is. The window is the fix, not a setting: at 5 kb both ends of every
+// connector are in frame, the curves converge on the junction, and the chr10
+// landing site reads as the 199 bp island it is. Reducing the read count first
+// (`showOnlySplitAlignments` below) halved the comb and did not remove it -- it
+// is geometry, not density.
+//
+// The derivative pane stays at 380 bp, and widening it to match was tried and
+// reverted: past about a kilobase the pane fills with the clipped tails of
+// reads that reach the junction without crossing it, which is a true thing
+// about the realignment and the opposite of what this pane is for. Each pane
+// carries its own scale bar, and the two answer different questions -- where
+// the pieces went, and whether anything clips AT the junction.
 //
 // Soft clipping is ON in both panes, which is what makes the comparison
 // honest: the right pane is not "clipping hidden", it is the same setting over
@@ -202,6 +242,18 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
     trackId: TUMOUR,
     ...DEEP_ONT,
     showSoftClipping: true,
+    // ONLY THE SPLIT READS, which is what the panel is about and what fixes
+    // the second glitch report ("this is potentially showing some weird
+    // glitchy lines in figure 1 on left"). Those lines were the bezier
+    // connectors: 200x of COLO829 packs more rows into each panel than the
+    // panel is tall, so a connector leaving a row the pileup drew BELOW the
+    // visible band still gets drawn, and a couple of hundred of them at 2px
+    // spacing come out as two diagonal ladders running off both edges with no
+    // read at either end. `showOnlySplitAlignments` keeps the reads the
+    // aligner emitted a supplementary segment for -- the chimeric evidence
+    // this pane exists to show -- and every connector then starts and ends on
+    // a row a reader can see.
+    showOnlySplitAlignments: true,
     // 2px rows, not the 1px SUPER_COMPACT the other cancer_sv pileups take: at
     // 1px a read is a hairline and the rows fuse into a grey slab with white
     // streaks where the pack happens to leave a gap, which reads as a rendering
@@ -243,24 +295,22 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
             views: [
               {
                 assembly: 'hg38',
-                loc: 'chr3:25,359,380-25,359,760',
+                loc: 'chr3:25,357,000-25,362,000',
                 tracks: [{ ...BREAKPOINT_READS, height: 280 }],
               },
               {
                 assembly: 'hg38',
-                loc: 'chr10:58,717,274-58,717,654',
+                loc: 'chr10:58,715,000-58,720,000',
                 tracks: [{ ...BREAKPOINT_READS, height: 150 }],
               },
             ],
           },
         ],
       }),
-      // 380 bp a panel, which is the window the single pileup used and the same
-      // number of bases the derivative pane shows, so the two halves stay
-      // comparable base for base. It is also what makes the pileup fit: a 2 kb
-      // panel was tried and every read overlapping the wider window stacks, so
-      // the rows outgrew any height the panel could be given and the wall of
-      // clipping ran under a scrollbar.
+      // 5 kb a panel. A wider window means more reads stack, which is what
+      // kept this at 380 bp before -- the answer to that is
+      // `showOnlySplitAlignments` above rather than a narrower frame, and the
+      // split subset fits the panel at 2 px a row.
       // The connections rather than a delay -- the overlay publishes
       // `<trackId>-loaded` only once a read has matches on BOTH panels, which
       // is exactly the thing this pane exists to show.
@@ -328,8 +378,8 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
             trackId: 'reads_vs_der3',
             showSoftClipping: true,
             // 29 reads rather than 200, so they get a row an order of magnitude
-            // taller than the reference pane's and the pane fills with the
-            // same 380 bp of pileup
+            // taller than the reference pane's and the pane fills with 380 bp
+            // of pileup
             featureHeight: 9,
             // all 29 rows, and no more: a height that shows twenty of them puts
             // the rest behind a scrollbar, which reads as a pileup that stops.
@@ -638,6 +688,29 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
             timeout: 180000,
           },
         ],
+        // HOW THE DIALOG WAS OPENED, on the frame that shows it (reviewer:
+        // "might need a further 'part 1' text annotation showing the same text
+        // annotation as e.g. cancer_sv/multihop_reads -- whatever user needs to
+        // do to get the dialog"). Same wording and same shape as the pill on
+        // cancer_sv/multihop_reads, and it names the three clicks this stage's
+        // own `actions` drive, so the label and the capture cannot drift.
+        //
+        // Low in the pileup and hard left: the dialog is centred and 620 px
+        // wide, so the bottom-left corner of the reads track is the only region
+        // of the frame that is neither dialog nor scrim-darkened chrome.
+        annotations: [
+          {
+            type: 'text',
+            text: 'Track menu → Launch view → Reconstruct derivative allele...',
+            fontSize: 17,
+            maxWidth: 340,
+            anchor: {
+              track: TUMOUR,
+              locus: 'chr3:25,358,200',
+              fracY: 0.78,
+            },
+          },
+        ],
       },
       {
         // `Replace current view`, not the dialog's own submit: the
@@ -652,10 +725,15 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         // that list BEFORE the replace destroys the view it came from), so the
         // frame still says which genes the path runs through rather than
         // drawing ribbons between two bare axes.
-        actions: [{ type: 'click', text: 'Replace current view' }],
+        actions: [
+          { type: 'click', text: 'Replace current view' },
+          CLOSE_REF_SEQUENCE_TRACK,
+        ],
         // the synteny view alone, measured off the render: two panels, the
-        // ribbons between them and the provenance track under the derivative
-        viewportHeight: 660,
+        // ribbons between them and the provenance track under the derivative.
+        // 35 px shorter than before for the sequence track the action above
+        // closes
+        viewportHeight: 625,
       },
     ],
   },
@@ -710,14 +788,39 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
             timeout: 60000,
           },
         ],
+        // the same route pill as derivative_autogenerated's first stage, for
+        // the same reason: this frame is a dialog and nothing in it says which
+        // menu produced it.
+        //
+        // Hard against the track's left edge and narrower than that figure's:
+        // this dialog carries three candidate routes rather than one, so its
+        // button row sits lower and a centred-ish pill lands on CANCEL.
+        annotations: [
+          {
+            type: 'text',
+            text: 'Track menu → Launch view → Reconstruct derivative allele...',
+            fontSize: 17,
+            maxWidth: 250,
+            anchor: {
+              track: TUMOUR,
+              alignX: 'left',
+              dx: 8,
+              fracY: 0.78,
+            },
+          },
+        ],
       },
       {
         // as in derivative_autogenerated above: the result gets the frame, not
         // the pileup it was launched from. Shorter than that figure's because a
         // fold-back's derivative carries two segments rather than four, so the
         // provenance track is one row
-        actions: [{ type: 'click', text: 'Replace current view' }],
-        viewportHeight: 610,
+        actions: [
+          { type: 'click', text: 'Replace current view' },
+          CLOSE_REF_SEQUENCE_TRACK,
+        ],
+        // 35 px shorter for the closed sequence track
+        viewportHeight: 575,
       },
     ],
   },
@@ -815,10 +918,29 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   // The reads are what a separate figure used to carry on its own. Realigned
   // depth means nothing without the segment boundaries to read it against, and
   // those boundaries are this figure, so the two belong in one frame.
+  //
+  // SIMPLIFIED on review ("this is a relatively complex figure. can it be
+  // simplified? the sequence track is unneeded ... also, no ribbon on left
+  // side. just the two middle ones. why?"). Three things changed:
+  //
+  //  - BOTH reference-sequence lanes are gone. At 1.48 kb across a 1600 px
+  //    frame neither can draw a base, so each was 130 px of mismatch-coloured
+  //    hash that reads as data and is not. That is 260 px, most of the height
+  //    the figure lost.
+  //  - `drawCurves` is OFF, and that is the answer to the missing ribbon. The
+  //    first segment is 32.7 kb of chr3 and only its last few hundred bases are
+  //    in the top panel's window, so its far corner sits tens of thousands of
+  //    pixels off the left edge -- and a bezier drawn to a control point out
+  //    there leaves the frame vertically before it reaches the visible part.
+  //    As straight quadrilaterals every segment with any overlap in both
+  //    panels draws, which is what the reviewer expected to see.
+  //  - A pill on each row saying which genome it is.
   {
     mode: 'url',
     name: 'cancer_sv/derivative_inserts',
-    viewportHeight: 1412,
+    // 1412 left 270 css px of blank once the two sequence lanes went, per the
+    // run's own report
+    viewportHeight: 1145,
     viewportWidth: 1600,
     url: sessionSpec(CONFIG, {
       sessionTracks: [DER3_GENES_TRACK],
@@ -834,10 +956,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
               // deep inside an intron, so the glyphs are lines rather than exon
               // stacks, but they answer which gene each piece was taken from
               // without the reader going back to the text
-              tracks: [
-                { ...GENE_TRACK, height: 75 },
-                'hg38-ReferenceSequenceTrack',
-              ],
+              tracks: [{ ...GENE_TRACK, height: 75 }],
             },
             {
               assembly: 'der3_RARB_BICC1_TRHDE',
@@ -858,17 +977,48 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   trackId: DER3_GENES_TRACK.trackId,
                   height: 130,
                 },
-                'der3_RARB_BICC1_TRHDE-ReferenceSequenceTrack',
                 { trackId: 'reads_vs_der3', height: 250, ...READS },
               ],
             },
           ],
           tracks: [['der3_vs_hg38']],
-          drawCurves: true,
+          drawCurves: false,
           levelHeights: [220],
         },
       ],
     }),
+    // WHICH ROW IS WHICH GENOME, top and bottom (reviewer: "red box text
+    // annotations could be added on top and bottom to say what is being
+    // shown"). The location boxes in the header say it, but they say it in
+    // 11px grey at the top of the frame and a reader is looking at the ribbons.
+    // Two or three words each; the three loci are named on the segment track
+    // and in the caption.
+    annotations: [
+      {
+        type: 'text',
+        text: 'hg38, three source loci',
+        fontSize: 19,
+        anchor: {
+          view: [0, 0],
+          track: GENES,
+          alignX: 'left',
+          dx: 10,
+          fracY: 0.8,
+        },
+      },
+      {
+        type: 'text',
+        text: 'the derivative allele',
+        fontSize: 19,
+        anchor: {
+          view: [0, 1],
+          track: 'reads_vs_der3',
+          alignX: 'left',
+          dx: 10,
+          fracY: 0.88,
+        },
+      },
+    ],
   },
 
   // How the split view above is opened, since "here is a session that has one"

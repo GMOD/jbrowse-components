@@ -101,6 +101,16 @@
     },
     {
       "type": "VariantTrack",
+      "trackId": "dog10k_denr_svs_records",
+      "name": "Dog10K SVs at DENR (one row per record)",
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "dog10k_denr_svs.vcf.gz"
+      }
+    },
+    {
+      "type": "VariantTrack",
       "trackId": "dog10k_amy2b_svs",
       "name": "Dog10K structural variants at AMY2B (dogs and every wolf)",
       "assemblyNames": ["UU_Cfam_GSD_1.0"],

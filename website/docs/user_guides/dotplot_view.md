@@ -52,9 +52,15 @@ rather than another setting.
 
 Aligning a sequence to itself puts its internal repeat structure on the plot.
 Tandem arrays draw as filled wedges sitting on the diagonal, and inverted
-repeats draw as crossings off it.
+repeats draw as crossings off it. Everything else on the plot is real too: the
+male-specific Y is dense in dispersed repeats, and at any minimum length that
+keeps the palindromes those blocks are drawn as well.
 
-<Figure caption="T2T-CHM13 chrY aligned to itself over the euchromatic male-specific region, at a 25 kb minimum length. The filled wedge on the diagonal near 9.3 Mb is the TSPY tandem array. The lattice of crossings between 21 and 26 Mb is the Yq palindrome family, each arm meeting its own inverted copy off the diagonal." src="/img/dotplot_self_chry.png" />
+<Figure caption="T2T-CHM13v2 chrY aligned to itself over the euchromatic male-specific region, at a 25 kb minimum length. Boxed on the diagonal near 9.3 Mb, the TSPY tandem array as a filled wedge; boxed at 21.2 to 26.0 Mb, the P1 to P5 Yq palindrome family, each arm meeting its own inverted copy off the diagonal. The scatter between them is the dispersed repeat content of the MSY, not noise." src="/img/dotplot_self_chry.png" />
+
+Both structures are described in the T2T-CHM13 Y chromosome paper
+([Rhie et al. 2023](https://www.nature.com/articles/s41586-023-06457-y)), which
+is where the coordinates the boxes use come from.
 
 Producing the alignment takes one extra minimap2 flag:
 

@@ -273,6 +273,7 @@ export const cookbookSpecs: ScreenshotSpec[] = [
     readyText: 'NCBI RefSeq',
     readyTimeout: 60000,
     settleMs: 8000,
-    viewportHeight: 840,
+    // 840 clipped 15 css px off the last trace once the gene track grew
+    viewportHeight: 860,
   },
 ]

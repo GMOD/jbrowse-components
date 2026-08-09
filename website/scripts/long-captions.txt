@@ -6,10 +6,14 @@
 # visual takeaway, and move the color/stroke/row glossary into the prose that
 # introduces the figure. Removing one is the win. A multi-panel figure that has
 # to name each panel is the legitimate reason to stay listed.
+config_guides/variant_track.md /img/ld/lct_haploblock.png
 tutorials/cancer_sv.md /img/cancer_sv/multihop_reads.png
 tutorials/dog10k_svs.md /img/dog10k-diet-genes.png
 tutorials/hic_structural_variants.md /img/hic/loops_and_domains.png
 tutorials/homoeolog_synteny.md /img/homoeolog_synteny/wheat_vs_oat.png
+tutorials/ld_human.md /img/ld/lct_haploblock.png
+tutorials/ld_human.md /img/ld/lct_pooled_vs_panel.png
 tutorials/mappability_qc.md /img/qc/smn_problematic_regions.png
 tutorials/pangenome_ecoli.md /img/pangenome/pggb_untangle_rows.png
 tutorials/selection_pressure.md /img/selection_pressure/lysozyme.png
+user_guides/gene_track.md /img/dtu/atp5f1c_dtu.png
