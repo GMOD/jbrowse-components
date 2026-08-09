@@ -40,22 +40,20 @@ const NLRP1_WINDOW = 'chr17:5,495,000-5,591,000'
 // right-click is resolved against the track's band, and an auto height is a
 // function of how many isoforms RefSeq draws at this locus, so the click
 // coordinate would move whenever that changed.
-const NLRP1_SESSION = sessionSpec(UCSC_HG38_CONFIG, {
-  views: [
+const NLRP1_LGV = {
+  type: 'LinearGenomeView',
+  assembly: 'hg38',
+  loc: NLRP1_WINDOW,
+  tracks: [
     {
-      type: 'LinearGenomeView',
-      assembly: 'hg38',
-      loc: NLRP1_WINDOW,
-      tracks: [
-        {
-          trackId: 'hg38-ncbiRefSeqCurated',
-          geneGlyphMode: 'longestCoding',
-          height: 60,
-        },
-      ],
+      trackId: 'hg38-ncbiRefSeqCurated',
+      geneGlyphMode: 'longestCoding',
+      height: 60,
     },
   ],
-})
+}
+
+const NLRP1_SESSION = sessionSpec(UCSC_HG38_CONFIG, { views: [NLRP1_LGV] })
 
 const RIGHT_CLICK_NLRP1: ScreenshotAction = {
   type: 'rightclick',
@@ -206,18 +204,61 @@ export const msaSpecs: ScreenshotSpec[] = [
     // the fitted whole-protein frame above cannot show: individual residues.
     // The tutorial's control check is that the rows without a pyrin block are
     // not empty under it, and "no domain annotated" and "no sequence" are the
-    // same picture at whole-protein zoom. scrollX starts at 0 and the pyrin
-    // call is at query residue 9, so the columns the view opens on are the
-    // columns the check is about, with no scrolling to write down.
+    // same picture at whole-protein zoom.
     //
     // Single frame rather than a fourth stage on the spec above: a stack is
     // unusable as a gallery card (gen-gallery-thumbs fits inside 1200x600, so a
     // 3000x4600 stack paints as a 170px-wide sliver), and this is the figure
     // the gallery card is cut from.
+    //
+    // Declarative, and the whole point of it being so is that the columns are
+    // aimed rather than accepted. The dialog-driven version of this spec drove
+    // the same click-path as the figure above and then shot whatever columns
+    // the view happened to open on, which stopped being the pyrin ones the
+    // moment the species list widened: at twelve rows the alignment's first
+    // columns are the gorilla's private N-terminal extension, then the
+    // gorilla's and the horse's, and the human query's first residue is 82
+    // columns in. `orthologParams` is msaview's own launch path reached from a
+    // session spec (jbrowse-plugin-msaview >= 2.8.2), so there is no
+    // right-click, no dialog and no submit here.
     mode: 'url',
     name: 'genomes_msa/pyrin_residues',
-    url: NLRP1_SESSION,
-    actions: [RIGHT_CLICK_NLRP1, ...OPEN_LAUNCH_DIALOG, ...SUBMIT_AND_WAIT],
+    url: sessionSpec(UCSC_HG38_CONFIG, {
+      views: [
+        NLRP1_LGV,
+        {
+          type: 'MsaView',
+          // `taxa` omitted is every species the dialog offers, and
+          // `proteinSequence` omitted is NCBI's representative protein for the
+          // gene -- which is also what makes the query row byte-identical to
+          // the RefSeq record its accession names, so the CDD overlay the
+          // readiness gate below waits on is there by construction.
+          orthologParams: {
+            taxId: 9606,
+            geneCandidates: ['NLRP1'],
+            msaAlgorithm: 'clustalo',
+          },
+          // Hide any column gappier than this, which is the aiming. Measured
+          // on this alignment: the gorilla alone holds columns 0-31 (1 of 12
+          // rows, 91.7% gaps) and the gorilla with the horse holds 32-81 (2 of
+          // 12, 83.3%), while the human M and eight other rows start together
+          // at column 82. 80 drops both runs and keeps everything a third row
+          // reaches (3 of 12 is 75%), so the view opens on the human N
+          // terminus with the pyrin call nine residues into it. The margin is
+          // what makes it robust rather than the exact number: at eleven or
+          // thirteen rows those two quantities are 81.8/72.7 and 84.6/76.9,
+          // still either side of 80.
+          //
+          // `hideGaps` defaults true, so this one number is the whole setting.
+          allowedGappyness: 80,
+        },
+      ],
+    }),
+    // The same gate the click-path above uses, and for the same reason: it is
+    // the only thing that proves NCBI answered the human record rather than
+    // 429ing, and a frame without it is an overlay missing the one block the
+    // page is about.
+    actions: [{ type: 'waitForText', text: 'Pyrin_NALPs', timeout: 180000 }],
     hideTooltip: true,
     viewportHeight: 878,
     readyTimeout: 120000,

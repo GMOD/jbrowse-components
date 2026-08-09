@@ -112,11 +112,12 @@ chain visits and draws the reads that leave one panel and arrive in another.
 The reads already know which loci those are and in what order, so the view is
 built from them rather than typed in. On the tumor track, **Launch view →
 Reconstruct derivative allele...** groups the reads in the window by their split
-alignments and lists the routes through the reference they describe; picking one,
-setting **Draw as** to **Breakpoint split view** and choosing **Replace current
-view** puts a panel per segment of that route in the launching view's place, in
-the order the reads cross it, carrying the tracks that view had. That is how the panels above were made, with no locus
-typed anywhere; the dialog itself is the top frame of
+alignments and lists the routes through the reference they describe; picking
+one, setting **Draw as** to **Breakpoint split view** and choosing **Replace
+current view** puts a panel per segment of that route in the launching view's
+place, in the order the reads cross it, carrying the tracks that view had. That
+is how the panels above were made, with no locus typed anywhere; the dialog
+itself is the top frame of
 [the reconstruction figure below](#reconstructing-the-derivative-allele-in-the-browser).
 
 One panel per segment rather than per chromosome, which is the difference

@@ -463,12 +463,14 @@ export const gallerySections: readonly GallerySection[] = [
       {
         // pyrin_residues, not the tutorial's three-frame click-path figure: a
         // stack fits inside 1200x600 as a sliver, and this is the same view
-        // anyway, left at the zoom it opens on.
+        // anyway, left at the zoom it opens on. Its spec is also the one that
+        // builds the alignment from a session spec rather than by driving the
+        // dialog, so the card's live link opens the alignment directly.
         label: 'Cross-species protein alignment',
         spec: 'genomes_msa/pyrin_residues',
         guide: 'tutorials/genomes_msa',
         description:
-          "NLRP1 aligned across the species NCBI has an ortholog gene for, built by right-clicking the gene rather than from a file, with NCBI's conserved-domain calls drawn in alignment columns. The pyrin domain is called on the human row only.",
+          "NLRP1 aligned across the species NCBI has an ortholog gene for, built from the gene symbol rather than from an alignment file, with NCBI's conserved-domain calls drawn in alignment columns. The pyrin domain is called on the human, chimpanzee, gorilla and marmoset rows.",
       },
     ],
   },

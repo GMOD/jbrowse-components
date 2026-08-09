@@ -108,18 +108,24 @@ A whole-protein view cannot tell "no domain annotated" from "no sequence", so
 read the residues. The zoom the view opened at is already the right one: scroll
 back to it, or use the alignment's **Zoom in** button until the letters return.
 
-The rows without a pyrin domain are not empty there. Most of them carry ordinary
-sequence in those columns with no domain called over it, which is a different
-statement from the sequence being absent. One row is gap.
+Which columns the view opens on is worth one detour, because it is a property of
+any panel of unequal proteins rather than of this gene. An alignment is as long
+as its longest row, so its leftmost columns belong to whichever protein reaches
+furthest past the others and every other row is gap underneath them. On a panel
+this wide those opening columns are one or two rows' private N-terminal
+extensions, which is not what the comparison is about. **Hide columns w/ >N%
+gaps**, the slider in the alignment's toolbar, is the lever: bring it down until
+the columns only a row or two hold disappear, and the columns the panel shares
+(the pyrin among them) come to the left edge.
 
-The figure below makes that point on a deliberately small run of the same gene,
-five species rather than twelve, and the reason is where the columns land. A run
-with more species includes proteins whose N termini extend past the human one,
-so the alignment's opening columns are their extension and the pyrin columns sit
-further right; unchecking the species you are not comparing brings the columns
-you are back to where the view opens.
+The rows without a pyrin block are not empty there. Sheep, cattle and dog carry
+ordinary residues under the same columns with nothing called over them, which is
+a different statement from the sequence being absent, and the horse and rhesus
+macaque rows carry a death-domain call that is not the pyrin-specific one. Mouse
+and guinea pig are the actual absence: gap right across the frame, because their
+rows begin further right in the alignment.
 
-<Figure src="/img/genomes_msa/pyrin_residues.png" caption="A five-species run of the same gene at the residue zoom the view opens on, over the columns the pyrin block covers. The block is on the human query row alone here; dog, cattle and pig carry ordinary residues under it with nothing called over them, and mouse is the one row that is gap there." />
+<Figure src="/img/genomes_msa/pyrin_residues.png" caption="NLRP1 across the species NCBI has an ortholog for, at the residue zoom the view opens on, with the gappiest columns hidden so the human N terminus sits at the left edge. The pyrin call, in light blue, is on the human, chimpanzee, gorilla and marmoset rows and on no others." />
 
 ## The same domains in genome coordinates
 
