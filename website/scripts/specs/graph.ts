@@ -910,12 +910,25 @@ const MHC_MARKED_DELETION = '6:32,514,842-32,529,438'
 // charcoal, matching REFERENCE_RAMP_ALT_COLOR in the plugin. It used to keep the
 // hue of the reference it replaces, paler (45%/72% against 70%/50%); review
 // asked for "a non-spectrum coloring" for the non-backbone parts, because a hue
-// on the ramp says the allele IS the reference at that position. On a lane over
-// the REFERENCE that branch never fires — a rank>0 segment states its
-// coordinates on its own stable sequence, so it is not in the window at all —
-// and the pair of rows a dense lane draws is the layout packing rank-0 blocks,
-// not rank. It is here for a lane opened on a contributing assembly, where those
-// segments do appear, and so the ramp cannot disagree with the graph beside it.
+// on the ramp says the allele IS the reference at that position.
+//
+// WHICH LANES THAT BRANCH ACTUALLY FIRES ON, because the two kinds of index
+// differ and the charcoal has been read as a bug on the one where it does
+// (review, on pangenome/pggb_bubble_tier: "it is sort of odd to see black
+// segments in the linaergenomeview to me, i thought those are all reference"):
+//
+//  - AN rGFA SEGMENT INDEX over the reference. Never. A rank>0 segment states
+//    its coordinates on its own stable sequence, so it is not in this window at
+//    all, and the pair of rows a dense lane draws is the layout packing rank-0
+//    blocks, not rank. The branch is there for a lane opened on a contributing
+//    assembly, where those segments do appear.
+//  - A BUBBLE TIER. Every window, by construction: `snarls_to_bubble_bed.py`
+//    anchors each bubble at its REFERENCE span, so a tier row alternates rank-0
+//    backbone with rank-1 bubbles tiling the same axis. Those are the charcoal
+//    blocks, and they are the point of the lane — the bubbles are what the
+//    coarse tier keeps. They pack onto their own row because at ~100 bp/px a
+//    124 bp bubble is a pixel wide and cannot sit beside its neighbours.
+//
 // `rank` is what RgfaTabixAdapter puts on the feature; a track carrying none
 // reads `undefined > 0` as false and stays on the ramp.
 //

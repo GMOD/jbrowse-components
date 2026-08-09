@@ -823,7 +823,13 @@ drawable:
 }
 ```
 
-<Figure caption="100 kb around the same IS5 element, one node per bubble: the K12 backbone on rank 0 with its invariant stretches labelled, and eleven bubbles below it, each an indel some strain carries and K12 does not. The element the figure below opens is the arrowed node. 27 nodes here against 53 for the 1.6 kb cut below, and the single-base alternatives are in the backbone rather than drawn." src="/img/pangenome/pggb_bubble_tier.png" />
+<Figure caption="100 kb around the same IS5 element, one node per bubble, as a linear track above and as the graph it indexes below. Both color a node by where on K12 it sits, and both paint an alternative allele charcoal instead, because it is not K12 sequence: twelve backbone stretches and eleven bubbles here, each bubble an indel some strain carries and K12 does not. The element the figure below opens is the arrowed node. 27 nodes here against 53 for the 1.6 kb cut below, and the single-base alternatives are in the backbone rather than drawn." src="/img/pangenome/pggb_bubble_tier.png" />
+
+The tier is a feature track, so it draws in a linear view as well as in the
+graph, and the figure shows both. A bubble is anchored on the reference span it
+replaces, so the linear lane alternates backbone with bubbles along one axis;
+the bubbles take their own row only because at this width most of them are a
+pixel across.
 
 Every surviving node states what it stands for, so nothing a reader was reading
 is hidden: hover one for the segments it collapsed, how many traversals cross
