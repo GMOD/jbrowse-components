@@ -2,7 +2,7 @@ import { getType } from '@jbrowse/mobx-state-tree'
 
 import type {
   ConfigurationSchemaDefinition,
-  ConfigurationSchemaOptions,
+  MergedConfigurationSchemaOptions,
 } from './configurationSchema.ts'
 import type { AnyConfigurationModel } from './types.ts'
 import type { IAnyType } from '@jbrowse/mobx-state-tree'
@@ -10,8 +10,11 @@ import type { IAnyType } from '@jbrowse/mobx-state-tree'
 export interface ConfigurationSchemaMetadata {
   /** the raw slot/sub-schema/constant table, also carrying per-slot editor metadata */
   definition: ConfigurationSchemaDefinition
-  /** construction options (identifier kind, baseConfiguration, etc.) */
-  options: ConfigurationSchemaOptions<any, any>
+  /**
+   * construction options (identifier kind, baseConfiguration, etc.) as stored,
+   * i.e. with any `baseConfiguration`'s hooks already composed in
+   */
+  options: MergedConfigurationSchemaOptions<any, any>
 }
 
 // Per-schema metadata keyed by the MST type itself. Registered for BOTH the

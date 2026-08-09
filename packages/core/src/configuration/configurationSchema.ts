@@ -66,18 +66,53 @@ export interface ConfigurationSchemaOptions<
   ) => Record<string, unknown>
 }
 
-// Options merged from a baseConfiguration are a shallow `{...base, ...child}`
-// spread, not a composition — if both sides define the same hook, the child's
-// silently replaces the base's instead of extending it. Checked eagerly here
-// (at schema-construction time, i.e. plugin registration) so that mistake
-// fails loud immediately rather than shipping a track/display that quietly
-// lost some of its base behavior.
-const OVERRIDABLE_HOOK_KEYS = [
-  'actions',
-  'views',
-  'extend',
-  'preProcessSnapshot',
-] as const satisfies readonly (keyof ConfigurationSchemaOptions<any, any>)[]
+type SchemaHook = (self: unknown) => any
+
+/**
+ * Options as **stored**: what a caller passes, except that the three
+ * MST-chained hooks may have accumulated a chain by merging in a
+ * `baseConfiguration`. A caller's single function is a valid chain of one, so
+ * `ConfigurationSchemaOptions` is assignable to this and no call site changes.
+ *
+ * They stay a chain rather than being folded into one function because MST is
+ * what does the chaining: `.actions()` is called once per entry, which is what
+ * puts the base's members on `self` by the time the subclass's function runs,
+ * and what lets the subclass override one by redeclaring its name. Folding to
+ * `self => ({...base(self), ...child(self)})` would give neither, and would
+ * corrupt `extend` outright (it returns `{actions, views, state}`, so a spread
+ * merge drops whichever side declared fewer of the three).
+ *
+ * `preProcessSnapshot` is the exception and composes into a single function,
+ * `child(base(snapshot))`: the base normalizes and migrates first, the subclass
+ * refines. It has to stay one function because `preProcessSlotValues` calls it
+ * straight off the registry (slotFacade.ts).
+ */
+export interface MergedConfigurationSchemaOptions<
+  BASE_SCHEMA extends AnyConfigurationSchemaType | undefined,
+  EXPLICIT_IDENTIFIER extends string | undefined,
+> extends Omit<
+  ConfigurationSchemaOptions<BASE_SCHEMA, EXPLICIT_IDENTIFIER>,
+  'actions' | 'views' | 'extend'
+> {
+  actions?: SchemaHook | SchemaHook[]
+  views?: SchemaHook | SchemaHook[]
+  extend?: SchemaHook | SchemaHook[]
+}
+
+function hookList(hook: SchemaHook | SchemaHook[] | undefined) {
+  return hook === undefined ? [] : Array.isArray(hook) ? hook : [hook]
+}
+
+// base first, then child. Returns the single function unchanged when only one
+// side declares the hook, so the common case never allocates a chain.
+function chainHooks(
+  base: SchemaHook | SchemaHook[] | undefined,
+  child: SchemaHook | SchemaHook[] | undefined,
+) {
+  return base && child
+    ? [...hookList(base), ...hookList(child)]
+    : (child ?? base)
+}
 
 /**
  * Fold a subclass's schema definition over its `baseConfiguration`'s. New slots
@@ -125,14 +160,13 @@ function preprocessConfigurationSchemaArguments(
   // if we have a base configuration schema that we are
   // extending, grab the slot definitions from that
   let schemaDefinition = inputSchemaDefinition
-  let options = inputOptions
+  let options: MergedConfigurationSchemaOptions<any, any> = inputOptions
   const baseMeta = inputOptions.baseConfiguration
     ? getConfigurationSchemaMetadata(inputOptions.baseConfiguration)
     : undefined
   // A base with no registry entry used to be skipped in silence, producing a
-  // schema missing every inherited slot with nothing thrown anywhere — the same
-  // class of quiet loss the hook check below exists to prevent, and reachable
-  // without doing anything obviously wrong: `isBareConfigurationSchemaType`
+  // schema missing every inherited slot with nothing thrown anywhere, and
+  // reachable without doing anything obviously wrong: `isBareConfigurationSchemaType`
   // answers true for a `types.late` wrapper, and
   // `pluginManager.pluggableConfigSchemaType(…)` hands back a `types.union`.
   // Neither is registered, because only the type `ConfigurationSchema` itself
@@ -143,24 +177,29 @@ function preprocessConfigurationSchemaArguments(
     )
   }
   if (baseMeta) {
-    const clobberedHooks = OVERRIDABLE_HOOK_KEYS.filter(
-      key => baseMeta.options[key] && inputOptions[key],
-    )
-    if (clobberedHooks.length) {
-      throw new Error(
-        `${modelName} and its baseConfiguration both define ${clobberedHooks.join(', ')} — ` +
-          `${modelName}'s would silently replace the base's instead of composing. ` +
-          `Rename one, or fold the base's ${clobberedHooks.join(', ')} into ${modelName}'s directly.`,
-      )
-    }
     schemaDefinition = mergeSchemaDefinition(
       baseMeta.definition,
       schemaDefinition,
     )
+    // Everything else merges as a shallow `{...base, ...child}` spread, where
+    // the child's value replaces the base's. The four hooks below must not:
+    // `createBaseTrackConfig` alone declares two of them, so replace-semantics
+    // meant no track config schema could ever declare its own without silently
+    // dropping display-stub injection and the legacy-key migration. They
+    // compose instead, base first. See MergedConfigurationSchemaOptions.
+    const basePreProcess = baseMeta.options.preProcessSnapshot
+    const childPreProcess = inputOptions.preProcessSnapshot
     options = {
       ...baseMeta.options,
       ...inputOptions,
       baseConfiguration: undefined,
+      actions: chainHooks(baseMeta.options.actions, inputOptions.actions),
+      views: chainHooks(baseMeta.options.views, inputOptions.views),
+      extend: chainHooks(baseMeta.options.extend, inputOptions.extend),
+      preProcessSnapshot:
+        basePreProcess && childPreProcess
+          ? snapshot => childPreProcess(basePreProcess(snapshot))
+          : (childPreProcess ?? basePreProcess),
     }
   }
   return { schemaDefinition, options }
@@ -168,7 +207,7 @@ function preprocessConfigurationSchemaArguments(
 
 function makeConfigurationSchemaModel<
   DEFINITION extends ConfigurationSchemaDefinition,
-  OPTIONS extends ConfigurationSchemaOptions<any, any>,
+  OPTIONS extends MergedConfigurationSchemaOptions<any, any>,
 >(modelName: string, schemaDefinition: DEFINITION, options: OPTIONS) {
   // now assemble the MST model of the configuration schema
   const modelDefinition: Record<string, any> = {}
@@ -293,14 +332,16 @@ function makeConfigurationSchemaModel<
   if (Object.keys(volatileConstants).length) {
     completeModel = completeModel.volatile((/* self */) => volatileConstants)
   }
-  if (options.actions) {
-    completeModel = completeModel.actions(options.actions)
+  // one MST call per entry, base's before the subclass's — chaining is what
+  // makes the base's members visible on `self` inside the subclass's function
+  for (const hook of hookList(options.actions)) {
+    completeModel = completeModel.actions(hook)
   }
-  if (options.views) {
-    completeModel = completeModel.views(options.views)
+  for (const hook of hookList(options.views)) {
+    completeModel = completeModel.views(hook)
   }
-  if (options.extend) {
-    completeModel = completeModel.extend(options.extend)
+  for (const hook of hookList(options.extend)) {
+    completeModel = completeModel.extend(hook)
   }
   if (options.preProcessSnapshot) {
     completeModel = completeModel.preProcessSnapshot(options.preProcessSnapshot)

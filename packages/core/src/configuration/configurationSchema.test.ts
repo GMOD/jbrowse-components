@@ -154,33 +154,126 @@ describe('configuration schemas', () => {
     // let slot: ConfigurationSlotName<typeof schema>
   })
 
+  // Everything else in the options merge is a shallow `{...base, ...child}`
+  // spread. These four hooks compose instead, because `createBaseTrackConfig`
+  // declares two of them and replace-semantics meant no track config schema
+  // could declare its own at all.
   describe('baseConfiguration hook composition', () => {
-    // The options merge in preprocessConfigurationSchemaArguments is a shallow
-    // `{...base, ...child}` spread: a child that redefines the same hook the
-    // base already defines would silently replace it rather than compose.
-    // Caught eagerly at schema-construction time instead of shipping that.
-    test.each(['actions', 'views', 'extend', 'preProcessSnapshot'] as const)(
-      'throws when both base and child define %s',
-      hook => {
-        const base = ConfigurationSchema(
-          'HookBase',
-          { x: { type: 'number', defaultValue: 1 } },
-          { [hook]: (self: unknown) => (hook === 'extend' ? {} : self) },
-        )
-        expect(() =>
-          ConfigurationSchema(
-            'HookChild',
-            {},
-            {
-              baseConfiguration: base,
-              [hook]: (self: unknown) => (hook === 'extend' ? {} : self),
-            },
-          ),
-        ).toThrow(new RegExp(`HookChild and its baseConfiguration.*${hook}`))
-      },
-    )
+    const numberSlot = { x: { type: 'number', defaultValue: 1 } }
 
-    test('does not throw when base and child define different hooks', () => {
+    test('actions chain, and the child sees the base actions on self', () => {
+      const base = ConfigurationSchema('ActionBase', numberSlot, {
+        actions: () => ({ baseAction: () => 'base' }),
+      })
+      const child = ConfigurationSchema(
+        'ActionChild',
+        {},
+        {
+          baseConfiguration: base,
+          actions: (self: unknown) => ({
+            childAction: () =>
+              `${(self as { baseAction: () => string }).baseAction()}+child`,
+          }),
+        },
+      )
+      const node = child.create(undefined, { pluginManager }) as unknown as {
+        baseAction: () => string
+        childAction: () => string
+      }
+      expect(node.baseAction()).toBe('base')
+      // proof the two are separate MST `.actions()` calls rather than one merged
+      // object: a merged object would not have baseAction on self here
+      expect(node.childAction()).toBe('base+child')
+    })
+
+    test('a child action of the same name overrides the base one', () => {
+      const base = ConfigurationSchema('OverrideBase', numberSlot, {
+        actions: () => ({ which: () => 'base' }),
+      })
+      const child = ConfigurationSchema(
+        'OverrideChild',
+        {},
+        {
+          baseConfiguration: base,
+          actions: () => ({ which: () => 'child' }),
+        },
+      )
+      const node = child.create(undefined, { pluginManager }) as unknown as {
+        which: () => string
+      }
+      expect(node.which()).toBe('child')
+    })
+
+    test('views chain across three levels', () => {
+      const base = ConfigurationSchema('ViewBase', numberSlot, {
+        views: () => ({ baseView: () => 'base' }),
+      })
+      const middle = ConfigurationSchema(
+        'ViewMiddle',
+        {},
+        { baseConfiguration: base, views: () => ({ midView: () => 'mid' }) },
+      )
+      const leaf = ConfigurationSchema(
+        'ViewLeaf',
+        {},
+        {
+          baseConfiguration: middle,
+          views: () => ({ leafView: () => 'leaf' }),
+        },
+      )
+      const node = leaf.create(undefined, { pluginManager }) as unknown as {
+        baseView: () => string
+        midView: () => string
+        leafView: () => string
+      }
+      expect([node.baseView(), node.midView(), node.leafView()]).toEqual([
+        'base',
+        'mid',
+        'leaf',
+      ])
+    })
+
+    test('extend chains rather than clobbering the other members', () => {
+      const base = ConfigurationSchema('ExtendBase', numberSlot, {
+        extend: () => ({ views: { baseView: () => 'base' } }),
+      })
+      const child = ConfigurationSchema(
+        'ExtendChild',
+        {},
+        {
+          baseConfiguration: base,
+          // declares only `actions` where the base declared only `views`. A
+          // spread merge of the two return values would drop one of them
+          extend: () => ({ actions: { childAction: () => 'child' } }),
+        },
+      )
+      const node = child.create(undefined, { pluginManager }) as unknown as {
+        baseView: () => string
+        childAction: () => string
+      }
+      expect(node.baseView()).toBe('base')
+      expect(node.childAction()).toBe('child')
+    })
+
+    test('preProcessSnapshot composes base first, then child', () => {
+      const base = ConfigurationSchema('PreProcessBase', numberSlot, {
+        preProcessSnapshot: snap => ({ ...snap, x: Number(snap.x) + 1 }),
+      })
+      const child = ConfigurationSchema(
+        'PreProcessChild',
+        {},
+        {
+          baseConfiguration: base,
+          preProcessSnapshot: snap => ({ ...snap, x: Number(snap.x) * 10 }),
+        },
+      )
+      // base normalizes (0 -> 1), then the child refines (1 -> 10). The other
+      // order gives 1, so this pins the direction, not just that both ran
+      const node = child.create({ x: 0 }, { pluginManager })
+      expect(readConfObject(node, 'x')).toBe(10)
+    })
+
+    test('a lone hook is left exactly as the caller passed it', () => {
       const base = ConfigurationSchema(
         'DistinctHookBase',
         { x: { type: 'number', defaultValue: 1 } },
