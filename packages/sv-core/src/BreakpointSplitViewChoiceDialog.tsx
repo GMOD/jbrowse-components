@@ -56,7 +56,15 @@ const BreakpointSplitViewChoiceDialog = observer(
     assemblyName: string
     stableViewId?: string
   }) {
-    const [step, setStep] = useState<'choose' | 'options'>('choose')
+    // ONE STEP. This dialog used to ask its two questions on two screens --
+    // shape, then options -- so opening a split view took a right-click, a menu
+    // item and two more clicks before anything was launched, and the shape
+    // chosen on screen one was no longer visible on screen two. There is no
+    // dependency between the two questions that needs the sequencing: `mirror`
+    // and `focusOnBreakends` are the only shape-specific rows and they swap in
+    // place. So the shapes are a selectable pair at the top of the same dialog
+    // the options and the Open button live in, and the choice stays on screen
+    // while it is being configured.
     const [viewType, setViewType] = useState<'split' | 'single'>('split')
     const [copyTracks, setCopyTracks] = useState(true)
     const [mirror, setMirror] = useState(true)
@@ -103,52 +111,39 @@ const BreakpointSplitViewChoiceDialog = observer(
       handleClose()
     }
 
-    if (step === 'choose') {
-      return (
-        <Dialog open onClose={handleClose} title="Open breakpoint split view">
-          <DialogContent>
-            <List>
-              <ListItemButton
-                onClick={() => {
-                  setViewType('split')
-                  setStep('options')
-                }}
-              >
-                <ListItemIcon>
-                  <SplitLevelIcon />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Split level (top/bottom)"
-                  secondary="Opens two stacked linear genome views, one for each breakend"
-                />
-              </ListItemButton>
-              <ListItemButton
-                onClick={() => {
-                  setViewType('single')
-                  setStep('options')
-                }}
-              >
-                <ListItemIcon>
-                  <SingleLevelIcon />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Single level (single row)"
-                  secondary="Opens one linear genome view spanning both breakends"
-                />
-              </ListItemButton>
-            </List>
-          </DialogContent>
-        </Dialog>
-      )
-    }
-
     return (
-      <Dialog
-        open
-        onClose={handleClose}
-        title={isSplitLevel ? 'Split level options' : 'Single level options'}
-      >
+      <Dialog open onClose={handleClose} title="Open breakpoint split view">
         <DialogContent>
+          <List>
+            <ListItemButton
+              selected={isSplitLevel}
+              onClick={() => {
+                setViewType('split')
+              }}
+            >
+              <ListItemIcon>
+                <SplitLevelIcon />
+              </ListItemIcon>
+              <ListItemText
+                primary="Split level (top/bottom)"
+                secondary="Opens two stacked linear genome views, one for each breakend"
+              />
+            </ListItemButton>
+            <ListItemButton
+              selected={!isSplitLevel}
+              onClick={() => {
+                setViewType('single')
+              }}
+            >
+              <ListItemIcon>
+                <SingleLevelIcon />
+              </ListItemIcon>
+              <ListItemText
+                primary="Single level (single row)"
+                secondary="Opens one linear genome view spanning both breakends"
+              />
+            </ListItemButton>
+          </List>
           <FormGroup>
             {view ? (
               <LabeledCheckbox
@@ -192,14 +187,6 @@ const BreakpointSplitViewChoiceDialog = observer(
           />
         </DialogContent>
         <DialogActions>
-          <Button
-            variant="contained"
-            onClick={() => {
-              setStep('choose')
-            }}
-          >
-            Back
-          </Button>
           <Button variant="contained" color="primary" onClick={handleLaunch}>
             Open
           </Button>

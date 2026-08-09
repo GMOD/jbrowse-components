@@ -7,20 +7,23 @@
 #                        open-data release, plus the RARB/BICC1/TRHDE derivative
 #                        allele that scripts/sv_multihop.py reconstructs from the
 #                        tumour reads
-#   K562                 ENCODE PacBio Iso-Seq alignments, and DepMap 24Q4
-#                        STAR-Fusion calls and copy-number segments
+#   K562                 ENCODE PacBio Iso-Seq alignments, DepMap 24Q4
+#                        STAR-Fusion calls and copy-number segments, and the
+#                        10X linked-read DNA breakpoints lifted from hg19
 #
 # The tumour CRAM and the normal BAM are streamed from the ONT bucket rather than
 # downloaded; only the reconstruction outputs are written locally.
 #
-# Requires: samtools, minimap2, bedGraphToBigWig, bgzip, curl, python3, node>=18
+# Requires: samtools, minimap2, bedGraphToBigWig, bgzip, tabix, curl, python3, node>=18
+#           The UCSC liftOver binary is downloaded into the output directory;
+#           nothing is installed.
 # Usage:    bash scripts/build_cancer_sv_demo.sh [outdir]
 set -euo pipefail
 
 HERE=$(cd "$(dirname "$0")" && pwd)
 
 # fetched on demand so a bare `curl -O` of this one script still works
-HELPERS=(sv_multihop.py depmap_to_jbrowse.py)
+HELPERS=(sv_multihop.py depmap_to_jbrowse.py lift_bnd_vcf.py)
 for h in "${HELPERS[@]}"; do
   [ -f "$HERE/$h" ] || curl -fsSL -o "$HERE/$h" \
     "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
@@ -123,6 +126,42 @@ if [ ! -f "$DEMO/K562_cn.bw" ]; then
   rm -f K562_cn.bedGraph K562_cn.sorted.bedGraph
 fi
 
+# ------------------------------------------------- K562 DNA breakpoints (ENCODE)
+# The DNA counterpart to the STAR-Fusion calls above, and the reason it is worth
+# the lift: a fusion callset only ever sees a junction that is transcribed, so
+# the RNA breakpoints sit at exon boundaries and say nothing about where the
+# amplicon's edges are. DepMap's 24Q4 release has no structural-variant table at
+# all (OmicsCNSegmentsProfile and OmicsFusionFiltered, no OmicsStructuralVariants),
+# and ENCODE's four K562 WGS experiments are Illumina short reads on hg19. What
+# does exist is one 10X Chromium linked-read run, ENCSR053AXS, whose large-SV
+# call set carries both junctions of the BCR-ABL1 amplicon.
+#
+# hg19, so it is lifted. Both of a breakend's coordinates move, not just POS --
+# see lift_bnd_vcf.py, which is where that is done and explained.
+K562_10X_SV=ENCFF863MPP
+if [ ! -f "$DEMO/K562.10x-large-sv.vcf.gz" ]; then
+  [ -f "$K562_10X_SV.vcf.gz" ] ||
+    curl -fL "https://www.encodeproject.org/files/$K562_10X_SV/@@download/$K562_10X_SV.vcf.gz" \
+      -o "$K562_10X_SV.vcf.gz"
+  # hgdownload.soe is the canonical host; the euro mirror keeps the same chain
+  # under /gbdb and is the fallback when the US host is unreachable.
+  [ -f hg19ToHg38.over.chain.gz ] ||
+    curl -fsSL -o hg19ToHg38.over.chain.gz \
+      "https://hgdownload.soe.ucsc.edu/goldenPath/hg19/liftOver/hg19ToHg38.over.chain.gz" ||
+    curl -fsSL -o hg19ToHg38.over.chain.gz \
+      "https://hgdownload-euro.soe.ucsc.edu/gbdb/hg19/liftOver/hg19ToHg38.over.chain.gz"
+  if [ ! -x ./liftOver ]; then
+    curl -fsSL -o liftOver "https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/liftOver" ||
+      curl -fsSL -o liftOver "https://hgdownload-euro.soe.ucsc.edu/admin/exe/linux.x86_64/liftOver"
+    chmod +x liftOver
+  fi
+  python3 "$HERE/lift_bnd_vcf.py" "$K562_10X_SV.vcf.gz" hg19ToHg38.over.chain.gz \
+    ./liftOver K562.10x-large-sv.hg38.vcf liftwork
+  bgzip -f -c K562.10x-large-sv.hg38.vcf > "$DEMO/K562.10x-large-sv.vcf.gz"
+  tabix -f -p vcf "$DEMO/K562.10x-large-sv.vcf.gz"
+  rm -f K562.10x-large-sv.hg38.vcf
+fi
+
 # ------------------------------------------------------------------- JBrowse
 [ -f "$APP/index.html" ] || jb create "$APP"
 
@@ -172,6 +211,9 @@ jb add-track "$DEMO/K562.star-fusion.tsv" --load copy \
 jb add-track "$DEMO/K562_cn.bw" --load copy \
   --name 'K562 copy-number segments (DepMap WGS)' --trackId K562_cn \
   --assemblyNames hg38 --out "$APP" --force
+jb add-track "$DEMO/K562.10x-large-sv.vcf.gz" --load copy \
+  --name 'K562 DNA breakpoints (10X linked reads, lifted to hg38)' \
+  --trackId K562_10x_sv --assemblyNames hg38 --out "$APP" --force
 
 jb text-index --out "$APP" --force || true
 

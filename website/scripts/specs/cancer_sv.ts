@@ -99,12 +99,12 @@ const MULTIHOP_GENE_HEIGHT = 70
 // a solid block and the connectors then fan out of a smear.
 const SPLIT_READS = { featureHeight: 2 }
 
-// The 29 reads realigned to the derivative, in the two figures that carry them.
-// Every one of them spans the junctions, so the pileup is 29 rows however it is
-// laid out, and at the default row height only two thirds of them are above the
-// fold. Five pixels with a gap is the largest row that fits all 29 while leaving
-// the mismatch ticks and the clipping (or its absence) visible.
-const READS = { featureHeight: 5 }
+// The 29 reads realigned to the derivative used to share one row height across
+// the three figures that draw them. They no longer do, and the reason is that
+// the three are at three zooms: 40 kb (derivative_synteny, now the coverage
+// band alone), 1.1 kb (derivative_inserts, 8 px rows) and 380 bp
+// (realigned_reads_derivative, 13 px rows). Each height is explained where it
+// is set.
 
 // Every COLO829 window in this tutorial falls inside a large intron (RARB,
 // BICC1, TRHDE), where the gene track draws one flat line per isoform and no
@@ -140,6 +140,34 @@ const CLOSE_REF_SEQUENCE_TRACK = {
   selector: '[data-testid="track-close-hg38-ReferenceSequenceTrack"]',
 }
 
+// A big numbered badge in the same corner of each frame of a staged figure
+// (reviewer, on cancer_sv/split_view_from_breakend: "panels need to be numbered
+// with large numbers so user can see the flow"). The frames are separate
+// captures composed afterwards, so nothing can draw across a seam to say "this
+// one, then that one" -- a badge in each says it in the order a reader reads.
+//
+// Radius 26 rather than realigned_reads' 15: that figure's pair sits inside two
+// panes of one image, this one has to be legible after a 2700 px strip is
+// scaled to a doc column. Anchored to the SV track's band so it follows the
+// lane rather than a measured y, and hard left where no frame has content --
+// the context menu is at the record, the dialog is centred, and the result's
+// leftmost lane is a scale bar.
+const FLOW_NUMBER = (n: number, extra?: { view: [number, number] }) =>
+  ({
+    type: 'circle',
+    text: String(n),
+    radius: 26,
+    fontSize: 30,
+    anchor: {
+      ...extra,
+      track: SV,
+      fracY: 0,
+      alignX: 'left',
+      dx: 34,
+      dy: 34,
+    },
+  }) as const
+
 // Support level, as a colour, for the arcs in the amplicon figure: three
 // windows hold five arcs there, with no room for a column of numbers beside
 // them. StarFusionAdapter puts JunctionReadCount on the feature's score, and
@@ -167,7 +195,25 @@ const FUSION_ARC_COLOR =
 // segment 1 is 0-32,732 + -> chr3:25,326,821-25,359,568), and both panes are
 // centred on the pair.
 //
-// THE TWO PANES ARE NO LONGER THE SAME WIDTH, and that is deliberate. The
+// THREE PANELS ON THE REFERENCE SIDE, not two, and that is the answer to the
+// third report on this figure ("it uses dotted lines which means, in effect, we
+// dont have the full picture here. we might want to fully resolve the 3 level
+// derived breakpoint split"). The dashes are not a style: AlignmentConnections
+// draws `strokeDasharray="4 3"` exactly when `hiddenSegmentsBefore` is set,
+// which markHiddenSegments fills with the read's own SA-chain segments that
+// fall between two drawn ones and are shown in NO panel. der(3) is a four-hop
+// chain -- chr3 32.7 kb, chr10 199 bp, chr12 183 bp inverted, chr3 6.4 kb
+// inverted -- so with chr3 and chr10 on screen every connector from the chr10
+// island back to the returning chr3 arm skipped the chr12 insert and came out
+// dashed. The reader was being told, correctly, that a piece was missing.
+//
+// Adding the chr12 panel puts all four segments in view, so each connector now
+// joins two adjacent hops and every one of them is solid. The last hop returns
+// to level 0, which is why one bundle of curves crosses the chr12 panel: the
+// allele visits chr3 twice, and that crossing is the fold-back drawn rather
+// than described.
+//
+// THE TWO PANES ARE NOT THE SAME WIDTH, and that is deliberate. The
 // reference pane is 5 kb a panel where it used to be 380 bp, which is what
 // fixes the second glitch report on this figure. A BreakpointSplitView
 // connector runs between two SEGMENT ENDS, so if either end falls outside its
@@ -224,7 +270,12 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
   // height. Neither of the run's size reports fixes this number -- both measure
   // the PAGE, and every miss here was inside a track. 566 came off the
   // blank-below report and left the chr3 pileup on a scrollbar.
-  const HEIGHT = 615
+  //
+  // Grown for the third panel the reference pane gained (see the hidden-segment
+  // note above), then measured back down: at 855 the left half's own content
+  // stopped 72 px short and the right half's ran 8 px past, so this is the
+  // left half as it renders and the right half's rows are sized to meet it.
+  const HEIGHT = 785
   const WIDTH = 700
   // Both panels of the split view draw their reads the same way on purpose:
   // the comparison is between the two ENDS of one junction, so a difference in
@@ -282,7 +333,8 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
         views: [
           {
             type: 'BreakpointSplitView',
-            displayName: 'RARB (chr3) - BICC1 (chr10)',
+            // all three loci, since all three are on screen now
+            displayName: 'RARB (chr3) - BICC1 (chr10) - TRHDE (chr12)',
             // THE VIEW'S OWN HEIGHT IS THE LEVER, and it is easy to miss: a
             // panel's track height does apply (the two panels come out
             // different sizes), but the split view lays its panels out inside
@@ -291,7 +343,11 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
             // move together. `init` is NOT the spelling here -- the launcher
             // takes the panels flat as `views` and rejects `init` by name,
             // which is the config/defaultSession form.
-            height: 560,
+            height: 800,
+            // In the order the reads cross them, which is also the order that
+            // makes the first two connector bundles run between adjacent
+            // panels. chr3 carries both of the allele's chr3 arms, so it is the
+            // panel with the full pileup and the one the last hop returns to.
             views: [
               {
                 assembly: 'hg38',
@@ -301,6 +357,14 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
               {
                 assembly: 'hg38',
                 loc: 'chr10:58,715,000-58,720,000',
+                tracks: [{ ...BREAKPOINT_READS, height: 150 }],
+              },
+              // the 183 bp chr12 insert, centred. Only the reads that reach it
+              // land here, so it takes the same height as the chr10 island
+              // rather than chr3's.
+              {
+                assembly: 'hg38',
+                loc: 'chr12:72,270,700-72,275,700',
                 tracks: [{ ...BREAKPOINT_READS, height: 150 }],
               },
             ],
@@ -380,13 +444,20 @@ function realignedReadsPartSpecs(): ScreenshotSpec[] {
             // 29 reads rather than 200, so they get a row an order of magnitude
             // taller than the reference pane's and the pane fills with 380 bp
             // of pileup
-            featureHeight: 9,
-            // all 29 rows, and no more: a height that shows twenty of them puts
-            // the rest behind a scrollbar, which reads as a pileup that stops.
-            // Grown with the pane when the left half became two panels -- the
-            // rows get the extra height rather than the page, since `+append`
-            // would otherwise pad this half with white.
-            height: 308,
+            // EVERY ROW, and the row count is 43, not the 29 an older note
+            // here asserted. 29 is the number of reads spanning ALL FOUR
+            // junctions, which the tutorial's prose is about; what this 380 bp
+            // window draws is every read overlapping it, and
+            // `samtools view -c ... der3_RARB_BICC1_TRHDE:32545-32925` says 43
+            // (69 in the whole BAM). Pitch is `featureHeight + 1` above 3px
+            // (featureSpacingForHeight), so 43 rows need 387 px and the 425 px
+            // this track has left over its coverage band fits them with room.
+            // At 11 they overflowed and the pileup ended on a scrollbar, which
+            // is the "pileup that stops" failure this number exists to avoid --
+            // and neither size report catches it, because the overflow is
+            // inside a track.
+            featureHeight: 8,
+            height: 470,
           },
         ],
       }),
@@ -643,6 +714,12 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'cancer_sv/derivative_autogenerated',
+    // THIS IS NO LONGER THE FIRST RECONSTRUCTION A READER MEETS. See the note
+    // on cancer_sv/foldback_reconstruction below: the page now opens the
+    // section on the two-segment fold-back and reaches this four-segment allele
+    // second, which is the review's own ordering rather than the one the last
+    // round defended.
+    //
     // Both stages are sized to their own content: the picker frame is the
     // dialog over as much pileup as fits behind it, and the result frame is the
     // synteny view the dialog creates plus the pileup it was launched from.
@@ -738,9 +815,18 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The same menu on a different class of event, because the der(3) figure
-  // above is one allele and says nothing about whether the reconstruction
-  // generalizes. This locus is a fold-back: chr9 runs out at 28,031,837 and
+  // The reconstruction's INTRODUCTORY example on the page, ahead of the der(3)
+  // one above it in this file (reviewer, twice, on derivative_autogenerated:
+  // "might also be good to get a more clear example of an SV, this one is
+  // complex"). The first round answered that the simple example already exists
+  // and is deliberately second, so the harder case came first; the ask came
+  // back unchanged, which is the reviewer rejecting that ordering rather than
+  // missing the figure. In cancer_sv.md the fold-back subsection now leads the
+  // section and der(3) follows it as the four-segment case the rest of the page
+  // works on. The order in THIS file is unchanged and does not matter: a spec
+  // array is not a page.
+  //
+  // This locus is a fold-back: chr9 runs out at 28,031,837 and
   // resumes INVERTED from 28,059,142, so the allele visits one chromosome twice
   // in opposite orientations and the reference panel shows two windows of chr9
   // rather than three chromosomes.
@@ -829,10 +915,36 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   // three reference loci on the top. The two templated inserts are 199 bp and
   // 183 bp, so they are thin ribbons between two thick chr3 arms -- the second
   // of which runs backwards, which is the foldback.
+  //
+  // THREE HUNDRED PIXELS SHORTER, and the read lane is where all of it came
+  // from (reviewer: "should reduce y-screen real estate using more compact
+  // renderings as much as possible ... the read stack looks really messy also").
+  // The 29 realigned reads were 290 px of individually drawn rows at 40 kb
+  // across a 1400 px frame, which is a fifth of a pixel per base: no row is a
+  // molecule a reader can follow and the mismatch ticks are ONT error, so the
+  // lane was a grey slab that looked like data. Its one claim at this zoom --
+  // depth does not dip at any junction -- is what the coverage band states
+  // directly, in 70 px. The per-read picture is not lost, it is the next two
+  // figures: derivative_inserts opens the junctions at base scale, and
+  // realigned_reads puts the same molecules against hg38 beside the allele.
+  // `linkedReads` is not the lever here the way it is on k562_bcr_abl_split --
+  // these reads span the whole allele in one alignment, so there is nothing to
+  // chain.
+  //
+  // AND THE CHR3 WINDOW REACHES PAST THE LAST BREAKPOINT (reviewer: "it would
+  // be somewhat interesting to zoom out 'even more' so we see what is on the
+  // 'other side' of the inversion on the right side of the figure"). The
+  // allele's last hop returns inverted to chr3:25,352,683-25,359,111, so
+  // everything on chr3 past 25,359,568 is reference the derivative abandons.
+  // Ending the window at 25,361,000 gave that 1.4 kb, which reads as margin;
+  // at 25,367,000 it is 7.4 kb of reference row with no ribbon under it, which
+  // is the piece this allele leaves behind, drawn.
   {
     mode: 'url',
     name: 'cancer_sv/derivative_synteny',
-    viewportHeight: 1245,
+    // 1245 - 220 (the pileup the coverage band replaces) - 40 (gene rows the
+    // projection actually uses) - 40 (ribbon band)
+    viewportHeight: 945,
     viewportWidth: 1600,
     url: sessionSpec(CONFIG, {
       sessionTracks: [DER3_GENES_TRACK],
@@ -847,7 +959,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
               // every ribbon has a target. A single chr3 window would leave the
               // two templated inserts -- the whole point of the figure --
               // pointing at nothing.
-              loc: 'chr3:25325000-25361000 chr10:58716500-58718500 chr12:72272000-72274500',
+              loc: 'chr3:25325000-25367000 chr10:58716500-58718500 chr12:72272000-72274500',
               // the annotation this figure's bottom row is the projection of,
               // in its original coordinates, so the two rows can be read
               // against each other one ribbon at a time. The somatic SV calls
@@ -877,12 +989,16 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 {
                   ...GENE_TRACK,
                   trackId: DER3_GENES_TRACK.trackId,
-                  height: 220,
+                  height: 180,
                 },
-                // sized to the pileup: 29 spanning reads is 29 rows, and a
-                // height that shows twenty of them puts the rest behind a
-                // scrollbar, which reads as a pileup that stops
-                { trackId: 'reads_vs_der3', height: 290, ...READS },
+                // COVERAGE ONLY -- see the note above. The band's own claim is
+                // the whole claim at this zoom: no dip at any junction.
+                {
+                  trackId: 'reads_vs_der3',
+                  showPileup: false,
+                  coverageHeight: 60,
+                  height: 70,
+                },
               ],
             },
           ],
@@ -902,7 +1018,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // own panel — the flat colour costs nothing there, and it is a figure
           // review already passed.
           colorBy: 'reference',
-          levelHeights: [200],
+          levelHeights: [160],
         },
       ],
     }),
@@ -945,8 +1061,9 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'cancer_sv/derivative_inserts',
     // 1412 left 270 css px of blank once the two sequence lanes went, per the
-    // run's own report
-    viewportHeight: 1145,
+    // run's own report; +130 net for the read lane that now draws all 46 of its
+    // rows at a legible height, less the 40 the ribbon band gave back
+    viewportHeight: 1275,
     viewportWidth: 1600,
     url: sessionSpec(CONFIG, {
       sessionTracks: [DER3_GENES_TRACK],
@@ -983,13 +1100,52 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   trackId: DER3_GENES_TRACK.trackId,
                   height: 130,
                 },
-                { trackId: 'reads_vs_der3', height: 250, ...READS },
+                // TALLER ROWS AND NO COVERAGE BAND, on review ("the read stack
+                // looks really messy also, can it use view-as-pairs/link supp
+                // reads or anything to simplify the stack?").
+                //
+                // Neither of the two named settings applies: these are
+                // single-end ONT reads crossing the whole window in one
+                // alignment, so there is no mate to pair and no supplementary
+                // to chain. `mismatchAlpha` was the next guess and was measured
+                // rather than assumed -- it fades a tick by `min(1, qual/50)`,
+                // and this BAM's mismatch positions carry Q30-Q50, so it
+                // changed the picture by nothing visible. Don't reach for it on
+                // R10 data.
+                //
+                // What is actually wrong is a scale the spec never states: this
+                // capture is 3200 px wide and the page draws it about a third
+                // of that, so a 5 px row lands under 2 px and 29 of them turn
+                // into hash. At `featureHeight` 8 a row survives the downscale
+                // as a bar. The coverage band goes to pay for it -- at 1.1 kb
+                // it is one flat grey slab, and 29 rows that all span the frame
+                // say "flat depth" more directly than a band drawn over them.
+                // The band is the whole lane one figure up (derivative_synteny),
+                // where the window is 40 kb and rows are the thing that cannot
+                // work.
+                //
+                // 420 px is 46 rows at a pitch of 9 (`featureHeight + 1` above
+                // 3 px, featureSpacingForHeight). 46 is measured, not the 29
+                // the prose and an older note here both said: 29 reads span all
+                // four junctions, and `samtools view -c` over this window
+                // (der3_RARB_BICC1_TRHDE:32300-33400) returns 46 overlapping
+                // it. Every earlier version of this lane was quietly on a
+                // scrollbar for the difference.
+                {
+                  trackId: 'reads_vs_der3',
+                  height: 420,
+                  showCoverage: false,
+                  featureHeight: 8,
+                },
               ],
             },
           ],
           tracks: [['der3_vs_hg38']],
           drawCurves: false,
-          levelHeights: [220],
+          // 180 rather than 220: five ribbons crossing need enough band to
+          // stay separable and no more, and the 40 px buys most of the row
+          // height the reads gained
+          levelHeights: [180],
         },
       ],
     }),
@@ -1053,22 +1209,31 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'cancer_sv/split_view_from_breakend',
-    // 1000, not the 1400 the single column used: `stageColumns` puts two frames
-    // in a row, so the figure is twice a frame wide and 1400 made it 5,600px of
-    // PNG that the page then scales the text out of.
-    viewportWidth: 1000,
-    // The three menu/dialog frames. 612 is what the blank-below report asks
-    // for and it is wrong here: the blank it measures is the page under a
-    // CENTRED dialog, while the page itself is 667 tall, so 612 clipped the
-    // pileup by 55. The result frame gets its own height below.
-    viewportHeight: 670,
-    // 2x2 rather than a column (reviewer: "may want to use a 2x2 screenshot
-    // format"). Four frames stacked was 6,160px, most of it the same app
-    // chrome four times, and the result -- the thing the other three exist to
-    // reach -- was below three screens of scroll. A row is `+append`ed so the
-    // two frames sharing one have to share a height, which is why stage 3
-    // takes the result frame's height rather than the dialog frames'.
-    stageColumns: 2,
+    // ONE ROW OF THREE, at the same height, which is the whole answer to
+    // "please extensively reduce the y-real-estate of both the top and bottom
+    // figures, potentially reducing width and height of browser too" and to
+    // "we may want to make the breakpoint split view launch dialog a single
+    // step also so it doesnt require two steps".
+    //
+    // It used to be four frames in a 2x2, 1,740 px tall, and BOTH halves of
+    // that height were avoidable. The dialog is now one step rather than two
+    // (BreakpointSplitViewChoiceDialog: the shapes are a selected pair above
+    // the options they configure, instead of a screen each), which deletes a
+    // frame outright. And the frames left are the same height as each other,
+    // so a row of them wastes nothing: the result frame is 1,070 tall only
+    // because its two panels each carried a 260 px pileup, and this junction's
+    // support reads as clearly at 170.
+    //
+    // A trailing partial row is padded to full width on the right, so three
+    // frames in rows of two would have been a row and a half with a blank
+    // quarter. Three columns is the shape the content already has -- menu,
+    // dialog, result -- and it is the order the numbers on the frames read in.
+    viewportWidth: 900,
+    // 612 is what the blank-below report asks for and it is wrong here: the
+    // blank it measures is the page under a CENTRED dialog, while the page
+    // itself is taller. All three frames take this one, since they share a row.
+    viewportHeight: 700,
+    stageColumns: 3,
     url: lgvSession(CONFIG, {
       assembly: 'hg38',
       loc: 'chr3:25,359,318-25,359,818',
@@ -1098,44 +1263,40 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           { type: 'waitForText', text: SPLIT_VIEW_MENU_LABEL },
           { type: 'delay', ms: 1000 },
         ],
-        annotations: [{ type: 'box', anchor: { text: SPLIT_VIEW_MENU_LABEL } }],
+        annotations: [
+          FLOW_NUMBER(1),
+          { type: 'box', anchor: { text: SPLIT_VIEW_MENU_LABEL } },
+        ],
       },
       {
-        // the dialog it opens: which shape of view, before any of it is built
+        // The dialog it opens -- now ONE frame rather than two, because it is
+        // one dialog rather than two. The shape and the window size are the
+        // only two answers it needs and both are on screen at once, so the box
+        // goes on the window size: the shape is a selected row a reader can
+        // see is selected, and the window size is the setting that decides
+        // whether the junction is legible in the result.
         actions: [
           { type: 'click', text: SPLIT_VIEW_MENU_LABEL },
-          { type: 'waitForText', text: 'Split level (top/bottom)' },
-          { type: 'delay', ms: 1000 },
-        ],
-        annotations: [
-          { type: 'box', anchor: { text: 'Split level (top/bottom)' } },
-        ],
-      },
-      {
-        // and its second step, which is where the window each panel opens at
-        // comes from -- the one setting that decides whether the junction is
-        // legible in the result
-        actions: [
-          { type: 'click', text: 'Split level (top/bottom)' },
           { type: 'waitForText', text: 'Window size (bp)' },
           { type: 'delay', ms: 1000 },
         ],
-        annotations: [{ type: 'box', anchor: { text: 'Window size (bp)' } }],
-        // Deliberately NOT raised to the result frame's height. It is the left
-        // half of the grid's second row, so `+append` pads it to match -- with
-        // white, which reads as a gutter. Matching heights instead was tried
-        // and is worse: the app's own page is ~667 tall here, so the extra 400
-        // is grey app background rather than more pileup.
+        annotations: [
+          FLOW_NUMBER(2),
+          { type: 'box', anchor: { text: 'Window size (bp)' } },
+        ],
       },
       {
         // The result, loaded as a session rather than clicked out of the dialog
         // -- the harness's own `stage.url` case for "this frame is a RESULT
         // rather than a step". Driving the last click was tried three ways and
         // each failed differently: `.MuiDialogActions-root button` takes the
-        // FIRST button (Back), a `button::-p-text(Open)` compound matched Back
-        // too, and a plain `Open` left a second copy of the dialog standing at
-        // its first step -- the menu item queues one, and the click helper's
+        // FIRST button (which was Back), a `button::-p-text(Open)` compound
+        // matched Back too, and a plain `Open` left a second copy of the dialog
+        // standing -- the menu item queues one, and the click helper's
         // covered-element fallback can dispatch twice, so the queue holds two.
+        // Two of those three are gone with the Back button, but the frame stays
+        // declarative: a result frame that is a session is one the live link
+        // can open.
         //
         // The panels are what the dialog builds from this record at its default
         // 5 kb window: each breakend +/- 5 kb, both tracks copied onto both
@@ -1150,10 +1311,10 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   assembly: 'hg38',
                   loc: 'chr3:25,354,568-25,364,568',
                   tracks: [
-                    { trackId: SV, height: 90 },
+                    { trackId: SV, height: 65 },
                     {
                       trackId: TUMOUR,
-                      height: 260,
+                      height: 120,
                       ...SUPER_COMPACT,
                       ...DEEP_ONT,
                     },
@@ -1163,10 +1324,10 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   assembly: 'hg38',
                   loc: 'chr10:58,712,464-58,722,464',
                   tracks: [
-                    { trackId: SV, height: 90 },
+                    { trackId: SV, height: 65 },
                     {
                       trackId: TUMOUR,
-                      height: 260,
+                      height: 120,
                       ...SUPER_COMPACT,
                       ...DEEP_ONT,
                     },
@@ -1180,9 +1341,14 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         // `<trackId>-loaded` only once a read has matches on both panels, which
         // is the whole content of this frame
         readySelector: `[data-testid="${TUMOUR}-loaded"]`,
-        // sized off the run's own clipped-below-the-fold report, twice: 900 cut
-        // 109 px off the bottom panel's pileup and 1010 still cut 55
-        viewportHeight: 1070,
+        // NO per-stage height any more: the point of this rebuild is that all
+        // three frames are one height, so the result meets the step frames
+        // rather than the step frames being padded up to it. It gets there on
+        // its panels' own track heights (120 a pileup, from 260), which is
+        // where the y-real-estate the review asked about actually was. 170 was
+        // the first try and left 125 css px of page below the fold, per the
+        // run's own report.
+        annotations: [FLOW_NUMBER(3, { view: [0, 0] })],
       },
     ],
   },
@@ -1408,10 +1574,29 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   // one above the other and runs its splines down the page between them, which
   // is a second screen of figure for the same read set. Side by side, the same
   // splines run across the gap the fusion actually closes.
+  //
+  // LINKED, which is the reviewer's own suggestion ("consider 'view as pairs' or
+  // other things to sync across displayed regions") and turns out to be
+  // literally that menu item: `Read connections -> View as pairs / link
+  // supplementary alignments`. Unlinked, a read's chr22 alignment and its chr9
+  // supplementary are packed as two independent rows, so ~250 reads made ~500
+  // rows and every connector ran diagonally from wherever one row landed to
+  // wherever the other did -- the fan that makes this figure unreadable. In
+  // chain mode `mergeChains` (computeChainLayout.ts) merges a chain by NAME
+  // across displayed regions and shifts each region's bounds onto its own
+  // segment of the packing axis, so a read's two alignments share one row: the
+  // connectors go flat, the row count halves, and a reader can follow a single
+  // molecule from BCR into ABL1 by running a finger along one line.
+  //
+  // Not a claim about pairs. Iso-Seq is single-end; what is being linked here
+  // is the SA chain, which is the same layout and the same menu item.
   {
     mode: 'url',
     name: 'cancer_sv/k562_bcr_abl_split',
-    viewportHeight: 1030,
+    // 1030 put ~11% of the chains behind the pileup's own scrollbar (the
+    // thumb, not either size report, is what says so -- both of those measure
+    // the PAGE and the overflow here is inside a track)
+    viewportHeight: 1110,
     url: lgvSession(CONFIG, {
       assembly: 'hg38',
       loc: 'chr22:23,286,000-23,293,000 chr9:130,851,000-130,858,000',
@@ -1430,10 +1615,17 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         // the fan between the two regions is that read set, read by read.
         {
           trackId: 'K562_isoseq',
-          height: 620,
+          height: 700,
           coverageHeight: 190,
-          showBezierConnections: true,
           showOnlySplitAlignments: true,
+          // one row per molecule across both regions -- see the note above
+          linkedReads: 'normal',
+          // `showBezierConnections` is deliberately NOT set here any more. It
+          // was what drew the fan, and in chain mode it is redundant: the chain
+          // layout runs its own connecting-line pass (`showLinkedReadLines` is
+          // literally `showBezierConnections && !isChainMode`), so the straight
+          // line between a molecule's two alignments is drawn either way and
+          // the bezier only added a second curve over it.
           ...SPLIT_READS,
         },
       ],
@@ -1464,21 +1656,75 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   // window across ~1500px puts an Iso-Seq exon under a pixel. The RNA reading of
   // this junction is cancer_sv/k562_bcr_abl_split, one section up, at the zoom
   // where a transcript is resolvable.
+  //
+  // A DNA LANE, which is the reinvestigation the review asked for ("please
+  // reinvestigate the 'skip reason' i think it might be worth getting dna
+  // still") and which reverses the previous round's answer. That round was
+  // right about the sources and wrong to stop: DepMap 24Q4 genuinely publishes
+  // no structural-variant table, and ENCODE's four K562 WGS experiments are
+  // genuinely Illumina on hg19 -- but ENCODE also has one 10X Chromium
+  // linked-read run, ENCSR053AXS, whose large-SV VCF (ENCFF863MPP, 322 BND
+  // records, hg19) carries BOTH junctions of this amplicon. Lifting it costs a
+  // chain and a hosted file, which is what the last round declined to spend.
+  //
+  // Now spent. `scripts/lift_bnd_vcf.py` moves both of a breakend's
+  // coordinates rather than just POS, drops any record whose partner did not
+  // survive, and drops loci that landed on an inverted chain block, which is
+  // 264 of 322 records; the REF base of every one of them was checked against
+  // GRCh38 and matches. It is a track in the demo config, so the live link
+  // opens what this figure shows.
+  //
+  // What it adds is the thing the RNA lane structurally cannot say, and it is
+  // checkable off the two files rather than asserted. A fusion caller only ever
+  // sees a junction that is transcribed, so the STAR-Fusion arc puts BCR-ABL1's
+  // chr9 end at 130,854,064, an exon boundary. The DNA arc puts it at
+  // 130,731,760. And `bigWigToBedGraph -chrom=chr9` over K562_cn.bw -- the
+  // OTHER lane in this figure, from DepMap's WGS rather than from ENCODE's 10X
+  // run -- says the amplification starts at 130,731,326. Two assays, two
+  // pipelines, the same edge; the transcript junction is 122 kb inside it,
+  // in ABL1's first intron, which is where this fusion's genomic break is known
+  // to sit.
+  //
+  // Hence the highlight: it is the one place in the figure where a reader can
+  // see the copy-number step, the DNA arc's terminus and the absence of an RNA
+  // arc in a single vertical stripe. In-app rather than an overlay, so it is in
+  // the live link too.
   {
     mode: 'url',
     name: 'cancer_sv/k562_cn_amplicon',
-    viewportHeight: 780,
+    // 940 cut 84 css px off the DNA lane's arcs, per the run's own report
+    viewportHeight: 1025,
     url: lgvSession(CONFIG, {
       assembly: 'hg38',
       loc: 'chr22:16,700,000-16,950,000 chr9:130,600,000-131,350,000 chr22:23,150,000-23,400,000',
+      // wide enough to be a stripe rather than a hairline at 1.39 Mb across the
+      // frame, and centred on the pair of coordinates it marks
+      highlight: [
+        {
+          refName: 'chr9',
+          start: 130_723_000,
+          end: 130_740_000,
+          color: 'rgba(60,65,72,0.13)',
+        },
+      ],
       tracks: [
         { ...GENE_TRACK, height: 70 },
         { trackId: 'K562_cn', height: 130 },
         {
           trackId: 'K562_star_fusion',
           type: 'LinearPairedArcDisplay',
-          height: 290,
+          height: 250,
           color: FUSION_ARC_COLOR,
+        },
+        // The DNA junctions, under the RNA ones so the pair is read down the
+        // page against one copy-number lane. Flat colour rather than
+        // FUSION_ARC_COLOR: that expression encodes JunctionReadCount, which
+        // this caller does not report, and two arcs need no ramp.
+        {
+          trackId: 'K562_10x_sv',
+          type: 'LinearPairedArcDisplay',
+          height: 250,
+          color: '#1565c0',
         },
       ],
     }),

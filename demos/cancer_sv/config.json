@@ -196,6 +196,24 @@
         "type": "BigWigAdapter",
         "uri": "K562_cn.bw"
       }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "K562_10x_sv",
+      "name": "K562 DNA breakpoints (10X linked reads, lifted to hg38)",
+      "assemblyNames": ["hg38"],
+      "category": ["K562 (CML)"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "K562.10x-large-sv.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "K562.10x-large-sv.vcf.gz.tbi"
+          }
+        }
+      }
     }
   ],
   "defaultSession": {
