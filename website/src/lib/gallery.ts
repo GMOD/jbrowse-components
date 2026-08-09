@@ -448,7 +448,7 @@ export const gallerySections: readonly GallerySection[] = [
       },
       {
         label: 'Differential transcript usage',
-        spec: 'dtu/atp5f1c_isoform_switch',
+        spec: 'dtu/dtu_colored_gene_glyph',
         guide: 'user_guides/gene_track',
         description:
           'ATP5F1C with ENCODE muscle and liver RNA-seq coverage over GENCODE transcripts colored by the change in isoform fraction satuRn measured between the two tissues. The boxed exon has no muscle reads and a liver peak, and only the liver-preferred transcript draws an exon there.',

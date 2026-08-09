@@ -131,7 +131,7 @@ the test separated colored, and the eight it could not staying neutral rather
 than competing for attention. Zoomed to one cassette exon, the same color says
 which isoform the reads under it belong to.
 
-<Figure caption="ATP5F1C in the hosted differential-transcript-usage demo (hg38), at two zooms. ENCODE skeletal-muscle and liver RNA-seq coverage on a shared scale, over GENCODE transcripts colored by the change in isoform fraction that satuRn measured between the two tissues. Top, the whole locus: ATP5F1C-201 (muscle-preferred) and ATP5F1C-202 (liver-preferred) carry the color and the other eight are gray. Bottom, the 3' third: the boxed 37 bp exon has no muscle reads and a clear liver peak, and only the liver-preferred transcript draws an exon there. The four empty rows in the lower frame are ATP5F1C-203, -204, -205 and -207, which end before this window starts and keep their rows so the packing does not shift as you pan." src="/img/dtu/atp5f1c_dtu.png" links="Whole locus=dtu/dtu_colored_gene_glyph,The cassette exon=dtu/atp5f1c_isoform_switch" />
+<Figure caption="ATP5F1C in the hosted differential-transcript-usage demo (hg38). ENCODE skeletal-muscle and liver RNA-seq coverage on a shared scale, over GENCODE transcripts colored by the change in isoform fraction that satuRn measured between the two tissues. ATP5F1C-201 (muscle-preferred) and ATP5F1C-202 (liver-preferred) carry the color and the other eight are gray. The marked column is the 37 bp cassette exon that separates them: no muscle reads, a clear liver peak, and an exon drawn on the liver-preferred transcript alone." src="/img/dtu/dtu_colored_gene_glyph.png" links="Open this view=dtu/dtu_colored_gene_glyph" />
 
 ## Peptide lettering
 

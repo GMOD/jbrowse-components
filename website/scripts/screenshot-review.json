@@ -2712,13 +2712,6 @@
     "reviewedAt": "2026-08-08T02:33:20.917Z",
     "hash": "8156dfe1d881c4927631178f39b282dc34babbd2"
   },
-  "dtu/atp5f1c_isoform_switch": {
-    "name": "dtu/atp5f1c_isoform_switch",
-    "status": "good",
-    "note": "there are weird 'gaps' between the gene glyphs. might want to find a way to fix this. can we sort or pack transcripts in a glyph automatically in cases like this?  MERGED into dtu/atp5f1c_dtu, a two-frame compose (whole locus on top, the 3' third with the 37 bp cassette exon below), which is the multi-part option rather than the delete. See that entry.",
-    "reviewedAt": "2026-08-09T03:58:00.000Z",
-    "hash": "50b150771c7f5caabe37cbd6e05614f5fd90d3ac"
-  },
   "feature_plotting_threads": {
     "name": "feature_plotting_threads",
     "status": "good",
@@ -2832,9 +2825,9 @@
   "dtu/dtu_colored_gene_glyph": {
     "name": "dtu/dtu_colored_gene_glyph",
     "status": "good",
-    "note": "see note in dtu/atp5f1c_isoform_switch . also this is very similar to dtu/atp5f1c_isoform_switch , might make multi-part figure, or delete dtu/atp5f1c_isoform_switch entirely. we can see the exon skipping here.  MERGED into dtu/atp5f1c_dtu (whole locus on top, the cassette exon below). On the gaps: they are NOT a packing failure. Checked against the whole-gene frame -- the empty rows are ATP5F1C-203, -204, -205 and -207, all four of which END before the 8 kb window starts. The layout is computed per BLOCK rather than per visible window, which is what keeps rows from renumbering as you pan, so a feature just off the left edge keeps its row and the row draws empty. Packing them out would mean a layout that reshuffles on every scroll. The whole-gene frame above now names every one of those rows, so the gaps read as isoforms that ended.",
-    "reviewedAt": "2026-08-09T03:58:00.000Z",
-    "hash": "0c818ca41d1976f5192066bf868ee5b197a2378a"
+    "note": "see note in dtu/atp5f1c_isoform_switch . also this is very similar to dtu/atp5f1c_isoform_switch , might make multi-part figure, or delete dtu/atp5f1c_isoform_switch entirely. we can see the exon skipping here.  MERGED into dtu/atp5f1c_dtu (whole locus on top, the cassette exon below). On the gaps: they are NOT a packing failure. Checked against the whole-gene frame -- the empty rows are ATP5F1C-203, -204, -205 and -207, all four of which END before the 8 kb window starts. The layout is computed per BLOCK rather than per visible window, which is what keeps rows from renumbering as you pan, so a feature just off the left edge keeps its row and the row draws empty. Packing them out would mean a layout that reshuffles on every scroll. The whole-gene frame above now names every one of those rows, so the gaps read as isoforms that ended. UPDATED 2026-08-09: this is now the ONLY DTU figure. Carrying the note from dtu/atp5f1c_dtu, which is deleted: 'i dont think this strongly benefits from the two part figure. i think we just can add the box to the part 1 figure and delete part 2 figure.' Done exactly -- the box and both pills moved onto this frame and the zoomed spec (dtu/atp5f1c_isoform_switch) and the compose are gone, along with their entries and their figures.lock lines. It survives the pull-back because what the box marks is not the exon's WIDTH: at 24.8 kb the 37 bp exon is ~2 css px, but the claim is that liver carries a coverage peak at 7,806,974 and muscle carries none, and both read plainly at this zoom, with ATP5F1C-202's exon in the same column. Verified on the regenerated PNG. gallery.ts and the gene_track.md figure now point here.",
+    "reviewedAt": "2026-08-09T05:54:08.551Z",
+    "hash": "ab3c3ca33e9a64ffa63fb4571aaa4f6493562554"
   },
   "genomes_basics/phylop_bases": {
     "name": "genomes_basics/phylop_bases",
@@ -2920,12 +2913,5 @@
     "note": "'once per region' is a hard to understand claim. might just not even say it. data returned in 'absolute bp' unclear what that means like...just normal coordinates? its not a unambigous term...unless we define glossary or make better term or say uint32 genomic coordinates. the way it says 'kept' is weird. also even saying 'uploaded once' is weird. i know what it means kinda, but we want it to be easy for someone that doesnt know gpu",
     "reviewedAt": "2026-08-09T05:44:20.811Z",
     "hash": "c16fe53f0627da694c6ea3b5935748e9051ac4c1"
-  },
-  "dtu/atp5f1c_dtu": {
-    "name": "dtu/atp5f1c_dtu",
-    "status": "bad",
-    "note": "i dont think this strongly benefits from the two part figure. i think we just can add the box to the part 1 figure and delete part 2 figure.",
-    "reviewedAt": "2026-08-09T05:44:54.497Z",
-    "hash": "1595eb91554830fdf2b08e664197b31a63b0f00c"
   }
 }

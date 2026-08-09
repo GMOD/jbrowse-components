@@ -61,23 +61,33 @@ const glyph = {
 const DTU_READY = displayReady('feature-display')
 
 export const dtuSpecs: ScreenshotSpec[] = [
-  // The hero: one cassette exon, the read evidence for it in both tissues, and
-  // the two isoforms it distinguishes, colored by the statistic that called it.
-  // Muscle coverage is flat across the exon while liver peaks on it, and only
-  // the blue (liver-preferred) transcript draws a box there — the same fact
-  // three ways in one frame.
+  // The whole gene, which is where the color encoding earns its keep: ten
+  // annotated isoforms, two of them called, and the eight the test could not
+  // separate staying neutral gray rather than competing for attention.
+  //
+  // ONE FIGURE, not the two-zoom compose this used to be the top half of
+  // (review: "i dont think this strongly benefits from the two part figure. i
+  // think we just can add the box to the part 1 figure and delete part 2
+  // figure"). The zoomed half was a second frame of the same track over the same
+  // gene, and its whole subject — the cassette exon — survives the pull-back:
+  // at 24.8 kb the 37 bp exon is about 2 css px, but the thing being marked is
+  // not the exon's WIDTH, it is that liver carries a coverage peak at
+  // 7,806,974 and muscle carries nothing there, and both are plainly visible at
+  // this zoom. So the box moved up here and the zoomed spec is gone.
+  //
+  // Right edge carried ~4 kb past the gene, the same lever the figure above
+  // documents and this one did not have. The floating color key is pinned to
+  // the track's top-right corner (FloatingLegend's `right: 10, top: 10`) with an
+  // opaque paper background and no placement slot, so on a window that ends
+  // where the gene ends it sits ON the 3' end of every row — here it covered the
+  // last exon of both colored transcripts and five of the gray ones. The only
+  // lever a spec has is where the data is, so the window carries past it.
   {
     mode: 'url',
-    name: 'dtu/atp5f1c_isoform_switch',
+    name: 'dtu/dtu_colored_gene_glyph',
     url: lgvSession(DTU_CONFIG, {
       assembly: 'hg38',
-      // the 3' third of ATP5F1C. Wide enough to hold three exons both tissues
-      // cover, so the empty muscle band over the cassette exon reads as
-      // *skipping* rather than as a track that failed to load or a gene that
-      // simply ended
-      // right edge carried ~1 kb past the gene so the shared final exon lands
-      // clear of the floating color key rather than behind it
-      loc: 'chr10:7,801,200..7,809,400',
+      loc: 'chr10:7,787,600..7,812,400',
       tracks: [coverage('muscle_plus'), coverage('liver_plus'), glyph],
     }),
     readySelector: DTU_READY,
@@ -85,17 +95,20 @@ export const dtuSpecs: ScreenshotSpec[] = [
     viewportHeight: 730,
     annotations: [
       {
-        // no `track`, so the ring spans the view's whole tracks area: one
-        // vertical band tying the absent muscle signal, the liver peak, and the
-        // exon box together
+        // no `track`, so the band spans the view's whole tracks area: one
+        // vertical line tying the absent muscle signal, the liver peak and the
+        // exon box on ATP5F1C-202 together. At this zoom the exon itself is ~2
+        // px, so the pad is what makes the band findable — and what it marks is
+        // a column through three lanes, not the feature's width.
         type: 'box',
         anchor: { locus: CASSETTE_EXON },
         pad: 9,
         strokeWidth: 3,
       },
-      // one label per coverage track, each right-aligned so its pill ENDS just
-      // left of the exon — the tracks are empty there, and the alternative (a
-      // single centered label above) lands on the location box
+      // One label per coverage track, right-aligned so each pill ENDS just left
+      // of the band. Both lanes are quiet immediately left of the exon, which is
+      // the room these use; a single centered label above lands on the location
+      // box instead.
       {
         type: 'text',
         text: 'no reads — exon skipped',
@@ -121,54 +134,5 @@ export const dtuSpecs: ScreenshotSpec[] = [
         dx: -14,
       },
     ],
-  },
-
-  // The same locus pulled back to the whole gene, which is where the color
-  // encoding earns its keep: ten annotated isoforms, two of them called, and
-  // the eight the test could not separate staying neutral gray rather than
-  // competing for attention.
-  //
-  // Right edge carried ~4 kb past the gene, the same lever the figure above
-  // documents and this one did not have. The floating color key is pinned to
-  // the track's top-right corner (FloatingLegend's `right: 10, top: 10`) with an
-  // opaque paper background and no placement slot, so on a window that ends
-  // where the gene ends it sits ON the 3' end of every row — here it covered the
-  // last exon of both colored transcripts and five of the gray ones. The only
-  // lever a spec has is where the data is, so the window carries past it.
-  {
-    mode: 'url',
-    name: 'dtu/dtu_colored_gene_glyph',
-    url: lgvSession(DTU_CONFIG, {
-      assembly: 'hg38',
-      loc: 'chr10:7,787,600..7,812,400',
-      tracks: [coverage('muscle_plus'), coverage('liver_plus'), glyph],
-    }),
-    readySelector: DTU_READY,
-    settleMs: 4000,
-    viewportHeight: 730,
-  },
-
-  // The two above as ONE figure (reviewer, on the wide one: "this is very
-  // similar to dtu/atp5f1c_isoform_switch, might make multi-part figure, or
-  // delete dtu/atp5f1c_isoform_switch entirely"). They are the same track over
-  // the same gene at two zooms, and side by side in a page they read as a
-  // repeat; stacked in one frame they read as one zoom, which is what they are.
-  //
-  // Whole gene on TOP, and that order is the answer to the other note on this
-  // pair ("there are weird 'gaps' between the gene glyphs. might want to find a
-  // way to fix this. can we sort or pack transcripts in a glyph automatically
-  // in cases like this?"). Checked against the whole-gene frame: the empty rows
-  // are ATP5F1C-203, -204, -205 and -207, all four of which END before the 8 kb
-  // window starts. The layout is computed per BLOCK rather than per visible
-  // window -- which is what keeps rows from renumbering as you pan -- so a
-  // feature just off the left edge keeps its row and the row draws empty.
-  // Nothing declarative removes them, and packing them out would mean a layout
-  // that reshuffles on every scroll. The whole-gene frame above names every one
-  // of those rows instead, so the gaps read as isoforms that ended rather than
-  // as something having gone wrong.
-  {
-    mode: 'compose',
-    name: 'dtu/atp5f1c_dtu',
-    parts: ['dtu/dtu_colored_gene_glyph', 'dtu/atp5f1c_isoform_switch'],
   },
 ]
