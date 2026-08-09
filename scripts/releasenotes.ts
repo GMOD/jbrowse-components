@@ -2,31 +2,10 @@
 // Print a release's notes for the GitHub release body: summary + changelog,
 // minus the frontmatter and Downloads block. Defaults to the newest post;
 // `--tag v4.3.1` selects one. release.yml pipes this into `--notes-file`.
-import { readFileSync } from 'node:fs'
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { absolutizeImages, splitReleaseBody } from './releaseBlog.ts'
+import { loadReleasePost } from './releaseCli.ts'
 
-import {
-  absolutizeImages,
-  findReleasePost,
-  parseReleasePost,
-  splitReleaseBody,
-} from './releaseBlog.ts'
-
-const BLOG_DIR = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  '../website/blog',
-)
-
-const args = process.argv.slice(2)
-const tagIdx = args.indexOf('--tag')
-const tag = tagIdx === -1 ? undefined : args[tagIdx + 1]
-
-const post = findReleasePost(tag, BLOG_DIR)
-const { body } = parseReleasePost(
-  readFileSync(path.join(BLOG_DIR, post), 'utf8'),
-  post,
-)
+const { body } = loadReleasePost(process.argv.slice(2))
 const { notes, changelog } = splitReleaseBody(body)
 
 process.stdout.write(

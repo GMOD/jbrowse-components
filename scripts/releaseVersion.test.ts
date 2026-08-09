@@ -2,6 +2,7 @@ import {
   isPrerelease,
   nextVersion,
   parseReleaseArgs,
+  parseTagArg,
 } from './releaseVersion.ts'
 
 const from = (argv: string[], previousVersion = '4.3.0') => {
@@ -58,7 +59,39 @@ test('isPrerelease', () => {
   expect(isPrerelease('4.4.0-beta.1')).toBe(true)
 })
 
-test('--skip-ci-check is independent of the level', () => {
+// "no --tag" and "--tag with its value missing" both used to come out as
+// undefined, which findReleasePost reads as "the newest post" — so a typo
+// re-announced the previous release to Bluesky, Mastodon and the newsletter.
+test('parseTagArg refuses a --tag with no value', () => {
+  expect(parseTagArg([])).toBeUndefined()
+  expect(parseTagArg(['--dry-run'])).toBeUndefined()
+  expect(parseTagArg(['--tag', 'v4.3.1'])).toBe('v4.3.1')
+  expect(parseTagArg(['--dry-run', '--tag', 'v4.3.1'])).toBe('v4.3.1')
+  expect(() => parseTagArg(['--tag'])).toThrow('--tag needs a value')
+  expect(() => parseTagArg(['--tag', '--dry-run'])).toThrow(
+    '--tag needs a value',
+  )
+})
+
+// Both flags are read by `includes`, so the risk is not parsing them but the
+// level detection swallowing one — it takes the first non-`--` argument.
+test('the flags are independent of the level and of each other', () => {
   expect(parseReleaseArgs(['--skip-ci-check']).skipCiCheck).toBe(true)
   expect(parseReleaseArgs([]).skipCiCheck).toBe(false)
+  expect(parseReleaseArgs(['--dry-run']).dryRun).toBe(true)
+  expect(parseReleaseArgs([]).dryRun).toBe(false)
+  expect(parseReleaseArgs(['--dry-run']).level).toBe('patch')
+  expect(parseReleaseArgs(['minor', '--dry-run'])).toMatchObject({
+    level: 'minor',
+    dryRun: true,
+    skipCiCheck: false,
+  })
+  expect(
+    parseReleaseArgs(['--dry-run', '--version', '5.0.0', '--skip-ci-check']),
+  ).toMatchObject({
+    explicitVersion: '5.0.0',
+    dryRun: true,
+    skipCiCheck: true,
+    level: 'patch',
+  })
 })
