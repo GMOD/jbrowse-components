@@ -1339,9 +1339,10 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         // The dialog it opens -- now ONE frame rather than two, because it is
         // one dialog rather than two. The shape and the window size are the
         // only two answers it needs and both are on screen at once, so the box
-        // goes on the window size: the shape is a selected row a reader can
-        // see is selected, and the window size is the setting that decides
-        // whether the junction is legible in the result.
+        // goes on "Follow further breakends at each end", which is the setting
+        // that decides how much of the rearrangement the result frame holds:
+        // the shape is a selected row a reader can see is selected, and the
+        // window size is a number whose effect the result already shows.
         actions: [
           { type: 'click', text: SPLIT_VIEW_MENU_LABEL },
           { type: 'waitForText', text: 'Window size (bp)' },
@@ -1349,7 +1350,10 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         ],
         annotations: [
           FLOW_NUMBER(2),
-          { type: 'box', anchor: { text: 'Window size (bp)' } },
+          {
+            type: 'box',
+            anchor: { text: 'Follow further breakends at each end' },
+          },
         ],
       },
       {
@@ -1366,22 +1370,42 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         // can open.
         //
         // The panels are what the dialog builds from this record at its default
-        // 5 kb window: each breakend +/- 5 kb, both tracks copied onto both
-        // panels (Copy tracks / Mirror, checked in the frame above).
+        // 5 kb window, with "Follow further breakends at each end" left on:
+        // each stop +/- 5 kb, both tracks copied onto every panel (Copy tracks /
+        // Mirror, checked in the frame above).
+        //
+        // THREE PANELS, and they are the walk's own answer rather than a
+        // choice made here (review, twice: "ideally this workflow would show all
+        // three rows like cancer_sv/realigned_reads"). walkBreakendChain leaves
+        // r_12's chr10 end by r_13, which is 198 bp away and goes to chr12, and
+        // then stops: the only junction at the chr12 end is r_24, whose far end
+        // is 457 bp from where the chain started. Those three stops, in this
+        // order, are what walkBreakendChain.test.ts asserts against the records
+        // as the demo's VCF carries them -- so this session states the same
+        // thing the unit test does, and a change to either shows up as a
+        // disagreement rather than as a figure nobody re-checked.
+        //
+        // 40/50 px a lane rather than 65/120: the frame height is shared with
+        // the two step frames, and it now has to hold three panels rather than
+        // two. Measured rather than guessed at -- the first try at three panels
+        // kept 55/90 and the run reported 158 css px of the third panel below
+        // the fold, which is 53 a panel. The connectors are what this frame is
+        // of, and they are drawn between panels rather than inside one, so the
+        // px come off the pileups.
         url: sessionSpec(CONFIG, {
           views: [
             {
               type: 'BreakpointSplitView',
-              displayName: 'RARB (chr3) - BICC1 (chr10)',
+              displayName: 'RARB (chr3) - BICC1 (chr10) - TRHDE (chr12)',
               views: [
                 {
                   assembly: 'hg38',
                   loc: 'chr3:25,354,568-25,364,568',
                   tracks: [
-                    { trackId: SV, height: 65 },
+                    { trackId: SV, height: 40 },
                     {
                       trackId: TUMOUR,
-                      height: 120,
+                      height: 50,
                       ...SUPER_COMPACT,
                       ...DEEP_ONT,
                     },
@@ -1391,10 +1415,23 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   assembly: 'hg38',
                   loc: 'chr10:58,712,464-58,722,464',
                   tracks: [
-                    { trackId: SV, height: 65 },
+                    { trackId: SV, height: 40 },
                     {
                       trackId: TUMOUR,
-                      height: 120,
+                      height: 50,
+                      ...SUPER_COMPACT,
+                      ...DEEP_ONT,
+                    },
+                  ],
+                },
+                {
+                  assembly: 'hg38',
+                  loc: 'chr12:72,268,294-72,278,294',
+                  tracks: [
+                    { trackId: SV, height: 40 },
+                    {
+                      trackId: TUMOUR,
+                      height: 50,
                       ...SUPER_COMPACT,
                       ...DEEP_ONT,
                     },

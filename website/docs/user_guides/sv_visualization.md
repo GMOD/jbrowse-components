@@ -297,6 +297,28 @@ The header bar accepts location searches directly in either panel.
 The view also supports multi-hop events where a single read has multiple
 supplementary alignments, connecting more than two breakpoints simultaneously.
 
+### Following a chain of breakends
+
+A BND record names one partner, so the record a launch starts from is two loci
+however many the rearrangement has. Launching from a variant track's own
+right-click menu offers **Follow further breakends at each end**, which reaches
+the rest from the callset: at each end of the chain it looks for another
+junction leaving from within a kilobase of the same place, and takes it when
+there is exactly one, adding a panel per hop up to four.
+
+It is reading two junctions that leave one locus as one molecule, which is not
+something the caller asserts, so it declines the cases where that would be a
+guess. Two open continuations at a locus stop the walk, since the records cannot
+say which molecule carries which. A continuation that leads back to a locus
+already on screen stops it too, because a closed cycle is a shape the panels
+already show in full. Where the reads are the evidence rather than the record
+layout, the tool is
+[Reconstruct derivative allele](/docs/tutorials/cancer_sv#reconstructing-the-derivative-allele-in-the-browser),
+which ranks whole routes by how many molecules independently take each.
+
+The option appears only for a launch that can read the callset, and only for the
+stacked shape.
+
 ## Phasing heterozygous SVs
 
 For heterozygous SVs, confirming that supporting reads come from a single

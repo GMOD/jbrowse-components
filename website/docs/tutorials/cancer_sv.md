@@ -132,17 +132,28 @@ know, and takes one row per panel.
 One record needs no typing at all. Right-click it in the variant track and
 choose **Open breakpoint split view**: one dialog asks for the shape, two
 stacked panels or one row spanning both breakends, and for the window each panel
-opens at. The panels it builds are the two loci the record's own ALT names, with
-the tracks from the launching view copied onto both.
+opens at.
 
-Two loci is all a record can give: a BND names one partner, so this route opens
-one hop of a chain however many hops it has. Chaining records to reach the rest
-would mean assuming that two junctions sharing a locus sit on the same molecule,
-which is the thing a caller does not assert and the reads do, so the multi-hop
-route is the reconstruction dialog above rather than a second walker over the
-VCF.
+A BND names one partner, so the record on its own is two loci. **Follow further
+breakends at each end** is what reaches the rest of the rearrangement, and it
+does it from the callset rather than from the reads: at each end of the chain it
+looks for another junction leaving from the same place, and takes it when there
+is exactly one. On this record that is three panels rather than two, because the
+chr10 breakend it names has a second junction a couple of hundred bases away
+whose far end is on chr12. The walk then stops, since the only junction at the
+chr12 end returns to where the chain began.
 
-<Figure caption="Opening the split view from the record rather than the import form, in three steps. 1: right-click the breakend and choose Open breakpoint split view. 2: the dialog, where the shape and the window each panel opens at are set together. 3: the result, the chr3 and chr10 loci this record names, with the reads that cross the junction drawn as connectors between the two pileups." src="/img/cancer_sv/split_view_from_breakend.png" />
+What the option assumes is worth being clear about, because the caller does not
+assert it: two junctions leaving one locus are being read as one molecule. The
+walk refuses the cases where that reading is a guess rather than a reading. Two
+open continuations at a locus stop it, because the records cannot say which
+molecule carries which; a continuation that leads back into the chain stops it
+too, since a closed cycle is a shape already fully on screen. The evidence for
+the assumption is the reads, and it is the dialog above: **Reconstruct
+derivative allele** ranks whole routes by how many molecules independently take
+each.
+
+<Figure caption="Opening the split view from the record rather than the import form, in three steps. 1: right-click the breakend and choose Open breakpoint split view. 2: the dialog, where the shape, the window each panel opens at, and whether to follow further breakends are set together. 3: the result, three panels because the chain runs chr3 to chr10 to chr12, with the reads that cross each junction drawn as connectors between the pileups." src="/img/cancer_sv/split_view_from_breakend.png" />
 
 For one read rather than the pileup, right-click a read and choose **Linear read
 vs ref**. That builds a synteny view with the read as its own assembly along the

@@ -8,6 +8,7 @@
 # to name each panel is the legitimate reason to stay listed.
 config_guides/variant_track.md /img/ld/lct_haploblock.png
 tutorials/cancer_sv.md /img/cancer_sv/multihop_reads.png
+tutorials/cancer_sv.md /img/cancer_sv/split_view_from_breakend.png
 tutorials/chromhmm.md /img/chromhmm.png
 tutorials/dog10k_svs.md /img/dog10k-diet-genes.png
 tutorials/hic_structural_variants.md /img/hic/compartment_switch.png
