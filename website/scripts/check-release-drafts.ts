@@ -70,6 +70,10 @@ const BANNED = [
   },
 ]
 
+// Read off the raw draft, before prepareDraftNotes strips comments, so the
+// escape hatch itself never reaches the published post.
+const PRERELEASE_WORDING_OK = '<!-- prerelease-wording-ok -->'
+
 const problems: string[] = []
 const drafts = existsSync(DRAFTS)
   ? readdirSync(DRAFTS)
@@ -108,9 +112,25 @@ for (const file of drafts) {
     )
     continue
   }
+  const source = readFileSync(join(DRAFTS, file), 'utf8')
+  // Every draft here is named after a STABLE tag (the check above rejects the
+  // other kind), and the stable release is the only thing that ever renders one
+  // -- so a draft describing itself as a prerelease publishes that claim as the
+  // final post, and mails it to the newsletter and the social accounts too. It
+  // is an easy state to reach honestly: the v5.0.0 draft was written during a
+  // planned beta period, in the beta's voice, and would have gone out opening
+  // "This is the prerelease of JBrowse 2 v5.0.0". Cutting the beta itself is
+  // unaffected, since `pnpm release --version X-beta.N` consumes no draft.
+  if (!source.includes(PRERELEASE_WORDING_OK)) {
+    for (const [word] of source.matchAll(/\bpre-?releases?\b/gi)) {
+      flag(
+        `describes itself as a "${word}", but this draft is only ever rendered as the STABLE ${file.replace(/\.md$/, '')} post. Rewrite it in the release's own voice, or add ${PRERELEASE_WORDING_OK} if the mention is about some other release`,
+      )
+    }
+  }
   // Check what release.ts will actually write, not the source: a repo-relative
   // figure path is legal in the draft and normalized on the way in.
-  const notes = prepareDraftNotes(readFileSync(join(DRAFTS, file), 'utf8'))
+  const notes = prepareDraftNotes(source)
   if (notes === '') {
     flag('is empty once comments are stripped')
   }
