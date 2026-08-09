@@ -310,6 +310,40 @@ infrastructure staying in place regardless.
   `vs_main` / `fs_main`. Authored `.slang` sources use the snake_case form to
   match.
 
+### A guard that iterates over what it found is not a guard
+
+Two holes of the same shape, both found by probing rather than by a failure, and
+both silent per-backend rendering bugs — the exact class this ADR exists to
+eliminate.
+
+- **The GLSL rewrites were keyed on the mangling suffix `_0`.** slangc's
+  disambiguating index counts declarations it has seen, so it is only usually
+  zero. A miss is silent twice over: the WebGL2 shader keeps `inst_color_1`, so
+  `getAttribLocation('a_color')` returns -1 and that one attribute reads a
+  constant; and `assertVertexInputs` searches for `a_(\w+)` and compares only
+  what it FOUND, so the declaration it should have flagged drops out of the
+  comparison and the cross-check passes. Renames now match `_\d+` (field names
+  are unique within a struct, so widening cannot alias two onto one) and refuse
+  any `<prefix>_…_<n>` that survives. Note the first fix alone would not have
+  been enough — the backstop is what makes a mangling shape nobody anticipated
+  loud instead of quiet.
+- **Tight packing is the vertex-attribute rule, and it was applied to storage
+  buffers too.** `findInstanceStruct` supports instancing through a
+  `StructuredBuffer<T>`, where std430 aligns a vec2 to 8 and a vec3/vec4 to 16
+  — so `float2 a; float b; float2 c;` packs `c` at 12 and the GPU reads it at
+  16. `assertVertexInputsMatch` cannot catch it *by construction*: such a shader
+  declares no vertex inputs, so finding nothing is the correct answer and the
+  check that keeps the model honest everywhere else is vacuous exactly here.
+  Nothing in the tree instances that way today, so `instanceAttrs` refuses a
+  std430-incompatible layout with the rule named rather than shipping an
+  untested offset emitter for a case with no consumer.
+
+The generalization worth keeping: **whenever a check is written as "for each
+thing I parsed, assert X", ask what happens when the parse comes up short.**
+`assertParsedSomething` was already added for the all-empty case; the partial
+case needed its own answer, and the vacuous-by-construction case needed the
+guard moved somewhere the check could actually reach.
+
 ## Alternatives considered
 
 - **naga-driven reflection against hand-written WGSL** (no authoring change):

@@ -360,3 +360,80 @@ test('refuses a uniform array of scalars, naming the fix', () => {
     emitInterface({ baseName: 'test', reflection: scalarArray }),
   ).toThrow(/'palette' is an array of uint32.*Declare it as float4\[3\]/s)
 })
+
+// Tight packing is the rule for a vertex attribute and not for a struct in a
+// storage buffer, where std430 aligns a vec2 to 8 and a vec3/vec4 to 16. This
+// is the one layout nothing else can check: `assertVertexInputsMatch` keeps the
+// tight model honest by comparing it against the shader's declared vertex
+// inputs, and a storage-buffer shader declares none.
+describe('storage-buffer instancing', () => {
+  const bufferOf = (fields: { name: string; type: unknown }[]) =>
+    ({
+      parameters: [
+        {
+          name: 'instances',
+          binding: { kind: 'descriptorTableSlot' as const, index: 0 },
+          type: {
+            kind: 'resource' as const,
+            baseShape: 'structuredBuffer',
+            resultType: { kind: 'struct' as const, name: 'Inst', fields },
+          },
+        },
+      ],
+      entryPoints: [],
+    }) as Reflection
+
+  test('refuses a field the tight cursor lands on the wrong alignment for', () => {
+    const reflection = bufferOf([
+      { name: 'a', type: vector(2, 'float32') },
+      { name: 'b', type: scalar('float32') },
+      // Tight puts this at 12; std430 puts it at 16.
+      { name: 'c', type: vector(2, 'float32') },
+    ])
+    expect(() => emitInterface({ baseName: 'test', reflection })).toThrow(
+      /'c' to 8 bytes.*offset 12/s,
+    )
+    // The layout-only artifact writes the same offsets, so it must refuse too.
+    expect(() => emitLayoutOnly({ baseName: 'test', reflection })).toThrow(
+      /std430/,
+    )
+  })
+
+  test('accepts a struct whose tight layout already satisfies std430', () => {
+    const reflection = bufferOf([
+      { name: 'pos', type: vector(4, 'float32') },
+      { name: 'uv', type: vector(2, 'float32') },
+      { name: 'flags', type: scalar('uint32') },
+    ])
+    expect(emitLayoutOnly({ baseName: 'test', reflection })).toContain('uv: 4,')
+  })
+
+  test('a vertex-attribute struct with the same fields is fine', () => {
+    // 4-byte alignment is all either backend asks of an attribute, so the
+    // refusal above must not reach the case every shader in the tree uses.
+    const reflection = {
+      parameters: [],
+      entryPoints: [
+        {
+          name: 'vsMain',
+          stage: 'vertex' as const,
+          parameters: [
+            {
+              name: 'inst',
+              type: {
+                kind: 'struct' as const,
+                name: 'Inst',
+                fields: [
+                  { name: 'a', type: vector(2, 'float32') },
+                  { name: 'b', type: scalar('float32') },
+                  { name: 'c', type: vector(2, 'float32') },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    } as Reflection
+    expect(emitLayoutOnly({ baseName: 'test', reflection })).toContain('c: 3,')
+  })
+})

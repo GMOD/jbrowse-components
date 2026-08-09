@@ -16,31 +16,48 @@ function renameUniformBlock(
   return source.replace(re, `$1${target}`)
 }
 
-function renameAttributeIdentifiers(
+/**
+ * Rewrite every `<prefix>_<field>_<n>` identifier to `<target><field>`, and
+ * refuse if any `<prefix>_…_<n>` survives.
+ *
+ * **The suffix is `_<n>`, not `_0`.** slangc's disambiguating index counts
+ * declarations it has seen, so it is only usually zero — and a rename keyed on
+ * `_0` that misses is silent in both directions at once. The GLSL keeps the
+ * mangled name, so `getAttribLocation('a_color')` returns -1 and that attribute
+ * reads a constant on WebGL2 only; and `assertVertexInputs` searches for
+ * `a_(\w+)`, so the declaration it should have flagged simply drops out of the
+ * comparison, which iterates over what it FOUND. The layout cross-check passes
+ * while the shader and GL_ATTRIBUTES disagree about a name.
+ *
+ * Field names are unique within the struct, so widening to `_\d+` cannot alias
+ * two fields onto one target: `inst_color_0` and `inst_color2_0` differ before
+ * the suffix. The leftover check stays as the backstop for a mangling shape
+ * this pattern doesn't anticipate at all.
+ */
+function renameMangled(
   source: string,
+  what: string,
   prefix: string,
   fieldNames: readonly string[],
+  target: (field: string) => string,
 ) {
   let out = source
   for (const f of fieldNames) {
-    const re = new RegExp(String.raw`\b${prefix}_${f}_0\b`, 'g')
-    out = out.replace(re, `a_${f}`)
+    out = out.replace(
+      new RegExp(String.raw`\b${prefix}_${f}_\d+\b`, 'g'),
+      target(f),
+    )
   }
-  return out
-}
-
-// Rename mangled varying names to a shared `v_<field>` convention so that
-// vertex outputs and fragment inputs link by name (WebGL2 GLSL ES does not
-// allow `layout(location=N)` on vertex-out or fragment-in).
-function renameVaryings(
-  source: string,
-  prefix: string,
-  fieldNames: readonly string[],
-) {
-  let out = source
-  for (const f of fieldNames) {
-    const re = new RegExp(String.raw`\b${prefix}_${f}_0\b`, 'g')
-    out = out.replace(re, `v_${f}`)
+  const leftover = new RegExp(String.raw`\b${prefix}_\w+_\d+\b`, 'g').exec(out)
+  if (leftover) {
+    throw new Error(
+      `${what}: slangc emitted '${leftover[0]}', which is not any of the ` +
+        `reflected names (${fieldNames.join(', ')}) under the prefix ` +
+        `'${prefix}'. Renaming only what reflection knows about would leave ` +
+        `that identifier mangled in the WebGL2 shader, where nothing looks it ` +
+        `up — and the layout cross-check only compares what it can find, so ` +
+        `it would pass. Update the patterns in vulkanGlslToWebgl2.ts.`,
+    )
   }
   return out
 }
@@ -54,13 +71,13 @@ export interface RenameOptions {
   samplers?: readonly string[]
 }
 
-// Slang emits `sampler2D <name>_0;` for combined samplers. Rename to
-// `u_<name>` so the TS-side GL uniform lookup uses a predictable name.
+// Slang emits `sampler2D <name>_<n>;` for combined samplers. Rename to
+// `u_<name>` so the TS-side GL uniform lookup uses a predictable name. Each
+// sampler is its own prefix, so there is no leftover form to check for.
 function renameSamplers(source: string, names: readonly string[]) {
   let out = source
   for (const n of names) {
-    const re = new RegExp(String.raw`\b${n}_0\b`, 'g')
-    out = out.replace(re, `u_${n}`)
+    out = out.replace(new RegExp(String.raw`\b${n}_\d+\b`, 'g'), `u_${n}`)
   }
   return out
 }
@@ -148,17 +165,23 @@ export function vulkanGlslToWebgl2(
     out = renameUniformBlock(out, renames.uniformBlockName)
   }
   if (renames.attributes) {
-    out = renameAttributeIdentifiers(
+    out = renameMangled(
       out,
+      'vertex attributes',
       renames.attributes.prefix,
       renames.attributes.fieldNames,
+      f => `a_${f}`,
     )
   }
+  // Varyings go to a shared `v_<field>` so vertex outputs and fragment inputs
+  // link by name — GLSL ES 3.00 allows no `layout(location=N)` on either.
   if (renames.varyings) {
-    out = renameVaryings(
+    out = renameMangled(
       out,
+      'varyings',
       renames.varyings.prefix,
       renames.varyings.fieldNames,
+      f => `v_${f}`,
     )
   }
   if (renames.samplers && renames.samplers.length > 0) {

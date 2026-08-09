@@ -164,9 +164,61 @@ export interface InstanceAttr {
   size: number
   type: SlangType
 }
-export function instanceAttrs(vs: StructType): InstanceAttr[] {
+
+/**
+ * Refuse a storage-buffer instance struct whose tight layout is not the one the
+ * GPU would read.
+ *
+ * Tight packing is right for a VERTEX ATTRIBUTE — both backends require only
+ * 4-byte alignment there, and a `float3` at offset 4 is legal. It is not the
+ * rule for a struct in a storage buffer: std430 (and WGSL's default layout,
+ * which agrees) aligns a vec2 to 8 and a vec3/vec4 to 16, and rounds the struct
+ * stride up to its largest member's alignment. `float2 a; float b; float2 c;`
+ * packs c at 12 here and the GPU reads it at 16.
+ *
+ * This matters because it is the one shape nothing else catches.
+ * `assertVertexInputsMatch` is what keeps the tight model honest for the
+ * attributes case, and it can say nothing here by construction: a
+ * storage-buffer shader declares no vertex inputs, so there is nothing to
+ * compare against and finding nothing is the correct answer. Every field would
+ * simply be packed to an offset the shader does not read — silently, on both
+ * backends.
+ *
+ * No shader in the tree instances through a storage buffer today (they all use
+ * `StructuredBuffer<uint>`/`<float>`, whose scalar element `findInstanceStruct`
+ * declines). So this refuses rather than implementing std430 offsets: an
+ * untested layout emitter for a case with no consumer is a worse answer than a
+ * build error that names the rule for whoever writes the first one.
+ */
+function assertTightLayoutIsReadable(
+  structName: string,
+  attrs: readonly InstanceAttr[],
+) {
+  for (const a of attrs) {
+    const align =
+      a.type.kind === 'scalar' ? 4 : a.type.elementCount === 2 ? 8 : 16
+    if (a.offsetBytes % align !== 0) {
+      throw new Error(
+        `instance struct '${structName}' comes from a StructuredBuffer, where ` +
+          `std430 aligns field '${a.name}' to ${align} bytes — but the ` +
+          `codegen packs it tight, at offset ${a.offsetBytes}. Reorder the ` +
+          `struct so each vector field lands on its own alignment (widest ` +
+          `first is always safe), or pad it explicitly. Vertex-attribute ` +
+          `instancing is unaffected: 4-byte alignment is all either backend ` +
+          `asks there.`,
+      )
+    }
+  }
+}
+
+// `source` is required rather than defaulted, so a new call site has to say
+// which layout rule applies instead of inheriting the laxer one by omission.
+export function instanceAttrs(
+  vs: StructType,
+  source: 'attributes' | 'buffer',
+): InstanceAttr[] {
   let cursor = 0
-  return vs.fields.map(f => {
+  const attrs = vs.fields.map(f => {
     // A vertex attribute can't be an array — there is no `@location` form for
     // one, and the tight-packed stride below has no answer for std140's element
     // padding. Refuse rather than pack something neither backend would read.
@@ -187,6 +239,10 @@ export function instanceAttrs(vs: StructType): InstanceAttr[] {
     cursor += sizeOf(type)
     return entry
   })
+  if (source === 'buffer') {
+    assertTightLayoutIsReadable(vs.name, attrs)
+  }
+  return attrs
 }
 // The instance layout for a whole reflection, or undefined for a shader with no
 // instance struct (compute kernels). The driver's build-time cross-check reads
@@ -194,7 +250,9 @@ export function instanceAttrs(vs: StructType): InstanceAttr[] {
 // shader is supposed to declare vertex inputs at all.
 export function instanceAttrsFor(reflection: Reflection) {
   const vs = findInstanceStruct(reflection)
-  return vs ? { attrs: instanceAttrs(vs.struct), source: vs.source } : undefined
+  return vs
+    ? { attrs: instanceAttrs(vs.struct, vs.source), source: vs.source }
+    : undefined
 }
 export function instanceStride(attrs: InstanceAttr[]) {
   const last = attrs.at(-1)
@@ -273,7 +331,7 @@ export function emitInterface(inputs: CodegenInputs) {
   const lines = header(baseName)
   // Import only the HAL types the emitted module actually references. A compute
   // shader has no instance attributes and no textures, so it imports neither.
-  const vs = findInstanceStruct(reflection)?.struct
+  const vs = findInstanceStruct(reflection)
   const halImports = vs ? ['GlAttributeLayout'] : []
   if (textures && textures.length > 0) {
     halImports.push('TextureBinding')
@@ -426,7 +484,7 @@ export function emitInterface(inputs: CodegenInputs) {
   }
 
   if (vs) {
-    const attrs = instanceAttrs(vs)
+    const attrs = instanceAttrs(vs.struct, vs.source)
     const collision = attrs.find(a => PACK_INSTANCES_RESERVED.has(a.name))
     if (collision) {
       throw new Error(
@@ -538,9 +596,9 @@ export function emitLayoutOnly(
   inputs: Pick<CodegenInputs, 'baseName' | 'reflection'>,
 ) {
   const { baseName, reflection } = inputs
-  const vs = findInstanceStruct(reflection)?.struct
+  const vs = findInstanceStruct(reflection)
   return [
     ...header(baseName),
-    ...(vs ? instanceLayoutLines(instanceAttrs(vs)) : []),
+    ...(vs ? instanceLayoutLines(instanceAttrs(vs.struct, vs.source)) : []),
   ].join('\n')
 }

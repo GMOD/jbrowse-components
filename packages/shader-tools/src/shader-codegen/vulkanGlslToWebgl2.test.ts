@@ -108,3 +108,55 @@ describe('vulkanGlslToWebgl2', () => {
     expect(out).not.toContain('tex_0')
   })
 })
+
+// slangc's disambiguating suffix counts declarations it has seen, so it is only
+// USUALLY `_0`. A rename keyed on `_0` that misses is silent twice over: the
+// WebGL2 shader keeps the mangled name, so `getAttribLocation('a_color')`
+// returns -1 and that attribute reads a constant; and `assertVertexInputs`
+// searches for `a_(\w+)` and iterates over what it FOUND, so the declaration it
+// should have flagged simply drops out of the comparison.
+describe('mangled-name renames', () => {
+  test('renames an attribute whose suffix is not _0', () => {
+    const out = vulkanGlslToWebgl2(
+      '#version 460\nin vec2 inst_position_0;\nin uint inst_color_3;\n',
+      'vertex',
+      { attributes: { prefix: 'inst', fieldNames: ['position', 'color'] } },
+    )
+    expect(out).toContain('in vec2 a_position;')
+    expect(out).toContain('in uint a_color;')
+    expect(out).not.toContain('inst_')
+  })
+
+  test('a field name that is a prefix of another is not aliased onto it', () => {
+    const out = vulkanGlslToWebgl2(
+      '#version 460\nin float inst_color_0;\nin float inst_color2_0;\n',
+      'vertex',
+      { attributes: { prefix: 'inst', fieldNames: ['color', 'color2'] } },
+    )
+    expect(out).toContain('in float a_color;')
+    expect(out).toContain('in float a_color2;')
+  })
+
+  test('refuses a leftover mangled identifier under the prefix', () => {
+    expect(() =>
+      vulkanGlslToWebgl2(
+        '#version 460\nin vec2 inst_position_0;\nin uint inst_unknown_0;\n',
+        'vertex',
+        { attributes: { prefix: 'inst', fieldNames: ['position'] } },
+      ),
+    ).toThrow(/inst_unknown_0.*not any of the reflected names/s)
+  })
+
+  test('renames varyings and samplers past _0 too', () => {
+    const out = vulkanGlslToWebgl2(
+      '#version 460\nuniform sampler2D ramp_2;\nout vec4 entryPointParam_vsMain_color_1;\n',
+      'vertex',
+      {
+        varyings: { prefix: 'entryPointParam_vsMain', fieldNames: ['color'] },
+        samplers: ['ramp'],
+      },
+    )
+    expect(out).toContain('out vec4 v_color;')
+    expect(out).toContain('uniform sampler2D u_ramp;')
+  })
+})
