@@ -12,6 +12,7 @@ import {
   kgUrl,
   lgvSession,
   sessionSpec,
+  trackMenuIcon,
 } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -806,6 +807,91 @@ export const svSpecs: ScreenshotSpec[] = [
     readyTimeout: 180000,
     viewportHeight: 1000,
     settleMs: 25000,
+  },
+
+  // The reconstruction picker over the same junction the split view above
+  // draws, for the "three ways" walkthrough. The two other witnesses are
+  // already on the page (the benchmark BND in the SV inspector figure, the
+  // tumour contig in the synteny/dotplot ones), so the one picture missing is
+  // what the READS say on their own.
+  //
+  // A single frame, and deliberately the DIALOG rather than the view it draws.
+  // The view is a two-segment synteny panel that looks like every other one on
+  // this page; the ranked list is the thing this section is about, because the
+  // rows under the top one are terminal-repeat mismapping and the walkthrough
+  // asks the reader to read them as such.
+  //
+  // BOTH demo slices are displayed, and that is what makes the list a list.
+  // Shot on the chr3 side alone the picker offers exactly ONE route, because
+  // the routes the walkthrough asks the reader to weigh against it are built
+  // from chr13 reads whose other end lands in some other chromosome's terminal
+  // repeat — chr13's q-terminus is inside the second slice and chr3's window is
+  // nowhere near a telomere. `computeReadChains` is fed one entry per displayed
+  // region, so a region that is not on screen contributes no chain, however
+  // fully its reads' SA tags describe one.
+  //
+  // The two `loc` regions are the demo's own slice bounds, which are also the
+  // exact windows `realReads.cgiab.test.ts` builds its fixture from — so the
+  // figure and the test read the same records, and the ranked list here is the
+  // one those three `it`s assert against.
+  {
+    mode: 'url',
+    name: 'sv_cgiab/three_ways',
+    url: cgiabUrl({
+      views: [
+        {
+          type: 'LinearGenomeView',
+          loc: 'chr3:139,936,789-139,986,329 chr13:114,317,474-114,353,942',
+          assembly: 'GRCh38_GIABv3',
+          tracks: [
+            {
+              trackId:
+                'GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf',
+              type: 'LinearVariantDisplay',
+              height: 40,
+            },
+            {
+              trackId: 'HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3',
+              featureHeight: 1,
+              height: 320,
+              forceLoad: true,
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'HG008-T_PacBio',
+    readyTimeout: 180000,
+    viewportHeight: 900,
+    settleMs: 25000,
+    hideTooltip: true,
+    actions: [
+      trackMenuIcon('HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3'),
+      { type: 'click', text: 'Launch view' },
+      { type: 'click', text: 'Reconstruct derivative allele...' },
+      {
+        type: 'waitForSelector',
+        selector: '[data-testid="derivative-path-candidates"]',
+        // the pass walks every read's SA chain over a 116x HiFi pileup
+        timeout: 180000,
+      },
+    ],
+    // How the dialog was opened, in the same shape and wording the cancer_sv
+    // reconstruction figures use, so the two pages name one route identically.
+    annotations: [
+      {
+        type: 'text',
+        text: 'Track menu → Launch view → Reconstruct derivative allele...',
+        fontSize: 17,
+        maxWidth: 300,
+        anchor: {
+          track: 'HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3',
+          alignX: 'left',
+          dx: 8,
+          fracY: 0.8,
+        },
+      },
+    ],
   },
 
   {

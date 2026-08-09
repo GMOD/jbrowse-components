@@ -1,6 +1,6 @@
 ---
 name: sv-multihop
-description: How scripts/sv_multihop.py reconstructs a derivative allele from a somatic SV callset plus the tumour reads, the four silent-wrong-answer bugs now pinned by behavior checks, and the COLO829/K562 facts the cancer_sv tutorial rests on. Read before touching the cancer_sv figures or the derivative-allele reconstruction.
+description: How scripts/sv_multihop.py and the in-app picker each reconstruct a derivative allele, the silent-wrong-answer bugs in both now pinned by checks, and the measured COLO829/K562/HG008-T facts the cancer_sv and sv_visualization_cgiab tutorials rest on. Read before touching those figures or the derivative-allele reconstruction.
 ---
 
 # sv_multihop and the cancer_sv tutorial
@@ -249,6 +249,58 @@ The mate refName case trap applies to any breakend walk too. Pairing by `MATEID`
 sidesteps it, but a mate refName handed to consumers as the caller wrote it
 (`CHR10` against a `chr10` CHROM) means anything that groups on it has to
 normalize — the same bug this file had, one layer up.
+
+## HG008-T, the reconstruction's second dataset
+
+The picker is checked against a second cancer on different chemistry, in
+`realReads.cgiab.test.ts`: C-GIAB's HG008-T at 116x PacBio HiFi, over one
+breakend of the `cluster_3` chromoplexy the `sv_visualization_cgiab` tutorial
+follows. All of the below is measured, against the slice the hosted demo serves
+and the files C-GIAB publishes, and the tutorial's "three ways" walkthrough is
+built on it.
+
+- **The caller.** `SV_20` / `SV_190` are one junction written twice, joining
+  chr3:139,976,414 to chr13:114,353,244, filed under `EVENT=cluster_3` with two
+  further breakends and tagged `EVENTTYPE=CHROMOPLEXY`.
+- **The reads.** 134 of the slice's reads carry a chain. The top route is
+  chr13 forward into the junction then chr3 inverted, at **65 reads**, its two
+  segment edges landing on both published breakends. The next route has 10.
+- **The normal.** At the same 5 kb window the matched normal returns 51 reads
+  and **0** with an SA tag. That is the somatic control, and it is why the
+  fixture carries no normal records: they would be 17 kB asserting that an empty
+  list is empty.
+- **The assembly.** The hosted `HG008T_v3.2.pif.gz` puts both loci on one
+  contig, which the C-GIAB assembly named `chr3_chr13_hap1`. Its chr13 arm ends
+  at 114,353,244 and its chr3 arm begins at 139,976,415, abutting at one base of
+  contig coordinate with the same orientation flip the reads describe. The same
+  contig also carries chr3:139,998,693, which is `cluster_3`'s other junction —
+  so the assembly resolves more of this event than the read slice can.
+
+**The demo slice bounds what the reads can reach**: chr3:139,936,789-139,986,329
+and chr13:114,317,474-114,353,942, which is one of the two junctions. Widening
+it means re-slicing the 118 GB NCBI BAM and re-uploading, i.e. the data-prep
+work `OTHER_IDEAS.md` files under "C-GIAB tutorial follow-ups".
+
+**Why this dataset earns its place beside COLO829**: the window ends at the
+chr13 q-terminus, so under the real junction sit half a dozen routes built from
+reads mismapped into other chromosomes' terminal repeats, each with a real read
+count. The feature has to rank the true junction above them with nothing telling
+it which is which, and the fixture asserts both that it does and that it does
+not silently drop them.
+
+**A route is built from the reads in the DISPLAYED REGIONS**, which is what
+decides how much of the ranked list a figure of this dialog can show.
+`computeReadChains` takes one pileup entry per displayed region, so a locus that
+is not on screen contributes no chain however completely its reads' SA tags
+describe the join. Measured on `sv_cgiab/three_ways`: over the chr3 slice alone
+the picker offers exactly **one** route, and over both demo slices it offers
+**seven** — 65 reads, then 10, 5, 4, 3, 2, 2, the runners-up all flagged
+"extends beyond this window". The mismapping the fixture's third `it` asserts
+about is chr13's, and chr3's window is nowhere near a telomere, so the chr3-only
+shot has nothing under the top row for the walkthrough to ask a reader to weigh.
+The spec's two `loc` regions are the demo slice bounds, i.e. the same windows
+`realReads.cgiab.test.ts` builds `REGIONS` from, so figure and fixture read the
+same records.
 
 ## The in-app picker's junction tolerance is a distance, not a grid
 

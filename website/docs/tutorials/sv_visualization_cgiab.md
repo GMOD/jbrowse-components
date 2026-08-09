@@ -409,6 +409,56 @@ For the SV inspector workflow itself (filtering the table, search, configuring
 the circular overview), see the
 [SV inspector guide](/docs/user_guides/sv_inspector_view).
 
+### Walkthrough: the same junction three ways
+
+The chord says where to look. Three things in this instance say what is there,
+and none of them is derived from the others.
+
+**The caller.** `SV_20` and `SV_190` are one junction written twice, joining
+chr3:139,976,414 to chr13:114,353,244. A BND record names one partner, so on its
+own each describes a translocation and nothing more. The `EVENT` field is what
+says otherwise: the benchmark files both under `cluster_3` alongside two further
+breakends and tags them `EVENTTYPE=CHROMOPLEXY`. A caller can group junctions
+into an event because it sees the whole callset at once. It cannot say which
+molecule carries them.
+
+**The reads.** That is what the reads say. Put both breakpoint loci on screen,
+and from the tumor PacBio HiFi track's menu choose **Launch view → Reconstruct
+derivative allele...**. The reads in the window are grouped by the route their
+split alignments describe, and each route is offered with the number of reads
+that independently take it. The top route runs chr13 forward into the junction
+and then down chr3 inverted, which is the orientation the black splines in the
+figure above are drawing. The matched normal is the control, and it is a track
+away: the tumor reads split at this position, the normal reads read through it.
+
+<Figure caption="Reconstruct derivative allele over both breakpoint loci of the tumor PacBio HiFi track. Each row is a route through the reference that some set of reads crosses in the same order and orientation, ranked by how many. The top route, chr13 forward then chr3 inverted at 65 reads, is the junction the benchmark and the tumor assembly both name. Every route under it extends beyond the window." src="/img/sv_cgiab/three_ways.png" />
+
+**The assembly.** The synteny track loaded earlier says the same thing from no
+reads at all. The C-GIAB assembly resolves both loci onto a single tumor contig,
+and named that contig for the two chromosomes it fuses. Its chr13 arm ends at
+the chr13 breakend above and its chr3 arm begins at the chr3 one, abutting at a
+single base of contig coordinate, with the same orientation flip the reads
+describe. Open it in the synteny or dotplot view against GRCh38 and the junction
+is the point where one contig stops following chr13 and starts following chr3.
+
+Reading the list below the top route is the other half of the exercise. This
+window ends at the chr13 q-terminus, so most of what is offered under the real
+junction is reads mismapped into the terminal repeats of other chromosomes, and
+each of those is a confident-looking two-segment route with a real read count
+behind it. The read count ranks the routes. It does not vouch for them. What
+vouches for this one is that the caller and the assembly put its two ends in the
+same two places, which is a check nothing in the read data alone can supply.
+
+The reconstruction is bounded twice over by what is loaded. It is assembled from
+the reads in the **displayed regions**, so a locus that is not on screen
+contributes no route however plainly its reads describe one, which is why both
+sides of this junction are open above, and why the same dialog over the chr3
+side alone offers the top route and nothing to weigh it against. And the hosted
+demo slices the tumor reads to the loci these walkthroughs visit, so the reads
+here can reach one of `cluster_3`'s junctions, while the assembly contig carries
+the other one as well. Rebuilding from the full BAM with
+[the build script](#reproduce-it-end-to-end) lifts that limit.
+
 ### Walkthrough: a small deletion in CUZD1
 
 For small to medium SVs the linear genome view is usually enough. Use the
