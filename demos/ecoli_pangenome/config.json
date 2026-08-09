@@ -546,6 +546,24 @@
     },
     {
       "type": "FeatureTrack",
+      "trackId": "ecoli_pggb_tier50",
+      "name": "pggb graph bubbles (coarse tier, one node per bubble)",
+      "assemblyNames": ["K12"],
+      "adapter": {
+        "type": "RgfaTabixAdapter",
+        "uri": "ecoli_pggb.tier50"
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "ecoli_pggb_tier50-LinearBasicDisplay",
+          "showLabels": false
+        }
+      ],
+      "description": "The same graph as the segments track with one node per bubble instead of one per GFA segment, so a window far too wide for the fine index is still drawable: the whole 4.64 Mb pangenome is 1,088 nodes. Built from the graph's own vg deconstruct snarl VCF by scripts/snarls_to_bubble_bed.py plus scripts/build_bubble_tier.sh, keeping every bubble whose content is at least 50 bp so single-base alternatives fall into the backbone. Each node states what it collapsed: segments, traversals, and shortest and longest allele. Launch view -> Graph genome view (this region) opens it as a graph."
+    },
+    {
+      "type": "FeatureTrack",
       "trackId": "ecoli_pggb_carriage",
       "name": "pggb graph: segment carriage (which strains carry each segment)",
       "assemblyNames": ["K12"],
