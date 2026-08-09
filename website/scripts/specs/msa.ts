@@ -183,13 +183,17 @@ export const msaSpecs: ScreenshotSpec[] = [
         // plus that view plus nothing: the run's own
         // `blank below the last content` said 122 css px at 1000.
         //
-        // Left at 878 after trying 1010 for the domain KEY. Twelve species carry
-        // more distinct CDD domains between them than five did, and the key is
-        // one row per domain type present anywhere in the alignment, so its last
-        // entries are cut off -- but by the MsaView's OWN fixed height, not by
-        // this frame, so raising the frame only adds page background (measured:
-        // 128 css px of blank below, key clipped in the same place). The caption
-        // names the two blocks the figure is about instead.
+        // Left at 878 after trying 1010 for the domain KEY, whose last entry
+        // reads as cut off. Raising the frame only added page background (128
+        // css px of blank below, key looking the same), and the reason is that
+        // the key is not clipped at all: it is a scrollable list sized off the
+        // VIEW (60% of the MSA panel), and a scrollable list with a half-visible
+        // last row is indistinguishable from truncation in a still image.
+        // Measured on this alignment: 18 entries, Paper 330px ending at y=813,
+        // nearest clipping ancestor ending at 855, no row past that edge,
+        // clientHeight 296 against scrollHeight 313. So there is nothing here
+        // for a frame height or a plugin fix to do, and the caption names the
+        // two blocks the figure is about instead.
         viewportHeight: 878,
       },
     ],
