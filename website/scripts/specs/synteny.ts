@@ -864,11 +864,19 @@ export const syntenySpecs: ScreenshotSpec[] = [
       // (the axes hold three groups, not seven), so a pill to its left runs off
       // the frame -- which is where this one was.
       {
-        // Short, like the wheat plot's: that this is one of dozens is the
-        // whole claim, and the definition of a homoeologous group belongs in
-        // the caption rather than in a pill three lines deep.
+        // COUNTED, not "dozens" (review: "'one of dozens like it' is way too
+        // vague"). The pill was vague twice over -- it did not say which cell
+        // was boxed, and "dozens" was a guess that is also wrong. Counted off
+        // the very files this track reads (oat.homoeologs.blocks.gz mapped
+        // through oat.bed.gz) over the nine chromosomes on these axes: 27
+        // off-diagonal chromosome pairs carry anchors, 9 of them on-group (the
+        // three A/C/D pairings within groups 4, 5 and 7) and 18 off-group.
+        // Every one of those 18 carries at least 10 anchors, 14 carry 50+, and
+        // 4A/7C is the largest at 2,223 -- which is what makes it the right cell
+        // to box and the reason the label can now say so. What a homoeologous
+        // group IS still belongs in the caption, not in the pill.
         type: 'text',
-        text: 'one of dozens like it',
+        text: '4A/7C, largest of 18 cross-group pairs',
         fontSize: 18,
         maxWidth: 320,
         // 230 was the centre of a three-line pill; one line is narrower, so

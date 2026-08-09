@@ -211,7 +211,7 @@ and not the method: on the left each group is three near-collinear segments in
 its own block, which is what a plot like this looks like when the subgenomes
 stayed put.
 
-<Figure caption="Left, bread wheat aligned against itself; right, oat aligned against itself. Both hexaploids, both over homoeologous groups 4, 5 and 7, syntenic anchors coloured by dN/dS on a ramp pivoted at 1 where blue is purifying selection. Wheat's groups are three near-collinear segments in their own blocks, and the two boxed cells are the only places 4A pairs outside its group. Oat's boxed cell is one of dozens, the mosaic karyotype its assembly paper describes." src="/img/homoeolog_synteny/wheat_vs_oat.png" links="Open the oat plot=homoeolog_synteny/oat_homoeologs,Open the wheat plot=multiway_synteny/wheat_homoeolog_selection" />
+<Figure caption="Left, bread wheat aligned against itself; right, oat aligned against itself. Both hexaploids, both over homoeologous groups 4, 5 and 7, syntenic anchors coloured by dN/dS on a ramp pivoted at 1 where blue is purifying selection. Wheat's groups are three near-collinear segments in their own blocks, and the two boxed cells are the only places 4A pairs outside its group. On the same nine chromosomes oat has 18 such cross-group pairs — chromosome pairs whose members belong to different homoeologous groups — and the boxed 4A/7C is simply the largest: the mosaic karyotype its assembly paper describes." src="/img/homoeolog_synteny/wheat_vs_oat.png" links="Open the oat plot=homoeolog_synteny/oat_homoeologs,Open the wheat plot=multiway_synteny/wheat_homoeolog_selection" />
 
 The wheat panel comes from
 [the Compara route](/docs/tutorials/multiway_synteny#selection-pressure-between-a-polyploids-own-copies),
