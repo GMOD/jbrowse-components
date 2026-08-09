@@ -68,11 +68,28 @@ export default function configSchemaF(pluginManager: PluginManager) {
        * #slot
        * Feature attribute whose value assigns each feature to a row (e.g. a BED
        * column name). Features sharing a value stack into the same row.
+       *
+       * Nothing declares the rows: they are discovered from the values present
+       * in the loaded regions, so a file that gains a category needs no config
+       * change. `rowOrder` and `sampleColorMap` are how a row's position and
+       * color are held fixed while that set changes underfoot.
+       *
+       * A `jexl:` expression works here too, for a file that carries the
+       * category without carrying a column for it. UCSC's `bigRmskBed` is the
+       * case this was added for: the repeat class is a suffix on the name
+       * (`L1HS#LINE/L1`), so the attribute form can only partition on the full
+       * repeat name, which is thousands of rows instead of twenty.
+       *
+       * #example
+       * ```js
+       * { partitionField: "jexl:split(split(feature.name,'#')[1],'/')[0]" }
+       * ```
        */
       partitionField: {
         type: 'string',
         defaultValue: 'name',
-        description: 'feature attribute that assigns each feature to a row',
+        description:
+          'feature attribute that assigns each feature to a row, or a jexl expression deriving one',
       },
       /**
        * #slot

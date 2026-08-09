@@ -52,6 +52,40 @@ in the track config:
 assigns a feature to a row. Features sharing a value stack into the same row,
 and the value becomes the row label.
 
+Nothing lists the rows anywhere. They are discovered from the values the loaded
+region actually holds, so a file that gains a sample or a category needs no
+config change, and a region missing one simply has no row for it.
+
+### When the category is not a column
+
+A file can carry the category without carrying a column for it, in which case
+`partitionField` takes a [jexl](/docs/config_guides/jexl) expression instead of
+an attribute name. UCSC's `bigRmskBed` is the common case: the repeat class is a
+suffix on the name (`L1HS#LINE/L1`), so an attribute lookup can only split on
+the full repeat name, which is thousands of rows rather than twenty.
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "genark_rmsk",
+  "name": "RepeatMasker by class",
+  "assemblyNames": ["GCF_019238085.1"],
+  "adapter": {
+    "type": "BigBedAdapter",
+    "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/019/238/085/GCF_019238085.1/bbi/GCF_019238085.1_USGS_WTPT01.rmsk.bb"
+  },
+  "displays": [
+    {
+      "type": "LinearMultiRowFeatureDisplay",
+      "displayId": "genark_rmsk-LinearMultiRowFeatureDisplay",
+      "partitionField": "jexl:split(split(feature.name,'#')[1],'/')[0]"
+    }
+  ]
+}
+```
+
+Swapping the final `[0]` for `[1]` splits by family instead of class.
+
 Because this isn't the track's default display, it needs an explicit `displays`
 entry rather than the `displayDefaults` shorthand (whose `color` would also
 reach the default display).

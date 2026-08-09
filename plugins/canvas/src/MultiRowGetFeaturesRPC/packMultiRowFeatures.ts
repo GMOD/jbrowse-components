@@ -1,4 +1,4 @@
-import { readConfigValue } from '@jbrowse/core/configuration'
+import { isCallbackValue, readConfigValue } from '@jbrowse/core/configuration'
 import { cssColorToABGR, featureBedColor } from '@jbrowse/core/util/colorBits'
 
 // multi-row's unset-slot fallback is just the generic feature default; unset is
@@ -62,6 +62,53 @@ export function makeFeatureColorResolver(
   }
 }
 
+// A BED column arrives as a string or a number depending on the parser, and a
+// numeric category (a chromHMM state number, a cluster id) is a real row name,
+// so coerce rather than trust. Absent stays '' rather than becoming "undefined".
+function partitionValue(raw: unknown) {
+  return raw === undefined || raw === null ? '' : String(raw)
+}
+
+/**
+ * Build the per-feature row resolver for a `partitionField` value: the plain
+ * attribute lookup, or a `jexl:` expression evaluated per feature.
+ *
+ * The expression form exists because a file can carry the category without
+ * carrying a column for it. UCSC's `bigRmskBed` is the case in hand: the class
+ * is a suffix on the name (`L1HS#LINE/L1`), so an attribute lookup can only
+ * partition on the full repeat name, which is thousands of rows rather than
+ * twenty. `jexl:split(split(feature.name,'#')[1],'/')[0]` is the same file read
+ * as classes.
+ *
+ * A factory for the same two reasons the color one is: the slot is interpreted
+ * once rather than per feature, and — more importantly — this is SHARED with the
+ * clustering RPC on purpose. Rows cluster by which colors fall at which
+ * positions in each row, so if the two sides resolved a row differently the
+ * cluster order would describe rows nobody is looking at.
+ *
+ * A throwing expression yields '' for that feature rather than failing the
+ * region, mirroring evalColorSlot: one unparseable name costs its own row
+ * assignment, not the track.
+ */
+export function makeFeaturePartitionResolver(
+  partitionField: string,
+  jexl: JexlInstance,
+) {
+  if (!isCallbackValue(partitionField)) {
+    return (feature: Feature) => partitionValue(feature.get(partitionField))
+  }
+  const cfg = { partitionField }
+  return (feature: Feature) => {
+    try {
+      return partitionValue(
+        readConfigValue(cfg, 'partitionField', feature, jexl),
+      )
+    } catch {
+      return ''
+    }
+  }
+}
+
 /**
  * Pack features into the multi-row wire arrays: absolute genomic start/end, a
  * per-feature ABGR color (the `color` slot evaluated per feature — this is the
@@ -109,6 +156,7 @@ export function packMultiRowFeatures({
   // an unset (`maybeColor` undefined) slot is what lets the file's own color, or
   // the per-row palette, paint — see the `color` slot in configSchema.ts
   const featureColor = makeFeatureColorResolver(colorConfig, jexl)
+  const featurePartition = makeFeaturePartitionResolver(partitionField, jexl)
   // A painting repeats a handful of color strings across every feature it has —
   // eight ancestry hues over half a million segments — and parsing one is not
   // cheap: trim, lowercase, a named-color lookup, a BED-triple regex, then the
@@ -125,8 +173,8 @@ export function packMultiRowFeatures({
     featureStarts[i] = feature.get('start')
     featureEnds[i] = feature.get('end')
     featureIds[i] = feature.id()
-    // Coerced the same way the partition value below is, and for the same
-    // reason: a BED column arrives as a string or a number depending on the
+    // Coerced the same way the partition value is (see partitionValue), and for
+    // the same reason: a BED column arrives as a string or a number depending on the
     // parser, and a numeric name (a chromHMM state number, a numeric category)
     // is a real label — dropped to '' it cost the tooltip its text and the
     // legend its entry, since buildColorLegend skips unnamed features.
@@ -145,8 +193,7 @@ export function packMultiRowFeatures({
       featureDeltas[i] = Number.isFinite(num) ? num : 0
     }
 
-    const raw = feature.get(partitionField)
-    const value = raw === undefined || raw === null ? '' : String(raw)
+    const value = featurePartition(feature)
     let idx = valueIndex.get(value)
     if (idx === undefined) {
       idx = partitionValues.length

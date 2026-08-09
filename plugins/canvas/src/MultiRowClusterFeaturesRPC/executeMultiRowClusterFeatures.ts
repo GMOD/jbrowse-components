@@ -6,7 +6,10 @@ import {
 } from '@jbrowse/core/util/stopToken'
 import { clusterMatrix } from '@jbrowse/tree-sidebar'
 
-import { makeFeatureColorResolver } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
+import {
+  makeFeatureColorResolver,
+  makeFeaturePartitionResolver,
+} from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
 import { buildMultiRowMatrix } from './buildMultiRowMatrix.ts'
 
 import type { MatrixFeature } from './buildMultiRowMatrix.ts'
@@ -40,6 +43,12 @@ export async function executeMultiRowClusterFeatures({
   // must mirror the painting exactly — colorKey IS the on-screen color, so rows
   // cluster on what the user sees (see makeFeatureColorResolver)
   const featureColor = makeFeatureColorResolver(colorConfig, pluginManager.jexl)
+  // likewise mirrors the painting: the row a feature lands in has to be the row
+  // it was drawn in, or the cluster order describes an arrangement nobody sees
+  const featurePartition = makeFeaturePartitionResolver(
+    partitionField,
+    pluginManager.jexl,
+  )
   const features: MatrixFeature[] = []
   for (const [regionIndex, region] of regions.entries()) {
     const feats = await updateStatus(
@@ -54,10 +63,9 @@ export async function executeMultiRowClusterFeatures({
     for (const f of feats) {
       if (!seen.has(f.id())) {
         seen.add(f.id())
-        const raw = f.get(partitionField)
         features.push({
           regionIndex,
-          row: raw === undefined || raw === null ? '' : String(raw),
+          row: featurePartition(f),
           start: f.get('start'),
           end: f.get('end'),
           colorKey: featureColor(f).css,

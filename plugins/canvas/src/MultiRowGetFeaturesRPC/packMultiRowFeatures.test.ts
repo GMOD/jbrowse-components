@@ -265,3 +265,56 @@ test('packs signed deltas from lengthField, coercing strings', () => {
   })
   expect([...r.featureDeltas]).toEqual([113174, -3217, 0, 0])
 })
+
+// UCSC's bigRmskBed keeps the repeat class in the name (`L1HS#LINE/L1`) rather
+// than in a column, so the attribute form can only split on the full repeat
+// name. This is the same file read as ~20 classes instead of thousands of names.
+const RMSK_CLASS = "jexl:split(split(feature.name,'#')[1],'/')[0]"
+
+test('partitions on a jexl expression, not just an attribute', () => {
+  const r = packMultiRowFeatures({
+    features: [
+      feat({ start: 0, end: 50, name: 'L1HS#LINE/L1' }),
+      feat({ start: 0, end: 30, name: 'AluY#SINE/Alu' }),
+      feat({ start: 30, end: 50, name: 'L1PA2#LINE/L1' }),
+      feat({ start: 50, end: 60, name: '(ACCTA)n#Simple_repeat' }),
+    ],
+    partitionField: RMSK_CLASS,
+    lengthField: '',
+    colorConfig: undefined,
+    jexl: createJexlInstance(),
+  })
+  expect(r.partitionValues).toEqual(['LINE', 'SINE', 'Simple_repeat'])
+  expect([...r.featurePartitionIndex]).toEqual([0, 1, 0, 2])
+})
+
+test('a feature the expression throws on costs its own row, not the region', () => {
+  const r = packMultiRowFeatures({
+    // no '#', so the inner split yields undefined and the outer one throws
+    features: [
+      feat({ start: 0, end: 50, name: 'L1HS#LINE/L1' }),
+      feat({ start: 0, end: 30, name: 'unparseable' }),
+    ],
+    partitionField: RMSK_CLASS,
+    lengthField: '',
+    colorConfig: undefined,
+    jexl: createJexlInstance(),
+  })
+  expect(r.partitionValues).toEqual(['LINE', ''])
+  expect([...r.featurePartitionIndex]).toEqual([0, 1])
+})
+
+test('coerces a numeric partition value rather than dropping it', () => {
+  const r = packMultiRowFeatures({
+    features: [
+      feat({ start: 0, end: 50, state: 15 }),
+      feat({ start: 0, end: 30, state: 15 }),
+      feat({ start: 30, end: 50 }),
+    ],
+    partitionField: 'state',
+    lengthField: '',
+    colorConfig: undefined,
+    jexl: createJexlInstance(),
+  })
+  expect(r.partitionValues).toEqual(['15', ''])
+})
