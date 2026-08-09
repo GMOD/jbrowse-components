@@ -100,7 +100,10 @@ const BreakpointSplitViewChoiceDialog = observer(
         try {
           const start =
             canFollowChain && followChain
-              ? junctionFromFeature(feature)
+              ? junctionFromFeature(
+                  feature,
+                  await session.assemblyManager.requireAssembly(assemblyName),
+                )
               : undefined
           const stops =
             start && findJunctionsNear

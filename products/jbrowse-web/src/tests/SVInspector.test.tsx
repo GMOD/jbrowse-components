@@ -18,6 +18,15 @@ beforeEach(() => {
 
 const delay = { timeout: 80000 }
 
+// How many panels the launched breakpoint split view ended up with. Chord clicks
+// walk the breakend chain by default, so this is the visible result of the walk
+// and the two tests below pin both of its outcomes on the same file. It went
+// unpinned, and what the SV inspector's own refName resolution broke was
+// therefore only ever reported as a missing view or a hanging findByTestId.
+function panelCount(session: { views: unknown[] }) {
+  return (session.views[2] as { views: unknown[] }).views.length
+}
+
 test('opens a vcf.gz file in the sv inspector view', () => {
   return mockConsoleWarn(async () => {
     const { session, findByTestId, findByText } = await openViewWithFileInput({
@@ -37,6 +46,11 @@ test('opens a vcf.gz file in the sv inspector view', () => {
       expect(session.views.length).toBe(3)
     })
     expect(session.views[2]!.displayName).toBe('bnd_A split detail')
+    // Two panels: bnd_A (A:2700 → A:34200) and bnd_B are one junction written
+    // from both ends, so the only junction at the far end is the way the walk
+    // came. Nothing to follow is the walk working, not the walk failing — the
+    // other test's record is the one with somewhere to go.
+    expect(panelCount(session)).toBe(2)
   })
 }, 90000)
 
@@ -80,11 +94,22 @@ test('opens a track with minimal adapter config via "Open from track"', async ()
     expect(session.views.length).toBe(3)
   }, delay)
 
+  // Three: bnd_Y lands on A:21681, where bnd_V leaves for A:23456. Both hops
+  // cross a refName the VCF spells `A`/`B` and the assembly calls `ctgA`/`ctgB`,
+  // so this also pins that the chain resolves aliases — an unresolved name finds
+  // no region and the launch throws before any view is added.
+  expect(panelCount(session)).toBe(3)
+
   const breakpointView = session.views[2] as unknown as {
     views: { showTrack: (t: string) => void }[]
   }
-  breakpointView.views[0]!.showTrack('volvox_sv_test_renamed')
-  breakpointView.views[1]!.showTrack('volvox_sv_test_renamed')
+  // Every panel, not the first two: the overlay renders only for tracks in
+  // `matchedTracks`, which is the INTERSECTION across panels, so a track missing
+  // from one panel draws no connections at all — including between the panels
+  // that do have it. This record's breakends chain across three panels.
+  for (const panel of breakpointView.views) {
+    panel.showTrack('volvox_sv_test_renamed')
+  }
 
   const container = await findByTestId(
     'volvox_sv_test_renamed-loaded',

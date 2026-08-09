@@ -101,6 +101,17 @@ export function parseSvAlt(
 }
 
 /**
+ * Resolve a refName read out of a feature or an ALT string through the
+ * assembly's aliases, leaving one it doesn't know alone. The two functions that
+ * turn a VCF record into coordinates — `getBreakendCoveringRegions` here and
+ * `junctionFromFeature` — both apply it to both ends, and share it so they
+ * cannot drift into speaking different names for the same locus.
+ */
+export function toCanonicalRefName(assembly: Assembly) {
+  return (ref: string) => assembly.getCanonicalRefName(ref) ?? ref
+}
+
+/**
  * #api
  * Resolves the two canonical-refName endpoints a breakend/SV feature spans.
  */
@@ -114,7 +125,7 @@ export function getBreakendCoveringRegions({
   const startPos = feature.get('start')
   const refName = feature.get('refName')
   const alt = (feature.get('ALT') as string[] | undefined)?.[0]
-  const f = (ref: string) => assembly.getCanonicalRefName(ref) ?? ref
+  const f = toCanonicalRefName(assembly)
 
   const parsed = parseSvAlt(feature, alt)
   if (parsed) {

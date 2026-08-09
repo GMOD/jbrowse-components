@@ -1,11 +1,20 @@
-import { parseSvAlt } from './util.ts'
+import { parseSvAlt, toCanonicalRefName } from './util.ts'
 
+import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
 
 /**
  * One junction, reduced to what a chain walk needs: where its two ends are, and
  * the two record ids that let the walk tell "the way I came" from "another
  * junction that happens to be here".
+ *
+ * **Both refNames are canonical**, which `junctionFromFeature` is responsible
+ * for and is the only way to build one. Every use here needs them to be: the
+ * walk compares one junction's refName against another's, `findJunctionsNear`
+ * turns a stop back into an RPC region (whose contract is canonical in, adapter
+ * name out — see `renameRegionsIfNeeded`), and `navToMultiLevelBreak` looks a
+ * stop up in `assembly.regions`. Raw names fail all three, and only the last one
+ * fails loudly.
  */
 export interface Junction {
   id?: string
@@ -54,8 +63,20 @@ export const BREAKEND_COLOCATION_BP = 1000
 /**
  * The junction a VCF SV/BND feature describes, or undefined when it names no
  * mate position (a single breakend, or a symbolic ALT with no END).
+ *
+ * The assembly is what makes this the single place a `Junction` can come from.
+ * Neither refName reaching here is canonical: the mate's is whatever text the
+ * ALT spells (`G[A:34200[` → `A`), and the record's own is the *adapter's*,
+ * since a fetch renames the query region into the file's names on the way out
+ * and nothing renames the features on the way back. So both sides need the same
+ * resolution `getBreakendCoveringRegions` has always applied, and doing it here
+ * is what keeps two producers of the same chain from disagreeing about which
+ * names they speak.
  */
-export function junctionFromFeature(feature: Feature): Junction | undefined {
+export function junctionFromFeature(
+  feature: Feature,
+  assembly: Assembly,
+): Junction | undefined {
   const alt = (feature.get('ALT') as string[] | undefined)?.[0]
   const parsed = parseSvAlt(feature, alt)
   if (!parsed) {
@@ -63,12 +84,13 @@ export function junctionFromFeature(feature: Feature): Junction | undefined {
   }
   const info = feature.get('INFO') as Record<string, unknown> | undefined
   const mateId = (info?.MATEID as string[] | undefined)?.[0]
+  const f = toCanonicalRefName(assembly)
   return {
     id: feature.get('name'),
     ...(mateId !== undefined && { mateId }),
-    refName: feature.get('refName'),
+    refName: f(feature.get('refName')),
     pos: feature.get('start'),
-    mateRefName: parsed.mateRefName,
+    mateRefName: f(parsed.mateRefName),
     // parseSvAlt reports the VCF 1-based coordinate; every position here is
     // 0-based, the way getBreakendCoveringRegions hands them to the panels.
     matePos: parsed.matePos - 1,

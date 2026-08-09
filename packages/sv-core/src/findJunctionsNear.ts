@@ -31,7 +31,11 @@ export function makeFindJunctionsNear(
   assemblyName: string,
 ): FindJunctionsNear {
   return async region => {
-    const { rpcManager } = getSession(self)
+    const { rpcManager, assemblyManager } = getSession(self)
+    // require, not wait: without it the junctions this returns would carry raw
+    // refNames, which match nothing the walk compares them to, so the chain
+    // would read as having simply ended rather than as having failed.
+    const assembly = await assemblyManager.requireAssembly(assemblyName)
     const features = await rpcManager.call(
       getRpcSessionId(self),
       'CoreGetFeatures',
@@ -41,7 +45,7 @@ export function makeFindJunctionsNear(
       },
     )
     return features
-      .map(f => junctionFromFeature(f))
+      .map(f => junctionFromFeature(f, assembly))
       .filter((j): j is Junction => j !== undefined)
   }
 }
