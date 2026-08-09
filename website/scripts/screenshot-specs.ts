@@ -234,7 +234,7 @@ export function validateSpecs(list: ScreenshotSpec[] = specs) {
 //
 // Anything else is a callout that names a thing without saying which one, and
 // `scripts/locusAnchor.ts` explains what that has cost.
-const BASELINE = 36
+const BASELINE = 35
 
 export function countRawCallouts(list: ScreenshotSpec[] = specs) {
   const found: string[] = []

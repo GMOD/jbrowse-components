@@ -19,6 +19,8 @@ label
 legend
 maxRegionBp
 paneHeight
+partitionField
+sampleColorMap
 sideBySide
 subtreeFilter
 thickness

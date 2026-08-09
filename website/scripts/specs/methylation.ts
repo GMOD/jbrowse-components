@@ -224,30 +224,28 @@ export const methylationSpecs: ScreenshotSpec[] = [
     // downloading (progress bars baked into the PNG), so give it more room
     settleMs: 45000,
     // taller so both alignment tracks' full pileup (compact mode still stacks
-    // many rows for this depth) fit below the gene + promoter context tracks
-    viewportHeight: 1000,
+    // many rows for this depth) fit below the gene + promoter context tracks.
+    // 1000 clipped 24 css px off the bottom lane, per the run's own report
+    viewportHeight: 1030,
     // WHICH SAMPLE IS WHICH, on the drawing (reviewer). The figure's whole
     // claim is a contrast between two pileups, and the only thing that said
     // which was which was two config track names in the header — `PAY22766`
     // and `PBA15131` are accession ids, so a reader had to know the dataset to
-    // know which lane was the treatment. Boxing each band and naming the
-    // treatment inside it makes the comparison readable without the header.
+    // know which lane was the treatment.
     //
-    // The box wraps the track's whole rendering container (no fracY), so it
-    // follows the pileup's height; the pill sits inside it at a fracY, over
-    // the left flank where the 6mA density is lowest, so it covers reads
-    // rather than the promoter peak the figure is about.
+    // A pill per lane and NOTHING ELSE (reviewer: "dont need giant red boxes,
+    // just the small ones showing the text"). Each lane used to also carry a
+    // `box` around its whole rendering container, which at this height is a
+    // 400px-tall red rectangle over a pileup whose own edges already say where
+    // the lane starts and stops. The pill sits at a fracY over the left flank,
+    // where the 6mA density is lowest, so it covers reads rather than the
+    // promoter peak the figure is about. Text is two or three words; what 6mA
+    // means and what Hia5 does are in the caption.
     annotations: [
       {
-        type: 'box' as const,
-        anchor: { track: 'PAY22766-nanopore' },
-        strokeWidth: 4,
-      },
-      {
         type: 'text' as const,
-        text: 'Hia5-treated: purple 6mA calls mark accessible chromatin',
-        fontSize: 20,
-        maxWidth: 360,
+        text: 'Hia5-treated',
+        fontSize: 22,
         anchor: {
           track: 'PAY22766-nanopore',
           locus: 'chr12:6,530,200',
@@ -255,15 +253,9 @@ export const methylationSpecs: ScreenshotSpec[] = [
         },
       },
       {
-        type: 'box' as const,
-        anchor: { track: 'PBA15131-nanopore' },
-        strokeWidth: 4,
-      },
-      {
         type: 'text' as const,
-        text: 'No-enzyme control: the same window, with scattered background 6mA only',
-        fontSize: 20,
-        maxWidth: 360,
+        text: 'No-enzyme control',
+        fontSize: 22,
         anchor: {
           track: 'PBA15131-nanopore',
           locus: 'chr12:6,530,200',

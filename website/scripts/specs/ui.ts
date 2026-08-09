@@ -893,28 +893,30 @@ export const uiSpecs: ScreenshotSpec[] = [
             // read-connection arcs on each trio member: discordant /
             // split pairs arc across the SV breakpoints, so the SV signal that is
             // present (or absent) in child vs parents reads at a glance
-            {
-              trackId: 'HG02030_trio_slice',
-              height: 280,
-              readConnections: 'arc',
-            },
-            {
-              trackId: 'HG02031_trio_slice',
-              height: 280,
-              readConnections: 'arc',
-            },
-            {
-              trackId: 'HG02032_trio_slice',
-              height: 280,
-              readConnections: 'arc',
-            },
+            // Super-compact reads (featureHeight 1, the 'super-compact'
+            // compactness preset) rather than the default 7, so three pileups
+            // plus the callset fit a much shorter frame (reviewer: "make the
+            // reads show using supercompact to reduce height of figure"). At
+            // 43 kb an individual read was never legible AS a read anyway --
+            // what this figure compares across the three samples is the shape
+            // of each pileup and its arc band, and both survive a 1px row.
+            // Track heights follow the reads down; the run's own
+            // clipped/blank-below report is what sizes the viewport.
+            ...['HG02030', 'HG02031', 'HG02032'].map(id => ({
+              trackId: `${id}_trio_slice`,
+              height: 150,
+              featureHeight: 1,
+              readConnections: 'arc' as const,
+            })),
           ],
         },
       ],
     }),
     readyText: 'HG02030',
     readyTimeout: 90000,
-    viewportHeight: 1250,
+    // 860: the run reported 97.5 css px of page still below the viewport at
+    // 760, i.e. the fourth track was cut rather than the frame being tight.
+    viewportHeight: 860,
     settleMs: 25000,
   },
 
@@ -1952,30 +1954,13 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Track selector with all sub-categories collapsed (track_selector.md) — the
-  // top-level categories stay open but their nested subcategory headers collapse.
-  {
-    mode: 'url',
-    name: 'hierarchical/collapse_subcategories-fs8',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        { type: 'LinearGenomeView', assembly: 'volvox', loc: 'ctgA:1-50000' },
-      ],
-    }),
-    readyText: 'ctgA',
-    settleMs: 3000,
-    actions: [
-      { type: 'click', text: 'Open track selector' },
-      {
-        type: 'waitForSelector',
-        selector: '[data-testid="hierarchical_track_selector"]',
-      },
-      { type: 'click', selector: '[data-testid="track-selector-hamburger"]' },
-      ...menuCascade(['Collapse...', 'Collapse subcategories']),
-      { type: 'click', text: 'Collapse subcategories' },
-      { type: 'delay', ms: 1000 },
-    ],
-  },
+  // No sub-category figure, deliberately. volvox's only nested categories are
+  // BigWig and Integration test, both of which sort below the ~30 tracks of
+  // Miscellaneous and Variants, so a selector captured from the top showed the
+  // action having no effect. Every visible header was still an open top-level
+  // one. Reviewed out rather than re-scoped; track_selector.md documents the
+  // slot beside the top-level figure above, which shows the same mechanism at a
+  // depth that fits in frame.
 
   // The track-selector badge a session-wide default raises, and the dialog it
   // opens (display_defaults.md). A promoted default lives in this browser's

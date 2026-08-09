@@ -1678,7 +1678,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         {
           trackId: 'dog10k_igf1_haplotype',
           type: 'LinearMultiSampleVariantMatrixDisplay',
-          height: 760,
+          height: 620,
           lineZoneHeight: 34,
           runClustering: true,
           // the 140 kb differentiated core, not the 320 kb on screen: the rows
@@ -1696,6 +1696,12 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     settleMs: 5000,
     // gene track, the Fst lane, the 760px matrix, their headers and the keys
-    viewportHeight: 1263,
+    // 620 rather than 760 on the matrix (reviewer: "you can reduce height of
+    // the multi-sample variantdisplay potentially"), which is as far as this
+    // one goes: 167 samples over 620px is 3.7px a row, and the TCGA round
+    // measured what happens when a matrix row goes under about 2px -- a call
+    // becomes a hairline and the block structure it is drawn for stops
+    // reading. The block separating toy/small from giant survives the trim.
+    viewportHeight: 1135,
   },
 ]

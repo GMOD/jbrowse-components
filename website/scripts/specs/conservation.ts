@@ -111,4 +111,40 @@ export const conservationSpecs: ScreenshotSpec[] = [
     viewportHeight: 620,
     diffThreshold: 0.02,
   },
+
+  // The alignment the score was computed from, at the same exon. Both tracks are
+  // the 470-way rather than the 100-way the page opens with, because UCSC
+  // publishes no bigMaf for multiz100way -- pairing a 100-way score with a
+  // 470-way alignment would be a picture of two different analyses.
+  //
+  // Only reachable at this zoom, and that is a property of the file rather than
+  // a choice: LinearMafDisplay byte-gates on the bigMaf's own R-tree estimate,
+  // which over TP53 is 0.06MB at 110bp, 0.54MB at 1kb and 4.76MB at 9.2kb
+  // against the 1MB fetchSizeLimit the display inherits. So this window loads
+  // and a gene-wide one is a force-load prompt (measured 2026-08-08). The third
+  // hg38 bigMaf, cactus241way, is flat at 15MB for every window and therefore
+  // opens at no zoom at all; it is dropped in jb2hubs rather than shown here.
+  {
+    mode: 'url',
+    name: 'genomes_basics/multiz_alignment',
+    url: sessionSpec(UCSC_HG38_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: TP53_EXON_WINDOW,
+          tracks: [
+            GENE_TRACK_COLLAPSED,
+            { trackId: 'hg38-phyloP470wayBW' },
+            { trackId: 'hg38-multiz470way' },
+          ],
+        },
+      ],
+    }),
+    readyText: 'TP53',
+    readyTimeout: 120000,
+    settleMs: 8000,
+    viewportHeight: 1080,
+    diffThreshold: 0.02,
+  },
 ]

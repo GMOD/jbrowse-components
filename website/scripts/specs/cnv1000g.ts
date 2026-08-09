@@ -188,7 +188,16 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
             {
               trackId: 'pur_cnv_ladder',
               type: 'MultiLinearWiggleDisplay',
-              defaultRendering: 'multirowxy',
+              // multirowLINE, not multirowxy (reviewer: "not interesting
+              // screenshot really, consider delete"). The claim is that the
+              // plateaus are flat, quantized and countable off the axis, and a
+              // filled area over a flat integer plateau paints each row as a
+              // solid bar whose only readable feature is its top edge. Six of
+              // those stacked is six blue slabs, which is what made a real
+              // result look like nothing. As step traces you read the level
+              // and where it steps. Same finding as cookbook_multiwig, which
+              // was rebuilt for it.
+              defaultRendering: 'multirowline',
               height: 500,
               minScore: 0,
               maxScore: 10,

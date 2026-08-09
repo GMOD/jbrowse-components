@@ -2293,10 +2293,16 @@ export const graphSpecs: ScreenshotSpec[] = [
     // callout lifted clear of the curve lands on the view's own header, and the
     // blank column is both where it belongs and the only place on the lane
     // where it covers no data.
+    // WORDING: the label says what a reader is looking at, in words that need
+    // nothing else on the page. "GRCh38's own gap on 1q: no bubbles, one
+    // 18.7 Mb backbone node instead" packed three pieces of vocabulary (gap,
+    // bubble, backbone node) into a contrast, and the reviewer could not tell
+    // what it was claiming. What makes the column blank is that there is no
+    // sequence there to align to, so that is the sentence.
     annotations: [
       {
         type: 'text',
-        text: "GRCh38's own gap on 1q: no bubbles, one 18.7 Mb backbone node instead",
+        text: '18.7 Mb of unknown sequence (N) in GRCh38. Nothing aligns here, so no bubbles.',
         fontSize: 18,
         maxWidth: 250,
         anchor: {
@@ -2538,8 +2544,45 @@ export const graphSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     settleMs: 5000,
     viewportWidth: 1000,
-    viewportHeight: 535,
+    // 535 clipped 9 css px off the carriage lane, per the run's own report
+    viewportHeight: 550,
     hideTooltip: true,
+    // WHERE EACH LANE COMES FROM, on the drawing (reviewer: "please make it
+    // clear how this figure was made, it is a very cool and important track").
+    // The tutorial prints the whole track config in the fence immediately above
+    // this figure, but the picture alone gave no hint that the red band is a
+    // per-segment tag rather than a called annotation, and the two quantitative
+    // lanes are computed two different ways from the same graph -- a windowed
+    // mean above, one box per segment below, which is the distinction the
+    // paragraph under the figure spends itself on.
+    //
+    // Anchored to the tracks rather than placed. The depth pill sits over the
+    // middle of the window, where the curve has dropped to 1 and everything
+    // above it is empty -- on the left flank it covered the axis ticks, which
+    // are the one thing in that lane a reader has to read. Three words each;
+    // the adapter, the jexl and the odgi command are in the tutorial.
+    annotations: [
+      {
+        type: 'text' as const,
+        text: 'odgi depth, windowed',
+        fontSize: 15,
+        anchor: {
+          track: PGGB_DEPTH_TRACK,
+          locus: 'chr:1,300,000',
+          fracY: 0.3,
+        },
+      },
+      {
+        type: 'text' as const,
+        text: 'GFA carriers tag, per segment',
+        fontSize: 15,
+        anchor: {
+          track: PGGB_CARRIAGE_TRACK,
+          locus: 'chr:1,299,340',
+          fracY: 0.55,
+        },
+      },
+    ],
   },
   {
     mode: 'url',

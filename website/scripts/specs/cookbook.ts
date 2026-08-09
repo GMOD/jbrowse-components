@@ -146,8 +146,11 @@ export const cookbookSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'rmsk_hg38_ucsc',
+              // 260, not 380 (reviewer: "reduce width and height of this
+              // figure also"). The repeats pack into about seven rows here, so
+              // the extra 120px was empty track under them.
               type: 'LinearBasicDisplay',
-              height: 380,
+              height: 260,
             },
           ],
         },
@@ -156,7 +159,65 @@ export const cookbookSpecs: ScreenshotSpec[] = [
     readyText: 'RepeatMasker',
     readyTimeout: 60000,
     settleMs: 6000,
-    viewportHeight: 585,
+    // narrower too, which also brings the legend in off the right edge
+    viewportWidth: 1200,
+    viewportHeight: 465,
+  },
+
+  // THE SAME DATA WITH THE CATEGORY AS THE ROW rather than as the color
+  // (reviewer: "consider also making a multirow canvas display of same data,
+  // with different repeat types in the rows as another screenshot").
+  //
+  // `partitionField: 'repClass'` is the whole recipe: the display assigns each
+  // feature to the row named by that attribute, so the same BED and the same
+  // six classes come out as six labelled lanes. It answers a question the
+  // colored figure above cannot -- how much of the window each class covers,
+  // and whether a class clusters -- because in one packed lane a class's blocks
+  // are interleaved with five others and the eye has to do the sorting.
+  //
+  // Same colors, from the same lookup, so the pair reads as one dataset seen
+  // two ways rather than two datasets. `sampleColorMap` is the row-keyed form
+  // of it and takes the class names as keys, so the color survives the
+  // repartition without the jexl.
+  //
+  // No `legend` here: the rows carry their own labels, which is the point.
+  {
+    mode: 'url',
+    name: 'cookbook_color_by_type_rows',
+    url: sessionSpec(DEMO_CONFIG, {
+      sessionTracks: [HG38_RMSK_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr17:45,700,000-45,750,000',
+          tracks: [
+            {
+              trackId: 'rmsk_hg38_ucsc',
+              type: 'LinearMultiRowFeatureDisplay',
+              partitionField: 'repClass',
+              sampleColorMap: {
+                SINE: '#e41a1c',
+                LINE: '#377eb8',
+                LTR: '#4daf4a',
+                DNA: '#984ea3',
+                Simple_repeat: '#ff7f00',
+                Low_complexity: '#a65628',
+              },
+              // separators only: showRowLabels already defaults to true, and
+              // the row names are the whole reason this form is worth showing
+              showRowSeparators: true,
+              height: 260,
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'RepeatMasker',
+    readyTimeout: 60000,
+    settleMs: 6000,
+    viewportWidth: 1200,
+    viewportHeight: 465,
   },
 
   // "Multiple signals on one track, each its own color" recipe: the eight-sample
@@ -167,6 +228,16 @@ export const cookbookSpecs: ScreenshotSpec[] = [
   // integer plateaus, so a filled area paints each row as a solid bar whose only
   // readable feature is its top edge, and eight bars read as a bar chart. As
   // step traces the levels and the places they step at are the picture.
+  //
+  // 1.5 Mb, not the 230 kb it was (reviewer: "need to zoom out way more, hard
+  // to see these thin lines without the lines varying a lot"). The old window
+  // sat entirely INSIDE the amylase CNV, so every trace was two or three
+  // plateaus with no baseline to read them against and no way to tell a gain
+  // from a starting level. Measured over the wider window (bigWigToBedGraph on
+  // the eight files, 50 kb bins): all eight are flat 2.0 across the 1.2 Mb of
+  // flank, and only chr1:103.54-103.79 Mb fans out — 4.0, 4.0, 4.0, 3.0, 2.0,
+  // 2.0, 1.0, 1.0. A hairline is easy to see when every other hairline is
+  // level with it and one of them leaves.
   {
     mode: 'url',
     name: 'cookbook_multiwig',
@@ -176,9 +247,12 @@ export const cookbookSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: 'chr1:103,540,000-103,770,000',
+          loc: 'chr1:102,900,000-104,400,000',
           tracks: [
-            { trackId: 'ncbi_refseq_109_hg38', height: 70 },
+            // 70 fitted the 230 kb window's three amylase genes; over 1.5 Mb
+            // the same track carries a dozen pseudogenes and their
+            // descriptions, and the last row was cut off mid-label
+            { trackId: 'ncbi_refseq_109_hg38', height: 130 },
             {
               trackId: 'cookbook_multiwig',
               height: 480,

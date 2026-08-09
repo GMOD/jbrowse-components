@@ -693,6 +693,17 @@ export const svSpecs: ScreenshotSpec[] = [
     readyText: 'chr1',
     readyTimeout: 60000,
     settleMs: 10000,
+    // TALL ENOUGH TO HOLD THE VIEW, which is what "the figure is scrolled down
+    // and looks weird" was (reviewer). The view is 1000px by the height above
+    // and the default capture viewport is 800, so the view overflowed the
+    // browser viewport, and the hover below is a puppeteer hover, which
+    // scrollIntoViewIfNeeded's the PAGE to reach its target. The frame that
+    // came out had the grid's own header row and the top of the circular plot
+    // cut off above the fold and the page background showing below. Nothing
+    // about the scroll was wanted; it was the side effect of the anchor.
+    // 1065: 1160 held the whole view but left 95 css px of page under it,
+    // which the run reports as blank below the last content.
+    viewportHeight: 1065,
     // The SV_20 row (chr3:139,976,414 -> chr13:114,353,244, the same
     // translocation junction translocation_breakpoint_split drills into below)
     // is mounted in the DataGrid's virtualization buffer but scrolled below
@@ -709,12 +720,17 @@ export const svSpecs: ScreenshotSpec[] = [
     actions: [{ type: 'hover', text: 'SV_20' }],
     annotations: [
       { type: 'box', anchor: { text: 'SV_20' } },
+      // Anchored to the row it names rather than parked at (60, 90). That
+      // corner is the view header and the inspector's own toolbar (search box,
+      // SVTYPE dropdown), so the pill sat on the controls; and it was only
+      // ever in the right place for the scroll offset it was measured against.
+      // Above the row, left-aligned with it, so it reads as that row's label.
       {
         type: 'text',
-        x: 60,
-        y: 90,
         text: 'SV_20: the chr3↔chr13 translocation, drilled into below.',
         maxWidth: 420,
+        anchor: { text: 'SV_20', alignX: 'left', alignY: 'top' },
+        dy: -54,
       },
     ],
   },

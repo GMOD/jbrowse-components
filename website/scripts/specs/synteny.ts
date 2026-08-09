@@ -403,10 +403,22 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // use the full peach_grape.paf (grape_peach_paf), not the small in-repo paf
     // that the config defaultSession loads
     //
-    // Grape and peach are divergent enough that this PAF is all short hits: the
-    // median block is well under a kb and the longest is ~12kb against a 227 x
-    // 486 Mbp plot, so every block draws as a single dot and the min-length
-    // filter is what leaves anything readable.
+    // NO MIN-LENGTH FILTER, and that is the fix for "this looks more sparse
+    // than expected to me ... i want the full size paf not the small one"
+    // (reviewer). It was already the full PAF; `minAlignmentLength: 2000` was
+    // throwing 87% of it away. Measured off the file: 16,192 records, median
+    // block 675 bp, p90 2,287 bp, longest 11,450 bp — so a 2 kb floor keeps
+    // 2,126 blocks and a 1 kb floor keeps 5,983.
+    //
+    // The old note here reasoned that since every block is sub-pixel against a
+    // 227 x 486 Mbp plot, the filter "is what leaves anything readable". That
+    // has it backwards for a dotplot: a sub-pixel block is a DOT, and the
+    // structure is the density of dots along a diagonal, so thinning them is
+    // thinning the signal. Rendered at 2000, 1000 and 0 and compared: the
+    // diagonals across grape chr5/chr9/chr17 and the Pp03 and Pp06 columns are
+    // faint streaks at 2000 and continuous runs at 0. The horizontal repeat
+    // bands on grape chr12-chr14 are present at every threshold and are
+    // proportionally LEAST dominant unfiltered.
     //
     // No colorBy. Per-query coloring was added here to separate the survivors,
     // and it does not: a rainbow of one-pixel dots reads as noise with extra
@@ -419,7 +431,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           type: 'DotplotView',
           views: [{ assembly: 'peach' }, { assembly: 'grape' }],
           tracks: ['grape_peach_paf'],
-          minAlignmentLength: 2000,
+          minAlignmentLength: 0,
         },
       ],
     }),
@@ -719,6 +731,13 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // each homoeologous group is a block off the diagonal, three
             // subgenomes against each other.
             type: 'DotplotView',
+            // The header said `wheat,wheat`, which is the two assembly names
+            // and not a sentence (reviewer, on the composed pair: "might need
+            // to clearly label wheat self-alignment on left, and oat
+            // self-alignment on right"). A `displayName` is the label that
+            // cannot land on the data, and in the compose it is the one piece
+            // of text at the same place in both halves.
+            displayName: 'Bread wheat aligned against itself',
             showColorLegend: true,
             views: [
               {
@@ -763,8 +782,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
       { type: 'box', anchor: { hLocus: '5D', vLocus: '4A' } },
       { type: 'box', anchor: { hLocus: '7D', vLocus: '4A' } },
       {
+        // Three tokens, not a sentence: what the 4AL/5AL and 4AL/7BS
+        // translocations are is the caption's job, and a paragraph laid over
+        // the middle of a dotplot covers the cells it is about.
         type: 'text',
-        text: "4A's distal end pairs with group 5 and group 7: the 4AL/5AL and 4AL/7BS translocations",
+        text: '4AL/5AL and 4AL/7BS',
         fontSize: 18,
         maxWidth: 320,
         anchor: { hLocus: '5D', vLocus: '4A', dy: -170 },
@@ -809,6 +831,10 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // in one order, so as stacked rows every link is near-vertical and
             // the table reads as a barcode.
             type: 'DotplotView',
+            // Same reason as the wheat plot's: `oat,oat` in the header is two
+            // assembly names, and in the composed pair the two headers are the
+            // one place a label can sit at the same height in both halves.
+            displayName: 'Oat aligned against itself',
             showColorLegend: true,
             views: [
               { assembly: 'oat', displayedRegionNames: HOMOEOLOG_GROUPS.oat },
@@ -838,11 +864,16 @@ export const syntenySpecs: ScreenshotSpec[] = [
       // (the axes hold three groups, not seven), so a pill to its left runs off
       // the frame -- which is where this one was.
       {
+        // Short, like the wheat plot's: that this is one of dozens is the
+        // whole claim, and the definition of a homoeologous group belongs in
+        // the caption rather than in a pill three lines deep.
         type: 'text',
-        text: 'One of dozens of cells like it: an oat segment sitting outside its own homoeologous group',
+        text: 'one of dozens like it',
         fontSize: 18,
         maxWidth: 320,
-        anchor: { hLocus: '4A', vLocus: '7C', alignX: 'right', dx: 230 },
+        // 230 was the centre of a three-line pill; one line is narrower, so
+        // the same dx left a gap between the arrowhead's tail and the text
+        anchor: { hLocus: '4A', vLocus: '7C', alignX: 'right', dx: 170 },
       },
       {
         type: 'arrow',
@@ -1008,6 +1039,23 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     settleMs: 15000,
     viewportHeight: 1000,
+    // The one published result this stack is evidence for, named on the band
+    // that shows it (reviewer: "add a small number (1-2) red box text
+    // annotations to figure showing e.g. known results about the chromosome
+    // changes"). Two words: the caption already explains why that band is
+    // dense, and the row labels either side say which two genomes it joins.
+    // Anchored to the `gar` row label, which is DOM text, and pushed down into
+    // the left of the band it heads, where no ribbons run.
+    annotations: [
+      {
+        type: 'text',
+        text: 'teleost duplication',
+        fontSize: 20,
+        anchor: { text: 'gar', alignX: 'left' },
+        dx: 10,
+        dy: 60,
+      },
+    ],
   },
 
   // orthofinder_synteny.md: rice/sorghum/maize/brachypodium/foxtail millet.
@@ -1158,6 +1206,32 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // row's scalebar in half, which is the row that names timopheevii's
     // sequences; 1165 cleared it but left a dead strip under the frame.
     viewportHeight: 1140,
+    // The textbook result this stack is a picture of, three words a row
+    // (reviewer: "add a small number (1-2) red box text annotations ... showing
+    // e.g. known results about the chromosome changes"). Bread wheat is
+    // hexaploid A+B+D, and the two diploids in the stack are the donors of two
+    // of those subgenomes -- which is exactly what the ribbons show, each
+    // donor's seven chromosomes fanning onto the wheat chromosomes carrying its
+    // subgenome letter. Anchored to the row labels, which are DOM text, and
+    // dropped into the empty left margin of each donor's own band.
+    annotations: [
+      {
+        type: 'text',
+        text: 'D genome donor',
+        fontSize: 20,
+        anchor: { text: 'tauschii', alignX: 'left' },
+        dx: 10,
+        dy: 60,
+      },
+      {
+        type: 'text',
+        text: 'A genome donor',
+        fontSize: 20,
+        anchor: { text: 'urartu', alignX: 'left' },
+        dx: 10,
+        dy: 60,
+      },
+    ],
   },
 
   // orthofinder_synteny.md: the 4A translocations, out of the same wheat demo
@@ -1249,6 +1323,41 @@ export const syntenySpecs: ScreenshotSpec[] = [
     settleMs: 15000,
     // two collapsed scalebar rows and one 430px band
     viewportHeight: 640,
+    // NAMING THE TWO BLOCKS ON THE FIGURE (reviewer: "add red box text
+    // annotations to figure showing that this is e.g. a known result about the
+    // chromosome changes"). Both are published: Devos et al. 1995 RFLP-mapped
+    // them and Dvorak et al. 2018 reassessed them against the reference
+    // assemblies, and the tutorial's reference list carries both dois.
+    //
+    // Anchored to the TOP ROW'S TICK LABELS, which are DOM text, because the
+    // two anchors this figure would otherwise want are both unavailable and the
+    // comment above records why: a synteny sub-panel has no
+    // `view-container-<id>` element for a `{view, locus}` anchor to resolve
+    // against, and an in-app `highlight` has nowhere to paint on a bare
+    // scalebar row with no tracks. The tick label is the one element in the
+    // frame that names a donor chromosome, and each pill sits under the tick of
+    // the chromosome whose bundle it is about.
+    //
+    // Two words each. The reader needs the block NAMED on the picture; who
+    // published it and when is the caption's job, and the tutorial's reference
+    // list already carries both dois.
+    annotations: [
+      {
+        type: 'text',
+        text: '4AL/5AL',
+        fontSize: 20,
+        anchor: { text: '5D', alignX: 'left' },
+        dy: 54,
+      },
+      {
+        type: 'text',
+        text: '4AL/7BS',
+        fontSize: 20,
+        anchor: { text: '7D', alignX: 'right' },
+        dx: -30,
+        dy: 150,
+      },
+    ],
   },
 
   // orthofinder_synteny.md: the same wheat 4A, against Triticum urartu instead
@@ -1309,6 +1418,29 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     settleMs: 15000,
     viewportHeight: 640,
+    // The same two names as the tauschii figure, so the pair is read by
+    // comparing which chromosome each is on rather than by re-reading the
+    // caption. That is the whole result: urartu's chromosome 4 covers both of
+    // the first two blocks, so the 4AL/5AL exchange is already in the diploid
+    // A-genome donor, and the distal block is still on its chromosome 7, so
+    // the 4AL/7BS one is not.
+    annotations: [
+      {
+        type: 'text',
+        text: '4AL/5AL present',
+        fontSize: 20,
+        anchor: { text: '4', alignX: 'left' },
+        dy: 54,
+      },
+      {
+        type: 'text',
+        text: '4AL/7BS absent',
+        fontSize: 20,
+        anchor: { text: '7', alignX: 'right' },
+        dx: -30,
+        dy: 150,
+      },
+    ],
   },
   {
     mode: 'url',
@@ -2304,11 +2436,15 @@ export const syntenySpecs: ScreenshotSpec[] = [
           { type: 'delay', ms: 500 },
         ],
         annotations: [
+          // fontSize 30 on all three step labels (reviewer: "please make the
+          // red textboxes larger"), up from 20, which was BELOW the overlay's
+          // own 22 default, and these are the four-panel grid's only signposts,
+          // read at whatever size a 2x2 of 900px frames ends up on the page.
           {
             type: 'text',
             x: 24,
             y: 56,
-            fontSize: 20,
+            fontSize: 30,
             text: '(1) Right-click a chain block',
           },
           {
@@ -2333,7 +2469,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             type: 'text',
             x: 24,
             y: 56,
-            fontSize: 20,
+            fontSize: 30,
             text: '(2) Confirm how each panel is framed',
           },
         ],
@@ -2368,7 +2504,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             type: 'text',
             x: 24,
             y: 56,
-            fontSize: 20,
+            fontSize: 30,
             text: '(3) The synteny view it opens',
           },
         ],

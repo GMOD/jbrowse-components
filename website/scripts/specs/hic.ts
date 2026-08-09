@@ -145,7 +145,11 @@ export const hicSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'K562 — CML: chr9 and chr22 are one chromosome here',
+        // Names the rearrangement, not just its consequence: "are one
+        // chromosome here" stated the reading without saying what made it
+        // true, so the reader had to already know K562 carries t(9;22) to
+        // connect the block to a structural variant.
+        text: 'K562 (CML): t(9;22) fuses chr9 to chr22, so they contact',
         anchor: {
           track: 'hic_k562_insitu',
           fracY: 0,

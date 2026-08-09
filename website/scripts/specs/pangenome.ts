@@ -457,6 +457,15 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
               // cannot: which reads cross the prophage boundary in one piece and
               // which are split at it.
               linkedReads: 'normal',
+              // GROUPED ON THE SAME FACT the links draw (reviewer:
+              // "potentially use groupBy split reads/sa tag"). `linkedReads`
+              // chains a read's supplementary segments, which says which reads
+              // are split at the prophage boundary, but the split and unsplit
+              // reads are interleaved down the pileup so the answer has to be
+              // traced read by read. Grouping puts them in two labelled
+              // sections, so "18 of 38 carry an SA tag" is a thing you can see
+              // rather than count.
+              groupBy: { type: 'splitRead' },
               height: 210,
             },
             {

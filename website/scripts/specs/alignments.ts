@@ -425,7 +425,25 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg19',
-          loc: '1:55,705,686-55,705,740',
+          // 250 bp rather than the 55 bp this used to be (reviewer: "please
+          // zoom out significantly more"), centered on the same pair of
+          // asymmetric positions. The earlier note here rejected a wider
+          // window on mismatch-LETTER legibility, which was answering the
+          // wrong question: the claim is about the two COVERAGE bands, and a
+          // strand-biased position draws as a colored column in one band at
+          // any width. What 55 bp cost was the baseline. With no ordinary
+          // positions in frame there was nothing for the two columns to be
+          // tall AGAINST, and both bands read as a wall of blocks.
+          //
+          // 250 AND NOT MORE, measured rather than reasoned: 600 bp was tried
+          // first, on the theory that ONT's background speckle is low-fraction
+          // and would stay at the foot of each bar. It does not. At 600 bp the
+          // bands are dense with colored ticks the whole way across and the
+          // two positions this window exists for stop being the tallest thing
+          // in frame, which is the same failure the 55 bp note was worried
+          // about arriving by a different route. At 250 the speckle is a
+          // baseline and the asymmetric columns stand clear of it.
+          loc: '1:55,705,588-55,705,838',
           tracks: [
             {
               trackId: 'hg002_nanopore_hp',
@@ -715,30 +733,11 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     settleMs: 10000,
   },
 
-  // Two windows on chr8 opened in one view. The matrix is fetched for every
-  // PAIR of displayed regions, not just each region against itself, so the
-  // block between the two panels carries their cross-region contacts — the
-  // same geometry that puts a bright off-diagonal block at a translocation's
-  // partner loci. Nothing in the app has to be clicked to get it; it falls out
-  // of a multi-region `loc`.
-  {
-    mode: 'url',
-    name: 'hic/two_regions',
-    url: lgvSession(DEMO_CONFIG, {
-      assembly: 'hg19',
-      // two windows close enough that the cross-block carries real signal —
-      // 5Mb-apart windows fetch their pair just the same, but Hi-C contact
-      // frequency has decayed to near background by then and the block reads
-      // as empty, which shows the geometry without showing the data
-      loc: 'chr8:52,000,000-54,000,000 chr8:54,200,000-56,200,000',
-      trackLabels: 'offset',
-      tracks: ['hic'],
-    }),
-    viewportHeight: 530,
-    readySelector: '[data-testid="hic-display-done"]',
-    readyTimeout: 60000,
-    settleMs: 10000,
-  },
+  // No two-windows-on-chr8 figure. It showed the region-pair fetch on two
+  // windows 200 kb apart, which is the same picture hic/bcr_abl1_translocation
+  // makes with a real result in it (chr9 x chr22 in K562, empty in GM12878), so
+  // hic_track.md's "Comparing two regions" links there instead of carrying a
+  // second, weaker copy of the geometry.
 
   // The same region-pair machinery taken to the whole genome: every chromosome
   // displayed at once, so the fetch is every chromosome against every other one
