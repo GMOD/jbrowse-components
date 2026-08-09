@@ -6,10 +6,11 @@ guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
 
-**TL;DR:** stack N genomes in one linear synteny view from a single jcvi MCScan
-`.blocks` ortholog table, using `MCScanBlocksAdapter` with one BED per column.
-The table is reference-anchored on column 0, so only pairs that include that
-reference are direct alignments and row order is a real choice.
+**TL;DR:** stack N genomes in one linear synteny view from a single wide
+ortholog table, using `MCScanBlocksAdapter` with one BED per column. The adapter
+pairs any two columns, so the table can be all-vs-all. What limits you to one
+reference is the tool that wrote it: jcvi MCScan anchors every row on one
+genome, while OrthoFinder orthogroups do not.
 
 ## Prerequisites
 
@@ -39,8 +40,8 @@ whole-genome all-vs-all PAF is usually a better source. See
 
 ## What a `.blocks` file is
 
-A `.blocks` file is a wide, tab-delimited table, reference-anchored on one
-genome:
+A `.blocks` file is a wide, tab-delimited table: one row per group of
+orthologous genes, one column per genome, `.` where a genome has no member.
 
 ```
 GSVIVT01012255001   Prupe.1G290900.1   Thecc1EG011472t1
@@ -48,12 +49,35 @@ GSVIVT01012253001   Prupe.1G290800.2   Thecc1EG011473t1
 GSVIVT01012261001   .                  .
 ```
 
-- Column 0 is a reference gene (grape here).
-- Each further column is that gene's ortholog in another genome (`.` = none).
-- One row per reference gene.
-
 This is a coordinate-free gene-id table. The accompanying `.bed` files (one per
 genome, produced alongside) map each gene id to a genomic position.
+
+### One reference, or all against all
+
+Worth being precise about, because the two are easy to conflate and only one of
+them is a real limit.
+
+**The format and the adapter are not reference-anchored.** To draw a pair the
+adapter takes the two columns for those genomes and keeps the rows where both
+cells resolve. It never consults column 0, so a row carrying a peach gene and a
+cacao gene draws a peach-cacao link whether or not that row also has a grape
+gene, and a table with no reference column at all is fine.
+
+**jcvi MCScan tables are.** `mcscan` writes one row per gene of the genome you
+anchor on, so a peach-cacao ortholog with no grape counterpart has no row to
+live in. Joining several `grape.X` tables side by side, as the
+[script below](#reproduce-it-end-to-end) does, gives every non-grape pair only
+the orthologs that happen to pass through grape. For grape against each of the
+others, which is what the one-vs-all figure draws, that costs nothing: those
+columns are direct grape-vs-X alignments. For the peach-cacao band in a stacked
+view it is a real approximation.
+
+**OrthoFinder orthogroups are not.** `Orthogroups.tsv` is inferred across all
+the genomes at once, so a group can contain peach and cacao and no grape, and it
+converts to this table with nothing lost.
+[](/docs/tutorials/orthofinder_synteny) builds a six-genome view that way. Use
+it when the non-reference pairs matter; use MCScan when you want synteny blocks
+rather than gene-level orthogroups.
 
 Nothing in the adapter is specific to jcvi: any ortholog table of this shape
 loads, whatever produced it. See
@@ -385,11 +409,13 @@ menu offers the other modes (`query`, `strand`, `identity`, …).
 
 ## Direct vs transitive pairs
 
-Because a `.blocks` table is reference-anchored on grape (column 0), only pairs
-that include grape are direct alignments. The adapter can still serve a pair
-where neither side is the reference (peach-cacao above, say) by joining the two
-columns on their shared grape gene, but that link is transitive rather than a
-direct alignment. Row order therefore matters. When one genome dominates
+Because _this_ table came from MCScan anchored on grape (see
+[One reference, or all against all](#one-reference-or-all-against-all)), only
+pairs that include grape are direct alignments. The adapter still serves
+peach-cacao, but every such link had to pass through a shared grape gene to get
+a row at all, so it is transitive rather than a direct alignment, and any
+peach-cacao ortholog grape has lost is simply absent. An OrthoFinder table has
+no such asymmetry. Row order therefore matters here. When one genome dominates
 (grape's 19 chromosomes against peach's 8 or cacao's 10), put the cleaner pair
 on top. Otherwise put the reference in the middle (peach-grape-cacao) so every
 band is direct. The demo above stacks grape on the bottom instead, to show the
@@ -435,8 +461,8 @@ of these kept it".
 ## Reproduce it end to end
 
 [`build_grape_peach_cacao_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_grape_peach_cacao_synteny.sh)
-runs everything above in one shot. It downloads the genomes from Ensembl
-Plants, runs the jcvi ortholog pipeline into one `grape.blocks` table, downloads
+runs everything above in one shot. It downloads the genomes from Ensembl Plants,
+runs the jcvi ortholog pipeline into one `grape.blocks` table, downloads
 JBrowse, and writes a `config.json` with the assemblies, per-genome gene tracks,
 the MCScan blocks synteny track, and a default session that stacks the three
 genomes. Its `BLOCKS_ONLY_SPECIES` list is where the extra lanes come from: a
