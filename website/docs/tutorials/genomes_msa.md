@@ -70,7 +70,7 @@ The view opens at residue zoom, which on a protein this long is a window on its
 N terminus. **Fit horizontally**, under the toolbar's fit and zoom button, puts
 the whole alignment on screen, which is the zoom the domain blocks read at.
 
-<Figure src="/img/genomes_msa/launch_sequence.png" caption="The whole path on NLRP1: the right-click menu with both plugins' launchers boxed, the Launch MSA view dialog on its Orthologs tab, and the alignment Submit builds, fitted to the width. The pyrin block sits on the human query row alone; the NACHT-to-CARD core below it is in every row." />
+<Figure src="/img/genomes_msa/launch_sequence.png" caption="The whole path on NLRP1: the right-click menu with both plugins' launchers boxed, the Launch MSA view dialog on its Orthologs tab, and the alignment Submit builds, fitted to the width. Twelve of the twenty-three species offered have an NLRP1 ortholog. The pyrin block is on the great apes and the marmoset and on no other row; the NACHT-to-CARD core to the right of it is in every row." />
 
 ## Reading the overlay
 
@@ -79,10 +79,19 @@ rather than at each protein's own residue positions. That is what makes the rows
 comparable: the same domain lands in the same column in every row that has it,
 however different the proteins are in length.
 
-Human _NLRP1_ carries a pyrin (PYD) death-fold domain at its N terminus, and no
-other row in this panel does, mouse _Nlrp1a_ included. Everything after it is
-shared, so the overlay reads as one block on the left that only the query row
-has, and a matching stack of blocks to the right of it that every row has.
+Human _NLRP1_ carries a pyrin (PYD) death-fold domain at its N terminus, and so
+do the chimpanzee, gorilla and marmoset rows. No other row in the panel does,
+mouse _Nlrp1a_ included, and neither does the rhesus macaque, whose record
+carries plenty of other calls. Everything after the pyrin is shared, so the
+overlay reads as one block on the left that a few rows have, and a matching
+stack of blocks to the right of it that every row has.
+
+That is a clade-level pattern rather than a quirk of one row, which is what a
+panel of twelve mammals buys over a panel of five. It is also a statement about
+annotation and not only about biology: the block is drawn where NCBI's
+conserved-domain database has called one, and a species missing the call is not
+the same as a species missing the sequence, which is what the residue check
+below is for.
 
 That shared core is the control. NACHT, the winged helix, HD2, FIIND and CARD
 are present in every row, so they have to line up in the same columns; a missing
@@ -103,7 +112,14 @@ The rows without a pyrin domain are not empty there. Most of them carry ordinary
 sequence in those columns with no domain called over it, which is a different
 statement from the sequence being absent. One row is gap.
 
-<Figure src="/img/genomes_msa/pyrin_residues.png" caption="The same alignment at the residue zoom it opens on, over the columns the pyrin block covers. The block is on the human query row alone; dog, cattle and pig carry ordinary residues under it with nothing called over them, and mouse is the one row that is gap there." />
+The figure below makes that point on a deliberately small run of the same gene,
+five species rather than twelve, and the reason is where the columns land. A run
+with more species includes proteins whose N termini extend past the human one,
+so the alignment's opening columns are their extension and the pyrin columns sit
+further right; unchecking the species you are not comparing brings the columns
+you are back to where the view opens.
+
+<Figure src="/img/genomes_msa/pyrin_residues.png" caption="A five-species run of the same gene at the residue zoom the view opens on, over the columns the pyrin block covers. The block is on the human query row alone here; dog, cattle and pig carry ordinary residues under it with nothing called over them, and mouse is the one row that is gap there." />
 
 ## The same domains in genome coordinates
 

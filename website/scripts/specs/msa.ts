@@ -148,7 +148,15 @@ export const msaSpecs: ScreenshotSpec[] = [
         // dialog the 540 the menu frame above wanted and cut it off below the
         // species checkboxes: no isoform selector, no Submit, in the frame
         // whose whole subject is that dialog.
-        viewportHeight: 880,
+        //
+        // 700, down from 880, and the dialog carries ten more species than it
+        // did: msaview 2.8.0 put the species grid on auto-fitted 130px columns
+        // (five rows for twenty-three where three 160px columns were five rows
+        // for thirteen), cut a seven-line intro to one line, and moved the
+        // query-row note to helper text under the isoform selector. Measured off
+        // the two captures at the same frame width: 735 css px of dialog before,
+        // 616 after.
+        viewportHeight: 700,
       },
       {
         actions: [
@@ -175,7 +183,15 @@ export const msaSpecs: ScreenshotSpec[] = [
         ],
         // the MSA view opens at a fixed height, so this is the LGV above it
         // plus that view plus nothing: the run's own
-        // `blank below the last content` said 122 css px at 1000
+        // `blank below the last content` said 122 css px at 1000.
+        //
+        // Left at 878 after trying 1010 for the domain KEY. Twelve species carry
+        // more distinct CDD domains between them than five did, and the key is
+        // one row per domain type present anywhere in the alignment, so its last
+        // entries are cut off -- but by the MsaView's OWN fixed height, not by
+        // this frame, so raising the frame only adds page background (measured:
+        // 128 css px of blank below, key clipped in the same place). The caption
+        // names the two blocks the figure is about instead.
         viewportHeight: 878,
       },
     ],

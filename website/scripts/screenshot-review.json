@@ -95,8 +95,8 @@
     "name": "sv_synteny/dotplot_import",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-04T17:39:47.321Z",
-    "hash": "c6ebb72f2499c72d514df67ec421b931bf53b915"
+    "reviewedAt": "2026-08-09T16:04:37.051Z",
+    "hash": "d2b5522e47f00789731b2851b3b87613f9817990"
   },
   "sv_synteny/dotplot": {
     "name": "sv_synteny/dotplot",
@@ -216,8 +216,8 @@
     "name": "sv_cgiab/synteny_view",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-09T13:16:51.847Z",
-    "hash": "1e9171d2b12c8937592055cec1a4847d9d5bc939"
+    "reviewedAt": "2026-08-09T16:04:01.571Z",
+    "hash": "b8b7933e8f9f1115cc899aeae40241d0e10b70a7"
   },
   "linear_synteny": {
     "name": "linear_synteny",
@@ -886,8 +886,8 @@
     "name": "sv_cgiab/translocation_breakpoint_split",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-09T13:16:55.639Z",
-    "hash": "73b62edf00b6a068ab134997da8c4ecaaa5c5a5c"
+    "reviewedAt": "2026-08-09T16:04:39.769Z",
+    "hash": "2acb367bdcd4f063a5d1ab8efc247aa77ee53af5"
   },
   "sv_inspector_importform_filtered": {
     "name": "sv_inspector_importform_filtered",
@@ -1210,8 +1210,8 @@
     "name": "multiway_synteny/grape_peach_cacao",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-09T13:10:39.531Z",
-    "hash": "bcd8180cbc4ca33182fd0dcd8e1e769c0f0a7dbb"
+    "reviewedAt": "2026-08-09T16:03:10.508Z",
+    "hash": "eab3d9fc027504831b708ddd2318b25da1b538a0"
   },
   "search_feature_highlight": {
     "name": "search_feature_highlight",
@@ -2337,8 +2337,8 @@
   "desktop-add-track-steps": {
     "name": "desktop-add-track-steps",
     "status": "answered",
-    "note": "reduce width and height of the app in all screenshots here. add margin on all sides. and make each row the same 'dimensions'...the varying height of each screenshot make it confusing. also the 'title bar' (minimize,expand,close) should be on right. ALL THREE DONE in composeProcedure, so every procedure figure gets them. MARGIN: the 26px transparent gap that was only between frames now surrounds the figure too (transparent, not a page color, since these render on a page with a light and a dark theme). TITLE BAR: the cluster moved to the right of the bar and its order changed with it -- minimize, maximize, close, close outermost, which is what a GNOME or Windows decoration draws. UNIFORM ROWS: the frames were each trimmed to their own content, which is what made them three different heights; now the slack is measured on every frame and all of them lose the SMALLEST amount, so the rows are identical and the dead page every frame shares still goes. The cost is deliberate: the app window is a fixed 1400x763 and cannot be resized (chromedriver's setRect throws on electron), so a state with short content -- the File menu over an empty view -- now keeps the blank page under it rather than being cropped to fit. Uniform windows were the ask and that blank is what the app really shows. Caption also fixed: it still narrated a (4) and a (5) that were removed last round. ANSWERED 2026-08-09 on the one remaining ask, and the answer is measured off the committed PNG rather than argued. REDUCING THE APP HEIGHT CANNOT MOVE THIS FIGURE. The composite is 1454x1952: strip the 26px border and the two 26px gaps and the three rows are 616.0px each, which is a 586px capture under a 28px title bar and a 1px border. The native capture is 763px, so trimFrames already removed 177px from every frame -- i.e. it cropped to the tallest frame's content plus exactly the keep=20 slack it aims for. The binding frame is the Add-a-track widget, whose content ends 566px down (Confirm track type lands at y=561 of the capture, measured on the composite). A shorter window would just capture fewer dead pixels that the crop was going to discard anyway; the composed rows come out 586px either way. So the height ask is already fully paid, by the crop rather than by the window. REDUCING THE WIDTH IS COUNTERPRODUCTIVE. Rendered into a fixed-width docs column the figure is scaled to that column, so the only thing width changes is aspect: a narrower window with the same 566px of widget content makes each row squarer and the three-row stack TALLER on the page. That is the opposite of the ask. Width also carries the 1400px convention every web figure shares. THE DEAD PAGE IN ROWS 1 AND 3 IS STRUCTURAL, not slack the crop missed: uniform rows plus one frame needing 566px and two needing ~300px is 266px of empty view in the short ones, and the only ways out are to shrink the widget's own UI or to give up uniform rows, which was the ask that created them. Window sizing IS available if it is ever wanted for another figure -- windowStateKeeper reads window-state.json from app.getPath('userData'), which electron maps onto the harness's throwaway --user-data-dir, and isValidState takes any bounds overlapping a display, so seeding {x:0,y:0,width,height} picks the size that setRect cannot. Not built here because it would not change a pixel of this figure.",
-    "reviewedAt": "2026-08-09T05:40:09.832Z",
+    "note": "",
+    "reviewedAt": "2026-08-09T16:03:07.877Z",
     "hash": "6d9291f9e8e252f35a0b186fdf42a77cda7c2cb7"
   },
   "desktop-available-genomes-steps": {
@@ -2562,8 +2562,8 @@
     "name": "methylation/hg002_snrpn_group_by_hp",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-09T13:10:36.023Z",
-    "hash": "561965d18d229aedeac5b6f9b42ca4f90f033796"
+    "reviewedAt": "2026-08-09T16:03:07.960Z",
+    "hash": "cb38dd98115af1d514e61fc630cd9c74d11343dd"
   },
   "multisv_rhd": {
     "name": "multisv_rhd",
@@ -2693,16 +2693,16 @@
   },
   "genomes_msa/launch_sequence": {
     "name": "genomes_msa/launch_sequence",
-    "status": "bad",
-    "note": "this is kind of a complex figure. can we (a) dramatically simplify the launch msa dialog, can modify jbrowse-plugin-msaview codebase in ~/src/jb2plugins. it takes up too much space and we need to reduce the vertical size ideally.  (b) get more sample rows? it generates more 'frission' to have more samples shown in the MSA.  NOT BUILT, and BOTH halves need the msaview plugin published before any pixel can move -- this figure loads jbrowse.org/ucsc/hg38/config.json, which pulls msaview from a hosted esmUrl, so a source edit in ~/src/jb2plugins/jbrowse-plugin-msaview reaches the figure only after a deploy. (a) THE DIALOG'S HEIGHT is the plugin's own layout: three tabs, the query-species and algorithm selects, a 13-checkbox species grid in three columns, the isoform selector and two paragraphs of help. Nothing in the spec can shrink it, and the frame already carries its own viewportHeight (880) because at the menu frame's 540 the Submit button was cut off. (b) MORE SAMPLE ROWS cannot come from the spec either, and this is the part worth recording: all 13 species are ALREADY checked in the captured frame (Human, Mouse, Rat, Cow, Pig, Dog, Chicken, Frog, Zebrafish, Fruitfly, C. elegans, Yeast, Arabidopsis), and the dialog says \"those without an ortholog are skipped\", so the row count is what NCBI's precomputed orthologs return for NLRP1 out of a species list the PLUGIN fixes. More rows means either a longer species list in the plugin (deploy) or a different gene, and the gene is the tutorial's subject. Your call on the deploy.",
-    "reviewedAt": "2026-08-09T00:05:04.050Z",
-    "hash": "0ad3512c9afeb1cddcdf1c2e537b57e3acc82d71"
+    "status": "good",
+    "note": "this is kind of a complex figure. can we (a) dramatically simplify the launch msa dialog, can modify jbrowse-plugin-msaview codebase in ~/src/jb2plugins. it takes up too much space and we need to reduce the vertical size ideally.  (b) get more sample rows? it generates more 'frission' to have more samples shown in the MSA.  NOT BUILT, and BOTH halves need the msaview plugin published before any pixel can move -- this figure loads jbrowse.org/ucsc/hg38/config.json, which pulls msaview from a hosted esmUrl, so a source edit in ~/src/jb2plugins/jbrowse-plugin-msaview reaches the figure only after a deploy. (a) THE DIALOG'S HEIGHT is the plugin's own layout: three tabs, the query-species and algorithm selects, a 13-checkbox species grid in three columns, the isoform selector and two paragraphs of help. Nothing in the spec can shrink it, and the frame already carries its own viewportHeight (880) because at the menu frame's 540 the Submit button was cut off. (b) MORE SAMPLE ROWS cannot come from the spec either, and this is the part worth recording: all 13 species are ALREADY checked in the captured frame (Human, Mouse, Rat, Cow, Pig, Dog, Chicken, Frog, Zebrafish, Fruitfly, C. elegans, Yeast, Arabidopsis), and the dialog says \"those without an ortholog are skipped\", so the row count is what NCBI's precomputed orthologs return for NLRP1 out of a species list the PLUGIN fixes. More rows means either a longer species list in the plugin (deploy) or a different gene, and the gene is the tutorial's subject. Your call on the deploy.  BOTH HALVES DONE, in msaview 2.8.0 (released and in the plugin store, so the hosted ucsc/hg38 config serves it). (b) MORE ROWS, and the diagnosis is the point: the old thirteen species were one per major clade, which produces almost nothing on a gene that is not conserved to yeast. NCBI publishes 165 orthologs for human NLRP1 and every one is a mammal, so only Human, Mouse, Cow, Pig and Dog returned a row -- FIVE, and not Rat, since NLRP1 is absent in Rattus norvegicus. Ten mammals added (chimpanzee, gorilla, rhesus, marmoset, guinea pig, rabbit, cat, horse, sheep, opossum) and the same gene returns TWELVE. Cat, rabbit and opossum contribute nothing here on purpose: they are the three that most often separate 'absent in this clade' from 'absent in this species'. (a) SHORTER ANYWAY, measured off the two captures at the same frame width: 735 css px of dialog before, 616 after, with ten more species in it. The checkbox list is the tallest thing in the dialog and it was three 160px columns in a 560px box (five rows for thirteen, eight for twenty-three); auto-fitted 130px columns is five rows for twenty-three. The rest was prose: a seven-line intro cut to the one thing a reader needs from it (which tab to pick), and the query-row note moved to helper text under the isoform selector. Spec stage height 880 -> 700. A SIDE EFFECT WORTH KNOWING: with twelve rows the domain KEY lists more distinct CDD domains than the MsaView's own fixed height can show, so its last entries are clipped -- by the view, not by the frame, so raising viewportHeight only adds page background (tried 1010, 128 css px of blank and the same clipping). The caption names the two blocks the figure is about. The tutorial's pyrin paragraph is rewritten: the block is on the great apes and the marmoset, not the human row alone, and the rhesus macaque is the annotated-but-not-called case, which is a better statement than the old one.",
+    "reviewedAt": "2026-08-09T19:40:00.000Z",
+    "hash": "86c7db4a0d8e73120a4d7fcbb296c74405f61640"
   },
   "genomes_msa/pyrin_residues": {
     "name": "genomes_msa/pyrin_residues",
     "status": "bad",
-    "note": "see notes in genomes_msa/launch_sequence   See genomes_msa/launch_sequence: both halves need a msaview plugin deploy, and the species list is already fully checked.",
-    "reviewedAt": "2026-08-09T00:05:12.152Z",
+    "note": "see notes in genomes_msa/launch_sequence   See genomes_msa/launch_sequence: both halves need a msaview plugin deploy, and the species list is already fully checked.  STILL FLAGGED, and now for a NEW reason: msaview 2.8.0's wider species list moves this figure's columns. Measured -- with twelve rows, ten of them are pure gap at the columns the view opens on, because the run includes proteins whose N termini extend past the human one (rhesus 1541 aa, gorilla 1556 aa against human 1473) and the alignment's opening columns are that extension, with the pyrin columns further right. So the regenerated capture showed leading gaps rather than the residues under the pyrin block, which is the opposite of this figure's point. I RESTORED THE COMMITTED PNG rather than ship a fresh figure under a caption that no longer described it, and said in the tutorial that this one is a deliberately small five-species run. TO FIX PROPERLY, one of: drive the launch dialog to uncheck the species this comparison does not need (a spec action per checkbox, keeps the columns where the view opens them), or scroll the MSA view to the pyrin columns, which needs something the spec can reach -- there is no scrollX prop and the view is built by the plugin's launch, so today the only in-app lever is the 'Hide columns w/ >100% gaps' slider.",
+    "reviewedAt": "2026-08-09T19:40:00.000Z",
     "hash": "26c8d466903732facd71fcd0175ebd4f9ea6828d"
   },
   "cancer_sv/multihop_reads": {
@@ -2926,5 +2926,26 @@
     "note": "NEW, and it is the 'just make it a two part figure' ask: the 2.5 Mb block over the 650 kb window inside it, vertically composed from qc/smn_problematic_regions and qc/smn_read_placement. The tutorial section that used to introduce the second one separately is folded into the one above it, and the T2T argument now comes after both rather than between them.",
     "reviewedAt": "2026-08-09T14:12:25.173921Z",
     "hash": "e52827e7f8a485ca385b8978fb62f5ed35516e5e"
+  },
+  "pangenome/pggb_bubble_tier": {
+    "name": "pangenome/pggb_bubble_tier",
+    "status": "bad",
+    "note": "does this figure make sense? are you happy with it? it is sort of odd to see black segments in the linaergenomeview to me, i thought those are all reference, related and thus rainbow colored",
+    "reviewedAt": "2026-08-09T16:03:59.415Z",
+    "hash": "862e66bff98eb00e056a7fd618eaea5c7bba9c27"
+  },
+  "synteny_self_chry_palindromes": {
+    "name": "synteny_self_chry_palindromes",
+    "status": "bad",
+    "note": "this figure at a minimum needs showCurves+transparent cigar",
+    "reviewedAt": "2026-08-09T16:04:31.929Z",
+    "hash": "dd0878c7d9a87c2dd1e86fb838fc2f5836d15658"
+  },
+  "sv_cgiab/three_ways": {
+    "name": "sv_cgiab/three_ways",
+    "status": "bad",
+    "note": "this dialog is definitely pretty complex. the 'replace with split view' and 'replace current view' are unclear what they would do. \"draw\" in new view is odd too. please simplify button labeling if possible.",
+    "reviewedAt": "2026-08-09T16:05:29.423Z",
+    "hash": "9a7792ee8aa692f760651a89c22bcca113ae6703"
   }
 }
