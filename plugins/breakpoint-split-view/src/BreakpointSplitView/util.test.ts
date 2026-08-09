@@ -1,5 +1,6 @@
 import {
   OFFSCREEN_Y_SENTINEL,
+  computeOverlayX,
   computeOverlayY,
   findFeatureViewLevel,
   isOffscreenLayout,
@@ -7,6 +8,7 @@ import {
   makeOffscreenLayout,
 } from './util.ts'
 
+import type { LayoutRecord } from './types.ts'
 import type { OverlayDisplay, OverlayTrack } from './util.ts'
 
 function trackWith(display: OverlayDisplay) {
@@ -141,5 +143,32 @@ describe('findFeatureViewLevel', () => {
   test('returns undefined when no view contains the refName', () => {
     const views = [make(['chr1']), make(['chr2'])]
     expect(findFeatureViewLevel(views, 'chrUn', 0)).toBeUndefined()
+  })
+})
+
+// computeOverlayY snaps an off-display segment to the track's bottom edge to be
+// the one sign it exists; that is only visible if x is in the panel too, which
+// is the whole job of computeOverlayX. Pinned because the two have to move
+// together — an x clamp without the y snap, or vice versa, draws a line to
+// nowhere.
+describe('computeOverlayX', () => {
+  const WIDTH = 800
+
+  test('leaves an on-display endpoint alone, even off-panel', () => {
+    // a long read whose alignment runs past the window has a real row and a
+    // real x, and the connector genuinely points off to the side
+    const onDisplay: LayoutRecord = [100, 10, 200, 20]
+    expect(computeOverlayX(-20000, WIDTH, onDisplay)).toBe(-20000)
+    expect(computeOverlayX(9000, WIDTH, onDisplay)).toBe(9000)
+    expect(computeOverlayX(400, WIDTH, onDisplay)).toBe(400)
+  })
+
+  test('clamps an off-display endpoint into its panel', () => {
+    const off = makeOffscreenLayout(100, 200)
+    expect(computeOverlayX(-20000, WIDTH, off)).toBe(0)
+    expect(computeOverlayX(9000, WIDTH, off)).toBe(WIDTH)
+    // one already in the panel is untouched, so the terminus keeps the side it
+    // was on rather than snapping to an edge
+    expect(computeOverlayX(400, WIDTH, off)).toBe(400)
   })
 })

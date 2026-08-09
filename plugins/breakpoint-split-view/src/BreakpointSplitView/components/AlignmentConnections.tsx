@@ -7,6 +7,7 @@ import {
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { computeOverlayX } from '../util.ts'
 import BreakpointTooltip from './BreakpointTooltip.tsx'
 import { useOrientationColor } from './getOrientationColor.tsx'
 import {
@@ -88,11 +89,16 @@ const AlignmentConnections = observer(function AlignmentConnections({
         end2: c2[RIGHT],
         isSplit: !hasPaired,
       })
-      const x1 = getX(level1, f1ref, p1)
-      const x2 = getX(level2, f2ref, p2)
-      if (x1 == null || x2 == null) {
+      const rawX1 = getX(level1, f1ref, p1)
+      const rawX2 = getX(level2, f2ref, p2)
+      if (rawX1 == null || rawX2 == null) {
         return []
       }
+      // An off-display segment's endpoint is clamped into its panel so the
+      // bottom-edge terminus getY gives it is actually on screen — see
+      // computeOverlayX.
+      const x1 = computeOverlayX(rawX1, layouts[level1]!.width, c1)
+      const x2 = computeOverlayX(rawX2, layouts[level2]!.width, c2)
       const reversed1 = isReversed(layouts, level1, x1)
       const reversed2 = isReversed(layouts, level2, x2)
       const y1 = getY(level1, c1)

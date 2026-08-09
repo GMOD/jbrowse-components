@@ -9,7 +9,7 @@ import { pxToBp } from '@jbrowse/core/util/Base1DUtils'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { isOffscreenLayout } from '../util.ts'
+import { computeOverlayX, isOffscreenLayout } from '../util.ts'
 import BreakpointTooltip from './BreakpointTooltip.tsx'
 
 import type { BreakpointViewModel } from '../model.ts'
@@ -410,13 +410,13 @@ export function* resolvedPairs({
 // LEFT-edge screen coords for simple variant overlays (paired/breakend), also
 // dropping off-view coordinates so callers only describe the path they draw.
 export function* canonicalPairs(ctx: VariantOverlayContext) {
-  const { getX, getY } = ctx
+  const { getX, getY, layouts } = ctx
   for (const { f1, f2, level1, level2, c1, c2, f1ref, f2ref } of resolvedPairs(
     ctx,
   )) {
-    const x1 = getX(level1, f1ref, c1[LEFT])
-    const x2 = getX(level2, f2ref, c2[LEFT])
-    if (x1 == null || x2 == null) {
+    const rawX1 = getX(level1, f1ref, c1[LEFT])
+    const rawX2 = getX(level2, f2ref, c2[LEFT])
+    if (rawX1 == null || rawX2 == null) {
       continue
     }
     yield {
@@ -424,8 +424,9 @@ export function* canonicalPairs(ctx: VariantOverlayContext) {
       f2,
       level1,
       level2,
-      x1,
-      x2,
+      // same clamp AlignmentConnections applies — computeOverlayX
+      x1: computeOverlayX(rawX1, layouts[level1]!.width, c1),
+      x2: computeOverlayX(rawX2, layouts[level2]!.width, c2),
       y1: getY(level1, c1),
       y2: getY(level2, c2),
       tooltip: () => buildPairTooltip(f1, f2),

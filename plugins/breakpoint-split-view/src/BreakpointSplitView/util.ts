@@ -78,6 +78,28 @@ export function isOffscreenLayout(c: LayoutRecord) {
   return c[1] === OFFSCREEN_Y_SENTINEL
 }
 
+// Horizontal screen position of an overlay endpoint, the sibling of
+// computeOverlayY below and clamped for the same reason.
+//
+// A feature with no row in any track's layout is off-display in BOTH axes, and
+// computeOverlayY deliberately snaps its y to the track's bottom edge so the
+// curve terminating there is the one sign the segment exists. Leaving x at the
+// true coordinate defeats that: the point it terminates at is outside the panel,
+// so the curve simply leaves the frame on a diagonal and the reader sees a line
+// to nowhere rather than a marker at the edge. Clamping x puts the terminus back
+// in view, on the side the segment actually lies.
+//
+// An on-display feature keeps its true x even when that is off-panel — a long
+// read whose alignment runs past the window has a real row, a real y, and an x
+// that means something. Only the synthesized record is clamped.
+export function computeOverlayX(
+  x: number,
+  width: number,
+  layout: LayoutRecord,
+) {
+  return isOffscreenLayout(layout) ? Math.min(Math.max(x, 0), width) : x
+}
+
 // Vertical screen position (relative to the overlay SVG) of an overlay endpoint
 // for a feature laid out at `layout` in a track of the given `height`.
 //   - Off-display features (see makeOffscreenLayout) snap to the bottom edge.
