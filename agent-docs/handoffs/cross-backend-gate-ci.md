@@ -1,6 +1,6 @@
 ---
 name: cross-backend-gate-ci
-description: The cross-backend render gate is back in CI as of 2026-08-04, blocking, scoped to CI_GATE_SUITES under swiftshader — what landed and why that scope, the blank-capture verdict that unblocked it (capture side, not render side), and what is still out of the gate (alignments, and the timeout failure mode). Read before widening the scope or re-opening the blank/timeout investigation.
+description: The cross-backend render gate is back in CI as of 2026-08-04, blocking, scoped to CI_GATE_SUITES under swiftshader — what landed and why that scope, the blank-capture verdict that unblocked it (capture side, not render side), and what is still out of the gate (alignments, and the timeout failure mode). Includes the first webgpu measurement of the alignments suites (2026-08-08): 8 stable over-threshold pairs, baselined as pre-existing and then attributed to the capture rather than the render, so what is left is the harness fix. Read before widening the scope or re-opening the blank/timeout investigation.
 ---
 
 # Cross-backend render gate → CI
@@ -239,7 +239,7 @@ The method is the transferable part: **a threshold override is a claim about why
 two backends disagree, and claims are testable.** This one said "antialiasing",
 which predicts the number moves when the rasterizer changes. It didn't.
 
-## Alignments: re-measured, and the drift is gone
+## Alignments vs WEBGL: re-measured, and the drift is gone
 
 The exclusion rested on a 2026-07 record of over-threshold pileup drift. Measured
 again on 2026-08-04 under swiftshader, after the composed capture waits:
@@ -258,7 +258,8 @@ multi-region sort, session-spec, main-thread RPC. Alignments drift: 2.01% (under
 a 10% override), 0.93%, 0.87%.
 
 **The historical pileup drift does not reproduce — 0 over threshold in all six
-runs.** What replaces it is a *stability* difference, not a correctness one, and
+runs.** (Webgl only; the webgpu pairs are the section after this one, and they
+are not clean.) What replaces it is a *stability* difference, not a correctness one, and
 it tracks machine load rather than anything in the app: the heavy suites (CRAM,
 simulated long reads) needed 2-11 retries per run, and their failures arrive as
 `Navigating frame was detached` in simultaneous batches of four — the whole
@@ -277,18 +278,161 @@ Recommendation: add **`Alignments Track`** and **`Alignments Color Schemes`**
 override above is audited — adding it now would buy four pairs whose passing
 verdict is a 5-17% divergence the gate is configured to ignore.
 
+## Alignments under WEBGPU: never measured until now, and it is not clean
+
+Everything above — the whole "drift is gone" table — is **canvas2d vs webgl**.
+`test:browser:gate` and `:gate:ci` both pass `--skip-webgpu`, so the webgpu pairs
+have never been in any measurement in this file. The alignments suites produce 20
+pairs without it and 40 with it.
+
+Measured 2026-08-08, swiftshader, Firefox Nightly for webgpu, two consecutive
+runs on one build:
+
+| pair | targeted | fullpage |
+| --- | --- | --- |
+| `alignments-bam` [canvas2d vs webgpu] | **3.46%** | **16.38 / 16.23%** |
+| `color-by-strand` [canvas2d vs webgpu] | **3.88%** | **26.95%** |
+| `color-by-tag-hp` [canvas2d vs webgpu] | **3.49%** | **24.39%** |
+| `color-by-mapping-quality` [canvas2d vs webgpu] | **3.87%** | **23.09%** |
+| `alignments-long-reads-sv-linked` [canvas2d vs webgpu] | 2.00% | 0.93% |
+| `color-by-insert-size-orientation` [canvas2d vs webgpu] | 0.68% | — |
+
+8 of 40 pairs over a 3% threshold, and **every figure but one byte-identical
+across the two runs** — the same bit-stability this file treats as the signature
+of a real difference rather than capture noise. The canvas2d-vs-webgl pairs in
+the very same runs stayed at their usual 1.99 / 0.71 / 0.65 / 0.62 / 0.23.
+
+### What it is not
+
+- **Not capture flake.** Two runs, byte-identical. Blank captures fail a test;
+  they do not produce a stable 3.88%.
+- **Not the read fills.** The diff images show read bodies uniformly grey —
+  pixel-identical. The whole of `targeted_alignments-bam`'s 3.46% is the band at
+  the top of the view (coverage strip + ruler), which is ~40px of 600 with about
+  half its pixels differing. That arithmetic accounts for the number.
+- **Not webgpu generally.** Synteny under the same invocation: 64 pairs, 0 over
+  threshold, webgpu tracking webgl (1.58 / 1.50 / 1.13 / 0.90).
+- **Not the coverage strip as such.** `pileup + coverage track` — the
+  coverage-focused test — passes. The four failures look like one view
+  (volvox bam at one locus) seen through the default plus three color schemes.
+
+### It is PRE-EXISTING. Baselined 2026-08-08, and the numbers are identical
+
+The open question was whether this arrived with that day's uniform-array work
+(`arcColor`/`linkedReadColor`/`readCategoryColor` became `float4[]` arrays, see
+[reference/SLANG_UNIFORM_ARRAYS.md](../reference/SLANG_UNIFORM_ARRAYS.md)) or
+predated it. Settled by measurement, not by the inference that used to be here.
+
+Baseline: `git worktree add --detach` at `82ac1951f6`, its own `pnpm install`,
+its own `pnpm --filter @jbrowse/web build`, then the identical invocation
+(`--backend=all --swiftshader --gate-only --filter=alignments`). 39 tests
+passed, **40 pairs compared, 0 uncompared, and the same 8 over threshold**:
+
+| pair | baseline (no uniform arrays) | with uniform arrays |
+| --- | --- | --- |
+| `fullpage_color-by-strand` | 26.95% | 26.95% |
+| `fullpage_color-by-tag-hp` | 24.39% | 24.39% |
+| `fullpage_color-by-mapping-quality` | 23.09% | 23.09% |
+| `fullpage_alignments-bam` | 16.38% | 16.38 / 16.23% |
+| `targeted_color-by-strand` | 3.88% | 3.88% |
+| `targeted_color-by-mapping-quality` | 3.87% | 3.87% |
+| `targeted_color-by-tag-hp` | 3.49% | 3.49% |
+| `targeted_alignments-bam` | 3.46% | 3.46% |
+| `targeted_alignments-long-reads-sv-linked` | 2.00% | 2.00% |
+| `fullpage_alignments-long-reads-sv-linked` | 0.93% | 0.93% |
+| `targeted_color-by-insert-size-orientation` | 0.68% | 0.68% |
+
+Every figure matches to the decimal, passing and failing alike, and the
+canvas2d-vs-webgl pairs in the baseline run came back at their usual 1.99 /
+0.71. A third run of the same invocation later the same day, after the marker
+palette became a fourth uniform array (which shifted every uniform offset after
+`arcColor`), reproduced all thirteen figures again. **The uniform-array work
+changed nothing here**, and this table is now the number to check any
+alignments render change against. It is a hole in the
+gate's coverage that has been open for as long as nobody ran webgpu against
+alignments, and the "arguing for pre-existing" reasoning above (identical read
+fills, shared upload code, webgl clean) is confirmed rather than merely
+plausible.
+
+Cheaper than this file used to claim, and worth knowing for the next one: the
+delta under test was **entirely uncommitted**, so `HEAD` already *was* the
+pre-change tree and there was no need to hunt for a sha from before the work.
+Check `git status` before dating a baseline off the log. The install is still
+required (symlinking `node_modules` recompiles the modified sources), but with a
+warm pnpm store it costs about a minute, and the whole baseline is roughly 20.
+
+What remains open is the **cause**, which is now a plain unexplained
+canvas2d-vs-webgpu difference with no suspect attached. It is localized much
+further than "the band at the top", below.
+
+### The cause: SETTLED, and it is the harness, not the render
+
+Localized, attributed and written up in
+[reference/SCREENSHOT_CAPTURE_RACE.md](../reference/SCREENSHOT_CAPTURE_RACE.md),
+"The third one: `el.screenshot()` scrolls the element first". In short:
+`el.screenshot()` scrolls the element into view before capturing, Firefox
+scrolls an inner container by 73px where Chrome does not scroll at all, the
+canvas top then sits under the app header, and the capture composites 37px of
+locstring box, toolbar divs and ruler into the canvas rectangle. The backing
+store held the full coverage strip the whole time, so nothing was ever
+mis-rendered, and every row below the band is pixel-identical between backends.
+
+`browser-tests/probe-webgpu-coverage.ts` is the instrument and reproduces all of
+it in one run. Read that section before touching this, because three separate
+correlations here point at the wrong subsystem: it looks like a coverage-strip
+bug, a zoom-dependent bug and a WebGPU bug, and it is none of them.
+
+What that leaves for this file is the fix, which is item 2 below.
+
+### Which tests, and the pattern in them
+
+Not the capture helper and not the selector. All six coverage-bearing alignments
+tests go through `lgvSnapshotTest` onto `[data-testid="pileup-display-done"]
+canvas`. The split is the locus, and it is downstream of the scroll (a zoomed-in
+locus stacks more pileup rows, so the display is taller):
+
+| test | locus | webgpu |
+| --- | --- | --- |
+| `alignments-bam` | app default | **fails** |
+| `color-by-strand` | ctgA:1000-2000 | **fails** |
+| `color-by-mapping-quality` | ctgA:1000-2000 | **fails** |
+| `color-by-tag-hp` | ctgA:39,800..40,000 | **fails** |
+| `color-by-insert-size-orientation` | ctgA:2,707..48,600 | 0.68% |
+| `alignments-pileup-coverage` | ctgA:1-4000 | 4.69%, and its one hot row (39, 60%) is hot under **webgl too**, so it is shared and not this |
+
+### Consequence for the recommendation below
+
+Adding `Alignments Track` and `Alignments Color Schemes` to `CI_GATE_SUITES` is
+safe **only because CI runs `--skip-webgpu`**. Say that out loud when adding
+them, or the next person widening the gate to webgpu gets eight failures and no
+context. Do not add a threshold override to paper over these: the number would
+be excusing a harness artifact as a rendering difference, and the
+`inversion-pbsim` entry above is this file's own record of what that costs.
+
+
 ## Next, in order
 
 1. **Nothing on the override list.** It was audited to one entry on 2026-08-05
    (see "Do not re-derive"), and `inversion-pbsim` stays at 10% because its
    remaining 6.59% is understood and deliberately not being chased. The audit
    is the thing to repeat, not revisit.
-2. **Widen `CI_GATE_SUITES`** with the two alignments suites, then the local
+2. **Make the capture scroll-invariant** (above). Baselining, localization and
+   attribution are all done: the drift is pre-existing, it is one 37px strip,
+   the render is correct, and the strip is app chrome composited into the canvas
+   after `el.screenshot()` scrolled the element under it in Firefox and not in
+   Chrome. So the work is in `snapshot.ts`, not in a shader: either size the
+   viewport so the display needs no scroll, or scroll to a fixed position before
+   capturing, applied to both sides of every pair. Re-run
+   `probe-webgpu-coverage.ts` afterwards. The canvas rect must be unchanged
+   across the capture on every backend, which is the property that was violated.
+   Then widen the gate to webgpu, which is currently blocked only by this.
+3. **Widen `CI_GATE_SUITES`** with the two alignments suites, then the local
    deterministic ones never measured under swiftshader (arcs, workspaces, redraw,
    cursor-guides, svg-export, custom-url, variant-force-load). Arcs and
    workspaces carry overrides tuned on a real GPU, so measure before adding —
-   that is the whole procedure, and it is a measurement, not an edit.
-3. **Attribute the TIMEOUT mode.** The other failure mode: a display never
+   that is the whole procedure, and it is a measurement, not an edit. The
+   alignments pair is webgl-clean only; see the webgpu section above.
+4. **Attribute the TIMEOUT mode.** The other failure mode: a display never
    reports `-done` inside 60 s. Apply exactly the move that worked for blanks —
    when the wait expires, report what state the display is actually in
    (`data-display-phase`, whether the wrapper exists at all, whether an error
@@ -298,7 +442,7 @@ verdict is a 5-17% divergence the gate is configured to ignore.
    earlier attempt was reverted (`839113dabe`) — re-query the selector per attempt
    rather than holding the handle, and prove the mechanism on a targeted
    reproduction first.
-4. **Make the webgl blank verdict readable** with `preserveDrawingBuffer` as a
+5. **Make the webgl blank verdict readable** with `preserveDrawingBuffer` as a
    diagnostic (see above). Half the blanks are currently unattributable.
 
 ## Related

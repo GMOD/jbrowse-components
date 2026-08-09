@@ -1,6 +1,6 @@
 ---
 name: screenshot-capture-race
-description: Why a canvas/GPU figure occasionally captures with no features even though the spec renders fine, why that is a generator capture race rather than an adapter or refName bug, and the gate-on-a-data-derived-DOM-signal fix pattern. Read before diagnosing an "empty painting" screenshot as a data problem.
+description: The three ways a screenshot disagrees with what the app drew — the website generator's empty-canvas race, the browser-test blank where el.screenshot() and toDataURL disagree, and the band of app chrome that appears when el.screenshot() scrolls the element under a sticky header in one browser and not the other. Read before diagnosing an "empty painting" as a data problem or a cross-backend band as a render bug.
 ---
 
 # Screenshot capture race: "empty canvas" figures
@@ -142,6 +142,59 @@ Two further limits:
   buffer reads identically. On canvas2d it is conclusive.
 - **None of this masks a shader that draws nothing.** That canvas self-reports
   blank too, and still fails with the render-side verdict.
+
+## The third one: `el.screenshot()` scrolls the element first
+
+Not a blank, and not a race. The capture is full, stable, byte-reproducible, and
+**wrong in a band at the top**, because puppeteer scrolls the element into view
+before capturing and the browsers disagree about whether to scroll.
+
+Found on the alignments suites' canvas2d-vs-webgpu pairs, which are also a
+Chrome-vs-Firefox pair, since WebGPU needs Firefox Nightly. Eight stable
+over-threshold pairs, 3-4% on the targeted captures and 16-27% on the fullpage
+ones, holding to the decimal across runs. Measured with
+`browser-tests/probe-webgpu-coverage.ts`:
+
+| | Chrome (canvas2d, webgl) | Firefox (webgpu) |
+| --- | --- | --- |
+| canvas rect before capture | top 197 | top 197 |
+| canvas rect **after** capture | top 197 | **top 124** |
+| `window.scrollY` after | 0 | 0 |
+| painted over the canvas after | nothing, rows 0-38 | locstring box 12px, untagged toolbar divs 8px, ruler 17px |
+
+Firefox moves the element up 73px with `window.scrollY` still 0, so an inner
+scroller moved. The canvas top then sits under the app's header, and
+`el.screenshot()` composites that header into the element's rectangle:
+12 + 8 + 17 = **37px**, which is exactly the band that differs. Everything below
+it is pixel-identical between the backends.
+
+The three things worth carrying:
+
+- **The render was never wrong.** The backing store held the full coverage strip
+  the whole time, which is the conclusive direction of the `toDataURL` check
+  above.
+- **It is not an offset.** Sliding the capture over the viewport screenshot
+  matches at offset **0** (0.02% residual, against 29-34% at every other offset
+  tried). The clip rectangle is right. The page really does paint chrome there.
+- **A `[data-testid]` scan is not enough to attribute it.** It found only the
+  12px of locstring box, because the toolbar's layout divs carry no testid.
+  `document.elementsFromPoint` down the band, *after* the capture, names all 37
+  rows. Read the geometry after the screenshot, not before: the scroll that
+  causes this happens inside the call.
+
+The apparent correlations are all downstream of the scroll, and each would have
+sent an investigation somewhere useless: it looked like a coverage-strip
+rendering bug (the band is where the coverage strip is), like a zoom-dependent
+one (a zoomed-in locus stacks more pileup rows, so the display is taller and
+Firefox decides a scroll is needed), and like a WebGPU one (only that backend
+runs in Firefox). The band is fixed at 37px whether `coverageHeight` is 45 or
+90, which is what rules the first one out.
+
+**The fix belongs on the capture side**: size the viewport so the display needs
+no scroll, or scroll to a deterministic position before capturing, applied to
+both sides of every pair. Not a threshold override, which would be excusing a
+harness artifact as a rendering difference. The invariant to assert is that
+**the element's rect is unchanged across the capture**, on every backend.
 
 ## Debugging tips that saved time here
 
