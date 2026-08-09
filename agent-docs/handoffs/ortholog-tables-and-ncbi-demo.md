@@ -121,28 +121,31 @@ anything.
 
 ### What is left
 
-1. Finish the build (7 gffread + 6 LAST pairs) and check per-column occupancy.
-2. Host from the build: three assemblies (bgzip FASTA + `.fai` + `.gzi`), three
-   sorted/tabixed gene GFF3s, seven BEDs, `grape.blocks.gz`, and the
-   `*.aliases.txt` the assemblies reference.
-3. Rewrite `demos/grape_peach_cacao/config.json` for the NCBI assemblies and
-   aliases. Deploy data before config; the deploy script requires the repo copy.
-4. **Re-derive the grape window.** `multiway_synteny/blocks_one_vs_all` frames
-   `11:1,840,000-1,927,000` on PN40024.v4; the new build's coordinates differ.
-   Gene labels become NCBI names.
-5. Rewrite the tutorial's Ensembl Plants prose and its prerequisites (`datasets`
-   and `gffread` replace `wget` against the Ensembl FTP).
-6. Re-render and verify all three figures on this dataset, not just the one
-   under review — the stacked view is the one that catches an assembly problem.
+**The migration is done** (`60efd42955`). Grape, peach and cacao assemblies,
+annotations, all seven BEDs, `grape.blocks` and three alias files are hosted
+from one NCBI build, the config points at them, and all three figures on this
+dataset render and were checked.
+
+Coordinates moved, as expected: grape is `GCF_030704535.1` (PN40024 but a newer
+build than PN40024.v4) and cacao is Criollo V2. The grape window was re-derived
+by scanning chr11 for the clearest presence/absence gradient rather than by eye
+(15 genes: cacao 14, peach 12, poplar 12, citrus 8, tomato 4, arabidopsis 3);
+the peach and cacao windows of the stacked figure come from the blocks table as
+the span of those genes' orthologs, both landing on one chromosome.
+
+**One cosmetic gap, deliberately left.** The ruler and row labels show
+accessions (`NC_081815.1`) rather than `11`. `refNameAliases` makes `11` resolve
+on input, but the display uses the assembly's own refName. Showing chromosome
+names means renaming the FASTA seqids to them and aliasing the accession
+instead. That is safe here -- NCBI's sequence report is a 1:1 map, so it is the
+unambiguous case, not the guess that broke cacao -- but it means regenerating
+and rehosting the FASTAs, BEDs and GFF3s with renamed seqids, and scaffolds
+without a `chrName` would keep accessions either way, so the naming ends up
+mixed. Worth doing next time this data is rebuilt rather than on its own.
 
 ### Current deployed state
 
-`grape.blocks.gz` and all seven BEDs on `jbrowse.org/demos/grape_peach_cacao/`
-are the ENSEMBL-keyed build with four extra species. Grape and peach resolve;
-cacao does not, because its hosted assembly is the other build. The cacao lane
-therefore draws EMPTY rather than wrong, deliberately, until the NCBI assemblies
-are hosted. `multiway_synteny/blocks_one_vs_all` is marked `answered` in
-`screenshot-review.json` with that written out.
-
-**The bucket has no versioning**, so the original three-species Ensembl BEDs are
-gone and the only way back is a rebuild. See `scripts/deploy-demo.sh`.
+Everything under `jbrowse.org/demos/grape_peach_cacao/` is the NCBI build. The
+Ensembl-keyed files it replaced are gone and **the bucket has no versioning**,
+so the only way back to any previous state is a rebuild. See
+`scripts/deploy-demo.sh`.
