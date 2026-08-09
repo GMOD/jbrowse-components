@@ -77,19 +77,11 @@ void computeLD(uint3 gid: SV_DispatchThreadID) {
     return;
   }
 
-  float mean1 = s1 / count;
-  float mean2 = s2 / count;
-  float var1 = s1sq / count - mean1 * mean1;
-  float var2 = s2sq / count - mean2 * mean2;
-  float cov = sprod / count - mean1 * mean2;
-  float r = 0.0;
-  float r2 = 0.0;
-  if (var1 > 0.0 && var2 > 0.0) {
-    r = cov / sqrt(var1 * var2);
-    r2 = clamp(r * r, 0.0, 1.0);
-  }
-
-  // Composite LD estimator (Weir 1979), D = Cov(g1,g2) / 2.
-  float D = cov * 0.5;
-  ldOut[k] = ldFinalize(r, r2, D, pA, pB, u.ldMetric, u.signedLD);
+  // The three statistics are authored in ldUniforms.slang and `//! js-export`ed
+  // into @jbrowse/ld-core, whose calculateLDStats is this kernel's CPU
+  // fallback — picked by GPU availability and by a work threshold, so the two
+  // run on the same data and their answers are read as one number.
+  float r = ldGenotypeCorrelation(s1, s2, s1sq, s2sq, sprod, count);
+  float D = ldGenotypeD(s1, s2, sprod, count);
+  ldOut[k] = ldFinalize(r, ldRSquared(r), D, pA, pB, u.ldMetric, u.signedLD);
 }

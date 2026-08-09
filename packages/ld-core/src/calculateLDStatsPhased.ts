@@ -1,4 +1,8 @@
-import { dprimeFinalize } from './dprimeFinalize.generated.ts'
+import {
+  dprimeFinalize,
+  ldHaplotypeCorrelation,
+  ldRSquared,
+} from './ldStats.generated.ts'
 
 const PIPE_CODE = 124 // '|'
 const ZERO_CODE = 48 // '0'
@@ -209,15 +213,13 @@ export function calculateLDStatsPhasedBits(
   const p11 = n11 / total
   const pA = p10 + p11
   const pB = p01 + p11
-  const qA = 1 - pA
-  const qB = 1 - pB
   if (pA <= 0 || pA >= 1 || pB <= 0 || pB >= 1) {
     return { r2: 0, dprime: 0 }
   }
+  // Shared with ldPhasedCompute.slang, this function's WebGPU counterpart —
+  // see the note at the top of calculateLDStats.ts.
   const D = p11 - pA * pB
-  const denom = pA * qA * pB * qB
-  const r = denom > 0 ? D / Math.sqrt(denom) : 0
-  const r2 = Math.min(1, Math.max(0, r * r))
+  const r = ldHaplotypeCorrelation(D, pA, pB)
   const dprime = dprimeFinalize(D, pA, pB, signedLD)
-  return { r2: signedLD ? r : r2, dprime }
+  return { r2: signedLD ? r : ldRSquared(r), dprime }
 }

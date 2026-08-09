@@ -74,18 +74,15 @@ void computeLDPhased(uint3 gid: SV_DispatchThreadID) {
   float p11 = float(n11) / ft;
   float pA = p10 + p11;
   float pB = p01 + p11;
-  float qA = 1.0 - pA;
-  float qB = 1.0 - pB;
 
   if (pA <= 0.0 || pA >= 1.0 || pB <= 0.0 || pB >= 1.0) {
     ldOut[k] = 0.0;
     return;
   }
 
+  // Shared with calculateLDStatsPhased in @jbrowse/ld-core, this kernel's CPU
+  // fallback — see the note in ldCompute.slang.
   float D = p11 - pA * pB;
-  float denom = pA * qA * pB * qB;
-  float r = denom > 0.0 ? D / sqrt(denom) : 0.0;
-  float r2 = clamp(r * r, 0.0, 1.0);
-
-  ldOut[k] = ldFinalize(r, r2, D, pA, pB, u.ldMetric, u.signedLD);
+  float r = ldHaplotypeCorrelation(D, pA, pB);
+  ldOut[k] = ldFinalize(r, ldRSquared(r), D, pA, pB, u.ldMetric, u.signedLD);
 }

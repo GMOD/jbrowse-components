@@ -6,7 +6,7 @@ export {
 } from './parsePlinkLD.ts'
 export type { PlinkLDHeader, PlinkLDRecord } from './plinkLDTypes.ts'
 export { calculateLDStats } from './calculateLDStats.ts'
-export { dprimeFinalize } from './dprimeFinalize.generated.ts'
+export { dprimeFinalize } from './ldStats.generated.ts'
 export {
   calculateLDStatsPhasedBits,
   packHaplotypesWithCounts,

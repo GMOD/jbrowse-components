@@ -2,8 +2,8 @@
 // uniform-grid). The genomic variant ignores `uniformW`; keeping the struct
 // identical lets both shaders share a single UBO byte layout so the renderer
 // writes one uniform buffer per frame regardless of which pass draws.
-//! js-export: dprimeFinalize
-//! js-export-out: packages/ld-core/src/dprimeFinalize.generated.ts
+//! js-export: dprimeFinalize, ldRSquared, ldGenotypeD, ldGenotypeCorrelation, ldHaplotypeCorrelation
+//! js-export-out: packages/ld-core/src/ldStats.generated.ts
 module ldUniforms;
 
 import diagonalGrid;
@@ -101,6 +101,53 @@ public float dprimeFinalize(float D, float pA, float pB, bool signedLD) {
     }
   }
   return 0.0;
+}
+
+// r² from the correlation. Clamped because a composite estimator on unphased
+// genotypes can overshoot 1 slightly, and because the value indexes a color
+// ramp on one side and is printed in a tooltip on the other.
+//
+// Both kernels end here, and so do both CPU paths — four statements of one
+// two-token expression, which is the shape a shared decision has just before it
+// drifts.
+public float ldRSquared(float r) {
+  return clamp(r * r, 0.0, 1.0);
+}
+
+// Covariance of the two loci's genotype dosages, from the moments a caller
+// accumulated over the called samples. Under Hardy-Weinberg Cov(g1, g2) = 2D,
+// so `ldGenotypeD` halves it — the Weir (1979) composite estimator.
+public float ldGenotypeCovariance(float s1, float s2, float sprod, float count) {
+  return sprod / count - (s1 / count) * (s2 / count);
+}
+
+public float ldGenotypeD(float s1, float s2, float sprod, float count) {
+  return ldGenotypeCovariance(s1, s2, sprod, count) * 0.5;
+}
+
+// Pearson correlation of the dosages (Rogers-Huff), the unphased r. 0 rather
+// than NaN where either locus has no variance — a monomorphic locus has no
+// linkage to report, and NaN would reach the color ramp as an unpainted cell on
+// one backend and a clamped one on the other.
+public float ldGenotypeCorrelation(
+  float s1, float s2, float s1sq, float s2sq, float sprod, float count
+) {
+  float mean1 = s1 / count;
+  float mean2 = s2 / count;
+  float var1 = s1sq / count - mean1 * mean1;
+  float var2 = s2sq / count - mean2 * mean2;
+  if (var1 > 0.0 && var2 > 0.0) {
+    return ldGenotypeCovariance(s1, s2, sprod, count) / sqrt(var1 * var2);
+  }
+  return 0.0;
+}
+
+// The phased counterpart: exact haplotypic r from gamete frequencies, where
+// D = p11 - pA*pB is already known and the denominator is the product of the
+// four allele frequencies.
+public float ldHaplotypeCorrelation(float D, float pA, float pB) {
+  float denom = pA * (1.0 - pA) * pB * (1.0 - pB);
+  return denom > 0.0 ? D / sqrt(denom) : 0.0;
 }
 
 public float ldFinalize(

@@ -203,6 +203,7 @@ the no-GPU path this all exists for.
 | `wiggle.slang` | `RENDERING_TYPE_*` (5), `SCALE_TYPE_LOG`, `NO_PREV_START` via `export-consts` | `@jbrowse/wiggle-core` — the `renderingType` / `scaleType` uniform vocabulary and the instance-buffer sentinel, all re-typed by hand where `WiggleRenderingType` is declared |
 | `manhattan.slang` | `GLYPH_POINT`, `GLYPH_INSERTION`, `GLYPH_INDEX` via `export-consts` | `ManhattanRPC/rpcTypes.ts` — restated there, and pinned to the shader only by a test that string-matched its branches out of the `.slang` source |
 | `ldUniforms.slang` | `dprimeFinalize` | `@jbrowse/ld-core` `calculateDprime` — a line-for-line twin, and the only export so far where the two backends must agree on a **number the user reads** rather than on pixels |
+| `ldUniforms.slang` | `ldRSquared`, `ldGenotypeD`, `ldGenotypeCorrelation`, `ldHaplotypeCorrelation` | `@jbrowse/ld-core` `calculateLDStats` + `calculateLDStatsPhased` — the rest of what `dprimeFinalize` left behind. Both compute kernels now end in these too, so the r/r²/D block is stated once instead of four times |
 
 ### A vector signature is usually a scalar decision in a wrapper
 
@@ -412,6 +413,22 @@ exists" is a claim to re-check, not a category to file things in.
   which dispatch overhead dominates — so a drift there is two users reading
   different r²/D' off the same data. Look for a `[shader("compute")]` with a
   hand-written CPU twin before looking at draw paths again.
+
+  Following that up finished the job: only `dprimeFinalize` had been lifted,
+  while r, r² and D — the metric the display actually defaults to — were still
+  stated in all four places (two kernels, two CPU functions). They are
+  `ldRSquared` / `ldGenotypeD` / `ldGenotypeCorrelation` /
+  `ldHaplotypeCorrelation` now. **The lesson is that lifting one function out of
+  a block is not the same as lifting the block**: `dprimeFinalize` was the
+  hardest-looking piece, so extracting it read as done, and what stayed behind
+  was the arithmetic simple enough that nobody expected it to drift — which is
+  also the arithmetic nobody would notice drifting.
+
+  What stays per-side is the accumulation loop, correctly: the kernel walks a
+  packed genotype buffer through `getGeno`, the CPU walks an `Int8Array` of
+  dosages. Those two loops produce the same six moments, and the split falls
+  exactly where the ADR's "factor the scalar decision out of the conversion"
+  rule puts it.
 - **The per-call cost is real and immaterial; measure before optimizing it
   away.** Replacing `getDensityColor`'s hoisted reciprocal with a call to the
   generated `densityGradientT` costs **0.56 ns per feature** (1.22× on that

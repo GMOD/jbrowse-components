@@ -2,7 +2,7 @@ import {
   calculateLDStatsPhasedBits,
   packHaplotypesWithCounts,
 } from './calculateLDStatsPhased.ts'
-import { dprimeFinalize } from './dprimeFinalize.generated.ts'
+import { dprimeFinalize } from './ldStats.generated.ts'
 
 // Brute-force reference: count the four two-locus haplotype configurations over
 // both gametes directly from the genotype strings, then apply the textbook
