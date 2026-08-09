@@ -374,12 +374,11 @@ function push() {
   const removals = changes.filter(c => c.kind === 'removed')
   if (removals.length > 0 && !values['allow-deletions']) {
     console.error(
-      `refusing to drop ${removals.length} figure(s) from figures.lock:\n` +
-        removals.map(c => `  - ${figureName(c.path)}`).join('\n') +
-        '\n\nTheir bytes are in the store; only the manifest line would go, and ' +
-        'nothing downstream would report them missing.\n' +
-        'If this worktree is incomplete, `pnpm figures:pull` first.\n' +
-        'If you really mean to unpublish them, re-run with --allow-deletions.',
+      `refusing to drop ${removals.length} figure(s) from figures.lock:\n${removals
+        .map(c => `  - ${figureName(c.path)}`)
+        .join(
+          '\n',
+        )}\n\nTheir bytes are in the store; only the manifest line would go, and nothing downstream would report them missing.\nIf this worktree is incomplete, \`pnpm figures:pull\` first.\nIf you really mean to unpublish them, re-run with --allow-deletions.`,
     )
     process.exit(1)
   }
