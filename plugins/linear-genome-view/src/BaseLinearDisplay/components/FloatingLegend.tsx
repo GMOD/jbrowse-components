@@ -16,6 +16,15 @@ const useStyles = makeStyles()(theme => ({
     position: 'absolute',
     right: 10,
     background: theme.palette.background.paper,
+    // A hairline edge, because `background.paper` on a track whose canvas is
+    // also paper-white is no edge at all: the key read as loose text floating
+    // over the features rather than as a panel, and the swatches were the only
+    // thing announcing it (reviewer, on cookbook_color_by_type: "legend needs a
+    // light border ... very subtle. just enough to notice because it is hard to
+    // see at a glance"). `divider` is the theme's own hairline, so this stays
+    // right in both themes and against a dark track.
+    border: `1px solid ${theme.palette.divider}`,
+    borderRadius: 3,
     padding: 3,
     fontSize: 10,
     zIndex: 100,

@@ -45,10 +45,19 @@ const useStyles = makeStyles()({
   // border-box edge, and the Paper's drop shadow (which reaches ~4px past it)
   // lands on the first rows of features. Vertical margins count on an atomic
   // inline-level box, so this grows the line box rather than collapsing away.
+  //
+  // 8, not 4. At 4 the whole margin went to clearing the shadow and nothing
+  // was left over as a gap: measured on desktop-ispcr-results, where the PCR
+  // product is a feature on the display's FIRST row, the chip's bottom border
+  // and the feature's top border came out ~2px apart and read as one line
+  // (reviewer: "the tracklabels:offset is just a little bit overlapping the
+  // tracklabel still"). Most tracks hide this because their display adds its
+  // own top padding before the first row. 8 keeps the ~4 the shadow needs and
+  // spends the other 4 on clearance.
   trackLabelOffset: {
     position: 'relative',
     display: 'inline-block',
-    marginBottom: 4,
+    marginBottom: 8,
   },
   trackLabelOverlap: {
     position: 'absolute',
