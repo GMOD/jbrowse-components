@@ -7,9 +7,9 @@ import type { LegendItem } from '@jbrowse/core/ui'
 // Adapts this display's two color vocabularies to the shared SvgColorLegend.
 //
 // They are genuinely two: `entries` keys the per-feature painting and its rows
-// are togglable (`hiddenLabels` dims a category the model has filtered out),
+// are toggleable (`hiddenLabels` dims a category the model has filtered out),
 // while `rowGroupItems` keys the sidebar's row-group stripe and names ROWS, not
-// features — it is not togglable and appears only when the rows are too short
+// features — it is not toggleable and appears only when the rows are too short
 // to write their own names (see `rowGroupLegend`). Kept as sections rather than
 // one merged list so a reader can tell which axis a swatch is about, and routed
 // through `legendEntries` so the titles-only-when-more-than-one rule is the

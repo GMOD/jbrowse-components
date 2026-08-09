@@ -524,7 +524,7 @@ export default function stateModelFactory(
        *
        * A different vocabulary from `colorLegend`, which keys the per-feature
        * painting and drives the category toggles; these rows name rows, and are
-       * not togglable. `legendIsReadable` refuses the degenerate cases — one
+       * not toggleable. `legendIsReadable` refuses the degenerate cases — one
        * group, or more groups than a reader can scan.
        */
       get rowGroupLegend(): LegendItem[] {
