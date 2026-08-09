@@ -832,7 +832,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'cancer_sv/derivative_synteny',
-    viewportHeight: 1230,
+    viewportHeight: 1245,
     viewportWidth: 1600,
     url: sessionSpec(CONFIG, {
       sessionTracks: [DER3_GENES_TRACK],
@@ -927,13 +927,19 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   //    frame neither can draw a base, so each was 130 px of mismatch-coloured
   //    hash that reads as data and is not. That is 260 px, most of the height
   //    the figure lost.
-  //  - `drawCurves` is OFF, and that is the answer to the missing ribbon. The
-  //    first segment is 32.7 kb of chr3 and only its last few hundred bases are
-  //    in the top panel's window, so its far corner sits tens of thousands of
-  //    pixels off the left edge -- and a bezier drawn to a control point out
-  //    there leaves the frame vertically before it reaches the visible part.
-  //    As straight quadrilaterals every segment with any overlap in both
-  //    panels draws, which is what the reviewer expected to see.
+  //  - `drawCurves` is OFF. That is a legibility call and NOT the answer to the
+  //    missing ribbon, which was an app bug and is now fixed. The synteny
+  //    projection asked bpToCumBp per corner and dropped the whole block when
+  //    one corner fell outside the displayed region, so every segment reaching
+  //    past the edge of these deliberately narrow panels -- the 32.7 kb chr3
+  //    arm above all -- vanished instead of being drawn clipped;
+  //    clampBlockToRegions now trims such a block to the part both panels can
+  //    show. An earlier note here blamed the bezier control point for leaving
+  //    the frame vertically, which it does not: the curve's y is monotonic
+  //    between the two panel edges, and both curve modes were missing the same
+  //    ribbon. With the ribbons restored there are five of them crossing in a
+  //    220 px band, and straight quadrilaterals are the easier pair of edges to
+  //    follow through the crossings.
   //  - A pill on each row saying which genome it is.
   {
     mode: 'url',

@@ -541,7 +541,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multiway_synteny/grape_peach_cacao_gene_orthologs',
-    viewportHeight: 812,
+    viewportHeight: 822,
     url: sessionSpec(
       encodeURIComponent(
         'https://jbrowse.org/demos/grape_peach_cacao/config.json',

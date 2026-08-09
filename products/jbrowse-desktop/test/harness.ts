@@ -100,6 +100,15 @@ export async function createDriver({
   // it after the fact (electron's chromedriver has no Browser.getWindowForTarget,
   // so window().setRect throws); an empty profile falls back to the electron
   // defaults, and the run stops inheriting recent sessions too.
+  //
+  // Seeding a window-state.json into that profile was considered and is not
+  // worth it. The fallback is not "some electron default" but the app's own
+  // DEFAULT_WINDOW_WIDTH/HEIGHT in electron/window.ts (1400x800), which is what
+  // the committed figures were captured at — so a seed would copy that constant
+  // into the harness, where it drifts silently the day the app default moves.
+  // It also would not explain the one 845x763 run that happened with this
+  // profile in place: the viewport was 555px narrower than the window with the
+  // height correct, which is docked DevTools, not a window size.
   const chromeArgs = [
     '--no-sandbox',
     '--disable-extensions',
