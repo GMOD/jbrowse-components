@@ -11,8 +11,17 @@ import {
   hoverDarken,
   isCigarKind,
   isMarkerKind,
+  sBlend,
   thinWidthFade,
+  yCurve,
 } from './shaders/syntenyTypes.js.generated.ts'
+import {
+  buildFeaturePath,
+  strokeCenterline,
+  strokeFeatureSideEdges,
+} from './syntenyRibbonPath.ts'
+
+import type { CanvasLike } from './syntenyRibbonPath.ts'
 
 // Three different things are pinned here, and the distinction is the point
 // (adr-051).
@@ -146,18 +155,51 @@ test('the fade floors a hairline ribbon and caps at full opacity', () => {
 })
 
 // --- the curve equivalence, checked instead of asserted in prose -------------
+//
+// `sBlend`/`yCurve` are the shader's own, generated. They were re-spelled here
+// under a "syntenyTypes.slang, verbatim" comment, which made the test that
+// exists to catch twins carry one: a sign error in the copy would have made
+// these pass while the shader drew something else.
+//
+// The control points are the ones `buildFeaturePath` actually emits, recorded
+// through a fake canvas, rather than the hand-written `(x0, x0, x1, x1)` the
+// prose describes. Same reason: what needs checking is the path the Canvas2D
+// backend draws, not a restatement of it.
 
-// syntenyTypes.slang, verbatim.
-function sBlend(t: number) {
-  return t * t * (3 - 2 * t)
-}
-function yCurve(t: number) {
-  return 1.5 * t * (1 - t) + t * t * t
+// Records path commands instead of drawing them.
+function recordingCtx() {
+  const beziers: number[][] = []
+  const lines: number[][] = []
+  // A curve's start point is implicit in Canvas2D — wherever the path already
+  // is, which ANY of the three commands can have set. "The last moveTo" is
+  // wrong for the fill path's closing edge, which starts at a lineTo.
+  let current: [number, number] = [Number.NaN, Number.NaN]
+  const ctx: CanvasLike = {
+    fillStyle: '',
+    strokeStyle: '',
+    lineWidth: 1,
+    beginPath() {},
+    closePath() {},
+    moveTo(x, y) {
+      current = [x, y]
+    },
+    lineTo(x, y) {
+      lines.push([x, y])
+      current = [x, y]
+    },
+    bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y) {
+      beziers.push([...current, cp1x, cp1y, cp2x, cp2y, x, y])
+      current = [x, y]
+    },
+    fill() {},
+    stroke() {},
+  }
+  return { ctx, beziers, lines }
 }
 
-// One coordinate of the cubic Bezier `buildFeaturePath` emits: from (x0, 0) to
-// (x1, h) with both control points at mid-height on their own anchor's x.
-function bezier(p0: number, p1: number, p2: number, p3: number, t: number) {
+// One coordinate of a recorded cubic at parameter t.
+function cubicAt(p: readonly number[], axis: 0 | 1, t: number) {
+  const [p0, p1, p2, p3] = [p[axis]!, p[2 + axis]!, p[4 + axis]!, p[6 + axis]!]
   const u = 1 - t
   return (
     u * u * u * p0 + 3 * u * u * t * p1 + 3 * u * t * t * p2 + t * t * t * p3
@@ -165,28 +207,81 @@ function bezier(p0: number, p1: number, p2: number, p3: number, t: number) {
 }
 
 const TS = Array.from({ length: 101 }, (_, i) => i / 100)
+const yTop = 40
+const height = 240
+const corners = { sx1: 12.5, sx2: 30, sx3: 907.25, sx4: 250 }
 
-test('the Canvas2D bezier traces the shader’s tessellated X blend exactly', () => {
-  // Control points at (x0, x0, x1, x1) — the "both control points on their own
-  // anchor's x" construction. The claimed identity is (1-t)²(1+2t) = 1 - sBlend,
-  // i.e. the bezier's x equals lerp(x0, x1, sBlend(t)).
-  const x0 = 12.5
-  const x1 = 907.25
+/**
+ * Assert a recorded bezier is the shader's edge from `xTop` at the band's top to
+ * `xBottom` at its bottom.
+ *
+ * `traced` is which way the TS walks it. The shader always runs top-to-bottom (t
+ * is the band fraction), but the fill path closes AROUND the ribbon, so its
+ * second edge is emitted bottom-to-top. A reversed cubic — endpoints and control
+ * points both swapped — is exactly B(1-t), so this flips the parameter rather
+ * than the expectation. Checking x and y at the SAME t is what makes it the same
+ * curve rather than merely the same set of points.
+ */
+function expectTracesShaderCurve(
+  bezier: readonly number[],
+  xTop: number,
+  xBottom: number,
+  traced: 'downward' | 'upward',
+) {
   for (const t of TS) {
-    expect(bezier(x0, x0, x1, x1, t)).toBeCloseTo(
-      x0 + (x1 - x0) * sBlend(t),
-      10,
+    const s = traced === 'downward' ? t : 1 - t
+    expect(cubicAt(bezier, 0, t)).toBeCloseTo(
+      xTop + (xBottom - xTop) * sBlend(s),
+      9,
     )
+    expect(cubicAt(bezier, 1, t)).toBeCloseTo(yTop + height * yCurve(s), 9)
   }
+}
+
+test('the fill path’s edges trace the curve the shader evaluates', () => {
+  const { ctx, beziers } = recordingCtx()
+  buildFeaturePath(ctx, corners, yTop, height, true)
+  expect(beziers).toHaveLength(2)
+  expectTracesShaderCurve(beziers[0]!, corners.sx1, corners.sx4, 'downward')
+  expectTracesShaderCurve(beziers[1]!, corners.sx2, corners.sx3, 'upward')
 })
 
-test('the Canvas2D bezier traces the shader’s Y curve exactly', () => {
-  // Control points at (0, h/2, h/2, h). The claimed identity is
-  // (h/2)·3t(1-t) + t³·h = h·yCurve(t).
-  const h = 240
-  for (const t of TS) {
-    expect(bezier(0, h / 2, h / 2, h, t)).toBeCloseTo(h * yCurve(t), 10)
-  }
+// The outline pass and the thin-ribbon centerline draw the same curve through
+// separate call sites, so each is its own chance to write `height / 3`.
+test('the outline and centerline strokes trace it too', () => {
+  const outline = recordingCtx()
+  strokeFeatureSideEdges(outline.ctx, corners, yTop, height, true)
+  expect(outline.beziers).toHaveLength(2)
+  expectTracesShaderCurve(
+    outline.beziers[0]!,
+    corners.sx1,
+    corners.sx4,
+    'downward',
+  )
+  expectTracesShaderCurve(
+    outline.beziers[1]!,
+    corners.sx2,
+    corners.sx3,
+    'downward',
+  )
+
+  const center = recordingCtx()
+  strokeCenterline(center.ctx, 100, 220, yTop, height, true)
+  expect(center.beziers).toHaveLength(1)
+  expectTracesShaderCurve(center.beziers[0]!, 100, 220, 'downward')
+})
+
+// Straight mode has no curve at all — the straight passes are separate shaders
+// with no cubic in them.
+test('straight mode emits no curve', () => {
+  const { ctx, beziers, lines } = recordingCtx()
+  buildFeaturePath(ctx, corners, yTop, height, false)
+  expect(beziers).toEqual([])
+  expect(lines).toEqual([
+    [corners.sx4, yTop + height],
+    [corners.sx3, yTop + height],
+    [corners.sx2, yTop],
+  ])
 })
 
 test('both curves are anchored at their endpoints', () => {

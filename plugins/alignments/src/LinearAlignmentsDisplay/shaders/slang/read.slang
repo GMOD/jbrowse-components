@@ -3,7 +3,7 @@
 // clipped to the segment's leading (fwd) or trailing (rev) edge.
 //! targets: wgsl, glsl
 //! js-export: insertGradientT, showChevron
-//! export-consts: CS_NORMAL, CS_STRAND, CS_MAPQ, CS_INSERT_SIZE, CS_FIRST_OF_PAIR, CS_PAIR_ORIENT, CS_IS_AND_ORIENT, CS_MODIFICATIONS, CS_TAG, CS_IS_GRADIENT, RC_SUPPLEMENTARY, RC_SPLIT_INVERSION, RC_SPLIT_DELETION, RC_UNMAPPED_MATE, RC_INTERCHROM, RC_FWD_STRAND, RC_REV_STRAND, RC_NO_STRAND, RC_NON_SPLIT, RC_PAIR_LR, RC_PAIR_RL, RC_PAIR_RR, RC_PAIR_LL, RC_LONG_INSERT, RC_SHORT_INSERT, RC_NORMAL_INSERT, RC_PLAIN, RC_MAPQ, RC_TAG, RC_NO_TAG_VALUE, RC_MOD_FWD, RC_MOD_REV, CHEVRON_PX, CHEVRON_DIRLESS_MIN_WIDTH_PX, PAIR_MIN_SPAN_PX, IS_GRADIENT_SPAN_FRAC
+//! export-consts: READ_CATEGORY_SLOTS, CS_NORMAL, CS_STRAND, CS_MAPQ, CS_INSERT_SIZE, CS_FIRST_OF_PAIR, CS_PAIR_ORIENT, CS_IS_AND_ORIENT, CS_MODIFICATIONS, CS_TAG, CS_IS_GRADIENT, RC_SUPPLEMENTARY, RC_SPLIT_INVERSION, RC_SPLIT_DELETION, RC_UNMAPPED_MATE, RC_INTERCHROM, RC_FWD_STRAND, RC_REV_STRAND, RC_NO_STRAND, RC_NON_SPLIT, RC_PAIR_LR, RC_PAIR_RL, RC_PAIR_RR, RC_PAIR_LL, RC_LONG_INSERT, RC_SHORT_INSERT, RC_NORMAL_INSERT, RC_PLAIN, RC_MAPQ, RC_TAG, RC_NO_TAG_VALUE, RC_MOD_FWD, RC_MOD_REV, CHEVRON_PX, CHEVRON_DIRLESS_MIN_WIDTH_PX, PAIR_MIN_SPAN_PX, IS_GRADIENT_SPAN_FRAC
 
 import alignmentsUniforms;
 import colorPack;
@@ -116,29 +116,11 @@ struct VsOut {
 // No classification here — see the RC_* block above. Everything below maps an
 // already-decided category to pixels.
 
-// Flat palette lookup. Order-insensitive data, unlike the precedence chain this
-// replaced: a category with no arm here is caught by colorCategory.test.ts,
-// which asserts this table and the TS `swatchPaletteKeys` cover the same set.
+// Flat palette lookup: the CPU wrote one color per category into
+// `u.readCategoryColor` (see alignmentsUniforms.slang), so there is nothing to
+// decide here and nothing that can drift from the legend.
 float3 categoryPaletteColor(uint cat, Uniforms u) {
-  if (cat == RC_FWD_STRAND)     { return unpackRGBA(u.colorFwd).xyz; }
-  if (cat == RC_REV_STRAND)     { return unpackRGBA(u.colorRev).xyz; }
-  if (cat == RC_NO_STRAND)      { return unpackRGBA(u.colorNostrand).xyz; }
-  if (cat == RC_NON_SPLIT)      { return unpackRGBA(u.colorNostrand).xyz; }
-  if (cat == RC_PAIR_LR)        { return unpackRGBA(u.colorPairLR).xyz; }
-  if (cat == RC_PAIR_RL)        { return unpackRGBA(u.colorPairRL).xyz; }
-  if (cat == RC_PAIR_RR)        { return unpackRGBA(u.colorPairRR).xyz; }
-  if (cat == RC_PAIR_LL)        { return unpackRGBA(u.colorPairLL).xyz; }
-  if (cat == RC_LONG_INSERT)    { return unpackRGBA(u.colorLongInsert).xyz; }
-  if (cat == RC_SHORT_INSERT)   { return unpackRGBA(u.colorShortInsert).xyz; }
-  if (cat == RC_INTERCHROM)     { return unpackRGBA(u.colorInterchrom).xyz; }
-  if (cat == RC_UNMAPPED_MATE)  { return unpackRGBA(u.colorUnmappedMate).xyz; }
-  if (cat == RC_SUPPLEMENTARY)  { return unpackRGBA(u.colorSupplementary).xyz; }
-  if (cat == RC_SPLIT_INVERSION){ return unpackRGBA(u.colorSplitInversion).xyz; }
-  if (cat == RC_SPLIT_DELETION) { return unpackRGBA(u.colorSupplementary).xyz; }
-  if (cat == RC_MOD_FWD)        { return unpackRGBA(u.colorModFwd).xyz; }
-  if (cat == RC_MOD_REV)        { return unpackRGBA(u.colorModRev).xyz; }
-  // RC_PLAIN / RC_NORMAL_INSERT / RC_NO_TAG_VALUE all paint the neutral fill.
-  return unpackRGBA(u.colorPairLR).xyz;
+  return u.readCategoryColor[min(cat, READ_CATEGORY_SLOTS - 1u)].xyz;
 }
 
 // How far along the gradient an outlier insert size sits: 0 at the band edge,

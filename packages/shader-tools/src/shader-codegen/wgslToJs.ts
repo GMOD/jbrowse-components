@@ -27,6 +27,8 @@
 // moment an exported function turns out to call one. Nothing is emitted for a
 // function that was not fully understood.
 
+import { demangle } from './slangcMangling.ts'
+
 // ---------------------------------------------------------------------------
 // Tokenizer
 // ---------------------------------------------------------------------------
@@ -223,6 +225,20 @@ const UNSUPPORTED_BUILTINS = new Set([
   'pack4x8unorm',
   'unpack4x8unorm',
 ])
+
+// Builtins that LOOK like they have an exact JS equivalent and do not. Each one
+// gets its own reason, because the generic "add it to MATH_BUILTINS" advice is
+// actively wrong here — `round` was in that table, mapped to `Math.round`, and
+// the two disagree on every tie.
+const MISLEADING_BUILTINS: Record<string, string> = {
+  round:
+    `WGSL rounds ties to EVEN and 'Math.round' rounds them up, so ` +
+    `round(0.5) is 0 on WebGPU and 1 in the twin, round(2.5) is 2 vs 3. ` +
+    `GLSL ES leaves ties implementation-defined on top of that, so a shader ` +
+    `using round() does not have one answer to transliterate. Write ` +
+    `floor(x + 0.5) in the .slang — that is what every existing pixel snap ` +
+    `in the tree does (snapBoxHeightPx, crispSquareTopLeftPx, snapCellEdgePx).`,
+}
 
 // ---------------------------------------------------------------------------
 // Parser
@@ -589,7 +605,6 @@ const MATH_BUILTINS: Record<string, string> = {
   max: 'Math.max',
   min: 'Math.min',
   pow: 'Math.pow',
-  round: 'Math.round',
   sign: 'Math.sign',
   sqrt: 'Math.sqrt',
   trunc: 'Math.trunc',
@@ -603,9 +618,13 @@ const HELPERS: Record<string, string> = {
     '  return Math.min(Math.max(x, lo), hi)',
     '}',
   ].join('\n'),
+  // WGSL defines mix as `a*(1-t) + b*t`, not the lerp form `a + (b-a)*t`. The
+  // two are equal in exact arithmetic and not in floating point: the lerp form
+  // does not return `b` exactly at t=1, which matters to a consumer quantizing
+  // the result into byte space.
   _mix: [
     'function _mix(a: number, b: number, t: number) {',
-    '  return a + (b - a) * t',
+    '  return a * (1 - t) + b * t',
     '}',
   ].join('\n'),
   _step: [
@@ -662,6 +681,25 @@ const FLOAT_BUILTINS = new Set([
   'step',
 ])
 
+const isHexLiteral = (text: string) => /^0[xX]/.test(text)
+
+/**
+ * WGSL's type suffix on a numeric literal (`0.5f` -> `f`, `1u` -> `u`), or
+ * undefined if it carries none.
+ *
+ * **Base-aware, and it has to be.** A hex literal's *digits* can end in `f`, so
+ * a blind `/[fhuil]$/` turns `0xff` into `0xf` — 255 silently becomes 15 — and
+ * `0xf` into the unparseable `0x`. Only the integer suffixes can follow a hex
+ * literal; `f` and `h` are float suffixes and cannot appear on one. (Same blind
+ * spot the constant evaluator in parseDirectives.ts had, and hex is how a u32
+ * sentinel gets spelled.) Both the strip and the type inference read this, so
+ * they cannot disagree about where the digits end.
+ */
+function literalSuffix(text: string) {
+  const re = isHexLiteral(text) ? /[uil]$/ : /[fhuil]$/
+  return re.exec(text)?.[0]
+}
+
 class Emitter {
   readonly usedHelpers = new Set<string>()
 
@@ -695,13 +733,19 @@ class Emitter {
   private typeOf(e: Expr): WgslType | undefined {
     switch (e.k) {
       case 'num': {
-        // slangc suffixes its integer literals; a bare one is a float.
-        const suffix = /[fhuil]$/.exec(e.text)?.[0]
-        return suffix === 'u'
-          ? 'u32'
-          : suffix === 'i' || suffix === 'l'
-            ? 'i32'
-            : 'f32'
+        // slangc suffixes its integer literals; a bare DECIMAL one is a float.
+        // A bare HEX one is not — and reading its trailing digit as a suffix is
+        // the same base-blindness `num()` documents below, with a worse failure
+        // here: typing `0xff` as f32 sends `0xff / 2u` down the float-division
+        // path, which WGSL truncates and JS does not.
+        const suffix = literalSuffix(e.text)
+        if (suffix === 'u') {
+          return 'u32'
+        }
+        if (suffix === 'i' || suffix === 'l') {
+          return 'i32'
+        }
+        return isHexLiteral(e.text) ? 'i32' : 'f32'
       }
       case 'ident': {
         return e.name === 'true' || e.name === 'false'
@@ -788,19 +832,12 @@ class Emitter {
   }
 
   /**
-   * Drop WGSL's literal type suffix: `0.5f` -> `0.5`, `1u` -> `1`.
-   *
-   * The strip has to know the base. A hex literal's *digits* can end in `f`, so
-   * a blind `/[fhuil]$/` turns `0xff` into `0xf` — 255 silently becomes 15 —
-   * and `0xf` into the unparseable `0x`. Only the integer suffixes can follow a
-   * hex literal; `f` and `h` are float suffixes and cannot appear on one. (Same
-   * blind spot the constant evaluator in parseDirectives.ts had, and hex is how
-   * a u32 sentinel gets spelled.)
+   * Drop WGSL's literal type suffix: `0.5f` -> `0.5`, `1u` -> `1`. See
+   * `literalSuffix` for why the strip has to know the base.
    */
   private num(text: string) {
-    return /^0[xX]/.test(text)
-      ? text.replace(/[uil]$/, '')
-      : text.replace(/[fhuil]$/, '')
+    const suffix = literalSuffix(text)
+    return suffix === undefined ? text : text.slice(0, -1)
   }
 
   /**
@@ -899,8 +936,15 @@ class Emitter {
   }
 
   private call(e: Expr & { k: 'call' }): string {
-    const a = e.args.map(x => this.expr(x))
     const name = e.name
+    const misleading = MISLEADING_BUILTINS[name]
+    if (misleading) {
+      throw new Error(
+        `wgslToJs: '${name}' at line ${e.line} has no exact JS equivalent. ` +
+          misleading,
+      )
+    }
+    const a = e.args.map(x => this.expr(x))
     // Scalar constructors. `f32(x)` is identity on a JS number; the integer
     // ones truncate the way the shader does. A literal argument folds away.
     if (name === 'f32' || name === 'i32' || name === 'u32') {
@@ -1015,8 +1059,6 @@ function buildRenames(names: Iterable<string>, reserved?: ReadonlySet<string>) {
   }
   return new Map(all.map(n => [n, demangle(n)]))
 }
-
-const demangle = (name: string) => name.replace(/_\d+$/, '')
 
 /** Every name this function declares — parameters and locals — with its type. */
 function collectDeclared(fn: WgslFn) {

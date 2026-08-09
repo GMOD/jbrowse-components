@@ -46,3 +46,11 @@ export function thinWidthFade(perpW: number, applies: boolean): number {
   }
   return _S3
 }
+
+export function sBlend(t: number): number {
+  return ((t * t) * (3.0 - (2.0 * t)))
+}
+
+export function yCurve(t: number): number {
+  return (((1.5 * t) * (1.0 - t)) + ((t * t) * t))
+}

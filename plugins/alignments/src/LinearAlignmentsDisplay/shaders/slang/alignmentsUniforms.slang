@@ -10,12 +10,31 @@
 // The sub-pixel frequency lerp is a pure scalar decision both backends must
 // make identically; rendererTypes.ts imports the generated twin rather than
 // re-deriving it (adr-051).
-//! js-export: frequencyAlpha, arcYFraction, arcYOffsetPx
+//! js-export: frequencyAlpha, frequencyFadeGate, arcYFraction, arcYOffsetPx
+// consts-out takes the WHOLE export-consts list, so this path names what that
+// list currently is rather than a category it will keep meaning. Anything added
+// above lands in a file called indicatorTriangle.generated.ts; put a constant
+// with a different subject on the pass that consumes it instead (arc.slang
+// carries ARC_HEIGHT_MARGIN and ARC_COLOR_SHORT_INSERT this way — the evaluator
+// resolves through imports, so a constant declared here still reaches it).
 //! consts-out: packages/alignments-core/src/indicatorTriangle.generated.ts
 module alignmentsUniforms;
 
 import colorPack;
 import hpmath;
+
+// Sizes of the two indexed color palettes in the block below. Declared as
+// constants rather than spelled into the array bounds because the TS side has
+// to build palettes of exactly these lengths — the generated
+// `UNIFORM_SLOT_ARRAYS` entry has one word offset per slot, so a palette of the
+// wrong size is caught there rather than by writing off the end.
+public static const uint ARC_COLOR_SLOTS = 9u;
+public static const uint LINKED_READ_COLOR_SLOTS = 8u;
+// One slot per read color category (read.slang's RC_*, which are dense from 0).
+// It lives here rather than with the RC_* block because the uniform declaring it
+// does, and imports only resolve one way. read.slang re-exports it so
+// colorCategory.test.ts can pin the two counts equal.
+public static const uint READ_CATEGORY_SLOTS = 22u;
 
 public struct Uniforms {
   // HP-split bp range: hi = base-pair offset (high 20 bits), lo = fractional
@@ -118,33 +137,51 @@ public struct Uniforms {
   // Muted grey for non-A/C/G/T mismatch/softclip bases (e.g. N) and the
   // showModifications palette collapse. Matches the Canvas2D path and MAF.
   public uint colorMutedSnpBase;
-  public uint arcColor0;
-  public uint arcColor1;
-  public uint arcColor2;
-  public uint arcColor3;
-  public uint arcColor4;
-  public uint arcColor5;
-  public uint arcColor6;
-  public uint arcColor7;
+  // Paired-read arc palette, indexed by the per-instance color type — a real
+  // array, because that is what it is. The nine slots were nine separately-named
+  // uniforms (arcColor0..8, the ninth appended at the tail years later for
+  // offset stability), which the shader could not subscript: `arcColorByIndex`
+  // copied all nine into a local array on every vertex to get one of them.
+  //
+  // float4 rather than the packed ABGR uint every OTHER color here uses, for two
+  // reasons that point the same way. std140 pads an array element to 16 bytes
+  // regardless, so the packed form would occupy the same 144 bytes while still
+  // costing an unpack per vertex — packing buys nothing in a uniform array (it
+  // buys plenty in a vertex attribute, which is where it stays). And slangc
+  // cannot compile the packed form at all: see colorPack.slang.
+  public float4 arcColor[ARC_COLOR_SLOTS];
+  // The same palette with the short-insert slot swapped for the pale
+  // pileup-fill variant, used by the read-cloud endpoint squares. See
+  // arcMarkerColorByIndex for why the two differ and why this is a second
+  // table rather than a branch. The CPU builds it (arcMarkerColorPalette),
+  // which is also what the Canvas2D and SVG marker draws read, so there is one
+  // place where the substitution happens.
+  public float4 arcMarkerColor[ARC_COLOR_SLOTS];
   // Linked-read connecting-line palette (linkedReadBezier mode). 8 slots so
   // every paired-orientation (unknown/LR/RL/RR/LL) and split-strand pairing
-  // (RF/FR/same) has its own ABGR color, looked up by per-instance colorType.
-  public uint linkedReadColor0;
-  public uint linkedReadColor1;
-  public uint linkedReadColor2;
-  public uint linkedReadColor3;
-  public uint linkedReadColor4;
-  public uint linkedReadColor5;
-  public uint linkedReadColor6;
-  public uint linkedReadColor7;
+  // (RF/FR/same) has its own color, looked up by per-instance colorType.
+  public float4 linkedReadColor[LINKED_READ_COLOR_SLOTS];
+  // Read fill color per RC_* category, baked on the CPU.
+  //
+  // The shader used to decide this: a 17-arm `cat == RC_X` chain in read.slang
+  // mapping each category to one of the named colors above. That chain and the
+  // legend's `swatchPaletteKeys` were two spellings of one mapping, and the only
+  // thing holding them together was a test that RE-READ read.slang's source with
+  // a regex and matched the arms against the table — pinning the source text,
+  // breaking on reformatting, and unable to catch the two sides agreeing on a
+  // spelling while disagreeing on a color.
+  //
+  // Now the CPU writes one color per category from the same table the legend
+  // swatches, and the shader indexes it. The mapping cannot disagree with the
+  // legend because there is only one of it. Costs 352 bytes of duplicated color
+  // — the values also live in the named slots above — which is the price of
+  // deleting the branch chain AND the test that guessed at it.
+  public float4 readCategoryColor[READ_CATEGORY_SLOTS];
   public float pxPerBp;
   // Dedicated paired-split-inversion fill color (only the read pass reads it).
   // Kept at the tail for offset stability — appending here leaves the other
   // shaders' generated offsets alone.
   public uint colorSplitInversion;
-  // 9th arc-palette slot (split-read deletion). Appended at the tail so adding
-  // it leaves arcColor0..7's offsets — and every other field's — unchanged.
-  public uint arcColor8;
   // Arc band height (CSS px) — the vertical extent the dome / flat-line Y-scale
   // (`availH`) maps into. Distinct from `canvasH` (the full canvas height, the
   // clip-space divisor) because the arc passes now run in the full-canvas
@@ -308,29 +345,36 @@ public float pileupRowCenterPx(float row, Uniforms u) {
   return pileupRowTopPx(row, u) + u.featHeight * 0.5;
 }
 
-// Paired-read arc palette (arcColor0..8), indexed by the per-instance color
-// type. Shared by the arc curves (arc.slang) and the interchromosomal
-// connector ticks (arcLine.slang) so both stay in lockstep.
+// Paired-read arc palette, indexed by the per-instance color type. Shared by
+// the arc curves (arc.slang) and the interchromosomal connector ticks
+// (arcLine.slang) so both stay in lockstep.
 public float3 arcColorByIndex(uint idx, Uniforms u) {
-  uint colors[9];
-  colors[0] = u.arcColor0; colors[1] = u.arcColor1;
-  colors[2] = u.arcColor2; colors[3] = u.arcColor3;
-  colors[4] = u.arcColor4; colors[5] = u.arcColor5;
-  colors[6] = u.arcColor6; colors[7] = u.arcColor7;
-  colors[8] = u.arcColor8;
-  return unpackRGBA(colors[min(idx, 8u)]).xyz;
+  return u.arcColor[min(idx, ARC_COLOR_SLOTS - 1u)].xyz;
 }
 
-// Read-cloud endpoint-square palette. The squares are filled opaque
-// marks, so they read fine with the pale pileup-fill short-insert (colorShortInsert
-// #ffc0cb) and must match it — index 2 in the arc palette is the *saturated*
-// stroke variant (colorShortInsertArc #ff3a8c), chosen so a thin translucent arc
-// line stays visible, which would mismatch the pale legend/pileup swatch. Every
-// other index defers to the shared arc palette. Index 2 == COLOR_SHORT_INSERT in
-// features/arcs/compute.ts.
+// The one arc palette slot whose meaning three separate files have to agree on:
+// the pair classifier assigns it (COLOR_SHORT_INSERT in features/arcs/compute.ts),
+// the marker palette below overrides it, and the Canvas2D palette overrides the
+// same position. It is `//! export-consts`ed through arc.slang, so the two TS
+// sides read this number instead of spelling `2` a second and third time.
+public static const uint ARC_COLOR_SHORT_INSERT = 2u;
+
+// Read-cloud endpoint-square palette. The squares are filled opaque marks, so
+// they read fine with the pale pileup-fill short-insert (colorShortInsert
+// #ffc0cb) and must match it. The short-insert slot in the arc palette is the
+// *saturated* stroke variant (colorShortInsertArc #ff3a8c), chosen so a thin
+// translucent arc line stays visible, which would mismatch the pale
+// legend/pileup swatch. Every other slot is the arc palette's.
+//
+// This was a branch on that one index reading the packed `u.colorShortInsert`,
+// which left one function indexing a float4 palette and unpacking a uint in
+// its two arms. The substitution is the CPU's to make and it already makes it
+// (arcMarkerColorPalette in palettes.ts, which the Canvas2D and SVG marker
+// draws read), so the shader now reads the result rather than reproducing the
+// rule. What used to be a comment in palettes.ts saying it mirrors this
+// function "down to the slot it overrides" is a shared table instead.
 public float3 arcMarkerColorByIndex(uint idx, Uniforms u) {
-  if (idx == 2u) { return unpackRGBA(u.colorShortInsert).xyz; }
-  return arcColorByIndex(idx, u);
+  return u.arcMarkerColor[min(idx, ARC_COLOR_SLOTS - 1u)].xyz;
 }
 
 // Where `yBp` plots within the arcs band, as a fraction in [0, inf).
@@ -357,6 +401,20 @@ public float arcYOffsetPx(uint yBp, float arcsYDomainBp, bool useLog,
                           float availH) {
   return min(availH, arcYFraction(yBp, arcsYDomainBp, useLog) * availH);
 }
+
+// Pixels of padding above the arc apex, subtracted from `u.arcBandH` to get the
+// `availH` the two functions above measure against.
+//
+// It lives here, with the formula that consumes it, because arc.slang and
+// arcMarker.slang must subtract the SAME margin or a read-cloud endpoint square
+// misses its flat line by the difference. Both declared their own copy and a
+// jest test pinned the two equal, on the belief that separate shader modules
+// can't share a `static const`. They can — both passes already `import
+// alignmentsUniforms`, and the codegen's constant evaluator resolves through
+// imports, so `//! export-consts: ARC_HEIGHT_MARGIN` still emits the value into
+// either pass's generated module. One declaration is what the test was
+// approximating.
+public static const float ARC_HEIGHT_MARGIN = 8.0;
 
 // Read cloud/arc flat-line Y offset (unsigned px) within an `availH`-tall band.
 // Shared by arc.slang (flat line + dome apex) and arcMarker.slang so a read
@@ -471,10 +529,18 @@ public float frequencyAlpha(float base, float freq) {
 // Every fading pass must go through this rather than reassembling the gate
 // locally — a hand-rolled copy is how the clip pass silently lost its
 // filterMismatchesByFrequency check. Mirrors frequencyFade() in rendererTypes.ts.
+// Split from the Uniforms wrapper below only so it can be `//! js-export`ed:
+// the wrapper takes the whole uniform block, which the scalar twin emitter
+// cannot carry across, and the GATE is the part that was hand-copied. The TS
+// side kept its own `state.filterMismatchesByFrequency && base < 1` — three
+// facts (the toggle, the sub-pixel test, and which one short-circuits) that
+// have to match, and losing the first of them is precisely the clip-pass bug.
+public float frequencyFadeGate(float base, float freq, bool filterByFrequency) {
+  return (filterByFrequency && base < 1.0) ? frequencyAlpha(base, freq) : 1.0;
+}
+
 public float frequencyFade(float base, float freq, Uniforms u) {
-  return (u.filterMismatchesByFrequency != 0 && base < 1.0)
-    ? frequencyAlpha(base, freq)
-    : 1.0;
+  return frequencyFadeGate(base, freq, u.filterMismatchesByFrequency != 0);
 }
 
 // Shared vertex output for passes that only need clip-space position + color.

@@ -27,12 +27,7 @@ struct Instance {
 };
 
 float3 linkedReadColorByIndex(uint idx, Uniforms u) {
-  uint colors[8];
-  colors[0] = u.linkedReadColor0; colors[1] = u.linkedReadColor1;
-  colors[2] = u.linkedReadColor2; colors[3] = u.linkedReadColor3;
-  colors[4] = u.linkedReadColor4; colors[5] = u.linkedReadColor5;
-  colors[6] = u.linkedReadColor6; colors[7] = u.linkedReadColor7;
-  return unpackRGBA(colors[min(idx, 7u)]).xyz;
+  return u.linkedReadColor[min(idx, LINKED_READ_COLOR_SLOTS - 1u)].xyz;
 }
 
 [shader("vertex")]

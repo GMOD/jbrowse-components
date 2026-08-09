@@ -40,8 +40,9 @@ interface DrawArcsOpts {
   palette: RGBColor[]
   // Palette for the read-cloud endpoint squares. Same as `palette` except the
   // filled short-insert square is pale (matching pileup + legend) rather than
-  // the saturated stroke color the arc curves use. Mirrors the GPU
-  // arcMarkerColorByIndex split.
+  // the saturated stroke color the arc curves use. Not a mirror of anything:
+  // the GPU indexes this same array, uploaded to the arcMarkerColor uniform
+  // slots.
   markerPalette: RGBColor[]
   // Visible width in px (mirrors arc.slang's `canvasW`); sets the far-pair
   // threshold below.

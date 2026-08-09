@@ -1,13 +1,19 @@
-import { frequencyAlpha } from '../shaders/slang/alignmentsUniforms.js.generated.ts'
+import {
+  frequencyAlpha,
+  frequencyFadeGate,
+} from '../shaders/slang/alignmentsUniforms.js.generated.ts'
 import { intronAlpha } from '../shaders/slang/gap.js.generated.ts'
 
-// Retirement gates for the two alpha curves rendererTypes.ts used to spell out
-// itself (adr-051).
+// Retirement gates for the alpha math rendererTypes.ts used to spell out itself
+// (adr-051).
 //
 // `frequencyAlpha` sat under a "Same formula as frequencyAlpha() in
 // alignmentsUniforms.slang" comment; the generated twin now backs
 // `frequencyFade`, which every fading pass (mismatch, clip, insertion, gap
-// deletion, softclip bases) routes through.
+// deletion, softclip bases) routes through. `frequencyFadeGate` is the decision
+// *around* that lerp, which stayed hand-written on both sides a while longer —
+// and is where the interesting bugs were, since dropping one of its three facts
+// still produces a plausible number.
 //
 // `intronAlpha` is the sharper case: the shader called `smoothstep(1, 4, h)`
 // and the TS hand-expanded the polynomial, with a comment on *each* side asking
@@ -56,6 +62,41 @@ test('is monotonic in both arguments', () => {
       frequencyAlpha(0.5, (i + 1) / 20),
     )
   }
+})
+
+// The retired gate, verbatim. The lerp above was generated; the three-fact
+// decision around it — read the toggle, test for sub-pixel, short-circuit to
+// fully opaque — stayed hand-written on both sides.
+function retiredFrequencyFade(
+  base: number,
+  freq: number,
+  filterByFrequency: boolean,
+) {
+  return filterByFrequency && base < 1 ? frequencyAlpha(base, freq) : 1
+}
+
+test('the fade gate matches the hand-written twin it replaced', () => {
+  for (const filter of [true, false]) {
+    for (let b = 0; b <= 20; b++) {
+      for (let f = 0; f <= 20; f++) {
+        const base = b / 20
+        const freq = f / 20
+        expect(frequencyFadeGate(base, freq, filter)).toBe(
+          retiredFrequencyFade(base, freq, filter),
+        )
+      }
+    }
+  }
+})
+
+test('the fade gate is off unless the toggle is on', () => {
+  // Losing this branch is the clip-pass bug: every low-frequency mark faded
+  // whether or not the user asked for it.
+  expect(frequencyFadeGate(0.1, 0, false)).toBe(1)
+  expect(frequencyFadeGate(0.1, 0, true)).toBe(0.1)
+  // A feature already covering a full pixel is opaque either way — the boundary
+  // is exclusive, so base exactly 1 takes the ungated path.
+  expect(frequencyFadeGate(1, 0, true)).toBe(1)
 })
 
 // The retired intron fade, verbatim: the smoothstep expanded by hand, with the

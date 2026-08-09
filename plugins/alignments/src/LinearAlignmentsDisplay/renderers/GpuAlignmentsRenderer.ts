@@ -90,11 +90,16 @@ import {
 } from '../../features/softclip/packBases.ts'
 import { uploadSoftclipBases } from '../../features/softclip/uploadBases.ts'
 import { CLIP_PASS, PASS_CLIP, uploadClips } from '../../shared/clipPass.ts'
+import { READ_COLOR_CATEGORY, readCategoryPaletteKeys } from '../colorUtils.ts'
 import {
   getSelectionBounds,
   toClipRect,
 } from '../components/chainOverlayUtils.ts'
-import { arcColorPalette, linkedReadColorPalette } from '../shaders/palettes.ts'
+import {
+  arcColorPalette,
+  arcMarkerColorPalette,
+  linkedReadColorPalette,
+} from '../shaders/palettes.ts'
 import * as flatQuadShader from '../shaders/slang/flatQuad.generated.ts'
 import * as readShader from '../shaders/slang/read.generated.ts'
 import { PILEUP_LAYERS } from './pileupLayers.ts'
@@ -107,6 +112,7 @@ import {
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
+import type { ReadColorCategory } from '../colorUtils.ts'
 import type { ChainBoundsRegion } from '../components/chainOverlayUtils.ts'
 import type { PileupLayerId } from './pileupLayers.ts'
 import type {
@@ -268,10 +274,14 @@ function fillArcUniforms(f: Float32Array, a: ArcFrame) {
   f[U.arcsYLog] = log ? 1 : 0
 }
 
-// Which ColorPalette entry backs each shader color uniform. A table rather
-// than 30 assignments so it is introspectable: colorCategory.test.ts composes
-// it with `swatchPaletteKeys` to check that read.slang's category→uniform
-// lookup paints each category the color the legend swatches for it.
+// Which ColorPalette entry backs each NAMED shader color uniform — the ones a
+// pass reads by name (`u.colorBaseA` in snpCoverage, `u.colorInsertion` in
+// insertion). The indexed palettes are separate and written below.
+//
+// A table rather than 30 assignments because it used to be introspected:
+// colorCategory.test.ts composed it with `swatchPaletteKeys` to check
+// read.slang's category→uniform chain. That chain is gone — the categories are
+// an indexed array the CPU fills — so nothing reads this but the loop under it.
 export const PALETTE_UNIFORM_FIELDS = {
   colorFwd: 'colorFwdStrand',
   colorRev: 'colorRevStrand',
@@ -305,18 +315,60 @@ export const PALETTE_UNIFORM_FIELDS = {
   colorMutedSnpBase: 'colorMutedSnpBase',
 } satisfies Record<string, keyof ColorPalette>
 
-// Pack every palette color into the UBO as u32 ABGR. Pure — writes through
-// the given u32 view only, no rendering side effects.
-function writePaletteToUbo(u: Uint32Array, c: ColorPalette) {
-  const pack = (rgb: RGBColor) => normalizedRgbToABGR(rgb[0], rgb[1], rgb[2])
+// Pack every palette color into the UBO. Pure — writes through the given views
+// only, no rendering side effects.
+//
+// Two representations on purpose. The NAMED colors are packed ABGR u32, one
+// slot each, which is how every color travels through this renderer. The two
+// INDEXED palettes are `float4[]` in the shader and so are written as four
+// floats per slot: std140 pads an array element to 16 bytes whatever it holds,
+// so the packed form would occupy the same space and still cost an unpack per
+// vertex (and slangc can't compile it — see colorPack.slang).
+function writePaletteToUbo(u: Uint32Array, f: Float32Array, c: ColorPalette) {
   for (const [uniform, key] of Object.entries(PALETTE_UNIFORM_FIELDS)) {
-    u[UU[uniform as keyof typeof UU]] = pack(c[key])
+    const rgb = c[key]
+    u[UU[uniform as keyof typeof UU]] = normalizedRgbToABGR(
+      rgb[0],
+      rgb[1],
+      rgb[2],
+    )
   }
-  for (let i = 0; i < arcColorPalette.length; i++) {
-    u[USLOTS.arcColor[i]!] = pack(arcColorPalette[i]!)
+  const writeSlots = (
+    slots: readonly number[],
+    palette: readonly RGBColor[],
+  ) => {
+    for (let i = 0; i < slots.length; i++) {
+      const at = slots[i]!
+      const rgb = palette[i]!
+      f[at] = rgb[0]
+      f[at + 1] = rgb[1]
+      f[at + 2] = rgb[2]
+      // Alpha. The shaders read `.xyz` and set their own, but a uniform slot
+      // left unwritten is whatever the last block render put there.
+      f[at + 3] = 1
+    }
   }
-  for (let i = 0; i < linkedReadColorPalette.length; i++) {
-    u[USLOTS.linkedReadColor[i]!] = pack(linkedReadColorPalette[i]!)
+  // Driven by the SHADER's slot count, not the palette's, so a palette that
+  // fell out of step leaves an undefined behind here rather than silently
+  // painting stale colors in the slots it didn't reach. arcYScale.test.ts pins
+  // the two lengths equal.
+  writeSlots(USLOTS.arcColor, arcColorPalette)
+  writeSlots(USLOTS.arcMarkerColor, arcMarkerColorPalette)
+  writeSlots(USLOTS.linkedReadColor, linkedReadColorPalette)
+  // One color per read category, indexed by the RC_* the CPU classifier baked
+  // into each instance. read.slang used to branch through 17 `cat == RC_X` arms
+  // to reach the same named colors; this is that mapping, from the one table
+  // the legend also reads.
+  for (const [category, key] of Object.entries(readCategoryPaletteKeys)) {
+    const at =
+      USLOTS.readCategoryColor[
+        READ_COLOR_CATEGORY[category as ReadColorCategory]
+      ]!
+    const rgb = c[key]
+    f[at] = rgb[0]
+    f[at + 1] = rgb[1]
+    f[at + 2] = rgb[2]
+    f[at + 3] = 1
   }
 }
 
@@ -803,7 +855,7 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
 
   private writeUniforms(state: RenderState, frame: BlockFrame) {
     fillFrameUniforms(this.uF32, this.uI32, state, frame)
-    writePaletteToUbo(this.uU32, state.colors)
+    writePaletteToUbo(this.uU32, this.uF32, state.colors)
     if (state.showModifications) {
       // Canvas equivalent: buildBaseColorTupleMap / buildCigarOpDrawColors in
       // features/mismatch/baseColors.ts — keep in sync when changing this.

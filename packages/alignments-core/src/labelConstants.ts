@@ -4,8 +4,6 @@ import {
 } from './indicatorTriangle.generated.ts'
 import {
   INSERTION_SERIF_MIN_PX_PER_BP,
-  LABEL_CHAR_W,
-  LABEL_PAD,
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
   MIN_HEIGHT_FOR_TEXT,
@@ -93,26 +91,14 @@ export function labelFadeOpacity(availPx: number, neededPx: number) {
   return smoothstep(neededPx, neededPx * LABEL_FADE_HI_RATIO, availPx)
 }
 
-// Canvas2D twin of `textWidth()` in insertion.slang, which sizes the GPU
-// count-label box this text is drawn into. The two constants come from the
-// shader (`pnpm gen:shaders`), so only the digit-count branching is mirrored.
-export function textWidthForNumber(num: number) {
-  const charWidth = LABEL_CHAR_W
-  const padding = LABEL_PAD
-  if (num < 10) {
-    return charWidth + padding
-  }
-  if (num < 100) {
-    return charWidth * 2 + padding
-  }
-  if (num < 1000) {
-    return charWidth * 3 + padding
-  }
-  if (num < 10000) {
-    return charWidth * 4 + padding
-  }
-  return charWidth * 5 + padding
-}
+// Width in CSS px of the GPU count-label box, for the count drawn into it.
+//
+// This IS insertion.slang's `textWidth()`, transliterated from slangc's WGSL by
+// `pnpm gen:shaders`. It used to be a hand-mirrored copy of the digit-count
+// branching over two constants exported from the shader, which is the twin
+// adr-051 is about: the box is sized on the GPU and the text is measured here,
+// so the two disagreeing means digits spilling out of their background.
+export { textWidth as textWidthForNumber } from './insertionWidth.generated.ts'
 
 export type InsertionType = 'large' | 'long' | 'small'
 

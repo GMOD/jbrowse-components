@@ -263,10 +263,26 @@ and the two implementations have to be *meant* to agree:
 - **`sBlend` / `yCurve` (synteny)** — exported as a **test oracle**, not as
   production code. The Canvas2D path deliberately draws one `bezierCurveTo`
   rather than tessellating, and `syntenyRibbonPath.ts` carries an algebraic proof
-  that the two are identical. `syntenyShaderParity.test.ts` now checks that
-  algebra numerically instead of trusting the comment. The bezier is the better
+  that the two are identical. `syntenyShaderParity.test.ts` checks that algebra
+  numerically instead of trusting the comment. The bezier is the better
   implementation; sharing the formula would make it worse.
-- **`textWidth`, `getGeno`, `getWord`** — no Canvas2D counterpart exists.
+
+  A test oracle is still an export, and for a while this one wasn't: the test
+  re-spelled both functions locally under a "syntenyTypes.slang, verbatim"
+  comment, so the test that exists to catch twins carried one, and a sign slip in
+  the copy would have made it pass against a shader drawing something else. It
+  now imports the generated pair and reads the control points `buildFeaturePath`
+  actually emits rather than a restatement of them.
+- **`getGeno`, `getWord`** — no Canvas2D counterpart exists.
+
+`textWidth` was on that list and should not have been: `textWidthForNumber` in
+`labelConstants.ts` was its counterpart all along, mirroring the digit-count
+branching over two exported constants, and the emitter had been transliterating
+`textWidth` for some time already — as a private helper inside
+`insertionWidth.generated.ts`, because `insertionBarWidthPx` calls it. Naming it
+in `js-export` made that helper public and `labelConstants.ts` a one-line
+re-export. The lesson is about the list, not the function: "no counterpart
+exists" is a claim to re-check, not a category to file things in.
 
 ## Consequences
 

@@ -1,10 +1,10 @@
 import { emitInterface, emitLayoutOnly, emitShaderStrings } from './codegen.ts'
 
-// Reflection mirrors slangc's external JSON, which the codegen itself reads
-// through casts (its declared types are deliberately partial). Name the
-// expected input type off the emit function so fixtures stay in sync without
-// exporting the internal reflection interfaces.
-type Reflection = Parameters<typeof emitInterface>[0]['reflection']
+import type { Reflection } from './reflection.ts'
+
+// The fixtures below are cast to `Reflection` rather than annotated: they are
+// slangc's JSON, which carries more than the model declares, and an annotation
+// would object to the extra keys a real reflection has.
 
 function scalar(scalarType: 'float32' | 'uint32' | 'int32') {
   return { kind: 'scalar' as const, scalarType }
@@ -20,9 +20,24 @@ function uniform(offset: number, size: number) {
   return { kind: 'uniform' as const, offset, size }
 }
 
-// Uniform block mixing every scalar view (uint/int/float) plus a two-entry
-// vec4 palette group (arcColor0/arcColor1) that should auto-collapse into a
-// UNIFORM_SLOT_ARRAYS entry.
+function array(
+  elementCount: number,
+  of: ReturnType<typeof scalar> | ReturnType<typeof vector>,
+) {
+  // std140 pads every array element to 16 bytes whatever the element is, which
+  // is the whole reason the emitted offsets can't just be consecutive words.
+  return {
+    kind: 'array' as const,
+    elementCount,
+    elementType: of,
+    uniformStride: 16,
+  }
+}
+
+// Uniform block mixing every scalar view (uint/int/float), two vec4 fields
+// whose names share a prefix (`arcColor0`/`arcColor1` — NOT an array, and the
+// old name-prefix heuristic wrongly treated them as one), and a real `uint[3]`
+// array field.
 const uniformParam = {
   name: 'u',
   binding: { kind: 'descriptorTableSlot', index: 1 },
@@ -45,9 +60,14 @@ const uniformParam = {
           type: vector(4, 'float32'),
           binding: uniform(32, 16),
         },
+        {
+          name: 'palette',
+          type: array(3, vector(4, 'float32')),
+          binding: uniform(48, 48),
+        },
       ],
     },
-    elementVarLayout: { binding: uniform(0, 48) },
+    elementVarLayout: { binding: uniform(0, 96) },
   },
 }
 
@@ -80,7 +100,7 @@ describe('emitInterface uniforms', () => {
   const out = emitInterface({ baseName: 'test', reflection })
 
   test('splits word offsets into per-view maps by scalar type', () => {
-    expect(out).toContain('export const UNIFORMS_SIZE_BYTES = 48')
+    expect(out).toContain('export const UNIFORMS_SIZE_BYTES = 96')
     // float fields (incl. the vec palette) address the buffer through a
     // Float32Array, so they land in the F32 map.
     expect(out).toContain('export const UNIFORM_OFFSET_F32 = {')
@@ -94,8 +114,23 @@ describe('emitInterface uniforms', () => {
     expect(out).toContain('level: 1,')
   })
 
-  test('auto-detects the palette slot-array group', () => {
-    expect(out).toContain('arcColor: [4, 8] as const,')
+  test('emits an element word offset per array entry, strided by std140', () => {
+    // 16 bytes per element, so words 12, 16, 20 — never 12, 13, 14. Getting
+    // this wrong writes three colors into the first color's slot.
+    expect(out).toContain('palette: [12, 16, 20] as const,')
+  })
+
+  // The slot arrays used to be inferred from field NAMES, which invented arrays
+  // out of any two fields sharing a prefix — synteny's `panPx0`/`panPx1` (a
+  // per-side pan pair) got a slot array nothing could sensibly index.
+  test('does not invent an array out of two same-prefix fields', () => {
+    expect(out).not.toContain('arcColor: [')
+  })
+
+  // A single word offset for an array reads like the whole field, so
+  // `u32[U.palette] = x` would write element 0 and silently drop the rest.
+  test('keeps array fields out of the scalar offset maps', () => {
+    expect(out).not.toMatch(/^ {2}palette: \d+,$/m)
   })
 
   test('writeUniforms selects u32 / i32 / f32 views per field', () => {
@@ -110,9 +145,23 @@ describe('emitInterface uniforms', () => {
     expect(out).toContain('f32[8] = uniforms.arcColor1[0]')
   })
 
-  test('typed Uniforms interface uses tuples for vectors', () => {
+  test('typed Uniforms interface uses tuples for vectors and arrays', () => {
     expect(out).toContain('flag: number')
     expect(out).toContain('arcColor0: [number, number, number, number]')
+    // A tuple, not `number[]`: the length is the shader's, so a palette built
+    // one entry short is a compile error rather than a zeroed tail slot.
+    expect(out).toContain(
+      'palette: [[number, number, number, number], [number, number, number, number], [number, number, number, number]]',
+    )
+  })
+
+  test('writeUniforms strides array elements by the std140 element stride', () => {
+    // Element 1 starts at word 16, not 12 + 4-components-of-element-0 — those
+    // happen to coincide for a vec4 and would not for a vec2.
+    expect(out).toContain('f32[12] = uniforms.palette[0][0]')
+    expect(out).toContain('f32[15] = uniforms.palette[0][3]')
+    expect(out).toContain('f32[16] = uniforms.palette[1][0]')
+    expect(out).toContain('f32[20] = uniforms.palette[2][0]')
   })
 })
 
@@ -182,7 +231,7 @@ describe('emitInterface compute', () => {
   })
 
   test('emits uniform layout but no instance layout', () => {
-    expect(out).toContain('export const UNIFORMS_SIZE_BYTES = 48')
+    expect(out).toContain('export const UNIFORMS_SIZE_BYTES = 96')
     expect(out).toContain('u32[0] = uniforms.flag')
     expect(out).not.toContain('INSTANCE_STRIDE_BYTES')
     expect(out).not.toContain('GL_ATTRIBUTES')
@@ -192,6 +241,36 @@ describe('emitInterface compute', () => {
   test('omits the HAL type import when there are no attributes or textures', () => {
     expect(out).not.toContain('@jbrowse/render-core/hal')
   })
+})
+
+// packInstances destructures every field name into its own scope, so a field
+// sharing a name with one of the packer's own bindings is shadowed. `count` was
+// noticed and routed around (hence `numInstances`); the rest were not, and `o`
+// or `i` would pack NaN into every instance without a word of complaint —
+// `o[i]` on a number is undefined, and the arrays are typed.
+test('refuses an instance field that would shadow a packInstances binding', () => {
+  const shadowing = {
+    parameters: [
+      {
+        ...instanceParam,
+        type: {
+          ...instanceParam.type,
+          resultType: {
+            kind: 'struct',
+            name: 'Inst',
+            fields: [
+              { name: 'pos', type: vector(2, 'float32') },
+              { name: 'o', type: scalar('uint32') },
+            ],
+          },
+        },
+      },
+    ],
+    entryPoints: [],
+  } as Reflection
+  expect(() =>
+    emitInterface({ baseName: 'test', reflection: shadowing }),
+  ).toThrow(/instance field 'o' collides/)
 })
 
 describe('emitLayoutOnly', () => {
@@ -247,4 +326,37 @@ describe('emitInterface textures', () => {
       "import type { GlAttributeLayout, TextureBinding } from '@jbrowse/render-core/hal'",
     )
   })
+})
+
+// slangc segfaults — no diagnostic at all — on a scalar array in a uniform
+// block, and only for WGSL, so it compiles cleanly right up until WebGPU.
+// Refusing it here is the difference between a message and a bisection session.
+test('refuses a uniform array of scalars, naming the fix', () => {
+  const scalarArray = {
+    parameters: [
+      {
+        name: 'u',
+        binding: { kind: 'descriptorTableSlot' as const, index: 0 },
+        type: {
+          kind: 'constantBuffer' as const,
+          elementType: {
+            kind: 'struct' as const,
+            name: 'Uniforms',
+            fields: [
+              {
+                name: 'palette',
+                type: array(3, scalar('uint32')),
+                binding: uniform(0, 48),
+              },
+            ],
+          },
+          elementVarLayout: { binding: uniform(0, 48) },
+        },
+      },
+    ],
+    entryPoints: [],
+  } as Reflection
+  expect(() =>
+    emitInterface({ baseName: 'test', reflection: scalarArray }),
+  ).toThrow(/'palette' is an array of uint32.*Declare it as float4\[3\]/s)
 })

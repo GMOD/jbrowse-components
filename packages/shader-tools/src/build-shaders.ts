@@ -20,7 +20,7 @@
 // that can't import the plugin owning the shader:
 //   //! layout-out: <path>   instance stride + field offsets only
 //   //! consts-out: <path>   the `export-consts` values only
-import { execFileSync, spawnSync } from 'node:child_process'
+import { execFileSync, spawn, spawnSync } from 'node:child_process'
 import {
   chmodSync,
   existsSync,
@@ -32,9 +32,10 @@ import {
   statSync,
   writeFileSync,
 } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { availableParallelism, tmpdir } from 'node:os'
 import path from 'node:path'
 
+import { pool } from './pool.ts'
 import { assertVertexInputsMatch } from './shader-codegen/assertVertexInputs.ts'
 import {
   emitConsts,
@@ -44,6 +45,7 @@ import {
   instanceAttrsFor,
 } from './shader-codegen/codegen.ts'
 import {
+  assertOutPathsUnique,
   parseConstsOut,
   parseExportedConsts,
   parseJsExportOut,
@@ -51,11 +53,21 @@ import {
   parseLayoutOut,
   parseTargets,
   parseVertsPerInstance,
+  stripComments,
 } from './shader-codegen/parseDirectives.ts'
+import {
+  findCombinedSamplers,
+  findEntryPoint,
+  findFragmentInputParamName,
+  findUniformBlockName,
+  findVaryingFieldNames,
+  findVertexAttributeStruct,
+} from './shader-codegen/reflection.ts'
 import { vulkanGlslToWebgl2 } from './shader-codegen/vulkanGlslToWebgl2.ts'
 import { emitJsTwins } from './shader-codegen/wgslToJs.ts'
 
 import type { JsExportFn } from './shader-codegen/parseDirectives.ts'
+import type { Reflection } from './shader-codegen/reflection.ts'
 
 const flagValue = (name: string) =>
   process.argv
@@ -167,19 +179,64 @@ function ensureSlangc() {
 const SLANGC = ensureSlangc()
 
 // Run a build tool (slangc/naga/glslang), surfacing its diagnostic on failure.
-// spawnSync (vs execFileSync) keeps the tool's stderr as a decoded string rather
-// than throwing an exception whose Buffer fields dump as raw byte arrays — so a
-// shader compile error reads as the compiler's own message, file:line and all.
+// Async, and that is the whole build's wall clock: this is called ~5 times per
+// shader (three slangc invocations, naga, two glslangValidator runs) and every
+// one of those is an independent process doing ~0.7s of work on one core. Run
+// serially — as this did — ~40 shaders is several hundred sequential spawns.
+//
+// Collecting the output by hand rather than through promisify(execFile) keeps
+// the failure message the tool's OWN diagnostic (file:line and all) instead of
+// an exception whose Buffer fields dump as raw byte arrays. stdout is in the
+// message too, not just stderr: glslangValidator reports on stdout, so a GLSL
+// validation failure used to print an empty reason.
+// It RESOLVES with the failure rather than rejecting, and that is deliberate.
+// Validators are started early and awaited late, so a rejection could land
+// while this file's task is awaiting something else — a rejection nobody is
+// handling yet, which Node answers by killing the process, losing the pool and
+// every other file's diagnostic along with this one's. (Found the honest way:
+// naga rejected a bad shader and took the whole build down with it.) A promise
+// that cannot reject cannot do that, whenever it settles. Call `runOrThrow`
+// where the failure should stop the file immediately.
 function run(bin: string, args: string[]) {
-  const { error, status, signal, stderr } = spawnSync(bin, args, {
-    encoding: 'utf8',
+  return new Promise<Error | undefined>(resolve => {
+    const child = spawn(bin, args, { stdio: ['ignore', 'pipe', 'pipe'] })
+    let out = ''
+    child.stdout.setEncoding('utf8')
+    child.stderr.setEncoding('utf8')
+    child.stdout.on('data', (chunk: string) => (out += chunk))
+    child.stderr.on('data', (chunk: string) => (out += chunk))
+    child.on('error', err => {
+      resolve(new Error(`${path.basename(bin)}: ${err.message}`))
+    })
+    child.on('close', (status, signal) => {
+      if (status === 0) {
+        resolve(undefined)
+        return
+      }
+      // The tool's own diagnostic leads; how the process ended is a footnote.
+      // slangc SIGSEGVs on some ordinary source errors AFTER printing a perfect
+      // `error[E30015]: undefined identifier` with a caret — and a message
+      // opening with "killed by SIGSEGV" sends the reader hunting a toolchain
+      // bug over their own typo.
+      const name = path.basename(bin)
+      const how = signal ? `killed by ${signal}` : `exited with ${status}`
+      const diagnostic = out.trim()
+      resolve(
+        new Error(
+          diagnostic
+            ? `${name} reported:\n\n${diagnostic}\n\n(${name} ${how})`
+            : `${name} ${how}, with no diagnostic`,
+        ),
+      )
+    })
   })
+}
+
+// `run`, for the calls whose failure must stop this file right here.
+async function runOrThrow(bin: string, args: string[]) {
+  const error = await run(bin, args)
   if (error) {
-    throw new Error(`${path.basename(bin)}: ${error.message}`)
-  }
-  if (status !== 0) {
-    const how = signal ? `killed by ${signal}` : `exited with ${status}`
-    throw new Error(`${path.basename(bin)} ${how}\n\n${stderr.trim()}`)
+    throw error
   }
 }
 
@@ -212,19 +269,21 @@ function walk(dir: string, out: string[] = []) {
   return out
 }
 
-// A module declares `module <name>;` and has no entry points — it is compiled
-// only as an import. The `[shader(` probe strips line comments first: several
-// modules discuss the passes that import them, and a mention in prose would
-// otherwise make the driver try to compile a module as a standalone shader.
+// Files compile concurrently, so a file's progress lines are collected and
+// printed as one block when it finishes rather than interleaved with whatever
+// else is in flight.
+type Log = (line: string) => void
+
 // Write a `//! layout-out` / `//! consts-out` artifact at a repo-relative path.
 // Both exist so a package that can't import the owning plugin still gets its
 // numbers from the shader rather than a hand-kept SYNC copy.
-function writeOut(relPath: string, contents: string) {
+function writeOut(log: Log, relPath: string, contents: string) {
   writeFileSync(path.join(PROJECT_ROOT, relPath), contents)
-  console.log(`  ok: ${relPath}`)
+  log(`  ok: ${relPath}`)
 }
 
 function writeConstsOut(
+  log: Log,
   source: string,
   base: string,
   exportedConsts: Record<string, number> | undefined,
@@ -238,7 +297,7 @@ function writeConstsOut(
       `//! consts-out needs a //! export-consts directive naming what to write`,
     )
   }
-  writeOut(constsOut, emitConsts(base, exportedConsts))
+  writeOut(log, constsOut, emitConsts(base, exportedConsts))
 }
 
 // Slang dead-code-eliminates anything an entry point can't reach, so asking
@@ -290,7 +349,7 @@ function buildJsExportWrapper(moduleName: string, fns: JsExportFn[]) {
 }
 
 function parseModuleName(source: string, slangPath: string) {
-  const m = /^\s*module\s+(\w+)\s*;/m.exec(source.replaceAll(/\/\/[^\n]*/g, ''))
+  const m = /^\s*module\s+(\w+)\s*;/m.exec(stripComments(source))
   if (!m) {
     throw new Error(`${slangPath}: //! js-export needs a 'module <name>;' file`)
   }
@@ -299,7 +358,7 @@ function parseModuleName(source: string, slangPath: string) {
 
 // A module's functions are only reachable through an import, so its WGSL has to
 // be conjured by the wrapper above.
-function compileJsExportWrapper(
+async function compileJsExportWrapper(
   slangPath: string,
   source: string,
   base: string,
@@ -312,7 +371,7 @@ function compileJsExportWrapper(
     const wrapperPath = path.join(tmp, `${base}JsExportWrapper.slang`)
     writeFileSync(wrapperPath, buildJsExportWrapper(moduleName, fns))
     const wgslOut = path.join(tmp, `${base}.wgsl`)
-    run(SLANGC, [
+    await runOrThrow(SLANGC, [
       wrapperPath,
       '-target',
       'wgsl',
@@ -333,7 +392,8 @@ function compileJsExportWrapper(
 // points: those already keep the exported functions alive, and a wrapper can't
 // `import` such a file anyway. The emitter lifts only what an export reaches, so
 // the vertex/fragment support code alongside it is ignored rather than refused.
-function writeJsExports(
+async function writeJsExports(
+  log: Log,
   slangPath: string,
   source: string,
   base: string,
@@ -351,7 +411,7 @@ function writeJsExports(
     return
   }
   const wgsl =
-    shaderWgsl ?? compileJsExportWrapper(slangPath, source, base, fns)
+    shaderWgsl ?? (await compileJsExportWrapper(slangPath, source, base, fns))
   const contents = emitJsTwins(
     base,
     wgsl,
@@ -364,7 +424,7 @@ function writeJsExports(
   )
   const out = parseJsExportOut(source)
   if (out) {
-    writeOut(out, contents)
+    writeOut(log, out, contents)
     return
   }
   const generatedPath = path.join(
@@ -372,11 +432,16 @@ function writeJsExports(
     `${base}.js.generated.ts`,
   )
   writeFileSync(generatedPath, contents)
-  console.log(`  ok: ${generatedPath.replace(`${PROJECT_ROOT}/`, '')}`)
+  log(`  ok: ${generatedPath.replace(`${PROJECT_ROOT}/`, '')}`)
 }
 
+// A module declares `module <name>;` and has no entry points — it is compiled
+// only as an import. The `[shader(` probe reads the source with its comments
+// blanked: several modules discuss the passes that import them, and a mention
+// in prose would otherwise make the driver try to compile a module as a
+// standalone shader.
 function isModuleFile(source: string) {
-  const code = source.replaceAll(/\/\/[^\n]*/g, '')
+  const code = stripComments(source)
   return /^\s*module\s+\w+\s*;/m.test(code) && !code.includes('[shader(')
 }
 
@@ -391,7 +456,7 @@ function readImportedSources(
   seen = new Set<string>(),
 ): string[] {
   const dir = path.dirname(slangPath)
-  const code = source.replaceAll(/\/\/[^\n]*/g, '')
+  const code = stripComments(source)
   const out: string[] = []
   for (const m of code.matchAll(/^\s*import\s+(\w+)\s*;/gm)) {
     const found = [dir, SHARED_INCLUDE]
@@ -407,128 +472,7 @@ function readImportedSources(
   return out
 }
 
-function findVertexStructMeta(reflection: {
-  entryPoints: {
-    name: string
-    stage: string
-    parameters: {
-      name: string
-      type: { kind: string; name?: string; fields?: { name: string }[] }
-    }[]
-  }[]
-  parameters: {
-    name: string
-    type: { kind: string; elementType?: { name?: string } }
-  }[]
-}) {
-  const vs = reflection.entryPoints.find(e => e.stage === 'vertex')
-  if (!vs) {
-    return undefined
-  }
-  for (const p of vs.parameters) {
-    if (p.type.kind === 'struct' && p.type.fields) {
-      return {
-        prefix: p.name,
-        fieldNames: p.type.fields.map(f => f.name),
-      }
-    }
-  }
-  return undefined
-}
-
-function findUniformBlockName(reflection: {
-  parameters: { type: { kind: string; elementType?: { name?: string } } }[]
-}) {
-  for (const p of reflection.parameters) {
-    if (p.type.kind === 'constantBuffer' && p.type.elementType?.name) {
-      return `block_${p.type.elementType.name}_0`
-    }
-  }
-  return undefined
-}
-
-function findEntryPoint(
-  reflection: { entryPoints: { name: string; stage: string }[] },
-  stage: 'vertex' | 'fragment' | 'compute',
-) {
-  return reflection.entryPoints.find(e => e.stage === stage)?.name
-}
-
-function findVaryingFieldNames(reflection: {
-  entryPoints: {
-    stage: string
-    result?: {
-      type?: {
-        kind: string
-        fields?: { name: string; binding?: { kind: string } }[]
-      }
-    }
-  }[]
-}): string[] {
-  const vs = reflection.entryPoints.find(e => e.stage === 'vertex')
-  const t = vs?.result?.type
-  if (t?.kind !== 'struct' || !t.fields) {
-    return []
-  }
-  return t.fields
-    .filter(f => f.binding?.kind === 'varyingOutput')
-    .map(f => f.name)
-}
-
-function findFragmentInputParamName(reflection: {
-  entryPoints: {
-    stage: string
-    parameters: { name: string; type: { kind: string } }[]
-  }[]
-}) {
-  const fs = reflection.entryPoints.find(e => e.stage === 'fragment')
-  if (!fs) {
-    return undefined
-  }
-  return fs.parameters.find(p => p.type.kind === 'struct')?.name
-}
-
-// Combined `Sampler2D<T>` declarations. Each one consumes two WebGPU binding
-// slots (texture at N, sampler at N+1) and emits a single `sampler2D` in
-// GLSL. Returns the shader-author's original name alongside both bindings so
-// the TS side can wire up TextureBinding{textureBinding, samplerBinding,
-// glUniformName}.
-interface ReflectionTexture {
-  name: string
-  textureBinding: number
-  samplerBinding: number
-}
-function findCombinedSamplers(reflection: {
-  parameters: {
-    name: string
-    binding?: { kind: string; index?: number; count?: number }
-    type?: { kind?: string; baseShape?: string; combined?: boolean }
-  }[]
-}): ReflectionTexture[] {
-  const out: ReflectionTexture[] = []
-  for (const p of reflection.parameters) {
-    if (
-      p.type?.kind === 'resource' &&
-      p.type.baseShape === 'texture2D' &&
-      p.type.combined &&
-      p.binding?.kind === 'descriptorTableSlot' &&
-      typeof p.binding.index === 'number'
-    ) {
-      out.push({
-        name: p.name,
-        textureBinding: p.binding.index,
-        samplerBinding: p.binding.index + 1,
-      })
-    }
-  }
-  return out
-}
-
-function compileOne(slangPath: string) {
-  const source = readFileSync(slangPath, 'utf8')
-  if (isModuleFile(source)) {
-    return
-  }
+async function compileOne(log: Log, slangPath: string, source: string) {
   const targets = parseTargets(source)
   const base = path.basename(slangPath, '.slang')
   const dir = path.dirname(slangPath)
@@ -551,19 +495,32 @@ function compileOne(slangPath: string) {
       '-I',
       SHARED_INCLUDE,
     ]
-    run(SLANGC, slangcArgs)
+    await runOrThrow(SLANGC, slangcArgs)
     const wgsl = readFileSync(wgslOut, 'utf8')
+    // The two validators only ever read what slangc wrote, so they overlap with
+    // the rest of this file's work rather than blocking it.
+    //
+    // `deferred` is not decoration. A validator that rejects while this function
+    // is awaiting something ELSE is a rejection nobody is handling yet, and Node
+    // kills the process for it — losing the pool, the other files' diagnostics
+    // and this one's, in favour of an unhandled-rejection stack trace. Turning
+    // the rejection into a resolved value at the moment the promise is created
+    // means the failure waits, intact, for the `await` below. (Found the honest
+    // way: naga rejected a bad shader and took the whole build down with it.)
+    const validations: Promise<Error | undefined>[] = []
     if (NAGA) {
-      run(NAGA, [wgslOut])
+      validations.push(run(NAGA, [wgslOut]))
     }
 
-    const reflection = JSON.parse(readFileSync(reflectionOut, 'utf8'))
+    const reflection = JSON.parse(
+      readFileSync(reflectionOut, 'utf8'),
+    ) as Reflection
     let glslVertex: string | undefined
     let glslFragment: string | undefined
 
     if (targets.includes('glsl')) {
-      const vsName = findEntryPoint(reflection, 'vertex')
-      const fsName = findEntryPoint(reflection, 'fragment')
+      const vsName = findEntryPoint(reflection, 'vertex')?.name
+      const fsName = findEntryPoint(reflection, 'fragment')?.name
       if (!vsName || !fsName) {
         throw new Error(
           `${slangPath}: targets 'glsl' but missing vertex or fragment entry point`,
@@ -586,10 +543,18 @@ function compileOne(slangPath: string) {
         '-I',
         SHARED_INCLUDE,
       ]
-      run(SLANGC, glslArgs('vertex', vsName, glslVertexOut))
-      run(SLANGC, glslArgs('fragment', fsName, glslFragmentOut))
+      await Promise.all([
+        runOrThrow(SLANGC, glslArgs('vertex', vsName, glslVertexOut)),
+        runOrThrow(SLANGC, glslArgs('fragment', fsName, glslFragmentOut)),
+      ])
 
-      const attributes = findVertexStructMeta(reflection)
+      const vertexStruct = findVertexAttributeStruct(reflection)
+      const attributes = vertexStruct
+        ? {
+            prefix: vertexStruct.paramName,
+            fieldNames: vertexStruct.struct.fields.map(f => f.name),
+          }
+        : undefined
       const uniformBlockName = findUniformBlockName(reflection)
       const varyingFieldNames = findVaryingFieldNames(reflection)
       const fragParamName = findFragmentInputParamName(reflection)
@@ -624,19 +589,31 @@ function compileOne(slangPath: string) {
       writeFileSync(processedVertOut, glslVertex)
       writeFileSync(processedFragOut, glslFragment)
       if (GLSLANG) {
-        run(GLSLANG, ['-S', 'vert', processedVertOut])
-        run(GLSLANG, ['-S', 'frag', processedFragOut])
+        validations.push(
+          run(GLSLANG, ['-S', 'vert', processedVertOut]),
+          run(GLSLANG, ['-S', 'frag', processedFragOut]),
+        )
       }
+    }
+
+    // Both fail the build before anything is written. The first validator to
+    // have failed is rethrown; the others' messages are lost, which is the same
+    // thing a serial build did and one bad shader is one fix.
+    const validationError = (await Promise.all(validations)).find(Boolean)
+    if (validationError) {
+      throw validationError
     }
 
     // Fail here, before writing, if slangc's `@location` assignment disagrees
     // with the tight-packed layout the generated packers assume.
-    const attrs = instanceAttrsFor(reflection)
-    if (attrs) {
-      assertVertexInputsMatch(path.relative(PROJECT_ROOT, slangPath), attrs, {
-        wgsl,
-        glslVertex,
-      })
+    const instance = instanceAttrsFor(reflection)
+    if (instance) {
+      assertVertexInputsMatch(
+        path.relative(PROJECT_ROOT, slangPath),
+        instance.attrs,
+        { wgsl, glslVertex },
+        instance.source === 'attributes',
+      )
     }
 
     const codegenInputs = {
@@ -653,48 +630,83 @@ function compileOne(slangPath: string) {
     writeFileSync(generatedPath, emitShaderStrings(codegenInputs))
     const ifacePath = path.join(dir, `${base}.iface.generated.ts`)
     writeFileSync(ifacePath, emitInterface(codegenInputs))
-    console.log(`  ok: ${generatedPath.replace(`${PROJECT_ROOT}/`, '')}`)
-    console.log(`  ok: ${ifacePath.replace(`${PROJECT_ROOT}/`, '')}`)
+    log(`  ok: ${generatedPath.replace(`${PROJECT_ROOT}/`, '')}`)
+    log(`  ok: ${ifacePath.replace(`${PROJECT_ROOT}/`, '')}`)
 
     const layoutOut = parseLayoutOut(source)
     if (layoutOut) {
-      writeOut(layoutOut, emitLayoutOnly({ baseName: base, reflection }))
+      writeOut(log, layoutOut, emitLayoutOnly({ baseName: base, reflection }))
     }
-    writeConstsOut(source, base, codegenInputs.exportedConsts)
-    writeJsExports(slangPath, source, base, wgsl)
+    writeConstsOut(log, source, base, codegenInputs.exportedConsts)
+    await writeJsExports(log, slangPath, source, base, wgsl)
   } finally {
     rmSync(tmp, { recursive: true, force: true })
   }
 }
 
-function main() {
+// A module compiles to nothing on its own; it contributes only the artifacts
+// its directives ask for.
+async function emitModuleArtifacts(
+  log: Log,
+  slangPath: string,
+  source: string,
+) {
+  const base = path.basename(slangPath, '.slang')
+  const exportedConsts = parseExportedConsts(
+    source,
+    readImportedSources(slangPath, source),
+  )
+  if (exportedConsts) {
+    const generatedPath = path.join(
+      path.dirname(slangPath),
+      `${base}.generated.ts`,
+    )
+    writeFileSync(generatedPath, emitConsts(base, exportedConsts))
+    log(`  ok: ${generatedPath.replace(`${PROJECT_ROOT}/`, '')}`)
+  }
+  writeConstsOut(log, source, base, exportedConsts)
+  await writeJsExports(log, slangPath, source, base)
+}
+
+async function main() {
   const argPaths = process.argv.slice(2).filter(a => !a.startsWith('--'))
   const paths = argPaths.length > 0 ? argPaths : walk(PROJECT_ROOT)
-  console.log(`Found ${paths.length} .slang file(s)`)
-  for (const p of paths) {
-    const source = readFileSync(p, 'utf8')
-    if (isModuleFile(source)) {
-      const exportedConsts = parseExportedConsts(
-        source,
-        readImportedSources(p, source),
-      )
-      const base = path.basename(p, '.slang')
-      if (exportedConsts) {
-        const generatedPath = path.join(path.dirname(p), `${base}.generated.ts`)
-        writeFileSync(generatedPath, emitConsts(base, exportedConsts))
-        console.log(`  ok: ${generatedPath.replace(`${PROJECT_ROOT}/`, '')}`)
-      }
-      writeConstsOut(source, base, exportedConsts)
-      writeJsExports(p, source, base)
-      continue
+  const files = paths.map(p => ({ path: p, source: readFileSync(p, 'utf8') }))
+  assertOutPathsUnique(files)
+  // Leave a couple of cores for everything else on the machine (and for this
+  // process, which does the codegen between spawns).
+  const limit = Math.max(1, availableParallelism() - 2)
+  console.log(`Found ${files.length} .slang file(s); building ${limit}-way`)
+
+  const failures = await pool(files, limit, async file => {
+    const lines: string[] = [file.path.replace(`${PROJECT_ROOT}/`, '')]
+    const log: Log = line => lines.push(line)
+    try {
+      await (isModuleFile(file.source)
+        ? emitModuleArtifacts(log, file.path, file.source)
+        : compileOne(log, file.path, file.source))
+    } finally {
+      // Print what did land even when the compile threw, so the failure report
+      // at the end reads against the same progress a serial build showed.
+      console.log(lines.join('\n'))
     }
-    console.log(p.replace(`${PROJECT_ROOT}/`, ''))
-    compileOne(p)
+  })
+
+  if (failures.length > 0) {
+    for (const { item, error } of failures) {
+      const message = error instanceof Error ? error.message : String(error)
+      console.error(
+        `\n${item.path.replace(`${PROJECT_ROOT}/`, '')}: ${message}`,
+      )
+    }
+    throw new Error(
+      `${failures.length} of ${files.length} .slang file(s) failed`,
+    )
   }
 }
 
 try {
-  main()
+  await main()
 } catch (e) {
   // run() already put the tool's diagnostic in the Error message; print just
   // that (no Node stack / raw Buffer dump) and fail the build.

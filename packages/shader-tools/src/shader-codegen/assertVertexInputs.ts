@@ -22,6 +22,8 @@
 // or at locations. Checking here fails `pnpm gen:shaders` at the moment the bad
 // file would be written, for every shader and both targets.
 
+import { demangle } from './slangcMangling.ts'
+
 import type { InstanceAttr } from './codegen.ts'
 
 function componentCount(a: InstanceAttr) {
@@ -55,12 +57,6 @@ interface DeclaredInput {
   type: string
 }
 
-// Slang suffixes the field name with a disambiguating index (`color` ->
-// `color_1`), and the index isn't stable across shaders, so strip it.
-function demangle(name: string) {
-  return name.replace(/_\d+$/, '')
-}
-
 function parseWgslInputs(wgsl: string): DeclaredInput[] | undefined {
   const struct = /struct vertexInput\w*\s*\{([\s\S]*?)\}/.exec(wgsl)
   if (!struct) {
@@ -75,11 +71,12 @@ function parseWgslInputs(wgsl: string): DeclaredInput[] | undefined {
   }))
 }
 
+// `\s*` rather than `\n\s*` between the layout qualifier and the declaration:
+// they land on separate lines in slangc's output today, and matching only that
+// spelling made the whole check depend on the emitter's line breaks.
 function parseGlslInputs(glsl: string): DeclaredInput[] {
   return [
-    ...glsl.matchAll(
-      /layout\(location\s*=\s*(\d+)\)\s*\n\s*in\s+(\w+)\s+a_(\w+);/g,
-    ),
+    ...glsl.matchAll(/layout\(location\s*=\s*(\d+)\)\s*in\s+(\w+)\s+a_(\w+);/g),
   ].map(m => ({ location: Number(m[1]), type: m[2]!, name: m[3]! }))
 }
 
@@ -115,25 +112,49 @@ function compare(
   }
 }
 
-// Throws if the emitted shaders disagree with `attrs`. Shaders with no vertex
-// input struct (compute kernels, storage-buffer instancing) are skipped.
+// Every check here is over what the parse FOUND, so a parse that finds nothing
+// passes. That is the right answer for a shader whose instances come from a
+// storage buffer (and for a compute kernel, which gets here with no attrs at
+// all): there are no vertex inputs to declare. It is the wrong answer — a guard
+// that silently stopped guarding — for a shader whose instance struct IS the
+// vertex entry point's parameter, which is what `expectDeclared` says. slangc
+// can drop an input the shader body never reads, but not all of them: something
+// has to be read for the struct to exist.
+function assertParsedSomething(
+  what: string,
+  expectDeclared: boolean,
+  declared: readonly DeclaredInput[] | undefined,
+) {
+  if (expectDeclared && !declared?.length) {
+    throw new Error(
+      `${what}: the reflected instance struct is this shader's vertex input, ` +
+        `but no vertex input declarations were found in the emitted source. ` +
+        `That means the parser stopped matching what slangc emits — the ` +
+        `layout cross-check would silently pass from here on. Update the ` +
+        `patterns in assertVertexInputs.ts against the new output.`,
+    )
+  }
+}
+
+// Throws if the emitted shaders disagree with `attrs`. `expectDeclared` is true
+// when the instance struct is the vertex entry point's own parameter; false for
+// storage-buffer instancing, where no vertex inputs are declared at all.
 export function assertVertexInputsMatch(
   label: string,
   attrs: InstanceAttr[],
   shaders: { wgsl?: string; glslVertex?: string },
+  expectDeclared: boolean,
 ) {
   if (shaders.wgsl !== undefined) {
     const declared = parseWgslInputs(shaders.wgsl)
+    assertParsedSomething(`${label} (WGSL)`, expectDeclared, declared)
     if (declared) {
       compare(`${label} (WGSL)`, attrs, declared, wgslTypeOf)
     }
   }
   if (shaders.glslVertex !== undefined) {
-    compare(
-      `${label} (GLSL)`,
-      attrs,
-      parseGlslInputs(shaders.glslVertex),
-      glslTypeOf,
-    )
+    const declared = parseGlslInputs(shaders.glslVertex)
+    assertParsedSomething(`${label} (GLSL)`, expectDeclared, declared)
+    compare(`${label} (GLSL)`, attrs, declared, glslTypeOf)
   }
 }

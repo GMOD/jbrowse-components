@@ -28,10 +28,11 @@ describe('arc palette parity (JS ↔ GPU uniform slots)', () => {
 
 // The read-cloud endpoint squares are opaque fills, so they use the pale
 // pileup-fill short-insert (matching the legend + pileup) rather than the
-// saturated stroke variant the arc curves use — otherwise the squares read a
-// different pink from the legend swatch. arcMarkerColorPalette is the GPU
-// arcMarkerColorByIndex twin; pin the one substituted slot and confirm the rest
-// is the arc palette unchanged.
+// saturated stroke variant the arc curves use, otherwise the squares read a
+// different pink from the legend swatch. This array is what all three draw
+// paths use, the GPU included (it is uploaded to the arcMarkerColor uniform
+// slots and indexed there), so pinning it here pins every renderer: the one
+// substituted slot, and the rest identical to the arc palette.
 describe('arcMarkerColorPalette (read-cloud endpoint squares)', () => {
   it('substitutes the pale short-insert fill at the short-insert slot', () => {
     expect(arcMarkerColorPalette[2]).toEqual(

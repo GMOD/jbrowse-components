@@ -4,7 +4,7 @@
 // in absolute canvas px — the same band the dome/flat passes anchor to
 // (`covOffset` = the arc baseline, band bottom in up mode / top in down mode;
 // `arcBandH` = band height). The devBand scissor clips the tick to the visible
-// slice. Colored from the shared arc palette (arcColor0..8).
+// slice. Colored from the shared arc palette (u.arcColor).
 //
 // Drawn as an antialiased quad, not a line-list. Native lines are one DEVICE
 // pixel wide with no width control in WebGPU (and effectively none in WebGL2),

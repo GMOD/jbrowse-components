@@ -10,6 +10,7 @@ import {
   readLeadingBp,
 } from '@jbrowse/cigar-utils'
 
+import { ARC_COLOR_SHORT_INSERT } from '../../LinearAlignmentsDisplay/shaders/palettes.ts'
 import {
   classifyInsertSize,
   robustSpread,
@@ -100,7 +101,10 @@ function isConcordantFRPair(
 // classifier reads as a story rather than as magic numbers.
 const COLOR_DEFAULT = 0
 const COLOR_LONG_INSERT = 1
-const COLOR_SHORT_INSERT = 2
+// The shader's own slot number: arcMarkerColorByIndex overrides exactly this
+// index with the pale pileup fill, and the Canvas2D marker palette overrides the
+// same one. A local `2` here agreed with them by inspection only.
+const COLOR_SHORT_INSERT = ARC_COLOR_SHORT_INSERT
 const COLOR_INTERCHROM = 3
 // LL slot 4; RR slot 5; RL slot 6 (see arcColorPalette).
 const COLOR_PAIR_LL = 4

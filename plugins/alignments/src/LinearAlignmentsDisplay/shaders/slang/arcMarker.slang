@@ -6,7 +6,7 @@
 // Y-scale uniforms (arcsYLog / arcsYDomainBp / covOffset / pairedArcsDown) and
 // the |tlen| → destY formula must stay byte-identical to arc.slang's flat path.
 //! targets: wgsl, glsl
-//! export-consts: ARC_MARKER_PX, ARC_MARKER_HEIGHT_MARGIN
+//! export-consts: ARC_MARKER_PX
 
 import alignmentsUniforms;
 import hpmath;
@@ -15,9 +15,9 @@ import hpmath;
 public static const uint VERTS_PER_INSTANCE = 6u;
 // Side length (CSS px) of an endpoint square. Mirrored in drawCanvas.ts.
 static const float ARC_MARKER_PX = 5.0;
-// Must equal arc.slang's ARC_HEIGHT_MARGIN so a marker lands exactly on the
-// flat line's Y.
-static const float ARC_MARKER_HEIGHT_MARGIN = 8.0;
+// ARC_HEIGHT_MARGIN comes from alignmentsUniforms, alongside the arcBandDestY
+// formula that consumes it — the same declaration arc.slang subtracts, so a
+// marker cannot land off its flat line.
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -32,7 +32,7 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   ColorVsOut o;
   // Y of the flat line at this insert size — shared arcBandDestY formula, so it
   // stays byte-identical to arc.slang's flat path and the square lands on the line.
-  float availH = u.arcBandH - ARC_MARKER_HEIGHT_MARGIN;
+  float availH = u.arcBandH - ARC_HEIGHT_MARGIN;
   float destY = arcBandDestY(inst.yBp, availH, u);
   float yDir = (u.pairedArcsDown > 0.5) ? 1.0 : -1.0;
   float cy = destY * yDir;

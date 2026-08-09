@@ -19,7 +19,7 @@
 // The two kind predicates are pure scalar decisions the Canvas2D renderer and
 // the CPU pick engine must make identically; both import the generated twins
 // rather than re-spelling the thresholds (adr-051).
-//! js-export: isCigarKind, isMarkerKind, fillShade, hoverDarken, thinWidthFade
+//! js-export: isCigarKind, isMarkerKind, fillShade, hoverDarken, thinWidthFade, sBlend, yCurve
 //! export-consts: KIND_CIGAR_MIN, KIND_MARKER
 module syntenyTypes;
 
@@ -163,6 +163,13 @@ public bool isCulled(Corners c, float alignmentLength, Uniforms u) {
 // fragment inverts yCurve via Newton using yCurveDeriv. Keeping the cubic in
 // one place stops the four call sites (fill evalT, fill Newton, edge
 // hermiteEdges, edge tangent) from drifting out of sync.
+//
+// There is a fifth call site, and it is not in a shader: the Canvas2D/SVG path
+// draws this curve as a `bezierCurveTo` with both control points at midheight
+// (syntenyRibbonPath.ts), which is the same cubic in a different
+// parameterization. `//! js-export`ed so the identity is checked at those
+// control points rather than asserted in a comment — the two derivatives stay
+// shader-only, since Canvas2D never inverts the curve.
 public float sBlend(float t)      { return t * t * (3.0 - 2.0 * t); }
 public float sBlendDeriv(float t) { return 6.0 * t * (1.0 - t); }
 public float yCurve(float t)      { return 1.5 * t * (1.0 - t) + t * t * t; }

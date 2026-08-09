@@ -30,15 +30,23 @@ export interface CanvasLike {
   stroke(): void
 }
 
-// SYNC: the same cubic the curve shaders trace — syntenyTypes.slang's `sBlend`
-// (the smoothstep X-blend) and `yCurve` (`1.5 t (1-t) + t³`) together form the
-// cubic Bezier from (sx?, 0) to (sx?, height) with both control points at
-// midheight on each anchor's x. Algebra:
+// The same cubic the curve shaders trace — syntenyTypes.slang's `sBlend` (the
+// smoothstep X-blend) and `yCurve` (`1.5 t (1-t) + t³`) together form the cubic
+// Bezier from (sx?, 0) to (sx?, height) with both control points at midheight
+// on each anchor's x. Algebra:
 //   (1-t)²(1+2t) = 1 - sBlend(t)
 //   (h/2)·3t(1-t) + t³·h = h·[1.5t(1-t) + t³]
 // so what the shader evaluates analytically per fragment is a single
 // bezierCurveTo per edge here, with zero loss of fidelity (and perfect browser
 // AA at the curve).
+//
+// syntenyShaderParity.test.ts evaluates the beziers these functions actually
+// emit against the shader's own `sBlend`/`yCurve`, so the identity above is
+// checked rather than asserted — it used to be a SYNC comment, which is a note
+// to a future reader and not a mechanism. Every control point below is
+// load-bearing: a midheight that drifts leaves the GPU fill and the Canvas2D /
+// SVG fill tracing different paths, which shows as a sliver of background along
+// a curved ribbon's edge in one backend and not the other.
 //
 // Corners are NOT widened here — adjacent ribbons that share a genomic
 // boundary must have identical corner positions so their bezier curves

@@ -1,9 +1,9 @@
 // Insertion pass: renders up to 3 rects per instance — the insertion bar
 // (or numeric label box when long + zoomed), plus top/bottom serifs.
 //! targets: wgsl, glsl
-//! export-consts: LABEL_CHAR_W, LABEL_PAD, LONG_INSERTION_MIN_LENGTH, LONG_INSERTION_TEXT_THRESHOLD_PX, MIN_HEIGHT_FOR_TEXT, INSERTION_SERIF_MIN_PX_PER_BP
+//! export-consts: LONG_INSERTION_MIN_LENGTH, LONG_INSERTION_TEXT_THRESHOLD_PX, MIN_HEIGHT_FOR_TEXT, INSERTION_SERIF_MIN_PX_PER_BP
 //! consts-out: packages/alignments-core/src/insertionLabel.generated.ts
-//! js-export: insertionBarWidthPx
+//! js-export: insertionBarWidthPx, textWidth
 //! js-export-out: packages/alignments-core/src/insertionWidth.generated.ts
 
 import alignmentsUniforms;
@@ -31,11 +31,13 @@ struct Instance {
   float frequency : ATTR3;
 };
 
-// Width of the count-label box: one char per digit plus padding. The two
-// numbers are exported to @jbrowse/alignments-core (see the consts-out
-// directive above) and read by textWidthForNumber(), the Canvas2D twin that
-// actually measures the text, so the GPU box can't size differently from the
-// label drawn into it.
+// Width of the count-label box: one char per digit plus padding.
+//
+// `//! js-export`ed as `textWidthForNumber` (see js-export-out): the Canvas2D
+// path draws the actual text into this box, so it has to size it identically or
+// the digits overflow. It used to export the two constants instead and mirror
+// the digit-count branching by hand in labelConstants.ts — which is a twin, and
+// the reason adr-051 exists.
 static const float LABEL_CHAR_W = 6.0;
 static const float LABEL_PAD = 10.0;
 

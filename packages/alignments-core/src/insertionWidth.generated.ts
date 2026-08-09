@@ -4,7 +4,7 @@
 // Scalar twins of insertion.slang, transliterated from slangc's WGSL so
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
-function textWidth(num: number): number {
+export function textWidth(num: number): number {
   if ((num < 10)) {
     return 16.0
   }

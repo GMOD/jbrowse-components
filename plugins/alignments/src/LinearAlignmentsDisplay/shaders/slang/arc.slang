@@ -29,7 +29,7 @@
 // height; for flat it is the line's Y. Read cloud sets yBp = |tlen|; arc mode
 // sets yBp = |x2-x1|/2 (the genomic radius).
 //! targets: wgsl, glsl
-//! export-consts: ARC_HEIGHT_MARGIN, ARC_FAR_SCREEN_WIDTHS, ARC_FLAT_MIN_PX, ARC_FLAT_ALPHA, ARC_APEX_FRACTION
+//! export-consts: ARC_HEIGHT_MARGIN, ARC_FAR_SCREEN_WIDTHS, ARC_FLAT_MIN_PX, ARC_FLAT_ALPHA, ARC_APEX_FRACTION, ARC_COLOR_SHORT_INSERT
 
 import alignmentsUniforms;
 
@@ -43,7 +43,6 @@ import alignmentsUniforms;
 // curve at 128, and the visible error was never the tessellation.)
 public static const uint ARC_CURVE_SEGMENTS = 64u;
 public static const uint VERTS_PER_INSTANCE = (ARC_CURVE_SEGMENTS + 1u) * 2u;
-static const float ARC_HEIGHT_MARGIN = 8.0;
 static const float PI = 3.14159265359;
 // Fraction of destY the dome's apex reaches. The cubic bezier this replaced had
 // control points at (x1, apexY) / (x2, apexY), whose peak is 3·(1/2)·(1/2) =

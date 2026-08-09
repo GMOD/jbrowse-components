@@ -1,4 +1,5 @@
 import {
+  assertOutPathsUnique,
   parseExportedConsts,
   parseJsExports,
   parseLayoutOut,
@@ -45,6 +46,23 @@ describe('parseVertsPerInstance', () => {
       'static const uint VERTS_PER_INSTANCE = N * 2u;',
     ].join('\n')
     expect(parseVertsPerInstance(shader, [module])).toBe(6)
+  })
+
+  // These files carry long block comments explaining superseded math, and a
+  // `static const` inside one reads exactly like a live declaration to a regex.
+  // The line-comment form defends itself (the pattern anchors at `^\s*`), which
+  // is why only the block form was a hole.
+  test('ignores a declaration that only exists inside a comment', () => {
+    const src = [
+      '/*',
+      'static const uint VERTS_PER_INSTANCE = 99u;',
+      '*/',
+      'static const uint VERTS_PER_INSTANCE = 6u;',
+    ].join('\n')
+    expect(parseVertsPerInstance(src)).toBe(6)
+    expect(
+      parseVertsPerInstance('/* static const uint VERTS_PER_INSTANCE = 4u; */'),
+    ).toBeUndefined()
   })
 
   test('undefined when the shader declares none', () => {
@@ -141,6 +159,37 @@ describe('parseExportedConsts', () => {
     })
   })
 
+  // Third literal form the evaluator could not read, after hex. Both letters
+  // reached the identifier pass as unresolvable names — `0.5f` reported
+  // "references unknown identifier f", and the arithmetic allow-list already
+  // permitted an `e` it could never actually be handed.
+  test('evaluates float suffixes and scientific notation', () => {
+    const src = [
+      '//! export-consts: HALF, EPS, SCALED, HUGE_SPAN',
+      'static const float HALF = 0.5f;',
+      'static const float EPS = 1e-6;',
+      'static const float SCALED = EPS * 2.0f;',
+      'static const float HUGE_SPAN = 1.5E+3;',
+    ].join('\n')
+    expect(parseExportedConsts(src)).toEqual({
+      HALF: 0.5,
+      EPS: 1e-6,
+      SCALED: 2e-6,
+      HUGE_SPAN: 1500,
+    })
+  })
+
+  // The suffix strip anchors at the start of a number, so it cannot reach into
+  // an identifier that merely ends in one.
+  test('does not clip a constant whose name ends in a digit-plus-suffix', () => {
+    const src = [
+      '//! export-consts: DOUBLED',
+      'static const uint X1 = 4u;',
+      'static const uint DOUBLED = X1 * 2u;',
+    ].join('\n')
+    expect(parseExportedConsts(src)).toEqual({ DOUBLED: 8 })
+  })
+
   test('throws when a named const does not exist', () => {
     expect(() =>
       parseExportedConsts(
@@ -180,6 +229,23 @@ describe('parseJsExports', () => {
     expect(parseJsExports(OWN)).toEqual([
       { name: 'ownFn', returnType: 'float', paramTypes: ['float'] },
     ])
+  })
+
+  // A commented-out function is not compiled, so slangc emits no body for it
+  // and the twin emitter would have nothing to lift — but the name would sit in
+  // the "Declared:" list a typo prints, pointing at a function that isn't there.
+  // Worse for an import: the module's copy is scanned first, so a stale one
+  // inside a block comment would be shadowed only by luck of ordering.
+  test('does not see a function declared inside a block comment', () => {
+    const src = [
+      '//! js-export: ownFn',
+      '/*',
+      'float ownFn(float x) {',
+      '  return x * 2.0;',
+      '}',
+      '*/',
+    ].join('\n')
+    expect(() => parseJsExports(src)).toThrow(/no such 'public' function/)
   })
 
   test('resolves a function declared in an imported module', () => {
@@ -227,5 +293,52 @@ describe('parseLayoutOut', () => {
 
   test('undefined when absent', () => {
     expect(parseLayoutOut('//! targets: wgsl')).toBeUndefined()
+  })
+})
+
+// Every `*-out` directive redirects a generated artifact to a path outside the
+// shader's own directory, and nothing about the path says which shader owns it.
+// Two shaders claiming one path used to be last-writer-wins in scan order —
+// wrong, but repeatably wrong; with the files compiling concurrently it becomes
+// a race, so it has to be refused rather than merely deplored.
+describe('assertOutPathsUnique', () => {
+  const file = (path: string, source: string) => ({ path, source })
+
+  test('accepts distinct out paths, including several from one shader', () => {
+    expect(() => {
+      assertOutPathsUnique([
+        file(
+          'a.slang',
+          [
+            '//! layout-out: pkg/a.layout.generated.ts',
+            '//! consts-out: pkg/a.consts.generated.ts',
+          ].join('\n'),
+        ),
+        file('b.slang', '//! layout-out: pkg/b.layout.generated.ts'),
+        file('c.slang', '// no directives here'),
+      ])
+    }).not.toThrow()
+  })
+
+  test('refuses two shaders writing one path, naming both', () => {
+    expect(() => {
+      assertOutPathsUnique([
+        file('a.slang', '//! consts-out: pkg/shared.generated.ts'),
+        file('b.slang', '//! consts-out: pkg/shared.generated.ts'),
+      ])
+    }).toThrow(
+      /pkg\/shared\.generated\.ts is written by two shaders: a\.slang and b\.slang/,
+    )
+  })
+
+  // The three directives write the same kind of artifact to the same kind of
+  // place, so the collision is across all of them, not per-directive.
+  test('refuses a collision between two different directives', () => {
+    expect(() => {
+      assertOutPathsUnique([
+        file('a.slang', '//! layout-out: pkg/shared.generated.ts'),
+        file('b.slang', '//! js-export-out: pkg/shared.generated.ts'),
+      ])
+    }).toThrow(/written by two shaders/)
   })
 })

@@ -22,6 +22,27 @@ const SLANG_SCALARS = new Set(['float', 'uint', 'int', 'bool'])
 // Statement keywords that can open a line looking like a function signature.
 const SLANG_KEYWORDS = new Set(['else', 'do', 'return'])
 
+/**
+ * Blank out every comment, keeping the source's length and line structure so
+ * the regexes below see the same columns and `^` anchors they would have.
+ *
+ * Everything that reads a `.slang` as text has to do this first. A LINE comment
+ * happens to be self-defending — the patterns here all anchor at `^\s*`, and
+ * `//` isn't whitespace — but a BLOCK comment is not: a `static const` or a
+ * function signature sitting in one is indistinguishable from a live
+ * declaration, and these files carry long block comments explaining the math
+ * they replaced. Reading a decommissioned constant back out and emitting it as
+ * a TS export is the failure, and it is silent.
+ *
+ * Note the directive parsers run on the RAW source: `//!` is itself a line
+ * comment.
+ */
+export function stripComments(source: string) {
+  return source.replaceAll(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, m =>
+    m.replaceAll(/[^\n]/g, ' '),
+  )
+}
+
 // Every module-scope `(public)? static const <type> NAME = <expr>;`, keyed by
 // name with the raw right-hand side as the value.
 //
@@ -34,7 +55,8 @@ function parseConstDecls(source: string, imported: readonly string[] = []) {
   const constRe =
     /^\s*(?:public\s+)?static\s+const\s+(?:float|int|uint)\s+(\w+)\s*=\s*([^;]+);/gm
   const decls = new Map<string, string>()
-  for (const src of [source, ...imported]) {
+  for (const raw of [source, ...imported]) {
+    const src = stripComments(raw)
     constRe.lastIndex = 0
     for (let m = constRe.exec(src); m; m = constRe.exec(src)) {
       if (!decls.has(m[1]!)) {
@@ -62,11 +84,20 @@ function evalConstExpr(
   const dehexed = raw.replaceAll(/0[xX]([0-9a-fA-F]+)[uU]?\b/g, (_m, digits) =>
     String(Number.parseInt(digits as string, 16)),
   )
-  // Strip Slang's `u` / `U` integer suffix so `1u` doesn't leave a stray `u`
-  // that the identifier pass would fail to resolve.
-  const stripped = dehexed.replaceAll(/(\d+)[uU]\b/g, '$1')
-  // Replace identifier references with their resolved numeric values.
-  const cleaned = stripped.replaceAll(/[A-Za-z_]\w*/g, name => {
+  // Strip Slang's literal type suffix so it doesn't leave a stray letter the
+  // identifier pass would fail to resolve. The FLOAT suffixes matter as much as
+  // the integer ones: `0.5f` is an ordinary Slang literal and reported
+  // `references unknown identifier f`. The leading `(?<![\w.])` keeps the match
+  // anchored at the start of a number, so a constant named `X1u` isn't clipped.
+  const stripped = dehexed.replaceAll(
+    /(?<![\w.])((?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)[uUlLfFhH]\b/g,
+    '$1',
+  )
+  // Replace identifier references with their resolved numeric values. The
+  // lookbehind is what lets an exponent through: in `1e-6` the `e` is part of
+  // the literal, not a name, and treating it as one was why the allow-list
+  // below could permit scientific notation that never reached it.
+  const cleaned = stripped.replaceAll(/(?<![\d.])[A-Za-z_]\w*/g, name => {
     if (evaluating.has(name)) {
       throw new Error(`${what}: circular static-const reference: ${name}`)
     }
@@ -83,7 +114,7 @@ function evalConstExpr(
   // 32-bit ints these constants are (a scheme bitmask is built as
   // `(1 << CS_A) | (1 << CS_B)`). A stray comparison would evaluate to a
   // boolean, which the isFinite check below rejects.
-  if (!/^[\d.\se+\-*/%()<>|&^~]+$/.test(cleaned)) {
+  if (!/^[\d.\seE+\-*/%()<>|&^~]+$/.test(cleaned)) {
     throw new Error(
       `${what} must be a numeric arithmetic expression; got: ${raw} ` +
         `(post-substitution: ${cleaned})`,
@@ -200,7 +231,8 @@ export function parseJsExports(
     /^\s*(?:public\s+)?([A-Za-z_]\w*)\s+([A-Za-z_]\w*)\s*\(([^)]*)\)\s*\{/gm
   // Imports first, so a same-named function in the shader's own source wins —
   // that is the one slangc will have compiled.
-  for (const src of [...importedSources, source]) {
+  for (const raw of [...importedSources, source]) {
+    const src = stripComments(raw)
     fnRe.lastIndex = 0
     for (let m = fnRe.exec(src); m; m = fnRe.exec(src)) {
       // `else if (...) {` reads as a two-identifier signature. Nothing
@@ -303,4 +335,34 @@ export function parseConstsOut(source: string) {
 export function parseJsExportOut(source: string) {
   const match = /^\/\/!\s*js-export-out:\s*(\S+)/m.exec(source)
   return match ? match[1]! : undefined
+}
+
+// Two .slang files naming the same `//! *-out` path would race, since files
+// compile concurrently, and win nondeterministically. Serially they merely
+// overwrote each other — already a bug, since one of the two shaders' numbers
+// then silently isn't what the importing package reads — so say so rather than
+// making it intermittent.
+export function assertOutPathsUnique(
+  files: readonly { path: string; source: string }[],
+) {
+  const owner = new Map<string, string>()
+  for (const f of files) {
+    for (const out of [
+      parseLayoutOut(f.source),
+      parseConstsOut(f.source),
+      parseJsExportOut(f.source),
+    ]) {
+      if (out === undefined) {
+        continue
+      }
+      const prior = owner.get(out)
+      if (prior !== undefined) {
+        throw new Error(
+          `${out} is written by two shaders: ${prior} and ${f.path}. ` +
+            `Only one may own a generated file.`,
+        )
+      }
+      owner.set(out, f.path)
+    }
+  }
 }

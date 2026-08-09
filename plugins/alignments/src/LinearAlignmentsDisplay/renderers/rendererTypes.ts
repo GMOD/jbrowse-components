@@ -1,6 +1,6 @@
 import { makeCellLeftMapper } from '@jbrowse/render-core/canvas2dUtils'
 
-import { frequencyAlpha } from '../shaders/slang/alignmentsUniforms.js.generated.ts'
+import { frequencyFadeGate } from '../shaders/slang/alignmentsUniforms.js.generated.ts'
 import { intronAlpha } from '../shaders/slang/gap.js.generated.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -225,11 +225,6 @@ export function shouldDrawOverlaps(state: RenderState) {
   )
 }
 
-// Sub-pixel alpha blend: lerp between `base` (full-row coverage) and 1 using
-// per-site frequency. `frequencyAlpha` is generated from
-// alignmentsUniforms.slang by `pnpm gen:shaders` (adr-051), so this is the
-// shader's own formula rather than a copy of it.
-
 // The whole low-frequency fade gate for one feature: honors the
 // "show low frequency mismatches" toggle, skips features that already cover a
 // full pixel, and normalizes the frequency byte. Callers pass `base` from their
@@ -246,15 +241,22 @@ export function shouldDrawOverlaps(state: RenderState) {
 // Every fading pass must go through this rather than reassembling the gate
 // locally: hand-rolled copies are how the clip pass silently lost its toggle
 // check and how the softclip-base pass fed 0 into the lerp (0 fades to nothing,
-// it doesn't mean "opaque"). Mirrors frequencyFade() in alignmentsUniforms.slang.
+// it doesn't mean "opaque").
+//
+// The gate itself is `frequencyFadeGate`, generated from
+// alignmentsUniforms.slang — so is the lerp inside it — leaving this function
+// with the two things that are genuinely the CPU side's: reading the toggle off
+// the render state, and normalizing the frequency byte the worker packs.
 export function frequencyFade(
   state: RenderState,
   base: number,
   frequencyByte: number,
 ) {
-  return state.filterMismatchesByFrequency && base < 1
-    ? frequencyAlpha(base, frequencyByte / 255)
-    : 1
+  return frequencyFadeGate(
+    base,
+    frequencyByte / 255,
+    state.filterMismatchesByFrequency,
+  )
 }
 
 // Width (CSS px) of one 1bp pileup cell for the Canvas2D "colored rect per base"

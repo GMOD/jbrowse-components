@@ -518,6 +518,25 @@ export const swatchPaletteKeys = {
 
 export type SwatchCategory = keyof typeof swatchPaletteKeys
 
+// Palette key backing EVERY category, including the ones with no legend swatch.
+// This is what the GPU uploads into `u.readCategoryColor`, one slot per RC_*
+// index, so the shader can index instead of branching — and so the color a
+// category is painted and the color its swatch shows come from one table rather
+// than from a shader chain checked against this one by a test.
+//
+// The four dynamic categories resolve per read (an hsl() of the mapq, a packed
+// tag color) and never reach the uploaded table; they take the neutral fill so
+// the slot holds a sane color rather than whatever the last block render left,
+// which is also what the shader's own tagColor==0 path paints.
+export const readCategoryPaletteKeys = {
+  ...swatchPaletteKeys,
+  plain: 'colorPairLR',
+  modFwd: 'colorModificationFwd',
+  modRev: 'colorModificationRev',
+  mapq: 'colorPairLR',
+  tag: 'colorPairLR',
+} satisfies Record<ReadColorCategory, keyof ColorPalette>
+
 // CSS color of a fixed-swatch category, straight from the live palette.
 export function categorySwatchColor(
   category: SwatchCategory,

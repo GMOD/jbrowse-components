@@ -315,6 +315,33 @@ test.each([
   expect(() => emit(wgsl, ['f'])).toThrow(needle)
 })
 
+// A builtin whose JS namesake is *nearly* right is the worst case: it emits,
+// it reads correctly, and it disagrees only on inputs a test is unlikely to
+// pick. `round` was in MATH_BUILTINS mapped to `Math.round` until this landed.
+test('refuses round(), which JS and WGSL break ties on differently', () => {
+  expect(() =>
+    emit(`fn f_0( x_0 : f32) -> f32 { return round(x_0); }`, ['f']),
+  ).toThrow(/round.*ties to EVEN.*floor\(x \+ 0\.5\)/s)
+})
+
+test('mix uses WGSL’s definition, which is exact at both endpoints', () => {
+  const out = emit(
+    `fn f_0( a_0 : f32,  b_0 : f32,  t_0 : f32) -> f32 { return mix(a_0, b_0, t_0); }`,
+    ['f'],
+  )
+  // `a + (b - a) * t` returns 0.30000000000000004 here; WGSL's form returns b.
+  expect(evaluate(out, 'f')(0.1, 0.3, 1)).toBe(0.3)
+  expect(evaluate(out, 'f')(0.1, 0.3, 0)).toBe(0.1)
+})
+
+test('a bare hex literal is an integer, so it takes the truncating divide', () => {
+  // Typing `0xff` off its trailing `f` made it an f32 and sent this down the
+  // float path — WGSL truncates an integer quotient and JS does not.
+  const out = emit(`fn f_0( n_0 : u32) -> u32 { return 0xff / u32(2); }`, ['f'])
+  expect(out).toContain('Math.trunc')
+  expect(evaluate(out, 'f')(0)).toBe(127)
+})
+
 test('refuses an unimplemented builtin instead of emitting a dangling call', () => {
   // `dot` would otherwise look exactly like a call to a module function and be
   // emitted as `dot(...)`, resolving to nothing at runtime.

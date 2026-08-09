@@ -7,9 +7,7 @@ export const VERTS_PER_INSTANCE = 6
 
 export const ARC_MARKER_PX = 5
 
-export const ARC_MARKER_HEIGHT_MARGIN = 8
-
-export const UNIFORMS_SIZE_BYTES = 336
+export const UNIFORMS_SIZE_BYTES = 1040
 
 // Word indices into a Float32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_F32 = {
@@ -40,9 +38,9 @@ export const UNIFORM_OFFSET_F32 = {
   arcsYDomainBp: 24,
   arcsYLog: 25,
   reversed: 32,
-  pxPerBp: 78,
-  arcBandH: 81,
-  dpr: 82,
+  pxPerBp: 256,
+  arcBandH: 258,
+  dpr: 259,
 } as const
 
 // Word indices into a Int32Array view over the uniform buffer.
@@ -86,33 +84,19 @@ export const UNIFORM_OFFSET_U32 = {
   colorUnmappedMate: 59,
   colorInterchrom: 60,
   colorMutedSnpBase: 61,
-  arcColor0: 62,
-  arcColor1: 63,
-  arcColor2: 64,
-  arcColor3: 65,
-  arcColor4: 66,
-  arcColor5: 67,
-  arcColor6: 68,
-  arcColor7: 69,
-  linkedReadColor0: 70,
-  linkedReadColor1: 71,
-  linkedReadColor2: 72,
-  linkedReadColor3: 73,
-  linkedReadColor4: 74,
-  linkedReadColor5: 75,
-  linkedReadColor6: 76,
-  linkedReadColor7: 77,
-  colorSplitInversion: 79,
-  arcColor8: 80,
+  colorSplitInversion: 257,
 } as const
 
 
-// Palette-group slot arrays: offsets of consecutive <prefix>0..N
-// fields, indexed into the 4-byte-word uniform buffer (works with
-// either Uint32Array or Float32Array views — the field kind picks).
+// Word indices of each array field’s elements, into a 4-byte-word
+// view over the uniform buffer (Uint32Array or Float32Array — the
+// field’s scalar type picks, same as UNIFORM_OFFSET_*). NOT
+// consecutive: std140 pads every array element to 16 bytes.
 export const UNIFORM_SLOT_ARRAYS = {
-  arcColor: [62, 63, 64, 65, 66, 67, 68, 69, 80] as const,
-  linkedReadColor: [70, 71, 72, 73, 74, 75, 76, 77] as const,
+  arcColor: [64, 68, 72, 76, 80, 84, 88, 92, 96] as const,
+  arcMarkerColor: [100, 104, 108, 112, 116, 120, 124, 128, 132] as const,
+  linkedReadColor: [136, 140, 144, 148, 152, 156, 160, 164] as const,
+  readCategoryColor: [168, 172, 176, 180, 184, 188, 192, 196, 200, 204, 208, 212, 216, 220, 224, 228, 232, 236, 240, 244, 248, 252] as const,
 } as const
 
 export interface Uniforms {
@@ -178,25 +162,12 @@ export interface Uniforms {
   colorUnmappedMate: number
   colorInterchrom: number
   colorMutedSnpBase: number
-  arcColor0: number
-  arcColor1: number
-  arcColor2: number
-  arcColor3: number
-  arcColor4: number
-  arcColor5: number
-  arcColor6: number
-  arcColor7: number
-  linkedReadColor0: number
-  linkedReadColor1: number
-  linkedReadColor2: number
-  linkedReadColor3: number
-  linkedReadColor4: number
-  linkedReadColor5: number
-  linkedReadColor6: number
-  linkedReadColor7: number
+  arcColor: [[number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number]]
+  arcMarkerColor: [[number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number]]
+  linkedReadColor: [[number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number]]
+  readCategoryColor: [[number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number]]
   pxPerBp: number
   colorSplitInversion: number
-  arcColor8: number
   arcBandH: number
   dpr: number
 }
@@ -267,27 +238,202 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   u32[59] = uniforms.colorUnmappedMate
   u32[60] = uniforms.colorInterchrom
   u32[61] = uniforms.colorMutedSnpBase
-  u32[62] = uniforms.arcColor0
-  u32[63] = uniforms.arcColor1
-  u32[64] = uniforms.arcColor2
-  u32[65] = uniforms.arcColor3
-  u32[66] = uniforms.arcColor4
-  u32[67] = uniforms.arcColor5
-  u32[68] = uniforms.arcColor6
-  u32[69] = uniforms.arcColor7
-  u32[70] = uniforms.linkedReadColor0
-  u32[71] = uniforms.linkedReadColor1
-  u32[72] = uniforms.linkedReadColor2
-  u32[73] = uniforms.linkedReadColor3
-  u32[74] = uniforms.linkedReadColor4
-  u32[75] = uniforms.linkedReadColor5
-  u32[76] = uniforms.linkedReadColor6
-  u32[77] = uniforms.linkedReadColor7
-  f32[78] = uniforms.pxPerBp
-  u32[79] = uniforms.colorSplitInversion
-  u32[80] = uniforms.arcColor8
-  f32[81] = uniforms.arcBandH
-  f32[82] = uniforms.dpr
+  f32[64] = uniforms.arcColor[0][0]
+  f32[65] = uniforms.arcColor[0][1]
+  f32[66] = uniforms.arcColor[0][2]
+  f32[67] = uniforms.arcColor[0][3]
+  f32[68] = uniforms.arcColor[1][0]
+  f32[69] = uniforms.arcColor[1][1]
+  f32[70] = uniforms.arcColor[1][2]
+  f32[71] = uniforms.arcColor[1][3]
+  f32[72] = uniforms.arcColor[2][0]
+  f32[73] = uniforms.arcColor[2][1]
+  f32[74] = uniforms.arcColor[2][2]
+  f32[75] = uniforms.arcColor[2][3]
+  f32[76] = uniforms.arcColor[3][0]
+  f32[77] = uniforms.arcColor[3][1]
+  f32[78] = uniforms.arcColor[3][2]
+  f32[79] = uniforms.arcColor[3][3]
+  f32[80] = uniforms.arcColor[4][0]
+  f32[81] = uniforms.arcColor[4][1]
+  f32[82] = uniforms.arcColor[4][2]
+  f32[83] = uniforms.arcColor[4][3]
+  f32[84] = uniforms.arcColor[5][0]
+  f32[85] = uniforms.arcColor[5][1]
+  f32[86] = uniforms.arcColor[5][2]
+  f32[87] = uniforms.arcColor[5][3]
+  f32[88] = uniforms.arcColor[6][0]
+  f32[89] = uniforms.arcColor[6][1]
+  f32[90] = uniforms.arcColor[6][2]
+  f32[91] = uniforms.arcColor[6][3]
+  f32[92] = uniforms.arcColor[7][0]
+  f32[93] = uniforms.arcColor[7][1]
+  f32[94] = uniforms.arcColor[7][2]
+  f32[95] = uniforms.arcColor[7][3]
+  f32[96] = uniforms.arcColor[8][0]
+  f32[97] = uniforms.arcColor[8][1]
+  f32[98] = uniforms.arcColor[8][2]
+  f32[99] = uniforms.arcColor[8][3]
+  f32[100] = uniforms.arcMarkerColor[0][0]
+  f32[101] = uniforms.arcMarkerColor[0][1]
+  f32[102] = uniforms.arcMarkerColor[0][2]
+  f32[103] = uniforms.arcMarkerColor[0][3]
+  f32[104] = uniforms.arcMarkerColor[1][0]
+  f32[105] = uniforms.arcMarkerColor[1][1]
+  f32[106] = uniforms.arcMarkerColor[1][2]
+  f32[107] = uniforms.arcMarkerColor[1][3]
+  f32[108] = uniforms.arcMarkerColor[2][0]
+  f32[109] = uniforms.arcMarkerColor[2][1]
+  f32[110] = uniforms.arcMarkerColor[2][2]
+  f32[111] = uniforms.arcMarkerColor[2][3]
+  f32[112] = uniforms.arcMarkerColor[3][0]
+  f32[113] = uniforms.arcMarkerColor[3][1]
+  f32[114] = uniforms.arcMarkerColor[3][2]
+  f32[115] = uniforms.arcMarkerColor[3][3]
+  f32[116] = uniforms.arcMarkerColor[4][0]
+  f32[117] = uniforms.arcMarkerColor[4][1]
+  f32[118] = uniforms.arcMarkerColor[4][2]
+  f32[119] = uniforms.arcMarkerColor[4][3]
+  f32[120] = uniforms.arcMarkerColor[5][0]
+  f32[121] = uniforms.arcMarkerColor[5][1]
+  f32[122] = uniforms.arcMarkerColor[5][2]
+  f32[123] = uniforms.arcMarkerColor[5][3]
+  f32[124] = uniforms.arcMarkerColor[6][0]
+  f32[125] = uniforms.arcMarkerColor[6][1]
+  f32[126] = uniforms.arcMarkerColor[6][2]
+  f32[127] = uniforms.arcMarkerColor[6][3]
+  f32[128] = uniforms.arcMarkerColor[7][0]
+  f32[129] = uniforms.arcMarkerColor[7][1]
+  f32[130] = uniforms.arcMarkerColor[7][2]
+  f32[131] = uniforms.arcMarkerColor[7][3]
+  f32[132] = uniforms.arcMarkerColor[8][0]
+  f32[133] = uniforms.arcMarkerColor[8][1]
+  f32[134] = uniforms.arcMarkerColor[8][2]
+  f32[135] = uniforms.arcMarkerColor[8][3]
+  f32[136] = uniforms.linkedReadColor[0][0]
+  f32[137] = uniforms.linkedReadColor[0][1]
+  f32[138] = uniforms.linkedReadColor[0][2]
+  f32[139] = uniforms.linkedReadColor[0][3]
+  f32[140] = uniforms.linkedReadColor[1][0]
+  f32[141] = uniforms.linkedReadColor[1][1]
+  f32[142] = uniforms.linkedReadColor[1][2]
+  f32[143] = uniforms.linkedReadColor[1][3]
+  f32[144] = uniforms.linkedReadColor[2][0]
+  f32[145] = uniforms.linkedReadColor[2][1]
+  f32[146] = uniforms.linkedReadColor[2][2]
+  f32[147] = uniforms.linkedReadColor[2][3]
+  f32[148] = uniforms.linkedReadColor[3][0]
+  f32[149] = uniforms.linkedReadColor[3][1]
+  f32[150] = uniforms.linkedReadColor[3][2]
+  f32[151] = uniforms.linkedReadColor[3][3]
+  f32[152] = uniforms.linkedReadColor[4][0]
+  f32[153] = uniforms.linkedReadColor[4][1]
+  f32[154] = uniforms.linkedReadColor[4][2]
+  f32[155] = uniforms.linkedReadColor[4][3]
+  f32[156] = uniforms.linkedReadColor[5][0]
+  f32[157] = uniforms.linkedReadColor[5][1]
+  f32[158] = uniforms.linkedReadColor[5][2]
+  f32[159] = uniforms.linkedReadColor[5][3]
+  f32[160] = uniforms.linkedReadColor[6][0]
+  f32[161] = uniforms.linkedReadColor[6][1]
+  f32[162] = uniforms.linkedReadColor[6][2]
+  f32[163] = uniforms.linkedReadColor[6][3]
+  f32[164] = uniforms.linkedReadColor[7][0]
+  f32[165] = uniforms.linkedReadColor[7][1]
+  f32[166] = uniforms.linkedReadColor[7][2]
+  f32[167] = uniforms.linkedReadColor[7][3]
+  f32[168] = uniforms.readCategoryColor[0][0]
+  f32[169] = uniforms.readCategoryColor[0][1]
+  f32[170] = uniforms.readCategoryColor[0][2]
+  f32[171] = uniforms.readCategoryColor[0][3]
+  f32[172] = uniforms.readCategoryColor[1][0]
+  f32[173] = uniforms.readCategoryColor[1][1]
+  f32[174] = uniforms.readCategoryColor[1][2]
+  f32[175] = uniforms.readCategoryColor[1][3]
+  f32[176] = uniforms.readCategoryColor[2][0]
+  f32[177] = uniforms.readCategoryColor[2][1]
+  f32[178] = uniforms.readCategoryColor[2][2]
+  f32[179] = uniforms.readCategoryColor[2][3]
+  f32[180] = uniforms.readCategoryColor[3][0]
+  f32[181] = uniforms.readCategoryColor[3][1]
+  f32[182] = uniforms.readCategoryColor[3][2]
+  f32[183] = uniforms.readCategoryColor[3][3]
+  f32[184] = uniforms.readCategoryColor[4][0]
+  f32[185] = uniforms.readCategoryColor[4][1]
+  f32[186] = uniforms.readCategoryColor[4][2]
+  f32[187] = uniforms.readCategoryColor[4][3]
+  f32[188] = uniforms.readCategoryColor[5][0]
+  f32[189] = uniforms.readCategoryColor[5][1]
+  f32[190] = uniforms.readCategoryColor[5][2]
+  f32[191] = uniforms.readCategoryColor[5][3]
+  f32[192] = uniforms.readCategoryColor[6][0]
+  f32[193] = uniforms.readCategoryColor[6][1]
+  f32[194] = uniforms.readCategoryColor[6][2]
+  f32[195] = uniforms.readCategoryColor[6][3]
+  f32[196] = uniforms.readCategoryColor[7][0]
+  f32[197] = uniforms.readCategoryColor[7][1]
+  f32[198] = uniforms.readCategoryColor[7][2]
+  f32[199] = uniforms.readCategoryColor[7][3]
+  f32[200] = uniforms.readCategoryColor[8][0]
+  f32[201] = uniforms.readCategoryColor[8][1]
+  f32[202] = uniforms.readCategoryColor[8][2]
+  f32[203] = uniforms.readCategoryColor[8][3]
+  f32[204] = uniforms.readCategoryColor[9][0]
+  f32[205] = uniforms.readCategoryColor[9][1]
+  f32[206] = uniforms.readCategoryColor[9][2]
+  f32[207] = uniforms.readCategoryColor[9][3]
+  f32[208] = uniforms.readCategoryColor[10][0]
+  f32[209] = uniforms.readCategoryColor[10][1]
+  f32[210] = uniforms.readCategoryColor[10][2]
+  f32[211] = uniforms.readCategoryColor[10][3]
+  f32[212] = uniforms.readCategoryColor[11][0]
+  f32[213] = uniforms.readCategoryColor[11][1]
+  f32[214] = uniforms.readCategoryColor[11][2]
+  f32[215] = uniforms.readCategoryColor[11][3]
+  f32[216] = uniforms.readCategoryColor[12][0]
+  f32[217] = uniforms.readCategoryColor[12][1]
+  f32[218] = uniforms.readCategoryColor[12][2]
+  f32[219] = uniforms.readCategoryColor[12][3]
+  f32[220] = uniforms.readCategoryColor[13][0]
+  f32[221] = uniforms.readCategoryColor[13][1]
+  f32[222] = uniforms.readCategoryColor[13][2]
+  f32[223] = uniforms.readCategoryColor[13][3]
+  f32[224] = uniforms.readCategoryColor[14][0]
+  f32[225] = uniforms.readCategoryColor[14][1]
+  f32[226] = uniforms.readCategoryColor[14][2]
+  f32[227] = uniforms.readCategoryColor[14][3]
+  f32[228] = uniforms.readCategoryColor[15][0]
+  f32[229] = uniforms.readCategoryColor[15][1]
+  f32[230] = uniforms.readCategoryColor[15][2]
+  f32[231] = uniforms.readCategoryColor[15][3]
+  f32[232] = uniforms.readCategoryColor[16][0]
+  f32[233] = uniforms.readCategoryColor[16][1]
+  f32[234] = uniforms.readCategoryColor[16][2]
+  f32[235] = uniforms.readCategoryColor[16][3]
+  f32[236] = uniforms.readCategoryColor[17][0]
+  f32[237] = uniforms.readCategoryColor[17][1]
+  f32[238] = uniforms.readCategoryColor[17][2]
+  f32[239] = uniforms.readCategoryColor[17][3]
+  f32[240] = uniforms.readCategoryColor[18][0]
+  f32[241] = uniforms.readCategoryColor[18][1]
+  f32[242] = uniforms.readCategoryColor[18][2]
+  f32[243] = uniforms.readCategoryColor[18][3]
+  f32[244] = uniforms.readCategoryColor[19][0]
+  f32[245] = uniforms.readCategoryColor[19][1]
+  f32[246] = uniforms.readCategoryColor[19][2]
+  f32[247] = uniforms.readCategoryColor[19][3]
+  f32[248] = uniforms.readCategoryColor[20][0]
+  f32[249] = uniforms.readCategoryColor[20][1]
+  f32[250] = uniforms.readCategoryColor[20][2]
+  f32[251] = uniforms.readCategoryColor[20][3]
+  f32[252] = uniforms.readCategoryColor[21][0]
+  f32[253] = uniforms.readCategoryColor[21][1]
+  f32[254] = uniforms.readCategoryColor[21][2]
+  f32[255] = uniforms.readCategoryColor[21][3]
+  f32[256] = uniforms.pxPerBp
+  u32[257] = uniforms.colorSplitInversion
+  f32[258] = uniforms.arcBandH
+  f32[259] = uniforms.dpr
 }
 
 export const INSTANCE_STRIDE_BYTES = 12

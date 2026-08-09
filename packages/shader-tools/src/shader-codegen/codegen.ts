@@ -16,67 +16,16 @@
 // callers that pack multiple sources into one buffer (wiggle, synteny) and so
 // can't use the single-array-per-field shape.
 
-interface ScalarType {
-  kind: 'scalar'
-  scalarType: 'float32' | 'uint32' | 'int32'
-}
-interface VectorType {
-  kind: 'vector'
-  elementCount: number
-  elementType: ScalarType
-}
-type SlangType = ScalarType | VectorType
+import { findConstantBuffer, findInstanceStruct } from './reflection.ts'
 
-interface UniformBinding {
-  kind: 'uniform'
-  offset: number
-  size: number
-}
-interface VaryingBinding {
-  kind: 'varyingInput' | 'varyingOutput'
-  index: number
-}
-
-interface Field {
-  name: string
-  type: SlangType
-  binding?: UniformBinding | VaryingBinding
-}
-
-interface StructType {
-  kind: 'struct'
-  name: string
-  fields: Field[]
-}
-
-interface ConstantBufferType {
-  kind: 'constantBuffer'
-  elementType: StructType
-  elementVarLayout: { binding: UniformBinding }
-}
-
-interface Parameter {
-  name: string
-  binding: { kind: string; index: number; count?: number }
-  type: ConstantBufferType | { kind: string }
-}
-
-interface EntryPoint {
-  name: string
-  stage: 'vertex' | 'fragment' | 'compute'
-  // Slang reflects `[numthreads(X, Y, Z)]` on a compute entry point.
-  threadGroupSize?: [number, number, number]
-  parameters: {
-    name: string
-    type: SlangType | StructType
-    semanticName?: string
-  }[]
-}
-
-interface Reflection {
-  parameters: Parameter[]
-  entryPoints: EntryPoint[]
-}
+import type {
+  ArrayType,
+  Field,
+  Reflection,
+  SlangType,
+  StructType,
+  UniformFieldType,
+} from './reflection.ts'
 
 export interface CodegenTexture {
   name: string
@@ -99,71 +48,102 @@ function sizeOf(t: SlangType) {
   return t.kind === 'scalar' ? 4 : t.elementCount * 4
 }
 
-function tsFieldType(t: SlangType) {
+// A tuple, not `number[]`, so the length is the shader's and a caller building
+// a palette of the wrong size is a compile error rather than a run of zeros in
+// the tail slots.
+function tuple(n: number, of: string) {
+  return `[${Array.from({ length: n }, () => of).join(', ')}]`
+}
+
+function tsFieldType(t: UniformFieldType): string {
   if (t.kind === 'scalar') {
     return 'number'
   }
-  const ns = Array.from({ length: t.elementCount }, () => 'number').join(', ')
-  return `[${ns}]`
+  if (t.kind === 'array') {
+    return tuple(t.elementCount, tsFieldType(t.elementType))
+  }
+  return tuple(t.elementCount, 'number')
 }
 
-function isUintField(t: SlangType) {
-  if (t.kind === 'scalar') {
-    return t.scalarType === 'uint32'
+/**
+ * Refuse a uniform array of SCALARS, which slangc v2026.5.2 cannot compile for
+ * WebGPU and does not say so.
+ *
+ * A `uint palette[N]` member becomes a `_Array_std140_uintN` wrapper struct
+ * (std140 pads each element to 16 bytes), and passing an element of one to a
+ * cross-module function SEGFAULTS slangc — signal 11, no diagnostic, and the
+ * driver can only report that the compiler died. `[ForceInline]` on the callee
+ * dodges the crash and then emits invalid WGSL (a bare `…data_0[i].x;`
+ * statement), so there is no spelling that works. GLSL compiles it fine, which
+ * is what makes it easy to hit and hard to attribute.
+ *
+ * The fix is always the same, so name it here rather than making someone
+ * bisect a segfault: declare the array as `float4[N]`. A vector element needs no
+ * wrapper, lowers correctly, and occupies the same 16 bytes std140 was padding
+ * the scalar to — so packing bought nothing in a uniform array anyway. (It buys
+ * plenty in a vertex attribute, which is unaffected: those can't be arrays.)
+ */
+function assertNoScalarArray(baseName: string, field: Field, type: ArrayType) {
+  if (type.elementType.kind === 'scalar') {
+    throw new Error(
+      `${baseName}.slang: uniform field '${field.name}' is an array of ` +
+        `${type.elementType.scalarType}, which slangc cannot compile for WGSL ` +
+        `(it segfaults with no diagnostic). Declare it as float4[` +
+        `${type.elementCount}] — std140 pads each element to 16 bytes either ` +
+        `way, so a vector element costs the same and lowers correctly.`,
+    )
   }
-  return t.elementType.scalarType === 'uint32'
 }
 
-function isIntField(t: SlangType) {
-  if (t.kind === 'scalar') {
-    return t.scalarType === 'int32'
+// Word offsets of an array field's elements. Element `i` lives `uniformStride`
+// bytes after element `i-1`, NOT `sizeof(element)` — see ArrayType.
+function arrayElementWords(field: Field, type: ArrayType) {
+  if (field.binding?.kind !== 'uniform') {
+    return []
   }
-  return t.elementType.scalarType === 'int32'
+  const base = field.binding.offset / 4
+  const strideWords = type.uniformStride / 4
+  return Array.from(
+    { length: type.elementCount },
+    (_, i) => base + i * strideWords,
+  )
 }
 
-function findVertexStruct(r: Reflection) {
-  // Prefer an instance struct read from a StructuredBuffer at module scope —
-  // that's the layout the TS side has to pack. Fall back to a vertex-input
-  // struct (ATTR-semantic parameter) for shaders that use vertex attributes.
-  // The `struct` check matters: a compute shader's StructuredBuffer<uint>
-  // reflects a scalar resultType, which has no fields to pack.
-  for (const p of r.parameters) {
-    const t = p.type as {
-      kind?: string
-      baseShape?: string
-      resultType?: { kind?: string }
-    }
-    if (
-      t.kind === 'resource' &&
-      t.baseShape === 'structuredBuffer' &&
-      t.resultType?.kind === 'struct'
-    ) {
-      return t.resultType as StructType
-    }
+// Which typed-array view addresses a field of this type. ONE mapping from the
+// Slang scalar type to the JS view: the emitted uniform offset maps, the
+// `writeUniforms` writes, the `packInstances` writes and the GL_ATTRIBUTES
+// component type all read it, and they were four separate spellings of the
+// same three-way branch.
+type View = 'f32' | 'u32' | 'i32'
+const VIEWS: readonly View[] = ['f32', 'u32', 'i32']
+const VIEW_ARRAY: Record<View, string> = {
+  f32: 'Float32Array',
+  u32: 'Uint32Array',
+  i32: 'Int32Array',
+}
+const VIEW_COMPONENT: Record<View, 'float' | 'uint' | 'int'> = {
+  f32: 'float',
+  u32: 'uint',
+  i32: 'int',
+}
+function viewOf(t: UniformFieldType): View {
+  if (t.kind === 'array') {
+    return viewOf(t.elementType)
   }
-  const vs = r.entryPoints.find(e => e.stage === 'vertex')
-  if (!vs) {
-    return undefined
+  const s = t.kind === 'scalar' ? t.scalarType : t.elementType.scalarType
+  if (s === 'uint32') {
+    return 'u32'
   }
-  for (const p of vs.parameters) {
-    if (
-      typeof p.type === 'object' &&
-      'kind' in p.type &&
-      p.type.kind === 'struct'
-    ) {
-      return p.type
-    }
-  }
-  return undefined
+  return s === 'int32' ? 'i32' : 'f32'
 }
 
-function findConstantBuffer(r: Reflection) {
-  for (const p of r.parameters) {
-    if ('kind' in p.type && p.type.kind === 'constantBuffer') {
-      return p.type as ConstantBufferType
-    }
-  }
-  return undefined
+// `const f32 = new Float32Array(buf)` for each view the body goes on to use,
+// always in VIEWS order. Both packers take their buffer in a parameter named
+// `buf`, so this is the same three lines in both.
+function declareViews(used: ReadonlySet<View>) {
+  return VIEWS.filter(v => used.has(v)).map(
+    v => `  const ${v} = new ${VIEW_ARRAY[v]}(buf)`,
+  )
 }
 
 function toStringLiteral(s: string) {
@@ -187,38 +167,71 @@ export interface InstanceAttr {
 export function instanceAttrs(vs: StructType): InstanceAttr[] {
   let cursor = 0
   return vs.fields.map(f => {
+    // A vertex attribute can't be an array — there is no `@location` form for
+    // one, and the tight-packed stride below has no answer for std140's element
+    // padding. Refuse rather than pack something neither backend would read.
+    if (f.type.kind === 'array') {
+      throw new Error(
+        `instance struct '${vs.name}' field '${f.name}' is an array; ` +
+          `vertex attributes must be scalars or vectors. Pass it as a uniform, ` +
+          `or as separate fields.`,
+      )
+    }
+    const type: SlangType = f.type
     const entry = {
       name: f.name,
       offsetBytes: cursor,
-      size: sizeOf(f.type),
-      type: f.type,
+      size: sizeOf(type),
+      type,
     }
-    cursor += sizeOf(f.type)
+    cursor += sizeOf(type)
     return entry
   })
 }
 // The instance layout for a whole reflection, or undefined for a shader with no
 // instance struct (compute kernels). The driver's build-time cross-check reads
-// the same list `emitInterface` emits from.
-export function instanceAttrsFor(reflection: CodegenInputs['reflection']) {
-  const vs = findVertexStruct(reflection)
-  return vs ? instanceAttrs(vs) : undefined
+// the same list `emitInterface` emits from, and the tag tells it whether the
+// shader is supposed to declare vertex inputs at all.
+export function instanceAttrsFor(reflection: Reflection) {
+  const vs = findInstanceStruct(reflection)
+  return vs ? { attrs: instanceAttrs(vs.struct), source: vs.source } : undefined
 }
 export function instanceStride(attrs: InstanceAttr[]) {
   const last = attrs.at(-1)
   return last ? last.offsetBytes + last.size : 0
 }
 
-function componentType(t: SlangType): 'float' | 'uint' | 'int' {
-  const s = t.kind === 'scalar' ? t.scalarType : t.elementType.scalarType
-  if (s === 'uint32') {
-    return 'uint'
-  }
-  if (s === 'int32') {
-    return 'int'
-  }
-  return 'float'
+// The stride and per-field word offsets, emitted identically by `emitInterface`
+// and by the layout-only module `//! layout-out` writes.
+function instanceLayoutLines(attrs: InstanceAttr[]) {
+  const stride = instanceStride(attrs)
+  return [
+    `export const INSTANCE_STRIDE_BYTES = ${stride}`,
+    `export const INSTANCE_STRIDE_F32 = ${stride / 4}`,
+    '',
+    'export const FIELD_OFFSET_F32 = {',
+    ...attrs.map(a => `  ${a.name}: ${a.offsetBytes / 4},`),
+    '} as const',
+    '',
+  ]
 }
+
+// Names `packInstances` binds in its own scope, either as a parameter/local or
+// (for the two stride constants it references) at module scope. An instance
+// field sharing one of them is shadowed by the binding: `count` was caught and
+// renamed around, but a field named `o` or `i` would silently pack NaN, since
+// the loop bindings win over the destructured array and `o[i]` is a number.
+// Fail at emit time instead, where the message can name the field.
+const PACK_INSTANCES_RESERVED = new Set([
+  'arrays',
+  'numInstances',
+  'buf',
+  'i',
+  'o',
+  ...VIEWS,
+  'INSTANCE_STRIDE_BYTES',
+  'INSTANCE_STRIDE_F32',
+])
 
 const header = (baseName: string) => [
   `// AUTO-GENERATED by packages/shader-tools/src/shader-codegen from ${baseName}.slang.`,
@@ -260,7 +273,7 @@ export function emitInterface(inputs: CodegenInputs) {
   const lines = header(baseName)
   // Import only the HAL types the emitted module actually references. A compute
   // shader has no instance attributes and no textures, so it imports neither.
-  const vs = findVertexStruct(reflection)
+  const vs = findInstanceStruct(reflection)?.struct
   const halImports = vs ? ['GlAttributeLayout'] : []
   if (textures && textures.length > 0) {
     halImports.push('TextureBinding')
@@ -311,23 +324,21 @@ export function emitInterface(inputs: CodegenInputs) {
     // identical across views — the split only constrains which fields each
     // view may address. Empty maps aren't emitted (a float-only shader has no
     // `_I32` / `_U32`).
-    const viewOf = (t: SlangType) =>
-      isUintField(t) ? 'u32' : isIntField(t) ? 'i32' : 'f32'
+    // Array fields are deliberately absent from these maps and appear only in
+    // UNIFORM_SLOT_ARRAYS below: a single word offset for an array reads like
+    // the whole field, and `u32[U.palette] = x` would write element 0 and
+    // silently leave the rest.
     const uniformOffsets = u.fields.flatMap(f =>
-      f.binding?.kind === 'uniform'
+      f.binding?.kind === 'uniform' && f.type.kind !== 'array'
         ? [{ name: f.name, word: f.binding.offset / 4, view: viewOf(f.type) }]
         : [],
     )
-    for (const { view, suffix, arrayName } of [
-      { view: 'f32', suffix: 'F32', arrayName: 'Float32Array' },
-      { view: 'i32', suffix: 'I32', arrayName: 'Int32Array' },
-      { view: 'u32', suffix: 'U32', arrayName: 'Uint32Array' },
-    ] as const) {
+    for (const view of ['f32', 'i32', 'u32'] as const) {
       const fields = uniformOffsets.filter(o => o.view === view)
       if (fields.length > 0) {
         lines.push(
-          `// Word indices into a ${arrayName} view over the uniform buffer.`,
-          `export const UNIFORM_OFFSET_${suffix} = {`,
+          `// Word indices into a ${VIEW_ARRAY[view]} view over the uniform buffer.`,
+          `export const UNIFORM_OFFSET_${view.toUpperCase()} = {`,
         )
         for (const o of fields) {
           lines.push(`  ${o.name}: ${o.word},`)
@@ -336,49 +347,34 @@ export function emitInterface(inputs: CodegenInputs) {
       }
     }
 
-    // Auto-detect palette groups: fields with a shared prefix and consecutive
-    // integer suffixes starting at 0 (e.g. arcColor0..7, arcLineColor0..1).
-    // Emits `UNIFORM_SLOT_ARRAYS_F32.<prefix>` so TS callers iterate without
-    // maintaining parallel hand-rolled slot arrays.
-    const groups = new Map<string, Map<number, number>>()
-    for (const f of u.fields) {
-      if (f.binding?.kind !== 'uniform') {
-        continue
+    // Word offset of every element of every array field, so a TS caller can
+    // fill a palette by index without knowing std140's element stride.
+    //
+    // These come from the reflected ARRAY type. They used to be inferred from
+    // field NAMES — any two fields sharing a prefix with consecutive integer
+    // suffixes from 0 were assumed to be a palette — which both invented arrays
+    // that weren't (synteny's `panPx0`/`panPx1` are a per-side pan pair, and got
+    // a slot array nothing could sensibly index) and forced the shader to keep
+    // the fiction up: `arcColorByIndex` copied nine separately-named uniforms
+    // into a local array on every vertex in order to subscript them.
+    const arrayFields = u.fields.flatMap(f => {
+      if (f.type.kind !== 'array') {
+        return []
       }
-      const m = /^(.+?)(\d+)$/.exec(f.name)
-      if (!m) {
-        continue
-      }
-      const prefix = m[1]!
-      const n = Number(m[2]!)
-      if (!groups.has(prefix)) {
-        groups.set(prefix, new Map())
-      }
-      groups.get(prefix)!.set(n, f.binding.offset / 4)
-    }
-    const emittedGroups: { prefix: string; offsets: number[] }[] = []
-    for (const [prefix, idxMap] of groups) {
-      if (idxMap.size < 2 || !idxMap.has(0)) {
-        continue
-      }
-      const offsets: number[] = []
-      for (let i = 0; idxMap.has(i); i++) {
-        offsets.push(idxMap.get(i)!)
-      }
-      if (offsets.length === idxMap.size) {
-        emittedGroups.push({ prefix, offsets })
-      }
-    }
-    if (emittedGroups.length > 0) {
+      assertNoScalarArray(baseName, f, f.type)
+      return [{ name: f.name, words: arrayElementWords(f, f.type) }]
+    })
+    if (arrayFields.length > 0) {
       lines.push(
         '',
-        '// Palette-group slot arrays: offsets of consecutive <prefix>0..N',
-        '// fields, indexed into the 4-byte-word uniform buffer (works with',
-        '// either Uint32Array or Float32Array views — the field kind picks).',
+        '// Word indices of each array field’s elements, into a 4-byte-word',
+        '// view over the uniform buffer (Uint32Array or Float32Array — the',
+        '// field’s scalar type picks, same as UNIFORM_OFFSET_*). NOT',
+        '// consecutive: std140 pads every array element to 16 bytes.',
         'export const UNIFORM_SLOT_ARRAYS = {',
       )
-      for (const g of emittedGroups) {
-        lines.push(`  ${g.prefix}: [${g.offsets.join(', ')}] as const,`)
+      for (const a of arrayFields) {
+        lines.push(`  ${a.name}: [${a.words.join(', ')}] as const,`)
       }
       lines.push('} as const')
     }
@@ -389,39 +385,37 @@ export function emitInterface(inputs: CodegenInputs) {
     }
     lines.push('}', '')
 
-    const uniformFields = u.fields.filter(f => f.binding?.kind === 'uniform')
-    const hasUint = uniformFields.some(f => isUintField(f.type))
-    const hasInt = uniformFields.some(f => isIntField(f.type))
-    const hasFloat = uniformFields.some(
-      f => !isUintField(f.type) && !isIntField(f.type),
-    )
+    const writtenFields = u.fields.filter(f => f.binding?.kind === 'uniform')
     lines.push(
       'export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {',
+      ...declareViews(new Set(writtenFields.map(f => viewOf(f.type)))),
     )
-    if (hasFloat) {
-      lines.push('  const f32 = new Float32Array(buf)')
-    }
-    if (hasUint) {
-      lines.push('  const u32 = new Uint32Array(buf)')
-    }
-    if (hasInt) {
-      lines.push('  const i32 = new Int32Array(buf)')
-    }
-    for (const f of u.fields) {
-      if (f.binding?.kind !== 'uniform') {
-        continue
-      }
-      const off4 = f.binding.offset / 4
-      let view: 'f32' | 'u32' | 'i32'
-      if (isUintField(f.type)) {
-        view = 'u32'
-      } else if (isIntField(f.type)) {
-        view = 'i32'
-      } else {
-        view = 'f32'
-      }
+    for (const f of writtenFields) {
+      // Narrowed by the filter above; re-tested so TS can see it.
+      const off4 = f.binding?.kind === 'uniform' ? f.binding.offset / 4 : 0
+      const view = viewOf(f.type)
       if (f.type.kind === 'scalar') {
         lines.push(`  ${view}[${off4}] = uniforms.${f.name}`)
+      } else if (f.type.kind === 'array') {
+        // Each element strides by std140's 16 bytes, and an element that is
+        // itself a vector then packs tight within its slot.
+        const strideWords = f.type.uniformStride / 4
+        const comps =
+          f.type.elementType.kind === 'scalar'
+            ? 1
+            : f.type.elementType.elementCount
+        for (let i = 0; i < f.type.elementCount; i++) {
+          const at = off4 + i * strideWords
+          if (comps === 1) {
+            lines.push(`  ${view}[${at}] = uniforms.${f.name}[${i}]`)
+          } else {
+            for (let c = 0; c < comps; c++) {
+              lines.push(
+                `  ${view}[${at + c}] = uniforms.${f.name}[${i}][${c}]`,
+              )
+            }
+          }
+        }
       } else {
         for (let i = 0; i < f.type.elementCount; i++) {
           lines.push(`  ${view}[${off4 + i}] = uniforms.${f.name}[${i}]`)
@@ -433,28 +427,26 @@ export function emitInterface(inputs: CodegenInputs) {
 
   if (vs) {
     const attrs = instanceAttrs(vs)
-    const stride = instanceStride(attrs)
+    const collision = attrs.find(a => PACK_INSTANCES_RESERVED.has(a.name))
+    if (collision) {
+      throw new Error(
+        `${baseName}.slang: instance field '${collision.name}' collides with a ` +
+          `name packInstances() binds in its own scope ` +
+          `(${[...PACK_INSTANCES_RESERVED].join(', ')}). The generated packer ` +
+          `destructures every field as a local, so this one would be shadowed ` +
+          `and pack garbage. Rename the field in the .slang struct.`,
+      )
+    }
 
     lines.push(
-      `export const INSTANCE_STRIDE_BYTES = ${stride}`,
-      `export const INSTANCE_STRIDE_F32 = ${stride / 4}`,
-      '',
-      'export const FIELD_OFFSET_F32 = {',
-    )
-    for (const a of attrs) {
-      lines.push(`  ${a.name}: ${a.offsetBytes / 4},`)
-    }
-    lines.push(
-      '} as const',
-      '',
+      ...instanceLayoutLines(attrs),
       `export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [`,
     )
     for (const a of attrs) {
-      const ct = componentType(a.type)
+      const view = viewOf(a.type)
       const comps = a.type.kind === 'scalar' ? 1 : a.type.elementCount
-      const integer = ct === 'uint' || ct === 'int'
       lines.push(
-        `  { name: 'a_${a.name}', components: ${comps}, type: '${ct}', offsetBytes: ${a.offsetBytes}, integer: ${integer} },`,
+        `  { name: 'a_${a.name}', components: ${comps}, type: '${VIEW_COMPONENT[view]}', offsetBytes: ${a.offsetBytes}, integer: ${view !== 'f32'} },`,
       )
     }
     lines.push(']', '')
@@ -472,34 +464,23 @@ export function emitInterface(inputs: CodegenInputs) {
     }
     lines.push('}', '')
 
-    const hasF32 = attrs.some(a => componentType(a.type) === 'float')
-    const hasU32 = attrs.some(a => componentType(a.type) === 'uint')
-    const hasI32 = attrs.some(a => componentType(a.type) === 'int')
     // `numInstances` (not `count`) avoids colliding with an instance field
     // literally named `count` — the destructure below binds field names as
-    // locals, so the loop bound must not share a name with any field.
+    // locals, so the loop bound must not share a name with any field. Every
+    // other such name is in PACK_INSTANCES_RESERVED, checked above.
     lines.push(
       'export function packInstances(',
       '  arrays: InstanceArrays,',
       '  numInstances: number,',
       '  buf: ArrayBuffer = new ArrayBuffer(numInstances * INSTANCE_STRIDE_BYTES),',
       ') {',
+      ...declareViews(new Set(attrs.map(a => viewOf(a.type)))),
+      `  const { ${attrs.map(a => a.name).join(', ')} } = arrays`,
+      '  for (let i = 0; i < numInstances; i++) {',
+      '    const o = i * INSTANCE_STRIDE_F32',
     )
-    if (hasF32) {
-      lines.push('  const f32 = new Float32Array(buf)')
-    }
-    if (hasU32) {
-      lines.push('  const u32 = new Uint32Array(buf)')
-    }
-    if (hasI32) {
-      lines.push('  const i32 = new Int32Array(buf)')
-    }
-    lines.push(`  const { ${attrs.map(a => a.name).join(', ')} } = arrays`)
-    lines.push('  for (let i = 0; i < numInstances; i++) {')
-    lines.push('    const o = i * INSTANCE_STRIDE_F32')
     for (const a of attrs) {
-      const ct = componentType(a.type)
-      const view = ct === 'uint' ? 'u32' : ct === 'int' ? 'i32' : 'f32'
+      const view = viewOf(a.type)
       const word = a.offsetBytes / 4
       const comps = a.type.kind === 'scalar' ? 1 : a.type.elementCount
       if (comps === 1) {
@@ -557,28 +538,9 @@ export function emitLayoutOnly(
   inputs: Pick<CodegenInputs, 'baseName' | 'reflection'>,
 ) {
   const { baseName, reflection } = inputs
-  const lines: string[] = [
-    `// AUTO-GENERATED by packages/shader-tools/src/shader-codegen from ${baseName}.slang.`,
-    '// Do not edit. Run `pnpm gen:shaders` to regenerate.',
-    '',
-  ]
-
-  const vs = findVertexStruct(reflection)
-  if (vs) {
-    const attrs = instanceAttrs(vs)
-    const stride = instanceStride(attrs)
-
-    lines.push(
-      `export const INSTANCE_STRIDE_BYTES = ${stride}`,
-      `export const INSTANCE_STRIDE_F32 = ${stride / 4}`,
-      '',
-      'export const FIELD_OFFSET_F32 = {',
-    )
-    for (const a of attrs) {
-      lines.push(`  ${a.name}: ${a.offsetBytes / 4},`)
-    }
-    lines.push('} as const', '')
-  }
-
-  return lines.join('\n')
+  const vs = findInstanceStruct(reflection)?.struct
+  return [
+    ...header(baseName),
+    ...(vs ? instanceLayoutLines(instanceAttrs(vs)) : []),
+  ].join('\n')
 }
