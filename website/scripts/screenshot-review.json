@@ -1562,8 +1562,8 @@
   },
   "multiway_synteny/ecoli_stx_island": {
     "name": "multiway_synteny/ecoli_stx_island",
-    "status": "bad",
-    "note": "this one frequently changes across different runs, unsure why",
+    "status": "answered",
+    "note": "NOT RUN-TO-RUN VARIANCE, and measured rather than argued: three consecutive `pnpm screenshots --filter multiway_synteny/ecoli_stx_island` on this machine produced bytes identical to each other AND to the committed figure (sha1 487c1407, the one this verdict is against). The two verdicts are against two different PUBLISHED revisions, not two runs of one spec. The `good` at 13:10 hashes to 5ecc219a, which is store blob 77ff67456605 -- the figure as it stood BEFORE 84001026c5, the sweep that regenerated eleven comparative figures off the projection fix in e7f99860b7 (alignment blocks reaching past a displayed region's edge were being dropped, so each was drawing a subset of its own data). So it moved once, for a stated app fix, and the review saw the old one after the new one had already landed in figures.lock -- a stale copy on disk, which `figures:pull` replaces on the next run. That replacement is what reads as \"changes across runs\". Worth knowing why the delta LOOKS huge for a fix about ribbons: 14.6% of pixels differ, and most of them are the two gene lanes re-packing their rows, since a label layout that shifts by one row moves every name after it. The ribbons themselves barely move at this window.",
     "reviewedAt": "2026-08-09T17:08:23.488Z",
     "hash": "487c140749b22bcfea516f705896ec590d5c8f64"
   },
@@ -2929,22 +2929,22 @@
   },
   "pangenome/pggb_bubble_tier": {
     "name": "pangenome/pggb_bubble_tier",
-    "status": "bad",
-    "note": "does this figure make sense? are you happy with it? it is sort of odd to see black segments in the linaergenomeview to me, i thought those are all reference, related and thus rainbow colored",
+    "status": "answered",
+    "note": "IT MAKES SENSE, and the black is the point of the lane rather than a rendering fault -- but nothing on the figure said so, which is now fixed (3cdbaf60c6). The charcoal blocks are the BUBBLES. `snarls_to_bubble_bed.py` anchors each bubble on the reference span it replaces, so a tier row tiles rank-0 backbone and rank-1 bubbles along one axis: `tabix ecoli_pggb.tier50.segs.bed.gz chr:1250000-1350000` returns twelve backbone stretches and eleven bubbles, and the eleven are the black ones. They are off the position ramp on purpose -- an earlier review asked for \"a non-spectrum coloring\" for the non-backbone parts, because a hue from the ramp claims the allele IS the reference at that position -- and the graph pane below paints its Rank 1 row the same charcoal, so the two panes agree. They sit on their own row only because at ~100 bp/px most of them are about a pixel across and cannot pack beside their neighbours. The caption named only the graph pane; it now names both, and the prose says a bubble is anchored on the reference span it replaces. One stale claim went with it: referencePositionColor's comment said that branch never fires on a lane over the reference, which is true of an rGFA segment index and false of a bubble tier -- the one figure a reader meets it on.",
     "reviewedAt": "2026-08-09T16:03:59.415Z",
     "hash": "862e66bff98eb00e056a7fd618eaea5c7bba9c27"
   },
   "synteny_self_chry_palindromes": {
     "name": "synteny_self_chry_palindromes",
-    "status": "bad",
-    "note": "this figure at a minimum needs showCurves+transparent cigar",
+    "status": "answered",
+    "note": "FIXED (230d3a7f95). drawCurves plus cigarMode 'matches' (the menu's \"Transparent indels\"). As beziers the inverted arm and the collinear self-match pinch at the palindrome's own centre and flare against the panel edges instead of crossing as one hard X, and the indels inside each arm are left as gaps in the fill rather than drawn in their own colour over it. The caption and the sentence above it follow the new picture: the plus-strand self match covers the whole window, so it is what the magenta ribbon sits on rather than a band under a crossing.",
     "reviewedAt": "2026-08-09T16:04:31.929Z",
     "hash": "dd0878c7d9a87c2dd1e86fb838fc2f5836d15658"
   },
   "sv_cgiab/three_ways": {
     "name": "sv_cgiab/three_ways",
-    "status": "bad",
-    "note": "this dialog is definitely pretty complex. the 'replace with split view' and 'replace current view' are unclear what they would do. \"draw\" in new view is odd too. please simplify button labeling if possible.",
+    "status": "answered",
+    "note": "FIXED (2848696d06), by separating the two questions the buttons were mixing. Three of the four buttons drew something: two drew the SAME synteny view in different places, the third drew a DIFFERENT view in one of those places -- which is why no wording made them tell apart. What to draw is now a \"Draw as\" row in the dialog body, beside the route list it is a property of, and it names the view types the rest of the app names: Linear synteny view, Breakpoint split view (\"is it breakpoint split view? or synteny view? ... it helps to use our existing wording\"). The buttons are then the pair every other launch dialog offers -- Replace current view, Open in new view -- and either destination now applies to either drawing. Four buttons became three. Also found on the way: both cancer_sv specs picked a candidate row by a testid built from chr-prefixed refNames this dataset never had (its reads say `3`, `9`), so neither click had ever landed; and the id itself was ambiguous, since at the chr9 fold-back `9 -> 9 (inverted)` and `9 -> 9` are both two segments on one chromosome. The id now names every segment in derivative order with `rev` on the flipped ones.",
     "reviewedAt": "2026-08-09T16:05:29.423Z",
     "hash": "9a7792ee8aa692f760651a89c22bcca113ae6703"
   }
