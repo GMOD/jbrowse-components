@@ -24,6 +24,10 @@
 //     Those live in PREFIXES below, checked by probing a real child instead;
 //   * a placeholder (`https://yourhost/file.bam`) is not a URL at all.
 //
+// And the inverse, which is the one this checker was blind to: a 2xx is not
+// automatically a live page. A static site serves a route it chose not to build
+// as a `<meta refresh>` stub with a 200 on it. See `softRedirectTarget` below.
+//
 // Run: `pnpm check-external-links`, or `--json` for the raw table.
 import { execFile as execFileCb, execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
@@ -60,6 +64,10 @@ const PREFIXES: [string, string][] = [
   // rGFA stems — RgfaTabixAdapter appends .segs.bed.gz / .links.bed.gz
   ['https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb', '.segs.bed.gz'],
   ['https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38', '.segs.bed.gz'],
+  [
+    'https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.tier10000',
+    '.segs.bed.gz',
+  ],
   // zarr store roots — the adapter reads objects inside
   ['https://jbrowse.org/demos/tcga/tcga_brca_cnv.zarr', '/zarr.json'],
   ['https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr', '/zarr.json'],
@@ -126,8 +134,12 @@ const EXPECTED_NON_2XX = new Set([
   'https://sra-pub-run-odp.s3.amazonaws.com/sra',
   'https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR029/DRR029742/DRR029742',
   'https://raw.githubusercontent.com/rrlove/compkaryo/master/compkaryo/targets',
-  // our own bucket, where a listing is denied but the objects under it serve
+  // our own bucket, where a listing is denied but the objects under it serve.
+  // `hubs/genark/` is not even written as a link: it is the head of the GenArk
+  // url template in the agent docs, left behind when the extractor stops at the
+  // `<GCA|GCF>` placeholder that follows it.
   'https://jbrowse.org/plugins/',
+  'https://jbrowse.org/hubs/genark/',
   // written as an illustration of a URL shape rather than as a link: somewhere
   // to host demo files, the prefix a prerelease uploads to, a video not yet up
   'https://jbrowse.org/demos/arabidopsis/',
@@ -283,6 +295,73 @@ async function probeAll(urls: string[], hits: Map<string, string[]>) {
   return out
 }
 
+// A 200 that is a redirect stub rather than a page, which every check above
+// reads as healthy. A static Astro build turns `Astro.redirect('/')` into a
+// `<meta http-equiv="refresh">` document served with a normal 200, so a link to
+// a route the build decided not to publish resolves, scores ok, and lands the
+// reader somewhere else a couple of seconds later.
+//
+// genomes.jbrowse.org is where this bites, because its routes are gated by
+// feature flags that live in a different repo (~/src/jb2hubs,
+// `website/src/config/features.ts`): a page can stop being published with
+// nothing changing here and nothing failing. `/synteny` was staging-only while
+// the synteny tutorial linked to it as the site's pair index.
+//
+// Only for hosts we publish, only for page-shaped paths, and only over the first
+// 2 KB — the rest of the sweep is full of multi-gigabyte data files that must
+// not be fetched, and a redirect stub is a few hundred bytes.
+const OUR_HOST = /(^|\.)jbrowse\.org$/
+const META_REFRESH =
+  /<meta[^>]+http-equiv=["']?refresh["']?[^>]+content=["'][^"']*url=([^"'\s>]+)/i
+
+function isPageShaped(url: string) {
+  try {
+    const { hostname, pathname } = new URL(url)
+    const last = pathname.split('/').filter(Boolean).at(-1) ?? ''
+    return (
+      OUR_HOST.test(hostname) && (!last.includes('.') || last.endsWith('.html'))
+    )
+  } catch {
+    return false
+  }
+}
+
+// The path a stub points at, or undefined when the response is a real page.
+// Trailing slashes are normalized away: `/synteny` serving `/synteny/` is the
+// host being tidy, not a route that went away.
+async function softRedirectTarget(url: string) {
+  let body: string
+  try {
+    const { stdout } = await execFile('curl', [
+      '-s',
+      '-L',
+      '-A',
+      UA,
+      '--max-time',
+      String(TIMEOUT_MS / 1000),
+      '-r',
+      '0-2047',
+      url,
+    ])
+    body = stdout
+  } catch {
+    return undefined
+  }
+  const target = META_REFRESH.exec(body)?.[1]
+  if (!target) {
+    return undefined
+  }
+  const trim = (s: string) => s.replace(/\/+$/, '')
+  try {
+    const to = new URL(target, url)
+    return trim(to.pathname) === trim(new URL(url).pathname)
+      ? undefined
+      : to.href
+  } catch {
+    return target
+  }
+}
+
 const hits = collectUrls()
 const prefixMap = new Map(PREFIXES)
 // Probe the child in place of the prefix, and report it under the prefix's name
@@ -341,6 +420,26 @@ const blocked = results.filter(
 )
 const unreachable = results.filter(p => p.code === '000')
 
+// Second pass, over the handful of our-host page URLs that answered ok above.
+const stubCandidates = results.filter(
+  p => /^2\d\d$/.test(p.code) && isPageShaped(p.url),
+)
+const softRedirects: { probe: Probe; to: string }[] = []
+{
+  let next = 0
+  await Promise.all(
+    Array.from({ length: CONCURRENCY }, async () => {
+      while (next < stubCandidates.length) {
+        const probe = stubCandidates[next++]!
+        const to = await softRedirectTarget(probe.url)
+        if (to) {
+          softRedirects.push({ probe, to })
+        }
+      }
+    }),
+  )
+}
+
 if (process.argv.includes('--json')) {
   console.log(JSON.stringify(results, null, 2))
 }
@@ -354,10 +453,25 @@ for (const p of pending) {
   )
 }
 console.log(
-  `\n${results.length - dead.length - blocked.length - unreachable.length} ok, ` +
+  `\n${results.length - dead.length - blocked.length - unreachable.length - softRedirects.length} ok, ` +
     `${blocked.length} answered a script an error (browsers get the page), ` +
-    `${unreachable.length} unreachable, ${dead.length} dead`,
+    `${unreachable.length} unreachable, ${dead.length} dead, ` +
+    `${softRedirects.length} redirect stubs (checked ${stubCandidates.length} of our pages)`,
 )
+
+if (softRedirects.length) {
+  console.log(
+    '\nRedirect stubs — these answer 200 with a page that bounces elsewhere,\n' +
+      'so the route is not published. On genomes.jbrowse.org check whether a\n' +
+      'feature flag in ~/src/jb2hubs turned it off:\n',
+  )
+  for (const { probe, to } of softRedirects) {
+    console.log(`  ${label(probe)}  ->  ${to}`)
+    for (const w of probe.where) {
+      console.log(`        ${w}`)
+    }
+  }
+}
 
 if (dead.length) {
   console.log('\nDead links:\n')
@@ -367,5 +481,8 @@ if (dead.length) {
       console.log(`        ${w}`)
     }
   }
+}
+
+if (dead.length || softRedirects.length) {
   process.exit(1)
 }
