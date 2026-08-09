@@ -36,8 +36,19 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-          # Deploy the tagged tree, not whatever main has moved on to.
-          ref: ${{ github.event.release.tag_name || github.ref }}
+          # Always main, on both triggers — deliberately NOT the release tag.
+          #
+          # The release commit that sets currentVersion is itself on main, so
+          # checking out the tag buys nothing for the download page, and it
+          # costs: publishing happens up to hours after the tag, and deploying
+          # the tag reverts every doc commit merged in between. Those stayed
+          # reverted on the live site until somebody next pushed with
+          # 'update docs' in the message.
+          #
+          # What has to wait for the publish click is *when* this runs, not
+          # what it deploys — the download page links at release assets, which
+          # stay private while the release is a draft. That is the `if:` above.
+          ref: main
       - uses: ./.github/actions/setup
         with:
           working-directory: website
