@@ -708,8 +708,8 @@ importers:
   plugins/alignments:
     dependencies:
       '@gmod/bam':
-        specifier: ^8.3.0
-        version: 8.3.0
+        specifier: ^8.3.1
+        version: 8.3.1
       '@gmod/cram':
         specifier: ^11.3.0
         version: 11.3.0
@@ -832,8 +832,8 @@ importers:
         specifier: ^2.2.9
         version: 2.2.9
       '@gmod/tabix':
-        specifier: ^3.6.0
-        version: 3.6.0
+        specifier: ^3.6.1
+        version: 3.6.1
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -983,8 +983,8 @@ importers:
   plugins/comparative-adapters:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.6.0
-        version: 3.6.0
+        specifier: ^3.6.1
+        version: 3.6.1
       '@jbrowse/cigar-utils':
         specifier: workspace:^
         version: link:../../packages/cigar-utils
@@ -1179,8 +1179,8 @@ importers:
   plugins/gff3:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.6.0
-        version: 3.6.0
+        specifier: ^3.6.1
+        version: 3.6.1
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1233,8 +1233,8 @@ importers:
   plugins/gtf:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.6.0
-        version: 3.6.0
+        specifier: ^3.6.1
+        version: 3.6.1
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1702,8 +1702,8 @@ importers:
   plugins/variants:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.6.0
-        version: 3.6.0
+        specifier: ^3.6.1
+        version: 3.6.1
       '@gmod/vcf':
         specifier: ^7.1.0
         version: 7.1.0
@@ -4250,8 +4250,8 @@ packages:
   '@gmod/abortable-promise-cache@3.0.4':
     resolution: {integrity: sha512-kxRJj5fyRKFuZDp/YvnHeadYCV2EEUKyH2T4a2Iz9O7T/thOWWHUDiiD/Mg6WZP/RNNDIcfSHl/xVHHy/+j8qg==}
 
-  '@gmod/bam@8.3.0':
-    resolution: {integrity: sha512-A5fULaxsGwbmJZinbeal3yYqhEGhMEM956CpXZxqvYzshZcguGKVEHjHK+futFlXwV39wmOSQ+ZAOgHbCu/HKg==}
+  '@gmod/bam@8.3.1':
+    resolution: {integrity: sha512-aKCaUo030O80zFs9b9fcjs1RmOu3wzeYuwhRui1264KFXN5uS8DJ23Y8SqlxZjltKK2F/U5Alsqfk0M5lsfDAQ==}
 
   '@gmod/bbi@11.0.0':
     resolution: {integrity: sha512-wyxOJ6cr906Vht+jXhO4Tg2NSRmXhh33yFOayLHHIPlOzhjDa0ZHQWbGO/shUi7Z2Me8vVkxQhZNxeE0IJQGpQ==}
@@ -4280,8 +4280,11 @@ packages:
   '@gmod/shared-read-cache@1.4.2':
     resolution: {integrity: sha512-oRR61ThcE3YWKapJi8tEbPE+qnkfup8/0kINwE/wWa0S/urWsmJGxiIw0a9N6z7SpyaaKlfG3HpTwJQYkfzq0A==}
 
-  '@gmod/tabix@3.6.0':
-    resolution: {integrity: sha512-lJcigm7SKG1/1D45eRhAAtvFkVw/CLSrui4+o4pZjuyebaVDAoI0rsal9+91uPTgukB77MgxLHOZGcKifIHKHg==}
+  '@gmod/shared-read-cache@1.4.4':
+    resolution: {integrity: sha512-K8YhHkibBm/b8AMs+t35nGgbE2jlhsQ2+MqDv7b1hWDcGoSudyLwVmLLiPMlWrIwxXCzM4ROZF7cY3RamC7kDQ==}
+
+  '@gmod/tabix@3.6.1':
+    resolution: {integrity: sha512-6rwhdadQfUmrfkwkacHQHrmPS9rDRhYvhF7fQ6k1P5HS/KhU2qwT0HBbYPnXef620MgmLKjh9dWJnJmki0MWtg==}
 
   '@gmod/trix@3.0.19':
     resolution: {integrity: sha512-QUNgi7n7cJ82RrS9Rhdo5W16XNB7PcdEoMr9UReOrbKR0MlmleaJaNvmlqR05UopNgBszKWb3aJe4bUi4Uz/Hw==}
@@ -12155,10 +12158,10 @@ snapshots:
 
   '@gmod/abortable-promise-cache@3.0.4': {}
 
-  '@gmod/bam@8.3.0':
+  '@gmod/bam@8.3.1':
     dependencies:
       '@gmod/bgzf-filehandle': 6.3.2
-      '@gmod/shared-read-cache': 1.4.2
+      '@gmod/shared-read-cache': 1.4.4
       '@jbrowse/quick-lru': 7.3.5
       crc: 4.3.2
       generic-filehandle2: 2.2.2
@@ -12205,10 +12208,12 @@ snapshots:
 
   '@gmod/shared-read-cache@1.4.2': {}
 
-  '@gmod/tabix@3.6.0':
+  '@gmod/shared-read-cache@1.4.4': {}
+
+  '@gmod/tabix@3.6.1':
     dependencies:
       '@gmod/bgzf-filehandle': 6.3.2
-      '@gmod/shared-read-cache': 1.4.2
+      '@gmod/shared-read-cache': 1.4.4
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.2.2
 
