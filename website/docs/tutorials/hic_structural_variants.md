@@ -189,7 +189,7 @@ that call for every Hi-C experiment as a
 [compartment eigenvector and a set of subcompartment classes](/docs/user_guides/hic_track#compartments-and-subcompartments),
 both derived from the matrix already loaded.
 
-<Figure src="/img/hic/compartment_switch.png" caption="4 Mb of chr18 with the GM12878 and K562 compartment eigenvectors on one shared scale. Over the highlighted TCF4 band the GM12878 eigenvector is negative, the B or closed compartment, while the K562 one is positive, A or open. Both edges of the frame, where the two agree, are the control. No contact matrix here: a compartment only appears once a matrix is divided by its distance expectation, and the eigenvector is that computation, published." links="Open this view=hic/compartment_switch" />
+<Figure src="/img/hic/compartment_switch.png" caption="Whether a stretch of the genome is open or closed is a property of the cell, not of the sequence. A normal lymphoblastoid line and a leukemia line put the same TCF4 band in opposite compartments, and the frame edges, where the two agree, are what makes that a switch rather than a scaling difference. No contact matrix here: a compartment appears only once a matrix is divided by its distance expectation, and the eigenvector is that computation, published." links="Open this view=hic/compartment_switch" />
 
 The band over _TCF4_ is in the B compartment in GM12878 and the A compartment in
 K562, and the reason to believe it is the same reason the translocation was

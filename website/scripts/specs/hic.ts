@@ -469,16 +469,41 @@ export const hicSpecs: ScreenshotSpec[] = [
         // asked to take on trust, under four lanes that state the answer
         // outright. The matrix is still one figure up, where its subject is
         // something it does show.
+        //
+        // NO ACCESSIBILITY LANE EITHER, and this one was measured rather than
+        // argued (review: "are there any other 'interesting' tracks that
+        // complement or enhance result?"). DNase is the obvious corroboration --
+        // an A compartment should be the accessible one -- and both lines have
+        // it on the same CORS-enabled ENCODE S3 the eigenvectors come from, from
+        // one pipeline run: GM12878 ENCFF594DFV (ENCSR581CCT), K562 ENCFF655HFU
+        // (ENCSR227NUB). Mean signal inside the band against the rest of this
+        // 4 Mb frame: GM12878 0.1046 vs 0.1261 (0.83x), K562 0.1496 vs 0.1442
+        // (1.04x). The DIRECTION is right in both -- the closed line is
+        // depleted, the open line slightly enriched -- but the switch between
+        // them is 1.25x, and 1.25x drawn as two more wiggle lanes at 4 Mb is two
+        // lanes that look the same. That is the exact complaint
+        // hic/loops_and_domains collected for drawing a difference this size
+        // ("the naive and memory tracks look almost exactly the same. i cant see
+        // difference"). The eigenvector is a 100 kb aggregate and DNase is peaky
+        // per site, so the contrast is real in the arithmetic and invisible in
+        // the picture.
       ],
     }),
-    // one callout per cell line, on the lane it describes, naming the
+    // One callout per cell line, on the lane it describes, naming the
     // compartment rather than leaving "positive" and "negative" to be decoded
     // (the sign convention is checked in the spec comment above and stated in
     // the guide). Anchored to the highlighted band, so they move with it.
+    //
+    // WHAT THE TWO LINES ARE is now in the pills, in a parenthesis each
+    // (review: "why are we even comparing gm12878 and k562, ostensibly normal
+    // vs cancer? elaborate on this context in red annotation box very
+    // briefly"). It goes here rather than in a third box because the answer is
+    // per-lane -- naming the lane and saying what the cell is are the same
+    // sentence -- and folding it in let both pills get SHORTER, not longer.
     annotations: [
       {
         type: 'text',
-        text: 'GM12878: eigenvector negative across the band, the B (closed) compartment',
+        text: 'GM12878 (normal lymphoblastoid): B, closed',
         maxWidth: 380,
         anchor: {
           track: 'hic_gm12878_compartments',
@@ -490,7 +515,7 @@ export const hicSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'K562: the same band is positive, the A (open) compartment',
+        text: 'K562 (leukemia): A, open',
         maxWidth: 380,
         anchor: {
           track: 'hic_k562_compartments',
