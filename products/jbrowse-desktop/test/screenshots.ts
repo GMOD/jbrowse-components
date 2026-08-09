@@ -72,8 +72,7 @@ const FIGURES = [
   'desktop-available-genomes-steps.png',
   'desktop-ispcr.png',
   'desktop-ispcr-results.png',
-  'desktop-blat-search.png',
-  'desktop-blat-results.png',
+  'desktop-blat-steps.png',
 ]
 
 const selected = FIGURES.filter(name => ONLY.some(only => name.includes(only)))
@@ -205,7 +204,7 @@ async function procedureFrame(
   frames.set(figure, captured)
   if (captured.length === procedure.steps.length) {
     const stacked = join(FRAME_DIR, figure)
-    composeProcedure(captured, stacked)
+    composeProcedure(captured, stacked, procedure.direction)
     optimizePng(stacked)
     await commitFigure(figure, readFileSync(stacked))
   }
@@ -597,7 +596,7 @@ async function captureBlatDialogs(driver: WebDriver): Promise<void> {
   await blatSeqInput.click()
   await blatSeqInput.sendKeys(SAMPLE_SEQ)
   await delay(500)
-  await capture(driver, 'desktop-blat-search.png')
+  await procedureFrame(driver, 'desktop-blat-steps.png', 0)
 
   // The result of a search is a track plus a list, so capture the state after
   // submitting too, with the best hit opened from that list. Submitted against
@@ -650,7 +649,7 @@ async function captureBlatDialogs(driver: WebDriver): Promise<void> {
   // that move it
   const settled = await waitForStableSession(driver)
   console.log(`    DEBUG: settled at ${settled?.locStrings.join('; ')}`)
-  await capture(driver, 'desktop-blat-results.png')
+  await procedureFrame(driver, 'desktop-blat-steps.png', 1)
   // the query's own console output (runQuery logs its failures) is otherwise
   // only flushed by the fatal handler, so a run that captured a wrong-looking
   // figure without throwing left no trace of what the renderer saw
@@ -857,8 +856,11 @@ async function main(): Promise<void> {
   await cleanupUI(driver)
 
   // Loaded session with the bundled volvox assembly, served over http. This is
-  // the third frame of the open-a-genome procedure: what the reader gets for
-  // the two dialogs above.
+  // Opens the genome the rest of this flow needs (the add-track procedure has
+  // to have something to add a track TO). No longer a frame of the
+  // open-a-genome procedure: that figure is now the two dialog states side by
+  // side, and the volvox view this lands on is what the quickstart's other
+  // figures already show.
   console.log('Opening volvox genome...')
   // the 2bit rather than the FASTA: see openVolvoxGenome on why a pasted
   // .fa + .fai pair goes through the app's own FASTA indexing, and why that
@@ -870,7 +872,6 @@ async function main(): Promise<void> {
   await waitForAppReady(driver)
   await freezeAnimations(driver)
   await waitForStableSession(driver)
-  await procedureFrame(driver, 'desktop-open-genome-steps.png', 2)
 
   // Add the bundled volvox GFF3 genes track over http, one frame per step of
   // the add-a-track procedure: the menu item, the filled-in form, and the track

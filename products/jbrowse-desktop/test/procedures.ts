@@ -25,6 +25,14 @@ export interface ProcedureStep {
 
 export interface Procedure {
   steps: ProcedureStep[]
+  // How the frames are laid out. 'vertical' (the default) stacks them, which is
+  // what a procedure of three or more steps wants, because a row of four 1400px
+  // windows is unreadable at page width. Two frames are the case where 'side by
+  // side' wins: the figure is half as tall, and the two states sit at the same
+  // scale where a reader can compare them (reviewer, on the open-genome
+  // procedure: "could also just be a two part screenshot left+right instead of
+  // top+bottom").
+  direction?: 'vertical' | 'horizontal'
 }
 
 // A numbered step callout: the badge, a box around the control it names, and an
@@ -133,22 +141,26 @@ export const PROCEDURES: Record<string, Procedure> = {
             labelSide: 'left',
             maxWidth: 260,
           }),
+          // BELOW its control, not beside it (reviewer: "the red boxes are
+          // slightly overlapping which looks messy"). "Open from a URL" sits
+          // directly under the drop zone, so a label to its right started
+          // level with the drop zone's own red box and the two rectangles
+          // met. Under the link there is nothing but dialog padding.
           ...step({
             n: 3,
             anchor: { text: 'Open from a URL' },
             label: 'or paste file URLs instead',
+            labelSide: 'below',
+            labelDy: 6,
           }),
         ],
       },
-      {
-        // No callout: the frame IS the result, and a badge on the location box
-        // labelled "the assembly opens in a linear genome view" only narrates
-        // what the reader is already looking at. Same rule as the add-track
-        // procedure's last frame.
-        title: 'linear genome view on the new assembly',
-        annotations: [],
-      },
+      // No third frame. It was the volvox view the flow lands on, which is
+      // what every other figure in the quickstart already shows, and dropping
+      // it is what lets the two frames that carry the procedure sit side by
+      // side (reviewer: "3 can be omitted").
     ],
+    direction: 'horizontal',
   },
 
   'desktop-available-genomes-steps.png': {
@@ -226,6 +238,39 @@ export const PROCEDURES: Record<string, Procedure> = {
         annotations: [],
       },
     ],
+  },
+
+  // The BLAT query and what it produces, in one figure (reviewer: "consider
+  // making the blat screenshots multipart, e.g. combine with
+  // desktop-blat-results"). They were already two states of one visit (the
+  // code comment in screenshots.ts said so) but published as two unrelated
+  // pictures in two sections of blat.md, so nothing said the second was the
+  // first one's answer. Side by side, the query and its hits are one read.
+  'desktop-blat-steps.png': {
+    steps: [
+      {
+        title: 'BLAT search dialog with a query pasted',
+        // The sequence box rather than Submit: what a reader has to supply is
+        // the query, and Submit is the one control in a dialog that needs no
+        // explaining. Label left, because the box runs to the dialog's right
+        // edge.
+        annotations: step({
+          n: 1,
+          anchor: { selector: 'textarea:not([aria-hidden="true"])' },
+          label: 'Paste DNA or FASTA, and pick the assembly to search',
+          labelSide: 'left',
+          maxWidth: 230,
+        }),
+      },
+      {
+        // No callout, same rule as the other procedures' last frames: the
+        // frame IS the result. The Search results panel and the drawn hits are
+        // what step 1 produced, and a badge saying so narrates the picture.
+        title: 'the hit opened from the results list',
+        annotations: [],
+      },
+    ],
+    direction: 'horizontal',
   },
 }
 
@@ -345,7 +390,12 @@ const FRAME_GAP_PX = 26
 // A frame plus its simulated window chrome, as an ImageMagick parenthesized
 // group. The title bar is spliced above the capture and the dots are drawn into
 // it; the 1px border goes on last so it surrounds both.
-function windowFrame(file: string, width: number, gapAbove: boolean): string[] {
+function windowFrame(
+  file: string,
+  width: number,
+  gapBefore: boolean,
+  direction: 'vertical' | 'horizontal' = 'vertical',
+): string[] {
   const dots = WINDOW_DOTS.flatMap((color, i) => {
     const cx = width - DOT_INSET - (WINDOW_DOTS.length - 1 - i) * DOT_PITCH
     const cy = Math.round(TITLEBAR_PX / 2)
@@ -368,22 +418,37 @@ function windowFrame(file: string, width: number, gapAbove: boolean): string[] {
     WINDOW_BORDER,
     '-border',
     '1',
-    ...(gapAbove
-      ? ['-background', 'none', '-splice', `0x${FRAME_GAP_PX}`]
+    // The gap goes on the leading edge of every frame but the first, so it is
+    // always BETWEEN two windows: above for a stack, to the left for a row.
+    // -splice inserts at the NorthWest corner, so the axis is chosen by which
+    // dimension is non-zero.
+    ...(gapBefore
+      ? [
+          '-background',
+          'none',
+          '-splice',
+          direction === 'horizontal'
+            ? `${FRAME_GAP_PX}x0`
+            : `0x${FRAME_GAP_PX}`,
+        ]
       : []),
     ')',
   ]
 }
 
 // Stack the frames into one figure, each in its own window.
-export function composeProcedure(frames: string[], outPath: string): void {
+export function composeProcedure(
+  frames: string[],
+  outPath: string,
+  direction: 'vertical' | 'horizontal' = 'vertical',
+): void {
   trimFrames(frames)
   const { width } = frameSize(frames[0]!)
   execFileSync(IM, [
-    ...frames.flatMap((f, i) => windowFrame(f, width, i > 0)),
+    ...frames.flatMap((f, i) => windowFrame(f, width, i > 0, direction)),
     '-background',
     'none',
-    '-append',
+    direction === 'horizontal' ? '+append' : '-append',
     // splicing leaves the first frame's geometry as the result's virtual
     // canvas, which every later `convert` on this file then crops to
     '+repage',

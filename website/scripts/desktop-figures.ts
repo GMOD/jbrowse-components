@@ -20,8 +20,7 @@ export const desktopAutogenNames = new Set([
   'desktop-available-genomes-steps',
   'desktop-add-track-steps',
   'desktop-cli-config',
-  'desktop-blat-search',
-  'desktop-blat-results',
+  'desktop-blat-steps',
   'desktop-ispcr',
   'desktop-ispcr-results',
 ])
