@@ -3,13 +3,15 @@
 # Every number website/docs/tutorials/mappability_qc.md quotes, measured from
 # the same files the tutorial's figures draw.
 #
-# Four independent measurements of one thing — whether a short read can be
-# placed at a locus — over the SMN1/SMN2 pair and two ordinary control genes:
+# Five independent measurements of one thing — whether a read can be placed at a
+# locus — over the SMN1/SMN2 pair and two ordinary control genes:
 #
 #   1. Umap k100 multi-read mappability (the annotation)
 #   2. gnomAD v3 mean genome coverage over 76k samples (an aggregate outcome)
 #   3. which problematic-region tracks flag the locus (three groups' opinions)
-#   4. MAPQ 0 fraction in one 30x sample (the reads themselves)
+#   4. MAPQ 0 fraction in one 30x short-read sample (the reads themselves)
+#   6. the same, for LONG reads, against GRCh38 AND against T2T-CHM13 — the two
+#      obvious "surely this fixes it" answers, measured instead of assumed
 #
 # Plus the chromosome-wide stratification the page uses to say what the region
 # annotations do and do not imply about a callset.
@@ -37,6 +39,31 @@ GNOMAD=$GBDB/gnomAD/coverage/v3-genome/gnomad.coverage.mean.bw
 # 30x short-read genome would do; this one is public, CORS-enabled, and is the
 # track the tutorial's read figure draws.
 CRAM=https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram
+
+# The same question asked of LONG reads, and asked twice: once against GRCh38 and
+# once against T2T-CHM13. Section 6 below.
+#
+# GM18501 from the 1000 Genomes ONT release (Gustafson et al. 2024) — the same
+# project as the 1kgOnt SV callset sections 5 and 5b count, and one of the
+# samples that release aligned to BOTH references with the same minimap2
+# pipeline, which is what makes the pair a controlled comparison rather than two
+# datasets. NOT NA12878: that sample has no long reads in this release, so the
+# short-read lanes above and these two are different individuals. That is fine
+# for what is being asked (can a read be placed here at all) and is why the
+# script prints the read counts rather than comparing depths.
+#
+# NB this bucket serves no CORS headers, so these two files can be read by
+# samtools and NOT by a browser — a figure over them needs a hosted slice.
+ONT_BASE=https://s3.amazonaws.com/1000g-ont/PROCESSED_DATA
+ONT_HG38=$ONT_BASE/ALIGNED_TO_HG38/MINIMAP2_ALIGNED_BAMS/GM18501-ONT-hg38-R9-LSK110-guppy-sup-5mC.phased.bam
+ONT_CHM13=$ONT_BASE/ALIGNED_TO_CHM13/MINIMAP2_ALIGNED_BAMS/GM18501-ONT-chm13-R9-LSK110-guppy-sup-5mC.phased.bam
+
+# SMN1 in each assembly's own coordinates, at the same gene length (28,072 bp).
+# The CHM13 start is where UCSC's hg38ToHs1 chains put SMN1's start — the same
+# chain file the qc/smn_vs_t2t figure draws, so this window and that figure are
+# talking about the same sequence.
+SMN1_HG38=chr5:70924940-70953012
+SMN1_CHM13=chr5:71381728-71409800
 
 # hg38 gene bodies, and two controls every measurement below is read against.
 #
@@ -174,4 +201,29 @@ for name in dgvMerged 1kgOnt; do
   block=$(bigBedToBed -chrom=chr5 -start=69533889 -end=71009585 "$name.bb" stdout | wc -l)
   right=$(bigBedToBed -chrom=chr5 -start=71009585 -end=72500000 "$name.bb" stdout | wc -l)
   printf "   %-12s %10s %15s %16s\n" "$name" "$left" "$block" "$right"
+done
+
+echo
+echo "== 6. LONG reads at SMN1, against GRCh38 and against T2T-CHM13"
+# Two questions the short-read sections cannot answer, and the answer to both is
+# on the same three lines:
+#
+#   Do long reads fix it?          Partly. They halve the MAPQ 0 fraction.
+#   Does a finished assembly fix it? No. CHM13 comes out the same.
+#
+# The second is the measured version of what qc/smn_vs_t2t argues from the
+# liftOver chains, and of the page's claim that the ambiguity is a property of
+# the sequence rather than of GRCh38.
+#
+# Counts, not depths: this is a different individual from the short-read lanes
+# (see ONT_HG38 above), so what is comparable is the fraction of records the
+# aligner could place, within each reference and between the two.
+# Split on | rather than :, since both a URL and a locstring contain colons.
+for pair in "GRCh38|$ONT_HG38|$SMN1_HG38" "T2T-CHM13|$ONT_CHM13|$SMN1_CHM13"; do
+  IFS='|' read -r ref bam region <<<"$pair"
+  reads=$(samtools view -c "$bam" "$region")
+  placed=$(samtools view -c -q 1 "$bam" "$region")
+  q60=$(samtools view -c -q 60 "$bam" "$region")
+  awk -v r="$ref" -v n="$reads" -v p="$placed" -v q="$q60" \
+    'BEGIN { printf "   %-10s %5d records, %5.1f%% at MAPQ 0, %5.1f%% at MAPQ 60\n", r, n, 100*(n-p)/n, 100*q/n }'
 done

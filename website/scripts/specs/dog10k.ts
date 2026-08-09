@@ -821,6 +821,34 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     // gene track plus all 56 sample rows, the genotype legend and the record
     // lane under them
     viewportHeight: 1200,
+    // THE ANSWER TO "ARE THERE GIANT SV OVERSHADOWING THE ONES INTENDED",
+    // which is no, and the reason a reader would ask it is the layout rather
+    // than the data (reviewer: "this is a somewhat chaotic screenshot, unsure
+    // what i should be getting from this. are there 'giant' SV overshadowing
+    // the ones that are intending to be shown?"). A matrix lays its columns out
+    // by feature INDEX at equal widths, so two records fill the panel as two
+    // half-width blocks and read as two multi-kb deletions; they are 222 bp and
+    // 219 bp. Nothing else in the frame says that except the record lane at the
+    // bottom, which is 90 px of a 1200 px figure.
+    //
+    // In the line zone, which is the one band of the matrix that carries no
+    // genotype cell, anchored to the track rather than to a column -- a column
+    // has no genomic x to anchor to, which is the same fact the pill is about.
+    annotations: [
+      {
+        type: 'text',
+        text: 'one column per variant, not per span: both are ~220 bp',
+        fontSize: 19,
+        maxWidth: 380,
+        anchor: {
+          track: 'dog10k_denr_svs',
+          locus: 'chr26:6,931,300',
+          fracY: 0.02,
+          alignX: 'left',
+          dx: 20,
+        },
+      },
+    ],
   },
 
   // The pancreatic amylase duplication, genotyped across dogs and every wolf in

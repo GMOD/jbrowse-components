@@ -259,7 +259,7 @@ The window holds the whole gene, and the lines above the matrix tie each column
 back to the intron it sits in. The Greek wolves have lost the left repeat
 entirely while a third of them still carry the right one.
 
-<Figure caption="Two SINEC2A1 deletions in adjacent DENR introns, one column each, every animal of every breed in the panel. The Mastiff-clade breeds carry both repeats and the Labrador Retrievers have lost both. The lane under the matrix is the same two records at their own coordinates, so each column can be named rather than traced." src="/img/dog10k-denr-sine-deletions.png" />
+<Figure caption="Two SINEC2A1 deletions in adjacent DENR introns, one column each, every animal of every breed in the panel. A matrix column is one variant and its width is the panel divided by the number of variants, not the variant's size: both of these are about 220 bp, named in the record lane under the matrix. The Mastiff-clade breeds carry both repeats and the Labrador Retrievers have lost both." src="/img/dog10k-denr-sine-deletions.png" />
 
 This contrasts with the Collie eye anomaly figure. That deletion was long, rare,
 and confined to one clade. These are short, common, and it is the reference that

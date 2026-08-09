@@ -13,6 +13,7 @@ colorDomain
 connectedView
 displayMode
 featureHighlights
+filterBy
 gfaLocation
 height
 label
@@ -21,8 +22,8 @@ maxRegionBp
 paneHeight
 partitionField
 sampleColorMap
+showCoverage
 sideBySide
-subtreeFilter
 thickness
 transcriptId
 uniprotId

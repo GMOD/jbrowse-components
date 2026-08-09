@@ -803,6 +803,14 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         // frame still says which genes the path runs through rather than
         // drawing ribbons between two bare axes.
         actions: [
+          // The four-segment allele by name. It is row 0 and outranks the other
+          // row by 28 reads to 2, so the default selection is already right --
+          // but this frame is the one the section's whole claim rests on, and
+          // saying which route it draws costs one line.
+          {
+            type: 'click',
+            selector: '[data-testid="derivative-path-4-chr3-chr10-chr12"]',
+          },
           { type: 'click', text: 'Replace current view' },
           CLOSE_REF_SEQUENCE_TRACK,
         ],
@@ -902,6 +910,15 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         // fold-back's derivative carries two segments rather than four, so the
         // provenance track is one row
         actions: [
+          // Pick the fold-back by its SHAPE, not by its rank. Two routes here
+          // are described by the same number of reads, and rows tied on support
+          // sort by segment count, so the two-segment fold-back this section is
+          // about is not row 0. Left on the default selection this stage drew
+          // the three-segment route under a caption describing the fold-back.
+          {
+            type: 'click',
+            selector: '[data-testid="derivative-path-2-chr9"]',
+          },
           { type: 'click', text: 'Replace current view' },
           CLOSE_REF_SEQUENCE_TRACK,
         ],
@@ -942,9 +959,9 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'cancer_sv/derivative_synteny',
-    // 1245 - 220 (the pileup the coverage band replaces) - 40 (gene rows the
-    // projection actually uses) - 40 (ribbon band)
-    viewportHeight: 945,
+    // 945 + 251 for the read lane coming back as chains, - 25 and - 60 for the
+    // two gene tracks going compact
+    viewportHeight: 1111,
     viewportWidth: 1600,
     url: sessionSpec(CONFIG, {
       sessionTracks: [DER3_GENES_TRACK],
@@ -970,7 +987,18 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
               // anchored bottom-right, and the chr12 window is the rightmost
               // thing in the panel, so the slack is what keeps the chip off
               // TRHDE's label
-              tracks: [{ ...GENE_TRACK, height: 95 }],
+              tracks: [
+                {
+                  ...GENE_TRACK,
+                  type: 'LinearBasicDisplay',
+                  // compact on every canvas track in the figure, per review.
+                  // Compact scales the glyph bodies and the label font but keeps
+                  // the labels, which this row cannot lose -- the gene names ARE
+                  // what the top row contributes.
+                  displayMode: 'compact',
+                  height: 70,
+                },
+              ],
             },
             {
               assembly: 'der3_RARB_BICC1_TRHDE',
@@ -989,15 +1017,42 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 {
                   ...GENE_TRACK,
                   trackId: DER3_GENES_TRACK.trackId,
-                  height: 180,
+                  type: 'LinearBasicDisplay',
+                  displayMode: 'compact',
+                  height: 120,
                 },
-                // COVERAGE ONLY -- see the note above. The band's own claim is
-                // the whole claim at this zoom: no dip at any junction.
+                // THE READS ARE BACK, AS CHAINS (reviewer: "also show the reads.
+                // consider using view as pairs/link supplementary reads ... that
+                // puts the multiple split-aligned segments into the same row,
+                // which makes it easier to see SV").
+                //
+                // The previous round removed this lane on a claim about the data
+                // that is false, and `samtools` says so. Over the whole
+                // realigned BAM: 69 records, 29 primary, 16 SECONDARY (flags 256
+                // and 272) and 24 SUPPLEMENTARY (2048, 2064), 0 paired. So a
+                // record here is very often one segment of a split molecule, not
+                // a read spanning the allele in one alignment -- 19 of the 29
+                // read names carry 2-4 non-secondary records.
+                //
+                // Which is exactly what chain mode is for: `linkedReads:
+                // 'normal'` merges a chain by read NAME, so those 53
+                // non-secondary records lay out as 29 rows and each row is one
+                // molecule crossing the junctions it crosses.
+                //
+                // Secondary alignments are FILTERED, and this is the other half
+                // of the correction. JBrowse's default `flagExclude` is 1540
+                // (unmapped, QC-fail, duplicate) and does not touch 0x100, so
+                // the lane was drawing 16 competing placements as if they were
+                // evidence. 1796 = 1540 + 256.
                 {
                   trackId: 'reads_vs_der3',
-                  showPileup: false,
                   coverageHeight: 60,
-                  height: 70,
+                  // 29 chains at a pitch of 9 (featureHeight + 1 above 3 px,
+                  // featureSpacingForHeight) is 261, + the band
+                  height: 321,
+                  featureHeight: 8,
+                  linkedReads: 'normal',
+                  filterBy: { flagInclude: 0, flagExclude: 1796 },
                 },
               ],
             },
@@ -1060,10 +1115,9 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'cancer_sv/derivative_inserts',
-    // 1412 left 270 css px of blank once the two sequence lanes went, per the
-    // run's own report; +130 net for the read lane that now draws all 46 of its
-    // rows at a legible height, less the 40 the ribbon band gave back
-    viewportHeight: 1275,
+    // as before, less the 160 px the read lane gives back once the secondary
+    // alignments are filtered and the split segments chain (46 rows -> 28)
+    viewportHeight: 1115,
     viewportWidth: 1600,
     url: sessionSpec(CONFIG, {
       sessionTracks: [DER3_GENES_TRACK],
@@ -1104,14 +1158,26 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 // looks really messy also, can it use view-as-pairs/link supp
                 // reads or anything to simplify the stack?").
                 //
-                // Neither of the two named settings applies: these are
-                // single-end ONT reads crossing the whole window in one
-                // alignment, so there is no mate to pair and no supplementary
-                // to chain. `mismatchAlpha` was the next guess and was measured
-                // rather than assumed -- it fades a tick by `min(1, qual/50)`,
-                // and this BAM's mismatch positions carry Q30-Q50, so it
-                // changed the picture by nothing visible. Don't reach for it on
-                // R10 data.
+                // "No supplementary to chain" is what an earlier version of
+                // this note said and it was wrong (reviewer: "are you certain
+                // these are all single end ont reads? i think many of them are
+                // likely split supplementary alignments"). `samtools view` over
+                // this exact window returns 46 records with the flag histogram
+                // 11x0, 7x16, 2x256, 13x272, 3x2048, 10x2064: 18 primary, 15
+                // SECONDARY and 13 SUPPLEMENTARY, from 29 distinct read names.
+                // None of them is paired (0 records with 0x1), so the
+                // "single-end" half of that claim stands and view-as-pairs is
+                // still not the lever -- but a third of the lane was competing
+                // placements and another quarter was split segments, both drawn
+                // as though each were its own molecule. `linkedReads` and the
+                // secondary filter below are the fix; see the sibling lane on
+                // derivative_synteny, where the same file over the whole allele
+                // is 53 non-secondary records from 29 molecules.
+                //
+                // `mismatchAlpha` was an earlier guess and was measured rather
+                // than assumed -- it fades a tick by `min(1, qual/50)`, and this
+                // BAM's mismatch positions carry Q30-Q50, so it changed the
+                // picture by nothing visible. Don't reach for it on R10 data.
                 //
                 // What is actually wrong is a scale the spec never states: this
                 // capture is 3200 px wide and the page draws it about a third
@@ -1124,18 +1190,19 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 // where the window is 40 kb and rows are the thing that cannot
                 // work.
                 //
-                // 420 px is 46 rows at a pitch of 9 (`featureHeight + 1` above
-                // 3 px, featureSpacingForHeight). 46 is measured, not the 29
-                // the prose and an older note here both said: 29 reads span all
-                // four junctions, and `samtools view -c` over this window
-                // (der3_RARB_BICC1_TRHDE:32300-33400) returns 46 overlapping
-                // it. Every earlier version of this lane was quietly on a
-                // scrollbar for the difference.
+                // 260 px is 28 rows at a pitch of 9 (`featureHeight + 1` above
+                // 3 px, featureSpacingForHeight). 28, measured: dropping the 15
+                // secondary records leaves 31 in this window over 28 read
+                // names, 3 of which have both their segments inside it and so
+                // merge into one chain row. (46 rows, the number this lane was
+                // sized for, counted every record including the secondaries.)
                 {
                   trackId: 'reads_vs_der3',
-                  height: 420,
+                  height: 260,
                   showCoverage: false,
                   featureHeight: 8,
+                  linkedReads: 'normal',
+                  filterBy: { flagInclude: 0, flagExclude: 1796 },
                 },
               ],
             },
@@ -1620,16 +1687,47 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           showOnlySplitAlignments: true,
           // one row per molecule across both regions -- see the note above
           linkedReads: 'normal',
-          // `showBezierConnections` is deliberately NOT set here any more. It
-          // was what drew the fan, and in chain mode it is redundant: the chain
-          // layout runs its own connecting-line pass (`showLinkedReadLines` is
-          // literally `showBezierConnections && !isChainMode`), so the straight
-          // line between a molecule's two alignments is drawn either way and
-          // the bezier only added a second curve over it.
+          // AND the beziers, which the previous round removed on the reasoning
+          // that chain layout draws its own connecting line so the curve was
+          // redundant (reviewer, on the result: "this is no longer showing the
+          // connection between reads across the different chromosomes"). The
+          // reasoning was wrong about what reaches the screen. Chain layout's
+          // line (`buildChainConnectingData`) is emitted per DISPLAYED REGION
+          // as an absolute-coordinate [minStart, maxEnd] pair, so for a chain
+          // whose ends are on chr22 and chr9 each region's block projects the
+          // far end outside its own bp range and draws a 1px black hairline
+          // from its edge to the junction -- which is what a full-width thin
+          // line at 2px rows looks like, i.e. nothing. The bezier overlay is
+          // the pass that knows about both regions (`computePileupBezierArcs`
+          // resolves each end through `view.bpToPx` with its own region index)
+          // and it is NOT gated on chain mode -- only the straight-line pass
+          // is (`showLinkedReadLines = showBezierConnections && !isChainMode`).
+          // So this is a curve per molecule between two ends that chain layout
+          // has already put on ONE row, which is the flat fan the last round
+          // wanted without the diagonal one it removed.
+          showBezierConnections: true,
           ...SPLIT_READS,
         },
       ],
     }),
+    // and one pill naming them, in the empty strip on the chr9 side of the
+    // join. A coloured line crossing a panel divider is only obviously a
+    // connection to someone who already knows the display draws them.
+    annotations: [
+      {
+        type: 'text',
+        text: 'each line is one molecule, BCR into ABL1',
+        fontSize: 18,
+        maxWidth: 250,
+        anchor: {
+          track: 'K562_isoseq',
+          locus: 'chr9:130,851,100',
+          fracY: 0.32,
+          alignX: 'left',
+          dx: 20,
+        },
+      },
+    ],
   },
 
   // Where the amplified copies came from: chr22q11 beside chr9q34, one region
@@ -1692,8 +1790,10 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'cancer_sv/k562_cn_amplicon',
-    // 940 cut 84 css px off the DNA lane's arcs, per the run's own report
-    viewportHeight: 1025,
+    // 1025 - 260 for the two arc lanes going from 250 to 120 (reviewer: "reduce
+    // height of the arc tracks a bunch"). Two arcs each is what they hold, and
+    // at 250 the pair was 500 px of blank with four curves in it.
+    viewportHeight: 765,
     url: lgvSession(CONFIG, {
       assembly: 'hg38',
       loc: 'chr22:16,700,000-16,950,000 chr9:130,600,000-131,350,000 chr22:23,150,000-23,400,000',
@@ -1713,7 +1813,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         {
           trackId: 'K562_star_fusion',
           type: 'LinearPairedArcDisplay',
-          height: 250,
+          height: 120,
           color: FUSION_ARC_COLOR,
         },
         // The DNA junctions, under the RNA ones so the pair is read down the
@@ -1723,10 +1823,41 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         {
           trackId: 'K562_10x_sv',
           type: 'LinearPairedArcDisplay',
-          height: 250,
+          height: 120,
           color: '#1565c0',
         },
       ],
     }),
+    // WHAT EACH ARC LANE IS, on the lane (reviewer: "use text annotation to say
+    // what the arcs are"). The track names say which caller produced them,
+    // which is not the same question -- the figure is about the two lanes
+    // disagreeing on purpose, and that is what these say. Anchored to the track
+    // rather than to a coordinate, so they follow the lane heights above.
+    annotations: [
+      {
+        type: 'text',
+        text: 'RNA: only junctions that are transcribed',
+        fontSize: 18,
+        maxWidth: 260,
+        anchor: {
+          track: 'K562_star_fusion',
+          fracY: 0.14,
+          alignX: 'left',
+          dx: 14,
+        },
+      },
+      {
+        type: 'text',
+        text: "DNA: the amplicon's own two edges",
+        fontSize: 18,
+        maxWidth: 260,
+        anchor: {
+          track: 'K562_10x_sv',
+          fracY: 0.14,
+          alignX: 'left',
+          dx: 14,
+        },
+      },
+    ],
   },
 ]

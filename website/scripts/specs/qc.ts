@@ -22,27 +22,28 @@ const HG38_HUB = `?config=${encodeURIComponent('https://jbrowse.org/ucsc/hg38/co
 // SMN1 and SMN2 are 99.9% identical over ~28 kb and sit ~900 kb apart, inside a
 // segmental duplication that runs to about 1.5 Mb.
 //
-// STAYS 30 kb, and the review that asked to widen it ("it is just 'all bad
-// mappability', would be better to see 'island of badness'") was answered by
-// measuring rather than by zooming. Two facts, both checked at 200 kb before
-// this was put back:
+// 100 kb, up from the 30 kb this framed on for three rounds (reviewer, each of
+// those rounds: "also zoom out more"). Two of them refused, on two facts, and
+// only one of the two has survived:
 //
-//  - There is no edge within reach. gnomAD coverage over this block is under
-//    12x continuously from 69.5 Mb to 71.36 Mb, so the nearest place the reads
-//    recover is 410 kb past SMN1's end. 200 kb of extra width buys a wider red
-//    block, not a boundary.
-//  - A read panel cannot be that wide anyway. At 200 kb this window is a 4.61 Mb
-//    fetch and the control 3.93 Mb, so both tracks render the too-much-data
-//    banner instead of a pileup — the figure loses the only lane that shows one
-//    read at a time. The Umap lane goes with it: at 143 bp/px the absent
-//    stretches average in and it draws as a picket fence.
+//  - STILL TRUE. There is no edge within reach. gnomAD coverage over this block
+//    is under 12x continuously from 69.5 Mb to 71.36 Mb, so the nearest place
+//    the reads recover is 410 kb past SMN1's end -- widening towards it buys a
+//    wider red block and no boundary, and the frame that HOLDS the boundary is
+//    qc/smn_read_placement at 650 kb.
+//  - NO LONGER TRUE, and it is what the refusals rested on: "a read panel
+//    cannot be that wide", because at 200 kb the fetch is 4.61 Mb against the
+//    byte gate and the lane renders its too-much-data banner instead of a
+//    pileup. `forceLoad` is the declarative half of that banner's own FORCE LOAD
+//    button, and the 650 kb frame below has been drawing a pileup through it
+//    since. So the ceiling was a missing spec field, not the data.
 //
-// The island's edges belong to qc/smn_problematic_regions, which carries the
-// whole 2.5 Mb and names both of them. The page now leads with that figure and
-// treats this pair as the zoom-in, which is the structural half of the same
-// review ("i suggested zooming out, i need to see the assembly quality increase
-// on either side of this problematic region").
-const SMN1_LOC = 'chr5:70,924,000-70,954,000'
+// 100 kb is chosen for what is IN it rather than as a compromise: the whole SMN
+// cassette -- SERF1A, SMN1 with SMN1-AS1, and NAIP -- so the
+// frame says MAPQ 0 across a structure instead of across one gene. The Umap
+// lane still works here -- at 71 bp/px the absent stretches have not started
+// averaging in (they do by ~143), which is the other thing 200 kb would cost.
+const SMN1_ZOOM_LOC = 'chr5:70,889,000-70,989,000'
 
 // The control is chr5:71,455,000-71,485,000 — 30 kb over the 5' end of BDP1, on
 // the same chromosome and out of the same library as SMN1, at the same width. It
@@ -66,7 +67,7 @@ const OVERVIEW_LOC = 'chr5:69,200,000-71,700,000'
 // The read panel's own window, sized by where the reads recover rather than by
 // what looks tidy: SMN1 sits at ~11% from the left, gnomAD coverage steps back
 // up at 71.375 Mb (79%), and the BDP1 sequence the deleted control panel used is
-// the right-hand fifth. See the note on the qc/smn_vs_control spec.
+// the right-hand fifth. See the note on the qc/smn_read_placement spec.
 const WIDE_LOC = 'chr5:70,850,000-71,500,000'
 
 // The two genes, banded in-app rather than annotated, so the reader can see
@@ -93,8 +94,8 @@ const SMN_HIGHLIGHT = [
 // solid wall near 1 across a region where almost nothing maps. `min` over the
 // same bin is the worst position in it, so the lane sits on the floor for the
 // whole low-mappability block and steps to 1 at its edge — measured against the
-// read track in qc/smn_vs_control, where the step lands at the same coordinate
-// as the MAPQ 0 to MAPQ 60 transition and the gnomAD coverage step.
+// read track in qc/smn_read_placement, where the step lands at the same
+// coordinate as the MAPQ 0 to MAPQ 60 transition and the gnomAD coverage step.
 const mappabilityTrack = {
   trackId: 'hg38-umap100Quantitative',
   type: 'LinearWiggleDisplay',
@@ -112,7 +113,7 @@ const mappabilityTrack = {
 // everywhere -- practically every 2 kb window in this part of chr5 contains at
 // least one badly-mappable base, so the block does not stand out from the
 // flanks. `avg` with a density ramp is vertical stripes at every k. The
-// summarization that works at 464 bp a pixel (qc/smn_vs_control) does not
+// summarization that works at 464 bp a pixel (qc/smn_read_placement) does not
 // survive being widened four times, and the overview figure keeps gnomAD
 // coverage as its mappability-shaped lane instead.
 
@@ -146,16 +147,20 @@ const geneTrack = (height: number, showOnlyGenes: boolean) => ({
   type: 'LinearBasicDisplay',
   height,
   showOnlyGenes,
-  // Collapsing to one transcript per gene raises the display's loud "Longest
-  // isoform" chip at the right edge of the lane, which in the 2.5 Mb frames
-  // lands on top of a gene label. Its dismissal is VOLATILE by design (a reload
-  // is the reset boundary), so a session spec cannot pre-dismiss it — naming a
-  // non-collapsing mode is what leaves the quiet icon instead. It costs a second
-  // row on the multi-transcript genes even under `showOnlyGenes`, which is the
-  // cheaper of the two blemishes: a stacked row is data, a chip over a label is
-  // chrome.
-  geneGlyphMode: 'all',
+  // ONE TRANSCRIPT PER GENE (reviewer, on two of the three figures here: "use
+  // longestisoform on the gene track"). Collapsing raises the display's loud
+  // "Longest isoform" chip at the right edge of the lane, and in a 2.5 Mb frame
+  // it lands on a gene label; that is why an earlier round named 'all' instead
+  // and paid a stacked row per multi-transcript gene. The chip is chrome, so
+  // HIDE_ISOFORM_CHIP takes it out of the capture rather than the collapsing
+  // being given up for it. Its own dismissal cannot be used: that state is
+  // volatile by design, so a session spec cannot arrive with it dismissed.
+  geneGlyphMode: 'longestCoding',
 })
+
+// The chip above, removed at capture time. Every figure on this page carries a
+// gene lane and none of them is about the isoform control.
+const HIDE_ISOFORM_CHIP = ['.MuiChip-root']
 
 // NA12878 at 30x on GRCh38, from the 1000 Genomes high-coverage release. Public,
 // CORS-enabled, and needs no sequenceAdapter — the app fills that from the
@@ -213,6 +218,16 @@ const panel = (loc: string) => ({
       // colour of the whole block.
       featureHeight: 2,
       height: 300,
+      // 100 kb of a 30x CRAM is past the byte gate, and a capture has nobody to
+      // click the banner. Same reason as the 650 kb frame below.
+      forceLoad: true,
+      // and the same fix that frame needed for the same reason: at 30 kb the
+      // coverage band's `local` autoscale topped out near the library's real
+      // depth, but over 100 kb it reaches a collapsed-repeat pile-up and the
+      // axis ran to 1,600, drawing a 30x library as a flat line on the floor.
+      // `localsd` is mean +/- numStdDev over what is in view, so the ceiling
+      // comes from the window rather than from a number somebody picked.
+      autoscale: 'localsd',
     },
   ],
 })
@@ -223,8 +238,9 @@ export const qcSpecs: ScreenshotSpec[] = [
     name: 'qc/smn1_evidence',
     url: `${HG38_HUB}&session=${encodeSessionSpec({
       sessionTracks: [na12878Track],
-      views: [panel(SMN1_LOC)],
+      views: [panel(SMN1_ZOOM_LOC)],
     })}&sessionName=Screenshot`,
+    hideSelectors: HIDE_ISOFORM_CHIP,
     // Compact rows let the whole pileup fit where it used to hit the layout
     // ceiling, so this came down from 820. Not to the 723 the blank-below
     // report suggested: at 723 the run reports 110 px CLIPPED instead, the two
@@ -260,7 +276,7 @@ export const qcSpecs: ScreenshotSpec[] = [
         maxWidth: 430,
         anchor: {
           track: 'na12878_qc_reads',
-          locus: 'chr5:70,926,500',
+          locus: 'chr5:70,895,000',
           fracY: 0.22,
         },
       },
@@ -277,7 +293,7 @@ export const qcSpecs: ScreenshotSpec[] = [
   // till we see non-problematic region, then we will see good and bad areas in
   // same screenshot and can delete part 2").
   //
-  // The objection recorded at SMN1_LOC above was that a wide read panel banners
+  // The objection recorded at SMN1_ZOOM_LOC above was that a wide read panel banners
   // instead of drawing — true when it was written, and no longer, because
   // `forceLoad` is the declarative half of the FORCE LOAD button. The rest of
   // that note still holds and is why this window is 650 kb rather than 200: the
@@ -296,7 +312,12 @@ export const qcSpecs: ScreenshotSpec[] = [
   // multi-coloured one, over a coverage lane that steps up at the same place.
   {
     mode: 'url',
-    name: 'qc/smn_vs_control',
+    // RENAMED from qc/smn_vs_control (reviewer: "the naming 'vs_control' is
+    // likely an outdated naming, we are not comparing now"). It was two 30 kb
+    // panels, SMN1 against a control locus, composed; it has been one 650 kb
+    // window with the recovery inside it since that compose was collapsed, so
+    // the name outlived the comparison by two rounds.
+    name: 'qc/smn_read_placement',
     url: `${HG38_HUB}&session=${encodeSessionSpec({
       sessionTracks: [na12878Track],
       views: [
@@ -336,6 +357,7 @@ export const qcSpecs: ScreenshotSpec[] = [
     // 760 cut 42 css px off the bottom, from the run's own report; +95 more
     // for the mappability lane
     viewportHeight: 925,
+    hideSelectors: HIDE_ISOFORM_CHIP,
     readySelector: '[data-testid="pileup-display-done"]',
     readyTimeout: 600000,
     settleMs: 30000,
@@ -358,17 +380,19 @@ export const qcSpecs: ScreenshotSpec[] = [
             // broad plateau rather than per-base structure, so summarizing it
             // into 2 kb pixels keeps it.
             gnomadCoverageTrack(120, 'avg'),
-            // Two groups' opinions of the same sequence, as separate lanes: they
-            // were drawn by different projects for different purposes and they
-            // do not agree on where the region ends, which is only visible with
-            // both on screen.
+            // ONE flagged-region lane, where this had two (reviewer: "we are
+            // mixing gnomad coverage, giab problematic regions, encode
+            // problematic regions, 1000g nanopore, etc. kind of too many
+            // concepts. i just wanted to show user something about mappability.
+            // try to simplify the message"). The ENCODE Blacklist V2 lane is
+            // gone. It was here to make a second point -- the two projects
+            // disagree by 350 kb on where the block ends -- and that point is
+            // a fact about two annotation files rather than about mappability,
+            // which is what this figure is for. GIAB's is the one kept because
+            // it is the mappability annotation by name: low-mappability plus
+            // segmental duplication.
             {
               trackId: 'hg38-alllowmapandsegdupregions',
-              type: 'LinearBasicDisplay',
-              height: 40,
-            },
-            {
-              trackId: 'hg38-encBlacklist',
               type: 'LinearBasicDisplay',
               height: 40,
             },
@@ -387,51 +411,54 @@ export const qcSpecs: ScreenshotSpec[] = [
         },
       ],
     })}&sessionName=Screenshot`,
-    viewportHeight: 780,
-    // THIS is the figure that shows the island, which is why the read panels
-    // above stay at 30 kb (see SMN1_LOC), and it now carries the callset lane
-    // too. Where the island stops is settled by the coverage lane:
-    // scan_mappability_qc.sh bins it across the block and it is under 12x
-    // continuously to 71.35 Mb, 20.2x at 71.35 and 30.0x from 71.375 — so the
-    // depression ends at ENCODE's boundary and not at GIAB's, 350 kb earlier.
+    // 780 - 40 for the ENCODE lane
+    viewportHeight: 740,
+    hideSelectors: HIDE_ISOFORM_CHIP,
+    // TWO PILLS, ONE MESSAGE. The previous pair said "coverage returns at
+    // ENCODE's edge, 350 kb past GIAB's", which the review rejected on both
+    // counts -- the possessive reads oddly and, more importantly, which
+    // annotation file the coverage step lands on is not what the figure is
+    // about. So each pill now says why its own lane is here, and both say the
+    // same thing about mappability from a different direction.
     //
-    // ONE pill on the coverage lane, not one per edge. Under `avg` the lane is
-    // a full-height plateau, a low block and a full-height plateau, so where
-    // the depth drops and where it returns need no labelling; what the picture
-    // cannot say is WHICH annotation edge the return lands on. Both pills sit
-    // in the lane's upper fifth, where the axis runs to 40x and the mean inside
-    // the block is under 12x, so nothing is covered.
+    // The coverage pill is the one that turns a depth lane into a mappability
+    // lane: gnomAD drops non-uniquely-placed reads before averaging, so this
+    // lane collapsing IS the mappability annotation carried out on 76,156
+    // genomes. Nothing else on the frame says that, and without it a reader can
+    // only conclude that the sequence is hard to sequence.
+    //
+    // The callset pill is the one review asked to make clearer ("which is kind
+    // of interesting that even the nanopore 1000g callset cant resolve this.
+    // which could be notable to mention more clearly"): the hole in that lane
+    // is not a missing file, it is 1,019 long-read genomes producing no call.
+    // The count is scan_mappability_qc.sh's, over this block against the
+    // equal-width flanks either side: 2 records inside, 81 and 40 outside.
+    //
+    // Both sit in their lane's upper fifth, where the coverage axis runs to 40x
+    // and the mean inside the block is under 12x, so nothing is covered.
     annotations: [
       {
         type: 'text',
-        text: "Coverage returns at ENCODE's edge, 350 kb past GIAB's",
+        // same simplification pass as the pill below it
+        text: 'the dip is mappability: reads that fit in two places are dropped',
         fontSize: 19,
-        maxWidth: 330,
-        textAlign: 'end',
+        maxWidth: 340,
         anchor: {
           track: 'hg38-gnomad3MeanCoverage',
-          locus: 'chr5:71,160,000',
-          fracY: 0.16,
+          locus: 'chr5:70,400,000',
+          fracY: 0.18,
         },
       },
       {
-        type: 'arrow',
-        fromAnchor: {
-          track: 'hg38-gnomad3MeanCoverage',
-          locus: 'chr5:71,175,000',
-          fracY: 0.16,
-        },
-        anchor: {
-          track: 'hg38-gnomad3MeanCoverage',
-          locus: 'chr5:71,370,000',
-          fracY: 0.16,
-        },
-      },
-      {
+        // PLAIN, on a second pass (reviewer: "'1,019 long-read genomes, 2 calls
+        // inside the block' is still too dense of wording. more like 'even with
+        // long read bam files, very few calls inside this block'"). The counts
+        // are scan_mappability_qc.sh's and they belong in the prose, where there
+        // is room to say what they are counts OF.
         type: 'text',
-        text: 'No long-read SV calls across the flagged block',
+        text: 'even with long reads, very few calls in this block',
         fontSize: 18,
-        maxWidth: 520,
+        maxWidth: 340,
         anchor: {
           track: 'hg38-lrSv1kgOnt',
           locus: 'chr5:70,300,000',
@@ -439,6 +466,23 @@ export const qcSpecs: ScreenshotSpec[] = [
         },
       },
     ],
+  },
+
+  // THE TWO SCALES AS ONE FIGURE (reviewer: "if this is a two part of zooming in
+  // on qc/smn_problematic_regions, then just make it a two part figure"). They
+  // were embedded two sections apart, with the T2T argument between them, and a
+  // reader had to hold the 2.5 Mb frame in mind to know what the 650 kb one was
+  // inside of. Stacked, the second frame is visibly a window into the first: the
+  // block, then the reads in it.
+  //
+  // Both parts render at the default 1400 px, which is what makes a vertical
+  // compose land square. Each stays reachable live on its own, which is why the
+  // parts keep their names.
+  {
+    mode: 'compose',
+    name: 'qc/smn_block_and_reads',
+    parts: ['qc/smn_problematic_regions', 'qc/smn_read_placement'],
+    direction: 'vertical',
   },
 
   // qc/callsets_at_smn was here and is DELETED (review: "this is not a good

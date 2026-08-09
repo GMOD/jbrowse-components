@@ -619,6 +619,44 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 120000,
     settleMs: 12000,
+    // THE RIBBONS ARE ACCURATE AND THE "DOUBLING" IS THE FINDING (reviewer: "i
+    // think previously this had less 'doubling' of ribbons. please check that
+    // the new ribbons are accurate. not sure if it is due to isoforms").
+    //
+    // Checked against the two files the track reads, not against the picture.
+    // `grape.blocks.gz` is keyed on TRANSCRIPT ids (rna-XM_...), so the first
+    // guess -- one gene's isoforms each drawing their own ribbon -- is the right
+    // shape and the wrong mechanism: over this window `grape.bed.gz` has 15
+    // grape transcripts at 15 distinct loci, one row each, no locus repeated.
+    // What repeats is the MATE. Of the 12 rows here that have a peach ortholog,
+    // three name the same peach transcript (rna-XM_007203660.2) and the same
+    // cacao one, from three grape loci 20 kb apart at 836 kb, 857 kb and 862 kb;
+    // two more share rna-XM_020568573.1 from 778 kb and 784 kb.
+    //
+    // Those three grape loci are the trimethyltridecatetraene synthase copies
+    // the grape lane labels. So the fan is a tandem expansion in grape against a
+    // single ortholog in each of the other two genomes -- 3:1 and 2:1 anchors
+    // that MCScan is right to emit -- and it is the most interesting thing in
+    // the frame rather than a rendering fault. Hence a pill instead of a fix.
+    annotations: [
+      {
+        type: 'text',
+        text: 'three grape copies, one peach and one cacao ortholog: a tandem expansion',
+        fontSize: 18,
+        maxWidth: 330,
+        // right-aligned: the array it names is at 836-863 kb, which is the last
+        // fifth of the frame, so a pill drawing rightward from it runs off
+        textAlign: 'end',
+        anchor: {
+          // the MIDDLE panel of the three-genome stack; without the view path
+          // this resolves against the top one (peach), which has no such track
+          view: [0, 1],
+          track: 'grape_genes',
+          locus: '11:849,000',
+          fracY: 0.92,
+        },
+      },
+    ],
   },
 
   // The last paragraph of multiway_synteny.md, which had no figure: the same
@@ -783,6 +821,30 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // against the distal ends of 5B/5D, and the ~650-744 Mb end against the
     // first 80 Mb of 7D.
     annotations: [
+      // WHICH GENOME THIS HALF IS, in the overlay rather than only in the view
+      // header (reviewer, twice: "clearly label wheat self-alignment on left
+      // using red annotation boxes, and oat self-alignment on right"). The
+      // `displayName` in the purple bar was the previous round's answer and it
+      // is 13px of chrome; a reader scanning the composed pair needs to know
+      // which genome is which before anything else on the frame. Over the app
+      // header, at the same x/y as the oat half's, so the two titles line up
+      // across the join.
+      {
+        type: 'text',
+        text: 'Bread wheat vs itself',
+        fontSize: 26,
+        // on the app bar, anchored to it rather than to an x/y: check-specs
+        // ratchets hand-placed coordinates and this is chrome, so it has an
+        // element. `.MuiAppBar-root` is app-core's own App.tsx header; its top
+        // left corner is the frame's top left corner in every capture width.
+        anchor: {
+          selector: '.MuiAppBar-root',
+          alignX: 'left',
+          alignY: 'top',
+          dx: 24,
+          dy: 30,
+        },
+      },
       { type: 'box', anchor: { hLocus: '5D', vLocus: '4A' } },
       { type: 'box', anchor: { hLocus: '7D', vLocus: '4A' } },
       {
@@ -862,6 +924,22 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // named 4A rearrangement; oat's are ordinary. 4A/7C is only the largest, so
     // the label says what boxing one cell cannot — that it is not the exception.
     annotations: [
+      // the other half of the composed pair's title, same x/y and same size as
+      // the wheat one so they sit level across the join
+      {
+        type: 'text',
+        text: 'Oat vs itself',
+        fontSize: 26,
+        // same anchor as the wheat half, so the two titles sit level across the
+        // join of the compose
+        anchor: {
+          selector: '.MuiAppBar-root',
+          alignX: 'left',
+          alignY: 'top',
+          dx: 24,
+          dy: 30,
+        },
+      },
       { type: 'box', anchor: { hLocus: '4A', vLocus: '7C' } },
       // To the RIGHT of the cell. 7C is one row from the top, so a pill lifted
       // clear of it runs into the app header, and 4A is now the leftmost column
@@ -913,6 +991,13 @@ export const syntenySpecs: ScreenshotSpec[] = [
   //
   // alpha at 0.95 rather than the 0.2 default, which is tuned for whole-genome
   // hairballs and washes a dozen ribbons out to nothing.
+  //
+  // 3 Mb, up from 1.09 (reviewer: "zoom out even more"). The point of the
+  // figure is that ONE ribbon is not blue, and that reads better the more blue
+  // neighbours are in frame. The rhesus window is the same span scaled by
+  // 1.06/1.09 — the ratio the two 1 Mb windows this replaced already had, which
+  // is the two assemblies' local length difference — and centred on the same
+  // pair of coordinates, so the ribbons stay parallel instead of shearing.
   {
     mode: 'url',
     name: 'selection_pressure/lysozyme',
@@ -928,13 +1013,32 @@ export const syntenySpecs: ScreenshotSpec[] = [
             views: [
               {
                 assembly: 'human',
-                loc: '12:68,790,000-69,880,000',
-                tracks: ['human_genes'],
+                loc: '12:67,835,000-70,835,000',
+                tracks: [
+                  {
+                    trackId: 'human_genes',
+                    type: 'LinearBasicDisplay',
+                    // names only. The blue Ensembl description line under every
+                    // gene ("lysozyme [Source:HGNC Symbol;Acc:...]") is a
+                    // second row of text per feature and at 3 Mb it is most of
+                    // the ink in the panel, none of it the figure's subject
+                    // (reviewer: "turn off show descriptions on gene tracks").
+                    showLabels: 'name',
+                    displayMode: 'compact',
+                  },
+                ],
               },
               {
                 assembly: 'rhesus',
-                loc: '11:68,330,000-69,390,000',
-                tracks: ['rhesus_genes'],
+                loc: '11:67,401,000-70,319,000',
+                tracks: [
+                  {
+                    trackId: 'rhesus_genes',
+                    type: 'LinearBasicDisplay',
+                    showLabels: 'name',
+                    displayMode: 'compact',
+                  },
+                ],
               },
             ],
             tracks: [['primate_orthologs']],
@@ -949,6 +1053,60 @@ export const syntenySpecs: ScreenshotSpec[] = [
     settleMs: 12000,
     // 640 left 60 css px of blank under the bottom row, per the run's report
     viewportHeight: 580,
+    // WHAT THE COLOUR MEANS, on the drawing (reviewer: "add red text box
+    // pointing at the synteny ribbon explaining why this finding is
+    // interesting"). It was in the caption only, so the frame's content was a
+    // row of blue ribbons with one orange one and nothing saying that the
+    // orange one is the result. Worded the way the section words it — LYZ
+    // stands apart from its neighbours, which is a hypothesis worth a codon
+    // model rather than a demonstration of selection, and a pill that claimed
+    // more than that would contradict the page it sits on.
+    //
+    // Anchored on the human panel's gene track at LYZ (12:69,348,341-69,354,234
+    // in GRCh38, Ensembl 116) rather than on a pixel: the arrow drops from the
+    // bottom edge of that track into the ribbon band below it, so both follow
+    // the window if it moves again.
+    annotations: [
+      {
+        type: 'text',
+        text: 'LYZ, the only pair above 1. Every neighbour is blue',
+        fontSize: 18,
+        maxWidth: 300,
+        // to the RIGHT of the ribbon it names, inside the band: a pill centred
+        // on LYZ covers the one ribbon the figure is about, and the band's own
+        // 95 px is the only horizontal strip on the frame that is neither gene
+        // rows nor ruler
+        anchor: {
+          view: [0, 0],
+          track: 'human_genes',
+          locus: '12:69,351,000',
+          fracY: 1,
+          dy: 45,
+          alignX: 'right',
+          dx: 95,
+        },
+      },
+      {
+        type: 'arrow',
+        fromAnchor: {
+          view: [0, 0],
+          track: 'human_genes',
+          locus: '12:69,351,000',
+          fracY: 1,
+          dy: 52,
+          alignX: 'right',
+          dx: 88,
+        },
+        anchor: {
+          view: [0, 0],
+          track: 'human_genes',
+          locus: '12:69,351,000',
+          fracY: 1,
+          dy: 52,
+          dx: 8,
+        },
+      },
+    ],
   },
 
   // The two hexaploid cereals side by side, which is the one framing that makes
@@ -2448,10 +2606,14 @@ export const syntenySpecs: ScreenshotSpec[] = [
           { type: 'delay', ms: 500 },
         ],
         annotations: [
-          // fontSize 30 on all three step labels (reviewer: "please make the
-          // red textboxes larger"), up from 20, which was BELOW the overlay's
-          // own 22 default, and these are the four-panel grid's only signposts,
-          // read at whatever size a 2x2 of 900px frames ends up on the page.
+          // fontSize 30 on ALL FOUR step labels (reviewer: "please make the
+          // red textboxes larger", then "i do not like the varying text
+          // sizes"), up from 20, which was BELOW the overlay's own 22 default,
+          // and these are the four-panel grid's only signposts, read at
+          // whatever size a 2x2 of 900px frames ends up on the page. Stage 4's
+          // label was the one left at 20 and it was left there because it was
+          // the longest; it is shortened instead, so no frame's signpost is a
+          // different size from its neighbours'.
           {
             type: 'text',
             x: 24,
@@ -2574,14 +2736,16 @@ export const syntenySpecs: ScreenshotSpec[] = [
           ],
         }),
         readySelector: '[data-testid="synteny_canvas_done"]',
-        viewportHeight: 690,
+        // 690 cut 13.5 css px off the chimp RepeatMasker row, per the run's own
+        // CONTENT CLIPPED report
+        viewportHeight: 704,
         annotations: [
           {
             type: 'text',
             x: 24,
             y: 56,
-            fontSize: 20,
-            text: '(4) Chimp tracks on, ribbon drawn with transparent indels',
+            fontSize: 30,
+            text: '(4) Chimp tracks on, transparent indels',
           },
         ],
       },

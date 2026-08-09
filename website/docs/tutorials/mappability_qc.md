@@ -31,25 +31,28 @@ cannot answer: the same sequence exists twice, so an aligner given a read from
 either copy has two equally good places to put it.
 
 An aligner reports that as MAPQ 0. The read is still aligned and still drawn
-where it aligned; MAPQ is
-`-10 log10 Pr{mapping position is wrong}`
+where it aligned; MAPQ is `-10 log10 Pr{mapping position is wrong}`
 ([SAM specification](https://samtools.github.io/hts-specs/SAMv1.pdf)), so 0 is
 the aligner saying the position it chose is about as likely wrong as right.
 Nothing about the pileup itself announces it.
 
-## Zooming out first
+## The block, and the reads inside it
 
-<Figure src="/img/qc/smn_problematic_regions.png" caption="2.5 Mb of chr5 with SMN2 and SMN1 banded. From the top: RefSeq genes, gnomAD mean coverage, GIAB's low-mappability regions, the ENCODE Blacklist V2, and the 1000 Genomes long-read (ONT) SV callset over 1,019 samples. Coverage runs at full depth into the block, drops across the whole span the two annotation lanes cover, and returns at the right-hand edge. The callset lane has a hole over the same span." />
+<Figure src="/img/qc/smn_block_and_reads.png" caption="Two scales of the same place. Top, 2.5 Mb of chr5 with SMN2 and SMN1 banded: RefSeq genes, gnomAD mean coverage, GIAB's low-mappability and segmental-duplication regions, and the 1000 Genomes long-read (ONT) SV callset over 1,019 samples. Coverage runs at full depth into the block, drops across the flagged span, and returns at its right-hand edge, and the callset lane has a hole over the same span. Bottom, 650 kb inside it with SMN1 banded at the left: the same coverage lane, Umap k100 mappability summarized by minimum, and NA12878 reads colored by mapping quality. The mappability lane is on the floor for four fifths of the frame, the pileup over it is red (MAPQ 0) across the same span and multi-colored after it, and the coverage lane steps up at the same coordinate." links="Open the wide view=qc/smn_problematic_regions,Open the read view=qc/smn_read_placement" />
 
 The affected sequence is not the gene, it is a block of about 1.5 Mb that
 contains it, so a locus can be inside one of these regions without being inside
-anything that carries the gene's name. Neither boundary is sharp, and the two
-projects drew them differently: GIAB's interval ends at chr5:71,009,585 and
-ENCODE's continues to chr5:71,359,500, so a locus sitting between the two edges
-is one to check by hand. The coverage lane settles which edge to believe here,
-and does so on the image: it stays down through the 350 kb GIAB has let go of
-and comes back at ENCODE's. `scan_mappability_qc.sh` prints the same lane in 25
-kb bins if you want the step as numbers.
+anything that carries the gene's name. Neither boundary is sharp: GIAB's
+interval ends at chr5:71,009,585 while ENCODE's blacklist continues to
+chr5:71,359,500, so a locus sitting between the two edges is one to check by
+hand. `scan_mappability_qc.sh` bins the coverage lane at 25 kb, which is how to
+settle that by measurement rather than by picking a file. It stays low through
+the 350 kb GIAB has let go of and recovers at ENCODE's edge.
+
+The lower panel is the same block at the scale a read lives at. The nearest
+sequence where reads recover is 410 kb past the end of _SMN1_, which is why it
+is one 650 kb window with the edge inside it rather than a pair of panels a
+reader has to hold in mind at once.
 
 ## Would a finished assembly fix it?
 
@@ -75,18 +78,32 @@ array is not even the same length in the two assemblies: the two genes are 875
 kb apart in GRCh38 and 572 kb apart in CHM13, which is what a
 copy-number-variable region does between any two haplotypes.
 
+The chains are an argument. The reads are the measurement, and it agrees with
+them. The 1000 Genomes ONT release, which is the same project as the long-read SV
+callset in the wide figure, aligned some of its samples to both references with
+the same minimap2 pipeline, so one sample can be asked the same question twice.
+`scan_mappability_qc.sh` counts GM18501's records over _SMN1_ in each assembly's
+own coordinates:
+
+| reference | records | MAPQ 0 | MAPQ 60 |
+| --------- | ------: | -----: | ------: |
+| GRCh38    |     290 |  46.6% |    6.9% |
+| T2T-CHM13 |     290 |  46.6% |    9.7% |
+
+Two things fall out of those three numbers. **Long reads help and do not fix
+it**: 46.6% at MAPQ 0 against the 83.2% the short-read lane gives at the same
+gene, so roughly half the reads still fit somewhere else as well. And **the
+finished assembly changes nothing**: the same reads, the same fraction
+unplaceable, a couple of points more of them at MAPQ 60.
+
 So the ambiguity is a property of the sequence rather than of the assembly, and
-finishing the assembly does not remove it. What removes it is a read long enough
-to span from inside one copy to sequence outside it.
+finishing the assembly does not remove it. What removes it is not a better
+reference but a read long enough to span from inside one copy to sequence
+outside it, and at ~47% MAPQ 0 an R9 ONT library is not yet that read.
 
-## Zooming back in
+## What the lanes are
 
-Reads are what the block does to a sample. The nearest sequence where they
-recover is 410 kb past the end of _SMN1_, so this is one 650 kb window with the
-edge inside it rather than a pair of panels that a reader has to hold in mind at
-once.
-
-<Figure src="/img/qc/smn_vs_control.png" caption="650 kb on chromosome 5, SMN1 banded at the left. RefSeq genes, Umap k100 multi-read mappability summarized by minimum, gnomAD v3 mean coverage, and NA12878 reads colored by mapping quality. The mappability lane is on the floor for four fifths of the frame; the pileup over it is red (MAPQ 0) across the same span and multi-colored after it, and the coverage lane steps up at the same coordinate." links="Open this view=qc/smn_vs_control,Open a 30 kb window over SMN1=qc/smn1_evidence" />
+<Figure src="/img/qc/smn1_evidence.png" caption="100 kb over the SMN cassette, holding SERF1A, SMN1 and NAIP, with the same four lanes and one read per row. Almost every read is red: mapped where it is drawn, and fitting somewhere else just as well." links="Open this view=qc/smn1_evidence" />
 
 The lanes are independent of each other, which is what makes them worth
 stacking:
@@ -110,8 +127,9 @@ stacking:
 - **Mapping quality on the reads** is the aligner's own account, one read at a
   time, in the sample on screen. Red is MAPQ 0, meaning the aligner found
   another place the read fits equally well; yellow is MAPQ 60 and above.
-- The **problematic-region annotations** in the figure above are two projects'
-  published opinions of the same sequence.
+- The **GIAB low-mappability + segdup lane** in the wide panel is a published
+  opinion of the same sequence, drawn by a project that had to decide where a
+  benchmark stops being trustworthy.
 
 Everything on this page except the read track comes out of the hosted hg38
 config at [genomes.jbrowse.org](https://genomes.jbrowse.org): find them in the
@@ -213,3 +231,7 @@ list is measured the same way.
   [Umap and Bismap: quantifying genome and methylome mappability](https://doi.org/10.1093/nar/gky677).
   _Nucleic Acids Research_ 46:e120 (2018), the source of the k100 mappability
   track.
+- Gustafson JA, Gibson SB, Damaraju N, et al.
+  [High-coverage nanopore sequencing of samples from the 1000 Genomes Project to build a comprehensive catalog of human genetic variation](https://doi.org/10.1101/gr.279273.124).
+  _Genome Research_ 34:2061-2073 (2024), the source of both the long-read SV
+  callset in the wide figure and the GRCh38 / T2T-CHM13 read counts above.
