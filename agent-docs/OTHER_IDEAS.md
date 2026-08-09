@@ -100,6 +100,9 @@ reference others may hold, not as free-form prose.
 - [Tutorial ideas (2026-07 audit)](#tutorial-ideas-2026-07-audit) — the demand
   tally, priorities, the two tutorials deliberately removed, and the 2026-08
   re-inventory of the 196 hosted tracks no page or spec names
+- [The genomes.jbrowse.org pages (2026-08-08 audit)](#the-genomesjbrowseorg-pages-2026-08-08-audit),
+  what the hosted catalog carries that the three pages don't use, and the
+  staging flags in `~/src/jb2hubs` that decide what a link to that site reaches
 
 ## Alignments
 
@@ -2700,6 +2703,87 @@ connections. genomes.jbrowse.org and `~/src/jb2hubs` are existence proofs that
 we do this, the "Large track catalogs (100k+ tracks)" section of this file
 covers the engineering, and the docs teach none of it. Adjacent to the serving
 your lab's data tutorial, one tier up in scale.
+
+### The genomes.jbrowse.org pages (2026-08-08 audit)
+
+`genomes_basics`, `genomes_synteny` and `genomes_msa` read against the live
+`hg38` hub config, the jb2hubs feature flags, and the JBrowse source for every UI
+label they name. What was wrong is fixed. What is left needs a figure or a
+decision.
+
+**Half of what a link to that site reaches is decided in another repo.**
+`~/src/jb2hubs/website/src/config/features.ts` gates `/synteny`,
+`/conserved-gene-order`, `/protein-browser` and `/pangenomes/*` on
+`PUBLIC_STAGING`, and a production build serves each of them as an
+`Astro.redirect('/')`, which is a **200** carrying a `<meta refresh>` stub. So a
+doc could link to a page that no longer exists and every status check called it
+healthy. `genomes_synteny` linked to `/synteny` as "the synteny pair index" that
+way. `check-external-links.ts` now reads the body of our own page URLs and fails
+on a stub. Only `/orthologs` of that set is live in production, and its per-row
+**Synteny** links are deliberately ungated, so they work there too
+(`jb2hubs/agent-docs/ORTHOLOGS_LAUNCH_FOLLOWUPS.md`). Check the flag before
+linking anything else on that site, and expect `/protein-browser` to overlap
+`genomes_msa` heavily when it ships.
+
+**The alignment under the conservation signal — built 2026-08-08** as
+`genomes_basics`' "The alignment the score came from"
+(`genomes_basics/multiz_alignment`), closing the "Conservation and multiple
+alignments" idea above. Both of the blockers first written here were wrong, and
+how they were wrong is the part worth keeping:
+
+- "the tracks open hundreds of rows tall" was a guess from the sample lists.
+  `LinearMafDisplay` defaults to `rowHeight: 0`, which fits rows to the display
+  height instead, so depth costs thinness rather than height. Nothing to fix in
+  jb2hubs, and the 319-row texture is what makes the figure legible.
+- "no multiz100way bigMaf, so the figure has to move" was true but not a
+  blocker. The section switches **both** tracks to the 470-way pair rather than
+  pairing a 100-way score with a 470-way alignment, and the earlier figures keep
+  the 100-way they were shot on.
+
+What the section actually turns on is better than the one it was proposed for.
+Two dense columns sit within ~15bp of each other in the same figure and score
+opposite ways: under S240 nearly every species differs from human but they all
+carry the same base and the score stays positive, while under T256 and G244
+fewer rows differ but they disagree with each other and the score goes red.
+phyloP counts substitution events on the tree, not rows that differ, and reading
+it the density way is the plausible wrong answer the figure disproves.
+
+The third track, `cactus241wayBM`, is dropped in jb2hubs rather than shown, and
+the byte measurements behind that are in `getTrackModifications.ts` beside the
+rule.
+
+**UniProt in genome coordinates is now used, the rest of the set is not.**
+`genomes_msa` gained a section pairing the MSA's CDD overlay with
+`hg38-unipDomain` (verified against the UCSC API: Pyrin, NACHT, FIIND and CARD
+over NLRP1, minus strand). Fourteen more UniProt tracks are in the same config,
+covering chains, disulfide bonds, transmembrane segments, modified residues and
+sequence conflicts. That is the "UniProt protein features on the genome" idea
+above, reachable off the hosted hub rather than off `config_demo.json`.
+
+**`genomes_synteny` follows two datasets.** Prose is TNNT3/hs1, the walkthrough
+figure is FTO/panTro6, and `tutorials/CLAUDE.md` says one dataset step by step.
+Two of its three figures are already hs1, so the fix is re-shooting
+`genomes_synteny/launch_sequence` on the hs1 track: one spec edit, a regen and a
+push.
+
+**All three pages are human.** The site's fifty thousand assemblies are its
+reason to exist, and `genomes_basics` now states the no-name-index caveat
+(the trix index is built from an assembly's NCBI RefSeq GFF, so an unannotated
+one has none) without ever showing it. A GenArk page would demonstrate that
+caveat and answer the undecided "Non-model organism with no config" entry above
+in favor of the hosted instance.
+
+**Not a bug, checked: the hub configs name a MafViewer plugin that core also
+carries.** `@jbrowse/plugin-maf` is in `products/jbrowse-web/src/corePlugins.ts`
+as of 33dff33a71 (2026-05-14), which is **not** in v4.3.0, still `latest` on npm
+and what production launches point at. So the `plugins[]` entry is required today
+and redundant only on `main`. When v5 ships it becomes a bundle fetch on the
+critical path of every hosted launch for something core already has, and
+`plugins[].url` is the one field that can error-page a whole session. The two
+plugin names differ (`MafPlugin` vs `MafViewerPlugin`), so PluginManager's
+name-match guard does not dedupe them, and the registry's first-wins guard means
+the core copy would win anyway. Re-verify against the hosted builds rather than
+against git before acting.
 
 ### Parked
 

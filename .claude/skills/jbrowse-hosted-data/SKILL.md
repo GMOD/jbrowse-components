@@ -42,6 +42,12 @@ GenArk fans the first nine digits into three directories: `GCA_964188535.1` ->
 the `--hub` flag below, so usually you name the assembly and never build the
 URL.
 
+`https://jbrowse.org/ucsc/all.json` is every UCSC assembly in one config, with
+both directions of every pairwise liftOver. Reach for it when a session spans
+two genomes, since both assemblies are then already declared and neither has to
+be resolved at run time. It is a much bigger fetch, so use a per-assembly config
+otherwise.
+
 ## Find the assembly
 
 `npx @jbrowse/img list` prints the couple of hundred UCSC databases. The GenArk
