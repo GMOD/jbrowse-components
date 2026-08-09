@@ -272,28 +272,29 @@ export const hicSpecs: ScreenshotSpec[] = [
         // B-lymphoblastoid line, and this window's 600 kb gene desert is the
         // MYC enhancer cluster.
         //
-        // ONE ROW, not two (reviewer: "the naive and memory tracks look almost
-        // exactly the same. i cant see difference"). They look the same because
-        // they ARE: all twelve pseudobulks were measured over this window with
-        // bigWigToBedGraph, mean signal inside the 600 kb domain against the
-        // rest of the 2.5 Mb frame, and Naive B and Memory B come out 0.0385 /
-        // 0.0342 against flanks of 0.0094 / 0.0084. Two rows a reader is
-        // invited to compare, carrying a difference that is not there, is worse
-        // than one row.
+        // ALL TWELVE PSEUDOBULKS (review: "this one single bigwig does not help
+        // me to see pattern. seeing a bunch of accessibility bigwigs as a
+        // multiwig might help"). This lane was cut to one row last round for a
+        // different complaint -- "the naive and memory tracks look almost
+        // exactly the same. i cant see difference" -- and both notes are right,
+        // because they are about different claims.
         //
-        // The same table settles what the lane may claim, which is less than a
-        // cell-type-matched lane looks like it claims. EVERY lineage is
-        // enriched inside the domain -- the ratio runs 3.6x (NK) to 5.2x (CD4
-        // Naive) and B is mid-table at 4.1x -- so this is not a B-specific
-        // domain and must not be captioned as one. What IS true of B is the
-        // absolute level: Naive B carries the most signal inside the domain of
-        // the twelve, which is why it is the row kept, GM12878 being an
-        // EBV-transformed B-lymphoblastoid line. The lane's statement is that
-        // the contacted sequence is accessible regulatory DNA in the matched
-        // cell type, and that is all.
+        // TWO rows is a comparison, and the comparison is not there: measured
+        // over this window with bigWigToBedGraph, mean signal inside the 600 kb
+        // domain against the rest of the 2.5 Mb frame, Naive B and Memory B come
+        // out 0.0385 / 0.0342 against flanks of 0.0094 / 0.0084. Inviting a
+        // reader to find a difference that small is worse than one row.
         //
-        // `subtreeFilter` is the display's own "show these leaves", matched on
-        // the source NAME with no tree involved.
+        // TWELVE rows is not a comparison, it is a distribution, and that one
+        // the measurement supports outright: EVERY lineage is enriched inside
+        // the domain, 3.6x (NK) to 5.2x (CD4 Naive), with B mid-table at 4.1x.
+        // So the honest reading of the lane -- the contacted sequence is
+        // accessible regulatory DNA across blood lineages, not a B-specific
+        // domain -- is the one twelve rows actually draw, while one row looked
+        // like a cell-type-matched claim it was never entitled to make. The
+        // `subtreeFilter` that pinned it to Naive B is gone with it.
+        //
+        // `multirowxy` is the track's own default rendering, one row per source.
         //
         // ENCODE's cCRE registry (`encodeCcreCombined`, also in this config)
         // was the first thing tried here and does NOT work at this width --
@@ -305,8 +306,7 @@ export const hicSpecs: ScreenshotSpec[] = [
         {
           trackId: 'pbmc5k_scatac_pseudobulk_hg38',
           type: 'MultiLinearWiggleDisplay',
-          subtreeFilter: ['Naive B'],
-          height: 75,
+          height: 300,
         },
         // Contact domains as ARCS (review: "delete the 'contact domains', just
         // change that into an arc track. it is not sensible as is being orange
@@ -367,9 +367,9 @@ export const hicSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    // +120 for the B-cell ATAC lane, +33 the run reported clipped; the run's
-    // own clipped/blank-below report is what corrects this
-    viewportHeight: 1243,
+    // +225 for the accessibility lane going from one row to all twelve; the
+    // run's own clipped/blank-below report is what corrects this
+    viewportHeight: 1468,
     readySelector: '[data-testid="hic-display-done"]',
     readyTimeout: 240000,
     settleMs: 20000,

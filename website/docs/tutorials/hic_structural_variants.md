@@ -40,14 +40,14 @@ annotation files derived from the same matrix:
   of convergent CTCF sites. ENCODE calls them with
   [HiCCUPS](https://github.com/aidenlab/juicer/wiki/HiCCUPS), also a BEDPE.
 
-<Figure src="/img/hic/loops_and_domains.png" caption="GM12878 in situ Hi-C over 2.5 Mb of chr8 in coarse bins, with the Arrowhead contact domains and HiCCUPS loops called from the same matrix stacked above, one arc each. MYC is banded, and the domain springing from it is 600 kb wide: the dark red arc below is the HiCCUPS loop between that domain's two corners, and the block it bounds is the denser triangle in the matrix. RefSeq genes on top, and naive-B ATAC accessibility under them, whose peaks fall inside the domain." links="Open this view=hic/loops_and_domains" />
+<Figure src="/img/hic/loops_and_domains.png" caption="A contact domain is a claim about which sequence talks to which, so the test is whether the sequence inside it is doing anything. MYC's 600 kb domain, its bounding HiCCUPS loop and the denser triangle in the matrix are three readings of one file; the twelve single-cell ATAC pseudobulks above them are not, and their peaks pile up inside the domain and thin out to its right in every blood lineage." links="Open this view=hic/loops_and_domains" />
 
-The accessibility lane is one cell type rather than several because the
-difference between cell types is not the point here. Every PBMC lineage in that
-pseudobulk is between 3.6 and 5.2 times more accessible inside this domain than
-in the flanking sequence, so the lane says the contacted DNA is regulatory, not
-that it is B-specific. Naive B is the row kept because it carries the most
-signal inside the domain of the twelve and GM12878 is a B-lymphoblastoid line.
+All twelve lineages are drawn because the agreement between them is the result.
+Every PBMC lineage in that pseudobulk is between 3.6 and 5.2 times more
+accessible inside this domain than in the flanking sequence, so the lane says
+the contacted DNA is regulatory, not that it is B-specific. Read one row at a
+time they would be a comparison with nothing in it; read together they are the
+same enrichment twelve times.
 
 The dark arc is the point of the figure. A contact domain and the loop at its
 corner are the same object seen two ways. The block in the matrix and the arc
