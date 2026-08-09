@@ -2311,6 +2311,42 @@ export const uiSpecs: ScreenshotSpec[] = [
         dx: 8,
         dy: -8,
       },
+      // WHAT TO READ OFF IT (reviewer: "this screenshot 'looks cool' but does
+      // it mean anything? is there anything we should interpret from it?").
+      // The result was in the caption and nowhere on the picture, which is the
+      // wrong way round for a figure whose whole content is a shape. The shape
+      // is that the clustering cuts the 127 epigenomes in two: an upper block
+      // where the boxes carry active-TSS red and transcription green, and a
+      // lower block where the same two boxes are Polycomb orange and quiescent
+      // grey. That is HOX regulation -- the cluster is held repressed in most
+      // tissues and opened in the ones that use it -- and it is the reason the
+      // figure exists rather than a pattern that happens to look good.
+      //
+      // In the LEFT FLANK, which is uniform quiescent in every row, so the
+      // pills cover no state call. Anchored by fracY rather than by pixel, so
+      // they follow the clustering's own split if a rebuild moves it.
+      {
+        type: 'text',
+        text: 'these epigenomes open HOXA',
+        fontSize: 17,
+        anchor: {
+          track: 'roadmap_chromhmm_multirow_hg19',
+          locus: 'chr7:26,995,000',
+          alignX: 'left',
+          fracY: 0.22,
+        },
+      },
+      {
+        type: 'text',
+        text: 'these keep it repressed',
+        fontSize: 17,
+        anchor: {
+          track: 'roadmap_chromhmm_multirow_hg19',
+          locus: 'chr7:26,995,000',
+          alignX: 'left',
+          fracY: 0.72,
+        },
+      },
     ],
     // clustering 127 rows is real WASM compute, and a settle long enough to
     // cover it on a slow runner is one that is wrong on a fast one — a 15s

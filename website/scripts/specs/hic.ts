@@ -272,11 +272,28 @@ export const hicSpecs: ScreenshotSpec[] = [
         // B-lymphoblastoid line, and this window's 600 kb gene desert is the
         // MYC enhancer cluster.
         //
-        // Two rows, not twelve: the pseudobulk track carries T, NK, B and
-        // myeloid, and `subtreeFilter` is the display's own "show these leaves"
-        // (matched on the source NAME, no tree involved). Naming both B rows
-        // also keeps the lane honest about being two independent pseudobulks
-        // rather than one curve.
+        // ONE ROW, not two (reviewer: "the naive and memory tracks look almost
+        // exactly the same. i cant see difference"). They look the same because
+        // they ARE: all twelve pseudobulks were measured over this window with
+        // bigWigToBedGraph, mean signal inside the 600 kb domain against the
+        // rest of the 2.5 Mb frame, and Naive B and Memory B come out 0.0385 /
+        // 0.0342 against flanks of 0.0094 / 0.0084. Two rows a reader is
+        // invited to compare, carrying a difference that is not there, is worse
+        // than one row.
+        //
+        // The same table settles what the lane may claim, which is less than a
+        // cell-type-matched lane looks like it claims. EVERY lineage is
+        // enriched inside the domain -- the ratio runs 3.6x (NK) to 5.2x (CD4
+        // Naive) and B is mid-table at 4.1x -- so this is not a B-specific
+        // domain and must not be captioned as one. What IS true of B is the
+        // absolute level: Naive B carries the most signal inside the domain of
+        // the twelve, which is why it is the row kept, GM12878 being an
+        // EBV-transformed B-lymphoblastoid line. The lane's statement is that
+        // the contacted sequence is accessible regulatory DNA in the matched
+        // cell type, and that is all.
+        //
+        // `subtreeFilter` is the display's own "show these leaves", matched on
+        // the source NAME with no tree involved.
         //
         // ENCODE's cCRE registry (`encodeCcreCombined`, also in this config)
         // was the first thing tried here and does NOT work at this width --
@@ -288,8 +305,8 @@ export const hicSpecs: ScreenshotSpec[] = [
         {
           trackId: 'pbmc5k_scatac_pseudobulk_hg38',
           type: 'MultiLinearWiggleDisplay',
-          subtreeFilter: ['Naive B', 'Memory B'],
-          height: 120,
+          subtreeFilter: ['Naive B'],
+          height: 75,
         },
         // Contact domains as ARCS (review: "delete the 'contact domains', just
         // change that into an arc track. it is not sensible as is being orange
@@ -427,18 +444,16 @@ export const hicSpecs: ScreenshotSpec[] = [
           minScore: -0.03,
           maxScore: 0.03,
         },
-        {
-          trackId: 'hic_gm12878_subcompartments',
-          type: 'LinearBasicDisplay',
-          height: 30,
-          displayMode: 'collapsed',
-        },
-        {
-          trackId: 'hic_k562_subcompartments',
-          type: 'LinearBasicDisplay',
-          height: 30,
-          displayMode: 'collapsed',
-        },
+        // THE TWO SUBCOMPARTMENT STRIPS ARE GONE (reviewer: "i dont like the
+        // silly colors of the subcompartment tracks ... this is just crazy
+        // colors"). They were the only categorical encoding in the frame --
+        // A1/A2/B1/B2/B3 as yellow, red, grey, green -- and the five classes
+        // were a second, coarser copy of the sign the two eigenvector lanes
+        // already draw as red against blue. Five colours whose key is off the
+        // figure, next to two lanes that carry the same call continuously, is
+        // what "the text annotations dont help me understand" is about: the
+        // reader had to decide which of the two encodings to believe. Now the
+        // figure has one, and the two lanes bracket the band symmetrically.
         {
           trackId: 'hic_k562_compartments',
           height: 84,
@@ -463,7 +478,8 @@ export const hicSpecs: ScreenshotSpec[] = [
     annotations: [
       {
         type: 'text',
-        text: 'GM12878: B compartment across TCF4',
+        text: 'GM12878: eigenvector negative across the band, the B (closed) compartment',
+        maxWidth: 380,
         anchor: {
           track: 'hic_gm12878_compartments',
           locus: 'chr18:55,950,000',
@@ -474,7 +490,8 @@ export const hicSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'K562: the same band is A',
+        text: 'K562: the same band is positive, the A (open) compartment',
+        maxWidth: 380,
         anchor: {
           track: 'hic_k562_compartments',
           locus: 'chr18:55,950,000',
@@ -484,7 +501,8 @@ export const hicSpecs: ScreenshotSpec[] = [
         fontSize: 18,
       },
     ],
-    viewportHeight: 633,
+    // -60 for the two strips that went
+    viewportHeight: 573,
     readySelector: '[data-testid="wiggle-display-done"]',
     readyTimeout: 240000,
     settleMs: 12000,

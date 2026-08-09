@@ -40,7 +40,14 @@ annotation files derived from the same matrix:
   of convergent CTCF sites. ENCODE calls them with
   [HiCCUPS](https://github.com/aidenlab/juicer/wiki/HiCCUPS), also a BEDPE.
 
-<Figure src="/img/hic/loops_and_domains.png" caption="GM12878 in situ Hi-C over 2.5 Mb of chr8 in coarse bins, with the Arrowhead contact domains and HiCCUPS loops called from the same matrix stacked above, one arc each. MYC is banded, and the domain springing from it is 600 kb wide: the dark red arc below is the HiCCUPS loop between that domain's two corners, and the block it bounds is the denser triangle in the matrix. RefSeq genes on top, which here are mostly the lncRNAs the domain contains, and B-cell ATAC accessibility under them: its peaks fall inside the domain and thin out to the right of it." links="Open this view=hic/loops_and_domains" />
+<Figure src="/img/hic/loops_and_domains.png" caption="GM12878 in situ Hi-C over 2.5 Mb of chr8 in coarse bins, with the Arrowhead contact domains and HiCCUPS loops called from the same matrix stacked above, one arc each. MYC is banded, and the domain springing from it is 600 kb wide: the dark red arc below is the HiCCUPS loop between that domain's two corners, and the block it bounds is the denser triangle in the matrix. RefSeq genes on top, and naive-B ATAC accessibility under them, whose peaks fall inside the domain." links="Open this view=hic/loops_and_domains" />
+
+The accessibility lane is one cell type rather than several because the
+difference between cell types is not the point here. Every PBMC lineage in that
+pseudobulk is between 3.6 and 5.2 times more accessible inside this domain than
+in the flanking sequence, so the lane says the contacted DNA is regulatory, not
+that it is B-specific. Naive B is the row kept because it carries the most
+signal inside the domain of the twelve and GM12878 is a B-lymphoblastoid line.
 
 The dark arc is the point of the figure. A contact domain and the loop at its
 corner are the same object seen two ways. The block in the matrix and the arc
@@ -182,7 +189,7 @@ that call for every Hi-C experiment as a
 [compartment eigenvector and a set of subcompartment classes](/docs/user_guides/hic_track#compartments-and-subcompartments),
 both derived from the matrix already loaded.
 
-<Figure src="/img/hic/compartment_switch.png" caption="4 Mb of chr18 with the GM12878 and K562 compartment eigenvectors on one shared scale and their subcompartment classes as colored strips between them. Over the highlighted TCF4 band the GM12878 eigenvector is negative, the B compartment, while the K562 one is positive, A, and the subcompartment class changes with it; both edges of the frame, where the two agree, are the control." links="Open this view=hic/compartment_switch" />
+<Figure src="/img/hic/compartment_switch.png" caption="4 Mb of chr18 with the GM12878 and K562 compartment eigenvectors on one shared scale. Over the highlighted TCF4 band the GM12878 eigenvector is negative, the B or closed compartment, while the K562 one is positive, A or open. Both edges of the frame, where the two agree, are the control. No contact matrix here: a compartment only appears once a matrix is divided by its distance expectation, and the eigenvector is that computation, published." links="Open this view=hic/compartment_switch" />
 
 The band over _TCF4_ is in the B compartment in GM12878 and the A compartment in
 K562, and the reason to believe it is the same reason the translocation was
