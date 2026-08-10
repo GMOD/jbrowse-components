@@ -310,6 +310,41 @@ author who lands on a behavior change can find the sentence that explains it.
   **Opt-out: none** — call `checkStopToken` (the one-shot form) directly at a
   point that must not be thinned.
 
+- **`@jbrowse/core/data_adapters/dataAdapterCache` is now served**
+  (`ReExports/list.ts`). `adapterCache` is module-level state, so a plugin that
+  deep-imported `getAdapter` got a *second* cache in the RPC worker while
+  `CoreFreeResources` called `freeAdapterResources` on the host's — and that
+  function's own comment says the cache is the only strong reference to an
+  adapter, so a plugin's adapters and everything they hold lived as long as the
+  worker no matter how many tracks closed. Serving the module is what makes an
+  external RPC method share the host's cache.
+
+  **This one runs the opposite direction from the rest of the ledger**, and the
+  direction is the point: *adding* to `list.ts` is what has the consequence,
+  not removing. Nothing already published changes — an existing bundle has the
+  module inlined and keeps working. But a deep path absent from `list.ts` is
+  **bundled, not host-bound**, which `jb2plugins/CLAUDE.md` names as the safe
+  way to reuse core code across every host; putting a path in the list takes
+  that option away, so the plugin's **next rebuild** silently becomes
+  host-bound and error-pages on any host older than this release. Five external
+  plugins deep-import this module today — graphgenomeview, gwas, mafviewer,
+  msaview, tview — and msaview is one of the three that still load from the
+  store on current hosts.
+
+  **Opt-out: keep bundling it** by dropping the path from the plugin's own
+  globals map before `globalExternals` sees it. msaview already has the
+  machinery (`SHAPE_VARIES_BY_HOST` in its `esbuild.mjs`), added for a
+  different reason. Either way, gate the publish with `pnpm host-compat` —
+  booting the built bundle on v4.0.0/v4.3.0 is the only check that sees this
+  class of failure, and it is the check that would have caught all three of the
+  outages that file records.
+
+  The general rule, which is not obvious from anywhere else in this doc: **an
+  ABI addition is safe for the host and for every published bundle, but it is a
+  version floor for the next build of any plugin already reaching that path.**
+  Weigh it against what bundling actually costs — here a silent unbounded leak,
+  which wins; for a stateless helper it usually would not.
+
 ## Follow-ups
 
 Smallest-useful-first; none committed — they need a scope decision and probably
