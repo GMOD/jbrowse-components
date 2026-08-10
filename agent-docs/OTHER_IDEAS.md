@@ -96,7 +96,8 @@ reference others may hold, not as free-form prose.
 - [Website: copy-as-markdown / LLM-readiness](#website-copy-as-markdown--llm-readiness)
 - [Website: screenshot spec ↔ PNG staleness guard](#website-screenshot-spec--png-staleness-guard)
 - [Review UIs: the repaint is the bug](#review-uis-the-repaint-is-the-bug) — one cause
-  behind every "I have to click Approve twice", and the React port costed against it
+  behind every "I have to click Approve twice"; the screenshot review is ported to
+  React, the snapshot review is the half still to do
 - [Figure work parked on a cost or a decision](#figure-work-parked-on-a-cost-or-a-decision) —
   the wheat Compara rebuild, a curated ortholog palette, and per-level dotplot scale
 - [Cancer SV datasets not yet shot](#cancer-sv-datasets-not-yet-shot) — including
@@ -2269,11 +2270,15 @@ inputs rather than its output.)
 
 ## Review UIs: the repaint is the bug
 
+Kept after the fact because the diagnosis is what makes the remaining half of the
+work obvious, and because the last section below is a cause React does *not*
+remove.
+
 The two review tools (`website/scripts/review-screenshots-web.ts`,
-`products/jbrowse-web/browser-tests/review-snapshots-web.ts`, sharing
-`packages/browser-test-utils/src/reviewClient.ts`) render by replacing DOM
-wholesale — `el.outerHTML = renderCard(entry)`. Every bug filed against them has
-been that one fact in a different hat, because the swap destroys everything the
+`products/jbrowse-web/browser-tests/review-snapshots-web.ts`) both rendered by
+replacing DOM wholesale — `el.outerHTML = renderCard(entry)`, out of the shared
+`packages/browser-test-utils/src/reviewClient.ts`. Every bug filed against them
+was that one fact in a different hat, because the swap destroys everything the
 DOM holds and `data` does not: the click in flight between a mousedown and its
 mouseup (the browser dispatches none at all, which is the "I have to click
 Approve twice" complaint), the caret in a note being typed, the optimistic press
@@ -2287,24 +2292,43 @@ behaviour that is only fragile for the same reason. Two of the workarounds have
 cancelled each other out: the deferred repaint flushes the instant the click is
 dispatched, wiping the press the other one had just painted.
 
-**A React port was costed and parked, not rejected.** A reconciler keeps node
-identity and patches props in place, so the button survives its own click and the
-textarea keeps its caret — the whole family stops being reachable rather than
-being guarded one at a time. `react`, `react-dom` and `esbuild` are already root
-deps; the server can bundle a page entry at startup in ~15 lines with no watcher,
-keeping "run one node script, open localhost" and offline operation.
-`reviewServer.ts`, the verdict routes, `screenshot-review-lib.ts` and the write
-protocol (preconditions, 409 adoption, per-card write serialization) carry over
-untouched — that half is real domain logic and is not the problem. The compare
-stage's image measurement stays imperative in a ref either way.
+**The screenshot review is ported; the snapshot review is not.** The trigger
+fired, so `review-screenshots-web.ts` now renders with React
+(`website/scripts/review-app/`, over the shared client in
+`packages/browser-test-utils/src/reviewApp/`), and every workaround listed above
+is deleted rather than guarded — a reconciler keeps node identity, so the button
+survives its own click and the textarea keeps its caret. `reviewServer.ts`, the
+verdict routes, `screenshot-review-lib.ts` and the write protocol carry over
+untouched, as costed; the page entry is bundled by esbuild at server start with
+no watcher, so "run one node script, open localhost" and offline operation both
+survive. The compare stage's image measurement turned out NOT to need a ref: the
+natural dimensions go in state and the sizing falls out of render.
 
-Measured at the time: 3400 lines across the five files, of which the port removes
-an estimated 1400, mostly the ~2150 lines of `'<div class="' + esc(x) + '">'`
-string building in the two pages (JSX also removes the hand-rolled escaping).
+`review-snapshots-web.ts` still runs `reviewClient.ts`, which is why that file is
+still here. Moving it over is mechanical — it is the same two endpoints under the
+same two preconditions — and until it happens the write protocol exists twice,
+which is the drift the shared client was written to prevent. That is the argument
+for doing it, and there is no new analysis needed.
 
-Parked because it is roughly a day of rewrite on tools that work and were freshly
-tested, not because the analysis is in doubt. **The trigger to do it is the next
-repaint-family bug** — at that point a sixth workaround costs more than the port.
+Measured before: 3400 lines across the five files, with ~1400 estimated
+removable. The screenshot half came out at 1188 lines deleted from the page
+against ~2400 added across a dozen small modules — the line count went UP, and
+that is the honest number. What went down is the part that was killing us: the
+page has no string building, no escaping, no manual DOM writes and no repaint
+bookkeeping, and its behaviour is pinned by `reviewAppProbe.ts` instead of by
+comments explaining which workaround must not be touched.
+
+**One thing the port did not fix, and could not.** "I have to click Approve
+twice" has a second, independent cause: a note save landing mid-press empties the
+unsaved hint, the card shrinks ~27px, and if the page is at the bottom of its
+scroll range the browser clamps `scrollY` to the new maximum — which moves the
+button DOWN under a stationary pointer, so the mouseup lands elsewhere and no
+click is dispatched. It is layout, not rendering, and no framework prevents it;
+the old deferral machinery happened to cover it by freezing repaints during a
+press. Fixed in CSS instead, by reserving the hint's line and giving `main`
+enough trailing slack that a shrinking card can never force a clamp. **When
+porting the snapshot review, port those two rules with it** — its cards have the
+same hint and the same problem.
 
 ## Figure work parked on a cost or a decision
 

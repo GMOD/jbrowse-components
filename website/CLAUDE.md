@@ -147,7 +147,9 @@ bookkeeping: `GLOBAL_TRIGGERS` in `screenshot-impact.ts` matches that prefix, so
   effect.
 - **Restart the review server after editing a caption.** It loads the docs at
   startup, so a reviewer reading it sees the stale text and files a verdict
-  against prose you already fixed.
+  against prose you already fixed. Same for editing the review UI itself: its
+  page is React under `scripts/review-app/`, bundled by esbuild once at startup
+  with no watcher, so a reload serves the bundle the last restart built.
 - **"This figure changes between runs" is checkable, and usually isn't a race.**
   A review entry's `hash` is the sha1 of the PNG the verdict was made against,
   so `sha1sum` the file on disk and compare. Both revisions are fetchable from

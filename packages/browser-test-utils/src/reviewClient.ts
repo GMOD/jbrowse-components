@@ -1,35 +1,40 @@
 // The browser half of a review tool: the write protocol as the page speaks it,
 // and the note-draft bookkeeping that keeps a reviewer's words from being eaten
-// by a repaint. Its server counterpart is reviewServer.ts, and it is shared for
-// the same reason — both review UIs (the website's screenshot review and
-// jbrowse-web's browser-test snapshot review) post to the same two endpoints
-// under the same two preconditions, and the recovery rules are subtle enough
-// (serialize writes per card, adopt what the server reports on a 409, never let
-// a failed write look like one that landed, never let a re-render take
-// unsaved text) that a second copy of them is a second place for them to drift.
-// It already had: the same note-loss bug was fixed in both files in one commit,
-// twice.
+// by a repaint. Its server counterpart is reviewServer.ts.
 //
 // ---------------------------------------------------------------------------
-// Why this file is big, and what NOT to add to it
+// THIS FILE IS THE OLD CLIENT, AND HAS ONE CONSUMER LEFT
 //
-// Rendering is `el.outerHTML = renderCard(entry)`, a wholesale swap that
-// destroys everything the DOM holds and `data` does not: the click in flight
+// `products/jbrowse-web/browser-tests/review-snapshots-web.ts`. The website's
+// screenshot review — the other half of what this was shared with — moved to
+// React in 2026-08 and now uses `reviewApp/`, which holds the same write
+// protocol as ordinary modules instead of as an emitted string.
+//
+// So the protocol currently exists twice, and that is exactly the drift this
+// file was written to prevent: the same note-loss bug was once fixed in both
+// pages in one commit, twice. **Don't fix a protocol bug here without fixing it
+// in `reviewApp/` too, and prefer porting the snapshot review over doing that
+// twice again.** The port is mechanical — same two endpoints, same two
+// preconditions — and `website/scripts/review-app/` is the worked example.
+//
+// Why the port happened, and why a fix here is probably the wrong move:
+// rendering below is `el.outerHTML = renderCard(entry)`, a wholesale swap that
+// destroys everything the DOM holds and `data` does not — the click in flight
 // between a mousedown and its mouseup, the caret in a note, the press waiting on
 // its write, unsaved text, the pointer capture on a swipe divider. About half of
-// what follows carries that state back across the swap — the pointerHeld /
+// what follows carries that state back across the swap: the pointerHeld /
 // deferredCards deferral, pressedNow, the harvest/apply note pair, cardMessages,
-// and paintCard itself. reviewClientProbe.ts exists to pin behaviour that is
-// only fragile for the same reason.
-//
+// and paintCard itself. Two of those cancelled each other out at least once.
 // Every "I have to click Approve twice" report against these tools has been that
-// one cause in a different hat. So when the next one arrives it is probably not
-// a new bug, and the fix is probably not a sixth workaround: patch the card in
-// place, or render it with something that keeps node identity. A React port was
-// costed in 2026-08 and parked, not rejected — react, react-dom and esbuild are
-// already root deps, the server can bundle a page entry at startup with no
-// watcher, and reviewServer.ts and the write protocol below carry over
-// untouched. See "Review UIs: the repaint is the bug" in agent-docs/OTHER_IDEAS.
+// one cause in a different hat, so a new one is probably not a new bug and the
+// fix is probably not a sixth workaround.
+//
+// One caveat, learned by porting: the complaint has a SECOND cause that is not
+// about repainting at all, and that a port does not fix. A note save landing
+// mid-press empties the unsaved hint, the card shrinks, and at the bottom of the
+// scroll range the browser clamps scrollY — moving the button out from under the
+// pointer. See "Review UIs: the repaint is the bug" in agent-docs/OTHER_IDEAS
+// for the two CSS rules that fix it, which this page still needs.
 // ---------------------------------------------------------------------------
 //
 // This is emitted as JavaScript source and spliced into the tool's inline
