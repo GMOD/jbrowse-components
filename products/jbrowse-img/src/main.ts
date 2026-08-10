@@ -13,6 +13,7 @@ import { runList } from './list.ts'
 import { modeDescriptors, subcommandMode, subcommandTokens } from './modes.ts'
 import {
   DEFAULT_WIDTH,
+  buildBatchHelp,
   buildHelp,
   comparativeOptionNames,
   getBoolean,
@@ -27,6 +28,7 @@ import {
   ignoredComparativeOptions,
   knownOptions,
 } from './options.ts'
+import { runBatch } from './runBatch.ts'
 
 const scriptName = 'jb2export'
 
@@ -69,9 +71,9 @@ async function main() {
   const mode = isSubcommand ? subcommandMode(first) : undefined
   const args = isSubcommand ? argv.slice(1) : argv
 
-  if (isSubcommand && !mode && first !== 'list') {
+  if (isSubcommand && !mode && first !== 'list' && first !== 'batch') {
     console.error(
-      `Unknown subcommand "${first}". Known subcommands: ${subcommandTokens.join(', ')}, list`,
+      `Unknown subcommand "${first}". Known subcommands: ${subcommandTokens.join(', ')}, list, batch`,
     )
     process.exit(1)
   } else if (
@@ -81,7 +83,11 @@ async function main() {
   ) {
     // ahead of `list`, so `jb2export list --help` prints help rather than going
     // to the network for a hub literally named "--help"
-    console.log(buildHelp(scriptName, trackTypes, syntenyTrackTypes, mode))
+    console.log(
+      first === 'batch'
+        ? buildBatchHelp(scriptName)
+        : buildHelp(scriptName, trackTypes, syntenyTrackTypes, mode),
+    )
   } else if (first === 'list') {
     // a text-only discovery command (no rendering): `list` prints the hosted
     // assemblies, `list <hub> [filter]` prints that hub's tracks
@@ -138,7 +144,7 @@ async function main() {
     }
 
     const width = getNumber(rest, 'width', DEFAULT_WIDTH)
-    const result = await renderRegion({
+    const renderOpts = {
       fasta: getString(rest, 'fasta'),
       aliases: getString(rest, 'aliases'),
       assembly: getString(rest, 'assembly'),
@@ -169,9 +175,32 @@ async function main() {
       showColorLegend: getBoolean(rest, 'showColorLegend'),
       spec: getString(rest, 'spec'),
       trackList,
-    })
+    }
 
-    writeOutput(result, getString(rest, 'out'), width)
+    if (first === 'batch') {
+      const bedpe = getString(rest, 'bedpe')
+      if (!bedpe) {
+        throw new Error(
+          'batch needs --bedpe <file> (a VCF converts with one bcftools query — see the docs)',
+        )
+      }
+      const { failures } = await runBatch({
+        ...renderOpts,
+        bedpe,
+        outDir: getString(rest, 'outDir') ?? 'jb2export-batch',
+        flank: getNumber(rest, 'flank', 500),
+        limit: getOptionalNumber(rest, 'limit'),
+        format: getString(rest, 'format') === 'svg' ? 'svg' : 'png',
+      })
+      // A partial run is reported as one: the images are still there and worth
+      // keeping, but a script that treats this as success would be wrong about
+      // how much of its callset it just reviewed.
+      if (failures.length) {
+        process.exitCode = 1
+      }
+    } else {
+      writeOutput(await renderRegion(renderOpts), getString(rest, 'out'), width)
+    }
   }
 }
 

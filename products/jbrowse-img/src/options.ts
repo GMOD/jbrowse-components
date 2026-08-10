@@ -457,12 +457,68 @@ export function getColorBy(rest: Record<string, unknown>) {
   return getEnum(rest, 'colorBy', syntenyColorByModes)
 }
 
+// Options only the `batch` subcommand reads. Kept out of optionDefs so they do
+// not appear in every subcommand's help, but listed here so they are not
+// reported as unknown when batch is what is running.
+export const batchOptionDefs: OptionDef[] = [
+  {
+    name: 'bedpe',
+    description:
+      'BEDPE of junctions to render, one image per row (batch subcommand)',
+  },
+  {
+    name: 'outDir',
+    description: 'Directory to write the images to',
+    default: 'jb2export-batch',
+  },
+  {
+    name: 'flank',
+    description: 'bp of context around each breakend',
+    default: '500',
+  },
+  { name: 'limit', description: 'Render only the first N rows' },
+  { name: 'format', description: "'png' or 'svg'", default: 'png' },
+]
+
 export const knownOptions = new Set([
   ...optionDefs.map(o => o.name),
   ...comparativeOptionDefs.map(o => o.name),
+  ...batchOptionDefs.map(o => o.name),
   'help',
   'version',
 ])
+
+export function buildBatchHelp(scriptName: string) {
+  const defs = [...optionDefs, ...batchOptionDefs]
+  const pad = Math.max(...defs.map(o => o.name.length))
+  return [
+    `Usage: ${scriptName} batch --bedpe <file> [options]`,
+    '',
+    'Renders one breakpoint split view per BEDPE row: both loci stacked, with',
+    'the reads that leave one panel and arrive in the other drawn between them.',
+    'The module graph loads once for the whole callset, so this is much faster',
+    `than a shell loop over "${scriptName} breakpoint".`,
+    '',
+    'Options:',
+    ...formatOpts(defs, pad),
+    '',
+    'Examples:',
+    ...formatExamples(scriptName, [
+      [
+        'batch --bedpe calls.bedpe --fasta ref.fa --bam tumor.bam --outDir figs --flank 1000',
+        'A contact sheet of every junction in a callset',
+      ],
+      [
+        'batch --bedpe calls.bedpe --hub hg38 --bam tumor.bam --limit 20',
+        'The first 20, to check the framing before committing to the whole run',
+      ],
+    ]),
+    '',
+    'A VCF converts in one line:',
+    "  bcftools query -f '%CHROM\\t%POS\\t%END\\t%INFO/CHR2\\t%INFO/END2\\t%ID\\n' calls.vcf.gz",
+    '  (field names vary by caller; see the docs for the LINX/GRIDSS forms)',
+  ].join('\n')
+}
 
 function formatOpts(defs: OptionDef[], pad: number) {
   return defs.map(o => {
