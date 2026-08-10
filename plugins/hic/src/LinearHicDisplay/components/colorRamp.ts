@@ -1,5 +1,7 @@
 import { makeRampFillStyleLut } from '@jbrowse/render-core/canvas2dUtils'
 
+import { MIN_VISIBLE_ALPHA } from './shaders/hic.generated.ts'
+
 export type RGBA = readonly [number, number, number, number]
 
 // Single source of truth for each scheme. Used to build the GPU/Canvas2D
@@ -175,9 +177,10 @@ export function getLegendSvgStops(colorScheme: HicColorScheme) {
 // Per-cell fillStyle LUT for the Canvas2D + SVG hic draw: returns the cached
 // `rgba(...)` string for a normalized value `t`, or undefined where the ramp is
 // effectively transparent (the juicebox scheme fades alpha→0 at low counts) so
-// the caller skips painting that bin. Keeping the alpha cutoff here — rather
-// than in the shared render-core LUT — keeps this hic-specific threshold out of
-// the cross-plugin primitive.
+// the caller skips painting that bin. The cutoff is hic-specific, so it stays
+// out of the shared render-core LUT — but it is the SHADER's, generated from
+// hic.slang's MIN_VISIBLE_ALPHA (adr-051), because the fragment discards on the
+// same test and the two paths must not disagree about which bins exist.
 export function makeHicFillStyleLut(ramp: Uint8Array) {
   const fill = makeRampFillStyleLut(ramp)
   // Precompute the transparent/opaque decision per ramp entry instead of
@@ -187,7 +190,7 @@ export function makeHicFillStyleLut(ramp: Uint8Array) {
   // 256 times for a question that only needs one byte.
   const opaque = new Uint8Array(256)
   for (let i = 0; i < 256; i++) {
-    opaque[i] = ramp[i * 4 + 3]! / 255 < 0.01 ? 0 : 1
+    opaque[i] = ramp[i * 4 + 3]! / 255 < MIN_VISIBLE_ALPHA ? 0 : 1
   }
   return (t: number) => {
     const idx = Math.max(0, Math.min(255, Math.round(t * 255)))

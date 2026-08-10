@@ -3,6 +3,7 @@
 // a 256×1 palette texture with `t = normalized count (optionally log)`.
 //! targets: wgsl, glsl
 //! js-export: mapHicCount
+//! export-consts: MIN_VISIBLE_ALPHA
 
 import diagonalGrid;
 import hpmath;
@@ -73,9 +74,29 @@ float mapHicCount(float count, float colorMaxScore, bool useLogScale) {
   return clamp(t, 0.0, 1.0);
 }
 
+// Below this the ramp is effectively transparent and the bin is not painted at
+// all. Not an edge case: `juicebox` is the default scheme and fades alpha from 0
+// across its low counts, so on a typical frame a large share of contacts land
+// here — and a frame is 300k-4.5M of them (see hicTransform.ts).
+//
+// Exported so `makeHicFillStyleLut` gates on the shader's own number instead of
+// its own copy of it. That LUT already skips these bins entirely, which is what
+// makes this a boundary rather than an optimization: the GPU was painting bins
+// the Canvas2D and SVG paths omit (adr-051, and the same "drawn and exported are
+// one boundary" rule as synteny's isInstanceInvisible).
+public static const float MIN_VISIBLE_ALPHA = 0.01;
+
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
   float t = mapHicCount(fragIn.count, u.colorMaxScore, u.useLogScale == 1u);
   float4 c = colorRamp.SampleLevel(float2(t, 0.5), 0.0);
+  // Nothing to composite. The blend is `one / one-minus-src-alpha`, so a zero
+  // alpha is already a no-op on the framebuffer — it just wasn't a free one, and
+  // at these contact counts the read-modify-write it skips is the whole cost of
+  // the fragment. Costs the opaque schemes (fall, viridis) nothing: their ramps
+  // are alpha 255 throughout, so this is never taken.
+  if (c.a < MIN_VISIBLE_ALPHA) {
+    discard;
+  }
   return float4(c.rgb * c.a, c.a);
 }

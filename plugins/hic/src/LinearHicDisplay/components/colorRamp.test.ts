@@ -3,6 +3,7 @@ import {
   getLegendStops,
   makeHicFillStyleLut,
 } from './colorRamp.ts'
+import { MIN_VISIBLE_ALPHA } from './shaders/hic.generated.ts'
 
 import type { HicColorScheme } from './colorRamp.ts'
 
@@ -43,6 +44,29 @@ describe('makeHicFillStyleLut', () => {
     const lut = makeHicFillStyleLut(generateColorRamp('fall'))
     expect(lut(-1)).toBe(lut(0))
     expect(lut(2)).toBe(lut(1))
+  })
+
+  // The fragment discards on the same test (hic.slang), so this is a boundary
+  // between backends, not a Canvas2D detail: a bin either exists in all three
+  // paths or none of them. Walking the exact alpha the ramp carries at each
+  // entry is what says the LUT switches where MIN_VISIBLE_ALPHA says, rather
+  // than somewhere close to it.
+  test('skips exactly the bins the shader discards', () => {
+    const ramp = generateColorRamp('juicebox')
+    const lut = makeHicFillStyleLut(ramp)
+    let below = 0
+    for (let i = 0; i < 256; i++) {
+      const t = i / 255
+      const transparent = ramp[i * 4 + 3]! / 255 < MIN_VISIBLE_ALPHA
+      expect(lut(t) === undefined).toBe(transparent)
+      if (transparent) {
+        below++
+      }
+    }
+    // and the juicebox fade really does put bins on both sides of it, so the
+    // agreement above is about a live threshold rather than a vacuous one
+    expect(below).toBeGreaterThan(0)
+    expect(below).toBeLessThan(256)
   })
 })
 
