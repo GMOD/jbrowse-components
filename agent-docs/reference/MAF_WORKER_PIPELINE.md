@@ -30,6 +30,11 @@ here comparing two implementations is an interleaved ratio.
   placeMafRegionData (MAIN thread)              3.6 ms
 ```
 
+Those are the numbers as profiled, before the two commits at the bottom of this
+doc — coverage's 89ms is pre-hoist. They are left as measured rather than scaled
+by a ratio taken on different data, since the ranking they establish is what the
+rest of this doc reasons about and the hoist does not reorder it.
+
 Against the I/O it sits behind, same region from a local file:
 
 ```
@@ -90,10 +95,33 @@ coverage bar.
 
 ## What is left
 
-**`computeMafCoverage` is half the worker and has no non-compromising lever
-left.** The two structural ideas are the ones above; what remains inside it is
-per-cell bookkeeping already reduced to about as few operations as the semantics
-allow.
+**`computeMafCoverage` is half the worker, and "no non-compromising lever left"
+is what this section used to say — wrongly, and for an instructive reason.** The
+claim rested on the per-cell body being reduced to about as few operations as the
+semantics allow, which was true and irrelevant: the loop was never ALU bound, so
+counting its operations measured the wrong thing. What settled it was decomposing
+the cost instead of eyeballing it (`plugins/maf/benches/mafCoverage.bench.ts`):
+
+- Gapless data with nothing to emit still costs ~8.5ns/cell, so the cost is the
+  loop, not the output. The work the data makes it do — mismatch pushes at a 6%
+  rate, insertion runs — adds under 2ns/cell.
+- It is not memory either. Hold the inner loop at 447 rows and sweep the block
+  footprint from 3KB to 3.5MB, and ns/cell is flat — the same answer the rejected
+  row-major transpose gave from the other direction.
+- Peel the body one operation at a time and the largest single item is
+  `alignedBaseUpper`'s `col >= len` bound test: a kernel without it is **1.8x**
+  the one with it, on both a 26x7 and a 447x200 shape.
+
+That test is a per-cell answer to a per-block question, because a MAF block is a
+set of rows over the *same* alignment columns and a shorter row is the defensive
+case. Hoisting it to a per-block `uniformRows` scan is **1.13-1.24x** on the whole
+function across eight shapes (`4177979cca`), against a byte-identical control
+reading 0.97-1.04x on the same runs.
+
+So the lever that was there for months was invisible to the method being used to
+look for it. Before declaring a hot loop finished, decompose it: measure the bare
+loop against the loop-plus-output, sweep the working set, and peel the body one
+operation at a time. The rung that costs is rarely the rung that looks expensive.
 
 **Mismatch decimation is the biggest remaining win and is a compromise.** A
 region that wide emits 783k `(position, base)` pairs which are computed, packed,
@@ -121,6 +149,8 @@ Eight commits, all output-identical except where noted:
 | `e1abf5d533` | count a coverage column in locals, not three arrays per cell | ~1.3x |
 | `57e26565a4` | SNP segments in dense lanes, not a `Map` of objects | 78 → 27 ms |
 | `7b0cbcee48` | the wire's round-trip contract, under test | — |
+| `bc9e6a1d24` | short arena rows by `charCodeAt`, and the sizing pass fused into the discovery walk | 1.30x packer, 1.38-1.64x sizing |
+| `4177979cca` | coverage's `col >= len` test hoisted to a per-block scan | 1.13-1.24x |
 
 `57e26565a4` is in `packages/alignments-core`, so the alignments coverage
 pipeline gets it too. It is the one behavioral difference in the set: SNP
