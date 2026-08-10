@@ -40,3 +40,7 @@ export function arcYFraction(yBp: number, arcsYDomainBp: number, useLog: boolean
 export function arcYOffsetPx(yBp: number, arcsYDomainBp: number, useLog: boolean, availH: number): number {
   return Math.min(availH, (arcYFraction(yBp, arcsYDomainBp, useLog) * availH))
 }
+
+export function arcColorSlot(idx: number): number {
+  return Math.min(idx, 8)
+}

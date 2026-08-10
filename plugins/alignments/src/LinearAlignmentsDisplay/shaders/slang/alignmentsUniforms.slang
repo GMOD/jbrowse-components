@@ -10,7 +10,7 @@
 // The sub-pixel frequency lerp is a pure scalar decision both backends must
 // make identically; rendererTypes.ts imports the generated twin rather than
 // re-deriving it (adr-051).
-//! js-export: frequencyAlpha, frequencyFadeGate, arcYFraction, arcYOffsetPx
+//! js-export: frequencyAlpha, frequencyFadeGate, arcYFraction, arcYOffsetPx, arcColorSlot
 // consts-out takes the WHOLE export-consts list, so this path names what that
 // list currently is rather than a category it will keep meaning. Anything added
 // above lands in a file called indicatorTriangle.generated.ts; put a constant
@@ -348,11 +348,25 @@ public float pileupRowCenterPx(float row, Uniforms u) {
   return pileupRowTopPx(row, u) + u.featHeight * 0.5;
 }
 
+// Which palette slot a per-instance color type reads. Split from the two
+// wrappers below only so it can be `//! js-export`ed — they take a `Uniforms`
+// and return a color, neither of which the scalar emitter carries, and the
+// index rule is the part all four backends have to agree on.
+//
+// It is a clamp, not a wrap. The Canvas2D twin was `colorIdx % palette.length`,
+// which for an out-of-range slot resolves to a DIFFERENT REAL COLOR than the
+// GPU's clamp rather than to an obviously-wrong one — the drift this file's
+// other exports exist to prevent, and invisible in review because nothing
+// currently emits a slot past 8.
+public uint arcColorSlot(uint idx) {
+  return min(idx, ARC_COLOR_SLOTS - 1u);
+}
+
 // Paired-read arc palette, indexed by the per-instance color type. Shared by
 // the arc curves (arc.slang) and the interchromosomal connector ticks
 // (arcLine.slang) so both stay in lockstep.
 public float3 arcColorByIndex(uint idx, Uniforms u) {
-  return u.arcColor[min(idx, ARC_COLOR_SLOTS - 1u)].xyz;
+  return u.arcColor[arcColorSlot(idx)].xyz;
 }
 
 // The one arc palette slot whose meaning three separate files have to agree on:
@@ -377,7 +391,7 @@ public static const uint ARC_COLOR_SHORT_INSERT = 2u;
 // rule. What used to be a comment in palettes.ts saying it mirrors this
 // function "down to the slot it overrides" is a shared table instead.
 public float3 arcMarkerColorByIndex(uint idx, Uniforms u) {
-  return u.arcMarkerColor[min(idx, ARC_COLOR_SLOTS - 1u)].xyz;
+  return u.arcMarkerColor[arcColorSlot(idx)].xyz;
 }
 
 // Where `yBp` plots within the arcs band, as a fraction in [0, inf).

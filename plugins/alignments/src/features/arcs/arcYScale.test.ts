@@ -6,13 +6,13 @@ import {
   arcMarkerColorPalette,
   linkedReadColorPalette,
 } from '../../LinearAlignmentsDisplay/shaders/palettes.ts'
+import { arcColorSlot } from '../../LinearAlignmentsDisplay/shaders/slang/alignmentsUniforms.js.generated.ts'
 import { UNIFORM_SLOT_ARRAYS } from '../../LinearAlignmentsDisplay/shaders/slang/read.iface.generated.ts'
 import { arcYFraction } from './arcYScale.ts'
 
 // The JS palettes (Canvas2D / SVG) and the GPU uniform slots are two hand-kept
 // copies of the same color table. If they drift — a color constant added to one
-// side but not the other — the GPU copy loop silently uploads a short palette
-// and the Canvas2D `colorIdx % paletteLen` quietly wraps out-of-range indices,
+// side but not the other — the GPU copy loop silently uploads a short palette,
 // mis-coloring instead of failing. Pin the lengths equal so that drift is a
 // test failure, not a subtle visual bug.
 describe('arc palette parity (JS ↔ GPU uniform slots)', () => {
@@ -23,6 +23,25 @@ describe('arc palette parity (JS ↔ GPU uniform slots)', () => {
     expect(linkedReadColorPalette.length).toBe(
       UNIFORM_SLOT_ARRAYS.linkedReadColor.length,
     )
+  })
+})
+
+// The index rule the palettes are read with, generated from
+// alignmentsUniforms.slang so Canvas2D, SVG and the GPU cannot pick different
+// ones. Canvas2D used to spell it `colorIdx % palette.length`, which agrees with
+// the shader's clamp on every slot anything currently emits (0-8) and disagrees
+// above that — resolving to another real color rather than to a visibly wrong
+// one. That is the class of drift the lift exists to end, so pin both ends.
+describe('arcColorSlot', () => {
+  it('is the identity over every slot the classifier can emit', () => {
+    arcColorPalette.forEach((_, i) => {
+      expect(arcColorSlot(i)).toBe(i)
+    })
+  })
+  it('clamps past the last slot instead of wrapping to the first', () => {
+    const last = arcColorPalette.length - 1
+    expect(arcColorSlot(arcColorPalette.length)).toBe(last)
+    expect(arcColorSlot(99)).toBe(last)
   })
 })
 

@@ -97,14 +97,17 @@ struct VsOut {
   float  screenPx : COLOR5;
 };
 
-// arcColorByIndex is shared from alignmentsUniforms (also used by arcLine).
-float3 arcColor(float ct, Uniforms u) {
-  uint idx = uint(ct + 0.5);
-  if (idx < 9u) { return arcColorByIndex(idx, u); }
-  // Gradient fallback for colorType >= NUM_ARC_COLORS.
-  return hueRampHalfSat(u.gradientHue);
-}
-
+// arcColorByIndex is shared from alignmentsUniforms (also used by arcLine), and
+// clamps out-of-range slots itself (arcColorSlot).
+//
+// This used to fall through to `hueRampHalfSat(u.gradientHue)` above a bare
+// `9u` — a hand-spelled ARC_COLOR_SLOTS — for a "colorType >= NUM_ARC_COLORS"
+// that no longer exists under that name or any other. `arcColorTypes` is
+// written in exactly one place (getArcColorType in features/arcs/compute.ts),
+// whose widest value is COLOR_SPLIT_DELETION = 8; interchrom ticks are a
+// constant 3. So the ramp was unreachable, and it was the third distinct
+// answer — after the shader's clamp and Canvas2D's wrap — to an input none of
+// the three can receive.
 // The analytic curve, in band-local CSS px. `radii` and `kind` say which
 // distance function measures it; `c` is the centre an ellipse or flat line is
 // measured from, `ends` the two endpoints' screen x a far circle's legs are.
@@ -130,7 +133,7 @@ Curve arcCurve(Instance inst, Uniforms u) {
     // midpoint); the line is horizontal, so the span's sign is moot.
     cv.kind = KIND_FLAT;
     cv.c = float2((x1Px + x2Px) * 0.5, destY * yDir);
-    cv.radii = float2(max(2.0 * halfWidthPx, ARC_FLAT_MIN_PX) * 0.5, 0.0);
+    cv.radii = float2(max(abs(x2Px - x1Px), ARC_FLAT_MIN_PX) * 0.5, 0.0);
   } else {
     // `far` is purely a function of on-screen span — no bp limit.
     bool far = 2.0 * halfWidthPx > ARC_FAR_SCREEN_WIDTHS * u.canvasW;
@@ -215,7 +218,8 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   // a plain line).
   bool flat = inst.shapeType > 0.5;
   float arcAlpha = flat ? ARC_FLAT_ALPHA : 1.0;
-  float3 rgb = flat ? float3(0.0, 0.0, 0.0) : arcColor(inst.colorType, u);
+  float3 rgb = flat ? float3(0.0, 0.0, 0.0)
+                    : arcColorByIndex(uint(inst.colorType + 0.5), u);
   o.color = float4(rgb, arcAlpha);
   // Split-read flat shape (2) renders dashed.
   o.dashed = (inst.shapeType > 1.5) ? 1.0 : 0.0;

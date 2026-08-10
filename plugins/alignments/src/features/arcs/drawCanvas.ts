@@ -4,6 +4,9 @@ import {
   arcColorPalette,
   arcMarkerColorPalette,
 } from '../../LinearAlignmentsDisplay/shaders/palettes.ts'
+// The palette-index rule, generated from alignmentsUniforms.slang (adr-051) —
+// imported from the generated module directly, with no re-export hop.
+import { arcColorSlot } from '../../LinearAlignmentsDisplay/shaders/slang/alignmentsUniforms.js.generated.ts'
 import {
   ARC_APEX_FRACTION,
   ARC_FAR_SCREEN_WIDTHS,
@@ -95,7 +98,6 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
   // colors the curves; the marker palette colors the read-cloud endpoint squares.
   const cssPalette = palette.map(c => rgb255(c))
   const cssMarkerPalette = markerPalette.map(c => rgb255(c))
-  const paletteLen = cssPalette.length
   // Flat (read cloud) connector lines are neutral black; the category color lives
   // in the endpoint squares drawn by the arcMarker pass. ARC_FLAT_ALPHA comes
   // from arc.generated.ts (arc.slang is the source of truth).
@@ -133,12 +135,12 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
       ctx.lineTo(mid + halfPx, apexY)
       ctx.stroke()
       // Colored square at each read endpoint (mirrors the arcMarker GPU pass).
-      ctx.fillStyle = cssMarkerPalette[colorIdx % paletteLen]!
+      ctx.fillStyle = cssMarkerPalette[arcColorSlot(colorIdx)]!
       const m = ARC_MARKER_PX
       ctx.fillRect(sx1 - m / 2, apexY - m / 2, m, m)
       ctx.fillRect(sx2 - m / 2, apexY - m / 2, m, m)
     } else {
-      ctx.strokeStyle = cssPalette[colorIdx % paletteLen]!
+      ctx.strokeStyle = cssPalette[arcColorSlot(colorIdx)]!
       // far is purely a function of on-screen span — no bp limit.
       const far = Math.abs(sx2 - sx1) > ARC_FAR_SCREEN_WIDTHS * screenWidthPx
       strokeArc(ctx, sx1, sx2, anchorY, apexY, pairedArcsDown, far)
@@ -190,9 +192,7 @@ export function drawArcs(
     const bp = region.arcLinePositions[i]!
     const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
     const colorIdx = region.arcLineColorTypes[i]!
-    ctx.strokeStyle = rgb255(
-      arcColorPalette[colorIdx % arcColorPalette.length]!,
-    )
+    ctx.strokeStyle = rgb255(arcColorPalette[arcColorSlot(colorIdx)]!)
     ctx.beginPath()
     ctx.moveTo(x, arcsTop)
     ctx.lineTo(x, arcsTop + arcsH)
