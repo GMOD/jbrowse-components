@@ -16,7 +16,9 @@ test('keeps only the fields that describe the locus', () => {
       end: 100,
       assemblyName: 'volvox',
       // extra block fields (keys, offsets, widths) must not reach the snapshot
-      ...{ key: 'ctgA-0-100', offsetPx: 12, widthPx: 800 },
+      key: 'ctgA-0-100',
+      offsetPx: 12,
+      widthPx: 800,
     },
   ])
   expect(provenance.regions).toEqual([

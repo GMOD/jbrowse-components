@@ -45,7 +45,9 @@ test('sidebar row color swatches export', () => {
 
   const { container } = renderOverlay(model)
   for (const color of colors) {
-    expect(container.querySelector(`rect[fill="${color}"]`)).toBeTruthy()
+    expect(
+      container.querySelector(`rect[fill="${CSS.escape(color)}"]`),
+    ).toBeTruthy()
   }
 })
 

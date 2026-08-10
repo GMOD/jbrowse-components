@@ -86,7 +86,7 @@ export function getNumberGrouping() {
 // Fast number formatter with thousand separators.
 // Benchmarked at 5-67x faster than toLocaleString('en-US')
 export function toLocale(n: number) {
-  const abs = n < 0 ? -n : n
+  const abs = Math.abs(n)
   // `!(abs >= 1000)` also covers NaN, which has no digits to group, and
   // String() switches to exponential form at 1e21 and for Infinity, where a
   // thousands separator is meaningless

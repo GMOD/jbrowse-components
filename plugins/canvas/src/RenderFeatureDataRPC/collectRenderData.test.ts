@@ -647,9 +647,7 @@ describe('collectRenderData transcript coords', () => {
       end: 500,
       subfeatures: [transcript('tx1')],
     })
-    const result = collect(
-      findGlyph(gene, config)({ feature: gene, config: config }),
-    )
+    const result = collect(findGlyph(gene, config)({ feature: gene, config }))
     const info = result.subfeatureInfos.find(s => s.featureId === 'tx1')
     expect(info!.transcript).toEqual({
       exons: [0, 100, 200, 300, 400, 500],

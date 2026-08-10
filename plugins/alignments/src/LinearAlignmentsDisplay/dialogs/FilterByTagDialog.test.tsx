@@ -2,8 +2,7 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 
-import { defaultFilterFlags } from '../../shared/util.ts'
-import { filterTagValue } from '../../shared/util.ts'
+import { defaultFilterFlags, filterTagValue } from '../../shared/util.ts'
 import FilterByTagDialog from './FilterByTagDialog.tsx'
 
 import type { FilterBy } from '../../shared/types.ts'

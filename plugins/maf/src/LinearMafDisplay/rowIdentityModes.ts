@@ -17,8 +17,8 @@ export type RowIdentityMode = Exclude<RowIdentityModeWithOff, 'none'>
 
 // Derived rather than written out, so this can't disagree with the enumeration
 // above about which values draw a plot.
-const DRAWN_MODES: readonly string[] = ROW_IDENTITY_MODE_VALUES.filter(
-  v => v !== 'none',
+const DRAWN_MODES: ReadonlySet<string> = new Set(
+  ROW_IDENTITY_MODE_VALUES.filter(v => v !== 'none'),
 )
 
 /**
@@ -30,5 +30,5 @@ const DRAWN_MODES: readonly string[] = ROW_IDENTITY_MODE_VALUES.filter(
  * which a third mode would leave silently wrong in both.
  */
 export function isRowIdentityMode(value: string): value is RowIdentityMode {
-  return DRAWN_MODES.includes(value)
+  return DRAWN_MODES.has(value)
 }

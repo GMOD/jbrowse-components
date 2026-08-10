@@ -1,5 +1,5 @@
-import { readFileSync } from 'fs'
-import path from 'path'
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
 
 // `makeStyles` is imported by 268 modules, a great many of them evaluated when
 // a plugin installs. For most of JBrowse's life the theme it handed them was

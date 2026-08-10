@@ -602,15 +602,15 @@ await promisify(execFile)(process.execPath, [oxfmtBin, INDEX])
 
 // Type groups only — `migratedDisplayKeys` is a lookup table, not a set of
 // registered types, and counting its keys reads as "2 migrated display keys".
-const TYPE_GROUPS = [
+const TYPE_GROUPS = new Set([
   'adapters',
   'tracks',
   'displays',
   'textSearchAdapters',
   'connections',
-]
+])
 const counts = Object.entries(schema)
-  .filter(([group]) => TYPE_GROUPS.includes(group))
+  .filter(([group]) => TYPE_GROUPS.has(group))
   .map(([group, types]) => `${Object.keys(types as object).length} ${group}`)
   .join(', ')
 console.log(`wrote ${path.relative(REPO_ROOT, OUT)}: ${counts}`)

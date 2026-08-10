@@ -169,10 +169,10 @@ export function nextJunctionFrom({
     o =>
       // not the record we arrived on, nor its own mate record: a reciprocal
       // pair is one junction written twice and both spellings sit at this locus
-      !(o.junction.id !== undefined && arrivalIds.has(o.junction.id)) &&
+      (o.junction.id === undefined || !arrivalIds.has(o.junction.id)) &&
       // and not a second copy of the arrival junction filed under other ids,
       // which is what a callset with no MATEID gives instead
-      !(arrivedBy !== undefined && sameLocus(o.next, arrivedBy, tolerance)),
+      (arrivedBy === undefined || !sameLocus(o.next, arrivedBy, tolerance)),
   )
   const open = fresh.filter(
     o => !visited.some(v => sameLocus(o.next, v, tolerance)),

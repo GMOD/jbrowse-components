@@ -19,8 +19,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
-import type { AttributeRange } from '@jbrowse/synteny-core'
-import type { BpIndexViewSnap } from '@jbrowse/synteny-core'
+import type { AttributeRange, BpIndexViewSnap } from '@jbrowse/synteny-core'
 
 // Float64 because cumBp values reach Gbp-scale, which Float32 can't represent
 // without losing per-base precision. Hi/lo splitting happens at the GPU upload

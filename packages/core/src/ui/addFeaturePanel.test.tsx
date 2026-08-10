@@ -12,7 +12,7 @@ function fire(
   depth = 0,
 ) {
   return pm.evaluateExtensionPoint('Core-extraFeaturePanel', [], {
-    model: model,
+    model,
     feature: { uniqueId: 'f1', refName: 'ctgA', start: 0, end: 10 },
     depth,
   })

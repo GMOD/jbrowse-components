@@ -77,7 +77,7 @@ test('an unrelated prop change keeps the live element', () => {
   // remounts" is half the invariant.
   fireEvent.click(getByTestId('toggle-done'))
   expect(canvas()).toBe(first)
-  expect(canvas()?.getAttribute('data-testid')).toBe('synteny_canvas_done')
+  expect(canvas()?.dataset.testid).toBe('synteny_canvas_done')
 })
 
 test('the hook is handed each fresh element through canvasRef', () => {
@@ -100,7 +100,7 @@ test('the hook is handed each fresh element through canvasRef', () => {
 // keeps the separator the call site's business.
 test('forwards data-testid verbatim rather than composing one', () => {
   const { canvas } = setup()
-  expect(canvas()?.getAttribute('data-testid')).toBe('synteny_canvas')
+  expect(canvas()?.dataset.testid).toBe('synteny_canvas')
 })
 
 test('emits no testid attribute when none is passed', () => {
@@ -138,8 +138,8 @@ test('forwards the caller half — sizing, class and handlers', () => {
 // does makes "has everything painted?" one selector that covers every view.
 test('publishes the paint state the readiness waits select on', () => {
   const { canvas, getByTestId } = setup()
-  expect(canvas()?.getAttribute('data-display-drawn')).toBe('false')
+  expect(canvas()?.dataset.displayDrawn).toBe('false')
 
   fireEvent.click(getByTestId('toggle-done'))
-  expect(canvas()?.getAttribute('data-display-drawn')).toBe('true')
+  expect(canvas()?.dataset.displayDrawn).toBe('true')
 })

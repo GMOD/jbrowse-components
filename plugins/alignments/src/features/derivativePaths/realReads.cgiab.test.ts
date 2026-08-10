@@ -43,8 +43,8 @@ import type { SamRecordFixture } from '../../LinearAlignmentsDisplay/testUtils.t
 //
 //   samtools view -F 1540 -c \
 //     https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/\
-//HG008/Liss_lab/PacBio_Revio_20240125/\
-//HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3.bam \
+// HG008/Liss_lab/PacBio_Revio_20240125/\
+// HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3.bam \
 //     chr3:139974000-139979000
 //
 // 65 of the 140 tumour reads over that same 5 kb are split; 0 of the normal's

@@ -90,7 +90,7 @@ async function readPage(page: Page) {
       .map(el => {
         const r = el.getBoundingClientRect()
         return {
-          testid: el.getAttribute('data-testid'),
+          testid: el.dataset.testid,
           top: Math.round(r.top),
           height: Math.round(r.height),
         }
@@ -102,7 +102,7 @@ async function readPage(page: Page) {
     // it fails to account for are exactly the question. Sampled at three x
     // positions because the chrome over the band is not full-width.
     const describe = (el: Element) => {
-      const testid = el.getAttribute('data-testid')
+      const testid = el.dataset.testid
       const cls = el.className
       return testid
         ? `[${testid}]`

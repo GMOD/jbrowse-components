@@ -247,8 +247,9 @@ export function parseExportedConsts(
   const missing = names.filter(n => !decls.has(n))
   if (missing.length > 0) {
     throw new Error(
-      `//! export-consts names no such 'static const' in this shader: ` +
-        missing.join(', '),
+      `//! export-consts names no such 'static const' in this shader: ${missing.join(
+        ', ',
+      )}`,
     )
   }
   return Object.fromEntries(
@@ -313,12 +314,13 @@ export function parseJsExports(
     const candidates = [...declared.keys()].sort().join(', ') || '(none)'
     throw new Error(
       `//! js-export names no such 'public' function in this shader: ` +
-        `${missing.join(', ')}. Declared: ${candidates}` +
-        (importedSources.length === 0
-          ? `. (Only this file's own functions are in scope here — a module ` +
-            `exports through a synthesized wrapper that cannot see what the ` +
-            `module itself imports.)`
-          : ''),
+        `${missing.join(', ')}. Declared: ${candidates}${
+          importedSources.length === 0
+            ? `. (Only this file's own functions are in scope here — a module ` +
+              `exports through a synthesized wrapper that cannot see what the ` +
+              `module itself imports.)`
+            : ''
+        }`,
     )
   }
   const fns = names.map(n => declared.get(n)!)
@@ -430,8 +432,9 @@ export function parseJsSkips(source: string): JsSkip[] {
   )
   if (malformed.length > 0) {
     throw new Error(
-      `//! js-skip must read '<function> — <why not>' (em dash or --); got: ` +
-        malformed.map(m => JSON.stringify(m[1])).join(', '),
+      `//! js-skip must read '<function> — <why not>' (em dash or --); got: ${malformed
+        .map(m => JSON.stringify(m[1]))
+        .join(', ')}`,
     )
   }
   return out

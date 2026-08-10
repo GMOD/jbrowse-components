@@ -151,8 +151,9 @@ export function augmentColor(input: ColorInput): ColorQuad {
   const main = entry.main ?? entry[500]
   if (!main) {
     throw new Error(
-      'palette color needs a `main` or a `500` shade, got ' +
-        JSON.stringify(input),
+      `palette color needs a \`main\` or a \`500\` shade, got ${JSON.stringify(
+        input,
+      )}`,
     )
   }
   return {

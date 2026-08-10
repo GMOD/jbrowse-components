@@ -142,13 +142,13 @@ test('data-display-phase reports loading even once canvasDrawn has flipped', asy
   const { findByTestId } = renderChrome(model, 'chrome')
 
   const el = await findByTestId('chrome-done')
-  expect(el.getAttribute('data-display-phase')).toBe('loading')
+  expect(el.dataset.displayPhase).toBe('loading')
 
   act(() => {
     model.setLoadingCondition(false)
   })
 
-  expect(el.getAttribute('data-display-phase')).toBe('ready')
+  expect(el.dataset.displayPhase).toBe('ready')
 })
 
 // The reader outside the display. `data-display-drawn` is what
@@ -165,7 +165,7 @@ test('a display that renders no canvas reports drawn, not pending', async () => 
   // `-done` and the attribute agree, and neither waits on a canvas that is
   // never going to be mounted
   const el = await findByTestId('chrome-done')
-  expect(el.getAttribute('data-display-drawn')).toBe('true')
+  expect(el.dataset.displayDrawn).toBe('true')
   expect(model.canvasDrawn).toBe(false)
 })
 
@@ -174,12 +174,12 @@ test('a canvas-painting display still reports pending until first paint', async 
   const { findByTestId } = renderChrome(model, 'chrome')
 
   const el = await findByTestId('chrome')
-  expect(el.getAttribute('data-display-drawn')).toBe('false')
+  expect(el.dataset.displayDrawn).toBe('false')
 
   act(() => {
     model.setCanvasDrawn(true)
   })
-  expect(el.getAttribute('data-display-drawn')).toBe('true')
+  expect(el.dataset.displayDrawn).toBe('true')
 })
 
 test('terminal banner survives loading-condition churn (lazy-thunk guard)', async () => {
@@ -343,7 +343,7 @@ describe('DisplayStatusChrome (no rendering backend)', () => {
     const { findByTestId } = renderStatusChrome(model, 'status')
 
     const el = await findByTestId('status')
-    expect(el.getAttribute('data-display-phase')).toBe('loading')
+    expect(el.dataset.displayPhase).toBe('loading')
 
     act(() => {
       model.setCanvasDrawn(true)
@@ -474,19 +474,19 @@ describe('the chrome element publishes the display identity', () => {
     const { findByTestId } = renderChrome(model, 'probe-display')
 
     const el = await findByTestId('probe-display')
-    expect(el.getAttribute('data-display-id')).toBe('test-display')
-    expect(el.getAttribute('data-display-phase')).toBe('ready')
+    expect(el.dataset.displayId).toBe('test-display')
+    expect(el.dataset.displayPhase).toBe('ready')
     // `false`, not absent: `PENDING_DISPLAYS` selects on
     // `[data-display-drawn="false"]`, so an omitted attribute would make every
     // unpainted display look finished and every screenshot wait return early.
-    expect(el.getAttribute('data-display-drawn')).toBe('false')
+    expect(el.dataset.displayDrawn).toBe('false')
 
     act(() => {
       model.setCanvasDrawn(true)
     })
     const done = await findByTestId('probe-display-done')
     expect(done).toBe(el)
-    expect(done.getAttribute('data-display-drawn')).toBe('true')
-    expect(done.getAttribute('data-display-id')).toBe('test-display')
+    expect(done.dataset.displayDrawn).toBe('true')
+    expect(done.dataset.displayId).toBe('test-display')
   })
 })

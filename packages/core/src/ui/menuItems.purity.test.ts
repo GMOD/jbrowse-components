@@ -1,5 +1,5 @@
-import { readFileSync } from 'fs'
-import path from 'path'
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
 
 // `ui/menuItems.ts` exists so that eagerly-evaluated code — state models, the
 // `menuItems`/`trackMenus` modules of a dozen plugins — can build menu rows

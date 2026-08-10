@@ -45,7 +45,7 @@ describe('clip detection (score legend indicator)', () => {
   // baseline (2) with a rare gain (3). localpercentile discards that <1% tail as
   // an outlier, pinning the domain max below the true max — so the legend shows
   // the true extent (↑3). `local` keeps the full range, so nothing clips.
-  const copyNumber = [entry([...Array(99).fill(2), 3])]
+  const copyNumber = [entry([...new Array(99).fill(2), 3])]
 
   it('localpercentile clips the rare gain below the true extent', () => {
     const extent = computeScoreExtent('avg', copyNumber)!

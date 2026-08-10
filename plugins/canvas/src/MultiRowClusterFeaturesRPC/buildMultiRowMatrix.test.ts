@@ -293,7 +293,7 @@ describe('categorical palettes: one channel per color', () => {
     })
     expect(dist(absentA!, absentB!)).toBe(0)
     // a gap differs from a color exactly as much as two colors differ
-    expect(dist(painted!, absentA!)).toBeCloseTo(Math.sqrt(2 * 2))
+    expect(dist(painted!, absentA!)).toBeCloseTo(Math.abs(2))
   })
 
   test('switches to rgb once the palette outgrows the categorical ceiling', () => {

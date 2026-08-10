@@ -34,7 +34,7 @@ test('types tags by their SAM type letter', () => {
 })
 
 test('decodes QUAL from ASCII-33 phred', () => {
-  expect([...parseSamLine(READ).qual!]).toEqual(Array(9).fill(40))
+  expect([...parseSamLine(READ).qual!]).toEqual(new Array(9).fill(40))
 })
 
 test('an unset QUAL is absent rather than a run of zeros', () => {

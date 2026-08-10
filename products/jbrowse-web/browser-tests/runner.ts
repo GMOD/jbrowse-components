@@ -615,8 +615,9 @@ async function main() {
       // Say what moved. A sweep that reports nothing reads the same whether it
       // rewrote two goldens or two hundred.
       console.log(
-        `  Snapshots: ${snapshotUpdates.length} written, the rest unchanged` +
-          (values['force-snapshots'] ? ' (gate forced off)' : ''),
+        `  Snapshots: ${snapshotUpdates.length} written, the rest unchanged${
+          values['force-snapshots'] ? ' (gate forced off)' : ''
+        }`,
       )
       for (const u of [...snapshotUpdates]
         .sort((a, b) => (b.pct ?? 1) - (a.pct ?? 1))

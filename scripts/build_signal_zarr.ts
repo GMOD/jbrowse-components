@@ -264,10 +264,11 @@ if (intervals) {
     ? readSampleTable(values.samples, false).filter(s => present.has(s.name))
     : [...present].sort().map(name => ({ name }))
   console.log(
-    `${intervals.length} intervals over ${present.size} samples in ${values.bed}` +
-      (values.samples
+    `${intervals.length} intervals over ${present.size} samples in ${values.bed}${
+      values.samples
         ? `, ${samples.length} of them named in ${values.samples}`
-        : ''),
+        : ''
+    }`,
   )
 } else {
   samples = readSampleTable(values.samples!, true)

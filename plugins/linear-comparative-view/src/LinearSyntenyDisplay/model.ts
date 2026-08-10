@@ -30,8 +30,8 @@ import type { ClickCoord } from './components/util.ts'
 import type { LinearSyntenyDisplayConfigSchema } from './configSchemaF.ts'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { AttributeRange } from '@jbrowse/synteny-core'
 import type {
+  AttributeRange,
   CigarOpMask,
   LodTier,
   SyntenyColorBy,

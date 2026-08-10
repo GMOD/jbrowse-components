@@ -102,10 +102,11 @@ async function main() {
   }
   const { resolved, unresolved } = counts()
   console.log(
-    `\nframes resolved ${resolved}, unresolved ${unresolved}` +
-      (unresolved > resolved / 20
+    `\nframes resolved ${resolved}, unresolved ${unresolved}${
+      unresolved > resolved / 20
         ? ' — SOURCE MAPS DO NOT MATCH THIS TRACE, re-capture against the current build'
-        : ''),
+        : ''
+    }`,
   )
 }
 void main().then(() => process.exit(0))

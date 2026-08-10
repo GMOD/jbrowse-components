@@ -97,7 +97,7 @@ test('forwards a pinned rpcDriverName so the free reaches that driver', async ()
 test('a failing free does not reject into the teardown path', async () => {
   const rpc = {
     async call() {
-      return Promise.reject(new Error('worker already terminated'))
+      throw new Error('worker already terminated')
     },
   }
   retainAdapterSession(rpc, 'adapterA')

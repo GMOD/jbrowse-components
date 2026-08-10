@@ -13,7 +13,7 @@ function focus(html: string) {
 }
 
 afterEach(() => {
-  document.body.innerHTML = ''
+  document.body.replaceChildren()
 })
 
 test('nothing focused defers to session undo', () => {

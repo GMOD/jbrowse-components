@@ -476,7 +476,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #action
        */
       expandAllCategories() {
-        for (const [id, mode] of [...self.categoryMode]) {
+        for (const [id, mode] of self.categoryMode) {
           if (mode === 'collapsed') {
             self.categoryMode.delete(id)
           }

@@ -425,15 +425,15 @@ function checkSessionDisplay(
   }
   const props = entry.stateModelProps
   const slots = entry.slots.map(slot => slot.name)
-  const migrated = [
+  const migrated = new Set([
     ...(manifest.migratedDisplayKeys['*'] ?? []),
     ...(manifest.migratedDisplayKeys[entry.canonicalName] ?? []),
-  ]
+  ])
   for (const key of Object.keys(display)) {
     if (props.includes(key)) {
       continue
     }
-    if (migrated.includes(key)) {
+    if (migrated.has(key)) {
       report.warn(
         `${where}.${key}`,
         `"${key}" is a legacy display-instance key that a session migration lifts onto the config slot replacing it — it still works, but writing the current slot is clearer`,

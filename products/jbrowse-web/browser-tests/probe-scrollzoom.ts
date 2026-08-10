@@ -15,8 +15,8 @@
 //     node browser-tests/probe-scrollzoom.ts
 //     OUT=/tmp/shots HEADLESS=0 node browser-tests/probe-scrollzoom.ts
 
-import { tmpdir } from 'os'
-import { join } from 'path'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 
 import puppeteer from 'puppeteer'
 
@@ -54,7 +54,10 @@ async function main() {
   await page.evaluate(() => {
     const w = window as unknown as { __c: { wheel: number; scroll: number } }
     w.__c = { wheel: 0, scroll: 0 }
-    document.addEventListener('wheel', () => w.__c.wheel++, { capture: true })
+    document.addEventListener('wheel', () => w.__c.wheel++, {
+      capture: true,
+      passive: true,
+    })
     document.addEventListener('scroll', () => w.__c.scroll++, { capture: true })
   })
 
@@ -102,10 +105,10 @@ async function main() {
   await page.mouse.wheel({ deltaY: 400 })
   await delay(700)
   const dead = await state()
-  console.log('dead wheel ', JSON.stringify(dead))
+  console.log('dead wheel', JSON.stringify(dead))
   const shot = join(OUT, 'scrollzoom-hint.png')
   await page.screenshot({ path: shot })
-  console.log('screenshot ', shot)
+  console.log('screenshot', shot)
 
   if (dead.hint.length) {
     const clicked = await page.evaluate(() => {

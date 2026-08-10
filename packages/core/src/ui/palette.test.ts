@@ -11,8 +11,8 @@
  * Both sides are flattened to the same plain shape so a mismatch reads as one
  * diff instead of forty assertions.
  */
-import { readFileSync } from 'fs'
-import path from 'path'
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
 
 import { createTheme } from '@mui/material'
 

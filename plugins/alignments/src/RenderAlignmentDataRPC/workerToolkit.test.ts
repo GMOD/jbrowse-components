@@ -13,8 +13,8 @@
  * the identical string, and the only symptom is a bigger worker chunk. So walk
  * the graph instead. Value imports only — `import type` is erased.
  */
-import { readFileSync } from 'fs'
-import path from 'path'
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
 
 // `@jbrowse/core/ui` is the barrel of ~80 Material components and `ui/theme` is
 // the entry that builds the MUI theme; a worker wanting a color has `ui/palette`

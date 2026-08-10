@@ -119,7 +119,7 @@ export async function findDisplayById(displayId: string, timeout = 20000) {
   return waitFor(
     () => {
       const el = document.querySelector<HTMLElement>(
-        `[data-display-id="${displayId}"][data-display-drawn="true"]`,
+        `[data-display-id="${CSS.escape(displayId)}"][data-display-drawn="true"]`,
       )
       if (!el) {
         throw new Error(`display ${displayId} has not painted`)

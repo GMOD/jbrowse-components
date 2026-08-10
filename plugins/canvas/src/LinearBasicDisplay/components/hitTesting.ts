@@ -168,7 +168,7 @@ export function hoverTooltip(result: HitFeatureResult) {
 // those fields together into one line.
 export function htmlToPlainText(html: string) {
   return new DOMParser().parseFromString(
-    html.replace(/<br\s*\/?>/gi, '\n'),
+    html.replaceAll(/<br\s*\/?>/gi, '\n'),
     'text/html',
   ).body.textContent
 }

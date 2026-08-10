@@ -124,7 +124,7 @@ export function useDockviewController(session: DockviewSession) {
   // its view (no panel renders it) or — since assignViewToPanel doesn't
   // unassign — double-renders it in two panels at once.
   const clearPanelAssignments = useCallback((session: DockviewSession) => {
-    for (const panelId of [...session.panelViewAssignments.keys()]) {
+    for (const panelId of session.panelViewAssignments.keys()) {
       session.removePanel(panelId)
     }
   }, [])

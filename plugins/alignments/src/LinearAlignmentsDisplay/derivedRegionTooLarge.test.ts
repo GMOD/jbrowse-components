@@ -8,8 +8,7 @@ import {
 } from '@jbrowse/core/pluggableElementTypes/models'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
-import { types } from '@jbrowse/mobx-state-tree'
-import { getMembers } from '@jbrowse/mobx-state-tree'
+import { types, getMembers } from '@jbrowse/mobx-state-tree'
 import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
 import configSchemaFactory from './configSchema.ts'

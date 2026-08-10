@@ -23,10 +23,10 @@
  * else is bundled, which is the honest question: what does adding this to my
  * app download.
  */
-import { readFileSync, writeFileSync } from 'fs'
-import path from 'path'
-import { fileURLToPath } from 'url'
-import { gzipSync } from 'zlib'
+import { readFileSync, writeFileSync } from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { gzipSync } from 'node:zlib'
 
 import esbuild from 'esbuild'
 
@@ -122,11 +122,9 @@ if (args.has('--check')) {
   ).filter(k => sizes[k] !== prev[k])
   if (drifted.length) {
     console.error(
-      `chromeBundleSizes.json is stale on ${drifted.join(', ')}:\n` +
-        drifted
-          .map(k => `  ${k}: committed ${prev[k]}, measured ${sizes[k]}`)
-          .join('\n') +
-        '\nRun `pnpm autogen` and commit the result.',
+      `chromeBundleSizes.json is stale on ${drifted.join(', ')}:\n${drifted
+        .map(k => `  ${k}: committed ${prev[k]}, measured ${sizes[k]}`)
+        .join('\n')}\nRun \`pnpm autogen\` and commit the result.`,
     )
     process.exit(1)
   }

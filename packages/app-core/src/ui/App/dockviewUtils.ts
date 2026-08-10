@@ -70,7 +70,7 @@ export function reconcilePanelAssignments(
   // An assignment is what marks a view as homed, so a stale one is worse than
   // none: pointing at a panel dockview no longer has leaves the view rendered
   // by nothing while the homing loop below still considers it placed.
-  for (const panelId of [...session.panelViewAssignments.keys()]) {
+  for (const panelId of session.panelViewAssignments.keys()) {
     const panelGone = !api.getPanel(panelId)
     for (const viewId of session.getViewIdsForPanel(panelId)) {
       if (panelGone || !currentViewIds.has(viewId)) {
@@ -116,7 +116,7 @@ export function reconcilePanelAssignments(
 export function adoptSavedPanelOrder(
   session: DockviewSessionType & SessionWithDockviewLayout,
 ) {
-  for (const panelId of [...session.panelViewAssignments.keys()]) {
+  for (const panelId of session.panelViewAssignments.keys()) {
     session.orderViews(session.getViewIdsForPanel(panelId))
   }
 }

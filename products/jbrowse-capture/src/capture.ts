@@ -184,7 +184,7 @@ export async function waitForJBrowseReady(
 export function pendingDisplays(page: Page): Promise<string[]> {
   return page.evaluate(() =>
     [...document.querySelectorAll('[data-display-drawn="false"]')].map(
-      el => el.getAttribute('data-testid') ?? (el.id || 'unnamed display'),
+      el => el.dataset.testid ?? (el.id || 'unnamed display'),
     ),
   )
 }

@@ -274,8 +274,9 @@ async function waitForCaptureSettled(page: Page) {
       const pending = document.querySelectorAll(pendingSelector)
       if (pending.length) {
         unsettled.push(
-          `${pending.length} display(s) never reported done: ` +
-            [...pending].map(e => e.getAttribute('data-testid')).join(', '),
+          `${pending.length} display(s) never reported done: ${[...pending]
+            .map(e => e.dataset.testid)
+            .join(', ')}`,
         )
       }
       return unsettled

@@ -145,9 +145,11 @@ function resolveSharedInclude() {
   const found = candidates.find(c => existsSync(c))
   if (!found) {
     throw new Error(
-      `Could not find the shared .slang modules. Looked in:\n` +
-        candidates.map(c => `  ${c}`).join('\n') +
-        `\nInstall @jbrowse/render-core, or pass --shared-include=<dir>.`,
+      `Could not find the shared .slang modules. Looked in:\n${candidates
+        .map(c => `  ${c}`)
+        .join(
+          '\n',
+        )}\nInstall @jbrowse/render-core, or pass --shared-include=<dir>.`,
     )
   }
   return found
@@ -787,9 +789,11 @@ function assertNoOrphans() {
     .filter(p => readFileSync(p, 'utf8').startsWith(banner))
   if (orphans.length > 0) {
     throw new Error(
-      `${orphans.length} generated file(s) that no .slang produces:\n` +
-        orphans.map(p => `  ${p.replace(`${PROJECT_ROOT}/`, '')}`).join('\n') +
-        `\nA renamed or deleted shader, or a dropped //! layout-out / ` +
+      `${orphans.length} generated file(s) that no .slang produces:\n${orphans
+        .map(p => `  ${p.replace(`${PROJECT_ROOT}/`, '')}`)
+        .join(
+          '\n',
+        )}\nA renamed or deleted shader, or a dropped //! layout-out / ` +
         `consts-out / js-export-out. The file is still committed and still ` +
         `imported, and it will never be regenerated again — delete it, or ` +
         `restore the directive that owned it.`,

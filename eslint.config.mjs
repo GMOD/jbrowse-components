@@ -3,6 +3,7 @@ import eslintPluginAstro from 'eslint-plugin-astro'
 import { importX } from 'eslint-plugin-import-x'
 import reactCompiler from 'eslint-plugin-react-compiler'
 import eslintPluginReactRefresh from 'eslint-plugin-react-refresh'
+import tssUnusedClasses from 'eslint-plugin-tss-unused-classes'
 import eslintPluginUnicorn from 'eslint-plugin-unicorn'
 import { defineConfig } from 'eslint/config'
 import globals from 'globals'
@@ -58,6 +59,25 @@ export default defineConfig(
     },
   },
   {
+    // **This `files` is what makes the config lint TypeScript at all**, and
+    // leaving it off does not fail — it silently shrinks the run. A flat-config
+    // object with no `files` applies only to files *some other object already
+    // matches*, and ESLint's own default set is just `**/*.js`/`.mjs`/`.cjs`.
+    // Every block below that names a `.ts` path (`**/*.generated.ts`,
+    // `website/src/**/*.ts`, the electron and examples-site blocks) was
+    // therefore doing double duty: turning a rule off *and* being the only
+    // reason those files were linted in the first place. Everything else —
+    // `packages/**/src`, `plugins/**/src`, all of `products/*/src` — matched
+    // nothing and was skipped without a word. 461 files of ~4900.
+    //
+    // The rules this config exists for are exactly the ones that needed the
+    // missing 90%: `react-compiler`, `@eslint-react`, `react-refresh`, and the
+    // `useEffectEvent` import guard whose message begins "nearly every JBrowse
+    // component is an observer". None of them had ever run on a component.
+    //
+    // `.astro` is deliberately absent; its own block near the bottom adds it,
+    // along with the parser its frontmatter needs.
+    files: ['**/*.{js,cjs,mjs,jsx,ts,cts,mts,tsx}'],
     languageOptions: {
       // No `project` on purpose — this config is type-information-free so it
       // stays fast. tseslint.parser is still needed to parse TS/TSX syntax.
@@ -84,6 +104,14 @@ export default defineConfig(
       // this keeps the backstop green until the comments are migrated to
       // `oxlint-disable`.
       '@typescript-eslint': tseslint.plugin,
+      // Same deal, and it surfaced the moment the config started matching
+      // `**/*.ts`: six files carry `eslint-disable
+      // tss-unused-classes/unused-classes`, the plugin is a devDependency, and
+      // nothing had ever registered it — so each of those comments was an
+      // error ("Definition for rule … was not found"), not a suppression. The
+      // rule itself stays off; tss styles shared across sibling components are
+      // exactly what it false-positives on, which is what the disables say.
+      'tss-unused-classes': tssUnusedClasses,
     },
     rules: {
       'react-compiler/react-compiler': 'error',
@@ -111,6 +139,11 @@ export default defineConfig(
       'unicorn/prefer-simple-condition-first': 'off',
       // Don't dictate named vs namespace import style (e.g. `node:fs`).
       'unicorn/import-style': 'off',
+      // 752 — one-line `/** Read is unmapped */` above a constant or a field is
+      // the house JSDoc style, and this wants every one of them expanded to
+      // three lines. Comment layout is the formatter's half of the split this
+      // config's header describes, and oxfmt leaves these alone.
+      'unicorn/single-line-block-comment-style': 'off',
 
       // === Opinionated / high-churn, intentionally not adopted ===
       'unicorn/no-null': 'off', // 1035 — null is intentional in JSON/DOM/MST
@@ -277,6 +310,10 @@ export default defineConfig(
     },
   },
   {
+    // Node-side tooling, where printing to stdout IS the output. The last five
+    // entries only became reachable when this config started matching `**/*.ts`
+    // — `plugins/data-management/scripts/*.js` was the whole of the plugin
+    // entry because a `.ts` sibling would not have been linted anyway.
     files: [
       'babel.config.js',
       'config/webpack/**/*',
@@ -286,7 +323,14 @@ export default defineConfig(
       'products/jbrowse-web/scripts/*',
       'products/jbrowse-cli/**/*',
       'products/jbrowse-desktop/sign.cjs',
-      'plugins/data-management/scripts/*.js',
+      'plugins/*/scripts/**/*',
+      'plugins/*/benches/**/*',
+      // Puppeteer drivers: they print the measurement they were run to take.
+      'products/jbrowse-web/browser-tests/**/*',
+      // The capture CLI's entry point, and the shared examples-site doc-link
+      // checker whose `log = console.log` default is its reporting channel.
+      'products/jbrowse-capture/src/bin.ts',
+      'packages/browser-test-utils/**/*',
     ],
     languageOptions: {
       globals: {

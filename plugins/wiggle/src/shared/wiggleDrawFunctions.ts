@@ -1,7 +1,6 @@
 import { abgrToCssRgba, setAbgrFill } from '@jbrowse/core/util/colorBits'
 import { makeBpMapper, spanLeft } from '@jbrowse/render-core/canvas2dUtils'
-import { appendPointMarker } from '@jbrowse/wiggle-core'
-import { SCALE_TYPE_LOG } from '@jbrowse/wiggle-core'
+import { appendPointMarker, SCALE_TYPE_LOG } from '@jbrowse/wiggle-core'
 
 import {
   WIGGLE_FUDGE_FACTOR,

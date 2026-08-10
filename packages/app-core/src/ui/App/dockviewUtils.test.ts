@@ -250,7 +250,7 @@ describe('applyInitLayout over an existing workspace', () => {
     session.assignViewToPanel('panel-stale', 'v1')
     session.assignViewToPanel('panel-stale', 'v2')
 
-    for (const panelId of [...session.panelViewAssignments.keys()]) {
+    for (const panelId of session.panelViewAssignments.keys()) {
       session.removePanel(panelId)
     }
     api.clear()

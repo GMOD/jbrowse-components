@@ -13,10 +13,10 @@
 //
 // Type-only exports are dropped, because a plugin importing one gets nothing at
 // runtime and so can't be broken by its removal.
-import { execFileSync } from 'child_process'
-import fs from 'fs'
-import os from 'os'
-import path from 'path'
+import { execFileSync } from 'node:child_process'
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 
 import reExportsList from '../packages/core/src/ReExports/list.ts'
 

@@ -223,14 +223,14 @@ test('a replaced view keeps its position among its panel-mates', () => {
   for (const displayName of ['a1', 'b1', 'a2', 'b2']) {
     session.addView('FakeLinearView', { displayName })
   }
-  const panelAIds = [session.views[0]!.id, session.views[2]!.id]
+  const panelAIds = new Set([session.views[0]!.id, session.views[2]!.id])
 
   const created = session.replaceView(session.views[2], 'FakeSyntenyView')
 
   // still third overall, so still second of the two panel-A views
   expect(session.views[2]).toBe(created)
   const stillInPanelA = session.views.filter(
-    v => panelAIds.includes(v.id) || v === created,
+    v => panelAIds.has(v.id) || v === created,
   )
   expect(stillInPanelA.map(v => v.type)).toEqual([
     'FakeLinearView',

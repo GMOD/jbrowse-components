@@ -28,7 +28,7 @@ function updateUrl(params: URLSearchParams) {
   window.history.replaceState(null, '', newUrl)
   // copied: a listener may unsubscribe (React drops the subscription when the
   // re-render this triggers unmounts the reader) while we are iterating
-  for (const listener of [...listeners]) {
+  for (const listener of listeners) {
     listener()
   }
 }

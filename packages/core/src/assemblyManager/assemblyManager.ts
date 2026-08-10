@@ -1,6 +1,5 @@
 import { addDisposer, getParent, types } from '@jbrowse/mobx-state-tree'
-import { autorun, untracked } from 'mobx'
-import { when } from 'mobx'
+import { autorun, untracked, when } from 'mobx'
 
 import { readConfObject } from '../configuration/index.ts'
 import assemblyFactory from './assembly.ts'

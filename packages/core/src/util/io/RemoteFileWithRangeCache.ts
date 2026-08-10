@@ -217,7 +217,7 @@ export function clearCache() {
   // limitConcurrency caller with no resolve and no reject, so the read neither
   // runs nor settles — a hang rather than a cancellation. Each resumed waiter
   // claims a slot the way runNext would and releases it in its own finally.
-  const waiters = queue.splice(0, queue.length)
+  const waiters = queue.splice(0)
   activeCount = waiters.length
   for (const resolve of waiters) {
     resolve()

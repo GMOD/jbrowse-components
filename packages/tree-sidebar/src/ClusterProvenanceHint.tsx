@@ -111,7 +111,7 @@ export const ClusterProvenanceHint = observer(function ClusterProvenanceHint({
         setDismissed(true)
       }}
     >
-      {'\u26a0 '}
+      {'\u26A0 '}
       {clusterProvenanceLocLabel(clusterProvenance)}
     </div>
   )

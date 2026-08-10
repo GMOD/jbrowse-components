@@ -23,8 +23,6 @@ test('open a GWAS manhattan track', async () => {
   fireEvent.click(await findByTestId(hts('volvox_gwas'), {}, { timeout }))
 
   const el = await findByTestId('manhattan-display-done', {}, { timeout })
-  expect(el.getAttribute('data-display-id')).toBe(
-    'volvox_gwas-LinearManhattanDisplay',
-  )
-  expect(el.getAttribute('data-display-drawn')).toBe('true')
+  expect(el.dataset.displayId).toBe('volvox_gwas-LinearManhattanDisplay')
+  expect(el.dataset.displayDrawn).toBe('true')
 }, 25000)

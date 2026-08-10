@@ -20,7 +20,7 @@ function openedOptions(feature: SimpleFeatureSerialized) {
   fireEvent.mouseDown(within(container).getByRole('combobox'))
   return [
     ...document.body.querySelectorAll('[data-testid^="sequence_type_"]'),
-  ].map(el => el.getAttribute('data-testid')!.replace('sequence_type_', ''))
+  ].map(el => el.dataset.testid!.replace('sequence_type_', ''))
 }
 
 const region = {

@@ -111,10 +111,9 @@ export async function measureDemoHeights({
         tallest[key] = Math.max(tallest[key] ?? 0, height)
       }
       log(
-        `  ${viewport.width}px  ${slug.padEnd(26)} ` +
-          Object.entries(measured)
-            .map(([k, v]) => `${k}=${v}`)
-            .join(' '),
+        `  ${viewport.width}px  ${slug.padEnd(26)} ${Object.entries(measured)
+          .map(([k, v]) => `${k}=${v}`)
+          .join(' ')}`,
       )
       await page.close()
     }

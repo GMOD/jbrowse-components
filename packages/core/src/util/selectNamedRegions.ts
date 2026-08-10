@@ -4,7 +4,7 @@ import type { Region } from './types/index.ts'
 // so a refName containing regex punctuation (`chr1.1`, `scaffold[2]`) can't turn
 // into an accidental pattern.
 function globToRegExp(pattern: string) {
-  const escaped = pattern.replace(/[.*+?^${}()|[\]\\]/g, m =>
+  const escaped = pattern.replaceAll(/[.*+?^${}()|[\]\\]/g, m =>
     m === '*' ? '.*' : `\\${m}`,
   )
   return new RegExp(`^${escaped}$`)

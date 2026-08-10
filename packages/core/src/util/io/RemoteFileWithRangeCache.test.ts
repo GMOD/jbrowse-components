@@ -208,7 +208,7 @@ describe('RemoteFileWithRangeCache', () => {
     )
     clearCache()
     const results = await Promise.all(reads)
-    expect(results.map(r => r.byteLength)).toEqual(Array(32).fill(10))
+    expect(results.map(r => r.byteLength)).toEqual(new Array(32).fill(10))
   })
 
   test('clearCache causes subsequent requests to re-fetch', async () => {

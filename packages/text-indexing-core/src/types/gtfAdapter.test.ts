@@ -33,17 +33,16 @@ describe('indexGtf', () => {
   ) {
     const file = path.join(tmpDir, 'test.gtf')
     fs.writeFileSync(file, [...lines, ''].join('\n'))
-    const results: string[] = []
-    for await (const record of indexGtf({
-      config: { trackId: 'gtf-track' },
-      attributesToIndex,
-      inLocation: file,
-      outDir: tmpDir,
-      onStart: () => {},
-      onUpdate: () => {},
-    })) {
-      results.push(record)
-    }
+    const results: string[] = await Array.fromAsync(
+      indexGtf({
+        config: { trackId: 'gtf-track' },
+        attributesToIndex,
+        inLocation: file,
+        outDir: tmpDir,
+        onStart: () => {},
+        onUpdate: () => {},
+      }),
+    )
     return results
   }
 
@@ -59,7 +58,7 @@ describe('indexGtf', () => {
 
   test('a gene entry spans every row of the gene, not one exon', async () => {
     const results = await index(eden)
-    const gene = results.find(r => words(r).join() === 'EDEN')!
+    const gene = results.find(r => words(r).join(',') === 'EDEN')!
     expect(loc(gene)).toBe('ctgA:1050..9000')
   })
 

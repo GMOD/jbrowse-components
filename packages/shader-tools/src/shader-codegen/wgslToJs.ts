@@ -1208,8 +1208,9 @@ class Emitter {
     const misleading = MISLEADING_BUILTINS[name]
     if (misleading) {
       throw new Error(
-        `wgslToJs: '${name}' at line ${e.line} has no exact JS equivalent. ` +
-          misleading,
+        `wgslToJs: '${name}' at line ${e.line} has no exact JS equivalent. ${
+          misleading
+        }`,
       )
     }
     // Whether the callee is one this emitter can produce AT ALL, checked before
@@ -1548,15 +1549,18 @@ function resolveExport(
   )
   if (blocked) {
     throw new Error(
-      `//! js-export: '${want}' is outside the supported scalar subset. ` +
-        blocked.reason,
+      `//! js-export: '${want}' is outside the supported scalar subset. ${
+        blocked.reason
+      }`,
     )
   }
   throw new Error(
     `//! js-export names a function absent from the compiled WGSL: ` +
-      `${want}. Present: ` +
-      [...new Set(fns.map(f => demangle(f.name)))].sort().join(', ') +
-      `. (In a shader with entry points, slangc drops any function no entry ` +
+      `${want}. Present: ${[...new Set(fns.map(f => demangle(f.name)))]
+        .sort()
+        .join(
+          ', ',
+        )}. (In a shader with entry points, slangc drops any function no entry ` +
       `point reaches — an export must be called from the draw path.)`,
   )
 }

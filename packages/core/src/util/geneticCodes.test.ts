@@ -3,8 +3,8 @@ import {
   ncbiGeneticCodes,
   parseTranslTable,
   relativizeTranslExcept,
+  codonTable,
 } from './geneticCodes.ts'
-import { codonTable } from './geneticCodes.ts'
 
 describe('getGeneticCode', () => {
   // codonTable is now *defined* as table 1's, so this no longer guards drift

@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs from 'node:fs'
 
 import { buildConsensusTally, computeConsensus } from '@jbrowse/alignments-core'
 import { firstValueFrom } from 'rxjs'

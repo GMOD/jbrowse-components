@@ -33,7 +33,7 @@ async function menuRowBox(page: Page, testId: string, deepest: boolean) {
     (id, deep) => {
       const menus = [...document.querySelectorAll('[role="menu"]')]
       const scope = deep ? menus.at(-1) : menus[0]
-      const li = scope?.querySelector(`[data-testid="${id}"]`)
+      const li = scope?.querySelector(`[data-testid="${CSS.escape(id)}"]`)
       if (!li) {
         return null
       }
@@ -61,7 +61,7 @@ async function clickMenuRow(page: Page, label: string, deepest = false) {
 async function hoverSubmenu(page: Page, label: string) {
   const testId = rowTestId('submenu', label)
   const box = await page.evaluate(id => {
-    const li = document.querySelector(`[data-testid="${id}"]`)
+    const li = document.querySelector(`[data-testid="${CSS.escape(id)}"]`)
     if (!li) {
       return null
     }
@@ -260,7 +260,7 @@ const suite: TestSuite = {
           rows.filter(r => r.checked).map(r => r.label)
 
         const before = await openTrackSubmenu()
-        if (checkedIn(before).join() !== 'Use view setting') {
+        if (checkedIn(before).join(',') !== 'Use view setting') {
           throw new Error(
             `expected only "Use view setting" checked, got: ${checkedIn(before).join(', ')}`,
           )
@@ -268,7 +268,7 @@ const suite: TestSuite = {
 
         await clickMenuRow(page, 'Strand', true)
         const overridden = await openTrackSubmenu()
-        if (checkedIn(overridden).join() !== 'Strand') {
+        if (checkedIn(overridden).join(',') !== 'Strand') {
           throw new Error(
             `expected only "Strand" checked after overriding, got: ${checkedIn(overridden).join(', ')}`,
           )
@@ -276,7 +276,7 @@ const suite: TestSuite = {
 
         await clickMenuRow(page, 'Use view setting', true)
         const restored = await openTrackSubmenu()
-        if (checkedIn(restored).join() !== 'Use view setting') {
+        if (checkedIn(restored).join(',') !== 'Use view setting') {
           throw new Error(
             `"Use view setting" did not take effect, checked: ${checkedIn(restored).join(', ')}`,
           )

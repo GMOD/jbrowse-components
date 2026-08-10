@@ -3,7 +3,7 @@
 // can be imported. Throws rather than exiting; the callers turn that into a
 // clean message.
 
-const LEVELS = ['patch', 'minor', 'major']
+const LEVELS = new Set(['patch', 'minor', 'major'])
 const VERSION = /^\d+\.\d+\.\d+(-[0-9A-Za-z][0-9A-Za-z.-]*)?$/
 
 export function parseReleaseArgs(argv: string[]) {
@@ -25,9 +25,9 @@ export function parseReleaseArgs(argv: string[]) {
   const level =
     argv.find(
       (a, i) =>
-        !a.startsWith('--') && !(versionIdx !== -1 && i === versionIdx + 1),
+        !a.startsWith('--') && (versionIdx === -1 || i !== versionIdx + 1),
     ) ?? 'patch'
-  if (!LEVELS.includes(level)) {
+  if (!LEVELS.has(level)) {
     throw new Error(
       `Invalid semver level '${level}'. Use patch, minor, or major.`,
     )

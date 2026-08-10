@@ -1589,7 +1589,7 @@ describe('packedContentHeight matches the committed layout', () => {
     expect(new Set(tops).size).toBe(3)
     expect(Math.max(...tops)).toBeGreaterThan(0)
     // row offsets reached the geometry, not left at the worker's 0
-    expect(new Set([...laid.rectYs]).size).toBe(3)
+    expect(new Set(laid.rectYs).size).toBe(3)
 
     const compactH = packedContentHeight(new Map([[0, overlapping(3, 20)]]), {
       ...base,

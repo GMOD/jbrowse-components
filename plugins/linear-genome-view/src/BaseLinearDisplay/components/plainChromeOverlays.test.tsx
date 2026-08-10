@@ -152,12 +152,12 @@ test('the base still owns the -done testid and data-display-phase', async () => 
   const { findByTestId } = renderPlain(model, 'chrome')
 
   const el = await findByTestId('chrome-done')
-  expect(el.getAttribute('data-display-phase')).toBe('loading')
+  expect(el.dataset.displayPhase).toBe('loading')
 
   act(() => {
     model.setLoadingCondition(false)
   })
-  expect(el.getAttribute('data-display-phase')).toBe('ready')
+  expect(el.dataset.displayPhase).toBe('ready')
 })
 
 describe('the Canvas2D escape hatch survives the swap', () => {

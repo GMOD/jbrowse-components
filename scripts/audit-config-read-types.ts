@@ -40,8 +40,8 @@
  * behind the tree with nobody noticing; the gate language below was aspirational
  * until then and is now literal.
  */
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 
 import ts from 'typescript'
 

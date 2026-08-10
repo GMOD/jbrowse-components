@@ -96,8 +96,8 @@ function resolveSpec(spec: string, fromFile: string) {
 // `export type` are erased before webpack sees them, so they don't count.
 function staticImports(src: string) {
   const code = src
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/(^|[^:])\/\/.*$/gm, '$1')
+    .replaceAll(/\/\*[\s\S]*?\*\//g, '')
+    .replaceAll(/(^|[^:])\/\/.*$/gm, '$1')
   const re =
     /(?:^|\n)\s*(?:import|export)\s+(?!type\b)(?:[\s\S]*?\sfrom\s*)?['"]([^'"]+)['"]/g
   const out: string[] = []

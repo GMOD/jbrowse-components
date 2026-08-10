@@ -49,9 +49,7 @@ test('a wiggle track emits its testid, display id and phase on one element', asy
   fireEvent.click(await findByTestId(hts('volvox_microarray'), {}, { timeout }))
 
   const el = await findByTestId('wiggle-display-done', {}, { timeout })
-  expect(el.getAttribute('data-display-id')).toBe(
-    'volvox_microarray-LinearWiggleDisplay',
-  )
-  expect(el.getAttribute('data-display-drawn')).toBe('true')
-  expect(el.getAttribute('data-display-phase')).toBeTruthy()
+  expect(el.dataset.displayId).toBe('volvox_microarray-LinearWiggleDisplay')
+  expect(el.dataset.displayDrawn).toBe('true')
+  expect(el.dataset.displayPhase).toBeTruthy()
 }, 25000)

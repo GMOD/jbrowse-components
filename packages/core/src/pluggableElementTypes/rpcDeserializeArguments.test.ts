@@ -1,5 +1,5 @@
-import { readFileSync, readdirSync } from 'fs'
-import path from 'path'
+import { readFileSync, readdirSync } from 'node:fs'
+import path from 'node:path'
 
 // Every `RpcMethodType.execute` has to call `this.deserializeArguments`, and
 // nothing enforces it at the type level: the worker entry point looks the method

@@ -43,7 +43,7 @@ function renameMangled(
 ) {
   let out = source
   for (const f of fieldNames) {
-    out = out.replace(
+    out = out.replaceAll(
       new RegExp(String.raw`\b${prefix}_${f}_\d+\b`, 'g'),
       target(f),
     )
@@ -77,7 +77,7 @@ export interface RenameOptions {
 function renameSamplers(source: string, names: readonly string[]) {
   let out = source
   for (const n of names) {
-    out = out.replace(new RegExp(String.raw`\b${n}_\d+\b`, 'g'), `u_${n}`)
+    out = out.replaceAll(new RegExp(String.raw`\b${n}_\d+\b`, 'g'), `u_${n}`)
   }
   return out
 }

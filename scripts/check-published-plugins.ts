@@ -22,7 +22,7 @@
 // (the names in each), not from modules.ts: that module's graph reaches .tsx,
 // which --experimental-strip-types will not load. The two are kept in sync with
 // modules.ts by a load-time throw and by abi.test.ts respectively.
-import fs from 'fs'
+import fs from 'node:fs'
 
 import reExportsList from '../packages/core/src/ReExports/list.ts'
 
@@ -80,7 +80,9 @@ function hostAliases(src: string) {
   const deps = /define\(\[([^\]]*)\]/.exec(src)
   const params = /\}\(this,\s*\(?function\s*\(([^)]*)\)/.exec(src)
   if (deps && params) {
-    const d = deps[1]!.split(',').map(s => s.trim().replace(/^["']|["']$/g, ''))
+    const d = deps[1]!
+      .split(',')
+      .map(s => s.trim().replaceAll(/^["']|["']$/g, ''))
     const p = params[1]!.split(',').map(s => s.trim())
     d.forEach((mod, i) => {
       if (p[i]) {
@@ -139,7 +141,7 @@ for (const p of plugins) {
   for (const [alias, mod] of Object.entries(hostAliases(src))) {
     for (const name of removed[mod] ?? []) {
       const used = new RegExp(
-        `[(,\\s.]${alias.replaceAll(/[$]/g, '\\$')}\\.${name}\\b`,
+        `[(,\\s.]${alias.replaceAll('$', '\\$')}\\.${name}\\b`,
       )
       if (used.test(src)) {
         breaks.push(`${mod}#${name}`)
