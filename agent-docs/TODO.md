@@ -91,30 +91,66 @@ was run on any of them.** The finding they share is in
 Suites exist for every view touched — `synteny.ts`, `grape-peach-synteny.ts`,
 `hs1-mm39-synteny.ts`, `multi-way-synteny.ts`, `dotplot.ts`, `hic.ts`, `gwas.ts`,
 `gwas-locuszoom.ts`, `wiggle-color.ts` under
-`products/jbrowse-web/browser-tests/suites/` — and `pnpm test:browser:compare`
-is the differential oracle that needs no golden.
+`products/jbrowse-web/browser-tests/suites/`.
+
+**`pnpm test:browser:compare` is an oracle for two of these commits and blind to
+two others**, which is the thing to plan around. It diffs `webgl` / `webgpu` /
+`canvas2d` (`compare-backends.ts`), so it catches the dotplot and glyph AA
+changes: those are GPU-only, Canvas2D was untouched, and a crop or an overdraw
+regression lands as GPU-vs-Canvas2D divergence. It cannot see the other two,
+by construction — `fillShade` reaches Canvas2D and the SVG export through the
+generated twin (`Canvas2DSyntenyRenderer.ts`), and hi-C's `colorRamp.ts` now
+imports `MIN_VISIBLE_ALPHA` from `hic.generated.ts`, so in both cases all the
+paths moved together and agree on the new answer. Those two need a snapshot
+diff or an eye.
 
 Ranked by how likely the author thought they were to be wrong:
 
-1. **The dotplot quad grew and was never measured.** Every capsule quad is now
-   `halfWidth + aaHalf` on both axes; at the default `lineWidth` 2.5 that is
-   ~40% more rasterized area per instance. A `discard` covers the fragments the
-   pad introduced, but the *net* effect on a dense plot is reasoned, not
-   measured. If it is negative the pad is still correct and the discard is the
-   lever.
-2. **The glyph ramp got narrower** (2–2.83 → 1 device px), so discs and diamonds
+1. **The dotplot quad grew and was never measured — and the discard is not the
+   lever the pad needs.** Every capsule quad is now `halfWidth + aaHalf` on both
+   axes. At the default `lineWidth` 2.5 (`DotplotView/model.ts`) the ~40% figure
+   is the *long-segment asymptote*; a short alignment — a dot, which is most
+   instances at whole-genome zoom, and where the 300k+ counts come from — goes
+   from `2.5×2.5` to `3.5×3.5`, i.e. **+96% at dpr 1**. At dpr 2 it is +20% /
+   +44%, so the overhead is worst on the non-retina display. The `discard`
+   reclaims less than it looks: `finalAlpha <= 0.0` holds only where
+   `d ≥ halfWidth + aa`, and along the body the pad ring has `d ≤ halfWidth + aa`
+   with alpha ramping 0.5→0 — that ring *is* the outer half of the AA ramp and
+   has to be shaded. Only the quad corners past each cap discard, `1 - π/4` ≈ 21%
+   of each cap rectangle, so ~21% of a dot's quad and ~0% of a long line's; a dot
+   at dpr 1 is still +54% net. If the measurement comes back negative the pad is
+   still correct, but the levers are the pad width or the blend, not the discard.
+2. **hi-C stopped painting bins it used to paint.** `4261bbfe40` discards below
+   `MIN_VISIBLE_ALPHA` on `juicebox`, which is the *default* scheme. Closing a
+   boundary rather than opening one — the Canvas2D and SVG paths already skipped
+   those bins — but it means the before picture has visible bins the after
+   picture does not. One threshold and an existing suite, so it is the cheapest
+   of the six to look at.
+3. **The glyph ramp got narrower** (2–2.83 → 1 device px), so discs and diamonds
    read crisper. 1px matches every other mark and `SMALL_POINT_MAX_DIAMETER`
    already routes ≤3px points to crisp squares — but it is a visible change
    nobody has seen.
-3. **`fillShade` at high opacity.** Hover no longer *reduces* alpha, but for
+4. **`fillShade` at high opacity.** Hover no longer *reduces* alpha, but for
    `a ≥ 0.35` it now leaves alpha untouched and hover shows only as
    `hoverDarken`'s 0.7 on the rgb. Whether that is enough feedback at opacity 1.0
    is a design question, not a correctness one; a small relative boost is the
    alternative.
-4. **`clipLargeBlockToWindow`'s pre-gate assumes the CIGAR's span matches
-   `end - start`.** A malformed CIGAR that walks past `end` could have an op
-   inside the window the gate now skips. Every other consumer would already be
+5. **`clipLargeBlockToWindow`'s pre-gate assumes the CIGAR's span matches
+   `end - start`** — but only on one side. `end < winStart` is the exposed half:
+   a malformed CIGAR walking past its declared `end` into the window would be
+   dropped. `start > winEnd` is safe whatever the CIGAR does, because the walk
+   only ever moves forward from `start`. Every other consumer would already be
    mis-drawing such a block, so this was accepted — but it is a new assumption.
+   Untested corner alongside it: `winStart`/`winEnd` are clamped to the region,
+   so a window falling outside the chosen region collapses them to a point and
+   the gate drops nearly everything. The `if (!r0) return undefined` above picks
+   an overlapping region, which looks like it makes this unreachable.
+
+Cheapest first, which inverts that ranking: **hi-C** (one number, suite exists),
+then **glyphs** (`gwas.ts`, `gwas-locuszoom.ts`, `wiggle-color.ts` — a pure look
+change and compare sees it), then **synteny hover** (needs a hover interaction
+and has no oracle), then **dotplot** — the only one of the five that is a headed
+perf measurement on a dense plot at dpr 1 rather than a look question.
 
 ### Report a callout that draws off-frame
 
