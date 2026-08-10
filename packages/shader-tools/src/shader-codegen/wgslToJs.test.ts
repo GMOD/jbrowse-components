@@ -530,14 +530,32 @@ test('refuses round(), which JS and WGSL break ties on differently', () => {
   ).toThrow(/round.*ties to EVEN.*floor\(x \+ 0\.5\)/s)
 })
 
-test('mix uses WGSL’s definition, which is exact at both endpoints', () => {
+// The oracle cannot referee this one, and not because of its tolerance: slangc's
+// C++ lowers `lerp` to `x + (y - x) * s` — the OTHER form — while the WGSL it
+// hands the GPU is `mix()`, which is `a * (1 - t) + b * t`. So the differential
+// check's reference implementation is on the wrong side of the question, and
+// tightening `REL_TOLERANCE` would make a *correct* `_mix` fail rather than
+// catch a wrong one. Nothing but a direct test can hold this.
+test('mix returns b exactly at t=1, which the lerp form does not', () => {
   const out = emit(
     `fn f_0( a_0 : f32,  b_0 : f32,  t_0 : f32) -> f32 { return mix(a_0, b_0, t_0); }`,
     ['f'],
   )
-  // `a + (b - a) * t` returns 0.30000000000000004 here; WGSL's form returns b.
-  expect(evaluate(out, 'f')(0.1, 0.3, 1)).toBe(0.3)
-  expect(evaluate(out, 'f')(0.1, 0.3, 0)).toBe(0.1)
+  const mix = evaluate(out, 'f')
+  // These two are the whole test. `a + (b - a) * t` returns 0.8999999999999999
+  // and 0.09999999999999998 here — an ulp off b, which is what a consumer
+  // quantizing into byte space rounds the wrong way.
+  //
+  // Pick a replacement pair by *checking* it discriminates, rather than by
+  // eye: this test previously used (0.1, 0.3, 1), where both forms return 0.3
+  // exactly, so it passed against the lerp form it exists to reject.
+  expect(mix(0.2, 0.9, 1)).toBe(0.9)
+  expect(mix(0.4, 0.1, 1)).toBe(0.1)
+  // t=0 is exact in both forms (`a + anything * 0`), so this is a sanity check
+  // on the endpoint, not a second discriminator.
+  expect(mix(0.2, 0.9, 0)).toBe(0.2)
+  // Ordinary interior blend, unchanged by the choice of form.
+  expect(mix(0, 10, 0.25)).toBe(2.5)
 })
 
 test('a bare hex literal is an integer, so it takes the truncating divide', () => {

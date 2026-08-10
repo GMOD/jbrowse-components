@@ -755,6 +755,16 @@ const HELPERS: Record<string, string> = {
   // two are equal in exact arithmetic and not in floating point: the lerp form
   // does not return `b` exactly at t=1, which matters to a consumer quantizing
   // the result into byte space.
+  //
+  // **`check-shader-oracle` cannot referee this one, and not because of its
+  // tolerance.** slangc lowers `lerp` to `x + (y - x) * s` for `-target cpp`
+  // while emitting `mix()` for `-target wgsl`, so the oracle's reference
+  // implementation is the form this deliberately does not use. Tightening
+  // `REL_TOLERANCE` would fail a *correct* `_mix` rather than catch a wrong one.
+  // The guard is `wgslToJs.test.ts`'s 'mix returns b exactly at t=1', and the
+  // inputs there were chosen by checking that they discriminate — the pair it
+  // used before (0.1, 0.3) is exact in BOTH forms, so the test passed against
+  // the lerp form for as long as it existed.
   _mix: [
     'function _mix(a: number, b: number, t: number) {',
     '  return a * (1 - t) + b * t',
