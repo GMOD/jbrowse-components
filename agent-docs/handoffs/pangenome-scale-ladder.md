@@ -1,6 +1,6 @@
 ---
 name: pangenome-scale-ladder
-description: A whole human chromosome now draws as a graph (249 Mb of chr1, 474 nodes, 18 ms) off the hosted bubble tier, and what that took — the bp ceiling is a session prop now, not a constant. Carries the two negatives that cost a session to find: the tier is a dud on a bacterial rGFA, and `gfatools bubble` returns nothing on a pggb GFA. Read before building another tier or widening a graph cut.
+description: A whole human chromosome now draws as a graph (249 Mb of chr1, 474 nodes, 18 ms) off the hosted bubble tier, and what that took — the bp ceiling is a session prop now, not a constant. Carries one negative that cost a session to find (the tier is a dud on a bacterial rGFA) and one since superseded (`gfatools bubble` returns nothing on a pggb GFA — the snarl-VCF route landed 2026-08-09 and the corollary drawn from it is withdrawn). Read before building another tier or widening a graph cut.
 ---
 
 # The pangenome scale ladder
@@ -84,18 +84,25 @@ shipping. The hosted files exist (see "Left open").
 
 **`gfatools bubble` returns 0 bubbles on a pggb GFA.** It needs rGFA
 `SN`/`SO`/`SR` to place a bubble on a reference, and a pggb GFA has bare
-S-lines. So the graph that most needs coarsening — 606k segments for five
-bacterial chromosomes — is exactly the one this route cannot coarsen. A pggb
-tier needs a different decomposition (`vg snarls`, BubbleGun), and the costs
-already recorded in reference/PANGENOME_GRAPHS.md apply: BubbleGun as published
-hangs on human chr1 at 15+ GB, and `vg mod -u` chain contraction gives 0.95% on
-HPRC chr20.
+S-lines. **This is still true of `gfatools` and no longer blocks a pggb tier —
+superseded 2026-08-09**, three days after this file was written. `pggb -V`
+writes a `vg deconstruct` snarl VCF whose `LV=0` records are the top-level
+bubbles, so `scripts/snarls_to_bubble_bed.py` feeds the same
+`bubbles_to_tier_bed.py` with nothing downstream changed. The whole 4.64 Mb
+E. coli graph is **1,088 nodes in 51 kB** at `--min-content 50`, hosted as
+`ecoli_pggb.tier50`. See
+[reference/PANGENOME_GRAPHS.md](../reference/PANGENOME_GRAPHS.md), "Level of
+detail" — that is the current account, including the `<source>@<refStart>` id
+qualification a repeat-folded graph needs. BubbleGun and `vg mod -u` were the
+alternatives priced here and neither was needed.
 
-Corollary worth stating plainly, because it is the answer to "can the
-whole-chromosome pggb projections have a graph panel": **no.** `depth`, `pav`
-and `untangle_rows` are pggb-derived and whole-chromosome, the pggb graph has no
-tier, and pairing them with a *minigraph* tier would mix builders the tutorials
-deliberately keep apart.
+**The corollary this file drew from that is therefore withdrawn.** It read: "can
+the whole-chromosome pggb projections have a graph panel — **no**, the pggb
+graph has no tier." It has one now. `depth`, `pav` and `untangle_rows` stay
+pggb-derived and whole-chromosome, and the half of the reasoning that still
+stands is only that pairing them with a *minigraph* tier would mix builders the
+tutorials keep apart — which the pggb tier does not do. Anyone who read this
+section as a closed door should re-open it.
 
 ## Left open
 
