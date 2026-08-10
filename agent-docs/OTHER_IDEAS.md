@@ -2697,15 +2697,24 @@ than a page of its own.
 Cheaper than any new tutorial, and some of them raise the value of every
 tutorial already there.
 
-**A comparative-genomics chooser** (endorsed by Colin, 2026-07-26). Seven of the
-25 cards are synteny or pangenome and their thumbnails are all ribbon stacks, so
-a reader holding a PAF cannot tell which page is theirs. One decision page that
-routes on what you have (a pairwise alignment goes to dotplot plus linear
-synteny, one all-vs-all PAF goes to the stack, an ortholog table goes to MCScan,
-a graph pipeline goes to the three pangenome pages) would do more for that
-section than an eighth tutorial. There is no comparative overview page today,
-only `user_guides/dotplot_view.md` and `user_guides/linear_synteny_view.md`
-separately. It is nearly free, since it links pages and figures that exist.
+**A comparative-genomics chooser: declined by Colin, 2026-08-09.** "Overly
+complicated, they will just have to read the titles." Don't rebuild it.
+
+The entry argued that the ten synteny and pangenome cards have interchangeable
+ribbon-stack thumbnails, so a reader holding a PAF cannot tell which page is
+theirs, and proposed a decision page routing on what you have (pairwise
+alignment, all-vs-all PAF, ortholog table, graph pipeline). The premise was
+wrong: it reasoned from the thumbnails and skipped the line underneath them.
+Those titles already name the input or the tool — "(pairwise minimap2)",
+"(all-vs-all minimap2)", "Synteny from an ortholog table", "Synteny from MCScan
+anchors", "Pangenome (pggb)" — which is the same key the chooser would have
+routed on. A page that restates the card titles as a table is a second index of
+the section, kept in sync by hand.
+
+The general form, worth remembering before proposing the next router: when a
+navigation aid's routing key is already in the labels a reader is looking at,
+the aid adds a surface rather than an answer. Fix the titles that do not carry
+it instead.
 
 **Badge what a tutorial costs the reader.** Half these pages open a hosted link
 and half want pggb, Cactus, or minimap2 run first, and the cards say nothing
