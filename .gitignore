@@ -96,6 +96,8 @@ test_data/jb2bench_link/
 # directories un-ignored first — git never descends into an excluded directory,
 # and the allowlist is per-skill so a new local one is untracked by default.
 .claude/*
+!.claude/settings.json
+!.claude/hooks/
 !.claude/skills/
 .claude/skills/*
 !.claude/skills/jbrowse-authoring/
