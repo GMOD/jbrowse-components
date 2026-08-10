@@ -1,11 +1,16 @@
 // One exhaustive classification of a shader's GPU binding table, derived from
 // slangc's reflection.
 //
-// It replaces a family of `find<TheOneIExpect>` accessors — `findConstantBuffer`
-// and `findCombinedSamplers` are now views over this, and `findInstanceStruct`
-// consults it — each of which independently scanned `reflection.parameters` for
-// the shape it wanted and ignored everything else. That is fine right up until a
-// shader declares something the scan wasn't looking for:
+// It backstops a family of `find<TheOneIExpect>` accessors —
+// `findConstantBuffer`, `findInstanceStruct`, `findCombinedSamplers` — each of
+// which scans `reflection.parameters` for the shape it wants, returns the first
+// match, and ignores everything else. They still do that; what changed is that
+// this runs first and refuses the shader shapes that would make first-match the
+// wrong answer, so their scans are now safe rather than merely lucky. (Folding
+// them into genuine projections of this table would mean carrying each one's
+// struct payload through `ShaderBinding`, which buys no safety over the
+// refusal.) Their failure mode was a shader declaring something the scan wasn't
+// looking for:
 //
 //   ConstantBuffer<A> ua;   // canvasSize, k
 //   ConstantBuffer<B> ub;   // scale, bias
