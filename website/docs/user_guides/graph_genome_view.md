@@ -98,6 +98,13 @@ gfa=$(ls pggb/*.smooth.final.gfa)
 bash build_pggb_tabix.sh "$gfa" ecoli_pggb K12
 ```
 
+The rGFA in these figures is a minigraph graph of five strains, built by the
+[pangenome tutorials](/docs/tutorials/pangenome_ecoli). Building your own has
+one thing to get right: minigraph takes its stable names from the input FASTA
+headers, so feed it PanSN-named records rather than the per-strain files, whose
+contig is called `chr` in all five. Otherwise every segment lands on an
+ambiguous `chr` that no later command can query by strain.
+
 The plain-GFA walk makes four choices worth knowing:
 
 - The third argument names an **assembly**, not a path, so every contig that
@@ -144,6 +151,11 @@ Then **Track menu → Launch view → Graph genome view (this region)** cuts a
 subgraph from the index. The item is offered only for a track whose adapter can
 cut one, and past the size the view will draw it greys out and names its own
 limit rather than disappearing.
+
+How wide a window that is depends on the graph rather than on the index. A
+minigraph graph records structural variation and collapses everything smaller,
+so a legible window is hundreds of kb; a pggb graph puts a node at every SNP,
+and a legible window is hundreds of bp.
 
 Right-clicking one segment cuts the graph around that segment instead, padded by
 half its length on each side so it opens with context rather than clipped to its
@@ -430,21 +442,6 @@ segment sits, which is also what the lane above it is painted with, so a segment
 is the same hue in the lane and in the graph it launches.
 
 <Figure caption="The round trip between the two views. Left: the graph at K12's asnW/asnU/asnV tRNA cluster with the CFT073 entry boxed, above the view that entry launches, on CFT073's own coordinates and holding the clb operon. Right: a right-click on segment s1277 in a linear view, above the subgraph it cuts." src="/img/pangenome/rgfa_launch_roundtrip.png" links="Graph → linear=pangenome/rgfa_strain_launch,Linear → graph=pangenome/rgfa_segment_neighbourhood" />
-
-## Building the rGFA these figures use
-
-**Skip this if your graph is already indexed.**
-
-The figures above use a minigraph graph of five strains, built by the
-[pangenome tutorials](/docs/tutorials/pangenome_ecoli). One thing to get right:
-minigraph takes its stable names from the input FASTA headers, so feed it
-PanSN-named records rather than the per-strain files, whose contig is called
-`chr` in all five. Otherwise every segment lands on an ambiguous `chr` that no
-later command can query by strain.
-
-A minigraph graph is far less fragmented than a pggb one, recording structural
-variation rather than every SNP, so a legible window is hundreds of kb rather
-than hundreds of bp.
 
 ## Which strain takes which path
 
