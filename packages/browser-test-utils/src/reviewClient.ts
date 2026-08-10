@@ -676,16 +676,43 @@ function paintCard(name) {
     // Guarded like applyPendingNotes: a renderer without a note field is a card
     // with nothing to carry, not a reason to leave every deferred card in the
     // same flush unpainted.
-    const typed = el.querySelector('.note')?.value
+    const old = el.querySelector('.note')
+    const typed = old?.value
     if (typed !== undefined) {
       // record before the swap so the rebuilt card renders the right draft hint
       setDraft(name, typed)
     }
+    // Where the reviewer was in the box, if they were in it at all.
+    //
+    // Carrying the TEXT across is not enough. A verdict write returns a few
+    // hundred ms after the click, and typing the reason straight after clicking
+    // Deny is the flow this card is arranged for — justActed exists so it stays
+    // on screen while you do. So the repaint that confirms the verdict lands
+    // mid-sentence: the swap moves focus to <body>, and from then on every
+    // keystroke goes nowhere while the reviewer is still looking at the box they
+    // think they are typing into. The words already typed survived, which is
+    // what made this quiet; the ones after it were dropped on the floor.
+    //
+    // Only when this field is the one holding the caret, so repainting some
+    // other card cannot steal focus into it. selectionStart is null on the input
+    // types that have no selection to speak of, which is also the guard against
+    // setSelectionRange throwing on them.
+    const caret =
+      old && document.activeElement === old && old.selectionStart !== null
+        ? { at: old.selectionStart, to: old.selectionEnd, scroll: old.scrollTop }
+        : null
     el.outerHTML = renderCard(entry)
     const note = cardOf(name)?.querySelector('.note')
     if (note && typed !== undefined) {
       note.value = typed
       autosizeNote(note)
+    }
+    if (note && caret) {
+      // preventScroll: the field was on screen a moment ago by definition, and
+      // a repaint is not a reason to move the page under someone mid-sentence
+      note.focus({ preventScroll: true })
+      note.setSelectionRange(caret.at, caret.to)
+      note.scrollTop = caret.scroll
     }
     // the card was just rebuilt from \\\`data\\\`, which does not know about a click
     // whose write has not come back yet

@@ -1,18 +1,23 @@
 // Drives the shared review client (reviewClient.ts) in a real browser, against
-// a stubbed fetch and a two-button card, and asserts the two properties that
+// a stubbed fetch and a two-button card, and asserts the three properties that
 // only a driven browser can see:
 //
-//   1. a press SHOWS for as long as its write is in flight, and
-//   2. what the card settles on is whatever the server said, not the click.
+//   1. a press SHOWS for as long as its write is in flight,
+//   2. what the card settles on is whatever the server said, not the click, and
+//   3. the repaint that confirms a verdict does not throw the reviewer out of
+//      the note they started typing after clicking it.
 //
-// Both live in the gap between a mousedown and a write returning, so nothing
-// jest can reach observes them, and the review UIs have now lost each of them
-// once. The first regressed silently and invisibly: the press was painted onto
-// the button and left there, correct until a repaint deferred by that same press
-// flushed the instant the click was dispatched and rendered the card back from
-// `data` — several hundred ms before the write it was waiting on. The reviewer
-// sees an unpressed button and clicks again, which is the "I have to click
-// Approve twice" complaint, arriving through the machinery added to fix it.
+// All three live in the gap between a mousedown and a write returning, so
+// nothing jest can reach observes them, and the review UIs have now lost each of
+// them once. The first regressed silently and invisibly: the press was painted
+// onto the button and left there, correct until a repaint deferred by that same
+// press flushed the instant the click was dispatched and rendered the card back
+// from `data` — several hundred ms before the write it was waiting on. The
+// reviewer sees an unpressed button and clicks again, which is the "I have to
+// click Approve twice" complaint, arriving through the machinery added to fix
+// it. The third is quieter still: the text already typed was carried across the
+// swap, so nothing looked lost — but focus went to <body> and every keystroke
+// after that was dropped while the reviewer watched the box they were typing in.
 //
 // Run it: node --experimental-strip-types src/reviewClientProbe.ts
 // It exits non-zero on a failure and prints what each case settled on.
@@ -195,10 +200,42 @@ for (const strand of [false, true]) {
   await page.close()
 }
 
+// ---------------------------------------------------------------------------
+// 3. the repaint that confirms the verdict lands mid-sentence, because typing
+//    the reason straight after clicking Deny is the flow the card is built for
+// ---------------------------------------------------------------------------
+{
+  const page = await open(echoStub(350))
+  await page.click('.deny')
+  await page.focus('.note')
+  await page.keyboard.type('the labels overlap here')
+  // caret parked mid-sentence, as a reviewer rereading what they wrote
+  await page.evaluate('document.querySelector(".note").setSelectionRange(4, 4)')
+  // the write is still outstanding; let it land and repaint the card
+  await new Promise(r => setTimeout(r, 700))
+  await page.keyboard.type('XYZ')
+  const box = await page.evaluate(() => {
+    const note = document.querySelector('.note') as HTMLTextAreaElement | null
+    return {
+      text: note?.value ?? '',
+      focused: document.activeElement === note,
+      caret: note?.selectionStart ?? -1,
+    }
+  })
+  check(
+    'the confirming repaint keeps the caret in the note being typed',
+    box.focused && box.text.includes('XYZ'),
+    box.text.includes('XYZ')
+      ? `still focused, caret ${box.caret}, text kept: ${JSON.stringify(box.text)}`
+      : `focus lost — the keystrokes after the repaint went nowhere: ${JSON.stringify(box.text)}`,
+  )
+  await page.close()
+}
+
 await browser.close()
 if (failures.length) {
   console.log(`\n${failures.length} failing:\n  ${failures.join('\n  ')}`)
   process.exitCode = 1
 } else {
-  console.log('\nall review-client press properties hold')
+  console.log('\nall review-client repaint properties hold')
 }
