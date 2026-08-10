@@ -1,5 +1,5 @@
 import { writeFileSync } from 'node:fs'
-import { join, relative } from 'node:path'
+import { relative } from 'node:path'
 
 // What the run noticed while it was capturing, and how it says so at the end.
 //
@@ -19,7 +19,6 @@ import {
   unpublishedFigures,
 } from './figure-paths.ts'
 import { figureName } from './figure-store.ts'
-import { websiteDir } from './paths.ts'
 import {
   CLIP_WARN_PX,
   DEVICE_SCALE_FACTOR,
@@ -27,6 +26,7 @@ import {
   diffThreshold,
   filterTokens,
 } from './screenshot-options.ts'
+import { type RunReport, runReportPath } from './screenshot-run-report.ts'
 import { specs } from './screenshot-specs.ts'
 
 import type { CommitResult } from './image-pipeline.ts'
@@ -268,48 +268,10 @@ export function printSummary(totals: RunTotals) {
 }
 
 // Everything above is printed and then lost, which is the wrong lifetime for
-// half of it. A reviewer opening review-screenshots-web is looking at PNGs on
-// disk with no way to tell which ones the last run failed to re-render, or
-// which ones it re-rendered differently twice — and a figure that is stale
-// because its spec died looks exactly like a figure that is fine.
-//
-// So the run leaves a machine-readable record beside its console output.
-// Gitignored: it describes one run on one machine, and committing it would
-// churn on every sweep and mean nothing on anyone else's checkout.
-//
-// `filter` and `check` ride along because they decide what the record MEANS. A
-// filtered run says nothing about the specs it skipped, and only a --check run
-// can populate `flaky` at all — without both, a reviewer cannot tell "not
-// flaky" from "never tested for flakiness".
-//
-// `selected` is the same argument taken to its conclusion. Everything else here
-// is exceptions — a spec that rendered fine and unchanged leaves no trace at
-// all, which is most of them — so "no entry" can only be read as "nothing went
-// wrong" if something else says the run reached it. `filter` was standing in for
-// that and got it wrong in the direction that matters: --affected and --cover
-// narrow just as hard and leave `filter` empty, so a 14-spec --affected run (the
-// workflow website/CLAUDE.md actually recommends) reported as a full sweep and
-// the other 300 figures read as verified by it.
-export interface RunReport {
-  finishedAt: string
-  filter: string[]
-  check: boolean
-  // every spec this run intended to render, however it was narrowed
-  selected: string[]
-  // how many specs existed at the time, so a reader can size `selected`
-  // against the corpus rather than against today's spec list
-  total: number
-  // selected, then deliberately not rendered — the committed image is kept and
-  // says nothing about the current app
-  skipped: { name: string; reason: string }[]
-  failures: { name: string; error: string }[]
-  flaky: { name: string; frac: number }[]
-  updated: { name: string; detail: string }[]
-  suppressed: { name: string; frac: number }[]
-}
-
-export const runReportPath = join(websiteDir, 'scripts', 'screenshot-run.json')
-
+// half of it, so the run also leaves a machine-readable record beside its
+// console output. Its shape and its path live in ./screenshot-run-report.ts and
+// that file explains what is in it — they are over there because this module
+// imports screenshot-options.ts, and its only reader is a server that must not.
 function writeRunReport(totals: RunTotals) {
   const report: RunReport = {
     finishedAt: new Date().toISOString(),

@@ -12,7 +12,6 @@ import {
 
 import { readManifest, unpublishedFigures } from './figure-paths.ts'
 import { figureContentTypes, figureName, figurePath } from './figure-store.ts'
-import { type RunReport, runReportPath } from './screenshot-report.ts'
 import {
   collectScreenshots,
   getBaselineState,
@@ -25,6 +24,10 @@ import {
   syncJbrowseImgMirror,
   websiteDir,
 } from './screenshot-review-lib.ts'
+// the record's shape and path only — NOT screenshot-report.ts, which reaches
+// screenshot-options.ts and so parses this server's argv as if it were a
+// generator run (see the header of screenshot-run-report.ts)
+import { type RunReport, runReportPath } from './screenshot-run-report.ts'
 import { screenshotLiveUrls, specs } from './screenshot-specs.ts'
 
 const { values } = parseArgs({
