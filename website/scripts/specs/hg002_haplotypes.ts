@@ -60,14 +60,21 @@ type PanelTracks = (string | Record<string, unknown>)[]
 
 // A panel with no tracks draws a centered "No tracks active" chip and an OPEN
 // TRACK SELECTOR button, which in a two-row frame outweighs the ribbons the
-// figure is about. Each panel therefore carries the bigChain rendering of the
-// same alignment, on its OWN haplotype's coordinates: mat2pat is built on the
-// 22 maternal autosomes, pat2mat on the paternal ones, so the pairing is not
-// interchangeable. Nine features across this window, against a het-site track
-// that is orders of magnitude over the feature gate here.
-function chainBlocks(hap: 'mat' | 'pat') {
-  return { trackId: `hg002v1.2_chainblocks_${hap}`, height: 40 }
-}
+// figure is about. Each panel therefore carries the chain blocks on its OWN
+// haplotype's coordinates -- and that is the SAME SyntenyTrack the ribbons come
+// from, not a second file. In a plain LGV a SyntenyTrack draws as
+// LGVSyntenyDisplay (the only display registered for that pair), whose colorBy
+// already promotes to `strand`, so this needs no display config at all.
+//
+// It resolves per panel because the published chain carries BOTH directions:
+// every alignment appears once with the maternal contig as query and once with
+// the paternal one, so the maternal panel's fetch returns the mat-as-query
+// records and the paternal panel's the pat-as-query records. That is exactly
+// the split the mat2pat / pat2mat bigChain pair used to provide, from one file
+// instead of two, which is also what stops the blocks and the ribbons from
+// disagreeing. Nine records either side across this window, against a het-site
+// track that is orders of magnitude over the feature gate here.
+const CHAIN_BLOCKS = { trackId: 'hg002v1.2_mat_vs_pat', height: 40 }
 
 function haplotypeSession(
   matLoc: string,
@@ -108,12 +115,9 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
   {
     ...CAPTURE,
     name: 'hg002_haplotypes_8p23_inversion',
-    url: haplotypeSession(
-      INVERSION_WINDOW_MAT,
-      INVERSION_WINDOW_PAT,
-      [chainBlocks('mat')],
-      [chainBlocks('pat')],
-    ),
+    url: haplotypeSession(INVERSION_WINDOW_MAT, INVERSION_WINDOW_PAT, [
+      CHAIN_BLOCKS,
+    ]),
     viewportHeight: 468,
   },
   {

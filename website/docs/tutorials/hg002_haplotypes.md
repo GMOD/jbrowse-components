@@ -66,35 +66,23 @@ what makes it a self-alignment:
 }
 ```
 
-The same alignment is published a second time as bigChain, one file per
-haplotype's coordinates. Loaded as an ordinary feature track it draws the chain
-blocks on each panel's own ruler, which is where the boundaries the last section
-is about become visible:
+That one track also goes in each panel. Turned on from a panel's own track
+selector, a synteny track draws its alignments as ordinary features on that
+panel's ruler rather than as ribbons between two, which is where the boundaries
+the last section is about become visible. It needs no second file and no extra
+config: `LGVSyntenyDisplay` is the display a synteny track takes in a plain
+linear view, and it colors by strand already.
 
-```json addtrack
-{
-  "type": "FeatureTrack",
-  "trackId": "hg002v1.2_chainblocks_mat",
-  "name": "Chain blocks (maternal)",
-  "assemblyNames": ["hg002v1.2"],
-  "adapter": {
-    "type": "BigBedAdapter",
-    "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/annotation/browserchains/hg002v1.2.mat2pat.bigChain.bb"
-  },
-  "displays": [
-    {
-      "type": "LinearBasicDisplay",
-      "displayId": "hg002v1.2_chainblocks_mat-LinearBasicDisplay",
-      "showLabels": "none",
-      "color": "jexl:feature.strand == -1 ? '#00f' : '#f00'"
-    }
-  ]
-}
-```
+This resolves per panel because the published chain carries both directions.
+Every alignment appears in it twice, once with the maternal contig as the query
+and once with the paternal one, so the maternal panel finds the
+maternal-coordinate copy and the paternal panel the paternal-coordinate copy.
+The blocks in a panel and the ribbons above them are then the same records, and
+cannot disagree.
 
-The paternal panel takes the matching `pat2mat` file the same way. The two are
-not interchangeable: `mat2pat` is built on the maternal contigs and `pat2mat` on
-the paternal ones, so each belongs to the panel whose coordinates it uses.
+The project also publishes the same alignment as bigChain, one file per
+haplotype's coordinates (`mat2pat` built on the maternal contigs, `pat2mat` on
+the paternal ones), for loading as a plain feature track instead.
 
 The project also publishes the heterozygous sites called between the two
 haplotypes, which the last section uses as a check on the alignment:
