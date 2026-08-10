@@ -4,7 +4,7 @@ description:
   Split a hub's RepeatMasker track into a labelled lane per repeat class,
   without preparing any data
 guide_category: Tutorials
-tutorial_category: Configuration & embedding
+tutorial_category: genomes.jbrowse.org
 ---
 
 **TL;DR:** a RepeatMasker track is one packed lane of colored blocks, which says
@@ -16,9 +16,13 @@ display discovers the lanes from it.
 
 ## Prerequisites
 
-- A genome from [jbrowse.org/genomes](https://jbrowse.org/genomes/), or any
-  UCSC/GenArk hub config, which is where the RepeatMasker track comes from
-- htslib (`tabix`), for the check at the end only
+- nothing to install to read along: the RepeatMasker track is already on any
+  genome at [genomes.jbrowse.org](https://genomes.jbrowse.org), or on any other
+  UCSC/GenArk hub config
+- htslib (`bgzip`, `tabix`, `htsfile`), for the check at the end
+- samtools and node, for
+  [serving your own RepeatMasker output](#serving-your-own-repeatmasker-output)
+  only
 
 ## The class is already in the file
 
@@ -122,8 +126,51 @@ The same command with `$6` instead of `$7` counts `repFamily`, which is the
 finer partition (`L1`, `Alu`, `MIR`) if the classes turn out to be too coarse
 for what you are reading.
 
+## Serving your own RepeatMasker output
+
+Everything above reads a hub's track, whose BED already carries the `repClass`
+column the display partitions on. RepeatMasker's own `.out` does not have one:
+it writes a single `class/family` field, `LINE/L1` for a repeat with both and a
+bare `Simple_repeat` for one whose family is its class. Splitting that field in
+two, under a header naming the columns, is the whole difference between the
+`.out` and the file the track above is reading.
+
+## Reproduce it end to end
+
+One script converts the `.out`, indexes it, and writes a runnable JBrowse with
+the track already set to the multi-row display,
+[`build_repeatmasker_classes.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_repeatmasker_classes.sh):
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_repeatmasker_classes.sh
+bash build_repeatmasker_classes.sh genome.fa repeats.out  # builds ./repeatmasker_build/jbrowse2
+npx --yes serve repeatmasker_build/jbrowse2               # then open the printed URL
+```
+
+`genome.fa` is the FASTA RepeatMasker was run against and `repeats.out` is its
+`.out`; either may be gzipped. Tools are under [Prerequisites](#prerequisites).
+The BED it writes carries UCSC's first seven columns in UCSC's order, so the
+`tabix | awk` check above reads it with no change.
+
+That ordering is also what makes the conversion checkable. Run the script on a
+genome UCSC masks too, and its output can be compared against UCSC's own:
+
+```bash
+curl -o ucsc_rmsk.bed.gz https://jbrowse.org/ucsc/dm6/rmsk.bed.gz
+diff <(gzip -dc repeatmasker_build/rmsk.bed.gz | grep -v '^#' | cut -f1-7 | sort) \
+     <(gzip -dc ucsc_rmsk.bed.gz | grep -v '^#' | cut -f1-7 | sort)
+```
+
+Silence means every interval, name, strand, family and class agrees with UCSC's
+conversion of the same `.out`. The two places this can disagree are both in the
+`.out` format rather than in the display: its coordinates are 1-based and
+inclusive where BED's are 0-based and half-open, and its strand column spells
+the minus strand `C`.
+
 ## See also
 
+- [](/docs/tutorials/genomes_basics) - opening a hosted genome and finding a
+  track in the same catalog this one comes from
 - [](/docs/user_guides/multirow_feature_track) - the display itself, including
   clustering, row sorting and the derived-value form GenArk needs
 - [](/docs/cookbook#colors) - the same track colored by class instead of

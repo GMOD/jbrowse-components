@@ -29,8 +29,8 @@ const EXTRA_DOCS = new Map([
   ['cookbook', 'Configuration & embedding'],
 ])
 
-// Curated order within each section, shared with the user guide index. Getting
-// started is the hosted-site walkthrough and the two quickstarts; the domain
+// Curated order within each section, shared with the user guide index. The
+// hosted-site pages lead, Getting started is the two quickstarts; the domain
 // analysis sections follow; and the more advanced, developer/admin-oriented
 // configuration work (display defaults, embedding, CLI-config walkthroughs)
 // sits last in its own Configuration & embedding section.
@@ -126,7 +126,11 @@ const HAS_THUMB = new Set(
 >
   <p class="lead">
     Hands-on walkthroughs of common JBrowse workflows, from first setup to
-    advanced analysis.
+    advanced analysis. The first section runs on
+    <a href="https://genomes.jbrowse.org" target="_blank" rel="noopener"
+      >genomes.jbrowse.org</a
+    >, which hosts a configured JBrowse for every UCSC genome, so those pages
+    need nothing installed and no data prepared.
   </p>
   {
     grouped.map(group => (

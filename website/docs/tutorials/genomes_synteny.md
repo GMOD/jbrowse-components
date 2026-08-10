@@ -4,7 +4,7 @@ description:
   Open a UCSC liftOver track in a linear genome view and launch a synteny view
   from it
 guide_category: Tutorials
-tutorial_category: Synteny & comparative genomics
+tutorial_category: genomes.jbrowse.org
 ---
 
 **TL;DR:** genomes.jbrowse.org already carries UCSC's pairwise liftOver

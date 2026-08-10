@@ -4,7 +4,7 @@ description:
   Right-click a gene and build a cross-species protein alignment from NCBI's
   precomputed orthologs, with conserved domains overlaid
 guide_category: Tutorials
-tutorial_category: Transcriptomics & proteins
+tutorial_category: genomes.jbrowse.org
 ---
 
 **TL;DR:** genomes.jbrowse.org loads both protein plugins, so any gene in a

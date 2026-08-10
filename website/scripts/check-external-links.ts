@@ -63,6 +63,10 @@ const IS_TEST = /\.test\.[jt]sx?$|__mocks__|\/test\/data\//
 const PREFIXES: [string, string][] = [
   // rGFA stems — RgfaTabixAdapter appends .segs.bed.gz / .links.bed.gz
   ['https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb', '.segs.bed.gz'],
+  [
+    'https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb.tier50',
+    '.segs.bed.gz',
+  ],
   ['https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38', '.segs.bed.gz'],
   [
     'https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.tier10000',
@@ -104,6 +108,13 @@ const PREFIXES: [string, string][] = [
   [
     'https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts',
     '/build_dog10k_size_fst.sh',
+  ],
+  // scan_mappability_qc.sh's $ONT_BASE. The bucket answers a bare prefix with
+  // 404 rather than a listing, so only a key under it can say whether the
+  // release is still there.
+  [
+    'https://s3.amazonaws.com/1000g-ont/PROCESSED_DATA',
+    '/ALIGNED_TO_HG38/MINIMAP2_ALIGNED_BAMS/GM18501-ONT-hg38-R9-LSK110-guppy-sup-5mC.phased.bam',
   ],
 ]
 

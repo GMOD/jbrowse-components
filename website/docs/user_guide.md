@@ -57,9 +57,12 @@ How to drive JBrowse once it is running. New here? Start with the
 
 ## Tutorials
 
-### Getting started
+### genomes.jbrowse.org
 
 - [](/docs/tutorials/genomes_basics)
+- [](/docs/tutorials/genomes_synteny)
+- [](/docs/tutorials/genomes_msa)
+- [](/docs/tutorials/repeatmasker_classes)
 
 ### Synteny & comparative genomics
 
@@ -71,7 +74,6 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/selection_pressure)
 - [](/docs/tutorials/multiway_synteny_grape_peach_cacao)
 - [](/docs/tutorials/mcscan_synteny_grape_peach)
-- [](/docs/tutorials/genomes_synteny)
 - [](/docs/tutorials/homoeolog_synteny)
 - [](/docs/tutorials/orthofinder_synteny)
 
@@ -113,11 +115,9 @@ How to drive JBrowse once it is running. New here? Start with the
 
 - [](/docs/tutorials/rnaseq)
 - [](/docs/tutorials/protein_structure)
-- [](/docs/tutorials/genomes_msa)
 
 ### Configuration & embedding
 
 - [](/docs/tutorials/display_settings)
 - [](/docs/tutorials/embed_linear_genome_view)
 - [](/docs/tutorials/cli_desktop)
-- [](/docs/tutorials/repeatmasker_classes)

@@ -4,7 +4,7 @@ description:
   Open a hosted genome, search a gene, and turn on a track from the UCSC
   catalog, worked on hg38 phyloP conservation over TP53
 guide_category: Tutorials
-tutorial_category: Getting started
+tutorial_category: genomes.jbrowse.org
 ---
 
 **TL;DR:** genomes.jbrowse.org hosts a ready-made JBrowse config for every UCSC
@@ -145,6 +145,8 @@ coordinates are the way in.
 - [](/docs/tutorials/genomes_synteny), the same site's pairwise alignments
 - [](/docs/tutorials/genomes_msa), building a protein alignment from a gene in
   the same view
+- [](/docs/tutorials/repeatmasker_classes), another track from this catalog
+  reopened in a display the track menu already carries
 - [](/docs/user_guides/quantitative_track) for what else the phyloP track's menu
   can do (plot type, scale, autoscale, colors)
 - [](/docs/user_guides/hub_url) for opening a hub that the site does not host

@@ -67,7 +67,22 @@ export const DEVELOPER_CATEGORIES = [
 // with prose that says WHY the two are related, which a tag cannot. When a page
 // straddles, fix the cross-links, not the schema. Revisit only if the corpus
 // roughly doubles or a section stops describing its contents.
+//
+// 'genomes.jbrowse.org' leads, and is the second heading here that names
+// something other than a biology domain. It holds the pages that are about the
+// hosted site rather than about a dataset: each opens on a genome that is
+// already configured, so the whole page is a click path and its Prerequisites
+// list is "nothing to install". Filed by domain they were scattered across
+// four sections, each sitting among pages that want minimap2, pggb or a
+// tabix'd file first, so the one group a reader can follow without downloading
+// anything was the one group that could not be seen. They already read as a
+// series: all four cross-link each other, and the flat tutorials sidebar
+// happens to sort three of them adjacent. This is not the same axis as "costs
+// the reader nothing", which is wider (the demo-instance pages are zero-setup
+// too, and `mappability_qc` is a hosted click path whose subject is SMN, not
+// the site) and wants a per-card badge rather than a heading.
 export const TUTORIAL_CATEGORIES = [
+  'genomes.jbrowse.org',
   'Getting started',
   'Synteny & comparative genomics',
   'Structural variation',
@@ -87,11 +102,17 @@ export const TUTORIAL_FALLBACK = 'More tutorials'
 // a few slugs that only the landing page shows (the quickstarts, the cookbook,
 // the external examples card); they are inert for the user guide index.
 export const TUTORIAL_ORDER = [
-  // Leads Getting started, ahead of the two quickstarts: both of those are
-  // "install JBrowse and load data into it", and this one is the page that
-  // needs neither, so it is the shortest path from the tutorials index to a
+  // The hosted-site series, in the order it is meant to be read: open a genome
+  // and turn on a track, then the two right-click launchers that build a second
+  // view out of the gene under the cursor, then the display swap that needs no
+  // second view at all. It leads the page ahead of Getting started because both
+  // quickstarts are "install JBrowse and load data into it", and these are the
+  // pages that need neither — the shortest path from the tutorials index to a
   // reader looking at real data in a real browser.
   'genomes_basics',
+  'genomes_synteny',
+  'genomes_msa',
+  'repeatmasker_classes',
   'quickstart_web',
   'quickstart_desktop',
   'synteny_visualization',
