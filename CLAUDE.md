@@ -57,6 +57,22 @@ checkout, so ordinary git is yours to use without asking.
   `createRequire(<that>/package.json)` — or run from a package that depends on
   it.
 
+- **Those symlinks are for scripts and figures, never for `pnpm typecheck`.**
+  Each package's `node_modules/@jbrowse/*` links are **relative**
+  (`plugins/canvas/node_modules/@jbrowse/core -> ../../../../packages/core`), so
+  borrowing the primary's tree makes every cross-package import resolve to the
+  primary checkout's sources. A whole-repo `--noEmit` then typechecks _its_ code
+  against your edit and passes — the failure mode is a clean run that proved
+  nothing. Run `pnpm install --frozen-lockfile` in the worktree instead: the
+  store is shared, so it's ~6s, and the frozen lockfile is what removes the risk
+  the symlinks were avoiding.
+
+- **`products/jbrowse-web/src/buildInfo.ts` is generated and gitignored**, so a
+  fresh worktree fails `tsc` on it and takes ~5 suites down with it (anything
+  reaching `rootModel`).
+  `node --experimental-strip-types products/jbrowse-web/scripts/genBuildInfo.ts`
+  once per worktree.
+
 - **With those symlinks, a cross-package `@jbrowse/*` import in the worktree
   resolves to the _primary checkout's_ source, not yours.** Every workspace
   package's `exports` points at `./src/*.ts`, and the link node follows out of
