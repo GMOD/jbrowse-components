@@ -217,4 +217,6 @@ export default [
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail',
   // #reexport `BaseFeatureDataAdapter` and the adapter base classes
   '@jbrowse/core/data_adapters/BaseAdapter',
+  // #reexport `getAdapter`, the worker-side adapter cache an RPC method resolves its adapter through
+  '@jbrowse/core/data_adapters/dataAdapterCache',
 ]

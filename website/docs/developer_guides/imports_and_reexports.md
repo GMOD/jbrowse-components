@@ -80,6 +80,7 @@ and the table below is generated from it. The categories:
 | `@jbrowse/core/util/rxjs` | The RxJS re-exports an adapter's `getFeatures` stream is built from |
 | `@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail` | `FeatureDetails`, `BaseCard` and the other feature-detail building blocks |
 | `@jbrowse/core/data_adapters/BaseAdapter` | `BaseFeatureDataAdapter` and the adapter base classes |
+| `@jbrowse/core/data_adapters/dataAdapterCache` | `getAdapter`, the worker-side adapter cache an RPC method resolves its adapter through |
 
 <!-- REEXPORT_MODULES END -->
 
