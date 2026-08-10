@@ -222,38 +222,38 @@ export function modelFactory(
       },
       /**
        * #getter
+       * Showing the message means `canvasRef` is never called and `canvasDrawn`
+       * can never flip. Overrides `RenderLifecycleMixin`'s default-true hook,
+       * which is what makes `painted` — and so `data-display-drawn`, which
+       * `PENDING_DISPLAYS` selects on — report finished instead of hanging
+       * every `waitForDisplaysDone` on a page that shows the reference sequence
+       * track zoomed out.
+       *
+       * The two hooks below are the same condition on the other two axes.
+       * Three hooks for one fact looks redundant and isn't: they answer the
+       * scrim, the SVG export and first paint, and each has a different set of
+       * readers — but only this one states the condition, so they cannot drift.
+       */
+      get rendersCanvas() {
+        return this.placeholderMessage === undefined
+      },
+      /**
+       * #getter
        * A placeholder is a terminal renderable state (static message, no
        * fetch), so it makes `svgReady` resolve even though no data loads. See
        * MultiRegionDisplayMixin.svgReadyExtraTerminal.
        */
       get svgReadyExtraTerminal() {
-        return this.placeholderMessage !== undefined
+        return !this.rendersCanvas
       },
       /**
        * #getter
-       * Same fact on the other axis: the body is deliberately showing a static
-       * message, so the loading scrim must not cover it. One term, not a
-       * `displayPhase` override — see FetchMixin.loadingSuppressed.
+       * The body is deliberately showing a static message, so the loading scrim
+       * must not cover it. One term, not a `displayPhase` override — see
+       * FetchMixin.loadingSuppressed.
        */
       get loadingSuppressed() {
-        return this.placeholderMessage !== undefined
-      },
-      /**
-       * #getter
-       * The same fact once more, on the axis every reader *outside* this
-       * display uses: showing the message means `canvasRef` is never called and
-       * `canvasDrawn` can never flip. Overrides `RenderLifecycleMixin`'s
-       * default-true hook, which is what makes `painted` — and so
-       * `data-display-drawn`, which `PENDING_DISPLAYS` selects on — report
-       * finished instead of hanging every `waitForDisplaysDone` on a page that
-       * shows the reference sequence track zoomed out.
-       *
-       * Three hooks for one condition looks redundant and isn't: they answer
-       * the scrim, the SVG export and first paint, and each has a different
-       * set of readers.
-       */
-      get rendersCanvas() {
-        return this.placeholderMessage === undefined
+        return !this.rendersCanvas
       },
       /**
        * #getter
@@ -272,9 +272,7 @@ export function modelFactory(
        * sequence; otherwise sized to fit the visible rows.
        */
       get computedHeight() {
-        return this.placeholderMessage !== undefined
-          ? COLLAPSED_HEIGHT_PX
-          : this.sequenceHeight
+        return this.rendersCanvas ? this.sequenceHeight : COLLAPSED_HEIGHT_PX
       },
       /**
        * #getter

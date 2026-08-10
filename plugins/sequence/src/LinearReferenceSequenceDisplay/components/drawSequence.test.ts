@@ -1,4 +1,5 @@
 import { drawSequenceBlocks } from './drawSequence.ts'
+import { rowLayout } from './sequenceGeometry.ts'
 
 import type { SequenceRegionData } from '../model.ts'
 import type { DrawSequenceState } from './drawSequence.ts'
@@ -23,7 +24,7 @@ const PX_PER_BP = BLOCK_WIDTH / (END - START)
 const BP_PER_PX = (END - START) / BLOCK_WIDTH
 
 function recordingCtx() {
-  const rects: { x: number; w: number }[] = []
+  const rects: { x: number; y: number; w: number }[] = []
   return {
     rects,
     ctx: {
@@ -36,8 +37,8 @@ function recordingCtx() {
       set font(_v: string) {},
       set textAlign(_v: string) {},
       set textBaseline(_v: string) {},
-      fillRect(x: number, _y: number, w: number) {
-        rects.push({ x, w })
+      fillRect(x: number, y: number, w: number) {
+        rects.push({ x, y, w })
       },
       strokeRect() {},
       fillText() {},
@@ -72,7 +73,7 @@ function regionData(): SequenceRegionData {
   }
 }
 
-function state(): DrawSequenceState {
+function state(overrides?: Partial<DrawSequenceState>): DrawSequenceState {
   return {
     bpPerPx: BP_PER_PX,
     showForward: true,
@@ -83,14 +84,12 @@ function state(): DrawSequenceState {
     palette: palette(),
     canvasWidth: BLOCK_WIDTH,
     canvasHeight: 100,
+    ...overrides,
   }
 }
 
-// The first painted cell (loop runs low→high bp regardless of orientation) is
-// the base at START.
-function firstCellFor(reversed: boolean) {
-  const { ctx, rects } = recordingCtx()
-  const block: RenderBlock = {
+function block(reversed: boolean): RenderBlock {
+  return {
     displayedRegionIndex: 0,
     start: START,
     end: END,
@@ -98,7 +97,18 @@ function firstCellFor(reversed: boolean) {
     screenEndPx: BLOCK_WIDTH,
     reversed,
   }
-  drawSequenceBlocks(ctx, new Map([[0, regionData()]]), [block], state())
+}
+
+// The first painted cell (loop runs low→high bp regardless of orientation) is
+// the base at START.
+function firstCellFor(reversed: boolean) {
+  const { ctx, rects } = recordingCtx()
+  drawSequenceBlocks(
+    ctx,
+    new Map([[0, regionData()]]),
+    [block(reversed)],
+    state(),
+  )
   expect(rects).toHaveLength(END - START)
   return rects[0]!
 }
@@ -122,6 +132,49 @@ describe('drawSequenceBlocks reversed cell geometry', () => {
   test('the two orientations differ by exactly one base width', () => {
     expect(firstCellFor(true).x - firstCellFor(false).x).toBeCloseTo(
       BLOCK_WIDTH - PX_PER_BP,
+    )
+  })
+})
+
+// A codon cell is the same pivot three bases wide, so getting it wrong is a
+// three-base slide rather than one. The base row above covers `left(bp, 1)`;
+// nothing covered `left(bp, 3)`, whose reversed anchor is the codon's *end*.
+describe('drawSequenceBlocks reversed codon geometry', () => {
+  // START % 3 === 1, so frame +1's grid starts 2 bases in: the first whole
+  // codon is [START+2, START+5).
+  const CODON_START_BP = START + 2
+  const CODON_END_BP = START + 5
+
+  function firstCodonCellFor(reversed: boolean) {
+    const s = state({ showTranslation: true })
+    const { ctx, rects } = recordingCtx()
+    drawSequenceBlocks(ctx, new Map([[0, regionData()]]), [block(reversed)], s)
+    // reversal reorders the stack, so ask the layout where frame +1 landed
+    // rather than hard-coding a row index
+    const rowIndex = rowLayout(s, reversed).findIndex(
+      r => r.type === 'translation' && r.frame === 1,
+    )
+    // within that row the 3bp-wide rects are the codons; the others are the
+    // partial-codon background bands at the region edges
+    const codons = rects.filter(
+      r =>
+        r.y === rowIndex * s.rowHeight && Math.abs(r.w - 3 * PX_PER_BP) < 0.001,
+    )
+    expect(codons.length).toBeGreaterThan(0)
+    return codons[0]!
+  }
+
+  test('forward block: the codon starts at its low-coordinate edge', () => {
+    expect(firstCodonCellFor(false).x).toBeCloseTo(
+      (CODON_START_BP - START) * PX_PER_BP,
+    )
+  })
+
+  test('reversed block: the codon is anchored at its end, not its start', () => {
+    // Reversed, the codon's leftmost edge is its highest coordinate. Anchoring
+    // at the start instead would put it at 160 — a full codon too far right.
+    expect(firstCodonCellFor(true).x).toBeCloseTo(
+      BLOCK_WIDTH - (CODON_END_BP - START) * PX_PER_BP,
     )
   })
 })

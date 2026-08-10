@@ -1,4 +1,4 @@
-import { complement, revcom } from '@jbrowse/core/util'
+import { complementTable, revcom } from '@jbrowse/core/util'
 import { getGeneticCode } from '@jbrowse/core/util/geneticCodes'
 import {
   forEachClippedBlock,
@@ -100,6 +100,14 @@ interface RowDrawCommon {
   codonTable: Record<string, string>
 }
 
+/**
+ * `complemented` rather than a pre-complemented string: the row draws at most a
+ * viewport's worth of bases, but the fetched region is the *buffered* one, so
+ * complementing it up front allocated a whole extra copy of the region per base
+ * row per block per frame to read a viewport-sized window out of. Complementing
+ * the one letter about to be painted is strictly less work, and it is also how
+ * `hoverDetailForRow` resolves the same letter.
+ */
 function drawBaseRow({
   ctx,
   block,
@@ -110,8 +118,9 @@ function drawBaseRow({
   rowHeight,
   showBorders,
   isDna,
+  complemented,
   palette,
-}: RowDrawCommon & { isDna: boolean }) {
+}: RowDrawCommon & { isDna: boolean; complemented: boolean }) {
   const { start, end } = visibleRange(
     block.start,
     block.end,
@@ -121,7 +130,8 @@ function drawBaseRow({
   const { left, pxPerBp } = scale
 
   for (let i = start; i < end; i++) {
-    const letter = seq[i]!
+    const fwd = seq[i]!
+    const letter = complemented ? (complementTable[fwd] ?? fwd) : fwd
     // a peptide track's residues are not nucleotides — its A/C/G/T are Ala,
     // Cys, Gly and Thr — so only DNA consults the base palette, and everything
     // else takes the neutral fallback rather than four residues at random
@@ -250,7 +260,12 @@ export function drawSequenceBlocks(
   const showBorders = 1 / bpPerPx >= 12
 
   if (showBorders) {
-    ctx.font = `${Math.min(rowHeight - 2, 14)}px sans-serif`
+    // floored at 1px: a configured `height` below ~2px per row makes
+    // `rowHeight - 2` negative, and a negative font-size is an *invalid* font
+    // string that the context silently ignores — leaving whatever font the
+    // previous frame set, i.e. letters far too big for the row rather than
+    // letters too small to read.
+    ctx.font = `${Math.max(1, Math.min(rowHeight - 2, 14))}px sans-serif`
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     ctx.strokeStyle = BORDER_COLOR
@@ -269,6 +284,7 @@ export function drawSequenceBlocks(
         ctx,
         block,
         scale: blockScale(block),
+        seq: data.seq,
         seqStart: data.start,
         rowHeight,
         showBorders,
@@ -281,12 +297,14 @@ export function drawSequenceBlocks(
       let y = 0
       for (const row of rowLayout(state, reversed)) {
         if (row.type === 'translation') {
-          drawTranslationRow({ ...common, seq: data.seq, frame: row.frame, y })
+          drawTranslationRow({ ...common, frame: row.frame, y })
         } else {
-          const seq = baseRowComplemented(row.strand, reversed)
-            ? complement(data.seq)
-            : data.seq
-          drawBaseRow({ ...common, seq, y, isDna })
+          drawBaseRow({
+            ...common,
+            y,
+            isDna,
+            complemented: baseRowComplemented(row.strand, reversed),
+          })
         }
         y += rowHeight
       }

@@ -19,13 +19,37 @@ test('reverse base row reports the complement', () => {
   ).toEqual({ type: 'base', strand: -1, base: 'T' })
 })
 
-test('reversed block swaps which row shows the complement', () => {
+// The reported strand is the strand of the reported letter, not of the row: a
+// flipped block draws the complement in the "forward" row, and echoing the row's
+// own strand there labelled that complement "+ strand".
+test('reversed block swaps both the complement and the strand it is labelled', () => {
   expect(
     hoverDetailForRow({ type: 'base', strand: 1 }, seq, 0, 0, true, standard),
-  ).toEqual({ type: 'base', strand: 1, base: 'T' })
+  ).toEqual({ type: 'base', strand: -1, base: 'T' })
   expect(
     hoverDetailForRow({ type: 'base', strand: -1 }, seq, 0, 0, true, standard),
-  ).toEqual({ type: 'base', strand: -1, base: 'A' })
+  ).toEqual({ type: 'base', strand: 1, base: 'A' })
+})
+
+// seq[0] is 'A', so whatever row and orientation it was read through, a base
+// reported as '+' must be A and one reported as '−' must be T.
+test('the reported base is always the reported strand’s base', () => {
+  for (const reversed of [false, true]) {
+    for (const strand of [1, -1] as const) {
+      const detail = hoverDetailForRow(
+        { type: 'base', strand },
+        seq,
+        0,
+        0,
+        reversed,
+        standard,
+      )
+      expect(detail?.type).toBe('base')
+      if (detail?.type === 'base') {
+        expect(detail.base).toBe(detail.strand === 1 ? 'A' : 'T')
+      }
+    }
+  }
 })
 
 test('frame +1 translates the ATG start codon anywhere in it', () => {

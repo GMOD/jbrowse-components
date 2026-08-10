@@ -6,6 +6,8 @@ import type { CodonKind, SequenceRow } from './sequenceGeometry.ts'
 import type { Frame } from '@jbrowse/core/util'
 
 export type HoverDetail =
+  // `strand` is the strand the reported `base` belongs to, which is not always
+  // the strand of the row it was read from — see hoverDetailForRow.
   | { type: 'base'; strand: 1 | -1; base: string }
   | {
       type: 'codon'
@@ -47,13 +49,18 @@ export function hoverDetailForRow(
 ): HoverDetail | undefined {
   const fwdBase = seq[coord0 - seqStart]?.toUpperCase()
   if (row.type === 'base') {
+    // Flipping the view swaps which row carries the complement (the top row
+    // keeps reading 5'->3' left to right), so the letter shown in the row the
+    // user ticked as "forward" is the *minus*-strand base there. Report the
+    // strand the letter actually belongs to rather than echoing `row.strand`,
+    // which labelled a complemented base "+ strand: T" at a coordinate whose
+    // plus strand is A. One term decides both, so they cannot disagree.
+    const complemented = baseRowComplemented(row.strand, reversed)
     return fwdBase
       ? {
           type: 'base',
-          strand: row.strand,
-          base: baseRowComplemented(row.strand, reversed)
-            ? complement(fwdBase)
-            : fwdBase,
+          strand: complemented ? -1 : 1,
+          base: complemented ? complement(fwdBase) : fwdBase,
         }
       : undefined
   }
