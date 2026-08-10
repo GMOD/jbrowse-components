@@ -16,8 +16,7 @@ layer, which is why it is the one that differs.
 
 Nothing in the build cared — `build-shaders` walks for `.slang` rather than
 being pointed at a directory, and `js-export-out` / `consts-out` name their
-destinations in `packages/`. `.fallowrc.json` did name four generated files by
-path.
+destinations in `packages/`.
 
 ## Strand comes from `strand`; `flags` answers everything else
 
