@@ -18,7 +18,7 @@ test('strips GTF quotes and unwraps single- vs multi-value attributes alike', ()
   // GTF expresses multiple values via repeated keys (tag ...; tag ...)
   const gtf =
     'ctgA\ttest\texon\t1\t100\t.\t+\t.\tgene_id "ENSG01"; transcript_id "t1"; tag "basic"; tag "CCDS";'
-  const exon = featureData(parse(gtf)[0]!.child_features![0]![0]!)
+  const exon = featureData(parse(gtf)[0]!.child_features![0]!)
   expect(exon.gene_id).toBe('ENSG01')
   expect(exon.tag).toEqual(['basic', 'CCDS'])
 })
@@ -29,7 +29,7 @@ test('keeps a comma inside an attribute value intact', () => {
   const gtf =
     'ctgA\ttest\texon\t1\t100\t.\t+\t.\tgene_id "g1"; transcript_id "t1"; note "a, b";'
   const [transcript] = parse(gtf)
-  const exon = featureData(transcript!.child_features![0]![0]!)
+  const exon = featureData(transcript!.child_features![0]!)
   expect(exon.note).toBe('a, b')
 })
 
@@ -42,7 +42,7 @@ test('strips CRLF carriage returns so the final attribute is not corrupted', () 
     'ctgA\ttest\texon\t1\t100\t.\t+\t.\tgene_id "g1"; transcript_id "t1"\r'
   const [transcript] = parse(gtf)
   expect(transcript!.featureType).toBe('transcript')
-  const exon = featureData(transcript!.child_features![0]![0]!)
+  const exon = featureData(transcript!.child_features![0]!)
   expect(exon.transcript_id).toBe('t1')
 })
 
@@ -237,4 +237,145 @@ test('uses an explicit transcript line as the container for its children', () =>
   expect(transcript!.child_features).toHaveLength(2)
   // the gene line has no transcript_id, so it stays a standalone top-level feature
   expect(features.filter(f => f.featureType === 'gene')).toHaveLength(1)
+})
+
+test('keeps a semicolon inside a quoted attribute value intact', () => {
+  // the ';' entry separator can also occur inside a quoted value, where
+  // splitting on it truncated the value and dropped the remainder silently
+  const gtf =
+    'ctgA\ttest\texon\t1\t100\t.\t+\t.\tgene_id "g1"; transcript_id "t1"; note "a; b"; tag "basic";'
+  const exon = featureData(parse(gtf)[0]!.child_features![0]!)
+  expect(exon.note).toBe('a; b')
+  // the entry after the rejoined one is still read
+  expect(exon.tag).toBe('basic')
+})
+
+test('a malformed line cannot take its transcript down with it', () => {
+  // Number('') is NaN, and Math.min/Math.max against NaN spreads it to the
+  // transcript spanning the line; a NaN-bounded transcript then fails every
+  // intersection test, so the truncated line used to remove the whole gene
+  const gtf = [
+    'chr1\ttest\texon\t100\t200\t.\t+\t.\tgene_id "G1"; transcript_id "t1";',
+    'chr1\ttest\texon\t.\t.\t.\t+\t.\tgene_id "G1"; transcript_id "t1";',
+    'chr1\ttest\texon',
+  ].join('\n')
+  const [transcript] = parse(gtf)
+  expect([transcript!.start, transcript!.end]).toEqual([100, 200])
+  expect(transcript!.child_features).toHaveLength(1)
+  const out = aggregateGtfFeatures({
+    feats: parseGtfToFeatures(
+      gtf.split('\n').map(line => ({ line })),
+      (_r, i) => `id-${i}`,
+    ),
+    aggregateField: 'gene_name',
+    refName: 'chr1',
+    idPrefix: 'test',
+    regionStart: 0,
+    regionEnd: 1000,
+  })
+  expect(out).toHaveLength(1)
+  expect([out[0]!.start, out[0]!.end]).toEqual([99, 200])
+})
+
+test('an attribute named subfeatures cannot replace the child array', () => {
+  const gtf =
+    'ctgA\ttest\texon\t1\t100\t.\t+\t.\tgene_id "g1"; transcript_id "t1"; subfeatures "x";'
+  const exon = featureData(parse(gtf)[0]!.child_features![0]!)
+  // the exon has no children of its own, so nothing would overwrite a string
+  // left here, and every consumer of subfeatures expects an array
+  expect(exon.subfeatures).toBeUndefined()
+  expect(exon.subfeatures2).toBe('x')
+})
+
+test('keeps an explicit gene line that no synthesized gene supersedes', () => {
+  // a file of nothing but gene rows has no transcript to synthesize a gene
+  // from, so dropping every explicit gene line rendered it as an empty track
+  const gtf = [
+    'chr1\ttest\tgene\t100\t200\t.\t+\t.\tgene_id "G1"; gene_name "ABC";',
+    'chr1\ttest\tgene\t300\t400\t.\t+\t.\tgene_id "G2";',
+  ].join('\n')
+  const out = aggregateGtfFeatures({
+    feats: parseGtfToFeatures(
+      gtf.split('\n').map(line => ({ line })),
+      (_r, i) => `id-${i}`,
+    ),
+    aggregateField: 'gene_name',
+    refName: 'chr1',
+    idPrefix: 'test',
+    regionStart: 0,
+    regionEnd: 1000,
+  })
+  expect(out.map(f => f.type)).toEqual(['gene', 'gene'])
+  // named by gene_name where there is one, else by the gene_id
+  expect(out.map(f => f.name)).toEqual(['ABC', 'G2'])
+})
+
+test('drops an explicit gene line once its transcripts build the same gene', () => {
+  const gtf = [
+    'chr1\tHAVANA\tgene\t100\t400\t.\t+\t.\tgene_id "G1"; gene_name "ABC";',
+    'chr1\tHAVANA\texon\t100\t200\t.\t+\t.\tgene_id "G1"; transcript_id "t1"; gene_name "ABC";',
+    'chr1\tHAVANA\texon\t300\t400\t.\t+\t.\tgene_id "G1"; transcript_id "t2"; gene_name "ABC";',
+  ].join('\n')
+  const out = aggregateGtfFeatures({
+    feats: parseGtfToFeatures(
+      gtf.split('\n').map(line => ({ line })),
+      (_r, i) => `id-${i}`,
+    ),
+    aggregateField: 'gene_name',
+    refName: 'chr1',
+    idPrefix: 'test',
+    regionStart: 0,
+    regionEnd: 1000,
+  })
+  expect(out).toHaveLength(1)
+  expect(out[0]!.subfeatures).toHaveLength(2)
+})
+
+test('a childless transcript with a gene_id still builds a gene', () => {
+  // a transcript-only GTF (no exon/CDS rows) used to render nothing: every
+  // transcript was childless, and childless transcripts were dropped wholesale
+  const gtf = [
+    'chr1\ttest\ttranscript\t100\t200\t.\t+\t.\tgene_id "G1"; transcript_id "t1"; gene_name "ABC";',
+    'chr1\ttest\ttranscript\t300\t400\t.\t+\t.\tgene_id "G1"; transcript_id "t2"; gene_name "ABC";',
+  ].join('\n')
+  const out = aggregateGtfFeatures({
+    feats: parseGtfToFeatures(
+      gtf.split('\n').map(line => ({ line })),
+      (_r, i) => `id-${i}`,
+    ),
+    aggregateField: 'gene_name',
+    refName: 'chr1',
+    idPrefix: 'test',
+    regionStart: 0,
+    regionEnd: 1000,
+  })
+  expect(out).toHaveLength(1)
+  expect(out[0]!.name).toBe('ABC')
+  expect(out[0]!.subfeatures).toHaveLength(2)
+})
+
+test('still drops a bare transcript line that has nothing to group on', () => {
+  // AUGUSTUS writes `g1` / `g1.t1` in column 9, which parse to no attributes at
+  // all; the real model is in the exon lines below, so the two container lines
+  // must not surface as features of their own
+  const gtf = [
+    'chr17\tAUGUSTUS\tgene\t100\t400\t0.42\t-\t.\tg1',
+    'chr17\tAUGUSTUS\ttranscript\t100\t400\t0.42\t-\t.\tg1.t1',
+    'chr17\tAUGUSTUS\texon\t100\t200\t.\t-\t.\ttranscript_id "g1.t1"; gene_id "g1";',
+    'chr17\tAUGUSTUS\texon\t300\t400\t.\t-\t.\ttranscript_id "g1.t1"; gene_id "g1";',
+  ].join('\n')
+  const out = aggregateGtfFeatures({
+    feats: parseGtfToFeatures(
+      gtf.split('\n').map(line => ({ line })),
+      (_r, i) => `id-${i}`,
+    ),
+    aggregateField: 'gene_name',
+    refName: 'chr17',
+    idPrefix: 'test',
+    regionStart: 0,
+    regionEnd: 1000,
+  })
+  expect(out).toHaveLength(1)
+  expect(out[0]!.name).toBe('g1')
+  expect(out[0]!.subfeatures).toHaveLength(1)
 })

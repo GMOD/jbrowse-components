@@ -12,7 +12,7 @@ export interface FeatureLoc {
   source?: string | null
   score?: number | null
   frame?: string | null
-  child_features?: FeatureLoc[][]
+  child_features?: FeatureLoc[]
   attributes: Record<string, string[]>
 }
 
@@ -20,7 +20,10 @@ const strandMap = { '+': 1, '-': -1, '.': 0, '?': undefined } as const
 
 // structural output fields an attribute must not overwrite; a clashing
 // attribute key gets a `2` suffix instead (compared lowercase, so camelCase
-// output fields like refName never collide)
+// output fields like refName never collide). `subfeatures` is the one that
+// matters beyond tidiness: on a feature with no children nothing overwrites it
+// back, so an attribute of that name would leave a string where every consumer
+// expects the child array
 const reservedFields = new Set([
   'type',
   'source',
@@ -29,6 +32,7 @@ const reservedFields = new Set([
   'strand',
   'score',
   'phase',
+  'subfeatures',
 ])
 
 export function featureData(
@@ -46,9 +50,7 @@ export function featureData(
   )
 
   const subfeatures = data.child_features?.length
-    ? data.child_features.flatMap(childLocs =>
-        childLocs.map(childLoc => featureData(childLoc)),
-      )
+    ? data.child_features.map(childLoc => featureData(childLoc))
     : undefined
 
   // build the output explicitly rather than spreading `data` and clearing its
@@ -78,16 +80,37 @@ function nullIfDot(s: string | undefined) {
 }
 
 /**
+ * True when an entry opens a double quote it never closes, meaning the ';' it
+ * was split on fell inside the value instead of ending the entry. A GTF value
+ * is either bare or wholly quoted, so a second quote settles it — no need to
+ * scan the rest of the entry.
+ */
+function hasUnclosedQuote(entry: string) {
+  const first = entry.indexOf('"')
+  return first !== -1 && !entry.includes('"', first + 1)
+}
+
+/**
  * Parse the GTF 9th column (`gene_id "X"; transcript_id "Y";`). Each `key
  * "value"` entry contributes one value; GTF expresses multiple values per key
  * via repeated keys (`tag "A"; tag "B"`), not comma separation, so the value is
  * taken whole (a comma inside it, e.g. `note "a, b"`, stays intact). Surrounding
  * double-quotes are stripped here.
+ *
+ * A quoted value may also contain the ';' the entries are split on
+ * (`note "a; b"`), so the pieces of one are rejoined before the value is read.
+ * Without that the value is silently truncated at the semicolon, and the
+ * remainder — having no `key value` shape — is dropped rather than erroring.
  */
 function parseGtfAttributes(attrString: string) {
   const attrs: Record<string, string[]> = {}
   if (attrString.length > 0 && attrString !== '.') {
-    for (const entry of attrString.split(';')) {
+    const entries = attrString.split(';')
+    for (let i = 0; i < entries.length; i++) {
+      let entry = entries[i]!
+      while (hasUnclosedQuote(entry) && i + 1 < entries.length) {
+        entry += `;${entries[++i]}`
+      }
       const trimmed = entry.trim()
       const sp = trimmed.indexOf(' ')
       if (sp !== -1) {
@@ -211,49 +234,58 @@ export function parseGtf<R extends GtfLineRecord>(
     const line = record.line.endsWith('\r')
       ? record.line.slice(0, -1)
       : record.line
-    if (line.length > 0 && !line.startsWith('#')) {
-      const feature = parseGtfLine(line)
-      const transcriptId = feature.attributes.transcript_id?.[0]
-      if (transcriptId === undefined) {
-        topLevel.push({ feature, record })
-      } else if (feature.featureType === 'transcript') {
-        const existing = byTranscript.get(transcriptId)
-        if (existing) {
-          // explicit transcript line seen after its children: keep the
-          // collected children, but use the explicit line as the container
-          feature.child_features = existing.feature.child_features
-          feature.start = Math.min(feature.start, existing.feature.start)
-          feature.end = Math.max(feature.end, existing.feature.end)
-          existing.feature = feature
-          existing.record = record
-          synthesized.delete(transcriptId)
-        } else {
-          feature.child_features = []
-          const parsed = { feature, record }
-          topLevel.push(parsed)
-          byTranscript.set(transcriptId, parsed)
+    if (line.length === 0 || line.startsWith('#')) {
+      continue
+    }
+    const feature = parseGtfLine(line)
+    // a line whose coordinate columns aren't numbers is not a feature, and
+    // letting its NaN through is not a local failure: Math.min/Math.max against
+    // NaN poisons the transcript spanning it, and a NaN-bounded transcript then
+    // fails every intersection test, so one truncated line silently removes a
+    // whole gene rather than itself
+    if (Number.isNaN(feature.start) || Number.isNaN(feature.end)) {
+      continue
+    }
+    const transcriptId = feature.attributes.transcript_id?.[0]
+    if (transcriptId === undefined) {
+      topLevel.push({ feature, record })
+    } else if (feature.featureType === 'transcript') {
+      const existing = byTranscript.get(transcriptId)
+      if (existing) {
+        // explicit transcript line seen after its children: keep the
+        // collected children, but use the explicit line as the container
+        feature.child_features = existing.feature.child_features
+        feature.start = Math.min(feature.start, existing.feature.start)
+        feature.end = Math.max(feature.end, existing.feature.end)
+        existing.feature = feature
+        existing.record = record
+        synthesized.delete(transcriptId)
+      } else {
+        feature.child_features = []
+        const parsed = { feature, record }
+        topLevel.push(parsed)
+        byTranscript.set(transcriptId, parsed)
+      }
+    } else {
+      let transcript = byTranscript.get(transcriptId)
+      if (transcript) {
+        // an explicit transcript line's own attributes are authoritative, so
+        // only a synthesized one gets narrowed against this child
+        if (synthesized.has(transcriptId)) {
+          narrowToCommonAttributes(transcript.feature.attributes, feature)
         }
       } else {
-        let transcript = byTranscript.get(transcriptId)
-        if (transcript) {
-          // an explicit transcript line's own attributes are authoritative, so
-          // only a synthesized one gets narrowed against this child
-          if (synthesized.has(transcriptId)) {
-            narrowToCommonAttributes(transcript.feature.attributes, feature)
-          }
-        } else {
-          transcript = { feature: synthesizeTranscript(feature), record }
-          topLevel.push(transcript)
-          byTranscript.set(transcriptId, transcript)
-          synthesized.add(transcriptId)
-        }
-        transcript.feature.child_features!.push([feature])
-        transcript.feature.start = Math.min(
-          transcript.feature.start,
-          feature.start,
-        )
-        transcript.feature.end = Math.max(transcript.feature.end, feature.end)
+        transcript = { feature: synthesizeTranscript(feature), record }
+        topLevel.push(transcript)
+        byTranscript.set(transcriptId, transcript)
+        synthesized.add(transcriptId)
       }
+      transcript.feature.child_features!.push(feature)
+      transcript.feature.start = Math.min(
+        transcript.feature.start,
+        feature.start,
+      )
+      transcript.feature.end = Math.max(transcript.feature.end, feature.end)
     }
   }
   return topLevel
@@ -274,13 +306,20 @@ export function parseGtfToFeatures<R extends GtfLineRecord>(
   )
 }
 
+/** The value if it is a non-empty string, otherwise undefined. */
+function nonEmptyString(value: unknown) {
+  return typeof value === 'string' && value.length > 0 ? value : undefined
+}
+
 /**
  * GTF has no spanning gene line, so a gene is synthesized by grouping related
- * transcript features and spanning them. Any
- * explicit `gene` line is dropped, since the parser leaves it childless and the
- * synthesized parent supersedes it; a childless `transcript` line is dropped too
- * (e.g. AUGUSTUS emits a bare `transcript` line whose 9th column has no parseable
- * attributes).
+ * transcript features and spanning them. An explicit `gene` line is held aside
+ * rather than aggregated — the parser hangs exons off the transcript, so a gene
+ * line is childless and the synthesized parent supersedes it — and emitted only
+ * if no synthesized gene claimed its `gene_id`, which is what keeps a file of
+ * nothing but `gene` rows from rendering as an empty track. A gene line with no
+ * `gene_id` at all (AUGUSTUS writes a bare `g1` in column 9, which parses to no
+ * attributes) has no key to be superseded by, and is dropped.
  *
  * Grouping is keyed by `gene_id` where a transcript carries one, falling back to
  * the aggregate value; `aggregateField` supplies the gene's display `name`. The
@@ -321,34 +360,59 @@ export function aggregateGtfFeatures({
     string,
     { name: string | undefined; subfeatures: SimpleFeatureSerialized[] }
   >()
+  const explicitGenes = new Map<string, SimpleFeatureSerialized>()
   for (const feat of feats) {
-    const childlessTranscript =
-      feat.type === 'transcript' && !feat.subfeatures?.length
-    if (feat.type !== 'gene' && !childlessTranscript) {
-      const aggr = feat[aggregateField]
-      const geneId = feat.gene_id
-      const name =
-        typeof aggr === 'string' && aggr.length > 0 ? aggr : undefined
-      const key =
-        typeof geneId === 'string' && geneId.length > 0 ? geneId : name
-      if (key !== undefined) {
-        let group = parentAggregation.get(key)
-        if (group) {
-          // a transcript that carries the aggregate value names the gene even
-          // when the first one grouped under this key didn't
-          group.name ??= name
-        } else {
-          group = { name, subfeatures: [] }
-          parentAggregation.set(key, group)
-        }
-        group.subfeatures.push(feat)
-      } else if (doesIntersect2(feat.start, feat.end, regionStart, regionEnd)) {
-        // passthrough features (neither a gene_id nor an aggregate value) must
-        // be clipped to the original query too, else a redispatch's expanded
-        // fetch leaks features outside the view (aggregated genes are already
-        // intersection-checked)
-        out.push(feat)
+    const geneId = nonEmptyString(feat.gene_id)
+    if (feat.type === 'gene') {
+      if (geneId !== undefined) {
+        explicitGenes.set(geneId, feat)
       }
+      continue
+    }
+    const name = nonEmptyString(feat[aggregateField])
+    const key = geneId ?? name
+    if (key !== undefined) {
+      let group = parentAggregation.get(key)
+      if (group) {
+        // a transcript that carries the aggregate value names the gene even
+        // when the first one grouped under this key didn't
+        group.name ??= name
+      } else {
+        group = { name, subfeatures: [] }
+        parentAggregation.set(key, group)
+      }
+      group.subfeatures.push(feat)
+    } else if (
+      // a childless transcript with nothing to group on is a stray container
+      // line rather than a feature — AUGUSTUS's bare `transcript` line, whose
+      // real model arrives as the exon/CDS lines below it. One carrying a
+      // gene_id is a real transcript and was aggregated above; dropping those
+      // too made a transcript-only GTF render nothing at all
+      (feat.type !== 'transcript' || feat.subfeatures?.length) &&
+      doesIntersect2(feat.start, feat.end, regionStart, regionEnd)
+    ) {
+      // passthrough features (neither a gene_id nor an aggregate value) must
+      // be clipped to the original query too, else a redispatch's expanded
+      // fetch leaks features outside the view (aggregated genes are already
+      // intersection-checked)
+      out.push(feat)
+    }
+  }
+
+  for (const [geneId, feat] of explicitGenes) {
+    if (
+      !parentAggregation.has(geneId) &&
+      doesIntersect2(feat.start, feat.end, regionStart, regionEnd)
+    ) {
+      // labeled the way a synthesized gene is: featureData names a feature from
+      // its transcript_id, which a gene line hasn't got
+      out.push({
+        ...feat,
+        name:
+          nonEmptyString(feat.name) ??
+          nonEmptyString(feat[aggregateField]) ??
+          geneId,
+      })
     }
   }
 
