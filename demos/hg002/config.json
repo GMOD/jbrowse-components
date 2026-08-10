@@ -28,6 +28,42 @@
         "type": "BigBedAdapter",
         "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/annotation/haplotypes/v1.2.hetsites.bb"
       }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hg002v1.2_chainblocks_mat",
+      "name": "Chain blocks (maternal)",
+      "assemblyNames": ["hg002v1.2"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/annotation/browserchains/hg002v1.2.mat2pat.bigChain.bb"
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "hg002v1.2_chainblocks_mat-LinearBasicDisplay",
+          "showLabels": "none",
+          "color": "jexl:feature.strand == -1 ? '#00f' : '#f00'"
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hg002v1.2_chainblocks_pat",
+      "name": "Chain blocks (paternal)",
+      "assemblyNames": ["hg002v1.2"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/annotation/browserchains/hg002v1.2.pat2mat.bigChain.bb"
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "hg002v1.2_chainblocks_pat-LinearBasicDisplay",
+          "showLabels": "none",
+          "color": "jexl:feature.strand == -1 ? '#00f' : '#f00'"
+        }
+      ]
     }
   ]
 }
