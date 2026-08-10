@@ -72,7 +72,10 @@ immutable; git tracks `figures.lock` at the repo root, one line per figure.
   answer "nothing there" — asked about figures they do not report "unchanged",
   they report the state of a fresh clone. `review-screenshots-web` reads the
   lock at `origin/main` instead, and points its before-image straight at the
-  store URL that line names.
+  store URL that line names. Its **Compare control stacks the two under an onion
+  slider** (per card, or every card at once), which is the way to see the small
+  moves — a repacked row of labels, a recoloured bar — that two columns 700px
+  apart read as identical.
 - **The line carries `WxH`**, which is the one change a pixel diff cannot see —
   `pngDiffFraction` returns null on a size mismatch. A resize shows up in
   `git diff` as `1400x900 -> 1400x1240`.
