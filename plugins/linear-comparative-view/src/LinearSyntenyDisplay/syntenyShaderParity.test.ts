@@ -81,6 +81,11 @@ test('the two predicates partition the kinds the way the renderer assumes', () =
 // resolveInstanceFill's hover branch, verbatim as it stood before it called the
 // generated pair. The ×5 boost capped at 0.35 and the 0.7 darkening were a
 // SYNC-tagged copy of shadeFill's.
+//
+// It is no longer the reference for every input, and deliberately so: the cap it
+// applies is a cap on the ALPHA, which runs hover backwards above 0.35 (see the
+// test below). fillShade caps the BOOST instead. The two agree wherever the old
+// spelling was right, and this stays as the pin on that agreement.
 function retiredShade(pa: number, alpha: number, isHovered: boolean) {
   return isHovered ? Math.min(pa * alpha * 5, 0.35) : pa * alpha
 }
@@ -88,10 +93,13 @@ function retiredShade(pa: number, alpha: number, isHovered: boolean) {
 const PACKED_ALPHAS = [0, 1, 64, 128, 200, 254, 255].map(a => a / 255)
 const DISPLAY_ALPHAS = [0, 0.05, 0.07, 0.1, 0.25, 0.5, 0.75, 1]
 
-test('fillShade matches the hover branch it replaced', () => {
+test('fillShade matches the hover branch it replaced below the cap', () => {
   for (const pa of PACKED_ALPHAS) {
     for (const alpha of DISPLAY_ALPHAS) {
       for (const hovered of [false, true]) {
+        if (hovered && pa * alpha > 0.35) {
+          continue
+        }
         // 0.35 arrives as its f32 value (0.34999999403953552), so the cap is
         // equal to ~8 decimals rather than bit-identical — 1e-8 of an alpha
         // that is quantized to 1/255 downstream. adr-051: parity tests assert
@@ -111,10 +119,30 @@ test('hover boosts a faint alignment but never past the cap', () => {
   // letting a dense pileup of them turn opaque.
   expect(fillShade(1, 0.05, true)).toBeCloseTo(0.25, 7)
   expect(fillShade(1, 0.05, true)).toBeGreaterThan(fillShade(1, 0.05, false))
-  expect(fillShade(1, 0.5, true)).toBeCloseTo(0.35, 7)
-  expect(fillShade(1, 1, true)).toBeCloseTo(0.35, 7)
+  expect(fillShade(1, 0.07, true)).toBeCloseTo(0.35, 7)
+  expect(fillShade(1, 0.2, true)).toBeCloseTo(0.35, 7)
   // A fully transparent feature stays invisible on hover rather than appearing.
   expect(fillShade(0, 1, true)).toBe(0)
+})
+
+test('hover never makes a ribbon fainter than it already was', () => {
+  // The cap is on the boost, not on the alpha. Capping the alpha meant that
+  // above 0.35 — which the opacity slider reaches, it runs to 1.0 — hovering
+  // DROPPED a ribbon's alpha (at opacity 1 it went 1.0 -> 0.35), so the ribbon
+  // under the cursor became the faintest one on screen. hoverDarken's 0.7 on the
+  // rgb cannot compensate for that; it darkens a ribbon that is now barely
+  // composited at all.
+  for (const pa of PACKED_ALPHAS) {
+    for (const alpha of DISPLAY_ALPHAS) {
+      expect(fillShade(pa, alpha, true)).toBeGreaterThanOrEqual(
+        fillShade(pa, alpha, false),
+      )
+    }
+  }
+  expect(fillShade(1, 1, true)).toBe(1)
+  expect(fillShade(1, 0.5, true)).toBeCloseTo(0.5, 7)
+  // and the old spelling is what this is guarding against
+  expect(retiredShade(1, 1, true)).toBeLessThan(retiredShade(1, 1, false))
 })
 
 test('hoverDarken is a no-op unless hovered', () => {

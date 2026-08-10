@@ -42,7 +42,7 @@ public struct Instance {
   public float alignmentLength   : ATTR6;
   // Per-instance KIND tag (KIND_BASE/KIND_CIGAR_*/etc from syntenyColors.ts).
   // The fill fragment uses it only for shading: CIGAR indel tiles get the white
-  // pre-blend in shadeFill and skip the density width-fade in fillCoverage. The
+  // pre-blend in shadeFill and skip the density width-fade in fillFs. The
   // coverage/AA path is identical to BASE (smooth analytic bezier edge), so
   // indels aren't faceted or aliased.
   public float kind              : ATTR7;
@@ -130,23 +130,27 @@ public float aaHalfPx(Uniforms u) {
   return 0.5 / u.devicePixelRatio;
 }
 
-public struct Corners {
-  public float x1, x2, x3, x4;
-};
-
+// The four projected corner X positions in CSS-px screen space, held as a plain
+// float4 with lanes (x1, x2, x3, x4) — x/y are the top view's corners, z/w the
+// bottom view's. This is the SAME value FillVsOut.corners carries, so the vertex
+// stage hands the fragment its corners without repacking a struct into a vector.
+//
+// The lanes are corners, not edges. Which corner pairs with which to form the two
+// ribbon EDGES is stated in exactly one place, `ribbonEdges`, and everything that
+// needs an edge — the vertex polygon, the fragment's analytic clip, the pads —
+// goes through it or through the two derived helpers beside it.
+//
 // screenX = (cumBp - offsetPx*bpPerPx)/bpPerPx, with cumBp = bpRel + base folded
 // so only small magnitudes reach Float32: bpRel*inv (on-screen bpRel is small)
 // plus panPx = (base - offsetPx*bpPerPx)*inv.
-public Corners computeCorners(Instance inst, Uniforms u) {
-  Corners c;
-  c.x1 = inst.bp1 * u.bpPerPxInv0 + u.panPx0;
-  c.x2 = inst.bp2 * u.bpPerPxInv0 + u.panPx0;
-  c.x3 = inst.bp3 * u.bpPerPxInv1 + u.panPx1;
-  c.x4 = inst.bp4 * u.bpPerPxInv1 + u.panPx1;
-  return c;
+public float4 computeCorners(Instance inst, Uniforms u) {
+  return float4(inst.bp1 * u.bpPerPxInv0 + u.panPx0,
+                inst.bp2 * u.bpPerPxInv0 + u.panPx0,
+                inst.bp3 * u.bpPerPxInv1 + u.panPx1,
+                inst.bp4 * u.bpPerPxInv1 + u.panPx1);
 }
 
-public bool isCulled(Corners c, float alignmentLength, Uniforms u) {
+public bool isCulled(float4 c, float alignmentLength, Uniforms u) {
   // No `minAlignmentLength > 0` guard needed: lengths are non-negative, so an
   // unset (0) filter never matches.
   if (alignmentLength < u.minAlignmentLength) {
@@ -154,8 +158,8 @@ public bool isCulled(Corners c, float alignmentLength, Uniforms u) {
   }
   float mOff = u.overdrawPx;
   float rW = u.resolution.x;
-  return max(c.x1, c.x2) < -mOff || min(c.x1, c.x2) > rW + mOff
-      || max(c.x3, c.x4) < -mOff || min(c.x3, c.x4) > rW + mOff;
+  return max(c.x, c.y) < -mOff || min(c.x, c.y) > rW + mOff
+      || max(c.z, c.w) < -mOff || min(c.z, c.w) > rW + mOff;
 }
 
 // Ease-in-out ribbon basis (single source of truth). Curve mode traces y(t) =
@@ -175,9 +179,12 @@ public float sBlendDeriv(float t) { return 6.0 * t * (1.0 - t); }
 public float yCurve(float t)      { return 1.5 * t * (1.0 - t) + t * t * t; }
 public float yCurveDeriv(float t) { return 1.5 - 3.0 * t + 3.0 * t * t; }
 
-// Perpendicular coverage cx for a fill fragment. `edge0`/`edge1` are the two
-// ribbon edges at this y (screen X); `pf0`/`pf1` are EACH edge's own slope
-// foreshortening (sqrt(1+slope²) of that edge's tangent, not the centerline's).
+// Perpendicular coverage cx for a fill fragment at screen X `x`. `edge0`/`edge1`
+// are the two ribbon edges at this y (screen X); `pf0`/`pf1` are EACH edge's own
+// slope foreshortening (sqrt(1+slope²) of that edge's tangent, not the
+// centerline's). `fadeApplies` is the caller's answer to "is this a fadeable BASE
+// ribbon" — see thinWidthFade for why that decision is passed rather than
+// re-derived from the kind here.
 //
 // Using per-edge slopes is the fix for boundary fuzz on curved ribbons: the old
 // model measured distance from the centerline with one shared perpFactor, but
@@ -186,16 +193,15 @@ public float yCurveDeriv(float t) { return 1.5 - 3.0 * t + 3.0 * t * t; }
 // smeared across many px (visibly fuzzy in transparent mode; hidden behind the
 // opaque base in colored mode). Measuring each edge's own signed perpendicular
 // distance keeps the transition ~1px on both edges regardless of curvature.
-float perpCoverage(float2 localPos, float edge0, float edge1, float pf0,
-                   float pf1, float kind, float fadeThinAlignments,
-                   float aaHalf) {
+float perpCoverage(float x, float edge0, float edge1, float pf0, float pf1,
+                   bool fadeApplies, float aaHalf) {
   float xL = min(edge0, edge1);
   float xR = max(edge0, edge1);
   float pfL = (edge0 <= edge1) ? pf0 : pf1;
   float pfR = (edge0 <= edge1) ? pf1 : pf0;
   // Signed perpendicular distance (screen px) inward from each edge.
-  float dL = (localPos.x - xL) / pfL;
-  float dR = (xR - localPos.x) / pfR;
+  float dL = (x - xL) / pfL;
+  float dR = (xR - x) / pfR;
   // Perpendicular (visual) width, averaging the two edge foreshortenings.
   float perpW = (xR - xL) / (0.5 * (pfL + pfR));
   // 1px minimum footprint: push both edges outward for a sub-pixel-thin ribbon
@@ -208,9 +214,7 @@ float perpCoverage(float2 localPos, float edge0, float edge1, float pf0,
   // per-fragment perpW here and the whole-ribbon one Canvas2D measures from the
   // corners are deliberately different quantities; the fade curve applied to
   // them is not, so only that is shared.
-  float widthFade = thinWidthFade(
-    perpW,
-    !isCigarKind(kind) && !isMarkerKind(kind) && fadeThinAlignments >= 0.5);
+  float widthFade = thinWidthFade(perpW, fadeApplies);
   // Per-edge AA, one output pixel each (aaHalf; see aaHalfPx). dL/dR are
   // constructed as TRUE perpendicular distances — each divided by its own edge's
   // foreshortening — so the ramp width is a known constant at every slope rather
@@ -242,30 +246,16 @@ struct FillEdges {
   float pf1;
 };
 
-FillEdges fillEdges(float4 corners, float s, float sd, float dydt) {
-  FillEdges e;
-  e.edge0 = lerp(corners.x, corners.w, s);
-  e.edge1 = lerp(corners.y, corners.z, s);
-  float dxdy = sd / max(abs(dydt), 1e-4);
-  float slope0 = (corners.w - corners.x) * dxdy;
-  float slope1 = (corners.z - corners.y) * dxdy;
-  e.pf0 = sqrt(1.0 + slope0 * slope0);
-  e.pf1 = sqrt(1.0 + slope1 * slope1);
-  return e;
-}
-
-// Analytic coverage for a fill fragment. `localPos.x` is screen X, `localPos.y`
-// is the vertical offset from yTop. `edge0`/`edge1` are the ribbon edges at this
-// y and `pf0`/`pf1` each edge's slope foreshortening. BASE ribbons and CIGAR
-// indel tiles share this analytic per-edge AA so both trace the smooth analytic
-// bezier edges with antialiased (not stair-stepped) sides; only the density
-// width-fade differs.
-float fillCoverage(float2 localPos, float edge0, float edge1,
-                   float pf0, float pf1, float kind, float h,
-                   float fadeThinAlignments, float aaHalf) {
-  float cx = perpCoverage(localPos, edge0, edge1, pf0, pf1, kind,
-                          fadeThinAlignments, aaHalf);
-  return cx * vertCoverage(localPos.y, h, aaHalf);
+FillEdges fillEdges(float4 c, float s, float sd, float dydt) {
+  float2 e = ribbonEdges(c, s);
+  // Each edge's own dx/dy: its total travel scaled by this point's ds/dy.
+  float2 slope = ribbonEdgeDeltas(c) * (sd / max(abs(dydt), 1e-4));
+  FillEdges o;
+  o.edge0 = e.x;
+  o.edge1 = e.y;
+  o.pf0 = sqrt(1.0 + slope.x * slope.x);
+  o.pf1 = sqrt(1.0 + slope.y * slope.y);
+  return o;
 }
 
 // How far a fill is faded, and how much hover darkens it. These two scalars are
@@ -279,9 +269,17 @@ float fillCoverage(float2 localPos, float edge0, float edge1,
 // out as its alpha, CIGAR uses it as the white pre-blend factor. They were
 // separately-spelled but identical before, which is exactly the shape that
 // drifts.
+//
+// The cap is a cap on the BOOST, not on the alpha: `max(a, ...)` is what keeps
+// hover from running backwards. Without it, the ×5/0.35 pair reduces the alpha of
+// anything already above 0.35 — so with the opacity slider anywhere past that
+// (it reaches 1.0; the default is 0.2), hovering made a ribbon the FAINTEST thing
+// on screen instead of the most findable, and hoverDarken's 0.7 on the rgb could
+// not make up for it. Below 0.35 the max is inert, so the low display alphas a
+// whole-genome view actually uses are untouched.
 public float fillShade(float colorAlpha, float displayAlpha, bool isHovered) {
   float a = colorAlpha * displayAlpha;
-  return isHovered ? min(a * 5.0, 0.35) : a;
+  return isHovered ? max(a, min(a * 5.0, 0.35)) : a;
 }
 
 public float hoverDarken(bool isHovered) { return isHovered ? 0.7 : 1.0; }
@@ -334,26 +332,23 @@ static const float STROKE_ALPHA = 0.4;
 // exactly the whole-genome case it exists for — and the sides came out
 // hard-cut instead of antialiased.
 //
-// Bounded by the ribbon's MINIMUM horizontal width, so a ribbon wider than
+// Bounded by the ribbon's MINIMUM horizontal width (see ribbonWidths, which is
+// where the "only the two ends matter" argument lives), so a ribbon wider than
 // perpFactor px gets no extra pad at all and the per-segment saving in
-// syntenyFillCurve is untouched. Both modes have edge1 - edge0 =
-// lerp(x2-x1, x3-x4, s) exactly, monotonic in s, so the width can only reach
-// zero mid-ribbon when the two endpoint deltas differ in sign (a bowtie).
+// syntenyFillCurve is untouched.
 // SYNC: mirrored by `padExtra` in syntenyFillPad.test.ts.
-public float thinRibbonPad(float perpFactor, Corners c) {
-  float dTop = c.x2 - c.x1;
-  float dBot = c.x3 - c.x4;
-  float wMin = dTop * dBot < 0.0 ? 0.0 : min(abs(dTop), abs(dBot));
+public float thinRibbonPad(float perpFactor, float4 c) {
+  float2 w = ribbonWidths(c);
+  float wMin = w.x * w.y < 0.0 ? 0.0 : min(abs(w.x), abs(w.y));
   return max(perpFactor * 0.5 - 0.5 * wMin, 0.0);
 }
 
 // The two ribbon edges at X-blend `s`, ordered left/right — they swap on a
-// crossed "bowtie" ribbon, which is why every caller takes min/max rather than
+// crossed "bowtie" ribbon, which is why the geometry sorts them here rather than
 // assuming an order. Straight mode passes s=t, curve mode s=sBlend(t).
-public float2 edgeSpan(Corners c, float s) {
-  float e0 = lerp(c.x1, c.x4, s);
-  float e1 = lerp(c.x2, c.x3, s);
-  return float2(min(e0, e1), max(e0, e1));
+public float2 edgeSpan(float4 c, float s) {
+  float2 e = ribbonEdges(c, s);
+  return float2(min(e.x, e.y), max(e.x, e.y));
 }
 
 // Everything the two fill passes share. They differ only in geometry — one quad
@@ -364,8 +359,9 @@ public struct FillVsOut {
   public float4 position : SV_Position;
   public float4 color    : COLOR0;
   public nointerpolation float featureId : COLOR1;
-  // Per-instance corner positions in CSS-pixel screen X. (x, y) belong to the
-  // top view, (z, w) to the bottom — i.e. Corners x1..x4 in order.
+  // Per-instance corner positions in CSS-pixel screen X, exactly as
+  // computeCorners produces them: (x, y) belong to the top view, (z, w) to the
+  // bottom — i.e. x1..x4 in order.
   public nointerpolation float4 corners : COLOR2;
   // Local position within the instance: localPos.x = screen X (CSS px),
   // localPos.y = vertical offset from yTop in CSS px (≈[0, height], extended
@@ -381,7 +377,7 @@ public struct FillVsOut {
 // degenerate vertex. `c` is the projected corner set the caller builds its
 // polygon from.
 public bool fillVsBegin(Instance inst, Uniforms u, out FillVsOut o,
-                        out Corners c) {
+                        out float4 c) {
   o.position = float4(0.0);
   o.color = unpackRGBA(inst.color);
   o.featureId = inst.featureId;
@@ -392,14 +388,14 @@ public bool fillVsBegin(Instance inst, Uniforms u, out FillVsOut o,
   if (isCulled(c, inst.alignmentLength, u)) {
     return false;
   }
-  o.corners = float4(c.x1, c.x2, c.x3, c.x4);
+  o.corners = c;
   return true;
 }
 
 // Vertex epilogue: place the vertex at screen (vx, yTop + y) and record the
 // local position the fragment measures coverage from. Setting both here is what
 // makes localPos.y affine in screen y with unit slope — the property
-// fillCoverage's constant vertical AA relies on.
+// fillFs's constant vertical AA relies on.
 public void fillVsEmit(inout FillVsOut o, float vx, float y, Uniforms u) {
   o.localPos = float2(vx, y);
   o.position = screenToClip(float2(vx, u.yTop + y), u.resolution);
@@ -409,11 +405,20 @@ public void fillVsEmit(inout FillVsOut o, float vx, float y, Uniforms u) {
 // its ds/dt and `dydt` its dy/dt (straight: t, 1, height; curve: sBlend(t),
 // sBlendDeriv(t), height·yCurveDeriv(t)). fillEdges turns those into each
 // edge's own X and foreshortening.
+//
+// BASE ribbons and CIGAR indel tiles run the identical analytic per-edge AA, so
+// both trace the smooth bezier edges with antialiased rather than stair-stepped
+// sides. The ONLY thing the kind decides here is whether the density width-fade
+// applies, which is what `fadeApplies` carries into perpCoverage.
 public float4 fillFs(FillVsOut i, float s, float sd, float dydt, Uniforms u) {
   FillEdges e = fillEdges(i.corners, s, sd, dydt);
-  float coverage = fillCoverage(i.localPos, e.edge0, e.edge1, e.pf0, e.pf1,
-                                i.kind, u.height, u.fadeThinAlignments,
-                                aaHalfPx(u));
+  float aaHalf = aaHalfPx(u);
+  bool fadeApplies = !isCigarKind(i.kind) && !isMarkerKind(i.kind)
+                  && u.fadeThinAlignments >= 0.5;
+  float coverage =
+    perpCoverage(i.localPos.x, e.edge0, e.edge1, e.pf0, e.pf1, fadeApplies,
+                 aaHalf)
+    * vertCoverage(i.localPos.y, u.height, aaHalf);
   if (coverage <= 0.0) {
     discard;
   }
@@ -448,7 +453,7 @@ public float4 strokeFs(FillVsOut i, float s, float sd, float dydt, Uniforms u) {
   float aaHalf = aaHalfPx(u);
   float band = max(clamp((STROKE_HALF_PX - d0) / (2.0 * aaHalf) + 0.5, 0.0, 1.0),
                    clamp((STROKE_HALF_PX - d1) / (2.0 * aaHalf) + 0.5, 0.0, 1.0));
-  // Capped at the ribbon's top and bottom by the SAME vertical AA fillCoverage
+  // Capped at the ribbon's top and bottom by the SAME vertical AA fillFs
   // applies, so the outline ends exactly where the fill does.
   float alpha = band * vertCoverage(i.localPos.y, u.height, aaHalf)
               * STROKE_ALPHA;
@@ -484,7 +489,7 @@ public static const uint CURVE_SEGMENTS = 8u;
 
 // One quad (6 verts). Vert layout: 0=TL, 1=TR, 2=BL, 3=BL, 4=TR, 5=BR;
 // triangles (TL, TR, BL) and (BL, TR, BR).
-public void straightGeometry(inout FillVsOut o, Corners c, uint vid,
+public void straightGeometry(inout FillVsOut o, float4 c, uint vid,
                              float extraPerpPx, Uniforms u) {
   bool isTop = (vid == 0u || vid == 1u || vid == 4u);
   bool isRight = (vid == 1u || vid == 4u || vid == 5u);
@@ -507,9 +512,10 @@ public void straightGeometry(inout FillVsOut o, Corners c, uint vid,
   // the same reasoning that put maxEdgeDx in the curve pad below.
   //
   // CIGAR indel tiles use the same padded polygon as BASE — they share the
-  // analytic edge + smoothstep AA path (fillCoverage), so their perpendicular
+  // analytic edge + smoothstep AA path (fillFs), so their perpendicular
   // edges antialiase against the base block instead of stair-stepping.
-  float slope = max(abs(c.x4 - c.x1), abs(c.x3 - c.x2)) / u.height;
+  float2 d = ribbonEdgeDeltas(c);
+  float slope = max(abs(d.x), abs(d.y)) / u.height;
   float perpFactor = sqrt(1.0 + slope * slope);
   float pad = perpFactor * (0.5 + extraPerpPx) + thinRibbonPad(perpFactor, c)
             + 1.0;
@@ -527,7 +533,7 @@ public void straightGeometry(inout FillVsOut o, Corners c, uint vid,
 // but the chords visibly faceted slanted ribbons, so indels went back on the
 // analytic curve.) Halving to 4 makes the bulge term dominate the pad; doubling
 // to 16 gives diminishing returns.
-public void curveGeometry(inout FillVsOut o, Corners c, uint vid,
+public void curveGeometry(inout FillVsOut o, float4 c, uint vid,
                           float extraPerpPx, Uniforms u) {
   uint seg = vid / 6u;
   uint vertInSeg = vid % 6u;
@@ -574,7 +580,8 @@ public void curveGeometry(inout FillVsOut o, Corners c, uint vid,
   // The pad protects the EDGES, so it scales with the larger edge Δ, not the
   // centerline's (they differ on a width-changing ribbon, where the centerline
   // average under-pads the wider edge).
-  float maxEdgeDx = max(abs(c.x4 - c.x1), abs(c.x3 - c.x2));
+  float2 d = ribbonEdgeDeltas(c);
+  float maxEdgeDx = max(abs(d.x), abs(d.y));
   // dx/dy = (Δ/h)·sBlendDeriv(t)/yCurveDeriv(t). That ratio is unimodal with
   // its peak of 2.0 at t=0.5, so its maximum over the segment is at whichever
   // in-range t sits closest to 0.5.
@@ -617,10 +624,49 @@ public float curveParamAtY(float yLocal, Uniforms u) {
 // is affine in screen y with unit slope — the ramp is aaHalf wide by
 // construction, no derivative to take.
 //
-// Shared by fillCoverage and strokeFs rather than spelled in both: the outline
+// Shared by fillFs and strokeFs rather than spelled in both: the outline
 // has to end exactly where the fill does, and two copies of the same two
 // smoothsteps is precisely the shape that drifts.
 public float vertCoverage(float yLocal, float h, float aaHalf) {
   return smoothstep(-aaHalf, aaHalf, yLocal)
        - smoothstep(h - aaHalf, h + aaHalf, yLocal);
+}
+
+// ---------------------------------------------------------------------------
+// Corners -> edges. The one statement of which corner belongs to which ribbon
+// edge, and the two quantities derived from it.
+// ---------------------------------------------------------------------------
+
+// The two ribbon edges at X-blend `s`, as (edge0, edge1) and NOT sorted — they
+// swap on a crossed "bowtie" ribbon, which is what edgeSpan's min/max is for.
+// Straight mode passes s=t, curve mode s=sBlend(t).
+//
+// Edge 0 runs x1 -> x4, edge 1 runs x2 -> x3. That pairing used to be written
+// twice — here for the vertex polygon and again inside fillEdges for the
+// fragment's analytic clip — and the two have to agree or the geometry crops the
+// shape the fragment draws. Nothing would have caught them diverging:
+// syntenyFillPad.test.ts builds its model polygon from its own copy of
+// fillEdges, so it assumes the agreement instead of checking it. Stating the
+// pairing once removes the question.
+float2 ribbonEdges(float4 c, float s) {
+  return float2(lerp(c.x, c.w, s), lerp(c.y, c.z, s));
+}
+
+// Each edge's total top-to-bottom travel in x: (x4-x1, x3-x2). Taken as the
+// difference of the two endpoints ribbonEdges itself reports, which is exact
+// (lerp at s=1 minus lerp at s=0) and keeps the pairing above the only place a
+// corner is matched to an edge.
+float2 ribbonEdgeDeltas(float4 c) {
+  return ribbonEdges(c, 1.0) - ribbonEdges(c, 0.0);
+}
+
+// The ribbon's SIGNED horizontal width at its top and bottom: (x2-x1, x3-x4).
+// Signed on purpose — opposite signs mean the edges cross, so the width passes
+// through zero somewhere between, which is the bowtie case thinRibbonPad has to
+// pad for. Width is edge1 - edge0 = lerp(x2-x1, x3-x4, s), monotonic in s, so
+// these two ends bound it everywhere and no interior sample is needed.
+float2 ribbonWidths(float4 c) {
+  float2 top = ribbonEdges(c, 0.0);
+  float2 bot = ribbonEdges(c, 1.0);
+  return float2(top.y - top.x, bot.y - bot.x);
 }
