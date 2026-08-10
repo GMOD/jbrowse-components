@@ -10,9 +10,13 @@ import { arcColorSlot } from '../../LinearAlignmentsDisplay/shaders/slang/alignm
 import {
   ARC_APEX_FRACTION,
   ARC_FAR_SCREEN_WIDTHS,
+} from '../../LinearAlignmentsDisplay/shaders/slang/arc.iface.generated.ts'
+// The flat-line constants moved with the flat line: they are arcFlat.slang's
+// now, declared on the pass that consumes them.
+import {
   ARC_FLAT_ALPHA,
   ARC_FLAT_MIN_PX,
-} from '../../LinearAlignmentsDisplay/shaders/slang/arc.iface.generated.ts'
+} from '../../LinearAlignmentsDisplay/shaders/slang/arcFlat.iface.generated.ts'
 import { ARC_COLOR_INTERCHROM } from '../../LinearAlignmentsDisplay/shaders/slang/arcLine.iface.generated.ts'
 import { ARC_MARKER_PX } from '../../LinearAlignmentsDisplay/shaders/slang/arcMarker.iface.generated.ts'
 import { arcAvailH, arcYOffsetPx, arcYScale } from './arcYScale.ts'

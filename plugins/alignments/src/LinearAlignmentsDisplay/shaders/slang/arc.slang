@@ -14,22 +14,24 @@
 // 0.49px at 128, converging to the corner rather than to zero. Since destY is
 // clamped to the band, every arc wider than 2·availH has those feet.
 //
-// shapeType encodes the curve form:
-//   0 = paired arc, drawn as a half-ellipse rising from the two real bp
-//       endpoints. rx is the pair's on-screen half-width; ry is
-//       ARC_APEX_FRACTION of the Y the insert size maps to. Once the pair spans
-//       more than ARC_FAR_SCREEN_WIDTHS the ellipse becomes a true circle
-//       (ry = rx), so big the band clips the apex away and only near-vertical
-//       legs rising from each endpoint remain.
-//   1 = flat horizontal line at Y = destY (read cloud paired, solid)
-//   2 = flat horizontal line at Y = destY (read cloud split read, dashed)
-// Both flat forms draw black at ARC_FLAT_ALPHA; see the note by that constant.
+// Every instance is one shape: a half-ellipse rising from the two real bp
+// endpoints. rx is the pair's on-screen half-width; ry is ARC_APEX_FRACTION of
+// the Y the insert size maps to. Once the pair spans more than
+// ARC_FAR_SCREEN_WIDTHS the ellipse becomes a true circle (ry = rx), so big the
+// band clips the apex away and only near-vertical legs rising from each
+// endpoint remain.
 //
-// yBp is the target Y position in genomic bp — for the arc this is the apex
-// height; for flat it is the line's Y. Read cloud sets yBp = |tlen|; arc mode
-// sets yBp = |x2-x1|/2 (the genomic radius).
+// There is no `shapeType` attribute. It used to select between this curve and
+// the read cloud's flat connector (values 1 and 2), which meant a 130-vertex
+// curve hull rasterizing a straight line, plus a second distance function, a
+// dash pattern and a second color rule in here to serve it. Flat lines are
+// arcFlat.slang now — a 6-vertex quad — and the two never appear in one draw
+// anyway, since computeArcShape emits a flat shape iff `cloud`.
+//
+// yBp is the apex height in genomic bp; arc mode sets it to |x2-x1|/2 (the
+// genomic radius).
 //! targets: wgsl, glsl
-//! export-consts: ARC_HEIGHT_MARGIN, ARC_FAR_SCREEN_WIDTHS, ARC_FLAT_MIN_PX, ARC_FLAT_ALPHA, ARC_APEX_FRACTION, ARC_COLOR_SHORT_INSERT
+//! export-consts: ARC_HEIGHT_MARGIN, ARC_FAR_SCREEN_WIDTHS, ARC_APEX_FRACTION, ARC_COLOR_SHORT_INSERT
 
 import alignmentsUniforms;
 
@@ -55,21 +57,11 @@ static const float ARC_APEX_FRACTION = 0.75;
 // the band clips it down to near-vertical lines at each real endpoint. Mirrored
 // in drawCanvas.ts.
 static const float ARC_FAR_SCREEN_WIDTHS = 1.0;
-// Minimum drawn width (CSS px) of a flat read-cloud line. Short-insert pairs span
-// far less than a pixel, so without a floor the line collapses to an invisible
-// zero-length stroke. Mirrored in drawCanvas.ts.
-static const float ARC_FLAT_MIN_PX = 2.5;
-// Opacity of a flat read-cloud connector. Translucent so dense overlapping pairs
-// read as a band (cf. samplot.py's alpha), but kept well above samplot.py's 0.25:
-// an isolated short-insert pair is a single thin line, and at 0.25-0.4 it all but
-// vanishes into the background. Exported so drawCanvas.ts strokes the same value.
-static const float ARC_FLAT_ALPHA = 0.7;
 
 // Which distance function the fragment measures with. Ordered so the fragment
 // can compare rather than test equality on an interpolated float.
 static const float KIND_ELLIPSE = 0.0;
 static const float KIND_CIRCLE  = 1.0;
-static const float KIND_FLAT    = 2.0;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -77,8 +69,7 @@ struct Instance {
   uint  x1        : ATTR0;
   uint  x2        : ATTR1;
   float colorType : ATTR2;
-  float shapeType : ATTR3;
-  uint  yBp       : ATTR4;
+  uint  yBp       : ATTR3;
 };
 
 struct VsOut {
@@ -90,27 +81,14 @@ struct VsOut {
   float2 local    : COLOR1;
   float2 radii    : COLOR2;
   float  kind     : COLOR3;
-  float  dashed   : COLOR4;
-  // Screen x in CSS px (interpolated) — drives the dash pattern. Deliberately
-  // NOT fragIn.position.x (physical px), which would halve the dash period on a
-  // dpr=2 display and diverge from the Canvas2D setLineDash([3,3]) mirror.
-  float  screenPx : COLOR5;
 };
 
+// The analytic curve, in band-local CSS px. `radii` and `kind` say which
+// distance function measures it; `c` is the centre an ellipse is measured from,
+// `ends` the two endpoints' screen x a far circle's legs rise from.
+//
 // arcColorByIndex is shared from alignmentsUniforms (also used by arcLine), and
 // clamps out-of-range slots itself (arcColorSlot).
-//
-// This used to fall through to `hueRampHalfSat(u.gradientHue)` above a bare
-// `9u` — a hand-spelled ARC_COLOR_SLOTS — for a "colorType >= NUM_ARC_COLORS"
-// that no longer exists under that name or any other. `arcColorTypes` is
-// written in exactly one place (getArcColorType in features/arcs/compute.ts),
-// whose widest value is COLOR_SPLIT_DELETION = 8; interchrom ticks are a
-// constant 3. So the ramp was unreachable, and it was the third distinct
-// answer — after the shader's clamp and Canvas2D's wrap — to an input none of
-// the three can receive.
-// The analytic curve, in band-local CSS px. `radii` and `kind` say which
-// distance function measures it; `c` is the centre an ellipse or flat line is
-// measured from, `ends` the two endpoints' screen x a far circle's legs are.
 struct Curve { float2 c; float2 ends; float2 radii; float kind; float yDir; };
 
 Curve arcCurve(Instance inst, Uniforms u) {
@@ -119,7 +97,7 @@ Curve arcCurve(Instance inst, Uniforms u) {
   // Y the insert size maps to: availH px spans arcsYDomainBp bp, the CPU-chosen
   // domain (zoom-proportional for arcs, autoscaled |tlen| for read cloud).
   // arcBandDestY (alignmentsUniforms) is the shared formula — the same one
-  // arcMarker.slang uses so the endpoint squares land on the flat line.
+  // arcFlat.slang and arcMarker.slang use.
   float destY = arcBandDestY(inst.yBp, availH, u);
   float x1Px = u.blockStartPx + bpToLinear(inst.x1, u) * u.blockWidth;
   float x2Px = u.blockStartPx + bpToLinear(inst.x2, u) * u.blockWidth;
@@ -128,20 +106,12 @@ Curve arcCurve(Instance inst, Uniforms u) {
   Curve cv;
   cv.yDir = yDir;
   cv.ends = float2(min(x1Px, x2Px), max(x1Px, x2Px));
-  if (inst.shapeType > 0.5) {
-    // Flat line (read cloud). Clamp the span to ARC_FLAT_MIN_PX (centred on the
-    // midpoint); the line is horizontal, so the span's sign is moot.
-    cv.kind = KIND_FLAT;
-    cv.c = float2((x1Px + x2Px) * 0.5, destY * yDir);
-    cv.radii = float2(max(abs(x2Px - x1Px), ARC_FLAT_MIN_PX) * 0.5, 0.0);
-  } else {
-    // `far` is purely a function of on-screen span — no bp limit.
-    bool far = 2.0 * halfWidthPx > ARC_FAR_SCREEN_WIDTHS * u.canvasW;
-    cv.kind = far ? KIND_CIRCLE : KIND_ELLIPSE;
-    cv.c = float2((x1Px + x2Px) * 0.5, 0.0);
-    cv.radii = float2(halfWidthPx,
-                      far ? halfWidthPx : ARC_APEX_FRACTION * destY);
-  }
+  // `far` is purely a function of on-screen span — no bp limit.
+  bool far = 2.0 * halfWidthPx > ARC_FAR_SCREEN_WIDTHS * u.canvasW;
+  cv.kind = far ? KIND_CIRCLE : KIND_ELLIPSE;
+  cv.c = float2((x1Px + x2Px) * 0.5, 0.0);
+  cv.radii = float2(halfWidthPx,
+                    far ? halfWidthPx : ARC_APEX_FRACTION * destY);
   return cv;
 }
 
@@ -160,14 +130,7 @@ ArcVertex evalArcVertex(float t, float side, Curve cv, Uniforms u) {
   // outward-positive frame.
   float legDir = 1.0;
 
-  if (cv.kind >= KIND_FLAT) {
-    // Overshoot the line's real ends by a half-width: the flat form is the one
-    // shape whose caps are not cut by the band scissor, and the fragment's box
-    // distance needs somewhere to ramp them down.
-    p = float2((2.0 * t - 1.0) * (cv.radii.x + hw), 0.0);
-    tang = float2(1.0, 0.0);
-    origin = cv.c;
-  } else if (cv.kind >= KIND_CIRCLE) {
+  if (cv.kind >= KIND_CIRCLE) {
     // Two legs, each built from ITS OWN real endpoint outward. Reconstructing a
     // leg as `centre + cos(a)·r` cancels catastrophically once r passes ~1e6 px
     // (a mate a few thousand screen widths away): both terms are huge and their
@@ -205,37 +168,20 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float t = float(seg) / float(ARC_CURVE_SEGMENTS);
 
   ArcVertex av = evalArcVertex(t, side, cv, u);
-  o.screenPx = av.screen.x;
   o.local = av.local;
   o.radii = cv.radii;
   o.kind = cv.kind;
   float clipX = (av.screen.x / u.canvasW) * 2.0 - 1.0;
   float clipY = 1.0 - ((av.screen.y + u.covOffset) / u.canvasH) * 2.0;
   o.position = float4(flipX(clipX, u), clipY, 0.0, 1.0);
-  // Read cloud flat shapes (1, 2): the connector line itself is neutral black —
-  // the insert-size / orientation color lives in the endpoint squares drawn by
-  // the arcMarker pass (mirrors samplot.py's per-read colored markers joined by
-  // a plain line).
-  bool flat = inst.shapeType > 0.5;
-  float arcAlpha = flat ? ARC_FLAT_ALPHA : 1.0;
-  float3 rgb = flat ? float3(0.0, 0.0, 0.0)
-                    : arcColorByIndex(uint(inst.colorType + 0.5), u);
-  o.color = float4(rgb, arcAlpha);
-  // Split-read flat shape (2) renders dashed.
-  o.dashed = (inst.shapeType > 1.5) ? 1.0 : 0.0;
+  o.color = float4(arcColorByIndex(uint(inst.colorType + 0.5), u), 1.0);
   return o;
 }
 
 // Perpendicular distance in CSS px from this fragment to its analytic curve.
-// `local` is whatever frame that curve's measurement wants: the ellipse's
-// centre, a far circle's leg endpoint, or the flat line itself — where the
-// normal is constant, so |local.y| already is the distance.
+// `local` is whichever frame that curve's measurement wants: the ellipse's
+// centre, or a far circle's leg endpoint.
 float arcDistance(VsOut i) {
-  if (i.kind >= KIND_FLAT) {
-    // Distance to a butt-capped horizontal segment: the y-extent-zero box SDF.
-    float2 q = float2(abs(i.local.x) - i.radii.x, abs(i.local.y));
-    return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0);
-  }
   if (i.kind >= KIND_CIRCLE) { return distToWideCircle(i.local, i.radii.x); }
   return sdEllipse(i.local, i.radii);
 }
@@ -245,16 +191,6 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   // |∇d| is analytically 1 per CSS px, so the AA ramp is a constant number of
   // device pixels, not a derivative — see STROKE_AA_PX.
   float alpha = strokeCoverage(arcDistance(fragIn), u.lineWidthPx * 0.5, u);
-  // Split-read flat arcs render dashed (samplot.py's dotted style, and
-  // Canvas2D's setLineDash([3,3])): 3px on, 3px off, with the same STROKE_AA_PX
-  // ramp on the dash ends that the stroke's sides get. The +0.25 rotates the
-  // period so the ON segment is centred at phase 3 rather than straddling the
-  // wrap — measuring `abs(phase - centre)` across the wrap would leave one end
-  // of every dash hard-edged.
-  if (fragIn.dashed > 0.5) {
-    float phase = frac(fragIn.screenPx / 6.0 + 0.25) * 6.0;
-    alpha *= clamp(2.0 - abs(phase - 3.0), 0.0, 1.0);
-  }
   // Output straight alpha — the HAL blend func does the premultiply.
   return float4(fragIn.color.rgb, fragIn.color.a * alpha);
 }

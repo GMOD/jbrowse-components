@@ -1,20 +1,32 @@
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as arcShader from '../../LinearAlignmentsDisplay/shaders/slang/arc.generated.ts'
+import * as arcFlatShader from '../../LinearAlignmentsDisplay/shaders/slang/arcFlat.generated.ts'
 import * as arcLineShader from '../../LinearAlignmentsDisplay/shaders/slang/arcLine.generated.ts'
 import * as arcMarkerShader from '../../LinearAlignmentsDisplay/shaders/slang/arcMarker.generated.ts'
-import { isFlatArcShape } from './compute.ts'
+import { ARC_SHAPE_FLAT_SPLIT, isFlatArcShape } from './compute.ts'
 
 import type { ArcsUploadData } from './types.ts'
 
 export const PASS_ARC = 'arc'
+export const PASS_ARC_FLAT = 'arcFlat'
 export const PASS_ARC_LINE = 'arcLine'
 export const PASS_ARC_MARKER = 'arcMarker'
 
+// Curved paired-read arcs only. 130 vertices per instance, because the strip is
+// a hull that must contain the analytic dome the fragment measures.
 export const ARC_PASS = slangPass({
   id: PASS_ARC,
   mod: arcShader,
   topology: 'triangle-strip',
+})
+
+// Default triangle-list topology — a flat read-cloud connector is a 6-vertex
+// quad. It used to be an instance of ARC_PASS, i.e. 130 vertices tessellating a
+// straight line, in the one mode that draws thousands of them.
+export const ARC_FLAT_PASS = slangPass({
+  id: PASS_ARC_FLAT,
+  mod: arcFlatShader,
 })
 
 // Default triangle-list topology — the tick is an antialiased 6-vertex quad,
@@ -30,19 +42,60 @@ export const ARC_MARKER_PASS = slangPass({
   mod: arcMarkerShader,
 })
 
+// The two shape families are packed into two buffers rather than one buffer the
+// shader branches on, because their vertex counts differ by 32x (see
+// ARC_FLAT_PASS). `numFlatArcs` is precomputed alongside the arrays, so each
+// pass sizes its buffer exactly and the compaction below is a single walk.
+//
+// In practice one of the two is always empty — `computeArcShape` emits a flat
+// shape iff `cloud` — so the extra pass costs nothing in either mode. Nothing
+// depends on that, though: a mixed feed packs and draws correctly.
+function curvedArcCount(data: ArcsUploadData) {
+  return data.numArcs - data.numFlatArcs
+}
+
 // Field-for-field packing is delegated to the generated packInstances so the
 // instance layout can never drift from the shader struct.
 export function packArcs(data: ArcsUploadData): ArrayBuffer {
-  return arcShader.packInstances(
-    {
-      x1: data.arcX1,
-      x2: data.arcX2,
-      colorType: data.arcColorTypes,
-      shapeType: data.arcShapeTypes,
-      yBp: data.arcYBp,
-    },
-    data.numArcs,
-  )
+  const count = curvedArcCount(data)
+  const x1 = new Uint32Array(count)
+  const x2 = new Uint32Array(count)
+  const colorType = new Uint8Array(count)
+  const yBp = new Uint32Array(count)
+  let n = 0
+  for (let i = 0; i < data.numArcs; i++) {
+    if (!isFlatArcShape(data.arcShapeTypes[i]!)) {
+      x1[n] = data.arcX1[i]!
+      x2[n] = data.arcX2[i]!
+      colorType[n] = data.arcColorTypes[i]!
+      yBp[n] = data.arcYBp[i]!
+      n++
+    }
+  }
+  return arcShader.packInstances({ x1, x2, colorType, yBp }, count)
+}
+
+// The flat read-cloud connectors. No color — the line is black and the category
+// color lives in the endpoint squares (packArcMarkers) — but `dashed` is a real
+// per-instance bit, since the solid and split variants coexist in one draw.
+export function packArcFlats(data: ArcsUploadData): ArrayBuffer {
+  const count = data.numFlatArcs
+  const x1 = new Uint32Array(count)
+  const x2 = new Uint32Array(count)
+  const yBp = new Uint32Array(count)
+  const dashed = new Uint8Array(count)
+  let n = 0
+  for (let i = 0; i < data.numArcs; i++) {
+    const shape = data.arcShapeTypes[i]!
+    if (isFlatArcShape(shape)) {
+      x1[n] = data.arcX1[i]!
+      x2[n] = data.arcX2[i]!
+      yBp[n] = data.arcYBp[i]!
+      dashed[n] = shape === ARC_SHAPE_FLAT_SPLIT ? 1 : 0
+      n++
+    }
+  }
+  return arcFlatShader.packInstances({ x1, x2, yBp, dashed }, count)
 }
 
 // Position only — a tick's color is ARC_COLOR_INTERCHROM, which the shader

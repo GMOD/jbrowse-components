@@ -10,10 +10,12 @@ import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import { arcAvailH, arcYScale } from '../../features/arcs/arcYScale.ts'
 import {
+  ARC_FLAT_PASS,
   ARC_LINE_PASS,
   ARC_MARKER_PASS,
   ARC_PASS,
   PASS_ARC,
+  PASS_ARC_FLAT,
   PASS_ARC_LINE,
   PASS_ARC_MARKER,
 } from '../../features/arcs/packGpu.ts'
@@ -387,6 +389,7 @@ export const ALIGNMENTS_PASSES: PassDescriptor[] = [
   INTERBASE_PASS,
   INDICATOR_PASS,
   ARC_PASS,
+  ARC_FLAT_PASS,
   ARC_MARKER_PASS,
   ARC_LINE_PASS,
   CONN_LINE_PASS,
@@ -1024,8 +1027,11 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
 
       this.hal.setViewport(geom.vpX, 0, geom.vpW, bufH)
       this.hal.setScissor(geom.vpX, scissor.top, geom.vpW, scissor.height)
+      // Curves then flat connectors — one of the two is always empty, since
+      // read cloud draws only flats and arc mode only curves.
       this.hal.drawPass(PASS_ARC, regionKey)
-      // Endpoint squares paint on top of the (now black) flat connector lines.
+      this.hal.drawPass(PASS_ARC_FLAT, regionKey)
+      // Endpoint squares paint on top of the (black) flat connector lines.
       this.hal.drawPass(PASS_ARC_MARKER, regionKey)
       this.hal.drawPass(PASS_ARC_LINE, regionKey)
 
