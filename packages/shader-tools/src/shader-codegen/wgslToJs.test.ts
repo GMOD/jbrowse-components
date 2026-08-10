@@ -95,6 +95,43 @@ test('drops literal type suffixes and emits helpers only when used', () => {
   expect(evaluate(clamped, 'f')(5)).toBe(1)
 })
 
+// WGSL's min/max on a NaN are indeterminate, and slangc resolves them as
+// `a > b ? a : b` — a form that DROPS the NaN and returns the bound. JS's
+// Math.min/Math.max propagate it. The emitter's helpers therefore have to be
+// written as comparisons, or every twin that clamps disagrees with the shader
+// on exactly the input this codebase already guards by hand elsewhere.
+describe('NaN through the clamping helpers', () => {
+  test('clamp returns a bound, as the shader does, not NaN', () => {
+    const clamp = evaluate(
+      emit(`fn f_0( x_0 : f32) -> f32 { return clamp(x_0, 0.0f, 1.0f); }`, [
+        'f',
+      ]),
+      'f',
+    )
+    expect(clamp(Number.NaN)).toBe(0)
+    // …and is unchanged everywhere else.
+    expect(clamp(-5)).toBe(0)
+    expect(clamp(0.25)).toBe(0.25)
+    expect(clamp(5)).toBe(1)
+  })
+
+  test('smoothstep on a degenerate edge pair does not go NaN', () => {
+    // `e0 == e1` makes the ratio 0/0. Reachable: `vertCoverage(20, 20, 0)`,
+    // which is what the differential oracle failed on.
+    const ss = evaluate(
+      emit(
+        `fn f_0( e_0 : f32,  x_0 : f32) -> f32 { return smoothstep(e_0, e_0, x_0); }`,
+        ['f'],
+      ),
+      'f',
+    )
+    expect(ss(20, 20)).toBe(0)
+    expect(Number.isNaN(ss(20, 20))).toBe(false)
+    // The non-degenerate curve is untouched.
+    expect(ss(0, -1)).toBe(0)
+  })
+})
+
 test('entry points are skipped, not parsed', () => {
   // Their stage builtins (`vec3<u32>`) are outside the scalar subset by
   // construction; parsing them would reject a module for a type nothing reads.

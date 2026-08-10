@@ -123,11 +123,21 @@ can go quietly wrong.
 
 **`pnpm check-shader-oracle` is what makes that checkable rather than
 reviewable.** slangc will also emit C++ for the same Slang, so the second
-implementation is generated instead of written: the check compiles every
-`js-export` set to C++, sweeps ~400 pseudo-random argument tuples per function
-over pools of exactly-float32-representable values, and compares against the
-generated twin. ~19,600 comparisons across 20 shaders, in a few seconds. A
-disagreement is a bug in `wgslToJs.ts`, not in the shader.
+implementation is generated instead of written: the check compiles to C++,
+sweeps ~400 pseudo-random argument tuples per function over pools of
+exactly-float32-representable values, and compares. ~28,000 comparisons across
+20 shaders, in a few seconds. A disagreement is a bug in `wgslToJs.ts`, not in
+the shader.
+
+**It sweeps every function the emitter can emit, not just the exported ones**,
+and that is where its value is. An export already has a consumer and often a
+hand-written parity test; the untested surface is what the emitter *could*
+produce and nobody asked it to. Unexported functions have no committed twin, so
+one is emitted on the fly and compared — testing the emitter rather than an
+artifact, which is right, since the artifacts are pinned by the staleness check.
+
+Widening it that way immediately found a real bug, which is the argument for it:
+`vertCoverage(20, 20, 0)` was 1 on the shader and NaN in the twin.
 
 The retired twins kept as fixtures still matter, and are now the *narrow* check:
 they pin behavior a human decided was right (a degenerate y-domain, a
@@ -149,6 +159,25 @@ Mechanics worth not rediscovering, all in `oracleProbe.ts`:
   resolution. The `_N` suffix counts declarations per target and the two targets
   do not declare the same set; assuming they match happens to work today and
   would fail as a comparison against the wrong function.
+- **The WGSL pass uses a FRAGMENT probe, the C++ pass a COMPUTE one.** C++ has
+  to be compute (the other stages segfault or error), but a compute entry may
+  not reference `ddx`/`ddy`/`fwidth`, and the candidate set is chosen by
+  signature before anything knows which functions use them —
+  `glyphEdgeAlpha` reads as an ordinary `float -> float`. Fragment is
+  permissive, so nothing is dropped from the pass that only decides what is
+  emittable; by the C++ pass the list contains no derivatives, because the
+  emitter refuses them.
+
+- **`Math.min`/`Math.max` are the wrong primitives for a clamp, and NaN is why.**
+  WGSL leaves min/max on a NaN indeterminate; slangc resolves them as
+  `a > b ? a : b`, which **drops** the NaN and returns the bound, while JS's
+  `Math.max(NaN, 0)` is NaN and propagates. So every twin that clamped
+  disagreed with its shader on a NaN input — the exact split
+  `ldGenotypeCorrelation`'s comment already warns about ("an unfilled cell on
+  one backend and a clamped one on the other"), reintroduced generically by the
+  emitter's own helpers. `_clamp` and `_smoothstep` are written as comparisons
+  now. Neither behavior is *wrong* by the spec; agreeing with the compiler that
+  also generates the GPU path is the only useful choice.
 
 ## Verified facts, do not re-derive
 

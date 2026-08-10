@@ -5,7 +5,9 @@
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
 function _smoothstep(e0: number, e1: number, x: number) {
-  const t = Math.min(Math.max((x - e0) / (e1 - e0), 0), 1)
+  const r = (x - e0) / (e1 - e0)
+  const above = r > 0 ? r : 0
+  const t = above < 1 ? above : 1
   return t * t * (3 - 2 * t)
 }
 

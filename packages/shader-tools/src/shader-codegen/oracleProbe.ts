@@ -99,20 +99,46 @@ export function stripEntryPoints(source: string) {
   return out.replace(/^\s*module\s+\w+\s*;/m, '')
 }
 
-const PROBE_ARG: Record<string, string> = {
-  float: 'float(tid.x)',
-  uint: 'tid.x',
-  int: 'int(tid.x)',
-  bool: 'tid.x != 0u',
+const PROBE_ARG: Record<string, Record<string, string>> = {
+  compute: {
+    float: 'float(tid.x)',
+    uint: 'tid.x',
+    int: 'int(tid.x)',
+    bool: 'tid.x != 0u',
+  },
+  fragment: {
+    float: 'pos.x',
+    uint: 'uint(pos.x)',
+    int: 'int(pos.x)',
+    bool: 'pos.x > 0.0',
+  },
 }
 
 /**
- * The throwaway compute entry. Its only job is to reference every exported
- * function so Slang keeps it; the value it computes is discarded.
+ * The throwaway entry point whose only job is to reference each function, so
+ * Slang keeps it rather than eliminating what nothing reaches. The value it
+ * computes is discarded.
+ *
+ * The stage is not a detail. **Compute** is what the C++ pass needs — `-target
+ * cpp` segfaults on a vertex entry and errors on a fragment one. But compute
+ * cannot reference a function using `ddx`/`ddy`/`fwidth`, which are
+ * fragment-only, and the candidate set is chosen by signature before anything
+ * knows which functions those are: `pointGlyph.slang`'s `glyphEdgeAlpha` reads
+ * as an ordinary `float -> float`.
+ *
+ * So the WGSL pass — which exists only to decide what the emitter can emit —
+ * uses a **fragment** entry, where every builtin is legal and nothing is
+ * dropped. By the time the C++ pass runs, the list has been filtered to what
+ * the emitter accepts, and that set contains no derivatives by construction:
+ * the emitter refuses them.
  */
-export function buildProbeEntry(fns: readonly JsExportFn[]) {
+export function buildProbeEntry(
+  fns: readonly JsExportFn[],
+  stage: 'compute' | 'fragment' = 'compute',
+) {
+  const argFor = PROBE_ARG[stage]!
   const calls = fns.map((fn, i) => {
-    const args = fn.paramTypes.map(t => PROBE_ARG[t]!).join(', ')
+    const args = fn.paramTypes.map(t => argFor[t]!).join(', ')
     const call = `${fn.name}(${args})`
     const asFloat =
       fn.returnType === 'float'
@@ -122,19 +148,32 @@ export function buildProbeEntry(fns: readonly JsExportFn[]) {
           : fn.returnType === 'float2'
             ? `(${call}).x`
             : `float(${call})`
-    return `  oracleSink[${i}] = ${asFloat};`
+    return stage === 'compute'
+      ? `  oracleSink[${i}] = ${asFloat};`
+      : `  acc += ${asFloat};`
   })
-  return [
-    '',
-    '[[vk::binding(0, 0)]] RWStructuredBuffer<float> oracleSink;',
-    '',
-    '[shader("compute")]',
-    '[numthreads(1, 1, 1)]',
-    'void oracleProbe(uint3 tid : SV_DispatchThreadID) {',
-    ...calls,
-    '}',
-    '',
-  ].join('\n')
+  return stage === 'fragment'
+    ? [
+        '',
+        '[shader("fragment")]',
+        'float4 oracleProbe(float4 pos : SV_Position) : SV_Target {',
+        '  float acc = 0.0;',
+        ...calls,
+        '  return float4(acc);',
+        '}',
+        '',
+      ].join('\n')
+    : [
+        '',
+        '[[vk::binding(0, 0)]] RWStructuredBuffer<float> oracleSink;',
+        '',
+        '[shader("compute")]',
+        '[numthreads(1, 1, 1)]',
+        'void oracleProbe(uint3 tid : SV_DispatchThreadID) {',
+        ...calls,
+        '}',
+        '',
+      ].join('\n')
 }
 
 /**

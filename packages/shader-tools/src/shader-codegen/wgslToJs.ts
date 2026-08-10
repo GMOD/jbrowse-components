@@ -709,9 +709,28 @@ const MATH_BUILTINS: Record<string, string> = {
 // Builtins needing a helper. Emitted only when referenced, so the generated
 // file stays readable.
 const HELPERS: Record<string, string> = {
+  // Comparisons, not `Math.min`/`Math.max`, and the difference is NaN.
+  //
+  // WGSL's `clamp` is `min(max(x, lo), hi)`, and slangc spells those as
+  // `a > b ? a : b` / `a < b ? a : b` — a form that DROPS a NaN, because every
+  // comparison against one is false and the other operand is returned. JS's
+  // `Math.max(NaN, 0)` is NaN, and it propagates from there.
+  //
+  // So on a NaN the shader clamps to a bound and the twin returned NaN, which
+  // is the exact split this codebase already guards by hand elsewhere:
+  // `ldGenotypeCorrelation`'s comment says a NaN reaching the color ramp
+  // "would paint an unfilled cell on one backend and a clamped one on the
+  // other". The emitter was reintroducing that generically, in every twin that
+  // clamps.
+  //
+  // Found by the differential oracle once it swept unexported functions:
+  // `vertCoverage(20, 20, 0)` is 1 in slangc's C++ and was NaN here. WGSL calls
+  // min/max on a NaN indeterminate, so neither is *wrong* — but agreeing with
+  // the compiler that also generates the GPU path is the only useful choice.
   _clamp: [
     'function _clamp(x: number, lo: number, hi: number) {',
-    '  return Math.min(Math.max(x, lo), hi)',
+    '  const above = x > lo ? x : lo',
+    '  return above < hi ? above : hi',
     '}',
   ].join('\n'),
   // WGSL defines mix as `a*(1-t) + b*t`, not the lerp form `a + (b-a)*t`. The
@@ -733,9 +752,14 @@ const HELPERS: Record<string, string> = {
     '  return x - Math.floor(x)',
     '}',
   ].join('\n'),
+  // The clamp is `_clamp`'s, for `_clamp`'s reason: a degenerate edge pair
+  // (`e0 == e1`, which WGSL leaves indeterminate) makes the ratio 0/0, and
+  // whether that comes back NaN or clamped decides the whole result.
   _smoothstep: [
     'function _smoothstep(e0: number, e1: number, x: number) {',
-    '  const t = Math.min(Math.max((x - e0) / (e1 - e0), 0), 1)',
+    '  const r = (x - e0) / (e1 - e0)',
+    '  const above = r > 0 ? r : 0',
+    '  const t = above < 1 ? above : 1',
     '  return t * t * (3 - 2 * t)',
     '}',
   ].join('\n'),

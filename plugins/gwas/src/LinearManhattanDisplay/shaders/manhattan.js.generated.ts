@@ -5,7 +5,8 @@
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
 function _clamp(x: number, lo: number, hi: number) {
-  return Math.min(Math.max(x, lo), hi)
+  const above = x > lo ? x : lo
+  return above < hi ? above : hi
 }
 
 export function scoreToYPx(score: number, domainMin: number, domainMax: number, h: number): number {

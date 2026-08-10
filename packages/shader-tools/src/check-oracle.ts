@@ -40,10 +40,20 @@ import {
   stripEntryPoints,
 } from './shader-codegen/oracleProbe.ts'
 import {
+  isSupportedSignature,
+  parseDeclaredFunctions,
   parseJsExports,
   parseOutPath,
   stripComments,
 } from './shader-codegen/parseDirectives.ts'
+import { demangle } from './shader-codegen/slangcMangling.ts'
+import {
+  emitJsTwins,
+  emitRefusal,
+  parseWgsl,
+} from './shader-codegen/wgslToJs.ts'
+
+import type { JsExportFn } from './shader-codegen/parseDirectives.ts'
 
 const PROJECT_ROOT = path.resolve(
   process.env.JBROWSE_SHADER_ROOT ?? process.cwd(),
@@ -168,6 +178,55 @@ function agrees(a: number, b: number) {
   )
 }
 
+/**
+ * Every function in this shader's WGSL that the emitter can emit but nothing
+ * exports — the declined ones, plus any private helper no export happens to
+ * reach.
+ *
+ * Checking these is the point, not a bonus. Exported functions are the ones a
+ * consumer already depends on and a hand-written parity test may already cover;
+ * the untested surface is what the emitter *could* produce and nobody has
+ * asked it to, which is where ADR-051 says the next silent bug lives. It is
+ * also where the newest emitter paths sit: `quadLocal` is the only integer `%`
+ * with chained comparisons in the tree, and `expandMinWidthX` is a `vec2`
+ * return with a branch — the least-exercised feature, added last.
+ *
+ * They have no committed twin to compare against, so one is emitted on the fly.
+ * That tests the emitter rather than an artifact, which is the right target:
+ * the artifacts are already pinned by the staleness check.
+ */
+function candidateFunctions(source: string, exported: ReadonlySet<string>) {
+  return [...parseDeclaredFunctions([source]).values()].filter(
+    fn => !exported.has(fn.name) && isSupportedSignature(fn),
+  )
+}
+
+/**
+ * Of the candidates, the ones the emitter can actually emit — decided against
+ * the compiled WGSL, which is the only place that question has an answer.
+ */
+function emittableOf(
+  wgsl: string,
+  candidates: readonly JsExportFn[],
+): JsExportFn[] {
+  const mod = parseWgsl(wgsl)
+  const byName = new Map<string, string>()
+  for (const fn of mod.fns) {
+    const short = demangle(fn.name)
+    // An overloaded base name has no unambiguous mangled counterpart; skip it
+    // rather than sweep one overload under the other's label.
+    byName.set(short, byName.has(short) ? '' : fn.name)
+  }
+  return candidates.filter(c => {
+    const mangled = byName.get(c.name)
+    return (
+      mangled !== undefined &&
+      mangled !== '' &&
+      emitRefusal(mod, mangled) === undefined
+    )
+  })
+}
+
 async function checkShader(cxx: string, slangPath: string, source: string) {
   const imported = readImportedSources(slangPath, source)
   // A shader with entry points may export a function it merely imports, so the
@@ -188,9 +247,33 @@ async function checkShader(cxx: string, slangPath: string, source: string) {
 
   const base = path.basename(slangPath, '.slang')
   const tmp = mkdtempSync(path.join(tmpdir(), `oracle-${base}-`))
+  const includes = ['-I', path.dirname(slangPath), '-I', SHARED_INCLUDE]
   try {
+    // One probe, referencing the exports AND every other function in this file
+    // with a signature the emitter could handle. Both compiles read it, which
+    // is what makes the unexported set reachable at all: a module compiled on
+    // its own yields no WGSL (Slang keeps nothing an entry point cannot reach,
+    // and slangc then fails to write the file), and a shader compiled on its
+    // own keeps only what its draw path uses. The probe is the entry point that
+    // keeps the candidates alive in both.
+    const candidates = candidateFunctions(source, new Set(fns.map(f => f.name)))
+    const stripped = stripEntryPoints(source)
+    const wgslProbePath = path.join(tmp, `${base}WgslProbe.slang`)
+    writeFileSync(
+      wgslProbePath,
+      stripped + buildProbeEntry([...fns, ...candidates], 'fragment'),
+    )
+    const wgslPath = path.join(tmp, `${base}.wgsl`)
+    execFileSync(
+      SLANGC,
+      [wgslProbePath, '-target', 'wgsl', '-o', wgslPath, ...includes],
+      { stdio: 'pipe' },
+    )
+    const extras = emittableOf(readFileSync(wgslPath, 'utf8'), candidates)
+    const swept = [...fns, ...extras]
+
     const probePath = path.join(tmp, `${base}Oracle.slang`)
-    writeFileSync(probePath, stripEntryPoints(source) + buildProbeEntry(fns))
+    writeFileSync(probePath, stripped + buildProbeEntry(swept, 'compute'))
     const cppPath = path.join(tmp, `${base}.cpp`)
     execFileSync(
       SLANGC,
@@ -202,10 +285,7 @@ async function checkShader(cxx: string, slangPath: string, source: string) {
         'oracleProbe',
         '-o',
         cppPath,
-        '-I',
-        path.dirname(slangPath),
-        '-I',
-        SHARED_INCLUDE,
+        ...includes,
       ],
       { stdio: 'pipe' },
     )
@@ -215,20 +295,41 @@ async function checkShader(cxx: string, slangPath: string, source: string) {
     // first run of this hunting an imaginary Slang bug.
     const cpp = readFileSync(cppPath, 'utf8').replaceAll(/^#line .*$/gm, '')
     const cppNames = new Map(
-      fns.map(f => [f.name, resolveCppName(cpp, f.name)] as const),
+      swept.map(f => [f.name, resolveCppName(cpp, f.name)] as const),
     )
-    writeFileSync(cppPath, cpp + buildOracleMain(fns, cppNames, DRAWS))
+    writeFileSync(cppPath, cpp + buildOracleMain(swept, cppNames, DRAWS))
     const exePath = path.join(tmp, base)
     execFileSync(cxx, ['-O0', '-std=c++17', '-o', exePath, cppPath], {
       stdio: 'pipe',
     })
     const rows = execFileSync(exePath, { encoding: 'utf8' }).trim().split('\n')
 
-    const twin = (await import(twinPathFor(slangPath, source))) as Record<
+    type Twin = Record<
       string,
       (...args: (number | boolean)[]) => number | boolean | [number, number]
     >
-    const byName = new Map(fns.map(f => [f.name, f]))
+    // The committed artifact for the exported names — so a hand-edited
+    // generated file is caught too, not just a bad generator — and a
+    // freshly-emitted module for the rest, which have no committed twin by
+    // definition. Written to disk and imported rather than eval'd, so Node's
+    // own type stripping handles the annotations instead of a regex.
+    const twin = (await import(twinPathFor(slangPath, source))) as Twin
+    let extraTwin: Twin = {}
+    if (extras.length > 0) {
+      const freshPath = path.join(tmp, `${base}.extras.generated.ts`)
+      writeFileSync(
+        freshPath,
+        emitJsTwins(
+          base,
+          readFileSync(wgslPath, 'utf8'),
+          extras.map(f => f.name),
+          [],
+        ),
+      )
+      extraTwin = (await import(freshPath)) as Twin
+    }
+    const lookup = (name: string) => twin[name] ?? extraTwin[name]
+    const byName = new Map(swept.map(f => [f.name, f]))
     const mismatches: Mismatch[] = []
     for (const row of rows) {
       const [name, ...rest] = row.split('\t')
@@ -236,7 +337,7 @@ async function checkShader(cxx: string, slangPath: string, source: string) {
       const nums = rest.map(parseOracleNumber)
       const args = nums.slice(0, fn.paramTypes.length)
       const cppOut = nums.slice(fn.paramTypes.length)
-      const called = twin[name!]!(
+      const called = lookup(name!)!(
         ...args.map((v, i) => (fn.paramTypes[i] === 'bool' ? v !== 0 : v)),
       )
       const jsOut =

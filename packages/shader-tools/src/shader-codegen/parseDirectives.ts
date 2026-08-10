@@ -304,37 +304,7 @@ export function parseJsExports(
   if (names.length === 0) {
     throw new Error(`//! js-export names no functions`)
   }
-  // Slang's `[public] <returnType> <name>(<params>)`. Parsing the signature here
-  // (rather than just the name) is what lets the driver synthesize a wrapper
-  // entry point that references each function, so slangc emits its body instead
-  // of dead-code-eliminating it. A typo then fails at codegen with the
-  // candidate list rather than as an "absent from the compiled WGSL" error
-  // after a slangc round-trip. `public` is optional because a shader with entry
-  // points has no wrapper to be visible to — its own draw path keeps the
-  // function alive — and marking a function in such a file `public` is noise.
-  const declared = new Map<string, JsExportFn>()
-  const fnRe =
-    /^\s*(?:public\s+)?([A-Za-z_]\w*)\s+([A-Za-z_]\w*)\s*\(([^)]*)\)\s*\{/gm
-  // Imports first, so a same-named function in the shader's own source wins —
-  // that is the one slangc will have compiled.
-  for (const raw of [...importedSources, source]) {
-    const src = stripComments(raw)
-    fnRe.lastIndex = 0
-    for (let m = fnRe.exec(src); m; m = fnRe.exec(src)) {
-      // `else if (...) {` reads as a two-identifier signature. Nothing
-      // downstream would resolve it, but it would sit in the "Declared:" list a
-      // typo prints.
-      if (SLANG_KEYWORDS.has(m[1]!)) {
-        continue
-      }
-      const paramTypes = m[3]!
-        .split(',')
-        .map(s => s.trim())
-        .filter(Boolean)
-        .map(p => p.split(/\s+/)[0]!)
-      declared.set(m[2]!, { name: m[2]!, returnType: m[1]!, paramTypes })
-    }
-  }
+  const declared = parseDeclaredFunctions([...importedSources, source])
   const missing = names.filter(n => !declared.has(n))
   if (missing.length > 0) {
     // The `|| '(none)'` has to bind to the joined list, not to the whole
@@ -371,6 +341,58 @@ export function parseJsExports(
     }
   }
   return fns
+}
+
+/**
+ * Every `[public] <returnType> <name>(<params>)` these sources declare, keyed by
+ * name, later sources winning — so a shader's own definition beats an imported
+ * one of the same name, which is the one slangc will have compiled.
+ *
+ * Split out of `parseJsExports` because the differential oracle needs the same
+ * enumeration for a different question: not "is this name real" but "what else
+ * in this file could be swept". A second regex over the same syntax is how the
+ * two would come to disagree about what counts as a declaration.
+ */
+export function parseDeclaredFunctions(sources: readonly string[]) {
+  // Slang's `[public] <returnType> <name>(<params>)`. Parsing the signature
+  // (rather than just the name) is what lets a driver synthesize an entry point
+  // that references each function, so slangc emits its body instead of
+  // dead-code-eliminating it. A typo then fails at codegen with the candidate
+  // list rather than as an "absent from the compiled WGSL" error after a slangc
+  // round-trip. `public` is optional because a shader with entry points has no
+  // wrapper to be visible to — its own draw path keeps the function alive — and
+  // marking a function in such a file `public` is noise.
+  const declared = new Map<string, JsExportFn>()
+  const fnRe =
+    /^\s*(?:public\s+)?([A-Za-z_]\w*)\s+([A-Za-z_]\w*)\s*\(([^)]*)\)\s*\{/gm
+  for (const raw of sources) {
+    const src = stripComments(raw)
+    fnRe.lastIndex = 0
+    for (let m = fnRe.exec(src); m; m = fnRe.exec(src)) {
+      // `else if (...) {` reads as a two-identifier signature. Nothing
+      // downstream would resolve it, but it would sit in the "Declared:" list a
+      // typo prints.
+      if (SLANG_KEYWORDS.has(m[1]!)) {
+        continue
+      }
+      const paramTypes = m[3]!
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean)
+        .map(p => p.split(/\s+/)[0]!)
+      declared.set(m[2]!, { name: m[2]!, returnType: m[1]!, paramTypes })
+    }
+  }
+  return declared
+}
+
+/** Whether the emitter can handle this signature — scalars, plus float2 out. */
+export function isSupportedSignature(fn: JsExportFn) {
+  return (
+    (SLANG_SCALARS.has(fn.returnType) ||
+      SLANG_RETURN_ONLY.has(fn.returnType)) &&
+    fn.paramTypes.every(t => SLANG_SCALARS.has(t))
+  )
 }
 
 export interface JsSkip {

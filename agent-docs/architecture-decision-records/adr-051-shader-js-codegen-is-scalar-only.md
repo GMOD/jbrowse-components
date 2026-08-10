@@ -432,6 +432,19 @@ exists" is a claim to re-check, not a category to file things in.
   by seeding a mistranslation (`Math.round` for `floor(x + 0.5)`, `Math.trunc`
   for the other edge) and confirming it failed with the offending inputs; a
   check that has never been seen to fail is not evidence.
+- **An oracle that only checks what is exported checks the wrong half.** The
+  first version swept the `js-export` set — the functions that already have a
+  consumer, and often a hand-written parity test. Widening it to every function
+  the emitter *can* emit (a fresh twin generated for the ones with no committed
+  artifact) took ~28,000 comparisons instead of ~20,000 and found a real bug on
+  its first run: `Math.min`/`Math.max` propagate NaN where slangc's
+  `a > b ? a : b` drops it, so every twin that clamped disagreed with its shader
+  on a NaN input. That is the drift `ldGenotypeCorrelation` guards by hand —
+  "an unfilled cell on one backend and a clamped one on the other" — put back
+  generically by the emitter's own helpers, in eight twins.
+
+  The lesson generalizes past this codegen: **a differential check aimed only at
+  the code someone already thought about is aimed at the tested half.**
 - **The oracle's own first two failures were both in the harness, and both
   would have read as codegen bugs.** `0f` is not a valid C++ float literal, and
   `printf("%g")` spells infinity `inf`, which `Number()` parses as NaN — so
