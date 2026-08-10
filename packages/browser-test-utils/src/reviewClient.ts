@@ -24,10 +24,13 @@
 //   setVerdict saveNote clearVerdict addNote   the inline button/field handlers
 //   updateCard        re-render one card in place, held until after the click
 //                     if a pointer is down (see the comment on it)
-//   harvestNotes applyPendingNotes     call around a full #main repaint
-//                     (applyPendingNotes also sizes the note fields to their
-//                     text, so a page that repaints #main gets that for free)
+//   harvestNotes applyPendingNotes     call around a full #main repaint.
+//                     applyPendingNotes restores everything the old DOM held
+//                     that `data` does not know — unsaved note text, its
+//                     sizing, and any verdict press still waiting on its write
+//   repaintUnsafe     ask before a repaint no event asked for (a poll, a timer)
 //   dropStaleDrafts   call once after load(), when data is first populated
+//   settledAs         a verdict that still describes the image on the card
 //   draftHint pendingNotes setDraft paintDraft   draft state for the renderer
 //
 // It REQUIRES the page to declare, as function declarations (hoisted, so they
@@ -156,6 +159,16 @@ function saveDrafts() {
 
 const savedNote = name => (entryOf(name)?.verdict?.note) || ''
 
+// A verdict that still describes the image on the card. A stale one names a
+// picture that has since been replaced, so it counts as neither approved nor
+// denied — it is back in the queue. Here rather than in either page because
+// both ask it, of the same two fields, in every tab badge, filter predicate and
+// progress pill they have: it was written out longhand seven times across the
+// two, which is seven chances for one of them to forget the staleness half and
+// count a verdict the reviewer has already been asked to redo.
+const settledAs = (entry, status) =>
+  entry.verdict?.status === status && !entry.stale
+
 // Record what is in the box right now. A draft is only a draft while it differs
 // from what the report holds, so this doubles as the cleanup: the save paths
 // call it with the text they just persisted and it drops itself.
@@ -184,6 +197,9 @@ function applyPendingNotes() {
     if (typed !== undefined && note) {
       note.value = typed
     }
+    // a card rebuilt while its verdict write is still in flight renders from
+    // \\\`data\\\`, which does not know about the click yet — see paintPress
+    paintPress(el.dataset.name)
   }
   autosizeNotes()
 }
@@ -343,10 +359,27 @@ function queueWrite(name, fn) {
 // precondition the first just established), which is exactly why the tool felt
 // like it needed two clicks rather than looking broken.
 //
-// Class-only, so nothing moves under the pointer, and deliberately not recorded
-// anywhere: the repaint that follows renders from \\\`data\\\` and overwrites this
-// with whatever actually landed, including on a failure or a conflict.
-function markPending(name, status) {
+// The press has to be RECORDED, not just painted. It was painted straight onto
+// the buttons and left there on the reasoning that the repaint which follows
+// renders from \\\`data\\\` and should overwrite it with whatever actually landed —
+// true of that repaint, but not of any other. A card deferred by this very press
+// is repainted the instant the click is dispatched (see flushDeferredCards),
+// which is a repaint from \\\`data\\\` several hundred ms before the write it is
+// waiting on: the button went back to looking unpressed for the whole round
+// trip. That is the note-then-Deny case, which is exactly the one the deferral
+// machinery exists for, so the two fixes cancelled out precisely where both were
+// needed. Held until the write that carries it settles, and applied by every
+// paint in between; \\\`data\\\` is still the only thing that decides what a settled
+// card looks like, including on a failure or a conflict.
+//
+// Class-only, so nothing moves under the pointer.
+const pressedNow = new Map()
+
+function paintPress(name) {
+  if (!pressedNow.has(name)) {
+    return
+  }
+  const status = pressedNow.get(name)
   const el = cardOf(name)
   for (const [cls, active] of [
     ['approve', 'good'],
@@ -359,13 +392,29 @@ function markPending(name, status) {
   }
 }
 
+function markPressed(name, status) {
+  pressedNow.set(name, status)
+  paintPress(name)
+}
+
+// Only the write that carried this press may retire it. A second click before
+// the first write returns leaves the newer press standing, so the card does not
+// flick back through the older verdict on its way to the one the reviewer
+// actually ended on. \\\`status\\\` is a status word or null (a clear), never
+// undefined, so an absent entry cannot match.
+function dropPress(name, status) {
+  if (pressedNow.get(name) === status) {
+    pressedNow.delete(name)
+  }
+}
+
 async function setVerdict(btn, status) {
   const name = cardEl(btn).dataset.name
   const entry = entryOf(name)
   if (!entry) {
     return
   }
-  markPending(name, status)
+  markPressed(name, status)
   await queueWrite(name, async () => {
     // Read the note now rather than when the button was clicked: a note save
     // ahead of us in the queue may have re-rendered the card. The card can also
@@ -397,6 +446,7 @@ async function setVerdict(btn, status) {
       setMessage(name, 'Not saved — ' + err.message, 'error')
     }
     justActed.add(name)
+    dropPress(name, status)
     updateCard(name)
   })
 }
@@ -505,7 +555,7 @@ async function clearVerdict(btn) {
   if (!entry) {
     return
   }
-  markPending(name, null)
+  markPressed(name, null)
   await queueWrite(name, async () => {
     try {
       const result = await postJson('/api/verdict/clear', {
@@ -523,6 +573,7 @@ async function clearVerdict(btn) {
     } catch (err) {
       setMessage(name, 'Not cleared — ' + err.message, 'error')
     }
+    dropPress(name, null)
     updateCard(name)
   })
 }
@@ -556,6 +607,9 @@ function flushDeferredCards() {
   }
   const names = [...deferredCards]
   deferredCards.clear()
+  // nothing left for the re-arming net below to rescue, and leaving it armed
+  // wakes the page once per press for no work
+  clearTimeout(deferredTimer)
   for (const name of names) {
     paintCard(name)
   }
@@ -588,6 +642,19 @@ for (const ev of ['pointerup', 'pointercancel']) {
   }, true)
 }
 
+// Ask before a repaint of all of #main that no event asked for — a poll, a
+// timer, a background job filling in. The per-card deferral below cannot help
+// there: it defers a named card, and a full repaint replaces every card at once,
+// including the button between whose mousedown and mouseup it happens to land.
+// That dispatches no click at all, which is the eaten Approve/Deny this whole
+// mechanism exists to prevent, arriving by the one route it does not watch.
+//
+// A focused note field is the other half: a full repaint carries the words
+// across but not the caret, so a reviewer mid-sentence is thrown out of the box.
+// Both conditions are momentary — a poll's next tick catches up.
+const repaintUnsafe = () =>
+  pointerHeld || !!document.activeElement?.closest('.note')
+
 function updateCard(name) {
   if (pointerHeld) {
     deferredCards.add(name)
@@ -615,11 +682,14 @@ function paintCard(name) {
       setDraft(name, typed)
     }
     el.outerHTML = renderCard(entry)
-    const note = cardOf(name).querySelector('.note')
+    const note = cardOf(name)?.querySelector('.note')
     if (note && typed !== undefined) {
       note.value = typed
       autosizeNote(note)
     }
+    // the card was just rebuilt from \\\`data\\\`, which does not know about a click
+    // whose write has not come back yet
+    paintPress(name)
   }
   renderCounts()
 }
