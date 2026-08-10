@@ -138,6 +138,7 @@ jexl: trimEnd('  kitty ') // kitty, ending whitespace trimmed
 jexl: toUpperCase('kitty') // KITTY
 jexl: toLowerCase('KITTY') // kitty
 jexl: split('KITTY KITTY', ' ') // ['KITTY', 'KITTY']
+jexl: split(feature.notThere, ' ') // [''], an absent value is read as the empty string rather than throwing
 jexl: join('-', 'a', 'b', '', 'c') // a-b-c, joins truthy args with the separator
 jexl: includes('kittycat', 'cat') // true
 jexl: repeat('ab', 3) // ababab

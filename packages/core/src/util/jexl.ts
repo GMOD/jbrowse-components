@@ -115,8 +115,34 @@ export default function JexlF(/* config?: any*/) {
   j.addFunction('toUpperCase', (s: string) => s.toUpperCase())
   /** #jexlFunction String functions | toLowerCase('KITTY') | kitty */
   j.addFunction('toLowerCase', (s: string) => s.toLowerCase())
-  /** #jexlFunction String functions | split('KITTY KITTY', ' ') | ['KITTY', 'KITTY'] */
-  j.addFunction('split', (s: string, char: string) => s.split(char))
+  /**
+   * #jexlFunction String functions | split('KITTY KITTY', ' ') | ['KITTY', 'KITTY']
+   * #jexlFunction String functions | split(feature.notThere, ' ') | [''], an absent value is read as the empty string rather than throwing
+   */
+  // TOTAL, unlike its siblings above, and deliberately: `split` is the one
+  // string function that is routinely composed with itself, and the inner call
+  // supplies the outer one's argument. The catalog's own recipe for UCSC's
+  // `bigRmskBed` is `split(split(feature.name,'#')[1],'/')[0]`, where a feature
+  // whose name carries no `#` makes the inner call return `['name']` and index
+  // [1] `undefined` — so a bare `s.split(char)` threw a TypeError from INSIDE a
+  // config callback. That is not a recoverable error at the call site: it took
+  // out a whole LinearMultiRowFeatureDisplay (banner: "Cannot read properties
+  // of undefined (reading 'split')") even though the resolver evaluating it
+  // wraps each feature in a try/catch meant to cost one row and not the track.
+  //
+  // `String(s ?? '')` rather than a guard returning `[]`, so absent behaves
+  // exactly like the empty string already does: `split('', '#')` is `['']`
+  // today, and now so is `split(undefined, '#')`. Composed, that turns the
+  // recipe above into an empty partition value for a nameless feature, which
+  // is what its consumer already treats as "no row assignment". Non-strings
+  // coerce too, so splitting a numeric attribute works instead of throwing.
+  // `s: unknown`, not `string`, because the annotation is the only place that
+  // said otherwise: jexl is untyped at the call site, so every one of these
+  // takes whatever the expression evaluated to. Declaring it honestly is what
+  // makes the coercion below type-check rather than read as dead defensiveness.
+  j.addFunction('split', (s: unknown, char: string) =>
+    String(s ?? '').split(char),
+  )
   /** #jexlFunction String functions | join('-', 'a', 'b', '', 'c') | a-b-c, joins truthy args with the separator */
   j.addFunction('join', (k: string, ...args: string[]) =>
     [...args].filter(f => !!f).join(k),

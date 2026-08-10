@@ -34,6 +34,42 @@ describe('function string parsing', () => {
     expect(await expr2.eval({})).toBe(false)
   })
 
+  describe('split is total', () => {
+    // Regression: `split` was `(s, char) => s.split(char)`, so an absent value
+    // threw a TypeError out of a config callback. It reaches one function
+    // argument in every nested use, because the inner call supplies the outer
+    // one's input — see the note at the registration.
+    const evalSplit = (expr: string, ctx: Record<string, unknown> = {}) =>
+      stringToJexlExpression(`jexl:${expr}`, jexl).eval(ctx)
+
+    it('splits a string as before', () => {
+      expect(evalSplit("split('KITTY KITTY', ' ')")).toEqual(['KITTY', 'KITTY'])
+    })
+
+    it('reads an absent value as the empty string', () => {
+      // the same answer `split('', ' ')` has always given, rather than [] — so
+      // absent and empty stay indistinguishable to a caller indexing the result
+      expect(evalSplit('split(nope, " ")')).toEqual([''])
+      expect(evalSplit('split(nul, " ")', { nul: null })).toEqual([''])
+      expect(evalSplit("split('', ' ')")).toEqual([''])
+    })
+
+    it('coerces a non-string rather than throwing', () => {
+      expect(evalSplit('split(n, ".")', { n: 1.5 })).toEqual(['1', '5'])
+    })
+
+    it('survives the nested form the jexl catalog documents', () => {
+      // `bigRmskBed` carries the repeat class as a suffix on the name, and this
+      // is LinearMultiRowFeatureDisplay's documented partitionField recipe. The
+      // second case is the one that used to take out the whole display.
+      const recipe = "split(split(feature.name,'#')[1],'/')[0]"
+      expect(
+        evalSplit(recipe, { feature: { name: 'META1_LTR#LTR/Copia' } }),
+      ).toBe('LTR')
+      expect(evalSplit(recipe, { feature: { name: 'no-hash-here' } })).toBe('')
+    })
+  })
+
   it('can use the loaded core helper functions to access feature info', () => {
     const feature = new SimpleFeature({
       uniqueId: 'jexlFeature',
