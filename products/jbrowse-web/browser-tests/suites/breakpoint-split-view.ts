@@ -47,7 +47,7 @@ const suite: TestSuite = {
         await dualSnapshot(
           page,
           'bsv-hg19-pileup-canvas',
-          displayPainted('pileup-display') + ' canvas',
+          `${displayPainted('pileup-display')} canvas`,
         )
       },
     },

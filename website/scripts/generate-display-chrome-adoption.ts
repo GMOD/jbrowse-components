@@ -510,14 +510,12 @@ checkOrWrite({
     path: docPath,
     marker: 'DISPLAY_CHROME_ADOPTION',
     body: [
-      `${rows.length} display types are registered for \`${LGV}\`: ` +
-        [...counts]
-          .sort((a, b) => b[1] - a[1])
-          .map(([k, n]) =>
-            k === 'none' ? `${n} on neither` : `${n} on \`${k}\``,
-          )
-          .join(', ') +
-        '.',
+      `${rows.length} display types are registered for \`${LGV}\`: ${[...counts]
+        .sort((a, b) => b[1] - a[1])
+        .map(([k, n]) =>
+          k === 'none' ? `${n} on neither` : `${n} on \`${k}\``,
+        )
+        .join(', ')}.`,
       '',
       ...markdownTable(
         ['Display type', 'Chrome', 'Component'],

@@ -49,7 +49,7 @@ const suite: TestSuite = {
         await dualSnapshot(
           page,
           'main-thread-rpc-bam-canvas',
-          displayPainted('pileup-display') + ' canvas',
+          `${displayPainted('pileup-display')} canvas`,
         )
       },
     },

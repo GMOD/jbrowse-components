@@ -69,7 +69,7 @@ const suite: TestSuite = {
         await dualSnapshot(
           page,
           'wiggle-color-after-red',
-          displayPainted('wiggle-display') + ' canvas',
+          `${displayPainted('wiggle-display')} canvas`,
         )
       },
     },

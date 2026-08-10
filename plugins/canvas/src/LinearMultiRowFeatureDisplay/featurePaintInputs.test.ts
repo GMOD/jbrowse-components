@@ -72,17 +72,21 @@ describe('featurePaintInputs', () => {
   it.each([
     [
       'a reorder',
-      (d: ReturnType<typeof makeDisplay>) =>
-        d.setLayout([{ name: 'sampleB' }, { name: 'sampleA' }]),
+      (d: ReturnType<typeof makeDisplay>) => {
+        d.setLayout([{ name: 'sampleB' }, { name: 'sampleA' }])
+      },
     ],
     [
       'a recolor',
-      (d: ReturnType<typeof makeDisplay>) =>
-        d.setLayout([{ name: 'sampleA', color: 'red' }, { name: 'sampleB' }]),
+      (d: ReturnType<typeof makeDisplay>) => {
+        d.setLayout([{ name: 'sampleA', color: 'red' }, { name: 'sampleB' }])
+      },
     ],
     [
       'a category toggle',
-      (d: ReturnType<typeof makeDisplay>) => d.setHiddenCategories(['segA']),
+      (d: ReturnType<typeof makeDisplay>) => {
+        d.setHiddenCategories(['segA'])
+      },
     ],
   ])('still invalidates on %s', (_label, mutate) => {
     const display = makeDisplay()

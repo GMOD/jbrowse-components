@@ -47,7 +47,7 @@ import type { Browser, Page } from 'puppeteer'
 
 const FIREFOX = process.env.FIREFOX ?? '/usr/bin/firefox-nightly'
 const OUT = process.env.OUT ?? path.join(os.tmpdir(), 'webgpu-coverage-probe')
-const SELECTOR = displayPainted('pileup-display') + ' canvas'
+const SELECTOR = `${displayPainted('pileup-display')} canvas`
 
 // color-by-strand: one of the four failures, at a locus that reproduces it.
 const spec = {

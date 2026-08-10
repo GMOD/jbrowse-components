@@ -39,7 +39,7 @@ const suite: TestSuite = {
         // leave a stale or blank canvas.
         await assertCanvasHasContent(
           page,
-          displayPainted('pileup-display') + ' canvas',
+          `${displayPainted('pileup-display')} canvas`,
         )
       },
     },
