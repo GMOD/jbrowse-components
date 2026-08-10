@@ -7,6 +7,7 @@ import {
   doBeforeEach,
   expectCanvasMatch,
   findCanvasIn,
+  findDisplayPainted,
   hts,
   mockConsoleWarn,
   setup,
@@ -34,7 +35,7 @@ test('nav to synteny from right click', async () => {
     await view.navToLocString('ctgA:30,222..33,669')
     await user.click(await findByTestId(hts('volvox_ins.paf'), ...opts))
 
-    const display = await findByTestId('pileup-display-done', ...opts)
+    const display = await findDisplayPainted('pileup-display', delay)
     const canvas = findCanvasIn(display)
     fireEvent.mouseMove(canvas, { clientX: 200, clientY: 3 })
     fireEvent.contextMenu(canvas, { clientX: 200, clientY: 3 })
@@ -45,7 +46,7 @@ test('nav to synteny from right click', async () => {
       expect(v?.initialized).toBe(true)
       expect(v?.views[0]?.coarseVisibleLocStrings).toBe('ctgA:29,223..34,670')
     }, delay)
-    expectCanvasMatch(await findByTestId('synteny_canvas_done', ...opts))
+    expectCanvasMatch(await findDisplayPainted('synteny_canvas', delay))
   })
 }, 60000)
 
@@ -61,7 +62,7 @@ test('replacing the launching view with the synteny view', async () => {
     await view.navToLocString('ctgA:30,222..33,669')
     await user.click(await findByTestId(hts('volvox_ins.paf'), ...opts))
 
-    const display = await findByTestId('pileup-display-done', ...opts)
+    const display = await findDisplayPainted('pileup-display', delay)
     const canvas = findCanvasIn(display)
     fireEvent.mouseMove(canvas, { clientX: 200, clientY: 3 })
     fireEvent.contextMenu(canvas, { clientX: 200, clientY: 3 })
@@ -74,7 +75,7 @@ test('replacing the launching view with the synteny view', async () => {
       expect(v?.initialized).toBe(true)
       expect(v?.views[0]?.coarseVisibleLocStrings).toBe('ctgA:29,223..34,670')
     }, delay)
-    await findByTestId('synteny_canvas_done', ...opts)
+    await findDisplayPainted('synteny_canvas', delay)
   })
 }, 60000)
 
@@ -86,7 +87,7 @@ test('nav to synteny from feature details', async () => {
     await view.navToLocString('ctgA:30,222..33,669')
     await user.click(await findByTestId(hts('volvox_ins.paf'), ...opts))
 
-    const display = await findByTestId('pileup-display-done', ...opts)
+    const display = await findDisplayPainted('pileup-display', delay)
     const canvas = findCanvasIn(display)
     fireEvent.mouseMove(canvas, { clientX: 200, clientY: 3 })
     fireEvent.click(canvas, { clientX: 200, clientY: 3 })
@@ -101,7 +102,7 @@ test('nav to synteny from feature details', async () => {
       expect(v?.initialized).toBe(true)
       expect(v?.views[0]?.coarseVisibleLocStrings).toBe('ctgA:1..50,001')
     }, delay)
-    expectCanvasMatch(await findByTestId('synteny_canvas_done', ...opts))
+    expectCanvasMatch(await findDisplayPainted('synteny_canvas', delay))
   })
 }, 60000)
 
@@ -136,7 +137,7 @@ test('nav to synteny from right click, with launch connection plugin', async () 
     await view.navToLocString('ctgA:30,222..33,669')
     await user.click(await findByTestId(hts('volvox_del2.paf'), ...opts))
 
-    const display = await findByTestId('pileup-display-done', ...opts)
+    const display = await findDisplayPainted('pileup-display', delay)
     const canvas = findCanvasIn(display)
     fireEvent.mouseMove(canvas, { clientX: 200, clientY: 3 })
     fireEvent.contextMenu(canvas, { clientX: 200, clientY: 3 })
@@ -148,7 +149,7 @@ test('nav to synteny from right click, with launch connection plugin', async () 
       expect(v?.views[0]?.coarseVisibleLocStrings).toBe('ctgA:29,223..34,670')
       expect(v?.views[1]?.coarseVisibleLocStrings).toBe('ctgA:27,498..29,808')
     }, delay)
-    expectCanvasMatch(await findByTestId('synteny_canvas_done', ...opts))
+    expectCanvasMatch(await findDisplayPainted('synteny_canvas', delay))
   })
 }, 60000)
 
@@ -162,7 +163,7 @@ test('group by mate assembly from the Group by submenu', async () => {
 
     await view.navToLocString('ctgA:30,222..33,669')
     await user.click(await screen.findByTestId(hts('volvox_ins.paf'), ...opts))
-    await screen.findByTestId('pileup-display-done', ...opts)
+    await findDisplayPainted('pileup-display', delay)
 
     await user.click(await screen.findByTestId('track_menu_icon', ...opts))
     await user.click(await screen.findByText('Group by...'))
@@ -182,7 +183,7 @@ test('sort by longest features first from the Sort by submenu', async () => {
 
     await view.navToLocString('ctgA:30,222..33,669')
     await user.click(await screen.findByTestId(hts('volvox_ins.paf'), ...opts))
-    await screen.findByTestId('pileup-display-done', ...opts)
+    await findDisplayPainted('pileup-display', delay)
 
     const display = view.tracks[0]!.displays[0]!
     // largeFeaturesFirst is the synteny config default, so flip it off through
@@ -214,12 +215,12 @@ test('Show mismatches is a live layer on a synteny track', async () => {
 
     await view.navToLocString('ctgA:30,222..33,669')
     await user.click(await screen.findByTestId(hts('volvox_ins.paf'), ...opts))
-    await screen.findByTestId('pileup-display-done', ...opts)
+    await findDisplayPainted('pileup-display', delay)
     const display = view.tracks[0]!.displays[0]!
 
     const pixels = async () =>
       findCanvasIn(
-        await screen.findByTestId('pileup-display-done', ...opts),
+        await findDisplayPainted('pileup-display', delay),
       ).toDataURL()
 
     const before = await pixels()
@@ -304,6 +305,6 @@ test('launch a multi-panel synteny view from a region selection', async () => {
     // ends while they're still in flight, and their resolution after teardown
     // throws "require a file after the Jest environment has been torn down"
     // from the synteny RPC's dynamic import.
-    await screen.findAllByTestId('synteny_canvas_done', ...opts)
+    await findDisplayPainted('synteny_canvas', delay)
   })
 }, 60000)

@@ -1,4 +1,4 @@
-import { encodeSessionSpec } from '@jbrowse/browser-test-utils'
+import { displayPainted, encodeSessionSpec } from '@jbrowse/browser-test-utils'
 
 import { HG38_HS1_CONFIG } from '../screenshot-spec-helpers.ts'
 
@@ -358,7 +358,7 @@ export const qcSpecs: ScreenshotSpec[] = [
     // for the mappability lane
     viewportHeight: 925,
     hideSelectors: HIDE_ISOFORM_CHIP,
-    readySelector: '[data-testid="pileup-display-done"]',
+    readySelector: displayPainted('pileup-display'),
     readyTimeout: 600000,
     settleMs: 30000,
   },
@@ -632,7 +632,7 @@ export const qcSpecs: ScreenshotSpec[] = [
     // two gene lanes plus the 300px band, from the run's own "170 css px of
     // blank below the last content" at 1070
     viewportHeight: 900,
-    readySelector: '[data-testid="synteny_canvas_done"]',
+    readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 180000,
     settleMs: 15000,
     // ANCHORED to the ribbon band, which this used to say was impossible: the
@@ -654,7 +654,7 @@ export const qcSpecs: ScreenshotSpec[] = [
         fontSize: 20,
         maxWidth: 420,
         anchor: {
-          selector: '[data-testid="synteny_canvas_done"]',
+          selector: displayPainted('synteny_canvas'),
           alignX: 'left',
           alignY: 'top',
           dx: 24,

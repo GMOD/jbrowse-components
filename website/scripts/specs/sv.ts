@@ -1,3 +1,5 @@
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
 import {
   DEMO_CONFIG,
   HG00151_ONT_1000G_ADAPTER,
@@ -418,7 +420,7 @@ export const svSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: '[data-testid="pileup-display-done"]',
+    readySelector: displayPainted('pileup-display'),
     readyTimeout: 90000,
     viewportHeight: 1000,
     settleMs: 15000,

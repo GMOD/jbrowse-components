@@ -1,3 +1,5 @@
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
 import {
   DEMO_CONFIG,
   VOLVOX,
@@ -295,7 +297,7 @@ export const variantsSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: '[data-testid="variant-matrix-display-done"]',
+    readySelector: displayPainted('variant-matrix-display'),
     readyTimeout: 120000,
     settleMs: 15000,
     // Close the TOP lane's genotype key. Both lanes draw the same five entries

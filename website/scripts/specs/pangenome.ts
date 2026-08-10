@@ -1,3 +1,5 @@
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
 import {
   PARK_CURSOR,
   displayReady,
@@ -89,7 +91,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     // five collapsed scalebar rows and four 110px bands, matching the minimap2
     // figure's framing so the two are comparable line for line
     viewportHeight: 715,
-    readySelector: '[data-testid="synteny_canvas_done"]',
+    readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
     settleMs: 15000,
   },

@@ -120,9 +120,7 @@ export async function waitRender(page: Page, timeout = 60000) {
   await page
     .waitForFunction(
       () =>
-        document.querySelectorAll(
-          '[data-testid$="-done"],[data-testid$="_done"]',
-        ).length > 0 &&
+        document.querySelectorAll('[data-display-drawn="true"]').length > 0 &&
         document.querySelectorAll('[data-testid="loading-overlay"]').length ===
           0,
       { timeout, polling: 200 },

@@ -75,9 +75,7 @@ const DotplotCanvas = observer(function DotplotCanvas({
       <RenderCanvas
         handle={handle}
         drawn={model.settled}
-        data-testid={
-          model.settled ? 'dotplot_webgl_canvas_done' : 'dotplot_webgl_canvas'
-        }
+        data-testid="dotplot_webgl_canvas"
         className={classes.canvas}
         style={{
           width: viewWidth,

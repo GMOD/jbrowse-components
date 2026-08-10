@@ -1,3 +1,5 @@
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
 import {
   DEMO_CONFIG,
   HG38_GENCODE_PROMOTER_TRACK,
@@ -454,7 +456,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: '[data-testid="pileup-display-done"]',
+    readySelector: displayPainted('pileup-display'),
     readyTimeout: 90000,
     settleMs: 15000,
     // cpg(40) + gene(90) + reads(320) + chrome
@@ -510,7 +512,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: '[data-testid="pileup-display-done"]',
+    readySelector: displayPainted('pileup-display'),
     readyTimeout: 90000,
     settleMs: 15000,
     // cpg(40) + gene(90) + reads(320) + chrome
@@ -609,7 +611,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: '[data-testid="pileup-display-done"]',
+    readySelector: displayPainted('pileup-display'),
     readyTimeout: 90000,
     settleMs: 15000,
     // cpg(40) + gene(90) + the merged aggregate(170) + reads(460) + chrome

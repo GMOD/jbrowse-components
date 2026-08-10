@@ -4,6 +4,7 @@ import {
   createView,
   doBeforeEach,
   expectCanvasMatch,
+  findDisplayPainted,
   hts,
   setup,
 } from './util.tsx'
@@ -30,7 +31,7 @@ test(
     fireEvent.click(await findByText('Display types', ...opts))
     fireEvent.click(await findByText('LD heatmap display', ...opts))
 
-    await findByTestId('ld-display-done', ...opts)
+    await findDisplayPainted('ld-display', delay)
     expectCanvasMatch(await findByTestId('ld_canvas', ...opts))
   },
   timeout,

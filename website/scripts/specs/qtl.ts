@@ -1,3 +1,5 @@
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
 import { lgvSession } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -103,7 +105,7 @@ export const qtlSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: '[data-testid="manhattan-display-done"]',
+    readySelector: displayPainted('manhattan-display'),
     readyTimeout: 90000,
     // gene lane(50) + manhattan(200) + full painting(460) + headers clear crop
     viewportHeight: 1000,
@@ -136,7 +138,7 @@ export const qtlSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'qtl/bxd_painting_sorted',
     url: paintingSortPanel(),
-    readySelector: '[data-testid="manhattan-display-done"]',
+    readySelector: displayPainted('manhattan-display'),
     readyTimeout: 90000,
     // chrome + manhattan(140) + painting(420) clears the bottom crop
     viewportHeight: 840,

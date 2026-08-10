@@ -1,6 +1,8 @@
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
 import {
   delay,
-  findByTestId,
+  findDisplayPainted,
   navigateWithSessionSpec,
   waitForDataLoaded,
   waitForElementCount,
@@ -57,19 +59,15 @@ const suite: TestSuite = {
       name: '3-way synteny view (volvox ins/del)',
       snapshot: 'multiway-synteny-3way',
       view: threeWayView,
-      waitTestId: 'synteny_canvas_done',
+      waitTestId: 'synteny_canvas',
     }),
     {
       name: '3-way synteny full page screenshot',
       fn: async page => {
         await navigateWithSessionSpec(page, { views: [threeWayView] })
-        await findByTestId(page, 'synteny_canvas_done', 60000)
+        await findDisplayPainted(page, 'synteny_canvas', 60000)
         await waitForDataLoaded(page)
-        await waitForElementCount(
-          page,
-          '[data-testid="synteny_canvas_done"]',
-          2,
-        )
+        await waitForElementCount(page, displayPainted('synteny_canvas'), 2)
         await delay(2000)
         await pageSnapshot(page, 'multiway-synteny-3way-fullpage')
       },
@@ -78,13 +76,13 @@ const suite: TestSuite = {
       name: '3-way synteny from one all-vs-all PAF (volvox ins/del)',
       snapshot: 'multiway-synteny-3way-allvsall',
       view: threeWayAllVsAllView,
-      waitTestId: 'synteny_canvas_done',
+      waitTestId: 'synteny_canvas',
     }),
     viewSnapshotTest({
       name: '3-way synteny from one indexed all-vs-all PIF (volvox ins/del)',
       snapshot: 'multiway-synteny-3way-allvsall-indexed',
       view: threeWayAllVsAllIndexedView,
-      waitTestId: 'synteny_canvas_done',
+      waitTestId: 'synteny_canvas',
     }),
     viewSnapshotTest({
       name: '2-way synteny with gene tracks (volvox)',
@@ -105,7 +103,7 @@ const suite: TestSuite = {
           },
         ],
       },
-      waitTestId: 'synteny_canvas_done',
+      waitTestId: 'synteny_canvas',
     }),
     viewSnapshotTest({
       name: 'dotplot view with grape vs peach (zoomed region)',
@@ -119,7 +117,7 @@ const suite: TestSuite = {
           { loc: 'chr1:1..2,000,000', assembly: 'grape' },
         ],
       },
-      waitTestId: 'dotplot_webgl_canvas_done',
+      waitTestId: 'dotplot_webgl_canvas',
     }),
   ],
 }

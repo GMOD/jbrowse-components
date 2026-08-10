@@ -1,3 +1,5 @@
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
 import { heightModeLabel } from '../../../plugins/linear-genome-view/src/BaseLinearDisplay/models/heightMode.ts'
 import {
   DEMO_CONFIG,
@@ -466,7 +468,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: '[data-testid="pileup-display-done"]',
+    readySelector: displayPainted('pileup-display'),
     readyTimeout: 90000,
     settleMs: 12000,
     viewportHeight: 690,
@@ -728,7 +730,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         'hic',
       ],
     }),
-    readySelector: '[data-testid="hic-display-done"]',
+    readySelector: displayPainted('hic-display'),
     readyTimeout: 60000,
     settleMs: 10000,
   },
@@ -812,7 +814,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     // 910, off the run's own clipped-below-the-fold report, for the 700px of
     // track above
     viewportHeight: 910,
-    readySelector: '[data-testid="hic-display-done"]',
+    readySelector: displayPainted('hic-display'),
     // 300 region pairs, and all 300 answer, where the intra-only file answered
     // 24 of them. Against ENCODE's own 1.72 GB file that was 685,098 records in
     // 224 s measured serially, which is what the 900 s here used to be for; off
@@ -857,7 +859,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     // the whole 330px display has to be inside the capture, or the label
     // anchored to the bottom of the track band is drawn off the frame
     viewportHeight: 532,
-    readySelector: '[data-testid="hic-display-done"]',
+    readySelector: displayPainted('hic-display'),
     readyTimeout: 60000,
     settleMs: 10000,
     annotations: [
@@ -904,7 +906,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       ],
     }),
     viewportHeight: 530,
-    readySelector: '[data-testid="hic-display-done"]',
+    readySelector: displayPainted('hic-display'),
     readyTimeout: 60000,
     settleMs: 10000,
   },
@@ -1077,7 +1079,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: '[data-testid="pileup-display-done"]',
+    readySelector: displayPainted('pileup-display'),
     readyTimeout: 90000,
     viewportHeight: 700,
     settleMs: 15000,
@@ -1113,7 +1115,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: '[data-testid="pileup-display-done"]',
+    readySelector: displayPainted('pileup-display'),
     readyTimeout: 90000,
     viewportHeight: 550,
     settleMs: 15000,
@@ -1172,7 +1174,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           },
           {
             type: 'waitForSelector',
-            selector: '[data-testid="pileup-display-done"]',
+            selector: displayPainted('pileup-display'),
           },
           { type: 'delay', ms: 2000 },
         ],
@@ -1464,7 +1466,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: '[data-testid="pileup-display-done"]',
+    readySelector: displayPainted('pileup-display'),
     readyTimeout: 90000,
     settleMs: 12000,
     // the run reported 107 css px clipped below the fold at 780

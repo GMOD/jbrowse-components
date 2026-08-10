@@ -1,7 +1,9 @@
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
 import {
   assertCanvasHasContent,
-  findByTestId,
   findByText,
+  findDisplayPainted,
   navigateWithSessionSpec,
   waitForDataLoaded,
   zoomOut,
@@ -28,7 +30,7 @@ const suite: TestSuite = {
           lgvSpec('ctgA:1000-2000', 'volvox_cram'),
         )
         await findByText(page, 'ctgA')
-        await findByTestId(page, 'pileup-display-done', 60000)
+        await findDisplayPainted(page, 'pileup-display', 60000)
         await waitForDataLoaded(page)
 
         await zoomOut(page, 3)
@@ -37,7 +39,7 @@ const suite: TestSuite = {
         // leave a stale or blank canvas.
         await assertCanvasHasContent(
           page,
-          '[data-testid="pileup-display-done"] canvas',
+          displayPainted('pileup-display') + ' canvas',
         )
       },
     },

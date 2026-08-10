@@ -108,12 +108,49 @@ export function findCanvasIn(container: HTMLElement) {
 }
 
 /**
+ * Wait for a display of the given TYPE to finish first paint.
+ *
+ * The jsdom counterpart of `displayPainted` from `@jbrowse/capture`, and the
+ * replacement for `findByTestId('<base>-done')`: `data-testid` no longer
+ * mutates on paint (ADR-065), so "this display type, painted" is a conjunction
+ * of the stable testid and `data-display-drawn`.
+ *
+ * It reports **which half** failed, which is the thing the old suffix could not
+ * do — `findDisplayPainted('pileup-display')` timing out was equally consistent
+ * with "no pileup display mounted" and "it mounted and never painted", and
+ * those have completely different causes.
+ */
+export async function findDisplayPainted(
+  testid: string,
+  // Same shape as the `waitFor` options every call site already passes to
+  // `findByTestId` as its third argument, so the migration off the suffix was a
+  // rename rather than a re-timing.
+  { timeout = 20000 }: { timeout?: number } = {},
+) {
+  return waitFor(
+    () => {
+      const el = document.querySelector<HTMLElement>(
+        `[data-testid="${testid}"][data-display-drawn="true"]`,
+      )
+      if (!el) {
+        throw new Error(
+          document.querySelector(`[data-testid="${testid}"]`)
+            ? `display ${testid} mounted but has not painted (data-display-drawn is still "false")`
+            : `no display with data-testid="${testid}" is mounted`,
+        )
+      }
+      return el
+    },
+    { timeout },
+  )
+}
+
+/**
  * Wait for one specific display to finish first paint, by `data-display-id`.
  *
- * Not a testid: `data-testid` is the display *type*'s base, so two alignments
- * displays in a breakpoint-split view share `pileup-display-done` and only the
- * display id tells them apart. This replaced `display-<displayId>-done`, which
- * worked only while a second wrapper element existed to emit that id.
+ * The narrower sibling of `findDisplayPainted`: `data-testid` names the display
+ * *type*, so two alignments displays in a breakpoint-split view share
+ * `pileup-display` and only the display id tells them apart.
  */
 export async function findDisplayById(displayId: string, timeout = 20000) {
   return waitFor(
@@ -134,17 +171,36 @@ export async function findDisplayById(displayId: string, timeout = 20000) {
   )
 }
 
-/** Wait for a display to finish rendering and return its canvas element. */
-export async function waitForRenderedCanvas(
-  findAllByTestId: (
-    matcher: RegExp,
-    options?: object,
-    waitOptions?: object,
-  ) => Promise<HTMLElement[]>,
+/**
+ * Wait for *any* display to finish first paint — the caller does not care which
+ * type, only that something has drawn.
+ *
+ * This used to be `findAllByTestId(/-display-done$/)`: a regex, because "any
+ * display" could only be expressed as a pattern over the mutating testid. One
+ * attribute says it directly now, and the pattern took the two chrome-less
+ * views (`synteny_canvas_done`, `dotplot_webgl_canvas_done`) with it — they do
+ * not end in `-display-done` and were silently outside every such match.
+ */
+export async function findAnyDisplayPainted({
   timeout = 20000,
-) {
-  const displays = await findAllByTestId(/-display-done$/, {}, { timeout })
-  return findCanvasIn(displays[0]!)
+}: { timeout?: number } = {}) {
+  return waitFor(
+    () => {
+      const el = document.querySelector<HTMLElement>(
+        '[data-display-drawn="true"]',
+      )
+      if (!el) {
+        throw new Error('no display has painted')
+      }
+      return el
+    },
+    { timeout },
+  )
+}
+
+/** Wait for a display to finish rendering and return its canvas element. */
+export async function waitForRenderedCanvas(timeout = 20000) {
+  return findCanvasIn(await findAnyDisplayPainted({ timeout }))
 }
 
 export async function createView(args?: any, adminMode?: boolean) {
@@ -385,7 +441,12 @@ export async function testFileReload(config: {
   readBuffer?: (request: Request) => Promise<Response>
   trackId: string
   viewLocation: [number, number]
-  expectedCanvas: string | RegExp
+  /**
+   * Which display type must have repainted after the reload. Omit for "any
+   * display" — which used to be spelled `/-display-done$/`, the reason this was
+   * a `string | RegExp` union at all.
+   */
+  displayTestId?: string
   timeout?: number
 }) {
   const readBuffer = config.readBuffer ?? volvoxReadBuffer
@@ -404,10 +465,9 @@ export async function testFileReload(config: {
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0]!)
 
-    const displayEl =
-      typeof config.expectedCanvas === 'string'
-        ? await findByTestId(config.expectedCanvas, ...opts)
-        : (await findAllByTestId(config.expectedCanvas, ...opts))[0]!
+    const displayEl = config.displayTestId
+      ? await findDisplayPainted(config.displayTestId, delay)
+      : await findAnyDisplayPainted(delay)
     const canvas = displayEl.querySelector('canvas') ?? displayEl
     expectCanvasMatch(canvas)
   })

@@ -1,12 +1,18 @@
 import { fireEvent } from '@testing-library/react'
 
-import { createView, expectCanvasMatch, findCanvasIn, hts } from './util.tsx'
+import {
+  createView,
+  expectCanvasMatch,
+  findCanvasIn,
+  findDisplayPainted,
+  hts,
+} from './util.tsx'
 
 export async function testOpenTrack({
   bpPerPx,
   start,
   trackId,
-  displayTestId = 'wiggle-display-done',
+  displayTestId = 'wiggle-display',
   timeout = 20000,
 }: {
   bpPerPx: number
@@ -18,6 +24,6 @@ export async function testOpenTrack({
   const { view, findByTestId } = await createView()
   view.setNewView(bpPerPx, start)
   fireEvent.click(await findByTestId(hts(trackId), {}, { timeout }))
-  const display = await findByTestId(displayTestId, {}, { timeout })
+  const display = await findDisplayPainted(displayTestId, { timeout })
   expectCanvasMatch(findCanvasIn(display))
 }

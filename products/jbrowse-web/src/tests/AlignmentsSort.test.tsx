@@ -6,6 +6,7 @@ import {
   doBeforeEach,
   expectCanvasMatch,
   findCanvasIn,
+  findDisplayPainted,
   hts,
   setup,
 } from './util.tsx'
@@ -32,10 +33,10 @@ test('selects a sort, sort by base pair', async () => {
 
   await user.click(await screen.findByText('Sort by...'))
   await user.click(await screen.findByText('Base pair'))
-  const display1 = await screen.findByTestId('pileup-display-done', ...opts)
+  const display1 = await findDisplayPainted('pileup-display', delay)
   expectCanvasMatch(findCanvasIn(display1), 0.1)
   await new Promise(resolve => setTimeout(resolve, 1000))
   await user.click(await screen.findByTestId('zoom_out'))
-  const display2 = await screen.findByTestId('pileup-display-done', ...opts)
+  const display2 = await findDisplayPainted('pileup-display', delay)
   expectCanvasMatch(findCanvasIn(display2), 0.1)
 }, 35000)

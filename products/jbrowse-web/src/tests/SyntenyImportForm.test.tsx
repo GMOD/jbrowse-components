@@ -1,6 +1,12 @@
 import { fireEvent, waitFor, within } from '@testing-library/react'
 
-import { createView, doBeforeEach, expectCanvasMatch, setup } from './util.tsx'
+import {
+  createView,
+  doBeforeEach,
+  expectCanvasMatch,
+  findDisplayPainted,
+  setup,
+} from './util.tsx'
 
 setup()
 
@@ -16,7 +22,7 @@ afterEach(() => {
 })
 
 test('three level', async () => {
-  const { session, queryAllByTestId } = await createView()
+  const { session } = await createView()
   session.addView('LinearSyntenyView', {
     init: {
       views: [
@@ -28,7 +34,9 @@ test('three level', async () => {
     },
   })
   const canvases = await waitFor(() => {
-    const found = queryAllByTestId('synteny_canvas_done')
+    const found = document.querySelectorAll<HTMLElement>(
+      '[data-testid="synteny_canvas"][data-display-drawn="true"]',
+    )
     expect(found).toHaveLength(2)
     return found
   }, delay)
@@ -37,7 +45,7 @@ test('three level', async () => {
 }, 40000)
 
 test('open tracklist file', async () => {
-  const { session, findByTestId, findByRole, findByText } = await createView()
+  const { session, findByRole, findByText } = await createView()
 
   fireEvent.click(await findByText('Add'))
   fireEvent.click(await findByText('Linear synteny view'))
@@ -47,7 +55,7 @@ test('open tracklist file', async () => {
   fireEvent.click(within(await findByRole('listbox')).getByText('volvox_del'))
   fireEvent.click(await findByText('Launch'))
 
-  expectCanvasMatch(await findByTestId('synteny_canvas_done', {}, delay))
+  expectCanvasMatch(await findDisplayPainted('synteny_canvas', delay))
 }, 40000)
 
 test('open local paf', async () => {
@@ -71,11 +79,11 @@ test('open local paf', async () => {
   })
 
   fireEvent.click(await findByText('Launch'))
-  expectCanvasMatch(await findByTestId('synteny_canvas_done', {}, delay))
+  expectCanvasMatch(await findDisplayPainted('synteny_canvas', delay))
 }, 40000)
 
 test('open local pif', async () => {
-  const { session, findByTestId, findByRole, findAllByTestId, findByText } =
+  const { session, findByRole, findAllByTestId, findByText } =
     await createView()
 
   fireEvent.click(await findByText('Add'))
@@ -102,5 +110,5 @@ test('open local pif', async () => {
   })
 
   fireEvent.click(await findByText('Launch'))
-  expectCanvasMatch(await findByTestId('synteny_canvas_done', {}, delay))
+  expectCanvasMatch(await findDisplayPainted('synteny_canvas', delay))
 }, 40000)

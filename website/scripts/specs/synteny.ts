@@ -1,3 +1,5 @@
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
 import {
   CGIAB_ASM_PIF_TRACK,
   DOTPLOT_CONFIG,
@@ -126,7 +128,7 @@ const TNNT3_FRAME = {
   mode: 'url' as const,
   viewportWidth: 1200,
   viewportHeight: 520,
-  readySelector: '[data-testid="synteny_canvas_done"]',
+  readySelector: displayPainted('synteny_canvas'),
   readyTimeout: 120000,
   settleMs: 12000,
 }
@@ -183,7 +185,7 @@ function mcscanFilePartSpecs(): ScreenshotSpec[] {
         },
       ],
     }),
-    readySelector: '[data-testid="synteny_canvas_done"]',
+    readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 60000,
     settleMs: 8000,
     // two collapsed scalebar rows around one 260px band
@@ -277,7 +279,7 @@ function launchFromSelectionParts(): ScreenshotSpec[] {
   const base = {
     mode: 'url' as const,
     url,
-    readySelector: '[data-testid="pileup-display-done"]',
+    readySelector: displayPainted('pileup-display'),
     readyTimeout: 120000,
     settleMs: 12000,
   }
@@ -331,7 +333,7 @@ function launchFromSelectionParts(): ScreenshotSpec[] {
         { type: 'click', text: 'Replace current view' },
         {
           type: 'waitForSelector',
-          selector: '[data-testid="synteny_canvas_done"]',
+          selector: displayPainted('synteny_canvas'),
         },
         { type: 'delay', ms: 4000 },
         // No color legend and no palette menu (reviewer). The launched view
@@ -382,7 +384,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     url: hg38ChimpSynteny('full'),
     viewportWidth: 1200,
     viewportHeight: 850,
-    readySelector: '[data-testid="synteny_canvas_done"]',
+    readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 60000,
     settleMs: 12000,
   },
@@ -393,7 +395,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     url: hg38ChimpSynteny('full', VAPB_SVA_LOCUS),
     viewportWidth: 1200,
     viewportHeight: 878,
-    readySelector: '[data-testid="synteny_canvas_done"]',
+    readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 60000,
     settleMs: 12000,
   },
@@ -406,7 +408,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     url: hg38ChimpSynteny('full', PICALM_ALU_LOCUS),
     viewportWidth: 1200,
     viewportHeight: 850,
-    readySelector: '[data-testid="synteny_canvas_done"]',
+    readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 60000,
     settleMs: 12000,
   },
@@ -449,7 +451,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: '[data-testid="dotplot_webgl_canvas_done"]',
+    readySelector: displayPainted('dotplot_webgl_canvas'),
     readyTimeout: 60000,
     settleMs: 8000,
   },
@@ -482,7 +484,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: '[data-testid="synteny_canvas_done"]',
+    readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 60000,
     settleMs: 10000,
   },
@@ -541,7 +543,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         ],
       },
     ),
-    readySelector: '[data-testid="synteny_canvas_done"]',
+    readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
     settleMs: 15000,
   },
@@ -630,7 +632,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         ],
       },
     ),
-    readySelector: '[data-testid="synteny_canvas_done"]',
+    readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
     settleMs: 12000,
     // THE RIBBONS ARE ACCURATE AND THE "DOUBLING" IS THE FINDING (reviewer: "i
@@ -725,7 +727,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         ],
       },
     ),
-    readySelector: '[data-testid="pileup-display-done"]',
+    readySelector: displayPainted('pileup-display'),
     readyTimeout: 120000,
     settleMs: 12000,
     viewportHeight: 478,
@@ -811,7 +813,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         ],
       },
     ),
-    readySelector: '[data-testid="dotplot_webgl_canvas_done"]',
+    readySelector: displayPainted('dotplot_webgl_canvas'),
     readyTimeout: 300000,
     settleMs: 15000,
     // 1000 left 233 css px of blank under the plot, per the run's own report
@@ -926,7 +928,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         ],
       },
     ),
-    readySelector: '[data-testid="dotplot_webgl_canvas_done"]',
+    readySelector: displayPainted('dotplot_webgl_canvas'),
     readyTimeout: 300000,
     settleMs: 15000,
     viewportHeight: 767,
@@ -1219,7 +1221,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         ],
       },
     ),
-    readySelector: '[data-testid="synteny_canvas_done"]',
+    readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
     settleMs: 15000,
     viewportHeight: 1000,
@@ -1311,7 +1313,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         ],
       },
     ),
-    readySelector: '[data-testid="synteny_canvas_done"]',
+    readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
     settleMs: 15000,
     // five collapsed scalebar rows and four 180px bands
@@ -1375,7 +1377,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         ],
       },
     ),
-    readySelector: '[data-testid="synteny_canvas_done"]',
+    readySelector: displayPainted('synteny_canvas'),
     // The heaviest figure in the set, and the only one of the three OrthoFinder
     // specs that does not finish in 120s on a CI runner — it was the sole
     // synteny failure on the first sweeps of .github/workflows/figures.yml,
@@ -1502,7 +1504,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         ],
       },
     ),
-    readySelector: '[data-testid="synteny_canvas_done"]',
+    readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
     settleMs: 15000,
     // two collapsed scalebar rows and one 430px band
@@ -1598,7 +1600,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         ],
       },
     ),
-    readySelector: '[data-testid="synteny_canvas_done"]',
+    readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
     settleMs: 15000,
     viewportHeight: 640,
@@ -1688,7 +1690,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // five collapsed scalebar rows and four 110px bands, sized to them
     // (collapseEmptyRows shrinks each row from ~175px to a bare scalebar)
     viewportHeight: 715,
-    readySelector: '[data-testid="synteny_canvas_done"]',
+    readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
     settleMs: 15000,
   },
@@ -1770,7 +1772,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
       },
     ),
     viewportHeight: 560,
-    readySelector: '[data-testid="synteny_canvas_done"]',
+    readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
     settleMs: 15000,
     // Point out the stx2 island (the reviewer's ask). The box and arrow ANCHOR
@@ -2099,7 +2101,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
       },
     ),
     viewportHeight: 1030,
-    readySelector: '[data-testid="synteny_canvas_done"]',
+    readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
     settleMs: 15000,
   },
@@ -2245,7 +2247,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: '[data-testid="synteny_canvas_done"]',
+    readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 60000,
     settleMs: 10000,
     // just the app, and enough for the lower panel's own synteny row: the old
@@ -2283,7 +2285,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: '[data-testid="dotplot_webgl_canvas_done"]',
+    readySelector: displayPainted('dotplot_webgl_canvas'),
     readyTimeout: 60000,
     settleMs: 8000,
   },
@@ -2355,7 +2357,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: '[data-testid="synteny_canvas_done"]',
+    readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 60000,
     settleMs: 8000,
     // two 70px gene lanes, their scalebars and a 220px band; 560 cut 53px off
@@ -2387,7 +2389,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: '[data-testid="synteny_canvas_done"]',
+    readySelector: displayPainted('synteny_canvas'),
     // autoDiagonalize holds the synteny canvas (and thus synteny_canvas_done)
     // off-screen until the diagonalize RPC lands and the reorder is applied, so
     // the canvas only ever appears in its final diagonalized state. The remote
@@ -2594,7 +2596,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // resolving mm39 through the hub plugin raises a "Successfully loaded"
     // snackbar over whichever frame the connection lands in
     hideSelectors: ['.MuiSnackbar-root'],
-    readySelector: '[data-testid="pileup-display-done"]',
+    readySelector: displayPainted('pileup-display'),
     // the UCSC hub config is ~570 tracks and pulls three remote plugins
     readyTimeout: 120000,
     settleMs: 10000,
@@ -2672,7 +2674,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           { type: 'click', text: 'Replace current view' },
           {
             type: 'waitForSelector',
-            selector: '[data-testid="synteny_canvas_done"]',
+            selector: displayPainted('synteny_canvas'),
             timeout: 120000,
           },
           // mm39 resolves through the hub plugin and the chain track refetches
@@ -2749,7 +2751,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             },
           ],
         }),
-        readySelector: '[data-testid="synteny_canvas_done"]',
+        readySelector: displayPainted('synteny_canvas'),
         // 690 cut 13.5 css px off the chimp RepeatMasker row, per the run's own
         // CONTENT CLIPPED report
         viewportHeight: 704,
@@ -2803,7 +2805,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: '[data-testid="dotplot_webgl_canvas_done"]',
+    readySelector: displayPainted('dotplot_webgl_canvas'),
     readyTimeout: 90000,
     viewportWidth: 1800,
     // gate on the WebGL canvas `settled` test-id (canvas painted + no display
@@ -3135,7 +3137,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: '[data-testid="dotplot_webgl_canvas_done"]',
+    readySelector: displayPainted('dotplot_webgl_canvas'),
     readyTimeout: 60000,
     settleMs: 5000,
     actions: [
@@ -3156,7 +3158,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           { type: 'click', text: 'Linear synteny view' },
           {
             type: 'waitForSelector',
-            selector: '[data-testid="synteny_canvas_done"]',
+            selector: displayPainted('synteny_canvas'),
           },
           { type: 'delay', ms: 2000 },
           { type: 'click', selector: '[data-testid="close_view"]' },
@@ -3209,7 +3211,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // crossings stay symmetric
     viewportWidth: 1000,
     viewportHeight: 760,
-    readySelector: '[data-testid="dotplot_webgl_canvas_done"]',
+    readySelector: displayPainted('dotplot_webgl_canvas'),
     // 21 MB PIF plus the hs1 chrom.sizes, both remote
     readyTimeout: 180000,
     settleMs: 10000,
@@ -3319,7 +3321,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // same width as the dotplot it is read beside
     viewportWidth: 1000,
     viewportHeight: 420,
-    readySelector: '[data-testid="synteny_canvas_done"]',
+    readySelector: displayPainted('synteny_canvas'),
     // 21 MB PIF plus the hs1 chrom.sizes, both remote
     readyTimeout: 180000,
     settleMs: 10000,
@@ -3338,7 +3340,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: '[data-testid="dotplot_webgl_canvas_done"]',
+    readySelector: displayPainted('dotplot_webgl_canvas'),
     readyTimeout: 90000,
     settleMs: 10000,
   },

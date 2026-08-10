@@ -7,6 +7,7 @@ import {
   doBeforeEach,
   expectCanvasMatch,
   exportAndVerifySvg,
+  findDisplayPainted,
   hts,
   setup,
 } from './util.tsx'
@@ -47,7 +48,7 @@ test('opens a vcf track and clusters genotypes', async () => {
     expect(view.tracks[0].displays[0].hierarchy).toBeTruthy()
   }, delay)
 
-  await findByTestId('variant-matrix-display-done', {}, delay)
+  await findDisplayPainted('variant-matrix-display', delay)
   expectCanvasMatch(await findByTestId('variant_matrix_canvas', {}, delay))
 
   // export svg

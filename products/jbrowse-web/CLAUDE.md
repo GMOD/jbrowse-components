@@ -20,6 +20,7 @@ show.
 - **Don't wait on `textContent.includes('Loading')`** — `LoadingOverlay` always
   keeps that literal text in the DOM, so the wait is always true and burns its
   full timeout. Wait on the `loading-overlay` test-id count, or the per-display
-  `*-done` test-id for canvas paint completion.
+  `data-display-drawn` attribute for canvas paint completion
+  (`findDisplayPainted` in `browser-tests/helpers.ts`).
 - `runner.ts` reaps orphaned test browsers at startup; SIGKILLed prior runs
   otherwise accumulate until the kernel OOM-kills a live renderer mid-run.

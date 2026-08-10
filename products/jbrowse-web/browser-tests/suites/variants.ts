@@ -1,9 +1,10 @@
 import {
   assertVirtualScrollStructure,
   findByTestId,
-  waitForDisplayDrawn,
+  findDisplayPainted,
   navigateWithSessionSpec,
   waitForDataLoaded,
+  waitForDisplayDrawn,
 } from '../helpers.ts'
 import { lgvSnapshotTest } from '../suiteHelpers.ts'
 
@@ -101,7 +102,7 @@ const suite: TestSuite = {
       name: 'old MultiLinearVariantDisplay type still renders (rename back-compat)',
       fn: async page => {
         await navigateWithSessionSpec(page, oldTypeNameSpec)
-        await findByTestId(page, 'variant-display-done', 30000)
+        await findDisplayPainted(page, 'variant-display', 30000)
         await waitForDataLoaded(page)
         await findByTestId(page, 'variant_canvas')
       },
@@ -114,7 +115,7 @@ const suite: TestSuite = {
       name: 'colorBy population colors sample rows from samplesTsv metadata',
       fn: async page => {
         await navigateWithSessionSpec(page, populationDemoSpec)
-        await findByTestId(page, 'variant-display-done', 30000)
+        await findDisplayPainted(page, 'variant-display', 30000)
         await waitForDataLoaded(page)
         const info = await page.evaluate(() => {
           interface Src {
@@ -211,7 +212,7 @@ const suite: TestSuite = {
       name: 'multi-sample variant scrolls virtually (no native scroll container)',
       fn: async page => {
         await navigateWithSessionSpec(page, overflowingMultiSampleSpec)
-        await findByTestId(page, 'variant-display-done')
+        await findDisplayPainted(page, 'variant-display')
         await waitForDataLoaded(page)
         // an overflowing display renders the draggable VerticalScrollbar overlay
         await findByTestId(page, 'vertical-scrollbar')

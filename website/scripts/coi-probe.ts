@@ -114,7 +114,7 @@ for (const w of page.workers()) {
   )
 }
 painted = await page.evaluate(
-  () => document.querySelectorAll('[data-testid$="-done"]').length,
+  () => document.querySelectorAll('[data-display-drawn="true"]').length,
 )
 
 process.stderr.write(

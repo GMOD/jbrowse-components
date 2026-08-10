@@ -1,6 +1,12 @@
 import { fireEvent } from '@testing-library/react'
 
-import { createView, doBeforeEach, hts, setup } from './util.tsx'
+import {
+  createView,
+  doBeforeEach,
+  findDisplayPainted,
+  hts,
+  setup,
+} from './util.tsx'
 
 setup()
 
@@ -22,7 +28,7 @@ test('open a GWAS manhattan track', async () => {
   view.setNewView(5, 0)
   fireEvent.click(await findByTestId(hts('volvox_gwas'), {}, { timeout }))
 
-  const el = await findByTestId('manhattan-display-done', {}, { timeout })
+  const el = await findDisplayPainted('manhattan-display', { timeout })
   expect(el.dataset.displayId).toBe('volvox_gwas-LinearManhattanDisplay')
   expect(el.dataset.displayDrawn).toBe('true')
 }, 25000)

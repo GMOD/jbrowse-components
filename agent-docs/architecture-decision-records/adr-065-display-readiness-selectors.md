@@ -1,14 +1,18 @@
 ---
-status: Proposed
-summary: "Display readiness is a data attribute, and `data-testid` should stop mutating — the `-done`/`_done` suffix is an internal convenience that never reached the published contract, and its ergonomic advantage is recoverable as a helper"
+status: Accepted
+summary: "Display readiness is a data attribute and `data-testid` no longer mutates — the `-done`/`_done` suffix was an internal convenience that never reached the published contract, and its one ergonomic advantage came back as a helper that reports which half of the wait failed"
 ---
 
 # ADR-065: Display readiness is a data attribute; the `-done` suffix is not the contract
 
 ## Status
 
-**Proposed** (2026-08-10). Written before moving any call site, because the
-migration is ~162 of them and the decision should be agreed first.
+**Accepted** (2026-08-10). Written as Proposed before moving any call site,
+then implemented in the same session once agreed. The counts under Consequences
+are what the migration cost, not what it was estimated at — the estimate was
+~162 sites in three tranches and the real figure was ~200 across ~130 files,
+because the inventory that produced it counted selector *lines* and missed the
+regex forms (`/-display-done$/`) and the testids passed around as values.
 
 Related: [DISPLAYCHROME.md](../reference/DISPLAYCHROME.md) §"One element per
 display" (what is emitted today, and the three testid shapes this already
@@ -75,7 +79,7 @@ Three costs follow from having both:
 3. **A mutating testid is a surprising handle.** Every other `data-testid` in the
    tree is a stable name.
 
-## Decision (proposed)
+## Decision
 
 **Make `data-testid` stable and delete the suffix convention. Readiness is only
 ever a data attribute.** Concretely:

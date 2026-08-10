@@ -5,6 +5,7 @@ import {
   doBeforeEach,
   expectCanvasMatch,
   findCanvasIn,
+  findDisplayPainted,
   hts,
   mockConsoleWarn,
   setup,
@@ -26,7 +27,7 @@ test('launch read vs ref panel', async () => {
     await findByTestId(hts('volvox_alignments_pileup_coverage'), {}, delay),
   )
 
-  const display = await findByTestId('pileup-display-done', {}, delay)
+  const display = await findDisplayPainted('pileup-display', delay)
   const canvas = findCanvasIn(display)
   fireEvent.mouseMove(canvas, { clientX: 200, clientY: 80 })
   fireEvent.click(canvas, { clientX: 200, clientY: 80 })
@@ -41,7 +42,7 @@ test('launch read vs ref panel', async () => {
   })
   fireEvent.click(elt)
 
-  expectCanvasMatch(await findByTestId('synteny_canvas_done', {}, delay))
+  expectCanvasMatch(await findDisplayPainted('synteny_canvas', delay))
   consoleMock.mockRestore()
 }, 40000)
 
@@ -52,7 +53,7 @@ test('launch read vs ref dotplot', async () => {
     await findByTestId(hts('volvox_alignments_pileup_coverage'), {}, delay),
   )
 
-  const display = await findByTestId('pileup-display-done', {}, delay)
+  const display = await findDisplayPainted('pileup-display', delay)
   const canvas = findCanvasIn(display)
   fireEvent.mouseMove(canvas, { clientX: 200, clientY: 80 })
   fireEvent.click(canvas, { clientX: 200, clientY: 80 })
@@ -99,7 +100,7 @@ test('replace the launching view with the read vs ref dotplot', async () => {
       await findByTestId(hts('volvox_alignments_pileup_coverage'), {}, delay),
     )
 
-    const display = await findByTestId('pileup-display-done', {}, delay)
+    const display = await findDisplayPainted('pileup-display', delay)
     const canvas = findCanvasIn(display)
     fireEvent.mouseMove(canvas, { clientX: 200, clientY: 80 })
     fireEvent.click(canvas, { clientX: 200, clientY: 80 })

@@ -29,7 +29,7 @@ const suite: TestSuite = {
         levelHeights: [350],
         views: [{ assembly: 'grape' }, { assembly: 'peach' }],
       },
-      waitTestId: 'synteny_canvas_done',
+      waitTestId: 'synteny_canvas',
     }),
     viewSnapshotTest({
       name: 'renders synteny view for grape chr18 vs peach Pp01 (minimap2 PAF)',
@@ -48,7 +48,7 @@ const suite: TestSuite = {
           { loc: 'Pp01', assembly: 'peach' },
         ],
       },
-      waitTestId: 'synteny_canvas_done',
+      waitTestId: 'synteny_canvas',
     }),
   ],
 }

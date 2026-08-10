@@ -1,4 +1,4 @@
-import { encodeSessionSpec } from '@jbrowse/browser-test-utils'
+import { displayPainted, encodeSessionSpec } from '@jbrowse/browser-test-utils'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -193,7 +193,7 @@ export const popgenSpecs: ScreenshotSpec[] = [
         },
       ],
     })}&sessionName=Screenshot`,
-    readySelector: '[data-testid="wiggle-display-done"]',
+    readySelector: displayPainted('wiggle-display'),
     readyText: 'Fst',
     readyTimeout: 90000,
     // inversion(40) + fst(340) + 2 track headers + ruler/overview + app bar
@@ -266,7 +266,7 @@ export const popgenSpecs: ScreenshotSpec[] = [
         },
       ],
     })}&sessionName=Screenshot`,
-    readySelector: '[data-testid="wiggle-display-done"]',
+    readySelector: displayPainted('wiggle-display'),
     readyText: 'Tajima',
     readyTimeout: 90000,
     // tajd(200) + pi(180) + genes(150) + 3 headers + ruler/overview + app bar
@@ -341,7 +341,7 @@ export const popgenSpecs: ScreenshotSpec[] = [
         },
       },
     ],
-    readySelector: '[data-testid="variant-display-done"]',
+    readySelector: displayPainted('variant-display'),
     readyText: 'In(2L)t genotyped',
     readyTimeout: 120000,
     // inversion(40) + fst(160) + genotypes(360) + 3 track headers + ruler and

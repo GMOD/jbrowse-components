@@ -11,6 +11,8 @@
  */
 import { parseArgs } from 'node:util'
 
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
 import {
   resolveUrlSpec,
   specUrl,
@@ -40,7 +42,7 @@ const dump = await withHarness(
       waitUntil: 'domcontentloaded',
       timeout: 300000,
     })
-    await page.waitForSelector('[data-testid="synteny_canvas_done"]', {
+    await page.waitForSelector(displayPainted('synteny_canvas'), {
       timeout: 300000,
     })
     await new Promise(r => setTimeout(r, settle))

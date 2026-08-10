@@ -30,7 +30,7 @@ const suite: TestSuite = {
         levelHeights: [350],
         views: [{ assembly: 'hs1' }, { assembly: 'mm39' }],
       },
-      waitTestId: 'synteny_canvas_done',
+      waitTestId: 'synteny_canvas',
     }),
     viewSnapshotTest({
       name: 'whole-genome overview hs1 vs mm39 (100k minlen)',
@@ -45,7 +45,7 @@ const suite: TestSuite = {
         minAlignmentLength: 100000,
         views: [{ assembly: 'hs1' }, { assembly: 'mm39' }],
       },
-      waitTestId: 'synteny_canvas_done',
+      waitTestId: 'synteny_canvas',
     }),
     viewSnapshotTest({
       name: 'renders synteny view for chr7 vs chr6 (indexed PAF, 100k minlen)',
@@ -62,7 +62,7 @@ const suite: TestSuite = {
           { loc: 'chr6', assembly: 'mm39' },
         ],
       },
-      waitTestId: 'synteny_canvas_done',
+      waitTestId: 'synteny_canvas',
     }),
     viewSnapshotTest({
       name: 'renders synteny view for chr1 region (large dataset, viewport culling)',
@@ -86,7 +86,7 @@ const suite: TestSuite = {
           { loc: 'chr1:129,000,000..176,000,000', assembly: 'mm39' },
         ],
       },
-      waitTestId: 'synteny_canvas_done',
+      waitTestId: 'synteny_canvas',
     }),
   ],
 }

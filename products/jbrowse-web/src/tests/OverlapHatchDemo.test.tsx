@@ -10,6 +10,7 @@ import {
   createView,
   doBeforeEach,
   findCanvasIn,
+  findDisplayPainted,
   getSavedSvg,
   hts,
   setup,
@@ -51,7 +52,7 @@ async function renderLinkedOverlap(name: string, loc: string, track: string) {
   const display = view.tracks[0].displays[0]
   display.setFeatureHeight(14)
 
-  const el = await findByTestId('pileup-display-done', ...opts)
+  const el = await findDisplayPainted('pileup-display', { timeout })
   await new Promise(res => setTimeout(res, 2000))
 
   fs.mkdirSync(outDir, { recursive: true })

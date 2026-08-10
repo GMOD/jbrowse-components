@@ -1,12 +1,14 @@
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
 import {
   delay,
-  findByTestId,
   findByText,
+  findDisplayPainted,
   navigateToUrl,
   navigateWithSessionSpec,
   waitForDataLoaded,
-  waitForElementCount,
   waitForDisplayPaint,
+  waitForElementCount,
 } from '../helpers.ts'
 import { dualSnapshot, pageSnapshot } from '../snapshot.ts'
 import { lgvSnapshotTest, viewSnapshotTest } from '../suiteHelpers.ts'
@@ -177,14 +179,14 @@ const localDemos: TestSuite = {
 
         await waitForDisplayPaint(
           page,
-          '[data-testid="dotplot_webgl_canvas_done"]',
+          displayPainted('dotplot_webgl_canvas'),
           60000,
         )
         await waitForDataLoaded(page)
         await dualSnapshot(
           page,
           'demo-dotplot-canvas',
-          '[data-testid="dotplot_webgl_canvas_done"]',
+          displayPainted('dotplot_webgl_canvas'),
         )
       },
     },
@@ -201,7 +203,7 @@ const localDemos: TestSuite = {
           { loc: 'I', assembly: 'YJM1447' },
         ],
       },
-      waitTestId: 'synteny_canvas_done',
+      waitTestId: 'synteny_canvas',
     }),
     viewSnapshotTest({
       name: 'Yeast whole-genome synteny screenshot',
@@ -216,14 +218,14 @@ const localDemos: TestSuite = {
         tracks: ['dotplot_track_cigar'],
         views: [{ assembly: 'R64' }, { assembly: 'YJM1447' }],
       },
-      waitTestId: 'synteny_canvas_done',
+      waitTestId: 'synteny_canvas',
     }),
     {
       name: 'Breakpoint split view demo screenshot',
       fn: async page => {
         await navigateToUrl(page, 'config=test_data/breakpoint/config.json')
 
-        await findByTestId(page, 'pileup-display-done', 60000)
+        await findDisplayPainted(page, 'pileup-display', 60000)
         await waitForDataLoaded(page)
         await pageSnapshot(page, 'demo-breakpoint-split-view-fullpage')
       },
@@ -238,7 +240,7 @@ const localDemos: TestSuite = {
         loc: 'chr1:1..10,000,000',
         tracks: ['hic_test'],
       },
-      waitTestId: 'hic-display-done',
+      waitTestId: 'hic-display',
       snapshotSelector: '[data-testid="hic_canvas"]',
     }),
     lgvSnapshotTest({
@@ -258,7 +260,7 @@ const localDemos: TestSuite = {
       // omitting loc triggers showAllRegionsInAssembly — shows all hg19
       // chromosomes at once with tumor/normal BigWig coverage side by side
       tracks: ['colo_tumor', 'colo_normal'],
-      doneTestId: 'wiggle-display-done',
+      displayTestId: 'wiggle-display',
     }),
     lgvSnapshotTest({
       name: 'Nanopore EGFR amplicon alignments',
@@ -281,7 +283,7 @@ const localDemos: TestSuite = {
       tracks: [
         { trackId: 'nanopore_targeted_alignments_0.1', forceLoad: true },
       ],
-      doneTestId: 'pileup-display-done',
+      displayTestId: 'pileup-display',
     }),
     viewSnapshotTest({
       name: 'Grape-peach synteny demo screenshot',
@@ -295,7 +297,7 @@ const localDemos: TestSuite = {
           { loc: 'chr1:316,306..316,364', assembly: 'grape' },
         ],
       },
-      waitTestId: 'synteny_canvas_done',
+      waitTestId: 'synteny_canvas',
     }),
   ],
 }

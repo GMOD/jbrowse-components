@@ -177,6 +177,34 @@ export async function waitForQuiescent(
 // and that ambiguity is what makes a blank capture unattributable.
 export const PENDING_DISPLAYS = '[data-display-drawn="false"]'
 
+// The composite selectors, so "this display type, painted" is written once.
+//
+// `data-testid` names the display TYPE and is stable; the readiness attributes
+// are separate and orthogonal. That split is deliberate (ADR-065) and it is what
+// makes `PENDING_DISPLAYS` above a single selector — but it does mean the
+// everyday question, "has the pileup finished", is a conjunction rather than one
+// attribute. Writing that conjunction out at each call site is what previously
+// produced two suffix conventions and a `[data-testid$="-done"],
+// [data-testid$="_done"]` union, so it is a function here instead.
+//
+// No `CSS.escape`: these are our own testids, fixed identifiers chosen in the
+// display components, and the escape function does not exist in node (where
+// these strings are built) nor in jsdom.
+export const displayPainted = (testid: string) =>
+  `[data-testid="${testid}"][data-display-drawn="true"]`
+
+/**
+ * The stronger one. `drawn` flips on FIRST paint — an empty canvas with the
+ * fetch still in flight satisfies it — so a figure that must show *data* waits
+ * on the phase instead.
+ */
+export const displaySettled = (testid: string) =>
+  `[data-testid="${testid}"][data-display-phase="ready"]`
+
+/** One display, by its config's `displayId` rather than by type. */
+export const displayById = (displayId: string) =>
+  `[data-display-id="${displayId}"]`
+
 // Wait until no display wrapper is still pending its first paint, or until the
 // timeout elapses (proceed anyway — a display stuck in its too-large/error state
 // renders no wrapper at all and never reports done).

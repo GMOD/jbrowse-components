@@ -1,3 +1,5 @@
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
 import {
   navigateWithSessionSpec,
   waitForDataLoaded,
@@ -67,19 +69,19 @@ export interface LgvSnapshotOpts extends SnapshotTestCommon {
   // omit for a whole-genome view (triggers showAllRegionsInAssembly)
   loc?: string
   assembly?: string
-  // when set, wait on (and snapshot) `[data-testid="<doneTestId>"] canvas`,
-  // e.g. 'pileup-display-done'. Otherwise wait on the generic
-  // `[data-testid$="-done"] canvas` that any single-display view exposes.
-  doneTestId?: string
-  // override the snapshot target when it isn't the `<doneTestId> canvas` child
-  // (e.g. a paired-arc display whose `*-done` element IS the canvas)
+  // when set, wait on (and snapshot) that display TYPE's canvas once it has
+  // painted — e.g. 'pileup-display'. Otherwise wait on any painted display's
+  // canvas, which is what a single-display view exposes.
+  displayTestId?: string
+  // override the snapshot target when it isn't the display's `canvas` child
+  // (e.g. a paired-arc display whose painted element IS the canvas)
   snapshotSelector?: string
 }
 
 // Collapses the overwhelmingly common "open a LinearGenomeView at <loc> with
 // <tracks>, wait for paint, dual-snapshot the canvas" test into one
 // declaration. Replaces ~15 hand-rolled copies per snapshot suite. For views
-// whose `*_done` element IS the canvas (synteny/hic/dotplot), use
+// whose painted element IS the canvas (synteny/hic/dotplot), use
 // `viewSnapshotTest` instead — this is LGV-display-shaped.
 export function lgvSnapshotTest({
   name,
@@ -88,16 +90,16 @@ export function lgvSnapshotTest({
   loc,
   assembly = 'volvox',
   config,
-  doneTestId,
+  displayTestId,
   snapshotSelector,
   threshold,
   assertContent,
   requiresRemote,
   timeout,
 }: LgvSnapshotOpts): TestCase {
-  const canvasSelector = doneTestId
-    ? `[data-testid="${doneTestId}"] canvas`
-    : '[data-testid$="-done"] canvas'
+  const canvasSelector = displayTestId
+    ? `${displayPainted(displayTestId)} canvas`
+    : '[data-display-drawn="true"] canvas'
   return {
     name,
     requiresRemote,
@@ -122,17 +124,17 @@ export interface ViewSnapshotOpts extends SnapshotTestCommon {
   // a single view spec object (its `type` plus the view-specific fields, e.g.
   // a LinearSyntenyView with nested `views`)
   view: Record<string, unknown>
-  // data-testid of the paint-complete element to wait on and (by default)
-  // snapshot, e.g. 'synteny_canvas_done'
+  // data-testid of the display to wait for paint on and (by default) snapshot,
+  // e.g. 'synteny_canvas'
   waitTestId: string
   // override when the snapshot target differs from the wait element, e.g. hic
-  // waits on 'hic-display-done' but snapshots 'hic_canvas'
+  // waits on 'hic-display' but snapshots 'hic_canvas'
   snapshotSelector?: string
 }
 
 // Snapshot a whole-view render (synteny/dotplot/hic, or any view whose
 // paint-complete element is itself the canvas) where the wait element and the
-// snapshot target are the `*_done` element directly, not a `canvas` child.
+// snapshot target are the display element directly, not a `canvas` child.
 export function viewSnapshotTest({
   name,
   snapshot,
@@ -145,7 +147,7 @@ export function viewSnapshotTest({
   requiresRemote,
   timeout,
 }: ViewSnapshotOpts): TestCase {
-  const waitSelector = `[data-testid="${waitTestId}"]`
+  const waitSelector = displayPainted(waitTestId)
   return {
     name,
     requiresRemote,

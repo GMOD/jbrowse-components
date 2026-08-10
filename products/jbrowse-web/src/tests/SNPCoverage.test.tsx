@@ -5,6 +5,7 @@ import {
   doBeforeEach,
   expectCanvasMatch,
   findCanvasIn,
+  findDisplayPainted,
   hts,
   setup,
 } from './util.tsx'
@@ -29,7 +30,7 @@ test(
       await findByTestId(hts('volvox_alignments_pileup_coverage'), ...opts),
     )
 
-    const display = await findByTestId('pileup-display-done', ...opts)
+    const display = await findDisplayPainted('pileup-display', delay)
     expectCanvasMatch(findCanvasIn(display))
   },
   timeout + 10_000,

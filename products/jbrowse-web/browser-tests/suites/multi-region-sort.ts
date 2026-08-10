@@ -9,7 +9,7 @@ import { dualSnapshot } from '../snapshot.ts'
 import type { TestSuite } from '../types.ts'
 import type { Page } from 'puppeteer'
 
-const pileup = 'pileup-display-done'
+const pileup = 'pileup-display'
 
 // Minimal shape of the live model we drive from page.evaluate. window.JBrowseSession
 // is exposed by JBrowse.tsx.

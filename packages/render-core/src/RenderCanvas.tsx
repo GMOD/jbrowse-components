@@ -32,17 +32,16 @@ export interface RenderCanvasHandle {
  * canvas without the key.
  *
  * It owns the key and **nothing else** — everything (sizing, class, mouse
- * handlers, `data-testid`) is forwarded. In particular it does *not* fold in
- * `DisplayChrome`'s `-done` testid convention, which was the obvious extra to
- * hand it: these two views emit `synteny_canvas_done` /
- * `dotplot_webgl_canvas_done` with an **underscore**, and those selectors are a
- * frozen contract across four test systems (DISPLAYCHROME.md, "One element per
- * display"), only one of which runs outside CI. Centralizing the
- * convention here silently rewrote the separator; the jest suites caught it,
- * which is luckier than this class of change usually gets. Their readiness flag
- * is `settled`, not `canvasDrawn`, for a real reason too — a shared canvas
- * repaints unconditionally, so `canvasDrawn` says nothing (ADR-009's scope
- * clause) — so the ternary stays at the call site where both facts are visible.
+ * handlers, `data-testid`) is forwarded.
+ *
+ * There used to be a readiness convention to fold in here and there is not any
+ * more: these two views spelled it `synteny_canvas_done` /
+ * `dotplot_webgl_canvas_done`, with an **underscore**, against `DisplayChrome`'s
+ * `-done`, and ADR-065 deleted both in favour of the `data-display-drawn` this
+ * component already publishes. Their readiness flag is still `settled` rather
+ * than `canvasDrawn`, which is a real distinction and not a naming one — a
+ * shared canvas repaints unconditionally, so `canvasDrawn` says nothing
+ * (ADR-009's scope clause) — so `drawn` is passed at the call site.
  */
 export default function RenderCanvas({
   handle,

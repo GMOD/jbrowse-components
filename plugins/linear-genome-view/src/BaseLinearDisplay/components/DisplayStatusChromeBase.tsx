@@ -23,8 +23,8 @@ export type StatusChromeModel = DisplayErrorBarModel &
   }
 
 // Everything the status chrome is, minus the rendering backend: the phase
-// branch, the positioning container, the `-done` testid, the published
-// `data-display-phase`, and the four overlays that need no `retry()`.
+// branch, the positioning container, the four published `data-*` attributes,
+// and the four overlays that need no `retry()`.
 //
 // It exists as its own component because two displays need exactly this and
 // only one of them has a GPU backend. `DisplayChromeBase` wraps it with
@@ -60,9 +60,8 @@ export type DisplayStatusChromeBaseProps = {
   phase: DisplayStatusPhase
   /**
    * First paint: `painted` for a GPU display, arc's own `painted` for SVG.
-   * Drives the `-done` testid suffix, the published `data-display-drawn`, and
-   * the loading overlay's anti-flash suppression while there is nothing on
-   * screen to flash over.
+   * Drives the published `data-display-drawn` and the loading overlay's
+   * anti-flash suppression while there is nothing on screen to flash over.
    *
    * **`painted`, not the raw `canvasDrawn`.** A display showing a deliberate
    * static placeholder instead of a canvas never mounts one, so `canvasDrawn`
@@ -74,10 +73,15 @@ export type DisplayStatusChromeBaseProps = {
   drawn: boolean
   overlays: DisplayChromeOverlays
   /**
-   * Base first-paint selector; this owns the `-done` convention. **Required** —
-   * it used to be optional, and the displays that omitted it leaned on a second
-   * wrapper element (`DisplayContainer`) to emit an id instead, which is how the
-   * repo ended up with three testid shapes and a test-infra union to match them.
+   * The display type's stable `data-testid`. **Required** — it used to be
+   * optional, and the displays that omitted it leaned on a second wrapper
+   * element (`DisplayContainer`) to emit an id instead, which is how the repo
+   * ended up with three testid shapes and a test-infra union to match them.
+   *
+   * Pass the base name only. It used to gain `-done` on paint; readiness is
+   * `data-display-drawn` / `data-display-phase` now (ADR-065), so a consumer
+   * that wants "this display type, painted" composes the two —
+   * `displayPainted(base)` from `@jbrowse/capture`.
    */
   testid: string
   children?: ReactNode
@@ -111,22 +115,25 @@ export default function DisplayStatusChromeBase({
       // so the ones that didn't — hic, ld — stop leaking their overlays to an
       // ancestor). Caller `style` still wins if it overrides `position`.
       style={{ position: 'relative', ...style }}
-      data-testid={`${testid}${drawn ? '-done' : ''}`}
-      // The display's identity, stable across its whole life. `data-testid`
-      // cannot serve this: it is the *base*, shared by every instance of a
-      // display type, and it mutates on first paint. Targeting one track's
-      // display used to mean a second wrapper emitting `display-${displayId}` as
-      // its testid — a whole extra element, and a second `-done` emitter with
-      // the same gate.
+      // Stable for the display's whole life — the display TYPE, shared by every
+      // instance of it. It used to gain a `-done` suffix on first paint, which
+      // made it the only mutating testid in the tree and gave readiness two
+      // spellings (`-done` here, `_done` on the two chrome-less views). ADR-065
+      // deleted that: the three attributes below already carry identity, paint
+      // and phase separately, and a suffix could carry only one of them.
+      data-testid={testid}
+      // WHICH display this is. `data-testid` cannot serve it — it names the
+      // type, so every instance shares one. Targeting a single track's display
+      // used to mean a second wrapper emitting `display-${displayId}` as its
+      // testid, a whole extra element.
       data-display-id={model.configuration.displayId}
-      // First paint as its own stable attribute, rather than only as the `-done`
-      // suffix mutating `data-testid`. "Has every display painted?" is then one
-      // selector (`[data-display-drawn="false"]`) instead of a union that had to
-      // enumerate the testid shapes and go negative on the suffix.
+      // FIRST PAINT — true once something has been drawn, even if the fetch is
+      // still running. "Has every display painted?" is `[data-display-drawn=
+      // "false"]`, one selector across every view, because `RenderCanvas`
+      // publishes it for the chrome-less two as well.
       data-display-drawn={drawn}
-      // The `-done` suffix above is FIRST PAINT — it flips on an empty canvas
-      // while the fetch is still in flight, so it can't answer "is this display
-      // finished". `phase` can: it is the model's own mutually-exclusive state,
+      // FINISHED, which paint alone cannot answer: `drawn` flips on an empty
+      // canvas mid-fetch. `phase` is the model's own mutually-exclusive state,
       // and `loading` covers the whole fetch, not just the paint. Published so a
       // screenshot/e2e run can wait on the real signal instead of inferring it
       // from paint flags and overlay text. NOTE the two subtree-replacing

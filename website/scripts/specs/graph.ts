@@ -7,6 +7,8 @@ import {
 } from 'node:fs'
 import { join } from 'node:path'
 
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
 import { repoRoot } from '../paths.ts'
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
 import { ECOLI_DEMO_BASE, usingLocalDemo } from './demoBase.ts'
@@ -3807,7 +3809,7 @@ export const graphSpecs: ScreenshotSpec[] = [
     }),
     // the synteny canvas, not TOOLBAR_READY: this is the one HPRC figure with no
     // graph pane, so the plugin's toolbar never appears
-    readySelector: '[data-testid="synteny_canvas_done"]',
+    readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
     allowUnsettled: true,
     settleMs: 8000,
@@ -4740,7 +4742,7 @@ export const graphSpecs: ScreenshotSpec[] = [
           // the PAF the whole point of the launch is
           {
             type: 'waitForSelector',
-            selector: '[data-testid="synteny_canvas_done"]',
+            selector: displayPainted('synteny_canvas'),
             timeout: 120000,
           },
           { type: 'delay', ms: 8000 },

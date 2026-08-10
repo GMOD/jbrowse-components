@@ -15,6 +15,7 @@ import {
   doBeforeEach,
   expectCanvasMatch,
   findCanvasIn,
+  findDisplayPainted,
   hts,
   setup,
 } from './util.tsx'
@@ -106,7 +107,7 @@ test('looks at about this track dialog', async () => {
   // test ends while it's still in flight, and its resolution after teardown
   // throws "require a file after the Jest environment has been torn down"
   // from RenderAlignmentData's dynamic import.
-  await findByTestId('pileup-display-done', {}, delay)
+  await findDisplayPainted('pileup-display', delay)
   fireEvent.click(await findByTestId('track_menu_icon', {}, delay))
   fireEvent.click(await findByText('About track'))
   await findAllByText(/SQ/, {}, delay)

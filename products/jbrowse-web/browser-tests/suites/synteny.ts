@@ -1,5 +1,8 @@
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
 import {
   findByTestId,
+  findDisplayPainted,
   navigateToUrl,
   navigateWithSessionSpec,
   waitForDataLoaded,
@@ -28,7 +31,7 @@ const quickStartTest: TestCase = {
     }
     const launch = await page.waitForSelector('::-p-text(Launch)')
     await launch!.click()
-    await findByTestId(page, 'synteny_canvas_done', 60000)
+    await findDisplayPainted(page, 'synteny_canvas', 60000)
     await waitForDataLoaded(page, 60000)
   },
 }
@@ -76,7 +79,7 @@ function syntenyTest(
     snapshot: snapshotName,
     config: 'test_data/grape_peach_synteny/config.json',
     view: { type: 'LinearSyntenyView', tracks: ['subset'], views },
-    waitTestId: 'synteny_canvas_done',
+    waitTestId: 'synteny_canvas',
   })
 }
 
@@ -107,11 +110,7 @@ const identityLegendTest: TestCase = {
       },
       'test_data/grape_peach_synteny/config.json',
     )
-    await waitForDisplayPaint(
-      page,
-      '[data-testid="synteny_canvas_done"]',
-      60000,
-    )
+    await waitForDisplayPaint(page, displayPainted('synteny_canvas'), 60000)
     await waitForDataLoaded(page, 60000)
 
     // full-page capture records the legend
@@ -119,7 +118,7 @@ const identityLegendTest: TestCase = {
     await dualSnapshot(
       page,
       'synteny-identity-legend-canvas',
-      '[data-testid="synteny_canvas_done"]',
+      displayPainted('synteny_canvas'),
     )
 
     // dismiss it and confirm it is removed

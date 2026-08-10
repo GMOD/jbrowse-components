@@ -1,7 +1,10 @@
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
 import {
   delay,
   findByTestId,
   findByText,
+  findDisplayPainted,
   navigateWithSessionSpec,
   waitForDataLoaded,
 } from '../helpers.ts'
@@ -26,7 +29,7 @@ const suite: TestSuite = {
           ],
         })
 
-        await findByTestId(page, 'wiggle-display-done', 60000)
+        await findDisplayPainted(page, 'wiggle-display', 60000)
         await waitForDataLoaded(page)
 
         const menuIcon = await findByTestId(page, 'track_menu_icon', 10000)
@@ -66,7 +69,7 @@ const suite: TestSuite = {
         await dualSnapshot(
           page,
           'wiggle-color-after-red',
-          '[data-testid="wiggle-display-done"] canvas',
+          displayPainted('wiggle-display') + ' canvas',
         )
       },
     },

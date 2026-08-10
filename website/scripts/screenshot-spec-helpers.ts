@@ -1,4 +1,4 @@
-import { encodeSessionSpec } from '@jbrowse/browser-test-utils'
+import { displaySettled, encodeSessionSpec } from '@jbrowse/browser-test-utils'
 
 import type {
   Annotation,
@@ -376,11 +376,11 @@ export const CGIAB_ASM_PIF_TRACK = {
 }
 
 // Wait for ONE display to be finished, by the testid it passes to DisplayChrome
-// (`pileup-display`, `variant-matrix-display`, ...) with no `-done` suffix.
+// (`pileup-display`, `variant-matrix-display`, ...).
 //
 // MOST SPECS DO NOT NEED THIS. `settlePass` already runs `waitForDisplayPhases`
 // then `waitForDisplaysDone` on every capture, so a bare
-// `[data-testid="…-done"]` — the form nearly every spec here uses — is normally
+// `displayPainted(testid)` — the form nearly every spec here uses — is normally
 // enough, and generate-screenshots.ts says so at `settlePass`.
 //
 // Reach for this only where the display's FETCH MAY START LATE. The global gate
@@ -388,10 +388,10 @@ export const CGIAB_ASM_PIF_TRACK = {
 // the window before a display has entered `loading` at all — so a big remote
 // track (HPRC release 2's 2.3 GB wave VCF is the worked example, and
 // specs/graph.ts's hprc_graph_vs_callset is where it is read that way) can sail
-// through it and be captured empty. Pairing `-done` with
-// `data-display-phase=ready` on the display itself closes that window: the
-// phase covers the whole fetch, where `-done` is `canvasDrawn`, i.e. first
-// paint, which an empty canvas reaches on its own.
+// through it and be captured empty. Waiting on `data-display-phase=ready` on
+// the display itself closes that window: the phase covers the whole fetch,
+// where `data-display-drawn` is first paint, which an empty canvas reaches on
+// its own.
 //
 // This used to accept two arrangements, because the two attributes were not
 // always on the same element: alignments derived its chrome testid from
@@ -399,10 +399,9 @@ export const CGIAB_ASM_PIF_TRACK = {
 // they had to be related with `:has()`. Each form matched nothing in the other's
 // case, and the symptom was a capture that timed out rather than an error at
 // authoring time. Every display now emits both from its one chrome element, so
-// the plain conjunction is the whole selector.
-export function displayReady(testid: string) {
-  return `[data-display-phase="ready"][data-testid="${testid}-done"]`
-}
+// the plain conjunction is the whole selector — which is `displaySettled`, and
+// this is the alias the specs read by.
+export const displayReady = displaySettled
 
 export function sessionSpec(config: string, session: object) {
   return `?config=${config}&session=${encodeSessionSpec(session)}&sessionName=Screenshot`

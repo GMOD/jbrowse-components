@@ -42,7 +42,7 @@ async function main() {
 
   // a *-done canvas means the worker fetched/parsed data and a render came back
   const rendered = await page
-    .waitForSelector('[data-testid$="-done"]', { timeout: 45000 })
+    .waitForSelector('[data-display-drawn="true"]', { timeout: 45000 })
     .then(() => true)
     .catch(() => false)
   await new Promise(r => setTimeout(r, 1500))

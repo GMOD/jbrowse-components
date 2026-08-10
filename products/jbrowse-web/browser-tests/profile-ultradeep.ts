@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url'
 
 import {
   BASE_CHROME_ARGS,
+  displayPainted,
   encodeSessionSpec,
 } from '@jbrowse/browser-test-utils'
 import { launch } from 'puppeteer'
@@ -62,7 +63,7 @@ async function main() {
   })
   let doneMs = -1
   await page
-    .waitForSelector('[data-testid="pileup-display-done"]', { timeout: 180000 })
+    .waitForSelector(displayPainted('pileup-display'), { timeout: 180000 })
     .then(() => {
       doneMs = Date.now() - t0
     })

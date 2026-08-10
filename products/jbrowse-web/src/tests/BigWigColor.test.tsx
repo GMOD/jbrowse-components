@@ -18,14 +18,14 @@ beforeEach(() => {
 test.each(['green', 'purple'])(
   'open a bigwig track and change to %s color',
   async color => {
-    const { view, findByTestId, findAllByTestId } = await createView()
+    const { view, findByTestId } = await createView()
     view.setNewView(5, 0)
 
     fireEvent.click(
       await findByTestId(hts('volvox_microarray'), {}, { timeout: 20000 }),
     )
 
-    const canvas1 = await waitForRenderedCanvas(findAllByTestId)
+    const canvas1 = await waitForRenderedCanvas()
     expectCanvasMatch(canvas1)
 
     const display = view.tracks[0]!.displays[0] as {
@@ -34,7 +34,7 @@ test.each(['green', 'purple'])(
     display.setColor(color)
 
     await new Promise(res => setTimeout(res, 2000))
-    expectCanvasMatch(await waitForRenderedCanvas(findAllByTestId))
+    expectCanvasMatch(await waitForRenderedCanvas())
   },
   40000,
 )

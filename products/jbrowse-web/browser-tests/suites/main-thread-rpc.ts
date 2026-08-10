@@ -1,6 +1,8 @@
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
 import {
-  findByTestId,
   findByText,
+  findDisplayPainted,
   navigateToApp,
   openTrack,
   waitForDataLoaded,
@@ -24,7 +26,7 @@ const suite: TestSuite = {
       fn: async page => {
         await navigateToApp(page, 'test_data/volvox/config_main_thread.json')
         await openTrack(page, 'volvox_sv')
-        await findByTestId(page, 'pileup-display-done', 60000)
+        await findDisplayPainted(page, 'pileup-display', 60000)
       },
     },
     {
@@ -42,12 +44,12 @@ const suite: TestSuite = {
       fn: async page => {
         await navigateToApp(page, 'test_data/volvox/config_main_thread.json')
         await openTrack(page, 'volvox_sv')
-        await findByTestId(page, 'pileup-display-done', 60000)
+        await findDisplayPainted(page, 'pileup-display', 60000)
         await waitForDataLoaded(page)
         await dualSnapshot(
           page,
           'main-thread-rpc-bam-canvas',
-          '[data-testid="pileup-display-done"] canvas',
+          displayPainted('pileup-display') + ' canvas',
         )
       },
     },

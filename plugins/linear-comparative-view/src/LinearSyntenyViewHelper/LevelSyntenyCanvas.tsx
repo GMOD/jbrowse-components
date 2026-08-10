@@ -287,7 +287,7 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
       <RenderCanvas
         handle={{ canvasRef, canvasKey }}
         drawn={model.settled}
-        data-testid={model.settled ? 'synteny_canvas_done' : 'synteny_canvas'}
+        data-testid="synteny_canvas"
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         onMouseDown={handleMouseDown}

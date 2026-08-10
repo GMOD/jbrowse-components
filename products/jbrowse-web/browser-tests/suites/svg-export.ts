@@ -8,6 +8,7 @@ import {
   delay,
   findByTestId,
   findByText,
+  findDisplayPainted,
   navigateWithSessionSpec,
   waitForDataLoaded,
   waitForDisplayPaint,
@@ -161,7 +162,7 @@ const suite: TestSuite = {
             },
           ],
         })
-        await findByTestId(page, 'wiggle-display-done', 60000)
+        await findDisplayPainted(page, 'wiggle-display', 60000)
         await waitForLoadingToComplete(page)
 
         const svg = await exportSvgAndSave(
@@ -188,7 +189,7 @@ const suite: TestSuite = {
             },
           ],
         })
-        await findByTestId(page, 'pileup-display-done', 60000)
+        await findDisplayPainted(page, 'pileup-display', 60000)
         await waitForLoadingToComplete(page)
 
         await exportSvgAndSave(page, downloadDir, 'svg-export-alignments')
@@ -208,7 +209,7 @@ const suite: TestSuite = {
             },
           ],
         })
-        await findByTestId(page, 'wiggle-display-done', 60000)
+        await findDisplayPainted(page, 'wiggle-display', 60000)
         await waitForLoadingToComplete(page)
 
         await exportSvgAndSave(page, downloadDir, 'svg-export-multiple-tracks')
@@ -260,7 +261,7 @@ const suite: TestSuite = {
             },
           ],
         })
-        await findByTestId(page, 'multi-wiggle-display-done', 60000)
+        await findDisplayPainted(page, 'multi-wiggle-display', 60000)
         await waitForLoadingToComplete(page)
 
         const svg = await exportSvgAndSave(
@@ -298,7 +299,7 @@ const suite: TestSuite = {
             },
           ],
         })
-        await waitForDisplayPaint(page, '[data-testid$="-done"]', 60000)
+        await waitForDisplayPaint(page, '[data-display-drawn="true"]', 60000)
         await waitForLoadingToComplete(page)
 
         const svg = await exportSvgAndSave(
@@ -338,7 +339,7 @@ const suite: TestSuite = {
             },
           ],
         })
-        await waitForDisplayPaint(page, '[data-testid$="-done"]', 60000)
+        await waitForDisplayPaint(page, '[data-display-drawn="true"]', 60000)
         await waitForLoadingToComplete(page)
 
         const svg = await exportSvgAndSave(
@@ -371,7 +372,7 @@ const suite: TestSuite = {
             },
           ],
         })
-        await findByTestId(page, 'pileup-display-done', 60000)
+        await findDisplayPainted(page, 'pileup-display', 60000)
         await waitForLoadingToComplete(page)
 
         const svg = await exportSvgAndSave(
@@ -411,7 +412,7 @@ const suite: TestSuite = {
           'test_data/grape_peach_synteny/config.json',
         )
 
-        await findByTestId(page, 'synteny_canvas_done', 60000)
+        await findDisplayPainted(page, 'synteny_canvas', 60000)
         await waitForDataLoaded(page)
 
         await exportSvgAndSave(page, downloadDir, 'svg-export-synteny-2way')
@@ -435,7 +436,7 @@ const suite: TestSuite = {
           ],
         })
 
-        await findByTestId(page, 'synteny_canvas_done', 60000)
+        await findDisplayPainted(page, 'synteny_canvas', 60000)
         await waitForDataLoaded(page)
 
         await exportSvgAndSave(page, downloadDir, 'svg-export-synteny-3way')

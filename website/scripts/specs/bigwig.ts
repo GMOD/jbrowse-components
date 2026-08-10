@@ -1,3 +1,5 @@
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
 import {
   DEMO_CONFIG,
   HPYLORI_26695_SEQ_ADAPTER,
@@ -341,7 +343,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           { type: 'click', text: 'Show all regions in assembly' },
           {
             type: 'waitForSelector',
-            selector: '[data-testid="wiggle-display-done"]',
+            selector: displayPainted('wiggle-display'),
           },
           { type: 'delay', ms: 2000 },
         ],
@@ -577,7 +579,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'PUR',
-    readySelector: '[data-testid="multi-wiggle-display-done"]',
+    readySelector: displayPainted('multi-wiggle-display'),
     readyTimeout: 90000,
     viewportHeight: 620,
     settleMs: 15000,

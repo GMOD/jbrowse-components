@@ -31,6 +31,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
+import { displayPainted } from '@jbrowse/browser-test-utils'
 import { PNG } from 'pngjs'
 import { launch } from 'puppeteer'
 
@@ -46,7 +47,7 @@ import type { Browser, Page } from 'puppeteer'
 
 const FIREFOX = process.env.FIREFOX ?? '/usr/bin/firefox-nightly'
 const OUT = process.env.OUT ?? path.join(os.tmpdir(), 'webgpu-coverage-probe')
-const SELECTOR = '[data-testid="pileup-display-done"] canvas'
+const SELECTOR = displayPainted('pileup-display') + ' canvas'
 
 // color-by-strand: one of the four failures, at a locus that reproduces it.
 const spec = {
@@ -79,7 +80,7 @@ async function readPage(page: Page) {
     if (!(canvas instanceof HTMLCanvasElement)) {
       return { error: `no canvas for ${selector}` }
     }
-    const host = canvas.closest('[data-testid="pileup-display-done"]')
+    const host = canvas.closest(displayPainted('pileup-display'))
     const rect = canvas.getBoundingClientRect()
     const hostRect = host?.getBoundingClientRect()
     const near = [...document.querySelectorAll<HTMLElement>('[data-testid]')]

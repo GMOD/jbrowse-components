@@ -7,7 +7,13 @@ import {
 } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 
-import { createView, doBeforeEach, hts, setup } from './util.tsx'
+import {
+  createView,
+  doBeforeEach,
+  findDisplayPainted,
+  hts,
+  setup,
+} from './util.tsx'
 
 setup()
 
@@ -156,7 +162,7 @@ test('opens reference sequence track and expects zoom in message', async () => {
   // Waiting on the bare id here was the assertion that the old, wrong answer
   // was in place; `PENDING_DISPLAYS` keys on the same signal, so every
   // `waitForDisplaysDone` on a page showing this track used to time out.
-  await findByTestId('sequence-display-done', {}, delay)
+  await findDisplayPainted('sequence-display', delay)
   await findAllByText('Zoom in to see sequence')
 }, 30000)
 

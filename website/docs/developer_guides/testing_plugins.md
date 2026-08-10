@@ -249,8 +249,9 @@ assert on a fixed timeout; wait on a signal:
 
 - `data-testid="loading-overlay"` count reaching `0` means all tracks in a view
   finished loading.
-- Per-view `*-done` test-ids (e.g. `synteny_canvas_done`) gate on a display's
-  `settled` getter (drawn and not refetching), not a bare "drawn" flag.
+- The `data-display-drawn` attribute (e.g. on `synteny_canvas`) gates on a
+  display's `settled` getter (drawn and not refetching), not a bare "drawn"
+  flag.
 
 Run with `pnpm test:browser` (builds `@jbrowse/web` first) or
 `pnpm test:browser:update` to refresh snapshots. See

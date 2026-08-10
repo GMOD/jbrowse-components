@@ -18,7 +18,7 @@ test('reloads alignments track (CRAI 404)', async () => {
     failingFile: 'volvox-sorted.cram.crai',
     trackId: 'volvox_cram_pileup_ctga',
     viewLocation: [0.5, 0],
-    expectedCanvas: 'pileup-display-done',
+    displayTestId: 'pileup-display',
     timeout: 30000,
   })
 }, 50000)
@@ -28,7 +28,7 @@ test('reloads alignments track (CRAM 404)', async () => {
     failingFile: 'volvox-sorted-altname.cram',
     trackId: 'volvox_cram_snpcoverage',
     viewLocation: [0.5, 0],
-    expectedCanvas: 'pileup-display-done',
+    displayTestId: 'pileup-display',
     timeout: 30000,
   })
 }, 50000)

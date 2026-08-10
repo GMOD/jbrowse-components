@@ -2,7 +2,7 @@ import { lgvSnapshotTest } from '../suiteHelpers.ts'
 
 import type { TestSuite } from '../types.ts'
 
-const pileup = 'pileup-display-done'
+const pileup = 'pileup-display'
 
 const suite: TestSuite = {
   name: 'Long Reads and Inversions',
@@ -12,28 +12,28 @@ const suite: TestSuite = {
       snapshot: 'long-reads-bam',
       loc: 'ctgA:1-10000',
       tracks: ['volvox-long-reads-bam'],
-      doneTestId: pileup,
+      displayTestId: pileup,
     }),
     lgvSnapshotTest({
       name: 'long reads CRAM rendering',
       snapshot: 'long-reads-cram',
       loc: 'ctgA:1-10000',
       tracks: ['volvox-long-reads-cram'],
-      doneTestId: pileup,
+      displayTestId: pileup,
     }),
     lgvSnapshotTest({
       name: 'simple inversion BAM rendering',
       snapshot: 'inversion-simple-bam',
       loc: 'ctgA:1-50000',
       tracks: ['volvox-simple-inv.bam'],
-      doneTestId: pileup,
+      displayTestId: pileup,
     }),
     lgvSnapshotTest({
       name: 'simple inversion CRAM rendering',
       snapshot: 'inversion-simple-cram',
       loc: 'ctgA:1-50000',
       tracks: ['volvox-simple-inv.cram'],
-      doneTestId: pileup,
+      displayTestId: pileup,
     }),
     lgvSnapshotTest({
       name: 'inversion with indels rendering',
@@ -46,7 +46,7 @@ const suite: TestSuite = {
       snapshot: 'inversion-pbsim',
       loc: 'ctgA:1-50000',
       tracks: ['volvox-inv-pbsim'],
-      doneTestId: pileup,
+      displayTestId: pileup,
     }),
     lgvSnapshotTest({
       name: 'inversion pbsim with linked reads and arcs',
@@ -61,7 +61,7 @@ const suite: TestSuite = {
           },
         },
       ],
-      doneTestId: pileup,
+      displayTestId: pileup,
     }),
     lgvSnapshotTest({
       name: 'simple inversion BAM with linked reads and arcs',
@@ -76,7 +76,7 @@ const suite: TestSuite = {
           },
         },
       ],
-      doneTestId: pileup,
+      displayTestId: pileup,
     }),
     lgvSnapshotTest({
       name: 'inversion paired BAM coverage-only',
@@ -92,7 +92,7 @@ const suite: TestSuite = {
           },
         },
       ],
-      doneTestId: pileup,
+      displayTestId: pileup,
     }),
     lgvSnapshotTest({
       name: 'inversion pbsim coverage-only',
@@ -108,7 +108,7 @@ const suite: TestSuite = {
           },
         },
       ],
-      doneTestId: pileup,
+      displayTestId: pileup,
     }),
     lgvSnapshotTest({
       name: 'simple inversion paired BAM read cloud',
@@ -123,7 +123,7 @@ const suite: TestSuite = {
           },
         },
       ],
-      doneTestId: pileup,
+      displayTestId: pileup,
     }),
   ],
 }

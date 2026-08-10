@@ -273,7 +273,7 @@ const suite: TestSuite = {
       snapshot: 'my-bed', // -> targeted_my-bed.png + fullpage_my-bed.png
       loc: 'ctgA:1-50000',
       tracks: ['bed_genes'],
-      // doneTestId: 'pileup-display-done',  // for alignments/wiggle displays
+      // displayTestId: 'pileup-display',  // for alignments/wiggle displays
     }),
   ],
 }
@@ -298,7 +298,7 @@ RPC boundary — see `suites/gpu-quirks.ts`.
 - `findByTestId(page, testId, timeout)` / `findByText(page, text, timeout)`
 - `waitForDataLoaded(page)` / `waitForLoadingToComplete(page)` - wait on the
   `loading-overlay` test-id (data fetched). For canvas _paint_, wait on the
-  per-display `*-done` test-id (`canvasDrawn`).
+  per-display `data-display-drawn` attribute (`canvasDrawn`).
 - `assertCanvasHasContent(page, selector, opts?)` - fail if a canvas is blank
 - `delay(ms)`
 

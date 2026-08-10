@@ -1,6 +1,11 @@
 import { fireEvent } from '@testing-library/react'
 
-import { createView, expectCanvasMatch, hts } from './util.tsx'
+import {
+  createView,
+  expectCanvasMatch,
+  findDisplayPainted,
+  hts,
+} from './util.tsx'
 
 import type { Results } from './util.tsx'
 
@@ -9,12 +14,12 @@ type DisplayType = 'matrix' | 'regular'
 export const multiSampleVariantDisplayInfo = {
   matrix: {
     displayText: 'Multi-sample variant display (matrix)',
-    doneTestId: 'variant-matrix-display-done',
+    displayTestId: 'variant-matrix-display',
     canvasTestId: 'variant_matrix_canvas',
   },
   regular: {
     displayText: 'Multi-sample variant display (regular)',
-    doneTestId: 'variant-display-done',
+    displayTestId: 'variant-display',
     canvasTestId: 'variant_canvas',
   },
 } as const
@@ -67,6 +72,6 @@ export async function testLinearMultiSampleVariantDisplay({
     fireEvent.click(await findByText(/^Phased/, ...opts))
   }
 
-  await findByTestId(info.doneTestId, ...opts)
+  await findDisplayPainted(info.displayTestId, { timeout })
   expectCanvasMatch(await findByTestId(info.canvasTestId, ...opts))
 }

@@ -1,7 +1,13 @@
 import { fireEvent } from '@testing-library/react'
 
 import { testOpenTrack } from './testOpenTrack.tsx'
-import { createView, doBeforeEach, hts, setup } from './util.tsx'
+import {
+  createView,
+  doBeforeEach,
+  findDisplayPainted,
+  hts,
+  setup,
+} from './util.tsx'
 
 setup()
 
@@ -48,7 +54,7 @@ test('a wiggle track emits its testid, display id and phase on one element', asy
   view.setNewView(5, 0)
   fireEvent.click(await findByTestId(hts('volvox_microarray'), {}, { timeout }))
 
-  const el = await findByTestId('wiggle-display-done', {}, { timeout })
+  const el = await findDisplayPainted('wiggle-display', { timeout })
   expect(el.dataset.displayId).toBe('volvox_microarray-LinearWiggleDisplay')
   expect(el.dataset.displayDrawn).toBe('true')
   expect(el.dataset.displayPhase).toBeTruthy()

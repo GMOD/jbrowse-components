@@ -1,3 +1,5 @@
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
 import { kgUrl, lgvSession } from '../screenshot-spec-helpers.ts'
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -330,7 +332,7 @@ function mutationTrack({
 
 // The matrix canvas only mounts once the cell-data RPC has landed, so this gates
 // each capture on real completion rather than on a duration guess.
-const MATRIX_DONE = '[data-testid="variant-matrix-display-done"]'
+const MATRIX_DONE = displayPainted('variant-matrix-display')
 
 // Display height for the 979-row cohort matrices, i.e. about a third of a pixel
 // per tumor. Rows auto-fit by dividing the height and are allowed below a pixel
@@ -638,7 +640,7 @@ export const tcgaSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: '[data-testid="multi-wiggle-display-done"]',
+    readySelector: displayPainted('multi-wiggle-display'),
     // 246KB across the whole genome, so unlike the 5.7MB stack this needs no
     // raised navigation or ready budget
     readyTimeout: 180000,

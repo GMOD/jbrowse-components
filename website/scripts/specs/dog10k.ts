@@ -1,3 +1,5 @@
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
 import { lgvSession, sessionSpec } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -1111,7 +1113,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: '[data-testid="manhattan-display-done"]',
+    readySelector: displayPainted('manhattan-display'),
     readyTimeout: 120000,
     settleMs: 10000,
     viewportHeight: 600,
@@ -1292,7 +1294,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: '[data-testid="manhattan-display-done"]',
+    readySelector: displayPainted('manhattan-display'),
     readyTimeout: 120000,
     settleMs: 6000,
     // the gene lane, all 380 px of the score lane, and its bottom border: at 700

@@ -1,6 +1,12 @@
 import { fireEvent, within } from '@testing-library/react'
 
-import { createView, doBeforeEach, expectCanvasMatch, setup } from './util.tsx'
+import {
+  createView,
+  doBeforeEach,
+  expectCanvasMatch,
+  findDisplayPainted,
+  setup,
+} from './util.tsx'
 
 setup()
 
@@ -15,7 +21,7 @@ afterEach(() => {
 })
 
 test('open tracklist file', async () => {
-  const { session, findByTestId, findByRole, findByText } = await createView()
+  const { session, findByRole, findByText } = await createView()
 
   fireEvent.click(await findByText('File'))
   fireEvent.click(await findByText('Add'))
@@ -30,7 +36,7 @@ test('open tracklist file', async () => {
   fireEvent.click(listbox.getByText('volvox_del'))
   fireEvent.click(await findByText('Launch'))
 
-  expectCanvasMatch(await findByTestId('dotplot_webgl_canvas_done', {}, delay))
+  expectCanvasMatch(await findDisplayPainted('dotplot_webgl_canvas', delay))
 }, 50000)
 
 test('open local paf', async () => {
@@ -57,11 +63,11 @@ test('open local paf', async () => {
 
   fireEvent.click(await findByText('Swap?'))
   fireEvent.click(await findByText('Launch'))
-  expectCanvasMatch(await findByTestId('dotplot_webgl_canvas_done', {}, delay))
+  expectCanvasMatch(await findDisplayPainted('dotplot_webgl_canvas', delay))
 }, 50000)
 
 test('open local pif', async () => {
-  const { session, findByTestId, findByRole, findAllByTestId, findByText } =
+  const { session, findByRole, findAllByTestId, findByText } =
     await createView()
 
   fireEvent.click(await findByText('File'))
@@ -92,5 +98,5 @@ test('open local pif', async () => {
 
   fireEvent.click(await findByText('Swap?'))
   fireEvent.click(await findByText('Launch'))
-  expectCanvasMatch(await findByTestId('dotplot_webgl_canvas_done', {}, delay))
+  expectCanvasMatch(await findDisplayPainted('dotplot_webgl_canvas', delay))
 }, 50000)

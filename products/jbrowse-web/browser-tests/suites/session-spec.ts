@@ -10,7 +10,7 @@ const suite: TestSuite = {
       snapshot: 'session-spec-display-snapshot',
       loc: 'ctgA:1-10000',
       tracks: ['volvox_sv_cram'],
-      doneTestId: 'pileup-display-done',
+      displayTestId: 'pileup-display',
     }),
     lgvSnapshotTest({
       name: 'jexl',

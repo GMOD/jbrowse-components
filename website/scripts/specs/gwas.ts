@@ -1,3 +1,5 @@
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
 import { lgvSession } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -27,7 +29,7 @@ export const gwasSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: '[data-testid="manhattan-display-done"]',
+    readySelector: displayPainted('manhattan-display'),
     readyTimeout: 90000,
     viewportHeight: 470,
     settleMs: 12000,
@@ -61,7 +63,7 @@ export const gwasSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: '[data-testid="manhattan-display-done"]',
+    readySelector: displayPainted('manhattan-display'),
     readyTimeout: 60000,
     // Manhattan(200) + gene strip(90) + headers/ruler/overview clear the crop
     viewportHeight: 520,

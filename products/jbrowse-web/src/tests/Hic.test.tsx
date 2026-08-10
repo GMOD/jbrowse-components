@@ -7,6 +7,7 @@ import {
   createView,
   doBeforeEach,
   expectCanvasMatch,
+  findDisplayPainted,
   getSavedSvg,
   hts,
   setup,
@@ -33,7 +34,7 @@ test(
 
     view.setNewView(5000, 0)
     fireEvent.click(await findByTestId(hts('hic_test'), {}, delay))
-    await findByTestId('hic-display-done', {}, delay)
+    await findDisplayPainted('hic-display', delay)
     expectCanvasMatch(await findByTestId('hic_canvas', {}, delay))
   },
   timeout,
@@ -51,7 +52,7 @@ test(
 
     view.setNewView(5000, 0)
     fireEvent.click(await findByTestId(hts('hic_test'), {}, delay))
-    await findByTestId('hic-display-done', {}, delay)
+    await findDisplayPainted('hic-display', delay)
 
     const display = view.tracks[0]!.displays[0] as LinearHicDisplayModel
     display.setSquashToHeight(true)

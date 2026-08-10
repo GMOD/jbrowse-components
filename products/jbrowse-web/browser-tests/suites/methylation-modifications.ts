@@ -12,7 +12,7 @@ function pileupTests(
   config: string,
   snapshot: string,
 ): TestCase[] {
-  const done = 'pileup-display-done'
+  const done = 'pileup-display'
   const load = async (page: Page) => {
     await navigateToUrl(page, `config=${config}`)
     await findByTestId(page, done, 60000)

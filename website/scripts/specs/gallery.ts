@@ -1,3 +1,5 @@
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
 import {
   DEMO_CONFIG,
   HG38_GENCODE_PROMOTER_TRACK,
@@ -36,7 +38,7 @@ export const gallerySpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'PUR',
-    readySelector: '[data-testid="multi-wiggle-display-done"]',
+    readySelector: displayPainted('multi-wiggle-display'),
     readyTimeout: 90000,
     viewportHeight: 720,
     settleMs: 15000,
@@ -180,7 +182,7 @@ export const gallerySpecs: ScreenshotSpec[] = [
     url: '?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"20:18,503,000-18,509,000","type":"LinearGenomeView","tracks":["cpgisland_ucsc_hg38",{"trackId":"human_chr20_mod_call_5mC_5hmC_CG_cram","displaySnapshot":{"type":"LinearAlignmentsDisplay","colorBy":{"type":"methylation"}}}]}]}',
     // the remote CRAM's first fetch takes long enough that settleMs alone once
     // committed a loading screen; wait on the pileup canvas actually drawing
-    readySelector: '[data-testid="pileup-display-done"]',
+    readySelector: displayPainted('pileup-display'),
     // 90000 was enough on a dev machine and never once on a CI runner: this
     // failed all four sweeps of .github/workflows/figures.yml, deterministically
     // rather than under load, with the pileup simply not done in time. Same
@@ -222,7 +224,7 @@ export const gallerySpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: '[data-testid="dotplot_webgl_canvas_done"]',
+    readySelector: displayPainted('dotplot_webgl_canvas'),
     readyTimeout: 120000,
     settleMs: 10000,
     // the chain file carries liftOver entries for alt/random contigs that the

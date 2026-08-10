@@ -1,5 +1,6 @@
 import { Buffer } from 'node:buffer'
 
+import { displayPainted } from '@jbrowse/browser-test-utils'
 import { PNG } from 'pngjs'
 
 import {
@@ -61,7 +62,7 @@ async function capture(page: Page, loc: string) {
     },
     CONFIG,
   )
-  await waitForDisplayPaint(page, '[data-testid="hic-display-done"]', 60000)
+  await waitForDisplayPaint(page, displayPainted('hic-display'), 60000)
   await waitForDataLoaded(page, 60000)
   const el = await page.waitForSelector(CANVAS, { timeout: 60000 })
   return chromaProfile(await el!.screenshot())
@@ -88,7 +89,7 @@ const suite: TestSuite = {
         loc: 'chr1:1..10,000,000',
         tracks: ['hic_test'],
       },
-      waitTestId: 'hic-display-done',
+      waitTestId: 'hic-display',
       snapshotSelector: CANVAS,
     }),
 

@@ -1,6 +1,12 @@
 import { fireEvent, waitFor } from '@testing-library/react'
 
-import { createView, doBeforeEach, hts, setup } from './util.tsx'
+import {
+  createView,
+  doBeforeEach,
+  findDisplayPainted,
+  hts,
+  setup,
+} from './util.tsx'
 
 import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -52,7 +58,7 @@ test('alignments display delivers reversed render blocks after a [rev] nav', asy
 
   // Forward first — the flag must track the region, not read true regardless.
   await view.navToLocString('ctgA:1..4000', 'volvox')
-  await findByTestId('pileup-display-done', ...opts)
+  await findDisplayPainted('pileup-display', delay)
 
   const forward = alignmentsDisplay(view).renderBlocks
   expect(forward.length).toBeGreaterThan(0)

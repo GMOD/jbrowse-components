@@ -1,4 +1,9 @@
-import { createView, expectCanvasMatch, findCanvasIn } from './util.tsx'
+import {
+  createView,
+  expectCanvasMatch,
+  findCanvasIn,
+  findDisplayPainted,
+} from './util.tsx'
 
 export async function testAlignmentModificationsDisplay({
   config,
@@ -7,9 +12,8 @@ export async function testAlignmentModificationsDisplay({
   config: any
   timeout?: number
 }) {
-  const opts = [{}, { timeout }] as const
-  const { findByTestId } = await createView(config)
+  await createView(config)
 
-  const display = await findByTestId('pileup-display-done', ...opts)
+  const display = await findDisplayPainted('pileup-display', { timeout })
   expectCanvasMatch(findCanvasIn(display))
 }

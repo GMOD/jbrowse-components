@@ -76,7 +76,7 @@ test('loading phase overlays the loading scrim while keeping the canvas mounted'
   await findByTestId('loading-overlay')
 })
 
-test('ready phase shows the canvas with no banners; canvasDrawn toggles the -done testid', async () => {
+test('ready phase shows the canvas with no banners; the testid does NOT change on paint', async () => {
   const model = TestChromeModel.create({})
   const { findByTestId, getByTestId, queryByTestId } = renderChrome(
     model,
@@ -85,16 +85,21 @@ test('ready phase shows the canvas with no banners; canvasDrawn toggles the -don
 
   await findByTestId('probe-canvas')
   expect(queryByTestId('loading-overlay')).toBeNull()
-  // canvasDrawn:false -> bare base testid
-  expect(getByTestId('chrome')).toBeTruthy()
+  const before = getByTestId('chrome')
+  expect(before.dataset.displayDrawn).toBe('false')
 
   act(() => {
     model.setCanvasDrawn(true)
   })
 
-  // canvasDrawn:true -> `-done` suffix appended by the chrome
-  await findByTestId('chrome-done')
-  expect(queryByTestId('chrome')).toBeNull()
+  // The regression guard for ADR-065. The chrome used to rename this element to
+  // `chrome-done` on first paint, which is why `data-testid` was the only
+  // mutating testid in the tree; paint is an attribute now and the id is a
+  // stable handle. Same element throughout — not a remount.
+  const after = getByTestId('chrome')
+  expect(after).toBe(before)
+  expect(after.dataset.displayDrawn).toBe('true')
+  expect(queryByTestId('chrome-done')).toBeNull()
 })
 
 // Background work (clustering) reports through the same status channel as a
@@ -131,17 +136,17 @@ test('a fetch status shows only the scrim, never both indicators', async () => {
   expect(queryByTestId('progress-chip')).toBeNull()
 })
 
-// The distinction the screenshot generator depends on: `-done` is first paint,
-// `data-display-phase` is doneness. A display that has painted an empty canvas
-// while its fetch is still running reports BOTH `-done` and `loading`, so a
-// capture gated on the testid alone lands on a half-loaded frame.
+// The distinction the screenshot generator depends on: `data-display-drawn` is
+// first paint, `data-display-phase` is doneness. A display that has painted an
+// empty canvas while its fetch is still running reports BOTH `drawn` and
+// `loading`, so a capture gated on paint alone lands on a half-loaded frame.
 test('data-display-phase reports loading even once canvasDrawn has flipped', async () => {
   const model = TestChromeModel.create({})
   model.setLoadingCondition(true)
   model.setCanvasDrawn(true)
   const { findByTestId } = renderChrome(model, 'chrome')
 
-  const el = await findByTestId('chrome-done')
+  const el = await findByTestId('chrome')
   expect(el.dataset.displayPhase).toBe('loading')
 
   act(() => {
@@ -162,9 +167,8 @@ test('a display that renders no canvas reports drawn, not pending', async () => 
   const model = TestChromeModel.create({ rendersCanvas: false })
   const { findByTestId } = renderChrome(model, 'chrome')
 
-  // `-done` and the attribute agree, and neither waits on a canvas that is
-  // never going to be mounted
-  const el = await findByTestId('chrome-done')
+  // reports painted without ever waiting on a canvas that is never mounted
+  const el = await findByTestId('chrome')
   expect(el.dataset.displayDrawn).toBe('true')
   expect(model.canvasDrawn).toBe(false)
 })
@@ -337,7 +341,7 @@ describe('DisplayStatusChrome (no rendering backend)', () => {
     expect(queryByTestId('probe-body')).toBeTruthy()
   })
 
-  test('owns the -done testid and publishes data-display-phase', async () => {
+  test('owns the stable testid and publishes data-display-phase', async () => {
     const model = TestChromeModel.create({})
     model.setLoadingCondition(true)
     const { findByTestId } = renderStatusChrome(model, 'status')
@@ -348,7 +352,7 @@ describe('DisplayStatusChrome (no rendering backend)', () => {
     act(() => {
       model.setCanvasDrawn(true)
     })
-    await findByTestId('status-done')
+    await findByTestId('status')
   })
 
   // the drift this component was extracted to end
@@ -484,7 +488,7 @@ describe('the chrome element publishes the display identity', () => {
     act(() => {
       model.setCanvasDrawn(true)
     })
-    const done = await findByTestId('probe-display-done')
+    const done = await findByTestId('probe-display')
     expect(done).toBe(el)
     expect(done.dataset.displayDrawn).toBe('true')
     expect(done.dataset.displayId).toBe('test-display')

@@ -1,7 +1,12 @@
 import './svgExportMocks.ts'
 
 import { openMultiSampleVariantDisplay } from './testLinearMultiSampleVariantDisplay.tsx'
-import { doBeforeEach, getSavedSvg, setup } from './util.tsx'
+import {
+  doBeforeEach,
+  findDisplayPainted,
+  getSavedSvg,
+  setup,
+} from './util.tsx'
 
 // `view.tracks[0].displays[0]` is untyped; annotating it makes a getter that
 // doesn't exist on the model a typecheck error rather than a silent undefined.
@@ -39,10 +44,10 @@ function cellRowYs(svg: string) {
 // display height. Asserted on both multi-sample variant display types since
 // each has its own renderSvg.
 async function exportFitModeAndCheck(displayType: 'matrix' | 'regular') {
-  const { view, findByTestId, info } = await openMultiSampleVariantDisplay({
+  const { view, info } = await openMultiSampleVariantDisplay({
     displayType,
   })
-  await findByTestId(info.doneTestId, {}, { timeout: 40000 })
+  await findDisplayPainted(info.displayTestId, { timeout: 40000 })
 
   await view.exportSvg({ rasterizeLayers: false })
   const { rectCount, distinctY, yMin, yMax } = cellRowYs(getSavedSvg())
@@ -66,10 +71,10 @@ test(
 // leaving the bottom 20px blank) and the connector lines were missing entirely,
 // even though the component already had an `exportSVG` mode nothing called.
 test('matrix multi-sample variant SVG export draws the connector lines and offsets rows below them', async () => {
-  const { view, findByTestId, info } = await openMultiSampleVariantDisplay({
+  const { view, info } = await openMultiSampleVariantDisplay({
     displayType: 'matrix',
   })
-  await findByTestId(info.doneTestId, {}, { timeout: 40000 })
+  await findDisplayPainted(info.displayTestId, { timeout: 40000 })
   const display: LinearMultiSampleVariantMatrixDisplayModel =
     view.tracks[0].displays[0]
   const { lineZoneHeight } = display

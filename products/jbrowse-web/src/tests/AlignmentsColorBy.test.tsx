@@ -6,6 +6,7 @@ import {
   doBeforeEach,
   expectCanvasMatch,
   findCanvasIn,
+  findDisplayPainted,
   hts,
   setup,
 } from './util.tsx'
@@ -29,7 +30,7 @@ test('color by tag', async () => {
   await user.click(await screen.findByText('Tag...'))
   await user.type(await screen.findByLabelText('Tag name', ...opts), 'HP')
   await user.click(await screen.findByText('Submit'))
-  const display = await screen.findByTestId('pileup-display-done', ...opts)
+  const display = await findDisplayPainted('pileup-display', delay)
   expectCanvasMatch(findCanvasIn(display))
 }, 50000)
 
@@ -44,6 +45,6 @@ test('color by stranded rna-seq', async () => {
   await user.click(await screen.findByText('Color by...'))
   await user.click(await screen.findByText('Paired end'))
   await user.click(await screen.findByText('First of pair strand'))
-  const display = await screen.findByTestId('pileup-display-done', ...opts)
+  const display = await findDisplayPainted('pileup-display', delay)
   expectCanvasMatch(findCanvasIn(display), 0.1)
 }, 50000)

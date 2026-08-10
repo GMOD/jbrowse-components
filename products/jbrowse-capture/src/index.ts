@@ -22,6 +22,9 @@ export {
 export {
   PENDING_DISPLAYS,
   delay,
+  displayById,
+  displayPainted,
+  displaySettled,
   waitForDisplayPhases,
   waitForDisplaysDone,
   waitForLoadingComplete,

@@ -1,3 +1,5 @@
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
 import {
   delay,
   navigateWithSessionSpec,
@@ -72,7 +74,7 @@ async function hoverFraction(
   return { x, y }
 }
 
-async function bootTrack(page: Page, trackId: string, doneTestId: string) {
+async function bootTrack(page: Page, trackId: string, displayTestId: string) {
   await navigateWithSessionSpec(page, {
     views: [
       {
@@ -83,7 +85,7 @@ async function bootTrack(page: Page, trackId: string, doneTestId: string) {
       },
     ],
   })
-  await page.waitForSelector(`[data-testid="${doneTestId}"]`, {
+  await page.waitForSelector(`[data-testid="${displayTestId}"]`, {
     timeout: 60000,
   })
   await waitForDataLoaded(page, 60000)
@@ -107,7 +109,7 @@ export const suite: TestSuite = {
         await bootTrack(
           page,
           'volvox_mouse_inheritance_painting',
-          'multirow-display-done',
+          'multirow-display',
         )
         assert(
           (await countGuideLines(page)) === 0,
@@ -201,7 +203,7 @@ export const suite: TestSuite = {
         await bootTrack(
           page,
           'volvox_microarray_multi_multirowxy',
-          'multi-wiggle-display-done',
+          'multi-wiggle-display',
         )
         assert(
           (await countGuideLines(page)) === 0,
@@ -209,7 +211,7 @@ export const suite: TestSuite = {
         )
         await hoverFraction(
           page,
-          '[data-testid="multi-wiggle-display-done"]',
+          displayPainted('multi-wiggle-display'),
           0.5,
           0.5,
         )
@@ -249,7 +251,7 @@ export const suite: TestSuite = {
             },
           ],
         })
-        await page.waitForSelector('[data-testid="maf-display-done"]', {
+        await page.waitForSelector(displayPainted('maf-display'), {
           timeout: 60000,
         })
         await waitForDataLoaded(page, 60000)
@@ -265,7 +267,7 @@ export const suite: TestSuite = {
         // the one the sidebar is covering
         const { x, y } = await hoverFraction(
           page,
-          '[data-testid="maf-display-done"]',
+          displayPainted('maf-display'),
           0.7,
           0.6,
         )

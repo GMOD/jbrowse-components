@@ -16,7 +16,7 @@ const suite: TestSuite = {
       snapshot: 'misc-snpcoverage',
       loc: 'ctgA:13,010..13,610',
       tracks: ['volvox_alignments_pileup_coverage'],
-      doneTestId: 'pileup-display-done',
+      displayTestId: 'pileup-display',
     }),
     {
       name: 'NCBI alias adapter',
@@ -26,12 +26,16 @@ const suite: TestSuite = {
           'config=test_data/cfam2/config.json&sessionName=Test%20Session',
         )
 
-        await waitForDisplayPaint(page, '[data-testid$="-done"] canvas', 60000)
+        await waitForDisplayPaint(
+          page,
+          '[data-display-drawn="true"] canvas',
+          60000,
+        )
         await waitForDataLoaded(page)
         await dualSnapshot(
           page,
           'misc-ncbi-alias-canvas',
-          '[data-testid$="-done"] canvas',
+          '[data-display-drawn="true"] canvas',
         )
       },
     },

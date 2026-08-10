@@ -2,6 +2,7 @@ import { Buffer } from 'node:buffer'
 
 import {
   delay,
+  displayPainted,
   encodeSessionSpec,
   waitForLoadingComplete,
   waitForViewPhases,
@@ -48,6 +49,26 @@ export async function findByTestId(
   timeout = 30000,
 ): Promise<ElementHandle> {
   const selector = `[data-testid="${testId}"]`
+  const handle = await page.waitForSelector(selector, { timeout })
+  if (!handle) {
+    throw new Error(`element not found: ${selector}`)
+  }
+  return handle
+}
+
+/**
+ * Wait for a display of the given TYPE to finish first paint.
+ *
+ * The puppeteer counterpart of the jest `findDisplayPainted`, and what replaced
+ * `findByTestId(page, '<base>-done')`: `data-testid` names the type and no
+ * longer mutates on paint, so readiness is `data-display-drawn` (ADR-065).
+ */
+export async function findDisplayPainted(
+  page: Page,
+  testId: string,
+  timeout = 30000,
+): Promise<ElementHandle> {
+  const selector = displayPainted(testId)
   const handle = await page.waitForSelector(selector, { timeout })
   if (!handle) {
     throw new Error(`element not found: ${selector}`)

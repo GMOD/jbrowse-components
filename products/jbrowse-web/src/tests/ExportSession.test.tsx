@@ -8,6 +8,7 @@ import {
   createView,
   doBeforeEach,
   findDisplayById,
+  findDisplayPainted,
   hts,
   setup,
 } from './util.tsx'
@@ -47,7 +48,7 @@ test('export session with alignments and gff tracks', async () => {
   // test while the fetches are still in flight, and their resolution after
   // teardown throws "require a file after the Jest environment has been torn
   // down" from RenderFeatureData's dynamic import.
-  await findByTestId('pileup-display-done', ...opts)
+  await findDisplayPainted('pileup-display', delay)
   await findDisplayById('gff3tabix_genes-LinearBasicDisplay')
 
   const user = userEvent.setup()

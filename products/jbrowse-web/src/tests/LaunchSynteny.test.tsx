@@ -2,7 +2,7 @@ import { render } from '@testing-library/react'
 
 import { utilizeFetchMockForTest } from './generateReadBuffer.ts'
 import { App } from './loaderUtil.tsx'
-import { expectCanvasMatch, setup } from './util.tsx'
+import { expectCanvasMatch, findDisplayPainted, setup } from './util.tsx'
 
 setup()
 
@@ -42,8 +42,8 @@ async function testSyntenyView(
       ],
     },
   )}`
-  const { findByTestId } = render(<App search={str} />)
-  expectCanvasMatch(await findByTestId('synteny_canvas_done', {}, delay))
+  render(<App search={str} />)
+  expectCanvasMatch(await findDisplayPainted('synteny_canvas', delay))
 }
 
 test('horizontally flipped inverted alignment', async () => {

@@ -1,6 +1,12 @@
 import { userEvent } from '@testing-library/user-event'
 
-import { createView, expectCanvasMatch, findCanvasIn, hts } from './util.tsx'
+import {
+  createView,
+  expectCanvasMatch,
+  findCanvasIn,
+  findDisplayPainted,
+  hts,
+} from './util.tsx'
 
 type DisplayMode = 'arc' | 'cloud' | 'bezier' | 'linked' | 'stack'
 
@@ -39,7 +45,7 @@ export async function testLinkedReadsDisplay({
     await user.click(await findByText(label))
   }
 
-  const display = await findByTestId('pileup-display-done', ...opts)
+  const display = await findDisplayPainted('pileup-display', { timeout })
   await new Promise(res => setTimeout(res, 2000))
   expectCanvasMatch(findCanvasIn(display))
 

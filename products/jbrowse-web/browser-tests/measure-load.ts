@@ -58,7 +58,7 @@ async function main() {
   const track = await measure(
     'open a track',
     `config=test_data/volvox/config.json&session=${encodeSessionSpec(spec)}&sessionName=M&renderer=canvas2d`,
-    '[data-testid$="-done"]',
+    '[data-display-drawn="true"]',
   )
 
   for (const r of [shell, track]) {

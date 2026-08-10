@@ -1,3 +1,5 @@
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
 import { DEMO_CONFIG, lgvSession } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -125,7 +127,7 @@ export const hicSpecs: ScreenshotSpec[] = [
       ],
     }),
     viewportHeight: 1100,
-    readySelector: '[data-testid="hic-display-done"]',
+    readySelector: displayPainted('hic-display'),
     // Two 2Mb windows means three region pairs per track (chr9xchr9, chr22xchr22,
     // chr9xchr22) at 5kb bins, over range requests into a 55GB and a 20GB file.
     // Measured ~50s for the pair here; 4 minutes is headroom, not an expectation.
@@ -370,7 +372,7 @@ export const hicSpecs: ScreenshotSpec[] = [
     // +225 for the accessibility lane going from one row to all twelve; the
     // run's own clipped/blank-below report is what corrects this
     viewportHeight: 1468,
-    readySelector: '[data-testid="hic-display-done"]',
+    readySelector: displayPainted('hic-display'),
     readyTimeout: 240000,
     settleMs: 20000,
   },
@@ -528,7 +530,7 @@ export const hicSpecs: ScreenshotSpec[] = [
     ],
     // -60 for the two strips that went
     viewportHeight: 573,
-    readySelector: '[data-testid="wiggle-display-done"]',
+    readySelector: displayPainted('wiggle-display'),
     readyTimeout: 240000,
     settleMs: 12000,
   },

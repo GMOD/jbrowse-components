@@ -1,4 +1,4 @@
-import { encodeSessionSpec } from '@jbrowse/browser-test-utils'
+import { displayPainted, encodeSessionSpec } from '@jbrowse/browser-test-utils'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -429,7 +429,7 @@ export const ldSpecs: ScreenshotSpec[] = [
     })}&sessionName=Screenshot`,
     // same real signal as the Anopheles figure: an LD panel exists to settle on,
     // and the generator's settle takes it from there
-    readySelector: '[data-testid="ld-display-done"]',
+    readySelector: displayPainted('ld-display'),
     // 21 MB of genotypes across the two lanes, the pooled one on 2504 samples
     readyTimeout: 600000,
     // the gene lane, the Fst scatter, then two LD tracks (250 triangle + 50
@@ -546,7 +546,7 @@ export const ldSpecs: ScreenshotSpec[] = [
     // `loading` and then to paint (see settlePass in generate-screenshots.ts),
     // which is what "all four are done" means. This only has to hold until the
     // first LD panel exists to settle on.
-    readySelector: '[data-testid="ld-display-done"]',
+    readySelector: displayPainted('ld-display'),
     // 180s. The data is small; what takes the time is the anoGam3 hub's
     // chrom.sizes off hgdownload.soe.ucsc.edu, which times out and refetches
     // often enough to blow through 120s on a bad day.

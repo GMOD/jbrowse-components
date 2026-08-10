@@ -14,7 +14,7 @@ import { lgvSnapshotTest } from '../suiteHelpers.ts'
 
 import type { TestSuite } from '../types.ts'
 
-const pileup = 'pileup-display-done'
+const pileup = 'pileup-display'
 
 const suite: TestSuite = {
   name: 'Alignments Track',
@@ -56,14 +56,14 @@ const suite: TestSuite = {
       snapshot: 'alignments-volvox-sv',
       loc: 'ctgA:2,707..48,600',
       tracks: ['volvox_sv'],
-      doneTestId: pileup,
+      displayTestId: pileup,
     }),
     lgvSnapshotTest({
       name: 'volvox long reads with SV (zoomed out)',
       snapshot: 'alignments-long-reads-sv-zoomed-out',
       loc: 'ctgA:1..50,001',
       tracks: ['volvox-long-reads-sv-bam'],
-      doneTestId: pileup,
+      displayTestId: pileup,
     }),
     lgvSnapshotTest({
       name: 'volvox long reads with SV (linked reads)',
@@ -78,14 +78,14 @@ const suite: TestSuite = {
           },
         },
       ],
-      doneTestId: pileup,
+      displayTestId: pileup,
     }),
     lgvSnapshotTest({
       name: 'pileup + coverage track',
       snapshot: 'alignments-pileup-coverage',
       loc: 'ctgA:1-4000',
       tracks: ['volvox_alignments_pileup_coverage'],
-      doneTestId: pileup,
+      displayTestId: pileup,
     }),
     {
       name: 'read vs ref context menu appears',
@@ -131,7 +131,7 @@ const suite: TestSuite = {
       // with near-transparent pixels
       loc: 'ctgA:1..10,000',
       tracks: ['volvox_alignments_pileup_coverage'],
-      doneTestId: pileup,
+      displayTestId: pileup,
     }),
   ],
 }

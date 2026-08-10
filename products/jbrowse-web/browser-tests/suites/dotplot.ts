@@ -1,3 +1,5 @@
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
 import {
   delay,
   findByTestId,
@@ -179,10 +181,9 @@ const suite: TestSuite = {
           TWO_TRACK_SESSION,
           'test_data/config_dotplot.json',
         )
-        await page.waitForSelector(
-          '[data-testid="dotplot_webgl_canvas_done"]',
-          { timeout: 60000 },
-        )
+        await page.waitForSelector(displayPainted('dotplot_webgl_canvas'), {
+          timeout: 60000,
+        })
 
         const colors = await page.evaluate(() => {
           const view = (
@@ -241,10 +242,9 @@ const suite: TestSuite = {
           TWO_TRACK_SESSION,
           'test_data/config_dotplot.json',
         )
-        await page.waitForSelector(
-          '[data-testid="dotplot_webgl_canvas_done"]',
-          { timeout: 60000 },
-        )
+        await page.waitForSelector(displayPainted('dotplot_webgl_canvas'), {
+          timeout: 60000,
+        })
 
         await openPaletteMenu(page)
         // put the VIEW on Strand first — the case where an override equals it
@@ -293,14 +293,14 @@ const suite: TestSuite = {
 
         await waitForDisplayPaint(
           page,
-          '[data-testid="dotplot_webgl_canvas_done"]',
+          displayPainted('dotplot_webgl_canvas'),
           60000,
         )
         await waitForDataLoaded(page)
         await dualSnapshot(
           page,
           'dotplot-default-canvas',
-          '[data-testid="dotplot_webgl_canvas_done"]',
+          displayPainted('dotplot_webgl_canvas'),
         )
       },
     },

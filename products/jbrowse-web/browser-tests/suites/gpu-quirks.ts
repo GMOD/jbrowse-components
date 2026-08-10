@@ -1,7 +1,9 @@
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
 import { analyzeCanvasPng, assertNonBlank } from '../canvasContent.ts'
 import {
   delay,
-  findByTestId,
+  findDisplayPainted,
   navigateWithSessionSpec,
   waitForDataLoaded,
 } from '../helpers.ts'
@@ -17,7 +19,7 @@ import type { Page } from 'puppeteer'
 // boundary (jest runs RPC on the main thread). These are the failure modes that
 // would "cause alarm regarding shaders" yet pass every jsdom test.
 
-const PILEUP_DONE = '[data-testid="pileup-display-done"]'
+const PILEUP_DONE = displayPainted('pileup-display')
 
 function alignmentsSpec(loc: string, track: string) {
   return {
@@ -40,7 +42,7 @@ async function loadAlignments(
   }: { loc?: string; track?: string; config?: string } = {},
 ) {
   await navigateWithSessionSpec(page, alignmentsSpec(loc, track), config)
-  await findByTestId(page, 'pileup-display-done', 60000)
+  await findDisplayPainted(page, 'pileup-display', 60000)
   await waitForDataLoaded(page)
   await delay(500)
 }

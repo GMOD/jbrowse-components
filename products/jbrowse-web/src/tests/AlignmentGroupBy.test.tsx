@@ -6,6 +6,7 @@ import {
   doBeforeEach,
   expectCanvasMatch,
   findCanvasIn,
+  findDisplayPainted,
   hts,
   setup,
 } from './util.tsx'
@@ -44,7 +45,7 @@ test('group by strand stacks two sections in one track', async () => {
       ...opts,
     ),
   )
-  await screen.findByTestId('pileup-display-done', ...opts)
+  await findDisplayPainted('pileup-display', delay)
 
   // setGroupBy is the Stage 5 action the dialog's "stack" mode calls.
   const display = alignmentsDisplay(view)
@@ -64,7 +65,7 @@ test('group by strand stacks two sections in one track', async () => {
     { timeout: 30000 },
   )
 
-  const el = await screen.findByTestId('pileup-display-done', ...opts)
+  const el = await findDisplayPainted('pileup-display', delay)
   expectCanvasMatch(findCanvasIn(el), 0.05)
 
   // The inline section-divider overlay labels each stacked group with its read
@@ -82,7 +83,7 @@ test('group draws per-section paired-end arcs', async () => {
   const { view } = await createView()
   await view.navToLocString('ctgA:1-50000')
   await user.click(await screen.findByTestId(hts('volvox_sv_cram'), ...opts))
-  await screen.findByTestId('pileup-display-done', ...opts)
+  await findDisplayPainted('pileup-display', delay)
 
   const display = alignmentsDisplay(view)
   display.setReadConnections('arc')
@@ -104,7 +105,7 @@ test('group draws per-section paired-end arcs', async () => {
     { timeout: 30000 },
   )
 
-  const el = await screen.findByTestId('pileup-display-done', ...opts)
+  const el = await findDisplayPainted('pileup-display', delay)
   expectCanvasMatch(findCanvasIn(el), 0.05)
 }, 90000)
 
@@ -117,7 +118,7 @@ test('group draws per-section read-cloud lines', async () => {
   const { view } = await createView()
   await view.navToLocString('ctgA:1-50000')
   await user.click(await screen.findByTestId(hts('volvox_sv_cram'), ...opts))
-  await screen.findByTestId('pileup-display-done', ...opts)
+  await findDisplayPainted('pileup-display', delay)
 
   const display = alignmentsDisplay(view)
   display.setReadConnections('cloud')
@@ -140,7 +141,7 @@ test('group draws per-section read-cloud lines', async () => {
     { timeout: 30000 },
   )
 
-  const el = await screen.findByTestId('pileup-display-done', ...opts)
+  const el = await findDisplayPainted('pileup-display', delay)
   expectCanvasMatch(findCanvasIn(el), 0.05)
 }, 90000)
 
@@ -152,7 +153,7 @@ test('group draws per-section sashimi arcs', async () => {
   const { view } = await createView()
   await view.navToLocString('ctgA:1-50000')
   await user.click(await screen.findByTestId(hts('spliced'), ...opts))
-  await screen.findByTestId('pileup-display-done', ...opts)
+  await findDisplayPainted('pileup-display', delay)
 
   const display = alignmentsDisplay(view)
   display.setShowSashimiArcs(true)
@@ -178,7 +179,7 @@ test('group draws per-section sashimi arcs', async () => {
     { timeout: 30000 },
   )
 
-  const el = await screen.findByTestId('pileup-display-done', ...opts)
+  const el = await findDisplayPainted('pileup-display', delay)
   expectCanvasMatch(findCanvasIn(el), 0.05)
 }, 90000)
 
@@ -192,7 +193,7 @@ test('lowering the sashimi score reveals a group-specific junction', async () =>
   const { view } = await createView()
   await view.navToLocString('ctgA:1-50000')
   await user.click(await screen.findByTestId(hts('spliced'), ...opts))
-  await screen.findByTestId('pileup-display-done', ...opts)
+  await findDisplayPainted('pileup-display', delay)
 
   const display = alignmentsDisplay(view)
   display.setShowSashimiArcs(true)
@@ -223,7 +224,7 @@ test('chain mode groups whole chains by HP tag into sections', async () => {
   const { view } = await createView()
   view.setNewView(0.8, 49437)
   await user.click(await screen.findByTestId(hts('volvox_cram'), ...opts))
-  await screen.findByTestId('pileup-display-done', ...opts)
+  await findDisplayPainted('pileup-display', delay)
 
   const display = alignmentsDisplay(view)
   display.setLinkedReads('normal')
@@ -251,7 +252,7 @@ test('chain mode groups whole chains by HP tag into sections', async () => {
     { timeout: 30000 },
   )
 
-  const el = await screen.findByTestId('pileup-display-done', ...opts)
+  const el = await findDisplayPainted('pileup-display', delay)
   expectCanvasMatch(findCanvasIn(el), 0.05)
 }, 90000)
 
@@ -268,7 +269,7 @@ test('chain mode ignores a per-read group dimension (single section)', async () 
       ...opts,
     ),
   )
-  await screen.findByTestId('pileup-display-done', ...opts)
+  await findDisplayPainted('pileup-display', delay)
 
   const display = alignmentsDisplay(view)
   display.setLinkedReads('normal')
@@ -297,7 +298,7 @@ test('ungroup restores a single section', async () => {
       ...opts,
     ),
   )
-  await screen.findByTestId('pileup-display-done', ...opts)
+  await findDisplayPainted('pileup-display', delay)
 
   const display = alignmentsDisplay(view)
   display.setGroupBy({ type: 'strand' })
@@ -328,7 +329,7 @@ test('collapsing a group zeroes its pileup band but keeps coverage', async () =>
       ...opts,
     ),
   )
-  await screen.findByTestId('pileup-display-done', ...opts)
+  await findDisplayPainted('pileup-display', delay)
 
   const display = alignmentsDisplay(view)
   display.setGroupBy({ type: 'strand' })
@@ -364,7 +365,7 @@ test('resizing a group caps its rows independently of the others', async () => {
       ...opts,
     ),
   )
-  await screen.findByTestId('pileup-display-done', ...opts)
+  await findDisplayPainted('pileup-display', delay)
 
   const display = alignmentsDisplay(view)
   display.setGroupBy({ type: 'strand' })

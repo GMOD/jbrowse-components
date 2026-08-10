@@ -6,6 +6,7 @@ import {
   doBeforeEach,
   expectCanvasMatch,
   findCanvasIn,
+  findDisplayPainted,
   hts,
   setup,
 } from './util.tsx'
@@ -29,7 +30,7 @@ test('opens the track menu and enables soft clipping', async () => {
     await screen.findByTestId(hts('volvox-long-reads-sv-bam'), ...opts),
   )
   // wait for initial render before toggling soft clipping
-  await screen.findByTestId('pileup-display-done', ...opts)
+  await findDisplayPainted('pileup-display', delay)
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
   await user.click(await screen.findByText('Show...'))
   await user.click(await screen.findByText('Show soft clipping'))
@@ -44,6 +45,6 @@ test('opens the track menu and enables soft clipping', async () => {
   )
 
   // slightly higher threshold for fonts
-  const display = await screen.findByTestId('pileup-display-done', ...opts)
+  const display = await findDisplayPainted('pileup-display', delay)
   expectCanvasMatch(findCanvasIn(display), 0.05)
 }, 60000)

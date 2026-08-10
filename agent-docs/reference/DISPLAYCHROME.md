@@ -15,8 +15,7 @@ description: The shared display status chrome that owns loading, error, and retr
   `computeDisplayPhase`. Never re-encode it as `&& !error && !regionTooLarge`.
 - **Two components, split at the backend.** `DisplayChromeBase` owns only the
   hook and the `renderError` phase — the one phase whose banner needs the hook's
-  `retry()`. Everything below it (container, `-done` testid,
-  `data-display-phase`, the other four overlays) is `DisplayStatusChromeBase`,
+  `retry()`. Everything below it (container, the four `data-*` attributes, the other four overlays) is `DisplayStatusChromeBase`,
   which a display with no rendering backend renders directly. That is how arc
   gets the chrome instead of a copy of it.
 - The **loading term** is single-sourced too, in `computeLoadingTerm`, and so is
@@ -73,11 +72,12 @@ description: The shared display status chrome that owns loading, error, and retr
 - 16 LGV displays use it, plus arc/paired-arc on the backend-free half. Off it by
   design: dotplot and synteny (non-LGV, drop to `useRenderingBackend`),
   circular-view (radial, own banners).
-- **One element per display**, carrying `data-testid` (`<base>` → `<base>-done`),
-  `data-display-id`, `data-display-phase` and `data-display-drawn`. `testid` is
-  required, no display bypasses the chrome, and the two non-LGV views publish
-  `data-display-drawn` too (via `RenderCanvas`), so one selector answers "has
-  everything painted?" for the whole app. The three coexisting testid shapes, `DisplayContainer`,
+- **One element per display**, carrying a stable `data-testid` plus
+  `data-display-id`, `data-display-drawn` and `data-display-phase` — one
+  question each (ADR-065). `testid` is required, no display bypasses the chrome,
+  and the two non-LGV views publish `data-display-drawn` too (via
+  `RenderCanvas`), so one selector answers "has everything painted?" for the
+  whole app. The three coexisting testid shapes, `DisplayContainer`,
   `BaseLinearDisplayComponent` and the model's `DisplayMessageComponent` getter
   are all gone.
 
@@ -207,8 +207,8 @@ which owns the backend hook. They render `DisplayStatusChrome` — the *same
 component* the GPU chrome delegates to, not a parallel implementation — and
 supply the two facts it can't derive for a display whose canvas it doesn't own:
 `phase` (off `ArcFetchModel.displayPhase`, computed by `computeDisplayStatusPhase`)
-and `drawn` (`ArcFetchModel.painted`, its `canvasDrawn` analogue). Container, `-done` testid,
-`data-display-phase`, banners and progress chip all come from the shared file.
+and `drawn` (`ArcFetchModel.painted`, its `canvasDrawn` analogue). Container,
+the four `data-*` attributes, banners and progress chip all come from the shared file.
 The phase lives on the model, not in the component, for the same reason it does
 for a GPU display: the component then can't disagree with it. See
 `plugins/arc/CLAUDE.md`.
@@ -337,12 +337,27 @@ be conflated:
 
 Every LGV display emits **one** chrome element, and it carries four attributes:
 
-| attribute | value | stable? |
+| attribute | value | answers |
 | --- | --- | --- |
-| `data-testid` | `<base>` → `<base>-done` on first paint | mutates |
-| `data-display-id` | the display's `configuration.displayId` | stable |
-| `data-display-phase` | `ready` / `loading` / `error` | tracks the model |
-| `data-display-drawn` | `true` / `false` | tracks first paint |
+| `data-testid` | the display type's base name, never mutated | which KIND of display |
+| `data-display-id` | the display's `configuration.displayId` | WHICH display |
+| `data-display-drawn` | `true` / `false` | has it painted (FIRST paint) |
+| `data-display-phase` | `ready` / `loading` / `error` | is it FINISHED |
+
+All four are stable in meaning and orthogonal — one question each. `data-testid`
+used to gain a `-done` suffix on first paint, which made it the only mutating
+testid in the tree and meant readiness had two spellings (`-done` here, `_done`
+on the chrome-less synteny/dotplot canvases). [ADR-065](../architecture-decision-records/adr-065-display-readiness-selectors.md)
+deleted the suffix: a mutating id cannot be a handle, and a suffix could carry
+only one of the four answers above.
+
+**"This display type, painted" is therefore a conjunction**, and it is written
+once rather than at each call site — `displayPainted(base)` from
+`@jbrowse/capture` (re-exported by `@jbrowse/browser-test-utils`) for a selector
+string, `findDisplayPainted` for the jest and puppeteer waits. Those helpers can
+also say *which half* failed, which the suffix never could: a
+`findByTestId('pileup-display-done')` timeout was equally consistent with "no
+pileup display mounted" and "it mounted and never painted".
 
 All four ride the **container**, which the two subtree-replacing phases don't
 render — so in `tooLarge`/`renderError` a display publishes none of them, not
@@ -377,13 +392,13 @@ the comparative side, same fix: one name the display publishes and every
 consumer reads. Arc, with no `RenderLifecycleMixin`, declares its own `painted`
 on `ArcFetchModel` for the same reason its `displayPhase` lives there — a
 component-side derivation is free to disagree with the model.
-`DisplayChrome` takes a **required** `testid` base and appends `-done`, so no
-consumer hand-writes the ternary. Displays that pixel-match the canvas also give
-the inner `<canvas>` a static selector (`hic_canvas`, `ld_canvas`,
-`variant_canvas`, `variant_matrix_canvas`, `multirow_canvas`) as a query target:
-tests wait on `${base}-done`, then read the static selector. The non-LGV views
-keep their own standalone `synteny_canvas_done` / `dotplot_webgl_canvas_done`,
-since they have no chrome at all — but they do publish `data-display-drawn`,
+`DisplayChrome` takes a **required** `testid`, which it publishes unchanged.
+Displays that pixel-match the canvas also give the inner `<canvas>` a static
+selector (`hic_canvas`, `ld_canvas`, `variant_canvas`, `variant_matrix_canvas`,
+`multirow_canvas`) as a query target: tests wait with `findDisplayPainted(base)`,
+then read the static selector. The non-LGV views keep their own standalone
+`synteny_canvas` / `dotplot_webgl_canvas` ids, since they have no chrome at all
+— but they do publish `data-display-drawn`,
 through `RenderCanvas`, which is what lets "has everything painted?" be one
 selector across every view. It is a **required** prop there for the reason the
 old arrangement failed: `PENDING_DISPLAYS` named `synteny_canvas` explicitly and
@@ -469,8 +484,15 @@ instances — or two display types sharing a body — apart.
 
 ### How the unification was verified
 
-The freeze on this was real: the `-done` selectors are a contract across four
-test systems, only one of which (jest/jsdom) runs outside CI. What made it
+**Read as history.** This describes the change that ADDED the three attributes,
+which deliberately left `-done` alone. ADR-065 then removed the suffix outright
+— so the "freeze" below no longer holds, and the four test systems it names have
+all been migrated onto `data-display-drawn`. Kept because the method (check
+which system depends on which shape, rather than assuming all depend on all) is
+what made both changes tractable.
+
+The freeze was real at the time: the `-done` selectors were a contract across
+four test systems, only one of which (jest/jsdom) runs outside CI. What made it
 tractable was checking *which* system depends on *which* shape, rather than
 assuming all of them depend on all of it:
 

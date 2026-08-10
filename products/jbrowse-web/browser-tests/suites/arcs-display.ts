@@ -1,7 +1,10 @@
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
 import {
   delay,
   findByTestId,
   findByText,
+  findDisplayPainted,
   navigateWithSessionSpec,
   waitForDataLoaded,
   waitForElementCount,
@@ -11,7 +14,7 @@ import { lgvSnapshotTest } from '../suiteHelpers.ts'
 
 import type { TestSuite } from '../types.ts'
 
-const pileup = 'pileup-display-done'
+const pileup = 'pileup-display'
 
 const suite: TestSuite = {
   name: 'Arcs and BEDPE Displays',
@@ -33,7 +36,7 @@ const suite: TestSuite = {
         })
 
         await findByText(page, 'ctgA')
-        await findByTestId(page, 'arc-display-done', 60000)
+        await findDisplayPainted(page, 'arc-display', 60000)
         await waitForDataLoaded(page)
         await pageSnapshot(page, 'arcs-arc-test')
       },
@@ -51,14 +54,14 @@ const suite: TestSuite = {
           },
         },
       ],
-      doneTestId: pileup,
+      displayTestId: pileup,
     }),
     lgvSnapshotTest({
       name: 'RNA-seq sashimi arcs (spliced alignments)',
       snapshot: 'arcs-rnaseq-sashimi',
       loc: 'ctgA:1-10000',
       tracks: ['spliced'],
-      doneTestId: pileup,
+      displayTestId: pileup,
     }),
     lgvSnapshotTest({
       name: 'cloud mode (paired-end SV)',
@@ -73,7 +76,7 @@ const suite: TestSuite = {
           },
         },
       ],
-      doneTestId: pileup,
+      displayTestId: pileup,
     }),
     lgvSnapshotTest({
       name: 'cloud down mode (paired-end SV, scalebar left)',
@@ -89,7 +92,7 @@ const suite: TestSuite = {
           },
         },
       ],
-      doneTestId: pileup,
+      displayTestId: pileup,
     }),
     lgvSnapshotTest({
       name: 'BEDPE arcs (LinearPairedArcDisplay)',
@@ -97,16 +100,16 @@ const suite: TestSuite = {
       // volvox_bedpe has arcs from ctgA:2700→34200 and cross-contig A↔B arcs
       loc: 'ctgA:1-50000',
       tracks: ['volvox_bedpe'],
-      doneTestId: 'arc-display-done',
+      displayTestId: 'arc-display',
       // the arc display's `*-done` element IS the canvas, not a parent of one
-      snapshotSelector: '[data-testid="arc-display-done"]',
+      snapshotSelector: displayPainted('arc-display'),
     }),
     lgvSnapshotTest({
       name: 'paired-end stranded RNA-seq',
       snapshot: 'arcs-paired-end-rnaseq',
       loc: 'ctgA:1-10000',
       tracks: ['paired_end_stranded_rnaseq'],
-      doneTestId: pileup,
+      displayTestId: pileup,
     }),
     {
       name: 'collapse introns view with RNA-seq sashimi arcs (EDEN gene)',
@@ -165,11 +168,7 @@ const suite: TestSuite = {
 
         // The new LGV has displayedRegions set to the EDEN exon blocks; wait
         // for its pileup canvas to finish drawing
-        await waitForElementCount(
-          page,
-          '[data-testid="pileup-display-done"]',
-          2,
-        )
+        await waitForElementCount(page, displayPainted('pileup-display'), 2)
         await waitForDataLoaded(page)
 
         // Full-page snapshot shows both views: original + collapsed exon view

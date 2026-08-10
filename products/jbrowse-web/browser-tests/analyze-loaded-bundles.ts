@@ -62,7 +62,7 @@ const SCENARIOS = {
         ],
       },
     )}`,
-    waitSelector: '[data-testid$="-done"]',
+    waitSelector: '[data-display-drawn="true"]',
   },
   alignments: {
     label: 'one alignments track (webgl)',
@@ -78,7 +78,7 @@ const SCENARIOS = {
         ],
       },
     )}`,
-    waitSelector: '[data-testid$="-done"]',
+    waitSelector: '[data-display-drawn="true"]',
   },
 }
 

@@ -83,12 +83,12 @@ async function clickForceLoad(page: Page) {
 function forceLoadTest({
   name,
   displayType,
-  doneTestId,
+  displayTestId,
   canvasTestId,
 }: {
   name: string
   displayType: string
-  doneTestId: string
+  displayTestId: string
   canvasTestId: string
 }): TestCase {
   return {
@@ -124,7 +124,7 @@ function forceLoadTest({
 
       // Force-load remounts the body; the GPU canvas re-inits and paints.
       await clickForceLoad(page)
-      await findByTestId(page, doneTestId, 60000)
+      await findByTestId(page, displayTestId, 60000)
       await waitForDataLoaded(page)
       await assertCanvasHasContent(page, `[data-testid="${canvasTestId}"]`)
     },
@@ -137,13 +137,13 @@ const suite: TestSuite = {
     forceLoadTest({
       name: 'multi-sample variant force-load re-renders canvas',
       displayType: 'LinearMultiSampleVariantDisplay',
-      doneTestId: 'variant-display-done',
+      displayTestId: 'variant-display',
       canvasTestId: 'variant_canvas',
     }),
     forceLoadTest({
       name: 'variant matrix force-load re-renders canvas',
       displayType: 'LinearMultiSampleVariantMatrixDisplay',
-      doneTestId: 'variant-matrix-display-done',
+      displayTestId: 'variant-matrix-display',
       canvasTestId: 'variant_matrix_canvas',
     }),
   ],

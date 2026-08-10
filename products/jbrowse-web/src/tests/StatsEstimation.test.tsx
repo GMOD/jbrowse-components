@@ -5,6 +5,7 @@ import {
   doBeforeEach,
   expectCanvasMatch,
   findCanvasIn,
+  findDisplayPainted,
   hts,
   setup,
 } from './util.tsx'
@@ -75,7 +76,7 @@ test('test stats estimation pileup, force load to see', async () => {
   fireEvent.click(buttons[0]!)
 
   // After force load, wait for pileup to render
-  const display = await findByTestId('pileup-display-done', ...o)
+  const display = await findDisplayPainted('pileup-display', delay)
   expectCanvasMatch(findCanvasIn(display))
 }, 60000)
 

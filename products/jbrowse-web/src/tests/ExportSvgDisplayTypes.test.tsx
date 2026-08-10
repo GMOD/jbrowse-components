@@ -9,6 +9,7 @@ import { createCanvas as nodeCreateCanvas } from 'canvas'
 import {
   createView,
   doBeforeEach,
+  findDisplayPainted,
   getSavedSvg,
   getSavedSvgs,
   hts,
@@ -63,7 +64,7 @@ test('wiggle display SVG vector export', async () => {
   const { view, findByTestId } = await createView()
   view.setNewView(5, 0)
   fireEvent.click(await findByTestId(hts('volvox_microarray'), ...opts))
-  await findByTestId('wiggle-display-done', ...opts)
+  await findDisplayPainted('wiggle-display', delay)
 
   await view.exportSvg({ rasterizeLayers: false })
   const svg = getSavedSvg()
@@ -75,7 +76,7 @@ test('wiggle display SVG rasterized export embeds PNG', async () => {
   const { view, findByTestId } = await createView()
   view.setNewView(5, 0)
   fireEvent.click(await findByTestId(hts('volvox_microarray'), ...opts))
-  await findByTestId('wiggle-display-done', ...opts)
+  await findDisplayPainted('wiggle-display', delay)
 
   await view.exportSvg({ rasterizeLayers: true, createCanvas: canvasFactory })
   const svg = getSavedSvg()
@@ -115,7 +116,7 @@ test('alignments display SVG rasterized export embeds PNG', async () => {
   fireEvent.click(
     await findByTestId(hts('volvox_alignments_pileup_coverage'), ...opts),
   )
-  await findByTestId('pileup-display-done', ...opts)
+  await findDisplayPainted('pileup-display', delay)
 
   await view.exportSvg({ rasterizeLayers: true, createCanvas: canvasFactory })
   const svg = getSavedSvg()
@@ -130,7 +131,7 @@ test('alignments display SVG vector export', async () => {
   fireEvent.click(
     await findByTestId(hts('volvox_alignments_pileup_coverage'), ...opts),
   )
-  await findByTestId('pileup-display-done', ...opts)
+  await findDisplayPainted('pileup-display', delay)
 
   await view.exportSvg({ rasterizeLayers: false })
   const svg = getSavedSvg()
@@ -165,7 +166,7 @@ test('arc display SVG export renders bezier arcs for BND variants', async () => 
   fireEvent.click(await findByText('Display types', ...opts))
   fireEvent.click(await findByText('Variant display arcs', ...opts))
 
-  await findByTestId('arc-display-done', ...opts)
+  await findDisplayPainted('arc-display', delay)
 
   // renderArcSvg awaits model.svgReady (via awaitSvgReady) internally
   await view.exportSvg({ rasterizeLayers: false })
@@ -185,7 +186,7 @@ test('wiggle SVG export includes cross-hatches when enabled', async () => {
   const { view, findByTestId } = await createView()
   view.setNewView(5, 0)
   fireEvent.click(await findByTestId(hts('volvox_microarray'), ...opts))
-  await findByTestId('wiggle-display-done', ...opts)
+  await findDisplayPainted('wiggle-display', delay)
 
   const display = view.tracks[0]!.displays[0] as {
     toggleCrossHatches: () => void
@@ -207,7 +208,7 @@ test('multi-wiggle SVG export includes row separators and cross-hatches when ena
   fireEvent.click(
     await findByTestId(hts('volvox_microarray_multi_multirowxy'), ...opts),
   )
-  await findByTestId('multi-wiggle-display-done', ...opts)
+  await findDisplayPainted('multi-wiggle-display', delay)
 
   const display = view.tracks[0]!.displays[0] as {
     toggleCrossHatches: () => void

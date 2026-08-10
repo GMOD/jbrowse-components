@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict'
 
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
 import {
   delay,
-  findByTestId,
+  findDisplayPainted,
   navigateToUrl,
   navigateWithSessionSpec,
   waitForDataLoaded,
@@ -30,7 +32,7 @@ const suite: TestSuite = {
         await navigateToUrl(page, 'config=test_data/breakpoint/config.json')
 
         // BSV has two LGV sub-views with alignments tracks
-        await findByTestId(page, 'pileup-display-done', 60000)
+        await findDisplayPainted(page, 'pileup-display', 60000)
         await waitForDataLoaded(page)
         await pageSnapshot(page, 'bsv-hg19-default-session')
       },
@@ -40,12 +42,12 @@ const suite: TestSuite = {
       fn: async page => {
         await navigateToUrl(page, 'config=test_data/breakpoint/config.json')
 
-        await findByTestId(page, 'pileup-display-done', 60000)
+        await findDisplayPainted(page, 'pileup-display', 60000)
         await waitForDataLoaded(page)
         await dualSnapshot(
           page,
           'bsv-hg19-pileup-canvas',
-          '[data-testid="pileup-display-done"] canvas',
+          displayPainted('pileup-display') + ' canvas',
         )
       },
     },
@@ -74,7 +76,7 @@ const suite: TestSuite = {
           ],
         })
 
-        await findByTestId(page, 'pileup-display-done', 60000)
+        await findDisplayPainted(page, 'pileup-display', 60000)
         await waitForDataLoaded(page)
         await delay(1000)
         await pageSnapshot(page, 'bsv-volvox-inversion')
@@ -89,7 +91,7 @@ const suite: TestSuite = {
       name: 'overlay connectors track pan and zoom',
       fn: async page => {
         await navigateToUrl(page, 'config=test_data/breakpoint/config.json')
-        await findByTestId(page, 'pileup-display-done', 60000)
+        await findDisplayPainted(page, 'pileup-display', 60000)
         await waitForDataLoaded(page)
         await delay(2000)
 

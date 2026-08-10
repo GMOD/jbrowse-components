@@ -137,6 +137,26 @@ something the others do not, so waiting on one is not waiting on the rest:
 | `[data-display-phase="loading"]`  | no display is still in its own fetch. The direct read that the rows above only approximate                                                         |
 | `[data-display-drawn="false"]`    | every display has painted. `data-display-drawn` flips on FIRST paint, so wait on the fetch rows before this one or it proves nothing about content |
 
+**Targeting one display rather than all of them.** `data-testid` names the
+display _type_ (`pileup-display`, `wiggle-display`, `synteny_canvas`, …) and is
+stable for the element's whole life; `data-display-id` names the individual
+display. Neither carries readiness, so "this display, painted" is a conjunction
+— and `@jbrowse/capture` exports the builders so you do not write it out:
+
+```js
+import { displayPainted, displaySettled, displayById } from '@jbrowse/capture'
+
+await page.waitForSelector(displayPainted('pileup-display'))
+// '[data-testid="pileup-display"][data-display-drawn="true"]'
+
+await page.waitForSelector(displaySettled('pileup-display'))
+// ...[data-display-phase="ready"] — the whole fetch, not just first paint
+```
+
+Older builds appended `-done` to `data-testid` on first paint (and `_done` on
+the synteny/dotplot canvases). That is gone: the id no longer changes, so a
+selector written against it keeps matching after the display paints.
+
 Plus one that is text rather than an attribute: some views paint their own
 `Loading…` / `Rendering…` / `Computing…` banner that no test id covers. Waiting
 on that text needs a visibility check, because the loading overlay keeps the

@@ -10,7 +10,7 @@ const suite: TestSuite = {
       snapshot: 'gwas-manhattan',
       loc: 'ctgA:1-50000',
       tracks: ['volvox_gwas'],
-      doneTestId: 'manhattan-display-done',
+      displayTestId: 'manhattan-display',
     }),
   ],
 }

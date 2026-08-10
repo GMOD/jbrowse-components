@@ -94,10 +94,11 @@ test('the hook is handed each fresh element through canvasRef', () => {
   ])
 })
 
-// The testid convention deliberately does NOT live in this component: these two
-// views spell their suffix `_done`, not `DisplayChrome`'s `-done`, and those
-// selectors are frozen across four test systems. Forwarding it verbatim is what
-// keeps the separator the call site's business.
+// The testid deliberately does NOT come from this component — it is the call
+// site's name for its own canvas, forwarded verbatim. There used to be a
+// readiness suffix to compose here as well (`_done` for these two views against
+// `DisplayChrome`'s `-done`); ADR-065 deleted both, so there is nothing left to
+// centralize and the id is now stable for the element's whole life.
 test('forwards data-testid verbatim rather than composing one', () => {
   const { canvas } = setup()
   expect(canvas()?.dataset.testid).toBe('synteny_canvas')

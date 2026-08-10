@@ -9,7 +9,7 @@ refName.
 
 With no GPU backend arc can't wrap `DisplayChrome` (that owns
 `useRenderingBackend`), so it renders the component `DisplayChrome` itself
-delegates to, passing `phase` and `drawn`. Container, `-done` testid,
+delegates to, passing `phase` and `drawn`. Container, the `data-*` attributes,
 `data-display-phase`, banners and progress chip all come from that one file.
 Don't reintroduce arc-local loading/error components or an arc-local container —
 arc used to assemble them by hand and drifted into being the only display with
@@ -39,8 +39,8 @@ survives so stale arcs stay under the loading overlay instead of blanking.
 
 `svgReady` is the SVG-export terminal gate and goes false on a pan past a block
 boundary, so an export fired mid-refetch waits for fresh arcs. The
-`arc-display-done` testid uses the looser `drawn`, which stays true across a
-refetch so the testid doesn't churn on pan.
+`arc-display`'s `data-display-drawn` uses the looser `drawn`, which stays true
+across a refetch so the testid doesn't churn on pan.
 
 Byte-gated only, called directly (`byteGateBlocksFetch`) because arc fetches
 through `GlobalFetchMixin` rather than `fetchRegions`.

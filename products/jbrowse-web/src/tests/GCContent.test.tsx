@@ -6,6 +6,7 @@ import {
   doBeforeEach,
   expectCanvasMatch,
   findCanvasIn,
+  findDisplayPainted,
   hts,
   setup,
 } from './util.tsx'
@@ -24,6 +25,6 @@ test('gccontent', async () => {
   const { view } = await createView()
   view.setNewView(0.465, 85055)
   await user.click(await screen.findByTestId(hts('volvox_gc'), ...opts))
-  const display = await screen.findByTestId('wiggle-display-done', ...opts)
+  const display = await findDisplayPainted('wiggle-display', delay)
   expectCanvasMatch(findCanvasIn(display))
 }, 50000)

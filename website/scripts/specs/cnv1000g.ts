@@ -1,3 +1,5 @@
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
 import {
   DEMO_CONFIG,
   lgvSession,
@@ -160,7 +162,7 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readySelector: '[data-testid="multi-wiggle-display-done"]',
+    readySelector: displayPainted('multi-wiggle-display'),
     readyTimeout: 120000,
     viewportHeight: 830,
     settleMs: 8000,

@@ -6,6 +6,7 @@ import {
   doBeforeEach,
   expectCanvasMatch,
   findCanvasIn,
+  findDisplayPainted,
   hts,
   setup,
 } from './util.tsx'
@@ -30,7 +31,7 @@ async function testFilterTrack(trackId: string, tag: string, value: string) {
     value,
   )
   await user.click(await screen.findByText('Submit'))
-  const display = await screen.findByTestId('pileup-display-done', ...opts)
+  const display = await findDisplayPainted('pileup-display', delay)
   expectCanvasMatch(findCanvasIn(display))
 }
 

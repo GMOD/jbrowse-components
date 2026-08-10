@@ -151,7 +151,7 @@ test('the base still owns the -done testid and data-display-phase', async () => 
   model.setCanvasDrawn(true)
   const { findByTestId } = renderPlain(model, 'chrome')
 
-  const el = await findByTestId('chrome-done')
+  const el = await findByTestId('chrome')
   expect(el.dataset.displayPhase).toBe('loading')
 
   act(() => {

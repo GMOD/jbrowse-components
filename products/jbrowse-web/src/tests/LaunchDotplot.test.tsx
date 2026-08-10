@@ -3,6 +3,7 @@ import { Image, createCanvas } from 'canvas'
 
 import { utilizeFetchMockForTest } from './generateReadBuffer.ts'
 import { App } from './loaderUtil.tsx'
+import { findDisplayPainted } from './util.tsx'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
@@ -16,9 +17,9 @@ const delay = { timeout: 20000 }
 utilizeFetchMockForTest()
 
 test('can use a spec url for dotplot view', async () => {
-  const { findByTestId } = render(
+  render(
     <App search='?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"type":"DotplotView","views":[{"assembly":"volvox"},{"assembly":"volvox"}],"tracks":["volvox_fake_synteny"]}]}' />,
   )
 
-  await findByTestId('dotplot_webgl_canvas_done', {}, delay)
+  await findDisplayPainted('dotplot_webgl_canvas', delay)
 }, 40000)
