@@ -2564,6 +2564,34 @@ describe('declarative init: highlight, nav, unknown keys', () => {
     expect(model.highlight.length).toBe(1)
   })
 
+  // the sibling of the case above: not a re-entrant autorun pass (the drain
+  // flag covers that) but a genuinely newer `init` arriving mid-apply, which is
+  // what a programmatic re-launch does. Guarding the steps after each await with
+  // a bare isAlive let the stale blob run to completion and append its bands
+  // under the one that replaced it; installInitAutorun's `superseded` is the
+  // check that covers both.
+  test('an init replaced mid-apply stops instead of appending under its successor', async () => {
+    const model = makeModel({
+      assembly: 'volvox',
+      loc: 'ctgA:1-1000',
+      tracklist: true,
+      highlight: ['ctgA:100-200'],
+    })
+    // makeModel already setWidth(800), so the apply is parked on the tracklist
+    // width-settle await — the window a re-launch lands in
+    model.setInit({
+      assembly: 'volvox',
+      loc: 'ctgA:1-1000',
+      highlight: ['ctgA:300-400'],
+    })
+    await waitFor(() => {
+      expect(model.init).toBeUndefined()
+    })
+    // only the successor's band, and it did get applied (the locstring is
+    // 1-based closed, so 300-400 lands at interbase 299)
+    expect(model.highlight.map(h => h.start)).toEqual([299])
+  })
+
   // init.tracklist opens the drawer before navigating so the region is framed
   // at the width the drawer leaves behind. The "is a width change coming?"
   // question used to be answered with `!!session.visibleWidget`, which reads a

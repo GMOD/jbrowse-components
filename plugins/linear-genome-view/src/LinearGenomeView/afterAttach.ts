@@ -7,7 +7,7 @@ import {
 import { coerceHighlight } from '@jbrowse/core/util/highlights'
 import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
 import { normalizeTrackInit } from '@jbrowse/core/util/tracks'
-import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
+import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { autorun, when } from 'mobx'
 
 import { SearchResultsNotFoundError } from '../searchUtils.ts'
@@ -45,7 +45,7 @@ function asArray<T>(arg: T[] | T | undefined) {
 async function openTracklist(
   self: LinearGenomeViewModel,
   session: AbstractSessionModel,
-  ctx: InitApplyContext,
+  superseded: () => boolean,
 ) {
   // activateTrackSelector throws without widget support, which would abort the
   // rest of init (navigation included) over an optional extra
@@ -73,7 +73,7 @@ async function openTracklist(
       // (e.g. embedded or modal-drawer layouts, where no width change is
       // coming), and superseded so a re-launch landing mid-wait isn't held
       // behind an init that no longer matters
-      await when(() => self.volatileWidth !== widthBefore || ctx.superseded(), {
+      await when(() => self.volatileWidth !== widthBefore || superseded(), {
         timeout: 1000,
       }).catch(() => {})
     }
@@ -207,23 +207,30 @@ function applyInitHighlights(
 async function applyInit(
   self: LinearGenomeViewModel,
   init: InitState,
-  ctx: InitApplyContext,
+  { superseded }: InitApplyContext,
 ) {
   const session = getSession(self)
   warnInitKeyProblems(init)
   if (init.tracklist) {
-    await openTracklist(self, session, ctx)
+    await openTracklist(self, session, superseded)
   }
-  // the view may have been removed while the drawer or the navigation resolved;
-  // reading or mutating it past that point (and setInit in the caller's finally)
-  // would throw on a detached node. Checked after each await rather than once at
-  // the top, and as early returns rather than nesting, so a step added later
-  // takes a guard beside it instead of another level of indent.
-  if (!isAlive(self)) {
+  // `superseded`, not a bare isAlive: it subsumes the liveness check (the view
+  // may have been removed while the drawer or the navigation resolved, and
+  // reading or mutating a detached node throws) and also covers the case
+  // isAlive misses — a newer setInit landed mid-apply, so the rest of *this*
+  // blob is stale. Finishing it anyway appends its tracks and highlights under
+  // the one that replaced it, and addToHighlights pushes, so a re-launch of the
+  // same spec (a StrictMode remount) doubles the bands. The drain loop applies
+  // the newer init next either way.
+  //
+  // Checked after each await rather than once at the top, and as early returns
+  // rather than nesting, so a step added later takes a guard beside it instead
+  // of another level of indent.
+  if (superseded()) {
     return
   }
   await navigateInit(self, session, init)
-  if (!isAlive(self)) {
+  if (superseded()) {
     return
   }
   showInitTracks(self, init)
