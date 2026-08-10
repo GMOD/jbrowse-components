@@ -159,6 +159,22 @@ export interface MafCoverageResult {
  * counters are summed in locals and folded in once per column instead of once
  * per cell. That plus the `NO_BASE` sentinel is ~1.3x over the same data.
  *
+ * The per-cell cost decomposes, and it is worth knowing how, because the
+ * obvious reading of it is wrong. Measured on gapless data with nothing to
+ * emit, the bare cell loop is ~8.5ns/cell and the work the *data* makes it do —
+ * mismatch pushes at a 6% rate, insertion runs — adds under 2. So this is a
+ * loop cost, not an output cost. It is also not a memory cost: holding the
+ * inner loop at 447 rows and sweeping the block footprint from 3KB to 3.5MB
+ * leaves ns/cell flat, which is the same answer the rejected row-major
+ * transpose gave from the other direction. Peeling the body one operation at a
+ * time put the single largest item in `alignedBaseUpper`'s bound test — a
+ * kernel without it is 1.8x the one with it, on both a 26x7 and a 447x200
+ * shape — which is why the ALU-level rewrites (hoisting `refKnown`, a per-block
+ * `isRefRow` byte) measured 0.89-1.00x and are in REJECTED_IDEAS.md. Hoisting
+ * the bound to the per-block `uniformRows` scan below is 1.21-1.39x on the
+ * whole function across six shapes, against a byte-identical control copy
+ * scoring 1.00-1.04x on the same runs.
+ *
  * The other idea worth heading off is SWAR — reading the arena as `Uint32` and
  * classifying four columns at a time. A kernel doing just the depth and match
  * counts measures 4.5x, which is what makes it tempting, but that number is
@@ -246,6 +262,19 @@ export function computeMafCoverage(
     const rowLo = blockRowStart[block]!
     const rowHi = blockRowStart[block + 1]!
     let refPos = blockStartBp[block]!
+    // A MAF block is a set of rows over the *same* alignment columns, so a row
+    // shorter than the block's reference is the defensive case rather than the
+    // normal one — which makes `alignedBaseUpper`'s `col >= len` test a
+    // per-cell answer to a per-block question. One scan of this block's
+    // `rowLength` buys the depth loop below an arm with no bound test at all,
+    // and that arm is 1.2-1.3x on the whole function (see the doc comment).
+    let uniformRows = true
+    for (let i = rowLo; i < rowHi; i++) {
+      if (rowLength[i]! < refLen) {
+        uniformRows = false
+        break
+      }
+    }
     for (let col = 0; col < refLen; col++) {
       const refByte = arena[refBase + col]!
       if (refByte === DASH) {
@@ -274,26 +303,51 @@ export function computeMafCoverage(
           let depth = 0
           let columnClassifiable = 0
           let columnMatches = 0
-          for (let i = rowLo; i < rowHi; i++) {
-            const sampleUpper = alignedBaseUpper(
-              arena,
-              rowOffset[i]!,
-              rowLength[i]!,
-              col,
-            )
-            if (sampleUpper !== NO_BASE) {
-              depth++
-              // A known ref base + any differing sample base (incl. N and IUPAC
-              // codes, which render grey downstream) is a mismatch. An N ref is
-              // unclassifiable, so nothing is recorded against it.
-              if (refKnown && sampleUpper !== refUpper) {
-                mismatches.push(refPos, sampleUpper)
+          if (uniformRows) {
+            // `alignedBaseUpper`'s classification with its `col >= len` arm
+            // removed, which the block scan above proved unreachable here:
+            // `col < refLen` and every row of this block is at least `refLen`
+            // long. The arena's rows are adjacent, so reading past a row would
+            // return the next species' base — the scan is what makes dropping
+            // the test safe, and it is the only thing that does.
+            for (let i = rowLo; i < rowHi; i++) {
+              const byte = arena[rowOffset[i]! + col]!
+              if (byte !== DASH && byte !== SPACE) {
+                const sampleUpper = byte & ~LOWER_BIT
+                depth++
+                if (refKnown && sampleUpper !== refUpper) {
+                  mismatches.push(refPos, sampleUpper)
+                }
+                if (refKnown && rowSample[i]! !== refSample) {
+                  columnClassifiable++
+                  if (sampleUpper === refUpper) {
+                    columnMatches++
+                  }
+                }
               }
-              // Identity counts non-reference species at a known ref column.
-              if (refKnown && rowSample[i]! !== refSample) {
-                columnClassifiable++
-                if (sampleUpper === refUpper) {
-                  columnMatches++
+            }
+          } else {
+            for (let i = rowLo; i < rowHi; i++) {
+              const sampleUpper = alignedBaseUpper(
+                arena,
+                rowOffset[i]!,
+                rowLength[i]!,
+                col,
+              )
+              if (sampleUpper !== NO_BASE) {
+                depth++
+                // A known ref base + any differing sample base (incl. N and
+                // IUPAC codes, which render grey downstream) is a mismatch. An
+                // N ref is unclassifiable, so nothing is recorded against it.
+                if (refKnown && sampleUpper !== refUpper) {
+                  mismatches.push(refPos, sampleUpper)
+                }
+                // Identity counts non-reference species at a known ref column.
+                if (refKnown && rowSample[i]! !== refSample) {
+                  columnClassifiable++
+                  if (sampleUpper === refUpper) {
+                    columnMatches++
+                  }
                 }
               }
             }

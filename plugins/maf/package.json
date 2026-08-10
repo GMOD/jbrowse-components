@@ -22,6 +22,7 @@
   ],
   "scripts": {
     "build": "pnpm run /^build:/",
+    "bench:maf-coverage": "cd ../..; node --expose-gc plugins/maf/benches/mafCoverage.bench.ts",
     "test": "jest --config ../../jest.config.js --passWithNoTests --testPathPatterns plugins/maf",
     "prepublishOnly": "pnpm test",
     "prepack": "pnpm build",

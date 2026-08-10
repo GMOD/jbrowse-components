@@ -174,7 +174,23 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   reading of 1.35-1.43x for the same change was the local-copy artifact
   described below — the variant was local, the baseline imported. `NO_BASE`,
   column-major, and the per-column accumulation are all still carrying their
-  own measurements; this function has been squeezed.
+  own measurements.
+
+  Both stay rejected, but the *reason* they measured flat is now known and is
+  worth more than the rejection. Decomposing the per-cell cost
+  (`plugins/maf/benches/mafCoverage.bench.ts`, plus one-off kernels) showed the
+  loop is not ALU bound and not memory bound: gapless data with nothing to emit
+  still costs ~8.5ns/cell, and holding the inner loop at 447 rows while sweeping
+  the block footprint from 3KB to 3.5MB leaves ns/cell flat. Peeling the body one
+  operation at a time put the largest single item in `alignedBaseUpper`'s
+  `col >= len` bound test — a kernel without it is **1.8x** the one with it on
+  both a 26x7 and a 447x200 shape. So shaving integer ops off a loop that is
+  paying for a bound test is exactly the work that cannot show up. Hoisting that
+  test to a per-block `uniformRows` scan (every row of a MAF block spans the same
+  alignment columns; a shorter row is the defensive case) landed at 1.13-1.24x on
+  the whole function across eight shapes, controls 0.97-1.04x. The lesson
+  generalizes past this function: decompose before optimizing, because the rung
+  that costs is rarely the rung that looks expensive.
 - **Comparing an imported function against a local copy of it, as a perf A/B.**
   V8 optimizes the two differently, and the gap is large enough to invent a
   result: a control pitting `buildInstanceBuffer` against a byte-identical local
