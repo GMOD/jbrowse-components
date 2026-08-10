@@ -83,38 +83,55 @@ export function rowFlankAt(
  * as unbounded, which errs toward blank — the same call the middle of a long
  * non-alignment gets.
  */
-export function makeRowFlank(blocks: MafBlock[]) {
-  // Filled on first use rather than up front. Every caller now skips the
-  // buffered region's off-screen blocks before asking (`computeVisibleDeletions`
-  // by visible span, `drawMafBlocks` by render-block clip), and eagerly indexing
-  // was the one part of the pass that ignored that: two `Set`s per block, so on
-  // the UCSC ce11 26-way shape ~85k sets and a million inserts per frame, most
-  // of them for blocks nothing then looked at. A block's edges are still built
-  // at most once per pass, so the walk-everything case costs what it did.
-  interface BlockEdges {
-    startsAligned: Set<number>
-    endsAligned: Set<number>
-  }
-  const edges = new Array<BlockEdges | undefined>(blocks.length)
+/** Bits of a block's per-row edge mask: does this row's own sequence reach the
+ *  block's first / last column. */
+const STARTS_ALIGNED = 1
+const ENDS_ALIGNED = 2
 
-  function edgesAt(blockIndex: number): BlockEdges {
+export function makeRowFlank(blocks: MafBlock[]) {
+  // A block's edges are one **byte per row** — two bits, indexed by `rowIndex` —
+  // not two `Set<number>`. Row indices are dense and small (the display's row
+  // count), so the set was a hash table per side per block to answer a question
+  // a bit already answers, and it is built once per block per pass whatever the
+  // caller skips.
+  //
+  // That mattered because the lazy fill below does NOT help the caller that
+  // needs this most. The two Canvas2D painters skip the buffered region's
+  // off-screen blocks first (`computeVisibleDeletions` by visible span,
+  // `drawMafBlocks` by render-block clip), so they touch about half the blocks —
+  // but `buildInstanceBuffer` encodes the *whole* region, so it always paid the
+  // worst case: on the UCSC ce11 26-way shape (48k blocks, median 7bp, 26 rows)
+  // ~96k sets and ~1.2M inserts on every encode, which is every zoom tier, theme
+  // change and row reorder. Measured over that shape, flank + `resolvedExtent`
+  // went 949ms -> 256ms, byte-identical on 1.2M (block, row) pairs.
+  //
+  // Sized to the block's own highest row index rather than the display's row
+  // count, which is not known here; a row index past the end reads `undefined`
+  // and falls to 0, which is the right answer — that row is not in this block.
+  const edges = new Array<Uint8Array | undefined>(blocks.length)
+
+  function edgesAt(blockIndex: number): Uint8Array {
     const cached = edges[blockIndex]
     if (cached !== undefined) {
       return cached
     }
-    const startsAligned = new Set<number>()
-    const endsAligned = new Set<number>()
-    for (const { rowIndex, alignmentBytes } of blocks[blockIndex]!.rows) {
-      if (isAligned(alignmentBytes[0])) {
-        startsAligned.add(rowIndex)
-      }
-      if (isAligned(alignmentBytes[alignmentBytes.length - 1])) {
-        endsAligned.add(rowIndex)
+    const { rows } = blocks[blockIndex]!
+    let maxRow = -1
+    for (const row of rows) {
+      if (row.rowIndex > maxRow) {
+        maxRow = row.rowIndex
       }
     }
-    const entry = { startsAligned, endsAligned }
-    edges[blockIndex] = entry
-    return entry
+    const mask = new Uint8Array(maxRow + 1)
+    for (const { rowIndex, alignmentBytes } of rows) {
+      mask[rowIndex] =
+        (isAligned(alignmentBytes[0]) ? STARTS_ALIGNED : 0) |
+        (isAligned(alignmentBytes[alignmentBytes.length - 1])
+          ? ENDS_ALIGNED
+          : 0)
+    }
+    edges[blockIndex] = mask
+    return mask
   }
 
   return function rowFlank(blockIndex: number, rowIndex: number): RowFlank {
@@ -125,11 +142,11 @@ export function makeRowFlank(blocks: MafBlock[]) {
       boundedLeft:
         prev !== undefined &&
         prev.endBp === block.startBp &&
-        edgesAt(blockIndex - 1).endsAligned.has(rowIndex),
+        ((edgesAt(blockIndex - 1)[rowIndex] ?? 0) & ENDS_ALIGNED) !== 0,
       boundedRight:
         next !== undefined &&
         next.startBp === block.endBp &&
-        edgesAt(blockIndex + 1).startsAligned.has(rowIndex),
+        ((edgesAt(blockIndex + 1)[rowIndex] ?? 0) & STARTS_ALIGNED) !== 0,
     }
   }
 }

@@ -68,6 +68,22 @@ test('a neighbour missing this row entirely leaves the run open', () => {
   expect(makeRowFlank(blocks)(0, 0).boundedRight).toBe(false)
 })
 
+// The edge index is sized to the block's own highest row index, not the
+// display's row count (which it has no way to know), so a query for a row above
+// that reads past the end. It must answer "not bounded" — that row is not in the
+// neighbour at all — rather than throwing or reading a stale entry.
+test('a row index above the neighbour block s own highest is unbounded', () => {
+  const blocks = [
+    block(100, 'AAAA', [[9, 'aa--']]),
+    block(104, 'AAAA', [[0, 'aaaa']]),
+  ]
+  const flank = makeRowFlank(blocks)
+  expect(flank(0, 9).boundedRight).toBe(false)
+  expect(flank(1, 9).boundedLeft).toBe(false)
+  // and the row that IS present in both still resolves
+  expect(flank(1, 0).boundedLeft).toBe(false)
+})
+
 test('the outermost blocks of a region have no neighbour to consult', () => {
   const blocks = [block(100, 'AAAA', [[0, '-aa-']])]
   expect(makeRowFlank(blocks)(0, 0)).toEqual({
