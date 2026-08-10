@@ -318,6 +318,25 @@ const circularExamples: [string, string][] = [
   ],
 ]
 
+// Repeating --loc stacks a panel; a space INSIDE one --loc adds a window to
+// that panel, which is what a space already means to a LinearGenomeView. The
+// two levels need different separators or the common case stops being
+// expressible the moment one side wants a second window.
+const breakpointExamples: [string, string][] = [
+  [
+    'breakpoint --fasta ref.fa --bam tumor.bam --loc chr1:1,000,000-1,001,000 --loc chr5:2,000,000-2,001,000 --out sv.png',
+    'Both sides of one breakend, with the reads that cross it drawn between',
+  ],
+  [
+    'breakpoint --hub hg38 --bam tumor.bam --loc chr3:25,358,000-25,361,000 --loc chr10:58,716,500-58,718,500 --loc chr12:72,272,000-72,275,000 --out chain.png',
+    'A multi-hop chain: one panel per locus, in the order the reads cross them',
+  ],
+  [
+    'breakpoint --fasta ref.fa --bam tumor.bam --loc "chr9:28,030,000-28,032,000 chr9:28,058,000-28,060,000" --loc chr9:28,059,000-28,061,000 --out fb.png',
+    'Quote one --loc to put several windows in a single panel',
+  ],
+]
+
 export function getString(rest: Record<string, unknown>, key: string) {
   const v = rest[key]
   return typeof v === 'string' ? v : undefined
@@ -459,10 +478,17 @@ function formatExamples(scriptName: string, list: [string, string][]) {
 // Examples shown in a subcommand's --help. Dotplot and synteny share the same
 // comparative examples; circular and linear have their own.
 function examplesForMode(mode: ViewMode) {
-  if (modeDescriptors[mode].comparative) {
-    return comparativeExamples
+  switch (mode) {
+    case 'dotplot':
+    case 'synteny':
+      return comparativeExamples
+    case 'circular':
+      return circularExamples
+    case 'breakpoint':
+      return breakpointExamples
+    case 'linear':
+      return examples
   }
-  return mode === 'circular' ? circularExamples : examples
 }
 
 // Help for a subcommand. Dotplot/synteny compare two assemblies (second-assembly

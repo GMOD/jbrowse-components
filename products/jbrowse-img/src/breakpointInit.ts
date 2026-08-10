@@ -1,0 +1,109 @@
+import type { Entry } from './parseArgv.ts'
+import type { Config, OpenTrack, Opts } from './types.ts'
+import type { BreakpointSplitViewInitView } from '@jbrowse/plugin-breakpoint-split-view'
+import type { TrackInit } from '@jbrowse/plugin-linear-genome-view'
+
+// The `init` array a BreakpointSplitView is opened with, built from CLI flags.
+// Pure, and split out of renderRegion.ts for the reason comparativeInit.ts is:
+// that module imports the plugin renderToSvg chain, whose pure-ESM deps Jest's
+// CJS transform can't load, so the snapshot shape would be untestable there.
+
+/**
+ * The panels, one per `--loc` FLAG.
+ *
+ * There are two nested levels here and they need different separators, which is
+ * the whole reason this reads the raw argv rather than `opts.loc`:
+ *
+ * - **repeating `--loc` adds a PANEL** — a stacked LinearGenomeView
+ * - **whitespace inside one `--loc` adds a REGION to that panel**, which is
+ *   exactly what `parseLocStrings` already means by a space and what a
+ *   discontinuous LGV is
+ *
+ * So `--loc chr1:1-100 --loc chr5:1-100` is two panels, and
+ * `--loc "chr1:1-100 chr1:5,000-5,100" --loc chr5:1-100` is two panels of which
+ * the first shows two windows of chr1. Collapsing both onto whitespace would
+ * have made the common two-breakend case unspellable the moment either side
+ * wanted a second window, and — worse — would have silently rendered one
+ * picture when the user meant the other.
+ *
+ * The pleasant side effect is that the common case needs no shell quoting at
+ * all, since neither locstring contains a space.
+ *
+ * `standardizeArgv` keeps only the first value of the last `--loc`, so the
+ * repeated form is invisible downstream of it; this is why the entries are read
+ * from `argv`. The tokens of one flag are joined rather than taking `vals[0]`,
+ * so an unquoted `--loc chr1:1-100 chr1:5-6` means the same as the quoted form
+ * instead of silently dropping the second window.
+ */
+export function breakpointLocs(argv: Entry[] | undefined, loc?: string) {
+  const fromArgv = (argv ?? [])
+    .filter(([key]) => key === 'loc')
+    .map(([, vals]) => vals.join(' ').trim())
+    .filter(Boolean)
+  // `opts.loc` is the fallback for a programmatic call that passed no argv (the
+  // library entry point, and the tests below). One flag's worth, so it can only
+  // ever describe a single panel — which then fails the >=2 check with the
+  // message that names the fix.
+  return fromArgv.length > 0 ? fromArgv : loc ? [loc.trim()] : []
+}
+
+/**
+ * Every track the run opened, shown on EVERY panel.
+ *
+ * Not a per-panel list, because the connecting curves are what this view type
+ * is for and they are drawn only across `matchedTracks` — the tracks present in
+ * all panels. A track shown on one panel contributes no ribbon, so a per-panel
+ * spelling would let a caller silently ask for a picture with nothing joining
+ * it up.
+ */
+export function breakpointTracks(
+  openTracks: OpenTrack[] | undefined,
+  showTracks: string[],
+): TrackInit[] {
+  return [...showTracks, ...(openTracks ?? []).map(t => t.trackId)]
+}
+
+/**
+ * The panel array a `--spec` supplies directly.
+ *
+ * BreakpointSplitView is the one view type here whose `init` is an ARRAY — one
+ * entry per panel — so it cannot go through the shared `initFromSpec`, which
+ * strips the `type` discriminator and hands the REST of the object over as the
+ * init. For this view that would nest the array one level too deep
+ * (`{init: {init: [...]}}`), which the init autorun reads as "no panels" and
+ * renders as an empty view rather than as an error.
+ */
+export function breakpointInitFromSpec(
+  spec: Record<string, unknown>,
+): BreakpointSplitViewInitView[] {
+  const { init } = spec
+  if (!Array.isArray(init)) {
+    throw new Error(
+      'a BreakpointSplitView --spec needs an "init" array, one entry per panel: ' +
+        '{"type":"BreakpointSplitView","init":[{"assembly":"hg38","loc":"chr1:1-2","tracks":["t"]}, ...]}',
+    )
+  }
+  if (init.length < 2) {
+    throw new Error(
+      `a BreakpointSplitView --spec needs at least two panels in "init" (got ${init.length})`,
+    )
+  }
+  return init as BreakpointSplitViewInitView[]
+}
+
+export function breakpointInit(
+  data: Config,
+  opts: Opts,
+  showTracks: string[],
+): BreakpointSplitViewInitView[] {
+  const locs = breakpointLocs(opts.argv, opts.loc)
+  if (locs.length < 2) {
+    throw new Error(
+      `breakpoint mode stacks one panel per --loc and needs at least two (got ${locs.length}). ` +
+        'Repeat the flag: --loc chr1:1,000,000-1,001,000 --loc chr5:2,000,000-2,001,000. ' +
+        'Quote a single --loc only to put SEVERAL windows in one panel.',
+    )
+  }
+  const tracks = breakpointTracks(data.openTracks, showTracks)
+  return locs.map(loc => ({ assembly: data.assembly.name, loc, tracks }))
+}

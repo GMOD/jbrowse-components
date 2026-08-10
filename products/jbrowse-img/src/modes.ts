@@ -5,7 +5,12 @@
 // subcommand) but is registered here so `jb2export lgv ...` also works and so
 // the renderer Record stays exhaustive.
 
-export type ViewMode = 'linear' | 'dotplot' | 'synteny' | 'circular'
+export type ViewMode =
+  | 'linear'
+  | 'dotplot'
+  | 'synteny'
+  | 'circular'
+  | 'breakpoint'
 
 export interface ModeDescriptor {
   // The CLI subcommand token a user types to select this mode. `linear` uses
@@ -34,6 +39,15 @@ export const modeDescriptors: Record<ViewMode, ModeDescriptor> = {
   circular: {
     subcommand: 'circular',
     viewType: 'CircularView',
+    comparative: false,
+  },
+  // One assembly, several windows of it stacked with the reads that leave one
+  // and arrive in another drawn between them — so `comparative: false` even
+  // though it renders more than one panel. `comparative` asks whether a mode
+  // takes a SECOND ASSEMBLY (--fasta2, comparison tracks), which this does not.
+  breakpoint: {
+    subcommand: 'breakpoint',
+    viewType: 'BreakpointSplitView',
     comparative: false,
   },
 }

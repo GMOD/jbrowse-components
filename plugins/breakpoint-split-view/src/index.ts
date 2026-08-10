@@ -7,6 +7,12 @@ import LaunchBreakpointSplitViewF from './LaunchBreakpointSplitView/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
+// Same export the circular and synteny plugins make, and for the same consumer:
+// a headless renderer (`@jbrowse/img`) needs the SVG path without going through
+// the model's `exportSvg` action, which downloads a file. The model itself
+// reaches this module by lazy import, so nothing here changes what the app
+// bundles.
+export { renderToSvg } from './BreakpointSplitView/svgcomponents/SVGBreakpointSplitView.tsx'
 export type {
   BreakpointViewModel,
   BreakpointViewStateModel,

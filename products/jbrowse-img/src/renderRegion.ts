@@ -1,5 +1,6 @@
 import { getEnv } from '@jbrowse/core/util'
 import { addDisposer, destroy } from '@jbrowse/mobx-state-tree'
+import { renderToSvg as renderBreakpointToSvg } from '@jbrowse/plugin-breakpoint-split-view'
 import { renderToSvg as renderCircularToSvg } from '@jbrowse/plugin-circular-view'
 import { renderToSvg as renderDotplotToSvg } from '@jbrowse/plugin-dotplot-view'
 import { renderToSvg as renderSyntenyToSvg } from '@jbrowse/plugin-linear-comparative-view'
@@ -16,6 +17,7 @@ import {
   configTrackCategory,
   resolveTrackId,
 } from './applyTrackOpts.ts'
+import { breakpointInit, breakpointInitFromSpec } from './breakpointInit.ts'
 import { dotplotInit, syntenyInit } from './comparativeInit.ts'
 import { subcommandForViewType } from './modes.ts'
 import { DEFAULT_FONT_FAMILY, DEFAULT_WIDTH } from './options.ts'
@@ -28,6 +30,10 @@ import type { ViewMode } from './modes.ts'
 import type { ViewSpec } from './spec.ts'
 import type { Config, Opts, Track } from './types.ts'
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
+import type {
+  BreakpointSplitViewInitView,
+  BreakpointViewModel,
+} from '@jbrowse/plugin-breakpoint-split-view'
 import type {
   CircularViewInit,
   CircularViewModel,
@@ -281,7 +287,13 @@ function sessionViewType(session: Model['session']): string | undefined {
 async function addInitView<T extends InitView>(
   ctx: ModeContext,
   viewType: string,
-  init: SpecInit | DotplotViewInit | LinearSyntenyViewInit | CircularViewInit,
+  init:
+    | SpecInit
+    | DotplotViewInit
+    | LinearSyntenyViewInit
+    | CircularViewInit
+    // BreakpointSplitView's own init is an ARRAY, one entry per stacked panel
+    | BreakpointSplitViewInitView[],
 ) {
   const { session } = ctx.model
   const existing =
@@ -496,18 +508,58 @@ const renderCircular: ModeRenderer = async ctx => {
   return svg
 }
 
+// A window per locstring in --loc, stacked, with the reads that leave one and
+// arrive in another drawn between them. Unlike the comparative modes this reads
+// --track, because its panels are ordinary LGVs and the whole picture is the
+// tracks on them: with no track there is nothing to connect and the export is a
+// stack of empty rulers.
+//
+// The view's `init` is an ARRAY (one entry per panel), which is why this does
+// not go through `initFromSpec` the way the single-init modes do — but it is the
+// same `init` state machine underneath, so `addInitView`/`readyView` wait on it
+// identically.
+const renderBreakpoint: ModeRenderer = async ctx => {
+  const { data, opts } = ctx
+  const showTracks = (opts.showTracks ?? []).map(([, [trackInput]]) => {
+    if (!trackInput) {
+      throw new Error(
+        '--track requires a trackId (list them with "jb2export list <hub>")',
+      )
+    }
+    return resolveTrackId(data.tracks, trackInput, data.assembly.name)
+  })
+  const init = ctx.spec
+    ? breakpointInitFromSpec(ctx.spec)
+    : breakpointInit(data, opts, showTracks)
+  const view = await addInitView<BreakpointViewModel>(
+    ctx,
+    'BreakpointSplitView',
+    init,
+  )
+  const svg = await renderBreakpointToSvg(view, {
+    ...baseSvgOpts(opts),
+    createCanvas: nodeCanvas,
+    trackLabels: opts.trackLabels,
+    showGridlines: opts.showGridlines,
+  })
+  return svg
+}
+
 // Options only renderLinear reads. A comparative or circular view takes its
 // tracks from its own init (or --spec), so a --track/--refseq passed to one is
 // dropped; --loc positions the sub-views of a comparative view but means nothing
 // to a circular one, which always shows the whole assembly. main.ts warns about
 // the reverse — comparative flags in a linear run — so say this here rather than
 // leave the non-linear direction silent.
+//
+// Breakpoint is the one non-linear mode that DOES read --track: its panels are
+// ordinary LGVs and the tracks on them are the whole picture.
 function warnLinearOnlyOptions(mode: ViewMode, opts: Opts) {
   if (mode === 'linear') {
     return
   }
   const ignored = [
-    opts.showTracks?.length ? '--track' : '',
+    opts.showTracks?.length && mode !== 'breakpoint' ? '--track' : '',
     opts.refseq ? '--refseq' : '',
     mode === 'circular' && opts.loc ? '--loc' : '',
   ].filter(Boolean)
@@ -525,6 +577,7 @@ const modeRenderers: Record<ViewMode, ModeRenderer> = {
   dotplot: renderDotplot,
   synteny: renderSynteny,
   circular: renderCircular,
+  breakpoint: renderBreakpoint,
 }
 
 export async function renderRegion(opts: Opts) {
