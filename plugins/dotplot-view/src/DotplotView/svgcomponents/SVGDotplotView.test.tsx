@@ -94,10 +94,13 @@ test('overlay highlights render inside the view clip group', async () => {
   expect(clipGroupContents(svg).match(/fill="#ff00ff"/g)).toHaveLength(2)
 }, 20000)
 
-// Every display paints the one plot rect, so the terminal state belongs to the
-// view: a plot-sized SVGErrorBox per errored display buried the tracks that did
-// render (and its own stale geometry, which a failed refetch leaves on screen).
-test('errored tracks export one banner, not a plot-sized box each', async () => {
+// Every display paints the one plot rect, so a failed track has nowhere to
+// report itself that isn't over the tracks that did render — and a figure with a
+// red rect in it is worse than an export that says why and produces nothing.
+// Both names, because the view fans its displays out through `awaitSvgRenders`;
+// a plain `Promise.all` would let whichever display rejected first decide the
+// whole message and send the user back for a second export to find the other.
+test('an errored track fails the export, naming every track that failed', async () => {
   const { session, view } = await setup()
   for (const trackId of ['synteny1', 'synteny2']) {
     session.addTrackConf({
@@ -114,7 +117,7 @@ test('errored tracks export one banner, not a plot-sized box each', async () => 
     view.showTrack(trackId)
   }
   // set directly rather than by failing a fetch: this asserts how the view
-  // renders the terminal state, and both displays must be in it at once. After
+  // reports the terminal state, and both displays must be in it at once. After
   // the fetches land, so the autorun that clears the error before a fetch isn't
   // still to come.
   await when(() => view.dotplotDisplays.every(d => d.ready))
@@ -124,18 +127,10 @@ test('errored tracks export one banner, not a plot-sized box each', async () => 
     display.setError(new Error(`${display.trackId} failed`))
   }
   log.mockRestore()
-  const svg = await renderToSvg(view, {})
 
-  expect(svg.match(/fill="#ffdddd"/g)).toHaveLength(1)
-  expect(svg).toContain('synteny1 failed')
-  expect(svg).toContain('synteny2 failed')
-  // a strip across the top of the plot, never a box its full height
-  const box =
-    /<rect x="0" y="0" width="([\d.]+)" height="([\d.]+)" fill="#ffdddd"/.exec(
-      svg,
-    )
-  expect(Number(box![1])).toBe(view.viewWidth)
-  expect(Number(box![2])).toBeLessThan(view.viewHeight)
+  await expect(renderToSvg(view, {})).rejects.toThrow(
+    /synteny1 failed[\s\S]*synteny2 failed/,
+  )
 }, 20000)
 
 // The legend's own group, by the same depth-walk as clipGroupContents: the plot

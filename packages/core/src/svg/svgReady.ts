@@ -3,7 +3,7 @@ import { when } from 'mobx'
 /**
  * The contract every GPU display's `renderSvg` relies on: a `svgReady` gate
  * (the per-display terminal-state getter — see MultiRegionDisplayMixin /
- * GlobalDataDisplayMixin) and the `error` it renders through `SVGErrorBox`.
+ * GlobalDataDisplayMixin) and the `error` it fails the export on.
  * Duck-typed `renderSvg` model interfaces extend this so the compiler catches a
  * missing field instead of it surfacing as a runtime hang or a silent blank.
  */
@@ -63,9 +63,25 @@ export function computeSvgReady(
  * terminal state (data loaded, or error / too-large), so it resolves once the
  * fetch it observes settles. If a throwing `svgReady` getter rejects the wait,
  * that error propagates faithfully rather than being masked.
+ *
+ * It then fails the export if the terminal it settled on was the error
+ * (`throwOnExportErrors`, below, for why that is fatal), making this the exact
+ * display-level twin of `awaitViewInitialized`: both wait for `settled || error`
+ * and both refuse to continue on the error, so the postcondition of each is
+ * "there is something to draw". Folded in rather than left to the caller because
+ * `svgReady` is *true* on error, so a caller that awaits and stops there gets a
+ * display with nothing to draw and no sign of why.
+ *
+ * Every display uses this one, including the ones with nowhere to draw an error
+ * (dotplot, synteny) — a display never has to know whether it owns the surface
+ * it paints, because the thing that made that distinction matter, reporting all
+ * the failures rather than one, is `awaitSvgRenders`'s job.
  */
-export async function awaitSvgReady(model: Pick<SvgExportable, 'svgReady'>) {
+export async function awaitSvgReady(
+  model: Pick<SvgExportable, 'svgReady' | 'error'>,
+) {
   await when(() => model.svgReady)
+  throwOnExportErrors([model.error])
 }
 
 /**
@@ -77,8 +93,9 @@ export async function awaitSvgReady(model: Pick<SvgExportable, 'svgReady'>) {
  * Every view exposes a resolved `error` beside `initialized`; waiting on both
  * and throwing turns that hang into the dialog's error banner.
  *
- * An `error` on an initialized view is not fatal here — the export proceeds and
- * the errored piece renders its own box.
+ * Only a view that never initialized is fatal *here*. A track error on an
+ * initialized view is fatal too, but it is the displays' readiness waits that
+ * report it (`throwOnExportErrors`), after this one has let the export start.
  */
 export async function awaitViewInitialized(view: {
   initialized: boolean
@@ -86,31 +103,89 @@ export async function awaitViewInitialized(view: {
 }) {
   await when(() => view.initialized || !!view.error)
   if (!view.initialized) {
-    throw new Error(`Cannot export: ${view.error}`, { cause: view.error })
+    // the wait only resolves on one of the two, so `error` is set here — and
+    // routing it through the shared thrower keeps one wording for "the export
+    // failed", whichever half of the export noticed
+    throwOnExportErrors([view.error])
   }
 }
 
 /**
- * The display-level counterpart, for a view whose displays all paint one shared
- * surface. A track whose data failed to load has its error caught by the fetch
- * layer and stored on the display, so the export would otherwise write the
- * failure into the figure — and on a shared surface the box saying so is drawn
- * over the tracks that *did* render. An export is a standalone artifact, so a
- * failed track is fatal here: the dialog shows its error banner and saves
- * nothing, and a headless caller (jbrowse-img) exits nonzero instead of writing
- * a broken image.
+ * How the export answers "a track failed": by failing. A track whose data won't
+ * load has its error caught by the fetch layer and stored on the display, so the
+ * render itself still returns — with that track blank.
  *
- * Call it **after** the displays' readiness waits. `awaitSvgReady` resolves *on*
- * the error, so a fetch that fails during the wait is only visible afterwards —
- * reading the errors before the waits reports the ones that had already landed
- * and misses exactly the ones the wait was for.
+ * An export is a standalone artifact, so a failed track is fatal: the dialog
+ * shows its error banner and saves nothing, and a headless caller (jbrowse-img)
+ * exits nonzero instead of writing a broken image. Drawing the error into the
+ * figure instead costs more than the red rect it leaves in the picture: on a
+ * shared surface (dotplot plot rect, synteny band) the box covers the tracks
+ * that *did* render, and a snapshot regenerated while a display is broken
+ * absorbs the stack trace as expected output — which is how a real crash sat
+ * inside two committed goldens without turning anything red.
  *
- * A display that owns its own band keeps the `SvgChrome` box instead: there the
- * box covers only the failed track, which is what the reserved height was for.
+ * `regionTooLarge` is deliberately not routed here — see `SvgChrome`.
+ *
+ * The failures are kept on the thrown error so that nesting one `awaitSvgRenders`
+ * inside another (synteny: rows of tracks *and* levels of ribbons) still reports
+ * every leaf rather than one per group.
  */
 export function throwOnExportErrors(errors: unknown[]) {
   const failed = errors.filter(e => e != null)
   if (failed.length > 0) {
-    throw new Error(`Cannot export: ${failed.join('\n')}`, { cause: failed[0] })
+    throw Object.assign(
+      new Error(`Cannot export: ${failed.join('\n')}`, { cause: failed[0] }),
+      { exportFailures: failed },
+    )
+  }
+}
+
+/**
+ * The individual failures behind one rejection: the list `throwOnExportErrors`
+ * attached, or the rejection itself for anything else (a body that threw, which
+ * is a failure the same way a 404 is).
+ */
+function leafFailures(error: unknown): unknown[] {
+  return error !== null &&
+    typeof error === 'object' &&
+    'exportFailures' in error &&
+    Array.isArray(error.exportFailures)
+    ? error.exportFailures
+    : [error]
+}
+
+async function settledOrThrow(renders: readonly unknown[]) {
+  const settled = await Promise.allSettled(renders)
+  throwOnExportErrors(
+    settled.flatMap(r =>
+      r.status === 'rejected' ? leafFailures(r.reason) : [],
+    ),
+  )
+  return settled.flatMap(r => (r.status === 'fulfilled' ? [r.value] : []))
+}
+
+/**
+ * `Promise.all` for the renders a view fans out, differing in the one way an
+ * export needs: it fails with **every** failure instead of whichever rejected
+ * first. Exporting a session with three broken tracks should not mean finding
+ * the second one by fixing the first and exporting again. Nest it freely — an
+ * inner fan-out's failures are flattened into the outer one's report.
+ *
+ * That is also what lets every display await through the plain `awaitSvgReady`.
+ * A display on a shared surface (the dotplot's plot rect, a synteny level's
+ * band) has nowhere to draw an error and nothing complete to say alone; the
+ * alternative is for it to stay silent and let its view read the combined error
+ * back *after* the waits, which nothing enforces and every new shared-surface
+ * view has to rediscover. Here the display just throws, and being complete is
+ * the fan-out's job rather than the display's.
+ */
+export async function awaitSvgRenders<T extends readonly unknown[] | []>(
+  renders: T,
+): Promise<{ -readonly [K in keyof T]: Awaited<T[K]> }> {
+  // the mapped-tuple return type `Promise.all` also declares, and also can't
+  // produce from a value-level `map`. Past the throw inside, every entry is
+  // fulfilled, so the array really is that tuple.
+  return (await settledOrThrow(renders)) as {
+    -readonly [K in keyof T]: Awaited<T[K]>
   }
 }

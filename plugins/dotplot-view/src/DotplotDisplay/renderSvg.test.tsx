@@ -62,6 +62,7 @@ function model(overrides: Partial<DotplotRenderModel> = {}) {
   return {
     geometry: undefined,
     svgReady: true,
+    error: undefined,
     ...overrides,
   }
 }
@@ -75,14 +76,26 @@ function drawnSegments(html: string) {
     : []
 }
 
-// The error terminal state is the view's (SVGDotplotView owns it, since every
-// display paints the same plot rect), so an errored display draws whatever
-// geometry it still holds — the on-screen behavior, where a failed refetch
-// leaves the old dots under the ErrorBanner.
+// A display that reached its terminal with nothing to draw is not a failure: an
+// LOD-gated dotplot legitimately holds no geometry, so it exports the empty plot
+// rather than an error or a blank the export has to interpret.
 test('a display with no geometry yet exports the empty plot', async () => {
   const html = renderToStaticMarkup(await renderSvg(model()))
-  expect(html).not.toContain('fill="#ffdddd"')
   expect(drawnSegments(html)).toEqual([])
+})
+
+// It has nowhere to draw the failure — every display paints the one plot rect,
+// so a message here lands over its siblings' dots and over its own stale
+// geometry, which a failed refetch leaves on screen under the ErrorBanner.
+test('a failed track fails the export rather than exporting its stale dots', async () => {
+  await expect(
+    renderSvg(
+      model({
+        geometry: geometry([[10, 90, 20, 80]]),
+        error: new Error('paf 404'),
+      }),
+    ),
+  ).rejects.toThrow('Cannot export: Error: paf 404')
 })
 
 test('segments outside the plot are dropped, not left for the clip', async () => {

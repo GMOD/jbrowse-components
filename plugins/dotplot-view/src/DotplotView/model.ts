@@ -682,8 +682,10 @@ export default function stateModelFactory(pm: PluginManager) {
          * #getter
          * Every failed track's error, combined into the one value the plot has
          * room to report — resolved here rather than per display because they
-         * all paint the same plot rect. SVG export draws one banner from it; a
-         * box per errored display buried its siblings' dots.
+         * all paint the same plot rect, so a box per errored display would bury
+         * its siblings' dots. On-screen only: SVG export has no banner to float
+         * over a figure, so a failed track fails the export from that display's
+         * own `awaitSvgReady`.
          */
         get displayError() {
           const errors = this.dotplotDisplays

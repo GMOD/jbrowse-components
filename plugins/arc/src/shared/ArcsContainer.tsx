@@ -10,10 +10,11 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // and decide what the arcs are wrapped in.
 //
 // **The wrapper is the load-bearing half.** On screen the display body owns its
-// own `<svg>`; on the export path `renderArcSvg` has already opened one
-// (SvgChrome → SvgClipRect), so a second would nest and clip the arcs to a box
-// inside the box they were laid out in. That is one fact about this plugin and
-// it was written twice, in the two files least likely to be read together.
+// own `<svg>`; on the export path the shell has already opened one
+// (renderDisplaySvg → SvgChrome → renderArcSvg's SvgClipRect), so a second would
+// nest and clip the arcs to a box inside the box they were laid out in. That is
+// one fact about this plugin and it was written twice, in the two files least
+// likely to be read together.
 //
 // A render prop rather than an `Arc` component prop, the same shape
 // `DisplayChrome` uses: the caller keeps its own concrete model type and its own

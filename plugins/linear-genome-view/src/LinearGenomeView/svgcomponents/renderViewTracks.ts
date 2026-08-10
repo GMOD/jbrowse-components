@@ -1,3 +1,4 @@
+import { awaitSvgRenders } from '@jbrowse/core/svg/svgReady'
 import { max } from '@jbrowse/core/util'
 
 import { totalHeight } from './util.ts'
@@ -87,7 +88,10 @@ export async function renderViewTracks<T extends SvgExportTrack>({
         0,
       )
     : 0
-  const displayResults = await Promise.all(
+  // `awaitSvgRenders` over `Promise.all`: a track whose data won't load fails
+  // the export, and a view with three broken tracks should say so once rather
+  // than name whichever rejected first
+  const displayResults = await awaitSvgRenders(
     tracks.map(async track => ({
       track,
       result: await track.displays[0]!.renderSvg({

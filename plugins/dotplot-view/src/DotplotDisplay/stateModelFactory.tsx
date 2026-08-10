@@ -271,7 +271,10 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        * Off-screen SVG export gate: "Export SVG" waits on this before drawing
        * (see the [SVG export guide](/docs/developer_guides/svg_export)).
        * Runs the same shared `computeSvgReady` policy every other display does
-       * and awaits it via the shared `awaitSvgReady` — no inlined `when()`. No
+       * and awaits it via the shared `awaitSvgReady` — no inlined `when()`. A
+       * failed track fails the export rather than drawing itself into the plot;
+       * every display paints that one rect, so `SVGDotplotView` fans them out
+       * through `awaitSvgRenders` and names all of them at once. No
        * `regionTooLarge` state: the fetch is gated by LOD, not region size.
        * Stale-safe via `dataCurrent`: an export fired right after a
        * zoom/diagonalize reorder waits for geometry rebuilt from the fresh

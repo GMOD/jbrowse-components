@@ -2,6 +2,7 @@ import { autorun, observable, runInAction } from 'mobx'
 
 import {
   awaitSvgReady,
+  awaitSvgRenders,
   awaitViewInitialized,
   computeSvgReady,
   throwOnExportErrors,
@@ -74,13 +75,98 @@ describe('computeSvgReady', () => {
   })
 })
 
-test('resolves once svgReady flips true', async () => {
-  const model = observable({ svgReady: false })
-  const p = awaitSvgReady(model)
-  runInAction(() => {
-    model.svgReady = true
+describe('awaitSvgReady', () => {
+  it('resolves once svgReady flips true', async () => {
+    const model = observable({ svgReady: false, error: undefined })
+    const p = awaitSvgReady(model)
+    runInAction(() => {
+      model.svgReady = true
+    })
+    await expect(p).resolves.toBeUndefined()
   })
-  await expect(p).resolves.toBeUndefined()
+
+  // `svgReady` is *true* on error — it is a terminal like any other — so a wait
+  // that stopped there handed the export a display with no data and let it
+  // export the failure. The postcondition is "there is something to draw",
+  // which is what makes this the twin of awaitViewInitialized.
+  it('fails on the error terminal rather than resolving into it', async () => {
+    const model = observable<{ svgReady: boolean; error: unknown }>({
+      svgReady: false,
+      error: undefined,
+    })
+    const p = awaitSvgReady(model)
+    runInAction(() => {
+      model.error = new Error('HTTP 404 fetching volvox.bam')
+      model.svgReady = true
+    })
+    await expect(p).rejects.toThrow(
+      'Cannot export: Error: HTTP 404 fetching volvox.bam',
+    )
+  })
+
+  // a display that owns its band still draws the soft terminal: over-budget is
+  // a state the user navigated to, not a failure to report
+  it('resolves on a region-too-large terminal', async () => {
+    await expect(
+      awaitSvgReady({ svgReady: true, error: undefined }),
+    ).resolves.toBeUndefined()
+  })
+})
+
+describe('awaitSvgRenders', () => {
+  it('returns the values in order when everything renders', async () => {
+    await expect(
+      awaitSvgRenders([Promise.resolve('a'), Promise.resolve('b')]),
+    ).resolves.toEqual(['a', 'b'])
+  })
+
+  // the whole point over `Promise.all`: an export of a session with three broken
+  // tracks must not send the user back to find the second by fixing the first
+  it('reports every failed render, not whichever rejected first', async () => {
+    await expect(
+      awaitSvgRenders([
+        Promise.reject(new Error('paf 404')),
+        Promise.resolve('ok'),
+        Promise.reject(new Error('bam 404')),
+      ]),
+    ).rejects.toThrow('Cannot export: Error: paf 404\nError: bam 404')
+  })
+
+  // synteny nests one fan-out (a level's ribbon tracks) inside another (the
+  // levels), so an outer report that named the inner aggregate as one failure
+  // would collapse a level's tracks into a line of its own error text
+  it('flattens a nested fan-out into the same flat report', async () => {
+    await expect(
+      awaitSvgRenders([
+        awaitSvgRenders([
+          Promise.reject(new Error('level 0 track a')),
+          Promise.reject(new Error('level 0 track b')),
+        ]),
+        Promise.reject(new Error('row track')),
+      ]),
+    ).rejects.toThrow(
+      'Cannot export: Error: level 0 track a\nError: level 0 track b\nError: row track',
+    )
+  })
+
+  // a display body that throws is a failed export the same way a 404 is, and it
+  // has no `exportFailures` list to flatten
+  it('reports a render that threw for a reason of its own', async () => {
+    await expect(
+      awaitSvgRenders([Promise.reject(new TypeError('x is undefined'))]),
+    ).rejects.toThrow('Cannot export: TypeError: x is undefined')
+  })
+
+  // heterogeneous branches (synteny awaits its rows and its ribbon levels in one
+  // fan-out) keep their own types rather than collapsing to a union
+  it('keeps a tuple a tuple', async () => {
+    const [rows, levels] = await awaitSvgRenders([
+      Promise.resolve([{ height: 1 }]),
+      Promise.resolve(['ribbons']),
+    ])
+    expect(rows[0]?.height).toBe(1)
+    expect(levels[0]).toBe('ribbons')
+  })
 })
 
 function uninitializedView(): { initialized: boolean; error: unknown } {
@@ -142,6 +228,7 @@ describe('throwOnExportErrors', () => {
 
 test('a throwing svgReady getter rejects faithfully, not masked', async () => {
   const model = {
+    error: undefined,
     get svgReady(): boolean {
       throw new Error('view.width read before init')
     },

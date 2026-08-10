@@ -1,7 +1,7 @@
 import { exportMargin } from '@jbrowse/core/svg/constants'
 import {
+  awaitSvgRenders,
   awaitViewInitialized,
-  throwOnExportErrors,
 } from '@jbrowse/core/svg/svgReady'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getSession } from '@jbrowse/core/util'
@@ -29,7 +29,6 @@ import type { ExportSvgOptions } from '../types.ts'
 // the running offset NaN.
 interface SyntenyLevel {
   height: number
-  displayError: string | undefined
   linearSyntenyDisplays: LinearSyntenyDisplayModel[]
 }
 
@@ -67,17 +66,23 @@ export async function renderToSvg(
   // featureData/error), so no outer when() gate is needed here. The genome-view
   // track results and the ribbon levels are independent, so let both fan out
   // concurrently rather than blocking one behind the other.
-  const [rowTracks, renderings] = await Promise.all([
+  //
+  // `awaitSvgRenders` at every level of that fan-out rather than `Promise.all`:
+  // a track whose data won't load fails the export instead of drawing itself
+  // into the figure, and this export has more places for one to hide than any
+  // other — N genome views of tracks, N-1 levels of ribbons. It flattens nested
+  // failures, so one export names every broken track across all of them.
+  const [rowTracks, renderings] = await awaitSvgRenders([
     // renderViewTracks drops minimized tracks and measures each row only once
     // its displays have settled — see the orderings it documents
-    Promise.all(
+    awaitSvgRenders(
       views.map(view =>
         renderViewTracks({ view, opts, theme, textHeight, trackLabels }),
       ),
     ),
-    Promise.all(
+    awaitSvgRenders(
       levels.map((level: SyntenyLevel) =>
-        Promise.all(
+        awaitSvgRenders(
           level.linearSyntenyDisplays.map(async d => ({
             key: d.id,
             node: await renderSyntenyDisplaySvg(d, opts),
@@ -86,14 +91,6 @@ export async function renderToSvg(
       ),
     ),
   ])
-
-  // A ribbon track that failed to load is fatal rather than a box drawn into the
-  // band: every display in a level paints that same full-height band, so there
-  // is nowhere to put the box that isn't over the tracks that did render — and a
-  // figure with a red rect baked in is worse than a dialog that says why and
-  // saves nothing. Read here, after the waits, because `awaitSvgReady` resolves
-  // *on* the error.
-  throwOnExportErrors(levels.map((level: SyntenyLevel) => level.displayError))
 
   // Deliberately read after those waits, not before. SVGView and each ribbon
   // layer re-read the view geometry for themselves once their own waits resolve,

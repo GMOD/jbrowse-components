@@ -360,7 +360,7 @@ place by a different route, with a nullable state and a `clear()` method on the
 backend interface for the empty case.
 
 Circular view's `ChordVariantDisplay` is a fourth shape, off this axis
-entirely: it paints main-thread JSX SVG (radial, so it keeps a bespoke
+entirely: it paints main-thread JSX SVG (radial, so on screen it keeps a bespoke
 `<DisplayError>` instead of `SvgChrome`), composes none of the fetch
 foundations, and answers freshness with its own `ready` getter — one chord fetch
 covers the whole view, so there is no spatial or signature axis to compare. It
@@ -778,8 +778,10 @@ overlay components — is in
 SVG export and on-screen rendering share the same pure Canvas2D draw functions,
 so a shader-only tweak can't silently diverge the export. Every LGV display's
 `renderSvg.tsx` is one call — `renderDisplaySvg(model, opts, XxxSvgBody)` — which
-awaits `svgReady`, resolves the export geometry, and mounts `SvgChrome` (the
-single terminal-state gate) around the display's body component. The body paints
+awaits `svgReady` (failing the whole export if that track's data wouldn't load),
+resolves the export geometry, and mounts `SvgChrome` (the "region too large"
+terminal, the only one a figure draws) around the display's body component. The
+body paints
 via `paintLayer` at the `canvasWidth` the shell hands it, **not** the
 outline-adjusted width the on-screen canvas uses. That on-screen width is
 `MultiRegionDisplayMixin`'s `canvasWidthPx` (`= lgv.trackWidthPx`), and it is a

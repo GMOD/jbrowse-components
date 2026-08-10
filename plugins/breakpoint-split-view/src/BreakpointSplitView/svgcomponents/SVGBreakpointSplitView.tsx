@@ -1,6 +1,9 @@
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { exportMargin } from '@jbrowse/core/svg/constants'
-import { awaitViewInitialized } from '@jbrowse/core/svg/svgReady'
+import {
+  awaitSvgRenders,
+  awaitViewInitialized,
+} from '@jbrowse/core/svg/svgReady'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getSession } from '@jbrowse/core/util'
 import {
@@ -48,7 +51,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   // each row only once its displays have settled — which is what keeps the
   // reserved height, the rendered bodies and the ribbon anchors below in sync.
   // See the orderings it documents.
-  const rowTracks = await Promise.all(
+  const rowTracks = await awaitSvgRenders(
     views.map(view =>
       renderViewTracks({ view, opts, theme, textHeight, trackLabels }),
     ),

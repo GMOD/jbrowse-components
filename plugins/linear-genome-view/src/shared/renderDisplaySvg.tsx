@@ -43,12 +43,16 @@ export interface LgvSvgBodyProps<M> {
  * resolve the view geometry once, and mount the single terminal-state gate
  * around the display's own body.
  *
+ * A display that failed to load fails the whole export, in `awaitSvgReady`
+ * itself. `regionTooLarge` is the other terminal and stays drawn: see
+ * `SvgChrome` for why the two are not symmetric.
+ *
  * `Body` is a **component**, not a callback, and that is load-bearing:
- * `SvgChrome` renders `SVGErrorBox` / `SVGMessageBox` *instead of* its children
- * in a terminal state, so a body expressed as a component never runs there and
- * no `renderSvg` has to re-detect a terminal from empty or absent data. The
- * contract is documented in `agent-docs/reference/SVG_EXPORT.md`; this function
- * is where it is enforced rather than restated per display.
+ * `SvgChrome` renders `SVGMessageBox` *instead of* its children in a terminal
+ * state, so a body expressed as a component never runs there and no `renderSvg`
+ * has to re-detect a terminal from empty or absent data. The contract is
+ * documented in `agent-docs/reference/SVG_EXPORT.md`; this function is where it
+ * is enforced rather than restated per display.
  *
  * ```tsx
  * export async function renderSvg(model: RenderSvgModel, opts?: ExportSvgDisplayOptions) {
@@ -70,7 +74,6 @@ export async function renderDisplaySvg<M extends LgvSvgExportable>(
   const height = model.height
   return (
     <SvgChrome
-      error={model.error}
       regionTooLarge={model.regionTooLarge}
       width={view.width}
       height={height}

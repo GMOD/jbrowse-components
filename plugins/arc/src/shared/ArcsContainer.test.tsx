@@ -21,9 +21,10 @@ test('on screen the arcs get their own <svg>', () => {
   expect(container.querySelector('svg')).not.toBeNull()
 })
 
-// `renderArcSvg` has already opened one (SvgChrome → SvgClipRect), so a second
-// would nest and clip the arcs to a box inside the box they were laid out in.
-test('on the export path they do not, since renderArcSvg opened one', () => {
+// the export shell has already opened one (renderDisplaySvg → SvgChrome →
+// renderArcSvg's SvgClipRect), so a second would nest and clip the arcs to a box
+// inside the box they were laid out in.
+test('on the export path they do not, since the export shell opened one', () => {
   const { display } = createDisplay()
   const { container } = render(
     <ArcsContainer model={display} exportSVG>

@@ -112,12 +112,14 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
        * #getter
        * Off-screen SVG export gate: "Export SVG" waits on this before drawing
        * (see the [SVG export guide](/docs/developer_guides/svg_export)). Chord
-       * displays are non-rectangular (radial), so they keep a bespoke
-       * `<DisplayError>` error UI instead of `SvgChrome`, but they run the same
-       * shared `computeSvgReady` policy and await it via the shared
-       * `awaitSvgReady` — no inlined `when()`. No `regionTooLarge` state, and a
-       * chord fetch covers the whole view at once, so `ready` (features and
-       * refName map arrived) is the whole freshness axis.
+       * displays are non-rectangular (radial), so on screen they keep a bespoke
+       * `<DisplayError>` error UI instead of `SvgChrome`; the export has no box
+       * to draw one in either, and doesn't try — `awaitSvgReady` fails the
+       * export on a chord track that wouldn't load. Same shared
+       * `computeSvgReady` policy as every other display, awaited the same shared
+       * way — no inlined `when()`. No `regionTooLarge` state, and a chord fetch
+       * covers the whole view at once, so `ready` (features and refName map
+       * arrived) is the whole freshness axis.
        */
       get svgReady() {
         return computeSvgReady(

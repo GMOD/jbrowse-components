@@ -193,18 +193,6 @@ function throwOnRenderError(session: RenderErrorSources) {
   }
 }
 
-// A track whose data can't be loaded (a 404 / missing file / parse failure) has
-// its error caught by the fetch layer and stored on the display — the render
-// still returns with that track blank. Read it back so a headless export fails
-// loudly instead of writing a broken image.
-function throwOnDisplayError(tracks: { displays: { error?: unknown }[] }[]) {
-  for (const { error } of tracks.flatMap(t => t.displays)) {
-    if (error) {
-      throw toError(error)
-    }
-  }
-}
-
 interface InitView {
   setWidth: (n: number) => void
   initialized: boolean
@@ -368,8 +356,9 @@ const renderLinear: ModeRenderer = async ctx => {
     // Without --loc the session IS the region, so a session that reaches here
     // carrying no view (or a view positioned nowhere) renders an empty ruler and
     // nothing else. That came out as a ~500-byte SVG with nothing reported —
-    // same class as the display errors throwOnDisplayError catches, so it fails
-    // the same way rather than writing a blank image.
+    // same class of failure as a track whose data won't load, which the
+    // renderers now throw on themselves, so it fails the same way rather than
+    // writing a blank image.
     throw new Error(
       `the ${sessionParam ? '--session' : 'defaultSession'} has no view positioned on a region; pass --loc to say where to render`,
     )
@@ -422,7 +411,6 @@ const renderLinear: ModeRenderer = async ctx => {
     showGridlines,
     trackLabels,
   })
-  throwOnDisplayError(view.tracks)
   return svg
 }
 
@@ -432,7 +420,6 @@ const renderDotplot: ModeRenderer = async ctx => {
     : dotplotInit(ctx.data, ctx.opts)
   const view = await addInitView<DotplotViewModel>(ctx, 'DotplotView', init)
   const svg = await renderDotplotToSvg(view, baseSvgOpts(ctx.opts))
-  throwOnDisplayError(view.tracks)
   return svg
 }
 
@@ -451,8 +438,6 @@ const renderSynteny: ModeRenderer = async ctx => {
     trackLabels: ctx.opts.trackLabels,
     showGridlines: ctx.opts.showGridlines,
   })
-  // synteny keeps its tracks per level, unlike the flat `tracks` of the others
-  throwOnDisplayError(view.levels.flatMap(l => l.tracks))
   return svg
 }
 
@@ -508,7 +493,6 @@ const renderCircular: ModeRenderer = async ctx => {
   const init = ctx.spec ? initFromSpec(ctx.spec) : circularInit(ctx)
   const view = await addInitView<CircularViewModel>(ctx, 'CircularView', init)
   const svg = await renderCircularToSvg(view, baseSvgOpts(ctx.opts))
-  throwOnDisplayError(view.tracks)
   return svg
 }
 
@@ -569,8 +553,10 @@ export async function renderRegion(opts: Opts) {
     })
     // a failure reported to the session during the render (a bad track config,
     // a failed assembly load) means the SVG is incomplete — fail rather than
-    // emit a silently-broken image (per-track data-load errors are caught in
-    // each renderer via throwOnDisplayError)
+    // emit a silently-broken image. Per-track data-load errors need no check
+    // here: `renderToSvg` fails on them itself now (each display's
+    // `awaitSvgReady`), rather than drawing the error into the figure for a
+    // post-hoc pass over `view.tracks` to read back out of the model.
     throwOnRenderError(model.session)
     return result
   } finally {

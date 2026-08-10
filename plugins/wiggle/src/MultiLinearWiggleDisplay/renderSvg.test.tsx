@@ -269,11 +269,12 @@ describe('MultiLinearWiggleDisplay renderSvg', () => {
     expect(html).toContain('y1="50.5"')
   })
 
-  it('renders the error box instead of the body when the model errored', async () => {
-    const html = render(
-      await renderSvg(makeModel({ error: new Error('boom') })),
-    )
-    expect(html).toContain('boom')
-    expect(html).not.toContain('fill="rgb(0,104,209)"')
+  // not "draws an error box instead of the body": an export is a standalone
+  // figure, so a source whose data wouldn't load fails the whole export rather
+  // than reserving the track's height for a message nobody downstream will read
+  it('fails the export when the model errored', async () => {
+    await expect(
+      renderSvg(makeModel({ error: new Error('boom') })),
+    ).rejects.toThrow('Cannot export: Error: boom')
   })
 })

@@ -10,8 +10,8 @@ import type { ReactNode } from 'react'
 //
 // No terminal-state chrome, unlike a display that owns its own band: the
 // displays here all paint this one band, so a box over a failed track's ribbons
-// is a box over its siblings' too. The export fails on a level's `displayError`
-// instead (see SVGLinearSyntenyView), so nothing reaches this component but
+// is a box over its siblings' too. A failed track fails the whole export
+// instead, before anything is drawn, so nothing reaches this component but
 // ribbons that rendered.
 export default function SVGSyntenyLevel({
   clipId,

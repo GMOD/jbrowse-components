@@ -85,13 +85,14 @@ test('does not run the body under the region-too-large terminal', async () => {
   expect(queryByTestId('body')).toBeNull()
 })
 
-test('does not run the body under the error terminal', async () => {
+// The error terminal is the one the shell refuses to draw: a figure is a
+// standalone artifact, so a track whose data wouldn't load fails the export
+// rather than exporting a labeled box in the space that track was going to fill.
+test('fails the export on the error terminal instead of drawing it', async () => {
   const seen: LgvSvgBodyProps<TestDisplayModel>[] = []
-  const { queryByTestId } = await renderShell(
-    makeDisplay({ hasError: true }),
-    seen,
-  )
+  await expect(
+    renderShell(makeDisplay({ hasError: true }), seen),
+  ).rejects.toThrow('Cannot export: Error: boom')
 
   expect(seen).toHaveLength(0)
-  expect(queryByTestId('body')).toBeNull()
 })

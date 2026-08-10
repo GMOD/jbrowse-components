@@ -9,7 +9,6 @@ import {
   createView,
   doBeforeEach,
   exportAndVerifySvg,
-  getSavedSvg,
   hts,
   mockFile404,
   setup,
@@ -50,7 +49,11 @@ test('export svg of circular', async () => {
   })
 }, 45000)
 
-test('export svg of circular renders error when track fails to load', async () => {
+// A failed track fails the export: the dialog keeps its error banner up and
+// nothing is saved. The radial display has no width/height box to host a
+// message rect, so baking its bespoke `<DisplayError>` circle into the figure
+// would put it there at whatever size it happened to take.
+test('export svg of circular fails when a track fails to load', async () => {
   jest.spyOn(console, 'error').mockImplementation(() => {})
   mockFile404('volvox.dup.vcf.gz', generateReadBuffer(volvoxGetFile))
   const { findByTestId, findByText } = await createView({
@@ -71,13 +74,10 @@ test('export svg of circular renders error when track fails to load', async () =
   fireEvent.click(await findByText('Export SVG', ...opts))
   fireEvent.click(await findByText('Submit', ...opts))
 
-  // export completes (does not hang) and renders the error hatch circle
-  // instead of chords
+  // the export resolves (it must not hang) into the dialog's own error banner
+  await findByText(/Cannot export.*HTTP 404/, {}, delay)
   await waitFor(() => {
-    expect(saveAs).toHaveBeenCalled()
+    expect(saveAs).not.toHaveBeenCalled()
   }, delay)
-  const svg = getSavedSvg()
-  expect(svg).toContain('#ef5350')
-  expect(svg).not.toContain('structuralVariantChordRenderer')
   jest.restoreAllMocks()
 }, 45000)

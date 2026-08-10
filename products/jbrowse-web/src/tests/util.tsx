@@ -361,12 +361,12 @@ export async function exportAndVerifySvg({
   assertNoDanglingSvgRefs(svg)
   expect(svg).toMatchSnapshot()
   // AFTER the match, not before. The golden `.svg` and the `.snap` hold the
-  // same bytes for different readers — svgSnapshotErrors.test.ts scans the
-  // goldens, the .snap is what fails a run — and writing unconditionally let
-  // the two disagree: a render change rewrote the golden, the .snap kept the
-  // old bytes, and the failing test read in `git status` as somebody's pending
-  // snapshot update rather than as red CI. Written here, the golden only moves
-  // when the assertion it is a copy of has accepted the same string.
+  // same bytes for two readers — the golden is the one a human diffs, the
+  // `.snap` is what fails a run — and writing unconditionally let the two
+  // disagree: a render change rewrote the golden, the .snap kept the old bytes,
+  // and the failing test read in `git status` as somebody's pending snapshot
+  // update rather than as red CI. Written here, the golden only moves when the
+  // assertion it is a copy of has accepted the same string.
   const dir = path.dirname(module.filename)
   fs.writeFileSync(`${dir}/__image_snapshots__/${filename}_snapshot.svg`, svg)
   return svg

@@ -48,6 +48,7 @@ function makeModel(
 ): SyntenySvgModel {
   return {
     svgReady: true,
+    error: undefined,
     height: 100,
     renderInstanceData: data,
     renderParams: data ? params : undefined,

@@ -14,10 +14,11 @@ export type DotplotRpcData = Omit<
   'skippedHRefNames' | 'skippedVRefNames'
 >
 
-// What `renderSvg` reads off a DotplotDisplay. No `error`: the terminal state
-// is the view's, since every display paints the one shared plot rect (see
-// DotplotDisplay/renderSvg.tsx).
+// What `renderSvg` reads off a DotplotDisplay. `error` is the export's terminal
+// (a failed track fails the export), not something drawn — every display paints
+// the one shared plot rect, so there is no box here to draw it into.
 export interface DotplotRenderModel extends IStateTreeNode {
   geometry: DotplotGeometryData | undefined
   svgReady: boolean
+  error: unknown
 }

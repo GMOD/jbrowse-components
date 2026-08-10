@@ -22,12 +22,13 @@ interface RenderSvgView {
 }
 
 // One track's dots, drawn into the plot area every display in the view shares.
-// The terminal state belongs to the view (SVGDotplotView), not to this display:
-// they all paint that same rect, so a per-display SVGErrorBox covered its
-// siblings' dots — and its own stale geometry, which a failed refetch leaves on
-// screen under the ErrorBanner. It is the hazard SVGSyntenyLevel documents for
-// the equally non-LGV synteny display. No regionTooLarge state anywhere: the
-// dotplot gates its fetch by LOD, not region size.
+// A failed track fails the export rather than drawing anything: there is no box
+// of its own to draw into, so a message here is a message over its siblings'
+// dots — and over its own stale geometry, which a failed refetch leaves on
+// screen under the ErrorBanner. `SVGDotplotView` fans these out through
+// `awaitSvgRenders`, so every failed track is named, not just this one. No
+// regionTooLarge state anywhere: the dotplot gates its fetch by LOD, not region
+// size.
 export async function renderSvg(
   model: DotplotRenderModel,
   opts?: PaintLayerOpts,

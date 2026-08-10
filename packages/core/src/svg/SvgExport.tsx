@@ -66,29 +66,13 @@ export function SVGExportRoot({
   )
 }
 
-export function SVGErrorBox({
-  error,
-  width,
-  height,
-}: {
-  error: unknown
-  width: number
-  height: number
-}) {
-  return (
-    <>
-      <rect x={0} y={0} width={width} height={height} fill="#ffdddd" />
-      <text x={10} y={height / 2} fill="#cc0000" fontSize={14}>
-        {`${error}`}
-      </text>
-    </>
-  )
-}
-
-// Neutral informational box for a soft terminal state (region too large): the
-// calm counterpart to SVGErrorBox's red-alarm styling. Keeps the track's
-// reserved height and labels a state that would otherwise export as a silent
-// blank.
+// Informational box for a soft terminal state (region too large). Keeps the
+// track's reserved height and labels a state that would otherwise export as a
+// silent blank.
+//
+// There is deliberately no error counterpart. A failed track fails the export
+// (`throwOnExportErrors`) rather than painting its error into the figure, so the
+// only terminal an export draws is one the user asked for by zooming out.
 export function SVGMessageBox({
   message,
   width,
@@ -109,29 +93,30 @@ export function SVGMessageBox({
 }
 
 // SVG-export counterpart of DisplayChrome (BaseLinearDisplay/components): the
-// single terminal-state gate every display's `renderSvg` ends in. It renders the
-// terminal state itself — a themed SVGErrorBox on error, a "region too large"
-// message next — and only paints the children when the display has renderable
-// data. The body is an ordinary child component, so it never runs in a terminal
-// state and no `renderSvg` re-detects one from empty/absent data. The readiness
-// wait stays an explicit `await awaitSvgReady(model)` in each `renderSvg` (the
-// one genuinely async step), so this component is sync.
+// terminal-state gate every display's `renderSvg` ends in. It renders the
+// terminal state itself — a "region too large" message — and only paints the
+// children when the display has renderable data. The body is an ordinary child
+// component, so it never runs in a terminal state and no `renderSvg` re-detects
+// one from empty/absent data. The readiness wait stays an explicit
+// `await awaitSvgReady(model)` in each `renderSvg` (the one genuinely async
+// step), so this component is sync.
+//
+// One terminal, not two, and the asymmetry is the point: over-budget is a state
+// the user navigated to on purpose, and a figure saying so is the honest export
+// of it. A fetch that failed is not — it is the export being unable to answer,
+// which `throwOnExportErrors` reports by failing rather than by drawing.
 export function SvgChrome({
-  error,
   regionTooLarge,
   width,
   height,
   children,
 }: {
-  error: unknown
   regionTooLarge?: boolean
   width: number
   height: number
   children: React.ReactNode
 }) {
-  return error ? (
-    <SVGErrorBox error={error} width={width} height={height} />
-  ) : regionTooLarge ? (
+  return regionTooLarge ? (
     <SVGMessageBox
       message="Region too large to render"
       width={width}

@@ -21,6 +21,12 @@ description: SVG export pipeline covering the renderSvg shape, the svgReady/sett
 - **Never** inline `when(() => …)`, hand-roll `if (model.error) return`, mount
   `SvgChrome` yourself, or gate a body on data size. Those belong to
   `renderDisplaySvg` and "render empty naturally".
+- **A track whose data failed to load fails the whole export** — the dialog shows
+  its error banner and saves nothing, jbrowse-img exits nonzero. Nothing draws an
+  error into a figure. `regionTooLarge` is the one terminal that still draws.
+- **A view fans its display renders out with `awaitSvgRenders`, not
+  `Promise.all`** — same thing, except it reports *every* failure rather than
+  whichever rejected first, and nests.
 - `svgReady` deliberately excludes `canvasDrawn` (a headless export's canvas may
   never paint) and always carries a **freshness** axis, so an export fired right
   after a pan captures fresh data.
@@ -84,9 +90,9 @@ direct shape → `plugins/maf/src/LinearMafRenderer/drawMafBlocks.ts`.
 ## The renderSvg.tsx shape (every LGV display, identical)
 
 `renderDisplaySvg` (`plugins/linear-genome-view/src/shared/renderDisplaySvg.tsx`)
-**is** the shape: it awaits readiness, resolves the view geometry once, and mounts
-the error-gated chrome around the display's own body. A display writes the body
-and nothing else.
+**is** the shape: it awaits readiness (failing the export if the display errored),
+resolves the view geometry once, and mounts the terminal-state chrome around the
+display's own body. A display writes the body and nothing else.
 
 ```tsx
 export async function renderSvg(model: RenderSvgModel, opts?: ExportSvgDisplayOptions) {
@@ -119,10 +125,10 @@ Four invariants hold for **every** GPU display:
 - **Readiness and the chrome are the helper's, not yours.** Never re-inline
   `when(() => …)` or mount `SvgChrome` by hand. The duck-typed model interfaces
   each `extends SvgExportable` (`{ svgReady; error; regionTooLarge }`), so a
-  missing field is a compile error, not a runtime hang. `SvgChrome` renders the
-  terminal itself (`SVGErrorBox` on error, an `SVGMessageBox` "region too large"
-  next), so an over-budget or errored track exports a labeled box, not a silent
-  blank.
+  missing field is a compile error, not a runtime hang. `awaitSvgReady` fails the
+  export on the error terminal and `SvgChrome` draws the other one (an
+  `SVGMessageBox` "region too large"), so an over-budget track exports a labeled
+  box rather than a silent blank and a failed one exports nothing at all.
 - **Paint at `props.canvasWidth`.** See the next section.
 - **Render empty naturally — never gate on data size.** The readiness gate and
   `SvgChrome` already own "still loading" and the terminal states, so a
@@ -275,8 +281,9 @@ that fails to load leaves it false forever and a bare
 nothing said. Use `awaitViewInitialized(model)`
 (`@jbrowse/core/svg/svgReady`) — it waits on `initialized || error` and throws
 the error when the view never initialized, which surfaces in the dialog's error
-banner. An `error` on an *initialized* view is not fatal: the export proceeds and
-the errored track renders its own box.
+banner. Only a view that never initialized is fatal *here*: an errored track on
+an initialized view is fatal too, but the displays' own readiness waits report it
+after this one has let the export start.
 
 This is why every view's `error` must be **resolved** (fold in assembly errors
 and, for the composed views, the sub-views'), not just its raw `volatileError` —
@@ -369,18 +376,13 @@ same `computeSvgReady` policy:
   (`loadedFetchKey === currentFetchKey`) closes that window exactly as arc's
   signature does.
 
-  It draws **no `SvgChrome` at all**, and that is the rule for a shared surface:
-  `SvgChrome` is the terminal chrome for any rectangular display that *owns the
-  band it draws in*, because there the box covers only the track whose reserved
-  height it fills. Every synteny display in a level paints the same full-height
-  band, so any box is a box over the siblings that rendered — hoisting one
-  `SvgChrome` to `SVGSyntenyLevel` only made it one box that erased *every*
-  track's ribbons. So the error is fatal instead: `SVGLinearSyntenyView` calls
-  `throwOnExportErrors` on each level's `displayError` after the displays' waits,
-  and the dialog shows its error banner and saves nothing (jbrowse-img exits
-  nonzero, which is what its own post-hoc `throwOnDisplayError` was compensating
-  for). The dotplot is the other shared-surface view and still draws a 30px
-  banner strip — see below; it predates this and should follow.
+  It draws **no `SvgChrome` at all**: every synteny display in a level paints the
+  same full-height band, so any box is a box over the siblings that rendered —
+  hoisting one `SvgChrome` to `SVGSyntenyLevel` only made it one box that erased
+  *every* track's ribbons. A failed ribbon track fails the export instead, from
+  the display's own `awaitSvgReady`; `SVGLinearSyntenyView` fans the levels (and
+  its genome-view rows) out through `awaitSvgRenders`, so one export names every
+  broken track across all of them.
 
 ### The shared freshness name, and the shared signature compare
 
@@ -442,7 +444,7 @@ signature cannot see:
   once as a fully blank `synteny_canvas_done` frame in CI, where the synteny
   tracks are the last step of a multi-await apply.
 
-### Non-LGV displays: same gate, and `SvgChrome` wherever there's a box to draw
+### Non-LGV displays: same gate, and no chrome where there's no box
 
 Displays outside the LGV mixins still expose a `svgReady` getter and await it via
 the shared `awaitSvgReady` — never an inlined `when()`. Both below run
@@ -453,22 +455,25 @@ supply their own `dataCurrent` thunk:
   matching the capture gate above). `instanceData` rather than `geometry`
   deliberately: the export polls this getter outside any reactive context, where
   reading the `geometry` computed would recompute every segment's color per poll.
-  Like synteny, its terminal state lives a level up — every dotplot display in a
-  view paints the one plot rect, so `SVGDotplotView` reads `error` off each
-  display and draws **one banner** across the top of the plot rather than a
-  `SvgChrome` per display. Sizing matters as much as the count here: a plot-sized
-  box buried both its siblings' dots and its own stale geometry, which a failed
-  refetch leaves on screen under `DisplayStatusOverlays`' `ErrorBanner`. The
-  banner is the export's counterpart of that banner.
+  Like synteny it draws no chrome — every dotplot display in a view paints the
+  one plot rect, so a box there covers its siblings' dots *and* its own stale
+  geometry, which a failed refetch leaves on screen under
+  `DisplayStatusOverlays`' `ErrorBanner`. A failed track fails the export
+  instead, and `SVGDotplotView` fans the displays out through `awaitSvgRenders`
+  so all of them are named.
 - **circular chord**: `ready` — a chord fetch covers the whole view at once, so
-  "features arrived" is the whole freshness axis. This is the one genuinely
-  bespoke error UI (`<DisplayError>`): a radial display has no width/height box
-  to host a message rect.
+  "features arrived" is the whole freshness axis. The *on-screen* path keeps a
+  bespoke `<DisplayError>` because a radial display has no width/height box to
+  host a message rect — which is why the export has nothing sensibly sized to
+  draw there either, and draws nothing.
 
-So the readiness gate is uniform across **every** display (LGV, arc, synteny,
-dotplot, circular). The error chrome is uniform for displays that own their band;
-the two shared-surface views (synteny level, dotplot plot area) hoist it to the
-owner of the surface, and the radial one is bespoke.
+So both halves are uniform across **every** display (LGV, arc, synteny, dotplot,
+circular): the readiness gate, and the answer to a failed track — the display
+throws, from `awaitSvgReady`. What used to vary, *who* throws, was the
+shared-surface exception, and it is gone: a display never has to know whether it
+owns the surface it paints, because the reason that mattered — reporting all the
+failures rather than the first — is `awaitSvgRenders`' job at the fan-out. Views
+use it instead of `Promise.all` and may nest it; failures flatten.
 
 ## paintLayer: raster-vs-vector dispatch
 
@@ -519,8 +524,8 @@ flavor of drift).
   `opts.createCanvas` fallback ritual.
 - `PaintLayer({ width, height, opts, paint }) → ReactNode` — raster-vs-vector
   dispatch (`@jbrowse/core/util/paintLayer`).
-- `SvgExport` — `SVGErrorBox` (red error banner) + `SvgClipRect` (clipPath
-  wrapper), in `@jbrowse/core/svg/SvgExport`.
+- `SvgExport` — `SvgChrome`/`SVGMessageBox` (the "region too large" terminal) +
+  `SvgClipRect` (clipPath wrapper), in `@jbrowse/core/svg/SvgExport`.
 - `Ctx2D = CanvasRenderingContext2D | SvgCanvas` — the shared type alias every
   `drawXxxBlocks` signature uses.
 

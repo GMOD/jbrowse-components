@@ -253,11 +253,12 @@ describe('LinearMultiRowFeatureDisplay renderSvg', () => {
     expect(html).toContain('>Row groups</text>')
   })
 
-  it('renders the error box instead of the body when model.error is set', async () => {
-    const html = renderResult(
-      await renderSvg(makeModel({ error: new Error('boom') }), {}),
-    )
-    expect(html).toContain('boom')
-    expect(html).not.toContain('<rect x="80"')
+  // not "draws an error box instead of the body": an export is a standalone
+  // figure, so a track whose data wouldn't load fails the whole export rather
+  // than reserving its height for a message nobody downstream will read
+  it('fails the export when model.error is set', async () => {
+    await expect(
+      renderSvg(makeModel({ error: new Error('boom') }), {}),
+    ).rejects.toThrow('Cannot export: Error: boom')
   })
 })

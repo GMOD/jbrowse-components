@@ -145,8 +145,9 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
 
   // One banner per level so GPU lifecycle errors and per-display fetch errors
   // (e.g. PAF 404) never stack visually. The fetch half is the level's own
-  // `displayError`, shared with the SVG export's fatal check so the two can't
-  // disagree about what a failed level is.
+  // `displayError` — an on-screen affordance only: the SVG export reads each
+  // display's `error` for itself, since a figure has no banner to float and
+  // fails outright instead.
   const errors = [gpuError, model.displayError].filter(e => e != null)
   const combinedError = errors.length > 0 ? errors.join('\n') : undefined
 

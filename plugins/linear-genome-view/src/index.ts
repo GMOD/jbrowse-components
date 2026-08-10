@@ -225,15 +225,11 @@ export { TrackOverlayContext } from './LinearGenomeView/TrackOverlayContext.ts'
 export { TrackOverlayPortal } from './LinearGenomeView/TrackOverlayPortal.tsx'
 export { FloatingSvgOverlay } from './LinearGenomeView/FloatingSvgOverlay.tsx'
 export type { HoverHighlightPosition } from './LinearGenomeView/components/HoverPositionHighlight.tsx'
-export {
-  SVGErrorBox,
-  SvgChrome,
-  SvgClipRect,
-} from '@jbrowse/core/svg/SvgExport'
+export { SvgChrome, SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 // for a display that hand-rolls a <clipPath> instead of using SvgClipRect (an
 // inset or non-rect clip); ids built from a trackId/refName need it
 export { svgSafeId } from '@jbrowse/core/svg/svgId'
-export { awaitSvgReady } from '@jbrowse/core/svg/svgReady'
+export { awaitSvgReady, awaitSvgRenders } from '@jbrowse/core/svg/svgReady'
 export type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 export { renderDisplaySvg } from './shared/renderDisplaySvg.tsx'
 export type {

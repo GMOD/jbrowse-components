@@ -96,6 +96,11 @@ body — so **do not** write `when(() => ...)`, an `if (model.error) return`, or
 an `SvgChrome` of your own. `Body` is a component rather than a callback
 precisely so it never runs in a terminal state.
 
+A display whose data failed to load fails the whole export: the export dialog
+shows the error and saves nothing, rather than writing a figure with the error
+drawn into it. The one terminal an export does draw is "region too large", which
+is a state the user navigated to on purpose.
+
 `LinearReferenceSequenceDisplay` is the whole pattern in one file:
 
 <!-- include: plugins/sequence/src/LinearReferenceSequenceDisplay/renderSvg.tsx -->

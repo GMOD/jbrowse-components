@@ -1,6 +1,9 @@
 import { Fragment } from 'react'
 
-import { awaitViewInitialized } from '@jbrowse/core/svg/svgReady'
+import {
+  awaitSvgRenders,
+  awaitViewInitialized,
+} from '@jbrowse/core/svg/svgReady'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getSession, radToDeg } from '@jbrowse/core/util'
 
@@ -25,7 +28,10 @@ export async function renderToSvg(
   const session = getSession(model)
   const theme = session.getActiveThemeOptions?.(themeName)
 
-  const displayResults = await Promise.all(
+  // `awaitSvgRenders` over `Promise.all`: a chord track whose data won't load
+  // fails the export (a radial display has no box to draw the failure in), and
+  // two broken tracks are reported as two
+  const displayResults = await awaitSvgRenders(
     model.tracks.map(async track => ({
       id: track.id,
       result: await track.displays[0]!.renderSvg({ ...opts, theme }),

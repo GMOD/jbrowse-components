@@ -128,17 +128,19 @@ describe('renderSvg', () => {
     expect(html).toMatchSnapshot()
   })
 
-  it('returns an error element when model.error is set', async () => {
-    const result = await renderSvg(
-      makeModel({
-        laidOutDataMap: new Map(),
-        error: new Error('fetch failed'),
-      }),
-    )
-    expect(result).not.toBeNull()
-    const html = renderResult(result)
-    extractAndWriteSvg(html, 'error.svg')
-    expect(html).toMatchSnapshot()
+  // A track whose fetch failed used to export a red box with the message in it.
+  // It fails the export instead: a figure is a standalone artifact, so there is
+  // no reader downstream to notice the box and no way to tell it apart from a
+  // track that legitimately drew nothing.
+  it('rejects when model.error is set, rather than drawing the error', async () => {
+    await expect(
+      renderSvg(
+        makeModel({
+          laidOutDataMap: new Map(),
+          error: new Error('fetch failed'),
+        }),
+      ),
+    ).rejects.toThrow('Cannot export: Error: fetch failed')
   })
 
   it('generates SVG with features in visible region', async () => {
