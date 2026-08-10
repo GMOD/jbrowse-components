@@ -178,7 +178,7 @@ function isExcluded(name: string) {
 //   - **No alignments pileups.** Every over-threshold failure ever recorded here
 //     has been an alignments view, and the drift is a capture-timing race rather
 //     than a shader disagreement (see the comment above and
-//     agent-docs/handoffs/cross-backend-gate-ci.md). They come back when that is
+//     agent-docs/reference/CROSS_BACKEND_GATE.md). They come back when that is
 //     fixed, not before — one flaky suite is enough to get a blocking job
 //     switched off, which is how this check ended up decoration the first time.
 //

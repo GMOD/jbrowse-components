@@ -35,7 +35,7 @@ change → `--update-snapshots`.
 *cross-backend gate* does, blocking, since 2026-08-04: `pnpm test:browser:gate:ci`
 renders `CI_GATE_SUITES` (`crossBackendGate.ts`) with canvas2d and swiftshader
 webgl in one run and diffs the two, so it needs no committed baseline. Scope and
-its reasons live next to the list; `agent-docs/handoffs/cross-backend-gate-ci.md`
+its reasons live next to the list; `agent-docs/reference/CROSS_BACKEND_GATE.md`
 is what to read before widening it.
 
 **The 10-25% blank-capture flake was `fullPage: true`** (fixed 2026-07-26).

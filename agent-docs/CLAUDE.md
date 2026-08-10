@@ -10,11 +10,29 @@ Everything else is filed:
 - `architecture-decision-records/` — *why*, one decision per file. Its README
   index is **generated** by `website/scripts/generate-adr-index.ts`; don't hand-
   edit the block between the marker comments.
-- `handoffs/` — where a session leaves the state of an unfinished thread: what
-  was measured, what the next agent should not re-derive, and the decision left
-  open. Read the matching handoff before picking a thread back up; **delete one
-  once its thread closes** — if what it holds is durable, that means moving it
-  into `reference/` or an ADR first, not summarizing it into a commit message.
+There is **no `handoffs/`**, and reintroducing one is the thing to resist. It
+existed until 2026-08-10 and held nine files: a place for a session to park the
+state of an unfinished thread. What actually happened is that measured results,
+refuted hypotheses and whole subsystem profiles accumulated there instead of in
+`reference/`, because parking is easier than filing — and a doc nobody opens
+until they pick that exact thread back up is a doc nobody reads. Two of the nine
+had already been superseded by their own later sections.
+
+Everything they held is now filed by kind, which is what the split above is for:
+
+- **A measurement, a profile, or how a subsystem behaves** → `reference/`. Three
+  of those files became reference docs outright (`CROSS_BACKEND_GATE.md`,
+  `MAF_WORKER_PIPELINE.md`, `HPRC_RELEASE2.md`), which is a good sign they should
+  have been there from the start.
+- **Something tried and declined** → `reference/REJECTED_IDEAS.md`, with the
+  number that declined it.
+- **Work someone intends to do** → `TODO.md`, in the order to take it.
+- **A proposal parked** → `OTHER_IDEAS.md`.
+- **The rest** — what a session did, which commits, what is now green — → the
+  commit messages and `git log`, which already hold it.
+
+If you are about to write "state as of \<date\>" into a new top-level file, that
+is the signal: split it into the four homes above instead.
 
 `pnpm autogen` sweeps this tree for `<!-- NAME START -->` / `<!-- NAME END -->`
 pairs the same way it sweeps `website/docs`, and overwrites whatever is between

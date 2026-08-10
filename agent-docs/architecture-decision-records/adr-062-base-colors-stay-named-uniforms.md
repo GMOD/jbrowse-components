@@ -115,5 +115,5 @@ shared uploaded table.
   any palette upload.
 - [ADR-051](adr-051-shader-js-codegen-is-scalar-only.md) — the other GPU↔Canvas2D
   parity mechanism, for scalar decision functions.
-- [handoffs/cross-backend-gate-ci.md](../handoffs/cross-backend-gate-ci.md) —
+- [reference/CROSS_BACKEND_GATE.md](../reference/CROSS_BACKEND_GATE.md) —
   where the alignments WebGPU drift that once gated this was baselined.

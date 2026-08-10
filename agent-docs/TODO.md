@@ -22,6 +22,10 @@ Exploratory concepts that are *not* committed work live in
 | [Autofit height for the LGV demo](#autofit-height-for-the-lineargenomeview-example-site-demo) | embedded | no view-level auto-height exists yet |
 | [Extra large text SVG mode](#extra-large-text-svg-mode-for-pub-ready-figures) | SVG export | thread a scale the way `fontFamily` threads |
 | [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | five independent small items |
+| [Make the capture scroll-invariant](#make-the-snapshot-capture-scroll-invariant-then-widen-the-gate-to-webgpu) | browser tests | it is `snapshot.ts`, not a shader — attribution is done |
+| [Widen `CI_GATE_SUITES`](#widen-ci_gate_suites) | browser tests, CI | measure before adding; say why the alignments pair is safe |
+| [Attribute the TIMEOUT mode](#attribute-the-browser-test-timeout-failure-mode) | browser tests | report the display's state, don't extend the wait |
+| [Make the webgl blank verdict readable](#make-the-webgl-blank-verdict-readable) | browser tests | one diagnostic run; never leave it on |
 | [Look at the six AA-ramp commits](#look-at-the-six-aa-ramp-shader-commits--nobody-has) | shaders, GPU | landed, unit-tested, never seen |
 | [Report a callout that draws off-frame](#report-a-callout-that-draws-off-frame) | figures | the overlay already reports the unresolvable case |
 | [`partitionField` throws on `bigRmskBed`](#partitionfield-jexl-throws-through-its-own-guard-on-bigrmskbed) | canvas | the per-feature catch is there and not holding |
@@ -83,6 +87,60 @@ labels will overflow the boxes laid out for them.
 - Add a "hide this feature" option to `LinearMultiSampleVariantDisplay` (and
   similar displays). `plugins/canvas` already has `hideFeature`
   (`LinearBasicDisplay/baseModel.ts`) to copy.
+
+### Make the snapshot capture scroll-invariant, then widen the gate to webgpu
+
+Baselining, localization and attribution are all done — see
+[reference/CROSS_BACKEND_GATE.md](reference/CROSS_BACKEND_GATE.md) and
+[reference/SCREENSHOT_CAPTURE_RACE.md](reference/SCREENSHOT_CAPTURE_RACE.md).
+The drift is pre-existing, it is one 37px strip, the render is correct, and the
+strip is app chrome composited into the canvas after `el.screenshot()` scrolled
+the element under it in Firefox and not in Chrome.
+
+So the work is in `snapshot.ts`, not in a shader: either size the viewport so the
+display needs no scroll, or scroll to a fixed position before capturing, applied
+to both sides of every pair. **The canvas rect must be unchanged across the
+capture on every backend**, which is the property that was violated. Re-run
+`browser-tests/probe-webgpu-coverage.ts` afterwards. Widening the gate to webgpu
+is blocked only by this.
+
+### Widen `CI_GATE_SUITES`
+
+Add `Alignments Track` and `Alignments Color Schemes` first — tight drift, clean
+3/3 — and **say in the commit that this is safe only because CI runs
+`--skip-webgpu`**, or the next person widening to webgpu gets eight failures and
+no context. Hold `Long Reads and Inversions`: it would buy four pairs whose
+passing verdict is a 5–17% divergence the gate is configured to ignore.
+
+Then the local deterministic suites never measured under swiftshader — arcs,
+workspaces, redraw, cursor-guides, svg-export, custom-url, variant-force-load.
+Arcs and workspaces carry overrides tuned on a real GPU, so **measure before
+adding**; that is the whole procedure, and it is a measurement, not an edit.
+
+### Attribute the browser-test TIMEOUT failure mode
+
+The other failure mode next to blank captures: a display never reports `-done`
+inside 60 s. Apply exactly the move that worked for blanks — when the wait
+expires, report what state the display is actually in (`data-display-phase`,
+whether the wrapper exists at all, whether an error banner is up) instead of an
+opaque timeout. `waits.ts` already notes the likely shape: a display in a
+terminal `tooLarge`/`renderError` state renders no wrapper and so can never
+report done, which reads as a timeout forever.
+
+An earlier attempt was reverted (`839113dabe`) — re-query the selector per
+attempt rather than holding the handle, and prove the mechanism on a targeted
+reproduction first.
+
+### Make the webgl blank verdict readable
+
+Half the blank captures are unattributable today: a canvas2d blank self-reports
+"HAS content" and is conclusive, a webgl one self-reports "ALSO blank" and is
+not, because a cleared drawing buffer reads identically. Turning
+`preserveDrawingBuffer` on temporarily makes webgl's self-report conclusive, via
+an `evaluateOnNewDocument` override of `getContext` verified against a plain
+canvas first. **This is one deliberate diagnostic run, not another A/B, and it
+must not be left on** — it was measured and refuted as a *fix*
+([reference/CROSS_BACKEND_GATE.md](reference/CROSS_BACKEND_GATE.md)).
 
 ### Look at the six AA-ramp shader commits — nobody has
 

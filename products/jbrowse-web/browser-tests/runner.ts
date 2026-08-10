@@ -732,7 +732,7 @@ async function main() {
     // compared fewer pairs than the run before it (measured 2026-08-04:
     // 148/130/149 pairs over three runs, the 130 reporting clean). A gate that
     // passes by checking less is the one failure mode a blocking gate cannot
-    // have — see agent-docs/handoffs/cross-backend-gate-ci.md.
+    // have — see agent-docs/reference/CROSS_BACKEND_GATE.md.
     const failRun = totalFailed > 0 || crossBackendFailed
     process.exit(failRun ? 1 : 0)
   } catch (e) {

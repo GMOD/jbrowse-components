@@ -86,6 +86,13 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   concurrency bug: bam-js calls `unzip` concurrently, so a mid-flight reset
   nulls `bg.wasm` under a sibling that already passed `await init()`. Real fix
   is a per-call/pooled instance.
+- **Fixing blank browser-test captures by waiting harder, by
+  `preserveDrawingBuffer`, or by using `toDataURL` bytes as the capture** — all
+  three measured, all three declined; the last produced a false 93% drift because
+  a differential oracle cannot compare one backend's backing store against
+  another's composited layers. Also: **stop running whole-suite A/Bs against
+  this**, since failure counts range 0–20 under nominally identical conditions.
+  [CROSS_BACKEND_GATE.md](CROSS_BACKEND_GATE.md).
 - **Transposing `computeMafCoverage`'s walk, and a SWAR classifier for it** —
   both measured, both worse. The transpose is 0.92x–1.06x; exact-semantics SWAR
   is 0.51x, and the 4.5x a SWAR kernel does show is bought by reclassifying `.`
