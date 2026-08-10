@@ -2,7 +2,8 @@ import {
   assertOutPathsUnique,
   parseExportedConsts,
   parseJsExports,
-  parseLayoutOut,
+  parseOutPath,
+  OUT_DIRECTIVES,
   parseTargets,
   parseVertsPerInstance,
 } from './parseDirectives.ts'
@@ -349,15 +350,25 @@ describe('parseJsExports', () => {
   })
 })
 
-describe('parseLayoutOut', () => {
-  test('reads the repo-relative path', () => {
+describe('parseOutPath', () => {
+  test.each(OUT_DIRECTIVES)('reads the repo-relative %s-out path', kind => {
     expect(
-      parseLayoutOut('//! layout-out: packages/x/src/y.generated.ts'),
+      parseOutPath(`//! ${kind}-out: packages/x/src/y.generated.ts`, kind),
     ).toBe('packages/x/src/y.generated.ts')
   })
 
   test('undefined when absent', () => {
-    expect(parseLayoutOut('//! targets: wgsl')).toBeUndefined()
+    expect(parseOutPath('//! targets: wgsl', 'layout')).toBeUndefined()
+  })
+
+  // The kinds are one list because `assertOutPathsUnique` has to enumerate
+  // them: a fourth directive added as its own parser would work and silently
+  // not be collision-checked.
+  test('one directive does not answer for another', () => {
+    expect(parseOutPath('//! layout-out: a.ts', 'consts')).toBeUndefined()
+    // `js-export-out` vs `export-consts` share the word `export`; the kind is
+    // anchored, so neither reads the other's line.
+    expect(parseOutPath('//! js-export-out: a.ts', 'consts')).toBeUndefined()
   })
 })
 

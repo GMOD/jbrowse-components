@@ -137,16 +137,36 @@ bytes, once per block render, to delete a branch and a promise. The general
 rule: **if the CPU can name the substitution, upload the substituted table** and
 let every renderer index the same one.
 
-### Still to do
+### `snpColor` is NOT the next candidate — the naive version is a regression
 
-`snpColorForType` / `snpColor()` is the next candidate and has not been done. It
-was held back on 2026-08-08 for a reason that has since expired: it draws the
-SNP ticks in the coverage strip, which was then the region under suspicion for
-the unattributed alignments webgpu drift, so changing it would have confounded
-that attribution. The drift is now baselined and confirmed pre-existing (see
-[handoffs/cross-backend-gate-ci.md](../handoffs/cross-backend-gate-ci.md)), so
-there is a measured number to change things against and the hold no longer
-applies.
+It was listed here as one, held back on 2026-08-08 only because the coverage
+strip was then under suspicion for the unattributed alignments webgpu drift. That
+hold expired (the drift is baselined and confirmed pre-existing, see
+[handoffs/cross-backend-gate-ci.md](../handoffs/cross-backend-gate-ci.md)), and
+converting it was then attempted. **Don't** — the framing above was incomplete,
+and this is what it missed:
+
+- **`colorBaseA/C/G/T/N` are not snpCoverage's.** They live in the shared
+  `alignmentsUniforms` block and are read by **two** shaders under **two
+  different index spaces**: `snpCoverage.slang` switches on `colorType` 1–5,
+  `mismatch.slang` switches on the ASCII base code (65/97, 67/99, …). Giving
+  snpCoverage a `float4[5]` palette leaves mismatch on the named uniforms, so the
+  same five colors end up with two representations in one block.
+- **One of them is mutated at runtime.** `GpuAlignmentsRenderer.writeUniforms`
+  overwrites all five with grey when `showModifications` is on, and the Canvas2D
+  side (`features/mismatch/baseColors.ts`) has load-bearing comments about the
+  swap having *already* happened by the time it reads them. A second
+  representation would need the same swap applied to it, in step, forever — which
+  is a worse version of the mirror this was meant to delete.
+
+The version that would actually help is bigger: one palette indexed by a base
+*slot*, with the CPU mapping both `colorType` and the ASCII code to that slot
+before packing — which moves the mismatch instance `base` field's meaning and so
+touches the worker payload, the hot pack loop, the grey swap, the legend, and two
+Canvas2D mirrors. It is a real option, not a cleanup. The two switches it would
+delete are currently correct and covered by `coverageParity`,
+`cellPainterParity` and `baseColors` tests, so the drift risk it removes is
+small relative to the regression risk it adds. Left undone deliberately.
 
 ## Related
 

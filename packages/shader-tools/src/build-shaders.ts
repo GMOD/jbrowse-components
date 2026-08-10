@@ -16,10 +16,11 @@
 // treated as imports only. If a module declares `//! export-consts: A, B`
 // it emits a `<base>.generated.ts` with just those constant values.
 //
-// Two directives write a second artifact at a repo-relative path, for a package
-// that can't import the plugin owning the shader:
-//   //! layout-out: <path>   instance stride + field offsets only
-//   //! consts-out: <path>   the `export-consts` values only
+// Three directives redirect an artifact to a repo-relative path, for a package
+// that can't import the plugin owning the shader (see OUT_DIRECTIVES):
+//   //! layout-out: <path>      instance stride + per-view offset maps only
+//   //! consts-out: <path>      the `export-consts` values only
+//   //! js-export-out: <path>   the `js-export` twins
 import { execFileSync, spawn, spawnSync } from 'node:child_process'
 import {
   chmodSync,
@@ -51,11 +52,9 @@ import {
 } from './shader-codegen/codegen.ts'
 import {
   assertOutPathsUnique,
-  parseConstsOut,
   parseExportedConsts,
-  parseJsExportOut,
   parseJsExports,
-  parseLayoutOut,
+  parseOutPath,
   parseTargets,
   parseVertsPerInstance,
   stripComments,
@@ -326,7 +325,7 @@ function writeConstsOut(
   base: string,
   exportedConsts: Record<string, number> | undefined,
 ) {
-  const constsOut = parseConstsOut(source)
+  const constsOut = parseOutPath(source, 'consts')
   if (!constsOut) {
     return
   }
@@ -456,7 +455,7 @@ async function writeJsExports(
     fns.map(f => f.name),
     header(base),
   )
-  const out = parseJsExportOut(source)
+  const out = parseOutPath(source, 'js-export')
   if (out) {
     writeOut(log, out, contents)
     return
@@ -679,7 +678,7 @@ async function compileOne(log: Log, slangPath: string, source: string) {
     )
     emit(log, path.join(dir, `${base}.iface.generated.ts`), iface)
 
-    const layoutOut = parseLayoutOut(source)
+    const layoutOut = parseOutPath(source, 'layout')
     if (layoutOut) {
       writeOut(log, layoutOut, emitLayoutOnly({ baseName: base, reflection }))
     }

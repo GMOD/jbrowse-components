@@ -30,16 +30,11 @@ import type {
   ArrayType,
   Field,
   Reflection,
+  ReflectionTexture,
   SlangType,
   StructType,
   UniformFieldType,
 } from './reflection.ts'
-
-export interface CodegenTexture {
-  name: string
-  textureBinding: number
-  samplerBinding: number
-}
 
 export interface CodegenInputs {
   baseName: string
@@ -47,7 +42,9 @@ export interface CodegenInputs {
   wgsl?: string
   glslVertex?: string
   glslFragment?: string
-  textures?: CodegenTexture[]
+  // Straight from `findCombinedSamplers` — the same type, not a restatement of
+  // its three fields under a second name.
+  textures?: ReflectionTexture[]
   vertsPerInstance?: number
   exportedConsts?: Record<string, number>
 }

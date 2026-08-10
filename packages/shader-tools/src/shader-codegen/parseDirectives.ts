@@ -388,31 +388,34 @@ export function parseTargets(source: string): ShaderTarget[] {
   return requested as ShaderTarget[]
 }
 
-// `//! layout-out: <repo-relative path>` — write an instance-layout-only module
-// to a second location, for packages that can't import the owning plugin.
-export function parseLayoutOut(source: string) {
-  const match = /^\/\/!\s*layout-out:\s*(\S+)/m.exec(source)
-  return match ? match[1]! : undefined
-}
+/**
+ * The `//! <kind>-out: <repo-relative path>` directives, which redirect one
+ * generated artifact to a second location for a package that can't import the
+ * plugin owning the shader.
+ *
+ * - `layout-out` — the instance stride + per-view offset maps only.
+ * - `consts-out` — the `export-consts` values only. A shader constant whose
+ *   Canvas2D twin lives in a *different* package (alignments-core can't import
+ *   from plugins/alignments) otherwise has to be re-typed there by hand under a
+ *   SYNC comment.
+ * - `js-export-out` — the `js-export` twins. This one *redirects* rather than
+ *   adding: the twin is one file either way, and writing a byte-identical copy
+ *   next to the shader as well would leave an artifact nothing imports. The
+ *   insertion bar width is shared by plugin-alignments, plugin-maf and the
+ *   worker-side hit test, so it lives in alignments-core.
+ *
+ * One list, because `assertOutPathsUnique` has to enumerate every kind: a fourth
+ * directive added as its own parser would compile, work, and silently not be
+ * checked for collisions — which is the failure that assertion exists to
+ * prevent.
+ */
+export const OUT_DIRECTIVES = ['layout', 'consts', 'js-export'] as const
+export type OutDirective = (typeof OUT_DIRECTIVES)[number]
 
-// `//! consts-out: <repo-relative path>` — the same escape hatch for
-// `export-consts`. A shader constant whose Canvas2D twin lives in a *different*
-// package (alignments-core can't import from plugins/alignments) otherwise has
-// to be re-typed there by hand under a SYNC comment.
-export function parseConstsOut(source: string) {
-  const match = /^\/\/!\s*consts-out:\s*(\S+)/m.exec(source)
-  return match ? match[1]! : undefined
-}
-
-// `//! js-export-out: <repo-relative path>` — the same escape hatch again, for
-// `js-export`. It *redirects* rather than adding: the twin is one file either
-// way, and writing a byte-identical copy next to the shader as well would leave
-// an artifact nothing imports. Reach for it when the function's Canvas2D
-// consumer is in a package that can't depend on the shader's own — the
-// insertion bar width is shared by plugin-alignments, plugin-maf and the
-// worker-side hit test, so it lives in alignments-core.
-export function parseJsExportOut(source: string) {
-  const match = /^\/\/!\s*js-export-out:\s*(\S+)/m.exec(source)
+export function parseOutPath(source: string, kind: OutDirective) {
+  const match = new RegExp(String.raw`^//!\s*${kind}-out:\s*(\S+)`, 'm').exec(
+    source,
+  )
   return match ? match[1]! : undefined
 }
 
@@ -426,11 +429,7 @@ export function assertOutPathsUnique(
 ) {
   const owner = new Map<string, string>()
   for (const f of files) {
-    for (const out of [
-      parseLayoutOut(f.source),
-      parseConstsOut(f.source),
-      parseJsExportOut(f.source),
-    ]) {
+    for (const out of OUT_DIRECTIVES.map(k => parseOutPath(f.source, k))) {
       if (out === undefined) {
         continue
       }
