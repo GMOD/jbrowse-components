@@ -72,6 +72,13 @@ class Column<T extends Uint8Array | Int8Array | Uint32Array> {
   }
 }
 
+/**
+ * Sequence length at or below which a row is copied into the arena with a
+ * `charCodeAt` loop rather than `TextEncoder.encodeInto` — see `writeAscii` for
+ * the measurement behind the number.
+ */
+const ASCII_COPY_MAX_LENGTH = 64
+
 const u32 = (n: number) =>
   new Column(new Uint32Array(n), c => new Uint32Array(c))
 const u8 = (n: number) => new Column(new Uint8Array(n), c => new Uint8Array(c))
@@ -219,16 +226,48 @@ export class MafWirePacker {
     }
     let written: number
     if (typeof seq === 'string') {
-      written = this.encoder.encodeInto(
-        seq,
-        this.arena.subarray(offset, offset + seq.length),
-      ).written
+      written =
+        seq.length <= ASCII_COPY_MAX_LENGTH ? this.writeAscii(seq, offset) : -1
+      if (written < 0) {
+        written = this.encoder.encodeInto(
+          seq,
+          this.arena.subarray(offset, offset + seq.length),
+        ).written
+      }
     } else {
       this.arena.set(seq, offset)
       written = seq.length
     }
     this.arenaLength = offset + written
     return { offset, length: written }
+  }
+
+  /**
+   * Copy an ASCII `seq` into the arena a char at a time, or return -1 if it
+   * isn't ASCII (leaving the caller to redo it with `encodeInto`, which
+   * overwrites from the same offset, so the partial write costs nothing).
+   *
+   * Worth having only for short rows, hence `ASCII_COPY_MAX_LENGTH`.
+   * `encodeInto` is a C++ call that needs a `Uint8Array` destination, so every
+   * row also allocates an `arena.subarray` view for it — and a real MAF is
+   * mostly *short* rows: UCSC's ce11 26-way has a median block of 7bp, so the
+   * per-call overhead is paid ~1.2M times per buffered region for seven bytes
+   * of payload each. Measured over 12MB of sequence: 4.6x at 7 chars, 1.75x at
+   * 20, break-even around 70, and 2.5x the *wrong* way by 200 — `encodeInto`
+   * vectorizes and this cannot, so the threshold is what keeps a
+   * few-large-blocks region on the fast path for its shape.
+   */
+  private writeAscii(seq: string, offset: number) {
+    const arena = this.arena
+    const len = seq.length
+    for (let i = 0; i < len; i++) {
+      const code = seq.charCodeAt(i)
+      if (code > 0x7f) {
+        return -1
+      }
+      arena[offset + i] = code
+    }
+    return len
   }
 
   /**

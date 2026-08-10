@@ -163,6 +163,18 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   - **Hoisting `packMafCellColorConfig` out of the per-region encode** into a
     display-level computed. It really is per-display state rebuilt per region,
     but it is **0.1–0.3ms per region** — ~0.05% of an encode wave.
+- **Restructuring `computeMafCoverage`'s inner loop** — hoisting the `refKnown`
+  test out of the per-cell loop (it is constant for the column) and precomputing
+  an `isRefRow` byte per block instead of loading `rowSample[i]` on every cell.
+  Output-identical, and it *looks* like free wins on the stage that is 69-74% of
+  the RPC's CPU on medium and deep regions. Measured against the real
+  implementation, both imported, 30 alternating samples: **0.99x / 1.00x / 0.89x
+  / 0.90x** across four shapes. The per-block fill loop costs about what the
+  cheaper per-cell load saves, and on short blocks it costs more. An earlier
+  reading of 1.35-1.43x for the same change was the local-copy artifact
+  described below — the variant was local, the baseline imported. `NO_BASE`,
+  column-major, and the per-column accumulation are all still carrying their
+  own measurements; this function has been squeezed.
 - **Comparing an imported function against a local copy of it, as a perf A/B.**
   V8 optimizes the two differently, and the gap is large enough to invent a
   result: a control pitting `buildInstanceBuffer` against a byte-identical local

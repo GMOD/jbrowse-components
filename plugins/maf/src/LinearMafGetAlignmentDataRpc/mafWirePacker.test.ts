@@ -42,6 +42,57 @@ test('rows land at the offsets their block claims', () => {
   expect(refSeq(packed, 1)).toBe('TTTT')
 })
 
+// Short rows take a `charCodeAt` loop into the arena instead of `encodeInto`
+// (see `writeAscii`), and that loop is only valid for ASCII — which MAF
+// alignment text is, and which the whole render path already assumes, since
+// every consumer indexes a row's bytes by the reference's column number. A row
+// that somehow isn't ASCII must still come out exactly as `encodeInto` would
+// have written it, including the truncation that gives: the destination is
+// `seq.length` bytes, so a multi-byte character fills more than its share and
+// the row ends early rather than overflowing into the next one.
+test('a non-ASCII short row falls back to encodeInto, byte for byte', () => {
+  const seq = 'ACéGT'
+  const packed = packTestWire([
+    {
+      startBp: 0,
+      refSeq: 'ACGTA',
+      rows: [
+        { sampleId: 'a', seq },
+        // the row after it must be unaffected by the fallback's re-write
+        { sampleId: 'b', seq: 'TTTTT' },
+      ],
+    },
+  ])
+  const expected = new TextEncoder().encodeInto(seq, new Uint8Array(seq.length))
+  expect(packed.rowLength[0]).toBe(expected.written)
+  expect(rowSeq(packed, 0)).toBe(
+    new TextDecoder().decode(
+      new TextEncoder().encode(seq).subarray(0, expected.written),
+    ),
+  )
+  expect(rowSeq(packed, 1)).toBe('TTTTT')
+})
+
+// A row long enough to take the `encodeInto` path must pack the same as a short
+// one — the threshold is a performance switch, never a semantic one.
+test('rows on either side of the ASCII-copy threshold pack identically', () => {
+  const short = 'ACGT'.repeat(4) // 16, under the threshold
+  const long = 'ACGT'.repeat(40) // 160, over it
+  const packed = packTestWire([
+    {
+      startBp: 0,
+      refSeq: long,
+      rows: [
+        { sampleId: 'a', seq: short },
+        { sampleId: 'b', seq: long },
+      ],
+    },
+  ])
+  expect(rowSeq(packed, 0)).toBe(short)
+  expect(rowSeq(packed, 1)).toBe(long)
+  expect(refSeq(packed, 0)).toBe(long)
+})
+
 // The hazard the arena introduced: a row's bytes are immediately followed by the
 // next row's, so a length that overstates the row silently reads another
 // species' bases as this one's. Every consumer bounds on `rowLength`.

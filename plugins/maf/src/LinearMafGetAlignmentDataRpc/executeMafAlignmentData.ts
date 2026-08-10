@@ -112,15 +112,33 @@ export async function executeMafAlignmentData({
   // hand-listed sample list.
   const opts = hasConfiguredSamples ? { ...args, samples: configSamples } : args
 
-  // Pass 1: buffer blocks + collect sample order. Nothing is encoded yet — the
-  // subtree filter decides which rows reach the arena, and the arena is sized
-  // from the surviving rows in pass 2.
+  // Rows outside the active subtree are dropped rather than shipped and hidden.
+  // The returned `samples` stays the full set so the sidebar tree + "clear
+  // filter" still see every genome. Resolved before the fetch because the sizing
+  // pass below runs inside it.
+  const visible = subtreeFilter?.length ? new Set(subtreeFilter) : undefined
+  const isVisible = (sampleId: string) => !visible || visible.has(sampleId)
+
+  // Pass 1: buffer blocks, collect sample order, and size the pack. Nothing is
+  // encoded yet — the subtree filter decides which rows reach the arena.
+  //
+  // Every count in `reserve` is exact, so the packer allocates each column and
+  // the arena once: the arena is the largest thing the worker holds, and letting
+  // it double its way up would memcpy tens of megabytes several times over.
+  //
+  // It is accumulated *here*, in the walk that is already visiting every row to
+  // discover species, rather than in a second walk over `rawBlocks` afterwards.
+  // The two loops read the same `for...in` over the same records and only string
+  // lengths move, so the separate pass was a full re-traversal of the largest
+  // intermediate structure the worker builds — measured at 11% of the RPC's CPU
+  // on the ce11 26-way shape, where `rawBlocks` is ~1.2M records.
   const rawBlocks: {
     startBp: number
     refSeq: string
     alignments: Record<string, AlignmentRecord>
     empties: Record<string, EmptyRecord>
   }[] = []
+  const reserve = { blocks: 0, rows: 0, empties: 0, bytes: 0 }
   // The sample id of the row the block's reference sequence came from, resolved
   // from the first block that names one (all blocks of a track share a
   // reference species). See `referenceSampleId`.
@@ -141,13 +159,22 @@ export async function executeMafAlignmentData({
       const empties = feature.get('empties') as Record<string, EmptyRecord>
       const refSeq = feature.get('seq') as string
       refSampleId ??= referenceSampleId(alignments, refSeq)
+      reserve.blocks++
+      reserve.bytes += refSeq.length
       for (const sampleId in alignments) {
         discover(sampleId)
+        if (isVisible(sampleId)) {
+          reserve.rows++
+          reserve.bytes += alignments[sampleId]!.seq.length
+        }
       }
       // A species present only on `e` lines (bridged in every fetched block)
       // still needs a row so its bridge line renders.
       for (const sampleId in empties) {
         discover(sampleId)
+        if (isVisible(sampleId)) {
+          reserve.empties++
+        }
       }
       rawBlocks.push({
         startBp: feature.get('start'),
@@ -161,34 +188,8 @@ export async function executeMafAlignmentData({
   const samples: Sample[] = hasConfiguredSamples
     ? configSamples
     : [...discoveredOrder.keys()].map(id => ({ id, label: id }))
-  // Rows outside the active subtree are dropped here rather than shipped and
-  // hidden. The returned `samples` stays the full set so the sidebar tree +
-  // "clear filter" still see every genome.
-  const visible = subtreeFilter?.length ? new Set(subtreeFilter) : undefined
-  const isVisible = (sampleId: string) => !visible || visible.has(sampleId)
 
-  // Pass 2: size the pack. Every count here is exact, so the packer allocates
-  // each column and the arena once — the arena is the largest thing the worker
-  // holds, and letting it double its way up would memcpy tens of megabytes
-  // several times over. Only string lengths and record keys are touched; no
-  // sequence bytes move until pass 3.
-  const reserve = { blocks: rawBlocks.length, rows: 0, empties: 0, bytes: 0 }
-  for (const { refSeq, alignments, empties } of rawBlocks) {
-    reserve.bytes += refSeq.length
-    for (const sampleId in alignments) {
-      if (isVisible(sampleId)) {
-        reserve.rows++
-        reserve.bytes += alignments[sampleId]!.seq.length
-      }
-    }
-    for (const sampleId in empties) {
-      if (isVisible(sampleId)) {
-        reserve.empties++
-      }
-    }
-  }
-
-  // Pass 3: pack. One MAF feature = one alignment block; a single fetched
+  // Pass 2: pack. One MAF feature = one alignment block; a single fetched
   // region can contain many disjoint blocks at unrelated genomic anchors.
   // for...in + push avoids the Object.entries+flatMap temp array allocations on
   // a per-block hot path.
