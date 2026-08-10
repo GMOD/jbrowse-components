@@ -138,6 +138,20 @@ export function linearSyntenyViewHelperModelFactory(
       },
       /**
        * #getter
+       * Every failed track's error in this level, combined into the one value
+       * the band has room to report — resolved here rather than per display
+       * because they all paint the same full-height band. On screen that is one
+       * banner floating over the ribbons that did render; in SVG export it is
+       * fatal, since a box drawn into a shared band covers those same ribbons.
+       */
+      get displayError() {
+        const errors = this.linearSyntenyDisplays
+          .map(d => d.error)
+          .filter(e => e != null)
+        return errors.length > 0 ? errors.join('\n') : undefined
+      },
+      /**
+       * #getter
        * Canvas has painted and no display is still fetching, so what's on
        * screen is the final settled content. Drives the `synteny_canvas_done`
        * test-id, which screenshot capture and the browser-test suites wait on

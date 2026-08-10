@@ -4,6 +4,7 @@ import {
   awaitSvgReady,
   awaitViewInitialized,
   computeSvgReady,
+  throwOnExportErrors,
 } from './svgReady.ts'
 
 const noTerminals = {
@@ -113,6 +114,29 @@ describe('awaitViewInitialized', () => {
     await expect(
       awaitViewInitialized({ initialized: true, error: new Error('a track') }),
     ).resolves.toBeUndefined()
+  })
+})
+
+describe('throwOnExportErrors', () => {
+  it('passes when nothing failed', () => {
+    expect(() => {
+      throwOnExportErrors([undefined, null])
+    }).not.toThrow()
+  })
+
+  it('reports every failed track, not just the first', () => {
+    expect(() => {
+      throwOnExportErrors([new Error('paf 404'), undefined, 'chain parse'])
+    }).toThrow('Cannot export: Error: paf 404\nchain parse')
+  })
+
+  // the dialog's ErrorBanner shows the message; a caller unwrapping the cause
+  // (jbrowse-img's toError) should still reach the original
+  it('carries the first failure as the cause', () => {
+    const cause = new Error('paf 404')
+    expect(() => {
+      throwOnExportErrors([cause])
+    }).toThrow(expect.objectContaining({ cause }))
   })
 })
 

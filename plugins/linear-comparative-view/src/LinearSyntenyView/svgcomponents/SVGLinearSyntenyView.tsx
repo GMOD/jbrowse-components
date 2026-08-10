@@ -1,5 +1,8 @@
 import { exportMargin } from '@jbrowse/core/svg/constants'
-import { awaitViewInitialized } from '@jbrowse/core/svg/svgReady'
+import {
+  awaitViewInitialized,
+  throwOnExportErrors,
+} from '@jbrowse/core/svg/svgReady'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getSession } from '@jbrowse/core/util'
 import {
@@ -19,6 +22,17 @@ import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model
 import type { LinearSyntenyViewModel } from '../model.ts'
 import type { ExportSvgOptions } from '../types.ts'
 
+// Exactly what the export reads off a level. `levels` is declared with an
+// explicit IAnyModelType to break a type cycle (see LinearComparativeView's
+// model), so everything read off one is `any` — naming the shape here keeps that
+// out of the layout math below, where an undefined height would silently make
+// the running offset NaN.
+interface SyntenyLevel {
+  height: number
+  displayError: string | undefined
+  linearSyntenyDisplays: LinearSyntenyDisplayModel[]
+}
+
 // render a LinearSyntenyView to SVG: N stacked genome views with the synteny
 // ribbon level for each adjacent pair between them
 export async function renderToSvg(
@@ -33,13 +47,13 @@ export async function renderToSvg(
     rulerHeight = 30,
     trackLabels = 'offset',
     showGridlines = false,
-    Wrapper = ({ children }) => children,
+    Wrapper,
     themeName = 'default',
     fontFamily,
   } = opts
   const session = getSession(model)
-  const themeVar = session.getActiveThemeOptions?.(themeName)
-  const { width, views, levels } = model
+  const theme = session.getActiveThemeOptions?.(themeName)
+  const { views, levels } = model
 
   // Clearance between a row and whatever sits above it. A row starts with its
   // assembly label, and the ribbon band above it is a solid block of colour, so
@@ -58,38 +72,36 @@ export async function renderToSvg(
     // its displays have settled — see the orderings it documents
     Promise.all(
       views.map(view =>
-        renderViewTracks({
-          view,
-          opts,
-          theme: themeVar,
-          textHeight,
-          trackLabels,
-        }),
+        renderViewTracks({ view, opts, theme, textHeight, trackLabels }),
       ),
     ),
     Promise.all(
-      // `levels` is declared with an explicit IAnyModelType to break a type
-      // cycle (see LinearComparativeView's model), so everything read off a
-      // level is any — annotate displays.
-      levels.map(async level => {
-        const displays: LinearSyntenyDisplayModel[] =
-          level.linearSyntenyDisplays
-        // one error box per level rather than per display: they all paint the
-        // same full-height band, so a per-display box would cover its siblings'
-        // ribbons. Matches LevelSyntenyCanvas's single combined banner.
-        const errors = displays.map(d => d.error).filter(e => e != null)
-        return {
-          error: errors.length > 0 ? errors.join('\n') : undefined,
-          nodes: await Promise.all(
-            displays.map(async d => ({
-              key: d.id,
-              node: await renderSyntenyDisplaySvg(d, opts),
-            })),
-          ),
-        }
-      }),
+      levels.map((level: SyntenyLevel) =>
+        Promise.all(
+          level.linearSyntenyDisplays.map(async d => ({
+            key: d.id,
+            node: await renderSyntenyDisplaySvg(d, opts),
+          })),
+        ),
+      ),
     ),
   ])
+
+  // A ribbon track that failed to load is fatal rather than a box drawn into the
+  // band: every display in a level paints that same full-height band, so there
+  // is nowhere to put the box that isn't over the tracks that did render — and a
+  // figure with a red rect baked in is worse than a dialog that says why and
+  // saves nothing. Read here, after the waits, because `awaitSvgReady` resolves
+  // *on* the error.
+  throwOnExportErrors(levels.map((level: SyntenyLevel) => level.displayError))
+
+  // Deliberately read after those waits, not before. SVGView and each ribbon
+  // layer re-read the view geometry for themselves once their own waits resolve,
+  // so a resize landing during the fetch left the canvas, the level clips and
+  // the legend sized for the pre-wait width while the rows and ribbons were
+  // drawn against the new one. (Same ordering rule as the LGV export's track
+  // heights.)
+  const { width } = model
 
   // one gutter for the whole export, wide enough for the widest label in any
   // row, so the rows stay vertically aligned with each other
@@ -141,7 +153,7 @@ export async function renderToSvg(
         </g>
       ),
     }
-    const level = levels[i]
+    const level: SyntenyLevel | undefined = levels[i]
     return level
       ? [
           viewRow,
@@ -154,8 +166,7 @@ export async function renderToSvg(
                 width={width}
                 levelHeight={level.height}
                 trackLabelOffset={trackLabelOffset}
-                rendering={renderings[i]!.nodes}
-                error={renderings[i]!.error}
+                rendering={renderings[i]!}
                 // one legend for the whole view, in the topmost ribbon band —
                 // the same placement the on-screen LevelSection uses
                 legend={
@@ -192,9 +203,8 @@ export async function renderToSvg(
     )
   })
 
-  // the xlink namespace is used for rendering <image> tag
   return wrapSvgExport({
-    theme: themeVar,
+    theme,
     width: w,
     height: y + exportMargin,
     fontFamily,

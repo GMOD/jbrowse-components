@@ -89,3 +89,28 @@ export async function awaitViewInitialized(view: {
     throw new Error(`Cannot export: ${view.error}`, { cause: view.error })
   }
 }
+
+/**
+ * The display-level counterpart, for a view whose displays all paint one shared
+ * surface. A track whose data failed to load has its error caught by the fetch
+ * layer and stored on the display, so the export would otherwise write the
+ * failure into the figure — and on a shared surface the box saying so is drawn
+ * over the tracks that *did* render. An export is a standalone artifact, so a
+ * failed track is fatal here: the dialog shows its error banner and saves
+ * nothing, and a headless caller (jbrowse-img) exits nonzero instead of writing
+ * a broken image.
+ *
+ * Call it **after** the displays' readiness waits. `awaitSvgReady` resolves *on*
+ * the error, so a fetch that fails during the wait is only visible afterwards —
+ * reading the errors before the waits reports the ones that had already landed
+ * and misses exactly the ones the wait was for.
+ *
+ * A display that owns its own band keeps the `SvgChrome` box instead: there the
+ * box covers only the failed track, which is what the reserved height was for.
+ */
+export function throwOnExportErrors(errors: unknown[]) {
+  const failed = errors.filter(e => e != null)
+  if (failed.length > 0) {
+    throw new Error(`Cannot export: ${failed.join('\n')}`, { cause: failed[0] })
+  }
+}

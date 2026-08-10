@@ -359,23 +359,28 @@ same `computeSvgReady` policy:
   export fired right after a pan/zoom wait for fresh arcs instead of capturing
   stale ones.
 - **Multi-LGV synteny** is *non-LGV* (a `LinearSyntenyView` level composing only
-  `BaseDisplay` with its own fetch) yet *rectangular*, so it keeps the shared
-  `SvgChrome` + `awaitSvgReady` contract, calling `computeSvgReady` directly with
-  `dataCurrent` = `ready && !refetching && dataCurrent` (`ready` =
-  `featureData !== undefined`).
+  `BaseDisplay` with its own fetch), so it awaits `awaitSvgReady` itself, calling
+  `computeSvgReady` directly with `dataCurrent` =
+  `ready && !refetching && dataCurrent` (`ready` = `featureData !== undefined`).
   It needs BOTH freshness terms — `!refetching` covers the in-flight RPC, but a
   debounced fetch (500ms) leaves a *pre-refetch* window where a region/zoom
   change has invalidated the held data yet `fetching` hasn't flipped true, so
   `!refetching` alone still resolves on stale ribbons. `dataCurrent`
   (`loadedFetchKey === currentFetchKey`) closes that window exactly as arc's
-  signature does. It has no `regionTooLarge` state, so its `SvgChrome` is passed
-  `error` only. **`SvgChrome` is not LGV-specific** — it is the terminal chrome
-  for *any* rectangular display that owns the band it draws in. Synteny is one of
-  the two where the terminal sits a level *above* the display instead: every
-  synteny display in a level paints the same full-height band, so
-  `SVGSyntenyLevel` owns one `SvgChrome` over the errors combined across the
-  level (mirroring `LevelSyntenyCanvas`'s single banner). A per-display error box
-  would cover its siblings' ribbons. The dotplot is the other — see below.
+  signature does.
+
+  It draws **no `SvgChrome` at all**, and that is the rule for a shared surface:
+  `SvgChrome` is the terminal chrome for any rectangular display that *owns the
+  band it draws in*, because there the box covers only the track whose reserved
+  height it fills. Every synteny display in a level paints the same full-height
+  band, so any box is a box over the siblings that rendered — hoisting one
+  `SvgChrome` to `SVGSyntenyLevel` only made it one box that erased *every*
+  track's ribbons. So the error is fatal instead: `SVGLinearSyntenyView` calls
+  `throwOnExportErrors` on each level's `displayError` after the displays' waits,
+  and the dialog shows its error banner and saves nothing (jbrowse-img exits
+  nonzero, which is what its own post-hoc `throwOnDisplayError` was compensating
+  for). The dotplot is the other shared-surface view and still draws a 30px
+  banner strip — see below; it predates this and should follow.
 
 ### The shared freshness name, and the shared signature compare
 

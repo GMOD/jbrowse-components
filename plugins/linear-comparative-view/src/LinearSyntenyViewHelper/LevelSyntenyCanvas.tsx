@@ -144,10 +144,10 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   const { scrollingRef } = useWheelScrollZoom(canvas, parentView, noteDeadWheel)
 
   // One banner per level so GPU lifecycle errors and per-display fetch errors
-  // (e.g. PAF 404) never stack visually
-  const errors = [gpuError, ...model.linearSyntenyDisplays.map(d => d.error)]
-    .filter(e => e != null)
-    .map(e => `${e}`)
+  // (e.g. PAF 404) never stack visually. The fetch half is the level's own
+  // `displayError`, shared with the SVG export's fatal check so the two can't
+  // disagree about what a failed level is.
+  const errors = [gpuError, model.displayError].filter(e => e != null)
   const combinedError = errors.length > 0 ? errors.join('\n') : undefined
 
   function canvasCoords(evt: { clientX: number; clientY: number }) {

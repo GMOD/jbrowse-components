@@ -5,9 +5,11 @@ import { render } from '@testing-library/react'
 import SVGSyntenyLevel from './SVGSyntenyLevel.tsx'
 
 // Two synteny tracks in one level, as a level with two SyntenyTracks between the
-// same pair of assemblies has. Both paint the same full-height band, so where
-// the error chrome sits decides whether one track's 404 erases the other.
-function renderLevel(error?: unknown) {
+// same pair of assemblies has. Both paint the same full-height band, which is
+// why the level draws no terminal-state chrome of its own: a box sized to the
+// band buries whichever tracks did render. A failed track fails the export
+// instead (SVGLinearSyntenyView's throwOnExportErrors).
+function renderLevel() {
   return render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <svg>
@@ -16,7 +18,6 @@ function renderLevel(error?: unknown) {
           width={800}
           levelHeight={100}
           trackLabelOffset={0}
-          error={error}
           rendering={[
             { key: 'a', node: <rect data-testid="ribbons-a" /> },
             { key: 'b', node: <rect data-testid="ribbons-b" /> },
@@ -28,26 +29,25 @@ function renderLevel(error?: unknown) {
   )
 }
 
-test('paints every display in the level when none errored', () => {
-  const { queryByTestId, container } = renderLevel()
+test('paints every display in the level', () => {
+  const { queryByTestId } = renderLevel()
   expect(queryByTestId('ribbons-a')).toBeTruthy()
   expect(queryByTestId('ribbons-b')).toBeTruthy()
-  expect(container.textContent).not.toContain('boom')
 })
 
-test('one error box for the level, not one per display', () => {
-  // regression: each display used to wrap itself in SvgChrome, so an errored
-  // display painted an opaque box over its siblings' ribbons
-  const { queryByTestId, container } = renderLevel('boom\nkaboom')
-  expect(container.textContent).toContain('boom')
-  expect(container.querySelectorAll('rect[fill="#ffdddd"]')).toHaveLength(1)
-  expect(queryByTestId('ribbons-a')).toBeNull()
-  expect(queryByTestId('ribbons-b')).toBeNull()
+test('draws no error box over the band', () => {
+  // regression: the level used to mount SvgChrome, which renders its terminal
+  // box *instead of* its children — so one track's 404 erased both tracks'
+  // ribbons and left a band-sized red rect in the figure
+  const { container } = renderLevel()
+  expect(container.querySelectorAll('rect[fill="#ffdddd"]')).toHaveLength(0)
 })
 
-test('keeps the color-by legend outside the error chrome and the clip', () => {
-  // the legend is the view's key, not the track's, so an errored level still
-  // documents what the other levels' colors mean
-  const { container } = renderLevel('boom')
+test('keeps the color-by legend outside the clip', () => {
+  // a legend taller than a short level would otherwise be cropped by the band's
+  // clip rect
+  const { container } = renderLevel()
+  const clipped = container.querySelector('g[clip-path]')
+  expect(clipped?.textContent).not.toContain('legend')
   expect(container.textContent).toContain('legend')
 })
