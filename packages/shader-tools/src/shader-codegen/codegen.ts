@@ -16,9 +16,11 @@
 // callers that pack multiple sources into one buffer (wiggle, synteny) and so
 // can't use the single-array-per-field shape.
 
+import { assertRenderBindingShape, classifyBindings } from './bindings.ts'
 import {
   assertModeledStruct,
   findConstantBuffer,
+  findEntryPoint,
   findInstanceStruct,
 } from './reflection.ts'
 
@@ -370,10 +372,20 @@ export function emitInterface(inputs: CodegenInputs) {
   const { baseName, reflection, textures, vertsPerInstance, exportedConsts } =
     inputs
   const lines = header(baseName)
+
+  // Classify the whole parameter list before anything reads a piece of it: this
+  // is what refuses a second uniform block (silently dropped until now), a
+  // duplicate binding index, and a resource shape nothing could bind. See
+  // bindings.ts.
+  const bindings = classifyBindings(`${baseName}.slang`, reflection)
+
   // Import only the HAL types the emitted module actually references. A compute
   // shader has no instance attributes and no textures, so it imports neither.
   const vs = findInstanceStruct(reflection)
   const halImports = vs ? ['GlAttributeLayout'] : []
+  if (bindings.length > 0) {
+    halImports.push('ShaderBinding')
+  }
   if (textures && textures.length > 0) {
     halImports.push('TextureBinding')
   }
@@ -382,6 +394,26 @@ export function emitInterface(inputs: CodegenInputs) {
       `import type { ${halImports.join(', ')} } from '@jbrowse/render-core/hal'`,
       '',
     )
+  }
+
+  // The shader's own binding table, so a consumer builds its bind group layout
+  // from the shader instead of restating it. Three places restated it — both
+  // HALs' hardcoded render layouts and the LD compute driver's — and reflection
+  // knew the answer in all three.
+  //
+  // A render shader is additionally held to a shape the HALs actually bind; a
+  // compute shader is not, because its driver derives the layout from this.
+  if (bindings.length > 0) {
+    if (findEntryPoint(reflection, 'vertex')) {
+      assertRenderBindingShape(`${baseName}.slang`, bindings)
+    }
+    lines.push('export const BINDINGS: readonly ShaderBinding[] = [')
+    for (const b of bindings) {
+      lines.push(
+        `  { index: ${b.index}, kind: '${b.kind}', name: '${b.name}' },`,
+      )
+    }
+    lines.push(']', '')
   }
 
   if (vertsPerInstance !== undefined) {

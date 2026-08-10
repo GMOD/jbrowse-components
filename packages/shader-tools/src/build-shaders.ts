@@ -38,6 +38,10 @@ import path from 'node:path'
 import { pool } from './pool.ts'
 import { assertVertexInputsMatch } from './shader-codegen/assertVertexInputs.ts'
 import {
+  assertBindingsMatchWgsl,
+  classifyBindings,
+} from './shader-codegen/bindings.ts'
+import {
   emitConsts,
   emitInterface,
   emitLayoutOnly,
@@ -614,6 +618,15 @@ async function compileOne(log: Log, slangPath: string, source: string) {
     if (validationError) {
       throw validationError
     }
+
+    // Reflection and the emitted WGSL are two outputs of the same compiler, and
+    // only one of them is what the GPU runs. Make them agree about the bindings
+    // here, where the message can name the shader — see assertBindingsMatchWgsl.
+    assertBindingsMatchWgsl(
+      path.relative(PROJECT_ROOT, slangPath),
+      classifyBindings(`${base}.slang`, reflection),
+      wgsl,
+    )
 
     // Fail here, before writing, if slangc's `@location` assignment disagrees
     // with the tight-packed layout the generated packers assume.

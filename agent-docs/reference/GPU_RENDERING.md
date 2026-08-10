@@ -901,6 +901,31 @@ build itself refuses a `.generated.ts` that no `.slang` produces any more — a
 renamed shader or a dropped `//! *-out` leaves a committed file frozen at its
 last value, which is the one staleness a diff cannot see.
 
+**A shader's binding table is generated, not restated.** `BINDINGS` is the
+reflected `@binding` list — `{ index, kind, name }`, with `kind` spelled the way
+WebGPU spells it so a consumer hands it straight to `createBindGroupLayout`.
+Three places used to assert those indices by hand and none consulted the shader:
+`createUniformOnlyBindGroupLayout` (uniform at 1), `getOrCreateTexturedLayout`
+(uniform 1, texture 2, sampler 3), and the LD compute driver's own
+`makeBindGroupLayout` (0 read-only-storage, 1 storage, 2 uniform). The compute
+driver now builds both its layout and its bind group from `BINDINGS`, matching
+buffers by *kind* rather than by name — the two kernels call their input
+`genotypes` and `haps`. The render HALs still build the two shapes they
+implement, but `pnpm gen:shaders` refuses a render shader whose table is not one
+of them, which is the check `createUniformOnlyBindGroupLayout`'s comment ("Binding
+index 1 matches what the codegen emits") never had.
+
+**Reflection and the emitted WGSL are cross-checked.** They are two outputs of
+different slangc passes and only one of them is what the GPU runs, so
+`assertBindingsMatchWgsl` reads the `@binding(N) @group(0) var<…>` declarations
+back out of the WGSL and makes them agree with the table — the same doctrine as
+`assertVertexInputsMatch`, and one-directional for the same reason: slangc drops
+a binding the body never reads (`flatQuad.slang` declares a uniform block and
+then takes every value from its instance attributes), which is DCE and harmless,
+while a *declared* binding the table doesn't mention is one nothing would bind.
+This is what a `SLANG_VERSION` bump would trip if the sampler expansion — the one
+index the codegen invents, `index + 1` — ever changed.
+
 **Offsets come in two flavours, and `_F32` means different things in each.**
 `FIELD_OFFSET_F32` / `INSTANCE_STRIDE_F32` are in 4-byte *words* and cover every
 instance field whatever its type; `UNIFORM_OFFSET_F32` and

@@ -2,6 +2,7 @@ import type {
   BlendState,
   GlAttributeLayout,
   PassDescriptor,
+  ShaderBinding,
   TextureBinding,
 } from './hal'
 
@@ -23,6 +24,9 @@ export interface ShaderModule {
   // derives bindings from reflection so the renderer doesn't hand-maintain
   // them.
   TEXTURES?: readonly [TextureBinding, ...TextureBinding[]]
+  // The shader's whole reflected binding table. Optional only because a pass
+  // may be built from a module generated before this existed.
+  BINDINGS?: readonly ShaderBinding[]
 }
 
 export interface SlangPassOpts {
@@ -67,6 +71,7 @@ export function slangPass(opts: SlangPassOpts): PassDescriptor {
     glAttributes: opts.bufferAttributes ?? opts.mod.GL_ATTRIBUTES,
     topology: opts.topology,
     textures: opts.textures ?? opts.mod.TEXTURES,
+    bindings: opts.mod.BINDINGS,
     wgslFragmentEntry: opts.wgslFragmentEntry,
     glslFragmentOverride: opts.glslFragmentOverride,
   }

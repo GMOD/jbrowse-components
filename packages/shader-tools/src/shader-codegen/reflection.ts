@@ -88,6 +88,9 @@ export interface ResourceType {
   // A `Sampler2D<T>` (texture and sampler in one declaration) rather than a
   // separate `Texture2D` + `SamplerState` pair.
   combined?: boolean
+  // 'readWrite' for an `RWStructuredBuffer`; absent for a read-only one. What
+  // separates a WebGPU 'storage' binding from a 'read-only-storage' one.
+  access?: string
   resultType?: SlangType | StructType
 }
 
@@ -273,6 +276,14 @@ export function findInstanceStruct(reflection: Reflection) {
     : undefined
 }
 
+/**
+ * The shader's uniform block, or undefined if it declares none.
+ *
+ * First-match, and safe only because `classifyBindings` refuses a second one
+ * before any caller gets here — that is the accessor this and
+ * `findCombinedSamplers` used to be, each scanning for the shape it wanted and
+ * ignoring whatever else the shader declared. See bindings.ts.
+ */
 export function findConstantBuffer(reflection: Reflection) {
   for (const p of reflection.parameters) {
     if (p.type.kind === 'constantBuffer') {

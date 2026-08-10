@@ -18,6 +18,22 @@ export type BlendState =
   | { op?: 'add'; srcFactor: BlendFactor; dstFactor: BlendFactor }
   | { op: 'max' }
 
+/**
+ * One entry of a shader's GPU binding table, as the Slang codegen reflects it.
+ *
+ * `kind` is spelled the way WebGPU spells it so a consumer can build a
+ * `createBindGroupLayout` entry from it directly. That is the point: the binding
+ * indices used to be asserted by hand in three places that never consulted the
+ * shader — this HAL's two hardcoded render layouts, and the LD compute driver's
+ * own. A shader's `BINDINGS` export is the reflected truth, and `pnpm
+ * gen:shaders` now refuses a render shader whose table is not one the HALs bind.
+ */
+export interface ShaderBinding {
+  index: number
+  kind: 'uniform' | 'texture' | 'sampler' | 'storage' | 'read-only-storage'
+  name: string
+}
+
 export interface TextureBinding {
   // WebGPU binding index for the texture view (e.g. 2)
   textureBinding: number
@@ -49,8 +65,14 @@ export interface PassDescriptor {
   // primitive topology (default: 'triangle-list')
   topology?: 'triangle-list' | 'triangle-strip' | 'line-list'
   // Texture binding for this pass. Only textures[0] is wired up by both HAL
-  // implementations — multi-texture passes are not currently supported.
+  // implementations — multi-texture passes are not currently supported, and
+  // `pnpm gen:shaders` refuses a shader that declares a second sampler.
   textures?: readonly [TextureBinding, ...TextureBinding[]]
+  // The shader's reflected binding table (its generated `BINDINGS`). The HALs
+  // still build their layouts from the two shapes they implement; this carries
+  // the shader's own answer so a consumer that needs it — and the parity gate —
+  // reads reflection rather than a hardcoded index.
+  bindings?: readonly ShaderBinding[]
 }
 
 export interface GpuHal {

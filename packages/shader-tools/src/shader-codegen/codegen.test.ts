@@ -267,9 +267,28 @@ describe('emitInterface compute', () => {
     expect(out).not.toContain('GL_ATTRIBUTES')
   })
 
-  // Would otherwise emit an unused import — nothing here references the type.
-  test('omits the HAL type import when there are no attributes or textures', () => {
-    expect(out).not.toContain('@jbrowse/render-core/hal')
+  // Only the types the emitted module actually references: a compute kernel has
+  // no attributes and no textures, so it imports neither — but it does have a
+  // binding table, and the compute driver builds its bind group layout from it.
+  test('imports only the HAL types it references', () => {
+    expect(out).toContain(
+      "import type { ShaderBinding } from '@jbrowse/render-core/hal'",
+    )
+    expect(out).not.toContain('GlAttributeLayout')
+    expect(out).not.toContain('TextureBinding')
+  })
+
+  // The compute kernel's own bindings, which is what replaced the LD driver's
+  // hand-transcribed `createBindGroupLayout` entries.
+  test('emits the binding table', () => {
+    expect(out).toContain(
+      [
+        'export const BINDINGS: readonly ShaderBinding[] = [',
+        "  { index: 0, kind: 'read-only-storage', name: 'genotypes' },",
+        "  { index: 1, kind: 'uniform', name: 'u' },",
+        ']',
+      ].join('\n'),
+    )
   })
 })
 
@@ -356,7 +375,7 @@ describe('emitInterface textures', () => {
       "{ textureBinding: 0, samplerBinding: 1, glTextureUnit: 0, glUniformName: 'u_colorRamp', filter: 'linear' },",
     )
     expect(out).toContain(
-      "import type { GlAttributeLayout, TextureBinding } from '@jbrowse/render-core/hal'",
+      "import type { GlAttributeLayout, ShaderBinding, TextureBinding } from '@jbrowse/render-core/hal'",
     )
   })
 

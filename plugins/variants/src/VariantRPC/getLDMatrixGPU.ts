@@ -7,6 +7,7 @@ import * as ldPhasedCompute from '../LDDisplay/components/shaders/ldPhasedComput
 
 import type { LDMetric } from './getLDMatrix.ts'
 import type { PackedHaplotypes } from '@jbrowse/ld-core'
+import type { ShaderBinding } from '@jbrowse/render-core/hal'
 
 const MIN_WORK = 500_000
 
@@ -14,34 +15,49 @@ interface ComputeState {
   device: GPUDevice
   pipeline: GPUComputePipeline
   bindGroupLayout: GPUBindGroupLayout
+  // Carried alongside the layout it was built from, so the bind group is
+  // written against the same reflected indices.
+  bindings: readonly ShaderBinding[]
 }
 
-function makeBindGroupLayout(device: GPUDevice) {
+// Built from the kernel's own reflected binding table rather than restated
+// here. This was three hardcoded entries — 0 read-only-storage, 1 storage, 2
+// uniform — which is exactly what `ldCompute.slang`'s `[[vk::binding]]`
+// attributes say, transcribed by hand into the one place a mismatch shows up as
+// a validation failure at pipeline creation. `BINDINGS` is the same fact,
+// reflected.
+function makeBindGroupLayout(
+  device: GPUDevice,
+  bindings: readonly ShaderBinding[],
+) {
   return device.createBindGroupLayout({
-    entries: [
-      {
-        binding: 0,
+    entries: bindings.map(b => {
+      if (b.kind === 'texture' || b.kind === 'sampler') {
+        // A compute kernel here binds buffers only; the codegen can describe a
+        // sampler, and this driver has no case for one.
+        throw new Error(
+          `LD compute: binding ${b.index} ('${b.name}') is a ${b.kind}, which ` +
+            `this dispatch does not bind`,
+        )
+      }
+      return {
+        binding: b.index,
         visibility: GPUShaderStage.COMPUTE,
-        buffer: { type: 'read-only-storage' },
-      },
-      {
-        binding: 1,
-        visibility: GPUShaderStage.COMPUTE,
-        buffer: { type: 'storage' },
-      },
-      {
-        binding: 2,
-        visibility: GPUShaderStage.COMPUTE,
-        buffer: { type: 'uniform' },
-      },
-    ],
+        buffer: { type: b.kind },
+      }
+    }),
   })
 }
 
-// Both LD kernels share a bind group layout and differ only in source + entry
-// point, so one cache factory serves both. The cache is invalidated on device
+// Both LD kernels differ only in source + entry point, so one cache factory
+// serves both. They also happen to share a binding table — asserted rather than
+// assumed, since each now carries its own. The cache is invalidated on device
 // loss so the next call rebuilds against a freshly acquired device.
-function makePipelineCache(code: string, entryPoint: string) {
+function makePipelineCache(
+  code: string,
+  entryPoint: string,
+  bindings: readonly ShaderBinding[],
+) {
   let state: ComputeState | null = null
   // Serializes concurrent callers during async pipeline creation.
   let statePromise: Promise<ComputeState> | null = null
@@ -58,14 +74,14 @@ function makePipelineCache(code: string, entryPoint: string) {
     }
     statePromise = (async () => {
       const module = device.createShaderModule({ code })
-      const bindGroupLayout = makeBindGroupLayout(device)
+      const bindGroupLayout = makeBindGroupLayout(device, bindings)
       const pipeline = await device.createComputePipelineAsync({
         layout: device.createPipelineLayout({
           bindGroupLayouts: [bindGroupLayout],
         }),
         compute: { module, entryPoint },
       })
-      state = { device, pipeline, bindGroupLayout }
+      state = { device, pipeline, bindGroupLayout, bindings }
       statePromise = null
       return state
     })()
@@ -76,10 +92,12 @@ function makePipelineCache(code: string, entryPoint: string) {
 const ensureUnphasedPipeline = makePipelineCache(
   ldCompute.WGSL_SOURCE,
   ldCompute.COMPUTE_ENTRY_POINT,
+  ldCompute.BINDINGS,
 )
 const ensurePhasedPipeline = makePipelineCache(
   ldPhasedCompute.WGSL_SOURCE,
   ldPhasedCompute.COMPUTE_ENTRY_POINT,
+  ldPhasedCompute.BINDINGS,
 )
 
 interface DispatchPlan {
@@ -117,6 +135,7 @@ async function runGPUCompute({
   device,
   pipeline,
   bindGroupLayout,
+  bindings,
   inputBuffer,
   uniformData,
   numCells,
@@ -125,6 +144,7 @@ async function runGPUCompute({
   device: GPUDevice
   pipeline: GPUComputePipeline
   bindGroupLayout: GPUBindGroupLayout
+  bindings: readonly ShaderBinding[]
   inputBuffer: Uint32Array
   uniformData: ArrayBuffer
   numCells: number
@@ -157,13 +177,21 @@ async function runGPUCompute({
     )
     device.queue.writeBuffer(uniformBuffer, 0, uniformData)
 
+    // Indices come from the same reflected table the layout was built from, so
+    // the group and the layout cannot disagree about them. Matched by ROLE
+    // rather than by name: the two kernels call their input `genotypes` and
+    // `haps`, and a kind is what the buffer usage actually corresponds to.
+    const bufferFor: Record<string, GPUBuffer> = {
+      'read-only-storage': genoBuffer,
+      storage: ldBuffer,
+      uniform: uniformBuffer,
+    }
     const bindGroup = device.createBindGroup({
       layout: bindGroupLayout,
-      entries: [
-        { binding: 0, resource: { buffer: genoBuffer } },
-        { binding: 1, resource: { buffer: ldBuffer } },
-        { binding: 2, resource: { buffer: uniformBuffer } },
-      ],
+      entries: bindings.map(b => ({
+        binding: b.index,
+        resource: { buffer: bufferFor[b.kind]! },
+      })),
     })
 
     // A failed dispatch is not an exception: WebGPU records validation errors
@@ -224,7 +252,8 @@ export async function computeLDMatrixGPU(
     return null
   }
 
-  const { pipeline, bindGroupLayout } = await ensureUnphasedPipeline(device)
+  const { pipeline, bindGroupLayout, bindings } =
+    await ensureUnphasedPipeline(device)
 
   // Pack genotypes: 4 samples per u32, missing (-1) stored as 0xFF.
   // Build each word in a local variable (1 write vs 4 read-modify-writes).
@@ -269,6 +298,7 @@ export async function computeLDMatrixGPU(
     device,
     pipeline,
     bindGroupLayout,
+    bindings,
     inputBuffer: genoPacked,
     uniformData,
     numCells,
@@ -304,7 +334,8 @@ export async function computeLDMatrixGPUPhased(
     return null
   }
 
-  const { pipeline, bindGroupLayout } = await ensurePhasedPipeline(device)
+  const { pipeline, bindGroupLayout, bindings } =
+    await ensurePhasedPipeline(device)
 
   // Layout: for each SNP i, 4 arrays of numWords each:
   // [altH1[0..numWords-1], validH1[0..numWords-1], altH2[0..numWords-1], validH2[0..numWords-1]]
@@ -331,6 +362,7 @@ export async function computeLDMatrixGPUPhased(
     device,
     pipeline,
     bindGroupLayout,
+    bindings,
     inputBuffer: hapsPacked,
     uniformData,
     numCells,
