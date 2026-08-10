@@ -129,6 +129,17 @@ can go quietly wrong.
 - **Integer signedness is tracked and refused-on-doubt.** Don't "simplify" that
   away — the values that need it (packed ABGR colors, flag words) are exactly the
   ones at or above 2³¹ where JS's signed coercion silently changes the answer.
+- **`//! export-consts` obeys the declared Slang type, and that is recent.** The
+  type used to be dropped in a non-capturing group, so every constant was
+  evaluated as a float64: `static const uint FLAG = 1u << 31` exported
+  `-2147483648`, `~0u` exported `-1`, and `(1u<<30)|(1u<<31)` exported
+  `-1073741824` — the exact bitmask spelling the evaluator's own comment
+  anticipates. `narrow()` now applies the type at every substitution (a `uint`
+  referenced from a `float` expression arrives unsigned), and integer **division**
+  is refused outright rather than guessed at: a negative intermediate that has
+  been divided can't be reinterpreted back. Same call `wgslToJs.ts` makes, for
+  the same reason — these are two evaluators over the same constants and they now
+  agree about integers.
 - **Factoring a decision into its own scalar function is free on the GPU and
   ~0.5 ns/item on the CPU.** Slang keeps the function in the emitted WGSL (that
   is exactly what makes the lift possible) and every downstream compiler inlines

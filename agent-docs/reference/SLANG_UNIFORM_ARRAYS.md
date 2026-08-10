@@ -64,6 +64,17 @@ uniform array it buys nothing.
   turns a signal-11 death into a sentence.
 - `instanceAttrs` refuses an array in an *instance* struct, which has no
   `@location` form and no answer for element padding.
+- `assertModeledFieldType` (reflection.ts) refuses **any** field shape outside
+  scalars / vectors / uniform arrays of either, in a uniform block or an instance
+  struct. slangc's JSON is an open world and `reflection.ts`'s types are a closed
+  one, so before this gate an unmodeled shape didn't hit a `default:` anywhere —
+  it fell through to whichever branch tested last. A `float4x4` uniform (no
+  `elementCount`) reached the vector branch and emitted `xform: []`, a
+  `writeUniforms` that never wrote it, and one word offset standing for sixteen;
+  a nested struct threw a bare TypeError from `viewOf`; a `bool` scalar (slangc
+  really emits `scalarType: "bool"`) was absorbed as f32. Extend the model rather
+  than the gate — `sizeOf`'s 4-bytes-per-scalar and `viewOf`'s three views are
+  the two places that assume the closed world hardest.
 - `colorPack.slang` carries the short version at `unpackRGBA`, where you would be
   standing when you wrote the bad thing.
 

@@ -124,6 +124,97 @@ export interface Reflection {
 
 const isStruct = (t: { kind?: string }): t is StructType => t.kind === 'struct'
 
+/**
+ * Refuse a field whose type is outside the model above.
+ *
+ * The types in this file are a CLOSED world — three scalar types, three field
+ * kinds — and slangc's JSON is an open one. TS believes every `switch` over
+ * `t.kind` downstream is exhaustive, so an unmodeled shape doesn't land on a
+ * `default:` anywhere; it falls through to whichever branch tested last, and
+ * each one fails differently:
+ *
+ * - `matrix` has no `elementCount`, so it reaches the vector branch and
+ *   `Array.from({ length: undefined })` makes it an EMPTY tuple. A `float4x4`
+ *   uniform therefore emits `xform: []`, a `writeUniforms` that never writes it,
+ *   and a single `UNIFORM_OFFSET_F32` word for a 16-word field — all of which
+ *   type-check at every call site, and naga has no objection because the shader
+ *   itself is valid. Silent, and it was.
+ * - A nested `struct` field reaches `viewOf`, which reads `.elementType
+ *   .scalarType` off it and throws a bare TypeError naming neither the field nor
+ *   the shader.
+ * - A scalar type that isn't one of the three (slangc really does emit
+ *   `"bool"`) is absorbed by `viewOf`'s final `else` as `f32`, so an integer
+ *   field gets a float view and a float write.
+ *
+ * One gate, one sentence. Extend the model rather than the gate when a shader
+ * genuinely needs one of these — `sizeOf` (4 bytes/scalar) and `viewOf` are the
+ * two places that assume the closed world hardest.
+ */
+const MODELED_SCALARS = new Set(['float32', 'uint32', 'int32'])
+
+function describeType(t: { kind?: string; scalarType?: string }) {
+  return t.kind === 'scalar' ? `scalar '${t.scalarType}'` : `'${t.kind}'`
+}
+
+export function assertModeledFieldType(
+  where: string,
+  fieldName: string,
+  type: unknown,
+  insideArray = false,
+): void {
+  const t = type as {
+    kind?: string
+    scalarType?: string
+    elementCount?: number
+    elementType?: unknown
+    uniformStride?: number
+  }
+  const bad = (why: string): never => {
+    throw new Error(
+      `${where}: field '${fieldName}' is ${describeType(t)}, which the shader ` +
+        `codegen does not model (${why}). It models scalars ` +
+        `(${[...MODELED_SCALARS].join(', ')}), vectors of those, and — in a ` +
+        `uniform block — fixed-size arrays of either. Reshape the field, or ` +
+        `teach reflection.ts, codegen.ts's sizeOf/viewOf and the packers about ` +
+        `the new shape together; they all assume 4-byte scalars in three views.`,
+    )
+  }
+  if (t.kind === 'scalar') {
+    if (!MODELED_SCALARS.has(t.scalarType ?? '')) {
+      bad('no typed-array view corresponds to it')
+    }
+    return
+  }
+  if (t.kind === 'vector') {
+    if (typeof t.elementCount !== 'number') {
+      bad('it reports no elementCount')
+    }
+    assertModeledFieldType(where, fieldName, t.elementType, insideArray)
+    return
+  }
+  if (t.kind === 'array') {
+    if (insideArray) {
+      bad('nested arrays have no offset model')
+    }
+    if (
+      typeof t.elementCount !== 'number' ||
+      typeof t.uniformStride !== 'number'
+    ) {
+      bad('it reports no elementCount/uniformStride')
+    }
+    assertModeledFieldType(where, fieldName, t.elementType, true)
+    return
+  }
+  bad('the emitted layout and packers have no case for it')
+}
+
+/** Gate every field of a struct whose bytes the TS side has to lay out. */
+export function assertModeledStruct(where: string, struct: StructType) {
+  for (const f of struct.fields) {
+    assertModeledFieldType(`${where} '${struct.name}'`, f.name, f.type)
+  }
+}
+
 export function findEntryPoint(
   reflection: Reflection,
   stage: EntryPoint['stage'],

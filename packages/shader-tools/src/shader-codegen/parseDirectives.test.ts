@@ -84,13 +84,19 @@ describe('parseVertsPerInstance', () => {
     expect(() => parseVertsPerInstance(src)).toThrow(/circular/)
   })
 
-  test('rejects a non-positive or fractional count', () => {
+  test('rejects a non-positive count', () => {
     expect(() =>
       parseVertsPerInstance('static const uint VERTS_PER_INSTANCE = 6 - 6;'),
     ).toThrow(/positive integer/)
+  })
+
+  // A fractional count is caught one step earlier now, by the integer-division
+  // refusal — the count is `uint`, so `7 / 2` never gets as far as being a
+  // non-integer. Still a build failure, with the more specific message.
+  test('rejects a divided count as an integer division', () => {
     expect(() =>
       parseVertsPerInstance('static const uint VERTS_PER_INSTANCE = 7 / 2;'),
-    ).toThrow(/positive integer/)
+    ).toThrow(/truncates an integer quotient/)
   })
 })
 
@@ -116,6 +122,65 @@ describe('parseExportedConsts', () => {
     expect(
       parseExportedConsts('static const float CHEVRON_PX = 8.0;'),
     ).toBeUndefined()
+  })
+
+  // The declared type used to be dropped in a non-capturing group, so every
+  // constant was evaluated and emitted as a float64. JS's bitwise operators are
+  // signed int32, so a `uint` whose value reaches bit 31 came out NEGATIVE —
+  // silently, in exactly the flag/mask/sentinel constants that reach it. The
+  // shader-side spelling `(1 << CS_A) | (1 << CS_B)` is the one the file's own
+  // comment anticipates.
+  describe('applies the declared Slang type', () => {
+    const evalConst = (decl: string) =>
+      parseExportedConsts(`//! export-consts: X\n${decl}`)!.X
+
+    test('a uint reaching bit 31 stays unsigned', () => {
+      expect(evalConst('static const uint X = 1u << 31;')).toBe(2147483648)
+      expect(evalConst('static const uint X = ~0u;')).toBe(4294967295)
+      expect(
+        evalConst(
+          'static const uint A = 30u;\n' +
+            'static const uint B = 31u;\n' +
+            'static const uint X = (1u << A) | (1u << B);',
+        ),
+      ).toBe(3221225472)
+    })
+
+    test('uint arithmetic wraps the way Slang wraps', () => {
+      expect(evalConst('static const uint X = 0u - 1u;')).toBe(4294967295)
+      expect(evalConst('static const uint X = 65536u * 65536u;')).toBe(0)
+    })
+
+    test('an int stays signed', () => {
+      expect(evalConst('static const int X = 0 - 1;')).toBe(-1)
+    })
+
+    test('a float is left alone', () => {
+      expect(evalConst('static const float X = 1.0 - 3.0;')).toBe(-2)
+    })
+
+    // A negative intermediate that has been divided cannot be reinterpreted
+    // back, so this is refused rather than narrowed after the fact.
+    test('refuses integer division instead of doing float division', () => {
+      expect(() => evalConst('static const uint X = 7u / 2u;')).toThrow(
+        /truncates an integer quotient/,
+      )
+      expect(() => evalConst('static const int X = -7 % 2;')).toThrow(
+        /truncates an integer quotient/,
+      )
+    })
+
+    // A `uint` referenced from a `float` expression is narrowed at the point of
+    // substitution, not at the end — otherwise the reference would arrive
+    // signed and poison an expression whose own type can't fix it.
+    test('narrows a referenced const to its own declared type', () => {
+      expect(
+        evalConst(
+          'static const uint MASK = ~0u;\n' +
+            'static const float X = MASK + 0.0;',
+        ),
+      ).toBe(4294967295)
+    })
   })
 
   // Regression: these used to run through parseFloat, so a computed const

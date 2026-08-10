@@ -43,8 +43,14 @@ export function stripComments(source: string) {
   )
 }
 
+/** A module-scope `static const`, with the declared type kept — see `narrow`. */
+interface ConstDecl {
+  type: 'float' | 'int' | 'uint'
+  expr: string
+}
+
 // Every module-scope `(public)? static const <type> NAME = <expr>;`, keyed by
-// name with the raw right-hand side as the value.
+// name.
 //
 // `imported` holds the sources of the modules the shader `import`s, resolved by
 // the driver. Slang sees those constants, so this has to as well — otherwise a
@@ -53,26 +59,72 @@ export function stripComments(source: string) {
 // remove. The local source wins on a name collision, matching Slang's shadowing.
 function parseConstDecls(source: string, imported: readonly string[] = []) {
   const constRe =
-    /^\s*(?:public\s+)?static\s+const\s+(?:float|int|uint)\s+(\w+)\s*=\s*([^;]+);/gm
-  const decls = new Map<string, string>()
+    /^\s*(?:public\s+)?static\s+const\s+(float|int|uint)\s+(\w+)\s*=\s*([^;]+);/gm
+  const decls = new Map<string, ConstDecl>()
   for (const raw of [source, ...imported]) {
     const src = stripComments(raw)
     constRe.lastIndex = 0
     for (let m = constRe.exec(src); m; m = constRe.exec(src)) {
-      if (!decls.has(m[1]!)) {
-        decls.set(m[1]!, m[2]!.trim())
+      if (!decls.has(m[2]!)) {
+        decls.set(m[2]!, {
+          type: m[1]! as ConstDecl['type'],
+          expr: m[3]!.trim(),
+        })
       }
     }
   }
   return decls
 }
 
+/**
+ * Apply the constant's DECLARED Slang type to the value JS arithmetic produced.
+ *
+ * The declared type used to be discarded — matched by the regex above and
+ * dropped in a non-capturing group — so every constant was evaluated as a
+ * float64 and emitted as one. That is wrong for the two things Slang's integer
+ * types do that JS's numbers don't, and it is wrong SILENTLY, in the same
+ * shader constants `wgslToJs.ts` refuses-on-doubt about one file over:
+ *
+ *   static const uint FLAG   = 1u << 31;   // 2147483648  emitted -2147483648
+ *   static const uint MASK   = ~0u;        // 4294967295  emitted          -1
+ *   static const uint SCHEME = (1u<<30)|(1u<<31);        emitted -1073741824
+ *
+ * JS's bitwise operators are exactly int32 two's complement, so a chain of them
+ * is bit-correct and only the interpretation is off — one `>>> 0` at the end
+ * recovers Slang's value. `+ - *` agree with Slang below 2^32 and wrap the same
+ * way through the same coercion, up to the safe-integer check below.
+ *
+ * Division is the case that cannot be repaired after the fact: Slang truncates
+ * an integer quotient and JS does not, and once a negative intermediate has been
+ * divided the sign has contaminated the magnitude (`(1u<<31)/2u` is 1073741824
+ * in Slang and -1073741824 in JS, which no final reinterpretation fixes). So it
+ * is refused for an integer-typed constant rather than guessed at, which is the
+ * same call `wgslToJs.ts` makes for the same reason.
+ */
+function narrow(value: number, type: ConstDecl['type'], what: string) {
+  if (type === 'float') {
+    return value
+  }
+  if (!Number.isSafeInteger(value)) {
+    throw new Error(
+      `${what}: '${type}' constant did not evaluate to an exact integer (got ` +
+        `${value}). Slang would have computed this in 32-bit integer ` +
+        `arithmetic; the evaluator works in float64 and will not guess where ` +
+        `the two differ.`,
+    )
+  }
+  return type === 'uint' ? value >>> 0 : value | 0
+}
+
 // Evaluate a Slang constant expression to a number, resolving references to
 // other `static const`s in the same file the way the shader itself sees them
-// (`16u * 6`, `(ARC_CURVE_SEGMENTS + 1u) * 2u`).
+// (`16u * 6`, `(ARC_CURVE_SEGMENTS + 1u) * 2u`). Each referenced constant is
+// narrowed to ITS OWN declared type at the point of substitution, so a `uint`
+// referenced from a `float` expression still arrives unsigned.
 function evalConstExpr(
   raw: string,
-  decls: Map<string, string>,
+  type: ConstDecl['type'],
+  decls: Map<string, ConstDecl>,
   what: string,
   evaluating = new Set<string>(),
 ): number {
@@ -106,7 +158,11 @@ function evalConstExpr(
       throw new Error(`${what}: references unknown identifier ${name}`)
     }
     evaluating.add(name)
-    const value = evalConstExpr(ref, decls, what, evaluating)
+    const value = narrow(
+      evalConstExpr(ref.expr, ref.type, decls, what, evaluating),
+      ref.type,
+      `${what} -> ${name}`,
+    )
     evaluating.delete(name)
     return `(${value})`
   })
@@ -118,6 +174,16 @@ function evalConstExpr(
     throw new Error(
       `${what} must be a numeric arithmetic expression; got: ${raw} ` +
         `(post-substitution: ${cleaned})`,
+    )
+  }
+  // See `narrow`: an integer quotient is the one divergence a later coercion
+  // cannot undo, so it is refused where it appears rather than at the result.
+  if (type !== 'float' && /[/%]/.test(cleaned)) {
+    throw new Error(
+      `${what}: '${type}' constant divides (${raw}). Slang truncates an ` +
+        `integer quotient and JS does not, and the evaluator will not guess ` +
+        `which one you meant. Spell the result, or declare the constant ` +
+        `'float' if the division really is a float one.`,
     )
   }
   // eslint-disable-next-line @typescript-eslint/no-implied-eval
@@ -135,11 +201,16 @@ export function parseVertsPerInstance(
   imported: readonly string[] = [],
 ) {
   const decls = parseConstDecls(source, imported)
-  const expr = decls.get('VERTS_PER_INSTANCE')
-  if (expr === undefined) {
+  const decl = decls.get('VERTS_PER_INSTANCE')
+  if (decl === undefined) {
     return undefined
   }
-  const n = evalConstExpr(expr, decls, 'static const VERTS_PER_INSTANCE')
+  const what = 'static const VERTS_PER_INSTANCE'
+  const n = narrow(
+    evalConstExpr(decl.expr, decl.type, decls, what),
+    decl.type,
+    what,
+  )
   if (!Number.isInteger(n) || n <= 0) {
     throw new Error(
       `static const VERTS_PER_INSTANCE must be a positive integer; got ${n}`,
@@ -174,10 +245,18 @@ export function parseExportedConsts(
     )
   }
   return Object.fromEntries(
-    names.map(n => [
-      n,
-      evalConstExpr(decls.get(n)!, decls, `export-const ${n}`),
-    ]),
+    names.map(n => {
+      const decl = decls.get(n)!
+      const what = `export-const ${n}`
+      return [
+        n,
+        narrow(
+          evalConstExpr(decl.expr, decl.type, decls, what),
+          decl.type,
+          what,
+        ),
+      ]
+    }),
   )
 }
 

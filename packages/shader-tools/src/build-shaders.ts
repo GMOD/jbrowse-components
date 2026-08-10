@@ -241,7 +241,7 @@ async function runOrThrow(bin: string, args: string[]) {
   }
 }
 
-function walk(dir: string, out: string[] = []) {
+function walk(dir: string, suffix: string, out: string[] = []) {
   for (const entry of readdirSync(dir)) {
     if (
       entry === 'node_modules' ||
@@ -262,8 +262,8 @@ function walk(dir: string, out: string[] = []) {
       continue
     }
     if (stat.isDirectory()) {
-      walk(fullPath, out)
-    } else if (entry.endsWith('.slang')) {
+      walk(fullPath, suffix, out)
+    } else if (entry.endsWith(suffix)) {
       out.push(fullPath)
     }
   }
@@ -275,12 +275,27 @@ function walk(dir: string, out: string[] = []) {
 // else is in flight.
 type Log = (line: string) => void
 
+// Every artifact this run produced, absolute. `assertNoOrphans` reads it: an
+// artifact nobody wrote is one whose `.slang` was deleted or renamed, or whose
+// `//! *-out` directive was dropped — and it stays committed, frozen at its last
+// value, with its importers none the wiser. CI's staleness gate cannot see that
+// case by construction (there's no diff and the file is tracked), so the driver
+// has to be the one to say it.
+const WRITTEN = new Set<string>()
+
+// Write a generated artifact and record it. All artifact writes go through here
+// or through `writeOut`; a `writeFileSync` that doesn't will read as an orphan.
+function emit(log: Log, absPath: string, contents: string) {
+  writeFileSync(absPath, contents)
+  WRITTEN.add(absPath)
+  log(`  ok: ${absPath.replace(`${PROJECT_ROOT}/`, '')}`)
+}
+
 // Write a `//! layout-out` / `//! consts-out` artifact at a repo-relative path.
 // Both exist so a package that can't import the owning plugin still gets its
 // numbers from the shader rather than a hand-kept SYNC copy.
 function writeOut(log: Log, relPath: string, contents: string) {
-  writeFileSync(path.join(PROJECT_ROOT, relPath), contents)
-  log(`  ok: ${relPath}`)
+  emit(log, path.join(PROJECT_ROOT, relPath), contents)
 }
 
 function writeConstsOut(
@@ -424,12 +439,11 @@ async function writeJsExports(
     writeOut(log, out, contents)
     return
   }
-  const generatedPath = path.join(
-    path.dirname(slangPath),
-    `${base}.js.generated.ts`,
+  emit(
+    log,
+    path.join(path.dirname(slangPath), `${base}.js.generated.ts`),
+    contents,
   )
-  writeFileSync(generatedPath, contents)
-  log(`  ok: ${generatedPath.replace(`${PROJECT_ROOT}/`, '')}`)
 }
 
 // A module declares `module <name>;` and has no entry points — it is compiled
@@ -623,12 +637,16 @@ async function compileOne(log: Log, slangPath: string, source: string) {
       vertsPerInstance: parseVertsPerInstance(source, imported),
       exportedConsts: parseExportedConsts(source, imported),
     }
-    const generatedPath = path.join(dir, `${base}.generated.ts`)
-    writeFileSync(generatedPath, emitShaderStrings(codegenInputs))
-    const ifacePath = path.join(dir, `${base}.iface.generated.ts`)
-    writeFileSync(ifacePath, emitInterface(codegenInputs))
-    log(`  ok: ${generatedPath.replace(`${PROJECT_ROOT}/`, '')}`)
-    log(`  ok: ${ifacePath.replace(`${PROJECT_ROOT}/`, '')}`)
+    // The interface is emitted FIRST, because it is the one that refuses an
+    // unmodeled uniform/instance field or a second sampler. Writing the strings
+    // module before that check leaves a half-updated pair on disk when it fires.
+    const iface = emitInterface(codegenInputs)
+    emit(
+      log,
+      path.join(dir, `${base}.generated.ts`),
+      emitShaderStrings(codegenInputs),
+    )
+    emit(log, path.join(dir, `${base}.iface.generated.ts`), iface)
 
     const layoutOut = parseLayoutOut(source)
     if (layoutOut) {
@@ -654,20 +672,39 @@ async function emitModuleArtifacts(
     readImportedSources(slangPath, source),
   )
   if (exportedConsts) {
-    const generatedPath = path.join(
-      path.dirname(slangPath),
-      `${base}.generated.ts`,
+    emit(
+      log,
+      path.join(path.dirname(slangPath), `${base}.generated.ts`),
+      emitConsts(base, exportedConsts),
     )
-    writeFileSync(generatedPath, emitConsts(base, exportedConsts))
-    log(`  ok: ${generatedPath.replace(`${PROJECT_ROOT}/`, '')}`)
   }
   writeConstsOut(log, source, base, exportedConsts)
   await writeJsExports(log, slangPath, source, base)
 }
 
+// Committed artifacts that carry our banner but that this run did not write.
+// Only meaningful after a FULL build — given an explicit path list, every other
+// shader's artifacts are "not written" for the ordinary reason.
+function assertNoOrphans() {
+  const banner = header('x')[0]!.split(' from ')[0]!
+  const orphans = walk(PROJECT_ROOT, '.generated.ts')
+    .filter(p => !WRITTEN.has(p))
+    .filter(p => readFileSync(p, 'utf8').startsWith(banner))
+  if (orphans.length > 0) {
+    throw new Error(
+      `${orphans.length} generated file(s) that no .slang produces:\n` +
+        orphans.map(p => `  ${p.replace(`${PROJECT_ROOT}/`, '')}`).join('\n') +
+        `\nA renamed or deleted shader, or a dropped //! layout-out / ` +
+        `consts-out / js-export-out. The file is still committed and still ` +
+        `imported, and it will never be regenerated again — delete it, or ` +
+        `restore the directive that owned it.`,
+    )
+  }
+}
+
 async function main() {
   const argPaths = process.argv.slice(2).filter(a => !a.startsWith('--'))
-  const paths = argPaths.length > 0 ? argPaths : walk(PROJECT_ROOT)
+  const paths = argPaths.length > 0 ? argPaths : walk(PROJECT_ROOT, '.slang')
   const files = paths.map(p => ({ path: p, source: readFileSync(p, 'utf8') }))
   assertOutPathsUnique(files)
   // Leave a couple of cores for everything else on the machine (and for this
@@ -699,6 +736,9 @@ async function main() {
     throw new Error(
       `${failures.length} of ${files.length} .slang file(s) failed`,
     )
+  }
+  if (argPaths.length === 0) {
+    assertNoOrphans()
   }
 }
 

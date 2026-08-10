@@ -5,35 +5,52 @@
 // the same field offsets, so a single pack fn serves both. Multi-synteny has
 // its own packers (different layouts — min/max band bars vs single-depth bars).
 //
+// Offsets come in through `INSTANCE_OFFSET_U32` / `_F32` — one map per
+// typed-array view, holding only the fields whose Slang type takes that view —
+// so `SNP_F32.position` on a `uint position` doesn't compile, and the view a
+// field wants is legible at the call site instead of being this file's guess.
+// (A deliberate `f32[o + SNP_U32.position]` still type-checks; the split ends
+// the drift, it doesn't prove the pairing.)
+//
+// Every packer here used to head a prose restatement of the struct
+// ("[position(u32), yOffset(f32), …] = 20 bytes"). That is the hand-kept
+// parallel declaration the codegen exists to delete — nothing checked it, and
+// this package deliberately can't import the plugin that owns the .slang, so
+// nothing here could have.
+//
 // Pack fns return ArrayBuffer directly; callers already know the record count
 // from the input, so echoing it back as a wrapper struct adds nothing.
 
 import {
-  FIELD_OFFSET_F32 as COVERAGE_FIELD,
+  INSTANCE_OFFSET_F32 as COVERAGE_F32,
+  INSTANCE_OFFSET_U32 as COVERAGE_U32,
   INSTANCE_STRIDE_F32 as COVERAGE_STRIDE,
 } from './coverageLayout.generated.ts'
 import {
-  FIELD_OFFSET_F32 as INDICATOR_FIELD,
+  INSTANCE_OFFSET_F32 as INDICATOR_F32,
+  INSTANCE_OFFSET_U32 as INDICATOR_U32,
   INSTANCE_STRIDE_F32 as INDICATOR_STRIDE,
 } from './indicatorLayout.generated.ts'
 import {
-  FIELD_OFFSET_F32 as INTERBASE_FIELD,
+  INSTANCE_OFFSET_F32 as INTERBASE_F32,
+  INSTANCE_OFFSET_U32 as INTERBASE_U32,
   INSTANCE_STRIDE_F32 as INTERBASE_STRIDE,
 } from './interbaseHistogramLayout.generated.ts'
 import {
-  FIELD_OFFSET_F32 as MOD_COV_FIELD,
+  INSTANCE_OFFSET_F32 as MOD_COV_F32,
+  INSTANCE_OFFSET_U32 as MOD_COV_U32,
   INSTANCE_STRIDE_F32 as MOD_COV_STRIDE,
 } from './modCoverageLayout.generated.ts'
 import {
-  FIELD_OFFSET_F32 as SNP_FIELD,
+  INSTANCE_OFFSET_F32 as SNP_F32,
+  INSTANCE_OFFSET_U32 as SNP_U32,
   INSTANCE_STRIDE_F32 as SNP_STRIDE,
 } from './snpCoverageLayout.generated.ts'
 
 import type { SNPCoverageResult } from './coverageDownsampling.ts'
 import type { computeInterbaseCoverage } from './interbaseCoverage.ts'
 
-// Layout per bin: [position(u32), normalizedDepth(f32)] = 8 bytes.
-// Matches alignments plugin coverage.slang Instance. Position is absolute
+// Position is absolute
 // genomic uint32 (exact up to 4 Gbp); shader uses hp-math for clip-space
 // conversion. `binSize` is the bin width in bp: bin i spans
 // [startOffset + i*binSize, startOffset + (i+1)*binSize) and the shader draws
@@ -56,14 +73,12 @@ export function packCoverageBinsForGpu(
   const u32 = new Uint32Array(buffer)
   for (let i = 0; i < binCount; i++) {
     const o = i * COVERAGE_STRIDE
-    u32[o + COVERAGE_FIELD.position] = startOffset + i * binSize
-    f32[o + COVERAGE_FIELD.depth] = (depths[i] ?? 0) / maxDepth
+    u32[o + COVERAGE_U32.position] = startOffset + i * binSize
+    f32[o + COVERAGE_F32.depth] = (depths[i] ?? 0) / maxDepth
   }
   return buffer
 }
 
-// Layout per segment: [position(u32), yOffset(f32), height(f32), colorType(f32),
-// relDepth(f32)] = 20 bytes. Matches alignments plugin snpCoverage.slang.
 // relDepth = totalDepthAtPos / regionMaxDepth lets the shader draw segments as
 // a linear fraction of a possibly-log-scaled coverage bar at this position.
 export function packSnpSegmentsForGpu(
@@ -79,17 +94,16 @@ export function packSnpSegmentsForGpu(
   const u32 = new Uint32Array(buffer)
   for (let i = 0; i < count; i++) {
     const o = i * SNP_STRIDE
-    u32[o + SNP_FIELD.position] = positions[i]!
-    f32[o + SNP_FIELD.yOffset] = yOffsets[i]!
-    f32[o + SNP_FIELD.segHeight] = heights[i]!
-    f32[o + SNP_FIELD.colorType] = colorTypes[i]!
-    f32[o + SNP_FIELD.relDepth] = relDepths[i] ?? 1
+    u32[o + SNP_U32.position] = positions[i]!
+    f32[o + SNP_F32.yOffset] = yOffsets[i]!
+    f32[o + SNP_F32.segHeight] = heights[i]!
+    f32[o + SNP_F32.colorType] = colorTypes[i]!
+    f32[o + SNP_F32.relDepth] = relDepths[i] ?? 1
   }
   return buffer
 }
 
-// Layout per indicator: [position(u32), colorType(f32)] = 8 bytes.
-// Matches alignments plugin indicator.slang. Position is absolute uint32.
+// Position is absolute uint32.
 export function packIndicatorsForGpu(
   positions: Uint32Array,
   colorTypes: Uint8Array | undefined,
@@ -100,14 +114,12 @@ export function packIndicatorsForGpu(
   const u32 = new Uint32Array(buffer)
   for (let i = 0; i < count; i++) {
     const o = i * INDICATOR_STRIDE
-    u32[o + INDICATOR_FIELD.position] = positions[i]!
-    f32[o + INDICATOR_FIELD.colorType] = colorTypes ? colorTypes[i]! : 1
+    u32[o + INDICATOR_U32.position] = positions[i]!
+    f32[o + INDICATOR_F32.colorType] = colorTypes ? colorTypes[i]! : 1
   }
   return buffer
 }
 
-// Layout per segment: [position(u32), yOffset(f32), height(f32), rgbaColor(u32),
-// relDepth(f32)] = 20 bytes. Matches alignments plugin modCoverage.slang.
 // Position is absolute uint32; `colors` is pre-packed ABGR u32. relDepth =
 // totalDepthAtPos / regionMaxDepth (see snpCoverage.slang for details).
 export function packModCovSegmentsForGpu(
@@ -123,18 +135,16 @@ export function packModCovSegmentsForGpu(
   const u32 = new Uint32Array(buffer)
   for (let i = 0; i < count; i++) {
     const o = i * MOD_COV_STRIDE
-    u32[o + MOD_COV_FIELD.position] = positions[i]!
-    f32[o + MOD_COV_FIELD.yOffset] = yOffsets[i]!
-    f32[o + MOD_COV_FIELD.segHeight] = heights[i]!
-    u32[o + MOD_COV_FIELD.packedColor] = colors[i]!
-    f32[o + MOD_COV_FIELD.relDepth] = relDepths[i] ?? 1
+    u32[o + MOD_COV_U32.position] = positions[i]!
+    f32[o + MOD_COV_F32.yOffset] = yOffsets[i]!
+    f32[o + MOD_COV_F32.segHeight] = heights[i]!
+    u32[o + MOD_COV_U32.packedColor] = colors[i]!
+    f32[o + MOD_COV_F32.relDepth] = relDepths[i] ?? 1
   }
   return buffer
 }
 
-// Layout per segment: [position(u32), yOffset(f32), height(f32), colorType(f32)]
-// = 16 bytes. Matches alignments plugin interbaseHistogram.slang. Position is
-// absolute uint32.
+// Position is absolute uint32.
 export function packInterbaseSegmentsForGpu(
   positions: Uint32Array,
   yOffsets: Float32Array,
@@ -147,10 +157,10 @@ export function packInterbaseSegmentsForGpu(
   const u32 = new Uint32Array(buffer)
   for (let i = 0; i < count; i++) {
     const o = i * INTERBASE_STRIDE
-    u32[o + INTERBASE_FIELD.position] = positions[i]!
-    f32[o + INTERBASE_FIELD.yOffset] = yOffsets[i]!
-    f32[o + INTERBASE_FIELD.segHeight] = heights[i]!
-    f32[o + INTERBASE_FIELD.colorType] = colorTypes[i]!
+    u32[o + INTERBASE_U32.position] = positions[i]!
+    f32[o + INTERBASE_F32.yOffset] = yOffsets[i]!
+    f32[o + INTERBASE_F32.segHeight] = heights[i]!
+    f32[o + INTERBASE_F32.colorType] = colorTypes[i]!
   }
   return buffer
 }

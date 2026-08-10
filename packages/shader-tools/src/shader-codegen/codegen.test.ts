@@ -194,6 +194,36 @@ describe('emitInterface instances', () => {
     expect(out).toContain('u32[o + 2] = id[i]!')
     expect(out).toContain('i32[o + 3] = kind[i]!')
   })
+
+  // The uniform side has had per-view maps since the offsets were split; the
+  // instance side kept one flat map, so a hand-written packer (the ~190 sites
+  // that can't use packInstances — they index a second array, or scale on the
+  // way in) chose the destination view itself and could drift from the shader.
+  // Each map holds only its own fields, so naming a `uint` through the f32 map
+  // doesn't compile.
+  test('splits instance offsets into per-view maps', () => {
+    expect(out).toContain(
+      ['export const INSTANCE_OFFSET_F32 = {', '  pos: 0,', '} as const'].join(
+        '\n',
+      ),
+    )
+    expect(out).toContain(
+      ['export const INSTANCE_OFFSET_U32 = {', '  id: 2,', '} as const'].join(
+        '\n',
+      ),
+    )
+    expect(out).toContain(
+      ['export const INSTANCE_OFFSET_I32 = {', '  kind: 3,', '} as const'].join(
+        '\n',
+      ),
+    )
+  })
+
+  // The flat map is still emitted: too many call sites read it, and a packer
+  // interleaving several sources into one buffer legitimately wants it.
+  test('keeps the flat FIELD_OFFSET_F32 map alongside', () => {
+    expect(out).toContain('export const FIELD_OFFSET_F32 = {')
+  })
 })
 
 // A compute kernel binds StructuredBuffer<uint>, whose resultType reflects as a
@@ -281,6 +311,15 @@ describe('emitLayoutOnly', () => {
     expect(out).toContain('pos: 0,')
   })
 
+  // This artifact exists FOR the package that can't import the owning plugin,
+  // so it is the one place a hand-written packer has nothing to check itself
+  // against. It used to carry no type information at all and its consumers
+  // restated the struct in prose.
+  test('carries the per-view maps too', () => {
+    expect(out).toContain('export const INSTANCE_OFFSET_U32 = {')
+    expect(out).toContain('export const INSTANCE_OFFSET_I32 = {')
+  })
+
   test('omits GL_ATTRIBUTES and packers', () => {
     expect(out).not.toContain('GL_ATTRIBUTES')
     expect(out).not.toContain('packInstances')
@@ -305,26 +344,37 @@ describe('emitShaderStrings', () => {
 })
 
 describe('emitInterface textures', () => {
-  test('emits TEXTURES bindings with sequential GL texture units', () => {
+  test('emits the TEXTURES binding and imports the HAL type', () => {
     const out = emitInterface({
       // A shader sampling a texture also draws geometry, so this reflection
       // carries instance attributes too — the case that imports both HAL types.
       baseName: 'test',
       reflection,
-      textures: [
-        { name: 'colorRamp', textureBinding: 0, samplerBinding: 1 },
-        { name: 'mask', textureBinding: 2, samplerBinding: 3 },
-      ],
+      textures: [{ name: 'colorRamp', textureBinding: 0, samplerBinding: 1 }],
     })
     expect(out).toContain(
       "{ textureBinding: 0, samplerBinding: 1, glTextureUnit: 0, glUniformName: 'u_colorRamp', filter: 'linear' },",
     )
     expect(out).toContain(
-      "{ textureBinding: 2, samplerBinding: 3, glTextureUnit: 1, glUniformName: 'u_mask', filter: 'linear' },",
-    )
-    expect(out).toContain(
       "import type { GlAttributeLayout, TextureBinding } from '@jbrowse/render-core/hal'",
     )
+  })
+
+  // Both HALs bind `textures[0]` and ignore the rest, so a second sampler would
+  // read whatever was last bound to that unit — a wrong picture on both
+  // backends with nothing to attribute it to. The emitter used to number the
+  // whole list `glTextureUnit: 0, 1, …` as though it were wired up.
+  test('refuses a second combined sampler the HALs would not bind', () => {
+    expect(() =>
+      emitInterface({
+        baseName: 'test',
+        reflection,
+        textures: [
+          { name: 'colorRamp', textureBinding: 0, samplerBinding: 1 },
+          { name: 'mask', textureBinding: 2, samplerBinding: 3 },
+        ],
+      }),
+    ).toThrow(/bind only the first/)
   })
 })
 
@@ -435,5 +485,119 @@ describe('storage-buffer instancing', () => {
       ],
     } as Reflection
     expect(emitLayoutOnly({ baseName: 'test', reflection })).toContain('c: 3,')
+  })
+})
+
+// slangc's reflection JSON is an open world and the types in reflection.ts are a
+// closed one — three scalar types, three field kinds. TS therefore believes
+// every `switch` over `t.kind` downstream is exhaustive, so an unmodeled shape
+// doesn't land on a `default:`; it falls through to whichever branch tested
+// last, and each one goes wrong differently and quietly. One gate, one sentence.
+describe('unmodeled reflection shapes', () => {
+  const withUniformField = (name: string, type: unknown) =>
+    ({
+      parameters: [
+        {
+          name: 'u',
+          binding: { kind: 'descriptorTableSlot', index: 0 },
+          type: {
+            kind: 'constantBuffer',
+            elementType: {
+              kind: 'struct',
+              name: 'Uniforms',
+              fields: [{ name, type, binding: uniform(0, 16) }],
+            },
+            elementVarLayout: { binding: uniform(0, 16) },
+          },
+        },
+      ],
+      entryPoints: [],
+    }) as unknown as Reflection
+
+  // The one that was silent. A matrix has no `elementCount`, so it reached the
+  // vector branch and `Array.from({ length: undefined })` typed it as an EMPTY
+  // tuple: `xform: []` type-checked at every call site, `writeUniforms` never
+  // wrote it, and one `UNIFORM_OFFSET_F32` word stood for sixteen. naga had no
+  // objection either, because the shader itself is perfectly valid.
+  test('refuses a matrix uniform instead of emitting an empty tuple', () => {
+    expect(() =>
+      emitInterface({
+        baseName: 'test',
+        reflection: withUniformField('xform', {
+          kind: 'matrix',
+          rowCount: 4,
+          columnCount: 4,
+          elementType: scalar('float32'),
+        }),
+      }),
+    ).toThrow(
+      /field 'xform' is 'matrix', which the shader codegen does not model/,
+    )
+  })
+
+  // This one reached `viewOf`, which read `.elementType.scalarType` off it and
+  // threw a bare TypeError naming neither the field nor the shader.
+  test('refuses a nested struct uniform with a message, not a TypeError', () => {
+    expect(() =>
+      emitInterface({
+        baseName: 'test',
+        reflection: withUniformField('sub', {
+          kind: 'struct',
+          name: 'Sub',
+          fields: [
+            { name: 'a', type: scalar('float32'), binding: uniform(0, 4) },
+          ],
+        }),
+      }),
+    ).toThrow(/field 'sub' is 'struct'/)
+  })
+
+  // slangc really does emit `scalarType: "bool"`. `viewOf`'s final `else`
+  // absorbed it as f32, so an integer field got a float view and a float write.
+  test('refuses a scalar type with no typed-array view', () => {
+    expect(() =>
+      emitInterface({
+        baseName: 'test',
+        reflection: withUniformField('enabled', {
+          kind: 'scalar',
+          scalarType: 'bool',
+        }),
+      }),
+    ).toThrow(/scalar 'bool'.*no typed-array view/s)
+  })
+
+  // Same gate on the other struct whose bytes TS has to lay out. `sizeOf`
+  // hardcodes 4 bytes per scalar, so an f64 attribute silently halves the
+  // stride and every field after it lands at the wrong offset.
+  test('refuses an unmodeled instance field', () => {
+    expect(() =>
+      emitInterface({
+        baseName: 'test',
+        reflection: {
+          parameters: [],
+          entryPoints: [
+            {
+              name: 'vs_main',
+              stage: 'vertex',
+              parameters: [
+                {
+                  name: 'inst',
+                  type: {
+                    kind: 'struct',
+                    name: 'Instance',
+                    fields: [
+                      {
+                        name: 'wide',
+                        type: { kind: 'scalar', scalarType: 'float64' },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          ],
+        } as unknown as Reflection,
+      }),
+    ).toThrow(/instance struct 'Instance': field 'wide' is scalar 'float64'/)
   })
 })

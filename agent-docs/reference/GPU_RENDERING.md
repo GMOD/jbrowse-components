@@ -896,7 +896,22 @@ gen:shaders`. The generated module exports source strings, per-field byte offset
 strides, typed uniform/instance structs, a typed `writeUniforms()` /
 `packInstances()`, and the `GL_ATTRIBUTES` array; TS imports these by name, so
 stride/offset drift between packer and shader is impossible by construction. CI
-runs `pnpm gen:shaders && git diff --exit-code` to catch stale outputs.
+runs `pnpm gen:shaders && git diff --exit-code` to catch stale outputs, and the
+build itself refuses a `.generated.ts` that no `.slang` produces any more — a
+renamed shader or a dropped `//! *-out` leaves a committed file frozen at its
+last value, which is the one staleness a diff cannot see.
+
+**Offsets come in two flavours, and `_F32` means different things in each.**
+`FIELD_OFFSET_F32` / `INSTANCE_STRIDE_F32` are in 4-byte *words* and cover every
+instance field whatever its type; `UNIFORM_OFFSET_F32` and
+`INSTANCE_OFFSET_F32` / `_U32` / `_I32` are per *view*, holding only the fields
+whose Slang type takes that typed array. Reach for the per-view maps in a new
+hand-written packer — the ~190 sites that can't use `packInstances()` because
+they index a second array or scale on the way in — so the destination view is the
+shader's choice rather than the packer's. `packages/alignments-core`'s coverage
+packers are the worked example: they used to head a prose restatement of each
+struct (`[position(u32), yOffset(f32), …] = 20 bytes`) because a `layout-out`
+artifact carried no types at all.
 
 Layout: display-specific shaders in
 `plugins/<plugin>/src/<display>/shaders/<name>.slang`; per-plugin shared in

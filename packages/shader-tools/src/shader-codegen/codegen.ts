@@ -16,7 +16,11 @@
 // callers that pack multiple sources into one buffer (wiggle, synteny) and so
 // can't use the single-array-per-field shape.
 
-import { findConstantBuffer, findInstanceStruct } from './reflection.ts'
+import {
+  assertModeledStruct,
+  findConstantBuffer,
+  findInstanceStruct,
+} from './reflection.ts'
 
 import type {
   ArrayType,
@@ -217,6 +221,7 @@ export function instanceAttrs(
   vs: StructType,
   source: 'attributes' | 'buffer',
 ): InstanceAttr[] {
+  assertModeledStruct('instance struct', vs)
   let cursor = 0
   const attrs = vs.fields.map(f => {
     // A vertex attribute can't be an array — there is no `@location` form for
@@ -261,17 +266,49 @@ export function instanceStride(attrs: InstanceAttr[]) {
 
 // The stride and per-field word offsets, emitted identically by `emitInterface`
 // and by the layout-only module `//! layout-out` writes.
+//
+// Two flavours of offset map, and the difference is which mistakes they let
+// through. `FIELD_OFFSET_F32` holds every field and says nothing about types —
+// `_F32` there is the UNIT (4-byte words), not the view, the same sense it has
+// in `INSTANCE_STRIDE_F32` and the opposite of the one it has in
+// `UNIFORM_OFFSET_F32`. Packing through it means choosing the destination view
+// by hand, so `f32[o + F.position]` on a `uint position` compiles and writes a
+// float bit pattern the shader reads as an enormous integer.
+//
+// `INSTANCE_OFFSET_F32` / `_U32` / `_I32` split the same offsets by the view the
+// field's Slang type demands, exactly as the uniform side already does. Each map
+// holds only its own fields, so `INSTANCE_OFFSET_F32.position` on a `uint
+// position` doesn't compile and the packer stops choosing views by hand. New
+// packers should use these; FIELD_OFFSET_F32 stays because ~190 call sites read
+// it and because a packer interleaving several sources into one buffer
+// legitimately wants the flat map.
 function instanceLayoutLines(attrs: InstanceAttr[]) {
   const stride = instanceStride(attrs)
-  return [
+  const lines = [
     `export const INSTANCE_STRIDE_BYTES = ${stride}`,
     `export const INSTANCE_STRIDE_F32 = ${stride / 4}`,
     '',
+    '// Word offsets of every field, whatever its type. See INSTANCE_OFFSET_*',
+    '// below for the view-checked form.',
     'export const FIELD_OFFSET_F32 = {',
     ...attrs.map(a => `  ${a.name}: ${a.offsetBytes / 4},`),
     '} as const',
     '',
   ]
+  for (const view of VIEWS) {
+    const fields = attrs.filter(a => viewOf(a.type) === view)
+    if (fields.length === 0) {
+      continue
+    }
+    lines.push(
+      `// Word indices into a ${VIEW_ARRAY[view]} view over the instance buffer.`,
+      `export const INSTANCE_OFFSET_${view.toUpperCase()} = {`,
+      ...fields.map(a => `  ${a.name}: ${a.offsetBytes / 4},`),
+      '} as const',
+      '',
+    )
+  }
+  return lines
 }
 
 // Names `packInstances` binds in its own scope, either as a parameter/local or
@@ -375,6 +412,10 @@ export function emitInterface(inputs: CodegenInputs) {
   const cb = findConstantBuffer(reflection)
   if (cb) {
     const u = cb.elementType
+    // Before any offset is read off it: every branch below assumes the closed
+    // three-scalar / three-kind model, and a shape outside it fails silently
+    // rather than loudly. See assertModeledFieldType.
+    assertModeledStruct(`${baseName}.slang uniform block`, u)
     const totalBytes = cb.elementVarLayout.binding.size
     lines.push(`export const UNIFORMS_SIZE_BYTES = ${totalBytes}`, '')
 
@@ -558,6 +599,20 @@ export function emitInterface(inputs: CodegenInputs) {
     lines.push('  }', '  return buf', '}', '')
   }
 
+  if (textures && textures.length > 1) {
+    // Both HALs bind `textures[0]` and ignore the rest (webgl2Hal.ts,
+    // webgpuHal.ts), so emitting the full list would leave the second sampler
+    // reading whatever was last bound to that unit — a wrong picture, on both
+    // backends, with nothing to attribute it to. Refuse here, where the message
+    // can name the samplers, rather than at whatever the shader renders.
+    throw new Error(
+      `${baseName}.slang declares ${textures.length} combined samplers ` +
+        `(${textures.map(t => t.name).join(', ')}), but the HALs bind only the ` +
+        `first — multi-texture passes are not implemented. Combine them into ` +
+        `one texture, or teach both HALs (and PassDescriptor.textures) to bind ` +
+        `the whole list.`,
+    )
+  }
   if (textures && textures.length > 0) {
     lines.push(
       '// Combined `Sampler2D` bindings. Texture unit indices start at 0.',
