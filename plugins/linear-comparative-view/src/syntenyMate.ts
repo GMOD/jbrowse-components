@@ -28,3 +28,18 @@ export type SyntenyMate = {
 export function getMate(feature: Feature) {
   return feature.get('mate') as SyntenyMate | undefined
 }
+
+// The block's CIGAR, when the source carries one. `undefined` is the ordinary
+// case, not an error: a PAF from minimap2 without `-c` has no `cg` tag, and
+// neither do MashMap, MCScan or a PIF's coarse tier — the launch interpolates
+// across such a block instead of walking it.
+//
+// Narrowed rather than cast, and here rather than in each of the three places
+// that read it (the spec builder's walk, the launch dialog's "is there a CIGAR"
+// wording, the mate-discovery worker's serialization): `Feature.get` types a
+// non-standard key as `unknown`, so each copy was its own three-line
+// `typeof val === 'string'` helper, and one of them read it untyped.
+export function getCigar(feature: Feature) {
+  const cigar = feature.get('CIGAR')
+  return typeof cigar === 'string' ? cigar : undefined
+}

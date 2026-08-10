@@ -1,6 +1,6 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 
-import { getMate } from '../syntenyMate.ts'
+import { getCigar, getMate } from '../syntenyMate.ts'
 import { pickMatesForRegion } from './pickMatesForRegion.ts'
 
 import type { SyntenyMate } from '../syntenyMate.ts'
@@ -9,12 +9,6 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
-
-// `Feature.get` types non-standard keys as `unknown`.
-function stringField(feature: Feature, key: string) {
-  const val = feature.get(key)
-  return typeof val === 'string' ? val : undefined
-}
 
 // Only the fields the launch reads back out — see resolveSpans and
 // buildSyntenyViewSpec, which want the block's span on both axes, its strand and
@@ -35,7 +29,7 @@ function launchFields(
     start: feature.get('start'),
     end: feature.get('end'),
     strand: feature.get('strand'),
-    CIGAR: stringField(feature, 'CIGAR'),
+    CIGAR: getCigar(feature),
     mate,
   }
 }

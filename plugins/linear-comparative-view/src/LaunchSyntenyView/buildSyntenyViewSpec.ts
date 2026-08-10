@@ -2,7 +2,7 @@ import { parseCigar2 } from '@jbrowse/cigar-utils'
 import { assembleLocString } from '@jbrowse/core/util'
 import { launchSyntenyView } from '@jbrowse/synteny-core'
 
-import { getMate } from '../syntenyMate.ts'
+import { getCigar, getMate } from '../syntenyMate.ts'
 import { findPosInCigar } from './findPosInCigar.ts'
 
 import type { LinearSyntenyViewInit } from '../LinearSyntenyView/types.ts'
@@ -20,12 +20,6 @@ import type { TrackInit } from '@jbrowse/plugin-linear-genome-view'
 export interface RegionOfInterest {
   start: number
   end: number
-}
-
-// Feature.get types the non-standard keys as `unknown`; narrow rather than cast.
-function stringField(feature: Feature, key: string) {
-  const val = feature.get(key)
-  return typeof val === 'string' ? val : undefined
 }
 
 // Given a CIGAR-walked offset `mateX` along the mate axis, place it back on
@@ -71,7 +65,7 @@ function resolveSpans({
   mate: SyntenyMate
   region: RegionOfInterest | undefined
 }) {
-  const cigar = stringField(feature, 'CIGAR')
+  const cigar = getCigar(feature)
   const strand = feature.get('strand')
   const featStart = feature.get('start')
   const featEnd = feature.get('end')
