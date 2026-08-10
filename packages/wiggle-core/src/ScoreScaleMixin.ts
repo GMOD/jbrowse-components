@@ -73,11 +73,34 @@ export function ScoreScaleMixin() {
       },
       /**
        * #getter
+       * Overridable hook: what each end of the domain falls back to where the
+       * config leaves its bound unset. `[undefined, undefined]` — the default —
+       * means autoscale both ends, which is right for a track whose scores have
+       * no absolute meaning (a bigwig's units are its own).
+       *
+       * A display whose scores are bounded *by construction* overrides it, so
+       * the axis stops being a function of what happens to be on screen: GC
+       * content is a fraction, so 0 and 1 are its real limits and mean the same
+       * thing at every locus. Autoscaled, the same GC value drew at different
+       * heights depending on where the user had panned, and the track could not
+       * be read across loci.
+       *
+       * A hook rather than a config default because the answer can depend on
+       * display state — GC's does, on `gcMode` — and rather than each display
+       * re-resolving the sentinels below, which is the one thing that must not
+       * be duplicated: config bounds still win, precisely because they are
+       * checked before this is consulted.
+       */
+      get defaultScoreDomain(): [number | undefined, number | undefined] {
+        return [undefined, undefined]
+      },
+      /**
+       * #getter
        * Resolved lower bound; `undefined` means autoscale this end.
        */
       get minScoreBound(): number | undefined {
         const val: number = getConf(confNode(self), 'minScore')
-        return val === Number.MIN_VALUE ? undefined : val
+        return val === Number.MIN_VALUE ? this.defaultScoreDomain[0] : val
       },
       /**
        * #getter
@@ -85,7 +108,7 @@ export function ScoreScaleMixin() {
        */
       get maxScoreBound(): number | undefined {
         const val: number = getConf(confNode(self), 'maxScore')
-        return val === Number.MAX_VALUE ? undefined : val
+        return val === Number.MAX_VALUE ? this.defaultScoreDomain[1] : val
       },
     }))
     .actions(self => ({

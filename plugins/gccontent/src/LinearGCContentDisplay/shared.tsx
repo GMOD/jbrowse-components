@@ -75,6 +75,23 @@ export default function SharedModelF(
         setConf(self, 'gcMode', mode)
       },
     }))
+    .views(self => ({
+      /**
+       * #getter
+       * Overrides ScoreScaleMixin's autoscale-both-ends default. GC content is
+       * a fraction of the bases in a window, so [0,1] is the quantity's own
+       * range and pins the axis across loci.
+       *
+       * Skew is deliberately left autoscaling. Its range is [-1,1] and fixing
+       * it there would be just as *correct*, and useless: real skew sits within
+       * roughly ±0.3, so a [-1,1] axis squashes the sign flip at the
+       * replication origin — the entire thing the track is read for — into a
+       * flat line. Bounded and worth pinning are two different properties.
+       */
+      get defaultScoreDomain(): [number | undefined, number | undefined] {
+        return self.gcMode === 'content' ? [0, 1] : [undefined, undefined]
+      },
+    }))
     .views(self => {
       const { rpcProps: superRpcProps } = self
       return {

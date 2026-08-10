@@ -121,6 +121,28 @@ test('setting one GC parameter leaves the other alone', () => {
   expect(display.windowDelta).toBe(25)
 })
 
+// GC content is a fraction, so its axis is the quantity's own range rather than
+// whatever happens to be on screen; skew stays autoscaled because its real
+// values occupy a small part of [-1,1].
+test('content mode pins the score domain to [0,1], skew autoscales', () => {
+  const display = createDisplay()
+  expect([display.minScoreBound, display.maxScoreBound]).toEqual([0, 1])
+
+  display.setGCMode('skew')
+  expect([display.minScoreBound, display.maxScoreBound]).toEqual([
+    undefined,
+    undefined,
+  ])
+})
+
+test('an explicit score bound still beats the pinned default', () => {
+  const display = createDisplay()
+  display.setMaxScore(0.75)
+  expect(display.maxScoreBound).toBe(0.75)
+  // the end left unset still falls back to the pinned domain
+  expect(display.minScoreBound).toBe(0)
+})
+
 test('the GC parameters also reach the adapter config the worker resolves', () => {
   const display = createDisplay()
   display.setGCMode('skew')
