@@ -4,6 +4,7 @@ import {
   createView,
   doBeforeEach,
   expectCanvasMatch,
+  findAnyDisplayPainted,
   findCanvasIn,
   setup,
 } from './util.tsx'
@@ -47,8 +48,8 @@ test('adds a PAF via the add track workflow', async () => {
   fireEvent.click(within(await findByRole('listbox')).getByText('volvox_del'))
   fireEvent.click(getAllByTestId('addTrackNextButton')[0]!)
 
-  const displays = await findAllByTestId(/-display-done$/, ...opts)
-  expectCanvasMatch(findCanvasIn(displays[0]!))
+  const display = await findAnyDisplayPainted(delay)
+  expectCanvasMatch(findCanvasIn(display))
 }, 60000)
 
 test('bug: error message persists after fixing URL', async () => {

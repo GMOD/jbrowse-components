@@ -3,7 +3,13 @@ import '@testing-library/jest-dom'
 import { fireEvent, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 
-import { createView, doBeforeEach, hts, setup } from './util.tsx'
+import {
+  createView,
+  doBeforeEach,
+  findAnyDisplayPainted,
+  hts,
+  setup,
+} from './util.tsx'
 
 setup()
 
@@ -16,7 +22,7 @@ const opts = [{}, delay]
 
 xtest('click on subfeature label (EDEN.1) opens feature details', async () => {
   const user = userEvent.setup()
-  const { view, findAllByTestId } = await createView()
+  const { view } = await createView()
 
   // Navigate to the region with gene features
   await view.navToLocString('ctgA:907..15,319')
@@ -25,7 +31,7 @@ xtest('click on subfeature label (EDEN.1) opens feature details', async () => {
   await user.click(await screen.findByTestId(hts('gff3tabix_genes'), ...opts))
 
   // Wait for the track to render
-  await findAllByTestId(/-display-done$/, ...opts)
+  await findAnyDisplayPainted(delay)
 
   // Open track menu and enable subfeature labels
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))

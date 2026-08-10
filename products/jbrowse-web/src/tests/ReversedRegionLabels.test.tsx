@@ -1,11 +1,12 @@
 import './svgExportMocks.ts'
 
-import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { fireEvent, waitFor } from '@testing-library/react'
 
 import {
   createView,
   doBeforeEach,
   exportAndVerifySvg,
+  findAnyDisplayPainted,
   hts,
   setup,
 } from './util.tsx'
@@ -40,7 +41,7 @@ test('export svg of reversed region with gene labels', async () => {
   fireEvent.click(await findByTestId(hts('gff3tabix_genes'), ...opts))
 
   // Wait for at least one canvas block to finish rendering
-  await screen.findAllByTestId(/-display-done$/, {}, { timeout: 30000 })
+  await findAnyDisplayPainted({ timeout: 30000 })
 
   await exportAndVerifySvg({
     findByTestId,

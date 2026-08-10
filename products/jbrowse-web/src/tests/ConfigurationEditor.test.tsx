@@ -7,6 +7,7 @@ import {
   createView,
   doBeforeEach,
   expectCanvasMatch,
+  findAnyDisplayPainted,
   findCanvasIn,
   hts,
   setup,
@@ -23,13 +24,8 @@ beforeEach(() => {
 
 xtest('change color on track', async () => {
   const user = userEvent.setup()
-  const {
-    view,
-    findByTestId,
-    findByText,
-    findByDisplayValue,
-    findAllByTestId,
-  } = await createView(undefined, true)
+  const { view, findByTestId, findByText, findByDisplayValue } =
+    await createView(undefined, true)
 
   view.setNewView(0.05, 5000)
 
@@ -47,8 +43,8 @@ xtest('change color on track', async () => {
   await user.type(elt, 'green')
   await new Promise(res => setTimeout(res, 1000))
 
-  const displays = await findAllByTestId(/-display-done$/, {}, delay)
+  const display = await findAnyDisplayPainted(delay)
   await waitFor(() => {
-    expectCanvasMatch(findCanvasIn(displays[0]!), 0)
+    expectCanvasMatch(findCanvasIn(display), 0)
   }, delay)
 }, 40000)

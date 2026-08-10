@@ -5,6 +5,7 @@ import {
   createView,
   doBeforeEach,
   expectCanvasMatch,
+  findAnyDisplayPainted,
   findCanvasIn,
   mockConsoleWarn,
   setup,
@@ -33,8 +34,10 @@ const delay = { timeout: 40000 }
 
 test('copy and delete track in admin mode', () => {
   return mockConsoleWarn(async () => {
-    const { view, findByTestId, queryByText, findByText, findAllByTestId } =
-      await createView(undefined, true)
+    const { view, findByTestId, queryByText, findByText } = await createView(
+      undefined,
+      true,
+    )
 
     view.setNewView(0.05, 5000)
     fireEvent.click(
@@ -50,8 +53,8 @@ test('copy and delete track in admin mode', () => {
     await waitFor(() => {
       expect(view.tracks.length).toBe(1)
     })
-    const displays = await findAllByTestId(/-display-done$/, {}, delay)
-    expectCanvasMatch(findCanvasIn(displays[0]!))
+    const display = await findAnyDisplayPainted(delay)
+    expectCanvasMatch(findCanvasIn(display))
     fireEvent.click(await findByTestId('track_menu_icon'))
     fireEvent.click(await findByText('Track actions'))
     fireEvent.click(await findByText('Delete track'))
@@ -112,8 +115,10 @@ test('copy and delete reference sequence track disabled', () => {
 
 test('copy and delete track to session tracks', () => {
   return mockConsoleWarn(async () => {
-    const { view, findByTestId, findByText, findAllByTestId } =
-      await createView(undefined, false)
+    const { view, findByTestId, findByText } = await createView(
+      undefined,
+      false,
+    )
 
     view.setNewView(0.05, 5000)
     fireEvent.click(
@@ -129,8 +134,8 @@ test('copy and delete track to session tracks', () => {
     await waitFor(() => {
       expect(view.tracks.length).toBe(1)
     })
-    const displays = await findAllByTestId(/-display-done$/, {}, delay)
-    expectCanvasMatch(findCanvasIn(displays[0]!))
+    const display = await findAnyDisplayPainted(delay)
+    expectCanvasMatch(findCanvasIn(display))
     fireEvent.click(await findByTestId('track_menu_icon'))
     fireEvent.click(await findByText('Track actions'))
     fireEvent.click(await findByText('Delete track'))

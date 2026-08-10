@@ -3,7 +3,13 @@ import '@testing-library/jest-dom'
 import { fireEvent, screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 
-import { createView, doBeforeEach, hts, setup } from './util.tsx'
+import {
+  createView,
+  doBeforeEach,
+  findAnyDisplayPainted,
+  hts,
+  setup,
+} from './util.tsx'
 
 setup()
 
@@ -20,11 +26,11 @@ const opts = [{}, delay]
 // Regression: description labels were rendered without an onClick.
 test('clicking a variant description label opens feature details', async () => {
   const user = userEvent.setup()
-  const { view, findAllByTestId, findByTestId } = await createView()
+  const { view, findByTestId } = await createView()
 
   await view.navToLocString('ctgA:6257..6305')
   await user.click(await screen.findByTestId(hts('volvox_test_vcf'), ...opts))
-  await findAllByTestId(/-display-done$/, ...opts)
+  await findAnyDisplayPainted(delay)
 
   fireEvent.click(await screen.findByTestId('feature-desc-C -> T', ...opts))
 

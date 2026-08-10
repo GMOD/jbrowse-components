@@ -9,6 +9,7 @@ import { createCanvas as nodeCreateCanvas } from 'canvas'
 import {
   createView,
   doBeforeEach,
+  findAnyDisplayPainted,
   findDisplayPainted,
   getSavedSvg,
   getSavedSvgs,
@@ -89,7 +90,7 @@ test('canvas feature display SVG vector export', async () => {
   const { view, findByTestId } = await createView()
   await view.navToLocString('ctgA:1..5000')
   fireEvent.click(await findByTestId(hts('gff3tabix_genes'), ...opts))
-  await findByTestId(/-display-done$/, ...opts)
+  await findAnyDisplayPainted(delay)
 
   await view.exportSvg({ rasterizeLayers: false })
   const svg = getSavedSvg()
@@ -101,7 +102,7 @@ test('canvas feature display SVG rasterized export embeds PNG', async () => {
   const { view, findByTestId } = await createView()
   await view.navToLocString('ctgA:1..5000')
   fireEvent.click(await findByTestId(hts('gff3tabix_genes'), ...opts))
-  await findByTestId(/-display-done$/, ...opts)
+  await findAnyDisplayPainted(delay)
 
   await view.exportSvg({ rasterizeLayers: true, createCanvas: canvasFactory })
   const svg = getSavedSvg()
@@ -148,7 +149,7 @@ test('refName label stays on-canvas when zoomed into a chromosome interior', asy
   // (far off-canvas) block start
   await view.navToLocString('ctgA:30000..40000')
   fireEvent.click(await findByTestId(hts('gff3tabix_genes'), ...opts))
-  await findByTestId(/-display-done$/, ...opts)
+  await findAnyDisplayPainted(delay)
 
   await view.exportSvg({ rasterizeLayers: false })
   const svg = getSavedSvg()
@@ -279,7 +280,7 @@ test('left track labels stay inside the gutter the export widened for them', asy
   const { view, findByTestId } = await createView()
   await view.navToLocString('ctgA:1..5000')
   fireEvent.click(await findByTestId(hts('gff3tabix_genes'), ...opts))
-  await findByTestId(/-display-done$/, ...opts)
+  await findAnyDisplayPainted(delay)
 
   await view.exportSvg({ rasterizeLayers: false, trackLabels: 'left' })
   const svg = getSavedSvg()
@@ -299,7 +300,7 @@ test('a monospace export reserves the gutter in the font it draws the labels in'
   const { view, findByTestId } = await createView()
   await view.navToLocString('ctgA:1..5000')
   fireEvent.click(await findByTestId(hts('gff3tabix_genes'), ...opts))
-  await findByTestId(/-display-done$/, ...opts)
+  await findAnyDisplayPainted(delay)
 
   await view.exportSvg({ rasterizeLayers: false, trackLabels: 'left' })
   await view.exportSvg({
@@ -322,7 +323,7 @@ test('gridlines are exported behind the tracks when asked for', async () => {
   const { view, findByTestId } = await createView()
   await view.navToLocString('ctgA:1..5000')
   fireEvent.click(await findByTestId(hts('gff3tabix_genes'), ...opts))
-  await findByTestId(/-display-done$/, ...opts)
+  await findAnyDisplayPainted(delay)
 
   await view.exportSvg({ rasterizeLayers: false })
   await view.exportSvg({ rasterizeLayers: false, showGridlines: true })

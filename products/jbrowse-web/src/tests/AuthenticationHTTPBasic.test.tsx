@@ -5,6 +5,7 @@ import {
   createView,
   doBeforeEach,
   expectCanvasMatch,
+  findAnyDisplayPainted,
   findCanvasIn,
   hts,
   setup,
@@ -20,7 +21,7 @@ beforeEach(() => {
 const delay = { timeout: 20000 }
 
 test('opens a bigwig track that needs httpbasic authentication', async () => {
-  const { findByTestId, findAllByTestId, findByText, view } = await createView({
+  const { findByTestId, findByText, view } = await createView({
     ...config,
     tracks: [
       {
@@ -58,6 +59,6 @@ test('opens a bigwig track that needs httpbasic authentication', async () => {
     sessionStorage.getItem('HTTPBasicInternetAccount-HTTPBasicTest-token'),
   ).toContain(btoa('username:password'))
 
-  const displays = await findAllByTestId(/-display-done$/, {}, delay)
-  expectCanvasMatch(findCanvasIn(displays[0]!))
+  const display = await findAnyDisplayPainted(delay)
+  expectCanvasMatch(findCanvasIn(display))
 }, 25000)

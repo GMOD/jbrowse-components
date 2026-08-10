@@ -3,7 +3,13 @@ import '@testing-library/jest-dom'
 import { screen } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 
-import { createView, doBeforeEach, hts, setup } from './util.tsx'
+import {
+  createView,
+  doBeforeEach,
+  findAnyDisplayPainted,
+  hts,
+  setup,
+} from './util.tsx'
 
 setup()
 
@@ -40,11 +46,11 @@ function labelsIn(items: VocabMenuItem[]): string[] {
 
 test('the variant track menu names controls generically, content by its noun', async () => {
   const user = userEvent.setup()
-  const { view, findAllByTestId } = await createView()
+  const { view } = await createView()
 
   await view.navToLocString('ctgA:1..50000')
   await user.click(await screen.findByTestId(hts('volvox_test_vcf'), ...opts))
-  const [feature] = await findAllByTestId(/-display-done$/, ...opts)
+  const feature = await findAnyDisplayPainted(delay)
   expect(feature).toBeTruthy()
 
   const display = view.tracks[0]!.displays[0] as NounDisplay
@@ -68,11 +74,11 @@ test('the variant track menu names controls generically, content by its noun', a
 
 test('a row that counts what the track holds still says "variant"', async () => {
   const user = userEvent.setup()
-  const { view, findAllByTestId } = await createView()
+  const { view } = await createView()
 
   await view.navToLocString('ctgA:1..50000')
   await user.click(await screen.findByTestId(hts('volvox_test_vcf'), ...opts))
-  await findAllByTestId(/-display-done$/, ...opts)
+  await findAnyDisplayPainted(delay)
 
   const display = view.tracks[0]!.displays[0] as NounDisplay
   // the recovery row only exists once something is hidden, and it is a sentence

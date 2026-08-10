@@ -4,6 +4,7 @@ import {
   createView,
   doBeforeEach,
   expectCanvasMatch,
+  findAnyDisplayPainted,
   findCanvasIn,
   hts,
   setup,
@@ -19,7 +20,7 @@ const delay = { timeout: 20000 }
 const opts = [{}, delay]
 
 test('renders peptide letters on CDS features', async () => {
-  const { view, findByTestId, findByText, findAllByTestId } = await createView()
+  const { view, findByTestId, findByText } = await createView()
   await view.navToLocString('ctgA:3,292..3,323')
 
   // Frame coloring is opt-in; the amino acids on top of it are not
@@ -30,18 +31,18 @@ test('renders peptide letters on CDS features', async () => {
   fireEvent.click(await findByTestId(hts('bedtabix_genes'), ...opts))
 
   // Get canvas snapshot
-  const displays = await findAllByTestId(/-display-done$/, ...opts)
-  expectCanvasMatch(findCanvasIn(displays[0]!))
+  const display = await findAnyDisplayPainted(delay)
+  expectCanvasMatch(findCanvasIn(display))
 }, 25000)
 
 test('renders peptide letters without color by CDS', async () => {
-  const { view, findByTestId, findAllByTestId } = await createView()
+  const { view, findByTestId } = await createView()
   await view.navToLocString('ctgA:3,292..3,323')
 
   // no menu interaction: showAminoAcids is on by default, so the codons are
   // shaded and lettered over the track's own feature color
   fireEvent.click(await findByTestId(hts('bedtabix_genes'), ...opts))
 
-  const displays = await findAllByTestId(/-display-done$/, ...opts)
-  expectCanvasMatch(findCanvasIn(displays[0]!))
+  const display = await findAnyDisplayPainted(delay)
+  expectCanvasMatch(findCanvasIn(display))
 }, 25000)

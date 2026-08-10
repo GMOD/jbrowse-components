@@ -14,6 +14,7 @@ import {
   createView,
   doBeforeEach,
   expectCanvasMatch,
+  findAnyDisplayPainted,
   findCanvasIn,
   findDisplayPainted,
   hts,
@@ -66,13 +67,13 @@ test('toplevel configuration', () => {
 })
 
 test('assembly aliases', async () => {
-  const { view, findByTestId, findAllByTestId } = await createView()
+  const { view, findByTestId } = await createView()
   view.setNewView(0.05, 5000)
   fireEvent.click(
     await findByTestId(hts('volvox_filtered_vcf_assembly_alias'), {}, delay),
   )
-  const displays = await findAllByTestId(/-display-done$/, {}, delay)
-  expectCanvasMatch(findCanvasIn(displays[0]!))
+  const display = await findAnyDisplayPainted(delay)
+  expectCanvasMatch(findCanvasIn(display))
 }, 30000)
 
 xtest('nclist track test with long name', async () => {

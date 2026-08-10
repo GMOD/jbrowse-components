@@ -4,6 +4,7 @@ import {
   createView,
   doBeforeEach,
   expectCanvasMatch,
+  findAnyDisplayPainted,
   findCanvasIn,
   findDisplayPainted,
   hts,
@@ -81,8 +82,7 @@ test('test stats estimation pileup, force load to see', async () => {
 }, 60000)
 
 test('test stats estimation on vcf track, zoom in to see', async () => {
-  const { view, findAllByText, findByTestId, findAllByTestId } =
-    await createView()
+  const { view, findAllByText, findByTestId } = await createView()
   view.setNewView(34, 5)
   fireEvent.click(await findByTestId(hts('variant_colors'), ...o))
   await findAllByText(/Zoom in to see features/, ...o)
@@ -111,17 +111,16 @@ test('test stats estimation on vcf track, zoom in to see', async () => {
   window.requestAnimationFrame = origRAF
   performance.now = origPerfNow
 
-  const displays = await findAllByTestId(/-display-done$/, ...o)
-  expectCanvasMatch(findCanvasIn(displays[0]!))
+  const display = await findAnyDisplayPainted(delay)
+  expectCanvasMatch(findCanvasIn(display))
 }, 30000)
 
 test('test stats estimation on vcf track, force load to see', async () => {
-  const { view, findAllByText, findByTestId, findAllByTestId } =
-    await createView()
+  const { view, findAllByText, findByTestId } = await createView()
   view.setNewView(34, 5)
   await findAllByText('ctgA', ...o)
   fireEvent.click(await findByTestId(hts('variant_colors'), ...o))
   fireEvent.click((await findAllByText(/Force load/, ...o))[0]!)
-  const displays = await findAllByTestId(/-display-done$/, ...o)
-  expectCanvasMatch(findCanvasIn(displays[0]!))
+  const display = await findAnyDisplayPainted(delay)
+  expectCanvasMatch(findCanvasIn(display))
 }, 30000)

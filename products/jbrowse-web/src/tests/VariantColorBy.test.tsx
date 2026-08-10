@@ -3,7 +3,13 @@ import '@testing-library/jest-dom'
 import { screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 
-import { createView, doBeforeEach, hts, setup } from './util.tsx'
+import {
+  createView,
+  doBeforeEach,
+  findAnyDisplayPainted,
+  hts,
+  setup,
+} from './util.tsx'
 
 setup()
 
@@ -31,11 +37,11 @@ interface VariantDisplay {
 // color set through it must flow to the model.
 test('variant display exposes one "Color by..." menu and applies a solid color', async () => {
   const user = userEvent.setup()
-  const { view, findAllByTestId } = await createView()
+  const { view } = await createView()
 
   await view.navToLocString('ctgA:1..50000')
   await user.click(await screen.findByTestId(hts('volvox_test_vcf'), ...opts))
-  await findAllByTestId(/-display-done$/, ...opts)
+  await findAnyDisplayPainted(delay)
 
   const display = view.tracks[0]!.displays[0] as VariantDisplay
 
@@ -61,11 +67,11 @@ test('variant display exposes one "Color by..." menu and applies a solid color',
 // could silently stop rendering with every other variant test still green.
 test('the consequence-impact color key renders, and dismissing it removes it', async () => {
   const user = userEvent.setup()
-  const { view, findAllByTestId } = await createView()
+  const { view } = await createView()
 
   await view.navToLocString('ctgA:1..50000')
   await user.click(await screen.findByTestId(hts('volvox_test_vcf'), ...opts))
-  await findAllByTestId(/-display-done$/, ...opts)
+  await findAnyDisplayPainted(delay)
 
   const display = view.tracks[0]!.displays[0] as VariantDisplay
   expect(display.colorLegend).toBeUndefined()
