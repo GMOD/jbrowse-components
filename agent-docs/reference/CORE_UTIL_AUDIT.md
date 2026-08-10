@@ -1,132 +1,49 @@
 ---
 name: core-util-audit
-description: The 2026-07-31 audit of packages/core/src/util — what landed, the latent typing/contract items still open, the dead code that is a plugin-ABI decision rather than a reachability question, and the list verified clean. Read before re-auditing core/util or deleting something there that looks unused.
+description: What is left from the 2026-07-31 audit of packages/core/src/util — the latent typing/contract items still open, the dead code that is a plugin-ABI decision rather than a reachability question, the two structural nits, and the list verified clean. Read before re-auditing core/util or deleting something there that looks unused.
 ---
 
-# packages/core/src/util audit — findings and next steps
+# packages/core/src/util audit — what is left
 
 Audit of `packages/core/src/util/` (2026-07-31), six parallel read-only passes
-over disjoint subsets. Everything below was verified by reading the code and
-grepping call sites.
+over disjoint subsets, everything verified by reading the code and grepping call
+sites.
 
-**No reachable bugs are left open.** The latent/typing list, the unambiguous
-dead code, and the structural split have all landed. What remains: a short
-latent list, the dead code that sits behind the runtime-plugin ABI surface (a
-decision, not a reachability question), and two structural nits.
+**The audit is closed.** No reachable bugs are left open; the latent/typing
+list, the unambiguous dead code and the structural split all landed. Git holds
+the fixes — `git log --oneline -- packages/core/src/util` around 2026-07-31 is
+the list, and each one carries its own reasoning. What is below is only what a
+re-audit would otherwise re-derive: the items still open, the deletions that are
+a decision rather than a mechanical call, and the things already checked so
+nobody checks them twice.
 
-## Fixed in the second pass (2026-07-31)
+## Decisions taken during the fixes, so they are not undone
 
-Every item that was under "Open: reachable bugs" landed, plus most of
-"latent / typing / contract", all with tests:
+These look like leftovers and are not:
 
-- `assemblyConfigUtils.getFilename` deleted; `tracks.getFileName` moved to its
-  own `getFileName.ts` (dependency-free, so the pure form helpers can use it
-  without dragging in MST) and re-exported from `tracks.ts`. Its extension table
-  now shares three named constants with the sequence plugin's guessers, so
-  `.fas`, `.mfa`, `.FA` and `.fa.bgz` place. `LocalFileChooser`'s and
-  `plugins/wiggle`'s copies were deliberately left: the first shows the *full*
-  local path and returns `undefined` for "no file", the second takes a string.
-- `addAndShowTrack` only shows the track when `addTrackConf` returned a conf.
-- `ObservableCreate` errors its subscriber with an abort error when the stop
-  token stops (it cannot interrupt `func`; a long synchronous body still needs
-  its own `checkStopToken` ticks).
-- `fetchAndMaybeUnzip` passes `opts.statusCallback` through instead of
-  defaulting it, restoring generic-filehandle2's `res.arrayBuffer()` path, and
-  bridges `opts.stopToken` to the read's signal.
-- `parseHex` validates; `parseCssColor`'s magenta sentinel is now reachable for
-  `#`-prefixed garbage.
-- `tabix.extractType` and `groupLinesByRef` no longer lose a line's last
-  character to a `-1` end offset. A tab-free line is skipped rather than
-  published through `getRefNames`.
-- `useFetch` seeds `isLoading` from the key, and `mutate` is synchronous (the
-  promise resolved before the refetch it scheduled, so awaiting it was a lie).
-  `GetSequenceDialog` now reads `isLoading` instead of hand-rolling it.
-  `RefNameInfoDialog`'s `refNames === undefined` stays — it is narrowing, not a
-  workaround.
-- the jexl `alpha`/`hsl`/`colorString` functions take and return CSS color
-  strings, so the published catalog examples work and compose.
-- `isAuthNeededException` checks only the name.
-- `markStopTokenStopped` deletes before re-setting, so the TTL sweep can't be
-  permanently short-circuited.
-- `RemoteFileWithRangeCache.clearCache` resumes its queued waiters instead of
-  dropping them (a dropped resolver is a hang, not a cancellation), and `stat()`
-  goes through `limitConcurrency`.
-- `resolvePlugin` returns an undefined `definition` instead of throwing when a
-  per-version-only entry matches nothing; `PluginCard` leaves Install disabled.
-- `getContentBlocksPxSpan` passes each block's `displayedRegionIndex` through.
-- `updateStatus` / `withProgress` / `parseLineByLine` clear their status label in
-  a `finally`.
-- `namedColorToHex` / `isNamedColor` use `Object.hasOwn`.
-- `renameRegionsIfNeeded`'s `Object.fromEntries` is annotated, so `refNameMap`
-  and `getSeqAdapterRefName` are checked.
-- `fileHandleStore` drops a rejected `openDB` promise rather than caching it.
-- `springAnimate` guards its `cancelAnimationFrame`, honors an explicit
-  `precision: 0`, and its dropped-frame comment matches the code.
-- `mergeIntervals`/`gatherOverlaps`'s `w` is renamed `padding` and documented as
-  per-side (so the default merge window is 10kb, not 5kb). Not halved: three
+- **Three `getFileName` copies are down to two, and both stay.**
+  `LocalFileChooser`'s shows the *full* local path and returns `undefined` for
+  "no file"; `plugins/wiggle`'s takes a string. Not duplicates of
+  `tracks.getFileName`, which now lives in its own dependency-free
+  `getFileName.ts` so the pure form helpers can use it without dragging in MST.
+- **`defaultStarts` stays `['ATG']`**, not genetic-code table 1's
+  `['TTG','CTG','ATG']`. It drives sequence-track highlighting, where marking
+  every TTG would be noise.
+- **`Base1DUtils.offsetBpToPx` was kept against the dead-code list.** Three
+  neighbouring comments name it as the exact-round-trip answer to a documented
+  precision trap; deleting it makes that documentation dangle.
+- **`color/index.isNamedColor` was kept** as the one-line sibling of the live
+  `namedColorToHex` — it carries the `Object.hasOwn` prototype guard's test.
+- **`mergeIntervals`/`gatherOverlaps`'s padding was documented, not halved.** It
+  is per-side, so the default merge window is 10kb rather than 5kb; three
   callers depend on today's spacing.
-- `getTrackAssemblyNames`' permanent WeakMap is gone — every caller reads it from
-  a reactive getter or autorun, so the memo meant editing `assemblyNames` in the
-  config editor never invalidated. MobX's own computed caching covers it.
-- `showTrack` no longer builds and discards a whole config node to validate a
-  conf that is already a state tree node (MST validated it on creation, and
-  `configSchema.create`'s preProcessSnapshot re-ran `Core-preProcessTrackConfig`
-  on a snapshot `showTrack` had just preprocessed). An inline conf still gets it.
-
-Outside `util/` but found on the way:
-
-- `BaseSession.setSelection` unwraps a `jexlFeatureProxy`. `isFeature` accepts a
-  proxy, but the `Feature` it narrows to promises a callable `id()` and on a
-  proxy `id` is a data field — five readers doing
-  `isFeature(selection) ? selection.id() : …` threw once one reached the
-  selection, which `SVInspector` does through `defaultOnChordClick`.
-- `jbrowse add-track x.gtf.gz` wrote a `GtfAdapter` (whole-file) for a file with
-  a tabix index beside it; the CLI guesser now routes it to `GtfTabixAdapter`
-  like the browser, and knows bedGraph. The AllVsAll / MCScanBlocks /
-  BlastTabular entries the audit wanted are hint-only in the browser too, by
-  design — `--adapterType` is the intended path, not an extension guess.
-
-## Fixed in the first pass
-
-- `numericUtils.ts toLocale` grouped separators from the end of the whole
-  string, so any non-integer >= 1000 was corrupted (`2345.67` -> `"2,345,.67"`,
-  `1e21` -> `"1e,+21"`, `Infinity` -> `"In,fin,ity"`). Reached through
-  `bpUtils.getTickDisplayStr`, which feeds it `parseFloat(x.toFixed(2))`, so a
-  >1 Gbp chromosome rendered scalebar and dotplot-axis ticks as `3,088,.27M`.
-  The integer hot path is unchanged and benchmarked identical (still ~2x
-  `toLocaleString`); only a `Number.isInteger` branch was added.
-- `bpUtils.getBpDisplayStr` chose its unit before rounding, so 999,500-999,999
-  rendered `1,000Kbp` instead of `1Mbp`.
-- `copyToClipboard.ts` / `copyText.ts` reported success unconditionally: the
-  secure-context path was `void navigator.clipboard.writeText(...)` returning
-  `true` without awaiting, and `copyText` discarded the `execCommand` boolean.
-  Now `copyToClipboard` is async and signals failure one way (throw).
-  `copyTextWithSession` was split out for callers holding a session rather than
-  a model. The dynamic import was dropped — it bought ~1.5KB, and the module is
-  not reachable from the util barrel, so a separate chunk was a net loss.
-- `TimeTraveller.initialize()` was not idempotent but re-runs on every
-  `setSession` (`HistoryManagement` autorun reads `asRoot(self).session`). It
-  overwrote `snapshotDisposer` without disposing, and skipped its baseline once
-  `history` was non-empty — and `history` is volatile while `undoIdx` is a
-  persisted prop, so Ctrl+Z after a session switch applied the *previous*
-  session's snapshot to the new one.
-- `SvgCanvas.fontAttrs` matched size/family mid-string and dropped the weight and
-  style tokens ahead of them, so every `bold Npx ...` label (MAF codons via
-  `FONT_CONFIG`, alignment read labels) exported at regular weight.
-- `color-bits/format.ts rgbToHSL` selected its saturation formula on the max
-  channel instead of on lightness, understating saturation whenever max > 0.5
-  and lightness < 0.5 (`#0a0ac8` came out `63.3%` vs. the true `90.5%`).
-  Reachable through the documented jexl `hsl()`.
-- `color/makeContrasting` grew its coefficient without bound while MUI's
-  lighten/darken clamp it at 1, so a background whose luminance makes 3:1
-  unreachable froze the render thread. Measured against `defaultRefNameColors`:
-  38/40 hang on a `#b0b0b0` paper, 39/40 on `#a0a0a0`; best reachable ratio
-  there is ~2.2. Latent only because default MUI papers are `#fff`/`#121212`,
-  and `Ruler.tsx`'s `try/catch` cannot catch a spin.
+- **The duplicate codon table was collapsed by inverting a dependency, not by
+  the obvious route.** `geneticCodes.ts` imported `generateCodonTable`/`revlist`
+  FROM `seqUtils.ts`, so defining `codonTable` from `getGeneticCode(1)` there
+  would make a module-level const depend on a cycle. `revlist` went to its own
+  module and `generateCodonTable` into `geneticCodes.ts` beside its only caller.
 
 ## Open: latent / typing / contract
-
-Nearly all of this landed. What is genuinely left:
 
 - `renameRegions.ts:18` returns a dead MST node typed as a live `Region`. Every
   caller then reads properties off it, which MST refuses. Not reproduced in
@@ -155,42 +72,22 @@ Nearly all of this landed. What is genuinely left:
   (`Cannot read properties of undefined`), fixed by ordering the re-export first
   and guarded by `FileHandleRestoreBanner.test.tsx`.
 
-## Dead code: deleted in the second pass
-
-`compositeMap.ts`, `blobToDataURL.ts`, `transferables.ts`, `flatqueue/` (with
-`Flatbush.neighbors()` and `upperBound`), the dead half of
-`offscreenCanvasPonyfill.ts` (which also breaks one of the barrel's value
-cycles), `aborting.ts`'s three pre-stopToken helpers, `nanoid`'s custom-alphabet
-machinery, `color-bits`'s `formatHWBA`/`toHWBA`, and the single exports
-`blockToRegion`, `makeDisplayedRegionKey`, `isContainedWithin`, `iterMap`,
-`getLayoutId`, `contrastingTextColor`, `seqUtils.defaultStops`,
-`assembleLocStringFast`, `checkStopToken2`. `getUriLink` and
-`shareSessionToDynamo` became module-private.
-
-Two were deliberately kept against the list:
-
-- `Base1DUtils.offsetBpToPx` — three neighbouring comments name it as the
-  exact-round-trip answer to a documented precision trap. Deleting the function
-  makes that documentation dangle.
-- `color/index.isNamedColor` — the one-line sibling of the live
-  `namedColorToHex`, and it carries the `Object.hasOwn` prototype guard's test.
-
 ## Dead code: still open, gated on the plugin ABI question, not on reachability
 
 `@jbrowse/core/util` and `@jbrowse/core/util/layouts` are both in
 `ReExports/list.ts`, so everything they export is reachable by an external
 runtime plugin through `jbrequire`. The audit's reachability grep was in-tree
-only, so "dead" there means "dead in this repo", not "dead". The deletions above
-crossed that surface knowingly — they are obscure helpers, and
-[PLUGIN_ABI_STABILITY.md](PLUGIN_ABI_STABILITY.md) is explicit that
-RFC-001 deferred formal API-stability policy. The two items below are bigger
-and were left for a deliberate call:
+only, so "dead" there means "dead in this repo", not "dead". The deletions that
+landed crossed that surface knowingly — they are obscure helpers, and
+[PLUGIN_ABI_STABILITY.md](PLUGIN_ABI_STABILITY.md) is explicit that RFC-001
+deferred formal API-stability policy. The two items below are bigger and were
+left for a deliberate call:
 
 - `layouts/` — only `GranularRectLayout.addRect` has an in-tree caller
-  (`plugins/canvas/src/LinearBasicDisplay/layout.ts:1135`, on a layout built
-  fresh per pack). Dead in-tree: `MultiLayout.ts`, `PrecomputedLayout.ts`,
-  `intervalUtils.isRangeClear` (its live twin is hand-inlined at
-  `GranularRectLayout.ts:283`), `BaseLayout` as an implemented interface,
+  (`plugins/canvas/src/LinearBasicDisplay/layout.ts`, on a layout built fresh
+  per pack). Dead in-tree: `MultiLayout.ts`, `PrecomputedLayout.ts`,
+  `intervalUtils.isRangeClear` (its live twin is hand-inlined in
+  `GranularRectLayout.ts`), `BaseLayout` as an implemented interface,
   `serializeRegion`/`toJSON`/`discardRange`/`getByCoord`/`getByID`/
   `getDataByID`/`getRectangles`/`getTotalHeight`/`maxHeightReached`/public
   `addRectToBitmap`, the `Rectangle<T>` generic and both data fields, and the
@@ -205,43 +102,9 @@ and were left for a deliberate call:
 Also still open: `bpUtils`'s span helpers
 (`bpToPx`/`bpSpanPx`/`featureSpanPx`/`MinimalRegion`), three `mst-reflection`
 exports, `geneticCodes.ncbiGeneticCodes`, the remaining ~13 unused
-`color-bits`/`colorBits` exports, and `when.ts` (a one-line re-export of mobx's
-`when`, two consumers). Note `index.ts` exports the **dead** `bpUtils.bpToPx`
-under the same name as the live `Base1DUtils.bpToPx` — a public-surface
-collision where the exported one is unused.
-
-## Structural: done
-
-- `util/index.ts` is 443 lines, from 657. Split out: `environment.ts`
-  (`isElectron`/`isNode`/`rIC`), `objectUtils.ts` (`isObject`), `getStr.ts`,
-  `dataGridUtils.ts` (`measureGridWidth`/`resolveSelectedIds` — the barrel's only
-  reason to reach `@mui/x-data-grid`, in a barrel worker code imports),
-  `reorder.ts`, and `revlist.ts`. `pluralize`/`capitalizeFirst` moved to
-  `stringUtils.ts`, `stringify` to `locString.ts` beside `assembleLocString`.
-- The duplicate codon table is gone. It could not be collapsed the obvious way —
-  `geneticCodes.ts` imported `generateCodonTable`/`revlist` FROM `seqUtils.ts`,
-  so defining `codonTable` from `getGeneticCode(1)` there makes a module-level
-  const depend on a cycle. The dependency was inverted instead: `revlist` to its
-  own module, `generateCodonTable` into `geneticCodes.ts` where its only caller
-  lives, and `codonTable` defined there as `getGeneticCode(1).codonTable`.
-  `geneticCodes.ts` now imports nothing from `seqUtils.ts`, which is back to 89
-  lines of sequence-string helpers. `defaultStarts` deliberately stays `['ATG']`
-  rather than table 1's `['TTG','CTG','ATG']` — it drives sequence-track
-  highlighting, where marking every TTG would be noise.
-- The value cycles: the `offscreenCanvasPonyfill` and `openFeatureWidget` legs
-  are gone, and `util/io` no longer imports the barrel directly. `util/io` still
-  reaches it transitively through `tracks.ts` and `types/index.ts` — a bigger
-  untangling than this pass.
-- The CLI guesser is realigned (`.gtf.gz`, bedGraph). The AllVsAll /
-  MCScanBlocks / BlastTabular entries the audit wanted are hint-only in the
-  browser too, by design.
-- `ResizeHandle` uses `useRafCommit` instead of hand-rolling rAF coalescing
-  without unmount cleanup, and has tests — which needed `config/jest/pointerEvents.js`,
-  since jsdom has neither a `PointerEvent` constructor (so `fireEvent.pointerMove`
-  drops clientX/clientY) nor `setPointerCapture`. Any other pointer-drag surface
-  is testable now.
-- `util/when.ts` is gone: a one-line re-export of mobx's `when`, and mobx is
-  already in `ReExports/list.ts`, so plugins got the host singleton anyway.
+`color-bits`/`colorBits` exports. Note `index.ts` exports the **dead**
+`bpUtils.bpToPx` under the same name as the live `Base1DUtils.bpToPx` — a
+public-surface collision where the exported one is unused.
 
 ## Open: structural
 
@@ -259,12 +122,6 @@ collision where the exported one is unused.
   Only worth collapsing if a hot path is found calling two of them on the same
   string — none was.
 
-Resolved from this section: the three `shorten()`s were a name collision, not
-duplication (now `truncateLabel` and `snippetAround`), and the `getFileName`
-copies are down to the two that are not duplicates — `LocalFileChooser`'s shows
-the *full* local path and returns `undefined` for "no file", `plugins/wiggle`'s
-takes a string.
-
 ## Verified clean (do not re-investigate)
 
 - `crypto.ts` pure-JS fallback matches Node byte-for-byte: MD5, SHA-256
@@ -272,10 +129,12 @@ takes a string.
   0/5/16/30/31-byte plaintexts, and the full OpenSSL `Salted__` round-trip. Only
   nit is `getRandomBytes` silently degrading to `Math.random()`.
 - `linkify.ts` is not an XSS hole — the URL class excludes `'`, the scheme is
-  restricted, and `SanitizedHTML.tsx:109` runs it before DOMPurify.
+  restricted, and `SanitizedHTML.tsx` runs it before DOMPurify.
 - `color/cssColorsLevel4.ts` table itself is complete and correct (148 names,
   exact match against the CSS Color 4 list).
 - MST swallows exceptions thrown from `beforeDestroy`, so
   `TimeTraveller.beforeDestroy` calling an undefined disposer was a silently
   swallowed `TypeError`, not the aborted destroy chain it first looked like.
   Measured, not assumed.
+- The three `shorten()`s were a name collision, not duplication — now
+  `truncateLabel` and `snippetAround`.
