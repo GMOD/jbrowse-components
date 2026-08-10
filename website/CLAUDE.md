@@ -272,6 +272,49 @@ bookkeeping: `GLOBAL_TRIGGERS` in `screenshot-impact.ts` matches that prefix, so
   nobody needed. A figure that has to stay narrower than what users can actually
   do is a capture limit; say so where the spec explains itself, and don't let it
   leak into prose about the product.
+- **`hgdownload.soe.ucsc.edu` is not dependable from the capture box**, and
+  three broken figures were committed before that was pinned down. A whole-file
+  GET times out outright (`net::ERR_TIMED_OUT`, reproduced with a bare
+  in-browser `fetch`, while the same URL ranged returns 206); a ranged 2bit
+  header read failed 2 of 6 captures; a RefSeq bigBed failed twice with
+  generic-filehandle's "chrome CORS header caching bug" refetch failing too.
+  Read hs1 genes off `jbrowse.org/ucsc/hs1/hs1.gff.gz` (ours, and what the hg38
+  lane already uses), and give a fixture assembly a committed `chrom.sizes`.
+- **A display's config is per TRACK, not per pane.** A figure drawing one
+  segments track in two panes had a `color` on the second pane repaint the
+  first, because both panes share the same track config. If two panes of one
+  track must differ, the difference has to come from the data (a rank branch in
+  the ramp, say), not from a second display config.
+- **A spec appended to a `specs/*.ts` array can leave a sparse hole**, and the
+  generator then dies far away with
+  `TypeError: Cannot read properties of undefined (reading 'mode')` inside
+  `screenshot-specs.ts` — which reads as somebody else's broken spec file, and
+  was misattributed to a concurrent agent three times.
+  **`Array.prototype.filter` SKIPS holes**, so `arr.filter(x => !x).length` is
+  not a hole check and will report the array clean. Use
+  `for (let i = 0; i < a.length; i++) if (!(i in a)) …`.
+- **A `TMPDIR` under the session scratchpad is too long for Chrome**, which dies
+  with `FATAL: Socket path too long: …/SingletonSocket` before any spec renders.
+  Use a short one (`/tmp/ss`). Distinct from the "insufficient resources"
+  failure a _missing_ TMPDIR gives.
+- **A `stages` capture stacks the stage frames only.** The spec's own `actions`
+  are setup for stage one, not a frame — put the interaction in the first stage
+  or the committed PNG is just the last frame.
+- **Gate a row-label spec on the toolbar too**, e.g.
+  `body:has([data-testid="graph-row-label"]) [data-testid="graph-layout-select"]`.
+  The rows land first, and a capture in between shows the graph under a header
+  with no dropdowns in it.
+- **A synteny figure draws far more than its window, on both axes for different
+  reasons.** `LinearSyntenyDisplay.fetchRegions` is `syntenyFetchRegions` over
+  the **query axis only**, which is the visible window expanded by
+  `syntenyPanBufferPx = max(width * 0.5, 2000)` px of bp per side and snapped
+  outward to that grid — at 1000px and 350 bp/px that is 700 kb per side, so one
+  inversion figure fetched `chr1:143.5-145.6 Mb` for a 350 kb frame. The target
+  axis is then unscoped by design ("query regions in, every mate out"), so a
+  record whose mate sits a megabase off the other row's window comes back too
+  and draws a ribbon across the frame. Cut the fixture PAF to the frame, and ask
+  `node scripts/probe-synteny-features.ts <spec>` what a figure actually drew
+  rather than reasoning about what the view "should" have fetched.
 - **A killed run leaves its server on :3334**, so the next one fails instantly
   with `EADDRINUSE` and looks like a new bug. Likewise a run that seems hung:
   check the node process. Idle at ~0% CPU on `about:blank` means it is burning

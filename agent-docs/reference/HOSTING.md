@@ -101,6 +101,16 @@ no download. Audited 2026-08-02:
 - **PIF inverts losslessly back to PAF**: `t`-prefixed rows keep the original
   CIGAR, since `processLine` builds `tRow` before mutating `rest[cigarIdx]`.
 
+**Hosted and referenced by nothing:**
+`demos/ecoli_pangenome/ecoli_minigraph.tier{500,2000,10000}.*` — 12 objects,
+~55 kB, orphaned when the bacterial-ladder figure was dropped (the tier buys
+only ~4× on a minigraph rGFA, see
+[PANGENOME_GRAPHS.md](PANGENOME_GRAPHS.md)). Either delete them or wire one up;
+they rebuild in about two seconds from `build_bubble_tier.sh` over a
+`gfatools bubble` run, so nothing is lost by deleting. Left in place rather than
+cleaned up because **this bucket has no versioning** and an orphan costs 55 kB
+where a wrong delete costs a re-derivation.
+
 ## Plugins served off jbrowse.org, not npm
 
 - **blat** — the only **versioned** published path

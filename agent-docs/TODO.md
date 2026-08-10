@@ -29,6 +29,8 @@ Exploratory concepts that are *not* committed work live in
 | [Comparative cancel and retry](#give-the-comparative-displays-a-cancel-and-a-retry) | synteny, dotplot | read ADR-054 first; retry is a button, never automatic |
 | [Stop uploading every rect twice](#stop-uploading-every-rect-twice-for-the-continuation-pass) | GPU canvas | unify `ATTR4`, then verify headed on both backends |
 | [Linearize the pangenome](#linearize-the-pangenome-draw-graph-variation-as-alignment-style-glyphs) | pangenome | read PANGENOME_GRAPHS.md — four findings constrain the layout |
+| [Pangenome graph view queue](#pangenome-graph-view-the-open-queue) | pangenome | three items unblock the rest; take the LGV axis first |
+| [Collapse trivial bubbles in a file-loaded graph](#coarsen-a-graph-loaded-as-a-file-collapse-trivial-bubbles) | pangenome | designed; path lanes are the open question |
 | [Reads on the derivative allele](#reads-on-the-reconstructed-derivative-allele) | cancer SV | two open halves; the middle one is already built |
 | [PanSN prefixes in the add-track form](#offer-a-files-pansn-prefixes-in-the-all-vs-all-add-track-form) | comparative | the error half shipped; this is the discovery half |
 | [Synteny clicked outline in tiled mode](#the-synteny-clicked-outline-strokes-every-match-tile-in-transparent-indel-mode) | synteny | get the visual call — hull silhouette or per-tile |
@@ -313,6 +315,140 @@ Bandage view.
 Rank is also a weak rarity bound (rank r proves absence from haplotypes 1..r-1,
 nothing more), worth a color ramp only where no `AF` exists, i.e. a user's own
 graph rather than HPRC.
+
+### Pangenome graph view: the open queue
+
+Read [reference/PANGENOME_GRAPHS.md](reference/PANGENOME_GRAPHS.md) first — the
+files, the measured costs and the decisions that look like bugs are all there.
+**Take them in this order**, because three of them unblock the others.
+
+**1. The graph takes `scaleX`/`translateX` from the connected LGV.** When
+`connectedViewId` is set, read `bpPerPx`/`offsetPx` from that view. y-in-px
+shipped, so this is a change to x alone. It is what `hprc_mhc_anchored` needs —
+that figure's whole argument is a shared axis, and today the segments lane spans
+the full pane while the backbone starts after `FIT_PADDING` (40) plus the
+row-label gutter. Sharing a coordinate system is not sharing a pixel mapping.
+
+Not to re-derive: **the anisotropy does not belong in the transform uniform**,
+even though the uniform has carried `scaleX`/`scaleY` all along. Most of the
+drawing mixes the axes in a single `hypot` — a chord length, a tangent
+projection, a deletion's bow, a mitred normal, an arrowhead's angle, a hover
+distance — and each is nonsense the moment x is bp and y is px, so the conversion
+(`yToX = scaleY/scaleX`) has to happen where the geometry is built.
+`geometry.test.ts` asserts `yToX === 1` is the *identity*, not merely close,
+which is what keeps the committed FMMM figures byte-stable.
+
+**2. Follow that view's region, so the window is navigable from inside.**
+`loadedRegion` is written once by the launch and no action changes it
+(`refetchIfNeeded` returns early when `self.graph` is set), so seeing the next
+60 kb means going back to the linear view and rubber-banding again. Fetch cost
+does not scale with window size (~1.3 s, dominated by HTTP setup). Once item 1 is
+reading the transform, this is a debounced refetch when the region leaves
+`loadedRegion`, under `MAX_GRAPH_REGION_BP` with the existing "zoom in to view
+graph" message past it. A locstring field plus widen/narrow buttons is the
+fallback if following fights the user.
+
+**3. The view picks a tier by `bpPerPx`**, the way
+[SYNTENY_LOD.md](reference/SYNTENY_LOD.md)'s two PIF tiers already do — config is
+a prefix per tier plus its bp range, and there is no new rendering mode. Then
+**expand-on-click** (PangyPlot's `/pop`): the tier node id *is* the bubble's
+source segment, so expanding is a fine-index query over the same span with no
+cross-reference to maintain. This retires `maxRegionBp`, which is the interim
+mechanism.
+
+Then, in no particular order:
+
+- **Draw a node once per carrier.** `sampleRowLayout` emits one position per node
+  id and the renderer keys geometry by that id, so real multi-row carriage needs
+  synthetic per-carrier ids plus hit detection resolving them back.
+- **Let a row set be requested.** Rows come from whoever contributed to the
+  window, so a graph cannot be lined up row-for-row with a genotype matrix of
+  chosen donors — which is what `hprc_graph_vs_callset`'s open verdict asks for.
+  An explicit list of samples to row (empty rows included) would make the two
+  panels comparable, pin the order across windows, and let the graph label
+  `HG00642.1` where the callset labels `HG00642 HP0`.
+- **Kill the 12 s `fetch`.** The reference-only index was built and does *not* buy
+  it: `subgraphContext` defaults to **1 hop**, and a hop follows allele interiors,
+  which are indexed under exactly the donor contigs the small pair drops — so
+  pointing the graph cut at it silently returns the context-0 graph with no error
+  to notice (measured on C4: context 0 agrees at 30/36, context 1 and 2 differ).
+  The small pair is for a segments track drawn on the reference. What would
+  actually do it is making the hop reach donor rows without indexing every donor
+  contig — a third small file keyed by segment id for allele interiors, or a link
+  row carrying enough interior that no second query is needed. Producer plus
+  adapter change, not a config swap.
+- **Regenerate the graph figures.** Every published one still shows the
+  pre-`ROW_HEIGHT_PX` pitch. The change moves every anchored figure by design,
+  which is exactly why it must not go out piecemeal.
+- **`graph.slang` would stretch every stroke's half-width by `scaleY/scaleX` on a
+  row layout.** Dead code today — `createGraphRenderer` returns Canvas2D
+  unconditionally — but `GraphRenderer.ts` states the one-token fix for whoever
+  lands a GPU backend.
+
+### Coarsen a graph loaded as a FILE: collapse trivial bubbles
+
+Designed, not built. The tier route above does not reach this case: a tier is a
+hosted segs/links pair, and a figure like `pangenome/pggb_haplotype_paths` loads
+a GFA through `gfaLocation` because the tabix cut has no P lines and `drawPaths`
+would have nothing to draw. A file has no tier to switch to, so its coarsening
+has to happen in the view.
+
+**The complaint is arithmetic, not taste.** `ecoli_pggb_is5.gfa` is 20 segments /
+26 links / 5 paths over 1,414 bp, and twelve of the twenty segments are 1 bp. The
+figure runs `bubbleSpread: 'open'`, whose floor is `2.5 * MEAN_NODE_LENGTH` = 100
+FMMM units, and `bandageAutoScale` puts this graph at 0.566 units/bp — so
+everything under 177 bp clamps, which is nineteen of the twenty nodes. Drawn
+length is 19 × 100 + 678 for the 1,199 bp IS5 arm = 2,578 units, of which the
+twelve 1 bp alleles hold **47% while carrying 0.8% of the sequence**, and the arm
+the figure is about holds 26% while carrying 85%.
+
+**The shipped levers cannot fix it**, which is why this is a mechanism and not a
+spec edit: `auto` draws the alleles proportionally, as specks with no length for
+a path lane to run along — the thing the floor was added for — and `compress`
+pulls the arm toward the mean and piles its five ribbons into colour confetti.
+Both were rendered and rejected (see BUBBLE_SPREADS).
+
+**Collapse the bubble, and that is what lets the floor come off.** The two are
+one change: the floor exists only to give a bubble's ARMS room to separate, and a
+collapsed bubble has no arms. With both, this graph is 13 nodes at 0.368
+units/bp, the IS5 arm at 441 units against 79 for everything else — the arm
+becomes 85% of the drawn length, which is its share of the sequence.
+
+In build order:
+
+- **A pure pass over `Graph`, after parse and before layout.** Not a renderer
+  change: a collapsed bubble already satisfies the segs contract (a reference
+  span, an id, a rank). `collapseTrivialBubbles(graph, { maxAlleleBp })`
+  returning a new graph plus the map from collapsed id to the nodes behind it.
+- **Detection without BubbleGun.** The singleton-arm case is the one that matters
+  and is a local test: a source with k > 1 out-links to distinct nodes, each with
+  exactly one in and one out, all converging on one sink, every arm under
+  `maxAlleleBp`. In this file that catches four of the six bubbles; the fifth is
+  a nested superbubble needing the real algorithm, and the sixth is the IS5 event
+  itself, which must NOT collapse — `maxAlleleBp` handles that on its own.
+- **The floor becomes conditional on there being arms.** A `bubbleSpread` floor
+  applied to a collapsed node is the same bug one level down.
+- **Path lanes are the open question, and why this figure is the test case.**
+  Every path traverses a collapsed unit, so lanes drawn the current way say "all
+  five carry it" — the exact opposite of the carriage claim the figure exists
+  for. Worth building: colour the collapsed node's lanes by WHICH allele each
+  path took, which says strictly more than the picture does today. The fallback,
+  suppressing collapsing while `drawPaths` is on, leaves this figure as it is and
+  buys nothing.
+- **Expand on click**, as above. For a file-loaded graph the arms are already in
+  memory, so it is view state rather than a fetch — cheaper here than on the tier
+  route.
+
+Two findings already paid for, so they are not re-priced: **chain contraction is
+the wrong primitive** (ADR-014 measured `vg mod -u` at 0.95% on HPRC chr20,
+because at 90 haplotypes almost no node has bidirected degree 2), and
+**BubbleGun as published does not reach human chr1** (the PangyPlot team measured
+chrY 2 s / 1 GB, chrX 30 s / 11 GB, chr9 ~40 min / 13 GB, chr1 hanging at
+15+ GB). PangyPlot's second mechanism — merging degree-2 runs into polylines and
+grid-snapping — does not apply either: on chrY hprc.clip 39.4% of segments are
+junctions and the mean linear run is 2.8 segments, so RDP tops out at 59.5% and
+only grid snapping reaches 99%. That is a layout-space simplification for an
+overview, not something that makes one 20-node window legible.
 
 ### Reads on the reconstructed derivative allele
 

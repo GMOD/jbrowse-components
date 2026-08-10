@@ -658,10 +658,39 @@ int64-CSR rewrite. `gfabase` (`src/schema/GFA1.sql`) validates the indexing
 shape: a genomic range index over `(refseq_name, refseq_begin, refseq_end)` is
 what `segs.bed.gz` does with tabix.
 
+## Operating the graph plugin: two traps that cost a session each
+
+- **`test_data/graphgenomeview/_localdist` is a stale hand-copy and nothing
+  refreshes it.** `GRAPH_PLUGIN_LOCAL=1` serves that directory, so every "I
+  rebuilt the plugin and it still fails" result is read off whatever build was
+  copied there last. A dependency bump, two upstream patches and two rounds of
+  instrumentation were all judged against a bundle containing none of them.
+  **`cp -r <plugin>/dist test_data/graphgenomeview/_localdist` before any
+  `GRAPH_PLUGIN_LOCAL` run**, or make the generator do it.
+- **emscripten's `UTF8ArrayToString` cannot decode a long string out of wasm
+  memory.** It decodes a view over `HEAPU8` — over `WebAssembly.Memory`, whose
+  buffer is a resizable `ArrayBuffer`, which browsers refuse to `TextDecoder`.
+  `UTF16ToString` has the same shape. Both take that path **only for strings
+  longer than 16 units**, and shorter ones fall through to a manual char loop —
+  which is why it read as a data bug for a whole session: the fine index names
+  nodes `s10274` (6 bytes, fine) and the tier names them
+  `bb_GRCh38#0#chr1_0` (18 bytes, throws), so it was 100% failure on one index
+  and 0% on the other with everything else identical. Patched in
+  `scripts/build-wasm.sh`, because that script overwrites the generated file
+  wholesale.
+
+  The general lesson is the cheaper one: **bisecting on inputs cannot find a bug
+  whose error names a type.** Nine rounds eliminated window size, file size,
+  route, compressor, index flavour, tag column, plugin version and two dependency
+  versions, and none of them was it. One instrumented run — wrap
+  `TextDecoder.prototype.decode` and **throw** the stack rather than logging it,
+  since a worker's console does not reach the page — named the frame
+  immediately. Reach for that on the second round, not the tenth.
+
 ## Open
 
-Each of these is written up with its files, its evidence and a definition of
-done in [handoffs/pangenome-graph-next.md](../handoffs/pangenome-graph-next.md).
+The queue, with what each one is blocked on, is
+[TODO.md](../TODO.md#pangenome-graph-view-the-open-queue).
 
 - ~~**The `samples` column is emitted but not read.**~~ Done 2026-08-02, as the
   general tag column above: `SM:Z:` reaches `GraphNode.tags.SM`. What is still
