@@ -19,6 +19,7 @@
     "check-gated-adapter-budgets": "node --experimental-strip-types scripts/check-gated-adapter-budgets.ts",
     "check-shell-pipefail": "node --experimental-strip-types scripts/check-shell-pipefail.ts",
     "check-config-read-types": "node --experimental-strip-types scripts/audit-config-read-types.ts",
+    "check-deferred-slot-reads": "node --experimental-strip-types scripts/audit-deferred-slot-reads.ts",
     "validate-built-config": "node --experimental-strip-types scripts/validate-built-config.ts",
     "measure-chrome-bundle": "node --experimental-strip-types scripts/measureChromeBundle.ts",
     "changelog": "scripts/generate-changelog.sh",

@@ -127,6 +127,14 @@ jobs:
       - name: Check config reads did not lose their slot-name checking
         run: pnpm check-config-read-types
 
+      # The other half of the same problem: not a typo'd slot name, but a
+      # correctly-named read of a jexl-callback slot that forgot to say what the
+      # callback is about. Same ratchet shape, same reason (adr-066) — it cannot
+      # be a type error, because a `jexl:` expression on a `color` slot is a
+      # string and the resolved type is already string.
+      - name: Check callback slots are not resolved without a context
+        run: pnpm check-deferred-slot-reads
+
   lint:
     name: Lint
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
