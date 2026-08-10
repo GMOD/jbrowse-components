@@ -74,7 +74,11 @@ import {
   findVertexAttributeStruct,
 } from './shader-codegen/reflection.ts'
 import { vulkanGlslToWebgl2 } from './shader-codegen/vulkanGlslToWebgl2.ts'
-import { emitJsTwins, parseWgsl } from './shader-codegen/wgslToJs.ts'
+import {
+  emitJsTwins,
+  emitRefusal,
+  parseWgsl,
+} from './shader-codegen/wgslToJs.ts'
 
 import type { ShaderScan } from './shader-codegen/liftReport.ts'
 import type { JsExportFn } from './shader-codegen/parseDirectives.ts'
@@ -724,10 +728,24 @@ async function compileOne(log: Log, slangPath: string, source: string) {
     // same parser rather than a second opinion: the point of the inventory is
     // to report what THIS emitter can and cannot do, so a divergent scanner
     // would describe a subset nobody can actually generate from.
-    const { fns, refused } = parseWgsl(wgsl)
+    // Parsed AND emitted, not merely parsed. A function whose body calls an
+    // unsupported builtin parses cleanly — the parser accepts any call — and is
+    // only refused when the emitter reaches the call. Reporting it as liftable
+    // sends a reader to `//! js-export` for a rejection; see `emitRefusal`.
+    const parsed = parseWgsl(wgsl)
+    const inSubset = []
+    const refused = [...parsed.refused]
+    for (const fn of parsed.fns) {
+      const reason = emitRefusal(parsed, fn.name)
+      if (reason === undefined) {
+        inSubset.push(fn)
+      } else {
+        refused.push({ name: fn.name, reason })
+      }
+    }
     SCANS.push({
       shader: path.relative(PROJECT_ROOT, slangPath),
-      inSubset: fns,
+      inSubset,
       refused,
     })
   } finally {

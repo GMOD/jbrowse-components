@@ -606,4 +606,17 @@ describe('a returned float2', () => {
       emit('fn p_0( v_0 : vec2<f32>) -> f32 { return 1.0f; }', ['p'])
     }).toThrow(/type 'vec2' is outside the supported scalar subset/)
   })
+
+  // The refusal has to name the builtin, not the vec2 that happens to be its
+  // argument. `glyphEdgeAlpha` in pointGlyph.slang is exactly this shape —
+  // `length(vec2<f32>(ddx(c), ddy(c)))` — and reporting it as a vec2 problem
+  // sends the reader after a construct the emitter does support.
+  test('blames the unsupported builtin, not its vec2 argument', () => {
+    expect(() => {
+      emit(
+        'fn p_0( c_0 : f32) -> f32 { return length(vec2<f32>(dpdx(c_0), dpdy(c_0))); }',
+        ['p'],
+      )
+    }).toThrow(/call to 'length'/)
+  })
 })

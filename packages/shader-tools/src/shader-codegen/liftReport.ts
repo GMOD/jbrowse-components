@@ -96,8 +96,19 @@ function signatureOf(fn: WgslFn) {
 export function refusalBucket(reason: string) {
   const body = reason.replace(/^wgslToJs: /, '')
   const construct = body.split(' (line ')[0]!.split('. ')[0]!
-  // `'Corners_0'` and `'Corners_3'` are the same struct seen from two shaders.
-  return construct.replaceAll(/'(\w+?)_\d+'/g, "'$1'").trim()
+  return (
+    construct
+      // `'Corners_0'` and `'Corners_3'` are the same struct seen from two
+      // shaders — slangc numbers declarations per module.
+      .replaceAll(/'(\w+?)_\d+'/g, "'$1'")
+      // Not every refusal puts its location in the ` (line N,` suffix the split
+      // above removes; some name it mid-sentence ("vec2<f32> at line 227 is
+      // used…"). Left in, one function refused at two call sites produced two
+      // rows, and every row would churn whenever anything above it moved —
+      // which is exactly the churn this function exists to prevent.
+      .replaceAll(/\bline \d+/g, 'line N')
+      .trim()
+  )
 }
 
 /**

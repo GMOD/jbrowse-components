@@ -37,6 +37,15 @@ describe('refusal bucketing', () => {
     expect(a).toBe("type 'vec3' is outside the supported scalar subset")
   })
 
+  test('normalizes a location named mid-sentence, not just the suffix', () => {
+    // Not every refusal puts its line in the ` (line N,` tail. One that names it
+    // inline gave a function refused at two call sites two rows, each of which
+    // churned whenever anything above it moved.
+    expect(
+      refusalBucket("wgslToJs: call to 'length' at line 227 is neither a"),
+    ).toBe(refusalBucket("wgslToJs: call to 'length' at line 389 is neither a"))
+  })
+
   test('collapses slangc’s per-shader numbering on a struct name', () => {
     // The same struct is `Corners_0` in one shader and `Corners_3` in another,
     // purely because slangc counts declarations module-wide. Left alone, one

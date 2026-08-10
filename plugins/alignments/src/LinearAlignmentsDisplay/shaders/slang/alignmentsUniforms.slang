@@ -18,8 +18,6 @@
 // carries ARC_HEIGHT_MARGIN and ARC_COLOR_SHORT_INSERT this way — the evaluator
 // resolves through imports, so a constant declared here still reaches it).
 //! consts-out: packages/alignments-core/src/indicatorTriangle.generated.ts
-//! js-skip: bpToClipX — bp to clip space; Canvas2D maps bp to screen px through makeBpMapper and never enters clip space
-//! js-skip: bpToLinear — the same conversion into the arcs pass linear axis, and the same reason
 //! js-skip: expandMinWidthX — widens about the midpoint in clip space, and has no Canvas2D counterpart: the pileup floors a cell width one-sidedly and adds a seam fudge the shader deliberately omits (rendererTypes.ts pileupCellWidth). A different rule, not a twin
 module alignmentsUniforms;
 

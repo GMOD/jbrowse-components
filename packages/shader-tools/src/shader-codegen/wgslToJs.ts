@@ -1103,6 +1103,23 @@ class Emitter {
           misleading,
       )
     }
+    // Whether the callee is one this emitter can produce AT ALL, checked before
+    // the arguments are emitted. Order matters for the message, not the
+    // outcome: `length(vec2<f32>(ddx(c), ddy(c)))` is refused either way, but
+    // evaluating the arguments first refuses it for the *vec2*, sending the
+    // reader after a supported-looking construct instead of the three
+    // derivative builtins that are the actual reason.
+    if (!this.isKnownCallee(name)) {
+      throw new Error(
+        `wgslToJs: call to '${name}' at line ${e.line} is neither a supported ` +
+          `builtin nor a function in this module. ${
+            UNSUPPORTED_BUILTINS.has(name)
+              ? `'${name}' is a WGSL builtin this emitter does not implement — ` +
+                `add it to MATH_BUILTINS/HELPERS if it has exact JS semantics.`
+              : `If it is a builtin, add it explicitly; do not let it through.`
+          }`,
+      )
+    }
     const a = e.args.map(x => this.expr(x))
     // Scalar constructors. `f32(x)` is identity on a JS number; the integer
     // ones truncate the way the shader does. A literal argument folds away.
@@ -1136,17 +1153,17 @@ class Emitter {
       // WGSL argument order is select(falseValue, trueValue, condition).
       return `(${a[2]} ? ${a[1]} : ${a[0]})`
     }
-    if (this.moduleFns.has(name)) {
-      return `${this.id(name)}(${a.join(', ')})`
-    }
-    throw new Error(
-      `wgslToJs: call to '${name}' at line ${e.line} is neither a supported ` +
-        `builtin nor a function in this module. ${
-          UNSUPPORTED_BUILTINS.has(name)
-            ? `'${name}' is a WGSL builtin this emitter does not implement — ` +
-              `add it to MATH_BUILTINS/HELPERS if it has exact JS semantics.`
-            : `If it is a builtin, add it explicitly; do not let it through.`
-        }`,
+    return `${this.id(name)}(${a.join(', ')})`
+  }
+
+  /** Every callee spelling `call` above knows how to emit. */
+  private isKnownCallee(name: string) {
+    return (
+      SCALAR_TYPES.has(name) ||
+      name in MATH_BUILTINS ||
+      HELPER_BUILTINS.has(name) ||
+      name === 'select' ||
+      this.moduleFns.has(name)
     )
   }
 
@@ -1447,7 +1464,39 @@ export function emitJsTwins(
   exported: readonly string[],
   headerLines: readonly string[],
 ): string {
-  const { fns, refused } = parseWgsl(wgsl)
+  return emitFromModule(baseName, parseWgsl(wgsl), exported, headerLines)
+}
+
+/**
+ * Why `name` cannot be emitted, or `undefined` if it can.
+ *
+ * Parsing a function and emitting it are two different bars, and the gap
+ * between them is where the liftability inventory was lying. The parser accepts
+ * any call syntactically, so a body full of `ddx`/`dot`/`textureSample` reads
+ * fine and lands in `fns`; the refusal happens in the emitter, which knows those
+ * builtins have no JS equivalent. An inventory built on the parser alone
+ * therefore advertised functions that `//! js-export` would reject — and the
+ * FIRST real candidate it produced, `glyphEdgeAlpha`, was one of them.
+ *
+ * Actually attempting the emission is the only honest test, and it is cheap:
+ * the module is already parsed, and this is pure string work.
+ */
+export function emitRefusal(mod: WgslModule, name: string) {
+  try {
+    emitFromModule('probe', mod, [name], [])
+    return undefined
+  } catch (e) {
+    return e instanceof Error ? e.message : String(e)
+  }
+}
+
+function emitFromModule(
+  baseName: string,
+  mod: WgslModule,
+  exported: readonly string[],
+  headerLines: readonly string[],
+): string {
+  const { fns, refused } = mod
   const byName = new Map(fns.map(f => [f.name, f]))
 
   // Exported functions keep the name the directive asked for — a consumer
