@@ -54,6 +54,28 @@ generated module, or from the package that owns the concept where a
 passes it along. Two such chains existed and were removed; don't add one back for
 convenience.
 
+## What actually has to agree
+
+Worth stating plainly, because the parity machinery here is easy to read as a
+demand for pixel-identical backends, and it is not one. Three tiers:
+
+| | Standard | Examples |
+| --- | --- | --- |
+| **A number the user reads** | must agree | LD's r²/D' in a tooltip, a coverage depth |
+| **A semantic decision** | must agree | how many chevrons a line gets, which glyph kind, whether a locus is polymorphic, that a degenerate span is a *point* |
+| **Where a mark lands, to the pixel** | best effort | a half-pixel snap, an AA ramp, a min-width tick one column over |
+
+**Only the first two are what this exists for.** The third is explicitly
+per-backend — `WIGGLE_FUDGE_FACTOR`, the variant matrix's `f2` overdraw and
+synteny's sub-pixel centerline stroke are AA compensation ARCHITECTURE.md tells
+you *not* to port into a `.slang`, and the Canvas2D rasterizer will never match
+a fragment shader's coverage anyway.
+
+So: don't add an export to close a sub-pixel gap, don't write a test that pins
+one, and if a refactor moves a mark by a pixel in a rare case, record it and
+move on. The reason to generate a twin is that a hand-written one drifts
+*semantically* — and you cannot tell in advance which drift will be cosmetic.
+
 ## Adding a function to the export set
 
 0. **Check it clears the bar.** Export when the formula has a branch, a magic
@@ -149,11 +171,9 @@ for before arguing from algebra. To check whether rewriting a decision changed
 anything, put the old and new formulations side by side in one throwaway
 `.slang`, compile it with `-target cpp`, and sweep both from a C++ `main` — real
 float32, not a `Math.fround` simulation, and the same compiler that generates
-the GPU path. That is how `rectSpanPx` was shown to be free (39 emitted ops
-against 43) and, more usefully, how it turned out **not** to be
-behaviour-preserving: the clip-space version it replaced put an interbase point
-mark a full pixel off at half-pixel offsets, because it formed `2.0 /
-canvasWidth` in a normalized space. ADR-051 has the numbers.
+the GPU path. `rectSpanPx` is the worked example: free on cost (39 emitted ops
+against 43), unchanged on every ordinary span, and a pixel different on a rare
+interbase point. ADR-051 has the numbers and why that last part is a footnote.
 
 Mechanics worth not rediscovering, all in `oracleProbe.ts`:
 

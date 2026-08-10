@@ -303,18 +303,22 @@ of the 2px floor, both orientations:
   `* canvasWidth * 0.5` in the width readback paid for it.
 - **Span branch: unchanged.** 0 of 7317 cases differ by as much as half a pixel
   (max 0.00024 px), and the min-width decision never flips.
-- **Point branch: moved, and toward Canvas2D.** 19 of 369 cases shift a full
-  pixel, 15 at an exactly-half-pixel offset. The old code formed the ±half-width
-  as `2.0 / canvasWidth` in clip space — inexact for most widths — so the
-  perturbed value fell the other side of `floor(x + 0.5)`. Canvas2D always did
-  that arithmetic in px, so these were pixels where the GPU placed an interbase
-  cut mark somewhere the Canvas2D and SVG paths did not.
+- **Point branch: shifts a pixel** on 19 of 369 cases, mostly at exactly
+  half-pixel offsets, because the old code formed the ±half-width as
+  `2.0 / canvasWidth` in a normalized space and the perturbed value fell the
+  other side of `floor(x + 0.5)`.
 
-So the refactor is not behaviour-preserving, and that is the point: **the
-clip-space formulation was the one that disagreed.** The general lesson is that
-"px decision, thin clip-space wrapper" is not only more liftable but more
-*accurate* — clip space is a normalized coordinate with a division in it, and
-doing integer-ish pixel arithmetic there rounds where px space does not.
+So the refactor is not quite behaviour-preserving. **That is a footnote, not a
+result** — sub-pixel placement is best-effort between the backends, and a pixel
+on a 2px interbase tick at a measure-zero input is exactly the class
+ARCHITECTURE.md tells you not to chase. It is recorded so the next person to
+diff the two formulations does not spend an afternoon on it.
+
+The reusable part is the method, and one incidental fact: "px decision, thin
+clip-space wrapper" is not only more liftable but slightly better conditioned,
+since clip space is normalized by a division and pixel-scale arithmetic there
+rounds where px-space arithmetic does not. Prefer the shape for the first
+reason; the second is a bonus, not a justification.
 
 ### The blind spot the survey had, and why two decisions were missed
 
