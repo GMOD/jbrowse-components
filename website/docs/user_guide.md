@@ -68,6 +68,7 @@ How to drive JBrowse once it is running. New here? Start with the
 
 - [](/docs/tutorials/synteny_visualization)
 - [](/docs/tutorials/allvsall_synteny)
+- [](/docs/tutorials/hg002_haplotypes)
 - [](/docs/tutorials/pangenome_ecoli)
 - [](/docs/tutorials/pangenome_cactus)
 - [](/docs/tutorials/pangenome_hprc)

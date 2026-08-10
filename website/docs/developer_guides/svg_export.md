@@ -46,6 +46,14 @@ export type PaintLayerOpts = SvgRasterCanvasOpts & {
  * the plugin needs in logical coordinates (the raster canvas is pre-scaled, so
  * callbacks never deal with devicePixelRatio). Width 0 or height 0 falls
  * through to the vector branch (canvas creation rejects 0×0).
+ *
+ * A vector layer whose `paint` drew nothing renders nothing — not an empty
+ * `<g>`. Layers are routinely conditional on data (a highlight pass with no
+ * highlighted feature, a legend-less track, a band that is switched off), and
+ * every such layer was leaving a stray group in the file for a reader to open
+ * and find empty. The raster branch has no cheap equivalent — asking whether a
+ * canvas is blank means reading its pixels back — and it does not need one: a
+ * fully transparent PNG is a couple of hundred bytes.
  */
 export function PaintLayer({
   width,
@@ -71,8 +79,11 @@ export function PaintLayer({
   }
   const svg = new SvgCanvas()
   paint(svg)
-  // eslint-disable-next-line @eslint-react/dom-no-dangerously-set-innerhtml
-  return <g dangerouslySetInnerHTML={{ __html: svg.getSerializedSvg() }} />
+  const markup = svg.getSerializedSvg()
+  return markup ? (
+    // eslint-disable-next-line @eslint-react/dom-no-dangerously-set-innerhtml
+    <g dangerouslySetInnerHTML={{ __html: markup }} />
+  ) : null
 }
 ```
 

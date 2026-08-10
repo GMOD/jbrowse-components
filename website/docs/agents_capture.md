@@ -97,16 +97,26 @@ await page.waitForFunction(
     if (views.some(v => v.initialized === false)) {
       return false
     }
+    // A container view (synteny, dotplot) keeps its assemblies on the rows
+    // and its tracks on the levels, so both walks descend into sub-views
+    // and levels rather than reading the top view only.
+    const asmOf = (v: ViewState): string[] => [
+      ...(v.assemblyNames ?? []),
+      ...(v.views ?? []).flatMap(asmOf),
+    ]
     if (
       wantAssembly !== null &&
-      !views.some(v => (v.assemblyNames ?? []).includes(wantAssembly))
+      !views.some(v => asmOf(v).includes(wantAssembly))
     ) {
       return false
     }
+    const tracksOf = (v: ViewState): TrackState[] => [
+      ...(v.tracks ?? []),
+      ...(v.levels ?? []).flatMap(l => l.tracks ?? []),
+      ...(v.views ?? []).flatMap(tracksOf),
+    ]
     const open = new Set(
-      views.flatMap(v =>
-        (v.tracks ?? []).map(t => t.configuration?.trackId),
-      ),
+      views.flatMap(v => tracksOf(v).map(t => t.configuration?.trackId)),
     )
     return wantTracks.every(id => open.has(id))
   },
