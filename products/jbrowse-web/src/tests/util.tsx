@@ -553,12 +553,10 @@ export async function testFileReload(config: {
 }
 
 export async function openSpreadsheetView({
-  user,
   screen,
   fileUrl,
   timeout,
 }: {
-  user: any
   screen: any
   fileUrl: string
   timeout?: number

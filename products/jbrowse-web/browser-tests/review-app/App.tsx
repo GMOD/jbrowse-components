@@ -112,6 +112,12 @@ export function App() {
           const r = (await (
             await fetch('/api/compare')
           ).json()) as ComparePayload
+          // `cancelled` is only ever assigned by the cleanup closure below, so
+          // the checker narrows it to `false` for the whole loop body and calls
+          // this check dead. It is not: the effect can be torn down during the
+          // await, and without this the teardown races a setDiffs on an
+          // unmounted tree.
+          // oxlint-disable-next-line typescript/no-unnecessary-condition
           if (cancelled) {
             return
           }
