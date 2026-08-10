@@ -194,4 +194,68 @@ describe('Canvas2DLDRenderer', () => {
 
     expect(pathOps).not.toContain('fill')
   })
+  // The shader's own transform (render-core `diagonalCellToClip`), so the
+  // assertion below is against what the GPU actually draws rather than against
+  // a second copy of the Canvas2D arithmetic.
+  function shaderCorner(
+    x: number,
+    y: number,
+    state: LDRenderState = makeRenderState(),
+  ) {
+    const rx = (x + y) * COS45
+    const ry = (-x + y) * COS45
+    return [
+      rx * state.viewScale + state.viewOffsetX,
+      ry * state.viewScale * state.yScalar,
+    ]
+  }
+
+  // Genomic-positions mode gives every SNP its own Voronoi width, so the cell at
+  // (i=1, j=0) spans a 10-wide column against a 30-tall row. The half-diagonal
+  // form this replaced took the horizontal extent from `cw` and the vertical
+  // from `ch`, which describes the rotated rect only when they are equal — so a
+  // genomic matrix drew cells off-center, mis-shaped, and not tiling. Uniform
+  // mode never exposed it (every boundary is `i * uniformW`), and neither did
+  // this file until now.
+  test('a cell whose two spans differ is the rotated rect, not a half-diagonal rhombus', () => {
+    const { canvas, pathOps } = createMockCanvas()
+    const renderer = new Canvas2DLDRenderer(canvas)
+    renderer.uploadColorRamp(makeColorRamp())
+
+    renderer.render(
+      makeOneCell({ boundaries: new Float32Array([0, 10, 40]) }),
+      makeRenderState(),
+    )
+
+    // pre-rotation rect x in [0,10] (column 0), y in [10,40] (row 1)
+    expect(pathOps).toEqual([
+      'beginPath',
+      `moveTo(${shaderCorner(0, 10)})`,
+      `lineTo(${shaderCorner(10, 10)})`,
+      `lineTo(${shaderCorner(10, 40)})`,
+      `lineTo(${shaderCorner(0, 40)})`,
+      'closePath',
+      'fill',
+    ])
+  })
+
+  // The equal-span case is what every uniform-mode matrix is, so the fix had to
+  // leave it byte-identical: there the rotated rect IS the half-diagonal rhombus.
+  test('equal spans still draw the uniform-mode rhombus', () => {
+    const { canvas, pathOps } = createMockCanvas()
+    const renderer = new Canvas2DLDRenderer(canvas)
+    renderer.uploadColorRamp(makeColorRamp())
+
+    renderer.render(makeOneCell(), makeRenderState())
+
+    expect(pathOps).toEqual([
+      'beginPath',
+      `moveTo(${shaderCorner(0, 10)})`,
+      `lineTo(${shaderCorner(10, 10)})`,
+      `lineTo(${shaderCorner(10, 20)})`,
+      `lineTo(${shaderCorner(0, 20)})`,
+      'closePath',
+      'fill',
+    ])
+  })
 })

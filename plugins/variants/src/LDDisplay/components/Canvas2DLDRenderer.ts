@@ -52,17 +52,35 @@ export function drawLDBlocks(
         continue
       }
 
-      const leftX = (px + py) * s + viewOffsetX
-      const centerY = (-px + py) * s * yScalar
-      const halfW = cw * s
-      const halfH = ch * s * yScalar
+      // The four corners of the pre-rotation rect [px,px+cw] x [py,py+ch], each
+      // put through the same map the shader's `diagonalCellToClip` applies —
+      // (x,y) -> ((x+y)·s, (y-x)·s·yScalar) — rather than a rhombus built from
+      // half-diagonals. Stepping +cw along the cell's x axis moves the screen
+      // point by (+cw·s, -cw·s·yScalar) and stepping +ch along y by (+ch·s,
+      // +ch·s·yScalar), so the two steps compose to the far corner.
+      //
+      // The half-diagonal form this replaces used `cw` for the horizontal
+      // extent and `ch` for the vertical, which describes the rotated rect only
+      // when the two are equal. They always are in uniform mode — every
+      // boundary is `i * uniformW` — so this is bit-identical there. In genomic
+      // mode they are the Voronoi widths of two different SNPs and are equal
+      // only by coincidence: cells landed at the wrong center, in the wrong
+      // shape, and stopped tiling. It reached figures rather than only the
+      // Canvas2D fallback, because SVG export paints through this function on
+      // every backend.
+      const x0 = (px + py) * s + viewOffsetX
+      const y0 = (py - px) * s * yScalar
+      const dxw = cw * s
+      const dyw = -cw * s * yScalar
+      const dxh = ch * s
+      const dyh = ch * s * yScalar
 
       ctx.fillStyle = fillStyleLut(t)
       ctx.beginPath()
-      ctx.moveTo(leftX, centerY)
-      ctx.lineTo(leftX + halfW, centerY - halfH)
-      ctx.lineTo(leftX + 2 * halfW, centerY)
-      ctx.lineTo(leftX + halfW, centerY + halfH)
+      ctx.moveTo(x0, y0)
+      ctx.lineTo(x0 + dxw, y0 + dyw)
+      ctx.lineTo(x0 + dxw + dxh, y0 + dyw + dyh)
+      ctx.lineTo(x0 + dxh, y0 + dyh)
       ctx.closePath()
       ctx.fill()
     }
