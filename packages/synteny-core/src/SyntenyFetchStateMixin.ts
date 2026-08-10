@@ -84,7 +84,7 @@ export function SyntenyFetchStateMixin() {
        * display-local getter: it is the one reader outside the display, and
        * without the hook it demanded `dataCurrent` from a display whose
        * `loadedFetchKey` can never be set — wedging the view's `settled` gate,
-       * and with it the `*_canvas_done` testid screenshot capture waits on.
+       * and with it the `data-display-drawn` screenshot capture waits on.
        *
        * Default false is the strict answer, so a display that grows an inert
        * state and forgets to say so keeps waiting for data (diagnosable) rather

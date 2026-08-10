@@ -154,7 +154,7 @@ export function linearSyntenyViewHelperModelFactory(
       /**
        * #getter
        * Canvas has painted and no display is still fetching, so what's on
-       * screen is the final settled content. Drives the `synteny_canvas_done`
+       * screen is the final settled content. Drives `synteny_canvas`'s `data-display-drawn`
        * test-id, which screenshot capture and the browser-test suites wait on
        * before snapshotting — so it must mean "done", not just "first paint".
        */

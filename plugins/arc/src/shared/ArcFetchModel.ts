@@ -104,7 +104,7 @@ export function ArcFetchModel() {
          * #getter
          * Arc's first-paint signal — the `canvasDrawn` analogue for a display
          * that paints main-thread SVG and composes no `RenderLifecycleMixin`.
-         * Stays true across a refetch so the `-done` testid and the loading
+         * Stays true across a refetch so `data-display-drawn` and the loading
          * anti-flash don't churn on pan; the stricter, staleness-aware
          * `svgReady` is the export gate.
          *
