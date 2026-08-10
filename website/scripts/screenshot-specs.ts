@@ -29,6 +29,7 @@ import { featuresSpecs } from './specs/features.ts'
 import { gallerySpecs } from './specs/gallery.ts'
 import { graphSpecs } from './specs/graph.ts'
 import { gwasSpecs } from './specs/gwas.ts'
+import { hg002HaplotypeSpecs } from './specs/hg002_haplotypes.ts'
 import { hicSpecs } from './specs/hic.ts'
 import { ldSpecs } from './specs/ld.ts'
 import { mafSpecs } from './specs/maf.ts'
@@ -74,6 +75,7 @@ export const specs: ScreenshotSpec[] = [
   ...tcgaSpecs,
   ...cnv1000gSpecs,
   ...gwasSpecs,
+  ...hg002HaplotypeSpecs,
   ...hicSpecs,
   ...qtlSpecs,
   ...trioSpecs,
