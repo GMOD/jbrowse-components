@@ -222,6 +222,11 @@ function DisplayChromeBaseInner<B extends { dispose(): void }>({
   )
 }
 
+// Deliberate, and the only one in the tree: the generic `<B>` infers through
+// `observer` only from a named declaration. See the comment on
+// DisplayChromeBaseInner and its `'use no memo'`, which is what keeps the
+// compiled form safe.
+// eslint-disable-next-line no-restricted-syntax
 const DisplayChromeBase = observer(DisplayChromeBaseInner)
 
 export default DisplayChromeBase

@@ -805,6 +805,9 @@ export function showTrackGeneric(
     )
     for (const [key, value] of Object.entries(displaySlots)) {
       if (key !== 'type' && isConfigurationSlot(display.configuration, key)) {
+        // the key comes from a snapshot at runtime, and setConf's slot name is
+        // a compile-time type
+        // eslint-disable-next-line no-restricted-syntax
         display.configuration.setSlot(key, value)
       }
     }

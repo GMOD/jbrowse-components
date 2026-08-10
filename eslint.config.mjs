@@ -41,6 +41,37 @@ const noExportStar = {
   message:
     "Do not use `export *` / `export type *`. List the names explicitly (`export { a, b } from './x.ts'`) so a barrel's public surface is greppable and a new internal export can't silently become package API. Regenerate a list with the TS checker rather than hand-writing it.",
 }
+// The three below pin invariants CLAUDE.md already states, each of which fails
+// silently — the code keeps working, just wrongly, so no test catches them.
+const noNamedObserver = {
+  selector: "CallExpression[callee.name='observer'] > Identifier.arguments",
+  message:
+    'Write `observer(function Name() {…})` inline. babel-plugin-react-compiler does not compile an inline observer, but it DOES compile the `function Name(){}; observer(Name)` form, and a compiled MobX render can serve a stale read. See the React Compiler × MobX section of CLAUDE.md.',
+}
+const noSetSlot = {
+  selector:
+    "CallExpression[callee.property.name='setSlot'][callee.object.property.name='configuration']",
+  message:
+    'Write config with `setConf`, not `configuration.setSlot`. A promotable slot resolves only through `resolveConf`, and setSlot writes past that. See the MST section of CLAUDE.md.',
+}
+const noAnyStateTreeNode = {
+  selector:
+    "TSInterfaceHeritage > TSQualifiedName[right.name='IAnyStateTreeNode'], TSInterfaceHeritage > Identifier[name='IAnyStateTreeNode']",
+  message:
+    'A duck-typed interface extends `IStateTreeNode`, never `IAnyStateTreeNode`. The latter resolves through `STNValue<any, …>` to `any`, which silently turns off checking for every member you just declared. See the MST section of CLAUDE.md.',
+}
+
+// The set every file gets. A block below that needs its own extra selectors
+// spreads this rather than re-listing it — flat config overrides the rule
+// instead of merging it, so a hand-copied list is a list that drifts, which is
+// what the three copies of `noExportStar` used to be.
+const restrictedSyntax = [
+  noMockFromSrc,
+  noReadableFromWeb,
+  noExportStar,
+  noNamedObserver,
+  noAnyStateTreeNode,
+]
 
 export default defineConfig(
   {
@@ -454,12 +485,18 @@ export default defineConfig(
   // no-restricted-imports only covers import statements, not call expressions.
   {
     rules: {
-      'no-restricted-syntax': [
-        'error',
-        noMockFromSrc,
-        noReadableFromWeb,
-        noExportStar,
-      ],
+      'no-restricted-syntax': ['error', ...restrictedSyntax],
+    },
+  },
+  {
+    // setConf-over-setSlot is a source rule, not a test rule. 44 of the 47
+    // findings are fixtures reaching straight for a slot, where there is no
+    // promotable-slot resolution to route around and `setSlot` is the shorter
+    // way to say it. In source there were three, one of which is `setConf`
+    // itself.
+    ignores: ['**/*.test.{ts,tsx}', '**/tests/**', '**/browser-tests/**'],
+    rules: {
+      'no-restricted-syntax': ['error', ...restrictedSyntax, noSetSlot],
     },
   },
   // Shader codegen emits `export *` and must not be hand-edited (run
@@ -469,7 +506,10 @@ export default defineConfig(
   {
     files: ['**/*.generated.ts', 'products/*/src/webpack.ts'],
     rules: {
-      'no-restricted-syntax': ['error', noMockFromSrc, noReadableFromWeb],
+      'no-restricted-syntax': [
+        'error',
+        ...restrictedSyntax.filter(s => s !== noExportStar),
+      ],
     },
   },
   // Style rules can't apply to codegen output: the transpiler emits `1.0` for a
@@ -494,9 +534,7 @@ export default defineConfig(
     rules: {
       'no-restricted-syntax': [
         'error',
-        noMockFromSrc,
-        noReadableFromWeb,
-        noExportStar,
+        ...restrictedSyntax,
         {
           selector: "NewExpression[callee.name='SvgCanvas']",
           message:

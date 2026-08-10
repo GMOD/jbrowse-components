@@ -139,5 +139,6 @@ export function setConf<
   SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> =
     ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
 >(model: { configuration: CONFMODEL }, slotName: SLOT, value: unknown) {
+  // eslint-disable-next-line no-restricted-syntax -- this is setConf
   model.configuration.setSlot(slotName, value)
 }
