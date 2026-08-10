@@ -1,5 +1,6 @@
 import { insertionBarWidth } from '@jbrowse/alignments-core'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 import { drawMultiRowIndelGlyphs } from './drawMultiRowIndelGlyphs.ts'
 
@@ -20,7 +21,14 @@ interface FillRectCall {
 
 function mockCtx() {
   const calls: FillRectCall[] = []
-  const texts: { text: string; x: number; y: number }[] = []
+  // fillStyle rides along with the text: these labels are drawn ON the painting,
+  // so the color they are drawn in is part of whether they were drawn at all.
+  const texts: {
+    text: string
+    x: number
+    y: number
+    fillStyle: string
+  }[] = []
   const ctx = {
     fillStyle: '',
     font: '',
@@ -39,7 +47,7 @@ function mockCtx() {
       calls.push({ x, y, w, h, fillStyle: this.fillStyle })
     },
     fillText(text: string, x: number, y: number) {
-      texts.push({ text, x, y })
+      texts.push({ text, x, y, fillStyle: this.fillStyle })
     },
   }
   return { ctx: ctx as unknown as Ctx2D, calls, texts }
@@ -160,12 +168,14 @@ test('a block wider than the bar gets the label but no redundant bar', () => {
   const region = { ...wide, featureDeltas: Int32Array.from([113174, 0]) }
   const { calls, texts } = draw(region)
   expect(calls).toEqual([])
-  expect(texts).toEqual([{ text: '113174', x: 150, y: 10 }])
+  expect(texts).toEqual([{ text: '113174', x: 150, y: 10, fillStyle: '#fff' }])
 })
 
 test('a large insertion labels itself with the bp count', () => {
   const region = { ...narrow, featureDeltas: Int32Array.from([113174, 0]) }
-  expect(draw(region).texts).toEqual([{ text: '113174', x: 105, y: 10 }])
+  expect(draw(region).texts).toEqual([
+    { text: '113174', x: 105, y: 10, fillStyle: '#fff' },
+  ])
 })
 
 // The label is the magnitude: a signed one reads as a length that went negative,
@@ -177,7 +187,39 @@ test('a deletion draws a line across the reference span it removes', () => {
   // feature 1 spans x 500-600 on row 1 (y 20-40), so the line sits at its
   // vertical middle
   expect(calls).toEqual([{ x: 500, y: 29, w: 100, h: 2, fillStyle: '#333' }])
-  expect(texts).toEqual([{ text: '3217', x: 550, y: 25 }])
+  expect(texts).toEqual([{ text: '3217', x: 550, y: 25, fillStyle: '#fff' }])
+})
+
+// The regression: with no `color` slot every row takes a `tagColorPalette`
+// entry, and every one of those is a pastel. A hardcoded white bp count was
+// therefore invisible on the default configuration of the very track the glyphs
+// were built for -- a pangenome path BED, whose config example sets
+// `lengthField` and nothing else -- in exactly the case above, where the block
+// is wide enough that no purple bar is drawn under the text.
+test('labels read against a pale block rather than staying white on it', () => {
+  const region = { ...wide, featureDeltas: Int32Array.from([113174, -3217]) }
+  const { texts } = draw(region, {
+    // '#BBCCEE' is tagColorPalette[0]; '#800080' is the theme insertion purple,
+    // so the two rows are the two sides of the contrast decision.
+    rowColorsByIndex: [cssColorToABGR('#BBCCEE'), cssColorToABGR('#800080')],
+  })
+
+  expect(texts).toEqual([
+    { text: '113174', x: 150, y: 10, fillStyle: 'rgba(0, 0, 0, 0.87)' },
+    { text: '3217', x: 550, y: 25, fillStyle: '#fff' },
+  ])
+})
+
+// …and where a bar IS drawn, the label sits on the bar, not on the block, so the
+// block's color is the wrong thing to measure against. Same pale row as above,
+// now on the narrow (pure-insertion) shape that earns a bar.
+test('a label on the insertion bar reads against the bar', () => {
+  const region = { ...narrow, featureDeltas: Int32Array.from([113174, 0]) }
+  const { texts } = draw(region, {
+    rowColorsByIndex: [cssColorToABGR('#BBCCEE')],
+  })
+
+  expect(texts).toEqual([{ text: '113174', x: 105, y: 10, fillStyle: '#fff' }])
 })
 
 test('a deletion narrower than the label threshold draws the line only', () => {

@@ -4,6 +4,8 @@ import {
   getInsertionType,
   insertionBarWidth,
 } from '@jbrowse/alignments-core'
+import { getContrastText } from '@jbrowse/core/ui/palette'
+import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import {
   forEachClippedBlock,
   makeBpMapper,
@@ -27,6 +29,35 @@ const DELETION_LINE_H = 2
 const FONT = '10px sans-serif'
 // A deletion label needs this much block to sit inside without spilling past it.
 const DELETION_LABEL_MIN_PX = 30
+
+/**
+ * Text color for a label drawn ON one of these blocks, by contrast against
+ * whatever it lands on.
+ *
+ * Not a constant, because there is no color that reads on every block. Both bp
+ * labels sit over the painting, and the painting's colors are the user's: an
+ * `itemRgb` file's, a `sampleColorMap`, or — in the default configuration, which
+ * is what the `lengthField` config example uses — `tagColorPalette`, every entry
+ * of which is a pastel. A hardcoded white insertion count was therefore
+ * invisible on exactly the pangenome-path track the glyphs were added for,
+ * wherever the block was wide enough that the insertion bar wasn't drawn over
+ * it. Alignments can hardcode white because its label always sits on the
+ * purple bar; here that is the minority case.
+ *
+ * Memoized per background because `getContrastText` parses a color string, and
+ * a painting repeats a handful of them across every block it has.
+ */
+function makeLabelColorResolver() {
+  const cache = new Map<string, string>()
+  return (background: string) => {
+    let text = cache.get(background)
+    if (text === undefined) {
+      text = getContrastText(background)
+      cache.set(background, text)
+    }
+    return text
+  }
+}
 
 // The region's data if it carries a delta per feature, else undefined (nothing to
 // annotate, so the block is skipped entirely). Named because the test it performs
@@ -77,6 +108,7 @@ export function drawMultiRowIndelGlyphs(
 ) {
   const { canvasWidth, canvasHeight, rowHeight, rowProportion } = state
   const { height: h, offset } = rowBand(rowHeight, rowProportion)
+  const labelColor = makeLabelColorResolver()
   ctx.font = FONT
   ctx.textBaseline = 'middle'
 
@@ -99,7 +131,7 @@ export function drawMultiRowIndelGlyphs(
       forEachDrawnFeature(
         regionData,
         drawnFeatureContext(regionData, state),
-        (i, rowIndex) => {
+        (i, rowIndex, color) => {
           const delta = featureDeltas[i]!
           if (delta === 0) {
             // a reference-length allele: no glyph, and the block already says
@@ -122,12 +154,19 @@ export function drawMultiRowIndelGlyphs(
             // same center — so drawing it again only overdraws, and what the
             // reader still lacks is the magnitude, i.e. the label below.
             const barWidth = insertionBarWidth(delta, pxPerBp, h)
-            if (barWidth > Math.abs(xb - xa)) {
+            const barDrawn = barWidth > Math.abs(xb - xa)
+            if (barDrawn) {
               ctx.fillStyle = insertionColor
               drawInsertionMarker(ctx, xCenter, top, h, delta, pxPerBp)
             }
             if (getInsertionType(delta, pxPerBp) === 'large' && labelFits) {
-              ctx.fillStyle = 'white'
+              // against whatever the label actually lands on — the bar when one
+              // was drawn (it is wider than the block by definition of
+              // `barDrawn`, so it is what is under the centered text), the
+              // block itself when the block was the wider of the two
+              ctx.fillStyle = labelColor(
+                barDrawn ? insertionColor : abgrToCssRgba(color),
+              )
               ctx.textAlign = 'center'
               ctx.fillText(String(delta), xCenter, yMid)
             }
@@ -142,6 +181,11 @@ export function drawMultiRowIndelGlyphs(
               DELETION_LINE_H,
             )
             if (labelFits && width >= DELETION_LABEL_MIN_PX) {
+              // Sits above the line, so it is on the block — the line's own
+              // #333 is chosen to read against a grey deletion-class block and
+              // says nothing about the rest of the palette. Same resolver as
+              // the insertion count, for the same reason.
+              ctx.fillStyle = labelColor(abgrToCssRgba(color))
               ctx.textAlign = 'center'
               // The MAGNITUDE, not the signed delta. `delta` is negative here by
               // definition, and a bare "-9048" beside a graph reads as a
