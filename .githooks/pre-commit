@@ -6,6 +6,11 @@
 # Only the paths in this commit are formatted. Bare `pnpm format` rewrites all
 # ~5800 files, so in a worktree shared by several people it lands someone
 # else's reformatting in your diff under your commit message.
+#
+# This is oxfmt over the staged paths and nothing else -- `pnpm lint` (oxlint
+# --type-aware) is NOT here and never runs on commit. Measured 2026-08-10 on
+# real commits: 105ms on 3 files, 305ms on 1, 663ms on 10, 819ms on 13. So if a
+# commit feels slow, this is not where the time went; check before removing it.
 set -eu
 
 if [ "${SKIP_OXFMT:-}" = 1 ]; then
