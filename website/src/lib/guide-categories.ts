@@ -150,6 +150,7 @@ export const TUTORIAL_ORDER = [
   'synteny_visualization',
   'multiway_synteny',
   'allvsall_synteny',
+  'hg002_haplotypes',
   'pangenome_ecoli',
   'pangenome_cactus',
   'pangenome_hprc',

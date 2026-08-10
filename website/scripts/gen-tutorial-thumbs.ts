@@ -257,6 +257,17 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     src: 'selection_pressure/lysozyme.png',
     band: [0.22, 0.78],
   },
+  hg002_haplotypes: {
+    // The ribbon band and the two rulers bracketing it, which is the whole
+    // shape of this card: one sweep crossing between two haplotypes of the same
+    // chromosome. Left frame for the same reason as orthofinder_synteny below,
+    // the per-row "No tracks active / Open track selector" chip is horizontally
+    // centered and there are no panel tracks here to push it off screen.
+    src: 'hg002_haplotypes_8p23_inversion.png',
+    band: [0.3, 0.87],
+    xband: [0, 0.42],
+    position: 'left',
+  },
   homoeolog_synteny: {
     // The dotplot itself, past the app chrome and the coordinate readout. A
     // dotplot card wants the plot area and nothing else: the scattered segments
