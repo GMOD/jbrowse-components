@@ -65,6 +65,17 @@ strand case.
   version forgets, since context-loss recovery hands back empty GPU buffers.
   Create them _outside_ the `attachRenderingBackend` call and keep every input
   read unconditional.
+- **An `installPerRegionLifecycle` `encode` reads a narrow inputs getter, never
+  the display's `renderState`.** The encode runs inside the per-key autorun, so
+  every observable it touches is a re-encode trigger for _every_ region — and a
+  `renderState` carries the canvas box and the row geometry, which move on each
+  frame of a height drag or a window resize. None of that is in the buffer: the
+  geometry reaches the shader as uniforms, so the re-encode rebuilds byte-
+  identical output, at tens of MB and a pass over every feature, per frame. The
+  established spelling is a getter named for the job — maf's and wiggle's
+  `gpuProps()`, multi-row features' `featurePaintInputs` (which the hit test
+  reads too, so it is deliberately not `gpuProps`). Manhattan and sequence
+  encode `data => data` and read nothing, which is the other safe shape.
 - **Multi-pass renderers bracket `sync()` with `beginUpload`/`endUpload`**, so a
   pass whose data went empty can't leave a stale buffer. To skip a region inside
   that bracket, `retainRegion` it — the sweep destroys anything not rewritten,

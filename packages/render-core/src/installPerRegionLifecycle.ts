@@ -81,6 +81,16 @@ export type PerRegionRender<B, Encoded> = (
  * upload for this tick — the autorun stays subscribed and re-fires once the
  * missing input (e.g. a theme-derived encoder param) becomes available.
  *
+ * **Which makes what `encode` reads a performance contract, not a detail.**
+ * Every observable it touches re-encodes every region, so it must read a getter
+ * narrowed to what actually lands in the buffer — maf's and wiggle's
+ * `gpuProps()`, multi-row features' `featurePaintInputs` — and never the
+ * display's whole `renderState`. That one carries the canvas box and the row
+ * geometry, none of which is encoded (the shader gets them as uniforms) and all
+ * of which moves on every frame of a height drag or a window resize: the
+ * display then rebuilds tens of MB of byte-identical buffer per frame, with
+ * nothing on screen to say so. See render-core/CLAUDE.md.
+ *
  * Successful encode results are cached in an internal map and passed to
  * `render` so stateless renderers (wiggle) can draw from it without
  * re-encoding per frame. Renderers that read `rpcDataMap` directly can
