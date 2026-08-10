@@ -156,7 +156,7 @@ describe('computeDerivativePaths', () => {
     expect(candidates[0]!.refNames).toContain('chr7')
   })
 
-  it('drops paths below minReads, so a single mismapped read is not a candidate', () => {
+  it('drops paths below minReads, so a row is always a route reads AGREE on', () => {
     const lone = [
       seg('chr3', 25_326_821, 25_359_568, 1, 0),
       seg('chr7', 1_000_000, 1_002_000, 1, 32_732),

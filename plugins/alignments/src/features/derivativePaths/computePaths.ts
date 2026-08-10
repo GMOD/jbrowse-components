@@ -51,7 +51,16 @@ export interface ComputeDerivativePathsOpts {
    * chr9 fold-back means two real alleles reported as one.
    */
   tolerance?: number
-  /** Drop paths with less support than this. */
+  /**
+   * Drop paths with less support than this.
+   *
+   * A presentation floor, not a verdict: it is what makes a row "a route
+   * several reads agree on" rather than "a route", and the dialog says so in
+   * those words. It is emphatically NOT a judgement that a one-read chain is
+   * mismapped — this file has no way to know that, and the moment this number
+   * is defended as quality control it has become a caller's FILTER column with
+   * no way to see what it removed.
+   */
   minReads?: number
   /**
    * Context to show beyond the outermost junctions. The interior segments are
@@ -321,8 +330,16 @@ export function computeDerivativePaths(
 
   return candidates.sort(
     (a, b) =>
-      // support first; then more hops, since a 3-junction path is the
-      // interesting one when two candidates are equally well supported
+      // Support first. The segment count then breaks ties DETERMINISTICALLY,
+      // and that is the whole of its job: rows have to come back in a stable
+      // order, and two routes at equal support have nothing else to separate
+      // them. It is not a claim that the longer route is the likelier one —
+      // this file ranks by how many reads say a thing and never by how
+      // interesting the thing is, and at COLO829's chr9 fold-back the tiebreak
+      // duly puts a three-segment route above the two-segment allele the
+      // tutorial is about. That is why the picker's rows carry a
+      // `derivative-path-<refNames>` testid and every spec selects by it: rank
+      // is stable, but it is not meaningful, so nothing may key on position.
       b.readCount - a.readCount || b.segments.length - a.segments.length,
   )
 }

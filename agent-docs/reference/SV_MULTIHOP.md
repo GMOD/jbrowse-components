@@ -480,6 +480,59 @@ the read-side evidence. Ordering has to come from a breakend walk over the VCF
 reading the alignments, and one to run as its own program and consume the output
 of, rather than to fold in here.
 
+**And the program to consume is LINX, not one of ours.** Ordering breakends into
+a derivative chromosome is exactly LINX's job, and the reason it is a separate
+program is not tidiness: LINX resolves chaining by imposing allele-specific copy
+number constraints at every point on each chromosome, plus the constraint that a
+chromosome needs a centromere, fed by PURPLE's purity and ploidy estimates
+([Shale et al. 2022](https://doi.org/10.1016/j.xgen.2022.100112)). Nothing in
+this repo has purity, ploidy or allele-specific CN, so a `chains` that grew an
+orderer would be guessing at precisely the step the literature solves with data
+we do not have. Load LINX's output as a track instead.
+
+## The line this feature does not cross
+
+Worth stating plainly, because every idea in this area is one step from a
+caller and the steps are individually reasonable.
+
+**JBrowse may aggregate and rank what the reads literally say, and draw the
+result. It may not decide what is true, and it must not emit anything that
+outlives the view.**
+
+Concretely, against [cuteSV's](https://doi.org/10.1186/s13059-020-02107-y) own
+description of a caller as three steps — signature extraction, clustering and
+refinement, then calling and genotyping — the in-app reconstruction does the
+first for free (SA tags are already parsed to draw arcs), a thirty-line version
+of the second (`buildClusterOf`), and none of the third. There is no genotype,
+no likelihood, no FILTER and no VCF out. `computeDerivativePaths` is ~180 lines
+of logic; the other ~1,300 lines of this feature build views, which is a genome
+browser's actual job.
+
+The ancestry to claim is Ribbon and SplitThreader, both cited in the tutorial and
+both visualization tools. The picker is Ribbon with a `GROUP BY`: Ribbon draws
+one read's SA chain against the reference, this groups those chains and counts
+them.
+
+Three questions killed `projectReadsOntoDerivative`
+([above](#reads-on-the-allele-built-reverted-do-not-re-add)) and they generalize,
+so ask them of anything new here:
+
+1. **Can it be wrong in a way the picture shows?** The projection could not — the
+   allele has no sequence, so no read's bases ever touched it.
+2. **Is its evidence independent of what it is checking?** The projection's was
+   not; it tested chains against a junction list derived from those chains.
+3. **Does it survive an aligner artifact honestly?** The projection redrew a
+   mismapped read as support.
+
+A "no" to any of them means the thing belongs in `scripts/`, or in somebody
+else's program, and not in the browser.
+
+The one capability here that no caller has, and the reason the feature earns its
+place: it shows the **dissent**. The der(3) window returns the 28-read
+four-segment allele *and* the 2-read route that skips the chr12 insert, each with
+its own count. cuteSV and LINX are obliged to emit one answer. Preserving the
+disagreement is the product; resolving it is not.
+
 ## Traps in this worktree
 
 - **The session scratchpad is a 16 GB tmpfs.** A `samtools sort` of a few GB
