@@ -31,10 +31,23 @@ interface TrackState {
   configuration?: { trackId?: string }
 }
 
+interface LevelState {
+  tracks?: TrackState[]
+}
+
 interface ViewState {
   initialized?: boolean
   assemblyNames?: string[]
   tracks?: TrackState[]
+  // A container view keeps its open tracks somewhere other than `tracks`, and
+  // reading only the top level makes it look like nothing is open at all. A
+  // LinearSyntenyView/DotplotView holds the synteny tracks on its LEVELS (one
+  // per gap between adjacent rows) and the per-row LGV tracks on its SUB-VIEWS;
+  // its own `tracks` is empty in both cases. So a capture of any synteny view
+  // used to time out with "tracks []" while the track was open and drawn on
+  // screen, and the error blamed the caller's config.
+  levels?: LevelState[]
+  views?: ViewState[]
 }
 
 // `window.JBrowseSession` is jbrowse-web's own devtools/automation handle
@@ -59,7 +72,11 @@ export function readSessionSummary(
 
 // Serialized into the page, so it can only call what it declares — hence the
 // inlined copy of readViews rather than a shared import.
-function readSessionSummaryInPage(): SessionSummary | undefined {
+//
+// Exported for its test: it reads `globalThis.JBrowseSession` and nothing else,
+// so calling it in node against a stubbed global exercises the very function
+// puppeteer serializes, rather than a copy of it that can drift.
+export function readSessionSummaryInPage(): SessionSummary | undefined {
   const session = (
     globalThis as {
       JBrowseSession?: { views?: ViewState[] }
@@ -69,11 +86,26 @@ function readSessionSummaryInPage(): SessionSummary | undefined {
   if (!views) {
     return undefined
   }
+  // Inlined rather than shared with the gate below for the same reason as the
+  // readViews copy: both are serialized into the page.
+  function collect(v: ViewState): TrackState[] {
+    return [
+      ...(v.tracks ?? []),
+      ...(v.levels ?? []).flatMap(l => l.tracks ?? []),
+      ...(v.views ?? []).flatMap(collect),
+    ]
+  }
   return {
     views: views.length,
-    assemblies: [...new Set(views.flatMap(v => v.assemblyNames ?? []))],
+    assemblies: [
+      ...new Set(
+        views.flatMap(function asm(v: ViewState): string[] {
+          return [...(v.assemblyNames ?? []), ...(v.views ?? []).flatMap(asm)]
+        }),
+      ),
+    ],
     trackIds: views.flatMap(v =>
-      (v.tracks ?? []).map(t => t.configuration?.trackId ?? '(unnamed)'),
+      collect(v).map(t => t.configuration?.trackId ?? '(unnamed)'),
     ),
   }
 }
@@ -113,16 +145,26 @@ export async function waitForSession(
         if (views.some(v => v.initialized === false)) {
           return false
         }
+        // A container view (synteny, dotplot) keeps its assemblies on the rows
+        // and its tracks on the levels, so both walks descend into sub-views
+        // and levels rather than reading the top view only.
+        const asmOf = (v: ViewState): string[] => [
+          ...(v.assemblyNames ?? []),
+          ...(v.views ?? []).flatMap(asmOf),
+        ]
         if (
           wantAssembly !== null &&
-          !views.some(v => (v.assemblyNames ?? []).includes(wantAssembly))
+          !views.some(v => asmOf(v).includes(wantAssembly))
         ) {
           return false
         }
+        const tracksOf = (v: ViewState): TrackState[] => [
+          ...(v.tracks ?? []),
+          ...(v.levels ?? []).flatMap(l => l.tracks ?? []),
+          ...(v.views ?? []).flatMap(tracksOf),
+        ]
         const open = new Set(
-          views.flatMap(v =>
-            (v.tracks ?? []).map(t => t.configuration?.trackId),
-          ),
+          views.flatMap(v => tracksOf(v).map(t => t.configuration?.trackId)),
         )
         return wantTracks.every(id => open.has(id))
       },
