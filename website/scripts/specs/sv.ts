@@ -765,17 +765,24 @@ export const svSpecs: ScreenshotSpec[] = [
     //
     // The heterozygosity the two sections add up to is in the caption instead —
     // that is a conclusion drawn from both, not a label for either.
+    //
+    // NO "FLANK" (reviewer: "i dont really like the term flank here"). It is
+    // the field's word for the pieces either side, and the figure does not need
+    // a word for them at all: the top pill names what a reader can already see
+    // — the read breaks into three pieces and the middle one is a different
+    // colour — and says what that middle piece IS. The colour is the pointer,
+    // so the pill needs no coordinate and no anatomy vocabulary.
     annotations: [
       {
         type: 'text',
-        text: 'a supplementary alignment at each breakpoint: forward flank, reverse core, forward flank',
+        text: 'each read breaks into three pieces; the blue middle piece is aligned in reverse — that is the inverted segment',
         fontSize: 18,
         maxWidth: 560,
         anchor: { text: 'Split (SA)', alignX: 'right', dx: 14, dy: 45 },
       },
       {
         type: 'text',
-        text: 'no supplementary alignment: these cross the same span unbroken, so their haplotype is not inverted',
+        text: 'these reads cross the same span in one piece, so this haplotype is not inverted',
         fontSize: 18,
         maxWidth: 560,
         anchor: { text: 'Not split', alignX: 'right', dx: 14, dy: 45 },

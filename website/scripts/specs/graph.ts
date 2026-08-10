@@ -1684,8 +1684,9 @@ function localSubgraphSpec(): ScreenshotSpec {
 //
 // They are the two longest nodes in the cut, so the graph writes `12 kb` and
 // `12.3 kb` beside them in both layouts and the rings do not have to carry the
-// identification themselves. Anchored by id, so each layout can put them where
-// it likes.
+// identification themselves -- which is what let the numbered badges that used
+// to sit on them come off when the pair was reported as too busy. Anchored by
+// id, so each layout can put them where it likes.
 const MHC_LANDMARK_NODES = ['s101145+', 's396436+']
 
 // The halves of pangenome/graph_resolution: ONE window of K12, cut from the two
@@ -1942,13 +1943,6 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
     // measurement; omitting it leaves the pane sizing itself, which is what the
     // anchored half wants (its height is its rank count).
     paneHeight,
-    // Where the half's own caption sits, as an offset from the graph canvas
-    // centre. The two layouts leave their whitespace in different places -- the
-    // force drawing's nodes all sit below the top of its pane, the anchored one
-    // fills its top rows and empties out under the low ranks -- so a single
-    // offset would land on the drawing in one of them.
-    labelOffset,
-    label,
     // The force half additionally carries the right-click route, which used to
     // be pangenome/hprc_node_menu, a whole second capture of this same window
     // and this same drawing (reviewer: "may not need standalone figure combine
@@ -1961,8 +1955,6 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
     layoutMode: 'auto' | 'force'
     viewportHeight: number
     paneHeight?: number
-    labelOffset: { dx: number; dy: number }
-    label: string
     nodeMenu?: {
       actions: ScreenshotAction[]
       annotations: Annotation[]
@@ -2013,49 +2005,34 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
     viewportWidth: 820,
     viewportHeight,
     hideTooltip: true,
+    // FOUR RED MARKS ON THE FORCE HALF, DOWN FROM SEVEN (review: "the red
+    // annotations are too messy here. reduce"). Two things came off, and each
+    // was redundant with something already drawn in the frame by the app:
+    //
+    // - THE NUMBERED BADGES. Two rings plus two badges landed inside one 60 px
+    //   corner of the force pane, because the landmarks are an allele and the
+    //   reference stretch it replaces and that layout draws them touching --
+    //   which is why the badges needed opposite dx/dy there and a special case
+    //   for the caption pill. What they were for is telling the reader that a
+    //   ring on the left is the same node as a ring on the right, and the graph
+    //   already writes each node's length beside it in BOTH layouts (`12 kb`
+    //   and `12.3 kb`, the two longest nodes in the cut). The rings stay; the
+    //   labels doing the identifying are the app's own.
+    // - THE PER-HALF CAPTION PILL. It said "The same subgraph, force-directed"
+    //   over a pane whose Layout dropdown, in frame and unobscured, reads
+    //   "Force-directed layout". `label`/`labelOffset` went with it, and with
+    //   them the note about the two layouts leaving their whitespace in
+    //   different places -- there is nothing left to place.
+    //
+    // What is left is the two landmark rings, and on the force half the third
+    // ring plus the boxed menu item, which are the right-click route.
     annotations: [
-      ...MHC_LANDMARK_NODES.flatMap((graphNode, i): Annotation[] => [
-        {
-          type: 'circle',
-          anchor: { view: 1, graphNode },
-          radius: 24,
-          strokeWidth: 3,
-        },
-        // A NUMBER on each ring, the same number in both halves, which is the
-        // cross-pane pointer this pair was missing (review: "you can consider
-        // drawing an arrow from left panel to right panel"). An arrow cannot be
-        // drawn: the halves are two separate captures `+append`ed afterwards,
-        // so no overlay spans the seam, and the two panes are different heights
-        // besides. A badge does the same job and survives both layouts moving
-        // their nodes, since it is anchored to the node rather than to a pixel.
-        {
-          type: 'circle',
-          text: `${i + 1}`,
-          anchor: { view: 1, graphNode },
-          radius: 15,
-          // The two landmarks are an allele and the reference stretch it
-          // replaces, so the force layout draws them touching and a shared
-          // offset stacks their badges on each other (and on the graph's own
-          // "12 kb" label). They go opposite ways there. The anchored layout
-          // puts them rows apart, so up-left is free for both.
-          dx: layoutMode === 'force' && i === 1 ? 34 : -34,
-          dy:
-            layoutMode === 'force' && i === 0
-              ? // the force half's caption sits top left of its canvas and the
-                // first landmark is right under it, so an up-left badge lands
-                // behind the pill (rendered, and it did)
-                34
-              : -34,
-        },
-      ]),
-      {
-        type: 'text',
-        text: label,
-        anchor: { selector: '[data-testid="graph-genome-canvas"]' },
-        ...labelOffset,
-        maxWidth: 300,
-        fontSize: 20,
-      },
+      ...MHC_LANDMARK_NODES.map((graphNode): Annotation => ({
+        type: 'circle',
+        anchor: { view: 1, graphNode },
+        radius: 24,
+        strokeWidth: 3,
+      })),
       ...(nodeMenu?.annotations ?? []),
     ],
   })
@@ -2084,19 +2061,6 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
       // pane sizes to its own rank count. Bringing this one down to 878 closes
       // most of the same gap by shrinking the part that was actually taller.
       paneHeight: 420,
-      labelOffset: {
-        // TOP RIGHT, not top left. The two landmark nodes are an allele and the
-        // reference stretch it replaces, and this layout draws both of them in
-        // the pane's top-left corner -- the caption there covered the second
-        // ring and its badge outright.
-        //
-        // dy is measured from the canvas CENTRE, so it tracks paneHeight: at
-        // the old 600 it was -276, and -176 is the same distance below the top
-        // edge now the pane is 180 px shorter.
-        dx: 180,
-        dy: -176,
-      },
-      label: 'The same subgraph, force-directed',
       // THE RIGHT-CLICK ROUTE, folded in from the deleted hprc_node_menu.
       // `Highlight in hg38` writes the node's reference interval into the
       // linear view's own highlight list, where it stays — which is what lets
@@ -2120,9 +2084,9 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
         annotations: [
           // which node the menu was opened on: a context menu opens AT the
           // cursor, so it covers the thing it was opened on, and a force
-          // drawing has no row label to fall back on. Unnumbered, unlike the
-          // two landmark badges — it is a third node and the caption names it
-          // rather than pairing it across the seam.
+          // drawing has no row label to fall back on. It is a third node,
+          // present on this half only, and the prose names it rather than
+          // pairing it across the seam.
           {
             type: 'circle',
             anchor: { view: 1, graphNode: HPRC_ALLELE },
@@ -2135,9 +2099,7 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
       },
     }),
     // the one-hop default cut brings in more nodes than the old None cut, so
-    // the anchored pane grew past the 775 this used to need. Its label goes in
-    // the block under the low-rank rows, which carry a label and almost no
-    // nodes, and clear of the row labels' own column.
+    // the anchored pane grew past the 775 this used to need.
     //
     // DO NOT try to square the composite by raising this to the force half's
     // 1055. `+append` pads the shorter panel, so the pair does carry a white
@@ -2152,11 +2114,6 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
       name: 'pangenome/hprc_mhc_layout_anchored',
       layoutMode: 'auto',
       viewportHeight: 790,
-      labelOffset: {
-        dx: -310,
-        dy: 46,
-      },
-      label: 'The same subgraph, anchored on hg38',
     }),
   ]
 }
@@ -2237,6 +2194,30 @@ export const graphSpecs: ScreenshotSpec[] = [
     // anchored drawing is two rank rows and the pane sizes to them.
     viewportHeight: 640,
     hideTooltip: true,
+    // WHAT CHARCOAL MEANS *IN A TIER*, which is not what it means anywhere else
+    // on this page (review, twice: "im still confused by the black bubbles. are
+    // the black bubbles not in the reference path?"). The honest answer is no,
+    // they are ON it, and the figure was saying the opposite by inheritance:
+    //
+    //   $ tabix ecoli_pggb.tier50.segs.bed.gz chr:1290000-1310000
+    //   chr 1295416 1299497 bb_chr_1295416 0 ct:Z:backbone
+    //   chr 1299497 1300697 79945@1299497  1 ct:Z:bubble cn:i:3 cw:i:2 \
+    //                                        cs:i:1 cl:i:1200 cv:i:0
+    //
+    // The arrowed bubble spans 1,200 bp OF K12's own coordinates, and its
+    // longest allele is that same 1,200 bp -- K12 is the strain that carries
+    // the element; the other four take the 1 bp allele. `bubbles_to_tier_bed.py`
+    // gives every bubble rank 1 and every invariant stretch rank 0, so in a tier
+    // rank is `bubble` vs `backbone`, NOT `off-reference` vs `reference`. In the
+    // fine index it does mean off-reference, and both indexes are drawn through
+    // the same reference-position ramp, so the colour looks like the same claim
+    // and is not. The caption said "an allele that is not K12 sequence", which
+    // was false for this figure and is fixed with it.
+    //
+    // So a two-row legend, in the pane's empty top-left corner (the app's own
+    // ramp key is top-right). It is the one thing on the image that a reader
+    // cannot derive from the image.
+    //
     // THE SAME EVENT the fine figure below opens, named on the node that stands
     // for it here, so the two figures are visibly about one locus. The id is the
     // tier's own -- source segment qualified by reference start, which is what
@@ -2244,6 +2225,29 @@ export const graphSpecs: ScreenshotSpec[] = [
     // chr:1250000-1350000` prints -- so the callout follows the layout rather
     // than a pixel.
     annotations: [
+      {
+        type: 'legend',
+        fontSize: 15,
+        entries: [
+          // the ramp's midpoint over this window, which is the green the
+          // backbone nodes are drawn in across the middle of the frame
+          {
+            label: 'backbone: all five strains agree',
+            color: 'hsl(150,70%,50%)',
+          },
+          {
+            label: 'bubble: they differ, on K12 coordinates',
+            color: ALT_ALLELE_COLOR,
+          },
+        ],
+        anchor: {
+          selector: '[data-testid="graph-genome-canvas"]',
+          alignX: 'left',
+          alignY: 'top',
+          dx: 16,
+          dy: 14,
+        },
+      },
       {
         type: 'text',
         text: 'IS5, one node (1.2 kb allele)',
@@ -2440,16 +2444,57 @@ export const graphSpecs: ScreenshotSpec[] = [
     // blank here: 21 bubbles are called in the 124th Mb and 40 in the 125th. So
     // pointing at this column and saying "centromere" would be wrong in a way
     // the same figure disproves two centimetres to the left.
+    //
+    // TWO WORDS, WHICH IS THE WHOLE LABEL (review: "too much text, reduce to
+    // bare minimum e.g. just put arrow pointing at 'pericentromere' and
+    // 'centromere' itself"). The paragraph that used to say why the column is
+    // blank was 22 words on a 250px pill covering a fifth of the lane; it is
+    // two landmarks named where they are, and the reason lives in the caption,
+    // which is where a paragraph belongs.
+    //
+    // The two are ADJACENT, so the arrow is short on purpose: the centromere
+    // ends at 125.1 Mb and the blank starts at 125.18 Mb, ~20 css px apart at
+    // 178 kb/px. That adjacency is the point of labelling both — the blank is
+    // NEXT TO the centromere, not the centromere — so an arrow that had to
+    // travel would be misrepresenting the geometry.
     annotations: [
+      // the blank column, labelled in the blank column
       {
         type: 'text',
-        text: '1q12, the heterochromatin next to the centromere: 18.7 Mb of unknown sequence (N) in GRCh38, so nothing aligns and no bubble is called.',
-        fontSize: 18,
-        maxWidth: 250,
+        text: 'pericentromere (1q12)',
+        fontSize: 17,
+        maxWidth: 120,
         anchor: {
           track: 'hprc_bubble_score',
-          locus: 'chr1:132,000,000',
-          fracY: 0.42,
+          locus: 'chr1:126,200,000',
+          fracY: 0.08,
+        },
+      },
+      // the band itself, one lane down, arrowed left out of the blank onto the
+      // bubbles that ARE called across it
+      {
+        type: 'text',
+        text: 'centromere',
+        fontSize: 17,
+        maxWidth: 120,
+        anchor: {
+          track: 'hprc_tier',
+          locus: 'chr1:126,600,000',
+          fracY: 0.06,
+        },
+      },
+      {
+        type: 'arrow',
+        strokeWidth: 2,
+        fromAnchor: {
+          track: 'hprc_tier',
+          locus: 'chr1:126,400,000',
+          fracY: 0.45,
+        },
+        anchor: {
+          track: 'hprc_tier',
+          locus: 'chr1:123,400,000',
+          fracY: 0.62,
         },
       },
     ],

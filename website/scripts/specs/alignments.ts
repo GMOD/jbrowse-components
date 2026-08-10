@@ -492,8 +492,19 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     // The box takes no `fracY`, so it wraps the whole track band and crosses
     // both coverage histograms and both pileups at once, which is the
     // comparison. The label right-aligns 14 px left of it (`textAlign: 'end'`,
-    // since a pill's width is only known in-page) into the white above the
-    // forward band's bars.
+    // since a pill's width is only known in-page).
+    //
+    // THE PILL IS OFF THE DATA NOW (review: "the agents 'call out' is obscuring
+    // the result"). At `fracY: 0.04` it sat inside the track band, over the top
+    // ~15 px of the FORWARD coverage histogram for 150 px to the left of the
+    // box -- which is the band a reader checks first, since the claim is that
+    // this column is missing from it. There is no free space inside the track:
+    // both coverage bands fill their lanes and both pileups pack to the bottom.
+    // The one empty strip in the frame is the track's own label row, white from
+    // the end of "HG002 ONT" to the right edge, so the pill goes there:
+    // `fracY: 0` is the top of the band and a negative `dy` lifts it out.
+    // fontSize 15 rather than 17 is what makes it fit that strip (~26 css px)
+    // instead of spilling back over the Forward strand divider.
     annotations: [
       {
         type: 'box',
@@ -502,12 +513,13 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       {
         type: 'text',
         text: 'reverse reads only',
-        fontSize: 17,
+        fontSize: 15,
         textAlign: 'end',
         anchor: {
           track: 'hg002_nanopore_hp',
           locus: '1:55,705,711',
-          fracY: 0.04,
+          fracY: 0,
+          dy: -30,
           alignX: 'left',
           dx: -14,
         },

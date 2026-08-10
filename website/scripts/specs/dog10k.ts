@@ -1381,20 +1381,20 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     // below-the-fold check, which still reported 10.5 css px under the fold at
     // 1410 -- the bottom retrocopy lane's own border.
     viewportHeight: 1421,
-    // ONE PILL, IN THE GREY (review: "add red text annotation in the grey area
-    // saying what the finding of this figure is and how the figure was made and
-    // what the 'three rows' of the figure are ... having the top and bottom and
-    // middle is kind of complex"). Three paragraphs for the three questions, in
-    // that order, and the third is the finding rather than a restatement of the
-    // caption -- a reader who takes nothing else from the frame should take
-    // "the blue blocks are the retrogene, not a deletion".
+    // ONE PILL, TWO SENTENCES (review: "reduce wordiness to bare minimum. like
+    // 1-2 sentences/phrases please"). It used to be three paragraphs answering
+    // an earlier round's three questions -- what the rows are, how the figure
+    // was made, and the finding. The first two are description a reader can get
+    // from the row labels and the caption, and only the third is something the
+    // picture alone does not say; so the pill keeps the third and the caption
+    // and the prose above the figure carry the rest.
     //
-    // It answers the second half of that note too, which asked to rearrange so
-    // the reference is on top. That cannot be done: the two PAFs are each
-    // retrocopy against the PARENT, and there is no CFA18-vs-CFA12 alignment, so
-    // a view with the parent on top would have to draw its second band between
-    // two rows that share no alignment. Saying why the parent is in the middle
-    // is the available fix, and is what the pill's second paragraph does.
+    // What is deliberately NOT on the image any more: the two GenBank
+    // accessions (in the caption and in the track names), and the note that the
+    // parent is in the middle because both PAFs align a retrocopy to the PARENT
+    // and there is no CFA18-vs-CFA12 alignment -- that answers an earlier "put
+    // the reference on top", which is still not available, and it is a
+    // paragraph in the tutorial rather than a label.
     //
     // Anchored in the sample lane, right of both blue blocks and below the
     // in-app genotype/group legend, so it sits on homozygous-reference grey and
@@ -1404,24 +1404,16 @@ export const dog10kSpecs: ScreenshotSpec[] = [
       {
         type: 'text' as const,
         fontSize: 20,
-        maxWidth: 600,
+        maxWidth: 460,
         text:
-          'THREE ROWS, ONE LOCUS. The middle row is the parent FGF4 gene in ' +
-          'the dog reference, with 55 Dog10K genomes under it; each blue ' +
-          'block is one Manta "deletion" call.\n' +
-          '\n' +
-          'Top and bottom are the two FGF4 retrocopies as deposited (CFA18, ' +
-          'MF040222; CFA12, MF040221), each aligned back to the parent — ' +
-          'which is why the parent is between them rather than beside them.\n' +
-          '\n' +
-          'A processed retrocopy has no introns, so every gap in a ribbon ' +
-          'falls on a parent intron, and that is exactly where the blue ' +
-          'blocks are. The calls are the retrogene, not a deletion.',
+          "Every gap in a ribbon is one of the parent gene's introns. " +
+          'The blue calls sit in the same two places: they are the retrogene, ' +
+          'not a deletion.',
         anchor: {
           view: [0, 1],
           track: 'dog10k_fgf4_svs',
-          locus: 'chr18:48,871,150',
-          fracY: 0.3,
+          locus: 'chr18:48,871,300',
+          fracY: 0.34,
         },
       },
     ],

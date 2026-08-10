@@ -818,7 +818,13 @@ in the fine one, so a window sixty times wider becomes drawable:
 }
 ```
 
-<Figure caption="100 kb of K12 around an IS5 element, one node per bubble, as a linear track above and the graph it indexes below. Both color a node by where on K12 it sits, and paint charcoal an allele that is not K12 sequence: twelve backbone stretches and eleven bubbles, each an indel some strain carries and K12 does not. The arrowed node is the IS5 element, which only K12 carries." src="/img/pangenome/pggb_bubble_tier.png" />
+Charcoal means something different in a tier than it does in the fine index
+above. Every node here has K12 coordinates, backbone and bubble alike: the
+builder ranks an invariant stretch 0 and a bubble 1, so the reference-position
+ramp colors the stretches the strains agree on and paints the sites they differ
+at charcoal. A charcoal node is not sequence missing from K12.
+
+<Figure caption="100 kb of K12 around an IS5 element, one node per bubble, as a linear track above and the graph it indexes below. Twelve backbone stretches, colored by where on K12 they sit, alternate with eleven charcoal bubbles, each a site the five strains differ at. The arrowed bubble is the IS5 element: 1.2 kb on K12, which K12 carries and the other four skip." src="/img/pangenome/pggb_bubble_tier.png" />
 
 The tier is a feature track, so it draws in a linear view as well as in the
 graph, and the figure shows both. A bubble is anchored on the reference span it
