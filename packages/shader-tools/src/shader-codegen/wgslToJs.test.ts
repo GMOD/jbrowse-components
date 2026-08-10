@@ -487,3 +487,41 @@ test('names the candidates when js-export asks for a missing function', () => {
     emit(`fn present_0( x_0 : f32) -> f32 { return x_0; }`, ['absent']),
   ).toThrow(/absent.*present/s)
 })
+
+// The emitter reads `Math` and `Boolean` off the global scope and binds every
+// shader local by name, so a Slang identifier spelled like one of them shadows
+// the thing the emitted body calls. JS also reserves words Slang does not.
+// Both were caught only by `pnpm typecheck`, several steps downstream, as an
+// error about a generated file the reader is told never to edit.
+describe('names the emitted JS needs for something else', () => {
+  const twin = (wgsl: string, name: string) =>
+    emitJsTwins('t', wgsl, [name], [])
+
+  test('refuses a local that shadows a global the body calls', () => {
+    expect(() => {
+      twin(
+        'fn f_0(a_0 : f32) -> f32 { let Math : f32 = floor(a_0); return Math; }',
+        'f_0',
+      )
+    }).toThrow(/Math is both a name this module binds/)
+  })
+
+  test('refuses a local JS will not let a binding use', () => {
+    expect(() => {
+      twin(
+        'fn f_0(a_0 : f32) -> f32 { let new : f32 = a_0 * 2.0; return new; }',
+        'f_0',
+      )
+    }).toThrow(/new is both a name this module binds/)
+  })
+
+  // A Slang name that merely resembles one is fine — the check is exact.
+  test('leaves an ordinary name alone', () => {
+    expect(
+      twin(
+        'fn f_0(a_0 : f32) -> f32 { let mathScale_0 : f32 = a_0 * 2.0; return mathScale_0; }',
+        'f_0',
+      ),
+    ).toContain('let mathScale = (a * 2.0)')
+  })
+})

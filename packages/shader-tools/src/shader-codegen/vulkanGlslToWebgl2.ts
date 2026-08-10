@@ -136,9 +136,26 @@ export function vulkanGlslToWebgl2(
 ) {
   let out = source
 
+  // `precision highp sampler2D` is not redundant with the two above it, and it
+  // is the one WebGL2-only difference in this file that nothing would have
+  // reported. GLSL ES 3.00 predeclares `precision lowp sampler2D` in BOTH
+  // stages (§4.5.4) — unlike float, whose fragment-stage default is absent
+  // rather than low — so a sampled value came back lowp: a minimum of 2^-8
+  // relative precision, which is exactly the width of the 8-bit color it is
+  // sampling and therefore the edge of banding it. WebGPU has no equivalent
+  // notion, so the two backends were reading the same ramp texture at
+  // different precisions. Desktop drivers generally ignore precision
+  // qualifiers, which is what makes this the sort of thing that only shows up
+  // on someone else's phone.
+  //
+  // Emitted only when the shader has a sampler, to keep it legible in the
+  // three generated files it belongs in rather than the forty it doesn't.
+  const samplerPrecision = renames.samplers?.length
+    ? 'precision highp sampler2D;\n'
+    : ''
   out = out.replace(
     /^#version\s+4\d\d\s*\n/,
-    `#version 300 es\nprecision highp float;\nprecision highp int;\n`,
+    `#version 300 es\nprecision highp float;\nprecision highp int;\n${samplerPrecision}`,
   )
   out = out.replace(
     /^#extension\s+GL_ARB_shader_draw_parameters\s*:\s*require\s*\n/m,

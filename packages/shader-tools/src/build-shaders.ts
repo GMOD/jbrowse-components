@@ -289,7 +289,25 @@ const WRITTEN = new Set<string>()
 
 // Write a generated artifact and record it. All artifact writes go through here
 // or through `writeOut`; a `writeFileSync` that doesn't will read as an orphan.
+//
+// Two writers for one path is a build error rather than a race. `assertOutPaths
+// Unique` catches the case it can see — two `//! *-out` directives naming the
+// same file — but it compares directives against directives, so a `//! layout-
+// out` aimed at some other shader's own `<base>.generated.ts` slips past it and
+// silently overwrites a full generated module with a layout stub. Checking at
+// the write covers every pair of writers, whatever their source, without
+// needing to predict which paths a file will produce. Files compile
+// concurrently, so which write lands first is nondeterministic; that this fires
+// is not.
 function emit(log: Log, absPath: string, contents: string) {
+  if (WRITTEN.has(absPath)) {
+    throw new Error(
+      `${absPath.replace(`${PROJECT_ROOT}/`, '')} is written twice in one ` +
+        `build. Two shaders (or one shader's directive and another's default ` +
+        `output path) claim it, and which one survives depends on which ` +
+        `finished last. Only one may own a generated file.`,
+    )
+  }
   writeFileSync(absPath, contents)
   WRITTEN.add(absPath)
   log(`  ok: ${absPath.replace(`${PROJECT_ROOT}/`, '')}`)

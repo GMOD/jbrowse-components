@@ -9,6 +9,19 @@ describe('vulkanGlslToWebgl2', () => {
     expect(out).not.toContain('#version 460')
   })
 
+  // GLSL ES 3.00 predeclares `precision lowp sampler2D` in both stages (§4.5.4)
+  // — unlike float, whose fragment default is absent rather than low — so a
+  // sampled color came back at the edge of the 8 bits it was sampling, on
+  // WebGL2 only. WebGPU has no equivalent notion, so the two backends read the
+  // same ramp at different precisions.
+  test('raises sampler precision, but only for a shader that has one', () => {
+    const src = '#version 460\nvoid main() {}\n'
+    expect(
+      vulkanGlslToWebgl2(src, 'fragment', { samplers: ['colorRamp'] }),
+    ).toContain('precision highp sampler2D;')
+    expect(vulkanGlslToWebgl2(src, 'fragment')).not.toContain('sampler2D')
+  })
+
   test('strips the shader_draw_parameters extension line', () => {
     const src =
       '#version 460\n#extension GL_ARB_shader_draw_parameters : require\nvoid main() {}\n'

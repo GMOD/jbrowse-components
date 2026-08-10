@@ -890,7 +890,23 @@ points when the source of truth shifts.
 ## Shaders (Slang codegen)
 
 Production draw shaders are authored as `.slang`, compiled to WGSL (WebGPU) and
-GLSL ES 3.00 (WebGL2) by `packages/shader-tools/src/build-shaders.ts`. **Never
+GLSL ES 3.00 (WebGL2) by `packages/shader-tools/src/build-shaders.ts`.
+
+**slangc compiles both backends; it just has no GLSL ES target.** Its profile
+list runs `glsl_110` … `glsl_460` — desktop only, no `*_es` profile and no ES
+capability (checked against the pinned 2026.5.2: `-profile glsl_300_es` is
+`unknown profile`). So `-target glsl` yields Vulkan-flavoured desktop GLSL —
+`#version 460`, `gl_VertexIndex`/`gl_BaseVertex`, `layout(binding=N)` on UBOs,
+`layout(location=N)` on varyings, HLSL brace initializers — and
+`vulkanGlslToWebgl2.ts` is the ~200-line adapter down to ES 3.00. That file is
+not an alternative to using Slang for WebGL; it is the gap Slang leaves. The one
+real alternative is `-target spirv` piped through **SPIRV-Cross**, which has a
+genuine ESSL backend (`--es --version 300`) and would replace the regex adapter
+with a compiler — at the cost of a second auto-fetched binary and a rework of
+every name-mangling assumption (`assertVertexInputsMatch`, `renameMangled`, the
+`a_<field>`/`v_<field>` convention). Not obviously worth it while
+glslangValidator gates the current output in CI, but it is the option, and it is
+the only one. **Never
 hand-edit `*.generated.ts`** — edit the `.slang` source and run `pnpm
 gen:shaders`. The generated module exports source strings, per-field byte offsets,
 strides, typed uniform/instance structs, a typed `writeUniforms()` /

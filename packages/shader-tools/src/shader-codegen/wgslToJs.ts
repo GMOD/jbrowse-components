@@ -1126,6 +1126,36 @@ function buildRenames(names: Iterable<string>, reserved?: ReadonlySet<string>) {
   return new Map(all.map(n => [n, demangle(n)]))
 }
 
+// Globals the emitted JS reads: `Math.*` for MATH_BUILTINS, `Boolean` for a
+// `bool(x)` conversion. A binding of the same name shadows the thing its own
+// body calls.
+const EMITTER_GLOBALS = new Set(['Math', 'Boolean'])
+
+// Words JS will not let a `let`/`function` bind, minus the ones Slang reserves
+// too (`if`, `for`, `return`, `static`, `class`, `this`, …) — those cannot
+// reach here because they were never legal Slang identifiers either. What is
+// left is the genuine gap between the two languages.
+const JS_RESERVED = new Set([
+  'arguments',
+  'await',
+  'debugger',
+  'delete',
+  'eval',
+  'finally',
+  'function',
+  'instanceof',
+  'new',
+  'null',
+  'super',
+  'throw',
+  'try',
+  'typeof',
+  'undefined',
+  'var',
+  'with',
+  'yield',
+])
+
 // slangc's own scratch locals: `_S1`, `_S2`, … numbered from a counter it keeps
 // across the WHOLE module, not per function.
 const SLANGC_TEMP_RE = /^_S\d+$/
@@ -1394,11 +1424,26 @@ export function emitJsTwins(
   // calls — `let _clamp = _clamp(x, 0, 1)`, which is a TDZ throw at best and a
   // wrong answer at worst. Nothing in the tree does it and nothing should, so
   // say so rather than renaming around it.
-  const shadowed = [...em.usedHelpers].filter(h => emittedNames.has(h))
+  //
+  // The same hazard reaches past the helpers, and used to go unmentioned. The
+  // emitter also reads `Math` and `Boolean` off the global scope, so a Slang
+  // local named `Math` emitted `let Math = Math.floor(a)` — a TDZ error on the
+  // very line that declares it. And JS reserves words Slang does not, so a
+  // local named `new` or `delete` emitted a module that does not parse. Both
+  // are caught by `pnpm typecheck` today, several steps downstream, as an error
+  // about a generated file the reader is told never to edit; the point of
+  // naming them here is that the message can say which .slang identifier to
+  // rename.
+  const shadowed = [
+    ...[...em.usedHelpers].filter(h => emittedNames.has(h)),
+    ...[...EMITTER_GLOBALS, ...JS_RESERVED].filter(n => emittedNames.has(n)),
+  ]
   if (shadowed.length > 0) {
     throw new Error(
-      `wgslToJs: ${shadowed.join(', ')} is both a name this module binds and a ` +
-        `helper the emitter needs at module scope. Rename it in the .slang.`,
+      `wgslToJs: ${[...new Set(shadowed)].join(', ')} is both a name this ` +
+        `module binds and a name the emitted JS needs for something else — a ` +
+        `helper or global it calls, or a word JS reserves. Rename it in the ` +
+        `.slang.`,
     )
   }
 
