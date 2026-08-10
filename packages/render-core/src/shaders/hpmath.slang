@@ -9,6 +9,14 @@
 // sub-pixel span is widened. `pnpm gen:shaders` transliterates them into
 // hpmath.js.generated.ts; nothing downstream re-derives them by hand.
 //! js-export: snapBoxHeightPx, snapBoxCenterYPx, extendToMinWidthPx
+//! js-skip: hpSplitUint — the hi/lo float32 precision split exists because a GPU has no float64; the Canvas2D path just uses a number
+//! js-skip: quadLocal — maps a vertex id to a quad corner — Canvas2D has no vertices, it calls fillRect
+//! js-skip: yPxToClipY — clip space is the GPU coordinate system; the px-space decision it wraps is what gets exported (snapBoxCenterYPx and friends)
+//! js-skip: clipXToPx — the x half of the same clip-space conversion, and the reason a px decision can be written once — nothing outside a shader is in clip space
+//! js-skip: pxToClipX — the inverse of clipXToPx, same reason
+//! js-skip: extendToMinWidthX — clip-space wrapper over the exported extendToMinWidthPx, which is the decision
+//! js-skip: snapToPixelX — clip in, clip out; its px core is `floor(x + 0.5)`, which is Math.round and needs no twin
+//! js-skip: snapBoxCenterY — clip-space wrapper over the exported snapBoxCenterYPx
 module hpmath;
 
 public static const uint HP_LOW_MASK = 0xFFFu;
@@ -146,4 +154,23 @@ public float2 quadLocal(uint vid) {
 public float4 screenToClip(float2 screen, float2 resolution) {
   float2 clip = screen / resolution * 2.0 - 1.0;
   return float4(clip.x, -clip.y, 0.0, 1.0);
+}
+
+// The x pair of `yPxToClipY`/its inverse: clip x ↔ screen px across the span
+// clip [-1,1] covers. `canvasWidth` is whatever width that span means for the
+// caller — for the LGV glyph passes it is the block's scissored width, not the
+// canvas (see FeatureGlyphUniforms.canvasWidth).
+//
+// These exist so a horizontal decision can be written once in px and used from
+// clip space, the way `snapBoxCenterYPx` already is vertically:
+// `pxToClipX(decide(clipXToPx(a), clipXToPx(b)), w)`. `snapToPixelX` above is
+// that sandwich with `floor(x + 0.5)` in the middle — the round trip is
+// arithmetic it was already doing internally, so spelling a decision this way
+// costs no precision. (Appended, per the note on screenToClip.)
+public float clipXToPx(float clipX, float canvasWidth) {
+  return (clipX + 1.0) * 0.5 * canvasWidth;
+}
+
+public float pxToClipX(float xPx, float canvasWidth) {
+  return xPx / canvasWidth * 2.0 - 1.0;
 }

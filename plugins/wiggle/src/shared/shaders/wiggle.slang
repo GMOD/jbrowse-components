@@ -16,6 +16,7 @@
 // plugin reads them back from there.
 //! export-consts: RENDERING_TYPE_XYPLOT, RENDERING_TYPE_DENSITY, RENDERING_TYPE_LINE, RENDERING_TYPE_SCATTER, RENDERING_TYPE_LINE_CENTER, SCALE_TYPE_LOG, NO_PREV_START
 //! consts-out: packages/wiggle-core/src/wiggleRenderModes.generated.ts
+//! js-skip: scoreToY — diverges from JS makeScoreNormalizer on a degenerate (min == max) domain on purpose — JS returns 0, the shader avoids NaN. Unifying them is a product decision, not a codegen one; the part both backends must share is normalizeScore, which is exported
 
 import hpmath;
 import colorPack;

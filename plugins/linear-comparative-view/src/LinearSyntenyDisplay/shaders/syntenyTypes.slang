@@ -21,6 +21,10 @@
 // rather than re-spelling the thresholds (adr-051).
 //! js-export: isCigarKind, isMarkerKind, fillShade, hoverDarken, thinWidthFade, sBlend, yCurve
 //! export-consts: KIND_CIGAR_MIN, KIND_MARKER
+//! js-skip: sBlendDeriv — the ribbon tangent, for extruding an edge normal per fragment; Canvas2D draws one bezierCurveTo and never needs the derivative
+//! js-skip: yCurveDeriv — same as sBlendDeriv, the other half of the tangent
+//! js-skip: vertCoverage — the top/bottom antialiasing ramp, measured per fragment; Canvas2D gets its edge AA from the rasterizer
+//! js-skip: perpCoverage — measures perpendicular width per fragment from each edge own foreshortening, where Canvas2D measures it once for the whole ribbon (ribbonPerpWidth). Same quantity, deliberately different estimator — only the perpW < 1 boundary is shared, and that is a comparison, not a function
 module syntenyTypes;
 
 // Re-exported so every synteny pass gets `screenToClip` (and the rest of

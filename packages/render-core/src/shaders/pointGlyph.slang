@@ -7,8 +7,9 @@
 // Imported via `import pointGlyph;`. The CPU side no longer keeps its own copy
 // of either the threshold or the snap: `export-consts` emits the constant and
 // `js-export` emits the snap, both consumed by `pointMarker.ts` (adr-051).
-//! export-consts: SMALL_POINT_MAX_DIAMETER
+//! export-consts: SMALL_POINT_MAX_DIAMETER, AA_PAD_PX
 //! js-export: crispSquareTopLeftPx
+//! js-skip: discExpand — expands a quad so the fragment AA ramp is not clipped; Canvas2D draws ctx.arc and has no quad to expand
 module pointGlyph;
 
 // 1px device pad around a disc so the smoothstep edge has room to fade without
