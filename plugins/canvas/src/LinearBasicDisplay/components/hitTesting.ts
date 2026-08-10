@@ -2,8 +2,13 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 import { bpAtPx } from '@jbrowse/render-core/canvas2dUtils'
 
 import { isBaseResolved } from '../../RenderFeatureDataRPC/zoomThresholds.ts'
-import { hgvsPosition, locateOnTranscript } from '../hgvsPosition.ts'
+import {
+  hgvsFromLocated,
+  hgvsPosition,
+  locateOnTranscript,
+} from '../hgvsPosition.ts'
 import { computeLabelExtraWidth } from './labelPositioning.ts'
+import { residueLabel } from './peptidePositioning.ts'
 
 import type {
   AminoAcidOverlayItem,
@@ -79,10 +84,31 @@ export function isHitFeature(r: HitResult): r is HitFeatureResult {
   return r.feature !== null
 }
 
+// The transcript the cursor resolved to, together with the name that transcript
+// goes by — resolved as ONE decision, because an HGVS name pairs the two and a
+// name naming something other than the coordinate's own transcript is a wrong
+// answer that reads like a right one.
+//
+// The subfeature wins when it is itself transcript-shaped (an isoform of a
+// gene); otherwise the top-level feature's own coords and name are used, INCLUDING
+// when a subfeature resolved. That last case is the one worth spelling out: a
+// subfeature registered by a non-transcript glyph (a mature-peptide product, a
+// repeat subpart, a bare exon row stacked beside a gene's transcripts — see
+// registerSubfeature in glyphEmitters) carries a `displayLabel` but no
+// `transcript`. Reading the label off the subfeature while the coordinates fell
+// back to the parent produced names like `exon5:n.123` — the exon's label on the
+// gene's coordinate system, in the exact syntax a variant is reported in.
+function hitTranscriptAndName(result: HitFeatureResult) {
+  const { subfeature, feature } = result
+  return subfeature?.transcript
+    ? { coords: subfeature.transcript, name: subfeature.displayLabel }
+    : { coords: feature.transcript, name: feature.name }
+}
+
 // The transcript the cursor resolved to, if any: the subfeature's when it landed
 // on an isoform of a gene, else the top-level feature's own.
 export function hitTranscript(result: HitFeatureResult) {
-  return result.subfeature?.transcript ?? result.feature.transcript
+  return hitTranscriptAndName(result).coords
 }
 
 // What the hover says about a position on a transcript: the exon it is in, and
@@ -95,7 +121,9 @@ export function hitTranscript(result: HitFeatureResult) {
 //
 // The c./n. coordinate needs the cursor to resolve to one base, so it appears
 // only at base zoom (see isBaseResolved) — off by a base, it would be worse than
-// absent.
+// absent. It is formatted from the SAME located position the exon is named from
+// (hgvsFromLocated, not hgvsPosition), so the walk happens once per hover rather
+// than once per readout — this runs on every mousemove.
 function transcriptReadouts(result: HitFeatureResult) {
   const coords = hitTranscript(result)
   const located = coords && locateOnTranscript(coords, result.bpPos)
@@ -105,8 +133,8 @@ function transcriptReadouts(result: HitFeatureResult) {
         ? `exon ${located.exonNumber}/${located.exonCount}`
         : undefined,
     hgvs:
-      coords && isBaseResolved(result.bpPerPx)
-        ? hgvsPosition(coords, result.bpPos)
+      coords && located && isBaseResolved(result.bpPerPx)
+        ? hgvsFromLocated(coords, located)
         : undefined,
   }
 }
@@ -120,13 +148,12 @@ function transcriptReadouts(result: HitFeatureResult) {
 // This is the position half of an HGVS variant name; the change itself
 // (`…c.93+1G>T`) needs an allele, which a gene annotation doesn't carry.
 export function hgvsHitLabel(result: HitFeatureResult) {
-  const coords = hitTranscript(result)
+  const { coords, name } = hitTranscriptAndName(result)
   const position =
     coords && isBaseResolved(result.bpPerPx)
       ? hgvsPosition(coords, result.bpPos)
       : undefined
-  const accession = result.subfeature?.displayLabel ?? result.feature.name
-  return position && accession ? `${accession}:${position}` : position
+  return position && name ? `${name}:${position}` : position
 }
 
 // One tooltip row: its parts share a line, space-separated, dropping any that
@@ -148,8 +175,14 @@ function tooltipRows(result: HitFeatureResult) {
   const { peptide } = result
   const { exon, hgvs } = transcriptReadouts(result)
   const title = isoform ?? result.feature.tooltip
+  // `(transl_except)` on a residue whose letter came from a transl_except
+  // override rather than from the codon table — a selenocysteine read as U, a
+  // pyrrolysine as O, a polyA-completed stop. The codon rect already paints
+  // those in TRANSL_EXCEPT_HIGHLIGHT, but a color alone doesn't say what it
+  // means, and `U840` on SELENOP is otherwise indistinguishable from a
+  // mistranslation.
   const residue = peptide
-    ? `${peptide.aminoAcid}${peptide.proteinIndex + 1}`
+    ? `${residueLabel(peptide)}${peptide.isTranslExcept ? ' (transl_except)' : ''}`
     : undefined
   return [tooltipRow(title), tooltipRow(exon, hgvs, residue)].filter(Boolean)
 }

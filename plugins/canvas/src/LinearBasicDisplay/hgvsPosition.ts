@@ -3,7 +3,7 @@ import type { TranscriptCoords } from '../RenderFeatureDataRPC/rpcTypes.ts'
 // Where a genomic position falls on a transcript, in the two numbers HGVS needs:
 // which transcribed base it is (or is nearest to) and how far into the flanking
 // intron it sits.
-interface ExonicPosition {
+export interface ExonicPosition {
   // 0-based count of transcribed bases before this one, in transcription order
   index: number
   // 0 when the position is exonic; otherwise the signed intron offset, positive
@@ -110,6 +110,31 @@ function offsetSuffix(offset: number) {
   return offset === 0 ? '' : offset > 0 ? `+${offset}` : `${offset}`
 }
 
+// The HGVS coordinate of an ALREADY-LOCATED position — the half of
+// `hgvsPosition` below that does not need to walk the exons again.
+//
+// Split out because the hover wants both readouts off one walk: it names the
+// exon from `locateOnTranscript` and then, at base zoom, the c./n. coordinate
+// of that same position, and calling `hgvsPosition` for the second located the
+// identical base a second time on every mousemove.
+export function hgvsFromLocated(
+  coords: TranscriptCoords,
+  located: ExonicPosition,
+) {
+  const range = codingIndexRange(coords)
+  const suffix = offsetSuffix(located.offset)
+  const { index } = located
+  if (!range) {
+    return `n.${index + 1}${suffix}`
+  }
+  const [firstCoding, lastCoding] = range
+  return index < firstCoding
+    ? `c.${index - firstCoding}${suffix}`
+    : index > lastCoding
+      ? `c.*${index - lastCoding}${suffix}`
+      : `c.${index - firstCoding + 1}${suffix}`
+}
+
 // The HGVS coordinate of a genomic position on a transcript: `c.` numbered from
 // the A of the start codon when the transcript codes, `n.` numbered from its
 // first transcribed base when it doesn't.
@@ -125,22 +150,5 @@ function offsetSuffix(offset: number) {
 // has.
 export function hgvsPosition(coords: TranscriptCoords, bpPos: number) {
   const located = locateOnTranscript(coords, bpPos)
-  let text: string | undefined
-  if (located) {
-    const range = codingIndexRange(coords)
-    const suffix = offsetSuffix(located.offset)
-    if (range) {
-      const [firstCoding, lastCoding] = range
-      const { index } = located
-      text =
-        index < firstCoding
-          ? `c.${index - firstCoding}${suffix}`
-          : index > lastCoding
-            ? `c.*${index - lastCoding}${suffix}`
-            : `c.${index - firstCoding + 1}${suffix}`
-    } else {
-      text = `n.${located.index + 1}${suffix}`
-    }
-  }
-  return text
+  return located ? hgvsFromLocated(coords, located) : undefined
 }

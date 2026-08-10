@@ -598,6 +598,19 @@ test('hoverTooltip keeps the feature mouseover above a residue when there is no 
   )
 })
 
+// The rect is already painted in TRANSL_EXCEPT_HIGHLIGHT, but a color says
+// nothing about what it means: `U840` on SELENOP has to read as a deliberate
+// selenocysteine rather than as a mistranslated stop.
+test('hoverTooltip marks a residue that came from a transl_except override', () => {
+  expect(
+    hoverTooltip(
+      makeHit({
+        peptide: { ...makeAa('U', 0, 3, 839), isTranslExcept: true },
+      }),
+    ),
+  ).toBe('gene mouseover<br/>U840 (transl_except)')
+})
+
 test('hoverTooltip leaves only the residue for a feature with no tooltip text', () => {
   expect(
     hoverTooltip(
@@ -785,5 +798,30 @@ describe('hgvsHitLabel', () => {
   it('offers nothing below base zoom, or off a transcript', () => {
     expect(hgvsHitLabel(isoformHit({ bpPos: 25, bpPerPx: 10 }))).toBeUndefined()
     expect(hgvsHitLabel(makeHit({ bpPos: 25 }))).toBeUndefined()
+  })
+
+  // A subfeature registered by a non-transcript glyph (mature-peptide product,
+  // repeat subpart, a bare exon row stacked beside a gene's transcripts) has a
+  // displayLabel but no transcript of its own, so the coordinate falls back to
+  // the parent's. Taking the name off the subfeature anyway produced
+  // `exon5:n.123` — one thing's label on another thing's coordinate system, in
+  // the syntax a clinical variant is reported in.
+  it('names the transcript the coordinate was measured on, not an unrelated subfeature', () => {
+    expect(
+      hgvsHitLabel(
+        makeHit({
+          feature: {
+            ...makeItem('mRNA1', 0, 100, 0, 20),
+            name: 'BRCA1-201',
+            transcript: CODING_TRANSCRIPT,
+          },
+          subfeature: {
+            ...makeSub('exon5', 'mRNA1', 20, 30, 0, 20),
+            displayLabel: 'exon5',
+          },
+          bpPos: 25,
+        }),
+      ),
+    ).toBe('BRCA1-201:c.11')
   })
 })
