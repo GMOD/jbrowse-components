@@ -73,7 +73,10 @@ assignment to `canvasDrawn` outside the mixin's own actions is not allowed
 ### Scope: per-region displays, not the shared-canvas views
 
 This decision governs displays that own their canvas and whose loading scrim
-reads `canvasDrawn` through `isReady` (`canvasDrawn && !isLoading`). It does
+reads `canvasDrawn`. (It read it through an `isReady` getter — `canvasDrawn &&
+!isLoading` — when this was written; the scrim now reads the flag directly, as
+one term of `computeLoadingTerm`, and that getter was deleted in 2026-08 once it
+turned out to have no other reader. The scope below is unchanged.) It does
 **not** extend to the two views that hang one canvas above several displays —
 dotplot and the synteny level (ARCHITECTURE.md, "the empty frame is
 load-bearing"). There, nothing but the container ever repaints the canvas, so a

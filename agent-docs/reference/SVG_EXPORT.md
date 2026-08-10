@@ -222,7 +222,7 @@ The inline form resolved on the *first datum* (so multi-region/whole-genome
 exports drew a partial viewport) and stayed true through an in-place refetch (so
 a pan/zoom export captured stale data). `svgReady` fixes both.
 
-It deliberately **excludes `canvasDrawn`/`isReady`** — an off-screen export runs
+It deliberately **excludes `canvasDrawn`/`painted`** — an off-screen export runs
 on a display whose on-screen canvas may never have painted (e.g. headless
 jbrowse-img), so gating on the paint flag would hang forever.
 

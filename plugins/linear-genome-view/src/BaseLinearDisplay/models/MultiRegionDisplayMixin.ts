@@ -58,7 +58,7 @@ export function isBlockCovered(
  *
  * Per-region fetch lifecycle for LGV-based GPU displays. Installs five autoruns
  * in `afterAttach` and exposes overridable hooks (`fetchNeeded`, `rpcProps`,
- * `isCacheValid`, `byteGateEnabled`, `clearDisplaySpecificData`) plus the
+ * `isCacheValid`, `measuresBytesPreFlight`, `clearDisplaySpecificData`) plus the
  * `fetchRegions` / `loadedRegions` machinery.
  */
 export default function MultiRegionDisplayMixin() {
@@ -146,24 +146,6 @@ export default function MultiRegionDisplayMixin() {
          */
         get canRender() {
           return this.lgv.initialized
-        },
-
-        /**
-         * #getter
-         * true once the canvas has painted and no fetch is in flight — the
-         * render-lifecycle readiness axis of the three in CLAUDE.md.
-         *
-         * **`displayPhase` no longer routes through it**, and that is deliberate
-         * rather than an oversight to tidy up: the loading term wants
-         * `isLoadingOrCanceled`, and expressing it as `!isReady` (bare
-         * `isLoading`) left this family remembering `fetchCanceled` as a separate
-         * disjunct — the right answer reached the wrong way, one edit from the
-         * dead-Retry bug DISPLAYCHROME.md describes. This stays as the plain
-         * "painted and idle" question a display or plugin may want to ask; the
-         * scrim's question is `computeLoadingTerm`'s.
-         */
-        get isReady() {
-          return self.canvasDrawn && !self.isLoading
         },
 
         /**
@@ -347,16 +329,6 @@ export default function MultiRegionDisplayMixin() {
         reload() {
           this.clearAllRpcData()
         },
-
-        /**
-         * #action
-         * lighter reset: cancels fetch and clears loadedRegions, leaving error
-         * and regionTooLarge intact
-         */
-        invalidateLoadedRegions() {
-          self.cancelFetch()
-          self.loadedRegions.clear()
-        },
       }))
       .actions(_self => ({
         /**
@@ -411,7 +383,7 @@ export default function MultiRegionDisplayMixin() {
           work: (ctx: FetchContext) => Promise<void>,
         ) {
           await self.runFetch(async ctx => {
-            // No-op unless the display set `byteGateEnabled` — see
+            // No-op unless the display set `measuresBytesPreFlight` — see
             // RegionTooLargeMixin
             if (
               await self.byteGateBlocksFetch(

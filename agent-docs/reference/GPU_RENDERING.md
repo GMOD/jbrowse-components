@@ -137,7 +137,6 @@ RenderLifecycleMixin
 MultiRegionDisplayMixin  (composes RenderLifecycleMixin)
   .views
     canRender: boolean            view.initialized (see above); GlobalDataDisplayMixin overrides it identically
-    isReady: boolean              canvasDrawn && !isLoading
     viewportWithinLoadedData      every visible block ⊆ a loaded region
     displayPhase                  'renderError' | 'tooLarge' | 'error' | 'loading' | 'ready'
                                   computeDisplayPhase(self, () => computeLoadingTerm({...}, () =>
@@ -185,18 +184,18 @@ child `({ canvasRef, canvas }) => ReactNode`, so it's agnostic to how many
 canvases a display draws; pass a `testid` base and the chrome appends `-done`
 once `canvasDrawn` flips.
 
-The `loading` phase folds in both fetch- and paint-readiness. `isReady` covers
-track-open through the fetch cycle (hiding once the first frame paints);
+The `loading` phase folds in both fetch- and paint-readiness. The
+`isLoadingOrCanceled` and `rendersCanvas && !canvasDrawn` terms cover track-open
+through the fetch cycle (hiding once the first frame paints);
 `viewportWithinLoadedData` re-shows the overlay when the viewport extends past
-loaded data — e.g. the pre-refetch debounce after a zoom-out, where `isReady` is
-already true but stale data is still on screen (separate getter for tracking
-reasons — see BaseLinearDisplay/CLAUDE.md). `stopRenderingBackend` resets
-`canvasDrawn` so the overlay recovers after WebGL context loss.
+loaded data — e.g. the pre-refetch debounce after a zoom-out, where the first two
+are already satisfied but stale data is still on screen (separate getter for
+tracking reasons — see BaseLinearDisplay/CLAUDE.md). `stopRenderingBackend`
+resets `canvasDrawn` so the overlay recovers after WebGL context loss.
 
-In `GlobalDataDisplayMixin`'s inputs to that term, the `rendersCanvas &&
-!canvasDrawn` clause is the global-display equivalent of MultiRegion's
-`!isReady`, covering the window between component mount and `isLoading` flipping
-true. On HiC that window is real:
+That `rendersCanvas && !canvasDrawn` clause is what covers the window between
+component mount and `isLoading` flipping true, in both families. On HiC that
+window is real:
 the fetch can't start until `CoreGetInfo` resolves the file's resolution list
 (that RPC is also what makes the resolution/norm overlay panel appear before
 anything else), so `isLoading` is false with nothing painted for the length of

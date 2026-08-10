@@ -35,7 +35,7 @@ in dev for every display composing the mixin, so a new fetching display needs no
 per-family `getMembers` test.
 
 Only these two method-shaped hooks are exposed; a getter can't regress this way,
-which is why the byte gate's opt-in is the `byteGateEnabled` getter.
+which is why the byte gate's opt-in is the `measuresBytesPreFlight` getter.
 
 **A `fetchNeeded` that declines to fetch must be woken by something the autorun
 already tracks.** The coverage test short-circuits, so `isCacheValid`'s
@@ -57,21 +57,28 @@ computed cycle; read `fitTargetHeight`/`growMaxHeight`.
 Hover belongs with them: `installClearHoverOnViewportChange` tracks all three
 axes content can move on (`bpPerPx`, `offsetPx`, `scrollTop`), not just zoom.
 
-## The three readiness axes — don't collapse them
+## The two readiness axes — don't collapse them
 
-`isReady` is render-lifecycle, `viewportWithinLoadedData` is spatial staleness,
-`layoutReady` is does-a-layout-exist. A consumer can't derive the third from the
-other two. `dataCurrent` is not a fourth — it is this family's answer to the one
-freshness name cross-cutting consumers read.
+`viewportWithinLoadedData` is spatial staleness, `layoutReady` is
+does-a-layout-exist. Neither is derivable from the other. `dataCurrent` is not a
+third — it is this family's answer to the one freshness name cross-cutting
+consumers read.
 
-The loading scrim reads **none of them directly except the second**: the phase
+There used to be a third, `isReady` (`canvasDrawn && !isLoading`), and it is
+worth knowing why it went: the scrim stopped reading it in 2026-08, nothing else
+ever did, and it sat for months as a documented "axis" with no consumer — its
+own test re-declared the getter on a local model, so deleting it broke nothing.
+Paint readiness is `painted` (`RenderLifecycleMixin`), which is the one every
+consumer outside the display wants anyway.
+
+The loading scrim reads **neither axis directly except the first**: the phase
 goes through `foundationDisplayPhase`, shared with the global family, and the
 only thing this family supplies is `viewportWithinLoadedData` — every other term
 (`loadingSuppressed`, `isLoadingOrCanceled`, `rendersCanvas`, `canvasDrawn`) is
 read straight off the model by `computeLoadingTerm`, from `FetchMixin` /
 `RenderLifecycleMixin`. It used to go through `!isReady`, which meant
-re-remembering the cancel term alongside it — see the `isReady` getter for why
-that's the wrong shape even though it computed the right answer.
+re-remembering the cancel term alongside it — the right answer reached the wrong
+way, one edit from the dead-Retry bug DISPLAYCHROME.md describes.
 
 `layoutReady` exists because "laid out but off-display" and "no layout exists"
 are different answers only the display can tell apart. Default `false` so a

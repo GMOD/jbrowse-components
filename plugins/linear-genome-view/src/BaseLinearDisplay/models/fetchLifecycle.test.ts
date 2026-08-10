@@ -146,7 +146,13 @@ function clearAllRpcData(model: LifecycleModel) {
   model.fetchGeneration++
 }
 
-function invalidateLoadedRegions(model: LifecycleModel) {
+// FetchMixin.cancelFetch, minus its `fetchCanceled = false` (this simulation
+// carries no user-cancel flag). It was called `invalidateLoadedRegions` after a
+// MultiRegionDisplayMixin action that had no caller anywhere and was deleted in
+// 2026-08 — the three cases below never exercised it, since they call this local
+// copy, and what they actually pin is the rotation semantics `cancelFetch` has:
+// mark in-flight work stale, leave `error` and the too-large verdict alone.
+function cancelFetch(model: LifecycleModel) {
   if (model.renderingStopToken) {
     stopStopToken(model.renderingStopToken)
     model.renderingStopToken = undefined
@@ -379,7 +385,7 @@ describe('withFetchLifecycle state management', () => {
     expect(model.renderingStopToken).toBeUndefined()
   })
 
-  it('invalidateLoadedRegions marks current work stale without clearing error', async () => {
+  it('cancelFetch marks current work stale without clearing error', async () => {
     const model = createModel()
     let workWasStale = false
 
@@ -388,7 +394,7 @@ describe('withFetchLifecycle state management', () => {
       workWasStale = ctx.isStale()
     })
 
-    invalidateLoadedRegions(model)
+    cancelFetch(model)
 
     await fetchPromise
 
@@ -397,25 +403,25 @@ describe('withFetchLifecycle state management', () => {
     expect(model.regionTooLargeState).toBe(false)
   })
 
-  it('invalidateLoadedRegions preserves error and tooLarge state', () => {
+  it('cancelFetch preserves error and tooLarge state', () => {
     const model = createModel()
     model.error = new Error('something')
     model.regionTooLargeState = true
 
-    invalidateLoadedRegions(model)
+    cancelFetch(model)
 
     expect(model.error).toBeTruthy()
     expect(model.regionTooLargeState).toBe(true)
   })
 
-  it('invalidateLoadedRegions inside work triggers re-fetch without data loss', async () => {
+  it('cancelFetch inside work triggers re-fetch without data loss', async () => {
     const model = createModel()
     let firstWorkRan = false
     let secondWorkRan = false
 
     await withFetchLifecycle(model, [], null, async ctx => {
       firstWorkRan = true
-      invalidateLoadedRegions(model)
+      cancelFetch(model)
       expect(ctx.isStale()).toBe(true)
     })
 
