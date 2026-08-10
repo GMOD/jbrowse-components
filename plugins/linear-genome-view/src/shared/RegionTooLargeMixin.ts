@@ -421,28 +421,6 @@ export default function RegionTooLargeMixin() {
       },
       /**
        * #getter
-       * Whether "zoom in to see features" is still honest advice — the banner
-       * offers that way out only when this is true, and force-load alone when it
-       * isn't.
-       *
-       * Read straight off the last measurement, which is the only place the
-       * answer can honestly come from: an index quotes whole blocks, so whether
-       * zooming shrinks a given file's fetch is a property of that file's blocks
-       * and not of any span threshold. `ByteEstimate.zoomIneffective` records
-       * that the user zoomed in materially and the bytes did not move, so the
-       * banner stops offering zoom exactly when zoom has been tried and failed —
-       * and starts again if a later zoom does move them.
-       *
-       * True until proven otherwise, so a track that has been measured once
-       * still reads as escapable. That is the right default: the failure this
-       * guards is telling someone to keep zooming forever, not withholding the
-       * suggestion for one zoom step.
-       */
-      get zoomCanReleaseGate(): boolean {
-        return !self.byteEstimate?.zoomIneffective
-      },
-      /**
-       * #getter
        * Whether the **byte** axis may gate at this moment: the display opted in,
        * nothing exempts it, and the view is measured.
        *
@@ -557,6 +535,39 @@ export default function RegionTooLargeMixin() {
        */
       get regionTooLargeReason() {
         return self.tooLargeStatus.reason
+      },
+
+      /**
+       * #getter
+       * Whether "zoom in to see features" is still honest advice — the banner
+       * offers that way out only when this is true, and force-load alone when it
+       * isn't.
+       *
+       * **Asked of the axis that actually tripped**, because only one of the two
+       * can ever answer no. Screen density is features ÷ pixels, so it falls
+       * with `bpPerPx` by construction and zooming always releases it. Bytes
+       * don't work that way: an index quotes whole blocks, so whether zooming
+       * shrinks a given file's fetch is a property of that file's blocks and not
+       * of any span threshold, and `ByteEstimate.zoomIneffective` records that
+       * the user zoomed in materially and the bytes did not move.
+       *
+       * Reading `zoomIneffective` alone — which is what this used to do — got
+       * the density case backwards on exactly the files that axis exists for. A
+       * dense VCF is small on disk and flat across zooms, so two zoom steps
+       * while density-blocked set `zoomIneffective` (the worker reports `bytes`
+       * alongside a density rejection, so the estimate keeps updating), and the
+       * banner then withheld the one way out that works.
+       *
+       * True until proven otherwise, so a track that has been measured once
+       * still reads as escapable. That is the right default: the failure this
+       * guards is telling someone to keep zooming forever, not withholding the
+       * suggestion for one zoom step.
+       */
+      get zoomCanReleaseGate(): boolean {
+        return (
+          self.tooLargeStatus.axis !== 'bytes' ||
+          !self.byteEstimate?.zoomIneffective
+        )
       },
     }))
     .actions(self => ({

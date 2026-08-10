@@ -219,6 +219,16 @@ export function resolveByteLimit({
 export interface RegionTooLargeStatus {
   tooLarge: boolean
   reason: string
+  /**
+   * Which axis tripped, absent when nothing did. Not a second spelling of
+   * `reason` — `zoomCanReleaseGate` has to branch on it, because the two axes
+   * answer "would zooming in help?" differently and only one of them can
+   * honestly say no. Screen density is features ÷ pixels, so it falls with
+   * `bpPerPx` whatever the file looks like; bytes come in whole index blocks
+   * and may not fall at all ({@link ByteEstimate.zoomIneffective}). Matching on
+   * the reason string instead would tie the banner's logic to its wording.
+   */
+  axis?: 'bytes' | 'density'
 }
 
 export const NOT_TOO_LARGE: RegionTooLargeStatus = {
@@ -254,10 +264,11 @@ export function evaluateRegionTooLarge({
     return {
       tooLarge: true,
       reason: bytesTooLargeReason(estimatedFetchBytes),
+      axis: 'bytes',
     }
   }
   if (densityTooLarge) {
-    return { tooLarge: true, reason: TOO_MANY_FEATURES_REASON }
+    return { tooLarge: true, reason: TOO_MANY_FEATURES_REASON, axis: 'density' }
   }
   return NOT_TOO_LARGE
 }

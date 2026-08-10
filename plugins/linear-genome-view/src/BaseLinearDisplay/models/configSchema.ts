@@ -13,13 +13,18 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 const baseLinearDisplayConfigSchema = ConfigurationSchema(
   'BaseLinearDisplay',
   {
+    // Not a fallback for the byte gate: the two axes run together on every
+    // canvas fetch, and this is the one that catches what bytes structurally
+    // cannot. An index size can't tell "a few large features" from "many tiny
+    // ones" — a dense VCF is small on disk and still has more variants than
+    // there are pixels to draw them in.
     /**
      * #slot
      */
     maxFeatureScreenDensity: {
       type: 'number',
       description:
-        'maximum features per pixel before showing a "too many features" message, used if byte size estimates are not available',
+        'maximum features per pixel before showing a "too many features" message',
       defaultValue: 1,
       advanced: true,
     },

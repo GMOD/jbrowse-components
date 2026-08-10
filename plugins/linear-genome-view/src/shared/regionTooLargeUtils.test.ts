@@ -157,6 +157,7 @@ describe('evaluateRegionTooLarge', () => {
     ).toEqual({
       tooLarge: true,
       reason: bytesTooLargeReason(2_000_000),
+      axis: 'bytes',
     })
   })
 
@@ -185,7 +186,11 @@ describe('evaluateRegionTooLarge', () => {
       evaluateRegionTooLarge({
         densityTooLarge: true,
       }),
-    ).toEqual({ tooLarge: true, reason: TOO_MANY_FEATURES_REASON })
+    ).toEqual({
+      tooLarge: true,
+      reason: TOO_MANY_FEATURES_REASON,
+      axis: 'density',
+    })
   })
 
   it('bytes take precedence over density for the reason text', () => {
@@ -195,7 +200,24 @@ describe('evaluateRegionTooLarge', () => {
         byteLimit: 1_000_000,
         densityTooLarge: true,
       }),
-    ).toEqual({ tooLarge: true, reason: bytesTooLargeReason(2_000_000) })
+    ).toEqual({
+      tooLarge: true,
+      reason: bytesTooLargeReason(2_000_000),
+      axis: 'bytes',
+    })
+  })
+
+  // The axis is what `zoomCanReleaseGate` branches on, and it has to be a
+  // separate field rather than a re-read of `reason`: the banner's wording is
+  // free to change, the question "can zoom release this?" is not.
+  it('names the axis that tripped, and none when nothing did', () => {
+    expect(
+      evaluateRegionTooLarge({
+        estimatedFetchBytes: 500_000,
+        byteLimit: 1_000_000,
+        densityTooLarge: false,
+      }).axis,
+    ).toBeUndefined()
   })
 
   it('ignores bytes when no limit is provided (density-only path)', () => {

@@ -754,6 +754,55 @@ describe('derived regionTooLarge', () => {
     expect(mockRpcCall.mock.calls.length).toBe(callCount + 1)
   })
 
+  // The two axes disagree about whether zooming helps, and the banner has to
+  // ask the one that actually tripped. A dense VCF is the shape that separates
+  // them — small on disk and flat across zooms, so the byte estimate stops
+  // moving while the feature count is still far past what there are pixels to
+  // draw. The worker reports `bytes` alongside a density rejection, so the
+  // estimate keeps updating while blocked and `zoomIneffective` accumulates
+  // evidence about an axis that isn't gating. Reading that flag on its own —
+  // which `zoomCanReleaseGate` used to do — dropped "Zoom in to see features"
+  // off a banner that zooming does release.
+  it('keeps offering zoom on a density block once the bytes go flat', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 500_000, refName: 'ctgA' },
+    ])
+    // a density rejection carrying a byte figure that never moves, and one well
+    // under the 5MB display cap so the byte axis has no opinion at any zoom
+    mockRpcCall.mockResolvedValue({
+      regionTooLarge: true,
+      featureCount: 50_000,
+      bytes: 200_000,
+    })
+
+    view.zoomTo(1000)
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(true)
+    })
+    const wideSpan = view.visibleBp
+
+    // halve the span — the index quotes the same bytes back
+    view.zoomTo(250)
+    jest.advanceTimersByTime(2000)
+    await jest.runAllTimersAsync()
+    await waitFor(() => {
+      expect(display.byteEstimate?.zoomIneffective).toBe(true)
+    })
+    // the preconditions the evidence rule needs, asserted rather than assumed
+    expect(view.visibleBp).toBeLessThanOrEqual(wideSpan / 2)
+    expect(view.visibleBp).toBeGreaterThan(20_000)
+
+    // density is what is blocking, not bytes...
+    expect(display.regionTooLargeReason).toBe('Too many features')
+    // ...and screen density falls with bpPerPx by construction, so zoom is
+    // still an honest way out however flat this file's index is
+    expect(display.zoomCanReleaseGate).toBe(true)
+  })
+
   it('flips false and refetches when visibleBp drops below the gate', async () => {
     const { display, view, mockRpcCall } = createLargeDisplay()
 
