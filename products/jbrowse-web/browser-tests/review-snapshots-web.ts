@@ -19,6 +19,7 @@ import {
   loadReport,
   referenceHash,
   referenceHashByName,
+  referenceLocation,
   reportPath,
   snapshotPath,
   snapshotsDir,
@@ -67,7 +68,16 @@ function buildSnapshotPayload() {
     const imageHash = referenceHash(s)
     // an approval/denial only resurfaces once the reviewed image changes
     const stale = isVerdictStale(verdict, imageHash)
-    return { ...s, verdict, stale, imageHash: imageHash ?? null }
+    // which image the card shows — the same pick the hash above was taken from,
+    // so the two cannot disagree about what a verdict is a verdict on
+    const refLoc = referenceLocation(s)
+    return {
+      ...s,
+      verdict,
+      stale,
+      imageHash: imageHash ?? null,
+      refLoc: refLoc ?? null,
+    }
   })
 }
 
@@ -99,24 +109,45 @@ const contentTypes: Record<string, string> = {
   '.svg': 'image/svg+xml',
 }
 
+// A hand-typed or truncated URL can carry a malformed escape, which throws.
+// That is a request for a path that does not exist, not a server error.
+function decodePath(s: string): string | undefined {
+  try {
+    return decodeURIComponent(s)
+  } catch {
+    return undefined
+  }
+}
+
 // Serve /img/<backend>/<name> (backend = canvas2d|webgl|webgpu|root). The lib's
 // snapshotPath validates against traversal outside the snapshots tree.
 function serveImage(res: http.ServerResponse, urlPath: string) {
-  const rest = decodeURIComponent(urlPath.slice('/img/'.length))
-  const slash = rest.indexOf('/')
-  const loc = rest.slice(0, slash)
-  const name = rest.slice(slash + 1)
-  const full = snapshotPath(name, isBackend(loc) ? loc : undefined)
+  const rest = decodePath(urlPath.slice('/img/'.length))
+  const slash = rest === undefined ? -1 : rest.indexOf('/')
+  const loc = rest === undefined ? '' : rest.slice(0, slash)
+  const full =
+    rest === undefined
+      ? undefined
+      : snapshotPath(rest.slice(slash + 1), isBackend(loc) ? loc : undefined)
   if (!full || !fs.existsSync(full)) {
     res.writeHead(404)
     res.end('not found')
-  } else {
-    res.writeHead(200, {
-      'Content-Type':
-        contentTypes[path.extname(full)] ?? 'application/octet-stream',
-    })
-    fs.createReadStream(full).pipe(res)
+    return
   }
+  res.writeHead(200, {
+    'Content-Type':
+      contentTypes[path.extname(full)] ?? 'application/octet-stream',
+  })
+  const stream = fs.createReadStream(full)
+  // An unhandled stream 'error' is an uncaught exception — it fires after the
+  // handler's try/catch has returned, so nothing here catches it and the whole
+  // review server dies mid-session over one unreadable file. The 200 is already
+  // out, so there is no status left to send: drop the connection and let the
+  // <img> fail on its own.
+  stream.on('error', () => {
+    res.destroy()
+  })
+  stream.pipe(res)
 }
 
 // Serve /img-diff?name=&a=&b= — the visual diff between two backends.
@@ -177,7 +208,13 @@ const server = http.createServer((req, res) => {
       res.end('not found')
     }
   } catch (err) {
-    sendJson(res, 500, { error: `${err}` })
+    // an image route may already have committed its status line, and writing a
+    // second one throws again — from a catch that has nowhere left to report
+    if (res.headersSent) {
+      res.destroy()
+    } else {
+      sendJson(res, 500, { error: `${err}` })
+    }
   }
 })
 
@@ -274,6 +311,8 @@ const PAGE = /* html */ `<!doctype html>
   button.deny.active { background: #ef4444; color: #fff; }
   button.clear { border-color: #ccc; color: #666; }
   button.addnote { border-color: #ccc; color: #666; }
+  button:disabled { opacity: .45; cursor: not-allowed; border-color: #ccc; color: #666; }
+  .loaderror { color: #b91c1c; font-size: 14px; line-height: 1.5; white-space: pre-wrap; }
   /* height is set by the client's autosizeNote as you type; min-height keeps an
      empty box at two rows and overflow-y lets it scroll at the cap */
   .note { width: 100%; min-height: 3.6em; padding: 6px 9px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; font-family: inherit; resize: none; overflow-y: auto; }
@@ -330,7 +369,23 @@ function changeFilter(key, value) {
 }
 
 async function load() {
-  data = await (await fetch('/api/snapshots')).json()
+  try {
+    const res = await fetch('/api/snapshots')
+    const body = await res.json()
+    if (!res.ok || !Array.isArray(body)) {
+      throw new Error((body && body.error) || 'HTTP ' + res.status)
+    }
+    data = body
+  } catch (err) {
+    // Say why. An unparseable report is a real case with real recovery
+    // instructions in the message loadReport writes, and swallowing it left
+    // \`data\` as the error object — whose .filter is not a function, so render
+    // died and the page stayed blank, which reads as nothing left to review.
+    $('#main').innerHTML =
+      '<div class="loaderror">Could not load the snapshot list.\\n\\n' +
+      esc(err.message) + '</div>'
+    return
+  }
   dropStaleDrafts()
   render()
   // backend drift is computed in the background server-side; poll until done,
@@ -338,9 +393,14 @@ async function load() {
   while (true) {
     const r = await (await fetch('/api/compare')).json()
     compare = r.diffs
-    // a full re-render rebuilds #main and would drop focus / unsaved note text,
-    // so hold off while a field is being edited — the next poll catches up
-    if (document.activeElement?.tagName !== 'INPUT') { render() }
+    // A full re-render rebuilds #main, which drops the caret out of a note being
+    // typed and — for the ~25s this poll runs — can land between the mousedown
+    // and mouseup of an Approve, destroying the button so no click is dispatched
+    // at all. Both are what repaintUnsafe answers; the next poll catches up two
+    // seconds later. This used to test activeElement.tagName for 'INPUT', which
+    // stopped covering the note the day it became the textarea a denial reason
+    // needs, and never covered the press at all.
+    if (!repaintUnsafe()) { render() }
     if (r.done) { break }
     await new Promise(res => setTimeout(res, 2000))
   }
@@ -387,15 +447,21 @@ function imgCol(label, right, inner) {
 
 function kindPill(s) { return pill(s.kind, s.kind) }
 
-// pick the reference image: canvas2d first, then webgl/webgpu, then root
-function refLoc(s) {
-  return s.backends.includes('canvas2d') ? 'canvas2d'
-    : s.backends[0] || (s.inRoot ? 'root' : null)
-}
-
 // a snapshot needs review when it has no verdict, or its verdict went stale
 // because the reviewed image changed since (server-computed stale flag)
 const needsReview = s => !s.verdict || s.stale
+
+// A verdict is recorded against a hash of the snapshot, so one with no image on
+// disk has nothing to record it against and the server refuses the write — a 400
+// the reviewer only saw after clicking a button that looked live. Same test as
+// the server's (referenceHashByName is what fills imageHash), so the two cannot
+// drift. Clear stays enabled: dropping an entry needs no image.
+const verdictBtn = (cls, label, want, status, s) =>
+  '<button class="' + cls + (status === want ? ' active' : '') + '"' +
+    (s.imageHash
+      ? ' onclick="setVerdict(this,\\'' + want + '\\')"'
+      : ' disabled title="no image on disk — nothing to record a verdict against"') +
+  '>' + label + '</button>'
 
 // the shared review client calls this to rebuild one card in place; the
 // backends page renders its own read-only cards below
@@ -403,7 +469,7 @@ function renderCard(s) {
   const v = s.verdict
   const status = v ? v.status : 'none'
   const cls = s.stale ? 'stale' : status
-  const loc = refLoc(s)
+  const loc = s.refLoc
   const img = loc ? imgTag(loc, s.name, s.imageHash) : '<div class="missing">⚠ no image on disk</div>'
   const where = [s.inRoot ? 'root' : null, ...s.backends].filter(Boolean).join(', ')
   return '<div class="card ' + cls + '" data-name="' + esc(s.name) + '">' +
@@ -419,8 +485,8 @@ function renderCard(s) {
       // round-trips because one is spent here.
       '<textarea class="note" rows="2" placeholder="note (optional)" onchange="saveNote(this)">\\n' + esc(v ? v.note : '') + '</textarea>' +
       '<div class="actions">' +
-        '<button class="approve ' + (status === 'good' ? 'active' : '') + '" onclick="setVerdict(this,\\'good\\')">✓ Approve</button>' +
-        '<button class="deny ' + (status === 'bad' ? 'active' : '') + '" onclick="setVerdict(this,\\'bad\\')">✗ Deny</button>' +
+        verdictBtn('approve', '✓ Approve', 'good', status, s) +
+        verdictBtn('deny', '✗ Deny', 'bad', status, s) +
         (v ? '<button class="clear" onclick="clearVerdict(this)">clear</button>' : '') +
         // Always rendered, including on an empty box where it only focuses the
         // field: shown only when there is text to preserve, it would have to
@@ -490,8 +556,8 @@ function renderCounts() {
   $('[data-count="needs"]').textContent = data.filter(needsReview).length
   const inPage = specsInPage()
   if (filters.page === 'basic') {
-    const good = inPage.filter(s => s.verdict?.status === 'good' && !s.stale).length
-    const bad = inPage.filter(s => s.verdict?.status === 'bad' && !s.stale).length
+    const good = inPage.filter(s => settledAs(s, 'good')).length
+    const bad = inPage.filter(s => settledAs(s, 'bad')).length
     const stale = inPage.filter(s => s.stale).length
     $('#counts').innerHTML =
       pill('good', good + ' approved') +
@@ -511,9 +577,9 @@ function matchesFilters(s, q) {
   const matchesStatus =
     filters.page !== 'basic' ||
     filters.status === 'all' ||
-    (filters.status === 'needs' && needsReview(s)) ||
-    (filters.status === 'good' && s.verdict?.status === 'good' && !s.stale) ||
-    (filters.status === 'bad' && s.verdict?.status === 'bad' && !s.stale)
+    (filters.status === 'needs'
+      ? needsReview(s)
+      : settledAs(s, filters.status))
   const matchesKind = filters.kind === 'all' || s.kind === filters.kind
   const matchesDrift = filters.drift === 'all' || isDrifting(s.name)
   return matchesQuery &&

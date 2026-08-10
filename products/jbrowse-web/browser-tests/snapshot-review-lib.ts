@@ -102,8 +102,11 @@ export function snapshotPath(
 
 // The image a basic-pass verdict applies to: canvas2d (the deterministic
 // reference) when present, else the first available backend, else the root
-// copy. Mirrors the client's reference-picking so the hash tracks exactly what
-// the reviewer saw and approved.
+// copy. The one rule, sent to the page in the payload rather than reimplemented
+// there: the page picks which image to SHOW and this picks which image gets
+// HASHED, so a disagreement between the two would mean a verdict recorded
+// against a picture the reviewer was not looking at. It used to be written out
+// in both places, with a comment in each saying it mirrored the other.
 export function referenceLocation(
   entry: SnapshotEntry,
 ): Backend | 'root' | undefined {

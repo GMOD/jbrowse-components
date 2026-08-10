@@ -1462,11 +1462,6 @@ function matchesScope(s, q) {
   return matchesQuery && matchesGroup && matchesKind
 }
 
-// A verdict that still describes the image on the card. A stale one names a
-// picture that has since been replaced, so it counts as neither approved nor
-// denied — it is back in the queue.
-const settledAs = (s, status) => s.verdict?.status === status && !s.stale
-
 // 'all' and 'needs' are the two questions with their own shape; the other three
 // tabs are all the same question about a different status word, and spelling
 // each out separately is three chances for one of them to drift from the pill
