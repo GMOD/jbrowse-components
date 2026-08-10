@@ -174,7 +174,26 @@ const agLdTrack = (trackId: string, name: string, file: string) => ({
       // block's edges land where the inversion's edges are
       useGenomicPositions: true,
       showLegend: true,
-      height: 300,
+      // 340, NOT 300, AND THAT IS A CORRECTION rather than a preference. An
+      // unsquashed LD panel draws its triangle at natural aspect -- apex depth
+      // is half the drawn width (`canvasHeight` = `canvasWidth / 2` in
+      // LDDisplay/shared.ts) -- and the lane's own height then clips whatever
+      // does not fit. Clipping the whole-arm triangle is right and unavoidable:
+      // at 49.4 Mb across ~1490 css px it would be 745 px deep, and the deep
+      // half is pairs 20 Mb apart. But 2La is 20,524,058-42,165,532, which
+      // draws 653 px wide, so ITS apex is 327 px down -- and at 300 the block
+      // this figure exists to show was cut flat at the lane boundary, ~27 px
+      // short of closing. A truncated block reads as one that continues past
+      // the frame, which is the opposite of "this span is inherited as one
+      // piece". `squashToHeight` is not the fix and was reasoned out rather
+      // than tried: it fits the NATURAL triangle (745 px) into the lane, so at
+      // 300 it would scale 2La's apex to 131 px and spend the other 169 px on
+      // the empty long-range corner.
+      //
+      // Both panels take the same number. They are read against each other --
+      // block versus no block -- and two lanes of different heights make a
+      // reader wonder whether the empty one was drawn differently.
+      height: 340,
     },
   ],
 })
@@ -492,14 +511,17 @@ export const ldSpecs: ScreenshotSpec[] = [
           'Cameroon, both arrangements segregating (r²)',
           'ag1000g_2L_CMgam.ld.gz',
         ),
-        // 297 and 69 mosquitoes (the script prints both). The Cameroon lane
-        // takes its row count as its height, so a row is a pixel. The Gabon lane
-        // cannot: its floating legend is clipped to the display's own bounds and
-        // 69px cut that legend in half, so it takes the legend's height and its
-        // 69 rows auto-fit. The cost is that lane height is no longer
-        // proportional to panel size across the two, which is why the caption
-        // names both counts.
-        agKaryotypeTrack('CMgam', 'Cameroon, one row per mosquito', 297),
+        // 297 and 69 mosquitoes (the script prints both), and neither lane is
+        // sized off its row count any more (review: "if there is anyway to
+        // improve y-screen-real estate might be worth it"). This lane used to
+        // be 297 px so that one mosquito was one pixel, which is a pleasing
+        // property and not one the figure is read for: the rows are GROUPED by
+        // karyotype, so what a reader takes from the lane is three contiguous
+        // bands and where their edges fall, and 140 px still draws them 77, 32
+        // and 31 px deep. Per-row resolution would matter if the readout were
+        // density -- it is the trap the Dog10K cohort lane documents -- but
+        // inside a solid band aliasing has nothing to alias.
+        agKaryotypeTrack('CMgam', 'Cameroon, one row per mosquito', 140),
         // "almost every mosquito", not "fixed": 5 of the 69 are heterozygous
         // for the inverted arrangement, and they are visible two lanes down
         agLdTrack(
@@ -507,13 +529,16 @@ export const ldSpecs: ScreenshotSpec[] = [
           'Gabon, one arrangement in almost every mosquito (r²)',
           'ag1000g_2L_GAgam.ld.gz',
         ),
-        // 240, not the legend's own ~150: Gabon's five heterozygotes are the
-        // last five of its 69 rows (the lane is grouped in dosage order), so at
-        // 150px they were an 11px sliver sitting on the frame's bottom edge —
-        // the one thing in the figure a reader has to be able to find, drawn as
-        // close to invisible as it gets. 240 makes their band ~17px and puts
-        // clear lane under it.
-        agKaryotypeTrack('GAgam', 'Gabon, one row per mosquito', 240),
+        // 200, and this one is bounded from BELOW rather than chosen. Gabon's
+        // five heterozygotes are the last five of its 69 rows (the lane is
+        // grouped in dosage order), so their band is 5/69 of whatever the lane
+        // is: 14 px at 200, and the 11 px that 150 gave was rejected once
+        // already as close to invisible for the one thing in the figure a
+        // reader has to be able to find. It is also floored at the ~150 px its
+        // floating legend needs, since that legend is clipped to the display's
+        // own bounds. So this lane gave back 40 px where the Cameroon one gave
+        // back 157.
+        agKaryotypeTrack('GAgam', 'Gabon, one row per mosquito', 200),
       ],
       views: [
         {
@@ -551,11 +576,18 @@ export const ldSpecs: ScreenshotSpec[] = [
     // chrom.sizes off hgdownload.soe.ucsc.edu, which times out and refetches
     // often enough to blow through 120s on a bad day.
     readyTimeout: 180000,
-    // two LD tracks (300 each) + the 297 and 240 karyotype lanes + 4 headers +
+    // two LD tracks (340 each) + the 140 and 200 karyotype lanes + 4 headers +
     // ruler/overview. Undersize this and the rows past the fold are cropped away
     // silently: first paint still fires, so the capture succeeds with the
     // informative rows missing.
-    viewportHeight: 1472,
+    //
+    // 1472 -> 1355: 197 px off the two karyotype lanes, 80 back to the LD
+    // panels so the 2La block closes. The measurement behind the trade is in
+    // the two comments above; what it does NOT include is any slack, because
+    // there was none -- the run reported nothing blank below the content at
+    // 1472, and an ink scan of the capture found both LD panels drawing to
+    // their own bottom edge.
+    viewportHeight: 1355,
     settleMs: 8000,
     // One callout per lane, saying what each lane shows rather than only naming
     // the span (review: "a red text annotation on both cameroon and gabon
