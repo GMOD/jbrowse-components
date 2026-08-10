@@ -1,26 +1,73 @@
 /// <reference types="@webgpu/types" />
 
-let device: GPUDevice | null = null
-// devicePromise serializes concurrent calls during async init and after recovery.
-let devicePromise: Promise<GPUDevice | null> | null = null
-const deviceLostListeners = new Set<() => void>()
+interface GpuDeviceCell {
+  device: GPUDevice | null
+  /** Serializes concurrent calls during async init and after recovery. */
+  devicePromise: Promise<GPUDevice | null> | null
+  /**
+   * Proof that this machine's WebGPU works, set the first time a device is
+   * acquired. It is what makes a failed acquisition readable, because the two
+   * causes are indistinguishable at the call site and want opposite handling:
+   *
+   *  - Before it, failure means "no WebGPU here" — the ordinary path on most
+   *    hardware. Cache it, so every later backend skips the rung for free.
+   *  - After it, failure means the GPU stack has not come back up yet. The
+   *    re-init that follows `device.lost` asks for an adapter within a frame of
+   *    the loss, and on a sleep/wake or a driver reset that is exactly when
+   *    `requestAdapter` still declines. So this is not a rare race — it is the
+   *    expected timing of the one path that re-acquires.
+   *
+   * Caching the second kind is what `createGpuHal` then reads as "no WebGPU on
+   * this machine" (its own words), silently pinning the whole page to WebGL2
+   * until a reload. So past this flag a failure is retried and never cached.
+   */
+  hadDevice: boolean
+  deviceLostListeners: Set<() => void>
+  /** @see setGpuOverride */
+  gpuOverride: string | null
+}
 
-// Proof that this machine's WebGPU works, set the first time a device is
-// acquired. It is what makes a failed acquisition readable, because the two
-// causes are indistinguishable at the call site and want opposite handling:
-//
-//  - Before it, failure means "no WebGPU here" — the ordinary path on most
-//    hardware. Cache it, so every later backend skips the rung for free.
-//  - After it, failure means the GPU stack has not come back up yet. The
-//    re-init that follows `device.lost` asks for an adapter within a frame of
-//    the loss, and on a sleep/wake or a driver reset that is exactly when
-//    `requestAdapter` still declines. So this is not a rare race — it is the
-//    expected timing of the one path that re-acquires.
-//
-// Caching the second kind is what `createGpuHal` then reads as "no WebGPU on
-// this machine" (its own words), silently pinning the whole page to WebGL2
-// until a reload. So past this flag a failure is retried and never cached.
-let hadDevice = false
+declare global {
+  // eslint-disable-next-line no-var
+  var __jbrowseRenderCoreGpuDeviceV1: GpuDeviceCell | undefined
+}
+
+/**
+ * The page-wide GPU state, and the one thing in this package that **must not be
+ * duplicated** — so it is anchored on `globalThis` rather than held in module
+ * locals, and every copy of this module on the page shares one cell.
+ *
+ * The rest of render-core is duplication-safe: classes, mixins and geometry
+ * helpers, all of which a second copy can own its own instances of. This is
+ * not. `device` is one physical GPU device, and `gpuOverride` is a *page-wide*
+ * policy written by the host — `?renderer=` at startup, and the "disable GPU"
+ * button on the context-loss banner, which `packages/render-core/CLAUDE.md`
+ * names as the only sanctioned fallback path once a backend is built.
+ *
+ * A statically-bundled plugin is the case this exists for. ADR-030 makes the
+ * GPU surface static-import-only, so a third-party display carries its own copy
+ * of this module by design; with module locals its `gpuOverride` would start
+ * null and stay null, and the user who pins `?renderer=canvas2d` or clicks
+ * "disable GPU" after a crash would watch the plugin ignore both and take
+ * WebGPU anyway. Sharing the cell fixes that without putting anything in the
+ * frozen `ReExports` ABI — which is the trade ADR-030 declined, and rightly.
+ *
+ * **The shape is a cross-version contract.** Copies at different render-core
+ * versions meet here, and whichever loads first wins the initialization, so a
+ * field added later would read `undefined` on a cell built by an older copy.
+ * Changing this interface therefore means bumping the `V1` in the global's
+ * name, which costs the sharing between the two versions — the point of the
+ * suffix is that losing it is a decision rather than a silent misread. Reset in
+ * place (see `resetGpuDeviceForTests`); never reassign the cell itself, or
+ * copies holding the old object diverge from the new one.
+ */
+const cell = (globalThis.__jbrowseRenderCoreGpuDeviceV1 ??= {
+  device: null,
+  devicePromise: null,
+  hadDevice: false,
+  deviceLostListeners: new Set(),
+  gpuOverride: null,
+})
 
 // Enough to outlast a wake-up, and only ever spent once `hadDevice` is set — a
 // machine without WebGPU declines on the first ask and waits for nothing.
@@ -63,9 +110,9 @@ const REACQUIRE_DELAY_MS = 700
 // track unmount already does it many times a session without consequence.
 
 export function onDeviceLost(listener: () => void) {
-  deviceLostListeners.add(listener)
+  cell.deviceLostListeners.add(listener)
   return () => {
-    deviceLostListeners.delete(listener)
+    cell.deviceLostListeners.delete(listener)
   }
 }
 
@@ -106,7 +153,7 @@ async function acquire() {
 // only there is a decline evidence of a stack still coming up rather than of
 // hardware that simply cannot do this.
 async function acquireWithRetry() {
-  const tries = hadDevice ? REACQUIRE_TRIES : 1
+  const tries = cell.hadDevice ? REACQUIRE_TRIES : 1
   for (let attempt = 1; attempt <= tries; attempt++) {
     const last = attempt === tries
     try {
@@ -154,22 +201,22 @@ async function createDevice(): Promise<GPUDevice | null> {
       console.error('[GPU] UNCAPTURED ERROR:', event.error.message)
     })
     void d.lost.then(info => {
-      // Identity check: if the module-level device has already been replaced
-      // (test reset + re-init, or a subsequent successful createDevice), the
+      // Identity check: if the shared device has already been replaced (test
+      // reset + re-init, or a subsequent successful createDevice), the
       // resolution of the old device's `.lost` promise must NOT null out the
       // newer device. Without this guard the new device's reference is
       // silently cleared on the next getGpuDevice() call.
-      if (device === d) {
+      if (cell.device === d) {
         console.error('[GPU] Device lost:', info.message)
-        device = null
-        devicePromise = null
-        for (const listener of deviceLostListeners) {
+        cell.device = null
+        cell.devicePromise = null
+        for (const listener of cell.deviceLostListeners) {
           listener()
         }
       }
     })
-    device = d
-    hadDevice = true
+    cell.device = d
+    cell.hadDevice = true
     return d
   } catch (e) {
     console.warn('[GPU] WebGPU device creation failed:', e)
@@ -177,14 +224,16 @@ async function createDevice(): Promise<GPUDevice | null> {
   }
 }
 
-let gpuOverride: string | null = null
-
+/**
+ * Pin the page to a renderer, or clear the pin with `null`. Page-wide by
+ * design and shared across every copy of this module — see {@link GpuDeviceCell}.
+ */
 export function setGpuOverride(value: string | null) {
-  gpuOverride = value
+  cell.gpuOverride = value
 }
 
 export function getGpuOverride() {
-  return gpuOverride
+  return cell.gpuOverride
 }
 
 /**
@@ -194,24 +243,28 @@ export function getGpuOverride() {
  * every backend built from then on is the Canvas2D one.
  */
 export function isGpuRenderingDisabled() {
-  return gpuOverride === 'canvas2d' || gpuOverride === 'canvas'
+  return cell.gpuOverride === 'canvas2d' || cell.gpuOverride === 'canvas'
 }
 
 /**
- * Reset module-level singleton state. For use in tests only — clears
- * `device` and `devicePromise` so the next `getGpuDevice()` call starts
- * fresh rather than returning the cached (possibly null) promise from a
- * previous test.
+ * Reset the shared singleton state. For use in tests only — clears `device` and
+ * `devicePromise` so the next `getGpuDevice()` call starts fresh rather than
+ * returning the cached (possibly null) promise from a previous test.
  *
  * It drops references and deliberately does not destroy the device, so this is
  * not the half of a pair that a `destroyGpuDevice()` completes. See the comment
  * above `onDeviceLost` for what destroying one costs.
+ *
+ * Resets the cell's fields rather than replacing the cell, so a second copy of
+ * this module that captured it still sees the reset. `gpuOverride` is left
+ * alone: it is set by the host and by individual tests, and clearing it here
+ * would make the reset mean two different things.
  */
 export function resetGpuDeviceForTests() {
-  device = null
-  devicePromise = null
-  hadDevice = false
-  deviceLostListeners.clear()
+  cell.device = null
+  cell.devicePromise = null
+  cell.hadDevice = false
+  cell.deviceLostListeners.clear()
 }
 
 export function getGpuDevice() {
@@ -219,14 +272,14 @@ export function getGpuDevice() {
   if (override !== null && ['webgl', 'canvas2d', 'canvas'].includes(override)) {
     return Promise.resolve(null)
   }
-  if (device) {
-    return Promise.resolve(device)
+  if (cell.device) {
+    return Promise.resolve(cell.device)
   }
-  if (devicePromise) {
-    return devicePromise
+  if (cell.devicePromise) {
+    return cell.devicePromise
   }
   const pending = createDevice()
-  devicePromise = pending
+  cell.devicePromise = pending
   // Nothing re-asks on its own — every backend built from here on reads this
   // memo — so a cached failure is permanent for the life of the page. That is
   // the right answer for hardware that has no WebGPU and the wrong one for a
@@ -234,8 +287,8 @@ export function getGpuDevice() {
   // on the second, so the next display to build asks again instead of
   // inheriting a demotion to WebGL2 that no longer reflects the machine.
   void pending.then(d => {
-    if (!d && hadDevice && devicePromise === pending) {
-      devicePromise = null
+    if (!d && cell.hadDevice && cell.devicePromise === pending) {
+      cell.devicePromise = null
     }
   })
   return pending

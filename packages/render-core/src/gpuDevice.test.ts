@@ -1,6 +1,7 @@
 import {
   getGpuDevice,
   getGpuOverride,
+  isGpuRenderingDisabled,
   onDeviceLost,
   resetGpuDeviceForTests,
   setGpuOverride,
@@ -106,11 +107,13 @@ function installFakeGpu(device: FakeDevice) {
     limits: { maxStorageBufferBindingSize: 1, maxBufferSize: 1 },
     requestDevice: jest.fn().mockResolvedValue(device),
   }
+  const requestAdapter = jest.fn().mockResolvedValue(adapter)
   // Override navigator.gpu for this test — jsdom has none by default.
   Object.defineProperty(navigator, 'gpu', {
     configurable: true,
-    value: { requestAdapter: jest.fn().mockResolvedValue(adapter) },
+    value: { requestAdapter },
   })
+  return requestAdapter
 }
 
 // A GPU stack that declines `requestAdapter` — what a machine without WebGPU
@@ -238,4 +241,100 @@ test('retries and does not cache a failed re-acquisition after a device loss', a
   errSpy.mockRestore()
   uninstallFakeGpu()
   jest.useRealTimers()
+})
+
+// --- Two copies of this module on one page ---
+//
+// What a statically-bundled plugin produces. ADR-030 keeps the GPU surface out
+// of the ReExports ABI on purpose, so a third-party display carries its own
+// render-core — and everything in this file above this line would still pass
+// with per-copy module state while the plugin quietly ignored the host's
+// `?renderer=` and its "disable GPU" button. These are the tests that fail
+// without the globalThis cell.
+//
+// `jest.resetModules` clears the registry, so the `import` below evaluates the
+// module a second time while the static imports at the top of this file stay
+// bound to the first copy: two live instances, one page.
+async function loadSecondCopy() {
+  jest.resetModules()
+  return import('./gpuDevice.ts')
+}
+
+test('a second copy sees the host page-wide override', async () => {
+  setGpuOverride('canvas2d')
+
+  const plugin = await loadSecondCopy()
+
+  // Per-copy state reads its own untouched `gpuOverride` for all three: null,
+  // false, and an attempt to take a device on a page the user has explicitly
+  // pinned away from the GPU.
+  expect(plugin.getGpuOverride()).toBe('canvas2d')
+  expect(plugin.isGpuRenderingDisabled()).toBe(true)
+  expect(await plugin.getGpuDevice()).toBeNull()
+})
+
+test('an override set by a second copy reaches the host', async () => {
+  const plugin = await loadSecondCopy()
+
+  // Both directions matter: the "disable GPU" banner belongs to whichever
+  // display errored, so the write can originate in either copy.
+  plugin.setGpuOverride('canvas2d')
+
+  expect(getGpuOverride()).toBe('canvas2d')
+  expect(isGpuRenderingDisabled()).toBe(true)
+})
+
+test('two copies share one GPUDevice rather than taking one each', async () => {
+  const requestAdapter = installFakeGpu(makeFakeDevice())
+  const device = await getGpuDevice()
+
+  const plugin = await loadSecondCopy()
+
+  // Same device, and no second `requestAdapter`. A per-copy memo would take a
+  // second physical device with its own `.lost` handling, and spend from the
+  // page's WebGL2 context budget (reference/GPU_CONTEXT_BUDGET.md) where the
+  // host's accounting cannot see it.
+  expect(await plugin.getGpuDevice()).toBe(device)
+  expect(requestAdapter).toHaveBeenCalledTimes(1)
+
+  uninstallFakeGpu()
+})
+
+test('a device lost in one copy notifies listeners registered in the other', async () => {
+  const device = makeFakeDevice()
+  installFakeGpu(device)
+  expect(await getGpuDevice()).toBe(device)
+
+  const plugin = await loadSecondCopy()
+  const hostListener = jest.fn()
+  const pluginListener = jest.fn()
+  onDeviceLost(hostListener)
+  plugin.onDeviceLost(pluginListener)
+
+  const errSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+  device.resolveLost('test-induced loss')
+  await Promise.resolve()
+  await Promise.resolve()
+  errSpy.mockRestore()
+
+  expect(hostListener).toHaveBeenCalledTimes(1)
+  expect(pluginListener).toHaveBeenCalledTimes(1)
+
+  uninstallFakeGpu()
+})
+
+test('resetGpuDeviceForTests in one copy is seen by the other', async () => {
+  installFakeGpu(makeFakeDevice())
+  await getGpuDevice()
+
+  const plugin = await loadSecondCopy()
+  // Resets the cell's fields in place. Reassigning the cell would leave this
+  // copy holding the old object, and the two would silently diverge from there.
+  plugin.resetGpuDeviceForTests()
+
+  const device2 = makeFakeDevice()
+  installFakeGpu(device2)
+  expect(await getGpuDevice()).toBe(device2)
+
+  uninstallFakeGpu()
 })
