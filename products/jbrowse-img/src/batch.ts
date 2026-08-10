@@ -5,10 +5,10 @@ import type { Entry } from './parseArgv.ts'
 //
 // BEDPE and not VCF, deliberately. Every caller's BND spelling is a parsing job
 // this tool has no business growing — the brackets, the inserted sequence, the
-// symbolic ALTs, the mate conventions — and `bcftools query` already emits a
-// BEDPE from any of them in one line (see the tutorial). BEDPE is also what a
-// LINX/GRIDSS TSV converts to, so one input format covers every producer
-// without this file learning any of their dialects.
+// symbolic ALTs, the mate conventions — and `scripts/sv_multihop.py bedpe`
+// already does it, against the same parser the multi-hop tutorial uses. BEDPE is
+// also what a LINX/GRIDSS TSV converts to, so one input format covers every
+// producer without this file learning any of their dialects.
 
 export interface BedpeRecord {
   refName1: string

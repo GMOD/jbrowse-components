@@ -514,9 +514,10 @@ export function buildBatchHelp(scriptName: string) {
       ],
     ]),
     '',
-    'A VCF converts in one line:',
-    "  bcftools query -f '%CHROM\\t%POS\\t%END\\t%INFO/CHR2\\t%INFO/END2\\t%ID\\n' calls.vcf.gz",
-    '  (field names vary by caller; see the docs for the LINX/GRIDSS forms)',
+    'A VCF converts with the helper in this repo, which handles the breakend',
+    'grammar (inserted sequence, upper-cased mate contigs) and collapses the',
+    'reciprocal pairs that would otherwise queue each junction twice:',
+    '  python3 scripts/sv_multihop.py bedpe calls.vcf.gz --out junctions.bedpe',
   ].join('\n')
 }
 

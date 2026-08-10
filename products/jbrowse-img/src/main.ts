@@ -181,7 +181,7 @@ async function main() {
       const bedpe = getString(rest, 'bedpe')
       if (!bedpe) {
         throw new Error(
-          'batch needs --bedpe <file> (a VCF converts with one bcftools query — see the docs)',
+          'batch needs --bedpe <file> (convert a VCF with `sv_multihop.py bedpe`, see the docs)',
         )
       }
       const { failures } = await runBatch({
