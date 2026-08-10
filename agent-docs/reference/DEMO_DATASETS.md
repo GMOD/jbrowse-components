@@ -114,6 +114,21 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
 - **ChromHMM chromatin state** — `demos/chromhmm/`, hg19, row per epigenome via
   `partitionField: cellType`, color from `itemRgb`. UCSC Broad ENCODE
   (9 cell types, 15-state, 74MB, 5.4M segments) and Roadmap 127-epigenome.
+- **1000 Genomes VCFs need no re-hosting.** The EBI FTP is CORS-open and
+  byte-range capable, so a `VcfTabixAdapter` can point straight at it. Its
+  `integrated_call_samples_v3...ALL.panel` is a ready-made `samplesTsvLocation`
+  (sample / pop / super_pop / gender), so grouping and coloring by population
+  costs no new file either.
+- **Precomputed LD is region-queried, so file size doesn't matter.**
+  `PlinkLDTabixAdapter` + `LDTrack` render plink `--r2` output;
+  `plugins/variants/scripts/plink2ld.sh` does the conversion. Note that
+  `LDDisplay` suppresses its "… variants shown" status bar for precomputed LD,
+  so never gate a screenshot on that text.
+- **A `plink --maf` floor decides what an LD panel can say.** Both Anopheles
+  2La panels are built at `--maf 0.2`, and Gabon's inverted arrangement is 5 of
+  138 haplotypes — so its tag variants are below the floor and simply absent
+  from the file. An empty LD panel there is evidence about the *common*
+  variation only, not a claim that nothing is linked.
 
 ## Pangenome and comparative
 
@@ -155,3 +170,12 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
 - **A GDC MAF's `CONTEXT` column carries the indel anchor base VCF needs**, laid
   out as 5 bases + the REF allele + 5 bases, so `CONTEXT[5]` is the anchor for
   every row. MAF-to-VCF therefore needs no reference FASTA.
+- **Don't hand-write a refNameAliases file for an INSDC-accession assembly.**
+  The NCBI datasets CLI emits exactly the four columns
+  `NcbiSequenceReportAliasAdapter` reads:
+  `datasets download genome accession <GCA> --include seq-report`, then
+  `dataformat tsv genome-seq --fields
+  genbank-seq-acc,refseq-seq-acc,sequence-name,ucsc-style-name`. This is how the
+  wheat *timopheevii* row stopped being labelled `OY997263.1`. Prefer the CLI to
+  a hardcoded NCBI FTP URL — teaching the adapter to read
+  `*_assembly_report.txt` was tried and reverted as unnecessary.

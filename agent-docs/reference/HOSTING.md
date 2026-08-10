@@ -53,6 +53,11 @@ and papers. There is deliberately no `gc`.
   `jbrowse.org/ucsc/<db>/config.json`; GenArk fans the first nine digits into
   three dirs → `jbrowse.org/hubs/genark/GCA/964/188/535/GCA_964188535.1/config.json`.
   UCSC dbs ship trix `aggregateTextSearchAdapters`; GenArk ones often don't.
+- **The hosted UCSC hg19 hub already carries the annotation tracks a figure
+  usually wants**, referenced by `trackId` with no session track:
+  `hg19-clinvarMain`, `hg19-dgvMerged`, `hg19-gnomadSvFull`, plus dbVar, CADD
+  and phyloP/phastCons. Check `jbrowse.org/ucsc/hg19/config.json` before adding
+  one to a spec.
 - **`&loc=` accepts a gene name; a session spec's `init.loc` does not.** The URL
   param routes through text search; `navToLocString` rejects a non-locstring.
   Symbol → URL params, coordinates → either.

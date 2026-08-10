@@ -104,6 +104,31 @@ bookkeeping: `GLOBAL_TRIGGERS` in `screenshot-impact.ts` matches that prefix, so
 - **Display config in a session spec goes on the track**, inside its own
   `displays: [{ type, ...slots }]`. Slots on the view's `tracks` entry are
   silently dropped and the display falls back to schema defaults.
+- **A display's config slots and its model props take opposite routes**, and
+  putting one where the other goes fails silently in both directions. A *slot*
+  goes in `displays: [...]` as above; a *model prop* goes on the view's `tracks`
+  entry, which `normalizeTrackInit` folds into the display snapshot. So
+  `displays: [{ rowHeight: 3 }]` does nothing — `rowHeight` is a model prop, and
+  rows auto-fit `availableHeight / nrow`, which means **lane height is how you
+  set row height**. Conversely `forceLoad` is a real config slot, so no inline
+  key on a `tracks` entry can set it and a spec cannot force a lane past the
+  byte gate.
+- **`pnpm --filter jbrowse-web build` silently does nothing** — "No projects
+  matched", exit 0. The package is `@jbrowse/web`. A regen after a code change
+  then shoots the OLD build, which looks exactly like the change having no
+  effect.
+- **Restart the review server after editing a caption.** It loads the docs at
+  startup, so a reviewer reading it sees the stale text and files a verdict
+  against prose you already fixed.
+- **"This figure changes between runs" is checkable, and usually isn't a race.**
+  A review entry's `hash` is the sha1 of the PNG the verdict was made against,
+  so `sha1sum` the file on disk and compare. Both revisions are fetchable from
+  the content-addressed store
+  (`jbrowse.org/jb2-figures/<name>.<first12 of sha256>.png`), so **diff the two
+  blobs before hunting nondeterminism** — the usual answer is a verdict filed
+  against a superseded revision. A delta far larger than the stated fix is not
+  evidence against this: a label layout that shifts by one row moves every name
+  after it, so gene lanes re-packing dominate the pixel count.
 - **An unfiltered regen only rewrites a PNG whose capture changed**, so a sweep
   can't churn 288 figures over antialiasing. `--filter` implies `--force`: a run
   that names its specs rewrites them, since the gate's 0.5% is wider than a
@@ -179,6 +204,11 @@ bookkeeping: `GLOBAL_TRIGGERS` in `screenshot-impact.ts` matches that prefix, so
   _and_ to the pre-resolved branch in `annotationOverlay.ts`; the axis `bpToPx`
   returns a bare number, and reading `.offsetPx` off it yields a NaN that
   serializes to null and parks every callout in the top-left corner.
+- **Text pills draw last**, over arrows and boxes (`annotationOverlay.ts`). An
+  arrow's tail has to start inside the pill it leaves from, and a pill's width
+  is only known in-page — so place the pill's RIGHT edge with
+  `textAlign: 'end'` and put the tail 10px left of it. Don't hand-tune a `dx`
+  against a width you measured off an image.
 - **Don't `convert -append` a before/after figure by hand** — use a `compose`
   spec, or `stages` when a state is only reachable through the UI.
 - **A UI click-chain waiting on a fixed timeout is a red flag.** Make the

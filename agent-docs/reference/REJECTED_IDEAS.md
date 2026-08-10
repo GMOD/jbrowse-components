@@ -146,6 +146,43 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
 - **Rescuing a noisy whole-genome dotplot with `colorBy` or min-length** — pick
   data with real diagonals, draw it black.
 
+## Figures that were attempted and cannot be made
+
+Each of these was a screenshot-review item that got deleted rather than fixed,
+because the data does not contain the thing the figure asserted. Don't
+re-attempt without genuinely new data.
+
+- **The MAPT 17q21 inversion** — nothing available shows it. 1000G phase 3 SVs
+  hold only a 16 kb AC=1 singleton INV in chr17:42–46.5 Mb; gnomAD SV v2.1's
+  only INV there is a 53 Mb whole-arm call; HGSVC2 freeze4 *has* the call
+  (chr17-45568281-INV-926875) but as one merged row with a single GT column; and
+  PanGenie's genotyped release is insdel-only. Structurally: a balanced
+  inversion changes no copy number, so arrays are blind to it, and the segdups
+  defeat short reads.
+- **An LCT swept-haplotype matrix** — the matrix is a uniform field at both
+  800 kb and the 160 kb core block, because its MAF≥0.35 variants are common
+  across populations, so no swept haplotype resolves as a band. `groupBy` does
+  not rescue it; row order was never the problem. The surviving LD figure reads
+  causal variant → the block it dragged → where the block ends.
+- **An "island of badness" at SMN1 vs a control locus** — three independent
+  blockers. gnomAD coverage is continuously under 12x from 69.5 Mb to 71.36 Mb,
+  so the nearest edge is 410 kb past SMN1; at a 200 kb window the SMN fetch is
+  4.61 Mb and the control 3.93 Mb, both of which trip the byte gate and replace
+  the pileup with the banner; and Umap draws as a picket fence past ~30 kb. The
+  one finding worth keeping is that **coverage recovers at ENCODE's edge
+  (71,359,500), not GIAB's (71,009,585)**.
+- **Drawing the pggb 75 bp "spur" as a linear glyph** — it has no K12
+  coordinate. `tabix ecoli_pggb.segs.bed.gz 'K12#1#chr:1004500-1004961'` returns
+  53 records, every one a K12 interval and none of length 75. A glyph draws what
+  the adapter emits, so this needs a bubbles-style record at the detour's
+  attachment point, i.e. a build-script change and an upload.
+- **A second long-read carrier for the `inverted_duplication` figure** — asked
+  more than once, answered no by cohort, not just by this sample's absence.
+  `s3://1000g-ont/1KGP_PacBio_WGS` is 140 GM/NA genomes (no HG02768) whose
+  integrated callset is assembly-based INS/DEL with **no INV records anywhere on
+  chr1**, and all 500 ONT Sniffles v2.6.2 VCFs queried at
+  chr1:39,655,000-39,665,000 return zero INV/DUP.
+
 ## Tooling, tests and docs
 
 - **Golden-snapshot browser tests** — not worth the investment; the one version
