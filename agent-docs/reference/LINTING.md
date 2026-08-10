@@ -1,6 +1,6 @@
 ---
 name: linting
-description: Which linter owns which rules, why .oxlintrc.json cannot carry comments, why neither linter can report unused disable directives, and the rules measured and rejected (with the counts). Read before adding a rule, adding a plugin, or deleting a disable comment.
+description: Which linter owns which rules, why .oxlintrc.json cannot carry comments, why neither linter can report unused disable directives, the rules measured and rejected with their counts, and the triage of oxlint's react-compiler port (39 findings, no bugs, 23 from one analysis bug with a minimal repro). Read before adding a rule, adding a plugin, or deleting a disable comment.
 ---
 
 # Linting: who owns what
@@ -88,17 +88,55 @@ re-propose these without new evidence.
   `no-export` flags two files exporting a never-called type-level assertion so
   tsc keeps checking its body. Five rules are on, the rest off.
 
-## Open: oxlint and eslint disagree about react-compiler
+## oxlint's react-compiler port: triaged, and off
 
-oxlint ships `react/react-compiler`. On this tree it reports **39 findings in 15
-files** (refs read during render, module state reassigned during render) that
-`eslint-plugin-react-compiler@19.1.0-rc.2` does not, and it runs in 1.5s against
-that plugin's 11.5% of a 30s eslint run.
+oxlint ships `react/react-compiler`, and it is not the same check as
+`eslint-plugin-react-compiler@19.1.0-rc.2`. On this tree it reports 39 findings
+the eslint plugin does not, in 1.5s against that plugin's 11.5% of a 30s eslint
+run. All 39 were read, 2026-08-10. **None is a bug**, and the rule stays off.
 
-Nobody has established which is right. Until someone triages those 39, the
-eslint plugin stays authoritative and oxlint's port stays off — but this is the
-single largest remaining move, because react-compiler is the main reason the
-eslint backstop exists at all.
+The eslint plugin does fire — two sites carry
+`eslint-disable react-compiler/react-compiler`, both above a `'use no memo'`
+directive. What it reports is compilation bailouts. oxlint's port reports the
+broader "Rules of React" set, which is why the two barely overlap.
+
+**23 of the 39 are one analysis bug.** Once a hook returns a ref inside an
+object, oxlint treats every property of that object as a ref, so reading a
+`useState` value off it is "Cannot access refs during render". Minimal repro —
+`A` is flagged twice, `B` not at all, and they are the same program:
+
+```tsx
+function useThing() {
+  const ref = useRef<HTMLInputElement>(null)
+  const [value] = useState('')
+  return { ref, value }
+}
+export function A() {
+  const thing = useThing()
+  return <input ref={thing.ref} value={thing.value} /> // 2 findings
+}
+export function B() {
+  const { ref, value } = useThing()
+  return <input ref={ref} value={value} /> // clean
+}
+```
+
+A real `ref.current` read during render is still caught, so the rule is not
+useless — it is unusable while `useNoteDraft`, `RenderCanvas`'s handle and
+floating-ui's `refs` object all return that shape. Retry after an oxlint upgrade
+by re-running the snippet above.
+
+The other 16, all deliberate:
+
+| finding | n | why it stays |
+| --- | --- | --- |
+| `ref.current = value` during render (`useFetch`, `useDockviewController`) | 4 | The latest-ref mirror, so the fetch effect depends on the serialized key alone. Moving the write into an effect reorders it after the effect that reads it. The React-sanctioned alternative, `useEffectEvent`, is banned here — it stales inside `observer()`. |
+| lazy ref init, `storeRef.current ??= …` (`useMouseTracking`) | 2 | The form React's own docs give for expensive ref initialization. |
+| module `let` reassigned by a test harness component | 4 | `let api; function Harness(){ api = useHook() }` — how a hook gets exercised. Test files only. |
+| `MemoDependencies` in `useReview` | 3 | `exhaustive-deps` reports 0 on the same three callbacks. This is react-compiler's own memoization bookkeeping, not a dependency bug. |
+| `Immutability` in `useAlignmentsBase` | 1 | The write is in `handleCanvasMouseMove`, an event handler. Writing a ref from an event handler is what refs are for. |
+| `EffectSetState` in `LaunchSyntenyViewForRegionDialog` | 1 | Same site `@eslint-react/set-state-in-effect` flags; see the rejected list above. |
+| `StaticComponents` in `TrackControl` | 1 | `use(TrackControlContext) ?? MuiTrackControl` — a registry lookup, which is exactly why `@eslint-react/static-components` is off too. |
 
 ## Why `@eslint-react` is still installed
 
