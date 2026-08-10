@@ -41,6 +41,10 @@
     "jest/no-export": "off",
 
     "react/rules-of-hooks": "error",
+    "react/no-unstable-nested-components": ["error", { "allowAsProps": true }],
+    "oxc/no-accumulating-spread": "error",
+    "eslint/preserve-caught-error": "error",
+    "typescript/no-confusing-non-null-assertion": "error",
     "typescript/no-unnecessary-condition": "error",
     "typescript/switch-exhaustiveness-check": [
       "error",

@@ -370,14 +370,19 @@ function paragraphs(text: string) {
 // greedily pack words into lines no wider than `width`. A word longer than the
 // width gets a line to itself rather than being broken.
 function wrapParagraph(paragraph: string, width: number): string[] {
-  return paragraph.length <= width
-    ? [paragraph]
-    : paragraph.split(' ').reduce<string[]>((lines, word) => {
-        const last = lines.at(-1)
-        return last !== undefined && last.length + 1 + word.length <= width
-          ? [...lines.slice(0, -1), `${last} ${word}`]
-          : [...lines, word]
-      }, [])
+  if (paragraph.length <= width) {
+    return [paragraph]
+  }
+  const lines: string[] = []
+  for (const word of paragraph.split(' ')) {
+    const last = lines.at(-1)
+    if (last !== undefined && last.length + 1 + word.length <= width) {
+      lines[lines.length - 1] = `${last} ${word}`
+    } else {
+      lines.push(word)
+    }
+  }
+  return lines
 }
 
 function wrapText(text: string, width: number, indent: string) {

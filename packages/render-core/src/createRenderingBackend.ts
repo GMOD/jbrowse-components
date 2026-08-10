@@ -47,6 +47,10 @@ export async function createRenderingBackend<TRenderingBackend>(
     if (ladderFailures.length === 0) {
       throw e
     }
+    // `e` is the last entry of the errors array, which says more than `cause`
+    // would: it places the Canvas2D failure in order behind the WebGPU and
+    // WebGL ones.
+    // oxlint-disable-next-line eslint/preserve-caught-error
     throw new AggregateError(
       [...ladderFailures, e],
       `No rendering backend could be created for this canvas: ${e}`,

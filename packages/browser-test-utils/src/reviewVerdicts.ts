@@ -58,6 +58,7 @@ export function loadReport(reportPath: string): Record<string, Verdict> {
     throw new Error(
       `${reportPath} is not valid JSON (${e}). It has not been modified — ` +
         `recover it with \`git checkout -- ${reportPath}\` before reviewing further.`,
+      { cause: e },
     )
   }
 }

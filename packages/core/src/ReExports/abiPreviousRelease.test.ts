@@ -157,14 +157,14 @@ describe('ABI against the previously published release', () => {
   it('has no stale KNOWN_REMOVALS entries', () => {
     const modules = previous.modules as Record<string, string[]>
     const stale = Object.keys(KNOWN_REMOVALS).filter(key => {
-      const [name, exportName] = key.split('#')
+      // defaults rather than `!`: `exportName! in mod` reads as
+      // `!(exportName in mod)`, which is the opposite of what it does
+      const [name = '', exportName = ''] = key.split('#')
       const mod = libs[name as keyof typeof libs] as
         | Record<string, unknown>
         | undefined
       // stale two ways: the name came back, or the previous release never had it
-      return (
-        (mod && exportName! in mod) || !modules[name!]?.includes(exportName!)
-      )
+      return (mod && exportName in mod) || !modules[name]?.includes(exportName)
     })
     expect(stale).toEqual([])
   })

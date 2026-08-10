@@ -88,7 +88,7 @@ function checkColumnsResolve(
       if (name && name !== '.') {
         named[i]!++
         if (bedMaps[i]!.has(name)) {
-          resolving += placed[i]! === 0 ? 1 : 0
+          resolving += placed[i] === 0 ? 1 : 0
           placed[i]!++
         }
       }

@@ -47,7 +47,9 @@ function runQuiet(command: string, args: string[], what: string) {
     execFileSync(command, args, { encoding: 'utf8', stdio: 'pipe' })
   } catch (e) {
     const { stdout, stderr } = e as { stdout?: string; stderr?: string }
-    throw new Error(`${what} failed:\n${stdout ?? ''}${stderr ?? ''}`)
+    throw new Error(`${what} failed:\n${stdout ?? ''}${stderr ?? ''}`, {
+      cause: e,
+    })
   }
 }
 
@@ -469,6 +471,7 @@ function main() {
         'Rebase onto whatever landed, then re-tag and push:\n' +
         `  git tag -d ${releaseTag} && git pull --rebase && git tag -a ${releaseTag} -m ${releaseTag} && git push --follow-tags\n` +
         `To abandon instead: git tag -d ${releaseTag} && git reset --hard origin/main`,
+      { cause: e },
     )
   }
 
