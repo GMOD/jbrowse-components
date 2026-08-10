@@ -30,6 +30,23 @@ Steps 1-3 and 5 are yours; step 4 is CI running unattended off the tag.
    It reports which plugin-store plugins read a `@jbrowse/core/*` name this
    build no longer serves. Needs the network, so it isn't a test.
 
+   **If a package is publishing for the first time**, grep the docs for the
+   sentence that says it isn't. Nothing else catches this: the manifests are
+   already correct — every non-private package ships on the tag, since
+   `publish.yml` runs a bare `pnpm publish -r` — so the only thing that goes
+   stale is prose telling authors to work around the absence.
+
+   ```bash
+   git grep -n 'not on npm yet' -- website agent-docs
+   ```
+
+   `@jbrowse/render-core` and `@jbrowse/shader-tools` are the standing case:
+   both were created after 4.3.0, and `creating_gpu_display.md` currently tells
+   plugin authors to build against a checkout and hand-copy the generated shader
+   modules. That instruction becomes wrong the moment the tag lands, and it is
+   the instruction an external GPU plugin is blocked on
+   (`~/src/jb2plugins/jbrowse-plugin-graphgenomeview` links both by path today).
+
    **Optionally**, write
    `website/release_announcement_drafts/v<version>.changelog.md` to replace the
    generated changelog for that one release. `pnpm release` uses it verbatim in

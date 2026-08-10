@@ -109,3 +109,48 @@ on-ramp.
 - Follow-ups: migrate in-tree `@jbrowse/core/gpu/*` imports to `@jbrowse/render-core`
   and retire the shims; add an export-surface guard test in render-core; rewrite
   `creating_gpu_display.md` against the final import paths.
+
+  All three are done. The shims are gone (`packages/core/src/gpu/` no longer
+  exists; 580 in-tree sites import `@jbrowse/render-core` directly), the guard
+  is `packages/render-core/src/publicApi.test.ts`, and the guide leads with the
+  Canvas2D on-ramp.
+
+## Amendment (2026-08): the package is not uniformly duplication-safe
+
+Found while auditing the first publish. The decision above is unchanged — what
+was missing is that it rests on an unstated premise: **that a second copy of
+render-core is equivalent to one.** For almost all of it that is true. Classes,
+mixins, hooks and geometry helpers are things a second copy can own its own
+instances of, and `createCanvas2DBackend` — the documented on-ramp — touches no
+module state at all, so the easy path was always safe.
+
+`gpuDevice.ts` was the exception, and it is the module the whole ladder reads.
+Its five module locals are one physical `GPUDevice` and one **page-wide** policy
+flag, and the flag is written only by the host: `?renderer=` at startup
+(`InitialLoad.tsx`, desktop's `Loader.tsx`) and the "disable GPU" button on the
+context-loss banner (`DisplayRenderErrorOverlay`, `plainChromeOverlays`), which
+`packages/render-core/CLAUDE.md` names as the only sanctioned fallback once a
+backend exists. `hal/createHal.ts` reads it at every backend construction. So a
+bundled plugin started with `gpuOverride = null` and kept it: the user pins the
+page away from the GPU, or clicks the one recovery affordance offered after a
+crash, and the plugin takes WebGPU anyway. Plus two devices per page, each with
+its own `.lost` handling, both spending from a WebGL2 context budget that is
+per-page (`reference/GPU_CONTEXT_BUDGET.md`) while the accounting was per-copy.
+
+The fix is a `globalThis` cell in `gpuDevice.ts`, and it is worth naming *why
+that rather than the obvious two*, because the ReExports-vs-bundle framing in
+`reference/PLUGIN_ABI_STABILITY.md` presents them as the only options:
+
+- It needs no `ReExports` entry, so nothing joins the frozen ABI. Decision 3
+  above stands exactly as written.
+- It survives version skew, which neither alternative does — a plugin pinned to
+  4.4 and a host on 4.6 still share one device. That makes the cell's shape a
+  cross-version contract; changing it means bumping the `V1` in the global's
+  name, and the comment on `GpuDeviceCell` says so.
+
+The general rule this leaves: **a static-import package may hold module state
+only where a second copy holding its own is harmless.** Anything page-wide —
+device handles, policy flags, caches the host tears down — either shares a cell
+or does not belong in a package we tell third parties to bundle. `@jbrowse/core`
+has the same shape one layer up (`dataAdapterCache`'s `adapterCache`), which is
+why that module is now served as ABI instead.

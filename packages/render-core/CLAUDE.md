@@ -12,6 +12,16 @@ The WebGL→Canvas2D ladder runs at **backend construction only**. A context los
 afterwards surfaces as `renderError` with the page-wide `setGpuOverride` escape;
 don't add a second per-display fallback path.
 
+**Module state must survive being duplicated, or live on the `globalThis`
+cell.** ADR-030 makes this package static-import-only, so a third-party display
+bundles its own copy — two live instances on one page is the shipping shape, not
+an edge case. A class or a memo per copy is fine. Anything page-wide is not:
+`gpuDevice` holds one physical device and the override the _host_ writes
+(`?renderer=`, the "disable GPU" banner button), so per-copy state meant a
+plugin silently ignoring both. See `GpuDeviceCell` — its shape is a
+cross-version contract, and the tests that pin this load a second copy through
+`jest.resetModules`.
+
 ## The reversed-block family
 
 Three ways to place a mark wrong on a flipped region, all invisible on forward
