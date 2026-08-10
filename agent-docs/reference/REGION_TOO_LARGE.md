@@ -351,10 +351,26 @@ own escape hatch. **Exempting a tier assumes it is bounded; measuring it doesn't
 have to.** A genuinely small summary read is orders of magnitude under
 `fetchSizeLimit` and never sees a banner.
 
-LD turns `byteGateEnabled` off for pre-computed adapters (PlinkLD\*), which
-aren't feature adapters — `CoreGetRegionByteEstimate` measures through
-`getFeatures` and would throw. That is the remaining legitimate use: not "this
-read is cheap" but "this adapter cannot be measured at all".
+**Nothing turns `byteGateEnabled` off, and as of 2026-08-09 there is no reason
+to.** The last user was LD, which turned it off for pre-computed adapters
+(PlinkLD\*) because those aren't feature adapters and
+`CoreGetRegionByteEstimate` threw on them. That was a display answering an
+adapter's question, the same shape as the `alwaysRender` flag below, and it had
+the same defect: the escape from "this cannot be measured" was to leave the gate
+entirely, which would have taken the measurable adapters with it had the display
+ever had one.
+
+The RPC returns `undefined` for a non-feature adapter instead — "unmeasurable",
+the same answer a BigWig gives by not implementing `getRegionByteSize` — and
+`estimatedFetchBytes` being undefined already keeps the byte axis out of the
+verdict. So the capability question is answered where the capability lives, once,
+for both kinds of adapter that can't answer it. The cost is one round trip per
+pre-computed LD fetch that is undefined by construction; those adapters load
+lazily (`PlinkLDAdapterBase.loadConfigCached`), so resolving one reads no file.
+
+The general rule, which the deleted `alwaysRender` flag and this both broke: a
+display-side flag that exists to describe an *adapter* will be wrong for the next
+adapter that display is pointed at.
 
 ## Canvas folds the byte check into its fetch RPC
 

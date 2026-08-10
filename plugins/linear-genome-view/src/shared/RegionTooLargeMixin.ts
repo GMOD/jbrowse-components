@@ -176,13 +176,16 @@ export default function RegionTooLargeMixin() {
        * does the verdict, which is why requesting the estimate and gating on it
        * can't drift apart.
        *
-       * Turn it off only for a fetch that **cannot be measured** — LD's
-       * pre-computed adapters aren't feature adapters, so
-       * `CoreGetRegionByteEstimate` would throw. Not for one believed to be
-       * small: a display that reads a cheaper file at some zooms points
-       * `byteGateAdapterConfig` at that file and stays gated, which is what MAF
-       * does. Off means nothing is watching, and "this tier is cheap" is a
-       * premise, not a bound.
+       * **Nothing in the tree turns it off**, and there is no longer a reason
+       * to. "Can this adapter be measured" is the adapter's answer, not a
+       * display's: one with no index estimate reports `undefined`, one that
+       * serves no features at all gets `undefined` from
+       * `CoreGetRegionByteEstimate`, and an unmeasurable estimate keeps the byte
+       * axis out of the verdict on its own. It is emphatically not for a fetch
+       * believed to be small — a display that reads a cheaper file at some zooms
+       * points `byteGateAdapterConfig` at that file and stays gated, which is
+       * what MAF does. Off means nothing is watching, and "this tier is cheap"
+       * is a premise, not a bound.
        */
       get byteGateEnabled(): boolean {
         return false

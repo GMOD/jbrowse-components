@@ -367,16 +367,21 @@ export default function sharedModelFactory(
       /**
        * #getter
        * Opt into RegionTooLargeMixin's derived byte gate (byte axis only, no
-       * density axis), except for pre-computed LD. `CoreGetRegionByteEstimate`
-       * measures via `getFeatures`, which only the VCF-computed path's feature
-       * adapter implements — a PlinkLD* adapter would throw "Adapter does not
-       * support retrieving features", and it ships pre-thinned files that need
-       * no gate anyway.
+       * density axis). On for every adapter, including the pre-computed ones
+       * (PlinkLD*), which serve no features at all: `CoreGetRegionByteEstimate`
+       * answers `undefined` for those — "unmeasurable", the same answer a
+       * BigWig gives — and an unmeasurable estimate keeps the byte axis out of
+       * the verdict without anything here having to know which adapter it has.
+       *
+       * This is the last display-side answer to an adapter-side question to go
+       * — the same shape as the `alwaysRender` estimate flag that preceded it —
+       * so `byteGateEnabled` now has no "except when the adapter would explode"
+       * caveat anywhere in the tree. What it costs is one round trip per
+       * pre-computed fetch that returns undefined by construction; those
+       * adapters load lazily, so resolving one reads no file.
        */
-      // `this`, not `self`: the sibling getter above is in this same block, so
-      // `self` isn't typed with it yet
       get byteGateEnabled() {
-        return !this.isPrecomputedLD
+        return true
       },
     }))
     .views(self => ({

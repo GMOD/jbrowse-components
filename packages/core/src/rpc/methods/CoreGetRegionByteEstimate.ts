@@ -28,9 +28,21 @@ export default class CoreGetRegionByteEstimate extends RpcMethodTypeWithRenameRe
       adapterConfig,
     )
 
-    if (!isFeatureAdapter(dataAdapter)) {
-      throw new Error('Adapter does not support retrieving features')
-    }
-    return dataAdapter.getRegionByteSize(regions, deserializedArgs)
+    // "Unmeasurable", not an error. `undefined` is already the answer for an
+    // adapter that serves features but quotes no index estimate — BigWig, HiC,
+    // sequence — and the gate reads it as "no byte axis" rather than as a
+    // failure (see BaseFeatureDataAdapter.getRegionByteSize, and
+    // REGION_TOO_LARGE.md §"Self-summarizing adapters need no exemption"). An
+    // adapter that serves no features at all is the same answer arrived at
+    // sooner, so it takes the same path.
+    //
+    // Throwing here made "can this be measured" a question every gated display
+    // had to answer for itself, ahead of asking: a display pointed at such an
+    // adapter errored outright instead of simply not gating, and the only fix
+    // was a per-display opt-out of the whole gate — which then also disabled it
+    // for that display's measurable adapters. LD carried exactly that opt-out.
+    return isFeatureAdapter(dataAdapter)
+      ? dataAdapter.getRegionByteSize(regions, deserializedArgs)
+      : undefined
   }
 }
