@@ -1,6 +1,7 @@
 import { BamFile } from '@gmod/bam'
 import { packReference } from '@jbrowse/cigar-utils'
 import { downloadStatus, withProgress } from '@jbrowse/core/util'
+import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import {
@@ -43,6 +44,10 @@ export default class BamAdapter extends BaseSamAdapter<BamAdapterConfig> {
             ? undefined
             : openLocation(location, this.pluginManager),
           recordClass: BamSlightlyLazyFeature,
+          // maxCacheBytes is per file, and one BamFile is held per open track,
+          // so its 1GB ceiling was multiplied by the track count with nothing
+          // bounding the sum; see cacheBudgets
+          cacheBudget: decompressedBytesBudget,
         }),
       }
     }

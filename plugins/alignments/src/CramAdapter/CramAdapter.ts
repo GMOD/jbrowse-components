@@ -1,6 +1,7 @@
 import { CraiIndex, IndexedCramFile } from '@gmod/cram'
 import { downloadStatus, sum, withProgress } from '@jbrowse/core/util'
 import QuickLRU from '@jbrowse/core/util/QuickLRU'
+import { decodedRecordsBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
@@ -124,6 +125,10 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
         fetchReferenceSequence: (seqId: number, start: number, end: number) =>
           this.seqFetch(seqId, start, end),
         checkSequenceMD5: false,
+        // cacheSize is per file, and one IndexedCramFile is held per open
+        // track. Its own budget, not the bytes one: this cache weighs decoded
+        // records, and a budget summing records with bytes bounds neither
+        cacheBudget: decodedRecordsBudget,
       })
       this.configureResult = { cram, index }
     }

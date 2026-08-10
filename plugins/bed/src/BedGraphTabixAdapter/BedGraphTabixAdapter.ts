@@ -1,6 +1,7 @@
 import { TabixIndexedFile } from '@gmod/tabix'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { downloadStatus, updateStatus } from '@jbrowse/core/util'
+import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { withStopTokenSignal } from '@jbrowse/core/util/stopToken'
@@ -33,7 +34,7 @@ export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter<BedGrap
     const bedGraph = new TabixIndexedFile({
       filehandle: openLocation(bedGraphGzLocation, pm),
       ...openTabixIndexFilehandle(location, indexType, pm),
-      chunkCacheSize: 50 * 2 ** 20,
+      chunkCacheBudget: decompressedBytesBudget,
     })
     const columnNames = this.getConf('columnNames')
 

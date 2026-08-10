@@ -1,4 +1,5 @@
 import { TabixIndexedFile } from '@gmod/tabix'
+import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { withStopTokenSignal } from '@jbrowse/core/util/stopToken'
 import { readTabixHeaderLines } from '@jbrowse/core/util/tabix'
@@ -30,7 +31,7 @@ export default class PlinkLDTabixAdapter extends PlinkLDAdapterBase<Config> {
     const ld = new TabixIndexedFile({
       filehandle: openLocation(ldLocation, this.pluginManager),
       ...openTabixIndexFilehandle(location, indexType, this.pluginManager),
-      chunkCacheSize: 50 * 2 ** 20,
+      chunkCacheBudget: decompressedBytesBudget,
     })
 
     // The column layout decides whether the file's D' column is found at all,

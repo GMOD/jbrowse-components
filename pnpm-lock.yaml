@@ -395,6 +395,9 @@ importers:
       '@gmod/bgzf-filehandle':
         specifier: ^6.3.2
         version: 6.3.2
+      '@gmod/shared-read-cache':
+        specifier: ^1.5.0
+        version: 1.5.0
       '@jbrowse/jexl':
         specifier: ^3.0.2
         version: 3.0.2
@@ -708,11 +711,11 @@ importers:
   plugins/alignments:
     dependencies:
       '@gmod/bam':
-        specifier: ^8.3.1
-        version: 8.3.1
+        specifier: ^8.4.0
+        version: 8.4.0
       '@gmod/cram':
-        specifier: ^11.3.0
-        version: 11.3.0
+        specifier: ^11.4.0
+        version: 11.4.0
       '@jbrowse/alignments-core':
         specifier: workspace:^
         version: link:../../packages/alignments-core
@@ -832,8 +835,8 @@ importers:
         specifier: ^2.2.9
         version: 2.2.9
       '@gmod/tabix':
-        specifier: ^3.6.1
-        version: 3.6.1
+        specifier: ^3.7.1
+        version: 3.7.1
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -983,8 +986,8 @@ importers:
   plugins/comparative-adapters:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.6.1
-        version: 3.6.1
+        specifier: ^3.7.1
+        version: 3.7.1
       '@jbrowse/cigar-utils':
         specifier: workspace:^
         version: link:../../packages/cigar-utils
@@ -1179,8 +1182,8 @@ importers:
   plugins/gff3:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.6.1
-        version: 3.6.1
+        specifier: ^3.7.1
+        version: 3.7.1
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1233,8 +1236,8 @@ importers:
   plugins/gtf:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.6.1
-        version: 3.6.1
+        specifier: ^3.7.1
+        version: 3.7.1
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1702,8 +1705,8 @@ importers:
   plugins/variants:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.6.1
-        version: 3.6.1
+        specifier: ^3.7.1
+        version: 3.7.1
       '@gmod/vcf':
         specifier: ^7.1.0
         version: 7.1.0
@@ -2112,6 +2115,9 @@ importers:
       '@jbrowse/mobx-state-tree':
         specifier: ^6.1.0
         version: 6.1.0(mobx@7.0.0)
+      '@jbrowse/plugin-breakpoint-split-view':
+        specifier: workspace:^
+        version: link:../../plugins/breakpoint-split-view
       '@jbrowse/plugin-circular-view':
         specifier: workspace:^
         version: link:../../plugins/circular-view
@@ -4406,8 +4412,8 @@ packages:
   '@gmod/abortable-promise-cache@3.0.4':
     resolution: {integrity: sha512-kxRJj5fyRKFuZDp/YvnHeadYCV2EEUKyH2T4a2Iz9O7T/thOWWHUDiiD/Mg6WZP/RNNDIcfSHl/xVHHy/+j8qg==}
 
-  '@gmod/bam@8.3.1':
-    resolution: {integrity: sha512-aKCaUo030O80zFs9b9fcjs1RmOu3wzeYuwhRui1264KFXN5uS8DJ23Y8SqlxZjltKK2F/U5Alsqfk0M5lsfDAQ==}
+  '@gmod/bam@8.4.0':
+    resolution: {integrity: sha512-tmSHHScHQNYAJeK1XMlcIsYaIuPYew2z3KE45fliyZKiPrLAtPom5ZswEbb9R2xDqIBJlTVeQ+/DYYDsh932dw==}
 
   '@gmod/bbi@11.0.0':
     resolution: {integrity: sha512-wyxOJ6cr906Vht+jXhO4Tg2NSRmXhh33yFOayLHHIPlOzhjDa0ZHQWbGO/shUi7Z2Me8vVkxQhZNxeE0IJQGpQ==}
@@ -4418,8 +4424,8 @@ packages:
   '@gmod/bgzf-filehandle@6.3.2':
     resolution: {integrity: sha512-ZgVK7PGUMOByRQn5inARjcz2fSOH1hyIidPj1TBmPZVwVrIXeigHW6rAIs/U8UkxV0c8Xez2D14HGnF3uiq4UQ==}
 
-  '@gmod/cram@11.3.0':
-    resolution: {integrity: sha512-7carbizVLqwElrK7Z4JU5g2XIAEC+C6uBomGb0qJgst9f6vohe1s1SbqwNHgX4kGtuPFfeSjbRXva5JNN9NgJw==}
+  '@gmod/cram@11.4.0':
+    resolution: {integrity: sha512-Mn+Ugj2Q33cwNDGlb7lq9Nsyu8CmbXinNagekvZqgAeEumOa5aef4eOCXhRg5WGNUlsdy6KvYSM4LEfK0BDk3Q==}
 
   '@gmod/faidx@3.0.0':
     resolution: {integrity: sha512-3fgxkx8y87Fn4IBgRfovSzCn/kcs4Z0G1bEIzNN2gIDUVW0c1ISH2AvBa3jXlH5NGG26vpKRvLRguB6AsSrS6Q==}
@@ -4436,11 +4442,11 @@ packages:
   '@gmod/shared-read-cache@1.4.2':
     resolution: {integrity: sha512-oRR61ThcE3YWKapJi8tEbPE+qnkfup8/0kINwE/wWa0S/urWsmJGxiIw0a9N6z7SpyaaKlfG3HpTwJQYkfzq0A==}
 
-  '@gmod/shared-read-cache@1.4.4':
-    resolution: {integrity: sha512-K8YhHkibBm/b8AMs+t35nGgbE2jlhsQ2+MqDv7b1hWDcGoSudyLwVmLLiPMlWrIwxXCzM4ROZF7cY3RamC7kDQ==}
+  '@gmod/shared-read-cache@1.5.0':
+    resolution: {integrity: sha512-6bbUEcv9a/D/P5zWrscnwyCvmh2Yvo1e3NYv+V1xZyXe+bqb7tKAu5zXJoEUADlEnkkY2dpps+A5/vQrFRYrkw==}
 
-  '@gmod/tabix@3.6.1':
-    resolution: {integrity: sha512-6rwhdadQfUmrfkwkacHQHrmPS9rDRhYvhF7fQ6k1P5HS/KhU2qwT0HBbYPnXef620MgmLKjh9dWJnJmki0MWtg==}
+  '@gmod/tabix@3.7.1':
+    resolution: {integrity: sha512-Fce4TX5LmZN3CTM7On30Mbq0/bFLu3SmCPkjAw1zNC0hv8lvZwF9R4S0OdfoCshb+PJUJn52A+iixtgTi+hdbg==}
 
   '@gmod/trix@3.0.19':
     resolution: {integrity: sha512-QUNgi7n7cJ82RrS9Rhdo5W16XNB7PcdEoMr9UReOrbKR0MlmleaJaNvmlqR05UopNgBszKWb3aJe4bUi4Uz/Hw==}
@@ -12425,10 +12431,10 @@ snapshots:
 
   '@gmod/abortable-promise-cache@3.0.4': {}
 
-  '@gmod/bam@8.3.1':
+  '@gmod/bam@8.4.0':
     dependencies:
       '@gmod/bgzf-filehandle': 6.3.2
-      '@gmod/shared-read-cache': 1.4.4
+      '@gmod/shared-read-cache': 1.5.0
       '@jbrowse/quick-lru': 7.3.5
       crc: 4.3.2
       generic-filehandle2: 2.2.2
@@ -12447,9 +12453,9 @@ snapshots:
       generic-filehandle2: 2.2.2
       pako-esm2: 2.0.2
 
-  '@gmod/cram@11.3.0':
+  '@gmod/cram@11.4.0':
     dependencies:
-      '@gmod/shared-read-cache': 1.4.2
+      '@gmod/shared-read-cache': 1.5.0
       '@jbrowse/quick-lru': 7.3.5
       crc: 4.3.2
       generic-filehandle2: 2.2.2
@@ -12475,12 +12481,12 @@ snapshots:
 
   '@gmod/shared-read-cache@1.4.2': {}
 
-  '@gmod/shared-read-cache@1.4.4': {}
+  '@gmod/shared-read-cache@1.5.0': {}
 
-  '@gmod/tabix@3.6.1':
+  '@gmod/tabix@3.7.1':
     dependencies:
       '@gmod/bgzf-filehandle': 6.3.2
-      '@gmod/shared-read-cache': 1.4.4
+      '@gmod/shared-read-cache': 1.5.0
       '@jbrowse/quick-lru': 7.3.5
       generic-filehandle2: 2.2.2
 

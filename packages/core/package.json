@@ -129,6 +129,7 @@
     "./util/assemblyConfigUtils": "./src/util/assemblyConfigUtils.ts",
     "./util/bandHeight": "./src/util/bandHeight.ts",
     "./util/blockTypes": "./src/util/blockTypes.ts",
+    "./util/cacheBudgets": "./src/util/cacheBudgets.ts",
     "./util/calculateDynamicBlocks": "./src/util/calculateDynamicBlocks.ts",
     "./util/calculateStaticBlocks": "./src/util/calculateStaticBlocks.ts",
     "./util/chooseGridPitch": "./src/util/chooseGridPitch.ts",
@@ -207,6 +208,7 @@
     "@emotion/utils": "^1.4.2",
     "@floating-ui/react": "^0.27.20",
     "@gmod/bgzf-filehandle": "^6.3.2",
+    "@gmod/shared-read-cache": "^1.5.0",
     "@jbrowse/jexl": "^3.0.2",
     "@jbrowse/mobx-state-tree": "^6.1.0",
     "@jbrowse/quick-lru": "^7.3.5",
@@ -670,6 +672,10 @@
       "./util/blockTypes": {
         "types": "./esm/util/blockTypes.d.ts",
         "import": "./esm/util/blockTypes.js"
+      },
+      "./util/cacheBudgets": {
+        "types": "./esm/util/cacheBudgets.d.ts",
+        "import": "./esm/util/cacheBudgets.js"
       },
       "./util/calculateDynamicBlocks": {
         "types": "./esm/util/calculateDynamicBlocks.d.ts",
@@ -1228,6 +1234,9 @@
         ],
         "util/blockTypes": [
           "esm/util/blockTypes.d.ts"
+        ],
+        "util/cacheBudgets": [
+          "esm/util/cacheBudgets.d.ts"
         ],
         "util/calculateDynamicBlocks": [
           "esm/util/calculateDynamicBlocks.d.ts"

@@ -4,6 +4,7 @@ import {
   cachedSetup,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { downloadStatus } from '@jbrowse/core/util'
+import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
@@ -30,7 +31,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAd
           this.getConf(['index', 'indexType']),
           this.pluginManager,
         ),
-        chunkCacheSize: 50 * 2 ** 20,
+        chunkCacheBudget: decompressedBytesBudget,
       })
       return {
         gff,

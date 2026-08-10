@@ -4,6 +4,7 @@ import {
   cachedSetup,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { SimpleFeature, downloadStatus } from '@jbrowse/core/util'
+import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { readTabixLinesRedispatched } from '@jbrowse/core/util/tabix'
@@ -29,7 +30,7 @@ export default class GtfTabixAdapter extends BaseFeatureDataAdapter<GtfTabixAdap
           this.getConf(['index', 'indexType']),
           this.pluginManager,
         ),
-        chunkCacheSize: 50 * 2 ** 20,
+        chunkCacheBudget: decompressedBytesBudget,
       })
       return {
         gtf,

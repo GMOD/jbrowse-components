@@ -2,6 +2,7 @@ import { TabixIndexedFile } from '@gmod/tabix'
 import VcfParser from '@gmod/vcf'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { updateStatus } from '@jbrowse/core/util'
+import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
@@ -71,7 +72,7 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
           indexType,
           this.pluginManager,
         ),
-        chunkCacheSize: 50 * 2 ** 20,
+        chunkCacheBudget: decompressedBytesBudget,
       })
       this.configuredByRef.set(
         refName,
