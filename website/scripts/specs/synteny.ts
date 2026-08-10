@@ -3267,6 +3267,71 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ],
   },
 
+  // TWO PARTS, DOTPLOT FIRST (review: "it is unclear what 'inversion on top of
+  // match' ... actually even means. is this a 'alignment artifact'? truly an
+  // exact palindrome? if it is, add a red text box saying what this is. make it
+  // a multipart figure including the dotplot as first part.").
+  //
+  // The top part is NOT `dotplot_self_chry` re-used. That one is the whole
+  // 23.9 Mb MSY and it already sits on the same page directly above this
+  // figure, so composing it in would print the same picture twice. This is the
+  // 4.8 Mb the whole-MSY plot boxes as `Yq palindromes`, at the SAME 100 kb
+  // minimum length the ribbons below use -- which is what makes the two parts
+  // one figure: the four crossings this plot draws are the only four inverted
+  // alignments over 100 kb in the window, and the boxed one is the ribbon.
+  {
+    mode: 'url',
+    name: 'synteny_self_chry_palindromes_family',
+    url: sessionSpec('test_data/chry_self/config.json', {
+      views: [
+        {
+          type: 'DotplotView',
+          tracks: ['hs1_chrY_self'],
+          views: [
+            { assembly: 'T2T_chrY', loc: CHRY_YQ_PALINDROMES },
+            { assembly: 'T2T_chrY_self', loc: CHRY_YQ_PALINDROMES },
+          ],
+          // 100 kb, not the whole-MSY plot's 25 kb. At 25 kb over 4.8 Mb the
+          // dispersed repeats are back and the four crossings are again
+          // something to find; at 100 kb they are what is left, and it is the
+          // filter the second part draws with.
+          minAlignmentLength: 100000,
+        },
+      ],
+    }),
+    // square, so the diagonal is at 45 degrees and each palindrome's crossing
+    // is symmetric about it; same width as the part below
+    viewportWidth: 1000,
+    // 740, not 700: at 700 the run reported 39.9 css px under the fold, which
+    // is this plot's bottom axis and its tick labels
+    viewportHeight: 740,
+    readySelector: '[data-testid="dotplot_webgl_canvas_done"]',
+    readyTimeout: 180000,
+    settleMs: 10000,
+    annotations: [
+      // Which crossing the lower part opens. A dotplot anchor is a locstring
+      // per axis, so this follows the plot rather than a measured pixel.
+      {
+        type: 'box',
+        anchor: {
+          hLocus: CHRY_P_PALINDROME_WINDOW,
+          vLocus: CHRY_P_PALINDROME_WINDOW,
+        },
+      },
+      {
+        type: 'text',
+        text: 'this one, below',
+        fontSize: 17,
+        anchor: {
+          hLocus: CHRY_P_PALINDROME_WINDOW,
+          vLocus: CHRY_P_PALINDROME_WINDOW,
+          alignY: 'bottom',
+          dy: 34,
+        },
+      },
+    ],
+  },
+
   // The reviewer's own alternative to the plot above: "this is kind of chaotic,
   // we might need to cross reference paper or make linearsyntenyview of same
   // thing." The paper is cited on the page now, and this is the other half --
@@ -3294,7 +3359,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // draw nothing is not reachable here.
   {
     mode: 'url',
-    name: 'synteny_self_chry_palindromes',
+    name: 'synteny_self_chry_palindromes_zoom',
     url: sessionSpec('test_data/chry_self/config.json', {
       views: [
         {
@@ -3318,13 +3383,58 @@ export const syntenySpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    // same width as the dotplot it is read beside
+    // same width as the dotplot it is composed under
     viewportWidth: 1000,
     viewportHeight: 420,
     readySelector: displayPainted('synteny_canvas'),
     // 21 MB PIF plus the hs1 chrom.sizes, both remote
     readyTimeout: 180000,
     settleMs: 10000,
+    // WHAT THE TWO COLOURS ARE, said in the frame (review: "it is unclear what
+    // 'inversion on top of match' ... actually even means. is this a 'alignment
+    // artifact'? truly an exact palindrome?"). Both questions get an answer:
+    // it is not an artifact, and it is near-exact rather than exact -- which
+    // the picture itself already shows, because `cigarMode: 'matches'` leaves
+    // every indel inside the arms as an unpainted gap in the fill. So the pill
+    // points at something visible rather than asserting a number.
+    //
+    // FAR LEFT, deliberately. There is no empty space in this part -- the band
+    // is ribbon edge to edge -- so the pill has to sit on it, and the far left
+    // is where it costs least: the flare there is two flat horizontal bands,
+    // one per strand, carrying nothing but the colours the pill is naming. The
+    // crossing at the palindrome's centre, which is the whole shape, stays
+    // clear. Anchored to the synteny canvas rather than to a coordinate,
+    // because a synteny band is not a track and has no locus anchor.
+    annotations: [
+      {
+        type: 'text',
+        fontSize: 17,
+        maxWidth: 380,
+        text:
+          'NOT AN ARTIFACT — a true palindrome. Magenta is this interval ' +
+          'aligned to its own reverse complement, so its two arms cross at ' +
+          'the centre; salmon is the plus-strand self-match. The unpainted ' +
+          'gaps are where the arms differ: near-exact, not exact.',
+        anchor: {
+          selector: '[data-testid="synteny_canvas_done"]',
+          alignX: 'left',
+          alignY: 'top',
+          dx: 16,
+          dy: 18,
+        },
+      },
+    ],
+  },
+
+  // The two parts as one figure. The name is the one the doc and the review log
+  // already carry, so what moves is which spec renders it.
+  {
+    mode: 'compose',
+    name: 'synteny_self_chry_palindromes',
+    parts: [
+      'synteny_self_chry_palindromes_family',
+      'synteny_self_chry_palindromes_zoom',
+    ],
   },
 
   {
