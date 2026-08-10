@@ -10,6 +10,28 @@
 // It already had: the same note-loss bug was fixed in both files in one commit,
 // twice.
 //
+// ---------------------------------------------------------------------------
+// Why this file is big, and what NOT to add to it
+//
+// Rendering is `el.outerHTML = renderCard(entry)`, a wholesale swap that
+// destroys everything the DOM holds and `data` does not: the click in flight
+// between a mousedown and its mouseup, the caret in a note, the press waiting on
+// its write, unsaved text, the pointer capture on a swipe divider. About half of
+// what follows carries that state back across the swap — the pointerHeld /
+// deferredCards deferral, pressedNow, the harvest/apply note pair, cardMessages,
+// and paintCard itself. reviewClientProbe.ts exists to pin behaviour that is
+// only fragile for the same reason.
+//
+// Every "I have to click Approve twice" report against these tools has been that
+// one cause in a different hat. So when the next one arrives it is probably not
+// a new bug, and the fix is probably not a sixth workaround: patch the card in
+// place, or render it with something that keeps node identity. A React port was
+// costed in 2026-08 and parked, not rejected — react, react-dom and esbuild are
+// already root deps, the server can bundle a page entry at startup with no
+// watcher, and reviewServer.ts and the write protocol below carry over
+// untouched. See "Review UIs: the repaint is the bug" in agent-docs/OTHER_IDEAS.
+// ---------------------------------------------------------------------------
+//
 // This is emitted as JavaScript source and spliced into the tool's inline
 // <script>, so it shares one flat scope with the page around it. That scope is
 // the interface, and it has two halves.

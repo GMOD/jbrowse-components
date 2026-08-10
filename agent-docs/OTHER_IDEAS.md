@@ -95,6 +95,8 @@ reference others may hold, not as free-form prose.
 
 - [Website: copy-as-markdown / LLM-readiness](#website-copy-as-markdown--llm-readiness)
 - [Website: screenshot spec ↔ PNG staleness guard](#website-screenshot-spec--png-staleness-guard)
+- [Review UIs: the repaint is the bug](#review-uis-the-repaint-is-the-bug) — one cause
+  behind every "I have to click Approve twice", and the React port costed against it
 - [Figure work parked on a cost or a decision](#figure-work-parked-on-a-cost-or-a-decision) —
   the wheat Compara rebuild, a curated ortholog palette, and per-level dotplot scale
 - [Cancer SV datasets not yet shot](#cancer-sv-datasets-not-yet-shot) — including
@@ -2264,6 +2266,45 @@ file's git commit time is newer than its PNG's. Either turns "forgot to regen" f
 multi-session review loop into one red check. (Related: the review tool already hashes the
 PNG bytes to expire verdicts — this is the same idea one step upstream, keyed on the spec's
 inputs rather than its output.)
+
+## Review UIs: the repaint is the bug
+
+The two review tools (`website/scripts/review-screenshots-web.ts`,
+`products/jbrowse-web/browser-tests/review-snapshots-web.ts`, sharing
+`packages/browser-test-utils/src/reviewClient.ts`) render by replacing DOM
+wholesale — `el.outerHTML = renderCard(entry)`. Every bug filed against them has
+been that one fact in a different hat, because the swap destroys everything the
+DOM holds and `data` does not: the click in flight between a mousedown and its
+mouseup (the browser dispatches none at all, which is the "I have to click
+Approve twice" complaint), the caret in a note being typed, the optimistic press
+waiting on its write, unsaved text, the pointer capture on a swipe divider.
+
+Each got its own workaround, and by 2026-08 they were about half the shared
+client: the `pointerHeld`/`deferredCards`/`scheduleFlush` deferral, `pressedNow`,
+the `harvestNotes`/`applyPendingNotes` pair, `cardMessages`, and `paintCard`'s
+carrying logic. `reviewClientProbe.ts` (241 lines of puppeteer) exists to pin
+behaviour that is only fragile for the same reason. Two of the workarounds have
+cancelled each other out: the deferred repaint flushes the instant the click is
+dispatched, wiping the press the other one had just painted.
+
+**A React port was costed and parked, not rejected.** A reconciler keeps node
+identity and patches props in place, so the button survives its own click and the
+textarea keeps its caret — the whole family stops being reachable rather than
+being guarded one at a time. `react`, `react-dom` and `esbuild` are already root
+deps; the server can bundle a page entry at startup in ~15 lines with no watcher,
+keeping "run one node script, open localhost" and offline operation.
+`reviewServer.ts`, the verdict routes, `screenshot-review-lib.ts` and the write
+protocol (preconditions, 409 adoption, per-card write serialization) carry over
+untouched — that half is real domain logic and is not the problem. The compare
+stage's image measurement stays imperative in a ref either way.
+
+Measured at the time: 3400 lines across the five files, of which the port removes
+an estimated 1400, mostly the ~2150 lines of `'<div class="' + esc(x) + '">'`
+string building in the two pages (JSX also removes the hand-rolled escaping).
+
+Parked because it is roughly a day of rewrite on tools that work and were freshly
+tested, not because the analysis is in doubt. **The trigger to do it is the next
+repaint-family bug** — at that point a sixth workaround costs more than the port.
 
 ## Figure work parked on a cost or a decision
 
