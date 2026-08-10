@@ -79,6 +79,15 @@ immutable; git tracks `figures.lock` at the repo root, one line per figure.
   recoloured bar — that two columns 700px apart read as identical. Reach for
   `diff` to answer "did anything move at all", `swipe` to answer "what is under
   this bit", `onion` with `blink` on for a change you can't localise.
+- **When a layout change rewrites most of the corpus, `pnpm figures:triage` says
+  which figures actually redrew.** It aligns each figure to its baseline row by
+  row and ranks by how much a vertical slide accounts for, so the tail (99%+, 89
+  of 209 on the sweep it was written for) is the part needing no eye. Pass
+  `--base <sha>^`: publishing the regen is what makes `origin/main` agree with
+  your disk, and it then has nothing to compare. It does **not** separate a
+  re-pack from a redraw — a display that fits rows to available height scores
+  like one that moved an element — so read down the ranking, don't trust the top
+  of it as a verdict.
 - **The line carries `WxH`**, which is the one change a pixel diff cannot see —
   `pngDiffFraction` returns null on a size mismatch. A resize shows up in
   `git diff` as `1400x900 -> 1400x1240`.

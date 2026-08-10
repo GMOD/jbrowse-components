@@ -26,6 +26,7 @@ import {
   type WorktreeState,
   cacheDir,
   describeFile,
+  fetchBlob,
   inspectWorktree,
   listFigureFiles,
   manifestAt,
@@ -42,7 +43,6 @@ import {
   formatManifest,
   formatMarkdownReport,
   formatTextReport,
-  hashBuffer,
   mergeManifest,
   resolveNow,
   storeBucket,
@@ -146,39 +146,9 @@ function reportWorktree(state: WorktreeState) {
 // pull
 // ---------------------------------------------------------------------------
 
-async function fetchBlob(entry: FigureEntry): Promise<Buffer> {
-  const cached = join(cacheDir, storeKey(entry).slice(storePrefix.length + 1))
-  try {
-    const buf = readFileSync(cached)
-    if (hashBuffer(buf) === entry.sha256) {
-      return buf
-    }
-  } catch {
-    // not cached, or cached corrupt — refetch
-  }
-  const url = storeUrl(entry)
-  const res = await fetch(url)
-  if (!res.ok) {
-    throw new Error(
-      `${figureName(entry.path)}: ${res.status} fetching ${url}\n` +
-        '    Its bytes were never pushed to the store. Whoever committed this ' +
-        'figures.lock line must run `pnpm figures:push`.',
-    )
-  }
-  const buf = Buffer.from(await res.arrayBuffer())
-  const got = hashBuffer(buf)
-  if (got !== entry.sha256) {
-    // Only reachable through a truncated transfer or a tampered object: the URL
-    // is derived from the hash, so the store cannot legitimately answer with
-    // anything else.
-    throw new Error(
-      `${figureName(entry.path)}: ${url} hashes to ${got.slice(0, 12)}, expected ${entry.sha256.slice(0, 12)}`,
-    )
-  }
-  mkdirSync(dirname(cached), { recursive: true })
-  writeFileSync(cached, buf)
-  return buf
-}
+// fetchBlob lives in figure-paths.ts: `report` and triage-figure-diffs.ts want
+// a figure's PREVIOUS revision by the same route, and a second copy of a
+// hash-verified cache is a second place for the verification to be forgotten.
 
 // Whether the bytes currently on disk are in the store — i.e. whether replacing
 // them can lose anything. One HEAD per file, but only ever for files that

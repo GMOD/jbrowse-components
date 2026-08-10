@@ -2,17 +2,27 @@
 // hold because jest transforms that module to CJS, which cannot parse
 // `import.meta`. Same split, same reason, as check-utils.ts vs paths.ts.
 import { execFileSync } from 'node:child_process'
-import { readFileSync, readdirSync, statSync } from 'node:fs'
-import { join } from 'node:path'
+import {
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs'
+import { dirname, join } from 'node:path'
 
 import {
   type FigureEntry,
   figureExtRe,
+  figureName,
   figureRoots,
   hashBuffer,
   imageSize,
   isExcluded,
   parseManifest,
+  storeKey,
+  storePrefix,
+  storeUrl,
 } from './figure-store.ts'
 
 export const repoRoot = join(import.meta.dirname, '..', '..')
@@ -110,6 +120,54 @@ export function manifestAt(ref: string): Map<string, FigureEntry> | undefined {
   } catch {
     return undefined
   }
+}
+
+// One figure's bytes from the store, hash-verified, cached under
+// node_modules/.cache forever.
+//
+// "Forever" is exact rather than optimistic: the key is derived from the bytes,
+// so a cached blob that hashes right IS the blob and no revalidation is
+// possible or needed. That is also why the verify is not optional — a truncated
+// transfer is the only way the URL can answer with something else, and writing
+// it to the cache would poison every later read.
+//
+// Lives here rather than in the pull command because it is not about pulling: a
+// content-addressed store URL is the only way to see a figure's PREVIOUS
+// revision, so anything that compares against a baseline (figures report,
+// triage-figure-diffs) needs the same fetch, the same cache and the same
+// verification.
+export async function fetchBlob(entry: FigureEntry): Promise<Buffer> {
+  const cached = join(cacheDir, storeKey(entry).slice(storePrefix.length + 1))
+  try {
+    const buf = readFileSync(cached)
+    if (hashBuffer(buf) === entry.sha256) {
+      return buf
+    }
+  } catch {
+    // not cached, or cached corrupt — refetch
+  }
+  const url = storeUrl(entry)
+  const res = await fetch(url)
+  if (!res.ok) {
+    throw new Error(
+      `${figureName(entry.path)}: ${res.status} fetching ${url}\n` +
+        '    Its bytes were never pushed to the store. Whoever committed this ' +
+        'figures.lock line must run `pnpm figures:push`.',
+    )
+  }
+  const buf = Buffer.from(await res.arrayBuffer())
+  const got = hashBuffer(buf)
+  if (got !== entry.sha256) {
+    // Only reachable through a truncated transfer or a tampered object: the URL
+    // is derived from the hash, so the store cannot legitimately answer with
+    // anything else.
+    throw new Error(
+      `${figureName(entry.path)}: ${url} hashes to ${got.slice(0, 12)}, expected ${entry.sha256.slice(0, 12)}`,
+    )
+  }
+  mkdirSync(dirname(cached), { recursive: true })
+  writeFileSync(cached, buf)
+  return buf
 }
 
 // The commit a ref currently names, and when it was authored.
