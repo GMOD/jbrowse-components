@@ -116,18 +116,31 @@ immutable; git tracks `figures.lock` at the repo root, one line per figure.
 bookkeeping: `GLOBAL_TRIGGERS` in `screenshot-impact.ts` matches that prefix, so
 `--affected` knows it changes every capture the day it is added.
 
-- **Display config in a session spec goes on the track**, inside its own
-  `displays: [{ type, ...slots }]`. Slots on the view's `tracks` entry are
-  silently dropped and the display falls back to schema defaults.
-- **A display's config slots and its model props take opposite routes**, and
-  putting one where the other goes fails silently in both directions. A _slot_
-  goes in `displays: [...]` as above; a _model prop_ goes on the view's `tracks`
-  entry, which `normalizeTrackInit` folds into the display snapshot. So
-  `displays: [{ rowHeight: 3 }]` does nothing — `rowHeight` is a model prop, and
-  rows auto-fit `availableHeight / nrow`, which means **lane height is how you
-  set row height**. Conversely `forceLoad` is a real config slot, so no inline
-  key on a `tracks` entry can set it and a spec cannot force a lane past the
-  byte gate.
+- **An inline key on a session spec's `tracks` entry reaches a config slot and a
+  model prop alike**, so display settings need no nesting. `normalizeTrackInit`
+  folds every key except `trackId` / `trackSnapshot` / `displaySnapshot` into
+  the display snapshot, and `showTrackGeneric` then `setSlot`s the ones that are
+  real slots onto the persistent display config (#5591) — which is also what
+  makes them outlive a hide/retick, where a model prop is instance state and
+  does not. `{ trackId, height: 450, forceLoad: true, colorBy: {…} }` works as
+  written. An explicit `displaySnapshot` still wins over an inline key of the
+  same name, and a track config's own `displays: [{ type, ...slots }]` is still
+  where slots go when you are defining the track rather than opening it.
+- **`forceLoad` is the declarative half of the FORCE LOAD button** nothing can
+  click in a capture (`RegionTooLargeMixin`'s `configForceLoad`), so a spec
+  _can_ put a lane past the byte gate — and the live link then opens what the
+  figure shows. `gallery/nanopore_methylation` deliberately omits it and is the
+  spec that checks the default budget still draws an ordinary CRAM.
+- **What fails is a key that is neither**, silently and in both directions: MST
+  drops unknown snapshot keys, and the `setSlot` pass skips whatever
+  `isConfigurationSlot` rejects. A slot spelled for the wrong display type, or a
+  typo, leaves the display on schema defaults with nothing logged. `type` is
+  exempt from that pass — it picks the display, it is not a setting on one.
+- **`rowHeight` is a slot whose `0` means auto-fit**, not zero height: rows
+  stretch to fill the display, so adding rows shrinks them rather than growing
+  the track. Set it to pin a px height, and read `effectiveRowHeight` for the
+  resolved value — never `rowHeight`, which is the raw setting including the
+  sentinel.
 - **`pnpm --filter jbrowse-web build` silently does nothing** — "No projects
   matched", exit 0. The package is `@jbrowse/web`. A regen after a code change
   then shoots the OLD build, which looks exactly like the change having no
