@@ -1,4 +1,4 @@
-import { alpha } from '@mui/material'
+import { alpha } from '@jbrowse/core/ui/palette'
 
 import type { SummaryBar } from '../../LinearMafDisplay/components/computeVisibleSummaryBars.ts'
 import type { MafColorPalette } from '../util.ts'

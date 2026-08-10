@@ -1,4 +1,4 @@
-import { alpha } from '@mui/material'
+import { alpha } from '@jbrowse/core/ui/palette'
 
 import type { InversionMarker } from '../../LinearMafDisplay/components/computeVisibleInversions.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'

@@ -1,6 +1,5 @@
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
-import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { CrossHatchLines, axisPlotBox } from '@jbrowse/wiggle-core'
 
 import { legendRightEdgePx } from './wiggleComponentUtils.ts'
@@ -66,9 +65,9 @@ export function svgLegendRightPx(
 // first parameterizing the inset.
 export function WiggleFamilySvgFrame({
   model,
-  view,
   height,
   canvasWidth,
+  renderBlocks,
   opts,
   clipIdPrefix,
   paint,
@@ -78,7 +77,6 @@ export function WiggleFamilySvgFrame({
   paint: (ctx: Ctx2D, layout: WiggleFamilySvgLayout) => void
   legend?: React.ReactNode
 }) {
-  const renderBlocks = buildRenderBlocks(view.visibleRegions)
   // the plot itself is inset by the scalebar label gutter at top and bottom, so
   // it never overlaps the axis labels drawn in those bands — the same box
   // `ticks` places itself in, which is why both read it from one helper

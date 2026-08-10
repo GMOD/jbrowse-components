@@ -24,7 +24,6 @@ import type {
   ExportSvgDisplayOptions,
   LgvSvgBodyProps,
 } from '@jbrowse/plugin-linear-genome-view'
-import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type {
   ClusterProvenance,
   ClusterHierarchyNode,
@@ -38,7 +37,6 @@ export interface RenderSvgModel extends SvgExportable {
   id: string
   height: number
   rpcDataMap: { get: (key: number) => MultiRowRegionData | undefined }
-  renderBlocks: RenderBlock[]
   renderState: MultiRowRenderState
   sources: MultiRowSource[]
   effectiveRowHeight: number
@@ -67,6 +65,7 @@ function MultiRowSvgBody({
   model: self,
   height,
   canvasWidth,
+  renderBlocks,
   opts,
 }: LgvSvgBodyProps<RenderSvgModel>) {
   const state = {
@@ -92,13 +91,13 @@ function MultiRowSvgBody({
           height={height}
           opts={opts}
           paint={ctx => {
-            drawMultiRowBlocks(ctx, self.rpcDataMap, self.renderBlocks, state)
+            drawMultiRowBlocks(ctx, self.rpcDataMap, renderBlocks, state)
             // Same layer, after the blocks, so the export stacks them the way
             // the on-screen overlay composites over the canvas.
             drawMultiRowIndelGlyphs(
               ctx,
               self.rpcDataMap,
-              self.renderBlocks,
+              renderBlocks,
               state,
               insertionColor,
             )

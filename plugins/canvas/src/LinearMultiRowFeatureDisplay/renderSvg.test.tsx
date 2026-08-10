@@ -18,7 +18,22 @@ import type {
 // renderSvg calls getContainingView(self) to reach the LGV; the model is a plain
 // object in these tests, so intercept it. awaitSvgReady awaits mobx `when`, so
 // resolve that immediately.
-const mockView = { width: 800 }
+//
+// `visibleRegions` is here rather than on the model because renderDisplaySvg
+// resolves the export's render blocks from the view, once, for every display.
+const mockView = {
+  width: 800,
+  visibleRegions: [
+    {
+      displayedRegionIndex: 0,
+      start: 1000,
+      end: 2000,
+      screenStartPx: 0,
+      screenEndPx: 800,
+      reversed: false,
+    },
+  ],
+}
 // Stub only what renderSvg + SvgRowLabels reach for; requireActual pulls in the
 // whole core/util barrel and trips a jest module-init cycle.
 jest.mock('@jbrowse/core/util', () => ({
@@ -79,16 +94,6 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     regionTooLarge: false,
     svgReady: true,
     rpcDataMap: new Map([[0, makeRegionData()]]),
-    renderBlocks: [
-      {
-        displayedRegionIndex: 0,
-        start: 1000,
-        end: 2000,
-        screenStartPx: 0,
-        screenEndPx: 800,
-        reversed: false,
-      },
-    ],
     renderState: {
       canvasWidth: 800,
       canvasHeight: 100,

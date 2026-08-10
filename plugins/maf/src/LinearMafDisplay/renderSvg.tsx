@@ -12,7 +12,6 @@ import {
   SvgClipRect,
   renderDisplaySvg,
 } from '@jbrowse/plugin-linear-genome-view'
-import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
 import { drawMafBlocks } from '../LinearMafRenderer/drawMafBlocks.ts'
@@ -62,6 +61,7 @@ function MafSvgBody({
   view,
   height,
   canvasWidth: width,
+  renderBlocks,
   opts,
 }: LgvSvgBodyProps<LinearMafDisplayModel>) {
   const state = model.renderState
@@ -90,7 +90,6 @@ function MafSvgBody({
     rowProportion,
     scrollTop,
   } = model
-  const renderBlocks = buildRenderBlocks(view.visibleRegions)
   // SVG export builds its palette from the user-selected export theme, not
   // the live on-screen palette, so light/dark export choices stay consistent.
   const svgState = {

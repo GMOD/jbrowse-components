@@ -1,10 +1,12 @@
 import { SvgChrome } from '@jbrowse/core/svg/SvgExport'
 import { awaitSvgReady } from '@jbrowse/core/svg/svgReady'
 import { getContainingView } from '@jbrowse/core/util'
+import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 
 import type { ExportSvgDisplayOptions } from '../BaseLinearDisplay/types.ts'
 import type { LinearGenomeViewModel } from '../LinearGenomeView/model.ts'
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type React from 'react'
 
 /**
@@ -35,6 +37,13 @@ export interface LgvSvgBodyProps<M> {
    * `canvasWidth` with this value.
    */
   canvasWidth: number
+  /**
+   * The view's visible regions as render blocks. Resolved here because every
+   * body wanted the identical `buildRenderBlocks(view.visibleRegions)` and each
+   * wrote its own — the same reason `canvasWidth` is resolved here rather than
+   * re-derived per display.
+   */
+  renderBlocks: RenderBlock[]
   opts: ExportSvgDisplayOptions | undefined
 }
 
@@ -83,6 +92,7 @@ export async function renderDisplaySvg<M extends LgvSvgExportable>(
         view={view}
         height={height}
         canvasWidth={view.width}
+        renderBlocks={buildRenderBlocks(view.visibleRegions)}
         opts={opts}
       />
     </SvgChrome>

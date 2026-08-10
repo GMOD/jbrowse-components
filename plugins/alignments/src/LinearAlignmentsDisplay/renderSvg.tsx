@@ -12,7 +12,6 @@ import {
   SvgClipRect,
   renderDisplaySvg,
 } from '@jbrowse/plugin-linear-genome-view'
-import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 
 import { getAlignmentsLegendSections } from '../shared/legendUtils.ts'
@@ -64,6 +63,7 @@ function AlignmentsSvgBody({
   view,
   height,
   canvasWidth,
+  renderBlocks,
   opts,
 }: LgvSvgBodyProps<LinearAlignmentsDisplayModel>) {
   const theme = createJBrowseTheme(opts?.theme)
@@ -72,7 +72,6 @@ function AlignmentsSvgBody({
   const palette = resolvePalette({ configTheme: opts?.theme })
   const baseState = model.renderState
   const displayHeight = height
-  const renderBlocks = buildRenderBlocks(view.visibleRegions)
   const { coverageTicks, insertSizeTicks, renderSections } = model
   // anchors the left-edge scale bars / group labels to the content; non-zero
   // only when scrolled before the genome start

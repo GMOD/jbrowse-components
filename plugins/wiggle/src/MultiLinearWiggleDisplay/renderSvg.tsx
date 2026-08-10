@@ -5,7 +5,6 @@ import {
   SvgClipRect,
   renderDisplaySvg,
 } from '@jbrowse/plugin-linear-genome-view'
-import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import {
   SvgTreePath,
   describeClusterProvenance,
@@ -102,6 +101,7 @@ function MultiWiggleSvgBody({
   view,
   height,
   canvasWidth,
+  renderBlocks,
   opts,
 }: LgvSvgBodyProps<RenderSvgModel>) {
   // Multi keeps its own body rather than WiggleFamilySvgFrame (it stacks rows
@@ -124,7 +124,6 @@ function MultiWiggleSvgBody({
   const props = model.gpuProps()
   const legendRight = svgLegendRightPx(view, canvasWidth)
   const legendTop = scoreLegendReservedPx(model)
-  const renderBlocks = buildRenderBlocks(view.visibleRegions)
   const state = {
     ...renderState,
     canvasWidth,

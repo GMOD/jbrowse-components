@@ -6,7 +6,6 @@ import {
   SvgClipRect,
   renderDisplaySvg,
 } from '@jbrowse/plugin-linear-genome-view'
-import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 
 import {
   LABEL_BASELINE_RATIO,
@@ -98,6 +97,7 @@ function CanvasFeaturesSvgBody({
   view,
   height,
   canvasWidth,
+  renderBlocks,
   opts,
 }: LgvSvgBodyProps<RenderSvgModel>) {
   // The JBrowse palette, not Material UI's `useTheme`, for the same reason the
@@ -113,7 +113,6 @@ function CanvasFeaturesSvgBody({
   // `self.scrollTop`; the export honors the same offset so a scrolled track
   // exports what's on screen (top viewport) rather than always the track top.
   const scrollY = model.scrollTop
-  const renderBlocks = buildRenderBlocks(visibleRegions)
   // Shared by the geometry pass and the highlight pass, so the boxes can't be
   // scissored against a different canvas than the glyphs they wrap.
   const renderState = { scrollY, canvasWidth, canvasHeight: height }
