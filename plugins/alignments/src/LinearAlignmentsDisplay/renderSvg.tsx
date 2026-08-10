@@ -23,7 +23,7 @@ import TlenAxisLabel from './components/TlenAxisLabel.tsx'
 import { buildColorPaletteFromPalette } from './components/alignmentComponentUtils.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { drawAlignmentLabels } from './components/drawAlignmentLabels.ts'
-import { sectionKey } from './components/sectionScreen.ts'
+import { bandScreenTop, sectionKey } from './components/sectionScreen.ts'
 import {
   COMPACT_AXIS_HEIGHT,
   compactAxisLabel,
@@ -78,24 +78,36 @@ function AlignmentsSvgBody({
   // only when scrolled before the genome start
   const contentLeft = Math.max(-view.offsetPx, 0)
 
-  // SVG export renders the full display from y=0 with no Y scroll. Reuse the
-  // model's renderState, overriding only the viewport-related fields. The
-  // section geometry is rebuilt at scrollTop 0 so grouped coverage bands aren't
-  // shifted off-screen (no-op for the ungrouped single-section case).
+  // The export honors the display's Y scroll, exactly as the canvas and MAF
+  // exports do. The pileup scrolls virtually — the surface is only ever the
+  // viewport (`VerticalScrollbar` + a `scrollTop` the painters subtract), and
+  // this SVG's box is that same `model.height` — so drawing at scrollTop 0
+  // didn't export "the full track", it exported the TOP of a pileup the user
+  // had scrolled away from. `scrollModel` is the projection every on-screen
+  // overlay already shares (`bandScreenTop` / `contentScreenY`), and it carries
+  // the sticky-vs-scrolling rule: ungrouped scrolls only the pileup under a
+  // pinned coverage band, grouped scrolls whole sections. Reuse it rather than
+  // re-deciding here.
+  const scroll = model.scrollModel
+  // Projected once here, so everything downstream reads a plain screen y and
+  // no component below needs to know scroll exists.
+  const screenSections = renderSections.map(s => ({
+    ...s,
+    coverageTop: bandScreenTop(s.coverageTop, scroll),
+  }))
   const state = {
     ...baseState,
-    scrollTop: 0,
     canvasWidth,
     canvasHeight: displayHeight,
     colors: buildColorPaletteFromPalette(palette),
     sections: buildSectionRenders(model.sections, {
-      scrollTop: 0,
+      scrollTop: scroll.scrollTop,
       canvasHeight: displayHeight,
     }),
   }
 
-  // Same compute as the on-screen getter; only scrollTop differs (SVG export
-  // shows the full track height regardless of Y scroll).
+  // The same compute as the on-screen getter, now including scrollTop, so read
+  // labels ride the reads they name instead of staying pinned to the layout top.
   const labels = computeVisibleLabels({
     view,
     sections: renderSections,
@@ -103,7 +115,7 @@ function AlignmentsSvgBody({
     featureHeight: model.featureHeight,
     featureSpacing: model.featureSpacing,
     showMismatches: model.showMismatches,
-    scrollTop: 0,
+    scrollTop: scroll.scrollTop,
   })
   const contrastMap = getMismatchContrastMap(model.showModifications, palette)
 
@@ -138,7 +150,7 @@ function AlignmentsSvgBody({
       </SvgClipRect>
       {model.showCoverage && coverageTicks ? (
         <CoverageScaleBars
-          sections={renderSections}
+          sections={screenSections}
           ticks={coverageTicks}
           left={contentLeft}
           hasGroupLabels={model.showsGroupLabels}
@@ -150,11 +162,14 @@ function AlignmentsSvgBody({
           ticks={insertSizeTicks}
           down={model.readConnectionsDown}
           canvasWidth={canvasWidth}
+          // A sticky-capable band top like coverage, so it takes the same
+          // projection the on-screen InsertSizeAxisHost applies.
+          yShift={bandScreenTop(0, scroll)}
         />
       ) : null}
       {model.showsGroupLabels ? (
         <GroupLabelBoxes
-          sections={renderSections}
+          sections={screenSections}
           left={contentLeft}
           width={canvasWidth}
           theme={theme}
@@ -201,8 +216,7 @@ function ColorKey({
   )
 }
 
-// One coverage y-axis per stacked section's coverage band. Export is always at
-// scrollTop 0, so each `coverageTop` is the section's final y. Mirrors the
+// One coverage y-axis per stacked section's coverage band. Mirrors the
 // on-screen `CoverageAxisHost`, which makes a three-way choice: a band under
 // COMPACT_AXIS_HEIGHT can't fit tick labels and shows a single `[0, max]`
 // right-aligned; a full axis goes right whenever the group label chips are
@@ -210,6 +224,9 @@ function ColorKey({
 //
 // The side keys off the chips (`showsGroupLabels`), not off the section count:
 // a grouping that yields one named section still draws a chip at the left edge.
+//
+// `sections` arrive already projected to screen y by the body, so `coverageTop`
+// is the section's final y here.
 export function CoverageScaleBars({
   sections,
   ticks,
@@ -266,20 +283,22 @@ function InsertSizeScaleBar({
   ticks,
   down,
   canvasWidth,
+  yShift,
 }: {
   ticks: NonNullable<LinearAlignmentsDisplayModel['insertSizeTicks']>
   down: boolean
   canvasWidth: number
+  yShift: number
 }) {
   return down ? (
-    <g>
+    <g transform={`translate(0, ${yShift})`}>
       <g transform="translate(40, 0)">
         <YScaleBar ticks={ticks} orientation="left" />
       </g>
       <TlenAxisLabel yTop={ticks.yTop} yBottom={ticks.yBottom} x={11} />
     </g>
   ) : (
-    <g transform={`translate(${canvasWidth - 50})`}>
+    <g transform={`translate(${canvasWidth - 50}, ${yShift})`}>
       <YScaleBar ticks={ticks} orientation="right" />
       <TlenAxisLabel yTop={ticks.yTop} yBottom={ticks.yBottom} />
     </g>

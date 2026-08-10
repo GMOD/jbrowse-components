@@ -11,7 +11,9 @@ import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // Static linked-read bezier arcs for SVG export — same geometry as
-// PileupBezierOverlay, minus the hover/click handlers. Full height, scrollTop 0.
+// PileupBezierOverlay, minus the hover/click handlers, and now at the same
+// scrollTop: the arcs connect reads, so pinning them to 0 while the reads
+// scrolled left them hanging off the wrong rows.
 const PileupBezierArcsSvg = observer(function PileupBezierArcsSvg({
   model,
   view,
@@ -19,7 +21,7 @@ const PileupBezierArcsSvg = observer(function PileupBezierArcsSvg({
   model: LinearAlignmentsDisplayModel
   view: LinearGenomeViewModel
 }) {
-  const arcs = computePileupBezierArcsFromModel(model, view, 0)
+  const arcs = computePileupBezierArcsFromModel(model, view, model.scrollTop)
   return arcs.length ? (
     <g style={{ pointerEvents: 'none' }}>
       {arcs.map(arc => (
