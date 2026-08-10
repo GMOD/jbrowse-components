@@ -113,10 +113,15 @@ export default function LoadingOverlay({
   // anti-flash: only render after the load has run long enough to be worth
   // signaling, so fast loads show nothing at all. `immediate` bypasses this for
   // initial loads, where nothing is on screen to flash over yet.
-  const shownAfterDelay = useDelayedFlag(
-    !!isVisible && !immediate,
-    flashDelayMs,
-  )
+  //
+  // The delay runs off `isVisible` ALONE. Feeding `!immediate` in as well made
+  // `immediate` *restart* the timer rather than merely bypass it, and the chrome
+  // flips `immediate` mid-load: it passes `immediate={!painted}`, so first paint
+  // drops it while the phase is still `loading` — region 1 drawn, regions 2..n
+  // in flight. The scrim then blinked out for a fresh 250 ms in the middle of
+  // one continuous load. Same input as `cancelableAfterDelay` below, which never
+  // had the bug.
+  const shownAfterDelay = useDelayedFlag(!!isVisible, flashDelayMs)
   const shown = isVisible && (immediate || shownAfterDelay)
 
   // only offer cancel after the overlay has been continuously visible for a few

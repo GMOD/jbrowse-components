@@ -364,6 +364,64 @@ describe('DisplayStatusChrome (no rendering backend)', () => {
   })
 })
 
+// The scrim's `immediate` is `!painted`, so it flips in the middle of a load
+// that started before first paint — region 1 drawn, regions 2..n still fetching,
+// phase still `loading` throughout. `immediate` must BYPASS the 250ms anti-flash
+// delay, not restart it; `LoadingOverlay` used to feed `!immediate` into the
+// delay's own input, so the flip started a fresh window from zero and the scrim
+// blinked out mid-load.
+//
+// It has to be pinned here rather than on `LoadingOverlay` directly: RTL's
+// `rerender` remounts that component, which resets the delay's state and makes a
+// prop-flip assertion pass or fail for reasons unrelated to the timer. Coming
+// through MobX on a mounted tree is the real path and the only honest probe.
+describe('the loading scrim spans one continuous load', () => {
+  beforeEach(() => {
+    jest.useFakeTimers()
+  })
+  afterEach(() => {
+    jest.useRealTimers()
+  })
+
+  test('stays up when first paint lands while still loading', () => {
+    const model = TestChromeModel.create({})
+    model.setLoadingCondition(true)
+    const { queryByTestId } = renderChrome(model)
+
+    // nothing painted yet, so it shows without waiting out the delay
+    expect(queryByTestId('loading-overlay')).not.toBeNull()
+    act(() => {
+      jest.advanceTimersByTime(1000)
+    })
+    expect(queryByTestId('loading-overlay')).not.toBeNull()
+
+    act(() => {
+      model.setCanvasDrawn(true)
+    })
+
+    expect(model.displayPhase).toBe('loading')
+    expect(queryByTestId('loading-overlay')).not.toBeNull()
+  })
+
+  // the other half: a refetch over already-drawn content still gets the delay,
+  // which is the whole reason the flag exists
+  test('a refetch over drawn content still waits out the anti-flash delay', () => {
+    const model = TestChromeModel.create({})
+    model.setCanvasDrawn(true)
+    const { queryByTestId } = renderChrome(model)
+
+    act(() => {
+      model.setLoadingCondition(true)
+    })
+    expect(queryByTestId('loading-overlay')).toBeNull()
+
+    act(() => {
+      jest.advanceTimersByTime(250)
+    })
+    expect(queryByTestId('loading-overlay')).not.toBeNull()
+  })
+})
+
 // A backend re-init needs a canvas element that never held a context: a canvas's
 // context kind is permanent, so re-running the HAL ladder on a used element can
 // find it committed to a rung the ladder no longer wants (canvasContext.ts).

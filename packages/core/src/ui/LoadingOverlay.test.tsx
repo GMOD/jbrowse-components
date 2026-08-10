@@ -64,6 +64,13 @@ describe('LoadingOverlay anti-flash', () => {
     const { queryByTestId } = render(<LoadingOverlay isVisible immediate />)
     expect(queryByTestId('loading-overlay')).not.toBeNull()
   })
+
+  // `immediate` must bypass the delay without RESTARTING it — the chrome flips
+  // it mid-load. Not asserted here: RTL's `rerender` remounts this component, so
+  // a prop-flip test would reset `useDelayedFlag`'s state and pass (or fail) for
+  // a reason that has nothing to do with the timer. The real path is pinned in
+  // DisplayChrome.test.tsx, "the loading scrim spans one continuous load", where
+  // the flip arrives through MobX on a mounted tree.
 })
 
 describe('LoadingOverlay status + progress', () => {
