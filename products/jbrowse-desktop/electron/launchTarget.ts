@@ -35,6 +35,20 @@ export function toProtocolUrl(webUrl: string) {
 /**
  * The JBrowse Web url a jbrowse:// link carries, or undefined if this isn't a
  * usable one. Never throws: it is fed unvalidated input from the OS.
+ *
+ * The `open` in `jbrowse://open?url=…` is **not read**. It sits in the slot a
+ * hostname would occupy, and there is no host — the link is handled locally —
+ * so it is a word that reads as a command, by the convention of `vscode://file/…`
+ * and friends. `jbrowse://anything?url=…` is accepted identically.
+ *
+ * Checking it is not worth it, because the word lands in a different property
+ * depending on which of the two valid forms the caller wrote:
+ * `jbrowse://open?…` puts it in `host`, `jbrowse:open?…` (no authority, which
+ * isProtocolUrl below deliberately accepts) puts it in `pathname`. So a **second
+ * action belongs in a query param**, not here — `?action=import` is read the
+ * same way from both forms, and this one is already `?url=`-shaped. Adding
+ * `jbrowse://import?…` instead would be silently opened as a session by every
+ * Desktop already installed, which is the failure this note exists to prevent.
  */
 export function parseProtocolUrl(input: string): string | undefined {
   let url: URL
