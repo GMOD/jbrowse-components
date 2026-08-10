@@ -5,6 +5,7 @@ description:
   coloring
 guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
+data: pipeline
 ---
 
 **TL;DR:** align WGBS/EM-seq short reads with bwameth, load the plain BAM, and

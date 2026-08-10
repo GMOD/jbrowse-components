@@ -5,6 +5,7 @@ description:
   Chromosome-painting and a QTL Manhattan plot from GeneNetwork BXD data
 guide_category: Tutorials
 tutorial_category: Population genomics
+data: download
 ---
 
 **TL;DR:** build two mm10 tracks from one BXD genotype matrix, a strain

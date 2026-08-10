@@ -3,6 +3,7 @@ title: Protein structures
 description: View 3D protein structures and MSAs linked to genomic variants
 guide_category: Tutorials
 tutorial_category: Transcriptomics & proteins
+data: hosted
 ---
 
 **TL;DR:** the protein3d and msaview plugins add 3D-structure (Mol\*, from

@@ -6,6 +6,7 @@ description:
   CNV calls against the alignments that support them
 guide_category: Tutorials
 tutorial_category: Cancer genomics
+data: pipeline
 ---
 
 **TL;DR:** load the Cancer Genome in a Bottle HG008 cancer tumor/normal PacBio

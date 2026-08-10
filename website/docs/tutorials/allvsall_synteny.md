@@ -4,6 +4,7 @@ sidebar_label: Synteny (all-vs-all minimap2)
 description: Stack strains in a linear synteny view from one all-vs-all PAF
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
+data: pipeline
 ---
 
 **TL;DR:** stack N genome rows in one linear synteny view from a single

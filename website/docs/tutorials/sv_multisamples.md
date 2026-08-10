@@ -6,6 +6,7 @@ description:
   against the reads that produced it
 guide_category: Tutorials
 tutorial_category: Structural variation
+data: hosted
 ---
 
 **TL;DR:** take one 70 kb deletion out of the 1000 Genomes ensemble SV callset,

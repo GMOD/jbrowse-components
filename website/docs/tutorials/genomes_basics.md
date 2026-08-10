@@ -5,6 +5,7 @@ description:
   catalog, worked on hg38 phyloP conservation over TP53
 guide_category: Tutorials
 tutorial_category: genomes.jbrowse.org
+data: hosted
 ---
 
 **TL;DR:** genomes.jbrowse.org hosts a ready-made JBrowse config for every UCSC

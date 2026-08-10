@@ -4,6 +4,7 @@ sidebar_label: Ortholog tables (plants)
 description: Stack N genomes from a jcvi MCScan .blocks file
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
+data: pipeline
 ---
 
 **TL;DR:** stack N genomes in one linear synteny view from a single wide

@@ -5,6 +5,7 @@ description:
   breeds and eight held-out wolves, from the Dog10K phased panel
 guide_category: Tutorials
 tutorial_category: Population genomics
+data: pipeline
 ---
 
 **TL;DR:** run [FLARE](https://github.com/browning-lab/flare) on the public

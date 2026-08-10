@@ -6,6 +6,7 @@ description:
   per parental copy, and read the crossovers off the track
 guide_category: Tutorials
 tutorial_category: Population genomics
+data: pipeline
 ---
 
 **TL;DR:** turn a phased trio's hap-ibd IBD blocks into a BED9 with `itemRgb`

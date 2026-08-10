@@ -6,6 +6,7 @@ description:
   across dog breeds and wolves
 guide_category: Tutorials
 tutorial_category: Population genomics
+data: pipeline
 ---
 
 **TL;DR:** derive a stop-gained variant's coordinate by translating the

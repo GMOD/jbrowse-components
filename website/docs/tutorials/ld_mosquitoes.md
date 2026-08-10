@@ -5,6 +5,7 @@ description:
   will show up before building the figure
 guide_category: Tutorials
 tutorial_category: Population genomics
+data: hosted
 ---
 
 **TL;DR:** a 22 Mb inversion reads as one block, from `plink --r2` output

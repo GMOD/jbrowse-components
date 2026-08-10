@@ -6,6 +6,7 @@ description:
   one VCF
 guide_category: Tutorials
 tutorial_category: Population genomics
+data: pipeline
 ---
 
 **TL;DR:** compute per-window Fst, nucleotide diversity (π), and Tajima's D from

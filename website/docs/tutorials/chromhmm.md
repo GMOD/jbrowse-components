@@ -3,6 +3,7 @@ title: ChromHMM chromatin states
 description: Paint many-cell-type ChromHMM states in one multi-row track
 guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
+data: download
 ---
 
 **TL;DR:** merge many per-cell-type ChromHMM segmentation BEDs into one file

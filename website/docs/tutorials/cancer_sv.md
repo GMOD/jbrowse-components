@@ -6,6 +6,7 @@ description:
   make, reconstruct the derivative allele, and check it against the reads
 guide_category: Tutorials
 tutorial_category: Cancer genomics
+data: pipeline
 ---
 
 **TL;DR:** a gene fusion does not always come from one breakpoint. Search a

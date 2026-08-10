@@ -5,6 +5,7 @@ description:
   grouped by clinical annotation
 guide_category: Tutorials
 tutorial_category: Cancer genomics
+data: download
 ---
 
 **TL;DR:** turn a TCGA project's open-access somatic MAFs into one multi-sample

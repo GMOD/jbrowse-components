@@ -6,6 +6,7 @@ description:
   against the gene it sits in
 guide_category: Tutorials
 tutorial_category: Structural variation
+data: pipeline
 ---
 
 **TL;DR:** slice a locus out of the Dog10K structural-variant callsets over

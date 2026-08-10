@@ -5,6 +5,7 @@ description:
   precomputed orthologs, with conserved domains overlaid
 guide_category: Tutorials
 tutorial_category: genomes.jbrowse.org
+data: hosted
 ---
 
 **TL;DR:** genomes.jbrowse.org loads both protein plugins, so any gene in a

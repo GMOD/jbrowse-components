@@ -5,6 +5,7 @@ description:
   the graph itself in JBrowse
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
+data: pipeline
 ---
 
 **TL;DR:** build a five-strain _E. coli_ graph with pggb, then load its linear

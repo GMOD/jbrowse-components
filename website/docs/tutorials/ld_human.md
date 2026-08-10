@@ -6,6 +6,7 @@ description:
   the block's edges
 guide_category: Tutorials
 tutorial_category: Population genomics
+data: hosted
 ---
 
 **TL;DR:** an `LDDisplay` computes pairwise r² live from a phased VCF, no

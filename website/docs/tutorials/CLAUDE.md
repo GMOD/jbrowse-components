@@ -12,6 +12,18 @@ the TL;DR: a bulleted list, optionally followed by one short paragraph saying
 how to install what apt does not carry. Nothing else. The intro goes under its
 own `##` heading, or the TOC files it under "Prerequisites".
 
+Frontmatter carries `data: hosted | download | pipeline`, which is the chip on
+the page's card: what it takes to end up with what the page shows, **not**
+whether the figures can be read with nothing installed. Almost every page
+answers yes to the second, so a badge on that axis marks everything and says
+nothing; `dog10k_svs` opens with "nothing to read along" and is a bcftools
+pipeline, and its card says pipeline. `pipeline` means an analysis tool
+(aligner, graph builder, caller), `download` means fetch and index published
+files, `hosted` means the data is already served. A page whose cost is not about
+data at all (the embedding and display-settings walkthroughs) leaves the field
+off rather than picking the nearest of three. An unknown value fails the build;
+an absent one is silently no chip, which is why the two must not be confused.
+
 A page closes with `## See also`, then `## References` if it has one. Nothing
 goes below them: a worked example parked under `See also` and reached by an
 anchor from higher up the page is still content, and belongs above the closing

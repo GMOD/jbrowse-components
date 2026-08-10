@@ -5,6 +5,7 @@ description:
   and see the structure a symbolic-allele callset cannot hold
 guide_category: Tutorials
 tutorial_category: Structural variation
+data: download
 ---
 
 **TL;DR:** point a `MultiQuantitativeTrack` at per-sample copy-number BigWigs

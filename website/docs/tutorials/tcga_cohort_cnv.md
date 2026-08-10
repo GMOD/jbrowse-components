@@ -4,6 +4,7 @@ description:
   Plot somatic copy number across a thousand tumors, one row per sample
 guide_category: Tutorials
 tutorial_category: Cancer genomics
+data: download
 ---
 
 **TL;DR:** stack every tumor in a TCGA cohort as its own row of a
