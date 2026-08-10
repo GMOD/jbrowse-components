@@ -145,41 +145,38 @@ export const methylationSpecs: ScreenshotSpec[] = [
             // and family TAIR10_Transposable_Elements.txt calls AT1TE14315.
             //
             // Filtered by length rather than partitioned into rows by repeat
-            // class, and the class route WAS tried — don't re-try it against
-            // this file without fixing the display first. The other four
-            // repeats in this window are 30-80 bp simple repeats ((AATAA)n,
-            // (TTC)n), sub-pixel ticks that would only add labels; 200 bp is
-            // far below the 5.1 kb element and far above all four.
+            // class. The class route is where this lane belongs and it is
+            // BLOCKED on a display defect — measured, not guessed, so don't
+            // re-walk it. The other four repeats here are 30-80 bp simple
+            // repeats ((AATAA)n, (TTC)n), sub-pixel ticks that would only add
+            // labels; 200 bp is far below the 5.1 kb element and far above all
+            // four.
             //
-            // `LinearMultiRowFeatureDisplay` is the display for that job and
-            // its `partitionField` slot documents the exact recipe for this
-            // file type, since bigRmskBed carries the class as a suffix on the
-            // name rather than in a column. On this track it fails two ways,
-            // both rendered:
+            // `LinearMultiRowFeatureDisplay.partitionField` documents the
+            // recipe for this exact file type, since bigRmskBed carries the
+            // class as a suffix on the name rather than in a column:
             //
-            //   "jexl:split(split(feature.name,'#')[1],'/')[0]" (the documented
-            //     form) -> the whole display error-banners with `TypeError:
-            //     Cannot read properties of undefined (reading 'split')`, so
-            //     the throw escapes makeFeaturePartitionResolver's per-feature
-            //     catch, which is meant to cost one row assignment rather than
-            //     the track.
-            //   the same with a `+ '#other'` sentinel, so index [1] always
-            //     exists -> no banner, and every feature lands in ONE
-            //     unlabelled row. Consistent with the first: jexl's `+` is
-            //     numeric, so the sentinel makes NaN, `split(NaN,'#')` throws,
-            //     and THAT throw is caught, yielding '' for every feature.
-            //   partitionField: 'name' (the default) -> works, and is the
-            //     figure the slot's own docs warn about: one row per repeat
-            //     NAME, so this window draws six near-empty rows -- `(A)n`,
-            //     `(AATAA)n`, `(AATTTT)n`, `(AT)n`, `(TTC)n` -- with the
-            //     transposon buried among them and the lane clipped.
+            //   partitionField: "jexl:split(split(feature.name,'#')[1],'/')[0]"
             //
-            // Setting it as a config slot in the track's `displays` rather than
-            // on the view's tracks entry makes no difference; the documented
-            // form banners either way. So the throw escapes the guard, and the
-            // partition that would give two useful rows is the one that cannot
-            // run. That is a display bug rather than a spec one, and until it
-            // is fixed one labelled bar beats six rows named after motifs.
+            // `feature` is not bound when that is evaluated, and every symptom
+            // followed from it. Against the old `split` it threw a TypeError
+            // out of a config callback and banner-ed the WHOLE display; with
+            // `split` made total (that fix landed) there is no banner and every
+            // feature instead resolves to '', i.e. one unlabelled row. The
+            // tell is a `get(feature,'name')` variant, which fails one level
+            // further out with "Cannot read properties of undefined (reading
+            // 'get')" — the undefined is the FEATURE, not the attribute.
+            //
+            // Where the slot is set is not the variable: `model.ts` reads it
+            // with `readConfObject(self.conf, 'partitionField')`, so it has to
+            // be a real config slot in the track's `displays` (a key on the
+            // view's tracks entry never reaches it at all) — and it behaves
+            // identically both ways. The attribute form works, so the adapter
+            // and the display are fine; only the jexl form is broken. Its one
+            // usable value here, `partitionField: 'name'`, is the outcome the
+            // slot's own docs warn about: six near-empty rows for `(A)n`,
+            // `(AATAA)n`, `(AATTTT)n`, `(AT)n` and `(TTC)n` with the transposon
+            // buried among them.
             {
               trackId: 'arabidopsis_rmsk',
               type: 'LinearBasicDisplay',
