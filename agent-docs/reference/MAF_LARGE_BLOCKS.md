@@ -171,56 +171,21 @@ and the user chooses, instead of a 30-second freeze. Pair it with a cheap safety
 valve in the adapter: if a single line's payload exceeds a budget, fail with a
 message naming the block and pointing at the splitter rather than OOMing.
 
-### The rescale is gone, and what replaced it
+### The rescale is gone
 
-Measured 2026-08-06 with `bytesForRegions` against files in this repo. The
-estimate is not approximately proportional to span — it is a **step function**,
-because an index reports whole blocks, and *where* the steps fall is a property
-of the file rather than of the index's bin width:
+The rate model this section was written against is retired. The byte estimate is
+a step function whose steps are a property of the file, the fetch autoruns now
+skip on `regionTooLarge && !gateMeasurementStale`, and a blocked display runs one
+real measurement per settled viewport. The measurements, the two obvious fixes
+that were wrong, and the costed-and-declined curve are in
+[REGION_TOO_LARGE.md](REGION_TOO_LARGE.md) § "Measurement follows the viewport";
+the closed story is in [HISTORICAL.md](HISTORICAL.md) § "The byte estimate was a
+rate".
 
-| file | 200bp | 1kb | 5kb | 16kb | 50kb | 100kb |
-| --- | --- | --- | --- | --- | --- | --- |
-| `volvox/volvox.maf.bed.gz` | 213,443 | 213,443 | 213,443 | 238,685 | 306,719 | 306,719 |
-| `breakpoint/hs37d5.HG002…sv.vcf.gz` | 15,408 | 15,408 | 15,408 | 15,408 | 15,408 | 15,408 |
-| `ce11.26way.chrI_subset.bed.gz` | 92,757 | 92,757 | 92,757 | 92,757 | 92,757 | 92,757 |
-
-The hs37d5 file is flat all the way up to 7.8 Mb of span on chr1, four hundred
-times above where a 20kb floor would have looked — so "the index stops resolving
-at about 20kb" was true of the densest file measured and of nothing else. BigBed
-is the same shape (`getBlockSizeForRangeMulti` sums whole R-tree leaf blocks).
-This is *why* the ce11 26-way never gates, incidentally: 92,757 bytes against a
-1 Mb cap, two orders of magnitude of headroom at every zoom.
-
-The consequence for an over-budget track was: the rescale releases the banner on
-zoom-in, the pre-flight re-measures the same flat number, the banner returns. One
-aborted fetch cycle and a banner flash per zoom step, never settling. **It never
-downloads** — `byteGateBlocksFetch` re-measures before `work()` — so this cost a
-round trip, not data.
-
-**Fixed by deleting the rescale.** Two obvious fixes were wrong for the same
-reason, and naming it is what found the third:
-
-- **"Stop rescaling; use the measurement as-is."** Deadlocks *given the fetch
-  autoruns skip while `regionTooLarge` holds*. With no downward rescale nothing
-  re-measures, so a BAM gated at 200kb stays gated at 2kb forever.
-- **"Invalidate the estimate on view change so the pre-flight re-runs."** No
-  deadlock, same flash: a dropped estimate reads as "not too large", so the
-  banner disappears, a fetch starts, and the scrim shows before the new
-  measurement puts the banner back.
-
-Both take the skip as fixed and try to work around it. **The skip is the bug.**
-The fetch autoruns now skip on `regionTooLarge && !gateMeasurementStale`, so a
-blocked display runs its ordinary fetch once per settled viewport — and that
-fetch stops at the measurement, because that is what a fetch does when the answer
-is over budget. One index read, no download, no banner flash, and the estimate is
-never anything but a real measurement of what is on screen. See
-[REGION_TOO_LARGE.md](REGION_TOO_LARGE.md) § "Measurement follows the viewport".
-
-A **curve** was the other candidate — the adapter sampling its index at a ladder
-of centered sub-spans so the main thread interpolates instead of scaling. It is
-still a model, and it is not affordable: a 20-rung ladder over a 22-chromosome
-whole-genome region set measured 2.4s against 133ms for the single call, an 18x
-multiplier on the one path where the estimate matters most.
+What stays MAF-specific: the ce11 26-way never gates at all — 92,757 bytes
+against a 1 Mb cap is two orders of magnitude of headroom at every zoom — so the
+gate is not what stands between that file and a megabase block. Only a file whose
+blocks are genuinely large reaches the premise this doc opens with.
 
 ## Recommendation
 
@@ -228,66 +193,36 @@ multiplier on the one path where the estimate matters most.
 anyone who can regenerate; (3) turns a freeze into an informed choice for
 everyone else.
 
-## Still open (the other half of the original report)
+## The other half of the original report, now closed
 
-Independent of block size, and possibly the real cause of "crashes":
-
-- ~~`computeMafCoverage` builds a `MismatchEntry` object per mismatch per row~~
-  **Done** (`perf(maf): emit worker mismatches as typed arrays instead of
-  objects`). It now writes the packed arrays directly, so the per-base-per-row
-  object rate in the worker is gone. Still a memory fix, not a speed one.
-- ~~`MafTabixAdapter` has no cheap zoom-out path: `showSummary` requires a
-  `summaryAdapter`, which is BigMaf-only~~ **Done** (`feat(maf): give a tabix
-  MAF the zoom-out tier only bigMaf had`). `MafTabixAdapter` now declares the
-  same `summaryAdapter` slot and implements `getSummaryFeatures` through the
-  shared `mafSummaryFeatures`; point it at a `BedTabixAdapter` over the BED
-  `maf2bed --summary` writes in the same pass, or at a `bigMafSummary.bb`.
-  Still opt-in — a tabix track configured without the slot has no zoom-out path
-  and force-load remains the only way past the gate.
+Both items landed. The one consequence worth carrying: `MafTabixAdapter` has the
+`summaryAdapter` zoom-out tier that used to be BigMaf-only, but it is **opt-in**
+— point it at a `BedTabixAdapter` over the BED `maf2bed --summary` writes in the
+same pass, or at a `bigMafSummary.bb`. A tabix track configured without the slot
+still has no zoom-out path, and force-load remains the only way past the gate.
 
 ## Render cost is no longer the open question
 
-Worth stating so the next person doesn't re-profile it. Four passes have landed:
-the sub-pixel decimation on the base cells, `IdentityColumns` on the per-row
-identity plot (2.4-3.9x, and the bp bound on the conservation band), the
-source-chromosome ranks moved to a memoized computed, and the deletion overlay
-gated on what its label can actually fit (679k markers built and 0 drawn per
-frame on a 26-species view — the one item here that was on the *default* path).
+Worth stating so the next person doesn't re-profile it: six passes have landed
+(sub-pixel decimation on the base cells, `IdentityColumns` on the identity plot,
+memoized source-chromosome ranks and inversion consensus, the deletion overlay
+gated on what its label can fit, `bpLo`/`bpHi` culling for every marker overlay,
+and `blockIndexAtBp` replacing two linear block scans). `git log --oneline --
+plugins/maf` has them with their numbers.
 
-The deletion one is the lesson worth carrying: the decimation pass fixed the
-base-cell encode and stopped at the encode boundary, while a sibling getter kept
-doing a full per-cell scan at the same zooms. When something here gets faster,
-check the overlays computing alongside it before declaring the zoom level cheap.
+Two lessons generalize, and they are why the list above is not the point:
 
-A sixth pass has since landed on the same theme. `paintedBpRange` had been
-applied to three Canvas2D painters and to nothing else, so every marker overlay
-(`computeVisibleInsertions` / `Deletions` / `EmptyLines` / `Inversions` /
-`Labels`) still walked the whole **buffered** region while `visibleRegions`
-covers only what is on screen. `eachVisibleRegion` now yields `bpLo`/`bpHi` —
-the marker-side twin of `paintedBpRange` — and each helper skips a block before
-walking it; `drawMafBlocks`, the one painter the earlier pass missed, took the
-`paintedBpRange` bound it should have had. Three cheaper things went with it:
-
-- **`blockHasRefGap`.** A block whose `endBp - startBp` equals its column count
-  has no reference-gap column, so no row of it can carry an insertion. 66% of
-  blocks in `test_data/ce11.26way.chrI_subset.bed.gz` qualify, and the insertion
-  overlay had been re-deriving that per row by walking every column to find
-  nothing.
-- **`makeRowFlank` builds its per-block edge sets lazily.** Eager was two `Set`s
-  per block of the buffered region — ~85k sets a frame — most for blocks the
-  now-culled walk never asks about.
-- **The inversion consensus is a memoized computed** (`inversionConsensus`),
-  like `sourceChromRanks` before it. It is deliberately over every *loaded*
-  region so it stays put while panning, which is exactly what makes recomputing
-  it per frame the wrong place for it.
-
-Measured on a synthetic ce11-26-way shape (54k blocks, 26 rows, 360kb buffered /
-180kb visible): insertions 463ms -> 168ms, deletions 1.39s -> 0.72s.
-
-`findRowHoverAtBp` and the codon spine's `locateRefPos` scanned the block list
-linearly; both now use `blockIndexAtBp`, since blocks are disjoint and
-ascending. The codon one was the worse of the two — three scans per codon over
-the whole buffered region.
+- **Check the siblings before declaring a zoom level cheap.** The decimation
+  pass fixed the base-cell encode and stopped at the encode boundary, while a
+  sibling getter kept doing a full per-cell scan at the same zooms — 679k
+  deletion markers built and 0 drawn per frame on a 26-species view, on the
+  *default* path.
+- **`paintedBpRange` and its marker-side twin are easy to apply to three call
+  sites and miss the fourth.** Every marker overlay walked the whole *buffered*
+  region while `visibleRegions` covers only what is on screen; `drawMafBlocks`
+  was the painter the earlier pass missed. Measured on a synthetic ce11-26-way
+  shape (54k blocks, 26 rows, 360kb buffered / 180kb visible): insertions
+  463ms -> 168ms, deletions 1.39s -> 0.72s.
 
 **Still on the table, and the next real step:** the insertion and deletion walks
 are *pan-independent*. `(anchorBp, rowIndex, length)` does not change when the
