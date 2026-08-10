@@ -45,13 +45,21 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
     const leftHalf = windowSize === 1 ? 0 : halfWindowSize
     const rightHalf = windowSize === 1 ? 1 : halfWindowSize
 
-    // snap the fetched region to a windowSize grid so a given genomic window
-    // scores identically no matter which block requested it
+    // Snap the fetched region to a **windowDelta** grid. The scored positions
+    // are `qs + leftHalf + k * windowDelta`, so they are block-independent
+    // exactly when `qs` is constant mod windowDelta — the step, not the window
+    // width. Snapping to windowSize instead only looks right because the two
+    // default to the same 100: with windowSize 10 and windowDelta 3, two
+    // queries over the same span produced grids offset by (100 mod 3) and
+    // shared *no* sampling positions at all, so panning slid the whole curve.
+    // 0 is a multiple of every delta, so the clamp at the contig start stays on
+    // the same grid.
     const qs = Math.max(
       0,
-      Math.floor((query.start - halfWindowSize) / windowSize) * windowSize,
+      Math.floor((query.start - halfWindowSize) / windowDelta) * windowDelta,
     )
-    const qe = Math.ceil((query.end + halfWindowSize) / windowSize) * windowSize
+    const qe =
+      Math.ceil((query.end + halfWindowSize) / windowDelta) * windowDelta
 
     const residues =
       (await sequenceAdapter.getSequence(
@@ -71,9 +79,15 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
       let len = 0
       let lo = 0
       let hi = 0
+      // The bound is exactly "the window [i - leftHalf, i + rightHalf) fits in
+      // what we fetched", spelled with the two halves rather than
+      // halfWindowSize. Written with halfWindowSize on both sides it dropped
+      // the last complete window of every fetch, and at windowSize 1 — where
+      // the window is [i, i+1) but halfWindowSize is still 1 — it never scored
+      // the first or last base of a contig at all.
       for (
-        let i = halfWindowSize;
-        i < residues.length - halfWindowSize;
+        let i = leftHalf;
+        i + rightHalf <= residues.length;
         i += windowDelta
       ) {
         checkStopTokenThrottled(stopTokenCheck)
@@ -109,12 +123,21 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
             ? (ng - nc) / (ng + nc || 1)
             : (ng + nc) / (len || 1)
 
+        // Center the emitted bin on the position it scores. The bin is one
+        // step wide so consecutive bins still tile exactly, but anchoring it
+        // at `pos` drew each score half a step to the right of the sequence it
+        // came from: at the defaults, the window [0,100) was painted over
+        // [50,150), a 50bp mis-registration against the features underneath.
+        // Clamped at 0 for the out-of-contract windowDelta > windowSize, where
+        // half a step can reach past the start of the first window.
+        const pos = qs + i
+        const binStart = Math.max(0, pos - Math.floor(windowDelta / 2))
         features.push(
           new SimpleFeature({
-            uniqueId: `${this.id}_${qs + i}`,
+            uniqueId: `${this.id}_${pos}`,
             refName: query.refName,
-            start: qs + i,
-            end: qs + i + windowDelta,
+            start: binStart,
+            end: binStart + windowDelta,
             score,
           }),
         )

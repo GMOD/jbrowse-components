@@ -37,21 +37,6 @@ export default function SharedModelF(
         configuration: ConfigurationReference(configSchema),
       }),
     )
-    .actions(self => ({
-      setGCContentParams({
-        windowSize,
-        windowDelta,
-      }: {
-        windowSize: number
-        windowDelta: number
-      }) {
-        setConf(self, 'windowSize', windowSize)
-        setConf(self, 'windowDelta', windowDelta)
-      },
-      setGCMode(mode: 'content' | 'skew') {
-        setConf(self, 'gcMode', mode)
-      },
-    }))
     .views(self => ({
       get windowSize() {
         return getConf(self, 'windowSize')
@@ -61,6 +46,33 @@ export default function SharedModelF(
       },
       get gcMode() {
         return getConf(self, 'gcMode')
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * Either parameter alone; the other keeps its current value. Both menus
+       * change one of the two, and spelling that as "write both, carrying the
+       * other across" put `windowDelta: self.windowDelta` in four call sites —
+       * which is also where the clamp below would have had to be repeated.
+       */
+      setGCContentParams({
+        windowSize = self.windowSize,
+        windowDelta = self.windowDelta,
+      }: {
+        windowSize?: number
+        windowDelta?: number
+      }) {
+        setConf(self, 'windowSize', windowSize)
+        // A step wider than the window it steps leaves gaps the scores say
+        // nothing about, which is why the step menu caps itself at windowSize.
+        // The cap alone isn't the invariant though: *shrinking* windowSize
+        // through its own menu left the larger windowDelta behind, so each
+        // painted bin was scored from a window covering a fraction of it.
+        setConf(self, 'windowDelta', Math.min(windowDelta, windowSize))
+      },
+      setGCMode(mode: 'content' | 'skew') {
+        setConf(self, 'gcMode', mode)
       },
     }))
     .views(self => {
@@ -109,16 +121,10 @@ export default function SharedModelF(
                   getValue: () => self.windowSize,
                   isDefault: self.windowSize === WINDOW_SIZE_DEFAULT,
                   onChange: windowSize => {
-                    self.setGCContentParams({
-                      windowSize,
-                      windowDelta: self.windowDelta,
-                    })
+                    self.setGCContentParams({ windowSize })
                   },
                   onReset: () => {
-                    self.setGCContentParams({
-                      windowSize: WINDOW_SIZE_DEFAULT,
-                      windowDelta: self.windowDelta,
-                    })
+                    self.setGCContentParams({ windowSize: WINDOW_SIZE_DEFAULT })
                   },
                 }),
                 makeSizeMenu({
@@ -132,14 +138,10 @@ export default function SharedModelF(
                   getValue: () => self.windowDelta,
                   isDefault: self.windowDelta === WINDOW_DELTA_DEFAULT,
                   onChange: windowDelta => {
-                    self.setGCContentParams({
-                      windowSize: self.windowSize,
-                      windowDelta,
-                    })
+                    self.setGCContentParams({ windowDelta })
                   },
                   onReset: () => {
                     self.setGCContentParams({
-                      windowSize: self.windowSize,
                       windowDelta: WINDOW_DELTA_DEFAULT,
                     })
                   },

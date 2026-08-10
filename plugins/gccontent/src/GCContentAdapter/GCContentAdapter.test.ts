@@ -140,3 +140,48 @@ test('same genomic window scores identically across differing query offsets', as
     expect(f.get('score')).toBeCloseTo(byStart.get(f.get('start'))!)
   }
 })
+
+// The case above uses windowDelta === windowSize, where snapping the fetch to
+// either one happens to give the same grid. The sampling positions step by
+// windowDelta, so that is the modulus that has to be snapped to: with a
+// windowSize grid these two queries shared *zero* positions, and panning slid
+// the whole curve rather than extending it.
+test('the sampling grid is global when windowDelta does not divide windowSize', async () => {
+  const seq = 'GCATTAGCCGATatgcNNNNGGCC'.repeat(40)
+  const a = await getFeatures(makeAdapter(seq, 'content', 10, 3), 40, 200)
+  const b = await getFeatures(makeAdapter(seq, 'content', 10, 3), 137, 263)
+  const byStart = new Map(a.map(f => [f.get('start'), f.get('score')]))
+  const overlap = b.filter(f => byStart.has(f.get('start')))
+  // the two queries overlap over ~60bp, so at a 3bp step they must share many
+  // positions, not merely one or two by coincidence
+  expect(overlap.length).toBeGreaterThan(10)
+  for (const f of overlap) {
+    expect(f.get('score')).toBeCloseTo(byStart.get(f.get('start'))!)
+  }
+})
+
+test('the bin is centered on the window it scores', async () => {
+  // windowSize 10 centered on each position, stepping 10: the window at
+  // position 5 is [0,10), so its bin must be [0,10) too — anchoring the bin at
+  // the position drew it over [5,15) instead.
+  const features = await getFeatures(makeAdapter('A'.repeat(60)), 0, 40)
+  expect(features.slice(0, 3).map(f => [f.get('start'), f.get('end')])).toEqual(
+    [
+      [0, 10],
+      [10, 20],
+      [20, 30],
+    ],
+  )
+})
+
+test('windowSize 1 scores every base including the first and last', async () => {
+  // the window is [i, i+1), so every base of the contig has one — the bound
+  // used to reserve a half-window of slop on both sides regardless
+  const features = await getFeatures(makeAdapter('GATC', 'content', 1, 1), 0, 4)
+  expect(features.map(f => [f.get('start'), f.get('score')])).toEqual([
+    [0, 1],
+    [1, 0],
+    [2, 0],
+    [3, 1],
+  ])
+})

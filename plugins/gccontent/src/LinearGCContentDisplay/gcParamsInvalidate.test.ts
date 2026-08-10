@@ -104,6 +104,23 @@ test('each GC parameter is a cache key, so changing it invalidates the fetch', (
   expect(display.rpcPropsCacheKey).not.toBe(afterWindowSize)
 })
 
+// The step menu caps itself at the current windowSize, but that cap can't see a
+// later shrink of windowSize itself — which the menu offers right above it.
+test('windowDelta never outlives a windowSize shrunk below it', () => {
+  const display = createDisplay()
+  display.setGCContentParams({ windowSize: 1000, windowDelta: 1000 })
+  display.setGCContentParams({ windowSize: 20 })
+  expect(display.windowSize).toBe(20)
+  expect(display.windowDelta).toBe(20)
+})
+
+test('setting one GC parameter leaves the other alone', () => {
+  const display = createDisplay()
+  display.setGCContentParams({ windowSize: 500, windowDelta: 25 })
+  display.setGCContentParams({ windowSize: 400 })
+  expect(display.windowDelta).toBe(25)
+})
+
 test('the GC parameters also reach the adapter config the worker resolves', () => {
   const display = createDisplay()
   display.setGCMode('skew')
