@@ -72,4 +72,5 @@ reintroduce it — if `reference/` gets hard to scan, the fix is better
 
 Typecheck the touched packages, `pnpm test <path>`, a browser test when UI
 behavior changed, `pnpm lint --fix`. Regenerate snapshots only after a visually
-verified change. Don't open a PR unless asked.
+verified change. **Then commit it** — done means committed, not left in the
+working tree. Don't push or open a PR unless asked.

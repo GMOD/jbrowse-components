@@ -7,6 +7,30 @@ regionStart-relative arithmetic crosses the worker boundary.
 Background lives in `agent-docs/` (start at `ARCHITECTURE.md`, then `reference/`
 and the ADRs).
 
+## Git and worktrees
+
+Work in a worktree (`EnterWorktree`), branched from `main`. It is your own
+checkout, so ordinary git is yours to use without asking.
+
+- **Commit as you go, without being told.** Every coherent step — a fix, a
+  passing test, a doc — is a commit. Don't accumulate a session's work in the
+  working tree waiting for permission.
+- **Rebase onto `main` frequently.** A worktree that tracks main is a worktree
+  that lands as a fast-forward.
+- **Land with `git -C ~/src/jbrowse-components merge --ff-only <branch>`.** Main
+  lives in the primary checkout, so the merge runs there. It fast-forwards even
+  when that checkout is dirty, _unless_ the merge would overwrite one of its
+  modified files — then it refuses and changes nothing. On a refusal, rebase and
+  retry; never `git update-ref` main or force the merge.
+- **Land small and often** rather than saving a branch up. The longer a branch
+  runs, the more likely a fast-forward stops being possible.
+- **Don't push to `origin` (GMOD/jbrowse-components) or open a PR unless
+  asked.** Local commits and local merges are yours; publishing is not.
+- The primary checkout is shared with other agents and usually carries
+  uncommitted work. Keep it clean when you can — continuous landing only works
+  while main's checkout can fast-forward. If you must work there directly, use
+  the shared-checkout rules in `~/.claude/CLAUDE.md`.
+
 ## MST
 
 - `@jbrowse/mobx-state-tree` is our internal ESM fork; treat it like upstream.
@@ -49,14 +73,15 @@ and the ADRs).
 
 - Avoid running tests frequently, they are slow. Use `pnpm test <directory>`,
   not the full suite. Lint with `--fix`.
-- **`pnpm format <paths>` — always pass paths in a shared worktree.** Bare
-  `pnpm format` rewrites all ~5800 files, so in a worktree several agents share
-  it lands another agent's reformatting in your diff under your commit message.
-  The path argument used to be silently ignored (`oxfmt .` hardcoded the dot and
-  the argument fell through to the astro pass); `oxfmt` now defaults to the cwd
-  on its own and the astro pass is a `postformat` hook, so an argument reaches
-  it. The hook still sweeps every `.astro`, which is a no-op unless one is
-  genuinely unformatted — they all live under `website/src`.
+- **`pnpm format <paths>` — pass paths.** Bare `pnpm format` rewrites all ~5800
+  files. In your own worktree that is merely an unreviewable diff that will
+  never fast-forward onto main; in the shared primary checkout it also lands
+  another agent's reformatting under your commit message. The path argument used
+  to be silently ignored (`oxfmt .` hardcoded the dot and the argument fell
+  through to the astro pass); `oxfmt` now defaults to the cwd on its own and the
+  astro pass is a `postformat` hook, so an argument reaches it. The hook still
+  sweeps every `.astro`, which is a no-op unless one is genuinely unformatted —
+  they all live under `website/src`.
 - **`pnpm autogen` rewrites every generated-and-committed artifact** and is the
   answer to almost any "X is out of date" CI failure. It owns `package.json`
   `exports` maps, `tsconfig.build.esm.json` `references`, and the doc tables

@@ -136,6 +136,11 @@ bookkeeping: `GLOBAL_TRIGGERS` in `screenshot-impact.ts` matches that prefix, so
   The few that raise it are irreducible jitter — dense per-base glyphs,
   remote-fetch timing. Anything else is a bug in whatever is producing the
   nondeterminism; fix that first.
+- **The generator serves the BUILD's copy of `test_data`**, so a config edit
+  there is invisible until a rebuild. Likewise, render against the local build,
+  not `jb2/latest`, or new view/display props are silently dropped.
+- **A figure on a brand-new `test_data/` fixture has a live link that 404s until
+  the next release.** That is expected — don't "fix" it by repointing the link.
 - **Size a figure from the run's own two reports, not from the PNG.**
   `CONTENT CLIPPED BELOW THE FOLD` gives the exact css px to raise
   `viewportHeight` by and `blank below the last content` the px to lower it.
