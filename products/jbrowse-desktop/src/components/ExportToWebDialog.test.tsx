@@ -1,4 +1,4 @@
-import { fireEvent, render, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, waitFor } from '@testing-library/react'
 
 import ExportToWebDialog from './ExportToWebDialog.tsx'
 
@@ -109,6 +109,62 @@ test('the plaintext mode can show the session that will be opened', async () => 
   const json = getByText(/"my session"/)
   // the local track was dropped, so it must not be in what gets opened
   expect(json.textContent).not.toContain('/home/me/a.bam')
+})
+
+// The short link is the only thing this dialog does that leaves the computer.
+// Selecting it must not be what sends the session — the upload is the button.
+test('choosing the short link uploads nothing until asked', async () => {
+  fetchMock.resetMocks()
+  fetchMock.mockResponse(JSON.stringify({ sessionId: 'abc123' }))
+  const { getByLabelText, getByText } = await renderDialog()
+
+  fireEvent.click(getByLabelText('Short link'))
+  getByText(/Nothing is uploaded until you press the button/)
+
+  // Flush every pending promise before asserting the negative. useFetch calls
+  // its fetcher in a microtask, so an upload started merely by selecting the
+  // mode has not reached `fetch` yet at this point — assert without this and
+  // the test passes whether or not the gate exists (it did; verified by
+  // removing the gate and watching it still pass).
+  await act(async () => {})
+
+  expect(fetchMock).not.toHaveBeenCalled()
+  // and there is no link to open or copy in the meantime
+  expect(linkValue()).toBe('')
+
+  fireEvent.click(getByText('Upload and create short link'))
+  await waitFor(() => {
+    expect(linkValue()).toContain('share-abc123')
+  })
+  expect(fetchMock).toHaveBeenCalledTimes(1)
+  const [endpoint] = fetchMock.mock.calls[0]!
+  expect(endpoint).toBe('https://share.jbrowse.org/api/v1/share')
+})
+
+// Leaving the mode withdraws the permission: the alternative is that coming
+// back re-sends the session on arrival, which is the surprise being removed.
+test('returning to the short link asks again rather than re-uploading', async () => {
+  fetchMock.resetMocks()
+  fetchMock.mockResponse(JSON.stringify({ sessionId: 'abc123' }))
+  const { getByLabelText, getByText } = await renderDialog()
+
+  fireEvent.click(getByLabelText('Short link'))
+  fireEvent.click(getByText('Upload and create short link'))
+  await waitFor(() => {
+    expect(linkValue()).toContain('share-')
+  })
+
+  fireEvent.click(getByLabelText('Long link'))
+  await waitFor(() => {
+    expect(linkValue()).toContain('encoded-')
+  })
+  fireEvent.click(getByLabelText('Short link'))
+  getByText('Upload and create short link')
+
+  // as above: the re-upload this guards against would still be in flight
+  await act(async () => {})
+
+  expect(fetchMock).toHaveBeenCalledTimes(1)
 })
 
 test('a config webExportUrl reroutes the export to that deployment', async () => {

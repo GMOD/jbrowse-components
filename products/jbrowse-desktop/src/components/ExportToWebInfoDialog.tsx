@@ -32,7 +32,7 @@ export default function ExportToWebInfoDialog({
         with a random password, then uploaded to a central database. The
         password lives only in the link, never on the server, so short links are
         effectively end-to-end encrypted — but the session does leave this
-        computer, which is why it is not the default.
+        computer, which is why nothing is uploaded until you ask for it.
       </DialogContentText>
       <DialogContentText>
         <strong>Plaintext JSON</strong>: the readable session embedded in the
