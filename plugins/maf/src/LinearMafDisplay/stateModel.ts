@@ -657,7 +657,7 @@ export default function stateModelFactory(
         },
       }))
       // The derived, self-releasing too-large banner is opt-in via
-      // `byteGateEnabled` below: `fetchRegions` then measures the region set
+      // `measuresBytesPreFlight` below: `fetchRegions` then measures the region set
       // before it downloads, and afterAttach clears the estimate on chromosome
       // nav. Byte-only — no density axis.
       .views(self => ({
@@ -2258,7 +2258,7 @@ export default function stateModelFactory(
          * `fetchSizeLimit` and never sees a banner; that is the estimate's job to
          * decide, not this getter's.
          */
-        get byteGateEnabled() {
+        get measuresBytesPreFlight() {
           return true
         },
         /**

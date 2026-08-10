@@ -55,15 +55,15 @@ afterEach(() => {
 })
 
 // CanvasFeatureGateMixin contributes the opt-in additively, via
-// `gateFoldedIntoFetch`, which RegionTooLargeMixin ORs into
-// `derivedRegionTooLargeEnabled` alongside the pre-flight `byteGateEnabled` — so
+// `measuresBytesInFetch`, which RegionTooLargeMixin ORs into
+// `gateEnabled` alongside the pre-flight `measuresBytesPreFlight` — so
 // the gate stays on regardless of the order the two are composed in. This test
 // is the pin on that (it used to pin the composition order itself, which was the
 // only thing keeping the gate alive).
 test('the gate opt-in survives regardless of mixin composition order', () => {
   const { display } = createTestEnvironment().createDisplay()
-  expect(display.byteGateEnabled).toBe(false)
-  expect(display.derivedRegionTooLargeEnabled).toBe(true)
+  expect(display.measuresBytesPreFlight).toBe(false)
+  expect(display.gateEnabled).toBe(true)
 })
 
 // The method-shaped reactive hooks must stay in `.views()`: as actions MobX runs

@@ -42,9 +42,9 @@ for which foundation each in-tree display uses.
 `FetchVisibleRegions` to start fresh fetches.
 
 It deliberately leaves the too-large gate alone. `regionTooLarge` is derived
-from the cached byte estimate and the current viewport, so it releases itself
-and needs no imperative clear; keeping the estimate is what stops the banner
-flickering on an ordinary clear.
+from the cached byte estimate, which a blocked display re-takes once per settled
+viewport, so it releases itself and needs no imperative clear; keeping the
+estimate is what stops the banner flickering on an ordinary clear.
 
 ## FetchVisibleRegions: the core fetch trigger
 
@@ -225,7 +225,7 @@ with one getter:
  * Opt into RegionTooLargeMixin's byte gate: `fetchRegions` measures the
  * region set with `CoreGetRegionByteEstimate` before downloading reads.
  */
-get byteGateEnabled() {
+get measuresBytesPreFlight() {
   return true
 },
 ```
@@ -237,9 +237,12 @@ When the estimate for the visible span exceeds the byte limit (the adapter's own
 
 Two things fall out of that for free:
 
-- `regionTooLarge` is **derived**, not a flag: it rescales the stored estimate
-  to the span on screen right now, so the banner releases itself as soon as you
-  zoom in far enough, and doesn't flicker while you pan.
+- `regionTooLarge` is **derived**, not a flag: it is a pure comparison of the
+  last measurement against the budget. What keeps that measurement describing
+  what you are looking at is that a blocked display keeps running its fetch,
+  once per settled viewport — the fetch stops at the estimate, so it costs an
+  index read and downloads nothing. So the banner releases itself on a fresh
+  measurement, with no imperative clear and no flicker while you pan.
 - "Force load" sets one volatile boolean for the whole track (`forceLoadTrack`),
   so the user approves a track once, with its size quoted in front of them,
   rather than re-approving each locus. The declarative equivalent is the

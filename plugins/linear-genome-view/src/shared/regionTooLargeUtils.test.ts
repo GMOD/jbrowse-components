@@ -230,7 +230,7 @@ describe('evaluateRegionTooLarge', () => {
   })
 
   // Force-load, the opt-in, and the AUTO_FORCE_LOAD_BP floor on the density
-  // axis are NOT this function's business — they live in `byteGateActive` /
+  // axis are NOT this function's business — they live in `gateActive` /
   // `densityGateActive`, pinned per display in each
   // `derivedRegionTooLarge.test.ts`.
 })

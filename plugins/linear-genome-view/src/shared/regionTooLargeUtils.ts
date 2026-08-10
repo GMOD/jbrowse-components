@@ -201,7 +201,7 @@ export function tooLargeBannerText(
  *
  * Both inputs are read on the main thread (`gateByteLimit`), so the banner and
  * the worker budget resolve one number. There is deliberately no force-load tier:
- * force-load is a boolean "render this track regardless" (`byteGateExempt`), not
+ * force-load is a boolean "render this track regardless" (`gateExempt`), not
  * a raised ceiling — see agent-docs/reference/REGION_TOO_LARGE.md § Force-load.
  */
 export function resolveByteLimit({
@@ -231,10 +231,12 @@ export interface RegionTooLargeStatus {
   axis?: 'bytes' | 'density'
 }
 
-export const NOT_TOO_LARGE: RegionTooLargeStatus = {
+// Module-private and frozen: one shared object is returned to every caller that
+// isn't gating, so an accidental write would be a cross-display one.
+const NOT_TOO_LARGE: Readonly<RegionTooLargeStatus> = Object.freeze({
   tooLarge: false,
   reason: '',
-}
+})
 
 /**
  * The comparison half of the verdict: which axis is over budget, and the banner
@@ -242,7 +244,7 @@ export const NOT_TOO_LARGE: RegionTooLargeStatus = {
  *
  * Deliberately knows nothing about *whether* each axis applies — force-load, the
  * opt-in, and the `AUTO_FORCE_LOAD_BP` floor on the density axis live in
- * `byteGateActive` / `densityGateActive` on `RegionTooLargeMixin`, which are also
+ * `gateActive` / `densityGateActive` on `RegionTooLargeMixin`, which are also
  * what stop the pre-flight RPC and the worker budgets. Those ask "may this axis
  * gate?", this one asks "does it?" — so each caller passes `undefined` / `false`
  * for an axis that is off rather than restating why.

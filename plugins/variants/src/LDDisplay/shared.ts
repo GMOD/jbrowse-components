@@ -375,12 +375,12 @@ export default function sharedModelFactory(
        *
        * This is the last display-side answer to an adapter-side question to go
        * — the same shape as the `alwaysRender` estimate flag that preceded it —
-       * so `byteGateEnabled` now has no "except when the adapter would explode"
+       * so `measuresBytesPreFlight` now has no "except when the adapter would explode"
        * caveat anywhere in the tree. What it costs is one round trip per
        * pre-computed fetch that returns undefined by construction; those
        * adapters load lazily, so resolving one reads no file.
        */
-      get byteGateEnabled() {
+      get measuresBytesPreFlight() {
         return true
       },
     }))
@@ -813,7 +813,7 @@ export default function sharedModelFactory(
           const { rpcManager } = getSession(self)
           const sessionId = getRpcSessionId(self)
           // RegionTooLargeMixin's shared pre-flight gate (a no-op when
-          // `byteGateEnabled` is off), called directly because LD fetches
+          // `measuresBytesPreFlight` is off), called directly because LD fetches
           // through GlobalFetchMixin rather than MultiRegionDisplayMixin's
           // fetchRegions
           if (await self.byteGateBlocksFetch([...regions], ctx)) {

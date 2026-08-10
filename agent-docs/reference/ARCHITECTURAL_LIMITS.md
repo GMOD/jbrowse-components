@@ -336,7 +336,7 @@ from whatever window happened to be fetched, and features clump, which makes it
 non-monotone in span in a way the byte axis is not. It is what remains of the
 "bytes scale with span" assumption after the byte axis stopped assuming
 (REGION_TOO_LARGE.md § "Measurement follows the viewport"), and it is why
-`densityGateActive` still carries the floor while `byteGateActive` doesn't.
+`densityGateActive` still carries the floor while `gateActive` doesn't.
 
 **Measured, and the floor costs nothing today.** A scan of all 60 indexed files
 in this repo (2026-08-06) found exactly two that would banner below 20kb —
@@ -479,11 +479,19 @@ is dropped, which would hide the very violation being reported.
 **Now checked** (dev-only, no false positives possible):
 
 - **`CanvasFeatureGateMixin()` must compose after `MultiRegionDisplayMixin()`.**
-  Both define `gateFoldedIntoFetch` and the later wins, so swapping them switches
+  Both define `measuresBytesInFetch` and the later wins, so swapping them switches
   the whole size gate off with no error ([REGION_TOO_LARGE.md](REGION_TOO_LARGE.md)).
   The gate mixin's own `afterAttach` reads its opt-in back and reports if the
   base's `false` won — local to the mixin, so no generic checker needs to know
   what canvas is.
+- **A renamed gate hook must not be left overridden under its old name.**
+  `RegionTooLargeMixin`'s `afterAttach` reads `getMembers(self).views` against a
+  map of the names renamed in 2026-08 (`byteGateEnabled` → `measuresBytesPreFlight`
+  and the rest) and reports any it finds. Same failure as the compose-order case
+  and reached a different way: an out-of-tree display's override lands on a
+  getter nothing reads, so the gate stays off and the track downloads unguarded.
+  **The general move: a rename of an opt-in is only safe if it is louder than the
+  thing it renamed** — extend the map before renaming the next one.
 - **A display's `afterAttach` must not chain to super.** The MST fork auto-chains
   lifecycle hooks, so capturing and calling it double-installs all five autoruns
   (`models/afterAttachAutoChain.test.ts`). A `WeakSet` of nodes the foundation's
@@ -500,7 +508,7 @@ is dropped, which would hide the very violation being reported.
   distinguishes the orders. What distinguishes them is a flag that differs by
   construction: `supportsHeightModes` (false on the base, true on the mode
   mixin), read back in `HeightModeMixin`'s own `afterAttach`, exactly as the gate
-  case reads `gateFoldedIntoFetch`. **The general move: when a collision has no
+  case reads `measuresBytesInFetch`. **The general move: when a collision has no
   natural opt-in to probe, add the flag rather than concluding the order can't
   report itself.** Pinned both ways in `TrackHeightMixin.test.ts`.
 

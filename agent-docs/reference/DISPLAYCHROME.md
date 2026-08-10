@@ -229,9 +229,8 @@ can raise the error bar must be one `reload()` actually undoes — otherwise the
 button is present, looks live, and does nothing. Two shapes have failed it:
 
 - **A gate `reload()` doesn't clear.** Arc, above: `shouldFetch` is
-  `!regionTooLarge && !dataCurrent`, so the base `reload()`'s `reloadCounter`
-  bump refires the autorun into a no-op until `loadedRegionSignature` is dropped
-  too.
+  `!dataCurrent`, so the base `reload()`'s `reloadCounter` bump refires the
+  autorun into a no-op until `loadedRegionSignature` is dropped too.
 - **Work `reload()` never re-runs.** HiC's normalization/binsize header read was
   a bare `afterAttach` IIFE, so a retry cleared the error and dropped straight
   back onto the permanent scrim — the header was never re-read. It now runs from

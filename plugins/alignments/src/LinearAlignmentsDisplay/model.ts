@@ -3562,7 +3562,7 @@ export default function stateModelFactory(
          * Opt into RegionTooLargeMixin's byte gate: `fetchRegions` measures the
          * region set with `CoreGetRegionByteEstimate` before downloading reads.
          */
-        get byteGateEnabled() {
+        get measuresBytesPreFlight() {
           return true
         },
         // #endregion
@@ -3630,7 +3630,7 @@ export default function stateModelFactory(
         },
       }))
       // The derived, self-releasing too-large banner is opt-in via
-      // `byteGateEnabled` above: `fetchRegions` measures the region set before it
+      // `measuresBytesPreFlight` above: `fetchRegions` measures the region set before it
       // downloads, afterAttach clears the estimate on chromosome nav, and
       // onRegionTooLarge clears the hover. Byte-only — no density axis.
       .actions(self => ({

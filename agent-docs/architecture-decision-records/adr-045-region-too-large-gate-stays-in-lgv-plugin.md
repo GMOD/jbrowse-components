@@ -63,7 +63,7 @@ reduction the move was really after is done directly.**
 - `aboveForceLoadFloor` deliberately excludes the opt-in and force-load terms
   (`gateActive` adds those on top), because MAF's `showSummary` is itself a
   function of the floor and gate getters then read *it* — a floor getter that
-  read the opt-in would close the loop. (The reader was `byteGateEnabled` when
+  read the opt-in would close the loop. (The reader was `measuresBytesPreFlight` when
   this was written and is `byteGateAdapterConfig` now; the shape is the point.)
 
 ## Consequences

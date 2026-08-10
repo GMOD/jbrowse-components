@@ -32,10 +32,24 @@ measurements that retired it are in [HISTORICAL.md](HISTORICAL.md) § "The byte
 estimate was a rate".
 
 **The footgun:** gating is **opt-in**, and a display that doesn't opt in never
-gates. A pre-flight display sets `byteGateEnabled` (defaults to false); canvas,
-which measures inside its own feature RPC, sets `gateFoldedIntoFetch`.
-`derivedRegionTooLargeEnabled` is the OR of the two — additive, so composition
-order can't turn a gate off.
+gates. The two opt-ins are named as a pair, because they are alternatives:
+`measuresBytesPreFlight` (a `CoreGetRegionByteEstimate` before fetching) and
+`measuresBytesInFetch` (canvas, checking inside its own feature RPC). Both
+default to false and `gateEnabled` is their OR — additive, so composition order
+can't turn a gate off.
+
+**The naming law, since the gate has a lot of members:** a `byte`/`density`
+prefix means the term is genuinely about that axis, and nothing else carries one.
+So the shared question — "may the gate act at all right now?" — is `gateActive`
+(opted in, not exempt, view measured), the exemption is `gateExempt`, and a
+per-axis question is `gateActive` plus that axis's own terms. Today the byte axis
+adds nothing, so it has no getter of its own; `densityGateActive` adds
+`densityGateEnabled` and the `AUTO_FORCE_LOAD_BP` floor. Until 2026-08 those two
+shared terms were `byteGateActive` / `byteGateExempt` — neither had a single
+byte-specific term, `densityGateActive` was literally `byteGateActive && …`, and
+`byteGateExempt`'s own docstring opened by saying it applied to either axis.
+"Force-load only lifts the byte gate" is a thing the *predecessor* system
+actually did (§ Force-load); the names shouldn't keep suggesting it.
 
 **The rest:**
 
@@ -95,15 +109,18 @@ Four steps and a note, all on `RegionTooLargeMixin`:
   `regionTooLarge`. Callers do `if (await self.byteGateBlocksFetch(regions, ctx))
   return` and nothing else — `fetchRegions` makes that call for the whole
   `MultiRegionDisplayMixin` family, LD and arc make it from their own global
-  fetches. It short-circuits to false when `byteGateEnabled` is off, so the call
+  fetches. It short-circuits to false when `measuresBytesPreFlight` is off, so the call
   is unconditional at every site.
 - `gateViewport` is **what a measurement is about**: the span on screen, and a
-  key identifying the exact stretch of genome. It reads the view through
-  `gateVisibleBp`/`visibleRegions`, the mixin's only reads of it (it reaches the
-  containing *track* in one other place, `adapterFetchSizeLimit`), and is
-  `undefined` until `view.initialized` — `visibleBp` reads `view.width`, which
-  throws before the view is measured, and a bare getter must never throw, so the
-  pre-init guard exists once.
+  key identifying the exact stretch of genome. It is the mixin's **only** read of
+  the view (`visibleBp`/`visibleRegions`; it reaches the containing *track* in
+  one other place, `adapterFetchSizeLimit`), and is `undefined` until
+  `view.initialized` — `visibleBp` reads `view.width`, which throws before the
+  view is measured, and a bare getter must never throw, so the pre-init guard
+  exists once. A second getter for the span alone (`gateVisibleBp`) carried a
+  copy of that walk and that guard until 2026-08; `aboveForceLoadFloor` and
+  `gateActive` take `gateViewport?.spanBp` and `gateViewport !== undefined`
+  instead.
 
   It must be captured **before** the round trip. A zoom during the in-flight
   fetch would otherwise label the number with a viewport it never covered, and
@@ -119,12 +136,14 @@ Four steps and a note, all on `RegionTooLargeMixin`:
   measuring *no* bytes, because a dense region short-circuits on its feature
   count and an unmeasurable byte result must not overwrite a good estimate.
   Folding them would make a density-blocked display refetch forever.
-- `byteGateActive` and `densityGateActive` answer "may this axis gate right
-  now?". Both need the opt-in, no exemption and a measured view; only the density
-  one adds `aboveForceLoadFloor`. `tooLargeStatus` passes `undefined` / `false`
-  for whichever is off, so each axis's terms are stated once — including the
-  byte *budget*, which must go through the same flag because a display that never
-  gates has no containing track to read `adapterFetchSizeLimit` off.
+- `gateActive` answers "may the gate act right now?" — the opt-in, no exemption,
+  a measured view — and `densityGateActive` is that plus the density axis's own
+  two terms (`densityGateEnabled`, `aboveForceLoadFloor`). The byte axis reads
+  `gateActive` directly, having nothing to add. `tooLargeStatus` passes
+  `undefined` / `false` for whichever is off, so each axis's terms are stated
+  once — including the byte *budget*, which must go through the same flag because
+  a display that never gates has no containing track to read
+  `adapterFetchSizeLimit` off.
 - The verdict is read immediately after the commit, which works because the
   estimate was just taken at the current viewport.
 
@@ -146,7 +165,7 @@ which fetch that is.
   (the config, stringified), so overriding `byteGateAdapterConfig` stays the
   whole opt-in and no display has to remember a second wire — the same call
   `CanvasFeatureGateMixin` makes for its own stale-stat cleanup. Guarded on
-  `derivedRegionTooLargeEnabled`, so a display that never gates still never
+  `gateEnabled`, so a display that never gates still never
   evaluates the adapter getters below the opt-in.
 
   Skipping it shows the wrong number, and MAF is the worked example. It gates at
@@ -242,6 +261,21 @@ new one get taken*. Two states, and the answer in both is "the fetch takes it":
   small and bounded, but it is not nothing, and it is a cost that did not exist
   when the blocked branch was a dead end.
 
+**A fetch the gate sat out is not a measurement, and neither path stamps one.**
+`gateMeasurementStale` compares a stamp against `gateViewport.key`, and the stamp
+means "the gate asked the adapter about this viewport". A force-loaded fetch
+carries no budget on either axis, so the worker measures against nothing and the
+gate asked nothing. The pre-flight path always got this right by construction —
+`byteGateBlocksFetch` returns above its own stamp when `gateActive` is false —
+while `commitGateMeasurements` stamped unconditionally until 2026-08, so a
+canvas display put back under the gate (`setForceLoadTrack(false)`) inherited a
+stamp from fetches that never measured and would not re-measure until the
+viewport moved. Latent, since nothing in the UI revokes force-load, but the two
+paths disagreeing about what the stamp means is the kind of thing that is only
+ever found the hard way. The density *stats* are deliberately still committed on
+a force-loaded fetch — that is what lets zooming back out re-gate from the live
+main-thread verdict.
+
 The gated half is one condition, in the two fetch autoruns:
 
 ```js
@@ -296,7 +330,7 @@ question only a blocked track ever asks.
 
 Most displays override none of these.
 
-**`byteGateEnabled`** defaults to false, meaning no pre-flight and no gating.
+**`measuresBytesPreFlight`** defaults to false, meaning no pre-flight and no gating.
 `byteGateBlocksFetch` and the verdict both read it, so requesting the estimate
 and gating on it are one decision, not two: alignments, maf and
 multi-sample-variant can't drift into fetching estimates nothing reads, or gating
@@ -307,11 +341,22 @@ could be untracked by being declared in an `.actions` block. That is exactly how
 MultiSampleVariant's gate silently went dead. There is nothing viewport-derived
 left to untrack.
 
-**`derivedRegionTooLargeEnabled`** is `byteGateEnabled || gateFoldedIntoFetch`,
+**`gateEnabled`** is `measuresBytesPreFlight || measuresBytesInFetch`,
 the union of the two ways to measure. Where both are false (wiggle, Manhattan,
 sequence, synteny) `regionTooLarge` is a literal false, the LGV-only getters
 below it are never evaluated, and a non-LGV consumer of the mixin never reads
-`view.visibleBp`.
+`view.visibleBp`. It was `derivedRegionTooLargeEnabled` until 2026-08 — a name
+for how the verdict happened to be implemented rather than for the question, and
+long enough that both opt-ins ended up named for how they differed from *it*
+rather than from each other.
+
+**Renaming a gate hook is itself a hazard**, and `RegionTooLargeMixin`'s
+`afterAttach` carries a dev-time check for it (`RENAMED_HOOKS`). An out-of-tree
+display overriding an old name lands on a getter nothing reads: the gate quietly
+stays off and the display downloads whatever it is pointed at with no banner and
+no error — the same silent-disable failure the additive OR and
+`CanvasFeatureGateMixin`'s compose-order check exist to prevent. Add to that map
+before renaming another one.
 
 **`configuredFetchSizeLimit`** and **`configForceLoad`** read the
 `fetchSizeLimit` and `forceLoad` slots from `baseLinearDisplayConfigSchema`,
@@ -337,10 +382,10 @@ config — but a tiered display whose sub-adapter declares one would gate agains
 the wrong number, and the fix is to override `adapterFetchSizeLimit` alongside
 this getter rather than to teach the slot path about tiers.
 
-That getter is what lets a tiered display keep `byteGateEnabled` on for **both**
+That getter is what lets a tiered display keep `measuresBytesPreFlight` on for **both**
 tiers, and the alternative is worth naming because it was the shape here until
 2026-08-06 and it read as obviously safe. MAF used to spell the swap as
-`byteGateEnabled = !showSummary`, exempting the summary tier on the grounds that
+`measuresBytesPreFlight = !showSummary`, exempting the summary tier on the grounds that
 it is the cheap one. Cheap *per base* — it carries no sequence — but a
 `BigBedAdapter` read is still a whole-feature download (see the comment on its
 `getFeatures`), and `showSummary` is on from 20kb to the whole genome. So the one
@@ -351,7 +396,7 @@ own escape hatch. **Exempting a tier assumes it is bounded; measuring it doesn't
 have to.** A genuinely small summary read is orders of magnitude under
 `fetchSizeLimit` and never sees a banner.
 
-**Nothing turns `byteGateEnabled` off, and as of 2026-08-09 there is no reason
+**Nothing turns `measuresBytesPreFlight` off, and as of 2026-08-09 there is no reason
 to.** The last user was LD, which turned it off for pre-computed adapters
 (PlinkLD\*) because those aren't feature adapters and
 `CoreGetRegionByteEstimate` threw on them. That was a display answering an
@@ -374,7 +419,7 @@ adapter that display is pointed at.
 
 ## Canvas folds the byte check into its fetch RPC
 
-Canvas opts out of the pre-flight entirely — `byteGateEnabled` stays false,
+Canvas opts out of the pre-flight entirely — `measuresBytesPreFlight` stays false,
 because a second estimate RPC racing the per-region feature fetch is
 exactly the two-call coordination this codebase avoids. Instead
 `executeRenderFeatureData` and `executeMultiRowGetFeatures` call the adapter's
@@ -406,7 +451,7 @@ re-measure says so" in
 **The pre-flight has a smaller version of the same seam, and it is inert for a
 different reason.** `fetchRegions` measures `needed` — only the regions the
 loaded data doesn't already cover — while `byteGateBlocksFetch` labels the result
-with the whole `gateVisibleBp`. Nothing divides one by the other any more, so the
+with the whole `gateViewport.spanBp`. Nothing divides one by the other any more, so the
 banner is unaffected: it quotes what the adapter said about the regions actually
 being fetched, which is the honest number to ask permission for. The one reader
 that spans two measurements is `zoomIneffective`, and it compares bytes taken
@@ -437,7 +482,7 @@ known one rather than something the next reader has to re-derive from the two
 call sites. **A batch that measured no bytes at all writes
 nothing** — not `bytes: undefined`. Two ways that happens and they mean the same
 thing: the adapter offers no index estimate, or the fetch carried no `byteLimit`
-because `byteGateActive` was false when it was issued (force-loaded). Neither is
+because `gateActive` was false when it was issued (force-loaded). Neither is
 a measurement, so neither may overwrite the last real one — nor reset the
 zoom-effectiveness comparison, which needs two real ones. Publishing an empty
 estimate used to cost a wasted round trip on every re-activation: it wiped a
@@ -473,14 +518,23 @@ worker ignores and storing an answer the display doesn't ask.
 
 Composed on top of `RegionTooLargeMixin` by both canvas feature displays:
 `LinearBasicDisplay` and `LinearVariantDisplay` through `baseModel`, plus
-`LinearMultiRowFeatureDisplay`. It is the **density axis and nothing else**:
-`densityStatsPerRegion`, `observedMaxDensity`, the `densityTooLarge` override,
-and the worker's `maxFeatureDensity` budget (gated behind the shared
-`densityGateActive`). The worker's *byte* budget, `resolvedByteLimit()`, lives on
-`RegionTooLargeMixin` with the rest of the byte axis — both its terms are that
-mixin's, so a copy here would only be a second place to drift. Overriding
-`densityGateEnabled` to false drops the density axis for a display that paints
-into fixed lanes, such as multi-row, leaving byte-only gating.
+`LinearMultiRowFeatureDisplay`. It is **how the density number is measured, and
+nothing else**: `densityStatsPerRegion`, `observedMaxDensity`, the
+`densityTooLarge` override, and the worker's `maxFeatureDensity` budget (gated
+behind the shared `densityGateActive`). The worker's *byte* budget,
+`resolvedByteLimit()`, lives on `RegionTooLargeMixin` with the rest of the byte
+axis — both its terms are that mixin's, so a copy here would only be a second
+place to drift.
+
+**Whether the axis is on is `RegionTooLargeMixin`'s too**, and that is the one
+piece that moved back in 2026-08. `densityGateEnabled` lived here, out of
+`densityGateActive`'s reach, so "is the density axis on?" had two spellings and
+the one consumer that mattered had to ask both — `!densityGateEnabled ||
+!densityGateActive` inside `maxFeatureDensity`, with `densityGateActive` then
+applied a *second* time by `tooLargeStatus`. Overriding it to false still drops
+the axis for a display that paints into fixed lanes, such as multi-row, leaving
+byte-only gating; the override just lands on the base mixin now, beside the
+`densityTooLarge` hook that was always there.
 
 A display opts in by composing the mixin, calling `commitGateMeasurements` from
 its fetch (with the `visibleBp` captured *before* the fetch), and overriding
@@ -501,9 +555,9 @@ pushes nothing and there's no stale-feature flash.
 
 Force-load is **one boolean for the whole track**: `forceLoadTrack`, a volatile on
 `RegionTooLargeMixin`. `forceLoad()` sets it (via `setForceLoadTrack`) and calls
-`reload()`; `byteGateExempt` ORs it with the declarative `forceLoad` config slot,
+`reload()`; `gateExempt` ORs it with the declarative `forceLoad` config slot,
 and everything downstream — the verdict, the worker byte budget, the worker
-density budget — reads that one getter, through `byteGateActive` /
+density budget — reads that one getter, through `gateActive` /
 `densityGateActive`.
 
 The banner quotes the estimated size before the click, so a user approving it is
@@ -684,7 +738,7 @@ paths can't drift apart.
   banner's wording stays free to change. It is *only* the comparison: over the
   byte limit gates before density, and `densityTooLarge` is opt-in, so byte-only
   displays never gate on it. Whether either axis applies — the opt-in,
-  force-load, `AUTO_FORCE_LOAD_BP` on the density side — is `byteGateActive` /
+  force-load, `AUTO_FORCE_LOAD_BP` on the density side — is `gateActive` /
   `densityGateActive`'s question, and each caller passes `undefined` / `false`
   rather than restating why.
 

@@ -254,7 +254,7 @@ describe('FetchVisibleRegions autorun', () => {
     expect(mockRpcCall.mock.calls.length).toBe(callCount)
   })
 
-  // The byte axis has no span floor — `byteGateActive` carries the opt-in and
+  // The byte axis has no span floor — `gateActive` carries the opt-in and
   // force-load and nothing else — because read cost scales with depth, so a
   // gene-sized window over an amplicon or mitochondrial pileup is tens of MB and
   // a floor would decline to look at it. The estimate is still what decides, so
@@ -524,7 +524,7 @@ describe('FetchVisibleRegions autorun', () => {
     view.zoomTo(50)
 
     // The estimate never changes: force-load exempts the track outright
-    // (`byteGateExempt`), it doesn't raise a ceiling the adapter reports.
+    // (`gateExempt`), it doesn't raise a ceiling the adapter reports.
     mockRpcCall.mockImplementation((_sid: string, method: string) => {
       if (method === 'CoreGetRegionByteEstimate') {
         return Promise.resolve(50_000_000)

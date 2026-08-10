@@ -33,7 +33,8 @@ It has bitten twice:
 
 - **MultiSampleVariant's byte gate was dead.** The gate's old opt-in was a
   method, `getByteEstimateConfig()`, that read `view.visibleBp`. It was declared
-  in an `.actions()` block, so the `derivedRegionTooLargeEnabled` computed that
+  in an `.actions()` block, so the `gateEnabled` computed (then
+  `derivedRegionTooLargeEnabled`) that
   called it registered nothing, evaluated once pre-init to `false`, and never
   re-evaluated. Both multi-sample-variant displays fetched unguarded, with
   `derivedRegionTooLarge.test.ts` and `isCacheValidTracking.test.ts` failing on a
@@ -56,7 +57,7 @@ this way at all — the mistake becomes a crash on the first display instantiati
 in every test that builds one. Where a hook can be a boolean or a value rather
 than a call, make it one. The byte gate's opt-in was reshaped from
 `getByteEstimateConfig(): {adapterConfig, visibleBp} | null` to the plain getter
-`byteGateEnabled: boolean` for exactly this reason (see
+`measuresBytesPreFlight: boolean` for exactly this reason (see
 [REGION_TOO_LARGE.md](../reference/REGION_TOO_LARGE.md)); the viewport read moved
 inside `byteGateBlocksFetch`, the action that consumes it, where being untracked
 is correct.
@@ -106,7 +107,10 @@ trap. Per-family is also where the failure would be diagnosed.
   behavioral tracking test (`isCacheValidTracking.test.ts`) — it is what proves
   the *reason* the declaration matters, and it would survive a future MST that
   reports members differently.
-- Two hooks are in scope today. `getByteEstimateConfig` is gone;
-  `derivedRegionTooLargeEnabled`, `byteGateEnabled`, `gateActive`,
-  `regionTooLarge`, and `densityTooLarge` are getters and therefore
-  self-protecting.
+- Two hooks are in scope today. `getByteEstimateConfig` is gone; `gateEnabled`,
+  `measuresBytesPreFlight`, `gateActive`, `regionTooLarge`, and `densityTooLarge`
+  are getters and therefore self-protecting. (The first two were
+  `derivedRegionTooLargeEnabled` and `byteGateEnabled` when this was written —
+  and note that this list and ADR-045 both already wrote the *third* as
+  `gateActive` while the code called it `byteGateActive`, which is roughly the
+  whole argument for the 2026-08 rename.)

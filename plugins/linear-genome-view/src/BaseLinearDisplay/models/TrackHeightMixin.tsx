@@ -82,7 +82,7 @@ export default function TrackHeightMixin<
        * only the drag-resizable `height` slot above. False here; `HeightModeMixin`
        * overrides it to true, and `types.compose` resolves the collision to the
        * later argument — which is exactly what makes it a usable compose-order
-       * probe, the same way `gateFoldedIntoFetch` is for the canvas size gate.
+       * probe, the same way `measuresBytesInFetch` is for the canvas size gate.
        *
        * That probe is the point. `HeightModeMixin` also overrides `height` and
        * `resizeHeight`, and composing it FIRST silently hands both back to this

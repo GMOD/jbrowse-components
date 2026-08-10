@@ -175,7 +175,7 @@ describe('alignments derived regionTooLarge', () => {
     expect(display.regionTooLarge).toBe(true)
   })
 
-  // The byte axis has no span floor: `byteGateActive` carries the opt-in and
+  // The byte axis has no span floor: `gateActive` carries the opt-in and
   // force-load and nothing else, so a gene-sized window over a deep pileup —
   // tens of MB, and exactly the fetch the old floor declined to look at — is
   // judged the same way a whole-chromosome one is.
@@ -190,7 +190,7 @@ describe('alignments derived regionTooLarge', () => {
     // quotes whole blocks so the next one will not.
     view.zoomTo(1)
     expect(view.visibleBp).toBeLessThan(20_000)
-    expect(display.byteGateActive).toBe(true)
+    expect(display.gateActive).toBe(true)
     expect(display.regionTooLarge).toBe(true)
   })
 
@@ -207,7 +207,7 @@ describe('alignments derived regionTooLarge', () => {
     view.zoomTo(0.01)
     expect(view.visibleBp).toBeLessThan(20_000)
     display.setByteEstimate({ bytes: 1e9, viewport: display.gateViewport! })
-    expect(display.byteGateActive).toBe(true)
+    expect(display.gateActive).toBe(true)
     expect(display.zoomCanReleaseGate).toBe(false)
     expect(display.regionTooLarge).toBe(true)
 
@@ -225,7 +225,7 @@ describe('alignments derived regionTooLarge', () => {
     view.zoomTo(1)
     expect(view.visibleBp).toBeLessThan(20_000)
     display.setByteEstimate({ bytes: 300_000, viewport: display.gateViewport! })
-    expect(display.byteGateActive).toBe(true)
+    expect(display.gateActive).toBe(true)
     expect(display.regionTooLarge).toBe(false)
   })
 

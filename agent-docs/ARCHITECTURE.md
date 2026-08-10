@@ -352,7 +352,8 @@ each display invents.
 
 `canvasDrawn` therefore means "painted at least once" here rather than "real
 content reached the canvas" (ADR-009, written for the per-region family, whose
-loading scrim reads it through `isReady`). Nothing is lost: both `settled`
+loading scrim reads it through `computeLoadingTerm`'s
+`rendersCanvas && !canvasDrawn` term). Nothing is lost: both `settled`
 getters carry data-readiness separately through `displaysSettled`, and neither
 view drives a scrim off `canvasDrawn`. Dotplot keyed by track index and gated
 its render on having geometry until both were fixed; synteny reached the same
@@ -455,9 +456,9 @@ return value, not the reads") and `reloadCounter` at the top of its body,
 gate, and that ordering is load-bearing. MobX rebuilds the dependency set on
 every run, so a read placed inside the gate drops out of it on any run that
 decides not to fetch — and can then never wake the autorun again. Arc is the
-shape that exposes this: its `shouldFetch` is `!regionTooLarge && !dataCurrent`,
-so it goes false on every successful fetch, and with `reloadCounter` read under
-the gate `reload()` was silently dead. The display's own `shouldFetch` is the
+shape that exposes this: its `shouldFetch` is `!dataCurrent`, so it goes false on
+every successful fetch, and with `reloadCounter` read under the gate `reload()`
+was silently dead. The display's own `shouldFetch` is the
 only gate in the skeleton; each display's `fetch` re-checks `isMinimized` /
 `view.initialized` / an empty viewport for its direct callers.
 
@@ -556,8 +557,8 @@ reads a different file at different zooms.
 Subclasses override `fetchNeeded` to call `self.fetchRegions(needed, work)`.
 `fetchRegions` runs an optional pre-flight byte estimate before invoking the work
 callback: `RegionTooLargeMixin.byteGateBlocksFetch` → the
-`CoreGetRegionByteEstimate` RPC, active when the display sets `byteGateEnabled`
-and the shared `byteGateActive` says something could act on the answer. A blocked
+`CoreGetRegionByteEstimate` RPC, active when the display sets `measuresBytesPreFlight`
+and the shared `gateActive` says something could act on the answer. A blocked
 display keeps running that fetch, once per settled viewport, because the
 measurement is the only thing that releases the banner and a blocked fetch stops
 at it. Oversize regions surface a banner:
@@ -586,11 +587,11 @@ byte measurement — and what keeps that measurement describing what is on scree
 is that a blocked display keeps fetching, once per settled viewport, with the
 fetch stopping at the measurement rather than downloading. So the banner releases
 on a fresh index read, with no imperative clear and no flicker on pan. Displays
-opt in by overriding hooks — `byteGateEnabled` for a pre-flight estimate,
-`gateFoldedIntoFetch` for a byte check inside the display's own feature RPC,
+opt in by overriding hooks — `measuresBytesPreFlight` for a pre-flight estimate,
+`measuresBytesInFetch` for a byte check inside the display's own feature RPC,
 plus `byteGateAdapterConfig` / `densityTooLarge` / `configuredFetchSizeLimit` —
 rather than shadowing the getter. **Never override
-`derivedRegionTooLargeEnabled`**: it is the OR of the two opt-ins, additive
+`gateEnabled`**: it is the OR of the two opt-ins, additive
 precisely so a gate mixin can contribute one without racing the base on
 composition order, and `CanvasFeatureGateMixin` carries a dev-time check for
 that failure because it disables the whole gate silently. Canvas folds
@@ -1218,10 +1219,9 @@ that is what makes them worth listing rather than trusting to review.
   GPU buffer lifecycle delegate to `hal.pruneRegions(active)`.
 - Don't add or redefine volatiles/actions owned by the slot mixin (`canvasDrawn`,
   `renderTick`, `currentRenderingBackend`, `renderError`, `markCanvasDrawn`,
-  `resetCanvasDrawn`, `renderNow`, `setRenderError`, `stopRenderingBackend`, etc.)
-  or the `isReady` view owned by `MultiRegionDisplayMixin`. `renderError` in
-  particular is the single source for the `renderError` terminal phase — don't fork
-  it into a display-local volatile.
+  `resetCanvasDrawn`, `renderNow`, `setRenderError`, `stopRenderingBackend`, etc.).
+  `renderError` in particular is the single source for the `renderError` terminal
+  phase — don't fork it into a display-local volatile.
 
 ### Chrome, readiness and export
 

@@ -603,7 +603,7 @@ export default function MultiSampleVariantBaseModelF(
         },
       }))
       // The derived, self-releasing too-large banner is opt-in via
-      // `byteGateEnabled` below: `fetchRegions` then measures the region set
+      // `measuresBytesPreFlight` below: `fetchRegions` then measures the region set
       // before it downloads, and afterAttach clears the estimate on chromosome
       // nav. Byte-only — no density axis.
       .actions(self => {
@@ -1342,7 +1342,7 @@ export default function MultiSampleVariantBaseModelF(
          * Opt into RegionTooLargeMixin's byte gate: `fetchRegions` measures the
          * region set with `CoreGetRegionByteEstimate` before it downloads cells.
          */
-        get byteGateEnabled() {
+        get measuresBytesPreFlight() {
           return true
         },
 

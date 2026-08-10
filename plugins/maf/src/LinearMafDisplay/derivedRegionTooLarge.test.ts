@@ -31,7 +31,7 @@ describe('MAF summary swap vs the force-load floor', () => {
     expect(display.aboveForceLoadFloor).toBe(true)
     expect(display.showSummary).toBe(false)
     // so the detail path is what gates
-    expect(display.byteGateEnabled).toBe(true)
+    expect(display.measuresBytesPreFlight).toBe(true)
   })
 
   it('summarizes above the floor and swaps back to the gated detail path below it', () => {
@@ -44,15 +44,15 @@ describe('MAF summary swap vs the force-load floor', () => {
     // The summary tier is gated too — it is a whole-feature read, not a
     // zoom-reduced one — but against its own file, so a small summary read is
     // nowhere near the cap and never sees a banner.
-    expect(display.byteGateEnabled).toBe(true)
-    expect(display.byteGateActive).toBe(true)
+    expect(display.measuresBytesPreFlight).toBe(true)
+    expect(display.gateActive).toBe(true)
     expect(display.byteGateAdapterConfig).toEqual({ type: 'BigBedAdapter' })
 
     view.zoomTo(20)
     expect(view.visibleBp).toBeLessThan(20_000)
     expect(display.aboveForceLoadFloor).toBe(false)
     expect(display.showSummary).toBe(false)
-    expect(display.byteGateEnabled).toBe(true)
+    expect(display.measuresBytesPreFlight).toBe(true)
   })
 
   it('summarizes nothing before the view is measured', () => {
@@ -86,7 +86,7 @@ describe('MAF gating below the force-load floor', () => {
       bytes: 3_000_000,
       viewport: display.gateViewport!,
     })
-    expect(display.byteGateActive).toBe(true)
+    expect(display.gateActive).toBe(true)
     expect(display.regionTooLarge).toBe(true)
     expect(display.regionTooLargeReason).toBe('Requested too much data (3 Mb)')
   })
@@ -107,7 +107,7 @@ describe('MAF gating below the force-load floor', () => {
     expect(display.regionTooLarge).toBe(true)
 
     view.zoomTo(5)
-    expect(display.byteGateActive).toBe(true)
+    expect(display.gateActive).toBe(true)
     expect(display.estimatedFetchBytes).toBe(3_000_000)
     expect(display.regionTooLarge).toBe(true)
 
@@ -145,7 +145,7 @@ describe('MAF gating below the force-load floor', () => {
     view.zoomTo(20)
     // a 26-way over the same window: two orders of magnitude under the cap
     display.setByteEstimate({ bytes: 40_000, viewport: display.gateViewport! })
-    expect(display.byteGateActive).toBe(true)
+    expect(display.gateActive).toBe(true)
     expect(display.regionTooLarge).toBe(false)
   })
 
@@ -159,7 +159,7 @@ describe('MAF gating below the force-load floor', () => {
     // did not move with the byte gate.
     view.zoomTo(20)
     expect(display.showSummary).toBe(false)
-    expect(display.byteGateActive).toBe(true)
+    expect(display.gateActive).toBe(true)
 
     // and the swap still happens at 20kb, independently of the gate
     view.zoomTo(100)
@@ -177,7 +177,7 @@ describe('MAF gating below the force-load floor', () => {
     expect(display.regionTooLarge).toBe(true)
 
     display.setForceLoadTrack(true)
-    expect(display.byteGateActive).toBe(false)
+    expect(display.gateActive).toBe(false)
     expect(display.regionTooLarge).toBe(false)
   })
 
@@ -185,7 +185,7 @@ describe('MAF gating below the force-load floor', () => {
     const { display } = createMafTestEnvironment().createDisplay({
       skipWidth: true,
     })
-    expect(display.byteGateActive).toBe(false)
+    expect(display.gateActive).toBe(false)
     expect(display.regionTooLarge).toBe(false)
   })
 })
@@ -317,7 +317,7 @@ describe('MAF measures the tier it is about to fetch', () => {
     view.zoomTo(100)
     // a real summary read at this zoom: no sequence, just per-species runs
     display.setByteEstimate({ bytes: 60_000, viewport: display.gateViewport! })
-    expect(display.byteGateActive).toBe(true)
+    expect(display.gateActive).toBe(true)
     expect(display.regionTooLarge).toBe(false)
   })
 })

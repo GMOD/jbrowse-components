@@ -985,7 +985,7 @@ export default function baseStateModelFactory(
           // floor a full `clearAllRpcData()` + refetch, blanking the display at
           // exactly the zoom people settle a gene at, for data identical on both
           // sides of it. The byte budget no longer moves at that span at all —
-          // `byteGateActive` has no floor term — but it swings on force-load, so
+          // `gateActive` has no floor term — but it swings on force-load, so
           // the same rule holds for the same reason. The slots they
           // resolve from — fetchSizeLimit/forceLoad/maxFeatureScreenDensity —
           // deliberately STAY in the snapshot, so a config change to either

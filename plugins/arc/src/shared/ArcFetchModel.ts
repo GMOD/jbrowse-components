@@ -15,10 +15,13 @@ import type { DisplayStatusPhase } from '@jbrowse/plugin-linear-genome-view'
  * rendering-agnostic `GlobalFetchMixin` (cancel-safe `runFetch`, region-too-large
  * gate, `reload`/`reloadCounter`, `svgReady`) and adds the arc-specific data
  * state (`features` + its region signature) plus a **derived** `regionTooLarge`
- * — the exact byte-only pattern LinearWiggle/LD/canvas use, so arc has no special
- * region-too-large handling: the banner is a pure function of the cached estimate
- * scaled to the current viewport and self-releases on zoom-in with no imperative
- * clear.
+ * — the exact byte-only pattern LD and multi-sample variant use, so arc has no
+ * special region-too-large handling: the banner is a pure function of the last
+ * measurement, and what keeps that measurement describing the viewport on screen
+ * is that a blocked display keeps running this fetch once per settled viewport,
+ * stopping at the pre-flight. No imperative clear, and no derived second byte
+ * number scaled by span — see RegionTooLargeMixin §"Measurement follows the
+ * viewport".
  *
  * #stateModel ArcFetchModel
  * #category display
@@ -57,7 +60,7 @@ export function ArcFetchModel() {
         /**
          * #getter
          */
-        get byteGateEnabled() {
+        get measuresBytesPreFlight() {
           return true
         },
       }))
