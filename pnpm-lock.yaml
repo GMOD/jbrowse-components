@@ -2133,6 +2133,9 @@ importers:
       '@jbrowse/react-app2':
         specifier: workspace:^
         version: link:../jbrowse-react-app
+      '@jbrowse/sv-core':
+        specifier: workspace:^
+        version: link:../../packages/sv-core
       '@types/jsdom':
         specifier: ^30.0.0
         version: 30.0.0

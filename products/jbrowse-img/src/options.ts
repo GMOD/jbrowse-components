@@ -462,9 +462,14 @@ export function getColorBy(rest: Record<string, unknown>) {
 // reported as unknown when batch is what is running.
 export const batchOptionDefs: OptionDef[] = [
   {
+    name: 'vcf',
+    description:
+      'VCF (plain or bgzipped) of junctions to render, one image per junction',
+  },
+  {
     name: 'bedpe',
     description:
-      'BEDPE of junctions to render, one image per row (batch subcommand)',
+      'BEDPE of junctions to render, one image per row; the format for anything a VCF cannot express (a LINX TSV reshaped by awk)',
   },
   {
     name: 'outDir',
@@ -492,7 +497,7 @@ export function buildBatchHelp(scriptName: string) {
   const defs = [...optionDefs, ...batchOptionDefs]
   const pad = Math.max(...defs.map(o => o.name.length))
   return [
-    `Usage: ${scriptName} batch --bedpe <file> [options]`,
+    `Usage: ${scriptName} batch --vcf <file> [options]`,
     '',
     'Renders one breakpoint split view per BEDPE row: both loci stacked, with',
     'the reads that leave one panel and arrive in the other drawn between them.',
@@ -505,19 +510,22 @@ export function buildBatchHelp(scriptName: string) {
     'Examples:',
     ...formatExamples(scriptName, [
       [
-        'batch --bedpe calls.bedpe --fasta ref.fa --bam tumor.bam --outDir figs --flank 1000',
+        'batch --vcf calls.vcf.gz --fasta ref.fa --bam tumor.bam --outDir figs --flank 1000',
         'A contact sheet of every junction in a callset',
       ],
       [
-        'batch --bedpe calls.bedpe --hub hg38 --bam tumor.bam --limit 20',
+        'batch --vcf calls.vcf.gz --hub hg38 --bam tumor.bam --limit 20',
         'The first 20, to check the framing before committing to the whole run',
+      ],
+      [
+        'batch --bedpe linx_links.bedpe --hub hg38 --bam tumor.bam',
+        'The same from a BEDPE, for a caller whose output is not a VCF',
       ],
     ]),
     '',
-    'A VCF converts with the helper in this repo, which handles the breakend',
-    'grammar (inserted sequence, upper-cased mate contigs) and collapses the',
-    'reciprocal pairs that would otherwise queue each junction twice:',
-    '  python3 scripts/sv_multihop.py bedpe calls.vcf.gz --out junctions.bedpe',
+    'The ALT grammar is parsed by @gmod/vcf, so inserted sequence at the',
+    'junction and upper-cased mate contigs are handled; reciprocal breakend',
+    'pairs collapse, so each junction is queued once.',
   ].join('\n')
 }
 

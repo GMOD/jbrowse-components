@@ -1,0 +1,126 @@
+// Progress for a bulk render. A hundred junctions over a remote CRAM is minutes,
+// and the two things a person wants to know are "is it moving" and "how long".
+//
+// Two shapes on purpose, chosen by whether stderr is a terminal:
+//
+// - **a terminal** gets ONE line, rewritten in place. A hundred lines of
+//   `[57/100] wrote ...` is a wall that scrolls the run's actual output (the
+//   skipped-record warning, the failures) off the screen.
+// - **a pipe or a file** gets one line per record, because a log is read after
+//   the fact and a carriage-returned bar collapses to gibberish in it. This is
+//   also what CI captures.
+//
+// Failures print on their own line in both shapes, above the bar, so they
+// survive the rewriting.
+
+/** `2m10s`, `45s`, `1h04m`. Blank when there is nothing to estimate from yet. */
+export function formatDuration(ms: number) {
+  if (!Number.isFinite(ms) || ms < 0) {
+    return ''
+  }
+  const total = Math.round(ms / 1000)
+  const h = Math.floor(total / 3600)
+  const m = Math.floor((total % 3600) / 60)
+  const s = total % 60
+  if (h > 0) {
+    return `${h}h${String(m).padStart(2, '0')}m`
+  }
+  return m > 0 ? `${m}m${String(s).padStart(2, '0')}s` : `${s}s`
+}
+
+/**
+ * The one-line bar.
+ *
+ * The ETA is a flat mean of the records finished so far rather than a windowed
+ * rate, because the thing that actually varies here is per-record fetch size
+ * (a junction into a deep repeat pulls far more read data than one in a quiet
+ * arm) and a window over that swings wildly between neighbouring rows. A mean
+ * over the whole run is the honest estimate for a queue of unknown-cost items.
+ *
+ * No ETA until two records are done: one sample of a network-bound render says
+ * nothing, and a confidently wrong "eta 41m" on the first row is worse than
+ * nothing.
+ */
+export function progressLine({
+  done,
+  total,
+  failed,
+  elapsedMs,
+  width = 24,
+}: {
+  done: number
+  total: number
+  failed: number
+  elapsedMs: number
+  width?: number
+}) {
+  const frac = total === 0 ? 1 : done / total
+  const filled = Math.round(frac * width)
+  const bar = '#'.repeat(filled) + '-'.repeat(Math.max(0, width - filled))
+  const pct = String(Math.round(frac * 100)).padStart(3)
+  const counter = `${String(done).padStart(String(total).length)}/${total}`
+  const eta =
+    done >= 2 && done < total
+      ? ` eta ${formatDuration((elapsedMs / done) * (total - done))}`
+      : ''
+  const failures = failed > 0 ? ` ${failed} failed` : ''
+  return `[${bar}] ${pct}% ${counter}${eta}${failures}`
+}
+
+export interface ProgressReporter {
+  /** Called after each record, whether it rendered or failed. */
+  step: (label: string) => void
+  /** A failure, printed so it survives a rewritten bar. */
+  fail: (message: string) => void
+  /** Final line; leaves the terminal on a fresh row. */
+  finish: (summary: string) => void
+}
+
+export function createProgress({
+  total,
+  isTty,
+  write,
+  now = () => Date.now(),
+}: {
+  total: number
+  isTty: boolean
+  write: (s: string) => void
+  now?: () => number
+}): ProgressReporter {
+  const started = now()
+  let done = 0
+  let failed = 0
+  const redraw = () => {
+    if (isTty) {
+      // \r and a clear-to-end-of-line, so a shorter line does not leave the tail
+      // of the previous one behind
+      write(
+        `\r[2K${progressLine({
+          done,
+          total,
+          failed,
+          elapsedMs: now() - started,
+        })}`,
+      )
+    }
+  }
+  return {
+    step(label) {
+      done++
+      if (isTty) {
+        redraw()
+      } else {
+        write(`[${done}/${total}] ${label}\n`)
+      }
+    },
+    fail(message) {
+      failed++
+      // clear the bar first, or the failure lands on top of it
+      write(isTty ? `\r[2K${message}\n` : `${message}\n`)
+      redraw()
+    },
+    finish(summary) {
+      write(isTty ? `\r[2K${summary}\n` : `${summary}\n`)
+    },
+  }
+}

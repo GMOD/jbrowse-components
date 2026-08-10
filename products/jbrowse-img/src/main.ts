@@ -178,15 +178,10 @@ async function main() {
     }
 
     if (first === 'batch') {
-      const bedpe = getString(rest, 'bedpe')
-      if (!bedpe) {
-        throw new Error(
-          'batch needs --bedpe <file> (convert a VCF with `sv_multihop.py bedpe`, see the docs)',
-        )
-      }
       const { failures } = await runBatch({
         ...renderOpts,
-        bedpe,
+        bedpe: getString(rest, 'bedpe'),
+        vcf: getString(rest, 'vcf'),
         outDir: getString(rest, 'outDir') ?? 'jb2export-batch',
         flank: getNumber(rest, 'flank', 500),
         limit: getOptionalNumber(rest, 'limit'),
