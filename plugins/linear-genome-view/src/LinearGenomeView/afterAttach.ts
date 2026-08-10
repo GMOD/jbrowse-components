@@ -216,18 +216,22 @@ async function applyInit(
   }
   // the view may have been removed while the drawer or the navigation resolved;
   // reading or mutating it past that point (and setInit in the caller's finally)
-  // would throw on a detached node
-  if (isAlive(self)) {
-    await navigateInit(self, session, init)
-    if (isAlive(self)) {
-      showInitTracks(self, init)
-      if (init.nav !== undefined) {
-        self.setHideHeader(!init.nav)
-      }
-      backfillHighlightAssemblies(self)
-      applyInitHighlights(self, session, init)
-    }
+  // would throw on a detached node. Checked after each await rather than once at
+  // the top, and as early returns rather than nesting, so a step added later
+  // takes a guard beside it instead of another level of indent.
+  if (!isAlive(self)) {
+    return
   }
+  await navigateInit(self, session, init)
+  if (!isAlive(self)) {
+    return
+  }
+  showInitTracks(self, init)
+  if (init.nav !== undefined) {
+    self.setHideHeader(!init.nav)
+  }
+  backfillHighlightAssemblies(self)
+  applyInitHighlights(self, session, init)
 }
 
 /**

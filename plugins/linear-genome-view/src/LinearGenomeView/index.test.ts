@@ -19,7 +19,7 @@ import {
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { waitFor } from '@testing-library/react'
-import { autorun, when } from 'mobx'
+import { autorun } from 'mobx'
 
 import TrackHeightMixin from '../BaseLinearDisplay/models/TrackHeightMixin.tsx'
 import { getTrackOrderSubMenu } from './components/trackLabelMenuItems.ts'
@@ -2582,17 +2582,17 @@ describe('declarative init: highlight, nav, unknown keys', () => {
         init: { assembly: 'volvox', loc: 'ctgA:1-1000', tracklist: true },
       }),
     )
-    // stands in for the app's ResizeObserver: un-minimizing gives the drawer
-    // its column back, which is what shrinks the view. Reported on a macrotask
-    // like the real one — resizing synchronously inside activateTrackSelector
-    // would hand navigation the narrowed width whether or not it waited, and
-    // the test would pass against the bug.
-    void when(() => !session.minimized).then(() =>
-      setTimeout(() => {
-        model.setWidth(600)
-      }, 0),
-    )
     model.setWidth(800)
+
+    // stands in for the app's ResizeObserver: un-minimizing gives the drawer its
+    // column back, which is what shrinks the view. Driven from here, after
+    // yielding, rather than synchronously inside activateTrackSelector —
+    // resizing in the same tick would hand navigation the narrowed width whether
+    // or not it waited, and the test would pass against the bug.
+    await waitFor(() => {
+      expect(session.minimized).toBe(false)
+    })
+    model.setWidth(600)
 
     await waitFor(() => {
       expect(model.init).toBeUndefined()
