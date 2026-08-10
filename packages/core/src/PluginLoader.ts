@@ -116,10 +116,35 @@ function isInWebWorker() {
   return 'WorkerGlobalScope' in globalThis
 }
 
-function assertHttpProtocol(url: URL) {
+/**
+ * Resolve a plugin's url, refusing anything that isn't http(s).
+ *
+ * `base` is the JBrowse **instance's** own location, not the config that named
+ * the plugin — every product passes `window.location.href` (the embedded ones
+ * let their host override it, the RPC worker forwards the same value). That is
+ * deliberate rather than an oversight: a relative url means "a plugin shipped
+ * beside this index.html". A config that means "beside *me*" has the
+ * `umdLoc`/`esmLoc` forms instead, which carry their own `baseUri` — the one
+ * `addRelativeUris` stamps from the config's url when it is fetched.
+ *
+ * The rule only bites on Desktop, whose instance is a `file://` page, so a
+ * relative url resolves to a `file:` url that could never be fetched. Diagnose
+ * that in terms its author can act on: the raw scheme of a url they never wrote
+ * ("Cannot load plugins using protocol file:") named the symptom and nothing
+ * else, and the reader is usually looking at a third-party hub config.
+ */
+function resolvePluginUrl(spec: string, base?: string) {
+  const url = new URL(spec, base)
   if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-    throw new Error(`Cannot load plugins using protocol "${url.protocol}"`)
+    throw new Error(
+      // a spec with a scheme of its own resolved to exactly what it asked for,
+      // so there is nothing to explain beyond refusing it
+      /^[a-z][a-z0-9+.-]*:/i.test(spec)
+        ? `Cannot load plugins using protocol "${url.protocol}"`
+        : `Cannot load plugin from relative url "${spec}": it resolves against this JBrowse instance (${base}), not against the config that named it. Give it an absolute http(s) url, or use the umdLoc/esmLoc form to resolve it against the config.`,
+    )
   }
+  return url
 }
 
 function addCacheBuster(url: string) {
@@ -150,8 +175,7 @@ export default class PluginLoader {
   }
 
   async loadCJSPlugin(def: CJSPluginDefinition, baseUri?: string) {
-    const parsedUrl = new URL(def.cjsUrl, baseUri)
-    assertHttpProtocol(parsedUrl)
+    const parsedUrl = resolvePluginUrl(def.cjsUrl, baseUri)
     if (!this.fetchCJS) {
       throw new Error('No fetchCJS callback provided')
     }
@@ -161,9 +185,8 @@ export default class PluginLoader {
   async loadESMPlugin(def: ESMPluginDefinition, baseUri?: string) {
     const parsedUrl =
       'esmUrl' in def
-        ? new URL(def.esmUrl, baseUri)
-        : new URL(def.esmLoc.uri, def.esmLoc.baseUri)
-    assertHttpProtocol(parsedUrl)
+        ? resolvePluginUrl(def.esmUrl, baseUri)
+        : resolvePluginUrl(def.esmLoc.uri, def.esmLoc.baseUri)
     if (!this.fetchESM) {
       throw new Error('No ESM fetcher installed')
     }
@@ -181,12 +204,11 @@ export default class PluginLoader {
   ) {
     const parsedUrl =
       'url' in def
-        ? new URL(def.url, baseUri)
+        ? resolvePluginUrl(def.url, baseUri)
         : 'umdUrl' in def
-          ? new URL(def.umdUrl, baseUri)
-          : new URL(def.umdLoc.uri, def.umdLoc.baseUri)
+          ? resolvePluginUrl(def.umdUrl, baseUri)
+          : resolvePluginUrl(def.umdLoc.uri, def.umdLoc.baseUri)
 
-    assertHttpProtocol(parsedUrl)
     const moduleName = def.name
     const umdName = `JBrowsePlugin${moduleName}`
     // a cache buster query string would change the bytes the browser hashes for

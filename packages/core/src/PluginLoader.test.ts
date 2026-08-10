@@ -118,6 +118,73 @@ test('load rethrows the first failure by definition order', async () => {
   await expect(loader.load()).rejects.toThrow(/first failed/)
 })
 
+// A plugin url resolves against the JBrowse instance, never against the config
+// that named it — so a config saying `url: 'plugin.js'` means something
+// different on every host that reads it, and on Desktop means nothing at all.
+// Both halves of that are worth pinning, because the rule is invisible from the
+// config side and the two failures read very differently.
+describe('a relative plugin url', () => {
+  const relative = { name: 'Hub', url: 'plugin.js' }
+
+  test('resolves against the instance, not the config that named it', async () => {
+    const loaded: string[] = []
+    await new PluginLoader([{ esmUrl: 'plugin.esm.js' }], {
+      fetchESM: url => {
+        loaded.push(url)
+        return Promise.resolve({ default: class P {} as never })
+      },
+    }).load('https://jbrowse.org/code/jb2/main/')
+
+    expect(loaded[0]).toBe('https://jbrowse.org/code/jb2/main/plugin.esm.js')
+  })
+
+  test('explains itself when the instance is a file:// page (desktop)', async () => {
+    const { failures } = await new PluginLoader([relative]).loadSettled(
+      'file:///opt/JBrowse/resources/app/index.html',
+    )
+
+    // the old message named only the scheme of a url the config author never
+    // wrote, which on a third-party hub config is undiagnosable
+    expect(`${failures[0]!.error}`).toMatch(
+      /relative url "plugin\.js".*resolves against this JBrowse instance.*umdLoc\/esmLoc/s,
+    )
+  })
+
+  test('is not what a bad scheme reports', async () => {
+    const { failures } = await new PluginLoader([
+      { name: 'Odd', url: 'ftp://example.com/plugin.js' },
+    ]).loadSettled('https://jbrowse.org/')
+
+    expect(`${failures[0]!.error}`).toMatch(/protocol "ftp:"/)
+  })
+
+  // the config-relative channel, and the only form that survives being read by a
+  // host somewhere else: addRelativeUris stamps this baseUri from the config url,
+  // so it ignores the instance entirely — including a file:// one
+  test('the esmLoc form resolves against the config instead', async () => {
+    const loaded: string[] = []
+    await new PluginLoader(
+      [
+        {
+          name: 'Hub',
+          esmLoc: {
+            uri: 'plugin.js',
+            baseUri: 'https://hub.example.org/cfg/config.json',
+          },
+        },
+      ],
+      {
+        fetchESM: url => {
+          loaded.push(url)
+          return Promise.resolve({ default: class P {} as never })
+        },
+      },
+    ).load('file:///opt/JBrowse/resources/app/index.html')
+
+    expect(loaded[0]).toBe('https://hub.example.org/cfg/plugin.js')
+  })
+})
+
 describe('pluginUrl', () => {
   it('extracts url from legacy UMD plugin', () => {
     expect(
