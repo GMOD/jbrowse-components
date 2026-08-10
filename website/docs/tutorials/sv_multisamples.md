@@ -123,7 +123,7 @@ solid mass and the coverage curve is the whole point here. Then set an explicit
 **min/max score** on each rather than leaving the default autoscale, which fits
 each row to its own maximum and draws three different depths at the same height.
 
-<Figure caption="The RHD deletion across three genotypes, coverage pinned to one 0-70 axis, the banded span RHD itself. Top, HG00113 with no copy: coverage at the flanking depth either side, collapsing across the gene. Middle, HG00096 with one: about half that depth. Bottom, HG00097 with two: flat throughout. Under each curve, that sample's in-window mate-pair arcs." src="/img/multisv_rhd_dosage.png" />
+<Figure caption="The RHD deletion across three genotypes, coverage pinned to one 0-70 axis, the banded span RHD itself. Top, HG00113 with no copy: coverage at the flanking depth either side, collapsing across the gene. Middle, HG00096 with one: about half that depth. Bottom, HG00097 with two: flat throughout." src="/img/multisv_rhd_dosage.png" />
 
 That is the whole dosage series in one frame, and it needs no interpretation:
 the gene is there twice, once, or not at all, and the coverage says which.

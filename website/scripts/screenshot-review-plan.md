@@ -413,6 +413,24 @@ tolerance ball for "did this figure move".
   `minAlignmentLength`. Same for `LinearSyntenyView` (`autoDiagonalize`,
   `colorBy`, `alpha`, `levelHeights`).
 - **Arcs below coverage** = `readConnectionsDown: true` (the modern default).
+- **A read-pair arc band is a claim, and some deletions cannot support it.**
+  `multisv_rhd_dosage` spent three review rounds on one, and the answer was to
+  delete the band: `scripts/count_rhd_mate_pairs.py` counts **one** pair
+  spanning the RHD deletion in the homozygous carrier against 36 and 56 RHD↔RHCE
+  paralog pairs in the two non-carriers. A deletion whose breakpoints sit inside
+  a long identical repeat — RHD's are the ~9 kb Rhesus boxes — has no
+  mate-distance signal at all, because a fragment crossing the junction lands
+  inside the hybrid repeat and aligns collinearly. Check the count before
+  designing a figure around discordant pairs; over a segmental duplication the
+  band will fill with paralog mismappings instead and read as noise, busiest in
+  the control. The two settings that narrow such a band, and are worth knowing
+  even though no spec now sets them: `drawInter: false` (an interchromosomal
+  pair is never an arc — it drops a tick at each endpoint, `compute.ts`
+  `if (p1Ref !== p2Ref)`, so a segdup at 30x draws a picket fence) and
+  `drawLongRange: false` (otherwise a mate's RECORDED position outside the
+  window still gets an arc). Neither `drawProperPairs` nor a jexl insert-size
+  filter is available as a third: both run before the COVERAGE pipeline, so they
+  take the curve with them.
 - **The nested-bubble trap** (pggb/Minigraph-Cactus variant tracks): both emit
   top-level bubble records thousands of bp wide alongside the decomposed SNPs,
   one alt allele per sample. A single such record paints kilobases of flat solid

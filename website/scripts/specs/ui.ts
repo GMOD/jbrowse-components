@@ -739,61 +739,72 @@ export const uiSpecs: ScreenshotSpec[] = [
               type: 'LinearAlignmentsDisplay',
               forceLoad: true,
               showPileup: false,
-              // The mate-pair band under each coverage curve: the second,
-              // independent reading of the same event. The coverage says how
-              // much sequence is there, the mates say what distance they think
-              // they are apart, so a deletion shows as a hole AND as pairs whose
-              // insert spans that hole. `showPileup: false` still holds -- a 30x
-              // pileup at this width is a solid mass -- so these two bands are
-              // the whole track.
+              // NO MATE-PAIR BAND, and this is a claim about the biology rather
+              // than about settings -- three rounds of review went into it, so
+              // don't put the arcs back. See `scripts/count_rhd_mate_pairs.py`,
+              // which prints the numbers below straight off the three CRAMs.
               //
-              // ON-SCREEN PAIRS ONLY, and this is the whole of the review's
-              // objection -- "an unexpectedly large number of 'vertical line'
-              // connections in the arc field, and ... unexpectedly placed arcs,
-              // i expected them over the deletion region but they are not". Both
-              // were settings rather than properties of 30x data, and the
-              // vertical lines were not arcs at all:
+              // The band was here as "the second, independent reading of the
+              // same event": coverage says how much sequence is there, the mates
+              // say what distance they think they are apart, so a deletion ought
+              // to show as a hole AND as pairs whose insert spans that hole. The
+              // reviewer twice reported the arcs were not over the deletion.
+              // They were right, and no setting fixes it. Counting every
+              // in-window pair (both ends in frame, mate on chr1, >=1 kb apart
+              // -- exactly what `drawInter: false` + `drawLongRange: false`
+              // leave drawable):
               //
-              // - An INTERCHROMOSOMAL pair is never drawn as an arc. It drops a
-              //   tick at each endpoint in one dedicated colour, because insert
-              //   size and pair orientation mean nothing across refNames
-              //   (compute.ts, `if (p1Ref !== p2Ref)`). A 270 kb window of
-              //   segmental duplication at 30x holds thousands of reads whose
-              //   mate is called on another chromosome, so the band filled with
-              //   ticks -- the picket fence, drawn correctly and saying only
-              //   "these mates are elsewhere". `drawInter: false` removes it.
-              // - `drawLongRange` also draws a read whose RNEXT/PNEXT names a
-              //   locus OUTSIDE the window (`offScreenMateArcs`), at that
-              //   recorded position. Those were the widest curves in every lane,
-              //   they ran to places the frame does not show, and the control
-              //   sample had as many as the carrier -- which is exactly "not
-              //   over the deletion".
+              //   sample           spans RHD   RHD<->RHCE   other
+              //   HG00113  1/1             1            1       0
+              //   HG00096  0/1             0           36       0
+              //   HG00097  0/0             1           56       1
               //
-              // With both off, what is left is pairs with both ends in frame, so
-              // the arcs that remain are the ones the deletion produces.
+              // ONE pair spans the deletion in the homozygous carrier. THE RHD
+              // DELETION HAS NO READ-PAIR SIGNAL, because it is NAHR between the
+              // ~9 kb Rhesus boxes that flank RHD: a fragment crossing the
+              // junction lands wholly inside the hybrid box, which the reference
+              // also carries, so it aligns collinearly at ordinary insert size.
+              // A deletion whose breakpoints sit inside a long identical repeat
+              // is invisible to mate distance by construction.
               //
-              // `drawProperPairs: false` is a third filter and is deliberately
-              // NOT set: it drops whole read-name chains in
-              // `filterChainFeatures`, which runs before the COVERAGE pipeline
-              // and not merely before layout, so on an ordinary sample it takes
-              // ~all the reads and the three coverage curves this figure exists
-              // to compare go with them. It is also unnecessary now -- a
-              // concordant ~500 bp pair draws as a 3 px dome against the band's
-              // floor, not as a tick.
+              // What the band actually drew is the RHD/RHCE paralogy. Those 36
+              // and 56 pairs are not scattered: they stack on two offsets,
+              // 25,283,7xx->25,409,9xx and 25,287,1xx->25,405,4xx, repeated
+              // dozens of times -- reads mismapping between a 97% identical
+              // inverted gene pair. So the band was busiest in the 0/0 control
+              // and nearly empty in the 1/1 carrier, which is a true statement
+              // about paralogy and the exact opposite of the figure's own claim.
+              // The coverage curve is the whole reading, and it is a clean one.
               //
-              // Read cloud was tried here and is worse, so don't re-try it: its
-              // y axis is `arcsYDomainBp`, a per-TRACK maximum, so three
-              // separate CRAM tracks got three different insert-size scales
-              // (149 kb / 19 Mb / 8.4 Mb in the capture) and the one thing the
-              // figure exists to do -- compare the three samples -- is the one
-              // thing that band cannot do. It shares a domain across GROUPS of
-              // one track, not across tracks.
-              readConnections: 'arc',
-              drawInter: false,
-              drawLongRange: false,
-              readConnectionsHeight: 110,
-              height: 260,
-              coverageHeight: 140,
+              // Two earlier rounds narrowed the band before this one removed it,
+              // and both mechanisms are durable enough to be worth keeping (they
+              // are also written up in screenshot-review-plan.md, since no spec
+              // demonstrates them any more). An INTERCHROMOSOMAL pair is never
+              // drawn as an arc -- it drops a tick at each endpoint, because
+              // insert size and orientation mean nothing across refNames
+              // (compute.ts, `if (p1Ref !== p2Ref)`) -- so 270 kb of segmental
+              // duplication at 30x filled the band with a picket fence of them,
+              // and `drawInter: false` is what removes it. And `drawLongRange`
+              // draws an arc to a mate's RECORDED position outside the window
+              // (`offScreenMateArcs`), which put the widest curves off-frame.
+              // Turning both off is what left the two arcs counted above, i.e.
+              // what made it possible to see there was nothing there.
+              //
+              // `drawProperPairs: false` was never the answer: it drops whole
+              // read-name chains in `filterChainFeatures`, which runs before the
+              // COVERAGE pipeline and not merely before layout, so it would take
+              // ~all the reads and the three curves with them. Nor is a jexl
+              // insert-size filter, for the same reason -- the coverage is
+              // downstream of it. Read cloud is worse again: its y axis is
+              // `arcsYDomainBp`, a per-TRACK maximum, so three CRAM tracks got
+              // three different insert-size scales (149 kb / 19 Mb / 8.4 Mb) and
+              // comparing the three samples is the one thing this figure does.
+              readConnections: 'off',
+              // 140 -> 190 with the 110px arc band's space: the curve IS the
+              // figure, so the height the band was spending goes to the thing
+              // being compared rather than off the bottom of the frame.
+              height: 200,
+              coverageHeight: 190,
               minScore: 0,
               maxScore: 70,
             })),
@@ -802,12 +813,12 @@ export const uiSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'HG00097.final',
-    // 2.7x the span at 30x across three CRAMs, and the mate band needs every
-    // mate rather than just the coverage summary
+    // 2.7x the span at 30x across three CRAMs. `showPileup: false` summarises
+    // rather than draws, but the reads themselves are still fetched.
     readyTimeout: 600000,
-    // three 260px tracks over the grown gene lane; the run's own
+    // three 200px tracks over the grown gene lane; the run's own
     // clipped/blank-below report is what corrects this
-    viewportHeight: 1180,
+    viewportHeight: 1000,
     settleMs: 90000,
   },
 
