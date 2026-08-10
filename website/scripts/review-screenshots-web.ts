@@ -42,10 +42,15 @@ if (values.help) {
 Usage: pnpm review-screenshots-web [--port=3335]
 
 Each figure is shown against the same figure on origin/main, with where the
-docs use it, and approve/deny/note controls. The two images sit side by side,
-or stacked under an onion-skin slider that fades between them — per card, or
-for every card from the Compare control. Verdicts are written to
-${path.relative(process.cwd(), reportPath)}.
+docs use it, and approve/deny/note controls. Four ways to look at the pair,
+per card or for every card from the Compare control:
+
+  side    the two images in two columns
+  onion   stacked, with a slider that fades between them (and a blink toggle)
+  swipe   stacked, with a divider you drag across the picture
+  diff    pixel difference — black wherever the two agree (with an amplifier)
+
+Verdicts are written to ${path.relative(process.cwd(), reportPath)}.
 `)
   process.exit(0)
 }
@@ -473,38 +478,97 @@ const PAGE = /* html */ `<!doctype html>
   .imgwrap { background: #222; display: flex; align-items: center; justify-content: center; min-height: 180px; flex: 1; }
   .imgwrap img { max-width: 100%; max-height: 400px; display: block; cursor: zoom-in; }
   .imgcol + .imgcol { border-left: 2px solid ButtonBorder; }
-  /* Onion overlay: the same two images stacked, with a slider crossfading
-     between them. Side by side answers "what changed" only for a change big
-     enough to find twice; a figure whose row packing moved by a few pixels, or
-     whose one bar recoloured, reads as identical in two columns 700px apart.
-     Stacked, the eye is looking at one picture and the difference is the thing
-     that moves. */
-  .onionbar {
+  /* Stacked comparison: the same two images one on top of the other, with a
+     control that decides how much of each you see. Side by side answers "what
+     changed" only for a change big enough to find twice; a figure whose row
+     packing moved by a few pixels, or whose one bar recoloured, reads as
+     identical in two columns 700px apart. Stacked, the eye is looking at one
+     picture and the difference is the thing that moves.
+     Three ways of doing that, sharing one stage: fade (onion), a draggable
+     divider (swipe), and difference blending (diff). */
+  .cmpbar {
     display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
     padding: 4px 10px; background: Canvas; border-bottom: 1px solid ButtonBorder;
     font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: GrayText;
   }
-  .onionbar input[type=range] { flex: 1; min-width: 160px; max-width: 460px; accent-color: #2563eb; cursor: ew-resize; }
+  .cmpbar input[type=range] { flex: 1; min-width: 140px; max-width: 420px; accent-color: #2563eb; cursor: ew-resize; }
   /* the readout does not reflow the bar as it is dragged */
-  .onionpct { font-variant-numeric: tabular-nums; min-width: 3.2em; text-align: right; }
+  .cmppct { font-variant-numeric: tabular-nums; min-width: 3.2em; text-align: right; }
   /* A resize is the one change a pixel diff cannot see (pngDiffFraction returns
      null on a size mismatch), and it is also the one the overlay itself is
      worst at showing — everything below the change looks shifted. Say it. */
-  .onionsize { text-transform: none; letter-spacing: 0; font-weight: 500; color: #b45309; }
-  .onionsize:empty { display: none; }
+  .cmpnote { text-transform: none; letter-spacing: 0; font-weight: 500; color: #b45309; }
+  .cmpnote:empty { display: none; }
+  .cmphint, .cmplink { text-transform: none; letter-spacing: 0; font-weight: 500; }
+  .cmplink { color: LinkText; }
   .cmpbtn {
     padding: 1px 9px; border-radius: 999px; border: 1px solid ButtonBorder;
     background: ButtonFace; color: ButtonText; cursor: pointer;
     font: inherit; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;
   }
-  .onionwrap { background: #222; display: flex; justify-content: center; min-height: 180px; }
+  .cmpbtn.on { background: #2563eb; border-color: #2563eb; color: #fff; }
+  /* the four ways of looking are one segmented control, not four loose buttons:
+     they are alternatives, and only one is ever on */
+  .cmpmodes { display: flex; }
+  .cmpmodes .cmpbtn { border-radius: 0; }
+  .cmpmodes .cmpbtn + .cmpbtn { border-left: 0; }
+  .cmpmodes .cmpbtn:first-child { border-radius: 999px 0 0 999px; padding-left: 11px; }
+  .cmpmodes .cmpbtn:last-child { border-radius: 0 999px 999px 0; padding-right: 11px; }
+  .cmpwrap { background: #222; display: flex; justify-content: center; min-height: 180px; }
   /* Both images at ONE scale and aligned at their top-left corner, sized by
-     fitOnionStage off their natural dimensions — never each to its own
+     fitCompareStage off their natural dimensions — never each to its own
      max-width, which would rescale a resized figure into agreement and draw the
-     one difference nothing else can see as no difference at all. */
-  .onionstage { position: relative; }
-  .onionstage img { position: absolute; top: 0; left: 0; display: block; }
-  .oniontop { opacity: var(--onion, 0.5); }
+     one difference nothing else can see as no difference at all.
+     \`isolation\` keeps difference blending inside the stage: without it the
+     exposed strip beside a resized figure blends against the #222 wrap, which
+     draws a grey band where the honest answer is "nothing here". */
+  .cmpstage { position: relative; isolation: isolate; user-select: none; }
+  .cmpstage img { position: absolute; top: 0; left: 0; display: block; -webkit-user-drag: none; }
+  /* so a pointerdown anywhere on the stage is a drag of the divider rather than
+     the browser's own image drag, and \`e.target\` is always the stage */
+  .cmpstage img, .cmpside, .cmphandle { pointer-events: none; }
+  .cmpstage.onion .cmptop { opacity: var(--fade, 0.5); }
+  /* clipped from the LEFT, so origin/main is what the left of the divider shows
+     and the current branch the right — which is what the two corner labels say,
+     and the only arrangement in which they stay true at every position */
+  .cmpstage.swipe { cursor: ew-resize; touch-action: none; }
+  .cmpstage.swipe .cmptop { clip-path: inset(0 0 0 var(--wipe, 50%)); }
+  .cmphandle {
+    position: absolute; top: 0; bottom: 0; left: var(--wipe, 50%);
+    width: 2px; margin-left: -1px; background: #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.55);
+  }
+  .cmphandle::after {
+    content: '⇔'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    width: 26px; height: 26px; border-radius: 999px; background: #fff; color: #111;
+    font-size: 13px; line-height: 26px; text-align: center; box-shadow: 0 0 0 1px rgba(0,0,0,.55);
+  }
+  /* Each label is capped at the width of the side it names, so a divider taken
+     to an edge takes its label with it. Left at 6px, a label kept naming a
+     region that was no longer on screen — "origin/main" over a stage showing
+     nothing but the current branch, which is the one thing these labels exist
+     to prevent getting backwards. */
+  .cmpside { position: absolute; top: 6px; overflow: hidden; border-radius: 999px; }
+  /* the pill's padding is on the inner span, so a label clipped to nothing is
+     nothing — on the outer element, box-sizing floors the CONTENT box at 0 and
+     leaves 14px of padded background as a lozenge stuck in the corner */
+  .cmpside span {
+    display: block; padding: 1px 7px; white-space: nowrap;
+    background: rgba(0,0,0,.6); color: #fff;
+    font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .cmpside.left { left: 6px; max-width: calc(var(--wipe, 50%) - 6px); }
+  .cmpside.right { right: 6px; max-width: calc(100% - var(--wipe, 50%) - 6px); }
+  /* Difference: black wherever the two agree, so the only lit pixels are the
+     change. It is the one mode that answers "did ANYTHING move" without the eye
+     having to find it — and the one that needs amplifying, since a one-shade
+     recolour differences to a value indistinguishable from black. */
+  .cmpstage.diff { background: #000; }
+  .cmpstage.diff .cmptop { mix-blend-mode: difference; }
+  .cmpstage.diff.amp { filter: brightness(8); }
+  /* Blink comparator: hard cuts, not a crossfade — a fade is a change
+     everywhere, which is the one thing that hides a change somewhere. */
+  .cmpstage.onion.blink .cmptop { animation: cmpblink 1.4s infinite; }
+  @keyframes cmpblink { 0%, 49.9% { opacity: 1 } 50%, 100% { opacity: 0 } }
   .missing { color: #f88; padding: 30px; font-size: 14px; }
   .meta { padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; border-top: 1px solid ButtonBorder; }
   .meta h2 { font-size: 14px; margin: 0; font-family: ui-monospace, monospace; word-break: break-all; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
@@ -563,7 +627,9 @@ const PAGE = /* html */ `<!doctype html>
   <label class="ctrl"><span>Compare</span>
     <select id="compare" title="How each card shows the current image against origin/main">
       <option value="side">Side by side</option>
-      <option value="onion">Onion overlay</option>
+      <option value="onion">Onion fade</option>
+      <option value="swipe">Swipe divider</option>
+      <option value="diff">Difference</option>
     </select>
   </label>
   <label class="ctrl"><span>Sort</span>
@@ -590,24 +656,38 @@ ${CLIENT}
 
 const filters = { status: 'needs', changedOnly: false, runOnly: false, sortBy: 'default', group: '', kind: 'all', compare: 'side' }
 
-// Which cards are showing the onion overlay, and where each one's slider sits.
-// Held out here rather than on \`data\` for the same reason note drafts are: a
-// verdict click re-renders the card from \`data\`, and a comparison the reviewer
-// has set up should survive that. Not persisted beyond the tab — the header's
-// Compare control is the part worth restoring, and it rides in the URL with the
-// rest of the view state.
+// How each card is showing its two pictures, and where its slider sits. Held
+// out here rather than on \`data\` for the same reason note drafts are: a verdict
+// click re-renders the card from \`data\`, and a comparison the reviewer has set
+// up should survive that. Not persisted beyond the tab — the header's Compare
+// control is the part worth restoring, and it rides in the URL with the rest of
+// the view state.
 //
-// The header sets the default and a card's own button overrides it, so changing
+// The header sets the default and a card's own control overrides it, so changing
 // the default drops the overrides: otherwise switching everything to onion would
-// silently leave behind whichever cards had been toggled off individually.
-const onionOverrides = new Map()
-const onionValues = new Map()
+// silently leave behind whichever cards had been switched individually.
+const compareOverrides = new Map()
+const compareValues = new Map()
+// Amplify (diff) and blink (onion) are momentary aids rather than ways of
+// looking — you turn one on for the four seconds it takes to answer a question
+// — so neither is a mode, and neither goes in the URL.
+const amplified = new Set()
+const blinking = new Set()
 // half and half, the position at which both pictures are equally present and
 // neither is the one being checked against the other
-const ONION_DEFAULT = 50
-const onionOn = name =>
-  onionOverrides.has(name) ? onionOverrides.get(name) : filters.compare === 'onion'
-const onionValue = name => onionValues.get(name) ?? ONION_DEFAULT
+const COMPARE_DEFAULT = 50
+const compareMode = name => compareOverrides.get(name) ?? filters.compare
+const compareValue = name => compareValues.get(name) ?? COMPARE_DEFAULT
+
+// Least to most processed: two columns, the same two stacked, then only what
+// differs between them. \`side\` first because it is the one that shows each
+// picture as itself, which is what most cards want.
+const COMPARE_MODES = [
+  ['side', '◫ side', 'The two images in two columns'],
+  ['onion', '◐ onion', 'Stacked, with a slider that fades between them'],
+  ['swipe', '⇔ swipe', 'Stacked, with a divider you drag across the picture'],
+  ['diff', '◆ diff', 'Pixel difference — black wherever the two agree'],
+]
 
 // A spec the last run could not render, rendered differently twice, or only
 // kept because its own diffThreshold was raised. All three mean the image on
@@ -644,7 +724,7 @@ function writeUrl() {
 const STATUSES = ['needs', 'good', 'answered', 'bad', 'all']
 const KINDS = ['all', 'manual', 'auto']
 const SORTS = ['default', 'recent']
-const COMPARES = ['side', 'onion']
+const COMPARES = COMPARE_MODES.map(m => m[0])
 
 function readUrl() {
   const params = new URLSearchParams(location.search)
@@ -876,7 +956,7 @@ function runPills(spec) {
   if (!r) {
     return spec.notCovered ? ' ' + pill('notcovered', 'not in the last run') : ''
   }
-  var out = ''
+  let out = ''
   if (r.skipped) out += ' ' + pill('notcovered', 'skipped — ' + esc(r.skipped))
   if (r.failed) out += ' ' + pill('failed', '✗ failed to render')
   if (r.flaky !== undefined)
@@ -914,7 +994,7 @@ function renderParts(spec) {
 
 function imgCol(label, inner) {
   return '<div class="imgcol">' +
-    '<div class="imglabel">' + label + '</div>' +
+    '<div class="imglabel"><span>' + label + '</span></div>' +
     '<div class="imgwrap">' + inner + '</div>' +
   '</div>'
 }
@@ -947,76 +1027,190 @@ function mainImg(spec) {
     : '<div class="missing" style="color:#aaa">not on origin/main</div>'
 }
 
-const cmpButton = (label, title) =>
-  '<button class="cmpbtn" onclick="toggleOnion(this)" title="' + esc(title) + '">' + label + '</button>'
-
 // The two pictures, however this card is set to show them.
 //
-// Onion is only offered where there are two to fade between: a figure added on
-// this branch has no baseline, and one that is not on disk has nothing to draw.
-// The side-by-side column already says which of those it is.
+// A stacked comparison is only offered where there are two pictures to stack: a
+// figure added on this branch has no baseline, and one that is not on disk has
+// nothing to draw. The side-by-side column already says which of those it is,
+// so those cards get no bar and no choice.
 function renderCompare(spec) {
-  const canOnion = spec.exists && !!spec.mainUrl
-  if (canOnion && onionOn(spec.name)) {
-    return renderOnion(spec)
+  const canCompare = spec.exists && !!spec.mainUrl
+  const mode = canCompare ? compareMode(spec.name) : 'side'
+  return (canCompare ? compareBar(spec, mode) : '') +
+    (mode === 'side'
+      ? '<div class="card-images">' +
+          imgCol('current branch', currentImg(spec)) +
+          imgCol('origin/main', mainImg(spec)) +
+        '</div>'
+      : renderStage(spec, mode))
+}
+
+// One bar per card, in every mode, so the way you are looking at a pair is
+// always switchable from the same place. It used to be a lone '⧉ onion' button
+// tucked into the current-branch column header, which said nothing about there
+// being anything else to switch to and nothing about what was on.
+function compareBar(spec, mode) {
+  return '<div class="cmpbar">' +
+    '<span class="cmpmodes">' +
+      COMPARE_MODES.map(m => cmpBtn(m[0] === mode, m[1], m[2], 'setCardMode(this,\\'' + m[0] + '\\')')).join('') +
+    '</span>' +
+    cmpControls(spec, mode) +
+    '<span class="cmpnote"></span>' +
+  '</div>'
+}
+
+const cmpBtn = (on, label, title, call) =>
+  '<button class="cmpbtn' + (on ? ' on' : '') + '" title="' + esc(title) + '" ' +
+    'onclick="' + call + '">' + label + '</button>'
+
+// Whatever the mode being shown needs steering with, plus the way back to the
+// full-size pictures — the stage modes lose the click-to-open each side-by-side
+// column has, and full size is the fallback for an overlay that says "something
+// moved here" without saying what.
+function cmpControls(spec, mode) {
+  if (mode === 'side') {
+    return ''
   }
-  return '<div class="card-images">' +
-    imgCol(
-      '<span>current branch</span>' +
-        (canOnion ? cmpButton('⧉ onion', 'Stack the two images and fade between them') : ''),
-      currentImg(spec),
-    ) +
-    imgCol('<span>origin/main</span>', mainImg(spec)) +
+  const v = compareValue(spec.name)
+  const slider = label =>
+    '<input class="cmpslider" type="range" min="0" max="100" step="1" value="' + v + '" ' +
+      'aria-label="' + esc(label) + '" oninput="setCompare(this)" />' +
+    '<span class="cmppct">' + v + '%</span>'
+  const body =
+    mode === 'onion'
+      // The ends are labelled with the two things being faded between rather
+      // than with a number, because 0% and 100% do not say which picture is
+      // which — and getting that backwards turns "the new one lost a track"
+      // into "the new one gained a track".
+      ? '<span>origin/main</span>' +
+        slider('Fade between origin/main and the current branch') +
+        '<span>current branch</span>' +
+        cmpBtn(blinking.has(spec.name), '⚡ blink', 'Cut between the two twice a second — whatever moves is the change', 'toggleCmp(this,\\'blink\\')')
+      : mode === 'swipe'
+        // No end labels on this one: the divider answers which is which
+        // spatially, the stage says so in its corners, and a second answer on
+        // the slider would contradict them everywhere except the ends.
+        ? '<span>divider</span>' +
+          slider('Move the divider between origin/main and the current branch')
+        : '<span class="cmphint">black = identical</span>' +
+          cmpBtn(amplified.has(spec.name), '⊕ amplify', 'Multiply the difference 8× — a one-shade recolour is otherwise indistinguishable from black', 'toggleCmp(this,\\'amp\\')')
+  return body +
+    '<span class="cmplink">open ' +
+      '<a href="' + currentSrc(spec) + '" target="_blank" rel="noopener">current ↗</a> · ' +
+      '<a href="' + esc(spec.mainUrl) + '" target="_blank" rel="noopener">main ↗</a>' +
+    '</span>'
+}
+
+// One stage for all three stacked modes. They differ only in what the CSS does
+// with \`.cmptop\` — fade it, clip it, or blend it — so the markup, the sizing
+// and the size-mismatch warning are written once.
+function renderStage(spec, mode) {
+  const v = compareValue(spec.name)
+  const on = [
+    mode,
+    mode === 'diff' && amplified.has(spec.name) ? 'amp' : '',
+    mode === 'onion' && blinking.has(spec.name) ? 'blink' : '',
+  ].filter(Boolean).join(' ')
+  return '<div class="cmpwrap">' +
+    '<div class="cmpstage ' + on + '" style="--fade:' + v / 100 + ';--wipe:' + v + '%">' +
+      '<img class="cmpbase" src="' + esc(spec.mainUrl) + '" loading="lazy" draggable="false" ' +
+        'onload="fitCompare(this)" onerror="baselineFailed(this)" />' +
+      '<img class="cmptop" src="' + currentSrc(spec) + '" draggable="false" onload="fitCompare(this)" />' +
+      (mode === 'swipe'
+        ? '<div class="cmpside left"><span>origin/main</span></div>' +
+          '<div class="cmpside right"><span>current branch</span></div>' +
+          '<div class="cmphandle"></div>'
+        : '') +
+    '</div>' +
   '</div>'
 }
 
-// The slider's ends are labelled with the two things being faded between rather
-// than with a number, because 0% and 100% do not say which picture is which —
-// and getting that backwards turns "the new one lost a track" into "the new one
-// gained a track". The percentage is only there to say where the drag is.
-function renderOnion(spec) {
-  const v = onionValue(spec.name)
-  return '<div class="onion">' +
-    '<div class="onionbar">' +
-      cmpButton('◫ side by side', 'Back to the two images side by side') +
-      '<span>origin/main</span>' +
-      '<input class="onionslider" type="range" min="0" max="100" step="1" value="' + v + '" ' +
-        'aria-label="Fade between origin/main and the current branch" ' +
-        'oninput="setOnion(this)" />' +
-      '<span>current branch</span>' +
-      '<span class="onionpct">' + v + '%</span>' +
-      '<span class="onionsize"></span>' +
-    '</div>' +
-    '<div class="onionwrap">' +
-      '<div class="onionstage" style="--onion:' + v / 100 + '">' +
-        '<img class="onionbase" src="' + esc(spec.mainUrl) + '" loading="lazy" ' +
-          'onload="fitOnion(this)" onerror="onionBaseFailed(this)" />' +
-        '<img class="oniontop" src="' + currentSrc(spec) + '" onload="fitOnion(this)" />' +
-      '</div>' +
-    '</div>' +
-  '</div>'
-}
-
-function toggleOnion(btn) {
+function setCardMode(btn, mode) {
   const name = cardEl(btn).dataset.name
-  onionOverrides.set(name, !onionOn(name))
+  compareOverrides.set(name, mode)
   updateCard(name)
 }
 
-// Dragging the slider moves one opacity and nothing else. Deliberately no
-// re-render: rebuilding the card mid-drag destroys the input the pointer is
-// holding, and the drag ends there with the fade stuck wherever it got to.
-function setOnion(input) {
-  const card = cardEl(input)
-  const v = Number(input.value)
-  onionValues.set(card.dataset.name, v)
-  card.querySelector('.onionstage').style.setProperty('--onion', v / 100)
-  card.querySelector('.onionpct').textContent = v + '%'
+function toggleCmp(btn, kind) {
+  const name = cardEl(btn).dataset.name
+  const set = kind === 'amp' ? amplified : blinking
+  if (set.has(name)) {
+    set.delete(name)
+  } else {
+    set.add(name)
+  }
+  updateCard(name)
 }
 
-function onionNote(stage, text) {
-  const el = stage.closest('.onion').querySelector('.onionsize')
-  el.textContent = text
+// Moving the comparison moves two custom properties and nothing else.
+// Deliberately no re-render: rebuilding the card mid-drag destroys the control
+// the pointer is holding, and the drag ends there with the comparison stuck
+// wherever it got to.
+//
+// Both \`--fade\` and \`--wipe\` are written every time, and each mode's CSS reads
+// the one it cares about. The alternative — a mode-dependent write — leaves the
+// other property behind at whatever it was when the mode last changed, which
+// shows up the moment you switch modes mid-review.
+function setCompareValue(name, raw) {
+  const v = Math.max(0, Math.min(100, Math.round(raw)))
+  compareValues.set(name, v)
+  const card = cardOf(name)
+  const stage = card && card.querySelector('.cmpstage')
+  if (!stage) {
+    return
+  }
+  stage.style.setProperty('--fade', v / 100)
+  stage.style.setProperty('--wipe', v + '%')
+  const pct = card.querySelector('.cmppct')
+  if (pct) {
+    pct.textContent = v + '%'
+  }
+  // the drag and the slider are two handles on one value, so each has to move
+  // the other; guarded because setting .value mid-drag would fight the input
+  const slider = card.querySelector('.cmpslider')
+  if (slider && Number(slider.value) !== v) {
+    slider.value = v
+  }
+}
+
+const setCompare = input =>
+  setCompareValue(cardEl(input).dataset.name, Number(input.value))
+
+// Dragging on the picture itself is what a swipe comparison IS — the pointer
+// lands on the thing being compared, so the divider goes where you are already
+// looking rather than where a control 200px above it says. The slider in the
+// bar is the keyboard-reachable half of the same value; both write through
+// setCompareValue, so neither can leave the other behind.
+$('#main').addEventListener('pointerdown', e => {
+  const stage = e.target.closest('.cmpstage.swipe')
+  if (!stage) {
+    return
+  }
+  const name = stage.closest('.card').dataset.name
+  const move = ev => {
+    const box = stage.getBoundingClientRect()
+    setCompareValue(name, ((ev.clientX - box.left) / box.width) * 100)
+  }
+  const stop = () => {
+    stage.removeEventListener('pointermove', move)
+    stage.removeEventListener('pointerup', stop)
+    stage.removeEventListener('pointercancel', stop)
+  }
+  // Capture, because the useful end of a wipe is at the edges and most drags
+  // leave the stage before they get there. Without it the divider stops dead
+  // partway and the reviewer has to re-grab it.
+  stage.setPointerCapture(e.pointerId)
+  stage.addEventListener('pointermove', move)
+  stage.addEventListener('pointerup', stop)
+  stage.addEventListener('pointercancel', stop)
+  move(e)
+})
+
+function cmpNote(stage, text) {
+  const el = stage.closest('.card').querySelector('.cmpnote')
+  if (el) {
+    el.textContent = text
+  }
 }
 
 const naturalDims = img => img.naturalWidth + '×' + img.naturalHeight
@@ -1028,9 +1222,9 @@ const naturalDims = img => img.naturalWidth + '×' + img.naturalHeight
 // A cap on height, not on width, and never a scale above 1: the point is to put
 // the two images in the same place at the same size, and an upscaled figure is
 // two interpolations hiding the small differences the overlay exists to show.
-const ONION_MAX_PX = 600
+const CMP_MAX_PX = 600
 
-function fitOnionStage(stage) {
+function fitCompareStage(stage) {
   if (!stage) {
     return
   }
@@ -1048,7 +1242,7 @@ function fitOnionStage(stage) {
   }
   const w = Math.max(...imgs.map(i => i.naturalWidth))
   const h = Math.max(...imgs.map(i => i.naturalHeight))
-  const scale = Math.min(1, (stage.parentElement.clientWidth || w) / w, ONION_MAX_PX / h)
+  const scale = Math.min(1, (stage.parentElement.clientWidth || w) / w, CMP_MAX_PX / h)
   // the stage holds the box; the images are absolutely positioned inside it, so
   // it is the only thing giving the card its height
   stage.style.width = Math.round(w * scale) + 'px'
@@ -1059,22 +1253,22 @@ function fitOnionStage(stage) {
   }
   const [base, top] = imgs
   // only once both are here: one image is never a disagreement about size
-  onionNote(stage, imgs.length === 2 && naturalDims(base) !== naturalDims(top)
+  cmpNote(stage, imgs.length === 2 && naturalDims(base) !== naturalDims(top)
     ? 'resized ' + naturalDims(base) + ' → ' + naturalDims(top) +
       ' — drawn at one scale from the top-left, so the extra edge is the change in size'
     : '')
 }
 
-const fitOnion = img => fitOnionStage(img.closest('.onionstage'))
+const fitCompare = img => fitCompareStage(img.closest('.cmpstage'))
 
 // The store URL 404s (a baseline whose bytes were never pushed). Drop it and
 // show the current image alone rather than fading to black, which reads as the
 // figure having gone blank on this branch.
-function onionBaseFailed(img) {
-  const stage = img.closest('.onionstage')
+function baselineFailed(img) {
+  const stage = img.closest('.cmpstage')
   img.remove()
-  fitOnionStage(stage)
-  onionNote(stage, '⚠ baseline bytes are not in the store — only the current image is here')
+  fitCompareStage(stage)
+  cmpNote(stage, '⚠ baseline bytes are not in the store — only the current image is here')
 }
 
 // The stage is sized in px off natural dimensions, so a narrowed window leaves
@@ -1087,8 +1281,8 @@ addEventListener('resize', () => {
   fitQueued = true
   requestAnimationFrame(() => {
     fitQueued = false
-    for (const stage of document.querySelectorAll('.onionstage')) {
-      fitOnionStage(stage)
+    for (const stage of document.querySelectorAll('.cmpstage')) {
+      fitCompareStage(stage)
     }
   })
 })
@@ -1261,7 +1455,7 @@ $('#kind').addEventListener('change', () => changeFilter('kind', $('#kind').valu
 $('#compare').addEventListener('change', () => {
   // the default this overrode has moved, so the overrides no longer mean what
   // the reviewer set them to
-  onionOverrides.clear()
+  compareOverrides.clear()
   changeFilter('compare', $('#compare').value)
 })
 load()
