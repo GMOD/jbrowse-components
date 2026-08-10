@@ -229,11 +229,13 @@ export interface ClipContext2D {
  * `select` resolves a block to what it paints, or `undefined` to skip it — the
  * one gate covering all three reasons a painter skips: no region in the map, a
  * region with zero features, and a region whose relevant sub-field is absent
- * (MAF's `?.coverage`). It runs *before* the clip because entering the scaffold
- * for an empty block is not free on the export path: `SvgCanvas.clip()` emits a
- * `<clipPath>` + group unconditionally, so a skipped-late block leaves dead
- * markup in the SVG. Resolving here also lets `paint` take a non-optional value
- * instead of re-narrowing inside the callback.
+ * (MAF's `?.coverage`). It runs *before* the clip so an empty block costs
+ * neither the path-and-clip round trip on a real context nor the queued group
+ * on `SvgCanvas` — that class now drops a clip nothing was drawn inside, so a
+ * skipped-late block no longer leaves dead `<clipPath>` markup in the export,
+ * but relying on it to clean up after the gate is backwards. Resolving here
+ * also lets `paint` take a non-optional value instead of re-narrowing inside
+ * the callback.
  *
  * `clipHeight` is a parameter rather than read off a render state because
  * painters that own a sub-band of the canvas clip to that band, not the full

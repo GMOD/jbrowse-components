@@ -13,7 +13,7 @@ description: SVG export pipeline covering the renderSvg shape, the svgReady/sett
 - Every LGV `renderSvg.tsx` is one shape, and the shape is a **function**, not a
   convention to retype: `return renderDisplaySvg(model, opts, XxxSvgBody)`, where
   `XxxSvgBody` is a component taking `LgvSvgBodyProps<M>` and painting via
-  `paintLayer`.
+  `PaintLayer`.
 - **Paint at `props.canvasWidth`, never at `model.renderState.canvasWidth`.** The
   on-screen render state carries `view.trackWidthPx` (2px narrower, for the track
   outline the export doesn't draw) and that value is also the block scissor
@@ -32,7 +32,7 @@ description: SVG export pipeline covering the renderSvg shape, the svgReady/sett
   after a pan captures fresh data.
 - `settled` is the separate **on-screen** capture gate: `canvasDrawn` plus that
   same freshness axis.
-- Anything draw-shaped goes through `paintLayer`. Hand-rolled
+- Anything draw-shaped goes through `PaintLayer`. Hand-rolled
   `<rect>`/`<path>`/`<line>` is a red flag, with three permitted exceptions
   (trivial chrome, bezier-arc overlays, shared React-SVG overlays).
 - **Clip-path ids must be scoped by the owning model's `.id`.** SVG ids are
@@ -101,18 +101,28 @@ export async function renderSvg(model: RenderSvgModel, opts?: ExportSvgDisplayOp
 
 function XxxSvgBody({
   model,
-  view,
   height,
   canvasWidth,
+  renderBlocks,
   opts,
 }: LgvSvgBodyProps<RenderSvgModel>) {
-  const renderBlocks = buildRenderBlocks(view.visibleRegions)
-  return paintLayer(canvasWidth, height, opts, ctx => {
-    drawXxxBlocks(ctx, model.rpcDataMap, renderBlocks, state)
-    // OR, for multi-source: drawXxxToCtx(ctx, sources, renderBlocks, state)
-  })
+  return (
+    <PaintLayer
+      width={canvasWidth}
+      height={height}
+      opts={opts}
+      paint={ctx => {
+        drawXxxBlocks(ctx, model.rpcDataMap, renderBlocks, state)
+        // OR, for multi-source: drawXxxToCtx(ctx, sources, renderBlocks, state)
+      }}
+    />
+  )
 }
 ```
+
+`renderBlocks` comes off the props — the shell resolves
+`buildRenderBlocks(view.visibleRegions)` once, for the same reason it resolves
+`canvasWidth`. Don't re-derive it in a body.
 
 The body is passed as a **component**, not a callback returning JSX, and that is
 load-bearing rather than stylistic: `SvgChrome` renders its terminal box
@@ -475,17 +485,27 @@ owns the surface it paints, because the reason that mattered — reporting all t
 failures rather than the first — is `awaitSvgRenders`' job at the fan-out. Views
 use it instead of `Promise.all` and may nest it; failures flatten.
 
-## paintLayer: raster-vs-vector dispatch
+## PaintLayer: raster-vs-vector dispatch
 
-`paintLayer` (`@jbrowse/core/util/paintLayer`) decides between a 2× DPR raster
-canvas (when `opts.rasterizeLayers`) and an `SvgCanvas`, returning one
-`ReactNode` (`<image xlinkHref=…>` or `<g dangerouslySetInnerHTML=…>`). Raster
-mode bakes the 2× DPR scaling into the embedded PNG; vector mode serializes the
-SvgCanvas call log to SVG markup. Either way the caller draws to `Ctx2D` in CSS
-pixels — no manual DPR.
+`PaintLayer` (`@jbrowse/core/util/paintLayer`) is a **component**, and it
+decides between a 2× DPR raster canvas (when `opts.rasterizeLayers`) and an
+`SvgCanvas`, rendering one element (`<image xlinkHref=…>` or
+`<g dangerouslySetInnerHTML=…>`). Raster mode bakes the 2× DPR scaling into the
+embedded PNG; vector mode serializes the SvgCanvas call log to SVG markup.
+Either way the caller draws to `Ctx2D` in CSS pixels — no manual DPR.
+
+**A vector layer whose `paint` drew nothing renders nothing** — not an empty
+`<g>`. Layers are routinely conditional on data (a highlight pass with nothing
+highlighted, a legend-less track, a band switched off), so a body may mount one
+unconditionally rather than duplicating the condition in JSX. This holds through
+clipping: `SvgCanvas.clip()` queues its group and only an element actually drawn
+commits it, so a painter that walked clipped blocks and drew nothing still
+serializes as empty. Omitting `opts` pins a layer to vector even when
+`rasterizeLayers` is on — what the canvas feature export does for its label and
+peptide overlays, so exported text stays crisp.
 
 **Avoid hand-rolled JSX-SVG inside `renderSvg.tsx`.** Anything draw-shaped
-(rects, paths, fills, strokes) should go through `paintLayer` so both raster and
+(rects, paths, fills, strokes) should go through `PaintLayer` so both raster and
 vector modes work and the on-screen draw code can be shared. Hand-rolled
 `<rect>`/`<path>`/`<line>` inside `renderSvg.tsx` is a red flag — it can't
 rasterize, drifts from on-screen output, and locks in vector output.
@@ -493,7 +513,7 @@ rasterize, drifts from on-screen output, and locks in vector output.
 **Permitted exception classes** (only these — anything else is a regression):
 
 - **Trivial chrome**: scalebars, single separator lines, clipPath wrappers,
-  transform `<g>` for offsetting an already-paintLayer'd block. Use
+  transform `<g>` for offsetting an already-PaintLayer'd block. Use
   `<SvgClipRect>` from `@jbrowse/plugin-linear-genome-view` for the
   clipPath+rect pair.
 - **Bezier-arc overlays** (sashimi in `plugins/alignments`, paired arcs in
@@ -509,11 +529,12 @@ rasterize, drifts from on-screen output, and locks in vector output.
   `@jbrowse/tree-sidebar`). Same component
   renders on-screen + in export via an `exportSVG` prop. The heavy
   raster-friendly fill path (the matrix itself) **must** still go through
-  `paintLayer`; only the overlays stay JSX.
+  `PaintLayer`; only the overlays stay JSX.
 
 Everything else — fills, glyphs, mismatches, coverage bins, score bars, ribbons,
-dot lines, sequence text — goes through `paintLayer(width, height, opts, ctx =>
-drawXxx{Blocks,ToCtx}(ctx, …))`. This kills the older "SVG-only `renderToCtx`"
+dot lines, sequence text — goes through `<PaintLayer width height opts paint={ctx
+=> drawXxx{Blocks,ToCtx}(ctx, …)} />`. This kills the older "SVG-only
+`renderToCtx`"
 pattern that drifted out of sync with the on-screen renderer (different bicolor
 handling, Y-axis offsets, bezier curves, palettes — each plugin had its own
 flavor of drift).

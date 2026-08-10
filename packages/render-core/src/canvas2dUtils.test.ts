@@ -357,8 +357,9 @@ describe('forEachClippedBlock', () => {
         log.push('paint')
       },
     )
-    // Not merely "paint never ran" — nothing may reach the context at all, or
-    // SvgCanvas.clip() leaves a dead <clipPath> + group in the export.
+    // Not merely "paint never ran" — nothing may reach the context at all, so
+    // an empty block costs neither a real context's clip round trip nor a
+    // queued group on SvgCanvas.
     expect(log).toEqual([])
   })
 

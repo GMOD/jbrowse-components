@@ -52,9 +52,8 @@ strand case.
   per copy.
 - **Per-block Canvas2D clipping goes through `forEachClippedBlock`.** Its
   `select` callback is the single skip gate — skipping inside `paint` instead
-  leaves dead `<clipPath>` markup in the SVG export, and the `finally`-paired
-  restore is what keeps a throwing painter from leaving every later frame
-  clipped.
+  pays the clip round trip per empty block — and the `finally`-paired restore is
+  what keeps a throwing painter from leaving every later frame clipped.
 - **Don't redefine lifecycle state** (`canvasDrawn`, `renderTick`,
   `renderError`, …) — plugins compose `RenderLifecycleMixin`, never re-declare.
 - **Renderers stay stateless.** The one sanctioned exception is a cache written
