@@ -38,7 +38,20 @@ function HicTooltip({
   )
 }
 
-function Crosshairs({
+// The two contact axes meeting under the cursor, drawn back up to the top edge —
+// so the guide names the pair of loci this cell is the intersection of.
+//
+// Deliberately NOT called `Crosshairs`, which is a different component in
+// `@jbrowse/core/ui` that sibling displays (wiggle, multi-wiggle, maf) import for
+// a plain vertical rule. This one is a chevron along the triangle's diagonals and
+// shares nothing with it but the `currentColor` stroke; the two carrying one name
+// invites a dedupe that would silently replace this geometry with a vertical line.
+//
+// The screen slope of a data-space diagonal is exactly `yScalar` — the squash
+// lands after the rotation (see hicTransform.ts) — so reaching y=0 from the
+// cursor costs `y / yScalar` in x. `viewScale` correctly does not appear: it
+// scales both axes before the squash, so it cancels out of the slope.
+function ContactAxisGuides({
   x,
   y,
   yScalar,
@@ -63,8 +76,8 @@ function Crosshairs({
         pointerEvents: 'none',
       }}
     >
-      {/* currentColor matches the shared core Crosshairs component, so the
-          guide tracks the UI theme's text color rather than a fixed black */}
+      {/* currentColor so the guide tracks the UI theme's text color rather
+          than a fixed black, the same way core's Crosshairs does */}
       <g stroke="currentColor" strokeWidth="1" fill="none">
         <path d={`M ${x - dx} 0 L ${x} ${y} L ${x + dx} 0`} />
       </g>
@@ -148,7 +161,7 @@ const HicBody = observer(function HicBody({
       <HicOverlayPanel model={model} />
       {mouseState ? (
         <>
-          <Crosshairs
+          <ContactAxisGuides
             x={mouseState.x}
             y={mouseState.y}
             yScalar={yScalar}

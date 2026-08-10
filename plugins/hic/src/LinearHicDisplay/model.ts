@@ -20,6 +20,7 @@ import { autorun } from 'mobx'
 import { calcViewBlocks } from '../regionOffsets.ts'
 import { generateColorRamp } from './components/colorRamp.ts'
 import { findContactAt } from './contactLookup.ts'
+import { hicScreenToData } from './hicTransform.ts'
 import { buildHicTrackMenuItems } from './trackMenuItems.ts'
 
 import type {
@@ -370,12 +371,11 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
           return undefined
         }
         const { scale, viewOffsetX } = self.renderTransform
-        // Reverse viewport transform, then un-rotate to pre-rotation
-        // data-space — the same coordinate system positions[] live in.
-        const dataX = (mouseX - viewOffsetX) / scale
-        const dataY = mouseY / scale / self.yScalar
-        const ux = (dataX - dataY) / Math.SQRT2
-        const uy = (dataX + dataY) / Math.SQRT2
+        const { ux, uy } = hicScreenToData(mouseX, mouseY, {
+          viewScale: scale,
+          viewOffsetX,
+          yScalar: self.yScalar,
+        })
         return findContactAt(data, ux, uy)
       },
     }))
@@ -533,36 +533,47 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #action
-       * Lock to a specific binsize (from the overlay dropdown) by converting it
-       * to the bias offset from the current auto pick, so the choice still
-       * shifts consistently as the user zooms. No-op if the binsize isn't one
-       * the file offers.
+       * Lock the display to `availableResolutions[idx]`, stored the way the
+       * config slot wants it: an offset from whatever pure auto-mode would pick
+       * at the current zoom, so a locked choice keeps shifting consistently as
+       * the user zooms rather than pinning an absolute binsize.
+       *
+       * Both resolution controls write through here. That conversion — "a bias
+       * is an index offset from the auto pick" — is one arithmetic fact, and it
+       * was stated once per control, each with its own guard against a bad
+       * index: one checked membership, the other clamped. Clamping here covers
+       * both, so a caller may hand over an out-of-range index without indexing
+       * the file's binsize list out of bounds. No-op before the binsize list
+       * arrives from CoreGetInfo.
+       */
+      setResolutionIdx(idx: number) {
+        const avail = self.availableResolutions
+        if (avail?.length) {
+          const clamped = Math.max(0, Math.min(avail.length - 1, idx))
+          setConf(self, 'resolutionBias', clamped - self.autoResolutionIdx)
+        }
+      },
+      /**
+       * #action
+       * Lock to a specific binsize (from the overlay dropdown). No-op if the
+       * binsize isn't one the file offers.
        */
       setResolution(binSize: number) {
-        const avail = self.availableResolutions
-        const idx = avail ? avail.indexOf(binSize) : -1
+        const idx = self.availableResolutions?.indexOf(binSize) ?? -1
         if (idx !== -1) {
-          setConf(self, 'resolutionBias', idx - self.autoResolutionIdx)
+          this.setResolutionIdx(idx)
         }
       },
       /**
        * #action
        * Step one entry finer (negative delta) or coarser (positive) from the
-       * binsize currently in effect, again as a bias off the auto pick. Clamped
-       * to what the file offers, so a step at either edge no-ops instead of
-       * indexing out of bounds — the menu's stepper disables there, and this
-       * keeps that from being the only thing standing between a bad index and
-       * a fetch.
+       * binsize currently in effect. A step at either edge lands on the edge
+       * rather than indexing out of bounds — the menu's stepper disables there,
+       * and this keeps that from being the only thing standing between a bad
+       * index and a fetch.
        */
       stepResolution(delta: number) {
-        const avail = self.availableResolutions
-        if (avail?.length) {
-          const idx = Math.max(
-            0,
-            Math.min(avail.length - 1, self.effectiveResolutionIdx + delta),
-          )
-          setConf(self, 'resolutionBias', idx - self.autoResolutionIdx)
-        }
+        this.setResolutionIdx(self.effectiveResolutionIdx + delta)
       },
     }))
     .views(self => {
