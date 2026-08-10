@@ -1378,8 +1378,53 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     settleMs: 6000,
     // an annotation lane per retrocopy, the gene lane and the 55-row sample block
     // between them, and the two synteny bands. Sized by the generator's
-    // below-the-fold check.
-    viewportHeight: 1410,
+    // below-the-fold check, which still reported 10.5 css px under the fold at
+    // 1410 -- the bottom retrocopy lane's own border.
+    viewportHeight: 1421,
+    // ONE PILL, IN THE GREY (review: "add red text annotation in the grey area
+    // saying what the finding of this figure is and how the figure was made and
+    // what the 'three rows' of the figure are ... having the top and bottom and
+    // middle is kind of complex"). Three paragraphs for the three questions, in
+    // that order, and the third is the finding rather than a restatement of the
+    // caption -- a reader who takes nothing else from the frame should take
+    // "the blue blocks are the retrogene, not a deletion".
+    //
+    // It answers the second half of that note too, which asked to rearrange so
+    // the reference is on top. That cannot be done: the two PAFs are each
+    // retrocopy against the PARENT, and there is no CFA18-vs-CFA12 alignment, so
+    // a view with the parent on top would have to draw its second band between
+    // two rows that share no alignment. Saying why the parent is in the middle
+    // is the available fix, and is what the pill's second paragraph does.
+    //
+    // Anchored in the sample lane, right of both blue blocks and below the
+    // in-app genotype/group legend, so it sits on homozygous-reference grey and
+    // covers no call. `y` is the FIRST line's baseline and the block grows
+    // downward, so `fracY` places the top of the pill, not its centre.
+    annotations: [
+      {
+        type: 'text' as const,
+        fontSize: 20,
+        maxWidth: 600,
+        text:
+          'THREE ROWS, ONE LOCUS. The middle row is the parent FGF4 gene in ' +
+          'the dog reference, with 55 Dog10K genomes under it; each blue ' +
+          'block is one Manta "deletion" call.\n' +
+          '\n' +
+          'Top and bottom are the two FGF4 retrocopies as deposited (CFA18, ' +
+          'MF040222; CFA12, MF040221), each aligned back to the parent — ' +
+          'which is why the parent is between them rather than beside them.\n' +
+          '\n' +
+          'A processed retrocopy has no introns, so every gap in a ribbon ' +
+          'falls on a parent intron, and that is exactly where the blue ' +
+          'blocks are. The calls are the retrogene, not a deletion.',
+        anchor: {
+          view: [0, 1],
+          track: 'dog10k_fgf4_svs',
+          locus: 'chr18:48,871,150',
+          fracY: 0.3,
+        },
+      },
+    ],
   },
 
   // There is deliberately NO whole-collection figure beside the panel above,
