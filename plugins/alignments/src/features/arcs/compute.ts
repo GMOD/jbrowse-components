@@ -15,16 +15,12 @@ import {
   classifyInsertSize,
   robustSpread,
 } from '../../shared/insertSizeStats.ts'
-import {
-  connectionEndpoints,
-  resolveReadGroup,
-} from '../../shared/readGroupConnections.ts'
+import { resolveReadGroup } from '../../shared/readGroupConnections.ts'
 import { getOrCreate } from '../../shared/util.ts'
 
 import type { ReadColorCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
-import type { ReadConnection } from '../../shared/readGroupConnections.ts'
 import type { ArcColorByType } from '../../shared/types.ts'
 import type { ArcsUploadData } from './types.ts'
 
@@ -350,13 +346,17 @@ function computeArcShape({
   arc: PendingArc
   absrad: number
 }) {
-  const { isSplit, p1Bp, p2Bp } = arc
+  const { p1Bp, p2Bp } = arc
   if (cloud) {
-    const tlen = isSplit ? 0 : Math.abs(arc.tlen)
-    const spanBp = tlen > 0 ? tlen : Math.abs(p2Bp - p1Bp)
+    // `|| gap` reads as the fallback it is: a split junction has no tlen at
+    // all, and an unset one is 0. Routing splits through a 0 sentinel so the
+    // next line's `> 0` could catch both hid that the union already proves
+    // which arm has a tlen.
+    const gapBp = Math.abs(p2Bp - p1Bp)
+    const spanBp = arc.isSplit ? gapBp : Math.abs(arc.tlen) || gapBp
     const jitter = 1 + CLOUD_JITTER_BOUNDS * (pairJitter01(p1Bp, p2Bp) * 2 - 1)
     return {
-      shapeType: isSplit ? ARC_SHAPE_FLAT_SPLIT : ARC_SHAPE_FLAT,
+      shapeType: arc.isSplit ? ARC_SHAPE_FLAT_SPLIT : ARC_SHAPE_FLAT,
       yBp: Math.round(spanBp * jitter),
     }
   }
@@ -642,39 +642,35 @@ function pairOuterBp(entry: ReadEntry) {
   return readLeadingBp(entryStrand(entry), start, end)
 }
 
-// Build a pending arc from one resolved connection. Split junctions carry no
-// template length / pair orientation (so read cloud draws a dashed line at the gap
-// span rather than collapsing |0| to the baseline); the mate link sources both
-// from its first read's primary. Endpoints: a split junction joins the first
-// segment's read-trailing (3') edge to the next segment's read-leading (5')
-// edge — the inversion breakpoint, not the far edge of the reverse segment — and
-// the mate link joins each read's own outer (5') edge, matching its TLEN span.
-function pendingArcFromConnection(c: ReadConnection<ReadEntry>): PendingArc {
-  const { e1, e2, isSplit } = c
-  const { bp1, s1, bp2, s2 } = connectionEndpoints(c)
-  const p1Ref = e1.refName
-  const p2Ref = e2.refName
-  return isSplit
-    ? {
-        p1Ref,
-        p1Bp: bp1,
-        p1Strand: s1,
-        p2Ref,
-        p2Bp: bp2,
-        p2Strand: s2,
-        isSplit,
-      }
-    : {
-        p1Ref,
-        p1Bp: pairOuterBp(e1),
-        p1Strand: s1,
-        p2Ref,
-        p2Bp: pairOuterBp(e2),
-        p2Strand: s2,
-        isSplit,
-        pairOrientationNum: e1.data.readPairOrientations[e1.readIdx]!,
-        tlen: e1.data.readInsertSizes[e1.readIdx]!,
-      }
+// The mate link between the two reads of one pair, sourcing orientation and
+// template length from the first read's primary.
+//
+// Split junctions do not come through here. The arc path chains a read's
+// segments as `SegAln`s so it can walk off-screen SA records, and
+// `splitJunctionArc` is that path's junction builder — so this took a
+// `ReadConnection` and branched on `isSplit` for an arm the one call site
+// (`mateLink`, which passes `isSplit: false` literally) could never reach. The
+// dead arm was also the only consumer of `connectionEndpoints` here: the live
+// arm asked it for two endpoints and then overwrote both.
+//
+// Those endpoints are each read's own outer (5') edge — the fragment boundary
+// TLEN is measured from — not `connectionEndpointBps`' read-trailing edges,
+// which are built for split/bezier connectors and want the facing GAP between
+// two drawn segments. Using the gap edges understated a mate link's span by
+// both mates' own lengths, so the dome's width silently disagreed with the TLEN
+// driving its color.
+function mateLinkArc(e1: ReadEntry, e2: ReadEntry): PairedPendingArc {
+  return {
+    p1Ref: e1.refName,
+    p1Bp: pairOuterBp(e1),
+    p1Strand: entryStrand(e1),
+    p2Ref: e2.refName,
+    p2Bp: pairOuterBp(e2),
+    p2Strand: entryStrand(e2),
+    isSplit: false,
+    pairOrientationNum: e1.data.readPairOrientations[e1.readIdx]!,
+    tlen: e1.data.readInsertSizes[e1.readIdx]!,
+  }
 }
 
 // The link to a mate that isn't on screen: only RNEXT/PNEXT locate it, so this
@@ -741,8 +737,7 @@ function collectPendingArcs(
     pendingArcs.push(
       ...resolveReadGroup<ReadEntry, PendingArc>(entries, {
         chainMate: segs => unpairedChainArcs(segs, ctx),
-        mateLink: (e1, e2) =>
-          pendingArcFromConnection({ e1, e2, isSplit: false }),
+        mateLink: mateLinkArc,
         loneMateLink: primary => offScreenMateArcs(primary, ctx),
       }),
     )
