@@ -31,8 +31,10 @@ Fetch `https://jbrowse.org/ucsc/hg38/config.json` and you have, in one document:
   makes a gene name work as a location.
 
 The GenArk assemblies carry the sequence, aliases and their own smaller track
-set, and most ship a text index too — but not all, so check for
-`aggregateTextSearchAdapters` before assuming a gene name will resolve.
+set, and whether one ships a text index follows its accession: a `GCF_` (RefSeq)
+assembly is annotated from the NCBI RefSeq GFF and indexed, a `GCA_` (GenBank)
+one generally is neither. That is a prediction, not a guarantee, so read
+`aggregateTextSearchAdapters` out of the config when a gene name has to resolve.
 
 ### The URL scheme
 

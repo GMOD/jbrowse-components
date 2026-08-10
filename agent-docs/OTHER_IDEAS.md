@@ -2817,12 +2817,26 @@ worth following, and that every click is the same on the hs1 track the page
 opened with. If this is reopened, the move is a second hs1 frame **added** to
 the sequence, not the chimp one replaced.
 
-**All three pages are human.** The site's fifty thousand assemblies are its
-reason to exist, and `genomes_basics` now states the no-name-index caveat
-(the trix index is built from an assembly's NCBI RefSeq GFF, so an unannotated
-one has none) without ever showing it. A GenArk page would demonstrate that
-caveat and answer the undecided "Non-model organism with no config" entry above
-in favor of the hosted instance.
+**All four pages are human.** The site's fifty thousand assemblies are its
+reason to exist. A GenArk page would fix that and answer the undecided
+"Non-model organism with no config" entry above in favor of the hosted instance.
+
+What it should NOT be built to demonstrate is the no-name-index caveat, which
+was the reason first written here. Per Colin (2026-08-09) the RefSeq GenArk
+hubs do have gene tracks and are indexed, and the split is the accession
+namespace, not a per-assembly accident: `GCF_` is annotated from the NCBI
+RefSeq GFF and carries `aggregateTextSearchAdapters`, `GCA_` generally carries
+neither. Checked against the live configs on a spread sample of the 50,686-line
+`hgdownload.soe.ucsc.edu/hubs/UCSC_GI.assemblyHubList.txt`: 15 of 15 `GCF_`
+indexed, 0 of 13 `GCA_`, including the matched pair where one assembly is
+released both ways (axolotl `Mex_15411`, `GCF_040938575.1` vs
+`GCA_040938575.1`, same sequence and only the RefSeq one searches).
+
+So the caveat is a rule a reader can apply from the accession before clicking,
+which is what `genomes_basics` and `agents_hosted_data` now say, and it no
+longer needs a page to demonstrate it. A GenArk page has to earn its place on
+what the long tail actually shows: a smaller track set, a genome nobody has a
+config for, and what you do when the annotation is the only track there is.
 
 **Not a bug, checked: the hub configs name a MafViewer plugin that core also
 carries.** `@jbrowse/plugin-maf` is in `products/jbrowse-web/src/corePlugins.ts`

@@ -137,9 +137,15 @@ is why a genome-wide signal track opens at gene zoom without downloading it.
 ## Trying another genome
 
 The GenArk assemblies behave the same way, with two differences: their configs
-carry a smaller track set, and their name index is built from an assembly's NCBI
-RefSeq annotation, so one that has no such annotation ships no index and
-coordinates are the way in.
+carry a smaller track set, and whether a gene symbol resolves is decided by
+which accession you opened. The name index is built from an assembly's NCBI
+RefSeq annotation, so a `GCF_` accession (RefSeq) carries gene tracks and an
+index and searches like hg38 does, while a `GCA_` one (GenBank) generally has
+neither and coordinates are the way in.
+
+An assembly released both ways appears under both accessions, same sequence, and
+only the RefSeq one searches: the axolotl `Mex_15411` is `GCF_040938575.1` and
+`GCA_040938575.1`.
 
 ## See also
 
