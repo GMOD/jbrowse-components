@@ -26,7 +26,7 @@ Exploratory concepts that are *not* committed work live in
 | [Widen `CI_GATE_SUITES`](#widen-ci_gate_suites) | browser tests, CI | measure before adding; say why the alignments pair is safe |
 | [Attribute the TIMEOUT mode](#attribute-the-browser-test-timeout-failure-mode) | browser tests | report the display's state, don't extend the wait |
 | [Make the webgl blank verdict readable](#make-the-webgl-blank-verdict-readable) | browser tests | one diagnostic run; never leave it on |
-| [Look at the six AA-ramp commits](#look-at-the-six-aa-ramp-shader-commits--nobody-has) | shaders, GPU | landed, unit-tested, never seen |
+| [Look at the six AA-ramp commits](#look-at-the-six-aa-ramp-shader-commits--nobody-has) | shaders, GPU | four risks left; hi-C is rendered and cleared |
 | [Report a callout that draws off-frame](#report-a-callout-that-draws-off-frame) | figures | the overlay already reports the unresolvable case |
 | [`partitionField` throws on `bigRmskBed`](#partitionfield-jexl-throws-through-its-own-guard-on-bigrmskbed) | canvas | the per-feature catch is there and not holding |
 | [Render the converted callout specs](#render-the-twenty-specs-whose-callouts-were-converted-to-anchors) | figures | sweep them; five move deliberately |
@@ -146,8 +146,10 @@ must not be left on** — it was measured and refuted as a *fix*
 
 Six rendering commits landed on 2026-08-10 (`f96108bad9`, `75e0db7602`,
 `f082bad29f`, `333477b51c`, `c7ebdf6d9b`, `4261bbfe40`) verified by unit test and
-argument only. **None was visually verified and no cross-backend or browser test
-was run on any of them.** The finding they share is in
+argument only. **Five have still never been looked at.** `4261bbfe40` has since
+been rendered and cleared (below); `75e0db7602` is a pure refactor with no
+picture to check, so what is actually open is the four ranked risks. The finding
+they share is in
 [reference/GPU_RENDERING.md](reference/GPU_RENDERING.md#antialiasing-ramps-how-wide-and-where-the-width-comes-from).
 
 Suites exist for every view touched — `synteny.ts`, `grape-peach-synteny.ts`,
@@ -182,22 +184,16 @@ Ranked by how likely the author thought they were to be wrong:
    of each cap rectangle, so ~21% of a dot's quad and ~0% of a long line's; a dot
    at dpr 1 is still +54% net. If the measurement comes back negative the pad is
    still correct, but the levers are the pad width or the blend, not the discard.
-2. **hi-C stopped painting bins it used to paint.** `4261bbfe40` discards below
-   `MIN_VISIBLE_ALPHA` on `juicebox`, which is the *default* scheme. Closing a
-   boundary rather than opening one — the Canvas2D and SVG paths already skipped
-   those bins — but it means the before picture has visible bins the after
-   picture does not. One threshold and an existing suite, so it is the cheapest
-   of the six to look at.
-3. **The glyph ramp got narrower** (2–2.83 → 1 device px), so discs and diamonds
+2. **The glyph ramp got narrower** (2–2.83 → 1 device px), so discs and diamonds
    read crisper. 1px matches every other mark and `SMALL_POINT_MAX_DIAMETER`
    already routes ≤3px points to crisp squares — but it is a visible change
    nobody has seen.
-4. **`fillShade` at high opacity.** Hover no longer *reduces* alpha, but for
+3. **`fillShade` at high opacity.** Hover no longer *reduces* alpha, but for
    `a ≥ 0.35` it now leaves alpha untouched and hover shows only as
    `hoverDarken`'s 0.7 on the rgb. Whether that is enough feedback at opacity 1.0
    is a design question, not a correctness one; a small relative boost is the
    alternative.
-5. **`clipLargeBlockToWindow`'s pre-gate assumes the CIGAR's span matches
+4. **`clipLargeBlockToWindow`'s pre-gate assumes the CIGAR's span matches
    `end - start`** — but only on one side. `end < winStart` is the exposed half:
    a malformed CIGAR walking past its declared `end` into the window would be
    dropped. `start > winEnd` is safe whatever the CIGAR does, because the walk
@@ -208,10 +204,30 @@ Ranked by how likely the author thought they were to be wrong:
    the gate drops nearly everything. The `if (!r0) return undefined` above picks
    an overlapping region, which looks like it makes this unreachable.
 
-Cheapest first, which inverts that ranking: **hi-C** (one number, suite exists),
-then **glyphs** (`gwas.ts`, `gwas-locuszoom.ts`, `wiggle-color.ts` — a pure look
-change and compare sees it), then **synteny hover** (needs a hover interaction
-and has no oracle), then **dotplot** — the only one of the five that is a headed
+**hi-C (`4261bbfe40`) is done — it changes nothing visible, and that is provable
+rather than merely observed.** `hic.ts` on `--backend=webgl` passes against the
+2026-08-04 goldens, and the Hi-C matrix is *bit-identical* to them: every
+differing pixel in that capture is neutral-grey block borders and gridlines whose
+raster phase moved for unrelated reasons, and the suite's own chroma metric
+(`chromaProfile`, which scores neutral chrome 0 and the ramp above 0) reports a
+delta of exactly zero over both captures. The reason is in the ramp: `juicebox`
+is two stops, `[255,0,0,0]` → `[255,0,0,255]`, so alpha is linear in the index
+and `MIN_VISIBLE_ALPHA` 0.01 cuts exactly entries 0, 1 and 2 of 256. Over white
+those composite to chroma 0, 1 and 2 of 255. The bins are numerous — which is the
+perf argument, and it stands — but each was worth at most 2/255, so no ranking
+above them was ever going to be right, including the one this entry used to
+carry.
+
+Caveat for whoever re-runs it: the zero is partly because this locus has no bin
+in the cut band at all, so the run confirms no regression without confirming the
+discard ever fires. A locus that does hit it would still move nothing visible, by
+the arithmetic above; if you want the branch exercised, assert on it in the
+shader test rather than looking for it in a picture.
+
+Cheapest first for what is left: **glyphs** (`gwas.ts`, `gwas-locuszoom.ts`,
+`wiggle-color.ts` — a pure look change and compare sees it), then **synteny
+hover** (needs a hover interaction and has no oracle), then **dotplot** — the
+only one of the four that is a headed
 perf measurement on a dense plot at dpr 1 rather than a look question.
 
 ### Report a callout that draws off-frame
