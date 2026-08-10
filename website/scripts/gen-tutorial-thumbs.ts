@@ -258,14 +258,16 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.22, 0.78],
   },
   hg002_haplotypes: {
-    // The ribbon band and the two rulers bracketing it, which is the whole
+    // The ribbon band with a chain track above and below it, which is the whole
     // shape of this card: one sweep crossing between two haplotypes of the same
-    // chromosome. Left frame for the same reason as orthofinder_synteny below,
-    // the per-row "No tracks active / Open track selector" chip is horizontally
-    // centered and there are no panel tracks here to push it off screen.
+    // chromosome, and the same block as a long reverse-strand bar on each side
+    // of it. Still a left frame, but no longer to dodge the "No tracks active"
+    // chip (the panels carry tracks now) — a 2:1 card cannot hold the full
+    // width of a 3:1 capture, and a centered crop lands entirely inside the
+    // inversion, dropping the collinear flanks that are what make it read as
+    // one. The left edge keeps a flank against the start of the inverted block.
     src: 'hg002_haplotypes_8p23_inversion.png',
-    band: [0.3, 0.87],
-    xband: [0, 0.42],
+    band: [0.36, 0.93],
     position: 'left',
   },
   homoeolog_synteny: {

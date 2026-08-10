@@ -66,6 +66,36 @@ what makes it a self-alignment:
 }
 ```
 
+The same alignment is published a second time as bigChain, one file per
+haplotype's coordinates. Loaded as an ordinary feature track it draws the chain
+blocks on each panel's own ruler, which is where the boundaries the last section
+is about become visible:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "hg002v1.2_chainblocks_mat",
+  "name": "Chain blocks (maternal)",
+  "assemblyNames": ["hg002v1.2"],
+  "adapter": {
+    "type": "BigBedAdapter",
+    "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/annotation/browserchains/hg002v1.2.mat2pat.bigChain.bb"
+  },
+  "displays": [
+    {
+      "type": "LinearBasicDisplay",
+      "displayId": "hg002v1.2_chainblocks_mat-LinearBasicDisplay",
+      "showLabels": "none",
+      "color": "jexl:feature.strand == -1 ? '#00f' : '#f00'"
+    }
+  ]
+}
+```
+
+The paternal panel takes the matching `pat2mat` file the same way. The two are
+not interchangeable: `mat2pat` is built on the maternal contigs and `pat2mat` on
+the paternal ones, so each belongs to the panel whose coordinates it uses.
+
 The project also publishes the heterozygous sites called between the two
 haplotypes, which the last section uses as a check on the alignment:
 
@@ -119,12 +149,14 @@ the two haplotypes of one person disagree at a scale a whole-chromosome view can
 show.
 
 Colored by strand, the inversion is the one block whose ribbons sweep across the
-frame. The flanks stay collinear at this scale, which is what makes it legible:
+frame, and the same block is the long reverse-strand bar in each panel's chain
+track. The flanks stay collinear at this scale, which is what makes it legible:
 a segment reads as inverted only because the sequence around it did not move.
-Thin off-color threads inside those flanks are smaller inverted chains, well
-short of the scale the sweep is drawn at.
+They are not uniformly collinear, though. Smaller reverse-strand chains sit
+inside them, drawn as short bars in the panels and as thin off-color threads
+among the flank ribbons, well short of the scale the sweep is drawn at.
 
-<Figure caption="HG002 v1.2 maternal (top) against paternal (bottom) across 8p23.1, ribbons colored by strand. The purple sweep crossing the frame is the inverted block; the pink ribbons either side are the collinear flanks that frame it." src="/img/hg002_haplotypes_8p23_inversion.png" />
+<Figure caption="HG002 v1.2 maternal (top) against paternal (bottom) across 8p23.1, with chain blocks on each panel's own coordinates and the ribbons between them colored by strand. The inverted block is the long blue bar in both panels and the sweep crossing between them; the red blocks either side are the collinear flanks." src="/img/hg002_haplotypes_8p23_inversion.png" />
 
 Set the ribbon coloring from the palette button in the view header, and turn on
 **Show curved lines** under **View options** then **Show...** so a block landing
@@ -166,7 +198,9 @@ rather than a mark on screen:
   property of the file, not a finding about HG002.
 - **Chains are split at large gaps.** No single chain therefore holds an indel
   above that threshold, and the largest indels in the file are the threshold
-  rather than a measurement.
+  rather than a measurement. The chain track is where this is visible: the gaps
+  between its blocks are where the alignment was cut, not places the haplotypes
+  stop corresponding.
 - **The alignment is trimmed to one-to-one.** Every position has exactly one
   counterpart, so a segmental duplication is represented once rather than fanned
   out. This is what makes the view easy to read, and also what makes it the

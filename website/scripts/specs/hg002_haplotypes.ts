@@ -56,10 +56,24 @@ const INVERSION_WINDOW_PAT = `chr8_PATERNAL:${INVERSION_RANGE}`
 const COLLINEAR_WINDOW_MAT = 'chr8_MATERNAL:7,700,000-7,770,000'
 const COLLINEAR_WINDOW_PAT = 'chr8_PATERNAL:7,556,638-7,626,638'
 
+type PanelTracks = (string | Record<string, unknown>)[]
+
+// A panel with no tracks draws a centered "No tracks active" chip and an OPEN
+// TRACK SELECTOR button, which in a two-row frame outweighs the ribbons the
+// figure is about. Each panel therefore carries the bigChain rendering of the
+// same alignment, on its OWN haplotype's coordinates: mat2pat is built on the
+// 22 maternal autosomes, pat2mat on the paternal ones, so the pairing is not
+// interchangeable. Nine features across this window, against a het-site track
+// that is orders of magnitude over the feature gate here.
+function chainBlocks(hap: 'mat' | 'pat') {
+  return { trackId: `hg002v1.2_chainblocks_${hap}`, height: 40 }
+}
+
 function haplotypeSession(
   matLoc: string,
   patLoc: string,
-  panelTracks: (string | Record<string, unknown>)[] = [],
+  matTracks: PanelTracks = [],
+  patTracks: PanelTracks = matTracks,
 ) {
   return sessionSpec(HG002_CONFIG, {
     views: [
@@ -71,8 +85,8 @@ function haplotypeSession(
         drawCurves: true,
         tracks: [['hg002v1.2_mat_vs_pat']],
         views: [
-          { assembly: 'hg002v1.2', loc: matLoc, tracks: panelTracks },
-          { assembly: 'hg002v1.2', loc: patLoc, tracks: panelTracks },
+          { assembly: 'hg002v1.2', loc: matLoc, tracks: matTracks },
+          { assembly: 'hg002v1.2', loc: patLoc, tracks: patTracks },
         ],
       },
     ],
@@ -94,8 +108,13 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
   {
     ...CAPTURE,
     name: 'hg002_haplotypes_8p23_inversion',
-    url: haplotypeSession(INVERSION_WINDOW_MAT, INVERSION_WINDOW_PAT),
-    viewportHeight: 460,
+    url: haplotypeSession(
+      INVERSION_WINDOW_MAT,
+      INVERSION_WINDOW_PAT,
+      [chainBlocks('mat')],
+      [chainBlocks('pat')],
+    ),
+    viewportHeight: 468,
   },
   {
     ...CAPTURE,
