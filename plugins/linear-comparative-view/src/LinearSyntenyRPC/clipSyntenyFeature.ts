@@ -118,9 +118,13 @@ export function clipSyntenyFeature(
     }
     bp1 = bp1Next
     bp2 = bp2Next
-    // query ascends monotonically, so once past the window we can stop (only
-    // after collecting at least one op)
-    if (out.length && bp1 > winEnd) {
+    // Query ascends monotonically, so every later op has opQLo >= bp1 > winEnd
+    // and cannot overlap the window — whether or not anything has been collected
+    // yet. This used to also require `out.length`, which disabled the break for
+    // the one input that walks longest: a block lying entirely to the RIGHT of
+    // the window never collects an op, so it read every op of a multi-megabyte
+    // chain to conclude what the first op already said.
+    if (bp1 > winEnd) {
       break
     }
   }
@@ -233,6 +237,19 @@ export function clipLargeBlockToWindow({
       ? Math.ceil(region.end - (winCumLo - bpBefore))
       : Math.ceil(winCumHi - bpBefore + region.start),
   )
+  // A block that doesn't reach the window keeps no op — every op the walk below
+  // retains has to overlap [winStart, winEnd], and the walk only ever moves
+  // forward from `start` — so answer that here, before parsing. What this saves
+  // is not a rare case: the fetch window snaps OUTWARD to a buffer-sized grid
+  // (syntenyFetchRegions, so panning within a cell doesn't refetch) while the
+  // cull window is only the viewport plus one buffer, so up to a full buffer of
+  // fetched blocks sits outside it by construction. Those blocks are dropped by
+  // the viewport cull moments later; without this they first pay
+  // parseCigar2Typed on a multi-megabyte CIGAR string, which is exactly the size
+  // of block that reaches this function at all.
+  if (end < winStart || start > winEnd) {
+    return undefined
+  }
   return clipSyntenyFeature(
     parseCigar2Typed(cigar),
     start,

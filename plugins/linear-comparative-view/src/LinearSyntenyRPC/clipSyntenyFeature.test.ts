@@ -89,6 +89,39 @@ test('block entirely outside the window returns undefined', () => {
   ).toBeUndefined()
 })
 
+// A CIGAR that reports how many ops the walk actually touched. The whole point
+// of the block below is work avoided, and the result is `undefined` either way,
+// so counting reads is the only way to state it.
+function countingCigar(c: Uint32Array) {
+  let reads = 0
+  const proxy = new Proxy(c, {
+    get(target, prop) {
+      if (typeof prop === 'string' && /^\d+$/.test(prop)) {
+        reads++
+      }
+      // No `receiver`: a typed array's length/index getters read internal slots
+      // and reject the proxy as `this`.
+      return Reflect.get(target, prop) as unknown
+    },
+  })
+  return { proxy, reads: () => reads }
+}
+
+test('a block starting past the window stops at the first op', () => {
+  // Query ascends monotonically, so the first op already settles it. The break
+  // used to require `out.length`, which is never satisfied here — so this input,
+  // a whole liftOver chain fetched into the pan buffer but sitting right of the
+  // visible window, read every op to reach the same answer. That is the longest
+  // walk the function has, on the one input whose answer is immediate.
+  const ops = Array.from(
+    { length: 5000 },
+    () => [10, CIGAR_M] as [number, number],
+  )
+  const { proxy, reads } = countingCigar(cig(...ops))
+  expect(clipSyntenyFeature(proxy, 1000, 0, 50000, 1, 0, 100)).toBeUndefined()
+  expect(reads()).toBeLessThanOrEqual(2)
+})
+
 // clipLargeBlockToWindow maps the pixel-derived cumBp window back to the v1
 // region's local bp before clipping. In a reversed display region bpToCumBp runs
 // backward (cumBp = end - coord within the region), so the window mapping must
@@ -176,5 +209,66 @@ describe('clipLargeBlockToWindow window mapping', () => {
       winCumHi: 51000,
     })
     expect(c).toBeUndefined()
+  })
+
+  // The block's own span is tested against the window before the CIGAR string is
+  // parsed, which saves a parse of a multi-megabyte string for every block the
+  // viewport cull is about to drop anyway (a whole band of them: syntenyFetchRegions
+  // snaps the fetch window OUTWARD to a buffer-sized grid so panning within a cell
+  // doesn't refetch, while the cull window is only the viewport plus one buffer).
+  //
+  // Being a pure short-circuit, the saving itself is unobservable from out here —
+  // what these pin is the part that could be WRONG, that it reaches the same answer
+  // the walk it skips would. Every op the walk keeps has to overlap the window and
+  // the walk only moves forward from `start`, so a block on either side keeps
+  // nothing; both directions are checked against the walk itself.
+  test.each([
+    ['left of the window', 250000, 251000],
+    ['right of the window', 1000, 2000],
+  ])('a block %s clips to nothing, as walking it would', (_n, lo, hi) => {
+    // A 1000 bp block on a region that shows 300 kb, so the window lands well
+    // clear of it on one side or the other.
+    const smallBlock = {
+      ...bigBlock,
+      start: 100000,
+      end: 101000,
+      mateStart: 100000,
+      mateEnd: 101000,
+      cigar: '1000M',
+    }
+    const args = {
+      ...smallBlock,
+      v1Index: v1({ refName: 'chr1', start: 0, end: 300000 }),
+      refName: 'chr1',
+      winCumLo: lo,
+      winCumHi: hi,
+    }
+    expect(clipLargeBlockToWindow(args)).toBeUndefined()
+    // and the walk it short-circuits agrees
+    expect(
+      clipSyntenyFeature(
+        cig([1000, CIGAR_M]),
+        smallBlock.start,
+        smallBlock.mateStart,
+        smallBlock.mateEnd,
+        smallBlock.strand,
+        lo,
+        hi,
+      ),
+    ).toBeUndefined()
+  })
+
+  // The gate is on the BLOCK's span, not the window's, so a block that does
+  // reach the window is still clipped normally.
+  test('a block overlapping the window is still clipped', () => {
+    const c = clipLargeBlockToWindow({
+      ...bigBlock,
+      v1Index: v1({ refName: 'chr1', start: 0, end: 300000 }),
+      refName: 'chr1',
+      winCumLo: 1000,
+      winCumHi: 1100,
+    })
+    expect(c?.start).toBe(1000)
+    expect(c?.end).toBe(1100)
   })
 })
