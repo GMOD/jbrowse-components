@@ -676,7 +676,7 @@ segment count as its `score`, so the only change is the track type, since a
 }
 ```
 
-<Figure caption="All 249 Mb of GRCh38 chr1 in three lanes off two files. Top, the bubble file as a curve: segments per bubble. Middle, the same bubbles as the tier's segments lane. Bottom, the tier as a graph, backbone nodes labelled with the megabases they span alternating with bubbles. The blank column is 18.7 Mb of unknown sequence (N) on 1q, where nothing aligns, so no bubbles are called." src="/img/pangenome/hprc_whole_chromosome.png" />
+<Figure caption="All 249 Mb of GRCh38 chr1 in three lanes off two files. Top, the bubble file as a curve: segments per bubble. Middle, the same bubbles as the tier's segments lane. Bottom, the tier as a graph, backbone nodes labelled with the megabases they span alternating with bubbles. The blank column is 1q12, the heterochromatic band next to the centromere: 18.7 Mb of unknown sequence (N) in GRCh38, where nothing aligns, so no bubbles are called. The centromere itself is not blank — bubbles are called across it." src="/img/pangenome/hprc_whole_chromosome.png" />
 
 The graph is 474 nodes against about 751,000 segments in the graph itself, laid
 out in 18 ms. The chain alternates strictly, 237 backbone nodes and 237 bubbles,

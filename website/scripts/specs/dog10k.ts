@@ -1406,6 +1406,16 @@ export const dog10kSpecs: ScreenshotSpec[] = [
       // you zoom out, so this is the only scale at which a per-sample call
       // reads as a block rather than a tick
       loc: 'chr30:38,261,590-38,261,690',
+      // The whole point of the figure is which of the three forward frames is
+      // the coding one, and this is the view prop that answers it: it reads the
+      // CDS phase off the gene track below and tints only that frame's row,
+      // leaving the other two grey. Without it all three rows are drawn in the
+      // same amino-acid colors, and the two non-coding frames carry an
+      // unrelated red stop 30 bp left of the site -- the label below had to
+      // name the consequence precisely because nothing on the image picked a
+      // frame. It is a VIEW prop, not a display one: it sits beside `loc`, not
+      // in the sequence track's entry.
+      colorByCDS: true,
       // No view highlight on the codon, deliberately. It tints every track it
       // crosses, and over the genotype lane that washes the het/hom blues into
       // teal and olive -- the one column the figure is about stops matching the
@@ -1463,12 +1473,12 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     // 870 (pre-sequence-track) cut the last wolf row's block against the frame;
     // the per-position variant lane above the matrix adds its own 60.
     viewportHeight: 1010,
-    // The sequence track puts CGA and its Arg on screen, but three forward
-    // frames are drawn and nothing says which is the coding one -- the CDS frame
-    // is the bottom row (codons begin at positions == 1 mod 3 here, from the
-    // exon's phase-2 start at 38,261,549), and the other two carry an unrelated
-    // red stop 30 bp left of the site. One label names the consequence so the
-    // reader doesn't have to pick a frame.
+    // The sequence track puts CGA and its Arg on screen; `colorByCDS` above is
+    // what says which of the three forward frames it is read in (codons begin
+    // at positions == 1 mod 3 here, from the exon's phase-2 start at
+    // 38,261,549, and the other two frames carry an unrelated red stop 30 bp
+    // left of the site). The label still names the consequence, because a
+    // tinted frame shows WHERE to read and not WHAT the substitution does.
     //
     // Second line is the phenotype, and it says *homozygotes* because that is
     // what the pharmacology shows: liver microsomes from T/T dogs carry no

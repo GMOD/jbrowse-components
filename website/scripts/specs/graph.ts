@@ -1928,28 +1928,44 @@ function graphResolutionPartSpecs(): ScreenshotSpec[] {
 }
 
 function mhcLayoutPartSpecs(): ScreenshotSpec[] {
-  const part = (
-    name: string,
-    layoutMode: 'auto' | 'force',
-    viewportHeight: number,
+  // One object rather than seven positional arguments: the two calls below
+  // differ in six of them, and read as a list of bare numbers and offsets
+  // otherwise -- `('…_force', 'force', 895, 520, { dx: 180, dy: -276 }, …)`
+  // says nothing about which number is a viewport and which a pane.
+  const part = ({
+    name,
+    layoutMode,
+    viewportHeight,
+    // Only the force half sets one. See the call below for why, and for the
+    // measurement; omitting it leaves the pane sizing itself, which is what the
+    // anchored half wants (its height is its rank count).
+    paneHeight,
     // Where the half's own caption sits, as an offset from the graph canvas
     // centre. The two layouts leave their whitespace in different places -- the
     // force drawing's nodes all sit below the top of its pane, the anchored one
     // fills its top rows and empties out under the low ranks -- so a single
     // offset would land on the drawing in one of them.
-    labelOffset: { dx: number; dy: number },
-    label: string,
+    labelOffset,
+    label,
     // The force half additionally carries the right-click route, which used to
     // be pangenome/hprc_node_menu, a whole second capture of this same window
     // and this same drawing (reviewer: "may not need standalone figure combine
     // with pangenome/hprc_mhc_anchored"). What it added over this half was the
     // menu, one ring and the band the menu leaves behind, so it is those three
     // things rather than a figure.
+    nodeMenu,
+  }: {
+    name: string
+    layoutMode: 'auto' | 'force'
+    viewportHeight: number
+    paneHeight?: number
+    labelOffset: { dx: number; dy: number }
+    label: string
     nodeMenu?: {
       actions: ScreenshotAction[]
       annotations: Annotation[]
-    },
-  ): ScreenshotSpec => ({
+    }
+  }): ScreenshotSpec => ({
     mode: 'url',
     name,
     ...(nodeMenu ? { actions: nodeMenu.actions } : {}),
@@ -1984,6 +2000,7 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
           loadedRegion: MHC_REGION,
           layoutMode,
           colorScheme: 'reference-position',
+          ...(paneHeight === undefined ? {} : { paneHeight }),
         },
       ],
     }),
@@ -2043,11 +2060,25 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
   return [
     // the top strip of the force pane: its nodes start well below the top of
     // the canvas, so nothing is covered there
-    part(
-      'pangenome/hprc_mhc_layout_force',
-      'force',
-      1055,
-      {
+    part({
+      name: 'pangenome/hprc_mhc_layout_force',
+      layoutMode: 'force',
+      viewportHeight: 895,
+      // 520 rather than the ~680 the pane sized itself to (review: "try to
+      // reduce height of graphgenomeview on left side"). The force drawing here
+      // is tall and narrow -- a chain that turns down the pane and ends in a
+      // 9.4 kb loop -- so the fit is height-bound and the pane spent its whole
+      // aspect ratio on that. Shortening it scales the drawing down and gives
+      // the height back; the node labels are drawn at a fixed size, so they
+      // stay the size they were.
+      //
+      // It also squares the composite from the other end. `+append` pads the
+      // shorter part, and the note on the anchored half below records that
+      // raising THAT one to 1055 only adds blank page inside it, because its
+      // pane sizes to its own rank count. Bringing this one down to 895 closes
+      // most of the same gap by shrinking the part that was actually taller.
+      paneHeight: 520,
+      labelOffset: {
         // TOP RIGHT, not top left. The two landmark nodes are an allele and the
         // reference stretch it replaces, and this layout draws both of them in
         // the pane's top-left corner -- the caption there covered the second
@@ -2055,7 +2086,7 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
         dx: 180,
         dy: -276,
       },
-      'The same subgraph, force-directed',
+      label: 'The same subgraph, force-directed',
       // THE RIGHT-CLICK ROUTE, folded in from the deleted hprc_node_menu.
       // `Highlight in hg38` writes the node's reference interval into the
       // linear view's own highlight list, where it stays — which is what lets
@@ -2064,7 +2095,7 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
       // already left behind. The node is NAMED (`anchor: { graphNode }`,
       // resolved through the view's nodePositions), so a layout change fails
       // the capture rather than clicking empty canvas.
-      {
+      nodeMenu: {
         actions: [
           // the auto-fit has to have finished before the anchor means anything
           { type: 'delay', ms: 2000 },
@@ -2092,7 +2123,7 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
           { type: 'box', anchor: { text: 'Highlight in hg38' } },
         ],
       },
-    ),
+    }),
     // the one-hop default cut brings in more nodes than the old None cut, so
     // the anchored pane grew past the 775 this used to need. Its label goes in
     // the block under the low-rank rows, which carry a label and almost no
@@ -2107,16 +2138,16 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
     // run then reports as "blank below the last content". It also does not buy
     // the zoom this half would like — the anchored layout stayed at 1.2%,
     // because it fits to the pane and the pane did not grow.
-    part(
-      'pangenome/hprc_mhc_layout_anchored',
-      'auto',
-      790,
-      {
+    part({
+      name: 'pangenome/hprc_mhc_layout_anchored',
+      layoutMode: 'auto',
+      viewportHeight: 790,
+      labelOffset: {
         dx: -310,
         dy: 46,
       },
-      'The same subgraph, anchored on hg38',
-    ),
+      label: 'The same subgraph, anchored on hg38',
+    }),
   ]
 }
 
@@ -2377,10 +2408,21 @@ export const graphSpecs: ScreenshotSpec[] = [
     // bubble, backbone node) into a contrast, and the reviewer could not tell
     // what it was claiming. What makes the column blank is that there is no
     // sequence there to align to, so that is the sentence.
+    //
+    // IT NAMES THE BAND NOW (review: "is that the centromere? just say so").
+    // The honest answer is no, and next to it — which is why a label that only
+    // described the blank kept inviting the question. The blank is 1q12, the
+    // heterochromatic band immediately distal to the centromere
+    // (125,100,000-143,200,000 in GRCh38's cytoband file, against a modeled
+    // centromere ending at 125,100,000), and the bubbles BED's continuous blank
+    // runs 125,183,471-143,314,415 inside it. The centromere itself is NOT
+    // blank here: 21 bubbles are called in the 124th Mb and 40 in the 125th. So
+    // pointing at this column and saying "centromere" would be wrong in a way
+    // the same figure disproves two centimetres to the left.
     annotations: [
       {
         type: 'text',
-        text: '18.7 Mb of unknown sequence (N) in GRCh38. Nothing aligns here, so no bubbles.',
+        text: '1q12, the heterochromatin next to the centromere: 18.7 Mb of unknown sequence (N) in GRCh38, so nothing aligns and no bubble is called.',
         fontSize: 18,
         maxWidth: 250,
         anchor: {

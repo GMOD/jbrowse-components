@@ -1596,8 +1596,15 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   {
     mode: 'url' as const,
     name: 'cancer_sv/k562_fusion_inspector_split',
-    // 830 cut 269 css px off the bottom, from the run's own report
-    viewportHeight: 1100,
+    // 830 cut 269 css px off the bottom, and 1100 still cut the chr22 pileup in
+    // half -- which is most of what read as chaos (review: "the screenshot in 4
+    // is also VERY chaotic"). Every grey curve is one Iso-Seq molecule and its
+    // far end is a ROW in the other panel's pileup, so a clipped pileup turns
+    // the whole fan into lines leaving the frame at the bottom-right with
+    // nothing to land on. Both pileups are tall enough for their rows below and
+    // the frame is tall enough for both pileups; the curves then terminate on
+    // reads a reader can see.
+    viewportHeight: 1500,
     url: sessionSpec(CONFIG, {
       views: [
         {
@@ -1617,7 +1624,11 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 },
                 {
                   trackId: 'K562_isoseq',
-                  height: 260,
+                  // room for every packed row rather than the first ~90 of
+                  // them: a curve's endpoint is the row its read is on, so a
+                  // pileup that overflows its own lane sends that curve off
+                  // the bottom of the panel
+                  height: 380,
                   coverageHeight: 80,
                   showOnlySplitAlignments: true,
                   ...SPLIT_READS,
@@ -1636,7 +1647,10 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 },
                 {
                   trackId: 'K562_isoseq',
-                  height: 260,
+                  // taller than the chr9 lane: the fusion transcript runs from
+                  // NUP214's promoter into XKR3, so the chr22 side is where the
+                  // reads stack up
+                  height: 480,
                   coverageHeight: 80,
                   showOnlySplitAlignments: true,
                   ...SPLIT_READS,
@@ -1658,9 +1672,16 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   {
     mode: 'compose',
     name: 'cancer_sv/k562_starfusion_triage',
+    // TWO frames, not four (review: "we do not need screenshots 1 and 2. just
+    // keep 3 and 4. then allocate more vertical y-space to 4"). The import form
+    // and the unfiltered table were the route in and the starting state, and
+    // both are steps a reader performs rather than results they read: the form
+    // is two dropdowns, and the 44-row table's own content is described by the
+    // prose above it. What is left is the pair of frames that carry the
+    // finding — the search that leaves two rows and one chord, and where one of
+    // those rows opens. Both part specs stay, so the prose can still link each
+    // dropped step as a live view.
     parts: [
-      'cancer_sv/k562_fusion_inspector_form',
-      'cancer_sv/k562_fusion_inspector_all',
       'cancer_sv/k562_fusion_inspector_pair',
       'cancer_sv/k562_fusion_inspector_split',
     ],

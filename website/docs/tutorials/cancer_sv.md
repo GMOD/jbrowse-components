@@ -370,17 +370,22 @@ caller's output relates to the reads under it, is easier to follow on a known
 fusion.
 
 The SV inspector opens DepMap's STAR-Fusion output as a table beside a circular
-view of it, one chord per row. Searching the table narrows both halves, since
-the circle draws the rows the search leaves. `chr9` leaves `BCR--ABL1` and
-`NUP214--XKR3`, one junction seen from both sides, carrying an order of
-magnitude more junction reads than anything else in the file.
+view of it, one chord per row. **Add → SV inspector**, then a File Type of
+STAR-Fusion, which the wizard cannot infer from this file's `.tsv` extension;
+all 44 calls load as one table, their artifact tail converging on chrM between
+chrY and chr1. Both of those steps are live links under the figure below.
+
+Searching the table narrows both halves, since the circle draws the rows the
+search leaves. `chr9` leaves `BCR--ABL1` and `NUP214--XKR3`, one junction seen
+from both sides, carrying an order of magnitude more junction reads than
+anything else in the file.
 
 A triaged row is not the end of the table. Every row carries a menu on its
 caret, and **Open in breakpoint split view** takes that call's two breakpoints
 into one view with the reads under both, which is where a call stops being a
 line in a file.
 
-<Figure caption="K562 STAR-Fusion calls in the SV inspector, top to bottom: the import form; all 44 calls, with the artifact tail converging on chrM between chrY and chr1; the table searched for chr9, leaving two rows and the single chord they draw between 22q11 and 9q34; and the NUP214--XKR3 row opened in a breakpoint split view, its two breakpoints banded green with the Iso-Seq reads that cross between them." src="/img/cancer_sv/k562_starfusion_triage.png" links="Import form=cancer_sv/k562_fusion_inspector_form,All 44 calls=cancer_sv/k562_fusion_inspector_all,Searched for chr9=cancer_sv/k562_fusion_inspector_pair,Breakpoint split view=cancer_sv/k562_fusion_inspector_split" />
+<Figure caption="K562 STAR-Fusion calls in the SV inspector. Above, the table searched for chr9, leaving two rows and the single chord they draw between 22q11 and 9q34. Below, the NUP214--XKR3 row opened in a breakpoint split view: its two breakpoints are banded green, and every grey curve is one Iso-Seq molecule whose alignment ends at the chr9 band and resumes at the chr22 one." src="/img/cancer_sv/k562_starfusion_triage.png" links="Import form=cancer_sv/k562_fusion_inspector_form,All 44 calls=cancer_sv/k562_fusion_inspector_all,Searched for chr9=cancer_sv/k562_fusion_inspector_pair,Breakpoint split view=cancer_sv/k562_fusion_inspector_split" />
 
 That split view is the `NUP214--XKR3` side of the pair. The `BCR--ABL1` side
 gets the rest of this section, laid out as two regions of one view rather than

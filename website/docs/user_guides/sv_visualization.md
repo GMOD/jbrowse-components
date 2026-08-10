@@ -93,7 +93,12 @@ reverse-strand middle (blue) paints between its forward-strand ends (red), and
 the magenta arc joins the two breakpoints; the section below it spans the locus
 without splitting.
 
-<Figure caption="The reads grouped by Group by... → Split read (SA tag): the same inversion (HGSV_10047, chr1:197,787,660-197,788,855) in HG00151 Oxford Nanopore long reads, with the 1KGP ensemble VCF call above. The reads that cross the breakpoints are the upper section, the ones that do not are below it." src="/img/inversion_long_read.png" />
+The two sections together are the genotype. A read covers one haplotype, so a
+locus where some reads invert and the rest run through unbroken is one inverted
+copy and one that is not — a heterozygous inversion, read off the pileup rather
+than taken from the caller's `GT`.
+
+<Figure caption="The reads grouped by Group by... → Split read (SA tag): the same inversion (HGSV_10047, chr1:197,787,660-197,788,855) in HG00151 Oxford Nanopore long reads, with the 1KGP ensemble VCF call above. Split reads are the upper section, each painting a reverse-strand core between forward-strand flanks; the reads below cross the same span unbroken. One haplotype inverted and one not is a heterozygous inversion." src="/img/inversion_long_read.png" />
 
 ### Insert size color scheme
 

@@ -645,6 +645,37 @@ export const svSpecs: ScreenshotSpec[] = [
     // the cursor would otherwise park over the pileup and raise the read tooltip
     hideTooltip: true,
     actions: [PARK_CURSOR, { type: 'delay', ms: 1500 }],
+    // WHAT THE TWO SECTIONS ARE (review: "consider adding additional text
+    // annotation to say that the top row of groupby is reads with SA tag
+    // (split alignments) and bottom row is non-split alignments. this implies
+    // basically heterozygous inversion"). The display already writes `Split
+    // (SA)` and `Not split` on each divider, but those are the grouping's own
+    // vocabulary and neither says what the reads under it are doing.
+    //
+    // Anchored to the divider labels themselves rather than to a coordinate:
+    // the strip beside each is the one place on this figure that is empty at
+    // any window width, and it moves with the section it names. `alignX:
+    // 'right'` puts the pill's left edge past the label's right edge without a
+    // dx that encodes the label's width.
+    //
+    // Both pills stay on one line each. Wrapped, they would grow down into the
+    // coverage lane immediately below the divider, which is data. The
+    // heterozygosity the two sections add up to is in the caption instead —
+    // that is a conclusion drawn from both, not a label for either.
+    annotations: [
+      {
+        type: 'text',
+        text: 'a supplementary alignment at each breakpoint: forward flank, reverse core, forward flank',
+        fontSize: 18,
+        anchor: { text: 'Split (SA)', alignX: 'right', dx: 14 },
+      },
+      {
+        type: 'text',
+        text: 'no supplementary alignment: these cross the same span unbroken, so their haplotype is not inverted',
+        fontSize: 18,
+        anchor: { text: 'Not split', alignX: 'right', dx: 14 },
+      },
+    ],
   },
 
   // C-GIAB live demo screenshots (load from jbrowse.org, not local test data)
