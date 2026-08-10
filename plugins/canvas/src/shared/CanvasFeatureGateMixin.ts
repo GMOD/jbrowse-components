@@ -28,6 +28,7 @@ declare const process: { env: { NODE_ENV?: string } }
  */
 interface GateHost {
   configuration: AnyConfigurationModel
+  gateActive: boolean
   densityGateActive: boolean
   setByteEstimate: (measurement: {
     bytes: number | undefined
@@ -102,21 +103,11 @@ export default function CanvasFeatureGateMixin() {
     .views(self => ({
       /**
        * #getter
-       * Contributes the opt-in additively rather than overriding
-       * `derivedRegionTooLargeEnabled`: `MultiRegionDisplayMixin` ORs this in,
-       * so the gate stays on whichever side of `.compose()` this mixin lands.
+       * Contributes the opt-in additively rather than overriding `gateEnabled`:
+       * `RegionTooLargeMixin` ORs this with `measuresBytesPreFlight`, so the
+       * gate stays on whichever side of `.compose()` this mixin lands.
        */
-      get gateFoldedIntoFetch() {
-        return true
-      },
-      /**
-       * #getter
-       * Whether the density (features-per-pixel) axis applies. Byte-only displays
-       * override this to `false`: e.g. `LinearMultiRowFeatureDisplay` paints
-       * features into fixed lanes, so a high total feature count is not a
-       * per-glyph render cost — only the download (byte) budget should gate it.
-       */
-      get densityGateEnabled() {
+      get measuresBytesInFetch() {
         return true
       },
       /**
@@ -158,16 +149,18 @@ export default function CanvasFeatureGateMixin() {
       /**
        * #getter
        * The density budget passed to the worker and used by the derived verdict:
-       * undefined (gate off) when nothing gates, otherwise the config. Force-load
-       * and the `AUTO_FORCE_LOAD_BP` floor both reach this through the shared
-       * `densityGateActive`, so approving a track's *size* no longer
-       * half-disables its *density* axis by side effect, and the floor is
-       * compared in one place rather than restated here.
+       * undefined (gate off) when the axis can't gate, otherwise the config.
+       * Every term for that — the opt-in, force-load, the `AUTO_FORCE_LOAD_BP`
+       * floor — is inside `densityGateActive`, so approving a track's *size* no
+       * longer half-disables its *density* axis by side effect and none of them
+       * is restated here. It used to ask twice, `!densityGateEnabled ||
+       * !densityGateActive`, because the first hook lived on this mixin where
+       * the second one couldn't see it; both are `RegionTooLargeMixin`'s now.
        */
       get maxFeatureDensity(): number | undefined {
-        return !self.densityGateEnabled || !host(self).densityGateActive
-          ? undefined
-          : getConf(host(self), 'maxFeatureScreenDensity')
+        return host(self).densityGateActive
+          ? getConf(host(self), 'maxFeatureScreenDensity')
+          : undefined
       },
     }))
     .views(self => ({
@@ -235,12 +228,29 @@ export default function CanvasFeatureGateMixin() {
         if (measurements.length === 0 || !viewport) {
           return
         }
-        // Stamped whatever the batch learned. A dense region short-circuits on
-        // its feature count and reports no bytes, but it did ask the adapter
-        // about this viewport, and that is what `gateMeasurementStale` answers —
-        // keying the stamp on bytes instead makes a density-blocked display
-        // refetch forever.
-        host(self).setGateMeasuredViewport(viewport)
+        // Stamped whatever the batch learned, but only when the gate could
+        // learn anything. A dense region short-circuits on its feature count and
+        // reports no bytes, and it must still stamp — it did ask the adapter
+        // about this viewport, and that is what `gateMeasurementStale` answers,
+        // so keying the stamp on bytes instead makes a density-blocked display
+        // refetch forever. A force-loaded fetch is the other case and goes the
+        // other way: the worker was handed no budget on either axis, so it
+        // measured against nothing and the gate asked nothing. Stamping there
+        // wrote "this viewport has been measured" over a fetch that could not
+        // have measured it, and the pre-flight path already answers the other
+        // way — `byteGateBlocksFetch` returns before its own stamp when
+        // `gateActive` is false. The two agreeing is the point: the stamp means
+        // one thing, so putting a track back under the gate
+        // (`setForceLoadTrack(false)`, from a plugin or a test) lands on a
+        // viewport that reads as unmeasured and re-measures, instead of
+        // inheriting a stamp from fetches the gate sat out.
+        //
+        // The density stats below are deliberately outside this: they are
+        // committed on every successful fetch regardless of budget, which is
+        // what lets zooming back out re-gate from the live main-thread verdict.
+        if (host(self).gateActive) {
+          host(self).setGateMeasuredViewport(viewport)
+        }
         const byteCounts: number[] = []
         for (const { displayedRegionIndex, region, result } of measurements) {
           const { bytes, featureCount } = result
@@ -282,21 +292,21 @@ export default function CanvasFeatureGateMixin() {
       // reused displayedRegionIndex against a prior chromosome's stats.
       afterAttach() {
         // Compose-order self-check. Both this mixin and `RegionTooLargeMixin`
-        // (via MultiRegionDisplayMixin) declare `gateFoldedIntoFetch`, and
+        // (via MultiRegionDisplayMixin) declare `measuresBytesInFetch`, and
         // `types.compose` resolves the collision to the later argument — so
         // composing this one FIRST silently switches the entire size gate off
         // with no error anywhere. Reading our own opt-in back is the whole test:
         // if it isn't true, the base's `false` won.
         if (
           process.env.NODE_ENV !== 'production' &&
-          !self.gateFoldedIntoFetch
+          !self.measuresBytesInFetch
         ) {
           console.error(
             '[jbrowse display contract] CanvasFeatureGateMixin() must be ' +
               'composed AFTER MultiRegionDisplayMixin(): the later .compose() ' +
-              'argument wins on `gateFoldedIntoFetch`, and the region-too-large ' +
-              'gate is currently disabled for this display. See ' +
-              'agent-docs/reference/REGION_TOO_LARGE.md.',
+              'argument wins on `measuresBytesInFetch`, and the ' +
+              'region-too-large gate is currently disabled for this display. ' +
+              'See agent-docs/reference/REGION_TOO_LARGE.md.',
           )
         }
         onDisplayedRegionsChange(

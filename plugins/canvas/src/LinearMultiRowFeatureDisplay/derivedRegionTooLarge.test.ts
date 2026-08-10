@@ -2,16 +2,16 @@ import { getMembers } from '@jbrowse/mobx-state-tree'
 
 import { createTestEnvironment } from './testEnv.ts'
 
-// CanvasFeatureGateMixin never sets `byteGateEnabled` (it folds the byte check
+// CanvasFeatureGateMixin never sets `measuresBytesPreFlight` (it folds the byte check
 // into its feature RPC instead of running the pre-flight), so the opt-in comes
-// entirely from `gateFoldedIntoFetch`, which RegionTooLargeMixin ORs into
-// `derivedRegionTooLargeEnabled`. Additive, so the gate survives either
+// entirely from `measuresBytesInFetch`, which RegionTooLargeMixin ORs into
+// `gateEnabled`. Additive, so the gate survives either
 // composition order — this used to hinge on the mixin composing last, and
 // swapping the two lines turned the whole byte/density gate off silently.
 test('the gate opt-in survives regardless of mixin composition order', () => {
   const { display } = createTestEnvironment().createDisplay()
-  expect(display.byteGateEnabled).toBe(false)
-  expect(display.derivedRegionTooLargeEnabled).toBe(true)
+  expect(display.measuresBytesPreFlight).toBe(false)
+  expect(display.gateEnabled).toBe(true)
 })
 
 // The method-shaped reactive hooks must stay in `.views()`: as actions MobX runs
@@ -190,6 +190,59 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     // the kept estimate, with no round trip
     display.setForceLoadTrack(false)
     expect(display.regionTooLarge).toBe(true)
+  })
+
+  // ...and it does not claim to have *asked* about this viewport either. The
+  // stamp `gateMeasurementStale` reads means "the gate asked the adapter", and a
+  // force-loaded fetch carries no budget on either axis, so it asked nothing.
+  // Stamping it anyway left a revoked track holding a stamp from fetches that
+  // never measured, so the fetch autoruns would skip the one re-measure the
+  // banner needs until the viewport moved. The pre-flight path always got this
+  // right — `byteGateBlocksFetch` returns above its own stamp when the gate is
+  // inactive — and the two paths have to mean the same thing by the stamp.
+  it('does not stamp the viewport for a fetch the gate sat out', () => {
+    const { display, view } = createTestEnvironment().createDisplay()
+    view.zoomTo(100)
+    display.setForceLoadTrack(true)
+
+    display.commitGateMeasurements(
+      [
+        {
+          displayedRegionIndex: 0,
+          region: { start: 0, end: 10_000 },
+          result: { featureCount: 12 },
+        },
+      ],
+      display.gateViewport,
+    )
+
+    display.setForceLoadTrack(false)
+    expect(display.gateMeasurementStale).toBe(true)
+  })
+
+  // The density stats are the deliberate exception: they are committed whatever
+  // the budget was, which is what lets zooming back out re-gate from the live
+  // main-thread verdict rather than waiting on a fresh worker rejection.
+  it('still records density stats for a force-loaded fetch', () => {
+    const { display, view } = createTestEnvironment().createDisplay()
+    view.zoomTo(100)
+    display.setForceLoadTrack(true)
+
+    display.commitGateMeasurements(
+      [
+        {
+          displayedRegionIndex: 0,
+          region: { start: 0, end: 10_000 },
+          result: { featureCount: 12 },
+        },
+      ],
+      display.gateViewport,
+    )
+
+    expect(display.densityStatsPerRegion.get(0)).toEqual({
+      featureCount: 12,
+      regionWidthBp: 10_000,
+    })
   })
 
   it('keeps force-load across region navigation', () => {
