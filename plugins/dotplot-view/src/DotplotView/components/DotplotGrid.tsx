@@ -122,10 +122,8 @@ const RegionGrid = observer(function RegionGrid({
 // the divider tint that says "no sequence here".
 const DotplotGrid = observer(function DotplotGrid({
   model,
-  children,
 }: {
   model: DotplotViewModel
-  children?: React.ReactNode
 }) {
   const { viewWidth, viewHeight, hasVisibleRegions } = model
   const theme = useTheme()
@@ -137,7 +135,6 @@ const DotplotGrid = observer(function DotplotGrid({
         {...getFillProps(theme.palette.divider)}
       />
       {hasVisibleRegions ? <RegionGrid model={model} /> : null}
-      {children}
     </>
   )
 })

@@ -66,6 +66,88 @@ test('off-axis region returns undefined', () => {
   ).toBeUndefined()
 })
 
+// The two axes of a dotplot are two different assemblies, and the pixel lookup
+// under these getters compares refNames only — so a `chr1` shared by the target
+// and query assemblies used to band BOTH axes for a highlight belonging to one.
+function asmConf(name: string, aliases: string[] = []) {
+  return {
+    name,
+    aliases,
+    sequence: {
+      trackId: `${name}_refseq`,
+      type: 'ReferenceSequenceTrack',
+      adapter: {
+        type: 'FromConfigSequenceAdapter',
+        features: [
+          {
+            refName: 'chr1',
+            uniqueId: 'chr1',
+            start: 0,
+            end: 1000,
+            seq: 'a'.repeat(1000),
+          },
+        ],
+      },
+    },
+  }
+}
+
+async function setupTwoAssemblies() {
+  const session = createTestSession() as any
+  session.addAssemblyConf(asmConf('hg38', ['GRCh38']))
+  session.addAssemblyConf(asmConf('mm10'))
+  await session.assemblyManager.waitForAssembly('hg38')
+  await session.assemblyManager.waitForAssembly('mm10')
+  const region = (assemblyName: string) => ({
+    assemblyName,
+    refName: 'chr1',
+    start: 0,
+    end: 1000,
+  })
+  const view = session.addView('DotplotView', {
+    height: 600,
+    assemblyNames: ['hg38', 'mm10'],
+    hview: { bpPerPx: 1, offsetPx: 0, displayedRegions: [region('hg38')] },
+    vview: { bpPerPx: 1, offsetPx: 0, displayedRegions: [region('mm10')] },
+  })
+  view.setWidth(800)
+  return view
+}
+
+test('a highlight naming one axis assembly does not band the other axis', async () => {
+  const model = await setupTwoAssemblies()
+  const span = { refName: 'chr1', start: 100, end: 200 }
+
+  expect(
+    model.getHHighlightCoords({ ...span, assemblyName: 'hg38' }),
+  ).toBeDefined()
+  expect(
+    model.getVHighlightCoords({ ...span, assemblyName: 'hg38' }),
+  ).toBeUndefined()
+
+  expect(
+    model.getHHighlightCoords({ ...span, assemblyName: 'mm10' }),
+  ).toBeUndefined()
+  expect(
+    model.getVHighlightCoords({ ...span, assemblyName: 'mm10' }),
+  ).toBeDefined()
+})
+
+test('an alias of the axis assembly still bands that axis', async () => {
+  const model = await setupTwoAssemblies()
+  const span = { refName: 'chr1', start: 100, end: 200, assemblyName: 'GRCh38' }
+  expect(model.getHHighlightCoords(span)).toBeDefined()
+  expect(model.getVHighlightCoords(span)).toBeUndefined()
+})
+
+// hand-authored session JSON and `init.highlight` locstrings both omit it
+test('a highlight with no assemblyName bands both axes', async () => {
+  const model = await setupTwoAssemblies()
+  const span = { refName: 'chr1', start: 100, end: 200 }
+  expect(model.getHHighlightCoords(span)).toBeDefined()
+  expect(model.getVHighlightCoords(span)).toBeDefined()
+})
+
 test('addHighlightFromMouseCoords bands the drag rect on both axes', () => {
   const model = setup()
   const { viewHeight } = model

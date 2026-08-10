@@ -1,9 +1,10 @@
 import { getSession } from '@jbrowse/core/util'
+import { highlightKey } from '@jbrowse/core/util/highlights'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import DotplotHighlightBands from './DotplotHighlightBands.tsx'
-import { getHighlightColor, highlightKey } from './highlightUtils.ts'
+import { getHighlightColor } from './highlightUtils.ts'
 
 import type { DotplotViewModel } from '../model.ts'
 

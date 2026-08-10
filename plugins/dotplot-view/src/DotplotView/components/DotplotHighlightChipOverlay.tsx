@@ -1,12 +1,13 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { getSession } from '@jbrowse/core/util'
+import { highlightKey } from '@jbrowse/core/util/highlights'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
 import LinkIcon from '@mui/icons-material/Link'
 import { Box, Tooltip, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { getHighlightColor, highlightKey } from './highlightUtils.ts'
+import { getHighlightColor } from './highlightUtils.ts'
 
 import type { DotplotViewModel } from '../model.ts'
 import type { HighlightType } from '@jbrowse/core/util/highlights'

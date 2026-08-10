@@ -41,19 +41,22 @@ const MouseInteractionLayer = observer(function MouseInteractionLayer({
   )
   return (
     <>
+      {/* grid then overlays, the same order the SVG export's plot group uses
+          (which then draws the dots over both). The rubber-band rect goes last:
+          it is the live drag, and a highlight band painted after it tinted the
+          selection the user is still dragging out. */}
       <svg width={model.viewWidth} height={model.viewHeight}>
-        <DotplotGrid model={model}>
-          {validSelect && anchor && pointer ? (
-            <rect
-              fill="rgba(255,0,0,0.3)"
-              x={Math.min(anchor.x, pointer.x)}
-              y={Math.min(anchor.y, pointer.y)}
-              width={Math.abs(dx)}
-              height={Math.abs(dy)}
-            />
-          ) : null}
-          {svgOverlays}
-        </DotplotGrid>
+        <DotplotGrid model={model} />
+        {svgOverlays}
+        {validSelect && anchor && pointer ? (
+          <rect
+            fill="rgba(255,0,0,0.3)"
+            x={Math.min(anchor.x, pointer.x)}
+            y={Math.min(anchor.y, pointer.y)}
+            width={Math.abs(dx)}
+            height={Math.abs(dy)}
+          />
+        ) : null}
       </svg>
       <div className={classes.htmlOverlay}>
         <Suspense fallback={null}>

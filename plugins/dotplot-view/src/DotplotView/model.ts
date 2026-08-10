@@ -89,12 +89,30 @@ function axisTicks(view: Dotplot1DViewModel) {
   return makeTicks(staticBlocks.contentBlocks, bpPerPx)
 }
 
-// Resolve a region's refName to the assembly's canonical name, falling back to
-// the raw name when the assembly isn't loaded or has no alias for it. Takes a
-// plain node (not DotplotViewModel) to avoid a self-referential type cycle when
-// called from the model's own views.
-function canonicalRegion(
+// Resolve a highlight/bookmark region against ONE axis of the plot, or reject
+// it as belonging to the other one. Two things happen here that the pixel
+// lookup below doesn't do on its own:
+//
+// - The assembly check. `bpToPx` compares refNames and nothing else, and a
+//   dotplot is the one view whose two layouts are two different assemblies —
+//   so on an hg38-vs-mm10 plot a bookmark on mm10 `chr1` also banded hg38's
+//   `chr1` on the horizontal axis. Aliases go through the axis assembly's
+//   `hasName`, so a highlight naming `GRCh38` still lands on an `hg38` axis.
+//   A region with no assemblyName is drawn on both axes: hand-authored session
+//   JSON and `init.highlight` locstrings omit it, and on a self-vs-self plot
+//   both bands are wanted regardless.
+// - The refName alias, resolved against the AXIS assembly rather than the
+//   region's own. Having passed the check above they name the same assembly,
+//   and the axis's is the one the view has already waited on — `initialized`
+//   gates on it, whereas `getCanonicalRefName` throws outright on an assembly
+//   whose aliases haven't loaded, which a bookmark on some unrelated assembly
+//   can be.
+//
+// Takes a plain node (not DotplotViewModel) to avoid a self-referential type
+// cycle when called from the model's own views.
+function axisHighlightRegion(
   node: IAnyStateTreeNode,
+  axisAssemblyName: string | undefined,
   region: {
     assemblyName?: string
     refName: string
@@ -102,12 +120,19 @@ function canonicalRegion(
     end: number
   },
 ) {
-  const { assemblyManager } = getSession(node)
-  const asm = region.assemblyName
-    ? assemblyManager.get(region.assemblyName)
+  const asm = axisAssemblyName
+    ? getSession(node).assemblyManager.get(axisAssemblyName)
     : undefined
-  const refName = asm?.getCanonicalRefName(region.refName) ?? region.refName
-  return { ...region, refName }
+  const onAxis = region.assemblyName
+    ? (asm?.hasName(region.assemblyName) ??
+      region.assemblyName === axisAssemblyName)
+    : true
+  return onAxis
+    ? {
+        ...region,
+        refName: asm?.getCanonicalRefName(region.refName) ?? region.refName,
+      }
+    : undefined
 }
 
 // Collapse an axis' drag span into a single highlight region. A drag can start
@@ -891,8 +916,8 @@ export default function stateModelFactory(pm: PluginManager) {
           self.init = undefined
           // Highlights are (assemblyName, refName, start, end) against the pair
           // being cleared. Kept, they reappear over whatever pair is picked
-          // next, banding whichever refNames happen to share a name — and the
-          // chips offer to dismiss a region the plot no longer shows.
+          // next whenever it reuses one of these assemblies — and the chips
+          // offer to dismiss a region the plot no longer shows.
           self.setHighlight([])
           // View-local track configs exist only for the read-vs-ref plot that
           // synthesized them; nothing can resolve them once its tracks are
@@ -1255,16 +1280,15 @@ export default function stateModelFactory(pm: PluginManager) {
           start: number
           end: number
         }) {
-          return getLayoutHighlightCoords(
-            self.hview,
-            canonicalRegion(self, region),
-          )
+          const r = axisHighlightRegion(self, self.assemblyNames[0], region)
+          return r ? getLayoutHighlightCoords(self.hview, r) : undefined
         },
         /**
          * #method
          * Map a highlight/bookmark region to {top, height} px on the vertical
          * axis. The vview lays out bottom-to-top, so the band is y-flipped into
-         * screen space. Returns undefined when the region isn't on vview.
+         * screen space. Returns undefined when the region isn't on vview's
+         * assembly/displayed regions.
          */
         getVHighlightCoords(region: {
           assemblyName?: string
@@ -1272,10 +1296,8 @@ export default function stateModelFactory(pm: PluginManager) {
           start: number
           end: number
         }) {
-          const coords = getLayoutHighlightCoords(
-            self.vview,
-            canonicalRegion(self, region),
-          )
+          const r = axisHighlightRegion(self, self.assemblyNames[1], region)
+          const coords = r ? getLayoutHighlightCoords(self.vview, r) : undefined
           return coords
             ? {
                 top: self.viewHeight - (coords.left + coords.width),

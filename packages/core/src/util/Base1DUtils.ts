@@ -286,6 +286,36 @@ export function layoutBpToPx(
   return bpToPx({ ...args, self: layout })?.offsetPx
 }
 
+// A highlight's span narrowed to what `layout` can actually place. `bpToPx`
+// answers only for a coord that falls inside a displayed region, so an end
+// hanging past one takes the whole band down with it — a bookmark on a whole
+// chromosome drew nothing at all in a view showing a slice of that chromosome,
+// which is the shape every region a read-vs-ref dotplot's horizontal axis
+// displays has (gatherOverlaps windows them around the aligned segments).
+//
+// Ends that are already inside some region of this refName are left exactly
+// where they are, so a highlight spanning two same-refName regions still bands
+// across both rather than being clipped to the first. Only when one is
+// homeless does the first overlapping region get to clamp it.
+function clipToDisplayedRegions(
+  layout: ViewLayout,
+  region: { refName: string; start: number; end: number },
+) {
+  const [start, end] =
+    region.start <= region.end
+      ? [region.start, region.end]
+      : [region.end, region.start]
+  const rs = layout.displayedRegions.filter(r => r.refName === region.refName)
+  const placeable = (c: number) => rs.some(r => c >= r.start && c <= r.end)
+  if (placeable(start) && placeable(end)) {
+    return { start, end }
+  }
+  const r = rs.find(r => start <= r.end && end >= r.start)
+  return r
+    ? { start: Math.max(start, r.start), end: Math.min(end, r.end) }
+    : undefined
+}
+
 // Map a region's start/end onto `layout` and return the pixel position+width to
 // render a highlight band. `minWidth` floors the band so it stays visible when
 // zoomed out far enough that it would otherwise collapse to a sub-pixel sliver.
@@ -296,11 +326,18 @@ export function getLayoutHighlightCoords(
   region: { refName: string; start: number; end: number },
   minWidth = 3,
 ) {
+  const clipped = clipToDisplayedRegions(layout, region)
+  if (!clipped) {
+    return undefined
+  }
   const s = layoutBpToPx(layout, {
     refName: region.refName,
-    coord: region.start,
+    coord: clipped.start,
   })
-  const e = layoutBpToPx(layout, { refName: region.refName, coord: region.end })
+  const e = layoutBpToPx(layout, {
+    refName: region.refName,
+    coord: clipped.end,
+  })
   return s !== undefined && e !== undefined
     ? {
         width: Math.max(Math.abs(e - s), minWidth),

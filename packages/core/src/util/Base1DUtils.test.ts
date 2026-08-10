@@ -550,6 +550,46 @@ describe('getLayoutHighlightCoords', () => {
     })
     expect(coords).toBeUndefined()
   })
+
+  // bpToPx answers only inside a displayed region, so an end hanging past one
+  // used to take the whole band down with it — a whole-chromosome bookmark drew
+  // nothing at all in a view showing a slice of that chromosome
+  it('clips a band that overhangs the displayed region', () => {
+    const self = makeSnap([{ refName: 'chr1', start: 200, end: 400 }])
+    expect(
+      getLayoutHighlightCoords(self, {
+        refName: 'chr1',
+        start: 0,
+        end: 100_000,
+      }),
+    ).toEqual({ left: 0, width: 200 })
+    expect(
+      getLayoutHighlightCoords(self, { refName: 'chr1', start: 0, end: 300 }),
+    ).toEqual({ left: 0, width: 100 })
+    expect(
+      getLayoutHighlightCoords(self, { refName: 'chr1', start: 300, end: 900 }),
+    ).toEqual({ left: 100, width: 100 })
+  })
+
+  it('still returns undefined for a band that misses the region entirely', () => {
+    const self = makeSnap([{ refName: 'chr1', start: 200, end: 400 }])
+    expect(
+      getLayoutHighlightCoords(self, { refName: 'chr1', start: 500, end: 600 }),
+    ).toBeUndefined()
+  })
+
+  // both ends land in a region of their own, so neither is clamped and the band
+  // covers the gap between them rather than being clipped to the first region
+  it('spans two displayed regions of the same refName', () => {
+    const self = makeSnap([
+      { refName: 'chr1', start: 0, end: 100 },
+      { refName: 'chr2', start: 0, end: 100 },
+      { refName: 'chr1', start: 500, end: 600 },
+    ])
+    expect(
+      getLayoutHighlightCoords(self, { refName: 'chr1', start: 50, end: 550 }),
+    ).toEqual({ left: 50, width: 200 })
+  })
 })
 
 describe('moveTo with clamped bpPerPx (extraBp path)', () => {
