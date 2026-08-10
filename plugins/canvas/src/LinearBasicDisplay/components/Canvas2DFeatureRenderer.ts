@@ -71,15 +71,54 @@ type BpToScreen = (bp: number) => number
 // hand-ported here until adr-051; `hpmathParity.test.ts` pins the generated
 // pair against the implementations they replaced.
 
+// The furthest a glyph reaches outside the box it rides on: chevrons half of
+// CHEVRON_H_PX around the center row, arrowheads HEAD_HALF_H_PX, continuation
+// triangles CONT_TRI_HALF_H_PX, plus the ≤1px snapBoxCenterYPx snap. 8 clears
+// every one of them, and being generous costs nothing — the test below is only
+// ever decisive for primitives already well off-screen.
+const GLYPH_Y_SLACK_PX = 8
+
+// Whether a primitive occupying `[topY, topY + heightPx]` in absolute track
+// coordinates can put ink on the canvas.
+//
+// It cannot change a pixel: `forEachClippedBlock` clips every block to
+// `[0, canvasHeight]`, so anything this rejects was already invisible. It is
+// worth asking because a fixed-height display scrolls over content many times
+// its own height — on screen that is thousands of no-op `fillRect`s a frame,
+// and on the SVG export path each one is an element serialized into the file
+// and then clipped away. `drawLines`' on-screen chevron window is the same
+// argument on the other axis.
+function rowVisible(state: RenderState, topY: number, heightPx: number) {
+  const y = topY - state.scrollY
+  return (
+    y + heightPx >= -GLYPH_Y_SLACK_PX &&
+    y <= state.canvasHeight + GLYPH_Y_SLACK_PX
+  )
+}
+
+// `lineYs` and `arrowYs` are the box's CENTER (that is what `snapBoxCenterYPx`
+// takes), while `rectYs` is its top — so the two families measure their extent
+// differently and only this pair of helpers has to know which is which.
+function centeredRowVisible(
+  state: RenderState,
+  centerY: number,
+  heightPx: number,
+) {
+  return rowVisible(state, centerY - heightPx * 0.5, heightPx)
+}
+
 function drawLines(
   ctx: Ctx2D,
   region: RegionRenderData,
   block: BpRegionBounds,
   toX: BpToScreen,
-  scrollY: number,
-  canvasWidth: number,
+  state: RenderState,
 ) {
+  const { scrollY, canvasWidth } = state
   for (let i = 0; i < region.lineYs.length; i++) {
+    if (!centeredRowVisible(state, region.lineYs[i]!, region.lineHeights[i]!)) {
+      continue
+    }
     const startBp = region.linePositions[i * 2]!
     const endBp = region.linePositions[i * 2 + 1]!
     const x1 = toX(startBp)
@@ -196,8 +235,9 @@ function drawRects(
   ctx: Ctx2D,
   region: RegionRenderData,
   toX: BpToScreen,
-  scrollY: number,
+  state: RenderState,
 ) {
+  const { scrollY } = state
   const styles = new Map<number, string>()
   let lastStyle: string | undefined
   // outlineColor is per-region, so the stroke state is hoisted out of the loop
@@ -210,6 +250,9 @@ function drawRects(
     ctx.lineWidth = 1
   }
   for (let i = 0; i < region.rectYs.length; i++) {
+    if (!rowVisible(state, region.rectYs[i]!, region.rectHeights[i]!)) {
+      continue
+    }
     const y = Math.floor(region.rectYs[i]! - scrollY + 0.5)
     const h = snapBoxHeightPx(region.rectHeights[i]!)
     const [xLeft, w] = paintedRectSpan(
@@ -239,9 +282,15 @@ function drawArrows(
   region: RegionRenderData,
   block: BpRegionBounds,
   toX: BpToScreen,
-  scrollY: number,
+  state: RenderState,
 ) {
+  const { scrollY } = state
   for (let i = 0; i < region.arrowYs.length; i++) {
+    if (
+      !centeredRowVisible(state, region.arrowYs[i]!, region.arrowHeights[i]!)
+    ) {
+      continue
+    }
     const xBp = region.arrowXs[i]!
     const rawDir = region.arrowDirections[i]!
     // `xBp` is whichever end the arrow points off of, so the feature's other end
@@ -342,11 +391,11 @@ function drawContinuation(
   region: RegionRenderData,
   block: BpRegionBounds,
   toX: BpToScreen,
-  scrollY: number,
+  state: RenderState,
   scissorX: number,
   scissorW: number,
-  canvasWidth: number,
 ) {
+  const { scrollY, canvasWidth } = state
   const scissorLeft = scissorX
   const scissorRight = scissorX + scissorW
   // Only the true canvas edges get markers, never an internal seam between two
@@ -364,6 +413,9 @@ function drawContinuation(
     return
   }
   for (let i = 0; i < region.rectYs.length; i++) {
+    if (!rowVisible(state, region.rectYs[i]!, region.rectHeights[i]!)) {
+      continue
+    }
     const x1 = toX(region.rectPositions[i * 2]!)
     const x2 = toX(region.rectPositions[i * 2 + 1]!)
     const left = Math.min(x1, x2)
@@ -431,7 +483,7 @@ export function drawFeatureBlocks(
   blocks: FeatureRenderBlock[],
   state: RenderState,
 ) {
-  const { canvasWidth, canvasHeight, scrollY } = state
+  const { canvasWidth, canvasHeight } = state
   forEachClippedBlock(
     ctx,
     blocks,
@@ -440,19 +492,18 @@ export function drawFeatureBlocks(
     block => regions.get(block.displayedRegionIndex),
     (region, block, clip) => {
       const toX = makeBpMapper(block)
-      drawLines(ctx, region, block, toX, scrollY, canvasWidth)
-      drawRects(ctx, region, toX, scrollY)
-      drawArrows(ctx, region, block, toX, scrollY)
+      drawLines(ctx, region, block, toX, state)
+      drawRects(ctx, region, toX, state)
+      drawArrows(ctx, region, block, toX, state)
       // Drawn last so the markers sit on top of the glyphs they annotate.
       drawContinuation(
         ctx,
         region,
         block,
         toX,
-        scrollY,
+        state,
         clip.scissorX,
         clip.scissorW,
-        canvasWidth,
       )
     },
   )

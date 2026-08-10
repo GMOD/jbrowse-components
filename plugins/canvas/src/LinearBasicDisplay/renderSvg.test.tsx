@@ -343,21 +343,23 @@ describe('renderSvg', () => {
   it('offsets features and text by scrollTop so a scrolled track exports its viewport', async () => {
     const data = makeData([{ startBp: 1100, endBp: 1200 }])
     const render = renderResult
-    const top = render(
-      await renderSvg(
-        makeModel({ laidOutDataMap: new Map([[0, data]]), scrollTop: 0 }),
-      ),
-    )
-    const scrolled = render(
-      await renderSvg(
-        makeModel({ laidOutDataMap: new Map([[0, data]]), scrollTop: 30 }),
-      ),
-    )
-    // At scrollTop=0 the feature rect sits at y=0; scrolled up by 30 it moves
-    // to y=-30, proving the export honors the on-screen scroll offset instead
-    // of always drawing the track top.
-    expect(top).toContain('<rect x="80" y="0"')
-    expect(scrolled).toContain('<rect x="80" y="-30"')
+    const at = async (scrollTop: number) =>
+      render(
+        await renderSvg(
+          makeModel({ laidOutDataMap: new Map([[0, data]]), scrollTop }),
+        ),
+      )
+    // The fixture's rect occupies track y 0..10. At scrollTop=0 it sits at
+    // y=0; scrolled up by 5 it moves to y=-5, proving the export honors the
+    // on-screen scroll offset instead of always drawing the track top.
+    expect(await at(0)).toContain('<rect x="80" y="0"')
+    expect(await at(5)).toContain('<rect x="80" y="-5"')
+    // Scrolled past it entirely, it is not emitted at all: it would land 20px above
+    // the viewport, inside the block scissor's clip and therefore invisible.
+    // The export used to serialize every such rect anyway (see rowVisible in
+    // Canvas2DFeatureRenderer), which on a track scrolling over thousands of px
+    // of rows is most of the file.
+    expect(await at(30)).not.toContain('<rect x="80"')
   })
 
   // The DOM overlay positions a label div by its TOP at labelY with
