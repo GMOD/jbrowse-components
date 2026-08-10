@@ -32,6 +32,7 @@ import {
   rowLabelsCarryText,
   setupRowSortAutorun,
   setupRunClusteringAutorun,
+  setupTreeDrawingAutorun,
   treeDescribesRows,
   treeSidebarOffset,
   treeSidebarRightEdge,
@@ -1022,7 +1023,7 @@ export default function stateModelFactory(
         // MultiRegionDisplayMixin's afterAttach already runs (see
         // afterAttachAutoChain.test.ts). An explicit call would double-install
         // its fetch autoruns.
-        async afterAttach() {
+        afterAttach() {
           // The byte/density gate clears its own stale per-region stats on
           // chromosome nav (CanvasFeatureGateMixin.afterAttach) — nothing to
           // wire up here.
@@ -1040,24 +1041,19 @@ export default function stateModelFactory(
             }),
           )
 
-          // Light autorun (mobx-only, already bundled): install synchronously.
-          // The two below genuinely code-split heavy d3/clustering code.
+          // Both are mobx-only glue and the barrel is a static import above, so
+          // they install synchronously. The tree drawing one came through
+          // `await import('@jbrowse/tree-sidebar')` until it was measured: a
+          // dynamic import of a barrel this file already imports statically
+          // deferred one 4KB module and dragged the rest of the barrel into an
+          // async chunk, +69KB. See packages/tree-sidebar/CLAUDE.md.
           setupRowSortAutorun(self, {
             name: 'MultiRowFeatureSortRows',
             sortRows: (refName, pos) => {
               self.sortRowsByValueAt(refName, pos)
             },
           })
-
-          try {
-            const { setupTreeDrawingAutorun } =
-              await import('@jbrowse/tree-sidebar')
-            if (isAlive(self)) {
-              setupTreeDrawingAutorun(self)
-            }
-          } catch (e) {
-            console.error(e)
-          }
+          setupTreeDrawingAutorun(self)
 
           // The "Cluster rows by similarity" flavor of the shared declarative-
           // clustering autorun: fires once when `runClustering` flips true

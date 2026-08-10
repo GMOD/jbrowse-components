@@ -13,7 +13,7 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
-import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import {
   MIN_DISPLAY_HEIGHT,
   MultiRegionDisplayMixin,
@@ -30,6 +30,7 @@ import {
   computeClusterHierarchy,
   filterRowsBySubtree,
   reconcileLayout,
+  setupTreeDrawingAutorun,
 } from '@jbrowse/tree-sidebar'
 import { domainFromStats, getNiceDomain } from '@jbrowse/wiggle-core'
 import deepEqual from 'fast-deep-equal'
@@ -2299,16 +2300,14 @@ export default function stateModelFactory(
         // so MultiRegionDisplayMixin's afterAttach already runs (see
         // afterAttachAutoChain.test.ts). Calling it explicitly would double-install
         // the mixin's fetch autoruns.
-        async afterAttach() {
-          try {
-            const { setupTreeDrawingAutorun } =
-              await import('@jbrowse/tree-sidebar')
-            if (isAlive(self)) {
-              setupTreeDrawingAutorun(self)
-            }
-          } catch (e) {
-            console.error(e)
-          }
+        afterAttach() {
+          // mobx-only glue and the barrel is a static import above, so it
+          // installs synchronously. This came through
+          // `await import('@jbrowse/tree-sidebar')` until it was measured: a
+          // dynamic import of a barrel this file already imports statically
+          // deferred one 4KB module and dragged the rest of the barrel into an
+          // async chunk, +69KB. See packages/tree-sidebar/CLAUDE.md.
+          setupTreeDrawingAutorun(self)
         },
       }))
       .postProcessSnapshot(snap => {

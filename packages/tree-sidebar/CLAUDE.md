@@ -243,6 +243,36 @@ box running `rowsTopOffset` px past the last row — is clipped away by
 `TrackRenderingContainer`'s `contain: strict`, and buying it back means growing
 this component an API for maf to re-bind its wheel through.
 
+## Install the autoruns statically; don't `import()` this barrel
+
+`setupTreeDrawingAutorun`, `setupRowSortAutorun` and `setupRunClusteringAutorun`
+are installed with a plain call from the display's `afterAttach`. The heavy work
+is code-split _inside_ them — `setupRunClusteringAutorun`'s `run` imports the
+clustering module when a run actually starts — so the installers themselves are
+mobx-only glue.
+
+All three displays reached `setupTreeDrawingAutorun` through
+`await import('@jbrowse/tree-sidebar')` instead, on the grounds that it split
+heavy drawing code. It split nothing, and it cost:
+
+- **It deferred one module.** `treeDrawingAutorun.ts`'s whole dependency closure
+  — `hierarchy.ts` (already pulled by `computeClusterHierarchy` /
+  `buildSpatialIndex`), `treeSidebarGeometry.ts`, mobx, `canvas2dUtils` — is in
+  the eager graph already, via static imports in the same file. Only its own
+  ~4KB was deferrable.
+- **Dynamically importing a barrel you also statically import is a net loss.**
+  The static named imports tree-shake to the leaf modules they name; the
+  namespace request pulls the _rest_ of the barrel — the cluster dialogs, the
+  MUI grid — into an async chunk the static-only graph drops entirely. Measured
+  with esbuild against one display's import list: **608KB vs 539KB**, +69KB for
+  the dynamic form.
+- It bought an `async afterAttach`, a `try`/`catch` and an `isAlive` guard for a
+  call that cannot fail.
+
+So: a dynamic import of `@jbrowse/tree-sidebar` is always wrong from a file that
+already imports it statically, which is every consumer. Split inside a function,
+or from a module nobody imports eagerly — never the barrel.
+
 ## SVG export: use `SvgTreeSidebar`, never `SvgRowLabels` alone
 
 Labels are offset right by `treeAreaWidth`, so rendering them without the tree

@@ -14,7 +14,7 @@ import {
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { isAlive, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
@@ -31,6 +31,7 @@ import {
   rowArrangementMenuItem,
   setupRowSortAutorun,
   setupRunClusteringAutorun,
+  setupTreeDrawingAutorun,
 } from '@jbrowse/tree-sidebar'
 import { computeYTicks, makeCrossHatchItem } from '@jbrowse/wiggle-core'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
@@ -608,26 +609,20 @@ export default function stateModelFactory(
         // MultiRegionDisplayMixin's afterAttach already runs (see
         // afterAttachAutoChain.test.ts). An explicit call would double-install
         // its fetch autoruns.
-        async afterAttach() {
-          // mobx-only and already bundled (the barrel is a static import
-          // above), so it installs synchronously — unlike the two below, which
-          // genuinely code-split d3/clustering code
+        afterAttach() {
+          // Both are mobx-only glue and the barrel is a static import above, so
+          // they install synchronously. The tree drawing one came through
+          // `await import('@jbrowse/tree-sidebar')` until it was measured: a
+          // dynamic import of a barrel this file already imports statically
+          // deferred one 4KB module and dragged the rest of the barrel into an
+          // async chunk, +69KB. See packages/tree-sidebar/CLAUDE.md.
           setupRowSortAutorun(self, {
             name: 'MultiWiggleSortRows',
             sortRows: (refName, pos) => {
               self.sortRowsByScoreAt(refName, pos)
             },
           })
-
-          try {
-            const { setupTreeDrawingAutorun } =
-              await import('@jbrowse/tree-sidebar')
-            if (isAlive(self)) {
-              setupTreeDrawingAutorun(self)
-            }
-          } catch (e) {
-            console.error(e)
-          }
+          setupTreeDrawingAutorun(self)
 
           // The "Cluster columns" flavor of the shared declarative-clustering
           // autorun: fires once on `runClustering: true` and runs the real
