@@ -9,6 +9,8 @@ import {
 import { DEFAULT_MANHATTAN_COLOR } from '../ManhattanRPC/rpcTypes.ts'
 import { DEFAULT_POINT_DIAMETER_PX } from './manhattanRenderingBackendTypes.ts'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 // Declares its own slots rather than extending LinearWiggleDisplay's schema.
 // It used to, which put sixteen inherited slots on a GWAS track of which twelve
 // did nothing — `defaultRendering: 'density'`, `useBicolor`, `summaryScoreMode`,
@@ -77,6 +79,12 @@ export function configSchemaFactory() {
         type: 'color',
         defaultValue: DEFAULT_MANHATTAN_COLOR,
         description: 'CSS color or jexl callback for Manhattan points',
+        // What makes the config editor offer this slot's value/callback toggle
+        // at all (SlotEditor gates that switch on a non-empty contextVariable),
+        // and what names `feature` in the callback editor's help. Editor
+        // affordance only — nothing in the read path consults it, and the
+        // display forwards this slot to the worker unevaluated either way.
+        contextVariable: ['feature'],
       },
       /**
        * #slot
@@ -143,3 +151,6 @@ export function configSchemaFactory() {
 export type LinearManhattanDisplayConfigModel = ReturnType<
   typeof configSchemaFactory
 >
+
+export type LinearManhattanDisplayConfig =
+  Instance<LinearManhattanDisplayConfigModel>

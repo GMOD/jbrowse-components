@@ -4,17 +4,15 @@ import { createTestEnvironment } from './testEnv.ts'
 
 // `color` is a DEFERRED slot: `makeColorEvaluator` in the worker binds `feature`
 // and evaluates it once per point, so what `rpcProps()` must carry is the
-// expression, not an answer. The model reads it with a plain arg-less
-// `getConf`, and that is correct only because a callback read with no context
-// is not evaluated (see readConfObject) — evaluated here, on the main thread,
-// against no feature, the expression would arrive as a plain string, fail
-// `isJexl`, and paint every point one constant color with no error anywhere.
+// expression, not an answer. The model getter therefore reads the raw slot
+// (`self.conf.color`), the same way `LinearBasicDisplay` reads `featureColor`
+// and the multi-row display reads `colorConfig`.
 //
-// No gwas-side code guards this. That is the point of the test: the guarantee
-// lives in the config reader, so this display gets it without knowing about it,
-// and so does any other display that curates its own `rpcProps()`. The
-// multi-row display's partitionFieldTransport.test.ts is the same canary from
-// the other end.
+// It used to read `getConf(self, 'color')`, which evaluates the callback here,
+// on the main thread, with no feature in scope: `get(feature,'category')` threw
+// `reading 'get'` straight out of this getter and bannered the display. The
+// silent spelling of the same mistake is pinned by the multi-row display's
+// partitionFieldTransport.test.ts — same cause, no resemblance from outside.
 const BY_ATTRIBUTE = "jexl:get(feature,'category')=='hit' ? 'red' : 'grey'"
 
 describe('the color slot reaches the worker unevaluated', () => {

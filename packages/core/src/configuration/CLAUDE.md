@@ -52,26 +52,30 @@ union (`pluginManager.pluggableConfigSchemaType(…)`) type-checks and passes
 `isBareConfigurationSchemaType`, and used to drop every inherited slot in
 silence; it now throws at construction.
 
-## A callback read with no context is not an evaluation
+## An arg-less read of a callback slot resolves it against nothing
 
-`readConfObject` / `getConf` return a `jexl:` slot's **expression** when the
-read passes no `args`, instead of evaluating it against a context where every
-name it mentions is `undefined`. That is what lets a curated `rpcProps()`
-forward a callback slot by name, the way the wholesale snapshot path always
-could.
+`args` is **optional** on `readConfObject` / `getConf` / `resolveConf`, so "what
+is this setting" and "what is this setting FOR this feature" are the same call
+with and without a third argument. On a `jexl:` slot the arg-less form still
+evaluates, against a context where every name the expression mentions is
+`undefined`, and returns the fallout as the setting — a throw out of whatever
+getter did the read (`get(feature,…)`), or a plausible wrong value (`''`, `NaN`)
+when the functions involved are total.
 
-Keyed on `args` being empty, **never** on the slot's `contextVariable`. That
-field is config-editor metadata — it gates `SlotEditor`'s value/callback toggle
-— and making evaluation depend on it would mean a slot that forgot to declare
-one silently reverts to the old behavior, which is exactly how `partitionField`
-shipped broken. Declare it so the editor works; don't read it here.
+**A curated `rpcProps()` must read such a slot raw** — `self.conf.someSlot`, not
+a reader — because the worker is what binds the feature. `CONFIG_PATTERN.md`
+§"Forwarding a callback slot" has the two symptoms, the worked examples on both
+sides, and the test to copy.
 
-Consequence worth knowing before you debug something odd: a read is still typed
-as the slot's _resolved_ type and can now hand back a string. That is a real
-hole, deliberately left rather than papered over — TODO.md §"Deferred config
-slots are typed as if they were resolved" has the repair. Don't close it by
-making the reader throw: the two failure modes it replaced were a throw out of a
-display getter and a plausible wrong value, and a throw is the worse of them.
+Do **not** fix this by teaching the reader to skip evaluation when `args` is
+empty. That was built, measured and backed out: it makes a read typed as the
+slot's resolved type hand back `"jexl:…"` for every caller in the repo and every
+third-party plugin (`@jbrowse/core/configuration` is in `ReExports/modules.ts`,
+and `abiBaseline.json` guards names, not behavior) — trading an enumerable set
+of wrong values for an unenumerable one. Keying on the slot's `contextVariable`
+instead is worse still: it is editor metadata, and a slot is free to forget it.
+The typed repair — forking the reader so a call site states which of the two
+operations it wants — is written up in the ADR's consequences, not scheduled.
 
 ## A config snapshot is transport, not a value-read API
 

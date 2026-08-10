@@ -22,7 +22,6 @@ Exploratory concepts that are *not* committed work live in
 | [Autofit height for the LGV demo](#autofit-height-for-the-lineargenomeview-example-site-demo) | embedded | no view-level auto-height exists yet |
 | [Extra large text SVG mode](#extra-large-text-svg-mode-for-pub-ready-figures) | SVG export | thread a scale the way `fontFamily` threads |
 | [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | five independent small items |
-| [Deferred config slots type as resolved](#deferred-config-slots-are-typed-as-if-they-were-resolved) | core config | fork the read, don't add another guard |
 | [Comparative cancel and retry](#give-the-comparative-displays-a-cancel-and-a-retry) | synteny, dotplot | read ADR-054 first; retry is a button, never automatic |
 | [Stop uploading every rect twice](#stop-uploading-every-rect-twice-for-the-continuation-pass) | GPU canvas | unify `ATTR4`, then verify headed on both backends |
 | [Linearize the pangenome](#linearize-the-pangenome-draw-graph-variation-as-alignment-style-glyphs) | pangenome | read PANGENOME_GRAPHS.md — four findings constrain the layout |
@@ -79,50 +78,6 @@ labels will overflow the boxes laid out for them.
 
 Each of these carries a design that already survived a rejected alternative.
 Read the linked ADR or reference doc before re-proposing the thing it rejected.
-
-### Deferred config slots are typed as if they were resolved
-
-`readConfObject(conf, slot)` and `readConfObject(conf, slot, { feature })` are
-two different operations — "what is this setting" and "what is this setting for
-this feature" — and the only thing separating them at a call site is whether
-someone passed an optional third argument. The type is identical either way, and
-so is the declared return type, which is the slot's resolved type (`number` for
-`featureHeight`, `string` for `color`). A slot holding `jexl:...` makes that
-return type a lie in both spellings.
-
-It used to be a lie that *looked* true. The reader evaluated the callback
-regardless, so an arg-less read of a `jexl:` slot still produced a value of
-roughly the right shape — evaluated against a context where every name it
-mentions is `undefined`. `jexl:1+1` really did read as `2`. A slot's whole point
-being per-feature, the more usual outcome was `''`, `NaN`, or a throw out of
-whatever getter did the read. The reader now returns the expression instead
-(`deferredSlotRead.test.ts`), which makes the value honest and leaves the type
-wrong in a visible way: `getConf(model, 'featureHeight')` is typed `number` and
-can hand back `"jexl:…"`. `renderConfig.ts` already writes that union by hand
-for the one slot where it did damage.
-
-**The repair is to make the two operations different calls**, so a call site
-states which it wants and the type follows:
-
-- a resolving read keeps today's spelling and its resolved return type, and is
-  the only one that accepts `args`;
-- a transport read — the one a curated `rpcProps()` wants, feeding a worker that
-  will bind the feature itself — returns `T | string` (or a branded expression
-  type), so forwarding it is checked and *using* it as a value is not.
-
-The transport read already exists informally as `self.conf.<slot>`, which is
-typed and correct; `colorConfig` in `LinearMultiRowFeatureDisplay`, and
-`featureColor` / `utrColor` / `colorByMode` in `LinearBasicDisplay`, are the
-worked examples. What is missing is that nothing makes a call site use it, and
-nothing makes the resolved-typed read refuse.
-
-Sizing note before starting: `ConfigurationSlotValue` is the type that would
-have to fork, and `packages/core/src/configuration/CLAUDE.md` §"Read type
-narrowing" records that threading generics through these readers has been tried
-and failed — that warning is about recovering narrowing through a widened
-holder, which is a different problem, but it is the same machinery and worth
-reading first. `scripts/configReadTypeGaps.txt` says how many call sites are
-narrow enough for the fork to even be expressible.
 
 ### Give the comparative displays a cancel and a retry
 

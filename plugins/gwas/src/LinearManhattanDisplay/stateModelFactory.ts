@@ -38,7 +38,10 @@ import { isIndexSnpOffscreen } from './isIndexSnpOffscreen.ts'
 
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type { ManhattanDisplayModel } from './components/manhattanDisplayTypes.ts'
-import type { LinearManhattanDisplayConfigModel } from './configSchemaFactory.ts'
+import type {
+  LinearManhattanDisplayConfig,
+  LinearManhattanDisplayConfigModel,
+} from './configSchemaFactory.ts'
 import type { ManhattanHit } from './findManhattanHit.ts'
 import type {
   ManhattanRenderState,
@@ -103,6 +106,17 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
+         * the config typed off the concrete schema; `ConfigurationReference`
+         * erases `self.configuration` to `any`, so reads route through this to
+         * stay typed
+         */
+        get conf(): LinearManhattanDisplayConfig {
+          return self.configuration
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
          * Offset the track label above the plot so the -log10(p) y-axis stays
          * pinned to the content edge instead of dodging right of the label.
          */
@@ -111,10 +125,18 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * resolved point color
+         * The `color` slot — a CSS color, or a `jexl:` expression — forwarded to
+         * the worker, which binds `feature` and evaluates it once per point
+         * (`makeColorEvaluator`).
+         *
+         * Reads the raw slot value, not `getConf`: this is a transport read, and
+         * `getConf` evaluates a callback against whatever context the call
+         * passes, which here is none. `get(feature,…)` against no feature throws
+         * `reading 'get'`, and that escaped this getter and bannered the whole
+         * display. Pinned end-to-end by colorSlotTransport.test.ts.
          */
         get color(): string {
-          return getConf(self, 'color')
+          return self.conf.color
         },
         /**
          * #getter

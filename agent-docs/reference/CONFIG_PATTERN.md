@@ -20,10 +20,6 @@ MST confined to main thread; renderers work on plain objects.
   the only such helper on the public barrel — the raw walker under it is
   deliberately unexported, so an unresolved cascade can't be shipped by writing
   the obvious thing.
-- **A callback read with no context is not an evaluation** — `readConfObject` /
-  `getConf` hand back the `"jexl:…"` string. Curating `rpcProps()` slot by slot
-  is therefore as jexl-safe as the wholesale snapshot form; see
-  §"Forwarding a callback slot" below for why this rule exists.
 - Visual settings live **directly on the display config schema**, not nested in a
   renderer sub-config. `contextVariable: ['feature']` enables jexl.
 - A runtime UI change writes the **config slot itself** (`setConf`) and reads
@@ -109,44 +105,6 @@ const fontSize = readConfigValue<number>(
 `readConfigValue` detects `"jexl:..."` strings and evaluates them via
 `stringToJexlExpression`. Non-JEXL values are returned directly. No MST model
 needed — works on plain objects.
-
-### Forwarding a callback slot
-
-A `jexl:` slot value is an expression, and the worker is what binds `feature` to
-it. So a display's job for such a slot is **transport**: get the string across
-unevaluated. The wholesale `getConfigSnapshotWithPromotables(self)` form does
-that for free — `fullConfSnapshot` reads raw MST properties and never touches
-the reader, which is why the canvas/wiggle path never had this bug.
-
-A **curated** `rpcProps()` (alignments, gwas, multi-row) is the one that can go
-wrong, because it re-reads each slot by name. `readConfObject`'s `args`
-parameter is optional, so "what is this setting" and "what is this setting for
-this feature" are the same call with and without a third argument — and the
-arg-less spelling used to evaluate the expression anyway, against a context
-where every name in it is `undefined`, and return the fallout as the setting.
-
-Two live bugs, one cause, no resemblance to each other:
-
-| Slot | Expression | Read with no feature | Symptom |
-| --- | --- | --- | --- |
-| `LinearManhattanDisplay.color` | `jexl:get(feature,…)` | throws `reading 'get'` | a config getter throws; the display banners |
-| `LinearMultiRowFeatureDisplay.partitionField` | `jexl:split(feature.name,…)` | `''` — `split` is total | `''` ships as an attribute name; every feature lands in one unnamed row |
-
-The reader now returns the expression when a read supplies no context at all
-(`deferredSlotRead.test.ts`), so both spellings forward correctly and a curated
-`rpcProps()` needs no special care. Canaries at the two displays:
-`colorSlotTransport.test.ts`, `partitionFieldTransport.test.ts`.
-
-The rule keys on `args` being empty, **not** on the slot's `contextVariable`
-declaration. That declaration is config-editor metadata (it is what makes
-`SlotEditor` offer the value/callback toggle), and correctness resting on it
-would mean a slot that forgot to declare one — `partitionField` had — silently
-went back to being wrong. Declare `contextVariable` for the editor; don't rely
-on it for evaluation.
-
-What this does **not** fix: the call site still cannot say which of the two jobs
-it wants, and a read typed as the slot's resolved type can now hand back a
-string. See TODO.md §"Deferred config slots are typed as if they were resolved".
 
 ### Config schema: define settings on the display
 
@@ -268,6 +226,66 @@ Don't "fix" `readSlot` to return a defaults-included clone: it returns the cache
 a per-read built object was a measured perf and spurious-recomputation regression.
 The story is in [HISTORICAL.md](HISTORICAL.md) §"A config snapshot was a legal
 input to `readConfObject`".
+
+## Forwarding a callback slot: read it raw, don't resolve it
+
+[ADR-066](../architecture-decision-records/adr-066-callback-slots-are-read-raw-at-the-call-site.md)
+is the decision behind this section, including the repo-wide fix that was built
+and backed out. `pnpm check-deferred-slot-reads` ratchets it.
+
+A wholesale snapshot never had to think about this. `fullConfSnapshot` reads raw
+MST properties, so a `jexl:` slot is forwarded intact and the worker's
+`readConfigValue` binds the feature — which is why canvas and wiggle, which ship
+the whole snapshot, have never hit the trap below.
+
+A display that curates its own `rpcProps()` slot by slot has to think about it,
+because the obvious spelling is wrong:
+
+```ts
+// WRONG in a curated rpcProps(): resolves the callback here, on the main
+// thread, against whatever context the read passes — which is none
+get partitionField(): string {
+  return readConfObject(self.conf, 'partitionField')
+}
+
+// RIGHT: a transport read. The worker binds `feature` and resolves it.
+get partitionField(): string {
+  return self.conf.partitionField
+}
+```
+
+`readConfObject` / `getConf` / `resolveConf` take `args` as an **optional**
+parameter, so "what is this setting" and "what is this setting FOR this feature"
+are the same call with and without a third argument. Omit it on a callback slot
+and the expression is evaluated anyway, against a context where every name it
+mentions is `undefined`, and the fallout comes back as the setting. The two
+spellings of that look nothing alike from the outside:
+
+| slot | expression | arg-less read | symptom |
+| --- | --- | --- | --- |
+| `LinearManhattanDisplay.color` | `jexl:get(feature,…)` | throws `reading 'get'` | escapes the model getter, banners the display |
+| `LinearMultiRowFeatureDisplay.partitionField` | `jexl:split(feature.name,…)` | `''`, because `split` is total | `''` ships as an attribute name; every feature lands in one unnamed row |
+
+Both are pinned by canaries at the display — `colorSlotTransport.test.ts` and
+`partitionFieldTransport.test.ts` — because there is nothing in the reader that
+can catch this: an arg-less read is a legitimate operation on the many slots that
+hold no callback.
+
+**How to tell which kind of read you want:** does something downstream still bind
+a feature? If the value is going into `rpcProps()`, a renderer, or anywhere the
+worker will call `readConfigValue` on it, it is transport — read it raw. If it is
+going into a swatch, a menu label, or arithmetic on the main thread, it is a
+resolving read, and it needs either a feature in `args` or an `isJexl` guard.
+`LinearBasicDisplay`'s `featureColor` / `utrColor` / `colorByMode` are the worked
+examples of the second kind: raw read, `isJexl` guard, fall back to a default,
+because no single swatch can show a per-feature expression.
+
+Slots that can hold a callback are the ones declaring `contextVariable` — that is
+what gates `SlotEditor`'s value/callback toggle. It is editor metadata only:
+nothing in the read path consults it, so a slot that forgets to declare one is
+still reachable by hand-writing `jexl:` into JSON. (`partitionField` had
+forgotten, which is how it shipped broken.) Declare it so the editor works; don't
+rely on it as a correctness signal.
 
 ## Key functions
 
