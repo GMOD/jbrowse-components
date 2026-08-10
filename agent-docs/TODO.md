@@ -8,9 +8,10 @@ description: The backlog — action items to build or fix, grouped by how ready 
 Grouped by **what you have to do first**, because that is the thing most of these
 entries actually disagree on. A third of them are ordinary build work; another
 third carry a design that survived a rejected alternative and needs following
-rather than re-deriving; the rest open with an instruction to go measure
+rather than re-deriving; most of the rest open with an instruction to go measure
 something, because the premise or the cost attribution is not established and
-building first would be guessing.
+building first would be guessing. One is blocked on a decision that is not the
+implementer's to make.
 
 Exploratory concepts that are *not* committed work live in
 [OTHER_IDEAS.md](OTHER_IDEAS.md).
@@ -25,6 +26,8 @@ Exploratory concepts that are *not* committed work live in
 | [Stop uploading every rect twice](#stop-uploading-every-rect-twice-for-the-continuation-pass) | GPU canvas | unify `ATTR4`, then verify headed on both backends |
 | [Linearize the pangenome](#linearize-the-pangenome-draw-graph-variation-as-alignment-style-glyphs) | pangenome | read PANGENOME_GRAPHS.md — four findings constrain the layout |
 | [Reads on the derivative allele](#reads-on-the-reconstructed-derivative-allele) | cancer SV | two open halves; the middle one is already built |
+| [PanSN prefixes in the add-track form](#offer-a-files-pansn-prefixes-in-the-all-vs-all-add-track-form) | comparative | the error half shipped; this is the discovery half |
+| [Synteny clicked outline in tiled mode](#the-synteny-clicked-outline-strokes-every-match-tile-in-transparent-indel-mode) | synteny | get the visual call — hull silhouette or per-tile |
 | [Cut WebGL2 contexts per display](#cut-webgl2-contexts-per-display) | GPU, limits | build — ceiling measured at 16, one ordinary view crosses it |
 | [MAF fetch cost on long blocks](#maf-fetch-cost-on-long-blocks) | MAF | run the one-line block-size check; premise unconfirmed |
 | [Alignments main-thread repack](#alignments-still-repacks-every-row-instanced-pass-on-the-main-thread) | alignments, GPU | profile the pack/upload/clone split first |
@@ -305,6 +308,57 @@ sentinel plus the non-positive floor) and the menu row and dialog. A mixin over
 the rest is two hooks plus two override points wrapping about four lines of
 arithmetic. See
 [reference/ROW_HEIGHT_AND_FIT.md](reference/ROW_HEIGHT_AND_FIT.md).
+
+### Offer a file's PanSN prefixes in the all-vs-all add-track form
+
+An all-vs-all track whose JBrowse assembly name is not the file's PanSN sample
+prefix used to draw nothing and report nothing. Both adapters now *throw*
+`noPanSNMatchError` (`plugins/comparative-adapters/src/util.ts`) naming the
+file's samples and the `assemblyNameToPanSN` slot that fixes it, and the region
+launcher's dialog separates "no mate aligns" from "mates align but none is a
+declared assembly". That was the ten-line half, taken first on purpose: the
+error carries the information at the moment it is needed.
+
+What is left is discovery. `AllVsAllAddTrackComponent` collects assembly names
+only, and the config editor renders `assemblyNameToPanSN` — a `frozen` slot — as
+a raw JSON textarea, so **nothing in the UI ever lists a file's PanSN prefixes**
+and the mapping can only be written from `tabix -l`. Read the tabix contig list
+in the add-track form and offer a per-assembly prefix dropdown.
+
+Before shipping any further *throw* on an adapter misconfiguration, check every
+hosted demo file still resolves:
+`tabix -l <url> | cut -c2- | cut -d'#' -f1 | sort -u` (the leading character is
+the PIF tier letter). All four `demos/ecoli_pangenome` files were checked that
+way.
+
+## Blocked on a visual call
+
+### The synteny clicked outline strokes every match tile in transparent-indel mode
+
+In transparent-indel mode (`drawCIGARMatchesOnly`), `cigarSegmentKind` tags each
+match segment `KIND_BASE`, and the outline gate is "not CIGAR, not marker"
+(`isClickedSilhouette` in `syntenyTypes.slang`, mirrored in
+`Canvas2DSyntenyRenderer`). So a clicked feature gets the side edges of *every*
+match tile stroked instead of one silhouette — a ribbon with 300 visible indels
+draws ~600 black hairlines. The shader comments say the intent is the clicked
+feature's BASE silhouette, so this is accidental kind reuse, not a chosen look.
+
+It is not a one-line fix, which is why it needs the visual decision first.
+Giving tiles their own kind so the edge pass skips them leaves a tiled feature
+with **no outline at all**, because pass 1 deliberately lays down no full-span
+base in that mode (that is what keeps the indels see-through) — `isTiled` in
+`buildSyntenyGeometry.ts` is the predicate. Doing it properly means emitting an
+outline-only instance carrying the feature hull, which the fill passes must
+discard and the pick engine must skip, or it breaks the documented
+"pickable ⟺ drawn as a solid fill" invariant. **The call to make: silhouette of
+the hull, or per-tile outlines.**
+
+The perf argument that used to ride along with this is gone — the edge pass no
+longer draws every instance. `packClickedOutlineInstances` builds a buffer of
+just the clicked feature's instances (`GpuSyntenyRenderer.ensureOutlineUploaded`),
+so don't reintroduce the HAL `firstInstance`/`instanceCount` range on `drawPass`
+for this reason. The corner-order convention these passes read is spelled out at
+the top of `syntenyTypes.slang`.
 
 ## Measure first: the premise or the cost attribution is unconfirmed
 
