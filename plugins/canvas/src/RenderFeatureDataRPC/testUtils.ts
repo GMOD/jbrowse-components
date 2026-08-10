@@ -2,7 +2,12 @@ import { packRenderArrays } from './packRenderArrays.ts'
 
 import type { RectData } from './packRenderArrays.ts'
 import type { DisplayConfig } from './renderConfig.ts'
-import type { FeatureDataResult, FlatbushItem } from './rpcTypes.ts'
+import type {
+  AminoAcidOverlayItem,
+  FeatureDataResult,
+  FlatbushItem,
+  SubfeatureInfo,
+} from './rpcTypes.ts'
 
 export function mockDisplayConfig(
   overrides: Partial<DisplayConfig> = {},
@@ -65,6 +70,45 @@ export function makeFlatbushItem(
     featureHeightPx: 10,
     tooltip: overrides.featureId,
     densityFade: false,
+    ...overrides,
+  }
+}
+
+// The subfeature twin of makeFlatbushItem — an isoform/mature-peptide/subpart
+// hit entry. `transcript` is deliberately absent by default: a subfeature only
+// carries exon geometry when the glyph that registered it was transcript-shaped,
+// and the hover's accession/coordinate pairing turns on exactly that (see
+// hoverReadout's hitTranscriptAndName).
+export function makeSubfeatureInfo(
+  overrides: Partial<SubfeatureInfo> &
+    Pick<SubfeatureInfo, 'featureId' | 'parentFeatureId'>,
+): SubfeatureInfo {
+  return {
+    kind: 'subfeature',
+    type: 'mRNA',
+    startBp: 0,
+    endBp: 10,
+    topPx: 0,
+    bottomPx: 10,
+    ...overrides,
+  }
+}
+
+// One residue of the amino-acid overlay. `isStopOrNonTriplet` defaults off the
+// letter so a fixture spelling `*` reads as a stop without having to say so
+// twice.
+export function makeAminoAcidOverlayItem(
+  overrides: Partial<AminoAcidOverlayItem> &
+    Pick<AminoAcidOverlayItem, 'aminoAcid' | 'proteinIndex'>,
+): AminoAcidOverlayItem {
+  return {
+    startBp: 0,
+    endBp: 3,
+    topPx: 0,
+    heightPx: 20,
+    isStopOrNonTriplet: overrides.aminoAcid === '*',
+    isTranslExcept: false,
+    flatbushIdx: 0,
     ...overrides,
   }
 }

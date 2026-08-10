@@ -9,7 +9,8 @@ import {
   highlightBoxColors,
   overlayItemRect,
 } from './highlightUtils.ts'
-import { HIT_PAD_PX, htmlToPlainText } from './hitTesting.ts'
+import { HIT_PAD_PX } from './hitTesting.ts'
+import { htmlToPlainText } from './hoverReadout.ts'
 import {
   computeLabelExtraWidth,
   forEachDisplayLabel,

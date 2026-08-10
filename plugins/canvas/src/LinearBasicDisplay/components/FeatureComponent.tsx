@@ -21,13 +21,8 @@ import { CanvasFeatureRenderer } from './CanvasFeatureRenderer.ts'
 import FeatureTooltip from './FeatureTooltip.tsx'
 import GeneGlyphControl from './GeneGlyphControl.tsx'
 import SoloSelectionChip from './SoloSelectionChip.tsx'
-import {
-  hgvsHitLabel,
-  hoverTooltip,
-  hoverTooltipText,
-  isHitFeature,
-  performMultiRegionHitDetection,
-} from './hitTesting.ts'
+import { isHitFeature, performMultiRegionHitDetection } from './hitTesting.ts'
+import { hgvsHitLabel, hoverTooltip, hoverTooltipText } from './hoverReadout.ts'
 import { FloatingLabelsLayer, HighlightLayer } from './overlayElements.tsx'
 
 import type { FlatbushItem } from '../../RenderFeatureDataRPC/rpcTypes.ts'
