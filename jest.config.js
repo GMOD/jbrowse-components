@@ -14,6 +14,16 @@ const baseConfig = {
   // targets:{node:'current'} (~8% of transform time), and an interleaved cold A/B
   // showed no end-to-end difference. Don't diverge test/prod compilation for it.
   cacheDirectory: '<rootDir>/node_modules/.cache/jest',
+  // Agent worktrees live at `.claude/worktrees/<branch>/`, i.e. whole extra
+  // checkouts *inside* rootDir. `testMatch` already misses them (it anchors on
+  // `<rootDir>/plugins/**`), but jest-haste-map crawls rootDir independently of
+  // it and doesn't read .gitignore, so every worktree contributes a second
+  // `packages/__mocks__/@testing-library/react.tsx` and a second
+  // `plugins/*/package.json`. Duplicate manual mocks are a warning; duplicate
+  // haste packages are a hard `_assertNoDuplicates` throw that fails every suite
+  // importing across packages. Nothing under `.claude/` is ever test material,
+  // so the whole directory is invisible to the module loader.
+  modulePathIgnorePatterns: ['/\\.claude/'],
   moduleNameMapper: {
     '^@jbrowse/core/util/useMeasure$':
       '<rootDir>/packages/__mocks__/@jbrowse/core/util/useMeasure.ts',
