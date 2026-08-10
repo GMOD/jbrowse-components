@@ -68,9 +68,11 @@ is the same track opens in a
 [linear synteny view](/docs/user_guides/linear_synteny_view) instead. One
 palindrome, both panels framing it, colored by strand: the arms draw as a single
 minus-strand ribbon over the plus-strand match of the sequence to itself, which
-is a palindrome stated rather than inferred from a shape.
+is a palindrome stated rather than inferred from a shape. The one below is the
+402 kb alignment at chrY:22,368,211 to 22,769,851, aligned to its own reverse
+complement.
 
-<Figure caption="Top, the boxed 4.8 Mb replotted on its own at a 100 kb minimum length: four crossings, which are every inverted alignment that long in the window, and the P1 to P5 family. Bottom, the boxed one of them in a linear synteny view with both panels on chrY:22.33 to 22.81 Mb, the same track and the same minimum length, colored by strand. The magenta ribbon pinched at its centre is the 402 kb inverted alignment at chrY:22,368,211 to 22,769,851, aligned to its own reverse complement; the salmon it sits on is the plus-strand self match." src="/img/synteny_self_chry_palindromes.png" />
+<Figure caption="Top, the boxed 4.8 Mb replotted on its own at a 100 kb minimum length: four crossings, every inverted alignment that long in the window, and the P1 to P5 family. Bottom, one of them in a linear synteny view, both panels on chrY:22.33 to 22.81 Mb, colored by strand. The magenta ribbon pinched at its centre is the 402 kb inverted alignment; the salmon it sits on is the plus-strand self match." src="/img/synteny_self_chry_palindromes.png" />
 
 Which view to reach for is a question of how many alignments are in frame. Every
 ribbon spans the full height of the strip, so ribbons stack rather than

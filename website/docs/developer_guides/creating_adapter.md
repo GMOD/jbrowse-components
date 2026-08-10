@@ -99,11 +99,17 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter<Gff3AdapterConfi
         // lines are already split and comment/FASTA-filtered by
         // groupLinesByRef, so feed them straight to parseLines rather than
         // re-joining and re-splitting through parseStringSync
-        (lines, refName) =>
-          parseLines(lines).map((feature, i) => ({
-            ...feature,
-            uniqueId: `${this.id}-${refName}-${i}`,
-          })),
+        (lines, refName) => {
+          const features = parseLines(lines)
+          // stamped in place rather than through `{...feature, uniqueId}`:
+          // these are freshly parsed objects nobody else holds, and the spread
+          // copied every attribute of every top-level feature in the file to
+          // add one key
+          for (let i = 0; i < features.length; i++) {
+            features[i]!.uniqueId = `${this.id}-${refName}-${i}`
+          }
+          return features as Gff3Feature[]
+        },
         'Parsing GFF data',
       )
 

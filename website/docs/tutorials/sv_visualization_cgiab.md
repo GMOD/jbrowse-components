@@ -625,7 +625,7 @@ imbalance of a 2+1 gain rather than the full drop of a complete haplotype loss.
 Because the event is a couple of megabases rather than an arm, zoom to it: at
 whole-chromosome scale it is a handful of pixels wide.
 
-<Figure caption="KRAS on chr12: the gene's MANE Select transcript, boxed, over the segmented copy ratio, the HiFiCNV depth and the BAF, above the CNV calls. Over the tandem duplication (SV_101, CN 3, 2+1) the copy-ratio segment rises above its flanks by what three copies against two predicts, its edges landing on the called boundaries, while the BAF separates into bands at 1/3 and 2/3 against the single 0.5 band of the balanced flanks." src="/img/sv_cgiab/driver_kras_gain.png" />
+<Figure caption="KRAS on chr12: the gene's MANE Select transcript, boxed, over the segmented copy ratio, the HiFiCNV depth and the BAF, above the CNV calls. Over the tandem duplication (SV_101, CN 3, 2+1) the copy-ratio segment rises above its flanks, its edges landing on the called boundaries, while the BAF separates into bands at 1/3 and 2/3 against the flanks' single 0.5 band." src="/img/sv_cgiab/driver_kras_gain.png" />
 
 `SMAD4` on 18q is lost with LOH (`CNA_48`, CN 1, 0+1), the mirror image of the
 TP53 event. Here the balanced p-arm is in the same picture, so the contrast is

@@ -23,8 +23,10 @@ maxRegionBp
 orthologParams
 paneHeight
 partitionField
+readConnections
 sampleColorMap
 showCoverage
+showLabels
 sideBySide
 thickness
 transcriptId
