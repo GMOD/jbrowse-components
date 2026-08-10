@@ -23,7 +23,15 @@ const baseConfig = {
   // haste packages are a hard `_assertNoDuplicates` throw that fails every suite
   // importing across packages. Nothing under `.claude/` is ever test material,
   // so the whole directory is invisible to the module loader.
-  modulePathIgnorePatterns: ['/\\.claude/'],
+  //
+  // Anchored at `<rootDir>`, and that is the whole point. These patterns are
+  // matched unanchored against ABSOLUTE paths, so a bare `/\.claude/` also
+  // matches when rootDir *is* the worktree — every path under
+  // `.../.claude/worktrees/<branch>/` contains it, so jest ignored the entire
+  // tree and `pnpm test <anything>` reported "0 files checked across 5
+  // projects". Which made tests unrunnable from inside the worktrees this rule
+  // exists to accommodate.
+  modulePathIgnorePatterns: ['<rootDir>/\\.claude/'],
   moduleNameMapper: {
     '^@jbrowse/core/util/useMeasure$':
       '<rootDir>/packages/__mocks__/@jbrowse/core/util/useMeasure.ts',
