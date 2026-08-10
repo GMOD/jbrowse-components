@@ -49,6 +49,13 @@ export interface GroupLayoutContext {
   // Region bounds by displayed-region index, so multi-region layout can locate
   // the sort position's region and detect the single-refName case.
   regions: ReadonlyMap<number, RegionBounds>
+  // Here despite `attachLinkedReadLines` never moving a read — it derives line
+  // records from rows already placed — so toggling it does pay the relayout the
+  // color/layout split exists to avoid. Deliberate: the lines embed `readYs`
+  // values, so they are a function of the layout and have to be rebuilt on every
+  // layout invalidation anyway. A separate memo downstream would buy exactly one
+  // menu click and nothing in steady state, which is not the trap that split
+  // guards against (an input that changes at drag/frame rate).
   showLinkedReadLines: boolean
   // Draw each group as a single row, overlap depth carried by the tint layer
   // instead of by stacking (`collapsedLayout.ts`). A group the user has sized

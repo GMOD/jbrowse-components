@@ -98,10 +98,19 @@ so `hitTestFeature` misses the run `drawSoftclipBases` paints past the alignment
 end — and a miss doesn't fail quietly, it clears the selection on click and
 falls through to the **browser's** context menu on right-click.
 
-Priority within the chain is a real decision, not scan order. Both index-backed
-tests must pick by distance: `Flatbush.search` returns packed Hilbert order,
-which for one row's collinear points is ascending position, so `hits[0]` is the
-leftmost candidate in the window rather than the one under the cursor.
+Priority within the chain is a real decision, not scan order. Neither
+index-backed test may take `hits[0]`: `Flatbush.search` returns packed Hilbert
+order, which for one row's collinear points is ascending position, so `hits[0]`
+is the leftmost candidate in the window rather than the one under the cursor.
+Which rule replaces it depends on what the boxes are. `hitTestModification`
+boxes points and picks by **distance**. `hitTestChain` boxes each chain's whole
+extent, so every candidate contains the cursor and is at distance 0 — it picks
+the **highest chain index**, which is `hitTestFeature`'s "last drawn wins" rule,
+the two arrays being built in one ascending pass. Ambiguity there is only
+reachable on the `placeRectCapped` overflow row, where every truncated chain is
+piled onto the `maxRows` sentinel; that row is one row below the last drawn one,
+and an ungrouped display puts no bottom bound on `findSectionAtY`, so a track
+taller than its capped pileup reaches it.
 
 ## Context menu: build items from the id, not the feature
 

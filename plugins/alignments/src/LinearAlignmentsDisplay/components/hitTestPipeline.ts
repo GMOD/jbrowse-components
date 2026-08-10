@@ -115,7 +115,29 @@ function hitTestChain(
   if (hits.length === 0) {
     return undefined
   }
-  const readIdx = rpcData.chainFirstReadIndices[hits[0]!]!
+  // Highest chain index wins, which is `hitTestFeature`'s tie-break (last drawn
+  // is the one under the cursor) rather than the distance rule the other
+  // index-backed test uses: these boxes all CONTAIN the point, so every
+  // candidate is at distance 0 and picking by distance is undefined.
+  // `buildChainConnectingData` adds to the Flatbush and emits the connecting
+  // lines in one ascending pass over chain index, so a higher index is a later
+  // line.
+  //
+  // Ambiguity is only reachable on the `placeRectCapped` overflow row, where
+  // every truncated chain is piled onto the `maxRows` sentinel and their spans
+  // freely overlap; a real row holds non-overlapping chain extents by
+  // construction, so a point query there returns one box and any rule agrees.
+  // That row sits immediately below the last drawn one (truncation implies
+  // `maxY === maxRows`) and an ungrouped display hit-tests the whole canvas
+  // against its single section — `findSectionAtY` short-circuits with no bottom
+  // bound — so a track taller than its capped pileup can put the cursor there.
+  let best = hits[0]!
+  for (let i = 1; i < hits.length; i++) {
+    if (hits[i]! > best) {
+      best = hits[i]!
+    }
+  }
+  const readIdx = rpcData.chainFirstReadIndices[best]!
   return { id: rpcData.readIds[readIdx]!, index: readIdx }
 }
 

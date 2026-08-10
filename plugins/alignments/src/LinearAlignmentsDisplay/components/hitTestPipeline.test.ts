@@ -554,6 +554,38 @@ describe('chain mode resolves the read under the cursor, not the chain first rea
       expect(result.hit).toStrictEqual({ id: 'mate1', index: 0 })
     }
   })
+
+  // The one row where chain boxes overlap: `placeRectCapped` piles every
+  // truncated chain onto the `maxRows` sentinel, so a point query returns
+  // several boxes that all contain the cursor. `hits[0]` is Flatbush's packed
+  // Hilbert order — for one row's collinear boxes the LEFTMOST — which named
+  // whichever chain started furthest left rather than the line drawn on top.
+  //
+  // maxRows=2 here: rows 0 and 1 are real, row 2 is the sentinel. topOffset 50 +
+  // rowHeight 12 puts row 2 at canvasY 74..84, and x=100 is bp 10000, inside
+  // both chains' extents but inside neither one's reads.
+  it('the overflow row resolves the chain drawn last, not the leftmost', () => {
+    const chainFlatbush = new Flatbush(2)
+    chainFlatbush.add(0, 2, 18000, 2)
+    chainFlatbush.add(8000, 2, 19000, 2)
+    chainFlatbush.finish()
+    const resolved = makeResolved({
+      readIds: ['c0mate1', 'c0mate2', 'c1mate1', 'c1mate2'],
+      readPositions: new Uint32Array([
+        0, 2000, 16000, 18000, 8000, 9000, 18000, 19000,
+      ]),
+      readYs: new Uint16Array([2, 2, 2, 2]),
+      chainFirstReadIndices: new Uint32Array([0, 2]),
+      chainFlatbush,
+      maxY: 2,
+      truncated: true,
+    })
+    const result = performHitTest(100, 80, resolved, CHAIN_OPTS)
+    expect(result.type).toBe('feature')
+    if (result.type === 'feature') {
+      expect(result.hit).toStrictEqual({ id: 'c1mate1', index: 2 })
+    }
+  })
 })
 
 // `gap` / `mismatch` / `insertion` are the three PILEUP_LAYERS entries gated on
