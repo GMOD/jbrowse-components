@@ -100,8 +100,8 @@ together:
 
 - right-click a ribbon and choose **Center on feature**, which recenters both
   panels on that alignment
-- turn on **Link views** in the hamburger menu, which replays a pan or zoom in
-  one panel onto the other
+- turn on **Link views** from the **View options** button in the view header,
+  which replays a pan or zoom in one panel onto the other
 
 Neither follows the alignment as you scroll: Link views moves both panels by the
 same amount, so it holds only as long as the haplotypes stay in register.
@@ -118,30 +118,31 @@ al._ 2009). HG002 is heterozygous for it, so it is one of the few places where
 the two haplotypes of one person disagree at a scale a whole-chromosome view can
 show.
 
-Coloured by strand, the inverted block is the single off-colour sweep in the
-frame. Everything around it is collinear and stays one colour, which is what
-makes the inversion legible: a segment reads as inverted only because the
-sequence flanking it did not move.
+Colored by strand, the inversion is the one block whose ribbons sweep across the
+frame. The flanks stay collinear at this scale, which is what makes it legible:
+a segment reads as inverted only because the sequence around it did not move.
+Thin off-color threads inside those flanks are smaller inverted chains, well
+short of the scale the sweep is drawn at.
 
-<Figure caption="HG002 v1.2 maternal (top) against paternal (bottom) across 8p23.1, ribbons coloured by strand. The purple sweep crossing the middle is the inverted block; the pink ribbons at both edges are the collinear flanks that frame it." src="/img/hg002_haplotypes_8p23_inversion.png" />
+<Figure caption="HG002 v1.2 maternal (top) against paternal (bottom) across 8p23.1, ribbons colored by strand. The purple sweep crossing the frame is the inverted block; the pink ribbons either side are the collinear flanks that frame it." src="/img/hg002_haplotypes_8p23_inversion.png" />
 
-Set the ribbon colouring from the palette button in the view header, and turn on
-curved ribbons under **View options** so a block landing far from where it
-started is easier to follow across the gap.
+Set the ribbon coloring from the palette button in the view header, and turn on
+**Show curved lines** under **View options** then **Show...** so a block landing
+far from where it started is easier to follow across the gap.
 
 ## Collinear does not mean identical
 
 Structural agreement and sequence identity are separate claims, and the view
 above only makes the first one. Zooming into the collinear block beside the
 inversion and turning on the heterozygous-sites track makes the second one
-checkable in the same frame: the ribbon is a single straight band, and the sites
-underneath it are dense in both panels.
+checkable in the same frame: the ribbon runs as one band apart from a single
+indel, and the sites underneath it are dense in both panels.
 
-<Figure caption="A window inside the collinear block left of the inversion, with heterozygous sites under each panel. The ribbon is one unbroken band, so the haplotypes agree structurally, while the sites below show they differ at base level throughout. The pale wedge in the ribbon is an indel inside the block." src="/img/hg002_haplotypes_hetsites.png" />
+<Figure caption="A window inside the collinear block left of the inversion, with heterozygous sites under each panel. The ribbon runs as one band, so the haplotypes agree structurally, while the sites below show they differ at base level throughout. The pale wedge is an indel, and the solid run of sites beneath it on the paternal panel is where the two haplotypes stop agreeing base for base." src="/img/hg002_haplotypes_hetsites.png" />
 
 This has to be its own view for two reasons worth knowing before you try to
 combine them. Across the whole inversion the het-site track is over its
-feature-count limit and paints a warning instead of data. And a window centred
+feature-count limit and paints a warning instead of data. And a window centered
 on a breakpoint cannot work at all: the flanking sequence and the inverted
 sequence land megabases apart on the other haplotype, so no single paternal
 window contains both and the ribbons come back empty. Frame one side or the
