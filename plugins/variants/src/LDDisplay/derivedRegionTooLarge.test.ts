@@ -174,6 +174,53 @@ describe('LD derived regionTooLarge', () => {
     expect(display.regionTooLarge).toBe(false)
   })
 
+  // The other half of the divergence pinned in canvas's
+  // `LinearMultiRowFeatureDisplay/derivedRegionTooLarge.test.ts`, "gates on the
+  // worst region, not the total".
+  //
+  // The pre-flight hands the **whole region set** to `getRegionByteSize` in one
+  // RPC and stores the single figure that comes back — which for every tabix
+  // adapter here is the chunk-merged total across all of them. Canvas measures
+  // one region per RPC and keeps the max, so on two 3 Mb regions against a 5 Mb
+  // budget the two paths reach opposite verdicts on the same file. That is a
+  // known divergence, not a bug (one is what the wire costs, the other what any
+  // single region costs), and neither is cheaply convertible to the other: this
+  // path has no per-region number to keep, canvas has no cross-region call to
+  // sum. Pinned on both sides so changing either fails loudly.
+  //
+  // What this asserts is the structural half — one call, carrying every region
+  // — since the summing itself happens inside the adapter, worker-side.
+  it('measures the whole region set in one call, where canvas measures per region', async () => {
+    const { display, view, mockRpcCall } =
+      createTestEnvironment().createDisplay()
+    await new Promise(res => setTimeout(res, 0))
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 100_000, refName: 'ctgA' },
+      { assemblyName: 'volvox', start: 0, end: 100_000, refName: 'ctgB' },
+    ])
+    view.moveTo({ index: 0, offset: 0 }, { index: 1, offset: 100_000 })
+
+    mockRpcCall.mockImplementation((_sessionId: string, method: string) =>
+      method === 'CoreGetRegionByteEstimate' ? 6_000_000 : null,
+    )
+    mockRpcCall.mockClear()
+    await display.performLDFetch()
+
+    const estimateCalls = mockRpcCall.mock.calls.filter(
+      c => c[1] === 'CoreGetRegionByteEstimate',
+    )
+    expect(estimateCalls).toHaveLength(1)
+    // every visible region in that one call — the adapter sums across them, so
+    // there is one figure for the set rather than one per region
+    expect(
+      (estimateCalls[0]![2] as { regions: { refName: string }[] }).regions.map(
+        r => r.refName,
+      ),
+    ).toEqual(['ctgA', 'ctgB'])
+    expect(display.estimatedFetchBytes).toBe(6_000_000)
+    expect(display.regionTooLarge).toBe(true)
+  })
+
   // afterAttach installs the onDisplayedRegionsChange autorun that drops the
   // cached estimate on chromosome navigation. Without it, a previous region's
   // estimate would gate the new region against the wrong stats and, because the

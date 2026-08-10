@@ -178,7 +178,7 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
           result: { featureCount: 12 },
         },
       ],
-      display.gateViewport!,
+      display.gateViewport,
     )
     expect(display.byteEstimate).toEqual({
       bytes: 8_000_000,
@@ -251,7 +251,7 @@ describe('multi-region estimates over a shrinking region set', () => {
           result: { bytes: 2_000_000 },
         },
       ],
-      display.gateViewport!,
+      display.gateViewport,
     )
     expect(display.byteEstimate).toMatchObject({
       bytes: 20_000_000,
@@ -277,10 +277,62 @@ describe('multi-region estimates over a shrinking region set', () => {
           result: { bytes: 8_000_000 },
         },
       ],
-      display.gateViewport!,
+      display.gateViewport,
     )
     expect(display.regionTooLarge).toBe(true)
     expect(display.resolvedByteLimit()).toBe(5_000_000)
+  })
+
+  // The half of a divergence that is a decision, not an accident, and the half
+  // that has a harness — so it is pinned here and named on the other side in
+  // `LDDisplay/derivedRegionTooLarge.test.ts`.
+  //
+  // Canvas measures one region per RPC and keeps the **max**: every region is
+  // gated against the same per-region budget, so a multi-region view where each
+  // region individually fits is never blanked by what they add up to. The
+  // pre-flight path hands the whole region set to `getRegionByteSize` in one
+  // call and gets the summed, chunk-merged total back, so on this same input it
+  // banners. Two 3 Mb regions against a 5 Mb budget is the smallest case that
+  // separates them, and the same VCF really does reach opposite verdicts
+  // through `LinearVariantDisplay` and `LinearMultiSampleVariantDisplay`.
+  //
+  // Both readings are defensible — one is what the wire costs, the other is
+  // what any single region costs — and neither is cheaply convertible to the
+  // other. This is here so that changing either one fails rather than silently
+  // flipping a documented decision. See REGION_TOO_LARGE.md § Canvas folds the
+  // byte check into its fetch RPC.
+  it('gates on the worst region, not the total, where the pre-flight sums', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 10_000_000, refName: 'ctgA' },
+      { assemblyName: 'volvox', start: 0, end: 10_000_000, refName: 'ctgB' },
+    ])
+    view.moveTo({ index: 0, offset: 0 }, { index: 1, offset: 10_000_000 })
+
+    const perRegion = 3_000_000
+    display.commitGateMeasurements(
+      [
+        {
+          displayedRegionIndex: 0,
+          region: { start: 0, end: 10_000_000 },
+          result: { bytes: perRegion },
+        },
+        {
+          displayedRegionIndex: 1,
+          region: { start: 0, end: 10_000_000 },
+          result: { bytes: perRegion },
+        },
+      ],
+      display.gateViewport,
+    )
+
+    expect(display.resolvedByteLimit()).toBe(5_000_000)
+    // the max, not the 6 Mb sum
+    expect(display.estimatedFetchBytes).toBe(perRegion)
+    expect(display.regionTooLarge).toBe(false)
+    // ...and the sum is what the other path would have compared, which is over
+    expect(perRegion * 2).toBeGreaterThan(display.resolvedByteLimit()!)
   })
 })
 
