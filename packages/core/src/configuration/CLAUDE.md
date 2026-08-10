@@ -52,6 +52,27 @@ union (`pluginManager.pluggableConfigSchemaType(…)`) type-checks and passes
 `isBareConfigurationSchemaType`, and used to drop every inherited slot in
 silence; it now throws at construction.
 
+## A callback read with no context is not an evaluation
+
+`readConfObject` / `getConf` return a `jexl:` slot's **expression** when the
+read passes no `args`, instead of evaluating it against a context where every
+name it mentions is `undefined`. That is what lets a curated `rpcProps()`
+forward a callback slot by name, the way the wholesale snapshot path always
+could.
+
+Keyed on `args` being empty, **never** on the slot's `contextVariable`. That
+field is config-editor metadata — it gates `SlotEditor`'s value/callback toggle
+— and making evaluation depend on it would mean a slot that forgot to declare
+one silently reverts to the old behavior, which is exactly how `partitionField`
+shipped broken. Declare it so the editor works; don't read it here.
+
+Consequence worth knowing before you debug something odd: a read is still typed
+as the slot's _resolved_ type and can now hand back a string. That is a real
+hole, deliberately left rather than papered over — TODO.md §"Deferred config
+slots are typed as if they were resolved" has the repair. Don't close it by
+making the reader throw: the two failure modes it replaced were a throw out of a
+display getter and a plausible wrong value, and a throw is the worse of them.
+
 ## A config snapshot is transport, not a value-read API
 
 `types.stripDefault` omits a slot still at its default, so reading a defaulted

@@ -29,6 +29,16 @@ import type {
 } from './types.ts'
 import type { IMSTMap } from '@jbrowse/mobx-state-tree'
 
+// Whether a read supplied anything for a callback to be about. `for...in`
+// rather than `Object.keys().length`, to stop at the first key instead of
+// allocating an array on a path that every callback read takes.
+function hasContext(args: Record<string, unknown>) {
+  for (const _ in args) {
+    return true
+  }
+  return false
+}
+
 // Evaluate a slot's `jexl:...` callback string against the realm's single jexl
 // instance (carrying plugin-registered functions), read from the config node's
 // env. readConfObject only ever operates on live MST configs — nested sub-config
@@ -95,9 +105,44 @@ function readSlot(
   if (value === undefined) {
     return undefined
   }
-  const val = isCallbackValue(value)
-    ? evalConfigCallback(value, args, confObject)
-    : value
+  // A callback read with no context is not an evaluation, so don't perform one:
+  // hand back the expression.
+  //
+  // `args` is an optional parameter, which is the whole problem. `readConfObject`
+  // does two different jobs — "what is this setting" and "what is this setting
+  // FOR this feature" — and the only thing distinguishing them at a call site is
+  // whether someone passed a third argument. Omit it on a `jexl:` slot and the
+  // expression was evaluated anyway, against a context where every name it
+  // mentions is `undefined`, and the fallout was returned as if it were the
+  // setting. `feature.name` is `undefined`; `split(undefined,'#')` is `['']`;
+  // the multi-row display shipped that `''` to the worker as an attribute name
+  // and drew every feature in one unnamed row. The Manhattan plot lost
+  // per-point coloring the same way. LinearBasicDisplay and renderConfig.ts
+  // had each already worked around it locally, four times between them.
+  //
+  // Deliberately keyed on `args` being empty rather than on the slot's declared
+  // `contextVariable`: that declaration is config-editor metadata, and making
+  // correctness depend on it would mean a slot that forgot to declare it —
+  // `partitionField` did — silently goes back to being wrong. Emptiness needs
+  // nothing to be declared and nothing to be maintained.
+  //
+  // The expression is what every deferred consumer already expects, because
+  // forwarding one is the normal case: `readConfigValue`, `makeColorEvaluator`,
+  // `makeFeaturePartitionResolver` and `getScoreTransform` all test
+  // `isJexl`/`isCallbackValue` first and evaluate with a feature in hand. This
+  // only brings the slot-at-a-time read in line with the wholesale snapshot
+  // path, which never had the bug — `fullConfSnapshot` reads raw properties and
+  // so has always forwarded expressions intact (CONFIG_PATTERN.md, "the
+  // snapshot keeps raw jexl strings").
+  //
+  // Note what this does NOT fix: a call site still can't say which of the two
+  // jobs it wants, so a read that means "resolve this" and forgets its feature
+  // now gets an expression instead of nonsense. Better failure, same ambiguity.
+  // Splitting the reader in two is the real repair — agent-docs/TODO.md.
+  const val =
+    isCallbackValue(value) && hasContext(args)
+      ? evalConfigCallback(value, args, confObject)
+      : value
   // Fast path for primitives (most common case)
   if (val === null || typeof val !== 'object') {
     return val

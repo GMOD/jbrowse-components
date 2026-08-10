@@ -229,6 +229,17 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * The `partitionField` slot — an attribute name, or a `jexl:` expression —
+       * forwarded to the worker, which binds `feature` and resolves it per
+       * feature (`makeFeaturePartitionResolver`).
+       *
+       * An ordinary read, and it stays an expression only because a callback
+       * read that supplies no context is not evaluated (see `readConfObject`).
+       * Without that rule the rmsk recipe this slot documents was evaluated
+       * right here, against no feature, resolved to `''`, and shipped to the
+       * worker as an attribute name — every feature answered `feature.get('')`
+       * and the track drew one unnamed row. Pinned end-to-end by
+       * partitionFieldTransport.test.ts.
        */
       get partitionField(): string {
         return readConfObject(self.conf, 'partitionField')

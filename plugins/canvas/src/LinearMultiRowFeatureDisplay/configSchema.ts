@@ -90,6 +90,18 @@ export default function configSchemaF(pluginManager: PluginManager) {
         defaultValue: 'name',
         description:
           'feature attribute that assigns each feature to a row, or a jexl expression deriving one',
+        // What makes the config editor offer this slot's value/callback toggle
+        // at all (SlotEditor gates that switch on a non-empty contextVariable),
+        // and what names `feature` in the callback editor's help. Without it the
+        // jexl form documented above was reachable only by hand-writing the
+        // `jexl:` string into JSON.
+        //
+        // Editor affordance only. Nothing in the read path consults it — the
+        // reader decides whether to evaluate a callback from whether the read
+        // supplied any context, deliberately not from this declaration, so that
+        // a slot forgetting it (as this one did) is a missing toggle in the UI
+        // and not a silently wrong value.
+        contextVariable: ['feature'],
       },
       /**
        * #slot

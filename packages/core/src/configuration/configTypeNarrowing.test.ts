@@ -133,7 +133,19 @@ describe('getConf slot-value type narrowing', () => {
     expect(height).toBe(10)
     expect(enabled).toBe(true)
     expect(mode).toBe('a')
-    expect(thickness).toBe(2) // jexl:1+1 evaluated on read
+    // A callback read with no context is not evaluated — it reads as its own
+    // expression (see readConfObject). This used to assert `2`, and that
+    // assertion is where the type lie is easiest to see: `thickness` is typed
+    // `number` on both sides of the change, but a slot holding `jexl:1+1` only
+    // ever *was* a number because the read manufactured one. With a feature
+    // bound the manufactured number is the right answer; with nothing bound it
+    // was whatever fell out of evaluating against undefined, and still a number,
+    // so nothing downstream could tell. The value is honest now and the type is
+    // not — a deferred read's real type is `number | string`, which
+    // `renderConfig.ts` already spells out by hand for `featureHeight`.
+    // agent-docs/TODO.md, "Deferred config slots are typed as if they were
+    // resolved".
+    expect(thickness).toBe('jexl:1+1')
 
     assertType<Equal<typeof color, string>>()
     assertType<Equal<typeof height, number>>()
