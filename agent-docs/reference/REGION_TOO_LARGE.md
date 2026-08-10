@@ -269,7 +269,18 @@ fetching — would give canvas a second RPC racing its feature fetch, which is t
 two-call coordination it is built to avoid, to take a measurement its own fetch
 already takes. It also spread staleness over two mechanisms.
 
-**"Zoom in to see features" is measured too.** `zoomCanReleaseGate` reads
+**"Zoom in to see features" is measured too — and only on the byte axis.**
+`zoomCanReleaseGate` first asks `tooLargeStatus.axis` which axis actually
+tripped. Screen density is features ÷ pixels, so it falls with `bpPerPx` by
+construction and zoom always releases it; only bytes can be un-escapable. That
+branch is load-bearing rather than tidy: the worker returns `bytes` alongside a
+density rejection, so a density-blocked display keeps updating its estimate, and
+a dense VCF — small on disk, flat across zooms, which is the case the density
+axis exists for — sets `zoomIneffective` while the byte axis gates nothing. The
+getter read that flag alone until 2026-08-09 and withheld the advice from the
+one banner zooming does release.
+
+On the byte axis it reads
 `ByteEstimate.zoomIneffective`, which `nextByteEstimate` sets when a measurement
 at a materially smaller span (≤ ½) comes back materially unchanged (> 90% of the
 previous bytes), and clears the moment one does fall. It has to be evidence
@@ -376,15 +387,18 @@ on screen. Pinned by "does not release on a shrinking region set until a
 re-measure says so" in
 `LinearMultiRowFeatureDisplay/derivedRegionTooLarge.test.ts`.
 
-**The pre-flight's version of the same mismatch is likewise inert.** `fetchRegions` measures `needed` — only the regions the loaded data
-doesn't already cover — but `byteGateBlocksFetch` anchors to the whole
-`gateVisibleBp`. With one of several visible regions uncovered, the stored rate
-is bytes-for-one over span-of-all and under-reports. `ByteEstimate`'s own note
-argues the buffer cancels because it scales with `visibleBp`; the
-covered/uncovered split doesn't. It costs a round trip and never a download — the
-pre-flight re-measures before `work()` runs — which is why it is left alone
-rather than threaded through a per-region anchor the single-region case would
-never use.
+**The pre-flight has a smaller version of the same seam, and it is inert for a
+different reason.** `fetchRegions` measures `needed` — only the regions the
+loaded data doesn't already cover — while `byteGateBlocksFetch` labels the result
+with the whole `gateVisibleBp`. Nothing divides one by the other any more, so the
+banner is unaffected: it quotes what the adapter said about the regions actually
+being fetched, which is the honest number to ask permission for. The one reader
+that spans two measurements is `zoomIneffective`, and it compares bytes taken
+over region sets that may differ — so a zoom-in whose covered set *grows* can
+read as "the bytes didn't fall", costing the banner its zoom advice for one
+measurement pair. It self-corrects on the next one, and threading a per-region
+anchor through for it would burden the single-region case that is nearly every
+case.
 
 `commitGateMeasurements` records the maximum per-region byte count, not the sum,
 because every region is gated against the same per-region budget — a
@@ -484,7 +498,8 @@ otherwise download the same data with no warning and no visible reason. A page l
 re-arms the gate. The durable, declarative escape hatch is the `forceLoad` config
 slot, which is also what `jbrowse-img --force` sets via the display snapshot, so
 the gate is off before the first fetch. `setForceLoadTrack(false)` puts the track
-back under the gate.
+back under the gate, but nothing in the UI calls it — a page load is how a user
+re-arms it, and the action exists for tests and for a plugin that wants to.
 
 **This replaced a per-region, per-axis ceiling system**, and the simplification is
 the point — the deleted machinery (`userByteLimit`, `userFeatureDensityLimit`,
@@ -645,7 +660,9 @@ paths can't drift apart.
 - `bytesTooLargeReason(bytes)` and `TOO_MANY_FEATURES_REASON` are the only two
   banner strings.
 - `evaluateRegionTooLarge({ estimatedFetchBytes, byteLimit, densityTooLarge })`
-  produces the verdict and its reason, and is *only* the comparison: over the
+  produces the verdict, its reason, and the `axis` that tripped — a field rather
+  than something `zoomCanReleaseGate` re-derives from the reason string, so the
+  banner's wording stays free to change. It is *only* the comparison: over the
   byte limit gates before density, and `densityTooLarge` is opt-in, so byte-only
   displays never gate on it. Whether either axis applies — the opt-in,
   force-load, `AUTO_FORCE_LOAD_BP` on the density side — is `byteGateActive` /

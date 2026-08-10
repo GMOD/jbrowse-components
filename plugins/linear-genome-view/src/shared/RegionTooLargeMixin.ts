@@ -283,7 +283,7 @@ export default function RegionTooLargeMixin() {
        * recovered afterwards. The span is what `zoomIneffective` compares across
        * two measurements; the key is what tells the fetch autoruns whether the
        * stored estimate still describes what the user is looking at
-       * (`byteEstimateStale`). Reading either at commit time would label the
+       * (`gateMeasurementStale`). Reading either at commit time would label the
        * number with a viewport it never covered.
        *
        * Rounded, because `visibleRegions` carries fractional bp and a key that
@@ -551,12 +551,12 @@ export default function RegionTooLargeMixin() {
        * of any span threshold, and `ByteEstimate.zoomIneffective` records that
        * the user zoomed in materially and the bytes did not move.
        *
-       * Reading `zoomIneffective` alone — which is what this used to do — got
-       * the density case backwards on exactly the files that axis exists for. A
-       * dense VCF is small on disk and flat across zooms, so two zoom steps
-       * while density-blocked set `zoomIneffective` (the worker reports `bytes`
-       * alongside a density rejection, so the estimate keeps updating), and the
-       * banner then withheld the one way out that works.
+       * Reading `zoomIneffective` alone gets the density case backwards on
+       * exactly the files that axis exists for. A dense VCF is small on disk and
+       * flat across zooms, so two zoom steps while density-blocked set the flag
+       * — the worker reports `bytes` alongside a density rejection, so the
+       * estimate keeps updating while the banner holds — and the banner would
+       * then withhold the one way out that works.
        *
        * True until proven otherwise, so a track that has been measured once
        * still reads as escapable. That is the right default: the failure this
@@ -577,7 +577,7 @@ export default function RegionTooLargeMixin() {
        * `viewport` must be `gateViewport` read when the measurement was
        * *requested*, not at commit time — a view that moved during the round trip
        * would otherwise label the number with a viewport it never covered, and
-       * both readers of that label (`byteEstimateStale`, `zoomIneffective`) would
+       * both readers of that label (`gateMeasurementStale`, `zoomIneffective`) would
        * answer about the wrong one. Harmless for non-gated displays (they ignore
        * it).
        *
@@ -675,7 +675,7 @@ export default function RegionTooLargeMixin() {
        * viewport is read here, *before* the await, so the estimate is labelled
        * with the one it actually covers. A re-read afterwards would pin it to
        * whatever a mid-fetch zoom left on screen, and both things the label is
-       * for — `byteEstimateStale`, `zoomIneffective` — would then answer about a
+       * for — `gateMeasurementStale`, `zoomIneffective` — would then answer about a
        * viewport the number was never taken at.
        */
       async byteGateBlocksFetch(

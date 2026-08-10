@@ -535,20 +535,23 @@ LGV displays (alignments, canvas, wiggle, variants) via these autoruns:
 | Autorun | Fires on | Action |
 | --- | --- | --- |
 | `DisplayedRegionsChange` | `view.displayedRegions` changes | `clearAllRpcData()` **+ `clearByteEstimate()`** — one of the two places the cached byte estimate is dropped (the other is a tier swap) |
-| `FetchVisibleRegions` | the viewport, or `fetchGeneration` after a fetch ends (debounced 600 ms) | `fetchNeeded(needed)` for the visible blocks loaded data doesn't cover, or `remeasureByteEstimate()` instead while `regionTooLarge` holds. Skipped while `error` / `fetchCanceled` is set, while a fetch is in flight, and while the track is minimized |
+| `FetchVisibleRegions` | the viewport, or `fetchGeneration` after a fetch ends (debounced 600 ms) | `fetchNeeded(needed)` for the visible blocks loaded data doesn't cover. While `regionTooLarge` holds it runs that same fetch once per settled viewport — the fetch stops at whichever gate rejected it, and there is no measurement-only path. Skipped while `error` / `fetchCanceled` is set, while a fetch is in flight, and while the track is minimized |
 | `SettingsInvalidate` | `rpcPropsCacheKey`, the serialized `rpcProps()` return | `clearAllRpcData()`. Installed only when the display defines `rpcProps()` |
 | `ClearBlockingStateOnViewportChange` | `view.visibleRegions` | `clearAllRpcData()` when `error` or `fetchCanceled` is set, so the fetch autorun retries. Not `regionTooLarge`, which is derived and re-measured by the fetch autorun itself |
 | `ClearHoverOnRegionTooLarge` | `regionTooLarge` becoming true | the overridable `onRegionTooLarge()` hook — a no-op unless the display overrides it |
 
 <!-- FETCH_AUTORUNS END -->
 
-Why the byte estimate is dropped in `DisplayedRegionsChange` and nowhere else:
-`displayedRegionIndex` is reused across chromosomes, so a stale estimate would
-gate the new region against the previous chromosome's numbers — and since
-`FetchVisibleRegions` skips while `regionTooLarge` holds, the banner wedges with
-no refetch to correct it. `clearAllRpcData` deliberately leaves the estimate
-alone (no flicker on an ordinary clear), which is why the drop lives in the
-autorun rather than in that action.
+Why the byte estimate is dropped here: `displayedRegionIndex` is reused across
+chromosomes, so a stale estimate describes the previous chromosome's numbers and
+the banner quotes them at the new region until a re-measure lands. Only that
+long — the new region moves `gateViewport.key`, so `gateMeasurementStale` lets
+the next fetch through — but a banner quoting the wrong file's cost is worth one
+line to avoid. `clearAllRpcData` deliberately leaves the estimate alone (no
+flicker on an ordinary clear), which is why the drop lives in the autorun rather
+than in that action. This is one of **two** places it is dropped; the other is
+`RegionTooLargeMixin`'s own `ClearByteEstimateOnTierSwap`, for a display that
+reads a different file at different zooms.
 
 Subclasses override `fetchNeeded` to call `self.fetchRegions(needed, work)`.
 `fetchRegions` runs an optional pre-flight byte estimate before invoking the work
@@ -582,9 +585,15 @@ It's a **derived** getter on `RegionTooLargeMixin` — a pure function of the la
 byte measurement — and what keeps that measurement describing what is on screen
 is that a blocked display keeps fetching, once per settled viewport, with the
 fetch stopping at the measurement rather than downloading. So the banner releases
-on a fresh index read, with no imperative clear and no flicker on pan. Displays opt in by
-overriding hooks (`derivedRegionTooLargeEnabled`, `configuredFetchSizeLimit`,
-`densityTooLarge`) rather than shadowing the getter. Canvas folds
+on a fresh index read, with no imperative clear and no flicker on pan. Displays
+opt in by overriding hooks — `byteGateEnabled` for a pre-flight estimate,
+`gateFoldedIntoFetch` for a byte check inside the display's own feature RPC,
+plus `byteGateAdapterConfig` / `densityTooLarge` / `configuredFetchSizeLimit` —
+rather than shadowing the getter. **Never override
+`derivedRegionTooLargeEnabled`**: it is the OR of the two opt-ins, additive
+precisely so a gate mixin can contribute one without racing the base on
+composition order, and `CanvasFeatureGateMixin` carries a dev-time check for
+that failure because it disables the whole gate silently. Canvas folds
 its byte check into the feature-fetch RPC instead of a separate pre-flight
 estimate, and adds the density axis, via `CanvasFeatureGateMixin`
 (`plugins/canvas/src/shared/`), which both canvas feature displays compose; the

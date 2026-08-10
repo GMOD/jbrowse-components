@@ -362,8 +362,9 @@ export const mafSpecs: ScreenshotSpec[] = [
               height: 600,
               rowIdentityMode: 'heatmap',
               rowIdentityAutoZoom: false,
-              // The byte gate is live at this zoom (`gateBelowForceLoadFloor`,
-              // RegionTooLargeMixin), and a 470-way is over the 1MB default at
+              // The byte gate is live at this zoom — it has no span floor
+              // (`byteGateActive`, RegionTooLargeMixin), so it measures at
+              // whatever is on screen — and a 470-way is over the 1MB default at
               // any span — so without this the capture is the too-large banner,
               // not the heatmap. `readyText` is the ruler, so nothing would have
               // failed; the figure would just have been wrong. This is the case
@@ -524,9 +525,9 @@ export const mafSpecs: ScreenshotSpec[] = [
               subtreeFilter: HG38_470WAY_30,
               // Needed by both halves, for different reasons, which is fitting
               // since they are deliberately one display spec at two zooms. The
-              // 200bp half is below the 20kb floor, where the gate is live now
-              // (`gateBelowForceLoadFloor`) and a 470-way alignment is over the
-              // cap at any span. The 180kb half is in summary mode, which is
+              // 200bp half is below the 20kb floor, where the byte gate is live
+              // anyway (it has none — `byteGateActive`) and a 470-way alignment
+              // is over the cap at any span. The 180kb half is in summary mode, which is
               // gated too now — against the summary file rather than the
               // alignment (`byteGateAdapterConfig`) — and a 470-way summary over
               // 180kb is a lot of per-species runs. Either way the banner would
