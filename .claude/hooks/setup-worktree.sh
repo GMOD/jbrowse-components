@@ -1,39 +1,44 @@
 #!/usr/bin/env bash
-# WorktreeCreate hook: make a freshly created git worktree actually usable.
+# WorktreeCreate hook: CREATE a git worktree and make it usable.
 #
-# A worktree is a bare checkout — it has no node_modules and none of the files
-# `postinstall` generates (`products/jbrowse-web/src/buildInfo.ts` among them,
-# which is why a fresh worktree otherwise fails `tsc` and takes ~5 suites with
-# it). Symlinking the main checkout's root node_modules is NOT enough for a pnpm
-# workspace: each package's dependencies, including the workspace links between
-# them, live in `<pkg>/node_modules`, so with only the root linked tsc resolves
-# every `@jbrowse/*` import back into the MAIN checkout's sources and a whole-
-# repo typecheck passes without ever seeing your edit. `pnpm install` builds the
-# real symlink farm and runs postinstall; with a warm store it is a few seconds.
+# Read the contract before editing, because it is not the usual hook contract
+# and getting it wrong breaks EnterWorktree for every session in the repo.
 #
-# TWO THINGS THIS HOOK MUST NOT DO. It did both until 2026-08-10, and neither
-# announced itself:
+# A WorktreeCreate hook does not run *alongside* the runtime's own worktree
+# creation — it REPLACES it. The runtime delegates the whole job and then reads
+# the resulting path from the hook's STDOUT:
 #
-# 1. WRITE TO STDOUT. The runtime reads a WorktreeCreate hook's stdout as the
-#    worktree PATH — that is the channel by which this hook is allowed to create
-#    the directory itself for non-git projects. A `{"systemMessage":...}` reply,
-#    which is the correct shape for nearly every other hook event, therefore
-#    became a path: the session tried to chdir into a directory literally named
-#    `{"systemMessage":"worktree ready: pnpm install complete"}`, died on ENOENT,
-#    and lost the worktree. Say nothing on stdout. Log instead.
+#     "hook succeeded but returned no worktree path
+#      (command: echo the path to stdout; ...)"
 #
-# 2. FALL BACK TO THE PAYLOAD'S `cwd`. The payload carries no worktree path at
-#    all — only `name`, alongside a `cwd` that is the PRIMARY CHECKOUT. So a
-#    `// .cwd` fallback aims `pnpm install` at the shared tree every other agent
-#    is working in. It did that on all 15 real invocations before anyone looked,
-#    and it never once installed into a worktree; the giveaway that should have
-#    been suspicious is a log full of "Already up to date" in 150ms. The path has
-#    to be rebuilt from `cwd` + `name`, and the install refuses to run anywhere
-#    that resolves back to `cwd`.
+# So this script owns `git worktree add`, and stdout carries exactly one thing:
+# the absolute path of the worktree, on the last line, and nothing else. Every
+# diagnostic goes to the log.
 #
-# Test it without creating a worktree — this should SKIP, not install:
-#   echo "{\"cwd\":\"$PWD\",\"name\":\"scratch\"}" | .claude/hooks/setup-worktree.sh
-#   tail ~/.claude/worktree-hook.log
+# Three ways this has actually broken:
+#
+# 1. Printing `{"systemMessage":...}` — the right reply for almost every other
+#    hook event — makes the runtime treat that JSON as the path. The session
+#    chdir'd into a directory literally named
+#    `{"systemMessage":"worktree ready: pnpm install complete"}` and died on
+#    ENOENT.
+# 2. Printing nothing at all fails the hook outright ("returned no worktree
+#    path"), which is what a script that only ran `pnpm install` did.
+# 3. Taking the target directory from the payload's `cwd`. The payload has no
+#    worktree path in it — there is no worktree yet, that is the point — only
+#    `name` and a `cwd` that is the PRIMARY CHECKOUT. A `// .cwd` fallback
+#    therefore ran `pnpm install` in the shared tree every other agent is
+#    working in, on all 15 real invocations, while logging "Already up to date"
+#    in 150ms and looking like success.
+#
+# Base ref: local `main`, deliberately. The runtime's own default is
+# `worktree.baseRef: fresh`, i.e. `origin/<default-branch>`, and this repo runs
+# ~70 commits ahead of `origin/main` — branching there would start every
+# worktree that far behind and make the ff-only landing in CLAUDE.md impossible.
+#
+# Test it end to end (this really does create a worktree; remove it after):
+#   echo "{\"cwd\":\"$PWD\",\"name\":\"hooktest\"}" | .claude/hooks/setup-worktree.sh
+#   git worktree remove .claude/worktrees/hooktest && git branch -d worktree-hooktest
 set -uo pipefail
 
 payload=$(cat)
@@ -42,57 +47,70 @@ log=~/.claude/worktree-hook.log
 note() { printf '%s\n' "$*" >>"$log" 2>/dev/null; }
 field() { printf '%s' "$payload" | jq -r "$1" 2>/dev/null; }
 
-base=$(field '.cwd // empty')
-base=${base:-${CLAUDE_PROJECT_DIR:-$PWD}}
+repo=$(field '.cwd // empty')
+repo=${repo:-${CLAUDE_PROJECT_DIR:-$PWD}}
 name=$(field '.name // empty')
 
-# Prefer an explicit path if the runtime ever starts sending one; otherwise
-# rebuild it, because `.claude/worktrees/<name>` is where EnterWorktree puts it.
-dir=$(field '.worktree_path // .worktreePath // .path // .worktree // empty')
-if [ -z "$dir" ] && [ -n "$name" ]; then
-  dir="$base/.claude/worktrees/$name"
-fi
-
 note "--- $(date -Is) ---"
-note "base:         $base"
-note "name:         ${name:-<none>}"
-note "resolved dir: ${dir:-<none>}"
-note "payload:      $payload"
+note "repo:    $repo"
+note "name:    ${name:-<none>}"
+note "payload: $payload"
 
-if [ -z "$dir" ]; then
-  note "SKIP: payload carried neither a worktree path nor a name"
-  exit 0
+if [ -z "$name" ]; then
+  name="wt-$(date +%s)-$$"
+  note "no name in payload, generated: $name"
 fi
 
-# The guard the `.cwd` fallback was missing: never install into the shared tree.
-if [ "$(cd "$dir" 2>/dev/null && pwd -P)" = "$(cd "$base" 2>/dev/null && pwd -P)" ]; then
-  note "SKIP: $dir is the primary checkout, not a worktree"
-  exit 0
+dir="$repo/.claude/worktrees/$name"
+branch="worktree-$name"
+
+# Never let the target collapse onto the shared checkout — that is bug 3 above.
+if [ "$(cd "$dir" 2>/dev/null && pwd -P)" = "$(cd "$repo" 2>/dev/null && pwd -P)" ]; then
+  note "ABORT: $dir resolves to the primary checkout"
+  exit 1
 fi
 
-# The runtime may still be checking the worktree out when this fires, so give
-# the directory a bounded moment to appear before giving up on it.
-waited=0
-while [ ! -f "$dir/pnpm-lock.yaml" ] && [ "$waited" -lt 40 ]; do
-  sleep 0.25
-  waited=$((waited + 1))
-done
-note "waited:       $((waited * 250))ms for the checkout"
-
-if [ ! -f "$dir/pnpm-lock.yaml" ]; then
-  note "SKIP: no pnpm-lock.yaml in $dir - the runtime may create the worktree after the hook"
-  exit 0
-fi
-
-# A stale symlink here would make pnpm try to remove the main checkout's
-# node_modules; it aborts rather than doing so, but clear it either way.
-if [ -L "$dir/node_modules" ]; then
-  rm -f "$dir/node_modules"
-fi
-
-if (cd "$dir" && pnpm install --frozen-lockfile) >>"$log" 2>&1; then
-  note "OK: pnpm install complete in $dir"
+# Create the worktree unless a previous run already did. `git worktree add`
+# refuses an existing directory, and reusing one is the idempotent answer for a
+# retried EnterWorktree.
+if [ -e "$dir/.git" ]; then
+  note "reusing existing worktree at $dir"
 else
-  note "FAILED: run 'pnpm install --frozen-lockfile' in $dir yourself"
+  base=main
+  git -C "$repo" show-ref --verify --quiet "refs/heads/$base" || base=HEAD
+  if git -C "$repo" show-ref --verify --quiet "refs/heads/$branch"; then
+    add_out=$(git -C "$repo" worktree add "$dir" "$branch" 2>&1) || add_rc=$?
+  else
+    add_out=$(git -C "$repo" worktree add "$dir" -b "$branch" "$base" 2>&1) || add_rc=$?
+  fi
+  if [ "${add_rc:-0}" -ne 0 ]; then
+    note "ABORT: git worktree add failed ($add_rc)"
+    note "$add_out"
+    exit 1
+  fi
+  note "created $dir on $branch from $base"
 fi
-exit 0
+
+# A worktree is a bare checkout: no node_modules, and none of the files
+# postinstall generates (products/jbrowse-web/src/buildInfo.ts among them, which
+# a fresh worktree otherwise fails `tsc` on, taking ~5 suites with it).
+# Symlinking the main checkout's root node_modules is NOT enough for a pnpm
+# workspace: each package's deps, including the workspace links between
+# packages, live in <pkg>/node_modules, so with only the root linked every
+# @jbrowse/* import resolves back into the MAIN checkout's sources and a
+# whole-repo typecheck passes without ever seeing your edit.
+if [ -f "$dir/pnpm-lock.yaml" ]; then
+  if [ -L "$dir/node_modules" ]; then
+    rm -f "$dir/node_modules"
+  fi
+  if (cd "$dir" && pnpm install --frozen-lockfile) >>"$log" 2>&1; then
+    note "OK: pnpm install complete"
+  else
+    note "WARN: pnpm install failed - run it in $dir yourself"
+  fi
+else
+  note "no pnpm-lock.yaml in $dir, skipping install"
+fi
+
+# The contract: the path, alone, on stdout. Nothing above this line may print.
+printf '%s\n' "$dir"
