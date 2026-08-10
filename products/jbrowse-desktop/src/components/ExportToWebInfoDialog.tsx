@@ -18,19 +18,21 @@ export default function ExportToWebInfoDialog({
     >
       <DialogContentText>
         This opens your desktop session in jbrowse-web. Tracks pointing at
-        remote URLs load directly; local files are not accessible from the web
-        and will not load.
+        remote URLs load directly. Files on this computer are not reachable from
+        the web, so tracks that use one are left out of the export and listed
+        for you; host those files at a URL to include them.
       </DialogContentText>
       <DialogContentText>
-        <strong>Short link</strong> (recommended): the session is encrypted in
-        your browser with a random password, then uploaded to a central
-        database. The password lives only in the link, never on the server, so
-        short links are effectively end-to-end encrypted.
+        <strong>Long link</strong> (the default): the full session is compressed
+        into the URL itself. Nothing leaves this computer, but the URL can get
+        long enough to break some programs.
       </DialogContentText>
       <DialogContentText>
-        <strong>Long link</strong>: the full session is compressed into the URL
-        itself. Nothing is uploaded, but the URL can get long enough to break
-        some programs.
+        <strong>Short link</strong>: the session is encrypted in your browser
+        with a random password, then uploaded to a central database. The
+        password lives only in the link, never on the server, so short links are
+        effectively end-to-end encrypted — but the session does leave this
+        computer, which is why it is not the default.
       </DialogContentText>
       <DialogContentText>
         <strong>Plaintext JSON</strong>: the readable session embedded in the

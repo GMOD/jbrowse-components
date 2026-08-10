@@ -22,6 +22,14 @@ export default function JBrowseDesktop(
         type: 'string',
         defaultValue: '',
       },
+      // desktop-only: the jbrowse-web deployment "export to web" opens a session
+      // in. Empty means the public one (DEFAULT_WEB_BASE_URL); a site that runs
+      // its own — and whose data may only be reachable from it — points its
+      // configs here instead. Absolute http(s) url; anything else is ignored.
+      webExportUrl: {
+        type: 'string',
+        defaultValue: '',
+      },
     },
   })
 }

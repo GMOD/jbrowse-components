@@ -1,6 +1,5 @@
 import { useState } from 'react'
 
-import { DEFAULT_SHARE_URL } from '@jbrowse/app-core'
 import {
   ErrorBanner,
   InfoDialog,
@@ -8,16 +7,8 @@ import {
   MonospaceTextField,
 } from '@jbrowse/core/ui'
 import ShareLinkField from '@jbrowse/core/ui/ShareLinkField'
-import { encodeSessionParam, fetchJson } from '@jbrowse/core/util'
-import { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
 import { copyTextWithSession } from '@jbrowse/core/util/copyText'
 import { useFetch } from '@jbrowse/core/util/useFetch'
-import {
-  DEFAULT_WEB_BASE_URL,
-  bakePromotedDefaultsIntoSnapshot,
-  buildWebExportUrl,
-  planWebExport,
-} from '@jbrowse/product-core'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import HelpOutlineIcon from '@mui/icons-material/HelpOutlined'
 import OpenInBrowserIcon from '@mui/icons-material/OpenInBrowser'
@@ -34,71 +25,51 @@ import {
 import { observer } from 'mobx-react'
 
 import ExportToWebInfoDialog from './ExportToWebInfoDialog.tsx'
+import { buildLink, prepareExport } from './buildWebExport.ts'
 
 import type { AbstractSessionModel, SessionShareMode } from '@jbrowse/core/util'
-import type {
-  HostedBaseConfig,
-  WebExportInput,
-  WebExportPlan,
-} from '@jbrowse/product-core'
+import type { WebExportInput, WebExportPlan } from '@jbrowse/product-core'
 
-async function buildExport(
-  snapshot: WebExportInput,
-  mode: SessionShareMode,
-  session: AbstractSessionModel,
-) {
-  const sourceConfigUrl = snapshot.configuration?.sourceConfigUrl
-  // If the hosted base config can't be fetched (hub down, offline), fall back
-  // to a self-contained export rather than failing the whole operation —
-  // planWebExport treats a missing baseConfig as "no usable base".
-  const baseConfig = sourceConfigUrl
-    ? await fetchJson<HostedBaseConfig>(sourceConfigUrl).catch((e: unknown) => {
-        console.error(e)
-        return undefined
-      })
-    : undefined
-  if (baseConfig && sourceConfigUrl) {
-    // Stamp baseUri onto the base's relative-URI locations the same way desktop
-    // did when it first loaded this config (see fetchConfig), so planWebExport's
-    // per-track diff against the base doesn't read every relative-URI location as
-    // an edit.
-    addRelativeUris(baseConfig, new URL(sourceConfigUrl))
-  }
-  const plan = planWebExport(snapshot, baseConfig)
-  // Flatten the live promotable-default cascade into concrete track values, the
-  // same as jbrowse-web's ShareDialog — a self-contained track is baked into its
-  // sessionTracks config, a hosted-base track into a trackConfigDeltas entry the
-  // web recipient merges — so the exported session shows what the sender saw.
-  const bakedSession = bakePromotedDefaultsIntoSnapshot(session, plan.session)
-  // A short link uploads to the share server that the export TARGET reads back
-  // from — never this desktop instance's own shareURL config, since Desktop never
-  // reads share links at all. That target is DEFAULT_WEB_BASE_URL loading
-  // `?config=<plan.configUrl>`, and jbrowse-web resolves the store from *that
-  // config's* configuration.shareURL (SessionLoader.fetchSharedSession). So a
-  // hosted base declaring its own share server has to win here, or the link
-  // resolves against a store the session was never uploaded to. With no hosted
-  // base (self-contained, `?config=none`) web falls back to DEFAULT_SHARE_URL, and
-  // the two defaults are a pair.
-  const { sessionParam, password, plaintext } = await encodeSessionParam(
-    mode,
-    bakedSession,
-    {
-      shareURL:
-        plan.strategy === 'hostedConfigBase'
-          ? // mirrors web's readConf: an explicit empty string is honored as-is
-            (baseConfig?.configuration?.shareURL ?? DEFAULT_SHARE_URL)
-          : DEFAULT_SHARE_URL,
-      referer: DEFAULT_WEB_BASE_URL,
-    },
+const SHARE_MODES = [
+  // the default first, and in the order ExportToWebInfoDialog explains them
+  { value: 'long', label: 'Long link' },
+  { value: 'short', label: 'Short link' },
+  { value: 'json', label: 'Plaintext JSON' },
+] as const
+
+function ShareModeRadios({
+  mode,
+  onChange,
+}: {
+  mode: SessionShareMode
+  onChange: (mode: SessionShareMode) => void
+}) {
+  return (
+    <RadioGroup
+      row
+      value={mode}
+      onChange={event => {
+        // MUI types the change value as a bare string; the radios below are the
+        // only things that can produce one, so the narrowing is sound here
+        onChange(event.target.value as SessionShareMode)
+      }}
+    >
+      {SHARE_MODES.map(({ value, label }) => (
+        <FormControlLabel
+          key={value}
+          value={value}
+          control={<Radio />}
+          label={label}
+        />
+      ))}
+    </RadioGroup>
   )
-  return {
-    plan,
-    url: buildWebExportUrl(plan, sessionParam, { password }),
-    plaintext,
-  }
 }
 
-function PortabilityWarning({ plan }: { plan: WebExportPlan }) {
+// What the export decided and what it had to leave behind. Depends only on the
+// plan, not on the share mode, so it stays on screen while a mode switch
+// re-encodes the link.
+function PlanSummary({ plan }: { plan: WebExportPlan }) {
   const { droppedTracks, blockingFiles } = plan
   return (
     <>
@@ -120,6 +91,38 @@ function PortabilityWarning({ plan }: { plan: WebExportPlan }) {
           include them.
         </Alert>
       ) : null}
+      <Typography variant="caption" color="textSecondary">
+        {plan.strategy === 'hostedConfigBase'
+          ? `Reuses the hosted config ${plan.configUrl}`
+          : 'Self-contained session (carries its own assemblies and tracks)'}
+      </Typography>
+    </>
+  )
+}
+
+// The plaintext-JSON mode's inspect panel. Owns its own expanded flag: it is
+// unmounted whenever the mode produces no plaintext, so the flag resetting with
+// it is the behavior we want.
+function SessionJsonPanel({ plaintext }: { plaintext: string }) {
+  const [show, setShow] = useState(false)
+  return (
+    <>
+      <LabeledCheckbox
+        checked={show}
+        onChange={val => {
+          setShow(val)
+        }}
+        label="Show readable JSON"
+      />
+      {show ? (
+        <MonospaceTextField
+          label="Session JSON"
+          value={plaintext}
+          readOnly
+          fullWidth
+          maxRows={20}
+        />
+      ) : null}
     </>
   )
 }
@@ -138,18 +141,29 @@ const ExportToWebDialog = observer(function ExportToWebDialog({
   // than something merely opening this dialog does before the user acts.
   const [mode, setMode] = useState<SessionShareMode>('long')
   const [infoDialogOpen, setInfoDialogOpen] = useState(false)
-  const [showReadableJson, setShowReadableJson] = useState(false)
-  const {
-    data,
-    error,
-    isLoading: loading,
-    mutate,
-  } = useFetch(['exportToWeb', mode], () =>
-    buildExport(snapshot, mode, session),
+  // Two fetches rather than one keyed on the mode: switching modes must not
+  // re-fetch the hosted base config, must not re-read the live session for the
+  // bake at a different moment than the snapshot was taken, and must not blank
+  // the portability warnings while it re-encodes.
+  const prepared = useFetch(['exportToWebPlan'], () =>
+    prepareExport(snapshot, session),
   )
-  const url = data?.url ?? ''
-  const plaintext = data?.plaintext
-  const disabled = loading || !!error
+  // A null fetcher until the plan resolves, which is also what starts the link
+  // fetch once it does — and restarts it if a failed plan is retried, since
+  // useFetch tracks the fetcher's nullness as a fetch input alongside the key.
+  const preparation = prepared.data
+  const link = useFetch(
+    ['exportToWebLink', mode],
+    preparation ? () => buildLink(preparation, mode) : null,
+  )
+  const plan = preparation?.plan
+  const url = link.data?.url ?? ''
+  const plaintext = link.data?.plaintext
+  const error = prepared.error ?? link.error
+  // Covers the plan fetch, the encode, and the render in between where neither
+  // reports isLoading yet — anything that isn't a finished link or a failure.
+  const generating = !error && !link.data
+  const disabled = generating || !!error
   return (
     <>
       <InfoDialog
@@ -194,70 +208,30 @@ const ExportToWebDialog = observer(function ExportToWebDialog({
           </IconButton>
         </DialogContentText>
 
-        <RadioGroup
-          row
-          value={mode}
-          onChange={event => {
-            setMode(event.target.value as SessionShareMode)
-          }}
-        >
-          <FormControlLabel
-            value="short"
-            control={<Radio />}
-            label="Short link"
-          />
-          <FormControlLabel
-            value="long"
-            control={<Radio />}
-            label="Long link"
-          />
-          <FormControlLabel
-            value="json"
-            control={<Radio />}
-            label="Plaintext JSON"
-          />
-        </RadioGroup>
+        <ShareModeRadios mode={mode} onChange={setMode} />
 
         {error ? (
           <ErrorBanner
             error={error}
             onReset={() => {
-              mutate()
+              if (prepared.error) {
+                prepared.mutate()
+              } else {
+                link.mutate()
+              }
             }}
           />
-        ) : loading ? (
-          <Typography>Generating {mode} URL...</Typography>
         ) : (
           <>
-            {data ? <PortabilityWarning plan={data.plan} /> : null}
-            {data?.plan.strategy === 'hostedConfigBase' ? (
-              <Typography variant="caption" color="textSecondary">
-                Reuses the hosted config {data.plan.configUrl}
-              </Typography>
+            {plan ? <PlanSummary plan={plan} /> : null}
+            {generating ? (
+              <Typography>Generating {mode} URL...</Typography>
             ) : (
-              <Typography variant="caption" color="textSecondary">
-                Self-contained session (carries its own assemblies and tracks)
-              </Typography>
+              <>
+                <ShareLinkField value={url} />
+                {plaintext ? <SessionJsonPanel plaintext={plaintext} /> : null}
+              </>
             )}
-            <ShareLinkField value={url} />
-            {plaintext ? (
-              <LabeledCheckbox
-                checked={showReadableJson}
-                onChange={val => {
-                  setShowReadableJson(val)
-                }}
-                label="Show readable JSON"
-              />
-            ) : null}
-            {plaintext && showReadableJson ? (
-              <MonospaceTextField
-                label="Session JSON"
-                value={plaintext}
-                readOnly
-                fullWidth
-                maxRows={20}
-              />
-            ) : null}
           </>
         )}
       </InfoDialog>
