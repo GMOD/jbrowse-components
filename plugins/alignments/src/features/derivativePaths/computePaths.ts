@@ -1,5 +1,7 @@
 import { assembleLocStringRaw } from '@jbrowse/core/util'
 
+import { getOrCreate } from '../../shared/util.ts'
+
 import type { SegAln } from '../arcs/compute.ts'
 
 // A derivative allele is an ordered, oriented list of reference intervals, and
@@ -118,12 +120,7 @@ function buildClusterOf(chains: SegAln[][], tolerance: number): ClusterOf {
   const byRef = new Map<string, number[]>()
   for (const chain of chains) {
     for (const { refName, bp } of junctionEndpoints(chain)) {
-      let bps = byRef.get(refName)
-      if (!bps) {
-        bps = []
-        byRef.set(refName, bps)
-      }
-      bps.push(bp)
+      getOrCreate(byRef, refName, () => []).push(bp)
     }
   }
   const ids = new Map<string, number>()
@@ -213,8 +210,12 @@ function canonicalize(chain: SegAln[], clusterOf: ClusterOf) {
 // replaces it cannot move a read from one candidate to another, and it is free
 // to consult the read extent the signature deliberately ignores.
 //
-// The rule is "start from the lower of the two reference coordinates the allele
-// could begin at", which reads COLO829's der(3) in the orientation its published
+// The rule is "start from the lower of the two ends the allele could begin at",
+// compared by refName first and only then by coordinate — the two readings begin
+// on different chromosomes whenever the path is interchromosomal, and there is no
+// coordinate comparison to make across two of them. Lexicographic, so `chr10`
+// sorts under `chr3`; that is arbitrary, and allowed to be, because nothing but
+// the drawing reads it. It puts COLO829's der(3) in the orientation its published
 // description and `sv_multihop.py derive` both use.
 function orientForDisplay(chain: SegAln[]) {
   const reversed = reverseComplementChain(chain)
@@ -279,27 +280,24 @@ export function derivativeLocString(segments: DerivativeSegment[]) {
 export function computeDerivativePaths(
   opts: ComputeDerivativePathsOpts,
 ): DerivativeCandidate[] {
-  const { chains } = opts
-  const tolerance = opts.tolerance ?? DEFAULTS.tolerance
-  const minReads = opts.minReads ?? DEFAULTS.minReads
-  const flank = opts.flank ?? DEFAULTS.flank
+  const {
+    chains,
+    tolerance = DEFAULTS.tolerance,
+    minReads = DEFAULTS.minReads,
+    flank = DEFAULTS.flank,
+  } = opts
 
   const linked = chains.filter(chain => chain.length > 1)
   const clusterOf = buildClusterOf(linked, tolerance)
-  const groups = new Map<string, { chains: SegAln[][] }>()
+  const groups = new Map<string, SegAln[][]>()
   for (const chain of linked) {
     const { signature, chain: oriented } = canonicalize(chain, clusterOf)
-    let group = groups.get(signature)
-    if (!group) {
-      group = { chains: [] }
-      groups.set(signature, group)
-    }
-    group.chains.push(oriented)
+    getOrCreate(groups, signature, () => []).push(oriented)
   }
 
   const candidates: DerivativeCandidate[] = []
   for (const group of groups.values()) {
-    if (group.chains.length < minReads) {
+    if (group.length < minReads) {
       continue
     }
     // The representative is the widest chain rather than an average of them:
@@ -307,14 +305,14 @@ export function computeDerivativePaths(
     // thing left to choose is how much reference context the candidate carries,
     // and the widest read is the one that saw the most. Averaging would invent
     // a boundary no read observed.
-    const representative = group.chains.reduce((best, chain) =>
+    const representative = group.reduce((best, chain) =>
       totalSpan(chain) > totalSpan(best) ? chain : best,
     )
     const oriented = orientForDisplay(representative)
     const segments = segmentsFromChain(oriented, flank)
     candidates.push({
       segments,
-      readCount: group.chains.length,
+      readCount: group.length,
       locString: derivativeLocString(segments),
       refNames: [...new Set(segments.map(seg => seg.refName))],
       extendsOffScreen: oriented.some(seg => !seg.onScreen),
