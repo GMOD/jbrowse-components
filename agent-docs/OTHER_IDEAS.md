@@ -2789,11 +2789,24 @@ covering chains, disulfide bonds, transmembrane segments, modified residues and
 sequence conflicts. That is the "UniProt protein features on the genome" idea
 above, reachable off the hosted hub rather than off `config_demo.json`.
 
-**`genomes_synteny` follows two datasets.** Prose is TNNT3/hs1, the walkthrough
-figure is FTO/panTro6, and `tutorials/CLAUDE.md` says one dataset step by step.
-Two of its three figures are already hs1, so the fix is re-shooting
-`genomes_synteny/launch_sequence` on the hs1 track: one spec edit, a regen and a
-push.
+**`genomes_synteny` follows two datasets, and the obvious fix is wrong.** Prose
+is TNNT3/hs1, the walkthrough figure is FTO/panTro6, and `tutorials/CLAUDE.md`
+says one dataset step by step. This used to read "two of its three figures are
+already hs1, so re-shoot `genomes_synteny/launch_sequence` on the hs1 track: one
+spec edit, a regen and a push." Don't. That spec's own comment records the
+review that put it on chimp: a same-species target makes every block
+near-identical, so the launched view says nothing a reader could not have
+guessed, and the payoff frame needs a ribbon whose gaps are attributable (it is
+aimed at an L1HS in an _FTO_ intron, with the flanking repeats named). Mouse was
+tried and rejected in the same pass for being too far. Re-shooting on hs1 spends
+a slow remote regen to make the figure say less.
+
+The rule it is really in tension with is "show rather than tell", and the page
+already resolves it in prose: the section says the figure walks a second pair
+because a cross-species target is where the tracks each panel ends up with are
+worth following, and that every click is the same on the hs1 track the page
+opened with. If this is reopened, the move is a second hs1 frame **added** to
+the sequence, not the chimp one replaced.
 
 **All three pages are human.** The site's fifty thousand assemblies are its
 reason to exist, and `genomes_basics` now states the no-name-index caveat
