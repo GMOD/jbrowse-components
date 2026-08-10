@@ -144,6 +144,17 @@ they pin behavior a human decided was right (a degenerate y-domain, a
 reversed-block anchor) at inputs a random sweep would rarely hit. The oracle
 pins that the transliteration is faithful. Neither subsumes the other.
 
+**The same machinery measures a shader refactor**, and that is worth reaching
+for before arguing from algebra. To check whether rewriting a decision changed
+anything, put the old and new formulations side by side in one throwaway
+`.slang`, compile it with `-target cpp`, and sweep both from a C++ `main` — real
+float32, not a `Math.fround` simulation, and the same compiler that generates
+the GPU path. That is how `rectSpanPx` was shown to be free (39 emitted ops
+against 43) and, more usefully, how it turned out **not** to be
+behaviour-preserving: the clip-space version it replaced put an interbase point
+mark a full pixel off at half-pixel offsets, because it formed `2.0 /
+canvasWidth` in a normalized space. ADR-051 has the numbers.
+
 Mechanics worth not rediscovering, all in `oracleProbe.ts`:
 
 - `-target cpp` **segfaults** on a vertex entry point, so the check strips every

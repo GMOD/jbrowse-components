@@ -81,6 +81,26 @@ struct VsOut {
 // Canvas2D rect fill is built from. Canvas2DFeatureRenderer's `paintedRectSpan`
 // was a hand-written twin of it, down to relying on the widen being a no-op on
 // the point branch.
+//
+// Working in PX and converting once at each end is not just tidier than the
+// clip-space version this replaced — it is what makes the two backends agree.
+// Measured in float32 against the old formulation over ~7.7k inputs (block
+// widths 97..7680, sub-pixel offsets, spans either side of the 2px floor, both
+// orientations):
+//
+//   - the SPAN branch is unchanged: 0 of 7317 cases differ by as much as half a
+//     pixel, max delta 0.00024 px, and the min-width decision never flips.
+//   - the POINT branch MOVED, on 19 of 369 cases, by a full pixel — 15 of them
+//     at an exactly-half-pixel offset. The old code formed the ±half-width as
+//     `2.0 / canvasWidth` in clip space, which is inexact for most widths, so
+//     the perturbed value fell the other side of `floor(x + 0.5)`. Canvas2D
+//     always did this arithmetic in px, so those were pixels where the GPU put
+//     an interbase cut mark somewhere the Canvas2D and SVG paths did not.
+//
+// The round trip costs nothing: `snapToPixelX` was already doing clip→px→clip
+// internally, twice, and hoisting it out leaves the same two conversions each
+// way. The emitted shader is slightly smaller for it — 39 arithmetic ops
+// reachable from `vs_main` against 43 before, same function count.
 public float2 rectSpanPx(float x1Px, float x2Px, bool isPoint) {
   if (isPoint) {
     float half = MIN_RECT_WIDTH_PX * 0.5;

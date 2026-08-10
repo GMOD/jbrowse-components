@@ -289,6 +289,33 @@ the reasons in §"A vertex shader is not a geometry description" are unchanged �
 what moved is that a px-space *mark extent* can now be factored out of one, the
 same way a px-space scalar already could.
 
+**Measured, because "the round trip is free" was an argument and not evidence.**
+Rewriting the decision as px-in/px-out means `vs_main` now converts clip→px and
+back, which on a per-vertex path deserved more than an algebra sketch. Both
+formulations compiled to C++ (real float32, via the oracle's own path) and swept
+over ~7.7k inputs — block widths 97..7680, sub-pixel offsets, spans either side
+of the 2px floor, both orientations:
+
+- **Cost: slightly lower.** 39 arithmetic operations reachable from `vs_main`,
+  against 43 before, same function count and the same two conversions each way
+  — `snapToPixelX` was already doing clip→px→clip internally, twice, so
+  hoisting it out added nothing. Eliminating `pxToClipW` and the
+  `* canvasWidth * 0.5` in the width readback paid for it.
+- **Span branch: unchanged.** 0 of 7317 cases differ by as much as half a pixel
+  (max 0.00024 px), and the min-width decision never flips.
+- **Point branch: moved, and toward Canvas2D.** 19 of 369 cases shift a full
+  pixel, 15 at an exactly-half-pixel offset. The old code formed the ±half-width
+  as `2.0 / canvasWidth` in clip space — inexact for most widths — so the
+  perturbed value fell the other side of `floor(x + 0.5)`. Canvas2D always did
+  that arithmetic in px, so these were pixels where the GPU placed an interbase
+  cut mark somewhere the Canvas2D and SVG paths did not.
+
+So the refactor is not behaviour-preserving, and that is the point: **the
+clip-space formulation was the one that disagreed.** The general lesson is that
+"px decision, thin clip-space wrapper" is not only more liftable but more
+*accurate* — clip space is a normalized coordinate with a division in it, and
+doing integer-ish pixel arithmetic there rounds where px space does not.
+
 ### The blind spot the survey had, and why two decisions were missed
 
 `rectSpanPx` and the chevron layout (`showChevrons` / `chevronCount` /
