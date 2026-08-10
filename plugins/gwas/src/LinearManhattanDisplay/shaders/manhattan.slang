@@ -180,8 +180,11 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   } else {
     coverage = discCoverage(p);
   }
-  float aa = max(fwidth(coverage), 1e-5);
-  float alpha = smoothstep(-aa, aa, coverage);
+  // One output pixel of ramp, from the SDF's own gradient — which is what lets
+  // the four shapes above share a single line despite the diamond's L1 norm
+  // carrying a sqrt(2) the others don't. See glyphEdgeAlpha; the ramp used to be
+  // open-coded here as `fwidth` used as a half-width, i.e. 2 to 2.83 px wide.
+  float alpha = glyphEdgeAlpha(coverage);
   if (alpha <= 0.0) discard;
   return float4(fragIn.color.rgb, fragIn.color.a * alpha);
 }
