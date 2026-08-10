@@ -767,14 +767,11 @@ view → Graph genome view (this region)** cuts a subgraph from the index with n
 `odgi` step in between. Rubberbanding the ruler and picking **Graph genome view
 (this selection)** does the same for a window you drag.
 
-<Figure caption="An IS5 element at K12 chr:1,299,499-1,300,693, cut from the index rather than from a file prepared beforehand. The 1.2 kb arm of the bubble is the element, which only K12 carries; the other arm is the edge the other four strains take straight past it. Both panels are colored by reference position, so a node's color says where in the window it sits." src="/img/pangenome/pggb_locus_graph.png" />
-
 #### One node per bubble, when the window is wider than the graph can draw
 
 The index above draws one node per GFA segment, and a pggb graph runs about 17
-bp per segment, so the drawable window is the kilobase the figure above opens
-on. It is also where the reviewer's complaint about that figure lives: most of
-what a 1.6 kb cut draws is single-base alternatives, one small lens each.
+bp per segment, so the drawable window is a kilobase or so. Most of what a cut
+that size draws is single-base alternatives, one small lens each.
 
 A coarse tier draws one node per **bubble** instead, with the invariant
 reference between bubbles as backbone, and it needs no new adapter or renderer:
@@ -806,8 +803,7 @@ that decides what the picture is about. At 0 every single-base alternative is
 its own node, which over 20 kb is hundreds of them and reads worse than the fine
 tier. At 50 those are absorbed into the backbone and every indel is kept. The
 whole 4.64 Mb graph is then 1,088 nodes in 51 kB of index, against 606k segments
-in the fine one, so a window sixty times wider than the figure above becomes
-drawable:
+in the fine one, so a window sixty times wider becomes drawable:
 
 ```json
 {
@@ -822,14 +818,13 @@ drawable:
 }
 ```
 
-<Figure caption="100 kb around the same IS5 element, one node per bubble, as a linear track above and the graph it indexes below. Both color a node by where on K12 it sits, and paint charcoal an allele that is not K12 sequence: twelve backbone stretches and eleven bubbles, each an indel some strain carries and K12 does not. The arrowed node is the element the figure above opens." src="/img/pangenome/pggb_bubble_tier.png" />
+<Figure caption="100 kb of K12 around an IS5 element, one node per bubble, as a linear track above and the graph it indexes below. Both color a node by where on K12 it sits, and paint charcoal an allele that is not K12 sequence: twelve backbone stretches and eleven bubbles, each an indel some strain carries and K12 does not. The arrowed node is the IS5 element, which only K12 carries." src="/img/pangenome/pggb_bubble_tier.png" />
 
 The tier is a feature track, so it draws in a linear view as well as in the
 graph, and the figure shows both. A bubble is anchored on the reference span it
 replaces, so the linear lane alternates backbone with bubbles along one axis;
 the bubbles take their own row only because at this width most of them are a
-pixel across. The 100 kb here is 27 nodes, against 53 for the 1.6 kb cut in the
-figure above it.
+pixel across. The 100 kb here is 27 nodes.
 
 Every surviving node states what it stands for, so nothing a reader was reading
 is hidden: hover one for the segments it collapsed, how many traversals cross
@@ -1109,8 +1104,8 @@ arc is a result too, since it walks the window on the backbone.
 The setting needs a graph with P or W records. An rGFA has neither, and neither
 does a subgraph cut from the tabix index above, which rebuilds segments and
 links only. So this is what the file route is still for: cut the IS5 bubble
-[from earlier](#browsing-the-whole-graph-by-locus) as a file and the P lines
-come with it.
+[the coarse tier arrows](#one-node-per-bubble-when-the-window-is-wider-than-the-graph-can-draw)
+as a file and the P lines come with it.
 
 ```bash
 in_pggb bash -c "odgi extract -i /data/$og -r K12#1#chr:1299400-1300800 -E -o - \
@@ -1125,18 +1120,12 @@ strains that skip it with no aligned sequence across its span, while K12's row
 runs through. That is the same carriage the colored strokes below draw, reached
 through an alignment the graph had no part in.
 
-The two panes are different cuts of the same bubble rather than one subgraph
-drawn twice, and each pane header states its own node and edge counts. This one
-is a file, cut with `odgi extract -E` over a slightly narrower range, where the
-figure above is the index cut expanded from its window by **Graph context**.
-Same element, a different neighbourhood drawn around it.
-
 The broken line is the drawing's only one, and it means what it looks like:
 sequence that is not there. Weight and color could not carry it on their own,
 since an off-reference node is already charcoal and the arc is already
 near-black.
 
-<Figure caption="The same IS5 bubble as the index figure above, cut as a file so its P lines survive. Top, the interval in K12 coordinates. Bottom, the bubble with the strain paths drawn and the nodes grey: one arm is the 1.2 kb element, the other the deletion edge past it, drawn broken. Four strokes run along that arc, and the missing one is K12." src="/img/pangenome/pggb_haplotype_paths.png" />
+<Figure caption="The IS5 bubble cut as a file, so its P lines survive. Top, the interval in K12 coordinates. Bottom, the bubble with the strain paths drawn and the nodes grey: one arm is the 1.2 kb element, the other the deletion edge past it, drawn broken. Four strokes run along that arc, and the missing one is K12." src="/img/pangenome/pggb_haplotype_paths.png" />
 
 ## Reproduce it end to end
 

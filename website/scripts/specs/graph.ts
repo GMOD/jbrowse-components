@@ -2121,22 +2121,22 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
 }
 
 export const graphSpecs: ScreenshotSpec[] = [
-  // THE OTHER END OF THE LADDER from pggb_locus_graph below: the same graph and
-  // the same insertion, 60x wider, drawn one node per bubble instead of one node
-  // per segment. This is the answer to the second report on that figure ("the
-  // large green loop is small now but figure still has many small bubbles. we
-  // may want to look at mechanisms to 'pop' the bubbles similar to pangyplot"),
-  // and pangyplot's mechanism is exactly this: decompose once offline, draw the
-  // collapsed graph, open one bubble when a reader asks.
+  // THE COARSE END OF THE LADDER: the pggb graph drawn one node per bubble
+  // instead of one node per segment. This was the answer to the second report
+  // on the fine-grained figure that used to sit above it ("the large green loop
+  // is small now but figure still has many small bubbles. we may want to look
+  // at mechanisms to 'pop' the bubbles similar to pangyplot"), and pangyplot's
+  // mechanism is exactly this: decompose once offline, draw the collapsed
+  // graph, open one bubble when a reader asks. That fine-grained figure
+  // (pggb_locus_graph) has since been deleted -- it never stopped reading as a
+  // tangle, and it drew the same IS5 element as pggb_haplotype_paths below.
   //
-  // What the collapse does to the thing being complained about: the fine cut at
-  // 1.6 kb is 53 nodes and 68 edges, of which 15 are single-base alternatives
-  // strung along the backbone as lenses. Here 100 kb is **11 bubbles and 12
-  // backbone nodes**, because a `--min-content 50` tier absorbs every one of
-  // those single-base bubbles into the backbone and keeps every indel. Nothing
-  // is hidden that a reader was reading: each surviving node states what it
-  // collapsed (`cn` segments, `cw` traversals, `cs`/`cl` shortest and longest
-  // allele), and the insertion the figure below opens is `cl:i:1200` here.
+  // What the collapse does: 100 kb here is **11 bubbles and 12 backbone
+  // nodes**, because a `--min-content 50` tier absorbs every single-base bubble
+  // into the backbone and keeps every indel. Nothing is hidden that a reader
+  // was reading: each surviving node states what it collapsed (`cn` segments,
+  // `cw` traversals, `cs`/`cl` shortest and longest allele), and the IS5
+  // insertion is `cl:i:1200` here.
   //
   // Anchored rather than force-directed, which is the opposite choice from the
   // fine figure and for the reason the layout note gives: a tier IS a chain
@@ -2219,86 +2219,6 @@ export const graphSpecs: ScreenshotSpec[] = [
           alignY: 'bottom',
           dy: 6,
         },
-      },
-    ],
-  },
-  // A pggb graph opened at a locus, with no window cut beforehand. Until this
-  // existed the pggb tutorial had to send the reader to `odgi extract` for
-  // every look, which is why its one graph figure (local_subgraph) is a
-  // hand-extracted 561 bp file: base-level graphs state their coordinates in
-  // path order, and nothing indexed that. Now the same walk runs offline once
-  // (scripts/build_pggb_tabix.sh) and the whole graph is queryable.
-  //
-  // Both panels in the reference-position ramp, which does more here than on a
-  // minigraph graph: at ~17 bp per segment the backbone is hundreds of tiny
-  // blocks rather than a few long ones, and a solid left-to-right hue sweep is
-  // what says they are consecutive rather than scattered. It is also what ties
-  // the two panels together now the graph is force-directed rather than anchored
-  // on the K12 path (review: "the backbone graphs are too hard to understand ...
-  // across all our figures"): a block in the lane and its node in the graph are
-  // the same hue at the same bp.
-  {
-    mode: 'url',
-    name: 'pangenome/pggb_locus_graph',
-    url: pggbLocusSession('force', {
-      region: PGGB_LOCUS,
-      window: PGGB_LOCUS_WINDOW,
-      // COMPRESS, where this drew proportionally (review: "kind of a chaotic
-      // image. the green is a very large loop. unclear why it is a loop? any
-      // better layout?"). It is a loop because it is one 1,199 bp segment
-      // attached at two points a few tens of bp apart -- which is what an
-      // insertion IS -- but under the proportional law it is drawn 20-70x
-      // longer than every other node in the cut (17-73 bp), so the only place
-      // the layout can put it is a circle that swallows the rest of the
-      // drawing, crossing the very arm it is meant to be paired with.
-      //
-      // `compress` is the instrument for exactly this: the power law pulls the
-      // longest and shortest nodes towards the graph's mean, so a cut spanning
-      // kb and bp fits one pane, and the two arms of the bubble come out as a
-      // lens the reader can see is a bubble. What it costs is that the long
-      // node no longer READS as long -- which costs nothing here, because the
-      // node carries its own "1.2 kb" label and the lane above it is drawn on
-      // the coordinates that say the same thing.
-      bubbleSpread: 'compress',
-    }),
-    readySelector: TOOLBAR_READY,
-    readyTimeout: 120000,
-    settleMs: 5000,
-    viewportWidth: 1000,
-    // the two lanes plus the graph pane, which is about as tall as it is wide
-    // for a force drawing where the anchored one was two rows
-    viewportHeight: 1050,
-    hideTooltip: true,
-    // NAME THE OTHER ARM. The view already labels the link the other four
-    // strains take "1.2 kb deletion", so one arm of the bubble said what it was
-    // and the other said nothing -- which is most of "unclear why it is a
-    // loop". It is a loop because two routes leave one junction and meet at the
-    // next, and a reader can only see that once both routes are named.
-    //
-    // `196827-` is the segment itself (K12#1#chr:1,299,498 +1,199 bp, from
-    // `probe-graph-nodes.ts pangenome/pggb_locus_graph --view=1`, and the same
-    // row the segs BED gives as K12-only), so the callout follows the FMMM
-    // layout instead of a pixel. The offset puts it inside the ring, which is
-    // the only white space near the lens.
-    annotations: [
-      // The arrow starts INSIDE the pill and the pill is drawn over it (text
-      // callouts paint last whatever order they are listed in), so the leader
-      // emerges from the label's edge. Both ends are the same node anchor, one
-      // offset by the pill's own placement, so the pair follows the FMMM layout
-      // together and cannot drift apart.
-      {
-        type: 'arrow' as const,
-        strokeWidth: 3,
-        fromAnchor: { view: 1, graphNode: '196827-', dx: 150, dy: -34 },
-        anchor: { view: 1, graphNode: '196827-' },
-      },
-      {
-        type: 'text' as const,
-        text: 'IS5, K12 only',
-        fontSize: 18,
-        anchor: { view: 1, graphNode: '196827-' },
-        dx: 150,
-        dy: -34,
       },
     ],
   },
@@ -2869,11 +2789,12 @@ export const graphSpecs: ScreenshotSpec[] = [
   // and 0 bp, which is a shape rather than a texture, and the four strains that
   // skip the element are four strokes on one arc.
   //
-  // It is deliberately the same locus pggb_locus_graph opens from the index,
-  // because that is the section this one answers: the tabix cut rebuilds
-  // segments and links only, so it has no P lines and this setting has nothing
-  // to draw. The file route keeps them. Same bubble, two colourings — reference
-  // position there, carriage here.
+  // It is deliberately the locus the coarse tier arrows, because that is the
+  // section this one answers: the tabix cut rebuilds segments and links only,
+  // so it has no P lines and this setting has nothing to draw. The file route
+  // keeps them. (An index cut of this same bubble, pggb_locus_graph, used to
+  // sit further up the page and was deleted as an unreadable near-duplicate of
+  // this one.)
   //
   // Nodes go grey, unlike every other figure on the page. Depth is a per-node
   // quantity and carriage is a per-path one, and drawn together the viridis
