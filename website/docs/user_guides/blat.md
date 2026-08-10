@@ -11,8 +11,8 @@ UCSC-style sequence-search servers and turn the hits into a track built on the
 fly, with every hit listed so you can go to the one you want.
 
 The plugin ships with JBrowse Desktop, where both items are in the Tools menu
-with nothing to install. JBrowse Web does not bundle it, so the menu items are
-absent there.
+with nothing to install. JBrowse Web does not bundle it yet, so the menu items
+are absent there; shipping it on Web is planned.
 
 ## BLAT search
 
