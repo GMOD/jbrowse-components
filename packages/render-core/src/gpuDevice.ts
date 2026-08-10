@@ -23,7 +23,14 @@ interface GpuDeviceCell {
    */
   hadDevice: boolean
   deviceLostListeners: Set<() => void>
-  /** @see setGpuOverride */
+  /**
+   * Stays `string | null` rather than {@link GpuOverride} because the cell is
+   * shared with other copies of this module, including older ones whose
+   * `setGpuOverride` took any string without checking. Everything that reads it
+   * treats an unrecognized value as no pin.
+   *
+   * @see setGpuOverride
+   */
   gpuOverride: string | null
 }
 
@@ -225,10 +232,43 @@ async function createDevice(): Promise<GPUDevice | null> {
 }
 
 /**
+ * The renderers `?renderer=` can pin the page to. `canvas` is a spelling of
+ * `canvas2d` kept because it is in the wild.
+ *
+ * A pin means *only* that rung — `createGpuHal` does not fall past it. That is
+ * the whole point of the flag: it exists to compare backends, and a comparison
+ * whose subject silently substitutes itself is worse than no comparison. The
+ * failure is visible instead, as a `renderError` carrying the pin that could
+ * not be honored, with the banner's "disable GPU" as the way out.
+ */
+export const GPU_OVERRIDES = ['webgpu', 'webgl', 'canvas2d', 'canvas'] as const
+
+export type GpuOverride = (typeof GPU_OVERRIDES)[number]
+
+function isGpuOverride(value: string): value is GpuOverride {
+  return (GPU_OVERRIDES as readonly string[]).includes(value)
+}
+
+/**
  * Pin the page to a renderer, or clear the pin with `null`. Page-wide by
  * design and shared across every copy of this module — see {@link GpuDeviceCell}.
+ *
+ * Takes a bare `string` because both callers hand it one straight off a URL
+ * (`?renderer=` in jbrowse-web's `InitialLoad`, the same param fed by desktop's
+ * `--renderer` flag), so validating here is validating once at the only place
+ * an unchecked value enters. An unrecognized one clears the pin and says so:
+ * before this, `?renderer=WebGL` or a typo was indistinguishable from passing
+ * nothing at all, which is the one outcome a person debugging a renderer must
+ * not silently get.
  */
 export function setGpuOverride(value: string | null) {
+  if (value !== null && !isGpuOverride(value)) {
+    console.warn(
+      `[GPU] ignoring unknown renderer "${value}" — expected one of ${GPU_OVERRIDES.join(', ')}. Rendering with the default ladder (WebGPU → WebGL2 → Canvas2D).`,
+    )
+    cell.gpuOverride = null
+    return
+  }
   cell.gpuOverride = value
 }
 
@@ -241,6 +281,10 @@ export function getGpuOverride() {
  * startup or switched off from a display's GPU-error banner after an
  * unrecoverable WebGL context loss. `createGpuHal` returns null in that case, so
  * every backend built from then on is the Canvas2D one.
+ *
+ * Note this is narrower than "a pin is in force": `webgl` and `webgpu` are pins
+ * too, and both leave GPU rendering on. The banner reads this to decide whether
+ * to offer its escape, so it must stay the Canvas2D question specifically.
  */
 export function isGpuRenderingDisabled() {
   return cell.gpuOverride === 'canvas2d' || cell.gpuOverride === 'canvas'

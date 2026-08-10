@@ -4,8 +4,9 @@ import { WebGPUHal } from './webgpuHal.ts'
 
 import type { GpuHal, PassDescriptor } from './types.ts'
 
-// Ladder: WebGPU → WebGL2 → Canvas2D (null). `?renderer=` URL param can pin
-// to webgl or canvas/canvas2d for debugging.
+// Ladder: WebGPU → WebGL2 → Canvas2D (null). The `?renderer=` URL param pins it
+// to a single rung for debugging — `webgpu`, `webgl`, or `canvas2d`/`canvas` —
+// and a pin never falls through to the next rung. See GPU_OVERRIDES.
 //
 // `failures` is an optional out-parameter collecting why each rung declined, in
 // ladder order. Falling through a rung is normal (no WebGPU on this machine) and
@@ -36,6 +37,19 @@ export async function createGpuHal(
     } catch (e) {
       console.warn('[GPU] WebGPU init failed, falling back to WebGL2:', e)
       failures?.push(e)
+    }
+    // A pin is not a preference. `?renderer=webgpu` used to be indistinguishable
+    // from passing nothing — WebGPU is the first rung either way — so on a
+    // machine where it declined, the page rendered on WebGL2 and said nothing,
+    // and anyone using the flag to compare the two backends measured WebGL2
+    // twice. Fail where it can be seen instead. The other pins already behave
+    // this way: `webgl` skips this rung, `canvas2d` returns null above.
+    if (override === 'webgpu') {
+      const message =
+        'WebGPU was pinned with ?renderer=webgpu but no WebGPU backend could be created. Not falling back to WebGL2 — a pinned renderer that silently substitutes another makes any comparison against it wrong. Drop the parameter for the default WebGPU → WebGL2 → Canvas2D ladder.'
+      throw failures?.length
+        ? new AggregateError(failures, message)
+        : new Error(message)
     }
   }
   try {

@@ -800,8 +800,9 @@ If the menus and track names look fine but the features themselves are missing,
 smeared, or the wrong color, the drawing path is the more likely cause than the
 data. [`&renderer=`](/docs/urlparams#renderer) pins which one is used, so you
 can try each in turn: no parameter for the usual WebGPU-first detection,
-`?renderer=webgl` for WebGL2, and `?renderer=canvas2d` for software drawing. On
-JBrowse Desktop the same choice is the
+`?renderer=webgpu` to require WebGPU, `?renderer=webgl` for WebGL2, and
+`?renderer=canvas2d` for software drawing. On JBrowse Desktop the same choice is
+the
 [`--renderer` flag](/docs/quickstart_desktop#launching-from-the-command-line).
 
 That identifies where the problem is rather than fixing it, so please

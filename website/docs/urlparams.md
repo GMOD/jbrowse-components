@@ -289,9 +289,14 @@ Example
 
 `&renderer=webgl`
 
-Pins the backend tracks are drawn with, rather than detecting one. `webgl` skips
-WebGPU and uses WebGL2; `canvas2d` skips both and draws in software. Any other
-value leaves the normal WebGPU-first ladder alone.
+Pins the backend tracks are drawn with, rather than detecting one. `webgpu`,
+`webgl` and `canvas2d` each pin that one: `webgl` skips WebGPU and uses WebGL2,
+`canvas2d` skips both and draws in software, and `webgpu` requires WebGPU.
+
+A pin never falls through to the next backend. If the one you named cannot
+start, tracks show an error saying so — which is the point, since a flag whose
+whole use is comparing two backends must not quietly answer with the other one.
+Any other value is ignored, with a console warning naming the ones that work.
 
 It is a debugging aid: trying each in turn says whether a blank or wrong-looking
 track comes from the GPU path, see

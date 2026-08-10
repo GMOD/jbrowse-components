@@ -1,4 +1,5 @@
 import {
+  GPU_OVERRIDES,
   getGpuDevice,
   getGpuOverride,
   isGpuRenderingDisabled,
@@ -38,6 +39,49 @@ test('getGpuOverride reflects setGpuOverride', () => {
   expect(getGpuOverride()).toBe('webgl')
   setGpuOverride(null)
   expect(getGpuOverride()).toBeNull()
+})
+
+test.each(GPU_OVERRIDES)('accepts the documented pin %s', pin => {
+  setGpuOverride(pin)
+  expect(getGpuOverride()).toBe(pin)
+})
+
+test('rejects an unknown renderer instead of silently ignoring it', () => {
+  const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+
+  // The reachable typos: a URL param is free text, and this one used to be
+  // indistinguishable from passing nothing.
+  setGpuOverride('WebGL')
+  expect(getGpuOverride()).toBeNull()
+  setGpuOverride('gpu')
+  expect(getGpuOverride()).toBeNull()
+
+  expect(warnSpy).toHaveBeenCalledTimes(2)
+  expect(warnSpy.mock.calls[0]![0]).toMatch(/unknown renderer "WebGL"/)
+  warnSpy.mockRestore()
+})
+
+test('an unknown renderer clears a pin rather than leaving the old one', () => {
+  const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  setGpuOverride('webgl')
+  setGpuOverride('nonsense')
+  // Not 'webgl' — a rejected write must not leave the previous pin in force,
+  // or the warning describes one state and the page renders in another.
+  expect(getGpuOverride()).toBeNull()
+  warnSpy.mockRestore()
+})
+
+test('webgpu is not treated as "GPU disabled"', () => {
+  // The banner's escape hatch reads this; webgl and webgpu are pins that leave
+  // GPU rendering on, and only the canvas ones turn it off.
+  setGpuOverride('webgpu')
+  expect(isGpuRenderingDisabled()).toBe(false)
+  setGpuOverride('webgl')
+  expect(isGpuRenderingDisabled()).toBe(false)
+  setGpuOverride('canvas2d')
+  expect(isGpuRenderingDisabled()).toBe(true)
+  setGpuOverride('canvas')
+  expect(isGpuRenderingDisabled()).toBe(true)
 })
 
 test('returns null in Jest (no navigator.gpu)', async () => {

@@ -5,6 +5,7 @@ exports[`render-core public surface pins the barrel exports 1`] = `
   "Canvas2DGlobalRenderingBackend",
   "Canvas2DPerRegionRenderingBackend",
   "Canvas2DRenderingBackendBase",
+  "GPU_OVERRIDES",
   "GpuGlobalRenderingBackend",
   "GpuPerRegionRenderingBackend",
   "GpuRenderingBackendBase",

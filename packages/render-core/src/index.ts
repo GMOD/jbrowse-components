@@ -131,6 +131,7 @@ export type {
 
 // --- GPU device singleton ---
 export {
+  GPU_OVERRIDES,
   getGpuDevice,
   getGpuOverride,
   isGpuRenderingDisabled,
@@ -138,3 +139,4 @@ export {
   resetGpuDeviceForTests,
   setGpuOverride,
 } from './gpuDevice.ts'
+export type { GpuOverride } from './gpuDevice.ts'

@@ -63,3 +63,27 @@ test('the Canvas2D failure is rethrown bare when no rung had anything to add', a
     setGpuOverride(null)
   }
 })
+
+test('a webgpu pin fails visibly instead of quietly running on WebGL2', async () => {
+  // jsdom has no navigator.gpu, so this is the machine the flag is most likely
+  // to be used on by mistake. Without the pin the same canvas falls to WebGL2
+  // and then Canvas2D, and the page renders — which is precisely the outcome
+  // that makes `?renderer=webgpu` useless for comparing backends, because it is
+  // indistinguishable from passing no parameter at all.
+  setGpuOverride('webgpu')
+  try {
+    const error = await createRenderingBackend(makeCanvas(), {
+      ...OPTS,
+      // Would succeed if the ladder reached it. It must not.
+      createCanvas2DBackend: () => ({ dispose() {} }),
+    }).then(
+      () => undefined,
+      (e: unknown) => e,
+    )
+
+    expect(`${error}`).toContain('?renderer=webgpu')
+    expect(`${error}`).toContain('Not falling back to WebGL2')
+  } finally {
+    setGpuOverride(null)
+  }
+})
