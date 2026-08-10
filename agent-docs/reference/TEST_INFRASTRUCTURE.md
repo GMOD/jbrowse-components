@@ -49,8 +49,8 @@ room gets a bigger viewport (`page.setViewport`) — never `fullPage`.
 
 Measured on the alignments suite at concurrency 4: **5/5 runs failed 2-3 tests
 with `fullPage`, 4/4 runs clean without it**, same build, same goldens. The DOM
-was fully populated at capture time (`*-done` testids present, ruler text in
-`innerText`) and an immediate re-capture matched, which is what ruled out a
+was fully populated at capture time (displays reporting `data-display-drawn`,
+ruler text in `innerText`) and an immediate re-capture matched, which is what ruled out a
 paint gate as the fix. A single test run alone with `--test=` almost never
 reproduces it — the blanking needs the concurrent browser churn.
 
@@ -89,21 +89,57 @@ true (this silently burned full snapshot timeouts).
 - `data-testid="loading-overlay"` **absent** → data finished **fetching**
   (generic; used by `waitForLoadingToComplete` / `waitForDataLoaded` and the
   snapshot waits).
-- `${base}-done` testid → canvas finished **painting** (gated on `canvasDrawn`,
-  owned by `DisplayChrome` via its **required** `testid` base prop). One base per
-  display type — `wiggle-display-done`, `hic-display-done`, `ld-display-done`,
-  `pileup-display-done`, … — and every display now also carries
-  `data-display-id` (which instance) and `data-display-drawn` (paint state as a
-  stable attribute) on that **same element**. Prefer those two for anything that
-  needs to name one track's display or test paint state; the testid is the type,
-  it is shared between instances, and it mutates. See DISPLAYCHROME.md, "One
-  element per display". For tests that pixel-match or
-  screenshot the canvas element, the inner `<canvas>` carries a **static**
-  selector (`hic_canvas`, `ld_canvas`, `variant_canvas`,
-  `variant_matrix_canvas`): wait on `${base}-done`, then read the static canvas
-  selector. Standalone non-LGV displays keep self-contained `_done` selectors
-  (`synteny_canvas_done`, `dotplot_webgl_canvas_done`). `canvasSnapshot` takes the
-  exact selector — canvas captures are the most reliable.
+- `data-display-drawn="true"` → canvas finished **painting** (gated on
+  `painted`, published by `DisplayChrome` from its **required** `testid` base
+  prop, and by `RenderCanvas` for the two chrome-less views). The testid names
+  the display TYPE and is **stable** — it used to gain a `-done` suffix on first
+  paint, and ADR-065 removed that, so nothing composes readiness into an id any
+  more.
+
+  Don't hand-write the conjunction. `displayPainted(base)` /
+  `displaySettled(base)` / `displayById(id)` come from `@jbrowse/capture`
+  (re-exported by `@jbrowse/browser-test-utils`) for selector strings, and
+  `findDisplayPainted` / `findAnyDisplayPainted` are the jest waits
+  (`products/jbrowse-web/src/tests/util.tsx`) — the jest ones report *which*
+  half failed, which "no element found" never could. See DISPLAYCHROME.md, "One
+  element per display".
+
+  For tests that pixel-match or screenshot the canvas element, the inner
+  `<canvas>` carries a **static** selector (`hic_canvas`, `ld_canvas`,
+  `variant_canvas`, `variant_matrix_canvas`): wait with `findDisplayPainted`,
+  then read the static canvas selector. `canvasSnapshot` takes the exact
+  selector — canvas captures are the most reliable.
+
+## Image snapshots go stale invisibly
+
+`jest-image-snapshot` writes `__image_snapshots__/*-snap.png` as plain files
+beside the suite, **outside** jest's own obsolete-snapshot tracking. So a
+snapshot whose test was renamed, deleted, or simply stopped calling
+`expectCanvasMatch` is never reported by anything — verified by dropping a
+fabricated `…-zzz-fake-orphan-probe-1-snap.png` into a snapshot dir and watching
+a full run of that suite pass without a word. Two such orphans were found by
+hand in `BigWig.test.tsx` alone, one of them ~30 commits old.
+
+**The library ships a reporter for this and it must not be enabled here.**
+`jest-image-snapshot/src/outdated-snapshot-reporter` (gated on
+`JEST_IMAGE_SNAPSHOT_TRACK_OBSOLETE`) deletes every `-snap.png` in any directory
+the run touched that the run did not itself write. Two properties make that
+destructive in this repo:
+
+- `__image_snapshots__` is shared per test *directory*, so one running test
+  marks the whole directory live — and every `test.skip` in that directory then
+  looks obsolete. There are several (`Alignments`, `ConfigurationEditor`,
+  `JBrowse`, …), and regenerating a deleted golden means re-rendering it, which
+  this repo only does after a *visually verified* change.
+- It deletes on any run, including a filtered one, so `jest BigWig.test.tsx`
+  with the flag set wipes every other jbrowse-web golden.
+
+The **instrumentation** is safe on its own: setting the env var without
+registering the reporter appends each compared file to
+`.jest-image-snapshot-touched-files`, which can be diffed against what is on
+disk. That needs a fully green `jest` run over the whole repo — a failing or
+filtered run under-reports the touched set and every unreached snapshot reads
+as an orphan.
 
 ## Troubleshooting
 
