@@ -4560,13 +4560,47 @@ export const graphSpecs: ScreenshotSpec[] = [
       // (`ecoli_minigraph.segs.bed.gz`), and it attaches to s402 and s405,
       // which leaves K12 chr:1,095,502-1,097,564 between them — the same
       // 2,062 bp the hover band is drawing.
+      //
+      // IT WAS DRAWN OFF THE BOTTOM OF THE FRAME. `dy: 90` off a node the force
+      // layout puts at the foot of a 1250 px capture lands at ~1299, and an
+      // annotation outside the viewport is not an error — `drawAnnotationOverlay`
+      // only reports an anchor that resolved to NOTHING, and this one resolved
+      // fine and then painted past the edge. So every review of this figure has
+      // been of a bare red ring with no text anywhere near it ("unclear what the
+      // red circle is"), and the answer was in the spec the whole time. It goes
+      // right of the loop now, into the empty half of the pane.
       {
         type: 'text',
-        text: 'CFT073 insertion: 65.4 kb\nwhere K12 has 2.1 kb',
+        text: 'the ringed node is 65.4 kb of CFT073 sequence',
         anchor: { view: 1, graphNode: HOVERED_ALLELE },
-        dx: -130,
-        dy: 90,
-        maxWidth: 210,
+        dx: 300,
+        dy: -60,
+        maxWidth: 230,
+        fontSize: 16,
+      },
+      // AND THE BAND SAYS ITS OWN WIDTH, which is the other half of the same
+      // complaint ("it is not matching the highlight over the lineargenomeview
+      // afaict"). It does match; the two numbers are just 30x apart, and a
+      // figure that shows a 65.4 kb node and a 2.1 kb band without saying so
+      // reads as a mismatch rather than as the comparison it exists to make.
+      // Anchored to the band's own K12 interval, above the gene lane, so it
+      // moves with the coordinates rather than with a measured pixel.
+      {
+        type: 'text',
+        text: 'K12 has 2.1 kb here',
+        // Right edge against the band's LEFT edge, so the pill sits beside the
+        // band rather than starting at its midpoint and running off to the
+        // right of it — which is what a bare locus anchor does, since textAlign
+        // only offers start and end and the pill's width is not known here.
+        textAlign: 'end',
+        anchor: {
+          track: 'K12_genes',
+          locus: 'chr:1,095,502-1,097,564',
+          alignX: 'left',
+          fracY: 0,
+          dx: -6,
+          dy: -16,
+        },
         fontSize: 16,
       },
     ],

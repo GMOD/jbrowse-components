@@ -1457,7 +1457,8 @@ export const svSpecs: ScreenshotSpec[] = [
     // the segmented lane(90) + the coverage rows(200) + BAF(140) + the bed
     // calls + chrome; sized rather than left to the default, which leaves blank
     // below
-    viewportHeight: 830,
+    // 830 left 23.6 css px under the fold, by the run's own report
+    viewportHeight: 855,
     settleMs: 15000,
   },
 
@@ -1790,7 +1791,8 @@ export const svSpecs: ScreenshotSpec[] = [
     viewportWidth: 1500,
     // 800 framed the 120px HiFiCNV depth lane this replaced; the two-row
     // coverage track is 280
-    viewportHeight: 1075,
+    // 1075 left 17.7 css px under the fold, by the run's own report
+    viewportHeight: 1095,
     settleMs: 30000,
   },
 
