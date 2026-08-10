@@ -96,6 +96,19 @@ describe('GpuDotplotRenderer window-relative uniforms', () => {
     expect(screenX).toBeCloseTo(base + 300 - offsetBp, 2)
   })
 
+  // The shader's AA ramp is 0.5/dpr CSS px, because it measures in CSS px while
+  // the viewport is device px. It cannot read the ratio itself, so a missing
+  // write here leaves the uniform at 0 and the ramp at infinity — every line
+  // would vanish. Same uniform, same reason, as the synteny passes.
+  test('supplies the device pixel ratio the AA ramp is sized by', () => {
+    const hal = new MockHal(DOTPLOT_PASSES)
+    const renderer = new GpuDotplotRenderer(hal)
+    renderer.resize(800, 600)
+    renderer.uploadGeometry(0, makeGeometry())
+    renderer.render(makeState())
+    expect(hal.getLastUniformsF32()![U.devicePixelRatio]).toBeGreaterThan(0)
+  })
+
   test('each display uses its own base for panPx', () => {
     const hal = new MockHal(DOTPLOT_PASSES)
     const renderer = new GpuDotplotRenderer(hal)

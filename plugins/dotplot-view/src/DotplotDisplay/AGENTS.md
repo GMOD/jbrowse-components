@@ -5,6 +5,18 @@
   the single source of truth for WGSL, GLSL ES 300, instance stride, field
   offsets, and GL attribute layout. See
   `agent-docs/architecture-decision-records/adr-005-shader-codegen-slang.md`.
+- **The AA ramp is `0.5/dpr` CSS px and the vertex quad is padded by the same
+  amount.** The shader measures in CSS px while the viewport is device px, so
+  the ratio arrives as a uniform (`devicePixelRatio`) — the same constant, for
+  the same reason, as `syntenyTypes.slang`'s `aaHalfPx`. It is analytic, not
+  `fwidth(d)`: `d` is a true Euclidean distance so `|grad d| = 1` and there is
+  nothing to measure, while `fwidth` overshoots by up to sqrt(2) on exactly the
+  diagonals a dotplot is made of. The two halves are one change — a ramp the
+  quad doesn't contain gets cropped at 50% alpha, which is a hard aliased edge.
+  `shaders/dotplotCapsulePad.test.ts` pins the containment and the
+  counterexample; it is the twin of
+  `LinearSyntenyDisplay/shaders/syntenyFillPad.test.ts`. Change either half, run
+  it.
 - **The plot-wide opacity slider is the `alpha` uniform, not part of the packed
   color.** `dotplotColors.ts` packs every color fully opaque; the fragment does
   `color.a * u.alpha`, and `drawDotplotInstances` folds the same scalar into its

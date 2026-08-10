@@ -1,3 +1,4 @@
+import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import {
@@ -119,6 +120,10 @@ export class GpuDotplotRenderer implements DotplotRenderingBackend {
     this.uniformF32[U.alpha] = alpha
     this.uniformF32[U.bpPerPxHInv] = bpPerPxHInv
     this.uniformF32[U.bpPerPxVInv] = bpPerPxVInv
+    // The shader measures in CSS px (this.width/height are the view's, and the
+    // HAL scales the backing store by getDpr()), so it needs the ratio to size
+    // its AA ramp at one output pixel — see aaHalf in dotplot.slang.
+    this.uniformF32[U.devicePixelRatio] = getDpr()
     for (const displayKey of displayKeys) {
       const base = this.baseByKey.get(displayKey)
       if (!base) {
