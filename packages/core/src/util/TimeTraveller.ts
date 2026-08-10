@@ -40,6 +40,29 @@ const TimeTraveller = types
     let skipNextUndoState = false
     let debounceTimer: ReturnType<typeof setTimeout> | undefined
 
+    /**
+     * Apply `history[undoIdx]` to the target without recording it. The flag
+     * brackets the whole `applySnapshot` — patches are emitted synchronously
+     * inside it, and there are as many as there are changed leaves — and is
+     * lowered in a `finally` so a rejected snapshot can't leave recording off
+     * for good. Lowering it here rather than in the patch handler is the point:
+     * the handler cannot tell the last patch of an applySnapshot from the first
+     * patch of the user's next edit.
+     *
+     * A local function, not an action, so it stays off the model's API.
+     */
+    function applyHistoryState(index: number) {
+      if (!targetStore) {
+        return
+      }
+      skipNextUndoState = true
+      try {
+        applySnapshot(targetStore, self.history[index])
+      } finally {
+        skipNextUndoState = false
+      }
+    }
+
     return {
       stopTrackingUndo() {
         self.notTrackingUndo = true
@@ -109,11 +132,17 @@ const TimeTraveller = types
             return
           }
 
-          // undo/redo sets skipNextUndoState before calling applySnapshot.
-          // Reset the flag here and cancel any pending debounce so the
-          // applied snapshot is never recorded as an undoable action.
+          // undo/redo raises this flag around its applySnapshot, so the state
+          // it applies is never recorded as an undoable action of its own.
+          // Cancel any debounce still pending from the change being undone
+          // while we're here. The flag is lowered by undo/redo once
+          // applySnapshot has returned, NOT on the first patch: applySnapshot
+          // emits one patch per changed leaf, so lowering it here left every
+          // patch after the first to schedule a recording of the undone state —
+          // which truncated the forward history (redo went dead) and re-pushed
+          // the state just restored, so the next undo landed on it again and
+          // appeared to do nothing.
           if (skipNextUndoState) {
-            skipNextUndoState = false
             if (debounceTimer) {
               clearTimeout(debounceTimer)
               debounceTimer = undefined
@@ -139,17 +168,11 @@ const TimeTraveller = types
       },
       undo() {
         self.undoIdx--
-        skipNextUndoState = true
-        if (targetStore) {
-          applySnapshot(targetStore, self.history[self.undoIdx])
-        }
+        applyHistoryState(self.undoIdx)
       },
       redo() {
         self.undoIdx++
-        skipNextUndoState = true
-        if (targetStore) {
-          applySnapshot(targetStore, self.history[self.undoIdx])
-        }
+        applyHistoryState(self.undoIdx)
       },
     }
   })

@@ -87,6 +87,64 @@ test('change after undo is recorded (skipNextUndoState reset regression)', () =>
   expect(target.value).toBe(0)
 })
 
+// Two fields, because `applySnapshot` emits one patch per changed leaf and the
+// recorder listens to patches: an undo that restores more than one of them
+// re-enters the recorder after the first patch has already consumed the skip.
+// A single-field target can't show it — every applySnapshot there is one patch.
+const WideStore = types.model('Wide', { a: 0, b: 0 }).actions(self => ({
+  setBoth(a: number, b: number) {
+    self.a = a
+    self.b = b
+  },
+}))
+
+function makeWideStores() {
+  const target = WideStore.create({ a: 0, b: 0 })
+  const undo = TimeTraveller.create(
+    { undoIdx: -1, targetPath: '' },
+    { targetStore: target },
+  )
+  undo.initialize()
+  return { target, undo }
+}
+
+test('undoing a multi-field change leaves redo intact', () => {
+  const { target, undo } = makeWideStores()
+  target.setBoth(1, 1)
+  flushDebounce()
+  // history: [{0,0}, {1,1}], undoIdx=1
+
+  undo.undo()
+  expect(target).toMatchObject({ a: 0, b: 0 })
+  // The undo's own patches must not be recorded — the trailing ones used to
+  // schedule a debounce that then truncated the forward history.
+  flushDebounce()
+
+  expect(undo.history).toHaveLength(2)
+  expect(undo.canRedo).toBe(true)
+  undo.redo()
+  expect(target).toMatchObject({ a: 1, b: 1 })
+})
+
+test('a second undo of multi-field changes keeps walking back', () => {
+  const { target, undo } = makeWideStores()
+  target.setBoth(1, 1)
+  flushDebounce()
+  target.setBoth(2, 2)
+  flushDebounce()
+  // history: [{0,0}, {1,1}, {2,2}], undoIdx=2
+
+  undo.undo()
+  flushDebounce()
+  expect(target).toMatchObject({ a: 1, b: 1 })
+
+  // A recorded undo re-pushes the state just restored, so undoIdx lands back on
+  // it and this second undo appeared to do nothing at all.
+  undo.undo()
+  flushDebounce()
+  expect(target).toMatchObject({ a: 0, b: 0 })
+})
+
 // Mirrors HistoryManagementMixin: the TimeTraveller sits next to a `session`
 // prop that the root replaces wholesale, and its init autorun re-fires each time.
 const Root = types
