@@ -132,6 +132,19 @@ it is rewritten wholesale under one lock, so whoever commits it carries every
 verdict written in that window, the human reviewer's live ones included. Say so
 in the commit message rather than pretending they are yours.
 
+**So keep the flips out of the branch entirely.** A worktree does not share the
+review server's lock, and a branch that carries this file also makes the ff-only
+landing refuse against a reviewer's dirty copy — which is the one thing that has
+to keep working. Work the figures in a worktree and accumulate the verdict
+changes as `flip-review.ts` calls instead, then run them from the primary
+checkout, where the server runs, after the branch lands.
+
+**Rebase before assuming an item is still open.** Two agents worked one backlog
+at once and it showed up twice: a figure deleted on main by another agent while
+the branch was mid-flight, and one reverted by the same hand this branch had
+deleted it with. Re-run the hash triage rather than trusting a list you made
+before the last rebase.
+
 **Discriminate a sweep on pixels, not on the file list.** `--affected` selected
 89 specs for one variants change and rewrote 15, of which 3 had anything to do
 with it; narrowing to "every spec whose session carries a

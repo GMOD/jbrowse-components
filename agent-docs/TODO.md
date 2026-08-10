@@ -22,6 +22,9 @@ Exploratory concepts that are *not* committed work live in
 | [Autofit height for the LGV demo](#autofit-height-for-the-lineargenomeview-example-site-demo) | embedded | no view-level auto-height exists yet |
 | [Extra large text SVG mode](#extra-large-text-svg-mode-for-pub-ready-figures) | SVG export | thread a scale the way `fontFamily` threads |
 | [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | five independent small items |
+| [Report a callout that draws off-frame](#report-a-callout-that-draws-off-frame) | figures | the overlay already reports the unresolvable case |
+| [`partitionField` throws on `bigRmskBed`](#partitionfield-jexl-throws-through-its-own-guard-on-bigrmskbed) | canvas | the per-feature catch is there and not holding |
+| [Render the converted callout specs](#render-the-twenty-specs-whose-callouts-were-converted-to-anchors) | figures | sweep them; five move deliberately |
 | [Comparative cancel and retry](#give-the-comparative-displays-a-cancel-and-a-retry) | synteny, dotplot | read ADR-054 first; retry is a button, never automatic |
 | [Stop uploading every rect twice](#stop-uploading-every-rect-twice-for-the-continuation-pass) | GPU canvas | unify `ATTR4`, then verify headed on both backends |
 | [Linearize the pangenome](#linearize-the-pangenome-draw-graph-variation-as-alignment-style-glyphs) | pangenome | read PANGENOME_GRAPHS.md — four findings constrain the layout |
@@ -73,6 +76,58 @@ labels will overflow the boxes laid out for them.
 - Add a "hide this feature" option to `LinearMultiSampleVariantDisplay` (and
   similar displays). `plugins/canvas` already has `hideFeature`
   (`LinearBasicDisplay/baseModel.ts`) to copy.
+
+### Report a callout that draws off-frame
+
+`drawAnnotationOverlay` throws on an anchor that resolves to nothing and says
+nothing about one that resolves and then draws outside the viewport, which is
+how a correct pill shipped invisible for a round (see
+[reference/SCREENSHOT_CALLOUT_ANCHORS.md](reference/SCREENSHOT_CALLOUT_ANCHORS.md)).
+An item whose drawn rect falls outside the capture is almost always a bug —
+report it the way the overlay already reports an unresolvable anchor.
+
+### `partitionField` jexl throws through its own guard on `bigRmskBed`
+
+`LinearMultiRowFeatureDisplay`'s `partitionField` slot documents
+`"jexl:split(split(feature.name,'#')[1],'/')[0]"` for exactly this file type,
+and it error-banners the whole display with `TypeError: Cannot read properties
+of undefined (reading 'split')`. The throw escapes
+`makeFeaturePartitionResolver`'s per-feature `catch`, which exists so that one
+unparseable name costs its own row rather than the track — so the guard is there
+and is not holding. Setting it as a config slot in the track's `displays`
+instead of on the view's tracks entry makes no difference.
+
+Two things not to spend time re-finding: jexl's `+` is numeric, so a
+`feature.name + '#sentinel'` workaround yields NaN and every feature lands in one
+empty row; and the attribute form (`partitionField: 'name'`) works but gives one
+row per repeat NAME, which is the outcome the slot's own docs warn about.
+`website/scripts/specs/methylation.ts` carries the full write-up beside the lane
+that wanted it.
+
+### Render the twenty specs whose callouts were converted to anchors
+
+The anchoring pass landed in the specs and **no figure was regenerated** — the
+worktree it was done in carried another agent's in-flight display edits, so a
+render there would have baked unlanded work into a committed PNG. So these are
+correct in the spec and stale on disk until a sweep picks them up.
+
+`--check` passes at 0.000% on every changed spec (`maf_codon_tooltip` at
+0.001%), which is the proof that every anchor resolves — `drawAnnotations`
+throws on one that does not, and several gate on what the click produced rather
+than only on where it landed. Most are placement-identical by construction.
+Five deliberately move, so a reviewer should expect a diff and not read it as
+drift:
+
+| figure | what moves | why |
+| --- | --- | --- |
+| `trio-crossover-paternal` / `-maternal` | frames' OUTER edges, 3px left and 5px right | they were inset from the view; they are now the window's own. The rows, the pitch and the abutment at the crossover are unchanged arithmetic |
+| `lgv_usage_guide` | pills and tails, ≤1px | the lift is 59px off the controls' resolved row (y=121.4) rather than y=62 on the page |
+| `bookmark_widget_edit_label` | arrowhead, ~8px left and 1px down | it points at the label cell's centre plus a nudge, where it used to be a raw point |
+| `linear_align_ctx_menu` | arrowhead ~5px right, pill ≤2px | head and pill now share the click's own anchor |
+| `customized_feature_details` / `upstream_downstream_details` | the click, from x=430 to the Apple3 mRNA's midpoint | same feature, same row, furthest point from either end of it |
+
+[reference/SCREENSHOT_CALLOUT_ANCHORS.md](reference/SCREENSHOT_CALLOUT_ANCHORS.md)
+is the method, including why the 40 remaining raw coordinates are deliberate.
 
 ## Ready to build: the design is settled
 

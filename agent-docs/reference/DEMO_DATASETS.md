@@ -179,3 +179,37 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   wheat *timopheevii* row stopped being labelled `OY997263.1`. Prefer the CLI to
   a hardcoded NCBI FTP URL — teaching the adapter to read
   `*_assembly_report.txt` was tried and reverted as unnecessary.
+- **UCSC GenArk hubs are keyed on RefSeq accessions**, so a track from one drops
+  into a config for the same assembly with no aliasing — the TAIR10 RepeatMasker
+  bigBed's chroms *are* `NC_003070.9` and friends, which is what let it land
+  straight in the Arabidopsis bisulfite config. Worth checking before hosting
+  anything of your own for a non-model assembly:
+  `https://hgdownload.soe.ucsc.edu/hubs/GCF/000/001/735/GCF_000001735.3/bbi/`.
+- **MANE Select's symbol column is `geneSymbol`**, not `geneName2` (confirm with
+  `bigBedInfo -as`). Filtering still wants the accession — CDKN2A has two MANE
+  entries — but `labels: { name: "jexl:get(feature,'geneSymbol')" }` makes the
+  glyph label itself, and that is a config slot, so it goes in the track's
+  `displays`.
+- **Don't take a repeat's identity from the Ensembl REST API.** It returned the
+  right interval for an Arabidopsis element under the id `AT4TE22180` — a chr4
+  id on chr1. TAIR10's own `TAIR10_Transposable_Elements.txt` calls it
+  `AT1TE14315`. It is also flaky. Take the identity from the assembly's own
+  annotation file.
+
+## "Make this figure on better data" is often a claim the data cannot make
+
+The check is a count, and it is cheap. Two figures were asked to be rebuilt on
+more dramatic data and both ended in a measurement instead:
+
+- `multisv_rhd_dosage` wanted arcs over a deletion that produces **one** spanning
+  read pair in its homozygous carrier — it is NAHR between ~9 kb identical
+  repeats, so a junction-spanning fragment aligns collinearly and there is no
+  read-pair signal to draw. The band that was there was drawing RHD↔RHCE
+  paralogy, busiest in the 0/0 control.
+- `alignments/strand_split_coverage` wanted dramatic strandedness that was
+  already in the frame at one column: 0.00 mismatch on 12 forward reads against
+  1.00 on 10 reverse.
+
+Both now ship a script in `website/scripts/` that prints the numbers, which is
+what makes the answer re-checkable rather than an assertion. **Count before
+hunting for new data, and again before deleting a figure.**

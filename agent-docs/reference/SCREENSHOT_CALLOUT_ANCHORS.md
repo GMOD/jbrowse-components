@@ -128,6 +128,15 @@ anchor resolved; the percentage is the run-to-run drift.
 collision surfaces as a blank page and a ready-gate timeout long before it
 surfaces as `EADDRINUSE`.
 
+**A clean run does NOT prove the callout is in the picture.** `drawAnnotations`
+only reports an anchor that resolved to *nothing*; one that resolves and then
+draws off-frame is silent. `pangenome/rgfa_hover_sync` carried the pill that
+answered its review note for a whole round, anchored `dy: +90` off a node the
+force layout puts at the foot of a 1250px capture — so it painted at y≈1299 and
+no reviewer ever saw it. When a callout hangs off content whose position the
+layout chooses, check the drawn y against the capture height rather than
+trusting the run.
+
 Don't regenerate the figure to prove the conversion. The worktree usually
 carries another agent's in-flight display edits and `products/jbrowse-web`'s
 build output is whatever they last built; a figure rendered under that bakes their unlanded

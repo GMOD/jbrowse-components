@@ -201,6 +201,24 @@ bookkeeping: `GLOBAL_TRIGGERS` in `screenshot-impact.ts` matches that prefix, so
   `viewportHeight` by and `blank below the last content` the px to lower it.
   Both beat measuring off an image, and the clipped one cannot be recovered from
   the image at all.
+- **But the two reports have a blind spot, and it is a LANE that is wrong rather
+  than the page.** Both answer "is the capture the right height"; neither can
+  answer "is this display the right height", and three review rounds turned on
+  that difference.
+  - **A lane that does not fit SCROLLS**, so it reads as complete to both
+    reports while cutting its own content in half. Three pinned heights on
+    `cancer_sv/k562_fusion_inspector_split` (260, 380, 480) each did this. The
+    tell is a scrollbar thumb on the display's own right edge; the fix is
+    `heightMode: 'grow'` plus sizing the frame off the report.
+  - **A full lane can still be the wrong size in either direction, and only
+    geometry says which.** An unsquashed LD panel draws at natural aspect — apex
+    depth is half the drawn width — so `ld/anopheles_2la`'s 2La block needed
+    327px, had 300, and the block the figure exists to show was cut flat while
+    the lane read as packed. Conversely its karyotype lanes were sized off their
+    row COUNT (297px for 297 mosquitoes) when the rows are grouped, and what the
+    lane is read for is three contiguous bands — 140px draws them 77/32/31.
+    **Compute what the content's shape demands** before believing a lane that
+    looks full.
 - **`DISPLAYS NOT PAINTED AT CAPTURE` names a frame that may hold a blank
   track.** Every settle wait is best-effort, so "all painted" and "we stopped
   waiting" otherwise look identical; the run re-checks
