@@ -519,7 +519,9 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           track: 'hg002_nanopore_hp',
           locus: '1:55,705,711',
           fracY: 0,
-          dy: -30,
+          // -30 overshot into the ruler's own tick labels; -14 lands the pill
+          // in the label row itself
+          dy: -14,
           alignX: 'left',
           dx: -14,
         },

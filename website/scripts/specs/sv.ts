@@ -775,7 +775,7 @@ export const svSpecs: ScreenshotSpec[] = [
     annotations: [
       {
         type: 'text',
-        text: 'each read breaks into three pieces; the blue middle piece is aligned in reverse — that is the inverted segment',
+        text: 'each read breaks into three pieces; the blue middle piece is aligned in reverse: that is the inverted segment',
         fontSize: 18,
         maxWidth: 560,
         anchor: { text: 'Split (SA)', alignX: 'right', dx: 14, dy: 45 },

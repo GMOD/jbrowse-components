@@ -2113,7 +2113,12 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
     part({
       name: 'pangenome/hprc_mhc_layout_anchored',
       layoutMode: 'auto',
-      viewportHeight: 790,
+      // 705, down from 790: the 85 css px the run reported blank under this
+      // part is exactly what the per-half caption pill used to occupy. The
+      // composite is unaffected either way -- `+append` pads this half up to
+      // the force half's 878 regardless -- but this part is its own figure with
+      // its own live link.
+      viewportHeight: 705,
     }),
   ]
 }
@@ -2227,7 +2232,12 @@ export const graphSpecs: ScreenshotSpec[] = [
     annotations: [
       {
         type: 'legend',
-        fontSize: 15,
+        // 13 is the minimum the overlay clamps to, and it is what makes a
+        // two-row pill fit the 63 css px of blank between the pane's top edge
+        // and its Reference row. The other blank band, under Rank 1, is 56 px
+        // and holds neither size -- rendered there, the pill covered the row
+        // label and the first three bubbles.
+        fontSize: 13,
         entries: [
           // the ramp's midpoint over this window, which is the green the
           // backbone nodes are drawn in across the middle of the frame
@@ -2240,12 +2250,17 @@ export const graphSpecs: ScreenshotSpec[] = [
             color: ALT_ALLELE_COLOR,
           },
         ],
+        // Top left, above the Reference row and left of the app's own ramp key.
+        // A legend always grows DOWN from its anchor (`top = cy`), so a
+        // `alignY: 'bottom'` placement would have to subtract the pill's own
+        // height (padY*2 + rows*round(fontSize*1.5)) -- and there is not enough
+        // room down there anyway; see the fontSize note above.
         anchor: {
           selector: '[data-testid="graph-genome-canvas"]',
           alignX: 'left',
           alignY: 'top',
           dx: 16,
-          dy: 14,
+          dy: 6,
         },
       },
       {
@@ -2452,49 +2467,50 @@ export const graphSpecs: ScreenshotSpec[] = [
     // two landmarks named where they are, and the reason lives in the caption,
     // which is where a paragraph belongs.
     //
-    // The two are ADJACENT, so the arrow is short on purpose: the centromere
-    // ends at 125.1 Mb and the blank starts at 125.18 Mb, ~20 css px apart at
-    // 178 kb/px. That adjacency is the point of labelling both — the blank is
-    // NEXT TO the centromere, not the centromere — so an arrow that had to
-    // travel would be misrepresenting the geometry.
+    // A BOX FOR THE CENTROMERE, NOT AN ARROW, and the arrow was rendered first.
+    // The two landmarks are adjacent -- the centromere ends at 125.1 Mb and the
+    // blank starts at 125.18 Mb -- and at 178 kb per css px the whole centromere
+    // is an 18 px sliver 20 px from the pill naming it. An arrow that short
+    // draws as a red smudge with no direction in it. The box states the band's
+    // extent instead, and the pill beside it needs no arrow at all.
+    //
+    // The box goes on the TIER lane rather than the curve because that is where
+    // the claim is: bubbles are called right across the centromere (21 in the
+    // 124th Mb, 40 in the 125th), so a box there is full of blocks and the
+    // column immediately right of it is empty.
     annotations: [
-      // the blank column, labelled in the blank column
+      // the blank column, labelled in the blank column. fontSize 14 and a
+      // maxWidth that forces the second word onto its own line is what keeps
+      // the pill inside the ~97 px the blank is wide; at 17 it ran 50 px out
+      // over the curve.
       {
         type: 'text',
         text: 'pericentromere (1q12)',
-        fontSize: 17,
-        maxWidth: 120,
+        fontSize: 14,
+        maxWidth: 100,
         anchor: {
           track: 'hprc_bubble_score',
-          locus: 'chr1:126,200,000',
+          locus: 'chr1:126,000,000',
           fracY: 0.08,
         },
       },
-      // the band itself, one lane down, arrowed left out of the blank onto the
-      // bubbles that ARE called across it
       {
-        type: 'text',
-        text: 'centromere',
-        fontSize: 17,
-        maxWidth: 120,
+        type: 'box',
+        strokeWidth: 3,
         anchor: {
           track: 'hprc_tier',
-          locus: 'chr1:126,600,000',
-          fracY: 0.06,
+          locus: 'chr1:121,700,000-125,100,000',
         },
       },
       {
-        type: 'arrow',
-        strokeWidth: 2,
-        fromAnchor: {
-          track: 'hprc_tier',
-          locus: 'chr1:126,400,000',
-          fracY: 0.45,
-        },
+        type: 'text',
+        text: 'centromere',
+        fontSize: 14,
+        maxWidth: 100,
         anchor: {
           track: 'hprc_tier',
-          locus: 'chr1:123,400,000',
-          fracY: 0.62,
+          locus: 'chr1:126,000,000',
+          fracY: 0.06,
         },
       },
     ],
