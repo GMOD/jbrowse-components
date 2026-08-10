@@ -15,11 +15,22 @@ import {
   getSavedSvgs,
   hts,
   setup,
+  volvoxConfigWithTracks,
 } from './util.tsx'
 
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
 setup()
+
+// only the tracks this suite opens, so createView doesn't mount a
+// selector row for the other ~120 - see volvoxConfigWithTracks
+const config = volvoxConfigWithTracks([
+  'gff3tabix_genes',
+  'volvox_alignments_pileup_coverage',
+  'volvox_microarray',
+  'volvox_microarray_multi_multirowxy',
+  'volvox_sv_test',
+])
 
 beforeEach(() => {
   jest.clearAllMocks()
@@ -62,7 +73,7 @@ function normalizeSvg(svg: string) {
 }
 
 test('wiggle display SVG vector export', async () => {
-  const { view, findByTestId } = await createView()
+  const { view, findByTestId } = await createView(config)
   view.setNewView(5, 0)
   fireEvent.click(await findByTestId(hts('volvox_microarray'), ...opts))
   await findDisplayPainted('wiggle-display', delay)
@@ -74,7 +85,7 @@ test('wiggle display SVG vector export', async () => {
 }, 45000)
 
 test('wiggle display SVG rasterized export embeds PNG', async () => {
-  const { view, findByTestId } = await createView()
+  const { view, findByTestId } = await createView(config)
   view.setNewView(5, 0)
   fireEvent.click(await findByTestId(hts('volvox_microarray'), ...opts))
   await findDisplayPainted('wiggle-display', delay)
@@ -87,7 +98,7 @@ test('wiggle display SVG rasterized export embeds PNG', async () => {
 }, 45000)
 
 test('canvas feature display SVG vector export', async () => {
-  const { view, findByTestId } = await createView()
+  const { view, findByTestId } = await createView(config)
   await view.navToLocString('ctgA:1..5000')
   fireEvent.click(await findByTestId(hts('gff3tabix_genes'), ...opts))
   await findAnyDisplayPainted(delay)
@@ -99,7 +110,7 @@ test('canvas feature display SVG vector export', async () => {
 }, 45000)
 
 test('canvas feature display SVG rasterized export embeds PNG', async () => {
-  const { view, findByTestId } = await createView()
+  const { view, findByTestId } = await createView(config)
   await view.navToLocString('ctgA:1..5000')
   fireEvent.click(await findByTestId(hts('gff3tabix_genes'), ...opts))
   await findAnyDisplayPainted(delay)
@@ -112,7 +123,7 @@ test('canvas feature display SVG rasterized export embeds PNG', async () => {
 }, 45000)
 
 test('alignments display SVG rasterized export embeds PNG', async () => {
-  const { view, findByTestId } = await createView()
+  const { view, findByTestId } = await createView(config)
   view.setNewView(0.1, 1)
   fireEvent.click(
     await findByTestId(hts('volvox_alignments_pileup_coverage'), ...opts),
@@ -127,7 +138,7 @@ test('alignments display SVG rasterized export embeds PNG', async () => {
 }, 45000)
 
 test('alignments display SVG vector export', async () => {
-  const { view, findByTestId } = await createView()
+  const { view, findByTestId } = await createView(config)
   view.setNewView(0.1, 1)
   fireEvent.click(
     await findByTestId(hts('volvox_alignments_pileup_coverage'), ...opts),
@@ -143,7 +154,7 @@ test('alignments display SVG vector export', async () => {
 }, 45000)
 
 test('refName label stays on-canvas when zoomed into a chromosome interior', async () => {
-  const { view, findByTestId } = await createView()
+  const { view, findByTestId } = await createView(config)
   // deep inside ctgA, so the region's left edge has scrolled off the left of
   // the viewport — the sticky refName label must pin to x=0, not render at the
   // (far off-canvas) block start
@@ -158,7 +169,7 @@ test('refName label stays on-canvas when zoomed into a chromosome interior', asy
 }, 45000)
 
 test('arc display SVG export renders bezier arcs for BND variants', async () => {
-  const { view, findByTestId, findByText } = await createView()
+  const { view, findByTestId, findByText } = await createView(config)
   await view.navToLocString('ctgA:1..50000')
   fireEvent.click(await findByTestId(hts('volvox_sv_test'), ...opts))
 
@@ -184,7 +195,7 @@ test('arc display SVG export renders bezier arcs for BND variants', async () => 
 // test earlier would renumber every later snapshot's `svgcanvas-clip-N`.
 
 test('wiggle SVG export includes cross-hatches when enabled', async () => {
-  const { view, findByTestId } = await createView()
+  const { view, findByTestId } = await createView(config)
   view.setNewView(5, 0)
   fireEvent.click(await findByTestId(hts('volvox_microarray'), ...opts))
   await findDisplayPainted('wiggle-display', delay)
@@ -204,7 +215,7 @@ test('wiggle SVG export includes cross-hatches when enabled', async () => {
 }, 45000)
 
 test('multi-wiggle SVG export includes row separators and cross-hatches when enabled', async () => {
-  const { view, findByTestId } = await createView()
+  const { view, findByTestId } = await createView(config)
   view.setNewView(5, 0)
   fireEvent.click(
     await findByTestId(hts('volvox_microarray_multi_multirowxy'), ...opts),
@@ -238,7 +249,7 @@ function rulerLabelXs(svg: string) {
 }
 
 test('SVG export labels ruler coordinates when many regions are visible', async () => {
-  const { view } = await createView()
+  const { view } = await createView(config)
   // Six visible regions. The export used to suppress every coordinate label
   // once five or more content blocks were in view, though the on-screen
   // scalebar labels them regardless — labelFitsInBlock already drops the ones a
@@ -277,7 +288,7 @@ function leftLabelExtent(svg: string, name: string) {
 }
 
 test('left track labels stay inside the gutter the export widened for them', async () => {
-  const { view, findByTestId } = await createView()
+  const { view, findByTestId } = await createView(config)
   await view.navToLocString('ctgA:1..5000')
   fireEvent.click(await findByTestId(hts('gff3tabix_genes'), ...opts))
   await findAnyDisplayPainted(delay)
@@ -297,7 +308,7 @@ test('left track labels stay inside the gutter the export widened for them', asy
 }, 45000)
 
 test('a monospace export reserves the gutter in the font it draws the labels in', async () => {
-  const { view, findByTestId } = await createView()
+  const { view, findByTestId } = await createView(config)
   await view.navToLocString('ctgA:1..5000')
   fireEvent.click(await findByTestId(hts('gff3tabix_genes'), ...opts))
   await findAnyDisplayPainted(delay)
@@ -320,7 +331,7 @@ test('a monospace export reserves the gutter in the font it draws the labels in'
 }, 45000)
 
 test('gridlines are exported behind the tracks when asked for', async () => {
-  const { view, findByTestId } = await createView()
+  const { view, findByTestId } = await createView(config)
   await view.navToLocString('ctgA:1..5000')
   fireEvent.click(await findByTestId(hts('gff3tabix_genes'), ...opts))
   await findAnyDisplayPainted(delay)
@@ -338,7 +349,7 @@ test('gridlines are exported behind the tracks when asked for', async () => {
 }, 45000)
 
 test('SVG export of a view holding no regions says so instead of saving a blank canvas', async () => {
-  const { view } = await createView()
+  const { view } = await createView(config)
   // `initialized` folds in the assemblies, not the navigation, so a view on its
   // import form (or emptied by clearView) sails past awaitViewInitialized with
   // nothing to draw. It used to save the header's reserved height as a blank

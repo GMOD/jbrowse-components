@@ -9,9 +9,14 @@ import {
   findDisplayPainted,
   hts,
   setup,
+  volvoxConfigWithTracks,
 } from './util.tsx'
 
 setup()
+
+// only the track this suite opens, so createView doesn't mount a
+// selector row for the other ~120 - see volvoxConfigWithTracks
+const config = volvoxConfigWithTracks(['volvox_cram_alignments_ctga'])
 
 beforeEach(() => {
   doBeforeEach()
@@ -22,7 +27,7 @@ const opts = [{}, delay]
 
 test('selects a sort, sort by base pair', async () => {
   const user = userEvent.setup()
-  const { view } = await createView()
+  const { view } = await createView(config)
   view.setNewView(0.043688891869634636, 301762)
 
   // load track

@@ -9,9 +9,14 @@ import {
   findAnyDisplayPainted,
   hts,
   setup,
+  volvoxConfigWithTracks,
 } from './util.tsx'
 
 setup()
+
+// only the track this suite opens, so createView doesn't mount a
+// selector row for the other ~120 - see volvoxConfigWithTracks
+const config = volvoxConfigWithTracks(['volvox_test_vcf'])
 
 beforeEach(() => {
   doBeforeEach()
@@ -37,7 +42,7 @@ interface VariantDisplay {
 // color set through it must flow to the model.
 test('variant display exposes one "Color by..." menu and applies a solid color', async () => {
   const user = userEvent.setup()
-  const { view } = await createView()
+  const { view } = await createView(config)
 
   await view.navToLocString('ctgA:1..50000')
   await user.click(await screen.findByTestId(hts('volvox_test_vcf'), ...opts))
@@ -67,7 +72,7 @@ test('variant display exposes one "Color by..." menu and applies a solid color',
 // could silently stop rendering with every other variant test still green.
 test('the consequence-impact color key renders, and dismissing it removes it', async () => {
   const user = userEvent.setup()
-  const { view } = await createView()
+  const { view } = await createView(config)
 
   await view.navToLocString('ctgA:1..50000')
   await user.click(await screen.findByTestId(hts('volvox_test_vcf'), ...opts))

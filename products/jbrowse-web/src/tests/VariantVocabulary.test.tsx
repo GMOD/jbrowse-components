@@ -9,9 +9,14 @@ import {
   findAnyDisplayPainted,
   hts,
   setup,
+  volvoxConfigWithTracks,
 } from './util.tsx'
 
 setup()
+
+// only the track this suite opens, so createView doesn't mount a
+// selector row for the other ~120 - see volvoxConfigWithTracks
+const config = volvoxConfigWithTracks(['volvox_test_vcf'])
 
 beforeEach(() => {
   doBeforeEach()
@@ -46,7 +51,7 @@ function labelsIn(items: VocabMenuItem[]): string[] {
 
 test('the variant track menu names controls generically, content by its noun', async () => {
   const user = userEvent.setup()
-  const { view } = await createView()
+  const { view } = await createView(config)
 
   await view.navToLocString('ctgA:1..50000')
   await user.click(await screen.findByTestId(hts('volvox_test_vcf'), ...opts))
@@ -74,7 +79,7 @@ test('the variant track menu names controls generically, content by its noun', a
 
 test('a row that counts what the track holds still says "variant"', async () => {
   const user = userEvent.setup()
-  const { view } = await createView()
+  const { view } = await createView(config)
 
   await view.navToLocString('ctgA:1..50000')
   await user.click(await screen.findByTestId(hts('volvox_test_vcf'), ...opts))

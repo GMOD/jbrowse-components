@@ -9,9 +9,14 @@ import {
   findDisplayPainted,
   hts,
   setup,
+  volvoxConfigWithTracks,
 } from './util.tsx'
 
 setup()
+
+// only the track this suite opens, so createView doesn't mount a
+// selector row for the other ~120 - see volvoxConfigWithTracks
+const config = volvoxConfigWithTracks(['volvox-long-reads-sv-bam'])
 
 beforeEach(() => {
   doBeforeEach()
@@ -22,7 +27,7 @@ const opts = [{}, delay]
 
 test('opens the track menu and enables soft clipping', async () => {
   const user = userEvent.setup()
-  const { view } = await createView()
+  const { view } = await createView(config)
   // position near end of aligned reads (1-2701) where soft clips extend
   view.setNewView(0.02, 134500)
 

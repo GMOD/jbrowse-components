@@ -9,6 +9,7 @@ import {
   findDisplayPainted,
   hts,
   setup,
+  volvoxConfigWithTracks,
 } from './util.tsx'
 
 import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
@@ -32,12 +33,21 @@ beforeEach(() => {
 const delay = { timeout: 30000 }
 const opts = [{}, delay]
 
+// only the four tracks this suite opens, so createView doesn't mount a selector
+// row for the other ~120 — see volvoxConfigWithTracks
+const config = volvoxConfigWithTracks([
+  'volvox_alignments_pileup_coverage',
+  'volvox_sv_cram',
+  'volvox_cram',
+  'spliced',
+])
+
 // In-track stacked group-by (GROUP_BY_PLAN Stage 5): setGroupBy partitions the
 // single fetch into N sections rendered in one track. Strand grouping yields a
 // forward and a reverse section.
 test('group by strand stacks two sections in one track', async () => {
   const user = userEvent.setup()
-  const { view } = await createView()
+  const { view } = await createView(config)
   view.setNewView(5, 100)
   await user.click(
     await screen.findByTestId(
@@ -80,7 +90,7 @@ test('group by strand stacks two sections in one track', async () => {
 // meaningful. Asserts the per-section arc feed is populated, then snapshots.
 test('group draws per-section paired-end arcs', async () => {
   const user = userEvent.setup()
-  const { view } = await createView()
+  const { view } = await createView(config)
   await view.navToLocString('ctgA:1-50000')
   await user.click(await screen.findByTestId(hts('volvox_sv_cram'), ...opts))
   await findDisplayPainted('pileup-display', delay)
@@ -115,7 +125,7 @@ test('group draws per-section paired-end arcs', async () => {
 // comparable. firstOfPairStrand keeps mates together so each section has pairs.
 test('group draws per-section read-cloud lines', async () => {
   const user = userEvent.setup()
-  const { view } = await createView()
+  const { view } = await createView(config)
   await view.navToLocString('ctgA:1-50000')
   await user.click(await screen.findByTestId(hts('volvox_sv_cram'), ...opts))
   await findDisplayPainted('pileup-display', delay)
@@ -150,7 +160,7 @@ test('group draws per-section read-cloud lines', async () => {
 // section's arcs come only from that section's reads.
 test('group draws per-section sashimi arcs', async () => {
   const user = userEvent.setup()
-  const { view } = await createView()
+  const { view } = await createView(config)
   await view.navToLocString('ctgA:1-50000')
   await user.click(await screen.findByTestId(hts('spliced'), ...opts))
   await findDisplayPainted('pileup-display', delay)
@@ -190,7 +200,7 @@ test('group draws per-section sashimi arcs', async () => {
 // on the floor entirely would still satisfy the test above.
 test('lowering the sashimi score reveals a group-specific junction', async () => {
   const user = userEvent.setup()
-  const { view } = await createView()
+  const { view } = await createView(config)
   await view.navToLocString('ctgA:1-50000')
   await user.click(await screen.findByTestId(hts('spliced'), ...opts))
   await findDisplayPainted('pileup-display', delay)
@@ -221,7 +231,7 @@ test('lowering the sashimi score reveals a group-specific junction', async () =>
 // haplotype grouping of linked/long reads is the marquee use case.
 test('chain mode groups whole chains by HP tag into sections', async () => {
   const user = userEvent.setup()
-  const { view } = await createView()
+  const { view } = await createView(config)
   view.setNewView(0.8, 49437)
   await user.click(await screen.findByTestId(hts('volvox_cram'), ...opts))
   await findDisplayPainted('pileup-display', delay)
@@ -261,7 +271,7 @@ test('chain mode groups whole chains by HP tag into sections', async () => {
 // isChainGroupableType guard.
 test('chain mode ignores a per-read group dimension (single section)', async () => {
   const user = userEvent.setup()
-  const { view } = await createView()
+  const { view } = await createView(config)
   view.setNewView(5, 100)
   await user.click(
     await screen.findByTestId(
@@ -290,7 +300,7 @@ test('chain mode ignores a per-read group dimension (single section)', async () 
 
 test('ungroup restores a single section', async () => {
   const user = userEvent.setup()
-  const { view } = await createView()
+  const { view } = await createView(config)
   view.setNewView(5, 100)
   await user.click(
     await screen.findByTestId(
@@ -321,7 +331,7 @@ test('ungroup restores a single section', async () => {
 
 test('collapsing a group zeroes its pileup band but keeps coverage', async () => {
   const user = userEvent.setup()
-  const { view } = await createView()
+  const { view } = await createView(config)
   view.setNewView(5, 100)
   await user.click(
     await screen.findByTestId(
@@ -357,7 +367,7 @@ test('collapsing a group zeroes its pileup band but keeps coverage', async () =>
 
 test('resizing a group caps its rows independently of the others', async () => {
   const user = userEvent.setup()
-  const { view } = await createView()
+  const { view } = await createView(config)
   view.setNewView(5, 100)
   await user.click(
     await screen.findByTestId(

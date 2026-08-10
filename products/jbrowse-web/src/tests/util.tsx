@@ -156,12 +156,18 @@ export async function findDisplayPainted(
 ) {
   return waitFor(
     () => {
+      // No `CSS.escape`, same as findDisplayById below: this runs in jsdom,
+      // which has no `CSS` object at all, so the rule's autofix breaks every
+      // caller at runtime. Each selector is kept on its own line so the disable
+      // can't drift off the interpolation when the formatter rewraps the call.
+      // eslint-disable-next-line unicorn/require-css-escape
+      const base = `[data-testid="${testid}"]`
       const el = document.querySelector<HTMLElement>(
-        `[data-testid="${testid}"][data-display-drawn="true"]`,
+        `${base}[data-display-drawn="true"]`,
       )
       if (!el) {
         throw new Error(
-          document.querySelector(`[data-testid="${testid}"]`)
+          document.querySelector(base)
             ? `display ${testid} mounted but has not painted (data-display-drawn is still "false")`
             : `no display with data-testid="${testid}" is mounted`,
         )

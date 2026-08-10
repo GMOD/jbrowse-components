@@ -9,9 +9,14 @@ import {
   findDisplayById,
   hts,
   setup,
+  volvoxConfigWithTracks,
 } from './util.tsx'
 
 setup()
+
+// only the track this suite opens, so createView doesn't mount a
+// selector row for the other ~120 - see volvoxConfigWithTracks
+const config = volvoxConfigWithTracks(['gff3tabix_genes'])
 
 beforeEach(() => {
   doBeforeEach()
@@ -22,7 +27,7 @@ const opts = [{}, delay]
 
 test('toggle subfeature labels and verify eden.1 label appears', async () => {
   const user = userEvent.setup()
-  const { view } = await createView()
+  const { view } = await createView(config)
 
   await view.navToLocString('ctgA:907..15,319')
   await user.click(await screen.findByTestId(hts('gff3tabix_genes'), ...opts))

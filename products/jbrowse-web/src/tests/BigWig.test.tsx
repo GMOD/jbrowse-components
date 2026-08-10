@@ -7,9 +7,14 @@ import {
   findDisplayPainted,
   hts,
   setup,
+  volvoxConfigWithTracks,
 } from './util.tsx'
 
 setup()
+
+// only the track this suite opens, so createView doesn't mount a
+// selector row for the other ~120 - see volvoxConfigWithTracks
+const config = volvoxConfigWithTracks(['volvox_microarray'])
 
 const timeout = 20000
 
@@ -50,7 +55,7 @@ test('open a bigwig density track', async () => {
 // asserted, and the suites that would notice need a full GPU + headless-Chrome
 // run. See agent-docs/reference/DISPLAYCHROME.md, "One element per display".
 test('a wiggle track emits its testid, display id and phase on one element', async () => {
-  const { view, findByTestId } = await createView()
+  const { view, findByTestId } = await createView(config)
   view.setNewView(5, 0)
   fireEvent.click(await findByTestId(hts('volvox_microarray'), {}, { timeout }))
 

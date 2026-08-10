@@ -9,11 +9,16 @@ import {
   findAnyDisplayPainted,
   hts,
   setup,
+  volvoxConfigWithTracks,
 } from './util.tsx'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 setup()
+
+// only the track this suite opens, so createView doesn't mount a
+// selector row for the other ~120 - see volvoxConfigWithTracks
+const config = volvoxConfigWithTracks(['gff3tabix_genes'])
 
 beforeEach(() => {
   doBeforeEach()
@@ -24,7 +29,7 @@ const opts = [{}, delay]
 
 test('collapse introns on gene feature', async () => {
   const user = userEvent.setup()
-  const { view, session, findByText } = await createView()
+  const { view, session, findByText } = await createView(config)
 
   await view.navToLocString('ctgA:907..10,000')
   await user.click(await screen.findByTestId(hts('gff3tabix_genes'), ...opts))
@@ -61,7 +66,7 @@ test('collapse introns on gene feature', async () => {
 
 test('collapse introns dialog lists the transcripts to scope to', async () => {
   const user = userEvent.setup()
-  const { view, findByText } = await createView()
+  const { view, findByText } = await createView(config)
 
   await view.navToLocString('ctgA:907..10,000')
   await user.click(await screen.findByTestId(hts('gff3tabix_genes'), ...opts))

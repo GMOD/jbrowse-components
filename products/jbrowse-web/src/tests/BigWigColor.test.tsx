@@ -7,9 +7,14 @@ import {
   hts,
   setup,
   waitForRenderedCanvas,
+  volvoxConfigWithTracks,
 } from './util.tsx'
 
 setup()
+
+// only the track this suite opens, so createView doesn't mount a
+// selector row for the other ~120 - see volvoxConfigWithTracks
+const config = volvoxConfigWithTracks(['volvox_microarray'])
 
 beforeEach(() => {
   doBeforeEach()
@@ -18,7 +23,7 @@ beforeEach(() => {
 test.each(['green', 'purple'])(
   'open a bigwig track and change to %s color',
   async color => {
-    const { view, findByTestId } = await createView()
+    const { view, findByTestId } = await createView(config)
     view.setNewView(5, 0)
 
     fireEvent.click(

@@ -9,9 +9,17 @@ import {
   findDisplayPainted,
   hts,
   setup,
+  volvoxConfigWithTracks,
 } from './util.tsx'
 
 setup()
+
+// only the tracks this suite opens, so createView doesn't mount a
+// selector row for the other ~120 - see volvoxConfigWithTracks
+const config = volvoxConfigWithTracks([
+  'paired_end_stranded_rnaseq',
+  'volvox_cram',
+])
 
 beforeEach(() => {
   doBeforeEach()
@@ -22,7 +30,7 @@ const opts = [{}, delay]
 
 test('color by tag', async () => {
   const user = userEvent.setup()
-  const { view } = await createView()
+  const { view } = await createView(config)
   view.setNewView(0.8, 49437)
   await user.click(await screen.findByTestId(hts('volvox_cram'), ...opts))
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
@@ -36,7 +44,7 @@ test('color by tag', async () => {
 
 test('color by stranded rna-seq', async () => {
   const user = userEvent.setup()
-  const { view } = await createView()
+  const { view } = await createView(config)
   view.setNewView(10, 0)
   await user.click(
     await screen.findByTestId(hts('paired_end_stranded_rnaseq'), ...opts),

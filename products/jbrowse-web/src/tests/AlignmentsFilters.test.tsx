@@ -9,9 +9,14 @@ import {
   findDisplayPainted,
   hts,
   setup,
+  volvoxConfigWithTracks,
 } from './util.tsx'
 
 setup()
+
+// only the tracks this suite opens, so createView doesn't mount a
+// selector row for the other ~120 - see volvoxConfigWithTracks
+const config = volvoxConfigWithTracks(['volvox_cram', 'volvox_bam'])
 
 beforeEach(() => {
   doBeforeEach()
@@ -36,13 +41,13 @@ async function testFilterTrack(trackId: string, tag: string, value: string) {
 }
 
 test('filter by HP tag cram', async () => {
-  const { view } = await createView()
+  const { view } = await createView(config)
   view.setNewView(0.8, 49437)
   await testFilterTrack('volvox_cram', 'HP', '1')
 }, 50000)
 
 test('filter by HP tag bam', async () => {
-  const { view } = await createView()
+  const { view } = await createView(config)
   view.setNewView(0.8, 49437)
   await testFilterTrack('volvox_bam', 'HP', '1')
 }, 50000)

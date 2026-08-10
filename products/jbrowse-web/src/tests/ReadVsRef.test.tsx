@@ -9,9 +9,14 @@ import {
   hts,
   mockConsoleWarn,
   setup,
+  volvoxConfigWithTracks,
 } from './util.tsx'
 
 setup()
+
+// only the track this suite opens, so createView doesn't mount a
+// selector row for the other ~120 - see volvoxConfigWithTracks
+const config = volvoxConfigWithTracks(['volvox_alignments_pileup_coverage'])
 
 beforeEach(() => {
   doBeforeEach()
@@ -21,7 +26,7 @@ const delay = { timeout: 20000 }
 
 test('launch read vs ref panel', async () => {
   const consoleMock = jest.spyOn(console, 'warn').mockImplementation()
-  const { view, findByTestId, findByText } = await createView()
+  const { view, findByTestId, findByText } = await createView(config)
   view.setNewView(5, 100)
   fireEvent.click(
     await findByTestId(hts('volvox_alignments_pileup_coverage'), {}, delay),
@@ -47,7 +52,7 @@ test('launch read vs ref panel', async () => {
 }, 40000)
 
 test('launch read vs ref dotplot', async () => {
-  const { view, session, findByTestId, findByText } = await createView()
+  const { view, session, findByTestId, findByText } = await createView(config)
   view.setNewView(5, 100)
   fireEvent.click(
     await findByTestId(hts('volvox_alignments_pileup_coverage'), {}, delay),
@@ -94,7 +99,7 @@ test('replace the launching view with the read vs ref dotplot', async () => {
   // re-evaluates their reads across the dead nodes and MST's livelinessChecking
   // warns. Nothing throws and the render never commits.
   await mockConsoleWarn(async () => {
-    const { view, session, findByTestId, findByText } = await createView()
+    const { view, session, findByTestId, findByText } = await createView(config)
     view.setNewView(5, 100)
     fireEvent.click(
       await findByTestId(hts('volvox_alignments_pileup_coverage'), {}, delay),

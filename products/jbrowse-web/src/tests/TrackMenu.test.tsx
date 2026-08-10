@@ -7,9 +7,14 @@ import {
   findDisplayPainted,
   hts,
   setup,
+  volvoxConfigWithTracks,
 } from './util.tsx'
 
 setup()
+
+// only the track this suite opens, so createView doesn't mount a
+// selector row for the other ~120 - see volvoxConfigWithTracks
+const config = volvoxConfigWithTracks(['volvox_cram'])
 
 beforeEach(() => {
   doBeforeEach()
@@ -20,7 +25,7 @@ const opts = [{}, delay]
 
 test('check pin track', async () => {
   const user = userEvent.setup()
-  await createView()
+  await createView(config)
   await user.click(await screen.findByTestId(hts('volvox_cram'), ...opts))
   // Wait for the track's RPC fetch to settle before continuing: otherwise the
   // test ends while it's still in flight, and its resolution after teardown

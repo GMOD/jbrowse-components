@@ -9,9 +9,17 @@ import {
   findDisplayPainted,
   hts,
   setup,
+  volvoxConfigWithTracks,
 } from './util.tsx'
 
 setup()
+
+// only the tracks this suite opens, so createView doesn't mount a
+// selector row for the other ~120 - see volvoxConfigWithTracks
+const config = volvoxConfigWithTracks([
+  'volvox_alignments_pileup_coverage',
+  'volvox-long-reads-sv-cram',
+])
 
 beforeEach(() => {
   doBeforeEach()
@@ -25,7 +33,7 @@ test(
   'opens an alignments track and clicks feature',
   async () => {
     const user = userEvent.setup()
-    const { view, findByTestId } = await createView()
+    const { view, findByTestId } = await createView(config)
     view.setNewView(5, 100)
     await user.click(
       await findByTestId(hts('volvox_alignments_pileup_coverage'), ...opts),
@@ -48,7 +56,7 @@ test(
   'test snpcoverage doesnt count snpcoverage',
   async () => {
     const user = userEvent.setup()
-    const { view, findByTestId } = await createView()
+    const { view, findByTestId } = await createView(config)
     view.setNewView(0.03932, 67884.16536402702)
     await user.click(
       await findByTestId(hts('volvox-long-reads-sv-cram'), ...opts),

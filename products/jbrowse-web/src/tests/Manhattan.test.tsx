@@ -6,9 +6,14 @@ import {
   findDisplayPainted,
   hts,
   setup,
+  volvoxConfigWithTracks,
 } from './util.tsx'
 
 setup()
+
+// only the track this suite opens, so createView doesn't mount a
+// selector row for the other ~120 - see volvoxConfigWithTracks
+const config = volvoxConfigWithTracks(['volvox_gwas'])
 
 beforeEach(() => {
   doBeforeEach()
@@ -24,7 +29,7 @@ const timeout = 20000
 // verifiable here rather than only in a full GPU + headless-Chrome run. See
 // DISPLAYCHROME.md, "One element per display".
 test('open a GWAS manhattan track', async () => {
-  const { view, findByTestId } = await createView()
+  const { view, findByTestId } = await createView(config)
   view.setNewView(5, 0)
   fireEvent.click(await findByTestId(hts('volvox_gwas'), {}, { timeout }))
 

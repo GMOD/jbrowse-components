@@ -6,12 +6,17 @@ import {
   findDisplayPainted,
   hts,
   setup,
+  volvoxConfigWithTracks,
 } from './util.tsx'
 
 import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 setup()
+
+// only the track this suite opens, so createView doesn't mount a
+// selector row for the other ~120 - see volvoxConfigWithTracks
+const config = volvoxConfigWithTracks(['volvox_alignments_pileup_coverage'])
 
 beforeEach(() => {
   doBeforeEach()
@@ -50,7 +55,7 @@ function alignmentsDisplay(
  * the two compose to cover displayedRegion → renderBlocks → draw end to end.
  */
 test('alignments display delivers reversed render blocks after a [rev] nav', async () => {
-  const { view, findByTestId } = await createView()
+  const { view, findByTestId } = await createView(config)
 
   fireEvent.click(
     await findByTestId(hts('volvox_alignments_pileup_coverage'), ...opts),

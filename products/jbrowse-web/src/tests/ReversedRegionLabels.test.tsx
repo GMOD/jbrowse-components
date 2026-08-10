@@ -9,11 +9,16 @@ import {
   findAnyDisplayPainted,
   hts,
   setup,
+  volvoxConfigWithTracks,
 } from './util.tsx'
 
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
 setup()
+
+// only the track this suite opens, so createView doesn't mount a
+// selector row for the other ~120 - see volvoxConfigWithTracks
+const config = volvoxConfigWithTracks(['gff3tabix_genes'])
 
 beforeEach(() => {
   jest.clearAllMocks()
@@ -24,7 +29,7 @@ const delay = { timeout: 40000 }
 const opts = [{}, delay]
 
 test('export svg of reversed region with gene labels', async () => {
-  const { view, findByTestId, findByText } = await createView()
+  const { view, findByTestId, findByText } = await createView(config)
 
   // Navigate to reversed region
   await view.navToLocString('ctgA:1..7,720[rev]', 'volvox')

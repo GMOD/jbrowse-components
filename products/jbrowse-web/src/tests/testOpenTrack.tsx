@@ -6,6 +6,7 @@ import {
   findCanvasIn,
   findDisplayPainted,
   hts,
+  volvoxConfigWithTracks,
 } from './util.tsx'
 
 export async function testOpenTrack({
@@ -21,7 +22,9 @@ export async function testOpenTrack({
   displayTestId?: string
   timeout?: number
 }) {
-  const { view, findByTestId } = await createView()
+  const { view, findByTestId } = await createView(
+    volvoxConfigWithTracks([trackId]),
+  )
   view.setNewView(bpPerPx, start)
   fireEvent.click(await findByTestId(hts(trackId), {}, { timeout }))
   const display = await findDisplayPainted(displayTestId, { timeout })

@@ -2,16 +2,25 @@ import '@testing-library/jest-dom'
 
 import { fireEvent, getByRole, waitFor } from '@testing-library/react'
 
-import { createView, doBeforeEach, hts } from './util.tsx'
+import {
+  createView,
+  doBeforeEach,
+  hts,
+  volvoxConfigWithTracks,
+} from './util.tsx'
 
 const delay = { timeout: 15000 }
+
+// only the track this suite opens, so createView doesn't mount a selector row
+// for the other ~120 - see volvoxConfigWithTracks
+const config = volvoxConfigWithTracks(['volvox_filtered_vcf'])
 
 beforeEach(() => {
   doBeforeEach()
 })
 
 test('widget drawer navigation', async () => {
-  const { view, session, findByTestId, findByText } = await createView()
+  const { view, session, findByTestId, findByText } = await createView(config)
   view.setNewView(0.05, 5000)
   // opens a config editor widget
   fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), {}, delay))
@@ -55,7 +64,7 @@ test('widget drawer navigation', async () => {
 }, 40000)
 
 test('widget pops out into a dialog and returns to the drawer', async () => {
-  const { session, findByTestId, queryByTestId } = await createView()
+  const { session, findByTestId, queryByTestId } = await createView(config)
   await findByTestId('drawer-widget', {}, delay)
 
   fireEvent.click(await findByTestId('drawer-popout'))
@@ -72,7 +81,7 @@ test('widget pops out into a dialog and returns to the drawer', async () => {
 }, 40000)
 
 test('hiding the last widget clears popped-out state', async () => {
-  const { session, findByTestId } = await createView()
+  const { session, findByTestId } = await createView(config)
   await findByTestId('drawer-widget', {}, delay)
   fireEvent.click(await findByTestId('drawer-popout'))
   expect(session.poppedOut).toBe(true)

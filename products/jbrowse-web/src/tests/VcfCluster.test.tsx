@@ -10,9 +10,14 @@ import {
   findDisplayPainted,
   hts,
   setup,
+  volvoxConfigWithTracks,
 } from './util.tsx'
 
 setup()
+
+// only the track this suite opens, so createView doesn't mount a
+// selector row for the other ~120 - see volvoxConfigWithTracks
+const config = volvoxConfigWithTracks(['volvox_test_vcf'])
 
 beforeEach(() => {
   doBeforeEach()
@@ -24,7 +29,7 @@ const delay = { timeout: 60000 }
 const opts = [{}, delay]
 
 test('opens a vcf track and clusters genotypes', async () => {
-  const { view, findByTestId, findByText } = await createView()
+  const { view, findByTestId, findByText } = await createView(config)
   await view.navToLocString('ctgA:1-50000')
 
   fireEvent.click(await findByTestId(hts('volvox_test_vcf'), ...opts))

@@ -9,9 +9,14 @@ import {
   findAnyDisplayPainted,
   hts,
   setup,
+  volvoxConfigWithTracks,
 } from './util.tsx'
 
 setup()
+
+// only the track this suite opens, so createView doesn't mount a
+// selector row for the other ~120 - see volvoxConfigWithTracks
+const config = volvoxConfigWithTracks(['volvox_test_vcf'])
 
 beforeEach(() => {
   doBeforeEach()
@@ -26,7 +31,7 @@ const opts = [{}, delay]
 // Regression: description labels were rendered without an onClick.
 test('clicking a variant description label opens feature details', async () => {
   const user = userEvent.setup()
-  const { view, findByTestId } = await createView()
+  const { view, findByTestId } = await createView(config)
 
   await view.navToLocString('ctgA:6257..6305')
   await user.click(await screen.findByTestId(hts('volvox_test_vcf'), ...opts))

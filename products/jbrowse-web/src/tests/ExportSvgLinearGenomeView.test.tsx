@@ -8,11 +8,16 @@ import {
   exportAndVerifySvg,
   hts,
   setup,
+  volvoxConfigWithTracks,
 } from './util.tsx'
 
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
 setup()
+
+// only the track this suite opens, so createView doesn't mount a
+// selector row for the other ~120 - see volvoxConfigWithTracks
+const config = volvoxConfigWithTracks(['volvox_alignments_pileup_coverage'])
 
 beforeEach(() => {
   jest.clearAllMocks()
@@ -23,7 +28,7 @@ const delay = { timeout: 40000 }
 const opts = [{}, delay]
 
 test('export svg of lgv', async () => {
-  const { view, findByTestId, findByText } = await createView()
+  const { view, findByTestId, findByText } = await createView(config)
 
   view.setNewView(0.1, 1)
   fireEvent.click(
@@ -34,7 +39,7 @@ test('export svg of lgv', async () => {
 }, 45000)
 
 test('export svg of lgv with gridlines', async () => {
-  const { view, findByTestId, findByText } = await createView()
+  const { view, findByTestId, findByText } = await createView(config)
 
   view.setNewView(0.1, 1)
   fireEvent.click(

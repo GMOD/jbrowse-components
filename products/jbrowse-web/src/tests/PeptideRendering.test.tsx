@@ -8,9 +8,14 @@ import {
   findCanvasIn,
   hts,
   setup,
+  volvoxConfigWithTracks,
 } from './util.tsx'
 
 setup()
+
+// only the track this suite opens, so createView doesn't mount a
+// selector row for the other ~120 - see volvoxConfigWithTracks
+const config = volvoxConfigWithTracks(['bedtabix_genes'])
 
 beforeEach(() => {
   doBeforeEach()
@@ -20,7 +25,7 @@ const delay = { timeout: 20000 }
 const opts = [{}, delay]
 
 test('renders peptide letters on CDS features', async () => {
-  const { view, findByTestId, findByText } = await createView()
+  const { view, findByTestId, findByText } = await createView(config)
   await view.navToLocString('ctgA:3,292..3,323')
 
   // Frame coloring is opt-in; the amino acids on top of it are not
@@ -36,7 +41,7 @@ test('renders peptide letters on CDS features', async () => {
 }, 25000)
 
 test('renders peptide letters without color by CDS', async () => {
-  const { view, findByTestId } = await createView()
+  const { view, findByTestId } = await createView(config)
   await view.navToLocString('ctgA:3,292..3,323')
 
   // no menu interaction: showAminoAcids is on by default, so the codons are
