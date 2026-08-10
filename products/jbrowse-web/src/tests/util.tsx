@@ -172,6 +172,52 @@ export async function findDisplayById(displayId: string, timeout = 20000) {
 }
 
 /**
+ * Wait for a display to be *settled* — painted AND no longer working.
+ *
+ * The stricter sibling of {@link findDisplayPainted}, for the callers that flip
+ * a track-menu setting on a display that has ALREADY painted. `data-display-
+ * drawn` is first paint, so it is true throughout for them: waiting on it
+ * observes the previous frame and snapshots it. That is what the flat
+ * `setTimeout(2000)`s in the linked-read suites were covering — not a race
+ * anyone had diagnosed, just a delay long enough that the second paint had
+ * usually landed. Measured, the real settle is 6-334ms.
+ *
+ * `data-display-phase` is the model's own mutually-exclusive state and covers
+ * the whole refetch rather than the paint, so the conjunction is the real
+ * signal — the same one the screenshot specs wait on via `displayReady`.
+ *
+ * It is sampled twice because the conjunction alone does not close the window
+ * here: the phase is the only moving term for these callers, and a refetch the
+ * setting triggered has not necessarily left `ready` at the instant we first
+ * look. The second sample gives an imminent `loading` somewhere to appear.
+ *
+ * **Only for a setting whose change REFETCHES.** One that merely repaints —
+ * anything in the `renderState` tier, per `LinearAlignmentsDisplay/CLAUDE.md`'s
+ * invalidation tiers — never moves the phase, so this returns immediately with
+ * the previous frame still up. Not hypothetical: `BigWigColor` was ported to
+ * this and captured the pre-recolor canvas (the default blue, 68% different
+ * from the green it had just asked for) while the phase sat at `ready`
+ * throughout. Those callers still sleep, and that is why.
+ */
+export async function findSettledDisplay(
+  testid = 'pileup-display',
+  { timeout = 30000 }: { timeout?: number } = {},
+) {
+  const find = async () => {
+    const el = await findDisplayPainted(testid, { timeout })
+    if (el.dataset.displayPhase !== 'ready') {
+      throw new Error(
+        `display ${testid} painted but is at phase "${el.dataset.displayPhase}", not "ready"`,
+      )
+    }
+    return el
+  }
+  await waitFor(find, { timeout })
+  await new Promise(res => setTimeout(res, 100))
+  return waitFor(find, { timeout })
+}
+
+/**
  * Wait for *any* display to finish first paint — the caller does not care which
  * type, only that something has drawn.
  *

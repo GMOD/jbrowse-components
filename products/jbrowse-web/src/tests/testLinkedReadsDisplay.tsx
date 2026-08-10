@@ -4,7 +4,7 @@ import {
   createView,
   expectCanvasMatch,
   findCanvasIn,
-  findDisplayPainted,
+  findSettledDisplay,
   hts,
 } from './util.tsx'
 
@@ -45,8 +45,7 @@ export async function testLinkedReadsDisplay({
     await user.click(await findByText(label))
   }
 
-  const display = await findDisplayPainted('pileup-display', { timeout })
-  await new Promise(res => setTimeout(res, 2000))
+  const display = await findSettledDisplay('pileup-display', { timeout })
   expectCanvasMatch(findCanvasIn(display))
 
   // Bezier connections render in an SVG overlay, not the canvas, so the snapshot
