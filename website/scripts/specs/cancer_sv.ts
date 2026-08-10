@@ -1591,29 +1591,42 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   // after the search.
   //
   // Breakpoints are the call's own, `chr9:131199015:+` and `chr22:16808083:-`
-  // from K562.star-fusion.tsv, +/- 5 kb. The STAR-Fusion track rides above the
-  // reads in both panels so the junction the reads support is marked on each.
+  // from K562.star-fusion.tsv, +/- 2.5 kb. The STAR-Fusion track rides above
+  // the reads in both panels so the junction the reads support is marked on
+  // each.
+  //
+  // 2.5 kb and not the 5 kb this used to frame (review: "the screenshot in 4 is
+  // also VERY chaotic"). Halving each window halves the reads that intersect
+  // it, and every read that supports the fusion touches the junction, so the
+  // ones dropped are the ones that were only ever adding a row and a curve. It
+  // is the row count that makes this figure hard: one curve is drawn per
+  // molecule and its far end is a ROW in the other panel's pileup, so 200 rows
+  // is 200 long diagonals crossing everything between them.
   {
     mode: 'url' as const,
     name: 'cancer_sv/k562_fusion_inspector_split',
-    // 830 cut 269 css px off the bottom, and 1100 still cut the chr22 pileup in
-    // half -- which is most of what read as chaos (review: "the screenshot in 4
-    // is also VERY chaotic"). Every grey curve is one Iso-Seq molecule and its
-    // far end is a ROW in the other panel's pileup, so a clipped pileup turns
-    // the whole fan into lines leaving the frame at the bottom-right with
-    // nothing to land on. Both pileups are tall enough for their rows below and
-    // the frame is tall enough for both pileups; the curves then terminate on
-    // reads a reader can see.
-    viewportHeight: 1500,
+    // 830 cut 269 css px off the bottom; 1100 and then 1500 still cut the chr22
+    // pileup, because at +/- 5 kb it is over 200 rows deep. The window is half
+    // that now (see above) and the intraview links are off, so this is sized to
+    // the rows that are left rather than to the rows there used to be.
+    viewportHeight: 1180,
     url: sessionSpec(CONFIG, {
       views: [
         {
           type: 'BreakpointSplitView',
           displayName:
             'Row menu → Open in breakpoint split view (NUP214--XKR3)',
+          // The other half of the chaos, and the half that says nothing about
+          // this fusion: an intraview link joins two alignments of one read
+          // that both landed in the SAME panel, so none of them crosses the
+          // junction the figure is about. On chr9 they were a fan of ~60 blue
+          // arcs over the 2.5 kb left of the breakpoint, drawn on top of the
+          // curves that do cross. `Show intra-view links` in the view menu is
+          // the same switch.
+          showIntraviewLinks: false,
           views: [
             {
-              loc: 'chr9:131,194,015-131,204,015',
+              loc: 'chr9:131,196,515-131,201,515',
               assembly: 'hg38',
               tracks: [
                 GENE_TRACK,
@@ -1627,8 +1640,10 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   // room for every packed row rather than the first ~90 of
                   // them: a curve's endpoint is the row its read is on, so a
                   // pileup that overflows its own lane sends that curve off
-                  // the bottom of the panel
-                  height: 380,
+                  // the bottom of the panel. The lane SCROLLS when it does not
+                  // fit, which is the tell -- a thumb on the display's right
+                  // edge, not something either size report can see.
+                  height: 300,
                   coverageHeight: 80,
                   showOnlySplitAlignments: true,
                   ...SPLIT_READS,
@@ -1636,7 +1651,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
               ],
             },
             {
-              loc: 'chr22:16,803,083-16,813,083',
+              loc: 'chr22:16,805,583-16,810,583',
               assembly: 'hg38',
               tracks: [
                 GENE_TRACK,
@@ -1650,7 +1665,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   // taller than the chr9 lane: the fusion transcript runs from
                   // NUP214's promoter into XKR3, so the chr22 side is where the
                   // reads stack up
-                  height: 480,
+                  height: 420,
                   coverageHeight: 80,
                   showOnlySplitAlignments: true,
                   ...SPLIT_READS,

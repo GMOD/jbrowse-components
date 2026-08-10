@@ -639,8 +639,9 @@ export const svSpecs: ScreenshotSpec[] = [
     viewportWidth: 1800,
     // tall enough to clear the whole 620px track plus the second section's own
     // coverage lane and divider, which grouping adds (the pileup used to run off
-    // the bottom edge — reviewer: increase browser height)
-    viewportHeight: 960,
+    // the bottom edge — reviewer: increase browser height). 960 left 73 css px
+    // of blank under the last row, by the run's own report.
+    viewportHeight: 887,
     settleMs: 40000,
     // the cursor would otherwise park over the pileup and raise the read tooltip
     hideTooltip: true,
@@ -658,22 +659,33 @@ export const svSpecs: ScreenshotSpec[] = [
     // 'right'` puts the pill's left edge past the label's right edge without a
     // dx that encodes the label's width.
     //
-    // Both pills stay on one line each. Wrapped, they would grow down into the
-    // coverage lane immediately below the divider, which is data. The
-    // heterozygosity the two sections add up to is in the caption instead —
+    // `dy` DROPS EACH PILL ONTO ITS SECTION'S COVERAGE LANE rather than leaving
+    // it centred on the divider. Centred, a wrapped pill reaches as far above
+    // the divider as below it, which is where the track header is — the first
+    // render put the top one straight over "HG00151 Nanopore (1000G ONT,
+    // minimap2)". The coverage lane under each divider is 70 px of flat grey in
+    // both sections at this window, so it is the one band here that a label
+    // costs nothing to cover.
+    //
+    // maxWidth is set so each is two lines rather than the three the default
+    // gave, which is taller than the lane they are being dropped onto.
+    //
+    // The heterozygosity the two sections add up to is in the caption instead —
     // that is a conclusion drawn from both, not a label for either.
     annotations: [
       {
         type: 'text',
         text: 'a supplementary alignment at each breakpoint: forward flank, reverse core, forward flank',
         fontSize: 18,
-        anchor: { text: 'Split (SA)', alignX: 'right', dx: 14 },
+        maxWidth: 560,
+        anchor: { text: 'Split (SA)', alignX: 'right', dx: 14, dy: 45 },
       },
       {
         type: 'text',
         text: 'no supplementary alignment: these cross the same span unbroken, so their haplotype is not inverted',
         fontSize: 18,
-        anchor: { text: 'Not split', alignX: 'right', dx: 14 },
+        maxWidth: 560,
+        anchor: { text: 'Not split', alignX: 'right', dx: 14, dy: 45 },
       },
     ],
   },

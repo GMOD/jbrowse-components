@@ -1406,15 +1406,19 @@ export const dog10kSpecs: ScreenshotSpec[] = [
       // you zoom out, so this is the only scale at which a per-sample call
       // reads as a block rather than a tick
       loc: 'chr30:38,261,590-38,261,690',
-      // The whole point of the figure is which of the three forward frames is
-      // the coding one, and this is the view prop that answers it: it reads the
-      // CDS phase off the gene track below and tints only that frame's row,
-      // leaving the other two grey. Without it all three rows are drawn in the
-      // same amino-acid colors, and the two non-coding frames carry an
-      // unrelated red stop 30 bp left of the site -- the label below had to
-      // name the consequence precisely because nothing on the image picked a
-      // frame. It is a VIEW prop, not a display one: it sits beside `loc`, not
-      // in the sequence track's entry.
+      // Which of the three forward frames is the coding one, answered by
+      // color correspondence rather than by a label (review: "consider turning
+      // on colorByCDS"). It does NOT single out a frame -- what it does is swap
+      // the translation rows from `palette.frames` to `palette.framesCDS`
+      // (sequenceGeometry.ts), which is the same bright per-frame palette a
+      // gene track paints its CDS with. So the third row comes out the gene
+      // track's own pink, and reads R P Q L P L M E A F I L E I F R H T S F,
+      // the residues the lane below labels R358..F377. Two rows of the same
+      // color carrying the same residues is what picks the frame; grey rows
+      // (the default) leave the reader counting phase.
+      //
+      // It is a VIEW prop, not a display one: it sits beside `loc`, not in the
+      // sequence track's entry.
       colorByCDS: true,
       // No view highlight on the codon, deliberately. It tints every track it
       // crosses, and over the genotype lane that washes the het/hom blues into
@@ -1474,11 +1478,11 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     // the per-position variant lane above the matrix adds its own 60.
     viewportHeight: 1010,
     // The sequence track puts CGA and its Arg on screen; `colorByCDS` above is
-    // what says which of the three forward frames it is read in (codons begin
-    // at positions == 1 mod 3 here, from the exon's phase-2 start at
-    // 38,261,549, and the other two frames carry an unrelated red stop 30 bp
-    // left of the site). The label still names the consequence, because a
-    // tinted frame shows WHERE to read and not WHAT the substitution does.
+    // what says which of the three forward frames it is read in (the third,
+    // codons beginning at positions == 1 mod 3 here from the exon's phase-2
+    // start at 38,261,549; the other two carry an unrelated red stop 30 bp left
+    // of the site). The label still names the consequence, because matching
+    // colors show WHERE to read and not WHAT the substitution does.
     //
     // Second line is the phenotype, and it says *homozygotes* because that is
     // what the pharmacology shows: liver microsomes from T/T dogs carry no

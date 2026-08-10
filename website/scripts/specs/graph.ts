@@ -2063,28 +2063,36 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
     part({
       name: 'pangenome/hprc_mhc_layout_force',
       layoutMode: 'force',
-      viewportHeight: 895,
-      // 520 rather than the ~680 the pane sized itself to (review: "try to
-      // reduce height of graphgenomeview on left side"). The force drawing here
-      // is tall and narrow -- a chain that turns down the pane and ends in a
-      // 9.4 kb loop -- so the fit is height-bound and the pane spent its whole
-      // aspect ratio on that. Shortening it scales the drawing down and gives
-      // the height back; the node labels are drawn at a fixed size, so they
-      // stay the size they were.
+      // 458 css px of app chrome plus the pane below, measured off the run's
+      // own below-the-fold report at paneHeight 520 (978 - 520).
+      viewportHeight: 878,
+      // 420 rather than the MAX_CANVAS_HEIGHT ceiling of 600 this pinned
+      // (review: "try to reduce height of graphgenomeview on left side"). The
+      // force drawing here is tall and narrow -- a chain that turns down the
+      // pane and ends in a 9.4 kb loop -- so the aspect-derived height is well
+      // over the ceiling and the pane took all of it. `paneHeight` replaces the
+      // ceiling (the MIN_CANVAS_HEIGHT floor of 160 still wins), the drawing
+      // auto-fits smaller, and the node labels are drawn at a fixed size, so
+      // they stay the size they were. Same value as hprc_chm13_allele, which
+      // was measured over the same trade.
       //
       // It also squares the composite from the other end. `+append` pads the
       // shorter part, and the note on the anchored half below records that
       // raising THAT one to 1055 only adds blank page inside it, because its
-      // pane sizes to its own rank count. Bringing this one down to 895 closes
+      // pane sizes to its own rank count. Bringing this one down to 878 closes
       // most of the same gap by shrinking the part that was actually taller.
-      paneHeight: 520,
+      paneHeight: 420,
       labelOffset: {
         // TOP RIGHT, not top left. The two landmark nodes are an allele and the
         // reference stretch it replaces, and this layout draws both of them in
         // the pane's top-left corner -- the caption there covered the second
         // ring and its badge outright.
+        //
+        // dy is measured from the canvas CENTRE, so it tracks paneHeight: at
+        // the old 600 it was -276, and -176 is the same distance below the top
+        // edge now the pane is 180 px shorter.
         dx: 180,
-        dy: -276,
+        dy: -176,
       },
       label: 'The same subgraph, force-directed',
       // THE RIGHT-CLICK ROUTE, folded in from the deleted hprc_node_menu.
