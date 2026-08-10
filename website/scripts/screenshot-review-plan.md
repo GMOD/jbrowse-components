@@ -760,3 +760,8 @@ channel), not a spec edit.
   relative to the reference propagated through the run in `placeOffReference`,
   and `computeEdgeCurves` picking endpoints from those. Then tighten the test
   back to a bare `expect([])`.
+
+  **One figure is waiting on this.** `pangenome/hprc_inversion` has no graph
+  panel because a reverse-complement edge is all such a panel would draw; add
+  one once this lands. That is the whole reason it is filed here rather than as
+  a figure debt.
