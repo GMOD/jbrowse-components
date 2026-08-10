@@ -40,14 +40,16 @@ test('sidebar row color swatches export', () => {
     { name: 'HG002', population: 'AFR' },
   ])
   model.setColorBy('population')
-  const colors = model.sources.map(s => s.color)
+  const colors = model.sources.map(s => s.color).filter(c => c !== undefined)
   expect(new Set(colors).size).toBe(2)
 
   const { container } = renderOverlay(model)
   for (const color of colors) {
-    expect(
-      container.querySelector(`rect[fill="${CSS.escape(color)}"]`),
-    ).toBeTruthy()
+    // jsdom has no `CSS`, so `CSS.escape` — which is what
+    // `unicorn/require-css-escape` autofixes this to — is a ReferenceError
+    // here. The values are the model's own color strings, not user input.
+    // eslint-disable-next-line unicorn/require-css-escape
+    expect(container.querySelector(`rect[fill="${color}"]`)).toBeTruthy()
   }
 })
 

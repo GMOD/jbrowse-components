@@ -153,6 +153,11 @@ export default defineConfig(
 
       // Uint8Array toBase64()/fromBase64() aren't widely-available baseline yet.
       'unicorn/prefer-uint8array-base64': 'off',
+      // Fires on `const drained = queue.splice(0)`, where the returned array
+      // IS the point — an atomic drain-and-clear. `.length = 0` would throw
+      // the elements away. The rule's premise only holds when the return value
+      // is discarded, and it does not check that.
+      'unicorn/no-unnecessary-splice': 'off',
 
       // === Conflicts with repo conventions (nest / ternaries over early return) ===
       'unicorn/prefer-early-return': 'off', // 74 — we prefer nesting over early return
@@ -163,6 +168,13 @@ export default defineConfig(
 
       // === Deferred: valid rules not adopted in this first pass. Enable
       // incrementally; the number is the violation count at deferral time. ===
+      // These five surfaced when the config started matching `**/*.ts` — the
+      // counts are from that first full run, not from a rule upgrade.
+      'unicorn/no-duplicate-loops': 'off', // 11 — `for (const x of xs.filter(…))`; a perf claim, not a correctness one
+      'unicorn/prefer-then-catch': 'off', // 7 — NOT a safe rewrite: `.then(a, b)` does not route a's own throw to b, `.then(a).catch(b)` does. Each site needs reading
+      'unicorn/no-useless-spread': 'off', // 6 (the other 8 were autofixable and are fixed)
+      'unicorn/prefer-scoped-selector': 'off', // 2
+      'unicorn/no-unnecessary-nested-ternary': 'off', // 1
       'unicorn/number-literal-case': 'off', // 618
       'unicorn/prefer-global-this': 'off', // 253
       'unicorn/catch-error-name': 'off', // 246
@@ -310,6 +322,28 @@ export default defineConfig(
     },
   },
   {
+    // ---------------------------------------------------------------------
+    // Backlog from the day this config started matching `**/*.ts`. Until then
+    // it linted 461 files of ~4900, so none of these rules had run on
+    // packages/*/src, plugins/*/src or products/*/src, and the first full run
+    // raised 1001 problems. The autofixable ~900 are fixed in that commit;
+    // these are what needs a human per site. Counts are from that run and this
+    // list is meant to shrink — same convention as the unicorn block above.
+    //
+    // Deliberately one line each rather than per-file allowlists: a burn-down
+    // that costs 25 lines of config to express is one nobody burns down.
+    // ---------------------------------------------------------------------
+    rules: {
+      'react-refresh/only-export-components': 'off', // 26 in 20 files — each exports a helper beside a component; fixing means splitting files and rewiring imports
+      '@eslint-react/naming-convention-ref-name': 'off', // 7, all in packages/core/src/util/usePanZoom.ts
+      '@eslint-react/use-state': 'off', // 3 — setters not named setX
+      '@eslint-react/set-state-in-effect': 'off', // 3 — a real smell; needs the effect rewritten, not renamed
+      '@eslint-react/no-context-provider': 'off', // 1 — React 19 `<Context>` over `<Context.Provider>`
+      '@eslint-react/no-use-context': 'off', // 1 — React 19 `use()` over `useContext()`
+      '@eslint-react/no-array-index-key': 'off', // 1
+    },
+  },
+  {
     // Node-side tooling, where printing to stdout IS the output. The last five
     // entries only became reachable when this config started matching `**/*.ts`
     // — `plugins/data-management/scripts/*.js` was the whole of the plugin
@@ -339,6 +373,19 @@ export default defineConfig(
     },
     rules: {
       'no-console': 'off',
+    },
+  },
+  {
+    // Jest specs run under node, so `process`, `__dirname` and friends are
+    // real. Without this the browser-only globals list makes `process.env` an
+    // undeclared variable, and unicorn's optional-chaining rule then reports a
+    // ReferenceError that cannot happen (`liveProxy.test.ts` reads
+    // `process.env.JBROWSE_UCSC_PROXY_URL?.replace(…)`).
+    files: ['**/*.test.{ts,tsx}', '**/tests/**/*.{ts,tsx}'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
     },
   },
   {

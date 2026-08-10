@@ -532,9 +532,8 @@ describe('forEachMismatchNumeric', () => {
           }
           soffset += len
           roffset += len
-        } else if (op === 'I') {
-          soffset += len
-        } else if (op === 'S') {
+        } else if (op === 'I' || op === 'S') {
+          // both consume query and not reference
           soffset += len
         } else if (op === 'D') {
           roffset += len

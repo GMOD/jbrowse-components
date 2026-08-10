@@ -100,7 +100,7 @@ function navToLocString(page: Page, loc: string) {
 
 function displayPhases(page: Page) {
   return page.evaluate(() =>
-    [...document.querySelectorAll('[data-display-phase]')].map(
+    [...document.querySelectorAll<HTMLElement>('[data-display-phase]')].map(
       el => el.dataset.displayPhase,
     ),
   )

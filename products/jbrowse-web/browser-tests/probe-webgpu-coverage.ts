@@ -82,7 +82,7 @@ async function readPage(page: Page) {
     const host = canvas.closest('[data-testid="pileup-display-done"]')
     const rect = canvas.getBoundingClientRect()
     const hostRect = host?.getBoundingClientRect()
-    const near = [...document.querySelectorAll('[data-testid]')]
+    const near = [...document.querySelectorAll<HTMLElement>('[data-testid]')]
       // An ancestor always "overlaps" the canvas and always by most of its
       // height, which is noise on every backend. Only siblings layered over it
       // can bleed into the capture.
@@ -101,8 +101,11 @@ async function readPage(page: Page) {
     // band. `near` can only find elements carrying a data-testid, and the rows
     // it fails to account for are exactly the question. Sampled at three x
     // positions because the chrome over the band is not full-width.
+    // `Element`, not `HTMLElement`: the callers include `elementsFromPoint`,
+    // which is typed to the former — so `.dataset` is not available here.
     const describe = (el: Element) => {
-      const testid = el.dataset.testid
+      // eslint-disable-next-line unicorn/dom-node-dataset
+      const testid = el.getAttribute('data-testid')
       const cls = el.className
       return testid
         ? `[${testid}]`

@@ -110,6 +110,7 @@ function layoutBands(
             // the two acen bands always point at each other, meeting at the
             // centromere: the p arm points right and the q arm left, and both
             // flip when reversed puts the p arm on the right
+            // eslint-disable-next-line unicorn/no-chained-comparison -- parenthesised XOR, not `a === b !== c`
             pointsRight: (index === firstAcenIdx) !== reversed,
           }
         : undefined

@@ -19,7 +19,9 @@ function openedOptions(feature: SimpleFeatureSerialized) {
   )
   fireEvent.mouseDown(within(container).getByRole('combobox'))
   return [
-    ...document.body.querySelectorAll('[data-testid^="sequence_type_"]'),
+    ...document.body.querySelectorAll<HTMLElement>(
+      '[data-testid^="sequence_type_"]',
+    ),
   ].map(el => el.dataset.testid!.replace('sequence_type_', ''))
 }
 

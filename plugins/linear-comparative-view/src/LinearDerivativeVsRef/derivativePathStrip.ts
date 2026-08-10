@@ -63,7 +63,7 @@ function allocateWidths(lengths: number[], available: number, min: number) {
     // any: equal blocks say "n segments" and nothing else, which is true.
     return lengths.map(() => available / n)
   }
-  const widths = Array.from<number>({ length: n }).fill(0)
+  const widths = Array.from({ length: n }, () => 0)
   const pool = new Set(lengths.map((_, i) => i))
   let free = available
   for (;;) {

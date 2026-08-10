@@ -15,10 +15,12 @@ test('keeps only the fields that describe the locus', () => {
       start: 0,
       end: 100,
       assemblyName: 'volvox',
-      // extra block fields (keys, offsets, widths) must not reach the snapshot
-      key: 'ctgA-0-100',
-      offsetPx: 12,
-      widthPx: 800,
+      // extra block fields (keys, offsets, widths) must not reach the snapshot.
+      // The spread is load-bearing: it is what gets these past TypeScript's
+      // excess-property check, so the test can hand in the wider object a real
+      // block is. Inlining the keys makes it a type error, not a cleanup.
+      // eslint-disable-next-line unicorn/no-useless-spread
+      ...{ key: 'ctgA-0-100', offsetPx: 12, widthPx: 800 },
     },
   ])
   expect(provenance.regions).toEqual([

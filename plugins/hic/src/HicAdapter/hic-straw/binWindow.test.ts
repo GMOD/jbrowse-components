@@ -92,7 +92,9 @@ describe('block selection covers the same window', () => {
     // `floor((end/binsize) - 1)` on the fractional quotient stopped at block 0.
     const region = { chr: '1', start: 500, end: 1050 }
     const nums = zoomData(100).getBlockNumbers(region, region, 8)
-    // same-chr blocks are keyed row*blockColumnCount + column
+    // same-chr blocks are keyed row*blockColumnCount + column, spelled out
+    // rather than folded so the two expectations read as the same formula
+    // eslint-disable-next-line unicorn/no-constant-zero-expression
     expect(nums).toContain(0 * 100 + 0)
     expect(nums).toContain(1 * 100 + 1)
   })

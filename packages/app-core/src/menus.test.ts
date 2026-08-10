@@ -251,7 +251,11 @@ describe('item contributions', () => {
         menuItem: item('Dotplot'),
       },
     ])
-    menus.map(m => m.menuItems())
+    // Called for the side effect of realizing each lazy menu; the mapped
+    // array was never read.
+    for (const m of menus) {
+      m.menuItems()
+    }
     expect(definitions[0]!.menuItems).toEqual([{ label: 'Open' }])
     expect(definitions[1]!.menuItems).toEqual([
       { label: 'Views', subMenu: [{ label: 'LGV' }] },

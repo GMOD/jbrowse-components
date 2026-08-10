@@ -271,7 +271,7 @@ async function waitForCaptureSettled(page: Page) {
       if (document.querySelector('[data-display-phase="loading"]')) {
         unsettled.push('display-phase=loading')
       }
-      const pending = document.querySelectorAll(pendingSelector)
+      const pending = document.querySelectorAll<HTMLElement>(pendingSelector)
       if (pending.length) {
         unsettled.push(
           `${pending.length} display(s) never reported done: ${[...pending]

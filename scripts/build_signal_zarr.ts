@@ -561,9 +561,15 @@ function writeLevel(
         buf[i] = Math.round(buf[i]! * roundTo) / roundTo
       }
     }
-    const gz = gzipSync(Buffer.from(buf.buffer, 0, buf.byteLength), {
-      level: 9,
-    })
+    // `buf.byteOffset`, not 0: they are equal only because `buf` is freshly
+    // allocated here. The day it becomes a subarray of a bigger buffer, a
+    // hardcoded 0 silently gzips somebody else's bytes.
+    const gz = gzipSync(
+      Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength),
+      {
+        level: 9,
+      },
+    )
     const file = join(outDir, path, 'c', '0', String(c))
     mkdirSync(dirname(file), { recursive: true })
     writeFileSync(file, gz)

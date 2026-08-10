@@ -118,8 +118,11 @@ export function findCanvasIn(container: HTMLElement) {
 export async function findDisplayById(displayId: string, timeout = 20000) {
   return waitFor(
     () => {
+      // No `CSS.escape` here, unlike the browser-tests copies: this runs in
+      // jsdom, which has no `CSS` object at all. Display ids are generated.
+      // eslint-disable-next-line unicorn/require-css-escape
       const el = document.querySelector<HTMLElement>(
-        `[data-display-id="${CSS.escape(displayId)}"][data-display-drawn="true"]`,
+        `[data-display-id="${displayId}"][data-display-drawn="true"]`,
       )
       if (!el) {
         throw new Error(`display ${displayId} has not painted`)

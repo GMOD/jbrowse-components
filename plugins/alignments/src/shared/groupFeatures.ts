@@ -205,7 +205,11 @@ function capGroups(groups: FeatureGroup[]) {
     features: overflow.flatMap(g => g.features),
   })
   if (untagged) {
-    groups.splice(-1, 0, untagged)
+    // Before the overflow group that was just pushed, so it stays last.
+    // Spelled `length - 1` rather than `-1`: `unicorn/no-confusing-array-splice`
+    // is right that `splice(-1, 0, x)` reads like "remove the last one".
+    // eslint-disable-next-line unicorn/prefer-negative-index -- the two rules disagree; clarity wins
+    groups.splice(groups.length - 1, 0, untagged)
   }
   return groups
 }
