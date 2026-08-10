@@ -58,7 +58,7 @@ export interface RenderSvgModel extends SvgExportable {
 
 export async function renderSvg(
   self: RenderSvgModel,
-  opts: ExportSvgDisplayOptions,
+  opts?: ExportSvgDisplayOptions,
 ) {
   return renderDisplaySvg(self, opts, MultiRowSvgBody)
 }
@@ -69,6 +69,17 @@ function MultiRowSvgBody({
   canvasWidth,
   opts,
 }: LgvSvgBodyProps<RenderSvgModel>) {
+  const state = {
+    ...self.renderState,
+    // canvasWidth is the block scissor bound, so it has to be the width this
+    // layer is actually painted at — see LgvSvgBodyProps.canvasWidth.
+    canvasWidth,
+    canvasHeight: height,
+  }
+  // From the user-selected export theme rather than the live on-screen palette,
+  // so a light export of a dark session stays light — plugin-maf's rule for the
+  // same glyph.
+  const insertionColor = resolvePalette({ configTheme: opts?.theme }).insertion
   return (
     <>
       <SvgClipRect
@@ -81,14 +92,6 @@ function MultiRowSvgBody({
           height={height}
           opts={opts}
           paint={ctx => {
-            const state = {
-              ...self.renderState,
-              // canvasWidth is the block scissor bound, so it has to be the
-              // width this layer is actually painted at — see
-              // LgvSvgBodyProps.canvasWidth.
-              canvasWidth,
-              canvasHeight: height,
-            }
             drawMultiRowBlocks(ctx, self.rpcDataMap, self.renderBlocks, state)
             // Same layer, after the blocks, so the export stacks them the way
             // the on-screen overlay composites over the canvas.
@@ -97,10 +100,7 @@ function MultiRowSvgBody({
               self.rpcDataMap,
               self.renderBlocks,
               state,
-              // From the user-selected export theme rather than the live
-              // on-screen palette, so a light export of a dark session stays
-              // light — plugin-maf's rule for the same glyph.
-              resolvePalette({ configTheme: opts?.theme }).insertion,
+              insertionColor,
             )
           }}
         />

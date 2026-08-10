@@ -1,15 +1,16 @@
 /* eslint-disable react-refresh/only-export-components */
 import { SvgColorLegend } from '@jbrowse/core/ui'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
   SvgClipRect,
   renderDisplaySvg,
 } from '@jbrowse/plugin-linear-genome-view'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
-import { useTheme } from '@mui/material'
 
 import {
   LABEL_BASELINE_RATIO,
+  LABEL_OVERLAY_BACKGROUND,
   renderedTextWidth,
 } from '../RenderFeatureDataRPC/constants.ts'
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
@@ -18,9 +19,12 @@ import {
   drawHighlightBoxes,
 } from './components/Canvas2DFeatureRenderer.ts'
 import { highlightBoxColors } from './components/highlightUtils.ts'
-import { forEachDisplayLabel } from './components/labelPositioning.ts'
+import {
+  LABEL_CULL_BUCKET_PX,
+  forEachDisplayLabel,
+  labelCullBand,
+} from './components/labelPositioning.ts'
 import { drawPeptidesForRegions } from './components/peptidePositioning.ts'
-import { LABEL_OVERLAY_BACKGROUND } from './components/sharedRendererConstants.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { CanvasColorLegend } from './baseModel.ts'
@@ -49,7 +53,7 @@ export interface RenderSvgModel extends SvgExportable {
 // on-screen, so the on-screen renderer doesn't draw them. SVG export must
 // bake them into the output, so they live here as a vector-only post-pass
 // that runs after drawFeatureBlocks paints the geometry.
-function paintLabel(ctx: Ctx2D, labels: ResolvedLabel[], fontSize: number) {
+function paintLabels(ctx: Ctx2D, labels: ResolvedLabel[], fontSize: number) {
   for (const { label, labelX, labelY } of labels) {
     if (label.isOverlay) {
       ctx.fillStyle = LABEL_OVERLAY_BACKGROUND
@@ -96,7 +100,11 @@ function CanvasFeaturesSvgBody({
   canvasWidth,
   opts,
 }: LgvSvgBodyProps<RenderSvgModel>) {
-  const theme = useTheme()
+  // The JBrowse palette, not Material UI's `useTheme`, for the same reason the
+  // on-screen `overlayBoxStyles` reads it: `highlight` is a JBrowse entry a bare
+  // Material theme doesn't have. `wrapSvgExport` mounts both providers from the
+  // export theme, so this is still the theme the user picked in the dialog.
+  const palette = usePalette()
   const visibleRegions = view.visibleRegions
   const renderPeptidesFlag = shouldRenderPeptideText(view.bpPerPx)
 
@@ -109,7 +117,6 @@ function CanvasFeaturesSvgBody({
   // Shared by the geometry pass and the highlight pass, so the boxes can't be
   // scissored against a different canvas than the glyphs they wrap.
   const renderState = { scrollY, canvasWidth, canvasHeight: height }
-  const highlightColor = theme.palette.highlight.main
   const fontSize = model.labelFontSize
   const colorLegend = model.colorLegend
   // One label context for both consumers: the highlight boxes reserve exactly
@@ -119,6 +126,16 @@ function CanvasFeaturesSvgBody({
     showDescriptions: model.renderedShowDescriptions,
     fontSize,
   }
+  // The export clips to the scrolled viewport (SvgClipRect below, `scrollY`
+  // above), so a label whose feature sits outside it is written into the file
+  // and then clipped away — on a fixed-height track scrolling over content many
+  // times its height, that is most of them. Culled with the DOM overlay's own
+  // band rather than a tighter export-only one: it is the band that ships on
+  // screen, so the export emits exactly the labels the user is looking at.
+  const cullBand = labelCullBand(
+    Math.floor(scrollY / LABEL_CULL_BUCKET_PX),
+    height,
+  )
 
   return (
     <SvgClipRect
@@ -139,43 +156,42 @@ function CanvasFeaturesSvgBody({
           )
         }}
       />
-      {/* Highlight boxes are on-screen DOM overlays the app canvas never paints,
-          so bake them in here (same highlight.main border/tint as
-          searchHighlightBox). Drawn over the features but under labels, matching
-          the on-screen layering. */}
+      {/* The three overlays the app canvas never paints — on-screen they are the
+          highlight boxes (a DOM layer), the floating labels (another) and the
+          peptide letters (their own canvas) — baked in here in the on-screen
+          stacking order: boxes over the glyphs, labels over the boxes, peptides
+          over both. One layer rather than three because the order within a
+          layer already gives that, and because `opts` is deliberately withheld:
+          all three stay vector even when `rasterizeLayers` is on, so exported
+          text and box edges remain crisp. */}
       <PaintLayer
         width={canvasWidth}
         height={height}
         paint={ctx => {
+          // Same highlight.main border/tint as the on-screen searchHighlightBox.
           drawHighlightBoxes(
             ctx,
             model.laidOutDataMap,
             renderBlocks,
             model.highlightedFeatureIdSet,
             renderState,
-            highlightBoxColors(highlightColor),
+            highlightBoxColors(palette.highlight.main),
             labelContext,
           )
-        }}
-      />
-      {/* Labels + peptides always vector — text should remain crisp even when
-          rasterizeLayers is on. */}
-      <PaintLayer
-        width={canvasWidth}
-        height={height}
-        paint={ctx => {
           ctx.font = `${fontSize}px sans-serif`
-          // Labels/peptides are laid out in absolute track px (no per-layer
-          // scrollY, unlike drawFeatureBlocks); shift the whole layer up by
-          // scrollY so text tracks the feature geometry when scrolled.
+          // Labels/peptides are laid out in absolute track px (drawHighlightBoxes
+          // above applies scrollY itself, as drawFeatureBlocks does); shift the
+          // rest of the layer up by scrollY so text tracks the feature geometry
+          // when scrolled.
           ctx.translate(0, -scrollY)
           forEachDisplayLabel(
             visibleRegions,
             model.laidOutDataMap,
             labelContext,
             (_, labels) => {
-              paintLabel(ctx, labels, fontSize)
+              paintLabels(ctx, labels, fontSize)
             },
+            cullBand,
           )
           // Same peptide walk the app canvas runs (drawPeptidesForRegions), so
           // the export can't drift from on-screen. Peptides need no cross-region

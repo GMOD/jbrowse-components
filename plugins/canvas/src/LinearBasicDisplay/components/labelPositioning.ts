@@ -16,15 +16,21 @@ import type { BpRegionBounds } from '@jbrowse/render-core/renderBlock'
 // Gap (px) between a feature's bottom and its floating name/description row.
 const LABEL_TOP_GAP_PX = 2
 
-// Vertical virtualization for the DOM floating-label overlay: labels whose
-// feature sits outside the visible viewport (± overscan) are never emitted as
-// DOM nodes. The band is quantized to LABEL_CULL_BUCKET_PX so the label build
-// stays decoupled from per-frame scrolling — a scroll tick must NOT rebuild the
-// label DOM (that decoupling is why the overlay reads a bucket index, not raw
-// scrollTop). Labels only rebuild once the user scrolls a full bucket, and the
-// one-bucket overscan on each side keeps the whole viewport covered for every
-// scrollTop within a bucket. The SVG export renders the full track and passes no
-// band, so it's unaffected.
+// Vertical virtualization for the floating labels: labels whose feature sits
+// outside the visible viewport (± overscan) are never emitted. The band is
+// quantized to LABEL_CULL_BUCKET_PX so the label build stays decoupled from
+// per-frame scrolling — a scroll tick must NOT rebuild the label DOM (that
+// decoupling is why the overlay reads a bucket index, not raw scrollTop).
+// Labels only rebuild once the user scrolls a full bucket, and the one-bucket
+// overscan on each side keeps the whole viewport covered for every scrollTop
+// within a bucket.
+//
+// The SVG export passes this same band (renderSvg), computed from `scrollTop`
+// rather than the bucket getter. It has no per-frame rebuild to avoid, but it
+// clips to the same scrolled viewport, so without a band it writes every label
+// in the whole content height into the file and then clips all but a screenful
+// away. Sharing the band is also what keeps the export emitting exactly the
+// labels on screen.
 export const LABEL_CULL_BUCKET_PX = 400
 
 export interface LabelCullBand {

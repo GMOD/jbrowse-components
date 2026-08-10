@@ -1,5 +1,9 @@
+// JBrowse's own `alpha`, not Material UI's — same `rgba(r, g, b, a)` output, but
+// this module is reached from the pure Canvas2D painter and the SVG export, and
+// neither should drag @mui/material along. `overlayBoxStyles`, the other half of
+// these colors, already imports it from here.
+import { alpha } from '@jbrowse/core/ui/palette'
 import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
-import { alpha } from '@mui/material'
 
 import type { BpRegionBounds } from '@jbrowse/render-core/renderBlock'
 

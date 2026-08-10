@@ -435,4 +435,63 @@ describe('renderSvg', () => {
     )
     expect(html).not.toContain('rgb(255,177,29)')
   })
+
+  // The export clips to the display's own height, so a label on a feature far
+  // down a tall track's content is written into the file and then clipped away.
+  // It shares the DOM overlay's cull band (labelCullBand) so it emits the same
+  // labels the user is looking at; without it a fixed-height track over a few
+  // thousand px of content exported an order of magnitude more <text> nodes
+  // than it showed.
+  it('omits labels whose feature is scrolled far outside the exported viewport', async () => {
+    const label = (text: string) => ({
+      text,
+      relativeY: 0,
+      color: '#000',
+      textWidth: 40,
+    })
+    const data = makeFeatureData({
+      ...packFixtureRects([{ startBp: 1400, endBp: 1600 }]),
+      flatbushItems: [
+        makeFlatbushItem({ featureId: 'near', startBp: 1400, endBp: 1600 }),
+        makeFlatbushItem({ featureId: 'far', startBp: 1400, endBp: 1600 }),
+      ],
+      floatingLabelsData: {
+        near: {
+          featureId: 'near',
+          minX: 1400,
+          maxX: 1600,
+          topY: 0,
+          featureHeight: 10,
+          nameLabel: label('IN-VIEWPORT'),
+        },
+        // 5000px down a track exported 100px tall: outside the band on every
+        // scrollTop this test uses
+        far: {
+          featureId: 'far',
+          minX: 1400,
+          maxX: 1600,
+          topY: 5000,
+          featureHeight: 10,
+          nameLabel: label('OFF-VIEWPORT'),
+        },
+      },
+      featureCount: 2,
+    })
+    const html = renderResult(
+      await renderSvg(makeModel({ laidOutDataMap: new Map([[0, data]]) })),
+    )
+    expect(html).toContain('IN-VIEWPORT')
+    expect(html).not.toContain('OFF-VIEWPORT')
+
+    // ...and the band follows scrollTop rather than being pinned to the track
+    // top, so scrolling down to the far feature exports it and drops the near
+    // one.
+    const scrolled = renderResult(
+      await renderSvg(
+        makeModel({ laidOutDataMap: new Map([[0, data]]), scrollTop: 5000 }),
+      ),
+    )
+    expect(scrolled).toContain('OFF-VIEWPORT')
+    expect(scrolled).not.toContain('IN-VIEWPORT')
+  })
 })
