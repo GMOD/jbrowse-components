@@ -167,3 +167,32 @@ ls -d plugins/breakpoint-split-view/node_modules/@jbrowse/alignments-core  # con
 The control matters: an empty result means nothing unless a dep you kept is
 still linked. With both confirmed, typecheck is a real check. Without it, the
 greps are carrying the whole claim.
+
+## What a release shipped is in its lockfile, not its version range
+
+To answer "does version X have this fix?", read the tag's lockfile:
+
+```sh
+git show v4.3.0:pnpm-lock.yaml | grep -A2 'gff-nostream:'
+```
+
+A `package.json` range says what *would* resolve on a fresh install today. pnpm
+builds from the lockfile, so the range and what actually shipped can be several
+versions apart, and the gap is widest exactly when it matters — during a run of
+fast patch releases, which is when a bug is most likely to have landed and been
+fixed inside one.
+
+This is not hypothetical. `gff-nostream` 3.0.6–3.0.9 silently dropped shared-ID
+CDS continuation lines, so a GENCODE transcript parsed to one CDS of its four
+while every exon survived, and consumers translating from the full CDS set got a
+short protein with no error. `@jbrowse/plugin-gff3@4.3.0` declares `^3.0.5`,
+which resolved to 3.0.9 on the day it was published — from which it follows, and
+is wrong, that the release shipped the bug. Its lockfile pinned **3.0.5**, two
+versions below the window. No release ever carried it; `main` did, for thirteen
+days. Reasoning from the range produced a confident wrong answer twice before
+anyone opened the lockfile.
+
+The prior worth keeping alongside the command: a common data shape breaking in a
+release is *loud*. Shared-ID CDS is most of GENCODE and RefSeq. If a claim
+implies a release silently mangled that and nobody noticed, the claim is far more
+likely wrong than the silence is.
