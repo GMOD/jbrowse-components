@@ -33,7 +33,11 @@
 // It REQUIRES the page to declare, as function declarations (hoisted, so they
 // may appear after this block):
 //   renderCard(entry)   the HTML for one card, including a .note field, an
-//                       .unsaved flag, a .cardmsg box and data-name on the root
+//                       .unsaved flag, a .cardmsg box and data-name on the root.
+//                       Its verdict buttons are .approve and .deny and wear
+//                       .active for the status in force — the client toggles
+//                       that class the instant one is clicked, so the press is
+//                       visible before the write it is waiting on lands
 //   renderCounts()      repaint whatever the header counts. No arguments: it is
 //                       called after every single-card repaint too, so anything
 //                       it counts against it has to read for itself
@@ -321,9 +325,38 @@ const writeChain = new Map()
 
 function queueWrite(name, fn) {
   const run = (writeChain.get(name) || Promise.resolve()).then(fn)
-  // each caller reports its own failure; the chain itself must survive one
-  writeChain.set(name, run.catch(() => {}))
-  return run
+  // Each caller reports its own failure in the card's own message box, so the
+  // promise itself carries nothing anyone reads — and the inline onclick that
+  // started it has nowhere to report a rejection but the console. Swallow once,
+  // here, which is also what keeps the chain alive past a failed write.
+  const settled = run.catch(() => {})
+  writeChain.set(name, settled)
+  return settled
+}
+
+// Show the press before the round trip that confirms it. The card is only
+// rebuilt once the server answers, which is ~20ms against an idle server and
+// several hundred while a page load's worth of figures is still streaming down
+// the same six connections — and a button that stays unpressed that long reads
+// as a click that missed, so the reviewer clicks again. That second click is
+// harmless (the writes are serialized per card and the second carries the
+// precondition the first just established), which is exactly why the tool felt
+// like it needed two clicks rather than looking broken.
+//
+// Class-only, so nothing moves under the pointer, and deliberately not recorded
+// anywhere: the repaint that follows renders from \\\`data\\\` and overwrites this
+// with whatever actually landed, including on a failure or a conflict.
+function markPending(name, status) {
+  const el = cardOf(name)
+  for (const [cls, active] of [
+    ['approve', 'good'],
+    ['deny', 'bad'],
+  ]) {
+    const btn = el && el.querySelector('button.' + cls)
+    if (btn) {
+      btn.classList.toggle('active', status === active)
+    }
+  }
 }
 
 async function setVerdict(btn, status) {
@@ -332,6 +365,7 @@ async function setVerdict(btn, status) {
   if (!entry) {
     return
   }
+  markPending(name, status)
   await queueWrite(name, async () => {
     // Read the note now rather than when the button was clicked: a note save
     // ahead of us in the queue may have re-rendered the card. The card can also
@@ -471,6 +505,7 @@ async function clearVerdict(btn) {
   if (!entry) {
     return
   }
+  markPending(name, null)
   await queueWrite(name, async () => {
     try {
       const result = await postJson('/api/verdict/clear', {
@@ -506,8 +541,19 @@ async function clearVerdict(btn) {
 // runs after the click, which is dispatched in the same task as the mouseup.
 let pointerHeld = false
 const deferredCards = new Set()
+let deferredTimer = null
 
+// The one invariant: a card is never rebuilt between a mousedown and its
+// mouseup. Every caller here is an event that can land inside a press, and
+// \\\`pointerHeld\\\` is the only thing that knows. This used to be checked by the
+// callers, and the pointerdown handler called it WITHOUT checking — as a safety
+// net for a stranded card — so a press that arrived with anything deferred had
+// its own button replaced out from under it before the click. That is the very
+// bug the deferral exists to prevent, reintroduced by its own safety net.
 function flushDeferredCards() {
+  if (pointerHeld || !deferredCards.size) {
+    return
+  }
   const names = [...deferredCards]
   deferredCards.clear()
   for (const name of names) {
@@ -515,11 +561,24 @@ function flushDeferredCards() {
   }
 }
 
-// capture, so a card's own handlers cannot stop these from being seen. The flush
-// on pointerdown is the safety net for a release the page never saw — a mouseup
-// outside the window, say — which would otherwise strand a card unpainted.
+// The safety net, now that pointerdown is not it: a press whose release the page
+// never saw (a mouseup over another window, a drag the OS took over) leaves
+// \\\`pointerHeld\\\` set, and the card deferred by it stranded. Re-arms rather than
+// repainting under a pointer that is still down, so a stuck flag costs a delayed
+// repaint instead of an eaten click.
+function scheduleFlush() {
+  clearTimeout(deferredTimer)
+  deferredTimer = setTimeout(() => {
+    if (pointerHeld) {
+      scheduleFlush()
+    } else {
+      flushDeferredCards()
+    }
+  }, 500)
+}
+
+// capture, so a card's own handlers cannot stop these from being seen
 addEventListener('pointerdown', () => {
-  flushDeferredCards()
   pointerHeld = true
 }, true)
 for (const ev of ['pointerup', 'pointercancel']) {
@@ -532,6 +591,7 @@ for (const ev of ['pointerup', 'pointercancel']) {
 function updateCard(name) {
   if (pointerHeld) {
     deferredCards.add(name)
+    scheduleFlush()
   } else {
     paintCard(name)
   }
@@ -546,13 +606,20 @@ function paintCard(name) {
     // Carry the note field's live value across the swap. On a write that landed
     // this is exactly what was saved anyway; on one that failed or conflicted
     // it is the difference between "try again" and losing the words typed.
-    const typed = el.querySelector('.note').value
-    // record before the swap so the rebuilt card renders the right draft hint
-    setDraft(name, typed)
+    // Guarded like applyPendingNotes: a renderer without a note field is a card
+    // with nothing to carry, not a reason to leave every deferred card in the
+    // same flush unpainted.
+    const typed = el.querySelector('.note')?.value
+    if (typed !== undefined) {
+      // record before the swap so the rebuilt card renders the right draft hint
+      setDraft(name, typed)
+    }
     el.outerHTML = renderCard(entry)
     const note = cardOf(name).querySelector('.note')
-    note.value = typed
-    autosizeNote(note)
+    if (note && typed !== undefined) {
+      note.value = typed
+      autosizeNote(note)
+    }
   }
   renderCounts()
 }
