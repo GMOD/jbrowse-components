@@ -325,37 +325,22 @@ more divergent species.
 
 ## Pangenome depth and per-strain presence
 
-These two projections run the same commands as the pggb tutorial's
+[`odgi depth`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_depth.html)
+counts how many paths traverse the graph under each K12 base, and
+[`odgi pav`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_pav.html)
+splits that aggregate per strain. Both run as they do in the pggb tutorial's
 [depth](/docs/tutorials/pangenome_ecoli#pangenome-depth-projection-core-vs-accessory)
 and [per-strain presence](/docs/tutorials/pangenome_ecoli#per-strain-presence)
-sections, on the Cactus `.og` instead of the pggb GFA. Only the path names
-differ: the reference path is `K12#0#chr`, and the non-reference strains carry a
-trailing subpath tag (`Sakai#0#chr#0`), so filter on those.
+sections, over `mc/ecoli.full.og` instead of the pggb GFA, and load as the same
+[`QuantitativeTrack`](/docs/config_guides/quantitative_track) and
+[`MultiQuantitativeTrack`](/docs/user_guides/multiquantitative_track). Two names
+change: the reference path is `K12#0#chr`, and each non-reference strain carries
+a trailing subpath tag (`Sakai#0#chr#0`), so the per-strain filter has to match
+a prefix rather than the whole name. The
+[build script](#reproduce-it-end-to-end) runs both.
 
-[`odgi depth`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_depth.html)
-counts how many paths traverse the graph under each K12 base. It sits near the
-strain count over shared sequence and drops toward 1 over K12-private accessory
-sequence:
-
-```bash
-reflen=$(awk '!/^>/{c+=length($0)} END{print c}' K12.fa)
-awk -v len="$reflen" 'BEGIN{for(s=0;s<len;s+=500){e=s+500; if(e>len)e=len; print "K12#0#chr\t"s"\t"e}}' \
-  > depth_windows.bed
-printf 'chr\t%s\n' "$reflen" > chrom.sizes
-
-in_cactus odgi depth -i /data/mc/ecoli.full.og -b /data/depth_windows.bed \
-  | awk -v OFS='\t' '$1=="K12#0#chr" && $4+0==$4 {print "chr",$2,$3,$4}' \
-  | sort -k1,1 -k2,2n > ecoli_cactus_depth.bedgraph
-bedGraphToBigWig ecoli_cactus_depth.bedgraph chrom.sizes ecoli_cactus_depth.bw
-```
-
-Load the bigWig as a
-[`QuantitativeTrack`](/docs/config_guides/quantitative_track) on K12. The
-aggregate curve says how many strains cover a base, but not which are missing,
-so pair it with the per-strain split below.
-
-What it counts is path **steps**, not strains, so a repeat the graph folded onto
-one run of nodes reads above the strain count: every path carrying several
+What depth counts is path **steps**, not strains, so a repeat the graph folded
+onto one run of nodes reads above the strain count: every path carrying several
 copies walks that run several times. That is where the two builders part company
 on identical input, and it is the one difference between them visible in a
 single frame. seqwish folds the rRNA copies together, so the pggb curve runs
@@ -375,22 +360,7 @@ and not on the pggb one. The pggb tutorial reads the same operon the other way,
 as
 [several query segments landing on one reference span](/docs/tutorials/pangenome_ecoli#the-same-picture-read-out-of-the-graph).
 
-[`odgi pav`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_pav.html)
-splits that aggregate per strain. Slice each non-K12 strain's rows into its own
-bigWig and load the set as one
-[`MultiQuantitativeTrack`](/docs/user_guides/multiquantitative_track):
-
-```bash
-in_cactus odgi pav -i /data/mc/ecoli.full.og -b /data/depth_windows.bed > pav.tsv
-for strain in Sakai CFT073 NCTC86 IAI39; do
-  group=$(awk -F'\t' -v s="$strain" 'NR>1 && $5 ~ "^"s"#" {print $5; exit}' pav.tsv)
-  awk -F'\t' -v OFS='\t' -v g="$group" '$5==g && $6+0==$6 {print "chr",$2,$3,$6}' \
-    pav.tsv | sort -k1,1 -k2,2n > "ecoli_cactus_pav_$strain.bedgraph"
-  bedGraphToBigWig "ecoli_cactus_pav_$strain.bedgraph" chrom.sizes "ecoli_cactus_pav_$strain.bw"
-done
-```
-
-Drawn under the aggregate curve, the rows say which strain accounts for each
+Drawn under the aggregate curve, the pav rows say which strain accounts for each
 dip: one falls to 0 over its own accessory stretch while the others hold at 1.
 The picture is the one the pggb tutorial already shows
 ([per-strain presence](/docs/tutorials/pangenome_ecoli#per-strain-presence)),
