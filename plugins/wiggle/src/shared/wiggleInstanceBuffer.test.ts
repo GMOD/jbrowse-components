@@ -1,6 +1,7 @@
 import {
-  FIELD_OFFSET_F32,
-  INSTANCE_STRIDE_F32,
+  INSTANCE_OFFSET_F32,
+  INSTANCE_OFFSET_U32,
+  INSTANCE_STRIDE_WORDS,
 } from './shaders/wiggle.generated.ts'
 import { interleaveInstances } from './wiggleInstanceBuffer.ts'
 
@@ -30,14 +31,14 @@ function makeSource(
 function readInstance(buf: ArrayBuffer, i: number) {
   const f32 = new Float32Array(buf)
   const u32 = new Uint32Array(buf)
-  const base = i * INSTANCE_STRIDE_F32
+  const base = i * INSTANCE_STRIDE_WORDS
   return {
-    score: f32[base + FIELD_OFFSET_F32.score]!,
-    prevScore: f32[base + FIELD_OFFSET_F32.prevScore]!,
-    nextScore: f32[base + FIELD_OFFSET_F32.nextScore]!,
-    prevStart: u32[base + FIELD_OFFSET_F32.prevStartEnd]!,
-    prevEnd: u32[base + FIELD_OFFSET_F32.prevStartEnd + 1]!,
-    prevScoreLine: f32[base + FIELD_OFFSET_F32.prevScoreLine]!,
+    score: f32[base + INSTANCE_OFFSET_F32.score]!,
+    prevScore: f32[base + INSTANCE_OFFSET_F32.prevScore]!,
+    nextScore: f32[base + INSTANCE_OFFSET_F32.nextScore]!,
+    prevStart: u32[base + INSTANCE_OFFSET_U32.prevStartEnd]!,
+    prevEnd: u32[base + INSTANCE_OFFSET_U32.prevStartEnd + 1]!,
+    prevScoreLine: f32[base + INSTANCE_OFFSET_F32.prevScoreLine]!,
   }
 }
 

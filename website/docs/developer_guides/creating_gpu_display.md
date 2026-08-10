@@ -201,8 +201,12 @@ float4 fs_main(VsOut fragIn) : SV_Target {
 Run `pnpm gen:shaders` after every edit. This emits `score.generated.ts` with:
 
 - `WGSL_SOURCE`, `GLSL_VERTEX`, `GLSL_FRAGMENT`
-- `INSTANCE_STRIDE_BYTES` / `FIELD_OFFSET_F32` and a typed `packInstances()`
-  that interleaves your parallel arrays into one instance buffer
+- `INSTANCE_STRIDE_BYTES` / `INSTANCE_STRIDE_WORDS` and a typed
+  `packInstances()` that interleaves your parallel arrays into one instance
+  buffer
+- `INSTANCE_OFFSET_F32` / `_U32` / `_I32` — per-field word offsets, split by the
+  typed array each field's Slang type takes, for when you need your own pack
+  loop instead of `packInstances()`
 - `UNIFORMS_SIZE_BYTES`, `UNIFORM_OFFSET_F32` (Float32 indices), and a typed
   `writeUniforms()` function
 - `GL_ATTRIBUTES` for WebGL2 binding

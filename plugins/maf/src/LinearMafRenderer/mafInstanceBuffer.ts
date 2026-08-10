@@ -6,8 +6,8 @@ import {
   resolveCellPacked,
 } from './resolveCellColor.ts'
 import {
-  FIELD_OFFSET_F32,
-  INSTANCE_STRIDE_F32,
+  INSTANCE_OFFSET_U32,
+  INSTANCE_STRIDE_WORDS,
 } from './shaders/maf.iface.generated.ts'
 
 import type { MafBlock } from './mafRenderingBackendTypes.ts'
@@ -59,21 +59,21 @@ class InstanceWriter {
 
   constructor(initialCapacity: number) {
     this.capacity = Math.max(1, initialCapacity)
-    this.u32 = new Uint32Array(this.capacity * INSTANCE_STRIDE_F32)
+    this.u32 = new Uint32Array(this.capacity * INSTANCE_STRIDE_WORDS)
   }
 
   push(startBp: number, endBp: number, rowIndex: number, color: number) {
     if (this.count === this.capacity) {
       this.capacity *= 2
-      const next = new Uint32Array(this.capacity * INSTANCE_STRIDE_F32)
+      const next = new Uint32Array(this.capacity * INSTANCE_STRIDE_WORDS)
       next.set(this.u32)
       this.u32 = next
     }
-    const base = this.count * INSTANCE_STRIDE_F32
-    this.u32[base + FIELD_OFFSET_F32.startBp] = startBp
-    this.u32[base + FIELD_OFFSET_F32.endBp] = endBp
-    this.u32[base + FIELD_OFFSET_F32.rowIndex] = rowIndex
-    this.u32[base + FIELD_OFFSET_F32.color] = color
+    const base = this.count * INSTANCE_STRIDE_WORDS
+    this.u32[base + INSTANCE_OFFSET_U32.startBp] = startBp
+    this.u32[base + INSTANCE_OFFSET_U32.endBp] = endBp
+    this.u32[base + INSTANCE_OFFSET_U32.rowIndex] = rowIndex
+    this.u32[base + INSTANCE_OFFSET_U32.color] = color
     this.count++
   }
 
@@ -84,7 +84,7 @@ class InstanceWriter {
   // holding several MB of dead tail per region for the session.
   finish() {
     return {
-      buffer: this.u32.slice(0, this.count * INSTANCE_STRIDE_F32),
+      buffer: this.u32.slice(0, this.count * INSTANCE_STRIDE_WORDS),
       count: this.count,
     }
   }

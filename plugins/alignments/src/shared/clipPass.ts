@@ -29,8 +29,9 @@ export const CLIP_PASS = slangPass({
 export function packClips(data: CigarUploadData): ArrayBuffer {
   const { insEnd, scEnd, hcEnd } = interbaseRangeEnds(data)
   const count = data.numSoftclips + data.numHardclips
-  const F = clipShader.FIELD_OFFSET_F32
-  const s32 = clipShader.INSTANCE_STRIDE_F32
+  const F_F32 = clipShader.INSTANCE_OFFSET_F32
+  const F_U32 = clipShader.INSTANCE_OFFSET_U32
+  const s32 = clipShader.INSTANCE_STRIDE_WORDS
   const buf = new ArrayBuffer(count * clipShader.INSTANCE_STRIDE_BYTES)
   const u32 = new Uint32Array(buf)
   const f32 = new Float32Array(buf)
@@ -39,10 +40,10 @@ export function packClips(data: CigarUploadData): ArrayBuffer {
   const freq = data.interbaseFrequencies
   for (let i = insEnd; i < hcEnd; i++) {
     const o = (i - insEnd) * s32
-    u32[o + F.position] = pos[i]!
-    u32[o + F.y] = ys[i]!
-    f32[o + F.frequency] = freq[i]! / 255
-    u32[o + F.kind] = i < scEnd ? CLIP_KIND_SOFT : CLIP_KIND_HARD
+    u32[o + F_U32.position] = pos[i]!
+    u32[o + F_U32.y] = ys[i]!
+    f32[o + F_F32.frequency] = freq[i]! / 255
+    u32[o + F_U32.kind] = i < scEnd ? CLIP_KIND_SOFT : CLIP_KIND_HARD
   }
   return buf
 }

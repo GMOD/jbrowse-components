@@ -170,7 +170,7 @@ describe('emitInterface instances', () => {
 
   test('computes stride and field word offsets', () => {
     expect(out).toContain('export const INSTANCE_STRIDE_BYTES = 16')
-    expect(out).toContain('export const INSTANCE_STRIDE_F32 = 4')
+    expect(out).toContain('export const INSTANCE_STRIDE_WORDS = 4')
     expect(out).toContain('pos: 0,')
     expect(out).toContain('id: 2,')
     expect(out).toContain('kind: 3,')
@@ -221,8 +221,12 @@ describe('emitInterface instances', () => {
 
   // The flat map is still emitted: too many call sites read it, and a packer
   // interleaving several sources into one buffer legitimately wants it.
-  test('keeps the flat FIELD_OFFSET_F32 map alongside', () => {
-    expect(out).toContain('export const FIELD_OFFSET_F32 = {')
+  // The flat map is gone rather than deprecated. Keeping it would have left
+  // both an unchecked way to do this and `_F32` meaning two different things in
+  // adjacent constants — words there, a typed-array view in UNIFORM_OFFSET_F32.
+  test('emits no flat offset map', () => {
+    expect(out).not.toContain('FIELD_OFFSET_F32')
+    expect(out).not.toContain('INSTANCE_STRIDE_F32')
   })
 })
 

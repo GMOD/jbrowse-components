@@ -2,7 +2,7 @@ import {
   interleaveInstances,
   patchInstanceColors,
 } from './instanceInterleave.ts'
-import { FIELD_OFFSET_F32 as F } from './shaders/dotplot.iface.generated.ts'
+import { INSTANCE_OFFSET_F32 as F_F32 } from './shaders/dotplot.iface.generated.ts'
 
 import type { DotplotGeometryData } from './dotplotRenderingBackendTypes.ts'
 
@@ -62,9 +62,9 @@ describe('interleaveInstances', () => {
 
     const f = new Float32Array(interleaveInstances(data))
 
-    expect(f[F.x1]).toBe(100)
-    expect(f[F.y1]).toBe(200)
-    expect(f[F.x2]).toBe(150)
-    expect(f[F.y2]).toBe(250)
+    expect(f[F_F32.x1]).toBe(100)
+    expect(f[F_F32.y1]).toBe(200)
+    expect(f[F_F32.x2]).toBe(150)
+    expect(f[F_F32.y2]).toBe(250)
   })
 })

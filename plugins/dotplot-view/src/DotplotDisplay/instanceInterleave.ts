@@ -1,7 +1,8 @@
 import {
-  FIELD_OFFSET_F32,
+  INSTANCE_OFFSET_F32,
+  INSTANCE_OFFSET_U32,
   INSTANCE_STRIDE_BYTES,
-  INSTANCE_STRIDE_F32,
+  INSTANCE_STRIDE_WORDS,
 } from './shaders/dotplot.iface.generated.ts'
 
 import type { DotplotGeometryData } from './dotplotRenderingBackendTypes.ts'
@@ -28,12 +29,12 @@ export function interleaveInstances(data: DotplotGeometryData) {
   const u32 = new Uint32Array(buf)
 
   for (let i = 0; i < n; i++) {
-    const off = i * INSTANCE_STRIDE_F32
-    f[off + FIELD_OFFSET_F32.x1] = x1[i]! - baseH
-    f[off + FIELD_OFFSET_F32.y1] = y1[i]! - baseV
-    f[off + FIELD_OFFSET_F32.x2] = x2[i]! - baseH
-    f[off + FIELD_OFFSET_F32.y2] = y2[i]! - baseV
-    u32[off + FIELD_OFFSET_F32.color] = colors[i]!
+    const off = i * INSTANCE_STRIDE_WORDS
+    f[off + INSTANCE_OFFSET_F32.x1] = x1[i]! - baseH
+    f[off + INSTANCE_OFFSET_F32.y1] = y1[i]! - baseV
+    f[off + INSTANCE_OFFSET_F32.x2] = x2[i]! - baseH
+    f[off + INSTANCE_OFFSET_F32.y2] = y2[i]! - baseV
+    u32[off + INSTANCE_OFFSET_U32.color] = colors[i]!
   }
   return buf
 }
@@ -48,6 +49,6 @@ export function interleaveInstances(data: DotplotGeometryData) {
 export function patchInstanceColors(buf: ArrayBuffer, colors: Uint32Array) {
   const u32 = new Uint32Array(buf)
   for (let i = 0, n = colors.length; i < n; i++) {
-    u32[i * INSTANCE_STRIDE_F32 + FIELD_OFFSET_F32.color] = colors[i]!
+    u32[i * INSTANCE_STRIDE_WORDS + INSTANCE_OFFSET_U32.color] = colors[i]!
   }
 }

@@ -942,17 +942,29 @@ while a *declared* binding the table doesn't mention is one nothing would bind.
 This is what a `SLANG_VERSION` bump would trip if the sampler expansion — the one
 index the codegen invents, `index + 1` — ever changed.
 
-**Offsets come in two flavours, and `_F32` means different things in each.**
-`FIELD_OFFSET_F32` / `INSTANCE_STRIDE_F32` are in 4-byte *words* and cover every
-instance field whatever its type; `UNIFORM_OFFSET_F32` and
-`INSTANCE_OFFSET_F32` / `_U32` / `_I32` are per *view*, holding only the fields
-whose Slang type takes that typed array. Reach for the per-view maps in a new
-hand-written packer — the ~190 sites that can't use `packInstances()` because
-they index a second array or scale on the way in — so the destination view is the
-shader's choice rather than the packer's. `packages/alignments-core`'s coverage
-packers are the worked example: they used to head a prose restatement of each
-struct (`[position(u32), yOffset(f32), …] = 20 bytes`) because a `layout-out`
-artifact carried no types at all.
+**One suffix, one meaning: `_BYTES` / `_WORDS` are units, `_F32` / `_U32` /
+`_I32` are typed-array views.** So the layout surface is `INSTANCE_STRIDE_BYTES`,
+`INSTANCE_STRIDE_WORDS`, and `INSTANCE_OFFSET_F32` / `_U32` / `_I32` — each
+offset map holding only the fields whose Slang type takes that view, matching
+`UNIFORM_OFFSET_*`.
+
+It was not always: a flat `FIELD_OFFSET_F32` covered every instance field
+regardless of type, where `_F32` meant *words*, so two adjacent generated
+constants used one suffix for opposite things. Packing through it meant choosing
+the destination view by hand, and `f32[o + F.position]` on a `uint position`
+compiled and wrote a float bit pattern the shader read as an enormous integer.
+About 140 call sites did it correctly and nothing checked them. Both the flat map
+and `INSTANCE_STRIDE_F32` are **gone**, not deprecated — leaving either would
+have kept the ambiguous suffix in the vocabulary and a second, unchecked way to
+do the same thing. A hand-written packer (one that can't use `packInstances()`
+because it indexes a second array or scales on the way in) now names the view it
+writes through, and naming the wrong one does not compile.
+
+`packages/alignments-core`'s coverage packers are the worked example of why this
+matters most at a distance: that package deliberately can't import the plugin
+owning the `.slang`, its `layout-out` artifact carried no type information at
+all, and so each packer headed a prose restatement of the struct
+(`[position(u32), yOffset(f32), …] = 20 bytes`) that nothing could check.
 
 Layout: display-specific shaders in
 `plugins/<plugin>/src/<display>/shaders/<name>.slang`; per-plugin shared in

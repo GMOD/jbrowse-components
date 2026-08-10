@@ -93,7 +93,7 @@ Both paths must agree that:
 | Last feature         | `lineTo(x2, zeroY)`                   | `nextScore=0` → `v4–v5` drops |
 
 Tests in `Canvas2DWiggleRenderer.test.ts` lock the Canvas behavior;
-`gpuWiggleRenderer.test.ts` (using the slang-codegen `FIELD_OFFSET_F32` map)
+`gpuWiggleRenderer.test.ts` (using the slang-codegen `INSTANCE_OFFSET_*` maps)
 locks the per-instance encoding.
 
 ## Why `nextScore = score` is intentional

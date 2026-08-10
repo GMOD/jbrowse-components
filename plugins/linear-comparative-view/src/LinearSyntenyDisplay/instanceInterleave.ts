@@ -1,7 +1,8 @@
 import {
-  FIELD_OFFSET_F32,
+  INSTANCE_OFFSET_F32,
+  INSTANCE_OFFSET_U32,
   INSTANCE_STRIDE_BYTES,
-  INSTANCE_STRIDE_F32,
+  INSTANCE_STRIDE_WORDS,
 } from './shaders/syntenyFillStraight.iface.generated.ts'
 import {
   isCigarKind,
@@ -33,12 +34,12 @@ export function interleaveInstances(data: SyntenyInstanceData) {
   const u32 = new Uint32Array(buf)
 
   for (let i = 0; i < n; i++) {
-    const off = i * INSTANCE_STRIDE_F32
-    f[off + FIELD_OFFSET_F32.bp1] = bp1[i]!
-    f[off + FIELD_OFFSET_F32.bp2] = bp2[i]!
-    f[off + FIELD_OFFSET_F32.bp3] = bp3[i]!
-    f[off + FIELD_OFFSET_F32.bp4] = bp4[i]!
-    u32[off + FIELD_OFFSET_F32.color] = colors[i]!
+    const off = i * INSTANCE_STRIDE_WORDS
+    f[off + INSTANCE_OFFSET_F32.bp1] = bp1[i]!
+    f[off + INSTANCE_OFFSET_F32.bp2] = bp2[i]!
+    f[off + INSTANCE_OFFSET_F32.bp3] = bp3[i]!
+    f[off + INSTANCE_OFFSET_F32.bp4] = bp4[i]!
+    u32[off + INSTANCE_OFFSET_U32.color] = colors[i]!
     // featureId goes through the Float32 view (shader reads it as a float
     // attribute + compares to the float hovered/clickedFeatureId uniforms), so
     // it's exact only to 2^24 ~= 16.7M features. Past that, adjacent ids
@@ -46,9 +47,9 @@ export function interleaveInstances(data: SyntenyInstanceData) {
     // Genome-size-independent; likeliest to surface on dense all-vs-all PAF.
     // Fix = make featureId a uint attribute+uniform. See OTHER_IDEAS.md
     // "Synteny coordinate-precision ceilings".
-    f[off + FIELD_OFFSET_F32.featureId] = instanceFeatureIdx[i]! + 1
-    f[off + FIELD_OFFSET_F32.alignmentLength] = alignmentLengths[i]!
-    f[off + FIELD_OFFSET_F32.kind] = kinds[i]!
+    f[off + INSTANCE_OFFSET_F32.featureId] = instanceFeatureIdx[i]! + 1
+    f[off + INSTANCE_OFFSET_F32.alignmentLength] = alignmentLengths[i]!
+    f[off + INSTANCE_OFFSET_F32.kind] = kinds[i]!
   }
   return buf
 }
@@ -62,7 +63,7 @@ export function interleaveInstances(data: SyntenyInstanceData) {
 export function patchInstanceColors(buf: ArrayBuffer, colors: Uint32Array) {
   const u32 = new Uint32Array(buf)
   for (let i = 0, n = colors.length; i < n; i++) {
-    u32[i * INSTANCE_STRIDE_F32 + FIELD_OFFSET_F32.color] = colors[i]!
+    u32[i * INSTANCE_STRIDE_WORDS + INSTANCE_OFFSET_U32.color] = colors[i]!
   }
 }
 

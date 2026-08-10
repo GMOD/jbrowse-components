@@ -1,8 +1,8 @@
 import { drawnFeatureContext, forEachDrawnFeature } from './featurePainting.ts'
 import {
-  FIELD_OFFSET_F32,
+  INSTANCE_OFFSET_U32,
   INSTANCE_STRIDE_BYTES,
-  INSTANCE_STRIDE_F32,
+  INSTANCE_STRIDE_WORDS,
 } from './shaders/multiRow.iface.generated.ts'
 
 import type {
@@ -38,11 +38,11 @@ export function buildMultiRowInstanceBuffer(
     data,
     drawnFeatureContext(data, state),
     (i, rowIndex, color) => {
-      const base = count * INSTANCE_STRIDE_F32
-      u32[base + FIELD_OFFSET_F32.startBp] = featureStarts[i]!
-      u32[base + FIELD_OFFSET_F32.endBp] = featureEnds[i]!
-      u32[base + FIELD_OFFSET_F32.rowIndex] = rowIndex
-      u32[base + FIELD_OFFSET_F32.color] = color
+      const base = count * INSTANCE_STRIDE_WORDS
+      u32[base + INSTANCE_OFFSET_U32.startBp] = featureStarts[i]!
+      u32[base + INSTANCE_OFFSET_U32.endBp] = featureEnds[i]!
+      u32[base + INSTANCE_OFFSET_U32.rowIndex] = rowIndex
+      u32[base + INSTANCE_OFFSET_U32.color] = color
       count++
     },
   )

@@ -47,16 +47,7 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
 }
 
 export const INSTANCE_STRIDE_BYTES = 16
-export const INSTANCE_STRIDE_F32 = 4
-
-// Word offsets of every field, whatever its type. See INSTANCE_OFFSET_*
-// below for the view-checked form.
-export const FIELD_OFFSET_F32 = {
-  startBp: 0,
-  endBp: 1,
-  rowIndex: 2,
-  color: 3,
-} as const
+export const INSTANCE_STRIDE_WORDS = 4
 
 // Word indices into a Uint32Array view over the instance buffer.
 export const INSTANCE_OFFSET_U32 = {
@@ -88,7 +79,7 @@ export function packInstances(
   const u32 = new Uint32Array(buf)
   const { startBp, endBp, rowIndex, color } = arrays
   for (let i = 0; i < numInstances; i++) {
-    const o = i * INSTANCE_STRIDE_F32
+    const o = i * INSTANCE_STRIDE_WORDS
     u32[o + 0] = startBp[i]!
     u32[o + 1] = endBp[i]!
     u32[o + 2] = rowIndex[i]!

@@ -6,24 +6,24 @@ import { YSCALEBAR_LABEL_OFFSET } from './coverageDownsampling.ts'
 import {
   INSTANCE_OFFSET_F32 as INDICATOR_F32,
   INSTANCE_OFFSET_U32 as INDICATOR_U32,
-  INSTANCE_STRIDE_F32 as INDICATOR_STRIDE,
+  INSTANCE_STRIDE_WORDS as INDICATOR_STRIDE,
 } from './indicatorLayout.generated.ts'
 import { interbaseEdgePx } from './interbaseEdge.generated.ts'
 import {
   INSTANCE_OFFSET_F32 as INTERBASE_F32,
   INSTANCE_OFFSET_U32 as INTERBASE_U32,
-  INSTANCE_STRIDE_F32 as INTERBASE_STRIDE,
+  INSTANCE_STRIDE_WORDS as INTERBASE_STRIDE,
 } from './interbaseHistogramLayout.generated.ts'
 import { drawIndicatorTriangle } from './labelConstants.ts'
 import {
   INSTANCE_OFFSET_F32 as MOD_COV_F32,
   INSTANCE_OFFSET_U32 as MOD_COV_U32,
-  INSTANCE_STRIDE_F32 as MOD_COV_STRIDE,
+  INSTANCE_STRIDE_WORDS as MOD_COV_STRIDE,
 } from './modCoverageLayout.generated.ts'
 import {
   INSTANCE_OFFSET_F32 as SNP_F32,
   INSTANCE_OFFSET_U32 as SNP_U32,
-  INSTANCE_STRIDE_F32 as SNP_STRIDE,
+  INSTANCE_STRIDE_WORDS as SNP_STRIDE,
 } from './snpCoverageLayout.generated.ts'
 
 import type { CigarOpDrawColors } from './labelConstants.ts'

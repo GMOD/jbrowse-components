@@ -15,8 +15,8 @@ const PASS_MAIN = 'main'
 const PASS_GENOMIC = 'genomic'
 const REGION_KEY = 0
 
-const F = ldGenomicShader.FIELD_OFFSET_F32
-const STRIDE = ldGenomicShader.INSTANCE_STRIDE_F32
+const F_F32 = ldGenomicShader.INSTANCE_OFFSET_F32
+const STRIDE = ldGenomicShader.INSTANCE_STRIDE_WORDS
 const STRIDE_BYTES = ldGenomicShader.INSTANCE_STRIDE_BYTES
 
 // Both shader variants share an identical uniform block (ldUniforms.slang
@@ -41,11 +41,11 @@ function interleaveLDInstances(data: {
   const f32 = new Float32Array(buf)
   for (let i = 0; i < count; i++) {
     const off = i * STRIDE
-    f32[off + F.position] = data.positions[i * 2]!
-    f32[off + F.position + 1] = data.positions[i * 2 + 1]!
-    f32[off + F.cellSize] = data.cellSizes[i * 2]!
-    f32[off + F.cellSize + 1] = data.cellSizes[i * 2 + 1]!
-    f32[off + F.ldValue] = data.ldValues[i]!
+    f32[off + F_F32.position] = data.positions[i * 2]!
+    f32[off + F_F32.position + 1] = data.positions[i * 2 + 1]!
+    f32[off + F_F32.cellSize] = data.cellSizes[i * 2]!
+    f32[off + F_F32.cellSize + 1] = data.cellSizes[i * 2 + 1]!
+    f32[off + F_F32.ldValue] = data.ldValues[i]!
   }
   return buf
 }

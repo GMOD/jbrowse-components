@@ -1,7 +1,7 @@
 import { MockHal } from '@jbrowse/render-core/hal'
 
 import { GpuVariantRenderer, VARIANT_PASSES } from './GpuVariantRenderer.ts'
-import { INSTANCE_STRIDE_F32 as INSTANCE_STRIDE } from './shaders/variant.generated.ts'
+import { INSTANCE_STRIDE_WORDS as INSTANCE_STRIDE } from './shaders/variant.generated.ts'
 
 import type {
   VariantRenderBlock,

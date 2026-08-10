@@ -15,8 +15,8 @@ test('packSoftclipBases writes full frequency so bases never fade', () => {
   } as CigarUploadData
 
   const f32 = new Float32Array(packSoftclipBases(data))
-  const s32 = mismatchShader.INSTANCE_STRIDE_F32
-  const { frequency } = mismatchShader.FIELD_OFFSET_F32
+  const s32 = mismatchShader.INSTANCE_STRIDE_WORDS
+  const { frequency } = mismatchShader.INSTANCE_OFFSET_F32
 
   expect(f32[frequency]).toBe(1)
   expect(f32[s32 + frequency]).toBe(1)

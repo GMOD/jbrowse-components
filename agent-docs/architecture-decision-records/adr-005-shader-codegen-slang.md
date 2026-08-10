@@ -154,8 +154,12 @@ A build-time step compiles each `.slang` to:
 3. `*.reflection.json` — Slang's reflection output (intermediate)
 4. `*.generated.ts` — derived from reflection JSON. Contains:
    - `WGSL_SOURCE`, `GLSL_VERTEX`, `GLSL_FRAGMENT` shader string constants
-   - `INSTANCE_STRIDE_BYTES`, `INSTANCE_STRIDE_F32`
-   - `FIELD_OFFSET_BYTES`, `FIELD_OFFSET_F32` per-field offsets
+   - `INSTANCE_STRIDE_BYTES`, `INSTANCE_STRIDE_WORDS`
+   - `INSTANCE_OFFSET_F32` / `_U32` / `_I32` per-field word offsets, split by
+     the typed-array view the field's Slang type takes. (Was one flat
+     `FIELD_OFFSET_F32` over every field, where `_F32` meant *words* rather than
+     a view — so a packer chose the destination view by hand and could write a
+     `uint` field through a Float32Array without complaint.)
    - `UNIFORMS_SIZE_BYTES`, `UniformOffsets`
    - TS interface types
    - `writeInstance(buf, i, inst)` typed packer
@@ -239,8 +243,10 @@ For each migrated shader set:
 
 If `*.slang` changes in a way that shifts byte offsets, `*.generated.ts`
 changes, and `interleaveBuffers.ts` (which imports named field offsets like
-`FIELD_OFFSET_F32.y`) either keeps working transparently or fails at tsc if the
-field was renamed/removed. Stride drift is no longer expressible.
+`INSTANCE_OFFSET_F32.y`) either keeps working transparently or fails at tsc if
+the field was renamed, removed, or changed type — a field that moves between the
+f32 and u32 maps keeps its word offset and still stops compiling. Stride drift is
+no longer expressible.
 
 ## Consequences
 

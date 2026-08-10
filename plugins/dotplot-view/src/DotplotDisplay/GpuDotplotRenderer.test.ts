@@ -2,8 +2,9 @@ import { MockHal } from '@jbrowse/render-core/hal'
 
 import { DOTPLOT_PASSES, GpuDotplotRenderer } from './GpuDotplotRenderer.ts'
 import {
-  FIELD_OFFSET_F32 as F,
-  INSTANCE_STRIDE_F32,
+  INSTANCE_OFFSET_F32 as F_F32,
+  INSTANCE_OFFSET_U32 as F_U32,
+  INSTANCE_STRIDE_WORDS,
   UNIFORM_OFFSET_F32 as U,
 } from './shaders/dotplot.generated.ts'
 
@@ -59,8 +60,8 @@ describe('GpuDotplotRenderer window-relative uniforms', () => {
       }),
     )
     const stored = new Float32Array(hal.getBuffer(0, 'line')!.data)
-    expect(stored[F.x1]).toBe(100)
-    expect(stored[F.y1]).toBe(200)
+    expect(stored[F_F32.x1]).toBe(100)
+    expect(stored[F_F32.y1]).toBe(200)
   })
 
   // panPx is the whole point of the window-relative scheme: it folds the
@@ -121,7 +122,7 @@ describe('GpuDotplotRenderer window-relative uniforms', () => {
   })
 
   test('instance stride shrank to the single-float layout', () => {
-    expect(INSTANCE_STRIDE_F32).toBe(5)
+    expect(INSTANCE_STRIDE_WORDS).toBe(5)
   })
 
   // Opacity rides a uniform rather than the packed color, so an opacity drag is
@@ -167,9 +168,9 @@ describe('GpuDotplotRenderer recolor', () => {
     const f = new Float32Array(stored.data)
     const u = new Uint32Array(stored.data)
     // New color, coordinates still window-relative against the same base.
-    expect(u[F.color]).toBe(0x0000ff80)
-    expect(f[F.x1]).toBe(100)
-    expect(f[F.y1]).toBe(200)
+    expect(u[F_U32.color]).toBe(0x0000ff80)
+    expect(f[F_F32.x1]).toBe(100)
+    expect(f[F_F32.y1]).toBe(200)
   })
 
   test('new geometry arrays repack rather than patch', () => {
@@ -181,7 +182,7 @@ describe('GpuDotplotRenderer recolor', () => {
     renderer.uploadGeometry(0, makeGeometry({ x1: new Float64Array([700]) }))
 
     const f = new Float32Array(hal.getBuffer(0, 'line')!.data)
-    expect(f[F.x1]).toBe(700)
+    expect(f[F_F32.x1]).toBe(700)
   })
 
   // A departed track's cached bytes have to go with its buffer, or the next
@@ -202,7 +203,7 @@ describe('GpuDotplotRenderer recolor', () => {
     })
 
     const stored = hal.getBuffer(0, 'line')!
-    expect(new Uint32Array(stored.data)[F.color]).toBe(0xabcdef01)
-    expect(new Float32Array(stored.data)[F.x1]).toBe(100)
+    expect(new Uint32Array(stored.data)[F_U32.color]).toBe(0xabcdef01)
+    expect(new Float32Array(stored.data)[F_F32.x1]).toBe(100)
   })
 })

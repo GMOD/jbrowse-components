@@ -8,8 +8,9 @@ import {
 
 import { GpuWiggleRenderer, WIGGLE_PASSES } from './GpuWiggleRenderer.ts'
 import {
-  FIELD_OFFSET_F32 as F,
-  INSTANCE_STRIDE_F32 as INSTANCE_STRIDE,
+  INSTANCE_OFFSET_F32 as F_F32,
+  INSTANCE_OFFSET_U32 as F_U32,
+  INSTANCE_STRIDE_WORDS as INSTANCE_STRIDE,
   UNIFORM_OFFSET_F32 as U,
   UNIFORM_OFFSET_I32 as UI,
 } from './shaders/wiggle.generated.ts'
@@ -73,16 +74,16 @@ describe('GpuWiggleRenderer', () => {
 
     const f32 = new Float32Array(buf!.data)
     const u32 = new Uint32Array(buf!.data)
-    expect(u32[F.startEnd]).toBe(100)
-    expect(u32[F.startEnd + 1]).toBe(200)
-    expect(f32[F.score]).toBeCloseTo(5)
+    expect(u32[F_U32.startEnd]).toBe(100)
+    expect(u32[F_U32.startEnd + 1]).toBe(200)
+    expect(f32[F_F32.score]).toBeCloseTo(5)
     // prev_score=0 for first feature (encodes "rise from zero" gap-before)
-    expect(f32[F.prevScore]).toBe(0)
+    expect(f32[F_F32.prevScore]).toBe(0)
     // next_score=score for adj-after — sources are [100,200],[200,300]
-    expect(f32[F.nextScore]).toBeCloseTo(5)
+    expect(f32[F_F32.nextScore]).toBeCloseTo(5)
     // color [1,0,0] ABGR-packed → A=255,B=0,G=0,R=255
-    expect(u32[F.color]).toBe(0xff0000ff)
-    expect(f32[F.rowIndex]).toBe(0)
+    expect(u32[F_U32.color]).toBe(0xff0000ff)
+    expect(f32[F_F32.rowIndex]).toBe(0)
   })
 
   it('deletes region when uploading empty sources', () => {
@@ -295,12 +296,12 @@ describe('GpuWiggleRenderer', () => {
 
     const f32 = new Float32Array(buf!.data)
     const u32 = new Uint32Array(buf!.data)
-    expect(f32[F.rowIndex]).toBe(0)
+    expect(f32[F_F32.rowIndex]).toBe(0)
     // second source starts after the first source's two instances
     const src1 = 2 * INSTANCE_STRIDE
-    expect(f32[src1 + F.rowIndex]).toBe(1)
+    expect(f32[src1 + F_F32.rowIndex]).toBe(1)
     // color [0,1,0] ABGR-packed → A=255,B=0,G=255,R=0
-    expect(u32[src1 + F.color]).toBe(0xff00ff00)
+    expect(u32[src1 + F_U32.color]).toBe(0xff00ff00)
   })
 
   it('disposes cleanly', () => {

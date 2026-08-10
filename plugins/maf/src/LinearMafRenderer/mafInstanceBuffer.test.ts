@@ -1,7 +1,7 @@
 import { buildInstanceBuffer } from './mafInstanceBuffer.ts'
 import {
-  FIELD_OFFSET_F32,
-  INSTANCE_STRIDE_F32,
+  INSTANCE_OFFSET_U32,
+  INSTANCE_STRIDE_WORDS,
 } from './shaders/maf.generated.ts'
 
 import type { MafBlock } from './mafRenderingBackendTypes.ts'
@@ -16,12 +16,12 @@ interface DecodedRun {
 function decodeRuns(u32: Uint32Array, count: number): DecodedRun[] {
   const runs: DecodedRun[] = []
   for (let i = 0; i < count; i++) {
-    const base = i * INSTANCE_STRIDE_F32
+    const base = i * INSTANCE_STRIDE_WORDS
     runs.push({
-      startBp: u32[base + FIELD_OFFSET_F32.startBp]!,
-      endBp: u32[base + FIELD_OFFSET_F32.endBp]!,
-      rowIndex: u32[base + FIELD_OFFSET_F32.rowIndex]!,
-      color: u32[base + FIELD_OFFSET_F32.color]!,
+      startBp: u32[base + INSTANCE_OFFSET_U32.startBp]!,
+      endBp: u32[base + INSTANCE_OFFSET_U32.endBp]!,
+      rowIndex: u32[base + INSTANCE_OFFSET_U32.rowIndex]!,
+      color: u32[base + INSTANCE_OFFSET_U32.color]!,
     })
   }
   return runs

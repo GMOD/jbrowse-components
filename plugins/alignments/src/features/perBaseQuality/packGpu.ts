@@ -16,8 +16,8 @@ export function packPerBaseQuality(
   data: PerBaseQualityUploadData,
 ): ArrayBuffer {
   const n = data.perBaseQualPositions.length
-  const F = perBaseQualityShader.FIELD_OFFSET_F32
-  const s32 = perBaseQualityShader.INSTANCE_STRIDE_F32
+  const F_U32 = perBaseQualityShader.INSTANCE_OFFSET_U32
+  const s32 = perBaseQualityShader.INSTANCE_STRIDE_WORDS
   const buf = new ArrayBuffer(n * perBaseQualityShader.INSTANCE_STRIDE_BYTES)
   const u32 = new Uint32Array(buf)
   const pos = data.perBaseQualPositions
@@ -25,9 +25,9 @@ export function packPerBaseQuality(
   const scores = data.perBaseQualScores
   for (let i = 0; i < n; i++) {
     const o = i * s32
-    u32[o + F.position] = pos[i]!
-    u32[o + F.y] = ys[i]!
-    u32[o + F.packedColor] = qualityAbgr[scores[i]!]!
+    u32[o + F_U32.position] = pos[i]!
+    u32[o + F_U32.y] = ys[i]!
+    u32[o + F_U32.packedColor] = qualityAbgr[scores[i]!]!
   }
   return buf
 }

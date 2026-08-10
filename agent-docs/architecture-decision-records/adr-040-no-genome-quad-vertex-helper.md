@@ -191,7 +191,7 @@ second `flipX` double-flips reversed blocks (silent correctness bug).
    **`arrow`** (center-snap + extra fields) to prove the extra-per-mark-fields
    path.
 3. Run `pnpm gen:shaders`; **diff regenerated `rect.iface.generated.ts`
-   (`FIELD_OFFSET_F32`, `GL_ATTRIBUTES`, `INSTANCE_STRIDE_*`) against the
+   (`INSTANCE_OFFSET_*`, `GL_ATTRIBUTES`, `INSTANCE_STRIDE_*`) against the
    committed file.**
 4. Confirm `naga` (WGSL) and `glslangValidator` (GLSL) both accept the output —
    both run in CI, so red CI is the signal.

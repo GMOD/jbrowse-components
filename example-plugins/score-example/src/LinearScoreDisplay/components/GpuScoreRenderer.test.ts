@@ -33,15 +33,15 @@ test('packs startBp / endBp / score at the offsets the shader expects', () => {
   )
   const u32 = new Uint32Array(buf)
   const f32 = new Float32Array(buf)
-  const stride = shader.INSTANCE_STRIDE_F32
+  const stride = shader.INSTANCE_STRIDE_WORDS
 
-  expect(u32[shader.FIELD_OFFSET_F32.startBp]).toBe(42)
-  expect(u32[shader.FIELD_OFFSET_F32.endBp]).toBe(99)
-  expect(f32[shader.FIELD_OFFSET_F32.score]).toBeCloseTo(0.5)
+  expect(u32[shader.INSTANCE_OFFSET_U32.startBp]).toBe(42)
+  expect(u32[shader.INSTANCE_OFFSET_U32.endBp]).toBe(99)
+  expect(f32[shader.INSTANCE_OFFSET_F32.score]).toBeCloseTo(0.5)
 
-  expect(u32[stride + shader.FIELD_OFFSET_F32.startBp]).toBe(1337)
-  expect(u32[stride + shader.FIELD_OFFSET_F32.endBp]).toBe(2000)
-  expect(f32[stride + shader.FIELD_OFFSET_F32.score]).toBeCloseTo(0.25)
+  expect(u32[stride + shader.INSTANCE_OFFSET_U32.startBp]).toBe(1337)
+  expect(u32[stride + shader.INSTANCE_OFFSET_U32.endBp]).toBe(2000)
+  expect(f32[stride + shader.INSTANCE_OFFSET_F32.score]).toBeCloseTo(0.25)
 })
 
 test('produces a buffer sized to numFeatures x stride', () => {
@@ -63,7 +63,7 @@ test('preserves uint32 positions above the float32-safe range', () => {
     },
     1,
   )
-  expect(new Uint32Array(buf)[shader.FIELD_OFFSET_F32.startBp]).toBe(bigPos)
+  expect(new Uint32Array(buf)[shader.INSTANCE_OFFSET_U32.startBp]).toBe(bigPos)
 })
 
 describe('reversed convention', () => {

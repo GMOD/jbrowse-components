@@ -1,7 +1,7 @@
 // Build-time cross-check that the codegen's model of the per-instance vertex
 // layout matches the shader code slangc actually emitted.
 //
-// The codegen derives `GL_ATTRIBUTES` / `FIELD_OFFSET_F32` / the stride from the
+// The codegen derives `GL_ATTRIBUTES` / `INSTANCE_OFFSET_*` / the stride from the
 // reflected struct's field order, packing tight — reflection does NOT give byte
 // offsets for a vertex-input struct, so that packing is the codegen's own
 // assumption about how slangc assigns `@location`s. If slangc ever reordered,
@@ -100,7 +100,7 @@ function compare(
       throw new Error(
         `${what}: field '${attr.name}' is index ${index} of the instance ` +
           `struct but slangc gave it @location(${got.location}); ` +
-          `GL_ATTRIBUTES / FIELD_OFFSET_F32 assume declaration order`,
+          `GL_ATTRIBUTES / INSTANCE_OFFSET_* assume declaration order`,
       )
     }
     if (got.type !== expectedType(attr)) {

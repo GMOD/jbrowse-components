@@ -2,9 +2,10 @@ import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 import { NO_PREV_START } from '@jbrowse/wiggle-core'
 
 import {
-  FIELD_OFFSET_F32,
+  INSTANCE_OFFSET_F32,
+  INSTANCE_OFFSET_U32,
   INSTANCE_STRIDE_BYTES,
-  INSTANCE_STRIDE_F32,
+  INSTANCE_STRIDE_WORDS,
 } from './shaders/wiggle.iface.generated.ts'
 
 import type { SourceRenderData } from '@jbrowse/wiggle-core'
@@ -51,9 +52,9 @@ export function interleaveInstances(
         (currStart + currEnd) / 2 -
           (positions[pi - 2]! + positions[pi - 1]!) / 2 <=
           gapLimitBp
-      u32[off + FIELD_OFFSET_F32.startEnd] = currStart
-      u32[off + FIELD_OFFSET_F32.startEnd + 1] = currEnd
-      f32[off + FIELD_OFFSET_F32.score] = score
+      u32[off + INSTANCE_OFFSET_U32.startEnd] = currStart
+      u32[off + INSTANCE_OFFSET_U32.startEnd + 1] = currEnd
+      f32[off + INSTANCE_OFFSET_F32.score] = score
       // Center-line pass (RENDERING_TYPE_LINE_CENTER) draws one segment per
       // feature from the previous feature's bp midpoint to this one's. It
       // connects consecutive pairs regardless of bp-adjacency, so the sporadic
@@ -68,13 +69,13 @@ export function interleaveInstances(
       // nothing; it is the shader's own constant, generated in (adr-051), since
       // this is the side that writes the value the shader tests for. Both
       // unused by other modes.
-      u32[off + FIELD_OFFSET_F32.prevStartEnd] = prevLinked
+      u32[off + INSTANCE_OFFSET_U32.prevStartEnd] = prevLinked
         ? positions[pi - 2]!
         : NO_PREV_START
-      u32[off + FIELD_OFFSET_F32.prevStartEnd + 1] = prevLinked
+      u32[off + INSTANCE_OFFSET_U32.prevStartEnd + 1] = prevLinked
         ? positions[pi - 1]!
         : 0
-      f32[off + FIELD_OFFSET_F32.prevScoreLine] = prevLinked
+      f32[off + INSTANCE_OFFSET_F32.prevScoreLine] = prevLinked
         ? scores[i - 1]!
         : 0
       // The shader's line pass draws three segments per feature:
@@ -89,13 +90,13 @@ export function interleaveInstances(
       // nextScore deliberately stays equal to the current score so v4–v5
       // collapses to a no-op — the *next* feature's v0–v1 draws the real
       // transition. (Drawing it on both sides would double-stroke the seam.)
-      f32[off + FIELD_OFFSET_F32.prevScore] = prevAdj ? scores[i - 1]! : 0
-      f32[off + FIELD_OFFSET_F32.nextScore] = nextAdj ? score : 0
-      u32[off + FIELD_OFFSET_F32.color] = colorsAbgr
+      f32[off + INSTANCE_OFFSET_F32.prevScore] = prevAdj ? scores[i - 1]! : 0
+      f32[off + INSTANCE_OFFSET_F32.nextScore] = nextAdj ? score : 0
+      u32[off + INSTANCE_OFFSET_U32.color] = colorsAbgr
         ? colorsAbgr[i]!
         : colorAbgr
-      f32[off + FIELD_OFFSET_F32.rowIndex] = row
-      off += INSTANCE_STRIDE_F32
+      f32[off + INSTANCE_OFFSET_F32.rowIndex] = row
+      off += INSTANCE_STRIDE_WORDS
     }
   }
   return buf

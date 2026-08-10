@@ -12,9 +12,11 @@
 // consecutive values per instance) and interleaves them into the vertex
 // buffer. Crucially, the destination view (u32 / i32 / f32) for each field is
 // derived from the shader struct, so a field-type change in .slang updates the
-// packing automatically. The FIELD_OFFSET_F32 constants remain exported for
-// callers that pack multiple sources into one buffer (wiggle, synteny) and so
-// can't use the single-array-per-field shape.
+// packing automatically. A caller that can't use the single-array-per-field
+// shape — it packs several sources into one buffer, indexes a second array, or
+// scales on the way in — writes its own loop over the INSTANCE_OFFSET_* maps,
+// which are split by typed-array view for the same reason: the view each field
+// takes stays the shader's answer rather than the packer's.
 
 import { assertRenderBindingShape, classifyBindings } from './bindings.ts'
 import {
@@ -269,32 +271,26 @@ export function instanceStride(attrs: InstanceAttr[]) {
 // The stride and per-field word offsets, emitted identically by `emitInterface`
 // and by the layout-only module `//! layout-out` writes.
 //
-// Two flavours of offset map, and the difference is which mistakes they let
-// through. `FIELD_OFFSET_F32` holds every field and says nothing about types —
-// `_F32` there is the UNIT (4-byte words), not the view, the same sense it has
-// in `INSTANCE_STRIDE_F32` and the opposite of the one it has in
-// `UNIFORM_OFFSET_F32`. Packing through it means choosing the destination view
-// by hand, so `f32[o + F.position]` on a `uint position` compiles and writes a
-// float bit pattern the shader reads as an enormous integer.
+// **One suffix, one meaning.** `_BYTES` and `_WORDS` are units; `_F32` / `_U32`
+// / `_I32` are typed-array views, the sense they already had in
+// `UNIFORM_OFFSET_*`. That was not true until recently: the instance side
+// emitted a single flat `FIELD_OFFSET_F32` over every field regardless of type,
+// where `_F32` meant *4-byte words* — so two adjacent generated constants used
+// the same suffix for opposite things, and packing through the flat map meant
+// choosing the destination view by hand. `f32[o + F.position]` on a `uint
+// position` compiled and wrote a float bit pattern the shader read as an
+// enormous integer. ~140 call sites did this correctly and nothing checked
+// them.
 //
-// `INSTANCE_OFFSET_F32` / `_U32` / `_I32` split the same offsets by the view the
-// field's Slang type demands, exactly as the uniform side already does. Each map
-// holds only its own fields, so `INSTANCE_OFFSET_F32.position` on a `uint
-// position` doesn't compile and the packer stops choosing views by hand. New
-// packers should use these; FIELD_OFFSET_F32 stays because ~190 call sites read
-// it and because a packer interleaving several sources into one buffer
-// legitimately wants the flat map.
+// `INSTANCE_OFFSET_*` holds only the fields whose Slang type takes that view, so
+// `INSTANCE_OFFSET_F32.position` on a `uint position` does not compile. The flat
+// map is gone rather than deprecated: leaving it would have left the ambiguous
+// suffix in the vocabulary and a second, unchecked way to do the same thing.
 function instanceLayoutLines(attrs: InstanceAttr[]) {
   const stride = instanceStride(attrs)
   const lines = [
     `export const INSTANCE_STRIDE_BYTES = ${stride}`,
-    `export const INSTANCE_STRIDE_F32 = ${stride / 4}`,
-    '',
-    '// Word offsets of every field, whatever its type. See INSTANCE_OFFSET_*',
-    '// below for the view-checked form.',
-    'export const FIELD_OFFSET_F32 = {',
-    ...attrs.map(a => `  ${a.name}: ${a.offsetBytes / 4},`),
-    '} as const',
+    `export const INSTANCE_STRIDE_WORDS = ${stride / 4}`,
     '',
   ]
   for (const view of VIEWS) {
@@ -327,7 +323,7 @@ const PACK_INSTANCES_RESERVED = new Set([
   'o',
   ...VIEWS,
   'INSTANCE_STRIDE_BYTES',
-  'INSTANCE_STRIDE_F32',
+  'INSTANCE_STRIDE_WORDS',
 ])
 
 // The provenance banner every generated artifact opens with. Exported because
@@ -612,7 +608,7 @@ export function emitInterface(inputs: CodegenInputs) {
       ...declareViews(new Set(attrs.map(a => viewOf(a.type)))),
       `  const { ${attrs.map(a => a.name).join(', ')} } = arrays`,
       '  for (let i = 0; i < numInstances; i++) {',
-      '    const o = i * INSTANCE_STRIDE_F32',
+      '    const o = i * INSTANCE_STRIDE_WORDS',
     )
     for (const a of attrs) {
       const view = viewOf(a.type)

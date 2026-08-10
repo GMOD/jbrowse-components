@@ -48,19 +48,19 @@ test('packs absPosition / absEnd / score / color / glyph at the offsets the shad
   )
   const u32 = new Uint32Array(buf)
   const f32 = new Float32Array(buf)
-  const stride = shader.INSTANCE_STRIDE_F32
+  const stride = shader.INSTANCE_STRIDE_WORDS
 
-  expect(u32[shader.FIELD_OFFSET_F32.absPosition]).toBe(42)
-  expect(u32[shader.FIELD_OFFSET_F32.absEnd]).toBe(99)
-  expect(f32[shader.FIELD_OFFSET_F32.score]).toBeCloseTo(0.5)
-  expect(u32[shader.FIELD_OFFSET_F32.color]).toBe(0xff0000ff)
-  expect(u32[shader.FIELD_OFFSET_F32.glyph]).toBe(0)
+  expect(u32[shader.INSTANCE_OFFSET_U32.absPosition]).toBe(42)
+  expect(u32[shader.INSTANCE_OFFSET_U32.absEnd]).toBe(99)
+  expect(f32[shader.INSTANCE_OFFSET_F32.score]).toBeCloseTo(0.5)
+  expect(u32[shader.INSTANCE_OFFSET_U32.color]).toBe(0xff0000ff)
+  expect(u32[shader.INSTANCE_OFFSET_U32.glyph]).toBe(0)
 
-  expect(u32[stride + shader.FIELD_OFFSET_F32.absPosition]).toBe(1337)
-  expect(u32[stride + shader.FIELD_OFFSET_F32.absEnd]).toBe(2000)
-  expect(f32[stride + shader.FIELD_OFFSET_F32.score]).toBeCloseTo(7.25)
-  expect(u32[stride + shader.FIELD_OFFSET_F32.color]).toBe(0xff00ff00)
-  expect(u32[stride + shader.FIELD_OFFSET_F32.glyph]).toBe(1)
+  expect(u32[stride + shader.INSTANCE_OFFSET_U32.absPosition]).toBe(1337)
+  expect(u32[stride + shader.INSTANCE_OFFSET_U32.absEnd]).toBe(2000)
+  expect(f32[stride + shader.INSTANCE_OFFSET_F32.score]).toBeCloseTo(7.25)
+  expect(u32[stride + shader.INSTANCE_OFFSET_U32.color]).toBe(0xff00ff00)
+  expect(u32[stride + shader.INSTANCE_OFFSET_U32.glyph]).toBe(1)
 })
 
 test('produces a buffer sized to numFeatures × stride', () => {
@@ -72,7 +72,9 @@ test('preserves uint32 positions above the float32-safe range', () => {
   // chr1 ≈ 250 Mbp; bigger than 2^24 — would lose precision if stored as f32.
   const bigPos = 250_000_001
   const buf = buildInstanceBuffer(mkData([bigPos], [1], [0]))
-  expect(new Uint32Array(buf)[shader.FIELD_OFFSET_F32.absPosition]).toBe(bigPos)
+  expect(new Uint32Array(buf)[shader.INSTANCE_OFFSET_U32.absPosition]).toBe(
+    bigPos,
+  )
 })
 
 describe('reversed convention', () => {

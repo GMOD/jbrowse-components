@@ -38,6 +38,6 @@ describe('mismatch quality plumbing', () => {
       mismatchQuals: new Uint8Array([37]),
     }
     const f32 = new Float32Array(packMismatches(data))
-    expect(f32[mismatchShader.FIELD_OFFSET_F32.qual]).toBe(37)
+    expect(f32[mismatchShader.INSTANCE_OFFSET_F32.qual]).toBe(37)
   })
 })

@@ -24,35 +24,34 @@
 import {
   INSTANCE_OFFSET_F32 as COVERAGE_F32,
   INSTANCE_OFFSET_U32 as COVERAGE_U32,
-  INSTANCE_STRIDE_F32 as COVERAGE_STRIDE,
+  INSTANCE_STRIDE_WORDS as COVERAGE_STRIDE,
 } from './coverageLayout.generated.ts'
 import {
   INSTANCE_OFFSET_F32 as INDICATOR_F32,
   INSTANCE_OFFSET_U32 as INDICATOR_U32,
-  INSTANCE_STRIDE_F32 as INDICATOR_STRIDE,
+  INSTANCE_STRIDE_WORDS as INDICATOR_STRIDE,
 } from './indicatorLayout.generated.ts'
 import {
   INSTANCE_OFFSET_F32 as INTERBASE_F32,
   INSTANCE_OFFSET_U32 as INTERBASE_U32,
-  INSTANCE_STRIDE_F32 as INTERBASE_STRIDE,
+  INSTANCE_STRIDE_WORDS as INTERBASE_STRIDE,
 } from './interbaseHistogramLayout.generated.ts'
 import {
   INSTANCE_OFFSET_F32 as MOD_COV_F32,
   INSTANCE_OFFSET_U32 as MOD_COV_U32,
-  INSTANCE_STRIDE_F32 as MOD_COV_STRIDE,
+  INSTANCE_STRIDE_WORDS as MOD_COV_STRIDE,
 } from './modCoverageLayout.generated.ts'
 import {
   INSTANCE_OFFSET_F32 as SNP_F32,
   INSTANCE_OFFSET_U32 as SNP_U32,
-  INSTANCE_STRIDE_F32 as SNP_STRIDE,
+  INSTANCE_STRIDE_WORDS as SNP_STRIDE,
 } from './snpCoverageLayout.generated.ts'
 
 import type { SNPCoverageResult } from './coverageDownsampling.ts'
 import type { computeInterbaseCoverage } from './interbaseCoverage.ts'
 
-// Position is absolute
-// genomic uint32 (exact up to 4 Gbp); shader uses hp-math for clip-space
-// conversion. `binSize` is the bin width in bp: bin i spans
+// Position is absolute genomic uint32 (exact up to 4 Gbp); the shader uses
+// hp-math for clip-space conversion. `binSize` is the bin width in bp: bin i spans
 // [startOffset + i*binSize, startOffset + (i+1)*binSize) and the shader draws
 // the bar that wide off the matching `binSize` uniform. It is 1 for per-bp
 // coverage; the worker downsamples to a wider binSize at whole-chromosome scale

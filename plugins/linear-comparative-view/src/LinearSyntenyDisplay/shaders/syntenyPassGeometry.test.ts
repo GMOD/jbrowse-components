@@ -34,7 +34,11 @@ describe('synteny pass geometry', () => {
       [fillCurve, edgeCurve],
     ] as const) {
       expect(edge.INSTANCE_STRIDE_BYTES).toBe(fill.INSTANCE_STRIDE_BYTES)
-      expect(edge.FIELD_OFFSET_F32).toEqual(fill.FIELD_OFFSET_F32)
+      // Per view, so this also says the two passes agree about each field's
+      // TYPE — a field that moved between the f32 and u32 maps would keep the
+      // same word offset and fail here.
+      expect(edge.INSTANCE_OFFSET_F32).toEqual(fill.INSTANCE_OFFSET_F32)
+      expect(edge.INSTANCE_OFFSET_U32).toEqual(fill.INSTANCE_OFFSET_U32)
       // The vertex-attribute layout each HAL builds its pipeline from. Now that
       // the edge pass declares its own (SYNTENY_PASSES no longer overrides it
       // with the fill module's), this is what says the two agree.
