@@ -221,13 +221,13 @@ other projection on this page.
 
 `--vcf` decomposes the graph against the K12 reference with
 [`vg deconstruct`](https://github.com/vgteam/vg), genotyped across the other
-four strains. Its `CHROM` is already the reference contig (`chr`) and its
-samples are the four non-reference strains, so it loads unchanged. There is no
-rename step, just the `.gz` and `.tbi` Cactus already wrote.
+four strains. Its `CHROM` is already the reference contig (`chr`), so the `.gz`
+and `.tbi` Cactus wrote load unchanged, where the pggb VCF needs its PanSN path
+renamed first.
 
 Load `mc/ecoli.vcf.gz` as a [`VariantTrack`](/docs/config_guides/variant_track)
-on K12 and pick the matrix display, which draws one column per variant and one
-row per sample:
+on K12 and pick the matrix display, one column per variant and one row per
+sample:
 
 ```json
 {
@@ -243,24 +243,18 @@ row per sample:
 }
 ```
 
-Grey in the matrix is a call matching K12, blue an alternate allele, and dark
-red a second alternate at a multi-allelic site. Every variant gets the same
-width, and the band above ties each column back to its position.
-
 The [multi-sample variant track guide](/docs/user_guides/multivariant_track)
-covers the matrix versus the per-position display, and clustering samples by
-genotype.
+covers the matrix versus the per-position display, the genotype colors, and
+clustering samples by genotype.
 
 `vg deconstruct` emits a snarl **tree**, one record per snarl at every level, so
-the raw file holds both a bubble and the variants nested inside it, and the wide
-records paint over the fine layer they were decomposed from. `cactus-pangenome`
-runs [`vcfbub`](https://github.com/pangenome/vcfbub) itself, on by default,
-which is why nothing above has to pop that tree. `--vcfbub 0` turns it off, and
-`--vcfwave` additionally realigns the surviving alleles into primitive variants.
-The pggb tutorial's
-[reference-path length section](/docs/tutorials/pangenome_ecoli#why-the-reference-path-takes-a-length)
-covers what those two steps do and what the width cap costs, since there the
-same knob is set by hand.
+its wide records paint over the fine layer they were decomposed from.
+`cactus-pangenome` runs [`vcfbub`](https://github.com/pangenome/vcfbub) itself,
+on by default, which is why nothing above has to pop that tree; `--vcfbub 0`
+turns it off, and `--vcfwave` realigns the survivors into primitive variants.
+The pggb tutorial
+[sets the same knob by hand](/docs/tutorials/pangenome_ecoli#why-the-reference-path-takes-a-length),
+and covers what the width cap costs.
 
 ## Whole-genome alignment (MAF) projection
 
@@ -438,13 +432,10 @@ Every projection above flattens the graph onto K12. JBrowse can also draw it as
 a graph, through the
 [graph genome view plugin](/docs/user_guides/graph_genome_view).
 
-`mc/ecoli.gfa.gz` carries no `SN`/`SO`/`SR` tags, so nothing reads a reference
-position straight off a segment the way it does for a minigraph rGFA. Its `P`
-and `W` records hold the same information in a different encoding: walking a
-path in step order gives every segment it visits an interval on that path's own
-sequence. `build_pggb_tabix.sh` does that walk offline and writes the two
+`mc/ecoli.gfa.gz` carries no `SN`/`SO`/`SR` tags, so it takes the plain-GFA
+route: `build_pggb_tabix.sh` walks the path lines offline and writes the two
 tabix-indexed BEDs `RgfaTabixAdapter` reads, which makes the whole graph
-queryable by locus with no per-window extraction step:
+queryable by locus with no per-window extraction step.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_pggb_tabix.sh
@@ -453,18 +444,15 @@ bash build_pggb_tabix.sh mc/ecoli.gfa.gz ecoli_cactus K12
 
 Cactus writes the reference as a `P` line and the haplotypes as `W` lines, and
 the walk reads both in file order, so the third argument anchors rank 0 on the
-K12 path and every other path contributes the segments no earlier path reached,
-on its own coordinates. The non-reference paths carry a trailing subpath tag
-(`Sakai#0#chr#0`), which changes nothing here: PanSN still resolves the sample,
-and off-reference segments are reached from a K12 query through the links file
-either way.
+K12 path. The non-reference paths carry a trailing subpath tag
+(`Sakai#0#chr#0`), which changes nothing here, since PanSN still resolves the
+sample.
 
 The
 [pggb tutorial](/docs/tutorials/pangenome_ecoli#browsing-the-whole-graph-by-locus)
-covers the track config this produces, the two decisions in the walk that decide
-what it can be trusted for, and the graph size past which indexing stops being
-the answer. For a graph too large to index, or a window someone hands you, cut a
-file offline with `odgi extract` instead, which that page also covers.
+covers the track config this produces, the decisions in the walk that decide
+what it can be trusted for, and the graph size past which cutting one window
+offline with `odgi extract` is the better route.
 
 ## Compared to `odgi viz`
 
