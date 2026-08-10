@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["typescript", "unicorn", "import", "react", "oxc"],
+  "plugins": ["typescript", "unicorn", "import", "react", "oxc", "jest"],
   "categories": {
     "correctness": "error"
   },
@@ -27,6 +27,19 @@
     "unicorn/no-useless-spread": "off",
     "oxc/erasing-op": "off",
     "eslint/no-unsafe-optional-chaining": "off",
+
+    "jest/no-focused-tests": "error",
+    "jest/no-identical-title": "error",
+    "jest/no-disabled-tests": "error",
+    "jest/expect-expect": "off",
+    "jest/no-conditional-expect": "off",
+    "jest/require-to-throw-message": "off",
+    "jest/valid-title": "off",
+    "jest/prefer-snapshot-hint": "off",
+    "jest/no-commented-out-tests": "off",
+    "jest/no-standalone-expect": "off",
+    "jest/no-export": "off",
+
     "react/rules-of-hooks": "error",
     "typescript/no-unnecessary-condition": "error",
     "typescript/switch-exhaustiveness-check": [

@@ -66,6 +66,7 @@ function substitute(seq: string, at: number, base: string) {
 // Skipped unconditionally, not just when UCSC_API_KEY is unset: this hits a
 // real UCSC endpoint under a real account key and rate limit, so it should
 // only run when someone deliberately un-skips it for a manual check.
+// oxlint-disable-next-line jest/no-disabled-tests -- deliberate, see above
 describe.skip('live UCSC BLAT round-trip', () => {
   it('places four variants of a known hg38 locus back at that locus', async () => {
     fetchMock.dontMock()

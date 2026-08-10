@@ -551,8 +551,6 @@ exports[`can use an existing config file 1`] = `
 
 exports[`fails if custom refNameAliases adapter has no type 1`] = `"Error: No "type" specified in refNameAliases adapter "{}""`;
 
-exports[`fails if custom refNameAliases adapter has no type 2`] = `"Error: No "type" specified in refNameAliases adapter "{}""`;
-
 exports[`fails if custom sequence adapter has no type 1`] = `"Error: No "type" specified in sequence adapter "{}""`;
 
 exports[`fails if it cannot guess the sequence type 1`] = `"Error: Could not determine sequence type automatically, add --type to specify it"`;

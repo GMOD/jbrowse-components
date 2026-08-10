@@ -64,21 +64,6 @@ test('fails if custom refNameAliases adapter has no type', async () => {
   ])
   expect(error?.message).toMatchSnapshot()
 })
-test('fails if custom refNameAliases adapter has no type', async () => {
-  const { error } = await runCommand([
-    'add-assembly',
-    '{"type":"fromConfigSequenceAdapter"}',
-    '--name',
-    'simple',
-    '--refNameAliases',
-    '{}',
-    '--refNameAliasesType',
-    'custom',
-    '--load',
-    'copy',
-  ])
-  expect(error?.message).toMatchSnapshot()
-})
 
 test('fails if trying to add an assembly with a name that already exists', async () => {
   await runInTmpDir(async () => {
