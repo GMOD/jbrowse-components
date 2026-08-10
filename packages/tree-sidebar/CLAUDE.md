@@ -150,10 +150,10 @@ clustered track to fix nothing.
 
 ## `TreeDrawingModel` takes `effectiveRowHeight`, never a raw `rowHeight`
 
-Variants and MAF keep `rowHeight` as the raw prop where `0` means fit-to-height,
-and `0` is their default — reading it painted zero-height rects and the hover
-highlight silently did nothing. Structural typing let that through, so keep the
-contract field named for the resolved value.
+Variants and MAF keep `rowHeight` as a raw getter over the config slot, where
+`0` means fit-to-height and is their default — reading it painted zero-height
+rects and the hover highlight silently did nothing. Structural typing let that
+through, so keep the contract field named for the resolved value.
 
 ## …and `computeClusterHierarchy` takes the rows' _content_ height
 

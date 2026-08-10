@@ -80,9 +80,11 @@ checkout, so ordinary git is yours to use without asking.
 - `@jbrowse/mobx-state-tree` is our internal ESM fork; treat it like upstream.
 - Keep the main model chain in one file; don't split `.views()`/`.actions()`
   across files.
-- A bare getter returns a resolved value, never `undefined`. Where a prop
-  encodes a sentinel (`rowHeight === 0` = fit-to-height), expose the resolved
-  value under a distinct getter every consumer reads.
+- A bare getter returns a resolved value, never `undefined`. Where a slot or
+  prop encodes a sentinel (`rowHeight === 0` = fit-to-height — a config slot,
+  read through a raw same-named getter, on the displays that make it a setting),
+  expose the resolved value under a distinct getter every consumer reads
+  (`effectiveRowHeight`).
 - Write config with `setConf`, not `configuration.setSlot`. Promotable slots
   resolve only through `resolveConf`, never `getConf`.
 - In React, `autorun` inside `useEffect` to track observables (prefer over
