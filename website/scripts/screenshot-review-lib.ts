@@ -359,6 +359,41 @@ export function imageHash(name: string): string | undefined {
   return hashFile(path.join(imgDir, `${name}.png`))
 }
 
+// The same hash for the card list, where the question is only "which picture is
+// this" and the answer is wanted 321 times per page load.
+//
+// A page load already reads and sha256s all 68 MB of figures for the worktree
+// scan; asking imageHash for each spec on top of that read the same bytes a
+// second time, for a quarter of a cold load. Keyed on size and mtime so a regen
+// — which is the whole reason these scans are redone per request — still lands,
+// and deliberately NOT shared with the route above: a verdict's precondition is
+// the one place where "the file has not been touched" is not good enough, and it
+// is checked under the report lock precisely so nothing can slip between the
+// hash and the write.
+const scannedHashes = new Map<string, { key: string; hash: string }>()
+
+export function scannedImageHash(name: string): string | undefined {
+  syncJbrowseImgMirror(name)
+  const file = path.join(imgDir, `${name}.png`)
+  let stat
+  try {
+    stat = fs.statSync(file)
+  } catch {
+    scannedHashes.delete(name)
+    return undefined
+  }
+  const key = `${stat.size}:${stat.mtimeMs}`
+  const seen = scannedHashes.get(name)
+  if (seen?.key === key) {
+    return seen.hash
+  }
+  const hash = hashFile(file)
+  if (hash !== undefined) {
+    scannedHashes.set(name, { key, hash })
+  }
+  return hash
+}
+
 // ---------------------------------------------------------------------------
 // the baseline a review is against
 // ---------------------------------------------------------------------------

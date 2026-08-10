@@ -21,6 +21,7 @@ import {
   loadReport,
   refreshWorkingTreeScans,
   reportPath,
+  scannedImageHash,
   syncJbrowseImgMirror,
   websiteDir,
 } from './screenshot-review-lib.ts'
@@ -105,8 +106,10 @@ function buildSpecPayload() {
     const verdict = report[shot.name]
     // the hash of the PNG as the reviewer is about to see it. It rides along so
     // the page can say which pixels a verdict was formed against — both to
-    // cache-bust the <img> and as the precondition on the write.
-    const currentHash = imageHash(shot.name)
+    // cache-bust the <img> and as the precondition on the write. The stat-keyed
+    // form, since this is the scan: the write path re-reads the bytes under the
+    // report lock, which is where an unchanged mtime would actually matter.
+    const currentHash = scannedImageHash(shot.name)
     // an approval/denial only resurfaces once the reviewed image changes
     const stale = isVerdictStale(verdict, currentHash)
     const liveUrl = screenshotLiveUrls[shot.name]
@@ -597,6 +600,7 @@ const PAGE = /* html */ `<!doctype html>
   button.deny.active { background: #ef4444; color: #fff; }
   button.clear { border-color: ButtonBorder; color: GrayText; }
   button.addnote { border-color: ButtonBorder; color: GrayText; }
+  button:disabled { opacity: .45; cursor: not-allowed; border-color: ButtonBorder; color: GrayText; }
   /* height is set by the client's autosizeNote as you type; min-height keeps an
      empty box the two rows it was, and overflow-y lets it scroll once it hits
      the cap rather than clipping. No resize handle: autosize owns the height,
@@ -791,8 +795,21 @@ function buildGroupOptions() {
 
 async function load() {
   readUrl()
+  const specs = fetch('/api/specs')
+  // Started here and awaited below the cards' own data: the banner has to be in
+  // the page BEFORE the first card is. It is four lines of prose above main and
+  // it used to land ~120ms after the cards — a 217px shove of every card
+  // downwards, a tenth of a second after they became clickable. A press that
+  // straddles that has its button moved out from under the pointer and
+  // dispatches no click, which is the reload-then-review half of "I have to
+  // click Approve twice".
+  //
+  // Second in the pair, and that order is load-bearing: the server answers one
+  // request at a time, and this one reads the working-tree scan /api/specs pays
+  // for. Ahead of it, the 68 MB of figures gets hashed twice per load.
+  const storeState = loadStoreState()
   try {
-    const res = await fetch('/api/specs')
+    const res = await specs
     const body = await res.json()
     if (!res.ok || !Array.isArray(body)) {
       throw new Error((body && body.error) || 'HTTP ' + res.status)
@@ -811,8 +828,8 @@ async function load() {
   buildGroupOptions()
   // canonicalize: drops a shared-URL group that no longer names a real group
   writeUrl()
+  await storeState
   render()
-  loadStoreState()
 }
 
 // Whether the figures on this disk are the figures everyone else gets.
@@ -823,12 +840,17 @@ async function load() {
 // old world had \`git status\` for that. A silent banner would leave the good
 // case indistinguishable from a banner that failed to render.
 //
-// Fetched after render() rather than blocking it: a review page that took an
-// extra beat to appear because it was hashing 62 MB would be a bad trade. It
-// writes only #store — nothing a card shows depends on it — so it does not
-// repaint main. It used to, because the run summary landing here was what the
-// "not in the last run" pill was inferred from; that is decided server-side per
-// card now, so the second full repaint (which harvested and re-applied every
+// Awaited before the first render rather than after it. It used to be fired and
+// forgotten, because it was hashing 62 MB of its own and a review page should
+// not wait on that — but it reads the scan /api/specs has already paid for, so
+// what it actually costs now is one more round trip against a warm memo. Ahead
+// of the cards that is a beat nobody notices; behind them it was four lines of
+// banner appearing under a pointer already working through the queue.
+//
+// It still writes only #store: nothing a card shows depends on it, so it does
+// not repaint main. It used to, because the run summary landing here was what
+// the "not in the last run" pill was inferred from; that is decided server-side
+// per card now, so the second full repaint (which harvested and re-applied every
 // note field for nothing) went with it.
 async function loadStoreState() {
   const el = $('#store')
@@ -1272,6 +1294,13 @@ function fitCompareStage(stage) {
     i.style.width = Math.round(i.naturalWidth * scale) + 'px'
     i.style.height = Math.round(i.naturalHeight * scale) + 'px'
   }
+  // A stage that lost its baseline is saying something this cannot improve on,
+  // and the current image's own onload arrives after it whenever the bytes come
+  // from cache rather than the network — which used to wipe the warning and
+  // leave a single-image stage looking like an ordinary comparison.
+  if (stage.dataset.noBaseline) {
+    return
+  }
   const [base, top] = imgs
   // only once both are here: one image is never a disagreement about size
   cmpNote(stage, imgs.length === 2 && naturalDims(base) !== naturalDims(top)
@@ -1288,6 +1317,8 @@ const fitCompare = img => fitCompareStage(img.closest('.cmpstage'))
 function baselineFailed(img) {
   const stage = img.closest('.cmpstage')
   img.remove()
+  // before the fit, which reads it
+  stage.dataset.noBaseline = '1'
   fitCompareStage(stage)
   cmpNote(stage, '⚠ baseline bytes are not in the store — only the current image is here')
 }
@@ -1307,6 +1338,13 @@ addEventListener('resize', () => {
     }
   })
 })
+
+const verdictBtn = (cls, label, want, status, spec) =>
+  '<button class="' + cls + (status === want ? ' active' : '') + '"' +
+    (spec.imageHash
+      ? ' onclick="setVerdict(this,\\'' + want + '\\')"'
+      : ' disabled title="no image on disk — nothing to record a verdict against"') +
+  '>' + label + '</button>'
 
 // the shared review client calls this to rebuild one card in place
 function renderCard(spec) {
@@ -1331,8 +1369,15 @@ function renderCard(spec) {
       // with a blank line round-trips without it unless one is spent here
       '<textarea class="note" rows="2" placeholder="note (optional)" onchange="saveNote(this)">\\n' + esc(v ? v.note : '') + '</textarea>' +
       '<div class="actions">' +
-        '<button class="approve ' + (status === 'good' ? 'active' : '') + '" onclick="setVerdict(this,\\'good\\')">✓ Approve</button>' +
-        '<button class="deny ' + (status === 'bad' ? 'active' : '') + '" onclick="setVerdict(this,\\'bad\\')">✗ Deny</button>' +
+        // A verdict is recorded against a hash of the image, so a card with no
+        // image on disk has nothing to record one against and the server refuses
+        // it — correctly, but only after the click, as an error message under a
+        // button that looked live. There are two of these in a normal checkout
+        // (figures.lock names them, figures:pull has not fetched them), and the
+        // card already says which. Clear stays enabled: dropping an entry needs
+        // no image. Same test as the server's, so the two cannot drift.
+        verdictBtn('approve', '✓ Approve', 'good', status, spec) +
+        verdictBtn('deny', '✗ Deny', 'bad', status, spec) +
         (v ? '<button class="clear" onclick="clearVerdict(this)">clear</button>' : '') +
         // Always rendered, including on an empty box where it only focuses the
         // field. The alternative (show it once there is text to preserve)
@@ -1392,10 +1437,10 @@ function renderCounts() {
   $('[data-count="run"]').textContent =
     scoped.filter(s => hasStatus(s, filters.status) && matchesChanged(s) && hasRunProblem(s)).length
 
-  const has = status => s => s.verdict?.status === status && !s.stale
-  const answered = data.filter(has('answered')).length
-  const good = data.filter(has('good')).length
-  const bad = data.filter(has('bad')).length
+  const count = status => data.filter(s => settledAs(s, status)).length
+  const answered = count('answered')
+  const good = count('good')
+  const bad = count('bad')
   const stale = data.filter(s => s.stale).length
   $('#counts').innerHTML =
     pill('good', good + ' approved') +
@@ -1417,14 +1462,21 @@ function matchesScope(s, q) {
   return matchesQuery && matchesGroup && matchesKind
 }
 
+// A verdict that still describes the image on the card. A stale one names a
+// picture that has since been replaced, so it counts as neither approved nor
+// denied — it is back in the queue.
+const settledAs = (s, status) => s.verdict?.status === status && !s.stale
+
+// 'all' and 'needs' are the two questions with their own shape; the other three
+// tabs are all the same question about a different status word, and spelling
+// each out separately is three chances for one of them to drift from the pill
+// row that counts it.
 function hasStatus(s, status) {
-  return (
-    status === 'all' ||
-    (status === 'needs' && needsReview(s)) ||
-    (status === 'good' && s.verdict?.status === 'good' && !s.stale) ||
-    (status === 'bad' && s.verdict?.status === 'bad' && !s.stale) ||
-    (status === 'answered' && s.verdict?.status === 'answered' && !s.stale)
-  )
+  return status === 'all'
+    ? true
+    : status === 'needs'
+      ? needsReview(s)
+      : settledAs(s, status)
 }
 
 // The two header toggles as predicates, so the badge that counts what a toggle
