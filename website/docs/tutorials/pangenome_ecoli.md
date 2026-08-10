@@ -428,11 +428,19 @@ HPRC's own `-a 100000` leaves it running far longer on this graph than
 view or the per-strain path track anyway, so the smaller cap costs the browser
 nothing.
 
-Keep the raw file too and load it as a second track. It is where the graph
-structure lives: `LV`/`PS` give the snarl tree, and `AT` states each allele as
-the segment ids it traverses (`AT=>2>4>5,>2>3>5`), which are the same ids the
-graph view labels its nodes with. Filter it on `LV` in **Edit filters** to pick
-one level of the tree.
+Keep the raw file too, through the same rename, and load it as a second track:
+
+```bash
+in_pggb bash -c "bcftools annotate --rename-chrs /data/rename_chrs.tsv \
+  /data/pggb/*.smooth.final.K12.vcf \
+  | bcftools sort -Oz -o /data/ecoli_pggb_snarls.vcf.gz && tabix -p vcf /data/ecoli_pggb_snarls.vcf.gz"
+```
+
+It is where the graph structure lives: `LV`/`PS` give the snarl tree, and `AT`
+states each allele as the segment ids it traverses (`AT=>2>4>5,>2>3>5`), which
+are the same ids the graph view labels its nodes with. Filter it on `LV` in
+**Edit filters** to pick one level of the tree. The coarse tier below is built
+from its `LV=0` records.
 
 The [multi-sample variant track guide](/docs/user_guides/multivariant_track)
 covers the matrix versus the per-position display, genotype coloring, and
@@ -736,22 +744,12 @@ bash build_pggb_tabix.sh "$gfa" ecoli_pggb K12
 ```
 
 It produces `ecoli_pggb.segs.bed.gz` and `ecoli_pggb.links.bed.gz` with their
-indexes. The reference argument names a sample rather than a path, so every path
-that sample contributes is treated as rank 0 and a multi-contig reference keeps
-all of its contigs. Every other path then contributes the segments no earlier
-path reached, on its own coordinates. The walk agrees with the `odgi extract`
-route [below](#a-window-as-a-file): at that window every interval it derives
-matches the ones `gfa_nodes_to_bed.py` derives from the extracted subgraph. It
-reads P and W lines, so a graph carrying walks rather than paths indexes the
-same way.
-
-Two decisions in that walk decide what the output can be trusted for. When a
-path reaches the same segment twice, the first visit wins: a node draws as one
-tube at one x, so recording both would claim reference the segment does not
-occupy, and a collapsed repeat stays visible as depth instead. And a segment the
-reference path never visits is placed **on its own carrier's coordinates**,
-which is the same asymmetry rGFA has, and is why a reference query reaches it
-through the links file rather than directly.
+indexes. The
+[graph view guide](/docs/user_guides/graph_genome_view#route-1-a-graph-track-browsable-by-locus)
+covers the four choices that walk makes and what each one costs. It agrees with
+the `odgi extract` route [below](#a-window-as-a-file): at that window every
+interval it derives matches the ones `gfa_nodes_to_bed.py` derives from the
+extracted subgraph.
 
 Load it as one `FeatureTrack` pointed at the shared prefix, the same shape the
 [graph view tutorial](/docs/user_guides/graph_genome_view#route-1-a-graph-track-browsable-by-locus)
@@ -795,9 +793,15 @@ allele traversals and allele sequences, so
 turns it into the bubble BED the tier builder reads:
 
 ```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/snarls_to_bubble_bed.py
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_bubble_tier.sh
 python3 snarls_to_bubble_bed.py ecoli_pggb_snarls.vcf.gz ecoli_pggb.bubbles.bed
 bash build_bubble_tier.sh ecoli_pggb.bubbles.bed ecoli_pggb.tier50 50
 ```
+
+That is the raw snarl tree kept [above](#why-the-reference-path-takes-a-length),
+not the decomposed file the variant track loads: vcfbub pops exactly the
+top-level records a tier is built from.
 
 `gfatools bubble` cannot do this job here: it places a bubble on a reference by
 reading rGFA `SN`/`SO`/`SR` tags, and a pggb graph states the same information
@@ -1178,6 +1182,9 @@ graph track and its launch menu item work without adding the plugin by hand. It
 needs the same tools listed under [Prerequisites](#prerequisites), and picks its
 container runtime from what is on `PATH`, docker first and then singularity or
 apptainer. Force one with `CONTAINER=singularity`.
+
+[JBrowse Desktop](/docs/quickstart_desktop) opens that folder's `config.json` by
+path, so the `npx serve` line is only for the web build.
 
 Everything downstream is derived from the strain table at the top of the script,
 so adding genomes there is the only edit an expanded pangenome needs. Watch two

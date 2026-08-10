@@ -49,10 +49,14 @@ and loads from any config today (see
 Indexing a graph means converting it once into two tabix-indexed BED files,
 `.segs.bed.gz` for the segments and `.links.bed.gz` for the links between them,
 which JBrowse can then query by locus. With that pair in hand: **Add track**
-with `RgfaTabixAdapter` or `BedTabixAdapter` pointing at it → **Track menu →
-Launch view → Graph genome view (this region)**.
+with `RgfaTabixAdapter` pointing at the shared prefix → **Track menu → Launch
+view → Graph genome view (this region)**.
 [Route 1](#route-1-a-graph-track-browsable-by-locus) builds the pair; skip to
 [Three layouts](#three-layouts) if you just need to know what the buttons do.
+
+`RgfaTabixAdapter` is the only adapter that cuts a subgraph: the same pair
+behind a `BedTabixAdapter` draws as a feature track whose menu offers no graph.
+To skip indexing entirely, [Route 2](#route-2-a-gfa-file) opens a GFA as a file.
 
 ## Where a segment's coordinates come from
 
@@ -64,9 +68,14 @@ a reference, and that is what the formats differ on.
 | ------------------------------------------------------------- | ------------------------------------ | ---------------------------------------- |
 | **rGFA** (minigraph, the minigraph stage of Minigraph-Cactus) | `SN`/`SO`/`SR` tags on every segment | direct, the file states them             |
 | **plain GFA** (pggb, odgi, base-level Minigraph-Cactus)       | inside the P/W path lines            | walk a path first, in the app or offline |
+| **assembly graph** (SPAdes, Flye, Velvet)                     | nowhere, there is no reference       | not possible                             |
 
-Both end up in the same place: a segment track on the reference, and a graph
-that lines up under it.
+The first two end up in the same place: a segment track on the reference, and a
+graph that lines up under it. Everything here except the force layout reads
+those coordinates, so an assembly graph gets none of it: no locus cut, neither
+anchored layout, no hover sync, no launch menus.
+[Bandage](https://github.com/rrwick/Bandage), whose engine draws the force
+layout here, was built for those graphs. Use Bandage for one.
 
 ## Route 1: a graph track, browsable by locus
 
@@ -184,6 +193,18 @@ whole set: a node is drawn once, on the row of the first path that reaches it,
 and the other carriers stay in `carriedBy`. Reading across a row still says what
 one assembly does to the reference, which is what the layout is for, but a
 segment several haplotypes share appears on one of their rows and not the rest.
+
+## On JBrowse Desktop
+
+[JBrowse Desktop](/docs/quickstart_desktop) runs Route 2 with no server, config
+or index. Install the plugin once from the start screen menu, at **Global
+plugins... → Add custom plugin**. Expand **Advanced options** and put the
+`esmUrl` from the top of this page in **ESM build URL**, leaving the two fields
+above it empty: they are the UMD pair, and filling either one wins. Then **Add →
+Graph genome view** offers **Choose file**.
+
+Desktop only starts a session by opening a genome, so pick any one to get an
+**Add** menu. The file route ignores it.
 
 ## Three layouts
 
