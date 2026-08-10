@@ -1,5 +1,4 @@
-import { screen } from '@testing-library/react'
-import { userEvent } from '@testing-library/user-event'
+import { fireEvent, screen } from '@testing-library/react'
 
 import {
   createView,
@@ -29,30 +28,30 @@ const delay = { timeout: 30000 }
 const opts = [{}, delay]
 
 test('color by tag', async () => {
-  const user = userEvent.setup()
   const { view } = await createView(config)
   view.setNewView(0.8, 49437)
-  await user.click(await screen.findByTestId(hts('volvox_cram'), ...opts))
-  await user.click(await screen.findByTestId('track_menu_icon', ...opts))
-  await user.click(await screen.findByText('Color by...'))
-  await user.click(await screen.findByText('Tag...'))
-  await user.type(await screen.findByLabelText('Tag name', ...opts), 'HP')
-  await user.click(await screen.findByText('Submit'))
+  fireEvent.click(await screen.findByTestId(hts('volvox_cram'), ...opts))
+  fireEvent.click(await screen.findByTestId('track_menu_icon', ...opts))
+  fireEvent.click(await screen.findByText('Color by...'))
+  fireEvent.click(await screen.findByText('Tag...'))
+  fireEvent.change(await screen.findByLabelText('Tag name', ...opts), {
+    target: { value: 'HP' },
+  })
+  fireEvent.click(await screen.findByText('Submit'))
   const display = await findDisplayPainted('pileup-display', delay)
   expectCanvasMatch(findCanvasIn(display))
 }, 50000)
 
 test('color by stranded rna-seq', async () => {
-  const user = userEvent.setup()
   const { view } = await createView(config)
   view.setNewView(10, 0)
-  await user.click(
+  fireEvent.click(
     await screen.findByTestId(hts('paired_end_stranded_rnaseq'), ...opts),
   )
-  await user.click(await screen.findByTestId('track_menu_icon', ...opts))
-  await user.click(await screen.findByText('Color by...'))
-  await user.click(await screen.findByText('Paired end'))
-  await user.click(await screen.findByText('First of pair strand'))
+  fireEvent.click(await screen.findByTestId('track_menu_icon', ...opts))
+  fireEvent.click(await screen.findByText('Color by...'))
+  fireEvent.click(await screen.findByText('Paired end'))
+  fireEvent.click(await screen.findByText('First of pair strand'))
   const display = await findDisplayPainted('pileup-display', delay)
   expectCanvasMatch(findCanvasIn(display), 0.1)
 }, 50000)

@@ -1,6 +1,5 @@
 import { getEnv } from '@jbrowse/core/util'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
-import { userEvent } from '@testing-library/user-event'
 
 import {
   createView,
@@ -29,11 +28,10 @@ const opts = [{}, delay]
 
 test('nav to synteny from right click', async () => {
   await mockConsoleWarn(async () => {
-    const user = userEvent.setup()
     const { session, view, findByTestId, findByText } = await createView()
 
     await view.navToLocString('ctgA:30,222..33,669')
-    await user.click(await findByTestId(hts('volvox_ins.paf'), ...opts))
+    fireEvent.click(await findByTestId(hts('volvox_ins.paf'), ...opts))
 
     const display = await findDisplayPainted('pileup-display', delay)
     const canvas = findCanvasIn(display)
@@ -56,11 +54,10 @@ test('nav to synteny from right click', async () => {
 // session.views, since "the LGV is gone" is the whole difference.
 test('replacing the launching view with the synteny view', async () => {
   await mockConsoleWarn(async () => {
-    const user = userEvent.setup()
     const { session, view, findByTestId, findByText } = await createView()
 
     await view.navToLocString('ctgA:30,222..33,669')
-    await user.click(await findByTestId(hts('volvox_ins.paf'), ...opts))
+    fireEvent.click(await findByTestId(hts('volvox_ins.paf'), ...opts))
 
     const display = await findDisplayPainted('pileup-display', delay)
     const canvas = findCanvasIn(display)
@@ -81,11 +78,10 @@ test('replacing the launching view with the synteny view', async () => {
 
 test('nav to synteny from feature details', async () => {
   await mockConsoleWarn(async () => {
-    const user = userEvent.setup()
     const { session, view, findByTestId, findByText } = await createView()
 
     await view.navToLocString('ctgA:30,222..33,669')
-    await user.click(await findByTestId(hts('volvox_ins.paf'), ...opts))
+    fireEvent.click(await findByTestId(hts('volvox_ins.paf'), ...opts))
 
     const display = await findDisplayPainted('pileup-display', delay)
     const canvas = findCanvasIn(display)
@@ -108,7 +104,6 @@ test('nav to synteny from feature details', async () => {
 
 test('nav to synteny from right click, with launch connection plugin', async () => {
   await mockConsoleWarn(async () => {
-    const user = userEvent.setup()
     const { session, view, findByTestId, findByText } = await createView()
 
     getEnv(session).pluginManager.observeExtensionPoint(
@@ -135,7 +130,7 @@ test('nav to synteny from right click, with launch connection plugin', async () 
     )
 
     await view.navToLocString('ctgA:30,222..33,669')
-    await user.click(await findByTestId(hts('volvox_del2.paf'), ...opts))
+    fireEvent.click(await findByTestId(hts('volvox_del2.paf'), ...opts))
 
     const display = await findDisplayPainted('pileup-display', delay)
     const canvas = findCanvasIn(display)
@@ -158,16 +153,15 @@ test('nav to synteny from right click, with launch connection plugin', async () 
 // through the real menu, and assert the display state they land on.
 test('group by mate assembly from the Group by submenu', async () => {
   await mockConsoleWarn(async () => {
-    const user = userEvent.setup()
     const { view } = await createView()
 
     await view.navToLocString('ctgA:30,222..33,669')
-    await user.click(await screen.findByTestId(hts('volvox_ins.paf'), ...opts))
+    fireEvent.click(await screen.findByTestId(hts('volvox_ins.paf'), ...opts))
     await findDisplayPainted('pileup-display', delay)
 
-    await user.click(await screen.findByTestId('track_menu_icon', ...opts))
-    await user.click(await screen.findByText('Group by...'))
-    await user.click(await screen.findByText('Mate assembly'))
+    fireEvent.click(await screen.findByTestId('track_menu_icon', ...opts))
+    fireEvent.click(await screen.findByText('Group by...'))
+    fireEvent.click(await screen.findByText('Mate assembly'))
 
     const display = view.tracks[0]!.displays[0]!
     await waitFor(() => {
@@ -178,26 +172,25 @@ test('group by mate assembly from the Group by submenu', async () => {
 
 test('sort by longest features first from the Sort by submenu', async () => {
   await mockConsoleWarn(async () => {
-    const user = userEvent.setup()
     const { view } = await createView()
 
     await view.navToLocString('ctgA:30,222..33,669')
-    await user.click(await screen.findByTestId(hts('volvox_ins.paf'), ...opts))
+    fireEvent.click(await screen.findByTestId(hts('volvox_ins.paf'), ...opts))
     await findDisplayPainted('pileup-display', delay)
 
     const display = view.tracks[0]!.displays[0]!
     // largeFeaturesFirst is the synteny config default, so flip it off through
     // "Start location" first and prove the radio brings it back.
-    await user.click(await screen.findByTestId('track_menu_icon', ...opts))
-    await user.click(await screen.findByText('Sort by...'))
-    await user.click(await screen.findByText('Start location'))
+    fireEvent.click(await screen.findByTestId('track_menu_icon', ...opts))
+    fireEvent.click(await screen.findByText('Sort by...'))
+    fireEvent.click(await screen.findByText('Start location'))
     await waitFor(() => {
       expect(display.largeFeaturesFirst).toBe(false)
     }, delay)
 
-    await user.click(await screen.findByTestId('track_menu_icon', ...opts))
-    await user.click(await screen.findByText('Sort by...'))
-    await user.click(await screen.findByText('Longest features first'))
+    fireEvent.click(await screen.findByTestId('track_menu_icon', ...opts))
+    fireEvent.click(await screen.findByText('Sort by...'))
+    fireEvent.click(await screen.findByText('Longest features first'))
     await waitFor(() => {
       expect(display.largeFeaturesFirst).toBe(true)
     }, delay)
@@ -210,11 +203,10 @@ test('sort by longest features first from the Sort by submenu', async () => {
 // the canvas byte-identical.
 test('Show mismatches is a live layer on a synteny track', async () => {
   await mockConsoleWarn(async () => {
-    const user = userEvent.setup()
     const { view } = await createView()
 
     await view.navToLocString('ctgA:30,222..33,669')
-    await user.click(await screen.findByTestId(hts('volvox_ins.paf'), ...opts))
+    fireEvent.click(await screen.findByTestId(hts('volvox_ins.paf'), ...opts))
     await findDisplayPainted('pileup-display', delay)
     const display = view.tracks[0]!.displays[0]!
 
@@ -226,9 +218,9 @@ test('Show mismatches is a live layer on a synteny track', async () => {
     const before = await pixels()
     expect(display.showMismatches).toBe(true)
 
-    await user.click(await screen.findByTestId('track_menu_icon', ...opts))
-    await user.click(await screen.findByText('Show...'))
-    await user.click(await screen.findByText('Show mismatches'))
+    fireEvent.click(await screen.findByTestId('track_menu_icon', ...opts))
+    fireEvent.click(await screen.findByText('Show...'))
+    fireEvent.click(await screen.findByText('Show mismatches'))
     await waitFor(() => {
       expect(display.showMismatches).toBe(false)
     }, delay)

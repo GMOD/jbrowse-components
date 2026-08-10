@@ -23,9 +23,8 @@ const opts = [{}, delay]
 test('Open the bookmarks widget from the top level menu', async () => {
   const { findByText } = await createView()
 
-  const user = userEvent.setup()
-  await user.click(await findByText('Tools'))
-  await user.click(await findByText('Bookmarks/highlights'))
+  fireEvent.click(await findByText('Tools'))
+  fireEvent.click(await findByText('Bookmarks/highlights'))
 
   expect(await findByText('Bookmarked regions')).toBeTruthy()
 }, 60000)
@@ -56,9 +55,11 @@ test('Create a bookmark using the click and drag rubberband', async () => {
 test('Create a bookmark using the hotkey to bookmark the current region', async () => {
   const { session, findByTestId } = await createView()
 
-  // focus the view to allow the hotkey to work (it has a focus guard)
-  const user = userEvent.setup()
-  await user.click(await findByTestId('tracksContainer', ...opts))
+  // focus the view to allow the hotkey to work (it has a focus guard).
+  // userEvent, not fireEvent: the hotkey has a focus guard, and only a real
+  // pointer sequence focuses the container. fireEvent.click fires the click
+  // alone, leaving activeElement on <body> so the guard rejects the keydown.
+  await userEvent.setup().click(await findByTestId('tracksContainer', ...opts))
 
   document.dispatchEvent(
     new KeyboardEvent('keydown', {
@@ -75,9 +76,11 @@ test('Create a bookmark using the hotkey to bookmark the current region', async 
 test('Create a bookmark using the menu button to bookmark the current region', async () => {
   const { session, findByTestId, findByText } = await createView()
 
-  // focus the view to allow the hotkey to work (it has a focus guard)
-  const user = userEvent.setup()
-  await user.click(await findByTestId('tracksContainer', ...opts))
+  // focus the view to allow the hotkey to work (it has a focus guard).
+  // userEvent, not fireEvent: the hotkey has a focus guard, and only a real
+  // pointer sequence focuses the container. fireEvent.click fires the click
+  // alone, leaving activeElement on <body> so the guard rejects the keydown.
+  await userEvent.setup().click(await findByTestId('tracksContainer', ...opts))
   fireEvent.click(await findByTestId('view_menu_icon'))
   fireEvent.click(await findByText('Bookmarks/highlights'))
   fireEvent.click(await findByText('Bookmark current region'))
@@ -124,9 +127,11 @@ test('Navigate to a bookmark using the hotkey to navigate to the most recently c
     assemblyName: 'volvox',
   })
 
-  // focus the view to allow the hotkey to work (it has a focus guard)
-  const user = userEvent.setup()
-  await user.click(await findByTestId('tracksContainer', ...opts))
+  // focus the view to allow the hotkey to work (it has a focus guard).
+  // userEvent, not fireEvent: the hotkey has a focus guard, and only a real
+  // pointer sequence focuses the container. fireEvent.click fires the click
+  // alone, leaving activeElement on <body> so the guard rejects the keydown.
+  await userEvent.setup().click(await findByTestId('tracksContainer', ...opts))
 
   document.dispatchEvent(
     new KeyboardEvent('keydown', {
@@ -144,9 +149,8 @@ test('Navigate to a bookmark using the hotkey to navigate to the most recently c
 test('Edit a bookmark label with a single click on the data grid', async () => {
   const { session, findByText, findAllByRole } = await createView()
 
-  const user = userEvent.setup()
-  await user.click(await findByText('Tools'))
-  await user.click(await findByText('Bookmarks/highlights'))
+  fireEvent.click(await findByText('Tools'))
+  fireEvent.click(await findByText('Bookmarks/highlights'))
 
   const bookmarkWidget = session.widgets.get('GridBookmark')
   bookmarkWidget.addBookmark({
@@ -157,7 +161,10 @@ test('Edit a bookmark label with a single click on the data grid', async () => {
   })
 
   const field = (await findAllByRole('gridcell'))[2]!
-  await user.type(field, 'new label')
+  // userEvent, not fireEvent.change: the grid cell is a <div>, not an input, so
+  // it has no value setter for a change event to drive. Typing goes to whatever
+  // the click focused, which is the editor the grid mounts.
+  await userEvent.setup().type(field, 'new label')
   // get the focus away from the field
   fireEvent.click(document)
 
@@ -178,10 +185,8 @@ test('Toggle highlight visibility across all views', async () => {
     ],
   })
 
-  const user = userEvent.setup()
-
-  await user.click(await findByText('Tools'))
-  await user.click(await findByText('Bookmarks/highlights'))
+  fireEvent.click(await findByText('Tools'))
+  fireEvent.click(await findByText('Bookmarks/highlights'))
 
   const bookmarkWidget = session.widgets.get('GridBookmark')
   bookmarkWidget.addBookmark({
@@ -197,11 +202,11 @@ test('Toggle highlight visibility across all views', async () => {
   }, delay)
 
   fireEvent.click(await findByTestId('grid_bookmark_menu', ...opts))
-  await user.click(await findByText('Settings'))
-  await user.click(
+  fireEvent.click(await findByText('Settings'))
+  fireEvent.click(
     (await findByTestId('toggle_highlight_all_switch')).querySelector('input')!,
   )
-  await user.click(await findByText('Close'))
+  fireEvent.click(await findByText('Close'))
 
   // one session-wide flag hides the bands in every view
   await waitFor(() => {

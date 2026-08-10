@@ -1,7 +1,6 @@
 import '@testing-library/jest-dom'
 
 import { fireEvent, screen, waitFor, within } from '@testing-library/react'
-import { userEvent } from '@testing-library/user-event'
 
 import {
   createView,
@@ -28,11 +27,10 @@ const delay = { timeout: 30000 }
 const opts = [{}, delay]
 
 test('collapse introns on gene feature', async () => {
-  const user = userEvent.setup()
   const { view, session, findByText } = await createView(config)
 
   await view.navToLocString('ctgA:907..10,000')
-  await user.click(await screen.findByTestId(hts('gff3tabix_genes'), ...opts))
+  fireEvent.click(await screen.findByTestId(hts('gff3tabix_genes'), ...opts))
   await findAnyDisplayPainted(delay)
 
   const label = await screen.findByTestId('feature-name-EDEN', ...opts)
@@ -65,11 +63,10 @@ test('collapse introns on gene feature', async () => {
 }, 60000)
 
 test('collapse introns dialog lists the transcripts to scope to', async () => {
-  const user = userEvent.setup()
   const { view, findByText } = await createView(config)
 
   await view.navToLocString('ctgA:907..10,000')
-  await user.click(await screen.findByTestId(hts('gff3tabix_genes'), ...opts))
+  fireEvent.click(await screen.findByTestId(hts('gff3tabix_genes'), ...opts))
   await findAnyDisplayPainted(delay)
 
   const label = await screen.findByTestId('feature-name-EDEN', ...opts)

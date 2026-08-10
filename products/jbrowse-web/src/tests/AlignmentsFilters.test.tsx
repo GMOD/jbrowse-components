@@ -1,5 +1,4 @@
-import { screen } from '@testing-library/react'
-import { userEvent } from '@testing-library/user-event'
+import { fireEvent, screen } from '@testing-library/react'
 
 import {
   createView,
@@ -26,16 +25,17 @@ const delay = { timeout: 30000 }
 const opts = [{}, delay]
 
 async function testFilterTrack(trackId: string, tag: string, value: string) {
-  const user = userEvent.setup()
-  await user.click(await screen.findByTestId(hts(trackId), ...opts))
-  await user.click(await screen.findByTestId('track_menu_icon', ...opts))
-  await user.click(await screen.findByText('Filter by...'))
-  await user.type(await screen.findByLabelText('Tag name', ...opts), tag)
-  await user.type(
+  fireEvent.click(await screen.findByTestId(hts(trackId), ...opts))
+  fireEvent.click(await screen.findByTestId('track_menu_icon', ...opts))
+  fireEvent.click(await screen.findByText('Filter by...'))
+  fireEvent.change(await screen.findByLabelText('Tag name', ...opts), {
+    target: { value: tag },
+  })
+  fireEvent.change(
     await screen.findByPlaceholderText('Enter value or * for any'),
-    value,
+    { target: { value } },
   )
-  await user.click(await screen.findByText('Submit'))
+  fireEvent.click(await screen.findByText('Submit'))
   const display = await findDisplayPainted('pileup-display', delay)
   expectCanvasMatch(findCanvasIn(display))
 }

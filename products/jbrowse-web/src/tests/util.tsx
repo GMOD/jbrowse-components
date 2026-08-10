@@ -567,9 +567,9 @@ export async function openSpreadsheetView({
   const opts = [{}, delay]
   const { session } = await createView()
 
-  await user.click(await screen.findByText('File'))
-  await user.click(await screen.findByText('Add'))
-  await user.click(await screen.findByText('Spreadsheet view'))
+  fireEvent.click(await screen.findByText('File'))
+  fireEvent.click(await screen.findByText('Add'))
+  fireEvent.click(await screen.findByText('Spreadsheet view'))
 
   fireEvent.change(await screen.findByTestId('urlInput', ...opts), {
     target: { value: fileUrl },
@@ -579,7 +579,7 @@ export async function openSpreadsheetView({
     expect(screen.getByTestId('open_spreadsheet')).not.toBeDisabled()
   }, delay)
 
-  await user.click(await screen.findByTestId('open_spreadsheet'))
+  fireEvent.click(await screen.findByTestId('open_spreadsheet'))
 
   // Wait for the file load to settle before returning: otherwise callers that
   // don't wait on anything further leave the test while it's still in

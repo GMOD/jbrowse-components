@@ -2,10 +2,15 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 import { saveAs } from '@jbrowse/core/util/FileSaver'
-import { screen, waitFor } from '@testing-library/react'
-import { userEvent } from '@testing-library/user-event'
+import { fireEvent, screen, waitFor } from '@testing-library/react'
 
-import { createView, doBeforeEach, hts, setup } from './util.tsx'
+import {
+  createView,
+  doBeforeEach,
+  hts,
+  setup,
+  volvoxConfigWithTracks,
+} from './util.tsx'
 
 jest.mock('@jbrowse/core/util/FileSaver', () => {
   return {
@@ -25,14 +30,11 @@ beforeEach(() => {
 const delay = { timeout: 40000 }
 const opts = [{}, delay]
 
-async function openSaveTrackDataDialog(
-  user: ReturnType<typeof userEvent.setup>,
-  trackId: string,
-) {
-  await user.click(await screen.findByTestId(hts(trackId), ...opts))
-  await user.click(await screen.findByTestId('track_menu_icon', ...opts))
-  await user.click(await screen.findByText('Track actions', ...opts))
-  await user.click(await screen.findByText('Save track data', ...opts))
+async function openSaveTrackDataDialog(trackId: string) {
+  fireEvent.click(await screen.findByTestId(hts(trackId), ...opts))
+  fireEvent.click(await screen.findByTestId('track_menu_icon', ...opts))
+  fireEvent.click(await screen.findByText('Track actions', ...opts))
+  fireEvent.click(await screen.findByText('Save track data', ...opts))
 }
 
 function readBlobAsText(blob: Blob): Promise<string> {
@@ -57,11 +59,15 @@ test.each([
 ])(
   'save track data for %s track',
   async (_, trackId, expectedFilename, ext) => {
-    const user = userEvent.setup()
-    const { view } = await createView()
+    // volvox_refseq is the assembly's own sequence track rather than a member
+    // of config.tracks, so it is in the selector whatever `tracks` holds and
+    // there is nothing to keep for it.
+    const { view } = await createView(
+      volvoxConfigWithTracks(trackId === 'volvox_refseq' ? [] : [trackId]),
+    )
     await view.navToLocString('ctgA:4,318..4,440')
 
-    await openSaveTrackDataDialog(user, trackId)
+    await openSaveTrackDataDialog(trackId)
 
     await screen.findByText(/File type/, ...opts)
 
@@ -74,7 +80,7 @@ test.each([
       { timeout: 30000 },
     )
 
-    await user.click(await screen.findByText('Download'))
+    fireEvent.click(await screen.findByText('Download'))
 
     await waitFor(() => {
       // this is a false positive
@@ -120,7 +126,7 @@ test.each([
     )
     fs.writeFileSync(snapshotPath, content)
 
-    await user.click(await screen.findByText('Close'))
+    fireEvent.click(await screen.findByText('Close'))
   },
   60000,
 )

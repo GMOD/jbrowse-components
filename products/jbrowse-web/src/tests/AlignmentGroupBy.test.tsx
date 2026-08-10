@@ -1,5 +1,4 @@
-import { screen, waitFor } from '@testing-library/react'
-import { userEvent } from '@testing-library/user-event'
+import { fireEvent, screen, waitFor } from '@testing-library/react'
 
 import {
   createView,
@@ -46,10 +45,9 @@ const config = volvoxConfigWithTracks([
 // single fetch into N sections rendered in one track. Strand grouping yields a
 // forward and a reverse section.
 test('group by strand stacks two sections in one track', async () => {
-  const user = userEvent.setup()
   const { view } = await createView(config)
   view.setNewView(5, 100)
-  await user.click(
+  fireEvent.click(
     await screen.findByTestId(
       hts('volvox_alignments_pileup_coverage'),
       ...opts,
@@ -89,10 +87,9 @@ test('group by strand stacks two sections in one track', async () => {
 // mates in the same section (unlike plain strand), so each section's arcs are
 // meaningful. Asserts the per-section arc feed is populated, then snapshots.
 test('group draws per-section paired-end arcs', async () => {
-  const user = userEvent.setup()
   const { view } = await createView(config)
   await view.navToLocString('ctgA:1-50000')
-  await user.click(await screen.findByTestId(hts('volvox_sv_cram'), ...opts))
+  fireEvent.click(await screen.findByTestId(hts('volvox_sv_cram'), ...opts))
   await findDisplayPainted('pileup-display', delay)
 
   const display = alignmentsDisplay(view)
@@ -124,10 +121,9 @@ test('group draws per-section paired-end arcs', async () => {
 // flat |tlen| lines in every section map against one Y-domain so sections stay
 // comparable. firstOfPairStrand keeps mates together so each section has pairs.
 test('group draws per-section read-cloud lines', async () => {
-  const user = userEvent.setup()
   const { view } = await createView(config)
   await view.navToLocString('ctgA:1-50000')
-  await user.click(await screen.findByTestId(hts('volvox_sv_cram'), ...opts))
+  fireEvent.click(await screen.findByTestId(hts('volvox_sv_cram'), ...opts))
   await findDisplayPainted('pileup-display', delay)
 
   const display = alignmentsDisplay(view)
@@ -159,10 +155,9 @@ test('group draws per-section read-cloud lines', async () => {
 // reads by strand keeps each junction in its read's strand group, so each
 // section's arcs come only from that section's reads.
 test('group draws per-section sashimi arcs', async () => {
-  const user = userEvent.setup()
   const { view } = await createView(config)
   await view.navToLocString('ctgA:1-50000')
-  await user.click(await screen.findByTestId(hts('spliced'), ...opts))
+  fireEvent.click(await screen.findByTestId(hts('spliced'), ...opts))
   await findDisplayPainted('pileup-display', delay)
 
   const display = alignmentsDisplay(view)
@@ -199,10 +194,9 @@ test('group draws per-section sashimi arcs', async () => {
 // and nowhere else. Without this, a regression that dropped a group's junctions
 // on the floor entirely would still satisfy the test above.
 test('lowering the sashimi score reveals a group-specific junction', async () => {
-  const user = userEvent.setup()
   const { view } = await createView(config)
   await view.navToLocString('ctgA:1-50000')
-  await user.click(await screen.findByTestId(hts('spliced'), ...opts))
+  fireEvent.click(await screen.findByTestId(hts('spliced'), ...opts))
   await findDisplayPainted('pileup-display', delay)
 
   const display = alignmentsDisplay(view)
@@ -230,10 +224,9 @@ test('lowering the sashimi score reveals a group-specific junction', async () =>
 // lines stay intact. Only the chain-consistent dimensions are allowed; HP
 // haplotype grouping of linked/long reads is the marquee use case.
 test('chain mode groups whole chains by HP tag into sections', async () => {
-  const user = userEvent.setup()
   const { view } = await createView(config)
   view.setNewView(0.8, 49437)
-  await user.click(await screen.findByTestId(hts('volvox_cram'), ...opts))
+  fireEvent.click(await screen.findByTestId(hts('volvox_cram'), ...opts))
   await findDisplayPainted('pileup-display', delay)
 
   const display = alignmentsDisplay(view)
@@ -270,10 +263,9 @@ test('chain mode groups whole chains by HP tag into sections', async () => {
 // worker rather than splitting chains across sections — the defensive
 // isChainGroupableType guard.
 test('chain mode ignores a per-read group dimension (single section)', async () => {
-  const user = userEvent.setup()
   const { view } = await createView(config)
   view.setNewView(5, 100)
-  await user.click(
+  fireEvent.click(
     await screen.findByTestId(
       hts('volvox_alignments_pileup_coverage'),
       ...opts,
@@ -299,10 +291,9 @@ test('chain mode ignores a per-read group dimension (single section)', async () 
 }, 60000)
 
 test('ungroup restores a single section', async () => {
-  const user = userEvent.setup()
   const { view } = await createView(config)
   view.setNewView(5, 100)
-  await user.click(
+  fireEvent.click(
     await screen.findByTestId(
       hts('volvox_alignments_pileup_coverage'),
       ...opts,
@@ -330,10 +321,9 @@ test('ungroup restores a single section', async () => {
 }, 60000)
 
 test('collapsing a group zeroes its pileup band but keeps coverage', async () => {
-  const user = userEvent.setup()
   const { view } = await createView(config)
   view.setNewView(5, 100)
-  await user.click(
+  fireEvent.click(
     await screen.findByTestId(
       hts('volvox_alignments_pileup_coverage'),
       ...opts,
@@ -366,10 +356,9 @@ test('collapsing a group zeroes its pileup band but keeps coverage', async () =>
 }, 60000)
 
 test('resizing a group caps its rows independently of the others', async () => {
-  const user = userEvent.setup()
   const { view } = await createView(config)
   view.setNewView(5, 100)
-  await user.click(
+  fireEvent.click(
     await screen.findByTestId(
       hts('volvox_alignments_pileup_coverage'),
       ...opts,

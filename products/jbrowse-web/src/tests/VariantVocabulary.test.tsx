@@ -1,7 +1,6 @@
 import '@testing-library/jest-dom'
 
-import { screen } from '@testing-library/react'
-import { userEvent } from '@testing-library/user-event'
+import { fireEvent, screen } from '@testing-library/react'
 
 import {
   createView,
@@ -50,11 +49,10 @@ function labelsIn(items: VocabMenuItem[]): string[] {
 }
 
 test('the variant track menu names controls generically, content by its noun', async () => {
-  const user = userEvent.setup()
   const { view } = await createView(config)
 
   await view.navToLocString('ctgA:1..50000')
-  await user.click(await screen.findByTestId(hts('volvox_test_vcf'), ...opts))
+  fireEvent.click(await screen.findByTestId(hts('volvox_test_vcf'), ...opts))
   const feature = await findAnyDisplayPainted(delay)
   expect(feature).toBeTruthy()
 
@@ -78,11 +76,10 @@ test('the variant track menu names controls generically, content by its noun', a
 })
 
 test('a row that counts what the track holds still says "variant"', async () => {
-  const user = userEvent.setup()
   const { view } = await createView(config)
 
   await view.navToLocString('ctgA:1..50000')
-  await user.click(await screen.findByTestId(hts('volvox_test_vcf'), ...opts))
+  fireEvent.click(await screen.findByTestId(hts('volvox_test_vcf'), ...opts))
   await findAnyDisplayPainted(delay)
 
   const display = view.tracks[0]!.displays[0] as NounDisplay

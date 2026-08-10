@@ -1,4 +1,4 @@
-import { userEvent } from '@testing-library/user-event'
+import { fireEvent } from '@testing-library/react'
 
 import {
   createView,
@@ -34,18 +34,17 @@ export async function testLinkedReadsDisplay({
   displayMode: DisplayMode
   timeout?: number
 }) {
-  const user = userEvent.setup()
   const { view, findByTestId, findAllByTestId, findByText } = await createView(
     volvoxConfigWithTracks([track]),
   )
   const opts = [{}, { timeout }] as const
 
   await view.navToLocString(loc)
-  await user.click(await findByTestId(hts(track), ...opts))
-  await user.click(await findByTestId('track_menu_icon', ...opts))
+  fireEvent.click(await findByTestId(hts(track), ...opts))
+  fireEvent.click(await findByTestId('track_menu_icon', ...opts))
 
   for (const label of MENU_PATHS[displayMode]) {
-    await user.click(await findByText(label))
+    fireEvent.click(await findByText(label))
   }
 
   const display = await findSettledDisplay('pileup-display', { timeout })

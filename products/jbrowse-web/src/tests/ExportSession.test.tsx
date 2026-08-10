@@ -2,7 +2,6 @@ import './svgExportMocks.ts'
 
 import { saveAs } from '@jbrowse/core/util'
 import { fireEvent, waitFor } from '@testing-library/react'
-import { userEvent } from '@testing-library/user-event'
 
 import {
   createView,
@@ -51,9 +50,8 @@ test('export session with alignments and gff tracks', async () => {
   await findDisplayPainted('pileup-display', delay)
   await findDisplayById('gff3tabix_genes-LinearBasicDisplay')
 
-  const user = userEvent.setup()
-  await user.click(await findByText('File'))
-  await user.click(await findByText('Export session'))
+  fireEvent.click(await findByText('File'))
+  fireEvent.click(await findByText('Export session'))
 
   await waitFor(() => {
     expect(saveAs).toHaveBeenCalled()

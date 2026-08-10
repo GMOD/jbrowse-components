@@ -1,5 +1,4 @@
 import { fireEvent } from '@testing-library/react'
-import { userEvent } from '@testing-library/user-event'
 
 import {
   createView,
@@ -32,10 +31,9 @@ const opts = [{}, delay]
 test(
   'opens an alignments track and clicks feature',
   async () => {
-    const user = userEvent.setup()
     const { view, findByTestId } = await createView(config)
     view.setNewView(5, 100)
-    await user.click(
+    fireEvent.click(
       await findByTestId(hts('volvox_alignments_pileup_coverage'), ...opts),
     )
 
@@ -55,10 +53,9 @@ test(
 test(
   'test snpcoverage doesnt count snpcoverage',
   async () => {
-    const user = userEvent.setup()
     const { view, findByTestId } = await createView(config)
     view.setNewView(0.03932, 67884.16536402702)
-    await user.click(
+    fireEvent.click(
       await findByTestId(hts('volvox-long-reads-sv-cram'), ...opts),
     )
     const display = await findDisplayPainted('pileup-display', delay)

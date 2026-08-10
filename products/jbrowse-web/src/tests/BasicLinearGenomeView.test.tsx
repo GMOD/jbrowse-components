@@ -180,12 +180,15 @@ test('click to display center line with correct value', async () => {
 }, 30000)
 
 test('test choose option from dropdown refName autocomplete', async () => {
-  const user = userEvent.setup()
   const { findAllByText, findByPlaceholderText, getByPlaceholderText } =
     await createView()
 
   await findAllByText('ctgA', ...opts)
   const input = await findByPlaceholderText('Search for location')
+  // userEvent, not fireEvent: the MUI Autocomplete opens its listbox off the
+  // focus/pointer sequence, so a bare click event leaves it closed and the
+  // findByRole('listbox') below times out.
+  const user = userEvent.setup()
   await user.click(input)
   await user.click(
     within(await screen.findByRole('listbox', ...opts)).getByText(/ctgB/),
