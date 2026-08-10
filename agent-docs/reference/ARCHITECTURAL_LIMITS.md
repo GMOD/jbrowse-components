@@ -31,59 +31,41 @@ Keeping it honest:
 
 **Status:** Mitigated (view-level), root cause is WebGL2 itself.
 
-**Budget contexts as one per open GPU track.** Each display owns one backend
-canvas (`DisplayChrome` hands out a single `canvasRef`; extra canvases its child
-renders are 2D overlays), and `WebGL2Hal`'s constructor takes its own
-`canvas.getContext('webgl2')` with no pooling. Browsers cap live WebGL contexts
-per page and force-lose the oldest past the cap, `useRenderingBackend`
-re-acquires, that eviction evicts another, and the cascade wedges the main thread
-instead of degrading.
+**Budget contexts as one per open GPU track.** One display owns one backend
+canvas and `WebGL2Hal` takes its own context with no pooling, so the count to
+watch is open GPU tracks. **The ceiling is 16** (Chrome 151, measured
+2026-08-05); past it, eviction and re-acquisition cascade and wedge the main
+thread rather than degrading. **A single ordinary view reaches it** — 17 GPU
+tracks on one LGV, nothing synthetic. That retires the older reading of this
+entry, which bracketed the cascade "between 20 and 72" from a 24-view harness
+and called the realistic shape unmeasured.
+
+[GPU_CONTEXT_BUDGET.md](GPU_CONTEXT_BUDGET.md) owns this subject and is the
+only place the numbers should be edited: the ceiling table on both drivers, the
+software-vs-hardware cost crossover, the harness, and the four fixes already
+measured and eliminated.
 
 Chromosomes are free: a whole-genome view of one track is still one canvas, with
 one GPU buffer per `displayedRegionIndex` and one scissored draw per render
 block. **This ceiling is a primary motivation for targeting WebGPU**, which
 shares one device across displays (next entry) and so has no per-canvas cap.
 
-**The ceiling is 16 live contexts** (Chrome 151, measured 2026-08-05 on both a
-real Intel UHD 630 and SwiftShader — it is a browser/ANGLE property, not a
-driver one). One LGV with 16 GPU tracks holds 17 contexts counting the
-`getGraphicsCapabilities` probe and loses none; the 17th track evicts, and the
-re-acquire cascades — headed, one view with 20 tracks creates 57 contexts and
-takes 41 losses. So RFC-001 §12b's "Firefox around 16" is the figure that
-generalizes; its "Chrome around 8" does not.
-
-**A single ordinary view reaches it.** No many-view session and nothing synthetic
-required — 17 GPU tracks on one LGV is an unremarkable thing to open. That
-retires the older reading of this entry, which bracketed the cascade "between 20
-and 72" from a synthetic 24-view harness and called the realistic shape
-unmeasured.
-
-**The cascade past the ceiling is violent; the per-context cost is the driver's.**
-The same rebuild churn costs ~10x more under software rendering than on a real
-GPU (shader compilation on a CPU rasterizer), which is why Canvas2D beats WebGL
-by ~25x on SwiftShader and loses to it by ~2x on real hardware. `preferredRenderer`
-does not know the difference. [GPU_CONTEXT_BUDGET.md](GPU_CONTEXT_BUDGET.md)
-has the tables, the harness, and the fixes already eliminated.
-
 Mitigations in place, both bounding rather than fixing:
 
 - **View-level lazy mount** (`packages/app-core/src/ui/App/useViewVisibility.ts`)
   gates whether a view mounts its GPU subtree, falling back to always-visible
   where IntersectionObserver is absent (jsdom/SSR). Took the 72-canvas case to 6.
-  It buys that by **rebuilding the pipeline every time a view scrolls back into
-  view** — a fresh context, recompiling the whole program set, one per display per
-  scroll pass. So it bounds simultaneous contexts and converts the cap into a
-  per-scroll cost: cheap on a real GPU (1.4 s a pass over 12 views x 3 tracks),
-  ~10x that under software rendering. It is not a free win, and it does not bound
-  anything across a multi-panel workspace, where every panel is on screen at
-  once. See [GPU_CONTEXT_BUDGET.md](GPU_CONTEXT_BUDGET.md).
+  It buys that by rebuilding the pipeline every time a view scrolls back into
+  view, converting the cap into a per-scroll cost — cheap on a real GPU, ~10x
+  that under software rendering. It is not a free win, and it bounds nothing
+  across a multi-panel workspace, where every panel is on screen at once.
 - **Bounded auto-recovery** in `useRenderingBackend`: at most
   `MAX_CONTEXT_RECOVER_ATTEMPTS` re-inits on backoff, and the budget resets only
   on a genuine `webglcontextrestored` or a manual retry, so a flapping context
   climbs to the cap and stops rather than spinning.
 
 Still exposed: tracks inside a mounted view are not virtualized, so one LGV with
-17 GPU tracks allocates 17 contexts and crosses the ceiling above.
+17 GPU tracks allocates 17 contexts and crosses the ceiling.
 
 **Retire when** WebGL2 retires (RFC-001 §13a) or track-level mount/release lands.
 The measurement that used to gate both is done — the ceiling above — and it says

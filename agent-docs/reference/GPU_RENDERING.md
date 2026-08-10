@@ -818,16 +818,14 @@ data.
 
 `WebGL2Hal`'s constructor takes its own `canvas.getContext('webgl2')` with no
 pooling, and each display owns one backend canvas (`DisplayChrome` hands out a
-single `canvasRef`; extra canvases its child renders are 2D overlays). Browsers
-cap live WebGL contexts per page and force-lose the oldest past the cap, which the
-recovery re-acquires, evicting another — a cascade that wedges the main thread
-rather than degrading. `WebGPUHal` has no equivalent cap, since every display
-shares the `gpuDevice.ts` singleton; **that is a primary reason the GPU path
-targets WebGPU.**
+single `canvasRef`; extra canvases its child renders are 2D overlays). So the
+count to watch is **open GPU tracks**. `WebGPUHal` has no equivalent cap, since
+every display shares the `gpuDevice.ts` singleton; **that is a primary reason the
+GPU path targets WebGPU.**
 
-So the count to watch is **open GPU tracks**. Chromosomes are free: a whole-genome
-view of one track is one canvas holding one buffer per `displayedRegionIndex`,
-drawn as several scissored blocks. Practical consequences:
+Chromosomes are free: a whole-genome view of one track is one canvas holding one
+buffer per `displayedRegionIndex`, drawn as several scissored blocks. Practical
+consequences:
 
 - Mounting a canvas is not free, and `stopRenderingBackend` + `dispose()` on
   unmount is what returns a context. Views lazy-mount for this reason
@@ -835,9 +833,11 @@ drawn as several scissored blocks. Practical consequences:
 - `?renderer=canvas2d` allocates none, which is why it is the fallback for
   many-track sessions.
 
-Measurements, the unpinned cap, and mitigation state:
+The cap itself, what happens past it, and the mitigation state are in
+[GPU_CONTEXT_BUDGET.md](GPU_CONTEXT_BUDGET.md) and
 [ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md) §"One WebGL2 context per
-display canvas".
+display canvas". Don't restate the numbers here — they have been wrong in three
+places at once before.
 
 **A failed device acquisition is cached, except after a loss.** `getGpuDevice()`
 memoizes its promise, so a null result normally means "no WebGPU on this machine"

@@ -220,6 +220,6 @@ Kept so a section is not renumbered or deleted out from under a reference:
 - `plugins/canvas/src/LinearBasicDisplay/passes/index.ts` → §5
 - [ADR-040](../architecture-decision-records/adr-040-no-genome-quad-vertex-helper.md) → §5b (twice)
 - [PLUGIN_ABI_STABILITY.md](PLUGIN_ABI_STABILITY.md) → §7 (three times)
-- [ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md) → §12b, §13a, §13b
+- [ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md) → §13a, §13b
 - [GPU_CONTEXT_BUDGET.md](GPU_CONTEXT_BUDGET.md) → §12b
 - [GPU_RENDERING.md](GPU_RENDERING.md) → §3a

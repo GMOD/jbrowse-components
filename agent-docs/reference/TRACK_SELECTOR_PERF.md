@@ -75,12 +75,13 @@ model.setFilterText(prefix)
 const elapsed = performance.now() - t0
 ```
 
-**This repo is usually built by several agents at once.** At load average 13.8
-on 16 cores the same benchmark on the same commit varied 5x between runs, which
-manufactured an apparent 5x speedup that did not exist. Use the **minimum over
-many batches** — the estimator least distorted by contention — and alternate the
-two trees within one session. Absolute numbers are not comparable across
-sessions; only within-session A/B is.
+**This repo is usually built by several agents at once**, which invented a 5x
+speedup here that did not exist. The general form of that trap, and the rules
+that survive it, are in
+[PERF_INSTRUMENTATION.md](PERF_INSTRUMENTATION.md#measuring-on-a-contended-box).
+What it means for this benchmark specifically: use the **minimum over many
+batches** and alternate the two trees within one session. Absolute numbers are
+not comparable across sessions; only within-session A/B is.
 
 For the A/B itself, `git worktree add --detach <dir> <sha>` plus symlinked
 `node_modules` (root, and each package that has one) runs jest in both trees
