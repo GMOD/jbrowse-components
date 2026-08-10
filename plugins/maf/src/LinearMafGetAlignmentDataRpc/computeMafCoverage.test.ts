@@ -142,6 +142,37 @@ test('a row shorter than the reference contributes nothing past its end', () => 
   expect(Array.from(full.identity)).toEqual([1, 1, Number.NaN, Number.NaN])
 })
 
+// ' ' is missing data, same as '-': no depth, no mismatch, no insertion length.
+// Nothing pinned this before, which mattered once the block-uniform fast arms
+// stopped calling `alignedBaseUpper` and spelled the classification out
+// themselves — there are now three copies of "is this byte a base", and a
+// dropped ` ` test in any of them would have gone unnoticed. Both arms are
+// covered: this block is uniform, the next one is ragged.
+// ref 'A-CT' maps col1 to an insertion and cols 0,2,3 to refPos 50,51,52.
+// row1 holds a base only in col0; every other column of it is missing data, so
+// it must add no depth, no mismatch and no insertion length anywhere.
+test('a space is missing data, in reference and insertion columns alike', () => {
+  const blocks: TestWireBlock[] = [
+    block(50, 'A-CT', [row(0, 'AGCT'), row(1, 'A'.padEnd(4, ' '))]),
+  ]
+  const r = computeMafCoverage(blocks, 50, 53)
+  expect(r.insertions).toEqual([{ position: 51, length: 1 }])
+  expect(Array.from(r.depths)).toEqual([2, 1, 1])
+  expect(Array.from(r.mismatchPositions)).toEqual([])
+})
+
+// Same block, but row1 is short enough to force the ragged arm as well, so the
+// two spellings of the classification are asserted to agree.
+test('a space is missing data on the ragged path too', () => {
+  const blocks: TestWireBlock[] = [
+    block(50, 'A-CT', [row(0, 'AGCT'), row(1, 'A'.padEnd(2, ' '))]),
+  ]
+  const r = computeMafCoverage(blocks, 50, 53)
+  expect(r.insertions).toEqual([{ position: 51, length: 1 }])
+  expect(Array.from(r.depths)).toEqual([2, 1, 1])
+  expect(Array.from(r.mismatchPositions)).toEqual([])
+})
+
 test('a short row emits no phantom insertion in a reference-gap column', () => {
   // Ref has a 2-column insertion at refPos=51; row1 ends before it.
   const blocks: TestWireBlock[] = [

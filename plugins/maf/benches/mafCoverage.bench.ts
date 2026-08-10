@@ -281,6 +281,29 @@ const SHAPES: Shape[] = [
     mismatchEvery: 17,
     lowerEvery: 2,
   },
+  // Insertion-heavy: a reference gap column takes the *other* per-cell loop,
+  // the one that accumulates pending insertion runs. Every shape above spends
+  // ~3% of its columns there, which is realistic but far too little to see that
+  // loop at all — these two exist so a change to it is measurable rather than
+  // assumed. Indel-dense alignments really do reach these rates locally.
+  {
+    name: '30-way, 1 ref col in 8 a gap',
+    rows: 30,
+    cols: 500,
+    refGapEvery: 8,
+    mismatchEvery: 17,
+    rowGapEvery: 53,
+    lowerEvery: 3,
+  },
+  {
+    name: '30-way, 1 ref col in 3 a gap',
+    rows: 30,
+    cols: 500,
+    refGapEvery: 3,
+    mismatchEvery: 17,
+    rowGapEvery: 53,
+    lowerEvery: 3,
+  },
   // the defensive path: rows shorter than their block reference
   {
     name: '30-way, 1 row in 3 truncated',

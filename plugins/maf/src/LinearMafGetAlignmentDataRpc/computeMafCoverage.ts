@@ -171,9 +171,17 @@ export interface MafCoverageResult {
  * kernel without it is 1.8x the one with it, on both a 26x7 and a 447x200
  * shape — which is why the ALU-level rewrites (hoisting `refKnown`, a per-block
  * `isRefRow` byte) measured 0.89-1.00x and are in REJECTED_IDEAS.md. Hoisting
- * the bound to the per-block `uniformRows` scan below is 1.21-1.39x on the
+ * the bound to the per-block `uniformRows` scan below is 1.13-1.24x on the
  * whole function across six shapes, against a byte-identical control copy
- * scoring 1.00-1.04x on the same runs.
+ * scoring 0.97-1.04x on the same runs — `benches/mafCoverage.bench.ts`, whose
+ * min-of-interleaved-rounds is the number to quote. A mean-based harness read
+ * 1.21-1.39x for the same change and is not a figure to repeat.
+ *
+ * The insertion loop takes the same fast arm, and it is the weaker half of the
+ * change: worth ~1.05x over control where a *third* of reference columns are
+ * gaps, and 1.00x at the 3-12% rates real alignments run at, since that loop
+ * only executes on gap columns. It is there for symmetry with the depth loop
+ * and because it is free once `uniformRows` exists — not because it pays.
  *
  * The other idea worth heading off is SWAR — reading the arena as `Uint32` and
  * classifying four columns at a time. A kernel doing just the depth and match
@@ -266,8 +274,8 @@ export function computeMafCoverage(
     // shorter than the block's reference is the defensive case rather than the
     // normal one — which makes `alignedBaseUpper`'s `col >= len` test a
     // per-cell answer to a per-block question. One scan of this block's
-    // `rowLength` buys the depth loop below an arm with no bound test at all,
-    // and that arm is 1.2-1.3x on the whole function (see the doc comment).
+    // `rowLength` buys *both* per-cell loops below — the insertion one and the
+    // depth one — an arm with no bound test at all (see the doc comment).
     let uniformRows = true
     for (let i = rowLo; i < rowHi; i++) {
       if (rowLength[i]! < refLen) {
@@ -278,16 +286,33 @@ export function computeMafCoverage(
     for (let col = 0; col < refLen; col++) {
       const refByte = arena[refBase + col]!
       if (refByte === DASH) {
-        for (let i = rowLo; i < rowHi; i++) {
-          if (
-            alignedBaseUpper(arena, rowOffset[i]!, rowLength[i]!, col) !==
-            NO_BASE
-          ) {
-            const sample = rowSample[i]!
-            if (pendingInsLen[sample] === 0) {
-              pendingSamples[pendingCount++] = sample
+        if (uniformRows) {
+          // Same two arms as the depth loop below, for the same reason. This
+          // one never needs the uppercased value — only whether the cell holds
+          // a base at all — so the fast arm is `alignedBaseUpper` with both the
+          // bound test and the `& ~LOWER_BIT` gone.
+          for (let i = rowLo; i < rowHi; i++) {
+            const byte = arena[rowOffset[i]! + col]!
+            if (byte !== DASH && byte !== SPACE) {
+              const sample = rowSample[i]!
+              if (pendingInsLen[sample] === 0) {
+                pendingSamples[pendingCount++] = sample
+              }
+              pendingInsLen[sample]! += 1
             }
-            pendingInsLen[sample]! += 1
+          }
+        } else {
+          for (let i = rowLo; i < rowHi; i++) {
+            if (
+              alignedBaseUpper(arena, rowOffset[i]!, rowLength[i]!, col) !==
+              NO_BASE
+            ) {
+              const sample = rowSample[i]!
+              if (pendingInsLen[sample] === 0) {
+                pendingSamples[pendingCount++] = sample
+              }
+              pendingInsLen[sample]! += 1
+            }
           }
         }
       } else {
