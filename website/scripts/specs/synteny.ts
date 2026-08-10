@@ -300,7 +300,14 @@ function launchFromSelectionParts(): ScreenshotSpec[] {
       // that cap and the frame cut it off mid-button, which since the launch
       // grew a second way out ("Replace current view" beside "Open in new
       // view") is the row worth showing.
-      viewportHeight: 760,
+      //
+      // 760 -> 676 with the dialog's own shrink (review: "can the dialog
+      // y-screen real estate be improved by potentially adding an 'advanced'
+      // dropdown?"). The four option fields below the panel list are now an
+      // `Advanced` disclosure, collapsed — see AdvancedLaunchOptions in
+      // plugins/linear-comparative-view. The run reported exactly 84 css px
+      // blank below the shorter dialog.
+      viewportHeight: 676,
       actions: [...select, ...openDialog],
     },
     {

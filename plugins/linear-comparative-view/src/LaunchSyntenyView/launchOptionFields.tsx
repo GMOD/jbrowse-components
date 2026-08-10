@@ -1,6 +1,15 @@
 import { LabeledCheckbox, NumberTextField } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { HelpTooltip } from '@jbrowse/synteny-core'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Typography,
+} from '@mui/material'
+
+import type { ReactNode } from 'react'
 
 // The option fields the launch dialogs carry: the pairwise launch (one clicked
 // alignment) and the region launch (every assembly a locus aligns to) ask the
@@ -9,12 +18,77 @@ import { HelpTooltip } from '@jbrowse/synteny-core'
 // per-row empty-state block expensive.
 export const DEFAULT_WINDOW_SIZE = 1000
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   formControl: {
     margin: 10,
     border: '1px solid #ccc',
   },
-})
+  // Flattened out of MUI's default Accordion, which is a Paper: in a dialog the
+  // elevation and the ::before divider read as a second dialog inside the
+  // first. The SUMMARY's teal is deliberately left alone — the theme paints
+  // every `MuiAccordionSummary` with `palette.tertiary.main`
+  // (packages/core/src/ui/theme.ts), which is how a section header looks
+  // everywhere else in the app, and it is what makes this row read as a control
+  // rather than as a line of text.
+  advanced: {
+    background: 'none',
+    '&:before': {
+      display: 'none',
+    },
+  },
+  advancedSummary: {
+    minHeight: 0,
+    padding: theme.spacing(0, 1),
+    '& .MuiAccordionSummary-content': {
+      margin: theme.spacing(0.5, 0),
+    },
+  },
+  // The expand chevron inherits the default text colour, which on that teal is
+  // near-invisible — the same override AboutWidget's accordions carry. Missing
+  // it is how the first cut of this shipped a header with no affordance on it
+  // at all, plainly visible in multiway_synteny/ecoli_launch_dialog.
+  advancedIcon: {
+    color: theme.palette.tertiary.contrastText || '#fff',
+  },
+  advancedDetails: {
+    padding: 0,
+  },
+}))
+
+// The tail of the region launch dialog, folded away (review: "can the dialog
+// y-screen real estate be improved by potentially adding an 'advanced'
+// dropdown?"). Every field inside has a working default, and the thing the
+// dialog is FOR -- the panel list, one row per aligning assembly, which the
+// user reorders and unchecks -- is above it. On an all-vs-all locus that list
+// is a dozen rows and scrolls, so the options below it were what decided how
+// much of the list a short window could show.
+//
+// Only the region launch gets one. The pairwise dialog's whole body is these
+// same fields, two or three of them depending on the alignment, so folding them
+// there would leave a dialog with nothing in it but a submit button.
+//
+// Collapsed rather than `defaultExpanded`: an option a reader has to open is
+// still discoverable, and each of these was already reachable only by knowing
+// the dialog. The children stay mounted, so the fields' own state is the
+// dialog's whether or not it is ever opened.
+export function AdvancedLaunchOptions({ children }: { children: ReactNode }) {
+  const { classes } = useStyles()
+  return (
+    <Accordion disableGutters elevation={0} className={classes.advanced}>
+      <AccordionSummary
+        expandIcon={
+          <ExpandMoreIcon fontSize="small" className={classes.advancedIcon} />
+        }
+        className={classes.advancedSummary}
+      >
+        <Typography variant="subtitle2">Advanced</Typography>
+      </AccordionSummary>
+      <AccordionDetails className={classes.advancedDetails}>
+        {children}
+      </AccordionDetails>
+    </Accordion>
+  )
+}
 
 // Narrow both panels to the slice of the alignment the user is looking at,
 // rather than framing them on the whole block's endpoints. Offered by the

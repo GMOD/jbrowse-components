@@ -26,6 +26,7 @@ import {
 
 import { launchSyntenyViewForFeatures } from './buildSyntenyViewSpec.ts'
 import {
+  AdvancedLaunchOptions,
   CollapsePanelsCheckbox,
   CopySourceTracksCheckbox,
   DEFAULT_WINDOW_SIZE,
@@ -367,31 +368,36 @@ export default function LaunchSyntenyViewForRegionDialog({
           </Button>
         </div>
       ) : null}
-      <FlipInvertedTargetsCheckbox
-        checked={flipReversedMates}
-        onChange={val => {
-          setFlipReversedMates(val)
-        }}
-      />
-      {anchorTracks.length ? (
-        <CopySourceTracksCheckbox
-          checked={copySourceTracks}
+      {/* Everything below the panel list is folded away, and the list is what
+       the dialog is for — see AdvancedLaunchOptions for why these four and not
+       the pairwise dialog's. */}
+      <AdvancedLaunchOptions>
+        <FlipInvertedTargetsCheckbox
+          checked={flipReversedMates}
           onChange={val => {
-            setCopySourceTracks(val)
+            setFlipReversedMates(val)
           }}
         />
-      ) : null}
-      <CollapsePanelsCheckbox
-        checked={collapseEmptyRows}
-        onChange={val => {
-          setCollapseEmptyRows(val)
-        }}
-      />
-      <WindowSizeField
-        onChange={val => {
-          setWindowSize(val)
-        }}
-      />
+        {anchorTracks.length ? (
+          <CopySourceTracksCheckbox
+            checked={copySourceTracks}
+            onChange={val => {
+              setCopySourceTracks(val)
+            }}
+          />
+        ) : null}
+        <CollapsePanelsCheckbox
+          checked={collapseEmptyRows}
+          onChange={val => {
+            setCollapseEmptyRows(val)
+          }}
+        />
+        <WindowSizeField
+          onChange={val => {
+            setWindowSize(val)
+          }}
+        />
+      </AdvancedLaunchOptions>
     </SubmitDialog>
   )
 }
