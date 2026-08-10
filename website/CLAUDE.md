@@ -105,8 +105,8 @@ bookkeeping: `GLOBAL_TRIGGERS` in `screenshot-impact.ts` matches that prefix, so
   `displays: [{ type, ...slots }]`. Slots on the view's `tracks` entry are
   silently dropped and the display falls back to schema defaults.
 - **A display's config slots and its model props take opposite routes**, and
-  putting one where the other goes fails silently in both directions. A *slot*
-  goes in `displays: [...]` as above; a *model prop* goes on the view's `tracks`
+  putting one where the other goes fails silently in both directions. A _slot_
+  goes in `displays: [...]` as above; a _model prop_ goes on the view's `tracks`
   entry, which `normalizeTrackInit` folds into the display snapshot. So
   `displays: [{ rowHeight: 3 }]` does nothing — `rowHeight` is a model prop, and
   rows auto-fit `availableHeight / nrow`, which means **lane height is how you
@@ -206,9 +206,9 @@ bookkeeping: `GLOBAL_TRIGGERS` in `screenshot-impact.ts` matches that prefix, so
   serializes to null and parks every callout in the top-left corner.
 - **Text pills draw last**, over arrows and boxes (`annotationOverlay.ts`). An
   arrow's tail has to start inside the pill it leaves from, and a pill's width
-  is only known in-page — so place the pill's RIGHT edge with
-  `textAlign: 'end'` and put the tail 10px left of it. Don't hand-tune a `dx`
-  against a width you measured off an image.
+  is only known in-page — so place the pill's RIGHT edge with `textAlign: 'end'`
+  and put the tail 10px left of it. Don't hand-tune a `dx` against a width you
+  measured off an image.
 - **Don't `convert -append` a before/after figure by hand** — use a `compose`
   spec, or `stages` when a state is only reachable through the UI.
 - **A UI click-chain waiting on a fixed timeout is a red flag.** Make the
