@@ -208,7 +208,14 @@ function showDiff(paths: string[]) {
   })
 }
 
+// Two different outcomes, kept apart because the remedy is not the same. An
+// artifact that is merely out of date is fixed by `pnpm autogen` and a commit.
+// A generator that CRASHED produced nothing to commit, and telling someone to
+// run it again and commit the result is advice that cannot work — which is
+// exactly how one crash got reported onward as "the config manifest generator
+// is broken" when the generator was fine and the tree it reads was mid-edit.
 const stale: string[] = []
+const crashed: { name: string; status: number | null }[] = []
 const selected =
   filters.length > 0
     ? GENERATORS.filter(g => filters.some(f => g.name.includes(f)))
@@ -230,7 +237,7 @@ for (const { name, argv, diffPaths } of selected) {
     const before = new Set(check ? changedFiles(diffPaths) : [])
     const { status } = run(argv)
     if (status !== 0) {
-      stale.push(`${name} (generator failed)`)
+      crashed.push({ name, status })
     } else if (check) {
       const after = changedFiles(diffPaths).filter(f => !before.has(f))
       if (after.length > 0) {
@@ -243,12 +250,28 @@ for (const { name, argv, diffPaths } of selected) {
   }
 }
 
+if (crashed.length > 0) {
+  console.error(
+    `\n${crashed.length} generator(s) did not run to completion:\n${crashed
+      .map(c => `  - ${c.name} (exited ${c.status ?? 'on a signal'})`)
+      .join('\n')}\n\n` +
+      `Their diagnostic is above, inline. This is NOT a stale artifact and ` +
+      `re-running will not help until the cause is fixed.\n` +
+      `Some generators compile and execute the live source tree (the config ` +
+      `schema manifest bundles every core plugin), so the usual cause is the ` +
+      `tree itself: a syntax error, a half-finished edit, or a stale install ` +
+      `after a dependency change. Check the tree builds before suspecting the ` +
+      `generator.`,
+  )
+}
 if (stale.length > 0) {
   console.error(
     `\n${stale.length} generated artifact(s) out of date:\n${stale
       .map(n => `  - ${n}`)
       .join('\n')}\n\nRun 'pnpm autogen' and commit the result.`,
   )
+}
+if (crashed.length > 0 || stale.length > 0) {
   process.exit(1)
 }
 
