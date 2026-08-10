@@ -525,7 +525,10 @@ const PAGE = /* html */ `<!doctype html>
      \`isolation\` keeps difference blending inside the stage: without it the
      exposed strip beside a resized figure blends against the #222 wrap, which
      draws a grey band where the honest answer is "nothing here". */
-  .cmpstage { position: relative; isolation: isolate; user-select: none; }
+  /* overflow, because between a repaint and the image's onload the stage
+     carries its remembered box while the images are still at natural size —
+     3000px of figure spilling across the page for one frame */
+  .cmpstage { position: relative; isolation: isolate; user-select: none; overflow: hidden; }
   .cmpstage img { position: absolute; top: 0; left: 0; display: block; -webkit-user-drag: none; }
   /* so a pointerdown anywhere on the stage is a drag of the divider rather than
      the browser's own image drag, and \`e.target\` is always the stage */
@@ -671,6 +674,9 @@ const filters = { status: 'needs', changedOnly: false, runOnly: false, sortBy: '
 // silently leave behind whichever cards had been switched individually.
 const compareOverrides = new Map()
 const compareValues = new Map()
+// The box fitCompareStage last worked out for a card, so a repaint of that card
+// is born the right height instead of at nothing. See renderStage.
+const compareSizes = new Map()
 // Amplify (diff) and blink (onion) are momentary aids rather than ways of
 // looking — you turn one on for the four seconds it takes to answer a question
 // — so neither is a mode, and neither goes in the URL.
@@ -1114,8 +1120,17 @@ function renderStage(spec, mode) {
     mode === 'diff' && amplified.has(spec.name) ? 'amp' : '',
     mode === 'onion' && blinking.has(spec.name) ? 'blink' : '',
   ].filter(Boolean).join(' ')
+  // Born at the size it was last fitted to. The stage holds the box — the images
+  // inside are absolutely positioned — and it is only sized from an image's
+  // onload, so a repainted card was 180px of min-height until the bytes came
+  // back from cache. Every Approve, Deny and mode switch dropped a 600px stage
+  // to 180 and back, jerking the rest of the page 420px under a pointer that
+  // was working through a queue. fitCompareStage still owns the real answer and
+  // corrects this on arrival.
+  const size = compareSizes.get(spec.name)
   return '<div class="cmpwrap">' +
-    '<div class="cmpstage ' + on + '" style="--fade:' + v / 100 + ';--wipe:' + v + '%">' +
+    '<div class="cmpstage ' + on + '" style="--fade:' + v / 100 + ';--wipe:' + v + '%' +
+      (size ? ';width:' + size.w + 'px;height:' + size.h + 'px' : '') + '">' +
       '<img class="cmpbase" src="' + esc(spec.mainUrl) + '" loading="lazy" draggable="false" ' +
         'onload="fitCompare(this)" onerror="baselineFailed(this)" />' +
       '<img class="cmptop" src="' + currentSrc(spec) + '" draggable="false" onload="fitCompare(this)" />' +
@@ -1248,8 +1263,11 @@ function fitCompareStage(stage) {
   const scale = Math.min(1, (stage.parentElement.clientWidth || w) / w, CMP_MAX_PX / h)
   // the stage holds the box; the images are absolutely positioned inside it, so
   // it is the only thing giving the card its height
-  stage.style.width = Math.round(w * scale) + 'px'
-  stage.style.height = Math.round(h * scale) + 'px'
+  const box = { w: Math.round(w * scale), h: Math.round(h * scale) }
+  stage.style.width = box.w + 'px'
+  stage.style.height = box.h + 'px'
+  // so the next repaint of this card can start here rather than at nothing
+  compareSizes.set(stage.closest('.card').dataset.name, box)
   for (const i of imgs) {
     i.style.width = Math.round(i.naturalWidth * scale) + 'px'
     i.style.height = Math.round(i.naturalHeight * scale) + 'px'
