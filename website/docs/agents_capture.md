@@ -151,16 +151,27 @@ something the others do not, so waiting on one is not waiting on the rest:
 display _type_ (`pileup-display`, `wiggle-display`, `synteny_canvas`, …) and is
 stable for the element's whole life; `data-display-id` names the individual
 display. Neither carries readiness, so "this display, painted" is a conjunction
-— and `@jbrowse/capture` exports the builders so you do not write it out:
+— and `@jbrowse/capture` exports the builders so you do not write it out. The
+selector each one produces, spliced from the test that asserts it:
 
-```js
-import { displayPainted, displaySettled, displayById } from '@jbrowse/capture'
+<!-- include: products/jbrowse-capture/src/waits.test.ts#display-selectors -->
 
-await page.waitForSelector(displayPainted('pileup-display'))
-// '[data-testid="pileup-display"][data-display-drawn="true"]'
+```ts
+// `data-testid` names the display TYPE and never changes; readiness is a
+// separate attribute. "Has the pileup painted" is therefore a conjunction,
+// and these builders write it for you — pass one to `page.waitForSelector`.
+expect(displayPainted('pileup-display')).toBe(
+  '[data-testid="pileup-display"][data-display-drawn="true"]',
+)
 
-await page.waitForSelector(displaySettled('pileup-display'))
-// ...[data-display-phase="ready"] — the whole fetch, not just first paint
+// The stronger one. `drawn` flips on FIRST paint, so a figure that must show
+// data waits on the phase instead — that is the whole fetch, not first paint.
+expect(displaySettled('pileup-display')).toBe(
+  '[data-testid="pileup-display"][data-display-phase="ready"]',
+)
+
+// One display by its config's `displayId`, rather than every display of a type.
+expect(displayById('my_pileup')).toBe('[data-display-id="my_pileup"]')
 ```
 
 Older builds appended `-done` to `data-testid` on first paint (and `_done` on
