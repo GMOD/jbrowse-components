@@ -69,6 +69,28 @@ test('a tree offset wider than the axis strip still wins', () => {
   expect(rowLabelX(svg)).toBe(200)
 })
 
+// The rows stack edge to edge (`ticks` is built with offset 0), so a label
+// centered on its own tick lands half in the neighbouring row: clipped away
+// entirely on the first and last rows, overdrawn by the neighbour's
+// opposite-end label everywhere in between. YScaleBar's `insetLabels` is what
+// keeps them inside, and this is the only thing asking for it.
+test('the per-row axes inset their end labels', () => {
+  const svg = render({
+    model: makeModel(),
+    scalebarLeft: 50,
+    labelOffset: 0,
+  })
+  // domain-min at yBottom=100 (stroke at 99.5) pulled up to 95, domain-max at
+  // yTop=0 (stroke at 0.5) pushed down to 5, for each of the two rows
+  const axisLabels = [...svg.matchAll(/<text [^>]*paint-order="stroke"[^>]*>/g)]
+  expect(axisLabels.map(m => /\by="(-?[\d.]+)"/.exec(m[0])?.[1])).toEqual([
+    '-4.5',
+    '4.5',
+    '-4.5',
+    '4.5',
+  ])
+})
+
 test('no axis drawn (score legend only) leaves the labels at the offset', () => {
   const svg = render({
     model: makeModel({ isDensityMode: true }),

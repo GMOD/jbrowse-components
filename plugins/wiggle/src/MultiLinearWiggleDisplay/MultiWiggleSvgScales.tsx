@@ -125,7 +125,13 @@ export default observer(function MultiWiggleSvgScales({
           key={`scalebar-${idx}`}
           transform={`translate(0 ${getRowTop(idx, effectiveRowHeight)})`}
         >
-          <YScaleBar ticks={ticks} orientation="left" />
+          {/* insetLabels because these rows stack edge to edge (`ticks` is
+              built with offset 0, see the model): a label centered on a row's
+              own top or bottom tick straddles the boundary, so the first row's
+              top label and the last row's bottom label are half-clipped by the
+              track's <svg> and every boundary between them draws two labels on
+              the same pixels. */}
+          <YScaleBar ticks={ticks} orientation="left" insetLabels />
         </g>
       ))}
     </g>

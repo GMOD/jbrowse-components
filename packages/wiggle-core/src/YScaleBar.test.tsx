@@ -114,4 +114,59 @@ describe('YScaleBar', () => {
       'M-6 0.5H0.5V39.5H-6',
     )
   })
+
+  // Multi-wiggle's case: a full-height axis per row, no inset, so both end
+  // labels are centered on a row boundary. Ticks stay put; only the text moves.
+  it('insetLabels pulls the end labels inside the box, leaving ticks alone', () => {
+    const { container } = render(
+      <svg>
+        <YScaleBar
+          insetLabels
+          ticks={{
+            items: [
+              { value: 0, y: 100, label: '0' },
+              { value: 50, y: 50, label: '50' },
+              { value: 100, y: 0, label: '100' },
+            ],
+            yTop: 0,
+            yBottom: 100,
+          }}
+          orientation="left"
+        />
+      </svg>,
+    )
+    const groups = [...container.querySelectorAll('g[transform]')]
+    expect(groups.map(g => g.getAttribute('transform'))).toEqual([
+      'translate(0,99.5)',
+      'translate(0,50.5)',
+      'translate(0,0.5)',
+    ])
+    // bottom label up to y=95, top label down to y=5, middle one untouched —
+    // and untouched means no `y` at all, so the markup is byte-identical
+    // wherever the inset doesn't bite
+    expect(groups.map(g => g.querySelector('text')?.getAttribute('y'))).toEqual(
+      ['-4.5', null, '4.5'],
+    )
+  })
+
+  it('leaves labels centered on their ticks without insetLabels', () => {
+    const { container } = render(
+      <svg>
+        <YScaleBar
+          ticks={{
+            items: [
+              { value: 0, y: 100, label: '0' },
+              { value: 100, y: 0, label: '100' },
+            ],
+            yTop: 0,
+            yBottom: 100,
+          }}
+          orientation="left"
+        />
+      </svg>,
+    )
+    expect(
+      [...container.querySelectorAll('text')].map(t => t.getAttribute('y')),
+    ).toEqual([null, null])
+  })
 })
