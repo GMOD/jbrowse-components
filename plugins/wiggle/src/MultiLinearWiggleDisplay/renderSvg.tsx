@@ -6,8 +6,8 @@ import {
   renderDisplaySvg,
 } from '@jbrowse/plugin-linear-genome-view'
 import {
+  SvgClusterProvenanceCaption,
   SvgTreePath,
-  describeClusterProvenance,
   treeSidebarOffset,
 } from '@jbrowse/tree-sidebar'
 
@@ -181,13 +181,12 @@ function MultiWiggleSvgBody({
       {labelOffset && hierarchy ? (
         <>
           <SvgTreePath hierarchy={hierarchy} />
-          {/* The locus travels with the figure — see SvgTreeSidebar, which
-              carries the same caption for the displays that can use it. */}
-          {model.clusterProvenance ? (
-            <text x={0} y={-4} fontSize={11} fill="#666">
-              {describeClusterProvenance(model.clusterProvenance)}
-            </text>
-          ) : null}
+          {/* The same caption component `SvgTreeSidebar` draws for the displays
+              that can use that wrapper — see there for why this display can't,
+              and there for the caption's own rationale. */}
+          <SvgClusterProvenanceCaption
+            clusterProvenance={model.clusterProvenance}
+          />
         </>
       ) : null}
     </>

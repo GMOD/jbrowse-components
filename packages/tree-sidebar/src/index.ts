@@ -28,6 +28,7 @@ export type {
   ClusterProvenance,
   ClusterProvenanceRegion,
 } from './clusterProvenance.ts'
+export { SvgClusterProvenanceCaption } from './SvgClusterProvenanceCaption.tsx'
 export { SvgTreePath } from './SvgTreePath.tsx'
 export { SvgTreeSidebar } from './SvgTreeSidebar.tsx'
 export { setupTreeDrawingAutorun } from './treeDrawingAutorun.ts'
