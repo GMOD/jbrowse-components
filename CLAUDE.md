@@ -21,7 +21,10 @@ checkout, so ordinary git is yours to use without asking.
   lives in the primary checkout, so the merge runs there. It fast-forwards even
   when that checkout is dirty, _unless_ the merge would overwrite one of its
   modified files — then it refuses and changes nothing. On a refusal, rebase and
-  retry; never `git update-ref` main or force the merge.
+  retry; never `git update-ref` main or force the merge. The two things that
+  look like shortcuts are both worse: `git push . HEAD:main` just refuses here
+  (`receive.denyCurrentBranch` is unset), and `update-ref` on a checked-out
+  dirty `main` desynchronises its index from its worktree.
 - **Land small and often** rather than saving a branch up. The longer a branch
   runs, the more likely a fast-forward stops being possible.
 - **Don't push to `origin` (GMOD/jbrowse-components) or open a PR unless
@@ -76,6 +79,11 @@ checkout, so ordinary git is yours to use without asking.
 
 - Avoid running tests frequently, they are slow. Use `pnpm test <directory>`,
   not the full suite. Lint with `--fix`.
+- **A full-suite run from the shared primary checkout also _lies_**, which is
+  the reason the rule above matters more than the runtime does: other agents
+  edit the tree mid-run, so a different unrelated suite fails each time and none
+  of it is about your change. Judge your own change by a scoped run, in your own
+  worktree.
 - **`pnpm format <paths>` — pass paths.** Bare `pnpm format` rewrites all ~5800
   files. In your own worktree that is merely an unreviewable diff that will
   never fast-forward onto main; in the shared primary checkout it also lands
