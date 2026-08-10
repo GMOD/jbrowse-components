@@ -269,6 +269,23 @@ visual scroll from offsetPx updates** — render a wider-than-viewport canvas an
 CSS-translate it during scroll, only re-rendering when offsetPx exits the
 buffered region. Substantial change; not attempted in May 2026.
 
+## Measuring on a contended box
+
+This dev machine regularly sits at load average 60-80 on 16 cores, because other
+agents run `tsc`/`tsgolint` concurrently. That is enough to invent or erase any
+result you are likely to be chasing: the *same* cold jest run varied 18.6-25.9s
+purely from contention.
+
+A sequential before/after is therefore worthless here, and not just in theory —
+a babel change was reported as a **2.2x win** off one, and an interleaved,
+repeated A/B put the real difference at **zero**.
+
+- Check `uptime` before you believe anything.
+- Interleave the arms and take medians; never run all of A then all of B.
+- For in-process benchmarks, warm *both* variants before timing. Running variant
+  A first made it look 2x slower than B when the real gap was 8%.
+- `ab-compare.ts` below does the interleaving for built bundles.
+
 ## Startup profiling (July 2026)
 
 Four throwaway harnesses in `website/scripts/`, all running the built bundle
