@@ -94,6 +94,14 @@ const GENERATORS: Generator[] = [
     name: 'reference index',
     argv: web('generate-reference-index.ts'),
   },
+  {
+    // DISPLAYCHROME.md's adoption map, read off the DisplayType registrations.
+    // The hand-maintained version was already short by one (LDTrackDisplay),
+    // which is the same way the display-foundations table drifted before it
+    // was generated.
+    name: 'DisplayChrome adoption map',
+    argv: web('generate-display-chrome-adoption.ts'),
+  },
   // Before the README is mirrored into the docs site, since this rewrites it.
   { name: 'jbrowse-img README commands', argv: web('sync-img-readme.ts') },
   { name: 'jbrowse-img doc', argv: web('generate-img-doc.ts') },
