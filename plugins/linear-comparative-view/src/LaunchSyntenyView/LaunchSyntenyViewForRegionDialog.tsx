@@ -3,14 +3,13 @@ import { useEffect, useState } from 'react'
 import {
   ErrorMessage,
   LabeledCheckbox,
-  ReplaceCurrentViewButton,
   SubmitDialog,
+  replaceViewAction,
 } from '@jbrowse/core/ui'
 import {
   assembleLocString,
   getBpDisplayStr,
   isAbortException,
-  isSessionWithViewReplacement,
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -25,10 +24,7 @@ import {
   Typography,
 } from '@mui/material'
 
-import {
-  launchSyntenyViewForFeatures,
-  resolvedMateSpan,
-} from './buildSyntenyViewSpec.ts'
+import { launchSyntenyViewForFeatures } from './buildSyntenyViewSpec.ts'
 import {
   CollapsePanelsCheckbox,
   CopySourceTracksCheckbox,
@@ -91,17 +87,8 @@ const useStyles = makeStyles()(theme => ({
 // the anchor row contributes nothing, since its locus is the dialog's own title
 // line. The strand is spelled out rather than left to the locstring's `[rev]`,
 // which means "this panel opens flipped" and so depends on the checkbox below.
-function PanelLocus({
-  row,
-  region,
-  className,
-}: {
-  row: PanelRow
-  region: Region
-  className?: string
-}) {
-  const span =
-    row.kind === 'anchor' ? undefined : resolvedMateSpan(row.feature, region)
+function PanelLocus({ row, className }: { row: PanelRow; className?: string }) {
+  const span = row.kind === 'anchor' ? undefined : row.span
   return span ? (
     <Typography variant="body2" className={className}>
       {assembleLocString({
@@ -175,7 +162,7 @@ export default function LaunchSyntenyViewForRegionDialog({
           // seeded once from the fetch rather than derived every render,
           // because from here on the list is the user's: they reorder it and
           // uncheck rows
-          setRows(toPanelRows(region.assemblyName, result.mates))
+          setRows(toPanelRows(region.assemblyName, result.mates, region))
           setUnconfigured(result.unconfigured)
         }
       })
@@ -188,9 +175,11 @@ export default function LaunchSyntenyViewForRegionDialog({
       alive = false
       stopStopToken(stopToken)
     }
-  }, [discoverMatesFor, trackId, region.assemblyName])
+    // `region` whole rather than its assemblyName: the rows carry each panel's
+    // resolved locus, which is cut from all four of its fields. Stable for the
+    // dialog's life for the same reason `discoverMatesFor` is
+  }, [discoverMatesFor, trackId, region])
   const { anchorIndex, mates } = launchOrder(rows ?? [])
-  const canReplace = !!sourceView && isSessionWithViewReplacement(session)
   const launchDisabled = windowSize === undefined || !mates.length
   const launch = (replacing?: AbstractViewModel) => {
     if (windowSize !== undefined && mates.length) {
@@ -213,20 +202,15 @@ export default function LaunchSyntenyViewForRegionDialog({
 
   return (
     <SubmitDialog
+      {...replaceViewAction({
+        session,
+        sourceView,
+        disabled: launchDisabled,
+        onReplace: launch,
+      })}
       open
       title="Launch synteny view for region"
       submitDisabled={launchDisabled}
-      submitText={canReplace ? 'Open in new view' : undefined}
-      actions={
-        canReplace ? (
-          <ReplaceCurrentViewButton
-            disabled={launchDisabled}
-            onClick={() => {
-              launch(sourceView)
-            }}
-          />
-        ) : null
-      }
       onCancel={() => {
         handleClose()
       }}
@@ -328,11 +312,7 @@ export default function LaunchSyntenyViewForRegionDialog({
              which contig the region reaches, whether the match is inverted, or
              that a mate's alignment stops short of the selection. The anchor
              row's own locus is the line at the top of the dialog. */}
-            <PanelLocus
-              row={row}
-              region={region}
-              className={classes.panelLocus}
-            />
+            <PanelLocus row={row} className={classes.panelLocus} />
             <IconButton
               size="small"
               aria-label={`Move ${row.assemblyName} up`}

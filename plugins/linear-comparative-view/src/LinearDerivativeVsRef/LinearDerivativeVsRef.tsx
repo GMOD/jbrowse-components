@@ -1,17 +1,12 @@
 import { useState } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
-import {
-  ErrorMessage,
-  ReplaceCurrentViewButton,
-  SubmitDialog,
-} from '@jbrowse/core/ui'
+import { ErrorMessage, SubmitDialog, replaceViewAction } from '@jbrowse/core/ui'
 import {
   addOrReplaceView,
   getContainingView,
   getSession,
   isSessionWithAddTracks,
-  isSessionWithViewReplacement,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
@@ -216,7 +211,6 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
   // questions could not be labelled (review: "'replace with split view' and
   // 'replace current view' are unclear what they would do").
   const [drawAs, setDrawAs] = useState<'synteny' | 'split'>('synteny')
-  const canReplace = isSessionWithViewReplacement(getSession(track))
 
   // The same candidate, drawn the other way the tutorial contrasts: stacked
   // reference panels rather than the derivative's own axis. It exists because
@@ -363,25 +357,25 @@ const DerivativeVsRefDialog = observer(function DerivativeVsRefDialog({
 
   return (
     <SubmitDialog
-      open
-      title="Reconstruct derivative allele"
       // The two destinations every launch dialog offers, worded as they word
       // them (the synteny launches, "read vs ref"), because that is all these
       // buttons decide now: what gets drawn is the "Draw as" choice in the body,
-      // beside the route it is drawn from. A session that cannot replace a view
-      // is left with this one, which is still what it does.
+      // beside the route it is drawn from.
+      {...replaceViewAction({
+        session: getSession(track),
+        sourceView: getContainingView(track),
+        disabled: candidates.length === 0,
+        onReplace: () => {
+          draw(true)
+        },
+      })}
+      open
+      title="Reconstruct derivative allele"
+      // Named unconditionally, unlike the other launch dialogs: with no replace
+      // button beside it this is still the one thing it does, and the body above
+      // it is already a form of choices rather than a confirmation.
       submitText="Open in new view"
       submitDisabled={candidates.length === 0}
-      actions={
-        canReplace ? (
-          <ReplaceCurrentViewButton
-            disabled={candidates.length === 0}
-            onClick={() => {
-              draw(true)
-            }}
-          />
-        ) : null
-      }
       onCancel={() => {
         handleClose()
       }}

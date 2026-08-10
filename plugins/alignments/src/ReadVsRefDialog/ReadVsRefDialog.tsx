@@ -4,14 +4,10 @@ import { SAM_FLAG_SECONDARY } from '@jbrowse/cigar-utils'
 import {
   ErrorMessage,
   NumberTextField,
-  ReplaceCurrentViewButton,
   SubmitDialog,
+  replaceViewAction,
 } from '@jbrowse/core/ui'
-import {
-  getContainingView,
-  getSession,
-  isSessionWithViewReplacement,
-} from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 import { CircularProgress, Typography } from '@mui/material'
@@ -57,7 +53,6 @@ export default function ReadVsRefDialog({
   // the same two from it, and a dialog that took them as props would let a
   // caller hand over a view the read was not clicked in.
   const sourceView = getContainingView(track)
-  const canReplace = isSessionWithViewReplacement(getSession(track))
 
   const { data: primaryFeature, error: fetchError } = useFetch(
     ['primaryAlignment', preFeature.id()],
@@ -82,25 +77,21 @@ export default function ReadVsRefDialog({
 
   return (
     <SubmitDialog
-      open
-      title="Set window size"
-      submitDisabled={disabled}
       // The read-vs-ref view is anchored on the read the launching view is
       // already showing, so replacing that view is as reasonable an outcome as
       // appending below it — the same choice the synteny launches offer, in the
-      // same words. Named only when both are on offer; otherwise Submit is the
-      // only button and "Submit" is what it has always said.
-      submitText={canReplace ? 'Open in new view' : undefined}
-      actions={
-        canReplace ? (
-          <ReplaceCurrentViewButton
-            disabled={disabled}
-            onClick={() => {
-              void onSubmit(sourceView)
-            }}
-          />
-        ) : null
-      }
+      // same words.
+      {...replaceViewAction({
+        session: getSession(track),
+        sourceView,
+        disabled,
+        onReplace: replacing => {
+          void onSubmit(replacing)
+        },
+      })}
+      open
+      title="Set window size"
+      submitDisabled={disabled}
       onCancel={() => {
         handleClose()
       }}

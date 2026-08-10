@@ -1,8 +1,8 @@
 import { useState } from 'react'
 
-import { ReplaceCurrentViewButton, SubmitDialog } from '@jbrowse/core/ui'
-import { isSessionWithViewReplacement } from '@jbrowse/core/util'
+import { SubmitDialog, replaceViewAction } from '@jbrowse/core/ui'
 
+import { getCigar } from '../syntenyMate.ts'
 import { launchSyntenyViewForFeatures } from './buildSyntenyViewSpec.ts'
 import {
   ClipToRegionCheckbox,
@@ -41,22 +41,21 @@ export default function LaunchSyntenyViewDialog({
   // the launching view's own tracks, for the panel that opens on its assembly
   anchorTracks?: TrackInit[]
   // the launching view itself, which the dialog offers to put the result in
-  // place of. Omitted by callers that have no single view to name — the synteny
-  // feature-details widget, whose link can be opened from a view the launched
-  // one would not be a replacement for
+  // place of. Optional for a caller with no single view to name; a caller that
+  // has one passes it unconditionally, since replaceViewAction is what decides
+  // whether the session can honor it
   sourceView?: AbstractViewModel
   trackId: string
   handleClose: () => void
 }) {
   const inverted = feature.get('strand') === -1
-  const hasCIGAR = !!feature.get('CIGAR')
+  const hasCIGAR = !!getCigar(feature)
   const [flipReversedMates, setFlipReversedMates] = useState(inverted)
   const [copySourceTracks, setCopySourceTracks] = useState(true)
   const [windowSize, setWindowSize] = useState<number | undefined>(
     DEFAULT_WINDOW_SIZE,
   )
   const [useRegionOfInterest, setUseRegionOfInterest] = useState(true)
-  const canReplace = !!sourceView && isSessionWithViewReplacement(session)
   const launch = (replacing?: AbstractViewModel) => {
     if (windowSize !== undefined) {
       launchSyntenyViewForFeatures({
@@ -75,23 +74,15 @@ export default function LaunchSyntenyViewDialog({
   }
   return (
     <SubmitDialog
+      {...replaceViewAction({
+        session,
+        sourceView,
+        disabled: windowSize === undefined,
+        onReplace: launch,
+      })}
       open
       title="Launch synteny view"
       submitDisabled={windowSize === undefined}
-      // named only when there is a second way out to tell it apart from —
-      // otherwise Submit is the only button and "Submit" is what it has always
-      // said
-      submitText={canReplace ? 'Open in new view' : undefined}
-      actions={
-        canReplace ? (
-          <ReplaceCurrentViewButton
-            disabled={windowSize === undefined}
-            onClick={() => {
-              launch(sourceView)
-            }}
-          />
-        ) : null
-      }
       onCancel={() => {
         handleClose()
       }}

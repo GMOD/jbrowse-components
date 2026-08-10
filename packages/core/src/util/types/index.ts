@@ -322,6 +322,29 @@ export function isSessionWithViewReplacement(
 }
 
 /**
+ * Whether `view` is a view a launcher can actually offer to swap out — i.e.
+ * whether "Replace current view" would replace anything.
+ *
+ * Both halves are needed. The session must be able to replace a view at all,
+ * and the view must be one of the session's OWN: a launcher resolves its source
+ * with `getContainingView`, which inside a LinearSyntenyView (or a dotplot)
+ * returns the row's inner LGV, and that view occupies no session slot. Replacing
+ * it falls through to `addView`, so the button did what Submit does while saying
+ * otherwise — the launched view appended below the untouched source. Asking this
+ * instead leaves those cases with the one button that tells the truth.
+ */
+export function canReplaceView(
+  session: AbstractSessionModel,
+  view: AbstractViewModel | undefined,
+): view is AbstractViewModel {
+  return (
+    view !== undefined &&
+    isSessionWithViewReplacement(session) &&
+    session.views.includes(view)
+  )
+}
+
+/**
  * Open a launched view, either in the slot `replacing` occupies or appended.
  *
  * The branch every launcher that offers "Replace current view" would otherwise

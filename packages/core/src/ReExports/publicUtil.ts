@@ -60,6 +60,7 @@ export {
   bpToPx,
   bytesForRegions,
   calculateRedispatchRange,
+  canReplaceView,
   capitalizeFirst,
   checkStopToken,
   checkStopTokenThrottled,

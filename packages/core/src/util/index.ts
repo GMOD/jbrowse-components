@@ -77,6 +77,7 @@ export {
   type Widget,
   type WidgetMap,
   addOrReplaceView,
+  canReplaceView,
   isAbstractMenuManager,
   isAppRootModel,
   isAuthNeededException,

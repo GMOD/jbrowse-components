@@ -9,7 +9,11 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import LaunchSyntenyViewForRegionDialog from './LaunchSyntenyViewForRegionDialog.tsx'
 
 import type { MateDiscoveryResult } from './pickMatesForRegion.ts'
-import type { AbstractSessionModel, Region } from '@jbrowse/core/util'
+import type {
+  AbstractSessionModel,
+  AbstractViewModel,
+  Region,
+} from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 const region: Region = {
@@ -76,18 +80,34 @@ function renderDialogFor(
   discoverMatesFor: (
     trackId: string,
   ) => (stopToken: StopToken) => Promise<MateDiscoveryResult>,
+  {
+    session = {} as AbstractSessionModel,
+    sourceView,
+  }: { session?: AbstractSessionModel; sourceView?: AbstractViewModel } = {},
 ) {
   return render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <LaunchSyntenyViewForRegionDialog
-        session={{} as AbstractSessionModel}
+        session={session}
         region={region}
         tracks={tracks}
+        sourceView={sourceView}
         discoverMatesFor={discoverMatesFor}
         handleClose={() => {}}
       />
     </ThemeProvider>,
   )
+}
+
+// isSessionModel wants these two members; `views` is the slot list the replace
+// offer is really about.
+function replaceableSession(views: unknown[]) {
+  return {
+    rpcManager: {},
+    configuration: {},
+    views,
+    replaceView: () => {},
+  } as unknown as AbstractSessionModel
 }
 
 // A selection can be a whole chromosome, and the download+parse behind the
@@ -163,6 +183,52 @@ test('the region size is stated alongside the locstring', async () => {
 test('each mate row shows the locus its panel will open on', async () => {
   renderDialog(() => Promise.resolve(invertedMate()))
   expect(await screen.findByText('ctgZ:800,001..810,000 (-)')).toBeTruthy()
+})
+
+// The launch is anchored on the locus the rubberband was dragged over, so the
+// launched view is as reasonable a replacement for the view it came from as an
+// addition below it. Both buttons are on offer, and Submit is renamed so the
+// pair can be told apart.
+describe('the two destinations', () => {
+  const lgv = {} as AbstractViewModel
+
+  test('a launching view the session holds a slot for can be replaced', async () => {
+    renderDialogFor(
+      [{ trackId: 't1', name: 'all vs all' }],
+      () => () => Promise.resolve(mates('volvox_ins')),
+      { session: replaceableSession([lgv]), sourceView: lgv },
+    )
+    expect(await screen.findByText('Open in new view')).toBeTruthy()
+    expect(screen.getByText('Replace current view')).toBeTruthy()
+    expect(screen.queryByText('Submit')).toBeNull()
+  })
+
+  // The LGV row of a synteny view: getContainingView names it, but the session
+  // holds no slot for it, so replaceView would append while the button said
+  // otherwise.
+  test('a view outside the session stack gets the one honest button', async () => {
+    renderDialogFor(
+      [{ trackId: 't1', name: 'all vs all' }],
+      () => () => Promise.resolve(mates('volvox_ins')),
+      { session: replaceableSession([{}]), sourceView: lgv },
+    )
+    expect(await screen.findByText('Submit')).toBeTruthy()
+    expect(screen.queryByText('Replace current view')).toBeNull()
+  })
+
+  // both buttons launch the same view, so neither may be live before there is
+  // one to launch
+  test('the replace button is disabled alongside submit', async () => {
+    renderDialogFor(
+      [{ trackId: 't1', name: 'all vs all' }],
+      () => () => Promise.resolve(mates('volvox_ins')),
+      { session: replaceableSession([lgv]), sourceView: lgv },
+    )
+    fireEvent.click(await screen.findByLabelText('volvox_ins'))
+    expect(
+      screen.getByText('Replace current view').closest('button'),
+    ).toBeDisabled()
+  })
 })
 
 // A whole-chromosome selection makes this a long wait, and a bare spinner in a
