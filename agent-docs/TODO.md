@@ -36,6 +36,10 @@ Exploratory concepts that are *not* committed work live in
 | [Synteny clicked outline in tiled mode](#the-synteny-clicked-outline-strokes-every-match-tile-in-transparent-indel-mode) | synteny | get the visual call — hull silhouette or per-tile |
 | [Cut WebGL2 contexts per display](#cut-webgl2-contexts-per-display) | GPU, limits | build — ceiling measured at 16, one ordinary view crosses it |
 | [MAF fetch cost on long blocks](#maf-fetch-cost-on-long-blocks) | MAF | run the one-line block-size check; premise unconfirmed |
+| [Produce and host the HPRC summary tier](#produce-and-host-the-hprc-summary-tier) | MAF, pangenome | one streaming pass over the TAF, then an S3 write |
+| [A TPA reader](#a-tpa-reader) | pangenome | no reader exists; 466 files ship |
+| [Byte-native MAF adapter path](#a-byte-native-maf-adapter-path-once-tabix-js-publishes-linebytescallback) | MAF | blocked on a tabix-js publish; measure the pack stage, not the decode |
+| [Dense-lane SNP change on a deep pileup](#measure-the-dense-lane-snp-change-on-a-deep-pileup) | alignments | direction safe, magnitude unmeasured |
 | [Alignments main-thread repack](#alignments-still-repacks-every-row-instanced-pass-on-the-main-thread) | alignments, GPU | profile the pack/upload/clone split first |
 | [Stop rewriting the worker's arrays](#stop-rewriting-the-workers-arrays-to-lay-out-features) | canvas | count the consumers — they decide if it is worth it |
 | [`featureItemMap` O(N) build](#featureitemmap-is-an-on-build-serving-a-handful-of-point-queries) | canvas | pairs with the entry above |
@@ -420,6 +424,13 @@ Then, in no particular order:
   row layout.** Dead code today — `createGraphRenderer` returns Canvas2D
   unconditionally — but `GraphRenderer.ts` states the one-token fix for whoever
   lands a GPU backend.
+- **Launch the graph view from a clicked segment.** The data side is ready:
+  `links.bed` states both endpoints in full, precisely so a reference segment can
+  reach an off-reference neighbour. The affordance belongs in the plugin repo.
+- **Regenerate `pangenome/hprc_whole_chromosome` against the current plugin
+  pin.** It was excluded from the pin-bump regen because another agent had an
+  uncommitted `hprc_bubble_score` variability track in the same spec, and
+  regenerating would have folded their change in.
 
 ### Coarsen a graph loaded as a FILE: collapse trivial bubbles
 
@@ -657,6 +668,56 @@ check before building any of it. The byte-gate half is closed: the gate no longe
 scales an estimate by span, it re-measures at the viewport it is judging, so a
 cost quantized by feature is measured rather than modelled
 (REGION_TOO_LARGE.md § "Measurement follows the viewport").
+
+### Produce and host the HPRC summary tier
+
+Both MAF adapters take a `summaryAdapter` slot now (`3e25ca40ce`) and the
+producer is published (`maf2bed` v0.6.0 on crates.io). What is left is one
+streaming pass over the **5.96 GB v2.0 TAF** — `taffy view` into
+`maf2bed --summary`, not the 53 GB MAF — landing at roughly 75 MB bgzipped for
+the whole genome, then an S3 write to the jbrowse.org bucket.
+
+Nothing is broken without it: the tutorial reads the TAF, which draws at gene
+scale within the default gate, so this buys whole-chromosome navigation. The
+measurements not to re-derive are in
+[reference/MAF_LARGE_BLOCKS.md](reference/MAF_LARGE_BLOCKS.md) §"A `.tai` is not
+a tier" — ~19 compressed bytes/bp for the v2.1 MAF and ~2.1 for the v2.0 TAF,
+flat from 100 kb up, so whole chr6 is 3.19 GB and 354 MB; the same 200 kb of chr6
+is 4.35 MB as alignment and **3.5 kB as summary**, all 464 haplotypes present.
+`~/scratch/jbrowse-pangenome` holds a real C4 slice and its summary, enough to
+wire this against a real region offline
+([reference/HPRC_RELEASE2.md](reference/HPRC_RELEASE2.md)).
+
+### A TPA reader
+
+HPRC ships 466 TPA files as a first-class alternative to the PAFs and nothing
+reads the format. Of everything on the HPRC list this is the one integration
+that would be genuinely differentiating rather than catching up.
+
+### A byte-native MAF adapter path, once tabix-js publishes `lineBytesCallback`
+
+`GMOD/tabix-js` PR #156 adds `lineBytesCallback` — the decompressed buffer and
+the line's `[lineStart, lineEnd)` range instead of a decoded string. Open,
+mergeable, green there; nothing in jbrowse can consume it until it is published.
+
+**Size it honestly before spending the follow-up**, because the PR's own
+description argues a different number than the one that matters here. The decode
+it removes is part of a **7.3 ms** line walk, not the ~26 ms a pre-columnar
+profile implied. The real win for MAF is downstream of the decode:
+`MafWirePacker.write` already takes a `Uint8Array` as readily as a string, so a
+byte-native path skips the decode *and* the `encodeInto` inside the 31 ms pack
+stage. That is the number to measure when the publish lands.
+[reference/MAF_WORKER_PIPELINE.md](reference/MAF_WORKER_PIPELINE.md) is the
+profile it has to be measured against.
+
+### Measure the dense-lane SNP change on a deep pileup
+
+`57e26565a4` moved SNP segments into dense lanes and lives in
+`packages/alignments-core`, so the alignments coverage pipeline inherits it — but
+every measurement behind it is MAF data (78 → 27 ms). A deep pileup has a
+different mismatch distribution, far more mismatches per position and far fewer
+distinct positions, which is the shape where dense lanes win by the most. The
+direction is safe and verified output-identical; the magnitude is unmeasured.
 
 ### Alignments still repacks every row-instanced pass on the main thread
 
