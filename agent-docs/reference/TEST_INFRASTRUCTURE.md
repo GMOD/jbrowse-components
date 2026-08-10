@@ -139,6 +139,34 @@ suite that reads the track list itself** — categories, filter text, counts, or
 picking a track out of a listbox by name. `LGVSynteny` is the worked example of
 one that cannot be trimmed.
 
+### `fireEvent`, not `userEvent`
+
+`userEvent.click` replays a whole pointer sequence — pointerover, pointerdown,
+mousedown, focus, pointerup, mouseup, click — each wrapped in `act()` against a
+mounted JBrowse app. On that DOM it measured **~260ms a click against ~6ms for
+`fireEvent.click`**. Converting ~100 sites across this directory cut the
+affected suites' test-body time **22.6%** (two interleaved A/B rounds, 22.1% and
+23.1%, 90 tests green in both arms). Ticking a track checkbox or walking a menu
+does not need the difference, and most of the directory already used `fireEvent`
+for exactly those.
+
+Four sites do need it, and each carries a comment saying so — the full-suite run
+is what found them, so expect a failure rather than a slow test if you convert
+one of these back:
+
+- **A focus guard.** `BookmarkWidget`'s hotkeys only fire when the view has
+  focus, and only a real pointer sequence focuses `tracksContainer`;
+  `fireEvent.click` leaves `activeElement` on `<body>` and the keydown is
+  dropped.
+- **A non-input target.** Its bookmark-label cell is a `<div>`, so
+  `fireEvent.change` fails outright with "element does not have a value setter".
+- **MUI Autocomplete.** It opens its listbox off the focus/pointer sequence, so
+  a bare click leaves it closed and the following `findByRole('listbox')` burns
+  its timeout (`BasicLinearGenomeView`'s refName dropdown).
+
+`user.type` on a plain text field is one `fireEvent.change`, which replaces the
+whole value — so a preceding `user.clear` becomes redundant rather than lost.
+
 The mock's height is the bigger, unclaimed lever: dropping it to 500 cut init to
 ~1.0s across the board, but only 37 rows then render, so every test naming a
 track further down the list fails. Trimming per suite gets the same win without
