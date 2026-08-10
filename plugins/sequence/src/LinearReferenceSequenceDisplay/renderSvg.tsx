@@ -16,13 +16,11 @@ import type {
   LgvSvgBodyProps,
   SvgExportable,
 } from '@jbrowse/plugin-linear-genome-view'
-import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 interface SequenceDisplayModel extends SvgExportable {
   id: string
   height: number
   sequenceData: ReadonlyMap<number, SequenceRegionData>
-  renderBlocks: RenderBlock[]
   renderState: DrawSequenceState
   // terminal static-message state (zoomed past base resolution, or every row
   // toggled off), folded into svgReady via svgReadyExtraTerminal; still read
@@ -42,6 +40,7 @@ function SequenceSvgBody({
   view,
   height,
   canvasWidth,
+  renderBlocks,
   opts,
 }: LgvSvgBodyProps<SequenceDisplayModel>) {
   const { sequenceData } = model
@@ -77,7 +76,7 @@ function SequenceSvgBody({
         height={height}
         opts={opts}
         paint={ctx => {
-          drawSequenceBlocks(ctx, sequenceData, model.renderBlocks, state)
+          drawSequenceBlocks(ctx, sequenceData, renderBlocks, state)
         }}
       />
     </SvgClipRect>
