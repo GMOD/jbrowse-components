@@ -1,4 +1,4 @@
-import { emitJsTwins, parseWgsl } from './wgslToJs.ts'
+import { TRANSLATION_RULES, emitJsTwins, parseWgsl } from './wgslToJs.ts'
 
 // The emitter's contract is narrow on purpose (adr-051): transliterate the
 // scalar subset exactly, and refuse everything else *loudly*. These tests weight
@@ -556,6 +556,217 @@ test('mix returns b exactly at t=1, which the lerp form does not', () => {
   expect(mix(0.2, 0.9, 0)).toBe(0.2)
   // Ordinary interior blend, unchanged by the choice of form.
   expect(mix(0, 10, 0.25)).toBe(2.5)
+})
+
+// `pnpm check-shader-oracle` covers a translation rule only if some shader in
+// the tree happens to call that builtin from a liftable function. Measured
+// against the current tree, it reaches eight of the seventeen — `abs`, `clamp`,
+// `floor`, `log2`, `max`, `min`, `smoothstep`, `sqrt` — and the other nine are
+// translated by rules no differential check has ever run.
+//
+// That is not a fixable gap in the oracle: two of the nine (`mix`, `step`) are
+// ones it *cannot* referee, because slangc's C++ target lowers them to different
+// expressions than the WGSL it hands the GPU. So the floor has to be here, and
+// the completeness assertion below is what keeps a tenth from being added
+// silently — the failure mode this whole subset exists to rule out is a builtin
+// whose JS namesake is nearly right, which is exactly what `round` was.
+describe('every translated builtin, at inputs where a near-miss differs', () => {
+  const call1 = (builtin: string) =>
+    evaluate(
+      emit(`fn f_0( x_0 : f32) -> f32 { return ${builtin}(x_0); }`, ['f']),
+      'f',
+    )
+  const call2 = (builtin: string) =>
+    evaluate(
+      emit(
+        `fn f_0( a_0 : f32,  b_0 : f32) -> f32 { return ${builtin}(a_0, b_0); }`,
+        ['f'],
+      ),
+      'f',
+    )
+  const call3 = (builtin: string) =>
+    evaluate(
+      emit(
+        `fn f_0( a_0 : f32,  b_0 : f32,  c_0 : f32) -> f32 { return ${builtin}(a_0, b_0, c_0); }`,
+        ['f'],
+      ),
+      'f',
+    )
+
+  const CASES: { rule: string; check: () => void }[] = [
+    {
+      rule: 'abs',
+      check: () => {
+        const abs = call1('abs')
+        expect(abs(-3.5)).toBe(3.5)
+        expect(abs(3.5)).toBe(3.5)
+      },
+    },
+    {
+      rule: 'ceil',
+      check: () => {
+        const ceil = call1('ceil')
+        // Negative is the half that separates ceil from "round away from zero".
+        expect(ceil(-2.1)).toBe(-2)
+        expect(ceil(2.1)).toBe(3)
+        expect(ceil(2)).toBe(2)
+      },
+    },
+    {
+      rule: 'clamp',
+      check: () => {
+        const clamp = call3('clamp')
+        expect(clamp(5, 0, 1)).toBe(1)
+        expect(clamp(-5, 0, 1)).toBe(0)
+        expect(clamp(0.25, 0, 1)).toBe(0.25)
+      },
+    },
+    {
+      rule: 'exp',
+      check: () => {
+        const exp = call1('exp')
+        expect(exp(0)).toBe(1)
+        expect(exp(1)).toBeCloseTo(Math.E, 12)
+      },
+    },
+    {
+      rule: 'floor',
+      check: () => {
+        const floor = call1('floor')
+        // The pair that separates floor from trunc.
+        expect(floor(-2.7)).toBe(-3)
+        expect(floor(2.7)).toBe(2)
+      },
+    },
+    {
+      rule: 'fract',
+      check: () => {
+        const fract = call1('fract')
+        expect(fract(2.25)).toBe(0.25)
+        // WGSL's fract is `x - floor(x)`, so a negative input gives a POSITIVE
+        // fraction. A `%`-based reading would answer -0.25 here.
+        expect(fract(-0.25)).toBe(0.75)
+        expect(fract(3)).toBe(0)
+      },
+    },
+    {
+      rule: 'log',
+      check: () => {
+        const log = call1('log')
+        // 8 tells the three logarithms apart: 2.079 natural, 3 base-2,
+        // 0.903 base-10.
+        expect(log(8)).toBeCloseTo(Math.LN2 * 3, 12)
+        expect(log(1)).toBe(0)
+      },
+    },
+    {
+      rule: 'log2',
+      check: () => {
+        const log2 = call1('log2')
+        expect(log2(8)).toBe(3)
+        expect(log2(1)).toBe(0)
+      },
+    },
+    {
+      rule: 'max',
+      check: () => {
+        const max = call2('max')
+        expect(max(-3, 2)).toBe(2)
+        expect(max(2, -3)).toBe(2)
+      },
+    },
+    {
+      rule: 'min',
+      check: () => {
+        const min = call2('min')
+        expect(min(-3, 2)).toBe(-3)
+        expect(min(2, -3)).toBe(-3)
+      },
+    },
+    {
+      rule: 'mix',
+      check: () => {
+        // The endpoint exactness that separates the two formulations has its
+        // own test above; this is the ordinary blend.
+        expect(call3('mix')(0, 10, 0.25)).toBe(2.5)
+      },
+    },
+    {
+      rule: 'pow',
+      check: () => {
+        const pow = call2('pow')
+        expect(pow(2, 10)).toBe(1024)
+        expect(pow(9, 0.5)).toBe(3)
+      },
+    },
+    {
+      rule: 'sign',
+      check: () => {
+        const sign = call1('sign')
+        expect(sign(-3)).toBe(-1)
+        expect(sign(3)).toBe(1)
+        expect(sign(0)).toBe(0)
+      },
+    },
+    {
+      rule: 'smoothstep',
+      check: () => {
+        const ss = call3('smoothstep')
+        // The Hermite curve, not the linear ramp: halfway is 0.5, but a
+        // quarter of the way is 0.15625 rather than 0.25.
+        expect(ss(0, 1, 0.5)).toBe(0.5)
+        expect(ss(0, 1, 0.25)).toBe(0.15625)
+        expect(ss(0, 1, -1)).toBe(0)
+        expect(ss(0, 1, 2)).toBe(1)
+      },
+    },
+    {
+      rule: 'sqrt',
+      check: () => {
+        const sqrt = call1('sqrt')
+        expect(sqrt(9)).toBe(3)
+        expect(Number.isNaN(sqrt(-1))).toBe(true)
+      },
+    },
+    {
+      rule: 'step',
+      check: () => {
+        const step = call2('step')
+        // Argument order is (edge, x), and the edge itself is inclusive.
+        expect(step(1, 0)).toBe(0)
+        expect(step(1, 1)).toBe(1)
+        expect(step(1, 2)).toBe(1)
+        // NaN is pinned rather than argued. The helper is `x < edge ? 0 : 1`,
+        // which matches what slangc's `-target cpp` emits for `step`; the WGSL
+        // spec has been published with both "1.0 if edge <= x" (NaN -> 0) and
+        // "0.0 if x < edge" (NaN -> 1) phrasings, and gpuweb#4527 is about
+        // exactly this class of under-specification. Nothing in the tree calls
+        // `step`, so no shader depends on the answer — but a silent flip is
+        // still worth catching.
+        expect(step(1, Number.NaN)).toBe(1)
+      },
+    },
+    {
+      rule: 'trunc',
+      check: () => {
+        const trunc = call1('trunc')
+        // The other half of the floor/trunc pair.
+        expect(trunc(-2.7)).toBe(-2)
+        expect(trunc(2.7)).toBe(2)
+      },
+    },
+  ]
+
+  test('the table above covers every rule the emitter has', () => {
+    expect(CASES.map(c => c.rule).sort()).toStrictEqual([...TRANSLATION_RULES])
+  })
+
+  test.each(CASES.map(c => [c.rule, c.check] as const))(
+    '%s',
+    (_rule, check) => {
+      check()
+    },
+  )
 })
 
 test('a bare hex literal is an integer, so it takes the truncating divide', () => {

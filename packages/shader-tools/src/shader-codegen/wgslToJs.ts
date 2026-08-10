@@ -802,6 +802,29 @@ const HELPER_BUILTINS = new Set([
   'min',
 ])
 
+/**
+ * Every WGSL builtin this file claims to translate — the union of the two tables
+ * above, named as a shader author writes them.
+ *
+ * Exported so `wgslToJs.test.ts` can assert it has a semantics case for each,
+ * and that is the whole reason it exists. `pnpm check-shader-oracle` sweeps only
+ * what the tree's shaders happen to call, which as of this writing exercises
+ * **eight** of these seventeen: `abs`, `clamp`, `floor`, `log2`, `max`, `min`,
+ * `smoothstep`, `sqrt`. The other nine are translated by rules nothing
+ * differential has ever run — `mix` and `step` cannot even in principle be
+ * covered by the oracle, because slangc's `-target cpp` lowers them to different
+ * expressions than the WGSL it hands the GPU (see `_mix` above).
+ *
+ * So the coverage has to come from the unit tests, and a new entry in either
+ * table has to arrive with one. Making that a list the test compares against,
+ * rather than a rule someone remembers, is what keeps the tenth unchecked rule
+ * from being added silently.
+ */
+export const TRANSLATION_RULES: readonly string[] = [
+  ...Object.keys(MATH_BUILTINS),
+  ...HELPER_BUILTINS,
+].sort()
+
 // Helpers that call other helpers. Emission is by reference, so a helper reached
 // only through another one is otherwise left out and the module throws
 // `_min is not defined` at import — which is what happened the moment `_clamp`
