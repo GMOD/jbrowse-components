@@ -160,6 +160,55 @@ export const methylationSpecs: ScreenshotSpec[] = [
     // pill hard toward the left edge of the ~1500px-wide data area (container
     // center ~750, so -690 lands the pill near x≈60).
     annotations: [
+      // WHAT EACH HALF IS DOING, which the row labels never said (review: "can
+      // potentially add 'chh silencing of transposon' ... and cpg enhancing of
+      // gene body ... (if that is what it is doing)"). It is, and the right
+      // half was worth checking rather than assuming: the gene GFF this figure
+      // draws carries only a pseudogene there (AT1G12935, 4,406,318-4,406,746),
+      // which is not the same claim.
+      //
+      // TAIR10's own transposable-element table is what settles it —
+      // TAIR10_Transposable_Elements.txt from arabidopsis.org, one row per
+      // element:
+      //
+      //   AT1TE14310  4,405,694-4,405,995  META1  LTR/Copia
+      //   AT1TE14315  4,405,996-4,411,119  META1  LTR/Copia
+      //
+      // so the block that is red in all three contexts is a 5.1 kb LTR/Copia
+      // retrotransposon, and CG+CHG+CHH together is the RdDM silencing
+      // signature. Ensembl Plants' repeat endpoint returns the same interval
+      // under the id `AT4TE22180`, which is a chr4 id on chr1 — take the
+      // element's name from TAIR, not from there.
+      //
+      // The left label says "CpG only" and stops. Gene-body CpG methylation is
+      // a real and well-known pattern, but what it DOES is contested, so
+      // "enhancing" is more than the figure or the literature can carry; the
+      // tutorial says it is associated with constitutive expression and leaves
+      // it there.
+      {
+        type: 'text' as const,
+        text: 'expressed gene body: CpG only',
+        fontSize: 20,
+        anchor: {
+          track: 'arabidopsis_genes',
+          // AT1G12930's own span, from the same GFF the lane draws
+          locus: 'NC_003070.9:4,398,322-4,405,669',
+          fracY: 1,
+          dy: -16,
+        },
+      },
+      {
+        type: 'text' as const,
+        text: 'LTR/Copia transposon, silenced: all three contexts',
+        fontSize: 20,
+        maxWidth: 300,
+        anchor: {
+          track: 'arabidopsis_genes',
+          locus: 'NC_003070.9:4,405,996-4,411,119',
+          fracY: 1,
+          dy: -16,
+        },
+      },
       ...(['CpG', 'CHG', 'CHH'] as const).map((text, i) => ({
         type: 'text' as const,
         anchor: {
