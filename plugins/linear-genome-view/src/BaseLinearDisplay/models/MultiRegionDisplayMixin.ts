@@ -200,11 +200,9 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #getter
-         * Fills `RenderLifecycleMixin`'s default-false hook: a fetch that failed
-         * before first paint leaves `canvasDrawn` false forever with the canvas
-         * still mounted, so without this `painted` — and through it
-         * `data-display-drawn` — reports pending for the rest of the session and
-         * every `waitForDisplaysDone` on the page times out. See `paintInert`.
+         * Fills `RenderLifecycleMixin`'s `paintInert` hook — see there for why a
+         * failed fetch has to read as finished to the consumers outside the
+         * display. The global family declares the identical override.
          */
         get paintInert(): boolean {
           return !!self.error
@@ -277,23 +275,20 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #getter
-         * The display's mutually-exclusive visual state. Both halves — the
-         * terminal precedence and the loading term — are single-sourced in
-         * render-core, and the *mapping* onto them in `foundationDisplayPhase`,
-         * which the global family calls with the same seven fields. So this
-         * family differs from that one in exactly the argument below, and a term
-         * added to `computeLoadingTerm` reaches both without being wired twice.
+         * The display's mutually-exclusive visual state, mapped in
+         * `foundationDisplayPhase` — every foundation calls it and supplies only
+         * its staleness argument, so a term added to `computeLoadingTerm`
+         * reaches all three without being wired three times.
          *
-         * Here `loading` means data isn't ready yet, or stale data (viewport past
-         * loaded) is still on screen through the pre-refetch debounce.
+         * This family's argument is spatial: `loading` also covers stale data
+         * (viewport past loaded) still on screen through the pre-refetch
+         * debounce. A thunk, so a suppressed or already-loading display doesn't
+         * subscribe to viewport churn.
          *
          * A subclass customizes this through `loadingSuppressed` (FetchMixin),
          * never by overriding the getter — see that hook.
          */
         get displayPhase(): DisplayPhase {
-          // this family's spatial-staleness axis, and the only term the two
-          // families genuinely disagree on; a thunk so a suppressed or
-          // already-loading display doesn't subscribe to viewport churn
           return foundationDisplayPhase(
             self,
             () => self.viewportWithinLoadedData,

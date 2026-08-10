@@ -21,12 +21,14 @@ description: The shared display status chrome that owns loading, error, and retr
   gets the chrome instead of a copy of it.
 - The **loading term** is single-sourced too, in `computeLoadingTerm`, and so is
   the **mapping onto it**, in `foundationDisplayPhase` — the twin of
-  `foundationSvgReady`, called by both GPU families. They differ in one
-  argument: per-region passes its staleness predicate, global passes `() =>
-  true`. Arc (backend-free, no canvas to wait on) still writes the object by
-  hand. Customize it through `loadingSuppressed` / `rendersCanvas`, never by
-  overriding `displayPhase` — an override restates every term and then silently
-  misses the next one added. Same rule the precedence has, one level down.
+  `foundationSvgReady`. All three foundations call it and supply exactly one
+  argument, their staleness predicate: per-region its spatial one, global and arc
+  `() => true`. Arc goes through `foundationDisplayStatusPhase`, the same mapping
+  returning the narrower phase and supplying the two canvas terms it has no
+  canvas for. Customize it through `loadingSuppressed` / `rendersCanvas`, never
+  by overriding `displayPhase` — an override restates every term and then
+  silently misses the next one added. Same rule the precedence has, one level
+  down.
 - **The four loading inputs live on the mixin every foundation composes**, so no
   family can carry half the pair: `loadingSuppressed` and `isLoadingOrCanceled`
   on `FetchMixin`, `rendersCanvas` and `canvasDrawn` on `RenderLifecycleMixin`.

@@ -132,27 +132,18 @@ export function RenderLifecycleMixin() {
       /**
        * #getter
        * Overridable hook (default false): the display has reached a state it
-       * will not paint its way out of, so "has it painted yet" should answer
+       * will not paint its way out of, so `painted` below should answer
        * *finished* rather than *pending*. Both LGV fetch families fill it with
-       * `!!error`.
+       * `!!error` — a fetch that failed before first paint keeps its canvas
+       * mounted, since the error bar is an overlay rather than a subtree
+       * replacement, so nothing ever draws into it. Named for `fetchInert` on
+       * the comparative side.
        *
-       * Named for `fetchInert` on the comparative side, and it exists for the
-       * same reason `rendersCanvas` does: the consumer that gets forgotten is
-       * the one outside the display. A fetch that fails before first paint
-       * leaves `canvasDrawn` false forever with the canvas still mounted (the
-       * error bar is an overlay, not a subtree replacement), so `painted` — and
-       * through it `data-display-drawn` — reported `"false"` for the rest of the
-       * session. `PENDING_DISPLAYS` selects on exactly that, so one broken track
-       * URL made every `waitForDisplaysDone` on the page burn its full timeout,
-       * silently, since that wait swallows its own. Arc was immune only because
-       * its hand-written `painted` happened to carry an `|| !!error` term the
-       * shared getter never got.
-       *
-       * A hook rather than reading `error` here: this package is a leaf and
-       * `error` belongs to the fetch mixins, and declaring the name here would
-       * collide with `FetchMixin`'s volatile — `types.compose` gives the later
-       * argument the collision, and the two families compose them in opposite
-       * orders.
+       * A hook rather than a read of `error` here, for two reasons that both
+       * bite: this package is a leaf and `error` belongs to the fetch mixins,
+       * and declaring that name here would *collide* with `FetchMixin`'s
+       * volatile — `types.compose` gives the collision to its later argument,
+       * and the two families compose the two mixins in opposite orders.
        */
       get paintInert(): boolean {
         return false

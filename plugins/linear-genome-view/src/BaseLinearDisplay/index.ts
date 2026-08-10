@@ -67,6 +67,12 @@ export {
   type FetchMixinType,
   default as FetchMixin,
 } from './models/FetchMixin.ts'
+// The phase mapping the in-tree foundations share. Only the backend-free variant
+// is public: it is what an out-of-tree SVG display (arc's shape) needs, and it
+// is the alternative to that display hand-writing the object literal arc used to
+// — which is how arc came to be the last foundation still doing so.
+export { foundationDisplayStatusPhase } from './models/foundationDisplayPhase.ts'
+export type { DisplayStatusPhaseFoundation } from './models/foundationDisplayPhase.ts'
 export { default as StaleViewportRescaleMixin } from './models/StaleViewportRescaleMixin.ts'
 export { squashToHeightCheckboxItem } from './models/squashToHeightMenuItem.ts'
 export {

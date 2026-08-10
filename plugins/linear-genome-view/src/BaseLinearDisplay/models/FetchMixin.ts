@@ -150,19 +150,16 @@ export default function FetchMixin() {
        *
        * A hook rather than a `displayPhase` override, because overriding the
        * getter means restating the whole loading condition — which is how
-       * sequence came to hold a verbatim copy of the other three terms, one `git
-       * blame` away from silently missing a fourth.
+       * sequence came to hold a verbatim copy of the other terms, one `git blame`
+       * away from silently missing the next one added.
        *
-       * It lives **here**, beside `isLoadingOrCanceled` and next to nothing else
-       * it reads, because this is the one mixin all three display foundations
-       * compose — the two GPU families and arc. It used to sit on
-       * `MultiRegionDisplayMixin` alone, so the global family hard-coded `false`
-       * with a comment inviting the first display that needed it to move the
-       * hook; LD was already that display and expressed only the half it could
-       * reach (`rendersCanvas`), which drops the pre-first-paint term and leaves
-       * the scrim free to park over the placeholder on the cancel term. Same
-       * argument, one level down, that put `rendersCanvas` on
-       * `RenderLifecycleMixin` beside `canvasDrawn`.
+       * It lives **here** because this is the one mixin all three display
+       * foundations compose. On `MultiRegionDisplayMixin` it was reachable by
+       * one of the three, so the global family hard-coded `false` and LD could
+       * express only the half `rendersCanvas` reaches — which drops the
+       * pre-first-paint term alone and leaves the scrim free to park over the
+       * placeholder on the durable cancel term. Same argument, one level down,
+       * that put `rendersCanvas` on `RenderLifecycleMixin` beside `canvasDrawn`.
        */
       get loadingSuppressed(): boolean {
         return false

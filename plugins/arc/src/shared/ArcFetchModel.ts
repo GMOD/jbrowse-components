@@ -2,8 +2,7 @@ import { isDataCurrent } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   GlobalFetchMixin,
-  computeDisplayStatusPhase,
-  computeLoadingTerm,
+  foundationDisplayStatusPhase,
 } from '@jbrowse/plugin-linear-genome-view'
 
 import { currentRegionSignature } from './regionSignature.ts'
@@ -89,28 +88,13 @@ export function ArcFetchModel() {
          * `isLoadingOrCanceled`, never a bare `isLoading` — see that getter.
          */
         get displayPhase(): DisplayStatusPhase {
-          return computeDisplayStatusPhase(self, () =>
-            computeLoadingTerm(
-              {
-                // No canvas to wait on, so that axis constants out and the term
-                // reduces to `isLoadingOrCanceled` — exactly what this getter
-                // spelled by hand until 2026-08. Routed through the shared
-                // function anyway because arc is the *third* foundation, and a
-                // term added there for the other two would otherwise reach every
-                // display except this one. Same argument the precedence above
-                // already won; `loadingSuppressed` is read off `FetchMixin`
-                // rather than pinned to `false` for that reason, even though no
-                // arc display overrides it today.
-                loadingSuppressed: self.loadingSuppressed,
-                rendersCanvas: false,
-                canvasDrawn: false,
-                isLoadingOrCanceled: self.isLoadingOrCanceled,
-              },
-              // no spatial-staleness axis: stale arcs stay on screen under the
-              // overlay through a refetch rather than blanking (see `reload`)
-              () => true,
-            ),
-          )
+          // no spatial-staleness axis: stale arcs stay on screen under the
+          // overlay through a refetch rather than blanking (see `reload`). That
+          // argument is the only thing arc supplies — every term is read off
+          // `self` by the same mapping the two GPU foundations use, so a term
+          // added to `computeLoadingTerm` reaches this display too. Arc spelled
+          // the object out by hand until it was the last one doing so.
+          return foundationDisplayStatusPhase(self, () => true)
         },
 
         /**

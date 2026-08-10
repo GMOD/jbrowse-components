@@ -62,11 +62,9 @@ export default function GlobalDataDisplayMixin() {
 
       /**
        * #getter
-       * Fills `RenderLifecycleMixin`'s default-false hook, identically to the
-       * per-region family: a fetch that failed before first paint leaves
-       * `canvasDrawn` false forever with the canvas still mounted, so without
-       * this `painted` — and through it `data-display-drawn` — reports pending
-       * for the rest of the session. See `paintInert`.
+       * Fills `RenderLifecycleMixin`'s `paintInert` hook — see there for why a
+       * failed fetch has to read as finished to the consumers outside the
+       * display. The per-region family declares the identical override.
        */
       get paintInert(): boolean {
         return !!self.error
@@ -75,29 +73,24 @@ export default function GlobalDataDisplayMixin() {
     .views(self => ({
       /**
        * #getter
-       * Same precedence as MultiRegionDisplayMixin (single-sourced in
-       * `computeDisplayPhase`). A global display has no per-region staleness
-       * axis, but it does have a pre-first-paint window: between component mount
-       * and `isLoading` flipping true (on HiC that means the `CoreGetInfo`
-       * round-trip its first fetch waits on). Mirror MultiRegion's `!isReady`
-       * term with `!canvasDrawn` so the loading scrim shows immediately on open
-       * instead of after that gap — gated by `RenderLifecycleMixin`'s
-       * `rendersCanvas` so a display showing a static non-canvas placeholder
-       * isn't stuck under it (LD with the triangle off). Once
-       * painted, `canvasDrawn` stays true through viewport/setting changes
-       * (StaleViewportRescaleMixin keeps the last frame up during refetch), so
-       * this adds no scrim on pan or zoom — those keep the existing `isLoading`
-       * behavior. Reads `renderError` (RenderLifecycleMixin), which is why it
-       * lives here, not in GlobalFetchMixin.
+       * The display's mutually-exclusive visual state, mapped in
+       * `foundationDisplayPhase` — every foundation calls it and supplies only
+       * its staleness argument, so a term added to `computeLoadingTerm` reaches
+       * all three without being wired three times.
+       *
+       * This family's argument is the constant `true`, deliberately: a global
+       * display keeps the last frame up through a refetch
+       * (StaleViewportRescaleMixin rescales it), so a pan or zoom shows no scrim
+       * beyond the `isLoading` window. The pre-first-paint scrim it *does* want
+       * — the gap between mount and `isLoading` going true, which on HiC is the
+       * `CoreGetInfo` round-trip its first fetch waits on — is
+       * `computeLoadingTerm`'s shared `rendersCanvas && !canvasDrawn` term, not
+       * anything this family spells out.
+       *
+       * It lives here rather than in `GlobalFetchMixin` because the phase reads
+       * `renderError`, which is `RenderLifecycleMixin`'s.
        */
       get displayPhase(): DisplayPhase {
-        // No staleness axis, deliberately: a global display keeps the last frame
-        // up through a refetch (StaleViewportRescaleMixin rescales it), so a
-        // pan/zoom shows no scrim beyond the isLoading window. That constant is
-        // the *whole* difference from the per-region family — every other term
-        // is read off `self` by the shared mapping, which is what stopped this
-        // one hard-coding `loadingSuppressed: false` (LD needed it, and could
-        // express only the half `rendersCanvas` reaches).
         return foundationDisplayPhase(self, () => true)
       },
     }))

@@ -21,6 +21,13 @@ minus `renderError`: arc has no backend to fail, and the type says so rather
 than a comment. Its loading term must read `isLoadingOrCanceled`, never
 `isLoading` — see `shared/displayPhase.test.ts` for the hole that leaves.
 
+It is computed by `foundationDisplayStatusPhase`, the same mapping the two GPU
+foundations use, so arc supplies only its staleness argument (`() => true` —
+stale arcs stay under the overlay through a refetch). Arc hand-wrote that object
+literal until it was the last foundation doing so, which meant a term added to
+`computeLoadingTerm` for the other two reached every display except this one.
+Don't inline it back.
+
 ## `reload()` must invalidate `dataCurrent`, not just bump the counter
 
 `GlobalFetchMixin.reload()` bumping `reloadCounter` is enough for LD/HiC, but
