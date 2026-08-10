@@ -120,10 +120,11 @@ export async function findDisplayById(displayId: string, timeout = 20000) {
     () => {
       // No `CSS.escape` here, unlike the browser-tests copies: this runs in
       // jsdom, which has no `CSS` object at all. Display ids are generated.
+      // Kept on its own line so the disable can't drift off the interpolation
+      // when the formatter rewraps the call.
       // eslint-disable-next-line unicorn/require-css-escape
-      const el = document.querySelector<HTMLElement>(
-        `[data-display-id="${displayId}"][data-display-drawn="true"]`,
-      )
+      const selector = `[data-display-id="${displayId}"][data-display-drawn="true"]`
+      const el = document.querySelector<HTMLElement>(selector)
       if (!el) {
         throw new Error(`display ${displayId} has not painted`)
       }

@@ -235,7 +235,7 @@ function rowDistance(a: RowImage, ay: number, b: RowImage, by: number): number {
   for (let x = 0; x < SIGNATURE_WIDTH; x++) {
     const bv = (b.data[bo + x]! + b.data[bo2 + x]!) / 2
     const d = a.data[ao + x]! - bv
-    sum += d < 0 ? -d : d
+    sum += Math.abs(d)
   }
   return sum / SIGNATURE_WIDTH
 }
@@ -549,8 +549,9 @@ for (const r of listed) {
     `  ${pct(r.explained).padStart(4)}  left ${r.aligned.toFixed(1).padStart(5)}  ${r.name}`,
   )
   console.log(
-    `        slid ${describeOffsets(r.offsets) || 'nowhere'}` +
-      (worst.length ? `   worst at ${worst.join(', ')}` : ''),
+    `        slid ${describeOffsets(r.offsets) || 'nowhere'}${
+      worst.length ? `   worst at ${worst.join(', ')}` : ''
+    }`,
   )
 }
 if (compared.length > listed.length) {

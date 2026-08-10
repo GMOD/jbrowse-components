@@ -124,7 +124,7 @@ export function outputName(
   const width = String(total).length
   const num = String(idx + 1).padStart(width, '0')
   const where = `${rec.refName1}_${rec.start1}-${rec.refName2}_${rec.start2}`
-  const label = rec.name ? `_${rec.name.replace(/[^\w.-]+/g, '-')}` : ''
+  const label = rec.name ? `_${rec.name.replaceAll(/[^\w.-]+/g, '-')}` : ''
   return `${num}_${where}${label}.${ext}`
 }
 
