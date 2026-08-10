@@ -38,6 +38,7 @@
     "gendocs": "node website/scripts/api-docs/generate.ts",
     "autogen": "node --experimental-strip-types scripts/autogen.ts",
     "gen:shaders": "node packages/shader-tools/src/build-shaders.ts",
+    "check-shader-oracle": "node packages/shader-tools/src/check-oracle.ts",
     "figures": "node website/scripts/figures.ts",
     "figures:pull": "node website/scripts/figures.ts pull",
     "figures:push": "node website/scripts/figures.ts push",

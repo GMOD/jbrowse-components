@@ -19,6 +19,13 @@ export interface JsExportFn {
 
 const SLANG_SCALARS = new Set(['float', 'uint', 'int', 'bool'])
 
+// Additionally allowed in RETURN position only. A decision whose answer is a
+// pair is still scalar in every other respect; the emitter models a returned
+// `float2` and nothing else about vectors, so a `float2` *parameter* would be
+// refused several steps later by a message about WGSL rather than about this
+// directive. See WgslReturnType in wgslToJs.ts.
+const SLANG_RETURN_ONLY = new Set(['float2'])
+
 // Statement keywords that can open a line looking like a function signature.
 const SLANG_KEYWORDS = new Set(['else', 'do', 'return'])
 
@@ -348,19 +355,64 @@ export function parseJsExports(
   // Reject non-scalar signatures here rather than letting wgslToJs discover
   // them after a compile: the message can name the function and the type.
   for (const fn of fns) {
-    const bad = [fn.returnType, ...fn.paramTypes].filter(
-      t => !SLANG_SCALARS.has(t),
-    )
+    const bad = [
+      ...(SLANG_RETURN_ONLY.has(fn.returnType) ? [] : [fn.returnType]),
+      ...fn.paramTypes,
+    ].filter(t => !SLANG_SCALARS.has(t))
     if (bad.length > 0) {
       throw new Error(
-        `//! js-export: ${fn.name} uses non-scalar type(s) ` +
+        `//! js-export: ${fn.name} uses unsupported type(s) ` +
           `${[...new Set(bad)].join(', ')}. The JS emitter covers scalars ` +
-          `(${[...SLANG_SCALARS].join(', ')}) only — factor the scalar part of ` +
-          `the computation into its own public function and export that.`,
+          `(${[...SLANG_SCALARS].join(', ')}), plus ` +
+          `${[...SLANG_RETURN_ONLY].join(', ')} as a return type — factor the ` +
+          `supported part of the computation into its own public function and ` +
+          `export that.`,
       )
     }
   }
   return fns
+}
+
+export interface JsSkip {
+  name: string
+  reason: string
+}
+
+/**
+ * `//! js-skip: <fn> — <why not>`, one per line, repeatable.
+ *
+ * The counterpart to `js-export`, and the reason the generated liftability
+ * inventory is readable: most functions the emitter *could* lift should not be
+ * lifted — a clip-space wrapper, a per-fragment antialiasing ramp with no
+ * Canvas2D counterpart — and a report that lists those next to the real
+ * candidates every time is a report whose diff means nothing.
+ *
+ * The decision therefore lives next to the code it is about, and is checked:
+ * `assertJsSkipsResolve` fails the build on a skip naming a function the
+ * emitter cannot see, or one that is exported after all. That is the part a
+ * prose list in an ADR cannot do — the old "Deliberately not exported" section
+ * had an entry (`textWidth`) that had quietly become false, and nothing said so.
+ *
+ * The separator is an em dash or a double hyphen; everything after it is free
+ * text and lands in the report verbatim.
+ */
+export function parseJsSkips(source: string): JsSkip[] {
+  const out: JsSkip[] = []
+  for (const m of source.matchAll(
+    /^\/\/!\s*js-skip:\s*(\w+)\s*(?:—|--)\s*(.+)$/gm,
+  )) {
+    out.push({ name: m[1]!, reason: m[2]!.trim() })
+  }
+  const malformed = [...source.matchAll(/^\/\/!\s*js-skip:\s*(.*)$/gm)].filter(
+    m => !/^\w+\s*(?:—|--)\s*\S/.test(m[1]!),
+  )
+  if (malformed.length > 0) {
+    throw new Error(
+      `//! js-skip must read '<function> — <why not>' (em dash or --); got: ` +
+        malformed.map(m => JSON.stringify(m[1])).join(', '),
+    )
+  }
+  return out
 }
 
 // `//! targets: wgsl, glsl` — which backends to emit. Default: both.

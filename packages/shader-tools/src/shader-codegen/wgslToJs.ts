@@ -143,6 +143,8 @@ type Expr =
   | { k: 'unary'; op: string; e: Expr }
   | { k: 'bin'; op: string; l: Expr; r: Expr }
   | { k: 'call'; name: string; args: Expr[]; line: number }
+  // `vec2<f32>(a, b)`. Legal ONLY as the whole of a `return` — see `stmts`.
+  | { k: 'vec2'; args: Expr[]; line: number }
 
 type Stmt =
   // `type` is absent for an un-annotated `let`, whose type the emitter infers
@@ -163,6 +165,20 @@ type Stmt =
  */
 export type WgslType = 'f32' | 'u32' | 'i32' | 'bool'
 
+/**
+ * What a function may RETURN. `vec2f` is the one non-scalar type in the subset,
+ * and it is deliberately return-only: a decision whose answer is a pair (the
+ * two screen-x edges a rect paints) is still a scalar decision in every other
+ * respect — nothing indexes it, swizzles it or does vector arithmetic on it,
+ * and the emitter refuses all three. Params and locals stay strictly scalar, so
+ * none of the signedness/division inference below has to know about it.
+ *
+ * adr-051 held vector support open for "a function whose decision is genuinely
+ * vector-valued"; `rectSpanPx` is that function, and a pair is as far as the
+ * evidence goes. `vec3`/`vec4` remain refused, by name.
+ */
+export type WgslReturnType = WgslType | 'vec2f' | 'void'
+
 export interface WgslParam {
   name: string
   type: WgslType
@@ -171,7 +187,7 @@ export interface WgslParam {
 export interface WgslFn {
   name: string
   params: WgslParam[]
-  returnType: WgslType | 'void'
+  returnType: WgslReturnType
   body: Stmt[]
 }
 
@@ -192,8 +208,21 @@ const STAGE_ATTRS = new Set(['compute', 'vertex', 'fragment'])
 // so the emitter's coverage is always explicit rather than assumed.
 const SCALAR_TYPES = new Set<string>(['f32', 'u32', 'i32', 'bool'])
 
-const tsTypeOf = (t: WgslType | 'void') =>
-  t === 'bool' ? 'boolean' : t === 'void' ? 'void' : 'number'
+// Spelled out so a constructor for any of them is recognized as a construction
+// and refused as one, rather than being parsed as an identifier followed by two
+// comparisons. Only `vec2<f32>` gets past the refusal, and only in a `return`.
+const VECTOR_TYPE_NAMES = new Set<string>(['vec2', 'vec3', 'vec4'])
+
+const tsTypeOf = (t: WgslReturnType) =>
+  t === 'bool'
+    ? 'boolean'
+    : t === 'void'
+      ? 'void'
+      : t === 'vec2f'
+        ? // A tuple, not an object: WGSL names these lanes `.x`/`.y`, which mean
+          // nothing to a Canvas2D consumer, and the call sites destructure.
+          '[number, number]'
+        : 'number'
 
 // Every WGSL builtin this emitter knows it does *not* handle. Listing them
 // explicitly is what stops an unsupported builtin from being mistaken for a
@@ -356,6 +385,24 @@ class Parser {
     return t.text as WgslType
   }
 
+  /**
+   * A return type, which may additionally be `vec2<f32>` — see WgslReturnType.
+   * Params and locals go through `parseType` and stay scalar.
+   */
+  private parseReturnType(): WgslReturnType {
+    if (this.at('vec2') && this.at('<', 1)) {
+      this.next()
+      this.next()
+      const elem = this.next()
+      if (elem.text !== 'f32') {
+        this.unsupported(elem, `vec2 element type '${elem.text}'`)
+      }
+      this.expect('>')
+      return 'vec2f'
+    }
+    return this.parseType()
+  }
+
   parseModule(): WgslModule {
     const fns: WgslFn[] = []
     const refused: WgslRefusal[] = []
@@ -419,10 +466,10 @@ class Parser {
       }
     }
     this.expect(')')
-    let returnType: WgslType | 'void' = 'void'
+    let returnType: WgslReturnType = 'void'
     if (this.eat('->')) {
       this.skipAttributes()
-      returnType = this.parseType()
+      returnType = this.parseReturnType()
     }
     return { name, params, returnType, body: this.parseBlock() }
   }
@@ -569,26 +616,61 @@ class Parser {
       if (t.text === 'true' || t.text === 'false') {
         return { k: 'ident', name: t.text }
       }
+      // A vector constructor is `vecN<T>(...)`, so the type arguments sit
+      // between the name and the parens. Caught by name rather than left to the
+      // expression parser: `vec3<f32>(a, b, c)` otherwise tokenizes into
+      // something the precedence climber reads as two comparisons, and the
+      // failure it eventually produces names a stray `,` several tokens away.
+      if (VECTOR_TYPE_NAMES.has(t.text) && this.at('<')) {
+        return this.rejectPostfix(this.parseVectorCtor(t))
+      }
       if (this.at('(')) {
-        this.next()
-        const args: Expr[] = []
-        while (!this.at(')')) {
-          args.push(this.parseExpr())
-          if (!this.eat(',')) {
-            break
-          }
-        }
-        this.expect(')')
         return this.rejectPostfix({
           k: 'call',
           name: t.text,
-          args,
+          args: this.parseArgs(),
           line: t.line,
         })
       }
       return this.rejectPostfix({ k: 'ident', name: t.text })
     }
     this.unsupported(t, `token '${t.text}'`)
+  }
+
+  /** A parenthesized, comma-separated argument list, cursor on the `(`. */
+  private parseArgs(): Expr[] {
+    this.expect('(')
+    const args: Expr[] = []
+    while (!this.at(')')) {
+      args.push(this.parseExpr())
+      if (!this.eat(',')) {
+        break
+      }
+    }
+    this.expect(')')
+    return args
+  }
+
+  /**
+   * `vec2<f32>(a, b)` — the one vector construction in the subset. Every other
+   * width and element type is refused here, by name and with its own line.
+   */
+  private parseVectorCtor(name: Token): Expr {
+    this.expect('<')
+    const elem = this.next()
+    this.expect('>')
+    if (name.text !== 'vec2' || elem.text !== 'f32') {
+      this.unsupported(name, `'${name.text}<${elem.text}>' construction`)
+    }
+    const args = this.parseArgs()
+    if (args.length !== 2) {
+      this.unsupported(
+        name,
+        `vec2<f32> built from ${args.length} component(s) (only the ` +
+          `two-scalar form is supported, not a splat or a copy)`,
+      )
+    }
+    return { k: 'vec2', args, line: name.line }
   }
 
   /** Swizzles, struct fields and indexing all mean we left the scalar subset. */
@@ -719,7 +801,7 @@ class Emitter {
 
   private renames: Map<string, string>
   private moduleFns: ReadonlySet<string>
-  private returnTypes: ReadonlyMap<string, WgslType | 'void'>
+  private returnTypes: ReadonlyMap<string, WgslReturnType>
   // Mutable, and filled in as the body is emitted: an un-annotated `let` gets
   // its type from its initializer, which can only be evaluated in the scope the
   // statements before it built. Statements are emitted in source order, so a
@@ -729,7 +811,7 @@ class Emitter {
   constructor(
     renames: Map<string, string>,
     moduleFns: ReadonlySet<string>,
-    returnTypes: ReadonlyMap<string, WgslType | 'void'>,
+    returnTypes: ReadonlyMap<string, WgslReturnType>,
   ) {
     this.renames = renames
     this.moduleFns = moduleFns
@@ -795,7 +877,13 @@ class Emitter {
           return this.typeOf(e.args[0]!) ?? this.typeOf(e.args[1]!)
         }
         const ret = this.returnTypes.get(e.name)
-        return ret === 'void' ? undefined : ret
+        return ret === 'void' || ret === 'vec2f' ? undefined : ret
+      }
+      case 'vec2': {
+        // Not a scalar, so it has no answer here. Every caller treats
+        // `undefined` as "refuse rather than guess", and `expr` refuses a vec2
+        // outright anywhere but a return, so this is unreachable in practice.
+        return undefined
       }
     }
   }
@@ -988,6 +1076,21 @@ class Emitter {
       case 'call': {
         return this.call(e)
       }
+      case 'vec2': {
+        // `stmts` emits the tuple directly for a `return`, which is the only
+        // position a vec2 is allowed in. Reaching here means one turned up
+        // inside an expression — assigned to a local, passed to a function,
+        // added to something — and none of those are modeled: the emitter has
+        // no vector locals, no vector params, and no vector arithmetic. Refuse
+        // rather than emit a JS array into an expression that will silently
+        // stringify or NaN.
+        throw new Error(
+          `wgslToJs: vec2<f32> at line ${e.line} is used somewhere other than ` +
+            `as the whole of a 'return'. Only a returned pair is supported ` +
+            `(see WgslReturnType) — assign the components to scalar locals in ` +
+            `the .slang, or narrow the //! js-export set.`,
+        )
+      }
     }
   }
 
@@ -1074,11 +1177,17 @@ class Emitter {
           break
         }
         case 'return': {
-          out.push(
-            s.value === undefined
-              ? `${indent}return`
-              : `${indent}return ${this.expr(s.value)}`,
-          )
+          if (s.value === undefined) {
+            out.push(`${indent}return`)
+          } else if (s.value.k === 'vec2') {
+            // The one place a vec2 is legal, and the only place it is spelled:
+            // a tuple literal over the two component expressions, each of which
+            // is ordinary scalar code.
+            const [x, y] = s.value.args
+            out.push(`${indent}return [${this.expr(x!)}, ${this.expr(y!)}]`)
+          } else {
+            out.push(`${indent}return ${this.expr(s.value)}`)
+          }
           break
         }
         case 'expr': {
@@ -1245,6 +1354,13 @@ function collectCalls(fn: WgslFn, into: Set<string>) {
       walkExpr(e.r)
     } else if (e.k === 'call') {
       into.add(e.name)
+      for (const a of e.args) {
+        walkExpr(a)
+      }
+    } else if (e.k === 'vec2') {
+      // A vec2 is not itself a call, but its components can be — miss these and
+      // a helper reached only from inside a returned pair is left out of the
+      // emitted module, or its refusal goes unreported.
       for (const a of e.args) {
         walkExpr(a)
       }

@@ -525,3 +525,85 @@ describe('names the emitted JS needs for something else', () => {
     ).toContain('let mathScale = (a * 2.0)')
   })
 })
+
+// The one non-scalar type in the subset, and it is return-only. A decision
+// whose answer is a PAIR — the two screen-x edges a rect paints — is still
+// scalar in every other respect, and the pair is what a Canvas2D rect fill is
+// built from. Everything wider, and every other use of a vec2, stays refused:
+// the value of the refusals is that they are exhaustive, so widening the subset
+// by one shape means pinning the shapes next to it.
+describe('a returned float2', () => {
+  const PAIR =
+    'fn span_0( a_0 : f32,  b_0 : f32) -> vec2<f32> {' +
+    ' var lo_0 : f32 = floor(a_0 + 0.5f);' +
+    ' return vec2<f32>(lo_0, floor(b_0 + 0.5f)); }'
+
+  test('becomes a TS tuple', () => {
+    const out = emit(PAIR, ['span'])
+    expect(out).toContain(
+      'export function span(a: number, b: number): [number, number]',
+    )
+    expect(out).toContain('return [lo, Math.floor((b + 0.5))]')
+  })
+
+  test('runs', () => {
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval
+    const span = new Function(
+      `${emit(PAIR, ['span'])
+        .replaceAll(/^export function/gm, 'function')
+        .replaceAll(/: \[number, number\]|: number/g, '')}\nreturn span`,
+    )() as (a: number, b: number) => [number, number]
+    expect(span(1.4, 9.6)).toStrictEqual([1, 10])
+  })
+
+  test('pulls a helper reached only from inside the pair', () => {
+    const out = emit(
+      'fn dbl_0( x_0 : f32) -> f32 { return x_0 * 2.0f; }' +
+        'fn p_0( a_0 : f32) -> vec2<f32> { return vec2<f32>(a_0, dbl_0(a_0)); }',
+      ['p'],
+    )
+    expect(out).toContain('function dbl(')
+  })
+
+  test('refuses a vec2 anywhere but a return', () => {
+    expect(() => {
+      emit(
+        'fn p_0( a_0 : f32) -> f32 { var v_0 : f32 = vec2<f32>(a_0, a_0); return v_0; }',
+        ['p'],
+      )
+    }).toThrow(/used somewhere other than as the whole of a 'return'/)
+  })
+
+  test('refuses a wider vector, by name', () => {
+    expect(() => {
+      emit(
+        'fn p_0( a_0 : f32) -> vec3<f32> { return vec3<f32>(a_0, a_0, a_0); }',
+        ['p'],
+      )
+    }).toThrow(/type 'vec3' is outside the supported scalar subset/)
+  })
+
+  test('refuses a vec2 of the wrong element type', () => {
+    expect(() => {
+      emit('fn p_0( a_0 : u32) -> vec2<u32> { return vec2<u32>(a_0, a_0); }', [
+        'p',
+      ])
+    }).toThrow(/vec2 element type 'u32'/)
+  })
+
+  // Constructed from one scalar (a splat) or from another vector (a copy) —
+  // both legal WGSL, neither modeled. Refused rather than assumed to be a pair.
+  test('refuses a vec2 that is not two scalars', () => {
+    expect(() => {
+      emit('fn p_0( a_0 : f32) -> vec2<f32> { return vec2<f32>(a_0); }', ['p'])
+    }).toThrow(/built from 1 component/)
+  })
+
+  // A vec2 PARAMETER stays out: it would need vector locals and swizzles to be
+  // useful, which is the general vector support adr-051 leaves unproven.
+  test('refuses a vec2 parameter', () => {
+    expect(() => {
+      emit('fn p_0( v_0 : vec2<f32>) -> f32 { return 1.0f; }', ['p'])
+    }).toThrow(/type 'vec2' is outside the supported scalar subset/)
+  })
+})

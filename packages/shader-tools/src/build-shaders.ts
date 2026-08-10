@@ -51,9 +51,15 @@ import {
   instanceAttrsFor,
 } from './shader-codegen/codegen.ts'
 import {
+  assertJsSkipsResolve,
+  collectSkips,
+  emitLiftReport,
+} from './shader-codegen/liftReport.ts'
+import {
   assertOutPathsUnique,
   parseExportedConsts,
   parseJsExports,
+  parseJsSkips,
   parseOutPath,
   parseTargets,
   parseVertsPerInstance,
@@ -68,8 +74,9 @@ import {
   findVertexAttributeStruct,
 } from './shader-codegen/reflection.ts'
 import { vulkanGlslToWebgl2 } from './shader-codegen/vulkanGlslToWebgl2.ts'
-import { emitJsTwins } from './shader-codegen/wgslToJs.ts'
+import { emitJsTwins, parseWgsl } from './shader-codegen/wgslToJs.ts'
 
+import type { ShaderScan } from './shader-codegen/liftReport.ts'
 import type { JsExportFn } from './shader-codegen/parseDirectives.ts'
 import type { Reflection } from './shader-codegen/reflection.ts'
 
@@ -286,6 +293,26 @@ type Log = (line: string) => void
 // has to be the one to say it.
 const WRITTEN = new Set<string>()
 
+// What each entry-point shader's compiled WGSL turned out to contain, for the
+// liftability inventory. Collected here rather than in a separate pass because
+// the WGSL is already in hand and re-running slangc over ~40 shaders to produce
+// a report is how a report ends up behind a flag nobody passes.
+//
+// Entry-point shaders only, and that is sufficient: slangc inlines every
+// function the draw path reaches, including the ones authored in the modules a
+// shader imports, so a module's decisions appear under each shader that uses
+// them. A module nothing imports has no live functions to lift by definition.
+const SCANS: ShaderScan[] = []
+
+// Every name any `//! js-export` names, tree-wide. Filled by `writeJsExports`,
+// which is the one place that resolves the directive the same way for a module
+// and for a shader with entry points — and tree-wide because a module's export
+// is inlined into every importer's WGSL, so it shows up in a dozen scans while
+// being declared once.
+const EXPORTED = new Set<string>()
+
+const LIFT_REPORT_PATH = 'agent-docs/reference/SHADER_LIFT_INVENTORY.md'
+
 // Write a generated artifact and record it. All artifact writes go through here
 // or through `writeOut`; a `writeFileSync` that doesn't will read as an orphan.
 //
@@ -362,12 +389,17 @@ function buildJsExportWrapper(moduleName: string, fns: JsExportFn[]) {
   const calls = fns.map((fn, i) => {
     const args = fn.paramTypes.map(t => SLANG_DUMMY_ARG[t]!).join(', ')
     const call = `${fn.name}(${args})`
+    // The sink is `float`, so the probe has to narrow whatever the function
+    // returns down to one. It only has to keep the CALL alive — Slang emits the
+    // whole function either way — so taking one lane of a vector is enough.
     const asFloat =
       fn.returnType === 'float'
         ? call
         : fn.returnType === 'bool'
           ? `(${call} ? 1.0 : 0.0)`
-          : `float(${call})`
+          : fn.returnType === 'float2'
+            ? `(${call}).x`
+            : `float(${call})`
     return `  jsExportSink[${i}] = ${asFloat};`
   })
   return [
@@ -446,6 +478,9 @@ async function writeJsExports(
   )
   if (!fns) {
     return
+  }
+  for (const fn of fns) {
+    EXPORTED.add(fn.name)
   }
   const wgsl =
     shaderWgsl ?? (await compileJsExportWrapper(slangPath, source, base, fns))
@@ -684,6 +719,17 @@ async function compileOne(log: Log, slangPath: string, source: string) {
     }
     writeConstsOut(log, source, base, codegenInputs.exportedConsts)
     await writeJsExports(log, slangPath, source, base, wgsl)
+
+    // Read the WGSL back through the emitter's own parser. Deliberately the
+    // same parser rather than a second opinion: the point of the inventory is
+    // to report what THIS emitter can and cannot do, so a divergent scanner
+    // would describe a subset nobody can actually generate from.
+    const { fns, refused } = parseWgsl(wgsl)
+    SCANS.push({
+      shader: path.relative(PROJECT_ROOT, slangPath),
+      inSubset: fns,
+      refused,
+    })
   } finally {
     rmSync(tmp, { recursive: true, force: true })
   }
@@ -767,8 +813,24 @@ async function main() {
       `${failures.length} of ${files.length} .slang file(s) failed`,
     )
   }
+  // Both are whole-tree claims, so both are meaningful only after a FULL build.
+  // Given an explicit path list the scan covers those shaders alone, and
+  // writing the report from it would delete every other shader's rows.
   if (argPaths.length === 0) {
     assertNoOrphans()
+    // Skips come from every file, modules included — see `collectSkips`.
+    const skips = collectSkips(
+      files.map(f => ({
+        shader: f.path.replace(`${PROJECT_ROOT}/`, ''),
+        skips: parseJsSkips(f.source),
+      })),
+    )
+    assertJsSkipsResolve(SCANS, EXPORTED, skips)
+    writeFileSync(
+      path.join(PROJECT_ROOT, LIFT_REPORT_PATH),
+      emitLiftReport(SCANS, EXPORTED, skips),
+    )
+    console.log(`  ok: ${LIFT_REPORT_PATH}`)
   }
 }
 

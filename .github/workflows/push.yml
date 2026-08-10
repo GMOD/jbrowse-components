@@ -322,22 +322,37 @@ jobs:
       - name: Check generated shaders are up to date
         run: |
           pnpm gen:shaders
+          # The liftability inventory is generated too, and is the point of the
+          # check as much as the twins are: a shader edit that makes a new
+          # function liftable adds a row to its Candidates table, and that row
+          # is the only signal anyone gets that a decision (export it, or
+          # //! js-skip it with a reason) is now owed.
+          artifacts=("**/*.generated.ts" "agent-docs/reference/SHADER_LIFT_INVENTORY.md")
           # `git diff` cannot see an artifact generated for the FIRST time and
           # never committed — adding `//! js-export:` to a shader and forgetting
           # to `git add` the new twin left this job green, and the failure
           # surfaced as an unresolved import in some other job. Untracked
           # artifacts are counted separately, the way scripts/autogen.ts does.
-          untracked=$(git ls-files --others --exclude-standard -- '**/*.generated.ts')
-          if ! git diff --quiet -- '**/*.generated.ts' || [ -n "$untracked" ]; then
-            echo "Error: generated shaders are out of date!"
+          untracked=$(git ls-files --others --exclude-standard -- "${artifacts[@]}")
+          if ! git diff --quiet -- "${artifacts[@]}" || [ -n "$untracked" ]; then
+            echo "Error: generated shader artifacts are out of date!"
             echo "Run 'pnpm gen:shaders' and commit the changes."
-            git diff --stat -- '**/*.generated.ts'
+            git diff --stat -- "${artifacts[@]}"
             if [ -n "$untracked" ]; then
               echo "Generated but never committed:"
               echo "$untracked"
             fi
             exit 1
           fi
+      # Differential check of every generated twin against slangc's own C++
+      # translation of the same Slang. The staleness check above proves the
+      # twins were regenerated; this proves the generator read slangc right —
+      # which is the property a SLANG_VERSION bump can break wholesale, and
+      # which the per-function parity tests only cover where one was written.
+      # Runs here rather than in jest: it needs slangc and a C++ compiler, and
+      # this is the job that already has both.
+      - name: Check generated twins against the C++ oracle
+        run: pnpm check-shader-oracle
 
   format:
     name: Format
