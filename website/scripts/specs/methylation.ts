@@ -163,13 +163,21 @@ export const methylationSpecs: ScreenshotSpec[] = [
             //     the track.
             //   the same with a `+ '#other'` sentinel, so index [1] always
             //     exists -> no banner, and every feature lands in ONE
-            //     unlabelled row: the expression resolved empty for all of them.
-            //   partitionField: 'name' -> works, rows labelled
-            //     `(AATAA)n#Simple_repeat` and so on.
+            //     unlabelled row. Consistent with the first: jexl's `+` is
+            //     numeric, so the sentinel makes NaN, `split(NaN,'#')` throws,
+            //     and THAT throw is caught, yielding '' for every feature.
+            //   partitionField: 'name' (the default) -> works, and is the
+            //     figure the slot's own docs warn about: one row per repeat
+            //     NAME, so this window draws six near-empty rows -- `(A)n`,
+            //     `(AATAA)n`, `(AATTTT)n`, `(AT)n`, `(TTC)n` -- with the
+            //     transposon buried among them and the lane clipped.
             //
-            // So the attribute form reaches this adapter and the jexl form does
-            // not. That is a display bug rather than a spec one, and until it
-            // is fixed one labelled bar beats five rows named after themselves.
+            // Setting it as a config slot in the track's `displays` rather than
+            // on the view's tracks entry makes no difference; the documented
+            // form banners either way. So the throw escapes the guard, and the
+            // partition that would give two useful rows is the one that cannot
+            // run. That is a display bug rather than a spec one, and until it
+            // is fixed one labelled bar beats six rows named after motifs.
             {
               trackId: 'arabidopsis_rmsk',
               type: 'LinearBasicDisplay',
