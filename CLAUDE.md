@@ -36,6 +36,25 @@ checkout, so ordinary git is yours to use without asking.
 - **Never merge a `*.generated.ts` conflict — regenerate it.** Take either side,
   re-run the generator (see Tooling), `git add`. Only the sources conflict for
   real.
+- **A fresh worktree has no `node_modules` and no figures**, so every
+  `website/scripts/*.ts` dies on
+  `Cannot find package '@jbrowse/browser-test-utils'` and anything reading
+  figures calls the whole corpus unpulled. Three symlinks beat a `pnpm install`
+  — seconds, and no lockfile risk, because pnpm's internal links are absolute
+  and resolve back into the primary checkout's store:
+
+  ```
+  ln -s ~/src/jbrowse-components/node_modules node_modules
+  ln -s ~/src/jbrowse-components/website/node_modules website/node_modules
+  ln -s ~/src/jbrowse-components/website/static/img website/static/img
+  ```
+
+  Linking `static/img` is also what lets figure tooling see the machine's real
+  figures, unpushed regens included, which is the whole point of a before/after
+  comparison. Delete the three before committing — they are gitignored, but they
+  muddy a `git status` read. Note `puppeteer` is not hoisted to the root, so
+  resolve it from `packages/browser-test-utils/` or run from a package that
+  depends on it.
 
 ## MST
 
