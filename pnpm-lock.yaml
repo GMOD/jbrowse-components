@@ -362,13 +362,28 @@ importers:
       '@jbrowse/capture':
         specifier: workspace:^
         version: link:../../products/jbrowse-capture
+      esbuild:
+        specifier: ^0.28.2
+        version: 0.28.2
       puppeteer:
         specifier: ^25.5.0
         version: 25.5.0(yauzl@2.10.0)
+      react:
+        specifier: ^19.2.8
+        version: 19.2.8
+      react-dom:
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
       serve-handler:
         specifier: ^6.1.7
         version: 6.1.7
     devDependencies:
+      '@types/react':
+        specifier: ^19.2.18
+        version: 19.2.18
+      '@types/react-dom':
+        specifier: ^19.2.4
+        version: 19.2.4(@types/react@19.2.18)
       '@types/serve-handler':
         specifier: ^6.1.4
         version: 6.1.4
@@ -2817,12 +2832,24 @@ importers:
       '@types/mdast':
         specifier: ^4.0.4
         version: 4.0.4
+      '@types/react':
+        specifier: ^19.2.18
+        version: 19.2.18
+      '@types/react-dom':
+        specifier: ^19.2.4
+        version: 19.2.4(@types/react@19.2.18)
       pagefind:
         specifier: ^1.5.2
         version: 1.5.2
       prettier-plugin-astro:
         specifier: ^0.14.1
         version: 0.14.1
+      react:
+        specifier: ^19.2.8
+        version: 19.2.8
+      react-dom:
+        specifier: ^19.2.8
+        version: 19.2.8(react@19.2.8)
       typescript:
         specifier: ^6.0.3
         version: 6.0.3

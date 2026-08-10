@@ -8,14 +8,20 @@
   "main": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./annotationOverlay": "./src/annotationOverlay.ts"
+    "./annotationOverlay": "./src/annotationOverlay.ts",
+    "./reviewApp": "./src/reviewApp/index.ts"
   },
   "dependencies": {
     "@jbrowse/capture": "workspace:^",
+    "esbuild": "^0.28.2",
     "puppeteer": "^25.5.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "serve-handler": "^6.1.7"
   },
   "devDependencies": {
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
     "@types/serve-handler": "^6.1.4"
   }
 }

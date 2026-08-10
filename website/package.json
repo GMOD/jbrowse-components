@@ -63,8 +63,12 @@
     "@jbrowse/browser-test-utils": "workspace:*",
     "@types/hast": "^3.0.5",
     "@types/mdast": "^4.0.4",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
     "pagefind": "^1.5.2",
     "prettier-plugin-astro": "^0.14.1",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "typescript": "^6.0.3"
   }
 }
