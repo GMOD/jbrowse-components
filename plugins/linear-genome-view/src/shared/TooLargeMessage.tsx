@@ -7,12 +7,16 @@ import { tooLargeBannerText } from './regionTooLargeUtils.ts'
 
 export interface TooLargeMessageModel {
   regionTooLargeReason: string
-  // Optional because the displays outside `RegionTooLargeMixin` (wiggle,
-  // manhattan) duck-type this interface and have no such getter. Absent means
-  // "zooming still helps", which is right for them: they gate on their own
-  // block-level checks rather than on an index estimate, so there is no
-  // measurement pair that could say otherwise.
-  zoomCanReleaseGate?: boolean
+  // Required, like the other two. Every display that can reach the `tooLarge`
+  // phase composes `RegionTooLargeMixin` — reaching it at all means
+  // `regionTooLarge` came back true, and that getter is the mixin's — so there
+  // is no in-tree model without this. It was optional on the theory that wiggle
+  // and manhattan duck-typed the interface from outside the mixin; they compose
+  // it (through `MultiRegionDisplayMixin`) and simply never opt in, so they
+  // never raise this banner at all. What optional actually bought was a
+  // `tooLargeBannerText` default that no display could reach and one test double
+  // that didn't have to declare the field.
+  zoomCanReleaseGate: boolean
   forceLoad: () => void
 }
 

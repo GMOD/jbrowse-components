@@ -31,6 +31,15 @@ export interface WiggleGpuDisplayModel<
   reload: () => void
   regionTooLarge: boolean
   regionTooLargeReason: string
+  // The banner's third field, alongside the two above. It was missing here
+  // while `TooLargeMessageModel` had it optional, so this contract type-checked
+  // against the chrome while under-declaring what the real models expose — every
+  // display in this family composes `RegionTooLargeMixin` and has it. Harmless
+  // in practice, since none of the three opts the gate in and so none can reach
+  // the `tooLarge` phase, but a duck-typed contract that omits a member the
+  // model has is how a shared component comes to read `undefined` from one
+  // caller and a real value from another.
+  zoomCanReleaseGate: boolean
   forceLoad: () => void
   // the resolved "do the hatches draw" getter, never the raw
   // `displayCrossHatches` setting — density mode has no score axis for them to
