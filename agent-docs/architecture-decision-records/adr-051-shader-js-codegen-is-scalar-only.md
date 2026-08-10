@@ -3,6 +3,13 @@ status: Accepted
 summary: "Generate the Canvas2D twin of a shader's scalar decision functions from slangc's WGSL; never transpile the vertex or fragment stage"
 ---
 
+> **Amended 2026-08.** Three changes, all recorded in place below: the subset
+> gained `float2` **in return position only** (the "genuinely vector-valued
+> decision" this ADR held the door open for turned up — see §A vector signature),
+> the export/decline state is now a **generated inventory** rather than a prose
+> list (§What is exported today), and the emitter is checked against **slangc's
+> own C++** rather than by reading diffs (§Consequences).
+
 # ADR-051: Shader→JS codegen covers scalar decisions only, never a draw stage
 
 ## Status
@@ -104,6 +111,15 @@ indexing, loops, pointer params and unimplemented builtins all throw at
 safety property: a transliterator that silently guesses is strictly worse than
 the hand-written twin it replaces, because the twin is at least reviewable.
 
+The one amendment (2026-08) is `float2` **in return position**, emitted as a TS
+`[number, number]`. It is not a step toward vector support and is bounded so
+that it cannot become one: no vec2 parameters, locals, swizzles, indexing or
+arithmetic, only a `vec2<f32>(a, b)` constructor as the whole of a `return`, and
+`vec3`/`vec4` refused by name. Nothing in the signedness or integer-division
+inference has to know it exists. §"A vector signature is usually a scalar
+decision in a wrapper" says why this case is different from the ones that table
+turned down.
+
 Two mechanics follow from the findings above:
 
 - **A synthesized compute wrapper, for module files only.** Slang eliminates
@@ -176,6 +192,13 @@ the no-GPU path this all exists for.
 
 ## What is exported today
 
+**The current state is generated**, into
+[reference/SHADER_LIFT_INVENTORY.md](../reference/SHADER_LIFT_INVENTORY.md): what
+is exported, what is liftable and deliberately is not (with the reason, from a
+`//! js-skip` beside the code), and what the emitter refuses and why. Read that
+for *what*; the table below is kept for *what each export replaced*, which is
+the part a scanner cannot know and the part that says whether the bar was met.
+
 | Shader | Exported | Consumer, and what it replaced |
 | --- | --- | --- |
 | `hpmath.slang` | `snapBoxHeightPx`, `snapBoxCenterYPx`, `extendToMinWidthPx` | `Canvas2DFeatureRenderer` — two hand-ports (`boxHeightPx` / `boxCenterY`, both labelled "JS twin of…") and the open-coded `max(floor, \|dx\|)` |
@@ -204,6 +227,9 @@ the no-GPU path this all exists for.
 | `manhattan.slang` | `GLYPH_POINT`, `GLYPH_INSERTION`, `GLYPH_INDEX` via `export-consts` | `ManhattanRPC/rpcTypes.ts` — restated there, and pinned to the shader only by a test that string-matched its branches out of the `.slang` source |
 | `ldUniforms.slang` | `dprimeFinalize` | `@jbrowse/ld-core` `calculateDprime` — a line-for-line twin, and the only export so far where the two backends must agree on a **number the user reads** rather than on pixels |
 | `ldUniforms.slang` | `ldRSquared`, `ldGenotypeD`, `ldGenotypeCorrelation`, `ldHaplotypeCorrelation` | `@jbrowse/ld-core` `calculateLDStats` + `calculateLDStatsPhased` — the rest of what `dprimeFinalize` left behind. Both compute kernels now end in these too, so the r/r²/D block is stated once instead of four times |
+| `rect.slang` | `rectSpanPx` | `Canvas2DFeatureRenderer` `paintedRectSpan` — the point-vs-span branch, the pixel snap and the widening, all restated there; the first export whose answer is a pair |
+| `chevron.slang` | `showChevrons`, `chevronCount`, `chevronOffset` | `Canvas2DFeatureRenderer` `drawLines` — the strand-marker layout, stated in bp in the shader and in px here, so the two copies did not even look alike |
+| `ldUniforms.slang` | `ldEnoughGenotypes`, `ldEnoughGametes`, `ldLociPolymorphic`, `ldGenotypeAlleleFreq` | `@jbrowse/ld-core` + both compute kernels — the degenerate-input gates that stood between the moments and the already-generated estimators. The polymorphism test was written out in four places |
 
 ### A vector signature is usually a scalar decision in a wrapper
 
@@ -233,10 +259,66 @@ Vector support is therefore **not** blocked-and-valuable, it is unproven. Build
 it when a function turns up whose *decision* is genuinely vector-valued, not
 because a signature has a `3` in it.
 
+### The function that turned up: `rectSpanPx` (2026-08)
+
+`rect.slang`'s `vs_main` decides where a feature rect's two screen-x edges land:
+a degenerate span is an interbase **point** and straddles its coordinate, a real
+span is snapped at both ends and then widened away from its start edge.
+`paintedRectSpan` in `Canvas2DFeatureRenderer` was a hand-written twin of that
+branch, and the two agreed only via an argument nobody had written down — the
+shader's point branch does not widen, the Canvas2D one did, and that was
+harmless only because `round(x + 1) - round(x - 1)` is exactly the min width.
+
+It passes the test this section sets, where the earlier candidates did not:
+
+- **The decision is the pair.** Splitting it into `leftEdgePx` and
+  `rightEdgePx` makes each recompute the other's branch, and the right edge is
+  defined in terms of the left one (`extendToMinWidthPx(left, …)`).
+- **There is no packaging to leave behind.** `float4 → float4` candidates were
+  refused because the vector part was a color conversion each backend should do
+  its own way. Here both lanes are screen px on both backends; the only
+  per-backend step is turning a signed edge pair into a `fillRect` x, which is
+  `spanLeft`, already shared and deliberately not part of this.
+- **The pair is the consumer's argument list.** It is the first and third
+  argument of a rect fill. That is the honest limit of "generate canvas drawing
+  commands": generate the geometry a mark occupies, and let each backend keep
+  its own paint, style caching and culling.
+
+This does not reopen the vertex stage. `vs_main` still describes triangles, and
+the reasons in §"A vertex shader is not a geometry description" are unchanged —
+what moved is that a px-space *mark extent* can now be factored out of one, the
+same way a px-space scalar already could.
+
+### The blind spot the survey had, and why two decisions were missed
+
+`rectSpanPx` and the chevron layout (`showChevrons` / `chevronCount` /
+`chevronOffset`) were both found in the same place, and it is a place no sweep
+was looking: **inline in a `vs_main` body**. The codegen lifts functions and the
+survey inventoried functions, so a decision that was never given a name was
+invisible to both — while its Canvas2D twin was a perfectly ordinary hand-written
+copy. Chevron spacing had been stated twice, in bp on the GPU and px on the CPU,
+which is why comment-syncing it had held: the two copies do not even look alike.
+
+The generated inventory does not close this — it also lists functions. What
+closes it is the habit: when a `vs_main` body grows a decision, name it.
+
 ### Deliberately not exported
 
-Being already-scalar is necessary, not sufficient — there has to be a consumer,
-and the two implementations have to be *meant* to agree:
+**This list now lives in the code**, as `//! js-skip: <fn> — <why not>` on the
+`.slang` that authors the function, and is rendered into the generated
+inventory's Declined table. Every entry is checked on each build: a skip naming
+a function the emitter can no longer see, or one that is exported after all,
+fails `pnpm gen:shaders`.
+
+That check exists because of the `textWidth` entry below — this section asserted
+"no counterpart exists" about a function whose counterpart had been sitting in
+`labelConstants.ts` all along, and nothing said so. A prose list of things that
+are *absent* has no way to notice when it stops being true.
+
+The reasoning is kept here because it is the standard the skips are written
+against; the skips themselves are the current state. Being already-scalar is
+necessary, not sufficient — there has to be a consumer, and the two
+implementations have to be *meant* to agree:
 
 - **`discExpand` (pointGlyph)** — expands a quad so a fragment AA ramp isn't
   clipped. Canvas2D draws `ctx.arc` and has no quad; there is nothing to share.
@@ -331,10 +413,31 @@ exists" is a claim to re-check, not a category to file things in.
   tests assert behavior, not bit patterns.
 - The emitter couples the build to the *shape* of slangc's WGSL output
   (identifier mangling, desugaring choices), which no consumer depended on
-  before. `SLANG_VERSION` is pinned and the failure is loud, but a version bump
-  should re-run `pnpm gen:shaders`, read the diff, and run the parity suite —
-  the permanently-kept retired twins are the only oracle for a desugaring
-  change. Procedure in the handoff.
+  before. `SLANG_VERSION` is pinned and the failure is loud.
+
+  **The oracle for that is now generated rather than written** (2026-08).
+  slangc emits C++ for the same Slang, so `pnpm check-shader-oracle` compiles
+  every `js-export` set to C++, sweeps ~400 argument tuples per function over
+  pools of exactly-float32-representable values, and compares against the
+  generated twin — ~19,600 comparisons across 20 shaders, in seconds, in CI.
+  The previous procedure was "read the generated diff and run the parity
+  suite", and the parity suite covers the emitter only where somebody wrote a
+  fixture: a desugaring change invalidates every twin at once, which is exactly
+  the case a per-function test set is worst at.
+
+  The retired twins stay, and are now the complementary check rather than the
+  only one: they pin behavior a human decided was right — a degenerate
+  y-domain, a reversed-block anchor — at inputs a random sweep would rarely
+  reach. The oracle pins that the transliteration is faithful. It was verified
+  by seeding a mistranslation (`Math.round` for `floor(x + 0.5)`, `Math.trunc`
+  for the other edge) and confirming it failed with the offending inputs; a
+  check that has never been seen to fail is not evidence.
+- **The oracle's own first two failures were both in the harness, and both
+  would have read as codegen bugs.** `0f` is not a valid C++ float literal, and
+  `printf("%g")` spells infinity `inf`, which `Number()` parses as NaN — so
+  every division by a swept zero was reported as C++ NaN against JS Infinity.
+  A differential check is two implementations *and* a comparator, and the
+  comparator is the one nothing else is checking.
 - **"Every gap is a hard error" is a claim to keep auditing, not a property the
   design confers.** A review found two constructs that were silently
   mistranslated rather than refused, both now fixed and covered: integer `/`,

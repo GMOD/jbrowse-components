@@ -9,12 +9,26 @@ The *why*, the export table, and everything deliberately not built are
 [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-scalar-only.md).
 Read that first; this file is the how-to and assumes it.
 
-The survey that produced this is finished. Every `.slang` in the tree was checked
-for a directive, every one without a directive read against its Canvas2D twin,
-and every `static const` grepped for a TS re-typing — twice. What that turned up
-is either exported (ADR-051's table) or classified under its "Deliberately not
-exported". **The next export will come from a function that does not exist yet,
-or from a `vs_main` body that grows a second decision worth naming.**
+**The survey is no longer a thing you run — it is generated.**
+[reference/SHADER_LIFT_INVENTORY.md](SHADER_LIFT_INVENTORY.md) is written by
+every full `pnpm gen:shaders`, and its Candidates table is the standing answer to
+"what could be lifted and has not been". It is empty today, and a row appearing
+in a diff is the signal that a shader edit created a decision nobody has made
+yet — export it, or `//! js-skip` it with a reason.
+
+That replaces a hand-run grep sweep which was declared finished twice and was
+wrong both times (ADR-051's "Deliberately not exported" list carried an entry,
+`textWidth`, that had quietly become false). **Do not re-run the sweep by hand.
+Read the inventory, and if you think it is missing something, fix the scanner —
+it uses the emitter's own parser, so anything it cannot see is something that
+cannot be generated either.**
+
+The two remaining places a new export comes from: a function that does not exist
+yet, and a `vs_main` body that grows a decision worth naming. The second is the
+blind spot the inventory *cannot* close — it lists functions, and a decision
+written inline in a vertex body is not one. `rectSpanPx` and the chevron layout
+were both found that way, and both were then given names so the inventory could
+see them.
 
 ## Where the pieces are
 
@@ -22,10 +36,13 @@ or from a `vs_main` body that grows a second decision worth naming.**
 | --- | --- |
 | `packages/shader-tools/src/shader-codegen/wgslToJs.ts` | tokenizer + recursive-descent parser + emitter for the scalar subset of slangc's WGSL |
 | `packages/shader-tools/src/shader-codegen/wgslToJs.test.ts` | weighted toward the *refusals* |
-| `parseDirectives.ts` | `//! js-export:`, `//! js-export-out:`, and the constant evaluator (which resolves through `import`s) |
+| `parseDirectives.ts` | `//! js-export:`, `//! js-export-out:`, `//! js-skip:`, and the constant evaluator (which resolves through `import`s) |
 | `build-shaders.ts` `writeJsExports` | lifts from the shader's own WGSL, or from a synthesized compute wrapper for `module` files |
+| `liftReport.ts` | the generated inventory + the `js-skip` staleness check |
+| `check-oracle.ts`, `oracleProbe.ts` | the differential check against slangc's C++ (`pnpm check-shader-oracle`) |
 | `*.js.generated.ts` | the generated twins — never hand-edit |
 | `*Parity.test.ts` | the retirement gates |
+| `reference/SHADER_LIFT_INVENTORY.md` | generated; candidates, declines, and the refusal surface |
 
 Counts belong in a grep, not in prose — a hand-incremented tally lived in the old
 handoff for several rounds and ended up off by a factor of four on the constants.
@@ -75,13 +92,27 @@ convenience.
 **Step 4 is not optional.** The generator's whole value is that it can't drift;
 that only holds if each retirement was proved once.
 
-## Bumping `SLANG_VERSION`
+## Not exporting something: `//! js-skip`
 
-The retired twins kept as fixtures are the oracle for a desugaring change, which
-is the whole reason they are kept rather than deleted. A pin bump is:
+The counterpart to `js-export`, and what keeps the inventory readable: most
+liftable functions *should not* be lifted, and a Candidates table listing a
+clip-space wrapper forever is one whose diff means nothing.
+
+```
+//! js-skip: discExpand — expands a quad so the fragment AA ramp is not clipped; Canvas2D draws ctx.arc and has no quad
+```
+
+One line per function, on the `.slang` that **authors** it (so a module-authored
+decision is declined in the module, not in each importer), em dash or `--`
+before the reason, free text after. Both halves are checked on every full build:
+a skip naming a function the emitter can no longer see, or one that turns out to
+be exported, fails `pnpm gen:shaders`. That is the part a prose list cannot do.
+
+## Bumping `SLANG_VERSION`
 
 ```sh
 pnpm gen:shaders && git diff --stat -- '**/*.generated.ts'   # read the diff
+pnpm check-shader-oracle                                     # the real gate
 pnpm test --testPathPatterns 'Parity\.test\.ts$'
 ```
 
@@ -90,12 +121,47 @@ The emitter is coupled to the *shape* of slangc's WGSL — identifier mangling, 
 Nothing else in the tree depends on that shape, so this is the only place a bump
 can go quietly wrong.
 
+**`pnpm check-shader-oracle` is what makes that checkable rather than
+reviewable.** slangc will also emit C++ for the same Slang, so the second
+implementation is generated instead of written: the check compiles every
+`js-export` set to C++, sweeps ~400 pseudo-random argument tuples per function
+over pools of exactly-float32-representable values, and compares against the
+generated twin. ~19,600 comparisons across 20 shaders, in a few seconds. A
+disagreement is a bug in `wgslToJs.ts`, not in the shader.
+
+The retired twins kept as fixtures still matter, and are now the *narrow* check:
+they pin behavior a human decided was right (a degenerate y-domain, a
+reversed-block anchor) at inputs a random sweep would rarely hit. The oracle
+pins that the transliteration is faithful. Neither subsumes the other.
+
+Mechanics worth not rediscovering, all in `oracleProbe.ts`:
+
+- `-target cpp` **segfaults** on a vertex entry point, so the check strips every
+  `[shader(...)]` function and appends its own compute probe. The probe's body
+  is never run — it exists only so Slang does not DCE the functions — and `main`
+  calls the emitted free functions directly rather than going through slangc's
+  kernel ABI.
+- The probe is appended to the shader's **own source** rather than importing it
+  from a wrapper. That works for a module and a stage-carrying shader alike, and
+  sidesteps Slang's cross-module visibility rules, which would otherwise need
+  `public` on every shader-local function in the export set.
+- The C++ name is resolved from the **C++ output**, not reused from the WGSL
+  resolution. The `_N` suffix counts declarations per target and the two targets
+  do not declare the same set; assuming they match happens to work today and
+  would fail as a comparison against the wrong function.
+
 ## Verified facts, do not re-derive
 
 - **slangc's CPU targets do not support graphics stages.** `-target c` on a
   vertex entry errors (`'max' not available in 'vertex' stage`); `-target cpp`
-  **segfaults** (exit 139). Both work on a `[shader("compute")]` entry. This is
-  why module files get a synthesized compute wrapper.
+  **segfaults** (exit 139, re-confirmed against 2026.5.2). This is why module
+  files get a synthesized compute wrapper.
+
+  **`-target cpp` works on a `[shader("compute")]` entry; `-target c` does
+  not** — it reports `unavailable features in entry point … for 'compute'
+  stage` on the same probe `cpp` compiles cleanly. This entry previously said
+  "both work", which is what the C++ oracle was built against and immediately
+  disproved. `cpp` is the one to reach for.
 - **Slang DCEs anything no entry point reaches.** For a module that means the
   wrapper is the only way to get WGSL at all. For a shader with entry points it
   means an exported function must be *called from the draw path* or it will not
@@ -166,20 +232,33 @@ can go quietly wrong.
   `qualityFade` is the first export doing this. Note slangc expands the `&&` in
   its body into an `if`/`else` over a `_S5` temporary, so the generated JS is
   longer than the Slang; that is the desugaring, not a bug.
-- **A vector or struct signature is usually a scalar decision in a wrapper.**
-  Working the candidates one at a time found that in every case the part both
+- **A vector or struct signature is usually a scalar decision in a wrapper**, and
+  that is still the first thing to try. In almost every case the part both
   backends must agree on was already scalar, and the vector part was a
   color-space or packaging conversion each backend should keep doing its own way.
-  So vector support is *unproven* rather than blocked — build it when a function
-  turns up whose **decision** is genuinely vector-valued. The gap that was real
-  turned out to be integer semantics, not vectors.
+
+  **The exception is a returned PAIR, and `float2` is now in the subset for
+  exactly that.** `rectSpanPx` is the function ADR-051 was waiting for: the two
+  screen-x edges a rect paints are one decision with two numbers in it, and
+  splitting it into `leftEdgePx`/`rightEdgePx` would make each recompute the
+  other's branch. The support is deliberately narrow — **return position only**,
+  built from `vec2<f32>(a, b)`, no vec2 params, locals, swizzles or arithmetic —
+  so none of the signedness and division inference has to know about it. `vec3`
+  and `vec4` are refused by name.
+
+  Reach for it when the answer is a pair a Canvas2D call takes as two
+  arguments. Do not reach for it because a signature has a `2` in it:
+  `hpSplitUint` and `quadLocal` also return `float2`, and both are `js-skip`ped
+  — widening the subset made them *visible* to the inventory, which is what
+  forced them to be classified.
 - **Not every mirror is worth converting.** The test is whether a hand-written
   twin could plausibly drift *and* the difference would be hard to see —
   `snapCellEdgePx`'s half-canvas offset passes it, a multiply-add does not.
 
 ## The two sweeps, when a shader gains a constant
 
-Cheap, and worth re-running rather than trusting a past result — the second one
+**Constants only.** The inventory covers functions; nothing generates the
+equivalent for `static const`, so these two greps are still hand-run. The second
 is what found the wiggle rendering-mode enum and the Manhattan glyph ids.
 
 ```sh
