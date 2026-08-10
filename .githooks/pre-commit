@@ -1,0 +1,105 @@
+#!/bin/sh
+# Runs oxfmt over the files being committed, so `pnpm check-format` in CI does
+# not fail on formatting alone. `pnpm install` points core.hooksPath here; skip
+# a run with `SKIP_OXFMT=1 git commit` or `git commit --no-verify`.
+#
+# Only the paths in this commit are formatted. Bare `pnpm format` rewrites all
+# ~5800 files, so in a worktree shared by several people it lands someone
+# else's reformatting in your diff under your commit message.
+set -eu
+
+if [ "${SKIP_OXFMT:-}" = 1 ]; then
+  exit 0
+fi
+
+root=$(git rev-parse --show-toplevel)
+oxfmt=$root/node_modules/.bin/oxfmt
+if [ ! -x "$oxfmt" ]; then
+  echo "pre-commit: no $oxfmt, skipping format (run pnpm install)" >&2
+  exit 0
+fi
+
+staged=$(git diff --cached --name-only --diff-filter=ACMR)
+if [ -z "$staged" ]; then
+  exit 0
+fi
+
+# A file with unstaged edits cannot be formatted in place, because the `git add`
+# afterwards would stage the rest of those edits too. Only its staged blob is
+# formatted, further down.
+#
+# `git commit -- <paths>` commits the working tree at those paths through a
+# temporary index, so nothing reads as unstaged there and every path gets
+# formatted -- which is what that form is asking for.
+dirty=$(git diff --name-only)
+
+whole=
+partial=
+oldifs=$IFS
+IFS='
+'
+for f in $staged; do
+  if printf '%s\n' "$dirty" | grep -Fxq -- "$f"; then
+    partial=$partial$f'
+'
+  else
+    whole=$whole$f'
+'
+  fi
+done
+IFS=$oldifs
+
+if [ -n "$whole" ]; then
+  # oxfmt skips paths it has no formatter for, and --no-error-on-unmatched-
+  # pattern keeps "everything you passed is in .prettierignore" from being an
+  # error. Both are ordinary here: generated shader modules and agent-docs are
+  # ignored, .astro belongs to prettier below.
+  printf '%s' "$whole" | tr '\n' '\0' |
+    xargs -0 "$oxfmt" --no-error-on-unmatched-pattern --write
+  printf '%s' "$whole" | tr '\n' '\0' | xargs -0 git add --
+
+  astro=$(printf '%s' "$whole" | grep '\.astro$' || true)
+  if [ -n "$astro" ] && [ -x "$root/node_modules/.bin/prettier" ]; then
+    printf '%s' "$astro" | tr '\n' '\0' |
+      xargs -0 "$root/node_modules/.bin/prettier" --write --
+    printf '%s' "$astro" | tr '\n' '\0' | xargs -0 git add --
+  fi
+fi
+
+if [ -n "$partial" ]; then
+  # The staged blob is formatted and written back to the index on its own, which
+  # leaves the working copy and its unstaged edits alone. --stdin-filepath
+  # applies that path's ignore rules and echoes the input back unchanged when it
+  # is ignored, so an ignored file is never rewritten; it exits non-zero for a
+  # path it cannot format and for one that does not parse, and both of those are
+  # left exactly as staged.
+  tmp=$(mktemp -d)
+  trap 'rm -rf "$tmp"' EXIT
+  fixed=
+  IFS='
+'
+  for f in $partial; do
+    git show ":$f" >"$tmp/staged"
+    if ! "$oxfmt" --stdin-filepath "$f" <"$tmp/staged" >"$tmp/formatted" 2>/dev/null; then
+      continue
+    fi
+    if cmp -s "$tmp/staged" "$tmp/formatted"; then
+      continue
+    fi
+    if [ ! -s "$tmp/formatted" ] && [ -s "$tmp/staged" ]; then
+      continue
+    fi
+    mode=$(git ls-files --stage -- "$f" | cut -d' ' -f1)
+    blob=$(git hash-object -w --stdin <"$tmp/formatted")
+    git update-index --cacheinfo "$mode,$blob,$f"
+    fixed=$fixed'  '$f'
+'
+  done
+  IFS=$oldifs
+
+  if [ -n "$fixed" ]; then
+    echo "pre-commit: formatted what is being committed of, but not the working" >&2
+    echo "copy of (these have unstaged edits as well):" >&2
+    printf '%s' "$fixed" >&2
+  fi
+fi

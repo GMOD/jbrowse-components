@@ -32,6 +32,10 @@ Run from root:
 - **Format**: `pnpm format`
 - **Test**: `pnpm test`
 
+`pnpm install` points `core.hooksPath` at `.githooks`, whose `pre-commit` runs
+oxfmt over the files in the commit. Skip it with `SKIP_OXFMT=1 git commit` or
+`git commit --no-verify`.
+
 ### Products
 
 - **Web**: `cd products/jbrowse-web && pnpm start`

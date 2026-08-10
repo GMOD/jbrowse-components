@@ -10,7 +10,7 @@
     "plugins/*"
   ],
   "scripts": {
-    "postinstall": "node products/jbrowse-web/scripts/genBuildInfo.ts",
+    "postinstall": "node products/jbrowse-web/scripts/genBuildInfo.ts && node --experimental-strip-types scripts/install-git-hooks.ts",
     "build": "pnpm -r build",
     "build:esm": "node node_modules/typescript7/bin/tsc --build tsconfig.build.json",
     "gen-tsconfig-refs": "node --experimental-strip-types scripts/generate-tsconfig-references.ts",
