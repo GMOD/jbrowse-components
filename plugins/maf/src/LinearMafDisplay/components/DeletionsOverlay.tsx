@@ -3,6 +3,7 @@ import { observer } from 'mobx-react'
 
 import { drawMafDeletionLabels } from '../../LinearMafRenderer/rendering/deletions.ts'
 
+import type { MafColorPalette } from '../../LinearMafRenderer/util.ts'
 import type { DeletionMarker } from './computeVisibleDeletions.ts'
 
 /**
@@ -15,10 +16,13 @@ const DeletionsOverlay = observer(function DeletionsOverlay({
   markers,
   width,
   height,
+  palette,
 }: {
   markers: DeletionMarker[]
   width: number
   height: number
+  // the label reads against `gapColor`, which the base pass fills the run with
+  palette: MafColorPalette
 }) {
   if (markers.length === 0) {
     return null
@@ -28,7 +32,7 @@ const DeletionsOverlay = observer(function DeletionsOverlay({
       width={width}
       height={height}
       draw={ctx => {
-        drawMafDeletionLabels(ctx, markers)
+        drawMafDeletionLabels(ctx, markers, palette)
       }}
     />
   )

@@ -193,7 +193,9 @@ function MafSvgBody({
                 1 / view.bpPerPx,
               )
             }
-            drawMafDeletionLabels(ctx, model.visibleDeletions)
+            // `svgState.palette`, so the count follows the export theme the
+            // gap cells under it were painted from
+            drawMafDeletionLabels(ctx, model.visibleDeletions, svgState.palette)
             drawMafLabels(
               ctx,
               model.visibleLabels,

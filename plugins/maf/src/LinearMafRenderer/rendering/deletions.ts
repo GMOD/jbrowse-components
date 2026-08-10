@@ -1,9 +1,11 @@
 import { MIN_HEIGHT_FOR_TEXT } from '@jbrowse/alignments-core'
+import { getContrastText } from '@jbrowse/core/ui/palette'
 import { measureText } from '@jbrowse/core/util'
 
 import { FONT_CONFIG } from './types.ts'
 
 import type { DeletionMarker } from '../../LinearMafDisplay/components/computeVisibleDeletions.ts'
+import type { MafColorPalette } from '../util.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 /**
@@ -13,12 +15,26 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
  * painted by the base pass; this only adds the count label, and only where the
  * run is wide/tall enough to fit it. Markers come from `computeVisibleDeletions`
  * (which shares the `forEachDeletion` walk with the hover hit-test).
+ *
+ * Takes the palette for the same reason `drawMafEmptyLines` and
+ * `drawMafInsertions` do, and this was the one marker drawing that didn't: the
+ * label sits on the gap cells, which the base pass fills with
+ * `palette.gapColor`, and that color is theme-varying in the one direction that
+ * matters. It is `palette.deletion` — `#808080` in light, deliberately
+ * lightened to `#c8c8c8` in dark so the run reads against a dark track — so a
+ * hardcoded white count was invisible on every dark-mode MAF, and on every
+ * dark-theme SVG export regardless of the session's own theme.
  */
-export function drawMafDeletionLabels(ctx: Ctx2D, markers: DeletionMarker[]) {
+export function drawMafDeletionLabels(
+  ctx: Ctx2D,
+  markers: DeletionMarker[],
+  palette: MafColorPalette,
+) {
   ctx.font = FONT_CONFIG
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.fillStyle = 'white'
+  // One resolution per draw, not per marker: every run is the same gap color.
+  ctx.fillStyle = getContrastText(palette.gapColor)
   for (const m of markers) {
     const text = String(m.length)
     if (m.width >= measureText(text) + 2 && m.h >= MIN_HEIGHT_FOR_TEXT) {

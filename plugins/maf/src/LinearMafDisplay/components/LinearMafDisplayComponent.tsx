@@ -224,6 +224,7 @@ const MafBody = observer(function MafBody({
           markers={model.visibleDeletions}
           width={width}
           height={rowsHeight}
+          palette={colorPalette}
         />
         <VisibleLabelsOverlay
           labels={model.visibleLabels}
