@@ -11,6 +11,8 @@ import {
 import type { PanelRow } from './panelOrder.ts'
 import type { MateCandidate } from './pickMatesForRegion.ts'
 
+const region = { start: 0, end: 1 }
+
 function candidates(...assemblyNames: string[]): MateCandidate[] {
   return assemblyNames.map(assemblyName => ({
     assemblyName,
@@ -19,19 +21,40 @@ function candidates(...assemblyNames: string[]): MateCandidate[] {
       refName: 'chr',
       start: 0,
       end: 1,
+      mate: { refName: 'ctg', start: 10, end: 20, assemblyName },
     }),
   }))
 }
 
-const rows = toPanelRows('K12', candidates('Sakai', 'CFT073', 'IAI39'))
+const rows = toPanelRows('K12', candidates('Sakai', 'CFT073', 'IAI39'), region)
 
 function names(list: PanelRow[]) {
   return list.map(r => r.assemblyName)
 }
 
+function spanOf(list: PanelRow[], assemblyName: string) {
+  const row = list.find(r => r.assemblyName === assemblyName)
+  return row?.kind === 'mate' ? row.span : undefined
+}
+
 test('the anchor leads the list and every discovered mate starts checked', () => {
   expect(names(rows)).toEqual(['K12', 'Sakai', 'CFT073', 'IAI39'])
   expect(rows.filter(r => r.kind === 'mate').every(r => r.checked)).toBe(true)
+})
+
+// The row carries where its panel opens, resolved once at seed time: the dialog
+// re-renders on every keystroke in its window-size field, and deriving this in
+// render re-walked each listed mate's CIGAR per character. Reordering and
+// unchecking move the panel, not the locus, so the value has to survive both.
+test('a row carries its resolved locus through a reorder and an uncheck', () => {
+  expect(spanOf(rows, 'Sakai')).toEqual({
+    refName: 'ctg',
+    start: 10,
+    end: 20,
+    reversed: false,
+  })
+  const moved = movePanel(setPanelChecked(rows, 1, false), 1, 1)
+  expect(spanOf(moved, 'Sakai')).toEqual(spanOf(rows, 'Sakai'))
 })
 
 test('moving a panel swaps it with its neighbour', () => {
