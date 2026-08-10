@@ -1,0 +1,33 @@
+{
+  "assemblies": [
+    {
+      "name": "hg002v1.2",
+      "displayName": "T2T-HG002 v1.2 (diploid)",
+      "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/hg002v1.2.fasta.gz"
+    }
+  ],
+  "tracks": [
+    {
+      "type": "SyntenyTrack",
+      "trackId": "hg002v1.2_mat_vs_pat",
+      "name": "Maternal vs paternal (Q100 chain)",
+      "assemblyNames": ["hg002v1.2", "hg002v1.2"],
+      "adapter": {
+        "type": "ChainAdapter",
+        "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/changes/hg002v1.2_to_other_haplotype.chain.gz",
+        "queryAssembly": "hg002v1.2",
+        "targetAssembly": "hg002v1.2"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hg002v1.2_hetsites",
+      "name": "Heterozygous sites",
+      "assemblyNames": ["hg002v1.2"],
+      "adapter": {
+        "type": "BigBedAdapter",
+        "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/annotation/haplotypes/v1.2.hetsites.bb"
+      }
+    }
+  ]
+}
