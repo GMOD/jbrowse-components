@@ -144,11 +144,53 @@ They are not uniformly collinear, though. Smaller reverse-strand chains sit
 inside them, drawn as short bars in the panels and as thin off-color threads
 among the flank ribbons, well short of the scale the sweep is drawn at.
 
-<Figure caption="HG002 v1.2 maternal (top) against paternal (bottom) across 8p23.1, with chain blocks on each panel's own coordinates and the ribbons between them colored by strand. The inverted block is the long blue bar in both panels and the sweep crossing between them; the red blocks either side are the collinear flanks." src="/img/hg002_haplotypes_8p23_inversion.png" />
+The assembly has no gene annotation of its own. What it has is the JHU Liftoff
+annotation of HG002 v1.1, published beside it as one bgzipped GFF per haplotype,
+whose contig names already match and whose coordinates are within a few bases of
+v1.2 across chromosome 8. Added as a track per panel it says what kind of
+sequence the inverted block is: ordinary gene-carrying euchromatin, not a blank
+segment that happened to flip.
+
+<Figure caption="HG002 v1.2 maternal (top) against paternal (bottom) across 9 Mb of 8p23.1, with chain blocks and genes on each panel's own coordinates and the ribbons between them colored by strand. The inverted block is the long blue bar in both panels and the sweep crossing between them; the red blocks either side are the collinear flanks." src="/img/hg002_haplotypes_8p23_inversion.png" />
 
 Set the ribbon coloring from the palette button in the view header, and turn on
 **Show curved lines** under **View options** then **Show...** so a block landing
 far from where it started is easier to follow across the gap.
+
+The Liftoff GFF carries its gene symbol in `gene_name` and no `Name` attribute,
+so the default label falls through to the assembly's own ordinal identifier
+(`hg002_chr8_maternal_195` for ENPP7P1). Point the display's name label at
+`gene_name` instead:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "hg002_genes_mat",
+  "name": "Genes (JHU Liftoff v0.6, HG002 v1.1 MAT)",
+  "assemblyNames": ["hg002v1.2"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "gffGzLocation": {
+      "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/annotation/JHULiftoff/v0.6/hg002v1.1.MAT.loff.v0.6.gff.gz"
+    },
+    "index": {
+      "location": {
+        "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/annotation/JHULiftoff/v0.6/hg002v1.1.MAT.loff.v0.6.gff.gz.tbi"
+      },
+      "indexType": "TBI"
+    }
+  },
+  "displays": [
+    {
+      "type": "LinearBasicDisplay",
+      "displayId": "hg002_genes_mat-LinearBasicDisplay",
+      "labels": {
+        "name": "jexl:get(feature,'gene_name') || get(feature,'name') || get(feature,'id')"
+      }
+    }
+  ]
+}
+```
 
 ## Collinear does not mean identical
 
@@ -158,7 +200,11 @@ inversion and turning on the heterozygous-sites track makes the second one
 checkable in the same frame: the ribbon runs as one band apart from a single
 indel, and the sites underneath it are dense in both panels.
 
-<Figure caption="A window inside the collinear block left of the inversion, with heterozygous sites under each panel. The ribbon runs as one band, so the haplotypes agree structurally, while the sites below show they differ at base level throughout. The pale wedge is an indel, and the solid run of sites beneath it on the paternal panel is where the two haplotypes stop agreeing base for base." src="/img/hg002_haplotypes_hetsites.png" />
+At this width the gene lane is readable, and each panel carries its own
+haplotype's annotation rather than one shared lane, so the sites can be read
+against the genes they fall in.
+
+<Figure caption="A window inside the collinear block left of the inversion, with each haplotype's genes and heterozygous sites under its own panel. The ribbon runs as one band, so the haplotypes agree structurally, while the sites below show they differ at base level throughout. The pale wedge is an indel, and the solid run of sites beneath it on the paternal panel is where the two haplotypes stop agreeing base for base." src="/img/hg002_haplotypes_hetsites.png" />
 
 This has to be its own view for two reasons worth knowing before you try to
 combine them. Across the whole inversion the het-site track is over its

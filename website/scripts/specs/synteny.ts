@@ -3312,7 +3312,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // 740, not 700: at 700 the run reported 39.9 css px under the fold, which
     // is this plot's bottom axis and its tick labels
     viewportHeight: 740,
-    readySelector: '[data-testid="dotplot_webgl_canvas_done"]',
+    // one of the three `_done` selectors ADR-065's sweep missed; the suffix no
+    // longer exists, so this spec could not have regenerated
+    readySelector: displayPainted('dotplot_webgl_canvas'),
     readyTimeout: 180000,
     settleMs: 10000,
     annotations: [
@@ -3423,7 +3425,13 @@ export const syntenySpecs: ScreenshotSpec[] = [
           'the centre; salmon is the plus-strand self-match. The unpainted ' +
           'gaps are where the arms differ: near-exact, not exact.',
         anchor: {
-          selector: '[data-testid="synteny_canvas_done"]',
+          // the bare testid, not `displayPainted(...)`: an annotation anchor
+          // only has to FIND the element, and annotations are drawn after the
+          // ready gate has already established that it painted. (It read
+          // `synteny_canvas_done` before ADR-065, which no longer matches
+          // anything -- the anchor would have resolved to nothing and failed
+          // the spec.)
+          selector: '[data-testid="synteny_canvas"]',
           alignX: 'left',
           alignY: 'top',
           dx: 16,
