@@ -69,3 +69,15 @@ it('draws no key for a single group', () => {
 it('draws no key when nothing is grouped', () => {
   expect(makeDisplay(1987, 640, []).rowGroupLegend).toEqual([])
 })
+
+// `showRowLabels` takes the whole of SvgRowLabels with it, swatch runs
+// included -- it is not a text-only toggle. Keying a stripe nobody drew is the
+// inverse of the tall-rows case and comes from the same question being asked
+// about only half of what draws it.
+it('draws no key once the row labels the stripe lives in are turned off', () => {
+  const display = makeDisplay(1987, 640)
+  expect(display.rowGroupLegend).toHaveLength(3)
+
+  display.setShowRowLabels(false)
+  expect(display.rowGroupLegend).toEqual([])
+})

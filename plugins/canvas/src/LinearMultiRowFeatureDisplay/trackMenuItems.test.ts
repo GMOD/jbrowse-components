@@ -20,6 +20,7 @@ function makeSelf(
     setShowRowLabels: () => {},
     effectiveRowHeight: 14,
     colorLegend: [],
+    rowGroupLegend: [],
     hiddenCategories: [],
     showBranchLength: true,
     treeHasBranchLengths: false,
@@ -178,6 +179,24 @@ describe('multi-row track menu', () => {
     )
     expect(labels(withLegend)).toContain('Categories')
     expect(labels(subMenuOf(withLegend, 'Show...'))).toContain('Show legend')
+  })
+
+  // The row-group key is drawn under the same `showLegend` slot but is not a
+  // category vocabulary, so it contributes no "Categories" submenu — and its
+  // ordinary track has an EMPTY colorLegend, because every row carrying a
+  // per-row color is exactly what makes buildColorLegend return nothing. Gating
+  // "Show legend" on colorLegend alone therefore left the legend's own "x"
+  // (which writes showLegend) as a one-way door.
+  it('offers "Show legend" for the row-group key with no color key at all', () => {
+    const items = buildMultiRowTrackMenuItems(
+      makeSelf({
+        colorLegend: [],
+        rowGroupLegend: [{ label: 'Wolf', color: '#377eb8' }],
+      }),
+    )
+
+    expect(labels(subMenuOf(items, 'Show...'))).toContain('Show legend')
+    expect(labels(items)).not.toContain('Categories')
   })
 
   it('counts hidden categories and offers a way back', () => {

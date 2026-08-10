@@ -540,9 +540,20 @@ export default function stateModelFactory(
        * painting and drives the category toggles; these rows name rows, and are
        * not toggleable. `legendIsReadable` refuses the degenerate cases — one
        * group, or more groups than a reader can scan.
+       *
+       * `showRowLabels` gates it too, because that toggle takes the stripe with
+       * it rather than only the text: `RowLabelsOverlay` renders no
+       * `SvgRowLabels` at all when it is off, and `SvgRowLabels` is where the
+       * swatch runs are drawn. Without this the labels-off dense case published
+       * a "Row groups" key naming colors that appear nowhere on the plot — the
+       * exact inverse of the case above, from the same one-line question asked
+       * about only half of what draws the stripe.
        */
       get rowGroupLegend(): LegendItem[] {
-        if (rowLabelsCarryText(self.effectiveRowHeight)) {
+        if (
+          !self.showRowLabels ||
+          rowLabelsCarryText(self.effectiveRowHeight)
+        ) {
           return []
         }
         const seen = new Set<string>()
@@ -621,6 +632,31 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * The three inputs to "does this feature paint, and in what color" —
+       * `featurePainting`'s whole contract, and nothing else.
+       *
+       * Split out of `renderState` because the two have different lifetimes and
+       * the difference is expensive. `renderState` also carries the canvas box
+       * and the row geometry, all four of which move on a track-height drag or
+       * a window resize; this moves only on a reorder, a recolor, a category
+       * toggle or a refetch. The consumers that answer the paint question and
+       * nothing else — the per-region GPU encode autorun and the hit test's
+       * memoized contexts — read this, so a resize no longer re-encodes every
+       * region's instance buffer (a full pass over every feature, per drag
+       * frame) to arrive at byte-identical output.
+       */
+      get featurePaintInputs(): Pick<
+        MultiRowRenderState,
+        'rowIndexByValue' | 'rowColorsByIndex' | 'hiddenColors'
+      > {
+        return {
+          rowIndexByValue: self.rowIndexByValue,
+          rowColorsByIndex: self.rowColorsByIndex,
+          hiddenColors: self.hiddenColors,
+        }
+      },
+      /**
+       * #getter
        * Render state passed to the GPU/Canvas2D backend each frame.
        */
       get renderState(): MultiRowRenderState {
@@ -631,9 +667,7 @@ export default function stateModelFactory(
           canvasHeight: self.height,
           rowHeight: self.effectiveRowHeight,
           rowProportion: self.rowProportion,
-          rowIndexByValue: self.rowIndexByValue,
-          rowColorsByIndex: self.rowColorsByIndex,
-          hiddenColors: self.hiddenColors,
+          ...this.featurePaintInputs,
         }
       },
       /**
@@ -679,9 +713,13 @@ export default function stateModelFactory(
        * resolving the region's whole partition list (a couple of thousand rows
        * on a cohort painting) sixty times a second for a value that changes
        * only when the rows, the colors or the data do.
+       *
+       * `featurePaintInputs` rather than the whole `renderState`, so that
+       * "changes only when the rows, the colors or the data do" is actually
+       * true — see there.
        */
       get drawnFeatureContexts(): Map<number, DrawnFeatureContext> {
-        const state = self.renderState
+        const state = self.featurePaintInputs
         return new Map(
           [...self.rpcDataMap.entries()].map(([index, data]) => [
             index,
@@ -971,10 +1009,17 @@ export default function stateModelFactory(
           backend,
           regionData => {
             // read here, inside the per-region encode autorun, so a reorder /
-            // recolor / category toggle re-encodes without an RPC roundtrip
+            // recolor / category toggle re-encodes without an RPC roundtrip.
+            //
+            // `featurePaintInputs`, never `renderState`: the encode is tracked,
+            // and the instance buffer holds {startBp,endBp,rowIndex,color} with
+            // no geometry in it — the row height and canvas box reach the shader
+            // as uniforms. Reading the wider getter here made a track-height
+            // drag or a window resize re-encode every region, every frame, to
+            // produce the same bytes.
             const { buffer, count } = buildMultiRowInstanceBuffer(
               regionData,
-              self.renderState,
+              self.featurePaintInputs,
             )
             return { instanceBuffer: buffer, instanceCount: count }
           },

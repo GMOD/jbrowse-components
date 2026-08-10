@@ -19,7 +19,7 @@ import { MIN_SEPARATOR_ROW_PX } from './rendering/rowBand.ts'
 
 import type { LegendEntry } from './rendering/colorLegend.ts'
 import type { MultiRowSource } from './sourcesLogic.ts'
-import type { MenuItem } from '@jbrowse/core/ui'
+import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const SetRowArrangementDialog = lazy(
@@ -42,6 +42,10 @@ interface MultiRowMenuSelf extends IStateTreeNode {
   setShowRowLabels: (f: boolean) => void
   effectiveRowHeight: number
   colorLegend: LegendEntry[]
+  // the display's other color key (see `rowGroupLegend`) — not toggleable
+  // per-category, but covered by the same `showLegend` slot, so the "Show
+  // legend" item has to see it
+  rowGroupLegend: LegendItem[]
   hiddenCategories: readonly string[]
   // the model's derived Set of the above, which is where every other consumer
   // asks whether a category is hidden — the checkbox below has to agree with the
@@ -87,7 +91,13 @@ function showMenuItems(self: MultiRowMenuSelf): MenuItem[] {
     checkboxItem('Show row labels', self.showRowLabels, () => {
       self.setShowRowLabels(!self.showRowLabels)
     }),
-    ...(self.colorLegend.length
+    // Both keys, because `showLegend` governs both and the legend's own "×"
+    // writes it: the row-group key draws on a track whose `colorLegend` is
+    // empty — that is its ordinary case, since every row carrying a per-row
+    // color is exactly what makes `buildColorLegend` return nothing — so
+    // gating on `colorLegend` alone let a user dismiss the group key with no
+    // menu item left to bring it back.
+    ...(self.colorLegend.length || self.rowGroupLegend.length
       ? [
           showLegendCheckboxItem(self.showLegend, () => {
             self.setShowLegend(!self.showLegend)
