@@ -85,6 +85,15 @@ const LONG_RANGE_STDDEV_THRESHOLD = 3
 // A pair is concordant FR (the modal, "normal" insert) when its tlen sits
 // inside the insert-size stats band AND it is LR orientation. Read cloud drops
 // these to surface SV signals (mirrors samplot.py's --max_depth 1 default).
+//
+// TLEN 0 — SAM's "information unavailable" encoding — is never concordant, the
+// same guard `classifyInsertSize` applies for the same reason. `stats.lower` is
+// `max(0, center - spread)`, so a noisy library floors it at 0 and an unset TLEN
+// then satisfies `0 >= lower`: the pair reads as textbook-concordant on no
+// evidence at all and is dropped. That made the cloud's contents depend on
+// whether the fetched set's MAD happened to reach zero, and it discarded exactly
+// the records `computeArcShape` re-plots at their breakpoint gap for being
+// untrustworthy here.
 function isConcordantFRPair(
   pairOrientationNum: number | undefined,
   tlen: number | undefined,
@@ -94,7 +103,7 @@ function isConcordantFRPair(
     return false
   }
   const abs = Math.abs(tlen)
-  return abs >= stats.lower && abs <= stats.upper
+  return abs > 0 && abs >= stats.lower && abs <= stats.upper
 }
 
 // Color-slot indices into the arc palette. Kept as named constants so the

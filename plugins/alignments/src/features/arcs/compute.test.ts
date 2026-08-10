@@ -757,6 +757,40 @@ describe('computeArcsFromPileupData', () => {
     expect(arcs[0]!.yBp).toBeLessThan(8000 * 1.1)
   })
 
+  test('read cloud keeps an unset-TLEN pair even when the stats band floors at 0', () => {
+    // `getInsertSizeStats` clamps `lower` to `max(0, center - spread)`, so a
+    // library with a wide spread hands back lower=0. An unset TLEN then lands
+    // inside the band on no evidence, and the concordant-FR filter dropped the
+    // pair — making the cloud's contents depend on the fetched set's MAD. The
+    // test above covers the same read WITHOUT stats, where the filter is
+    // short-circuited, which is why this went unnoticed.
+    const data = makePileupData({
+      regionStart: 0,
+      readPositions: new Uint32Array([1000, 1100]),
+      readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
+      readStrands: new Int8Array([1]),
+      readInsertSizes: new Float32Array([0]),
+      readPairOrientations: new Uint8Array([1]),
+      readNames: ['readA'],
+      readNextRefs: ['chr1'],
+      readNextPositions: new Uint32Array([9000]),
+      insertSizeStats: { upper: 500, lower: 0 },
+    })
+    const regions = [
+      { refName: 'chr1', start: 0, end: 10000, displayedRegionIndex: 0 },
+    ]
+    const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
+      colorByType: 'insertSizeAndOrientation',
+      cloud: true,
+      drawInter: false,
+      drawLongRange: true,
+    })
+    expect(arcs).toHaveLength(1)
+    expect(arcs[0]!.shapeType).toBe(ARC_SHAPE_FLAT)
+    // Still plotted at the breakpoint gap, not the (untrustworthy) TLEN.
+    expect(arcs[0]!.yBp).toBeGreaterThan(8000 * 0.9)
+  })
+
   test('a lone paired read with no recorded mate locus draws no arc', () => {
     // RNEXT `*` / PNEXT 0 (BAM next_refid -1) on a record that still claims a
     // mapped mate: nothing locates the other end. Substituting this read's own
