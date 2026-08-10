@@ -24,6 +24,19 @@
       "assemblyNames": ["arabidopsis"]
     },
     {
+      "type": "FeatureTrack",
+      "trackId": "arabidopsis_rmsk",
+      "name": "RepeatMasker (TAIR10)",
+      "adapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/000/001/735/GCF_000001735.3/bbi/GCF_000001735.3_TAIR10.rmsk.bb",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["arabidopsis"]
+    },
+    {
       "type": "MultiQuantitativeTrack",
       "trackId": "arabidopsis_methyldackel",
       "name": "Aggregate methylation (MethylDackel)",

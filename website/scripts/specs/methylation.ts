@@ -132,6 +132,50 @@ export const methylationSpecs: ScreenshotSpec[] = [
           loc: 'NC_003070.9:4,398,000-4,412,000',
           tracks: [
             { trackId: 'arabidopsis_genes' },
+            // THE TRANSPOSON, DRAWN RATHER THAN ASSERTED. The gene GFF above
+            // carries only a pseudogene over the silenced half, so the label
+            // below was the figure's only evidence for the word "transposon".
+            // This lane is UCSC's GenArk RepeatMasker bigBed for TAIR10
+            // (GCF_000001735.3), which needs no hosting of ours and is already
+            // on this config's refNames — its chroms ARE NC_003070.9 and the
+            // rest, so nothing has to be aliased. Over this window it returns
+            // `META1_LTR#LTR/Copia` at 4,406,005-4,411,120, the same element
+            // and family TAIR10_Transposable_Elements.txt calls AT1TE14315.
+            //
+            // Filtered by length rather than partitioned into rows by repeat
+            // class, and the class route WAS tried — don't re-try it against
+            // this file without fixing the display first. The other four
+            // repeats in this window are 30-80 bp simple repeats ((AATAA)n,
+            // (TTC)n), sub-pixel ticks that would only add labels; 200 bp is
+            // far below the 5.1 kb element and far above all four.
+            //
+            // `LinearMultiRowFeatureDisplay` is the display for that job and
+            // its `partitionField` slot documents the exact recipe for this
+            // file type, since bigRmskBed carries the class as a suffix on the
+            // name rather than in a column. On this track it fails two ways,
+            // both rendered:
+            //
+            //   "jexl:split(split(feature.name,'#')[1],'/')[0]" (the documented
+            //     form) -> the whole display error-banners with `TypeError:
+            //     Cannot read properties of undefined (reading 'split')`, so
+            //     the throw escapes makeFeaturePartitionResolver's per-feature
+            //     catch, which is meant to cost one row assignment rather than
+            //     the track.
+            //   the same with a `+ '#other'` sentinel, so index [1] always
+            //     exists -> no banner, and every feature lands in ONE
+            //     unlabelled row: the expression resolved empty for all of them.
+            //   partitionField: 'name' -> works, rows labelled
+            //     `(AATAA)n#Simple_repeat` and so on.
+            //
+            // So the attribute form reaches this adapter and the jexl form does
+            // not. That is a display bug rather than a spec one, and until it
+            // is fixed one labelled bar beats five rows named after themselves.
+            {
+              trackId: 'arabidopsis_rmsk',
+              type: 'LinearBasicDisplay',
+              jexlFiltersSetting: ['jexl:feature.end-feature.start>200'],
+              height: 50,
+            },
             // aggregate CpG/CHG/CHH fraction, one labeled row each (multirowxy)
             {
               trackId: 'arabidopsis_methyldackel',
@@ -150,8 +194,9 @@ export const methylationSpecs: ScreenshotSpec[] = [
     // remote CRAM (x3 copies, one adapter) + gene GFF + three bigWigs
     readyTimeout: 90000,
     settleMs: 20000,
-    // genes + aggregate(3 rows) + 3 compact pileups + headers/ruler/overview
-    viewportHeight: 900,
+    // genes + the repeat lane + aggregate(3 rows) + 3 compact pileups +
+    // headers/ruler/overview
+    viewportHeight: 995,
     // larger red pill labels naming each context row (reviewer: push them almost
     // to the far left edge of the data). The aggregate multiwiggle stacks
     // CpG/CHG/CHH in one 170px container (row centers ~28/85/142px, so each label
