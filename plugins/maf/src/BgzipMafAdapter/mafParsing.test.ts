@@ -70,17 +70,62 @@ test('reads consecutive blocks', () => {
   ])
 })
 
-test('i/e/q lines and comments do not become rows', () => {
-  const withExtras = [
+const withExtras = [
+  'a',
+  's\tGRCh38.chr1\t100\t10\t+\t248956422\tACGTACGTAC',
+  's\tHG002.1.chr1\t50\t10\t+\t1000\tACGTACGTAT',
+  'i\tHG002.1.chr1\tC\t0\tI\t12',
+  'e\tHG003.1.chr1\t10\t5\t+\t1000\tI',
+  'q\tHG002.1.chr1\t99999999',
+  '# a comment',
+  '',
+].join('\n')
+
+test('i/e/q lines and comments do not become aligned rows', () => {
+  const [f] = collect(withExtras)
+  expect(Object.keys(f!.alignments).sort()).toEqual(['GRCh38', 'HG002'])
+})
+
+// The same grammar bigMaf packs into its `mafBlock` field, so a `.maf.gz` gets
+// the same rows out of it. These two used to be dropped here and read only on
+// the bigMaf path, so the identical alignment lost its bridge lines and hover
+// context purely by being published as MAF rather than as a bigMaf.
+test('e lines become bridged rows', () => {
+  const [f] = collect(withExtras)
+  expect(f!.empties.HG003).toEqual({
+    chr: '1.chr1',
+    start: 10,
+    size: 5,
+    strand: 1,
+    srcSize: 1000,
+    status: 'I',
+  })
+  // and are not aligned rows
+  expect(f!.alignments.HG003).toBeUndefined()
+})
+
+test('i lines become their own row context', () => {
+  const [f] = collect(withExtras)
+  expect(f!.alignments.HG002!.context).toEqual({
+    leftStatus: 'C',
+    leftCount: 0,
+    rightStatus: 'I',
+    rightCount: 12,
+  })
+  expect(f!.alignments.GRCh38!.context).toBeUndefined()
+})
+
+// A byte-range read cuts its last line mid-field. Such a row has no sequence, so
+// it is dropped rather than given an `undefined` one — which reached the wire
+// packer's `seq.length` and threw the whole region fetch away.
+test('an s line missing its sequence field is dropped', () => {
+  const short = [
     'a',
     's\tGRCh38.chr1\t100\t10\t+\t248956422\tACGTACGTAC',
-    'i\tHG002.1.chr1\tC\t0\tC\t0',
-    'e\tHG003.1.chr1\t10\t5\t+\t1000\tI',
-    'q\tHG002.1.chr1\t99999999',
-    '# a comment',
+    's\tHG002.1.chr1\t50\t10\t+\t1000',
     '',
   ].join('\n')
-  const [f] = collect(withExtras)
+  const [f] = collect(short)
   expect(Object.keys(f!.alignments)).toEqual(['GRCh38'])
 })
 

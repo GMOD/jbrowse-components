@@ -136,6 +136,40 @@ test('context columns are absent unless some row carries an i line', () => {
   expect(withContext.rowRightCount![1]).toBe(7)
 })
 
+// The context columns are created at the first row carrying an `i` line and
+// grown only by a `set`, so the rows after the last one that carries one used to
+// fall off the end: `rowHasContext` came back length 1 against 20 rows. Reading
+// it stayed correct (a missing entry is falsy, which is "no context"), but the
+// columns were ragged against every other per-row array and against what
+// `MafWireRegionData` documents them to be.
+test('context columns run the full row count, not just up to the last i line', () => {
+  const packed = packTestWire([
+    {
+      startBp: 0,
+      refSeq: 'AC',
+      rows: [
+        { sampleId: 'a', seq: 'AC', context: { leftStatus: 'C' } },
+        ...Array.from({ length: 19 }, (_, i) => ({
+          sampleId: `s${i}`,
+          seq: 'AC',
+        })),
+      ],
+    },
+  ])
+  const rows = packed.rowOffset.length
+  expect(rows).toBe(20)
+  for (const column of [
+    packed.rowHasContext,
+    packed.rowLeftStatus,
+    packed.rowLeftCount,
+    packed.rowRightStatus,
+    packed.rowRightCount,
+  ]) {
+    expect(column!.length).toBe(rows)
+  }
+  expect(packed.rowHasContext![19]).toBe(0)
+})
+
 test('empties are ranged per block alongside rows', () => {
   const packed = packTestWire([
     {

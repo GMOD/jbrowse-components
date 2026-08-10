@@ -57,8 +57,18 @@ class Column<T extends Uint8Array | Int8Array | Uint32Array> {
 
   // Right-sized copy, not a subarray view: these are retained for as long as
   // the region is loaded, so a view would pin the doubling slack with them.
+  //
+  // Exactly `count` entries even when the backing array never grew that far,
+  // which `slice` alone does not give: the context columns are created at the
+  // first row that carries an `i` line and only ever grown by a `set`, so a
+  // stanza whose last few species have no `i` line left `rowHasContext` shorter
+  // than `rowCount` — ragged against every other per-row column, and against
+  // what `MafWireRegionData` documents. `grow` zero-fills, so the padding is the
+  // "absent" value each column already uses.
   finish(count: number) {
-    return this.array.slice(0, count) as T
+    // `at` is what grows *and* copies; `grow` alone allocates a fresh array and
+    // would silently return the padding in place of the data.
+    return (count > 0 ? this.at(count - 1) : this.array).slice(0, count) as T
   }
 }
 

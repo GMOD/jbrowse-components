@@ -1,13 +1,7 @@
-import { parseStrand } from '../util/parseStrand.ts'
+import { applyMafLine } from '../util/mafLines.ts'
 
-import type { AlignmentRecord } from '../types.ts'
+import type { AlignmentRecord, EmptyRecord } from '../types.ts'
 import type { SourceResolver } from '../util/parseAssemblyName.ts'
-
-// Any run of whitespace, NOT the ` +` the bigMaf path uses. UCSC's MAF is
-// space-aligned; taffy and Cactus write theirs tab-separated, and HPRC's is the
-// latter. Splitting on spaces alone leaves the whole row in one field, so every
-// `s` line silently fails its column check and the track draws nothing.
-const WHITESPACE_REGEX = /\s+/
 
 export interface MafBlockFeature {
   uniqueId: string
@@ -15,6 +9,7 @@ export interface MafBlockFeature {
   end: number
   strand: number
   alignments: Record<string, AlignmentRecord>
+  empties: Record<string, EmptyRecord>
   seq: string
 }
 
@@ -22,10 +17,12 @@ export interface MafBlockFeature {
  * Stream MAF alignment blocks out of a decompressed slice.
  *
  * A MAF block is an `a` line followed by `s`/`i`/`e`/`q` lines and terminated by
- * a blank line. `s src start size strand srcSize text` — the first `s` line is
- * the reference row and fixes the block's genomic extent, taken before
- * `resolve` so a reference filtered out of the sample set still positions the
- * block.
+ * a blank line. The per-line field parsing is `applyMafLine`, shared with the
+ * bigMaf reader of the same grammar — so `e` lines become bridged rows and `i`
+ * lines become their row's left/right context here exactly as they do there.
+ * `s src start size strand srcSize text` — the first `s` line is the reference
+ * row and fixes the block's genomic extent, taken before `resolve` so a
+ * reference filtered out of the sample set still positions the block.
  *
  * `trailingPartial` is the one thing this has to be careful about. The read is a
  * byte range, so its last block is very often cut mid-row; emitting it would put
@@ -44,7 +41,10 @@ export function* parseMafBlocks(
   const endsClean = text.endsWith('\n')
   const lines = text.split('\n')
 
-  let alignments: Record<string, AlignmentRecord> = {}
+  let rows: {
+    alignments: Record<string, AlignmentRecord>
+    empties: Record<string, EmptyRecord>
+  } = { alignments: {}, empties: {} }
   let refName: string | undefined
   let refStart = 0
   let refSize = 0
@@ -63,11 +63,12 @@ export function* parseMafBlocks(
             start: refStart,
             end: refStart + refSize,
             strand: refStrand,
-            alignments,
+            alignments: rows.alignments,
+            empties: rows.empties,
             seq: refSeq,
           }
         : undefined
-    alignments = {}
+    rows = { alignments: {}, empties: {} }
     refName = undefined
     refStart = 0
     refSize = 0
@@ -93,9 +94,6 @@ export function* parseMafBlocks(
       continue
     }
     const type = line[0]
-    if (type === '#') {
-      continue
-    }
     if (type === 'a') {
       const done = flush()
       if (done) {
@@ -104,38 +102,18 @@ export function* parseMafBlocks(
       open = true
       continue
     }
-    if (type !== 's' || !open) {
-      // i/e/q lines carry context and bridged rows the bigMaf path uses; a TAF
-      // or bgzip-MAF read gets its rows from `s` alone, and anything else is
-      // either a comment or a line type this view has nothing to draw for.
+    // The `.tai` entry a slice begins at points at a block boundary, so the
+    // leading `a` is present; a stray row before one is not a block.
+    if (!open) {
       continue
     }
-    const parts = line.split(WHITESPACE_REGEX)
-    const seq = parts[6]
-    if (seq === undefined) {
-      continue
-    }
-    const src = parts[1]!
-    const start = Number.parseInt(parts[2]!, 10)
-    const size = Number.parseInt(parts[3]!, 10)
-    const strand = parseStrand(parts[4])
-    const srcSize = Number.parseInt(parts[5]!, 10)
-    if (refName === undefined) {
-      refName = src
-      refStart = start
-      refSize = size
-      refStrand = strand
-      refSeq = seq
-    }
-    const parsed = resolve(src)
-    if (parsed?.assemblyName) {
-      alignments[parsed.assemblyName] = {
-        chr: parsed.chr,
-        start,
-        seq,
-        strand,
-        srcSize,
-      }
+    const s = applyMafLine(line, resolve, rows)
+    if (s !== undefined && refName === undefined) {
+      refName = s.src
+      refStart = s.start
+      refSize = s.size
+      refStrand = s.strand
+      refSeq = s.seq
     }
   }
 

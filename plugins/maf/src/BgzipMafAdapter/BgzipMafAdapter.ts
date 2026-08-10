@@ -102,6 +102,7 @@ export default class BgzipMafAdapter extends BaseFeatureDataAdapter {
               feat.strand,
               feat.alignments,
               feat.seq,
+              feat.empties,
             ),
           )
         }
