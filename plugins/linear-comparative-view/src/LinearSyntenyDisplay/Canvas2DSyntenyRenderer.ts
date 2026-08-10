@@ -184,7 +184,7 @@ export function drawSyntenyTrack(
     // Location markers: zero-width context ticks. Drawn as a fixed 1px line at
     // the packed color's own alpha (~0.25), bypassing hover/global-alpha and
     // the sub-pixel width fade that would zero a zero-width quad. Mirrors the
-    // isMarker path in syntenyTypes.slang's fillCoverage/shadeFill — and the
+    // isMarker path in syntenyTypes.slang's fillFs/shadeFill — and the
     // predicate itself is now the shader's, generated (adr-051), so the
     // threshold can't drift even though the shading below still can.
     const kind = data.kinds[i]!
@@ -224,8 +224,8 @@ export function drawSyntenyTrack(
     // The BASE alpha fade is the shader's own `thinWidthFade` — a lone thin
     // ribbon stays a faint locatable line while a whole-genome tangle fades
     // instead of stacking hard full-opacity lines. CIGAR keeps full alpha
-    // (indel detail stays solid), as it does in fillCoverage. What is NOT
-    // shared is `perpW` itself: fillCoverage measures a per-fragment width from
+    // (indel detail stays solid), as it does in fillFs. What is NOT
+    // shared is `perpW` itself: perpCoverage measures a per-fragment width from
     // the two edges' own foreshortenings, this measures the whole ribbon's from
     // its corners, and each is right for the decision it feeds.
     // Deliberate divergence: the clicked outline is drawn only on the fill

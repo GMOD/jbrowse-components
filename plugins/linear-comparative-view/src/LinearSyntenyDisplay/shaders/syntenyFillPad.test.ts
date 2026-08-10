@@ -10,6 +10,13 @@
 // shaders rely on: at every y, the padded polygon contains every pixel where
 // perpCoverage is non-zero.
 // SYNC: keep in step with the `pad` blocks and with perpCoverage/fillEdges.
+//
+// One thing this deliberately does NOT check, and cannot: which corner pairs with
+// which to form an edge. `edgesAt` below is the model of BOTH the polygon and the
+// analytic clip, so a shader where those two disagreed would still pass here. The
+// shader single-sources that pairing in `ribbonEdges` instead — the polygon
+// (edgeSpan), the clip (fillEdges), the slope pads (ribbonEdgeDeltas) and the
+// sub-pixel allowance (ribbonWidths) are all derived from that one function.
 
 const NUM_SEGMENTS = 8
 const invN = 1 / NUM_SEGMENTS
@@ -61,8 +68,9 @@ function footprint(c: Corners, h: number, t: number, curve: boolean) {
 }
 
 // thinRibbonPad: allowance for perpCoverage's sub-pixel `expand`, bounded by the
-// ribbon's minimum horizontal width. edge1 - edge0 = lerp(x2-x1, x3-x4, s) in
-// both modes, so the width only reaches zero mid-ribbon on a sign change.
+// ribbon's minimum horizontal width (the shader takes the two ends from
+// `ribbonWidths`). edge1 - edge0 = lerp(x2-x1, x3-x4, s) in both modes, so the
+// width only reaches zero mid-ribbon on a sign change.
 function padExtra(perpFactor: number, c: Corners) {
   const dTop = c.x2 - c.x1
   const dBot = c.x3 - c.x4

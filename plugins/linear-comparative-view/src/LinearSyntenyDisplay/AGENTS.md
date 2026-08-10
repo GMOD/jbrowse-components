@@ -7,6 +7,14 @@
 - Shared types (the per-instance vertex layout, the `Uniforms` cbuffer,
   `computeCorners` and `isCulled`) live in `shaders/syntenyTypes.slang`. Every
   shader imports from this module so layouts stay in sync.
+- **Corners are a bare `float4` (x1, x2, x3, x4), and `ribbonEdges` is the only
+  place a corner is matched to an EDGE** (edge 0 runs x1→x4, edge 1 runs x2→x3).
+  `edgeSpan` (vertex polygon), `fillEdges` (fragment's analytic clip),
+  `ribbonEdgeDeltas` (slope pads) and `ribbonWidths` (`thinRibbonPad`) all go
+  through it. The polygon and the clip MUST agree or the geometry crops the
+  shape the fragment draws, and `syntenyFillPad.test.ts` cannot catch that — it
+  models both from one copy of `fillEdges`. Don't re-spell a
+  `lerp(c.x, c.w, s)`.
 - **All four passes draw one of two polygons, and `syntenyTypes` owns both.**
   `straightGeometry` (one quad) and `curveGeometry` (`CURVE_SEGMENTS`
   tessellated bezier segments) are each shared by that mode's fill pass and its
@@ -22,9 +30,11 @@
   `sBlend`/`yCurve` are its two components, and `Canvas2DSyntenyRenderer` draws
   the same curve with `bezierCurveTo`. Don't approximate it with chords — the
   outline pass used to, and sat up to 11.7px off.
-- `VERTS_PER_INSTANCE` in the curve passes is a literal (the codegen can't
-  resolve an imported constant); `syntenyPassGeometry.test.ts` pins it to
-  `CURVE_SEGMENTS` and pins the two passes of a mode to one instance layout.
+- The curve passes spell `VERTS_PER_INSTANCE` as `CURVE_SEGMENTS * 6u` — the
+  codegen resolves identifiers through the import, so the count follows
+  `syntenyTypes` by construction. `syntenyPassGeometry.test.ts` pins the two
+  passes of a mode to one instance layout, which is what lets a record packed
+  for the fill be read by the edge.
 - `u.height` is floored at 1 by `writeUniforms`, not by each shader.
 - The vertex pads are pinned by `shaders/syntenyFillPad.test.ts`, which mirrors
   both `pad` blocks plus `perpCoverage`'s footprint and asserts the padded

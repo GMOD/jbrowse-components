@@ -20,7 +20,7 @@ public static const uint VERTS_PER_INSTANCE = CURVE_SEGMENTS * 6u;
 [shader("vertex")]
 FillVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   FillVsOut o;
-  Corners c;
+  float4 c;
   if (fillVsBegin(inst, u, o, c) && isClickedSilhouette(inst, u)) {
     curveGeometry(o, c, vid, STROKE_PERP_PX, u);
   }
