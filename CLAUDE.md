@@ -53,8 +53,9 @@ checkout, so ordinary git is yours to use without asking.
   figures, unpushed regens included, which is the whole point of a before/after
   comparison. Delete the three before committing — they are gitignored, but they
   muddy a `git status` read. Note `puppeteer` is not hoisted to the root, so
-  resolve it from `packages/browser-test-utils/` or run from a package that
-  depends on it.
+  resolve it from `packages/browser-test-utils/` —
+  `createRequire(<that>/package.json)` — or run from a package that depends on
+  it.
 
 ## MST
 
