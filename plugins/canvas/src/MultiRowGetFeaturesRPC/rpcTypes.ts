@@ -75,10 +75,15 @@ export interface MultiRowRegionData {
 // (there is no pre-flight call to carry them separately), which is exactly why
 // the render side gets the narrower half.
 export interface MultiRowGetFeaturesResult extends MultiRowRegionData {
-  // index-only byte estimate for the region (absent when the adapter has none),
-  // and the fetched feature count — the main-thread gate maxes/re-derives both.
+  // index-only byte estimate for the region, absent when the adapter has none.
+  // The main-thread gate takes the per-region max of these.
+  //
+  // No `featureCount` beside it, for the same reason there is no
+  // `maxFeatureDensity` in the args: this display turns the density axis off, so
+  // a count would only be stored in `densityStatsPerRegion` and never read. The
+  // omission is what makes re-enabling that axis a compile error on both sides
+  // rather than a silently dead round trip.
   bytes?: number
-  featureCount?: number
 }
 
 // The region-too-large short-circuit (shared RegionTooLargeResult from the

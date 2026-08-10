@@ -2424,7 +2424,7 @@ export default function baseStateModelFactory(
 
         function applyFetchResults(
           fetches: RegionFetch[],
-          viewport: GateViewport,
+          viewport: GateViewport | undefined,
         ) {
           for (const {
             displayedRegionIndex,
@@ -2470,10 +2470,12 @@ export default function baseStateModelFactory(
             // keys.
             const byteLimit = self.resolvedByteLimit()
             const maxFeatureDensity = self.maxFeatureDensity
-            const viewport = self.gateViewport!
             // captured here, not at commit time: the measurement is labelled
             // with the viewport it describes, and a mid-fetch zoom would
-            // otherwise label it with one it never covered
+            // otherwise label it with one it never covered. Undefined only
+            // before the view is measured, which `commitGateMeasurements` treats
+            // as "nothing to label these numbers with" and skips.
+            const viewport = self.gateViewport
             // Drop cached entries (rpcDataMap + density stats) for regions no
             // longer visible. Keeps on-screen data so labels stay up during
             // the refetch window without letting either map grow unboundedly

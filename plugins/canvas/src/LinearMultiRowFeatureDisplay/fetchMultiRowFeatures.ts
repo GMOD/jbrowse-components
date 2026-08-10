@@ -47,7 +47,7 @@ interface FetchSelf extends IStateTreeNode {
   gateViewport: GateViewport | undefined
   commitGateMeasurements: (
     measurements: RegionGateMeasurement[],
-    viewport: GateViewport,
+    viewport: GateViewport | undefined,
   ) => void
 }
 
@@ -60,8 +60,10 @@ export function fetchMultiRowFeatures(self: FetchSelf, needed: Needed) {
   const { rpcManager } = getSession(self)
   const sessionId = getRpcSessionId(self)
   // captured before the fetch: the measurement is labelled with the viewport it
-  // describes, so a mid-fetch zoom must not re-label it
-  const viewport = self.gateViewport!
+  // describes, so a mid-fetch zoom must not re-label it. Undefined only before
+  // the view is measured, which `commitGateMeasurements` treats as "nothing to
+  // label these numbers with" and skips.
+  const viewport = self.gateViewport
   const byteLimit = self.resolvedByteLimit()
   // Per-region gate measurements, keyed by the displayedRegionIndex onResult
   // reports back. A region whose fetch was skipped as stale never lands here.

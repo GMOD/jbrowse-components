@@ -218,13 +218,21 @@ export default function CanvasFeatureGateMixin() {
        */
       commitGateMeasurements(
         measurements: RegionGateMeasurement[],
-        viewport: GateViewport,
+        viewport: GateViewport | undefined,
       ) {
         // Nothing measured (every region's fetch went stale) — leave the
         // previous estimate alone rather than replacing it with an empty one,
         // and don't claim this viewport has been asked about either, or a
         // blocked display would stop re-measuring after a superseded fetch.
-        if (measurements.length === 0) {
+        //
+        // An absent `viewport` means the view was unmeasured when the fetch was
+        // issued, so there is nothing to label these numbers with. Same
+        // treatment, and self-correcting for the same reason: the stamp is not
+        // written, so `gateMeasurementStale` holds and the next settled viewport
+        // measures again. Accepting it here rather than asserting at the two
+        // call sites keeps the fetch paths free of a non-null assertion that
+        // would throw mid-commit if it were ever wrong.
+        if (measurements.length === 0 || !viewport) {
           return
         }
         // Stamped whatever the batch learned. A dense region short-circuits on

@@ -442,13 +442,16 @@ A measurement is handed over as `{ displayedRegionIndex, region, result }` — t
 shape a fetch already holds — so neither canvas display does span arithmetic of
 its own; features-per-bp is the gate's business.
 
-Multi-row's fetch RPC (`MultiRowGetFeatures`) is **byte-only**: it takes a
-`byteLimit` and deliberately no `maxFeatureDensity`, because the display turns
+Multi-row's fetch RPC (`MultiRowGetFeatures`) is **byte-only, in both
+directions**: it takes a `byteLimit` and deliberately no `maxFeatureDensity`, and
+it returns `bytes` and deliberately no `featureCount`, because the display turns
 the mixin's density axis off. The density gate that used to sit in that worker
 was unreachable — `maxFeatureDensity` was always `undefined` — so it was removed
-rather than left as a safety net that never fires. Re-enabling `densityGateEnabled`
-there now fails to typecheck at the call site instead of silently passing an
-argument the worker ignores.
+rather than left as a safety net that never fires; the count it kept returning
+outlived it by a while, reaching `commitGateMeasurements` and landing in a
+`densityStatsPerRegion` nothing reads. Re-enabling `densityGateEnabled` there now
+fails to typecheck on both sides instead of silently passing an argument the
+worker ignores and storing an answer the display doesn't ask.
 
 ### `CanvasFeatureGateMixin`
 

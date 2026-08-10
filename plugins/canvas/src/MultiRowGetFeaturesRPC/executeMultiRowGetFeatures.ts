@@ -62,8 +62,8 @@ export async function executeMultiRowGetFeatures({
   checkStopTokenThrottled(stopTokenCheck)
 
   // Dedup by feature id: multiple adapter passes can yield the same feature id
-  // (mirrors the feature-render RPC), which would otherwise double-count the
-  // density gate and pack duplicate quads.
+  // (mirrors the feature-render RPC), which would otherwise pack duplicate
+  // quads.
   const featureMap = new Map<string, Feature>()
   for (const f of featuresArray) {
     if (!featureMap.has(f.id())) {
@@ -87,11 +87,11 @@ export async function executeMultiRowGetFeatures({
   })
   // Caller-facing type comes from the RpcRegistry `MultiRowGetFeatures.return`
   // ambient declaration (see rpcTypes.ts); the framework unwraps the rpcResult
-  // wrapper, so no return annotation or cast is needed here. Carry bytes +
-  // featureCount so the main-thread gate maxes/re-derives them.
+  // wrapper, so no return annotation or cast is needed here. Carries `bytes` and
+  // no feature count — this display gates on the byte axis only, so a count has
+  // nothing on the main thread that would read it.
   return rpcResultWithArrayBuffers({
     ...result,
     bytes,
-    featureCount: features.length,
   })
 }
