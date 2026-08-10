@@ -172,9 +172,21 @@ export default defineConfig(
       // counts are from that first full run, not from a rule upgrade.
       'unicorn/no-duplicate-loops': 'off', // 11 — `for (const x of xs.filter(…))`; a perf claim, not a correctness one
       'unicorn/prefer-then-catch': 'off', // 7 — NOT a safe rewrite: `.then(a, b)` does not route a's own throw to b, `.then(a).catch(b)` does. Each site needs reading
-      'unicorn/no-useless-spread': 'off', // 6 (the other 8 were autofixable and are fixed)
-      'unicorn/prefer-scoped-selector': 'off', // 2
-      'unicorn/no-unnecessary-nested-ternary': 'off', // 1
+      // Off, and do NOT try again: its fix is wrong on every remaining site.
+      // Six are `[...someUint32Array.slice(0, n)]`, where the spread is the
+      // whole point — it turns a TypedArray into a `number[]` so `toEqual([…])`
+      // can match it — and the rule reads `.slice()` as returning an Array.
+      // The seventh is `for (const x of [...this.drafts])` around a
+      // `this.drafts.delete()`, where the snapshot is the guard. This one is
+      // autofixable, so `--fix` applies all seven silently.
+      'unicorn/no-useless-spread': 'off',
+      // Off: both sites are `el.querySelectorAll('svg > g > g')` in tests,
+      // where nothing is ambiguous about which subtree is being searched.
+      'unicorn/prefer-scoped-selector': 'off',
+      // Off: it is the nested-ternary family, and the four entries above
+      // already reject that. Its one site is the shader literal formatter,
+      // whose branches carry a comment each.
+      'unicorn/no-unnecessary-nested-ternary': 'off',
       'unicorn/number-literal-case': 'off', // 618
       'unicorn/prefer-global-this': 'off', // 253
       'unicorn/catch-error-name': 'off', // 246
@@ -314,33 +326,67 @@ export default defineConfig(
       // components defined during render, so it false-positives across the
       // whole plugin architecture.
       '@eslint-react/static-components': 'off',
+      // oxlint runs react/rules-of-hooks, so this is the same check twice on
+      // every file. It was 5.4% of this config's runtime — the third most
+      // expensive rule here — for a verdict already reached in the 2.5s
+      // linter. The header above says oxlint owns react-hooks; this makes
+      // that true.
+      '@eslint-react/rules-of-hooks': 'off',
       // Vite resource queries (`?raw`, `?url`, etc.) make an import resolve to
       // different content than the bare path; without this, no-duplicates
       // treats e.g. `from './x.tsx'` + `from './x.tsx?raw'` as duplicates.
       'import-x/no-duplicates': ['error', { considerQueryString: true }],
       'import-x/extensions': ['error', 'ignorePackages'],
+      // Adopted out of the deferred list below: one site each (PaletteContext),
+      // now fixed. On so the next context added stays on the React 19 spelling.
+      '@eslint-react/no-context-provider': 'error',
+      '@eslint-react/no-use-context': 'error',
+      // Adopted for its ratio, not its count. One unsuppressed site; the value
+      // is the 30 `eslint-disable @eslint-react/no-array-index-key -- …`
+      // comments in the tree, which said nothing at all while the rule was off.
+      '@eslint-react/no-array-index-key': 'error',
     },
   },
   {
     // ---------------------------------------------------------------------
-    // Backlog from the day this config started matching `**/*.ts`. Until then
-    // it linted 461 files of ~4900, so none of these rules had run on
-    // packages/*/src, plugins/*/src or products/*/src, and the first full run
-    // raised 1001 problems. The autofixable ~900 are fixed in that commit;
-    // these are what needs a human per site. Counts are from that run and this
-    // list is meant to shrink — same convention as the unicorn block above.
+    // What is left of the backlog from the day this config started matching
+    // `**/*.ts`. Until then it linted 461 files of ~4900, so none of these
+    // rules had run on packages/*/src, plugins/*/src or products/*/src, and
+    // the first full run raised 1001 problems.
     //
-    // Deliberately one line each rather than per-file allowlists: a burn-down
-    // that costs 25 lines of config to express is one nobody burns down.
+    // Most of what stayed here has now been read site by site, and the honest
+    // answer for all but one was reject, not defer — a "deferred" line nobody
+    // can act on is worse than an "off, because" line, because it reads as a
+    // promise. The reasons are below. Anything genuinely deferred keeps its
+    // count and says what the work is.
     // ---------------------------------------------------------------------
     rules: {
-      'react-refresh/only-export-components': 'off', // 26 in 20 files — each exports a helper beside a component; fixing means splitting files and rewiring imports
-      '@eslint-react/naming-convention-ref-name': 'off', // 7, all in packages/core/src/util/usePanZoom.ts
-      '@eslint-react/use-state': 'off', // 3 — setters not named setX
-      '@eslint-react/set-state-in-effect': 'off', // 3 — a real smell; needs the effect rewritten, not renamed
-      '@eslint-react/no-context-provider': 'off', // 1 — React 19 `<Context>` over `<Context.Provider>`
-      '@eslint-react/no-use-context': 'off', // 1 — React 19 `use()` over `useContext()`
-      '@eslint-react/no-array-index-key': 'off', // 1
+      // 26 in 20 files, and still a to-do: each exports a helper beside a
+      // component, so fixing means splitting files and rewiring imports. The
+      // 17 inline disables in the tree are dead while this is off.
+      'react-refresh/only-export-components': 'off',
+
+      // Off, not deferred: it wants every useRef named `*Ref`, and all 10 of
+      // ours hold latch values rather than elements — `shown`, `cursor`,
+      // `lastWheelAt`, `held`, `atFocus`. `lastWheelAt.current` says what it
+      // is; `lastWheelAtRef.current` says it twice. Same call as
+      // unicorn/prevent-abbreviations above: a naming preference we don't share.
+      '@eslint-react/naming-convention-ref-name': 'off',
+
+      // Off, not deferred: it wants the setter of `useState(x)` named `setX`,
+      // and our four exceptions are all deliberate. `const [, forceRender] =
+      // useState(0)` is the force-render idiom. `setEntriesState` is named
+      // apart from the `setEntries` wrapper that writes the ref alongside it,
+      // so the rule's rename would collide with a real function.
+      '@eslint-react/use-state': 'off',
+
+      // Off, not deferred: all three are the reset half of fetch-into-state
+      // (`setRows(undefined)` before an await), which is the pattern the rule
+      // exists to catch and also the one thing you cannot derive during
+      // render — the state is the user's after it seeds, they reorder and
+      // uncheck it. The React answer is a `key` on the component, which is the
+      // caller's to give, not this file's.
+      '@eslint-react/set-state-in-effect': 'off',
     },
   },
   {

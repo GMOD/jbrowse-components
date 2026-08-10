@@ -22,6 +22,7 @@ const SupplementaryAlignmentsLocStrings = observer(
           {splitSA(tag).map((record, idx) => {
             const parsed = parseSupplementaryAlignment(record)
             return parsed ? (
+              // eslint-disable-next-line @eslint-react/no-array-index-key -- the split of one SA tag, positional and never reordered; the locString prefix separates the entries that differ
               <li key={`${parsed.locString}-${idx}`}>
                 <NavToLocLink model={model} loc={parsed.locString}>
                   {parsed.label}

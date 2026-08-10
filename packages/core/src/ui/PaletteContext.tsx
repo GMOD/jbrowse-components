@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo } from 'react'
+import { createContext, use, useEffect, useMemo } from 'react'
 
 import { defaultStyleTheme } from './styleTheme.ts'
 
@@ -39,11 +39,7 @@ export function StyleThemeProvider({
   theme: JBrowseStyleTheme
   children: ReactNode
 }) {
-  return (
-    <StyleThemeContext.Provider value={theme}>
-      {children}
-    </StyleThemeContext.Provider>
-  )
+  return <StyleThemeContext value={theme}>{children}</StyleThemeContext>
 }
 
 /**
@@ -63,7 +59,7 @@ export function PaletteProvider({
 }
 
 export function useStyleTheme(): JBrowseStyleTheme {
-  return useContext(StyleThemeContext) ?? defaultStyleTheme
+  return use(StyleThemeContext) ?? defaultStyleTheme
 }
 
 export function usePalette(): JBrowsePalette {
