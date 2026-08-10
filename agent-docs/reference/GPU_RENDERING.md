@@ -900,14 +900,11 @@ capability (checked against the pinned 2026.5.2: `-profile glsl_300_es` is
 `layout(location=N)` on varyings, HLSL brace initializers — and
 `vulkanGlslToWebgl2.ts` is the ~200-line adapter down to ES 3.00. That file is
 not an alternative to using Slang for WebGL; it is the gap Slang leaves. The one
-real alternative is `-target spirv` piped through **SPIRV-Cross**, which has a
-genuine ESSL backend (`--es --version 300`) and would replace the regex adapter
-with a compiler — at the cost of a second auto-fetched binary and a rework of
-every name-mangling assumption (`assertVertexInputsMatch`, `renameMangled`, the
-`a_<field>`/`v_<field>` convention). Not obviously worth it while
-glslangValidator gates the current output in CI, but it is the option, and it is
-the only one. **Never
-hand-edit `*.generated.ts`** — edit the `.slang` source and run `pnpm
+real alternative — `-target spirv` through SPIRV-Cross's ESSL backend — was
+weighed and declined in
+[ADR-061](../architecture-decision-records/adr-061-webgl2-glsl-comes-from-the-regex-adapter.md).
+
+**Never hand-edit `*.generated.ts`** — edit the `.slang` source and run `pnpm
 gen:shaders`. The generated module exports source strings, per-field byte offsets,
 strides, typed uniform/instance structs, a typed `writeUniforms()` /
 `packInstances()`, and the `GL_ATTRIBUTES` array; TS imports these by name, so
