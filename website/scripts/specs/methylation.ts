@@ -145,38 +145,39 @@ export const methylationSpecs: ScreenshotSpec[] = [
             // and family TAIR10_Transposable_Elements.txt calls AT1TE14315.
             //
             // Filtered by length rather than partitioned into rows by repeat
-            // class. The class route is where this lane belongs and it is
-            // BLOCKED on a display defect — measured, not guessed, so don't
-            // re-walk it. The other four repeats here are 30-80 bp simple
-            // repeats ((AATAA)n, (TTC)n), sub-pixel ticks that would only add
-            // labels; 200 bp is far below the 5.1 kb element and far above all
-            // four.
+            // class. The class route USED to be blocked by a display defect and
+            // is not any more; it was then tried here and rejected on the
+            // picture, so don't re-walk either half.
             //
-            // `LinearMultiRowFeatureDisplay.partitionField` documents the
-            // recipe for this exact file type, since bigRmskBed carries the
-            // class as a suffix on the name rather than in a column:
+            // The defect, for the record, since two rounds went into it:
+            // `LinearMultiRowFeatureDisplay.partitionField` documents
+            // `jexl:split(split(feature.name,'#')[1],'/')[0]` for exactly this
+            // file type, bigRmskBed carrying the class as a suffix on the name
+            // (`META1_LTR#LTR/Copia`) rather than in a column. Two bugs stood in
+            // front of it. `split` threw on an absent value, so a nested one
+            // banner-ed the whole display; making it total turned that into a
+            // silent ''. The cause under both was one level up — the model read
+            // the slot with a resolving reader and no feature, so the expression
+            // was evaluated on the MAIN THREAD against nothing and its answer
+            // shipped to the worker as if it were the attribute name. Fixed in
+            // `readConfObject` ("a callback read with no context is not an
+            // evaluation"), pinned by `partitionFieldTransport.test.ts`.
             //
-            //   partitionField: "jexl:split(split(feature.name,'#')[1],'/')[0]"
+            // Rendered, the class partition is worse HERE, which only a picture
+            // could say: it yields `LTR` / `Low_complexity` / `Simple_repeat`,
+            // costs 40px more, leaves `Low_complexity` empty over this window,
+            // and drops the per-feature label — so the lane stops naming
+            // `META1_LTR#LTR/Copia` and the "LTR/Copia transposon" callout loses
+            // the evidence it points at, keeping only `LTR`. The display is
+            // built for many features per row (haplotype paintings, chromHMM);
+            // this window holds five features, one of which matters. A single
+            // self-labelling bar is the right shape for that, and the row
+            // headers are the wrong tool rather than a broken one.
             //
-            // `feature` is not bound when that is evaluated, and every symptom
-            // followed from it. Against the old `split` it threw a TypeError
-            // out of a config callback and banner-ed the WHOLE display; with
-            // `split` made total (that fix landed) there is no banner and every
-            // feature instead resolves to '', i.e. one unlabelled row. The
-            // tell is a `get(feature,'name')` variant, which fails one level
-            // further out with "Cannot read properties of undefined (reading
-            // 'get')" — the undefined is the FEATURE, not the attribute.
-            //
-            // Where the slot is set is not the variable: `model.ts` reads it
-            // with `readConfObject(self.conf, 'partitionField')`, so it has to
-            // be a real config slot in the track's `displays` (a key on the
-            // view's tracks entry never reaches it at all) — and it behaves
-            // identically both ways. The attribute form works, so the adapter
-            // and the display are fine; only the jexl form is broken. Its one
-            // usable value here, `partitionField: 'name'`, is the outcome the
-            // slot's own docs warn about: six near-empty rows for `(A)n`,
-            // `(AATAA)n`, `(AATTTT)n`, `(AT)n` and `(TTC)n` with the transposon
-            // buried among them.
+            // The length filter is doing that job: the other four repeats here
+            // are 30-80 bp simple repeats ((AATAA)n, (TTC)n), sub-pixel ticks
+            // that would only add labels; 200 bp is far below the 5.1 kb element
+            // and far above all four.
             {
               trackId: 'arabidopsis_rmsk',
               type: 'LinearBasicDisplay',
