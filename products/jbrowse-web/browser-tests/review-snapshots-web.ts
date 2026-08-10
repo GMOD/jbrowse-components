@@ -5,10 +5,11 @@ import path from 'node:path'
 import { parseArgs } from 'node:util'
 
 import {
+  buildReviewPage,
   createVerdictRoutes,
   isVerdictStale,
-  reviewClientScript,
   sendJson,
+  serveReviewBundle,
 } from '@jbrowse/browser-test-utils'
 
 import {
@@ -25,6 +26,7 @@ import {
   snapshotsDir,
 } from './snapshot-review-lib.ts'
 
+import type { SnapshotPayloadEntry } from './review-snapshot-payload.ts'
 import type { Backend, BackendDiff } from './snapshot-review-lib.ts'
 
 const { values } = parseArgs({
@@ -57,7 +59,7 @@ function isBackend(s: string): s is Backend {
   return (BACKENDS as readonly string[]).includes(s)
 }
 
-function buildSnapshotPayload() {
+function buildSnapshotPayload(): SnapshotPayloadEntry[] {
   const report = loadReport()
   return collectSnapshots().map(s => {
     const verdict = report[s.name]
@@ -179,14 +181,29 @@ const { handleVerdict, handleClearVerdict } = createVerdictRoutes({
   statuses: ['good', 'bad'],
 })
 
+// The page is React, bundled once at startup — no watcher, no dev server, so
+// "run one node script, open localhost" and offline operation both survive. Its
+// write protocol and note-draft bookkeeping are shared with the website's
+// screenshot review (@jbrowse/browser-test-utils/reviewApp); this entry supplies
+// the two halves that differ, what a card looks like and what the header counts.
+//
+// Built before the server listens, so a syntax error in the page is a startup
+// failure with esbuild's own message rather than a blank tab.
+const bundle = await buildReviewPage({
+  entry: path.resolve(import.meta.dirname, 'review-app', 'main.tsx'),
+  title: 'Snapshot review',
+  // tells this tab apart from the screenshot review UI, which the two tools are
+  // expected to be open beside
+  favicon: '📸',
+})
+
 const server = http.createServer((req, res) => {
   const raw = req.url ?? '/'
   const [urlPath, qs] = raw.split('?')
   const query = new URLSearchParams(qs ?? '')
   try {
-    if (urlPath === '/' || urlPath === '/index.html') {
-      res.writeHead(200, { 'Content-Type': 'text/html' })
-      res.end(PAGE)
+    if (serveReviewBundle(res, urlPath ?? '/', bundle)) {
+      // the page, its script and its stylesheet
     } else if (urlPath === '/api/snapshots') {
       sendJson(res, 200, buildSnapshotPayload())
     } else if (urlPath === '/api/compare') {
@@ -231,384 +248,3 @@ server.listen(port, () => {
     console.error(`drift computation failed: ${err}`)
   })
 })
-
-// The write protocol and the note-draft bookkeeping are shared with the
-// website's screenshot review; this page supplies the two halves that differ —
-// what a card looks like and what the header counts.
-const CLIENT = reviewClientScript({
-  draftsKey: 'snapshot-review-drafts',
-  imageMovedPhrase: 'this snapshot was rewritten',
-})
-
-const PAGE = /* html */ `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Snapshot review</title>
-<!-- inline, both to stop the /favicon.ico 404 putting a red line in the console
-     on every load and to tell this tab apart from the screenshot review UI,
-     which the two tools are expected to be open beside -->
-<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📸</text></svg>'>
-<style>
-  :root { color-scheme: light dark; }
-  * { box-sizing: border-box; }
-  body {
-    font-family: system-ui, -apple-system, sans-serif;
-    margin: 0; background: #f4f5f7; color: #1a1a1a;
-  }
-  header {
-    position: sticky; top: 0; z-index: 10;
-    background: #fff; border-bottom: 1px solid #ddd;
-    padding: 12px 20px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
-  }
-  header h1 { font-size: 16px; margin: 0; }
-  header input[type=search] { padding: 6px 10px; width: 220px; border: 1px solid #ccc; border-radius: 6px; }
-  .tabs { display: flex; gap: 6px; }
-  .tab {
-    padding: 7px 14px; border: 1px solid #ccc; border-radius: 6px; background: #fff;
-    cursor: pointer; font-size: 14px; font-weight: 500; color: #555;
-  }
-  .tab.active { background: #2563eb; border-color: #2563eb; color: #fff; }
-  .tab .tabcount { opacity: 0.7; margin-left: 5px; font-size: 12px; }
-  .counts { font-size: 13px; color: #555; margin-left: auto; display: flex; gap: 14px; flex-wrap: wrap; }
-  .pill { padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 500; }
-  .pill.good { background: #d6f5dd; color: #14532d; }
-  .pill.bad { background: #fbd9d9; color: #7f1d1d; }
-  .pill.none { background: #eee; color: #666; }
-  .pill.targeted { background: #dbeafe; color: #1e40af; }
-  .pill.fullpage { background: #fef3c7; color: #92400e; }
-  .pill.svg { background: #f3e8ff; color: #6b21a8; }
-  .pill.other { background: #eee; color: #555; }
-  .pill.ident { background: #d6f5dd; color: #14532d; }
-  .pill.drift { background: #fde68a; color: #854d0e; }
-  .pill.bigdrift { background: #fbd9d9; color: #7f1d1d; }
-  .pill.absent { background: #eee; color: #999; }
-  .pill.stale { background: #fde68a; color: #854d0e; }
-  main { padding: 20px; display: flex; flex-direction: column; gap: 18px; max-width: 1500px; margin: 0 auto; }
-  .card { background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden; }
-  .card.good { border-left: 5px solid #22c55e; }
-  .card.bad { border-left: 5px solid #ef4444; }
-  .card.stale { border-left: 5px solid #f59e0b; }
-  .card-images { display: flex; gap: 0; }
-  .imgcol { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-  .imglabel {
-    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
-    padding: 4px 10px; background: #f8f8f8; border-bottom: 1px solid #eee; color: #666;
-    display: flex; justify-content: space-between; align-items: center; gap: 6px;
-  }
-  .imgwrap { background: #222; display: flex; align-items: center; justify-content: center; min-height: 160px; flex: 1; }
-  .imgwrap img { max-width: 100%; max-height: 380px; display: block; cursor: zoom-in; }
-  .imgcol + .imgcol { border-left: 2px solid #ddd; }
-  .missing { color: #888; padding: 30px; font-size: 13px; }
-  .meta { padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; border-top: 1px solid #eee; }
-  .meta h2 { font-size: 14px; margin: 0; font-family: ui-monospace, monospace; word-break: break-all; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-  .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-  button { padding: 7px 14px; border-radius: 6px; border: 1px solid #ccc; background: #fff; cursor: pointer; font-size: 14px; }
-  button.approve { border-color: #22c55e; color: #14532d; }
-  button.approve.active { background: #22c55e; color: #fff; }
-  button.deny { border-color: #ef4444; color: #7f1d1d; }
-  button.deny.active { background: #ef4444; color: #fff; }
-  button.clear { border-color: #ccc; color: #666; }
-  button.addnote { border-color: #ccc; color: #666; }
-  button:disabled { opacity: .45; cursor: not-allowed; border-color: #ccc; color: #666; }
-  .loaderror { color: #b91c1c; font-size: 14px; line-height: 1.5; white-space: pre-wrap; }
-  /* height is set by the client's autosizeNote as you type; min-height keeps an
-     empty box at two rows and overflow-y lets it scroll at the cap */
-  .note { width: 100%; min-height: 3.6em; padding: 6px 9px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; font-family: inherit; resize: none; overflow-y: auto; }
-  /* a write that did not land, or one rejected because the entry moved. Empty
-     for the overwhelmingly common case where it just worked. */
-  .cardmsg { font-size: 13px; font-weight: 500; }
-  .cardmsg:empty { display: none; }
-  .cardmsg.error { color: #b91c1c; }
-  .cardmsg.warn { color: #b45309; }
-  /* whether what is in the note box has reached the report yet */
-  .unsaved { font-size: 12px; font-weight: 500; color: #b45309; }
-  .unsaved:empty { display: none; }
-  .reviewedAt { font-size: 11px; color: #999; }
-</style>
-</head>
-<body>
-<header>
-  <h1>Snapshot review</h1>
-  <div class="tabs">
-    <button class="tab" data-page="basic">Basic pass<span class="tabcount" data-count="page-basic"></span></button>
-    <button class="tab" data-page="backends">Backends<span class="tabcount" data-count="page-backends"></span></button>
-  </div>
-  <input id="search" type="search" placeholder="filter by name…" />
-  <div class="tabs" data-group="status">
-    <button class="tab" data-status="needs">Needs review<span class="tabcount" data-count="needs"></span></button>
-    <button class="tab" data-status="all">All</button>
-    <button class="tab" data-status="good">Approved</button>
-    <button class="tab" data-status="bad">Denied</button>
-  </div>
-  <div class="tabs" data-group="kind">
-    <button class="tab" data-kind="all">All</button>
-    <button class="tab" data-kind="targeted">Targeted</button>
-    <button class="tab" data-kind="fullpage">Full-page</button>
-    <button class="tab" data-kind="svg">SVG</button>
-  </div>
-  <div class="tabs" data-group="drift">
-    <button class="tab" data-drift="all">All</button>
-    <button class="tab" data-drift="drift">Drifting<span class="tabcount" data-count="drift-any"></span></button>
-  </div>
-  <div class="counts" id="counts"></div>
-</header>
-<main id="main"></main>
-<script>
-${CLIENT}
-
-let compare = {}
-const filters = { page: 'basic', status: 'needs', kind: 'all', drift: 'all' }
-const DRIFT_THRESHOLD = 5 // percent; mirrors compare-backends.ts similar/different split
-
-function changeFilter(key, value) {
-  filters[key] = value
-  clearJustActed()
-  render()
-}
-
-async function load() {
-  try {
-    const res = await fetch('/api/snapshots')
-    const body = await res.json()
-    if (!res.ok || !Array.isArray(body)) {
-      throw new Error((body && body.error) || 'HTTP ' + res.status)
-    }
-    data = body
-  } catch (err) {
-    // Say why. An unparseable report is a real case with real recovery
-    // instructions in the message loadReport writes, and swallowing it left
-    // \`data\` as the error object — whose .filter is not a function, so render
-    // died and the page stayed blank, which reads as nothing left to review.
-    $('#main').innerHTML =
-      '<div class="loaderror">Could not load the snapshot list.\\n\\n' +
-      esc(err.message) + '</div>'
-    return
-  }
-  dropStaleDrafts()
-  render()
-  // backend drift is computed in the background server-side; poll until done,
-  // re-rendering as the map fills in so drift pills/filters progressively appear
-  while (true) {
-    const r = await (await fetch('/api/compare')).json()
-    compare = r.diffs
-    // A full re-render rebuilds #main, which drops the caret out of a note being
-    // typed and — for the ~25s this poll runs — can land between the mousedown
-    // and mouseup of an Approve, destroying the button so no click is dispatched
-    // at all. Both are what repaintUnsafe answers; the next poll catches up two
-    // seconds later. This used to test activeElement.tagName for 'INPUT', which
-    // stopped covering the note the day it became the textarea a denial reason
-    // needs, and never covered the press at all.
-    if (!repaintUnsafe()) { render() }
-    if (r.done) { break }
-    await new Promise(res => setTimeout(res, 2000))
-  }
-}
-
-// Worst pairwise drift % across backends for a snapshot, or -1 if not comparable
-function maxDrift(name) {
-  const pairs = compare[name]
-  if (!pairs) { return -1 }
-  let worst = -1
-  for (const p of pairs) {
-    if (typeof p.diffFraction === 'number') {
-      worst = Math.max(worst, p.diffFraction * 100)
-    }
-  }
-  return worst
-}
-const isDrifting = name => maxDrift(name) >= DRIFT_THRESHOLD
-
-function driftPill(pct) {
-  if (pct < 0) { return pill('absent', 'n/a') }
-  if (pct === 0) { return pill('ident', 'identical') }
-  if (pct < DRIFT_THRESHOLD) { return pill('drift', pct.toFixed(2) + '%') }
-  return pill('bigdrift', pct.toFixed(2) + '%')
-}
-
-// \`bust\` is the reference snapshot's hash: in the URL, the browser refetches
-// exactly when the pixels change and caches otherwise. Without it a test run
-// leaves the reviewer judging a cached image while the server hashes the one now
-// on disk. Only the reference image (the one the verdict is about) carries it;
-// the backend-comparison views are read-only.
-function imgTag(loc, name, bust) {
-  return '<img src="/img/' + loc + '/' + encodeURIComponent(name) +
-    (bust ? '?v=' + encodeURIComponent(bust) : '') +
-    '" onclick="window.open(this.src)" />'
-}
-
-function imgCol(label, right, inner) {
-  return '<div class="imgcol">' +
-    '<div class="imglabel"><span>' + label + '</span><span>' + (right || '') + '</span></div>' +
-    '<div class="imgwrap">' + inner + '</div>' +
-  '</div>'
-}
-
-function kindPill(s) { return pill(s.kind, s.kind) }
-
-// a snapshot needs review when it has no verdict, or its verdict went stale
-// because the reviewed image changed since (server-computed stale flag)
-const needsReview = s => !s.verdict || s.stale
-
-// A verdict is recorded against a hash of the snapshot, so one with no image on
-// disk has nothing to record it against and the server refuses the write — a 400
-// the reviewer only saw after clicking a button that looked live. Same test as
-// the server's (referenceHashByName is what fills imageHash), so the two cannot
-// drift. Clear stays enabled: dropping an entry needs no image.
-const verdictBtn = (cls, label, want, status, s) =>
-  '<button class="' + cls + (status === want ? ' active' : '') + '"' +
-    (s.imageHash
-      ? ' onclick="setVerdict(this,\\'' + want + '\\')"'
-      : ' disabled title="no image on disk — nothing to record a verdict against"') +
-  '>' + label + '</button>'
-
-// the shared review client calls this to rebuild one card in place; the
-// backends page renders its own read-only cards below
-function renderCard(s) {
-  const v = s.verdict
-  const status = v ? v.status : 'none'
-  const cls = s.stale ? 'stale' : status
-  const loc = s.refLoc
-  const img = loc ? imgTag(loc, s.name, s.imageHash) : '<div class="missing">⚠ no image on disk</div>'
-  const where = [s.inRoot ? 'root' : null, ...s.backends].filter(Boolean).join(', ')
-  return '<div class="card ' + cls + '" data-name="' + esc(s.name) + '">' +
-    '<div class="card-images">' + imgCol(loc ? 'rendered (' + loc + ')' : 'rendered', '', img) + '</div>' +
-    '<div class="meta">' +
-      '<h2>' + esc(s.name) + ' ' + kindPill(s) +
-        (s.stale ? ' ' + pill('stale', 'image changed since ' + status) : '') +
-        (compare[s.name] ? ' ' + driftPill(maxDrift(s.name)) : '') + '</h2>' +
-      '<div class="reviewedAt">present in: ' + esc(where) + '</div>' +
-      // a textarea, not an input: a denial reason is a paragraph, and the
-      // shared client grows this one to fit it. The leading newline is eaten by
-      // the HTML parser, so a note that opens with a blank line only
-      // round-trips because one is spent here.
-      '<textarea class="note" rows="2" placeholder="note (optional)" onchange="saveNote(this)">\\n' + esc(v ? v.note : '') + '</textarea>' +
-      '<div class="actions">' +
-        verdictBtn('approve', '✓ Approve', 'good', status, s) +
-        verdictBtn('deny', '✗ Deny', 'bad', status, s) +
-        (v ? '<button class="clear" onclick="clearVerdict(this)">clear</button>' : '') +
-        // Always rendered, including on an empty box where it only focuses the
-        // field: shown only when there is text to preserve, it would have to
-        // appear and disappear as the note is typed, and the note field
-        // deliberately does not re-render as you type.
-        '<button class="addnote" onclick="addNote(this)" title="Keep this note and start a new one above it">+ add note</button>' +
-        (v ? '<span class="reviewedAt">' + new Date(v.reviewedAt).toLocaleString() + '</span>' : '') +
-      '</div>' +
-      // Below the buttons, not under the box it describes: this line appears
-      // the moment you type and disappears the moment the note saves, and the
-      // note saves on the blur that the Approve/Deny mousedown itself causes.
-      // Above the buttons it moved them out from under the pointer between
-      // mousedown and mouseup, so no click was dispatched at all and the first
-      // click after typing did nothing.
-      '<div class="unsaved">' + esc(draftHint(s)) + '</div>' +
-      '<div class="' + msgClass(s.name) + '">' + esc(messageText(s.name)) + '</div>' +
-    '</div>' +
-  '</div>'
-}
-
-// drift % for a specific backend pair from the compare payload
-function pairPct(name, a, b) {
-  const pairs = compare[name] || []
-  const p = pairs.find(x => (x.a === a && x.b === b) || (x.a === b && x.b === a))
-  return p && typeof p.diffFraction === 'number' ? p.diffFraction * 100 : -1
-}
-
-function backendCard(s) {
-  const cols = ['canvas2d', 'webgl', 'webgpu'].map(b =>
-    s.backends.includes(b)
-      ? imgCol(b, '', imgTag(b, s.name))
-      : imgCol(b, '', '<div class="missing">not captured</div>')
-  ).join('')
-  // diff thumbnails for each comparable pair
-  const diffs = (compare[s.name] || []).filter(p => typeof p.diffFraction === 'number').map(p =>
-    imgCol(p.a + ' vs ' + p.b, driftPill(p.diffFraction * 100),
-      '<img src="/img-diff?name=' + encodeURIComponent(s.name) + '&a=' + p.a + '&b=' + p.b + '" onclick="window.open(this.src)" />')
-  ).join('')
-  return '<div class="card" data-name="' + esc(s.name) + '">' +
-    '<div class="card-images">' + cols + '</div>' +
-    (diffs ? '<div class="card-images">' + diffs + '</div>' : '') +
-    '<div class="meta"><h2>' + esc(s.name) + ' ' + kindPill(s) +
-      ' ' + driftPill(maxDrift(s.name)) + '</h2></div>' +
-  '</div>'
-}
-
-function specsInPage() {
-  return filters.page === 'backends'
-    ? data.filter(s => !s.isSvg && s.backends.length >= 2)
-    : data
-}
-
-function syncControls() {
-  for (const key of ['page', 'status', 'kind', 'drift']) {
-    for (const b of document.querySelectorAll('header [data-' + key + ']')) {
-      b.classList.toggle('active', b.dataset[key] === filters[key])
-    }
-  }
-  // status filter only meaningful on the basic-pass page
-  $('[data-group="status"]').style.display = filters.page === 'basic' ? '' : 'none'
-}
-
-function renderCounts() {
-  $('[data-count="page-basic"]').textContent = data.length
-  $('[data-count="page-backends"]').textContent = data.filter(s => !s.isSvg && s.backends.length >= 2).length
-  $('[data-count="drift-any"]').textContent = data.filter(s => isDrifting(s.name)).length
-  $('[data-count="needs"]').textContent = data.filter(needsReview).length
-  const inPage = specsInPage()
-  if (filters.page === 'basic') {
-    const good = inPage.filter(s => settledAs(s, 'good')).length
-    const bad = inPage.filter(s => settledAs(s, 'bad')).length
-    const stale = inPage.filter(s => s.stale).length
-    $('#counts').innerHTML =
-      pill('good', good + ' approved') +
-      pill('bad', bad + ' denied') +
-      (stale ? pill('stale', stale + ' changed since review') : '') +
-      pill('none', inPage.filter(s => !s.verdict).length + ' unreviewed')
-  } else {
-    const drifting = inPage.filter(s => isDrifting(s.name)).length
-    $('#counts').innerHTML =
-      pill('bigdrift', drifting + ' drifting ≥' + DRIFT_THRESHOLD + '%') +
-      pill('none', inPage.length + ' comparable')
-  }
-}
-
-function matchesFilters(s, q) {
-  const matchesQuery = !q || s.name.toLowerCase().includes(q)
-  const matchesStatus =
-    filters.page !== 'basic' ||
-    filters.status === 'all' ||
-    (filters.status === 'needs'
-      ? needsReview(s)
-      : settledAs(s, filters.status))
-  const matchesKind = filters.kind === 'all' || s.kind === filters.kind
-  const matchesDrift = filters.drift === 'all' || isDrifting(s.name)
-  return matchesQuery &&
-    (justActed.has(s.name) || (matchesStatus && matchesKind && matchesDrift))
-}
-
-
-function render() {
-  syncControls()
-  renderCounts()
-  const q = $('#search').value.toLowerCase()
-  const visible = specsInPage().filter(s => matchesFilters(s, q))
-  const card = filters.page === 'basic' ? renderCard : backendCard
-  harvestNotes()
-  $('#main').innerHTML = visible.map(card).join('')
-  applyPendingNotes()
-}
-
-$('header').addEventListener('click', e => {
-  const btn = e.target.closest('[data-page],[data-status],[data-kind],[data-drift]')
-  if (btn) {
-    const key = btn.dataset.page ? 'page'
-      : btn.dataset.status ? 'status'
-      : btn.dataset.kind ? 'kind' : 'drift'
-    changeFilter(key, btn.dataset[key])
-  }
-})
-$('#search').addEventListener('input', render)
-load()
-</script>
-</body>
-</html>`

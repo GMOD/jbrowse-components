@@ -24,3 +24,10 @@ show.
   (`findDisplayPainted` in `browser-tests/helpers.ts`).
 - `runner.ts` reaps orphaned test browsers at startup; SIGKILLed prior runs
   otherwise accumulate until the kernel OOM-kills a live renderer mid-run.
+- **`pnpm review-snapshots-web` bundles its page at startup, with no watcher**,
+  so editing `browser-tests/review-app/` needs a restart to take effect. It
+  shares its write protocol, note drafts and repaint properties with the
+  website's screenshot review via `@jbrowse/browser-test-utils/reviewApp` — fix
+  a bug in either page's card, but fix a protocol bug in the shared client, and
+  run `node --experimental-strip-types src/reviewAppProbe.ts` in
+  `packages/browser-test-utils` after touching it.

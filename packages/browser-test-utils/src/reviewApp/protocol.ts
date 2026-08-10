@@ -5,10 +5,11 @@ import type { PressStatus, ReviewEntry, WriteResult } from './types.ts'
 // and the recovery rules for a 409. Its server counterpart is reviewServer.ts.
 //
 // Deliberately framework-free — nothing here imports React. It is the half of
-// the old string-emitting reviewClient.ts that was never the problem: real
+// the string-emitting client this replaced that was never the problem: real
 // domain logic, subtle enough (serialize writes per card, adopt what the server
 // reports on a 409, never let a failed write look like one that landed) that a
-// second copy of it is a second place for it to drift.
+// second copy of it is a second place for it to drift. It has had one: the same
+// note-loss bug was once fixed in both review pages in one commit, twice.
 
 // What this tab had in hand, sent with every write so the server can reject one
 // composed against state that has since moved. null means "there was none",

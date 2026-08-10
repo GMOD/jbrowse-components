@@ -1,0 +1,318 @@
+/* `light`, not `light dark`. This page hardcodes its surfaces (#f4f5f7, #fff
+   cards, #222 image wells) rather than using the Canvas/CanvasText system colors
+   the website's screenshot review adapts with, so announcing dark support only
+   ever reached the things the page does NOT paint: the form controls. On a
+   dark-preferring browser that rendered the note box near-black on a white card,
+   with the reviewer's own denial reason the least readable text on screen. */
+:root {
+  color-scheme: light;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+  margin: 0;
+  background: #f4f5f7;
+  color: #1a1a1a;
+}
+header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #fff;
+  border-bottom: 1px solid #ddd;
+  padding: 12px 20px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+header h1 {
+  font-size: 16px;
+  margin: 0;
+}
+header input[type='search'] {
+  padding: 6px 10px;
+  width: 220px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+.tabs {
+  display: flex;
+  gap: 6px;
+}
+.tab {
+  padding: 7px 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #555;
+}
+.tab.active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+}
+.tab .tabcount {
+  opacity: 0.7;
+  margin-left: 5px;
+  font-size: 12px;
+}
+.counts {
+  font-size: 13px;
+  color: #555;
+  margin-left: auto;
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.pill {
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.pill.good {
+  background: #d6f5dd;
+  color: #14532d;
+}
+.pill.bad {
+  background: #fbd9d9;
+  color: #7f1d1d;
+}
+.pill.none {
+  background: #eee;
+  color: #666;
+}
+.pill.targeted {
+  background: #dbeafe;
+  color: #1e40af;
+}
+.pill.fullpage {
+  background: #fef3c7;
+  color: #92400e;
+}
+.pill.svg {
+  background: #f3e8ff;
+  color: #6b21a8;
+}
+.pill.other {
+  background: #eee;
+  color: #555;
+}
+.pill.ident {
+  background: #d6f5dd;
+  color: #14532d;
+}
+.pill.drift {
+  background: #fde68a;
+  color: #854d0e;
+}
+.pill.bigdrift {
+  background: #fbd9d9;
+  color: #7f1d1d;
+}
+.pill.absent {
+  background: #eee;
+  color: #999;
+}
+.pill.stale {
+  background: #fde68a;
+  color: #854d0e;
+}
+
+/* The trailing space is load-bearing, not decoration.
+   A card that shrinks while a pointer is down — every note save does, see
+   `.unsaved` — shortens the document. If the page is at the bottom of its scroll
+   range, the browser has to clamp scrollY to the new maximum, and that moves
+   every pixel in the viewport DOWN by the difference. The button between whose
+   mousedown and mouseup it lands goes out from under the pointer, the mouseup
+   happens somewhere else, and the browser dispatches no click at all: the
+   reviewer's Deny silently does nothing and they click again.
+   Nothing about React prevents this — it is not a repaint, it is the scroll
+   position. Slack past the last card is what does. */
+main {
+  padding: 20px 20px 40vh;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 1500px;
+  margin: 0 auto;
+}
+.card {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.card.good {
+  border-left: 5px solid #22c55e;
+}
+.card.bad {
+  border-left: 5px solid #ef4444;
+}
+.card.stale {
+  border-left: 5px solid #f59e0b;
+}
+.card-images {
+  display: flex;
+  gap: 0;
+}
+.imgcol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.imglabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 10px;
+  background: #f8f8f8;
+  border-bottom: 1px solid #eee;
+  color: #666;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+}
+.imgwrap {
+  background: #222;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+  flex: 1;
+}
+.imgwrap img {
+  max-width: 100%;
+  max-height: 380px;
+  display: block;
+  cursor: zoom-in;
+}
+.imgcol + .imgcol {
+  border-left: 2px solid #ddd;
+}
+.missing {
+  color: #888;
+  padding: 30px;
+  font-size: 13px;
+}
+.meta {
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid #eee;
+}
+.meta h2 {
+  font-size: 14px;
+  margin: 0;
+  font-family: ui-monospace, monospace;
+  word-break: break-all;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+button {
+  padding: 7px 14px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+}
+button.approve {
+  border-color: #22c55e;
+  color: #14532d;
+}
+button.approve.active {
+  background: #22c55e;
+  color: #fff;
+}
+button.deny {
+  border-color: #ef4444;
+  color: #7f1d1d;
+}
+button.deny.active {
+  background: #ef4444;
+  color: #fff;
+}
+button.clear {
+  border-color: #ccc;
+  color: #666;
+}
+button.addnote {
+  border-color: #ccc;
+  color: #666;
+}
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  border-color: #ccc;
+  color: #666;
+}
+.loaderror {
+  color: #b91c1c;
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+/* height is set by useNoteDraft as you type; min-height keeps an empty box at
+   two rows and overflow-y lets it scroll at the cap */
+.note {
+  width: 100%;
+  min-height: 3.6em;
+  padding: 6px 9px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  resize: none;
+  overflow-y: auto;
+}
+/* a write that did not land, or one rejected because the entry moved */
+.cardmsg {
+  font-size: 13px;
+  font-weight: 500;
+}
+.cardmsg.error {
+  color: #b91c1c;
+}
+.cardmsg.warn {
+  color: #b45309;
+}
+/* Whether what is in the note box has reached the report yet. Its line is
+   RESERVED rather than collapsed when empty — line-height and min-height are the
+   same length on purpose, so an empty box is exactly as tall as a one-line one.
+   This text appears on the first keystroke and disappears the moment the note
+   saves, which is on the blur that the Approve/Deny mousedown itself causes, so
+   a collapsing line resizes the card in the middle of the press that caused it.
+   See `main` for what that does at the bottom of the scroll range. */
+.unsaved {
+  font-size: 12px;
+  font-weight: 500;
+  color: #b45309;
+  line-height: 1.5;
+  min-height: 1.5em;
+}
+.reviewedAt {
+  font-size: 11px;
+  color: #999;
+}
