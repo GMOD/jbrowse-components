@@ -9,7 +9,7 @@ import { observer } from 'mobx-react'
 
 import { invokeIpc } from '../ipc.ts'
 import { useIpc } from '../useIpc.ts'
-import { useQueryParam } from '../useQueryParam.ts'
+import { deleteQueryParams, useQueryParam } from '../useQueryParam.ts'
 import { NotificationProvider } from './Notifications.tsx'
 import { useNotifyError } from './NotifyContext.ts'
 import StartScreen from './StartScreen/StartScreen.tsx'
@@ -32,11 +32,18 @@ setGpuOverride(new URLSearchParams(window.location.search).get('renderer'))
 // already been built, which takes considerably longer.
 const JBrowse = lazy(() => import('./JBrowse.tsx'))
 
+// Both launch params are one-shot: once the session they name is built (or has
+// failed to build) they have to leave the address bar, or the next read reopens
+// it. Cleared together because at most one was ever set.
+function clearTarget() {
+  deleteQueryParams(['config', 'specLink'])
+}
+
 const LoaderContents = observer(function LoaderContents() {
   const [pluginManager, setPluginManager] = useState<PluginManager>()
-  const [config, setConfig] = useQueryParam('config')
+  const [config] = useQueryParam('config')
   // a jbrowse:// link the main process resolved to a JBrowse Web url
-  const [specLink, setSpecLink] = useQueryParam('specLink')
+  const [specLink] = useQueryParam('specLink')
   const notifyError = useNotifyError()
 
   // The installed manager, readable synchronously. Replacing one is a side
@@ -95,13 +102,22 @@ const LoaderContents = observer(function LoaderContents() {
     })
 
     replacePluginManager(pm)
-    setConfig(undefined)
-    setSpecLink(undefined)
+    clearTarget()
   })
 
-  const handleConfigError = useEventCallback((e: unknown) => {
-    // the failing config path is a recent-session entry we can prune, so offer
-    // it as a toast action rather than leaving a dead row behind
+  // What the main process asked this window to open, if anything. buildAppUrl
+  // writes one param or the other, never both, so one load covers both routes
+  // and `config` decides which of the two it is.
+  const target = config ?? specLink
+
+  const loadTarget = useEventCallback((source: string) =>
+    config ? loadPluginManager(source) : openSpecLink(source),
+  )
+
+  const handleTargetError = useEventCallback((e: unknown) => {
+    // A failing config path is a recent-session entry we can prune, so offer it
+    // as a toast action rather than leaving a dead row behind. A bad link is not
+    // one, so it gets a plain error.
     notifyError(
       e,
       config
@@ -113,28 +129,15 @@ const LoaderContents = observer(function LoaderContents() {
           }
         : undefined,
     )
-    // fall back to the start screen so the user can pick another config
-    setConfig(undefined)
-  })
-
-  // A bad link is not a recent-session entry, so it gets a plain error and
-  // drops to the start screen rather than offering to prune anything.
-  const handleSpecLinkError = useEventCallback((e: unknown) => {
-    notifyError(e)
-    setSpecLink(undefined)
+    // fall back to the start screen so the user can pick another session
+    clearTarget()
   })
 
   usePluginManagerLoad(
-    config,
-    loadPluginManager,
+    target,
+    loadTarget,
     handleSetPluginManager,
-    handleConfigError,
-  )
-  usePluginManagerLoad(
-    specLink,
-    openSpecLink,
-    handleSetPluginManager,
-    handleSpecLinkError,
+    handleTargetError,
   )
 
   const loading = <LoadingEllipses variant="h6" message="Loading session" />
@@ -143,7 +146,7 @@ const LoaderContents = observer(function LoaderContents() {
     <Suspense fallback={loading}>
       <JBrowse pluginManager={pluginManager} />
     </Suspense>
-  ) : config || specLink ? (
+  ) : target ? (
     loading
   ) : (
     <StartScreen setPluginManager={handleSetPluginManager} />
