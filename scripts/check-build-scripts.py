@@ -1136,6 +1136,32 @@ check("dedupe_junctions does not merge transitively",
 
 check("parse_junctions reads END, not the END inside CIEND",
       sv_multihop.parse_junctions(vcf2), [(("chr6", 1000), ("chr6", 9000))])
+
+# `bedpe` is `chains`' parser with the chain search taken off, which is the whole
+# reason it exists: an awk one-liner in the tutorial would have to re-solve the
+# inserted-sequence ALT, the upper-cased mate and the reciprocal pair, and each
+# of those fails silently rather than loudly.
+bedpe_out = os.path.join(os.path.dirname(vcf), "junctions.bedpe")
+run_helper(sv_multihop, ["sv_multihop.py", "bedpe", vcf, "--out", bedpe_out],
+           want_err=True)
+bedpe_rows = [l.split("\t") for l in
+              open(bedpe_out).read().strip().split("\n")]
+# one row per DEDUPED junction: the reciprocal pair must not queue twice
+check("bedpe writes one row per junction, reciprocal pair collapsed",
+      len(bedpe_rows), 4)
+# 1-based VCF POS in, 0-based half-open BEDPE out, one base per breakend
+check("bedpe converts the VCF's 1-based POS to a 0-based half-open interval",
+      bedpe_rows[0][:6],
+      ["chr3", "25359110", "25359111", "chr12", "72273111", "72273112"])
+# the mate spelling the FILE uses, not the ALT's upper-cased one: a `CHR12`
+# renders as a region hg38 does not have, so the panel comes out empty
+check("bedpe writes the mate contig in the file's own spelling",
+      sorted({r[3] for r in bedpe_rows}), ["chr10", "chr12", "chr5"])
+run_helper(sv_multihop,
+           ["sv_multihop.py", "bedpe", vcf, "--out", bedpe_out,
+            "--interchromosomal-only"], want_err=True)
+check("bedpe --interchromosomal-only drops the same-chromosome junctions",
+      len(open(bedpe_out).read().strip().split("\n")), 3)
 check("info_field matches a key at the start of its own field only",
       [sv_multihop.info_field("SVTYPE=DUP;CIEND=5,10;END=9000", "END"),
        sv_multihop.info_field("OLDSVTYPE=DEL", "SVTYPE")],

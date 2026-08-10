@@ -147,6 +147,38 @@ def parse_junctions(vcf, dedup_tolerance=DEDUP_TOLERANCE):
     )
 
 
+def cmd_bedpe(args):
+    """Every junction as a BEDPE row, for `jb2export batch` to render.
+
+    This is `chains`' parser with the chain search taken off: the two ends of a
+    junction are exactly the two panels of a breakpoint split view, so a callset
+    converts to a review queue with no analysis in between.
+
+    It exists as a subcommand rather than as an awk one-liner in the tutorial
+    because the awk would have to re-solve every trap `parse_junctions` already
+    solves, and each one fails silently: an ALT bracket carrying inserted
+    sequence (28 of the 66 BND records in COLO829's own VCF), a mate contig the
+    caller upper-cased, `END=` matched inside `CIEND=`, and the reciprocal pairs
+    that otherwise put every translocation in the queue twice.
+    """
+    junctions = parse_junctions(args.vcf, args.dedup_tolerance)
+    out = open(args.out, 'w') if args.out else sys.stdout
+    try:
+        n = 0
+        for i, ((c1, p1), (c2, p2)) in enumerate(junctions):
+            if args.interchromosomal_only and c1 == c2:
+                continue
+            # 0-based half-open, one base per breakend: the flank is what
+            # actually frames the panel, and it belongs to whoever renders.
+            out.write(f'{c1}\t{p1 - 1}\t{p1}\t{c2}\t{p2 - 1}\t{p2}\tjunction_{i}\n')
+            n += 1
+    finally:
+        if args.out:
+            out.close()
+    where = args.out if args.out else 'stdout'
+    print(f'{n} of {len(junctions)} junctions written to {where}', file=sys.stderr)
+
+
 def find_chains(junctions, max_segment, min_hops):
     """Group junctions into chains linked by short reference segments.
 
@@ -850,6 +882,17 @@ def main():
                         'pair may place it and still count as one junction; keep '
                         'this small, it is not --max-segment')
     c.set_defaults(func=cmd_chains)
+
+    b = sub.add_parser('bedpe',
+                       help='every junction as a BEDPE row, for `jb2export batch`')
+    b.add_argument('vcf')
+    b.add_argument('--out', help='output path (default stdout)')
+    b.add_argument('--interchromosomal-only', action='store_true',
+                   help='keep only junctions joining two different chromosomes')
+    b.add_argument('--dedup-tolerance', type=int, default=DEDUP_TOLERANCE,
+                   help='how far apart the two records of one reciprocal breakend '
+                        'pair may place it and still count as one junction')
+    b.set_defaults(func=cmd_bedpe)
 
     d = sub.add_parser('derive', help='rebuild the derivative allele from spanning reads')
     d.add_argument('--aln', required=True, help='tumour BAM/CRAM (indexed, may be a URL)')
