@@ -40,6 +40,18 @@ const GENERATORS: Generator[] = [
     argv: ['node', 'packages/core/scripts/generateExports.mjs'],
   },
   {
+    // The other half of the same job for the packages whose `exports` map is a
+    // hand-curated allowlist rather than derived from usage: keeps
+    // publishConfig in step with it, since only publishConfig is what an
+    // installed consumer resolves against.
+    name: 'publishConfig exports',
+    argv: [
+      'node',
+      '--experimental-strip-types',
+      'scripts/generate-publish-exports.ts',
+    ],
+  },
+  {
     // The bring-your-own-overlays docs quote what the chrome layer costs. This
     // bundles both entry points for real so the claim is measured rather than
     // remembered, and the byo landing page imports the result.
