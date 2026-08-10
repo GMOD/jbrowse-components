@@ -428,8 +428,26 @@ const isClaudeDoc = (path: string) => path.endsWith('/CLAUDE.md')
 // PascalCase, plus camelCase with an internal capital. The internal capital is
 // what keeps this from flagging ordinary backticked prose (`true`, `undefined`,
 // `error`) while still catching `renderProps`, `canvasWidthPx`, `isCacheValid`.
+//
+// The name may close on a backtick OR an open paren, because these docs write a
+// method as `foo()` at least as often as `foo` — 153 references in the checked
+// scope take the call shape, and requiring the backtick made the checker blind
+// to every one of them. That is not hypothetical: the data-fetching guide
+// published a method name for the byte gate's while-blocked re-measure that no
+// such method has ever had, while REGION_TOO_LARGE.md explained at length why
+// that path deliberately doesn't exist, and this check ran over the guide the
+// whole time. No allowlist entry was needed to close it — every call-shaped
+// reference in scope resolved once that one was fixed.
+//
+// Deliberately without the offending name: `collectSymbols` walks
+// `website/scripts`, so a source comment here that spelled it would add it to
+// the symbol set and whitelist it in every doc, repo-wide and invisibly. That
+// applies to any comment anywhere under the collected roots — `DOC_ABSENT_ON_PURPOSE`
+// is the supported way for a *doc* to name something gone, and there is no
+// equivalent escape for source, because source naming a dead symbol is the
+// thing this check has no way to tell apart from source defining a live one.
 const TICKED_SYMBOL =
-  /`([A-Z][A-Za-z0-9]{4,}|[a-z][A-Za-z0-9]*[A-Z][A-Za-z0-9]*)`/g
+  /`([A-Z][A-Za-z0-9]{4,}|[a-z][A-Za-z0-9]*[A-Z][A-Za-z0-9]*)[`(]/g
 // Two placeholder conventions, both standing in for a name the reader supplies:
 // `My*` in the guides (`MyAdapterConfig`, `MyPlugin`), and `Xxx` as an infix in
 // the architecture spec, where a rule holds across a family of per-plugin
