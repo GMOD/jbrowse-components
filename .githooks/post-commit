@@ -1,0 +1,42 @@
+#!/bin/sh
+# Drops the stale index entries the pre-commit hook leaves behind on a
+# `git commit -- <paths>`, which is the form the shared checkout is supposed to
+# use (see ~/.claude/CLAUDE.md).
+#
+# The mechanism, because it is not guessable from the symptom. A pathspec commit
+# builds a TEMPORARY index -- git points GIT_INDEX_FILE at
+# `.git/next-index-<pid>.lock` -- and it builds it BEFORE running pre-commit. So
+# pre-commit's `git add` lands in that temp index, which is the only reason the
+# reformatted bytes reach the commit at all: drop the `git add` and the commit
+# captures the file as it was before oxfmt touched it, while the working tree
+# keeps the formatted version. It is load-bearing, not tidiness.
+#
+# What it cannot do is update the REAL `.git/index`, which still holds the
+# pre-format blob. HEAD and the working tree then agree, the index alone
+# disagrees, and `git status` reports the path as modified forever -- an `MM`
+# nobody can make go away by reverting, because there is nothing to revert.
+#
+# That is worse here than an untidy status. The shared-checkout rules tell every
+# agent to read `git status` before editing and to leave alone anything they did
+# not touch, so a phantom modification makes them defer to a change that does not
+# exist -- or "restore" it and silently undo the formatting.
+#
+# Only entries that are provably noise are reset: index disagrees with HEAD AND
+# the working tree agrees with HEAD. Nothing can be lost by resetting one, since
+# the content it holds exists nowhere else and matches nothing. A path edited
+# again after the commit fails the second test and is left as an ordinary
+# unstaged change, and another agent's genuinely staged file is never in
+# HEAD's diff-tree to begin with. Both are covered by the repro this came from.
+#
+# post-commit's exit status is ignored by git, so this can never fail a commit.
+set -eu
+
+# -z would need a bash `read -d ''`; quotePath=false is enough to keep a path
+# with a space or a non-ASCII byte from arriving backslash-quoted and unmatchable
+git -c core.quotePath=false diff-tree --no-commit-id --name-only -r HEAD |
+  while IFS= read -r f; do
+    if ! git diff --cached --quiet HEAD -- "$f" 2>/dev/null &&
+      git diff --quiet HEAD -- "$f" 2>/dev/null; then
+      git restore --staged -- "$f" 2>/dev/null || true
+    fi
+  done
