@@ -178,16 +178,59 @@ test('one search serves the genomic layout too', () => {
 
 // hitTest inverts what cellToScreen does, and both overlays place themselves
 // with the forward half, so a cell center round-trips back to its own cell.
-test('cellToScreen and hitTest are inverses', () => {
+//
+// **Assert the coordinates, not just the cell they land in, and run squashed as
+// well as natural.** `yScalar` is 1 in every other test here, and a cell-identity
+// round trip is too coarse to catch a term this size: with `yScalar` deleted from
+// the inverse the hit is off by a fraction of a cell, stays inside the same one,
+// and all 45 LD tests passed — verified before this was split out. The exact
+// round trip through `screenToCell` does catch it, and fit-to-height is precisely
+// when a dropped `yScalar` would make the tooltip name the wrong pair of SNPs.
+describe('cellToScreen and screenToCell are inverses', () => {
+  test.each([
+    ['natural height', false],
+    ['fit-to-height squash', true],
+  ])('%s', (_label, squash) => {
+    const { display } = loadedDisplay({ scrollTo: -100 })
+    display.setSquashToHeight(squash)
+    expect(squash ? display.yScalar !== 1 : display.yScalar === 1).toBe(true)
+
+    const { boundaries } = display.rpcData!
+    const center = (k: number) => (boundaries[k]! + boundaries[k + 1]!) / 2
+
+    for (const [u, v] of [
+      [center(1), center(2)],
+      [center(0), center(3)],
+      [0, boundaries.at(-1)!],
+    ]) {
+      const screen = display.cellToScreen(u!, v!)
+      const back = display.screenToCell(screen.x, screen.y)
+      expect(back.x).toBeCloseTo(u!, 6)
+      expect(back.y).toBeCloseTo(v!, 6)
+    }
+
+    // and the cell the pair resolves to, which is what the overlays consume
+    const { x, y } = display.cellToScreen(center(1), center(2))
+    const hit = display.hitTest(x, y)
+    expect(hit).toBeDefined()
+    expect([hit!.i, hit!.j]).toEqual([2, 1])
+    expect(hit!.snp1.id).toBe('rs2')
+    expect(hit!.snp2.id).toBe('rs1')
+  })
+})
+
+// `columnX` is the x half of `cellToScreen` written a second time — the point on
+// the diagonal at a fractional column index. It stays a separate expression on
+// purpose: routing it through `cellToScreen` would make every connector line and
+// recombination point track `yScalar` and `effectiveLineZoneHeight`, which they
+// genuinely do not depend on. What that costs is a way for the two to drift, and
+// `columnX`'s own comment names the symptom — everything anchored through it
+// slides off the triangle. So the agreement is asserted instead.
+test('columnX agrees with the x half of cellToScreen', () => {
   const { display } = loadedDisplay({ scrollTo: -100 })
-  const { boundaries } = display.rpcData!
-  const center = (k: number) => (boundaries[k]! + boundaries[k + 1]!) / 2
-
-  const { x, y } = display.cellToScreen(center(1), center(2))
-  const hit = display.hitTest(x, y)
-
-  expect(hit).toBeDefined()
-  expect([hit!.i, hit!.j]).toEqual([2, 1])
-  expect(hit!.snp1.id).toBe('rs2')
-  expect(hit!.snp2.id).toBe('rs1')
+  const { cellWidth } = display
+  for (const column of [0, 0.5, 1, 2.5, 4]) {
+    const u = column * cellWidth
+    expect(display.columnX(column)).toBeCloseTo(display.cellToScreen(u, u).x, 9)
+  }
 })

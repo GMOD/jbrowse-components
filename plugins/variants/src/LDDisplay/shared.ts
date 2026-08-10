@@ -646,10 +646,35 @@ export default function sharedModelFactory(
       },
       /**
        * #method
-       * Inverse of `renderTransform` for the LD matrix: takes mouse coords
-       * (canvas-relative) and returns the LD cell under the cursor, or
-       * undefined. Mirrors plugins/hic's `hitTest` so both contact maps
-       * keep the forward and inverse transforms paired on the model.
+       * The exact inverse of `cellToScreen`: canvas-relative pixels back to
+       * pre-rotation cell coordinates. Reverses the rendering's
+       * `scale(1, yScalar) · rotate(-π/4)` — yScalar squashes Y, so it divides
+       * out before the un-rotation.
+       *
+       * Split out of `hitTest` so the pair is checkable as an **identity**
+       * rather than only through the cell it lands in. Round-tripping a cell
+       * center through the two and asserting the cell comes back is too coarse
+       * to catch a dropped `yScalar`: the error is a fraction of a cell at
+       * realistic squashes, so the hit stays inside the same cell and the test
+       * passes with the term deleted — verified. `overlayCoords.test.ts` asserts
+       * the coordinates now, which does catch it.
+       */
+      screenToCell(mouseX: number, mouseY: number) {
+        const { scale, viewOffsetX } = self.renderTransform
+        const dataX = (mouseX - viewOffsetX) / scale
+        const dataY =
+          (mouseY - this.effectiveLineZoneHeight) / scale / this.yScalar
+        return {
+          x: (dataX - dataY) / Math.SQRT2,
+          y: (dataX + dataY) / Math.SQRT2,
+        }
+      },
+      /**
+       * #method
+       * Takes mouse coords (canvas-relative) and returns the LD cell under the
+       * cursor, or undefined: `screenToCell` above, then the boundary walk.
+       * Mirrors plugins/hic's `hitTest` so both contact maps keep the forward
+       * and inverse transforms paired on the model.
        */
       hitTest(mouseX: number, mouseY: number): LDFlatbushItem | undefined {
         const data = self.rpcData
@@ -659,15 +684,7 @@ export default function sharedModelFactory(
         if (mouseY < this.effectiveLineZoneHeight) {
           return undefined
         }
-        const { scale, viewOffsetX } = self.renderTransform
-        const dataX = (mouseX - viewOffsetX) / scale
-        const dataY = (mouseY - this.effectiveLineZoneHeight) / scale
-        // Reverse the rendering's `scale(1, yScalar) · rotate(-π/4)` then
-        // pick the cell. yScalar squashes Y, so divide it out before
-        // un-rotating.
-        const scaledY = dataY / this.yScalar
-        const x = (dataX - scaledY) / Math.SQRT2
-        const y = (dataX + scaledY) / Math.SQRT2
+        const { x, y } = this.screenToCell(mouseX, mouseY)
         const { boundaries, ldValues } = data
         const n = boundaries.length - 1
         // One search for both layouts: uniform mode's boundaries ARE
