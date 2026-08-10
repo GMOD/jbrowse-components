@@ -65,14 +65,14 @@ void computeLD(uint3 gid: SV_DispatchThreadID) {
     }
   }
 
-  if (count < 2.0) {
+  if (!ldEnoughGenotypes(count)) {
     ldOut[k] = 0.0;
     return;
   }
 
-  float pA = s1 / (2.0 * count);
-  float pB = s2 / (2.0 * count);
-  if (pA <= 0.0 || pA >= 1.0 || pB <= 0.0 || pB >= 1.0) {
+  float pA = ldGenotypeAlleleFreq(s1, count);
+  float pB = ldGenotypeAlleleFreq(s2, count);
+  if (!ldLociPolymorphic(pA, pB)) {
     ldOut[k] = 0.0;
     return;
   }

@@ -1,7 +1,10 @@
 import {
   dprimeFinalize,
+  ldEnoughGenotypes,
+  ldGenotypeAlleleFreq,
   ldGenotypeCorrelation,
   ldGenotypeD,
+  ldLociPolymorphic,
   ldRSquared,
 } from './ldStats.generated.ts'
 
@@ -59,17 +62,14 @@ export function calculateLDStats(
     }
   }
 
-  // Need at least 2 samples
-  if (n < 2) {
+  if (!ldEnoughGenotypes(n)) {
     return { r2: 0, dprime: 0 }
   }
 
-  // Allele frequencies (frequency of alt allele)
-  const pA = sumG1 / (2 * n)
-  const pB = sumG2 / (2 * n)
+  const pA = ldGenotypeAlleleFreq(sumG1, n)
+  const pB = ldGenotypeAlleleFreq(sumG2, n)
 
-  // If either locus is monomorphic, LD is undefined
-  if (pA <= 0 || pA >= 1 || pB <= 0 || pB >= 1) {
+  if (!ldLociPolymorphic(pA, pB)) {
     return { r2: 0, dprime: 0 }
   }
 

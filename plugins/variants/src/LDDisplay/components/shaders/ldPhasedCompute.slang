@@ -63,19 +63,19 @@ void computeLDPhased(uint3 gid: SV_DispatchThreadID) {
     total += countbits(vi2 & vj2);
   }
 
-  if (total < 4u) {
+  float ft = float(total);
+  if (!ldEnoughGametes(ft)) {
     ldOut[k] = 0.0;
     return;
   }
 
-  float ft = float(total);
   float p01 = float(n01) / ft;
   float p10 = float(n10) / ft;
   float p11 = float(n11) / ft;
   float pA = p10 + p11;
   float pB = p01 + p11;
 
-  if (pA <= 0.0 || pA >= 1.0 || pB <= 0.0 || pB >= 1.0) {
+  if (!ldLociPolymorphic(pA, pB)) {
     ldOut[k] = 0.0;
     return;
   }

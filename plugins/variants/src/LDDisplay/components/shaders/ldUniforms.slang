@@ -2,8 +2,10 @@
 // uniform-grid). The genomic variant ignores `uniformW`; keeping the struct
 // identical lets both shaders share a single UBO byte layout so the renderer
 // writes one uniform buffer per frame regardless of which pass draws.
-//! js-export: dprimeFinalize, ldRSquared, ldGenotypeD, ldGenotypeCorrelation, ldHaplotypeCorrelation
+//! js-export: dprimeFinalize, ldRSquared, ldGenotypeD, ldGenotypeCorrelation, ldHaplotypeCorrelation, ldEnoughGenotypes, ldEnoughGametes, ldLociPolymorphic, ldGenotypeAlleleFreq
 //! js-export-out: packages/ld-core/src/ldStats.generated.ts
+//! js-skip: ldFinalize — picks one metric for the heatmap; the CPU path returns r2 AND dprime because the tooltip shows both, so it has no single value to pick. Everything ldFinalize dispatches to is exported
+//! js-skip: ldGenotypeCovariance — reached as a private helper inside the generated ldGenotypeD and ldGenotypeCorrelation, so it is already shared without being public
 module ldUniforms;
 
 import diagonalGrid;
@@ -112,6 +114,46 @@ public float dprimeFinalize(float D, float pA, float pB, bool signedLD) {
 // drifts.
 public float ldRSquared(float r) {
   return clamp(r * r, 0.0, 1.0);
+}
+
+// The two degenerate-input gates, and the frequency they are phrased in terms
+// of. Every LD path — both compute kernels and both CPU fallbacks — has to make
+// these calls the same way, and until adr-051 lifted them each was written out
+// where it was used: the polymorphism test in FOUR places, the dosage→frequency
+// conversion in two.
+//
+// They are the arithmetic nobody expects to drift, which is the arithmetic
+// nobody would notice drifting. Everything downstream of them was already
+// generated, so a cell whose moments one side accepted and the other rejected
+// was the last way the heatmap and the tooltip could disagree about a number.
+// The accumulation loops above them stay per-side on purpose (a kernel walks a
+// packed buffer, the CPU an Int8Array); what they produce is these moments.
+
+// Fewest called samples a genotype cell needs. Below two there is no variance
+// to correlate, so `ldGenotypeCorrelation` would divide by zero.
+public bool ldEnoughGenotypes(float sampleCount) {
+  return sampleCount >= 2.0;
+}
+
+// The phased counterpart, counted in gametes rather than samples: two samples'
+// worth of diploid haplotypes, the same floor one step down the ploidy.
+public bool ldEnoughGametes(float gameteCount) {
+  return gameteCount >= 4.0;
+}
+
+// Alt-allele frequency from a dosage sum. The 2 is the ploidy — a diploid
+// sample contributes up to two alt alleles — and dropping it halves every
+// frequency, which D' then normalizes against and quietly changes.
+public float ldGenotypeAlleleFreq(float dosageSum, float sampleCount) {
+  return dosageSum / (2.0 * sampleCount);
+}
+
+// Both loci actually vary. A monomorphic locus has no linkage to report, and
+// every estimator downstream divides by a variance or a frequency product that
+// is zero there. Strict on both ends: a frequency of exactly 0 or 1 is fixed,
+// not rare.
+public bool ldLociPolymorphic(float pA, float pB) {
+  return pA > 0.0 && pA < 1.0 && pB > 0.0 && pB < 1.0;
 }
 
 // Covariance of the two loci's genotype dosages, from the moments a caller

@@ -1,8 +1,12 @@
 import {
   dprimeFinalize,
+  ldEnoughGametes,
+  ldEnoughGenotypes,
+  ldGenotypeAlleleFreq,
   ldGenotypeCorrelation,
   ldGenotypeD,
   ldHaplotypeCorrelation,
+  ldLociPolymorphic,
   ldRSquared,
 } from './ldStats.generated.ts'
 
@@ -198,4 +202,62 @@ test('D’ is clamped into range rather than overflowing', () => {
   expect(dprimeFinalize(0.9, 0.5, 0.5, false)).toBe(1)
   expect(dprimeFinalize(-0.9, 0.5, 0.5, true)).toBe(-1)
   expect(dprimeFinalize(-0.9, 0.5, 0.5, false)).toBe(1)
+})
+
+// The degenerate-input gates, lifted after the estimators above them were. They
+// were the last thing between the moments and a generated answer: every path
+// restated them, and the polymorphism test was written out in FOUR places (both
+// kernels, both CPU fallbacks). Simple enough that nobody expected them to
+// drift, which is the same reason nobody would have noticed.
+describe('the degenerate-input gates', () => {
+  // `calculateLDStats.ts` and `calculateLDStatsPhased.ts`, verbatim.
+  const retiredEnoughGenotypes = (n: number) => !(n < 2)
+  const retiredEnoughGametes = (total: number) => !(total < 4)
+  const retiredAlleleFreq = (sum: number, n: number) => sum / (2 * n)
+  const retiredPolymorphic = (pA: number, pB: number) =>
+    !(pA <= 0 || pA >= 1 || pB <= 0 || pB >= 1)
+
+  test('ldEnoughGenotypes / ldEnoughGametes match the twins they replaced', () => {
+    for (const n of [0, 1, 1.5, 2, 2.5, 3, 4, 5, 1000]) {
+      expect(ldEnoughGenotypes(n)).toBe(retiredEnoughGenotypes(n))
+      expect(ldEnoughGametes(n)).toBe(retiredEnoughGametes(n))
+    }
+  })
+
+  test('ldLociPolymorphic matches the twin it replaced', () => {
+    // Includes the ends themselves, which is where the strictness lives: a
+    // frequency of exactly 0 or 1 is fixed, and `<`/`<=` disagreeing between a
+    // kernel and its fallback would show only on those cells.
+    for (const pA of FREQS) {
+      for (const pB of FREQS) {
+        expect(ldLociPolymorphic(pA, pB)).toBe(retiredPolymorphic(pA, pB))
+      }
+    }
+    expect(ldLociPolymorphic(0, 0.5)).toBe(false)
+    expect(ldLociPolymorphic(1, 0.5)).toBe(false)
+    expect(ldLociPolymorphic(0.5, 0)).toBe(false)
+    expect(ldLociPolymorphic(0.5, 1)).toBe(false)
+    expect(ldLociPolymorphic(0.01, 0.99)).toBe(true)
+  })
+
+  test('ldGenotypeAlleleFreq matches the twin it replaced', () => {
+    for (const g1 of DOSAGE_VECTORS) {
+      const { s1, n } = momentsOf(g1, g1)
+      expect(ldGenotypeAlleleFreq(s1, n)).toBeCloseTo(
+        retiredAlleleFreq(s1, n),
+        12,
+      )
+    }
+  })
+
+  test('the ploidy divisor is 2, so an all-alt locus is fixed at 1', () => {
+    // The property the 2 exists for: dosages run 0..2 per sample, so the
+    // frequency's denominator is 2n and not n. Halving it makes every locus look
+    // rare, which D' normalizes against and quietly rescales.
+    const { s1, n } = momentsOf([2, 2, 2, 2], [2, 2, 2, 2])
+    expect(ldGenotypeAlleleFreq(s1, n)).toBe(1)
+    expect(ldLociPolymorphic(ldGenotypeAlleleFreq(s1, n), 0.5)).toBe(false)
+    const het = momentsOf([1, 1, 1, 1], [1, 1, 1, 1])
+    expect(ldGenotypeAlleleFreq(het.s1, het.n)).toBe(0.5)
+  })
 })

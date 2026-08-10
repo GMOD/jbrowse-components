@@ -1,6 +1,8 @@
 import {
   dprimeFinalize,
+  ldEnoughGametes,
   ldHaplotypeCorrelation,
+  ldLociPolymorphic,
   ldRSquared,
 } from './ldStats.generated.ts'
 
@@ -205,7 +207,7 @@ export function calculateLDStatsPhasedBits(
     n01 += popcount32(vi2 & ~ai2 & aj2)
     total += popcount32(vi2 & vj2)
   }
-  if (total < 4) {
+  if (!ldEnoughGametes(total)) {
     return { r2: 0, dprime: 0 }
   }
   const p01 = n01 / total
@@ -213,7 +215,7 @@ export function calculateLDStatsPhasedBits(
   const p11 = n11 / total
   const pA = p10 + p11
   const pB = p01 + p11
-  if (pA <= 0 || pA >= 1 || pB <= 0 || pB >= 1) {
+  if (!ldLociPolymorphic(pA, pB)) {
     return { r2: 0, dprime: 0 }
   }
   // Shared with ldPhasedCompute.slang, this function's WebGPU counterpart —
