@@ -2184,6 +2184,17 @@ export const graphSpecs: ScreenshotSpec[] = [
   // (backbone, bubble, backbone, ...), so there is no graph shape for a force
   // layout to find, and an anchored row puts each bubble under its own
   // coordinate in the lane above it.
+  //
+  // FORCE WAS TRIED AND RENDERED, so don't re-try it (review: "might benefit to
+  // see bandage force directed graph view of bubbles. backbone just tends to
+  // not look good"). The pane already IS a graph view -- what the note asks for
+  // is the other layout, and it turns 27 nodes and 26 edges into a near-vertical
+  // thread down one corner of the pane at 64.8% zoom, with the run reporting 413
+  // css px of page below the fold and the IS5 callout off-frame. That is the
+  // chain argument arriving as a picture: with no branch structure, the force
+  // solver has nothing to spread and returns the chain as a line, while the
+  // anchored layout spends the same pixels putting each bubble under its own
+  // coordinate. The backbone looking plain is the anchoring working.
   {
     mode: 'url',
     name: 'pangenome/pggb_bubble_tier',

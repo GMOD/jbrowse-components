@@ -1,11 +1,21 @@
 # Screenshot review: the `bad` backlog of 2026-08-10
 
-The reviewer filed 27 `bad` verdicts on 2026-08-10. Sixteen are answered and
-flipped; **ten are still open**, plus one that another agent resolved. This is
-what was learned, and what each open one needs.
+The reviewer filed 27 `bad` verdicts on 2026-08-10. All 27 are now answered:
+sixteen in the first pass, ten in the second, one resolved by another agent.
+**Nothing in this round is open** — this file is kept only until the verdicts
+are re-reviewed, and should be deleted then.
 
 `website/scripts/screenshot-review-plan.md` is the pipeline doc — read that
 first for mechanics. This file is only the state of this round.
+
+## The verdict flips are NOT in the branch, on purpose
+
+`screenshot-review.json` is rewritten wholesale under a lock the review server
+holds, and a worktree copy does not share that lock — so a branch carrying the
+file also makes the ff-only landing refuse against a reviewer's dirty copy. The
+second pass therefore accumulated its flips as `flip-review.ts` calls and ran
+them from the primary checkout after landing. Do the same: work the figures in
+a worktree, run the flips where the server runs.
 
 ## Two agents worked this backlog at once
 
@@ -31,6 +41,16 @@ re-run the hash triage in the plan doc rather than trusting a stale list.
   in the run's reports and each cut the pileup in half. The tell is a scrollbar
   thumb on the display's own right edge. `heightMode: 'grow'` plus sizing the
   frame off the report is the fix.
+- **A lane can be full and still be the wrong size, in either direction, and
+  only geometry says which.** Two of the second pass's ten turned on this and
+  the run's own reports could not see either. An unsquashed LD panel draws at
+  natural aspect — apex depth is half the drawn width — so `ld/anopheles_2la`'s
+  2La block needed 327 px and had 300, and the block the figure exists to show
+  was cut flat at the lane boundary while the lane read as completely full.
+  Conversely its karyotype lanes were sized off their row COUNT (297 px for 297
+  mosquitoes) when the rows are grouped, so what the lane is read for is three
+  contiguous bands and 140 px draws them 77/32/31 px deep. Compute what the
+  content's shape demands before believing a lane that looks packed.
 - **`LinearMultiRowFeatureDisplay`'s `partitionField` jexl throws through its own
   guard on `bigRmskBed`.** The slot documents
   `"jexl:split(split(feature.name,'#')[1],'/')[0]"` for this exact file type and
@@ -58,64 +78,64 @@ re-run the hash triage in the plan doc rather than trusting a stale list.
   entries — but `labels: { name: "jexl:get(feature,'geneSymbol')" }` makes the
   glyph label itself, and that is a config slot, so it goes in the track's
   `displays`.
+- **"Make this figure on better data" is often a claim the data cannot make, and
+  the check is a count.** Three of the second pass's ten were this shape and two
+  of them ended in a measurement rather than a new dataset. `multisv_rhd_dosage`
+  wanted arcs over a deletion that produces **one** spanning read pair in its
+  homozygous carrier, because it is NAHR between long identical repeats;
+  `alignments/strand_split_coverage` wanted dramatic strandedness that was
+  already in the frame at one column, 0.00 mismatch on 12 forward reads against
+  1.00 on 10 reverse. Both now ship a script in `website/scripts/` that prints
+  the numbers, which is what makes the answer re-checkable rather than an
+  assertion. Count before hunting for data, and again before deleting a figure.
 
-## Still open
+## Answered in the second pass
 
-Ordered roughly by how self-contained each is.
+Ten items, with what each turned into. Every one carries its reasoning in the
+spec it touched; this is the index, not the record.
 
-### `multisv_rhd_dosage` — needs a verdict, probably not a fix
+- **`multisv_rhd_dosage`** — arc band removed
+  (`scripts/count_rhd_mate_pairs.py`). The RHD deletion has no read-pair signal:
+  NAHR between the ~9 kb Rhesus boxes means a junction-spanning fragment aligns
+  collinearly. The band was drawing RHD↔RHCE paralogy instead, busiest in the
+  0/0 control. Coverage lane keeps the 110 px.
+- **`dog10k-fgf4-retrogene-synteny`** — one pill in the grey, three paragraphs
+  for the note's three questions. The reorder is not available: both PAFs are a
+  retrocopy against the PARENT and there is no CFA18-vs-CFA12 alignment.
+- **`ld/anopheles_2la`** — 1472 → 1355, and the 2La block's apex now closes.
+  See the geometry bullet above.
+- **`synteny_self_chry_palindromes`** — now a compose, the boxed 4.8 Mb
+  replotted at the ribbons' own 100 kb minimum as the first part. The pill
+  answers "artifact?" (no) and "exact?" (near — the unpainted gaps in the
+  magenta are where the arms differ).
+- **`alignments/strand_split_coverage`** — the one-sided column boxed
+  (`scripts/rank_strand_asymmetry.py`). The reviewer's viral example is a claim
+  about depth, which `rnaseq/strand_split_coverage` already draws; ONT WGS is
+  strand-balanced by construction.
+- **`multiway_synteny/ecoli_launch_from_selection`** — an app change.
+  `AdvancedLaunchOptions` in `plugins/linear-comparative-view` folds the region
+  launch dialog's four defaulted fields under a disclosure; the panel list above
+  them is what the dialog is for. The pairwise dialog deliberately does not get
+  one. Watch the theme: `MuiAccordionSummary` is painted `palette.tertiary.main`
+  app-wide, so the expand chevron needs the `contrastText` override
+  `AboutWidget` carries or the header ships with no affordance on it.
+- **`pangenome/pggb_bubble_tier`** — force layout tried, rendered, and worse
+  (413 css px below the fold, the callout off-frame, the chain drawn as a line).
+  Measurement recorded in the spec.
+- **`pangenome/hprc_inversion`** — a graph panel is blocked on the
+  reverse-complement edge-endpoint bug, which is *all* an inversion panel would
+  draw. Add one once that lands; the fix is scoped under "Open plugin work".
+- **`pangenome/pggb_untangle_rows`** — kept. A multiway synteny view draws
+  ribbons only between neighbouring panels, so the four-strain comparison has to
+  be assembled from four bands; this puts all four on one reference axis and is
+  the only figure reading the untangle PAF's strand column.
+- **`pangenome/hprc_chm13_allele`** — all three sub-asks answered, two by
+  declining with a measurement (the two-lane repeat comparison is a bp/px
+  difference before it is a repeat difference; the fourth pane is empty because
+  CHM13 entered at rank 61). The red labels are in-app `displayName`s.
 
-A forced regen reproduces the committed PNG **byte for byte**, so the
-`drawInter: false` / `drawLongRange: false` fix from the previous round is in the
-image the reviewer re-flagged. The note asks again why the arcs are not over the
-deletion. Next step is to read the current picture against that claim, not to
-change settings blind.
+## Open plugin work this round identified
 
-### `ld/anopheles_2la` — "improve y-screen real estate"
-
-1472 px: two 300 px LD panels plus 297 and 240 px karyotype lanes. A forced
-regen reports no blank below the content, so nothing is slack. Each lane's
-height has a recorded reason (the Cameroon lane is one pixel per mosquito; the
-Gabon lane's 240 exists so its five heterozygotes are ~17 px rather than an
-11 px sliver on the frame edge). Real saving means shortening an LD triangle,
-which is the figure's subject — measure before trimming.
-
-### `alignments/strand_split_coverage` — better example wanted
-
-"make this screenshot on an example that has dramatic differences between
-strandedness e.g. on viral sample". Needs a dataset with genuine strand
-asymmetry; check what is already hosted before adding anything.
-
-### `dog10k-fgf4-retrogene-synteny` — annotate and reorder
-
-"add red text annotation in the grey area saying what the finding is, how the
-figure was made, and what the three rows are… if needed, rearrange so top is
-reference, and bottom two are the modified samples."
-
-### `synteny_self_chry_palindromes` — explain, and make it multipart
-
-"unclear what 'inversion on top of match' means. is this an alignment artifact?
-truly an exact palindrome? if it is, add a red text box saying what this is.
-make it a multipart figure including the dotplot as first part."
-
-### `multiway_synteny/ecoli_launch_from_selection` — an app change
-
-"can the dialog y-screen real estate be improved by potentially adding an
-'advanced' dropdown?" This is the launch dialog's own layout, not a spec edit.
-
-### The pangenome four
-
-- `pangenome/hprc_inversion` — "if the graphgenomeview would help show this we
-  can consider adding graph panel."
-- `pangenome/hprc_chm13_allele` — a secondary figure showing the L1 density is
-  higher; a repeat track on hg38 too; red labels naming hg38 (top) and
-  T2T-CHM13-v2.0 (bottom). The height half of this note is already done and
-  recorded in the entry.
-- `pangenome/pggb_untangle_rows` — "we have the MAF+multiway synteny view of
-  this exact same data in another tutorial… generally a stronger figure than
-  just this standalone." Consolidation decision, not a rendering one.
-- `pangenome/pggb_bubble_tier` — "might benefit to see bandage force directed
-  graph view of bubbles. backbone just tends to not look good." Note that the
-  standing colour-scheme rule (`website/scripts/screenshot-review-plan.md`) says
-  a graph shown beside a linear view uses reference-position and one shown alone
-  keeps stable-rank; a layout change here has to respect that.
+Nothing new, but one existing item is now load-bearing for a figure: the
+reverse-complement edge endpoints (`screenshot-review-plan.md`, "Open plugin
+work"). `pangenome/hprc_inversion` is the figure waiting on it.
