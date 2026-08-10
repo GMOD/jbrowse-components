@@ -226,7 +226,7 @@ function layerOrderProblems(htmlPath: string) {
     }
   }
   const ours = seen.filter(name => LAYER_ORDER.includes(name))
-  if (ours.join() !== LAYER_ORDER.join()) {
+  if (ours.join(',') !== LAYER_ORDER.join(',')) {
     return [
       `  ${relative(distDir, htmlPath)}: cascade layers are established in the order [${ours.join(', ')}],`,
       `    but styles/layers.css declares [${LAYER_ORDER.join(', ')}]. A layer used before that`,

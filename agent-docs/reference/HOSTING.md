@@ -31,7 +31,7 @@ before regenerating anything that reads it.
 ## Figure store
 
 Adopted 2026-08-06 (`e5af680b69`). `website/static/img/` and
-`products/jbrowse-img/img/` are gitignored; bytes live at
+`products/jbrowse-img`'s `img/` are gitignored; bytes live at
 `s3://jbrowse.org/jb2-figures/<name>.<sha256[0:12]>.<ext>`, and git tracks
 `figures.lock` (`<path> <WxH> <bytes> <sha256>`, sorted). CLI:
 `website/scripts/figures.ts` (`pnpm figures`, `:pull`, `:push`).
