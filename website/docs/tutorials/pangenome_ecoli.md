@@ -999,9 +999,6 @@ and edge counts. That is the trade in one picture, and it is why the two graphs
 are worth building side by side: browse the rGFA whole-genome, and open the pggb
 graph where you want every base.
 
-When the graph is too large to index, cut a window offline and open that file
-instead, [below](#a-window-as-a-file).
-
 ### A window as a file
 
 With no index, **Add → Graph genome view** takes a GFA by file or URL. This is
@@ -1072,6 +1069,24 @@ holds an event is a property of the graph, not of the window you asked for.
 
 <Figure caption="The extracted file opened beside a linear view of the same locus, anchored on the graph's K12 path so both panels share an axis and the Depth colors. The green-to-yellow step where the fifth strain rejoins the shared sequence sits at the same x in both, and the ringed 93 bp node is the one whose second link falls outside the extracted window." src="/img/pangenome/local_subgraph.png" />
 
+A collapsed repeat is where `-E` fails outright rather than merely growing, and
+there `-d` is the answer. The graph folds a repeat's copies onto one run of
+segments, so `-E` walks out of the window to every copy on every chromosome: at
+the 16S rRNA gene `rrsB` it returns tens of thousands of segments for a 500 bp
+cut, where `-d 500` returns six.
+
+```bash
+in_pggb bash -c "odgi extract -i /data/$og -r K12#1#chr:4166800-4167300 -d 500 -o - \
+  | odgi sort -i - -o - -O \
+  | odgi view -i - -g" > ecoli_pggb_rrna.gfa
+```
+
+`odgi paths -L` on that cut lists nine path intervals over those six segments,
+one per visit and named for where the visit starts: two copies each in Sakai,
+CFT073, NCTC86 and IAI39, one in K12. Nine locations across five chromosomes are
+one run of segments, which is the collapse the depth curve reads as a spike and
+[untangle draws in coordinate space](#the-same-picture-read-out-of-the-graph).
+
 ### Drawing the haplotype paths
 
 A P line is a walk: the ordered list of segments one strain takes through the
@@ -1123,33 +1138,6 @@ near-black.
 
 <Figure caption="The same IS5 bubble as the index figure above, cut as a file so its P lines survive. Top, the interval in K12 coordinates. Bottom, the bubble with the strain paths drawn and the nodes grey: one arm is the 1.2 kb element, the other the deletion edge past it, drawn broken. Four strokes run along that arc, and the missing one is K12." src="/img/pangenome/pggb_haplotype_paths.png" />
 
-### A collapsed repeat
-
-Where a sequence repeats, the graph folds the copies onto one run of segments,
-and a path walks that run once per copy. `odgi extract` then returns one path
-interval per visit, named for where the visit starts, so the copies stay
-distinguishable.
-
-Cut the 16S rRNA gene `rrsB` with `-d`, which expands by bp, rather than the
-`-E` used above. `-E` takes every node between the first and last in the range,
-and these segments are shared by rRNA copies across all five chromosomes, so it
-walks out to every one of them and returns tens of thousands of segments for a
-500 bp window:
-
-```bash
-in_pggb bash -c "odgi extract -i /data/$og -r K12#1#chr:4166800-4167300 -d 500 -o - \
-  | odgi sort -i - -o - -O \
-  | odgi view -i - -g" > ecoli_pggb_rrna.gfa
-```
-
-The cut is six segments, and `odgi paths -L` on it lists nine path intervals
-over them: two copies each in Sakai, CFT073, NCTC86 and IAI39, one in K12. That
-is the collapse stated directly: nine locations across five chromosomes are one
-run of segments. The picture of it is
-[the untangle figure above](#the-same-picture-read-out-of-the-graph), which is
-the same operon in coordinate space; the graph drawing of a six-node chain adds
-nothing to the list.
-
 ## Reproduce it end to end
 
 [`build_ecoli_pangenome_graph.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_ecoli_pangenome_graph.sh)
@@ -1166,8 +1154,8 @@ It downloads the RefSeq genomes, runs pggb, converts the wfmash PAF,
 `odgi untangle`, both VCF tiers, the MAF, `odgi similarity`, `odgi depth` and
 `odgi pav` into the projections above, downloads JBrowse, and writes a
 `config.json` with the assemblies, per-strain gene tracks, the graph-derived
-tracks, and a default session. It also writes the `odgi viz` raster and one cut
-GFA per graph-view figure on this page: `ecoli_pggb_subgraph.gfa`,
+tracks, and a default session. It also writes the `odgi viz` raster and every
+cut GFA this page opens as a file: `ecoli_pggb_subgraph.gfa`,
 `ecoli_pggb_is5.gfa` and `ecoli_pggb_rrna.gfa` out of odgi, then
 `ecoli_rgfa_slice.gfa`, `ecoli_paa_subgraph.gfa` and the rGFA tabix indexes
 behind the segments track out of the cactus image, which is where minigraph and
