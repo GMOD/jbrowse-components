@@ -77,3 +77,21 @@ noticing in a diff.
 | type 'RowRectInstance' is outside the supported scalar subset | 1 | `rowRectVertex` |
 | type 'VsOut' is outside the supported scalar subset | 1 | `arcDistance` |
 | vec2 element type 'u32' is outside the supported scalar subset | 1 | `decodeTriangular` |
+
+## Exported, but nothing imports it
+
+An export costs an import edge, a generated file and a parity test, so one
+no production code reads is unpaid-for — usually because a consumer was
+refactored and the twin was left behind. **Not automatically wrong**: it may
+still be a genuine shared rule reached from inside another generated file,
+or a deliberate test oracle. Reported rather than enforced for exactly that
+reason; decide per row, and delete the export only if the shader-side rule
+is no longer shared with anything.
+
+| Export | Imported by |
+| --- | --- |
+| `extendToMinWidthPx` | tests only — `hpmathParity.test.ts`, `rectSpanParity.test.ts` |
+| `frequencyAlpha` | tests only — `alphaShaderParity.test.ts` |
+| `normalizeScore` | tests only — `normalizeScoreParity.test.ts` |
+| `sBlend` | tests only — `syntenyShaderParity.test.ts` |
+| `yCurve` | tests only — `syntenyShaderParity.test.ts` |

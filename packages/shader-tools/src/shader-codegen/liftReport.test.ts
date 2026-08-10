@@ -1,5 +1,6 @@
 import {
   assertJsSkipsResolve,
+  collectExportUses,
   collectSkips,
   emitLiftReport,
   refusalBucket,
@@ -119,6 +120,88 @@ describe('js-skip resolution', () => {
         ['b.slang', 'f', 'a different reason'],
       ])
     }).toThrow(/declined twice, by a\.slang and b\.slang/)
+  })
+})
+
+describe('who imports an export', () => {
+  const scan1 = [scan('a.slang', [fn('used_0'), fn('testOnly_0')])]
+  const files = [
+    {
+      path: 'plugins/x/src/Renderer.ts',
+      text: "import { used } from './a.js.generated.ts'\n",
+    },
+    {
+      path: 'plugins/x/src/parity.test.ts',
+      text: "import { used, testOnly } from './a.js.generated.ts'\n",
+    },
+  ]
+
+  test('separates production importers from test-only ones', () => {
+    const uses = collectExportUses(files, new Set(['used', 'testOnly']))
+    expect(uses.get('used')!.production).toStrictEqual([
+      'plugins/x/src/Renderer.ts',
+    ])
+    expect(uses.get('testOnly')!.production).toStrictEqual([])
+    expect(uses.get('testOnly')!.test).toStrictEqual([
+      'plugins/x/src/parity.test.ts',
+    ])
+  })
+
+  test('counts a re-export and an aliased import', () => {
+    // `labelConstants.ts` is a one-line re-export of a twin, and that is a real
+    // consumer; `import { x as y }` names the export on the LEFT.
+    const uses = collectExportUses(
+      [
+        {
+          path: 'packages/core/src/reexport.ts',
+          text: "export { textWidth } from './insertionWidth.generated.ts'\n",
+        },
+        {
+          path: 'packages/core/src/alias.ts',
+          text: "import { drawnRowHeightPx as h } from '@jbrowse/render-core/shaders/rowRect'\n",
+        },
+      ],
+      new Set(['textWidth', 'drawnRowHeightPx']),
+    )
+    expect(uses.get('textWidth')!.production).toHaveLength(1)
+    expect(uses.get('drawnRowHeightPx')!.production).toHaveLength(1)
+  })
+
+  // The module path is deliberately not matched: consumers reach a twin both
+  // directly and through a package exports map that hides the generated file.
+  test('does not require the import path to look generated', () => {
+    const uses = collectExportUses(
+      [
+        {
+          path: 'plugins/x/src/R.ts',
+          text: "import { snapBoxHeightPx } from '@jbrowse/render-core/shaders/hpmath'\n",
+        },
+      ],
+      new Set(['snapBoxHeightPx']),
+    )
+    expect(uses.get('snapBoxHeightPx')!.production).toHaveLength(1)
+  })
+
+  test('lists an unimported export in the report, with what does use it', () => {
+    const out = emitLiftReport(
+      scan1,
+      new Set(['used', 'testOnly']),
+      new Map(),
+      collectExportUses(files, new Set(['used', 'testOnly'])),
+    )
+    const section = out.split('## Exported, but nothing imports it')[1]!
+    expect(section).toContain('`testOnly`')
+    expect(section).toContain('parity.test.ts')
+    expect(section).not.toContain('`used`')
+  })
+
+  // An empty map means "consumers were not scanned", which a path-scoped build
+  // does not do — it must not read as "every export is dead".
+  test('says nothing when consumers were not measured', () => {
+    const out = emitLiftReport(scan1, new Set(['used']), new Map())
+    expect(out.split('## Exported, but nothing imports it')[1]).toContain(
+      '_None._',
+    )
   })
 })
 

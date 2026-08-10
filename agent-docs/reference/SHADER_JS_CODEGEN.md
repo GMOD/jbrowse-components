@@ -9,6 +9,13 @@ The *why*, the export table, and everything deliberately not built are
 [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-scalar-only.md).
 Read that first; this file is the how-to and assumes it.
 
+It also reports **exports nothing imports**. That one is deliberately a line in
+a report and not a build gate: every candidate for a gate turned out to resolve
+to "leave it" — a rule still shared through another generated file
+(`extendToMinWidthPx`, reached from inside `rectSpanPx`'s twin), or a deliberate
+test oracle (`sBlend`, `yCurve`). A check whose findings all end in a
+suppression teaches people to suppress.
+
 **The survey is no longer a thing you run — it is generated.**
 [reference/SHADER_LIFT_INVENTORY.md](SHADER_LIFT_INVENTORY.md) is written by
 every full `pnpm gen:shaders`, and its Candidates table is the standing answer to

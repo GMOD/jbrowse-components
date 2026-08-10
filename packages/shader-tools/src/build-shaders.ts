@@ -52,6 +52,7 @@ import {
 } from './shader-codegen/codegen.ts'
 import {
   assertJsSkipsResolve,
+  collectExportUses,
   collectSkips,
   emitLiftReport,
 } from './shader-codegen/liftReport.ts'
@@ -844,9 +845,28 @@ async function main() {
       })),
     )
     assertJsSkipsResolve(SCANS, EXPORTED, skips)
+    // Who imports each twin. A whole-tree read, so it belongs with the other
+    // whole-tree claims here rather than in the per-file compile: consumers of
+    // a module-authored export live anywhere, and `walk` already skips
+    // node_modules, dist, esm and every dotted directory (agent worktrees
+    // included).
+    const consumers = [
+      ...walk(PROJECT_ROOT, '.ts'),
+      ...walk(PROJECT_ROOT, '.tsx'),
+    ]
+      .filter(p => !p.endsWith('.generated.ts'))
+      .map(p => ({
+        path: path.relative(PROJECT_ROOT, p),
+        text: readFileSync(p, 'utf8'),
+      }))
     writeFileSync(
       path.join(PROJECT_ROOT, LIFT_REPORT_PATH),
-      emitLiftReport(SCANS, EXPORTED, skips),
+      emitLiftReport(
+        SCANS,
+        EXPORTED,
+        skips,
+        collectExportUses(consumers, EXPORTED),
+      ),
     )
     console.log(`  ok: ${LIFT_REPORT_PATH}`)
   } else {

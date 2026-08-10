@@ -9,8 +9,8 @@
 //
 // So the sweep is a build artifact. Every full `pnpm gen:shaders` reads back the
 // WGSL it just compiled, parses each function with the same parser the emitter
-// uses, and writes what it found. The three sections answer three questions a
-// reader actually has:
+// uses, and writes what it found. The sections answer the questions a reader
+// actually has:
 //
 //   - What could be lifted and has not been? (`Candidates` — should stay empty;
 //     a row appearing in the diff is the signal.)
@@ -19,6 +19,11 @@
 //   - What is outside the subset, and what is blocking it? (`Outside the
 //     subset` — this is the emitter's coverage boundary, and it moves only when
 //     someone moves it.)
+//   - What is exported that nothing reads? (`Exported, but nothing imports it`
+//     — reported, deliberately NOT enforced. Every candidate for a gate turned
+//     out to resolve to "leave it": a rule still shared through another
+//     generated file, or a deliberate test oracle. A check whose findings all
+//     end in a suppression teaches people to suppress.)
 
 import { demangle } from './slangcMangling.ts'
 
@@ -77,6 +82,60 @@ export function collectSkips(
  * exports per shader listed all fourteen of them as unexported candidates.
  */
 export type ExportedNames = ReadonlySet<string>
+
+/** Where an exported name is imported: production files, and test files. */
+export interface ExportUse {
+  production: string[]
+  test: string[]
+}
+
+const isTestFile = (p: string) => /\.test\.[cm]?[jt]sx?$|__tests__\//.test(p)
+
+/**
+ * Which exported names each TypeScript file imports or re-exports.
+ *
+ * Matched on the specifier list of any `import {…} from` / `export {…} from`,
+ * **without filtering by module path**, because consumers reach a twin two ways:
+ * directly (`'../passes/shaders/rect.js.generated.ts'`) and through a package
+ * exports map that hides it (`'@jbrowse/render-core/shaders/hpmath'`). Requiring
+ * "generated" in the path missed every consumer of the second kind, which is
+ * most of them.
+ *
+ * The cost is that a same-named import from somewhere unrelated counts as a
+ * use. That direction is the safe one — it under-reports rather than accusing a
+ * live export of being dead — and this drives a line in a report, not a gate.
+ */
+export function collectExportUses(
+  files: readonly { path: string; text: string }[],
+  exported: ExportedNames,
+) {
+  const uses = new Map<string, ExportUse>()
+  for (const name of exported) {
+    uses.set(name, { production: [], test: [] })
+  }
+  for (const file of files) {
+    const seen = new Set<string>()
+    for (const m of file.text.matchAll(
+      /(?:^|\n)\s*(?:import|export)\s+(?:type\s+)?\{([^}]*)\}\s*from\s*['"]/g,
+    )) {
+      for (const part of m[1]!.split(',')) {
+        // `x as y` — the export is the name on the left.
+        const name = part
+          .trim()
+          .split(/\s+as\s+/)[0]!
+          .trim()
+        if (uses.has(name)) {
+          seen.add(name)
+        }
+      }
+    }
+    for (const name of seen) {
+      const u = uses.get(name)!
+      ;(isTestFile(file.path) ? u.test : u.production).push(file.path)
+    }
+  }
+  return uses
+}
 
 /** Signature as the report prints it, e.g. `(f32, f32) -> f32`. */
 function signatureOf(fn: WgslFn) {
@@ -186,6 +245,7 @@ export function emitLiftReport(
   scans: readonly ShaderScan[],
   exported: ExportedNames,
   skips: ReadonlyMap<string, ResolvedSkip>,
+  uses: ReadonlyMap<string, ExportUse> = new Map(),
 ): string {
   const sorted = [...scans].sort((a, b) => a.shader.localeCompare(b.shader))
   const fns = byFunction(sorted)
@@ -224,6 +284,21 @@ export function emitLiftReport(
         .slice(0, 6)
         .map(n => `\`${n}\``)
         .join(', ') + (names.size > 6 ? ', …' : ''),
+    ])
+
+  // Only meaningful when the caller actually scanned for consumers; an empty
+  // map means "not measured", not "nothing is used".
+  const unusedRows = [...uses]
+    .filter(([, u]) => u.production.length === 0)
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([name, u]) => [
+      `\`${name}\``,
+      u.test.length === 0
+        ? 'nothing'
+        : `tests only — ${u.test
+            .map(p => `\`${p.replace(/^.*\//, '')}\``)
+            .sort()
+            .join(', ')}`,
     ])
 
   const exportedCount = exported.size
@@ -274,6 +349,18 @@ export function emitLiftReport(
     'noticing in a diff.',
     '',
     ...table(['Refused because', 'Functions', 'For example'], refusalRows),
+    '',
+    '## Exported, but nothing imports it',
+    '',
+    'An export costs an import edge, a generated file and a parity test, so one',
+    'no production code reads is unpaid-for — usually because a consumer was',
+    'refactored and the twin was left behind. **Not automatically wrong**: it may',
+    'still be a genuine shared rule reached from inside another generated file,',
+    'or a deliberate test oracle. Reported rather than enforced for exactly that',
+    'reason; decide per row, and delete the export only if the shader-side rule',
+    'is no longer shared with anything.',
+    '',
+    ...table(['Export', 'Imported by'], unusedRows),
     '',
   ].join('\n')
 }
