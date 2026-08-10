@@ -232,9 +232,12 @@ frame. `LinearMultiRowFeatureDisplay` shipped exactly that bug. A body reusing
 body above does.
 
 The Y axis runs 0 (top) to `model.height` (bottom), same as on-screen.
-`buildRenderBlocks(view.visibleRegions)` from `@jbrowse/render-core/renderBlock`
-gives `{ startPx, endPx }` per region, mapping genomic coordinates into export
-pixels; `MultiRegionDisplayMixin` also exposes a `renderBlocks` getter.
+Horizontal placement comes from `renderBlocks`, which gives `{ startPx, endPx }`
+per region: take it off the body's props — `renderDisplaySvg` resolves
+`buildRenderBlocks(view.visibleRegions)` once, for the same reason it resolves
+`canvasWidth` — rather than calling `buildRenderBlocks` again yourself.
+(`MultiRegionDisplayMixin` exposes a `renderBlocks` getter of the same
+expression, for the on-screen path.)
 
 Clip-path ids must be scoped by the owning model's `.id` — SVG ids are
 document-global, and a duplicate renders the second group unclipped.
