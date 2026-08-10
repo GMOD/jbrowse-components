@@ -249,6 +249,19 @@ const cppLiteral = (type: string, v: number) =>
  * of one generator is the same drift this project exists to remove, and it
  * would fail as a mismatch on every row rather than as an obvious bug.
  */
+/**
+ * Draws for one function, scaled by how many parameters it has.
+ *
+ * A flat count spends the same effort on `ldRSquared(r)` — where 400 draws
+ * saturate a 24-value pool sixteen times over — as on
+ * `showChevron(bool, f32, f32, u32, u32, u32, f32, f32)`, whose input space is
+ * eight pools wide. The space grows exponentially and this compensates
+ * linearly, which is not coverage and is not claimed to be; it just stops the
+ * thinnest-sampled functions being the ones with the most room to hide a bug.
+ */
+export const drawsFor = (fn: JsExportFn, base: number) =>
+  base * Math.max(1, fn.paramTypes.length)
+
 export function buildOracleMain(
   fns: readonly JsExportFn[],
   cppNames: ReadonlyMap<string, string>,
@@ -292,7 +305,7 @@ export function buildOracleMain(
           `pool_${fn.name}_${i}[] = {${values.join(', ')}};`,
       )
     }
-    lines.push(`  for (int d = 0; d < ${draws}; d++) {`)
+    lines.push(`  for (int d = 0; d < ${drawsFor(fn, draws)}; d++) {`)
     // Each argument is drawn ONCE into a local, then both printed and passed.
     // Drawing inline at each use would advance the generator between the two,
     // so every row would report arguments the call never saw.

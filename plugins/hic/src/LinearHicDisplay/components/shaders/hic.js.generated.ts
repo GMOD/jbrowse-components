@@ -5,16 +5,23 @@
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
 function _clamp(x: number, lo: number, hi: number) {
-  const above = x > lo ? x : lo
-  return above < hi ? above : hi
+  return _min(_max(x, lo), hi)
+}
+
+function _max(a: number, b: number) {
+  return a > b ? a : b
+}
+
+function _min(a: number, b: number) {
+  return a < b ? a : b
 }
 
 export function mapHicCount(count: number, colorMaxScore: number, useLogScale: boolean): number {
   let t: number
   if (useLogScale) {
-    t = (Math.log2(Math.max(count, 1.0)) / Math.log2(Math.max(colorMaxScore, 2.0)))
+    t = (Math.log2(_max(count, 1.0)) / Math.log2(_max(colorMaxScore, 2.0)))
   } else {
-    t = (count / Math.max(colorMaxScore, 0.00100000004749745))
+    t = (count / _max(colorMaxScore, 0.00100000004749745))
   }
   return _clamp(t, 0.0, 1.0)
 }

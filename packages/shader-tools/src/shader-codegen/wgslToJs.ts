@@ -698,8 +698,6 @@ const MATH_BUILTINS: Record<string, string> = {
   floor: 'Math.floor',
   log: 'Math.log',
   log2: 'Math.log2',
-  max: 'Math.max',
-  min: 'Math.min',
   pow: 'Math.pow',
   sign: 'Math.sign',
   sqrt: 'Math.sqrt',
@@ -709,6 +707,27 @@ const MATH_BUILTINS: Record<string, string> = {
 // Builtins needing a helper. Emitted only when referenced, so the generated
 // file stays readable.
 const HELPERS: Record<string, string> = {
+  // `max`/`min` are helpers rather than `Math.max`/`Math.min` for the same
+  // reason `_clamp` is, and leaving them out of that fix was an incomplete job:
+  // the clamping helpers were made NaN-faithful while every DIRECT `max(...)` in
+  // a shader kept diverging. `perpCoverage`'s `max(0.5 - 0.5 * perpW, 0.0)` on
+  // a degenerate ribbon is 0 on the shader and NaN here.
+  //
+  // The readability cost is real and paid deliberately. A twin the emitter got
+  // wrong is supposed to be reviewable, and `_max(a, b)` reads worse than
+  // `Math.max(a, b)` — but an emitter that is faithful *except for two builtins
+  // on one input class* is a carve-out nobody will remember, and a check with an
+  // accepted failure in it decays into a check nobody runs.
+  _max: [
+    'function _max(a: number, b: number) {',
+    '  return a > b ? a : b',
+    '}',
+  ].join('\n'),
+  _min: [
+    'function _min(a: number, b: number) {',
+    '  return a < b ? a : b',
+    '}',
+  ].join('\n'),
   // Comparisons, not `Math.min`/`Math.max`, and the difference is NaN.
   //
   // WGSL's `clamp` is `min(max(x, lo), hi)`, and slangc spells those as
@@ -729,8 +748,7 @@ const HELPERS: Record<string, string> = {
   // the compiler that also generates the GPU path is the only useful choice.
   _clamp: [
     'function _clamp(x: number, lo: number, hi: number) {',
-    '  const above = x > lo ? x : lo',
-    '  return above < hi ? above : hi',
+    '  return _min(_max(x, lo), hi)',
     '}',
   ].join('\n'),
   // WGSL defines mix as `a*(1-t) + b*t`, not the lerp form `a + (b-a)*t`. The
@@ -764,7 +782,41 @@ const HELPERS: Record<string, string> = {
     '}',
   ].join('\n'),
 }
-const HELPER_BUILTINS = new Set(['clamp', 'mix', 'step', 'fract', 'smoothstep'])
+const HELPER_BUILTINS = new Set([
+  'clamp',
+  'mix',
+  'step',
+  'fract',
+  'smoothstep',
+  'max',
+  'min',
+])
+
+// Helpers that call other helpers. Emission is by reference, so a helper reached
+// only through another one is otherwise left out and the module throws
+// `_min is not defined` at import — which is what happened the moment `_clamp`
+// stopped restating the comparisons and called `_min`/`_max` instead. Stating
+// the rule once is worth four lines of closure over duplicating it.
+const HELPER_DEPS: Record<string, readonly string[]> = {
+  _clamp: ['_min', '_max'],
+}
+
+function withHelperDeps(used: Iterable<string>) {
+  const out = new Set<string>()
+  const add = (h: string) => {
+    if (out.has(h)) {
+      return
+    }
+    out.add(h)
+    for (const dep of HELPER_DEPS[h] ?? []) {
+      add(dep)
+    }
+  }
+  for (const h of used) {
+    add(h)
+  }
+  return out
+}
 
 // Operators where WGSL's semantics and JS's diverge on integers. JS coerces
 // both operands to *signed* int32 and returns a signed int32, so on a `u32`
@@ -1624,7 +1676,7 @@ function emitFromModule(
   // naming them here is that the message can say which .slang identifier to
   // rename.
   const shadowed = [
-    ...[...em.usedHelpers].filter(h => emittedNames.has(h)),
+    ...[...withHelperDeps(em.usedHelpers)].filter(h => emittedNames.has(h)),
     ...[...EMITTER_GLOBALS, ...JS_RESERVED].filter(n => emittedNames.has(n)),
   ]
   if (shadowed.length > 0) {
@@ -1636,7 +1688,9 @@ function emitFromModule(
     )
   }
 
-  const helpers = [...em.usedHelpers].sort().map(h => HELPERS[h]!)
+  const helpers = [...withHelperDeps(em.usedHelpers)]
+    .sort()
+    .map(h => HELPERS[h]!)
   return [
     ...headerLines,
     `// Scalar twins of ${baseName}.slang, transliterated from slangc's WGSL so`,

@@ -4,12 +4,16 @@
 // Scalar twins of chevron.slang, transliterated from slangc's WGSL so
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
+function _max(a: number, b: number) {
+  return a > b ? a : b
+}
+
 export function showChevrons(lineWidthPx: number): boolean {
   return (lineWidthPx >= 20.0)
 }
 
 export function chevronCount(lineWidthPx: number): number {
-  return Math.max(1.0, Math.floor((lineWidthPx / 40.0)))
+  return _max(1.0, Math.floor((lineWidthPx / 40.0)))
 }
 
 export function chevronOffset(span: number, count: number, index: number): number {

@@ -4,15 +4,19 @@
 // Scalar twins of variant.slang, transliterated from slangc's WGSL so
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
+function _max(a: number, b: number) {
+  return a > b ? a : b
+}
+
 export function snapCellEdgePx(xPx: number, canvasWidth: number): number {
   let half = (canvasWidth * 0.5)
   return (Math.floor(((xPx - half) + 0.5)) + half)
 }
 
 export function snappedCellWidthPx(x1Px: number, x2Px: number): number {
-  return Math.max(2.0, (x2Px - x1Px))
+  return _max(2.0, (x2Px - x1Px))
 }
 
 export function drawnCellHeightPx(rowHeight: number): number {
-  return Math.max(rowHeight, 2.0)
+  return _max(rowHeight, 2.0)
 }

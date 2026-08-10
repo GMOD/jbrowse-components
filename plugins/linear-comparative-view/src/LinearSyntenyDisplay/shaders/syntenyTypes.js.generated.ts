@@ -5,8 +5,15 @@
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
 function _clamp(x: number, lo: number, hi: number) {
-  const above = x > lo ? x : lo
-  return above < hi ? above : hi
+  return _min(_max(x, lo), hi)
+}
+
+function _max(a: number, b: number) {
+  return a > b ? a : b
+}
+
+function _min(a: number, b: number) {
+  return a < b ? a : b
 }
 
 export function isCigarKind(kind: number): boolean {
@@ -21,7 +28,7 @@ export function fillShade(colorAlpha: number, displayAlpha: number, isHovered: b
   let a = (colorAlpha * displayAlpha)
   let _t0: number
   if (isHovered) {
-    _t0 = Math.max(a, Math.min((a * 5.0), 0.34999999403953552))
+    _t0 = _max(a, _min((a * 5.0), 0.34999999403953552))
   } else {
     _t0 = a
   }

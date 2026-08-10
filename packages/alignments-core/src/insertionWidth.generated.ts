@@ -4,6 +4,10 @@
 // Scalar twins of insertion.slang, transliterated from slangc's WGSL so
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
+function _min(a: number, b: number) {
+  return a < b ? a : b
+}
+
 export function textWidth(num: number): number {
   if ((num < 10)) {
     return 16.0
@@ -38,7 +42,7 @@ export function insertionBarWidthPx(length: number, pxPerBp: number, featHeight:
     return textWidth(length)
   }
   if (isLong) {
-    return Math.min(5.0, (insWPx / 3.0))
+    return _min(5.0, (insWPx / 3.0))
   }
   return 1.0
 }

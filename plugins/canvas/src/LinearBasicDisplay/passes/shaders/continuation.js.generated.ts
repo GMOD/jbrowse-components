@@ -4,6 +4,10 @@
 // Scalar twins of continuation.slang, transliterated from slangc's WGSL so
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
+function _max(a: number, b: number) {
+  return a > b ? a : b
+}
+
 export function markerDirection(screenStrand: number, edgeSide: number): number {
   let _t0: number
   if ((screenStrand == 0.0)) {
@@ -15,5 +19,5 @@ export function markerDirection(screenStrand: number, edgeSide: number): number 
 }
 
 export function strandMatchesEdge(screenStrand: number, edgeSide: number): number {
-  return Math.max(0.0, (markerDirection(screenStrand, edgeSide) * edgeSide))
+  return _max(0.0, (markerDirection(screenStrand, edgeSide) * edgeSide))
 }

@@ -115,6 +115,43 @@ describe('NaN through the clamping helpers', () => {
     expect(clamp(5)).toBe(1)
   })
 
+  test('a direct max/min returns the bound, as the shader does', () => {
+    // The gap the clamp fix left behind: the HELPERS were made NaN-faithful
+    // while every direct `max(...)` in a shader body still went through
+    // `Math.max`. `perpCoverage`'s `max(0.5 - 0.5 * perpW, 0.0)` on a
+    // degenerate ribbon is 0 on the shader and was NaN here.
+    const mx = evaluate(
+      emit(`fn f_0( x_0 : f32) -> f32 { return max(x_0, 0.0f); }`, ['f']),
+      'f',
+    )
+    expect(mx(Number.NaN)).toBe(0)
+    expect(mx(-3)).toBe(0)
+    expect(mx(3)).toBe(3)
+
+    const mn = evaluate(
+      emit(`fn f_0( x_0 : f32) -> f32 { return min(x_0, 1.0f); }`, ['f']),
+      'f',
+    )
+    expect(mn(Number.NaN)).toBe(1)
+    expect(mn(5)).toBe(1)
+    expect(mn(0.5)).toBe(0.5)
+  })
+
+  test('a helper reached only through another helper is still emitted', () => {
+    // `_clamp` calls `_min`/`_max` rather than restating the comparisons, and
+    // helpers are emitted by reference — so without dependency closure the
+    // module throws `_min is not defined` at import, which is exactly what the
+    // first version of this did.
+    const out = emit(
+      `fn f_0( x_0 : f32) -> f32 { return clamp(x_0, 0.0f, 1.0f); }`,
+      ['f'],
+    )
+    expect(out).toContain('function _clamp')
+    expect(out).toContain('function _min')
+    expect(out).toContain('function _max')
+    expect(evaluate(out, 'f')(Number.NaN)).toBe(0)
+  })
+
   test('smoothstep on a degenerate edge pair does not go NaN', () => {
     // `e0 == e1` makes the ratio 0/0. Reachable: `vertCoverage(20, 20, 0)`,
     // which is what the differential oracle failed on.

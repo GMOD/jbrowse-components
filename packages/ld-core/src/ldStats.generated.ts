@@ -5,27 +5,34 @@
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
 function _clamp(x: number, lo: number, hi: number) {
-  const above = x > lo ? x : lo
-  return above < hi ? above : hi
+  return _min(_max(x, lo), hi)
+}
+
+function _max(a: number, b: number) {
+  return a > b ? a : b
+}
+
+function _min(a: number, b: number) {
+  return a < b ? a : b
 }
 
 export function dprimeFinalize(D: number, pA: number, pB: number, signedLD: boolean): number {
   let qA = (1.0 - pA)
   let qB = (1.0 - pB)
   if ((D > 0.0)) {
-    let _t0 = Math.min((pA * qB), (qA * pB))
+    let _t0 = _min((pA * qB), (qA * pB))
     if ((_t0 > 0.0)) {
-      return Math.min(1.0, (D / _t0))
+      return _min(1.0, (D / _t0))
     }
   } else {
     if ((D < 0.0)) {
-      let _t1 = Math.min((pA * pB), (qA * qB))
+      let _t1 = _min((pA * pB), (qA * qB))
       if ((_t1 > 0.0)) {
         let _t2: number
         if (signedLD) {
-          _t2 = Math.max(-1.0, (D / _t1))
+          _t2 = _max(-1.0, (D / _t1))
         } else {
-          _t2 = Math.min(1.0, (Math.abs(D) / _t1))
+          _t2 = _min(1.0, (Math.abs(D) / _t1))
         }
         return _t2
       }

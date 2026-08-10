@@ -4,6 +4,14 @@
 // Scalar twins of alignmentsUniforms.slang, transliterated from slangc's WGSL so
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
+function _max(a: number, b: number) {
+  return a > b ? a : b
+}
+
+function _min(a: number, b: number) {
+  return a < b ? a : b
+}
+
 export function frequencyAlpha(base: number, freq: number): number {
   return (base + (freq * (1.0 - base)))
 }
@@ -26,7 +34,7 @@ export function frequencyFadeGate(base: number, freq: number, filterByFrequency:
 
 export function arcYFraction(yBp: number, arcsYDomainBp: number, useLog: boolean): number {
   if (useLog) {
-    return (Math.log2(Math.max(1.0, (yBp))) / Math.log2(Math.max(2.0, arcsYDomainBp)))
+    return (Math.log2(_max(1.0, (yBp))) / Math.log2(_max(2.0, arcsYDomainBp)))
   }
   let _t0: number
   if ((arcsYDomainBp > 0.0)) {
@@ -38,13 +46,13 @@ export function arcYFraction(yBp: number, arcsYDomainBp: number, useLog: boolean
 }
 
 export function arcYOffsetPx(yBp: number, arcsYDomainBp: number, useLog: boolean, availH: number): number {
-  return Math.min(availH, (arcYFraction(yBp, arcsYDomainBp, useLog) * availH))
+  return _min(availH, (arcYFraction(yBp, arcsYDomainBp, useLog) * availH))
 }
 
 export function arcColorSlot(idx: number): number {
-  return Math.min(idx, 8)
+  return _min(idx, 8)
 }
 
 export function linkedReadColorSlot(idx: number): number {
-  return Math.min(idx, 7)
+  return _min(idx, 7)
 }

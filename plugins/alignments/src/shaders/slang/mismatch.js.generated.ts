@@ -4,6 +4,10 @@
 // Scalar twins of mismatch.slang, transliterated from slangc's WGSL so
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
+function _min(a: number, b: number) {
+  return a < b ? a : b
+}
+
 export function qualityFade(qual: number, enabled: boolean): number {
   let _t0: boolean
   if (enabled) {
@@ -12,7 +16,7 @@ export function qualityFade(qual: number, enabled: boolean): number {
     _t0 = false
   }
   if (_t0) {
-    return Math.min(1.0, (qual / 50.0))
+    return _min(1.0, (qual / 50.0))
   }
   return 1.0
 }
