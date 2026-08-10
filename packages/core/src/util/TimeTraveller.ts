@@ -3,7 +3,7 @@ import {
   applySnapshot,
   getEnv,
   getSnapshot,
-  onSnapshot,
+  onPatch,
   resolvePath,
   types,
 } from '@jbrowse/mobx-state-tree'
@@ -39,7 +39,6 @@ const TimeTraveller = types
     let snapshotDisposer: IDisposer | undefined
     let skipNextUndoState = false
     let debounceTimer: ReturnType<typeof setTimeout> | undefined
-    let pendingSnapshot: unknown
 
     return {
       stopTrackingUndo() {
@@ -91,12 +90,21 @@ const TimeTraveller = types
           clearTimeout(debounceTimer)
           debounceTimer = undefined
         }
-        pendingSnapshot = undefined
         skipNextUndoState = false
         self.history = []
         self.undoIdx = -1
 
-        snapshotDisposer = onSnapshot(targetStore, snapshot => {
+        // onPatch, not onSnapshot: this only needs to know *that* the target
+        // changed, and the snapshot is taken once per debounce window below.
+        // onSnapshot would serialize the whole target on every single change to
+        // hand the callback a snapshot we then throw away — debouncing the
+        // handler does not debounce that, because MST has to build the snapshot
+        // to call the handler at all. Measured on a LinearGenomeView drag, this
+        // was the only listener in the app firing every frame, re-serializing
+        // the entire session ~120 times per second to record it ~3 times.
+        // Patches fire synchronously on the same changes, so the flag handling
+        // below keeps its original ordering.
+        snapshotDisposer = onPatch(targetStore, () => {
           if (self.notTrackingUndo) {
             return
           }
@@ -113,13 +121,17 @@ const TimeTraveller = types
             return
           }
 
-          pendingSnapshot = snapshot
           if (debounceTimer) {
             clearTimeout(debounceTimer)
           }
           debounceTimer = setTimeout(() => {
             debounceTimer = undefined
-            this.addUndoState(pendingSnapshot)
+            // read the target's current state rather than a snapshot captured
+            // per change: any change inside the window resets this timer, so
+            // when it does fire the two agree
+            if (targetStore) {
+              this.addUndoState(getSnapshot(targetStore))
+            }
           }, 300)
         })
 
