@@ -26,7 +26,7 @@ Exploratory concepts that are *not* committed work live in
 | [Widen `CI_GATE_SUITES`](#widen-ci_gate_suites) | browser tests, CI | measure before adding; say why the alignments pair is safe |
 | [Attribute the TIMEOUT mode](#attribute-the-browser-test-timeout-failure-mode) | browser tests | report the display's state, don't extend the wait |
 | [Make the webgl blank verdict readable](#make-the-webgl-blank-verdict-readable) | browser tests | one diagnostic run; never leave it on |
-| [Look at the six AA-ramp commits](#look-at-the-six-aa-ramp-shader-commits--nobody-has) | shaders, GPU | four risks left; hi-C is rendered and cleared |
+| [Look at the six AA-ramp commits](#look-at-the-six-aa-ramp-shader-commits--nobody-has) | shaders, GPU | three risks left; hi-C and the glyphs are cleared |
 | [Report a callout that draws off-frame](#report-a-callout-that-draws-off-frame) | figures | the overlay already reports the unresolvable case |
 | [`partitionField` throws on `bigRmskBed`](#partitionfield-jexl-throws-through-its-own-guard-on-bigrmskbed) | canvas | the per-feature catch is there and not holding |
 | [Render the converted callout specs](#render-the-twenty-specs-whose-callouts-were-converted-to-anchors) | figures | sweep them; five move deliberately |
@@ -146,10 +146,10 @@ must not be left on** — it was measured and refuted as a *fix*
 
 Six rendering commits landed on 2026-08-10 (`f96108bad9`, `75e0db7602`,
 `f082bad29f`, `333477b51c`, `c7ebdf6d9b`, `4261bbfe40`) verified by unit test and
-argument only. **Five have still never been looked at.** `4261bbfe40` has since
-been rendered and cleared (below); `75e0db7602` is a pure refactor with no
-picture to check, so what is actually open is the four ranked risks. The finding
-they share is in
+argument only. **Three have still never been looked at.** `4261bbfe40` and
+`c7ebdf6d9b` have since been rendered and cleared (below); `75e0db7602` is a pure
+refactor with no picture to check, so what is actually open is the three ranked
+risks. The finding they share is in
 [reference/GPU_RENDERING.md](reference/GPU_RENDERING.md#antialiasing-ramps-how-wide-and-where-the-width-comes-from).
 
 Suites exist for every view touched — `synteny.ts`, `grape-peach-synteny.ts`,
@@ -184,16 +184,12 @@ Ranked by how likely the author thought they were to be wrong:
    of each cap rectangle, so ~21% of a dot's quad and ~0% of a long line's; a dot
    at dpr 1 is still +54% net. If the measurement comes back negative the pad is
    still correct, but the levers are the pad width or the blend, not the discard.
-2. **The glyph ramp got narrower** (2–2.83 → 1 device px), so discs and diamonds
-   read crisper. 1px matches every other mark and `SMALL_POINT_MAX_DIAMETER`
-   already routes ≤3px points to crisp squares — but it is a visible change
-   nobody has seen.
-3. **`fillShade` at high opacity.** Hover no longer *reduces* alpha, but for
+2. **`fillShade` at high opacity.** Hover no longer *reduces* alpha, but for
    `a ≥ 0.35` it now leaves alpha untouched and hover shows only as
    `hoverDarken`'s 0.7 on the rgb. Whether that is enough feedback at opacity 1.0
    is a design question, not a correctness one; a small relative boost is the
    alternative.
-4. **`clipLargeBlockToWindow`'s pre-gate assumes the CIGAR's span matches
+3. **`clipLargeBlockToWindow`'s pre-gate assumes the CIGAR's span matches
    `end - start`** — but only on one side. `end < winStart` is the exposed half:
    a malformed CIGAR walking past its declared `end` into the window would be
    dropped. `start > winEnd` is safe whatever the CIGAR does, because the walk
@@ -203,6 +199,29 @@ Ranked by how likely the author thought they were to be wrong:
    so a window falling outside the chosen region collapses them to a point and
    the gate drops nearly everything. The `if (!r0) return undefined` above picks
    an overlapping region, which looks like it makes this unreachable.
+
+**The glyphs (`c7ebdf6d9b`) are done, and the change is an improvement rather
+than merely a change.** The discs go from a wide pale halo around a small core to
+a crisp edge with a tight fringe — still clearly antialiased, not jaggy. The
+magenta index SNP in the locuszoom capture renders as a clean diamond whose
+fringe is the *same width* as the discs beside it, which is the visible form of
+the claim the commit rests on: the diamond's L1 norm carries √2, so a shared
+constant would have left it visibly softer than its neighbours.
+
+What makes it an improvement and not a taste call is that Canvas2D is an
+independent render of the same points, so "closer to Canvas2D" is measurable. On
+`targeted_gwas-manhattan`, against the same canvas2d golden:
+
+| | differing px | excess chroma |
+| --- | --- | --- |
+| old webgl | 4.51% | +11.19% |
+| new webgl | 2.03% | +5.72% |
+
+The over-wide halo was carrying ~11% more colored ink than the CPU render of the
+same points and the new ramp gives back half of it; `compare-backends` now puts
+the pair at 0.23% drift. The goldens also confirm the change is GPU-only on their
+own: canvas2d's `targeted_gwas-manhattan` did not move at all (the stability gate
+kept it) while webgl's moved 0.81%. Goldens re-baselined for both backends.
 
 **hi-C (`4261bbfe40`) is done — it changes nothing visible, and that is provable
 rather than merely observed.** `hic.ts` on `--backend=webgl` passes against the
@@ -224,11 +243,9 @@ discard ever fires. A locus that does hit it would still move nothing visible, b
 the arithmetic above; if you want the branch exercised, assert on it in the
 shader test rather than looking for it in a picture.
 
-Cheapest first for what is left: **glyphs** (`gwas.ts`, `gwas-locuszoom.ts`,
-`wiggle-color.ts` — a pure look change and compare sees it), then **synteny
-hover** (needs a hover interaction and has no oracle), then **dotplot** — the
-only one of the four that is a headed
-perf measurement on a dense plot at dpr 1 rather than a look question.
+Cheapest first for what is left: **synteny hover** (needs a hover interaction and
+has no oracle), then **dotplot** — alone among the three in being a headed perf
+measurement on a dense plot at dpr 1 rather than a look or a code question.
 
 ### Report a callout that draws off-frame
 
