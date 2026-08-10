@@ -5,6 +5,7 @@ import {
   expectCanvasMatch,
   findDisplayPainted,
   hts,
+  volvoxConfigWithTracks,
 } from './util.tsx'
 
 import type { Results } from './util.tsx'
@@ -41,7 +42,7 @@ export async function openMultiSampleVariantDisplay({
   const opts = [{}, { timeout }] as const
   const info = multiSampleVariantDisplayInfo[displayType]
 
-  const result = await createView()
+  const result = await createView(volvoxConfigWithTracks(['volvox_test_vcf']))
   const { view, findByTestId, findByText } = result
   await view.navToLocString('ctgA')
   fireEvent.click(await findByTestId(hts('volvox_test_vcf'), ...opts))

@@ -8,6 +8,7 @@ import {
   findDisplayPainted,
   hts,
   setup,
+  volvoxConfigWithTracks,
 } from './util.tsx'
 
 // `view.tracks[0].displays[0]` is untyped; annotating it makes a getter that
@@ -15,6 +16,16 @@ import {
 import type { MultiWiggleDisplayModel } from '@jbrowse/plugin-wiggle'
 
 setup()
+
+// only the tracks this suite opens, so createView doesn't mount a selector row
+// for the other ~120 - see volvoxConfigWithTracks
+const config = volvoxConfigWithTracks([
+  'volvox_microarray_multi',
+  'volvox_microarray_multi_multirowxy',
+  'volvox_microarray_multi_multirowdensity',
+  'volvox_microarray_multi_multirowline',
+  'mytrack',
+])
 
 beforeEach(() => {
   doBeforeEach()
@@ -24,7 +35,7 @@ const delay = { timeout: 60000 }
 const opts = [{}, delay]
 
 test('open a multibigwig xyplot track', async () => {
-  const { view, findByTestId } = await createView()
+  const { view, findByTestId } = await createView(config)
   view.setNewView(5, 0)
   fireEvent.click(await findByTestId(hts('volvox_microarray_multi'), ...opts))
   expectCanvasMatch(
@@ -33,7 +44,7 @@ test('open a multibigwig xyplot track', async () => {
 }, 60000)
 
 test('open a multibigwig multirowxy track', async () => {
-  const { view, findByTestId } = await createView()
+  const { view, findByTestId } = await createView(config)
   view.setNewView(5, 0)
   fireEvent.click(
     await findByTestId(hts('volvox_microarray_multi_multirowxy'), ...opts),
@@ -44,7 +55,7 @@ test('open a multibigwig multirowxy track', async () => {
 }, 60000)
 
 test('open a multibigwig multirowdensity track', async () => {
-  const { view, findByTestId } = await createView()
+  const { view, findByTestId } = await createView(config)
   view.setNewView(5, 0)
   fireEvent.click(
     await findByTestId(hts('volvox_microarray_multi_multirowdensity'), ...opts),
@@ -55,7 +66,7 @@ test('open a multibigwig multirowdensity track', async () => {
 }, 60000)
 
 test('open a multibigwig multiline track', async () => {
-  const { view, findByTestId } = await createView()
+  const { view, findByTestId } = await createView(config)
   view.setNewView(5, 0)
   fireEvent.click(await findByTestId(hts('mytrack'), ...opts))
   expectCanvasMatch(
@@ -64,7 +75,7 @@ test('open a multibigwig multiline track', async () => {
 }, 60000)
 
 test('open a multibigwig multirowline track', async () => {
-  const { view, findByTestId } = await createView()
+  const { view, findByTestId } = await createView(config)
   view.setNewView(5, 0)
   fireEvent.click(
     await findByTestId(hts('volvox_microarray_multi_multirowline'), ...opts),
@@ -79,7 +90,7 @@ test('open a multibigwig multirowline track', async () => {
 // the handler rides `DisplayChrome`'s prop spread onto the same container the
 // pointer measurement uses, and nothing else in the wiggle family binds one.
 test('right-click offers the row-order sort, and the reset once it has run', async () => {
-  const { view, findByTestId, findByText } = await createView()
+  const { view, findByTestId, findByText } = await createView(config)
   view.setNewView(5, 0)
   fireEvent.click(
     await findByTestId(hts('volvox_microarray_multi_multirowxy'), ...opts),

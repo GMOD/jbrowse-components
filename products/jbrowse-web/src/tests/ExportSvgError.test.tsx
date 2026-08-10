@@ -3,7 +3,14 @@ import './svgExportMocks.ts'
 import { saveAs } from '@jbrowse/core/util/FileSaver'
 import { fireEvent, waitFor } from '@testing-library/react'
 
-import { createView, doBeforeEach, hts, mockConsole, setup } from './util.tsx'
+import {
+  createView,
+  doBeforeEach,
+  hts,
+  mockConsole,
+  setup,
+  volvoxConfigWithTracks,
+} from './util.tsx'
 
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
@@ -24,7 +31,9 @@ const opts = [{}, delay]
 // regenerated while it is up, the only one that can't hide a real crash either.
 async function testExportSvgFails(tracks: string[], expectedError: RegExp) {
   await mockConsole(async () => {
-    const { view, findByTestId, findByText, findAllByText } = await createView()
+    const { view, findByTestId, findByText, findAllByText } = await createView(
+      volvoxConfigWithTracks(tracks),
+    )
 
     view.setNewView(0.1, 1)
     for (const track of tracks) {
