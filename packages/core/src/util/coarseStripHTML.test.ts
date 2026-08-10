@@ -62,11 +62,6 @@ test('handles tags with newlines in attributes', () => {
   ).toBe('Content')
 })
 
-xtest('removes script tags and content', () => {
-  // this is commented because we don't evaluate script anyways, so 'non-issue'
-  expect(coarseStripHTML('<script>alert("test")</script>Text')).toBe('Text')
-})
-
 test('handles multiple consecutive tags', () => {
   expect(coarseStripHTML('</div></div></div>Text<div><div><div>')).toBe('Text')
 })

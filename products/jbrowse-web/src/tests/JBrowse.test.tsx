@@ -76,18 +76,6 @@ test('assembly aliases', async () => {
   expectCanvasMatch(findCanvasIn(display))
 }, 30000)
 
-xtest('nclist track test with long name', async () => {
-  const { view, findByTestId, findByText } = await createView()
-  view.setNewView(6.2, -301)
-  fireEvent.click(await findByTestId(hts('nclist_long_names'), {}, delay))
-
-  await findByText(
-    'This is a gene with a very long name it is crazy abcdefghijklmnopqrstuv...',
-    {},
-    delay,
-  )
-}, 20000)
-
 test('test sharing', async () => {
   jest.mocked(buildShareUrl).mockResolvedValue({
     url: 'http://localhost/?session=share-abc&password=123',

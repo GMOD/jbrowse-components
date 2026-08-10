@@ -10,33 +10,6 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-xtest('opens feature detail from left click', async () => {
-  const { view, findByTestId, findAllByTestId } = await createView()
-  view.setNewView(0.05, 5000)
-  fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), {}, delay))
-
-  view.tracks[0].displays[0].setFeatureIdUnderMouse('test-vcf-604453')
-  fireEvent.click((await findAllByTestId('test-vcf-604453', {}, delay))[0]!)
-  expect(
-    await findByTestId('variant-side-drawer', {}, delay),
-  ).toBeInTheDocument()
-}, 40000)
-
-xtest('open feature detail from right click', async () => {
-  const { view, findByTestId, findAllByTestId, findByText } = await createView()
-  view.setNewView(0.05, 5000)
-  fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), {}, delay))
-  view.tracks[0].displays[0].setFeatureIdUnderMouse('test-vcf-604453')
-
-  fireEvent.contextMenu(
-    (await findAllByTestId('test-vcf-604453', {}, delay))[0]!,
-  )
-  fireEvent.click(await findByText('Open feature details'))
-  expect(
-    await findByTestId('variant-side-drawer', {}, delay),
-  ).toBeInTheDocument()
-}, 40000)
-
 test('widget drawer navigation', async () => {
   const { view, session, findByTestId, findByText } = await createView()
   view.setNewView(0.05, 5000)

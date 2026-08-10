@@ -47,17 +47,6 @@ function standardInitializer() {
   )
 }
 
-const realLocation = window.location
-
-// https://stackoverflow.com/a/60110508/2129219
-function setWindowLoc(loc: string) {
-  // @ts-expect-error
-  // biome-ignore lint/performance/noDelete:
-  delete window.location
-  // @ts-expect-error
-  window.location = new URL(loc)
-}
-
 const FakeViewModel = types.model('FakeView', {
   id: types.identifier,
   type: types.literal('FakeView'),
@@ -104,34 +93,6 @@ test('adds full URL (BAM)', () => {
   expect(widget.trackName).toBe('volvox-sorted.bam')
   expect(widget.isRelativeUrl).toBe(false)
   expect(widget.assembly).toBe('volvox')
-})
-
-xtest('test wrongProtocol returning false', () => {
-  const session = standardInitializer()
-  const { widget } = session
-  widget.setTrackData({
-    uri: 'https://google.com/volvox-sorted.bam',
-    locationType: 'UriLocation',
-  })
-  setWindowLoc('https://google.com')
-
-  expect(widget.wrongProtocol).toBe(false)
-  // @ts-expect-error
-  window.location = realLocation
-})
-
-// broken by jest 30
-xtest('test wrongProtocol returning true', () => {
-  const session = standardInitializer()
-  const { widget } = session
-  widget.setTrackData({
-    uri: 'https://google.com/volvox-sorted.bam',
-    locationType: 'UriLocation',
-  })
-  setWindowLoc('https://google.com')
-  expect(widget.wrongProtocol).toBe(true)
-  // @ts-expect-error
-  window.location = realLocation
 })
 
 test('tests on an view without view.assemblyNames', () => {

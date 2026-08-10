@@ -44,21 +44,6 @@ test(
   timeout + 10_000,
 )
 
-// maxHeight rendering may work differently in new display
-xtest(
-  'test that bam with small max height displays message',
-  async () => {
-    const user = userEvent.setup()
-    const { findByTestId, findAllByText } = await createView()
-    await user.click(
-      await findByTestId(hts('volvox_bam_small_max_height'), ...opts),
-    )
-
-    await findAllByText('Max height reached', ...opts)
-  },
-  timeout + 10_000,
-)
-
 test(
   'test snpcoverage doesnt count snpcoverage',
   async () => {
