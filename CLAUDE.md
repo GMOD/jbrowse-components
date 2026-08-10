@@ -57,6 +57,30 @@ checkout, so ordinary git is yours to use without asking.
   `createRequire(<that>/package.json)` — or run from a package that depends on
   it.
 
+- **With those symlinks, a cross-package `@jbrowse/*` import in the worktree
+  resolves to the _primary checkout's_ source, not yours.** Every workspace
+  package's `exports` points at `./src/*.ts`, and the link node follows out of
+  the symlinked `node_modules` lands in `~/src/jbrowse-components/packages/…`.
+  So a test importing `./Thing.tsx` sees your edit while a test importing
+  `@jbrowse/some-core` does not — the same edit, tested twice, disagreeing, and
+  the package-level one fails locally and passes in CI (or, worse, the reverse).
+  It is not a stale cache; don't chase it as one. To run such a test against
+  your own copy, map the package for that one run rather than editing the shared
+  jest config:
+
+  ```
+  node_modules/.bin/jest <paths> --moduleNameMapper \
+    '{"^@jbrowse/some-core$":"<rootDir>/packages/some-core/src/index.ts",
+      ...the two entries jest.config.js already maps, verbatim}'
+  ```
+
+  The flag replaces `moduleNameMapper` wholesale, so the two entries jest.config
+  already carries have to be repeated or the suites relying on them break. The
+  same resolution gap makes `tsc --noEmit` in a worktree emit TS2307 for every
+  `@jbrowse/*` import (the per-package `node_modules` aren't linked, only the
+  root) — pre-existing noise on untouched files too, so it can't be read as a
+  verdict on your change.
+
 ## MST
 
 - `@jbrowse/mobx-state-tree` is our internal ESM fork; treat it like upstream.
