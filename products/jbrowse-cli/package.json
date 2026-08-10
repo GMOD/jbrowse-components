@@ -41,7 +41,7 @@
     "cli-progress": "^3.12.0",
     "cors": "^2.8.6",
     "express": "^5.2.1",
-    "ixixx": "^3.0.11",
+    "ixixx": "^3.0.12",
     "tmp": "^0.2.7"
   },
   "publishConfig": {
