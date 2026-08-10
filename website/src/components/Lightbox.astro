@@ -157,159 +157,165 @@
 </script>
 
 <style is:global>
-  /* The trigger is a bare button around the image: it must not add a box of its
-     own, so figure/prose image styling still applies to the <img> inside. */
-  .lightbox-trigger {
-    display: block;
-    width: 100%;
-    padding: 0;
-    border: none;
-    background: none;
-    font: inherit;
-    color: inherit;
-    text-align: inherit;
-    cursor: zoom-in;
-  }
-  .lightbox-trigger img {
-    transition: filter 0.15s;
-  }
-  .lightbox-trigger:hover img {
-    filter: brightness(0.92);
-  }
+  /* Global because rehype-lightbox emits the trigger into markdown, so there
+     is no component scope to key it to; in the `widget` layer for the same
+     reason the recipe dialog is — this markup lands inside prose that
+     out-specifies it. See src/styles/layers.css. */
+  @layer widget {
+    /* The trigger is a bare button around the image: it must not add a box of its
+       own, so figure/prose image styling still applies to the <img> inside. */
+    .lightbox-trigger {
+      display: block;
+      width: 100%;
+      padding: 0;
+      border: none;
+      background: none;
+      font: inherit;
+      color: inherit;
+      text-align: inherit;
+      cursor: zoom-in;
+    }
+    .lightbox-trigger img {
+      transition: filter 0.15s;
+    }
+    .lightbox-trigger:hover img {
+      filter: brightness(0.92);
+    }
 
-  /* The page behind a modal <dialog> still scrolls, and locking `body` cannot
-     stop it here: BaseLayout's `html { overflow-x: hidden }` means body's
-     overflow no longer propagates to the viewport. So lock the element that
-     actually scrolls — and reserve the scrollbar's width in both states, or the
-     page jumps sideways by that width as the scrollbar comes and goes. */
-  html {
-    scrollbar-gutter: stable;
-  }
-  html:has(.lightbox[open]) {
-    overflow: hidden;
-  }
+    /* The page behind a modal <dialog> still scrolls, and locking `body` cannot
+       stop it here: BaseLayout's `html { overflow-x: hidden }` means body's
+       overflow no longer propagates to the viewport. So lock the element that
+       actually scrolls — and reserve the scrollbar's width in both states, or the
+       page jumps sideways by that width as the scrollbar comes and goes. */
+    html {
+      scrollbar-gutter: stable;
+    }
+    html:has(.lightbox[open]) {
+      overflow: hidden;
+    }
 
-  .lightbox {
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    max-width: 100vw;
-    max-height: 100vh;
-    margin: 0;
-    padding: 2rem;
-    border: none;
-    background: rgba(0, 0, 0, 0.85);
-  }
-  .lightbox[open] {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .lightbox::backdrop {
-    background: rgba(0, 0, 0, 0.85);
-  }
-  .lightbox-fig {
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    max-width: 96vw;
-    max-height: 92vh;
-  }
-  .lightbox-viewport {
-    position: relative;
-    min-height: 0;
-    border-radius: 6px;
-    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
-  }
-  /* Sized by the image up to the viewport box, then scrolls: a figure taller
-     than the screen stays at full width and legible instead of being shrunk. */
-  .lightbox-scroll {
-    max-height: 80vh;
-    overflow-y: auto;
-    overflow-x: hidden;
-    border-radius: 6px;
-    scrollbar-color: rgba(255, 255, 255, 0.5) rgba(0, 0, 0, 0.3);
-  }
-  .lightbox-scroll:focus-visible {
-    outline: 2px solid #6ab0ff;
-    outline-offset: 2px;
-  }
-  .lightbox-fig:not([data-scrollable]) .lightbox-scroll img {
-    cursor: zoom-out;
-  }
-  .lightbox-scroll img {
-    display: block;
-    max-width: 96vw;
-    height: auto;
-  }
-  /* Fits in one screen (see measure()): scale it down instead of scrolling. */
-  .lightbox-fig[data-fit] .lightbox-scroll img {
-    max-height: 80vh;
-    object-fit: contain;
-  }
-  /* Fades the bottom edge of the figure while there is more below it. */
-  .lightbox-fade {
-    position: absolute;
-    inset: auto 0 0;
-    height: 4rem;
-    border-radius: 0 0 6px 6px;
-    background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.55));
-    opacity: 0;
-    transition: opacity 0.2s;
-    pointer-events: none;
-  }
-  .lightbox-fig[data-scrollable]:not([data-at-end]) .lightbox-fade {
-    opacity: 1;
-  }
-  .lightbox-hint {
-    display: none;
-    margin: 0.6rem 0 0;
-    color: #fff;
-    font-size: 0.85rem;
-  }
-  /* On a scrollable figure the hint holds its space and only its ink goes away
-     at the bottom, so the caption doesn't jump as the reader scrolls. */
-  .lightbox-fig[data-scrollable] .lightbox-hint {
-    display: block;
-    visibility: hidden;
-  }
-  .lightbox-fig[data-scrollable]:not([data-at-end]) .lightbox-hint {
-    visibility: visible;
-  }
-  .lightbox-fig figcaption {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem 1.25rem;
-    align-items: center;
-    justify-content: center;
-    margin-top: 0.85rem;
-    max-width: 900px;
-    color: #fff;
-    font-size: 0.95rem;
-    text-align: center;
-  }
-  .lightbox-links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem 1.25rem;
-    justify-content: center;
-  }
-  .lightbox-open {
-    color: #6ab0ff;
-    font-weight: 600;
-    white-space: nowrap;
-  }
-  .lightbox-close {
-    position: absolute;
-    top: 0.75rem;
-    right: 1.25rem;
-    padding: 0;
-    border: none;
-    background: none;
-    color: #fff;
-    font-size: 2.25rem;
-    line-height: 1;
-    cursor: pointer;
+    .lightbox {
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      max-width: 100vw;
+      max-height: 100vh;
+      margin: 0;
+      padding: 2rem;
+      border: none;
+      background: rgba(0, 0, 0, 0.85);
+    }
+    .lightbox[open] {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .lightbox::backdrop {
+      background: rgba(0, 0, 0, 0.85);
+    }
+    .lightbox-fig {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 96vw;
+      max-height: 92vh;
+    }
+    .lightbox-viewport {
+      position: relative;
+      min-height: 0;
+      border-radius: 6px;
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+    }
+    /* Sized by the image up to the viewport box, then scrolls: a figure taller
+       than the screen stays at full width and legible instead of being shrunk. */
+    .lightbox-scroll {
+      max-height: 80vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      border-radius: 6px;
+      scrollbar-color: rgba(255, 255, 255, 0.5) rgba(0, 0, 0, 0.3);
+    }
+    .lightbox-scroll:focus-visible {
+      outline: 2px solid #6ab0ff;
+      outline-offset: 2px;
+    }
+    .lightbox-fig:not([data-scrollable]) .lightbox-scroll img {
+      cursor: zoom-out;
+    }
+    .lightbox-scroll img {
+      display: block;
+      max-width: 96vw;
+      height: auto;
+    }
+    /* Fits in one screen (see measure()): scale it down instead of scrolling. */
+    .lightbox-fig[data-fit] .lightbox-scroll img {
+      max-height: 80vh;
+      object-fit: contain;
+    }
+    /* Fades the bottom edge of the figure while there is more below it. */
+    .lightbox-fade {
+      position: absolute;
+      inset: auto 0 0;
+      height: 4rem;
+      border-radius: 0 0 6px 6px;
+      background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.55));
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+    }
+    .lightbox-fig[data-scrollable]:not([data-at-end]) .lightbox-fade {
+      opacity: 1;
+    }
+    .lightbox-hint {
+      display: none;
+      margin: 0.6rem 0 0;
+      color: #fff;
+      font-size: 0.85rem;
+    }
+    /* On a scrollable figure the hint holds its space and only its ink goes away
+       at the bottom, so the caption doesn't jump as the reader scrolls. */
+    .lightbox-fig[data-scrollable] .lightbox-hint {
+      display: block;
+      visibility: hidden;
+    }
+    .lightbox-fig[data-scrollable]:not([data-at-end]) .lightbox-hint {
+      visibility: visible;
+    }
+    .lightbox-fig figcaption {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1.25rem;
+      align-items: center;
+      justify-content: center;
+      margin-top: 0.85rem;
+      max-width: 900px;
+      color: #fff;
+      font-size: 0.95rem;
+      text-align: center;
+    }
+    .lightbox-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1.25rem;
+      justify-content: center;
+    }
+    .lightbox-open {
+      color: #6ab0ff;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .lightbox-close {
+      position: absolute;
+      top: 0.75rem;
+      right: 1.25rem;
+      padding: 0;
+      border: none;
+      background: none;
+      color: #fff;
+      font-size: 2.25rem;
+      line-height: 1;
+      cursor: pointer;
+    }
   }
 </style>

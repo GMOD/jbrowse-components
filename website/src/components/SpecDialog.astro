@@ -1,24 +1,22 @@
 ---
-// Behavior and styling for the figure recipe dialog, mounted by BaseLayout so
-// every page has it. The dialogs themselves are emitted next to the figure they
-// belong to (src/lib/spec-recipe/html.ts) — by remark-figure for a doc figure,
-// by gallery.astro for a card — because each carries that figure's own decoded
+// Behavior for the figure recipe dialog, mounted by BaseLayout so every page
+// has it. The dialogs themselves are emitted next to the figure they belong to
+// (src/lib/spec-recipe/html.ts) — by remark-figure for a doc figure, by
+// gallery.astro for a card — because each carries that figure's own decoded
 // session spec. This component owns only the parts that must be identical
-// wherever one appears: the click that opens it, the Copy buttons inside it,
-// and the CSS.
+// wherever one appears: the click that opens it and the Copy buttons inside it.
+//
+// The CSS is in styles/widgets/spec-recipe.css with the rest of the
+// string-emitted markup's styling, imported by BaseLayout. It cannot be scoped
+// here anyway (Astro would key it to this component, which renders none of that
+// markup), and a global block in a component is where it goes to be scoped to
+// whatever page context that component happened to have in mind.
 //
 // The backdrop light-dismiss below is deliberately element-agnostic rather than
 // scoped to `.spec-dialog`. It moved here from DocsLayout, where it also served
 // the api-docs table-cell dialogs; those still get it, and so does any future
 // <dialog> on any page, from one listener rather than a copy per layout. The
 // Lightbox keeps its own richer dismiss (it also closes on an image click).
-//
-// Styles are global rather than scoped to a page's content wrapper: the same
-// markup now renders in `.docs-content` and in a gallery card, and a selector
-// naming either one would silently style the dialog on one page and not the
-// other. Everything inside the dialog is qualified with `.spec-dialog` — not
-// for scoping but for specificity, since the docs `pre` rule would otherwise
-// win over an unqualified `.spec-json` and repaint the code blocks.
 ---
 
 <script>
@@ -93,185 +91,3 @@
     }
   })
 </script>
-
-<style is:global>
-  /* Figure recipe: the trigger beside a figure's live link, and the dialog it
-     opens. Markup comes from src/lib/spec-recipe/html.ts.
-     ------------------------------------------------------------------------
-     Every rule for the dialog's contents is deliberately three classes deep
-     (`.spec-dialog .spec-panel .spec-note`, and so on). Two would read better
-     but would lose on a docs page: Astro compiles DocsLayout's
-     `.docs-content :global(ol)` to `.docs-content[data-astro-cid-…] ol`, and
-     that attribute selector outranks a two-class global rule — the recipe's
-     step list would take the page's list indent and margins instead of its
-     own. The extra class in each chain is a real ancestor the markup always
-     emits, not a duplicated one: `panels()` puts every note, step list and
-     code block inside a `.spec-panel`, and `copyableBlock` puts every `pre`
-     inside a `.spec-copywrap`. */
-  .spec-help {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    margin-left: 0.35rem;
-    padding: 0.2rem;
-    border: none;
-    border-radius: 4px;
-    background: none;
-    color: var(--color-text-muted);
-    cursor: pointer;
-    vertical-align: middle;
-    opacity: 0.65;
-  }
-  .spec-help svg {
-    width: 1rem;
-    height: 1rem;
-    display: block;
-  }
-  .spec-help:hover {
-    background: var(--color-surface);
-    color: var(--color-accent);
-    opacity: 1;
-  }
-  .spec-help:focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 1px;
-    color: var(--color-accent);
-    opacity: 1;
-  }
-  .spec-dialog {
-    width: min(46rem, 92vw);
-    max-height: 85vh;
-    padding: 1.25rem 1.5rem 1.5rem;
-    border: 1px solid var(--color-border);
-    border-radius: 8px;
-    background: #fff;
-    color: var(--color-text);
-  }
-  .spec-dialog::backdrop {
-    background: rgba(0, 0, 0, 0.55);
-  }
-  .spec-dialog .spec-dialog-close-form {
-    float: right;
-    margin: -0.5rem -0.75rem 0 0;
-  }
-  .spec-dialog .spec-dialog-close {
-    border: none;
-    background: none;
-    color: var(--color-text-muted);
-    font-size: 1rem;
-    cursor: pointer;
-  }
-  /* radio-driven tabs: no JS, the checked input selects its panel */
-  .spec-dialog .spec-tab-input {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-  }
-  .spec-dialog .spec-tab-label {
-    display: inline-block;
-    padding: 0.4rem 0.85rem;
-    border-bottom: 2px solid transparent;
-    color: var(--color-text-muted);
-    font-size: 0.9rem;
-    font-style: normal;
-    cursor: pointer;
-  }
-  .spec-dialog .spec-tab-input:checked + .spec-tab-label {
-    border-bottom-color: var(--color-accent);
-    color: var(--color-accent);
-    font-weight: 600;
-  }
-  .spec-dialog .spec-tab-input:focus-visible + .spec-tab-label {
-    outline: 2px solid var(--color-accent);
-  }
-  /* A doc figure's dialog sits inside an italic, centered <figcaption>; a
-     gallery card's inside a left-aligned one. Both reset here so the dialog
-     reads the same either way. */
-  .spec-dialog .spec-panel {
-    display: none;
-    margin-top: 1rem;
-    max-height: 65vh;
-    overflow-y: auto;
-    text-align: left;
-    font-style: normal;
-    font-size: 0.9rem;
-  }
-  /* Pairs the nth tab with the nth panel. One rule per panel panels() can emit
-     (spec-recipe/html.ts) — a figure with fewer panels just leaves later rules
-     unmatched, but a new panel needs a rule here or its tab shows nothing. */
-  .spec-tabs > .spec-tab-input:nth-of-type(1):checked ~ .spec-panel-1,
-  .spec-tabs > .spec-tab-input:nth-of-type(2):checked ~ .spec-panel-2,
-  .spec-tabs > .spec-tab-input:nth-of-type(3):checked ~ .spec-panel-3,
-  .spec-tabs > .spec-tab-input:nth-of-type(4):checked ~ .spec-panel-4,
-  .spec-tabs > .spec-tab-input:nth-of-type(5):checked ~ .spec-panel-5 {
-    display: block;
-  }
-  .spec-dialog .spec-panel .spec-note {
-    margin: 0.5rem 0;
-  }
-  .spec-dialog .spec-panel .spec-desktop-open {
-    margin: 0 0 0.5rem;
-    font-size: 1rem;
-    font-weight: 600;
-  }
-  .spec-dialog .spec-panel .spec-steps {
-    margin: 0;
-    padding-left: 1.25rem;
-  }
-  /* the full shorthand, not just margin-bottom: the docs `li` rule also sets a
-     top margin, and leaving it in place would space the steps differently in a
-     doc figure than on a gallery card */
-  .spec-dialog .spec-panel .spec-steps li {
-    margin: 0 0 0.7rem;
-  }
-  .spec-dialog .spec-panel .spec-step-title {
-    display: block;
-  }
-  .spec-dialog .spec-panel .spec-step-note,
-  .spec-dialog .spec-panel .spec-step-example {
-    display: block;
-    margin-top: 0.15rem;
-  }
-  .spec-dialog .spec-panel .spec-copywrap {
-    position: relative;
-  }
-  /* Only reaches the gallery's copy of the dialog. On a docs page these blocks
-     go through the markdown pipeline, where rehype-shiki swaps each `<pre>` for
-     its own highlighted one and the `spec-json` class does not survive — the
-     page's `pre` rule paints them there, as it always has. Keep background and
-     color together: --color-code-text on a light background is unreadable.
-     One rule rather than a base plus a padding-top override, since every block
-     copyableBlock emits is inside a `.spec-copywrap`; the extra top padding is
-     what keeps the Copy button off the first line of code. */
-  .spec-dialog .spec-panel .spec-copywrap .spec-json,
-  .spec-dialog .spec-panel .spec-copywrap .spec-python {
-    max-height: 45vh;
-    overflow: auto;
-    margin: 1rem 0;
-    padding: 1.9rem 0.75rem 0.75rem;
-    border-radius: 4px;
-    background: var(--color-code-bg);
-    color: var(--color-code-text);
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-    line-height: 1.5;
-  }
-  .spec-dialog .spec-panel .spec-copy {
-    position: absolute;
-    top: 0.4rem;
-    right: 0.4rem;
-    padding: 0.2rem 0.55rem;
-    border: 1px solid var(--color-border);
-    border-radius: 4px;
-    background: var(--color-surface);
-    color: var(--color-text-muted);
-    font-size: 0.72rem;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  .spec-dialog .spec-panel .spec-copy:hover,
-  .spec-dialog .spec-panel .spec-copy.copied {
-    color: var(--color-accent);
-    border-color: var(--color-accent);
-  }
-</style>

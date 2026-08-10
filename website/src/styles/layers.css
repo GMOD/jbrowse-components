@@ -1,0 +1,32 @@
+/* Cascade-layer order for the whole site. This statement has to be the first
+   CSS the browser sees, because a layer's position is fixed by where it is
+   first named — so BaseLayout imports this file before anything else, and
+   `check-widget-styles.ts` asserts it still lands at the top of the built
+   bundle.
+
+   Later layers win over earlier ones no matter what the selectors weigh, which
+   is the point: a rule that needs to win no longer needs an ancestor to lean
+   on.
+
+     base    reset, tokens, bare element defaults (BaseLayout)
+     prose   generic styling of rendered markdown — headings, code blocks,
+             tables, lists (styles/prose.module.css, DocsLayout)
+     widget  self-contained widgets whose markup is emitted as a string by the
+             markdown pipeline, not written in an .astro template
+             (styles/widgets/*.css)
+
+   Unlayered CSS beats all of it, and that is where a component's own scoped
+   `<style>` stays: those selectors only ever match markup that component
+   renders, so they are not competing with anything here.
+
+   Why a widget layer at all: its markup lands inside prose it does not control,
+   so `.docs-content pre` and friends outrank a plain `.spec-json` on element
+   count. Before layers the only lever was to out-specify them, and every widget
+   rule carried an ancestor class to do it — a qualifier that reads as scoping
+   but was really a specificity crutch. It cost us: the Config/CLI tabs
+   (remark-config-cli-tabs.ts) reuse the figure recipe's tab classes, whose
+   rules were all qualified with `.spec-dialog`, so outside the dialog nothing
+   hid the unselected panel and the fence rendered both panels at once under a
+   pair of raw radio buttons. In a layer a widget rule needs no ancestor, so
+   there is nothing to scope wrongly. */
+@layer base, prose, widget;

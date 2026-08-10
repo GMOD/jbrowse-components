@@ -1,0 +1,74 @@
+/* The generated config/model reference tables. Markup: scripts/api-docs/util.ts
+   (`dialogCell`, the slot-group rows), emitted into the markdown those scripts
+   write. The dialog's open-on-click and light-dismiss come from
+   layouts/DocsLayout.astro and components/SpecDialog.astro respectively.
+
+   Only the prose these land in is a docs page today, but nothing about the
+   markup says so, so nothing here names `.docs-content`. Beating the prose
+   layer's `pre` and table rules is the layer's job — see styles/layers.css. */
+@layer widget {
+  /* A table cell's oversized value (long type signature, jexl default,
+     #example): the trigger reads as the truncated code itself, and the full
+     value opens in a modal rather than reflowing the table. */
+  .cell-more-trigger {
+    display: inline;
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    text-decoration: underline dotted var(--color-text-muted);
+    text-underline-offset: 3px;
+  }
+  .cell-more-trigger:hover {
+    text-decoration-color: var(--color-accent);
+  }
+  .cell-dialog {
+    width: min(60rem, 92vw);
+    max-height: 85vh;
+    padding: 1rem 1.25rem 1.25rem;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: var(--color-surface);
+    color: var(--color-text);
+    overflow: auto;
+  }
+  .cell-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.55);
+  }
+  .cell-dialog pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .cell-dialog-close {
+    float: right;
+    padding: 0.15rem 0.4rem;
+    border: none;
+    border-radius: 4px;
+    background: none;
+    color: var(--color-text-muted);
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  .cell-dialog-close:hover {
+    background: var(--color-border);
+    color: var(--color-text);
+  }
+  /* The full-width row that opens a run of related slots (see
+     scripts/api-docs/generateConfigDocs.ts). It takes the table header's own
+     fill across both cells — which also beats the zebra stripe — so the run
+     reads as one section a reader can skip past rather than as another slot. */
+  tr:has(.slot-group) td {
+    background: var(--color-table-header-bg);
+    border-top: 2px solid var(--color-text-muted);
+    font-weight: 600;
+  }
+  .slot-group-count {
+    float: right;
+    color: var(--color-text-muted);
+    font-weight: 400;
+  }
+}

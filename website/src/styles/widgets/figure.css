@@ -1,0 +1,11 @@
+/* Set on the live link of a figure whose session is slow to open (heavy remote
+   data or whole-genome clustering) — see slowNote in src/lib/remark-figure.ts.
+   It has to beat the italic a `<figcaption>` gets from the prose layer, which
+   is what the layer order buys it. The `figure`/`figcaption` rules themselves
+   stay with the prose: they style the element, not this widget. */
+@layer widget {
+  .figure-slow-note {
+    font-style: normal;
+    font-size: 0.85em;
+  }
+}

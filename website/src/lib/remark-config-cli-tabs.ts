@@ -60,7 +60,11 @@ function bash(value: string) {
   return { type: 'code', lang: 'bash', value } satisfies Code
 }
 
-// Reuses the JS-free radio-tab classes styled in DocsLayout.astro. Raw-HTML
+// Reuses the JS-free radio-tab classes the figure recipe uses, styled in
+// src/styles/widgets/spec-tabs.css — shared by both callers precisely because
+// neither one's context appears in a selector there. A rule that did name one
+// (`.spec-dialog …`) would reach the recipe and not this fence, which renders
+// as raw radio buttons above both panels at once. Raw-HTML
 // wrappers interleave with real mdast code nodes so both panels still get Shiki
 // highlighting downstream. `gid` names one radio group and must be unique
 // within the page: two widgets sharing a group leave the first showing no panel

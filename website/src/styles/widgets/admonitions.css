@@ -1,0 +1,56 @@
+/* `:::note` / `:::tip` callouts. Markup: src/lib/rehype-admonitions.ts, which
+   runs on every markdown surface — docs, blog, the showcase pages. These rules
+   were qualified with `.docs-content` and so painted on exactly one of them;
+   the first admonition in a blog post would have rendered as a bare div. */
+@layer widget {
+  .admonition {
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin: 1.5rem 0;
+  }
+  .admonition > *:last-child {
+    margin-bottom: 0;
+  }
+  .admonition-title {
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+  }
+  .admonition-note {
+    background: #f0f4ff;
+    border-left: 4px solid #4a6cf7;
+  }
+  .admonition-note .admonition-title {
+    color: #4a6cf7;
+  }
+  .admonition-info {
+    background: #f0faf8;
+    border-left: 4px solid var(--color-accent);
+  }
+  .admonition-info .admonition-title {
+    color: var(--color-accent);
+  }
+  .admonition-tip {
+    background: #f0fdf4;
+    border-left: 4px solid #16a34a;
+  }
+  .admonition-tip .admonition-title {
+    color: #16a34a;
+  }
+  .admonition-caution {
+    background: #fffbeb;
+    border-left: 4px solid #d97706;
+  }
+  .admonition-caution .admonition-title {
+    color: #d97706;
+  }
+  .admonition-warning {
+    background: #fff1f0;
+    border-left: 4px solid #e53e3e;
+  }
+  .admonition-warning .admonition-title {
+    color: #e53e3e;
+  }
+}

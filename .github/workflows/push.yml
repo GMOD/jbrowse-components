@@ -644,6 +644,12 @@ jobs:
           pnpm build
           node scripts/check-llms.ts
           node scripts/check-duplicate-ids.ts
+          # Loads the built pages in headless Chrome and asserts the cascade
+          # layers and the string-emitted widgets (Config/CLI tabs,
+          # admonitions, recipe dialogs) actually render styled. No network,
+          # so it fails on the change under review rather than on someone
+          # else's outage.
+          node scripts/check-widget-styles.ts
           mkdir testing
           mv dist testing/jb2
       - name: Check website links

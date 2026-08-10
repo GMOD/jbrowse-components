@@ -4,6 +4,37 @@ Astro, deployed to `s3://jbrowse.org/jb2/` on commits to `main` containing
 "update docs". `pnpm index` once for local search (`static/pagefind/` is
 gitignored). `deploy_staging.sh` wraps a staging deploy.
 
+## CSS: where a rule goes
+
+Three homes, and the question that picks one is **who renders the markup**.
+
+- **A component renders it** → that component's scoped `<style>`, or a
+  `*.module.css` next to it. Unlayered, because those selectors only ever match
+  markup the component itself renders. Most of the site is this, and it stays
+  this.
+- **The markdown pipeline emits it as a string** (remark/rehype plugins,
+  `spec-recipe/html.ts`, the api-docs scripts) →
+  `src/styles/widgets/<emitter>.css`, one file per emitter, in `@layer widget`,
+  imported by BaseLayout. There is no component to scope it to, so **no rule may
+  name a page-context ancestor** — the same markup lands in `.docs-content` on
+  one page and a gallery card on the next.
+- **Generic styling of rendered markdown** (headings, `pre`, tables, lists) →
+  `styles/prose.module.css` or DocsLayout, in `@layer prose`.
+
+`src/styles/layers.css` declares the order (`base, prose, widget`) and explains
+it. **The layer is what lets a widget rule win**, so it no longer needs an
+ancestor to out-specify `.docs-content[data-astro-cid-…] pre` — which is what
+the ancestors were always for, and how the Config/CLI tabs came to be qualified
+with `.spec-dialog` and render both panels at once everywhere else. Two classes
+deep is now enough; if you find yourself adding a third to win a fight, the rule
+is in the wrong layer.
+
+`pnpm check-widget-styles` (after a build; runs in the `buildwebsite` job) loads
+the built pages in headless Chrome and asserts the effective layer order plus
+one property per widget that only the widget layer sets. It has to be computed
+styles: the broken selector _was_ present in the stylesheet, just unreachable,
+so nothing textual catches this.
+
 ## Figure store (`static/img/` is gitignored)
 
 Figure **bytes** live in `s3://jbrowse.org/jb2-figures/`, content-addressed and

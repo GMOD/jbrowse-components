@@ -1,4 +1,21 @@
 ---
+// A cascade layer takes its position from wherever it is first named, so the
+// declaration has to reach the browser before any rule that uses one — hence
+// first import, in the layout every page goes through. Where the bundler
+// actually places it is the bundler's call, though (today it lands just after
+// this component's own <style>, which is itself in the first layer), so the
+// contract is checked rather than assumed: check-widget-styles.ts reads the
+// built pages and fails if the effective order is not the declared one.
+import '../styles/layers.css'
+// Styling for markup the markdown pipeline emits as a string, which has no
+// component to be scoped to. One file per emitter; see styles/layers.css for
+// why they are all in the `widget` layer.
+import '../styles/widgets/admonitions.css'
+import '../styles/widgets/api-docs-tables.css'
+import '../styles/widgets/figure.css'
+import '../styles/widgets/spec-recipe.css'
+import '../styles/widgets/spec-tabs.css'
+
 import { Font } from 'astro:assets'
 
 import Lightbox from '../components/Lightbox.astro'
@@ -89,60 +106,65 @@ const year = new Date().getFullYear()
     <link rel="icon" href={`${baseUrl}/img/favicon.ico`} />
     <Font cssVariable="--font-roboto" preload />
     <style is:global>
-      :root {
-        --nav-height: 60px;
-        --sidebar-width: 320px;
-        --font-mono:
-          ui-monospace, 'SF Mono', 'Cascadia Code', 'Consolas',
-          'Liberation Mono', monospace;
-        --sidebar-link-padding: 6px 12px;
-        --color-accent: hsl(160, 51%, 35%);
-        --color-accent-dark: hsl(160, 55%, 26%);
-        --color-primary: #1a3f72;
-        --color-primary-dark: #122d54;
-        --color-navy: #0d223f;
-        --color-teal-bright: #46cbae;
-        --color-border: #dadde1;
-        --color-surface: #f5f5f5;
-        --color-footer-bg: #303846;
-        --color-footer-text: #ebedf0;
-        --color-sidebar-text: #2d3748;
-        --color-sidebar-hover-bg: rgba(0, 0, 0, 0.06);
-        --color-sidebar-active-bg: hsl(160, 40%, 93%);
-        --color-sidebar-active-text: hsl(160, 55%, 26%);
-        --color-text: #1c1e21;
-        --color-text-muted: #606770;
-        --color-code-bg: #1e1e2e;
-        --color-code-text: #cdd6f4;
-        --color-table-header-bg: #f1f3f5;
-        --color-table-stripe: #fafafa;
-        --color-blockquote-bg: #f0faf8;
-        --color-highlight-bg: #fff3cd;
-        /* Every card grid on the site (home gallery preview, home resource
-           cards, tutorial cards) lifts on hover — one treatment, not three. */
-        --card-radius: 8px;
-        --card-hover-border: var(--color-accent);
-        --card-hover-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-      }
-      * {
-        box-sizing: border-box;
-      }
-      html {
-        overflow-x: hidden;
-      }
-      body {
-        margin: 0;
-        font-family: var(--font-roboto), sans-serif;
-        color: var(--color-text);
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
-      }
-      a {
-        color: var(--color-accent);
-      }
-      a:hover {
-        color: var(--color-accent-dark);
+      /* Reset, design tokens and bare element defaults. Layered so the
+         prose and widget layers can override an element default without
+         out-specifying it; see styles/layers.css for the order. */
+      @layer base {
+        :root {
+          --nav-height: 60px;
+          --sidebar-width: 320px;
+          --font-mono:
+            ui-monospace, 'SF Mono', 'Cascadia Code', 'Consolas',
+            'Liberation Mono', monospace;
+          --sidebar-link-padding: 6px 12px;
+          --color-accent: hsl(160, 51%, 35%);
+          --color-accent-dark: hsl(160, 55%, 26%);
+          --color-primary: #1a3f72;
+          --color-primary-dark: #122d54;
+          --color-navy: #0d223f;
+          --color-teal-bright: #46cbae;
+          --color-border: #dadde1;
+          --color-surface: #f5f5f5;
+          --color-footer-bg: #303846;
+          --color-footer-text: #ebedf0;
+          --color-sidebar-text: #2d3748;
+          --color-sidebar-hover-bg: rgba(0, 0, 0, 0.06);
+          --color-sidebar-active-bg: hsl(160, 40%, 93%);
+          --color-sidebar-active-text: hsl(160, 55%, 26%);
+          --color-text: #1c1e21;
+          --color-text-muted: #606770;
+          --color-code-bg: #1e1e2e;
+          --color-code-text: #cdd6f4;
+          --color-table-header-bg: #f1f3f5;
+          --color-table-stripe: #fafafa;
+          --color-blockquote-bg: #f0faf8;
+          --color-highlight-bg: #fff3cd;
+          /* Every card grid on the site (home gallery preview, home resource
+             cards, tutorial cards) lifts on hover — one treatment, not three. */
+          --card-radius: 8px;
+          --card-hover-border: var(--color-accent);
+          --card-hover-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+        }
+        * {
+          box-sizing: border-box;
+        }
+        html {
+          overflow-x: hidden;
+        }
+        body {
+          margin: 0;
+          font-family: var(--font-roboto), sans-serif;
+          color: var(--color-text);
+          display: flex;
+          flex-direction: column;
+          min-height: 100vh;
+        }
+        a {
+          color: var(--color-accent);
+        }
+        a:hover {
+          color: var(--color-accent-dark);
+        }
       }
     </style>
   </head>

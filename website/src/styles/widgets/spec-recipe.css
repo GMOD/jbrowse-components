@@ -1,0 +1,146 @@
+/* The figure recipe: the trigger beside a figure's live link, and the dialog it
+   opens. Markup: src/lib/spec-recipe/html.ts, emitted by remark-figure for a
+   doc figure and by gallery.astro for a card. Behavior and the mount point:
+   components/SpecDialog.astro. The tab machinery it shares with the docs
+   Config/CLI fence is in spec-tabs.css.
+
+   The dialog lands in `.docs-content` on one page and in a gallery card on the
+   next, so no rule here names either. Where a selector does carry an ancestor
+   it is one of this widget's own elements — `.spec-dialog .spec-panel` is the
+   dialog's panel as opposed to the fence's, real structure rather than a
+   specificity crutch. Winning against the surrounding prose is the layer's job:
+   see styles/layers.css. */
+@layer widget {
+  .spec-help {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0.35rem;
+    padding: 0.2rem;
+    border: none;
+    border-radius: 4px;
+    background: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    vertical-align: middle;
+    opacity: 0.65;
+  }
+  .spec-help svg {
+    width: 1rem;
+    height: 1rem;
+    display: block;
+  }
+  .spec-help:hover {
+    background: var(--color-surface);
+    color: var(--color-accent);
+    opacity: 1;
+  }
+  .spec-help:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 1px;
+    color: var(--color-accent);
+    opacity: 1;
+  }
+  .spec-dialog {
+    width: min(46rem, 92vw);
+    max-height: 85vh;
+    padding: 1.25rem 1.5rem 1.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--color-text);
+  }
+  .spec-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.55);
+  }
+  .spec-dialog-close-form {
+    float: right;
+    margin: -0.5rem -0.75rem 0 0;
+  }
+  .spec-dialog-close {
+    border: none;
+    background: none;
+    color: var(--color-text-muted);
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  /* A doc figure's dialog sits inside an italic, centered <figcaption>; a
+     gallery card's inside a left-aligned one. Both reset here so the dialog
+     reads the same either way. The fence's panels take none of this. */
+  .spec-dialog .spec-panel {
+    margin-top: 1rem;
+    max-height: 65vh;
+    overflow-y: auto;
+    text-align: left;
+    font-style: normal;
+    font-size: 0.9rem;
+  }
+  .spec-note {
+    margin: 0.5rem 0;
+  }
+  .spec-desktop-open {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  .spec-steps {
+    margin: 0;
+    padding-left: 1.25rem;
+  }
+  /* the full shorthand, not just margin-bottom: the docs `li` rule also sets a
+     top margin, and leaving it in place would space the steps differently in a
+     doc figure than on a gallery card */
+  .spec-steps li {
+    margin: 0 0 0.7rem;
+  }
+  .spec-step-title {
+    display: block;
+  }
+  .spec-step-note,
+  .spec-step-example {
+    display: block;
+    margin-top: 0.15rem;
+  }
+  .spec-copywrap {
+    position: relative;
+  }
+  /* Only reaches the gallery's copy of the dialog. On a docs page these blocks
+     go through the markdown pipeline, where rehype-shiki swaps each `<pre>` for
+     its own highlighted one and the `spec-json` class does not survive — the
+     page's `pre` rule paints them there, as it always has. Keep background and
+     color together: --color-code-text on a light background is unreadable.
+     One rule rather than a base plus a padding-top override, since every block
+     copyableBlock emits is inside a `.spec-copywrap`; the extra top padding is
+     what keeps the Copy button off the first line of code. */
+  .spec-copywrap .spec-json,
+  .spec-copywrap .spec-python {
+    max-height: 45vh;
+    overflow: auto;
+    margin: 1rem 0;
+    padding: 1.9rem 0.75rem 0.75rem;
+    border-radius: 4px;
+    background: var(--color-code-bg);
+    color: var(--color-code-text);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+  .spec-copy {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.4rem;
+    padding: 0.2rem 0.55rem;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .spec-copy:hover,
+  .spec-copy.copied {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+}
