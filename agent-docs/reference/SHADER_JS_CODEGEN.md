@@ -168,6 +168,27 @@ artifact, which is right, since the artifacts are pinned by the staleness check.
 Widening it that way immediately found a real bug, which is the argument for it:
 `vertCoverage(20, 20, 0)` was 1 on the shader and NaN in the twin.
 
+**Where the oracle's authority stops, and it is not where you would guess.** It
+sweeps functions, so it covers a *translation rule* only when some shader in the
+tree happens to call that builtin from a liftable function. Measured against the
+current tree, it exercises **eight** of the emitter's seventeen — `abs`,
+`clamp`, `floor`, `log2`, `max`, `min`, `smoothstep`, `sqrt`. The remaining nine
+are covered by `wgslToJs.test.ts`'s per-rule table instead, and
+`TRANSLATION_RULES` is exported so that table's completeness is asserted rather
+than remembered. Don't read a green oracle as "the emitter is checked"; read it
+as "the emitter is checked on what the tree currently calls".
+
+**Two builtins it cannot referee at any tolerance.** slangc lowers `lerp` to
+`x + (y - x) * s` and `step` to `x < y ? 0.0f : 1.0f` for `-target cpp`, while
+emitting the WGSL builtins `mix()` and `step()` for `-target wgsl`. The GPU runs
+the WGSL; the oracle compares against the C++. For `mix` the two formulations
+differ by an ulp everywhere and exactly at the endpoints, so the twin follows
+WGSL and the oracle would fail it if `REL_TOLERANCE` were ever tightened — the
+mismatch is in the *reference*, not in the tolerance. For `step` they differ
+only on a NaN, and there the WGSL spec itself has been published with both
+phrasings (gpuweb#4527), so the twin follows the C++ and the choice is pinned by
+a test rather than defended.
+
 The retired twins kept as fixtures still matter, and are now the *narrow* check:
 they pin behavior a human decided was right (a degenerate y-domain, a
 reversed-block anchor) at inputs a random sweep would rarely hit. The oracle
@@ -218,6 +239,16 @@ Mechanics worth not rediscovering, all in `oracleProbe.ts`:
   also generates the GPU path is the only useful choice.
 
 ## Verified facts, do not re-derive
+
+- **A parity test can pass against the very form it exists to reject, and one
+  did.** `_mix` is written as WGSL's `a*(1-t) + b*t` rather than the lerp form
+  `a + (b-a)*t` because only the first returns `b` exactly at `t == 1`. The test
+  pinning that used `(0.1, 0.3, 1)` — a pair where **both** forms return `0.3`
+  exactly — so mutating the helper to the lerp form left it green. The general
+  lesson is cheap to apply: when a test's whole point is that two formulations
+  differ, *run* the rejected one and check the test fails, rather than picking
+  inputs by eye. Discriminating pairs are not rare (`(0.2, 0.9)`, `(0.4, 0.1)`),
+  they are just not the first ones you think of.
 
 - **slangc's CPU targets do not support graphics stages.** `-target c` on a
   vertex entry errors (`'max' not available in 'vertex' stage`); `-target cpp`
