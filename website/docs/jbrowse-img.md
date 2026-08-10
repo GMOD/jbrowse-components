@@ -335,6 +335,48 @@ jb2export --hub hg38 \
 
 <Figure src="/img/jbrowse-img/sv_read_arcs.png" caption="HG00151 ONT long reads over a ~1.2 kb chr1 inversion, grouped on SA-tag presence: the split reads sit in their own section under the purple junction arcs, chained so a blue reverse-strand core runs between red forward-strand flanks" />
 
+### Breakpoint split views
+
+Both sides of a junction, stacked, with a curve per read that leaves one panel
+and arrives in the other. Everything above draws an SV in **reference**
+coordinates; this draws the two loci it joins.
+
+**Repeating `--loc` stacks a panel; whitespace inside one `--loc` adds a window
+to that panel** — the meaning a space already has for a linear view. So the
+two-breakend case needs no shell quoting, and a panel that wants two windows
+still can have them.
+
+<!-- jb2export: sv_review_tumor -->
+
+```bash
+jb2export breakpoint --config https://jbrowse.org/demos/cancer_sv/config.json \
+  --assembly hg38 --track COLO829_tumor_ont height:240 \
+  --loc chr3:25,358,511-25,359,711 --loc chr12:72,272,512-72,273,712 \
+  --width 1100 --out sv_review_tumor.png
+```
+
+<Figure src="/img/jbrowse-img/sv_review_tumor.png" caption="One junction of the COLO829 melanoma line's der(3): chr3 above, chr12 below, with a curve per tumour read that crosses between them" />
+
+The same two windows in the matched normal are the control, and the somatic call
+is the difference between the two pictures — so they are rendered at the same
+flank and the same width, or the difference is not the only thing that changed:
+
+<!-- jb2export: sv_review_normal -->
+
+```bash
+jb2export breakpoint --config https://jbrowse.org/demos/cancer_sv/config.json \
+  --assembly hg38 --track COLO829BL_normal_ont height:240 \
+  --loc chr3:25,358,511-25,359,711 --loc chr12:72,272,512-72,273,712 \
+  --width 1100 --out sv_review_normal.png
+```
+
+<Figure src="/img/jbrowse-img/sv_review_normal.png" caption="The same two windows in the matched normal COLO829BL: reads read straight through both loci and nothing connects the panels" />
+
+To do that for a whole callset rather than one junction, `jb2export batch`
+renders one image per row of a BEDPE. See the
+[SV callset review tutorial](https://jbrowse.org/jb2/docs/tutorials/sv_callset_review/),
+and `jb2export batch --help`.
+
 More alignment recipes (see [Track modifiers](#track-modifiers) for all
 options):
 
@@ -1073,7 +1115,7 @@ subcommand's options. The complete output:
 
 ```
 Usage: jb2export [options]
-       jb2export <dotplot|synteny|circular> [options]
+       jb2export <dotplot|synteny|circular|breakpoint> [options]
        jb2export list [hub] [filter]
 
 Options:
@@ -1117,7 +1159,7 @@ Examples:
 
 Track options: --bam, --cram, --bigwig, --multiwig, --vcfgz, --gffgz, --hic, --bigbed, --bedgz
 
-Comparative subcommands (run "jb2export dotplot --help"): dotplot, synteny, circular
+Comparative subcommands (run "jb2export dotplot --help"): dotplot, synteny, circular, breakpoint
 
 Discovery: "jb2export list" lists genomes.jbrowse.org assemblies; "jb2export list <hub> [filter]" lists a hub's tracks
 
@@ -1241,6 +1283,39 @@ Options:
 Examples:
   jb2export circular --fasta ref.fa --vcfgz sv.vcf.gz --out out.svg
       Circular (chord) view of structural variants
+
+Usage: jb2export breakpoint [options]
+
+Options:
+  --fasta           Path to indexed FASTA file
+  --chromSizes      Path to a chrom.sizes file (whole-genome assembly, no sequence). Repeat for each assembly in a comparative view
+  --aliases         Path to reference name aliases file
+  --assembly        Path to assembly JSON (or "-" for stdin) or name in config
+  --hub             Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
+  --track           Show a trackId already in the config (from --hub/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
+  --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
+  --session         Path to session JSON (or "-" for stdin)
+  --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --hub)
+  --out             Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
+  --width           Width of output in pixels [default: 1500]
+  --noRasterize     Disable rasterization of pileup/coverage [default: false]
+  --defaultSession  Use default session from config [default: false]
+  --tracks          Path to JSON file with an array of track configs (or "-" for stdin)
+  --cytobands       Path to cytoband file for the assembly
+  --themeName       Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
+  --fontFamily      Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
+  --showGridlines   Show genomic coordinate gridlines in the output [default: false]
+  --trackLabels     Track label position: offset, overlay, left, or none
+  --refseq          Show the reference sequence track [default: false]
+  --spec            Session-spec JSON (inline, path to .json, or "-" for stdin) describing the view; see urlparams.md. Drives N-way comparative views from a --config
+
+Examples:
+  jb2export breakpoint --fasta ref.fa --bam tumor.bam --loc chr1:1,000,000-1,001,000 --loc chr5:2,000,000-2,001,000 --out sv.png
+      Both sides of one breakend, with the reads that cross it drawn between
+  jb2export breakpoint --hub hg38 --bam tumor.bam --loc chr3:25,358,000-25,361,000 --loc chr10:58,716,500-58,718,500 --loc chr12:72,272,000-72,275,000 --out chain.png
+      A multi-hop chain: one panel per locus, in the order the reads cross them
+  jb2export breakpoint --fasta ref.fa --bam tumor.bam --loc "chr9:28,030,000-28,032,000 chr9:28,058,000-28,060,000" --loc chr9:28,059,000-28,061,000 --out fb.png
+      Quote one --loc to put several windows in a single panel
 ```
 
 <!-- INJECT_HELP END -->

@@ -1500,4 +1500,48 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '--width',
     '1900',
   ]),
+
+  // The two figures of the sv_callset_review tutorial, and deliberately a
+  // matched PAIR: the same junction of COLO829's der(3), at the same window and
+  // the same width, in the tumour and in its matched normal. The somatic call is
+  // the DIFFERENCE between them, so rendering them apart (different flank,
+  // different width) would be showing two pictures and asserting a comparison
+  // rather than drawing one.
+  //
+  // Both come from the hosted cancer_sv demo config, so neither needs a local
+  // file. Repeating --loc is what stacks the two panels; the reads crossing
+  // between them are drawn by the view.
+  cliSpec('sv_review_tumor', [
+    'breakpoint',
+    '--config',
+    'https://jbrowse.org/demos/cancer_sv/config.json',
+    '--assembly',
+    'hg38',
+    '--track',
+    'COLO829_tumor_ont',
+    'height:240',
+    '--loc',
+    'chr3:25,358,511-25,359,711',
+    '--loc',
+    'chr12:72,272,512-72,273,712',
+    '--width',
+    '1100',
+  ]),
+
+  cliSpec('sv_review_normal', [
+    'breakpoint',
+    '--config',
+    'https://jbrowse.org/demos/cancer_sv/config.json',
+    '--assembly',
+    'hg38',
+    '--track',
+    'COLO829BL_normal_ont',
+    'height:240',
+    '--loc',
+    'chr3:25,358,511-25,359,711',
+    '--loc',
+    'chr12:72,272,512-72,273,712',
+    '--width',
+    '1100',
+  ]),
 ]

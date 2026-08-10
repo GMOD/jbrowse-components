@@ -193,6 +193,14 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     src: 'sv_cgiab/cnv_depth_baf.png',
     band: [0.25, 1],
   },
+  sv_callset_review: {
+    // The tumour half of the page's before/after pair. Cropped to the band that
+    // carries the junction itself — the fan of curves between the two panels —
+    // rather than to either pileup, since the connections are the only thing on
+    // this page a card can show at thumbnail size.
+    src: 'jbrowse-img/sv_review_tumor.png',
+    band: [0.3, 0.85],
+  },
   hic_structural_variants: {
     // Same split as sv_visualization_cgiab above: the translocation comparison
     // is this tutorial's gallery card, so the tutorial card takes its other
