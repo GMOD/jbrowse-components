@@ -72,3 +72,35 @@ export function ldHaplotypeCorrelation(D: number, pA: number, pB: number): numbe
   }
   return _t0
 }
+
+export function ldEnoughGenotypes(sampleCount: number): boolean {
+  return (sampleCount >= 2.0)
+}
+
+export function ldEnoughGametes(gameteCount: number): boolean {
+  return (gameteCount >= 4.0)
+}
+
+export function ldLociPolymorphic(pA: number, pB: number): boolean {
+  let _t0: boolean
+  if ((pA > 0.0)) {
+    _t0 = (pA < 1.0)
+  } else {
+    _t0 = false
+  }
+  if (_t0) {
+    _t0 = (pB > 0.0)
+  } else {
+    _t0 = false
+  }
+  if (_t0) {
+    _t0 = (pB < 1.0)
+  } else {
+    _t0 = false
+  }
+  return _t0
+}
+
+export function ldGenotypeAlleleFreq(dosageSum: number, sampleCount: number): number {
+  return (dosageSum / (2.0 * sampleCount))
+}

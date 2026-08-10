@@ -2,3 +2,5 @@
 // Do not edit. Run `pnpm gen:shaders` to regenerate.
 
 export const SMALL_POINT_MAX_DIAMETER = 3
+
+export const AA_PAD_PX = 1
