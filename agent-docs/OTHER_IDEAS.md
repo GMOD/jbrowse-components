@@ -95,9 +95,6 @@ reference others may hold, not as free-form prose.
 
 - [Website: copy-as-markdown / LLM-readiness](#website-copy-as-markdown--llm-readiness)
 - [Website: screenshot spec ↔ PNG staleness guard](#website-screenshot-spec--png-staleness-guard)
-- [Review UIs: the repaint is the bug](#review-uis-the-repaint-is-the-bug) — done, and
-  kept for the SECOND cause of "I have to click Approve twice", which is layout and
-  which no framework removes
 - [Figure work parked on a cost or a decision](#figure-work-parked-on-a-cost-or-a-decision) —
   the wheat Compara rebuild, a curated ortholog palette, and per-level dotplot scale
 - [Cancer SV datasets not yet shot](#cancer-sv-datasets-not-yet-shot) — including
@@ -2267,78 +2264,6 @@ file's git commit time is newer than its PNG's. Either turns "forgot to regen" f
 multi-session review loop into one red check. (Related: the review tool already hashes the
 PNG bytes to expire verdicts — this is the same idea one step upstream, keyed on the spec's
 inputs rather than its output.)
-
-## Review UIs: the repaint is the bug
-
-**Done — both tools are ported and the string client is deleted.** Kept as the
-record of what the bug actually was, because the last section below is a cause
-React does *not* remove and is the one to reach for when a "click Approve twice"
-report arrives against the new pages.
-
-The two review tools (`website/scripts/review-screenshots-web.ts`,
-`products/jbrowse-web/browser-tests/review-snapshots-web.ts`) both rendered by
-replacing DOM wholesale — `el.outerHTML = renderCard(entry)`, out of the shared
-`packages/browser-test-utils/src/reviewClient.ts`. Every bug filed against them
-was that one fact in a different hat, because the swap destroys everything the
-DOM holds and `data` does not: the click in flight between a mousedown and its
-mouseup (the browser dispatches none at all, which is the "I have to click
-Approve twice" complaint), the caret in a note being typed, the optimistic press
-waiting on its write, unsaved text, the pointer capture on a swipe divider.
-
-Each got its own workaround, and by 2026-08 they were about half the shared
-client: the `pointerHeld`/`deferredCards`/`scheduleFlush` deferral, `pressedNow`,
-the `harvestNotes`/`applyPendingNotes` pair, `cardMessages`, and `paintCard`'s
-carrying logic. `reviewClientProbe.ts` (241 lines of puppeteer) exists to pin
-behaviour that is only fragile for the same reason. Two of the workarounds have
-cancelled each other out: the deferred repaint flushes the instant the click is
-dispatched, wiping the press the other one had just painted.
-
-**Both pages now render with React** (`website/scripts/review-app/` and
-`products/jbrowse-web/browser-tests/review-app/`) over one shared client,
-`packages/browser-test-utils/src/reviewApp/`. Every workaround listed above is
-deleted rather than guarded — a reconciler keeps node identity, so the button
-survives its own click and the textarea keeps its caret. `reviewServer.ts`, the
-verdict routes, `screenshot-review-lib.ts`, `snapshot-review-lib.ts` and the
-write protocol carried over untouched, as costed; each page entry is bundled by
-esbuild at server start with no watcher, so "run one node script, open
-localhost" and offline operation both survive. `reviewClient.ts` and
-`reviewClientProbe.ts` are gone; `reviewAppProbe.ts` replaces the latter and adds
-a case asserting the complaint itself.
-
-Two things the costing got wrong, both in the same direction — the imperative
-escape hatches were not needed:
-
-- The compare stage's image measurement was expected to stay in a ref. It did
-  not: the natural dimensions go in state on each image's `load` and the sizing
-  falls out of render, which also deleted the size memo, the resize listener and
-  its rAF batching.
-- The snapshot review's `/api/compare` poll was the whole reason `repaintUnsafe`
-  existed — a full repaint every two seconds for ~25s, landing on whatever the
-  reviewer was doing. It is now a state update that patches some pills, and
-  there is nothing to guard.
-
-Measured before: 3400 lines across the five files, with ~1400 estimated
-removable. Actual: 1188 lines deleted from the screenshot page, 365 from the
-snapshot page, 1002 from the deleted client and its probe, against a larger
-amount added across two dozen small modules — the total line count went UP, and
-that is the honest number. What went down is the part that was killing us:
-neither page has string building, escaping, manual DOM writes or repaint
-bookkeeping, and the behaviour is pinned by a probe instead of by comments
-explaining which workaround must not be touched.
-
-**One thing the port did not fix, and could not.** "I have to click Approve
-twice" has a second, independent cause: a note save landing mid-press empties the
-unsaved hint, the card shrinks ~27px, and if the page is at the bottom of its
-scroll range the browser clamps `scrollY` to the new maximum — which moves the
-button DOWN under a stationary pointer, so the mouseup lands elsewhere and no
-click is dispatched. It is layout, not rendering, and no framework prevents it;
-the old deferral machinery happened to cover it by freezing repaints during a
-press. Fixed in CSS instead, in both pages: `.unsaved` gets a `line-height` and a
-`min-height` of the same length, so an empty hint is exactly as tall as a
-one-line one, and `main` gets 40vh of trailing padding, so a shrinking card can
-never force a clamp. **A "click Approve twice" report against either page now is
-most likely this**, not the rendering — look for a card that changes height while
-a pointer is down, and reserve the space rather than deferring the change.
 
 ## Figure work parked on a cost or a decision
 
