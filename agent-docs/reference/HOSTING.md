@@ -58,6 +58,13 @@ and papers. There is deliberately no `gc`.
   `hg19-clinvarMain`, `hg19-dgvMerged`, `hg19-gnomadSvFull`, plus dbVar, CADD
   and phyloP/phastCons. Check `jbrowse.org/ucsc/hg19/config.json` before adding
   one to a spec.
+- **UCSC downloads are `hgdownload.soe.ucsc.edu`, never `hgdownload.cse.ucsc.edu`.**
+  Both names reach the same server on one cert, but UCSC reissued it on
+  2026-07-16 with SANs for `soe`/`gi` (and hgdownload2/3) and **dropped the
+  legacy `cse` SAN**, so HTTPS to `cse` now fails
+  `ERR_CERT_COMMON_NAME_INVALID`. In screenshot generation that surfaces as an
+  assembly refusing to load with "Failed to fetch … chromAlias.txt". Repoint any
+  new `cse` URL.
 - **`&loc=` accepts a gene name; a session spec's `init.loc` does not.** The URL
   param routes through text search; `navToLocString` rejects a non-locstring.
   Symbol → URL params, coordinates → either.

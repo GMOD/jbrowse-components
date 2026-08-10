@@ -113,6 +113,12 @@ checkout, so ordinary git is yours to use without asking.
   astro pass is a `postformat` hook, so an argument reaches it. The hook still
   sweeps every `.astro`, which is a no-op unless one is genuinely unformatted —
   they all live under `website/src`.
+- **`agent-docs` is on `.prettierignore`, and naming it explicitly overrides
+  that.** oxfmt skips the tree when it walks into it, so those docs have never
+  been formatted and are hand-wrapped. Passing the directory as an argument
+  (`oxfmt agent-docs/`) formats all ~118 of them anyway — 9k lines of rewrapped
+  prose and repadded tables around whatever you actually changed. Never format
+  that path; the ignore is doing real work.
 - **`pnpm autogen` rewrites every generated-and-committed artifact** and is the
   answer to almost any "X is out of date" CI failure. It owns `package.json`
   `exports` maps, `tsconfig.build.esm.json` `references`, and the doc tables

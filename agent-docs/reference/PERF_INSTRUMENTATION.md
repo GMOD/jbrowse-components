@@ -286,6 +286,30 @@ repeated A/B put the real difference at **zero**.
   A first made it look 2x slower than B when the real gap was 8%.
 - `ab-compare.ts` below does the interleaving for built bundles.
 
+## Decoding a shared Firefox profile offline
+
+Colin drops Firefox profiler exports (`~/Downloads/Firefox <date> profile.json.gz`)
+to drive perf work. For `preprocessedProfileVersion: 66`:
+
+- **The tables are shared across threads**, under `d['shared']` — `stackTable`,
+  `frameTable`, `funcTable`, `stringArray` — not per-thread.
+- **`stackTable` has no `prefix` column**, it has `prefixOffset`. Decode as
+  `prefix(i) = None if prefixOffset[i] == 0 else i - prefixOffset[i]`. Verify by
+  reconstructing one stack: it should read leaf→root with `js::RunScript` frames
+  nesting.
+- Self time is the frame at the sample's own stack index, weighted by
+  `samples.timeDeltas`. A naive sum of `timeDeltas` is not wall time — it spans
+  idle gaps.
+- The content process running JBrowse is **not thread 0**. Find it by scanning
+  every thread's `funcTable` for app symbols.
+
+**These are dev builds, so subtract React's dev-only work before sizing a render
+finding**: ~7% of JS self time is `validateProperty`, `warnUnknownProperties`,
+`validateProperties$2`, `setCurrentFiber`, `jsxDEVImpl`, none of which exists in
+production. It does not affect plain compute frames. Rank targets by **self**
+time in our own code — a component's inclusive time is mostly its children plus
+reconciliation.
+
 ## Startup profiling (July 2026)
 
 Four throwaway harnesses in `website/scripts/`, all running the built bundle

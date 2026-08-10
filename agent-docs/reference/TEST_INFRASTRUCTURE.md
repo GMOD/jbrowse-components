@@ -119,6 +119,22 @@ true (this silently burned full snapshot timeouts).
   force-kills its own launched browsers on exit.
 - **Console errors** — runner forwards `[alignments]` / `[webgl-wiggle]` logs;
   add patterns in `runner.ts`.
+- **A `waitFor` that burns its full 30s, blamed on a line that never ran.** In
+  `products/jbrowse-web/src/tests`, `view` is typed but
+  `view.tracks[0].displays[0]` is **`any`** — so a getter that does not exist on
+  the display model typechecks fine and fails only at runtime. Jest then prints
+  the *last* error with surrounding source, pointing several lines below the
+  real one. This cost a long debug once: `display.sashimiSections` never existed
+  (it is `sashimiArcSections`), but the reported error named `data.sashimiX1` on
+  an unreached line. When a test touches more than a member or two off a
+  display, annotate it with the real exported model type — e.g.
+  `LinearAlignmentsDisplayModel` from `@jbrowse/plugin-alignments`, which
+  jbrowse-web already depends on. `AlignmentGroupBy.test.tsx` is the worked
+  example. Expect a batch of `noUncheckedIndexedAccess` errors that `any` was
+  hiding. If a member looks plausible but resolves nowhere, suspect a
+  pre-migration shape: the nested `PileupDisplay`/`SNPCoverageDisplay` sub-nodes
+  were flattened into `LinearAlignmentsDisplay` (see `sessionMigrations`), and
+  dead `xtest`s referenced them for years afterward.
 
 ### Cross-test memory growth is SwiftShader, not a JBrowse leak
 
