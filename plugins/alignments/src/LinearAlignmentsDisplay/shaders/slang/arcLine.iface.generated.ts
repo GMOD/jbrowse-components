@@ -9,6 +9,8 @@ export const BINDINGS: readonly ShaderBinding[] = [
 
 export const VERTS_PER_INSTANCE = 6
 
+export const ARC_COLOR_INTERCHROM = 3
+
 export const UNIFORMS_SIZE_BYTES = 1040
 
 // Word indices into a Float32Array view over the uniform buffer.
@@ -438,13 +440,8 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[259] = uniforms.dpr
 }
 
-export const INSTANCE_STRIDE_BYTES = 8
-export const INSTANCE_STRIDE_WORDS = 2
-
-// Word indices into a Float32Array view over the instance buffer.
-export const INSTANCE_OFFSET_F32 = {
-  colorType: 1,
-} as const
+export const INSTANCE_STRIDE_BYTES = 4
+export const INSTANCE_STRIDE_WORDS = 1
 
 // Word indices into a Uint32Array view over the instance buffer.
 export const INSTANCE_OFFSET_U32 = {
@@ -453,12 +450,10 @@ export const INSTANCE_OFFSET_U32 = {
 
 export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_position', components: 1, type: 'uint', offsetBytes: 0, integer: true },
-  { name: 'a_colorType', components: 1, type: 'float', offsetBytes: 4, integer: false },
 ]
 
 export interface InstanceArrays {
   position: ArrayLike<number>
-  colorType: ArrayLike<number>
 }
 
 export function packInstances(
@@ -466,13 +461,11 @@ export function packInstances(
   numInstances: number,
   buf: ArrayBuffer = new ArrayBuffer(numInstances * INSTANCE_STRIDE_BYTES),
 ) {
-  const f32 = new Float32Array(buf)
   const u32 = new Uint32Array(buf)
-  const { position, colorType } = arrays
+  const { position } = arrays
   for (let i = 0; i < numInstances; i++) {
     const o = i * INSTANCE_STRIDE_WORDS
     u32[o + 0] = position[i]!
-    f32[o + 1] = colorType[i]!
   }
   return buf
 }

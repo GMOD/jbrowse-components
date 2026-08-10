@@ -12,6 +12,7 @@
 // ignored `readConnectionsLineWidth` entirely, and snapped to a whole pixel
 // column — visibly stepping between columns as the view panned.
 //! targets: wgsl, glsl
+//! export-consts: ARC_COLOR_INTERCHROM
 
 import alignmentsUniforms;
 import hpmath;
@@ -21,9 +22,12 @@ public static const uint VERTS_PER_INSTANCE = 6u;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
+// Position only. A `colorType : ATTR1` used to ride along, but `resolveArcs`
+// assigns every tick ARC_COLOR_INTERCHROM and nothing else can — so the
+// attribute, the `arcLineColorTypes` array behind it and the legend scan over
+// that array were all carrying one constant.
 struct Instance {
-  uint  position  : ATTR0;
-  float colorType : ATTR1;
+  uint position : ATTR0;
 };
 
 struct VsOut {
@@ -54,8 +58,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float sx = ((screenX + o.dx) / u.canvasW) * 2.0 - 1.0;
   float sy = 1.0 - (yPx / u.canvasH) * 2.0;
   o.position = float4(flipX(sx, u), sy, 0.0, 1.0);
-  uint idx = uint(inst.colorType + 0.5);
-  o.color = float4(arcColorByIndex(idx, u), 1.0);
+  o.color = float4(arcColorByIndex(ARC_COLOR_INTERCHROM, u), 1.0);
   return o;
 }
 

@@ -1,4 +1,8 @@
-import { colorShortInsert, colorShortInsertArc } from '@jbrowse/core/ui/theme'
+import {
+  colorInterchrom,
+  colorShortInsert,
+  colorShortInsertArc,
+} from '@jbrowse/core/ui/theme'
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 
 import {
@@ -7,6 +11,7 @@ import {
   linkedReadColorPalette,
 } from '../../LinearAlignmentsDisplay/shaders/palettes.ts'
 import { arcColorSlot } from '../../LinearAlignmentsDisplay/shaders/slang/alignmentsUniforms.js.generated.ts'
+import { ARC_COLOR_INTERCHROM } from '../../LinearAlignmentsDisplay/shaders/slang/arcLine.iface.generated.ts'
 import { UNIFORM_SLOT_ARRAYS } from '../../LinearAlignmentsDisplay/shaders/slang/read.iface.generated.ts'
 import { arcYFraction } from './arcYScale.ts'
 
@@ -32,6 +37,19 @@ describe('arc palette parity (JS ↔ GPU uniform slots)', () => {
 // the shader's clamp on every slot anything currently emits (0-8) and disagrees
 // above that — resolving to another real color rather than to a visibly wrong
 // one. That is the class of drift the lift exists to end, so pin both ends.
+// arcLine.slang reads ARC_COLOR_INTERCHROM out of the palette directly now that
+// a connector tick carries no per-instance color, and the Canvas2D tick loop
+// indexes the same constant into `arcColorPalette`. Nothing else ties the
+// shader's slot number to what sits at that position in the JS array, so pin it
+// — a color inserted above index 3 would repaint every translocation tick.
+describe('ARC_COLOR_INTERCHROM', () => {
+  it('is the palette position holding the interchrom color', () => {
+    expect(arcColorPalette[ARC_COLOR_INTERCHROM]).toEqual(
+      cssColorToNormalizedRgb(colorInterchrom),
+    )
+  })
+})
+
 describe('arcColorSlot', () => {
   it('is the identity over every slot the classifier can emit', () => {
     arcColorPalette.forEach((_, i) => {

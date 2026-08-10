@@ -45,12 +45,11 @@ export function packArcs(data: ArcsUploadData): ArrayBuffer {
   )
 }
 
+// Position only — a tick's color is ARC_COLOR_INTERCHROM, which the shader
+// names itself (see arcLine.slang).
 export function packArcLines(data: ArcsUploadData): ArrayBuffer {
   return arcLineShader.packInstances(
-    {
-      position: data.arcLinePositions,
-      colorType: data.arcLineColorTypes,
-    },
+    { position: data.arcLinePositions },
     data.numArcLines,
   )
 }

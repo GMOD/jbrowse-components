@@ -376,6 +376,15 @@ public float3 arcColorByIndex(uint idx, Uniforms u) {
 // sides read this number instead of spelling `2` a second and third time.
 public static const uint ARC_COLOR_SHORT_INSERT = 2u;
 
+// The connector-tick slot, and the ONLY color an interchromosomal tick takes.
+// Insert size, long-range distance and pair orientation are all meaningless
+// across two references — a cross-chromosome "pair orientation" is arbitrary —
+// so every translocation tick is this one color whatever `arcColorByType` says
+// (see resolveArcs). That is why arcLine.slang carries no per-instance
+// colorType: the attribute existed to convey a constant. `//! export-consts`ed
+// through arcLine.slang, the pass that consumes it.
+public static const uint ARC_COLOR_INTERCHROM = 3u;
+
 // Read-cloud endpoint-square palette. The squares are filled opaque marks, so
 // they read fine with the pale pileup-fill short-insert (colorShortInsert
 // #ffc0cb) and must match it. The short-insert slot in the arc palette is the

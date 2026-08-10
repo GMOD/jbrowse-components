@@ -125,6 +125,7 @@ import {
   buildSectionRenders,
   computeStackedSections,
 } from './sectionLayout.ts'
+import { ARC_COLOR_INTERCHROM } from './shaders/slang/arcLine.iface.generated.ts'
 
 import type {
   GroupedAlignmentsResult,
@@ -1214,8 +1215,16 @@ export default function stateModelFactory(
                 for (const ct of data.arcColorTypes) {
                   present.add(arcColorLegendCategory(ct, self.arcColorByType))
                 }
-                for (const ct of data.arcLineColorTypes) {
-                  present.add(arcColorLegendCategory(ct, self.arcColorByType))
+                // Connector ticks carry no per-instance color — every one is
+                // ARC_COLOR_INTERCHROM (arcLine.slang) — so their presence, not
+                // a scan of their colors, is what keys the swatch.
+                if (data.numArcLines > 0) {
+                  present.add(
+                    arcColorLegendCategory(
+                      ARC_COLOR_INTERCHROM,
+                      self.arcColorByType,
+                    ),
+                  )
                 }
               }
             }

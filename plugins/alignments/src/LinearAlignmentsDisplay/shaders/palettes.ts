@@ -16,17 +16,11 @@ import { ARC_COLOR_SHORT_INSERT } from './slang/arc.iface.generated.ts'
 
 import type { RGBColor } from './colors.ts'
 
-// Pixels of padding above the arc apex. Re-exported from arc.generated.ts
-// (arc.slang is the source of truth) so the shader and the Canvas2D / SVG arc
-// renderers share one value.
-export { ARC_HEIGHT_MARGIN } from './slang/arc.iface.generated.ts'
-
-// The palette slot the marker palette overrides below, and the one the pair
-// classifier assigns (COLOR_SHORT_INSERT in features/arcs/compute.ts). Also the
-// shader's, which is why it comes from the generated module: three files
-// spelling `2` is three chances for one of them to mean a different color.
-export { ARC_COLOR_SHORT_INSERT } from './slang/arc.iface.generated.ts'
-
+// ARC_HEIGHT_MARGIN and ARC_COLOR_SHORT_INSERT used to be re-exported from
+// here. Both are generated (arc.slang is the source of truth), and a generated
+// constant takes no re-export hop — a consumer imports the generated module, or
+// the package a `consts-out` put it in, never a third module passing it along
+// (SHADER_JS_CODEGEN.md). This file was that third module for two of them.
 // Palette indices match the Slang arc shaders (u.arcColor0..8). Canvas2D / SVG
 // arc renderers reuse these same arrays, and the interchromosomal connector
 // ticks (arcLine) index into this palette too. Adding a color here requires

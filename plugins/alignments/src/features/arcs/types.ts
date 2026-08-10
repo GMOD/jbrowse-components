@@ -15,9 +15,9 @@ export interface ArcsUploadData {
   numFlatArcs: number
   maxFlatArcYBp: number
   // One entry per connector tick (interchromosomal breakpoint marker). The tick
-  // spans the full arc band, so no Y is stored — see arcLine.slang.
+  // spans the full arc band, so no Y is stored, and every tick is
+  // ARC_COLOR_INTERCHROM, so no color is stored either — see arcLine.slang.
   arcLinePositions: Uint32Array
-  arcLineColorTypes: Uint8Array
   numArcLines: number
 }
 
@@ -45,7 +45,6 @@ export function emptyArcsUploadData(): ArcsUploadData {
     numFlatArcs: 0,
     maxFlatArcYBp: 0,
     arcLinePositions: new Uint32Array(0),
-    arcLineColorTypes: new Uint8Array(0),
     numArcLines: 0,
   }
 }

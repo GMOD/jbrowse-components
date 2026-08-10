@@ -1,5 +1,5 @@
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
-import { ARC_HEIGHT_MARGIN } from './shaders/palettes.ts'
+import { ARC_HEIGHT_MARGIN } from './shaders/slang/arc.iface.generated.ts'
 
 describe('computeInsertSizeTicks', () => {
   it('returns undefined when available height is invalid', () => {

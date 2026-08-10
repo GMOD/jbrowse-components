@@ -10,7 +10,10 @@ import {
   readLeadingBp,
 } from '@jbrowse/cigar-utils'
 
-import { ARC_COLOR_SHORT_INSERT } from '../../LinearAlignmentsDisplay/shaders/palettes.ts'
+// Generated constants, imported from the generated modules with no re-export
+// hop through palettes.ts (SHADER_JS_CODEGEN.md).
+import { ARC_COLOR_SHORT_INSERT } from '../../LinearAlignmentsDisplay/shaders/slang/arc.iface.generated.ts'
+import { ARC_COLOR_INTERCHROM } from '../../LinearAlignmentsDisplay/shaders/slang/arcLine.iface.generated.ts'
 import {
   classifyInsertSize,
   robustSpread,
@@ -110,7 +113,11 @@ const COLOR_LONG_INSERT = 1
 // index with the pale pileup fill, and the Canvas2D marker palette overrides the
 // same one. A local `2` here agreed with them by inspection only.
 const COLOR_SHORT_INSERT = ARC_COLOR_SHORT_INSERT
-const COLOR_INTERCHROM = 3
+// Also the shader's own, for the same reason: arcLine.slang names this slot
+// directly now that a tick carries no per-instance color, so a local `3` here
+// would be the only thing keeping the legend's interchrom swatch on the color
+// the ticks actually paint.
+const COLOR_INTERCHROM = ARC_COLOR_INTERCHROM
 // LL slot 4; RR slot 5; RL slot 6 (see arcColorPalette).
 const COLOR_PAIR_LL = 4
 const COLOR_PAIR_RR = 5
@@ -280,9 +287,10 @@ export interface ComputedArc {
   yBp: number
 }
 
+// A connector tick. No color: every tick is ARC_COLOR_INTERCHROM (see the
+// interchromosomal branch of `resolveArcs` for why that isn't a setting).
 export interface ComputedLine {
   x: ArcEndpoint
-  colorType: number
 }
 
 interface PendingArcEndpoints {
@@ -809,12 +817,14 @@ function resolveArcs(
     // long-range distance, and pair orientation are all meaningless across refs
     // (a cross-chromosome "pair orientation" is arbitrary), so coloring by them
     // just produces visual noise — every translocation tick is one uniform
-    // color regardless of colorByType.
+    // color regardless of colorByType. That is why a tick carries no color of
+    // its own: ARC_COLOR_INTERCHROM is the whole rule, and it lives in
+    // arcLine.slang where the pass reads it.
     if (p1Ref !== p2Ref) {
       if (drawInter) {
         lines.push(
-          { x: { refName: p1Ref, bp: p1Bp }, colorType: COLOR_INTERCHROM },
-          { x: { refName: p2Ref, bp: p2Bp }, colorType: COLOR_INTERCHROM },
+          { x: { refName: p1Ref, bp: p1Bp } },
+          { x: { refName: p2Ref, bp: p2Bp } },
         )
       }
       continue
@@ -910,11 +920,8 @@ export function arcsToRegionResult(
   // One entry per connector tick — the arcLine pass self-expands each instance
   // to the two band-edge vertices (see arcLine.slang / packInstances).
   const arcLinePositions = new Uint32Array(regionLines.length)
-  const arcLineColorTypes = new Uint8Array(regionLines.length)
   for (let i = 0; i < regionLines.length; i++) {
-    const line = regionLines[i]!
-    arcLinePositions[i] = line.x.bp
-    arcLineColorTypes[i] = line.colorType
+    arcLinePositions[i] = regionLines[i]!.x.bp
   }
 
   return {
@@ -927,7 +934,6 @@ export function arcsToRegionResult(
     numFlatArcs,
     maxFlatArcYBp,
     arcLinePositions,
-    arcLineColorTypes,
     numArcLines: regionLines.length,
   }
 }

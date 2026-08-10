@@ -13,6 +13,7 @@ import {
   ARC_FLAT_ALPHA,
   ARC_FLAT_MIN_PX,
 } from '../../LinearAlignmentsDisplay/shaders/slang/arc.iface.generated.ts'
+import { ARC_COLOR_INTERCHROM } from '../../LinearAlignmentsDisplay/shaders/slang/arcLine.iface.generated.ts'
 import { ARC_MARKER_PX } from '../../LinearAlignmentsDisplay/shaders/slang/arcMarker.iface.generated.ts'
 import { arcAvailH, arcYOffsetPx, arcYScale } from './arcYScale.ts'
 import { ARC_SHAPE_FLAT_SPLIT, isFlatArcShape } from './compute.ts'
@@ -185,14 +186,15 @@ export function drawArcs(
   })
 
   // Interchromosomal connector ticks: a vertical line spanning the arc band at
-  // the breakpoint, matching arcLine.slang's full-band ±1 span.
+  // the breakpoint, matching arcLine.slang's full-band ±1 span. Every tick is
+  // ARC_COLOR_INTERCHROM — the shader names the same slot — so the color is
+  // hoisted out of the loop rather than read per instance.
   ctx.lineWidth = state.readConnectionsLineWidth
   ctx.setLineDash([])
+  ctx.strokeStyle = rgb255(arcColorPalette[ARC_COLOR_INTERCHROM]!)
   for (let i = 0; i < region.numArcLines; i++) {
     const bp = region.arcLinePositions[i]!
     const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
-    const colorIdx = region.arcLineColorTypes[i]!
-    ctx.strokeStyle = rgb255(arcColorPalette[arcColorSlot(colorIdx)]!)
     ctx.beginPath()
     ctx.moveTo(x, arcsTop)
     ctx.lineTo(x, arcsTop + arcsH)

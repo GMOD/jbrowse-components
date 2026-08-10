@@ -7,6 +7,7 @@ import {
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/alignments-core'
 
+import { ARC_COLOR_INTERCHROM } from '../../LinearAlignmentsDisplay/shaders/slang/arcLine.iface.generated.ts'
 import {
   ARC_SHAPE_ARC,
   ARC_SHAPE_FLAT,
@@ -204,16 +205,21 @@ describe('computeArcsFromPileupData', () => {
     expect(result.lines.length).toBe(2)
     expect(result.lines[0]!.x.refName).toBe('chr1')
     expect(result.lines[1]!.x.refName).toBe('chr2')
-    // Interchromosomal pairs color with the dedicated interchromosomal slot (3)
-    // under the insert-size schemes (the refs differ).
-    expect(result.lines[0]!.colorType).toBe(3)
-    expect(result.lines[1]!.colorType).toBe(3)
+    // A tick carries no color of its own — every one paints
+    // ARC_COLOR_INTERCHROM, which arcLine.slang names directly — so "the
+    // interchromosomal slot under the insert-size schemes" is now structural
+    // rather than a per-instance value to assert. What still needs pinning is
+    // that the slot means the interchrom swatch; see the legend test below.
+    expect(arcColorLegendCategory(ARC_COLOR_INTERCHROM, 'insertSize')).toBe(
+      'interchrom',
+    )
   })
 
-  test('inter-chromosomal always uses the interchrom color regardless of orientation', () => {
+  test('inter-chromosomal draws ticks, not an orientation-colored arc', () => {
     // RL orientation (2) would resolve to the RL slot (6) for a same-chromosome
-    // arc; across chromosomes "pair orientation" is meaningless, so the tick
-    // must stay the single interchrom color (3) and not vary by orientation.
+    // arc; across chromosomes "pair orientation" is meaningless. The pair must
+    // therefore leave the arc path entirely and come out as two ticks — which,
+    // carrying no color, cannot pick up the RL slot however the scheme is set.
     const data = makePileupData({
       regionStart: 1000,
       readPositions: new Uint32Array([0, 100]),
@@ -236,9 +242,8 @@ describe('computeArcsFromPileupData', () => {
       drawLongRange: true,
     })
 
+    expect(result.arcs).toEqual([])
     expect(result.lines.length).toBe(2)
-    expect(result.lines[0]!.colorType).toBe(3)
-    expect(result.lines[1]!.colorType).toBe(3)
   })
 
   test('inter-chromosomal produces nothing when drawInter=false', () => {
@@ -1707,14 +1712,13 @@ describe('arcsToRegionResult', () => {
 
   test('one entry per connector line, packed in order', () => {
     const lines = [
-      { x: { refName: 'chr1', bp: 1500 }, colorType: 3 },
-      { x: { refName: 'chr1', bp: 2500 }, colorType: 3 },
+      { x: { refName: 'chr1', bp: 1500 } },
+      { x: { refName: 'chr1', bp: 2500 } },
     ]
     const result = arcsToRegionResult([], lines)
 
     expect(result.numArcLines).toBe(2)
     expect(Array.from(result.arcLinePositions)).toEqual([1500, 2500])
-    expect(Array.from(result.arcLineColorTypes)).toEqual([3, 3])
   })
 })
 
