@@ -44,8 +44,6 @@ QuicK-mer2 counts only k-mers that occur exactly once in the reference, so it
 reads _paralogs_ apart instead of collapsing a gene family into one averaged
 pile. That is the whole reason this tutorial has anything to show.
 
-<Figure caption="chr17:36.08-36.27Mb in 104 PUR individuals, one row each, clustered on this window. Red is a gain over the diploid baseline, blue a loss, white two copies, and the bar top right is the scale. The 1000 Genomes integrated SV map above holds a single multiallelic CNV record, which ends before the block where copy number runs from zero to ten across the panel." src="/img/cnv1000g/ccl3l1_depth.png" />
-
 ## Load it
 
 Add hg38, then one track holding every sample:
@@ -223,7 +221,7 @@ the bin size and the resolution levels are attributes of the store, written by
 the converter. A relative `uri` resolves against the config that holds it, so a
 store sitting beside `config.json` needs no absolute URL.
 
-<Figure caption="All 2504 individuals of the 1000 Genomes panel over the CCL3L1 window, clustered, from a single Zarr store. Every population is present, so the classes the 104-sample figure hints at are filled in." src="/img/cnv1000g/zarr_cohort.png" />
+<Figure caption="All 2504 individuals of the 1000 Genomes panel over the CCL3L1 window, clustered, from a single Zarr store. Red is a gain over the diploid baseline, blue a loss, white two copies. Every population is present, so each copy-number class is filled in rather than sampled." src="/img/cnv1000g/zarr_cohort.png" />
 
 That figure is the whole panel, and it cost the three requests measured above:
 the group metadata, the array metadata, and one chunk. The three do not grow

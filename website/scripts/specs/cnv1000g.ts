@@ -119,60 +119,14 @@ const CNV_CONFIG = 'test_data/1000g_cnv/config.json'
 // naming the contig.
 
 export const cnv1000gSpecs: ScreenshotSpec[] = [
-  // The hero figure. 104 individuals as one row each, clustered on this window
-  // so the copy-number classes separate, over the SV map's own record of the
-  // same region. The teaching point is the disagreement: depth resolves a
-  // continuous ladder from zero to ten copies across two paralogous blocks,
-  // while the callset holds one CNV record with three symbolic alleles, ending
-  // 35 kb short of the highest-amplitude block.
-  {
-    mode: 'url',
-    name: 'cnv1000g/ccl3l1_depth',
-    url: lgvSession(DEMO_CONFIG, {
-      assembly: 'hg38',
-      loc: CCL3L1_WINDOW,
-      tracks: [
-        { trackId: GENE_TRACK, displayMode: 'compact', height: 80 },
-        { trackId: SV_MAP_TRACK, height: 70 },
-        {
-          ...CN_HEATMAP,
-          height: 470,
-          runClustering: true,
-          showTree: false,
-        },
-      ],
-    }),
-    readySelector: CLUSTERED_READY,
-    // 104 BigWigs, each needing its header, chrom B-tree and R-tree index
-    // before the first value, then a second pass for stats: minutes of
-    // latency-bound fetching before clustering can even start. This is the cost
-    // the tutorial's Zarr section removes.
-    readyTimeout: 300000,
-    viewportHeight: 900,
-    settleMs: 15000,
-    // One label, naming the block the figure is about and nothing more. The
-    // count it spans belongs in the caption: the heatmap's scale caps at four,
-    // so a "0 to 10 copies" pill over it would claim something the colors under
-    // it cannot show. The callset's side of the contrast is in the caption too,
-    // because the VCF track is three rows tall here and a pill over it hides
-    // the records it describes.
-    annotations: [
-      {
-        type: 'text',
-        text: 'CCL3L1/CCL4L1',
-        anchor: {
-          track: 'pur_copynumber_1000g',
-          locus: '17:36,195,000',
-          fracY: 0,
-          dy: -14,
-        },
-      },
-    ],
-  },
-
-  // The same window as individual profiles instead of a heatmap. This is what
-  // the heatmap is a summary of: the plateaus are flat and quantized, so a
-  // reader can count copies off the y axis rather than trust a color.
+  // The window as individual profiles. The plateaus are flat and quantized, so
+  // a reader can count copies off the y axis rather than trust a color.
+  //
+  // This used to be the companion to cnv1000g/ccl3l1_depth, a 104-sample PUR
+  // heatmap of the same window that opened the page. That one is deleted:
+  // cnv1000g/zarr_cohort draws the same locus the same way for all 2504
+  // individuals, which is what the Zarr store bought, and the PUR cut only
+  // existed because 2504 bigwigs were too slow to plot.
   {
     mode: 'url',
     name: 'cnv1000g/ccl3l1_ladder',
