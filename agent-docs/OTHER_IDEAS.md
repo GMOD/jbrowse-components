@@ -95,6 +95,8 @@ reference others may hold, not as free-form prose.
 
 - [Website: copy-as-markdown / LLM-readiness](#website-copy-as-markdown--llm-readiness)
 - [Website: screenshot spec ↔ PNG staleness guard](#website-screenshot-spec--png-staleness-guard)
+- [Figure work parked on a cost or a decision](#figure-work-parked-on-a-cost-or-a-decision) —
+  the wheat Compara rebuild, a curated ortholog palette, and per-level dotplot scale
 - [Cancer SV datasets not yet shot](#cancer-sv-datasets-not-yet-shot) — including
   the dead ends, so nobody re-checks them
 - [C-GIAB tutorial follow-ups](#c-giab-tutorial-follow-ups-need-data-prep--s3-upload-not-sandbox-runnable)
@@ -2262,6 +2264,30 @@ file's git commit time is newer than its PNG's. Either turns "forgot to regen" f
 multi-session review loop into one red check. (Related: the review tool already hashes the
 PNG bytes to expire verdicts — this is the same idea one step upstream, keyed on the spec's
 inputs rather than its output.)
+
+## Figure work parked on a cost or a decision
+
+Three items the screenshot review surfaced and then left, each because the next
+move is expensive or is not the implementer's to make.
+
+- **Wheat homoeologs are Compara-derived and Colin does not want that.**
+  `scripts/build_wheat_homoeologs.sh` pulls
+  `Compara.*.protein_default.homologies.tsv.gz`, where
+  `scripts/build_oat_homoeologs.sh` computes its own anchors (DIAMOND
+  self-alignment + jcvi + `kaks_from_pairs.py`) and so depends on no external
+  ortholog table. Rebuilding wheat the oat way means a *hexaploid* DIAMOND
+  self-alignment and a demo-bucket upload. That cost has never been measured,
+  which is the first move.
+- **`sv_synteny/ortholog_colors` wants a curated palette**, which means changing
+  core `randomColor` (`packages/core/src/util/color/`, exposed as a jexl
+  function) rather than the spec. Awaiting the word, because that function's
+  output is baked into every config using it.
+- **"Consistent genomic scale per level" across a dotplot set** — the obvious
+  lever doesn't work. `squareView()` averages `bpPerPx`, so on the wheat/oat
+  pair the hexaploid overflows while the diploid leaves whitespace, and
+  `bpPerPx` is not settable from a session spec at all (an `InitState` carries
+  `loc`/`grow`/`displayedRegionNames` only). Either the spec layer grows a way
+  to state a scale, or the figures accept the mismatch.
 
 ## Cancer SV datasets not yet shot
 
