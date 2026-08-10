@@ -4,12 +4,12 @@ import {
 } from '@jbrowse/core/util'
 
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
-import { linkedReadColorPalette } from '../../LinearAlignmentsDisplay/shaders/palettes.ts'
+import { linkedReadColorPalette } from '../../shaders/palettes.ts'
 // The palette-index rule, generated from alignmentsUniforms.slang (adr-051).
 // Canvas2D/SVG spelled it `colorType % palette.length`, which agrees with the
 // shader's clamp on every slot in use and resolves an out-of-range one to a
 // different real color instead of the last slot.
-import { linkedReadColorSlot } from '../../LinearAlignmentsDisplay/shaders/slang/alignmentsUniforms.js.generated.ts'
+import { linkedReadColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 import { connectionLabel, iterLinkedPairs } from './compute.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'

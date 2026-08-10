@@ -1,4 +1,4 @@
-import { qualityFade } from '../../LinearAlignmentsDisplay/shaders/slang/mismatch.js.generated.ts'
+import { qualityFade } from '../../shaders/slang/mismatch.js.generated.ts'
 
 // The retirement gate for mismatch.slang's `//! js-export` (adr-051).
 //

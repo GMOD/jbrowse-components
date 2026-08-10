@@ -1,7 +1,7 @@
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import { passesFrequencyGate } from '../LinearAlignmentsDisplay/constants.ts'
-import * as clipShader from '../LinearAlignmentsDisplay/shaders/slang/clip.generated.ts'
+import * as clipShader from '../shaders/slang/clip.generated.ts'
 import { interbaseRangeEnds } from './uploadTypes.ts'
 
 import type {

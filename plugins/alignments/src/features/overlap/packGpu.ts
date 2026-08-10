@@ -1,6 +1,6 @@
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
-import * as overlapShader from '../../LinearAlignmentsDisplay/shaders/slang/overlap.generated.ts'
+import * as overlapShader from '../../shaders/slang/overlap.generated.ts'
 
 import type { OverlapsUploadData } from './types.ts'
 

@@ -1,4 +1,4 @@
-import { overlapAlpha } from '../../LinearAlignmentsDisplay/shaders/slang/overlap.js.generated.ts'
+import { overlapAlpha } from '../../shaders/slang/overlap.js.generated.ts'
 
 // Retirement gate for the overlap tint's Canvas2D twin (adr-051). drawCanvas.ts
 // multiplied the exported OVERLAP_ALPHA by its own hand-written `smoothstep`

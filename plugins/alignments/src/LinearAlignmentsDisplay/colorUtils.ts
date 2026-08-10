@@ -4,16 +4,6 @@ import {
 } from '@jbrowse/alignments-core'
 import { abgrToCssRgba, normalizedRgbToCss } from '@jbrowse/core/util/colorBits'
 
-import { COLOR_SCHEMES } from '../shared/colorSchemes.ts'
-import { classifyInsertSize } from '../shared/insertSizeStats.ts'
-import {
-  CHAIN_FILL_NO_SUPP,
-  CHAIN_FILL_SPLIT_DELETION,
-  CHAIN_FILL_SPLIT_INVERSION,
-  CHAIN_FILL_SUPP_PRIMARY_FWD,
-} from '../shared/types.ts'
-import { firstOfPairStrand } from '../shared/util.ts'
-import { ColorScheme } from './constants.ts'
 import {
   RC_FWD_STRAND,
   RC_INTERCHROM,
@@ -37,11 +27,21 @@ import {
   RC_SUPPLEMENTARY,
   RC_TAG,
   RC_UNMAPPED_MATE,
-} from './shaders/slang/read.iface.generated.ts'
-import { insertGradientT } from './shaders/slang/read.js.generated.ts'
+} from '../shaders/slang/read.iface.generated.ts'
+import { insertGradientT } from '../shaders/slang/read.js.generated.ts'
+import { COLOR_SCHEMES } from '../shared/colorSchemes.ts'
+import { classifyInsertSize } from '../shared/insertSizeStats.ts'
+import {
+  CHAIN_FILL_NO_SUPP,
+  CHAIN_FILL_SPLIT_DELETION,
+  CHAIN_FILL_SPLIT_INVERSION,
+  CHAIN_FILL_SUPP_PRIMARY_FWD,
+} from '../shared/types.ts'
+import { firstOfPairStrand } from '../shared/util.ts'
+import { ColorScheme } from './constants.ts'
 
+import type { ColorPalette, RGBColor } from '../shaders/colors.ts'
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
-import type { ColorPalette, RGBColor } from './shaders/colors.ts'
 
 // Re-exports from core — kept for backwards-compat with call sites.
 export const rgb255 = normalizedRgbToCss

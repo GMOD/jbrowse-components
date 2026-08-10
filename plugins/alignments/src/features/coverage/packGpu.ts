@@ -1,6 +1,6 @@
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
-import * as coverageShader from '../../LinearAlignmentsDisplay/shaders/slang/coverage.generated.ts'
+import * as coverageShader from '../../shaders/slang/coverage.generated.ts'
 
 export const PASS_COVERAGE = 'coverage'
 

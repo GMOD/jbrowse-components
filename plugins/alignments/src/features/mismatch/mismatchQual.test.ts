@@ -1,4 +1,4 @@
-import * as mismatchShader from '../../LinearAlignmentsDisplay/shaders/slang/mismatch.generated.ts'
+import * as mismatchShader from '../../shaders/slang/mismatch.generated.ts'
 import { buildMismatchArrays } from './buildArrays.ts'
 import { packMismatches } from './packGpu.ts'
 

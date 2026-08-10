@@ -1,5 +1,24 @@
 # plugins/alignments
 
+## Shaders are `src/shaders`, a peer of `src/features`
+
+They lived under `src/LinearAlignmentsDisplay/shaders` and the dependency arrow
+pointed the wrong way: 39 files outside that display imported them against 11
+inside, every `features/*` directory reaching back up through
+`../../LinearAlignmentsDisplay/shaders/slang/...`. `features/` is the shared
+layer here — one pass per directory, packing for whichever renderer draws it —
+so the shaders it packs for belong beside it, not inside the single display that
+happens to mount them.
+
+Other plugins do keep shaders display-local, and that is right for them: their
+shaders have exactly one consumer. This plugin is the one with a `features/`
+layer, which is why it is the one that differs.
+
+Nothing in the build cared — `build-shaders` walks for `.slang` rather than
+being pointed at a directory, and `js-export-out` / `consts-out` name their
+destinations in `packages/`. `.fallowrc.json` did name four generated files by
+path.
+
 ## Strand comes from `strand`; `flags` answers everything else
 
 This pipeline serves two kinds of feature: SAM-flavoured records (BAM/CRAM/SAM)

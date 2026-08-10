@@ -91,19 +91,19 @@ import {
   SOFTCLIP_BASES_PASS,
 } from '../../features/softclip/packBases.ts'
 import { uploadSoftclipBases } from '../../features/softclip/uploadBases.ts'
+import {
+  arcColorPalette,
+  arcMarkerColorPalette,
+  linkedReadColorPalette,
+} from '../../shaders/palettes.ts'
+import * as flatQuadShader from '../../shaders/slang/flatQuad.generated.ts'
+import * as readShader from '../../shaders/slang/read.generated.ts'
 import { CLIP_PASS, PASS_CLIP, uploadClips } from '../../shared/clipPass.ts'
 import { READ_COLOR_CATEGORY, readCategoryPaletteKeys } from '../colorUtils.ts'
 import {
   getSelectionBounds,
   toClipRect,
 } from '../components/chainOverlayUtils.ts'
-import {
-  arcColorPalette,
-  arcMarkerColorPalette,
-  linkedReadColorPalette,
-} from '../shaders/palettes.ts'
-import * as flatQuadShader from '../shaders/slang/flatQuad.generated.ts'
-import * as readShader from '../shaders/slang/read.generated.ts'
 import { PILEUP_LAYERS } from './pileupLayers.ts'
 import {
   lazyReadIdToIndex,

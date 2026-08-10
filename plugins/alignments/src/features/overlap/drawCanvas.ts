@@ -3,7 +3,7 @@ import {
   pileupRowOffCanvas,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import { overlapAlpha } from '../../LinearAlignmentsDisplay/shaders/slang/overlap.js.generated.ts'
+import { overlapAlpha } from '../../shaders/slang/overlap.js.generated.ts'
 
 import type {
   DrawBlock,

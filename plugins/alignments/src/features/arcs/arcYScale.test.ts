@@ -9,13 +9,13 @@ import {
   arcColorPalette,
   arcMarkerColorPalette,
   linkedReadColorPalette,
-} from '../../LinearAlignmentsDisplay/shaders/palettes.ts'
+} from '../../shaders/palettes.ts'
 import {
   arcColorSlot,
   linkedReadColorSlot,
-} from '../../LinearAlignmentsDisplay/shaders/slang/alignmentsUniforms.js.generated.ts'
-import { ARC_COLOR_INTERCHROM } from '../../LinearAlignmentsDisplay/shaders/slang/arcLine.iface.generated.ts'
-import { UNIFORM_SLOT_ARRAYS } from '../../LinearAlignmentsDisplay/shaders/slang/read.iface.generated.ts'
+} from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
+import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.iface.generated.ts'
+import { UNIFORM_SLOT_ARRAYS } from '../../shaders/slang/read.iface.generated.ts'
 import { arcYFraction } from './arcYScale.ts'
 
 // The JS palettes (Canvas2D / SVG) and the GPU uniform slots are two hand-kept

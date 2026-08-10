@@ -1,4 +1,4 @@
-import { ARC_HEIGHT_MARGIN } from '../../LinearAlignmentsDisplay/shaders/slang/arc.iface.generated.ts'
+import { ARC_HEIGHT_MARGIN } from '../../shaders/slang/arc.iface.generated.ts'
 
 // The arcs band's yBp→vertical-fraction mapping, and the clamped px offset
 // built on it, are generated from alignmentsUniforms.slang (adr-051). Both were
@@ -16,7 +16,7 @@ import { ARC_HEIGHT_MARGIN } from '../../LinearAlignmentsDisplay/shaders/slang/a
 export {
   arcYFraction,
   arcYOffsetPx,
-} from '../../LinearAlignmentsDisplay/shaders/slang/alignmentsUniforms.js.generated.ts'
+} from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 
 // Plottable height of the band: the drawn height less the apex padding.
 export function arcAvailH(bandH: number) {

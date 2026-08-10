@@ -2,7 +2,7 @@ import { slangPass } from '@jbrowse/render-core/slangPass'
 
 // Softclip-base bases reuse the mismatch pass's shader/geometry — same
 // instanced quad with a base-letter slot.
-import * as mismatchShader from '../../LinearAlignmentsDisplay/shaders/slang/mismatch.generated.ts'
+import * as mismatchShader from '../../shaders/slang/mismatch.generated.ts'
 
 import type { CigarUploadData } from '../../shared/uploadTypes.ts'
 

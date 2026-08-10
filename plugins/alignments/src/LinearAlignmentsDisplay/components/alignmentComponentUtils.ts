@@ -12,10 +12,10 @@ import {
   colorUnmappedMate,
 } from '@jbrowse/core/ui/palette'
 
-import { toRgb } from '../shaders/colors.ts'
+import { toRgb } from '../../shaders/colors.ts'
 
+import type { ColorPalette, RGBColor } from '../../shaders/colors.ts'
 import type { CigarCoords } from '../../shared/hitTestTypes.ts'
-import type { ColorPalette, RGBColor } from '../shaders/colors.ts'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type React from 'react'

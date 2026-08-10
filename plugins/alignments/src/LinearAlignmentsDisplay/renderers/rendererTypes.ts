@@ -1,15 +1,15 @@
 import { makeCellLeftMapper } from '@jbrowse/render-core/canvas2dUtils'
 
-import { frequencyFadeGate } from '../shaders/slang/alignmentsUniforms.js.generated.ts'
-import { intronAlpha } from '../shaders/slang/gap.js.generated.ts'
+import { frequencyFadeGate } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
+import { intronAlpha } from '../../shaders/slang/gap.js.generated.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
+import type { ColorPalette } from '../../shaders/colors.ts'
 import type { ReadConnectionsMode } from '../constants.ts'
-import type { ColorPalette } from '../shaders/colors.ts'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
-export type { ColorPalette, RGBColor } from '../shaders/colors.ts'
+export type { ColorPalette, RGBColor } from '../../shaders/colors.ts'
 export { interbaseRangeEnds } from '../../shared/uploadTypes.ts'
 export type {
   CigarUploadData,

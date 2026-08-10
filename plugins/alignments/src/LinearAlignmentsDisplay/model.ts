@@ -55,6 +55,7 @@ import {
   isBezierArcPair,
 } from '../features/linkedReads/computeOverlay.ts'
 import { computeSashimiArcs } from '../features/sashimi/computeOverlay.ts'
+import { ARC_COLOR_INTERCHROM } from '../shaders/slang/arcLine.iface.generated.ts'
 import {
   COLOR_SCHEMES,
   isModificationScheme,
@@ -125,7 +126,6 @@ import {
   buildSectionRenders,
   computeStackedSections,
 } from './sectionLayout.ts'
-import { ARC_COLOR_INTERCHROM } from './shaders/slang/arcLine.iface.generated.ts'
 
 import type {
   GroupedAlignmentsResult,

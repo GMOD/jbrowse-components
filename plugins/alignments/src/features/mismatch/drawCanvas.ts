@@ -5,7 +5,7 @@ import {
   pileupRowOffCanvas,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import { qualityFade } from '../../LinearAlignmentsDisplay/shaders/slang/mismatch.js.generated.ts'
+import { qualityFade } from '../../shaders/slang/mismatch.js.generated.ts'
 import {
   baseColorFallback,
   buildBaseColorTupleMap,

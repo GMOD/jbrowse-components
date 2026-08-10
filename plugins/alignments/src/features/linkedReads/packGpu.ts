@@ -1,6 +1,6 @@
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
-import * as linkedReadLineShader from '../../LinearAlignmentsDisplay/shaders/slang/linkedReadLine.generated.ts'
+import * as linkedReadLineShader from '../../shaders/slang/linkedReadLine.generated.ts'
 
 import type { LinkedReadLinesUploadData } from './types.ts'
 

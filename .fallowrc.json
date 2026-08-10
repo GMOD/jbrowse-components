@@ -41,19 +41,19 @@
       "exports": ["*"]
     },
     {
-      "file": "plugins/alignments/src/LinearAlignmentsDisplay/shaders/slang/arc.generated.ts",
+      "file": "plugins/alignments/src/shaders/slang/arc.generated.ts",
       "exports": ["*"]
     },
     {
-      "file": "plugins/alignments/src/LinearAlignmentsDisplay/shaders/slang/arcLine.generated.ts",
+      "file": "plugins/alignments/src/shaders/slang/arcLine.generated.ts",
       "exports": ["*"]
     },
     {
-      "file": "plugins/alignments/src/LinearAlignmentsDisplay/shaders/slang/flatQuad.generated.ts",
+      "file": "plugins/alignments/src/shaders/slang/flatQuad.generated.ts",
       "exports": ["*"]
     },
     {
-      "file": "plugins/alignments/src/LinearAlignmentsDisplay/shaders/slang/read.generated.ts",
+      "file": "plugins/alignments/src/shaders/slang/read.generated.ts",
       "exports": ["*"]
     },
     {

@@ -1,6 +1,6 @@
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
-import * as modificationShader from '../../LinearAlignmentsDisplay/shaders/slang/packedColorQuad.generated.ts'
+import * as modificationShader from '../../shaders/slang/packedColorQuad.generated.ts'
 
 import type { ModificationUploadData } from './types.ts'
 

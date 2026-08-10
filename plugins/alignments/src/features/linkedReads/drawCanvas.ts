@@ -3,8 +3,8 @@ import {
   bpToScreenX,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import { linkedReadColorPalette } from '../../LinearAlignmentsDisplay/shaders/palettes.ts'
-import { LINKED_READ_LINE_ALPHA } from '../../LinearAlignmentsDisplay/shaders/slang/linkedReadLine.iface.generated.ts'
+import { linkedReadColorPalette } from '../../shaders/palettes.ts'
+import { LINKED_READ_LINE_ALPHA } from '../../shaders/slang/linkedReadLine.iface.generated.ts'
 
 import type {
   DrawBlock,

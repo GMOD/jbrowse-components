@@ -4,8 +4,8 @@ import {
   pileupRowOffCanvas,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import { CHEVRON_PX } from '../../LinearAlignmentsDisplay/shaders/slang/read.iface.generated.ts'
-import { showChevron as shaderShowChevron } from '../../LinearAlignmentsDisplay/shaders/slang/read.js.generated.ts'
+import { CHEVRON_PX } from '../../shaders/slang/read.iface.generated.ts'
+import { showChevron as shaderShowChevron } from '../../shaders/slang/read.js.generated.ts'
 
 import type {
   DrawBlock,

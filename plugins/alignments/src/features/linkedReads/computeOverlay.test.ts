@@ -6,7 +6,7 @@ import {
 } from '@jbrowse/alignments-core'
 
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
-import { linkedReadColorPalette } from '../../LinearAlignmentsDisplay/shaders/palettes.ts'
+import { linkedReadColorPalette } from '../../shaders/palettes.ts'
 import {
   LINKED_READ_COLOR_PAIR_RR,
   LINKED_READ_COLOR_SPLIT_INV,

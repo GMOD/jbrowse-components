@@ -1,4 +1,4 @@
-import { ARC_APEX_FRACTION } from '../../LinearAlignmentsDisplay/shaders/slang/arc.iface.generated.ts'
+import { ARC_APEX_FRACTION } from '../../shaders/slang/arc.iface.generated.ts'
 import { strokeArc } from './drawCanvas.ts'
 
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'

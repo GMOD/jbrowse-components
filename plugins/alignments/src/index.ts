@@ -95,7 +95,7 @@ export type {
   SectionRender,
 } from './LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 export type { SectionsLayout } from './LinearAlignmentsDisplay/sectionLayout.ts'
-export type { ColorPalette } from './LinearAlignmentsDisplay/shaders/colors.ts'
+export type { ColorPalette } from './shaders/colors.ts'
 export type {
   GroupedAlignmentsResult,
   PileupDataResult,

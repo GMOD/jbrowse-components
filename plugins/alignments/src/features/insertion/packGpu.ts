@@ -1,6 +1,6 @@
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
-import * as insertionShader from '../../LinearAlignmentsDisplay/shaders/slang/insertion.generated.ts'
+import * as insertionShader from '../../shaders/slang/insertion.generated.ts'
 
 import type { CigarUploadData } from '../../shared/uploadTypes.ts'
 

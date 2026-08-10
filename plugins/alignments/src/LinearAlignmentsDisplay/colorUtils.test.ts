@@ -5,7 +5,7 @@ import { getReadColor, readColorCategory, rgb255 } from './colorUtils.ts'
 import { ColorScheme } from './constants.ts'
 import { makeTestPalette } from './testUtils.ts'
 
-import type { RGBColor } from './shaders/colors.ts'
+import type { RGBColor } from '../shaders/colors.ts'
 
 // Distinct colors only for the roles these cases assert on, so a mis-mapped
 // category resolves to a different (zeroed) color and the test catches it.

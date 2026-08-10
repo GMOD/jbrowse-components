@@ -1,8 +1,8 @@
 import {
   frequencyAlpha,
   frequencyFadeGate,
-} from '../shaders/slang/alignmentsUniforms.js.generated.ts'
-import { intronAlpha } from '../shaders/slang/gap.js.generated.ts'
+} from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
+import { intronAlpha } from '../../shaders/slang/gap.js.generated.ts'
 
 // Retirement gates for the alpha math rendererTypes.ts used to spell out itself
 // (adr-051).

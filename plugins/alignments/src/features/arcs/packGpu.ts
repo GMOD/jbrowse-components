@@ -1,9 +1,9 @@
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
-import * as arcShader from '../../LinearAlignmentsDisplay/shaders/slang/arc.generated.ts'
-import * as arcFlatShader from '../../LinearAlignmentsDisplay/shaders/slang/arcFlat.generated.ts'
-import * as arcLineShader from '../../LinearAlignmentsDisplay/shaders/slang/arcLine.generated.ts'
-import * as arcMarkerShader from '../../LinearAlignmentsDisplay/shaders/slang/arcMarker.generated.ts'
+import * as arcShader from '../../shaders/slang/arc.generated.ts'
+import * as arcFlatShader from '../../shaders/slang/arcFlat.generated.ts'
+import * as arcLineShader from '../../shaders/slang/arcLine.generated.ts'
+import * as arcMarkerShader from '../../shaders/slang/arcMarker.generated.ts'
 import { ARC_SHAPE_FLAT_SPLIT, isFlatArcShape } from './compute.ts'
 
 import type { ArcsUploadData } from './types.ts'

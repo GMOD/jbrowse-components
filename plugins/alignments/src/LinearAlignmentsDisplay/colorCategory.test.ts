@@ -1,10 +1,10 @@
+import * as readShader from '../shaders/slang/read.generated.ts'
 import {
   READ_COLOR_CATEGORY,
   READ_COLOR_CATEGORY_BY_INDEX,
   readCategoryPaletteKeys,
   swatchPaletteKeys,
 } from './colorUtils.ts'
-import * as readShader from './shaders/slang/read.generated.ts'
 
 // read.slang classifies nothing — `readColorCategory` (colorUtils.ts) decides a
 // read's bucket once on the CPU and the shader paints the resulting RC_* index.

@@ -8,7 +8,7 @@ import type {
   DrawBlock,
   RenderState,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import type { ColorPalette } from '../../LinearAlignmentsDisplay/shaders/colors.ts'
+import type { ColorPalette } from '../../shaders/colors.ts'
 import type { ChevronFrame } from './drawCanvas.ts'
 
 const BLACK: [number, number, number] = [0, 0, 0]

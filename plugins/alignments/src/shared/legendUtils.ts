@@ -22,7 +22,7 @@ import type {
   SwatchCategory,
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import type { ReadConnectionsMode } from '../LinearAlignmentsDisplay/constants.ts'
-import type { ColorPalette } from '../LinearAlignmentsDisplay/shaders/colors.ts'
+import type { ColorPalette } from '../shaders/colors.ts'
 import type { ColorBy, ColorSchemeType } from './types.ts'
 import type { LegendItem, LegendSection } from '@jbrowse/core/ui'
 

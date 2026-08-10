@@ -1,7 +1,7 @@
 import { getClip, getLengthOnRef } from '@jbrowse/cigar-utils'
 
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
-import type { ColorPalette, RGBColor } from './shaders/colors.ts'
+import type { ColorPalette, RGBColor } from '../shaders/colors.ts'
 
 // A full ColorPalette with every channel zeroed, for tests that only assert on
 // a few roles. Pass `overrides` to set the colors a case actually checks; the

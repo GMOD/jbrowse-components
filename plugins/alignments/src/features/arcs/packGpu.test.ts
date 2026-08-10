@@ -1,5 +1,5 @@
-import * as arcShader from '../../LinearAlignmentsDisplay/shaders/slang/arc.iface.generated.ts'
-import * as arcFlatShader from '../../LinearAlignmentsDisplay/shaders/slang/arcFlat.iface.generated.ts'
+import * as arcShader from '../../shaders/slang/arc.iface.generated.ts'
+import * as arcFlatShader from '../../shaders/slang/arcFlat.iface.generated.ts'
 import {
   ARC_SHAPE_ARC,
   ARC_SHAPE_FLAT,

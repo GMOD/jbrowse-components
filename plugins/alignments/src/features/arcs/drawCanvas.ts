@@ -3,22 +3,22 @@ import { bpToScreenX } from '../../LinearAlignmentsDisplay/renderers/rendererTyp
 import {
   arcColorPalette,
   arcMarkerColorPalette,
-} from '../../LinearAlignmentsDisplay/shaders/palettes.ts'
+} from '../../shaders/palettes.ts'
 // The palette-index rule, generated from alignmentsUniforms.slang (adr-051) —
 // imported from the generated module directly, with no re-export hop.
-import { arcColorSlot } from '../../LinearAlignmentsDisplay/shaders/slang/alignmentsUniforms.js.generated.ts'
+import { arcColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 import {
   ARC_APEX_FRACTION,
   ARC_FAR_SCREEN_WIDTHS,
-} from '../../LinearAlignmentsDisplay/shaders/slang/arc.iface.generated.ts'
+} from '../../shaders/slang/arc.iface.generated.ts'
 // The flat-line constants moved with the flat line: they are arcFlat.slang's
 // now, declared on the pass that consumes them.
 import {
   ARC_FLAT_ALPHA,
   ARC_FLAT_MIN_PX,
-} from '../../LinearAlignmentsDisplay/shaders/slang/arcFlat.iface.generated.ts'
-import { ARC_COLOR_INTERCHROM } from '../../LinearAlignmentsDisplay/shaders/slang/arcLine.iface.generated.ts'
-import { ARC_MARKER_PX } from '../../LinearAlignmentsDisplay/shaders/slang/arcMarker.iface.generated.ts'
+} from '../../shaders/slang/arcFlat.iface.generated.ts'
+import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.iface.generated.ts'
+import { ARC_MARKER_PX } from '../../shaders/slang/arcMarker.iface.generated.ts'
 import { arcAvailH, arcYOffsetPx, arcYScale } from './arcYScale.ts'
 import { ARC_SHAPE_FLAT_SPLIT, isFlatArcShape } from './compute.ts'
 
@@ -26,7 +26,7 @@ import type {
   DrawBlock,
   RenderState,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import type { RGBColor } from '../../LinearAlignmentsDisplay/shaders/colors.ts'
+import type { RGBColor } from '../../shaders/colors.ts'
 import type { ArcsUploadData } from './types.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 

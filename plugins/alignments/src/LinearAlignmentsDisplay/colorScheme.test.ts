@@ -1,4 +1,3 @@
-import { ColorScheme } from './model.ts'
 import {
   CS_FIRST_OF_PAIR,
   CS_INSERT_SIZE,
@@ -10,7 +9,8 @@ import {
   CS_PAIR_ORIENT,
   CS_STRAND,
   CS_TAG,
-} from './shaders/slang/read.generated.ts'
+} from '../shaders/slang/read.generated.ts'
+import { ColorScheme } from './model.ts'
 
 describe('ColorScheme', () => {
   test('has all expected color scheme indices', () => {

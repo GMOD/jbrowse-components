@@ -12,8 +12,8 @@ import {
 
 // Generated constants, imported from the generated modules with no re-export
 // hop through palettes.ts (SHADER_JS_CODEGEN.md).
-import { ARC_COLOR_SHORT_INSERT } from '../../LinearAlignmentsDisplay/shaders/slang/arc.iface.generated.ts'
-import { ARC_COLOR_INTERCHROM } from '../../LinearAlignmentsDisplay/shaders/slang/arcLine.iface.generated.ts'
+import { ARC_COLOR_SHORT_INSERT } from '../../shaders/slang/arc.iface.generated.ts'
+import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.iface.generated.ts'
 import {
   classifyInsertSize,
   robustSpread,
