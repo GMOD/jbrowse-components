@@ -1,16 +1,25 @@
 #!/bin/sh
-# Runs oxfmt over the files being committed, so `pnpm check-format` in CI does
-# not fail on formatting alone. `pnpm install` points core.hooksPath here; skip
-# a run with `SKIP_OXFMT=1 git commit` or `git commit --no-verify`.
+# Runs oxfmt and then oxlint over the files being committed, so `pnpm
+# check-format` and `pnpm lint` in CI do not fail on something a three-second
+# local check would have caught. `pnpm install` points core.hooksPath here;
+# skip the format with `SKIP_OXFMT=1 git commit`, the lint with `SKIP_LINT=1`,
+# and both with `git commit --no-verify`.
 #
-# Only the paths in this commit are formatted. Bare `pnpm format` rewrites all
-# ~5800 files, so in a worktree shared by several people it lands someone
-# else's reformatting in your diff under your commit message.
+# Only the paths in this commit are formatted or linted. Bare `pnpm format`
+# rewrites all ~5800 files, so in a worktree shared by several people it lands
+# someone else's reformatting in your diff under your commit message; a
+# whole-tree `pnpm lint` has the mirror problem, failing your commit for an
+# error in someone else's unfinished work.
 #
-# This is oxfmt over the staged paths and nothing else -- `pnpm lint` (oxlint
-# --type-aware) is NOT here and never runs on commit. Measured 2026-08-10 on
-# real commits: 105ms on 3 files, 305ms on 1, 663ms on 10, 819ms on 13. So if a
-# commit feels slow, this is not where the time went; check before removing it.
+# WHAT IT COSTS, since that is what you want to know when a commit feels slow.
+# Measured 2026-08-10 on real commits. Format: 105ms on 3 files, 305ms on 1,
+# 663ms on 10, 819ms on 13. Lint is the larger half and nearly flat in file
+# count -- almost all of it is tsgolint building the program, so: 0.80s on 1
+# file, 0.89s on 3, 0.97s on 13. Call it a second, whatever you are committing.
+#
+# eslint is deliberately not here. `pnpm lint:eslint` is ~75s even with
+# --concurrency, against the above, and it owns only the syntactic backstop
+# rules. It stays a CI job.
 set -eu
 
 if [ "${SKIP_OXFMT:-}" = 1 ]; then
@@ -107,4 +116,53 @@ if [ -n "$partial" ]; then
     echo "copy of (these have unstaged edits as well):" >&2
     printf '%s' "$fixed" >&2
   fi
+fi
+
+# ---------------------------------------------------------------------------
+# Lint. Only the fully-staged paths: a partially-staged file's working copy is
+# not what is being committed, so an error in the unstaged half would block a
+# commit that does not contain it. Those are rare and CI still covers them.
+#
+# --type-aware because that is the tier that catches what actually reaches main
+# -- no-confusing-void-expression, no-unnecessary-condition. It costs ~1.3s for
+# two files against ~0.2s untyped, and ~8s for the whole tree, so paying it per
+# commit is affordable and skipping it would miss the point.
+#
+# --fix first: this hook already rewrites your files, and most of what lands
+# broken is autofixable. What survives the fix is a real block.
+# ---------------------------------------------------------------------------
+if [ "${SKIP_LINT:-}" = 1 ] || [ -z "$whole" ]; then
+  exit 0
+fi
+
+oxlint=$root/node_modules/.bin/oxlint
+if [ ! -x "$oxlint" ]; then
+  echo "pre-commit: no $oxlint, skipping lint (run pnpm install)" >&2
+  exit 0
+fi
+
+# --no-error-on-unmatched-pattern: a commit is mostly not JavaScript. Without
+# it, oxlint exits 1 with "No files found to lint" on a docs-only commit, and
+# every path it has no parser for -- .md, .json, .slang -- reads as unmatched.
+status=0
+printf '%s' "$whole" | tr '\n' '\0' |
+  xargs -0 "$oxlint" --type-aware --deny-warnings \
+    --no-error-on-unmatched-pattern --fix -- || status=$?
+
+# oxlint's fixes are not formatted -- it rewrites an arrow shorthand as
+# `() =>{  g(); }` and leaves it there. Format runs above this block, so
+# without a second pass a commit could satisfy `pnpm lint` and then fail
+# `pnpm check-format`, which is the failure this hook exists to prevent.
+printf '%s' "$whole" | tr '\n' '\0' |
+  xargs -0 "$oxfmt" --no-error-on-unmatched-pattern --write
+
+# Stage whatever the two --fix passes rewrote, whether or not anything survived
+# them, so a blocked commit is still strictly closer to green than it started.
+printf '%s' "$whole" | tr '\n' '\0' | xargs -0 git add --
+
+if [ "$status" != 0 ]; then
+  echo >&2
+  echo "pre-commit: lint errors above survived --fix (autofixes are staged)." >&2
+  echo "Fix them, or commit anyway with SKIP_LINT=1 git commit." >&2
+  exit "$status"
 fi

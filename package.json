@@ -25,7 +25,7 @@
     "changelog": "scripts/generate-changelog.sh",
     "lint": "oxlint --type-aware --deny-warnings",
     "lint:fast": "oxlint --deny-warnings",
-    "lint:eslint": "eslint --max-warnings 0",
+    "lint:eslint": "eslint --max-warnings 0 --concurrency=auto",
     "format": "oxfmt",
     "postformat": "prettier --write \"**/*.astro\"",
     "check-format": "oxfmt --check",
