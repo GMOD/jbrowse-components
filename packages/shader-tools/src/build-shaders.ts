@@ -849,6 +849,16 @@ async function main() {
       emitLiftReport(SCANS, EXPORTED, skips),
     )
     console.log(`  ok: ${LIFT_REPORT_PATH}`)
+  } else {
+    // Say so, rather than skipping in silence. A path-scoped run is the one the
+    // shared-worktree guidance recommends, so this is the mode people actually
+    // use — and a shader edit that adds a Candidates row would then produce no
+    // local signal at all, surfacing hours later as a red CI job.
+    console.log(
+      `\nnote: ${LIFT_REPORT_PATH} was NOT updated — it is a whole-tree ` +
+        `artifact and this run was scoped to ${argPaths.length} path(s). Run ` +
+        `\`pnpm gen:shaders\` with no arguments before committing.`,
+    )
   }
 }
 
