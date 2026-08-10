@@ -203,8 +203,10 @@ plugins... → Add custom plugin**. Expand **Advanced options** and put the
 above it empty: they are the UMD pair, and filling either one wins. Then **Add →
 Graph genome view** offers **Choose file**.
 
-Desktop only starts a session by opening a genome, so pick any one to get an
-**Add** menu. The file route ignores it.
+Desktop only starts a session by opening a genome, so you have to pick one
+before there is an **Add** menu at all. It can be any genome: a GFA opened this
+way is laid out from its own P/W lines, and nothing in the graph pane reads the
+assembly you happened to start with.
 
 ## Three layouts
 
