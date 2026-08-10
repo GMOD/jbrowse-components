@@ -1,4 +1,8 @@
-import { forEachRenderedPeptide } from './peptidePositioning.ts'
+import { measureText } from '@jbrowse/core/util'
+import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
+
+import { PEPTIDE_TEXT_MAX_BP_PER_PX } from '../../RenderFeatureDataRPC/zoomThresholds.ts'
+import { drawPeptides, forEachRenderedPeptide } from './peptidePositioning.ts'
 
 import type {
   AminoAcidOverlayItem,
@@ -130,5 +134,104 @@ describe('forEachRenderedPeptide', () => {
     })
     // reversed maps bp b -> 1000 - b, so 100..130 -> 900..870, midpoint 885
     expect(emitted!.cell.centerPx).toBe(885)
+  })
+})
+
+// The claim the cell layout above exists to make, asserted on what is actually
+// PAINTED rather than on the numbers feeding it: at the coarsest zoom the
+// letters ever draw at, no residue's text may reach its neighbour's. Driven
+// through SvgCanvas because it records each draw as a `<text x=...>` element —
+// the same 2D-context surface the SVG export paints peptides onto, so this
+// covers the export path as well as the on-screen one.
+describe('drawPeptides at the tightest zoom that draws text', () => {
+  // A run of codons tiling the region, numbered from `firstIndex` — the digit
+  // count is what decides whether the residue number fits.
+  function paintedTexts(firstIndex: number, count = 6, heightPx = 10) {
+    const cellBp = 3
+    const region: BpRegionBounds = {
+      start: 0,
+      end: cellBp * count,
+      screenStartPx: 0,
+      screenEndPx: (cellBp * count) / PEPTIDE_TEXT_MAX_BP_PER_PX,
+    }
+    const overlay = Array.from({ length: count }, (_, i) =>
+      makeItem({
+        startBp: i * cellBp,
+        endBp: (i + 1) * cellBp,
+        aminoAcid: 'M',
+        proteinIndex: firstIndex + i,
+        topPx: 0,
+        heightPx,
+      }),
+    )
+    const ctx = new SvgCanvas()
+    drawPeptides(ctx, makeData(overlay), region)
+    // strokeText + fillText emit one <text> each (the halo pattern), so take the
+    // fills alone — the stroke is the same string at the same x.
+    return [
+      ...ctx
+        .getSerializedSvg()
+        .matchAll(/<text x="([^"]*)"[^>]*>([^<]*)<\/text>/g),
+    ]
+      .filter((_, i) => i % 2 === 1)
+      .map(m => ({ x: Number.parseFloat(m[1]!), text: m[2]! }))
+  }
+
+  // 24px cells; textAlign is 'center', so each label occupies
+  // [x - w/2, x + w/2] and adjacent labels must not cross.
+  function overlaps(painted: { x: number; text: string }[], fontSize = 10) {
+    const spans = painted.map(({ x, text }) => {
+      const w = measureText(text, fontSize, 'monospace')
+      return { left: x - w / 2, right: x + w / 2 }
+    })
+    return spans.some((s, i) => i > 0 && s.left < spans[i - 1]!.right)
+  }
+
+  test('a 1-digit protein fits its letter and number in a 24px codon', () => {
+    const painted = paintedTexts(0)
+    expect(painted.map(p => p.text)).toEqual([
+      'M1',
+      'M2',
+      'M3',
+      'M4',
+      'M5',
+      'M6',
+    ])
+    expect(overlaps(painted)).toBe(false)
+  })
+
+  // The regression. `M12346` is 36.6px of monospace in a 24px cell: it used to
+  // be painted anyway, so a titin CDS drew its residue numbers straight through
+  // each other.
+  test('a 5-digit protein drops to bare letters rather than colliding', () => {
+    const painted = paintedTexts(12345)
+    // the assertion that fails on the old fixed-20px rule, which painted
+    // `M12346` (36.6px) into a 24px cell
+    expect(overlaps(painted)).toBe(false)
+    expect(painted.map(p => p.text)).toEqual(['M', 'M', 'M', 'M', 'M', 'M'])
+  })
+
+  test('the numbers come back once the cells are wide enough to hold them', () => {
+    const cellBp = 3
+    const count = 4
+    const region: BpRegionBounds = {
+      start: 0,
+      end: cellBp * count,
+      // 4x further in than the threshold: 96px cells, room for `M12346`
+      screenStartPx: 0,
+      screenEndPx: (cellBp * count * 4) / PEPTIDE_TEXT_MAX_BP_PER_PX,
+    }
+    const overlay = Array.from({ length: count }, (_, i) =>
+      makeItem({
+        startBp: i * cellBp,
+        endBp: (i + 1) * cellBp,
+        proteinIndex: 12345 + i,
+        topPx: 0,
+        heightPx: 10,
+      }),
+    )
+    const ctx = new SvgCanvas()
+    drawPeptides(ctx, makeData(overlay), region)
+    expect(ctx.getSerializedSvg()).toContain('>M12346<')
   })
 })

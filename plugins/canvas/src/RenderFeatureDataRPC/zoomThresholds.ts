@@ -1,5 +1,11 @@
 const PEPTIDE_BACKGROUND_MAX_BP_PER_PX = 1
-const PEPTIDE_TEXT_MAX_BP_PER_PX = 1 / 8
+
+// The coarsest zoom the amino-acid letters draw at, and so the tightest codon
+// cell they ever have to fit: 3 / (1/8) = 24px for a full triplet. Exported
+// because that is the worst case the letter/residue-number layout has to hold
+// at (peptidePositioning), and a test asserting it should read the real number
+// rather than restate it.
+export const PEPTIDE_TEXT_MAX_BP_PER_PX = 1 / 8
 
 // Above this features-per-pixel density, floating labels are hidden in 'auto'
 // mode: too many labels to be individually readable, and React element
