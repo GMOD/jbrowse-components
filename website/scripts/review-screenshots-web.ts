@@ -795,21 +795,8 @@ function buildGroupOptions() {
 
 async function load() {
   readUrl()
-  const specs = fetch('/api/specs')
-  // Started here and awaited below the cards' own data: the banner has to be in
-  // the page BEFORE the first card is. It is four lines of prose above main and
-  // it used to land ~120ms after the cards — a 217px shove of every card
-  // downwards, a tenth of a second after they became clickable. A press that
-  // straddles that has its button moved out from under the pointer and
-  // dispatches no click, which is the reload-then-review half of "I have to
-  // click Approve twice".
-  //
-  // Second in the pair, and that order is load-bearing: the server answers one
-  // request at a time, and this one reads the working-tree scan /api/specs pays
-  // for. Ahead of it, the 68 MB of figures gets hashed twice per load.
-  const storeState = loadStoreState()
   try {
-    const res = await specs
+    const res = await fetch('/api/specs')
     const body = await res.json()
     if (!res.ok || !Array.isArray(body)) {
       throw new Error((body && body.error) || 'HTTP ' + res.status)
@@ -828,7 +815,23 @@ async function load() {
   buildGroupOptions()
   // canonicalize: drops a shared-URL group that no longer names a real group
   writeUrl()
-  await storeState
+  // After /api/specs has answered, and before the first card is drawn.
+  //
+  // Before the cards, because the banner is four lines of prose above main: it
+  // used to land ~120ms after them, shoving every card down 217px a tenth of a
+  // second after they became clickable, and a press straddling that has its
+  // button moved out from under the pointer and dispatches no click. That is the
+  // reload-then-review half of "I have to click Approve twice".
+  //
+  // After /api/specs, because this endpoint answers from the working-tree scan
+  // that request refreshes. The two used to be issued together and this one
+  // relied on arriving second — but they go out on two sockets, and nothing made
+  // that true. Losing the race meant hashing the 68 MB of figures twice, and on
+  // a reload after a regen it meant a banner describing the tree as it was
+  // before it. Serialized, neither is reachable, and it costs one localhost
+  // round trip against a warm memo: the server is single-threaded, so the work
+  // behind these two was never overlapping anyway.
+  await loadStoreState()
   render()
 }
 
@@ -840,12 +843,11 @@ async function load() {
 // old world had \`git status\` for that. A silent banner would leave the good
 // case indistinguishable from a banner that failed to render.
 //
-// Awaited before the first render rather than after it. It used to be fired and
-// forgotten, because it was hashing 62 MB of its own and a review page should
-// not wait on that — but it reads the scan /api/specs has already paid for, so
-// what it actually costs now is one more round trip against a warm memo. Ahead
-// of the cards that is a beat nobody notices; behind them it was four lines of
-// banner appearing under a pointer already working through the queue.
+// Awaited before the first render rather than fired and forgotten. That was the
+// right call while it hashed 62 MB of its own, which is not something a review
+// page should wait on; it reads the scan /api/specs has already paid for now, so
+// it costs one round trip against a warm memo. See the call site for why it is
+// awaited on both sides — after the specs request, before the cards.
 //
 // It still writes only #store: nothing a card shows depends on it, so it does
 // not repaint main. It used to, because the run summary landing here was what
