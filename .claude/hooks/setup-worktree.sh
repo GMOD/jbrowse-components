@@ -78,9 +78,13 @@ if [ -e "$dir/.git" ]; then
 else
   base=main
   git -C "$repo" show-ref --verify --quiet "refs/heads/$base" || base=HEAD
+  # An existing branch is checked out as is, NOT re-branched from $base, so a
+  # reused name resumes that branch's commits. The log line below says which.
   if git -C "$repo" show-ref --verify --quiet "refs/heads/$branch"; then
+    from="existing $branch"
     add_out=$(git -C "$repo" worktree add "$dir" "$branch" 2>&1) || add_rc=$?
   else
+    from="$base"
     add_out=$(git -C "$repo" worktree add "$dir" -b "$branch" "$base" 2>&1) || add_rc=$?
   fi
   if [ "${add_rc:-0}" -ne 0 ]; then
@@ -88,7 +92,7 @@ else
     note "$add_out"
     exit 1
   fi
-  note "created $dir on $branch from $base"
+  note "created $dir on $branch from $from"
 fi
 
 # A worktree is a bare checkout: no node_modules, and none of the files
