@@ -233,7 +233,7 @@ export function modelFactory(
        * #getter
        * Same fact on the other axis: the body is deliberately showing a static
        * message, so the loading scrim must not cover it. One term, not a
-       * `displayPhase` override — see MultiRegionDisplayMixin.loadingSuppressed.
+       * `displayPhase` override — see FetchMixin.loadingSuppressed.
        */
       get loadingSuppressed() {
         return this.placeholderMessage !== undefined

@@ -252,6 +252,25 @@ export default function sharedModelFactory(
       },
       /**
        * #getter
+       * The scrim's other half, and the one this display could not reach until
+       * `loadingSuppressed` moved onto `FetchMixin` (the global family used to
+       * hard-code it `false`). `rendersCanvas` alone drops only the
+       * pre-first-paint term, which leaves the *fetch* terms free to scrim over
+       * the EmptyState: toggling the triangle off mid-fetch parks the overlay
+       * there until the fetch lands, and cancelling a load first parks it
+       * permanently — `fetchCanceled` is deliberately durable, so "Loading
+       * canceled / Retry" would sit over "Enable LD triangle" for the rest of
+       * the session.
+       *
+       * Same slot as the two hooks around it, spelled out separately for the
+       * reason `svgReadyExtraTerminal` is: the three answer the scrim, the
+       * export and first paint, and only coincide here.
+       */
+      get loadingSuppressed(): boolean {
+        return !getConf(self, 'showLDTriangle')
+      },
+      /**
+       * #getter
        * The same toggle, answering the *export* question rather than the scrim
        * one. With the triangle off `shouldFetch` is false forever, so `rpcData`
        * stays null and `dataCurrent` can never flip — and `awaitSvgReady` is an

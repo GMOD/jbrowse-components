@@ -225,6 +225,36 @@ test('painted reports true for a display that renders no canvas', () => {
   expect(model.painted).toBe(true)
 })
 
+// The third term, and the same argument once more. A display that WOULD paint a
+// canvas but whose fetch failed before first paint keeps its canvas mounted (the
+// error bar is an overlay, not a subtree replacement), so `canvasDrawn` never
+// flips and `data-display-drawn` published `"false"` for the rest of the
+// session — which is what `PENDING_DISPLAYS` selects on, so one broken track URL
+// made every `waitForDisplaysDone` on the page burn its full timeout, silently.
+// Both LGV fetch families fill this hook with `!!error`.
+const InertModel = types.compose(
+  'InertModel',
+  RenderLifecycleMixin(),
+  types.model({ inert: false }).views(self => ({
+    get paintInert() {
+      return self.inert
+    },
+  })),
+)
+
+test('painted reports true for a canvas display that will not paint', () => {
+  const model = InertModel.create({})
+
+  expect(model.rendersCanvas).toBe(true)
+  expect(model.canvasDrawn).toBe(false)
+  expect(model.painted).toBe(false)
+
+  const inert = InertModel.create({ inert: true })
+  expect(inert.rendersCanvas).toBe(true)
+  expect(inert.canvasDrawn).toBe(false)
+  expect(inert.painted).toBe(true)
+})
+
 test('painted tracks canvasDrawn for a display that does render one', () => {
   const model = TestModel.create()
   const backend: FakeRenderingBackend = { uploads: [], renders: 0 }

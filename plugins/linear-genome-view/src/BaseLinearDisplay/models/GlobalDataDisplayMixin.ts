@@ -1,15 +1,12 @@
 import { leadingEdgeDebounce } from '@jbrowse/core/util/leadingEdgeDebounce'
 import { types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
-import {
-  computeDisplayPhase,
-  computeLoadingTerm,
-} from '@jbrowse/render-core/displayPhase'
 import { computed } from 'mobx'
 
 import GlobalFetchMixin from './GlobalFetchMixin.ts'
 import { autorunOnReadyView } from './MultiRegionDisplayMixin.ts'
 import { assertDisplayContract } from './assertDisplayContract.ts'
+import { foundationDisplayPhase } from './foundationDisplayPhase.ts'
 import { serializeRpcProps } from './rpcPropsCacheKey.ts'
 
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -62,6 +59,18 @@ export default function GlobalDataDisplayMixin() {
         // hoisting it there.
         return self.lgv.initialized
       },
+
+      /**
+       * #getter
+       * Fills `RenderLifecycleMixin`'s default-false hook, identically to the
+       * per-region family: a fetch that failed before first paint leaves
+       * `canvasDrawn` false forever with the canvas still mounted, so without
+       * this `painted` — and through it `data-display-drawn` — reports pending
+       * for the rest of the session. See `paintInert`.
+       */
+      get paintInert(): boolean {
+        return !!self.error
+      },
     }))
     .views(self => ({
       /**
@@ -82,27 +91,14 @@ export default function GlobalDataDisplayMixin() {
        * lives here, not in GlobalFetchMixin.
        */
       get displayPhase(): DisplayPhase {
-        return computeDisplayPhase(self, () =>
-          computeLoadingTerm(
-            {
-              // Constant, not a hook: no global display renders a static message
-              // in place of the whole display today. If one does, declare a
-              // `loadingSuppressed` getter and read it here — the per-region
-              // family already declares that exact hook for sequence, and this
-              // is the seam it plugs into. (`rendersCanvas`, the other half of
-              // that pair, now lives on `RenderLifecycleMixin` so both families
-              // read the same one.)
-              loadingSuppressed: false,
-              isLoadingOrCanceled: self.isLoadingOrCanceled,
-              canvasDrawn: self.canvasDrawn,
-              rendersCanvas: self.rendersCanvas,
-            },
-            // No staleness axis, deliberately: a global display keeps the last
-            // frame up through a refetch (StaleViewportRescaleMixin rescales
-            // it), so a pan/zoom shows no scrim beyond the isLoading window.
-            () => true,
-          ),
-        )
+        // No staleness axis, deliberately: a global display keeps the last frame
+        // up through a refetch (StaleViewportRescaleMixin rescales it), so a
+        // pan/zoom shows no scrim beyond the isLoading window. That constant is
+        // the *whole* difference from the per-region family — every other term
+        // is read off `self` by the shared mapping, which is what stopped this
+        // one hard-coding `loadingSuppressed: false` (LD needed it, and could
+        // express only the half `rendersCanvas` reaches).
+        return foundationDisplayPhase(self, () => true)
       },
     }))
 }

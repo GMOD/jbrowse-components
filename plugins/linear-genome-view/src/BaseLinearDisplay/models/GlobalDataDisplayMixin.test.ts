@@ -96,3 +96,43 @@ test('displayPhase is not loading pre-paint when rendersCanvas is false', () => 
   expect(model.canvasDrawn).toBe(false)
   expect(model.displayPhase).toBe('ready')
 })
+
+// `rendersCanvas: false` drops the pre-paint term ALONE, which is not enough for
+// a placeholder: the fetch terms still apply, and `fetchCanceled` is deliberately
+// durable. That is `loadingSuppressed`'s job — and this family used to hard-code
+// it `false`, so LD (the display that needed it) could express only the half it
+// could reach and the "Loading canceled / Retry" chip could park permanently over
+// "Enable LD triangle". The hook now lives on FetchMixin, which all three display
+// foundations compose.
+test('loadingSuppressed silences the scrim over a placeholder, cancel included', () => {
+  const Suppressed = types
+    .compose(
+      'TestSuppressedDisplay',
+      GlobalDataDisplayMixin(),
+      types.model({ type: types.literal('TestSuppressedDisplay') }),
+    )
+    .views(() => ({
+      get rendersCanvas() {
+        return false
+      },
+      get loadingSuppressed() {
+        return true
+      },
+    }))
+  const model = Suppressed.create({ type: 'TestSuppressedDisplay' })
+
+  model.cancelFetchByUser()
+  expect(model.fetchCanceled).toBe(true)
+  expect(model.displayPhase).toBe('ready')
+})
+
+// Same reader-outside-the-display argument as `rendersCanvas`, for the state
+// where a display would paint and its fetch failed first. See `paintInert`.
+test('painted reports finished once a pre-paint fetch has errored', () => {
+  const model = testModel()
+  expect(model.painted).toBe(false)
+
+  model.setError(new Error('boom'))
+  expect(model.canvasDrawn).toBe(false)
+  expect(model.painted).toBe(true)
+})

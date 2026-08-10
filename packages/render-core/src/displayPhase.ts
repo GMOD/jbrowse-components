@@ -70,8 +70,11 @@ export function computeDisplayPhase(
 export interface DisplayLoadingInputs {
   /**
    * The display is deliberately showing a static message instead of data
-   * (sequence past base resolution), so no scrim at all. Suppresses every term
-   * below.
+   * (sequence past base resolution, LD with the triangle off), so no scrim at
+   * all. Suppresses every term below — which is why `rendersCanvas: false` is
+   * not a substitute: that one drops the pre-first-paint term alone, leaving the
+   * fetch terms free to scrim over the placeholder, and `isLoadingOrCanceled`
+   * includes a cancel that is deliberately durable.
    */
   loadingSuppressed: boolean
   /**
@@ -108,13 +111,15 @@ export interface DisplayLoadingInputs {
  * above already won, one level down: a term added here reaches every display,
  * instead of reaching whichever family the author happened to be reading.
  *
- * Each family constants out the axis it doesn't have, which is where the two
- * genuinely differ:
- *
- * - **per-region** passes `viewportCurrent = () => viewportWithinLoadedData` and
- *   `rendersCanvas: true`,
- * - **global** passes `viewportCurrent = () => true` (it keeps the last frame up
- *   through a refetch rather than scrimming) and `loadingSuppressed: false`.
+ * The four inputs all now live on a mixin every foundation composes —
+ * `loadingSuppressed` / `isLoadingOrCanceled` on `FetchMixin`, `rendersCanvas` /
+ * `canvasDrawn` on `RenderLifecycleMixin` — so `foundationDisplayPhase` passes
+ * the model straight through and the only thing a family supplies is
+ * `viewportCurrent`: per-region its staleness predicate, global `() => true` (it
+ * keeps the last frame up through a refetch rather than scrimming). Two hooks
+ * used to be hard-coded per family instead, which is how the second drift
+ * happened after the first was fixed — LD needed `loadingSuppressed` and the
+ * global family did not have it.
  *
  * `viewportCurrent` is a **thunk** for the same MobX reason `computeDisplayPhase`'s
  * `loading` is, and it is the only term that needs to be: it reads the containing

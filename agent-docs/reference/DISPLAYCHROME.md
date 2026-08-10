@@ -19,19 +19,30 @@ description: The shared display status chrome that owns loading, error, and retr
   `data-display-phase`, the other four overlays) is `DisplayStatusChromeBase`,
   which a display with no rendering backend renders directly. That is how arc
   gets the chrome instead of a copy of it.
-- The **loading term** is single-sourced too, in `computeLoadingTerm`: all three
-  foundations (per-region, global, and arc's backend-free one) evaluate the same
-  expression and each constants out the axes it doesn't have — per-region the
-  staleness term, global the `loadingSuppressed` hook, arc both suppression axes
-  and the canvas. Customize it through `loadingSuppressed` / `rendersCanvas`,
-  never by overriding `displayPhase` — an override restates every term and then
-  silently misses the next one added. Same rule the precedence has, one level
-  down.
-- **`rendersCanvas` and `painted` live on `RenderLifecycleMixin`**, beside
-  `canvasDrawn`, so both LGV families read one hook rather than each hard-coding
-  the other's axis. A display that draws a deliberate static placeholder instead
-  of a canvas (sequence past base resolution, LD with the triangle off) answers
-  `rendersCanvas: false`; the chrome publishes `painted`, never the raw flag.
+- The **loading term** is single-sourced too, in `computeLoadingTerm`, and so is
+  the **mapping onto it**, in `foundationDisplayPhase` — the twin of
+  `foundationSvgReady`, called by both GPU families. They differ in one
+  argument: per-region passes its staleness predicate, global passes `() =>
+  true`. Arc (backend-free, no canvas to wait on) still writes the object by
+  hand. Customize it through `loadingSuppressed` / `rendersCanvas`, never by
+  overriding `displayPhase` — an override restates every term and then silently
+  misses the next one added. Same rule the precedence has, one level down.
+- **The four loading inputs live on the mixin every foundation composes**, so no
+  family can carry half the pair: `loadingSuppressed` and `isLoadingOrCanceled`
+  on `FetchMixin`, `rendersCanvas` and `canvasDrawn` on `RenderLifecycleMixin`.
+  A display that draws a deliberate static placeholder instead of a canvas
+  (sequence past base resolution, LD with the triangle off) answers **both**
+  `rendersCanvas: false` and `loadingSuppressed: true`, and needs both:
+  `rendersCanvas` drops the pre-first-paint term *alone*, so the fetch terms
+  still scrim over the placeholder — and `fetchCanceled` is durable, so a cancel
+  parks "Loading canceled / Retry" over it permanently. LD had exactly that hole
+  while the global family hard-coded `loadingSuppressed: false`.
+- **`painted` is the first-paint answer, never the raw `canvasDrawn`**, and it
+  has three terms: `canvasDrawn || !rendersCanvas || paintInert`. The third is
+  the state where a display *would* paint and never gets to — a fetch that failed
+  before first paint, whose error bar is an *overlay*, so the canvas stays
+  mounted and the flag can never flip. Both families fill `paintInert` with
+  `!!error`.
 - `renderError`/`tooLarge` replace the subtree (canvas unmounts,
   `backend.dispose()`); `error`/`loading` are overlays over a live canvas.
 - **The three overlay states portal as a group**, in `DisplayStatusChromeBase`,
@@ -57,7 +68,7 @@ description: The shared display status chrome that owns loading, error, and retr
 - Load-bearing: a terminal state **replaces the subtree** (that is what disposes
   the backend) and `displayPhase`'s loading term is a **thunk**. Early-`return`
   vs ternary is style only, since `'use no memo'`.
-- 15 LGV displays use it, plus arc/paired-arc on the backend-free half. Off it by
+- 16 LGV displays use it, plus arc/paired-arc on the backend-free half. Off it by
   design: dotplot and synteny (non-LGV, drop to `useRenderingBackend`),
   circular-view (radial, own banners).
 - **One element per display**, carrying `data-testid` (`<base>` → `<base>-done`),
@@ -176,8 +187,10 @@ LinearBasicDisplay (via `FeatureComponent`), canvas LinearMultiRowFeatureDisplay
 wiggle, multi-wiggle, gwas manhattan, sequence, maf, alignments, hic, LD,
 multi-sample-variant, variant-matrix.
 
-**Reuse one of those components (3):** `LGVSyntenyDisplay` → LinearAlignmentsDisplay's
-component; `LinearGCContentDisplay` → wiggle's; `LinearVariantDisplay` →
+**Reuse one of those components (4):** `LGVSyntenyDisplay` → LinearAlignmentsDisplay's
+component; `LinearGCContentDisplay` **and** `LinearGCContentTrackDisplay` → wiggle's
+(two registered display types, one per track type, off the same component);
+`LinearVariantDisplay` →
 LinearBasicDisplay's (borrowed off the DisplayType registry, so no cross-plugin
 component import). They get the chrome for free, and since the wrapper layer was
 deleted they now borrow the *same* level in every case — the component the
@@ -330,21 +343,39 @@ Every LGV display emits **one** chrome element, and it carries four attributes:
 | `data-display-phase` | `ready` / `loading` / `error` | tracks the model |
 | `data-display-drawn` | `true` / `false` | tracks first paint |
 
+All four ride the **container**, which the two subtree-replacing phases don't
+render — so in `tooLarge`/`renderError` a display publishes none of them, not
+even `data-display-id`. That is deliberate (see `data-display-phase` below), and
+it is why the two helpers that wait on
+`[data-display-id="…"][data-display-drawn="true"]` can never match a too-large
+display.
+
 **The readiness gate is `painted`, not `canvasDrawn`, and that distinction cost
-a silent timeout.** `painted` (`RenderLifecycleMixin`) is `canvasDrawn ||
-!rendersCanvas`: a display deliberately showing a static placeholder instead of
-a canvas never calls `canvasRef`, so no backend is built and the raw flag can
-never flip. Both such displays — sequence past base resolution, LD with the
-triangle off — had wired the *scrim* (`loadingSuppressed` / `rendersCanvas`) and
-the *export* (`svgReadyExtraTerminal`) by hand and missed the third reader,
-which is the one outside the display: `PENDING_DISPLAYS` selects
-`[data-display-drawn="false"]`, so a zoomed-out reference sequence track made
-every `waitForDisplaysDone` on the page burn its full timeout — invisibly, since
-that wait swallows its own. Same shape as `fetchInert` on the comparative side,
-same fix: one name the display publishes and every consumer reads. Arc, with no
-`RenderLifecycleMixin`, declares its own `painted` on `ArcFetchModel` for the
-same reason its `displayPhase` lives there — a component-side derivation is free
-to disagree with the model.
+two silent timeouts.** `painted` (`RenderLifecycleMixin`) is `canvasDrawn ||
+!rendersCanvas || paintInert`, and each term past the first is a state where the
+raw flag can never flip:
+
+- **`!rendersCanvas`** — a display deliberately showing a static placeholder
+  never calls `canvasRef`, so no backend is built. Both such displays — sequence
+  past base resolution, LD with the triangle off — had wired the *scrim*
+  (`loadingSuppressed` / `rendersCanvas`) and the *export*
+  (`svgReadyExtraTerminal`) by hand and missed the third reader, the one outside
+  the display.
+- **`paintInert`** — a fetch that failed before first paint. The error bar is an
+  *overlay*, so the canvas stays mounted, nothing draws into it, and the flag
+  stays false for the rest of the session. Both families fill the hook with
+  `!!error`. Arc was immune only by accident: its `painted` is
+  `features !== undefined || !!error`, a hand-written expression that carried
+  the term the shared getter never got.
+
+Either way the failure is the same and it is invisible: `PENDING_DISPLAYS`
+selects `[data-display-drawn="false"]`, so a zoomed-out reference sequence track
+— or one broken track URL — made every `waitForDisplaysDone` on the page burn
+its full timeout, and that wait swallows its own. Same shape as `fetchInert` on
+the comparative side, same fix: one name the display publishes and every
+consumer reads. Arc, with no `RenderLifecycleMixin`, declares its own `painted`
+on `ArcFetchModel` for the same reason its `displayPhase` lives there — a
+component-side derivation is free to disagree with the model.
 `DisplayChrome` takes a **required** `testid` base and appends `-done`, so no
 consumer hand-writes the ternary. Displays that pixel-match the canvas also give
 the inner `<canvas>` a static selector (`hic_canvas`, `ld_canvas`,
@@ -374,10 +405,13 @@ DisplayChrome, and whether a `DisplayContainer` sat above it emitting
 `display-${id}-done` on its own. The knock-on effects were all in the test
 infrastructure, which had to accept every shape:
 
-- `PENDING_DISPLAYS` (`browser-test-utils/waits.ts`) was a three-way union —
-  `display-…` not ending in `-done`, plus anything ending in `-display`, plus
-  synteny — because paint state was encoded by a mutating id whose base could
-  take either shape. It is now two selectors, one of which is only synteny.
+- `PENDING_DISPLAYS` (`products/jbrowse-capture/src/waits.ts`, re-exported from
+  `@jbrowse/browser-test-utils`) was a three-way union — `display-…` not ending
+  in `-done`, plus anything ending in `-display`, plus synteny — because paint
+  state was encoded by a mutating id whose base could take either shape. It is
+  now **one** selector, `[data-display-drawn="false"]`: the synteny special case
+  went with it once `RenderCanvas` made the same attribute required of the two
+  non-LGV views.
 - `displayReady()` (`website/scripts/screenshot-spec-helpers.ts`) had to emit
   **two** selectors joined by a comma, because alignments put its `-done` testid
   on an inner div while `data-display-phase` stayed on the chrome, so the two
@@ -619,6 +653,16 @@ restated in the `DisplayChrome.tsx` comment block.
   `{phase === 'loading' ? <Loading/> : null}` — the obvious tidy-up — remounts it
   on every activation, resets the timer, and turns the delay into a no-op that
   flashes the scrim on every fast pan.
+- **`immediate` bypasses that delay; it must never be an input to it
+  (load-bearing).** The chrome passes `immediate={!painted}`, and that flips
+  *during* a load: first paint lands while the phase is still `loading` (region 1
+  drawn, regions 2..n in flight). `useDelayedFlag(isVisible && !immediate, …)`
+  made the flip start a fresh 250 ms window from zero, so the scrim blinked out
+  in the middle of one continuous load. The delay keys on `isVisible` alone —
+  same input the cancel-button delay beside it always used. Pinned by
+  `DisplayChrome.test.tsx`, "the loading scrim spans one continuous load", and it
+  has to be pinned *there*: `rerender`ing `LoadingOverlay` directly remounts it,
+  which resets the state under test and makes the assertion vacuous.
 - **Laziness (load-bearing):** `displayPhase`'s loading term is a thunk,
   evaluated only after the terminal flags are ruled out, so a banner state
   doesn't subscribe to the view's churning `visibleRegions`/`loadedRegions`.

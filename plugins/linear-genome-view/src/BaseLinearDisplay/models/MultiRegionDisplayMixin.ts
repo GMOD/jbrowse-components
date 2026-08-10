@@ -6,10 +6,6 @@ import {
 import { getTrackAssemblyNames } from '@jbrowse/core/util/tracks'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
-import {
-  computeDisplayPhase,
-  computeLoadingTerm,
-} from '@jbrowse/render-core/displayPhase'
 import { regionDataMap } from '@jbrowse/render-core/installPerRegionLifecycle'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { autorun, untracked } from 'mobx'
@@ -17,6 +13,7 @@ import { autorun, untracked } from 'mobx'
 import RegionTooLargeMixin from '../../shared/RegionTooLargeMixin.ts'
 import FetchMixin from './FetchMixin.ts'
 import { assertDisplayContract } from './assertDisplayContract.ts'
+import { foundationDisplayPhase } from './foundationDisplayPhase.ts'
 import { foundationSvgReady } from './foundationSvgReady.ts'
 import { serializeRpcProps } from './rpcPropsCacheKey.ts'
 
@@ -203,21 +200,14 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #getter
-         * Overridable hook (default false): a subclass returns true when its
-         * body is deliberately showing a static message instead of data, so the
-         * loading scrim must not cover it. Sequence sets it when zoomed past
-         * base resolution ("Zoom in to see sequence"); the global family's
-         * `rendersCanvas` is the same idea for LD's placeholder.
-         *
-         * A hook rather than a `displayPhase` override, because overriding the
-         * getter means restating the whole loading condition — which is how
-         * sequence came to hold a verbatim copy of the three terms below, one
-         * `git blame` away from silently missing a fourth. The terminal
-         * precedence stays single-sourced in `computeDisplayPhase`; this keeps
-         * the *loading* term single-sourced too.
+         * Fills `RenderLifecycleMixin`'s default-false hook: a fetch that failed
+         * before first paint leaves `canvasDrawn` false forever with the canvas
+         * still mounted, so without this `painted` — and through it
+         * `data-display-drawn` — reports pending for the rest of the session and
+         * every `waitForDisplaysDone` on the page times out. See `paintInert`.
          */
-        get loadingSuppressed(): boolean {
-          return false
+        get paintInert(): boolean {
+          return !!self.error
         },
 
         /**
@@ -287,40 +277,26 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #getter
-         * The display's mutually-exclusive visual state, precedence single-sourced
-         * in `computeDisplayPhase` and the loading term itself in
-         * `computeLoadingTerm` — the same expression the global family evaluates,
-         * so a term added to one reaches both. Here `loading` means data isn't
-         * ready yet, or stale data (viewport past loaded) is still on screen
-         * through the pre-refetch debounce.
+         * The display's mutually-exclusive visual state. Both halves — the
+         * terminal precedence and the loading term — are single-sourced in
+         * render-core, and the *mapping* onto them in `foundationDisplayPhase`,
+         * which the global family calls with the same seven fields. So this
+         * family differs from that one in exactly the argument below, and a term
+         * added to `computeLoadingTerm` reaches both without being wired twice.
          *
-         * A subclass customizes this through `loadingSuppressed`, never by
-         * overriding the getter — see that hook.
+         * Here `loading` means data isn't ready yet, or stale data (viewport past
+         * loaded) is still on screen through the pre-refetch debounce.
+         *
+         * A subclass customizes this through `loadingSuppressed` (FetchMixin),
+         * never by overriding the getter — see that hook.
          */
         get displayPhase(): DisplayPhase {
-          return computeDisplayPhase(self, () =>
-            computeLoadingTerm(
-              {
-                loadingSuppressed: self.loadingSuppressed,
-                // `isLoadingOrCanceled`, not `!isReady` + a separately-remembered
-                // `fetchCanceled`: same answer, but the second term was this
-                // family's to remember, and remembering it is exactly what
-                // FetchMixin's getter exists to stop anyone having to do.
-                isLoadingOrCanceled: self.isLoadingOrCanceled,
-                canvasDrawn: self.canvasDrawn,
-                // `RenderLifecycleMixin`'s hook, not a hard-coded `true`: this
-                // family has a display that renders a static non-canvas
-                // placeholder too (sequence past base resolution), and while
-                // `loadingSuppressed` already answers the scrim for it, the
-                // flag has a second reader — `painted`, and through it
-                // `data-display-drawn` — that a constant here would go on
-                // getting wrong. One hook, both families.
-                rendersCanvas: self.rendersCanvas,
-              },
-              // this family's spatial-staleness axis; a thunk so a suppressed or
-              // already-loading display doesn't subscribe to viewport churn
-              () => self.viewportWithinLoadedData,
-            ),
+          // this family's spatial-staleness axis, and the only term the two
+          // families genuinely disagree on; a thunk so a suppressed or
+          // already-loading display doesn't subscribe to viewport churn
+          return foundationDisplayPhase(
+            self,
+            () => self.viewportWithinLoadedData,
           )
         },
 
@@ -481,11 +457,13 @@ export default function MultiRegionDisplayMixin() {
           // yet).
           //
           // The cached byte estimate goes with it. displayedRegionIndex is
-          // reused across chromosomes, so a stale estimate would gate the new
-          // region against the previous chromosome's numbers and, since
-          // FetchVisibleRegions skips while regionTooLarge holds, wedge the
-          // banner with no refetch to correct it. clearAllRpcData deliberately
-          // leaves it alone (no banner flicker on an ordinary viewport-change
+          // reused across chromosomes, so a stale estimate describes the
+          // previous chromosome's numbers, and the banner would quote them at
+          // the new region for the settled cycle it takes to re-measure. Only
+          // that long — the new region moves `gateViewport.key`, so
+          // `gateMeasurementStale` lets the fetch through and the next
+          // measurement corrects it. clearAllRpcData deliberately leaves the
+          // estimate alone (no banner flicker on an ordinary viewport-change
           // clear), which is why the drop lives in this autorun rather than in
           // that action.
           //
@@ -508,7 +486,7 @@ export default function MultiRegionDisplayMixin() {
           // by loaded data. Fetches with an explicit buffer for smooth
           // scrolling without blank gaps.
           //
-          // #autorun the viewport, or `fetchGeneration` after a fetch ends | `fetchNeeded(needed)` for the visible blocks loaded data doesn't cover, or `remeasureByteEstimate()` instead while `regionTooLarge` holds. Skipped while `error` / `fetchCanceled` is set, while a fetch is in flight, and while the track is minimized
+          // #autorun the viewport, or `fetchGeneration` after a fetch ends | `fetchNeeded(needed)` for the visible blocks loaded data doesn't cover. While `regionTooLarge` holds it runs that same fetch once per settled viewport — the fetch stops at whichever gate rejected it, and there is no measurement-only path. Skipped while `error` / `fetchCanceled` is set, while a fetch is in flight, and while the track is minimized
           autorunOnReadyView(
             self,
             view => {

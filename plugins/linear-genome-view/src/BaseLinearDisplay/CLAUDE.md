@@ -64,13 +64,14 @@ axes content can move on (`bpPerPx`, `offsetPx`, `scrollTop`), not just zoom.
 other two. `dataCurrent` is not a fourth — it is this family's answer to the one
 freshness name cross-cutting consumers read.
 
-The loading scrim reads **none of them directly except the second**: its term is
-`computeLoadingTerm` (`@jbrowse/render-core/displayPhase`), shared with the
-global family, and this family feeds it `viewportWithinLoadedData` plus
-`isLoadingOrCanceled` / `canvasDrawn` off `FetchMixin` / `RenderLifecycleMixin`.
-It used to go through `!isReady`, which meant re-remembering the cancel term
-alongside it — see the `isReady` getter for why that's the wrong shape even
-though it computed the right answer.
+The loading scrim reads **none of them directly except the second**: the phase
+goes through `foundationDisplayPhase`, shared with the global family, and the
+only thing this family supplies is `viewportWithinLoadedData` — every other term
+(`loadingSuppressed`, `isLoadingOrCanceled`, `rendersCanvas`, `canvasDrawn`) is
+read straight off the model by `computeLoadingTerm`, from `FetchMixin` /
+`RenderLifecycleMixin`. It used to go through `!isReady`, which meant
+re-remembering the cancel term alongside it — see the `isReady` getter for why
+that's the wrong shape even though it computed the right answer.
 
 `layoutReady` exists because "laid out but off-display" and "no layout exists"
 are different answers only the display can tell apart. Default `false` so a

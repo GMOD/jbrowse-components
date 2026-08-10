@@ -92,14 +92,16 @@ export function ArcFetchModel() {
           return computeDisplayStatusPhase(self, () =>
             computeLoadingTerm(
               {
-                // no static-placeholder state and no canvas to wait on, so both
-                // suppression axes constant out and the term reduces to
-                // `isLoadingOrCanceled` — exactly what this getter spelled by
-                // hand until 2026-08. Routed through the shared function anyway
-                // because arc is the *third* foundation, and a term added there
-                // for the other two would otherwise reach every display except
-                // this one. Same argument the precedence above already won.
-                loadingSuppressed: false,
+                // No canvas to wait on, so that axis constants out and the term
+                // reduces to `isLoadingOrCanceled` — exactly what this getter
+                // spelled by hand until 2026-08. Routed through the shared
+                // function anyway because arc is the *third* foundation, and a
+                // term added there for the other two would otherwise reach every
+                // display except this one. Same argument the precedence above
+                // already won; `loadingSuppressed` is read off `FetchMixin`
+                // rather than pinned to `false` for that reason, even though no
+                // arc display overrides it today.
+                loadingSuppressed: self.loadingSuppressed,
                 rendersCanvas: false,
                 canvasDrawn: false,
                 isLoadingOrCanceled: self.isLoadingOrCanceled,
