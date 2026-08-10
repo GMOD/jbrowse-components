@@ -519,7 +519,7 @@ const renderCircular: ModeRenderer = async ctx => {
 // same `init` state machine underneath, so `addInitView`/`readyView` wait on it
 // identically.
 const renderBreakpoint: ModeRenderer = async ctx => {
-  const { data, opts } = ctx
+  const { data, opts, model } = ctx
   const showTracks = (opts.showTracks ?? []).map(([, [trackInput]]) => {
     if (!trackInput) {
       throw new Error(
@@ -536,6 +536,20 @@ const renderBreakpoint: ModeRenderer = async ctx => {
     'BreakpointSplitView',
     init,
   )
+  // A SECOND wait, because this view's `init` is consumed one level above the
+  // one that matters. Its autorun turns the panel array into sub-views and
+  // clears `init` in the same tick, so `readyView` is satisfied the moment the
+  // panels EXIST — while each sub-view still carries its own `init` holding the
+  // loc and, decisively, the tracks. Rendering there produced two correctly
+  // positioned, correctly labelled, completely empty panels: the exact
+  // failure `whenViewReady` warns about for LGV's `initPending`, one level of
+  // nesting further out.
+  await when(
+    () =>
+      view.views.every(v => !v.init) ||
+      firstRenderError(model.session) !== undefined,
+  )
+  throwOnRenderError(model.session)
   const svg = await renderBreakpointToSvg(view, {
     ...baseSvgOpts(opts),
     createCanvas: nodeCanvas,
