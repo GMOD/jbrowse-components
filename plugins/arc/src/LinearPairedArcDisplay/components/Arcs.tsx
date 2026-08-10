@@ -1,13 +1,10 @@
 import { Suspense, lazy, useState } from 'react'
 
-import {
-  getContainingView,
-  getSession,
-  getStrokeProps,
-} from '@jbrowse/core/util'
+import { getStrokeProps } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import ArcsContainer from '../../shared/ArcsContainer.tsx'
 import { makeSummary } from './util.ts'
 
 import type { LinearPairedArcDisplayModel } from '../model.ts'
@@ -124,37 +121,27 @@ const Arcs = observer(function Arcs({
   model: LinearPairedArcDisplayModel
   exportSVG?: boolean
 }) {
-  const view = getContainingView(model) as LGV
-  const { assemblyManager } = getSession(model)
-  const { arcStyles, height, lineWidth } = model
-  const assembly = assemblyManager.get(view.assemblyNames[0]!)
+  const { arcStyles, lineWidth } = model
   // resolved once here rather than per arc — every <Arc> would otherwise
   // subscribe to theme context on its own to compute this one color
   const hoverColor = useTheme().palette.text.primary
-
-  if (!assembly) {
-    return null
-  }
-
-  const arcs = arcStyles?.map(style => (
-    <Arc
-      key={`${style.feature.id()}-${style.alt ?? ''}`}
-      model={model}
-      style={style}
-      view={view}
-      assembly={assembly}
-      lineWidth={lineWidth}
-      hoverColor={hoverColor}
-      exportSVG={exportSVG}
-    />
-  ))
-
-  return exportSVG ? (
-    <>{arcs}</>
-  ) : (
-    <svg width={view.totalWidthPx} height={height}>
-      {arcs}
-    </svg>
+  return (
+    <ArcsContainer model={model} exportSVG={exportSVG}>
+      {(assembly, view) =>
+        arcStyles?.map(style => (
+          <Arc
+            key={`${style.feature.id()}-${style.alt ?? ''}`}
+            model={model}
+            style={style}
+            view={view}
+            assembly={assembly}
+            lineWidth={lineWidth}
+            hoverColor={hoverColor}
+            exportSVG={exportSVG}
+          />
+        ))
+      }
+    </ArcsContainer>
   )
 })
 

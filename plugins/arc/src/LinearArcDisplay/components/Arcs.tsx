@@ -1,11 +1,9 @@
 import { Suspense, lazy, useState } from 'react'
 
-import {
-  getContainingView,
-  getSession,
-  getStrokeProps,
-} from '@jbrowse/core/util'
+import { getStrokeProps } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
+
+import ArcsContainer from '../../shared/ArcsContainer.tsx'
 
 import type { LinearArcDisplayModel } from '../model.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
@@ -124,35 +122,25 @@ const Arcs = observer(function Arcs({
   model: LinearArcDisplayModel
   exportSVG?: boolean
 }) {
-  const view = getContainingView(model) as LGV
-  const { assemblyManager } = getSession(model)
-  const { arcStyles, height, displayMode, selectedFeatureId } = model
-  const assembly = assemblyManager.get(view.assemblyNames[0]!)
-
-  if (!assembly) {
-    return null
-  }
-
+  const { arcStyles, displayMode, selectedFeatureId } = model
   const semicircle = displayMode === 'semicircles'
-  const arcs = arcStyles?.map(style => (
-    <Arc
-      key={style.feature.id()}
-      model={model}
-      style={style}
-      view={view}
-      assembly={assembly}
-      semicircle={semicircle}
-      selected={selectedFeatureId === style.feature.id()}
-      exportSVG={exportSVG}
-    />
-  ))
-
-  return exportSVG ? (
-    <>{arcs}</>
-  ) : (
-    <svg width={view.totalWidthPx} height={height}>
-      {arcs}
-    </svg>
+  return (
+    <ArcsContainer model={model} exportSVG={exportSVG}>
+      {(assembly, view) =>
+        arcStyles?.map(style => (
+          <Arc
+            key={style.feature.id()}
+            model={model}
+            style={style}
+            view={view}
+            assembly={assembly}
+            semicircle={semicircle}
+            selected={selectedFeatureId === style.feature.id()}
+            exportSVG={exportSVG}
+          />
+        ))
+      }
+    </ArcsContainer>
   )
 })
 

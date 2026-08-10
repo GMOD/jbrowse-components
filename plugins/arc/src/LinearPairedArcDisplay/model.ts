@@ -160,6 +160,11 @@ export function stateModelFactory(
        */
       // opts is accepted (the export framework calls every display's renderSvg
       // with it) but unused: arc paints vector JSX, not a paintLayer.
+      //
+      // One `import()`, and `renderSvg.tsx` is the edge behind it — it pairs the
+      // shared export body with this display's `<Arcs>` using ordinary static
+      // imports, so the whole export path is a single chunk. Don't inline it
+      // into two dynamic imports here; see that file.
       async renderSvg(
         _opts?: ExportSvgDisplayOptions,
       ): Promise<React.ReactNode> {
