@@ -460,12 +460,39 @@ here can reach one of `cluster_3`'s junctions, while the assembly contig carries
 the other one as well. Rebuilding from the full BAM with
 [the build script](#reproduce-it-end-to-end) lifts that limit.
 
+### Which of these calls are drivers
+
+Most somatic calls in a tumour genome are passengers: real events, carried along
+by the cell lineage, with no role in the cancer. A handful are drivers. In
+pancreatic ductal adenocarcinoma the recurrently altered genes are `KRAS`,
+`CDKN2A`, `TP53` and `SMAD4`
+([Waddell et al. 2015](https://doi.org/10.1038/nature14169),
+[Bailey et al. 2016](https://doi.org/10.1038/nature16965)), and the copy-number
+walkthroughs below visit all four in this genome.
+
+Nothing in the browser marks that distinction. The benchmark BED states copy
+number and haplotype; it makes no claim about consequence, and neither does the
+gene track. Driver status is a literature question, not a track — the somatic
+driver catalogues that would answer it as a lane (COSMIC's Cancer Gene Census
+among them) are licensed rather than redistributable, so a public demo cannot
+carry one. What the figures below do instead is name the gene: each copy-number
+figure draws one MANE Select transcript under the lanes, so the event and the
+gene it covers are read off the same axis.
+
 ### Walkthrough: a small deletion in CUZD1
 
 For small to medium SVs the linear genome view is usually enough. Use the
 **search** (magnifying glass) button in the SV inspector to find a specific
 call, for example `SV_85`, a heterozygous deletion that affects two exons of the
 CUZD1 gene.
+
+CUZD1 is a passenger here, and a useful one to start on. It encodes a pancreatic
+acinar protein predicted to act in trypsinogen activation
+([NCBI Gene 50624](https://www.ncbi.nlm.nih.gov/gene/50624)); it is not one of
+the four PDAC genes above, and one heterozygous copy remains. What makes it the
+right first example is the picture rather than the biology: a ~1.8 kb deletion
+over two exons is small enough to read base by base and large enough to see in a
+pileup.
 
 <Figure caption="The SV inspector after searching for SV_85, a heterozygous CUZD1 deletion. The SVTYPE column reports a DEL. Clicking the row's location link opens it in the linear genome view below, drawn as the <DEL> ALT allele above the NCBI RefSeq gene track." src="/img/sv_cgiab/deletion_sv_inspector_search.png" />
 
@@ -598,13 +625,15 @@ imbalance of a 2+1 gain rather than the full drop of a complete haplotype loss.
 Because the event is a couple of megabases rather than an arm, zoom to it: at
 whole-chromosome scale it is a handful of pixels wide.
 
-<Figure caption="KRAS on chr12: the segmented copy ratio over the HiFiCNV depth over the BAF, above the CNV calls. Over the tandem duplication (SV_101, CN 3, 2+1) the copy-ratio segment rises above its flanks by what three copies against two predicts, its edges landing on the called boundaries, while the BAF separates into bands at 1/3 and 2/3 against the single 0.5 band of the balanced flanks." src="/img/sv_cgiab/driver_kras_gain.png" />
+<Figure caption="KRAS on chr12: the gene's MANE Select transcript, boxed, over the segmented copy ratio, the HiFiCNV depth and the BAF, above the CNV calls. Over the tandem duplication (SV_101, CN 3, 2+1) the copy-ratio segment rises above its flanks by what three copies against two predicts, its edges landing on the called boundaries, while the BAF separates into bands at 1/3 and 2/3 against the single 0.5 band of the balanced flanks." src="/img/sv_cgiab/driver_kras_gain.png" />
 
 `SMAD4` on 18q is lost with LOH (`CNA_48`, CN 1, 0+1), the mirror image of the
 TP53 event. Here the balanced p-arm is in the same picture, so the contrast is
-read within one chromosome rather than against a second figure.
+read within one chromosome rather than against a second figure. The gene's own
+MANE transcript is the top lane, boxed, so the arm-level call and the gene it
+covers share an axis.
 
-<Figure caption="Chromosome 18: the segmented copy ratio over the HiFiCNV depth over the BAF, above the CNV calls. CNA_48 (single-copy loss with LOH over SMAD4) runs from ~30 Mb to the telomere: the copy ratio steps down against the CN 2 p-arm beside it, depth halves, and the BAF spreads off the single band the p-arm holds." src="/img/sv_cgiab/driver_smad4_loh.png" />
+<Figure caption="Chromosome 18: SMAD4's MANE Select transcript over the segmented copy ratio, the HiFiCNV depth and the BAF, above the CNV calls. CNA_48 (single-copy loss with LOH over SMAD4) runs from ~30 Mb to the telomere: the copy ratio steps down against the CN 2 p-arm beside it, depth halves, and the BAF spreads off the single band the p-arm holds." src="/img/sv_cgiab/driver_smad4_loh.png" />
 
 See also the
 [multi-quantitative track guide](/docs/user_guides/multiquantitative_track) for

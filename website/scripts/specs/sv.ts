@@ -17,24 +17,113 @@ import {
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// MANE Select 1.4, as a session track on the C-GIAB assembly: one curated
-// transcript per gene, in a bigBed, so a whole-chromosome window is a small
-// ranged read rather than the 40 MB of GFF the UCSC RefSeq track's chr17 slice
-// is. Used by the chr17 figure to put one named gene under a chromosome-wide
-// copy-number lane.
-const MANE_TRACK = {
-  type: 'FeatureTrack',
-  trackId: 'mane_hg38',
-  name: 'TP53 (MANE Select, NCBI RefSeq 1.4)',
-  assemblyNames: ['GRCh38_GIABv3'],
-  adapter: {
-    type: 'BigBedAdapter',
-    bigBedLocation: {
-      uri: 'https://jbrowse.org/genomes/GRCh38/mane/MANE.GRCh38.v1.4.refseq.bb',
-      locationType: 'UriLocation',
+// A ONE-GENE LANE on the C-GIAB assembly, from MANE Select 1.4.
+//
+// Every driver figure below is named for a gene and most of them were not
+// drawing it (review, on the whole set: "other tracks that enhance its
+// purpose... or any other figure clarity"). The config's own UCSC RefSeq track
+// cannot do this job at these windows: its chr17 slice is 40 MB of GFF, mostly
+// per-transcript `description` prose, and a whole-chromosome fetch of it does
+// not land inside the capture. MANE is one curated transcript per gene in a
+// bigBed, so the same window is a small ranged read, and the jexl filter leaves
+// a single glyph.
+//
+// The filter matches the MANE Select ACCESSION, not the symbol: the symbol
+// lives in the bigBed's geneName2 column and filtering on it (or on the gene
+// parent the adapter is meant to aggregate into) leaves the lane empty. The
+// track's NAME carries the symbol instead, so the lane still labels itself.
+// `forceLoad` because the density gate runs on the region's byte size, before
+// any filter.
+//
+// The session track and the view lane come back together, because they have to
+// agree on trackId and on which gene the name claims; returned as a pair rather
+// than as two exports that a spec could mix up.
+//
+// Accessions read out of the hosted bigBed rather than recalled:
+//   bigBedToBed MANE.GRCh38.v1.4.refseq.bb -chrom=chr12 -start=25200000 \
+//     -end=25260000 stdout   ->   NM_004985.5  chr12:25,205,245-25,250,929
+function maneGeneLane({
+  symbol,
+  accession,
+  height = 50,
+  // A gene is a few pixels wide on a whole-chromosome or multi-megabase frame,
+  // so the figures at that scale box it. Given as the gene's own span, which
+  // resolveFeatureHighlights matches within +/-1 bp.
+  featureHighlights,
+}: {
+  symbol: string
+  accession: string
+  height?: number
+  featureHighlights?: {
+    refName: string
+    start: number
+    end: number
+    name: string
+  }[]
+}) {
+  const trackId = 'mane_hg38'
+  return {
+    track: {
+      type: 'FeatureTrack',
+      trackId,
+      name: `${symbol} (MANE Select, NCBI RefSeq 1.4)`,
+      assemblyNames: ['GRCh38_GIABv3'],
+      adapter: {
+        type: 'BigBedAdapter',
+        bigBedLocation: {
+          uri: 'https://jbrowse.org/genomes/GRCh38/mane/MANE.GRCh38.v1.4.refseq.bb',
+          locationType: 'UriLocation',
+        },
+      },
+      // LABEL THE GLYPH WITH THE SYMBOL, not with the accession. `name` in this
+      // bigBed is the transcript accession, so the one glyph came out reading
+      // "NM_004985.5" under a track whose name said KRAS — the reader has to
+      // join those up. The symbol is the file's own `geneSymbol` column
+      // (bigBedInfo -as), which is also the column the older comment here
+      // guessed was `geneName2`.
+      //
+      // A config SLOT, so it goes in the track's `displays`, not on the view's
+      // tracks entry, where it would be dropped in silence.
+      displays: [
+        {
+          type: 'LinearBasicDisplay',
+          displayId: `${trackId}-LinearBasicDisplay`,
+          labels: { name: "jexl:get(feature,'geneSymbol')" },
+        },
+      ],
     },
-  },
+    lane: {
+      trackId,
+      type: 'LinearBasicDisplay',
+      jexlFiltersSetting: [`jexl:get(feature,'name')=='${accession}'`],
+      forceLoad: true,
+      height,
+      ...(featureHighlights ? { featureHighlights } : {}),
+    },
+  }
 }
+
+const TP53_MANE = maneGeneLane({ symbol: 'TP53', accession: 'NM_000546.6' })
+
+// chr12:25,205,245-25,250,929 is the gene's own span in this bigBed, which is
+// also what the old UCSC-RefSeq-based highlight on this figure had.
+const KRAS_MANE = maneGeneLane({
+  symbol: 'KRAS',
+  accession: 'NM_004985.5',
+  featureHighlights: [
+    { refName: 'chr12', start: 25205245, end: 25250929, name: 'KRAS' },
+  ],
+})
+
+// chr18:51,030,212-51,085,042, likewise read out of the bigBed. Boxed because
+// this figure is the whole of chr18 and SMAD4 is 55 kb of it.
+const SMAD4_MANE = maneGeneLane({
+  symbol: 'SMAD4',
+  accession: 'NM_005359.6',
+  featureHighlights: [
+    { refName: 'chr18', start: 51030212, end: 51085042, name: 'SMAD4' },
+  ],
+})
 
 // SV_85's span, written the way the SV inspector's location column prints it.
 // One string does both jobs the deletion_sv_inspector_search figure needs: it
@@ -1729,38 +1818,26 @@ export const svSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'sv_cgiab/driver_kras_gain',
     url: cgiabUrl({
-      sessionTracks: [HG008_BICSEQ2_TRACK, HG008_DEPTH_TRACK, HG008_BAF_TRACK],
+      sessionTracks: [
+        KRAS_MANE.track,
+        HG008_BICSEQ2_TRACK,
+        HG008_DEPTH_TRACK,
+        HG008_BAF_TRACK,
+      ],
       views: [
         {
           type: 'LinearGenomeView',
           assembly: 'GRCh38_GIABv3',
           loc: 'chr12:23,000,000-27,500,000',
           tracks: [
-            {
-              trackId: 'hg38_ncbiRefSeq_ucsc',
-              // normal (not compact) height so the KRAS gene row + label read
-              // where they land (taller track)
-              type: 'LinearBasicDisplay',
-              height: 150,
-              // feature-specific highlight: box the KRAS gene glyph itself rather
-              // than a fixed region band, so the eye lands on the oncogene within
-              // the ~4.5Mb gained arm even though it's tiny at this scale.
-              // Coords are the track's own: ncbiRefSeq.gff records KRAS as
-              // chr12:25,205,246-25,250,929 (1-based) = 25205245..25250929
-              // interbase. The old end (25250936) was 7bp past that and boxed
-              // nothing, because resolveFeatureHighlights matches a span within
-              // ±1bp. `name` is now a fallback matcher, so that exact typo would
-              // resolve today — but keep the coords right anyway and let the
-              // fallback be the safety net, not the mechanism.
-              featureHighlights: [
-                {
-                  refName: 'chr12',
-                  start: 25205245,
-                  end: 25250929,
-                  name: 'KRAS',
-                },
-              ],
-            },
+            // ONE GENE at 50 px, where the config's UCSC RefSeq track was 150
+            // (review: "reducing the y-screen real estate can be valuable").
+            // Over 4.5 Mb that lane packed five rows of about sixty gene names
+            // — LOC124902897, MIR4302, BCAT1-DT — none of which this figure is
+            // about, and the KRAS box had to be found among them. The box is
+            // still here, on the one glyph that is left, because 45 kb of a
+            // 4.5 Mb frame is about 15 px whatever else is drawn.
+            KRAS_MANE.lane,
             {
               trackId: 'hg008_bicseq2',
               type: 'LinearWiggleDisplay',
@@ -1813,9 +1890,9 @@ export const svSpecs: ScreenshotSpec[] = [
     readyText: 'chr12',
     readyTimeout: 90000,
     viewportWidth: 1500,
-    // tall enough for the gene track + both wiggles + the CN-labeled CNV calls
-    // track to all fit (the gene track pushes the CNV calls down)
-    viewportHeight: 980,
+    // 980 held the 150 px UCSC RefSeq lane this replaced; the one-gene MANE
+    // lane is 50, and the run's own reports settle the rest.
+    viewportHeight: 880,
     settleMs: 20000,
     // No arrow annotation. It existed only because featureHighlights was pinned
     // to the wrong end coordinate and so drew nothing (see the highlight above),
@@ -1840,7 +1917,7 @@ export const svSpecs: ScreenshotSpec[] = [
     name: 'sv_cgiab/cnv_chr17_loh',
     url: cgiabUrl({
       sessionTracks: [
-        MANE_TRACK,
+        TP53_MANE.track,
         HG008_BICSEQ2_TRACK,
         HG008_DEPTH_TRACK,
         HG008_BAF_TRACK,
@@ -1855,30 +1932,11 @@ export const svSpecs: ScreenshotSpec[] = [
           // chromosome is the first 10 Mb — and the gene this figure was asked
           // to show sits at 7.7 Mb, under the box
           tracks: [
-            {
-              // one gene, filtered to it: the caption says this arm covers TP53
-              // and the figure was only asserting it (reviewer: "this isn't
-              // really showing anything like a specific gene").
-              //
-              // MANE rather than the config's own UCSC RefSeq track, which was
-              // tried first and drew nothing: its chr17 slice is 40 MB of GFF,
-              // mostly per-transcript `description` prose, and a whole-
-              // chromosome fetch of it does not land inside the capture. MANE
-              // is one curated transcript per gene in a bigBed, so the same
-              // window is a small ranged read. The jexl filter is what leaves
-              // the single glyph; forceLoad because the density gate runs on
-              // the region's byte size, before any filter.
-              trackId: 'mane_hg38',
-              type: 'LinearBasicDisplay',
-              // on the MANE Select accession, not on "TP53": the symbol lives
-              // in the bigBed's geneName2 column, and filtering on it (or on
-              // the gene parent the adapter is meant to aggregate into) leaves
-              // the lane empty, so the accession is the field that is actually
-              // there. The track's name carries the symbol instead.
-              jexlFiltersSetting: ["jexl:get(feature,'name')=='NM_000546.6'"],
-              forceLoad: true,
-              height: 50,
-            },
+            // one gene, filtered to it: the caption says this arm covers TP53
+            // and the figure was only asserting it (reviewer: "this isn't
+            // really showing anything like a specific gene"). See maneGeneLane
+            // for why it is MANE and why the filter names an accession.
+            TP53_MANE.lane,
             {
               trackId: 'hg008_bicseq2',
               type: 'LinearWiggleDisplay',
@@ -1946,16 +2004,28 @@ export const svSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'sv_cgiab/driver_smad4_loh',
     url: cgiabUrl({
-      sessionTracks: [HG008_BICSEQ2_TRACK, HG008_DEPTH_TRACK, HG008_BAF_TRACK],
+      sessionTracks: [
+        SMAD4_MANE.track,
+        HG008_BICSEQ2_TRACK,
+        HG008_DEPTH_TRACK,
+        HG008_BAF_TRACK,
+      ],
       views: [
         {
           type: 'LinearGenomeView',
           assembly: 'GRCh38_GIABv3',
           loc: 'chr18:1-80,373,285',
           // overlay the long track names on the tracks instead of a dedicated
-          // label row (reviewer)
+          // label row (reviewer). Safe here in a way it was not on chr17:
+          // `offset` puts each name box over the first ~10 Mb of its own
+          // canvas, and the gene this figure is about is at 51 Mb.
           trackLabels: 'offset',
           tracks: [
+            // SMAD4 ITSELF, which this figure is named for and did not draw
+            // (review: "other tracks that enhance its purpose"). Same one-gene
+            // MANE lane as the chr17 figure's TP53, boxed because 55 kb of
+            // chr18 is about 1 px.
+            SMAD4_MANE.lane,
             {
               trackId: 'hg008_bicseq2',
               type: 'LinearWiggleDisplay',
@@ -2009,7 +2079,9 @@ export const svSpecs: ScreenshotSpec[] = [
     readyText: 'chr18',
     readyTimeout: 90000,
     viewportWidth: 1500,
-    viewportHeight: 780,
+    // + the 50 px one-gene lane this figure gained, and the 52.7 the run then
+    // reported still under the fold
+    viewportHeight: 885,
     settleMs: 20000,
   },
 
