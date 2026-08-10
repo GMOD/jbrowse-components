@@ -7,6 +7,7 @@
 // that WebGL2 binds via `vertexAttribPointer` / `vertexAttribIPointer`.
 //! targets: wgsl, glsl
 //! export-consts: MIN_RECT_WIDTH_PX, MIN_DENSITY_ALPHA
+//! js-export: rectSpanPx
 
 import hpmath;
 import colorPack;
@@ -52,38 +53,57 @@ struct VsOut {
   float2 featSizePx : TEXCOORD1;
 };
 
+// The two screen-x edges a rect actually paints, given its unsnapped edges in
+// px. Returns (left edge, right edge) as a SIGNED span: on a reversed block the
+// render axis runs leftward, so x2 < x1 and the mark must grow that way. The
+// vertex stage lerps between the pair; Canvas2D turns it into a fillRect x via
+// `spanLeft`, which owns that pivot on its side.
+//
+// Two rules, and the split between them keys on `isPoint` — the caller's
+// GENOMIC start == end — never on the snapped pixel width. Pixel snapping
+// collapses plenty of real sub-pixel spans onto one pixel, and treating those
+// as points would slide every one of them half a mark off its start edge.
+//
+//   - A degenerate span is an interbase POINT, not a box: a CRISPR or
+//     restriction cut sits BETWEEN two bases, which is what a zero-length
+//     interval means in the interbase coordinates the adapters emit. So the
+//     min-width mark straddles the coordinate instead of growing off one side
+//     of it — zoomed in far enough to read bases, a one-sided tick sits inside
+//     the following base's cell and reads as "cuts this base". Centering is
+//     orientation-free, so unlike extendToMinWidthPx it needs no reversed-block
+//     special case.
+//   - A real span is snapped at both ends, so a min-width box is a crisp >=2px
+//     column rather than an anti-aliased blur, then widened away from its START
+//     edge by `extendToMinWidthPx`.
+//
+// `//! js-export`ed: this is the first export whose decision is genuinely a
+// PAIR rather than a scalar (adr-051), and the pair is the two arguments a
+// Canvas2D rect fill is built from. Canvas2DFeatureRenderer's `paintedRectSpan`
+// was a hand-written twin of it, down to relying on the widen being a no-op on
+// the point branch.
+public float2 rectSpanPx(float x1Px, float x2Px, bool isPoint) {
+  if (isPoint) {
+    float half = MIN_RECT_WIDTH_PX * 0.5;
+    return float2(floor(x1Px - half + 0.5), floor(x1Px + half + 0.5));
+  }
+  float left = floor(x1Px + 0.5);
+  return float2(
+    left, extendToMinWidthPx(left, floor(x2Px + 0.5), MIN_RECT_WIDTH_PX));
+}
+
 [shader("vertex")]
 VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
   float2 q = quadLocal(vid);
   float localX = q.x, localY = q.y;
 
-  float cx1 = bpToClipX(inst.startEnd.x, u);
-  float cx2 = bpToClipX(inst.startEnd.y, u);
-
-  float sx1;
-  float sx2;
-  if (inst.startEnd.x == inst.startEnd.y) {
-    // A degenerate span is an interbase POINT, not a box: a CRISPR or
-    // restriction cut sits BETWEEN two bases, which is what a zero-length
-    // interval means in the interbase coordinates the adapters emit. So the
-    // min-width mark straddles the coordinate instead of growing off one side of
-    // it — zoomed in far enough to read bases, a one-sided tick sits inside the
-    // following base's cell and reads as "cuts this base".
-    //
-    // Keyed on the genomic coords, never on sx2 - sx1 == 0: pixel snapping
-    // collapses plenty of real sub-pixel spans onto one pixel, and centering
-    // those would slide every one of them half a mark off its start edge.
-    // Centering is also orientation-free, so unlike extendToMinWidthX it needs
-    // no reversed-block special case.
-    float halfMin = pxToClipW(MIN_RECT_WIDTH_PX * 0.5, u);
-    sx1 = snapToPixelX(cx1 - halfMin, u.canvasWidth);
-    sx2 = snapToPixelX(cx1 + halfMin, u.canvasWidth);
-  } else {
-    sx1 = snapToPixelX(cx1, u.canvasWidth);
-    sx2 = extendToMinWidthX(
-      sx1, snapToPixelX(cx2, u.canvasWidth), MIN_RECT_WIDTH_PX, u.canvasWidth
-    );
-  }
+  float cw = u.canvasWidth;
+  float2 span = rectSpanPx(
+    clipXToPx(bpToClipX(inst.startEnd.x, u), cw),
+    clipXToPx(bpToClipX(inst.startEnd.y, u), cw),
+    inst.startEnd.x == inst.startEnd.y
+  );
+  float sx1 = pxToClipX(span.x, cw);
+  float sx2 = pxToClipX(span.y, cw);
   float sx = lerp(sx1, sx2, localX);
 
   float yTopPx = floor(inst.y - u.scrollY + 0.5);
@@ -97,7 +117,7 @@ VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
   float syBot = yPxToClipY(yBotPx, u.canvasHeight);
   float sy = lerp(syBot, syTop, localY);
 
-  float widthPx  = abs(sx2 - sx1) * u.canvasWidth * 0.5;
+  float widthPx  = abs(span.y - span.x);
   float heightPx = abs(yBotPx - yTopPx);
 
   // densityFade is already the layout's dense-pileup decision, so it alone gates

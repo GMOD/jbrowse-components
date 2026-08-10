@@ -12,21 +12,25 @@ import {
 } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import {
-  extendToMinWidthPx,
   snapBoxCenterYPx,
   snapBoxHeightPx,
 } from '@jbrowse/render-core/shaders/hpmath'
 
 import {
+  chevronCount,
+  chevronOffset,
+  showChevrons,
+} from '../passes/shaders/chevron.js.generated.ts'
+import {
   markerDirection,
   strandMatchesEdge,
 } from '../passes/shaders/continuation.js.generated.ts'
+import { rectSpanPx } from '../passes/shaders/rect.js.generated.ts'
 import { computeOverlayRect, overlayItemRect } from './highlightUtils.ts'
 import { computeLabelExtraWidth } from './labelPositioning.ts'
 import {
   ARROW_MIN_FEATURE_WIDTH_PX,
   CHEVRON_H_PX,
-  CHEVRON_SPACING_PX,
   CHEVRON_THICKNESS_PX,
   CHEVRON_W_PX,
   CONT_EDGE_MARGIN_PX,
@@ -36,7 +40,6 @@ import {
   CONT_TRI_W_PX,
   HEAD_HALF_H_PX,
   MIN_DENSITY_ALPHA,
-  MIN_RECT_WIDTH_PX,
   STEM_HALF_H_PX,
   STEM_LENGTH_PX,
   canvasEdgeFlags,
@@ -101,28 +104,28 @@ function drawLines(
     if (dir !== 0) {
       ctx.lineWidth = CHEVRON_THICKNESS_PX
       const lineWidthPx = Math.abs(x2 - x1)
-      // Skip chevrons when the line is too short to host even one with
-      // reasonable margins (half the nominal spacing).
-      if (lineWidthPx >= CHEVRON_SPACING_PX * 0.5) {
-        const totalChevrons = Math.max(
-          1,
-          Math.floor(lineWidthPx / CHEVRON_SPACING_PX),
-        )
-        // N chevrons with gaps at both ends ⇒ N+1 evenly-sized gaps.
-        const spacing = lineWidthPx / (totalChevrons + 1)
+      // How many chevrons a line gets and where each one sits are
+      // chevron.slang's decisions, generated into TS (adr-051) — this loop used
+      // to restate both, including the N-chevrons-in-N+1-gaps rule that decides
+      // whether the marks look evenly spaced or crowd one end.
+      if (showChevrons(lineWidthPx)) {
+        const totalChevrons = chevronCount(lineWidthPx)
+        const spacing = chevronOffset(lineWidthPx, totalChevrons, 0)
         const minX = Math.min(x1, x2)
         // Only iterate chevrons whose center lands on-screen. A long intron
         // zoomed in spans millions of px with almost all chevrons off-screen;
-        // without this window the loop issues thousands of clipped-away strokes
-        // (mirrors the GPU shader's visible-range windowing). cx positions are
-        // unchanged, so on-screen output is identical.
+        // without this window the loop issues thousands of clipped-away strokes.
+        // The GPU windows too, but against the viewport in bp — it has an
+        // hp-split line start to measure from and no minX — so the two arrive at
+        // the same visible set by different arithmetic and this half stays here.
+        // cx positions are unchanged either way, so on-screen output is identical.
         const firstC = Math.max(0, Math.ceil(-minX / spacing - 1))
         const lastC = Math.min(
           totalChevrons - 1,
           Math.floor((canvasWidth - minX) / spacing - 1),
         )
         for (let c = firstC; c <= lastC; c++) {
-          const cx = minX + spacing * (c + 1)
+          const cx = minX + chevronOffset(lineWidthPx, totalChevrons, c)
           // Three-segment "<" or ">" centred on (cx, y). The two outer
           // points share an x offset on the side opposite to `dir`, so
           // flipping dir flips the chevron's apex.
@@ -168,32 +171,23 @@ function rectFillStyle(
 // The horizontal extent a rect actually paints: its left edge and width, both in
 // whole pixels.
 //
-// Two rules, and the split between them keys on the GENOMIC coords, never on the
-// snapped pixel width — pixel snapping collapses plenty of real sub-pixel spans
-// onto one pixel, and treating those as points would slide every one of them off
-// its start edge (see pointRectCentering.test.ts):
+// Both edges come from `rectSpanPx`, generated from rect.slang's own vertex
+// stage (adr-051) — the point-vs-span rule, the pixel snap and the min-width
+// widening are all the shader's, and were hand-written here until
+// `rectSpanParity.test.ts` retired them. That test also pins the part that is
+// easy to lose on a later edit: the point branch does not widen, and does not
+// need to.
 //
-//   - A degenerate span is an interbase POINT (a CRISPR cut site, a motif cut
-//     tick), so it straddles its coordinate, half the min width either side.
-//   - A real span is pixel-snapped at both ends (matching the GPU shader's
-//     snapToPixelX, so a min-width box is a crisp >=2px column rather than an
-//     anti-aliased blur) and then widened to the min width by the shader's own
-//     `extendToMinWidthPx`, which grows the span away from the feature's START
-//     edge — reversed, that is its right edge. `spanLeft` turns the resulting
-//     signed span into a fill-x.
+// What stays this side is the conversion from the shader's signed edge pair to
+// a fill-x, because that is the pivot Canvas2D needs and the GPU does not: the
+// vertex stage lerps between the two edges, so it never has to know which one
+// is leftmost. `spanLeft` owns it.
 function paintedRectSpan(
   startBp: number,
   endBp: number,
   toX: BpToScreen,
 ): [xLeft: number, width: number] {
-  const x1 = toX(startBp)
-  const isPoint = startBp === endBp
-  const sx1 = Math.round(isPoint ? x1 - MIN_RECT_WIDTH_PX / 2 : x1)
-  const sx2 = extendToMinWidthPx(
-    sx1,
-    Math.round(isPoint ? x1 + MIN_RECT_WIDTH_PX / 2 : toX(endBp)),
-    MIN_RECT_WIDTH_PX,
-  )
+  const [sx1, sx2] = rectSpanPx(toX(startBp), toX(endBp), startBp === endBp)
   const width = Math.abs(sx2 - sx1)
   return [spanLeft(sx1, sx2, width), width]
 }

@@ -8,6 +8,7 @@
 // chevron positioning is computed in the shader from viewport + line span.
 //! targets: wgsl, glsl
 //! export-consts: CHEVRON_SPACING_PX, CHEVRON_W_PX, CHEVRON_H_PX, CHEVRON_THICKNESS_PX
+//! js-export: showChevrons, chevronCount, chevronOffset
 
 import hpmath;
 import colorPack;
@@ -30,6 +31,40 @@ struct VsOut {
 // Off-clip vertex; the GPU culls any triangle that contains it.
 static const float4 OFFSCREEN = float4(2.0, 2.0, 0.0, 1.0);
 
+// How a line's chevrons are laid out along it. The three decisions below are
+// the whole of it, and both backends have to answer them identically or the
+// strand marks land in different places on a GPU machine and a Canvas2D one —
+// which nothing would catch, because each looks plausible alone. They were
+// stated inline here and again in Canvas2DFeatureRenderer's `drawLines` until
+// adr-051; `//! js-export` now generates that second copy.
+//
+// Deliberately unit-agnostic: this shader measures the line in bp (it has an
+// hp-split start to add an offset to) and Canvas2D measures it in px. Only
+// `showChevrons` and `chevronCount` are px, because the thresholds they compare
+// against are.
+
+// Whether a line hosts chevrons at all. Too short to fit one with reasonable
+// margins (half the nominal spacing) and it gets none, rather than one crammed
+// against its ends.
+public bool showChevrons(float lineWidthPx) {
+  return lineWidthPx >= CHEVRON_SPACING_PX * 0.5;
+}
+
+// How many, at least one for any line that clears `showChevrons`. Float rather
+// than int so the count can be multiplied straight back into `chevronOffset`
+// without either backend rounding it a second time; both truncate it to an
+// index type at the point they iterate.
+public float chevronCount(float lineWidthPx) {
+  return max(1.0, floor(lineWidthPx / CHEVRON_SPACING_PX));
+}
+
+// Distance from the line's start to chevron `index`, in whatever unit `span` is.
+// N chevrons sit in N+1 evenly-sized gaps, so neither end is flush — both `+1`s
+// are here, once, instead of being spelled on each side.
+public float chevronOffset(float span, float count, float index) {
+  return span / (count + 1.0) * (index + 1.0);
+}
+
 [shader("vertex")]
 VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
   int localChevronIndex = int(vid / 12u);
@@ -44,13 +79,14 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
   o.color = float4(0.0);
   o.dist = 0.0;
 
-  if (inst.direction == 0.0 || lineWidthPx < CHEVRON_SPACING_PX * 0.5) {
+  if (inst.direction == 0.0 || !showChevrons(lineWidthPx)) {
     o.position = OFFSCREEN;
     return o;
   }
 
-  int totalChevrons = max(1, int(floor(lineWidthPx / CHEVRON_SPACING_PX)));
-  float bpSpacing = lineLengthBp / float(totalChevrons + 1);
+  float chevronsPerLine = chevronCount(lineWidthPx);
+  int totalChevrons = int(chevronsPerLine);
+  float bpSpacing = chevronOffset(lineLengthBp, chevronsPerLine, 0.0);
 
   float2 splitLine = hpSplitUint(inst.startEnd.x);
   float viewStartFromLine = hpViewportOffsetBp(splitLine, u.bpRangeX);
@@ -67,7 +103,8 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
     return o;
   }
 
-  float chevronOffsetBp = bpSpacing * float(globalChevronIndex + 1);
+  float chevronOffsetBp =
+    chevronOffset(lineLengthBp, chevronsPerLine, float(globalChevronIndex));
   float2 splitChevron = float2(splitLine.x, splitLine.y + chevronOffsetBp);
   float cx = hpClipX(splitChevron, u);
 
