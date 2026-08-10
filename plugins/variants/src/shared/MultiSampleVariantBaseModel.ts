@@ -32,6 +32,7 @@ import {
   buildSpatialIndex,
   computeClusterHierarchy,
   filterRowsBySubtree,
+  rowLabelsCarryText,
 } from '@jbrowse/tree-sidebar'
 import deepEqual from 'fast-deep-equal'
 
@@ -1275,9 +1276,24 @@ export default function MultiSampleVariantBaseModelF(
       .views(self => ({
         /**
          * #getter
+         * Whether the sidebar rows draw their sample NAME, as opposed to the
+         * bare color swatch `SvgSampleRowLabels` falls back to (and which stays
+         * drawn either way — below the threshold the tint is the only thing
+         * carrying row identity on a cohort track).
+         *
+         * `rowLabelsCarryText`, not a re-typed `>= 6`: the constant behind it is
+         * exported precisely so each caller does not restate the comparison, and
+         * restating it is how the answer drifts — tree-sidebar records
+         * multi-wiggle doing exactly that. These displays render their own label
+         * component rather than tree-sidebar's `SvgRowLabels`, which is what let
+         * a second copy of the threshold live here at all; the question is still
+         * the one shared question.
          */
         get canDisplayLabels() {
-          return self.effectiveRowHeight >= 6 && self.showSidebarLabels
+          return (
+            rowLabelsCarryText(self.effectiveRowHeight) &&
+            self.showSidebarLabels
+          )
         },
         /**
          * #getter

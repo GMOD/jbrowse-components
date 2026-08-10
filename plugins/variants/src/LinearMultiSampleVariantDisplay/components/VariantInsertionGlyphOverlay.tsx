@@ -1,12 +1,10 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
-import { getContainingView } from '@jbrowse/core/util'
 import { OverlayCanvas } from '@jbrowse/render-core'
 import { observer } from 'mobx-react'
 
 import { drawVariantInsertionGlyphs } from './drawVariantInsertionGlyphs.ts'
 
 import type { LinearMultiSampleVariantDisplayModel } from '../model.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * Insertion markers composited over the genotype canvas, on whichever backend
@@ -22,12 +20,16 @@ const VariantInsertionGlyphOverlay = observer(
   }: {
     model: LinearMultiSampleVariantDisplayModel
   }) {
-    const view = getContainingView(model) as LinearGenomeViewModel
     const palette = usePalette()
-    const { insertionGlyphRegions, renderBlocks, renderState } = model
+    const { insertionGlyphRegions, renderBlocks, renderState, canvasWidthPx } =
+      model
     return insertionGlyphRegions ? (
       <OverlayCanvas
-        width={view.trackWidthPx}
+        // `canvasWidthPx`, not a second `view.trackWidthPx` read: this is the
+        // width `renderState.canvasWidth` carries, and that value is the block
+        // scissor bound inside the draw below — so a divergence would clip the
+        // glyphs against a box the overlay isn't the size of.
+        width={canvasWidthPx}
         height={model.availableHeight}
         draw={ctx => {
           drawVariantInsertionGlyphs(

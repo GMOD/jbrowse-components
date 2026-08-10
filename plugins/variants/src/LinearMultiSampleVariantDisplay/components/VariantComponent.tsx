@@ -1,7 +1,6 @@
 import { useId, useState } from 'react'
 
 import { hoverBoxStyle } from '@jbrowse/core/ui'
-import { getContainingView } from '@jbrowse/core/util'
 import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 import { observer } from 'mobx-react'
 
@@ -24,9 +23,6 @@ import { computeVariantHitQuery } from './variantHitTest.ts'
 import type { VariantTooltipFields } from '../../shared/buildVariantHit.ts'
 import type { VariantFeatureInfo } from '../../shared/types.ts'
 import type { LinearMultiSampleVariantDisplayModel } from '../model.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-type LGV = LinearGenomeViewModel
 
 interface HoveredCell {
   rowIndex: number
@@ -222,8 +218,12 @@ const VariantBody = observer(function VariantBody({
 }) {
   const [hoveredCell, setHoveredCell] = useState<HoveredCell>()
 
-  const view = getContainingView(model) as LGV
-  const width = view.trackWidthPx
+  // `canvasWidthPx`, not a second `view.trackWidthPx` read: it is the width
+  // `renderState.canvasWidth` carries, so the canvas below and every overlay
+  // beside it sit in the box the cells were actually mapped into. The getter
+  // exists to be the one answer — reading the view directly is how MAF drifted
+  // onto `view.width` (see MultiRegionDisplayMixin.canvasWidthPx).
+  const width = model.canvasWidthPx
   const canvasId = useId()
 
   useVariantVirtualScroll(canvas, model)
