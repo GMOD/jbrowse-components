@@ -1158,25 +1158,24 @@ function syncControls() {
 // repaint, so it has to be able to see the search box on its own
 function renderCounts() {
   const q = $('#search').value.toLowerCase()
-  // A tab badge answers "how many cards do I get if I click this", so it counts
-  // within the group/kind/search scope and on the tab's own predicate — not over
-  // the whole corpus. A global 42 above a filtered view showing 3 reads as a
-  // broken filter. The pill row below stays global: that one is the progress
-  // reading for the whole sweep.
+  // A badge answers "how many cards do I get if I click this", so it counts
+  // within the group/kind/search scope and under every OTHER control's current
+  // setting, replacing only its own predicate. A global 42 above a filtered
+  // view showing 3 reads as a broken filter. The pill row below stays global:
+  // that one is the progress reading for the whole sweep.
   const scoped = data.filter(s => matchesScope(s, q))
-  const inScope = status =>
-    scoped.filter(
-      s =>
-        hasStatus(s, status) &&
-        (!filters.changedOnly || isNew(s) || isChanged(s)) &&
-        (!filters.runOnly || hasRunProblem(s)),
-    ).length
   for (const status of ['needs', 'good', 'bad', 'answered']) {
-    $('[data-count="' + status + '"]').textContent = inScope(status)
+    $('[data-count="' + status + '"]').textContent =
+      scoped.filter(s => hasStatus(s, status) && matchesChanged(s) && matchesRun(s)).length
   }
+  // The two toggles count what turning them ON would leave, which means
+  // honouring the status tab and each other. They used to honour neither, so
+  // 'Changed vs main' read 40 over a needs-review queue that would show 3 —
+  // exactly the broken-filter reading the tab badges above were written to fix.
   $('[data-count="changed"]').textContent =
-    scoped.filter(s => isNew(s) || isChanged(s)).length
-  $('[data-count="run"]').textContent = scoped.filter(hasRunProblem).length
+    scoped.filter(s => hasStatus(s, filters.status) && matchesRun(s) && (isNew(s) || isChanged(s))).length
+  $('[data-count="run"]').textContent =
+    scoped.filter(s => hasStatus(s, filters.status) && matchesChanged(s) && hasRunProblem(s)).length
 
   const has = status => s => s.verdict?.status === status && !s.stale
   const answered = data.filter(has('answered')).length
@@ -1213,10 +1212,16 @@ function hasStatus(s, status) {
   )
 }
 
+// The two header toggles as predicates, so the badge that counts what a toggle
+// would show and the filter that applies it cannot disagree — they were two
+// copies of this, and did.
+const matchesChanged = s => !filters.changedOnly || isNew(s) || isChanged(s)
+const matchesRun = s => !filters.runOnly || hasRunProblem(s)
+
 function matchesFilters(s, q) {
-  const matchesChanged = !filters.changedOnly || isNew(s) || isChanged(s)
-  const matchesRun = !filters.runOnly || hasRunProblem(s)
-  return matchesScope(s, q) && (justActed.has(s.name) || (hasStatus(s, filters.status) && matchesChanged && matchesRun))
+  return matchesScope(s, q) &&
+    (justActed.has(s.name) ||
+      (hasStatus(s, filters.status) && matchesChanged(s) && matchesRun(s)))
 }
 
 function render() {
