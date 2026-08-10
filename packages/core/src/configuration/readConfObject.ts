@@ -3,9 +3,17 @@
  * The config **readers**: `readConfObject` off a live MST config node,
  * `readConfigValue` off a plain snapshot object in a worker or a renderer, and
  * `readConfSlot` for the callers that hold either and don't know which. All
- * three exist to evaluate a slot's `jexl:...` callback on read; they differ only
- * in where the jexl instance comes from (the node's env vs. an explicit
- * argument) and in how much of that they are willing to decide at runtime.
+ * three exist to evaluate a slot's `jexl:...` callback on read; they differ in
+ * where the jexl instance comes from (the node's env vs. an explicit argument)
+ * and in how much of that they are willing to decide at runtime.
+ *
+ * They also differ, for now, in whether a read that supplies no context
+ * evaluates the callback at all. `readSlot` — and so `readConfObject`/`getConf`
+ * — refuses and returns the expression; see the note at that branch for why.
+ * `readConfSlot` inherits the rule on its MST branch and NOT on its plain-object
+ * branch, which is the one thing about this that is inconsistent on purpose
+ * rather than by oversight: handoffs/deferred-config-slot-reads.md item 1 has
+ * the argument and the two tests pinning the current behavior.
  */
 import {
   getEnv,
