@@ -30,6 +30,21 @@ checkout, so ordinary git is yours to use without asking.
   uncommitted work. Keep it clean when you can — continuous landing only works
   while main's checkout can fast-forward. If you must work there directly, use
   the shared-checkout rules in `~/.claude/CLAUDE.md`.
+- **Never merge a `*.generated.ts` conflict — regenerate it.** A generated file
+  has no merge semantics: it is a function of its source, so a three-way merge
+  of two outputs is text-munging two right answers into a wrong one. Resolve by
+  taking _either_ side to unblock the index (`git checkout --ours` /
+  `--theirs`), re-running the generator, and `git add`ing the result. Then check
+  it: run the generator once more and confirm it produces no further diff.
+  Anything else is a resolution you guessed at.
+
+  This comes up constantly, because a widely-imported `.slang` changing length
+  rewrites GLSL `#line` numbers in ~85 files, so two branches touching any
+  shader collide across all of them — 19 conflicts in one rebase here, every one
+  of them derived. The **sources** are what actually merge (`.slang`, JSDoc
+  tags, config schemas); a conflict in one of those is real and needs reading.
+  Which generator owns which artifact is in Tooling below — shaders are
+  `pnpm gen:shaders`, everything else `pnpm autogen`.
 
 ## MST
 
