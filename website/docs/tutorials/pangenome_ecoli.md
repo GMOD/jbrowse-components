@@ -559,18 +559,13 @@ the PanSN path to the assembly's `chr`, and convert to bigWig with
 [`bedGraphToBigWig`](https://genome.ucsc.edu/goldenPath/help/bigWig.html):
 
 ```bash
-# K12 length from the concatenated FASTA index, tiled into 500 bp windows
-reflen=$(awk '$1 == "K12#1#chr" {print $2}' all.fa.gz.fai)
-awk -v len="$reflen" 'BEGIN{for(s=0;s<len;s+=500){e=s+500; if(e>len)e=len; print "K12#1#chr\t"s"\t"e}}' \
-  > depth_windows.bed
-
-in_pggb odgi depth -i "/data/$og" -b /data/depth_windows.bed \
-  | awk -v OFS='\t' '$1 == "K12#1#chr" && $4 + 0 == $4 {print "chr", $2, $3, $4}' \
-  | sort -k1,1 -k2,2n > ecoli_pggb_depth.bedgraph
-
-printf 'chr\t%s\n' "$reflen" > chrom.sizes
-bedGraphToBigWig ecoli_pggb_depth.bedgraph chrom.sizes ecoli_pggb_depth.bw
+in_pggb odgi depth -i "/data/$og" -b /data/depth_windows.bed
 ```
+
+`-b` is the whole trick: odgi reports one row per window rather than per base,
+with the mean depth in column 4, so the window size is the resolution of the
+curve. The [build script](#reproduce-it-end-to-end) tiles `depth_windows.bed`
+off `all.fa.gz.fai` at 500 bp, renames the path, and runs `bedGraphToBigWig`.
 
 Load it as a [`QuantitativeTrack`](/docs/config_guides/quantitative_track) on
 K12:
@@ -633,14 +628,13 @@ own bigWig and load the set as one
 [`MultiQuantitativeTrack`](/docs/user_guides/multiquantitative_track):
 
 ```bash
-# cols: chrom start end name group pav
-in_pggb odgi pav -i "/data/$og" -b /data/depth_windows.bed > pav.tsv
-for strain in Sakai CFT073 NCTC86 IAI39; do
-  awk -v OFS='\t' -v g="$strain#1#chr" '$5 == g && $6 + 0 == $6 { print "chr", $2, $3, $6 }' \
-    pav.tsv | sort -k1,1 -k2,2n > "ecoli_pggb_pav_$strain.bedgraph"
-  bedGraphToBigWig "ecoli_pggb_pav_$strain.bedgraph" chrom.sizes "ecoli_pggb_pav_$strain.bw"
-done
+in_pggb odgi pav -i "/data/$og" -b /data/depth_windows.bed
 ```
+
+Same windows as the depth curve, so the two lanes line up. The output is one row
+per window per path (`chrom start end name group pav`), where `group` is the
+PanSN path and `pav` the fraction: one bigWig per strain is that file split on
+`group`, which the [build script](#reproduce-it-end-to-end) does.
 
 ```json
 {

@@ -711,11 +711,20 @@ column, and 246 of the graph's 130,510 bubbles do. Their breakpoints are in the
 links index, stated as an orientation disagreement between two backbone
 segments, which is what makes them readable without the graph:
 
+A link row names its two endpoints in columns 4 and 5, each id ending in the `+`
+or `-` it is entered on, and gives their ranks in columns 9 and 13. So the test
+is: both ends on the backbone, and the two signs disagree.
+
 ```bash
 tabix https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.links.bed.gz \
   'GRCh38#0#chr1:144,400,000-144,600,000' |
-  awk -F'\t' '!s[$4$5]++ && $9==0 && $13==0 &&
-              substr($4,length($4)) != substr($5,length($5))' | cut -f4,5,7,8,11,12
+  awk -F'\t' -v OFS='\t' '
+    { dup = seen[$4 $5]++ }                  # count every row, so a repeat prints once
+    $9 == 0 && $13 == 0 && !dup {            # both ends on the GRCh38 backbone
+      from = substr($4, length($4))          # the trailing + or -
+      to   = substr($5, length($5))
+      if (from != to) print $4, $5, $7, $8, $11, $12
+    }'
 # s12829+  s12842-  144418665 144419292  144495968 144539697
 # s12830-  s12843+  144419292 144419591  144539697 144540296
 # s12831-  s12861+  144419591 144442163  144567263 144572458
