@@ -473,6 +473,46 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     settleMs: 12000,
     viewportHeight: 690,
     hideTooltip: true,
+    // THE COLUMN, MARKED (review: "it might be good to make this screenshot on
+    // an example that has dramatic differences between strandedness e.g. on
+    // viral sample"). The dramatic thing is here and the frame was making a
+    // reader find it: `scripts/rank_strand_asymmetry.py` scores every position
+    // in this window and 1:55,705,711 is 0.00 mismatch across 12 forward reads
+    // and 1.00 across 10 reverse ones -- as one-sided as it gets, and the next
+    // position down is 0.40. A real variant is carried by both strands, so a
+    // column present in one band and absent from the other is a basecalling
+    // artifact; that is the whole figure, and now it is pointed at.
+    //
+    // The reviewer's own example is a claim about DEPTH rather than mismatches,
+    // and it is a different figure: `rnaseq/strand_split_coverage` already
+    // draws it, with the forward band empty over NELFE and full over SKIV2L.
+    // ONT WGS cannot produce a depth split -- it is strand-balanced by
+    // construction, which is exactly why it is the right data for this one.
+    //
+    // The box takes no `fracY`, so it wraps the whole track band and crosses
+    // both coverage histograms and both pileups at once, which is the
+    // comparison. The label right-aligns 14 px left of it (`textAlign: 'end'`,
+    // since a pill's width is only known in-page) into the white above the
+    // forward band's bars.
+    annotations: [
+      {
+        type: 'box',
+        anchor: { track: 'hg002_nanopore_hp', locus: '1:55,705,711' },
+      },
+      {
+        type: 'text',
+        text: 'reverse reads only',
+        fontSize: 17,
+        textAlign: 'end',
+        anchor: {
+          track: 'hg002_nanopore_hp',
+          locus: '1:55,705,711',
+          fracY: 0.04,
+          alignX: 'left',
+          dx: -14,
+        },
+      },
+    ],
   },
 
   {

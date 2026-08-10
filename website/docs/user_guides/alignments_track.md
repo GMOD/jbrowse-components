@@ -173,7 +173,7 @@ transcript strand is which mate the read is; the
 [RNA-seq tutorial](/docs/tutorials/rnaseq#strand-specific-rna-seq) shows that on
 a pair of genes transcribed in opposite directions.
 
-<Figure caption="HG002 nanopore reads grouped by strand, each band colored from only its own strand's reads. Nanopore mismatches are frequent, so both bands are speckled, but the two tall columns here are each carried by one strand and barely register in the other, which is what separates a systematic basecalling error from a real variant." src="/img/alignments/strand_split_coverage.png" />
+<Figure caption="HG002 nanopore reads grouped by strand, each band colored from only its own strand's reads. Nanopore mismatches are frequent, so both bands are speckled; the boxed column is the one that is not shared. Every reverse read disagrees with the reference there and no forward read does, which is what separates a systematic basecalling error from a real variant." src="/img/alignments/strand_split_coverage.png" />
 
 ## Read height and track sizing
 
