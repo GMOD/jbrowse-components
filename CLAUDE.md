@@ -36,66 +36,44 @@ checkout, so ordinary git is yours to use without asking.
 - **Never merge a `*.generated.ts` conflict — regenerate it.** Take either side,
   re-run the generator (see Tooling), `git add`. Only the sources conflict for
   real.
-- **A fresh worktree has no `node_modules` and no figures**, so every
-  `website/scripts/*.ts` dies on
-  `Cannot find package '@jbrowse/browser-test-utils'` and anything reading
-  figures calls the whole corpus unpulled. Three symlinks beat a `pnpm install`
-  — seconds, and no lockfile risk, because pnpm's internal links are absolute
-  and resolve back into the primary checkout's store:
+- **A worktree from `EnterWorktree` arrives installed.** The `WorktreeCreate`
+  hook (`.claude/hooks/setup-worktree.sh`) creates it off local `main` and runs
+  `pnpm install --frozen-lockfile` before the session starts — ~20s with a warm
+  store — so `node_modules`, the per-package `@jbrowse/*` links, and everything
+  `postinstall` generates are already there. That includes
+  `products/jbrowse-web/src/buildInfo.ts`, which is gitignored and which `tsc`
+  dies on when absent, taking ~5 suites with it (anything reaching `rootModel`).
+  A worktree you made yourself with `git worktree add` gets none of this: run
+  the install by hand there.
+
+- **Figures are the one thing the install does not bring.** `website/static/img`
+  is a gitignored corpus, so anything reading figures sees an empty one — and
+  every `website/scripts/*.ts` needs `puppeteer`, which is not hoisted to the
+  root, so resolve it from `packages/browser-test-utils/`
+  (`createRequire(<that>/package.json)`) or run from a package that depends on
+  it. One symlink:
 
   ```
-  ln -s ~/src/jbrowse-components/node_modules node_modules
-  ln -s ~/src/jbrowse-components/website/node_modules website/node_modules
   ln -s ~/src/jbrowse-components/website/static/img website/static/img
   ```
 
-  Linking `static/img` is also what lets figure tooling see the machine's real
-  figures, unpushed regens included, which is the whole point of a before/after
-  comparison. Delete the three before committing — they are gitignored, but they
-  muddy a `git status` read. Note `puppeteer` is not hoisted to the root, so
-  resolve it from `packages/browser-test-utils/` —
-  `createRequire(<that>/package.json)` — or run from a package that depends on
-  it.
+  That link is what lets figure tooling see the machine's real figures, unpushed
+  regens included, which is the whole point of a before/after comparison. Delete
+  it before committing — gitignored, but it muddies a `git status` read.
 
-- **Those symlinks are for scripts and figures, never for `pnpm typecheck`.**
-  Each package's `node_modules/@jbrowse/*` links are **relative**
+- **Never symlink `node_modules` from the primary checkout.** This section used
+  to recommend it, before the install was automatic, and it is a trap worth
+  knowing because the damage is silent. Each package's `node_modules/@jbrowse/*`
+  link is **relative**
   (`plugins/canvas/node_modules/@jbrowse/core -> ../../../../packages/core`), so
   borrowing the primary's tree makes every cross-package import resolve to the
-  primary checkout's sources. A whole-repo `--noEmit` then typechecks _its_ code
-  against your edit and passes — the failure mode is a clean run that proved
-  nothing. Run `pnpm install --frozen-lockfile` in the worktree instead: the
-  store is shared, so it's ~6s, and the frozen lockfile is what removes the risk
-  the symlinks were avoiding.
-
-- **`products/jbrowse-web/src/buildInfo.ts` is generated and gitignored**, so a
-  fresh worktree fails `tsc` on it and takes ~5 suites down with it (anything
-  reaching `rootModel`).
-  `node --experimental-strip-types products/jbrowse-web/scripts/genBuildInfo.ts`
-  once per worktree.
-
-- **With those symlinks, a cross-package `@jbrowse/*` import in the worktree
-  resolves to the _primary checkout's_ source, not yours.** Every workspace
-  package's `exports` points at `./src/*.ts`, and the link node follows out of
-  the symlinked `node_modules` lands in `~/src/jbrowse-components/packages/…`.
-  So a test importing `./Thing.tsx` sees your edit while a test importing
-  `@jbrowse/some-core` does not — the same edit, tested twice, disagreeing, and
-  the package-level one fails locally and passes in CI (or, worse, the reverse).
-  It is not a stale cache; don't chase it as one. To run such a test against
-  your own copy, map the package for that one run rather than editing the shared
-  jest config:
-
-  ```
-  node_modules/.bin/jest <paths> --moduleNameMapper \
-    '{"^@jbrowse/some-core$":"<rootDir>/packages/some-core/src/index.ts",
-      ...the two entries jest.config.js already maps, verbatim}'
-  ```
-
-  The flag replaces `moduleNameMapper` wholesale, so the two entries jest.config
-  already carries have to be repeated or the suites relying on them break. The
-  same resolution gap makes `tsc --noEmit` in a worktree emit TS2307 for every
-  `@jbrowse/*` import (the per-package `node_modules` aren't linked, only the
-  root) — pre-existing noise on untouched files too, so it can't be read as a
-  verdict on your change.
+  primary checkout's sources instead of yours. A test importing `./Thing.tsx`
+  then sees your edit while a test importing `@jbrowse/some-core` does not — the
+  same edit, tested twice, disagreeing, and the package-level one failing
+  locally while passing in CI, or the reverse. A whole-repo `--noEmit`
+  typechecks _its_ code against your edit and passes, which is a clean run that
+  proved nothing. It is not a stale cache; don't chase it as one. A real install
+  resolves those links inside the worktree and none of this arises.
 
 ## MST
 
