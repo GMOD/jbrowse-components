@@ -445,7 +445,7 @@ export default function RegionTooLargeMixin() {
        * whose *own* opt-in depends on the floor can read it without a cycle:
        * MAF's `showSummary` swaps to the cheap summary adapter at this same span,
        * and `byteGateAdapterConfig` is downstream of that. `densityGateActive`
-       * adds the opt-in and exemption terms on top.
+       * adds `gateActive` and the density opt-in on top.
        */
       get aboveForceLoadFloor(): boolean {
         const spanBp = self.gateViewport?.spanBp

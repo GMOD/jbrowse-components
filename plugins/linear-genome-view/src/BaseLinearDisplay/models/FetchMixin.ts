@@ -256,8 +256,8 @@ export default function FetchMixin() {
        * #action
        * cancel any in-flight fetch and bump fetchGeneration (always bumps, so
        * callers can retrigger fetch autoruns even when nothing was in flight).
-       * This is the *internal* reset used by clearAllRpcData/invalidateLoadedRegions
-       * — it clears any user-cancel flag so the retrigger actually re-fetches.
+       * This is the *internal* reset `clearAllRpcData` runs — it clears any
+       * user-cancel flag so the retrigger actually re-fetches.
        */
       cancelFetch() {
         self.stopActiveFetch()
