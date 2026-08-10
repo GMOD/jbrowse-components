@@ -148,6 +148,16 @@ checkout, so ordinary git is yours to use without asking.
   own CI job (Shaders), and `scripts/autogen.ts` has no shader generator — so
   `pnpm autogen` on a stale-shader failure rewrites nothing and looks like the
   check is wrong. Edit the `.slang`, never the generated module.
+- **`pnpm gen:shaders` regenerates every shader in the repo, not just yours**,
+  so in the shared checkout the next agent's regen commit sweeps up your
+  `*.generated.ts` while your `.slang` sources are still uncommitted — which has
+  happened, and reads afterwards as their commit having changed your shader.
+  Commit sources promptly, or work in a worktree.
+- **`jest.config.js`'s `.claude/` ignore is load-bearing — don't re-diagnose
+  it.** Without it a nested agent worktree gives jest-haste-map duplicate
+  `packages/__mocks__/**` and duplicate `plugins/*/package.json`, and the latter
+  is a hard `_assertNoDuplicates` throw that fails every cross-package suite.
+  Already fixed (`824e95eda3`).
 - Two TypeScript versions on purpose: `typescript` 6.x for lint, aliased
   `typescript7` for `pnpm typecheck`. Don't unify them.
 - The `@jbrowse/core/*` modules in `ReExports/modules.ts` are the ABI external

@@ -22,6 +22,7 @@ Exploratory concepts that are *not* committed work live in
 | [Autofit height for the LGV demo](#autofit-height-for-the-lineargenomeview-example-site-demo) | embedded | no view-level auto-height exists yet |
 | [Extra large text SVG mode](#extra-large-text-svg-mode-for-pub-ready-figures) | SVG export | thread a scale the way `fontFamily` threads |
 | [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | five independent small items |
+| [Look at the six AA-ramp commits](#look-at-the-six-aa-ramp-shader-commits--nobody-has) | shaders, GPU | landed, unit-tested, never seen |
 | [Report a callout that draws off-frame](#report-a-callout-that-draws-off-frame) | figures | the overlay already reports the unresolvable case |
 | [`partitionField` throws on `bigRmskBed`](#partitionfield-jexl-throws-through-its-own-guard-on-bigrmskbed) | canvas | the per-feature catch is there and not holding |
 | [Render the converted callout specs](#render-the-twenty-specs-whose-callouts-were-converted-to-anchors) | figures | sweep them; five move deliberately |
@@ -76,6 +77,42 @@ labels will overflow the boxes laid out for them.
 - Add a "hide this feature" option to `LinearMultiSampleVariantDisplay` (and
   similar displays). `plugins/canvas` already has `hideFeature`
   (`LinearBasicDisplay/baseModel.ts`) to copy.
+
+### Look at the six AA-ramp shader commits — nobody has
+
+Six rendering commits landed on 2026-08-10 (`f96108bad9`, `75e0db7602`,
+`f082bad29f`, `333477b51c`, `c7ebdf6d9b`, `4261bbfe40`) verified by unit test and
+argument only. **None was visually verified and no cross-backend or browser test
+was run on any of them.** The finding they share is in
+[reference/GPU_RENDERING.md](reference/GPU_RENDERING.md#antialiasing-ramps-how-wide-and-where-the-width-comes-from).
+
+Suites exist for every view touched — `synteny.ts`, `grape-peach-synteny.ts`,
+`hs1-mm39-synteny.ts`, `multi-way-synteny.ts`, `dotplot.ts`, `hic.ts`, `gwas.ts`,
+`gwas-locuszoom.ts`, `wiggle-color.ts` under
+`products/jbrowse-web/browser-tests/suites/` — and `pnpm test:browser:compare`
+is the differential oracle that needs no golden.
+
+Ranked by how likely the author thought they were to be wrong:
+
+1. **The dotplot quad grew and was never measured.** Every capsule quad is now
+   `halfWidth + aaHalf` on both axes; at the default `lineWidth` 2.5 that is
+   ~40% more rasterized area per instance. A `discard` covers the fragments the
+   pad introduced, but the *net* effect on a dense plot is reasoned, not
+   measured. If it is negative the pad is still correct and the discard is the
+   lever.
+2. **The glyph ramp got narrower** (2–2.83 → 1 device px), so discs and diamonds
+   read crisper. 1px matches every other mark and `SMALL_POINT_MAX_DIAMETER`
+   already routes ≤3px points to crisp squares — but it is a visible change
+   nobody has seen.
+3. **`fillShade` at high opacity.** Hover no longer *reduces* alpha, but for
+   `a ≥ 0.35` it now leaves alpha untouched and hover shows only as
+   `hoverDarken`'s 0.7 on the rgb. Whether that is enough feedback at opacity 1.0
+   is a design question, not a correctness one; a small relative boost is the
+   alternative.
+4. **`clipLargeBlockToWindow`'s pre-gate assumes the CIGAR's span matches
+   `end - start`.** A malformed CIGAR that walks past `end` could have an op
+   inside the window the gate now skips. Every other consumer would already be
+   mis-drawing such a block, so this was accepted — but it is a new assumption.
 
 ### Report a callout that draws off-frame
 

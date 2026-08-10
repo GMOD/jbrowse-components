@@ -86,6 +86,20 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   concurrency bug: bam-js calls `unzip` concurrently, so a mid-flight reset
   nulls `bg.wasm` under a sibling that already passed `await init()`. Real fix
   is a per-call/pooled instance.
+- **A GPU-side cull for dotplot** — not obviously worth it.
+  `drawDotplotInstances` culls on the CPU and notes 87% of a fetch is offscreen,
+  but dotplot quads are a few px, so the rasterizer discards them about as
+  cheaply as a vertex test would. Synteny's `isCulled` earns its place because
+  its quads span the track.
+- **Tightening synteny's instance-capacity bound to the emit window** — cannot
+  be done. It looks loose (`buildSyntenyGeometry`'s `cigarBudget` comes from the
+  full feature width), but `segmentOffScreen` drops a segment only when it is
+  off-window on *both* axes, so a segment can survive on axis 1 while far off
+  axis 0. The bound really is `widthPx0 + widthPx1`.
+- **Closing the hi-C ramp texel-pick difference between GPU and CPU** — up to
+  half an entry (sampler texel-center convention vs `round(t * 255)`), which is
+  sub-visible on a 256-entry smooth ramp. Closing it adds machinery for no
+  effect.
 - **Workspaces/dockview freeze — two dead ends already paid for.** Width-set
   thrash disproven (that run used canvas2d + empty views and never reproduced
   the freeze, so it bounds `setWidth` only). View-stack windowing disproven as
@@ -248,3 +262,17 @@ re-attempt without genuinely new data.
   isn't on main.
 - **Converting the remaining developer-guide fences to `include:` markers** —
   can't be done without making the guides wrong.
+- **A gate on "this `//! js-export` has no importer"** — designed and abandoned.
+  Every row it would raise resolves to "leave it" (see the table in
+  [SHADER_JS_CODEGEN.md](SHADER_JS_CODEGEN.md)), and it would not catch the
+  accretion ADR-051 fears anyway: a new marginal export always has a consumer,
+  that being why someone added it. It stays a line in a report.
+- **A detector for decisions written inline in a `vs_main` body.** The shader
+  lift inventory lists *functions*, so a decision with no name is invisible to
+  it — and two real exports (`rectSpanPx`, the chevron layout) came from exactly
+  there. A detector was still refused: every heuristic available ("this stage
+  body contains a pixel snap and a magic constant") is noisy enough that people
+  learn to ignore it, which is worse than no mechanism. The control is the habit
+  stated in SHADER_JS_CODEGEN.md — when a `vs_main` grows a decision, give it a
+  name, and the inventory can then see it. Reopen only with a materially better
+  idea than a keyword heuristic.

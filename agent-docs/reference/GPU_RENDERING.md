@@ -1015,6 +1015,49 @@ block. Skipping this renders blurry on Retina. `prepareCanvas` (in
 `packages/render-core/src/canvas2dUtils.ts`) does this for the on-screen Canvas2D
 backend path; standalone overlay components must replicate it.
 
+## Antialiasing ramps: how wide, and where the width comes from
+
+Four shaders were fixed for one bug in 2026-08 (synteny, dotplot, the point
+glyphs, hi-C), and it is the same bug every time: **an AA ramp whose width was
+measured with `fwidth`, and/or whose geometry had no room for it.**
+
+`fwidth` is `|ddx| + |ddy|`, which overshoots a true gradient by up to √2 —
+worst on diagonals, which is what these marks are made of. Where it was *also*
+used as the smoothstep's half-width, the ramp came out 2–2.83 output pixels
+instead of 1.
+
+The right width depends on what the SDF is measured in, and the three cases are
+genuinely different:
+
+- **Distance already in pixels** (synteny `perpCoverage`, the dotplot capsule):
+  `|∇d| = 1`, so the half-width is the constant `0.5/dpr` and there is nothing to
+  differentiate. Needs a `devicePixelRatio` uniform.
+- **SDF in quad-local units** (`pointGlyph`, manhattan): the conversion to pixels
+  *is* the gradient, and it differs per shape — the disc and triangle carry unit
+  gradients, the diamond's L1 norm carries √2. Must be measured, as
+  `length(ddx, ddy)`, taken as the **full** width.
+- **Tiled cells** (hi-C bins): no per-quad AA at all, deliberately. Bins share
+  exact edges after a linear transform, and antialiasing them individually
+  produces seams.
+
+`wiggle.slang`'s capsule already had this right, in a comment that names synteny.
+
+**A ramp needs geometry to live in.** Widening one without padding the quad
+clips it: the dotplot capsule quad is now `halfWidth + aaHalf` on both axes, with
+a `discard` for the fragments the pad introduces. The tests for this
+(`shaders/dotplotCapsulePad.test.ts`, `shaders/glyphEdgeAlpha.test.ts`, and the
+pre-existing `syntenyFillPad.test.ts`) mirror the shader in TS and assert the
+geometry contains everything the fragment shades, each pinning the retired
+spelling as a counterexample. They *model* the shader rather than reading it, so
+a `SYNC` comment is what keeps them honest.
+
+**And a model test cannot check an agreement it models from one source.**
+`syntenyFillPad.test.ts` looked like it would catch a corner→edge pairing drift
+and could not: it builds both the polygon and the analytic clip from one copy of
+`fillEdges`, so it assumes the very agreement it appears to test. That is what
+`ribbonEdges` is for — one corner→edge pairing, so the property is structural
+instead of tested.
+
 ## `displayedRegionIndex`
 
 Zero-based index into `view.displayedRegions`. Stable unless regions are added,

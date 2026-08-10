@@ -179,6 +179,44 @@ out earlier hp-math attempts, and imposes no `MAX_REGIONS` cap. See ADR-010 for
 the rejected per-region-table alternatives and ADR-018 for the earlier hi/lo
 shape this replaced.
 
+### Should synteny adopt dotplot's shape? Asked, declined on bytes
+
+Synteny is the one that puts relative coordinates into the data model and across
+the RPC boundary, which brushes against the repo `CLAUDE.md` rule that worker
+output is absolute genomic uint32. It does not straightforwardly violate it —
+synteny's base is a **viewport** base rather than a regionStart, it is refetched
+when the window moves, and `base0`/`base1` travel with the data so no consumer
+has to guess it — but the inconsistency is real and the question has been asked.
+
+It was declined, so it can be argued with rather than re-derived:
+
+- Corners are synteny's largest per-instance array, and absolute means Float64:
+  **16 bytes/instance of corners becomes 32**. The plugin sizes its target at
+  500k instances on whole-genome PAF (`instanceInterleave.ts`,
+  `syntenyPickEngine.ts`), so roughly **+8 MB per region**, across the RPC and
+  then resident in `SyntenyGeometryCache`, per level.
+- "Half the position bytes" is a stated goal of the refactor that introduced the
+  scheme. Undoing it buys consistency and spends a measured win.
+- It is not a buffer-format change. The CPU pick path (`syntenyPickEngine.ts` /
+  `projectCorners`) reads the relative values today, so it moves too.
+
+**What would change the verdict:** a decision that one coordinate story across
+the fleet is worth the bytes regardless (a legitimate call, and not the
+implementer's); evidence the 500k-instance case is not the one to optimize for;
+or a third consumer arriving that needs absolute cumBp on the main thread, at
+which point synteny is paying the conversion anyway.
+
+**Do not** split the difference by leaving the worker relative and converting on
+arrival — that is the current cost plus a copy.
+
+### Hi-C is not a precision problem
+
+`diagonalGrid.slang` says its grid units are "genomic bp for Hi-C", which reads
+like the Gbp-scale Float32 hazard synteny and dotplot both had to solve. It is
+not. Positions are built as `u = (contactBin + off) * w` with
+`w = res / (bpPerPx * √2)` (`executeRenderHicData.ts`), so they are
+viewport-pixel-scale. Float32 is fine and no base/pan scheme is wanted.
+
 ## Genome-size limits
 
 - **A single reference sequence must be `< 2³²` = 4.29 Gbp.** The one hard

@@ -11,10 +11,23 @@ Read that first; this file is the how-to and assumes it.
 
 It also reports **exports nothing imports**. That one is deliberately a line in
 a report and not a build gate: every candidate for a gate turned out to resolve
-to "leave it" — a rule still shared through another generated file
-(`extendToMinWidthPx`, reached from inside `rectSpanPx`'s twin), or a deliberate
-test oracle (`sBlend`, `yCurve`). A check whose findings all end in a
-suppression teaches people to suppress.
+to "leave it", and a check whose findings all end in a suppression teaches people
+to suppress. It would also not catch the accretion ADR-051 actually fears, since
+a *new* marginal export always has a consumer — that being why someone added it.
+
+All five current rows were examined; re-deriving this is the waste the table
+exists to prevent:
+
+| Export | Why it stays |
+| --- | --- |
+| `extendToMinWidthPx` | still the shared rule. Its direct importer went away when `rectSpanPx` subsumed the call site, but `rectSpanPx`'s own twin calls it as a private helper, and the shader uses it |
+| `frequencyAlpha` | production moved to `frequencyFadeGate`; the rule is unchanged and still lifted |
+| `normalizeScore` | wiggle's normalizer, still the shared half of the deliberately-divergent `scoreToY` |
+| `sBlend`, `yCurve` | the deliberate test oracles ADR-051 describes. The report agreeing with the ADR here is a check on both |
+
+**What would change a verdict** is a shader-side rule that stops being shared at
+all — the function deleted from the `.slang`, or its Canvas2D counterpart gone.
+Not "nothing imports it", which is the state above and is fine.
 
 **The survey is no longer a thing you run — it is generated.**
 [reference/SHADER_LIFT_INVENTORY.md](SHADER_LIFT_INVENTORY.md) is written by
@@ -29,6 +42,15 @@ wrong both times (ADR-051's "Deliberately not exported" list carried an entry,
 Read the inventory, and if you think it is missing something, fix the scanner —
 it uses the emitter's own parser, so anything it cannot see is something that
 cannot be generated either.**
+
+**The inventory's whole value is in its diff, so watch it for churn.** Refusal
+*rows* were made stable (`refusalBucket` normalizes line numbers and slangc's
+per-module suffixes), but each row carries a **count**, and a count moves
+whenever any shader gains or loses a function of that shape. If that turns out to
+fire on most unrelated shader edits, people will learn to skim past the file and
+the mechanism is dead. **The remedy then is to drop the counts and keep the
+example names** — deliberately not done pre-emptively, because the churn has not
+been observed yet and a count is informative while it is stable.
 
 The two remaining places a new export comes from: a function that does not exist
 yet, and a `vs_main` body that grows a decision worth naming. The second is the

@@ -120,6 +120,13 @@ inference has to know it exists. §"A vector signature is usually a scalar
 decision in a wrapper" says why this case is different from the ones that table
 turned down.
 
+The shape that would push on that bound is a predicate *taking* a pair ("does
+this span overlap that one"). Nothing in the tree wants one, and if one turns up
+the first move is still this ADR's: try splitting the scalar decision out, and
+widen only if the decision genuinely is not scalar. Widening to *parameters*
+drags in vector locals and swizzles — the general vector support this ADR calls
+unproven — so it is a much larger amendment than return position was.
+
 Two mechanics follow from the findings above:
 
 - **A synthesized compute wrapper, for module files only.** Slang eliminates
