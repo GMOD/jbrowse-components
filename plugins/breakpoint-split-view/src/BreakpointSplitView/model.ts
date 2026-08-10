@@ -210,7 +210,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         const { renderToSvg } =
           await import('./svgcomponents/SVGBreakpointSplitView.tsx')
         const html = await renderToSvg(self as BreakpointViewModel, opts)
-        const { saveSvgAsImage } = await import('@jbrowse/core/util')
+        const { saveSvgAsImage } =
+          await import('@jbrowse/core/svg/saveSvgAsImage')
         await saveSvgAsImage(html, opts)
       },
     }))

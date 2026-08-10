@@ -162,7 +162,7 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
         <Button
           variant="contained"
           onClick={async () => {
-            const { saveAs } = await import('@jbrowse/core/util')
+            const { saveAs } = await import('@jbrowse/core/util/FileSaver')
             saveAs(
               new Blob([sequence], {
                 type: 'text/x-fasta;charset=utf-8',

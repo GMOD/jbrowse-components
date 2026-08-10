@@ -62,7 +62,7 @@ export function exportSessionMenuItem(): MenuItem {
     label: 'Export session',
     icon: GetAppIcon,
     onClick: async (session: AbstractSessionModel) => {
-      const { saveAs } = await import('@jbrowse/core/util')
+      const { saveAs } = await import('@jbrowse/core/util/FileSaver')
       saveAs(
         new Blob(
           [

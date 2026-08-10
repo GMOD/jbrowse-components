@@ -6,6 +6,11 @@ import type { FileLocation } from './types/index.ts'
 // `unzip` is deliberately NOT re-exported here — it lives at
 // '@jbrowse/core/util/unzip' so this barrel does not reach bgzf/pako. See that
 // file for why a re-export of it cannot be tree-shaken.
+//
+// Same weight, other direction: don't `await import('@jbrowse/core/util')` to
+// defer something. A dynamic namespace request re-inflates what the named
+// static imports tree-shook away — 231KB against 145KB, measured. Point the
+// dynamic import at the module instead ('@jbrowse/core/svg/saveSvgAsImage').
 
 export {
   capitalizeFirst,

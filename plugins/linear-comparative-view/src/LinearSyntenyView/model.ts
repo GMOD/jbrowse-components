@@ -524,7 +524,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         const { renderToSvg } =
           await import('./svgcomponents/SVGLinearSyntenyView.tsx')
         const html = await renderToSvg(self as LinearSyntenyViewModel, opts)
-        const { saveSvgAsImage } = await import('@jbrowse/core/util')
+        const { saveSvgAsImage } =
+          await import('@jbrowse/core/svg/saveSvgAsImage')
         await saveSvgAsImage(html, opts)
       },
     }))

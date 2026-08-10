@@ -36,7 +36,7 @@ const methods = {
 }
 
 async function download(text: string, filename: string) {
-  const { saveAs } = await import('@jbrowse/core/util')
+  const { saveAs } = await import('@jbrowse/core/util/FileSaver')
   saveAs(new Blob([text], { type: 'text/plain;charset=utf-8' }), filename)
 }
 

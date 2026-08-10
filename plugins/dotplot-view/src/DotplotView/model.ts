@@ -1220,7 +1220,8 @@ export default function stateModelFactory(pm: PluginManager) {
           const { renderToSvg } =
             await import('./svgcomponents/SVGDotplotView.tsx')
           const html = await renderToSvg(self as DotplotViewModel, opts)
-          const { saveSvgAsImage } = await import('@jbrowse/core/util')
+          const { saveSvgAsImage } =
+            await import('@jbrowse/core/svg/saveSvgAsImage')
           await saveSvgAsImage(html, opts)
         },
         // if any of our assemblies are temporary assemblies

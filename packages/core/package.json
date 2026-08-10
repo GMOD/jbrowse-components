@@ -69,6 +69,7 @@
     "./rpc/RpcRegistry": "./src/rpc/RpcRegistry.ts",
     "./svg/SvgExport": "./src/svg/SvgExport.tsx",
     "./svg/constants": "./src/svg/constants.ts",
+    "./svg/saveSvgAsImage": "./src/svg/saveSvgAsImage.ts",
     "./svg/svgId": "./src/svg/svgId.ts",
     "./svg/svgReady": "./src/svg/svgReady.ts",
     "./svg/wrapSvgExport": "./src/svg/wrapSvgExport.tsx",
@@ -432,6 +433,10 @@
       "./svg/constants": {
         "types": "./esm/svg/constants.d.ts",
         "import": "./esm/svg/constants.js"
+      },
+      "./svg/saveSvgAsImage": {
+        "types": "./esm/svg/saveSvgAsImage.d.ts",
+        "import": "./esm/svg/saveSvgAsImage.js"
       },
       "./svg/svgId": {
         "types": "./esm/svg/svgId.d.ts",
@@ -1054,6 +1059,9 @@
         ],
         "svg/constants": [
           "esm/svg/constants.d.ts"
+        ],
+        "svg/saveSvgAsImage": [
+          "esm/svg/saveSvgAsImage.d.ts"
         ],
         "svg/svgId": [
           "esm/svg/svgId.d.ts"

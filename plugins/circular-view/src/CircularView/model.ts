@@ -682,7 +682,8 @@ function stateModelFactory(pluginManager: PluginManager) {
         const { renderToSvg } =
           await import('./svgcomponents/SVGCircularView.tsx')
         const html = await renderToSvg(self as CircularViewModel, opts)
-        const { saveSvgAsImage } = await import('@jbrowse/core/util')
+        const { saveSvgAsImage } =
+          await import('@jbrowse/core/svg/saveSvgAsImage')
         await saveSvgAsImage(html, opts)
       },
     }))

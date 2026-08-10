@@ -1565,7 +1565,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const { renderToSvg } =
           await import('./svgcomponents/SVGLinearGenomeView.tsx')
         const html = await renderToSvg(self as LinearGenomeViewModel, opts)
-        const { saveSvgAsImage } = await import('@jbrowse/core/util')
+        const { saveSvgAsImage } =
+          await import('@jbrowse/core/svg/saveSvgAsImage')
         await saveSvgAsImage(html, opts)
       },
     }))

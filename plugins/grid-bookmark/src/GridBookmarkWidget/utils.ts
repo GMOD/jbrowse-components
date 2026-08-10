@@ -126,7 +126,7 @@ export async function downloadBookmarkFile(
   const bookmarksToDownload =
     selectedBookmarks.length === 0 ? visibleBookmarks : selectedBookmarks
 
-  const { saveAs } = await import('@jbrowse/core/util')
+  const { saveAs } = await import('@jbrowse/core/util/FileSaver')
 
   if (fileFormat === 'BED') {
     const fileContents: Record<string, string[]> = {}
