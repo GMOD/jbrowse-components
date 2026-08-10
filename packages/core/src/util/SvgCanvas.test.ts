@@ -68,6 +68,59 @@ test('clip with no preceding path is a no-op', () => {
   expect(svg).not.toContain('clip-path')
 })
 
+// `forEachClippedBlock` brackets every block that has data, so a block whose
+// features are all off-screen — or whose layer is switched off — used to leave a
+// dead <clipPath> + empty <g> pair in the file. Real exports carried them: 2 of
+// the 16 clip groups in the breakpoint-split-view golden were empty.
+test('a clip nothing was drawn inside is dropped entirely', () => {
+  const ctx = new SvgCanvas()
+  ctx.save()
+  ctx.beginPath()
+  ctx.rect(0, 0, 100, 100)
+  ctx.clip()
+  ctx.restore()
+
+  expect(ctx.getSerializedSvg()).toBe('')
+})
+
+// The elision is per clip, not all-or-nothing: a painted block keeps its group
+// while its empty neighbours cost nothing.
+test('an empty clip between two painted ones drops only itself', () => {
+  const ctx = new SvgCanvas()
+  for (const x of [0, 100, 200]) {
+    ctx.save()
+    ctx.beginPath()
+    ctx.rect(x, 0, 100, 100)
+    ctx.clip()
+    if (x !== 100) {
+      ctx.fillRect(x, 0, 10, 10)
+    }
+    ctx.restore()
+  }
+
+  const svg = ctx.getSerializedSvg()
+  expect((svg.match(/<clipPath/g) ?? []).length).toBe(2)
+  expect((svg.match(/<g clip-path/g) ?? []).length).toBe(2)
+  expect((svg.match(/<\/g>/g) ?? []).length).toBe(2)
+})
+
+// An SVG file is XML, so an unbalanced <g> doesn't render badly — it doesn't
+// parse. A clip with no save() to scope it is permanent (Canvas2D semantics) and
+// so has no restore() to close its group; serializing closes it instead.
+test('a permanent clip is closed at serialization', () => {
+  const ctx = new SvgCanvas()
+  ctx.beginPath()
+  ctx.rect(0, 0, 100, 100)
+  ctx.clip()
+  ctx.fillRect(0, 0, 10, 10)
+
+  const svg = ctx.getSerializedSvg()
+  expect((svg.match(/<g clip-path/g) ?? []).length).toBe(1)
+  expect((svg.match(/<\/g>/g) ?? []).length).toBe(1)
+  // and serializing is not what closed it — the second read agrees
+  expect(ctx.getSerializedSvg()).toBe(svg)
+})
+
 test('rgba fill is split into fill + fill-opacity for SVG 1.1 compat', () => {
   const ctx = new SvgCanvas()
 

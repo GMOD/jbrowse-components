@@ -18,8 +18,9 @@ interface SavedState {
   e: number
   f: number
   // Number of `<g clip-path="…">` groups opened since this save() — closed
-  // on restore(). Lets clip() be properly scoped to save/restore brackets,
-  // matching the CanvasRenderingContext2D semantics.
+  // on restore(), or dropped there if still unwritten. Lets clip() be properly
+  // scoped to save/restore brackets, matching the CanvasRenderingContext2D
+  // semantics.
   groupsToClose: number
 }
 
@@ -70,6 +71,13 @@ export class SvgCanvas {
   private parts: string[] = []
   private pathData = ''
   private stack: SavedState[] = []
+  // Clip groups `clip()` has opened but not yet written. Only a drawn element
+  // flushes them (`emit`), so a clip nothing was drawn inside is dropped
+  // entirely rather than serialized as a dead `<clipPath>` + empty `<g>`. See
+  // `clip()`.
+  private pendingGroups: string[] = []
+  // Flushed groups still awaiting their `</g>`.
+  private openGroups = 0
 
   fillStyle: string | CanvasGradient | CanvasPattern = '#000'
   strokeStyle: string | CanvasGradient | CanvasPattern = '#000'
@@ -201,6 +209,20 @@ export class SvgCanvas {
     return attrs
   }
 
+  // Every element that actually paints goes through here, and nothing else
+  // does. Writing a drawn element is what commits the clip groups enclosing it,
+  // which is what makes "nothing was drawn" observable at the end (`parts` stays
+  // empty) instead of being masked by the clip markup of the blocks that were
+  // walked and found empty.
+  private emit(markup: string) {
+    if (this.pendingGroups.length > 0) {
+      this.parts.push(...this.pendingGroups)
+      this.openGroups += this.pendingGroups.length
+      this.pendingGroups.length = 0
+    }
+    this.parts.push(markup)
+  }
+
   save() {
     this.stack.push({
       fillStyle: `${this.fillStyle}`,
@@ -227,7 +249,16 @@ export class SvgCanvas {
     const s = this.stack.pop()
     if (s) {
       for (let i = 0; i < s.groupsToClose; i++) {
-        this.parts.push('</g>')
+        if (this.pendingGroups.length > 0) {
+          // Still pending means nothing was drawn between this clip() and its
+          // restore(), so neither the group nor its <clipPath> is written at
+          // all. The pending list is a stack, and a flush empties it whole, so
+          // its tail is always this frame's own clips.
+          this.pendingGroups.pop()
+        } else {
+          this.parts.push('</g>')
+          this.openGroups--
+        }
       }
       this.fillStyle = s.fillStyle
       this.strokeStyle = s.strokeStyle
@@ -320,7 +351,7 @@ export class SvgCanvas {
   fillRect(x: number, y: number, w: number, h: number) {
     if (this.axisAligned) {
       const [tx, ty, tw, th] = this.transformRect(x, y, w, h)
-      this.parts.push(
+      this.emit(
         `<rect x="${tx}" y="${ty}" width="${tw}" height="${th}" ${this.paintAttr('fill', this.fillStyle)}/>`,
       )
     } else {
@@ -328,7 +359,7 @@ export class SvgCanvas {
       // pre-transformed x/y/width/height can't describe it. Emit the local size
       // and let the matrix place and shear it — exact for any affine, and
       // adjacent rects still share edges (no AA seams between hic bins).
-      this.parts.push(
+      this.emit(
         `<rect width="${w}" height="${h}" ${this.paintAttr('fill', this.fillStyle)}${this.originMatrixAttr(x, y)}/>`,
       )
     }
@@ -341,11 +372,11 @@ export class SvgCanvas {
   strokeRect(x: number, y: number, w: number, h: number) {
     if (this.axisAligned) {
       const [tx, ty, tw, th] = this.transformRect(x, y, w, h)
-      this.parts.push(
+      this.emit(
         `<rect x="${tx}" y="${ty}" width="${tw}" height="${th}" fill="none"${this.strokeAttrs()}/>`,
       )
     } else {
-      this.parts.push(
+      this.emit(
         `<rect width="${w}" height="${h}" fill="none"${this.strokeAttrs()}${this.originMatrixAttr(x, y)}/>`,
       )
     }
@@ -470,15 +501,13 @@ export class SvgCanvas {
 
   stroke() {
     if (this.pathData) {
-      this.parts.push(
-        `<path d="${this.pathData}" fill="none"${this.strokeAttrs()}/>`,
-      )
+      this.emit(`<path d="${this.pathData}" fill="none"${this.strokeAttrs()}/>`)
     }
   }
 
   fill() {
     if (this.pathData) {
-      this.parts.push(
+      this.emit(
         `<path d="${this.pathData}" ${this.paintAttr('fill', this.fillStyle)} stroke="none"/>`,
       )
     }
@@ -499,7 +528,7 @@ export class SvgCanvas {
   fillText(text: string, x: number, y: number) {
     const [tx, ty] = this.transformPoint(x, y)
     const escaped = escapeXml(text)
-    this.parts.push(
+    this.emit(
       `<text x="${tx}" y="${ty}" ${this.paintAttr('fill', this.fillStyle)}${fontAttrs(this.font)} text-anchor="${this.textAnchor()}" dominant-baseline="${this.dominantBaseline()}">${escaped}</text>`,
     )
   }
@@ -507,7 +536,7 @@ export class SvgCanvas {
   strokeText(text: string, x: number, y: number) {
     const [tx, ty] = this.transformPoint(x, y)
     const escaped = escapeXml(text)
-    this.parts.push(
+    this.emit(
       `<text x="${tx}" y="${ty}" fill="none"${this.strokeAttrs()}${fontAttrs(this.font)} text-anchor="${this.textAnchor()}" dominant-baseline="${this.dominantBaseline()}">${escaped}</text>`,
     )
   }
@@ -524,12 +553,20 @@ export class SvgCanvas {
     // Use the current path as a clipPath, then open a `<g clip-path>`
     // group that subsequent draws will land inside. The group is closed by
     // restore() — see groupsToClose on the save stack. Without a preceding
-    // save() the clip becomes permanent (matches Canvas2D semantics).
+    // save() the clip becomes permanent (matches Canvas2D semantics), and the
+    // group is closed by getSerializedSvg instead.
+    //
+    // Queued rather than written, because a clip is opened per candidate block
+    // and most of them paint nothing: `forEachClippedBlock` brackets every block
+    // that has data, and a block whose features are all off-screen (or whose
+    // layer is switched off) then leaves a dead `<clipPath>` + empty `<g>` pair
+    // behind. Those pairs are what made a layer that painted nothing still
+    // serialize as non-empty, defeating PaintLayer's elision of it.
     if (!this.pathData) {
       return
     }
     const id = `svgcanvas-clip-${clipIdCounter++}`
-    this.parts.push(
+    this.pendingGroups.push(
       `<clipPath id="${id}"><path d="${this.pathData}"/></clipPath><g clip-path="url(#${id})">`,
     )
     if (this.stack.length > 0) {
@@ -543,7 +580,15 @@ export class SvgCanvas {
     return { width: measureTextWidth(text, fontSize) }
   }
 
+  // The fragment drawn so far, or '' if nothing was drawn — PaintLayer reads
+  // the empty string as "emit no element at all".
+  //
+  // Groups still open are closed here: a permanent clip (one with no save() to
+  // scope it) has no restore() to close it, and neither does a painter that
+  // throws between the two. Leaving them open emitted an unbalanced `<g>`, which
+  // is not merely untidy — an SVG file is XML, so it doesn't parse at all.
+  // Non-mutating, so calling this twice returns the same string.
   getSerializedSvg() {
-    return this.parts.join('')
+    return this.parts.join('') + '</g>'.repeat(this.openGroups)
   }
 }
