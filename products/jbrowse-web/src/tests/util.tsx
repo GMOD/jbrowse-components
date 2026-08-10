@@ -66,6 +66,33 @@ export function setup() {
   expect.extend({ toMatchImageSnapshot })
 }
 
+/**
+ * The volvox config with all but the named tracks removed.
+ *
+ * The track selector is open in `defaultSession`, and `useMeasure` is mocked to
+ * a 100000px height so its virtualization never kicks in — so every
+ * `createView()` mounts a row per track, all 123 of them, before a test has
+ * done anything. Measured, that is most of what `createView()` costs: ~1.5s and
+ * a 2094-element document with the full config, versus ~0.4s and ~300 elements
+ * with one track. It is also paid twice over, because every later `findBy*` in
+ * the test scans that document.
+ *
+ * A suite that names its tracks keeps the coverage it actually has — the track
+ * is still switched on by clicking its row in the real selector — and stops
+ * paying for the 120 rows it never touches. Only trim a suite whose tracks are
+ * known: anything walking the tree itself (categories, filter text, counts)
+ * needs the whole config, as does anything asserting on what is *not* shown.
+ */
+export function volvoxConfigWithTracks(trackIds: string[]) {
+  const keep = new Set(trackIds)
+  const tracks = configSnapshot.tracks.filter(t => keep.has(t.trackId))
+  const missing = trackIds.filter(id => !tracks.some(t => t.trackId === id))
+  if (missing.length) {
+    throw new Error(`no such track in the volvox config: ${missing.join(', ')}`)
+  }
+  return { ...configSnapshot, tracks }
+}
+
 export function canvasToBuffer(canvas: HTMLCanvasElement) {
   const { width, height } = canvas
   const src = canvas.getContext('2d')!.getImageData(0, 0, width, height)

@@ -6,6 +6,7 @@ import {
   findCanvasIn,
   findSettledDisplay,
   hts,
+  volvoxConfigWithTracks,
 } from './util.tsx'
 
 type DisplayMode = 'arc' | 'cloud' | 'bezier' | 'linked' | 'stack'
@@ -34,7 +35,9 @@ export async function testLinkedReadsDisplay({
   timeout?: number
 }) {
   const user = userEvent.setup()
-  const { view, findByTestId, findAllByTestId, findByText } = await createView()
+  const { view, findByTestId, findAllByTestId, findByText } = await createView(
+    volvoxConfigWithTracks([track]),
+  )
   const opts = [{}, { timeout }] as const
 
   await view.navToLocString(loc)
