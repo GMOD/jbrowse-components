@@ -20,16 +20,28 @@ type ExecuteArgs = RenderLDDataArgs & {
 // them out in. `filterStats` rides along regardless: an empty triangle is
 // exactly when the status bar's "0 / 812 variants shown (812 MAF)" is the only
 // thing on screen explaining it.
+//
+// `genomicMode` is the requested mode rather than a flat `false`, because the
+// display branches its *chrome* on it and not only its matrix:
+// `effectiveUseGenomicPositions` picks the label zone over the connector zone
+// and, through `effectiveLineZoneHeight`, decides how much room sits above the
+// canvas. Reporting `false` here made a filter that emptied the result also
+// move the whole triangle down by `lineZoneHeight` (100px by default) and
+// shrink it — a layout jump on the one frame whose only content is the status
+// bar explaining the emptiness, and it un-jumped when the filter came back
+// down. There is no matrix either way; the honest answer for the chrome is the
+// mode the display is in.
 function emptyResult(
   { metric, method, hasDprime, filterStats }: LDMatrixResult,
   signedLD: boolean,
+  genomicMode: boolean,
 ): LDDataResult {
   return {
     ldValues: new Float32Array(0),
     boundaries: new Float32Array(0),
     numCells: 0,
     uniformW: 0,
-    genomicMode: false,
+    genomicMode,
     metric,
     hasDprime,
     method,
@@ -100,9 +112,17 @@ export async function executeRenderLDData({
         },
       }))
 
+  // Resolved before the empty check so both exits report the same thing.
+  // Genomic-positions mode maps each SNP onto a single continuous bp axis
+  // (offset from the region's left screen edge), which is only meaningful for
+  // one contiguous region. With multiple regions (e.g. a split/multi-region
+  // view) SNPs from later regions would collapse onto the first region's
+  // coordinates, so fall back to uniform cells there.
+  const genomicMode = useGenomicPositions && regions.length === 1
+
   const region = regions[0]
   if (ldData.snps.length === 0 || !region) {
-    return emptyResult(ldData, signedResult)
+    return emptyResult(ldData, signedResult, genomicMode)
   }
 
   // LD values themselves are orientation-free; only the axis is. A reversed
@@ -119,13 +139,6 @@ export async function executeRenderLDData({
   const width = totalWidthBp / bpPerPx
   const uniformW = width / (n * Math.SQRT2)
   const numCells = (n * (n - 1)) / 2
-
-  // Genomic-positions mode maps each SNP onto a single continuous bp axis
-  // (offset from the region's left screen edge), which is only meaningful for
-  // one contiguous region. With multiple regions (e.g. a split/multi-region
-  // view) SNPs from later regions would collapse onto the first region's
-  // coordinates, so fall back to uniform cells there.
-  const genomicMode = useGenomicPositions && regions.length === 1
 
   const boundaries = computeBoundaries({
     snps,
