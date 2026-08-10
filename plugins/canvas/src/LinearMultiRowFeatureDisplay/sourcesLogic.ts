@@ -61,7 +61,7 @@ export function applyRowGroups(
   if (!compiled.length) {
     return sources
   }
-  const tagged = sources.map(s => {
+  const tagged = sources.map((s, idx) => {
     const rank = compiled.findIndex(g => g.re.test(s.name))
     const hit = rank === -1 ? undefined : compiled[rank]!
     return {
@@ -70,6 +70,8 @@ export function applyRowGroups(
         : s,
       // unmatched rows rank after every declared group
       rank: rank === -1 ? compiled.length : rank,
+      // incoming position, which is the tiebreak the sort below is stable by
+      idx,
     }
   })
   if (!partition) {
@@ -82,8 +84,7 @@ export function applyRowGroups(
   // compared against the rest. Within a block the incoming order is preserved,
   // so a `sortRowsBy` still orders each block by the value it sorted on.
   return tagged
-    .map((t, idx) => ({ ...t, idx }))
-    .sort((a, b) => (a.rank !== b.rank ? a.rank - b.rank : a.idx - b.idx))
+    .sort((a, b) => a.rank - b.rank || a.idx - b.idx)
     .map(t => t.source)
 }
 
