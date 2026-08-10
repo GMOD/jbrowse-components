@@ -14,7 +14,7 @@ export const INVOKABLE_CHANNELS = [
   'promptSessionSaveAs',
   'listSessions',
   'loadSession',
-  'createInitialAutosaveFile',
+  'newAutosavePath',
   'saveSession',
   'deleteSessions',
   'removeRecentSession',

@@ -24,7 +24,7 @@ import {
   markGlobalPluginLoadSucceeded,
 } from './globalPlugins.ts'
 import { launchFromLink } from './launchFromLink.ts'
-import { newSessionName, resolveSessionName } from './sessionName.ts'
+import { resolveSessionName } from './sessionName.ts'
 
 import type { DesktopRootModel } from '../../rootModel/rootModel.ts'
 import type { JBrowseConfigInput } from './types.ts'
@@ -115,11 +115,42 @@ export async function createStartScreenPluginManager(): Promise<StartScreenPlugi
   return { pluginManager, failures }
 }
 
-export async function loadPluginManager(configPath: string) {
-  const snap = await invokeIpc('loadSession', configPath)
+/**
+ * Build the session a config describes, and record where its edits are to be
+ * saved. Every way of opening a session funnels through here, so `sessionPath`
+ * is set exactly once per session and always alongside the snapshot it belongs
+ * to — the pair that used to be assembled separately at each call site.
+ */
+async function openSession(snap: JBrowseConfigInput, sessionPath: string) {
   const pm = await createPluginManager(snap)
-  ;(pm.rootModel as DesktopRootModel | undefined)?.setSessionPath(configPath)
+  ;(pm.rootModel as DesktopRootModel | undefined)?.setSessionPath(sessionPath)
   return pm
+}
+
+/**
+ * Open a session or config file from disk. Which of the two it is decides where
+ * the session saves, and the main process decides that (see the `loadSession`
+ * handler) — opening a config must not overwrite it.
+ */
+export async function loadPluginManager(filePath: string) {
+  const { snap, sessionPath } = await invokeIpc('loadSession', filePath)
+  return openSession(snap, sessionPath)
+}
+
+/**
+ * Open a config snapshot the renderer assembled rather than read — merged hub
+ * configs, a quickstart, the config a JBrowse Web link named — as a new session.
+ * It has no file behind it, so it gets a fresh autosave path and the first
+ * autosave writes it.
+ *
+ * The snapshot goes straight into the session instead of being written out and
+ * read back through `loadSession`, which is what a self-contained spec link
+ * needed: its session carries its own `sessionAssemblies` and so has no config
+ * at all, and a round trip through the file failed that config's "does not
+ * contain any assemblies" check before the spec ever got to supply them.
+ */
+export async function launchSnapshot(snap: JBrowseConfigInput = {}) {
+  return openSession(snap, await invokeIpc('newAutosavePath'))
 }
 
 /**
@@ -130,15 +161,9 @@ export async function loadPluginManager(configPath: string) {
 export async function openSpecLink(link: string) {
   return launchFromLink(link, {
     fetchConfig,
-    createPluginManager: async config =>
-      loadPluginManager(
-        await invokeIpc('createInitialAutosaveFile', {
-          ...config,
-          // a placeholder: loadSessionSpec replaces this session with the one
-          // the spec describes (and names it)
-          defaultSession: { name: newSessionName() },
-        }),
-      ),
+    // no defaultSession to invent: loadSessionSpec replaces the session this
+    // builds with the one the spec describes, and names it from the link
+    createPluginManager: launchSnapshot,
   })
 }
 

@@ -6,13 +6,17 @@ import { generateFastaIndex } from '@gmod/faidx'
 import { app, dialog } from 'electron'
 
 import { getFileStream } from '../fileStream.ts'
-import { getFaiPath } from '../paths.ts'
+import { SESSION_EXTENSION, getFaiPath } from '../paths.ts'
 import { ipcHandle } from './channels.ts'
 
 import type { AppPaths } from '../paths.ts'
 
+// Save-as offers only the session extension, and appends it below when the user
+// leaves it off. That is not cosmetic: the extension is how `loadSession` later
+// tells a file JBrowse saved from a config it merely read, and so whether the
+// session may be written back into it. See isSessionFile.
 const FILE_FILTERS = [
-  { name: 'JBrowse Session', extensions: ['jbrowse'] },
+  { name: 'JBrowse Session', extensions: [SESSION_EXTENSION.slice(1)] },
   { name: 'All Files', extensions: ['*'] },
 ]
 
@@ -76,8 +80,8 @@ export function registerFileHandlers(paths: AppPaths) {
       filters: FILE_FILTERS,
     })
 
-    if (choice.filePath && !choice.filePath.endsWith('.jbrowse')) {
-      choice.filePath = `${choice.filePath}.jbrowse`
+    if (choice.filePath && !choice.filePath.endsWith(SESSION_EXTENSION)) {
+      choice.filePath = `${choice.filePath}${SESSION_EXTENSION}`
     }
     return choice.filePath
   })

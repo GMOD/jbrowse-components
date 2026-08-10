@@ -8,8 +8,7 @@ import deepmerge from 'deepmerge'
 import { invokeIpc } from '../../../ipc.ts'
 import { useNotifyError } from '../../NotifyContext.ts'
 import defaultFavs from '../defaultFavs.ts'
-import { resolveSessionName } from '../sessionName.ts'
-import { fetchConfig, loadPluginManager } from '../util.tsx'
+import { fetchConfig, launchSnapshot } from '../util.tsx'
 import FavoriteGenomesPanel from './FavoriteGenomesPanel.tsx'
 import OpenSequencePanel from './OpenSequencePanel.tsx'
 import QuickstartPanel from './QuickstartPanel.tsx'
@@ -57,19 +56,14 @@ export default function LeftSidePanel({
         merged.configuration = { ...merged.configuration, sourceConfigUrl: '' }
       }
       setPluginManager(
-        await loadPluginManager(
-          await invokeIpc('createInitialAutosaveFile', {
-            ...merged,
-            defaultSession: {
-              ...entries[0]?.defaultSession,
-              // The recent-sessions entry is written from this snapshot, before
-              // createPluginManager resolves the session's own name. Defaulting
-              // only when defaultSession is absent entirely left a hub config
-              // that ships an unnamed one with a nameless start-screen row.
-              name: resolveSessionName(entries[0]?.defaultSession ?? {}),
-            },
-          }),
-        ),
+        await launchSnapshot({
+          ...merged,
+          // The first entry's session, not the deep merge of every entry's,
+          // which would splice unrelated view lists into one. createPluginManager
+          // names it, and the recent-sessions row is written from the named
+          // session at the first autosave rather than from this snapshot.
+          defaultSession: entries[0]?.defaultSession,
+        }),
       )
     } catch (e) {
       console.error(e)

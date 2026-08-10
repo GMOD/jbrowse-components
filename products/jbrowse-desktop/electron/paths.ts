@@ -36,6 +36,36 @@ export function initializePaths(): AppPaths {
   }
 }
 
+// The extension "Save session as..." forces, and with it the one reliable mark
+// of a file JBrowse wrote as a session rather than one the user brought.
+export const SESSION_EXTENSION = '.jbrowse'
+
+/**
+ * Whether a path is one of the session files JBrowse manages for itself. Those
+ * are exactly the two it produces: an autosave under `autosaveDir`, or a file
+ * the user chose through "Save session as...", which appends
+ * {@link SESSION_EXTENSION}. Everything else the open dialog accepts is a
+ * *config* — hand-written, or built by `@jbrowse/cli` — which JBrowse reads but
+ * must never write back over. See the `loadSession` handler.
+ */
+export function isSessionFile(paths: AppPaths, filePath: string) {
+  return filePath.endsWith(SESSION_EXTENSION) || isAutosave(paths, filePath)
+}
+
+export function isAutosave(paths: AppPaths, filePath: string) {
+  return filePath.startsWith(paths.autosaveDir)
+}
+
+// Session files are named for the moment they were created. The counter only
+// separates two allocated inside one millisecond — nothing reads it back, and
+// the file is created by the first autosave rather than here, so a collision
+// would be two sessions quietly saving over each other instead of an EEXIST.
+let autosaveCounter = 0
+
+export function newAutosavePath(paths: AppPaths) {
+  return path.join(paths.autosaveDir, `${Date.now()}-${autosaveCounter++}.json`)
+}
+
 export function getQuickstartPath(
   paths: AppPaths,
   sessionName: string,

@@ -29,6 +29,17 @@ export interface SessionSnap {
 }
 
 /**
+ * A file the user asked to open, plus where the session built from it must be
+ * saved. The two are not always the same file: opening a *config* gives the
+ * session an autosave of its own, because writing it back would destroy the
+ * config (see the `loadSession` handler).
+ */
+export interface LoadedSession {
+  snap: SessionSnap
+  sessionPath: string
+}
+
+/**
  * Pushes from the main process to the renderer — the one direction the invoke
  * channels above cannot express, since only the renderer can invoke.
  *
@@ -62,8 +73,12 @@ export interface IpcChannels {
   }
   promptSessionSaveAs: { args: []; return: string | undefined }
   listSessions: { args: []; return: RecentSessionInfo[] }
-  loadSession: { args: [sessionPath: string]; return: SessionSnap }
-  createInitialAutosaveFile: { args: [snap: SessionSnap]; return: string }
+  loadSession: { args: [filePath: string]; return: LoadedSession }
+  // Where a session the renderer assembled for itself (a hub launch, a
+  // quickstart merge, a jbrowse:// link) should save. Only allocates a name —
+  // the first autosave writes the file and lists it, so a launch that fails
+  // before then leaves nothing behind.
+  newAutosavePath: { args: []; return: string }
   saveSession: { args: [sessionPath: string, snap: SessionSnap]; return: void }
   deleteSessions: { args: [sessionPaths: string[]]; return: void }
   // list-only removal (leaves any on-disk file intact) for pruning a recent

@@ -7,6 +7,9 @@ import {
   ENCODING,
   getLegacyThumbnailPath,
   getThumbnailPath,
+  isAutosave,
+  isSessionFile,
+  newAutosavePath,
   stringify,
 } from '../paths.ts'
 import { logError } from '../util.ts'
@@ -189,38 +192,37 @@ export function registerSessionHandlers(
     // Stamp the flag so the renderer can filter/prune them without that path.
     return sessions.map(s => ({
       ...s,
-      isAutosave: s.path.startsWith(paths.autosaveDir),
+      isAutosave: isAutosave(paths, s.path),
     }))
   })
 
-  ipcHandle('loadSession', async (_, sessionPath) => {
-    const sessionSnapshot = await readSession(sessionPath)
-    if (!sessionSnapshot.assemblies) {
+  ipcHandle('loadSession', async (_, filePath) => {
+    const snap = await readSession(filePath)
+    if (!snap.assemblies) {
       throw new Error(
-        `File at ${sessionPath} does not appear to be a JBrowse session. It does not contain any assemblies.`,
+        `File at ${filePath} does not appear to be a JBrowse session. It does not contain any assemblies.`,
       )
     }
-    return sessionSnapshot
-  })
-
-  ipcHandle('createInitialAutosaveFile', async (_, snap) => {
-    const now = Date.now()
-    const autosavePath = path.join(paths.autosaveDir, `${now}.json`)
-    const entry: RecentSession = {
-      path: autosavePath,
-      updated: now,
-      name: snap.defaultSession?.name,
+    return {
+      snap,
+      // Where this session's edits go, which for a config file is NOT the file
+      // it came from. readSession has just rewritten that config's relative uris
+      // into absolute localPaths for this machine, and the 1s autosave would
+      // write the result straight back — replacing the user's portable
+      // config.json with a session snapshot that no other machine, and no
+      // jbrowse-web, can read. It is the same burn-in renameSession avoids, and
+      // it happened a second after opening, unprompted. So a config is read and
+      // left alone; the session it starts gets an autosave of its own.
+      sessionPath: isSessionFile(paths, filePath)
+        ? filePath
+        : newAutosavePath(paths),
     }
-
-    await Promise.all([
-      updateRecentSessions(paths.recentSessionsPath, rows =>
-        upsertRecentSession(rows, entry),
-      ),
-      writeFileAtomic(autosavePath, stringify(snap)),
-    ])
-
-    return autosavePath
   })
+
+  // No write: the session's own autosave creates the file (and its
+  // recent-sessions row) a second later, from the session's resolved name
+  // rather than the placeholder a caller would have to invent here.
+  ipcHandle('newAutosavePath', () => newAutosavePath(paths))
 
   ipcHandle('saveSession', async (_, sessionPath, snap) => {
     const entry: RecentSession = {

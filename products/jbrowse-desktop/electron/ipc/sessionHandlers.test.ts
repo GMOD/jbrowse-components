@@ -141,6 +141,69 @@ test('loadSession names the file when it is gone', async () => {
   ).rejects.toThrow(/no longer exists/)
 })
 
+// Where a session saves is decided here, once, because getting it wrong is
+// silent and destructive: the 1s autosave writes the whole session snapshot to
+// `sessionPath`, and for a config that snapshot holds the machine-absolute
+// localPaths readSession just resolved.
+describe('a config file is read but never saved back over', () => {
+  function writeCliConfig(name: string) {
+    const configPath = path.join(dir, name)
+    fs.writeFileSync(
+      configPath,
+      // what `jbrowse add-assembly volvox.fa --load copy` writes: relative uris,
+      // meaningful only next to the config
+      JSON.stringify({
+        assemblies: [
+          { sequence: { adapter: { fastaLocation: { uri: 'volvox.fa' } } } },
+        ],
+      }),
+    )
+    return configPath
+  }
+
+  test('a CLI-built config.json gets an autosave of its own', async () => {
+    const configPath = writeCliConfig('config.json')
+
+    const { snap, sessionPath } = await invoke('loadSession', configPath)
+
+    // the renderer needs absolute paths, so the snapshot it gets is rewritten
+    const { assemblies } = snap as unknown as {
+      assemblies: { sequence: { adapter: { fastaLocation: unknown } } }[]
+    }
+    expect(assemblies[0]!.sequence.adapter.fastaLocation).toEqual({
+      locationType: 'LocalPathLocation',
+      localPath: path.join(dir, 'volvox.fa'),
+    })
+    // ...which is exactly why the session must not save there
+    expect(sessionPath).not.toBe(configPath)
+    expect(sessionPath.startsWith(paths.autosaveDir)).toBe(true)
+    // and the config on disk is untouched by having been opened
+    expect(JSON.parse(fs.readFileSync(configPath, 'utf8'))).toEqual({
+      assemblies: [
+        { sequence: { adapter: { fastaLocation: { uri: 'volvox.fa' } } } },
+      ],
+    })
+  })
+
+  test('a .jbrowse session saves in place', async () => {
+    const sessionPath = writeSession('saved.jbrowse')
+
+    expect((await invoke('loadSession', sessionPath)).sessionPath).toBe(
+      sessionPath,
+    )
+  })
+
+  test('an autosave saves in place, whatever its extension', async () => {
+    fs.mkdirSync(paths.autosaveDir, { recursive: true })
+    const autosavePath = path.join(paths.autosaveDir, '1-0.json')
+    fs.writeFileSync(autosavePath, JSON.stringify({ assemblies: [] }))
+
+    expect((await invoke('loadSession', autosavePath)).sessionPath).toBe(
+      autosavePath,
+    )
+  })
+})
+
 // recent_sessions.json is rewritten whole with no file locking, so every
 // read-modify-write goes through one promise chain. These are the interleavings
 // that chain exists to prevent — without it each handler reads the same starting
@@ -289,27 +352,19 @@ test('renameSession leaves a config relative uris alone', async () => {
   expect(snap.assemblies[0]!.sequence.adapter).toEqual({ uri: 'ref.fa.gz' })
 })
 
-test('createInitialAutosaveFile writes the snapshot and lists it', async () => {
-  fs.mkdirSync(paths.autosaveDir, { recursive: true })
+test('newAutosavePath allocates a name without creating anything', async () => {
+  const first = await invoke('newAutosavePath')
+  const second = await invoke('newAutosavePath')
 
-  const autosavePath = await invoke('createInitialAutosaveFile', {
-    assemblies: [],
-    defaultSession: { name: 'Fresh' },
-  })
-
-  expect(autosavePath.startsWith(paths.autosaveDir)).toBe(true)
-  expect(
-    (JSON.parse(fs.readFileSync(autosavePath, 'utf8')) as SessionSnap)
-      .defaultSession?.name,
-  ).toBe('Fresh')
-  expect(await invoke('listSessions')).toEqual([
-    {
-      path: autosavePath,
-      updated: expect.any(Number),
-      name: 'Fresh',
-      isAutosave: true,
-    },
-  ])
+  expect(first.startsWith(paths.autosaveDir)).toBe(true)
+  // two launches must never share a file, even inside one millisecond: nothing
+  // creates it here, so a collision would be two sessions saving over each
+  // other rather than a visible EEXIST
+  expect(second).not.toBe(first)
+  // and a launch that fails before its first autosave leaves no orphan file and
+  // no recent-sessions row pointing at one
+  expect(fs.existsSync(first)).toBe(false)
+  expect(await invoke('listSessions')).toEqual([])
 })
 
 test('loadThumbnail migrates a legacy-named thumbnail on first read', async () => {

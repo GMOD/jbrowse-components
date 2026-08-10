@@ -1,6 +1,7 @@
-// Timestamped name for a brand-new session. Single source of truth so every
-// launch path (open-sequence, hub configs, resolveSessionName) formats the
-// name identically instead of drifting between locales.
+// Timestamped name for a brand-new session — one the user is creating from
+// files rather than opening, so there is no name to inherit. Single source of
+// truth so every launch path formats it identically instead of drifting between
+// locales.
 export function newSessionName() {
   return `New session ${new Date().toLocaleString('en-US')}`
 }

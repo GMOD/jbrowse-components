@@ -32,7 +32,7 @@ export function relativeUrisToLocalPaths(
   }
   // recurse regardless: an adapter can carry a shorthand `uri` AND a nested
   // location (e.g. a BAM's `uri` plus its `index.location.uri`)
-  for (const key of Object.keys(obj)) {
-    relativeUrisToLocalPaths(obj[key], configDir)
+  for (const value of Object.values(obj)) {
+    relativeUrisToLocalPaths(value, configDir)
   }
 }

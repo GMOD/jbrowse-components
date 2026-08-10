@@ -2,6 +2,7 @@ import { destroy, isAlive } from '@jbrowse/mobx-state-tree'
 
 import type { DesktopRootModel } from '../../rootModel/rootModel.ts'
 import type { StartScreenPluginManager } from './pluginManagers.tsx'
+import type { JBrowseConfigInput } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 export { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
@@ -33,9 +34,14 @@ export async function createStartScreenPluginManager(): Promise<StartScreenPlugi
   return createStartScreenPluginManager()
 }
 
-export async function loadPluginManager(configPath: string) {
+export async function loadPluginManager(filePath: string) {
   const { loadPluginManager } = await import('./pluginManagers.tsx')
-  return loadPluginManager(configPath)
+  return loadPluginManager(filePath)
+}
+
+export async function launchSnapshot(snap: JBrowseConfigInput) {
+  const { launchSnapshot } = await import('./pluginManagers.tsx')
+  return launchSnapshot(snap)
 }
 
 export async function openSpecLink(link: string) {
