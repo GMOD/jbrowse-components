@@ -640,6 +640,13 @@ Rules they encode, each a reverted first attempt:
 - extraction is **not symmetric across reference paths, and that is biology**
   (adr-015), so the Reference path picker genuinely changing the drawing is
   expected.
+- **what actually made it heavy was indexing every path.** A subgraph index only
+  needs the *reference* path's coordinates — rGFA states them outright in the
+  `SR:0` tags, and a pggb graph gets them by walking one designated path — and
+  everything else can hang off segment ids. Indexing all paths is what produced
+  the 1.49 GB all-paths `segments.bin`. Any revival of reference-anchored
+  subgraph browsing should start here rather than from `getSubgraph`, which was
+  already fast enough.
 
 **PangyPlot** (Mastromatteo et al. 2025, vendored at `~/src/vendor/pangyplot`)
 is the closest published prior art and solved the problem this view still has:
