@@ -10,7 +10,7 @@
 // The sub-pixel frequency lerp is a pure scalar decision both backends must
 // make identically; rendererTypes.ts imports the generated twin rather than
 // re-deriving it (adr-051).
-//! js-export: frequencyAlpha, frequencyFadeGate, arcYFraction, arcYOffsetPx, arcColorSlot
+//! js-export: frequencyAlpha, frequencyFadeGate, arcYFraction, arcYOffsetPx, arcColorSlot, linkedReadColorSlot
 // consts-out takes the WHOLE export-consts list, so this path names what that
 // list currently is rather than a category it will keep meaning. Anything added
 // above lands in a file called indicatorTriangle.generated.ts; put a constant
@@ -358,6 +358,14 @@ public float pileupRowCenterPx(float row, Uniforms u) {
 // currently emits a slot past 8.
 public uint arcColorSlot(uint idx) {
   return min(idx, ARC_COLOR_SLOTS - 1u);
+}
+
+// The same rule for the linked-read connecting lines, whose palette is a
+// different length. Separate function rather than a slots parameter: each is the
+// index rule for one named palette, and a caller that can pass the wrong bound
+// is the failure mode this replaces.
+public uint linkedReadColorSlot(uint idx) {
+  return min(idx, LINKED_READ_COLOR_SLOTS - 1u);
 }
 
 // Paired-read arc palette, indexed by the per-instance color type. Shared by

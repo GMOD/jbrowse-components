@@ -10,7 +10,10 @@ import {
   arcMarkerColorPalette,
   linkedReadColorPalette,
 } from '../../LinearAlignmentsDisplay/shaders/palettes.ts'
-import { arcColorSlot } from '../../LinearAlignmentsDisplay/shaders/slang/alignmentsUniforms.js.generated.ts'
+import {
+  arcColorSlot,
+  linkedReadColorSlot,
+} from '../../LinearAlignmentsDisplay/shaders/slang/alignmentsUniforms.js.generated.ts'
 import { ARC_COLOR_INTERCHROM } from '../../LinearAlignmentsDisplay/shaders/slang/arcLine.iface.generated.ts'
 import { UNIFORM_SLOT_ARRAYS } from '../../LinearAlignmentsDisplay/shaders/slang/read.iface.generated.ts'
 import { arcYFraction } from './arcYScale.ts'
@@ -31,12 +34,6 @@ describe('arc palette parity (JS ↔ GPU uniform slots)', () => {
   })
 })
 
-// The index rule the palettes are read with, generated from
-// alignmentsUniforms.slang so Canvas2D, SVG and the GPU cannot pick different
-// ones. Canvas2D used to spell it `colorIdx % palette.length`, which agrees with
-// the shader's clamp on every slot anything currently emits (0-8) and disagrees
-// above that — resolving to another real color rather than to a visibly wrong
-// one. That is the class of drift the lift exists to end, so pin both ends.
 // arcLine.slang reads ARC_COLOR_INTERCHROM out of the palette directly now that
 // a connector tick carries no per-instance color, and the Canvas2D tick loop
 // indexes the same constant into `arcColorPalette`. Nothing else ties the
@@ -50,6 +47,12 @@ describe('ARC_COLOR_INTERCHROM', () => {
   })
 })
 
+// The index rule the palettes are read with, generated from
+// alignmentsUniforms.slang so Canvas2D, SVG and the GPU cannot pick different
+// ones. Canvas2D used to spell it `colorIdx % palette.length`, which agrees with
+// the shader's clamp on every slot anything currently emits (0-8) and disagrees
+// above that — resolving to another real color rather than to a visibly wrong
+// one. That is the class of drift the lift exists to end, so pin both ends.
 describe('arcColorSlot', () => {
   it('is the identity over every slot the classifier can emit', () => {
     arcColorPalette.forEach((_, i) => {
@@ -60,6 +63,24 @@ describe('arcColorSlot', () => {
     const last = arcColorPalette.length - 1
     expect(arcColorSlot(arcColorPalette.length)).toBe(last)
     expect(arcColorSlot(99)).toBe(last)
+  })
+})
+
+// The linked-read connecting lines have their own palette, their own length and
+// therefore their own slot rule. Same story as above: `computeOverlay.ts` spelled
+// it `colorType % palette.length` while linkedReadLine.slang clamped.
+describe('linkedReadColorSlot', () => {
+  it('is the identity over every slot in the palette', () => {
+    linkedReadColorPalette.forEach((_, i) => {
+      expect(linkedReadColorSlot(i)).toBe(i)
+    })
+  })
+  it('clamps past the last slot, and does not use the arc palette bound', () => {
+    const last = linkedReadColorPalette.length - 1
+    expect(linkedReadColorSlot(linkedReadColorPalette.length)).toBe(last)
+    // The two palettes are different lengths (9 vs 8), so a shared rule taking
+    // the wrong bound would show up right here.
+    expect(linkedReadColorSlot(99)).not.toBe(arcColorSlot(99))
   })
 })
 

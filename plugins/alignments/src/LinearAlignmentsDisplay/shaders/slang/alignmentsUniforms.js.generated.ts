@@ -44,3 +44,7 @@ export function arcYOffsetPx(yBp: number, arcsYDomainBp: number, useLog: boolean
 export function arcColorSlot(idx: number): number {
   return Math.min(idx, 8)
 }
+
+export function linkedReadColorSlot(idx: number): number {
+  return Math.min(idx, 7)
+}

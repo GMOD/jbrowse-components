@@ -5,6 +5,11 @@ import {
 
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { linkedReadColorPalette } from '../../LinearAlignmentsDisplay/shaders/palettes.ts'
+// The palette-index rule, generated from alignmentsUniforms.slang (adr-051).
+// Canvas2D/SVG spelled it `colorType % palette.length`, which agrees with the
+// shader's clamp on every slot in use and resolves an out-of-range one to a
+// different real color instead of the last slot.
+import { linkedReadColorSlot } from '../../LinearAlignmentsDisplay/shaders/slang/alignmentsUniforms.js.generated.ts'
 import { connectionLabel, iterLinkedPairs } from './compute.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -61,11 +66,10 @@ export function isBezierArcPair({ e1, e2, c }: LinkedPair): boolean {
 export function bezierConnectionLegendItems(
   colorTypes: Iterable<number>,
 ): LegendItem[] {
-  const paletteLen = linkedReadColorPalette.length
   return [...colorTypes]
     .sort((a, b) => a - b)
     .map(colorType => ({
-      color: rgb255(linkedReadColorPalette[colorType % paletteLen]!),
+      color: rgb255(linkedReadColorPalette[linkedReadColorSlot(colorType)]!),
       label: connectionLabel(colorType),
     }))
 }
@@ -116,7 +120,6 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
 
   const rowH = featureHeight + featureSpacing
   const readCenterDy = featureHeight / 2
-  const paletteLen = linkedReadColorPalette.length
   const readScreenY = (e: ReadEntry) =>
     e.data.readYs[e.readIdx]! * rowH +
     pileupTopOffset -
@@ -173,7 +176,9 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
           reversed2: !!r2.reversed,
           dip: true,
         })
-    const stroke = rgb255(linkedReadColorPalette[c.colorType % paletteLen]!)
+    const stroke = rgb255(
+      linkedReadColorPalette[linkedReadColorSlot(c.colorType)]!,
+    )
 
     result.push({
       d,

@@ -12,8 +12,8 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 41 shaders with entry points. 70 functions
-are inside the emitter's subset, of which **50 are exported**.
+Scanned 41 shaders with entry points. 68 functions
+are inside the emitter's subset, of which **51 are exported**.
 
 ## Candidates
 
@@ -22,9 +22,7 @@ empty.** A row here is either the next export or the next `//! js-skip` —
 and a row appearing in a diff means a shader edit created one without
 anyone deciding which.
 
-| Function | Signature | Shaders |
-| --- | --- | --- |
-| `glyphEdgeAlpha` | `(f32) -> f32` | manhattan, wiggle |
+_None._
 
 ## Declined
 
@@ -34,8 +32,6 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 
 | Function | Signature | Why not |
 | --- | --- | --- |
-| `bpToClipX` | `(u32) -> f32` | bp to clip space; Canvas2D maps bp to screen px through makeBpMapper and never enters clip space |
-| `bpToLinear` | `(u32) -> f32` | the same conversion into the arcs pass linear axis, and the same reason |
 | `clipXToPx` | `(f32, f32) -> f32` | the x half of the same clip-space conversion, and the reason a px decision can be written once — nothing outside a shader is in clip space |
 | `discExpand` | `(f32) -> f32` | expands a quad so the fragment AA ramp is not clipped; Canvas2D draws ctx.arc and has no quad to expand |
 | `expandMinWidthX` | `(f32, f32, f32) -> vec2f` | widens about the midpoint in clip space, and has no Canvas2D counterpart: the pileup floors a cell width one-sidedly and adds a seam fudge the shader deliberately omits (rendererTypes.ts pileupCellWidth). A different rule, not a twin |
@@ -72,6 +68,9 @@ noticing in a diff.
 | type 'Instance' is outside the supported scalar subset | 5 | `arcCurve`, `computeCorners`, `fillVsBegin`, `getReadColor`, `isClickedSilhouette` |
 | indexing is outside the supported scalar subset | 2 | `getGeno`, `getWord` |
 | type 'FillVsOut' is outside the supported scalar subset | 2 | `fillFs`, `strokeFs` |
+| //! js-export: 'bpToClipX' reaches hpClipX(), which is outside the supported scalar subset | 1 | `bpToClipX` |
+| //! js-export: 'bpToLinear' reaches hpLinear(), which is outside the supported scalar subset | 1 | `bpToLinear` |
+| call to 'length' at line N is neither a supported builtin nor a function in this module | 1 | `glyphEdgeAlpha` |
 | type 'ColorVsOut' is outside the supported scalar subset | 1 | `discardVertex` |
 | type 'Curve' is outside the supported scalar subset | 1 | `evalArcVertex` |
 | type 'RowBand' is outside the supported scalar subset | 1 | `rowBandPx` |

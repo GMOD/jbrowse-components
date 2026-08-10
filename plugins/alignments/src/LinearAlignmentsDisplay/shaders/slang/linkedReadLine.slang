@@ -26,8 +26,10 @@ struct Instance {
   float colorType : ATTR4;
 };
 
+// linkedReadColorSlot (alignmentsUniforms) is the index rule, split out so the
+// Canvas2D/SVG overlay can read the generated twin instead of spelling its own.
 float3 linkedReadColorByIndex(uint idx, Uniforms u) {
-  return u.linkedReadColor[min(idx, LINKED_READ_COLOR_SLOTS - 1u)].xyz;
+  return u.linkedReadColor[linkedReadColorSlot(idx)].xyz;
 }
 
 [shader("vertex")]
