@@ -9,6 +9,8 @@ import {
 } from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
+import { asArray, isRecord } from '../snapshotUtils.ts'
+
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 /**
@@ -161,12 +163,4 @@ function bakeValues(snap: Record<string, unknown>, bake: Bake) {
     })
     snap.trackConfigDeltas = deltas
   }
-}
-
-function isRecord(v: unknown): v is Record<string, unknown> {
-  return typeof v === 'object' && v !== null && !Array.isArray(v)
-}
-
-function asArray(v: unknown): unknown[] {
-  return Array.isArray(v) ? v : []
 }

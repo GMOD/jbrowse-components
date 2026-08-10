@@ -408,7 +408,7 @@ test('planWebExport falls back to self-contained when an assembly is not in the 
   expect(plan.strategy).toBe('selfContained')
 })
 
-test('planWebExport carries the portability report through', () => {
+test('planWebExport drops a local config track and names it', () => {
   const plan = planWebExport({
     assemblies: [{ name: 'mine' }],
     tracks: [
@@ -425,8 +425,6 @@ test('planWebExport carries the portability report through', () => {
     ],
     defaultSession: { name: 'session' },
   })
-  expect(plan.report.portable).toBe(false)
-  expect(plan.report.nonPortable[0]?.trackId).toBe('local')
   // the local track is reported, then dropped from the exported session
   expect(plan.droppedTracks).toEqual(['Local track'])
   expect(plan.session.sessionTracks).toEqual([])
@@ -539,13 +537,255 @@ test('planWebExport keeps a remote assembly and drops only the local user track'
   expect(plan.session.sessionAssemblies).toHaveLength(1)
 })
 
+// A hosted-base export leaves the config's assemblies behind but still ships
+// the prior session's `sessionAssemblies` verbatim, so a local file in one of
+// those is neither droppable (dropping the assembly kills the session) nor
+// covered by the base — it has to be reported as blocking.
+test('planWebExport reports a local session assembly as blocking under a hosted base', () => {
+  const plan = planWebExport(
+    {
+      assemblies: [{ name: 'hg38' }],
+      tracks: [],
+      configuration: {
+        sourceConfigUrl: 'https://jbrowse.org/ucsc/hg38/config.json',
+      },
+      defaultSession: {
+        name: 'session',
+        sessionAssemblies: [
+          {
+            name: 'myasm',
+            sequence: {
+              type: 'ReferenceSequenceTrack',
+              trackId: 'myasm-ReferenceSequenceTrack',
+              adapter: {
+                type: 'IndexedFastaAdapter',
+                fastaLocation: {
+                  locationType: 'LocalPathLocation',
+                  localPath: '/home/me/genome.fa',
+                },
+              },
+            },
+          },
+        ],
+      },
+    },
+    { assemblies: [{ name: 'hg38' }], tracks: [] },
+  )
+  expect(plan.strategy).toBe('hostedConfigBase')
+  expect(plan.droppedTracks).toEqual([])
+  expect(plan.blockingFiles).toEqual(['/home/me/genome.fa'])
+})
+
+// The mirror image: the config's own assemblies do NOT ship under a hosted
+// base, so their local files are the base's problem and must not be reported.
+test('planWebExport does not report a local config assembly under a hosted base', () => {
+  const plan = planWebExport(
+    {
+      assemblies: [
+        {
+          name: 'hg38',
+          refNameAliases: {
+            adapter: {
+              location: {
+                locationType: 'LocalPathLocation',
+                localPath: '/home/me/aliases.txt',
+              },
+            },
+          },
+        } as { name: string },
+      ],
+      tracks: [],
+      configuration: {
+        sourceConfigUrl: 'https://jbrowse.org/ucsc/hg38/config.json',
+      },
+      defaultSession: { name: 'session' },
+    },
+    { assemblies: [{ name: 'hg38' }], tracks: [] },
+  )
+  expect(plan.strategy).toBe('hostedConfigBase')
+  expect(plan.droppedTracks).toEqual([])
+  expect(plan.blockingFiles).toEqual([])
+})
+
+// An open connection track's config ships in `connectionTrackConfigs`, which the
+// droppable-track filter never touches, so a local one blocks rather than
+// silently going along unreported.
+test('planWebExport reports a local connection track config as blocking', () => {
+  const plan = planWebExport({
+    assemblies: [{ name: 'hg38' }],
+    tracks: [],
+    defaultSession: {
+      name: 'session',
+      connectionTrackConfigs: {
+        'conn-track': {
+          connectionId: 'conn',
+          config: {
+            trackId: 'conn-track',
+            name: 'Connection track',
+            adapter: {
+              bamLocation: {
+                locationType: 'LocalPathLocation',
+                localPath: '/data/conn.bam',
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+  expect(plan.blockingFiles).toEqual(['/data/conn.bam'])
+  // and not also announced as a track that was left out — nothing dropped it
+  expect(plan.droppedTracks).toEqual([])
+})
+
+test('planWebExport carries plugins into sessionPlugins when self-contained', () => {
+  const plan = planWebExport({
+    assemblies: [{ name: 'mine' }],
+    tracks: [],
+    plugins: [{ name: 'MyPlugin', umdUrl: 'https://example.com/my.js' }],
+    defaultSession: { name: 'session' },
+  })
+  expect(plan.session.sessionPlugins).toEqual([
+    { name: 'MyPlugin', umdUrl: 'https://example.com/my.js' },
+  ])
+})
+
+test('planWebExport carries only the plugins a hosted base does not declare', () => {
+  const shared = { name: 'Shared', umdUrl: 'https://example.com/shared.js' }
+  const extra = { name: 'Extra', umdUrl: 'https://example.com/extra.js' }
+  const plan = planWebExport(
+    {
+      assemblies: [{ name: 'hg38' }],
+      tracks: [],
+      plugins: [shared, extra],
+      configuration: {
+        sourceConfigUrl: 'https://jbrowse.org/ucsc/hg38/config.json',
+      },
+      defaultSession: { name: 'session' },
+    },
+    { assemblies: [{ name: 'hg38' }], tracks: [], plugins: [shared] },
+  )
+  expect(plan.strategy).toBe('hostedConfigBase')
+  // the base's own plugins[] is loaded by jbrowse-web from ?config=, so shipping
+  // it again would install the same plugin twice
+  expect(plan.session.sessionPlugins).toEqual([extra])
+})
+
+test('planWebExport leaves sessionPlugins out entirely when there are none', () => {
+  const plan = planWebExport({
+    assemblies: [{ name: 'mine' }],
+    tracks: [],
+    plugins: [],
+    defaultSession: { name: 'session' },
+  })
+  expect(plan.session).not.toHaveProperty('sessionPlugins')
+  expect(plan.session).not.toHaveProperty('sessionConnections')
+})
+
+// Desktop keeps connections in `jbrowse.connections`, which the export never
+// ships — so without sessionConnections a track hub is simply gone on the web.
+test('planWebExport carries connections into sessionConnections', () => {
+  const hub = {
+    type: 'UCSCTrackHubConnection',
+    connectionId: 'hub1',
+    hubTxtLocation: { uri: 'https://example.com/hub.txt' },
+  }
+  const plan = planWebExport({
+    assemblies: [{ name: 'mine' }],
+    tracks: [],
+    connections: [hub],
+    defaultSession: { name: 'session' },
+  })
+  expect(plan.session.sessionConnections).toEqual([hub])
+})
+
+test('planWebExport carries only the connections a hosted base does not declare', () => {
+  const shared = { connectionId: 'hub1', type: 'UCSCTrackHubConnection' }
+  const extra = { connectionId: 'hub2', type: 'UCSCTrackHubConnection' }
+  const plan = planWebExport(
+    {
+      assemblies: [{ name: 'hg38' }],
+      tracks: [],
+      connections: [shared, extra],
+      configuration: {
+        sourceConfigUrl: 'https://jbrowse.org/ucsc/hg38/config.json',
+      },
+      defaultSession: { name: 'session' },
+    },
+    { assemblies: [{ name: 'hg38' }], tracks: [], connections: [shared] },
+  )
+  expect(plan.strategy).toBe('hostedConfigBase')
+  // the recipient concatenates jbrowse.connections with sessionConnections, so
+  // shipping one the base already has lists the same hub twice
+  expect(plan.session.sessionConnections).toEqual([extra])
+})
+
+// sessionAssemblies and the config's assemblies land in ONE namespace on the
+// recipient, and the duplicate-name guard there is on the add path, which a
+// deserialized snapshot never takes. A colliding name doesn't get rejected, it
+// makes every assembly reference ambiguous and takes the session down.
+test('planWebExport drops a session assembly the hosted base already provides', () => {
+  const plan = planWebExport(
+    {
+      assemblies: [{ name: 'hg38' }],
+      tracks: [],
+      configuration: {
+        sourceConfigUrl: 'https://jbrowse.org/ucsc/hg38/config.json',
+      },
+      defaultSession: {
+        name: 'session',
+        sessionAssemblies: [{ name: 'hg38' }, { name: 'mine' }],
+      },
+    },
+    { assemblies: [{ name: 'hg38' }], tracks: [] },
+  )
+  expect(plan.strategy).toBe('hostedConfigBase')
+  expect(plan.session.sessionAssemblies).toEqual([{ name: 'mine' }])
+})
+
+test('planWebExport targets the public jbrowse-web by default', () => {
+  const plan = planWebExport({ assemblies: [], tracks: [] })
+  expect(plan.webBaseUrl).toBe('https://jbrowse.org/code/jb2/latest/')
+  expect(buildWebExportUrl(plan, 'encoded-ABC')).toContain(
+    'https://jbrowse.org/code/jb2/latest/',
+  )
+})
+
+test('planWebExport honors a config webExportUrl', () => {
+  const plan = planWebExport({
+    assemblies: [],
+    tracks: [],
+    configuration: { webExportUrl: 'https://inst.example/jbrowse/' },
+  })
+  expect(plan.webBaseUrl).toBe('https://inst.example/jbrowse/')
+  const parsed = new URL(buildWebExportUrl(plan, 'encoded-ABC'))
+  expect(parsed.origin + parsed.pathname).toBe('https://inst.example/jbrowse/')
+})
+
+// A typo in a config slot must not be able to make exporting impossible
+test('planWebExport falls back to the default for an unusable webExportUrl', () => {
+  const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+  expect(
+    planWebExport({
+      configuration: { webExportUrl: 'not a url' },
+    }).webBaseUrl,
+  ).toBe('https://jbrowse.org/code/jb2/latest/')
+  // a url that parses but isn't something a browser should be sent to
+  expect(
+    planWebExport({
+      configuration: { webExportUrl: 'file:///home/me/jbrowse/' },
+    }).webBaseUrl,
+  ).toBe('https://jbrowse.org/code/jb2/latest/')
+  errorSpy.mockRestore()
+})
+
 test('buildWebExportUrl puts an encoded- long link in the hash, keeping config', () => {
   const url = buildWebExportUrl(
     {
       strategy: 'hostedConfigBase',
       configUrl: 'https://jbrowse.org/ucsc/hg38/config.json',
       session: {},
-      report: { nonPortable: [], portable: true },
+      webBaseUrl: 'https://jbrowse.org/code/jb2/latest/',
       droppedTracks: [],
       blockingFiles: [],
     },
@@ -569,7 +809,7 @@ test('buildWebExportUrl puts a self-contained encoded- session in the hash', () 
     {
       strategy: 'selfContained',
       session: {},
-      report: { nonPortable: [], portable: true },
+      webBaseUrl: 'https://jbrowse.org/code/jb2/latest/',
       droppedTracks: [],
       blockingFiles: [],
     },
@@ -587,7 +827,7 @@ test('buildWebExportUrl adds the password param for a short share link', () => {
     {
       strategy: 'selfContained',
       session: {},
-      report: { nonPortable: [], portable: true },
+      webBaseUrl: 'https://jbrowse.org/code/jb2/latest/',
       droppedTracks: [],
       blockingFiles: [],
     },

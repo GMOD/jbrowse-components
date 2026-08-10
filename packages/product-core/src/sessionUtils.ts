@@ -1,3 +1,4 @@
+import { maybePluginUrl } from '@jbrowse/core/pluginDefinitions'
 import {
   SHARE_PREFIX,
   diffTrackConfig,
@@ -14,6 +15,9 @@ import {
   isValidReference,
 } from '@jbrowse/mobx-state-tree'
 
+import { asArray, isRecord } from './snapshotUtils.ts'
+
+import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type {
   IAnyStateTreeNode,
   IAnyType,
@@ -241,7 +245,9 @@ export interface TrackSnapshot {
 export interface WebExportInput {
   assemblies?: { name: string }[]
   tracks?: TrackSnapshot[]
-  configuration?: { sourceConfigUrl?: string }
+  plugins?: PluginDefinition[]
+  connections?: unknown[]
+  configuration?: { sourceConfigUrl?: string; webExportUrl?: string }
   defaultSession?: Record<string, unknown>
 }
 
@@ -253,6 +259,11 @@ export interface WebExportInput {
 export interface HostedBaseConfig {
   assemblies?: { name: string }[]
   tracks?: TrackSnapshot[]
+  // jbrowse-web loads both of these itself when it opens `?config=<configUrl>`,
+  // so an export reusing this config as its base only has to carry the ones it
+  // does not already declare
+  plugins?: PluginDefinition[]
+  connections?: unknown[]
   // jbrowse-web resolves the session-share store from the config it loaded, so
   // an export reusing this config as its base has to upload short links there
   configuration?: { shareURL?: string }
@@ -266,40 +277,18 @@ export interface WebExportPlan {
   // assemblies + tracks and web loads it with `?config=none`.
   strategy: 'hostedConfigBase' | 'selfContained'
   configUrl?: string
+  // the jbrowse-web deployment the link points at
+  webBaseUrl: string
   // the session snapshot to encode into `?session=encoded-<...>`
   session: Record<string, unknown>
-  // full portability detection over the input snapshot
-  report: WebPortabilityReport
   // distinct display names of tracks excluded from `session` because they
   // reference local files jbrowse-web can't open (empty when fully portable)
   droppedTracks: string[]
-  // distinct names of local files that block the whole session from loading on
-  // the web and can't be shed by dropping a track — an assembly's own sequence/
-  // alias files, or any non-track local file. Empty when fully portable.
+  // distinct names of local files that survive into `session` and so can't be
+  // shed by dropping a track — an assembly's own sequence/alias files, an open
+  // connection track's config, any non-track local file. Empty when the
+  // exported session is fully portable.
   blockingFiles: string[]
-}
-
-// Collects every `trackId` string anywhere within a snapshot subtree. An
-// assembly's sequence config carries a trackId (`<name>-ReferenceSequenceTrack`,
-// injected by the assembly config's preProcessSnapshot), so this is how
-// planWebExport tells an assembly's own structural trackIds from real user
-// tracks — a local sequence file surfaces in the report tagged with the sequence
-// trackId, but it is not a droppable track.
-function collectTrackIds(node: unknown, out = new Set<string>()): Set<string> {
-  if (Array.isArray(node)) {
-    for (const item of node) {
-      collectTrackIds(item, out)
-    }
-  } else if (typeof node === 'object' && node !== null) {
-    const obj = node as Record<string, unknown>
-    if (typeof obj.trackId === 'string') {
-      out.add(obj.trackId)
-    }
-    for (const key of Object.keys(obj)) {
-      collectTrackIds(obj[key], out)
-    }
-  }
-  return out
 }
 
 // Distinct file display names of a set of non-portable locations, in first-seen
@@ -312,14 +301,6 @@ function distinctNames(locations: NonPortableLocation[]): string[] {
 function readTrackId(track: unknown): string | undefined {
   const id = isRecord(track) ? track.trackId : undefined
   return typeof id === 'string' ? id : undefined
-}
-
-function isRecord(v: unknown): v is Record<string, unknown> {
-  return typeof v === 'object' && v !== null && !Array.isArray(v)
-}
-
-function asArray(v: unknown): unknown[] {
-  return Array.isArray(v) ? v : []
 }
 
 // Concatenate session-track lists, keeping the last entry per trackId so a track
@@ -340,6 +321,11 @@ function concatTracksByTrackId(...lists: unknown[][]): unknown[] {
   return [...out, ...byId.values()]
 }
 
+function readAssemblyName(assembly: unknown): string | undefined {
+  const name = isRecord(assembly) ? assembly.name : undefined
+  return typeof name === 'string' ? name : undefined
+}
+
 // Same idea as concatTracksByTrackId for assemblies, whose identifier is their
 // `name`. A duplicate is worse here than for tracks: it doesn't fail at load,
 // it makes every assembly's `configuration` safeReference ambiguous, so the
@@ -348,7 +334,7 @@ function concatAssembliesByName(...lists: unknown[][]): unknown[] {
   const byName = new Map<string, unknown>()
   const out: unknown[] = []
   for (const a of lists.flat()) {
-    const name = isRecord(a) && typeof a.name === 'string' ? a.name : undefined
+    const name = readAssemblyName(a)
     if (name === undefined) {
       out.push(a)
     } else {
@@ -358,16 +344,66 @@ function concatAssembliesByName(...lists: unknown[][]): unknown[] {
   return [...out, ...byName.values()]
 }
 
-// The user tracks (not an assembly's own structural sequence/alias files) that
-// reference a local file: their trackIds, to drop from the export, and display
-// names, to report to the user. Assembly-owned files can't be dropped by
-// removing a track, so they're excluded here and surface as blockingFiles.
+// Session assemblies that don't collide with one the recipient's config already
+// provides. `sessionAssemblies` and `jbrowse.assemblies` are concatenated into
+// one namespace on the far side (`AssembliesMixin.assemblies`), and the
+// duplicate-name guard there lives in `addSessionAssembly` — an *add* path,
+// which a deserialized snapshot never goes through. So a name the hosted base
+// also uses is not rejected on load, it silently makes every assembly's
+// `configuration` safeReference ambiguous and takes the session down on the
+// next read. The base's copy wins because it is the one `?config=` guarantees
+// is there.
+//
+// Only the hostedConfigBase strategy needs this. A self-contained export ships
+// no config at all, and concatAssembliesByName already keeps its own two lists
+// from colliding with each other.
+function withoutBaseAssemblies(
+  sessionAssemblies: unknown[],
+  baseAssemblyNames: Set<string>,
+): unknown[] {
+  return sessionAssemblies.filter(a => {
+    const name = readAssemblyName(a)
+    return !name || !baseAssemblyNames.has(name)
+  })
+}
+
+// The `sessionAssemblies` override for a hosted-base session, or nothing at all
+// when the session had none — the spread of `defaultSession` is what carries
+// them otherwise, so an unconditional key would add an empty array to every
+// export that never had one.
+function hostedSessionAssemblies(
+  prior: unknown[],
+  baseAssemblyNames: Set<string>,
+) {
+  return prior.length > 0
+    ? { sessionAssemblies: withoutBaseAssemblies(prior, baseAssemblyNames) }
+    : {}
+}
+
+// The trackIds the export is free to drop: the ones that name an entry in a
+// track list it actually assembles. Everything else a location can be tagged
+// with is structural and stays — an assembly's own sequence config carries
+// `<name>-ReferenceSequenceTrack`, and an open connection track's config lives
+// in `connectionTrackConfigs`, which rides along inside the session snapshot.
+function droppableTrackIds(
+  tracks: TrackSnapshot[],
+  sessionTracks: unknown[],
+): Set<string> {
+  return new Set(
+    [...tracks, ...sessionTracks].flatMap(t => readTrackId(t) ?? []),
+  )
+}
+
+// The tracks that reference a local file and can be shed by dropping them:
+// their trackIds, to filter the shipped track lists with, and display names, to
+// report to the user. A local file that no droppable track owns can't be shed
+// this way and surfaces as a blockingFile instead.
 function nonPortableUserTracks(
   report: WebPortabilityReport,
-  assemblyTrackIds: Set<string>,
+  droppable: Set<string>,
 ) {
   const locs = report.nonPortable.flatMap(l =>
-    l.trackId && !assemblyTrackIds.has(l.trackId)
+    l.trackId && droppable.has(l.trackId)
       ? [{ trackId: l.trackId, name: l.trackName ?? l.trackId }]
       : [],
   )
@@ -423,6 +459,69 @@ function withDeltas(
   return { ...session, trackConfigDeltas: { ...prior, ...editDeltas } }
 }
 
+// The plugin definitions the recipient will not already have, carried in the
+// session as `sessionPlugins` — the one channel a jbrowse-web session has for
+// them, and one it triages before loading (SessionLoader.loadSession). Without
+// this, a desktop session using a plugin's view or track type opens on a
+// jbrowse-web that never registered the type, and the view is dropped on load.
+//
+// Under `hostedConfigBase` jbrowse-web loads the base config's own `plugins[]`,
+// so only the extras ride along; a `selfContained` export opens `?config=none`
+// and has no config to load any from, so it carries them all. Identity is the
+// url a definition loads from (`maybePluginUrl`) rather than its name, since an
+// ESM/CJS definition need not have one; a definition naming no loader at all is
+// never "the same plugin" as another, so it is always carried.
+function extraPlugins(
+  plugins: PluginDefinition[],
+  basePlugins: PluginDefinition[],
+) {
+  const baseUrls = new Set(basePlugins.flatMap(p => maybePluginUrl(p) ?? []))
+  return plugins.filter(p => {
+    const url = maybePluginUrl(p)
+    return !url || !baseUrls.has(url)
+  })
+}
+
+// Connections the recipient will not already have, carried the same way and for
+// the same reason as the plugins above: desktop keeps them in `jbrowse
+// .connections`, which nothing in the export ships, so without this a session
+// with a track hub arrives on the web with the hub gone. Only the connection
+// tracks the sender had open survive on their own, through the session's
+// `connectionTrackConfigs`; the hub itself — and every track in it the recipient
+// might want to open next — needs `sessionConnections`, jbrowse-web's
+// session-level counterpart of `jbrowse.connections`.
+//
+// Identity is `connectionId`, which is what the recipient's own
+// `connections` getter concatenates on, so shipping one the base already
+// declares would list the same hub twice.
+function extraConnections(connections: unknown[], baseConnections: unknown[]) {
+  const baseIds = new Set(baseConnections.flatMap(c => readId(c) ?? []))
+  return connections.filter(c => {
+    const id = readId(c)
+    return !id || !baseIds.has(id)
+  })
+}
+
+function readId(connection: unknown): string | undefined {
+  const id = isRecord(connection) ? connection.connectionId : undefined
+  return typeof id === 'string' ? id : undefined
+}
+
+// Adds the session-level carriers to the exported session, leaving each key out
+// entirely when it would be empty so the exported snapshot stays minimal (same
+// rule as withDeltas above).
+function withCarriedConfigs(
+  session: Record<string, unknown>,
+  plugins: PluginDefinition[],
+  connections: unknown[],
+): Record<string, unknown> {
+  return {
+    ...session,
+    ...(plugins.length > 0 ? { sessionPlugins: plugins } : {}),
+    ...(connections.length > 0 ? { sessionConnections: connections } : {}),
+  }
+}
+
 // Decides how to hand a desktop session to jbrowse-web. When the session was
 // launched from a hosted hub config (sourceConfigUrl) that still covers all of
 // its assemblies, that config is reused as the base and only user-added/edited
@@ -438,24 +537,19 @@ export function planWebExport(
   const assemblies = snapshot.assemblies ?? []
   const defaultSession = snapshot.defaultSession ?? {}
   const priorSessionAssemblies = asArray(defaultSession.sessionAssemblies)
+  const allTracks = snapshot.tracks ?? []
+  const allSessionTracks = asArray(defaultSession.sessionTracks)
 
-  // An assembly's sequence config owns a trackId (`<name>-ReferenceSequenceTrack`),
-  // so a local sequence/alias file shows up in the report tagged with that
-  // trackId even though it's structural, not a droppable track. Collect the
-  // trackIds owned by shipped assemblies so those files count as blocking (they
-  // break the whole session) rather than as dropped tracks.
-  const assemblyTrackIds = collectTrackIds([
-    ...assemblies,
-    ...priorSessionAssemblies,
-  ])
-
-  const dropped = nonPortableUserTracks(report, assemblyTrackIds)
+  const dropped = nonPortableUserTracks(
+    report,
+    droppableTrackIds(allTracks, allSessionTracks),
+  )
   const keep = (t: unknown) => {
     const id = readTrackId(t)
     return !id || !dropped.ids.has(id)
   }
-  const tracks = (snapshot.tracks ?? []).filter(keep)
-  const priorSessionTracks = asArray(defaultSession.sessionTracks).filter(keep)
+  const tracks = allTracks.filter(keep)
+  const priorSessionTracks = allSessionTracks.filter(keep)
 
   const baseAssemblyNames = new Set(
     (baseConfig?.assemblies ?? []).map(a => a.name),
@@ -465,53 +559,88 @@ export function planWebExport(
     !!baseConfig &&
     assemblies.every(a => baseAssemblyNames.has(a.name))
 
-  if (coveredByBase) {
-    const { addedTracks, editDeltas } = splitTracksAgainstBase(
-      tracks,
-      baseConfig.tracks ?? [],
-    )
-    return {
-      strategy: 'hostedConfigBase',
-      configUrl: sourceConfigUrl,
-      session: withDeltas(
-        {
+  const plugins = snapshot.plugins ?? []
+  const connections = snapshot.connections ?? []
+  // defined exactly when the hostedConfigBase strategy applies, so it doubles as
+  // the strategy flag for the shared tail below
+  const hosted = coveredByBase
+    ? splitTracksAgainstBase(tracks, baseConfig.tracks ?? [])
+    : undefined
+
+  const session = withCarriedConfigs(
+    hosted
+      ? withDeltas(
+          {
+            ...defaultSession,
+            ...hostedSessionAssemblies(
+              priorSessionAssemblies,
+              baseAssemblyNames,
+            ),
+            sessionTracks: concatTracksByTrackId(
+              priorSessionTracks,
+              hosted.addedTracks,
+            ),
+          },
+          hosted.editDeltas,
+        )
+      : {
           ...defaultSession,
-          sessionTracks: concatTracksByTrackId(priorSessionTracks, addedTracks),
+          sessionAssemblies: concatAssembliesByName(
+            priorSessionAssemblies,
+            assemblies,
+          ),
+          sessionTracks: concatTracksByTrackId(priorSessionTracks, tracks),
         },
-        editDeltas,
-      ),
-      report,
-      droppedTracks: dropped.names,
-      // assemblies come from the hosted config, so their local files aren't
-      // shipped and can't block; only stray non-track local files remain
-      blockingFiles: distinctNames(report.nonPortable.filter(l => !l.trackId)),
-    }
-  }
+    hosted ? extraPlugins(plugins, baseConfig?.plugins ?? []) : plugins,
+    hosted
+      ? extraConnections(connections, asArray(baseConfig?.connections))
+      : connections,
+  )
   return {
-    strategy: 'selfContained',
-    session: {
-      ...defaultSession,
-      sessionAssemblies: concatAssembliesByName(
-        priorSessionAssemblies,
-        assemblies,
-      ),
-      sessionTracks: concatTracksByTrackId(priorSessionTracks, tracks),
-    },
-    report,
+    strategy: hosted ? 'hostedConfigBase' : 'selfContained',
+    configUrl: hosted ? sourceConfigUrl : undefined,
+    webBaseUrl: resolveWebBaseUrl(snapshot.configuration?.webExportUrl),
+    session,
     droppedTracks: dropped.names,
-    // self-contained ships the assemblies, so their local files (and any other
-    // non-track local file) block the session from loading on the web
-    blockingFiles: distinctNames(
-      report.nonPortable.filter(
-        l => !l.trackId || assemblyTrackIds.has(l.trackId),
-      ),
-    ),
+    // Re-run detection over the session that will actually ship rather than
+    // filtering the input report by trackId. The two are not the same set, in
+    // both directions: a hosted-base export leaves the config's assemblies
+    // behind (their local files are the base's problem, not the recipient's)
+    // but still ships the prior session's `sessionAssemblies`, and either
+    // strategy ships `connectionTrackConfigs` that the droppable-track filter
+    // above never touches. Anything non-portable still present here survived
+    // the drop and so blocks the session by definition.
+    blockingFiles: distinctNames(analyzeWebPortability(session).nonPortable),
   }
 }
 
 // The deployed jbrowse-web the desktop "export to web" action targets. Stable
 // per the maintainers; a future target will be added alongside, not replace it.
 export const DEFAULT_WEB_BASE_URL = 'https://jbrowse.org/code/jb2/latest/'
+
+// Where an export opens. A config can point its users at a different jbrowse-web
+// through the desktop-only `webExportUrl` slot — a site that runs its own
+// deployment, and whose data may only be reachable from it.
+//
+// A value that isn't an absolute http(s) url falls back rather than throwing:
+// this runs inside the export, and a typo in a config slot must not be able to
+// make exporting impossible. Same posture as the base-config fetch, which logs
+// and falls back to a self-contained export.
+function resolveWebBaseUrl(webExportUrl: string | undefined) {
+  if (!webExportUrl) {
+    return DEFAULT_WEB_BASE_URL
+  }
+  try {
+    const url = new URL(webExportUrl)
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      throw new Error(`not an http(s) url: ${webExportUrl}`)
+    }
+    return url.href
+  } catch (e) {
+    console.error(e)
+    return DEFAULT_WEB_BASE_URL
+  }
+}
 
 // Assembles the jbrowse-web URL for an export plan. `sessionParam` is the
 // ready-made `session` value: `share-<id>` for a short lambda link (pass its
@@ -527,9 +656,9 @@ export const DEFAULT_WEB_BASE_URL = 'https://jbrowse.org/code/jb2/latest/'
 export function buildWebExportUrl(
   plan: WebExportPlan,
   sessionParam: string,
-  options: { password?: string; webBaseUrl?: string } = {},
+  options: { password?: string } = {},
 ): string {
-  const url = new URL(options.webBaseUrl ?? DEFAULT_WEB_BASE_URL)
+  const url = new URL(plan.webBaseUrl)
   const params = new URLSearchParams()
   params.set('config', plan.configUrl ?? 'none')
   params.set('session', sessionParam)
