@@ -152,13 +152,23 @@ const LinkToSyntenyView = observer(function LinkToSyntenyView({
                   feature,
                   anchorAssembly,
                   anchorTracks: findAnchorTracks(model),
+                  // The view this widget was opened from, so the dialog can
+                  // offer to put the launched view in its slot rather than
+                  // below it — the same choice the two menu-driven launches
+                  // make. Passed for both shapes and filtered by the dialog:
+                  // `canReplaceView` keeps the offer to a view the session
+                  // actually holds a slot for, which drops the LGV *row* of a
+                  // synteny view (a ribbon click's widget names the outer view,
+                  // which does have one) without this having to know which
+                  // shape it got.
+                  sourceView: view,
                   trackId,
                   handleClose,
                 },
               ])
             }}
           >
-            Launch new linear synteny view on this feature
+            Launch linear synteny view on this feature
           </ActionLink>
         </li>
       ) : null}

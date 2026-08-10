@@ -91,9 +91,11 @@ test('nav to synteny from feature details', async () => {
     fireEvent.mouseMove(canvas, { clientX: 200, clientY: 3 })
     fireEvent.click(canvas, { clientX: 200, clientY: 3 })
     fireEvent.click(
-      await findByText('Launch new linear synteny view on this feature'),
+      await findByText('Launch linear synteny view on this feature'),
     )
-    fireEvent.click(await findByText('Submit'))
+    // "Open in new view", not "Submit": this link reaches the same dialog the
+    // right-click does, so it offers the same two destinations
+    fireEvent.click(await findByText('Open in new view'))
     await waitFor(() => {
       const v = session.views[1] as LinearSyntenyViewModel | undefined
       expect(v?.initialized).toBe(true)
