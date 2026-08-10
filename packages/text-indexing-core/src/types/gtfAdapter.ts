@@ -21,14 +21,30 @@ function expandAttributeNames(attributesToIndex: string[]) {
 }
 
 /**
+ * True when an entry opens a double quote it never closes, meaning the ';' it
+ * was split on fell inside the value instead of ending the entry.
+ */
+function hasUnclosedQuote(entry: string) {
+  const first = entry.indexOf('"')
+  return first !== -1 && !entry.includes('"', first + 1)
+}
+
+/**
  * Parse the GTF 9th column (`gene_id "X"; transcript_id "Y";`), mirroring
  * plugins/gtf so the indexed text matches what the track displays: entries are
- * `key value` separated by a space (not `key=value`), values may be quoted, and
- * a repeated key expresses multiple values.
+ * `key value` separated by a space (not `key=value`), values may be quoted, a
+ * repeated key expresses multiple values, and a quoted value may contain the
+ * ';' the entries are split on (`note "a; b"`), so its pieces are rejoined
+ * before the value is read.
  */
 export function parseGtfAttributes(attrString: string) {
   const attrs: Record<string, string[]> = {}
-  for (const entry of attrString.split(';')) {
+  const entries = attrString.split(';')
+  for (let i = 0; i < entries.length; i++) {
+    let entry = entries[i]!
+    while (hasUnclosedQuote(entry) && i + 1 < entries.length) {
+      entry += `;${entries[++i]}`
+    }
     const trimmed = entry.trim()
     const sp = trimmed.indexOf(' ')
     if (sp !== -1) {

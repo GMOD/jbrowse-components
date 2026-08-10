@@ -110,6 +110,15 @@ describe('indexGtf', () => {
     expect(results.map(r => words(r))).toEqual([['alpha', 'beta', 'g1']])
   })
 
+  test('a semicolon inside a quoted value does not truncate it', async () => {
+    // the ';' entry separator can also sit inside a value, where splitting on
+    // it indexed only the part before the semicolon
+    const results = await index([
+      'chr1\t.\texon\t1\t9\t.\t+\t.\tgene_id "g1"; gene_name "alpha; beta";',
+    ])
+    expect(results.map(r => words(r))).toEqual([['alpha;', 'beta', 'g1']])
+  })
+
   test('same-named genes on different refs stay separate entries', async () => {
     const results = await index([
       'chr1\t.\texon\t1\t9\t.\t+\t.\tgene_id "dup";',
