@@ -118,6 +118,14 @@ case. Hoisting it to a per-block `uniformRows` scan is **1.13-1.24x** on the who
 function across eight shapes (`4177979cca`), against a byte-identical control
 reading 0.97-1.04x on the same runs.
 
+The same arm went on the insertion loop (`4a8d7d8f7f`) and is worth stating as a
+counterexample: it measures ~1.05x over control only where a *third* of reference
+columns are gaps, and 1.00x at the 3-12% rates real alignments run, because that
+loop executes on gap columns alone. Same transformation, same function, an order
+of magnitude less payoff — how often a loop runs bounds what fixing it can buy,
+and the bench had to grow two insertion-heavy shapes before the difference was
+even visible.
+
 So the lever that was there for months was invisible to the method being used to
 look for it. Before declaring a hot loop finished, decompose it: measure the bare
 loop against the loop-plus-output, sweep the working set, and peel the body one
@@ -151,6 +159,7 @@ Eight commits, all output-identical except where noted:
 | `7b0cbcee48` | the wire's round-trip contract, under test | — |
 | `bc9e6a1d24` | short arena rows by `charCodeAt`, and the sizing pass fused into the discovery walk | 1.30x packer, 1.38-1.64x sizing |
 | `4177979cca` | coverage's `col >= len` test hoisted to a per-block scan | 1.13-1.24x |
+| `4a8d7d8f7f` | the same arm for coverage's insertion loop | ~1.05x at a 33% gap rate, 1.00x below that |
 
 `57e26565a4` is in `packages/alignments-core`, so the alignments coverage
 pipeline gets it too. It is the one behavioral difference in the set: SNP
