@@ -52,6 +52,39 @@ test('parses a hash-form link (jbrowse-web puts inline sessions in the hash)', (
   )
 })
 
+// Every "Open in Desktop" button sits next to the plain web link it wraps, so
+// the one a user copies and pastes into "Open JBrowse Web link..." is as often
+// the jbrowse:// url as the one inside it. Both have to work.
+describe('a jbrowse:// wrapper', () => {
+  const web = `https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=${encoded}&sessionName=Fig`
+  const wrap = (inner: string) =>
+    `jbrowse://open?url=${encodeURIComponent(inner)}`
+
+  test('parses as the web link it carries', () => {
+    expect(parseSessionSpecUrl(wrap(web))).toEqual(parseSessionSpecUrl(web))
+  })
+
+  test('resolves a relative config against the wrapped instance, not the wrapper', () => {
+    expect(parseSessionSpecUrl(wrap(web)).configUrl).toBe(
+      'https://jbrowse.org/code/jb2/main/test_data/volvox/config.json',
+    )
+  })
+
+  test('never unwraps to a non-web url', () => {
+    // the payload comes from whatever handed us the link, so a wrapped
+    // file:// must not become something a caller goes on to fetch
+    expect(() => parseSessionSpecUrl(wrap('file:///etc/passwd'))).toThrow(
+      /no session in it/,
+    )
+  })
+
+  test('reports a wrapper carrying no url at all as a link with no session', () => {
+    expect(() => parseSessionSpecUrl('jbrowse://open')).toThrow(
+      /no session in it/,
+    )
+  })
+})
+
 test('explains that a hash-form share link cannot be opened elsewhere', () => {
   expect(() =>
     parseSessionSpecUrl(

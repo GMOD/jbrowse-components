@@ -43,10 +43,40 @@ function linkParams(url: URL): URLSearchParams {
   return new URLSearchParams(hash.includes('=') ? hash : url.search)
 }
 
+// A `jbrowse://open?url=<web link>` wrapper carries a JBrowse Web url for
+// Desktop's protocol handler to unwrap. Every page that offers an "Open in
+// Desktop" button puts that link right next to the plain web one — the docs'
+// figure dialogs, genomes.jbrowse.org — so the link someone copies and pastes
+// into "Open JBrowse Web link..." is as often this as the url inside it. It
+// parses as a perfectly good URL whose query has no `session`, which reported
+// "that link has no session in it" about a link that does. Unwrap it instead.
+//
+// Restricted to http(s), and to a single unwrap, for the reason Desktop's own
+// parser is (products/jbrowse-desktop/electron/launchTarget.ts, which gates the
+// OS-delivered copy of this and cannot import from here — it is bundled into the
+// Electron main process): the payload comes from whatever handed us the link.
+function unwrapProtocolUrl(url: URL): URL {
+  if (url.protocol !== 'jbrowse:') {
+    return url
+  }
+  const wrapped = url.searchParams.get('url')
+  if (!wrapped) {
+    return url
+  }
+  try {
+    const inner = new URL(wrapped)
+    return inner.protocol === 'http:' || inner.protocol === 'https:'
+      ? inner
+      : url
+  } catch {
+    return url
+  }
+}
+
 export function parseSessionSpecUrl(input: string): ParsedSessionSpec {
   let url: URL
   try {
-    url = new URL(input.trim())
+    url = unwrapProtocolUrl(new URL(input.trim()))
   } catch {
     throw new Error(`Not a URL: ${input}`)
   }
