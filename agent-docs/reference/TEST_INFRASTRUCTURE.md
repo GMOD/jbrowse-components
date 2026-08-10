@@ -110,6 +110,51 @@ true (this silently burned full snapshot timeouts).
   then read the static canvas selector. `canvasSnapshot` takes the exact
   selector — canvas captures are the most reliable.
 
+## What a `createView()` actually costs
+
+Most of it is the **track selector**, not the view. `defaultSession` leaves the
+hierarchical selector open, and `useMeasure` is mocked to `height: 100000`
+(`packages/__mocks__/@jbrowse/core/util/useMeasure.ts`) so
+`HierarchicalTree`'s virtualization never engages — every test mounts a row per
+track, all 123 of them, before it has done anything. Measured in isolation:
+**~1.5s and a 2094-element document with the stock volvox config, ~0.4s and
+~300 elements with one track.** A CPU profile of the init path is
+`TrackLabel` / `TreeItem` / `CheckboxLite` / `CascadingMenuButton` /
+`MoreHorizGlyph` and the React and emotion work they drive, with no single
+hotspot to fix — it is 115 rows of ordinary rendering.
+
+It is paid twice, because the document it leaves behind is what every later
+`findBy*` scans. On a 2094-element document `getByTestId` measured ~10ms per
+call and **`getByLabelText` 4-17 seconds** — `getAllByRole` is the same shape.
+Those two walk every element and ask jsdom for its labels/role, which is
+quadratic here, and jsdom's nwsapi result cache only hides it until the next DOM
+mutation. Prefer `findByTestId` / `findByPlaceholderText` / `findByText` in
+full-app tests; a `ByLabelText` that looks instant in a component test is not.
+
+`volvoxConfigWithTracks(['...'])` in `products/jbrowse-web/src/tests/util.tsx`
+is the lever: a suite names the tracks it opens and stops paying for the rest,
+while keeping the coverage it has (the track is still switched on by clicking
+its row in the real selector). It throws on an unknown trackId. **Don't trim a
+suite that reads the track list itself** — categories, filter text, counts, or
+picking a track out of a listbox by name. `LGVSynteny` is the worked example of
+one that cannot be trimmed.
+
+The mock's height is the bigger, unclaimed lever: dropping it to 500 cut init to
+~1.0s across the board, but only 37 rows then render, so every test naming a
+track further down the list fails. Trimming per suite gets the same win without
+that.
+
+### Benchmarking on this box is unreliable
+
+The dev box runs several agents' test suites at once (load average ~35 on 16
+cores was normal while the above was measured). Per-suite wall time moved ±30s
+between runs **on suites that were not touched**, and a full-suite before/after
+disagreed in sign with an in-band A/B of the same change. Judge a perf change by
+an interleaved A/B of the affected suites, or by `--runInBand` on both arms, and
+treat a single full-suite wall time as noise. Load also produces spurious
+failures: a suite that times out under load and passes alone (`AuthenticationHTTPBasic`
+did) is not a regression.
+
 ## Image snapshots go stale invisibly
 
 `jest-image-snapshot` writes `__image_snapshots__/*-snap.png` as plain files
