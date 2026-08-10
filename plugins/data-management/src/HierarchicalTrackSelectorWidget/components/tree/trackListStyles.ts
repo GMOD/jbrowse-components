@@ -6,11 +6,9 @@ import type { MenuItem } from '@jbrowse/core/ui/Menu'
 // (see BadgeDropdownTracks)
 
 export const useSmallBadgeStyles = makeStyles()({
-  // eslint-disable-next-line tss-unused-classes/unused-classes
   smallBadge: {
     height: 14,
   },
-  // eslint-disable-next-line tss-unused-classes/unused-classes
   margin: {
     marginRight: 10,
   },

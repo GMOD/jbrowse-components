@@ -65,7 +65,6 @@ const heightModeConfig = ConfigurationSchema('TestHeightMode', {
 function composeInOrder(...mixins: any[]) {
   return types.compose(
     'TestHeightModeOrder',
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     types.compose('TestMixins', mixins[0], mixins[1]),
     types.model({
       type: types.literal('test'),

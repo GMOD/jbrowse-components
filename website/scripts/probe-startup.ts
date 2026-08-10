@@ -82,7 +82,6 @@ async function install(page: Page, deferStatus: boolean) {
       if (String(args[0]).startsWith('webgl')) {
         p.contexts++
       }
-      // eslint-disable-next-line prefer-spread
       return gc.apply(this, args)
     } as typeof gc
 

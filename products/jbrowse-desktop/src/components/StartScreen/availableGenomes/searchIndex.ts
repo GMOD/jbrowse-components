@@ -88,9 +88,7 @@ function toEntry(row: IndexRow): Entry | undefined {
         assemblyStatus: assemblyStatus || undefined,
         ncbiAssemblyName: assemblyName || undefined,
         pairedAccession: altAccession || undefined,
-        // eslint-disable-next-line no-bitwise
         ncbiRefSeqCategory: ncbiStatus & 1 ? 'reference genome' : undefined,
-        // eslint-disable-next-line no-bitwise
         suppressed: Boolean(ncbiStatus & 2),
       }
     : undefined

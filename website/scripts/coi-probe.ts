@@ -71,7 +71,6 @@ await page.evaluateOnNewDocument(() => {
       }
     }
     walk(msg, 0)
-    // eslint-disable-next-line prefer-spread
     send.apply(this, [msg, ...rest] as Parameters<typeof send>)
   } as typeof send
 })

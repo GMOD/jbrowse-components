@@ -62,33 +62,28 @@ beforeEach(() => {
 })
 
 test('no row without a right-click', () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   expect(breakendMenuItems(fakeSelf({ type: undefined }) as any)).toEqual([])
 })
 
 test('no row on a record that has no mate', () => {
   // A plain SNV opens the same dialog to nothing, so it must not offer it.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   expect(breakendMenuItems(fakeSelf({ type: 'SNV' }) as any)).toEqual([])
 })
 
 test('no row when the session has no BreakpointSplitView', () => {
   jest.mocked(hasBreakpointSplitView).mockReturnValue(false)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   expect(breakendMenuItems(fakeSelf({ type: 'breakend' }) as any)).toEqual([])
 })
 
 test('one row on a breakend, which launches with the refetched feature', async () => {
   const feature = { id: () => 'r_12_1' }
   const self = fakeSelf({ type: 'breakend', feature })
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const items = breakendMenuItems(self)
   expect(items.map(i => ('label' in i ? i.label : undefined))).toEqual([
     SPLIT_VIEW_MENU_LABEL,
   ])
 
   const item = items[0]!
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(item as any).onClick()
   await Promise.resolve()
   await Promise.resolve()

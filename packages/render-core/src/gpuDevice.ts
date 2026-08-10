@@ -35,7 +35,6 @@ interface GpuDeviceCell {
 }
 
 declare global {
-  // eslint-disable-next-line no-var
   var __jbrowseRenderCoreGpuDeviceV1: GpuDeviceCell | undefined
 }
 

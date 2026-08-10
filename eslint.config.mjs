@@ -3,7 +3,6 @@ import eslintPluginAstro from 'eslint-plugin-astro'
 import { importX } from 'eslint-plugin-import-x'
 import reactCompiler from 'eslint-plugin-react-compiler'
 import eslintPluginReactRefresh from 'eslint-plugin-react-refresh'
-import tssUnusedClasses from 'eslint-plugin-tss-unused-classes'
 import eslintPluginUnicorn from 'eslint-plugin-unicorn'
 import { defineConfig } from 'eslint/config'
 import globals from 'globals'
@@ -104,14 +103,6 @@ export default defineConfig(
       // this keeps the backstop green until the comments are migrated to
       // `oxlint-disable`.
       '@typescript-eslint': tseslint.plugin,
-      // Same deal, and it surfaced the moment the config started matching
-      // `**/*.ts`: six files carry `eslint-disable
-      // tss-unused-classes/unused-classes`, the plugin is a devDependency, and
-      // nothing had ever registered it — so each of those comments was an
-      // error ("Definition for rule … was not found"), not a suppression. The
-      // rule itself stays off; tss styles shared across sibling components are
-      // exactly what it false-positives on, which is what the disables say.
-      'tss-unused-classes': tssUnusedClasses,
     },
     rules: {
       'react-compiler/react-compiler': 'error',

@@ -1,4 +1,3 @@
-/* eslint-disable tss-unused-classes/unused-classes -- shared across the MAF tooltip components */
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 /**

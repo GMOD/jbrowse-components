@@ -179,7 +179,6 @@ function instrument() {
   }
 
   const orig = HTMLCanvasElement.prototype.getContext
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   HTMLCanvasElement.prototype.getContext = function (
     this: HTMLCanvasElement,
     type: string,

@@ -25,7 +25,6 @@ export const DEFAULT_PAGE_SIZE = 100
 // their location links navigate and where their color lives. The `cell` class
 // is consumed cross-file (the lint rule only checks same-file usage)
 export const useCellStyles = makeStyles()({
-  // eslint-disable-next-line tss-unused-classes/unused-classes
   cell: {
     whiteSpace: 'nowrap',
     overflow: 'hidden',

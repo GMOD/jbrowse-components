@@ -91,7 +91,6 @@ async function once(browser: Browser) {
       ) {
         p.stopFrames++
       }
-      // eslint-disable-next-line prefer-spread
       send.apply(this, [msg, ...r] as Parameters<typeof send>)
     } as typeof send
   })

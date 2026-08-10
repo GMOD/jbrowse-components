@@ -70,7 +70,6 @@ const suppressed = [
 
 const index = [hg38, hs1, hg19, genArkHuman, suppressed].map(r => [...r])
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const search = (query: string) => searchAllGroups(index as any, query)
 
 test('an empty query searches nothing rather than everything', () => {
@@ -124,7 +123,6 @@ test('a token starting a word outranks the same letters mid-word', () => {
     0,
     '',
   ]
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const hits = searchAllGroups([lookalike, eColi] as any, 'coli')
   expect(hits.map(r => r.accession)).toEqual([
     'GCF_000005845.2',

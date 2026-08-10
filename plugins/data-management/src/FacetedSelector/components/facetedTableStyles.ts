@@ -1,4 +1,3 @@
-/* eslint-disable tss-unused-classes/unused-classes -- shared across the faceted table components */
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { alpha, darken, lighten } from '@mui/material/styles'
 

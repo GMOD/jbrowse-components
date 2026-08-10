@@ -71,7 +71,6 @@ async function installProbe(page: Page) {
       ) {
         probe.stopFrames++
       }
-      // eslint-disable-next-line prefer-spread
       post.apply(this, [message, ...rest] as Parameters<typeof post>)
     } as typeof post
   })

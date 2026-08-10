@@ -3702,7 +3702,6 @@ export type LinearAlignmentsDisplayStateModel = ReturnType<
 >
 // interface (not type alias) breaks the circular reference TypeScript would
 // encounter through React.lazy → PileupComponent → useAlignmentsBase → model
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface LinearAlignmentsDisplayModel extends Instance<LinearAlignmentsDisplayStateModel> {}
 
 declare module '@jbrowse/core/PluginManager' {

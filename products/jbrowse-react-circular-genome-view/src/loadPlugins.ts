@@ -35,7 +35,6 @@ export default async function loadPlugins(
   // the default matters: `new URL('umd_plugin.js', undefined)` throws, so a
   // relative plugin url used to fail outright instead of resolving against the
   // page the way every other relative url does
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const base = args?.baseUri ?? args?.baseUrl
   return pluginLoader.load(base ?? window.location.href)
 }

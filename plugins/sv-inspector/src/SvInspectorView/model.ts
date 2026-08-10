@@ -19,7 +19,6 @@ import type {
 // forwarded verbatim to the child spreadsheet view, so it extends that view's
 // init rather than restating it: a field added there arrives here too, where a
 // lookalike interface would still typecheck while silently dropping it
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface SvInspectorViewInit extends SpreadsheetViewInit {}
 
 /** height of the "show only regions with data" bar above the circular view */

@@ -128,7 +128,6 @@ describe('MAF fetch progress reporting', () => {
     ['summary', fetchMafSummaryData],
   ])('%s fetch passes a per-region statusCallback', async (_name, fetchFn) => {
     const { self, statusKeys } = makeSelf()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- structural test double
     await fetchFn(self as any, NEEDED)
 
     expect(mockRpcCall).toHaveBeenCalledTimes(2)
@@ -149,14 +148,12 @@ describe('MAF fetch progress reporting', () => {
 describe('summary/detail data swap', () => {
   test('the summary fetch drops alignment blocks', async () => {
     const { self, cleared } = makeSelf()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- structural test double
     await fetchMafSummaryData(self as any, NEEDED)
     expect(cleared).toEqual(['alignment'])
   })
 
   test('the alignment fetch keeps summary records', async () => {
     const { self, cleared } = makeSelf()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- structural test double
     await fetchMafAlignmentData(self as any, NEEDED)
     expect(cleared).toEqual([])
   })

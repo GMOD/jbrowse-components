@@ -70,7 +70,6 @@ describe('fetchMultiRowFeatures', () => {
   // loading overlay showed no download progress.
   test('passes a per-region statusCallback', async () => {
     const { self, statusKeys } = makeSelf()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- structural test double
     await fetchMultiRowFeatures(self as any, NEEDED)
 
     expect(mockRpcCall).toHaveBeenCalledTimes(2)
@@ -89,7 +88,6 @@ describe('fetchMultiRowFeatures', () => {
   // the return value, not the reads".
   test('sends the rpcProps payload rather than re-reading the slots', async () => {
     const { self } = makeSelf()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- structural test double
     await fetchMultiRowFeatures(self as any, NEEDED)
 
     for (const call of mockRpcCall.mock.calls) {
@@ -99,7 +97,6 @@ describe('fetchMultiRowFeatures', () => {
 
   test('commits each region measurement against its own span', async () => {
     const { self, committed } = makeSelf()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- structural test double
     await fetchMultiRowFeatures(self as any, NEEDED)
 
     // each region pairs with its own result by construction (both come from

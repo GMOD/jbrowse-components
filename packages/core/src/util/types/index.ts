@@ -726,7 +726,6 @@ export function isAbstractMenuManager(
 
 // Empty interfaces required by @jbrowse/mobx-state-tree
 // See https://mobx-state-tree.js.org/tips/typescript#using-a-mst-type-at-design-time
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface NoAssemblyRegion extends SnapshotIn<
   typeof MUNoAssemblyRegion
 > {}
@@ -735,19 +734,16 @@ export interface NoAssemblyRegion extends SnapshotIn<
  * a description of a specific genomic region. assemblyName, refName, start,
  * end, and reversed
  */
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface Region extends SnapshotIn<typeof MUIRegion> {}
 
 export interface AugmentedRegion extends Region {
   originalRefName?: string
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface LocalPathLocation extends SnapshotIn<
   typeof MULocalPathLocation
 > {}
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface UriLocation extends SnapshotIn<typeof MUUriLocation> {}
 
 export function isUriLocation(location: unknown): location is UriLocation {
@@ -778,7 +774,6 @@ export function isBlobLocation(location: unknown): location is BlobLocation {
   )
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface FileHandleLocation extends SnapshotIn<
   typeof MUFileHandleLocation
 > {}
@@ -816,7 +811,6 @@ export function isAuthNeededException(
   return exception instanceof Error && exception.name === 'AuthNeededError'
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface BlobLocation extends SnapshotIn<typeof MUBlobLocation> {}
 
 export type FileLocation =

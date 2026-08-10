@@ -17,7 +17,6 @@ function recordStats(event, context, done) {
   stats.acceptLanguage = headers['Accept-Language'] || null
   stats.acceptCharset = headers['Accept-Charset'] || null
 
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
   stats.host = stats.referer ? url_parser.parse(stats.referer).host : null
   if (stats.host?.startsWith('www.')) {
     stats.host = stats.host.slice(4)
