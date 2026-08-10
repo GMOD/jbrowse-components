@@ -17,13 +17,11 @@ normal, rendered the same way, is the control.
 ## Prerequisites
 
 - [`@jbrowse/img`](/docs/jbrowse-img), which puts `jb2export` on your PATH
-- `python3`, for `sv_multihop.py`
 - nothing to download: the callset, the tumor reads and the matched normal are
   all hosted
 
 ```bash
 npm install -g @jbrowse/img
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/sv_multihop.py
 ```
 
 ## The dataset
@@ -39,52 +37,43 @@ are that release's own `wf-somatic-variation` run, served alongside the
 That tutorial follows **one** event all the way down. This one goes the other
 way: every junction in the callset, at a glance, which is what you do first.
 
-## From callset to junction list
+## The contact sheet
 
 A junction joins two loci, and those two loci are exactly the two panels of a
-breakpoint split view. So the callset converts to a render queue with no
-analysis in between:
+breakpoint split view. So a callset renders straight into a review queue:
 
 ```bash
 curl -fO https://jbrowse.org/demos/cancer_sv/COLO829.somatic-sv.vcf.gz
-python3 sv_multihop.py bedpe COLO829.somatic-sv.vcf.gz --out junctions.bedpe
-```
-
-```
-100 of 100 junctions written to junctions.bedpe
-```
-
-Insertions name one locus, so there is no second panel to stack and they are
-dropped. Everything else collapses to **100 distinct junctions**, because a
-caller writes each breakend pair twice. That is the same 100 that
-`sv_multihop.py chains` reports on this file in the
-[multi-hop tutorial](/docs/tutorials/cancer_sv#finding-the-chains), which is the
-useful kind of agreement: both numbers come out of one parser.
-
-It is a subcommand rather than a `bcftools query` one-liner because the four
-things that go wrong here all go wrong **silently**:
-
-- the ALT replacement string may carry inserted sequence either side of the
-  bracket (`GTGATGGATTCA[CHR12:72273112[`), which a pattern matching one base of
-  context drops. On this file most of the breakend records are that shape
-- callers upper-case the mate contig in the bracket. `CHR12` is not a region
-  hg38 has, so the panel renders empty rather than failing
-- `END=` matches inside `CIEND=`, and the first hit wins, so a caller that
-  writes its confidence interval first gets a junction at position 5
-- the two records of one breakend pair queue the same translocation twice
-
-Add `--interchromosomal-only` to keep just the junctions joining two different
-chromosomes, which is 26 of the 100 here and a reasonable first pass: a deletion
-whose two ends sit 200 bp apart is one panel's worth of picture drawn as two.
-
-## The contact sheet
-
-```bash
-jb2export batch --bedpe junctions.bedpe \
+jb2export batch --vcf COLO829.somatic-sv.vcf.gz \
   --config https://jbrowse.org/demos/cancer_sv/config.json --assembly hg38 \
   --track COLO829_tumor_ont height:240 \
   --outDir tumor --flank 600 --width 1100
 ```
+
+```
+Warning: 35 record(s) name no junction to draw, e.g. line 271: names no second locus (INS)
+[########################] 100% 100/100
+wrote 100/100 images to tumor
+```
+
+**100 junctions.** Insertions name one locus, so there is no second panel to
+stack and they are counted out rather than dropped in silence; what remains
+collapses because a caller writes each breakend pair twice. That is the same 100
+that `sv_multihop.py chains` reports on this file in the
+[multi-hop tutorial](/docs/tutorials/cancer_sv#finding-the-chains), and the two
+agree junction for junction, in the same order.
+
+They agree because neither parses the ALT bracket by hand. Four things go wrong
+there and all four go wrong **silently**:
+
+- the replacement string may carry inserted sequence either side of the bracket
+  (`GTGATGGATTCA[CHR12:72273112[`), which a pattern matching one base of context
+  drops. On this file most of the breakend records are that shape
+- callers upper-case the mate contig. `CHR12` is not a region hg38 has, so the
+  panel renders empty rather than failing
+- `END=` matches inside `CIEND=`, and the first hit wins, so a caller that
+  writes its confidence interval first gets a junction at position 5
+- the two records of one breakend pair queue the same translocation twice
 
 One image per row, written as `1_chr1_33053494-chr6_2919922_junction_0.png`:
 index first so the directory sorts in callset order, coordinates next so you can
@@ -102,7 +91,7 @@ rather than once per variant, which is most of the wall time on a shell loop.
 
 A row that cannot be rendered is reported and the run continues, so a
 translocation into a contig the assembly does not have costs you that row and
-not the other 99. The run prints how many of how many it wrote.
+not the other 99.
 
 <Figure caption="One junction of COLO829's der(3), tumor reads: chr3 above, chr12 below, with a curve per read that leaves one panel and arrives in the other. The fan of curves is the junction's support, and the reads stop dead at the breakpoint on both sides." src="/img/jbrowse-img/sv_review_tumor.png" />
 
@@ -111,7 +100,7 @@ not the other 99. The run prints how many of how many it wrote.
 The same junctions, the same windows, the matched normal:
 
 ```bash
-jb2export batch --bedpe junctions.bedpe \
+jb2export batch --vcf COLO829.somatic-sv.vcf.gz \
   --config https://jbrowse.org/demos/cancer_sv/config.json --assembly hg38 \
   --track COLO829BL_normal_ont height:240 \
   --outDir normal --flank 600 --width 1100
@@ -180,8 +169,8 @@ run it, and load its output here.
 
 ## Reproduce it end to end
 
-Everything on this page is the two commands above against hosted files. The
-figures are rendered by the `sv_review_tumor` and `sv_review_normal` specs in
+Everything on this page is the commands above against hosted files. The figures
+are rendered by the `sv_review_tumor` and `sv_review_normal` specs in
 `website/scripts/screenshot-spec-helpers.ts`, which are the same
 `jb2export breakpoint` invocation with one `--loc` per panel.
 
