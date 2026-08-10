@@ -100,16 +100,8 @@ only config change is the PanSN prefix, `{ "chm13": "CHM13" }` in place of
 ## Regular GFA vs rGFA
 
 Whether a graph opens by locus straight from the file depends on whether its
-segments carry coordinates.
-
-A **regular GFA** (what pggb, odgi, and the full base-level Minigraph-Cactus
-graph emit) records no coordinates on its segments. The only reference positions
-in the file live inside the P/W path lines, so you cannot look up a locus
-without walking every path, and to draw a subgraph you first cut a window out of
-the graph offline with `odgi extract`. That is the route the
-[E. coli pangenome tutorial](/docs/tutorials/pangenome_ecoli#a-window-as-a-file)
-takes.
-
+segments carry coordinates, which is
+[what the two formats differ on](/docs/user_guides/graph_genome_view#where-a-segments-coordinates-come-from).
 An **rGFA** (what minigraph emits) tags every segment with three fields, the
 whole of the [spec](https://github.com/lh3/gfatools/blob/master/doc/rGFA.md):
 
@@ -120,7 +112,10 @@ S  s3  TTGCAA  LN:i:6  SN:Z:GRCh38#0#chr1  SO:i:10621  SR:i:0
 `SN` is the stable sequence the segment sits on, `SO` its offset there, and `SR`
 its rank (`0` on the reference backbone). So the file itself states where each
 segment sits and which segments are the reference, and JBrowse can open any
-locus with no extraction step.
+locus with no extraction step. A **regular GFA** states the same thing only
+inside its P/W path lines, so it takes a walk first, or a window cut offline
+with `odgi extract` as in the
+[E. coli tutorial](/docs/tutorials/pangenome_ecoli#a-window-as-a-file).
 
 Release 2 ships no `minigraph/` directory and never labels a file "rGFA", but
 that is a naming matter rather than a missing format: `sv.gfa` is the minigraph
@@ -184,15 +179,18 @@ track menu's **Launch view → Graph genome view (this region)** takes whatever 
 on screen instead, and right-clicking one segment cuts the graph around that
 segment. The subgraph is cut from the same two files the track reads.
 
+The third lane in the figure below is the [bubble track](#the-bubble-track),
+which the figures from here on read alongside the graph.
+
 <Figure caption="The C4 locus as a graph, in force-directed layout, under three lanes of the same window. The bubbles track reports a single bubble spanning the locus, and the graph below is what that bubble contains: a colored reference thread with charcoal allele loops over it." src="/img/pangenome/hprc_c4_subgraph.png" />
 
 A force layout has no x axis to share with the linear view, so color is the only
-thing that can carry the correspondence. **Reference position** is built for
-that, and it is what the graph opens on: it ramps hue over the window the
-subgraph was cut from, red at its start to magenta at its end, and the key in
-the top right of the pane names the interval it runs over. A segment with no
-reference coordinate of its own comes off the ramp and draws flat charcoal, so a
-hue always states a position on GRCh38 rather than an allele's attachment point.
+thing that can carry the correspondence. **Reference position**, which the graph
+opens on, ramps hue over the window the subgraph was cut from and drops any
+segment without a reference coordinate to flat charcoal, so a hue always states
+a position on GRCh38 rather than an allele's attachment point. The
+[guide](/docs/user_guides/graph_genome_view#colors-that-mean-the-same-thing-in-both-panels)
+covers the other schemes.
 
 The ramp is two numbers and a midpoint, so a linear track can paint the same
 colors. This is the segments track above with the ramp in place of its rank
@@ -217,9 +215,7 @@ colors, so a block above and its node below are the same color:
 
 The two constants in the `color` are the window's start and its length, here the
 C4 window the figure above was cut from, so this belongs on the view rather than
-in a hosted config. The `rank` branch is the graph's own off-ramp charcoal; it
-fires only on a lane opened on a contributing assembly, where rank>0 segments
-have coordinates of their own.
+in a hosted config.
 
 The asymmetry between the panels is structural. A rank-0 segment sits on GRCh38
 and has a coordinate, while a rank>0 segment sits on some other assembly's
@@ -801,32 +797,20 @@ deletion between CFHR3 and CFHR1, is drawn on the same coordinates by the graph
 figure earlier in this page, where it is an arc with the two genes it removes
 boxed beside it.
 
-The
-[graph genome view guide](/docs/user_guides/graph_genome_view#when-all-you-have-is-the-graph)
-walks through the columns and how the walk derives them.
-
 The whole graph holds a few hundred thousand alleles, about half of them
-insertions, so a wide window is dense. The alignments display filters by flag
-and tag rather than by expression, so a size filter wants the same file loaded a
-second time as a `FeatureTrack`, whose default display has **Edit filters**:
-`jexl:abs(feature.delta)>10000`. Filter on `abs`: `delta` is negative for a
-deletion, so an unsigned bound keeps only the insertions.
-
-One column decides whether a length is _the_ length. `nested` is set when the
-walk that derived the row passed a branch point, so that row's `delta` is one
-route through a nested bubble rather than the only one. It is not a rare flag:
-the build script's closing summary prints how many rows carry it, and on the
-HPRC graph that is a large minority. Add `jexl:feature.nested==0` to the filter
-above before reading lengths off this lane in bulk.
+insertions, so a wide window is dense. The
+[graph genome view guide](/docs/user_guides/graph_genome_view#when-all-you-have-is-the-graph)
+walks through the columns, how the walk derives them, and the two filters that
+make a lane this size readable: `jexl:abs(feature.delta)>10000` for size and
+`jexl:feature.nested==0` before reading lengths in bulk. `nested` is not a rare
+flag on this graph, and `build_rgfa_alleles.sh`'s closing summary prints how
+many rows carry it.
 
 `discoveryRank` and `firstSeenIn` carry the same
 [attribution](#from-a-node-back-to-a-coordinate) the node panel does, on the
-allele rather than the segment. minigraph collapses, so an allele many
-haplotypes share is credited to whichever was added first, and one sample can
-end up named on half the rows in a dense window purely by build order. Nor does
-a high rank mean the earlier haplotypes lack the sequence: they may have lacked
-it, or had their copy merged into an existing path, or simply not aligned there.
-It bounds discovery and nothing else. Carriage is
+allele rather than the segment. minigraph collapses, so one haplotype can end up
+named on half the rows in a dense window purely by build order, and a high rank
+does not mean the earlier haplotypes lacked the sequence. Carriage is
 [a different file](#carriage-at-the-graphs-own-granularity).
 
 ## The variant callset
