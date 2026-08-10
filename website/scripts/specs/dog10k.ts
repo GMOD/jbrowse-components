@@ -1475,8 +1475,9 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     settleMs: 6000,
     // sequence + gene track plus all 39 sample rows and the genotype legend.
     // 870 (pre-sequence-track) cut the last wolf row's block against the frame;
-    // the per-position variant lane above the matrix adds its own 60.
-    viewportHeight: 1010,
+    // the per-position variant lane above the matrix adds its own 60, and the
+    // run reports 13.5 css px still under the fold at 1010.
+    viewportHeight: 1024,
     // The sequence track puts CGA and its Arg on screen; `colorByCDS` above is
     // what says which of the three forward frames it is read in (the third,
     // codons beginning at positions == 1 mod 3 here from the exon's phase-2

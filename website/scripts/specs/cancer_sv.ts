@@ -1605,11 +1605,11 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   {
     mode: 'url' as const,
     name: 'cancer_sv/k562_fusion_inspector_split',
-    // 830 cut 269 css px off the bottom; 1100 and then 1500 still cut the chr22
-    // pileup, because at +/- 5 kb it is over 200 rows deep. The window is half
-    // that now (see above) and the intraview links are off, so this is sized to
-    // the rows that are left rather than to the rows there used to be.
-    viewportHeight: 1180,
+    // Sized off the run's own below-the-fold report with both lanes grown, so
+    // it is the row count that sets it rather than a guess. 830 cut 269 css px;
+    // 1100 and 1500 both looked complete and were not, because a pinned
+    // alignments lane scrolls instead of pushing the page down.
+    viewportHeight: 2205,
     url: sessionSpec(CONFIG, {
       views: [
         {
@@ -1637,13 +1637,16 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 },
                 {
                   trackId: 'K562_isoseq',
-                  // room for every packed row rather than the first ~90 of
-                  // them: a curve's endpoint is the row its read is on, so a
-                  // pileup that overflows its own lane sends that curve off
-                  // the bottom of the panel. The lane SCROLLS when it does not
-                  // fit, which is the tell -- a thumb on the display's right
-                  // edge, not something either size report can see.
-                  height: 300,
+                  // GROW, not a pinned height, and this is the whole of the
+                  // chaos complaint. A curve's endpoint is the ROW its read is
+                  // packed onto, so any row past the lane's height is a curve
+                  // leaving the frame with nothing to land on -- and an
+                  // alignments lane that does not fit SCROLLS rather than
+                  // clipping the page, so neither the below-the-fold report nor
+                  // the blank-space one can see it. Three pinned heights were
+                  // tried (260, 380, 480) and each left a scrollbar. Let the
+                  // lane state its own row count and size the frame off that.
+                  heightMode: 'grow',
                   coverageHeight: 80,
                   showOnlySplitAlignments: true,
                   ...SPLIT_READS,
@@ -1662,10 +1665,10 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 },
                 {
                   trackId: 'K562_isoseq',
-                  // taller than the chr9 lane: the fusion transcript runs from
-                  // NUP214's promoter into XKR3, so the chr22 side is where the
-                  // reads stack up
-                  height: 420,
+                  // grown for the same reason as the chr9 lane above; this is
+                  // the deeper of the two, since the fusion transcript runs
+                  // from NUP214's promoter into XKR3
+                  heightMode: 'grow',
                   coverageHeight: 80,
                   showOnlySplitAlignments: true,
                   ...SPLIT_READS,

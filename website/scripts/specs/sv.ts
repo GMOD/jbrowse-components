@@ -640,8 +640,10 @@ export const svSpecs: ScreenshotSpec[] = [
     // tall enough to clear the whole 620px track plus the second section's own
     // coverage lane and divider, which grouping adds (the pileup used to run off
     // the bottom edge — reviewer: increase browser height). 960 left 73 css px
-    // of blank under the last row, by the run's own report.
-    viewportHeight: 887,
+    // of blank under the last row and 887 then cut 78 back off, which is the
+    // pills: dropping them onto the coverage lanes pushed the second section
+    // down. Back to a frame that holds the whole grouped track.
+    viewportHeight: 966,
     settleMs: 40000,
     // the cursor would otherwise park over the pileup and raise the read tooltip
     hideTooltip: true,
