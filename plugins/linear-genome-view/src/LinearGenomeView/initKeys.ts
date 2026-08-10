@@ -51,3 +51,14 @@ export function partitionLaunchKeys(spec: object) {
   }
   return { init, viewProps, unknown }
 }
+
+// Report the `unknown` bucket. Both callers say the same thing about the same
+// mistake and differ only in which surface they name, so the wording lives next
+// to the partition that produces the bucket rather than in two hand-written
+// copies that drift.
+export function warnUnknownLaunchKeys(surface: string, unknown: object) {
+  const keys = Object.keys(unknown)
+  if (keys.length) {
+    console.warn(`${surface} ignored unknown key(s): ${keys.join(', ')}`)
+  }
+}

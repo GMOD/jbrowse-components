@@ -1,4 +1,7 @@
-import { partitionLaunchKeys } from '../LinearGenomeView/initKeys.ts'
+import {
+  partitionLaunchKeys,
+  warnUnknownLaunchKeys,
+} from '../LinearGenomeView/initKeys.ts'
 
 import type {
   InitState,
@@ -38,16 +41,12 @@ export default function LaunchLinearGenomeViewF(pluginManager: PluginManager) {
     }
     // Resolution keys go into the one-shot `init` blob afterAttach applies and
     // discards; plain props go straight onto the view snapshot, where MST
-    // restores them natively and they round-trip on save. Anything in neither set
-    // is a typo — MST drops unknown snapshot keys and `init` is a frozen blob, so
-    // nothing downstream would notice.
+    // restores them natively (and, except for the purely localStorage-backed
+    // showCenterLine, persist on save). Anything in neither set is a typo — MST
+    // drops unknown snapshot keys and `init` is a frozen blob, so nothing
+    // downstream would notice.
     const { init, viewProps, unknown } = partitionLaunchKeys(spec)
-    const unknownKeys = Object.keys(unknown)
-    if (unknownKeys.length) {
-      console.warn(
-        `LaunchView-LinearGenomeView ignored unknown key(s): ${unknownKeys.join(', ')}`,
-      )
-    }
+    warnUnknownLaunchKeys('LaunchView-LinearGenomeView', unknown)
     // A provided id is passed top-level so MST's optional identifier honors it
     // (undefined falls back to an auto-generated id).
     session.addView('LinearGenomeView', { id, ...viewProps, init })

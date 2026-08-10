@@ -993,6 +993,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
         }
         // Check init assembly for errors (displayedRegions may be empty during init)
         if (self.init) {
+          // `assembly` is required by InitState, but init is a frozen blob and
+          // hand-authored JSON is what fills it, so the type is not a guarantee.
+          // Naming the authoring mistake beats the downstream symptom, which is
+          // the literal string "Assembly undefined not found".
+          if (!self.init.assembly) {
+            return 'LinearGenomeView init needs an "assembly"'
+          }
           const asm = this.initAssembly
           if (!asm) {
             return `Assembly ${self.init.assembly} not found`

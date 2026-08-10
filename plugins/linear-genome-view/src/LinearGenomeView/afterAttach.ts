@@ -11,21 +11,17 @@ import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun, when } from 'mobx'
 
 import { SearchResultsNotFoundError } from '../searchUtils.ts'
-import { partitionLaunchKeys } from './initKeys.ts'
+import { partitionLaunchKeys, warnUnknownLaunchKeys } from './initKeys.ts'
 
 import type { LinearGenomeViewModel } from './model.ts'
 import type { InitState } from './types.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { InitApplyContext } from '@jbrowse/core/util/installInitAutorun'
 
 function warnInitKeyProblems(init: InitState) {
   const { viewProps, unknown } = partitionLaunchKeys(init)
-  const unknownKeys = Object.keys(unknown)
   const viewPropKeys = Object.keys(viewProps)
-  if (unknownKeys.length) {
-    console.warn(
-      `LinearGenomeView init ignored unknown key(s): ${unknownKeys.join(', ')}`,
-    )
-  }
+  warnUnknownLaunchKeys('LinearGenomeView init', unknown)
   if (viewPropKeys.length) {
     console.warn(
       `LinearGenomeView init ignored view prop(s): ${viewPropKeys.join(', ')} — set these on the view alongside init, not inside it`,
@@ -44,23 +40,40 @@ function asArray<T>(arg: T[] | T | undefined) {
 // volatileWidth accounts for the drawer; otherwise navigation computes the
 // region at full width and the drawer then obscures part of it. Opening the
 // drawer shrinks the view, which the ResizeObserver reports as a volatileWidth
-// change — but only if the drawer wasn't already open. So wait for the change
-// (no timeout) only when we actually opened it; if a widget was already
-// visible, the width is already correct and no change is coming.
+// change — but only if the drawer wasn't already taking that width. So wait for
+// the change only when activating it actually opens the column.
 async function openTracklist(
   self: LinearGenomeViewModel,
   session: AbstractSessionModel,
+  ctx: InitApplyContext,
 ) {
   // activateTrackSelector throws without widget support, which would abort the
   // rest of init (navigation included) over an optional extra
   if (isSessionModelWithWidgets(session)) {
-    const drawerWasOpen = !!session.visibleWidget
+    // `poppedOut` — the visible widget rendered in a modal, leaving the drawer
+    // column free — lives on SessionWithDrawerWidgets, whose type guard is
+    // product-core's, so duck-type it here rather than take an upward
+    // dependency. A session without the key has no modal to pop out into, so
+    // false is the right answer for it.
+    const poppedOut = 'poppedOut' in session && session.poppedOut === true
+    // the same line App.tsx draws to decide whether to render the drawer column
+    // at all. A *minimized* drawer still holds a visibleWidget while taking no
+    // width, and showWidget un-minimizes it (product-core's DrawerWidgets), so
+    // `!!visibleWidget` alone reads "already open", skips the wait below, and
+    // hands navigation the pre-drawer width — the exact thing this is here to
+    // prevent.
+    const drawerWasOpen =
+      !!session.visibleWidget && !session.minimized && !poppedOut
     const widthBefore = self.volatileWidth
     self.activateTrackSelector()
-    if (!drawerWasOpen) {
+    // a width change is only coming if the drawer is about to start taking
+    // space; popped out it never does, so don't sit out the timeout for it
+    if (!drawerWasOpen && !poppedOut) {
       // Bounded so init can't wedge here if the drawer doesn't shrink the view
-      // (e.g. embedded or modal-drawer layouts, where no width change is coming)
-      await when(() => self.volatileWidth !== widthBefore, {
+      // (e.g. embedded or modal-drawer layouts, where no width change is
+      // coming), and superseded so a re-launch landing mid-wait isn't held
+      // behind an init that no longer matters
+      await when(() => self.volatileWidth !== widthBefore || ctx.superseded(), {
         timeout: 1000,
       }).catch(() => {})
     }
@@ -191,11 +204,15 @@ function applyInitHighlights(
   }
 }
 
-async function applyInit(self: LinearGenomeViewModel, init: InitState) {
+async function applyInit(
+  self: LinearGenomeViewModel,
+  init: InitState,
+  ctx: InitApplyContext,
+) {
   const session = getSession(self)
   warnInitKeyProblems(init)
   if (init.tracklist) {
-    await openTracklist(self, session)
+    await openTracklist(self, session, ctx)
   }
   // the view may have been removed while the drawer or the navigation resolved;
   // reading or mutating it past that point (and setInit in the caller's finally)
@@ -230,7 +247,7 @@ export function setupInitAutorun(self: LinearGenomeViewModel) {
     // initAssembly), so anything thrown out of applyInit is a failure of a
     // step, not of the view coming up.
     materialized: () => true,
-    apply: init => applyInit(self, init),
+    apply: (init, ctx) => applyInit(self, init, ctx),
   })
 }
 

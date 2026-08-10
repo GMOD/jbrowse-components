@@ -19,7 +19,7 @@ import {
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { waitFor } from '@testing-library/react'
-import { autorun } from 'mobx'
+import { autorun, when } from 'mobx'
 
 import TrackHeightMixin from '../BaseLinearDisplay/models/TrackHeightMixin.tsx'
 import { getTrackOrderSubMenu } from './components/trackLabelMenuItems.ts'
@@ -168,6 +168,11 @@ function initialize() {
       // presence of `widgets` is what isSessionModelWithWidgets keys off, so
       // activateTrackSelector (used by init.tracklist) works in the stub
       widgets: types.map(types.frozen<{ type: string; id: string }>()),
+      // mirrors the real drawer: a minimized drawer still reports a
+      // visibleWidget while taking no width from the view, and showWidget
+      // un-minimizes it. init.tracklist keys its width-settle wait off exactly
+      // that pair.
+      minimized: types.optional(types.boolean, false),
       // mirrors BaseSession's session-wide highlight band toggle, which
       // view.revealHighlights writes through
       highlightsVisible: types.optional(types.boolean, true),
@@ -185,6 +190,10 @@ function initialize() {
       // isTopLevelView keys off session.views membership; only `view` counts
       get views() {
         return self.view ? [self.view] : []
+      },
+      // most recently added widget, like the real session's
+      get visibleWidget() {
+        return [...self.widgets.values()].at(-1)
       },
       getTrackById(_id: string) {
         return undefined
@@ -212,8 +221,13 @@ function initialize() {
         self.widgets.set(id, widget)
         return widget
       },
-      showWidget() {},
+      showWidget() {
+        self.minimized = false
+      },
       hideWidget() {},
+      minimizeWidgetDrawer() {
+        self.minimized = true
+      },
       setHighlightsVisible(arg: boolean) {
         self.highlightsVisible = arg
       },
@@ -2550,6 +2564,44 @@ describe('declarative init: highlight, nav, unknown keys', () => {
     expect(model.highlight.length).toBe(1)
   })
 
+  // init.tracklist opens the drawer before navigating so the region is framed
+  // at the width the drawer leaves behind. The "is a width change coming?"
+  // question used to be answered with `!!session.visibleWidget`, which reads a
+  // *minimized* drawer — a visibleWidget taking no width — as already open. But
+  // showWidget un-minimizes it, so the view does narrow, after navigation had
+  // already computed bpPerPx from the full width: the requested 1000bp then
+  // occupied only part of the screen.
+  test('init.tracklist waits for a minimized drawer to take its width back', async () => {
+    const { Session, LinearGenomeModel } = initialize()
+    const session = Session.create({ configuration: {} })
+    session.addWidget('SomeOtherWidget', 'other')
+    session.minimizeWidgetDrawer()
+    const model = session.setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        init: { assembly: 'volvox', loc: 'ctgA:1-1000', tracklist: true },
+      }),
+    )
+    // stands in for the app's ResizeObserver: un-minimizing gives the drawer
+    // its column back, which is what shrinks the view. Reported on a macrotask
+    // like the real one — resizing synchronously inside activateTrackSelector
+    // would hand navigation the narrowed width whether or not it waited, and
+    // the test would pass against the bug.
+    void when(() => !session.minimized).then(() =>
+      setTimeout(() => {
+        model.setWidth(600)
+      }, 0),
+    )
+    model.setWidth(800)
+
+    await waitFor(() => {
+      expect(model.init).toBeUndefined()
+    })
+    expect(model.width).toBe(600)
+    // the whole 1000bp is on screen, i.e. bpPerPx was computed from 600
+    expect(model.width * model.bpPerPx).toBeCloseTo(1000, 0)
+  })
+
   // displayedRegionNames used to sit behind the same "don't clobber existing
   // navigation" guard as the whole-genome fallback, so URL params layered onto a
   // defaultSession that had already navigated (&extendSession=true&regions=)
@@ -2687,6 +2739,16 @@ describe('declarative init: highlight, nav, unknown keys', () => {
     await waitFor(() => {
       expect(model.init).toBeUndefined()
     })
+  })
+
+  // `assembly` is required by InitState, but init is a frozen blob filled from
+  // hand-authored config JSON, so the type guarantees nothing at runtime. The
+  // import form renders `error`, and interpolating the missing name into it
+  // produced the literal "Assembly undefined not found".
+  test('init without an assembly names the authoring mistake', () => {
+    const model = makeModel({ loc: 'ctgA:1-1000' } as InitState)
+    expect(model.error).toBe('LinearGenomeView init needs an "assembly"')
+    expect(model.showImportForm).toBe(true)
   })
 })
 
