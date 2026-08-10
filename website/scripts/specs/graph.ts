@@ -866,38 +866,6 @@ const LPA_REGION = {
   end: 160655000,
 }
 
-// KIR, the last window in the tutorial's locus table and the one it had no
-// figure for. The graph's own bubble file is why this locus is worth a frame,
-// and the row is one tabix query over the published index:
-//
-//   tabix hprc-v2.0-mc-grch38.bubbles.bed.gz 'GRCh38#0#chr19:54,700,000-54,900,000'
-//   GRCh38#0#chr19  54753102  54856752  209  2147483647  0  20823  252080
-//
-// 209 segments over 103.6 kb of GRCh38; shortest allele 20,823 bp and longest
-// 252,080 bp, so some haplotypes carry well over twice the reference's sequence
-// here. The path count is the int32 saturation the tutorial's bubble-track
-// section already explains, which the adapter labels uncountable — KIR is the
-// clearest case of it in the graph, and the reason is the biology: KIR
-// haplotypes differ in which genes they carry at all, not only in their alleles.
-//
-// 200 kb rather than the table's 90 kb because the bubble is 103.6 kb and the
-// table's window ends inside it. Widening until the backbone chain frames the
-// tangle is what the tutorial's amylase paragraph prescribes, and the cost is
-// measured, not guessed: tabix over the segments index returns 138 backbone
-// segments here against 121 at 130 kb and 77 at the table's 90 kb. 138 sits
-// beside the amylase figure's 126-node drawing, which is the density the page
-// already shows reading well.
-const KIR_WINDOW = 'chr19:54,700,000-54,900,000'
-const KIR_REGION = {
-  refName: 'chr19',
-  assemblyName: 'hg38',
-  start: 54700000,
-  end: 54900000,
-}
-// The big bubble's own span, from the row above. Used twice (the box and the
-// pill it labels), so it is one constant rather than two literals that can drift.
-const KIR_BUBBLE = 'chr19:54,753,102-54,856,752'
-
 // The whole of chr1, for the figure that loads a subgraph over all of it. One
 // constant for both views there: the graph's loadedRegion IS the domain of the
 // reference-position ramp, so a second copy of these numbers is a way for the
@@ -4375,92 +4343,6 @@ export const graphSpecs: ScreenshotSpec[] = [
           dy: 12,
         },
       },
-    ],
-  },
-
-  // KIR: the locus in the tutorial's table with no figure, and the graph's
-  // clearest case of an allele carrying far more sequence than the reference
-  // span it replaces. See KIR_WINDOW above for the bubble row this is built on
-  // and why the window is wider than the table's.
-  //
-  // Force, not anchored, per the standing note on hprc_lpa_kiv2 ("please
-  // default to showing the bandage graphs over linear backbone in almost all
-  // cases"). It is also the layout the locus needs: what makes KIR worth a
-  // picture is that one reference span holds a tangle of alternatives, and an
-  // anchored drawing flattens those onto the axis as stubs.
-  {
-    mode: 'url',
-    name: 'pangenome/hprc_kir_graph',
-    url: sessionSpec(HPRC_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: KIR_WINDOW,
-          tracks: [
-            {
-              trackId: 'hg38_ncbiRefSeq_ucsc',
-              type: 'LinearBasicDisplay',
-              geneGlyphMode: 'longestCoding',
-              displayMode: 'compact',
-              height: 70,
-            },
-            {
-              // FILTERED, not grown. This window holds 17 bubbles and the one
-              // the figure is about is the 13th in coordinate order, so at a
-              // pinned height it packs onto a clipped row and the lane draws
-              // every bubble EXCEPT the 103 kb one -- the first render of this
-              // figure boxed the empty space where it should have been. Growing
-              // the lane fixed that and cost more: a tall sparse lane where the
-              // box had to span twelve other bubbles' labels to reach the bar.
-              //
-              // The same expression the CHM13 allele lane uses, and it isolates
-              // exactly one bubble here: the next largest allele in this window
-              // is 18,995 bp, so the cut is not close.
-              trackId: 'hprc_minigraph_bubbles',
-              type: 'LinearBasicDisplay',
-              jexlFiltersSetting: ['jexl:feature.longestAlleleLength>100000'],
-              height: 80,
-            },
-            hprcSegmentsLane(KIR_REGION),
-          ],
-        },
-        {
-          type: 'GraphGenomeView',
-          loadedTrackId: SEGMENTS_TRACK,
-          loadedRegion: KIR_REGION,
-          layoutMode: 'force',
-          colorScheme: 'reference-position',
-        },
-      ],
-    }),
-    // the force drawing has no row labels to wait on, same as hprc_lpa_kiv2
-    readySelector: TOOLBAR_READY,
-    readyTimeout: 180000,
-    settleMs: 6000,
-    viewportWidth: 1000,
-    // The LPA frame, which fits once the bubbles lane is filtered back to one
-    // row. It was raised to 1454 while the lane was grown, on the run's own
-    // below-the-fold measurement, and came back down with the lane.
-    viewportHeight: 1170,
-    hideTooltip: true,
-    annotations: [
-      // The bubble named in the lane, so the pill below has something to point
-      // at and the reader can see the 103.6 kb span the alternatives replace.
-      {
-        type: 'box',
-        anchor: { track: 'hprc_minigraph_bubbles', locus: KIR_BUBBLE },
-        pad: 3,
-      },
-      // NO TEXT PILL, and the LPA figure is why the question came up. There a
-      // pill naming the KIV-2 array was added on review, because "KIV-2" was
-      // not written anywhere on screen. Here the gene lane is already KIR3DL3,
-      // KIR2DL3, KIR2DL1, KIR2DL4, KIR3DL1, KIR2DS4, KIR3DL2, and the boxed bar
-      // labels itself "20,823-252,080 bp, 209 segments, more paths than
-      // gfatools can count" -- so a pill restates what two lanes already say.
-      // Two earlier passes tried one anyway: three sentences of framing (which
-      // is the caption's job), then a shorter label that hung below the box and
-      // covered the segments track's own header.
     ],
   },
 
