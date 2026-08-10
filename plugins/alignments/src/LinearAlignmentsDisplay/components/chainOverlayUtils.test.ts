@@ -194,6 +194,40 @@ describe('computeArcBand', () => {
     ).toEqual({ top: 0, height: 60, down: false })
   })
 
+  // The scalebar-label inset belongs to the coverage histogram: overlaying it
+  // means anchoring on its baseline, which is coverageYOffset up from the
+  // bottom. Every case above passes coverageYOffset: 0, so neither side of that
+  // rule was pinned.
+  it('up mode anchors on the coverage baseline, inset and all', () => {
+    expect(
+      computeArcBand(
+        makeState({
+          readConnections: 'arc',
+          readConnectionsHeight: 60,
+          showCoverage: true,
+          coverageHeight: 80,
+          coverageYOffset: 5,
+        }),
+      ),
+    ).toEqual({ top: 0, height: 75, down: false })
+  })
+
+  it('up mode keeps its whole band when there is no coverage to inset from', () => {
+    // `reservesArcsBand` reserves the full readConnectionsHeight here, so a
+    // band shorter than that floats the arcs above the bottom of their own
+    // strip and shortens availH — for a baseline that isn't on screen.
+    expect(
+      computeArcBand(
+        makeState({
+          readConnections: 'arc',
+          readConnectionsHeight: 60,
+          showCoverage: false,
+          coverageYOffset: 5,
+        }),
+      ),
+    ).toEqual({ top: 0, height: 60, down: false })
+  })
+
   it('down mode sits below the coverage band', () => {
     expect(
       computeArcBand(

@@ -209,10 +209,20 @@ export function computeArcBand(state: ArcBandInput): ArcBand | undefined {
   if (state.readConnectionsDown) {
     return { top: covH, height: h, down: true }
   }
-  // Up mode: the anchor sits coverageYOffset above the band bottom (the
-  // coverage baseline / scalebar-label padding).
-  const bandH = covH > 0 ? covH : h
-  return { top: 0, height: bandH - state.coverageYOffset, down: false }
+  // Up mode overlays the coverage histogram when there is one, so the arcs'
+  // zero anchor has to be the coverage BASELINE — which sits coverageYOffset
+  // above the band bottom, that being the inset the scalebar labels reserve.
+  //
+  // With coverage hidden the band is the arcs' own and there is no baseline to
+  // meet, so the inset is a constant borrowed from an absent band: it left the
+  // arcs floating coverageYOffset px above the bottom of the strip
+  // `reservesArcsBand` had already reserved for them, and took the same px off
+  // `availH`. Down mode never subtracted it, which is the tell.
+  //
+  // This picks where the band's height comes from; it is not a `covH > 0` gate
+  // on whether arcs draw — that decoupling is the point of this function.
+  const bandH = covH > 0 ? covH - state.coverageYOffset : h
+  return { top: 0, height: bandH, down: false }
 }
 
 // Whether to draw the overlap tint pass. Shared by both renderers so the gate
