@@ -72,11 +72,10 @@ const AboutDialogContents = observer(function AboutDialogContents({
       </BaseCard>
       {shown.metadata ? (
         <BaseCard title="Metadata">
-          <Attributes
-            attributes={shown.metadata}
-            omit={hideFields}
-            hideUris={hideUris}
-          />
+          {/* no `hideFields` here: those name config structure, and metadata is
+              the user's own key/values — a metadata column called `refNames`
+              silently disappeared */}
+          <Attributes attributes={shown.metadata} hideUris={hideUris} />
         </BaseCard>
       ) : null}
       {extraPanels.map((Panel, i) => (
@@ -88,7 +87,12 @@ const AboutDialogContents = observer(function AboutDialogContents({
           <Panel session={session} config={config} />
         </Suspense>
       ))}
-      <FileInfoPanel config={config} session={session} />
+      {/* A file header is a location channel of its own: a BAM's `@SQ UR:` and
+          `@PG CL:` carry the server's absolute paths, which is exactly what a
+          deployment setting hideUris is trying not to publish. Hiding the
+          locations in the config card and then printing them here made the slot
+          a half-measure */}
+      {hideUris ? null : <FileInfoPanel config={config} session={session} />}
       {showRefNames ? (
         <RefNameInfoDialog
           session={session}
