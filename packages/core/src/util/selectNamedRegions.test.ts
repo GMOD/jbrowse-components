@@ -61,4 +61,37 @@ describe('selectNamedRegions', () => {
       selectNamedRegions(hap, ['chr1'], identity).map(r => r.refName),
     ).toEqual([])
   })
+
+  // `*` is a legal character in a contig name and GRCh38's ALT decoys are HLA
+  // allele names, so the literal reading has to win or naming one allele silently
+  // selects a family. `^HLA-A.*01:01:01:01$` matches both of these.
+  const hla = [
+    region('HLA-A*01:01:01:01'),
+    region('HLA-A*02:53N'),
+    region('HLA-A*24:01:01:01'),
+  ]
+
+  it('prefers an exact refName over reading its * as a glob', () => {
+    expect(
+      selectNamedRegions(hla, ['HLA-A*01:01:01:01'], identity).map(
+        r => r.refName,
+      ),
+    ).toEqual(['HLA-A*01:01:01:01'])
+  })
+
+  it('still globs a starred name that matches no contig exactly', () => {
+    expect(
+      selectNamedRegions(hla, ['HLA-A*'], identity).map(r => r.refName),
+    ).toEqual(['HLA-A*01:01:01:01', 'HLA-A*02:53N', 'HLA-A*24:01:01:01'])
+  })
+
+  it('an exact hit does not also pull in the glob reading of the same entry', () => {
+    // the entry names one contig, so it contributes one — not that contig plus
+    // everything else ending in the same four fields
+    expect(
+      selectNamedRegions(hla, ['HLA-A*24:01:01:01'], identity).map(
+        r => r.refName,
+      ),
+    ).toEqual(['HLA-A*24:01:01:01'])
+  })
 })

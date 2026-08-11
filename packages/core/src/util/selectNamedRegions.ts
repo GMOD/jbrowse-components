@@ -23,6 +23,16 @@ function globToRegExp(pattern: string) {
  * across entries are dropped, so `['chr1_hap1', '*_hap1']` is chr1 first then
  * the rest.
  *
+ * AN EXACT REFNAME BEATS THE GLOB READING, which is the only reason `*` is safe
+ * to hand a user as a syntax: `*` is a legal character in a real contig name and
+ * the names carrying it are the ones nobody would think to escape. GRCh38's ALT
+ * decoys are HLA allele names — `HLA-A*01:01:01:01` — so a pattern typed to name
+ * one allele was compiled to `^HLA-A.*01:01:01:01$`, which matches that contig
+ * (hence it looked fine) and every other HLA-A allele with the same last four
+ * fields. Trying the literal lookup first costs one Map hit and means a name
+ * that IS a contig always resolves to that contig; only a name matching nothing
+ * is reinterpreted as a pattern.
+ *
  * Selecting from the assembly's own region objects (rather than synthesizing
  * them) keeps coordinates and lengths correct; `getCanonicalRefName` lets an
  * exact name resolve through the assembly's aliases.
@@ -35,20 +45,22 @@ export function selectNamedRegions(
   const byRefName = new Map(regions.map(r => [r.refName, r]))
   const out: Region[] = []
   const seen = new Set<string>()
+  const take = (r: Region | undefined) => {
+    if (r && !seen.has(r.refName)) {
+      seen.add(r.refName)
+      out.push(r)
+    }
+  }
   for (const name of names) {
-    if (name.includes('*')) {
+    const exact = byRefName.get(getCanonicalRefName(name) ?? name)
+    if (exact) {
+      take(exact)
+    } else if (name.includes('*')) {
       const re = globToRegExp(name)
       for (const r of regions) {
-        if (re.test(r.refName) && !seen.has(r.refName)) {
-          seen.add(r.refName)
-          out.push(r)
+        if (re.test(r.refName)) {
+          take(r)
         }
-      }
-    } else {
-      const r = byRefName.get(getCanonicalRefName(name) ?? name)
-      if (r && !seen.has(r.refName)) {
-        seen.add(r.refName)
-        out.push(r)
       }
     }
   }
