@@ -778,6 +778,81 @@ describe('alignments showSashimiLabels (sashimi arc counts)', () => {
   })
 })
 
+// showLegend draws the floating color-scheme key. A promotable `maybeBoolean`
+// slot in six schemas (see DISPLAY_TYPE_DEFAULTS.md) — this exercises the
+// alignments one, which is also LGVSyntenyDisplay's by inheritance.
+describe('alignments showLegend (color-scheme key)', () => {
+  it('is off by default with no config and no session default', () => {
+    const { display } = createDisplay()
+    expect(display.showLegend).toBe(false)
+    expect(display.showLegendDisplayTypeDefault.active).toBe(false)
+  })
+
+  it('follows a session-wide default of on when the track is not customized', () => {
+    const { session, display } = createDisplay()
+    session.setDisplayTypeDefault('LinearAlignmentsDisplay', 'showLegend', true)
+    expect(display.showLegend).toBe(true)
+    expect(display.showLegendDisplayTypeDefault.active).toBe(true)
+    expect(getDisplayTypeDefaultChanges(display)).toEqual([
+      { path: ['showLegend'], from: false, to: true },
+    ])
+  })
+
+  // The legend's own "×" is `setShowLegend(false)` (PileupComponent), so under
+  // a promoted "on" it has to be a real customization rather than the un-set
+  // sentinel — otherwise dismissing the key on one track would put it straight
+  // back, which is exactly what a plain boolean would have done.
+  it('the legend "×" turns it off on one track under an on session default', () => {
+    const { session, display } = createDisplay()
+    session.setDisplayTypeDefault('LinearAlignmentsDisplay', 'showLegend', true)
+    expect(display.showLegend).toBe(true)
+
+    display.setShowLegend(false)
+    expect(display.showLegend).toBe(false)
+    // holding its own value, it is not merely following the default
+    expect(getDisplayTypeDefaultChanges(display)).toEqual([])
+  })
+
+  it('the pin promotes the current value, including off', () => {
+    const { session, display } = createDisplay()
+    display.setShowLegend(false)
+    display.showLegendDisplayTypeDefault.toggle()
+    expect(
+      session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'showLegend'),
+    ).toBe(false)
+    expect(display.showLegendDisplayTypeDefault.active).toBe(true)
+  })
+
+  it('ignores a non-boolean session default', () => {
+    const { session, display } = createDisplay()
+    session.setDisplayTypeDefault(
+      'LinearAlignmentsDisplay',
+      'showLegend',
+      'yes',
+    )
+    expect(display.showLegend).toBe(false)
+  })
+
+  it('the Show menu row carries the pin', () => {
+    interface MenuNode {
+      label?: string
+      pin?: { control: { toggle: () => void } }
+      subMenu?: MenuNode[]
+    }
+    const { session, display } = createDisplay()
+    const items = display.trackMenuItems() as MenuNode[]
+    const row = items
+      .find(i => i.label === 'Show...')
+      ?.subMenu?.find(i => i.label === 'Show legend')
+    expect(row?.pin).toBeDefined()
+
+    row?.pin?.control.toggle()
+    expect(
+      session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'showLegend'),
+    ).toBe(false)
+  })
+})
+
 // `grow` is the third value of the shared `heightMode` vocabulary (with the
 // canvas display): the track resizes to fit all reads rather than scrolling
 // (fixed) or shrinking reads (fit). autoHeight/fitHeightToDisplay are mutually
