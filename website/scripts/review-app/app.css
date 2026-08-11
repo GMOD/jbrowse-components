@@ -333,7 +333,16 @@ main {
   min-height: 180px;
   flex: 1;
 }
+/* `width: auto; height: auto` is what makes the width/height ATTRIBUTES safe,
+   and it is not optional. Those attributes are there to give the box an aspect
+   ratio to reserve before the bytes arrive (see Compare.tsx) — but they are also
+   presentational hints for the `width` and `height` PROPERTIES, so on their own
+   they hand the image a definite height that `max-height` then clamps with no
+   ratio left to preserve. Every tall figure drew 400px tall and 18% stretched,
+   which in a tool for judging figures is worse than the jank it fixed. Setting
+   both back to auto leaves the ratio and nothing else. */
 .imgwrap img {
+  height: auto;
   max-width: 100%;
   max-height: 400px;
   display: block;
