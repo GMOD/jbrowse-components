@@ -4783,6 +4783,107 @@ export const graphSpecs: ScreenshotSpec[] = [
     ],
   },
 
+  // THE SAME INSERTION AS AN ALIGNMENT (review on rgfa_hover_sync: "if possible
+  // show this in a synteny view too. that is very convincing"). It is, and it is
+  // a different KIND of evidence rather than a second drawing of the same one:
+  // the hover figure's claim comes out of the graph's own index — s2037 is
+  // 65,410 bp of CFT073 and its two links land 2,062 bp apart on K12 — and this
+  // one comes out of wfmash's all-vs-all alignment, which the graph had no part
+  // in. Two files agreeing is what makes it convincing.
+  //
+  // Coordinates are the graph's, not measured off a picture:
+  // `node scripts/probe-graph-nodes.ts pangenome/rgfa_hover_sync` prints s2037
+  // at `CFT073#1#chr:1,175,651` with length 65,410, and its neighbours s402
+  // (K12 chr:1,095,051 +451) and s405 (K12 chr:1,097,564), which is the 2,062 bp
+  // the hover band draws.
+  //
+  // The two panels are at wildly different scales on purpose -- 13 kb of K12
+  // against 77 kb of CFT073 -- because that IS the finding. Each panel is its
+  // own view with its own bp/px, so the flanks still align ribbon to ribbon and
+  // the 65 kb between them lands on nothing at all.
+  {
+    mode: 'url',
+    name: 'pangenome/rgfa_insertion_synteny',
+    url: sessionSpec(ECOLI_PANGENOME_CONFIG, {
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          tracks: [[ECOLI_AVA_TRACK]],
+          drawCurves: true,
+          levelHeights: [200],
+          views: [
+            {
+              assembly: 'K12',
+              // the 2,062 bp the two flanking backbone segments leave, plus
+              // ~5 kb either side so both flank ribbons have somewhere to land
+              loc: 'chr:1,090,000-1,103,000',
+              highlight: [
+                {
+                  refName: 'chr',
+                  start: 1095502,
+                  end: 1097564,
+                  color: 'rgba(60,65,72,0.10)',
+                },
+              ],
+              tracks: [strainGeneLane('K12_genes')],
+            },
+            {
+              assembly: 'CFT073',
+              loc: 'chr:1,170,000-1,247,000',
+              highlight: [
+                {
+                  refName: 'chr',
+                  start: 1175651,
+                  end: 1241061,
+                  color: 'rgba(60,65,72,0.10)',
+                },
+              ],
+              tracks: [strainGeneLane('CFT073_genes')],
+            },
+          ],
+        },
+      ],
+    }),
+    readySelector: displayPainted('synteny_canvas'),
+    readyTimeout: 120000,
+    settleMs: 8000,
+    viewportWidth: 1000,
+    // two gene lanes, two rulers and the 200 px band between them
+    viewportHeight: 582,
+    hideTooltip: true,
+    annotations: [
+      {
+        type: 'text',
+        text: 'CFT073 carries 65.4 kb here',
+        fontSize: 16,
+        maxWidth: 260,
+        anchor: {
+          view: [0, 1],
+          track: 'CFT073_genes',
+          locus: 'chr:1,175,651-1,241,061',
+          fracY: 0,
+          dy: -30,
+        },
+      },
+      {
+        type: 'text',
+        text: 'K12 has 2.1 kb',
+        fontSize: 16,
+        maxWidth: 200,
+        textAlign: 'end',
+        anchor: {
+          view: [0, 0],
+          track: 'K12_genes',
+          locus: 'chr:1,095,502-1,097,564',
+          alignX: 'left',
+          fracY: 0,
+          dx: -6,
+          dy: -16,
+        },
+      },
+    ],
+  },
+
   // pangenome/hprc_node_menu was here and is DELETED (reviewer: "may not need
   // standalone figure combine with pangenome/hprc_mhc_anchored"). It was the
   // same window, the same tracks and the same force drawing as that pair's left
