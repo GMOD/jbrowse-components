@@ -33,6 +33,15 @@ export interface PileupLayer {
 // until it is wired, so a layer can't be half-added and the two backends can't
 // drift on order or gating. `coverageParity.test.ts` cross-checks the result.
 //
+// The third thing a new layer owes is a HIT-testing story, and it is the one
+// that used to be owed only to a comment: what is painted and what answers a
+// hover are separate lists, both driven by repaint-tier settings, so a layer
+// switched off can keep its marks clickable over blank pixels. `HIT_GATES` in
+// `hitTestGateParity.test.ts` is a `Record<PileupLayerId, …>` for the same
+// reason the two draw maps are — adding an id there is a compile error until
+// the story is written down, and the test checks the classification against
+// this list's actual `enabled` behaviour rather than taking its word.
+//
 // This list is the row-instanced feature set (see RenderAlignmentDataRPC/CLAUDE.md
 // "Two feature categories"). The position-aggregate coverage-band layers and the
 // paired-end arc band are deliberately NOT here: the coverage draws take a
