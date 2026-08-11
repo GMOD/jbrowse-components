@@ -200,17 +200,17 @@
   },
   "sv_cgiab/deletion_linear_view": {
     "name": "sv_cgiab/deletion_linear_view",
-    "status": "answered",
-    "note": "THE SHARED QUESTION, answered once for all eight sv_cgiab figures. COSMIC: the somatic driver catalogues that would make 'is this a known bad thing' a LANE (COSMIC's Cancer Gene Census among them) are licensed rather than redistributable, so a public demo cannot host one. Driver status is a literature question, and the tutorial now answers it in prose: KRAS, CDKN2A, TP53 and SMAD4 are the recurrently altered genes in PDAC (Waddell 2015 doi:10.1038/nature14169, Bailey 2016 doi:10.1038/nature16965) and these walkthroughs visit all four; CUZD1 is named as the passenger it is (a pancreatic acinar protein predicted to act in trypsinogen activation, NCBI Gene 50624, one copy left). What the FIGURES can do instead is name the gene, and they now do: each copy-number figure draws one MANE Select transcript under the lanes, from a shared maneGeneLane() helper that returns the session track and the view lane together so the two cannot disagree about which gene the name claims. Y-SPACE: measured, not trimmed by eye. The run's own 'blank below the last content' report finds NO slack in these frames -- two of them were in fact CUTTING content and are 20px taller now. The one lane not earning its height was driver_kras_gain's, and that is taken (150px -> 50px).",
-    "reviewedAt": "2026-08-10T16:36:45.022Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-11T05:32:02.795Z",
     "hash": "db801a2c94cd8a0dbb5fee1df539c37182eddaf5"
   },
   "sv_cgiab/cnv_with_bed_track": {
     "name": "sv_cgiab/cnv_with_bed_track",
-    "status": "answered",
-    "note": "THE SHARED QUESTION, answered once for all eight sv_cgiab figures. COSMIC: the somatic driver catalogues that would make 'is this a known bad thing' a LANE (COSMIC's Cancer Gene Census among them) are licensed rather than redistributable, so a public demo cannot host one. Driver status is a literature question, and the tutorial now answers it in prose: KRAS, CDKN2A, TP53 and SMAD4 are the recurrently altered genes in PDAC (Waddell 2015 doi:10.1038/nature14169, Bailey 2016 doi:10.1038/nature16965) and these walkthroughs visit all four; CUZD1 is named as the passenger it is (a pancreatic acinar protein predicted to act in trypsinogen activation, NCBI Gene 50624, one copy left). What the FIGURES can do instead is name the gene, and they now do: each copy-number figure draws one MANE Select transcript under the lanes, from a shared maneGeneLane() helper that returns the session track and the view lane together so the two cannot disagree about which gene the name claims. Y-SPACE: measured, not trimmed by eye. The run's own 'blank below the last content' report finds NO slack in these frames -- two of them were in fact CUTTING content and are 20px taller now. The one lane not earning its height was driver_kras_gain's, and that is taken (150px -> 50px). Also: this frame was cutting 23.6 css px and is now 855.",
-    "reviewedAt": "2026-08-10T16:36:45.916Z",
-    "hash": "dee9eee892088e0494ff251fed51326fa193021e"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-11T05:31:58.844Z",
+    "hash": "53900d1e2fabd44cb625072bb585c3097e2ad710"
   },
   "sv_cgiab/synteny_view": {
     "name": "sv_cgiab/synteny_view",
@@ -877,9 +877,9 @@
   },
   "sv_cgiab/deletion_sv_inspector_search": {
     "name": "sv_cgiab/deletion_sv_inspector_search",
-    "status": "answered",
-    "note": "DONE, as two lanes rather than a paragraph. The earlier round declined a lane because the somatic DRIVER catalogues (COSMIC's Cancer Gene Census) are licensed -- true, and not the question this figure raises. 'Is this a known pathogenic CNV' has two public answers, both in ~/src/jb2hubs/ucsc2jbrowse/configs/hg38.json and both hgdownload bigBeds that answer ranged reads with CORS: clinvarCnv.bb and dgvMerged.bb. SIZE-FILTERED, which is what makes them answer rather than decorate: both hold chromosome-scale records that merely CONTAIN this 1.8 kb deletion, and unfiltered each lane is one bar edge to edge -- a red bar across the window reading as a pathogenic CNV sitting on it, i.e. exactly the wrong answer. Filtered on the catalogues' own _varLen / _size fields, the lanes say it: nothing of this scale in ClinVar, two DGV records over the locus and one across the deletion itself. ON WHY A GERMLINE CATALOGUE IS INTERESTING FOR A SOMATIC CALL (asked directly): not as benign evidence, which is a germline argument -- as the false-positive check, since common germline CNV territory is where a somatic caller most often emits something that was never somatic. The lane is named for that rather than for 'healthy genomes'.",
-    "reviewedAt": "2026-08-11T01:56:25.343Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-11T03:44:38.156Z",
     "hash": "32eae482efda90da860c788a8506386cd34021c3"
   },
   "sv_cgiab/translocation_breakpoint_split": {
@@ -1157,13 +1157,6 @@
     "reviewedAt": "2026-07-19T21:16:55.374Z",
     "hash": "a155a0a7261155e59bec60781951b93c61923088"
   },
-  "sv_cgiab/driver_cdkn2a_deletion": {
-    "name": "sv_cgiab/driver_cdkn2a_deletion",
-    "status": "answered",
-    "note": "THE SHARED QUESTION, answered once for all eight sv_cgiab figures. COSMIC: the somatic driver catalogues that would make 'is this a known bad thing' a LANE (COSMIC's Cancer Gene Census among them) are licensed rather than redistributable, so a public demo cannot host one. Driver status is a literature question, and the tutorial now answers it in prose: KRAS, CDKN2A, TP53 and SMAD4 are the recurrently altered genes in PDAC (Waddell 2015 doi:10.1038/nature14169, Bailey 2016 doi:10.1038/nature16965) and these walkthroughs visit all four; CUZD1 is named as the passenger it is (a pancreatic acinar protein predicted to act in trypsinogen activation, NCBI Gene 50624, one copy left). What the FIGURES can do instead is name the gene, and they now do: each copy-number figure draws one MANE Select transcript under the lanes, from a shared maneGeneLane() helper that returns the session track and the view lane together so the two cannot disagree about which gene the name claims. Y-SPACE: measured, not trimmed by eye. The run's own 'blank below the last content' report finds NO slack in these frames -- two of them were in fact CUTTING content and are 20px taller now. The one lane not earning its height was driver_kras_gain's, and that is taken (150px -> 50px). IS THE PARTIAL DELETION A KNOWN BAD THING: yes, and it is the strongest case of the four. CDKN2A is one of the recurrently altered PDAC genes, and this is a HOMOZYGOUS focal deletion (benchmark SV_75, total copy number 0) inside an arm that had already lost a copy -- the second hit on a tumour suppressor, which is what the figure's own CN 1 -> CN 0 -> CN 1 ladder is a picture of. The tutorial's new driver section states this and cites it. The lower panel was also cutting 17.7 css px and is now 1095.",
-    "reviewedAt": "2026-08-10T16:36:49.341Z",
-    "hash": "3bba9912fb197926beaf6604e7180141af8dab56"
-  },
   "maf_codon_tooltip": {
     "name": "maf_codon_tooltip",
     "status": "good",
@@ -1175,15 +1168,15 @@
     "name": "gc_content",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-10T15:33:37.978Z",
-    "hash": "a0a3c4ee1d74ce16d097e0cd285d1cf9dc9457ae"
+    "reviewedAt": "2026-08-11T04:30:06.329Z",
+    "hash": "00999dda388e4614517d4c6a2996e628eaa5fe40"
   },
   "sv_cgiab/driver_kras_gain": {
     "name": "sv_cgiab/driver_kras_gain",
-    "status": "answered",
-    "note": "THE SHARED QUESTION, answered once for all eight sv_cgiab figures. COSMIC: the somatic driver catalogues that would make 'is this a known bad thing' a LANE (COSMIC's Cancer Gene Census among them) are licensed rather than redistributable, so a public demo cannot host one. Driver status is a literature question, and the tutorial now answers it in prose: KRAS, CDKN2A, TP53 and SMAD4 are the recurrently altered genes in PDAC (Waddell 2015 doi:10.1038/nature14169, Bailey 2016 doi:10.1038/nature16965) and these walkthroughs visit all four; CUZD1 is named as the passenger it is (a pancreatic acinar protein predicted to act in trypsinogen activation, NCBI Gene 50624, one copy left). What the FIGURES can do instead is name the gene, and they now do: each copy-number figure draws one MANE Select transcript under the lanes, from a shared maneGeneLane() helper that returns the session track and the view lane together so the two cannot disagree about which gene the name claims. Y-SPACE: measured, not trimmed by eye. The run's own 'blank below the last content' report finds NO slack in these frames -- two of them were in fact CUTTING content and are 20px taller now. The one lane not earning its height was driver_kras_gain's, and that is taken (150px -> 50px). THIS FIGURE SPECIFICALLY: the gene lane went from the config's 150px UCSC RefSeq track to a 50px one-gene MANE lane. Over 4.5 Mb the old one packed five rows of about sixty gene names -- LOC124902897, MIR4302, BCAT1-DT -- and the KRAS box had to be found among them. The box stays on the one glyph that is left, because 45 kb of a 4.5 Mb frame is ~15 px whatever else is drawn. Two corrections to what the spec used to say: the symbol column in that bigBed is 'geneSymbol', not 'geneName2' (bigBedInfo -as), so the glyph now labels itself KRAS rather than NM_004985.5 -- as a config SLOT, in the track's displays, not on the view's tracks entry where it would be dropped silently. Frame 980 -> 880. And yes, KRAS is the PDAC driver: it is the most recurrently altered gene in the disease.",
-    "reviewedAt": "2026-08-10T16:36:46.796Z",
-    "hash": "06bc0469949fa199beab4f01db336470eeb562ba"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-11T05:31:54.089Z",
+    "hash": "1280fff6d370cd5347ccbad65a5baff1e67f4332"
   },
   "variants/consequence_impact_1000g": {
     "name": "variants/consequence_impact_1000g",
@@ -1194,10 +1187,10 @@
   },
   "sv_cgiab/driver_smad4_loh": {
     "name": "sv_cgiab/driver_smad4_loh",
-    "status": "answered",
-    "note": "DONE, all four asks. THE LINE: it was a 1px polyline with bicolor switched off, and a log2 ratio is a signed quantity read against zero, so at whole-chromosome scale a whole arm at -1 looked like a flat trace slightly lower down. It is an xyplot in the schema's default bicolor mode now, pivoting at 0, so the loss is a red block hanging below the midline and the p-arm gain a blue one above it -- the zero line is drawn by the fill. THE SCALE: -2..2, symmetric, so zero is the middle rather than 57% down; still fixed rather than autoscaled for the reason in the spec (a homozygous deletion writes -8.79 and would flatten everything else). THE 0 LINE: also the lane height -- tick density follows it, and 90px labelled only the two extremes, so it is 130. TUMOR VS NORMAL: the figure was four lanes of tumor, so 'halved' was a claim with nothing in frame to be half of. The chr5 walkthrough's indexcov pair goes in and REPLACES the HiFiCNV depth lane, which is this one's upper row; the normal runs flat at 1.0 and the tumor steps to ~0.5 at 30 Mb. WHY SMAD4: pill says it -- CNA_48 is CN 1 with haplotype copies 0 and 1, so one parental copy is gone and the other is not duplicated, which is a heterozygous loss that also removes an allele (hence the BAF split under it).",
-    "reviewedAt": "2026-08-11T02:20:22.438Z",
-    "hash": "9ab45815e32ae03dd1ae727a5f035f9d3a398b6d"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-11T05:30:23.996Z",
+    "hash": "fa2aa7a74795fee271ebaa24f052ebc211018a72"
   },
   "multiway_synteny/ecoli_pangenome": {
     "name": "multiway_synteny/ecoli_pangenome",
@@ -1310,9 +1303,9 @@
   },
   "inversion_long_read": {
     "name": "inversion_long_read",
-    "status": "answered",
-    "note": "DONE. Three one-line pills, and the setting is named. The two section pills were sentences explaining what a reader can already see (three pieces, the middle one reverse, the other section crossing in one) and the caption says it; each is one line now, which also stops the lower one covering four rows of reads. 'Group by -> Split read (SA tag)' sits on the track header in the empty strip right of the track name: it is the menu item's own text (groupByLabels.ts), so it is a path to retype rather than a paraphrase, and it goes on the track rather than on either section because the setting made both.",
-    "reviewedAt": "2026-08-11T02:19:30.511Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-11T03:44:29.972Z",
     "hash": "ae80fe4e3eeb003f2e622844c03b53826e2bc1c5"
   },
   "methylation/chromatin_accessibility_6ma": {
@@ -1340,15 +1333,15 @@
     "name": "synteny_human_chimp_cigar_modes",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-10T23:11:00.591Z",
-    "hash": "db4457fbc5c70de06fb5b442a3989c5e59d35878"
+    "reviewedAt": "2026-08-11T04:28:24.806Z",
+    "hash": "a1f6e86c46d05e60bfac862b87207f58358a2225"
   },
   "synteny_te_picalm_alu": {
     "name": "synteny_te_picalm_alu",
-    "status": "answered",
-    "note": "DONE, 2400x1700 -> 2400x1334, same change as synteny_te_vapb_sva: displayMode 'compact' on the two RepeatMasker lanes, which is the one compactness step that keeps the element names (only 'collapsed' forces labels off). synteny_human_chimp_cigar_modes shares the helper and got it too. Heights off the run's own blank-below-the-content report.",
-    "reviewedAt": "2026-08-11T01:55:52.498Z",
-    "hash": "b2f26bbe8ebc27fbad559ac095548b55eec50aeb"
+    "status": "good",
+    "note": "the canvasfeatures are oddly 'tall'",
+    "reviewedAt": "2026-08-11T04:28:26.751Z",
+    "hash": "b8ae88302c4601d2907f735b79fd412dd586f2e1"
   },
   "cookbook_color_by_strand": {
     "name": "cookbook_color_by_strand",
@@ -1541,10 +1534,10 @@
   },
   "sv_cgiab/cnv_chr17_loh": {
     "name": "sv_cgiab/cnv_chr17_loh",
-    "status": "answered",
-    "note": "THE SHARED QUESTION, answered once for all eight sv_cgiab figures. COSMIC: the somatic driver catalogues that would make 'is this a known bad thing' a LANE (COSMIC's Cancer Gene Census among them) are licensed rather than redistributable, so a public demo cannot host one. Driver status is a literature question, and the tutorial now answers it in prose: KRAS, CDKN2A, TP53 and SMAD4 are the recurrently altered genes in PDAC (Waddell 2015 doi:10.1038/nature14169, Bailey 2016 doi:10.1038/nature16965) and these walkthroughs visit all four; CUZD1 is named as the passenger it is (a pancreatic acinar protein predicted to act in trypsinogen activation, NCBI Gene 50624, one copy left). What the FIGURES can do instead is name the gene, and they now do: each copy-number figure draws one MANE Select transcript under the lanes, from a shared maneGeneLane() helper that returns the session track and the view lane together so the two cannot disagree about which gene the name claims. Y-SPACE: measured, not trimmed by eye. The run's own 'blank below the last content' report finds NO slack in these frames -- two of them were in fact CUTTING content and are 20px taller now. The one lane not earning its height was driver_kras_gain's, and that is taken (150px -> 50px). THIS FIGURE SPECIFICALLY: unchanged in what it shows -- it already had the one-gene TP53 lane -- but that lane is now the shared maneGeneLane() helper rather than a hand-rolled copy, and the glyph labels itself TP53 instead of NM_000546.6. TP53 is one of the four PDAC drivers.",
-    "reviewedAt": "2026-08-10T16:36:48.544Z",
-    "hash": "b0d00287286cd122d896b34b8858777263e725c4"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-11T05:31:43.784Z",
+    "hash": "1d8a7c7e0c2dc0b615d413452a915efa3ee9f25d"
   },
   "feature_height_default": {
     "name": "feature_height_default",
@@ -1677,10 +1670,10 @@
   },
   "sv_cgiab/cnv_depth_baf": {
     "name": "sv_cgiab/cnv_depth_baf",
-    "status": "answered",
-    "note": "THE SHARED QUESTION, answered once for all eight sv_cgiab figures. COSMIC: the somatic driver catalogues that would make 'is this a known bad thing' a LANE (COSMIC's Cancer Gene Census among them) are licensed rather than redistributable, so a public demo cannot host one. Driver status is a literature question, and the tutorial now answers it in prose: KRAS, CDKN2A, TP53 and SMAD4 are the recurrently altered genes in PDAC (Waddell 2015 doi:10.1038/nature14169, Bailey 2016 doi:10.1038/nature16965) and these walkthroughs visit all four; CUZD1 is named as the passenger it is (a pancreatic acinar protein predicted to act in trypsinogen activation, NCBI Gene 50624, one copy left). What the FIGURES can do instead is name the gene, and they now do: each copy-number figure draws one MANE Select transcript under the lanes, from a shared maneGeneLane() helper that returns the session track and the view lane together so the two cannot disagree about which gene the name claims. Y-SPACE: measured, not trimmed by eye. The run's own 'blank below the last content' report finds NO slack in these frames -- two of them were in fact CUTTING content and are 20px taller now. The one lane not earning its height was driver_kras_gain's, and that is taken (150px -> 50px).",
-    "reviewedAt": "2026-08-10T16:36:44.255Z",
-    "hash": "5666e7c1819bb583ffe4c3ed57f02d271c8f571d"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-11T05:32:06.800Z",
+    "hash": "7958d78ab93fc0303e17580acd3199ba2cfcd4b1"
   },
   "tcga/cohort_cnv_erbb2": {
     "name": "tcga/cohort_cnv_erbb2",
@@ -1982,9 +1975,9 @@
   },
   "pangenome/hprc_mhc_anchored": {
     "name": "pangenome/hprc_mhc_anchored",
-    "status": "answered",
+    "status": "good",
     "note": "DONE, one circle. It is on s101145+, the rank-0 node the reference-position ramp draws green, and it is the right survivor for a reason beyond the count: it is also the interval Highlight in hg38 writes, so the ring, the boxed menu item under it and the orange band above are three views of one object rather than three unrelated marks. The other two are gone -- the second landmark (the 12.3 kb allele, which the force layout draws touching the first, so their rings overlapped), and the ring on the clicked node, since a context menu opens AT the cursor and its own position already says which node it was opened on.",
-    "reviewedAt": "2026-08-11T02:34:25.670Z",
+    "reviewedAt": "2026-08-11T03:36:23.826Z",
     "hash": "925f8531849d331a352f72d15d3387e9a8abff18"
   },
   "pangenome/hprc_mhc_sample_rows": {
@@ -2078,9 +2071,9 @@
   },
   "pangenome/rgfa_hover_sync": {
     "name": "pangenome/rgfa_hover_sync",
-    "status": "answered",
+    "status": "good",
     "note": "DONE, and it is a NEW figure beside this one rather than a change to it: pangenome/rgfa_insertion_synteny, K12 above CFT073 below over the same event, in the graph_genome_view guide right under this figure. Worth having because it is a different KIND of evidence, not a second drawing of the same one -- this figure's claim comes out of the graph's own segment and link indexes (s2037 is 65,410 bp of CFT073, its two links land 2,062 bp apart on K12) and the synteny one comes out of wfmash's all-vs-all alignment, which the graph had no part in. Two files agreeing. The panels are deliberately at different scales, 13 kb of K12 against 77 kb of CFT073, because that IS the finding: the flanks align ribbon to ribbon and the 65 kb between them lands on nothing. The CFT073 gene lane names what is in the gap, a siderophore and fimbrial cluster. Every coordinate is printed by probe-graph-nodes.ts rather than measured off a picture.",
-    "reviewedAt": "2026-08-11T00:44:46.231Z",
+    "reviewedAt": "2026-08-11T04:29:25.302Z",
     "hash": "badd191c225caed16cea9056b76971024fef11f1"
   },
   "pangenome/rgfa_sample_rows": {
@@ -2094,8 +2087,8 @@
     "name": "pangenome/pggb_locus_sample_rows",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-08T01:12:27.979Z",
-    "hash": "5efacf90902dc257aaf6cc140b7b086f9553b97c"
+    "reviewedAt": "2026-08-11T03:48:12.659Z",
+    "hash": "e18f3c1c829e294edf46769834b031a5d61c65c0"
   },
   "scatac/pbmc5k_cd8a": {
     "name": "scatac/pbmc5k_cd8a",
@@ -2121,9 +2114,9 @@
   "dog10k-cyp1a2-nonsense": {
     "name": "dog10k-cyp1a2-nonsense",
     "status": "good",
-    "note": "DONE. colorByCDS is on, and what it actually does is worth recording because it is not what the name suggests: it does not single out the coding frame, it swaps the three translation rows from palette.frames to palette.framesCDS -- the same bright per-frame palette a gene track paints CDS with. So the third row now comes out the gene lane's own pink and reads R P Q L P L M E A F I L E I F R H T S F, the residues that lane labels R358..F377. Two bands of the same colour carrying the same residues is what picks the frame; grey rows left the reader counting phase. It is a VIEW prop, beside loc, not a slot on the sequence track. Frame also up 1010 -> 1024, the 13.5 css px the run said was still under the fold.",
-    "reviewedAt": "2026-08-10T22:54:51.804Z",
-    "hash": "cd1d7c637701580a00d028d77e9e4e7df44b37cf"
+    "note": "",
+    "reviewedAt": "2026-08-11T03:45:48.988Z",
+    "hash": "924344866a411043408f72f15df9e33a4f668bed"
   },
   "dog10k-denr-sine-deletions": {
     "name": "dog10k-denr-sine-deletions",
@@ -2266,10 +2259,10 @@
   },
   "dog10k-fgf4-retrogene-synteny": {
     "name": "dog10k-fgf4-retrogene-synteny",
-    "status": "answered",
-    "note": "DONE, all three parts. LABELS: one per row, on that row's own gene lane -- 'retrogene - no introns (CFA18)', 'regular gene (dog reference)', 'retrogene - no introns (CFA12)'. The reader gets the finding by comparing three glyphs rather than reading a sentence. TWO DIFFERENT SAMPLES: the labels carry it. CFA18 and CFA12 are independent FGF4 retrocopies from different studies (MF040222, Parker 2009; MF040221, Brown 2017), deposited and aligned separately, so the two retrocopy rows are not one thing drawn twice. LINEARVARIANTDISPLAY: added above the matrix, and it needed a SECOND trackId over the same VCF -- one track opens once per view, so written as two tracks entries with one trackId the second is dropped in silence and the frame came back with the positional lane where the matrix should have been. Its uri is absolute because a session track's relative path resolves against the PAGE, and the capture harness and jbrowse.org disagree about what that is: test_data/... 404s in one and /test_data/... in the other, so a relative path can only be right in one and the live link is the one that would break silently.",
-    "reviewedAt": "2026-08-11T02:34:09.491Z",
-    "hash": "a548ea0c1bb78fdd53534dca2de19a4fdc281adf"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-11T04:29:20.712Z",
+    "hash": "ae11af1b1a125e9f9724839c81601570eac8f76d"
   },
   "pangenome/pggb_collapsed_repeat": {
     "name": "pangenome/pggb_collapsed_repeat",
@@ -2315,10 +2308,10 @@
   },
   "cancer_sv/k562_starfusion_triage": {
     "name": "cancer_sv/k562_starfusion_triage",
-    "status": "answered",
-    "note": "DONE, and it is the layout you described. The lower half is no longer a breakpoint split view: it is one linear genome view with two displayed regions and linkedReads on ('Read connections -> View as pairs / link supplementary alignments'), so chain layout merges each molecule's two alignments onto ONE row across the two regions and a connector is a short hop at the seam. Same layout as k562_bcr_abl_split on the other side of the same amplicon. The other half of the fix is the windows: each now ENDS on its own breakpoint, on the side facing the join. The transcript only occupies chr9 left of 131,199,015 and chr22 below 16,808,083, so a centred 10 kb window spent half its width on empty lane AND pushed the two read piles ~700px apart -- which is what turned short hops into the long diagonal fan. 4.5 kb and 3.5 kb now. Renamed to cancer_sv/k562_fusion_inspector_reads, and FUSION_SPLIT_READS (half-pixel rows, which existed to stop the pileup outweighing the curve bundle) is gone with it.",
-    "reviewedAt": "2026-08-11T02:20:33.688Z",
-    "hash": "7cc34dc7a4e5947a7c7217f8d5102dd7252f8ebe"
+    "status": "good",
+    "note": "this is good, but it is weirdly 'abbreviated' ideally it would be able to scroll farther to the left and farther to the right. also, unclear why the reads are red/pink on the left but not on the right. previous notes: DONE, and it is the layout you described. The lower half is no longer a breakpoint split view: it is one linear genome view with two displayed regions and linkedReads on ('Read connections -> View as pairs / link supplementary alignments'), so chain layout merges each molecule's two alignments onto ONE row across the two regions and a connector is a short hop at the seam. Same layout as k562_bcr_abl_split on the other side of the same amplicon. The other half of the fix is the windows: each now ENDS on its own breakpoint, on the side facing the join. The transcript only occupies chr9 left of 131,199,015 and chr22 below 16,808,083, so a centred 10 kb window spent half its width on empty lane AND pushed the two read piles ~700px apart -- which is what turned short hops into the long diagonal fan. 4.5 kb and 3.5 kb now. Renamed to cancer_sv/k562_fusion_inspector_reads, and FUSION_SPLIT_READS (half-pixel rows, which existed to stop the pileup outweighing the curve bundle) is gone with it.",
+    "reviewedAt": "2026-08-11T05:31:35.731Z",
+    "hash": "618d3c04ab29baa90ab1f4d6248af11c59d9c39b"
   },
   "desktop-add-track-steps": {
     "name": "desktop-add-track-steps",
@@ -2413,10 +2406,10 @@
   },
   "pangenome/hprc_chm13_allele": {
     "name": "pangenome/hprc_chm13_allele",
-    "status": "answered",
-    "note": "Now a TWO-PART figure rather than the claim here and its check two sections down. The three-pane view is hprc_chm13_allele_panes, the density view is hprc_chm13_allele_density, and this name is the compose of the two, so the doc reference and this review entry are unchanged. Part two is 3 Mb of CHM13 chr17 with the allele shaded, and the allele is the tallest sustained level in the frame at about 3x the local baseline. Reading the two apart is what produced three rounds on the same 23.7%. Earlier rounds concluded there was no picture here from inside two limits neither of them named: the ELEMENT lane stops loading past ~400 kb (the RepeatMasker bigBed carries a long description per record), and 20 kb bins put the allele at 0.07-0.42 against flanks at 0.00-0.40. The density bigWig has neither -- resolution 0.03 makes each drawn value a ~100 kb mean, the allele's own size, and summaryScoreMode avg is required with it since a zoom level stores min/mean/max and the default draws all three. Nothing new is hosted. The claim is also scoped now: build_repeat_density.sh ranks the allele against every window of its size in CHM13, 2 of the 262 within 5 Mb carry more LINE and 35% genome-wide do, so it is L1-dense for this end of chr17 and ordinary for human sequence. 3,602 px, which is the cost.",
-    "reviewedAt": "2026-08-11T03:13:20.985Z",
-    "hash": "6588ce8b7c30e31707f233d52deeed17f84907c2"
+    "status": "bad",
+    "note": "presumably the loop should also be labeled with '1'. previous notes: DONE, all three. HEIGHT: 2,686 px to 2,180, from three cuts on the LEFT column that the right column then follows down (its height only ever existed to match the left's, since +append pads the shorter part). The RepeatMasker lane goes to one collapsed row -- its labels were already off and what it is read for is how much of the interval is red, so packing 171 elements into non-overlapping rows was ~150 px spent on a layout nobody reads; the graph pane goes 420 to 320; the bubble lane to the one row its filter leaves. BADGES: both point now. On the panes half the badge moves off the bar into the flank beside it with an arrow onto the allele's own left edge -- on the bar it was a disc on a black rectangle running most of the pane, so it identified the lane rather than the feature. On the density half the pill that named the shaded column gets an arrow onto it. Every end is a locus anchor. The lane's colour key moved into the track's NAME, since a pill over a one-row lane covers the lane, and its percentages are gone from figure and caption both.",
+    "reviewedAt": "2026-08-11T05:29:12.359Z",
+    "hash": "def8d884c70de0cfc2d65453caa7ebb354c304dc"
   },
   "dotplot_self_chry": {
     "name": "dotplot_self_chry",
@@ -2567,9 +2560,9 @@
   },
   "alignments/strand_split_coverage": {
     "name": "alignments/strand_split_coverage",
-    "status": "answered",
-    "note": "DONE, by marking the control as well. The loudest object in the frame was five bases right of the box, unmarked and plainly on BOTH strands, so a reader told 'reverse reads only' had their eye land on a counterexample. Both columns are boxed now and the pair is the whole claim: 1:55,705,711 is 0.00 of 12 forward reads against 1.00 of 10 reverse (a basecalling artifact), 1:55,705,716 is 0.85 and 0.73 (a real variant). The two pills share the track's label row and leave their columns in opposite directions, so 5 bp of separation is enough. rank_strand_asymmetry.py could not have found the control and that is fixed too: it took each column's majority base as the reference so it needed no FASTA, and where every read disagrees the majority base IS the alt, so 55,705,716 scored 0.00 mismatch on both strands and 0.00 asymmetry. It reads hg19 through samtools faidx now and takes --both.",
-    "reviewedAt": "2026-08-11T02:19:50.664Z",
+    "status": "bad",
+    "note": "i really think we should seek out a viral sample or something that has dramatically diff forward and reverse coverage. ",
+    "reviewedAt": "2026-08-11T03:44:20.554Z",
     "hash": "1024a7fc839d51da597d5f1310007e3b57f97ed2"
   },
   "hic/bcr_abl1_translocation": {
@@ -2741,9 +2734,9 @@
   },
   "pangenome/hprc_whole_chromosome": {
     "name": "pangenome/hprc_whole_chromosome",
-    "status": "answered",
-    "note": "PARTLY DONE, and the part not done is named rather than declined. CYTOBANDS: both asks. The fixture's hg38 now carries `cytobands`, so the view's own overview band is banded instead of blank, and UCSC's cytoBand BED is a collapsed lane directly above the variability curve -- which is what puts 1q12 on the SAME axis as the bubbles, where the two callouts were making that comparison in words. The lane needed the Giemsa stain to be reachable: it is column 5 of that BED, lands on `score` positionally, and comes back undefined because it is not a number, so the first attempt painted all 63 bands one colour. Explicit columnNames names it gieStain, and the jexl then draws the ideogram -- grey bands, red acen, blue-purple gvar, and the red and the blue are exactly the two the callouts name. NOT DONE: the bandage graph. Worth saying why it is open rather than answered -- the measurement that argues against a force layout on a TIER is pggb_bubble_tier's, and it was taken on 27 nodes while this cut is 474, so it needs its own render rather than that note's verdict. Next round.",
-    "reviewedAt": "2026-08-11T02:35:00.491Z",
+    "status": "bad",
+    "note": "the cytobands track is pretty good. should this be added in ~/src/jb2hubs as a track in other hubs? also, please try the bandage graph. humor me. previous notes: PARTLY DONE, and the part not done is named rather than declined. CYTOBANDS: both asks. The fixture's hg38 now carries `cytobands`, so the view's own overview band is banded instead of blank, and UCSC's cytoBand BED is a collapsed lane directly above the variability curve -- which is what puts 1q12 on the SAME axis as the bubbles, where the two callouts were making that comparison in words. The lane needed the Giemsa stain to be reachable: it is column 5 of that BED, lands on `score` positionally, and comes back undefined because it is not a number, so the first attempt painted all 63 bands one colour. Explicit columnNames names it gieStain, and the jexl then draws the ideogram -- grey bands, red acen, blue-purple gvar, and the red and the blue are exactly the two the callouts name. NOT DONE: the bandage graph. Worth saying why it is open rather than answered -- the measurement that argues against a force layout on a TIER is pggb_bubble_tier's, and it was taken on 27 nodes while this cut is 474, so it needs its own render rather than that note's verdict. Next round.",
+    "reviewedAt": "2026-08-11T03:36:16.161Z",
     "hash": "7d3e3644cfab566049de07098b279620bcc2fa48"
   },
   "pangenome/pggb_carriage": {
@@ -2803,9 +2796,9 @@
   "dog10k-diet-genes": {
     "name": "dog10k-diet-genes",
     "status": "good",
-    "note": "arrow on left side of the screen points at blank grey space. Each record now draws once above its own genotype rows, so the lane says what kind of variant the column below it is: AMY2B as a DUP block over the 14.9 kb it duplicates, RNASE1 as an insertion marker at a point. The two halves now differ in the glyph as well as in the genotypes. It needed a second trackId rather than a second display entry - a session spec that names the same track twice keeps only the last display, which silently replaced the 86 sample rows with the one-row lane. Same pattern the CYP1A2 figure already uses (dog10k_cyp1a2_snvs_positional).",
-    "reviewedAt": "2026-08-10T15:31:22.805Z",
-    "hash": "b97088e96cdeed7ab849d2ac31cfed1b045f0fe6"
+    "note": "",
+    "reviewedAt": "2026-08-11T04:30:13.311Z",
+    "hash": "9ec22528147d20cf2a47de4721187a1fd279c699"
   },
   "dtu/dtu_colored_gene_glyph": {
     "name": "dtu/dtu_colored_gene_glyph",
@@ -2916,9 +2909,9 @@
   },
   "synteny_self_chry_palindromes": {
     "name": "synteny_self_chry_palindromes",
-    "status": "answered",
+    "status": "good",
     "note": "DONE. 'this one, below' is an arrow now, out of the box and down to just above the bottom axis. Its head takes the same locus anchor as its tail rather than the canvas element -- a selector anchor centres on the element, so the first render sloped the arrow off into the middle of the plot instead of running straight down. A compose has no annotation layer of its own, so nothing can be drawn ACROSS the seam; pointing at it is as far as this goes, and it is further than the words got.",
-    "reviewedAt": "2026-08-11T02:34:26.547Z",
+    "reviewedAt": "2026-08-11T03:36:21.548Z",
     "hash": "a9e59c13efbd4f45bb799500490f34acf79b70d4"
   },
   "sv_cgiab/three_ways": {
@@ -2942,18 +2935,60 @@
     "reviewedAt": "2026-08-10T22:52:47.094Z",
     "hash": "d48346922d56fabe5fa3524b9ef229304a51ca22"
   },
+  "hg002_haplotypes_follow_panel": {
+    "name": "hg002_haplotypes_follow_panel",
+    "status": "bad",
+    "note": "any other changes you'd suggest?",
+    "reviewedAt": "2026-08-11T05:30:59.355Z",
+    "hash": "673e401ab5349dbaa22384726fac5b1fddfc2a5b"
+  },
+  "jbrowse-img/sv_review_pair": {
+    "name": "jbrowse-img/sv_review_pair",
+    "status": "bad",
+    "note": "add red text annotation boxes. also, if there was a 'derived allele' view of this, in order to show the linearized derived allele, it would be interesting to show alongside it. previous notes: DONE, and jb2export does none of it. Two renders now -- jbrowse-img/sv_review_tumor and jbrowse-img/sv_review_normal, identical but for the --track, same loci and same --width so the two halves are comparable line for line -- joined by a horizontal compose. The compose lives in screenshot-specs.ts rather than in jbrowseImgSpecs, which is typed CliSpec[] because sync-img-readme walks it to regenerate every command fence in the jb2export README and a compose is not a command; the README now prints both invocations and says outright that putting them side by side is the reader's job. The left half fills with connecting curves through all three panels and the right half carries essentially none, which is the somatic claim with the control beside it rather than folded into it.",
+    "reviewedAt": "2026-08-11T05:30:15.037Z",
+    "hash": "e7dd2275b5ec6f565699ad06dbd5abff2eaa817c"
+  },
+  "pangenome/rgfa_insertion_synteny": {
+    "name": "pangenome/rgfa_insertion_synteny",
+    "status": "answered",
+    "note": "DONE, and the pills are gone rather than reworded. Widening the frame to the PAF's own chain ends (K12 887,944-1,094,152 <-> CFT073 942,350-1,127,332 and K12 1,097,432-1,183,704 <-> CFT073 1,241,061-1,327,893, plus ~12 kb of flank each) is what made them redundant: the gap IS the obvious thing in the frame now. The two 10% grey highlights went with them for a duller reason -- neither was actually visible in the capture, so they were a setting the figure did not have. The zoom-out also found a registration bug the tight crop was hiding: the old CFT073 window started 43 kb past where the left flank chain reaches it, so that ribbon left the frame at the bottom-left corner and only the RIGHT flank was ever registered; both edges map onto each other now. The caption carries no measurements, and website/CLAUDE.md now says why: a sourced number in a caption is still a claim a reader cannot check against the picture, so it belongs in the spec comment. A second rule beside it says a callout must state what the picture cannot.",
+    "reviewedAt": "2026-08-11T04:37:58.525Z",
+    "hash": "6f7a1b80adccdf3c39248e603a0b0e68f51f2d8a"
+  },
+  "sv_synteny/color_by_attribute_steps": {
+    "name": "sv_synteny/color_by_attribute_steps",
+    "status": "good",
+    "note": "use side-by-side figures",
+    "reviewedAt": "2026-08-11T04:27:14.476Z",
+    "hash": "6fffbe3453a7193e16b984b00543d4709f02a9dd"
+  },
+  "sv_cgiab/driver_cdkn2a_deletion": {
+    "name": "sv_cgiab/driver_cdkn2a_deletion",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-11T05:30:42.015Z",
+    "hash": "bdfdf54bf19d2f0012ae99499fe765633d620a83"
+  },
   "hg002_haplotypes_8p23_inversion": {
     "name": "hg002_haplotypes_8p23_inversion",
-    "status": "answered",
-    "note": "DONE, and the correspondence is now readable as text. A 9 Mb lane of every Liftoff gene cannot carry a label, so there is a second lane over the same GFF filtered to the six largest protein coding genes inside the inverted block, read off the annotation with tabix rather than chosen. The maternal lane runs MFHAS1, TNKS, MSRA, XKR6, BLK, GATA4 and the paternal one runs the same six in the opposite order, which is the inversion without following a ribbon. It is a second trackId because a view cannot hold one track twice, and it sits next to the ribbons on both sides (last in the top panel, first in the bottom) so the two rows of names are as close together as the layout allows.",
-    "reviewedAt": "2026-08-11T02:20:01.526Z",
-    "hash": "5f666fe97f9b25703e5bbc0078c70df39c4db043"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-11T05:30:45.110Z",
+    "hash": "86f0113370a13115541a5c3cfe1d5241a3ddc8d4"
   },
-  "hg002_haplotypes_hetsites": {
-    "name": "hg002_haplotypes_hetsites",
-    "status": "answered",
-    "note": "One pill added, defining the tick: 'each tick: one base where the two haplotypes differ'. 'Heterozygous sites' is the track's name and says nothing to a reader who does not already know the term, while the whole figure rests on what one tick means. It sits on the empty half of the top panel's lane, under the row of ticks. The structural half of the claim needs no label: it is one shape and the caption names it.",
-    "reviewedAt": "2026-08-11T02:20:09.703Z",
-    "hash": "e2068b20ed9b9f11b3615ec523916c639bd50407"
+  "jbrowse-img/sv_review_normal": {
+    "name": "jbrowse-img/sv_review_normal",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-11T05:32:15.455Z",
+    "hash": "0ccbfbe3a78d2bdaba8ec2de9103c30dd0563c99"
+  },
+  "jbrowse-img/sv_review_tumor": {
+    "name": "jbrowse-img/sv_review_tumor",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-08-11T05:32:19.938Z",
+    "hash": "87a800b636ee2c161ccbcc63a4d057f329f105fa"
   }
 }
