@@ -103,8 +103,21 @@ Section "Install"
 SectionEnd
 
 Section "Uninstall"
+  ; Step out of $INSTDIR before deleting it. RMDir cannot remove the current
+  ; working directory — the NSIS manual's own example for this is literally
+  ; "SetOutPath $TEMP" followed by "RMDir /r $INSTDIR" — and the uninstaller
+  ; runs from $INSTDIR, so without this the install directory survived an
+  ; uninstall with its contents half-removed.
+  SetOutPath $TEMP
+
   ; Remove files
   RMDir /r "$INSTDIR"
+
+  ; Windows holds a lock on the running Uninstall.exe, so the RMDir above cannot
+  ; take it, and cannot take $INSTDIR while it is still in there. Both go at the
+  ; next reboot. Nothing prompts for one: there is no finish page to raise it.
+  Delete /REBOOTOK "$INSTDIR\\Uninstall.exe"
+  RMDir /REBOOTOK "$INSTDIR"
 
   ; Remove Start Menu items
   RMDir /r "$SMPROGRAMS\\${PRODUCT_NAME}"
