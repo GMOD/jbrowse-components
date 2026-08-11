@@ -5,7 +5,7 @@ import path from 'node:path'
 import { parseArgs } from 'node:util'
 
 import {
-  buildReviewPage,
+  createReviewBundle,
   createVerdictRoutes,
   isVerdictStale,
   sendJson,
@@ -181,15 +181,16 @@ const { handleVerdict, handleClearVerdict } = createVerdictRoutes({
   statuses: ['good', 'bad'],
 })
 
-// The page is React, bundled once at startup — no watcher, no dev server, so
-// "run one node script, open localhost" and offline operation both survive. Its
-// write protocol and note-draft bookkeeping are shared with the website's
-// screenshot review (@jbrowse/browser-test-utils/reviewApp); this entry supplies
-// the two halves that differ, what a card looks like and what the header counts.
+// The page is React, rebuilt by esbuild on every page load — no watcher, no dev
+// server, so "run one node script, open localhost" and offline operation both
+// survive while an edit to the page still only costs a reload. Its write
+// protocol and note-draft bookkeeping are shared with the website's screenshot
+// review (@jbrowse/browser-test-utils/reviewApp); this entry supplies the two
+// halves that differ, what a card looks like and what the header counts.
 //
-// Built before the server listens, so a syntax error in the page is a startup
-// failure with esbuild's own message rather than a blank tab.
-const bundle = await buildReviewPage({
+// Built once before the server listens too, so a syntax error in the page is a
+// startup failure with esbuild's own message rather than a blank tab.
+const bundle = await createReviewBundle({
   entry: path.resolve(import.meta.dirname, 'review-app', 'main.tsx'),
   title: 'Snapshot review',
   // tells this tab apart from the screenshot review UI, which the two tools are

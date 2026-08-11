@@ -57,7 +57,11 @@ export {
   readBody,
   sendJson,
 } from './reviewServer.ts'
-export { buildReviewPage, serveReviewBundle } from './reviewBundle.ts'
+export {
+  buildReviewPage,
+  createReviewBundle,
+  serveReviewBundle,
+} from './reviewBundle.ts'
 
 export type { TestServerOptions } from './server.ts'
 export type { SmokeOptions } from './examplesSmoke.ts'
@@ -72,4 +76,8 @@ export type {
 } from './docLinks.ts'
 export type { Verdict } from './reviewVerdicts.ts'
 export type { VerdictRouteOptions } from './reviewServer.ts'
-export type { ReviewBundle, ReviewBundleOptions } from './reviewBundle.ts'
+export type {
+  ReviewBundle,
+  ReviewBundleHost,
+  ReviewBundleOptions,
+} from './reviewBundle.ts'
