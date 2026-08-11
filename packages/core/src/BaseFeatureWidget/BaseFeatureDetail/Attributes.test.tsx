@@ -28,6 +28,9 @@ describe('Attributes', () => {
       <Attributes
         attributes={{
           a: 'x',
+          // a flat array is a labelled row like any other, so it is in the
+          // column too — `assemblyNames` and `category` on a track config
+          list: ['one', 'two'],
           nested: {
             aLongerFieldName: 'y',
             file: { uri: 'https://example.com/x' },
@@ -38,10 +41,26 @@ describe('Attributes', () => {
     const widths = labelWidths(container)
     expect(Object.keys(widths).sort()).toEqual([
       'a',
+      'list',
       'nested.aLongerFieldName',
       'nested.file',
     ])
     expect(new Set(Object.values(widths)).size).toBe(1)
+  })
+
+  // an array of objects renders each element as its own Attributes block with
+  // no label row at this level, so measuring its key would widen the column for
+  // a label that is never drawn
+  test('an object array contributes no label to the column', () => {
+    const width = (attributes: Record<string, unknown>) =>
+      Object.values(
+        labelWidths(
+          renderWithTheme(<Attributes {...{ attributes }} />).container,
+        ),
+      )[0]
+    expect(width({ a: 'x', aVeryMuchLongerName: [{ b: 'y' }] })).toBe(
+      width({ a: 'x' }),
+    )
   })
 
   // the padding around a label is added once, not once per level: a recursive

@@ -6,7 +6,7 @@ import {
   isUriLocation,
 } from '../../util/index.ts'
 import { measureText } from '../../util/index.ts'
-import ArrayValue from './ArrayValue.tsx'
+import ArrayValue, { isObjectArray } from './ArrayValue.tsx'
 import SimpleField from './SimpleField.tsx'
 import UriAttribute from './UriField.tsx'
 import { accessNested, applyFeatureFormatting } from './util.ts'
@@ -67,11 +67,12 @@ const globalOmit = [
  * The widest label `Attributes` will actually render under `attributes`, in
  * text units — the padding is added once by `widestLabel`, not per level.
  *
- * Follows the same branches the render below does: an array hands off to
- * `ArrayValue`/`DataGridDetails`, which lay their own label out and so start a
- * fresh column; a `UriLocation` is one field; any other object recurses. Kept
- * next to the render for that reason — the two agree by being read together,
- * and `Attributes.test.tsx` fails if they stop.
+ * Follows the same branches the render below does: a flat array is one labelled
+ * row (`rendersOwnFieldRow`), an array of objects renders each element as its
+ * own block with no label at this level, a data grid heads its own grid rather
+ * than sharing a row, a `UriLocation` is one field, any other object recurses.
+ * Kept next to the render for that reason — the two agree by being read
+ * together, and `Attributes.test.tsx` fails if they stop.
  */
 function measureLabels(
   attributes: Record<string, unknown>,
@@ -89,10 +90,16 @@ function measureLabels(
   for (const [key, value] of Object.entries(
     applyFeatureFormatting(attributes),
   )) {
-    if (value == null || omits.has(key) || Array.isArray(value)) {
+    if (value == null || omits.has(key)) {
       continue
     }
-    if (isObject(value)) {
+    if (Array.isArray(value)) {
+      // a data grid's FieldName is a heading above the grid, not a cell beside
+      // a value, so it takes no part in the column either
+      if (!isHomogeneousObjectArray(value) && !isObjectArray(value)) {
+        widest = Math.max(widest, measure(key))
+      }
+    } else if (isObject(value)) {
       if (hideUris && (isUriLocation(value) || isLocalPathLocation(value))) {
         continue
       }
@@ -193,6 +200,7 @@ export default function Attributes(props: {
               formatter={formatter}
               description={description}
               prefix={prefix}
+              width={width}
             />
           )
         } else if (isObject(value)) {

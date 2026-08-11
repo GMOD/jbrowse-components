@@ -31,18 +31,33 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+/**
+ * An array of objects renders each element as its own `Attributes` block and
+ * draws no label row at this level; anything else is one labelled row like any
+ * other field, and so takes its place in the card's shared label column.
+ * Exported because `Attributes` measures that column before rendering and has
+ * to make the same call.
+ */
+export function isObjectArray(
+  value: unknown[],
+): value is Record<string, unknown>[] {
+  return value.every(isObject)
+}
+
 export default function ArrayValue({
   name,
   value,
   description,
   formatter,
   prefix = [],
+  width,
 }: {
   description?: React.ReactNode
   name: string
   value: unknown[]
   formatter?: FeatureFormatter
   prefix?: string[]
+  width?: number
 }) {
   const { classes } = useStyles()
   const [showAll, setShowAll] = useState(false)
@@ -53,7 +68,7 @@ export default function ArrayValue({
   const displayedValues =
     needsTruncation && !showAll ? value.slice(0, limit) : value
 
-  return value.every(isObject) ? (
+  return isObjectArray(value) ? (
     value.length === 1 ? (
       <Attributes
         formatter={formatter}
@@ -75,7 +90,12 @@ export default function ArrayValue({
     )
   ) : (
     <div className={classes.field}>
-      <FieldName prefix={prefix} description={description} name={name} />
+      <FieldName
+        prefix={prefix}
+        description={description}
+        name={name}
+        width={width}
+      />
       {value.length === 1 ? (
         <BasicValue
           value={formatter ? formatter(value[0], name, 0) : value[0]}
