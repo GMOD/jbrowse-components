@@ -199,28 +199,23 @@ ribbon, which is what places a feature inside a long collinear block.
 ## Collinear does not mean identical
 
 Structural agreement and sequence identity are separate claims, and the view
-above only makes the first one. Frame a collinear block left of the inversion,
-turn on the heterozygous-sites track, and the second becomes checkable in the
-same frame. Each panel carries its own haplotype's annotation, so the sites can
-be read against the genes they fall in, and here the two annotations are the
-same list in the same order, which leaves the ticks as the only thing that
-differs.
+above only makes the first one. Turn on the heterozygous-sites track over a
+collinear block and the second becomes checkable in the same frame: the ribbon
+runs as one band while the sites below it are everywhere.
 
-<Figure caption="A window inside a collinear block left of the inversion, over MCPH1, with each haplotype's genes and heterozygous sites under its own panel. The ribbon runs as one band and both gene lanes carry the same genes in the same order, so the haplotypes agree; the ticks below show they still differ at base level throughout." src="/img/hg002_haplotypes_hetsites.png" />
+Two things bound where that works. Across the whole inversion the track is over
+its feature-count limit and paints a warning with a **FORCE LOAD** button
+instead of data, and a window centered on a breakpoint cannot work at all, since
+the flanking and inverted sequence land megabases apart on the other haplotype,
+so no single paternal window holds both and the ribbons come back empty. Frame
+one side or the other.
 
-This has to be its own view. Across the whole inversion the het-site track is
-over its feature-count limit and paints a warning instead of data, and a window
-centered on a breakpoint cannot work at all: the flanking and inverted sequence
-land megabases apart on the other haplotype, so no single paternal window holds
-both and the ribbons come back empty. Frame one side or the other.
-
-Even at this width the track is over that limit; the figure is what the
-warning's own **FORCE LOAD** button gives you. Pick the block, too, and not just
-the width: the collinear block immediately beside the inversion is inside
-8p23.1's defensin and FAM90A duplications, where each haplotype's array copies
-are annotated against whichever hg38 paralog they best match, so the two gene
-lanes come back with different symbols for the same sequence. That is a real
-difference between the haplotypes and it is not the one this section is about.
+Pick the block, not just the width. The collinear block immediately beside the
+inversion is inside 8p23.1's defensin and FAM90A duplications, where each
+haplotype's array copies are annotated against whichever hg38 paralog they best
+match, so the two gene lanes come back with different symbols for the same
+sequence. That is a real difference between the haplotypes, and it is not the
+one this section is about.
 
 Each site is named for its own coordinate and alleles, so at this density the
 labels are the ruler written twice. Turn them off with **Show labels**.

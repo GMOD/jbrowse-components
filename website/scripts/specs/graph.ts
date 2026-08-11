@@ -5041,12 +5041,21 @@ export const graphSpecs: ScreenshotSpec[] = [
   // reaches it -- so the left ribbon left the frame at the bottom-left corner
   // and only the right flank was actually registered.
   //
-  // The shaded block is the alignment's number, not the graph's: 113.7 kb of
-  // CFT073 that no K12 chain touches. The 65.4 kb node the hover figure rings
-  // is the LAST 65.4 kb of it (s2037 runs 1,175,651-1,241,061, ending exactly
-  // where the right chain resumes) and the 48 kb before it is the same bubble's
-  // s2030-s2036, all rank 2 -- so at the old crop the frame was showing part of
-  // the gap and labelling it the whole of it.
+  // The shaded block is the alignment's, not the graph's: the CFT073 span that
+  // no K12 chain touches at all. The node the hover figure rings is the last
+  // stretch of it (s2037 runs 1,175,651-1,241,061, ending exactly where the
+  // right chain resumes) and what precedes it is the same bubble's s2030-s2036,
+  // all rank 2 -- so at the old crop the frame showed part of the gap and
+  // labelled it the whole of it.
+  //
+  // NOTHING DRAWN ON TOP. Two pills used to name the block and the K12 gap, over
+  // a 10% grey highlight on each. Once the frame was widened to its chain ends
+  // the pills were describing the most obvious thing in it (review: "the text
+  // annotations here are...frankly nonsense. like its obvious there is a big
+  // gap. what is the point?") -- the rule now written down in
+  // website/CLAUDE.md. The highlights went with them for a duller reason: at
+  // that alpha neither was visible in the capture, so they were a setting the
+  // figure did not have.
   {
     mode: 'url',
     name: 'pangenome/rgfa_insertion_synteny',
@@ -5063,14 +5072,6 @@ export const graphSpecs: ScreenshotSpec[] = [
               // the 3.3 kb the two chains leave, plus ~12 kb of flank either
               // side so both flank ribbons are ribbons rather than frame edges
               loc: 'chr:1,082,000-1,110,000',
-              highlight: [
-                {
-                  refName: 'chr',
-                  start: 1094152,
-                  end: 1097432,
-                  color: 'rgba(60,65,72,0.10)',
-                },
-              ],
               tracks: [strainGeneLane('K12_genes')],
             },
             {
@@ -5079,14 +5080,6 @@ export const graphSpecs: ScreenshotSpec[] = [
               // left edge (1,115,000) is where K12 1,082,000 lands and the
               // right edge is where K12 1,110,000 does
               loc: 'chr:1,115,000-1,253,000',
-              highlight: [
-                {
-                  refName: 'chr',
-                  start: 1127332,
-                  end: 1241061,
-                  color: 'rgba(60,65,72,0.10)',
-                },
-              ],
               tracks: [strainGeneLane('CFT073_genes')],
             },
           ],
@@ -5103,40 +5096,6 @@ export const graphSpecs: ScreenshotSpec[] = [
     // two gene lanes, two rulers and the 200 px band between them
     viewportHeight: 582,
     hideTooltip: true,
-    annotations: [
-      {
-        type: 'text',
-        text: 'no K12 chain touches any of this',
-        fontSize: 16,
-        maxWidth: 260,
-        anchor: {
-          view: [0, 1],
-          track: 'CFT073_genes',
-          locus: 'chr:1,127,332-1,241,061',
-          fracY: 0,
-          dy: -30,
-        },
-      },
-      {
-        type: 'text',
-        text: 'the two chains meet here',
-        fontSize: 16,
-        maxWidth: 200,
-        // Starting at the gap's LEFT edge, which is as close to centred over it
-        // as this gets: the gap is ~140 px at this scale, the pill is a little
-        // wider than that, and `textAlign` offers only start and end. Anchored
-        // to the locus centre (the default) it began at the midpoint and ran out
-        // over the right-hand flank, which reads as naming the flank.
-        anchor: {
-          view: [0, 0],
-          track: 'K12_genes',
-          locus: 'chr:1,094,152-1,097,432',
-          alignX: 'left',
-          fracY: 0,
-          dy: -16,
-        },
-      },
-    ],
   },
 
   // pangenome/hprc_node_menu was here and is DELETED (reviewer: "may not need

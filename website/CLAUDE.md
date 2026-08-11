@@ -54,6 +54,15 @@ gitignored). `deploy_staging.sh` wraps a staging deploy.
 
 - Never write a hand-computed statistic into prose. Numbers must be published
   with a citation, structural, or emitted by a script in the repo.
+- **Keep specific values out of captions and callouts.** Even a sourced number
+  is a claim a reader cannot check against the picture, and a caption full of
+  them reads as arithmetic rather than as a result. Say what the frame shows;
+  put the measurement in the spec comment, where the next author needs it.
+- **A callout must say what the picture cannot.** If it names the largest, most
+  obvious thing in the frame, delete it rather than reword it — the fix for
+  "what is the point of this pill" is usually that widening the window already
+  made the point. Shading a region is different: WHERE something starts and
+  stops is often not obvious, and a `highlight` says it without words.
 - Captions name the tracks and the one visual takeaway. If a caption needs a
   paragraph of background, fix the figure.
 - Card titles: dataset first, then the pipeline that produced the picture. No
