@@ -1,14 +1,18 @@
-import { useEffect, useRef, useState } from 'react'
+import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 
-import { LoadingEllipses, ResizeHandle } from '@jbrowse/core/ui'
+import { ResizeHandle, ViewLoadingScreen } from '@jbrowse/core/ui'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import Controls from './Controls.tsx'
-import ImportForm from './ImportForm.tsx'
 import { Rulers } from './Ruler.tsx'
 
 import type { CircularViewModel } from '../model.ts'
+
+// lazies. Local Suspense at the use site rather than relying on the app's
+// ViewWrapper boundary: the sv-inspector renders this component directly inside
+// its own view, so suspending here would blank the whole SV inspector.
+const ImportForm = lazy(() => import('./ImportForm.tsx'))
 
 // How far a press has to travel before it rotates the figure rather than
 // clicking what is under it. See handlePointerMove.
@@ -90,14 +94,29 @@ const CircularView = observer(function CircularView({
 }: {
   model: CircularViewModel
 }) {
-  const { showLoading, showView, showImportForm } = model
-  return showLoading ? (
-    <LoadingEllipses variant="h6" message="Loading" />
-  ) : showImportForm ? (
-    <ImportForm model={model} />
-  ) : showView ? (
-    <CircularViewLoaded model={model} />
-  ) : null
+  const { showLoading, showView, showImportForm, loadingMessage } = model
+  if (showLoading) {
+    return (
+      <ViewLoadingScreen
+        message={loadingMessage}
+        fraction={model.loadingProgress}
+      />
+    )
+  } else if (showImportForm) {
+    return (
+      <Suspense fallback={null}>
+        <ImportForm model={model} />
+      </Suspense>
+    )
+  } else if (showView) {
+    return <CircularViewLoaded model={model} />
+  } else {
+    // The one view whose last branch isn't its content: `disableImportForm`
+    // (the sv-inspector's embedded circle) suppresses the form, so a circle
+    // with no regions yet has nothing to draw and nothing to offer. Every other
+    // view reaches its content here.
+    return null
+  }
 })
 
 const CircularViewLoaded = observer(function CircularViewLoaded({

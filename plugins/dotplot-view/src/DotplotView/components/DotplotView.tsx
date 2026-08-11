@@ -1,3 +1,5 @@
+import { lazy } from 'react'
+
 import { ErrorBanner, ResizeHandle, ViewLoadingScreen } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import RenderCanvas from '@jbrowse/render-core/RenderCanvas'
@@ -10,12 +12,16 @@ import { HorizontalAxis, VerticalAxis } from './Axes.tsx'
 import DisplayStatusOverlays from './DisplayStatusOverlays.tsx'
 import DotplotTooltips from './DotplotTooltips.tsx'
 import Header from './Header.tsx'
-import ImportForm from './ImportForm/index.tsx'
 import MouseInteractionLayer from './MouseInteractionLayer.tsx'
 import SelectionContextMenu from './SelectionContextMenu.tsx'
 import { useDotplotInteraction } from './useDotplotInteraction.ts'
 
 import type { DotplotViewModel } from '../model.ts'
+
+// lazies. The form pulls in the whole synteny-core quick-start stack
+// (ImportFormModes, useQuickStartState, the track selectors), none of which a
+// dotplot that opens straight onto a plot ever renders.
+const ImportForm = lazy(() => import('./ImportForm/index.tsx'))
 
 const useStyles = makeStyles()(theme => ({
   root: {
