@@ -76,7 +76,8 @@ export class Gff3Feature implements Feature {
       }
       case 'strand': {
         // a subfeature with no strand column of its own inherits its parent's,
-        // matching how SimpleFeature inflates nested features
+        // which is what SimpleFeature does too — it resolves the same way here,
+        // through the parent handle rather than by copying the field down
         return this.data.strand ?? this.parentFeature?.get('strand')
       }
       case 'subfeatures': {
