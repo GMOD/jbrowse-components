@@ -606,16 +606,17 @@ HiFiCNV's depth is binned, so these coverage tracks are per-base. For the exact
 breakpoints, open the PacBio HiFi read pileup below them.
 
 The benchmark's `total_copy_number` is absolute, so CN 2 is a diploid segment.
-Nothing in a 60 kb window around this deletion is diploid, which is the point of
-the wider frame above it: chr9 runs CN 1, drops to CN 0 across the deletion,
-returns to CN 1, and only reaches CN 2 several hundred kilobases to the right.
+Nothing in this window is diploid: the whole of 9p has lost a copy in this
+tumor, so CN 1 is the local background and the deletion is punched into it.
+Widen the view several hundred kilobases to the right to find the first CN 2
+segment and read the CN 1 lane against it.
 
-The lower panel stacks NCBI RefSeq genes, tumor and normal per-base coverage as
-two rows of one track on a shared fixed range, the PacBio HiFi read pileup, and
-the CNV calls again. The thin lines crossing the gap in the pileup are single
-reads carrying the deletion as one gap in their alignment.
+The panel stacks NCBI RefSeq genes, tumor and normal per-base coverage as two
+rows of one track on a shared fixed range, the PacBio HiFi read pileup, and the
+CNV calls. The thin lines crossing the gap in the pileup are single reads
+carrying the deletion as one gap in their alignment.
 
-<Figure caption="Top, 1.3 Mb of chr9 with the segmented log2 ratio over the benchmark CNV calls. Bottom, the same deletion at 60 kb: coverage drops out in the tumor row and not in the normal." src="/img/sv_cgiab/driver_cdkn2a_deletion.png" />
+<Figure caption="The CDKN2A deletion at 60 kb: coverage drops out in the tumor row and not in the normal, the read pileup drops out with it, and the CNV call under them reads CN 0." src="/img/sv_cgiab/driver_cdkn2a_deletion.png" />
 
 #### chr17: loss-with-LOH vs copy-neutral LOH
 

@@ -219,6 +219,47 @@ const HG19_MAIN_CHROMS = [
   'Y',
 ]
 
+// THE SEGMENTED LOG2-RATIO LANE, ONE CONFIG FOR EVERY CGIAB FIGURE THAT CARRIES
+// IT (review, on driver_smad4_loh: "please make all the cgiab use this same
+// look-and-feel for the segmented track in their screenshots"). It was six
+// near-identical inline copies, five of them still on the settings the smad4
+// round replaced, so one track looked like two different tracks depending which
+// figure you were reading.
+//
+// FILLED FROM ZERO, NOT A LINE (review: "the line representation of the copy
+// number here is very confusing, and there is no '0' horizontal line, and the
+// scale from -2 to 1.5 is very unnatural"). All three were one setting apart,
+// and the line was the worst of it: a log2 ratio is a signed quantity read
+// against zero, and a 1px polyline at whole-chromosome scale gives the eye
+// nothing to read it against, so a whole arm at -1 looked like a flat trace
+// slightly lower down. `useBicolor` (the schema default, which these used to
+// switch OFF) pivots at 0, so a loss is a red block hanging below the midline
+// and a gain a blue one above it: the zero line is drawn by the fill rather
+// than needing to be found.
+//
+// The range is symmetric so zero is the middle of the lane and a step down is
+// the same distance as a step up; -2..1.5 put zero at 57% of the height for no
+// reason beyond where the data happened to reach. Still fixed rather than
+// autoscaled, so a step means the same thing from one figure to the next: a
+// homozygous deletion has no reads, BIC-seq2 writes -8.79 for it, and one such
+// segment (chr17:53.93 Mb, the benchmark's CN 0) would flatten every other step
+// on the chromosome into a hairline. That clips off the bottom instead, which
+// is what an unbounded value should do.
+//
+// 130 rather than 90 because tick density follows the lane's height: at 90 the
+// axis drew two labels, the two extremes, which is the other half of "there is
+// no 0 horizontal line".
+const HG008_BICSEQ2_LANE = {
+  trackId: 'hg008_bicseq2',
+  type: 'LinearWiggleDisplay',
+  defaultRendering: 'xyplot',
+  useBicolor: true,
+  displayCrossHatches: true,
+  minScore: -2,
+  maxScore: 2,
+  height: 130,
+}
+
 export const svSpecs: ScreenshotSpec[] = [
   // Gallery page + sv_visualization.md screenshots (live sessions from jbrowse.org)
 
@@ -1491,22 +1532,7 @@ export const svSpecs: ScreenshotSpec[] = [
           // dedicated row
           trackLabels: 'offset',
           tracks: [
-            {
-              trackId: 'hg008_bicseq2',
-              type: 'LinearWiggleDisplay',
-              // step, not scatter: 196 segments genome-wide, so every value is
-              // a plateau and the reader's question is where the plateau moves
-              defaultRendering: 'line',
-              useBicolor: false,
-              displayCrossHatches: true,
-              // same fixed range as the other CNV figures, so a step means the
-              // same thing across the tutorial. A homozygous deletion has no
-              // finite ratio (BIC-seq2 writes it as a large negative) and clips
-              // off the bottom rather than setting the axis for everything else.
-              minScore: -2,
-              maxScore: 1.5,
-              height: 90,
-            },
+            HG008_BICSEQ2_LANE,
             {
               trackId: 'hg008_cnv_indexcov',
               type: 'MultiLinearWiggleDisplay',
@@ -1553,7 +1579,7 @@ export const svSpecs: ScreenshotSpec[] = [
     // calls + chrome; sized rather than left to the default, which leaves blank
     // below
     // 830 left 23.6 css px under the fold, by the run's own report
-    viewportHeight: 855,
+    viewportHeight: 895,
     settleMs: 15000,
   },
 
@@ -1577,25 +1603,7 @@ export const svSpecs: ScreenshotSpec[] = [
           assembly: 'GRCh38_GIABv3',
           loc: 'chr3',
           tracks: [
-            {
-              trackId: 'hg008_bicseq2',
-              type: 'LinearWiggleDisplay',
-              // step, not scatter: 196 segments genome-wide, so every value is
-              // a plateau and the reader's question is where the plateau moves
-              defaultRendering: 'line',
-              useBicolor: false,
-              displayCrossHatches: true,
-              // fixed, and the same range on all four figures, so a step means
-              // the same thing from one to the next. Autoscale cannot do that
-              // here: a homozygous deletion has no reads, so BIC-seq2 writes
-              // -8.79 for it and one such segment (chr17:53.93 Mb, the
-              // benchmark's CN 0) flattens every other step on the chromosome
-              // into a hairline. That segment clips off the bottom instead,
-              // which is what an unbounded value should do.
-              minScore: -2,
-              maxScore: 1.5,
-              height: 90,
-            },
+            HG008_BICSEQ2_LANE,
             {
               trackId: 'hg008_depth',
               type: 'LinearWiggleDisplay',
@@ -1636,72 +1644,18 @@ export const svSpecs: ScreenshotSpec[] = [
     viewportWidth: 1500,
     // taller so the benchmark CNV-calls track below the two wiggles is fully in
     // frame and each wiggle has room
-    viewportHeight: 840,
+    viewportHeight: 875,
     settleMs: 30000,
   },
 
-  // The copy-number ladder the detail figure below sits inside, and the top
-  // half of sv_cgiab/driver_cdkn2a_deletion. `total_copy_number` in this
-  // benchmark is ABSOLUTE -- CN 2 is a diploid segment -- but the 60kb detail
-  // window contains only CN 1 and CN 0, so nothing in it says what the scale's
-  // zero is and "CN 1" reads as if it might be the baseline. It is not: the
-  // whole of 9p has lost a copy in this tumour, which is the ordinary
-  // background a focal CDKN2A deletion is punched into.
-  //
-  // 1.3Mb is the narrowest window that contains all three states, taken from
-  // the benchmark BED rather than chosen: chr9 runs CN 1 from 10,000, CN 0
-  // across 21,952,497-21,972,343 (SV_75, the deletion), CN 1 again to
-  // 22,631,432, then CN 2 across 22,631,434-22,939,870 (SV_76) before dropping
-  // back to CN 1. So the lane reads 1, 0, 1, 2, 1 left to right and the reader
-  // has a diploid segment on screen to measure the others against.
-  //
-  // The segmented log2 ratio rather than the per-base coverage: at 1.3Mb the
-  // coverage is a summary either way, and the ratio is already on the fixed
-  // -2..1.5 axis the rest of the tutorial uses, so a step here means the same
-  // thing it means in the other CNV figures. The two absolute depths are not
-  // comparable across the pair anyway (the tumour BAM is a deeper run), which
-  // is exactly the confusion this half exists to remove.
-  {
-    mode: 'url',
-    name: 'sv_cgiab/cdkn2a_cn_ladder',
-    url: cgiabUrl({
-      sessionTracks: [HG008_BICSEQ2_TRACK],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'GRCh38_GIABv3',
-          loc: 'chr9:21,800,000-23,100,000',
-          trackLabels: 'offset',
-          tracks: [
-            {
-              trackId: 'hg38_ncbiRefSeq_ucsc',
-              type: 'LinearBasicDisplay',
-              geneGlyphMode: 'longestCoding',
-              height: 70,
-            },
-            {
-              trackId: 'hg008_bicseq2',
-              type: 'LinearWiggleDisplay',
-              defaultRendering: 'line',
-              useBicolor: false,
-              displayCrossHatches: true,
-              minScore: -2,
-              maxScore: 1.5,
-              height: 90,
-            },
-            'hg008_cnv_calls',
-          ],
-        },
-      ],
-    }),
-    readyText: 'chr9',
-    readyTimeout: 90000,
-    viewportWidth: 1500,
-    // the CNV lane wraps to a second row here (three segments, two of them
-    // overlapping in label space), so this clears two rows of it
-    viewportHeight: 545,
-    settleMs: 20000,
-  },
+  // sv_cgiab/cdkn2a_cn_ladder was here and is DELETED, with the two-part compose
+  // it was the top half of (review: "why is this now a 2 part figure? i dont
+  // want this. delete first part"). It framed 1.3 Mb of chr9 so the benchmark's
+  // ABSOLUTE total_copy_number had a diploid segment on screen -- the lane read
+  // 1, 0, 1, 2, 1 left to right, which is what says CN 1 is not the baseline
+  // here, because the whole of 9p has lost a copy in this tumour. That is a real
+  // point and it survives as the paragraph above the figure in the tutorial,
+  // which is where a scale caveat belongs; it did not need half a figure.
 
   // CDKN2A focal homozygous deletion (chr9:21,952,497-21,972,343, benchmark
   // SV_75, total CN=0 / hap 0+0) — the canonical PDAC two-hit tumor-suppressor
@@ -1731,7 +1685,7 @@ export const svSpecs: ScreenshotSpec[] = [
   // drops from ~65x to 0 at chr9:21,952,497-21,972,343.
   {
     mode: 'url',
-    name: 'sv_cgiab/cdkn2a_reads',
+    name: 'sv_cgiab/driver_cdkn2a_deletion',
     url: cgiabUrl({
       sessionTracks: [
         HG008_BICSEQ2_TRACK,
@@ -1814,22 +1768,7 @@ export const svSpecs: ScreenshotSpec[] = [
               type: 'LinearBasicDisplay',
               geneGlyphMode: 'longestCoding',
             },
-            {
-              trackId: 'hg008_bicseq2',
-              type: 'LinearWiggleDisplay',
-              // step, not scatter: 196 segments genome-wide, so every value is
-              // a plateau and the reader's question is where the plateau moves
-              defaultRendering: 'line',
-              useBicolor: false,
-              displayCrossHatches: true,
-              // same fixed range as the other CNV figures, so a step means the
-              // same thing across the tutorial. A homozygous deletion has no
-              // finite ratio (BIC-seq2 writes it as a large negative) and clips
-              // off the bottom rather than setting the axis for everything else.
-              minScore: -2,
-              maxScore: 1.5,
-              height: 90,
-            },
+            HG008_BICSEQ2_LANE,
             {
               // multirowxy: one filled profile per sample, stacked on the fixed
               // 0..80 range set above rather than each row's own autoscale.
@@ -1887,18 +1826,8 @@ export const svSpecs: ScreenshotSpec[] = [
     // 800 framed the 120px HiFiCNV depth lane this replaced; the two-row
     // coverage track is 280
     // 1075 left 17.7 css px under the fold, by the run's own report
-    viewportHeight: 1095,
+    viewportHeight: 1135,
     settleMs: 30000,
-  },
-
-  // The two above as one figure: the copy-number ladder over 1.3Mb, then the
-  // same event at 60kb where the reads are. Stacked, because the second is
-  // literally inside the first, and the CNV lane appears in both halves so the
-  // CN 0 label in the detail can be found in the wide one.
-  {
-    mode: 'compose',
-    name: 'sv_cgiab/driver_cdkn2a_deletion',
-    parts: ['sv_cgiab/cdkn2a_cn_ladder', 'sv_cgiab/cdkn2a_reads'],
   },
 
   // KRAS, the central PDAC oncogene: a low-level allelic gain (CN 3, 2+1) on
@@ -1935,25 +1864,7 @@ export const svSpecs: ScreenshotSpec[] = [
             // still here, on the one glyph that is left, because 45 kb of a
             // 4.5 Mb frame is about 15 px whatever else is drawn.
             KRAS_MANE.lane,
-            {
-              trackId: 'hg008_bicseq2',
-              type: 'LinearWiggleDisplay',
-              // step, not scatter: 196 segments genome-wide, so every value is
-              // a plateau and the reader's question is where the plateau moves
-              defaultRendering: 'line',
-              useBicolor: false,
-              displayCrossHatches: true,
-              // fixed, and the same range on all four figures, so a step means
-              // the same thing from one to the next. Autoscale cannot do that
-              // here: a homozygous deletion has no reads, so BIC-seq2 writes
-              // -8.79 for it and one such segment (chr17:53.93 Mb, the
-              // benchmark's CN 0) flattens every other step on the chromosome
-              // into a hairline. That segment clips off the bottom instead,
-              // which is what an unbounded value should do.
-              minScore: -2,
-              maxScore: 1.5,
-              height: 90,
-            },
+            HG008_BICSEQ2_LANE,
             {
               trackId: 'hg008_depth',
               type: 'LinearWiggleDisplay',
@@ -1989,7 +1900,7 @@ export const svSpecs: ScreenshotSpec[] = [
     viewportWidth: 1500,
     // 980 held the 150 px UCSC RefSeq lane this replaced; the one-gene MANE
     // lane is 50, and the run's own reports settle the rest.
-    viewportHeight: 880,
+    viewportHeight: 925,
     settleMs: 20000,
     // No arrow annotation. It existed only because featureHighlights was pinned
     // to the wrong end coordinate and so drew nothing (see the highlight above),
@@ -2034,25 +1945,7 @@ export const svSpecs: ScreenshotSpec[] = [
             // really showing anything like a specific gene"). See maneGeneLane
             // for why it is MANE and why the filter names an accession.
             TP53_MANE.lane,
-            {
-              trackId: 'hg008_bicseq2',
-              type: 'LinearWiggleDisplay',
-              // step, not scatter: 196 segments genome-wide, so every value is
-              // a plateau and the reader's question is where the plateau moves
-              defaultRendering: 'line',
-              useBicolor: false,
-              displayCrossHatches: true,
-              // fixed, and the same range on all four figures, so a step means
-              // the same thing from one to the next. Autoscale cannot do that
-              // here: a homozygous deletion has no reads, so BIC-seq2 writes
-              // -8.79 for it and one such segment (chr17:53.93 Mb, the
-              // benchmark's CN 0) flattens every other step on the chromosome
-              // into a hairline. That segment clips off the bottom instead,
-              // which is what an unbounded value should do.
-              minScore: -2,
-              maxScore: 1.5,
-              height: 90,
-            },
+            HG008_BICSEQ2_LANE,
             {
               trackId: 'hg008_depth',
               type: 'LinearWiggleDisplay',
@@ -2123,41 +2016,7 @@ export const svSpecs: ScreenshotSpec[] = [
             // MANE lane as the chr17 figure's TP53, boxed because 55 kb of
             // chr18 is about 1 px.
             SMAD4_MANE.lane,
-            {
-              trackId: 'hg008_bicseq2',
-              type: 'LinearWiggleDisplay',
-              // FILLED FROM ZERO, NOT A LINE (review: "the line representation
-              // of the copy number here is very confusing, and there is no '0'
-              // horizontal line, and the scale from -2 to 1.5 is very
-              // unnatural"). All three are one setting apart, and the line was
-              // the worst of it: a log2 ratio is a signed quantity read against
-              // zero, and a 1px polyline at whole-chromosome scale gives the
-              // eye nothing to read it against, so a whole arm at -1 looked
-              // like a flat trace slightly lower down.
-              //
-              // `useBicolor` (the schema default, which this used to switch
-              // OFF) pivots at 0: the arm-level loss is now a red block hanging
-              // below the midline and a gain is a blue one above it, so the
-              // zero line is drawn by the fill rather than needing to be found.
-              defaultRendering: 'xyplot',
-              useBicolor: true,
-              displayCrossHatches: true,
-              // symmetric, so zero is the middle of the lane and a step down
-              // means the same distance as a step up. -2..1.5 put zero at 57%
-              // of the height for no reason other than where the data happened
-              // to reach. Still fixed rather than autoscaled, and still the same
-              // range on all four figures, so a step means the same thing from
-              // one to the next: a homozygous deletion has no reads, BIC-seq2
-              // writes -8.79 for it, and one such segment (chr17:53.93 Mb, the
-              // benchmark's CN 0) would flatten every other step on the
-              // chromosome into a hairline. That clips off the bottom instead.
-              minScore: -2,
-              maxScore: 2,
-              // 90 drew two axis labels, the two extremes, which is the other
-              // half of "there is no 0 horizontal line" -- tick density follows
-              // the lane's height.
-              height: 130,
-            },
+            HG008_BICSEQ2_LANE,
             {
               // THE NORMAL, BESIDE THE TUMOUR (review: "use tumor vs normal to
               // contrast, show why the tumor matters here"). Every other lane
@@ -2228,7 +2087,12 @@ export const svSpecs: ScreenshotSpec[] = [
     annotations: [
       {
         type: 'text',
-        text: 'SMAD4: heterozygous loss with LOH (CN 1, 0|1)',
+        // No copy numbers in it: the CNV lane at the foot of the frame already
+        // draws `CN 1 (0|1)` under this exact coordinate, so repeating it here
+        // spends the pill on the one thing the picture does say (and see the
+        // callout rule in website/CLAUDE.md). What the pill is for is the gene,
+        // whose glyph is about a pixel wide at 80 Mb.
+        text: 'SMAD4: heterozygous loss with LOH',
         fontSize: 16,
         textAlign: 'end',
         anchor: {
