@@ -89,12 +89,20 @@ const MAGENTA = 'rgb(255,0,255)'
 const TOMATO = 'rgb(255,99,71)'
 const CORNFLOWER = 'rgb(100,149,237)'
 
+// `heightMode:grow` because these tests COUNT fills, and a fixed-height track
+// is a viewport: the export wraps its body in an SvgClipRect of the track
+// height, so this window at the default 256px shows 45 of the 134 features and
+// none of the 11 UTRs — they lay out below the fold. The counts below used to
+// pass only because the export serialized every glyph into the file and let the
+// clip hide it; `grow` sizes the track to its content (623px here), which is
+// what makes "every default-colored glyph should now be magenta" a statement
+// about the picture rather than about the file.
 const renderGff = (...opts) =>
   renderRegion({
     fasta,
     loc: 'ctgA:1-20000',
     noRasterize: true,
-    trackList: [['gffgz', [gff, 'force:true', ...opts]]],
+    trackList: [['gffgz', [gff, 'force:true', 'heightMode:grow', ...opts]]],
   })
 
 // `color` describes the FEATURE, so it reaches a transcript's UTRs too and the
