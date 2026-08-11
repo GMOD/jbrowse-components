@@ -62,7 +62,7 @@ const BreakpointSplitViewImportForm = observer(
       : ''
 
     return (
-      <Container className={classes.container}>
+      <Container className={classes.container} data-testid="import-form">
         {error ? <ErrorBanner error={error} /> : null}
         <Typography variant="h6">
           Open a breakpoint split view comparing two or more regions

@@ -111,7 +111,10 @@ const LinearGenomeViewImportForm = observer(
     })
 
     return (
-      <Container className={classes.importFormContainer}>
+      <Container
+        className={classes.importFormContainer}
+        data-testid="import-form"
+      >
         {displayError ? <ErrorBanner error={displayError} /> : null}
         <form
           onSubmit={async event => {
