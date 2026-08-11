@@ -64,6 +64,22 @@ export type SyntenyInstanceData = SyntenyGeometry & { colors: Uint32Array }
 // interesting" frission this view is meant to preserve.
 export const MIN_CIGAR_PX_WIDTH = 2
 
+// Location-marker ladder. Markers are emitted every MARKER_SPACING_PX of
+// average on-screen travel along a feature, and only for features at least
+// MIN_MARKER_FEATURE_PX wide on average — a tick every 20px across a 25px
+// ribbon says nothing a reader can use.
+//
+// BOTH are measured over the WHOLE FEATURE, never over a rendered CIGAR
+// segment. That distinction is the bug this pair of constants exists to
+// prevent: markers used to be emitted per rendered segment with the 30px gate
+// applied per segment, and visitCigarRenderedSegments emits a segment as soon
+// as either axis has advanced ~1px, so essentially every segment failed the
+// gate. The visible effect was that turning CIGAR detail on (the default
+// cigarMode is 'full') silently turned location markers OFF for every feature
+// carrying a CIGAR — only a lone multi-megabase M/D/N op ever cleared 30px.
+const MARKER_SPACING_PX = 20
+const MIN_MARKER_FEATURE_PX = 30
+
 // Colored-indel instance kind for an I/D/N op; undefined for any match op.
 function indelKind(op: number) {
   return op === CIGAR_I
@@ -136,15 +152,21 @@ export function buildSyntenyGeometry({
   // Per-feature: did we decide to draw CIGAR detail? Pass 1 always emits
   // KIND_BASE. When true, pass 2 runs the visitor and emits indel quads on top.
   const willDrawCigarArr = new Uint8Array(featureCount)
+  // Per-feature: is this feature wide enough to carry a marker ladder? Decided
+  // once here from the whole feature's width so the budget below and the two
+  // emit sites cannot disagree about it — see MIN_MARKER_FEATURE_PX.
+  const wantMarkersArr = new Uint8Array(featureCount)
 
-  // Single pre-pass: fill alignmentLengths, willDrawCigar, and accumulate the exact
-  // upper-bound capacity. visitCigarRenderedSegments emits a segment only
-  // when bp1 OR bp2 has advanced > 1 px from the segment start, so
-  // per-feature visitor emissions are bounded by widthPx0 + widthPx1
-  // regardless of CIGAR length. Markers from addLocationMarkers are
-  // bounded by (widthPx0 + widthPx1) / 10 (markers spaced >= 20 px apart
-  // along each axis, summed across both axes). These bounds are strict, so
-  // a single allocation matches actual usage — no growable buffers.
+  // Single pre-pass: fill alignmentLengths, willDrawCigar, wantMarkers, and
+  // accumulate the exact upper-bound capacity. visitCigarRenderedSegments emits
+  // a segment only when bp1 OR bp2 has advanced > 1 px from the segment start,
+  // so per-feature visitor emissions are bounded by widthPx0 + widthPx1
+  // regardless of CIGAR length. Markers are bounded by the ladder's own travel,
+  // (widthPx0 + widthPx1) / 2 px at one per MARKER_SPACING_PX — a bound that
+  // holds whether the ladder is fed one whole-feature span or every rendered
+  // CIGAR segment, since the segments' widths sum to the feature's. These
+  // bounds are strict, so a single allocation matches actual usage — no
+  // growable buffers.
   let capacity = 0
   for (let i = 0; i < featureCount; i++) {
     // Per-feature alignment length, used solely for the minAlignmentLength
@@ -170,14 +192,21 @@ export function buildSyntenyGeometry({
       willDrawCigarArr[i] = 1
       cigarBudget = Math.min(cigar.length, Math.ceil(widthPx0 + widthPx1) + 4)
     }
-    // Gated on the same >=30px average width addLocationMarkers emits at, so a
-    // whole-genome view of sub-pixel blocks doesn't reserve 4 unused slots per
+    // Gated on the same whole-feature width the ladder emits at, so a
+    // whole-genome view of sub-pixel blocks doesn't reserve unused slots per
     // feature. The arrays are handed out as `subarray` views, so unused capacity
     // is not just allocated but transferred across the RPC boundary intact.
-    const markerBudget =
-      drawLocationMarkers && (widthPx0 + widthPx1) / 2 >= 30
-        ? Math.ceil((widthPx0 + widthPx1) / 10) + 4
-        : 0
+    //
+    // The ladder walks (widthPx0 + widthPx1) / 2 px of travel at one marker per
+    // MARKER_SPACING_PX, so twice that is a bound with room to spare — slack
+    // that matters because a feature's CIGAR spans need not sum to exactly its
+    // corner span, and addInstance drops silently past capacity.
+    const wantMarkers =
+      drawLocationMarkers && (widthPx0 + widthPx1) / 2 >= MIN_MARKER_FEATURE_PX
+    wantMarkersArr[i] = wantMarkers ? 1 : 0
+    const markerBudget = wantMarkers
+      ? Math.ceil((widthPx0 + widthPx1) / MARKER_SPACING_PX) + 4
+      : 0
     capacity += 1 + cigarBudget + markerBudget
   }
 
@@ -224,52 +253,68 @@ export function buildSyntenyGeometry({
     idx++
   }
 
-  // All four corner values are cumBp. Off-screen check converts to screen px.
-  function addLocationMarkers(
-    bp1Start: number,
-    bp1End: number,
-    bp2End: number,
-    bp2Start: number,
-    featureIdx: number,
-    alignmentLength: number,
-  ) {
-    const width1 = Math.abs(bp1End - bp1Start) * bpPerPxInv0
-    const width2 = Math.abs(bp2End - bp2Start) * bpPerPxInv1
-    const averageWidth = (width1 + width2) / 2
+  // One feature's marker ladder, fed one span at a time. A CIGAR-less feature
+  // feeds its single full span; a CIGAR one feeds every rendered segment in
+  // order. Because `travelled` and `nextAt` persist across the calls, the ladder
+  // is one ruler laid along the whole feature rather than a fresh one per span —
+  // which is what lets it survive a CIGAR whose rendered segments are each ~1px
+  // (see MARKER_SPACING_PX).
+  //
+  // Feeding the segments rather than the corners is also what makes the markers
+  // TRUE: each tick's two endpoints are the pair the CIGAR actually aligns, so a
+  // deletion shears the ladder exactly where the alignment shears. Interpolating
+  // across the whole feature would draw an evenly-sheared ribbon over a
+  // unevenly-aligned one.
+  //
+  // Off-screen spans must still be fed — they carry travel, and skipping them
+  // would slide every later tick — so the emit cull is per marker, not per span.
+  function createMarkerLadder(featureIdx: number, alignmentLength: number) {
+    let travelled = 0
+    let nextAt = 0
 
-    if (averageWidth < 30) {
-      return
-    }
+    // All four values are cumBp, in the natural pairing: bp1Start aligns to
+    // bp2Start (t=0) and bp1End to bp2End (t=1).
+    return function feedSpan(
+      bp1Start: number,
+      bp1End: number,
+      bp2Start: number,
+      bp2End: number,
+    ) {
+      const width1 = Math.abs(bp1End - bp1Start) * bpPerPxInv0
+      const width2 = Math.abs(bp2End - bp2Start) * bpPerPxInv1
+      const span = (width1 + width2) / 2
+      if (span <= 0) {
+        return
+      }
+      const spanEnd = travelled + span
 
-    const targetPixelSpacing = 20
-    const numMarkers = Math.max(
-      2,
-      Math.floor(averageWidth / targetPixelSpacing) + 1,
-    )
+      while (nextAt <= spanEnd) {
+        const t = (nextAt - travelled) / span
+        nextAt += MARKER_SPACING_PX
+        const markerBp1 = bp1Start + (bp1End - bp1Start) * t
+        const markerBp2 = bp2Start + (bp2End - bp2Start) * t
 
-    for (let step = 0; step < numMarkers; step++) {
-      const t = step / (numMarkers - 1)
-      const markerBp1 = bp1Start + (bp1End - bp1Start) * t
-      const markerBp2 = bp2Start + (bp2End - bp2Start) * t
+        const screenTopX = markerBp1 * bpPerPxInv0 - viewOff0
+        const screenBottomX = markerBp2 * bpPerPxInv1 - viewOff1
+        if (
+          (screenTopX < emitLeft || screenTopX > emitRight) &&
+          (screenBottomX < emitLeft || screenBottomX > emitRight)
+        ) {
+          continue
+        }
 
-      const screenTopX = markerBp1 * bpPerPxInv0 - viewOff0
-      const screenBottomX = markerBp2 * bpPerPxInv1 - viewOff1
-      if (
-        (screenTopX < emitLeft || screenTopX > emitRight) &&
-        (screenBottomX < emitLeft || screenBottomX > emitRight)
-      ) {
-        continue
+        addInstance(
+          markerBp1,
+          markerBp1,
+          markerBp2,
+          markerBp2,
+          KIND_MARKER,
+          featureIdx,
+          alignmentLength,
+        )
       }
 
-      addInstance(
-        markerBp1,
-        markerBp1,
-        markerBp2,
-        markerBp2,
-        KIND_MARKER,
-        featureIdx,
-        alignmentLength,
-      )
+      travelled = spanEnd
     }
   }
 
@@ -328,8 +373,11 @@ export function buildSyntenyGeometry({
     if (!isTiled(i)) {
       addInstance(x11, x12, x22, x21, KIND_BASE, i, alignmentLength)
     }
-    if (!willDrawCigarArr[i] && drawLocationMarkers) {
-      addLocationMarkers(x11, x12, x22, x21, i, alignmentLength)
+    // Only the no-CIGAR features ladder here; pass 2 ladders the rest along
+    // their rendered segments, where the alignment is actually known.
+    if (!willDrawCigarArr[i] && wantMarkersArr[i]) {
+      const feedMarkerSpan = createMarkerLadder(i, alignmentLength)
+      feedMarkerSpan(x11, x12, x21, x22)
     }
   }
 
@@ -351,6 +399,10 @@ export function buildSyntenyGeometry({
     const k2 = strand === -1 ? x11 : x12
     const rev1 = k1 < k2 ? 1 : -1
     const rev2 = (x21 < x22 ? 1 : -1) * strand
+
+    const feedMarkerSpan = wantMarkersArr[i]
+      ? createMarkerLadder(i, alignmentLength)
+      : undefined
 
     visitCigarRenderedSegments(
       cigar,
@@ -374,17 +426,9 @@ export function buildSyntenyGeometry({
               alignmentLength,
             )
           }
-          if (drawLocationMarkers) {
-            addLocationMarkers(
-              segBp1Start,
-              segBp1End,
-              segBp2End,
-              segBp2Start,
-              i,
-              alignmentLength,
-            )
-          }
         }
+        // Outside the cull: the ladder has to see every span to keep counting.
+        feedMarkerSpan?.(segBp1Start, segBp1End, segBp2Start, segBp2End)
       },
     )
   }
