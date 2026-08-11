@@ -216,7 +216,8 @@ export interface BaseMenuItem {
    * into every host's first paint. It did, until 2026-08-05; see
    * reference/EAGER_BUNDLE.md.
    *
-   * Set it through `promotableToggleItem`/`promotableRadioItem`, not by hand.
+   * Set it through `promotableToggleItem` / `promotableRadioItems` (or
+   * `promotableRadioItem` for a lone row), not by hand.
    *
    * A `type: 'custom'` row (`makePromotableSizeMenu`) draws its own pin inside
    * its rendered content and still sets this — the declaration is what lets a
@@ -304,10 +305,16 @@ Each variant is one of the interfaces above: `type` is omitted for a plain row,
 arbitrary content inline without dismissing the menu.
 
 Prefer the builders in `@jbrowse/core/ui/menuItems` over writing the objects
-out: `checkboxItem`, `radioItems`, `promotableToggleItem` and
-`promotableRadioItem` produce these shapes, and that entry is React-free, so a
-state model or a plugin `menuItems` module can build rows without pulling the
-Material UI barrel into every host that installs it.
+out: `checkboxItem`, `radioItems`, `promotableToggleItem`,
+`promotableRadioItems` and `promotableRadioItem` produce these shapes, and that
+entry is React-free, so a state model or a plugin `menuItems` module can build
+rows without pulling the Material UI barrel into every host that installs it.
+
+The `promotable*` builders are their plain counterparts plus a "make this the
+default for all tracks of this type" pin, and are built from them, so a
+promotable row and a plain one differ only by that pin. Prefer the plural
+`promotableRadioItems` for a whole radio group: it takes the pin as a factory
+over the option's value, so a group cannot end up one pin short.
 
 ## Root model Menu API
 

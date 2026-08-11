@@ -10,7 +10,7 @@ import {
 } from '@jbrowse/core/configuration'
 import {
   checkboxItem,
-  promotableRadioItem,
+  promotableRadioItems,
   promotableToggleItem,
   radioItems,
 } from '@jbrowse/core/ui/menuItems'
@@ -304,15 +304,13 @@ export default function stateModelFactory(
           return [
             ...superShowSubmenuRadioGroups(),
             { type: 'subHeader' as const, label: 'Subfeature labels' },
-            ...SUBFEATURE_LABEL_OPTIONS.map(option =>
-              promotableRadioItem({
-                label: option.label,
-                checked: self.subfeatureLabels === option.value,
-                onClick: () => {
-                  self.setSubfeatureLabels(option.value)
-                },
-                pin: makePin(self, 'subfeatureLabels', option.value),
-              }),
+            ...promotableRadioItems(
+              SUBFEATURE_LABEL_OPTIONS,
+              self.subfeatureLabels,
+              mode => {
+                self.setSubfeatureLabels(mode)
+              },
+              mode => makePin(self, 'subfeatureLabels', mode),
             ),
           ]
         },

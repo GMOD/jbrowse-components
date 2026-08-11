@@ -140,6 +140,7 @@ export type { MouseState, MouseTracker } from './useMouseTracking.ts'
 export { PinAdornment } from './PinAdornment.tsx'
 export {
   promotableRadioItem,
+  promotableRadioItems,
   promotableToggleItem,
 } from './promotableMenuItems.ts'
 // Not on the React-free `menuItems.ts` entry beside the two builders above: this

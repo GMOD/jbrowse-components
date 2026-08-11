@@ -1,7 +1,7 @@
 /**
  * Menu-item *builders*, and nothing that draws one.
  *
- * These four functions return plain objects, and their callers are state models
+ * These builders return plain objects, and their callers are state models
  * and `menuItems.ts` / `trackMenus.ts` modules across a dozen plugins — code
  * that is evaluated when a plugin installs, before any session can be read.
  * Reaching them through `@jbrowse/core/ui` meant reaching them through a barrel
@@ -23,8 +23,10 @@ export { makeRadioSubMenu } from './radioSubMenu.ts'
 export { showLegendCheckboxItem } from './legendMenuItem.ts'
 export {
   promotableRadioItem,
+  promotableRadioItems,
   promotableToggleItem,
 } from './promotableMenuItems.ts'
+export type { CheckboxItemOptions, RadioOption } from './toggleMenuItems.ts'
 export { staysOpenOnClick } from './MenuTypes.ts'
 export type {
   BaseMenuItem,

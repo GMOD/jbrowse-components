@@ -1,6 +1,6 @@
 import { makeSizeMenu } from '@jbrowse/core/ui'
 import {
-  promotableRadioItem,
+  promotableRadioItems,
   promotableToggleItem,
 } from '@jbrowse/core/ui/menuItems'
 import AltRouteIcon from '@mui/icons-material/AltRoute'
@@ -61,15 +61,13 @@ export function getSashimiMenuItem(model: SashimiModel) {
           {
             label: 'Arc placement',
             type: 'subMenu' as const,
-            subMenu: SASHIMI_MODE_OPTIONS.map(option =>
-              promotableRadioItem({
-                label: option.label,
-                checked: model.sashimiArcsMode === option.value,
-                onClick: () => {
-                  model.setSashimiArcsMode(option.value)
-                },
-                pin: model.sashimiArcsModeDisplayTypeDefault(option.value),
-              }),
+            subMenu: promotableRadioItems(
+              SASHIMI_MODE_OPTIONS,
+              model.sashimiArcsMode,
+              mode => {
+                model.setSashimiArcsMode(mode)
+              },
+              mode => model.sashimiArcsModeDisplayTypeDefault(mode),
             ),
           },
           makeSizeMenu({

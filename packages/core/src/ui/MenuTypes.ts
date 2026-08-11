@@ -63,7 +63,8 @@ export interface BaseMenuItem {
    * into every host's first paint. It did, until 2026-08-05; see
    * reference/EAGER_BUNDLE.md.
    *
-   * Set it through `promotableToggleItem`/`promotableRadioItem`, not by hand.
+   * Set it through `promotableToggleItem` / `promotableRadioItems` (or
+   * `promotableRadioItem` for a lone row), not by hand.
    *
    * A `type: 'custom'` row (`makePromotableSizeMenu`) draws its own pin inside
    * its rendered content and still sets this — the declaration is what lets a

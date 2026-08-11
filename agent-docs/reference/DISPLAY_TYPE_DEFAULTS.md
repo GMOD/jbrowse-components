@@ -642,21 +642,34 @@ dismissing the menu.
 
 The row builders in `promotableMenuItems.ts`:
 
+Each is its plain counterpart in `toggleMenuItems.ts` **plus a pin**, and is
+built that way rather than as a second literal, so the promotable and plain forms
+of a row can only differ by the pin:
+
 - **`promotableToggleItem`** — a `type:'checkbox'` row (native
   hover/sizing/keyboard) for a flat boolean setting (`showSoftClipping`,
   `readConnectionsDown`, `showSashimiLabels`). The checkbox toggles the track's
   value; the pin promotes the setting's on-value. Takes a `pin`, per-value —
-  `makePin(self, slot, onValue)`.
-- **`promotableRadioItem`** — a `type:'radio'` row for one option of a
-  multi-value slot (a `colorBy` scheme, a `heightMode`/`sashimiArcsMode` option,
-  a feature-height preset). **Every option in a group gets a pin, the
-  `promotedBase` value included.** Once a non-base value is promoted, pinning the
-  base back is the only per-value way to undo it from its own row, and a radio
-  group with one row silently missing its trailing control reads as a bug.
-  `pin` stays optional on the row builder, but a group that omits it on some rows
-  and not others is the thing to avoid — build it per option inside the `.map`
-  over the group's values, rather than naming each combination, which is what made
-  `sashimiArcsMode`'s base look unpinnable.
+  `makePin(self, slot, onValue)`. Row built by `checkboxItem`, so it offers that
+  builder's full option set (`subLabel`, `disabled`, `disabledHelpText`, …); it
+  used to drop three of them.
+- **`promotableRadioItems`** — a whole `type:'radio'` group over a multi-value
+  slot, and **the one to reach for**: `radioItems` plus one pin per option, with
+  the pin supplied as a factory `value => makePin(self, slot, value)` so it
+  cannot be a row short. **Every option in a group gets a pin, the `promotedBase`
+  value included** — once a non-base value is promoted, pinning the base back is
+  the only per-value way to undo it from its own row, and a radio group with one
+  row silently missing its trailing control reads as a bug. Building the group in
+  one call is what makes that structural rather than a rule to follow;
+  `sashimiArcsMode`'s base looked unpinnable precisely because the rows had been
+  named by hand. The four groups on it: `heightMode`, `displayMode`,
+  `subfeatureLabels`, `sashimiArcsMode`.
+- **`promotableRadioItem`** — one row, the escape hatch for a group the plural
+  form can't express. Three cases have it: a row with no single value to promote
+  yet (the colorBy "Tag..." row before a tag is picked), a display whose slot
+  isn't promotable at all (the shared colorBy menu on gwas/variants) — `pin` is
+  optional for both — and the alignments size presets, whose group is gated row
+  by row (`needsContent`) and mixes in a non-promotable "Custom..." peer.
 
 Selecting a value **customizes** the track to it (`promotedBase` included), and
 **no radio or checkbox group offers a "follow default" row** — picking a value
@@ -769,7 +782,10 @@ pin itself to this panel is the parked "Promotable-slot UI" proposal in
    itself uses it), and `getConf` is that same raw read through a state model's
    `.configuration`.
 3. Track menu: build a `Pin` with `makePin(self, slot, value?)` and pass it as
-   `pin` to `promotableToggleItem` / `promotableRadioItem`. The track-selector badge
+   `pin` to `promotableToggleItem`, or hand `promotableRadioItems` the factory
+   `value => makePin(self, slot, value)` for a whole radio group (the plural form
+   is what keeps a group from being one pin short — see
+   [UI surface](#ui-surface)). The track-selector badge
    needs **nothing** — it reads the cascade directly off any display.
 4. **Serialization boundaries** (see
    [that section](#serialization-boundaries-getcomputedstyle)): promotable slots

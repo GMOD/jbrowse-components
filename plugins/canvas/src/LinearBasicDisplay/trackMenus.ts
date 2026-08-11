@@ -1,7 +1,7 @@
 import { makePin } from '@jbrowse/core/configuration'
 import { Highlighter } from '@jbrowse/core/ui/Icons'
 import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
-import { checkboxItem, promotableRadioItem } from '@jbrowse/core/ui/menuItems'
+import { checkboxItem, promotableRadioItems } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { pluralize } from '@jbrowse/core/util'
 import { heightModeMenuItems } from '@jbrowse/plugin-linear-genome-view'
@@ -206,15 +206,13 @@ export function featureHeightMenuItems(self: FeatureHeightSelf): MenuItem[] {
         // as the session-wide default for this display type. displayMode
         // is a sentinel promotable slot, so every preset — `normal`
         // included — is customizable back over another session default.
-        ...displayModeOptions.map(option =>
-          promotableRadioItem({
-            label: option.label,
-            checked: self.displayMode === option.value,
-            onClick: () => {
-              self.setDisplayMode(option.value)
-            },
-            pin: makePin(self, 'displayMode', option.value),
-          }),
+        ...promotableRadioItems(
+          displayModeOptions,
+          self.displayMode,
+          mode => {
+            self.setDisplayMode(mode)
+          },
+          mode => makePin(self, 'displayMode', mode),
         ),
         { type: 'subHeader' as const, label: 'Track sizing' },
         ...heightModeMenuItems(self, 'feature'),

@@ -10,21 +10,28 @@ import type { CheckboxMenuItem, RadioMenuItem } from './MenuTypes.ts'
 // live in `promotableMenuItems.ts`; reach for those when the setting has a
 // `Pin`.
 
+// The row decorations neither builder decides for itself. `subLabel` renders
+// inline under the label; `helpText` claims a "?" column that
+// `getMenuColumnFlags` then reserves on EVERY row of the menu, so prefer a
+// subLabel for a short clarifier and keep helpText for real prose.
+// `keepMenuOpen: false` is for a checkbox whose click opens a dialog.
+//
+// Named rather than inlined because `promotableToggleItem` builds its row
+// *through* `checkboxItem` and has to offer the same set — spelling it twice is
+// how the two drifted, the promotable one silently lacking `disabled`.
+export interface CheckboxItemOptions {
+  helpText?: string
+  subLabel?: string
+  disabled?: boolean
+  disabledHelpText?: string
+  keepMenuOpen?: boolean
+}
+
 export function checkboxItem(
   label: string,
   checked: boolean,
   onToggle: () => void,
-  // `subLabel` renders inline under the label; `helpText` claims a "?" column
-  // that `getMenuColumnFlags` then reserves on EVERY row of the menu, so prefer
-  // a subLabel for a short clarifier and keep helpText for real prose.
-  // `keepMenuOpen: false` is for a checkbox whose click opens a dialog.
-  opts?: {
-    helpText?: string
-    subLabel?: string
-    disabled?: boolean
-    disabledHelpText?: string
-    keepMenuOpen?: boolean
-  },
+  opts?: CheckboxItemOptions,
 ): CheckboxMenuItem {
   return {
     label,
@@ -35,13 +42,17 @@ export function checkboxItem(
   }
 }
 
+// One option of a radio group. Exported so `promotableRadioItems` can take the
+// same array this does and hand it straight through.
+export interface RadioOption<T extends string> {
+  value: T
+  label: string
+  subLabel?: string
+  helpText?: string
+}
+
 export function radioItems<T extends string>(
-  options: readonly {
-    value: T
-    label: string
-    subLabel?: string
-    helpText?: string
-  }[],
+  options: readonly RadioOption<T>[],
   current: T | undefined,
   setMode: (m: T) => void,
 ): RadioMenuItem[] {

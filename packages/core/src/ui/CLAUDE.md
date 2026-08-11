@@ -12,13 +12,21 @@ touches the view has to dismiss it first.
 ## Menu items: builders here, components there
 
 `menuItems.ts` is a **React-free** entry — `checkboxItem`, `radioItems`,
-`promotableToggleItem`, `promotableRadioItem`, plus the menu types — and
-`menuItems.purity.test.ts` fails if it, or anything it reaches, imports react,
-@mui or @emotion. It exists because the callers are state models and plugin
-`menuItems`/`trackMenus` modules, which are evaluated when a plugin installs:
-reaching them through the `index.ts` barrel put ~80 Material components in every
-host's first paint. **Build a row from `@jbrowse/core/ui/menuItems`; render one
-from `@jbrowse/core/ui`.**
+`promotableToggleItem`, `promotableRadioItem`, `promotableRadioItems`, plus the
+menu types — and `menuItems.purity.test.ts` fails if it, or anything it reaches,
+imports react, @mui or @emotion. It exists because the callers are state models
+and plugin `menuItems`/`trackMenus` modules, which are evaluated when a plugin
+installs: reaching them through the `index.ts` barrel put ~80 Material
+components in every host's first paint. **Build a row from
+`@jbrowse/core/ui/menuItems`; render one from `@jbrowse/core/ui`.**
+
+Each promotable builder is its plain counterpart **plus a pin**, and is written
+that way — `promotableToggleItem` builds its row through `checkboxItem`,
+`promotableRadioItems` through `radioItems`. So a change to what a settings row
+_is_ reaches both forms, which is the failure `checkboxItem`'s own comment
+records (a menu regressing by omission). The two literals had already drifted:
+the promotable checkbox silently dropped
+`subLabel`/`disabled`/`disabledHelpText`.
 
 The same rule inside a row: a menu item describes its trailing control
 (`pin: { control, label }`) and `menuItemAdornment.tsx` builds `PinAdornment`

@@ -1,5 +1,5 @@
 import { makePin } from '@jbrowse/core/configuration'
-import { promotableRadioItem } from '@jbrowse/core/ui/menuItems'
+import { promotableRadioItems } from '@jbrowse/core/ui/menuItems'
 
 import { getHeightModeOptions } from './heightMode.ts'
 
@@ -30,17 +30,16 @@ export function heightModeMenuItems(
   model: HeightModeMenuModel,
   noun: string,
 ): MenuItem[] {
-  return getHeightModeOptions(noun).map(option =>
-    promotableRadioItem({
-      label: option.label,
-      checked: model.heightMode === option.value,
-      // Like every other radio that only writes a setting. These render
-      // directly below the size presets, which already keep the menu open, so
-      // dismissing here made one submenu behave two ways.
-      onClick: () => {
-        model.setHeightMode(option.value)
-      },
-      pin: makePin(model, 'heightMode', option.value),
-    }),
+  // The rows keep the menu open, like every other radio that only writes a
+  // setting (`radioItems` states nothing, so `CascadingMenu` decides by type).
+  // These render directly below the size presets, which already stay open, so
+  // dismissing here made one submenu behave two ways.
+  return promotableRadioItems(
+    getHeightModeOptions(noun),
+    model.heightMode,
+    mode => {
+      model.setHeightMode(mode)
+    },
+    mode => makePin(model, 'heightMode', mode),
   )
 }
