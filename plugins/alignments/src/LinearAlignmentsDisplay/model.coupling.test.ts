@@ -438,6 +438,32 @@ describe('ordering controls in chain mode', () => {
     expect(item?.disabledHelpText).toMatch(/View as pairs/)
   })
 
+  // The mirror case: `flipStrandLongReadChains` / `colorSupplementaryChains`
+  // are read only inside readColorCategory's isChain branches, so OUTSIDE chain
+  // mode they are the silent no-op — two checkboxes, one ticked by default,
+  // that change nothing.
+  //
+  // colorBy.test.tsx covers the menu builder given an `isChainMode`; this covers
+  // the half that bug actually lived in, which is whether the model hands it the
+  // right one. Driven through the real display, so it asserts nothing about how
+  // the flag is spelled.
+  test('"Supplementary / split reads" greys out until chain mode is on', () => {
+    const display = createDisplay()
+    display.setLinkedReads('off')
+    const off = findMenu(
+      display.trackMenuItems(),
+      'Supplementary / split reads',
+    )
+    expect(off?.disabled).toBe(true)
+    expect(off?.disabledHelpText).toMatch(/View as pairs/)
+
+    display.setLinkedReads('normal')
+    expect(
+      findMenu(display.trackMenuItems(), 'Supplementary / split reads')
+        ?.disabled,
+    ).toBe(false)
+  })
+
   test('the context menu drops its position-anchored sorts too', () => {
     const display = createDisplay()
     display.openContextMenu({
