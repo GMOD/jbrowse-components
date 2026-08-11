@@ -377,21 +377,17 @@ function layoutRefGroups(
   const out = new Map<number, FeatureDataResult>()
   const collapsedIds = new Set<string>()
   for (const [, regions] of groupRawByRef(rpcDataMap, inputs.regionKeys)) {
-    const {
-      layoutMap,
-      layoutHeights,
-      droppedLabelIds,
-      densityFadeIds,
-      collapsed,
-    } = packPreparedRef(
-      prepareRefPack(regions, inputs, metrics),
-      inputs,
-      metrics,
-      prevYByFeatureId,
-    )
+    const { layoutMap, layoutHeights, droppedLabelIds, collapsed } =
+      packPreparedRef(
+        prepareRefPack(regions, inputs, metrics),
+        inputs,
+        metrics,
+        prevYByFeatureId,
+      )
     for (const mark of collapsed) {
       collapsedIds.add(mark.id)
     }
+    const densityFadeIds = pileupFadeIds(collapsed)
     // Clone only now that the packing is decided: cloneMutableFields dominates
     // this function's cost (~4/5 of it at 4k features), so the height probes the
     // fit solve runs skip it entirely (see packedContentHeight) and only the
@@ -1255,7 +1251,6 @@ function packPreparedRef(
       layoutMap,
       layoutHeights,
       droppedLabelIds,
-      densityFadeIds: NO_FADE,
       collapsed: NO_COLLAPSED,
     }
   }
@@ -1346,13 +1341,10 @@ function packPreparedRef(
     layoutHeights.set(id, ext.height)
   }
 
-  return {
-    layoutMap,
-    layoutHeights,
-    droppedLabelIds,
-    densityFadeIds: pileupFadeIds(collapsed),
-    collapsed,
-  }
+  // `collapsed` rather than the fade set it implies: the fit solve's height
+  // probes pack a ref-group ~10 times and read only the rows, so the sweep runs
+  // once, in the committed layout, where its answer is actually rendered.
+  return { layoutMap, layoutHeights, droppedLabelIds, collapsed }
 }
 
 // A mark the density collapse pinned to row 0, and the px span it paints there.
@@ -1362,9 +1354,8 @@ interface CollapsedMark {
   endPx: number
 }
 
-// The "nothing collapsed" pair, for the paths that can't collapse anything.
+// For the paths that can't collapse anything.
 const NO_COLLAPSED: CollapsedMark[] = []
-const NO_FADE: ReadonlySet<string> = new Set()
 
 // Which collapsed marks share pixels with another collapsed mark, i.e. exactly
 // the ones the fade exists for: on row 0 nothing stacks, so two marks over the
