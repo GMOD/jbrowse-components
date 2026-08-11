@@ -271,4 +271,97 @@ describe('clipLargeBlockToWindow window mapping', () => {
     expect(c?.start).toBe(1000)
     expect(c?.end).toBe(1100)
   })
+
+  // The pre-gate reads the block's DECLARED end, while the walk it replaces
+  // reads the CIGAR. Those agree only while the CIGAR's query span is
+  // `end - start`, which is an assumption the walk never had to make — so this
+  // pins where the two part company, in both directions, rather than leaving it
+  // to be rediscovered from a bug report.
+  //
+  // The assumption is one-sided, and only the LEFT half of the gate carries it.
+  describe('the pre-gate trusts `end`, and the walk trusts the CIGAR', () => {
+    // Query span 50000 against a declared span of 1000: the block's ops reach
+    // 150000 while `end` claims 101000. With the window past `end` but inside
+    // the CIGAR's true reach, the gate says "left of the window" and the walk
+    // disagrees. Deliberate — every other consumer already mis-draws a block
+    // whose CIGAR overruns its own coordinates — but it IS new, so it is pinned.
+    const overrunning = {
+      ...bigBlock,
+      start: 100000,
+      end: 101000,
+      mateStart: 100000,
+      mateEnd: 150000,
+      cigar: '50000M',
+    }
+
+    test('left of the window: the gate drops what the walk would keep', () => {
+      const args = {
+        ...overrunning,
+        v1Index: v1({ refName: 'chr1', start: 0, end: 300000 }),
+        refName: 'chr1',
+        // local [120000,120100] — past `end` (101000), inside the CIGAR's reach
+        winCumLo: 120000,
+        winCumHi: 120100,
+      }
+      expect(clipLargeBlockToWindow(args)).toBeUndefined()
+      // ...whereas walking the CIGAR finds ops there. This is the divergence.
+      const walked = clipSyntenyFeature(
+        cig([50000, CIGAR_M]),
+        overrunning.start,
+        overrunning.mateStart,
+        overrunning.mateEnd,
+        overrunning.strand,
+        120000,
+        120100,
+      )
+      expect(walked?.start).toBe(120000)
+      expect(walked?.end).toBe(120100)
+    })
+
+    test('right of the window: the gate is safe however long the CIGAR is', () => {
+      // `start > winEnd` needs no assumption about the CIGAR at all: the walk
+      // begins at `start` and only ever moves forward, so no op it could reach
+      // is left of `start`. Same overrunning block, window on the other side.
+      const args = {
+        ...overrunning,
+        v1Index: v1({ refName: 'chr1', start: 0, end: 300000 }),
+        refName: 'chr1',
+        winCumLo: 1000,
+        winCumHi: 1100,
+      }
+      expect(clipLargeBlockToWindow(args)).toBeUndefined()
+      expect(
+        clipSyntenyFeature(
+          cig([50000, CIGAR_M]),
+          overrunning.start,
+          overrunning.mateStart,
+          overrunning.mateEnd,
+          overrunning.strand,
+          1000,
+          1100,
+        ),
+      ).toBeUndefined()
+    })
+  })
+
+  // winStart/winEnd are clamped to the region, which looks like it could
+  // collapse them onto one point and make the gate drop everything. It cannot,
+  // and the reason is the region selection above it: r0 is only set when the
+  // window's cumBp overlap with the region is > 0, so the unclamped window
+  // always reaches strictly inside [region.start, region.end] from at least one
+  // side, and the floor/ceil widen outward from there. The tightest overlap the
+  // selection admits is a sub-bp sliver, which still leaves a 1 bp window.
+  test('a sub-bp overlap still yields a usable window, not a collapsed one', () => {
+    const c = clipLargeBlockToWindow({
+      ...bigBlock,
+      v1Index: v1({ refName: 'chr1', start: 0, end: 1000 }),
+      refName: 'chr1',
+      // overlaps the region by 0.4 bp at its right edge: floor/ceil widen that
+      // to local [999,1000] rather than to the empty [1000,1000].
+      winCumLo: 999.6,
+      winCumHi: 1500,
+    })
+    expect(c?.start).toBe(999)
+    expect(c?.end).toBe(1000)
+  })
 })
