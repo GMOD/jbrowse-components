@@ -1,9 +1,18 @@
+import { featureDefaultColor } from '@jbrowse/core/ui/palette'
+
 // What the `color`/`utrColor` slots resolve to when unset and the feature
 // carries no BED color of its own (see getBoxColor). These are pure fallbacks,
 // never compared against a stored value: the slots are `maybeColor`, so "unset"
 // is `undefined` and every real color — including these two — stays expressible.
-// Kept dependency-free so the config schema can import them freely.
-export const FEATURE_DEFAULT_COLOR = 'goldenrod'
+// Kept dependency-free (core's palette module imports no toolkit and loads in a
+// worker) so the config schema can import them freely.
+//
+// The box color is core's, not this plugin's: the multi-sample variant display's
+// lane paints an uncolored record with it too, and the two have to be the same
+// goldenrod or a lane over a genotype matrix reads as a different track from a
+// LinearVariantDisplay over the same VCF. Re-exported under this name because
+// every call site in this plugin already spells it this way.
+export const FEATURE_DEFAULT_COLOR = featureDefaultColor
 export const UTR_DEFAULT_COLOR = '#357089'
 
 // The built-in "color by strand" expression. Unlike the two above this IS

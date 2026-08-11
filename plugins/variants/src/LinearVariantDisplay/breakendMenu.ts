@@ -1,19 +1,13 @@
-import { getContainingView, getSession } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
-import {
-  getAssemblyName,
-  hasBreakpointSplitView,
-  launchBreakpointSplitView,
-  makeFindJunctionsNear,
-} from '@jbrowse/sv-core'
+import { hasBreakpointSplitView } from '@jbrowse/sv-core'
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
 
+import { launchFromFeature } from '../shared/breakendSplitViewMenuItem.ts'
 import { SPLIT_VIEW_MENU_LABEL } from './labels.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // The right-click that opened the menu, as much of it as this item needs.
 interface BreakendMenuSelf extends IStateTreeNode {
@@ -43,6 +37,13 @@ interface BreakendMenuSelf extends IStateTreeNode {
 // typed `breakend` and nothing here has to know the spelling. Records with no
 // mate therefore never show the row, rather than showing one that opens a
 // dialog with nothing to open.
+//
+// This display's half is the **fetch**: it paints from slim render arrays, so
+// the record has to be re-fetched to be launched from — the dialog resolves the
+// mate off the feature's own ALT/INFO, which the hit item does not carry (same
+// fetch the menu's "Open variant details" row makes). The launch itself is
+// `launchFromFeature`, shared with the multi-sample displays, whose context menu
+// is built from a feature it already holds and which therefore needs no fetch.
 export function breakendMenuItems(self: BreakendMenuSelf): MenuItem[] {
   const info = self.contextMenuInfo
   if (info?.item.type !== 'breakend' || !hasBreakpointSplitView(self)) {
@@ -55,27 +56,13 @@ export function breakendMenuItems(self: BreakendMenuSelf): MenuItem[] {
       label: SPLIT_VIEW_MENU_LABEL,
       icon: CompareArrowsIcon,
       onClick: () => {
-        // The painting ships slim render arrays, so the record has to be
-        // re-fetched to be launched from: the dialog resolves the mate off the
-        // feature's own ALT/INFO, which the hit item does not carry. Same
-        // fetch the menu's "Open variant details" row makes.
         void (async () => {
           const feature = await self.fetchFullFeature(
             featureId,
             displayedRegionIndex,
           )
-          const view = getContainingView(self) as LinearGenomeViewModel
-          const assemblyName = getAssemblyName(view)
-          if (feature && assemblyName && isAlive(self)) {
-            launchBreakpointSplitView({
-              session: getSession(self),
-              view,
-              assemblyName,
-              feature,
-              // this display reads the callset, so the dialog can offer to open
-              // the whole chain of junctions rather than this one record's ends
-              findJunctionsNear: makeFindJunctionsNear(self, assemblyName),
-            })
+          if (feature && isAlive(self)) {
+            launchFromFeature(self, feature)
           }
         })()
       },

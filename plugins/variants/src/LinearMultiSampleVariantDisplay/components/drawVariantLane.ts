@@ -1,10 +1,8 @@
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
-import {
-  forEachClippedBlock,
-  makeBpMapper,
-} from '@jbrowse/render-core/canvas2dUtils'
+import { forEachClippedBlock } from '@jbrowse/render-core/canvas2dUtils'
 
-import { variantCellSpanPx } from './variantCellSpan.ts'
+import { forEachFeatureSpan } from './forEachFeatureSpan.ts'
+import { drawVariantShape } from './variantShape.ts'
 
 import type { VariantRenderBlock } from './variantRenderingBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -20,6 +18,7 @@ export interface VariantLaneData {
   featurePositions: Uint32Array
   featureInsertedBp: Int32Array
   featureColors: Uint32Array
+  featureShapeTypes: Uint8Array
 }
 
 // Sub-pixel marks would antialias to nothing at the lane's typical zoom, and a
@@ -67,32 +66,34 @@ export function drawVariantLane(
       return region?.featureColors.length ? region : undefined
     },
     (region, block) => {
-      const toX = makeBpMapper(block)
-      const pxPerBp =
-        (block.screenEndPx - block.screenStartPx) / (block.end - block.start)
-      const numFeatures = region.featureColors.length
       // The color the context currently holds, so a run of records sharing one
       // (every record, whenever no `featureColor` override is set — the common
       // case) neither rebuilds the CSS string nor reassigns fillStyle. -1 is
       // "not one of ours", which no packed ABGR can be.
       let currentAbgr = -1
-      for (let f = 0; f < numFeatures; f++) {
-        const { left, width } = variantCellSpanPx({
-          x1: toX(region.featurePositions[f * 2]!),
-          x2: toX(region.featurePositions[f * 2 + 1]!),
-          insertedBp: region.featureInsertedBp[f]!,
-          pxPerBp,
-          // The lane's own height is what an insertion marker in it is sized
-          // against, the same way a cell's marker is sized against the cell.
-          drawnRowHeight: laneHeight,
-        })
+      // The shared per-record walk: the lane's marks and the insertion markers
+      // over the cells come out of one geometry, so a mark cannot sit a pixel
+      // off the column it names. `laneHeight` is the band an insertion marker
+      // is sized against here, the way a row height is for a cell.
+      forEachFeatureSpan(region, block, laneHeight, (f, span) => {
         const abgr = region.featureColors[f]!
         if (abgr !== currentAbgr) {
           ctx.fillStyle = abgrToCssRgba(abgr)
           currentAbgr = abgr
         }
-        ctx.fillRect(left, 0, Math.max(MIN_MARK_WIDTH_PX, width), laneHeight)
-      }
+        // The cells' own glyph painter, so an inversion is the same
+        // left-pointing triangle in the lane as in every row under it — and a
+        // new shape lands in both at once instead of in whichever was
+        // remembered.
+        drawVariantShape(
+          ctx,
+          region.featureShapeTypes[f]!,
+          span.left,
+          0,
+          Math.max(MIN_MARK_WIDTH_PX, span.width),
+          laneHeight,
+        )
+      })
     },
   )
 }

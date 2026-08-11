@@ -16,6 +16,7 @@ import PaletteIcon from '@mui/icons-material/Palette'
 import SplitscreenIcon from '@mui/icons-material/Splitscreen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 
+import { breakendSplitViewMenuItem } from './breakendSplitViewMenuItem.ts'
 import { capitalizeFirst } from './constants.ts'
 import { PHASE_SET_COLOR } from './getPhasedColor.ts'
 // lazy: this file is reached from a state model, so a dialog named here is in
@@ -341,6 +342,13 @@ export function variantContextMenuItems(
             void copyText(self, name ? `${name} ${loc}` : loc, 'variant')
           },
         },
+        // The same row `LinearVariantDisplay` puts on a breakend, off the same
+        // launcher. These displays hold the resolved record already, so they
+        // reach it without that display's re-fetch — see
+        // `breakendSplitViewMenuItem`. Placed above "Sort by genotype" because
+        // it is about the record, as the two rows above it are, where the sort
+        // is about the rows.
+        ...breakendSplitViewMenuItem(self, feat),
         {
           label: 'Sort by genotype',
           icon: SwapVertIcon,

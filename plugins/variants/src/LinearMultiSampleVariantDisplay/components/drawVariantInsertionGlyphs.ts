@@ -3,14 +3,11 @@ import {
   drawInsertionMarker,
   getInsertionType,
 } from '@jbrowse/alignments-core'
-import {
-  forEachClippedBlock,
-  makeBpMapper,
-} from '@jbrowse/render-core/canvas2dUtils'
+import { forEachClippedBlock } from '@jbrowse/render-core/canvas2dUtils'
 
 import { getInsertionColorForDosage } from '../../shared/constants.ts'
+import { forEachFeatureSpan } from './forEachFeatureSpan.ts'
 import { drawnCellHeightPx } from './shaders/variant.js.generated.ts'
-import { variantCellSpanPx } from './variantCellSpan.ts'
 
 import type {
   VariantRenderBlock,
@@ -46,8 +43,12 @@ export interface VariantInsertionGlyphData {
  * Whether a marker is drawn depends only on the feature — every cell of one
  * variant shares its span and its inserted bp — so this walks `featurePositions`
  * (thousands) rather than the cells (features × samples). Records that insert
- * nothing are every SNP and every deletion, and they can't produce a marker, so
- * they never reach the geometry.
+ * nothing are every SNP and every deletion and can't produce a marker;
+ * `variantCellSpanPx` short-circuits them to their plain span, which is false
+ * for `drawsMarker`. (They used to be skipped before the bp→px mapping too. The
+ * walk is shared with the variant lane now, which needs every record, and two
+ * multiplies per skipped feature is not worth two copies of the geometry that
+ * decides where a marker goes.)
  *
  * Split out of the draw so the legend can ask the painter's own question instead
  * of approximating it. Both cheaper approximations are wrong on real figures:
@@ -63,28 +64,25 @@ export function markersForBlock(
   block: VariantRenderBlock,
   drawnRowHeight: number,
 ) {
-  const toX = makeBpMapper(block)
-  const pxPerBp =
-    (block.screenEndPx - block.screenStartPx) / (block.end - block.start)
   const numFeatures = region.featureInsertedBp.length
   const drawsMarker = new Uint8Array(numFeatures)
   const markerXCenter = new Float64Array(numFeatures)
   let anyMarker = false
-  for (let f = 0; f < numFeatures; f++) {
-    const insertedBp = region.featureInsertedBp[f]!
-    if (insertedBp > 0) {
-      const x1 = toX(region.featurePositions[f * 2]!)
-      const x2 = toX(region.featurePositions[f * 2 + 1]!)
-      if (
-        variantCellSpanPx({ x1, x2, insertedBp, pxPerBp, drawnRowHeight })
-          .drawsMarker
-      ) {
-        markerXCenter[f] = (x1 + x2) / 2
+  // `forEachFeatureSpan` is the shared walk — the same one the variant lane
+  // paints from — so a marker cannot be sized against a different span than the
+  // lane mark above it or the cell below it.
+  const pxPerBp = forEachFeatureSpan(
+    region,
+    block,
+    drawnRowHeight,
+    (f, span) => {
+      if (span.drawsMarker) {
+        markerXCenter[f] = span.center
         drawsMarker[f] = 1
         anyMarker = true
       }
-    }
-  }
+    },
+  )
   return { drawsMarker, markerXCenter, anyMarker, pxPerBp }
 }
 

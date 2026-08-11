@@ -1,7 +1,7 @@
 import { set1 } from '@jbrowse/core/ui/colors'
-import { clamp } from '@jbrowse/core/util'
 import { abgrBlue, abgrGreen, abgrRed } from '@jbrowse/core/util/colorBits'
 
+import { clampBandHeight } from './variantTopBands.ts'
 import { getCachedABGR } from './variantWebglUtils.ts'
 
 export const GENOTYPE_SPLITTER = /[/|]/
@@ -20,11 +20,11 @@ export const VARIANT_FEATURE_WIDGET = {
 export const SIDEBAR_BACKGROUND_OPACITY = 0.8
 
 // Both displays' connector-line zone is drag-resizable, and both clamp the drag
-// the same way: the floor keeps the resize handle (drawn at lineZoneHeight - 4)
-// reachable, so a zone dragged shut can always be dragged back open. A config
-// or snapshot may still declare 0 to turn the zone off entirely.
+// through the shared band rule (`clampBandHeight`) — the floor keeps the resize
+// handle, drawn at lineZoneHeight - 4, reachable. A config or snapshot may still
+// declare 0 to turn the zone off entirely; only a *drag* comes through here.
 export function clampLineZoneHeight(n: number) {
-  return clamp(n, 10, 1000)
+  return clampBandHeight(n, 10, 1000)
 }
 
 // Screen row a worker row maps to when the display isn't drawing it (see
@@ -34,14 +34,6 @@ export function clampLineZoneHeight(n: number) {
 // glyph overlay, or in the SVG export. Chosen to be exactly representable in
 // float32 — the GPU paths carry the row index through a `float()` cast.
 export const HIDDEN_ROW = 0x00ffffff
-
-// What the variant lane paints a record with when no `featureColor` override
-// resolves for it. Deliberately the value `plugins/canvas` gives an uncolored
-// feature (`FEATURE_DEFAULT_COLOR`), so a lane above a genotype matrix and a
-// `LinearVariantDisplay` over the same VCF read as the same track. Restated
-// rather than imported: this is reached from the RPC worker, and the canvas
-// plugin's barrel is not something to pull across that boundary for one string.
-export const VARIANT_LANE_DEFAULT_COLOR = 'goldenrod'
 
 // Variant rendering colors
 export const REFERENCE_COLOR = '#ccc'

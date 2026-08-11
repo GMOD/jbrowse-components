@@ -45,9 +45,27 @@ export interface VariantTopBands {
   bottom: number
 }
 
-// Floor/ceiling for a dragged lane. The floor keeps the resize handle grabbable
-// (same reasoning as `clampLineZoneHeight`), and matches the height at which a
-// lane can still show a record as more than a hairline.
+/**
+ * Clamp a drag-resized band height.
+ *
+ * Every band above the rows is drag-resizable and every one of them clamps the
+ * same way, for the same two reasons: the **floor** keeps the resize handle
+ * (drawn just inside the band's bottom edge) reachable, so a band dragged shut
+ * can always be dragged back open, and the **ceiling** stops a drag from
+ * swallowing the plot it sits over — `availableHeight` floors at 0, so an
+ * unbounded band takes the rows to zero height rather than to a scrollbar.
+ *
+ * The bounds differ per band and the rule does not, which is why this is one
+ * function taking them rather than one clamp per band re-deriving the reasoning
+ * — that is how `clampLineZoneHeight` and the matrix's own bespoke clamp drifted
+ * apart before they were unified.
+ */
+export function clampBandHeight(n: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, Math.round(n)))
+}
+
+// Floor/ceiling for a dragged lane. The floor is also about where a lane stops
+// being able to show a record as more than a hairline.
 export const MIN_VARIANT_LANE_HEIGHT = 8
 export const MAX_VARIANT_LANE_HEIGHT = 500
 
@@ -58,10 +76,7 @@ export const MAX_VARIANT_LANE_HEIGHT = 500
 export const DEFAULT_VARIANT_LANE_HEIGHT = 20
 
 export function clampVariantLaneHeight(n: number) {
-  return Math.min(
-    MAX_VARIANT_LANE_HEIGHT,
-    Math.max(MIN_VARIANT_LANE_HEIGHT, Math.round(n)),
-  )
+  return clampBandHeight(n, MIN_VARIANT_LANE_HEIGHT, MAX_VARIANT_LANE_HEIGHT)
 }
 
 export function variantTopBandsGeometry({

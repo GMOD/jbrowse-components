@@ -403,6 +403,18 @@ export const tagColorPalette = [
   'lightsalmon',
 ]
 
+/**
+ * #color theme-colors | Feature (default) | A feature with no color of its own — no `color` slot, no BED itemRgb
+ *
+ * What an uncolored feature is painted. Lives here rather than in the display
+ * that draws most of them because it is not one display's default: the
+ * single-feature variant display resolves it through `plugins/canvas`, and the
+ * multi-sample variant display's lane bakes it into the color array its worker
+ * ships. Two copies of a color two displays are supposed to agree on is exactly
+ * the "never a fallback copy" this module exists to prevent.
+ */
+export const featureDefaultColor = 'goldenrod'
+
 /** #color theme-methylation | methylated5mC | 5-methylcytosine, methylated */
 export const methylated5mC = '#ff0000'
 /** #color theme-methylation | unmethylated5mC | 5-methylcytosine, unmethylated */
