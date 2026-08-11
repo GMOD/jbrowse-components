@@ -7,6 +7,7 @@ import { createGpuContextLostError } from '@jbrowse/render-core/useRenderingBack
 import { act, fireEvent, render, waitFor } from '@testing-library/react'
 import { observer } from 'mobx-react'
 
+import BottomRightIndicators from './BottomRightIndicators.tsx'
 import DisplayChrome, { DisplayStatusChrome } from './DisplayChrome.tsx'
 import { TestChromeModel, stubFactory } from './chromeTestModel.ts'
 
@@ -126,6 +127,83 @@ test('a status set while ready shows the corner chip, not the scrim', async () =
   })
   await waitFor(() => {
     expect(queryByTestId('progress-chip')).toBeNull()
+  })
+})
+
+// Two independent things want the bottom-right corner and neither can see the
+// other: this chip, which the chrome renders, and the display's own control row,
+// which the display renders several components down. Both used to pin themselves
+// to `bottom: 2; right: 2` of the same per-track overlay layer, so they drew on
+// top of each other — the controls winning on z-index, the status text vanishing
+// underneath. It has never been reachable (the two displays with a control row
+// are not among the four that report a ready-phase status), which is the reason
+// to make it structural rather than to leave it: nothing on either side is aware
+// of the constraint. See bottomRightCorner.ts.
+describe('the bottom-right corner has one owner', () => {
+  function renderWithControls(model: Instance<typeof TestChromeModel>) {
+    return render(
+      <DisplayChrome model={model} factory={stubFactory} testid="chrome">
+        {({ canvasRef }) => (
+          <>
+            <canvas data-testid="probe-canvas" ref={canvasRef} />
+            <BottomRightIndicators>
+              <button type="button" data-testid="probe-control">
+                size
+              </button>
+            </BottomRightIndicators>
+          </>
+        )}
+      </DisplayChrome>,
+    )
+  }
+
+  test('the status chip and the control row land in one anchored box', async () => {
+    const model = TestChromeModel.create({})
+    act(() => {
+      model.setStatus('Clustering samples', 0.25)
+    })
+    const { findByTestId, getByTestId } = renderWithControls(model)
+
+    const chip = await findByTestId('progress-chip')
+    const controlRow = getByTestId('probe-control').parentElement!
+    // chip -> its order slot -> the corner; control -> the row -> the corner
+    const corner = chip.parentElement!.parentElement
+    expect(corner).toBe(controlRow.parentElement)
+    expect(corner!.style.position).toBe('absolute')
+    // and the row joined it rather than pinning itself, which is the half that
+    // regresses if someone reinstates the row's own `position: absolute`
+    expect(controlRow.style.position).toBe('')
+  })
+
+  test('the chip stacks above the controls, by explicit order', async () => {
+    const model = TestChromeModel.create({})
+    act(() => {
+      model.setStatus('Clustering samples', 0.25)
+    })
+    const { findByTestId, getByTestId } = renderWithControls(model)
+
+    // `order`, not DOM position: one member arrives as a portal and the other as
+    // an ordinary child, and React documents no ordering between those two
+    const chipSlot = (await findByTestId('progress-chip')).parentElement!
+    const controlRow = getByTestId('probe-control').parentElement!
+    expect(Number(chipSlot.style.order)).toBeLessThan(
+      Number(controlRow.style.order),
+    )
+  })
+
+  test('with no chrome above it the row still anchors itself', () => {
+    const { getByTestId } = render(
+      <BottomRightIndicators>
+        <button type="button" data-testid="probe-control">
+          size
+        </button>
+      </BottomRightIndicators>,
+    )
+    // a display mounted standalone, a unit test, the SVG export: no corner to
+    // join and nothing in it to collide with
+    expect(getByTestId('probe-control').parentElement!.style.position).toBe(
+      'absolute',
+    )
   })
 })
 

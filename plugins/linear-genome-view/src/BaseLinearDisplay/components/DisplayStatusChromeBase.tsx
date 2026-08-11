@@ -1,4 +1,10 @@
+import { useState } from 'react'
+
 import { TrackOverlayPortal } from '../../LinearGenomeView/TrackOverlayPortal.tsx'
+import {
+  BOTTOM_RIGHT_STATUS_ORDER,
+  BottomRightCornerContext,
+} from './bottomRightCorner.ts'
 
 import type { TooLargeMessageModel } from '../../shared/TooLargeMessage.tsx'
 import type { DisplayBackgroundProgressModel } from './DisplayBackgroundProgress.tsx'
@@ -103,6 +109,11 @@ export default function DisplayStatusChromeBase({
   // fields out has none of the staleness hazard the "don't destructure the
   // model" rule is about.
   const { TooLarge, ErrorBar, Loading, BackgroundProgress } = overlays
+  // element state rather than a ref, so `BottomRightIndicators` re-renders once
+  // the corner mounts and its context value flips from null to the node — the
+  // same shape `TrackContainer` uses for the overlay layer, for the same reason.
+  // Declared above the early return because it is a hook.
+  const [cornerEl, setCornerEl] = useState<HTMLDivElement | null>(null)
   if (phase === 'tooLarge') {
     return <TooLarge model={model} />
   }
@@ -142,7 +153,12 @@ export default function DisplayStatusChromeBase({
       // `[data-display-phase]` census counts them as absent, not as terminal.
       data-display-phase={phase}
     >
-      {children}
+      {/* The corner node reaches the body through context, because the row that
+          fills it (`BottomRightIndicators`) is rendered by the display, several
+          components down, and the anchor is rendered by the chrome. */}
+      <BottomRightCornerContext value={cornerEl}>
+        {children}
+      </BottomRightCornerContext>
       {/* The status overlays are the display's *chrome*, not its data, so they
           belong in the TrackContainer's overlay layer rather than inside the
           `contain:strict` sandbox the LGV's inter-region masks paint over.
@@ -170,10 +186,39 @@ export default function DisplayStatusChromeBase({
           // a refetch over already-drawn content keeps the anti-flash delay
           immediate={!drawn}
         />
-        {/* the same status channel, for work with no fetch behind it
-            (clustering) — a corner chip, since the drawn content stays usable
-            meanwhile */}
-        <BackgroundProgress model={model} visible={phase === 'ready'} />
+        {/* The bottom-right corner, owned here so the two things that want it
+            cannot claim it independently — the status chip below, and the
+            display's own control row, which portals in through the context
+            above. See bottomRightCorner.ts. An empty flex box has no size, so a
+            display with neither renders nothing.
+
+            `pointer-events` stays `none`, the overlay layer's own value: the
+            control row sets `auto` on its own box and the chip never wants it.
+            The z-index is the row's old one and matters only where that one
+            did — a display mounted with no TrackContainer to portal into, where
+            this competes with `VerticalScrollbar` at 10. */}
+        <div
+          ref={setCornerEl}
+          style={{
+            position: 'absolute',
+            bottom: 2,
+            right: 2,
+            zIndex: 999,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-end',
+            gap: 4,
+            pointerEvents: 'none',
+          }}
+        >
+          {/* the same status channel, for work with no fetch behind it
+              (clustering) — a corner chip, since the drawn content stays usable
+              meanwhile. In flow here rather than anchoring itself, which is
+              what used to put it underneath the control row. */}
+          <div style={{ order: BOTTOM_RIGHT_STATUS_ORDER }}>
+            <BackgroundProgress model={model} visible={phase === 'ready'} />
+          </div>
+        </div>
       </TrackOverlayPortal>
     </div>
   )

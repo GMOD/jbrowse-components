@@ -266,16 +266,16 @@ const PlainBackgroundProgress = observer(function PlainBackgroundProgress({
   model: DisplayBackgroundProgressModel
   visible: boolean
 }) {
+  // The only state that renders no positioned box of its own: the chrome
+  // anchors the bottom-right corner and shares it with the display's control
+  // row, so this is laid out there. Claiming `inset: 0` here would collapse
+  // against that box, and pinning to the corner would sit under the row.
   return visible && model.statusMessage ? (
-    <div
-      style={{ ...overlayBox, alignItems: 'flex-end', justifyContent: 'right' }}
-    >
-      <div style={chip} data-testid="progress-chip">
-        {model.statusMessage}
-        {model.statusProgress === undefined
-          ? null
-          : ` ${Math.round(model.statusProgress * 100)}%`}
-      </div>
+    <div style={chip} data-testid="progress-chip">
+      {model.statusMessage}
+      {model.statusProgress === undefined
+        ? null
+        : ` ${Math.round(model.statusProgress * 100)}%`}
     </div>
   ) : null
 })

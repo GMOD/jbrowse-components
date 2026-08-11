@@ -1,4 +1,12 @@
+import { use } from 'react'
+
+import { createPortal } from 'react-dom'
+
 import { TrackOverlayPortal } from '../../LinearGenomeView/TrackOverlayPortal.tsx'
+import {
+  BOTTOM_RIGHT_CONTROLS_ORDER,
+  BottomRightCornerContext,
+} from './bottomRightCorner.ts'
 
 import type { ReactNode } from 'react'
 
@@ -8,6 +16,13 @@ import type { ReactNode } from 'react'
 // Children are self-gating (each renders null when inactive); an all-null flex
 // container has no size, so there's no need to also track "is anything visible"
 // here — callers just render every indicator unconditionally.
+//
+// The corner is shared with one thing this row cannot see: the chrome's
+// background-progress chip, which is rendered by the overlay set rather than by
+// the display. Both used to pin themselves to the same coordinates of the same
+// overlay layer, so the chrome anchors the corner now and this row is a member
+// of it (`bottomRightCorner.ts`) rather than a second box over it. Which is what
+// the paragraph above always claimed and, for that one chip, was not.
 //
 // Lives here rather than in one display's plugin because the two things it does
 // beyond layout are both contracts, and a display that re-rolled the row would
@@ -40,31 +55,57 @@ function BottomRightIndicators({
    * underneath it. Displays that scroll with a native overflow container pass
    * that container's scrollbar width; displays drawing `VerticalScrollbar` pass
    * its track width.
+   *
+   * It shifts this row alone rather than the whole corner, and that is right in
+   * both directions: the row is the rightmost member, so the status chip stacked
+   * above it clears the scrollbar transitively, and a display showing only the
+   * chip is where the chip was before.
    */
   scrollbarWidth?: number
   children: ReactNode
 }) {
-  return (
-    <TrackOverlayPortal>
-      <div
-        style={{
-          position: 'absolute',
-          bottom: 2,
-          right: scrollbarWidth + 2,
-          zIndex: OVERFLOW_INDICATOR_Z_INDEX,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 4,
-          pointerEvents: 'auto',
-        }}
-        data-gesture-owner="true"
-        onPointerDown={event => {
-          event.stopPropagation()
-        }}
-      >
-        {children}
-      </div>
-    </TrackOverlayPortal>
+  // The chrome anchors the corner and puts its background-progress chip in it,
+  // so landing in that box is what keeps the two from being drawn on top of
+  // each other — see bottomRightCorner.ts. Null outside a chrome (a display an
+  // embedder mounted standalone, a unit test, the SVG export): claim the corner
+  // as this always did, there being nothing else in it to collide with.
+  const cornerEl = use(BottomRightCornerContext)
+  const row = (
+    <div
+      style={
+        cornerEl
+          ? {
+              // an in-flow member of the corner's column; it owns the position
+              order: BOTTOM_RIGHT_CONTROLS_ORDER,
+              marginRight: scrollbarWidth,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+              pointerEvents: 'auto',
+            }
+          : {
+              position: 'absolute',
+              bottom: 2,
+              right: scrollbarWidth + 2,
+              zIndex: OVERFLOW_INDICATOR_Z_INDEX,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+              pointerEvents: 'auto',
+            }
+      }
+      data-gesture-owner="true"
+      onPointerDown={event => {
+        event.stopPropagation()
+      }}
+    >
+      {children}
+    </div>
+  )
+  return cornerEl ? (
+    createPortal(row, cornerEl)
+  ) : (
+    <TrackOverlayPortal>{row}</TrackOverlayPortal>
   )
 }
 

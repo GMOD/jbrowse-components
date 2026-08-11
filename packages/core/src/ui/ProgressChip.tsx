@@ -14,10 +14,6 @@ const appear = keyframes`
 
 const useStyles = makeStyles()(theme => ({
   root: {
-    position: 'absolute',
-    bottom: 2,
-    right: 2,
-    zIndex: 2,
     pointerEvents: 'none',
     padding: '0 4px',
     borderRadius: 4,
@@ -27,6 +23,18 @@ const useStyles = makeStyles()(theme => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+  },
+  // Separated from the presentation above because the two callers differ on who
+  // owns the corner. The comparative views drop this chip straight into their
+  // own positioned box and want it anchored; `DisplayChrome` puts it in a corner
+  // the chrome itself anchors and shares with the display's control row, and an
+  // absolutely-positioned chip there sits *under* that row instead of above it
+  // — which is the collision this split fixes.
+  anchored: {
+    position: 'absolute',
+    bottom: 2,
+    right: 2,
+    zIndex: 2,
   },
   bar: {
     width: 120,
@@ -44,17 +52,33 @@ const useStyles = makeStyles()(theme => ({
  * Pure presentation — the caller owns the gate (its own `refetching` getter, or
  * the chrome's "a status is set while the phase is ready") and the containing
  * element owns the positioning context.
+ *
+ * It also owns the corner, unless `anchored={false}` says something else does.
+ * That escape exists because on the LGV side the corner is shared: the chrome
+ * anchors one box for both this and the display's control row, and a chip that
+ * pins itself lands *under* that row rather than above it.
  */
 const ProgressChip = observer(function ProgressChip({
   statusMessage,
   statusProgress,
+  anchored = true,
 }: {
   statusMessage?: string
   statusProgress?: number
+  /**
+   * Pin to the bottom-right of the containing block (the default, and what a
+   * caller dropping this into its own positioned box wants). Pass `false` where
+   * something else already owns that corner and lays this out — `DisplayChrome`
+   * shares it with the display's control row.
+   */
+  anchored?: boolean
 }) {
-  const { classes } = useStyles()
+  const { classes, cx } = useStyles()
   return (
-    <div className={classes.root} data-testid="progress-chip">
+    <div
+      className={cx(classes.root, anchored ? classes.anchored : undefined)}
+      data-testid="progress-chip"
+    >
       <LoadingProgress
         message={statusMessage}
         fraction={statusProgress}

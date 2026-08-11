@@ -60,6 +60,15 @@ description: The shared display status chrome that owns loading, error, and retr
   (`DisplayBackgroundProgress`), not the scrim: the drawn content is still
   usable. Report such work through the display's own `setStatusMessage` and it
   shows up; don't add a phase for it.
+- **The bottom-right corner has one owner, and it is the chrome.** That chip and
+  the display's own control row (`BottomRightIndicators`) both want the corner
+  and neither can see the other — one is rendered by the overlay set, the other
+  by the display several components down, and both used to pin themselves to
+  `bottom: 2; right: 2` of the same per-track overlay layer. The chrome anchors
+  a single flex column there and publishes it through `BottomRightCornerContext`;
+  the chip is its first member and the row portals in as its second. So
+  `BackgroundProgress` is the one overlay state that does **not** own its box —
+  a replacement set renders an in-flow chip (see `bottomRightCorner.ts`).
 - Always: a thin outer owns the chrome, a named observer body owns the canvas
   and overlays, joined by a render-prop child.
 - **The pointer measurement is the chrome's too**, because it owns the element

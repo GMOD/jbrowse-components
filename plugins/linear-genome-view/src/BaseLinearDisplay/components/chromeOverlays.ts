@@ -27,6 +27,10 @@ import type { ComponentType } from 'react'
 // cancel -- has to set `pointer-events:auto` on its own positioned box. The
 // shipped sets and the examples-site set all do; the states own their box, so
 // nothing can default it for them.
+//
+// `BackgroundProgress` is the exception to that last clause -- the chrome owns
+// its placement, because its corner is shared with something the overlay set
+// cannot see. See its entry below.
 export interface DisplayChromeOverlays {
   /**
    * GPU/render-backend failure. A subtree-replacing terminal state: the canvas
@@ -67,6 +71,15 @@ export interface DisplayChromeOverlays {
   /**
    * Status for work with no fetch behind it, while the phase is `ready`.
    * Mounted unconditionally; gates on `visible` itself.
+   *
+   * **The one state that does not own its own box.** The chrome anchors the
+   * bottom-right corner and lays this out there, because that corner is shared
+   * with the display's own control row (`BottomRightIndicators`) and two boxes
+   * claiming it independently is exactly what they used to do — each pinning
+   * itself to `bottom: 2; right: 2` of the same overlay layer, the controls
+   * winning on z-index and the status text vanishing underneath. So render an
+   * **in-flow** chip: no `position`, no `inset`, no corner offsets. Sizing and
+   * colours are yours; placement is not. See `bottomRightCorner.ts`.
    */
   BackgroundProgress: ComponentType<{
     model: DisplayBackgroundProgressModel
