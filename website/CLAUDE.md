@@ -56,6 +56,5 @@ gitignored). `deploy_staging.sh` wraps a staging deploy.
   with a citation, structural, or emitted by a script in the repo.
 - Captions name the tracks and the one visual takeaway. If a caption needs a
   paragraph of background, fix the figure.
-- A figure a non-specialist can't read is a bad figure, however correct.
 - Card titles: dataset first, then the pipeline that produced the picture. No
   numerals, no JBrowse vocabulary, ~32 characters.
