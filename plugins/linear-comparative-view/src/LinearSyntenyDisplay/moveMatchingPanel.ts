@@ -60,11 +60,13 @@ export async function moveMatchingPanel({
   toMate: boolean
 }) {
   const session = getSession(model)
-  const window = visibleSpanOnRefName(
+  // not named `window`: this runs on the main thread, where that shadows the
+  // global and reads as a mistake even where it is not one
+  const stayingWindow = visibleSpanOnRefName(
     stayingView,
     toMate ? feat.refName : feat.mate.refName,
   )
-  if (!window) {
+  if (!stayingWindow) {
     return
   }
   const span = await session.rpcManager.call(
@@ -84,7 +86,7 @@ export async function moveMatchingPanel({
         },
       ],
       featureId: feat.id,
-      window,
+      window: stayingWindow,
       toMate,
       // the resolved tier, matching the fetch that produced this feature id:
       // ids are not comparable across a tiered PIF's two tiers
