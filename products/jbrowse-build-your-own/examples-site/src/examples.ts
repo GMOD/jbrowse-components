@@ -165,6 +165,30 @@ export const pages: ExamplePage[] = [
     ],
   },
   {
+    slug: 'search-by-name',
+    title: 'Searching by name',
+    description:
+      'Point the view at a text index and a location box takes gene names, plus the ambiguous-hit case a host drawing its own chrome renders nothing for.',
+    group: 'Your own UI',
+    // After the page that drives the view, because the first half of it is that
+    // page's location box with one config key added -- and before the highlight
+    // page, whose whole premise is arriving from a search hit.
+    sections: [
+      {
+        slug: 'search-by-name',
+        title: 'A name instead of a locstring',
+        description:
+          'One `createViewState` option, and `navToLocString` resolves names itself. Four inputs, four different paths through it.',
+      },
+      {
+        slug: 'your-own-search-results',
+        title: 'Your own list of hits',
+        description:
+          '`fetchResults` is the search without the navigation, so the ambiguity is yours to resolve and no dialog is ever queued.',
+      },
+    ],
+  },
+  {
     slug: 'highlight-a-region',
     title: 'Highlighting a region',
     description:

@@ -61,6 +61,7 @@ const MUI_BUDGET = {
   'loading-and-errors': 0,
   'scalebar-and-labels': 0,
   'controlling-the-view': 0,
+  'search-by-name': 0,
   'highlight-a-region': 0,
   'web-workers': 0,
   // measured, not chosen -- see the note below the budget

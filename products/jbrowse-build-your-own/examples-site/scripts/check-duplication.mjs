@@ -31,7 +31,7 @@ const DIVERGES = {
     'each page declares its own tracks, start location and return shape',
   trackIds: "the page's own track list",
   featureTrack:
-    'the feature-details page gives the genes track more height, being the only track on it',
+    'the feature-details page gives the genes track more height, being the only track on it; the search pages must additionally name it `gff3tabix_genes`, the trackId the hosted trix index was built against',
   BrowserView:
     'pages with no session alias the view directly; the rest destructure it',
 }

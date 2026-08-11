@@ -1,0 +1,22 @@
+---
+import SearchByName from '../examples/SearchByName.tsx'
+import SearchByNameCode from '../examples/SearchByName.tsx?raw'
+import SearchResultsDropdown from '../examples/SearchResultsDropdown.tsx'
+import SearchResultsDropdownCode from '../examples/SearchResultsDropdown.tsx?raw'
+import { getPage, section } from '../examples.ts'
+import Layout from '../layouts/ExampleLayout.astro'
+import Section from '../layouts/ExampleSection.astro'
+
+const page = getPage('search-by-name')
+const byName = section(page, 'search-by-name')
+const ownResults = section(page, 'your-own-search-results')
+---
+
+<Layout page={page}>
+  <Section {...byName} code={SearchByNameCode}>
+    <SearchByName client:only="react" />
+  </Section>
+  <Section {...ownResults} code={SearchResultsDropdownCode}>
+    <SearchResultsDropdown client:only="react" />
+  </Section>
+</Layout>
