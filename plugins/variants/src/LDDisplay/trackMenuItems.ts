@@ -15,6 +15,7 @@ import { AddFiltersDialog, LDFilterDialog } from '../shared/lazyDialogs.ts'
 import type { LDMethod, LDMetric, LDSnp } from '../VariantRPC/getLDMatrix.ts'
 import type { LDFilterModel } from '../shared/components/LDFilterDialog.tsx'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // Structural, so the menu's shape is testable without an MST instance (same
@@ -165,17 +166,43 @@ function showMenuItems(self: LDMenuSelf): MenuItem[] {
   ]
 }
 
-// The three LD-specific thresholds plus the JEXL list, counted by whether each
-// is doing anything rather than by whether it was edited — `minorAlleleFrequencyFilter`
-// ships at 0.1 and IS dropping variants, which until this label existed the
-// display said nowhere at all. 0 is the off value for all three.
-function ldFilterCount(self: LDMenuSelf) {
-  return (
-    (self.minorAlleleFrequencyFilter > 0 ? 1 : 0) +
-    (self.hweFilterThreshold > 0 ? 1 : 0) +
-    (self.callRateFilter > 0 ? 1 : 0) +
-    (self.jexlFilters?.length ?? 0)
-  )
+// The three LD-specific thresholds plus the JEXL list, declared once (see
+// `Reversible`) so the count in the label and what "Clear all filters" clears
+// come from the same place — they were two lists before, and a threshold added
+// to one and not the other is a filter the clear silently leaves on.
+//
+// Counted by whether each is DOING anything rather than by whether it was
+// edited: `minorAlleleFrequencyFilter` ships at 0.1 and IS dropping variants,
+// which until this label existed the display said nowhere at all. 0 is the off
+// value for all three. None names its own undo row — a threshold's recovery is
+// the dialog's own field, and the group clear is what resets the set.
+function ldNarrowings(self: LDMenuSelf): Reversibles {
+  return {
+    maf: {
+      count: self.minorAlleleFrequencyFilter > 0 ? 1 : 0,
+      clear: () => {
+        self.setMafFilter(0)
+      },
+    },
+    hwe: {
+      count: self.hweFilterThreshold > 0 ? 1 : 0,
+      clear: () => {
+        self.setHweFilter(0)
+      },
+    },
+    callRate: {
+      count: self.callRateFilter > 0 ? 1 : 0,
+      clear: () => {
+        self.setCallRateFilter(0)
+      },
+    },
+    jexlFilters: {
+      count: self.jexlFilters?.length ?? 0,
+      clear: () => {
+        self.setJexlFilters(undefined)
+      },
+    },
+  }
 }
 
 // Filters act on the genotypes LD is computed from, so a pre-computed file —
@@ -185,7 +212,7 @@ function ldFilterMenuItems(self: LDMenuSelf): MenuItem[] {
   return self.isPrecomputedLD
     ? []
     : filterMenuItems({
-        activeCount: ldFilterCount(self),
+        narrowings: ldNarrowings(self),
         subItems: [
           {
             label: 'LD-specific filters...',
@@ -207,15 +234,6 @@ function ldFilterMenuItems(self: LDMenuSelf): MenuItem[] {
             },
           },
         ],
-        // Every threshold back to its off value. Reachable from the dialogs too,
-        // one field at a time; this is the one action that clears the set the
-        // count above describes.
-        onClear: () => {
-          self.setMafFilter(0)
-          self.setHweFilter(0)
-          self.setCallRateFilter(0)
-          self.setJexlFilters(undefined)
-        },
       })
 }
 

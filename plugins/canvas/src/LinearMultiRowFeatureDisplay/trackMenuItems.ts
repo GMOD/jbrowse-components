@@ -1,5 +1,6 @@
 import { lazy } from 'react'
 
+import { undoItems } from '@jbrowse/core/ui/filterMenuItems'
 import {
   checkboxItem,
   showLegendCheckboxItem,
@@ -20,6 +21,7 @@ import { MIN_SEPARATOR_ROW_PX } from './rendering/rowBand.ts'
 import type { LegendEntry } from './rendering/colorLegend.ts'
 import type { MultiRowSource } from './sourcesLogic.ts'
 import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
+import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { TreeLayoutModel } from '@jbrowse/tree-sidebar'
 
@@ -127,20 +129,28 @@ function showMenuItems(self: MultiRowMenuSelf): MenuItem[] {
   ]
 }
 
-// The only recovery once the legend — where hidden categories render dimmed —
-// has been dismissed, and the only one at all when the legend is gone entirely
-// (below).
-function showAllCategoriesItem(self: MultiRowMenuSelf): MenuItem[] {
-  return self.hiddenCategories.length
-    ? [
-        {
-          label: 'Show all categories',
-          onClick: () => {
-            self.setHiddenCategories([])
-          },
-        },
-      ]
-    : []
+// What this display hides, declared once (see `Reversible`). Only the category
+// set for now — `subtreeFilter` is tree-sidebar's and carries its own row
+// (`clearSubtreeFilterMenuItems`).
+//
+// This display has no "Filter by... (n)" family to fold these into, so nothing
+// counts them out loud: a track with categories hidden says so only through the
+// legend's dimmed rows and the "Categories (n hidden)" label. Declaring them
+// here is what would make a count possible if that is ever wanted; today it just
+// single-sources the row below.
+function multiRowNarrowings(self: MultiRowMenuSelf): Reversibles {
+  return {
+    hiddenCategories: {
+      count: self.hiddenCategories.length,
+      // The only recovery once the legend — where hidden categories render
+      // dimmed — has been dismissed, and the only one at all when the legend is
+      // gone entirely (see categoriesMenuItems).
+      label: () => 'Show all categories',
+      clear: () => {
+        self.setHiddenCategories([])
+      },
+    },
+  }
 }
 
 // Per-category visibility. Stays its own submenu rather than folding into
@@ -166,7 +176,7 @@ function categoriesMenuItems(self: MultiRowMenuSelf): MenuItem[] {
         {
           label: hidden ? `Categories (${hidden} hidden)` : 'Categories',
           icon: LegendToggleIcon,
-          subMenu: [...toggles, ...showAllCategoriesItem(self)],
+          subMenu: [...toggles, ...undoItems(multiRowNarrowings(self))],
         },
       ]
     : []

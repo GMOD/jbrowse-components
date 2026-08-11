@@ -40,6 +40,14 @@ function activeFilterCount(filterBy: FilterBy) {
 //
 // No "Clear all filters" row: the dialog owns the reset, and its own controls
 // are where a user who opened it expects to find one.
+//
+// Which is also why this display does NOT declare `narrowings` the way the
+// canvas, LD and multi-sample variant menus do. That shape pairs a count with a
+// `clear` per entry so the two cannot drift — worth having wherever the menu
+// itself offers the undo, which is exactly what this one declines to do. Adopting
+// it here would mean writing three `clear` closures nothing calls, or adding a
+// flag to suppress the group row the declaration implies. Both are ceremony
+// around a decision already made, so this keeps the plain count.
 export function getFiltersMenuItems(model: FiltersModel) {
   return filterMenuItems({
     activeCount: activeFilterCount(model.filterBy),

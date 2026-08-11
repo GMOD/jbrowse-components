@@ -218,12 +218,34 @@ export function variantTrackMenuItems(
       ],
     },
     ...filterMenuItems({
-      // Each counted by whether it is doing anything, not by whether it was
+      // Declared once (see `Reversible`), so the count in the label and what
+      // "Clear all filters" clears come from the same list — they were two,
+      // and a filter added to one and not the other is one the clear leaves on.
+      //
+      // Each counted by whether it is DOING anything, not by whether it was
       // edited: MAF is off at 0 and missingness at 1 (keep every variant).
-      activeCount:
-        (self.minorAlleleFrequencyFilter > 0 ? 1 : 0) +
-        (self.maxMissingnessFilter < 1 ? 1 : 0) +
-        (self.jexlFilters?.length ?? 0),
+      // Neither slider names its own undo row; each has its own reset inline
+      // below, and the group clear is what resets the whole set.
+      narrowings: {
+        maf: {
+          count: self.minorAlleleFrequencyFilter > 0 ? 1 : 0,
+          clear: () => {
+            self.setMafFilter(0)
+          },
+        },
+        missingness: {
+          count: self.maxMissingnessFilter < 1 ? 1 : 0,
+          clear: () => {
+            self.setMaxMissingnessFilter(1)
+          },
+        },
+        jexlFilters: {
+          count: self.jexlFilters?.length ?? 0,
+          clear: () => {
+            self.setJexlFilters(undefined)
+          },
+        },
+      },
       onEdit: () => {
         getSession(self).queueDialog(handleClose => [
           AddFiltersDialog,
@@ -273,13 +295,6 @@ export function variantTrackMenuItems(
           },
         }),
       ],
-      // Each slider resets individually; this is the one action that clears the
-      // whole set the count names, JEXL filters included.
-      onClear: () => {
-        self.setMafFilter(0)
-        self.setMaxMissingnessFilter(1)
-        self.setJexlFilters(undefined)
-      },
     }),
     clusteringMenuItem(self, {
       label: 'Cluster rows by genotype...',
