@@ -152,7 +152,11 @@ test('autorun sizes the mouseover canvas to view width x content height', () => 
 
 // Reading the raw `rowHeight` here painted zero-height rows, so hovering the
 // tree highlighted nothing in fit-to-height mode (variants' default).
-test('subtree hover highlights rows at the resolved row height', () => {
+//
+// One rect for the whole run, not one per row: the fill is translucent and the
+// fit-to-height row height is fractional, so abutting rects blend twice over the
+// pixel they share and draw a seam at every row boundary.
+test('subtree hover highlights the rows as one rect at the resolved row height', () => {
   const { display } = createDisplay('view3').view
   setupTreeDrawingAutorun(display)
   display.setMouseoverCanvasRef(document.createElement('canvas'))
@@ -164,9 +168,29 @@ test('subtree hover highlights rows at the resolved row height', () => {
   const node = display.hierarchy.children![0]!
   display.setHoveredTreeNode({ node, descendantNames: getLeafNames(node) })
 
+  expect(fillRect.mock.calls).toEqual([[0, 0, 800, 20]])
+})
+
+// A hover whose rows are NOT contiguous still has to mark each block where it
+// really is. Reachable while the row set is mid-change: the tree is still drawn
+// (the names all match) but a display decorating `sources` can interleave them.
+test('subtree hover paints one rect per contiguous block of rows', () => {
+  const { display } = createDisplay('view5').view
+  setupTreeDrawingAutorun(display)
+  display.setMouseoverCanvasRef(document.createElement('canvas'))
+
+  const fillRect = stubCtx.fillRect as unknown as jest.Mock
+  fillRect.mockClear()
+
+  // rows are a,b,c,d; highlight a and c
+  display.setHoveredTreeNode({
+    node: display.hierarchy,
+    descendantNames: ['a', 'c'],
+  })
+
   expect(fillRect.mock.calls).toEqual([
     [0, 0, 800, 10],
-    [0, 10, 800, 10],
+    [0, 20, 800, 10],
   ])
 })
 

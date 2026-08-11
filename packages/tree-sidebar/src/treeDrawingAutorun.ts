@@ -4,6 +4,7 @@ import { getPreparedCanvas2D } from '@jbrowse/render-core/canvas2dUtils'
 import { autorun } from 'mobx'
 
 import { links, treeLinkSegments, treeStroke } from './hierarchy.ts'
+import { rowRuns } from './rowRuns.ts'
 import { treeContentHeight } from './treeSidebarGeometry.ts'
 
 import type { TreeDrawingModel } from './types.ts'
@@ -100,13 +101,23 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           ctx.translate(0, -scrollTop)
 
           ctx.fillStyle = 'rgba(255,165,0,0.2)'
+          // One rect per contiguous BLOCK of highlighted rows, not one per row:
+          // this fill is translucent and the row height is fractional in
+          // fit-to-height mode, so a rect per row blends twice over each shared
+          // pixel and seams the highlight at every row boundary. See `rowRuns`.
+          // A hovered subtree is contiguous whenever the tree is drawn at all
+          // (`treeDescribesRows`), so this is normally a single rect.
           const descendantSet = new Set(hoveredTreeNode.descendantNames)
-          for (let i = 0, l = sources.length; i < l; i++) {
-            const source = sources[i]!
-            if (descendantSet.has(source.name)) {
-              const y = i * effectiveRowHeight
-              ctx.fillRect(0, y, viewWidth, effectiveRowHeight)
-            }
+          const runs = rowRuns(sources, source =>
+            descendantSet.has(source.name) ? true : undefined,
+          )
+          for (const { start, end } of runs) {
+            ctx.fillRect(
+              0,
+              start * effectiveRowHeight,
+              viewWidth,
+              (end - start) * effectiveRowHeight,
+            )
           }
 
           const { node } = hoveredTreeNode

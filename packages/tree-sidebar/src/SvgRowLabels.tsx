@@ -1,6 +1,8 @@
 import { getFillProps, max, measureText } from '@jbrowse/core/util'
 import { alpha, useTheme } from '@mui/material'
 
+import { rowRuns } from './rowRuns.ts'
+
 import type { RowLabelSource } from './types.ts'
 
 /**
@@ -34,34 +36,22 @@ export function rowLabelsCarryText(rowHeight: number) {
 
 const SWATCH_WIDTH = 8
 
-// Consecutive rows sharing a color paint as one rect. At sub-pixel row heights
-// the alternative is a rect per row -- 1,987 DOM nodes re-rendered on every
-// scroll, each an antialiased sliver -- and because clustering puts like rows
-// next to each other, the runs are exactly the blocks a reader is meant to see.
-// Visually identical either way: the rects are contiguous and same-filled.
-// Rows with no color contribute nothing, so a partly-colored track draws gaps
-// rather than a run bridging them.
+// Consecutive rows sharing a color paint as one rect (`rowRuns` owns that rule
+// and says why; rows with no color contribute nothing, so a partly-colored
+// track draws gaps rather than a run bridging them), then painted longest-run
+// first.
+//
+// The sort is the part specific to this drawing: once a run is floored to a
+// pixel it is taller than the rows it covers, so a later rect overdraws its
+// neighbour -- and in row order that silently costs the minority group (307
+// village dogs erased 40% of the 63 wolves interleaved with them, which is
+// exactly the group the stripe exists to find). Shortest last means the rarest
+// mark survives. Painting order is all this changes; every rect keeps its true
+// `y`.
 function colorRuns(sources: RowLabelSource[]) {
-  const runs: { start: number; end: number; color: string; key: string }[] = []
-  for (const [idx, source] of sources.entries()) {
-    const color = source.labelColor
-    if (color !== undefined) {
-      const last = runs.at(-1)
-      if (last?.end === idx && last.color === color) {
-        last.end = idx + 1
-      } else {
-        runs.push({ start: idx, end: idx + 1, color, key: source.name })
-      }
-    }
-  }
-  // Longest first, so the shortest runs paint last and a rare mark is never
-  // buried by a common one. Once a run is floored to a pixel it is taller than
-  // the rows it covers, so a later rect overdraws its neighbour -- in row order
-  // that silently costs the minority group (307 village dogs erased 40% of the
-  // 63 wolves interleaved with them, which is exactly the group the stripe
-  // exists to find). Painting order is the only thing this changes; every rect
-  // keeps its true `y`.
-  return runs.sort((a, b) => b.end - b.start - (a.end - a.start))
+  return rowRuns(sources, source => source.labelColor).sort(
+    (a, b) => b.end - b.start - (a.end - a.start),
+  )
 }
 
 export function SvgRowLabels({
@@ -145,13 +135,15 @@ export function SvgRowLabels({
         // true. The painting itself keeps sub-pixel honesty; this is the index.
         const height = Math.max((run.end - run.start) * rowHeight, 1)
         return offscreen(y, height) ? null : (
+          // the run's first row names it: stable across a re-sort, unlike the
+          // array index the sorted list would otherwise supply
           <rect
-            key={run.key}
+            key={sources[run.start]!.name}
             x={0}
             y={y}
             width={boxWidth}
             height={height}
-            {...getFillProps(run.color)}
+            {...getFillProps(run.key)}
           />
         )
       })}
