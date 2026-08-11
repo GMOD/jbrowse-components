@@ -221,11 +221,19 @@ color, or a `jexl:` expression that runs once per feature.
   "name": "Genes (colored by strand)",
   "assemblyNames": ["volvox"],
   "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
-  "displayDefaults": { "color": "jexl:feature.strand==1?'#1f77b4':'#d62728'" }
+  "displayDefaults": {
+    "color": "jexl:feature.strand==1?'tomato':feature.strand==-1?'cornflowerblue':'goldenrod'"
+  }
 }
 ```
 
-<Figure caption="NCBI RefSeq genes on hg38 with this recipe applied: + strand genes blue, - strand genes red." src="/img/cookbook_color_by_strand.png"/>
+Those are the colors **Color by... → Strand** writes, so a config that ships
+this recipe and a reader who picks it from the track menu get the same picture,
+and forward stays red everywhere in the app, synteny ribbons included. Pick your
+own by all means; keep the direction, or a red block will mean "forward" in one
+track and "inverted" in the one under it.
+
+<Figure caption="NCBI RefSeq genes on hg38 with this recipe applied: forward-strand genes red, reverse-strand blue." src="/img/cookbook_color_by_strand.png"/>
 
 ### What you can color by
 

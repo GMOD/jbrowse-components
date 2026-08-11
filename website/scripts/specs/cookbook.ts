@@ -54,6 +54,24 @@ const COOKBOOK_MULTIWIG_TRACK = {
   },
 }
 
+// The exact "color by strand" recipe taught in docs/cookbook.md, which is also
+// STRAND_COLOR_JEXL verbatim (plugins/canvas/src/RenderFeatureDataRPC/
+// featureColors.ts) -- what **Color by... -> Strand** writes, so the recipe and
+// the menu produce the same picture and `colorByMode` reads the figure's track
+// back as 'strand' rather than 'attribute'.
+//
+// Copied rather than imported, for the reason @jbrowse/img gives at its own
+// copy: remark-figure.ts pulls this module into the Astro build to resolve
+// every figure's live link, so importing from @jbrowse/plugin-canvas here would
+// drag the whole plugin (React, CSS) into the site bundle to read one string.
+//
+// It replaced a hand-rolled `strand==1?'#1f77b4':'#d62728'`, whose blue-forward
+// reading is the INVERSE of the built-in and of the synteny ribbons' own scheme
+// (colorSchemes.strand, posColor '#f00' / negColor '#00f') -- so the cookbook
+// taught a strand vocabulary the rest of the app contradicts.
+const STRAND_COLOR =
+  "jexl:feature.strand==1?'tomato':feature.strand==-1?'cornflowerblue':'goldenrod'"
+
 // The exact lookup-table recipe taught in docs/cookbook.md, kept in one place so
 // the figure and the recipe text can't drift.
 const RMSK_CLASS_COLOR =
@@ -66,7 +84,7 @@ const RMSK_CLASS_COLOR =
 // and every figure links to a live instance running that recipe.
 export const cookbookSpecs: ScreenshotSpec[] = [
   // "Color by strand" recipe: NCBI RefSeq genes on hg38 (reviewer: use hg38 +
-  // ncbi gff) tinted blue on the + strand and red on the - strand via the jexl
+  // ncbi gff) tinted red on the + strand and blue on the - strand via the jexl
   // color slot the recipe teaches. The chr17p13 window spans several genes on
   // both strands (TP53−, WRAP53+, ATP1B2, EFNB3, …) so both colors show.
   {
@@ -79,7 +97,7 @@ export const cookbookSpecs: ScreenshotSpec[] = [
         {
           trackId: 'ncbi_refseq_109_hg38',
           height: 260,
-          color: "jexl:feature.strand==1?'#1f77b4':'#d62728'",
+          color: STRAND_COLOR,
         },
       ],
     }),
