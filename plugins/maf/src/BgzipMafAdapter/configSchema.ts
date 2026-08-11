@@ -101,6 +101,23 @@ const configSchema = ConfigurationSchema(
         'optional swappable sub-adapter (a BedTabixAdapter over a maf2bed --summary BED, or a BigBedAdapter over UCSC bigMafSummary.bb) used for cheap zoom-out rendering; null disables it',
       defaultValue: null,
     },
+    /**
+     * #slot
+     * The CDS reading frames, in the same shape and read by the same code as
+     * the other three MAF adapters' — the display looks the slot up by path off
+     * the parent track (`['adapter', 'annotationAdapter']`) and is otherwise
+     * format-blind. This adapter was the one of the four that never declared
+     * it, so the read simply returned undefined and every consumer of it — the
+     * CDS strip, the codon row coloring, the codon conservation band, and the
+     * menu rows that gate on the slot's presence — was silently unavailable on
+     * a `.maf.gz` track, with nothing on screen saying why.
+     */
+    annotationAdapter: {
+      type: 'frozen',
+      description:
+        'optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; null disables it',
+      defaultValue: null,
+    },
   },
   {
     explicitlyTyped: true,

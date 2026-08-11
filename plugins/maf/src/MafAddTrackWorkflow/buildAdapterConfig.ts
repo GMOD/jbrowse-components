@@ -6,7 +6,49 @@ export type AdapterTypeOptions =
   | 'BigMafAdapter'
   | 'MafTabixAdapter'
   | 'BgzipTaffyAdapter'
+  | 'BgzipMafAdapter'
 export type IndexTypeOptions = 'TBI' | 'CSI'
+
+/**
+ * The zoom-out tier as the three bgzip/tabix formats take it: a
+ * `BedTabixAdapter` over the BED `maf2bed --summary` writes. Its sibling `.tbi`
+ * is derived rather than asked for — the same suffix assumption both these
+ * adapters' and `BedTabixAdapter`'s own `uri` shorthands already make, and
+ * making an optional feature cost two file pickers is what would stop people
+ * turning it on. Omitted entirely when no summary was supplied, so the slot
+ * stays at its `null` default.
+ */
+function bedTabixSummary(summaryLoc: FileLocation | undefined) {
+  return summaryLoc
+    ? {
+        summaryAdapter: {
+          type: 'BedTabixAdapter',
+          bedGzLocation: summaryLoc,
+          index: { location: makeIndex(summaryLoc, '.tbi') },
+        },
+      }
+    : {}
+}
+
+/**
+ * The CDS reading frames every format takes the same way: a `BigBedAdapter`
+ * over a UCSC `multiz<N>wayFrames.bb`. It is what the "Show CDS frames"
+ * overlay, the codon row coloring and the codon conservation band are all
+ * gated on, and until now the form offered no way to supply it — so a track
+ * added through the UI could never reach any of the three, whatever file the
+ * user had. Optional, and omitted when unset so the slot keeps its `null`
+ * default.
+ */
+function framesAnnotation(framesLoc: FileLocation | undefined) {
+  return framesLoc
+    ? {
+        annotationAdapter: {
+          type: 'BigBedAdapter',
+          bigBedLocation: framesLoc,
+        },
+      }
+    : {}
+}
 
 /**
  * Parse the free-form sample-names text box. Accepts a JSON array (which
@@ -36,6 +78,7 @@ interface BuildArgs {
   indexLoc: FileLocation | undefined
   nhLoc: FileLocation | undefined
   summaryLoc: FileLocation | undefined
+  framesLoc: FileLocation | undefined
   sampleNames: string[]
 }
 
@@ -47,6 +90,7 @@ export function buildAdapterConfig(args: BuildArgs) {
     indexLoc,
     nhLoc,
     summaryLoc,
+    framesLoc,
     sampleNames,
   } = args
   if (!loc) {
@@ -70,6 +114,7 @@ export function buildAdapterConfig(args: BuildArgs) {
               },
             }
           : {}),
+        ...framesAnnotation(framesLoc),
       }
     case 'MafTabixAdapter':
       if (!indexLoc) {
@@ -84,20 +129,8 @@ export function buildAdapterConfig(args: BuildArgs) {
           location: indexLoc,
         },
         samples: sampleNames,
-        // The `maf2bed --summary` BED, read through a BedTabixAdapter. Its
-        // sibling `.tbi` is derived rather than asked for: that is the suffix
-        // both this adapter's and BedTabixAdapter's own `uri` shorthands
-        // already assume, and making an optional feature cost two file pickers
-        // is what would stop people turning it on.
-        ...(summaryLoc
-          ? {
-              summaryAdapter: {
-                type: 'BedTabixAdapter',
-                bedGzLocation: summaryLoc,
-                index: { location: makeIndex(summaryLoc, '.tbi') },
-              },
-            }
-          : {}),
+        ...bedTabixSummary(summaryLoc),
+        ...framesAnnotation(framesLoc),
       }
     case 'BgzipTaffyAdapter':
       if (!indexLoc) {
@@ -109,19 +142,31 @@ export function buildAdapterConfig(args: BuildArgs) {
         taiLocation: indexLoc,
         nhLocation: nhLoc,
         samples: sampleNames,
-        // Same summary BED and same sibling-.tbi assumption as the tabix
-        // branch. The .tai keeps a read proportional to the span on screen, not
-        // to the alignment — but a deep one still costs span x depth, so the
-        // zoom-out tier is worth offering here too.
-        ...(summaryLoc
-          ? {
-              summaryAdapter: {
-                type: 'BedTabixAdapter',
-                bedGzLocation: summaryLoc,
-                index: { location: makeIndex(summaryLoc, '.tbi') },
-              },
-            }
-          : {}),
+        // The .tai keeps a read proportional to the span on screen, not to the
+        // alignment — but a deep one still costs span x depth, so the zoom-out
+        // tier is worth offering here too.
+        ...bedTabixSummary(summaryLoc),
+        ...framesAnnotation(framesLoc),
+      }
+    case 'BgzipMafAdapter':
+      // A bgzip-compressed MAF with a sibling taffy `.tai` — the form
+      // whole-genome alignments are actually published in (HPRC release 2 ships
+      // a 53 GB `.maf.gz` + `.tai`). The adapter has been registered all along;
+      // it just had no way in from the UI, so an HPRC alignment had to be
+      // converted before it could be looked at.
+      //
+      // The index is derived rather than demanded, unlike the TAF branch above:
+      // this adapter's own `uri` shorthand already resolves `${uri}.tai`, so a
+      // published pair needs no second picker. The picker is still offered for
+      // an index that isn't a sibling, and wins when filled in.
+      return {
+        type: fileTypeChoice,
+        mafGzLocation: loc,
+        taiLocation: indexLoc ?? makeIndex(loc, '.tai'),
+        nhLocation: nhLoc,
+        samples: sampleNames,
+        ...bedTabixSummary(summaryLoc),
+        ...framesAnnotation(framesLoc),
       }
   }
 }

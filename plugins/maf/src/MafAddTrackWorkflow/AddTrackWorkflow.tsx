@@ -38,6 +38,7 @@ const dataFileName: Record<AdapterTypeOptions, string> = {
   BigMafAdapter: 'Path to bigMaf',
   MafTabixAdapter: 'Path to MAF tabix',
   BgzipTaffyAdapter: 'Path to TAF.gz (Bgzipped TAF)',
+  BgzipMafAdapter: 'Path to MAF.gz (bgzip-compressed MAF)',
 }
 
 // User-facing radio labels; the option values are the internal adapter type
@@ -46,7 +47,14 @@ const fileTypeLabel: Record<AdapterTypeOptions, string> = {
   BigMafAdapter: 'bigMaf',
   MafTabixAdapter: 'MAF (tabix-indexed)',
   BgzipTaffyAdapter: 'TAF (Taffy, bgzip-compressed)',
+  BgzipMafAdapter: 'MAF (bgzip-compressed, taffy .tai index)',
 }
+
+// The `maf2bed --summary` BED, offered by every format whose own read is
+// unbounded by zoom. Same wording in all three places it appears, so the file
+// being asked for reads the same however the user got here.
+const SUMMARY_BED_LABEL =
+  'Path to summary BED (.bed.gz from `maf2bed --summary`, optional — enables zoom-out rendering)'
 
 export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
   const { classes } = useStyles()
@@ -55,6 +63,7 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
   const [indexLoc, setIndexLoc] = useState<FileLocation>()
   const [nhLoc, setNhLoc] = useState<FileLocation>()
   const [summaryLoc, setSummaryLoc] = useState<FileLocation>()
+  const [framesLoc, setFramesLoc] = useState<FileLocation>()
   const [error, setError] = useState<unknown>()
   const [trackName, setTrackName] = useState('MAF track')
   const [fileTypeChoice, setFileTypeChoice] =
@@ -83,6 +92,7 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
               indexLoc,
               nhLoc,
               summaryLoc,
+              framesLoc,
               sampleNames: parseSampleNames(samples),
             }),
           },
@@ -107,7 +117,12 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
         <RadioSelector
           label="File type"
           value={fileTypeChoice}
-          options={['BigMafAdapter', 'MafTabixAdapter', 'BgzipTaffyAdapter']}
+          options={[
+            'BigMafAdapter',
+            'MafTabixAdapter',
+            'BgzipTaffyAdapter',
+            'BgzipMafAdapter',
+          ]}
           getOptionLabel={value => fileTypeLabel[value]}
           onChange={value => {
             setFileTypeChoice(value)
@@ -154,7 +169,7 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
                 .tbi is assumed, as everywhere else in this adapter. */}
             <FileSelector
               location={summaryLoc}
-              name="Path to summary BED (.bed.gz from `maf2bed --summary`, optional — enables zoom-out rendering)"
+              name={SUMMARY_BED_LABEL}
               rootModel={rootModel}
               setLocation={arg => {
                 setSummaryLoc(arg)
@@ -163,9 +178,18 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
           </>
         ) : (
           <>
+            {/* Both remaining formats are bgzip + a taffy `.tai`; they differ
+                only in the text inside. TAF names its index required because
+                the adapter has no shorthand for it, while BgzipMafAdapter's
+                `uri` form already resolves the sibling — so there it is an
+                override, not a requirement. */}
             <FileSelector
               location={indexLoc}
-              name="Path to TAF.gz.tai (TAF index)"
+              name={
+                fileTypeChoice === 'BgzipTaffyAdapter'
+                  ? 'Path to TAF.gz.tai (TAF index)'
+                  : 'Path to MAF.gz.tai (taffy index, optional — the sibling .tai is assumed)'
+              }
               rootModel={rootModel}
               setLocation={arg => {
                 setIndexLoc(arg)
@@ -177,7 +201,7 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
                 index does. Same sibling-.tbi assumption as the tabix branch. */}
             <FileSelector
               location={summaryLoc}
-              name="Path to summary BED (.bed.gz from `maf2bed --summary`, optional — enables zoom-out rendering)"
+              name={SUMMARY_BED_LABEL}
               rootModel={rootModel}
               setLocation={arg => {
                 setSummaryLoc(arg)
@@ -187,6 +211,20 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
         )}
       </div>
       <div>
+        {/* Format-independent — every MAF adapter takes the frames file as the
+            same BigBed sub-adapter — so it sits outside the per-format branch
+            above, next to the tree, which is the other file that describes the
+            alignment rather than being it. Without it the track menu's "Show
+            CDS frames", the codon row coloring and the codon conservation band
+            are all unreachable, which is what a UI-added track used to be. */}
+        <FileSelector
+          location={framesLoc}
+          name="Path to CDS frames (UCSC multiz<N>wayFrames.bb, optional — enables the CDS overlay and codon view)"
+          rootModel={rootModel}
+          setLocation={arg => {
+            setFramesLoc(arg)
+          }}
+        />
         <FileSelector
           location={nhLoc}
           name="Path to newick tree (.nh)"

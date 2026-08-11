@@ -52,6 +52,7 @@ describe('buildAdapterConfig', () => {
         indexLoc: undefined,
         nhLoc,
         summaryLoc: undefined,
+        framesLoc: undefined,
         sampleNames,
       }),
     ).toEqual({
@@ -71,6 +72,7 @@ describe('buildAdapterConfig', () => {
         indexLoc: undefined,
         nhLoc,
         summaryLoc,
+        framesLoc: undefined,
         sampleNames,
       }),
     ).toEqual({
@@ -94,6 +96,7 @@ describe('buildAdapterConfig', () => {
         indexLoc,
         nhLoc,
         summaryLoc: undefined,
+        framesLoc: undefined,
         sampleNames,
       }),
     ).toEqual({
@@ -123,6 +126,7 @@ describe('buildAdapterConfig', () => {
         indexLoc,
         nhLoc,
         summaryLoc: summaryBed,
+        framesLoc: undefined,
         sampleNames,
       }),
     ).toEqual({
@@ -155,6 +159,7 @@ describe('buildAdapterConfig', () => {
         indexLoc,
         nhLoc,
         summaryLoc: undefined,
+        framesLoc: undefined,
         sampleNames,
       }),
     ).toEqual({
@@ -184,6 +189,7 @@ describe('buildAdapterConfig', () => {
         indexLoc,
         nhLoc,
         summaryLoc: summaryBed,
+        framesLoc: undefined,
         sampleNames,
       }),
     ).toEqual({
@@ -205,6 +211,92 @@ describe('buildAdapterConfig', () => {
     })
   })
 
+  // The format whole-genome alignments are actually published in — HPRC
+  // release 2 ships a 53 GB `.maf.gz` with a sibling `.tai`. The adapter has
+  // been registered since it was written; the form just offered no way to reach
+  // it, so an HPRC alignment had to be converted first.
+  test('BgzipMafAdapter derives the sibling .tai', () => {
+    const mafGz: FileLocation = {
+      uri: 'aln.maf.gz',
+      locationType: 'UriLocation',
+    }
+    expect(
+      buildAdapterConfig({
+        fileTypeChoice: 'BgzipMafAdapter',
+        indexTypeChoice: 'TBI',
+        loc: mafGz,
+        indexLoc: undefined,
+        nhLoc,
+        summaryLoc: undefined,
+        framesLoc: undefined,
+        sampleNames,
+      }),
+    ).toEqual({
+      type: 'BgzipMafAdapter',
+      mafGzLocation: mafGz,
+      // not asked for — the adapter's own `uri` shorthand assumes the same
+      // sibling, so a published pair needs no second picker
+      taiLocation: { uri: 'aln.maf.gz.tai', locationType: 'UriLocation' },
+      nhLocation: nhLoc,
+      samples: sampleNames,
+    })
+  })
+
+  test('BgzipMafAdapter prefers an explicitly supplied .tai', () => {
+    const mafGz: FileLocation = {
+      uri: 'aln.maf.gz',
+      locationType: 'UriLocation',
+    }
+    const tai: FileLocation = {
+      uri: 'elsewhere/aln.tai',
+      locationType: 'UriLocation',
+    }
+    expect(
+      buildAdapterConfig({
+        fileTypeChoice: 'BgzipMafAdapter',
+        indexTypeChoice: 'TBI',
+        loc: mafGz,
+        indexLoc: tai,
+        nhLoc,
+        summaryLoc: undefined,
+        framesLoc: undefined,
+        sampleNames,
+      }),
+    ).toMatchObject({ taiLocation: tai })
+  })
+
+  // The CDS frames gate three separate features — the frame strip, the codon
+  // row coloring and the codon conservation band — and the form had no field
+  // for them at all, so none of the three was reachable from a UI-added track.
+  test.each([
+    'BigMafAdapter',
+    'MafTabixAdapter',
+    'BgzipTaffyAdapter',
+    'BgzipMafAdapter',
+  ] as const)('%s carries a frames annotationAdapter', fileTypeChoice => {
+    const framesLoc: FileLocation = {
+      uri: 'multiz30wayFrames.bb',
+      locationType: 'UriLocation',
+    }
+    expect(
+      buildAdapterConfig({
+        fileTypeChoice,
+        indexTypeChoice: 'TBI',
+        loc,
+        indexLoc,
+        nhLoc,
+        summaryLoc: undefined,
+        framesLoc,
+        sampleNames,
+      }),
+    ).toMatchObject({
+      annotationAdapter: {
+        type: 'BigBedAdapter',
+        bigBedLocation: framesLoc,
+      },
+    })
+  })
+
   test('throws when data file missing', () => {
     expect(() =>
       buildAdapterConfig({
@@ -214,6 +306,7 @@ describe('buildAdapterConfig', () => {
         indexLoc,
         nhLoc,
         summaryLoc: undefined,
+        framesLoc: undefined,
         sampleNames,
       }),
     ).toThrow(/data file/)
@@ -228,6 +321,7 @@ describe('buildAdapterConfig', () => {
         indexLoc: undefined,
         nhLoc,
         summaryLoc: undefined,
+        framesLoc: undefined,
         sampleNames,
       }),
     ).toThrow(/index/)
@@ -242,6 +336,7 @@ describe('buildAdapterConfig', () => {
         indexLoc: undefined,
         nhLoc,
         summaryLoc: undefined,
+        framesLoc: undefined,
         sampleNames,
       }),
     ).toThrow(/index/)
