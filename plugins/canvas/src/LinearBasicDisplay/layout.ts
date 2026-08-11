@@ -1318,23 +1318,38 @@ function packPreparedRef(
   const layoutMap = new Map<string, number>()
   const layoutHeights = new Map<string, number>()
 
-  // Collapsed mode: every feature shares row 0. No greedy stacking, no sub-pixel
-  // density collapse — just one overlapping row, so nothing below this point has
-  // anything to decide. Taken as a whole-function early-out rather than a branch
-  // inside the loop because everything it skips is dead here and none of it is
-  // cheap: the row grid, the priority sort, and the collapse tests, in the mode
-  // picked precisely because the track is too big to stack.
+  // Collapsed mode: every feature shares row 0, by the mode rather than by the
+  // sub-pixel test below. No greedy stacking and no row to contend for, so
+  // nothing after this point has anything to decide. Taken as a whole-function
+  // early-out rather than a branch inside the loop because everything it skips
+  // is dead here and none of it is cheap: the row grid, the priority sort, and
+  // the collapse tests, in the mode picked precisely because the track is too
+  // big to stack.
+  //
+  // The pileup fade still applies, and for the reason it exists everywhere else:
+  // row 0 is the only row, so marks that share pixels are drawn over each other
+  // and the ones underneath are gone. This mode is where that is guaranteed
+  // rather than incidental — a collapsed dbSNP track drew as one opaque bar
+  // conveying nothing about its depth.
+  //
+  // Candidacy is the same sub-pixel test, deliberately, so a wide feature stays
+  // opaque. A ~2px mark IS its own overlap, which is what makes a per-instance
+  // alpha read as the pileup's depth; a gene overlaps its neighbour over part of
+  // its length, and one instance alpha would ghost it end to end to report a
+  // collision at one end. The solid-overlap clause has no meaning here — nothing
+  // is held out of a collapse that the mode already applied to everything.
   if (singleRow) {
+    const collapsed: CollapsedMark[] = []
     for (const [id, ext] of packed) {
       layoutMap.set(id, 0)
       layoutHeights.set(id, ext.height)
+      const geom = features.get(id)!
+      if (isSubPixelFade(geom, bpPerPx)) {
+        const [startPx, endPx] = renderedSpanPx(geom, bpPerPx)
+        collapsed.push({ id, startPx, endPx })
+      }
     }
-    return {
-      layoutMap,
-      layoutHeights,
-      droppedLabelIds,
-      collapsed: NO_COLLAPSED,
-    }
+    return { layoutMap, layoutHeights, droppedLabelIds, collapsed }
   }
 
   // GranularRectLayout quantizes rows to pitchY (default 10px), so tops snap to
@@ -1429,15 +1444,13 @@ function packPreparedRef(
   return { layoutMap, layoutHeights, droppedLabelIds, collapsed }
 }
 
-// A mark the density collapse pinned to row 0, and the px span it paints there.
+// A sub-pixel mark drawn on row 0 — pinned there by the density collapse, or by
+// collapsed display mode putting everything there — and the px span it paints.
 interface CollapsedMark {
   id: string
   startPx: number
   endPx: number
 }
-
-// For the paths that can't collapse anything.
-const NO_COLLAPSED: CollapsedMark[] = []
 
 // Which collapsed marks share pixels with another collapsed mark, i.e. exactly
 // the ones the fade exists for: on row 0 nothing stacks, so two marks over the

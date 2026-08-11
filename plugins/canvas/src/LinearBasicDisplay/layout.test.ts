@@ -401,6 +401,79 @@ test('collapsed mode stacks overlapping features onto a single row', () => {
   expect(r.flatbushItems[1]!.topPx).toBe(0)
 })
 
+// Collapsed mode is where row 0 is the only row, so marks sharing a pixel column
+// are guaranteed to be drawn over each other — the case the pileup fade exists
+// for, and the one this mode used to draw as a single opaque bar.
+const collapsedModeLayout = (data: FeatureDataResult, bpPerPx: number) =>
+  layout(
+    new Map([[0, data]]),
+    new Map([[0, 'volvox:ctgA']]),
+    bpPerPx,
+    false,
+    false,
+    new Set<number>(),
+    'collapsed',
+  ).get(0)!
+
+test('collapsed mode fades sub-pixel marks piled on one pixel', () => {
+  const data = makeFeatureData({
+    features: Array.from({ length: 5 }, (_, i) => ({
+      featureId: `snp${i}`,
+      startBp: 100 + i,
+      endBp: 101 + i,
+      height: 10,
+      densityFade: true,
+    })),
+  })
+  const r = collapsedModeLayout(data, 26)
+  expect(r.flatbushItems.every(it => it.topPx === 0)).toBe(true)
+  expect([...r.rectDensityFade].every(v => v === 1)).toBe(true)
+})
+
+test('collapsed mode leaves marks with room around them opaque', () => {
+  const data = makeFeatureData({
+    features: Array.from({ length: 5 }, (_, i) => ({
+      featureId: `snp${i}`,
+      startBp: 100 + i * 100,
+      endBp: 101 + i * 100,
+      height: 10,
+      densityFade: true,
+    })),
+  })
+  expect(
+    [...collapsedModeLayout(data, 1).rectDensityFade].every(v => v === 0),
+  ).toBe(true)
+})
+
+test('collapsed mode does not fade a wide feature it overlaps another with', () => {
+  // A ~2px mark is its own overlap, so one instance alpha reads as the pileup's
+  // depth. A gene overlaps its neighbour over part of its length, and fading the
+  // instance would ghost it end to end to report a collision at one end — so the
+  // fade stays keyed to the sub-pixel test even in the mode that piles
+  // everything onto row 0 regardless of width.
+  const data = makeFeatureData({
+    features: [
+      {
+        featureId: 'geneA',
+        startBp: 100,
+        endBp: 500,
+        height: 20,
+        densityFade: true,
+      },
+      {
+        featureId: 'geneB',
+        startBp: 200,
+        endBp: 600,
+        height: 20,
+        densityFade: true,
+      },
+    ],
+  })
+  const r = collapsedModeLayout(data, 1)
+  expect(r.flatbushItems.every(it => it.topPx === 0)).toBe(true)
+  expect([...r.rectDensityFade].every(v => v === 0)).toBe(true)
+})
+
 test('different chromosomes get independent layouts', () => {
   const a = makeFeatureData({
     features: [
