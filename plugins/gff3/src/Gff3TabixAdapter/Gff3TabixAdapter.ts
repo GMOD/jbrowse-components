@@ -9,9 +9,10 @@ import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { readTabixLinesRedispatched } from '@jbrowse/core/util/tabix'
-import { parseRecords } from 'gff-nostream'
+import { parseRecordsLazy } from 'gff-nostream'
+
+import { Gff3Feature } from '../Gff3Feature.ts'
 
 import type { Gff3TabixAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -81,15 +82,12 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAd
         // emit only top-level features intersecting the original query. the
         // byte offset stays on our own record and is used purely to mint a
         // stable id, so it never pollutes the feature's data
-        for (const { feature, record } of parseRecords(lines)) {
+        for (const { feature, record } of parseRecordsLazy(lines)) {
           if (
             doesIntersect2(feature.start, feature.end, query.start, query.end)
           ) {
             observer.next(
-              new SimpleFeature({
-                data: feature,
-                id: `${this.id}-offset-${record.offset}`,
-              }),
+              new Gff3Feature(feature, `${this.id}-offset-${record.offset}`),
             )
           }
         }
