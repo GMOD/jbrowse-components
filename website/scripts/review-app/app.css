@@ -16,6 +16,15 @@ body {
   background: Canvas;
   color: CanvasText;
 }
+/* A wrapping flex row in the flow directly above the cards, so anything that
+   changes its width can add a 35px line and move every figure on the page down
+   by that — and a verdict changes every count in here. Denying the first card
+   of a session did exactly that: `Clear settled` appeared, the pill row wrapped,
+   and the figure jumped. (Mid-page, scroll anchoring compensates by scrolling,
+   which is its own lurch; at the top of the page it cannot.)
+   So nothing here is conditionally MOUNTED — with nothing to say a control goes
+   `visibility: hidden` and keeps its box — and every count sits in a fixed-width
+   slot. Give anything you add the same treatment. */
 header {
   position: sticky;
   top: 0;
@@ -91,10 +100,22 @@ header label {
   border-color: #2563eb;
   color: #fff;
 }
+/* 9 → 10 → 100 all draw in the same box. Nothing in the corpus reaches four. */
+.tabcount {
+  display: inline-block;
+  min-width: 3ch;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
 .tab .tabcount {
   opacity: 0.7;
   margin-left: 5px;
   font-size: 12px;
+}
+/* Holds its place in the row with nothing to say. `visibility` rather than
+   `opacity`, which would leave it in the tab order and the a11y tree. */
+.reserved {
+  visibility: hidden;
 }
 /* Not a filter — it is the only thing that takes cards off the list, so it does
    not use the blue active state the toggles share. */
@@ -240,23 +261,28 @@ main {
   max-width: 1400px;
   margin: 0 auto;
 }
+/* The status stripe is always 5px and only its COLOUR says which status, because
+   a border is layout: growing it 1px → 5px on a verdict takes 4px off the
+   content width, the two figure columns reflow into it, and the card gets
+   shorter. Same rule as the header — a verdict paints, it does not resize. */
 .card {
   background: Canvas;
   border: 1px solid ButtonBorder;
+  border-left: 5px solid ButtonBorder;
   border-radius: 10px;
   overflow: hidden;
 }
 .card.good {
-  border-left: 5px solid #22c55e;
+  border-left-color: #22c55e;
 }
 .card.bad {
-  border-left: 5px solid #ef4444;
+  border-left-color: #ef4444;
 }
 .card.stale {
-  border-left: 5px solid #f59e0b;
+  border-left-color: #f59e0b;
 }
 .card.answered {
-  border-left: 5px solid #3b82f6;
+  border-left-color: #3b82f6;
 }
 /* Settled, and kept on the list anyway so the reviewer can still type a reason.
    It recedes rather than disappearing: dimming a card is the one way to say

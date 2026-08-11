@@ -44,6 +44,21 @@ async function getJson(url: string) {
   return body
 }
 
+// Every number in the header counts something a verdict changes, so each sits in
+// a fixed-width slot and each pill is drawn even at zero. See the header rule in
+// app.css for what a header that resizes does to the figure below it.
+function Count({ n }: { n: number }) {
+  return <span className="tabcount">{n}</span>
+}
+
+function Pill({ cls, n, label }: { cls: string; n: number; label: string }) {
+  return (
+    <span className={`pill ${cls}`}>
+      <Count n={n} /> {label}
+    </span>
+  )
+}
+
 const TABS: { status: Status; label: string }[] = [
   { status: 'needs', label: 'Needs review' },
   { status: 'good', label: 'Approved' },
@@ -314,7 +329,7 @@ export function App() {
               }}
             >
               {t.label}
-              <span className="tabcount">{tabCount(t.status)}</span>
+              <Count n={tabCount(t.status)} />
             </button>
           ))}
           <button
@@ -335,7 +350,8 @@ export function App() {
             changeFilter('changedOnly', !filters.changedOnly)
           }}
         >
-          Changed vs main<span className="tabcount">{changedCount}</span>
+          Changed vs main
+          <Count n={changedCount} />
         </button>
         <button
           type="button"
@@ -345,37 +361,37 @@ export function App() {
             changeFilter('runOnly', !filters.runOnly)
           }}
         >
-          Render problems<span className="tabcount">{runCount}</span>
+          Render problems
+          <Count n={runCount} />
         </button>
         {/* The one control that removes cards from the list, so that removing
             them is something the reviewer does rather than something that
-            happens to them mid-note. Absent until there is something to clear,
-            which also makes it the progress readout for the batch in front of
-            you — the pill row to its right counts the whole sweep. */}
-        {leaving.size ? (
-          <button
-            type="button"
-            className="tab flush"
-            title="These are settled and no longer match the filters — take them off the list"
-            onClick={refresh}
-          >
-            Clear settled<span className="tabcount">{leaving.size}</span>
-          </button>
-        ) : null}
+            happens to them mid-note. Invisible until there is something to
+            clear, which also makes it the progress readout for the batch in
+            front of you — the pill row to its right counts the whole sweep. */}
+        <button
+          type="button"
+          className={leaving.size ? 'tab flush' : 'tab flush reserved'}
+          title="These are settled and no longer match the filters — take them off the list"
+          onClick={refresh}
+        >
+          Clear settled
+          <Count n={leaving.size} />
+        </button>
         <div className="counts">
-          <span className="pill good">{settled('good')} approved</span>
-          <span className="pill bad">{settled('bad')} denied</span>
-          {settled('answered') ? (
-            <span className="pill answered">
-              {settled('answered')} answered, awaiting you
-            </span>
-          ) : null}
-          {stale ? (
-            <span className="pill stale">{stale} changed since review</span>
-          ) : null}
-          <span className="pill none">
-            {entries.filter(s => !s.verdict).length} unreviewed
-          </span>
+          <Pill cls="good" n={settled('good')} label="approved" />
+          <Pill cls="bad" n={settled('bad')} label="denied" />
+          <Pill
+            cls="answered"
+            n={settled('answered')}
+            label="answered, awaiting you"
+          />
+          <Pill cls="stale" n={stale} label="changed since review" />
+          <Pill
+            cls="none"
+            n={entries.filter(s => !s.verdict).length}
+            label="unreviewed"
+          />
         </div>
       </header>
       <StoreBanner state={figureState} error={figureError} />
