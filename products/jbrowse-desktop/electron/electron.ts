@@ -90,6 +90,15 @@ function showFatalError(title: string, error: unknown) {
 // a jbrowse:// link on Windows/Linux), or the first 'open-file'/'open-url'
 // event that fires before 'ready' (macOS delivers both that way on a cold
 // launch). Resolves exactly once, when 'ready' fires.
+//
+// `on`, not `once`: a jbrowse:// url that doesn't parse resolves nothing, and a
+// `once` listener is removed whether or not it did. So one unusable link ate the
+// only pre-'ready' listener, and a good link arriving behind it — a browser that
+// fires the handler twice, a user who clicks again when nothing happens — landed
+// in the window before the app-level handlers exist and was dropped with no
+// diagnostic. Resolving is what has to happen once, and a promise already does
+// that; the listener staying is free. It also keeps `preventDefault` on every
+// delivery rather than only the first.
 function getInitialTarget(): Promise<LaunchTarget | undefined> {
   return new Promise(resolve => {
     const onOpenFile = (event: Electron.Event, filePath: string) => {
@@ -103,8 +112,8 @@ function getInitialTarget(): Promise<LaunchTarget | undefined> {
         resolve({ type: 'link', url: link })
       }
     }
-    app.once('open-file', onOpenFile)
-    app.once('open-url', onOpenUrl)
+    app.on('open-file', onOpenFile)
+    app.on('open-url', onOpenUrl)
     void app.whenReady().then(() => {
       app.off('open-file', onOpenFile)
       app.off('open-url', onOpenUrl)
