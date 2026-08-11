@@ -1,6 +1,7 @@
 import { TabixIndexedFile } from '@gmod/tabix'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { updateStatus } from '@jbrowse/core/util'
+import { sharedBgzfWorkerPool } from '@jbrowse/core/util/bgzfWorkerPool'
 import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
@@ -62,6 +63,7 @@ export default class PairwiseIndexedPAFAdapter extends BaseFeatureDataAdapter<Pa
       filehandle: openLocation(pifGzLoc, pm),
       ...openTabixIndexFilehandle(loc, type, pm),
       chunkCacheBudget: decompressedBytesBudget,
+      bgzfWorkerPool: sharedBgzfWorkerPool(),
     })
   }
   async getHeader(opts?: BaseOptions) {

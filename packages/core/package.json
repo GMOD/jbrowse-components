@@ -129,6 +129,7 @@
     "./util/analytics": "./src/util/analytics.ts",
     "./util/assemblyConfigUtils": "./src/util/assemblyConfigUtils.ts",
     "./util/bandHeight": "./src/util/bandHeight.ts",
+    "./util/bgzfWorkerPool": "./src/util/bgzfWorkerPool.ts",
     "./util/blockTypes": "./src/util/blockTypes.ts",
     "./util/cacheBudgets": "./src/util/cacheBudgets.ts",
     "./util/calculateDynamicBlocks": "./src/util/calculateDynamicBlocks.ts",
@@ -673,6 +674,10 @@
       "./util/bandHeight": {
         "types": "./esm/util/bandHeight.d.ts",
         "import": "./esm/util/bandHeight.js"
+      },
+      "./util/bgzfWorkerPool": {
+        "types": "./esm/util/bgzfWorkerPool.d.ts",
+        "import": "./esm/util/bgzfWorkerPool.js"
       },
       "./util/blockTypes": {
         "types": "./esm/util/blockTypes.d.ts",
@@ -1239,6 +1244,9 @@
         ],
         "util/bandHeight": [
           "esm/util/bandHeight.d.ts"
+        ],
+        "util/bgzfWorkerPool": [
+          "esm/util/bgzfWorkerPool.d.ts"
         ],
         "util/blockTypes": [
           "esm/util/blockTypes.d.ts"

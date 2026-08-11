@@ -1,4 +1,5 @@
 import { TabixIndexedFile } from '@gmod/tabix'
+import { sharedBgzfWorkerPool } from '@jbrowse/core/util/bgzfWorkerPool'
 import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { withStopTokenSignal } from '@jbrowse/core/util/stopToken'
@@ -32,6 +33,7 @@ export default class PlinkLDTabixAdapter extends PlinkLDAdapterBase<Config> {
       filehandle: openLocation(ldLocation, this.pluginManager),
       ...openTabixIndexFilehandle(location, indexType, this.pluginManager),
       chunkCacheBudget: decompressedBytesBudget,
+      bgzfWorkerPool: sharedBgzfWorkerPool(),
     })
 
     // The column layout decides whether the file's D' column is found at all,

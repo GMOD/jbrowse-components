@@ -3,6 +3,7 @@ import { TabixIndexedFile } from '@gmod/tabix'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { SimpleFeature, downloadStatus, updateStatus } from '@jbrowse/core/util'
+import { sharedBgzfWorkerPool } from '@jbrowse/core/util/bgzfWorkerPool'
 import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
@@ -56,6 +57,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
       filehandle: openLocation(this.bedGzLoc, pm),
       ...openTabixIndexFilehandle(loc, type, pm),
       chunkCacheBudget: decompressedBytesBudget,
+      bgzfWorkerPool: sharedBgzfWorkerPool(),
     })
     this.parser = new BED({ autoSql: readConfObject(this.config, 'autoSql') })
   }
