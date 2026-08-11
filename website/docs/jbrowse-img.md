@@ -351,37 +351,31 @@ alignment at a locus that is not on screen. That is the view reporting an
 incomplete picture rather than a style, and the fix is to give it the missing
 panel. COLO829's der(3) is a closed cycle over three chromosomes, so the
 junction below needs a chr10 panel between the two it appears to join, and with
-it every connector in the figure is solid:
+it every connector in the figure is solid.
 
-<!-- jb2export: sv_review_tumor -->
+**Repeat `--track` and the control is inside the picture.** Every track is shown
+on every panel, and the connecting curves are drawn per track, so the tumour
+lanes carry the fan and the matched normal lanes under them carry none. That is
+what somatic looks like, in one render at one flank and one width rather than in
+two pictures that have to be trusted to match.
+
+<!-- jb2export: sv_review_pair -->
 
 ```bash
 jb2export breakpoint --config https://jbrowse.org/demos/cancer_sv/config.json \
-  --assembly hg38 --track COLO829_tumor_ont height:190 force:true \
+  --assembly hg38 \
+  --track COLO829_tumor_ont height:130 force:true featureHeight:super-compact \
+  --track COLO829BL_normal_ont height:90 force:true featureHeight:super-compact \
   --loc chr3:25,358,511-25,359,711 --loc chr10:58,716,962-58,718,162 \
-  --loc chr12:72,272,512-72,273,712 --width 1400 --out sv_review_tumor.png
+  --loc chr12:72,272,512-72,273,712 --width 1400 --out sv_review_pair.png
 ```
 
-<Figure src="/img/jbrowse-img/sv_review_tumor.png" caption="The three loci of the COLO829 melanoma line's der(3), chr3 then chr10 then chr12, with a curve per tumour read that crosses between them and no dashed connector anywhere" />
+<Figure src="/img/jbrowse-img/sv_review_pair.png" caption="The three loci of the COLO829 melanoma line's der(3), chr3 then chr10 then chr12, with the tumour reads above the matched normal in each panel. Every curve is solid and every one of them is in a tumour lane" />
 
 `force:true` is there because the chr3 panel is 1.2 kb of 200x nanopore, which
 is over the byte gate; without it that panel draws the gate's message instead of
-reads.
-
-The same windows in the matched normal are the control, and the somatic call is
-the difference between the two pictures — so they are rendered at the same flank
-and the same width, or the difference is not the only thing that changed:
-
-<!-- jb2export: sv_review_normal -->
-
-```bash
-jb2export breakpoint --config https://jbrowse.org/demos/cancer_sv/config.json \
-  --assembly hg38 --track COLO829BL_normal_ont height:150 force:true \
-  --loc chr3:25,358,511-25,359,711 --loc chr10:58,716,962-58,718,162 \
-  --loc chr12:72,272,512-72,273,712 --width 1400 --out sv_review_normal.png
-```
-
-<Figure src="/img/jbrowse-img/sv_review_normal.png" caption="The same three windows in the matched normal COLO829BL: reads read straight through all three loci and nothing connects the panels" />
+reads. `featureHeight:super-compact` draws each read 1 px tall, which is what
+keeps six pileups on one screen.
 
 To do that for a whole callset rather than one junction, `jb2export batch`
 renders one image per row of a BEDPE. See the

@@ -358,11 +358,10 @@ jb2export breakpoint --config https://jbrowse.org/demos/cancer_sv/config.json \
   --track COLO829_tumor_ont height:130 force:true featureHeight:super-compact \
   --track COLO829BL_normal_ont height:90 force:true featureHeight:super-compact \
   --loc chr3:25,358,511-25,359,711 --loc chr10:58,716,962-58,718,162 \
-  --loc chr12:72,272,512-72,273,712 \
-  --width 1400 --out sv_review_pair.png
+  --loc chr12:72,272,512-72,273,712 --width 1400 --out sv_review_pair.png
 ```
 
-![The three loci of the COLO829 melanoma line's der(3), chr3 then chr10 then chr12, with the tumour reads above the matched normal in each panel. Every curve is solid and every one of them is in a tumour lane](https://jbrowse.org/jb2-figures/jbrowse-img/sv_review_pair.png)
+![The three loci of the COLO829 melanoma line's der(3), chr3 then chr10 then chr12, with the tumour reads above the matched normal in each panel. Every curve is solid and every one of them is in a tumour lane](https://jbrowse.org/jb2-figures/jbrowse-img/sv_review_pair.26a025c19797.png)
 
 `force:true` is there because the chr3 panel is 1.2 kb of 200x nanopore, which
 is over the byte gate; without it that panel draws the gate's message instead of
