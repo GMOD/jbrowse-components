@@ -11,6 +11,8 @@ import {
   volvoxConfigWithTracks,
 } from './util.tsx'
 
+import type { CanvasColorLegend } from '@jbrowse/plugin-canvas'
+
 setup()
 
 // only the track this suite opens, so createView doesn't mount a
@@ -33,7 +35,13 @@ interface VariantDisplay {
   colorByMode: string
   setFeatureColor: (arg?: string) => void
   colorMenuItems: () => ColorMenuItem[]
-  colorLegend: { items: { label: string }[]; dismiss: () => void } | undefined
+  // the canvas hook's real type, not a local restatement of it. This member was
+  // hand-declared as `{ items; dismiss() }` and went on compiling after the hook
+  // dropped `dismiss` for `dismissed`/`setDismissed`, so the rename reached CI as
+  // a runtime TypeError in this file rather than a type error in the package that
+  // made it. The rest of the shape stays duck-typed on purpose — the display's own
+  // model type is not importable across the lazy boundary.
+  colorLegend: CanvasColorLegend | undefined
 }
 
 // LinearVariantDisplay collapses the inherited "Color" + "Color by..." pair into
@@ -68,7 +76,7 @@ test('variant display exposes one "Color by..." menu and applies a solid color',
 // base's `colorLegend` model hook. So this is the test that the borrowed
 // component + hook actually draw variant-specific chrome; without it the legend
 // could silently stop rendering with every other variant test still green.
-test('the consequence-impact color key renders, and dismissing it removes it', async () => {
+test('the consequence-impact color key renders, and dismissing it stops it drawing', async () => {
   const { view } = await createView(config)
 
   await view.navToLocString('ctgA:1..50000')
@@ -87,9 +95,18 @@ test('the consequence-impact color key renders, and dismissing it removes it', a
   ])
   expect(await screen.findByText('MODERATE', ...opts)).toBeInTheDocument()
 
-  display.colorLegend!.dismiss()
-  expect(display.colorLegend).toBeUndefined()
+  // The hook stays PRESENT once dismissed and reports `dismissed` instead of
+  // vanishing, which is the whole point of the change that made it a flag: the
+  // key's own "×" was the only control that could put it away and it went away
+  // with the key, so a dismissal lasted until reload. Something has to still see
+  // the key to offer it back — the "Show legend" checkbox reads exactly this.
+  display.colorLegend!.setDismissed(true)
+  expect(display.colorLegend!.dismissed).toBe(true)
   await waitFor(() => {
     expect(screen.queryByText('MODERATE')).not.toBeInTheDocument()
   }, delay)
+
+  // and back, since a one-way door is the bug this replaced
+  display.colorLegend!.setDismissed(false)
+  expect(await screen.findByText('MODERATE', ...opts)).toBeInTheDocument()
 }, 60000)
