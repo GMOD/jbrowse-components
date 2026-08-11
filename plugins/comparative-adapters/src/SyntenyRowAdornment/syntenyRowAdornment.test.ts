@@ -27,11 +27,11 @@ test('a mate reached through an alias is named canonically', () => {
   expect(label(['hg19', 'hg38'], ['hg38'])).toBe('vs GRCh37')
   // and the anchor resolves too: the track names the alias of the view's own
   // assembly, so there is no mate left and it is a self-alignment
-  expect(label(['hg19', 'GRCh37'], ['hg19'])).toBe('self-alignment')
+  expect(label(['hg19', 'GRCh37'], ['hg19'])).toBe('vs self')
 })
 
 test('a self-alignment has no mate to name', () => {
-  expect(label(['hg38', 'hg38'], ['hg38'])).toBe('self-alignment')
+  expect(label(['hg38', 'hg38'], ['hg38'])).toBe('vs self')
 })
 
 test('several declared mates are counted, not listed', () => {

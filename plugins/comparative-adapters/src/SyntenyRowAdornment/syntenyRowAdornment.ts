@@ -63,7 +63,9 @@ export function syntenyMateLabel({
   ]
   if (mates.length === 0) {
     return {
-      label: 'self-alignment',
+      // "vs self" rather than "self-alignment": every suffix in the column
+      // starts with "vs", so the shapes line up and read as one vocabulary
+      label: 'vs self',
       detail: 'Aligns this assembly against itself',
     }
   }
