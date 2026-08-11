@@ -1,6 +1,6 @@
 import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 
-import { ResizeHandle, ViewLoadingScreen } from '@jbrowse/core/ui'
+import { ErrorBanner, ResizeHandle, ViewLoadingScreen } from '@jbrowse/core/ui'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -108,6 +108,12 @@ const CircularView = observer(function CircularView({
         <ImportForm model={model} />
       </Suspense>
     )
+  } else if (model.error) {
+    // Only reachable with `disableImportForm`, which suppresses the form this
+    // view normally reports errors inside. Before showView deliberately: an
+    // error means the regions on the circle can't be trusted, and the form
+    // branch above wins over the figure for the same reason when it is enabled.
+    return <ErrorBanner error={model.error} />
   } else if (showView) {
     return <CircularViewLoaded model={model} />
   } else {

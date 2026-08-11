@@ -494,12 +494,27 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * Whether to show the import form (when not ready to display and import
-       * form is enabled, or when there's an error)
+       * `!hasSomethingToShow || !!error`, the same predicate as every other
+       * view, with `disableImportForm` suppressing the whole thing rather than
+       * only its first half.
+       *
+       * The `||` used to bind the other way, so an error re-enabled a form the
+       * embedder had turned off. That is reachable, and the sv-inspector —
+       * `disableImportForm`'s only setter — is where: its circle is driven by
+       * the spreadsheet's assembly, so a circle left sitting on regions whose
+       * assembly the config no longer has reports an error (the case the
+       * region-binding autorun's comment describes). The inspector then grew a
+       * circular-view import form inside its own panel, offering an assembly
+       * dropdown whose Open the inspector's autorun overwrites on the next
+       * pass — a control that cannot work, in a view that asked not to have it.
+       *
+       * The error still has to be reported, so the component renders a bare
+       * ErrorBanner in that case; the form is only the *usual* place a circular
+       * view puts one.
        */
       get showImportForm() {
         return (
-          (!this.hasSomethingToShow && !self.disableImportForm) || !!this.error
+          !self.disableImportForm && (!this.hasSomethingToShow || !!this.error)
         )
       },
     }))

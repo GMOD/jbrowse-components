@@ -85,6 +85,43 @@ test('CircularView showImportForm is false when init is set', async () => {
   )
 }, 40000)
 
+// `disableImportForm` used to suppress only the "nothing to show" half of
+// showImportForm: the `||` bound so that an error re-enabled a form the embedder
+// had turned off. The sv-inspector is the only setter, and its circle can reach
+// an error state (regions whose assembly the config no longer has), so it grew a
+// circular import form inside its own panel whose Open its region autorun
+// overwrites on the next pass.
+test('disableImportForm suppresses the form on error too, not just on empty', () => {
+  const { rootModel } = getPluginManager()
+  rootModel.setDefaultSession()
+  const session = rootModel.session!
+
+  const view = session.addView('CircularView', { disableImportForm: true })
+  view.setWidth(800)
+
+  expect(view.showImportForm).toBe(false)
+
+  view.setError(new Error('assembly went away'))
+  expect(view.error).toBeTruthy()
+  expect(view.showImportForm).toBe(false)
+  // still reported, just not via the form — the component renders a bare banner
+  expect(view.showLoading).toBe(false)
+})
+
+// the same error with the form enabled keeps reporting through it, which is
+// where a standalone circular view has always put its banner
+test('an error opens the import form when it is not disabled', () => {
+  const { rootModel } = getPluginManager()
+  rootModel.setDefaultSession()
+  const session = rootModel.session!
+
+  const view = session.addView('CircularView', {})
+  view.setWidth(800)
+  view.setError(new Error('assembly went away'))
+
+  expect(view.showImportForm).toBe(true)
+})
+
 test('CircularView showImportForm is true when no init', () => {
   const { rootModel } = getPluginManager()
   rootModel.setDefaultSession()
