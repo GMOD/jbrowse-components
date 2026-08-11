@@ -39,23 +39,13 @@ export function featureData(
   data: FeatureLoc,
   id?: string,
 ): Record<string, unknown> {
-  // lowercase keys, suffix clashes with reserved fields, unwrap single-element
-  // arrays (quotes were already stripped at parse time)
-  const processedAttrs = Object.fromEntries(
-    Object.entries(data.attributes).map(([a, vals]) => {
-      const lower = a.toLowerCase()
-      const key = reservedFields.has(lower) ? `${lower}2` : lower
-      return [key, vals.length === 1 ? vals[0] : vals] as const
-    }),
-  )
-
   const subfeatures = data.child_features?.length
     ? data.child_features.map(childLoc => featureData(childLoc))
     : undefined
 
   // build the output explicitly rather than spreading `data` and clearing its
   // raw parser fields, which would leave them as `undefined`-valued keys
-  return {
+  const out: Record<string, unknown> = {
     refName: data.seq_name,
     type: data.featureType,
     source: data.source,
@@ -64,11 +54,35 @@ export function featureData(
     strand: strandMap[data.strand],
     score: data.score ?? undefined,
     phase: data.frame ? Number(data.frame) : undefined,
-    ...processedAttrs,
-    ...(subfeatures !== undefined && { subfeatures }),
-    ...(processedAttrs.transcript_id && { name: processedAttrs.transcript_id }),
-    ...(id !== undefined && { uniqueId: id }),
   }
+
+  // lowercase keys, suffix clashes with reserved fields, unwrap single-element
+  // arrays (quotes were already stripped at parse time). Assigned onto the
+  // output rather than built into an intermediate object and spread: the
+  // spread's `Object.entries`/`.map`/`Object.fromEntries` allocated four
+  // throwaway arrays plus a second object per feature, on a path that runs once
+  // per line of the file
+  for (const a in data.attributes) {
+    const vals = data.attributes[a]!
+    const lower = a.toLowerCase()
+    out[reservedFields.has(lower) ? `${lower}2` : lower] =
+      vals.length === 1 ? vals[0] : vals
+  }
+
+  if (subfeatures !== undefined) {
+    out.subfeatures = subfeatures
+  }
+  // after the attributes, so an attribute that happens to be called `name`
+  // loses to the transcript_id the renderer labels with — as it did when this
+  // was a spread in this order
+  const transcriptId = out.transcript_id
+  if (transcriptId) {
+    out.name = transcriptId
+  }
+  if (id !== undefined) {
+    out.uniqueId = id
+  }
+  return out
 }
 
 function toStrand(s: string | undefined): Strand {
@@ -80,14 +94,27 @@ function nullIfDot(s: string | undefined) {
 }
 
 /**
- * True when an entry opens a double quote it never closes, meaning the ';' it
- * was split on fell inside the value instead of ending the entry. A GTF value
+ * True when `[from, to)` opens a double quote it never closes, meaning the ';'
+ * that ended it fell inside the value instead of ending the entry. A GTF value
  * is either bare or wholly quoted, so a second quote settles it — no need to
  * scan the rest of the entry.
  */
-function hasUnclosedQuote(entry: string) {
-  const first = entry.indexOf('"')
-  return first !== -1 && !entry.includes('"', first + 1)
+function hasUnclosedQuote(s: string, from: number, to: number) {
+  const first = s.indexOf('"', from)
+  if (first === -1 || first >= to) {
+    return false
+  }
+  const second = s.indexOf('"', first + 1)
+  return second === -1 || second >= to
+}
+
+// ASCII whitespace, which is what `String.prototype.trim` strips that can occur
+// in a GTF attribute column: space plus \t \n \v \f \r. GTF is an ASCII format,
+// so the Unicode space separators trim also handles cannot appear as padding
+// here — and if one did it would stay in the key or value rather than corrupt
+// the parse
+function isSpace(c: number) {
+  return c === 32 || (c >= 9 && c <= 13)
 }
 
 /**
@@ -98,32 +125,71 @@ function hasUnclosedQuote(entry: string) {
  * double-quotes are stripped here.
  *
  * A quoted value may also contain the ';' the entries are split on
- * (`note "a; b"`), so the pieces of one are rejoined before the value is read.
- * Without that the value is silently truncated at the semicolon, and the
+ * (`note "a; b"`), so an entry is extended past that ';' before the value is
+ * read. Without that the value is silently truncated at the semicolon, and the
  * remainder — having no `key value` shape — is dropped rather than erroring.
+ *
+ * Scanned over the string by index rather than `split(';')`-then-trim-then-
+ * `replaceAll(/^"|"$/g)`. This is the GTF load path's single hottest function —
+ * on a GENCODE-shaped 26,870-line file it was more of the profile than every
+ * other function combined, plus the GC for the two intermediate strings and the
+ * regex match it produced per attribute. Only the key and the value are
+ * allocated now, which are the two strings that get kept.
  */
 function parseGtfAttributes(attrString: string) {
   const attrs: Record<string, string[]> = {}
-  if (attrString.length > 0 && attrString !== '.') {
-    const entries = attrString.split(';')
-    for (let i = 0; i < entries.length; i++) {
-      let entry = entries[i]!
-      while (hasUnclosedQuote(entry) && i + 1 < entries.length) {
-        entry += `;${entries[++i]}`
+  const len = attrString.length
+  if (len === 0 || attrString === '.') {
+    return attrs
+  }
+  let i = 0
+  while (i < len) {
+    let end = attrString.indexOf(';', i)
+    if (end === -1) {
+      end = len
+    }
+    // an unclosed quote means this ';' was inside the value: take the next one
+    // instead. A trailing entry with no closing quote has nothing to extend
+    // into and is read as-is
+    while (end < len && hasUnclosedQuote(attrString, i, end)) {
+      const next = attrString.indexOf(';', end + 1)
+      end = next === -1 ? len : next
+    }
+
+    // trim the entry by index
+    let s = i
+    let e = end
+    while (s < e && isSpace(attrString.charCodeAt(s))) {
+      s++
+    }
+    while (e > s && isSpace(attrString.charCodeAt(e - 1))) {
+      e--
+    }
+
+    // `key value`, split at the first space — a tab does not separate them, as
+    // it did not when this read `trimmed.indexOf(' ')`
+    const sp = attrString.indexOf(' ', s)
+    if (sp !== -1 && sp < e) {
+      let vs = sp + 1
+      while (vs < e && isSpace(attrString.charCodeAt(vs))) {
+        vs++
       }
-      const trimmed = entry.trim()
-      const sp = trimmed.indexOf(' ')
-      if (sp !== -1) {
-        const key = trimmed.slice(0, sp)
-        const value = trimmed
-          .slice(sp + 1)
-          .trim()
-          .replaceAll(/^"|"$/g, '')
-        if (value.length > 0) {
-          ;(attrs[key] ??= []).push(value)
-        }
+      let ve = e
+      // strip one leading and one trailing quote, independently: `"x"` and a
+      // half-quoted `"x` both yield `x`, and a bare `""` yields the empty
+      // string that is then dropped
+      if (vs < ve && attrString.charCodeAt(vs) === 34) {
+        vs++
+      }
+      if (ve > vs && attrString.charCodeAt(ve - 1) === 34) {
+        ve--
+      }
+      if (ve > vs) {
+        const key = attrString.slice(s, sp)
+        ;(attrs[key] ??= []).push(attrString.slice(vs, ve))
       }
     }
+    i = end + 1
   }
   return attrs
 }

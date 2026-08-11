@@ -277,6 +277,72 @@ test('a malformed line cannot take its transcript down with it', () => {
   expect([out[0]!.start, out[0]!.end]).toEqual([99, 200])
 })
 
+// The attribute column is scanned by index rather than split-then-trim-then-
+// regex. These pin the edges that scanner has to get right, each of which the
+// old implementation got from a library call that is no longer being made:
+// `trim()` on both the entry and the value, and a `/^"|"$/g` replace that
+// stripped a leading and a trailing quote independently.
+test.each([
+  ['bare values need no quotes', 'gene_id "g1"; level 2;', 'level', '2'],
+  [
+    'an empty quoted value is dropped',
+    'gene_id "g1"; note "";',
+    'note',
+    undefined,
+  ],
+  // an entry whose quote is never closed is the case the rejoin rule exists
+  // for, so it swallows the ';' that follows and everything up to the next one
+  // — here, the end of the column. Malformed input either way; pinned because
+  // it is the one place the entry boundary is not the ';' it looks like
+  [
+    'an unclosed quote swallows the separator',
+    'gene_id "g1"; note "x;',
+    'note',
+    'x;',
+  ],
+  [
+    'so does a value that only closes one',
+    'gene_id "g1"; note x";',
+    'note',
+    'x";',
+  ],
+  [
+    'padding around an entry is trimmed',
+    'gene_id "g1";    note   "x"   ;',
+    'note',
+    'x',
+  ],
+  [
+    'an entry with no space is not an attribute',
+    'gene_id "g1"; note;',
+    'note',
+    undefined,
+  ],
+  // the key/value split has always been on a literal space, so a tab between
+  // them leaves the pair unrecognized rather than silently splitting there
+  [
+    'a tab does not separate key from value',
+    'gene_id "g1"; note\tx;',
+    'note',
+    undefined,
+  ],
+  [
+    'a quote inside a value is kept',
+    'gene_id "g1"; note "a"b";',
+    'note',
+    'a"b',
+  ],
+  [
+    'a trailing entry needs no semicolon',
+    'gene_id "g1"; note "x"',
+    'note',
+    'x',
+  ],
+])('%s', (_name, attrs, key, expected) => {
+  const feat = parse(`ctgA\ttest\tgene\t1\t100\t.\t+\t.\t${attrs}`)[0]!
+  expect(featureData(feat)[key]).toBe(expected)
+})
+
 test('an attribute named subfeatures cannot replace the child array', () => {
   const gtf =
     'ctgA\ttest\texon\t1\t100\t.\t+\t.\tgene_id "g1"; transcript_id "t1"; subfeatures "x";'
