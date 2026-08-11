@@ -113,6 +113,7 @@ export {
   YSCALEBAR_LABEL_OFFSET,
   buildCoverageTooltipBin,
   computeCoverageTicks,
+  coverageDepthDomain,
   computeSNPCoverage,
   computeVisibleCoverageStats,
   countSnpsAtPosition,

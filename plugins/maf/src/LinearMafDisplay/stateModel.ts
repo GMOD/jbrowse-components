@@ -1409,7 +1409,7 @@ export default function stateModelFactory(
         get coverageTicks() {
           return self.coverageDomain
             ? computeCoverageTicks(
-                self.coverageDomain[1],
+                self.coverageDomain,
                 self.coverageHeight,
                 'linear',
               )

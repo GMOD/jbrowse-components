@@ -53,6 +53,12 @@ export interface RenderState {
   showCoverage: boolean
   coverageHeight: number
   coverageYOffset: number // padding at top/bottom of coverage area for scalebar labels
+  // The autoscaled coverage domain, `coverageDomain[0]` and `[1]`. Both ends,
+  // because a `minScore` bound moves the baseline the bars draw flat at — for a
+  // long time only the max was carried here and the min was silently dropped, so
+  // the setting did nothing. `undefined` until the debounced autoscale resolves;
+  // `makeCoverageScale` is the one place they are read, and reads them together.
+  coverageMinDepth: number | undefined
   coverageMaxDepth: number | undefined
   coverageIsLog: boolean
   showMismatches: boolean

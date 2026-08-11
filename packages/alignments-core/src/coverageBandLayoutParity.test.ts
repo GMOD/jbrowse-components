@@ -57,7 +57,7 @@ test('the baseline sits inside the band, and the bars fit between the insets', (
 test('the coverage axis places itself in the band the bars are drawn in', () => {
   for (const h of HEIGHTS.filter(x => x > 2 * YSCALEBAR_LABEL_OFFSET)) {
     const { effectiveH, bottom } = coverageLayout(h)
-    const ticks = computeCoverageTicks(100, h)
+    const ticks = computeCoverageTicks([0, 100], h)
     expect(ticks.yBottom).toBe(bottom)
     expect(ticks.yBottom - ticks.yTop).toBe(effectiveH)
     // domain-min at the baseline, domain-max a full drawable height above it

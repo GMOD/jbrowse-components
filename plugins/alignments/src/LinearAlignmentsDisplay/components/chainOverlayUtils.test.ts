@@ -21,6 +21,7 @@ function makeState(overrides: Partial<RenderState> = {}): RenderState {
     showCoverage: false,
     coverageHeight: 50,
     coverageYOffset: 0,
+    coverageMinDepth: undefined,
     coverageMaxDepth: undefined,
     coverageIsLog: false,
     showPerBaseQuality: false,

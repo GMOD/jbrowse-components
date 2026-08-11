@@ -42,16 +42,17 @@ export const UNIFORM_OFFSET_F32 = {
   binSize: 14,
   interbaseHeight: 15,
   depthDomainMax: 16,
-  insertUpper: 17,
-  insertLower: 18,
-  blockStartPx: 19,
-  blockWidth: 20,
-  lineWidthPx: 21,
-  gradientHue: 22,
-  pairedArcsDown: 23,
-  arcsYDomainBp: 24,
-  arcsYLog: 25,
-  reversed: 32,
+  depthDomainMin: 17,
+  insertUpper: 18,
+  insertLower: 19,
+  blockStartPx: 20,
+  blockWidth: 21,
+  lineWidthPx: 22,
+  gradientHue: 23,
+  pairedArcsDown: 24,
+  arcsYDomainBp: 25,
+  arcsYLog: 26,
+  reversed: 33,
   pxPerBp: 256,
   arcBandH: 258,
   dpr: 259,
@@ -59,45 +60,45 @@ export const UNIFORM_OFFSET_F32 = {
 
 // Word indices into a Int32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_I32 = {
-  colorScheme: 26,
-  chainMode: 27,
-  showStroke: 28,
-  coverageScaleType: 29,
-  filterMismatchesByFrequency: 30,
-  mismatchAlpha: 31,
+  colorScheme: 27,
+  chainMode: 28,
+  showStroke: 29,
+  coverageScaleType: 30,
+  filterMismatchesByFrequency: 31,
+  mismatchAlpha: 32,
 } as const
 
 // Word indices into a Uint32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_U32 = {
-  colorFwd: 33,
-  colorRev: 34,
-  colorNostrand: 35,
-  colorPairLR: 36,
-  colorPairRL: 37,
-  colorPairRR: 38,
-  colorPairLL: 39,
-  colorBaseA: 40,
-  colorBaseC: 41,
-  colorBaseG: 42,
-  colorBaseT: 43,
-  colorBaseN: 44,
-  colorInsertion: 45,
-  colorDeletion: 46,
-  colorSkip: 47,
-  colorSoftclip: 48,
-  colorHardclip: 49,
-  colorInsertionIndicator: 50,
-  colorSoftclipIndicator: 51,
-  colorHardclipIndicator: 52,
-  colorCoverage: 53,
-  colorModFwd: 54,
-  colorModRev: 55,
-  colorLongInsert: 56,
-  colorShortInsert: 57,
-  colorSupplementary: 58,
-  colorUnmappedMate: 59,
-  colorInterchrom: 60,
-  colorMutedSnpBase: 61,
+  colorFwd: 34,
+  colorRev: 35,
+  colorNostrand: 36,
+  colorPairLR: 37,
+  colorPairRL: 38,
+  colorPairRR: 39,
+  colorPairLL: 40,
+  colorBaseA: 41,
+  colorBaseC: 42,
+  colorBaseG: 43,
+  colorBaseT: 44,
+  colorBaseN: 45,
+  colorInsertion: 46,
+  colorDeletion: 47,
+  colorSkip: 48,
+  colorSoftclip: 49,
+  colorHardclip: 50,
+  colorInsertionIndicator: 51,
+  colorSoftclipIndicator: 52,
+  colorHardclipIndicator: 53,
+  colorCoverage: 54,
+  colorModFwd: 55,
+  colorModRev: 56,
+  colorLongInsert: 57,
+  colorShortInsert: 58,
+  colorSupplementary: 59,
+  colorUnmappedMate: 60,
+  colorInterchrom: 61,
+  colorMutedSnpBase: 62,
   colorSplitInversion: 257,
 } as const
 
@@ -131,6 +132,7 @@ export interface Uniforms {
   binSize: number
   interbaseHeight: number
   depthDomainMax: number
+  depthDomainMin: number
   insertUpper: number
   insertLower: number
   blockStartPx: number
@@ -207,51 +209,52 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[14] = uniforms.binSize
   f32[15] = uniforms.interbaseHeight
   f32[16] = uniforms.depthDomainMax
-  f32[17] = uniforms.insertUpper
-  f32[18] = uniforms.insertLower
-  f32[19] = uniforms.blockStartPx
-  f32[20] = uniforms.blockWidth
-  f32[21] = uniforms.lineWidthPx
-  f32[22] = uniforms.gradientHue
-  f32[23] = uniforms.pairedArcsDown
-  f32[24] = uniforms.arcsYDomainBp
-  f32[25] = uniforms.arcsYLog
-  i32[26] = uniforms.colorScheme
-  i32[27] = uniforms.chainMode
-  i32[28] = uniforms.showStroke
-  i32[29] = uniforms.coverageScaleType
-  i32[30] = uniforms.filterMismatchesByFrequency
-  i32[31] = uniforms.mismatchAlpha
-  f32[32] = uniforms.reversed
-  u32[33] = uniforms.colorFwd
-  u32[34] = uniforms.colorRev
-  u32[35] = uniforms.colorNostrand
-  u32[36] = uniforms.colorPairLR
-  u32[37] = uniforms.colorPairRL
-  u32[38] = uniforms.colorPairRR
-  u32[39] = uniforms.colorPairLL
-  u32[40] = uniforms.colorBaseA
-  u32[41] = uniforms.colorBaseC
-  u32[42] = uniforms.colorBaseG
-  u32[43] = uniforms.colorBaseT
-  u32[44] = uniforms.colorBaseN
-  u32[45] = uniforms.colorInsertion
-  u32[46] = uniforms.colorDeletion
-  u32[47] = uniforms.colorSkip
-  u32[48] = uniforms.colorSoftclip
-  u32[49] = uniforms.colorHardclip
-  u32[50] = uniforms.colorInsertionIndicator
-  u32[51] = uniforms.colorSoftclipIndicator
-  u32[52] = uniforms.colorHardclipIndicator
-  u32[53] = uniforms.colorCoverage
-  u32[54] = uniforms.colorModFwd
-  u32[55] = uniforms.colorModRev
-  u32[56] = uniforms.colorLongInsert
-  u32[57] = uniforms.colorShortInsert
-  u32[58] = uniforms.colorSupplementary
-  u32[59] = uniforms.colorUnmappedMate
-  u32[60] = uniforms.colorInterchrom
-  u32[61] = uniforms.colorMutedSnpBase
+  f32[17] = uniforms.depthDomainMin
+  f32[18] = uniforms.insertUpper
+  f32[19] = uniforms.insertLower
+  f32[20] = uniforms.blockStartPx
+  f32[21] = uniforms.blockWidth
+  f32[22] = uniforms.lineWidthPx
+  f32[23] = uniforms.gradientHue
+  f32[24] = uniforms.pairedArcsDown
+  f32[25] = uniforms.arcsYDomainBp
+  f32[26] = uniforms.arcsYLog
+  i32[27] = uniforms.colorScheme
+  i32[28] = uniforms.chainMode
+  i32[29] = uniforms.showStroke
+  i32[30] = uniforms.coverageScaleType
+  i32[31] = uniforms.filterMismatchesByFrequency
+  i32[32] = uniforms.mismatchAlpha
+  f32[33] = uniforms.reversed
+  u32[34] = uniforms.colorFwd
+  u32[35] = uniforms.colorRev
+  u32[36] = uniforms.colorNostrand
+  u32[37] = uniforms.colorPairLR
+  u32[38] = uniforms.colorPairRL
+  u32[39] = uniforms.colorPairRR
+  u32[40] = uniforms.colorPairLL
+  u32[41] = uniforms.colorBaseA
+  u32[42] = uniforms.colorBaseC
+  u32[43] = uniforms.colorBaseG
+  u32[44] = uniforms.colorBaseT
+  u32[45] = uniforms.colorBaseN
+  u32[46] = uniforms.colorInsertion
+  u32[47] = uniforms.colorDeletion
+  u32[48] = uniforms.colorSkip
+  u32[49] = uniforms.colorSoftclip
+  u32[50] = uniforms.colorHardclip
+  u32[51] = uniforms.colorInsertionIndicator
+  u32[52] = uniforms.colorSoftclipIndicator
+  u32[53] = uniforms.colorHardclipIndicator
+  u32[54] = uniforms.colorCoverage
+  u32[55] = uniforms.colorModFwd
+  u32[56] = uniforms.colorModRev
+  u32[57] = uniforms.colorLongInsert
+  u32[58] = uniforms.colorShortInsert
+  u32[59] = uniforms.colorSupplementary
+  u32[60] = uniforms.colorUnmappedMate
+  u32[61] = uniforms.colorInterchrom
+  u32[62] = uniforms.colorMutedSnpBase
   f32[64] = uniforms.arcColor[0][0]
   f32[65] = uniforms.arcColor[0][1]
   f32[66] = uniforms.arcColor[0][2]

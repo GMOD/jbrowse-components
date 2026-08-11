@@ -10,7 +10,7 @@
 // The sub-pixel frequency lerp is a pure scalar decision both backends must
 // make identically; rendererTypes.ts imports the generated twin rather than
 // re-deriving it (adr-051).
-//! js-export: frequencyAlpha, frequencyFadeGate, sizeAlpha, arcYFraction, arcYOffsetPx, arcColorSlot, linkedReadColorSlot
+//! js-export: frequencyAlpha, frequencyFadeGate, sizeAlpha, arcYFraction, arcYOffsetPx, arcColorSlot, linkedReadColorSlot, normalizeDepthScalar
 // consts-out takes the WHOLE export-consts list, so this path names what that
 // list currently is rather than a category it will keep meaning. Anything added
 // above lands in a file called indicatorTriangle.generated.ts; put a constant
@@ -70,7 +70,11 @@ public struct Uniforms {
   public float depthScale;
   public float binSize;
   public float interbaseHeight;
-  public float depthDomainMax; // coverage domain maximum (for log scale normalization)
+  // The coverage domain both ends. `depthDomainMin` is normally 0 (an
+  // autoscaled depth domain starts at no reads) and non-zero when the track
+  // carries a `minScore` bound, which moves the depth the bars draw flat at.
+  public float depthDomainMax;
+  public float depthDomainMin;
 
   // Insert-size thresholds
   public float insertUpper;
@@ -531,18 +535,39 @@ public float covBottom(Uniforms u) {
     - (covBottomOffsetPx(u.covHeight, u.covYOffset) / u.canvasH) * 2.0;
 }
 
-// Normalize a coverage depth value (relDepth = rawDepth / regionMaxDepth) to [0,1]
-// using the current coverage scale type. depthScale = regionMaxDepth / domainMax.
-// Linear: relDepth * depthScale = rawDepth / domainMax.
-// Log: log2(max(rawDepth,1)) / log2(max(domainMax,1)).
-public float normalizeDepth(float relDepth, Uniforms u) {
-  if (u.coverageScaleType == 1) {
-    float rawDepth = relDepth * u.depthScale * u.depthDomainMax;
-    float logMax = log2(max(u.depthDomainMax, 1.0));
-    if (logMax <= 0.0) { return 0.0; }
-    return clamp(log2(max(rawDepth, 1.0)) / logMax, 0.0, 1.0);
+// Normalize a raw coverage depth to [0,1] over the domain [min, max], on the
+// current scale type. The scalar twin of makeScoreNormalizer in
+// packages/wiggle-core/src/normalize.ts, which is what the Canvas2D coverage
+// draws and the y-axis ticks go through — `coverageNormalizeParity.test.ts`
+// pins the two against each other, so keep them the same function.
+//
+// The log branch floors at the domain's own min, not at 1, and falls back to 1
+// only where that min is non-positive; see makeScoreNormalizer for why
+// (a domain sitting entirely under 1 otherwise collapses to a flat baseline).
+public float normalizeDepthScalar(float rawDepth, float domainMin, float domainMax, bool isLog) {
+  if (isLog) {
+    float floorV = domainMin > 0.0 ? domainMin : 1.0;
+    float logMin = log2(floorV);
+    float logMax = log2(max(domainMax, floorV));
+    float logRange = logMax - logMin;
+    if (logRange <= 0.0) { return 0.0; }
+    return clamp((log2(max(rawDepth, floorV)) - logMin) / logRange, 0.0, 1.0);
   }
-  return relDepth * u.depthScale;
+  float range = domainMax - domainMin;
+  if (range <= 0.0) { return 0.0; }
+  return clamp((rawDepth - domainMin) / range, 0.0, 1.0);
+}
+
+// The uniform-block wrapper every coverage pass calls. Recovers the raw depth
+// from the packed `relDepth` (= rawDepth / regionMaxDepth, with
+// depthScale = regionMaxDepth / domainMax) and hands it to the scalar above.
+// Split in two so the scalar half can be `//! js-export`ed — the same shape
+// frequencyFadeGate takes, and for the same reason: the twin emitter cannot
+// carry a Uniforms struct across.
+public float normalizeDepth(float relDepth, Uniforms u) {
+  float rawDepth = relDepth * u.depthScale * u.depthDomainMax;
+  return normalizeDepthScalar(
+    rawDepth, u.depthDomainMin, u.depthDomainMax, u.coverageScaleType == 1);
 }
 
 // Below one 8-bit alpha step a mark is not representable, so sizeAlpha() snaps

@@ -12,6 +12,7 @@ import {
   buildCoverageFields,
   emptyCoverageFields,
 } from '../../features/coverage/buildRegion.ts'
+import { makeCoverageScale } from '../../features/coverage/coverageScale.ts'
 import { drawCoverageBars } from '../../features/coverage/drawCanvas.ts'
 import { drawGaps } from '../../features/gap/drawCanvas.ts'
 import { drawIndicatorCanvas } from '../../features/indicator/drawCanvas.ts'
@@ -477,13 +478,22 @@ function drawCoverage(
   // ungrouped sticky-coverage path, mirroring the shader `covTop` uniform.
   ctx.save()
   ctx.translate(0, state.coverageTopOffset)
-  const domainMax = state.coverageMaxDepth
-  if (domainMax !== undefined) {
-    drawCoverageBars(ctx, region, bpToX, viewWidth, state, domainMax)
-    drawSnpSegmentsCanvas(ctx, region, bpToX, viewWidth, state, domainMax)
-    drawModCoverageCanvas(ctx, region, bpToX, viewWidth, state, domainMax)
+  // One scale for the whole band, and it doubles as the resolved-domain gate —
+  // `undefined` while autoscale is still settling. Built once here because the
+  // bars, the SNP segments stacked inside them and the modification segments are
+  // readings of one axis; each building its own normalizer is how all three came
+  // to hardcode a zero floor and ignore `minScore`.
+  const scale = makeCoverageScale(state)
+  if (scale) {
+    drawCoverageBars(ctx, region, bpToX, viewWidth, state, scale.normalize)
+    drawSnpSegmentsCanvas(ctx, region, bpToX, viewWidth, state, scale.normalize)
+    drawModCoverageCanvas(ctx, region, bpToX, viewWidth, state, scale.normalize)
     if (state.showInterbaseIndicators) {
-      drawInterbaseCanvas(ctx, region, bpToX, viewWidth, state, domainMax)
+      // `domainMax`, not the normalizer: an interbase bar's height is
+      // `count / regionMaxDepth` against a half-band reference — a ratio of
+      // event counts rather than a depth read off the axis — so the domain min
+      // has nothing to say about it. See CoverageScale.
+      drawInterbaseCanvas(ctx, region, bpToX, viewWidth, state, scale.domainMax)
     }
   }
   if (state.showInterbaseIndicators) {

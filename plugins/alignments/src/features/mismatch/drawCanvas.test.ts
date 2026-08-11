@@ -43,6 +43,7 @@ function baseState(overrides: Partial<RenderState> = {}): RenderState {
     showCoverage: false,
     coverageHeight: 0,
     coverageYOffset: 0,
+    coverageMinDepth: undefined,
     coverageMaxDepth: undefined,
     coverageIsLog: false,
     showMismatches: true,

@@ -12,7 +12,7 @@ import type { CoverageRegion } from './coverageDownsampling.ts'
 
 describe('computeCoverageTicks', () => {
   test('produces nice round tick values', () => {
-    const result = computeCoverageTicks(100, 150)
+    const result = computeCoverageTicks([0, 100], 150)
     expect(result.yTop).toBe(5)
     expect(result.yBottom).toBe(145)
     // step = 50 for maxDepth=100; ticks at 0, 50, 100
@@ -20,15 +20,15 @@ describe('computeCoverageTicks', () => {
   })
 
   test('short height uses only 0 and max ticks', () => {
-    const small = computeCoverageTicks(50, 50)
+    const small = computeCoverageTicks([0, 50], 50)
     expect(small.items.length).toBe(2)
     expect(small.items[0]!.value).toBe(0)
     expect(small.items[1]!.value).toBe(50)
   })
 
   test('tall height uses nice step (more ticks than short)', () => {
-    const small = computeCoverageTicks(50, 50)
-    const large = computeCoverageTicks(50, 150)
+    const small = computeCoverageTicks([0, 50], 50)
+    const large = computeCoverageTicks([0, 50], 150)
     expect(large.items.length).toBeGreaterThan(small.items.length)
     // all values are multiples of a nice step
     const step = large.items[1]!.value - large.items[0]!.value
@@ -40,12 +40,12 @@ describe('computeCoverageTicks', () => {
   test('shallow coverage yields integer depth ticks, not fractions', () => {
     // maxDepth < 3 makes niceStep return 0.5; depth is integer-valued so the
     // step floors to 1 (ticks 0, 1, 2 rather than 0, 0.5, 1, 1.5, 2).
-    const result = computeCoverageTicks(2, 150)
+    const result = computeCoverageTicks([0, 2], 150)
     expect(result.items.map(t => t.value)).toEqual([0, 1, 2])
   })
 
   test('tick y values are within bounds', () => {
-    const result = computeCoverageTicks(200, 100)
+    const result = computeCoverageTicks([0, 200], 100)
     for (const tick of result.items) {
       expect(tick.y).toBeGreaterThanOrEqual(result.yTop)
       expect(tick.y).toBeLessThanOrEqual(result.yBottom)
@@ -54,7 +54,7 @@ describe('computeCoverageTicks', () => {
 
   test('log scale with maxDepth=1 produces finite tick positions', () => {
     // logMax is 0 here; the degenerate scale must not yield NaN.
-    const result = computeCoverageTicks(1, 150, 'log')
+    const result = computeCoverageTicks([0, 1], 150, 'log')
     expect(result.items.length).toBeGreaterThan(0)
     for (const tick of result.items) {
       expect(Number.isFinite(tick.y)).toBe(true)
@@ -65,16 +65,16 @@ describe('computeCoverageTicks', () => {
   // tick is a React duplicate key plus an overdrawn label and guide line
   test('emits no duplicate ticks on any log scale', () => {
     for (const maxDepth of [1, 2, 3, 5, 8, 17, 100]) {
-      const items = computeCoverageTicks(maxDepth, 150, 'log').items
+      const items = computeCoverageTicks([0, maxDepth], 150, 'log').items
       const keys = items.map(t => `${t.value}-${t.y}`)
       expect(new Set(keys).size).toBe(items.length)
     }
   })
 
   test('log scale with maxDepth=1 keeps its single tick rather than doubling it', () => {
-    expect(computeCoverageTicks(1, 150, 'log').items.map(t => t.value)).toEqual(
-      [1],
-    )
+    expect(
+      computeCoverageTicks([0, 1], 150, 'log').items.map(t => t.value),
+    ).toEqual([1])
   })
 
   // The top tick IS the announced scale max: the compact `[0, max]` caption the
@@ -86,7 +86,7 @@ describe('computeCoverageTicks', () => {
     'a short %s band shows exactly its two endpoints, the top one the real max',
     scaleType => {
       for (const height of [10, 20, 40, 69]) {
-        const items = computeCoverageTicks(100, height, scaleType).items
+        const items = computeCoverageTicks([0, 100], height, scaleType).items
         expect(items.map(t => t.value)).toEqual([
           scaleType === 'log' ? 1 : 0,
           100,
@@ -96,13 +96,13 @@ describe('computeCoverageTicks', () => {
   )
 
   test('a short log band at maxDepth 1 emits its one endpoint once', () => {
-    expect(computeCoverageTicks(1, 20, 'log').items.map(t => t.value)).toEqual([
-      1,
-    ])
+    expect(
+      computeCoverageTicks([0, 1], 20, 'log').items.map(t => t.value),
+    ).toEqual([1])
   })
 
   test('the endpoints land on the ends of the plot box', () => {
-    const { items, yTop, yBottom } = computeCoverageTicks(100, 40, 'log')
+    const { items, yTop, yBottom } = computeCoverageTicks([0, 100], 40, 'log')
     expect(items[0]!.y).toBe(yBottom)
     expect(items.at(-1)!.y).toBe(yTop)
   })

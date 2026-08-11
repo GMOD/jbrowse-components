@@ -1,10 +1,10 @@
 import { drawSnpSegments } from '@jbrowse/alignments-core'
-import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
 import { buildCigarOpDrawColors } from '../mismatch/baseColors.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { CoverageRegionFields } from '../coverage/buildRegion.ts'
+import type { CoverageScale } from '../coverage/coverageScale.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 export function drawSnpSegmentsCanvas(
@@ -13,12 +13,12 @@ export function drawSnpSegmentsCanvas(
   bpToX: (bp: number) => number,
   viewWidth: number,
   state: RenderState,
-  domainMax: number,
+  normalizeDepth: CoverageScale['normalize'],
 ) {
   drawSnpSegments(
     ctx,
     region.snpPackedBuffer,
-    makeScoreNormalizer(0, domainMax, state.coverageIsLog),
+    normalizeDepth,
     region.coverageMaxDepth,
     state.coverageHeight,
     buildCigarOpDrawColors(state),

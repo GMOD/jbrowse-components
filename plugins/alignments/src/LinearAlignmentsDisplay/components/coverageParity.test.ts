@@ -675,6 +675,7 @@ describe('renderBlocks canvasDrawn gating parity', () => {
       showCoverage: false,
       coverageHeight: 100,
       coverageYOffset: 5,
+      coverageMinDepth: 0,
       coverageMaxDepth: 50,
       coverageIsLog: false,
       showMismatches: false,

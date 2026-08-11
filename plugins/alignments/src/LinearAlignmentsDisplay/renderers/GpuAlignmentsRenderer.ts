@@ -25,6 +25,7 @@ import {
   PASS_CONN_LINE,
 } from '../../features/connectingLines/packGpu.ts'
 import { uploadConnectingLines } from '../../features/connectingLines/uploadGpu.ts'
+import { hasCoverageScale } from '../../features/coverage/coverageScale.ts'
 import {
   COVERAGE_PASS,
   PASS_COVERAGE,
@@ -185,6 +186,10 @@ function fillFrameUniforms(
       ? region.maxDepth / domainMax
       : 1
   f[U.depthDomainMax] = domainMax ?? 0
+  // Both ends of the domain, so `normalizeDepthScalar` can be the twin of
+  // `makeScoreNormalizer` rather than a max-only approximation of it. 0 unless
+  // the track carries a `minScore` bound.
+  f[U.depthDomainMin] = state.coverageMinDepth ?? 0
   i[UI.coverageScaleType] = state.coverageIsLog ? 1 : 0
   i[UI.filterMismatchesByFrequency] = state.filterMismatchesByFrequency ? 1 : 0
   i[UI.mismatchAlpha] = state.mismatchAlpha ? 1 : 0
@@ -597,7 +602,7 @@ export const GPU_PILEUP_PASS: Record<PileupLayerId, string> = {
 export function coveragePassPlan(
   state: RenderState,
 ): [pass: string, enabled: boolean][] {
-  const hasDomain = state.coverageMaxDepth !== undefined
+  const hasDomain = hasCoverageScale(state)
   return [
     [PASS_COVERAGE, hasDomain],
     [PASS_SNP_COV, hasDomain],

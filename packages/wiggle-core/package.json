@@ -21,7 +21,8 @@
   "main": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./constants": "./src/constants.ts"
+    "./constants": "./src/constants.ts",
+    "./normalize": "./src/normalize.ts"
   },
   "files": [
     "esm"

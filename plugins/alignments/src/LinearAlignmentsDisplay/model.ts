@@ -3,6 +3,7 @@ import { lazy } from 'react'
 import {
   YSCALEBAR_LABEL_OFFSET,
   computeCoverageTicks,
+  coverageDepthDomain,
   computeVisibleCoverageStats,
 } from '@jbrowse/alignments-core'
 import { getSequenceAdapterConfig } from '@jbrowse/core/assemblyManager/assembly'
@@ -1146,11 +1147,28 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * The domain the coverage band draws against — `coverageDomain` with a
+         * log scale's floor pulled up to one read (see `coverageDepthDomain`).
+         *
+         * **This, not `coverageDomain`, is what every consumer reads**: the
+         * y-axis ticks and both renderers' normalizers. `coverageDomain[0]` used
+         * to be read by none of them, so a `minScore` bound was resolved into it
+         * and then thrown away — the menu reported a manual range in force while
+         * the picture was identical.
+         */
+        get coverageDepthDomain() {
+          return this.coverageDomain
+            ? coverageDepthDomain(this.coverageDomain, self.scaleType)
+            : undefined
+        },
+
+        /**
+         * #getter
          */
         get coverageTicks() {
-          return this.coverageDomain
+          return this.coverageDepthDomain
             ? computeCoverageTicks(
-                this.coverageDomain[1],
+                this.coverageDepthDomain,
                 self.coverageHeight,
                 self.scaleType,
               )
@@ -2432,7 +2450,8 @@ export default function stateModelFactory(
             showCoverage: self.showCoverage,
             coverageHeight: self.coverageHeight,
             coverageYOffset: YSCALEBAR_LABEL_OFFSET,
-            coverageMaxDepth: self.coverageDomain?.[1],
+            coverageMinDepth: self.coverageDepthDomain?.[0],
+            coverageMaxDepth: self.coverageDepthDomain?.[1],
             coverageIsLog: self.coverageIsLog,
             showMismatches: self.showMismatches,
             filterMismatchesByFrequency: self.filterMismatchesByFrequency,

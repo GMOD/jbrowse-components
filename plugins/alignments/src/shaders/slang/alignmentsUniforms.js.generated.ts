@@ -71,3 +71,25 @@ export function arcColorSlot(idx: number): number {
 export function linkedReadColorSlot(idx: number): number {
   return _min(idx, 7)
 }
+
+export function normalizeDepthScalar(rawDepth: number, domainMin: number, domainMax: number, isLog: boolean): number {
+  if (isLog) {
+    let floorV: number
+    if ((domainMin > 0.0)) {
+      floorV = domainMin
+    } else {
+      floorV = 1.0
+    }
+    let logMin = Math.log2(floorV)
+    let logRange = (Math.log2(_max(domainMax, floorV)) - logMin)
+    if ((logRange <= 0.0)) {
+      return 0.0
+    }
+    return _clamp(((Math.log2(_max(rawDepth, floorV)) - logMin) / logRange), 0.0, 1.0)
+  }
+  let range = (domainMax - domainMin)
+  if ((range <= 0.0)) {
+    return 0.0
+  }
+  return _clamp(((rawDepth - domainMin) / range), 0.0, 1.0)
+}

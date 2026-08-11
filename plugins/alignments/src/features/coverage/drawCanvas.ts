@@ -1,10 +1,10 @@
 import { drawCoverageBins } from '@jbrowse/alignments-core'
-import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { ALIGNMENTS_FUDGE_FACTOR } from '../../LinearAlignmentsDisplay/constants.ts'
 
 import type { CoverageRegionFields } from './buildRegion.ts'
+import type { CoverageScale } from './coverageScale.ts'
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
@@ -17,12 +17,12 @@ export function drawCoverageBars(
   bpToX: (bp: number) => number,
   viewWidth: number,
   state: RenderState,
-  domainMax: number,
+  normalizeDepth: CoverageScale['normalize'],
 ) {
   drawCoverageBins(
     ctx,
     region.coverageBuffer,
-    makeScoreNormalizer(0, domainMax, state.coverageIsLog),
+    normalizeDepth,
     state.coverageHeight,
     rgb255(state.colors.colorCoverage),
     bpToX,

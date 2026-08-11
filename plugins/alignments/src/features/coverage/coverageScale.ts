@@ -1,0 +1,75 @@
+import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
+
+/**
+ * What the coverage band's depth scale is made of. The min and the max travel
+ * together because a normalizer built from one of them is not a scale — three
+ * separate draw sites each called `makeScoreNormalizer(0, domainMax, …)` with
+ * their own hardcoded floor, which is how `minScore` came to be a setting that
+ * changed nothing.
+ *
+ * Both are `undefined` until the debounced autoscale resolves
+ * (`coarseDynamicBlocks` is 500ms-debounced), which is what gates the
+ * depth-scaled passes on both backends.
+ */
+export interface CoverageScaleState {
+  coverageMinDepth: number | undefined
+  coverageMaxDepth: number | undefined
+  coverageIsLog: boolean
+}
+
+export interface CoverageScale {
+  /**
+   * Depth → [0,1] height fraction, for every mark that is a reading of the
+   * coverage axis: the depth bars, the SNP segments stacked inside them, and the
+   * modification segments. The GPU twin is `normalizeDepth` in
+   * alignmentsUniforms.slang, pinned to this by `coverageNormalizeParity.test`.
+   */
+  normalize: (depth: number) => number
+  /**
+   * The raw domain max, for the marks that are NOT readings of that axis. The
+   * interbase (clip/insertion) bars are the only ones: their height is
+   * `count / regionMaxDepth` against a half-band reference — a ratio of event
+   * counts — so the domain min has nothing to say about them, and they need the
+   * max on its own.
+   */
+  domainMax: number
+}
+
+/**
+ * The coverage band's resolved depth scale, or `undefined` while autoscale is
+ * still settling — which is also the single gate the depth-scaled layers are
+ * drawn under, on both backends.
+ *
+ * Returning the gate and the scale as one value is the point: as a bare
+ * `domainMax !== undefined` check beside three independent `makeScoreNormalizer`
+ * calls, a layer could be drawn against a domain no other layer was using, and
+ * three of them were.
+ */
+export function makeCoverageScale(
+  state: CoverageScaleState,
+): CoverageScale | undefined {
+  const { coverageMinDepth, coverageMaxDepth, coverageIsLog } = state
+  return hasCoverageScale(state) && coverageMaxDepth !== undefined
+    ? {
+        normalize: makeScoreNormalizer(
+          coverageMinDepth ?? 0,
+          coverageMaxDepth,
+          coverageIsLog,
+        ),
+        domainMax: coverageMaxDepth,
+      }
+    : undefined
+}
+
+/**
+ * Whether the depth domain has resolved. The GPU builds no normalizer — its
+ * passes read the uniforms directly — so it can't gate on `makeCoverageScale`
+ * itself, but it must gate on the same question: this is the one predicate both
+ * backends skip the depth-scaled layers under, rather than a
+ * `coverageMaxDepth !== undefined` written once per backend.
+ */
+export function hasCoverageScale(
+  state: Pick<CoverageScaleState, 'coverageMaxDepth'>,
+) {
+  return state.coverageMaxDepth !== undefined
+}

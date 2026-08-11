@@ -1,8 +1,8 @@
 import { drawModCovSegments } from '@jbrowse/alignments-core'
-import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { CoverageRegionFields } from '../coverage/buildRegion.ts'
+import type { CoverageScale } from '../coverage/coverageScale.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 export function drawModCoverageCanvas(
@@ -11,12 +11,12 @@ export function drawModCoverageCanvas(
   bpToX: (bp: number) => number,
   viewWidth: number,
   state: RenderState,
-  domainMax: number,
+  normalizeDepth: CoverageScale['normalize'],
 ) {
   drawModCovSegments(
     ctx,
     region.modCovPackedBuffer,
-    makeScoreNormalizer(0, domainMax, state.coverageIsLog),
+    normalizeDepth,
     region.coverageMaxDepth,
     state.coverageHeight,
     bpToX,

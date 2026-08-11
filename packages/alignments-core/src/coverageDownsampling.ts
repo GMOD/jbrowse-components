@@ -1,9 +1,11 @@
-// Deliberately the `/constants` entry, not the `@jbrowse/wiggle-core` barrel:
-// this package is worker/math-side and the barrel re-exports React components
-// (CrossHatches, SetMinMaxDialog, the menu builders), so the barrel would drag
-// React + MUI into every consumer of alignments-core. The type imports below
-// are erased, so they can keep using the barrel.
+// Deliberately the `/constants` and `/normalize` entries, not the
+// `@jbrowse/wiggle-core` barrel: this package is worker/math-side and the barrel
+// re-exports React components (CrossHatches, SetMinMaxDialog, the menu
+// builders), so the barrel would drag React + MUI into every consumer of
+// alignments-core. The type imports below are erased, so they can keep using the
+// barrel.
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
+import { makeScoreNormalizer } from '@jbrowse/wiggle-core/normalize'
 
 import { coverageLayout } from './coverageBandBox.ts'
 
@@ -27,33 +29,48 @@ export function niceStep(maxDepth: number) {
   return niceFrac * pow
 }
 
-// Maps a depth value to its 0..1 height fraction. The branch is chosen once so
-// the returned mapper is total: the log case pre-resolves logMax === 0 (maxDepth
-// of 1) to a constant 0 rather than dividing by zero. Mirrors normalizeDepth's
-// `logMax <= 0` guard in the shaders.
-function makeDepthFraction(maxDepth: number, scaleType: string) {
-  if (scaleType === 'log') {
-    const logMax = Math.log2(Math.max(1, maxDepth))
-    return logMax <= 0
-      ? () => 0
-      : (value: number) => Math.log2(Math.max(1, value)) / logMax
-  }
-  return (value: number) => value / maxDepth
+/**
+ * The domain the coverage band actually draws against — its autoscaled/bounded
+ * `[min, max]`, with a log scale's floor pulled up to 1.
+ *
+ * Depth is a count of whole reads, which is what separates this axis from a
+ * wiggle track's. `getNiceDomain` deliberately keeps a log domain under 1 (a
+ * mappability track, a methylation fraction), and for a shallow pileup it
+ * produces exactly that: a single-read region nices to `[0.0078125, 1]`, whose
+ * octave ladder is eight fractional read counts. One read is the floor.
+ *
+ * Applied once, by the display, so the ticks and both renderers are handed the
+ * same already-floored pair — the alternative is this rule spelled in the axis,
+ * in the Canvas2D scale and in the uniform write, which is how the min came to
+ * be dropped by all three in the first place.
+ */
+export function coverageDepthDomain(
+  domain: readonly [number, number],
+  scaleType: string,
+): [number, number] {
+  const [min, max] = domain
+  return scaleType === 'log' ? [Math.max(1, min), max] : [min, max]
 }
 
 // Below this band height the axis drops to its two endpoints: a full ladder's
 // 10px labels need ~15px of vertical room apiece and there isn't any.
 // Deliberately above `COMPACT_AXIS_HEIGHT` (30, where the axis gives up
-// entirely and becomes a one-line `[0, max]` caption) — between the two a
+// entirely and becomes a one-line `[min, max]` caption) — between the two a
 // two-tick axis still reads.
 const FULL_LADDER_MIN_HEIGHT = 70
 
 /**
- * The value a coverage axis starts from: 0 on a linear scale, 1 on a log one
- * (`makeDepthFraction` floors at 1, which is where the bars start too).
+ * The depth the coverage axis starts from, which is the depth the bars draw flat
+ * at. Normally the domain's own min — an autoscaled domain starts at 0, a
+ * `minScore` bound starts wherever the user put it.
+ *
+ * A log scale cannot start at 0, so it floors at 1. That is not a rule of this
+ * file: it is `makeScoreNormalizer`'s (`min > 0 ? min : 1`), and it has to be
+ * read off the same condition here or the baseline tick stops being the depth
+ * the bars flatten at.
  */
-function coverageBaseline(scaleType: string) {
-  return scaleType === 'log' ? 1 : 0
+function coverageBaseline(domainMin: number, scaleType: string) {
+  return scaleType === 'log' && domainMin <= 0 ? 1 : domainMin
 }
 
 /**
@@ -61,41 +78,47 @@ function coverageBaseline(scaleType: string) {
  * mapping to one place. They are the whole of what differs between the branches,
  * so each can be read against its own rule without the geometry in the way.
  *
- * Every one of them is required to end at `maxDepth` or below it and to emit no
- * value twice: `YScaleBar` and `CrossHatchLines` both key on `${value}-${y}`, so
- * a repeat is a React duplicate-key warning and a label drawn over itself.
+ * Every one of them starts at `baseline`, is required to end at `max` or below
+ * it, and must emit no value twice: `YScaleBar` and `CrossHatchLines` both key
+ * on `${value}-${y}`, so a repeat is a React duplicate-key warning and a label
+ * drawn over itself.
  */
-function endpointTickValues(maxDepth: number, scaleType: string) {
-  const baseline = coverageBaseline(scaleType)
-  return baseline === maxDepth ? [maxDepth] : [baseline, maxDepth]
+function endpointTickValues(baseline: number, max: number) {
+  return baseline === max ? [max] : [baseline, max]
 }
 
-/** Powers of two up to `maxDepth`, ending at `maxDepth` if nothing else did. */
-function octaveTickValues(maxDepth: number) {
-  const values = [1]
-  for (let tick = 2; tick <= maxDepth; tick *= 2) {
+/**
+ * The baseline, then successive doublings of it, up to `max` — and `max` itself
+ * if no doubling landed on it. Doublings *of the baseline* rather than of 1, so
+ * a bounded domain gets the same octave ladder its own floor implies; with the
+ * usual baseline of 1 that is the plain 1, 2, 4, 8 … it has always been.
+ */
+function octaveTickValues(baseline: number, max: number) {
+  const values = [baseline]
+  for (let tick = baseline * 2; tick <= max; tick *= 2) {
     values.push(tick)
   }
   // A log axis whose octave ladder never fired still wants a top tick — but only
-  // when maxDepth isn't the 1 already pushed.
-  if (values.length < 2 && maxDepth > 1) {
-    values.push(maxDepth)
+  // when max isn't the baseline already pushed.
+  if (values.length < 2 && max > baseline) {
+    values.push(max)
   }
   return values
 }
 
-/** 0, step, 2·step … the last multiple of a nice step at or below `maxDepth`. */
-function niceStepTickValues(maxDepth: number) {
-  // Depth is integer-valued, so floor the nice step to 1: for maxDepth < 3
+/** The baseline, then nice steps up from it, to the last one at or below `max`. */
+function niceStepTickValues(baseline: number, max: number) {
+  // Depth is integer-valued, so floor the nice step to 1: for a span under 3
   // niceStep returns 0.5, which would emit meaningless fractional depth labels
   // (0, 0.5, 1).
-  const step = Math.max(1, niceStep(maxDepth))
-  const stepCount = Math.floor(maxDepth / step)
-  return Array.from({ length: stepCount + 1 }, (_, i) => i * step)
+  const step = Math.max(1, niceStep(max - baseline))
+  const stepCount = Math.floor((max - baseline) / step)
+  return Array.from({ length: stepCount + 1 }, (_, i) => baseline + i * step)
 }
 
 function coverageTickValues(
-  maxDepth: number,
+  baseline: number,
+  max: number,
   coverageHeight: number,
   scaleType: string,
 ) {
@@ -103,19 +126,28 @@ function coverageTickValues(
   // to run at every height, so a 40px band over a depth-100 pileup drew seven
   // labels into 30px of space — and its top rung is the last power of 2 *below*
   // the max (64 for 100), so the band's own ceiling went unlabelled while the
-  // linear branch at the same height labelled it. The compact `[0, max]`
+  // linear branch at the same height labelled it. The compact `[min, max]`
   // fallback under COMPACT_AXIS_HEIGHT reads the top tick, so it inherited that
   // 64 as the scale max it announced.
   if (coverageHeight < FULL_LADDER_MIN_HEIGHT) {
-    return endpointTickValues(maxDepth, scaleType)
+    return endpointTickValues(baseline, max)
   }
   return scaleType === 'log'
-    ? octaveTickValues(maxDepth)
-    : niceStepTickValues(maxDepth)
+    ? octaveTickValues(baseline, max)
+    : niceStepTickValues(baseline, max)
 }
 
+/**
+ * Y-axis ticks for the coverage band.
+ *
+ * Takes the whole `[min, max]` domain, not just the max, and places its ticks
+ * with the same `makeScoreNormalizer` the Canvas2D coverage draws and the
+ * shader's `normalizeDepth` use. It used to take a bare max and carry a
+ * hand-written normalizer of its own, which is how a `minScore` bound came to be
+ * computed into `coverageDomain[0]` and then read by nothing at all.
+ */
 export function computeCoverageTicks(
-  maxDepth: number,
+  domain: readonly [number, number],
   coverageHeight: number,
   scaleType = 'linear',
 ): YScaleTicks {
@@ -128,18 +160,26 @@ export function computeCoverageTicks(
   const { effectiveH, bottom } = coverageLayout(coverageHeight)
   const yTop = YSCALEBAR_LABEL_OFFSET
   const yBottom = bottom
+  const [domainMin, max] = domain
 
-  if (maxDepth === 0) {
+  if (max === 0) {
     return { items: [], yTop, yBottom }
   }
 
-  const fractionOf = makeDepthFraction(maxDepth, scaleType)
-  const yOf = (value: number) => yBottom - fractionOf(value) * effectiveH
+  const baseline = coverageBaseline(domainMin, scaleType)
+  const normalize = makeScoreNormalizer(domainMin, max, scaleType === 'log')
+  const yOf = (value: number) => yBottom - normalize(value) * effectiveH
+
+  // A domain whose bound swallows the data (minScore above the visible peak)
+  // leaves nothing to ladder between; one tick at the top is the honest axis for
+  // a band where every bar is flat.
+  const values =
+    max > baseline
+      ? coverageTickValues(baseline, max, coverageHeight, scaleType)
+      : [max]
 
   return {
-    items: coverageTickValues(maxDepth, coverageHeight, scaleType).map(
-      value => ({ value, y: yOf(value) }),
-    ),
+    items: values.map(value => ({ value, y: yOf(value) })),
     yTop,
     yBottom,
   }
