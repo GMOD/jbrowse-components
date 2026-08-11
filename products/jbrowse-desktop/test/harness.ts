@@ -567,16 +567,21 @@ export async function startStaticServer(
 }
 
 // Load the volvox assembly through the "Open new genome" dialog, then navigate
-// to a region so the view fully paints. A `.fa` url brings its `.fai` along.
+// to a region so the view fully paints.
 //
-// Prefer `volvox.2bit` for anything that has to be reproducible. Pasting
-// `volvox.fa` plus `volvox.fa.fai` does NOT produce an indexed-FASTA assembly:
-// the pane classifies it as a bare FASTA and the app indexes it itself
-// (`indexFasta` in electron/ipc/fileHandlers.ts, whose output shows up as a
-// `LocalPathLocation` under the profile's `fai/` dir). That index step hangs
-// outright often enough to fail a run, leaving the assembly `initialized:
-// false` with no error and the import form reading "Loading" forever. A 2bit
-// needs no index, so it skips the whole path.
+// Pass `volvox.2bit`, not `volvox.fa`. Pasting `volvox.fa` plus `volvox.fa.fai`
+// does NOT produce an indexed-FASTA assembly: the pane classifies it as a bare
+// FASTA and the app indexes it itself (`indexFasta` in
+// electron/ipc/fileHandlers.ts, whose output shows up as a `LocalPathLocation`
+// under the profile's `fai/` dir). That index step hangs outright often enough
+// to fail a run, leaving the assembly `initialized: false` with no error and the
+// import form reading "Loading" forever. A 2bit needs no index, so it skips the
+// whole path — see agent-docs/reference/DESKTOP_SCREENSHOTS.md.
+//
+// This used to also paste the `.fai` when handed a `.fa`, which was the one
+// caller that still went that way (the e2e test) and the reason its Windows job
+// failed at random. Both callers now pass a 2bit, so the branch is gone rather
+// than sitting here as a working-looking way back into the hang.
 export async function openVolvoxGenome(
   driver: WebDriver,
   sequenceUrl: string,
@@ -599,11 +604,7 @@ export async function openVolvoxGenome(
     10000,
   )
   await urlInput.click()
-  await urlInput.sendKeys(
-    sequenceUrl.endsWith('.fa')
-      ? `${sequenceUrl}\n${sequenceUrl}.fai`
-      : sequenceUrl,
-  )
+  await urlInput.sendKeys(sequenceUrl)
   await delay(1000)
 
   const submitBtn = await driver.wait(

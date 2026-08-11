@@ -116,9 +116,18 @@ async function runTest(
 }
 
 async function testOpenVolvoxGenome(driver: WebDriver): Promise<void> {
+  // The 2bit, not volvox.fa — the same choice the screenshot flow makes, for the
+  // same reason. Pasting a remote .fa with its .fai does not produce a remote
+  // indexed FASTA: the app downloads the whole FASTA and builds its own index
+  // through the indexFasta IPC handler, and that step hangs often enough
+  // (roughly one run in two, unattended, per agent-docs/reference/
+  // DESKTOP_SCREENSHOTS.md) to fail a run. This job is the only Windows coverage
+  // main gets, so a coin flip in it is worse than no assertion at all — and the
+  // hang is in the FASTA-indexing path, not in opening a genome, which is what
+  // this test is about. indexFasta has its own test in electron/ipc.
   await openVolvoxGenome(
     driver,
-    `http://127.0.0.1:${DATA_PORT}/test_data/volvox/volvox.fa`,
+    `http://127.0.0.1:${DATA_PORT}/test_data/volvox/volvox.2bit`,
   )
 }
 
