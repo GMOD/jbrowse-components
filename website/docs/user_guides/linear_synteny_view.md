@@ -157,13 +157,11 @@ The view's hamburger menu controls how the ribbons are drawn:
 
 <Figure caption="Human (hg38) vs chimp (panTro6) across an RB1 intron, from a UCSC liftOver chain with RepeatMasker on both genomes. A full-length ~6 kb L1HS present in human is absent at the orthologous chimp intron. The 'Colored indels' CIGAR display mode paints the insertion as a wedge in the ribbon, with RepeatMasker naming the element at the indel." src="/img/synteny_human_chimp_cigar_modes.png" />
 
-### More lineage-specific insertions
+### How small an insertion still reads
 
-The same human/chimp synteny plus RepeatMasker resolves other lineage-specific
-transposon insertions. Each is a gap in the alignment with the element named at
-the indel:
-
-<Figure caption="A human-specific SVA_F (~2 kb) in an intron of VAPB, present in human and absent at the orthologous chimp intron." src="/img/synteny_te_vapb_sva.png" />
+The same human/chimp synteny plus RepeatMasker resolves a lineage-specific
+insertion an order of magnitude smaller than the L1HS above, and it is still a
+gap in the alignment with the element named at the indel:
 
 <Figure caption="A human-specific AluYb8 (~0.3 kb) in PICALM, inserted downstream of a conserved AluY present in both species. A small insertion still reads clearly as an indel." src="/img/synteny_te_picalm_alu.png" />
 

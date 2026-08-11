@@ -1707,7 +1707,18 @@ function localSubgraphSpec(): ScreenshotSpec {
 // identification themselves -- which is what let the numbered badges that used
 // to sit on them come off when the pair was reported as too busy. Anchored by
 // id, so each layout can put them where it likes.
-const MHC_LANDMARK_NODES = ['s101145+', 's396436+']
+// ONE, not two (review: "why are there three circles? try to just use the one
+// circle for the green path"). The pair was the reference node and the allele
+// over it, and on the force half those two are drawn touching, so their rings
+// overlapped and the reader was counting circles rather than reading them.
+//
+// The one kept is s101145+, the rank-0 node -- the green one, under the
+// reference-position ramp -- and it is the right survivor for a reason beyond
+// the count: it is also the interval **Highlight in hg38** writes into the
+// linear view, so on the force half the ring, the menu item boxed under it and
+// the orange band above are three views of one object instead of three
+// unrelated marks.
+const MHC_LANDMARK_NODES = ['s101145+']
 
 // The halves of pangenome/graph_resolution: ONE window of K12, cut from the two
 // graphs the demo carries. The tutorial argues in prose that a pggb graph runs
@@ -2102,16 +2113,13 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
           { type: 'delay', ms: 500 },
         ],
         annotations: [
-          // which node the menu was opened on: a context menu opens AT the
-          // cursor, so it covers the thing it was opened on, and a force
-          // drawing has no row label to fall back on. It is a third node,
-          // present on this half only, and the prose names it rather than
-          // pairing it across the seam.
-          {
-            type: 'circle',
-            anchor: { view: 1, graphNode: HPRC_ALLELE },
-            radius: 22,
-          },
+          // The ring that used to sit on HPRC_ALLELE, the node the menu was
+          // opened on, is GONE with the second landmark. A context menu opens
+          // AT the cursor, so its own position already says which node it was
+          // opened on, and what the frame needs marked is where the result
+          // LANDS -- which is the one remaining ring, since `Highlight in hg38`
+          // writes s101145's interval and not the clicked node's.
+          //
           // the item that produced the band. Without it the frame holds a menu
           // and a highlight with nothing joining them.
           { type: 'box', anchor: { text: 'Highlight in hg38' } },

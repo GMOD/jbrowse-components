@@ -7,7 +7,6 @@ import {
   HS1_MM39_CONFIG,
   PICALM_ALU_LOCUS,
   UCSC_HG38_CONFIG,
-  VAPB_SVA_LOCUS,
   VOLVOX,
   cgiabUrl,
   hg38ChimpSynteny,
@@ -429,18 +428,14 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     settleMs: 12000,
   },
-  // Second human-specific-TE example: an SVA_F retrotransposon inserted in VAPB.
-  {
-    mode: 'url',
-    name: 'synteny_te_vapb_sva',
-    url: hg38ChimpSynteny('full', VAPB_SVA_LOCUS),
-    viewportWidth: 1200,
-    viewportHeight: 763,
-    readySelector: displayPainted('synteny_canvas'),
-    readyTimeout: 60000,
-    settleMs: 12000,
-  },
-  // Third human-specific-TE example: a small AluYb8 insertion in PICALM.
+  // synteny_te_vapb_sva was here and is DELETED (review: "not very interesting,
+  // delete"). It was a third drawing of one claim: an SVA_F in a VAPB intron,
+  // which is the same picture as the L1HS in RB1 above at a similar size and
+  // with the same reading. What the set is actually for is the SIZE range, and
+  // two figures carry that -- ~6 kb above and ~0.3 kb below. The middle one had
+  // nothing to add. VAPB_SVA_LOCUS goes with it.
+  //
+  // Human-specific-TE example two of two: a small AluYb8 insertion in PICALM.
   // PICALM has many RefSeq isoforms — superCompact keeps the gene lanes from
   // dwarfing the ~0.3 kb insertion.
   {
@@ -3081,6 +3076,23 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ],
   },
 
+  // The click and its result as ONE figure (review: "if needed, show the UI
+  // steps as a side by side before and after image. e.g. the dialog/track menu
+  // in part 1, then the result in part 2"). Vertical rather than side by side:
+  // each part is a three-panel stack 1000 px wide and 822 tall, so `+append`ed
+  // horizontally the pair is 2000x822 and each strain row is a 270 px sliver.
+  // Stacked, the dialog sits directly above the colouring it produced, which is
+  // also the order a reader performs them in.
+  //
+  // Both parts stay their own specs, so each still has its own live link under
+  // the figure.
+  {
+    mode: 'compose',
+    name: 'sv_synteny/color_by_attribute_steps',
+    parts: ['sv_synteny/color_by_attribute', 'sv_synteny/ortholog_colors'],
+    direction: 'vertical',
+  },
+
   // The mistake the tutorial's Troubleshooting table describes, and the app's own
   // report of it. `assemblyNames` on a synteny track is [query, target], the
   // reverse of the minimap2 argument order, so writing it the other way round is
@@ -3400,15 +3412,32 @@ export const syntenySpecs: ScreenshotSpec[] = [
           vLocus: CHRY_P_PALINDROME_WINDOW,
         },
       },
+      // AN ARROW, NOT A SENTENCE (review: "still is presumptive and says 'this
+      // one, below'. that says nothing. just draw arrow to lower area"). It
+      // was right: the pill named no crossing and no direction, and the reader
+      // had to already know the figure was two parts. The arrow leaves the box
+      // and runs to the bottom edge of this part, which is the seam the lower
+      // part starts at. A compose has no annotation layer of its own, so
+      // nothing can be drawn ACROSS that seam -- pointing at it is as far as
+      // this can go, and it is further than the words got.
       {
-        type: 'text',
-        text: 'this one, below',
-        fontSize: 17,
+        type: 'arrow',
+        strokeWidth: 3,
+        fromAnchor: {
+          hLocus: CHRY_P_PALINDROME_WINDOW,
+          vLocus: CHRY_P_PALINDROME_WINDOW,
+          alignY: 'bottom',
+          dy: 16,
+        },
+        // The head takes the SAME locus anchor as the tail, not the canvas
+        // element: a selector anchor centres on the element, so the arrow
+        // sloped away to the middle of the plot instead of running straight
+        // down out of the box. `dy` carries it to just above the bottom axis.
         anchor: {
           hLocus: CHRY_P_PALINDROME_WINDOW,
           vLocus: CHRY_P_PALINDROME_WINDOW,
           alignY: 'bottom',
-          dy: 34,
+          dy: 122,
         },
       },
     ],

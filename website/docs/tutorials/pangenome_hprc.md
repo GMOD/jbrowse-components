@@ -329,12 +329,13 @@ The [guide](/docs/user_guides/graph_genome_view#three-layouts) sets out what the
 three modes put on each axis. What that costs at this scale is the same MHC
 class II window drawn both ways:
 
-Both halves ring the same two nodes, a reference stretch and the allele over it,
-which the graph labels `12 kb` and `12.3 kb` in either layout: touching in the
-force drawing, rows apart on the anchored one. The third ring, on the left only,
-is an allele whose right-click menu is open, and **Highlight in hg38** is what
-wrote the orange band above it, over the backbone segment that node attaches
-across.
+Both halves ring the same node, the 12 kb reference stretch the graph draws in
+green: near the top of the force drawing, out on the backbone row of the
+anchored one. On the left a right-click menu is open on the black allele beside
+it, and **Highlight in hg38** is what wrote the orange band above — over that
+ringed backbone segment rather than over the clicked node, because an
+off-reference allele is drawn across the reference it replaces and never over
+its own length.
 
 <Figure caption="One MHC class II subgraph drawn both ways, same window and same tracks above it. Left, force-directed: the drawing is the graph's shape and nothing in it lines up with the linear view. Right, anchored: every x is a GRCh38 coordinate, so the backbone is one straight line and each allele hangs below where it attaches, stacked by rank." src="/img/pangenome/hprc_mhc_anchored.png" links="Force-directed=pangenome/hprc_mhc_layout_force,Anchored=pangenome/hprc_mhc_layout_anchored" />
 

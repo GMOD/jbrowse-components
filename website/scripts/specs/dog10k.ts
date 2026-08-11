@@ -373,6 +373,41 @@ const IGF1_PEAK_WINDOW = 'chr15:41,400,000-41,600,000'
 // stripes, the most saturated thing in the frame and the least informative, and it
 // sat directly against the synteny bands competing with the ribbons. Bases are a
 // zoom away in the live link.
+// The FGF4 callset a second time, as its own track, so one view can carry both
+// the positional lane and the 55-row matrix. Config-identical to
+// `dog10k_fgf4_svs` in test_data/dog10k/config.json apart from the id and the
+// display it defaults to; the samples TSV comes along because the matrix is not
+// what reads it, the adapter is.
+const FGF4_POSITIONAL_TRACK = {
+  type: 'VariantTrack',
+  trackId: 'dog10k_fgf4_svs_positional',
+  name: 'Dog10K structural variants at FGF4 (calls)',
+  assemblyNames: ['UU_Cfam_GSD_1.0'],
+  // ABSOLUTE, and that is not laziness. A CONFIG track's relative `uri`
+  // resolves against the config that declares it, so the hosted config's bare
+  // `dog10k_fgf4_svs.vcf.gz` finds the file; a SESSION track's resolves against
+  // the PAGE, and the capture harness and the published app disagree about what
+  // that is. `test_data/...` 404s in the capture and `/test_data/...` 404s on
+  // jbrowse.org, so a relative path can only be right in one of them and the
+  // live link under this figure is the one that would break silently. The
+  // `main` build rather than `latest`: `latest` does not carry this fixture
+  // (404, checked), `main` does.
+  adapter: {
+    type: 'VcfTabixAdapter',
+    uri: 'https://jbrowse.org/code/jb2/main/test_data/dog10k/dog10k_fgf4_svs.vcf.gz',
+    samplesTsvLocation: {
+      uri: 'https://jbrowse.org/code/jb2/main/test_data/dog10k/dog10k_fgf4_samples.tsv',
+    },
+  },
+  displays: [
+    {
+      type: 'LinearVariantDisplay',
+      displayId: 'dog10k_fgf4_svs_positional-LinearVariantDisplay',
+      height: 50,
+    },
+  ],
+}
+
 const RETRO_TRACKS = (genesTrackId: string) => [
   {
     trackId: genesTrackId,
@@ -388,6 +423,7 @@ const RETRO_TRACKS = (genesTrackId: string) => [
 // alignment covers would put ribbon-free sequence in the frame.
 function fgf4SyntenySession(parent: string, retro: Record<string, string>) {
   return sessionSpec(DOG_CONFIG, {
+    sessionTracks: [FGF4_POSITIONAL_TRACK],
     views: [
       {
         type: 'LinearSyntenyView',
@@ -430,6 +466,20 @@ function fgf4SyntenySession(parent: string, retro: Record<string, string>) {
               // The cost is real and was the reason for the earlier choice: it
               // puts ~690 px between the two synteny bands, so the upper ribbon
               // and the lower one can no longer be taken in at once.
+              // The SAME callset as one lane before the 55-row matrix (review:
+              // "there should be a linearvariantdisplay of same data
+              // multivariantdisplay is showing"). The matrix answers WHO
+              // carries a record and the positional lane answers WHAT the
+              // records are -- two boxes, the two the whole figure is about --
+              // and reading the matrix without it means inferring the record
+              // from a column of genotypes.
+              //
+              // A SECOND trackId over the same VCF, not the same one twice. One
+              // track opens once per view: written as two `tracks` entries with
+              // one trackId the second is dropped in silence, and the frame came
+              // back with the positional lane where the matrix should have been.
+              // Same pattern as variants/potato_missingness.
+              FGF4_POSITIONAL_TRACK.trackId,
               {
                 trackId: 'dog10k_fgf4_svs',
                 type: 'LinearMultiSampleVariantDisplay',
@@ -1380,46 +1430,69 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     // between them, and the two synteny bands. Sized by the generator's
     // below-the-fold check, which still reported 10.5 css px under the fold at
     // 1410 -- the bottom retrocopy lane's own border.
-    viewportHeight: 1421,
-    // TWO LABELS, NO PROSE (review: "too much prose stiill. just put labels
-    // 'regular gene' and 'retrogene - no introns' on different gene areas of
-    // figure"). Every earlier round shrank the pill and kept it a sentence; this
-    // one drops the sentence. What is left names the two things the reader has
-    // to tell apart, each one sitting in the lane that draws it — a three-box
-    // model with two gaps, and a single box that has none — so the label is a
-    // pointer rather than a claim, and the ribbons between them are what argue.
+    viewportHeight: 1510,
+    // THREE LABELS, ONE PER ROW (review: "too much prose stiill. just put
+    // labels 'regular gene' and 'retrogene - no introns' on different gene
+    // areas of figure ... bottom row needs to also say retrogene, no introns,
+    // and explain somehow that these are two diff samples").
     //
-    // The finding the pill used to carry ("the blue calls sit in the same two
-    // places: they are the retrogene, not a deletion") is a conclusion drawn
-    // from all three lanes, so it moves to the caption. The GenBank accessions
-    // and the reason the parent is in the middle were already there.
+    // Each sits on its own row's gene lane, so the label is the thing it names
+    // rather than a sentence about the frame, and the reader gets the finding
+    // by comparing three glyphs: one gene drawn as three boxes with introns
+    // between them, and two drawn as one box each.
     //
-    // Both anchors are a locus in the lane's own coordinates, right of the last
-    // exon / of the retrocopy's single CDS box, so each label sits on empty lane
-    // rather than on the glyph it names. `fracY` places the TOP of the pill
-    // (`y` is the first line's baseline and the block grows downward), so at
-    // fontSize 18 these clear the 55/60 px lanes they are in.
+    // TWO DIFFERENT INSERTIONS, not one retrocopy drawn twice, and the labels
+    // carry it: CFA18 and CFA12 are independent FGF4 retrocopies from different
+    // studies (MF040222, Parker 2009; MF040221, Brown 2017), deposited
+    // separately and aligned to the parent separately. The view headers name
+    // the accessions; the pills name the chromosome each landed on, which is
+    // the part a reader needs to see the rows are not duplicates.
+    //
+    // What came off the image with the old pill -- that a ribbon gap IS a
+    // parent intron, and that the blue calls sit in the same two places -- is
+    // in the caption and in the prose above the figure. The picture now says it
+    // without being told: the gaps and the blue blocks line up on the page.
     annotations: [
       {
         type: 'text' as const,
         fontSize: 18,
-        text: 'retrogene - no introns',
+        maxWidth: 320,
+        text: 'retrogene - no introns (CFA18)',
         anchor: {
           view: [0, 0],
           track: 'dog10k_fgf4_retro_cfa18_genes',
-          locus: 'FGF4retro-CFA18:1,050',
-          fracY: 0.42,
+          locus: 'FGF4retro-CFA18:1',
+          fracY: 1,
+          dx: 14,
+          dy: -26,
         },
       },
       {
         type: 'text' as const,
         fontSize: 18,
-        text: 'regular gene',
+        maxWidth: 320,
+        text: 'regular gene (dog reference)',
         anchor: {
           view: [0, 1],
           track: 'canFam4_ncbi_refseq',
-          locus: 'chr18:48,871,400',
-          fracY: 0.42,
+          locus: 'chr18:48,869,100',
+          fracY: 1,
+          dx: 14,
+          dy: -26,
+        },
+      },
+      {
+        type: 'text' as const,
+        fontSize: 18,
+        maxWidth: 320,
+        text: 'retrogene - no introns (CFA12)',
+        anchor: {
+          view: [0, 2],
+          track: 'dog10k_fgf4_retro_cfa12_genes',
+          locus: 'FGF4retro-CFA12:2',
+          fracY: 1,
+          dx: 14,
+          dy: -26,
         },
       },
     ],

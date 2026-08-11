@@ -872,18 +872,6 @@ export const RB1_L1_LOCUS = {
   panTro6: 'chr13:29,450,000-29,459,000',
 }
 
-// VAPB (ALS8 / spinal muscular atrophy gene): a full-length ~2 kb SVA_F — a
-// composite, human-specific retrotransposon — inserted in the human lineage
-// between a conserved AluSz6 and a conserved UCON33 element; the orthologous
-// chimp interval runs AluSz6 -> UCON33 with no SVA (zero SVA anywhere in chimp
-// VAPB). RepeatMasker names it SVA_F at the insertion.
-export const VAPB_SVA_LOCUS = {
-  // zoomed out ~1.6x from the tight 12 kb / 9.5 kb windows so the SVA insertion
-  // reads with more flanking context (reviewer)
-  hg38: 'chr20:58,404,000-58,424,000',
-  panTro6: 'chr20:58,043,000-58,058,000',
-}
-
 // PICALM (Alzheimer's-associated): a ~0.3 kb AluYb8 — a young, human-specific Alu
 // subfamily and the commonest kind of human-specific mobile-element insertion —
 // dropped in downstream of a conserved AluY; the orthologous chimp interval keeps
