@@ -40,13 +40,6 @@ const useStyles = makeStyles()(theme => ({
       padding: '2px 4px',
     },
   },
-  // Separates the arcs the cursor is ALSO on from the one the tooltip is
-  // reporting, so the block below reads as a list of other things rather than
-  // as more fields of the arc above it.
-  coincidentHeading: {
-    marginTop: theme.spacing(0.5),
-    opacity: 0.8,
-  },
 }))
 
 // Vertical bar spanning the hovered section's coverage band. Grouped mode
@@ -368,16 +361,7 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
       )
     }
     case 'arc': {
-      const {
-        refName,
-        start,
-        end,
-        support,
-        category,
-        insertSize,
-        coincident,
-        coincidentHidden,
-      } = tooltipData
+      const { refName, start, end, support, category, insertSize } = tooltipData
       return (
         <BaseTooltip clientPoint={{ x, y }}>
           <div className={classes.tooltipContent}>
@@ -387,39 +371,12 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
             <div>Location: {formatLocationRange(refName, start, end)}</div>
             <div>Distance: {toLocale(end - start)} bp</div>
             {/* The count `resolveArcs` folded into this arc, which is what its
-                stroke width encodes. Singular at 1 so a lone connection does
-                not read as a suspiciously weak junction. */}
-            <div>
-              {supportLabel(support)}
-              {/* Named right here rather than in a footnote, because it is the
-                  qualifier on the number above: the cursor is on more than one
-                  arc, this is the heaviest, and the others are what the reader
-                  would otherwise have to discover by nudging the mouse and
-                  watching the count change. */}
-              {coincident.length === 0 ? null : ' (heaviest of several here)'}
-            </div>
+                stroke width encodes. */}
+            <div>{supportLabel(support)}</div>
             {insertSize === undefined ? null : (
               <div>Insert size: {toLocale(insertSize)} bp</div>
             )}
             {category === undefined ? null : <div>Type: {category}</div>}
-            {coincident.length === 0 ? null : (
-              <>
-                <div className={classes.coincidentHeading}>
-                  Also under the cursor:
-                </div>
-                {coincident.map(other => (
-                  <div key={`${other.span}-${other.support}-${other.category}`}>
-                    {supportLabel(other.support)} — {other.span}
-                    {other.category === undefined
-                      ? null
-                      : ` (${other.category})`}
-                  </div>
-                ))}
-                {coincidentHidden === 0 ? null : (
-                  <div>…and {toLocale(coincidentHidden)} more</div>
-                )}
-              </>
-            )}
           </div>
         </BaseTooltip>
       )

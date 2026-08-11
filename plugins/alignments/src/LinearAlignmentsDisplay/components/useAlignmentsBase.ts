@@ -196,10 +196,9 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
           tooltip: formatArcTooltip(
             hover.hit,
             region.refName,
-            colorType =>
-              readColorCategoryLabel(
-                arcColorLegendCategory(colorType, model.arcColorByType),
-              ),
+            readColorCategoryLabel(
+              arcColorLegendCategory(hover.hit.colorType, model.arcColorByType),
+            ),
             isFlatArcShape(hover.hit.shapeType),
           ),
           highlight: hover.highlight,
