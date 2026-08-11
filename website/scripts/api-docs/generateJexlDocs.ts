@@ -3,6 +3,7 @@ import fs from 'node:fs'
 import * as ts from 'typescript'
 
 import {
+  isMain,
   jsDocText,
   listSources,
   parsePipeTags,
@@ -119,9 +120,7 @@ export function writeJexlDocs({ check = false } = {}) {
   )
 }
 
-// Run as a script: `node docs/generateJexlDocs.ts [--check]`. The guard keeps
-// this inert when the module is imported by generate.ts (argv[1] is generate.ts
-// there), so the catalog isn't generated twice in one `pnpm gendocs`.
-if (process.argv[1]?.endsWith('generateJexlDocs.ts')) {
+// Run as a script: `node docs/generateJexlDocs.ts [--check]`.
+if (isMain(import.meta.filename)) {
   runMarkerScript('Jexl catalog', writeJexlDocs)
 }

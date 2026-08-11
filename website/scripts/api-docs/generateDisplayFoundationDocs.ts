@@ -2,6 +2,7 @@ import fs from 'fs'
 
 import {
   composeCalls,
+  isMain,
   listSources,
   markdownTable,
   rewriteMarkerBlock,
@@ -142,6 +143,6 @@ export function writeDisplayFoundationDocs({ check = false } = {}) {
   ]
 }
 
-if (process.argv[1]?.endsWith('generateDisplayFoundationDocs.ts')) {
+if (isMain(import.meta.filename)) {
   runMarkerScript('Display foundations table', writeDisplayFoundationDocs)
 }

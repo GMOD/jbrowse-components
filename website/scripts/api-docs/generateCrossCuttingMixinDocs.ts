@@ -2,6 +2,7 @@ import fs from 'fs'
 
 import {
   composeCalls,
+  isMain,
   listSources,
   markdownTable,
   rewriteMarkerBlock,
@@ -183,6 +184,6 @@ export function writeCrossCuttingMixinDocs({ check = false } = {}) {
   )
 }
 
-if (process.argv[1]?.endsWith('generateCrossCuttingMixinDocs.ts')) {
+if (isMain(import.meta.filename)) {
   runMarkerScript('Cross-cutting mixins table', writeCrossCuttingMixinDocs)
 }

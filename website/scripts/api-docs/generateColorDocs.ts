@@ -1,6 +1,7 @@
 import * as ts from 'typescript'
 
 import {
+  isMain,
   jsDocText,
   markdownTable,
   parsePipeTags,
@@ -142,9 +143,7 @@ export function writeColorDocs({ check = false } = {}) {
   return stale
 }
 
-// Run as a script: `node docs/generateColorDocs.ts [--check]`. The guard keeps
-// this inert when the module is imported by generate.ts (argv[1] is generate.ts
-// there), so the tables aren't generated twice in one `pnpm gendocs`.
-if (process.argv[1]?.endsWith('generateColorDocs.ts')) {
+// Run as a script: `node docs/generateColorDocs.ts [--check]`.
+if (isMain(import.meta.filename)) {
   runMarkerScript('Color tables', writeColorDocs)
 }

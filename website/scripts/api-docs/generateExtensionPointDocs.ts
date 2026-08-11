@@ -1,6 +1,7 @@
 import fs from 'fs'
 
 import {
+  isMain,
   listSources,
   markdownTable,
   rewriteMarkerBlock,
@@ -144,9 +145,7 @@ export function writeExtensionPointDocs({ check = false } = {}) {
   )
 }
 
-// Run as a script: `node docs/generateExtensionPointDocs.ts [--check]`. The guard
-// keeps this inert when imported by generate.ts (argv[1] is generate.ts there),
-// so the table isn't generated twice in one `pnpm gendocs`.
-if (process.argv[1]?.endsWith('generateExtensionPointDocs.ts')) {
+// Run as a script: `node docs/generateExtensionPointDocs.ts [--check]`.
+if (isMain(import.meta.filename)) {
   runMarkerScript('Extension point index', writeExtensionPointDocs)
 }

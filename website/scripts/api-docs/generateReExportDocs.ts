@@ -1,6 +1,7 @@
 import * as ts from 'typescript'
 
 import {
+  isMain,
   lastTaggedLine,
   markdownTable,
   parseSourceFileSyntactic,
@@ -100,6 +101,6 @@ export function writeReExportDocs({ check = false } = {}) {
   )
 }
 
-if (process.argv[1]?.endsWith('generateReExportDocs.ts')) {
+if (isMain(import.meta.filename)) {
   runMarkerScript('Re-export module table', writeReExportDocs)
 }

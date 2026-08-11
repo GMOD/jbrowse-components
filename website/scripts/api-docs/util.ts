@@ -1950,6 +1950,23 @@ export function rewriteGroupedMarkerBlocks(
   return { stale, seen }
 }
 
+// True when this module is the process entry point rather than one of
+// generate.ts's imports. Call it as `isMain(import.meta.filename)` — the
+// filename is passed in rather than read here so util.ts stays free of
+// `import.meta`, which jest transforms to CJS and cannot parse (see format.ts).
+//
+// Every marker generator carries a CLI tail, and generate.ts imports all of
+// them to run in one process, so each has to stay inert on import or its table
+// would be generated twice in one `pnpm gendocs`. That test used to be
+// `process.argv[1]?.endsWith('<the file's own name>')` — a hardcoded copy of
+// the filename, in ten files. A rename that missed one turned the script into a
+// silent no-op: it exits 0 having generated nothing, and `pnpm autogen --check`
+// judges these generators on exit status alone, so a stale table would report
+// as up to date.
+export function isMain(moduleFilename: string) {
+  return moduleFilename === process.argv[1]
+}
+
 // CLI entry shared by the marker-block generators (color/jexl/extension-point).
 // Runs the writer; in --check mode a stale-docs list exits non-zero so CI fails.
 // Each caller still guards on argv[1] so importing from generate.ts stays inert.

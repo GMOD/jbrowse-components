@@ -1,5 +1,6 @@
 import {
   getAllFiles,
+  isMain,
   jsDocText,
   markdownTable,
   parsePipeTags,
@@ -212,12 +213,10 @@ export function writeGotchaDocs(
   ).stale
 }
 
-// Run as a script: `node docs/generateFileTypeDocs.ts [--check]`. The guard
-// keeps this inert when imported by generate.ts, so the tables aren't generated
-// twice in one `pnpm gendocs`. The display-type table needs the whole-repo
-// DisplayType scan that generate.ts already does, so it is regenerated there
-// and only verified here.
-if (process.argv[1]?.endsWith('generateFileTypeDocs.ts')) {
+// Run as a script: `node docs/generateFileTypeDocs.ts [--check]`. The
+// display-type table needs the whole-repo DisplayType scan that generate.ts
+// already does, so it is regenerated there and only verified here.
+if (isMain(import.meta.filename)) {
   const stale = writeFileTypeDocs(await getAllFiles(), {
     check: process.argv.includes('--check'),
   })

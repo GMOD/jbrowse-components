@@ -1,6 +1,7 @@
 import * as ts from 'typescript'
 
 import {
+  isMain,
   lastTaggedLine,
   markdownTable,
   parseSourceFileSyntactic,
@@ -186,6 +187,6 @@ export function writeFetchAutorunDocs({ check = false } = {}) {
   })
 }
 
-if (process.argv[1]?.endsWith('generateFetchAutorunDocs.ts')) {
+if (isMain(import.meta.filename)) {
   runMarkerScript('Fetch autoruns table', writeFetchAutorunDocs)
 }

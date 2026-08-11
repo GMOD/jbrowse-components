@@ -1,6 +1,7 @@
 import * as ts from 'typescript'
 
 import {
+  isMain,
   jsDocText,
   markdownTable,
   parseSourceFileSyntactic,
@@ -146,6 +147,6 @@ export function writePaletteDocs({ check = false } = {}) {
   })
 }
 
-if (process.argv[1]?.endsWith('generatePaletteDocs.ts')) {
+if (isMain(import.meta.filename)) {
   runMarkerScript('Palette keys table', writePaletteDocs)
 }

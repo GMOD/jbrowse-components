@@ -4,6 +4,7 @@ import {
   elideSignature,
   exampleSection,
   filterUnseenByName,
+  isMain,
   lastTaggedLine,
   overviewSection,
   parseTaggedComment,
@@ -296,6 +297,25 @@ describe('filterUnseenByName', () => {
     const farther = filterUnseenByName(seen, [{ name: 'featureHeight' }])
     expect(closer.map(i => i.name)).toEqual(['featureHeight'])
     expect(farther).toEqual([])
+  })
+})
+
+describe('isMain', () => {
+  test('true for the process entry point', () => {
+    expect(isMain(process.argv[1]!)).toBe(true)
+  })
+
+  test('false for a module generate.ts merely imported', () => {
+    expect(isMain('/repo/website/scripts/api-docs/generateColorDocs.ts')).toBe(
+      false,
+    )
+  })
+
+  test('is an equality test, not the suffix match it replaced', () => {
+    // `argv[1].endsWith('generateColorDocs.ts')` also matched anything whose
+    // name ended with it, and — the reason this changed — silently matched
+    // NOTHING once the file was renamed and the literal was not.
+    expect(isMain(`/elsewhere/x${process.argv[1]!}`)).toBe(false)
   })
 })
 

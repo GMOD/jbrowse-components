@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 
 import {
+  isMain,
   listSources,
   markdownTable,
   rewriteMarkerBlock,
@@ -147,6 +148,6 @@ export function writeHelperPackageDocs({ check = false } = {}) {
   )
 }
 
-if (process.argv[1]?.endsWith('generateHelperPackageDocs.ts')) {
+if (isMain(import.meta.filename)) {
   runMarkerScript('Helper package table', writeHelperPackageDocs)
 }
