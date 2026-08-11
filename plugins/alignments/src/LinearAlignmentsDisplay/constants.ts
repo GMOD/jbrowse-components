@@ -57,6 +57,13 @@ export const ALIGNMENTS_FUDGE_FACTOR = 0.8
 // `maybeStringEnum`, so the unset inherit state is NOT a member — see
 // promotableResolve.ts). One source so the schema and the resolved type can't
 // drift; likewise for the two below.
+//
+// It is two members, so "is chain layout on" is binary and `!== 'off'` (the
+// worker, the menu row) and `=== 'normal'` (the model's `isChainMode`) are the
+// same question. They were not always: a third member, 'bezier', is now the
+// orthogonal `showBezierConnections` flag. Adding a member means revisiting both
+// spellings and `setLinkedReads`, which currently treats any change as
+// entering-or-leaving chain mode.
 export const LINKED_READS_MODES = ['off', 'normal'] as const
 export type LinkedReadsMode = (typeof LINKED_READS_MODES)[number]
 

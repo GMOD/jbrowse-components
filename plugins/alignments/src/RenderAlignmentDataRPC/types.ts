@@ -17,7 +17,9 @@ import type { StopToken } from '@jbrowse/core/util/stopToken'
 // Args for the single RenderAlignmentData RPC. `linkedReads` selects the
 // pileup (`'off'`) vs chain (`'normal'`) path inside the worker — the same flag
 // the client already tracks, so no separate `mode` is needed.
-// `sortTag`/`showSoftClipping` are pileup-only; `drawSingletons`/
+// `sortTag`/`showSoftClipping` are pileup-only — the chain path forces them off
+// below, and the display projects them the same way so the `rpcProps` cache key
+// doesn't refetch for a value this worker will discard. `drawSingletons`/
 // `drawProperPairs`/`showOnlySplitAlignments` (grouped-by-read-name chain
 // filters) apply in both modes.
 export interface RenderAlignmentDataArgs {
@@ -40,8 +42,10 @@ export interface RenderAlignmentDataArgs {
   // are computed from the full depth sweep regardless). Defaults true.
   showCoverage?: boolean
   // In-track stacked grouping. When set, the worker partitions the single fetch
-  // into N ordered groups and returns one PileupDataResult per group. Pileup
-  // mode only — ignored in chain mode (linkedReads !== 'off'). Tier-1 refetch
+  // into N ordered groups and returns one PileupDataResult per group. Honored in
+  // chain mode too, but only for the chain-consistent dimensions — `groupByForMode`
+  // degrades a per-read one to ungrouped rather than splitting a chain across
+  // sections, and `partitionChains` assigns each chain as a unit. Tier-1 refetch
   // setting (in rpcProps): changing it re-partitions, so the worker must re-run.
   groupBy?: GroupBy
   // Which detail tier a tiered adapter should serve. Set only by the synteny

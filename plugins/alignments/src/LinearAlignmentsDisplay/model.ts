@@ -2479,10 +2479,10 @@ export default function stateModelFactory(
             canvasWidth: self.canvasWidthPx,
             canvasHeight: self.height,
             selectedFeatureId: self.selectedFeatureId,
-            // Chain selection is only valid in 'normal' linked-reads mode.
-            // Gating here makes a stale selection unrenderable in off/bezier by
-            // construction — render correctness no longer depends on any
-            // clear-on-transition. The renderers draw on `length > 0` with no
+            // Chain selection is only valid in chain mode. Gating here makes a
+            // stale selection unrenderable outside it by construction — render
+            // correctness no longer depends on any clear-on-transition. The
+            // renderers draw on `length > 0` with no
             // mode check, so this is the one place the invariant must hold.
             // (Hover highlight lives in `highlightBoxes` / `HighlightOverlay`,
             // not here, so a hover never triggers a canvas repaint.)
@@ -3214,42 +3214,43 @@ export default function stateModelFactory(
           setLinkedReads(mode: LinkedReadsMode) {
             const prev = self.linkedReads
             setConf(self, 'linkedReads', mode)
-            // Forget chain hover/selection when leaving 'normal' mode. This is
-            // now a product choice (selection doesn't survive a mode change),
-            // not a render-safety mechanism — `renderState` already gates chain
-            // highlights on linkedReads === 'normal', so stale IDs can't render
-            // regardless.
-            if (prev === 'normal' && mode !== 'normal') {
-              self.highlightedChainIds = []
+            // `LINKED_READS_MODES` is a two-member enum, so this is the whole of
+            // "the mode changed". The two separate guards this replaces —
+            // leaving 'normal', and crossing 'off' — were written when a third
+            // member ('bezier', now the orthogonal `showBezierConnections` flag)
+            // made them distinct questions, and both reduce to this one.
+            if (prev === mode) {
+              return
+            }
+            // Forget chain hover (clearMouseoverState) and selection. A product
+            // choice — selection doesn't survive a mode change — not a
+            // render-safety mechanism: `renderState` already gates chain
+            // highlights on `isChainMode`, so stale IDs can't render regardless.
+            clearMouseoverState()
+            if (self.selectedChainIds.length > 0) {
               self.selectedChainIds = []
             }
-            if ((prev === 'off') !== (mode === 'off')) {
-              clearMouseoverState()
-              const currentType = self.colorBy.type
-              if (mode === 'off') {
-                // Leaving pairs: pairing-only schemes no longer have meaning, so
-                // reset colorBy back to inherit — falling back to the
-                // session-wide color default, else the `normal` promotedBase.
-                // This cleanly undoes the enter-pairs customization rather than
-                // customizing `normal` over a default. Explicit non-pairing choices (tag,
-                // methylation, base quality, ...) are preserved by the gate.
-                if (PAIRING_COLOR_SCHEMES.has(currentType)) {
-                  setConf(self, 'colorBy', undefined)
-                }
-              } else if (currentType === 'normal') {
-                // Entering pairs: nudge the plain default to the SV-signal
-                // scheme, but don't clobber a scheme the user explicitly picked.
-                setConf(self, 'colorBy', {
-                  type: 'insertSizeAndOrientation',
-                })
+            const currentType = self.colorBy.type
+            if (mode === 'off') {
+              // Leaving pairs: pairing-only schemes no longer have meaning, so
+              // reset colorBy back to inherit — falling back to the
+              // session-wide color default, else the `normal` promotedBase.
+              // This cleanly undoes the enter-pairs customization rather than
+              // customizing `normal` over a default. Explicit non-pairing choices (tag,
+              // methylation, base quality, ...) are preserved by the gate.
+              if (PAIRING_COLOR_SCHEMES.has(currentType)) {
+                setConf(self, 'colorBy', undefined)
               }
-              // No explicit invalidation here: `linkedReads` is an `rpcProps()`
-              // key, so `SettingsInvalidate` runs `clearAllRpcData` when this
-              // action ends. That is
-              // also what refetches the mode changes this branch doesn't cover
-              // (normal ↔ chain), so an invalidation spelled out here could only
-              // ever be the redundant half.
+            } else if (currentType === 'normal') {
+              // Entering pairs: nudge the plain default to the SV-signal
+              // scheme, but don't clobber a scheme the user explicitly picked.
+              setConf(self, 'colorBy', {
+                type: 'insertSizeAndOrientation',
+              })
             }
+            // No explicit invalidation here: `linkedReads` is an `rpcProps()`
+            // key, so `SettingsInvalidate` runs `clearAllRpcData` when this
+            // action ends.
           },
 
           /**
