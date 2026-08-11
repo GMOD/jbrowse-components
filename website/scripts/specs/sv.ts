@@ -685,17 +685,28 @@ export const svSpecs: ScreenshotSpec[] = [
   // overflows below the app frame, and the result is a 3000x4000 portrait PNG
   // where the informative discordant cluster is the bottom sixth.
   //
-  // So: no drawer, no callouts, and the Compact read preset (featureHeight 3,
-  // spacing derived to 0 — see compactnessPresets.ts) instead of 9. That is a
-  // ~3.3x shorter pileup, i.e. a landscape card at the same information. NOT
-  // Super-compact (featureHeight 1): the whole subject of the card is a minority
-  // color signal, and 1px reads erase it — the same reason the doc spec above
-  // raised the height to 9 in the first place.
+  // So: no drawer, no callouts, and a read small enough that the pileup is a
+  // landscape card rather than a 3000x4000 portrait one.
+  //
+  // 5px reads, 1px apart (reviewer: "make the reads slightly taller, maybe 5px
+  // tall and 1px spacing between them ... i wanted to really emphasize that you
+  // can see the different read pair directions"). Only the height is set: the
+  // gap is a pure function of it (`featureSpacingForHeight`, >3 -> 1) so 5 IS
+  // "5 and 1", and asking for the spacing separately would be asking for a
+  // setting that does not exist. This is off the Compact preset (3, gap 0) the
+  // card used to take, because at 3px flush the LL/RR pairs the card is ABOUT
+  // read as a texture rather than as reads: the gap is what makes a stack of
+  // same-colored bars countable, and it costs nothing until the body clears
+  // 3px. Still nowhere near Normal (7): 6px of pitch against 3 is one doubled
+  // pileup, not a portrait card.
   //
   // heightMode 'grow' rather than a guessed `height`: the discordant reads land
   // at the BOTTOM of the pileup layout, so a track too short by any amount
-  // scrolls away exactly the thing being shown. Grow fits every row (~126 rows
-  // x 3px + coverage + the 200px arc band, still under GROW_MAX_HEIGHT 800).
+  // scrolls away exactly the thing being shown. Rows are packed by genomic
+  // overlap, so doubling the pitch doubles the pileup's height at the same
+  // ~122 rows — past the 800px GROW_MAX_HEIGHT default, which would clamp the
+  // track and scroll away the cluster grow exists to keep. Hence growMaxHeight
+  // below; it is the grow ceiling only, NOT the `maxHeight` layout cap.
   {
     mode: 'url',
     name: 'gallery/inverted_duplication',
@@ -724,8 +735,12 @@ export const svSpecs: ScreenshotSpec[] = [
               // library's concordant inserts sit.
               readConnectionsHeight: 150,
               heightMode: 'grow',
+              // the ceiling `grow` sizes to; see the note above. Raised for the
+              // 6px pitch, not tuned for looks — the figure's height is still
+              // set by viewportHeight against the grown track.
+              growMaxHeight: 1200,
               coverageHeight: 120,
-              featureHeight: 3,
+              featureHeight: 5,
               colorBy: { type: 'pairOrientation' },
               // the legend is what makes a compact card's colors readable
               showLegend: true,
@@ -738,9 +753,9 @@ export const svSpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     // must clear the grown track, else the capture crops exactly the discordant
     // cluster at the bottom of the layout — measured against the rendered app
-    // rather than guessed, so there is no trailing whitespace. The run reported
-    // 51 css px of blank below the content after the arc band came down to 150.
-    viewportHeight: 1010,
+    // rather than guessed, so there is no trailing whitespace. Was 1010 at the
+    // 3px pitch; the 6px one adds a second copy of the pileup under it.
+    viewportHeight: 1390,
     settleMs: 30000,
   },
 
