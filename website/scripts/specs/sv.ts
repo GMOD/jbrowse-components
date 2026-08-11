@@ -576,11 +576,23 @@ export const svSpecs: ScreenshotSpec[] = [
               // was one solid mass. 200 lets the concordant domes resolve below
               // the discordant pairs spanning the 1.3kb duplication.
               readConnectionsHeight: 200,
-              height: 1460,
+              // COMPACT READS (reviewer: "show reads compact"), which is the
+              // COMPACTNESS_PRESETS 'compact' height and the same one the
+              // gallery card below already takes. It was 9 -- raised so the
+              // minority LL/RR pairs read as bars rather than slivers -- and
+              // 114 rows at that pitch is 1,140 px of pileup for a signal that
+              // lives in the bottom fifth of it. At 3 the same rows are ~340,
+              // the discordant cluster is still coloured (1px would erase it,
+              // which is why this is Compact and not Super-compact), and the
+              // whole figure fits a screen.
+              //
+              // `heightMode: 'grow'`, not a computed height, for the reason the
+              // card gives: the discordant reads land at the BOTTOM of the
+              // layout, so a track short by any amount scrolls away exactly the
+              // thing the figure is about.
+              heightMode: 'grow',
               coverageHeight: 120,
-              // taller reads so the minority green (same-orientation /
-              // inverted) pairs are legible instead of 3px slivers
-              featureHeight: 9,
+              featureHeight: 3,
               colorBy: { type: 'pairOrientation' },
               // legend is opt-in now; show the pair-orientation key so the
               // inversion color signature is readable
@@ -592,9 +604,15 @@ export const svSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'HG02768',
     readyTimeout: 60000,
-    // taller window so the enlarged pileup + the feature-details sidebar fit,
-    // plus headroom for the annotation callouts pushed down off the pileup
-    viewportHeight: 2010,
+    // the grown compact track, and NOT the sidebar, which is the thing that
+    // stops either size report from fixing this number: the feature-details
+    // drawer's INFO table runs to the bottom of any frame this VCF is opened
+    // in, so "blank below the last content" is 0 at every height and the only
+    // thing that gets shorter is the left half. 1075 is where the app frame
+    // itself ends (measured off the capture); the table is scrollable and
+    // being cut is what it does on screen too. Was 2010, when the pileup alone
+    // was 1,460 of it.
+    viewportHeight: 1075,
     settleMs: 30000,
     // suppress the hover tooltip the click leaves over the variant track
     // (reviewer: a stray mouseover tooltip was captured on the variant lane)
@@ -783,6 +801,13 @@ export const svSpecs: ScreenshotSpec[] = [
               height: 620,
               coverageHeight: 70,
               colorBy: { type: 'pairOrientation' },
+              // THE KEY TO THE COLOURS (reviewer: "show legend"). The figure's
+              // whole claim is a strand flip -- the reverse core painting a
+              // different colour between its forward flanks -- and the legend
+              // is the only thing on screen that says which colour is which
+              // strand. Same opt-in as inverted_duplication above, which shows
+              // the short-read half of the same event.
+              showLegend: true,
               // The reads that cross the breakpoints, above the reads that
               // don't: the section divider says which is which, so the figure
               // no longer needs a paragraph painted over the pileup saying it.
@@ -805,10 +830,14 @@ export const svSpecs: ScreenshotSpec[] = [
     // applied result and both frames were the same picture. The menu path is a
     // sentence, and the section under the figure is where it belongs.
     //
-    // 1800 rather than the default 1500: the extra 300px go into the 5.5 kb
-    // window, so a read's forward flank / reverse core / forward flank is three
-    // wider blocks rather than three narrower ones, which is the thing to see.
-    viewportWidth: 1800,
+    // 1400, down from 1800 (reviewer: "decrease width of browser"). The width
+    // was spent on the 5.5 kb window, so a read's forward flank / reverse core
+    // / forward flank drew as three wide blocks — but the flip is a colour
+    // change at a fixed pair of breakpoints, and the legend the same review
+    // asked for is what names it, so the blocks do not have to be wide to be
+    // read. The narrower frame also publishes at a larger scale on the page,
+    // which is where 1800 was actually being lost.
+    viewportWidth: 1400,
     // tall enough to clear the whole 620px track plus the second section's own
     // coverage lane and divider, which grouping adds (the pileup used to run off
     // the bottom edge — reviewer: increase browser height). 960 left 73 css px

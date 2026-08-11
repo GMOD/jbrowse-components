@@ -962,8 +962,9 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'cancer_sv/derivative_synteny',
     // 945 + 251 for the read lane coming back as chains, - 25 and - 60 for the
-    // two gene tracks going compact
-    viewportHeight: 1111,
+    // two gene tracks going compact, + 300 for the hg38 read lane and + 59 for
+    // the der3 lane unchaining into its own rows
+    viewportHeight: 1450,
     viewportWidth: 1600,
     url: sessionSpec(CONFIG, {
       sessionTracks: [DER3_GENES_TRACK],
@@ -999,6 +1000,39 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   // what the top row contributes.
                   displayMode: 'compact',
                   height: 70,
+                },
+                // THE SAME MOLECULES AGAINST hg38 (reviewer: "can the reads be
+                // shown aligned to the hg38 also?"). The figure's claim is that
+                // one contig explains reads three reference loci cannot, and
+                // until now only half of that was drawn: the reads appeared
+                // under the derivative and nowhere else, so a reader had to
+                // take the "cannot" on trust. This lane is the "cannot" --
+                // every read stops at a junction and its remainder is
+                // somewhere else in the row, or in another window of it.
+                //
+                // `showOnlySplitAlignments`, so this is the SAME SUBSET as the
+                // lane below rather than the whole 200x tumour pileup: the
+                // reads the aligner emitted a supplementary segment for are
+                // the chimeric molecules the allele is reconstructed from.
+                // Without it the lane is 200x of ordinary reference-matching
+                // ONT, which is depth rather than evidence, and none of it
+                // fits.
+                //
+                // `heightMode: 'fit'` rather than a px height picked off a row
+                // count: three windows at three depths share this lane, and a
+                // fixed height that holds chr3's rows scrolls exactly the
+                // reads that reach chr10 and chr12 out of the frame -- silently,
+                // since a display overflowing its own height reads as complete
+                // to both of the run's size checks.
+                {
+                  trackId: TUMOUR,
+                  ...DEEP_ONT,
+                  showOnlySplitAlignments: true,
+                  heightMode: 'fit',
+                  height: 300,
+                  coverageHeight: 50,
+                  featureHeight: 3,
+                  colorBy: { type: 'strand' },
                 },
               ],
             },
@@ -1046,14 +1080,44 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 // (unmapped, QC-fail, duplicate) and does not touch 0x100, so
                 // the lane was drawing 16 competing placements as if they were
                 // evidence. 1796 = 1540 + 256.
+                //
+                // AND THE CHAINING IS OFF AGAIN AT THIS ZOOM, which is what the
+                // dark blocks were (reviewer: "there is weird dark coloring
+                // too"). They were not a colour: chain mode puts a molecule's
+                // segments on ONE row, where they hide each other, and the
+                // display marks that with a 40% black tint over the overlapping
+                // span (`buildChainOverlaps` -> overlap.slang). Here the
+                // overlaps are enormous and the tint therefore covered most of
+                // the lane -- because the contig deliberately carries the same
+                // chr3 sequence twice (the fold-back returns inverted into
+                // chr3:25,352,683-25,359,111, inside the 32.7 kb arm), so
+                // minimap2 re-aligns read bases the primary already placed onto
+                // the second copy. Measured on the file: read 002fa8a6's
+                // primary covers der3 1,471-31,000 using read bases 1-30,789
+                // and its supplementary covers 20,614-39,500 using bases
+                // 9-18,938 -- 10 kb of one row painted twice by one molecule.
+                //
+                // The tint is right and the chain is what this lane cannot use:
+                // at 40 kb across the frame a row is 12 bp/px, so no reader
+                // follows a molecule through its segments anyway. Unchained,
+                // each alignment is its own row and the colours are strand
+                // again. `colorBy: 'strand'` replaces what the chain framing
+                // was providing (a supplementary's strand against its
+                // primary's), so the fold-back's inverted segments still read
+                // as the other colour. Chaining stays where it earns its
+                // place: derivative_inserts, at 1.1 kb, where the segments ARE
+                // what a reader follows and the overlaps are off-screen.
                 {
                   trackId: 'reads_vs_der3',
                   coverageHeight: 60,
-                  // 29 chains at a pitch of 9 (featureHeight + 1 above 3 px,
-                  // featureSpacingForHeight) is 261, + the band
-                  height: 321,
-                  featureHeight: 8,
-                  linkedReads: 'normal',
+                  // 53 non-secondary records pack into ~41 rows (a few of the
+                  // short ones share), at a pitch of 6 (featureHeight + 1
+                  // above 3 px, featureSpacingForHeight), + the band. Measured
+                  // off the capture rather than off the record count, which
+                  // over-reserved by 70 px.
+                  height: 320,
+                  featureHeight: 5,
+                  colorBy: { type: 'strand' },
                   filterBy: { flagInclude: 0, flagExclude: 1796 },
                 },
               ],
@@ -1118,8 +1182,9 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'cancer_sv/derivative_inserts',
     // as before, less the 160 px the read lane gives back once the secondary
-    // alignments are filtered and the split segments chain (46 rows -> 28)
-    viewportHeight: 1115,
+    // alignments are filtered and the split segments chain (46 rows -> 28),
+    // plus the 260 px hg38 read lane
+    viewportHeight: 1385,
     viewportWidth: 1600,
     url: sessionSpec(CONFIG, {
       sessionTracks: [DER3_GENES_TRACK],
@@ -1135,7 +1200,37 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
               // deep inside an intron, so the glyphs are lines rather than exon
               // stacks, but they answer which gene each piece was taken from
               // without the reader going back to the text
-              tracks: [{ ...GENE_TRACK, height: 75 }],
+              tracks: [
+                { ...GENE_TRACK, height: 75 },
+                // THE SAME MOLECULES AGAINST hg38 (reviewer: "can the reads be
+                // shown aligned to the hg38 also?"), and at this zoom the two
+                // lanes make the comparison the whole figure is for: a read
+                // that runs through every junction below STOPS at one here,
+                // with the rest of it soft-clipped, in all three windows at
+                // once.
+                //
+                // NO SOFT CLIPPING, though it is the obvious thing to reach
+                // for here and was tried: a clipped ONT tail is drawn base by
+                // base as mismatch colour, and at 800 bp across the frame the
+                // tails of every split read fill the whole chr3 window with
+                // rainbow hash -- the same "mismatch-coloured hash that reads
+                // as data and is not" the reference-sequence lanes were
+                // removed for. Off, every read simply STOPS on the junction
+                // and the pileup's right edge is a straight line at
+                // 25,359,568, which is the tear, said once. Same subset and
+                // the same reason as the sibling lane on derivative_synteny:
+                // split alignments only.
+                {
+                  trackId: TUMOUR,
+                  ...DEEP_ONT,
+                  showOnlySplitAlignments: true,
+                  heightMode: 'fit',
+                  height: 260,
+                  coverageHeight: 50,
+                  featureHeight: 4,
+                  colorBy: { type: 'strand' },
+                },
+              ],
             },
             {
               assembly: 'der3_RARB_BICC1_TRHDE',

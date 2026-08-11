@@ -352,10 +352,22 @@ function fgf4SyntenySession(parent: string, retro: Record<string, string>) {
               // duplicate: one track, one fetch, and the marks sit in the same
               // box as the columns they name. It also gives ~50 px back to the
               // gap between the two synteny bands.
+              // AS SHORT AS THE LABELS ALLOW (review: "decrease height of the
+              // multisamplevariantdisplay as much as possible so that labels
+              // still show"), and the floor is the app's own, not a taste:
+              // `rowLabelsCarryText` draws a row's NAME at 6 px and a bare
+              // colour swatch below that (MIN_TEXT_ROW_HEIGHT), and this
+              // display is in fit-to-height mode, so its row height is
+              // `(height - variant lane) / 55`. 370 = 55 x 6 + the 40 px lane,
+              // which is the smallest height whose rows still name their breed.
+              // It was 690, i.e. 11.8 px a row -- and every one of those extra
+              // px sat between the two synteny bands the figure exists to
+              // compare, which is the cost the earlier note flagged when the
+              // matrix replaced the one-row display.
               {
                 trackId: 'dog10k_fgf4_svs',
                 type: 'LinearMultiSampleVariantDisplay',
-                height: 690,
+                height: 370,
                 colorBy: 'group',
                 showVariantLane: true,
               },
@@ -1168,8 +1180,9 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     // below-the-fold check, which still reported 10.5 css px under the fold at
     // 1410 -- the bottom retrocopy lane's own border. 1510 until the variant
     // lane replaced the separate one-row track, which the same check then
-    // reported as 62 css px of blank.
-    viewportHeight: 1448,
+    // reported as 62 css px of blank; 1448 until the sample block came down to
+    // its label floor, which is the 320 px between that and this.
+    viewportHeight: 1128,
     // THREE LABELS, ONE PER ROW (review: "too much prose stiill. just put
     // labels 'regular gene' and 'retrogene - no introns' on different gene
     // areas of figure ... bottom row needs to also say retrogene, no introns,
