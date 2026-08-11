@@ -13,6 +13,7 @@ import { getLeafNames } from './clusterUtils.ts'
 import { pickTreeNode } from './spatialIndex.ts'
 import {
   TREE_RESIZE_HANDLE_WIDTH,
+  clampTreeAreaWidth,
   treeContentHeight,
   treeIsShowing,
 } from './treeSidebarGeometry.ts'
@@ -290,7 +291,9 @@ const TreeSidebar = observer(function TreeSidebar({
         />
         <ResizeHandle
           onDrag={distance => {
-            model.setTreeAreaWidth(Math.max(10, treeAreaWidth + distance))
+            model.setTreeAreaWidth(
+              clampTreeAreaWidth(treeAreaWidth + distance, viewWidth),
+            )
           }}
           className={classes.resizeHandle}
           style={{

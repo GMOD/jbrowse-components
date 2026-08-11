@@ -1,6 +1,35 @@
 // Width of the sidebar resize handle, sitting at left: treeAreaWidth.
 export const TREE_RESIZE_HANDLE_WIDTH = 4
 
+// Narrowest the gutter may be dragged. Not zero: at zero the handle is the only
+// thing left of the sidebar and it would sit on the track's left edge, where
+// there is nothing to say it is a control.
+export const MIN_TREE_AREA_WIDTH = 10
+
+/**
+ * The width a drag may actually set, both ends of it in one place.
+ *
+ * The upper bound is the point: the handle is positioned at
+ * `left: treeAreaWidth` **inside the display**, which renders in
+ * `TrackRenderingContainer`'s `contain: strict` sandbox — so a drag that takes
+ * the gutter past the view width puts the handle outside that box, where it is
+ * clipped away and cannot be clicked. `treeAreaWidth` is a persisted property
+ * and no menu item resets it, so the track stays all-sidebar across a reload
+ * with no way back short of editing the session. The drag used to carry
+ * `Math.max(10, …)` and nothing on the other side.
+ *
+ * Derived from the view rather than a chosen ceiling: the invariant is "the
+ * control that got you here is still reachable", which is exactly the handle's
+ * right edge staying on screen. `MIN_TREE_AREA_WIDTH` wins on a viewport too
+ * narrow to satisfy both, since a sidebar you cannot see is the lesser problem.
+ */
+export function clampTreeAreaWidth(width: number, viewWidth: number) {
+  return Math.max(
+    MIN_TREE_AREA_WIDTH,
+    Math.min(width, viewWidth - TREE_RESIZE_HANDLE_WIDTH),
+  )
+}
+
 // Drawable content zone height: sidebar height minus the reserved top line
 // zone. The tree canvas, hover canvas, and sidebar layout must agree on this,
 // so they all derive it here rather than recomputing `height - lineZoneHeight`.
