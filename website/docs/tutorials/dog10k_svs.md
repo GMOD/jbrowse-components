@@ -531,7 +531,7 @@ RefSeq model and the per-breed sample rows between the two ribbons. Each ribbon
 gap sits over a record the chondrodysplastic breeds and both spaniels carry, and
 the Labradors, German Shepherds and Greek wolves do not.
 
-<Figure caption="Two independent FGF4 retrocopies (CFA18, MF040222; CFA12, MF040221) aligned to their parent gene between them. Each retrocopy is one box against the parent's three, so every gap in a ribbon falls on a parent intron. Under the parent, the same Manta calls twice: one lane at their coordinates, then the 55 Dog10K genomes with one blue block per call. The blue blocks sit in the two places the ribbons gap, which is what makes them the retrogene rather than a deletion." src="/img/dog10k-fgf4-retrogene-synteny.png" />
+<Figure caption="Two independent FGF4 retrocopies (CFA18, MF040222; CFA12, MF040221) aligned to the parent gene between them, with the Manta calls at their own coordinates and then across 55 Dog10K genomes. Each retrocopy is one box against the parent's three, so every ribbon gap falls on a parent intron, and the blue blocks sit in those same two places: the retrogene rather than a deletion." src="/img/dog10k-fgf4-retrogene-synteny.png" />
 
 The window stops where the CFA18 alignment does, so that retrocopy is on screen
 end to end and the CFA12 ribbon runs on past it. The sample rows are the same
