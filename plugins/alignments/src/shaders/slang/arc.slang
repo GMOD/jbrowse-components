@@ -21,6 +21,30 @@
 // band clips the apex away and only near-vertical legs rising from each
 // endpoint remain.
 //
+// THE TWO BRANCHES DO NOT SHARE A CEILING, and that is a live design question
+// rather than an oversight to quietly close. In arc mode arcsYDomainBp is
+// availH/pxPerBp, so destY reduces to min(availH, rx) and a near arc's apex is
+// 0.75·min(rx, availH) — every pair wider than availH draws the SAME depth,
+// 0.75·availH, on its own rx. Two consequences, both measured on HG02768
+// (1:39,658,650-39,659,550, 200px band, so availH 192 and that ceiling 144px):
+//
+//   - rx >> ry makes the ellipse a plateau with steep shoulders, foot curvature
+//     radius ry²/rx — 34px at rx=600, 15px at rx=1400. It reads as an elbow,
+//     and 699 clamped arcs stacked on the 142px row measured in that view,
+//     which is the ceiling and not a coincidence. Inherited, not new: the cubic
+//     bezier this shape replaced peaked at the same 0.75·destY.
+//   - a FAR leg has no apex to clamp, so it runs the full arcBandH — past the
+//     ceiling every near arc respects, into the 0.25·availH the domes never use.
+//
+// So crossing ARC_FAR_SCREEN_WIDTHS while zooming steps an arc from a 144px
+// plateau to a 200px pair of legs. That step was masked until the hull was
+// fixed: the old chord truncated far legs at ~100-144px (see legSweepAngle),
+// which happened to land on the near ceiling. Nothing was decided there — an
+// accident agreed with a convention. Unifying them is a real change (one rule
+// would be ry = 0.75·destY unclamped, letting the band scissor the apex, which
+// deletes arcIsFar and this whole branch) and it moves every committed arc
+// figure, so it wants a decision, not a patch.
+//
 // There is no `shapeType` attribute. It used to select between this curve and
 // the read cloud's flat connector (values 1 and 2), which meant a 130-vertex
 // curve hull rasterizing a straight line, plus a second distance function, a
