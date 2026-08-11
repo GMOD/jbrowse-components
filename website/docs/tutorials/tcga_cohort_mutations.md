@@ -63,6 +63,14 @@ HER2 wherever a case has both, since that is the test an equivocal IHC gets sent
 for. `subtype` is derived from those three, and a tumor whose receptor calls do
 not resolve it stays `unknown` rather than being guessed into a group.
 
+The table is built per project rather than per track, so it names more tumors
+than either track carries: a case with no mutation calls still has receptor
+status, and the [copy-number cohort](/docs/tutorials/tcga_cohort_cnv) is drawn
+from a different GDC file set and comes out a different size. JBrowse reports
+the tumors it could not match when the track loads. The extras group nothing and
+are harmless; a tumor missing from the table would be the case worth chasing,
+and there are none.
+
 ## Load it into JBrowse
 
 Add hg38. The hosted FASTA names its contigs bare (`1`) while the VCF uses
