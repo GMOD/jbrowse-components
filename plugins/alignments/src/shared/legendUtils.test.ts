@@ -1,5 +1,3 @@
-import { colorShortInsertArc } from '@jbrowse/core/ui/theme'
-
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
 import {
   getAlignmentsLegendSections,
@@ -483,18 +481,19 @@ describe('getArcLegendItems', () => {
     expect(getArcLegendItems(new Set(), makeTestPalette(), 'arc')).toEqual([])
   })
 
-  // The curves stroke colorShortInsertArc, not the pale pileup fill; keying the
-  // fill left the one arc in a frame looking like the long-insert red beside it.
-  test('keys short insert in the color the curves stroke', () => {
+  // Short insert used to be the one bucket the reads and the arcs painted in
+  // DIFFERENT colors — a pale #ffc0cb fill against the saturated pink the curves
+  // needed to stay visible — so the arc key overrode the swatch and the merge
+  // grew a second mark for it. The fill is now that same saturated pink, so it
+  // keys like every other bucket, in one color, in both modes.
+  test('short insert keys one color, in both overlay modes', () => {
     const swatch = (mode: ReadConnectionsMode) =>
       getArcLegendItems(
         new Set<ReadColorCategory>(['shortInsert']),
-        makeTestPalette(),
+        makeTestPalette({ colorShortInsert: [1, 0, 0.5] }),
         mode,
       )[0]!.color
-    expect(swatch('arc')).toBe(colorShortInsertArc)
-    // read cloud fills endpoint squares from the pale marker palette instead
-    expect(swatch('cloud')).not.toBe(colorShortInsertArc)
+    expect(swatch('arc')).toBe(swatch('cloud'))
   })
 
   // Once these fold into the read key (the usual case), the mark is the only

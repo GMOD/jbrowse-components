@@ -1,8 +1,4 @@
-import {
-  colorInterchrom,
-  colorShortInsert,
-  colorShortInsertArc,
-} from '@jbrowse/core/ui/theme'
+import { colorInterchrom, colorShortInsert } from '@jbrowse/core/ui/theme'
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 
 import {
@@ -84,24 +80,19 @@ describe('linkedReadColorSlot', () => {
   })
 })
 
-// The read-cloud endpoint squares are opaque fills, so they use the pale
-// pileup-fill short-insert (matching the legend + pileup) rather than the
-// saturated stroke variant the arc curves use, otherwise the squares read a
-// different pink from the legend swatch. This array is what all three draw
-// paths use, the GPU included (it is uploaded to the arcMarkerColor uniform
-// slots and indexed there), so pinning it here pins every renderer: the one
-// substituted slot, and the rest identical to the arc palette.
+// The read-cloud endpoint squares are opaque fills and the arc curves are thin
+// strokes, and short insert used to need a different color for each: a pale
+// #ffc0cb fill that vanished as a stroke, against the saturated pink the curves
+// used. The fill is now that saturated pink too (see colorShortInsert), so the
+// substitution is gone and the two palettes are the same array. This is what all
+// three draw paths use, the GPU included (uploaded to the arcMarkerColor uniform
+// slots and indexed there), so pinning it here pins every renderer.
 describe('arcMarkerColorPalette (read-cloud endpoint squares)', () => {
-  it('substitutes the pale short-insert fill at the short-insert slot', () => {
+  it('paints short insert the one color the curves and the pileup use', () => {
     expect(arcMarkerColorPalette[2]).toEqual(
       cssColorToNormalizedRgb(colorShortInsert),
     )
-    expect(arcMarkerColorPalette[2]).not.toEqual(
-      cssColorToNormalizedRgb(colorShortInsertArc),
-    )
-    expect(arcColorPalette[2]).toEqual(
-      cssColorToNormalizedRgb(colorShortInsertArc),
-    )
+    expect(arcColorPalette[2]).toEqual(arcMarkerColorPalette[2])
   })
   it('leaves every other slot identical to the stroke arc palette', () => {
     expect(arcMarkerColorPalette.length).toBe(arcColorPalette.length)

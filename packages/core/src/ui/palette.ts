@@ -373,12 +373,19 @@ export const colorInterchrom = '#6e4b3a'
 /** #color alignments-insert-size | Insert larger than expected | Suggests a deletion spanning the pair */
 export const colorLongInsert = '#ff0000'
 /** #color alignments-insert-size | Insert smaller than expected | Suggests an insertion between the pair */
-export const colorShortInsert = '#ffc0cb'
-// Saturated short-insert variant for stroked marks (read-cloud / arc lines).
-// The pale #ffc0cb fill reads fine on filled pileup rectangles but, drawn as a
-// thin translucent line, blends into the white background and vanishes, so the
-// stroke-only arc palette uses a saturated pink instead.
-export const colorShortInsertArc = '#ff3a8c'
+export const colorShortInsert = '#ff3a8c'
+// The arcs' name for the same color, kept as an alias while call sites still
+// spell it. It used to be a genuinely different value: short insert was a pale
+// #ffc0cb, which reads fine as a filled pileup rectangle but vanishes as a thin
+// translucent stroke, so the arcs substituted this saturated pink.
+//
+// The pale fill was retired for a different reason — against #ff0000 it was the
+// SAME hue at a lower saturation (351 vs 0), which made "insert too small" and
+// "insert too large" the least distinguishable pair on the track while carrying
+// its most important distinction. The saturated pink was already the answer to
+// "this needs to be visible"; adopting it for the fill fixes the hue collision
+// and collapses the two-color special case at the same time.
+export const colorShortInsertArc = colorShortInsert
 export const colorUnmappedMate = '#b05a20'
 export const colorUnknown = '#808080'
 export const colorLongreadRevFwd = '#6688ee'

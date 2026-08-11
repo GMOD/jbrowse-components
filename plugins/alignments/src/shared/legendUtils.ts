@@ -4,7 +4,6 @@
 // components on every host's first paint (see EAGER_BUNDLE.md)
 import { legendSwatches } from '@jbrowse/core/ui/legendSpec'
 import {
-  colorShortInsertArc,
   methylated5hmC,
   methylated5mC,
   unmethylated5mC,
@@ -45,13 +44,20 @@ export type { LegendItem } from '@jbrowse/core/ui'
 // same grey twice.
 //
 // The label rule covers the mirror case, and it is where a row grows a SECOND
-// mark rather than losing one: short insert is the bucket the reads and the arc
-// curves paint in *different* colors (pale fill vs. saturated stroke), so keying
-// by color alone lists "Short insert" twice, while keying by label alone drops
-// whichever color arrived second — off a box whose whole claim is that it names
-// every color drawn. Keeping both as marks on one row is the only form that is
-// neither repetitive nor a lie. The reads' swatch leads, since a pileup fill is
-// what most of the frame shows.
+// mark rather than losing one: for a bucket the two vocabularies paint in
+// *different* colors, keying by color alone lists one label twice, while keying
+// by label alone drops whichever color arrived second — off a box whose whole
+// claim is that it names every color drawn. Keeping both as marks on one row is
+// the only form that is neither repetitive nor a lie. The reads' swatch leads,
+// since a pileup fill is what most of the frame shows.
+//
+// Short insert was the one live instance of that, back when the pileup filled it
+// pale and the curves stroked it saturated; both are the saturated pink now, so
+// today every shared bucket collapses to a single mark and this arm is
+// unexercised by the alignments vocabulary. Kept because the label collision it
+// resolves is a property of merging two vocabularies at all, not of that one
+// color choice — and because losing a drawn color silently is the failure it
+// exists to prevent.
 //
 // Color-less rows (headings, notes) merge by label only, never by color.
 function oneRowPerMeaning(items: LegendItem[]): LegendItem[] {
@@ -349,29 +355,13 @@ function bucketItems(
   presentCategories: ReadonlySet<ReadColorCategory>,
   palette: ColorPalette,
   overrides: Partial<Record<SwatchCategory, string>>,
-  swatchOverrides: Partial<Record<SwatchCategory, string>> = {},
 ): LegendItem[] {
   return CATEGORY_ORDER.filter(category => presentCategories.has(category)).map(
     category => ({
-      color:
-        swatchOverrides[category] ?? categorySwatchColor(category, palette),
+      color: categorySwatchColor(category, palette),
       label: overrides[category] ?? CATEGORY_LEGEND[category],
     }),
   )
-}
-
-// Short insert is the one bucket whose arc swatch is not the read swatch: a 1px
-// arc curve in the pale pileup fill (colorShortInsert #ffc0cb) is invisible over
-// the band, so the curves stroke the saturated variant (colorShortInsertArc,
-// arcColorPalette index 2) instead. Read cloud paints filled endpoint squares
-// from arcMarkerColorPalette, which is the pale fill again — same as the reads —
-// so only the curve mode overrides. Read straight from the theme constant, as
-// the arc palette does: arc colors are not part of the theme-overridable render
-// palette, so resolving this through `palette` would key a color no arc draws.
-function arcSwatches(
-  mode: ReadConnectionsMode,
-): Partial<Record<SwatchCategory, string>> {
-  return mode === 'arc' ? { shortInsert: colorShortInsertArc } : {}
 }
 
 // …and the mark those colors are drawn AS, which is the other half of the same
@@ -403,9 +393,10 @@ export function getArcLegendItems(
   mode: ReadConnectionsMode,
 ): LegendItem[] {
   const mark = arcMark(mode)
-  return bucketItems(presentCategories, palette, {}, arcSwatches(mode)).map(
-    item => ({ ...item, mark }),
-  )
+  return bucketItems(presentCategories, palette, {}).map(item => ({
+    ...item,
+    mark,
+  }))
 }
 
 // The modification family's own key: the methylation views (fill-unmarked and
