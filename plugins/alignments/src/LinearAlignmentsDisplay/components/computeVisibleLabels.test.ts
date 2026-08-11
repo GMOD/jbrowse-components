@@ -147,6 +147,71 @@ test('deletion label drops out once the rect is no wider than its text', () => {
   expect(deletionOpacity(10)).toBeUndefined()
 })
 
+// A deletion wider than the view has its own midpoint off-screen, and a label
+// placed there is simply not on the canvas — so the length is measured and
+// placed against the visible part of the rect instead. Its own runner, because
+// the region has to start away from bp 0 for a deletion to overhang BOTH edges.
+describe('a deletion wider than the view labels its visible part', () => {
+  // bp [10000,11000] at 1 bp/px => screen [0,1000]px; bpToPx(bp) = bp - 10000.
+  const deletionLabel = (start: number, end: number) =>
+    computeVisibleLabels({
+      view: {
+        visibleRegions: [
+          {
+            displayedRegionIndex: 0,
+            start: 10000,
+            end: 11000,
+            screenStartPx: 0,
+          },
+        ],
+        bpPerPx: 1,
+      },
+      sections: [
+        {
+          laidOutPileupMap: {
+            get: () =>
+              makeRpcData({
+                gapPositions: new Uint32Array([start, end]),
+                gapYs: new Uint16Array([0]),
+                gapLengths: new Uint32Array([end - start]),
+                gapTypes: new Uint8Array([0]),
+              }),
+          },
+          topOffset: 0,
+          pileupHeight: 1000,
+        },
+      ],
+      height: 1000,
+      featureHeight: 10,
+      featureSpacing: 2,
+      showMismatches: true,
+      scrollTop: 0,
+    }).find(l => l.type === 'deletion')
+
+  test('enclosing the whole view: label sits at the middle of the screen', () => {
+    // A 50kb deletion over a 1kb view. Unclamped this landed at x=20000.
+    const label = deletionLabel(5000, 55000)
+    expect(label?.text).toBe('50000')
+    expect(label?.x).toBeCloseTo(500)
+    expect(label?.opacity).toBe(1)
+  })
+
+  test('running off the right edge: label centers in what is visible', () => {
+    // Visible span is bp [10500,11000] => screen [500,1000], midpoint 750.
+    expect(deletionLabel(10500, 12500)?.x).toBeCloseTo(750)
+  })
+
+  test('running off the left edge: label centers in what is visible', () => {
+    // Visible span is bp [10000,10300] => screen [0,300], midpoint 150.
+    expect(deletionLabel(9000, 10300)?.x).toBeCloseTo(150)
+  })
+
+  test('only a sliver visible: the label drops rather than jamming the edge', () => {
+    // 8px of a 20kb deletion is nowhere near enough for "20000".
+    expect(deletionLabel(10992, 30992)).toBeUndefined()
+  })
+})
+
 test('large insertion label fades as its on-screen span shrinks toward the large threshold', () => {
   // span 20*pxPerBp: opacity 1 at >=30px, partial in (15,30), gone below 15px
   const opacityAt = (bpPerPx: number) =>

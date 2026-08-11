@@ -169,14 +169,25 @@ export function computeVisibleLabels(
             continue
           }
 
+          // Measure and place against the VISIBLE part of the deletion, not the
+          // whole thing. A deletion longer than the view has its midpoint
+          // off-screen — a 50kb one enclosing a 1kb view put its label 20x the
+          // canvas width to the right — so the grey bar filled the screen with
+          // no length on it, which is the view where the length matters most.
+          // The clamp is to the region's own bp range rather than the canvas
+          // because each visible region owns its own screen slice.
+          const visStart = Math.max(gapStart, blockStart)
+          const visEnd = Math.min(gapEnd, blockEnd)
+
           // bpToPx is affine, so the rect's width is its bp span scaled and its
           // midpoint is the midpoint bp projected — no need to project both
           // edges and min/max them.
-          const widthPx = Math.abs(gapEnd - gapStart) / bpPerPx
+          const widthPx = (visEnd - visStart) / bpPerPx
 
-          // Fade the length out as the deletion rect narrows toward its own text
+          // Fade the length out as the visible rect narrows toward its own text
           // width, so back-to-back deletions dissolve smoothly when zooming out
-          // instead of all vanishing at once.
+          // instead of all vanishing at once — and so a deletion panned almost
+          // off-screen drops its label instead of jamming it against the edge.
           const opacity = labelFadeOpacity(widthPx, gapTextWidth(length))
           if (opacity < MIN_LABEL_OPACITY) {
             continue
@@ -184,7 +195,7 @@ export function computeVisibleLabels(
 
           labels.push({
             type: 'deletion',
-            x: bpToPx((gapStart + gapEnd) / 2),
+            x: bpToPx((visStart + visEnd) / 2),
             y: yPx,
             text: String(length),
             fontSize,
