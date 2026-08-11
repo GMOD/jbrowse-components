@@ -99,6 +99,26 @@ export function storedSlotValue(
 }
 
 /**
+ * Whether `value` could actually become this slot's promoted default — the same
+ * `isUsableValue` gate the cascade puts both tiers through, asked ahead of time
+ * about a value a caller is about to offer as a pin's on-value.
+ *
+ * Exists because a pin built over a value the gate refuses is inert in a way
+ * nothing reports: `applyDefaultToggle` writes it to the session store happily,
+ * `resolveSlotIn` then drops it and every track keeps resolving to the tier
+ * below, and `isPromotableDefault` compares the *raw* stored value, so the pin
+ * draws outline forever while a dead key sits in the user's localStorage. See
+ * `makePin`, which is the one caller.
+ */
+export function isPromotableValue(
+  config: AnyConfigurationModel,
+  slot: string,
+  value: unknown,
+): boolean {
+  return isUsableValue(getSlotDefinition(config, slot), value)
+}
+
+/**
  * The outcome of walking the cascade for one slot: the two tiers that fed it,
  * whether the track customized it, and the settled value.
  *

@@ -965,6 +965,57 @@ test('resolving a non-promotable slot throws instead of silently collapsing', ()
   )
 })
 
+// A pin over a value the cascade would refuse is inert AND silent: toggling it
+// writes a store key `resolveSlotIn` then drops, so no track moves, and
+// `isPromotableDefault` compares the raw stored value, so the pin's own
+// filled/outline state stops describing anything. `makePin` refuses the value
+// instead, the same way `ConfigSlot` refuses an unusable `promotedBase`.
+describe('makePin refuses an on-value the cascade could never store', () => {
+  const schema = ConfigurationSchema('TestDisplay', {
+    mode: {
+      type: 'maybeStringEnum',
+      model: types.enumeration('Mode', ['normal', 'compact']),
+      defaultValue: undefined,
+      promotedBase: 'normal',
+    },
+    height: {
+      type: 'maybeNumber',
+      defaultValue: undefined,
+      promotedBase: 5,
+    },
+  })
+
+  // the sharpest case, because it fails in the *opposite* direction from the
+  // others: `undefined` is the inherit sentinel, so with nothing promoted the
+  // pin compares undefined to undefined and draws FILLED — a pin that looks
+  // like the current default and clears nothing when clicked
+  test('the inherit sentinel, passed explicitly', () => {
+    const { display } = createDisplay(schema)
+    expect(() => makePin(display, 'mode', undefined)).toThrow(/cannot pin/)
+  })
+
+  test('a value outside a maybeStringEnum vocabulary', () => {
+    const { display } = createDisplay(schema)
+    expect(() => makePin(display, 'mode', 'gone')).toThrow(/cannot pin/)
+  })
+
+  test('a non-finite number', () => {
+    const { display } = createDisplay(schema)
+    expect(() => makePin(display, 'height', Number.NaN)).toThrow(/cannot pin/)
+  })
+
+  // the value-omitted form settles on a cascade value, which is usable by
+  // construction (a customized value passed the gate, and `promotedBase` passed
+  // it at schema build), so it can never trip the guard
+  test('the promote-current form is unaffected', () => {
+    const { display } = createDisplay(schema)
+    expect(makePin(display, 'mode').active).toBe(false)
+    makePin(display, 'mode').toggle()
+    expect(makePin(display, 'mode').active).toBe(true)
+    expect(resolveConf(display, 'mode')).toBe('normal')
+  })
+})
+
 // A composite view (breakpoint-split, SV-inspector, the linear-comparative /
 // synteny family) holds child views rather than tracks of its own, and a
 // promotable display nested in one resolves the cascade like any other. Both

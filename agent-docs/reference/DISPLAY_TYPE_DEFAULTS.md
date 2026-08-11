@@ -356,6 +356,20 @@ pin, and the badge all fall back in lockstep — no consumer guards on its own.
 to the base instead of reaching the total `COLOR_SCHEMES` lookups that throw on
 an unregistered type.
 
+**`makePin` runs the same gate over a caller-supplied on-value**, and throws —
+the third place the gate is applied ahead of time rather than at read. A pin over
+a value the cascade would refuse is inert *and* silent in both directions: the
+toggle writes a store key `resolveSlotIn` then drops, so no track moves, while
+`isPromotableDefault` compares the *raw* stored value, so the pin draws outline
+forever with a dead key left in the user's localStorage. Passing the inherit
+sentinel explicitly (`makePin(self, slot, undefined)`) fails the other way — with
+nothing promoted it compares `undefined` to `undefined` and draws **filled**,
+a pin that claims to be the current default and clears nothing. Every in-tree
+caller passes a literal option value or a hand-guarded one (`tagItem` in the
+alignments colorBy menu, which is the discipline this makes checkable), so the
+throw only fires on an authoring mistake. The value-*omitted* form can't trip it:
+the cascade only ever settles on a usable value.
+
 One consequence is worth knowing rather than fixing. A promoted default that
 fails the gate goes *invisible* in the track UI: `isPromotableDefault` compares
 the raw stored value, so no row's pin fills (an unregistered scheme has no row at

@@ -16,6 +16,7 @@ import { fullConfSnapshot } from './fullConfSnapshot.ts'
 import { setConf } from './getConf.ts'
 import {
   cascadeContextFor,
+  isPromotableValue,
   resolveSlot,
   resolveSlotIn,
   storedSlotValue,
@@ -146,12 +147,18 @@ export function getTrackConfigWithPromotables(
   if (Array.isArray(displayConfigs) && Array.isArray(displaySnaps)) {
     for (const [i, displayConfig] of displayConfigs.entries()) {
       const snap: unknown = displaySnaps[i]
-      const displayType = isObject(snap) ? snap.type : undefined
-      if (
-        isConfigurationModel(displayConfig) &&
-        isObject(snap) &&
-        typeof displayType === 'string'
-      ) {
+      if (!isConfigurationModel(displayConfig) || !isObject(snap)) {
+        continue
+      }
+      // off the live config node, not off `snap` — the snapshot is what this
+      // function *writes*, so the key it resolves against shouldn't depend on
+      // what survived `stripDefault` on the way out. A display schema is
+      // `explicitlyTyped`, so the node always carries `type`; reading the
+      // snapshot's copy meant a display whose `type` ever stopped being emitted
+      // got skipped whole, and a skipped display is a copied config that
+      // silently isn't flattened. Same source `cascadeContextFor` reads.
+      const displayType: unknown = displayConfig.type
+      if (typeof displayType === 'string') {
         const ctx = { config: displayConfig, displayType, defaults: session }
         for (const slot of resolvePromotablesInto(ctx, snap)) {
           fromDisplayTypeDefaults.push(`${displayType}.${slot}`)
@@ -332,11 +339,26 @@ export function makePin(
   slot: string,
   ...value: [] | [unknown]
 ): Pin {
-  // rest-tuple, not `value?: unknown`: the promote-current case has to be
-  // distinguishable from an explicit `undefined`, which is the inherit sentinel
-  // and would promote "unset" as a default — a value `isUsableValue` rejects, so
-  // the pin would silently never light up.
+  // rest-tuple, not `value?: unknown`: the promote-current case has to stay
+  // distinguishable from an explicit `undefined` rather than collapsing into it.
   const onValue = value.length ? value[0] : resolveSlot(self, slot).value
+  // The value-omitted form can't fail this — the cascade only ever settles on a
+  // usable value — so this is entirely about a caller-supplied one. An on-value
+  // the cascade would refuse builds a pin that is inert *and* silent: clicking
+  // it stores a key `resolveSlotIn` then drops, so no track moves and the pin
+  // draws outline forever. The reachable mistakes are the inherit sentinel
+  // itself (`makePin(self, slot, undefined)`, which additionally reads as the
+  // default the moment nothing is promoted, so it draws *filled* and does
+  // nothing), a non-finite number, and a value outside a `maybeStringEnum`'s
+  // vocabulary. Every in-tree caller passes a literal option value or a
+  // hand-guarded one (`tagItem` in the alignments colorBy menu), so this throws
+  // only on a genuine authoring mistake — the same bargain `ConfigSlot` strikes
+  // over `promotedBase`, which is this gate at the other end of the cascade.
+  if (!isPromotableValue(self.configuration, slot, onValue)) {
+    throw new Error(
+      `cannot pin ${JSON.stringify(onValue)} as the default for config slot "${slot}": the cascade refuses it, so the pin could never light up`,
+    )
+  }
   const active = isPromotableDefault(self, slot, onValue)
   return {
     slot,
