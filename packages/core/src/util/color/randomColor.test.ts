@@ -40,8 +40,27 @@ describe('randomColor', () => {
     expect(randomColor('flaA')).not.toBe(randomColor('flaB'))
   })
 
+  // The everyday caller is the Color-by-attribute dialog, over a whole track
+  // where most files carry the attribute on some features and not others. This
+  // used to throw on the undefined, once per feature, and every unlabelled
+  // feature came out one strong color — a large fake category drawn over the
+  // real ones. Grey, and the same grey for all three ways of having no value.
+  test('paints a missing value neutral rather than hashing it', () => {
+    const grey = randomColor(undefined)
+    expect(grey).toMatch(/^#[0-9a-f]{6}$/)
+    expect(randomColor(null)).toBe(grey)
+    expect(randomColor('')).toBe(grey)
+    const { C } = oklch(grey)
+    // unsaturated, so it cannot be mistaken for one more member of a palette
+    // whose every member is equally colorful
+    expect(C).toBeLessThan(0.02)
+    for (const str of SAMPLES) {
+      expect(randomColor(str)).not.toBe(grey)
+    }
+  })
+
   test('emits a parseable hex color', () => {
-    for (const str of ['', 'a', 'prfB', 'C694_RS00885', 'a longer string!']) {
+    for (const str of ['a', 'prfB', 'C694_RS00885', 'a longer string!']) {
       expect(randomColor(str)).toMatch(/^#[0-9a-f]{6}$/)
     }
   })

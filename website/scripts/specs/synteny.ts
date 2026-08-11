@@ -422,7 +422,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
     name: 'synteny_human_chimp_cigar_modes',
     url: hg38ChimpSynteny('full'),
     viewportWidth: 1200,
-    viewportHeight: 850,
+    // sized off the run's own blank-below-the-content report after the repeat
+    // lanes went compact
+    viewportHeight: 691,
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 60000,
     settleMs: 12000,
@@ -433,7 +435,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     name: 'synteny_te_vapb_sva',
     url: hg38ChimpSynteny('full', VAPB_SVA_LOCUS),
     viewportWidth: 1200,
-    viewportHeight: 878,
+    viewportHeight: 763,
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 60000,
     settleMs: 12000,
@@ -446,7 +448,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     name: 'synteny_te_picalm_alu',
     url: hg38ChimpSynteny('full', PICALM_ALU_LOCUS),
     viewportWidth: 1200,
-    viewportHeight: 850,
+    viewportHeight: 667,
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 60000,
     settleMs: 12000,
@@ -3010,34 +3012,73 @@ export const syntenySpecs: ScreenshotSpec[] = [
   //
   // Review: "the colors are just very bad here". Most of the frame was one
   // strong magenta, and that was not a palette problem: two thirds of these
-  // genes carry no `gene` attribute at all, only a locus tag, so
-  // `randomColor(undefined)` painted every one of them the same color and they
-  // read as a large named group. They are grey now, so a color in this figure
-  // means what the section says it means — an ortholog symbol, the same color
-  // in all three panels.
+  // genes carry no `gene` attribute at all, only a locus tag, so every one of
+  // them came out the same color and read as a large named group.
   //
-  // The colored genes stay on `randomColor` rather than a curated rainbow,
-  // because the figure documents what the "Color by attribute" dialog writes
-  // (ColorByAttributeDialog builds this exact jexl) and a hand-picked palette
-  // would be a picture of something the dialog cannot produce. Review: "ideally
-  // we get a better palette, pulling from good color set rather than like random
-  // rgb" — answered in `randomColor` itself rather than here. It now places its
-  // hues in OKLCH at a fixed lightness and chroma instead of raw HSL, so every
-  // value comes out equally light and equally colorful, which is the property a
-  // curated categorical palette actually has. It stays a hash rather than a list
-  // of N because it has no allocator: see its docstring.
+  // THE EXPRESSION IS NOW THE DIALOG'S OWN, character for character
+  // (`attributeColorJexl` in plugins/canvas). It used to carry a hand-written
+  // `? … : 'rgb(175,175,175)'` else-branch, which fixed the picture and left
+  // the figure documenting something a user cannot produce — the dialog writes
+  // no ternary. The grey moved into `randomColor`, where a missing value now
+  // returns a neutral instead of throwing on `undefined.length`; see its
+  // docstring. So a reader who follows sv_synteny/color_by_attribute below gets
+  // exactly this picture.
+  //
+  // The colored genes stay on `randomColor` rather than a curated rainbow, for
+  // the same reason. Review: "ideally we get a better palette, pulling from good
+  // color set rather than like random rgb" — answered in `randomColor` itself
+  // rather than here. It places its hues in OKLCH at a fixed lightness and
+  // chroma instead of raw HSL, so every value comes out equally light and
+  // equally colorful, which is the property a curated categorical palette
+  // actually has. It stays a hash rather than a list of N because it has no
+  // allocator: see its docstring.
   {
     mode: 'url',
     name: 'sv_synteny/ortholog_colors',
     url: hpyloriSyntenyWithGenes({
-      geneColor:
-        "jexl:get(feature,'gene') ? randomColor(get(feature,'gene')) : 'rgb(175,175,175)'",
+      geneColor: "jexl:randomColor(get(feature,'gene'))",
     }),
     readyText: 'NC_018939.1',
     readyTimeout: 60000,
     settleMs: 12000,
     // the default 800 clips the bottom strain's gene labels
-    viewportHeight: 812,
+    viewportHeight: 822,
+  },
+
+  // HOW A READER PRODUCES THE FIGURE ABOVE (review: "we may want to show users
+  // how they do this in the app"). The section had the picture and the jexl and
+  // no route between them, so the coloring read as something a config author
+  // does rather than something a reader can do to the track in front of them.
+  //
+  // Track menu -> Color by... -> Attribute..., then the attribute's name. The
+  // dialog prints the expression it will write under the field, which is the
+  // one thing that ties this frame to the figure above it: the same string.
+  //
+  // The FIRST panel's track menu, by testid index. `track_menu_icon` is not
+  // unique here -- three stacked panels each carry a gene lane -- and the
+  // generator's text/selector lookup takes the smallest matching element, so
+  // the selector names the 26695 panel's track container to scope it.
+  {
+    mode: 'url',
+    name: 'sv_synteny/color_by_attribute',
+    url: hpyloriSyntenyWithGenes(),
+    readyText: 'NC_018939.1',
+    readyTimeout: 60000,
+    settleMs: 8000,
+    // the dialog is what the frame is for, and it opens centred over a stack
+    // whose lower half is the other two strains
+    viewportHeight: 822,
+    hideTooltip: true,
+    actions: [
+      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+      { type: 'waitForText', text: 'Color by...' },
+      { type: 'hover', text: 'Color by...' },
+      { type: 'waitForText', text: 'Attribute...' },
+      { type: 'click', text: 'Attribute...' },
+      { type: 'waitForText', text: 'Color by attribute' },
+      { type: 'type', text: 'Attribute name', value: 'gene', clear: true },
+      { type: 'delay', ms: 1200 },
+    ],
   },
 
   // The mistake the tutorial's Troubleshooting table describes, and the app's own

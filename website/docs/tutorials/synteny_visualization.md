@@ -114,18 +114,37 @@ building one from a session-spec URL.
 The ribbons connect aligned sequence rather than annotated genes. The gene
 tracks color independently, and in bacteria the gene symbol is effectively the
 ortholog id, since NCBI reuses standardized symbols across strains. On each gene
-track, open **Color by attribute** from the track menu and enter `gene`: every
+track, open the track menu, then **Color by...** then **Attribute...**, and
+enter `gene`. The dialog prints the expression it is about to write, and every
 distinct value of that attribute gets its own deterministic color, so an
 ortholog carries one color down all three panels and a gene's synteny becomes
 legible by color alone.
 
-Features with no such attribute all take one fallback color, and in this window
-that is two thirds of the genes, so the fallback ends up the loudest thing on
-screen. Editing the expression the dialog wrote to send them somewhere neutral
-fixes that:
+<Figure caption="The Color by attribute dialog on the first strain's gene track, with the attribute name set to gene. The expression under the field is what the dialog writes onto the track." src="/img/sv_synteny/color_by_attribute.png" />
 
-```
-jexl:get(feature,'gene') ? randomColor(get(feature,'gene')) : 'rgb(175,175,175)'
+Features with no value for that attribute are painted a neutral grey rather than
+given a color of their own, which matters here: two thirds of the genes in this
+window carry only a locus tag, and a color for them would be the loudest thing
+on screen and would read as one large named group.
+
+The dialog writes a display color expression, so the same thing is one line of
+config when you would rather ship it than click it:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "hpylori_26695.gff",
+  "name": "H. pylori 26695 genes",
+  "assemblyNames": ["hpylori_26695"],
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "uri": "https://jbrowse.org/demos/hpylori/hpylori_26695.gff.gz"
+  },
+  "displayDefaults": {
+    "showOnlyGenes": true,
+    "color": "jexl:randomColor(get(feature,'gene'))"
+  }
+}
 ```
 
 <Figure caption="The same three strains with each gene track colored by its gene attribute. prfB, fliR, cbf2, efp, pseI and lysS hold one color per symbol down all three panels; the genes that carry only a locus tag are grey." src="/img/sv_synteny/ortholog_colors.png" />

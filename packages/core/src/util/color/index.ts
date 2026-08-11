@@ -98,6 +98,11 @@ export { isNamedColor, namedColorToHex } from './cssColorsLevel4.ts'
 // apart, dark enough that black text over one still reads, and never near
 // white/black. The three differ enough to separate two neighbouring hues, and
 // little enough that no tier reads as "the faded ones".
+// What a value-less feature is painted. Neutral and unsaturated on purpose: it
+// has to read as "not in a category" beside a palette whose every member is
+// equally light and equally colorful, so it cannot be one more hue.
+const NO_CATEGORY_COLOR = '#afafaf'
+
 const RANDOM_COLOR_TIERS = [
   { lightness: 0.66, chroma: 0.15 },
   { lightness: 0.56, chroma: 0.14 },
@@ -206,10 +211,24 @@ export function relight(
  * sliver on yellow, and at one lightness its yellows glare while its blues go
  * murky. That unevenness is what reads as "random RGB".
  *
+ * A value that is absent gets NO_CATEGORY_COLOR rather than a hue, and that is
+ * the difference between this being usable on real data and not. The everyday
+ * caller is the Color-by-attribute dialog, which writes
+ * `jexl:randomColor(get(feature,'<attr>'))` over a whole track — and most files
+ * have the attribute on some features and not others, so most of the time this
+ * is handed `undefined`. It used to throw on that (`str.length` of undefined),
+ * once per feature, and what a reader saw was every unlabelled feature in one
+ * strong color: a large fake category, drawn over the real ones. Grey says the
+ * only true thing about a feature with no value for the attribute you asked to
+ * colour by.
+ *
  * @param str - The string to generate a color from
  * @returns A CSS hex color string
  */
-export function randomColor(str: string): string {
+export function randomColor(str: string | undefined | null): string {
+  if (!str) {
+    return NO_CATEGORY_COLOR
+  }
   // djb2 hash — much better distribution than a char-code sum (anagrams and
   // similar strings get well-separated hues).
   let hash = 5381

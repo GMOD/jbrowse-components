@@ -494,7 +494,42 @@ right first example is the picture rather than the biology: a ~1.8 kb deletion
 over two exons is small enough to read base by base and large enough to see in a
 pileup.
 
-<Figure caption="The SV inspector after searching for SV_85, a heterozygous CUZD1 deletion. The SVTYPE column reports a DEL. Clicking the row's location link opens it in the linear genome view below, drawn as the <DEL> ALT allele above the NCBI RefSeq gene track." src="/img/sv_cgiab/deletion_sv_inspector_search.png" />
+Two public catalogues make that a pair of lanes rather than a claim you have to
+take on trust. **ClinVar CNVs** carries the submitted copy-number variants with
+their clinical significance, and **DGV** carries the structural variation
+catalogued in germline genomes. Add both from UCSC:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "hg38_clinvar_cnv_ucsc",
+  "name": "ClinVar CNVs (UCSC)",
+  "assemblyNames": ["GRCh38_GIABv3"],
+  "adapter": {
+    "type": "BigBedAdapter",
+    "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarCnv.bb"
+  },
+  "displayDefaults": {
+    "jexlFilters": ["get(feature,'_varLen') < 50000"],
+    "displayMode": "compact"
+  }
+}
+```
+
+The size filter is what makes the lane readable. Both catalogues hold
+chromosome-scale records that merely contain a 1.8 kb event, so unfiltered each
+lane is one bar edge to edge, and a red bar across the window would read as a
+pathogenic CNV sitting on the deletion. `_varLen` in ClinVar and `_size` in DGV
+are the catalogues' own length fields; filtering on them keeps the records at
+this event's scale.
+
+Read the two lanes together. Nothing of comparable size is in ClinVar here, and
+DGV has two records over the locus, one of them across the deletion itself. That
+is the triage a reviewer performs on a somatic call: not a known pathogenic CNV,
+and sitting where common germline structural variation lives, which is where a
+somatic caller most often emits something that was never somatic.
+
+<Figure caption="The SV inspector after searching for SV_85, a heterozygous CUZD1 deletion. The SVTYPE column reports a DEL. Clicking the row's location link opens it in the linear genome view below, drawn as the <DEL> ALT allele above the NCBI RefSeq gene track, with the ClinVar CNV and DGV lanes between them." src="/img/sv_cgiab/deletion_sv_inspector_search.png" />
 
 Opening the gene annotations and the tumor PacBio HiFi reads, setting **Read
 height** → **Compact** and **Sort by...** → **Base pair** (both from the track

@@ -884,9 +884,19 @@ export function hg38ChimpSynteny(
   // decimation). Reviewer: repeats should be normal-height and compact but still
   // labeled (SVA_F, L1HS, AluY… at the insertions) — not the tall, label-dropping
   // 'fit' band.
+  //
+  // `displayMode: 'compact'` on top of that (review on both TE figures: "try to
+  // improve y-screen real estate using compact renderings"). These lanes are
+  // what the frames spend their height on -- every element gets a row of its
+  // own because its label widens its footprint, so each RepeatMasker band packs
+  // five or six rows. Compact is a 0.6x body with proportionally smaller label
+  // text and tighter row padding (HEIGHT_MULTIPLIERS / ROW_PADDING in
+  // glyphUtils), which is the one compactness step that keeps the names: only
+  // `collapsed` forces labels off, and the names are the point here.
   const rmsk = (id: string) => ({
     trackId: id,
     heightMode: 'grow',
+    displayMode: 'compact',
   })
   return sessionSpec(HG38_PANTRO6_CONFIG, {
     views: [

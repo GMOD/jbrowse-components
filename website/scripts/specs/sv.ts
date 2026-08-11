@@ -136,6 +136,45 @@ const SMAD4_MANE = maneGeneLane({
 // deletion and cannot drift apart.
 const SV_85_DEL = 'chr10:122,835,344..122,837,142'
 
+// The two public catalogues that answer "is this a known bad thing" as LANES
+// rather than as prose, both from `~/src/jb2hubs/ucsc2jbrowse/configs/hg38.json`
+// and both hgdownload bigBeds that answer ranged reads with
+// `Access-Control-Allow-Origin: *`. `assemblyNames` is the C-GIAB benchmark's
+// own GRCh38, not `hg38`: same coordinates, different assembly name in that
+// config, and a track named for the wrong one is silently absent.
+//
+// COLLAPSED, both of them. DGV in particular is a merged catalogue and packs
+// dozens of overlapping records over a 30 kb gene, which as stacked rows is
+// most of a viewport and as one row is the density read the question wants --
+// "is there ordinary variation here" is answered by the bar being there.
+const CLINVAR_CNV_TRACK = {
+  type: 'FeatureTrack',
+  trackId: 'hg38_clinvar_cnv_ucsc',
+  name: 'ClinVar CNVs (UCSC)',
+  assemblyNames: ['GRCh38_GIABv3'],
+  adapter: {
+    type: 'BigBedAdapter',
+    bigBedLocation: {
+      uri: 'https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarCnv.bb',
+      locationType: 'UriLocation',
+    },
+  },
+}
+
+const DGV_TRACK = {
+  type: 'FeatureTrack',
+  trackId: 'hg38_dgv_ucsc',
+  name: 'DGV common germline SVs',
+  assemblyNames: ['GRCh38_GIABv3'],
+  adapter: {
+    type: 'BigBedAdapter',
+    bigBedLocation: {
+      uri: 'https://hgdownload.soe.ucsc.edu/gbdb/hg38/dgv/dgvMerged.bb',
+      locationType: 'UriLocation',
+    },
+  },
+}
+
 // The pileup band `inverted_duplication`'s three callouts sit in, as an origin:
 // the track's own top edge (`fracY: 0`) at the view's left edge, with each
 // callout a dx/dy into it. The band is 2000px of arcs and reads in a 2010px
@@ -1084,9 +1123,12 @@ export const svSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'sv_cgiab/deletion_sv_inspector_search',
-    viewportHeight: 850,
+    // +277 for the two catalogue lanes, off the run's own below-the-fold report
+    viewportHeight: 1127,
     url: cgiabUrl({
       sessionTracks: [
+        CLINVAR_CNV_TRACK,
+        DGV_TRACK,
         // hg38 NCBI RefSeq genes (chr-named, CSI-indexed) so the LGV below the
         // inspector shows CUZD1's gene model over the deletion
         {
@@ -1125,6 +1167,59 @@ export const svSpecs: ScreenshotSpec[] = [
           loc: 'chr10:122,823,828-122,852,611',
           tracks: [
             'hg38_ncbiRefSeq_ucsc',
+            // IS THIS A KNOWN BAD THING, AS TWO LANES (review: "I dont like
+            // answers in prose. i want tracks that confirm. prose is tl;dr 99%
+            // of the time ... we also have ~/src/jb2hubs with many tracks").
+            // The previous round answered it in the tutorial's text, which is
+            // where a reader is least likely to look, and it declined a lane on
+            // the grounds that the somatic driver catalogues (COSMIC's Cancer
+            // Gene Census among them) are licensed. That is true of the DRIVER
+            // question and it is not the question the figure raises. "Is this
+            // deletion a known pathogenic event" has two public answers, both
+            // in jb2hubs' hg38 config and both bigBeds hgdownload serves with
+            // ranged reads and `Access-Control-Allow-Origin: *`:
+            //
+            //   clinvarCnv.bb   ClinVar's submitted CNVs, with clinical
+            //                   significance per record -- the direct answer
+            //   dgvMerged.bb    the Database of Genomic Variants, i.e. the
+            //                   structural variation catalogued in germline
+            //                   genomes
+            //
+            // WHY THE SECOND ONE, since this is a somatic callset (asked
+            // directly: "why would healthy genomes be interesting"). Not as
+            // benign evidence in the ACMG sense -- that is a germline argument
+            // and this is a tumour. It is the false-positive check a somatic
+            // callset needs: a locus that is ordinary CNV territory in germline
+            // catalogues is a locus where a somatic caller most often emits
+            // something that was never somatic. So the pair reads "not a known
+            // pathogenic CNV, and a place where common germline variation
+            // lives" -- which is the triage a reviewer performs, in lanes
+            // rather than in a paragraph.
+            // SIZE-FILTERED, and that is what makes them answer the question
+            // rather than decorate it. Both catalogues carry chromosome-scale
+            // records -- whole-10q26 losses in ClinVar, megabase CNV regions in
+            // DGV -- which merely CONTAIN this 1.8 kb deletion, and drawn
+            // unfiltered each lane is one bar edge to edge. A red bar across
+            // the window would read as "pathogenic CNV here", which is exactly
+            // the wrong answer. `_varLen` (ClinVar) and `_size` (DGV) are the
+            // catalogues' own length fields, off the bigBed autoSql, so the
+            // lanes keep the records at this event's own scale. Bare
+            // expressions: a canvas display's jexlFilters slot adds the `jexl:`
+            // prefix itself.
+            {
+              trackId: CLINVAR_CNV_TRACK.trackId,
+              type: 'LinearBasicDisplay',
+              jexlFilters: ["get(feature,'_varLen') < 50000"],
+              displayMode: 'compact',
+              heightMode: 'grow',
+            },
+            {
+              trackId: DGV_TRACK.trackId,
+              type: 'LinearBasicDisplay',
+              jexlFilters: ["get(feature,'_size') < 50000"],
+              displayMode: 'compact',
+              heightMode: 'grow',
+            },
             {
               trackId:
                 'GRCh38_HG008-T-V0.5_somatic-stvar_PASS.draftbenchmark.vcf',
@@ -1159,7 +1254,10 @@ export const svSpecs: ScreenshotSpec[] = [
     // value (not matched as text), so wait on the inspector and let settle cover
     // the remote LGV navigation/VCF load
     readyText: 'chr1',
-    readyTimeout: 60000,
+    // 120s, not 60: the two catalogue bigBeds are hgdownload ranged reads and
+    // the inspector's own VCF is remote too, and 60 started timing out on the
+    // ready gate once they were added
+    readyTimeout: 120000,
     settleMs: 20000,
     actions: [
       {
