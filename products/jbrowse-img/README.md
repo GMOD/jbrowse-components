@@ -360,7 +360,7 @@ jb2export breakpoint --config https://jbrowse.org/demos/cancer_sv/config.json \
   --loc chr12:72,272,512-72,273,712 --width 1000 --out sv_review_tumor.png
 ```
 
-![The three loci of the COLO829 melanoma line's der(3), chr3 then chr10 then chr12, in the tumour nanopore reads. Every connecting curve is solid](https://jbrowse.org/jb2-figures/jbrowse-img/sv_review_tumor.6ca1944665b0.png)
+![The three loci of the COLO829 melanoma line's der(3), chr3 then chr10 then chr12, in the tumour nanopore reads. Every connecting curve is solid](https://jbrowse.org/jb2-figures/jbrowse-img/sv_review_tumor.3689b42cb674.png)
 
 Then the same command with the other sample's track:
 
@@ -374,7 +374,7 @@ jb2export breakpoint --config https://jbrowse.org/demos/cancer_sv/config.json \
   --loc chr12:72,272,512-72,273,712 --width 1000 --out sv_review_normal.png
 ```
 
-![The same three loci in the matched normal, with no connecting curves in any panel](https://jbrowse.org/jb2-figures/jbrowse-img/sv_review_normal.5b72f8974226.png)
+![The same three loci in the matched normal, with no connecting curves in any panel](https://jbrowse.org/jb2-figures/jbrowse-img/sv_review_normal.593787f22ddb.png)
 
 `force:true` is there because the chr3 panel is 1.2 kb of 200x nanopore, which
 is over the byte gate; without it that panel draws the gate's message instead of
@@ -392,11 +392,11 @@ which `--assembly` is named.
 ```bash
 jb2export --config https://jbrowse.org/demos/cancer_sv/config.json \
   --assembly der3_RARB_BICC1_TRHDE --track der3_segments height:128 \
-  --track reads_vs_der3 height:374 --loc der3_RARB_BICC1_TRHDE:1-39,549 \
+  --track reads_vs_der3 height:440 --loc der3_RARB_BICC1_TRHDE:1-39,549 \
   --width 1000 --out sv_review_derivative.png
 ```
 
-![The COLO829 der(3) allele as a single 39.5 kb contig: 32.7 kb of chr3, 199 bp of chr10 and 183 bp of chr12 end to end, with the spanning reads running through every junction](https://jbrowse.org/jb2-figures/jbrowse-img/sv_review_derivative.c415498298d9.png)
+![The COLO829 der(3) allele as a single 39.5 kb contig: 32.7 kb of chr3, 199 bp of chr10 and 183 bp of chr12 end to end, with the spanning reads running through every junction](https://jbrowse.org/jb2-figures/jbrowse-img/sv_review_derivative.d83731441113.png)
 
 Putting the three beside each other is your docs' job; jb2export does not
 compose them.

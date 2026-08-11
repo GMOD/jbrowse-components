@@ -401,7 +401,7 @@ which `--assembly` is named.
 ```bash
 jb2export --config https://jbrowse.org/demos/cancer_sv/config.json \
   --assembly der3_RARB_BICC1_TRHDE --track der3_segments height:128 \
-  --track reads_vs_der3 height:374 --loc der3_RARB_BICC1_TRHDE:1-39,549 \
+  --track reads_vs_der3 height:440 --loc der3_RARB_BICC1_TRHDE:1-39,549 \
   --width 1000 --out sv_review_derivative.png
 ```
 
