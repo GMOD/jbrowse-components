@@ -189,6 +189,25 @@ export const pages: ExamplePage[] = [
     ],
   },
   {
+    slug: 'track-settings',
+    title: 'Track settings',
+    description:
+      'Drive a display rather than the view: a Color by menu and a read-height slider, built from the same registry the track menu uses.',
+    group: 'Your own UI',
+    // After the page that drives the *view*, because it is the same move one
+    // level down -- and it is the first page where JBrowse draws something the
+    // host did not ask for (the colour legend), which the file says more about.
+    //
+    // no section description: a single-section page draws no "On this page"
+    // card, so it would render nowhere
+    sections: [
+      {
+        slug: 'color-by-from-your-own-ui',
+        title: 'A Color by menu, and the legend it raises',
+      },
+    ],
+  },
+  {
     slug: 'highlight-a-region',
     title: 'Highlighting a region',
     description:

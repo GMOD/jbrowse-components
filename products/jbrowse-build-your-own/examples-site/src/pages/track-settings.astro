@@ -1,0 +1,16 @@
+---
+import TrackSettings from '../examples/TrackSettings.tsx'
+import TrackSettingsCode from '../examples/TrackSettings.tsx?raw'
+import { getPage, section } from '../examples.ts'
+import Layout from '../layouts/ExampleLayout.astro'
+import Section from '../layouts/ExampleSection.astro'
+
+const page = getPage('track-settings')
+const sec = section(page, 'color-by-from-your-own-ui')
+---
+
+<Layout page={page}>
+  <Section {...sec} code={TrackSettingsCode}>
+    <TrackSettings client:only="react" />
+  </Section>
+</Layout>

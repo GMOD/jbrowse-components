@@ -94,6 +94,17 @@ copy-paste and the answer is a different rule argued here, not more entries.
   product's graph from merging into the single-view pages — **not** another
   budget bump. Nobody has tried it yet.
 
+  **Every budget stepped up 1-2 KB again when `track-settings` landed, and that
+  one is the same mechanism at a twelfth the size.** Not a second product this
+  time — the page is on `@jbrowse/react-linear-genome-view2` like every other —
+  just a twelfth entry, which re-partitions chunks across the site the same way.
+  Attributed rather than assumed:
+  `pnpm probe-eager-graph --page ultraminimal --holds @jbrowse/plugin-alignments`
+  reports **zero** eager modules importing the alignments plugin, so
+  `pickColorOptions` did not leak out of the one page that imports it, and
+  `track-settings` itself lands at 554 KB, mid-pack among its siblings. Banked
+  once, here; the ratchet is normal again from there.
+
   **A shared React-free module lands in the LAZY chunk, and that is what two
   regressions since have actually been.** Not the shape the failure text names —
   in both, `--holds` reported _zero_ eagerly-evaluated modules importing any

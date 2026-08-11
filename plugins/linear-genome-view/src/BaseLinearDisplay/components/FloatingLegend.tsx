@@ -257,6 +257,12 @@ const FloatingLegend = observer(function FloatingLegend({
       <div
         className={cx(classes.legend, onDismiss && classes.withClose)}
         style={{ top }}
+        // Same doctrine as `plainChromeOverlays`' testids: a stable hook for the
+        // harnesses that have to find this box. The build-your-own site's smoke
+        // census needs it to prove the zero it reports for a page showing a
+        // legend is a legend that rendered, rather than a legend that never
+        // appeared — see `ultraminimal`'s unearned zero in that file.
+        data-testid="floating-legend"
         // Claims the press, so a drag that starts on the key isn't the LGV's
         // click-drag pan (`useSideScroll` tests `closest('[data-gesture-owner]')`).
         // Without it, dragging across a label panned the view under the legend

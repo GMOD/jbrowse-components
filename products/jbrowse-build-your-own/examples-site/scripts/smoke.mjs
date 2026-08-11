@@ -62,6 +62,12 @@ const MUI_BUDGET = {
   'loading-and-errors': 0,
   'scalebar-and-labels': 0,
   'controlling-the-view': 0,
+  // At rest this page shows a pileup coloured `normal`, which has no key — so
+  // this zero is the ordinary one and says nothing about the legend. The legend
+  // is a separate check (`legendRendersNoMaterialUI`), because it has to be
+  // driven and because a census that only ever runs before the thing appears is
+  // the `ultraminimal` unearned-zero trap one paragraph up.
+  'track-settings': 0,
   'search-by-name': 0,
   'highlight-a-region': 0,
   'web-workers': 0,
@@ -278,6 +284,99 @@ async function highlightSurvivesAOneBaseRegion(page, slug) {
         `drawn at all. Band widths found: ${JSON.stringify(widths)}`,
     ]
   }
+}
+
+// The floating colour legend, which is the one piece of display chrome behind
+// NEITHER bring-your-own seam: a display renders `FloatingLegend` directly, so
+// no provider redirects it and this site's whole claim rests on what that file
+// happens to import. It was two Material `IconButton`s and a `Link` until
+// 2026-08, and the census scored every page zero throughout — because a legend
+// only exists once something picks a colouring that has a key, and until this
+// page nothing here ever did.
+//
+// So the census is re-run with one on screen. Three assertions, and the middle
+// one is the one that stops this becoming another unearned zero: the scheme is
+// picked, the legend is confirmed *present*, and only then is the count taken.
+async function legendRendersNoMaterialUI(page, slug) {
+  if (slug !== 'track-settings') {
+    return []
+  }
+  const picked = await page.evaluate(() => {
+    const el = document.querySelector('select')
+    if (!el) {
+      return false
+    }
+    // `strand`, because its key has two rows on this BAM rather than the one a
+    // scheme whose categories are mostly absent from the window collapses to —
+    // so a legend that renders as an empty box would still fail this. Set
+    // through the native setter + an input event, because React's onChange
+    // listens for the latter and assigning `.value` alone raises none.
+    const setter = Object.getOwnPropertyDescriptor(
+      HTMLSelectElement.prototype,
+      'value',
+    )?.set
+    setter?.call(el, 'strand')
+    el.dispatchEvent(new Event('change', { bubbles: true }))
+    return el.value === 'strand'
+  })
+  if (!picked) {
+    return ['no Color by <select> on the page, or it would not take a scheme']
+  }
+  // `showLegend` is opt-in — a legend eagerly covering the top of every
+  // alignments track is worse than one you asked for — so a scheme with a key
+  // is necessary and not sufficient. The page draws the checkbox for it.
+  const toggled = await page.evaluate(() => {
+    const el = [...document.querySelectorAll('label')]
+      .find(l => l.innerText.includes('Show legend'))
+      ?.querySelector('input')
+    if (!el || el.checked) {
+      return !!el
+    }
+    el.click()
+    return true
+  })
+  if (!toggled) {
+    return ['no "Show legend" checkbox on the page']
+  }
+  try {
+    await page.waitForFunction(
+      () => !!document.querySelector('[data-testid="floating-legend"]'),
+      { timeout: 20000 },
+    )
+  } catch {
+    return [
+      'picking `strand` and ticking Show legend raised no legend — the scheme ' +
+        'stopped having a key, the opt-in stopped working, or the display ' +
+        'stopped drawing it. Without a legend on screen the zero this page ' +
+        'reports is about nothing.',
+    ]
+  }
+  const rows = await page.evaluate(
+    () =>
+      document.querySelector('[data-testid="floating-legend"]')?.innerText ??
+      '',
+  )
+  if (!rows.includes('Forward strand') || !rows.includes('Reverse strand')) {
+    return [
+      'the legend rendered but does not name both strands — a key is derived ' +
+        `from the reads laid out in the window, so this is the demo's data or ` +
+        `its start location moving, not the legend. Read:\n${rows}`,
+    ]
+  }
+  const found = await page.evaluate(() =>
+    [
+      ...document
+        .querySelector('[data-testid="floating-legend"]')
+        .querySelectorAll('[class*="Mui"]'),
+    ].map(el => el.getAttribute('class')),
+  )
+  return found.length === 0
+    ? []
+    : [
+        `the colour legend renders ${found.length} Material UI element(s), and ` +
+          'no provider can swap them — a host that mounted DisplayUIProvider to ' +
+          `avoid exactly this gets them anyway:\n${found.map(f => `           - ${f}`).join('\n')}`,
+      ]
 }
 
 // The one page whose subject is a state you cannot see by loading it.
@@ -535,6 +634,7 @@ const failures = await smokeExamplesSite({
     ...(await clicksReachTheTrack(page)),
     ...(await highlightSurvivesAOneBaseRegion(page, slug)),
     ...(await searchByNameResolvesNames(page, slug)),
+    ...(await legendRendersNoMaterialUI(page, slug)),
     // last: this one replaces the engine on the page it runs on
     ...(await viewStatusStatesAreDrawn(page, slug)),
   ],
