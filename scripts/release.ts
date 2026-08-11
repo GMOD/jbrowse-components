@@ -55,6 +55,13 @@ function runQuiet(command: string, args: string[], what: string) {
 
 const readJson = (file: string) => JSON.parse(fs.readFileSync(file, 'utf8'))
 
+// The `version.ts` files the release regenerates, alongside the manifests
+// workspaceManifests names. One function because the clean check and the writer
+// are two halves of one claim about what a release touches, and a release that
+// found them out of step would have already written half of it.
+const versionFiles = () =>
+  capture('git', ['ls-files', '*/src/version.ts']).split('\n').filter(Boolean)
+
 function assertReleasableTree() {
   if (capture('git', ['rev-parse', '--abbrev-ref', 'HEAD']) !== 'main') {
     throw new Error('Current branch is not main, please switch to main branch')
@@ -97,9 +104,7 @@ function assertReleasePathsClean() {
     'website/blog',
     DRAFTS_DIR,
     ...workspaceManifests(ROOT),
-    ...capture('git', ['ls-files', '*/src/version.ts'])
-      .split('\n')
-      .filter(Boolean),
+    ...versionFiles(),
   ]
   const dirty = capture('git', [
     'status',
@@ -217,6 +222,25 @@ function readReleaseDocs(releaseTag: string, changelogSince: string[]) {
   )
   // Both are consumed, so neither can be mistaken for a pending release.
   const consumed = [paths.notes, ...(override ? [paths.changelog] : [])]
+  // A draft that was never committed is the one file here with no copy
+  // anywhere: the release deletes it, and `git rm`-by-hand is not what happens
+  // — `fs.rmSync` is. It would also abort the commit that names it, since a
+  // pathspec commit refuses a path git has never heard of, so the failure would
+  // land after the delete rather than before it.
+  //
+  // assertReleasePathsClean cannot catch this: it passes --untracked-files=no
+  // so that a scratch file in a shared worktree doesn't block a release, which
+  // is right for every other path it checks and exactly wrong for this one.
+  // Drafts are committed for review anyway — check-release-drafts gates them in
+  // CI — so this normally passes.
+  for (const file of consumed) {
+    if (capture('git', ['ls-files', '--', file]) === '') {
+      throw new Error(
+        `${file} is not committed, and the release deletes the draft it consumes.\n` +
+          `Commit it first: git add ${file}`,
+      )
+    }
+  }
   return { consumed, notes, changelog }
 }
 
@@ -292,16 +316,14 @@ function bumpVersions(version: string, destDir: string) {
     )
   }
   // Regenerated, so they can't drift from the package.json versions above
-  const versionFiles = capture('git', ['ls-files', '*/src/version.ts'])
-    .split('\n')
-    .filter(Boolean)
-  for (const file of versionFiles) {
+  const versions = versionFiles()
+  for (const file of versions) {
     writeUnder(destDir, file, `export const version = '${version}'\n`)
   }
   console.log(
-    `  ${manifests.length} packages and ${versionFiles.length} version.ts files -> ${version}`,
+    `  ${manifests.length} packages and ${versions.length} version.ts files -> ${version}`,
   )
-  return [...manifests, ...versionFiles]
+  return [...manifests, ...versions]
 }
 
 // What a dry run has to show is the bytes that would be committed, not an
@@ -456,6 +478,18 @@ function main() {
   for (const file of deleted) {
     fs.rmSync(file)
   }
+  // Staged first because a pathspec commit refuses a path git does not already
+  // know, and the blog post is a brand-new file on every release — naming it in
+  // `git commit -- <paths>` alone fails with "pathspec ... did not match any
+  // file(s) known to git", after the versions are bumped and the draft is
+  // deleted. (Not a silent skip: git aborts the whole commit.)
+  //
+  // Staging exactly these paths does not widen what the commit takes. `git
+  // commit -- <paths>` still builds its tree from HEAD plus the working tree at
+  // those paths and ignores the index, so in a shared checkout another agent's
+  // staged work stays staged and uncommitted, which is the property this form
+  // was chosen for.
+  run('git', ['add', '--', ...written, ...deleted])
   run('git', ['commit', '--message', releaseTag, '--', ...written, ...deleted])
   run('git', ['tag', '-a', releaseTag, '-m', releaseTag])
   try {
