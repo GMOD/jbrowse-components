@@ -17,77 +17,54 @@ import {
 import { checkOrWrite, parseFrontmatter } from './check-utils.ts'
 import { docsDir } from './paths.ts'
 
-interface Entry {
-  title: string
-  description: string
+interface Page {
+  file: string
   slug: string
-  dir: string
+  title: string
+  fm: Record<string, string>
 }
 
-// A page's frontmatter, or an empty map for one that has none — every caller
-// here reports its own "missing X" rather than distinguishing the two.
-function frontmatterOf(dir: string, file: string): Record<string, string> {
-  return parseFrontmatter(readFileSync(join(dir, file), 'utf8')) ?? {}
+// Every `.md` page in a directory with its frontmatter, read once. Each guide
+// dir used to be walked three separate times — validate the frontmatter,
+// validate the category, then build the index — re-reading and re-parsing every
+// page on each pass, with the "is this a .md" and "strip the extension" rules
+// spelled out in each.
+//
+// A page with no frontmatter gets an empty map rather than being dropped: every
+// caller here reports its own "missing X" and would rather see the page than
+// silently not know about it.
+function pagesIn(dir: string): Page[] {
+  return readdirSync(dir)
+    .filter(f => f.endsWith('.md'))
+    .map(file => {
+      const slug = file.replace(/\.md$/, '')
+      const fm = parseFrontmatter(readFileSync(join(dir, file), 'utf8')) ?? {}
+      return { file, slug, title: fm.title ?? slug, fm }
+    })
 }
 
-function collectEntries(dir: string, urlDir: string): Map<string, Entry[]> {
-  const map = new Map<string, Entry[]>()
-  const mdFiles = readdirSync(dir).filter(f => f.endsWith('.md'))
-  for (const file of mdFiles) {
-    const fm = frontmatterOf(dir, file)
-    if (!fm.guide_category || !fm.description) {
-      continue
-    }
-    const cat = fm.guide_category
-    const entry: Entry = {
-      title: fm.title ?? file.replace(/\.md$/, ''),
-      description: fm.description,
-      slug: file.replace(/\.md$/, ''),
-      dir: urlDir,
-    }
-    if (!map.has(cat)) {
-      map.set(cat, [])
-    }
-    map.get(cat)!.push(entry)
-  }
-  return map
+interface Guide {
+  // Where the pages live, and the path segment their URLs carry — the same
+  // string for every guide dir, but `guideRank` keys on the URL form.
+  urlDir: string
+  categories: readonly string[]
+  pages: Page[]
 }
 
-function checkMissingFrontmatter(
-  dir: string,
-  label: string,
-): { file: string; missing: string[] }[] {
-  const problems: { file: string; missing: string[] }[] = []
-  const mdFiles = readdirSync(dir).filter(f => f.endsWith('.md'))
-  for (const file of mdFiles) {
-    const fm = frontmatterOf(dir, file)
-    const missing = []
-    if (!fm.description) {
-      missing.push('description')
-    }
-    if (!fm.guide_category) {
-      missing.push('guide_category')
-    }
-    if (missing.length) {
-      problems.push({ file: `${label}/${file}`, missing })
-    }
-  }
-  return problems
+function guide(urlDir: string, categories: readonly string[]): Guide {
+  return { urlDir, categories, pages: pagesIn(join(docsDir, urlDir)) }
 }
+
+const userGuides = guide('user_guides', USER_CATEGORIES)
+const configGuides = guide('config_guides', CONFIG_CATEGORIES)
+const developerGuides = guide('developer_guides', DEVELOPER_CATEGORIES)
 
 function buildTocSection(
-  categoryOrder: string[],
-  entryMaps: { dir: string; urlDir: string }[],
+  { urlDir, categories, pages }: Guide,
   headingLevel = '##',
 ): string[] {
-  const allEntries = new Map<string, Entry[]>()
-  for (const { dir, urlDir } of entryMaps) {
-    for (const [cat, entries] of collectEntries(dir, urlDir)) {
-      allEntries.set(cat, [...(allEntries.get(cat) ?? []), ...entries])
-    }
-  }
   const lines: string[] = []
-  for (const cat of categoryOrder) {
+  for (const cat of categories) {
     // Curated lead pages first (the ones the sidebar lifts), then alphabetical
     // — the same two keys docs-sidebar.ts sorts a category by, so a page has
     // the same neighbors here as it does in the nav. This used to be readdir
@@ -99,19 +76,19 @@ function buildTocSection(
     // deliberate: each list is ordered by the string it actually displays, so
     // each reads as sorted to its own reader. The two diverge only for the
     // three developer guides whose labels differ from their titles.
-    const entries = allEntries
-      .get(cat)
-      ?.sort(
+    const entries = pages
+      .filter(p => p.fm.guide_category === cat)
+      .sort(
         (a, b) =>
-          guideRank(a.dir, a.slug) - guideRank(b.dir, b.slug) ||
+          guideRank(urlDir, a.slug) - guideRank(urlDir, b.slug) ||
           a.title.localeCompare(b.title),
       )
-    if (!entries?.length) {
+    if (!entries.length) {
       continue
     }
     lines.push(`${headingLevel} ${cat}`, '')
     for (const e of entries) {
-      lines.push(`- [](/docs/${e.dir}/${e.slug})`)
+      lines.push(`- [](/docs/${urlDir}/${e.slug})`)
     }
     lines.push('')
   }
@@ -130,16 +107,11 @@ function buildTutorialSection(): string[] {
     const i = TUTORIAL_ORDER.indexOf(slug)
     return i === -1 ? TUTORIAL_ORDER.length : i
   }
-  const entries = readdirSync(dir)
-    .filter(f => f.endsWith('.md'))
-    .map(file => ({
-      slug: file.replace(/\.md$/, ''),
-      fm: frontmatterOf(dir, file),
-    }))
+  const entries = pagesIn(dir)
     .filter(({ fm }) => fm.guide_category === 'Tutorials')
-    .map(({ slug, fm }) => ({
+    .map(({ slug, title, fm }) => ({
       slug,
-      title: fm.title ?? slug,
+      title,
       category: TUTORIAL_CATEGORIES.includes(fm.tutorial_category ?? '')
         ? fm.tutorial_category!
         : TUTORIAL_FALLBACK,
@@ -176,11 +148,9 @@ function buildUserGuide(): string {
     '[JBrowse Web](/docs/quickstart_web) or',
     '[JBrowse Desktop](/docs/quickstart_desktop) quickstart.',
     '',
-    // tutorials/ is deliberately not passed here: its pages all share one
+    // tutorials/ is deliberately not part of this guide: its pages all share one
     // `guide_category` and get their own subgrouped section below.
-    ...buildTocSection(USER_CATEGORIES, [
-      { dir: join(docsDir, 'user_guides'), urlDir: 'user_guides' },
-    ]),
+    ...buildTocSection(userGuides),
     ...buildTutorialSection(),
   ]
   return lines.join('\n')
@@ -199,9 +169,7 @@ function buildConfigGuide(): string {
     'How to configure the `config.json` that drives a session. For copy-paste',
     'recipes, see the [](/docs/cookbook).',
     '',
-    ...buildTocSection(CONFIG_CATEGORIES, [
-      { dir: join(docsDir, 'config_guides'), urlDir: 'config_guides' },
-    ]),
+    ...buildTocSection(configGuides),
   ]
   return lines.join('\n')
 }
@@ -273,68 +241,43 @@ own via pull request.
 
 `
 
-  const toc = buildTocSection(
-    DEVELOPER_CATEGORIES,
-    [{ dir: join(docsDir, 'developer_guides'), urlDir: 'developer_guides' }],
-    '###',
-  )
+  const toc = buildTocSection(developerGuides, '###')
 
   return preamble + ['## Developer guides', '', ...toc].join('\n')
 }
 
-// Check for guide files missing required frontmatter fields.
-// tutorials/ is excluded: it's a mixed-use directory (user + developer tutorials)
-// managed explicitly in sidebars.json rather than auto-indexed.
-const guideDirs = [
-  {
-    dir: join(docsDir, 'user_guides'),
-    label: 'user_guides',
-    categories: USER_CATEGORIES,
-  },
-  {
-    dir: join(docsDir, 'config_guides'),
-    label: 'config_guides',
-    categories: CONFIG_CATEGORIES,
-  },
-  {
-    dir: join(docsDir, 'developer_guides'),
-    label: 'developer_guides',
-    categories: DEVELOPER_CATEGORIES,
-  },
-]
-const problems = guideDirs.flatMap(({ dir, label }) =>
-  checkMissingFrontmatter(dir, label),
-)
-if (problems.length) {
-  for (const { file, missing } of problems) {
-    console.error(`${file}: missing frontmatter fields: ${missing.join(', ')}`)
-  }
-  console.error(
-    `\nAdd the missing fields so these pages appear in the guide indexes.`,
-  )
-  process.exit(1)
+// A page that fails either check is invisible in the index with no other
+// signal — a missing field drops it silently, and a `guide_category` outside its
+// guide's list buckets nowhere and does the same. Both are reported per page,
+// across all three guides, so one run names every page to fix rather than the
+// first.
+//
+// tutorials/ is excluded: it's a mixed-use directory (user + developer
+// tutorials) managed explicitly in sidebars.json rather than auto-indexed.
+function frontmatterProblems({ urlDir, categories, pages }: Guide) {
+  return pages.flatMap(({ file, fm }) => {
+    const where = `${urlDir}/${file}`
+    const missing = ['description', 'guide_category'].filter(k => !fm[k])
+    return [
+      ...(missing.length
+        ? [`${where}: missing frontmatter fields: ${missing.join(', ')}`]
+        : []),
+      ...(fm.guide_category && !categories.includes(fm.guide_category)
+        ? [
+            `${where}: unknown guide_category "${fm.guide_category}" — expected one of: ${categories.join(', ')}`,
+          ]
+        : []),
+    ]
+  })
 }
 
-// A guide_category not in its guide's category list buckets nowhere and the page
-// vanishes from the index with no other signal — catch the typo here.
-const badCategories = guideDirs.flatMap(({ dir, label, categories }) =>
-  readdirSync(dir)
-    .filter(f => f.endsWith('.md'))
-    .flatMap(file => {
-      const fm = frontmatterOf(dir, file)
-      return fm.guide_category && !categories.includes(fm.guide_category)
-        ? [{ file: `${label}/${file}`, cat: fm.guide_category, categories }]
-        : []
-    }),
+const problems = [userGuides, configGuides, developerGuides].flatMap(
+  frontmatterProblems,
 )
-if (badCategories.length) {
-  for (const { file, cat, categories } of badCategories) {
-    console.error(
-      `${file}: unknown guide_category "${cat}" — expected one of: ${categories.join(', ')}`,
-    )
-  }
+if (problems.length) {
+  console.error(problems.join('\n'))
   console.error(
-    `\nFix the guide_category so these pages appear in the guide indexes.`,
+    '\nFix the frontmatter so these pages appear in the guide indexes.',
   )
   process.exit(1)
 }
