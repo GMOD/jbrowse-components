@@ -5,6 +5,7 @@ import {
   sizeAlpha,
 } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 import { intronAlpha } from '../../shaders/slang/gap.js.generated.ts'
+import { READ_OUTLINE_MIN_HEIGHT_PX } from '../../shaders/slang/read.iface.generated.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
@@ -242,6 +243,27 @@ export function shouldDrawOverlaps(state: RenderState) {
   return (
     (state.chainMode || state.collapseGroupRows) && state.featureHeight >= 3
   )
+}
+
+// Whether reads get an outline at all, for a whole frame. Shared by both
+// renderers for the same reason as `shouldDrawOverlaps`, and this one has the
+// scar to show for not having been: the height rule was written three times —
+// `>= 4` in `GpuAlignmentsRenderer`, `> READ_OUTLINE_MIN_PX` (2) in read.slang's
+// fragment stage, and `> READ_OUTLINE_MIN_PX` again in the Canvas2D painter.
+// Sharing the *constant* had not been enough, because what drifted was which
+// number and which comparison, not the name.
+//
+// Only the host's `>= 4` ever bound on the GPU: the shader gets height as
+// `u.featHeight` and copies it into every read's `featSize.y`, so its own y test
+// could never disagree with the uniform that had already zeroed `showStroke`.
+// That made it dead code, and dead code is a bad thing to copy — which is what
+// the canvas painter did, giving Compact (3px reads, and no inter-read gap at
+// that size) an outline on Canvas2D and in the SVG export but not on screen.
+//
+// The width half stays per-read and lives at each call site, since it is a
+// property of one read rather than of the frame.
+export function shouldOutlineReads(state: RenderState) {
+  return state.showOutline && state.featureHeight >= READ_OUTLINE_MIN_HEIGHT_PX
 }
 
 // The whole low-frequency fade gate for one feature: honors the

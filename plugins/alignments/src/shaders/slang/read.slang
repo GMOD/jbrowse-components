@@ -3,7 +3,7 @@
 // clipped to the segment's leading (fwd) or trailing (rev) edge.
 //! targets: wgsl, glsl
 //! js-export: insertGradientT, showChevron
-//! export-consts: READ_CATEGORY_SLOTS, CS_NORMAL, CS_STRAND, CS_MAPQ, CS_INSERT_SIZE, CS_FIRST_OF_PAIR, CS_PAIR_ORIENT, CS_IS_AND_ORIENT, CS_MODIFICATIONS, CS_TAG, CS_IS_GRADIENT, RC_SUPPLEMENTARY, RC_SPLIT_INVERSION, RC_SPLIT_DELETION, RC_UNMAPPED_MATE, RC_INTERCHROM, RC_FWD_STRAND, RC_REV_STRAND, RC_NO_STRAND, RC_NON_SPLIT, RC_PAIR_LR, RC_PAIR_RL, RC_PAIR_RR, RC_PAIR_LL, RC_LONG_INSERT, RC_SHORT_INSERT, RC_NORMAL_INSERT, RC_PLAIN, RC_MAPQ, RC_TAG, RC_NO_TAG_VALUE, RC_MOD_FWD, RC_MOD_REV, CHEVRON_PX, CHEVRON_DIRLESS_MIN_WIDTH_PX, PAIR_MIN_SPAN_PX, IS_GRADIENT_SPAN_FRAC, READ_OUTLINE_PX, READ_OUTLINE_SHADE, READ_OUTLINE_MIN_PX
+//! export-consts: READ_CATEGORY_SLOTS, CS_NORMAL, CS_STRAND, CS_MAPQ, CS_INSERT_SIZE, CS_FIRST_OF_PAIR, CS_PAIR_ORIENT, CS_IS_AND_ORIENT, CS_MODIFICATIONS, CS_TAG, CS_IS_GRADIENT, RC_SUPPLEMENTARY, RC_SPLIT_INVERSION, RC_SPLIT_DELETION, RC_UNMAPPED_MATE, RC_INTERCHROM, RC_FWD_STRAND, RC_REV_STRAND, RC_NO_STRAND, RC_NON_SPLIT, RC_PAIR_LR, RC_PAIR_RL, RC_PAIR_RR, RC_PAIR_LL, RC_LONG_INSERT, RC_SHORT_INSERT, RC_NORMAL_INSERT, RC_PLAIN, RC_MAPQ, RC_TAG, RC_NO_TAG_VALUE, RC_MOD_FWD, RC_MOD_REV, CHEVRON_PX, CHEVRON_DIRLESS_MIN_WIDTH_PX, PAIR_MIN_SPAN_PX, IS_GRADIENT_SPAN_FRAC, READ_OUTLINE_PX, READ_OUTLINE_SHADE, READ_OUTLINE_MIN_WIDTH_PX, READ_OUTLINE_MIN_HEIGHT_PX
 
 import alignmentsUniforms;
 import colorPack;
@@ -120,10 +120,30 @@ static const float IS_GRADIENT_SPAN_FRAC = 0.5;
 // restore it by tuning this number.
 static const float READ_OUTLINE_PX = 1.0;
 static const float READ_OUTLINE_SHADE = 0.85;
-// Below this the glyph is too small to spend a pixel of each edge on an outline
-// — it would be most of the read. Both axes, which is the half the Canvas2D twin
-// was missing: on a 2 px row it outlined and the GPU did not.
-static const float READ_OUTLINE_MIN_PX = 2.0;
+// Two gates, not one on two axes, because the axes are not the same question
+// and were never answered the same way. `READ_OUTLINE_MIN_PX` was one number
+// used for both and a THIRD rule lived in GpuAlignmentsRenderer, so the height
+// gate had two values on the GPU (4 on the host, 2 here) and a third on
+// Canvas2D (2). Only the host's ever bound, since `featSize.y` IS `u.featHeight`
+// — see the vertex stage — which made the y test below dead code, and dead code
+// is how the canvas twin came to believe 2.
+//
+// WIDTH is per-read and mechanical: the inset the outline is drawn at has to
+// fit. Below 2 px there is no interior left to inset into and the Canvas2D
+// rect inverts. `>` because a read's width is continuous — 2.5 px is a real
+// width and it passes.
+static const float READ_OUTLINE_MIN_WIDTH_PX = 2.0;
+// HEIGHT is frame-level and about legibility: it is 4 = 4 * READ_OUTLINE_PX,
+// the point where the interior (h - 2) stops being thinner than the two bands
+// that frame it. Below it a row is more outline than read, and a pileup of them
+// reads as a solid dark mass rather than as separated reads — which is exactly
+// what the Compact preset (3 px, and `featureSpacingForHeight` gives it no gap
+// either) would have looked like on Canvas2D.
+//
+// `>=` on purpose: fit mode divides pixels by rows, so this is a real number,
+// and 4 itself must pass. Do not "simplify" it to `> 3` — that silently admits
+// every fitted height in (3, 4), which is the band this gate exists to exclude.
+static const float READ_OUTLINE_MIN_HEIGHT_PX = 4.0;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -317,8 +337,8 @@ float4 fs_main(VsOut fragIn) : SV_Target {
       edgeDist = min(min(dxLL, dxR), dy);
     }
     if (edgeDist < READ_OUTLINE_PX
-        && fragIn.featSize.x > READ_OUTLINE_MIN_PX
-        && fragIn.featSize.y > READ_OUTLINE_MIN_PX) {
+        && fragIn.featSize.x > READ_OUTLINE_MIN_WIDTH_PX
+        && fragIn.featSize.y >= READ_OUTLINE_MIN_HEIGHT_PX) {
       return float4(fragIn.color.rgb * READ_OUTLINE_SHADE, fragIn.color.a);
     }
   }

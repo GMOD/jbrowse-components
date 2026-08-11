@@ -110,6 +110,7 @@ import {
   lazyReadIdToIndex,
   sectionRegionKey,
   sectionRenderState,
+  shouldOutlineReads,
 } from './rendererTypes.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -212,7 +213,11 @@ function fillFrameUniforms(
   // the CPU into `readColorCategories`, so the shader no longer branches on it
   // for fills. The bezier connection overlay is orthogonal to chain layout.
   i[UI.chainMode] = state.chainMode ? 1 : 0
-  i[UI.showStroke] = state.showOutline && state.featureHeight >= 4 ? 1 : 0
+  // The frame-level half of the outline gate, which the uniform is the natural
+  // home for: `featSize.y` is `u.featHeight` for every read, so deciding it once
+  // here is what makes the shader's own y test redundant rather than a second
+  // opinion. Shared with the Canvas2D painter — see `shouldOutlineReads`.
+  i[UI.showStroke] = shouldOutlineReads(state) ? 1 : 0
   f[U.reversed] = frame.reversed ? 1 : 0
 }
 

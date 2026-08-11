@@ -5,10 +5,11 @@ import {
   bpToScreenX,
   pileupRowOffCanvas,
   pileupRowY,
+  shouldOutlineReads,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import {
   CHEVRON_PX,
-  READ_OUTLINE_MIN_PX,
+  READ_OUTLINE_MIN_WIDTH_PX,
   READ_OUTLINE_PX,
   READ_OUTLINE_SHADE,
 } from '../../shaders/slang/read.iface.generated.ts'
@@ -145,7 +146,7 @@ function traceReadArrow(
   let apexIn = apexX
   // Branch rather than fold `inset` into the arithmetic: the fill's call passes
   // 0, and a zero-height read would take that path through `0 * (L / 0)` = NaN
-  // and drop the glyph. Only the outline's call has `fH > READ_OUTLINE_MIN_PX`
+  // and drop the glyph. Only the outline's call has READ_OUTLINE_MIN_HEIGHT_PX
   // behind it, so only the outline's call may divide by the half-height.
   if (inset !== 0) {
     const h = fH / 2
@@ -186,6 +187,14 @@ export function drawReads(
   ctx.strokeStyle = OUTLINE_STYLE
   ctx.lineWidth = READ_OUTLINE_PX
 
+  // The frame-level half of the outline gate, which the GPU spends a uniform on
+  // for the same reason: it cannot vary per read. Reading it through the shared
+  // predicate is what stops this painter and `GpuAlignmentsRenderer` from
+  // answering the height question differently, which they did — this side used
+  // to say `fH > 2` against the GPU's `>= 4`, so Compact reads outlined here and
+  // in the SVG export but not on screen.
+  const outlineFrame = shouldOutlineReads(state)
+
   // Assigning fillStyle re-parses the CSS string, which is the per-read cost
   // that matters here — the category→CSS lookup is minor next to it. Under
   // the default scheme every read resolves to the same color, so guarding the
@@ -220,11 +229,9 @@ export function drawReads(
     const xL = Math.min(xStart, xEnd)
     const xR = Math.max(xStart, xEnd)
     const w = Math.max(1, xR - xL)
-    // Both axes, matching read.slang: a read too short to spare a pixel of each
-    // edge gets no outline, and the height half of that test was missing here —
-    // on a 2px row this outlined where the GPU did not.
-    const outline =
-      state.showOutline && w > READ_OUTLINE_MIN_PX && fH > READ_OUTLINE_MIN_PX
+    // The per-read half of the gate. Width is a property of one read, so it
+    // belongs in the loop; the frame-level half was decided once, above.
+    const outline = outlineFrame && w > READ_OUTLINE_MIN_WIDTH_PX
 
     // Paints the category the classification pass already decided — the exact
     // byte read.slang gets as `inst.colorCategory`, so the two backends cannot

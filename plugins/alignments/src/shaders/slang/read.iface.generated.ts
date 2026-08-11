@@ -87,7 +87,9 @@ export const READ_OUTLINE_PX = 1
 
 export const READ_OUTLINE_SHADE = 0.85
 
-export const READ_OUTLINE_MIN_PX = 2
+export const READ_OUTLINE_MIN_WIDTH_PX = 2
+
+export const READ_OUTLINE_MIN_HEIGHT_PX = 4
 
 export const UNIFORMS_SIZE_BYTES = 1040
 

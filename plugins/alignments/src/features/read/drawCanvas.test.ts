@@ -2,6 +2,7 @@ import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 
 import { buildReadColorCategories } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { ColorScheme } from '../../LinearAlignmentsDisplay/constants.ts'
+import { shouldOutlineReads } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import { drawReads, showChevron } from './drawCanvas.ts'
 
 import type {
@@ -300,4 +301,57 @@ test('showChevron matches the shader predicate across a grid', () => {
       }
     }
   }
+})
+
+// The height gate had three spellings and the two that mattered disagreed: the
+// GPU decided it host-side as `featureHeight >= 4`, this painter as `fH > 2`.
+// Sharing the constant had not been enough — what drifted was the number and
+// the comparison, not the name — so these pin the observable behaviour of the
+// one predicate both now call, at the boundary and inside the band that used to
+// separate them.
+describe('the read outline height gate', () => {
+  // `stroke-width=`, not `stroke=`: SvgCanvas writes a literal `stroke="none"`
+  // on every FILLED path, so `stroke=` matches whether or not an outline was
+  // drawn. Only `strokeAttrs()` emits the width, and only a stroke op calls it.
+  //
+  // Default block width (10 px/bp), so the read is 400 px wide and the per-read
+  // width half of the gate is never the thing under test — the 0.05 px/bp the
+  // colour tests use puts this read at exactly 2 px, which the width gate
+  // rejects on its own.
+  const outlined = (featureHeight: number) =>
+    draw([wideFwd], { showOutline: true, featureHeight }).includes(
+      'stroke-width=',
+    )
+
+  test.each([
+    ['Normal', 7, true],
+    ['at the boundary itself', 4, true],
+    // Every one of these outlined on Canvas2D and not on the GPU. 3 is the
+    // Compact preset, which `featureSpacingForHeight` also gives no inter-read
+    // gap, so an outline top and bottom left one pixel of fill between two dark
+    // rows. The fractional ones are reachable only in fit mode, which divides
+    // pixels by rows.
+    ['Compact', 3, false],
+    ['a fitted height just under the boundary', 3.9, false],
+    ['a fitted height just over 3', 3.01, false],
+    ['Super-compact', 1, false],
+  ])('%s (%p px) outlines: %p', (_label, featureHeight, expected) => {
+    expect(outlined(featureHeight)).toBe(expected)
+  })
+
+  test('showOutline still switches it off at a height that would pass', () => {
+    expect(
+      draw([wideFwd], { showOutline: false, featureHeight: 7 }),
+    ).not.toContain('stroke-width=')
+  })
+
+  // What the GPU writes into `showStroke` and what this painter branches on are
+  // now the same call, so the parity is structural. This pins that it stays that
+  // way if either side grows a second condition.
+  test('the shared predicate is what both backends ask', () => {
+    for (const featureHeight of [1, 3, 3.9, 4, 7, 20]) {
+      const state = { showOutline: true, featureHeight } as RenderState
+      expect(outlined(featureHeight)).toBe(shouldOutlineReads(state))
+    }
+  })
 })
