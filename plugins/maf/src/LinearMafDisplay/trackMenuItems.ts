@@ -73,9 +73,13 @@ interface MafMenuSelf extends IStateTreeNode {
   showCoverage: boolean
   showAlignments: boolean
   showConservation: boolean
-  // Not a setting and not settable — the zoom-out tier the two band toggles
-  // above are inert on. Read only to say so.
+  // Not settings and not settable — the three states in which a tick above is
+  // correct and inert anyway. Read only to say so: the summary tier (both band
+  // toggles), base-level zoom (the codon row coloring), and a frames read the
+  // byte pre-flight declined (the CDS strip).
   showSummary: boolean
+  zoomedToBaseLevel: boolean
+  framesGateBlocked: boolean
   conservationMode: ConservationMode
   showAnnotations: boolean
   showInversions: boolean
@@ -121,9 +125,26 @@ interface MafMenuSelf extends IStateTreeNode {
 
 // The CDS-frame overlays only mean anything with a reading frame, so they
 // appear only when an `annotationAdapter` (mafFrames) is configured.
+//
+// The strip is the one thing here that can be on, and correctly on, and still
+// draw nothing — the frames file is one record per CDS exon *per species*, so
+// its own byte pre-flight declines the read at wide spans on a deep alignment
+// (`framesReadOverBudget`). That failure is deliberately soft, which is exactly
+// why it has to be said here: nothing else on screen changes.
 function frameMenuItems(self: MafMenuSelf): MenuItem[] {
   return self.annotationAdapterConfig
-    ? [toggle('Show CDS frames', self.showAnnotations, self.setShowAnnotations)]
+    ? [
+        toggle(
+          'Show CDS frames',
+          self.showAnnotations,
+          self.setShowAnnotations,
+          {
+            subLabel: self.framesGateBlocked
+              ? 'too much frame data at this zoom — zoom in'
+              : undefined,
+          },
+        ),
+      ]
     : []
 }
 
@@ -141,6 +162,14 @@ function frameMenuItems(self: MafMenuSelf): MenuItem[] {
  *
  * `Show bases when zoomed in` rides along because it qualifies the two identity
  * options and nothing else.
+ *
+ * The codon option is the one whose tick can sit on a rendering that is not
+ * painting: codons only exist at base level and not at all on the summary tier,
+ * and `activeRowRendering` falls back to the bases at both without moving the
+ * tick (deliberately — a radio that re-picks itself as you zoom reads as the
+ * menu changing the setting behind your back). The two identity options have
+ * carried an explanation of their own swap since they got one; this is the same
+ * sentence for the option that never had it.
  */
 function rowRenderingMenuItem(self: MafMenuSelf): MenuItem {
   return makeRadioSubMenu({
@@ -156,6 +185,11 @@ function rowRenderingMenuItem(self: MafMenuSelf): MenuItem {
       // mafFrames adapter can define one — same gate as the CDS-frame row.
       ...(self.annotationAdapterConfig ? [CODON_ROW_RENDERING] : []),
     ],
+    subLabels: {
+      codon: self.zoomedToBaseLevel
+        ? undefined
+        : 'zoom in to base level to see them',
+    },
     extraItems: [
       // Named for what it does, not for the mechanism. "Auto-switch by zoom"
       // said neither which two things swap nor which way round — so the only
