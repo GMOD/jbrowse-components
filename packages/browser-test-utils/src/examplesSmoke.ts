@@ -63,6 +63,15 @@ export interface SmokeOptions {
   // other error on that page. For anything a load-only check can't see — a
   // control that renders but doesn't respond to a real click, say
   check?: (page: Page, slug: string) => Promise<string[]>
+  // Console errors a specific page produces *on purpose*, and the escape hatch
+  // for a demo whose subject is a failure: a page teaching what a broken data
+  // URL looks like has to break one, and the resulting error is the page
+  // working. Deliberately a predicate over (text, slug) rather than another
+  // clause in `isNetworkNoise`, because the two are opposites — that function
+  // waives what no page meant to cause, this waives what exactly one page did.
+  // Keep the predicate narrow enough to name the URL: a filter matching "404"
+  // anywhere would hide the ordinary broken-link regression it looks like.
+  allowedConsoleError?: (text: string, slug: string) => boolean
   // progress sink (e.g. console.log from a CLI wrapper); defaults to a no-op so
   // the library stays console-free
   log?: (message: string) => void
@@ -84,6 +93,7 @@ export async function smokeExamplesSite({
   settleMs = 4000,
   viewport = DESKTOP_VIEWPORT,
   check,
+  allowedConsoleError = () => false,
   log = () => {},
 }: SmokeOptions): Promise<number> {
   const server = http.createServer((req, res) => {
@@ -151,7 +161,8 @@ export async function smokeExamplesSite({
       if (
         m.type() === 'error' &&
         !isBrowserConsoleNoise(text) &&
-        !isNetworkNoise(text)
+        !isNetworkNoise(text) &&
+        !allowedConsoleError(text, slug)
       ) {
         errors.push(`console: ${text}`)
       }

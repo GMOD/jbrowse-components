@@ -235,6 +235,84 @@ async function clicksReachTheTrack(page) {
     : [`a click inside the track landed on <${target}>, not the track canvas`]
 }
 
+// The one page whose subject is a state you cannot see by loading it.
+//
+// `loading-and-errors` argues that `view.ready` is false in two situations and
+// that a host drawing only one of them ships an empty box forever. Every other
+// check in this file censuses a page at rest, where that page looks exactly like
+// its neighbours — so its claim was verified once, by hand, and nothing stopped
+// the next change from making it blank again. Both halves are driven here.
+//
+// `el.click()` rather than `page.mouse.click`, deliberately, and it is the
+// opposite call from the one `clicksReachTheTrack` makes: that check is *about*
+// whether a click reaches its target through the page's own pan handler, so it
+// has to go through the pointer. This one only needs to drive the UI, and a
+// synthetic click on a control by name can't fail for a coordinate reason and
+// report it as a rendering one.
+//
+// Runs last. Picking the broken scenario replaces the engine with one that has
+// no canvas, so anything after it would be censusing a different page.
+async function viewStatusStatesAreDrawn(page, slug) {
+  if (slug !== 'loading-and-errors') {
+    return []
+  }
+  const clickByText = async text => {
+    const clicked = await page.evaluate(t => {
+      const el = [...document.querySelectorAll('button, label')].find(e =>
+        e.innerText.includes(t),
+      )
+      el?.click()
+      return !!el
+    }, text)
+    return clicked
+  }
+  const demoText = () =>
+    page.evaluate(() => document.querySelector('.demo')?.innerText ?? '')
+
+  const out = []
+
+  // half one: session.snackbarMessages. `showTrack` with an id that is not in
+  // the config returns undefined and reports the reason there, so a host that
+  // does not read the array shows nothing at all.
+  if (!(await clickByText("isn't in the config"))) {
+    return ['no "show a track that isn\'t in the config" button on the page']
+  }
+  try {
+    await page.waitForFunction(
+      () =>
+        document
+          .querySelector('.demo')
+          ?.innerText.includes('Could not resolve'),
+      { timeout: 5000 },
+    )
+  } catch {
+    out.push(
+      'showTrack with an unresolvable id drew no notification — ' +
+        `session.snackbarMessages is not reaching the screen. Demo read:\n${await demoText()}`,
+    )
+  }
+
+  // half two: view.error. The radio builds a fresh engine on an assembly whose
+  // sequence file 404s, which is the state `view.ready ? tracks : null` renders
+  // as an empty box with nothing anywhere saying why.
+  if (!(await clickByText('behind a 404'))) {
+    return [...out, 'no "behind a 404" scenario radio on the page']
+  }
+  try {
+    await page.waitForFunction(
+      () =>
+        document.querySelector('.demo')?.innerText.includes('could not load'),
+      { timeout: 30000 },
+    )
+  } catch {
+    out.push(
+      'a 404 assembly drew no error — the view-level error state is back to ' +
+        `rendering nothing, which is the bug this page exists to name. Demo read:\n${await demoText()}`,
+    )
+  }
+  return out
+}
+
 const failures = await smokeExamplesSite({
   distDir: path.join(here, '..', 'dist'),
   // single source of truth for the base path is astro.config.mjs
@@ -247,6 +325,13 @@ const failures = await smokeExamplesSite({
   // circular-dependency TDZ that webpack tolerates and Vite does not — and the
   // page's own claim is that a worker spawns, which loading it cannot show.
   workerSlug: 'web-workers',
+  // The one console error on this site that is a page working rather than
+  // failing: `loading-and-errors` points a radio at an assembly whose sequence
+  // file does not exist, and `viewStatusStatesAreDrawn` below clicks it. Named
+  // down to the URL on purpose — a filter matching "404" would waive the
+  // ordinary broken-data-link regression this looks exactly like, on every page.
+  allowedConsoleError: (text, slug) =>
+    slug === 'loading-and-errors' && text.includes('does-not-exist.2bit'),
   //
   // The census runs before the click: opening one of those bottom-right menus
   // mounts a Material popover, which would land in the count. It runs twice,
@@ -259,6 +344,8 @@ const failures = await smokeExamplesSite({
     ...(await muiThemedStyling(page, 'at rest')),
     ...(await censusWhileHovering(page)),
     ...(await clicksReachTheTrack(page)),
+    // last: this one replaces the engine on the page it runs on
+    ...(await viewStatusStatesAreDrawn(page, slug)),
   ],
   log: m => {
     console.log(m)
