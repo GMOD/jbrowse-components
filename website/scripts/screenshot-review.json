@@ -2306,13 +2306,6 @@
     "reviewedAt": "2026-08-09T14:12:25.173921Z",
     "hash": "f658ef96897894f392822545d2b988f4ddd6f29c"
   },
-  "cancer_sv/k562_starfusion_triage": {
-    "name": "cancer_sv/k562_starfusion_triage",
-    "status": "good",
-    "note": "this is good, but it is weirdly 'abbreviated' ideally it would be able to scroll farther to the left and farther to the right. also, unclear why the reads are red/pink on the left but not on the right. previous notes: DONE, and it is the layout you described. The lower half is no longer a breakpoint split view: it is one linear genome view with two displayed regions and linkedReads on ('Read connections -> View as pairs / link supplementary alignments'), so chain layout merges each molecule's two alignments onto ONE row across the two regions and a connector is a short hop at the seam. Same layout as k562_bcr_abl_split on the other side of the same amplicon. The other half of the fix is the windows: each now ENDS on its own breakpoint, on the side facing the join. The transcript only occupies chr9 left of 131,199,015 and chr22 below 16,808,083, so a centred 10 kb window spent half its width on empty lane AND pushed the two read piles ~700px apart -- which is what turned short hops into the long diagonal fan. 4.5 kb and 3.5 kb now. Renamed to cancer_sv/k562_fusion_inspector_reads, and FUSION_SPLIT_READS (half-pixel rows, which existed to stop the pileup outweighing the curve bundle) is gone with it.",
-    "reviewedAt": "2026-08-11T05:31:35.731Z",
-    "hash": "618d3c04ab29baa90ab1f4d6248af11c59d9c39b"
-  },
   "desktop-add-track-steps": {
     "name": "desktop-add-track-steps",
     "status": "good",
@@ -2406,10 +2399,10 @@
   },
   "pangenome/hprc_chm13_allele": {
     "name": "pangenome/hprc_chm13_allele",
-    "status": "bad",
-    "note": "presumably the loop should also be labeled with '1'. previous notes: DONE, all three. HEIGHT: 2,686 px to 2,180, from three cuts on the LEFT column that the right column then follows down (its height only ever existed to match the left's, since +append pads the shorter part). The RepeatMasker lane goes to one collapsed row -- its labels were already off and what it is read for is how much of the interval is red, so packing 171 elements into non-overlapping rows was ~150 px spent on a layout nobody reads; the graph pane goes 420 to 320; the bubble lane to the one row its filter leaves. BADGES: both point now. On the panes half the badge moves off the bar into the flank beside it with an arrow onto the allele's own left edge -- on the bar it was a disc on a black rectangle running most of the pane, so it identified the lane rather than the feature. On the density half the pill that named the shaded column gets an arrow onto it. Every end is a locus anchor. The lane's colour key moved into the track's NAME, since a pill over a one-row lane covers the lane, and its percentages are gone from figure and caption both.",
-    "reviewedAt": "2026-08-11T05:29:12.359Z",
-    "hash": "def8d884c70de0cfc2d65453caa7ebb354c304dc"
+    "status": "answered",
+    "note": "DONE, and the words are gone from both places they appeared. The pane's own header carried the same five, so the overlay was spending the pane's one free corner saying nothing twice. Which interval the subgraph was cut from is a fact about the pane and now lives only in the header, reworded to \"cut from the window above\". The overlay takes the claim the picture cannot make instead: reference-position ramps hue across that window and drops any segment with no reference coordinate off the ramp entirely (graph_genome_view.md, \"Colors that mean the same thing in both panels\"), so it reads \"charcoal nodes have no hg38 coordinate\" -- the same statement the pane above it makes about the same sequence, in the graph's own terms. Plural on purpose: the boxed arc is the largest charcoal node, not the only one, and the chain carries a dozen small grey segments between the coloured ones.",
+    "reviewedAt": "2026-08-11T07:25:13.584Z",
+    "hash": "74dd2126f4cea0af6e0292d2194df735b259b1b0"
   },
   "dotplot_self_chry": {
     "name": "dotplot_self_chry",
@@ -2560,9 +2553,9 @@
   },
   "alignments/strand_split_coverage": {
     "name": "alignments/strand_split_coverage",
-    "status": "bad",
-    "note": "i really think we should seek out a viral sample or something that has dramatically diff forward and reverse coverage. ",
-    "reviewedAt": "2026-08-11T03:44:20.554Z",
+    "status": "answered",
+    "note": "DONE, and the rnaseq frame is replaced rather than defended. alignments/strand_split_depth is HSV-1 now: 74 genes in 152 kb packed on both strands and essentially unspliced, so one 3.4 kb screen holds two whole transcription units and every base of both carries reads -- which is exactly what neither human cut could do, alpha-globin being one-sided and LUC7L/FAM234A being mostly intron. The frame is UL21 (+) against UL22 (-), about 150 reads a strand over its own gene against about 5 over its neighbour's, with the switch falling between the two 3' ends. Deliberately NOT US9 against US10-US12, which is the same flip an order of magnitude louder (1,079 forward against 10, then 3 against 2,567) and cannot draw its pileup at 2,500 reads -- the exact failure the globin cut was denied for. The library is what makes it work and it is the prep rather than the platform: ERR2379735, poly(A)-selected mRNA on MinION, carries transcript strand in read strand, while the same study's randomly-primed nanopore run comes back 50/50 in every 2 kb window of the genome. Verified it is not an aligner artefact -- map-ont, which knows nothing about transcripts, gives the same split. Hosted at demos/hsv1, built by scripts/build_hsv1_demo.sh, which prints those counts on every run. THIS figure is unchanged and stays HG002 ONT on purpose: it is the MISMATCH half of the setting, and ONT WGS is strand-balanced by construction, which is what makes a column carried by one strand an artefact rather than a depth story.",
+    "reviewedAt": "2026-08-11T07:25:19.477Z",
     "hash": "1024a7fc839d51da597d5f1310007e3b57f97ed2"
   },
   "hic/bcr_abl1_translocation": {
@@ -2734,9 +2727,9 @@
   },
   "pangenome/hprc_whole_chromosome": {
     "name": "pangenome/hprc_whole_chromosome",
-    "status": "bad",
-    "note": "the cytobands track is pretty good. should this be added in ~/src/jb2hubs as a track in other hubs? also, please try the bandage graph. humor me. previous notes: PARTLY DONE, and the part not done is named rather than declined. CYTOBANDS: both asks. The fixture's hg38 now carries `cytobands`, so the view's own overview band is banded instead of blank, and UCSC's cytoBand BED is a collapsed lane directly above the variability curve -- which is what puts 1q12 on the SAME axis as the bubbles, where the two callouts were making that comparison in words. The lane needed the Giemsa stain to be reachable: it is column 5 of that BED, lands on `score` positionally, and comes back undefined because it is not a number, so the first attempt painted all 63 bands one colour. Explicit columnNames names it gieStain, and the jexl then draws the ideogram -- grey bands, red acen, blue-purple gvar, and the red and the blue are exactly the two the callouts name. NOT DONE: the bandage graph. Worth saying why it is open rather than answered -- the measurement that argues against a force layout on a TIER is pggb_bubble_tier's, and it was taken on 27 nodes while this cut is 474, so it needs its own render rather than that note's verdict. Next round.",
-    "reviewedAt": "2026-08-11T03:36:16.161Z",
+    "status": "good",
+    "note": "DONE, both parts, and the bandage half is a negative result with a render behind it. BANDAGE: tried on this cut rather than declined on another figure's measurement, and it does not work for a reason the pane's own header states -- 474 nodes, 473 edges. n-1 edges on a connected drawing is a PATH: the bubble tier is one node per bubble in reference order with one edge between consecutive bubbles, so every branch the graph had was collapsed away when the tier was built, and Bandage's subject is exactly where a graph branches. Rendered, it fills the pane with one long wiggly arc at 4.2% zoom that runs off both edges and says nothing about chr1; the anchored layout of the same path is the reference axis, which is the one thing the drawing has at this scale. The setting now carries that note so it does not get re-run. The figure is byte-identical to the one you reviewed. JB2HUBS: nothing to add, and the numbers say why. Of the 238 UCSC-derived configs there, 170 already carry a cytoBand TRACK; 41 also carry the assembly-level cytobands slot, the one that makes the view's own overview band an ideogram rather than blank. The other 129 are not an oversight: getCytobands in ucsc2jbrowse/src/utils/assemblyAliasesAndCytobands.ts reads the rsync'd cytoBand/cytoBandIdeo table and deliberately DROPS it when every band is gneg, which is a placeholder ideogram with no banding in it. So the hubs already do what this figure's fixture does, wherever UCSC has real bands.",
+    "reviewedAt": "2026-08-11T06:32:43.377Z",
     "hash": "7d3e3644cfab566049de07098b279620bcc2fa48"
   },
   "pangenome/pggb_carriage": {
@@ -2937,23 +2930,23 @@
   },
   "hg002_haplotypes_follow_panel": {
     "name": "hg002_haplotypes_follow_panel",
-    "status": "bad",
-    "note": "any other changes you'd suggest?",
-    "reviewedAt": "2026-08-11T05:30:59.355Z",
+    "status": "good",
+    "note": "One change, and it is the figure undermining itself. The stage titles were anchored 52 px down the app bar, which put them on the toolbar row over the MATERNAL search box -- and the pair of search boxes is the whole evidence for both frames: the first says the two panels hold the same locus, the second says one of them changed while the other did not. Both boxes are legible in both frames now, with the titles inside the app bar (empty on its left half in this session) at 22 px rather than 26, and the caption says where to look. Two other things were considered and left alone: side by side, which would put the pair of two-panel stacks a screen apart, and a box around the paternal search box, which has no stable testid to anchor to and would have been a measured pixel.",
+    "reviewedAt": "2026-08-11T06:32:20.692Z",
     "hash": "673e401ab5349dbaa22384726fac5b1fddfc2a5b"
   },
   "jbrowse-img/sv_review_pair": {
     "name": "jbrowse-img/sv_review_pair",
-    "status": "bad",
-    "note": "add red text annotation boxes. also, if there was a 'derived allele' view of this, in order to show the linearized derived allele, it would be interesting to show alongside it. previous notes: DONE, and jb2export does none of it. Two renders now -- jbrowse-img/sv_review_tumor and jbrowse-img/sv_review_normal, identical but for the --track, same loci and same --width so the two halves are comparable line for line -- joined by a horizontal compose. The compose lives in screenshot-specs.ts rather than in jbrowseImgSpecs, which is typed CliSpec[] because sync-img-readme walks it to regenerate every command fence in the jb2export README and a compose is not a command; the README now prints both invocations and says outright that putting them side by side is the reader's job. The left half fills with connecting curves through all three panels and the right half carries essentially none, which is the somatic claim with the control beside it rather than folded into it.",
-    "reviewedAt": "2026-08-11T05:30:15.037Z",
-    "hash": "e7dd2275b5ec6f565699ad06dbd5abff2eaa817c"
+    "status": "answered",
+    "note": "DONE, both, and the second one needed a mechanism. THE ALLELE: there is one and it needs no new mode -- the reconstruction turns the three loci into a single 39,549 bp contig (der3_RARB_BICC1_TRHDE) which is an assembly in the same hosted config, so the third panel is a third jb2export invocation differing only in --assembly, with der3_segments above the reads naming which locus each stretch came from. It is also the panel that says what a curve cannot: a curve says two loci are joined, the contig says in what order and in which orientation. THE RED BOXES: a CLI part renders through React SSR with no browser in it, so it can carry no callout of its own, and the composition was the only place one could go. ComposeSpec takes annotations now, drawn by the same overlay every other figure's callouts go through -- the generator opens a page that is the composed image plus one element over each part's own box, so [data-part=\"N\"] is a real anchor rather than a pixel measured off a previous capture. One trap found on the way and written into the code: a viewport wider than the browser window screenshots as the leftmost window-width TILED across the frame while page.evaluate reading the same image into a canvas returns the right pixels throughout, so it looks like a corrupt figure rather than a capture bug. --window-size fixes it; captureBeyondViewport and fullPage do not.",
+    "reviewedAt": "2026-08-11T07:25:27.589Z",
+    "hash": "fb895a80d7b49f9c95dad1d2f49bb8bbc53141b2"
   },
   "pangenome/rgfa_insertion_synteny": {
     "name": "pangenome/rgfa_insertion_synteny",
-    "status": "answered",
+    "status": "good",
     "note": "DONE, and the pills are gone rather than reworded. Widening the frame to the PAF's own chain ends (K12 887,944-1,094,152 <-> CFT073 942,350-1,127,332 and K12 1,097,432-1,183,704 <-> CFT073 1,241,061-1,327,893, plus ~12 kb of flank each) is what made them redundant: the gap IS the obvious thing in the frame now. The two 10% grey highlights went with them for a duller reason -- neither was actually visible in the capture, so they were a setting the figure did not have. The zoom-out also found a registration bug the tight crop was hiding: the old CFT073 window started 43 kb past where the left flank chain reaches it, so that ribbon left the frame at the bottom-left corner and only the RIGHT flank was ever registered; both edges map onto each other now. The caption carries no measurements, and website/CLAUDE.md now says why: a sourced number in a caption is still a claim a reader cannot check against the picture, so it belongs in the spec comment. A second rule beside it says a callout must state what the picture cannot.",
-    "reviewedAt": "2026-08-11T04:37:58.525Z",
+    "reviewedAt": "2026-08-11T05:37:11.712Z",
     "hash": "6f7a1b80adccdf3c39248e603a0b0e68f51f2d8a"
   },
   "sv_synteny/color_by_attribute_steps": {
@@ -2990,5 +2983,12 @@
     "note": "",
     "reviewedAt": "2026-08-11T05:32:19.938Z",
     "hash": "87a800b636ee2c161ccbcc63a4d057f329f105fa"
+  },
+  "alignments/strand_split_depth": {
+    "name": "alignments/strand_split_depth",
+    "status": "answered",
+    "note": "REPLACED, per the note on alignments/strand_split_coverage (\"sorry but we need a new viral coverage example. rnaseq is too crazy\") -- this is a different frame on different data and the previous note here, about K562 Iso-Seq over LUC7L and FAM234A, no longer describes it. It is HSV-1 mRNA over UL21 (+) and UL22 (-), about 150 reads a strand over its own gene against about 5 over its neighbour's, on a 152 kb genome whose genes are packed on both strands and essentially unspliced -- so the frame has no intron in it and both pileups fit under their own bands. See that entry for the dataset and why this run rather than the other nanopore run in the same study.",
+    "reviewedAt": "2026-08-11T07:25:44.302Z",
+    "hash": "f99e66be4db0184a9252215e7fa192e1949d4682"
   }
 }
