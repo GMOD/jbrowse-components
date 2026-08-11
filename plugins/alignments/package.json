@@ -23,6 +23,7 @@
   "scripts": {
     "build": "pnpm run /^build:/",
     "test": "cd ../..; jest --passWithNoTests plugins/alignments",
+    "bench:record-shape": "node --expose-gc benches/recordShape.bench.ts",
     "prepublishOnly": "pnpm test",
     "prepack": "pnpm build",
     "prebuild": "pnpm clean",

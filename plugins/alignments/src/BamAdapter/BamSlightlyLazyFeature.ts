@@ -10,6 +10,34 @@ import type { PackedReference } from '@gmod/bam'
 import type { MismatchCallback, MismatchWindow } from '@jbrowse/cigar-utils'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
+/**
+ * EXTENDS BamRecord because the adapters pass this class to `@gmod/bam` as
+ * `recordClass`, so the library constructs it directly and a read is ONE object
+ * rather than a record plus a wrapper around it.
+ *
+ * That inheritance is not free — a purely additive @gmod/bam release can shadow
+ * one of our members without semver saying anything, which 8.6.0 did with
+ * `forEachMismatch`, and which `bamRecordOverrides.test.ts` now guards. So what
+ * it buys is worth stating precisely. From `benches/recordShape.bench.ts`, four
+ * samples over 184k pacbio reads:
+ *
+ *   inject (this)   1.00x   baseline
+ *   wrap            1.01-1.08x   (median ~1.05)
+ *   control         0.98-1.02x   <- noise floor, so the harness resolves ~±2%
+ *
+ *   wrapper allocation   2.8 ms per 184k reads   (~15 ns/read)
+ *   retained heap        7.3 MB per 184k reads   (~40 bytes/read)
+ *
+ * So: a few percent on the property-read path, plus ~7 MB on a deep pileup. Both
+ * are upper bounds — the bench's consumer is 8 property reads, while the real
+ * `extractFeatureArrays` also walks mismatches and parses tags per read, all
+ * identical work either way.
+ *
+ * Worth keeping, and worth keeping in proportion: it is a few percent and some
+ * heap, not a design the render path depends on. If a future @gmod/bam release
+ * ever collides badly enough to make the inheritance painful, moving to a
+ * wrapper is a bounded, known cost rather than a cliff.
+ */
 export default class BamSlightlyLazyFeature
   extends BamRecord
   implements MismatchFeature
