@@ -2,22 +2,10 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { canonicalAssemblyNames } from '@jbrowse/core/util/tracks'
 
-import { containsAll, intersects } from './util.ts'
+import { containsAll } from './util.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-
-// by default a track shows only if it supports every assembly the view displays;
-// any-overlap mode relaxes this to sharing any one assembly
-function assemblyMatches(
-  trackAssemblyNames: string[] | undefined,
-  viewAssemblyNames: string[],
-  anyOverlap: boolean | undefined,
-) {
-  return anyOverlap
-    ? intersects(trackAssemblyNames, viewAssemblyNames)
-    : containsAll(trackAssemblyNames, viewAssemblyNames)
-}
 
 /**
  * The display type names a view can render, as a lookup set.
@@ -59,13 +47,14 @@ export function viewCanDisplayTrack(
   )
 }
 
+/**
+ * The tracks a view can be offered: those that support every assembly it
+ * displays, and that declare a display it can draw.
+ */
 export function filterTracks(
   tracks: AnyConfigurationModel[],
   self: {
-    view?: {
-      type: string
-      trackSelectorAnyOverlap?: boolean
-    }
+    view?: { type: string }
     assemblyNames: string[]
   },
 ) {
@@ -84,11 +73,12 @@ export function filterTracks(
       | string[]
       | undefined
     return (
+      // a view that declares no assemblies (one still initializing) constrains
+      // nothing; otherwise the track must cover every one of them
       (viewAssemblyNames.length === 0 ||
-        assemblyMatches(
+        containsAll(
           trackAssemblyNames && canonical(trackAssemblyNames),
           viewAssemblyNames,
-          view.trackSelectorAnyOverlap,
         )) &&
       viewCanDisplayTrack(pluginManager, viewDisplays, c.type)
     )

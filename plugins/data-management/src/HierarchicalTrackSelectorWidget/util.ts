@@ -22,12 +22,6 @@ export function isUnsupported(name = '') {
   return name.endsWith('(Unsupported)') || name.endsWith('(Unknown)')
 }
 
-// true if the two arrays share at least one element (symmetric)
-export function intersects<T>(a: T[] = [], b: T[] = []) {
-  const s = new Set(a)
-  return b.some(x => s.has(x))
-}
-
 // true if `superset` contains every element of `subset`; argument order matters
 export function containsAll<T>(superset: T[] = [], subset: T[] = []) {
   const s = new Set(superset)
