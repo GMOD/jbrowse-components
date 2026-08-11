@@ -65,10 +65,18 @@ const nonEmptyLines = (val: string) =>
 const zipRecord = (fields: string[], cols: string[]) =>
   Object.fromEntries(fields.map((f, i) => [f, cols[i] ?? '']))
 
+// The paste, joined by row name. A `Map`, not a `Record`, because the keys are
+// row names — arbitrary strings out of somebody's data file — and a plain
+// object answers for every key `Object.prototype` has. `byName[row.name]` on a
+// row named `constructor`, `toString` or `valueOf` came back with an inherited
+// function instead of `undefined`, so `mergeParsedRows` treated the row as
+// matched by a paste that never mentioned it; under "Replace rows" that meant
+// starting from `{}` and spreading nothing over it, i.e. silently dropping
+// every field the row had. Same reason `ClusterMatrix` is a Map.
+export type ParsedRows = Map<string, Record<string, string>>
+
 // Parse CSV/TSV with a header row that includes a `name` column for join.
-export function parseRowsByName(
-  val: string,
-): Record<string, Record<string, string>> {
+export function parseRowsByName(val: string): ParsedRows {
   const lines = nonEmptyLines(val)
   const header = lines[0]
   if (!header) {
@@ -80,11 +88,16 @@ export function parseRowsByName(
   if (nameIdx === -1) {
     throw new Error('No "name" column found on line 1')
   }
-  return Object.fromEntries(
+  return new Map(
     lines.slice(1).flatMap(line => {
       const cols = parseCSVRow(line, delim)
       const name = cols[nameIdx]
-      return name ? [[name, zipRecord(fields, cols)]] : []
+      return name
+        ? ([[name, zipRecord(fields, cols)]] as [
+            string,
+            Record<string, string>,
+          ][])
+        : []
     }),
   )
 }
@@ -110,11 +123,11 @@ function unsetBlanks(patch: Record<string, string>) {
 //   never the whole record.
 export function mergeParsedRows<S extends { name: string }>(
   currLayout: S[],
-  byName: Record<string, Record<string, string>>,
+  byName: ParsedRows,
   replace: boolean,
 ): S[] {
   return currLayout.map(record => {
-    const patch = byName[record.name]
+    const patch = byName.get(record.name)
     if (!patch) {
       return record
     }
@@ -129,10 +142,10 @@ export function mergeParsedRows<S extends { name: string }>(
 // Names present in the paste but absent from the current layout.
 export function unmatchedNames(
   currLayout: { name: string }[],
-  byName: Record<string, Record<string, string>>,
+  byName: ParsedRows,
 ): string[] {
   const known = new Set(currLayout.map(r => r.name))
-  return Object.keys(byName).filter(n => !known.has(n))
+  return [...byName.keys()].filter(n => !known.has(n))
 }
 
 // Serialize a field value as a CSV cell, quoting when needed.

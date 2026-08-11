@@ -7,28 +7,30 @@ import {
 
 describe('parseRowsByName', () => {
   it('parses CSV with a name column', () => {
-    expect(parseRowsByName('name,pop\nHG1,GBR\nHG2,CHS')).toEqual({
-      HG1: { name: 'HG1', pop: 'GBR' },
-      HG2: { name: 'HG2', pop: 'CHS' },
-    })
+    expect(parseRowsByName('name,pop\nHG1,GBR\nHG2,CHS')).toEqual(
+      new Map([
+        ['HG1', { name: 'HG1', pop: 'GBR' }],
+        ['HG2', { name: 'HG2', pop: 'CHS' }],
+      ]),
+    )
   })
 
   it('parses TSV and ignores blank lines', () => {
-    expect(parseRowsByName('name\tpop\n\nHG1\tGBR\n  \n')).toEqual({
-      HG1: { name: 'HG1', pop: 'GBR' },
-    })
+    expect(parseRowsByName('name\tpop\n\nHG1\tGBR\n  \n')).toEqual(
+      new Map([['HG1', { name: 'HG1', pop: 'GBR' }]]),
+    )
   })
 
   it('pads missing trailing columns with empty strings', () => {
-    expect(parseRowsByName('name,pop\nHG1')).toEqual({
-      HG1: { name: 'HG1', pop: '' },
-    })
+    expect(parseRowsByName('name,pop\nHG1')).toEqual(
+      new Map([['HG1', { name: 'HG1', pop: '' }]]),
+    )
   })
 
   it('skips data rows with no name value', () => {
-    expect(parseRowsByName('name,pop\n,GBR\nHG1,CHS')).toEqual({
-      HG1: { name: 'HG1', pop: 'CHS' },
-    })
+    expect(parseRowsByName('name,pop\n,GBR\nHG1,CHS')).toEqual(
+      new Map([['HG1', { name: 'HG1', pop: 'CHS' }]]),
+    )
   })
 
   it('throws a clear error on empty/whitespace input', () => {
@@ -43,21 +45,23 @@ describe('parseRowsByName', () => {
   it('handles quoted fields containing commas', () => {
     expect(
       parseRowsByName('name,label\n"Sample A,B","Label, with comma"'),
-    ).toEqual({
-      'Sample A,B': { name: 'Sample A,B', label: 'Label, with comma' },
-    })
+    ).toEqual(
+      new Map([
+        ['Sample A,B', { name: 'Sample A,B', label: 'Label, with comma' }],
+      ]),
+    )
   })
 
   it('handles escaped double quotes inside quoted fields', () => {
-    expect(parseRowsByName('name,note\n"say ""hi""",test')).toEqual({
-      'say "hi"': { name: 'say "hi"', note: 'test' },
-    })
+    expect(parseRowsByName('name,note\n"say ""hi""",test')).toEqual(
+      new Map([['say "hi"', { name: 'say "hi"', note: 'test' }]]),
+    )
   })
 
   it('auto-detects tab delimiter', () => {
-    expect(parseRowsByName('name\tcolor\nHG1\t#f00')).toEqual({
-      HG1: { name: 'HG1', color: '#f00' },
-    })
+    expect(parseRowsByName('name\tcolor\nHG1\t#f00')).toEqual(
+      new Map([['HG1', { name: 'HG1', color: '#f00' }]]),
+    )
   })
 })
 
@@ -66,7 +70,7 @@ describe('mergeParsedRows', () => {
     { name: 'HG1', color: 'red', source: 'HG1' },
     { name: 'HG2', color: 'blue', source: 'HG2' },
   ]
-  const byName = { HG1: { name: 'HG1', pop: 'GBR' } }
+  const byName = new Map([['HG1', { name: 'HG1', pop: 'GBR' }]])
 
   it('patches parsed fields over existing rows, preserving name', () => {
     expect(mergeParsedRows(layout, byName, false)).toEqual([
@@ -81,7 +85,7 @@ describe('mergeParsedRows', () => {
   it('unsets fields whose pasted cell is blank', () => {
     const merged = mergeParsedRows(
       layout,
-      { HG1: { name: 'HG1', color: '' } },
+      new Map([['HG1', { name: 'HG1', color: '' }]]),
       false,
     )
     expect(merged[0]!.color).toBeUndefined()
@@ -108,21 +112,38 @@ describe('mergeParsedRows', () => {
   })
 
   it('always keeps unmatched rows unchanged in replace mode', () => {
-    const out = mergeParsedRows(layout, {}, true)
+    const out = mergeParsedRows(layout, new Map(), true)
     expect(out).toEqual(layout)
+  })
+
+  // Row names are arbitrary strings out of somebody's data file. Looked up in a
+  // plain object, one that collides with `Object.prototype` came back with an
+  // inherited function rather than `undefined`, so the row counted as matched by
+  // a paste that never named it — and "Replace rows" then started from `{}` and
+  // dropped every field it had.
+  it('does not treat a row named after an Object.prototype member as matched', () => {
+    const rows = [
+      { name: 'constructor', color: 'red' },
+      { name: 'toString', color: 'blue' },
+      { name: 'HG1', color: 'green' },
+    ]
+    expect(mergeParsedRows(rows, new Map(), true)).toEqual(rows)
   })
 })
 
 describe('unmatchedNames', () => {
   it('returns names in paste that are not in the layout', () => {
     const layout = [{ name: 'HG1' }, { name: 'HG2' }]
-    const byName = { HG1: { name: 'HG1' }, Ghost: { name: 'Ghost' } }
+    const byName = new Map([
+      ['HG1', { name: 'HG1' }],
+      ['Ghost', { name: 'Ghost' }],
+    ])
     expect(unmatchedNames(layout, byName)).toEqual(['Ghost'])
   })
 
   it('returns empty array when all names match', () => {
     const layout = [{ name: 'HG1' }]
-    const byName = { HG1: { name: 'HG1' } }
+    const byName = new Map([['HG1', { name: 'HG1' }]])
     expect(unmatchedNames(layout, byName)).toEqual([])
   })
 })
@@ -169,11 +190,15 @@ describe('toCSV', () => {
     ]
     const csv = toCSV(rows)
     const parsed = parseRowsByName(csv)
-    expect(parsed.HG1).toEqual({
+    expect(parsed.get('HG1')).toEqual({
       name: 'HG1',
       color: '#f00',
       group: 'tumor',
     })
-    expect(parsed.HG2).toEqual({ name: 'HG2', color: '', group: 'normal' })
+    expect(parsed.get('HG2')).toEqual({
+      name: 'HG2',
+      color: '',
+      group: 'normal',
+    })
   })
 })
