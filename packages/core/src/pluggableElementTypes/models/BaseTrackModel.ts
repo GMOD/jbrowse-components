@@ -11,6 +11,7 @@ import {
 } from '../../data_adapters/adapterSessionRefcount.ts'
 import { adapterConfigCacheKey } from '../../data_adapters/dataAdapterCache.ts'
 import { getContainingView, getEnv, getSession } from '../../util/index.ts'
+import { viewDisplayNames } from '../../util/tracks.ts'
 import { isSessionModelWithConfigEditing } from '../../util/types/index.ts'
 import { ElementId } from '../../util/types/mst.ts'
 import { stringifyBED } from './saveTrackFileTypes/bed.ts'
@@ -41,8 +42,10 @@ interface DisplayConf {
 export function getCompatibleDisplays(self: IAnyStateTreeNode) {
   const { pluginManager } = getEnv(self)
   const view = getContainingView(self)
-  const viewType = pluginManager.getViewType(view.type)
-  const compatTypes = new Set(viewType.displayTypes.map(d => d.name))
+  // which of THIS track's configured displays the view draws — a different
+  // question from viewCanDisplayTrack's "can it open the track at all", over
+  // the same set of names
+  const compatTypes = viewDisplayNames(pluginManager, view.type)
   const displays = self.configuration.displays as AnyConfigurationModel[]
   return displays.filter(d => compatTypes.has(d.type))
 }

@@ -7,17 +7,17 @@ import {
   localStorageSetJSON,
   notEmpty,
 } from '@jbrowse/core/util'
+import {
+  viewCanDisplayTrack,
+  viewDisplayNames,
+} from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun, observable } from 'mobx'
 
 import { configScopedKey, keyConfigPostFix } from '../shared/configScopedKey.ts'
 import { normalizeSearchQuery } from '../shared/searchText.ts'
-import {
-  filterTracks,
-  viewCanDisplayTrack,
-  viewDisplayNames,
-} from './filterTracks.ts'
+import { filterTracks } from './filterTracks.ts'
 import { generateHierarchy } from './generateHierarchy.ts'
 import { sortSources } from './sortUtils.ts'
 import {

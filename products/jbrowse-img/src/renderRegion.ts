@@ -1,4 +1,8 @@
 import { getEnv } from '@jbrowse/core/util'
+import {
+  viewCanDisplayTrack,
+  viewDisplayNames,
+} from '@jbrowse/core/util/tracks'
 import { addDisposer, destroy } from '@jbrowse/mobx-state-tree'
 import { renderToSvg as renderBreakpointToSvg } from '@jbrowse/plugin-breakpoint-split-view'
 import { renderToSvg as renderCircularToSvg } from '@jbrowse/plugin-circular-view'
@@ -462,23 +466,14 @@ const renderSynteny: ModeRenderer = async ctx => {
 // the chords still render. Warns per skipped track so the omission is visible.
 function circularTrackIds(model: Model, tracks: Track[]) {
   const { pluginManager } = getEnv(model)
-  const supported = new Set(
-    pluginManager.getViewType('CircularView').displayTypes.map(d => d.name),
-  )
+  const supported = viewDisplayNames(pluginManager, 'CircularView')
   const compatible = tracks.filter(track => {
     const type = trackType(track)
-    let names: string[] = []
-    try {
-      names = pluginManager.getTrackType(type).displayTypes.map(d => d.name)
-    } catch {
-      // getTrackType THROWS for a type this bundle doesn't register — which a
-      // --hub/--config config can easily carry (a track type from a plugin
-      // jb2export doesn't bundle), and which aborted the whole render from
-      // inside the very filter meant to skip untenable tracks. A type with no
-      // registered display is definitionally one the circular view can't open,
-      // so fall through to the skip-and-warn below.
-    }
-    const ok = names.some(name => supported.has(name))
+    // includes the type this bundle doesn't register at all, which a
+    // --hub/--config config can easily carry (a track type from a plugin
+    // jb2export doesn't bundle) and which used to throw from inside the very
+    // filter meant to skip untenable tracks
+    const ok = viewCanDisplayTrack(pluginManager, supported, type)
     if (!ok) {
       console.warn(
         `Warning: skipping track "${track.trackId}" (${type}) — it has no display the circular view can render`,

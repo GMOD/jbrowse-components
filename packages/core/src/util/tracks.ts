@@ -671,6 +671,61 @@ interface DisplayConfSnapshot {
  * `baseTrackConfig.preProcessSnapshot` injects one for every registered display
  * type, so the caller's `${trackId}-${type}` id resolves to it.
  */
+/**
+ * The display type names a view can render, as a lookup set. Built once per
+ * view and handed to {@link viewCanDisplayTrack} for every track, rather than
+ * rebuilt per track.
+ */
+export function viewDisplayNames(
+  pluginManager: PluginManager,
+  viewType: string,
+) {
+  return new Set(
+    pluginManager.getViewType(viewType).displayTypes.map(d => d.name),
+  )
+}
+
+/**
+ * Whether a view rendering `viewDisplays` can open a track of this type at all
+ * — does the track type declare a display the view draws. The coarse half of
+ * the question {@link pickDisplayForView} answers precisely: a picker that
+ * offers a track this says no to is offering one `showTrackGeneric` will
+ * refuse.
+ *
+ * Reads the *track type's* registered displays rather than a config's own
+ * `displays` array, which is both cheaper and the only form available on an
+ * un-hydrated frozen track config (ADR-032). The two agree, since
+ * `preprocessTrackConfigSnapshot` injects a stub display for every display the
+ * track type registers.
+ *
+ * Two answers that are easy to get wrong, and both have been:
+ *
+ * - A type **no plugin registered** answers false rather than throwing.
+ *   `getTrackType` throws on an unknown name, and a frozen track config never
+ *   passes the schema that would have rejected it at load — so a config naming
+ *   a plugin that failed to load put that throw inside whatever loop was
+ *   filtering tracks, and one unopenable track took out the entire list. The
+ *   track selector and jb2export's circular-view filter met this separately.
+ * - A view type registering **no displays at all** constrains nothing, so
+ *   every track passes. That is a policy rather than a fact, and it lives here
+ *   so the pickers agree on it.
+ */
+export function viewCanDisplayTrack(
+  pluginManager: PluginManager,
+  viewDisplays: Set<string>,
+  trackType: string,
+) {
+  if (!pluginManager.trackTypes.has(trackType)) {
+    return false
+  }
+  return (
+    viewDisplays.size === 0 ||
+    pluginManager
+      .getTrackType(trackType)
+      .displayTypes.some(d => viewDisplays.has(d.name))
+  )
+}
+
 export function pickDisplayForView({
   declaredDisplays,
   requestedType,
