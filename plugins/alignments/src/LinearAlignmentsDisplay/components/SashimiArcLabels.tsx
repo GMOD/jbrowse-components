@@ -1,4 +1,7 @@
-import { SASHIMI_LABEL_FONT_SIZE } from '../../features/sashimi/computeOverlay.ts'
+import {
+  SASHIMI_LABEL_FONT_SIZE,
+  SASHIMI_LABEL_HALO_WIDTH,
+} from '../../features/sashimi/computeOverlay.ts'
 import { sashimiArcKey } from './sashimiArcs.ts'
 
 import type { SashimiArc } from '../../features/sashimi/computeOverlay.ts'
@@ -36,7 +39,7 @@ function SashimiArcLabel({
       fontSize={SASHIMI_LABEL_FONT_SIZE}
       fill={color}
       stroke={haloColor}
-      strokeWidth={2.5}
+      strokeWidth={SASHIMI_LABEL_HALO_WIDTH}
       paintOrder="stroke"
       style={{ pointerEvents: 'none', userSelect: 'none' }}
     >

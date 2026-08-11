@@ -72,6 +72,11 @@ function getArcColor(strand: number) {
 // picked on its own would silently desync the two.
 export const SASHIMI_LABEL_FONT_SIZE = 9
 
+// Width of the halo stroke painted behind the label text, owned here for the
+// same reason as the font size: it widens the label's box in BOTH axes, and the
+// apex clearance below has to reserve room for it vertically.
+export const SASHIMI_LABEL_HALO_WIDTH = 2.5
+
 // Screen-px span below which the count label can't fit and is suppressed.
 const MIN_LABEL_SPAN_PX = 22
 
@@ -105,6 +110,23 @@ const MIN_ARC_FRAC = 0.3
 const MAX_ARC_FRAC = 0.95
 const SPAN_REF_MIN_BP = 50
 const SPAN_REF_MAX_BP = 100_000
+
+// Vertical room an apex needs PAST the curve: the count label is centered on it
+// (`arcCubic` puts labelY at the apex), so half the glyph box plus half the halo
+// stroke lands beyond the top of an 'up' arc and beyond the bottom of a 'down'
+// one. Both directions run into something. The down band is clipped to
+// `sashimiArcsHeight` — it must not paint over the pileup below it — so at
+// MAX_ARC_FRAC of the raw 40px default the digits' lower half, and a
+// deeply-covered junction's own stroke, were shaved off by that clip. The up
+// band overlays the coverage histogram and isn't clipped, but the same margin is
+// what keeps a full-height arc's label off the y-scalebar's top label, which the
+// bare 5% MAX_ARC_FRAC left (0.05 * 90 = 4.5px, against a label needing 5.75).
+//
+// Taken off the band BEFORE the fraction scales it, so MIN/MAX_ARC_FRAC keep
+// meaning "of the room the arc actually has" rather than of a height whose last
+// few pixels aren't drawable.
+export const SASHIMI_APEX_CLEARANCE_PX =
+  SASHIMI_LABEL_FONT_SIZE / 2 + SASHIMI_LABEL_HALO_WIDTH / 2
 
 // A junction resolved to screen space, before height-scaling. `left`/`right`
 // are screen-ordered (left <= right), NOT start/end-ordered: a reversed
@@ -264,7 +286,12 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts): SashimiArc[] {
       effectiveHeight,
       sashimiArcsHeight,
     })
-    const arcHeight = band * arcHeightFraction(Math.abs(a.end - a.start))
+    // Clearance comes off the band first — see SASHIMI_APEX_CLEARANCE_PX. A band
+    // shorter than the clearance flattens to a zero-height arc rather than
+    // inverting through the neighbouring band.
+    const arcHeight =
+      Math.max(0, band - SASHIMI_APEX_CLEARANCE_PX) *
+      arcHeightFraction(Math.abs(a.end - a.start))
     return {
       ...arcCubic(a, baseline, baseline + dir * arcHeight),
       stroke: getArcColor(a.strand),

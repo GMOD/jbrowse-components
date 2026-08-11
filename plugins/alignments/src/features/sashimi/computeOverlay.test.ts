@@ -4,7 +4,10 @@ import {
   colorRevStrand,
 } from '@jbrowse/core/ui/theme'
 
-import { computeSashimiArcs } from './computeOverlay.ts'
+import {
+  SASHIMI_APEX_CLEARANCE_PX,
+  computeSashimiArcs,
+} from './computeOverlay.ts'
 import { junctionKey } from './junctions.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -82,27 +85,59 @@ test('wider junctions get taller arcs (span-scaled nesting)', () => {
   expect(arcs[1]!.labelY).toBeGreaterThan(arcs[2]!.labelY)
 })
 
-test('an arc rises to the band fraction it asks for, not 3/4 of it', () => {
-  // The apex of a symmetric cubic is 3/4 of the way to its interior controls, so
-  // placing those AT the requested height drew the arc 3/4 as tall: the top 29%
-  // of a dragged `sashimiArcsHeight` was unreachable and MAX_ARC_FRAC's 0.95
-  // landed at 0.7125. A 100kb junction (>= SPAN_REF_MAX_BP) pins MAX_ARC_FRAC.
+// The tallest arc a band can hold: a 100kb junction (>= SPAN_REF_MAX_BP) pins
+// MAX_ARC_FRAC, and sending it down puts its apex at labelY in a band-local
+// space whose baseline is 0, so the numbers below read directly against the
+// 40px strip.
+const deepestDownArc = () => {
   const data = {
     sashimiX1: new Uint32Array([100]),
     sashimiX2: new Uint32Array([100_100]),
     sashimiCounts: new Uint32Array([5]),
     sashimiStrands: new Int8Array([0]),
   } as unknown as PileupDataResult
-  const arc = computeSashimiArcs({
+  return computeSashimiArcs({
     ...baseOpts(data, 0),
     downJunctionKeys: down(['chr1', 100, 100_100]),
   })[0]!
-  // down band: baseline 0, so the apex IS 0.95 of the 40px strip
+}
+
+test('an arc rises to the band fraction it asks for, not 3/4 of it', () => {
+  // The apex of a symmetric cubic is 3/4 of the way to its interior controls, so
+  // placing those AT the requested height drew the arc 3/4 as tall: the top 29%
+  // of a dragged `sashimiArcsHeight` was unreachable and MAX_ARC_FRAC's 0.95
+  // landed at 0.7125.
+  const arc = deepestDownArc()
+  // down band: baseline 0, so the apex IS 0.95 of the drawable strip — the 40px
+  // band less the room its label needs past the apex.
   expect(arc.side).toBe('down')
-  expect(arc.labelY).toBeCloseTo(0.95 * 40)
+  expect(arc.labelY).toBeCloseTo(0.95 * (40 - SASHIMI_APEX_CLEARANCE_PX))
   // and the control points sit 1/3 further out to put it there
   const ctrl = Number(/C \S+ (\S+),/.exec(arc.d)![1])
   expect(ctrl).toBeCloseTo(arc.labelY / 0.75)
+})
+
+test('the deepest down arc keeps its label inside the clipped strip', () => {
+  // The down sub-band renders with overflow:hidden — it must not paint over the
+  // pileup below it — so an apex placed at MAX_ARC_FRAC of the RAW height had
+  // the lower half of its count label clipped off. The label is centered on the
+  // apex, so what has to fit below it is the clearance.
+  expect(
+    deepestDownArc().labelY + SASHIMI_APEX_CLEARANCE_PX,
+  ).toBeLessThanOrEqual(40)
+})
+
+test('a sashimi band shorter than its label clearance flattens, never inverts', () => {
+  // Same failure mode as the too-short coverage band below: nothing floors a
+  // config-declared `sashimiArcsHeight`, and a band under the clearance made the
+  // drawable height negative, curving every down arc up through the coverage
+  // histogram instead of collapsing it flat.
+  const arcs = computeSashimiArcs({
+    ...baseOpts(makeData([5]), 0),
+    sashimiArcsHeight: 3,
+    downJunctionKeys: down(['chr1', 100, 200]),
+  })
+  expect(arcs[0]!.labelY).toBe(0)
 })
 
 test('suppresses the count label on sub-pixel-narrow junctions', () => {
