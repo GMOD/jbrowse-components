@@ -177,6 +177,18 @@ structural rather than remembered — there is no position at that level to hold
   nothing without one. `BaseTooltip` owns the gap to the cursor
   ([ADR-028](../architecture-decision-records/adr-028-tooltip-clientpoint-vs-pointer-tracking.md#amendment-2026-08-06-clientpoint-is-the-pointer-not-the-pointer-plus-a-gap));
   callers pass the true client point.
+- **A terminal phase removes the container, and that is not a `mouseleave`.**
+  The event cannot fire on an element unmounted under the cursor, so the chrome
+  drops the measurement itself when `tooLarge`/`renderError` replace the
+  subtree. Without it the tracker kept publishing the pre-banner position —
+  invisible while the banner is up, because nothing reads it there, and then
+  read by the body on its **first** render after Force load / Retry. The pointer
+  layers with no second gate (multi-row features, maf, both multi-sample variant
+  displays) draw a crosshair at it immediately, and `onPointerPosition`
+  consumers stay pinned to the stale hit. Pinned by `DisplayChrome.test.tsx`,
+  "the pointer measurement drops when the container is replaced", whose third
+  case is the negative control: an *overlay* phase keeps the position, since the
+  container is still there and the cursor really is still on it.
 - **A portaled overlay still bubbles its React events to the container** even
   though its DOM node is not a descendant, so the position would be measured
   against a box the pointer is not in. `useMouseTracking` treats that as a leave
