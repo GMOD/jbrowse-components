@@ -167,6 +167,32 @@ and `applyArrangement` re-arranges the rows already on screen rather than
 re-deriving from adapter order — re-deriving made "Color by…" discard a
 clustering run, and halve the row count in phased mode.
 
+## Which of the two displays: the matrix is for genotype PATTERN, not for spans
+
+`LinearMultiSampleVariantMatrixDisplay` lays its columns out by feature
+**index** at equal widths. That is the right trade when the question is which
+samples share which calls across many sites — a haplotype block, an LD
+structure, a missingness pattern — because it gives every site the same width
+whatever its allele frequency or its size, and the connector band ties the
+columns back to the genome.
+
+**It is the wrong display for structural variants**, and the failure is not
+subtle: an SV's SPAN is the thing being shown, and equal-width columns destroy
+it. The DENR figure was the proof — two SINE deletions of 222 bp and 219 bp,
+drawn as two half-width blocks across an 18 kb window, reading as multi-kb
+deletions over the whole gene. It cost a caption saying "one column per variant,
+not per span", a raised `lineZoneHeight` to make the connector band carry a real
+diagonal, and a second 90px track of the same records at their real coordinates.
+All three were corrections for the layout rather than anything about the data,
+and all three went away when the figure moved to
+`LinearMultiSampleVariantDisplay` with `showVariantLane`.
+
+So: **SVs go in the regular display.** It draws each record at its own
+coordinate and width, `showInsertionGlyphs` gives an insertion the length its
+reference span cannot express, and the variant lane names each record above its
+own column. A caption that apologises for a rendering choice is the sign the
+choice was wrong.
+
 ## Bands above the rows
 
 Two things stack over the genotype rows — the **variant lane** (records at their
