@@ -1816,6 +1816,47 @@ describe('identical arcs coalesce and carry their support', () => {
     expect(result.arcs[0]!.support).toBe(1)
   })
 
+  // The same junction, but the reads sit on the RIGHT side of it and name the
+  // left breakpoint as their mate — so the connection resolves with the two
+  // endpoints the other way round. It draws the identical arc (strokeArc is
+  // endpoint-order independent, pinned in arcShape.test.ts), so it has to fold
+  // into the same one.
+  //
+  // Found on real data rather than reasoned about: over the HG02768 inverted
+  // duplication a junction with 11 supporting reads came out as arcs of 7 and 4
+  // stacked in the same opaque colour, so the stroke width — the entire point of
+  // coalescing — under-reported it and no reader could tell.
+  test('a junction folds regardless of which mate the reads name first', () => {
+    const result = computeArcsFromPileupData(
+      new Map([
+        [
+          0,
+          makePileupData({
+            regionStart: 1000,
+            // two reads at 1000 pointing right to 2000, two at 2000 pointing
+            // left to 1000 — one junction, four reads
+            readPositions: new Uint32Array([
+              1000, 1100, 1000, 1100, 2000, 2100, 2000, 2100,
+            ]),
+            readFlags: new Uint16Array(
+              Array.from({ length: 4 }, () => SAM_FLAG_PAIRED),
+            ),
+            readStrands: new Int8Array([1, 1, 1, 1]),
+            readInsertSizes: new Float32Array([500, 500, 500, 500]),
+            readPairOrientations: new Uint8Array([1, 1, 1, 1]),
+            readNames: ['a', 'b', 'c', 'd'],
+            readNextRefs: Array.from({ length: 4 }, () => 'chr1'),
+            readNextPositions: new Uint32Array([2000, 2000, 1000, 1000]),
+          }),
+        ],
+      ]),
+      regions,
+      settings,
+    )
+    expect(result.arcs.length).toBe(1)
+    expect(result.arcs[0]!.support).toBe(4)
+  })
+
   test('support reaches the upload arrays in feed order', () => {
     const { arcs, lines } = computeArcsFromPileupData(
       new Map([[0, pairedReadsAt([1000, 1001, 1001], 2000)]]),

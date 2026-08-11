@@ -326,7 +326,18 @@ type PendingArc = SplitPendingArc | PairedPendingArc
 // Deterministic 0..1 hash from arc endpoints — gives each pair a stable jitter
 // offset regardless of fetch/render order, so snapshot tests don't flake.
 // `Math.sin(x)*43758.5453 mod 1` is the standard GPU-style cheap hash.
-function pairJitter01(p1Bp: number, p2Bp: number) {
+function pairJitter01(aBp: number, bBp: number) {
+  // Order-normalized INSIDE the hash rather than at the call site, so this is a
+  // property of the junction and no caller can forget to make it one. The two
+  // multipliers differ, so a pair named (a, b) and the same pair named (b, a)
+  // hashed to different offsets and drew as two flat lines at slightly
+  // different Y — which is the same junction split in two, exactly what
+  // `arcKey`'s normalization exists to prevent, and it would have defeated that
+  // fix in read-cloud mode since `yBp` is what the two arcs would then differ
+  // in. "Stable regardless of fetch/render order" was already the stated
+  // contract; mate order is that same kind of accident.
+  const p1Bp = Math.min(aBp, bBp)
+  const p2Bp = Math.max(aBp, bBp)
   // Math.imul keeps each product a true 32-bit multiply; a plain `*` overflows
   // the 2^53 safe-integer range for large genomic coordinates (bp·constant ≈
   // 1e17) and silently rounds away low bits before the `>>> 0`.
@@ -828,7 +839,24 @@ function arcKey(a: {
   colorType: number
   shapeType: number
 }) {
-  return `${a.p1Ref}\0${a.p1Bp}\0${a.p2Ref}\0${a.p2Bp}\0${a.colorType}\0${a.shapeType}`
+  // ENDPOINT ORDER IS NORMALIZED, because the drawn arc is symmetric in it and
+  // so the key has to be. `strokeArc` centres on (p1+p2)/2 with |p2-p1|/2 as its
+  // half-width and `arcShape.test.ts` pins that as endpoint-order independent;
+  // the shader takes min/max of the two. A junction whose reads name the mates
+  // the other way round therefore paints the identical pixels.
+  //
+  // Keying on the raw order did not fold those together, and that halved the
+  // very channel this key exists to feed. Measured over the HG02768 inverted
+  // duplication (1:39,658,200-39,661,800): the junction at 39,658,994 /
+  // 39,660,047 resolved as TWO arcs, support 7 and support 4, drawn on top of
+  // each other in the same opaque colour — so its stroke width reported 7 reads
+  // (or 4, whichever painted last) at a junction 11 reads support. Which of the
+  // two you saw depended on nothing the reader can see.
+  const swap = a.p1Ref === a.p2Ref ? a.p2Bp < a.p1Bp : a.p2Ref < a.p1Ref
+  const [r1, b1, r2, b2] = swap
+    ? [a.p2Ref, a.p2Bp, a.p1Ref, a.p1Bp]
+    : [a.p1Ref, a.p1Bp, a.p2Ref, a.p2Bp]
+  return `${r1}\0${b1}\0${r2}\0${b2}\0${a.colorType}\0${a.shapeType}`
 }
 
 // Colour + shape one group's resolved connections against the pooled scale,
