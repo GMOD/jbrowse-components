@@ -324,7 +324,15 @@ read draws at the width
 [`readConnectionsLineWidth`](/docs/config/LinearAlignmentsDisplay/#slot-readconnectionslinewidth)
 sets. Arcs coalesce only on exactly equal endpoints: junctions a few bases apart
 stay separate curves, because at long-read scale they are usually separate
-events.
+events. Which mate a read names first does not matter — a junction is one arc
+either way.
+
+Hovering an arc reports the junction behind it: its location, the distance
+between the two ends, how many reads support it, and which colour bucket it fell
+in. The read count is the number the thickness encodes, so the tooltip is how
+you read a specific value off a picture that otherwise only ranks. In read-cloud
+mode the tooltip also gives the pair's insert size, which is what that mode
+plots on the Y axis.
 
 <Figure caption="Enabling 'Show read arcs' from the Read connections submenu; the arcs draw alongside the coverage panel." src="/img/alignments/select_arc_display.png" />
 
