@@ -6,6 +6,8 @@ import SimpleFeature, {
   unwrapFeature,
 } from './simpleFeature.ts'
 
+import type { Feature } from './simpleFeature.ts'
+
 const jexl = createJexlInstance()
 
 test('can create a simple feature', () => {
@@ -35,6 +37,64 @@ test('can create a simple with subfeatures', () => {
   expect(f.get('start')).toEqual(100)
   expect(f.get('end')).toEqual(500)
   expect(f.get('subfeatures')![0]!.get('start')).toEqual(100)
+})
+
+// A subfeature with no strand of its own inherits its parent's. That used to be
+// a copy made in the constructor — the whole subfeature spread to set one field
+// — and is now resolved through the parent handle at read time, which puts two
+// things at risk that the copy got for free: inheritance through more than one
+// level, and a subfeature that has been serialized and rebuilt with no parent
+// to inherit from.
+describe('strand inheritance', () => {
+  const gene = () =>
+    new SimpleFeature({
+      uniqueId: 'gene1',
+      refName: 'chr1',
+      start: 100,
+      end: 900,
+      strand: -1,
+      subfeatures: [
+        {
+          refName: 'chr1',
+          start: 100,
+          end: 500,
+          type: 'mRNA',
+          subfeatures: [
+            { refName: 'chr1', start: 100, end: 200, type: 'exon' },
+            { refName: 'chr1', start: 300, end: 400, type: 'exon', strand: 1 },
+          ],
+        },
+      ],
+    })
+
+  const strands = (f: Feature): (number | undefined)[] => [
+    f.get('strand'),
+    ...(f.get('subfeatures') ?? []).flatMap(k => strands(k)),
+  ]
+
+  it('reaches a grandchild through a parent that inherited too', () => {
+    // the mRNA has no strand of its own, so the exon under it inherits through
+    // a link that is itself resolved rather than stored
+    expect(strands(gene())).toEqual([-1, -1, -1, 1])
+  })
+
+  it('survives serialization, which is what crosses the RPC boundary', () => {
+    // rebuilt from JSON, so no feature in the tree has a parent handle: the
+    // inherited value has to have been baked into the serialized form
+    const json = JSON.parse(JSON.stringify(gene().toJSON()))
+    expect(strands(new SimpleFeature(json))).toEqual([-1, -1, -1, 1])
+  })
+
+  it('leaves a feature with no strand anywhere undefined', () => {
+    const f = new SimpleFeature({
+      uniqueId: 'x',
+      refName: 'chr1',
+      start: 1,
+      end: 10,
+      subfeatures: [{ refName: 'chr1', start: 1, end: 5 }],
+    })
+    expect(strands(f)).toEqual([undefined, undefined])
+  })
 })
 
 test('rejects missing and inverted coordinates', () => {
