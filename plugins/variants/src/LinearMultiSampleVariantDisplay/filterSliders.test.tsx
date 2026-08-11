@@ -1,8 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { fireEvent, render, screen } from '@testing-library/react'
 
-import configSchemaFactory from './configSchema.ts'
-import stateModelFactory from './model.ts'
+import { createTestEnvironment } from './testEnv.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -12,15 +11,12 @@ import type { MenuItem } from '@jbrowse/core/ui'
 // MUI fires onChangeCommitted straight away for a hidden-input change — so the
 // deferral itself is makeSizeMenu's concern, not asserted here.)
 describe('multi-sample variant filter sliders', () => {
+  // The shared harness rather than a bare `stateModel.create()`: `sliderRow`
+  // builds the WHOLE track menu to find one row, and the "Show legend" row in
+  // it reads a promotable slot, whose cascade walks up to the session. A
+  // parentless display throws "no session model found!" there.
   function makeModel() {
-    const configSchema = configSchemaFactory()
-    return stateModelFactory(configSchema).create({
-      type: 'LinearMultiSampleVariantDisplay',
-      configuration: configSchema.create({
-        type: 'LinearMultiSampleVariantDisplay',
-        displayId: 'filter-slider-test',
-      }),
-    })
+    return createTestEnvironment().createDisplay().display
   }
 
   function subMenuOf(item: MenuItem | undefined) {
