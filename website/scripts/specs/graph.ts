@@ -1025,7 +1025,10 @@ function haplotypeGeneLane(trackId: string) {
 const HS1_RMSK_TRACK = {
   type: 'FeatureTrack',
   trackId: 'hs1_rmsk_ucsc',
-  name: 'RepeatMasker (T2T-CHM13v2.0)',
+  // The colour key lives in the track NAME, not in a pill over the lane. The
+  // lane is one collapsed row now, so a pill on it covers the whole thing --
+  // which is what the previous round's pill did the moment the row shrank.
+  name: 'RepeatMasker (T2T-CHM13v2.0), LINE elements in red',
   assemblyNames: ['hs1'],
   adapter: {
     type: 'BigBedAdapter',
@@ -1097,7 +1100,13 @@ function repeatLane(trackId: string) {
   return {
     trackId,
     type: 'LinearBasicDisplay',
-    displayMode: 'normal',
+    // COLLAPSED, which is a height decision and costs this lane nothing (review:
+    // "also try to extensively reduce y-screen real estate on left side"). The
+    // labels are already off and what the lane is read for is how much of the
+    // interval is red, so packing 171 elements into rows that avoid overlap was
+    // spending ~150 px on a layout nobody reads: collapsed draws them all on one
+    // row, and an overlap between two repeat elements is a couple of bases.
+    displayMode: 'collapsed',
     showLabels: 'none',
     // LINE red, everything else grey, off the class the bigBed writes into the
     // name after a '#' (`L1MD1#LINE/L1`). Two colors rather than one per class:
@@ -1106,9 +1115,8 @@ function repeatLane(trackId: string) {
     // labels stay off — a bar's color says its class without a name on it.
     color:
       "jexl:includes(get(feature,'name'),'#LINE') ? 'rgb(200,60,45)' : 'rgb(158,158,158)'",
-    // grow, not a fixed band: 171 elements over 180 kb pack into more rows than
-    // any number picked in advance, and a band an element short shows a
-    // scrollbar over the one row a reader would have to scroll to see.
+    // grow, so the band is whatever one collapsed row needs rather than a
+    // number picked in advance
     heightMode: 'grow',
     height: 90,
   }
@@ -4210,7 +4218,9 @@ export const graphSpecs: ScreenshotSpec[] = [
               // packs ten rows of small print and the reader has to find the
               // subject in it.
               jexlFiltersSetting: ['jexl:feature.longestAlleleLength>100000'],
-              height: 60,
+              // one two-line label on one row; 60 was sized when the lane was
+              // unfiltered
+              height: 46,
             },
             // no repeat lane on THIS pane, where there used to be one on each.
             // Two lanes is a comparison, and the comparison was the part that
@@ -4238,7 +4248,13 @@ export const graphSpecs: ScreenshotSpec[] = [
           // lands on and the chain stays legible. `paneHeight` is a plugin prop
           // (published bundle 35eccae5db30); the floor at MIN_CANVAS_HEIGHT
           // still wins, so this cannot squeeze the pane below hover height.
-          paneHeight: 420,
+          //
+          // 320 now, from 420 (review: "also try to extensively reduce y-screen
+          // real estate on left side"). Same reasoning one notch further: what
+          // the pane is read for is the boxed arc against the chain it leaves
+          // and rejoins, and both survive the scale change because the drawing
+          // is fitted rather than cropped.
+          paneHeight: 320,
         },
         {
           type: 'LinearGenomeView',
@@ -4267,11 +4283,11 @@ export const graphSpecs: ScreenshotSpec[] = [
     // view's nodePositions, so a shorter settle can capture before there are any
     settleMs: 14000,
     viewportWidth: 1000,
-    // 1495 minus the 180 px the graph pane gave back at paneHeight 420. The
-    // repeat lane still grows to its own row count (see repeatLane), 8 rows
-    // here rather than the 5 a 90px band held. +16 for the pane label dropped
-    // into the RepeatMasker track's own label row.
-    viewportHeight: 1331,
+    // 1078, off the run's own blank-below-the-content report, after three
+    // height cuts asked for by the same review note: the graph pane 420 -> 320,
+    // the repeat lane to one collapsed row, and the bubble lane to the one row
+    // its filter leaves.
+    viewportHeight: 1078,
     hideTooltip: true,
     annotations: [
       {
@@ -4292,12 +4308,15 @@ export const graphSpecs: ScreenshotSpec[] = [
         text: 'hg38: no coordinates for this sequence',
         fontSize: 18,
         maxWidth: 320,
+        // RIGHT, where the filtered bubble lane is empty. On the left it sat on
+        // the one bubble the filter keeps and on the segment blocks under it.
+        textAlign: 'end',
         anchor: {
           view: 0,
           track: 'hprc_minigraph_bubbles',
           fracY: 0,
-          alignX: 'left',
-          dx: 16,
+          alignX: 'right',
+          dx: -16,
           // the track rect starts at its HEADER, so dy has to clear the
           // "HPRC release 2 bubbles" row before the lane's own whitespace
           dy: 30,
@@ -4316,38 +4335,13 @@ export const graphSpecs: ScreenshotSpec[] = [
           dy: 10,
         },
       },
-      // ONE PILL ON THE BOTTOM PANE, NOT TWO (review: "too chaotic red
-      // annotation boxes in lower fig now. aggressively reduce wordiness. one
-      // box only"). The previous round put the pane's name in one pill and the
-      // colour key plus the L1 baseline in another, and at 18 px over a lane
-      // that is bars edge to edge they landed on top of each other.
-      //
-      // All three things it has to say fit in one line: which assembly, what
-      // red means, and whether the density is worth anything. The last is the
-      // part with no other home -- 48 red bars have no baseline beside them, so
-      // a reader cannot judge them. It is `scripts/build_repeat_density.sh`'s
-      // number: 23.70% of the allele's 142 kb against 14.18% and 14.47% in the
-      // CHM13 sequence either side, rounded here and exact in the caption. 1.7x
-      // as a MEAN -- per 20 kb the allele runs 0.07-0.42 and the flanks
-      // 0.00-0.40, which is why it is a number rather than a wider window or a
-      // second lane; both of those were tried and are recorded in `repeatLane`.
-      //
-      // Anchored to the track at the top of its own band rather than placed by
-      // pixel, so it stays on the lane as the lane grows to its row count.
-      {
-        type: 'text',
-        text: 'T2T-CHM13v2.0 — red = LINE, 23.7% here vs 14% either side',
-        fontSize: 18,
-        maxWidth: 460,
-        anchor: {
-          view: 2,
-          track: HS1_RMSK_TRACK.trackId,
-          fracY: 0,
-          alignX: 'left',
-        },
-        dx: 150,
-        dy: 20,
-      },
+      // The pane's colour-key pill is GONE, into the track's own name (see
+      // HS1_RMSK_TRACK). It used to carry three things -- which assembly, what
+      // red means, and 23.7% against 14% either side -- and two of them had to
+      // go for different reasons. The percentages are a measurement a reader
+      // cannot check against the picture, which is what the density part beside
+      // this one is for and what website/CLAUDE.md now says about callouts. The
+      // rest is a label, and a label belongs on the track.
       // HALF OF THE PAIR ①, whose other half is on the density part. The two
       // parts are side by side and this is the one landmark they share: the
       // sequence this pane draws per repeat element is the sliver shaded over
@@ -4357,13 +4351,34 @@ export const graphSpecs: ScreenshotSpec[] = [
       // the segments lane draws the allele as a single feature -- the badge sits
       // on one bar that is exactly the thing being identified, where on the
       // repeat lane it would land in the middle of eight rows of elements.
+      // In the 20 kb of flank LEFT of the bar rather than on it, with an arrow
+      // to where the bar starts (review: "make arrow pointing from the badges").
+      // On the bar the badge was a disc on a black rectangle that runs most of
+      // the pane, so it identified the lane rather than the allele; beside it,
+      // with the arrow landing on the allele's own left edge, it identifies the
+      // feature. Both ends are locus anchors on the same track, so neither is a
+      // measured pixel.
       {
         type: 'circle',
         text: '1',
         anchor: {
           view: 2,
           track: SEGMENTS_TRACK,
-          locus: 'chr17:83,899,576-84,041,803',
+          locus: 'chr17:83,886,000',
+        },
+      },
+      {
+        type: 'arrow',
+        fromAnchor: {
+          view: 2,
+          track: SEGMENTS_TRACK,
+          locus: 'chr17:83,886,000',
+          dx: 20,
+        },
+        anchor: {
+          view: 2,
+          track: SEGMENTS_TRACK,
+          locus: 'chr17:83,899,576',
         },
       },
     ],
@@ -4442,7 +4457,13 @@ export const graphSpecs: ScreenshotSpec[] = [
               // the extra height is resolution on the one comparison the part
               // exists to make -- the shaded plateau against the 3 Mb around it --
               // and the crosshatches keep it readable rather than a wall of bars.
-              height: 1081,
+              //
+              // 828 now, following the panes column down (review: "the right
+              // side does not need to be that turbo tall"). This lane never
+              // wanted the height on its own account -- it is one bar chart on a
+              // fixed 0-0.3 axis -- so every pixel the left column gives back is
+              // one this one gives back too.
+              height: 828,
             },
           ],
         },
@@ -4455,7 +4476,7 @@ export const graphSpecs: ScreenshotSpec[] = [
     // the panes part's viewportHeight exactly. `+append` pads the shorter part
     // to the taller one and top-aligns it, so any mismatch here is white down
     // the bottom of this column rather than an error.
-    viewportHeight: 1331,
+    viewportHeight: 1078,
     hideTooltip: true,
     annotations: [
       {
@@ -4471,6 +4492,25 @@ export const graphSpecs: ScreenshotSpec[] = [
           dx: -14,
         },
         textAlign: 'end',
+      },
+      // AND IT POINTS (review: "make arrow pointing from the badges"). The pill
+      // sat beside the shaded column naming it, which at 3 Mb across 1000 px is
+      // a label a few pixels from two other bars just as tall. Tail at the
+      // pill's own locus, head on the allele's midpoint further down the lane,
+      // both resolved through the track rather than measured.
+      {
+        type: 'arrow',
+        fromAnchor: {
+          track: HS1_LINE_DENSITY_TRACK.trackId,
+          locus: 'chr17:83,899,576',
+          fracY: 0.1,
+          dx: -24,
+        },
+        anchor: {
+          track: HS1_LINE_DENSITY_TRACK.trackId,
+          locus: 'chr17:83,970,690',
+          fracY: 0.28,
+        },
       },
       // HALF OF THE PAIR ①. The other half is on the panes part's bottom pane,
       // and together they say that the shaded sliver here is the sequence drawn

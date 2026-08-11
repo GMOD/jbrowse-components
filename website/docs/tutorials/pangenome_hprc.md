@@ -513,7 +513,7 @@ and set the track's **Resolution** low, so each drawn value averages about 100
 kb rather than 3 kb: at 5 kb the allele is invisible inside the spikes, and at
 its own scale it is a block.
 
-<Figure caption="A donor node on both coordinate systems: the GRCh38 window, the graph cut from it, then that node on hs1's own chr17 tiled by long L1 elements in red. Beside them ①, LINE density across the last 3 Mb of the chromosome at a ~100 kb mean, where the shaded allele is the tallest sustained level: of the 262 same-size windows within 5 Mb, 2 carry more LINE." src="/img/pangenome/hprc_chm13_allele.png" />
+<Figure caption="A donor node on both coordinate systems: the GRCh38 window, the graph cut from it, then that node on hs1's own chr17 tiled by long L1 elements in red. Beside them ①, LINE density across the last 3 Mb of the chromosome at a ~100 kb mean, where the shaded allele is the tallest sustained level in the frame." src="/img/pangenome/hprc_chm13_allele.png" />
 
 CHM13 entered this graph at rank 61, after sixty haplotypes, so most of what it
 carries was already in the graph and little is credited to it:

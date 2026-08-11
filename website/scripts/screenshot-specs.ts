@@ -89,6 +89,18 @@ export const specs: ScreenshotSpec[] = [
   ...cookbookSpecs,
   ...embeddedSpecs,
   ...jbrowseImgSpecs,
+  // The one composed jbrowse-img figure. It lives here rather than in
+  // `jbrowseImgSpecs`, which is typed `CliSpec[]` because `sync-img-readme.ts`
+  // walks it to regenerate every command fence in the jb2export README -- and
+  // this is not a command. Its two halves are: the compose is the figure
+  // pipeline putting one render beside another, which is what the review asked
+  // for ("not something jbrowse-img has to do").
+  {
+    mode: 'compose',
+    name: 'jbrowse-img/sv_review_pair',
+    parts: ['jbrowse-img/sv_review_tumor', 'jbrowse-img/sv_review_normal'],
+    direction: 'horizontal',
+  },
 ]
 
 // jbrowse.org hosts the same test_data/ configs (and the cgiab/hpylori demos)

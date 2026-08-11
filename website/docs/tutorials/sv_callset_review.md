@@ -101,7 +101,7 @@ matched normal under the tumour in every panel, which is the control drawn
 rather than filed in a second directory: the connecting curves are per track, so
 the tumour lanes carry the fan and the normal lanes carry none.
 
-<Figure caption="The three loci of COLO829's der(3), chr3 then chr10 then chr12, with the tumour reads above the matched normal in each panel. Every curve is solid, the reads stop dead at the breakpoint on every side, and not one curve is in a normal lane." src="/img/jbrowse-img/sv_review_pair.png" />
+<Figure caption="The three loci of COLO829's der(3), chr3 then chr10 then chr12. Left, the tumour nanopore reads; right, the matched normal at the same loci and the same width. Every curve is solid, the reads stop dead at the breakpoint on every side, and the normal render carries none of them." src="/img/jbrowse-img/sv_review_pair.png" />
 
 Reads at 1 px apiece (`featureHeight:super-compact`) is what keeps six pileups
 on one screen; at the default height the picture is mostly pileup and the curves
@@ -180,10 +180,10 @@ run it, and load its output here.
 ## Reproduce it end to end
 
 Everything on this page is the commands above against hosted files. The figure
-is rendered by the `sv_review_pair` spec in
-`website/scripts/screenshot-spec-helpers.ts`, which is one
-`jb2export breakpoint` invocation with one `--loc` per panel and one `--track`
-per sample.
+is two `jb2export breakpoint` invocations, one per sample, with one `--loc` per
+panel: the `sv_review_tumor` and `sv_review_normal` specs in
+`website/scripts/screenshot-spec-helpers.ts`. Putting them side by side is the
+figure pipeline's job, not jb2export's.
 
 ## See also
 

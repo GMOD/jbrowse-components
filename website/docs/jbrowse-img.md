@@ -353,24 +353,40 @@ panel. COLO829's der(3) is a closed cycle over three chromosomes, so the
 junction below needs a chr10 panel between the two it appears to join, and with
 it every connector in the figure is solid.
 
-**Repeat `--track` and the control is inside the picture.** Every track is shown
-on every panel, and the connecting curves are drawn per track, so the tumour
-lanes carry the fan and the matched normal lanes under them carry none. That is
-what somatic looks like, in one render at one flank and one width rather than in
-two pictures that have to be trusted to match.
+**One render per sample, and the control is the other render.** A somatic call
+is the difference between the tumour and its matched normal, so the figure that
+argues it is two of these side by side: the same `--loc` list and the same
+`--width`, one `--track` each. The connecting curves are drawn per track, so
+they fill the tumour render and the normal render carries none.
 
-<!-- jb2export: sv_review_pair -->
+<!-- jb2export: sv_review_tumor -->
 
 ```bash
 jb2export breakpoint --config https://jbrowse.org/demos/cancer_sv/config.json \
   --assembly hg38 \
   --track COLO829_tumor_ont height:130 force:true featureHeight:super-compact \
-  --track COLO829BL_normal_ont height:90 force:true featureHeight:super-compact \
   --loc chr3:25,358,511-25,359,711 --loc chr10:58,716,962-58,718,162 \
-  --loc chr12:72,272,512-72,273,712 --width 1400 --out sv_review_pair.png
+  --loc chr12:72,272,512-72,273,712 --width 1000 --out sv_review_tumor.png
 ```
 
-<Figure src="/img/jbrowse-img/sv_review_pair.png" caption="The three loci of the COLO829 melanoma line's der(3), chr3 then chr10 then chr12, with the tumour reads above the matched normal in each panel. Every curve is solid and every one of them is in a tumour lane" />
+<Figure src="/img/jbrowse-img/sv_review_tumor.png" caption="The three loci of the COLO829 melanoma line's der(3), chr3 then chr10 then chr12, in the tumour nanopore reads. Every connecting curve is solid" />
+
+Then the same command with the other sample's track:
+
+<!-- jb2export: sv_review_normal -->
+
+```bash
+jb2export breakpoint --config https://jbrowse.org/demos/cancer_sv/config.json \
+  --assembly hg38 \
+  --track COLO829BL_normal_ont height:130 force:true featureHeight:super-compact \
+  --loc chr3:25,358,511-25,359,711 --loc chr10:58,716,962-58,718,162 \
+  --loc chr12:72,272,512-72,273,712 --width 1000 --out sv_review_normal.png
+```
+
+<Figure src="/img/jbrowse-img/sv_review_normal.png" caption="The same three loci in the matched normal, with no connecting curves in any panel" />
+
+Putting the two beside each other is your docs' job; jb2export does not compose
+them.
 
 `force:true` is there because the chr3 panel is 1.2 kb of 200x nanopore, which
 is over the byte gate; without it that panel draws the gate's message instead of

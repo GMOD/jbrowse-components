@@ -972,6 +972,32 @@ export function cliSpec(name: string, args: string[]): CliSpec {
   return { mode: 'cli', name: `jbrowse-img/${name}`, args }
 }
 
+// One half of jbrowse-img/sv_review_pair: the same three der(3) loci and the
+// same render settings, with one sample's track. See the note on the two specs
+// that use it for why each modifier is there.
+function svReviewHalf(trackId: string) {
+  return [
+    'breakpoint',
+    '--config',
+    'https://jbrowse.org/demos/cancer_sv/config.json',
+    '--assembly',
+    'hg38',
+    '--track',
+    trackId,
+    'height:130',
+    'force:true',
+    'featureHeight:super-compact',
+    '--loc',
+    'chr3:25,358,511-25,359,711',
+    '--loc',
+    'chr10:58,716,962-58,718,162',
+    '--loc',
+    'chr12:72,272,512-72,273,712',
+    '--width',
+    '1000',
+  ]
+}
+
 export const jbrowseImgSpecs: CliSpec[] = [
   // Headline (README "## Screenshot"): a multi-track human view from public
   // files — NCBI RefSeq genes, ClinGen gene-disease, phyloP conservation,
@@ -1546,18 +1572,18 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1900',
   ]),
 
-  // ONE FIGURE, BOTH TRACKS, and the control is inside it rather than beside
-  // it (review on sv_review_normal: "boring figure. consider deleting. if this
-  // is just to show in contrast to the other, it needs to be side-by-side
-  // figure"). It was two separate renders of the same three windows, tumour and
-  // matched normal, and the somatic call is the DIFFERENCE between them -- a
-  // difference nobody can measure across two pictures on two parts of a page.
-  // Both tracks in every panel makes it one picture: the connecting curves are
-  // drawn per track, so they appear on the tumour rows and nowhere else, which
-  // is what somatic looks like.
+  // TUMOUR AND MATCHED NORMAL, SIDE BY SIDE, ONE RENDER EACH (review: "instead
+  // of having normal integrated, should be side-by-side figure with the tumor
+  // and the normal separate side by side panels ... not something jbrowse-img
+  // has to do"). It was one render carrying both tracks on every panel, six
+  // lanes stacked; the pair is now two renders and a `mode: 'compose'` with
+  // `direction: 'horizontal'`, which is the figure pipeline's own job and needs
+  // nothing of jb2export.
   //
-  // That also deletes the boring figure without deleting the control, which
-  // `docs/tutorials/CLAUDE.md` asks every dataset for.
+  // The two specs are identical but for the track, deliberately: same loci, same
+  // width, same track height, so the two halves are comparable line for line and
+  // `+append` pads neither. The whole claim is that the left half is full of
+  // connecting curves and the right half has none.
   //
   // THREE PANELS, AND THAT IS WHAT KILLED THE DOTTED LINES (review: "i dont
   // like the dotted lines, because that means 'incomplete story'. we need to fix
@@ -1572,10 +1598,9 @@ export const jbrowseImgSpecs: CliSpec[] = [
   // drawn dashed and correctly so. The third panel makes every connector solid.
   //
   // `featureHeight:super-compact` (review: "use supercompact"), which is 1 px
-  // per read. What the figure is read for is the bundle of curves and the
-  // absence of any in the normal lanes, and at the default 7 px the six pileups
-  // were most of a very tall page. `--width 1400` with six lanes rather than
-  // three needs the reads that small to stay one screen.
+  // per read. What each half is read for is the presence or absence of a bundle
+  // of curves, and at the default 7 px three pileups are most of a very tall
+  // page.
   //
   // `force:true` is not a taste call: the chr3 panel is 1.2 kb of 200x ONT and
   // the byte gate refuses it, so it drew "Region too large to render". Which is
@@ -1588,29 +1613,6 @@ export const jbrowseImgSpecs: CliSpec[] = [
   // SVGBreakpointSplitView rather than a flag here: a breakpoint stack is
   // usually one assembly at several loci, so it names the first row and any row
   // whose assembly differs from the one above it.
-  cliSpec('sv_review_pair', [
-    'breakpoint',
-    '--config',
-    'https://jbrowse.org/demos/cancer_sv/config.json',
-    '--assembly',
-    'hg38',
-    '--track',
-    'COLO829_tumor_ont',
-    'height:130',
-    'force:true',
-    'featureHeight:super-compact',
-    '--track',
-    'COLO829BL_normal_ont',
-    'height:90',
-    'force:true',
-    'featureHeight:super-compact',
-    '--loc',
-    'chr3:25,358,511-25,359,711',
-    '--loc',
-    'chr10:58,716,962-58,718,162',
-    '--loc',
-    'chr12:72,272,512-72,273,712',
-    '--width',
-    '1400',
-  ]),
+  cliSpec('sv_review_tumor', svReviewHalf('COLO829_tumor_ont')),
+  cliSpec('sv_review_normal', svReviewHalf('COLO829BL_normal_ont')),
 ]
