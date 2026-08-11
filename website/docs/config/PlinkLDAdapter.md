@@ -56,6 +56,7 @@ CHR_A  BP_A     SNP_A       CHR_B  BP_B     SNP_B       R2
 ## Related links
 
 - **Track:** [LDTrack](../ldtrack)
+- **Display:** [LDTrackDisplay](../ldtrackdisplay)
 
 ## Config slots
 

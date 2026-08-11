@@ -5,7 +5,7 @@
 # Adding a name here is a coverage regression; removing one is the win. Each
 # section names the tag that clears it.
 
-# configs with no #example (27)
+# configs with no #example (26)
 # fix: add an #example to the type’s #config JSDoc
 BigMafAdapter
 BlastTabularAdapter
@@ -31,7 +31,6 @@ RefNameAliasAdapter
 RpcOptions
 SPARQLAdapter
 SequenceSearchAdapter
-SharedLDDisplay
 TrixTextSearchAdapter
 UCSCTrackHubConnection
 

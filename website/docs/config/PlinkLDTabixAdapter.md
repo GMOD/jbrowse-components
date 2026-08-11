@@ -66,6 +66,7 @@ file with `plink --r2`.
 ## Related links
 
 - **Track:** [LDTrack](../ldtrack)
+- **Display:** [LDTrackDisplay](../ldtrackdisplay)
 
 ## Config slots
 

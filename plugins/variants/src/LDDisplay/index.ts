@@ -1,38 +1,33 @@
 import { lazy } from 'react'
 
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import sharedLDConfigFactory from './SharedLDConfigSchema.ts'
+import ldTrackDisplayConfigSchema from './configSchemaLDTrack.ts'
+import ldDisplayConfigSchema from './configSchemaVariant.ts'
 import sharedModelFactory from './shared.ts'
 
+import type { LDDisplayConfigSchema } from './SharedLDConfigSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 const LazyLDDisplayComponent = lazy(
   () => import('./components/LDDisplayComponent.tsx'),
 )
 
-function makeLDConfigSchema(typeName: string) {
-  return ConfigurationSchema(
-    typeName,
-    {
-      height: {
-        type: 'number',
-        defaultValue: 400,
-        description:
-          'Starting height in pixels for the LD triangle, excluding the lineZoneHeight band; drag-resizable',
-      },
-    },
-    {
-      baseConfiguration: sharedLDConfigFactory(),
-      explicitlyTyped: true,
-    },
-  )
-}
-
-function makeLDStateModel(typeName: string) {
-  const configSchema = makeLDConfigSchema(typeName)
+// The schema is passed in rather than built from `typeName` here, and that is
+// the same rule as the one below in a second guise: the doc generator keys a
+// `#config` block to its FILE, so while both schemas came from one
+// `makeLDConfigSchema(typeName)` helper neither registered display type had a
+// page or a name the generator could see. `SharedLDDisplay` had the only page,
+// so its slot table told readers to write `type: 'SharedLDDisplay'`, which
+// nothing accepts — and both displays were missing from the "settings with a
+// session-wide default" table (agent-docs/reference/DISPLAY_TYPE_DEFAULTS.md)
+// even though their promotable `showLegend` pin works. Only the state model
+// still takes the name, which nothing generates from.
+function makeLDStateModel(
+  typeName: string,
+  configSchema: LDDisplayConfigSchema,
+) {
   return {
     configSchema,
     stateModel: sharedModelFactory(configSchema)
@@ -62,7 +57,7 @@ export default function LDDisplayF(pluginManager: PluginManager) {
         displayName: 'LD heatmap display',
         helpText:
           'Displays a linkage disequilibrium (LD) heatmap showing pairwise R² values between variants computed directly from VCF genotypes',
-        ...makeLDStateModel('LDDisplay'),
+        ...makeLDStateModel('LDDisplay', ldDisplayConfigSchema()),
         trackType: 'VariantTrack',
         viewType: 'LinearGenomeView',
         ReactComponent: LazyLDDisplayComponent,
@@ -76,7 +71,7 @@ export default function LDDisplayF(pluginManager: PluginManager) {
         displayName: 'LD heatmap display',
         helpText:
           'Displays a linkage disequilibrium (LD) heatmap from pre-computed LD data (e.g., PLINK --r2 output)',
-        ...makeLDStateModel('LDTrackDisplay'),
+        ...makeLDStateModel('LDTrackDisplay', ldTrackDisplayConfigSchema()),
         trackType: 'LDTrack',
         viewType: 'LinearGenomeView',
         ReactComponent: LazyLDDisplayComponent,

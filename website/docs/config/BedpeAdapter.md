@@ -32,6 +32,7 @@ intended for SVs in a single assembly
 - **Track:** [VariantTrack](../varianttrack)
 - **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
 - **Display:** [ChordVariantDisplay](../chordvariantdisplay)
+- **Display:** [LDDisplay](../lddisplay)
 - **Display:**
   [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
 - **Display:**

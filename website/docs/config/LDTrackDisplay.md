@@ -1,38 +1,72 @@
 ---
-id: sharedlddisplay
-title: SharedLDDisplay
-sidebar_label: Display -> SharedLDDisplay
+id: ldtrackdisplay
+title: LDTrackDisplay
+sidebar_label: Display -> LDTrackDisplay
 ---
 
 Auto-generated config schema for the current JBrowse release — see the
 [config guide](/docs/config_guide) for concepts. Provided by the `variants`
 plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LDDisplay/SharedLDConfigSchema.ts).
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LDDisplay/configSchemaLDTrack.ts).
 
-Shared config for the two LD displays: `LDDisplay` (on a `VariantTrack`,
-computing pairwise R² from the VCF's own genotypes) and `LDTrackDisplay` (on an
-`LDTrack`, reading pre-computed LD such as PLINK `--r2` output). Both register
-the same slots against different track types, so the slots live here once.
+## Example usage
+
+The pre-computed heatmap, with the legend on so the R² ramp is labelled:
+
+```js
+{
+  type: 'LDTrack',
+  trackId: 'ld',
+  name: 'Linkage disequilibrium',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'PlinkLDTabixAdapter',
+    uri: 'https://example.com/plink.ld.gz',
+  },
+  displays: [
+    {
+      type: 'LDTrackDisplay',
+      displayId: 'ld-LDTrackDisplay',
+      showLegend: true,
+    },
+  ],
+}
+```
+
+_See the **Config slots** section below for all available configuration fields._
+
+Linkage disequilibrium heatmap read from an `LDTrack`'s pre-computed file (e.g.
+PLINK `--r2` output), rather than computed from genotypes. Use
+[](/docs/config/lddisplay) instead to compute LD from a `VariantTrack`'s own
+VCF.
+
+The genotype-derived filters the shared base declares
+(`minorAlleleFrequencyFilter`, `hweFilterThreshold`, `callRateFilter`) have
+nothing to act on here — the file's rows are already computed — so they are
+inherited but inert.
+
+Every slot comes from the shared base below; this display adds none of its own.
 
 ## Related links
 
-- **Extended by:** [LDTrackDisplay](../ldtrackdisplay)
-- **Extended by:** [LDDisplay](../lddisplay)
-- **Base config:** [BaseLinearDisplay](../baselineardisplay)
+- **Adapter:** [PlinkLDAdapter](../plinkldadapter)
+- **Adapter:** [PlinkLDTabixAdapter](../plinkldtabixadapter)
+- **Base config:** [SharedLDDisplay](../sharedlddisplay)
 
 ## Config slots
 
-`SharedLDDisplay` is a shared base schema, not a type you name in a config. Set
-these slots on one of the configs under **Extended by** above, each of which
-lists them as inherited and shows the shape in its own example. Slot types
-(`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types). Slots a base
-configuration contributes are listed here too, so this table is the whole
+These slots go on a display entry:
+`"displays": [{ "type": "LDTrackDisplay", ... }]`, or in the track's
+[`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this
+is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained
+in the [config slot types reference](/docs/config_guides/slot_types). Slots a
+base configuration contributes are listed here too, so this table is the whole
 surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
+| <span class="slot-group">Inherited from [SharedLDDisplay](../sharedlddisplay)</span> | <span class="slot-group-count">18 slots</span> |
 | <span id="slot-minorallelefrequencyfilter">**minorAlleleFrequencyFilter**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.1</code> | Filter variants by minor allele frequency (0-1). Variants with MAF below this threshold will be hidden<br>_advanced_ |
 | <span id="slot-lengthcutofffilter">**lengthCutoffFilter**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>Number.MAX_SAFE_INTEGER</code> | Maximum length of variants to include (in bp)<br>_advanced_ |
 | <span id="slot-linezoneheight">**lineZoneHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | Height of the zone for connecting lines at the top<br>_advanced_ |

@@ -1,38 +1,72 @@
 ---
-id: sharedlddisplay
-title: SharedLDDisplay
-sidebar_label: Display -> SharedLDDisplay
+id: lddisplay
+title: LDDisplay
+sidebar_label: Display -> LDDisplay
 ---
 
 Auto-generated config schema for the current JBrowse release — see the
 [config guide](/docs/config_guide) for concepts. Provided by the `variants`
 plugin.
-[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LDDisplay/SharedLDConfigSchema.ts).
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LDDisplay/configSchemaVariant.ts).
 
-Shared config for the two LD displays: `LDDisplay` (on a `VariantTrack`,
-computing pairwise R² from the VCF's own genotypes) and `LDTrackDisplay` (on an
-`LDTrack`, reading pre-computed LD such as PLINK `--r2` output). Both register
-the same slots against different track types, so the slots live here once.
+## Example usage
+
+An LD display on a phased callset, opened at a wider MAF cutoff than the default
+so low-frequency sites still contribute:
+
+```js
+{
+  type: 'VariantTrack',
+  trackId: 'ld_demo',
+  name: 'LD from genotypes',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'VcfTabixAdapter',
+    vcfGzLocation: { uri: 'https://example.com/calls.vcf.gz' },
+  },
+  displays: [
+    {
+      type: 'LDDisplay',
+      displayId: 'ld_demo-LDDisplay',
+      minorAlleleFrequencyFilter: 0.05,
+      showLegend: true,
+    },
+  ],
+}
+```
+
+_See the **Config slots** section below for all available configuration fields._
+
+Linkage disequilibrium heatmap computed from a `VariantTrack`'s own genotypes:
+pairwise R² (or D') over the variants in view, drawn as a triangle. Use
+[](/docs/config/ldtrackdisplay) instead to read pre-computed LD (e.g. PLINK
+`--r2` output) from an `LDTrack`.
+
+Every slot comes from the shared base below; this display adds none of its own.
 
 ## Related links
 
-- **Extended by:** [LDTrackDisplay](../ldtrackdisplay)
-- **Extended by:** [LDDisplay](../lddisplay)
-- **Base config:** [BaseLinearDisplay](../baselineardisplay)
+- **Adapter:** [BedpeAdapter](../bedpeadapter)
+- **Adapter:** [StarFusionAdapter](../starfusionadapter)
+- **Adapter:** [SplitVcfTabixAdapter](../splitvcftabixadapter)
+- **Adapter:** [VcfAdapter](../vcfadapter)
+- **Adapter:** [VcfTabixAdapter](../vcftabixadapter)
+- **Base config:** [SharedLDDisplay](../sharedlddisplay)
 
 ## Config slots
 
-`SharedLDDisplay` is a shared base schema, not a type you name in a config. Set
-these slots on one of the configs under **Extended by** above, each of which
-lists them as inherited and shows the shape in its own example. Slot types
-(`fileLocation`, `frozen`, ...) are explained in the
-[config slot types reference](/docs/config_guides/slot_types). Slots a base
-configuration contributes are listed here too, so this table is the whole
+These slots go on a display entry: `"displays": [{ "type": "LDDisplay", ... }]`,
+or in the track's
+[`displayDefaults`](/docs/config_guides/tracks#configuring-displays) when this
+is its default display. Slot types (`fileLocation`, `frozen`, ...) are explained
+in the [config slot types reference](/docs/config_guides/slot_types). Slots a
+base configuration contributes are listed here too, so this table is the whole
 surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
+| <span class="slot-group">Inherited from [SharedLDDisplay](../sharedlddisplay)</span> | <span class="slot-group-count">18 slots</span> |
 | <span id="slot-minorallelefrequencyfilter">**minorAlleleFrequencyFilter**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.1</code> | Filter variants by minor allele frequency (0-1). Variants with MAF below this threshold will be hidden<br>_advanced_ |
 | <span id="slot-lengthcutofffilter">**lengthCutoffFilter**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>Number.MAX_SAFE_INTEGER</code> | Maximum length of variants to include (in bp)<br>_advanced_ |
 | <span id="slot-linezoneheight">**lineZoneHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | Height of the zone for connecting lines at the top<br>_advanced_ |

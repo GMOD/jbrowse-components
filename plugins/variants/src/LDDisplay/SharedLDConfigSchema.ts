@@ -179,6 +179,21 @@ export default function sharedLDConfigFactory() {
         defaultValue: [],
         advanced: true,
       },
+      /**
+       * #slot
+       * Starting height in pixels for the LD triangle, excluding the
+       * lineZoneHeight band; drag-resizable
+       */
+      // An override of BaseLinearDisplay's `height` (100), which per the
+      // slot-merge rule states only what differs — but `type` and
+      // `defaultValue` stay, since they are what mark the entry as a slot. It
+      // lives here rather than on each concrete display because both want the
+      // identical 400: keeping it here is what lets those two schemas be empty,
+      // which is the shape that gives each a `#config` block of its own.
+      height: {
+        type: 'number',
+        defaultValue: 400,
+      },
     },
     {
       /**

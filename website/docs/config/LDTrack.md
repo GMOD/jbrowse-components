@@ -35,6 +35,7 @@ PLINK --r2 output)
 
 ## Related links
 
+- **Display:** [LDTrackDisplay](../ldtrackdisplay)
 - **Adapter:** [PlinkLDAdapter](../plinkldadapter)
 - **Adapter:** [PlinkLDTabixAdapter](../plinkldtabixadapter)
 - **Base config:** [BaseTrack](../basetrack)
