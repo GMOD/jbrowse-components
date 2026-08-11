@@ -70,7 +70,9 @@ description: The shared display status chrome that owns loading, error, and retr
   `BackgroundProgress` is the one overlay state that does **not** own its box —
   a replacement set renders an in-flow chip (see `bottomRightCorner.ts`).
 - Always: a thin outer owns the chrome, a named observer body owns the canvas
-  and overlays, joined by a render-prop child.
+  and overlays, joined by a render-prop child. **The render prop holds
+  components and nothing else** — it runs during the chrome's own render, so an
+  inline observable read there re-renders the chrome rather than the body.
 - **The pointer measurement is the chrome's too**, because it owns the element
   the position is measured against. It publishes `mouseTracker` through the
   handle and the body reads it with `useMouseState` — never hold the position
@@ -140,6 +142,39 @@ Every GPU display follows one shape:
 The thin outer owns the chrome, plus any hook that needs a ref to its container
 (maf's drag-select, the only one left). The named observer body owns the canvas
 and overlays, so observable reads scope to the body rather than the chrome.
+
+### The render prop is the chrome's render, not the body's
+
+**An observable read written inline in the render-prop child is tracked by
+`DisplayChromeBase`, not by the display's own component.** `children({…})` is
+called while `DisplayChromeBaseInner` builds its element tree, so MobX attributes
+everything it touches to that observer. Only reads inside a *component* the
+child returns land where the shape above implies.
+
+This is the trap the rule "a named observer body owns the canvas and overlays"
+is easy to read past, because the render prop looks like it is already the body.
+It isn't; it is one level too high, and the cost is the whole chrome
+re-rendering — `useRenderingBackend` re-run, the status container rebuilt with a
+fresh inline `style`, the overlay portal re-created.
+
+Two things follow, and each has cost something:
+
+- **Reads in the outer component are just as bad**, because they rebuild the
+  `DisplayChrome` element (a new `children` closure and usually a fresh `style`
+  object, which is what `observer`'s memo compares). Wiggle read
+  `view.visibleRegions` this way and the variant matrix read `view.offsetPx`;
+  both rebuild every pan frame, so a drag re-rendered the chrome for its whole
+  duration. Fixed 2026-08 by moving each read into the observer that wants the
+  number.
+- **Put components in the render prop, nothing else.** Alignments had four
+  inline reads there (`scrollableHeight` twice, `pileupTruncated`, `heightMode`,
+  `view.scrollZoom`) plus `contextMenuAnchor` — none per-frame, so it was never
+  hot, but it is the same shape. They are `AlignmentsCornerControls` and
+  `AlignmentsContextMenu` now. Multi-wiggle's body already carried the comment
+  for the context-menu half; it is a general rule, not a wiggle one.
+
+The quick check when adding a display: if the render prop contains anything but
+JSX elements and the destructured handle, the chrome is tracking it.
 
 ## The pointer position is published, never held
 

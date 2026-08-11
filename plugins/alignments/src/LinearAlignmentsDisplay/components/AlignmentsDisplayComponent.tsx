@@ -66,6 +66,79 @@ const AlignmentsTooltipLayer = observer(function AlignmentsTooltipLayer({
   )
 })
 
+// The corner controls, in their own observer for the reason every other layer
+// here is: the render-prop child below is invoked during `DisplayChromeBase`'s
+// render, so an observable read written *inline* in it is tracked by the CHROME,
+// not by this file's component. These four (`scrollableHeight` twice,
+// `pileupTruncated`, `heightMode`, `view.scrollZoom`) sat there, so raising the
+// max height or flipping the height mode re-rendered `DisplayChrome` itself —
+// `useRenderingBackend` re-run, the status container rebuilt, the overlay portal
+// re-created — to redraw two chips. None of them moves per frame, so this was
+// never hot; it is the same shape wiggle and the variant matrix WERE hot in.
+const AlignmentsCornerControls = observer(function AlignmentsCornerControls({
+  model,
+}: {
+  model: LinearAlignmentsDisplayModel
+}) {
+  // The guard travels with the read it was written for. Hiding a track detaches
+  // the display, firing MobX reactions synchronously inside the click handler —
+  // and this observer now tracks the config-backed `pileupTruncated` the outer
+  // component's comment names, plus `getContainingView`, which throws outright
+  // on a detached node. Relying on the parent re-rendering first would be
+  // relying on reaction order.
+  if (!isAlive(model)) {
+    return null
+  }
+  const view = getContainingView(model) as LinearGenomeViewModel
+  const hasOverflow = model.scrollableHeight > 0
+  return (
+    // The pileup's own scrollbar sits on the same edge, so the row has to clear
+    // it while it is drawn. Same expression as the canvas display's: the
+    // scrollbar's track plus a hairline. Passing nothing here drew these chips
+    // over the thumb.
+    <BottomRightIndicators
+      scrollbarWidth={hasOverflow ? VERTICAL_SCROLLBAR_WIDTH + 2 : 0}
+    >
+      {model.pileupTruncated ? (
+        <PileupTruncatedIndicator
+          onShowAll={() => {
+            model.setMaxHeight(SHOW_ALL_MAX_HEIGHT)
+          }}
+        />
+      ) : null}
+      <TrackHeightIndicator
+        heightMode={model.heightMode}
+        hasOverflow={hasOverflow}
+        scrollZoom={view.scrollZoom}
+        noun="read"
+        onSetHeightMode={mode => {
+          model.setHeightMode(mode)
+        }}
+      />
+    </BottomRightIndicators>
+  )
+})
+
+// Same reason, and the one multi-wiggle's own component already spells out:
+// reading `contextMenuAnchor` inline in the render prop attributes it to the
+// chrome's observer, so opening or closing the menu re-rendered the whole chrome
+// subtree.
+const AlignmentsContextMenu = observer(function AlignmentsContextMenu({
+  model,
+}: {
+  model: LinearAlignmentsDisplayModel
+}) {
+  return (
+    <ContextMenu
+      anchor={model.contextMenuAnchor}
+      menuItems={() => model.contextMenuItems()}
+      onClose={() => {
+        model.closeContextMenu()
+      }}
+    />
+  )
+})
+
 const AlignmentsDisplayComponent = observer(
   function AlignmentsDisplayComponent({
     model,
@@ -75,14 +148,12 @@ const AlignmentsDisplayComponent = observer(
     const { classes } = useStyles()
     // Hiding a track detaches this display from the MST tree, which fires MobX
     // reactions synchronously inside the click handler — this still-mounted
-    // observer re-renders once (reading config-backed getters like
-    // `pileupTruncated`) before React unmounts it. Bail out while detached.
+    // observer re-renders once before React unmounts it. Bail out while
+    // detached. It reads no model field of its own any more, but `isAlive` still
+    // guards the children it builds.
     if (!isAlive(model)) {
       return null
     }
-    const view = getContainingView(model) as LinearGenomeViewModel
-
-    const { pileupTruncated } = model
     return (
       <DisplayChrome
         model={model}
@@ -96,43 +167,13 @@ const AlignmentsDisplayComponent = observer(
         testid="pileup-display"
         className={classes.display}
       >
+        {/* Components only, no inline reads — see AlignmentsCornerControls. */}
         {({ canvasRef, canvas, mouseTracker }) => (
           <>
             <PileupBody model={model} canvasRef={canvasRef} canvas={canvas} />
-            {/* The pileup's own scrollbar sits on the same edge, so the row has
-                to clear it while it is drawn. Same expression as the canvas
-                display's: the scrollbar's track plus a hairline. Passing nothing
-                here drew these chips over the thumb. */}
-            <BottomRightIndicators
-              scrollbarWidth={
-                model.scrollableHeight > 0 ? VERTICAL_SCROLLBAR_WIDTH + 2 : 0
-              }
-            >
-              {pileupTruncated ? (
-                <PileupTruncatedIndicator
-                  onShowAll={() => {
-                    model.setMaxHeight(SHOW_ALL_MAX_HEIGHT)
-                  }}
-                />
-              ) : null}
-              <TrackHeightIndicator
-                heightMode={model.heightMode}
-                hasOverflow={model.scrollableHeight > 0}
-                scrollZoom={view.scrollZoom}
-                noun="read"
-                onSetHeightMode={mode => {
-                  model.setHeightMode(mode)
-                }}
-              />
-            </BottomRightIndicators>
+            <AlignmentsCornerControls model={model} />
             <AlignmentsTooltipLayer model={model} mouseTracker={mouseTracker} />
-            <ContextMenu
-              anchor={model.contextMenuAnchor}
-              menuItems={() => model.contextMenuItems()}
-              onClose={() => {
-                model.closeContextMenu()
-              }}
-            />
+            <AlignmentsContextMenu model={model} />
           </>
         )}
       </DisplayChrome>
