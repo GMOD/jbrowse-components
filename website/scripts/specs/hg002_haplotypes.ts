@@ -74,9 +74,11 @@ function geneTrack(hap: 'MAT' | 'PAT', kind: 'genes' | 'landmarks' = 'genes') {
   return {
     type: 'FeatureTrack',
     trackId: `hg002_${kind}_${hap.toLowerCase()}`,
+    // the landmark lane's name carries its colour key, so the figure needs no
+    // overlay to say what blue and red mean — see STRAND_COLOR
     name:
       kind === 'landmarks'
-        ? `Landmark genes (${hap})`
+        ? `Landmark genes (${hap}) — forward blue, reverse red`
         : `Genes (JHU Liftoff v0.6, HG002 v1.1 ${hap})`,
     assemblyNames: ['hg002v1.2'],
     adapter: {
@@ -122,25 +124,57 @@ function geneLane(hap: 'MAT' | 'PAT', extra: Record<string, unknown> = {}) {
   }
 }
 
-// SIX GENES, LABELLED, SO THE FLIP IS READABLE AS TEXT (review: "it is hard to
-// see matching genes ... ideally a couple labels would be visible particularly
-// in the inverted region so we can see correspondence"). A 9 Mb lane of every
-// Liftoff gene cannot carry a label, so this is a second lane over the same
-// GFF, filtered to the six largest protein-coding genes inside the inverted
-// block. It is a separate trackId rather than a second display of the gene
-// track because a view cannot hold one track twice.
+// NAMED GENES, LABELLED, SO THE FLIP IS READABLE AS TEXT (review: "it is hard
+// to see matching genes ... ideally a couple labels would be visible
+// particularly in the inverted region so we can see correspondence"). A 9 Mb
+// lane of every Liftoff gene cannot carry a label, so this is a second lane over
+// the same GFF, filtered to the longest protein-coding genes inside the inverted
+// block. It is a separate trackId rather than a second display of the gene track
+// because a view cannot hold one track twice.
 //
-// The six are read off the annotation, not chosen: `tabix` the MAT GFF over the
-// inverted block (chr8_MATERNAL:7,822,846-11,688,252) and take the longest gene
-// records. What they then show is the whole claim, in a form that needs no
-// ribbon-reading -- the maternal lane runs MFHAS1, TNKS, MSRA, XKR6, BLK,
-// GATA4 and the paternal one runs the same six in the opposite order, because
-// the block between them is inverted.
-const LANDMARK_GENES = ['MFHAS1', 'TNKS', 'MSRA', 'XKR6', 'BLK', 'GATA4']
+// They are read off the annotation, not chosen: `tabix` the MAT GFF over the
+// inverted block (chr8_MATERNAL:7,822,846-11,688,252), keep `gene` records whose
+// `gene_biotype` is protein_coding, and rank by span. That gives MSRA 376 kb,
+// XKR6 306 kb, TNKS 230 kb, MFHAS1 110 kb, ERI1 98 kb, GATA4 83 kb, PINX1 75 kb,
+// BLK 70 kb, and then a long tail. ERI1 and PINX1 used to be missing from a list
+// that called itself the longest six -- BLK is eighth by that ranking, not
+// sixth -- so the cut is now where the ranking has its own step, at 70 kb.
+//
+// What they show is the whole claim in a form that needs no ribbon-reading: the
+// maternal lane runs MFHAS1, ERI1, TNKS, MSRA, PINX1, XKR6, BLK, GATA4 and the
+// paternal one runs the same eight in the opposite order, because the block
+// between them is inverted.
+const LANDMARK_GENES = [
+  'MFHAS1',
+  'ERI1',
+  'TNKS',
+  'MSRA',
+  'PINX1',
+  'XKR6',
+  'BLK',
+  'GATA4',
+]
 
 const LANDMARK_FILTER = `jexl:${LANDMARK_GENES.map(
   g => `get(feature,'gene_name')=='${g}'`,
 ).join('||')}`
+
+// STRAND AS COLOUR, NOT AS AN ARROWHEAD (review: "why doesnt gata4, blk have
+// strand arrows?"). At 9 Mb across 1400 px a base is 6.4 kb, so GATA4's 83 kb
+// and BLK's 70 kb are 13 and 11 px of lane: a glyph that narrow is drawn as one
+// solid body with no intron line to hang an arrow off, while MSRA at 59 px has
+// room for both. Nothing is wrong with those two genes -- the arrow is simply
+// not a channel that survives this zoom for any of them (even MSRA's is a 3 px
+// mark), so the lane states strand the way a whole-genome lane can.
+//
+// It also says more here than an arrow would. Every one of the eight flips
+// strand between the haplotypes, checked in the two GFFs rather than inferred
+// from the chain -- MSRA is + on MAT and - on PAT, GATA4 + and -, and so on
+// through all eight -- so the two lanes come out as each other's colour negative,
+// which is the inversion stated a third way, beside the crossing ribbons and the
+// reversed name order. The blue/red pair is the one
+// `cookbook_color_by_strand` teaches, so a reader who wants this has the recipe.
+const STRAND_COLOR = "jexl:feature.strand==1?'#1f77b4':'#d62728'"
 
 function landmarkLane(hap: 'MAT' | 'PAT') {
   return {
@@ -148,6 +182,7 @@ function landmarkLane(hap: 'MAT' | 'PAT') {
     type: 'LinearBasicDisplay',
     geneGlyphMode: 'longestCoding',
     jexlFiltersSetting: [LANDMARK_FILTER],
+    color: STRAND_COLOR,
     height: 60,
   }
 }

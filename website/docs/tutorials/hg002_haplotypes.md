@@ -130,7 +130,7 @@ ordinary gene-carrying euchromatin, not a blank segment that happened to flip.
 At 9 Mb no gene in that lane can carry a label. Add a second lane over the same
 GFF and cut it to a few genes with **Edit filters...** in its track menu.
 
-<Figure caption="HG002 v1.2 maternal (top) against paternal (bottom) across 9 Mb of 8p23.1, ribbons colored by strand. The inverted block is the long blue bar in both panels and the sweep crossing between them, and the labelled lane beside the ribbons carries the same six genes in opposite orders." src="/img/hg002_haplotypes_8p23_inversion.png" />
+<Figure caption="HG002 v1.2 maternal (top) against paternal (bottom) across 9 Mb of 8p23.1, ribbons colored by strand. The inverted block is the long blue bar in both panels and the sweep crossing between them. The labelled lane beside the ribbons carries the same genes in opposite orders, coloured by strand, so each one is the other panel's colour: an arrowhead is unreadable at this zoom and the colour is not." src="/img/hg002_haplotypes_8p23_inversion.png" />
 
 Ribbon coloring is the palette button in the view header; **Show curved lines**,
 under **View options** then **Show...**, makes a block landing far from where it
