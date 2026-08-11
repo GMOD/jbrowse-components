@@ -1,3 +1,5 @@
+import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
+
 import type { SashimiArc } from '../../features/sashimi/computeOverlay.ts'
 import type { SashimiSide } from '../../features/sashimi/junctions.ts'
 
@@ -21,10 +23,39 @@ export const SASHIMI_SIDES = [
   'down',
 ] as const satisfies readonly SashimiSide[]
 
-// The remaining half of that pairing: which band top a side hangs off. Up arcs
-// are drawn over the coverage histogram, down arcs in the reserved strip below.
-export function sashimiSideTop(section: SashimiArcSection, side: SashimiSide) {
-  return side === 'up' ? section.coverageOverlayTop : section.sashimiBandTop
+// The heights the two sub-bands are cut from. Both are display-global settings,
+// so the model satisfies this shape directly.
+export interface SashimiBandHeights {
+  coverageHeight: number
+  sashimiArcsHeight: number
+}
+
+// The remaining half of that pairing: WHERE a side draws. Up arcs are drawn over
+// the coverage histogram, down arcs in the reserved strip below it — and the
+// box's height and clipping follow from that same choice, so they are derived
+// here beside the top rather than re-picked at each call site off an `isDown`.
+// (As separate decisions, nothing stopped the down strip's arcs being given the
+// coverage band's height.) `clipped` is the down strip's: it must not paint over
+// the pileup underneath it, whereas the up band stays open so an arc can rise
+// into the coverage band's own top margin.
+export function sashimiSideBand(
+  section: SashimiArcSection,
+  side: SashimiSide,
+  heights: SashimiBandHeights,
+) {
+  return side === 'down'
+    ? {
+        top: section.sashimiBandTop,
+        height: heights.sashimiArcsHeight,
+        clipped: true,
+      }
+    : {
+        top: section.coverageOverlayTop,
+        // The band runs from this box's own top — the histogram top, already one
+        // y-scalebar offset below the coverage band's — to the band's bottom.
+        height: heights.coverageHeight - YSCALEBAR_LABEL_OFFSET,
+        clipped: false,
+      }
 }
 
 /**

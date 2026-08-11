@@ -1,6 +1,5 @@
 import { Fragment, useState } from 'react'
 
-import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
@@ -11,53 +10,52 @@ import {
   SASHIMI_SIDES,
   sashimiArcKey,
   sashimiSelectionKey,
-  sashimiSideTop,
+  sashimiSideBand,
 } from './sashimiArcs.ts'
-import { bandScreenTop } from './sectionScreen.ts'
+import { bandOnScreen, bandScreenTop } from './sectionScreen.ts'
 import { formatSashimiTooltip } from './tooltipUtils.ts'
 
 import type { SashimiArc } from '../../features/sashimi/computeOverlay.ts'
-import type { SashimiSide } from '../../features/sashimi/junctions.ts'
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // One side's worth of arcs as an absolutely-positioned SVG at the (scrolled)
 // sub-band top. Native per-path hover/click means each band resolves its own
 // events.
 //
-// The band's extent and clipping follow from `side`, so they are derived here
-// rather than passed: an 'up' band overlays the coverage histogram (overflow
-// visible, so a tall arc can rise into it) and a 'down' band is the reserved
-// strip below it, clipped to its own height. As props, nothing stopped a caller
-// pairing the down band with the coverage height.
+// The box comes from `sashimiSideBand`, which derives extent and clipping from
+// the side — an 'up' band overlays the coverage histogram (overflow visible, so
+// a tall arc can rise into it) and a 'down' band is the reserved strip below it,
+// clipped to its own height so it can't paint over the pileup.
 //
 // Hover just widens the stroke: it's plain React state, not an imperative
 // setAttribute. Arc geometry is memoized on the model (`sashimiArcSections`), so
 // hovering repaints only this band's (low count) paths without recomputing it.
 const SashimiSubBand = observer(function SashimiSubBand({
   model,
-  side,
   arcs,
   groupKey,
   screenTop,
+  height,
+  clipped,
+  width,
+  palette,
   selectedArcKey,
   onSelect,
 }: {
   model: LinearAlignmentsDisplayModel
-  side: SashimiSide
   arcs: SashimiArc[]
   groupKey: string
   screenTop: number
+  height: number
+  clipped: boolean
+  width: number
+  palette: JBrowsePalette
   selectedArcKey: string | null
   onSelect: (key: string) => void
 }) {
   const [hoveredArcKey, setHoveredArcKey] = useState<string | null>(null)
-  const palette = usePalette()
-  const { width } = getContainingView(model) as LinearGenomeViewModel
-  const isDown = side === 'down'
-  if (!arcs.length) {
-    return null
-  }
   return (
     <svg
       style={{
@@ -65,11 +63,9 @@ const SashimiSubBand = observer(function SashimiSubBand({
         top: screenTop,
         left: 0,
         pointerEvents: 'none',
-        height: isDown
-          ? model.sashimiArcsHeight
-          : model.coverageHeight - YSCALEBAR_LABEL_OFFSET,
+        height,
         width,
-        overflow: isDown ? 'hidden' : 'visible',
+        overflow: clipped ? 'hidden' : 'visible',
       }}
     >
       {arcs.map(arc => {
@@ -132,32 +128,56 @@ const SashimiSubBand = observer(function SashimiSubBand({
 
 // Each stacked section contributes two sub-bands: `up` over the coverage
 // histogram and `down` in the reserved strip below it. 'auto' fills both at
-// once; 'up'/'down' leave the other empty (and an empty sub-band renders null).
-// `sashimiArcSections` is [] when sashimi is off or the view hasn't initialized.
+// once; 'up'/'down' leave the other empty. `sashimiArcSections` is [] when
+// sashimi is off or the view hasn't initialized.
 const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
   model,
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
   const [selectedArcKey, setSelectedArcKey] = useState<string | null>(null)
+  const palette = usePalette()
   // Ungrouped coverage is sticky (only the pileup scrolls), so its bands keep
   // their content-space tops; grouped sections scroll as a unit.
-  const { scrollModel: scroll } = model
-  return model.sashimiArcSections.flatMap(section =>
-    SASHIMI_SIDES.map(side => (
-      <SashimiSubBand
-        key={`${section.groupKey}-${side}`}
-        model={model}
-        side={side}
-        arcs={section[side]}
-        groupKey={section.groupKey}
-        screenTop={bandScreenTop(sashimiSideTop(section, side), scroll)}
-        selectedArcKey={selectedArcKey}
-        onSelect={key => {
-          setSelectedArcKey(key)
-        }}
-      />
-    )),
+  const { scrollModel: scroll, sashimiArcSections: sections } = model
+  if (sections.length === 0) {
+    return null
+  }
+  // Read AFTER that gate: `view.width` throws by design before the view is
+  // measured, and `sashimiArcSections` is empty until `view.initialized` — so
+  // the gate is what makes this read safe, rather than it being safe by
+  // accident of nothing mounting the overlay early (the trap
+  // `PileupBezierOverlay` documents at length).
+  const { width } = getContainingView(model) as LinearGenomeViewModel
+  return sections.flatMap(section =>
+    SASHIMI_SIDES.map(side => {
+      const arcs = section[side]
+      const band = sashimiSideBand(section, side, model)
+      const screenTop = bandScreenTop(band.top, scroll)
+      // A grouped display re-renders this whole overlay on every scroll frame
+      // (each section's screen top moves), so an off-screen lane's paths would
+      // be reconciled once per frame for a band nobody can see — the same
+      // reason `GroupLabelsOverlay` culls. Not applied to the SVG export, which
+      // has no frames and clips to the same box anyway.
+      return arcs.length === 0 ||
+        !bandOnScreen(screenTop, band.height, scroll) ? null : (
+        <SashimiSubBand
+          key={`${section.groupKey}-${side}`}
+          model={model}
+          arcs={arcs}
+          groupKey={section.groupKey}
+          screenTop={screenTop}
+          height={band.height}
+          clipped={band.clipped}
+          width={width}
+          palette={palette}
+          selectedArcKey={selectedArcKey}
+          onSelect={key => {
+            setSelectedArcKey(key)
+          }}
+        />
+      )
+    }),
   )
 })
 

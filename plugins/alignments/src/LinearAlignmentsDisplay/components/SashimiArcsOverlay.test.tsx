@@ -1,6 +1,13 @@
-import { sashimiArcKey, sashimiSelectionKey } from './sashimiArcs.ts'
+import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
+
+import {
+  sashimiArcKey,
+  sashimiSelectionKey,
+  sashimiSideBand,
+} from './sashimiArcs.ts'
 
 import type { SashimiArc } from '../../features/sashimi/computeOverlay.ts'
+import type { SashimiArcSection } from './sashimiArcs.ts'
 
 function makeArc(arc: Partial<SashimiArc>): SashimiArc {
   return {
@@ -37,6 +44,38 @@ describe('sashimiArcKey', () => {
     const fwd = sashimiArcKey(makeArc({ strand: 1 }))
     const rev = sashimiArcKey(makeArc({ strand: -1 }))
     expect(fwd).not.toBe(rev)
+  })
+})
+
+describe('sashimiSideBand', () => {
+  const section: SashimiArcSection = {
+    groupKey: 'sampleA',
+    up: [],
+    down: [],
+    coverageOverlayTop: 200,
+    sashimiBandTop: 290,
+  }
+  const heights = { coverageHeight: 100, sashimiArcsHeight: 40 }
+
+  it('hangs the up band off the coverage histogram, unclipped', () => {
+    // The box starts at the histogram top (one y-scalebar offset into the
+    // coverage band) and runs to the band's bottom, so a full-height arc has
+    // room; unclipped, so it can rise into the top margin.
+    expect(sashimiSideBand(section, 'up', heights)).toEqual({
+      top: 200,
+      height: 100 - YSCALEBAR_LABEL_OFFSET,
+      clipped: false,
+    })
+  })
+
+  it('clips the down band to the strip the layout reserved', () => {
+    // Clipping is the load-bearing half: the strip is only as tall as
+    // `sashimiArcsHeight`, and the pileup starts immediately below it.
+    expect(sashimiSideBand(section, 'down', heights)).toEqual({
+      top: 290,
+      height: 40,
+      clipped: true,
+    })
   })
 })
 

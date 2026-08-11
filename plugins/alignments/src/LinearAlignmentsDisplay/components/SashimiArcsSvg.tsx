@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react'
 
 import SashimiArcLabels from './SashimiArcLabels.tsx'
-import { SASHIMI_SIDES, sashimiArcKey, sashimiSideTop } from './sashimiArcs.ts'
+import { SASHIMI_SIDES, sashimiArcKey, sashimiSideBand } from './sashimiArcs.ts'
 import { bandScreenTop } from './sectionScreen.ts'
 
 import type { SashimiArc } from '../../features/sashimi/computeOverlay.ts'
@@ -63,7 +63,7 @@ const SashimiArcsSvg = observer(function SashimiArcsSvg({
       <SashimiSide
         key={`${section.groupKey}-${side}`}
         arcs={section[side]}
-        top={bandScreenTop(sashimiSideTop(section, side), scroll)}
+        top={bandScreenTop(sashimiSideBand(section, side, model).top, scroll)}
         showLabels={model.showSashimiLabels}
         palette={palette}
       />
