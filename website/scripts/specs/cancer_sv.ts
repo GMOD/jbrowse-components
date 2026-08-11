@@ -963,8 +963,10 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     name: 'cancer_sv/derivative_synteny',
     // 945 + 251 for the read lane coming back as chains, - 25 and - 60 for the
     // two gene tracks going compact, + 300 for the hg38 read lane and + 59 for
-    // the der3 lane unchaining into its own rows
-    viewportHeight: 1450,
+    // the der3 lane unchaining into its own rows, then -350 for the compact
+    // pass (read lanes at the Compact pitch, both gene lanes and the ribbon
+    // band down)
+    viewportHeight: 1100,
     viewportWidth: 1600,
     url: sessionSpec(CONFIG, {
       sessionTracks: [DER3_GENES_TRACK],
@@ -999,7 +1001,9 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   // the labels, which this row cannot lose -- the gene names ARE
                   // what the top row contributes.
                   displayMode: 'compact',
-                  height: 70,
+                  // 70 until "make everything as compact as possible": one
+                  // compact gene row plus its floating label is ~50
+                  height: 50,
                 },
                 // THE SAME MOLECULES AGAINST hg38 (reviewer: "can the reads be
                 // shown aligned to the hg38 also?"). The figure's claim is that
@@ -1024,13 +1028,21 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 // reads that reach chr10 and chr12 out of the frame -- silently,
                 // since a display overflowing its own height reads as complete
                 // to both of the run's size checks.
+                // `linkedReads` (reviewer: "please enable 'view as
+                // pairs/link supplementary reads' in first row"), which is
+                // what puts a molecule's chr3 / chr10 / chr12 segments on ONE
+                // row across the three windows of this panel, so a row is a
+                // molecule and its gaps are the junctions. It is also why the
+                // lane fits in 200 px: chaining collapses the 53 records into
+                // ~29 rows.
                 {
                   trackId: TUMOUR,
                   ...DEEP_ONT,
                   showOnlySplitAlignments: true,
+                  linkedReads: 'normal',
                   heightMode: 'fit',
-                  height: 300,
-                  coverageHeight: 50,
+                  height: 200,
+                  coverageHeight: 40,
                   featureHeight: 3,
                   colorBy: { type: 'strand' },
                 },
@@ -1055,7 +1067,9 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   trackId: DER3_GENES_TRACK.trackId,
                   type: 'LinearBasicDisplay',
                   displayMode: 'compact',
-                  height: 120,
+                  // 120 -> 90: three compact rows and their labels, which is
+                  // what the 32 kb arm plus the six genes beside it packs into
+                  height: 90,
                 },
                 // THE READS ARE BACK, AS CHAINS (reviewer: "also show the reads.
                 // consider using view as pairs/link supplementary reads ... that
@@ -1109,14 +1123,14 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 // what a reader follows and the overlaps are off-screen.
                 {
                   trackId: 'reads_vs_der3',
-                  coverageHeight: 60,
+                  coverageHeight: 40,
                   // 53 non-secondary records pack into ~41 rows (a few of the
-                  // short ones share), at a pitch of 6 (featureHeight + 1
-                  // above 3 px, featureSpacingForHeight), + the band. Measured
-                  // off the capture rather than off the record count, which
-                  // over-reserved by 70 px.
-                  height: 320,
-                  featureHeight: 5,
+                  // short ones share), now at the Compact pitch of 3
+                  // (featureHeight 3 derives a 0 gap, featureSpacingForHeight),
+                  // + the band. Measured off the capture rather than off the
+                  // record count, which over-reserved the last version by 70 px.
+                  height: 170,
+                  featureHeight: 3,
                   colorBy: { type: 'strand' },
                   filterBy: { flagInclude: 0, flagExclude: 1796 },
                 },
@@ -1139,7 +1153,9 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // own panel — the flat colour costs nothing there, and it is a figure
           // review already passed.
           colorBy: 'reference',
-          levelHeights: [160],
+          // 160 -> 110: four ribbons that do not cross need only enough band
+          // to leave one row and arrive at the other
+          levelHeights: [110],
         },
       ],
     }),
@@ -1183,8 +1199,8 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     name: 'cancer_sv/derivative_inserts',
     // as before, less the 160 px the read lane gives back once the secondary
     // alignments are filtered and the split segments chain (46 rows -> 28),
-    // plus the 260 px hg38 read lane
-    viewportHeight: 1385,
+    // plus the hg38 read lane, then -270 for the compact pass
+    viewportHeight: 1115,
     viewportWidth: 1600,
     url: sessionSpec(CONFIG, {
       sessionTracks: [DER3_GENES_TRACK],
@@ -1201,7 +1217,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
               // stacks, but they answer which gene each piece was taken from
               // without the reader going back to the text
               tracks: [
-                { ...GENE_TRACK, height: 75 },
+                { ...GENE_TRACK, displayMode: 'compact', height: 55 },
                 // THE SAME MOLECULES AGAINST hg38 (reviewer: "can the reads be
                 // shown aligned to the hg38 also?"), and at this zoom the two
                 // lanes make the comparison the whole figure is for: a read
@@ -1220,14 +1236,21 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 // 25,359,568, which is the tear, said once. Same subset and
                 // the same reason as the sibling lane on derivative_synteny:
                 // split alignments only.
+                // `linkedReads` (reviewer: "please enable 'view as
+                // pairs/link supplementary reads' in first row"). At this zoom
+                // it is the whole comparison in one lane: a molecule's pieces
+                // share a row across the three windows, so the row breaks
+                // exactly where the reference does and the lane below shows
+                // the same molecule unbroken.
                 {
                   trackId: TUMOUR,
                   ...DEEP_ONT,
                   showOnlySplitAlignments: true,
+                  linkedReads: 'normal',
                   heightMode: 'fit',
-                  height: 260,
-                  coverageHeight: 50,
-                  featureHeight: 4,
+                  height: 170,
+                  coverageHeight: 40,
+                  featureHeight: 3,
                   colorBy: { type: 'strand' },
                 },
               ],
@@ -1249,7 +1272,8 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 {
                   ...GENE_TRACK,
                   trackId: DER3_GENES_TRACK.trackId,
-                  height: 130,
+                  displayMode: 'compact',
+                  height: 95,
                 },
                 // TALLER ROWS AND NO COVERAGE BAND, on review ("the read stack
                 // looks really messy also, can it use view-as-pairs/link supp
@@ -1295,9 +1319,15 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 // sized for, counted every record including the secondaries.)
                 {
                   trackId: 'reads_vs_der3',
-                  height: 260,
+                  // 28 chain rows at a pitch of 7 ("as compact as possible",
+                  // reviewer). NOT the Compact preset's 3: this capture is
+                  // 3200 px wide and the page draws it about a third of that,
+                  // so a 3 px row lands at 1 px and 28 of them are hash again
+                  // -- the exact failure featureHeight 8 was set to fix. 6 is
+                  // 2 px published, which is the floor a bar survives at.
+                  height: 175,
                   showCoverage: false,
-                  featureHeight: 8,
+                  featureHeight: 6,
                   linkedReads: 'normal',
                   filterBy: { flagInclude: 0, flagExclude: 1796 },
                 },
@@ -1308,8 +1338,9 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           drawCurves: false,
           // 180 rather than 220: five ribbons crossing need enough band to
           // stay separable and no more, and the 40 px buys most of the row
-          // height the reads gained
-          levelHeights: [180],
+          // height the reads gained. 140 once the whole frame went compact --
+          // below that the two insert ribbons meet inside the crossings.
+          levelHeights: [140],
         },
       ],
     }),

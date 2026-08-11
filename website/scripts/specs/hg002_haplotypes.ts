@@ -385,20 +385,31 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
     url: haplotypeSession(
       DRIFT_WINDOW_MAT,
       DRIFT_WINDOW_PAT_BEFORE,
-      // GENES ARE WHAT MAKES THE MOVE VISIBLE, and the frame is unreadable
-      // without them. One alignment covers this whole window, so its ribbon
-      // fills the band edge to edge with both its corners off-screen: it is the
-      // same flat block of colour before and after, and the only thing on the
-      // first cut of this figure that recorded the move was the locstring in
-      // the search box. With a gene lane under each ruler the same genes sit at
-      // different offsets in frame one and under each other in frame two, which
-      // is the whole claim.
-      [CHAIN_BLOCKS, geneLane('MAT', { displayMode: 'compact', height: 60 })],
-      [CHAIN_BLOCKS, geneLane('PAT', { displayMode: 'compact', height: 60 })],
+      // THE CHAIN LANE ALONE, no gene lanes (review: "way too much stuff on
+      // the screen"), and dropping them fixes a claim as well as the clutter.
+      // A round that predates this one added a gene lane per panel on the
+      // grounds that the same genes would sit at different offsets before the
+      // move and under each other after it. They do not: Liftoff names each
+      // haplotype's copies after whichever hg38 paralog it matched, so the
+      // after-frame put FAM85B / ENPP7P1 over LOC729732 / ENPP7P3 -- two lanes
+      // of different names under a caption saying they correspond, which is
+      // the comparison a reader would make and get wrong. (It is the same
+      // naming that sank hg002_haplotypes_hetsites, noted above.)
+      //
+      // What records the move without inviting that is the chain lane, on both
+      // panels, which is also what is being right-clicked. Before: the
+      // maternal panel carries the block and the paternal panel's lane is
+      // EMPTY, because those coordinates land in the gap past this block's
+      // end. After: both lanes carry it and the ribbon closes between them.
+      // Empty-to-populated is a difference at a glance, in the one lane the
+      // figure is about.
+      [CHAIN_BLOCKS],
+      [CHAIN_BLOCKS],
     ),
     // The context menu opens below the chain lane, near the top of the maternal
-    // panel, so it hangs over the band rather than off the frame.
-    viewportHeight: 640,
+    // panel, so it hangs over the band rather than off the frame. 640 until the
+    // two gene lanes came out, then measured back to where the app frame ends.
+    viewportHeight: 445,
     hideTooltip: true,
     stages: [
       {
@@ -453,7 +464,34 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
               dy: 30,
             },
             fontSize: 22,
-            text: '(1) Same coordinates, different sequence',
+            // WHAT THE PANELS ARE DOING WRONG, not what they contain (review:
+            // "it is unclear 'why' we are doing this"). Both rulers carry the
+            // same numbers and the paternal chain lane under them is empty:
+            // the numbers agree and the sequence does not, which is the reason
+            // there is a menu item at all.
+            text: '(1) Same numbers in both panels, and no chain under the paternal one',
+          },
+          // WHERE THE CURSOR WAS (review: "it is unclear what is being right
+          // clicked in the first image"). A context menu opens at the pointer,
+          // so the menu's own top-left corner is the click -- true, and not
+          // something a reader knows to read. The ring is on the SAME anchor
+          // the rightclick action takes, so it cannot drift from it, and it
+          // lands on the chain block the menu came out of.
+          //
+          // A ring rather than a box: the block being right-clicked spans the
+          // whole window (one alignment covers it), so a box around "the
+          // block" is a box around the lane, which marks nothing.
+          {
+            type: 'circle',
+            anchor: {
+              view: [0, 0],
+              track: 'hg002v1.2_mat_vs_pat',
+              locus: 'chr8_MATERNAL:7,735,000',
+              fracY: 0,
+              dy: 6,
+            },
+            radius: 14,
+            strokeWidth: 4,
           },
           {
             type: 'box',
@@ -482,7 +520,10 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
               dy: 30,
             },
             fontSize: 22,
-            text: '(2) The other panel moves to the match',
+            // The result stated as the thing that changed: the paternal panel
+            // is somewhere else and its chain lane now carries the block the
+            // maternal one does, which is what "corresponding" means here.
+            text: '(2) The paternal panel jumps to the sequence that does correspond',
           },
         ],
       },

@@ -104,7 +104,7 @@ Right-click a chain block and choose **Move other panel to the matching
 region**, which walks that panel's visible window through the alignment's CIGAR
 and sends its neighbor there.
 
-<Figure caption="Maternal (top) and paternal (bottom) panels on the same coordinates, each carrying the chain blocks and its own haplotype's genes. The paternal window lands past the end of this chain, so nothing in it corresponds; moving it from a maternal chain block brings the matching sequence under it." src="/img/hg002_haplotypes_follow_panel.png" />
+<Figure caption="Maternal (top) and paternal (bottom) panels, each carrying the chain blocks on its own haplotype's coordinates. Both rulers read the same numbers and the paternal lane under them is empty: that window lands past the end of this chain, so nothing in it corresponds. The ring marks the right-clicked block; after the move the paternal panel is elsewhere and both lanes carry the block the ribbon joins." src="/img/hg002_haplotypes_follow_panel.png" />
 
 ## See also
 
