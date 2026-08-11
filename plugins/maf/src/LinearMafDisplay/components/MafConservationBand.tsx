@@ -22,6 +22,10 @@ import type { LinearMafDisplayModel } from '../stateModel.ts'
  * left the band permanently blank on a track configured `conservationMode:
  * 'codon'` with no `annotationAdapter` — `visibleCodonConservation` is gated on
  * the same getter and returns nothing there.
+ *
+ * Shown on `conservationBandActive`, not the raw `showConservation`, for the
+ * same class of reason one level up: identity is computed from the alignment,
+ * which the summary path clears.
  */
 const MafConservationBand = observer(function MafConservationBand({
   model,
@@ -32,7 +36,7 @@ const MafConservationBand = observer(function MafConservationBand({
 }) {
   const theme = useTheme()
   const {
-    showConservation,
+    conservationBandActive,
     codonConservationActive,
     conservationHeight,
     coverageDisplayHeight,
@@ -40,7 +44,7 @@ const MafConservationBand = observer(function MafConservationBand({
   return (
     <MafBand
       model={model}
-      show={showConservation}
+      show={conservationBandActive}
       top={coverageDisplayHeight}
       height={conservationHeight}
       ticks={conservationTicks(conservationHeight)}

@@ -859,6 +859,35 @@ export default function stateModelFactory(
         get coverageBandActive() {
           return self.showCoverage && !self.showSummary
         },
+        /**
+         * #getter
+         * The conservation band is on *and* has data to put in it — the exact
+         * twin of `coverageBandActive`, and it exists because the band had the
+         * bug that getter was written to fix.
+         *
+         * Percent identity is computed from the alignment: the per-base mode
+         * reads `coverage.identityScores` off the blocks and the codon mode
+         * translates them, so both come out of `rpcDataMap`, which the summary
+         * path clears. `showConservation` alone therefore left 40px of band, a
+         * fixed 0–100% axis and a resize handle drawn over nothing at every zoom
+         * past the floor. Unlike coverage it is off by default, which is the
+         * only reason it went unnoticed for longer.
+         *
+         * Same split as its twin: everything that lays the band out, paints it
+         * or exports it reads this, so the menu tick keeps reporting what the
+         * user chose and zooming back in restores the band without touching the
+         * config.
+         *
+         * The one other reader of the raw setting is `annotationDataActive`, and
+         * it has to stay raw: it is an `rpcProps()` cache key, so resolving it
+         * through this getter would make the key zoom-dependent and drop every
+         * loaded region on each crossing of the summary floor. Fetching frames
+         * the codon band can't draw yet costs one small read; refetching the
+         * alignment costs the tier swap twice over.
+         */
+        get conservationBandActive() {
+          return self.showConservation && !self.showSummary
+        },
       }))
       .views(self => ({
         /**
@@ -951,10 +980,11 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * Height of the conservation (percent identity) band (0 when hidden).
+         * Height of the conservation (percent identity) band (0 when hidden, and
+         * on the summary path, where it has nothing to draw).
          */
         get conservationDisplayHeight() {
-          return self.showConservation ? self.conservationHeight : 0
+          return self.conservationBandActive ? self.conservationHeight : 0
         },
       }))
       .views(self => ({
@@ -1880,10 +1910,11 @@ export default function stateModelFactory(
         get codonConservationActive() {
           return (
             self.lgv.initialized &&
-            self.showConservation &&
+            // carries both "the user asked for the band" and "not the summary
+            // path", which this used to spell as two terms of its own
+            self.conservationBandActive &&
             self.conservationMode === 'codon' &&
             !!self.annotationAdapterConfig &&
-            !self.showSummary &&
             !!self.defaultCodonSpecies
           )
         },
@@ -1990,7 +2021,7 @@ export default function stateModelFactory(
          * identity is worse than no caption.
          */
         get bandLabels(): { text: string; top: number }[] {
-          return self.coverageBandActive && self.showConservation
+          return self.coverageBandActive && self.conservationBandActive
             ? [
                 { text: 'Coverage', top: 0 },
                 {

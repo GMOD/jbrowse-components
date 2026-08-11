@@ -216,6 +216,64 @@ describe('what paints is the selection, overridden only by zoom and summary', ()
     expect(display.rowsTopOffset).toBe(display.coverageHeight)
   })
 
+  // The conservation band had the identical bug and no `…BandActive` getter to
+  // fix it: percent identity is computed from `coverage.identityScores` on the
+  // alignment blocks, which the summary path clears, so `showConservation`
+  // alone drew 40px of band, a fixed 0-100% axis and a resize handle over
+  // nothing. Off by default, which is the only reason it outlived its twin.
+  it('collapses the conservation band on the summary path', () => {
+    const { display, view } = framesEnv({
+      summaryAdapter: { type: 'BigBedAdapter' },
+    }).createDisplay()
+    display.setShowConservation(true)
+    zoomAndSettle(view, 100)
+    expect(display.showSummary).toBe(true)
+
+    expect(display.conservationBandActive).toBe(false)
+    expect(display.conservationDisplayHeight).toBe(0)
+    // both bands gone, so the rows own the whole track
+    expect(display.rowsTopOffset).toBe(0)
+    // and no titles: they exist to tell two stacked histograms apart
+    expect(display.bandLabels).toEqual([])
+
+    // the *setting* is untouched, same as coverage
+    expect(display.showConservation).toBe(true)
+  })
+
+  it('restores the conservation band below the summary floor', () => {
+    const { display, view } = framesEnv({
+      summaryAdapter: { type: 'BigBedAdapter' },
+    }).createDisplay()
+    display.setShowConservation(true)
+    zoomAndSettle(view, 100)
+    expect(display.conservationDisplayHeight).toBe(0)
+
+    zoomAndSettle(view, 0.5)
+    expect(display.conservationBandActive).toBe(true)
+    expect(display.conservationDisplayHeight).toBe(display.conservationHeight)
+    expect(display.rowsTopOffset).toBe(
+      display.coverageHeight + display.conservationHeight,
+    )
+    expect(display.bandLabels.map(l => l.text)).toEqual([
+      'Coverage',
+      'Conservation (% identity)',
+    ])
+  })
+
+  // The codon variant of the band already excluded the summary path with a term
+  // of its own; it now inherits it, so the two cannot end up disagreeing about
+  // where the band draws.
+  it('keeps the codon conservation band off on the summary path', () => {
+    const { display, view } = framesEnv({
+      summaryAdapter: { type: 'BigBedAdapter' },
+    }).createDisplay()
+    display.setShowConservation(true)
+    display.setConservationMode('codon')
+    zoomAndSettle(view, 100)
+    expect(display.codonConservationActive).toBe(false)
+    expect(display.visibleCodonConservation).toEqual([])
+  })
+
   // Turning it off by hand still wins — the summary path is an extra reason the
   // band can't draw, not the only one.
   it('keeps the band off on the summary path when the user turned it off', () => {

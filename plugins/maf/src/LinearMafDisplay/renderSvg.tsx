@@ -82,7 +82,7 @@ function MafSvgBody({
     coverageTicks,
     coverageBandActive,
     coverageDomain,
-    showConservation,
+    conservationBandActive,
     codonConservationActive,
     conservationHeight,
     rowsCanvas2dMode,
@@ -117,7 +117,7 @@ function MafSvgBody({
           }}
         />
       ) : null}
-      {showConservation ? (
+      {conservationBandActive ? (
         <g transform={`translate(0, ${coverageDisplayHeight})`}>
           <PaintLayer
             width={width}
@@ -225,7 +225,7 @@ function MafSvgBody({
       {coverageBandActive && coverageTicks ? (
         <SvgYScaleGutter y={0} ticks={coverageTicks} />
       ) : null}
-      {showConservation ? (
+      {conservationBandActive ? (
         <SvgYScaleGutter
           y={coverageDisplayHeight}
           ticks={conservationTicks(conservationHeight)}
