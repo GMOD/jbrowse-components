@@ -15,7 +15,7 @@ const NIBBLE_FROM_CHAR_CODE = (() => {
 
 /**
  * Pack a SEQ string into BAM's 4-bit-per-base encoding, two bases per byte with
- * the first base in the high nibble — the layout `forEachMismatchNumeric` reads
+ * the first base in the high nibble — the layout `@gmod/bam`'s `forEachMismatchNumeric` reads
  * via `(byte >> ((1 - (i & 1)) << 2)) & 0xf`. Lets a text source (SAM, a
  * PSL-derived alignment) drive the same zero-allocation mismatch walk that
  * BAM's own packed sequence does.

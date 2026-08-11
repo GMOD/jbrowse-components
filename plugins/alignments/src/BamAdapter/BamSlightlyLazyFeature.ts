@@ -1,15 +1,13 @@
-import { BamRecord } from '@gmod/bam'
-import {
-  clipLengthAtStartOfReadNumeric,
-  forEachMismatchNumeric,
-} from '@jbrowse/cigar-utils'
+import { BamRecord, forEachMismatchNumeric } from '@gmod/bam'
+import { clipLengthAtStartOfReadNumeric } from '@jbrowse/cigar-utils'
 
 import { collectMismatches } from '../shared/collectMismatches.ts'
 import { convertTagsToPlainArrays } from '../shared/util.ts'
 
 import type { MismatchFeature } from '../shared/extractCigarFeatures.ts'
 import type BamAdapter from './BamAdapter.ts'
-import type { MismatchCallback, PackedReference } from '@jbrowse/cigar-utils'
+import type { PackedReference } from '@gmod/bam'
+import type { MismatchCallback, MismatchWindow } from '@jbrowse/cigar-utils'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 export default class BamSlightlyLazyFeature
@@ -39,8 +37,8 @@ export default class BamSlightlyLazyFeature
    * The binding lives only on the view below, where it is `readonly`, which is
    * what makes the rule structural rather than a comment to obey.
    */
-  withRegionRef(ref: PackedReference, refOffset: number): MismatchFeature {
-    return new RegionBoundBamFeature(this, ref, refOffset)
+  withRegionRef(ref: PackedReference): MismatchFeature {
+    return new RegionBoundBamFeature(this, ref)
   }
 
   id() {
@@ -62,15 +60,17 @@ export default class BamSlightlyLazyFeature
   // there is deliberately no `ref` field here to bind: a record that needs one
   // is never this object.
   //
-  // windowStart/windowEnd are genomic reference coords of the viewport; the
+  // `opts.start`/`opts.end` are genomic reference coords of the viewport; the
   // walk skips CIGAR ops outside them so a chromosome-spanning contig only
-  // processes its visible slice. Converted to read-relative roffset here.
-  forEachMismatch(
-    callback: MismatchCallback,
-    windowStart?: number,
-    windowEnd?: number,
-  ) {
-    const { start } = this
+  // processes its visible slice. `origin` is what makes the positions come out
+  // read-relative, which is the convention every emitter downstream works in.
+  //
+  // This OVERRIDES `BamRecord.forEachMismatch`, so the options object is not a
+  // choice: an override whose signature disagrees with the base is a type
+  // error. It calls the walk directly rather than `super` because the base
+  // would need an options object built per read, and this path allocates
+  // nothing per read.
+  override forEachMismatch(callback: MismatchCallback, opts?: MismatchWindow) {
     forEachMismatchNumeric(
       this.NUMERIC_CIGAR,
       this.NUMERIC_SEQ,
@@ -78,10 +78,11 @@ export default class BamSlightlyLazyFeature
       this.NUMERIC_MD,
       this.qual,
       undefined,
+      this.start,
+      opts?.start ?? Number.NEGATIVE_INFINITY,
+      opts?.end ?? Number.POSITIVE_INFINITY,
+      this.start,
       callback,
-      0,
-      windowStart === undefined ? undefined : windowStart - start,
-      windowEnd === undefined ? undefined : windowEnd - start,
     )
   }
 
@@ -261,8 +262,8 @@ export default class BamSlightlyLazyFeature
 class RegionBoundBamFeature implements MismatchFeature {
   constructor(
     private base: BamSlightlyLazyFeature,
+    // carries its own `start`, which is what locates the read in it
     public readonly ref: PackedReference,
-    public readonly refOffset: number,
   ) {}
 
   id() {
@@ -328,13 +329,12 @@ class RegionBoundBamFeature implements MismatchFeature {
   // The reference-resolving walk — the whole reason this object exists. Mirrors
   // BamSlightlyLazyFeature.forEachMismatch, reading the packed arrays off the
   // shared record but the reference off this binding.
-  forEachMismatch(
-    callback: MismatchCallback,
-    windowStart?: number,
-    windowEnd?: number,
-  ) {
-    const { ref, refOffset, base } = this
-    const start = base.start
+  //
+  // The window is only the viewport: the walk bounds base COMPARISON by what
+  // the region covers on its own, so a read overhanging the fetched span still
+  // reports the indels and clips outside it.
+  forEachMismatch(callback: MismatchCallback, opts?: MismatchWindow) {
+    const { ref, base } = this
     forEachMismatchNumeric(
       base.NUMERIC_CIGAR,
       base.NUMERIC_SEQ,
@@ -342,10 +342,11 @@ class RegionBoundBamFeature implements MismatchFeature {
       base.NUMERIC_MD,
       base.qual,
       ref,
+      base.start,
+      opts?.start ?? Number.NEGATIVE_INFINITY,
+      opts?.end ?? Number.POSITIVE_INFINITY,
+      base.start,
       callback,
-      refOffset,
-      windowStart === undefined ? -refOffset : windowStart - start,
-      windowEnd === undefined ? ref.length - refOffset : windowEnd - start,
     )
   }
 }

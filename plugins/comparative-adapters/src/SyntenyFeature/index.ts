@@ -9,7 +9,7 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import { forEachCsMismatch } from '../csUtils.ts'
 
-import type { MismatchCallback } from '@jbrowse/cigar-utils'
+import type { MismatchCallback, MismatchWindow } from '@jbrowse/cigar-utils'
 import type { Feature } from '@jbrowse/core/util'
 
 // Implementing forEachMismatch lets synteny features flow through the alignments
@@ -37,14 +37,10 @@ export default class SyntenyFeature extends SimpleFeature {
     }
   }
 
-  forEachMismatch(
-    callback: MismatchCallback,
-    windowStart?: number,
-    windowEnd?: number,
-  ) {
+  forEachMismatch(callback: MismatchCallback, opts?: MismatchWindow) {
     const start = this.get('start')
-    const ws = windowStart === undefined ? undefined : windowStart - start
-    const we = windowEnd === undefined ? undefined : windowEnd - start
+    const ws = opts?.start === undefined ? undefined : opts.start - start
+    const we = opts?.end === undefined ? undefined : opts.end - start
     const cs = this.get('cs') as string | undefined
     if (cs) {
       forEachCsMismatch(cs, callback, ws, we)
@@ -68,9 +64,9 @@ export default class SyntenyFeature extends SimpleFeature {
               m.start,
               m.length,
               m.base,
-              m.qual,
-              undefined,
-              undefined,
+              m.qual ?? -1,
+              0,
+              0,
             )
           } else if (m.type === 'insertion') {
             callback(
@@ -78,30 +74,14 @@ export default class SyntenyFeature extends SimpleFeature {
               m.start,
               m.length,
               m.insertedBases ?? '',
-              undefined,
-              undefined,
+              -1,
+              0,
               m.insertlen,
             )
           } else if (m.type === 'deletion') {
-            callback(
-              DELETION_TYPE,
-              m.start,
-              m.length,
-              '',
-              undefined,
-              undefined,
-              undefined,
-            )
+            callback(DELETION_TYPE, m.start, m.length, '', -1, 0, 0)
           } else if (m.type === 'skip') {
-            callback(
-              SKIP_TYPE,
-              m.start,
-              m.length,
-              '',
-              undefined,
-              undefined,
-              undefined,
-            )
+            callback(SKIP_TYPE, m.start, m.length, '', -1, 0, 0)
           }
         }
       }

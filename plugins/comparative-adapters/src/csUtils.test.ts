@@ -22,7 +22,10 @@ describe('forEachCsMismatch', () => {
     forEachCsMismatch(
       cs,
       (type, start, length, base, _qual, _altbase, cliplen) => {
-        out.push({ type, start, base, len: cliplen ?? length })
+        // read bases consumed where there are any (insertions), reference
+        // bases otherwise. `cliplen` is 0 rather than undefined for the
+        // latter, matching @gmod/bam's callback.
+        out.push({ type, start, base, len: cliplen || length })
       },
       ws,
       we,

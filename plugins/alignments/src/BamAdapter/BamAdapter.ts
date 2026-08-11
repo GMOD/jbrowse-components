@@ -1,5 +1,4 @@
-import { BamFile } from '@gmod/bam'
-import { packReference } from '@jbrowse/cigar-utils'
+import { BamFile, packReference } from '@gmod/bam'
 import { downloadStatus, withProgress } from '@jbrowse/core/util'
 import { sharedBgzfWorkerPool } from '@jbrowse/core/util/bgzfWorkerPool'
 import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
@@ -122,7 +121,8 @@ export default class BamAdapter extends BaseSamAdapter<BamAdapterConfig> {
           : undefined
       // Packed once for the whole fetch, not per read: the walk then compares
       // two bases per byte against the read's own packed SEQ.
-      const packedRef = regionSeq ? packReference(regionSeq) : undefined
+      const packedRef =
+        regionSeq && span ? packReference(regionSeq, span.start) : undefined
 
       await withProgress(
         {
@@ -162,14 +162,15 @@ export default class BamAdapter extends BaseSamAdapter<BamAdapterConfig> {
 
             record.adapter = this
 
-            // Share the one packed region ref; refOffset locates this read in it.
+            // Share the one packed region ref; it carries the region's start,
+            // so it locates this read in itself.
             // A VIEW, not a write: these records come out of @gmod/bam's chunk
             // LRU, so two queries hitting the same chunk span share objects and
             // an assignment would rebind the read for whichever fetch still
             // holds it. See BamSlightlyLazyFeature.withRegionRef.
             observer.next(
               !record.NUMERIC_MD && packedRef && span
-                ? record.withRegionRef(packedRef, record.start - span.start)
+                ? record.withRegionRef(packedRef)
                 : record,
             )
           }

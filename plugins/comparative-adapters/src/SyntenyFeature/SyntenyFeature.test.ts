@@ -18,8 +18,7 @@ function collect(
     (type, start, length) => {
       out.push({ type, start, length })
     },
-    windowStart,
-    windowEnd,
+    { start: windowStart, end: windowEnd },
   )
   return out
 }

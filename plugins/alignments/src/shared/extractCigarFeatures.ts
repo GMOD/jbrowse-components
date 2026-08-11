@@ -1,3 +1,4 @@
+import { forEachMismatchNumeric } from '@gmod/bam'
 import {
   DELETION_TYPE,
   HARDCLIP_TYPE,
@@ -5,7 +6,6 @@ import {
   MISMATCH_TYPE,
   SKIP_TYPE,
   SOFTCLIP_TYPE,
-  forEachMismatchNumeric,
   parseCigar2Typed,
 } from '@jbrowse/cigar-utils'
 
@@ -22,7 +22,7 @@ import type {
   MismatchData,
   SoftclipData,
 } from './webglRpcTypes.ts'
-import type { MismatchCallback } from '@jbrowse/cigar-utils'
+import type { MismatchCallback, MismatchWindow } from '@jbrowse/cigar-utils'
 import type { Feature } from '@jbrowse/core/util'
 
 /**
@@ -40,11 +40,7 @@ import type { Feature } from '@jbrowse/core/util'
 export interface MismatchFeature extends Feature {
   // The zero-alloc mismatch iterator, and the discriminator `isMismatchFeature`
   // probes for.
-  forEachMismatch: (
-    callback: MismatchCallback,
-    windowStart?: number,
-    windowEnd?: number,
-  ) => void
+  forEachMismatch: (callback: MismatchCallback, opts?: MismatchWindow) => void
 
   // REQUIRED. The render path reads the start clip from here instead of
   // building a CIGAR string per read — expensive for CRAM, which would also
@@ -120,7 +116,7 @@ function makeCigarEmitter(
     } else if (type === INSERTION_TYPE) {
       emitInsertion(
         start,
-        cliplen!,
+        cliplen,
         base,
         readIndex,
         featureStart,
@@ -129,7 +125,7 @@ function makeCigarEmitter(
     } else if (type === SOFTCLIP_TYPE) {
       emitSoftclip(
         start,
-        cliplen!,
+        cliplen,
         readIndex,
         featureStart,
         feature,
@@ -160,7 +156,7 @@ function makeCigarEmitter(
         output.gaps,
       )
     } else if (type === HARDCLIP_TYPE) {
-      emitHardclip(start, cliplen!, readIndex, featureStart, output.hardclips)
+      emitHardclip(start, cliplen, readIndex, featureStart, output.hardclips)
     }
   }
 }
@@ -176,6 +172,11 @@ export function extractCigarFeatures(
   windowStart?: number,
   windowEnd?: number,
 ) {
+  // The window object is reused across features rather than allocated per
+  // feature: every implementation reads `start`/`end` before returning, and
+  // this runs for thousands of features per region.
+  WINDOW.start = windowStart
+  WINDOW.end = windowEnd
   feature.forEachMismatch(
     makeCigarEmitter(
       feature,
@@ -185,10 +186,11 @@ export function extractCigarFeatures(
       output,
       showSoftClipping,
     ),
-    windowStart,
-    windowEnd,
+    WINDOW,
   )
 }
+
+const WINDOW: MismatchWindow = {}
 
 // Everything else that carries an alignment carries it as a CIGAR *string* — a
 // PAF/PIF synteny block is the case in this repo — so walk that instead. It is
@@ -218,6 +220,12 @@ export function extractCigarFeaturesFromString(
     undefined,
     undefined,
     undefined,
+    featureStart,
+    // the window is genomic; `origin` is what makes the emitted positions
+    // read-relative, like the BAM one
+    windowStart ?? Number.NEGATIVE_INFINITY,
+    windowEnd ?? Number.POSITIVE_INFINITY,
+    featureStart,
     makeCigarEmitter(
       feature,
       readIndex,
@@ -226,9 +234,5 @@ export function extractCigarFeaturesFromString(
       output,
       showSoftClipping,
     ),
-    0,
-    // the walk is in read-relative reference offsets, like the BAM one
-    windowStart === undefined ? undefined : windowStart - featureStart,
-    windowEnd === undefined ? undefined : windowEnd - featureStart,
   )
 }

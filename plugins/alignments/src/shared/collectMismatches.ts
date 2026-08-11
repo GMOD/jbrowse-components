@@ -25,18 +25,17 @@ export function collectMismatches(feature: {
           start,
           length,
           base,
-          qual: qual !== undefined && qual >= 0 ? qual : undefined,
-          altbase:
-            altbase !== undefined && altbase > 0
-              ? CHAR_FROM_CODE[altbase]
-              : undefined,
+          // the walks report -1 for a read with no QUAL and 0 for a reference
+          // base they could not resolve; the object form spells both undefined
+          qual: qual >= 0 ? qual : undefined,
+          altbase: altbase > 0 ? CHAR_FROM_CODE[altbase] : undefined,
         })
       } else if (type === INSERTION_TYPE) {
         mismatches.push({
           type: 'insertion',
           start,
           length,
-          insertlen: cliplen!,
+          insertlen: cliplen,
           insertedBases: base,
         })
         // a clip occupies one reference column whatever its read length, which
@@ -49,14 +48,14 @@ export function collectMismatches(feature: {
           type: 'softclip',
           start,
           length: 1,
-          cliplen: cliplen!,
+          cliplen,
         })
       } else if (type === HARDCLIP_TYPE) {
         mismatches.push({
           type: 'hardclip',
           start,
           length: 1,
-          cliplen: cliplen!,
+          cliplen,
         })
       } else if (type === DELETION_TYPE) {
         mismatches.push({ type: 'deletion', start, length })

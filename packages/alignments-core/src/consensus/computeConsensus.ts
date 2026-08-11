@@ -42,17 +42,13 @@ import {
   SKIP_TYPE,
 } from '@jbrowse/cigar-utils'
 
-import type { MismatchCallback } from '@jbrowse/cigar-utils'
+import type { MismatchCallback, MismatchWindow } from '@jbrowse/cigar-utils'
 
 // Minimal feature shape the tally needs: an aligned ref span plus the shared
 // zero-alloc mismatch iterator that BAM and CRAM features both expose.
 export interface ConsensusFeature {
   get(field: string): unknown
-  forEachMismatch: (
-    callback: MismatchCallback,
-    windowStart?: number,
-    windowEnd?: number,
-  ) => void
+  forEachMismatch: (callback: MismatchCallback, opts?: MismatchWindow) => void
 }
 
 export interface ConsensusRegion {

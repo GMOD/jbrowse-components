@@ -1,4 +1,4 @@
-import { CHAR_CODE_FROM_NIBBLE, referenceNibble } from '@jbrowse/cigar-utils'
+import { CHAR_CODE_FROM_NIBBLE, referenceNibble } from '@gmod/bam'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
@@ -9,7 +9,7 @@ import { toArray } from 'rxjs/operators'
 import Adapter from './SamAdapter.ts'
 import configSchema from './configSchema.ts'
 
-import type { PackedReference } from '@jbrowse/cigar-utils'
+import type { PackedReference } from '@gmod/bam'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -17,8 +17,9 @@ import type { Feature } from '@jbrowse/core/util'
 // SamRecordFeature class so the assertions read as "what a fetch handed back",
 // and so the test doesn't reach into the class's private state.
 interface RegionView {
+  // a packed region carries its own start, which is what identifies the fetch
+  // a read was bound to
   ref?: PackedReference
-  refOffset: number
   id: () => string
 }
 
@@ -108,13 +109,14 @@ test('parallel region fetches each get their own reference slice', async () => {
   const right = rightFeats[0]!
 
   expect(left).not.toBe(right)
-  // each region fetched the sequence its own [start,end) covers (plus
-  // seqFetchSpan's one base of right slack, clamped to the region), and the read
-  // (start 0) is located relative to that slice
-  expect(left.refOffset).toBe(0)
+  // each region fetched the sequence its own [start,end) covers, and the packed
+  // region says where it starts, which is what locates a read in it
+  expect(left.ref!.start).toBe(0)
   expect(unpack(left.ref)).toBe(CTGA.slice(0, 12))
-  expect(right.refOffset).toBe(-16)
-  expect(unpack(right.ref)).toBe(CTGA.slice(16, 21))
+  expect(right.ref!.start).toBe(16)
+  // [16,20) is the read's own span; a trailing clip is reported whether or not
+  // the region reaches it, so nothing is fetched past the end
+  expect(unpack(right.ref)).toBe(CTGA.slice(16, 20))
 
   // ids come from the record, not the fetch — read lookups compare them across
   // regions
@@ -133,7 +135,7 @@ test('a parallel fetch resolves the same reference as a serial one', async () =>
   ])
 
   expect(unpack(parallelLeft[0]!.ref)).toBe(unpack(serialLeft.ref))
-  expect(parallelLeft[0]!.refOffset).toBe(serialLeft.refOffset)
+  expect(parallelLeft[0]!.ref!.start).toBe(serialLeft.ref!.start)
   expect(unpack(parallelRight[0]!.ref)).toBe(unpack(serialRight.ref))
-  expect(parallelRight[0]!.refOffset).toBe(serialRight.refOffset)
+  expect(parallelRight[0]!.ref!.start).toBe(serialRight.ref!.start)
 })

@@ -19,12 +19,35 @@ export const SKIP_TYPE = 0x4e // 'N'
 export const SOFTCLIP_TYPE = 0x53 // 'S'
 export const HARDCLIP_TYPE = 0x48 // 'H'
 
+/**
+ * Identical to `@gmod/bam`'s and `@gmod/cram`'s `MismatchCallback`, so a
+ * consumer's callback goes straight to either walk with nothing in between.
+ *
+ * The last three are numbers rather than `number | undefined`: an absent
+ * quality is -1, and an absent reference base or clip length is 0. That is
+ * what both libraries emit, and it saves every consumer a non-null assertion.
+ */
 export type MismatchCallback = (
   type: number,
   start: number,
   length: number,
   base: string,
-  qual: number | undefined,
-  altbase: number | undefined,
-  cliplen: number | undefined,
+  qual: number,
+  altbase: number,
+  cliplen: number,
 ) => void
+
+/**
+ * The genomic viewport a `forEachMismatch` walk reports within: 0-based
+ * half-open, and absolute even where the walk reports read-relative positions,
+ * since it describes a region of the reference rather than a position in the
+ * output.
+ *
+ * The narrow half of `@gmod/bam`'s and `@gmod/cram`'s `MismatchOptions` — the
+ * part every alignment feature can honour, without this package having to know
+ * about a packed reference or an origin.
+ */
+export interface MismatchWindow {
+  start?: number
+  end?: number
+}

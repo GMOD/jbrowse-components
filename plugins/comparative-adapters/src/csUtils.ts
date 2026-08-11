@@ -136,15 +136,7 @@ export function forEachCsMismatch(
       ref += i - start
     } else if (c === '*') {
       if (ref >= lo && ref < hi) {
-        callback(
-          MISMATCH_TYPE,
-          ref,
-          1,
-          cs[i + 2]!,
-          undefined,
-          undefined,
-          undefined,
-        )
+        callback(MISMATCH_TYPE, ref, 1, cs[i + 2]!, -1, 0, 0)
       }
       ref += 1
       i += 3
@@ -156,15 +148,7 @@ export function forEachCsMismatch(
       }
       const seq = cs.slice(start, i)
       if (ref >= lo && ref <= hi) {
-        callback(
-          INSERTION_TYPE,
-          ref,
-          seq.length,
-          seq,
-          undefined,
-          undefined,
-          seq.length,
-        )
+        callback(INSERTION_TYPE, ref, seq.length, seq, -1, 0, seq.length)
       }
     } else if (c === '-') {
       i++
@@ -174,7 +158,7 @@ export function forEachCsMismatch(
       }
       const len = i - start
       if (ref < hi && ref + len > lo) {
-        callback(DELETION_TYPE, ref, len, '', undefined, undefined, undefined)
+        callback(DELETION_TYPE, ref, len, '', -1, 0, 0)
       }
       ref += len
     } else if (c === '~') {
@@ -186,7 +170,7 @@ export function forEachCsMismatch(
       }
       i += 2
       if (ref < hi && ref + n > lo) {
-        callback(SKIP_TYPE, ref, n, '', undefined, undefined, undefined)
+        callback(SKIP_TYPE, ref, n, '', -1, 0, 0)
       }
       ref += n
     } else {

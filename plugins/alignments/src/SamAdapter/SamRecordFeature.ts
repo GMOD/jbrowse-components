@@ -1,3 +1,4 @@
+import { forEachMismatchNumeric } from '@gmod/bam'
 import {
   SAM_FLAG_FIRST_IN_PAIR,
   SAM_FLAG_MATE_REVERSE,
@@ -9,7 +10,6 @@ import {
 import {
   clipLengthAtStartOfReadNumeric,
   encodeSeqNumeric,
-  forEachMismatchNumeric,
   parseCigar2Typed,
 } from '@jbrowse/cigar-utils'
 
@@ -17,7 +17,8 @@ import { collectMismatches } from '../shared/collectMismatches.ts'
 
 import type { MismatchFeature } from '../shared/extractCigarFeatures.ts'
 import type { SamRecordData } from './parseSam.ts'
-import type { MismatchCallback, PackedReference } from '@jbrowse/cigar-utils'
+import type { PackedReference } from '@gmod/bam'
+import type { MismatchCallback, MismatchWindow } from '@jbrowse/cigar-utils'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 // ASCII codes of an MD tag, the form forEachMismatchNumeric walks (it tests
@@ -57,14 +58,14 @@ export default class SamRecordFeature implements MismatchFeature {
     // Shared with every region view of this record; the adapter's cached
     // instance creates it and `withRegionRef` passes it along.
     private numeric: NumericCache = {},
-    // Region-wide packed reference this view resolves its mismatches against,
-    // and this read's index into it. Immutable, and set only by
-    // `withRegionRef`: because the adapter caches one record object for the
-    // file's lifetime, every displayed region's fetch sees the SAME instance,
-    // so writing the fetched region's reference onto it would relocate the read
-    // for every other region in flight (all needed regions are fetched at once).
+    // Region-wide packed reference this view resolves its mismatches against;
+    // it carries the region's own start, which locates the read in it.
+    // Immutable, and set only by `withRegionRef`: because
+    // the adapter caches one record object for the file's lifetime, every
+    // displayed region's fetch sees the SAME instance, so writing the fetched
+    // region's reference onto it would relocate the read for every other region
+    // in flight (all needed regions are fetched at once).
     public readonly ref?: PackedReference,
-    public readonly refOffset = 0,
   ) {}
 
   /**
@@ -73,14 +74,8 @@ export default class SamRecordFeature implements MismatchFeature {
    * — ids must not depend on the queried region (the pileup's read lookups
    * compare them across regions).
    */
-  withRegionRef(ref: PackedReference, refOffset: number) {
-    return new SamRecordFeature(
-      this.record,
-      this.uniqueId,
-      this.numeric,
-      ref,
-      refOffset,
-    )
+  withRegionRef(ref: PackedReference) {
+    return new SamRecordFeature(this.record, this.uniqueId, this.numeric, ref)
   }
 
   id() {
@@ -213,17 +208,12 @@ export default class SamRecordFeature implements MismatchFeature {
     return collectMismatches(this)
   }
 
-  // See BamSlightlyLazyFeature: with no window the walk is still bounded by
-  // what `ref` covers, or a base overhanging the fetched reference span would
-  // compare against NaN and report as a mismatch.
-  forEachMismatch(
-    callback: MismatchCallback,
-    windowStart?: number,
-    windowEnd?: number,
-  ) {
-    const { ref, refOffset, start } = this
-    const refLo = ref === undefined ? undefined : -refOffset
-    const refHi = ref === undefined ? undefined : ref.length - refOffset
+  // See BamSlightlyLazyFeature. The window is genomic and `origin` makes the
+  // reported positions read-relative; the walk bounds base comparison by what
+  // `ref` covers on its own, so a read overhanging the fetched span still
+  // reports the indels and clips outside it.
+  forEachMismatch(callback: MismatchCallback, opts?: MismatchWindow) {
+    const { ref, start } = this
     forEachMismatchNumeric(
       this.NUMERIC_CIGAR,
       this.NUMERIC_SEQ,
@@ -231,10 +221,11 @@ export default class SamRecordFeature implements MismatchFeature {
       this.NUMERIC_MD,
       this.record.qual,
       ref,
+      start,
+      opts?.start ?? Number.NEGATIVE_INFINITY,
+      opts?.end ?? Number.POSITIVE_INFINITY,
+      start,
       callback,
-      refOffset,
-      windowStart === undefined ? refLo : windowStart - start,
-      windowEnd === undefined ? refHi : windowEnd - start,
     )
   }
 

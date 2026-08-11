@@ -8,15 +8,16 @@ import { toArray } from 'rxjs/operators'
 import Adapter from './BamAdapter.ts'
 import configSchema from './configSchema.ts'
 
-import type { PackedReference } from '@jbrowse/cigar-utils'
+import type { PackedReference } from '@gmod/bam'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature } from '@jbrowse/core/util'
 
 // The reference-binding fields under test — structural, so the assertions read
 // as "what a fetch handed back" rather than reaching into the record class.
 interface RegionView {
+  // a packed region carries its own start, which is what identifies the fetch
+  // a read was bound to
   ref?: PackedReference
-  refOffset: number
   id: () => string
   get: (field: string) => unknown
   // duck-typed by modifications-utils' getTag(); see the surface test below
@@ -110,16 +111,16 @@ test('a refetch does not rebind the reference of an earlier fetch', async () => 
   const narrow = await fetchRegion(adapter, 20000, 22000)
   const first = narrow[0]!
   const narrowRef = first.ref
-  const narrowOffset = first.refOffset
+  const narrowStart = first.ref!.start
 
   // Same reads, wider region: seqFetchSpan starts lower, so a correct binding
-  // for THIS fetch is a different refOffset than the narrow one above.
+  // for THIS fetch is a different region than the narrow one above.
   const wide = await fetchRegion(adapter, 19000, 23000)
   const sameRead = new Map(wide.map(f => [f.id(), f])).get(first.id())!
 
-  expect(sameRead.refOffset).not.toBe(narrowOffset)
+  expect(sameRead.ref!.start).not.toBe(narrowStart)
   // ...and the earlier fetch's feature still describes its own region
-  expect(first.refOffset).toBe(narrowOffset)
+  expect(first.ref!.start).toBe(narrowStart)
   expect(first.ref).toBe(narrowRef)
 })
 
@@ -129,7 +130,7 @@ test('the same range twice gives each fetch its own binding', async () => {
   const b = await fetchRegion(adapter, 20000, 22000)
 
   // identical range => identical binding, but not a shared mutable record
-  expect(b[0]!.refOffset).toBe(a[0]!.refOffset)
+  expect(b[0]!.ref!.start).toBe(a[0]!.ref!.start)
   expect(b[0]!.ref).toEqual(a[0]!.ref)
   expect(b[0]).not.toBe(a[0])
   expect(b[0]!.id()).toBe(a[0]!.id())
@@ -145,7 +146,7 @@ test('parallel region fetches each get their own reference slice', async () => {
   const shared = left.filter(f => rightById.has(f.id()))
   expect(shared.length).toBeGreaterThan(0)
   for (const l of shared) {
-    expect(rightById.get(l.id())!.refOffset).not.toBe(l.refOffset)
+    expect(rightById.get(l.id())!.ref!.start).not.toBe(l.ref!.start)
   }
 })
 

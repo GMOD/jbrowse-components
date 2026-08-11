@@ -1,7 +1,7 @@
 import { SEQRET } from './bamSeqDecoder.ts'
 import { encodeSeqNumeric } from './bamSeqEncoder.ts'
 
-// what forEachMismatchNumeric does to read base i
+// what @gmod/bam's forEachMismatchNumeric does to read base i
 function decode(packed: Uint8Array, length: number) {
   let out = ''
   for (let i = 0; i < length; i++) {

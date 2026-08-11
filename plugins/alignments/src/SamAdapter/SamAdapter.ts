@@ -1,4 +1,4 @@
-import { packReference } from '@jbrowse/cigar-utils'
+import { packReference } from '@gmod/bam'
 import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
@@ -130,10 +130,7 @@ export default class SamAdapter extends BaseAlignmentsAdapter<SamAdapterConfig> 
         : []
 
       // only records lacking an MD tag need the reference, so defer loading the
-      // sequence adapter (and the fetch) until we know at least one does.
-      // `seqFetchSpan` owns the one-base right slack that keeps the rightmost
-      // read's trailing clip (for a converted PSL hit, the unaligned end of the
-      // query) inside the walk's exclusive right bound.
+      // sequence adapter (and the fetch) until we know at least one does
       const span = seqFetchSpan(records, start, end)
       const sequenceAdapter = span ? await this.getSequenceAdapter() : undefined
       const regionSeq =
@@ -147,14 +144,16 @@ export default class SamAdapter extends BaseAlignmentsAdapter<SamAdapterConfig> 
       // Packed once for the whole fetch, not per read: the walk then compares
       // two bases per byte against the read's own packed SEQ.
       const packedRef =
-        regionSeq === undefined ? undefined : packReference(regionSeq)
+        regionSeq !== undefined && span
+          ? packReference(regionSeq, span.start)
+          : undefined
       checkStopToken(stopToken)
 
       for (const record of records) {
         // A record carrying MD needs no reference and walks in full, so leave
         // its span unbounded (see BamSlightlyLazyFeature.forEachMismatch);
         // otherwise emit a view bound to this region's shared packed reference,
-        // with refOffset locating the read in it.
+        // which carries the region's start and so locates the read itself.
         //
         // A VIEW, not a write onto the record: unlike BAM's per-region records,
         // these instances are cached for the file's lifetime and every region's
@@ -165,7 +164,7 @@ export default class SamAdapter extends BaseAlignmentsAdapter<SamAdapterConfig> 
         // the other's sequence.
         observer.next(
           !record.NUMERIC_MD && packedRef !== undefined && span
-            ? record.withRegionRef(packedRef, record.start - span.start)
+            ? record.withRegionRef(packedRef)
             : record,
         )
       }

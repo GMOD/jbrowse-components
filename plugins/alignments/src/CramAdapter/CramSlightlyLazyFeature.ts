@@ -7,7 +7,7 @@ import { packCigar } from './packCigar.ts'
 import type { MismatchFeature } from '../shared/extractCigarFeatures.ts'
 import type CramAdapter from './CramAdapter.ts'
 import type { CramRecord } from '@gmod/cram'
-import type { MismatchCallback } from '@jbrowse/cigar-utils'
+import type { MismatchCallback, MismatchWindow } from '@jbrowse/cigar-utils'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 // Reused across every call of forEachMismatch below, because a fresh literal is
@@ -297,13 +297,9 @@ export default class CramSlightlyLazyFeature implements MismatchFeature {
   // nothing but a hand-diff against cram-js's copy would have caught. Revisit
   // if an end-to-end render measurement, not this micro-benchmark, shows the
   // short-read row mattering.
-  forEachMismatch(
-    callback: MismatchCallback,
-    windowStart?: number,
-    windowEnd?: number,
-  ) {
-    MISMATCH_OPTS.start = windowStart
-    MISMATCH_OPTS.end = windowEnd
+  forEachMismatch(callback: MismatchCallback, opts?: MismatchWindow) {
+    MISMATCH_OPTS.start = opts?.start
+    MISMATCH_OPTS.end = opts?.end
     MISMATCH_OPTS.origin = this.start
     this.record.forEachMismatch(callback, MISMATCH_OPTS)
   }

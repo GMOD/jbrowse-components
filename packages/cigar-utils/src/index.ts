@@ -17,13 +17,10 @@ export {
   SEQRET_NUMERIC_DECODER,
 } from './bamSeqDecoder.ts'
 export { encodeSeqNumeric } from './bamSeqEncoder.ts'
-export { forEachMismatchNumeric } from './forEachMismatchNumeric.ts'
-export {
-  CHAR_CODE_FROM_NIBBLE,
-  packReference,
-  referenceNibble,
-} from './packedReference.ts'
-export type { PackedReference } from './packedReference.ts'
+// The BAM mismatch walk and its packed reference come from `@gmod/bam`:
+// `forEachMismatchNumeric`, `packReference`, `PackedReference`. One
+// implementation of the format's trickiest walk, in the library that owns the
+// format.
 export { flipCigar, swapIndelCigar } from './cigarReorient.ts'
 export { csToCigar } from './csToCigar.ts'
 export { pafIdentity } from './pafIdentity.ts'
@@ -35,7 +32,7 @@ export {
   SKIP_TYPE,
   SOFTCLIP_TYPE,
 } from './mismatchCallback.ts'
-export type { MismatchCallback } from './mismatchCallback.ts'
+export type { MismatchCallback, MismatchWindow } from './mismatchCallback.ts'
 export {
   visitCigarOps,
   visitCigarRenderedSegments,
