@@ -584,23 +584,22 @@ maximum and the comparison the track exists for would disappear.
 
 Open the track on each assembly's last 650 kb of chr17, which is what each one
 ends the chromosome with rather than a lifted-over interval: there is no
-lift-over for sequence one of them does not have. Over those two windows
-`build_repeat_density.sh` reports LINE at 13.71% against 16.51%, SINE at 13.58%
-against 9.00%, and total repeat at 37.22% against 36.48%, so a single density
-lane would have reported no difference between the two windows at all. What
-moved is the composition, and in opposite directions: more L1, less Alu. The
-insertion allele on its own is the sharper version of the same contrast, at
-23.70% LINE against 14.18% and 14.47% in the CHM13 sequence either side of it,
-which is the L1 tiling the figure above already shows per element.
+lift-over for sequence one of them does not have. `build_repeat_density.sh`
+reports the two windows at almost the same total repeat content, so a single
+density lane would have shown no difference between them at all. What moved is
+the composition, and in opposite directions: more L1, less Alu. The insertion
+allele on its own is the sharper version of the same contrast, running higher in
+LINE than the CHM13 sequence either side of it, which is the L1 tiling the
+figure above already shows per element.
 
 Whether that is a lot depends on the scale it is asked at, which is what the
 last part of [the donor-node figure](#the-one-donor-worth-loading) draws. The
-same script ranks the allele against every window of its own size in CHM13: 2 of
-the 262 within 5 Mb carry more LINE, against 35% of windows genome-wide. So the
-enrichment is a local statement rather than a genome-wide one, and that is the
-claim the figure supports: not that this sequence is L1-dense for human
-sequence, but that it is L1-dense for this end of chr17, which is what makes it
-the piece a BAC-and-Sanger reference could not place.
+same script ranks the allele against every window of its own size in CHM13. It
+comes out near the top of its own neighbourhood and unremarkable against the
+genome, so the enrichment is a local statement rather than a genome-wide one:
+not that this sequence is L1-dense for human sequence, but that it is L1-dense
+for this end of chr17, which is what makes it the piece a BAC-and-Sanger
+reference could not place.
 
 ## The bubble track
 

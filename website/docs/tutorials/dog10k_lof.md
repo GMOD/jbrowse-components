@@ -214,9 +214,9 @@ extents, so animals whose expansion starts and ends in the same place land
 together, and the blocks either side of the gene are the deletion polymorphisms
 in the flanking sequence.
 
-One number does not reproduce: this estimate puts 79% of the collection at three
-or more copies where the paper reports 49.7%, and the two depth sources agree
-too closely for that to be noise. The difference is which interval is counted:
+One number does not reproduce: this estimate puts far more of the collection at
+three or more copies than the paper reports, and the two depth sources agree too
+closely for that to be noise. The difference is which interval is counted:
 QuicK-mer2 over an element whose extent was never published, against the windows
 the collection itself puts above two.
 

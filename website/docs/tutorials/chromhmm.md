@@ -292,10 +292,10 @@ tabix index covers genomic bins rather than records, so stacking 127 rows into
 the same coordinates barely grows it, and the compressed file lands smaller than
 a bigBed of the same records while building in a fraction of the time. What a
 bigBed buys is bytes per view, and mostly when zoomed in: about a tenth as many
-at 20 kb, about half at the megabase scale this track is read at, against a 15%
-larger file and a second binary to install. The hosted copy above is a bigBed
-holding those same records, so either format loads the track with nothing else
-in it changing.
+at 20 kb, about half at the megabase scale this track is read at, against a
+somewhat larger file and a second binary to install. The hosted copy above is a
+bigBed holding those same records, so either format loads the track with nothing
+else in it changing.
 
 ## See also
 

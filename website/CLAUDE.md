@@ -52,11 +52,14 @@ gitignored). `deploy_staging.sh` wraps a staging deploy.
 
 ## Prose, captions, cards
 
-- **Keep numbers out of prose**, including ones a script in the repo prints.
-  "Emitted by a script" was an allowance here and it got used to argue results
-  in percentages the reader cannot check against the figure beside them. A
-  measurement belongs in a table, in the script, or in a spec comment; the prose
-  says which way it went. `docs/tutorials/CLAUDE.md` has the worked examples.
+- **Few numbers in prose, and none that assert a result.** A number that names
+  something (a variant's size, a coordinate, a window you type in, a published
+  cohort size) is fine. A number stating an aspect of the data the page could
+  have shown instead is not, however real it is: "emitted by a script" was an
+  allowance here and it got used to argue results in percentages the reader
+  cannot check against the figure beside them. Measurements belong in a table,
+  in the script, or in a spec comment. `docs/tutorials/CLAUDE.md` has the worked
+  examples.
 - **Keep specific values out of captions and callouts.** Even a sourced number
   is a claim a reader cannot check against the picture, and a caption full of
   them reads as arithmetic rather than as a result. Say what the frame shows;

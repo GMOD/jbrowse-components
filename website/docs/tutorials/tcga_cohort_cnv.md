@@ -190,8 +190,8 @@ read like a peak. `posColor`/`negColor` reuse the stack's amplification and
 deep-loss colors, so the two tracks agree by eye.
 
 Placed above the stack, as in the figure at the top of this page, each peak sits
-over a stripe and puts a number on it: 1q gained in 58.9% of tumors at its peak,
-16q lost in 46.4%, the 100kb bin over ERBB2 gained in 19.2%.
+over a stripe and puts a number on it, so 1q, 16q and the bin over _ERBB2_ can
+be read off the axis rather than judged by how solid the stripe below looks.
 
 This is a frequency plot, not
 [GISTIC](https://doi.org/10.1186/gb-2011-12-4-r41): there is no background

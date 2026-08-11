@@ -1,18 +1,27 @@
 Show rather than tell — use informative screenshot specs and keep prose minimal.
 No em-dashes anywhere, including code comments.
 
-**No numbers in prose. Not even ones a script in the repo prints.** This rule
-used to end "unless programmatically derived", and that clause is what let a
-page argue its result in percentages: "83.2% of the reads are at MAPQ 0 against
-0.8%", "4.5x against 30.6x", "18.3% of DGV's call midpoints". Every one of those
-was emitted by `scan_mappability_qc.sh` and every one was a claim the reader
-could not check against the figure it sat under, so the prose was telling the
-story the picture is there to tell. Say which way it went and let the lane show
-how far ("most of them at _SMN1_ and almost none at the control"). A measurement
-worth keeping goes in a table, which is data presentation, or stays in the
-script that prints it. The same goes for widths and spans: "a much larger block
-containing it" over "about 1.5 Mb", unless the number is one the reader types
-into a box.
+**Few numbers in prose, and none that assert a result.** The test is what the
+number is doing. A number that _names_ something is fine and often necessary: a
+variant's size (`a 7.8 kb deletion in an intron of NHEJ1`), a coordinate, a bin
+size or window the reader types in, a cohort size that comes from the
+publication. A number that states an _aspect of the data_ the page could have
+shown but instead asserts is the one to cut, because the reader cannot check it
+against anything on screen.
+
+That second kind is what this rule used to permit. It ended "unless
+programmatically derived", which read as a licence: run it through a script and
+the percentage may go in the paragraph. So `mappability_qc` argued its result in
+"83.2% of the reads are at MAPQ 0 against 0.8%", "4.5x against 30.6x", "18.3% of
+DGV's call midpoints" — all real, all printed by `scan_mappability_qc.sh`, and
+all telling the story the four lanes beside them were there to tell. Say which
+way it went and let the figure carry how far: "most of them at _SMN1_ and almost
+none at the control".
+
+A measurement worth keeping goes in a table, which is data presentation rather
+than prose, or stays in the script that prints it. Density matters on its own
+too: a paragraph with several derived figures in it reads as arithmetic even
+when each one is defensible.
 
 **Don't argue, and don't preach.** A tutorial cultivates an air of exploring
 data; it is not a case being made. Three shapes to watch for, all of which have

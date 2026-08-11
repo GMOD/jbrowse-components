@@ -41,8 +41,8 @@ on an otherwise dog background, and a German Shepherd should carry essentially
 none. That makes the pair a local-ancestry problem with a built-in control.
 
 Two more breeds ride along, both taken from the Dog10K paper's own discussion of
-wolf-like dogs. The Shiloh Shepherd shares 78% of its doubleton (F2) sites with
-wolves, the highest of any breed dog in the collection, though the paper's
+wolf-like dogs. The Shiloh Shepherd shares more of its doubleton (F2) sites with
+wolves than any other breed dog in the collection, though the paper's
 D-statistics find no significant excess over German Shepherds. The Tamaskan is a
 wolf-lookalike bred from ordinary sled and herding dogs. Painting all of them at
 once asks whether a genome-wide sharing statistic and a wolfish appearance point
@@ -138,13 +138,13 @@ TMSK000001      0.033   0.967     Tamaskan
 GRSD000002      0       1         German Shepherd Dog
 ```
 
-Of the 219 swept breeds, 193 come in under 1% wolf on this chromosome, which
-gives the wolfdogs' fractions a scale to be read against: seven of the eight
-land between 15% and 45%. The eighth, Czechoslovakian 2, is at 1.5% with no
-block over 0.8 Mb, which puts it inside the range the sweep occupies. That is
-not a failure of the inference. Both breeds have been bred back to dogs for
-decades, so how much wolf an individual carries varies, and the unit here is the
-animal rather than the breed.
+The sweep across every breed gives those fractions a scale to be read against:
+nearly all of the swept breeds come in at a trace of wolf on this chromosome,
+and seven of the eight wolfdogs sit far above them. The eighth, Czechoslovakian
+2, lands down inside the range the sweep occupies, with no long block anywhere.
+Both breeds have been bred back to dogs for decades, so how much wolf an
+individual carries varies, and the unit here is the animal rather than the
+breed.
 
 ### Collapsing calls into blocks
 
@@ -234,20 +234,20 @@ read against the breed.
 
 ### Where the painting and the alleles disagree
 
-Six of the eight held-out wolves paint 98% wolf or better. **Two do not.** The
-two Swedish museum specimens come out about half dog, and that is a result about
-the method rather than about the animals. The build script prints a second,
-cruder measurement beside FLARE's: the fraction of chr1 sites where the two
-panels are nearly fixed for different alleles at which the animal carries the
-wolf one. The two Swedish wolves score 0.92 and 0.92 there, the highest of all
-eight, against 0.06 for the German Shepherd. So the alleles say plainly that
-they are wolves while the painting says half dog, and this tutorial does not
-resolve which part of the inference gives way: the two measurements ask
-different questions, one about alleles one at a time and one about whole
-haplotypes matched against a panel of twenty-eight. What it does settle is which
-way to read the disagreement. Where a painting and the raw alleles disagree, the
-painting is the model's answer, and the reason to run the cruder measurement at
-all is that it has no model to be the answer of.
+Most of the held-out wolves paint essentially all wolf. Two do not: the two
+Swedish museum specimens come out about half dog, which is a result about the
+method rather than about the animals. The build script prints a second, cruder
+measurement beside FLARE's: the fraction of chr1 sites where the two panels are
+nearly fixed for different alleles at which the animal carries the wolf one. The
+two Swedish wolves score highest of all eight on that one, far above the German
+Shepherd. So the alleles say plainly that they are wolves while the painting
+says half dog, and this tutorial does not resolve which part of the inference
+gives way: the two measurements ask different questions, one about alleles one
+at a time and one about whole haplotypes matched against a panel of
+twenty-eight. What it does settle is which way to read the disagreement. Where a
+painting and the raw alleles disagree, the painting is the model's answer, and
+the reason to run the cruder measurement at all is that it has no model to be
+the answer of.
 
 ### What the two wolf-like breeds do
 

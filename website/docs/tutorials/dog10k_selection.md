@@ -173,16 +173,15 @@ sample table, so the two are independent.
 
 ## Framing it
 
-The slice is 400 kb but the figure frames 320 kb of it, and in a matrix that is
+The slice is wider than the window the figure frames, and in a matrix that is
 not a detail. Every record is one column of equal width, so a window's width in
 the frame is a count of records rather than a span of chromosome: widen it and
 the extra columns are as wide as the informative ones. The build script prints
-which sites actually separate the two size classes, 95 of the 606, spanning
-41,455,350-41,611,659, so this window is that span with about 80 kb of
-undifferentiated flank on each side. That flank is not padding. It is what the
-Fst lane needs in order to show a run rather than a level: framed on the
-differentiated sites alone, every point in view is high and nothing says where
-the signal starts or stops.
+which sites actually separate the two size classes, a minority of those in the
+slice, and this window is that span with a margin of undifferentiated flank on
+each side. That flank is not padding. It is what the Fst lane needs in order to
+show a run rather than a level: framed on the differentiated sites alone, every
+point in view is high and nothing says where the signal starts or stops.
 
 Clustering reads the region on screen, so where you run it matters as much as
 what you frame afterwards: over the whole window the separating columns are

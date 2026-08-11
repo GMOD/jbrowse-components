@@ -24,12 +24,12 @@ the same frame, out of the same sample, every one says the opposite.
 
 ## The locus
 
-_SMN1_ and _SMN2_ sit near each other on chromosome 5 and are near-identical
-copies of one another. Which of the two a read came from is the clinically
-interesting question, since it is the copy number of _SMN1_ that spinal muscular
-atrophy turns on, and it is also the question a short read cannot answer: the
-same sequence exists twice, so an aligner given a read from either copy has two
-equally good places to put it.
+_SMN1_ and _SMN2_ sit about 900 kb apart on chromosome 5 and are roughly 99.9%
+identical across their ~28 kb. Which of the two a read came from is the
+clinically interesting question, since it is the copy number of _SMN1_ that
+spinal muscular atrophy turns on, and it is also the question a 150 bp read
+cannot answer: the same sequence exists twice, so an aligner given a read from
+either copy has two equally good places to put it.
 
 An aligner reports that as MAPQ 0. The read is still aligned and still drawn
 where it aligned; MAPQ is `-10 log10 Pr{mapping position is wrong}`
