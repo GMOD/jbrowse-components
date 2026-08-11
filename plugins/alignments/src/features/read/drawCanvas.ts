@@ -103,6 +103,23 @@ function chevronApexX(strand: number, xStart: number, xEnd: number) {
 
 // "Home plate" pentagon: a [xL,xR] body rect with an arrowhead poking out to
 // apexX (right when apexX > xR, otherwise left).
+//
+// `inset` shrinks it by that many px along every edge's inward normal — the
+// polygon offset of the same shape, which is what `strokeRectInside` is to a
+// rect: stroke the inset-by-`lineWidth / 2` pentagon at `lineWidth` and the
+// whole line lands inside the glyph the fill painted. There is no `strokeRect`
+// equivalent to lean on here and no clip either, because a per-read `clip()`
+// would emit a `<clipPath>` + `<g>` per read in the vector SVG export.
+//
+// Three of the five edges are axis-aligned and just move by `inset`. The apex
+// is the one that isn't, and both of its numbers come from the same fact: two
+// edges meeting at half-angle β pull their shared vertex `inset / sin β` along
+// the bisector. The chevron's bisector is the horizontal axis, so with `c` the
+// arrowhead's run, `h` the half-height and `L` the diagonal's length, the tip
+// pulls back by `inset * L / h`, and the two body corners — where an offset
+// top/bottom line meets an offset diagonal — pull back by `inset * (L - c) / h`.
+// Both stay far inside the `w > 2` gate: the corner term is under 0.15 px for
+// every height the outline is drawn at.
 function traceReadArrow(
   ctx: Ctx2D,
   xL: number,
@@ -110,22 +127,38 @@ function traceReadArrow(
   y: number,
   fH: number,
   apexX: number,
+  inset = 0,
 ) {
   const yMid = y + fH / 2
-  ctx.beginPath()
-  if (apexX > xR) {
-    ctx.moveTo(xL, y)
-    ctx.lineTo(xR, y)
-    ctx.lineTo(apexX, yMid)
-    ctx.lineTo(xR, y + fH)
-    ctx.lineTo(xL, y + fH)
-  } else {
-    ctx.moveTo(xR, y)
-    ctx.lineTo(xL, y)
-    ctx.lineTo(apexX, yMid)
-    ctx.lineTo(xL, y + fH)
-    ctx.lineTo(xR, y + fH)
+  // Which way the arrowhead points; `back` is the read's blunt end, `base` the
+  // body edge the arrowhead springs from. Folding the direction into a sign
+  // keeps one path for both, as the un-inset version already did.
+  const dir = apexX > xR ? 1 : -1
+  const backX = dir > 0 ? xL : xR
+  const baseX = dir > 0 ? xR : xL
+  let backIn = backX
+  let baseIn = baseX
+  let apexIn = apexX
+  // Branch rather than fold `inset` into the arithmetic: the fill's call passes
+  // 0, and a zero-height read would take that path through `0 * (L / 0)` = NaN
+  // and drop the glyph. Only the outline's call has `fH > READ_OUTLINE_MIN_PX`
+  // behind it, so only the outline's call may divide by the half-height.
+  if (inset !== 0) {
+    const h = fH / 2
+    const c = Math.abs(apexX - baseX)
+    const L = Math.hypot(c, h)
+    backIn = backX + dir * inset
+    baseIn = baseX - dir * inset * ((L - c) / h)
+    apexIn = apexX - dir * inset * (L / h)
   }
+  const yTop = y + inset
+  const yBot = y + fH - inset
+  ctx.beginPath()
+  ctx.moveTo(backIn, yTop)
+  ctx.lineTo(baseIn, yTop)
+  ctx.lineTo(apexIn, yMid)
+  ctx.lineTo(baseIn, yBot)
+  ctx.lineTo(backIn, yBot)
   ctx.closePath()
 }
 
@@ -225,9 +258,17 @@ export function drawReads(
       )
 
     if (hasChev) {
-      traceReadArrow(ctx, xL, xR, y, fH, chevronApexX(strand, xStart, xEnd))
+      const apexX = chevronApexX(strand, xStart, xEnd)
+      traceReadArrow(ctx, xL, xR, y, fH, apexX)
       ctx.fill()
       if (outline) {
+        // Re-traced inset rather than stroked on the fill's own path, for the
+        // same reason the rect branch uses strokeRectInside: a centred stroke
+        // puts half its width outside the read, where read.slang's outline is a
+        // fragment test on distance-to-edge and cannot leave the glyph. On a
+        // pileup that half-width lands in the 1px gap between rows and smudges
+        // two neighbours together.
+        traceReadArrow(ctx, xL, xR, y, fH, apexX, READ_OUTLINE_PX / 2)
         ctx.stroke()
       }
     } else {
