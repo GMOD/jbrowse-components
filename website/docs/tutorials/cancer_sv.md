@@ -391,7 +391,7 @@ flat line per molecule instead of a fan of curves. Flip the chr22 region as well
 (`[rev]`): XKR3 is on the minus strand, so without it both halves of a molecule
 run opposite ways.
 
-<Figure caption="K562 STAR-Fusion calls in the SV inspector. Above, the table searched for chr9, leaving two rows and the single chord they draw between 22q11 and 9q34. Below, NUP214--XKR3 as two regions of one view with reads linked: the breakpoints are banded green, and each grey line is one Iso-Seq molecule running from NUP214 into XKR3." src="/img/cancer_sv/k562_starfusion_triage.png" links="Import form=cancer_sv/k562_fusion_inspector_form,All 44 calls=cancer_sv/k562_fusion_inspector_all,Searched for chr9=cancer_sv/k562_fusion_inspector_pair,Linked reads=cancer_sv/k562_fusion_inspector_reads" />
+<Figure caption="K562 STAR-Fusion calls in the SV inspector. Above, the table searched for chr9, leaving two rows and the single chord they draw between 22q11 and 9q34. Below, NUP214--XKR3 as two regions of one view with reads linked: the breakpoints are banded green, and each line is one Iso-Seq molecule running from NUP214 into XKR3. The legend names the read colors, which come from each segment's strand relative to its own chain rather than from the color-by setting." src="/img/cancer_sv/k562_starfusion_triage.png" links="Import form=cancer_sv/k562_fusion_inspector_form,All 44 calls=cancer_sv/k562_fusion_inspector_all,Searched for chr9=cancer_sv/k562_fusion_inspector_pair,Linked reads=cancer_sv/k562_fusion_inspector_reads" />
 
 That is the `NUP214--XKR3` side of the pair. The `BCR--ABL1` side gets the rest
 of this section, in the same layout.

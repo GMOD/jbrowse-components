@@ -1617,7 +1617,15 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
       // diagonal fan this figure was denied for. chr22 is `[rev]`, so its
       // higher coordinate is drawn leftmost and the breakpoint lands at that
       // region's left edge.
-      loc: 'chr9:131,195,015-131,199,515 chr22:16,805,083-16,808,583[rev]',
+      //
+      // WIDER ON THE OUTER SIDES ONLY (review: "it is weirdly 'abbreviated'
+      // ideally it would be able to scroll farther to the left and farther to
+      // the right"). Each window keeps its breakpoint where it was, against the
+      // seam, and grows away from it -- 4.5 kb to 9.5 on chr9 and 3.5 kb to 8.6
+      // on chr22 -- so the two read piles stay adjacent while the molecules stop
+      // running off the frame at both outer edges. Growing the INNER sides is
+      // the thing that cannot be done, and the note above says why.
+      loc: 'chr9:131,190,015-131,199,515 chr22:16,800,000-16,808,583[rev]',
       // the call's own breakpoints, one band each, so each side's coverage step
       // has a marked position to sit on
       highlight: [
@@ -1639,6 +1647,18 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // fusion's support, so every remaining row crosses the junction
           showOnlySplitAlignments: true,
           linkedReads: 'normal',
+          // THE LEGEND, WHICH IS THE ANSWER TO "unclear why the reads are
+          // red/pink on the left but not on the right" (review). The colours
+          // are not a scheme this spec picked, which is why nothing in the spec
+          // explained them: colorBy here is `normal`, and under CHAIN layout an
+          // unpaired long read whose chain carries a supplementary alignment is
+          // coloured by that segment's strand relative to the chain's primary
+          // instead (`readColorCategory`, the `isChain && hasSupp && !isPaired`
+          // branch). So the frame holds three categories and the legend names
+          // all three: `Split read (forward)`, `Split read (reverse)` and plain
+          // `Reads`. `showLegend` is opt-in per track and off by default, so a
+          // figure that leans on those colours has to ask for it.
+          showLegend: true,
           // chain layout's own connecting line is emitted per displayed region
           // and draws as a 1px hairline; the bezier pass is the one that
           // resolves both ends through view.bpToPx. See k562_bcr_abl_split.
