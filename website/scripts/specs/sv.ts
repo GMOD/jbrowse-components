@@ -740,7 +740,24 @@ export const svSpecs: ScreenshotSpec[] = [
               growMaxHeight: 1400,
               coverageHeight: 120,
               featureHeight: 7,
-              colorBy: { type: 'pairOrientation' },
+              // THE SAME SCHEME THE ARCS USE (reviewer: "there are red arcs,
+              // but shouldnt the read pairs that are associated with those arcs
+              // also be colored red in the pileup chains"). They should, and
+              // they were not: `arcColorByType` defaults to
+              // insertSizeAndOrientation while the reads were on
+              // pairOrientation, so a long-insert pair drew a red arc over a
+              // grey read and the two halves of the same frame keyed the same
+              // pair differently.
+              //
+              // Moving the READS to match rather than the arcs, because this
+              // scheme is a superset of the one they were on: short insert wins
+              // outright, then abnormal orientation, then insert size. So LL
+              // green, RR navy and the magenta split reads all still paint --
+              // the whole subject of the card is untouched -- and the pairs
+              // spanning the duplication pick up the red their arcs already
+              // had. Coloring the arcs by orientation instead would have
+              // reconciled them by deleting the long-insert signal.
+              colorBy: { type: 'insertSizeAndOrientation' },
               // the legend is what makes a compact card's colors readable
               showLegend: true,
             },
