@@ -101,6 +101,46 @@ test('a lane that reserved no arc band answers nothing', () => {
   ).toBeUndefined()
 })
 
+// `arcIsFar` is `2 * halfWidth > canvasW`, and `canvasW` is the BLOCK's clamped
+// width (`scissorW`) on both renderers, not the canvas's. Feeding the hit test
+// the full canvas width put it on the other side of that test from the paint
+// for every block narrower than the canvas — which is every multi-region view.
+describe('the far/near split is taken against the same width the renderers use', () => {
+  // A 400px block on a 1000px canvas, still 1bp per px. The mate at 1700 is off
+  // the block's right edge, which is exactly the case the projection is built to
+  // extrapolate through — so the pair spans 600px: far against the block's 400,
+  // near against the canvas's 1000.
+  const NARROW = {
+    region: { start: 1000, end: 1400, screenStartPx: 0, screenEndPx: 400 },
+    band: { arcBandTop: 0, arcBandHeight: 100, arcDown: false },
+    scroll: { isGrouped: false, scrollTop: 0, canvasHeight: 500 },
+    lineWidth: 1,
+    arcsYDomainBp: undefined,
+    canvasWidthPx: 1000,
+  } satisfies ArcHitBandOptions
+  const WIDE_PAIR = {
+    ...ARCS,
+    arcX1: new Uint32Array([1100]),
+    arcX2: new Uint32Array([1700]),
+  }
+
+  // What the renderers paint: a circle of radius halfWidth (300) centred on the
+  // span's midpoint at the anchor line, whose apex is 300px above a 100px band —
+  // so only two near-vertical legs are inside it. 20px up the left leg:
+  const LEG = { x: 400 - Math.sqrt(300 * 300 - 20 * 20), y: 100 - 20 }
+
+  test('a leg of the painted semicircle answers', () => {
+    expect(hitTestArcBand(LEG.x, LEG.y, WIDE_PAIR, NARROW)?.index).toBe(0)
+  })
+
+  test('and the dome the canvas-width reading would have drawn does not', () => {
+    // Read as a near pair the same arc is an ellipse peaking 30px up at x=400,
+    // which is where the hover used to answer. Nothing is painted there — the
+    // real curve is 200px above the band at that x — so it must miss.
+    expect(hitTestArcBand(400, 100 - 30, WIDE_PAIR, NARROW)).toBeUndefined()
+  })
+})
+
 test('a degenerate region does not divide by zero', () => {
   // A region measured before layout has zero width; the projection is undefined
   // there rather than infinite, so the hover simply misses.

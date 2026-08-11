@@ -1,3 +1,5 @@
+import { clampBlockScissor } from '@jbrowse/render-core'
+
 import { arcAvailH, arcYScale } from '../../features/arcs/arcYScale.ts'
 import { hitTestArcs } from '../../features/arcs/hitTest.ts'
 import { bandScreenTop, makeBpToPx } from './sectionScreen.ts'
@@ -37,8 +39,10 @@ export interface ArcHitBandOptions {
   // Y scale falls back to the bp span that fits the band at this zoom. Passed
   // through `arcYScale` so the hover reads the axis the draw plotted onto.
   arcsYDomainBp: number | undefined
-  // Mirrors the shader's `canvasW`, which is what decides whether a pair is far
-  // enough that its dome degenerates to two legs.
+  // The whole canvas, `renderState.canvasWidth`. NOT the shader's `canvasW`:
+  // both renderers upload the BLOCK's clamped width there (`scissorW`), and
+  // this is the input that clamp is taken against — see `clampBlockScissor`
+  // below for why the difference is the whole bug.
   canvasWidthPx: number
 }
 
@@ -60,6 +64,32 @@ export function hitTestArcBand(
   if (!(bpPerPx > 0)) {
     return undefined
   }
+  // The shader's `canvasW`, and it is the BLOCK's clamped width, not the
+  // canvas's. Both renderers upload `scissorW` there — GPU `f[U.canvasW] =
+  // scissorW`, Canvas2D `drawArcs(…, scissorW)` — and `arcIsFar` is
+  // `2 * halfWidth > canvasW`, the test that decides whether a pair draws as a
+  // dome or degenerates to a semicircle showing two near-vertical legs.
+  //
+  // Handing the full track width here instead put the hit test on a different
+  // side of that test from the paint whenever a block is narrower than the
+  // canvas — every multi-region view, and any region partly scrolled off. The
+  // draw flipped to the semicircle first, and until the hit test caught up it
+  // was measuring an ellipse dome (`ry = 0.75 * arcH`, inside the band) against
+  // a painted circle of radius `halfWidth` (apex far above it): not a near
+  // miss, a different curve, so the hover went dead across that whole zoom
+  // window rather than drifting by a pixel.
+  //
+  // `clampBlockScissor` is the renderers' own helper rather than a third
+  // spelling of floor/ceil/clamp, because that is the shape this bug already
+  // took once.
+  const scissor = clampBlockScissor(
+    region.screenStartPx,
+    region.screenEndPx,
+    canvasWidthPx,
+  )
+  if (!scissor) {
+    return undefined
+  }
   const arcsH = band.arcBandHeight
   // Same domain rule `drawArcs` applies, off the same `arcAvailH` — a mismatch
   // would measure against arcs plotted to a different height than they drew at.
@@ -76,6 +106,6 @@ export function hitTestArcBand(
     arcsH,
     pairedArcsDown: band.arcDown,
     lineWidth,
-    screenWidthPx: canvasWidthPx,
+    screenWidthPx: scissor.scissorW,
   })
 }
