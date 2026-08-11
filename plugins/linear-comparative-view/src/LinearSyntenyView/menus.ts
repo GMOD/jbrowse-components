@@ -95,6 +95,25 @@ export function genomeViewsMenuItems(model: GenomeViewsModel): MenuItem[] {
     : []
 }
 
+interface RowViewMenusModel {
+  views: { assemblyNames: string[]; menuItems: () => MenuItem[] }[]
+}
+
+// The per-row LGV menus, reachable from the synteny view's own menu: each row's
+// hamburger is otherwise only available from that row's header, which a compact
+// row doesn't show.
+export function rowViewMenuItems(model: RowViewMenusModel): MenuItem[] {
+  return [
+    {
+      label: 'Row view menus',
+      subMenu: model.views.map((view, idx) => ({
+        label: view.assemblyNames[0] ?? `View ${idx + 1}`,
+        subMenu: view.menuItems(),
+      })),
+    },
+  ]
+}
+
 interface CigarModeModel {
   hasCigarData: boolean
   cigarMode: CigarMode

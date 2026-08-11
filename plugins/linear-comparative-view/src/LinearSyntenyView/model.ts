@@ -24,6 +24,7 @@ import {
   displayCanShowCigar,
   genomeViewsMenuItems,
   removeRowMenuItems,
+  rowViewMenuItems,
 } from './menus.ts'
 
 import type { LinearComparativeViewModel } from '../LinearComparativeView/model.ts'
@@ -654,6 +655,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         menuItems() {
           return [
             ...superMenuItems(),
+            ...rowViewMenuItems(self),
             {
               label: 'Export SVG',
               icon: PhotoCameraIcon,
