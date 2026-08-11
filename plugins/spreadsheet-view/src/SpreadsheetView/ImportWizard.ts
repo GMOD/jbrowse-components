@@ -270,19 +270,28 @@ export default function stateModelFactory() {
         // location into openLocation (which throws a spurious error)
         if (src && self.isReadyToOpen) {
           self.selectedAssemblyName = assemblyName
-          const typeParser = await fileTypeParsers[self.fileType]()
-          // every await here is a place the user can close the view, and every
-          // write past one lands on a node MST has torn down. Under the default
-          // livelinessChecking that does not throw — it logs three warnings and
-          // drops the write — so the cost is a console full of them plus a
-          // whole file fetched and parsed for a view that is gone
-          if (!isAlive(self)) {
-            return undefined
-          }
-          const { pluginManager } = getEnv(self)
-          const filehandle = openLocation(src, pluginManager)
+          // Before the parser await, not after. That await is a lazy chunk
+          // fetch over the network and the user has already pressed Open, so
+          // set afterwards it left the whole fetch un-narrated: no spinner in
+          // the wizard, and `showLoading` (and so the view's
+          // `data-view-phase`) still reporting ready over a view that is
+          // plainly working. `openLocation` moved inside the try along with it,
+          // both so a throw there can't strand `loading` at true and so a bad
+          // location reports in the wizard's own error banner like every other
+          // import failure, rather than as a snackbar from loadSpreadsheet.
           self.setLoading(true)
           try {
+            const typeParser = await fileTypeParsers[self.fileType]()
+            // every await here is a place the user can close the view, and
+            // every write past one lands on a node MST has torn down. Under the
+            // default livelinessChecking that does not throw — it logs three
+            // warnings and drops the write — so the cost is a console full of
+            // them plus a whole file fetched and parsed for a view that is gone
+            if (!isAlive(self)) {
+              return undefined
+            }
+            const { pluginManager } = getEnv(self)
+            const filehandle = openLocation(src, pluginManager)
             let stat: { size: number } | undefined
             try {
               stat = await filehandle.stat()

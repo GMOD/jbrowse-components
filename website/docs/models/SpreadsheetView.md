@@ -51,6 +51,13 @@ the whole surface.
 | --- | --- |
 | <span id="volatile-width">**width**</span><br><code>width: 400</code> |  |
 
+## Getters
+
+<!-- prettier-ignore -->
+| Member | Description |
+| --- | --- |
+| <span id="getter-showloading">**showLoading**</span><br><code>boolean</code> | Named to match LGV/dotplot/synteny/circular/breakpoint-split, which is what `ViewContainer` reads to publish `data-view-phase`. Without it this view published `ready` for its whole load, so a capture or a browser test waiting on that attribute treated a spreadsheet still fetching and parsing its VCF as settled — and there is no display-level wait to fall back on here, since a spreadsheet mounts no displays at all.<br><br>The one view whose loading state renders *inside* its import form rather than replacing it: the wizard keeps the chosen file, type and assembly on screen and puts a spinner above them, which is more useful than a bare loading screen that throws that context away. The phase is about the model, not about which component is mounted. |
+
 ## Methods
 
 <!-- prettier-ignore -->

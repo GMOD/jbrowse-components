@@ -47,10 +47,19 @@ function viewHeight(view: AbstractViewModel) {
     : ESTIMATED_VIEW_HEIGHT
 }
 
-// Every view that waits on something before it can mount content (LGV, dotplot,
-// synteny, circular, breakpoint-split — all of which paint a spinner in place of
-// their whole body meanwhile) models that wait as `showLoading`. Views without
-// the getter are mounted content the moment they render.
+// Every view that waits on something before it can mount content models that
+// wait as `showLoading`. Views without the getter are mounted content the moment
+// they render — which is the trap, because a view that waits and *doesn't*
+// declare it is indistinguishable from one that never waits, and reports ready
+// over a body that is plainly working. Spreadsheet and SV inspector were exactly
+// that until they got the getter, and a spreadsheet mounts no displays, so no
+// display-level wait covered for them either.
+//
+// LGV, dotplot, synteny, circular and breakpoint-split paint a spinner in place
+// of their whole body meanwhile. Spreadsheet is the exception and keeps its
+// import wizard mounted with a spinner above it, since the chosen file, type and
+// assembly are worth more on screen than a bare loading screen — the phase is
+// about the model, not about which component is mounted.
 //
 // Two values, not one per render branch: an import form is finished content, not
 // a pending state, so it reports ready like anything else.

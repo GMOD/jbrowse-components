@@ -54,6 +54,49 @@ test('SvInspectorView initializes its spreadsheet from init', async () => {
   expect(view.init).toBeUndefined()
 }, 40000)
 
+// The view had no `showLoading` at all, so ViewContainer published
+// `data-view-phase="ready"` for the whole load and every readiness wait treated
+// a spreadsheet mid-parse as settled. There is no display-level wait to fall
+// back on: a spreadsheet mounts no displays.
+test('SvInspectorView reports loading while its spreadsheet loads', async () => {
+  const { view } = createSvInspectorViewWithInit({
+    assembly: 'volvox',
+    uri: 'test_data/volvox/volvox.dup.vcf.gz',
+  })
+
+  // Both in one callback, so they are read in the same tick — the load can
+  // finish between two awaits and did, when these were separate statements.
+  // That this catches the loading state at all is the ImportWizard half of the
+  // fix: setLoading(true) now runs before the lazy parser chunk fetch rather
+  // than after it, so there is no window where the view is working and says so
+  // to nobody.
+  await waitFor(() => {
+    expect(view.spreadsheetView.showLoading).toBe(true)
+    expect(view.showLoading).toBe(true)
+  })
+
+  await waitFor(
+    () => {
+      expect(view.spreadsheetView.spreadsheet).toBeDefined()
+    },
+    { timeout: 30000 },
+  )
+
+  await waitFor(() => {
+    expect(view.showLoading).toBe(false)
+  })
+}, 40000)
+
+// A view sitting on its import form is finished content, not a pending state —
+// the same line ViewContainer draws for every other view. Without this the
+// phase would never clear for a launch that names no file.
+test('SvInspectorView on the import form reports ready, not loading', () => {
+  const { view } = createSvInspectorViewWithInit({ assembly: 'volvox' })
+
+  expect(view.showLoading).toBe(false)
+  expect(view.spreadsheetView.showLoading).toBe(false)
+})
+
 // Regression: a launch that named an assembly but no file dropped the assembly,
 // and the import form fell back to whichever assembly sorted first
 test('an assembly with no uri lands on the import form, on that assembly', () => {

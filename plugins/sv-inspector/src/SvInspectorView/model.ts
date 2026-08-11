@@ -157,6 +157,28 @@ function SvInspectorViewF(pluginManager: PluginManager) {
 
       /**
        * #getter
+       * Named to match the other views, which is what `ViewContainer` reads to
+       * publish `data-view-phase`. Folds in both halves because neither
+       * publishes its own: the child views are rendered directly by this
+       * component rather than through a ViewContainer, so a spreadsheet still
+       * parsing or a circle still waiting on its assembly was invisible to
+       * every readiness wait, and `website/scripts/specs/sv.ts` captures five
+       * figures of this view.
+       *
+       * The circular term is gated on `showCircularView` so a circle that isn't
+       * rendered can never hold the phase open — `waitForViewPhases` is
+       * deliberately not best-effort, so a phase that never clears is a hang
+       * rather than a degraded capture.
+       */
+      get showLoading() {
+        return (
+          self.spreadsheetView.showLoading ||
+          (this.showCircularView && self.circularView.showLoading)
+        )
+      },
+
+      /**
+       * #getter
        */
       get features() {
         return (
