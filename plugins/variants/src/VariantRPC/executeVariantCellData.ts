@@ -361,6 +361,8 @@ export async function executeVariantCellData({
       transferables.add(data.featureIndexData)
       transferables.add(data.featurePositions.buffer)
       transferables.add(data.featureInsertedBp.buffer)
+      transferables.add(data.featureColors.buffer)
+      transferables.add(data.featureShapeTypes.buffer)
     }
 
     return rpcResult(
