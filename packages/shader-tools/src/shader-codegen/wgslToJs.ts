@@ -1074,12 +1074,14 @@ class Emitter {
     return t
   }
 
+  /**
+   * The identifier to emit for a Slang name — its demangled spelling where
+   * `buildRenames`/`stabilizeTemps` found one injective, otherwise the mangled
+   * name unchanged. One method: a private `id()` that only forwarded here read
+   * as a second concept and was not one.
+   */
   rename(name: string) {
     return this.renames.get(name) ?? name
-  }
-
-  private id(name: string) {
-    return this.rename(name)
   }
 
   /**
@@ -1128,7 +1130,7 @@ class Emitter {
         return this.num(e.text)
       }
       case 'ident': {
-        return this.id(e.name)
+        return this.rename(e.name)
       }
       case 'unary': {
         if (e.op === '~') {
@@ -1263,7 +1265,7 @@ class Emitter {
       // WGSL argument order is select(falseValue, trueValue, condition).
       return `(${a[2]} ? ${a[1]} : ${a[0]})`
     }
-    return `${this.id(name)}(${a.join(', ')})`
+    return `${this.rename(name)}(${a.join(', ')})`
   }
 
   /** Every callee spelling `call` above knows how to emit. */
@@ -1285,7 +1287,9 @@ class Emitter {
           if (s.init === undefined) {
             // The parser refuses a declaration with neither, so this one is
             // annotated.
-            out.push(`${indent}let ${this.id(s.name)}: ${tsTypeOf(s.type!)}`)
+            out.push(
+              `${indent}let ${this.rename(s.name)}: ${tsTypeOf(s.type!)}`,
+            )
             break
           }
           // Emit first, then type: the initializer is read in the scope as it
@@ -1296,11 +1300,11 @@ class Emitter {
           if (type !== undefined) {
             this.scopeTypes.set(s.name, type)
           }
-          out.push(`${indent}let ${this.id(s.name)} = ${value}`)
+          out.push(`${indent}let ${this.rename(s.name)} = ${value}`)
           break
         }
         case 'assign': {
-          out.push(`${indent}${this.id(s.name)} = ${this.expr(s.value)}`)
+          out.push(`${indent}${this.rename(s.name)} = ${this.expr(s.value)}`)
           break
         }
         case 'return': {

@@ -327,10 +327,7 @@ export function parseJsExports(
   // Reject non-scalar signatures here rather than letting wgslToJs discover
   // them after a compile: the message can name the function and the type.
   for (const fn of fns) {
-    const bad = [
-      ...(SLANG_RETURN_ONLY.has(fn.returnType) ? [] : [fn.returnType]),
-      ...fn.paramTypes,
-    ].filter(t => !SLANG_SCALARS.has(t))
+    const bad = unsupportedSignatureTypes(fn)
     if (bad.length > 0) {
       throw new Error(
         `//! js-export: ${fn.name} uses unsupported type(s) ` +
@@ -388,13 +385,33 @@ export function parseDeclaredFunctions(sources: readonly string[]) {
   return declared
 }
 
+/**
+ * The types in this signature the emitter does not cover, in signature order —
+ * empty when it covers all of them.
+ *
+ * One function rather than two spellings of the rule. `parseJsExports` needs the
+ * offending names for its message and `check-oracle` needs the yes/no, and each
+ * had its own predicate over the same two sets, sixty lines apart in this file.
+ * Widening the subset touches one of them by default: a `float2` *parameter*
+ * added to `isSupportedSignature` alone would put functions in the oracle's
+ * sweep that `//! js-export` still refuses, and added to the inline copy alone
+ * would export functions the oracle then declines to check. Same hazard this
+ * file already names for `parseDeclaredFunctions` — "a second regex over the
+ * same syntax is how the two would come to disagree" — one level up, in the
+ * types rather than the syntax.
+ */
+export function unsupportedSignatureTypes(fn: JsExportFn) {
+  return [
+    // A float2 return is in the subset; a float2 anywhere else is not, so it is
+    // dropped from the check here rather than added to SLANG_SCALARS.
+    ...(SLANG_RETURN_ONLY.has(fn.returnType) ? [] : [fn.returnType]),
+    ...fn.paramTypes,
+  ].filter(t => !SLANG_SCALARS.has(t))
+}
+
 /** Whether the emitter can handle this signature — scalars, plus float2 out. */
 export function isSupportedSignature(fn: JsExportFn) {
-  return (
-    (SLANG_SCALARS.has(fn.returnType) ||
-      SLANG_RETURN_ONLY.has(fn.returnType)) &&
-    fn.paramTypes.every(t => SLANG_SCALARS.has(t))
-  )
+  return unsupportedSignatureTypes(fn).length === 0
 }
 
 export interface JsSkip {
