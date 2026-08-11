@@ -3,7 +3,12 @@ import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { getPreparedCanvas2D } from '@jbrowse/render-core/canvas2dUtils'
 import { autorun } from 'mobx'
 
-import { links, treeLinkSegments, treeStroke } from './hierarchy.ts'
+import {
+  links,
+  treeHoverColors,
+  treeLinkSegments,
+  treeStroke,
+} from './hierarchy.ts'
 import { rowRuns } from './rowRuns.ts'
 import { treeContentHeight } from './treeSidebarGeometry.ts'
 
@@ -97,10 +102,11 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
         }
 
         if (hierarchy && hoveredTreeNode && sources) {
+          const colors = treeHoverColors(getSession(self).palette)
           ctx.save()
           ctx.translate(0, -scrollTop)
 
-          ctx.fillStyle = 'rgba(255,165,0,0.2)'
+          ctx.fillStyle = colors.band
           // One rect per contiguous BLOCK of highlighted rows, not one per row:
           // this fill is translucent and the row height is fractional in
           // fit-to-height mode, so a rect per row blends twice over each shared
@@ -121,12 +127,12 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           }
 
           const { node } = hoveredTreeNode
-          ctx.fillStyle = 'rgba(255,165,0,0.8)'
+          ctx.fillStyle = colors.node
           ctx.beginPath()
           ctx.arc(node.y, node.x, 4, 0, 2 * Math.PI)
           ctx.fill()
 
-          ctx.strokeStyle = 'rgba(255,140,0,1)'
+          ctx.strokeStyle = colors.nodeRing
           ctx.lineWidth = 1
           ctx.stroke()
 

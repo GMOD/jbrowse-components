@@ -22,11 +22,18 @@ const stubCtx = {
   restore() {},
   arc() {},
   fill() {},
-  fillRect: jest.fn(),
+  // Records the fill in force at the time of the call, not just the geometry:
+  // `fillStyle` on the stub holds whatever was written last (the node dot), so
+  // the band's own color is otherwise unreadable after the frame.
+  fillRect: jest.fn(function (this: { fillStyle: string }) {
+    bandFills.push(this.fillStyle)
+  }),
   strokeStyle: '',
   fillStyle: '',
   lineWidth: 0,
 } as unknown as CanvasRenderingContext2D
+
+const bandFills: string[] = []
 
 // Backing-store size is CSS px x devicePixelRatio (via render-core getDpr).
 const DPR = 2
@@ -96,8 +103,13 @@ const View = types
     },
   }))
 
-// `getSession` duck-types on rpcManager + configuration; the draw autorun reads
-// the palette off it for the branch-line stroke.
+// `getSession` duck-types on rpcManager + configuration; the draw autoruns read
+// the palette off it — the branch-line stroke from `mode`, the hover mark from
+// `highlight` as well, so the stub carries both halves of what they resolve.
+// The one color the hover mark is built from, so a test can assert the alpha
+// it was composited at rather than a literal.
+const HIGHLIGHT = '#FFB11D'
+
 const Session = types
   .model('TestSession', {
     view: View,
@@ -105,11 +117,11 @@ const Session = types
   .volatile(() => ({
     rpcManager: {},
     configuration: {},
-    palette: { mode: 'light' },
+    palette: { mode: 'light', highlight: { main: HIGHLIGHT } },
   }))
   .actions(self => ({
     setMode(mode: 'light' | 'dark') {
-      self.palette = { mode }
+      self.palette = { mode, highlight: { main: HIGHLIGHT } }
     },
   }))
 
@@ -205,4 +217,33 @@ test('branch lines take their ink from the session palette', () => {
   expect(stubCtx.strokeStyle).toBe('#0008')
   session.setMode('dark')
   expect(stubCtx.strokeStyle).toBe('#fff8')
+})
+
+// The hover mark was three `rgba(255,165,0,…)` literals — the last hardcoded
+// colors in the package's drawing paths — and its band's 0.2 was picked against
+// a light track. A translucent fill composites toward the background behind it,
+// so on a dark track that band all but disappeared: the same failure the codon
+// fills document and fix with per-mode alphas, and the same one `treeStroke`
+// already exists for, one line above it in the same module.
+test('the hover mark follows the palette, and holds up in dark mode', () => {
+  const session = createDisplay('view6')
+  const { display } = session.view
+  setupTreeDrawingAutorun(display)
+  display.setMouseoverCanvasRef(document.createElement('canvas'))
+
+  const node = display.hierarchy.children![0]!
+  bandFills.length = 0
+  display.setHoveredTreeNode({ node, descendantNames: getLeafNames(node) })
+  const bandLight = bandFills.at(-1)!
+
+  session.setMode('dark')
+  const bandDark = bandFills.at(-1)!
+
+  // built from the theme's highlight token, not a literal
+  expect(bandLight).toContain('255, 177, 29')
+  expect(bandDark).toContain('255, 177, 29')
+  // and composited more strongly against a dark background, or it vanishes
+  const alphaOf = (color: string) =>
+    Number(/([\d.]+)\)$/.exec(color)?.[1] ?? '1')
+  expect(alphaOf(bandDark)).toBeGreaterThan(alphaOf(bandLight))
 })

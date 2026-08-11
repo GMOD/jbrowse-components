@@ -1,3 +1,5 @@
+import { alpha } from '@jbrowse/core/ui/palette'
+
 // Stroke for tree branch lines, shared by the canvas and SVG draw paths. The
 // sidebar paints a translucent `background.paper` panel behind the dendrogram,
 // so the ink has to follow the theme with it: black-on-white was legible in
@@ -8,6 +10,39 @@
 // stays exactly what it has always been, byte for byte, in the exported SVG.
 export function treeStroke(palette: { mode: 'light' | 'dark' }) {
   return palette.mode === 'dark' ? '#fff8' : '#0008'
+}
+
+/**
+ * Colors for the hovered-subtree mark: the translucent band over the rows the
+ * hovered node contains, plus the dot and ring on the node itself.
+ *
+ * Here, beside `treeStroke`, and theme-derived for the same reason it is — with
+ * the extra term that getter did not need. These were three `rgba(255,165,0,…)`
+ * literals, the last hardcoded colors left in the package's drawing paths, and
+ * the band's 0.2 was picked against a light track. A translucent fill
+ * composites toward the background behind it, so on a dark track that band all
+ * but disappears: the same failure `getMafColorPalette`'s codon fills document
+ * and fix with per-mode alphas, and the same one `treeStroke` exists for.
+ *
+ * `palette.highlight` rather than a literal because it is already the token for
+ * "this is the thing being pointed at" — maf's MSA overlay marks with the same
+ * one at 0.4 fill / 0.8 border — so a custom theme moves the tree hover with
+ * everything else that marks.
+ */
+export function treeHoverColors(palette: {
+  mode: 'light' | 'dark'
+  highlight: { main: string }
+}) {
+  const dark = palette.mode === 'dark'
+  const { main } = palette.highlight
+  return {
+    /** band over the hovered node's rows */
+    band: alpha(main, dark ? 0.38 : 0.2),
+    /** filled dot on the node */
+    node: alpha(main, dark ? 0.9 : 0.8),
+    /** ring around that dot, so it reads against the band it sits in */
+    nodeRing: main,
+  }
 }
 
 // Left inset (CSS px) for the root branch line. The root sits at the smallest y
