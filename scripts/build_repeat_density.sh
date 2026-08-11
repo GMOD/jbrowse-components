@@ -212,6 +212,47 @@ report rmsk_hs1.bed chr17 83599576 83899576 "CHM13 left flank"
 report rmsk_hs1.bed chr17 83899576 84041803 "CHM13 allele"
 report rmsk_hs1.bed chr17 84041803 "$hs1_end" "CHM13 right flank"
 
+# IS THAT A LOT? The flank comparison above cannot answer it, and the answer
+# depends entirely on the scale it is asked at (review: "what would convince
+# user this is like an abnormal numnber of L1 compared to an even larger e.g.
+# megabase scale region"). So rank the allele against every window of its own
+# size in CHM13, at three scopes: genome-wide, chr17, and the 10 Mb around it.
+#
+# 20 kb step rather than tiling, so the ranking does not depend on where a tile
+# boundary happens to fall relative to the allele.
+echo
+echo "== is that a lot? the allele against same-size windows of CHM13 =="
+allele_len=$((84041803 - 83899576))
+awk -F'\t' '$4=="LINE"' rmsk_hs1.bed | bedtools merge -i - > tmp_line.bed
+bedtools makewindows -g hs1.main.sizes -w $allele_len -s 20000 |
+  sort -k1,1 -k2,2n > tmp_win.bed
+bedtools coverage -a tmp_win.bed -b tmp_line.bed -sorted -g hs1.main.sizes |
+  awk -v l=$allele_len -F'\t' '$3-$2==l {printf "%s\t%s\t%s\t%.5f\n", $1, $2, $3, $NF}' \
+    > tmp_frac.bed
+allele_line=$(awk -F'\t' \
+  '$1=="chr17" && $3>83899576 && $2<84041803 {
+     st=($2<83899576?83899576:$2); en=($3>84041803?84041803:$3); t+=en-st
+   } END {printf "%.4f", t/(84041803-83899576)}' tmp_line.bed)
+printf '  allele LINE fraction: %s over %d bp\n' "$allele_line" "$allele_len"
+rank() {
+  awk -v a="$allele_line" -v scope="$1" -v label="$2" -F'\t' '
+    scope != "genome" && $1 != "chr17" { next }
+    scope == "local" {
+      m = ($2 + $3) / 2
+      if (m < 83970689 - 5000000 || m > 83970689 + 5000000) next
+    }
+    { v[++n] = $4; if ($4 > a + 0) above++ }
+    END {
+      asort(v)
+      printf "  %-10s n=%-6d median %.3f   windows above the allele: %d (%.1f%%)\n",
+        label, n, v[int(n/2)], above+0, 100*(above+0)/n
+    }' tmp_frac.bed
+}
+rank genome "genome"
+rank chr17 "chr17"
+rank local "+/-5 Mb"
+rm -f tmp_line.bed tmp_win.bed tmp_frac.bed
+
 echo
 echo "Done. bigWigs in $PWD:"
 ls -1 ./*_repeat_density_*.bw

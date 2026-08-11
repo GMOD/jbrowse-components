@@ -846,19 +846,19 @@ const CHM13_BUBBLE = { refName: 'chr17', start: 83022357, end: 83023380 }
 const CHM13_ALLELE = { refName: 'chr17', start: 83899576, end: 84041803 }
 // The node's own span padded to a round window, and it STAYS this tight
 // (review: "ideally we would zoom out the lineargenomeview even more to show
-// how these L1 transposons are more frequent here than elsewhere"). Rendered at
-// 360 kb and at 627 kb before concluding, and the enrichment is real but is not
-// a picture. build_repeat_density.sh puts the allele at 23.70% LINE against
-// 14.18% and 14.47% in the flanks either side, which is 1.7x as a mean over
-// 142 kb; per 20 kb the allele runs 0.07-0.42 and the flanks run 0.00-0.40, so
-// there is no block for a reader to see and a wider window only adds
-// neighbourhood that looks the same. (The measurement the earlier pass made
-// here, "no local contrast, the allele sits in a subtelomere that is repeat-
-// dense end to end", was the joined-span bug in that script -- there IS a
-// contrast, it is just a mean rather than a shape.) 627 kb also does not draw
-// at all: the RepeatMasker bigBed carries a long `description` per record, so
-// past ~400 kb the lane hits its byte budget and comes back empty under a
-// FORCE LOAD prompt.
+// how these L1 transposons are more frequent here than elsewhere"). Not because
+// there is nothing to see wider -- there is, and `hprc_l1_density_context` is
+// it -- but because THIS lane cannot draw it. The RepeatMasker bigBed carries a
+// long `description` per record, so past ~400 kb the lane hits its byte budget
+// and comes back empty under a FORCE LOAD prompt; and per element over 627 kb
+// the allele's 48 LINEs are indistinguishable from the flanks' scatter, since
+// the enrichment is a level rather than a shape (0.07-0.42 inside per 20 kb
+// against 0.00-0.40 outside). The wider question is answered by the density
+// bigWig at ~100 kb smoothing over 3 Mb, which has neither limit.
+//
+// (An earlier pass concluded "no local contrast, the allele sits in a
+// subtelomere that is repeat-dense end to end". That was the joined-span bug in
+// build_repeat_density.sh; every number in it is roughly double.)
 const CHM13_ALLELE_WINDOW = 'chr17:83,880,000-84,060,000'
 
 const AMY_WINDOW = 'chr1:103,500,000-103,850,000'
@@ -1036,6 +1036,29 @@ const HS1_RMSK_TRACK = {
   },
 }
 
+// The same annotation as a DENSITY, which is the only form that can answer "is
+// that a lot" at megabase scale. One class, not the multi-class lane the
+// tutorial configures: the claim is about L1, and a second colour would invite
+// a composition reading the window is too wide to support.
+//
+// Already hosted and already documented — `scripts/build_repeat_density.sh`
+// writes it, the tutorial's repeat-density section is the config for it, and
+// its genome mean (0.2045) is the LINE fraction of CHM13, which is the check
+// that it is the corrected build rather than the joined-span one.
+const HS1_LINE_DENSITY_TRACK = {
+  type: 'QuantitativeTrack',
+  trackId: 'hs1_line_density',
+  name: 'LINE density (RepeatMasker, 5 kb bins)',
+  assemblyNames: ['hs1'],
+  adapter: {
+    type: 'BigWigAdapter',
+    bigWigLocation: {
+      uri: 'https://jbrowse.org/demos/hprc/repeat_density/hs1_repeat_density_LINE.bw',
+      locationType: 'UriLocation',
+    },
+  },
+}
+
 // A repeat lane as a LIST OF ELEMENTS, not as a density strip (review: "the
 // repeatmasker track is not very interesting unfortunately and looks sort of
 // glitchy even, just being collapsed layout. its also too zoomed in to tell if
@@ -1043,15 +1066,24 @@ const HS1_RMSK_TRACK = {
 // that are right, and the second one is what decides the first.
 //
 // A collapsed strip is a density read, and a density read is the one thing this
-// annotation cannot support here. scripts/build_repeat_density.sh puts the
-// allele at 23.70% LINE against 14.18% and 14.47% in the CHM13 sequence either
-// side of it: real, and 1.7x, but only as a mean over the whole 142 kb. Per
-// 20 kb the allele runs 0.07-0.42 and its flanks run 0.00-0.40, so a strip has
-// no block to draw and a wider window only adds neighbourhood that looks the
-// same — rendered at 360 kb and 627 kb before concluding that. (An earlier pass
-// concluded something stronger here, that there is no contrast at all because
-// the allele is 84.6% repeat against flanks at 79.0% and 70.4%. Those were the
-// joined-span bug in that script; every one of them is roughly double.)
+// annotation cannot support AT THIS WINDOW. scripts/build_repeat_density.sh
+// puts the allele at 23.70% LINE against 14.18% and 14.47% in the CHM13
+// sequence either side of it: real, and 1.7x, but only as a mean over the whole
+// 142 kb. Per 20 kb the allele runs 0.07-0.42 and its flanks run 0.00-0.40, so
+// over 180 kb there is no block for a strip to draw.
+//
+// A density read at the ALLELE'S OWN SCALE is a different matter, and it is
+// `hprc_l1_density_context`: 3 Mb of the same chromosome with each drawn value
+// a ~100 kb mean, where the allele is the tallest sustained level in the frame.
+// Two things had to be true for that and are not true here -- the source has to
+// be the density bigWig rather than this bigBed (which stops loading past ~400
+// kb), and the smoothing has to be at the allele's size rather than at 5 or
+// 20 kb. Earlier rounds concluded "not a picture" from inside those two limits.
+//
+// (An earlier pass concluded something stronger still, that there is no
+// contrast at all because the allele is 84.6% repeat against flanks at 79.0%
+// and 70.4%. Those were the joined-span bug in that script; every one of them
+// is roughly double.)
 //
 // What the annotation CAN say without a density read is what the sequence is
 // made of, and that is a per-element statement: 48 LINE elements in the allele's
@@ -4315,6 +4347,99 @@ export const graphSpecs: ScreenshotSpec[] = [
         },
         dx: 150,
         dy: 20,
+      },
+    ],
+  },
+  // IS THAT A LOT? (review, on the figure above: "we keep relitigated this but
+  // im trying to understand, what would convince user this is like an abnormal
+  // numnber of L1 compared to an even larger e.g. megabase scale region").
+  // Nothing in that figure can answer it: its widest lane is 180 kb, so the
+  // allele has only itself and two slivers of flank to be dense against, and
+  // the pill's "23.7% vs 14%" is a pair of numbers a reader has to take on
+  // trust. This is the same measurement drawn at the scale the question is
+  // asked at.
+  //
+  // Three earlier rounds concluded there was no picture here, and each was
+  // looking at the wrong two things: the ELEMENT lane, which cannot go past
+  // ~400 kb before the RepeatMasker bigBed hits its byte budget, and 20 kb
+  // bins, at which the allele runs 0.07-0.42 and its flanks 0.00-0.40 and
+  // nothing separates. The density bigWig has neither limit, and at the
+  // ALLELE'S OWN SCALE the separation is not subtle: `build_repeat_density.sh`
+  // ranks it against every 142 kb window of CHM13 and finds 2 of the 262 within
+  // 5 Mb carry more LINE, against a local median of 0.084.
+  //
+  // AND IT IS SCOPED, which is the honest half of the answer: genome-wide the
+  // same 23.7% is ordinary, with 35% of 142 kb windows above it. So the figure
+  // is 3 Mb of chr17 rather than a chromosome or a genome, and the caption says
+  // which claim is being made.
+  //
+  // `resolution` is what does the smoothing, and it is the whole trick: the
+  // display asks the bigWig for values of `bpPerPx / resolution` bp, so 0.03
+  // over this window lands on a ~100 kb zoom level instead of the ~3 kb one the
+  // default would draw. At 3 kb the allele is invisible inside the spikes -- 5
+  // kb bins reach 0.73 inside it and 0.47 just outside.
+  {
+    mode: 'url',
+    name: 'pangenome/hprc_l1_density_context',
+    url: sessionSpec(HPRC_CONFIG, {
+      sessionTracks: [HS1_LINE_DENSITY_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          displayName: 'T2T-CHM13v2.0 (hs1) chr17, the last 3 Mb',
+          assembly: 'hs1',
+          // to the end of the chromosome: the allele sits 235 kb from the
+          // telomere, so a window centred on it would be half off the contig
+          loc: 'chr17:81,300,000-84,276,897',
+          // the allele's own span, drawn by the app from its coordinates
+          highlight: [{ ...CHM13_ALLELE, color: 'rgba(200,60,45,0.16)' }],
+          tracks: [
+            {
+              trackId: HS1_LINE_DENSITY_TRACK.trackId,
+              type: 'LinearWiggleDisplay',
+              defaultRendering: 'xyplot',
+              useBicolor: false,
+              resolution: 0.03,
+              // 'avg' EXPLICITLY. A zoom level stores min/mean/max per bin and
+              // the default draws all three as whiskers, so the first render
+              // was a pale max band filling the lane to 0.5 everywhere with the
+              // mean buried under it -- the opposite of the point. The mean is
+              // the density; the max of a 100 kb bin is whatever single 5 kb
+              // bin inside it happened to be an L1.
+              summaryScoreMode: 'avg',
+              // fixed, not autoscaled: an axis that ends at whatever this
+              // window happens to reach cannot be read against another window,
+              // and 0.5 keeps the plateau at half height rather than pinned to
+              // the top of the lane
+              minScore: 0,
+              maxScore: 0.3,
+              displayCrossHatches: true,
+              height: 220,
+            },
+          ],
+        },
+      ],
+    }),
+    readySelector: displayPainted('wiggle-display'),
+    readyTimeout: 90000,
+    settleMs: 6000,
+    viewportWidth: 1000,
+    viewportHeight: 470,
+    hideTooltip: true,
+    annotations: [
+      {
+        type: 'text',
+        text: 'the 142 kb insertion allele',
+        fontSize: 17,
+        anchor: {
+          track: HS1_LINE_DENSITY_TRACK.trackId,
+          locus: 'chr17:83,899,576',
+          fracY: 0.06,
+          alignX: 'left',
+          textAlign: 'end',
+          dx: -14,
+        },
+        textAlign: 'end',
       },
     ],
   },
