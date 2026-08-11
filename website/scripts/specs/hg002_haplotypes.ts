@@ -75,10 +75,10 @@ function geneTrack(hap: 'MAT' | 'PAT', kind: 'genes' | 'landmarks' = 'genes') {
     type: 'FeatureTrack',
     trackId: `hg002_${kind}_${hap.toLowerCase()}`,
     // the landmark lane's name carries its colour key, so the figure needs no
-    // overlay to say what blue and red mean; see STRAND_COLOR
+    // overlay to say what red and blue mean; see STRAND_COLOR
     name:
       kind === 'landmarks'
-        ? `Landmark genes (${hap}), forward blue / reverse red`
+        ? `Landmark genes (${hap}), forward red / reverse blue`
         : `Genes (JHU Liftoff v0.6, HG002 v1.1 ${hap})`,
     assemblyNames: ['hg002v1.2'],
     adapter: {
@@ -183,9 +183,23 @@ const LANDMARK_FILTER = `jexl:${LANDMARK_GENES.map(
 // from the chain -- MSRA is + on MAT and - on PAT, GATA4 + and -, and so on
 // through all eight -- so the two lanes come out as each other's colour negative,
 // which is the inversion stated a third way, beside the crossing ribbons and the
-// reversed name order. The blue/red pair is the one
-// `cookbook_color_by_strand` teaches, so a reader who wants this has the recipe.
-const STRAND_COLOR = "jexl:feature.strand==1?'#1f77b4':'#d62728'"
+// reversed name order.
+//
+// THE BUILT-IN EXPRESSION, verbatim: this is STRAND_COLOR_JEXL
+// (plugins/canvas/src/RenderFeatureDataRPC/featureColors.ts), what **Color
+// by... -> Strand** writes into the slot, so the figure shows a menu click
+// rather than a callback a reader has to copy. An exact match is also what
+// makes the track menu's radio read 'strand' instead of 'attribute'; a
+// prettier equivalent would silently uncheck it.
+//
+// It replaced a hand-rolled `strand==1?'#1f77b4':'#d62728'` -- the cookbook's
+// blue-forward pair, which is the INVERSE of both the built-in and the synteny
+// ribbons' own strand scheme (colorSchemes.strand, posColor '#f00' / negColor
+// '#00f'). Blue therefore meant "forward" in the gene lanes and "inverted" in
+// the ribbons of the same frame, three inches apart. Now one vocabulary paints
+// the whole figure: red forward, blue reverse.
+const STRAND_COLOR =
+  "jexl:get(feature,'strand')==1?'tomato':get(feature,'strand')==-1?'cornflowerblue':'goldenrod'"
 
 function landmarkLane(hap: 'MAT' | 'PAT') {
   return {
