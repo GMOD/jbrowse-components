@@ -36,6 +36,44 @@ builder that sets it drags its whole component graph into every caller. `icon`
 is still an element type, which is the one of these left; see
 `agent-docs/reference/EAGER_BUNDLE.md`.
 
+## State that hides things declares itself: `Reversible`
+
+A filter, a hidden set, an applied "show only these", a highlight set — anything
+that narrows or marks what the user sees — is declared once as
+`{ count, label?, icon?, clear }`, keyed into a `Reversibles` record. The count
+in "Filter by... (n)", the undo rows inside that submenu and what "Clear all
+filters" clears are then all **derived from that one list** by `activeCount` /
+`undoItems` / `clearAll`, and `filterMenuItems` takes the record in place of the
+three computed separately.
+
+It exists because those three drifted apart repeatedly, and every failure was
+silent rather than loud: a set with no undo row at all (the canvas display's
+pinned features, reachable only from the pinned feature's own right-click menu,
+so a pin left on another chromosome could not be undone); an undo derived from
+the state's _absence_, so it vanished with what it undid (the canvas colour
+key's "×" was a one-way door for the session); a count derived from a different
+predicate than the state's effect ("Filter by... (1)" for opening the dialog and
+pressing Submit). LD and multi-sample variants each listed their filters twice,
+once to count and once to clear.
+
+Two rules that cost real bugs to learn:
+
+- **The seam is a method, not a getter.** `const { x } = self` on a getter
+  evaluates it once at composition time and freezes that value, so a subclass
+  super-capturing it gets a stale snapshot. Every extension seam here is a
+  method for that reason.
+- **Narrowing and marking are separate lists.** The canvas display declares
+  `featureNarrowings` (hide data — counted, cleared as a group) and
+  `featureMarks` (highlights, pins — same rows, deliberately not the same
+  count). A highlight is not filtering anything and must not appear in the
+  "(n)".
+
+**Where it does not fit:** a display whose filters are edited in a dialog and
+which deliberately offers no menu-level clear — `LinearAlignmentsDisplay` —
+keeps a plain `activeCount`. Declaring there would mean `clear` closures nothing
+calls, or a flag to suppress the group row the declaration implies. The shape is
+for menus that own the undo.
+
 ## Design tokens: `palette.ts` for colors, `styleTheme.ts` for the rest
 
 `makeStyles` hands a component **`JBrowseStyleTheme`** — palette, spacing,
