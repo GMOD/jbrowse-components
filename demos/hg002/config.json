@@ -64,6 +64,40 @@
           "color": "jexl:feature.strand == -1 ? '#00f' : '#f00'"
         }
       ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hg002_genes_mat",
+      "name": "Genes (JHU Liftoff v0.6, HG002 v1.1 MAT)",
+      "assemblyNames": ["hg002v1.2"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/annotation/JHULiftoff/v0.6/hg002v1.1.MAT.loff.v0.6.gff.gz"
+      },
+      "displayDefaults": {
+        "geneGlyphMode": "longestCoding",
+        "labels": {
+          "name": "jexl:feature.gene_name || feature.name || feature.id"
+        },
+        "color": "jexl:get(feature,'strand')==1?'tomato':get(feature,'strand')==-1?'cornflowerblue':'goldenrod'"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hg002_genes_pat",
+      "name": "Genes (JHU Liftoff v0.6, HG002 v1.1 PAT)",
+      "assemblyNames": ["hg002v1.2"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/annotation/JHULiftoff/v0.6/hg002v1.1.PAT.loff.v0.6.gff.gz"
+      },
+      "displayDefaults": {
+        "geneGlyphMode": "longestCoding",
+        "labels": {
+          "name": "jexl:feature.gene_name || feature.name || feature.id"
+        },
+        "color": "jexl:get(feature,'strand')==1?'tomato':get(feature,'strand')==-1?'cornflowerblue':'goldenrod'"
+      }
     }
   ]
 }

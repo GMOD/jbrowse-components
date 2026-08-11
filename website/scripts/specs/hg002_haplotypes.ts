@@ -13,8 +13,8 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // WHAT IS ACTUALLY IN THAT CHAIN, measured rather than taken from the README,
 // which is written about the GRCh38 pair and not this file (its awk step keys
 // on stripping _MATERNAL/_PATERNAL off the TARGET name, which only produces a
-// reference-vs-haplotype pairing). The tutorial's "what this alignment cannot
-// show" rests on these, so they are worth not re-deriving:
+// reference-vs-haplotype pairing). Deriving them again costs a genome-wide
+// scan of the chain, so they live here whether or not the page cites them:
 //
 //   zcat hg002v1.2_to_other_haplotype.chain.gz |
 //     awk '$1=="chain"{...}'   -> 6,830 chains, 0 cross-chromosome,
@@ -229,33 +229,32 @@ function landmarkLane(hap: 'MAT' | 'PAT') {
   }
 }
 
-// The base-level half of the comparison, and the figure that keeps the one
-// above honest: a window inside the COLLINEAR block just left of the inversion,
-// where the ribbon is one band (bar a single indel wedge) and the het sites
-// underneath it are what separate the haplotypes. Structural agreement and
-// sequence identity are different claims, and this is the frame that shows the
-// second one failing where the first one holds.
+// THERE IS NO HET-SITE FIGURE, AND TWO ATTEMPTS AT ONE ARE WHY. It would have
+// framed a window inside the COLLINEAR block just left of the inversion, where
+// the ribbon is one band (bar a single indel wedge) and the published het-site
+// calls underneath it are what separate the haplotypes -- structural agreement
+// and sequence identity being different claims.
 //
-// It has to be its own figure for two reasons. The 5.2 Mb inversion frame is
-// over the het track's too-many-features gate, so the track renders a warning
-// there rather than data. And a window ON the breakpoint cannot work at all:
-// the flank maps to chr8_PATERNAL ~7.6 Mb while the inverted side maps to
-// ~11.6 Mb, so no single paternal window contains both and the ribbons come
-// back empty -- which is what the first attempt at this figure did.
+// What the two rounds were worth knowing for, since they are constraints on the
+// data rather than on the figure:
 //
-// hg002_haplotypes_hetsites was here and is DELETED (review: "just delete this
-// figure ... it just doesnt seem interesting"). It framed a collinear block with
-// each haplotype's genes over the published het-site calls, to say that
-// structural agreement is not sequence identity. Two rounds went into making it
-// readable -- off the 8p23.1 defensin/FAM90A duplication, where Liftoff names
-// each haplotype's array copies after different hg38 paralogs and the two gene
-// lanes disagreed for a reason that was not the figure's subject; then wider,
-// with the het track force-loaded past its feature gate. Neither round changed
-// what it had to show, which is that a dense picket fence of ticks is a picture
-// of a statistic. The prose keeps the claim; the het-site track config stays in
-// the tutorial as something to turn on.
+//   - The 5.2 Mb inversion frame is over the het track's too-many-features
+//     gate, so the track renders a warning there rather than data. The window
+//     had to be its own capture.
+//   - A window ON the breakpoint cannot work at all: the flank maps to
+//     chr8_PATERNAL ~7.6 Mb while the inverted side maps to ~11.6 Mb, so no
+//     single paternal window contains both and the ribbons come back empty,
+//     which is what the first attempt did.
+//   - Off the breakpoint, the collinear block beside the inversion is inside
+//     8p23.1's defensin/FAM90A duplication, where Liftoff names each
+//     haplotype's array copies after different hg38 paralogs -- so the two gene
+//     lanes disagreed for a reason that was not the figure's subject.
 //
-// COLLINEAR_WINDOW_MAT / _PAT and HETSITE_TICK went with it.
+// Neither round changed what it had to show, which is that a dense picket fence
+// of ticks is a picture of a statistic (review: "just delete this figure ... it
+// just doesnt seem interesting"). hg002_haplotypes_hetsites, its
+// COLLINEAR_WINDOW_MAT / _PAT and its HETSITE_TICK all went. The page that
+// discussed it has since been cut back to the two figures below.
 
 type PanelTracks = (string | Record<string, unknown>)[]
 
@@ -280,8 +279,8 @@ type PanelTracks = (string | Record<string, unknown>)[]
 // cut: at megabase scale a whole-genome chain's indels each painted a
 // full-opacity marker and buried the strand color they sit on. The renderer's
 // `sizeAlpha` now fades an indel whose own on-screen span is sub-pixel, so what
-// survives here is the kilobase-scale ones -- which is the "chains are split at
-// large gaps" the page discusses, rather than noise over it.
+// survives here is the kilobase-scale ones -- the 10 kb split threshold
+// measured at the top of this file, rather than noise over it.
 const CHAIN_BLOCKS = { trackId: 'hg002v1.2_mat_vs_pat', height: 40 }
 
 function haplotypeSession(
