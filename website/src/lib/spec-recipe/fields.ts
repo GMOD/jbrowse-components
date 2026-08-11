@@ -6,7 +6,11 @@ import {
   attributeColorJexl,
 } from '../../../../plugins/canvas/src/RenderFeatureDataRPC/featureColors.ts'
 import { isJexl } from '../../../../packages/core/src/util/jexlStrings.ts'
-import { capitalizeFirst } from '../../../../plugins/variants/src/shared/constants.ts'
+// Straight from core, not through plugins/variants' re-export of it: that
+// module pulls in variantTopBands.ts -> the whole plugins/canvas entrypoint ->
+// BaseDisplayModel.tsx, and `node` cannot load a .tsx, so check-spec-recipes.ts
+// died on ERR_UNKNOWN_FILE_EXTENSION before running a single check.
+import { capitalizeFirst } from '../../../../packages/core/src/util/stringUtils.ts'
 import { CONSERVATION_MODES } from '../../../../plugins/maf/src/LinearMafDisplay/conservationModes.ts'
 import { DEFAULTS } from '../../../../plugins/maf/src/LinearMafDisplay/displayDefaults.ts'
 import {

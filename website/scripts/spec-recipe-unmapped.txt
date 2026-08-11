@@ -26,7 +26,8 @@ partitionField
 readConnections
 sampleColorMap
 showCoverage
-showLabels
+showLegend
+showVariantLane
 sideBySide
 thickness
 transcriptId
