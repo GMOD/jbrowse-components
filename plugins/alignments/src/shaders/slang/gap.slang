@@ -70,8 +70,16 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
     alpha = intronAlpha(u.featHeight);
   }
   if (inst.gapType == GAP_DELETION) {
+    // A deletion HAS a reference span, so its own width is the measure — the
+    // same quantity the frequency fade squares, and the reason that fade takes
+    // widthPx² rather than pxPerBp². sizeAlpha is still needed on top of it:
+    // the frequency lerp returns 1 for a site every read carries no matter how
+    // sub-pixel it is, so without this a chain's every D op painted a
+    // full-opacity 1px bar across a megabase-wide frame. Skips are exempt —
+    // an intron is a long span drawn as a centerline, and intronAlpha above is
+    // its own rule.
     float widthPx = float(inst.endOff - inst.startOff) * u.pxPerBp;
-    alpha = frequencyFade(widthPx * widthPx, inst.frequency, u);
+    alpha = frequencyFade(widthPx * widthPx, inst.frequency, u) * sizeAlpha(widthPx);
   }
   if (alpha <= 0.0) { return discardVertex(); }
 

@@ -10,7 +10,7 @@
 // The sub-pixel frequency lerp is a pure scalar decision both backends must
 // make identically; rendererTypes.ts imports the generated twin rather than
 // re-deriving it (adr-051).
-//! js-export: frequencyAlpha, frequencyFadeGate, arcYFraction, arcYOffsetPx, arcColorSlot, linkedReadColorSlot
+//! js-export: frequencyAlpha, frequencyFadeGate, sizeAlpha, arcYFraction, arcYOffsetPx, arcColorSlot, linkedReadColorSlot
 // consts-out takes the WHOLE export-consts list, so this path names what that
 // list currently is rather than a category it will keep meaning. Anything added
 // above lands in a file called indicatorTriangle.generated.ts; put a constant
@@ -545,6 +545,11 @@ public float normalizeDepth(float relDepth, Uniforms u) {
   return relDepth * u.depthScale;
 }
 
+// Below one 8-bit alpha step a mark is not representable, so sizeAlpha() snaps
+// there rather than emitting something no pixel can show. Not exported: it is
+// an implementation detail of that snap, and every caller reads the 0 instead.
+static const float MIN_VISIBLE_ALPHA = 0.00392156862745098; // 1/255
+
 // Sub-pixel alpha blend: lerp between `base` and 1.0 using per-site frequency.
 // Mirrors frequencyAlpha() in rendererTypes.ts.
 public float frequencyAlpha(float base, float freq) {
@@ -573,6 +578,31 @@ public float frequencyFadeGate(float base, float freq, bool filterByFrequency) {
 
 public float frequencyFade(float base, float freq, Uniforms u) {
   return frequencyFadeGate(base, freq, u.filterMismatchesByFrequency != 0);
+}
+
+// How much of an indel marker this zoom has earned, from its own on-screen
+// span in CSS px. Multiplies a pass's frequency fade; it does not replace it.
+//
+// The two gates answer different questions and neither substitutes. Frequency
+// asks "is this site rare", and it structurally cannot bound an indel drawn in
+// bulk: frequencyAlpha is `base + freq*(1 - base)`, so a site carried by every
+// read at that depth returns 1 however sub-pixel `base` is. A synteny alignment
+// has depth 1, so every indel it carries has frequency 1 — which is how a
+// whole-genome chain drawn at megabase scale covered its own alignment in
+// full-opacity ticks.
+//
+// Indels only. A mismatch is a point event whose whole value is being visible
+// when a screen holds more bases than pixels — a SNP column carried by every
+// read must stay opaque there, which is exactly what the frequency lerp is for.
+// An indel at that zoom is noise, and a big one still survives on its own span.
+//
+// Snaps to 0 below one 8-bit alpha step so each pass's existing `alpha <= 0`
+// discard drops the instance rather than paying to rasterize the invisible.
+// That cost is the point at low zoom: a chain offers tens of thousands of
+// indels per block and nearly all of them arrive here.
+public float sizeAlpha(float spanPx) {
+  float a = clamp(spanPx, 0.0, 1.0);
+  return a <= MIN_VISIBLE_ALPHA ? 0.0 : a;
 }
 
 // Shared vertex output for passes that only need clip-space position + color.

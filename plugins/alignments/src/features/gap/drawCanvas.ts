@@ -5,6 +5,7 @@ import {
   intronAlpha,
   pileupRowOffCanvas,
   pileupRowY,
+  sizeAlpha,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 
 import type {
@@ -54,11 +55,16 @@ export function drawGaps(
     const w = Math.max(1, widthPx)
 
     if (gapType === GAP_DELETION) {
-      const alpha = frequencyFade(
-        state,
-        widthPx * widthPx,
-        region.gapFrequencies[i]!,
-      )
+      // Twin of gap.slang's deletion branch: the frequency fade, times the
+      // deletion's own on-screen span. The second factor is what the first one
+      // cannot supply — a site every read carries lerps back to 1 however
+      // sub-pixel it is. sizeAlpha snaps to 0 below one alpha step.
+      const alpha =
+        frequencyFade(state, widthPx * widthPx, region.gapFrequencies[i]!) *
+        sizeAlpha(widthPx)
+      if (alpha === 0) {
+        continue
+      }
       ctx.fillStyle = alpha >= 1 ? delCssOpaque : rgba255(delColorBase, alpha)
       ctx.fillRect(left, y, w, fH)
     } else if (gapType === GAP_SKIP) {

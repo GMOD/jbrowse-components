@@ -1,5 +1,4 @@
 import {
-  MIN_VISIBLE_ALPHA,
   drawInsertionMarker,
   insertionSizeAlpha,
 } from '@jbrowse/alignments-core'
@@ -59,7 +58,7 @@ export function drawInsertions(
             pxPerBp * pxPerBp,
             region.insertionFrequencies[i]!,
           )) * insertionSizeAlpha(length, pxPerBp)
-    if (alpha <= MIN_VISIBLE_ALPHA) {
+    if (alpha === 0) {
       continue
     }
 

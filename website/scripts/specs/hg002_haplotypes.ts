@@ -157,17 +157,12 @@ type PanelTracks = (string | Record<string, unknown>)[]
 // instead of two, which is also what stops the blocks and the ribbons from
 // disagreeing. Nine records either side across this window, against a het-site
 // track that is orders of magnitude over the feature gate here.
-// At 5.2 Mb the CIGAR layer buries the thing this lane is for: a whole-genome
-// chain carries indels every few kb, and they draw as a wall of ticks over the
-// strand color. The blocks and their boundaries are what the page reads off
-// these lanes. (`showInterbaseIndicators` is NOT the other half of this: those
-// marks live in the coverage band, which this display defaults off, so setting
-// it here changes nothing.)
-const CHAIN_BLOCKS = {
-  trackId: 'hg002v1.2_mat_vs_pat',
-  height: 40,
-  showMismatches: false,
-}
+// The CIGAR layer is left ON, which it could not be when this figure was first
+// cut: at 5.2 Mb a whole-genome chain's indels each painted a full-opacity tick
+// and buried the strand color they sit on. insertionSizeAlpha now fades an
+// insertion whose own sequence is sub-pixel, so what survives at this zoom is
+// the kilobase-scale indels, which is what the lane is worth reading for.
+const CHAIN_BLOCKS = { trackId: 'hg002v1.2_mat_vs_pat', height: 40 }
 
 function haplotypeSession(
   matLoc: string,

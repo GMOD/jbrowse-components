@@ -1,4 +1,4 @@
-import { MIN_VISIBLE_ALPHA, insertionSizeAlpha } from '@jbrowse/alignments-core'
+import { insertionSizeAlpha } from '@jbrowse/alignments-core'
 
 import {
   insertionBarWidth as getInsertionRectWidthPx,
@@ -53,7 +53,7 @@ function hitTestInsertion(
       // unresolvable at this zoom must not intercept clicks either, or a
       // whole-genome view is carpeted in invisible hit targets. Both backends
       // multiply this in (insertion.slang, drawCanvas.ts).
-      if (insertionSizeAlpha(len, pxPerBp) <= MIN_VISIBLE_ALPHA) {
+      if (insertionSizeAlpha(len, pxPerBp) === 0) {
         continue
       }
       const isSmall = getInsertionType(len, pxPerBp) === 'small'

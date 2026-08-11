@@ -1,7 +1,7 @@
 // Insertion pass: renders up to 3 rects per instance — the insertion bar
 // (or numeric label box when long + zoomed), plus top/bottom serifs.
 //! targets: wgsl, glsl
-//! export-consts: LONG_INSERTION_MIN_LENGTH, LONG_INSERTION_TEXT_THRESHOLD_PX, MIN_HEIGHT_FOR_TEXT, INSERTION_SERIF_MIN_PX_PER_BP, MIN_VISIBLE_ALPHA
+//! export-consts: LONG_INSERTION_MIN_LENGTH, LONG_INSERTION_TEXT_THRESHOLD_PX, MIN_HEIGHT_FOR_TEXT, INSERTION_SERIF_MIN_PX_PER_BP
 //! consts-out: packages/alignments-core/src/insertionLabel.generated.ts
 //! js-export: insertionBarWidthPx, textWidth, insertionSizeAlpha
 //! js-export-out: packages/alignments-core/src/insertionWidth.generated.ts
@@ -21,13 +21,6 @@ static const uint  LONG_INSERTION_MIN_LENGTH = 10u;
 static const float LONG_INSERTION_TEXT_THRESHOLD_PX = 15.0;
 static const float INSERTION_SERIF_MIN_PX_PER_BP = 3.0;
 static const float MIN_HEIGHT_FOR_TEXT = 5.0;
-
-// Below one 8-bit alpha step the marker is not representable, so both backends
-// skip it outright rather than paying to rasterize something invisible. That
-// cost is the point at low zoom: a whole-genome chain offers tens of thousands
-// of insertions per block, and the size gate above sends nearly all of them
-// here.
-static const float MIN_VISIBLE_ALPHA = 0.00392156862745098; // 1/255
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -56,26 +49,13 @@ float textWidth(uint num) {
   return LABEL_CHAR_W * 5.0 + LABEL_PAD;
 }
 
-// How much of an insertion marker this zoom has earned, in [0,1].
-//
-// An insertion consumes no reference span, so unlike a mismatch or a deletion
-// its marker is a fixed glyph at every zoom — which is how a view holding
-// megabases ends up painting a full-opacity tick for every few-bp indel a long
-// CIGAR carries. A whole-genome chain has one every few kb, and they cover the
-// alignment they annotate. The inserted sequence's own on-screen span is the
-// honest measure: at base-level zoom a 1bp insertion is pxPerBp wide and draws
-// in full, and by the time a screen holds megabases only a kilobase-scale
-// insertion still covers a pixel.
-//
-// This MULTIPLIES the frequency fade instead of folding into it, because the
-// two gates answer different questions and neither substitutes. Frequency asks
-// "is this site rare", and it structurally cannot answer this one: alpha is
-// `base + freq*(1 - base)`, so a site carried by every read at that depth
-// returns 1 however sub-pixel `base` is. A synteny alignment has depth 1, so
-// every indel it carries has frequency 1 — which is exactly the case that was
-// drawing the wall of ticks.
+// alignmentsUniforms' sizeAlpha in the unit an insertion has: an insertion
+// consumes no reference span, so unlike a deletion its marker has no width of
+// its own to measure — the inserted SEQUENCE's span is what stands in. At
+// base-level zoom a 1bp insertion is pxPerBp wide and draws in full; by the
+// time a screen holds megabases only a kilobase-scale one still covers a pixel.
 float insertionSizeAlpha(uint length, float pxPerBp) {
-  return clamp(float(length) * pxPerBp, 0.0, 1.0);
+  return sizeAlpha(float(length) * pxPerBp);
 }
 
 // The insertion marker's width in CSS px — three cases, in order of how much
@@ -153,7 +133,7 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   // "is this resolvable at this zoom" rather than "is this site rare".
   float alpha = (isLong ? 1.0 : frequencyFade(pxPerBp * pxPerBp, inst.frequency, u))
     * insertionSizeAlpha(inst.length, pxPerBp);
-  if (alpha <= MIN_VISIBLE_ALPHA) { return discardVertex(); }
+  if (alpha <= 0.0) { return discardVertex(); }
 
   o.position = flippedQuadPos(x1, x2, y1, y2, local, u);
   o.color = float4(unpackRGBA(u.colorInsertion).xyz, alpha);

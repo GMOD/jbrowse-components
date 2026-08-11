@@ -55,6 +55,17 @@ export function insertionBarWidthPx(length: number, pxPerBp: number, featHeight:
   return 1.0
 }
 
+function sizeAlpha(spanPx: number): number {
+  let a = _clamp(spanPx, 0.0, 1.0)
+  let _t0: number
+  if ((a <= 0.00392156885936856)) {
+    _t0 = 0.0
+  } else {
+    _t0 = a
+  }
+  return _t0
+}
+
 export function insertionSizeAlpha(length: number, pxPerBp: number): number {
-  return _clamp(((length) * pxPerBp), 0.0, 1.0)
+  return sizeAlpha(((length) * pxPerBp))
 }

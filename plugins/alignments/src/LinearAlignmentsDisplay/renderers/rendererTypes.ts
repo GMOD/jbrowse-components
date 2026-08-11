@@ -1,6 +1,9 @@
 import { makeCellLeftMapper } from '@jbrowse/render-core/canvas2dUtils'
 
-import { frequencyFadeGate } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
+import {
+  frequencyFadeGate,
+  sizeAlpha,
+} from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 import { intronAlpha } from '../../shaders/slang/gap.js.generated.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -327,6 +330,10 @@ export function makePileupCellMapper(
 // smoothstep and a `smoothstep()` call under matching "keep these in sync"
 // comments. Re-exported here because this is where the draw path imports it.
 export { intronAlpha }
+// The indel size gate, alongside `frequencyFade` because every pass that wants
+// one wants the other — they multiply. Generated from alignmentsUniforms.slang
+// so the two backends cannot disagree (adr-051).
+export { sizeAlpha }
 
 // Canvas Y for a pileup row index, mirroring shader-side `pileupY()` in
 // alignmentsUniforms.slang. Single source of truth for the row → canvas-Y

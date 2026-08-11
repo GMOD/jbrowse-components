@@ -7,7 +7,6 @@ import {
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
   MIN_HEIGHT_FOR_TEXT,
-  MIN_VISIBLE_ALPHA,
 } from './insertionLabel.generated.ts'
 import {
   insertionBarWidthPx,
@@ -24,7 +23,6 @@ export {
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
   MIN_HEIGHT_FOR_TEXT,
-  MIN_VISIBLE_ALPHA,
   insertionSizeAlpha,
 }
 // Min px-per-bp before per-base text (mismatch letters, small-insertion `(N)`

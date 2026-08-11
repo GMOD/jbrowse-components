@@ -4,6 +4,10 @@
 // Scalar twins of alignmentsUniforms.slang, transliterated from slangc's WGSL so
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
+function _clamp(x: number, lo: number, hi: number) {
+  return _min(_max(x, lo), hi)
+}
+
 function _max(a: number, b: number) {
   return a > b ? a : b
 }
@@ -30,6 +34,17 @@ export function frequencyFadeGate(base: number, freq: number, filterByFrequency:
     _t1 = 1.0
   }
   return _t1
+}
+
+export function sizeAlpha(spanPx: number): number {
+  let a = _clamp(spanPx, 0.0, 1.0)
+  let _t0: number
+  if ((a <= 0.00392156885936856)) {
+    _t0 = 0.0
+  } else {
+    _t0 = a
+  }
+  return _t0
 }
 
 export function arcYFraction(yBp: number, arcsYDomainBp: number, useLog: boolean): number {

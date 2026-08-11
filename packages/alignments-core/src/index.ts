@@ -9,7 +9,6 @@ export {
   MIN_HEIGHT_FOR_TEXT,
   MIN_LABEL_OPACITY,
   MIN_PX_PER_BP_FOR_TEXT,
-  MIN_VISIBLE_ALPHA,
   MISMATCH_COLOR,
   computeLabelFontSize,
   drawIndicatorTriangle,
