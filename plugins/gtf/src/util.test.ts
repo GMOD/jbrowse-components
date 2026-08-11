@@ -277,6 +277,25 @@ test('a malformed line cannot take its transcript down with it', () => {
   expect([out[0]!.start, out[0]!.end]).toEqual([99, 200])
 })
 
+test('a tab inside the attribute column does not truncate it', () => {
+  // column 9 is everything after the eighth tab. When the line was split on
+  // every tab, a stray one inside the attributes put the remainder in a tenth
+  // element nothing read, so every attribute past it was dropped in silence
+  const gtf =
+    'ctgA\ttest\tgene\t1\t100\t.\t+\t.\tgene_id "g1"; note "a\tb"; level "2";'
+  const feat = featureData(parse(gtf)[0]!)
+  expect(feat.gene_id).toBe('g1')
+  expect(feat.note).toBe('a\tb')
+  expect(feat.level).toBe('2')
+})
+
+test('a line with fewer than nine columns is still dropped', () => {
+  // the short-line path is a separate branch now, so keep its NaN coordinates
+  // pinned — they are what makes the caller discard the line
+  const feat = parse('chr1\ttest\texon')[0]
+  expect(feat).toBeUndefined()
+})
+
 // The attribute column is scanned by index rather than split-then-trim-then-
 // regex. These pin the edges that scanner has to get right, each of which the
 // old implementation got from a library call that is no longer being made:

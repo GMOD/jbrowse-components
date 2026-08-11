@@ -136,57 +136,56 @@ function isSpace(c: number) {
  * regex match it produced per attribute. Only the key and the value are
  * allocated now, which are the two strings that get kept.
  */
-function parseGtfAttributes(attrString: string) {
+function parseGtfAttributes(s: string, from: number, to: number) {
   const attrs: Record<string, string[]> = {}
-  const len = attrString.length
-  if (len === 0 || attrString === '.') {
+  if (from >= to || (to - from === 1 && s.charCodeAt(from) === 46) /* . */) {
     return attrs
   }
-  let i = 0
-  while (i < len) {
-    let end = attrString.indexOf(';', i)
-    if (end === -1) {
-      end = len
+  let i = from
+  while (i < to) {
+    let end = s.indexOf(';', i)
+    if (end === -1 || end >= to) {
+      end = to
     }
     // an unclosed quote means this ';' was inside the value: take the next one
     // instead. A trailing entry with no closing quote has nothing to extend
     // into and is read as-is
-    while (end < len && hasUnclosedQuote(attrString, i, end)) {
-      const next = attrString.indexOf(';', end + 1)
-      end = next === -1 ? len : next
+    while (end < to && hasUnclosedQuote(s, i, end)) {
+      const next = s.indexOf(';', end + 1)
+      end = next === -1 || next >= to ? to : next
     }
 
     // trim the entry by index
-    let s = i
-    let e = end
-    while (s < e && isSpace(attrString.charCodeAt(s))) {
-      s++
+    let es = i
+    let ee = end
+    while (es < ee && isSpace(s.charCodeAt(es))) {
+      es++
     }
-    while (e > s && isSpace(attrString.charCodeAt(e - 1))) {
-      e--
+    while (ee > es && isSpace(s.charCodeAt(ee - 1))) {
+      ee--
     }
 
     // `key value`, split at the first space — a tab does not separate them, as
     // it did not when this read `trimmed.indexOf(' ')`
-    const sp = attrString.indexOf(' ', s)
-    if (sp !== -1 && sp < e) {
+    const sp = s.indexOf(' ', es)
+    if (sp !== -1 && sp < ee) {
       let vs = sp + 1
-      while (vs < e && isSpace(attrString.charCodeAt(vs))) {
+      while (vs < ee && isSpace(s.charCodeAt(vs))) {
         vs++
       }
-      let ve = e
+      let ve = ee
       // strip one leading and one trailing quote, independently: `"x"` and a
       // half-quoted `"x` both yield `x`, and a bare `""` yields the empty
       // string that is then dropped
-      if (vs < ve && attrString.charCodeAt(vs) === 34) {
+      if (vs < ve && s.charCodeAt(vs) === 34) {
         vs++
       }
-      if (ve > vs && attrString.charCodeAt(ve - 1) === 34) {
+      if (ve > vs && s.charCodeAt(ve - 1) === 34) {
         ve--
       }
       if (ve > vs) {
-        const key = attrString.slice(s, sp)
-        ;(attrs[key] ??= []).push(attrString.slice(vs, ve))
+        const key = s.slice(es, sp)
+        ;(attrs[key] ??= []).push(s.slice(vs, ve))
       }
     }
     i = end + 1
@@ -194,7 +193,12 @@ function parseGtfAttributes(attrString: string) {
   return attrs
 }
 
-function parseGtfLine(line: string): FeatureLoc {
+/**
+ * A line with fewer than nine columns, which is malformed. Split rather than
+ * scanned, so its absent fields and NaN coordinates come out exactly as they
+ * did when every line was split — the caller drops it on those NaNs.
+ */
+function parseShortGtfLine(line: string): FeatureLoc {
   const c = line.split('\t')
   const score = c[5]
   return {
@@ -206,7 +210,42 @@ function parseGtfLine(line: string): FeatureLoc {
     score: score === undefined || score === '.' ? null : Number(score),
     strand: toStrand(c[6]),
     frame: nullIfDot(c[7]),
-    attributes: parseGtfAttributes(c[8] ?? ''),
+    attributes: parseGtfAttributes(c[8] ?? '', 0, (c[8] ?? '').length),
+  }
+}
+
+function parseGtfLine(line: string): FeatureLoc {
+  // Scan for the eight tabs bounding the nine columns rather than splitting on
+  // them. Splitting materialized column 9 — by far the longest part of an
+  // annotation-grade line — as its own string, only for the attribute parser to
+  // read it and throw it away; the parser now reads it in place, so the biggest
+  // allocation per line is gone along with the array and the three numeric
+  // columns' strings.
+  //
+  // Taking column 9 as everything after the eighth tab also stops a tab inside
+  // it from truncating the attributes. `split('\t')` put the remainder in a
+  // tenth element that nothing read, so every attribute past such a tab was
+  // silently dropped.
+  const at = [0, 0, 0, 0, 0, 0, 0, 0]
+  let p = -1
+  for (let i = 0; i < 8; i++) {
+    p = line.indexOf('\t', p + 1)
+    if (p === -1) {
+      return parseShortGtfLine(line)
+    }
+    at[i] = p
+  }
+  const score = line.slice(at[4]! + 1, at[5])
+  return {
+    seq_name: line.slice(0, at[0]),
+    source: nullIfDot(line.slice(at[0]! + 1, at[1])),
+    featureType: nullIfDot(line.slice(at[1]! + 1, at[2])),
+    start: Number(line.slice(at[2]! + 1, at[3])),
+    end: Number(line.slice(at[3]! + 1, at[4])),
+    score: score === '.' ? null : Number(score),
+    strand: toStrand(line.slice(at[5]! + 1, at[6])),
+    frame: nullIfDot(line.slice(at[6]! + 1, at[7])),
+    attributes: parseGtfAttributes(line, at[7]! + 1, line.length),
   }
 }
 
