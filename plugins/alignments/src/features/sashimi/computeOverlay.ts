@@ -113,14 +113,19 @@ const SPAN_REF_MAX_BP = 100_000
 
 // Vertical room an apex needs PAST the curve: the count label is centered on it
 // (`arcCubic` puts labelY at the apex), so half the glyph box plus half the halo
-// stroke lands beyond the top of an 'up' arc and beyond the bottom of a 'down'
-// one. Both directions run into something. The down band is clipped to
-// `sashimiArcsHeight` — it must not paint over the pileup below it — so at
-// MAX_ARC_FRAC of the raw 40px default the digits' lower half, and a
-// deeply-covered junction's own stroke, were shaved off by that clip. The up
-// band overlays the coverage histogram and isn't clipped, but the same margin is
-// what keeps a full-height arc's label off the y-scalebar's top label, which the
-// bare 5% MAX_ARC_FRAC left (0.05 * 90 = 4.5px, against a label needing 5.75).
+// stroke lands beyond the arc's own extreme — below a 'down' arc, above an 'up'
+// one.
+//
+// Only the DOWN band pays it, because only the down band is clipped: it renders
+// at `sashimiArcsHeight` with overflow hidden so it can't paint over the pileup
+// underneath, and at MAX_ARC_FRAC of the raw 40px default the digits' lower
+// half, and a deeply-covered junction's own stroke, were shaved off by that
+// clip. The up band overlays the coverage histogram with overflow visible, so
+// nothing there is ever cut — its label draws into the scalebar margin the
+// histogram already reserves. Charging it the same clearance was measurably the
+// wrong trade: the default 45px coverage band leaves 35px of drawable height, so
+// it bought a rare left-edge label/axis-text overlap for 16% off the height of
+// every arc in the common case.
 //
 // Taken off the band BEFORE the fraction scales it, so MIN/MAX_ARC_FRAC keep
 // meaning "of the room the arc actually has" rather than of a height whose last
@@ -171,8 +176,22 @@ function bandGeometry(
   heights: { effectiveHeight: number; sashimiArcsHeight: number },
 ) {
   return side === 'down'
-    ? { band: heights.sashimiArcsHeight, baseline: 0, dir: 1 }
+    ? {
+        // Clipped, so the label's room comes out of the band — see
+        // SASHIMI_APEX_CLEARANCE_PX. Floored at 0: nothing floors a
+        // config-declared `sashimiArcsHeight`, and a band under the clearance
+        // went negative, flipping `dir * arcHeight` and curving every down arc
+        // up through the coverage histogram instead of collapsing it flat.
+        band: Math.max(
+          0,
+          heights.sashimiArcsHeight - SASHIMI_APEX_CLEARANCE_PX,
+        ),
+        baseline: 0,
+        dir: 1,
+      }
     : {
+        // Unclipped, so it spends its whole band on the arc and lets the label
+        // draw into the histogram's scalebar margin.
         band: heights.effectiveHeight,
         baseline: heights.effectiveHeight,
         dir: -1,
@@ -270,12 +289,7 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts): SashimiArc[] {
       effectiveHeight,
       sashimiArcsHeight,
     })
-    // Clearance comes off the band first — see SASHIMI_APEX_CLEARANCE_PX. A band
-    // shorter than the clearance flattens to a zero-height arc rather than
-    // inverting through the neighbouring band.
-    const arcHeight =
-      Math.max(0, band - SASHIMI_APEX_CLEARANCE_PX) *
-      arcHeightFraction(Math.abs(j.end - j.start))
+    const arcHeight = band * arcHeightFraction(Math.abs(j.end - j.start))
     arcs.push({
       ...arcCubic(span, baseline, baseline + dir * arcHeight),
       stroke: getArcColor(j.strand),

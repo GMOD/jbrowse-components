@@ -117,6 +117,25 @@ test('an arc rises to the band fraction it asks for, not 3/4 of it', () => {
   expect(ctrl).toBeCloseTo(arc.labelY / 0.75)
 })
 
+test('the up band spends its whole height on the arc, clearance-free', () => {
+  // The clearance is the CLIPPED band's alone. The up band overlays the coverage
+  // histogram with overflow visible, so nothing there is ever cut and its label
+  // draws into the scalebar margin the histogram already reserves — charging it
+  // the same clearance took 16% off every arc in the default 45px band (35px of
+  // drawable height) to buy a rare left-edge overlap with the axis text.
+  const data = {
+    sashimiX1: new Uint32Array([100]),
+    sashimiX2: new Uint32Array([100_100]),
+    sashimiCounts: new Uint32Array([5]),
+    sashimiStrands: new Int8Array([0]),
+  } as unknown as PileupDataResult
+  const arc = computeSashimiArcs(baseOpts(data, 0))[0]!
+  // baseline is the histogram's own zero line at effectiveHeight (100 - 2*5),
+  // and the apex rises MAX_ARC_FRAC of that full height above it.
+  expect(arc.side).toBe('up')
+  expect(arc.labelY).toBeCloseTo(90 - 0.95 * 90)
+})
+
 test('the deepest down arc keeps its label inside the clipped strip', () => {
   // The down sub-band renders with overflow:hidden — it must not paint over the
   // pileup below it — so an apex placed at MAX_ARC_FRAC of the RAW height had
