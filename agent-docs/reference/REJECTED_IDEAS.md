@@ -99,6 +99,20 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   and `*` as non-bases, so it is the semantic change priced rather than a win.
   [MAF_WORKER_PIPELINE.md](MAF_WORKER_PIPELINE.md) has the numbers and the
   zero-byte-test trap.
+- **Parsing VCF genotypes from raw bytes instead of decoding the line to a
+  string** — measured 2026-08-11, and it is backwards: the decode is nearly free
+  and the byte scan is *slower*. `TextDecoder` does 28.9 MB of 1000G lines in
+  7.4ms (~3.9 GB/s), 6% of what the genotype pass costs, and it produces a flat
+  one-byte string that `charCodeAt` reads as fast as `Uint8Array` indexing.
+  Worse, `String.prototype.indexOf` beats `Uint8Array.prototype.indexOf` by ~2x
+  on the same search, so the byte version gives up the one primitive the scan
+  most wants. What the investigation did find was a 2.5x in the string scan, now
+  in `@gmod/vcf` (`28300b1`, `781a3e9`): hop between samples with `indexOf`
+  rather than a `charCodeAt` loop, and hand the scans the *flat line plus
+  offsets* rather than a `line.slice()` — a V8 `SlicedString` costs an unwrap on
+  every `charCodeAt`, which is all this scan does. 300 real 1000G records × 3202
+  samples through a `computeSampleInfo`-shaped consumer: 156.5ms → 63.8ms,
+  identical codes. Same lesson as tabix-js ADR 0003, from the other side.
 - **A GPU-side cull for dotplot** — not obviously worth it.
   `drawDotplotInstances` culls on the CPU and notes 87% of a fetch is offscreen,
   but dotplot quads are a few px, so the rasterizer discards them about as
