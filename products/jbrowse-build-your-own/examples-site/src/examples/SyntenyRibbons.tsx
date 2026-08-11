@@ -429,8 +429,16 @@ const SyntenyRibbons = observer(function SyntenyRibbons() {
               </div>
             ))
           ) : (
+            // `initialized` waits on every row's view, so a failure in either
+            // assembly leaves it false permanently -- the synteny twin of the
+            // `view.ready` hole the Loading and error states page is about, and
+            // the reason `error` is checked here rather than assuming the only
+            // reason not to be initialized is that it is still loading. This
+            // view's `error` folds in its rows' for exactly that.
             <div style={{ fontSize: '0.85rem', opacity: 0.7, padding: 8 }}>
-              Loading two assemblies…
+              {view.error
+                ? `Could not load: ${view.error instanceof Error ? view.error.message : String(view.error)}`
+                : 'Loading two assemblies…'}
             </div>
           )}
         </div>

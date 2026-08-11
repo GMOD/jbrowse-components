@@ -6,7 +6,9 @@ import { observer } from 'mobx-react'
 
 // The smallest thing that puts genomic data on screen: measure a div, mount one
 // track's display in it. No header, no ruler, no track label, no MUI theme --
-// and no `usePanZoom`, so it doesn't move. The Pan and zoom example above adds that.
+// no status states either, which is the one omission worth knowing about before
+// you copy this (see the gate at the bottom) -- and no `usePanZoom`, so it
+// doesn't move. The Pan and zoom example above adds that.
 //
 // This file is complete. Everything it needs is either below or comes from a
 // published package, so you can copy the whole thing into an app and run it.
@@ -137,6 +139,13 @@ const OneTrack = observer(function OneTrack() {
 
   return (
     <div ref={ref} style={{ overflow: 'hidden' }}>
+      {/* `null` for the other branch is the one thing on this page that is not
+       * what you should ship. `view.ready` is false in TWO states -- loading,
+       * and failed to load -- so this box stays empty forever if the assembly
+       * 404s, with nothing anywhere saying why. Every other page here draws a
+       * `ViewStatus` instead; the Loading and error states page is about it.
+       * It is left out only because this page is the floor, and the floor is
+       * allowed to name what it leaves out rather than have it. */}
       {view.ready ? <TrackRow view={view} trackId="volvox_microarray" /> : null}
     </div>
   )

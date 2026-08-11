@@ -58,6 +58,7 @@ const MUI_BUDGET = {
   ultraminimal: 0,
   'multiple-tracks': 3,
   'removing-material-ui': 0,
+  'loading-and-errors': 0,
   'scalebar-and-labels': 0,
   'controlling-the-view': 0,
   'web-workers': 0,

@@ -1,0 +1,16 @@
+---
+import LoadingAndErrors from '../examples/LoadingAndErrors.tsx'
+import LoadingAndErrorsCode from '../examples/LoadingAndErrors.tsx?raw'
+import { getPage, section } from '../examples.ts'
+import Layout from '../layouts/ExampleLayout.astro'
+import Section from '../layouts/ExampleSection.astro'
+
+const page = getPage('loading-and-errors')
+const sec = section(page, 'loading-and-errors')
+---
+
+<Layout page={page}>
+  <Section {...sec} code={LoadingAndErrorsCode}>
+    <LoadingAndErrors client:only="react" />
+  </Section>
+</Layout>

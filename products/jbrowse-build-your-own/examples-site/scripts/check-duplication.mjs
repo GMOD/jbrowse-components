@@ -60,9 +60,13 @@ const COPIED = {
   TrackRow:
     "mounting a display is what the reader came to see, and the box it goes in is theirs to style — see EXAMPLES_SITES.md, 'the one good way out is to publish the block'",
   TrackStack: 'ditto: the reader owns the column their tracks sit in',
+  ViewStatus:
+    "what a host's own loading and error box looks like is theirs; that `view.ready` covers two states rather than one is not, which is why the block is here at all rather than a `: null` on every page — see the Loading and error states page",
   readSiteMode:
     "how a host knows its own colour mode is the host's business; JBrowse's half is useSessionPalette",
   useSiteMode: "ditto — the watchers are this site's, not an embedder's",
+  BrowserSession:
+    "the page's own alias for what `createViewState` handed back — one line, and naming it is what keeps every component below from re-deriving it",
   volvox: "the page's own assembly, and bulk data by the fixture rule",
   wiggleTrack: "the page's own track config: seeing the adapter is the point",
   alignmentsTrack: 'ditto',

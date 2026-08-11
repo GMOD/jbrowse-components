@@ -104,6 +104,32 @@ function makeView() {
 
 type BrowserView = ReturnType<typeof makeView>['view']
 
+// `view.ready` is false in TWO states, not one: while the assembly loads, and
+// when it failed to load. Returning `null` for both -- the gate that looks
+// obviously right -- turns a 404 on a sequence file into an empty box that
+// never fills, with nothing anywhere saying why; the failure is a state on the
+// model rather than a throw, so there is no console error either. `error` is
+// read first because `loadingMessage` goes undefined once the load stops,
+// however it stopped. The Loading and error states page draws the long form of
+// this, and has a radio that breaks the assembly on purpose.
+const ViewStatus = observer(function ViewStatus({
+  view,
+}: {
+  view: BrowserView
+}) {
+  const { error, loadingMessage } = view
+  return (
+    <div
+      role={error ? 'alert' : 'status'}
+      style={{ padding: '10px 12px', fontSize: '0.85rem', opacity: 0.75 }}
+    >
+      {error
+        ? `Could not load: ${error instanceof Error ? error.message : String(error)}`
+        : (loadingMessage ?? 'Loading')}
+    </div>
+  )
+})
+
 const TrackRow = observer(function TrackRow({
   view,
   trackId,
@@ -309,14 +335,16 @@ const TrackLabels = observer(function TrackLabels() {
                 cursor: 'grab',
               }}
             >
-              {view.ready
-                ? trackIds.map(id => (
-                    <div key={id}>
-                      <TrackRow view={view} trackId={id} />
-                      <TrackResizeHandle view={view} trackId={id} />
-                    </div>
-                  ))
-                : null}
+              {view.ready ? (
+                trackIds.map(id => (
+                  <div key={id}>
+                    <TrackRow view={view} trackId={id} />
+                    <TrackResizeHandle view={view} trackId={id} />
+                  </div>
+                ))
+              ) : (
+                <ViewStatus view={view} />
+              )}
             </div>
           </div>
         </div>

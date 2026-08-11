@@ -703,6 +703,29 @@ plain set without someone having mounted the component on purpose.
 seams, and that *not* mounting it still yields Material — because a
 half-wired provider reads as a styling bug rather than a missing one.
 
+**The view's own status states are not a seam either, and a host that only
+knows about these two draws none of them.** Everything above is a *display*
+failing — a fetch, a render — over a view that is up. The view has its own three
+outcomes, and they are plain getters rather than components: `loadingMessage` /
+`loadingProgress` while the assembly loads, `error` when it could not, and
+`ready` (`!showLoading && !error`) for the rest. JBrowse's own
+`LinearGenomeView` branches on them and renders `ViewLoadingScreen` or the
+import form; an embedder mounting `RenderingComponent` directly writes
+`view.ready ? tracks : null`, which is the shape everyone reaches for and which
+turns a 404 on a sequence file into an empty box that never fills — no throw and
+no console error, because the failure is a state on the model. `error` has to be
+read *before* `loadingMessage`, which goes `undefined` when the load stops
+however it stopped. `products/jbrowse-build-your-own`'s "Loading and error
+states" page is the worked version, with a radio that breaks the assembly on
+purpose; every other page there carries the short form.
+
+`session.snackbarMessages` is the third channel and the quietest, since it is
+not on the view at all: `showTrack` with an unresolvable id returns `undefined`
+and reports the reason there, and so do `addSessionTrackConf` on an invalid
+config and a failed `init.loc`. `app-core`'s `App` is the **only** thing in the
+repo that renders it, so both the embedded LGV product and every hand-built host
+drop those messages on the floor.
+
 **Colors are not a seam and are not in it.** A display reads `usePalette()` for
 its own content colors, which is a palette of strings rather than a toolkit, so
 it arrives through `PaletteProvider` whatever the two seams are set to — a

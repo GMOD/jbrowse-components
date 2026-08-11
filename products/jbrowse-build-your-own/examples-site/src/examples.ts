@@ -86,6 +86,25 @@ export const pages: ExamplePage[] = [
     ],
   },
   {
+    slug: 'loading-and-errors',
+    title: 'Loading and error states',
+    description:
+      'The other two outcomes of `view.ready`, plus the notification channel a host that draws its own chrome renders nothing for.',
+    group: 'Your own UI',
+    // Placed after the page that draws a *track's* status states, because it is
+    // the same question one level up: that page swaps the components a display
+    // uses, this one is about the states the view itself has and the gate every
+    // page here writes past. It cannot merge into that page -- its own MUI
+    // budget is zero and the merged document's would be the sum, which is the
+    // rule `Multiple tracks` is kept separate by.
+    sections: [
+      {
+        slug: 'loading-and-errors',
+        title: 'When the view is loading, and when it fails',
+      },
+    ],
+  },
+  {
     slug: 'scalebar-and-labels',
     title: 'Scalebar and track labels',
     description:
