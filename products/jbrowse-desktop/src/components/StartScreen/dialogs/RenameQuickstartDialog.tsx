@@ -21,7 +21,14 @@ export default function RenameQuickstartDialog({
   // includes() flags a spurious conflict the moment the dialog opens
   const nameConflict =
     newName !== quickstartToRename && quickstartNames.includes(newName)
+  // A quickstart is stored under its name, so a blank one has nowhere to live —
+  // it used to move the file to a name listQuickstarts never returns, which read
+  // as the quickstart having been deleted. See assertQuickstartName.
+  const nameBlank = !newName.trim()
   const { error, pending, onSubmit } = useIpcAction(async () => {
+    if (nameBlank) {
+      throw new Error('Quickstart name cannot be empty')
+    }
     if (nameConflict) {
       throw new Error('A quickstart with this name already exists')
     }
@@ -34,7 +41,7 @@ export default function RenameQuickstartDialog({
       maxWidth="xs"
       fullWidth
       title="Rename quickstart"
-      submitDisabled={pending}
+      submitDisabled={pending || nameBlank}
       onSubmit={onSubmit}
       onCancel={onClose}
     >

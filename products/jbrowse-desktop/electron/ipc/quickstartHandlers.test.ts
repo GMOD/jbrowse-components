@@ -106,6 +106,70 @@ test('renameQuickstart moves the file so the new name lists and the old does not
   expect(await invoke('listQuickstarts')).toEqual(['after'])
 })
 
+// The file is named encodeURIComponent(name).json and listed back by stripping
+// that extension, so a blank name produces `.json` — which Node reads as a
+// dotfile with no extension, and listQuickstarts therefore never returns. The
+// rename looked like it worked and the quickstart was gone for good.
+test.each(['', '   '])(
+  'renameQuickstart refuses the blank name %p instead of losing the file',
+  async blank => {
+    await invoke(
+      'addToQuickstartList',
+      writeSessionFile('s.jbrowse'),
+      'keep me',
+    )
+
+    await expect(invoke('renameQuickstart', 'keep me', blank)).rejects.toThrow(
+      /cannot be blank/,
+    )
+    expect(await invoke('listQuickstarts')).toEqual(['keep me'])
+  },
+)
+
+test('addToQuickstartList refuses a blank name', async () => {
+  await expect(
+    invoke('addToQuickstartList', writeSessionFile('s.jbrowse'), ''),
+  ).rejects.toThrow(/cannot be blank/)
+  expect(await invoke('listQuickstarts')).toEqual([])
+})
+
+// rename(2) replaces its destination silently, so this used to delete the
+// quickstart being renamed onto — the same overwrite addToQuickstartList uses
+// COPYFILE_EXCL to avoid.
+test('renameQuickstart refuses to overwrite another quickstart', async () => {
+  await invoke(
+    'addToQuickstartList',
+    writeSessionFile('a.jbrowse', { assemblies: [], marker: 'a' }),
+    'first',
+  )
+  await invoke(
+    'addToQuickstartList',
+    writeSessionFile('b.jbrowse', { assemblies: [], marker: 'b' }),
+    'second',
+  )
+
+  await expect(invoke('renameQuickstart', 'first', 'second')).rejects.toThrow(
+    /already exists/,
+  )
+  expect((await invoke('listQuickstarts')).toSorted()).toEqual([
+    'first',
+    'second',
+  ])
+  expect(await invoke('getQuickstart', 'second')).toEqual({
+    assemblies: [],
+    marker: 'b',
+  })
+})
+
+// renaming to the name it already has is a no-op, not a conflict with itself
+test('renameQuickstart accepts the name it already has', async () => {
+  await invoke('addToQuickstartList', writeSessionFile('s.jbrowse'), 'same')
+
+  await invoke('renameQuickstart', 'same', 'same')
+
+  expect(await invoke('listQuickstarts')).toEqual(['same'])
+})
+
 describe('deleteQuickstart', () => {
   test('leaves a gravestone for one that shipped with the app', async () => {
     const [legacy] = LEGACY_QUICKSTARTS

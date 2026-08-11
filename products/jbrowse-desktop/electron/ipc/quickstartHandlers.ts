@@ -20,6 +20,17 @@ async function readQuickstart(quickstartPath: string): Promise<SessionSnap> {
   }
 }
 
+// A quickstart is stored as `encodeURIComponent(name).json` and listed back by
+// stripping that extension — so a blank name writes a file called `.json`, which
+// Node reads as a dotfile with no extension at all (`path.extname('.json')` is
+// `''`). listQuickstarts drops it, and the quickstart is gone with nothing in the
+// UI that could name it again. Refuse the name instead of losing the file.
+function assertQuickstartName(name: string) {
+  if (!name.trim()) {
+    throw new Error('A quickstart name cannot be blank')
+  }
+}
+
 export function registerQuickstartHandlers(paths: AppPaths) {
   ipcHandle('listQuickstarts', async () => {
     return (await readdir(paths.quickstartDir))
@@ -28,6 +39,7 @@ export function registerQuickstartHandlers(paths: AppPaths) {
   })
 
   ipcHandle('addToQuickstartList', async (_, sessionPath, sessionName) => {
+    assertQuickstartName(sessionName)
     // A quickstart is named after the session it came from, and session names
     // are not unique — two sessions can share one, and a nameless one reaches
     // here as "Untitled session". A plain copy let the second silently replace
@@ -68,9 +80,19 @@ export function registerQuickstartHandlers(paths: AppPaths) {
   })
 
   ipcHandle('renameQuickstart', async (_, oldName, newName) => {
-    await rename(
-      getQuickstartPath(paths, oldName),
-      getQuickstartPath(paths, newName),
-    )
+    assertQuickstartName(newName)
+    if (oldName === newName) {
+      return
+    }
+    const target = getQuickstartPath(paths, newName)
+    // rename(2) replaces the destination silently, which is the one thing
+    // addToQuickstartList goes out of its way to avoid (COPYFILE_EXCL): renaming
+    // onto an existing name would destroy it with no way back. The dialog checks
+    // this too, but against the list it loaded, so the check has to be here as
+    // well — a race narrows to an error rather than to a lost quickstart.
+    if (fs.existsSync(target)) {
+      throw new Error(`A quickstart named "${newName}" already exists`)
+    }
+    await rename(getQuickstartPath(paths, oldName), target)
   })
 }
