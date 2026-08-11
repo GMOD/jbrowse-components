@@ -214,7 +214,7 @@ report rmsk_hs1.bed chr17 84041803 "$hs1_end" "CHM13 right flank"
 
 # IS THAT A LOT? The flank comparison above cannot answer it, and the answer
 # depends entirely on the scale it is asked at (review: "what would convince
-# user this is like an abnormal numnber of L1 compared to an even larger e.g.
+# user this is like an abnormal number of L1 compared to an even larger e.g.
 # megabase scale region"). So rank the allele against every window of its own
 # size in CHM13, at three scopes: genome-wide, chr17, and the 10 Mb around it.
 #

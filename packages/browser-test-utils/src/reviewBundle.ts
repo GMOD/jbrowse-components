@@ -137,7 +137,7 @@ export async function createReviewBundle(
 // the page serves the last good bundle forever and looks like the edit did
 // nothing.
 function errorPage(title: string, message: string) {
-  const escaped = message.replace(
+  const escaped = message.replaceAll(
     /[&<>]/g,
     c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]!,
   )

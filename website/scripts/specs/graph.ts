@@ -4411,7 +4411,7 @@ export const graphSpecs: ScreenshotSpec[] = [
   },
   // PART TWO: IS THAT A LOT? (review, on the part above: "we keep relitigated
   // this but im trying to understand, what would convince user this is like an
-  // abnormal numnber of L1 compared to an even larger e.g. megabase scale
+  // abnormal number of L1 compared to an even larger e.g. megabase scale
   // region"). Nothing in that part can answer it: its widest lane is 180 kb, so
   // the allele has only itself and two slivers of flank to be dense against,
   // and the pill's "23.7% vs 14%" is a pair of numbers a reader has to take on
@@ -4514,7 +4514,6 @@ export const graphSpecs: ScreenshotSpec[] = [
           locus: 'chr17:83,899,576',
           fracY: 0.06,
           alignX: 'left',
-          textAlign: 'end',
           dx: -14,
         },
         textAlign: 'end',
