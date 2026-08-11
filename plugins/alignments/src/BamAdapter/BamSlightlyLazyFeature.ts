@@ -200,7 +200,11 @@ export default class BamSlightlyLazyFeature
       : undefined
   }
 
-  toJSON(): SimpleFeatureSerialized {
+  // OVERRIDES BamRecord.toJSON, which emits BAM's own field names rather than a
+  // SimpleFeatureSerialized. Marked because it is an override, not because the
+  // compiler asks: `noImplicitOverride` is off repo-wide, so this collision was
+  // invisible until bamRecordOverrides.test.ts went looking for it.
+  override toJSON(): SimpleFeatureSerialized {
     return {
       ...this.fields,
       CIGAR: this.CIGAR,
