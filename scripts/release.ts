@@ -37,10 +37,10 @@ const run = (command: string, args: string[]) =>
 const capture = (command: string, args: string[]) =>
   execFileSync(command, args, { encoding: 'utf8' }).trim()
 
-// For a step whose output is only interesting when it fails. `pnpm format` is
-// the one: it echoes a 65-path command line and then every .astro in the repo
-// via its postformat hook, which in a dry run buries the rendered post the run
-// exists to show, and in a real release buries the commit and push.
+// For a step whose output is only interesting when it fails. The format step is
+// the one: it echoes a 65-path command line, which in a dry run buries the
+// rendered post the run exists to show, and in a real release buries the commit
+// and push.
 function runQuiet(command: string, args: string[], what: string) {
   console.log(`${what}...`)
   try {
@@ -447,17 +447,24 @@ function main() {
   const written = [...(rendered?.written ?? []), ...bumped]
   const deleted = rendered?.deleted ?? []
 
-  // Named paths, not a bare `pnpm format` + `git add .`. The clean-tree check
-  // ran minutes ago, before the install and the format; in a worktree several
+  // Named paths, not a bare format + `git add .`. The clean-tree check ran
+  // minutes ago, before the install and the format; in a worktree several
   // people or agents share, a sweep here lands their in-flight edits under the
-  // release commit. `git commit -- <paths>` takes the working tree at those
-  // paths and ignores the index, which also stages the deleted draft.
+  // release commit.
+  //
+  // oxfmt directly rather than `pnpm format`, whose postformat hook runs
+  // `prettier --write` over every .astro in the repo. A release writes .md,
+  // .json and .ts and never an .astro, so that pass can only do one thing here:
+  // reformat a website file the release was not asked to touch. In a dry run it
+  // would do it *in the repo*, since the hook ignores the paths and runs from
+  // the repo root — the one step that is not redirected by destDir, in a run
+  // whose whole promise is that nothing in the repo changes.
   //
   // CI publishes from the tag. The website deploy is not tied to this commit
   // message: update-docs.yml runs on release publish.
   runQuiet(
     'pnpm',
-    ['format', ...written.map(f => path.join(destDir, f))],
+    ['exec', 'oxfmt', ...written.map(f => path.join(destDir, f))],
     'Formatting',
   )
 
