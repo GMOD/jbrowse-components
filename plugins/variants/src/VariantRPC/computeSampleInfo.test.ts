@@ -1,5 +1,9 @@
 import { buildSampleIndex, decodeGenotype } from '../shared/genotypeCodec.ts'
-import { buildHeaderRemap, computeSampleInfo } from './computeSampleInfo.ts'
+import {
+  buildHeaderRemap,
+  computeSampleInfo,
+  packGenotypeKey,
+} from './computeSampleInfo.ts'
 
 import type { FilteredVariant } from '../shared/minorAlleleFrequencyUtils.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -131,6 +135,113 @@ describe('computeSampleInfo genotype codes', () => {
     expect(result.sampleInfo.S1!.maxPloidy).toBe(2)
     expect(result.sampleInfo.S2!.maxPloidy).toBe(3)
     expect(result.sampleInfo.S3!.maxPloidy).toBe(1)
+  })
+
+  // The site memo recognizes a short genotype by a packed int and a long one by
+  // a range compare. A site mixing the two is where a wrong answer would show
+  // up — the two kinds must not answer for each other, and a triploid site is
+  // routine (1000G chrX non-PAR).
+  it('interns correctly at a site mixing packable and unpackable genotypes', () => {
+    const result = computeSampleInfo(
+      [
+        makeFeature(
+          'f1',
+          ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'],
+          ['0|0', '0|1|1', '0|0', '0|1|1', '1|1|1', '0|1'],
+        ),
+      ],
+      new Map(),
+    )
+    expect(decodedFor(result, 'f1')).toEqual({
+      S1: '0|0',
+      S2: '0|1|1',
+      S3: '0|0',
+      S4: '0|1|1',
+      S5: '1|1|1',
+      S6: '0|1',
+    })
+    expect(result.sampleInfo.S2!.maxPloidy).toBe(3)
+    expect(result.sampleInfo.S6!.maxPloidy).toBe(2)
+  })
+
+  // Two-digit allele indices are what a decomposed multiallelic site spells,
+  // and they push a diploid genotype past four characters.
+  it('interns two-digit allele indices, which do not pack', () => {
+    const result = computeSampleInfo(
+      [
+        makeFeature(
+          'f1',
+          ['S1', 'S2', 'S3', 'S4'],
+          ['12|37', '37|12', '12|37', '1|2'],
+        ),
+      ],
+      new Map(),
+    )
+    expect(decodedFor(result, 'f1')).toEqual({
+      S1: '12|37',
+      S2: '37|12',
+      S3: '12|37',
+      S4: '1|2',
+    })
+    // '12|37' and '37|12' share no packed key and are genuinely distinct
+    expect(result.genotypeDict).toEqual(['12|37', '37|12', '1|2'])
+  })
+})
+
+describe('packGenotypeKey', () => {
+  const key = (s: string) => packGenotypeKey(s, 0, s.length)
+
+  it('gives every genotype of four characters or fewer a distinct key', () => {
+    const spellings = [
+      '0',
+      '1',
+      '.',
+      '0|0',
+      '0/0',
+      '0|1',
+      '1|0',
+      '0/1',
+      '1/0',
+      '1|1',
+      './.',
+      '.|.',
+      '0|.',
+      '.|0',
+      '9|9',
+      '0|10'.slice(0, 4),
+      '1|23'.slice(0, 4),
+    ]
+    const keys = spellings.map(key)
+    expect(keys.every(k => k !== 0)).toBe(true)
+    expect(new Set(keys).size).toBe(new Set(spellings).size)
+  })
+
+  it('declines anything longer than four characters', () => {
+    expect(key('0|1|1')).toBe(0)
+    expect(key('12|37')).toBe(0)
+    expect(key('0/0/0/0')).toBe(0)
+  })
+
+  it('declines an empty range', () => {
+    expect(key('')).toBe(0)
+    expect(packGenotypeKey('0|0', 1, 1)).toBe(0)
+  })
+
+  // A code unit above 0xFF would spill out of its byte and could collide with
+  // another genotype's key, so it has to decline rather than truncate.
+  it('declines a non-ASCII character rather than truncating it', () => {
+    expect(key('0|Ā')).toBe(0)
+    expect(key('ÿ')).toBe(0)
+  })
+
+  // Keys index an Int32Array, so the top bit must stay clear.
+  it('keeps keys non-negative for the widest ASCII genotype', () => {
+    expect(key('\x7f\x7f\x7f\x7f')).toBeGreaterThan(0)
+  })
+
+  it('reads only the given range', () => {
+    const line = 'x0|0y'
+    expect(packGenotypeKey(line, 1, 4)).toBe(key('0|0'))
   })
 })
 

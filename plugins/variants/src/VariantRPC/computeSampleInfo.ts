@@ -27,6 +27,44 @@ export interface SimplifiedVariantFeature {
 // the fast path rather than bounding correctness.
 const SITE_GENOTYPE_MEMO_SIZE = 32
 
+// The whole genotype as one int, or 0 when it doesn't fit. Four characters is
+// the width that matters: it holds every genotype a diploid biallelic-to-
+// 9-allele callset spells, which is nearly every cell of nearly every VCF. No
+// ASCII character is 0, so the zero padding of a shorter genotype cannot look
+// like a longer one, and 0 is free to mean "didn't pack".
+//
+// Exported for the test that pins exactly that: distinct genotypes must not
+// collide, and everything past four characters must decline.
+export function packGenotypeKey(str: string, start: number, end: number) {
+  const len = end - start
+  if (len === 0 || len > 4) {
+    return 0
+  }
+  // `seen` accumulates the raw code units so one test at the end can reject a
+  // non-ASCII character. It has to be rejected rather than truncated: a code
+  // unit above 0xFF would spill out of its byte and could land on the key of a
+  // different genotype, which is a silently wrong cell rather than a slow one.
+  const c0 = str.charCodeAt(start)
+  let key = c0
+  let seen = c0
+  if (len > 1) {
+    const c = str.charCodeAt(start + 1)
+    key |= c << 8
+    seen |= c
+  }
+  if (len > 2) {
+    const c = str.charCodeAt(start + 2)
+    key |= c << 16
+    seen |= c
+  }
+  if (len > 3) {
+    const c = str.charCodeAt(start + 3)
+    key |= c << 24
+    seen |= c
+  }
+  return (seen & 0xff80) === 0 ? key : 0
+}
+
 // Merge one sample's per-feature ploidy/phasing into the running sampleInfo
 // (max ploidy seen, phased if ever phased).
 function accumulateSampleInfo(
@@ -185,11 +223,32 @@ export function computeSampleInfo(
   // classification, so the char walk below runs once per (site, distinct
   // genotype) rather than once per cell. `memoStr` guards an offset from being
   // compared against a different line.
+  //
+  // `memoKey` is what a probe compares. A genotype of four characters or fewer
+  // packs whole into one int — `packGenotypeKey` — so recognizing a repeat is a
+  // single int compare instead of walking two ranges character by character.
+  // That covers every diploid call an ordinary VCF spells (`0|0`, `0/1`, `./.`,
+  // haploid `1`), which is the case worth spending the branch on. A longer
+  // genotype — polyploid, or a two-digit allele index at a decomposed
+  // multiallelic site — keys 0 and falls back to the range compare, so nothing
+  // is capped and nothing collides: key 0 means "not packable", never a
+  // genotype, since no ASCII character is 0.
+  const memoKey = new Int32Array(SITE_GENOTYPE_MEMO_SIZE)
   const memoStart = new Int32Array(SITE_GENOTYPE_MEMO_SIZE)
   const memoLen = new Int32Array(SITE_GENOTYPE_MEMO_SIZE)
   const memoCode = new Int32Array(SITE_GENOTYPE_MEMO_SIZE)
   const memoPloidy = new Int32Array(SITE_GENOTYPE_MEMO_SIZE)
   const memoPhased = new Uint8Array(SITE_GENOTYPE_MEMO_SIZE)
+
+  // Per-sample ploidy/phasing for the range-reporting path, indexed by canonical
+  // column rather than by sample name, and folded into `sampleInfo` once after
+  // the pass. The callback already holds the column; going through the name cost
+  // a string-keyed lookup on a 2504-property dictionary-mode object per
+  // genotype, which is once per cell — 10^8 on a real panel. Ploidy 0 means the
+  // column was never reported, which is what keeps a sample with no genotype out
+  // of `sampleInfo` exactly as the name-keyed version did.
+  const ploidyByColumn = new Int32Array(numSamples)
+  const phasedByColumn = new Uint8Array(numSamples)
 
   // Records to intern once the canonical order is known; only ever populated on
   // the no-header-sample-list path below.
@@ -246,8 +305,10 @@ export function computeSampleInfo(
       let memoStr: string | undefined
       feature.processGenotypes((str, start, end, sampleIdx) => {
         const column = remap === undefined ? sampleIdx : remap[sampleIdx]!
-        const sampleName = sampleNames[column]
-        if (sampleName === undefined) {
+        // -1 is `buildHeaderRemap` reporting a header sample that is not in the
+        // canonical order; the upper bound is the same guard `sampleNames[column]
+        // === undefined` used to give.
+        if (column < 0 || column >= numSamples) {
           return
         }
         const len = end - start
@@ -255,29 +316,37 @@ export function computeSampleInfo(
           memoStr = str
           memoN = 0
         }
+        // Probe the site memo. A packable genotype compares as one int; the
+        // rest fall back to the range compare, and are only ever compared
+        // against other unpackable entries (`memoKey[m] === 0`), so the two
+        // kinds cannot answer for each other.
+        const key = packGenotypeKey(str, start, end)
         for (let m = 0; m < memoN; m++) {
-          if (memoLen[m] === len) {
+          let eq: boolean
+          if (key !== 0) {
+            eq = memoKey[m] === key
+          } else if (memoKey[m] === 0 && memoLen[m] === len) {
             const ms = memoStart[m]!
-            let eq = true
+            eq = true
             for (let k = 0; k < len; k++) {
               if (str.charCodeAt(ms + k) !== str.charCodeAt(start + k)) {
                 eq = false
                 break
               }
             }
-            if (eq) {
-              codes[column] = memoCode[m]!
-              // The legend flags are global ORs already folded in on this
-              // genotype's first sighting at this site; only the per-sample
-              // ploidy/phasing still has to be recorded.
-              accumulateSampleInfo(
-                sampleInfo,
-                sampleName,
-                memoPloidy[m]!,
-                memoPhased[m] === 1,
-              )
-              return
+          } else {
+            eq = false
+          }
+          if (eq) {
+            codes[column] = memoCode[m]!
+            // The legend flags are global ORs already folded in on this
+            // genotype's first sighting at this site; only the per-sample
+            // ploidy/phasing still has to be recorded.
+            if (memoPloidy[m]! > ploidyByColumn[column]!) {
+              ploidyByColumn[column] = memoPloidy[m]!
             }
+            phasedByColumn[column] ||= memoPhased[m]!
+            return
           }
         }
 
@@ -309,7 +378,12 @@ export function computeSampleInfo(
         // only when it's entirely missing (a partial `0/.` stays
         // black/unphased).
         hasNoCall ||= phased ? missing : !called
-        accumulateSampleInfo(sampleInfo, sampleName, ploidy, phased)
+        if (ploidy > ploidyByColumn[column]!) {
+          ploidyByColumn[column] = ploidy
+        }
+        if (phased) {
+          phasedByColumn[column] = 1
+        }
 
         // An empty range is @gmod/vcf reporting a sample whose colon-separated
         // FORMAT fields stop before GT. It stays code 0 — "no genotype for this
@@ -325,6 +399,7 @@ export function computeSampleInfo(
                 genotypeDictIndex,
               )
         if (memoN < SITE_GENOTYPE_MEMO_SIZE) {
+          memoKey[memoN] = key
           memoStart[memoN] = start
           memoLen[memoN] = len
           memoCode[memoN] = code
@@ -383,6 +458,22 @@ export function computeSampleInfo(
         refName: feature.get('refName'),
         name: feature.get('name'),
       },
+    }
+  }
+
+  // Fold the column-indexed ploidy/phasing into `sampleInfo`, through the same
+  // merge the record path uses so a fetch mixing the two agrees on max ploidy
+  // and "phased if ever phased". Runs before the record block below, which reads
+  // `sampleInfo`'s keys to extend the canonical order.
+  for (let column = 0; column < numSamples; column++) {
+    const ploidy = ploidyByColumn[column]!
+    if (ploidy > 0) {
+      accumulateSampleInfo(
+        sampleInfo,
+        sampleNames[column]!,
+        ploidy,
+        phasedByColumn[column] === 1,
+      )
     }
   }
 
