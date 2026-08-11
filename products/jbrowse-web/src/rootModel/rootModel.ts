@@ -36,7 +36,11 @@ import {
   renameSessionRows,
   setSessionFavoriteRow,
 } from '../sessionDbOps.ts'
-import { setupSessionDB, setupSessionStorageAutosave } from './persistence.ts'
+import {
+  saveSessionSnapshot,
+  setupSessionDB,
+  setupSessionStorageAutosave,
+} from './persistence.ts'
 import { savedSessionMenuItems } from './sessionMenus.ts'
 
 import type { SessionDBHandle } from '../sessionDbOps.ts'
@@ -68,7 +72,26 @@ type SessionModelFactory = (args: {
 
 interface SessionDbHost {
   sessionDB?: SessionDBHandle
-  session?: { notifyError: (message: string, error?: unknown) => void }
+  session?: {
+    id: string
+    notifyError: (message: string, error?: unknown) => void
+  }
+}
+
+/**
+ * Whether `id` names the session that is currently open, which is never an
+ * ordinary row in the saved-session list. Four of the actions below have to ask
+ * — deleting it, bulk-deleting it, re-opening it and renaming it all mean
+ * something different for the open session — so the question is asked by name
+ * rather than by four repetitions of the comparison.
+ *
+ * The autosave autorun rewrites that row every 400ms, and everything follows
+ * from it: deleting it only makes it vanish until the next edit puts it back
+ * (minus its star, which lived in the row just deleted), and re-opening it from
+ * IndexedDB can only lose whatever the last tick has not written yet.
+ */
+function isOpenSession(self: SessionDbHost, id: string) {
+  return id === self.session?.id
 }
 
 // Every saved-session action is fired off with `void` from a menu or a grid
@@ -232,7 +255,7 @@ export default function RootModel({
       /**
        * #action
        */
-      setSessionDB(sessionDB: SessionDBHandle) {
+      setSessionDB(sessionDB: SessionDBHandle | undefined) {
         self.sessionDB = sessionDB
       },
     }))
@@ -246,7 +269,13 @@ export default function RootModel({
         // but the helpers only touch fields/actions already composed in.
         const model = self as unknown as WebRootModel
         setupSessionStorageAutosave(model)
-        if (typeof indexedDB !== 'undefined') {
+        if (typeof indexedDB === 'undefined') {
+          // no autosave database here (jsdom, a locked-down browser profile).
+          // An empty list rather than `undefined`, which means "still opening"
+          // — the session manager would otherwise sit on its loading message
+          // forever waiting for an open that is never going to happen.
+          self.setSavedSessionMetadata([])
+        } else {
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           setupSessionDB(model)
         }
@@ -272,13 +301,32 @@ export default function RootModel({
        * #action
        */
       async activateSession(id: string) {
+        // reloading the open session from IDB can only lose work — the row is
+        // up to one autosave tick behind the live model
+        if (isOpenSession(self, id)) {
+          return
+        }
         await withSessionDB(self, async sessionDB => {
           const ret = await sessionDB.get('sessions', id)
-          if (ret) {
-            self.setSession(ret)
-          } else {
+          if (!ret) {
             self.session?.notifyError('Session not found')
+            return
           }
+          // The autosave autorun is debounced, so the outgoing session's last
+          // edits may not have landed yet — and once setSession swaps it out,
+          // the pending tick reads the *new* session and they are lost for
+          // good. Flush it here so switching sessions never costs the last
+          // thing you did to the one you are leaving.
+          if (self.session) {
+            self.upsertSessionMetadata(
+              await saveSessionSnapshot(
+                sessionDB,
+                self.session,
+                self.configPath,
+              ),
+            )
+          }
+          self.setSession(ret)
         })
       },
       /**
@@ -294,11 +342,9 @@ export default function RootModel({
        * #action
        */
       async deleteSavedSession(id: string) {
-        // the open session is the one the autosave autorun rewrites every 400ms,
-        // so deleting its rows only makes it vanish from the list until the next
-        // edit puts it back — with its favorite flag reset, since that lives in
-        // the row just deleted. Say so instead of doing that.
-        if (id === self.session?.id) {
+        // aimed at one row, so say why that row is not going anywhere rather
+        // than silently doing nothing (see isOpenSession)
+        if (isOpenSession(self, id) && self.session) {
           // not wrapped in withErrorNotify: the only thing it does on failure
           // is push a snackbar, which is the call being made here
           self.session.notify(
@@ -307,8 +353,27 @@ export default function RootModel({
           )
           return
         }
+        await this.deleteSavedSessions([id])
+      },
+      /**
+       * #action
+       * Deletes a batch of saved sessions in ONE transaction, and re-reads the
+       * metadata once at the end. Looping `deleteSavedSession` instead is both
+       * N transactions and N full `getAll('metadata')` scans, and — because
+       * those interleave — leaves `savedSessionMetadata` holding whichever scan
+       * happened to resolve last, so already-deleted rows stay on screen until
+       * something else refreshes the list.
+       *
+       * The open session is skipped rather than reported on, since a bulk
+       * delete is not aimed at any one row (see deleteSavedSession).
+       */
+      async deleteSavedSessions(ids: string[]) {
+        const toDelete = ids.filter(id => !isOpenSession(self, id))
+        if (!toDelete.length) {
+          return
+        }
         await withSessionDB(self, async sessionDB => {
-          await deleteSessionRows(sessionDB, [id])
+          await deleteSessionRows(sessionDB, toDelete)
           await self.fetchSessionMetadata()
         })
       },
@@ -318,7 +383,7 @@ export default function RootModel({
       async renameSavedSession(id: string, name: string) {
         // renaming the active session goes through the live model so the
         // autosave autorun rewrites both stores; otherwise edit IDB directly
-        if (id === self.session?.id) {
+        if (isOpenSession(self, id)) {
           await withErrorNotify(self, () => {
             self.renameCurrentSession(name)
           })

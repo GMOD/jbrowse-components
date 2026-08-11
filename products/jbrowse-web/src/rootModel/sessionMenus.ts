@@ -82,13 +82,19 @@ const MAX_SHOWN = 5
  * is.
  */
 export function savedSessionMenuItems(self: SavedSessionMenuHost) {
+  const currentSessionId = self.session?.id
   const favorites = self.savedSessionMetadata
     ?.filter(f => f.favorite)
     .slice(0, MAX_SHOWN)
+  // the open session is excluded rather than shown disabled. The autosave
+  // autorun restamps its `updatedAt` every 400ms, so it is *always* the newest
+  // row — a disabled entry permanently occupying the top of the recent list and
+  // costing it one of its five slots. Favorites keep theirs, where the row says
+  // something ("this starred session is the one you are in") rather than
+  // nothing.
   const recent = self.savedSessionMetadata
-    ?.filter(f => !f.favorite)
+    ?.filter(f => !f.favorite && f.id !== currentSessionId)
     .slice(0, MAX_SHOWN)
-  const currentSessionId = self.session?.id
   const actions = {
     activate: (id: string) => self.activateSession(id),
     showMore: () => {

@@ -421,3 +421,27 @@ describe('deleteSavedSession', () => {
     ).toEqual(['Cannot delete the session that is currently open'])
   })
 })
+
+describe('deleteSavedSessions', () => {
+  // a bulk delete is not aimed at any one row, so the open session is dropped
+  // from the batch silently rather than reported on -- but it must still be
+  // dropped, or the batch would delete it and lose its star
+  test('skips the open session without a snackbar', async () => {
+    const root = getRootModel().create(mainThreadConfig)
+    root.setSession({ name: 'testSession' })
+    const session = root.session!
+
+    await root.deleteSavedSessions([session.id])
+
+    expect(session.snackbarMessages).toHaveLength(0)
+  })
+
+  // deleting nothing must not open a transaction, so that a "delete old
+  // sessions" run that matches nothing is genuinely a no-op
+  test('does nothing when the batch is empty', async () => {
+    const root = getRootModel().create(mainThreadConfig)
+    root.setSession({ name: 'testSession' })
+
+    await expect(root.deleteSavedSessions([])).resolves.toBeUndefined()
+  })
+})

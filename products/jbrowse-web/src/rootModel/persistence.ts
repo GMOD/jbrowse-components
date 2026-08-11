@@ -9,6 +9,7 @@ import type { SessionDBHandle } from '../sessionDbOps.ts'
 import type { Session, SessionMetadata } from '../types.ts'
 import type { WebRootModel } from './rootModel.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { IStateTreeNode, IType } from '@jbrowse/mobx-state-tree'
 
 // Autosaves accumulate in IndexedDB forever otherwise: every distinct session
 // leaves a full snapshot behind, eventually risking the storage quota. Keep all
@@ -45,12 +46,54 @@ async function pruneOldSessions(
   await deleteSessionRows(sessionDB, staleSessionIds(metadata, activeId))
 }
 
+/**
+ * Writes a session's snapshot and its metadata row to the autosave database,
+ * and returns the row that landed.
+ *
+ * The point of the helper is the *synchronous head*: id, name and the snapshot
+ * are read before anything is awaited. That is what keeps the autosave autorun
+ * tracking them (an MST action or a read past an await runs untracked — see the
+ * MST notes in CLAUDE.md), and what keeps the async tail from touching a node
+ * that may have been destroyed in the meantime. It has to be right in two
+ * places now — the autorun and the flush activateSession does on its way out —
+ * so it is one function rather than two copies of the same three lines.
+ */
+export function saveSessionSnapshot(
+  db: SessionDBHandle,
+  // IStateTreeNode, never IAnyStateTreeNode — the latter resolves to `any` and
+  // would stop checking that a caller passed something with an id and a name
+  session: IStateTreeNode<IType<any, Session, any>> & {
+    id: string
+    name: string
+  },
+  configPath: string | undefined,
+) {
+  const { id, name } = session
+  const snap = getSnapshot<Session>(session)
+  return upsertSessionRows(db, snap, { id, name, configPath: configPath ?? '' })
+}
+
 // Opens the IndexedDB for autosave persistence, then mirrors session changes
 // + metadata into idb on each session edit (debounced 400ms). Skipped when
 // indexedDB is unavailable (tests, restricted environments).
 export async function setupSessionDB(self: WebRootModel) {
   try {
-    const sessionDB = await openSessionDB()
+    const sessionDB = await openSessionDB({
+      // The connection is gone: another tab is upgrading the schema and we had
+      // to close so its upgrade could run, or the browser terminated us. Drop
+      // the handle — the autorun below reads it off the model each tick, so it
+      // stops writing rather than throwing an InvalidStateError every 400ms,
+      // and would pick a replacement handle straight back up.
+      onLost: () => {
+        if (isAlive(self)) {
+          self.setSessionDB(undefined)
+          self.session?.notify(
+            'Session auto-save to this browser stopped, likely because another JBrowse tab is updating its storage. Reload this tab to resume.',
+            'warning',
+          )
+        }
+      },
+    })
     // a plugin-install rebuild can destroy this root while the open (and the
     // two awaits below) are in flight. addDisposer on a dead node never fires,
     // so the autorun would be installed and never torn down — left writing a
@@ -78,23 +121,22 @@ export async function setupSessionDB(self: WebRootModel) {
       self,
       autorun(
         async () => {
-          if (self.session) {
+          // read off the model rather than closing over the handle from the
+          // open above: onLost clears it, and this is what makes that stick
+          const db = self.sessionDB
+          if (self.session && db) {
             try {
               // careful not to access self.savedSessionMetadata in the tracked
               // head of this autorun, or else it can create an infinite loop —
               // the list this writes is the list it would be observing.
               // (upsertSessionMetadata below reads it, but from inside an MST
-              // action past an await, so neither is tracked.) Capture
-              // id/name/snapshot synchronously so the reactive reads are tracked
-              // and the async tail never touches a possibly-destroyed node.
-              const { id, name } = self.session
-              const snap = getSnapshot<Session>(self.session)
-              const configPath = self.configPath ?? ''
-              const meta = await upsertSessionRows(sessionDB, snap, {
-                id,
-                name,
-                configPath,
-              })
+              // action past an await, so neither is tracked.) saveSessionSnapshot
+              // does its reads synchronously, which is what keeps them tracked.
+              const meta = await saveSessionSnapshot(
+                db,
+                self.session,
+                self.configPath,
+              )
               if (isAlive(self)) {
                 // the one row that changed is the one we just wrote, so merge it
                 // in rather than re-reading every session's metadata on each
@@ -120,6 +162,11 @@ export async function setupSessionDB(self: WebRootModel) {
   } catch (e) {
     console.error(e)
     if (isAlive(self)) {
+      // the list stays `undefined` on this path otherwise, which every reader
+      // takes to mean "still opening" — the session manager would sit on its
+      // loading message for the life of the tab rather than say there is
+      // nothing to show
+      self.setSavedSessionMetadata([])
       self.session?.notifyError(`${e}`, e)
     }
   }

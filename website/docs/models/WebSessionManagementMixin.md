@@ -27,6 +27,7 @@ database).
 | Member | Description |
 | --- | --- |
 | <span id="action-deletesavedsession">**deleteSavedSession**</span><br><code>(id: string) =&gt; Promise&lt;void&gt;</code> |  |
+| <span id="action-deletesavedsessions">**deleteSavedSessions**</span><br><code>(ids: string[]) =&gt; Promise&lt;void&gt;</code> |  |
 | <span id="action-setsavedsessionfavorite">**setSavedSessionFavorite**</span><br><code>(id: string, favorite: boolean) =&gt; Promise&lt;void&gt;</code> |  |
 | <span id="action-renamesavedsession">**renameSavedSession**</span><br><code>(id: string, name: string) =&gt; Promise&lt;void&gt;</code> |  |
 | <span id="action-activatesession">**activateSession**</span><br><code>(id: string) =&gt; Promise&lt;void&gt;</code> |  |

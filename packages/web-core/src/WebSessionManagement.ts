@@ -35,6 +35,12 @@ export function WebSessionManagementMixin(_pluginManager: PluginManager) {
         /**
          * #action
          */
+        deleteSavedSessions(ids: string[]) {
+          return root().deleteSavedSessions(ids)
+        },
+        /**
+         * #action
+         */
         setSavedSessionFavorite(id: string, favorite: boolean) {
           return root().setSavedSessionFavorite(id, favorite)
         },

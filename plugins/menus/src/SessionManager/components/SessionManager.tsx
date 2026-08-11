@@ -1,26 +1,20 @@
-import { ActionLink, LabeledCheckbox } from '@jbrowse/core/ui'
+import { useState } from 'react'
+
+import { LabeledCheckbox } from '@jbrowse/core/ui'
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
-import { formatRelativeTime, measureGridWidth } from '@jbrowse/core/util'
+import { measureGridWidth } from '@jbrowse/core/util'
 import { useLocalStorage } from '@jbrowse/core/util/hooks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import DeleteIcon from '@mui/icons-material/Delete'
-import StarIcon from '@mui/icons-material/Star'
-import StarBorderIcon from '@mui/icons-material/StarBorder'
-import { Button, IconButton, Tooltip } from '@mui/material'
+import { Button, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
+import DeleteOldSessionsDialog from './DeleteOldSessionsDialog.tsx'
+import { DeleteCell, FavoriteCell, LastUsedCell, NameCell } from './cells.tsx'
 import { sessionLastUsed } from './util.ts'
 
+import type { Row } from './cells.tsx'
 import type { SessionModel } from './util.ts'
-
-interface Row {
-  id: string
-  name: string
-  createdAt: Date
-  lastUsed: Date
-  fav: boolean
-}
 
 const useStyles = makeStyles()(theme => ({
   mb: {
@@ -29,52 +23,38 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const SessionManager = observer(function SessionManager({
-  session,
-}: {
-  session: SessionModel
-}) {
-  const { classes } = useStyles()
-  const [showOnlyFavs, setShowOnlyFavs] = useLocalStorage(
-    'sessionManager-showOnlyFavs',
-    false,
-  )
-  const rows: Row[] | undefined = session.savedSessionMetadata
+/**
+ * The rows of the grid: the saved-session metadata the root model read out of
+ * IndexedDB, in display shape. `undefined` in, `undefined` out — that is the
+ * "database still opening" state, and it is deliberately not the same value as
+ * an empty database (see the render below).
+ */
+function buildRows(
+  session: SessionModel,
+  showOnlyFavs: boolean,
+): Row[] | undefined {
+  return session.savedSessionMetadata
     ?.map(r => ({
       id: r.id,
       name: r.name,
       createdAt: r.createdAt,
       lastUsed: sessionLastUsed(r),
       fav: r.favorite,
+      current: r.id === session.id,
     }))
     .filter(f => !showOnlyFavs || f.fav)
+}
 
-  async function handleDeleteOld() {
-    // ages by last use, not creation: an id survives reloads, so a session
-    // edited every day still carries the createdAt of the day it was opened and
-    // would otherwise be deleted out from under the user
-    const toDelete = (session.savedSessionMetadata ?? []).filter(
-      elt =>
-        (Date.now() - sessionLastUsed(elt).getTime()) / (1000 * 60 * 60 * 24) >
-          1 && !elt.favorite,
-    )
-    await Promise.all(toDelete.map(elt => session.deleteSavedSession(elt.id)))
-    session.notify(`${toDelete.length} sessions deleted`, 'info')
-  }
-
-  const columns = [
+// One entry per column, each deferring to a named cell in cells.tsx so this
+// reads as the shape of the table rather than as four inline components.
+function buildColumns(session: SessionModel, rows: Row[] | undefined) {
+  return [
     {
       field: 'fav',
       headerName: 'Fav',
-      width: 20,
+      width: 60,
       renderCell: ({ row }: { row: Row }) => (
-        <IconButton
-          onClick={() => {
-            void session.setSavedSessionFavorite(row.id, !row.fav)
-          }}
-        >
-          {row.fav ? <StarIcon /> : <StarBorderIcon />}
-        </IconButton>
+        <FavoriteCell row={row} session={session} />
       ),
     },
     {
@@ -83,48 +63,41 @@ const SessionManager = observer(function SessionManager({
       editable: true,
       width: measureGridWidth((rows ?? []).map(r => r.name)),
       renderCell: ({ row }: { row: Row }) => (
-        <>
-          <ActionLink
-            onClick={() => {
-              void session.activateSession(row.id)
-            }}
-          >
-            {row.name}
-          </ActionLink>
-          {session.id === row.id ? ' (current)' : ''}
-        </>
+        <NameCell row={row} session={session} />
       ),
     },
     {
-      // the rows arrive ordered by last use, so dating them by creation would
-      // read as an unsorted list
-      headerName: 'Last used',
       field: 'lastUsed',
+      headerName: 'Last used',
       renderCell: ({ row }: { row: Row }) => (
-        <Tooltip
-          disableInteractive
-          slotProps={{ transition: { timeout: 0 } }}
-          title={`Last used ${row.lastUsed.toLocaleString()}\nCreated ${row.createdAt.toLocaleString()}`}
-        >
-          <div>{formatRelativeTime(row.lastUsed)}</div>
-        </Tooltip>
+        <LastUsedCell row={row} session={session} />
       ),
     },
     {
       field: 'delete',
-      width: 10,
       headerName: 'Delete',
+      width: 70,
+      sortable: false,
+      filterable: false,
       renderCell: ({ row }: { row: Row }) => (
-        <IconButton
-          onClick={() => {
-            void session.deleteSavedSession(row.id)
-          }}
-        >
-          <DeleteIcon />
-        </IconButton>
+        <DeleteCell row={row} session={session} />
       ),
     },
   ]
+}
+
+const SessionManager = observer(function SessionManager({
+  session,
+}: {
+  session: SessionModel
+}) {
+  const { classes } = useStyles()
+  const [deleteOldOpen, setDeleteOldOpen] = useState(false)
+  const [showOnlyFavs, setShowOnlyFavs] = useLocalStorage(
+    'sessionManager-showOnlyFavs',
+    false,
+  )
+  const rows = buildRows(session, showOnlyFavs)
 
   return (
     <div>
@@ -138,14 +111,12 @@ const SessionManager = observer(function SessionManager({
         />
         <Button
           variant="contained"
+          disabled={!rows}
           onClick={() => {
-            handleDeleteOld().catch((e: unknown) => {
-              console.error(e)
-              session.notifyError(`${e}`, e)
-            })
+            setDeleteOldOpen(true)
           }}
         >
-          Delete non-fav sessions older than 1 day?
+          Delete old sessions...
         </Button>
       </div>
       {rows ? (
@@ -158,7 +129,7 @@ const SessionManager = observer(function SessionManager({
             showToolbar
             slotProps={{ toolbar: { showQuickFilter: true } }}
             rows={rows}
-            columns={columns}
+            columns={buildColumns(session, rows)}
             processRowUpdate={(newRow: Row, oldRow: Row) => {
               if (newRow.name !== oldRow.name) {
                 void session.renameSavedSession(newRow.id, newRow.name)
@@ -172,8 +143,20 @@ const SessionManager = observer(function SessionManager({
           />
         </DataGridFlexContainer>
       ) : (
-        <div>No sessions loaded</div>
+        // undefined, not empty: the saved-session database has not finished
+        // opening. An empty list renders the grid with its own "no rows" row.
+        <Typography className={classes.mb}>
+          Loading saved sessions...
+        </Typography>
       )}
+      {deleteOldOpen ? (
+        <DeleteOldSessionsDialog
+          session={session}
+          onClose={() => {
+            setDeleteOldOpen(false)
+          }}
+        />
+      ) : null}
     </div>
   )
 })

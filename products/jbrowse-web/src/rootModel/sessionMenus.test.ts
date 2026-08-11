@@ -1,4 +1,7 @@
-import { buildSessionListSubmenu } from './sessionMenus.ts'
+import {
+  buildSessionListSubmenu,
+  savedSessionMenuItems,
+} from './sessionMenus.ts'
 
 import type { SessionMetadata } from '@jbrowse/web-core'
 
@@ -76,4 +79,55 @@ test('clicking an item activates it and More opens the manager', () => {
   expect(activate).toHaveBeenCalledWith('a')
   items[1]!.onClick()
   expect(showMore).toHaveBeenCalledTimes(1)
+})
+
+describe('savedSessionMenuItems', () => {
+  function host(sessions: SessionMetadata[], currentSessionId?: string) {
+    return {
+      savedSessionMetadata: sessions,
+      session: currentSessionId
+        ? {
+            id: currentSessionId,
+            addWidget: () => ({}),
+            showWidget: () => {},
+          }
+        : undefined,
+      activateSession: () => Promise.resolve(),
+    }
+  }
+
+  function labels(items: ReturnType<typeof savedSessionMenuItems>, i: number) {
+    return items[i]!.subMenu.map(s => s.label)
+  }
+
+  // the autosave autorun restamps the open session every 400ms, so it is always
+  // the newest row: left in, it is a permanently disabled entry sitting at the
+  // top of the recent list and eating one of its five slots
+  test('recent omits the open session', () => {
+    const items = savedSessionMenuItems(
+      host([meta('a', 'Session A'), meta('b', 'Session B')], 'a'),
+    )
+    expect(items).toHaveLength(1)
+    expect(labels(items, 0)).toEqual([
+      expect.stringMatching(/^Session B/),
+      'More...',
+    ])
+  })
+
+  // in favorites the row says something -- that the session you are in is
+  // starred -- so it stays, disabled
+  test('favorites keeps the open session, disabled', () => {
+    const fav = { ...meta('a', 'Session A'), favorite: true }
+    const items = savedSessionMenuItems(
+      host([fav, meta('b', 'Session B')], 'a'),
+    )
+    expect(items).toHaveLength(2)
+    expect(labels(items, 0)).toEqual(['Session A (current)', 'More...'])
+    expect(items[0]!.subMenu[0]!.disabled).toBe(true)
+  })
+
+  test('recent still reports emptiness when the open session was the only row', () => {
+    const items = savedSessionMenuItems(host([meta('a', 'Session A')], 'a'))
+    expect(labels(items, 0)).toEqual(['No autosaves found'])
+  })
 })
