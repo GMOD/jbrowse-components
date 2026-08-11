@@ -26,23 +26,23 @@ rows.
   [web quickstart](/docs/quickstart_web), or the
   [desktop quickstart](/docs/quickstart_desktop))
 
-## What a genome browser adds
+## What the tracks show
 
-A UMAP answers how much of a gene each cell type made. It cannot show where in
-the gene the reads landed, and that is the part a browser puts back: which end,
-which exons, which annotated transcript the pile actually agrees with.
+A UMAP or a dot plot gives you how much of a gene each cell type made. Putting
+the same cells on genomic coordinates adds where in the gene the reads landed:
+which end, which exons, which annotated transcript the pile agrees with.
 
 <Figure caption="Nine per-cell-type BigWigs from the 10x 5k PBMC dataset, loaded as one MultiQuantitativeTrack, over nine marker loci in one discontinuous view: the 3' end of IL7R, CD8A, GNLY, MS4A1, LYZ, FCGR3A, FCER1A, LILRA4 and PPBP, in the same order as the rows they mark. The signal walks down the diagonal, one marker per row." src="/img/scrna/marker_panel.png" />
 
-The pile at one end is not a defect. 10x 3' chemistry sequences the 3' end of
-each transcript, so a coverage track of that library is a spike near the
-polyadenylation site and very little else. The figure is on a log scale because
-the rows share one axis and LYZ in monocytes is an order of magnitude above IL7R
-in CD4 T cells. Reading a marker gene means comparing the heights of those
-spikes across rows, which is the same comparison a dot plot makes, drawn on the
-coordinate where the reads actually are. Full-length chemistries (Smart-seq, and
-5' kits to a lesser degree) spread coverage over the gene body instead, and the
-rest of this page applies unchanged.
+The signal piling up at one end of each gene is the chemistry showing through.
+10x 3' kits sequence the 3' end of each transcript, so a coverage track of that
+library is a spike near the polyadenylation site and very little else. Reading a
+marker gene means comparing the heights of those spikes across rows, which is
+the same comparison a dot plot makes, drawn on the coordinate where the reads
+actually are. The figure is on a log scale because the rows share one axis and
+the brightest marker sits well above the dimmest. Full-length chemistries
+(Smart-seq, and 5' kits to a lesser degree) spread coverage over the gene body
+instead, and the rest of this page applies unchanged.
 
 ## Generating per-cell-type BigWigs
 
@@ -78,8 +78,8 @@ writes a second copy of the BAM to disk, split N ways.
 [`build_scrna_pseudobulk.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_scrna_pseudobulk.sh)
 takes the other route: it reads the BAM by region straight over HTTPS,
 accumulating each cell type's coverage in one pass, so nothing is downloaded and
-nothing is split. For a 23GB BAM that is the difference between needing scratch
-space and needing none.
+nothing is split. On a BAM the size this one is, that is the difference between
+needing scratch space and needing none.
 
 ## Loading the BigWigs
 
@@ -143,27 +143,26 @@ A pseudobulk row is a sum over thousands of cells, and it draws that sum as a
 smooth curve. The cells themselves can go under it, one row each, read from a
 cells-by-bins Zarr matrix instead of one file per cell.
 
-<Figure caption="The nine pseudobulk rows at LYZ above the 4390 cells they are a sum over, ordered by cell type and colored to match. The monocyte and dendritic blocks are solid; the lymphocyte blocks are speckle, one UMI per cell." src="/img/scrna/percell_lyz.png" />
+<Figure caption="The nine pseudobulk rows at LYZ above the individual cells they are a sum over, ordered by cell type and colored to match. The monocyte and dendritic blocks are solid; the lymphocyte blocks are speckle, one UMI per cell." src="/img/scrna/percell_lyz.png" />
 
-The speckle is the point. Above, the lymphocyte rows look like a low flat line
-next to the monocyte peak, which reads as silence. Per cell it is not silence:
-many of those cells carry a single UMI of a monocyte gene, which is ambient RNA
-in the droplet rather than transcription in the cell. Summing hides that; one
-row per cell shows it.
+The speckle is what the pseudobulk row above cannot show. Summed, the lymphocyte
+rows are a low flat line next to the monocyte peak, which reads as silence. Per
+cell, many of those cells carry a single UMI of a monocyte gene, which is
+ambient RNA in the droplet rather than transcription in the cell.
 
-Two settings make this legible, and skipping either one wastes the figure.
+Two settings decide whether that is visible at all.
 
-Order the rows by cell type. 4390 rows in a few hundred pixels is well under a
-pixel each, so the picture is a raster rather than readable rows, and the only
-way a block means anything is if the cells in it are adjacent. The `group` on
-each row seeds that, and it also drives the sidebar tree.
+Order the rows by cell type. Thousands of rows in a few hundred pixels is well
+under a pixel each, so the picture is a raster rather than readable rows, and a
+block only means anything if the cells in it are adjacent. The `group` on each
+row seeds that, and it also drives the sidebar tree.
 
 Then pin the score axis. With autoscale the maximum is whatever the home cell
-type reached, which at LYZ is hundreds of UMIs in a single monocyte. Every
-single-UMI cell then renders white and the ambient signal disappears. A pinned
-`minScore: 0` and a low `maxScore` puts one UMI a visible fraction up the ramp
-and lets the home block saturate, which is the same reasoning as the copy-number
-heatmap in [](/docs/tutorials/population_cnv).
+type reached, which at LYZ is a single monocyte far above everything else, and
+every single-UMI cell renders white against it. A pinned `minScore: 0` and a low
+`maxScore` puts one UMI a visible fraction up the ramp and lets the home block
+saturate, which is the same reasoning as the copy-number heatmap in
+[](/docs/tutorials/population_cnv).
 
 The store is read by the `MultiWiggleZarrAdapter` that
 [`jbrowse-plugin-zarr`](https://github.com/cmdcolin/jbrowse-plugin-zarr) adds,
@@ -246,13 +245,13 @@ Its input is 10x Genomics' public 5k PBMC v3 dataset. The script runs the
 standard scanpy pipeline on the filtered count matrix (QC, normalize, PCA,
 neighbors, UMAP, Leiden), labels each cluster by scoring it against canonical
 PBMC marker panels, and prints the whole score matrix so the labels can be
-checked rather than trusted. It then pseudobulks the BAM against those labels
-and writes the finished JBrowse instance, plus the UMAP's own data files.
+checked against it. It then pseudobulks the BAM against those labels and writes
+the finished JBrowse instance, plus the UMAP's own data files.
 
 Cluster labels are the one step with real judgment in it. A cluster whose best
 panel score is weak is labeled unassigned rather than folded into the nearest
-lineage, which is the honest outcome for the low-count cluster a PBMC run
-usually produces.
+lineage, which is what usually happens to the low-count cluster a PBMC run
+produces.
 
 ## See also
 
