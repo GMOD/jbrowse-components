@@ -60,13 +60,14 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[11] = uniforms.rightIsCanvasEdge
 }
 
-export const INSTANCE_STRIDE_BYTES = 24
-export const INSTANCE_STRIDE_WORDS = 6
+export const INSTANCE_STRIDE_BYTES = 28
+export const INSTANCE_STRIDE_WORDS = 7
 
 // Word indices into a Float32Array view over the instance buffer.
 export const INSTANCE_OFFSET_F32 = {
   y: 2,
   height: 3,
+  strand: 6,
 } as const
 
 // Word indices into a Uint32Array view over the instance buffer.
@@ -82,6 +83,7 @@ export const VERTEX_ATTRIBUTES: readonly VertexAttributeLayout[] = [
   { name: 'a_height', components: 1, type: 'float', offsetBytes: 12, integer: false },
   { name: 'a_color', components: 1, type: 'uint', offsetBytes: 16, integer: true },
   { name: 'a_densityFade', components: 1, type: 'uint', offsetBytes: 20, integer: true },
+  { name: 'a_strand', components: 1, type: 'float', offsetBytes: 24, integer: false },
 ]
 
 export interface InstanceArrays {
@@ -90,6 +92,7 @@ export interface InstanceArrays {
   height: ArrayLike<number>
   color: ArrayLike<number>
   densityFade: ArrayLike<number>
+  strand: ArrayLike<number>
 }
 
 export function packInstances(
@@ -99,7 +102,7 @@ export function packInstances(
 ) {
   const f32 = new Float32Array(buf)
   const u32 = new Uint32Array(buf)
-  const { startEnd, y, height, color, densityFade } = arrays
+  const { startEnd, y, height, color, densityFade, strand } = arrays
   for (let i = 0; i < numInstances; i++) {
     const o = i * INSTANCE_STRIDE_WORDS
     u32[o + 0] = startEnd[i * 2 + 0]!
@@ -108,6 +111,7 @@ export function packInstances(
     f32[o + 3] = height[i]!
     u32[o + 4] = color[i]!
     u32[o + 5] = densityFade[i]!
+    f32[o + 6] = strand[i]!
   }
   return buf
 }
@@ -162,4 +166,13 @@ export function getInstanceDensityFade(u32: Uint32Array, i: number) {
 
 export function setInstanceDensityFade(u32: Uint32Array, i: number, v: number) {
   u32[i * INSTANCE_STRIDE_WORDS + 5] = v
+}
+
+// Instance `i`'s `strand`.
+export function getInstanceStrand(f32: Float32Array, i: number) {
+  return f32[i * INSTANCE_STRIDE_WORDS + 6]!
+}
+
+export function setInstanceStrand(f32: Float32Array, i: number, v: number) {
+  f32[i * INSTANCE_STRIDE_WORDS + 6] = v
 }

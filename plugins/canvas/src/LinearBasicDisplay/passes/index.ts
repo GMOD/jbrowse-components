@@ -80,8 +80,12 @@ export function makeChevronPass(
   })
 }
 
-// Continuation has its own buffer (uploaded alongside rects) carrying rect
-// geometry + strand so the arrows point in the feature's genomic direction.
+// Continuation reads RECT's vertex buffer (drawPass(continuation, region,
+// bufferPassId=rect)) — the strand it points by is a field on RectInstance
+// (rectInstance.slang), shared by both shaders. Same arrangement as chevron over
+// line's buffer, and the reason there is no second per-region pack + upload for
+// a marker that draws on at most two blocks of a frame. As with chevron, nothing
+// here restates rect's layout: sharing the struct is what makes the two agree.
 export const ContinuationPass: PipelineDescriptor = slangPass({
   id: CONTINUATION_PASS,
   mod: continuationShader,
@@ -92,7 +96,6 @@ export const ContinuationPass: PipelineDescriptor = slangPass({
 export const packRects = rectShader.packInstances
 export const packLines = lineShader.packInstances
 export const packArrows = arrowShader.packInstances
-export const packContinuations = continuationShader.packInstances
 
 // All passes bind the same UBO, so any pass's size is the uniform-buffer size.
 export const FEATURE_GLYPH_UNIFORM_BYTE_SIZE = rectShader.UNIFORMS_SIZE_BYTES

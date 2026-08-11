@@ -494,9 +494,9 @@ touching either path, preserve whichever of these the display uses:
   17 passes and 250 lines between the upload and the draw. `LinearBasicDisplay`'s
   5-pass renderer gets the same guarantee more cheaply: one
   `CANVAS_FEATURE_PASSES` list with the two non-obvious cases commented on the
-  entries themselves (chevron draws off line's buffer; continuation is uploaded
-  alongside rects), upload and draw ~60 lines apart and readable together. Don't
-  add registries to a renderer you can check by reading.
+  entries themselves (chevron draws off line's buffer, continuation off rect's),
+  upload and draw ~60 lines apart and readable together. Don't add registries to
+  a renderer you can check by reading.
 - **A per-instance vertex budget is a cap, and the other backend has no such
   cap.** Where one instance draws an unbounded number of marks — canvas's chevron
   pass, whose instance is an intron line and whose marks are the strand chevrons

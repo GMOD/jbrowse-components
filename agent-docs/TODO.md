@@ -53,7 +53,7 @@ before anyone noticed.
 | [Rename RPC results, once, for all six plugins](#rename-rpc-results-once-for-all-six-plugins) | RPC | read REFNAME_NAMESPACES.md; a design pass, not a patch |
 | [The follow runs away on a swapped track](#the-synteny-follow-runs-away-on-a-swapped-assembly-track) | synteny | profile the hung worker; the swap is a lead, not isolated |
 | [Comparative cancel and retry](#give-the-comparative-displays-a-cancel-and-a-retry) | synteny, dotplot | read ADR-054 first; retry is a button, never automatic |
-| [Stop uploading every rect twice](#stop-uploading-every-rect-twice-for-the-continuation-pass) | GPU canvas | unify `ATTR4`, then verify headed on both backends |
+| [Verify the shared rect buffer headed](#verify-the-shared-rectcontinuation-buffer-on-real-hardware) | GPU canvas | code landed; only the headed WebGL2/WebGPU check is owed |
 | [Feet on the interchromosomal ticks](#give-the-interchromosomal-ticks-breakend-feet-too) | alignments | decide what a coalesced tick's direction is, then the shader |
 | [Bound a breakend foot by its region](#bound-a-breakend-foot-by-its-displayed-region) | alignments | bound it by the REGION; the partner bound is wrong and was reverted |
 | [Linearize the pangenome](#linearize-the-pangenome-draw-graph-variation-as-alignment-style-glyphs) | pangenome | read PANGENOME_GRAPHS.md — four findings constrain the layout |
@@ -583,28 +583,25 @@ because `prepare` happens not to read it; the same hazard is why
 `installGlobalFetchAutorun` documents that `rpcProps()` must never return
 fetch-derived state.
 
-### Stop uploading every rect twice for the continuation pass
+### Verify the shared rect/continuation buffer on real hardware
 
-`GpuCanvasFeatureRenderer.uploadRegion` packs `numRects` continuation instances
-alongside `numRects` rect instances, so the densest tracks pay double the rect
-upload and VRAM to draw at most a handful of screen-edge markers. Upload and
-VRAM only — `drawRegion` skips the pass on any block touching neither canvas
-edge, where every instance would self-cull. The two instance structs are already
-byte-identical (`uint2 startEnd; float y; float height; uint color;` plus a
-differing 4-byte `ATTR4`: `uint densityFade` on rect, `float strand` on
-continuation).
+The second per-region pack and upload is gone: `strand` moved into
+`RectInstance` (`rectInstance.slang`, imported by both shaders) and continuation
+draws off rect's buffer via `drawPass(continuation, region, bufferPassId=rect)`,
+the arrangement chevron already had over line's. Per-rect GPU bytes for the pair
+went 48 → 28.
 
-`makeChevronPass` is the worked precedent for the fix: chevron owns no buffer and
-draws off line's via `drawPass(chevron, region, bufferPassId=line)`, wired by
-passing line's `bufferStride`/`bufferAttributes`. Unify `ATTR4` (bit-pack strand
-into the same word, or widen both structs to one shared stride) and continuation
-can do the same off rect.
+What is still owed is the headed check, on a real GPU, against **both** backends
+— a wrong attribute offset shows up as garbled geometry, and no unit test on the
+Canvas2D path can see it. WebGL2 binds attributes through
+`vertexAttribPointer`/`vertexAttribIPointer` (int vs float matters) while WebGPU
+goes through `vertex.buffers`, so agreeing on one proves nothing about the other.
+Zoom a gene past both viewport edges and read the »/« direction against the
+strand arrows on the same glyph.
 
-Not attempted yet because it needs `.slang` edits plus `pnpm gen:shaders`, and a
-wrong attribute offset shows up as garbled geometry that no unit test catches.
-Verify headed on a real GPU against both backends, since WebGL2 binds attributes
-through `vertexAttribPointer`/`vertexAttribIPointer` (int vs float matters) while
-WebGPU goes through `vertex.buffers`.
+`sharedInstanceBuffers.test.ts` pins the two structs against each other, which is
+what makes a silent drift into a test failure; it cannot tell you the HAL wired
+the offsets it was handed.
 
 ### Give the interchromosomal ticks breakend feet too
 

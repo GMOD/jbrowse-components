@@ -12,6 +12,7 @@
 import hpmath;
 import colorPack;
 import featureGlyphUniforms;
+import rectInstance;
 
 
 public static const uint VERTS_PER_INSTANCE = 6u;
@@ -33,16 +34,8 @@ static const float MIN_RECT_WIDTH_PX = 2.0;
 // density gradient; the src-alpha blend does the per-pixel counting.
 static const float MIN_DENSITY_ALPHA = 0.3;
 
-struct RectInstance {
-  uint2 startEnd : ATTR0;
-  float y        : ATTR1;
-  float height   : ATTR2;
-  uint  color    : ATTR3;
-  // 1 = collapsed row-0 box sharing pixels with another collapsed box — only
-  // these fade; 0 = anything else — a gene subfeature rect, a stacked box, or a
-  // collapsed mark with room around it — stays opaque.
-  uint  densityFade : ATTR4;
-};
+// RectInstance lives in rectInstance.slang — the continuation pass draws from
+// this same buffer, so the layout is declared once for both.
 
 // Binding 1 is the uniform across both the standard (storage+uniform) and
 // uniform-only bind group layouts, so this binding annotation works under

@@ -14,7 +14,6 @@ import {
   RectPass,
   makeChevronPass,
   packArrows,
-  packContinuations,
   packLines,
   packRects,
   rectShader,
@@ -41,6 +40,10 @@ export const CANVAS_FEATURE_UNIFORM_BYTE_SIZE = FEATURE_GLYPH_UNIFORM_BYTE_SIZE
 // the packer's loop bound and the instance count handed to the HAL — so the
 // binding is where that stops: `uploadPass` reads the count off the bytes the
 // packer allocated.
+//
+// Rect's buffer serves two passes: the continuation markers draw from this same
+// instance data via drawPass(..., bufferPassId=PASS_RECT), which is why `strand`
+// rides along here even though the rect shader never reads it.
 const RECT_INSTANCES: InstancePass<RegionRenderData> = {
   ...RectPass,
   pack: data =>
@@ -51,21 +54,6 @@ const RECT_INSTANCES: InstancePass<RegionRenderData> = {
         height: data.rectHeights,
         color: data.rectColors,
         densityFade: data.rectDensityFade,
-      },
-      data.rectYs.length,
-    ),
-}
-
-// Its own buffer (rect geometry + strand), from the same rects.
-const CONTINUATION_INSTANCES: InstancePass<RegionRenderData> = {
-  ...ContinuationPass,
-  pack: data =>
-    packContinuations(
-      {
-        startEnd: data.rectPositions,
-        y: data.rectYs,
-        height: data.rectHeights,
-        color: data.rectColors,
         strand: data.rectStrands,
       },
       data.rectYs.length,
@@ -104,21 +92,18 @@ const ARROW_INSTANCES: InstancePass<RegionRenderData> = {
 }
 
 // Every pass with a buffer of its own.
-const UPLOADED_PASSES = [
-  RECT_INSTANCES,
-  LINE_INSTANCES,
-  ARROW_INSTANCES,
-  CONTINUATION_INSTANCES,
-]
+const UPLOADED_PASSES = [RECT_INSTANCES, LINE_INSTANCES, ARROW_INSTANCES]
 
 export const CANVAS_FEATURE_PASSES: PipelineDescriptor[] = [
   ...UPLOADED_PASSES,
-  // Chevron reads line's vertex buffer via drawPass(chevron, region,
-  // bufferPassId=line), so its attribute layout must match line's — and so it
-  // is the one pass registered without being uploaded to. Registration is
-  // therefore the upload list plus this, rather than a second list of the same
-  // names.
+  // The two passes that draw from another pass's vertex buffer — chevron from
+  // line's, continuation from rect's (drawPass(id, region, bufferPassId)) — so
+  // each must declare the layout its lender does, which lineInstance.slang and
+  // rectInstance.slang are what make true. They are the passes registered
+  // without being uploaded to, so registration is the upload list plus these
+  // rather than a second list of the same names.
   makeChevronPass(MAX_VISIBLE_CHEVRONS_PER_LINE),
+  ContinuationPass,
 ]
 
 export class GpuCanvasFeatureRenderer extends GpuPerRegionRenderingBackend<
@@ -167,13 +152,18 @@ export class GpuCanvasFeatureRenderer extends GpuPerRegionRenderingBackend<
     this.hal.drawPass(PASS_RECT, block.displayedRegionIndex)
     this.hal.drawPass(PASS_ARROW, block.displayedRegionIndex)
     // Drawn last so the "feature keeps going" markers sit on top of the glyph
-    // they annotate. The pass runs one instance per rect and every instance
+    // they annotate, and from the rect buffer (bufferPassId) since its instances
+    // ARE the rects. The pass runs one instance per rect and every instance
     // self-culls to OFFSCREEN unless it straddles a canvas edge, so an interior
     // block in a multi-region view, where no instance can qualify, would shade a
     // full pileup's worth of vertices to draw nothing. Skip it there, as the
     // Canvas2D path already skips its equivalent per-rect scan.
     if (leftIsCanvasEdge || rightIsCanvasEdge) {
-      this.hal.drawPass(PASS_CONTINUATION, block.displayedRegionIndex)
+      this.hal.drawPass(
+        PASS_CONTINUATION,
+        block.displayedRegionIndex,
+        PASS_RECT,
+      )
     }
   }
 }

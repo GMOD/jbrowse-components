@@ -1,12 +1,13 @@
 // Off-screen continuation marker: a fast-forward double-arrow (»/«) pinned at
 // the screen edge when a feature glyph runs past the visible viewport, hinting
-// "this feature keeps going". Uses its own instance buffer (uploaded by
-// GpuCanvasFeatureRenderer alongside rects) that carries startEnd/y/height/color
-// from the rect data plus a strand field so the arrows point in the feature's
-// direction — letting users read strand even when both feature ends are
-// off-screen. The strand is genomic, so it goes through `flipX` like the strand
-// arrows' and chevrons' directions do: on a reversed block a + feature runs
-// right-to-left on screen and its markers must point left with it.
+// "this feature keeps going". Draws from the RECT instance buffer — the
+// renderer issues drawPass(continuation, region, bufferPassId=rect), the way
+// chevron reads line's — so it sees each rect's startEnd/y/height/color plus
+// the `strand` field rect carries for it, letting users read strand even when
+// both feature ends are off-screen. The strand is genomic, so it goes through
+// `flipX` like the strand arrows' and chevrons' directions do: on a reversed
+// block a + feature runs right-to-left on screen and its markers must point
+// left with it.
 //
 // The block's viewport is set to its on-screen (scissored) span, so clip x = ±1
 // is the visible left/right edge: a rect whose start maps left of -1 (or end
@@ -34,6 +35,7 @@
 import hpmath;
 import colorPack;
 import featureGlyphUniforms;
+import rectInstance;
 
 
 public static const uint VERTS_PER_INSTANCE = 12u;
@@ -43,13 +45,9 @@ static const float CONT_EDGE_MARGIN_PX = 1.0;
 static const float CONT_TRI_GAP_PX     = 4.0;
 static const float CONT_MIN_OVERHANG_PX = 20.0;
 
-struct ContinuationInstance {
-  uint2 startEnd : ATTR0;
-  float y        : ATTR1;
-  float height   : ATTR2;
-  uint  color    : ATTR3;
-  float strand   : ATTR4; // -1, 0, or +1; 0 falls back to outward arrows
-};
+// RectInstance (rectInstance.slang) is the shared layout — this pass reads
+// rect's buffer, so it must declare the same attributes rect does. `densityFade`
+// is rect's and goes unread here.
 
 [[vk::binding(1, 0)]] ConstantBuffer<FeatureGlyphUniforms> u;
 
@@ -85,7 +83,7 @@ public float strandMatchesEdge(float screenStrand, float edgeSide) {
 }
 
 [shader("vertex")]
-VsOut vs_main(ContinuationInstance inst, uint vid : SV_VertexID) {
+VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
   float sx1 = bpToClipX(inst.startEnd.x, u);
   float sx2 = bpToClipX(inst.startEnd.y, u);
   // Screen-space edges (handles reversed blocks, where bp→clip flips).
