@@ -1361,10 +1361,30 @@ test('an interbase mark measures its collapse span centered, as it paints', () =
   expect(top(insertionAt(102))).toBe(0)
 })
 
-test('a sparse handful of collapsed sub-pixel boxes render opaque, not faded', () => {
-  // The fixture pre-seeds rectDensityFade to 1 to prove layout owns the value: a
-  // few collapsed variants are not the dense-pileup regime, so they must stay
-  // solid (visible individual features), not read as a faint 30% smear.
+test('collapsed marks with clear space around them render opaque, not faded', () => {
+  // The fixture pre-seeds rectDensityFade to 1 to prove layout owns the value:
+  // these five collapsed variants are 100px apart at bpPerPx=1, so no two share
+  // a pixel and nothing is hidden. They must stay solid (visible individual
+  // features), not read as a faint 30% smear.
+  const data = makeFeatureData({
+    features: Array.from({ length: 5 }, (_, i) => ({
+      featureId: `snp${i}`,
+      startBp: 100 + i * 100,
+      endBp: 101 + i * 100,
+      height: 10,
+      densityFade: true,
+    })),
+  })
+  const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 1, false)
+  expect([...out.get(0)!.rectDensityFade].every(v => v === 0)).toBe(true)
+})
+
+test('a handful of collapsed marks on one pixel fade rather than hide each other', () => {
+  // Five variants within 5bp at 26 bp/px: every one collapses to row 0 and the
+  // min-width clamp puts all five marks on the same 2px column. Opaque, that is
+  // one visible mark and four features silently gone — the count-based rule this
+  // replaced called five "sparse" and drew exactly that. Faded, the src-alpha
+  // blend accumulates and the column reads as several stacked variants.
   const data = makeFeatureData({
     features: Array.from({ length: 5 }, (_, i) => ({
       featureId: `snp${i}`,
@@ -1375,7 +1395,28 @@ test('a sparse handful of collapsed sub-pixel boxes render opaque, not faded', (
     })),
   })
   const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 26, false)
-  expect([...out.get(0)!.rectDensityFade].every(v => v === 0)).toBe(true)
+  expect([...out.get(0)!.rectDensityFade].every(v => v === 1)).toBe(true)
+})
+
+test('one mark of a pair fading does not fade an isolated neighbour', () => {
+  // The decision is per mark, not per region: `pair*` share a pixel and fade,
+  // `lone` sits 500px clear of them and stays solid. A region-wide verdict (the
+  // old count) could only ever answer this one way for all three.
+  const data = makeFeatureData({
+    features: [
+      { featureId: 'pairA', startBp: 100, endBp: 101, height: 10 },
+      { featureId: 'pairB', startBp: 101, endBp: 102, height: 10 },
+      { featureId: 'lone', startBp: 600, endBp: 601, height: 10 },
+    ].map(f => ({ ...f, densityFade: true })),
+  })
+  const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 1, false)
+  const items = out.get(0)!.flatbushItems
+  const fadeOf = (id: string) =>
+    out.get(0)!.rectDensityFade[items.findIndex(f => f.featureId === id)]
+  expect(items.every(it => it.topPx === 0)).toBe(true)
+  expect(fadeOf('pairA')).toBe(1)
+  expect(fadeOf('pairB')).toBe(1)
+  expect(fadeOf('lone')).toBe(0)
 })
 
 test('a dense pileup of thousands of collapsed marks fades', () => {
@@ -1407,7 +1448,9 @@ test('a collapsed mark clears a solid neighbour at exactly the min-width clamp',
   // it was held out of the collapse and drew opaque in the middle of a pileup.
   //
   // bpPerPx=1, so bp are px. `probe` is a 1bp mark ending 3px short of the wide
-  // gene: inside a 4px clamp, clear of a 2px one.
+  // gene: inside a 4px clamp, clear of a 2px one. Read off topPx rather than the
+  // fade flag — the marks here are 10px apart, so none of them pile up and none
+  // of them fade; collapsing and fading are different questions.
   const N = 1200
   const marks = Array.from({ length: N }, (_, i) => ({
     featureId: `snp${i}`,
@@ -1438,13 +1481,14 @@ test('a collapsed mark clears a solid neighbour at exactly the min-width clamp',
     ],
   })
   const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 1, false)
-  const fade = out.get(0)!.rectDensityFade
-  // enough collapsed marks to be in the fade regime, so a mark's fade flag is
-  // exactly "did it collapse"
-  expect([...fade.subarray(0, N)].every(v => v === 1)).toBe(true)
-  expect(fade[N]).toBe(1)
-  // the solid box itself never collapses
-  expect(fade[N + 1]).toBe(0)
+  const items = out.get(0)!.flatbushItems
+  expect(items.slice(0, N).every(it => it.topPx === 0)).toBe(true)
+  // the probe clears the gene by 2px, so it collapses like the rest
+  expect(items[N]!.topPx).toBe(0)
+  // the solid box holds a real row rather than collapsing (it is at row 0 too,
+  // which is exactly why a mark overlapping it may not pin there)
+  expect(items[N + 1]!.topPx).toBe(0)
+  expect([...out.get(0)!.rectDensityFade].every(v => v === 0)).toBe(true)
 })
 
 test('thousands of sub-pixel variants collapse onto one row, not thousands', () => {

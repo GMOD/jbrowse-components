@@ -1168,11 +1168,10 @@ function packPreparedRef(
   })
   const layoutMap = new Map<string, number>()
   const layoutHeights = new Map<string, number>()
-  // Features pinned to row 0 by the density-collapse path below. They fade only
-  // when there are enough of them to be a genuine pileup (see DENSITY_FADE_MIN
-  // and the return): a handful of collapsed marks render opaque, thousands fade
-  // to convey density.
-  const collapsedFeatureIds = new Set<string>()
+  // Every feature pinned to row 0 by the density-collapse path below, with the
+  // px span it paints — the input to `pileupFadeIds`, which decides which of
+  // them fade.
+  const collapsed: CollapsedMark[] = []
 
   // Insertion order = priority for the low rows in greedy first-fit. Features
   // that sat near the top of the previous layout are inserted first so they
@@ -1228,7 +1227,7 @@ function packPreparedRef(
       !intersectsMerged(boxStartPx, boxEndPx, solidSpansPx)
     if (collapses) {
       layoutMap.set(id, 0)
-      collapsedFeatureIds.add(id)
+      collapsed.push({ id, startPx: boxStartPx, endPx: boxEndPx })
     } else {
       const { left: arrowLeft, right: arrowRight } = strandArrowPadding(geom)
       const leftPx = ext.layoutStartBp / bpPerPx - arrowLeft
@@ -1245,27 +1244,69 @@ function packPreparedRef(
     layoutHeights.set(id, ext.height)
   }
 
-  // Fade only in the dense-pileup regime: thousands of collapsed sub-pixel marks
-  // that stack onto row 0 read as density when drawn semi-transparent, but a
-  // sparse handful should stay solid so individual features are visible. Below
-  // the threshold nothing fades (empty set); at or above it every collapsed mark
-  // fades. One count, no per-mark decision.
   return {
     layoutMap,
     layoutHeights,
     droppedLabelIds,
-    densityFadeIds:
-      collapsedFeatureIds.size >= DENSITY_FADE_MIN
-        ? collapsedFeatureIds
-        : EMPTY_ID_SET,
+    densityFadeIds: pileupFadeIds(collapsed),
   }
 }
 
-// Collapsed-mark count at/above which a region enters the density-fade regime.
-// ~1 mark per pixel of a typical viewport — enough overlap that the pileup reads
-// as density rather than resolvable individual features.
-const DENSITY_FADE_MIN = 1000
-const EMPTY_ID_SET: ReadonlySet<string> = new Set()
+// A mark the density collapse pinned to row 0, and the px span it paints there.
+interface CollapsedMark {
+  id: string
+  startPx: number
+  endPx: number
+}
+
+// Which collapsed marks share pixels with another collapsed mark, i.e. exactly
+// the ones the fade exists for: on row 0 nothing stacks, so two marks over the
+// same pixels are one drawn on top of the other, and at full opacity the one
+// underneath is not merely hard to read but *gone*, with no cue that it is
+// there. Drawn at MIN_DENSITY_ALPHA instead they accumulate through the standard
+// src-alpha blend, so a pixel's opacity tracks how many marks landed on it (see
+// rect.slang) — a pair reads as a pair, a pileup as a density gradient.
+//
+// This replaced a count: fade every collapsed mark once a ref-group held >= 1000
+// of them, else none. Three things were wrong with measuring it that way, and
+// they are all the same mistake — occlusion is *local* and the count was not.
+// Two marks on one pixel occlude each other whether or not 998 more exist
+// elsewhere. The count was per ref-group, so one view could draw a track at two
+// different opacities, chr1 faded and chr21 not. And it counted the fetched span
+// — which buffers half a viewport either side — against a threshold justified as
+// "~1 mark per pixel of a typical viewport", a ratio that also moves with the
+// window width.
+//
+// A lone mark with clear space around it still renders opaque, which is what the
+// count was protecting and is preserved here exactly.
+//
+// Sweep in start order: a mark overlaps something earlier iff it starts before
+// the running max end. Only ONE earlier mark can still be unflagged at that
+// point — an unflagged mark is by definition disjoint from everything before it,
+// so it owns the running max end — hence the single `pending` slot rather than a
+// set of open intervals.
+function pileupFadeIds(collapsed: CollapsedMark[]): ReadonlySet<string> {
+  const fade = new Set<string>()
+  const byStart = [...collapsed].sort((a, b) => a.startPx - b.startPx)
+  let maxEndPx = Number.NEGATIVE_INFINITY
+  let pending: string | undefined
+  for (const mark of byStart) {
+    if (mark.startPx < maxEndPx) {
+      fade.add(mark.id)
+      if (pending !== undefined) {
+        fade.add(pending)
+        pending = undefined
+      }
+    }
+    if (mark.endPx > maxEndPx) {
+      maxEndPx = mark.endPx
+      // `pending` must track whoever owns maxEndPx, and only while unflagged:
+      // an already-faded owner has nothing left to flag later.
+      pending = fade.has(mark.id) ? undefined : mark.id
+    }
+  }
+  return fade
+}
 
 // Mutates the cloned region in place. Raw data has topPx=0 everywhere, so we
 // simply add the per-feature offset rather than computing a delta from the
