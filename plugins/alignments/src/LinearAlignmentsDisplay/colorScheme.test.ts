@@ -2,7 +2,6 @@ import {
   CS_FIRST_OF_PAIR,
   CS_INSERT_SIZE,
   CS_IS_AND_ORIENT,
-  CS_IS_GRADIENT,
   CS_MAPQ,
   CS_MODIFICATIONS,
   CS_NORMAL,
@@ -23,7 +22,6 @@ describe('ColorScheme', () => {
     expect(ColorScheme.insertSizeAndOrientation).toBe(6)
     expect(ColorScheme.modifications).toBe(7)
     expect(ColorScheme.tag).toBe(8)
-    expect(ColorScheme.insertSizeGradient).toBe(9)
   })
 
   test('all indices are unique', () => {
@@ -46,7 +44,6 @@ describe('ColorScheme', () => {
       insertSizeAndOrientation: CS_IS_AND_ORIENT,
       modifications: CS_MODIFICATIONS,
       tag: CS_TAG,
-      insertSizeGradient: CS_IS_GRADIENT,
     })
   })
 })

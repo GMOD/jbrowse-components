@@ -29,8 +29,6 @@ export const CS_MODIFICATIONS = 7
 
 export const CS_TAG = 8
 
-export const CS_IS_GRADIENT = 9
-
 export const RC_SUPPLEMENTARY = 1
 
 export const RC_SPLIT_INVERSION = 2
@@ -82,8 +80,6 @@ export const CHEVRON_PX = 8
 export const CHEVRON_DIRLESS_MIN_WIDTH_PX = 30
 
 export const PAIR_MIN_SPAN_PX = 10
-
-export const IS_GRADIENT_SPAN_FRAC = 0.5
 
 export const READ_OUTLINE_PX = 1
 

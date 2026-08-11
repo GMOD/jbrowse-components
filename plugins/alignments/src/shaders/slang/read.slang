@@ -2,8 +2,8 @@
 // segment. Verts 0..5 draw the body rectangle; 6..8 draw a chevron tip
 // clipped to the segment's leading (fwd) or trailing (rev) edge.
 //! targets: wgsl, glsl
-//! js-export: insertGradientT, showChevron
-//! export-consts: READ_CATEGORY_SLOTS, CS_NORMAL, CS_STRAND, CS_MAPQ, CS_INSERT_SIZE, CS_FIRST_OF_PAIR, CS_PAIR_ORIENT, CS_IS_AND_ORIENT, CS_MODIFICATIONS, CS_TAG, CS_IS_GRADIENT, RC_SUPPLEMENTARY, RC_SPLIT_INVERSION, RC_SPLIT_DELETION, RC_UNMAPPED_MATE, RC_INTERCHROM, RC_FWD_STRAND, RC_REV_STRAND, RC_NO_STRAND, RC_NON_SPLIT, RC_PAIR_LR, RC_PAIR_RL, RC_PAIR_RR, RC_PAIR_LL, RC_LONG_INSERT, RC_SHORT_INSERT, RC_NORMAL_INSERT, RC_PLAIN, RC_MAPQ, RC_TAG, RC_NO_TAG_VALUE, RC_MOD_FWD, RC_MOD_REV, RC_MAPQ_UNAVAILABLE, CHEVRON_PX, CHEVRON_DIRLESS_MIN_WIDTH_PX, PAIR_MIN_SPAN_PX, IS_GRADIENT_SPAN_FRAC, READ_OUTLINE_PX, READ_OUTLINE_SHADE, READ_OUTLINE_MIN_WIDTH_PX, READ_OUTLINE_MIN_HEIGHT_PX
+//! js-export: showChevron
+//! export-consts: READ_CATEGORY_SLOTS, CS_NORMAL, CS_STRAND, CS_MAPQ, CS_INSERT_SIZE, CS_FIRST_OF_PAIR, CS_PAIR_ORIENT, CS_IS_AND_ORIENT, CS_MODIFICATIONS, CS_TAG, RC_SUPPLEMENTARY, RC_SPLIT_INVERSION, RC_SPLIT_DELETION, RC_UNMAPPED_MATE, RC_INTERCHROM, RC_FWD_STRAND, RC_REV_STRAND, RC_NO_STRAND, RC_NON_SPLIT, RC_PAIR_LR, RC_PAIR_RL, RC_PAIR_RR, RC_PAIR_LL, RC_LONG_INSERT, RC_SHORT_INSERT, RC_NORMAL_INSERT, RC_PLAIN, RC_MAPQ, RC_TAG, RC_NO_TAG_VALUE, RC_MOD_FWD, RC_MOD_REV, RC_MAPQ_UNAVAILABLE, CHEVRON_PX, CHEVRON_DIRLESS_MIN_WIDTH_PX, PAIR_MIN_SPAN_PX, READ_OUTLINE_PX, READ_OUTLINE_SHADE, READ_OUTLINE_MIN_WIDTH_PX, READ_OUTLINE_MIN_HEIGHT_PX
 
 import alignmentsUniforms;
 import colorPack;
@@ -24,7 +24,6 @@ static const int CS_PAIR_ORIENT   = 5;
 static const int CS_IS_AND_ORIENT = 6;
 static const int CS_MODIFICATIONS = 7;
 static const int CS_TAG           = 8;
-static const int CS_IS_GRADIENT   = 9;
 
 // Read color categories. SINGLE SOURCE OF TRUTH for the category vocabulary:
 // `export-consts` emits these into read.generated.ts and the TS
@@ -88,12 +87,6 @@ static const float CHEVRON_DIRLESS_MIN_WIDTH_PX = 30.0;
 // below this many CSS px — when zoomed out the mates sit on top of each other and
 // the arrows are just clutter. Applies regardless of color scheme.
 static const float PAIR_MIN_SPAN_PX = 10.0;
-
-// insertSizeGradient ramp width, as a fraction of the 6σ stats band (upper−lower)
-// past the threshold. 0.5 → full color ~3σ beyond the threshold (center±6σ), so
-// a moderate outlier already reads as clearly colored instead of near-neutral.
-// Exported so colorUtils.ts (Canvas2D / SVG) shares the exact ramp.
-static const float IS_GRADIENT_SPAN_FRAC = 0.5;
 
 // The read outline, which is not a stroke: the outermost READ_OUTLINE_PX of the
 // glyph is repainted at READ_OUTLINE_SHADE of its own fill. No second colour, no
@@ -189,33 +182,6 @@ float3 categoryPaletteColor(uint cat, Uniforms u) {
   return u.readCategoryColor[min(cat, READ_CATEGORY_SLOTS - 1u)].xyz;
 }
 
-// How far along the gradient an outlier insert size sits: 0 at the band edge,
-// 1 once it is IS_GRADIENT_SPAN_FRAC of the 6s band past it. The thresholds
-// themselves live on the CPU (classifyInsertSize); by the time this runs the
-// category has already decided which end we are ramping toward.
-//
-// This is the whole of what the Canvas2D path needs from the gradient — the
-// lerp below is a color-space conversion each backend does its own way — so it
-// is `//! js-export`ed and gradientInsertColor in colorUtils.ts calls it
-// instead of re-deriving the ramp. Returning 0 for a degenerate band paints the
-// same neutral color the early return used to: a lerp at t=0 IS the base.
-float insertGradientT(float is, float lower, float upper, bool isLong) {
-  float span = (upper - lower) * IS_GRADIENT_SPAN_FRAC;
-  if (span <= 0.0) { return 0.0; }
-  float d = isLong ? (is - upper) : (lower - is);
-  return clamp(d / span, 0.0, 1.0);
-}
-
-// Insert-size bands lerp toward their endpoint under the gradient scheme.
-float3 insertSizeGradientColor(uint cat, float is, Uniforms u) {
-  bool isLong = cat == RC_LONG_INSERT;
-  float3 base = unpackRGBA(u.colorPairLR).xyz;
-  float3 endpoint =
-    unpackRGBA(isLong ? u.colorLongInsert : u.colorShortInsert).xyz;
-  return lerp(base, endpoint,
-              insertGradientT(is, u.insertLower, u.insertUpper, isLong));
-}
-
 // --- direction markers ---
 
 // Whether a read draws its strand arrowhead.
@@ -253,10 +219,6 @@ float3 getReadColor(Instance inst, Uniforms u) {
     return inst.tagColor != 0u
       ? unpackRGBA(inst.tagColor).xyz
       : unpackRGBA(u.colorPairLR).xyz;
-  }
-  if (u.colorScheme == CS_IS_GRADIENT
-      && (cat == RC_LONG_INSERT || cat == RC_SHORT_INSERT)) {
-    return insertSizeGradientColor(cat, inst.insertSize, u);
   }
   return categoryPaletteColor(cat, u);
 }

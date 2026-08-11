@@ -350,40 +350,14 @@ function bucketItems(
   palette: ColorPalette,
   overrides: Partial<Record<SwatchCategory, string>>,
   swatchOverrides: Partial<Record<SwatchCategory, string>> = {},
-  gradients: Partial<Record<SwatchCategory, string[]>> = {},
 ): LegendItem[] {
   return CATEGORY_ORDER.filter(category => presentCategories.has(category)).map(
     category => ({
       color:
         swatchOverrides[category] ?? categorySwatchColor(category, palette),
-      gradient: gradients[category],
       label: overrides[category] ?? CATEGORY_LEGEND[category],
     }),
   )
-}
-
-// Under `insertSizeGradient` the two outlier buckets are not flat colors: each
-// read lerps from the neutral toward its endpoint by how far past the threshold
-// it sits (gradientInsertColor / read.slang's insertSizeGradientColor), so most
-// reads paint something between the two. A flat endpoint swatch keyed a color
-// only the most extreme reads actually get — the one place the "legend can never
-// list a color the renderer didn't paint" rule was loose. Key the ramp itself.
-//
-// Only the two outlier buckets ramp. `normalInsert` IS flat (it is the neutral
-// the ramps start from), and every other scheme paints these two flat, so this
-// is keyed off the scheme rather than off the category.
-function insertGradients(
-  colorBy: ColorBy | undefined,
-  palette: ColorPalette,
-): Partial<Record<SwatchCategory, string[]>> {
-  if (colorBy?.type !== 'insertSizeGradient') {
-    return {}
-  }
-  const neutral = rgb255(palette.colorPairLR)
-  return {
-    longInsert: [neutral, rgb255(palette.colorLongInsert)],
-    shortInsert: [neutral, rgb255(palette.colorShortInsert)],
-  }
 }
 
 // Short insert is the one bucket whose arc swatch is not the read swatch: a 1px
@@ -613,12 +587,6 @@ export function getReadDisplayLegendItems({
       colorTagMap,
       presentTagValues,
     ),
-    ...bucketItems(
-      categories,
-      palette,
-      categoryLabelOverrides(colorBy),
-      {},
-      insertGradients(colorBy, palette),
-    ),
+    ...bucketItems(categories, palette, categoryLabelOverrides(colorBy)),
   ]
 }

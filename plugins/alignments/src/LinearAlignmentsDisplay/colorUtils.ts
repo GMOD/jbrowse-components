@@ -29,7 +29,6 @@ import {
   RC_TAG,
   RC_UNMAPPED_MATE,
 } from '../shaders/slang/read.iface.generated.ts'
-import { insertGradientT } from '../shaders/slang/read.js.generated.ts'
 import { COLOR_SCHEMES } from '../shared/colorSchemes.ts'
 import { classifyInsertSize } from '../shared/insertSizeStats.ts'
 import {
@@ -41,18 +40,11 @@ import {
 import { MAPQ_UNAVAILABLE, firstOfPairStrand } from '../shared/util.ts'
 import { ColorScheme } from './constants.ts'
 
-import type { ColorPalette, RGBColor } from '../shaders/colors.ts'
+import type { ColorPalette } from '../shaders/colors.ts'
 import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 
 // Re-exports from core — kept for backwards-compat with call sites.
 export const rgb255 = normalizedRgbToCss
-
-function lerpRgb255(a: RGBColor, b: RGBColor, t: number) {
-  const r = Math.round((a[0] + (b[0] - a[0]) * t) * 255)
-  const g = Math.round((a[1] + (b[1] - a[1]) * t) * 255)
-  const bl = Math.round((a[2] + (b[2] - a[2]) * t) * 255)
-  return `rgb(${r},${g},${bl})`
-}
 
 interface ReadColorData {
   readStrands: Int8Array
@@ -368,10 +360,7 @@ export function readColorCategory(
     case ColorScheme.mappingQuality:
       return data.readMapqs[i] === MAPQ_UNAVAILABLE ? 'mapqUnavailable' : 'mapq'
 
-    // insertSizeGradient lerps its fill but buckets identically; categoryColor
-    // applies the gradient when the scheme calls for it.
     case ColorScheme.insertSize:
-    case ColorScheme.insertSizeGradient:
       return insertSizeCategory(data.readInsertSizes[i]!, data.insertSizeStats)
 
     // Fragment strand inferred from the first mate, through the shared rule
@@ -431,30 +420,6 @@ export function readColorCategory(
   }
 }
 
-// Gradient fill for the insert-size-gradient scheme: lerp from the neutral
-// (normal) color toward the long/short endpoint by outlier severity. The ramp
-// position is the shader's own — `insertGradientT` is generated from read.slang
-// (adr-051), where it reaches full color IS_GRADIENT_SPAN_FRAC of the 6σ band
-// past the threshold (≈3σ, i.e. center±6σ) so a moderate outlier already reads
-// as clearly colored rather than near-neutral. A degenerate band gives t=0,
-// which lerps to the neutral color the explicit guard here used to return.
-// `stats` is required, not optional: this is only reachable for the longInsert /
-// shortInsert categories, and classifyInsertSize can only produce those from a
-// defined band.
-function gradientInsertColor(
-  cat: 'longInsert' | 'shortInsert',
-  insertSize: number,
-  stats: InsertSizeBand,
-  palette: ColorPalette,
-) {
-  const isLong = cat === 'longInsert'
-  return lerpRgb255(
-    palette.colorPairLR,
-    isLong ? palette.colorLongInsert : palette.colorShortInsert,
-    insertGradientT(insertSize, stats.lower, stats.upper, isLong),
-  )
-}
-
 // The one place a category becomes a CSS color. The dynamic categories
 // (computed per-read or per-scheme) are handled explicitly; everything else is
 // a flat swatch resolved through the same `swatchPaletteKeys` table the legend
@@ -486,19 +451,6 @@ function categoryColor(
       const packed = data.readTagColors[i]
       return packed ? abgrToCssRgba(packed) : rgb255(palette.colorPairLR)
     }
-    // insertSizeGradient lerps the two insert-size bands; under any other scheme
-    // they (and 'normalInsert') fall through to the flat swatch lookup.
-    case 'longInsert':
-    case 'shortInsert':
-      return colorScheme === ColorScheme.insertSizeGradient &&
-        data.insertSizeStats
-        ? gradientInsertColor(
-            cat,
-            data.readInsertSizes[i]!,
-            data.insertSizeStats,
-            palette,
-          )
-        : categorySwatchColor(cat, palette)
     default:
       return categorySwatchColor(cat, palette)
   }

@@ -2,7 +2,6 @@ import {
   CS_FIRST_OF_PAIR,
   CS_INSERT_SIZE,
   CS_IS_AND_ORIENT,
-  CS_IS_GRADIENT,
   CS_MAPQ,
   CS_MODIFICATIONS,
   CS_NORMAL,
@@ -43,7 +42,6 @@ export const ColorScheme: Record<ShaderScheme, number> = {
   insertSizeAndOrientation: CS_IS_AND_ORIENT,
   modifications: CS_MODIFICATIONS,
   tag: CS_TAG,
-  insertSizeGradient: CS_IS_GRADIENT,
 }
 
 export const ALIGNMENTS_FUDGE_FACTOR = 0.8

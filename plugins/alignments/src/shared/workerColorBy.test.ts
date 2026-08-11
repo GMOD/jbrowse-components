@@ -81,7 +81,6 @@ const sample: Record<ColorSchemeType, ColorBy> = {
   perBaseQuality: { type: 'perBaseQuality' },
   perBaseLetter: { type: 'perBaseLetter' },
   insertSize: { type: 'insertSize' },
-  insertSizeGradient: { type: 'insertSizeGradient' },
   firstOfPairStrand: { type: 'firstOfPairStrand' },
   pairOrientation: { type: 'pairOrientation' },
   insertSizeAndOrientation: { type: 'insertSizeAndOrientation' },

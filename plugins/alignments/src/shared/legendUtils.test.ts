@@ -58,49 +58,6 @@ describe('getReadDisplayLegendItems', () => {
     ])
   })
 
-  // Under the gradient scheme each outlier read lerps from the neutral toward
-  // its endpoint by severity, so a flat endpoint swatch keys a color only the
-  // most extreme reads get. The two outlier buckets key the ramp; `normalInsert`
-  // is genuinely flat (it IS the neutral the ramps start from), and the flat
-  // insertSize scheme is untouched.
-  describe('insertSizeGradient keys ramps, not endpoints', () => {
-    // distinct so a ramp built from the wrong end is a different string
-    const rampPalette = makeTestPalette({
-      colorPairLR: [1, 1, 1],
-      colorLongInsert: [1, 0, 0],
-      colorShortInsert: [0, 0, 1],
-    })
-    const neutral = 'rgb(255,255,255)'
-    const gradients = (type: ColorSchemeType, cats: ReadColorCategory[]) =>
-      getReadDisplayLegendItems({
-        colorBy: { type },
-        presentCategories: new Set(cats),
-        palette: rampPalette,
-      }).map(i => [i.label, i.gradient] as const)
-
-    test('the outlier buckets carry neutral -> endpoint ramps', () => {
-      expect(
-        gradients('insertSizeGradient', [
-          'normalInsert',
-          'longInsert',
-          'shortInsert',
-        ]),
-      ).toEqual([
-        // the neutral IS the flat start of both ramps, so it keeps a flat swatch
-        ['Normal', undefined],
-        ['Long insert', [neutral, 'rgb(255,0,0)']],
-        ['Short insert', [neutral, 'rgb(0,0,255)']],
-      ])
-    })
-
-    test('the flat insertSize scheme keeps flat swatches', () => {
-      expect(gradients('insertSize', ['longInsert', 'shortInsert'])).toEqual([
-        ['Long insert', undefined],
-        ['Short insert', undefined],
-      ])
-    })
-  })
-
   test('omits "Supplementary/split" when no supplementary reads are present', () => {
     expect(labels('insertSize', ['normalInsert'])).not.toContain(
       'Supplementary/split',

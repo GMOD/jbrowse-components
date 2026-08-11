@@ -90,17 +90,6 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
     mateAware: true,
     pairedOnly: true,
   },
-  insertSizeGradient: {
-    type: 'insertSizeGradient',
-    shaderScheme: 'insertSizeGradient',
-    menu: {
-      kind: 'radio',
-      label: 'Insert size (gradient)',
-      group: 'pairedEnd',
-    },
-    mateAware: true,
-    pairedOnly: true,
-  },
   firstOfPairStrand: {
     type: 'firstOfPairStrand',
     shaderScheme: 'firstOfPairStrand',
@@ -209,10 +198,12 @@ export function workerColorBy(colorBy: ColorBy): ColorBy | undefined {
 
 // Upgrade a persisted colorBy to canonical form: the retired standalone
 // `methylation` scheme becomes `modifications` with `fillUnmarked` set (its
-// cytosine context preserved), and the retired `stranded` alias becomes the
-// `firstOfPairStrand` it always meant. Applied in the model's `colorBy` getter
-// so no live code — extraction, menu, legend, shader dispatch — ever sees a
-// removed type. Idempotent on already-canonical values.
+// cytosine context preserved), the retired `stranded` alias becomes the
+// `firstOfPairStrand` it always meant, and the retired `insertSizeGradient`
+// becomes the `insertSize` it shared every threshold and bucket with. Applied in
+// the model's `colorBy` getter so no live code — extraction, menu, legend,
+// shader dispatch — ever sees a removed type. Idempotent on already-canonical
+// values.
 export function normalizeColorBy(colorBy: PersistedColorBy): ColorBy {
   return colorBy.type === 'methylation'
     ? {
@@ -221,7 +212,9 @@ export function normalizeColorBy(colorBy: PersistedColorBy): ColorBy {
       }
     : colorBy.type === 'stranded'
       ? { type: 'firstOfPairStrand' }
-      : colorBy
+      : colorBy.type === 'insertSizeGradient'
+        ? { type: 'insertSize' }
+        : colorBy
 }
 
 // widened for the `includes` check below, which takes an arbitrary string

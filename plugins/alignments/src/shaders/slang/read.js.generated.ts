@@ -4,18 +4,6 @@
 // Scalar twins of read.slang, transliterated from slangc's WGSL so
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
-function _clamp(x: number, lo: number, hi: number) {
-  return _min(_max(x, lo), hi)
-}
-
-function _max(a: number, b: number) {
-  return a > b ? a : b
-}
-
-function _min(a: number, b: number) {
-  return a < b ? a : b
-}
-
 export function showChevron(chainMode: boolean, pxPerBp: number, featHeight: number, colorScheme: number, flags: number, interchrom: number, insertSize: number, featWPx: number): boolean {
   let baseShow: boolean
   if (chainMode) {
@@ -60,18 +48,4 @@ export function showChevron(chainMode: boolean, pxPerBp: number, featHeight: num
     baseShow = false
   }
   return baseShow
-}
-
-export function insertGradientT(is: number, lower: number, upper: number, isLong: boolean): number {
-  let span = ((upper - lower) * 0.5)
-  if ((span <= 0.0)) {
-    return 0.0
-  }
-  let d: number
-  if (isLong) {
-    d = (is - upper)
-  } else {
-    d = (lower - is)
-  }
-  return _clamp((d / span), 0.0, 1.0)
 }

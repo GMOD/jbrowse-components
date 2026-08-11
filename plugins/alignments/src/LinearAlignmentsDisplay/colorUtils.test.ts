@@ -441,32 +441,6 @@ describe('getReadColor maps each category to its palette color', () => {
     ).toBe(rgb255(palette.colorLongInsert))
   })
 
-  test('insertSizeGradient lerps rather than painting the flat endpoint', () => {
-    const color = getReadColor(
-      0,
-      makeData({ insertSize: 700 }, stats),
-      ColorScheme.insertSizeGradient,
-      palette,
-    )
-    // a partial lerp toward the long-insert endpoint, not the flat endpoint
-    expect(color).not.toBe(rgb255(palette.colorLongInsert))
-    expect(color).not.toBe(rgb255(palette.colorPairLR))
-  })
-
-  test('insertSizeGradient saturates at IS_GRADIENT_SPAN_FRAC of the band', () => {
-    // band span = upper-lower = 500; ramp width = 500 * 0.5 = 250, so a read at
-    // upper + 250 = 850 reaches the full long-insert endpoint (the old full-band
-    // ramp would still be mid-lerp here).
-    expect(
-      getReadColor(
-        0,
-        makeData({ insertSize: 850 }, stats),
-        ColorScheme.insertSizeGradient,
-        palette,
-      ),
-    ).toBe(rgb255(palette.colorLongInsert))
-  })
-
   test('mapping quality uses an hsl ramp keyed on mapq', () => {
     expect(
       getReadColor(

@@ -88,7 +88,6 @@ export type ShaderScheme =
   | 'strand'
   | 'mappingQuality'
   | 'insertSize'
-  | 'insertSizeGradient'
   | 'firstOfPairStrand'
   | 'pairOrientation'
   | 'insertSizeAndOrientation'
@@ -105,7 +104,6 @@ export type ColorSchemeType =
   | 'strand'
   | 'mappingQuality'
   | 'insertSize'
-  | 'insertSizeGradient'
   | 'firstOfPairStrand'
   | 'pairOrientation'
   | 'insertSizeAndOrientation'
@@ -123,11 +121,16 @@ export interface ColorBy {
 }
 
 // On-disk shape of a persisted `colorBy`: the live ColorBy plus the retired
-// scheme names — `methylation` (now modifications+fillUnmarked) and `stranded`
-// (an alias of firstOfPairStrand that no UI ever wrote). `normalizeColorBy`
-// (colorSchemes.ts) upgrades both at the read boundary, so no live code — menu,
-// legend, extraction, shader dispatch — ever sees them.
-export const LEGACY_COLOR_SCHEME_TYPES = ['methylation', 'stranded'] as const
+// scheme names — `methylation` (now modifications+fillUnmarked), `stranded` (an
+// alias of firstOfPairStrand that no UI ever wrote) and `insertSizeGradient`
+// (now plain insertSize). `normalizeColorBy` (colorSchemes.ts) upgrades all
+// three at the read boundary, so no live code — menu, legend, extraction,
+// shader dispatch — ever sees them.
+export const LEGACY_COLOR_SCHEME_TYPES = [
+  'methylation',
+  'stranded',
+  'insertSizeGradient',
+] as const
 export interface LegacyMethylationColorBy {
   type: 'methylation'
   modifications?: ModificationColorBy
@@ -135,10 +138,21 @@ export interface LegacyMethylationColorBy {
 export interface LegacyStrandedColorBy {
   type: 'stranded'
 }
+// Retired because it made the distinction it existed to draw *harder* to see.
+// It bucketed exactly as `insertSize` and only differed in fill: an outlier
+// lerped from the neutral toward its endpoint by severity. Since the long and
+// short endpoints were a single hue apart (#ff0000 and #ffc0cb), two
+// half-ramped reads on OPPOSITE sides of the band both came out faintly-tinted
+// grey — closer to each other than the endpoints already were, and closest
+// exactly where telling a deletion signature from an insertion one matters.
+export interface LegacyInsertSizeGradientColorBy {
+  type: 'insertSizeGradient'
+}
 export type PersistedColorBy =
   | ColorBy
   | LegacyMethylationColorBy
   | LegacyStrandedColorBy
+  | LegacyInsertSizeGradientColorBy
 
 // True when modification coloring should fill in unmarked canonical bases (the
 // implicit-unmethylated cytosine walk) — the modifications+fillUnmarked sub-mode

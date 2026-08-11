@@ -26,13 +26,27 @@ describe('normalizeColorBy', () => {
     })
   })
 
+  // Retired because it made the distinction it existed to draw harder to see: it
+  // bucketed exactly as insertSize and only lerped the fill, and the two
+  // endpoints were one hue apart, so two half-ramped reads on OPPOSITE sides of
+  // the band both came out faintly-tinted grey.
+  test('the retired insertSizeGradient becomes plain insertSize', () => {
+    expect(normalizeColorBy({ type: 'insertSizeGradient' })).toEqual({
+      type: 'insertSize',
+    })
+  })
+
   test('canonical values pass through unchanged', () => {
     const colorBy = { type: 'tag', tag: 'HP' } as const
     expect(normalizeColorBy(colorBy)).toBe(colorBy)
   })
 
   test('every normalized type names a registered scheme', () => {
-    for (const legacy of ['methylation', 'stranded'] as const) {
+    for (const legacy of [
+      'methylation',
+      'stranded',
+      'insertSizeGradient',
+    ] as const) {
       expect(Object.keys(COLOR_SCHEMES)).toContain(
         normalizeColorBy({ type: legacy }).type,
       )
@@ -45,6 +59,7 @@ describe('isRegisteredColorScheme', () => {
     expect(isRegisteredColorScheme({ type: 'insertSize' })).toBe(true)
     expect(isRegisteredColorScheme({ type: 'methylation' })).toBe(true)
     expect(isRegisteredColorScheme({ type: 'stranded' })).toBe(true)
+    expect(isRegisteredColorScheme({ type: 'insertSizeGradient' })).toBe(true)
   })
 
   test('rejects anything the lookups would throw on', () => {
