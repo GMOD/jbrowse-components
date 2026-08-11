@@ -30,6 +30,23 @@ test('stops loading when the adapter resolves to undefined', async () => {
   await waitForElementToBeRemoved(() => queryByText('Loading file data'))
 })
 
+// BaseFeatureDataAdapter.getHeader returns null unless an adapter overrides it,
+// and CoreGetInfo returns null for anything that isn't a feature adapter — so
+// most tracks got a FILE INFO heading with blank space under it
+test.each([[null], [undefined], [{}], [{ a: null }]])(
+  'renders nothing at all when the adapter has no info (%p)',
+  async info => {
+    const { queryByText } = renderPanel(() => Promise.resolve(info))
+    await waitForElementToBeRemoved(() => queryByText('Loading file data'))
+    expect(queryByText('File info')).toBeNull()
+  },
+)
+
+test('keeps the card for a falsy-but-present value', async () => {
+  const { findByText } = renderPanel(() => Promise.resolve({ count: 0 }))
+  expect(await findByText('File info')).toBeTruthy()
+})
+
 test('renders object file info', async () => {
   const { findByText } = renderPanel(() =>
     Promise.resolve({ SQ: 'distinctiveheadervalue' }),

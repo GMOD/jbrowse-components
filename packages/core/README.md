@@ -197,6 +197,37 @@ See TrackConfigWithPromotables.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
+### hydrateTrackConfig
+
+Hydrate a plain track config into a live config node, dispatching on its `type`
+to find the schema. `session.tracks` holds `types.frozen` plain objects until
+something references a track (ADR-031), so a caller handed one of those has a
+config that reads nothing but what was literally authored: a slot at its schema
+default is absent, `preProcessSnapshot` has not run, and nothing that walks a
+live node — the promotable cascade above all — applies to it.
+
+For the callers that need the resolved answer rather than the authored one and
+cannot know which of the two they were handed. The About dialog's "Copy config"
+is the case this exists for: it is reached from two menus, and one of them
+passes a `session.tracks` entry.
+
+Returns **undefined** rather than throwing when the config names a track type no
+plugin registered, or when it is invalid enough that `create` rejects it — an
+un-hydrated config has never been validated, so a dialog that opens over it must
+not be the thing that discovers this. Callers fall back to treating it as the
+plain object it is.
+
+Shares `TrackConfigurationReference`'s per-PluginManager cache, so hydrating the
+same entry twice returns the same node and a track that gets opened later reuses
+it.
+
+```js
+// type signature
+(pluginManager: PluginManager, config: Record<string, unknown>) => (ModelInstanceTypeProps<Record<string, any>> & { ...; } & IStateTreeNode<...>) | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/configurationSchema.ts)
+
 ### isSlotCustomized
 
 Whether this track has customized the slot (holds a non-default value of its

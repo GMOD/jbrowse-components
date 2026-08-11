@@ -34,6 +34,16 @@ export default function FileInfoPanel({ config, session }: AboutPanelProps) {
         }
       : (info ?? {})
 
+  // `BaseFeatureDataAdapter.getHeader` returns null unless an adapter overrides
+  // it, and `CoreGetInfo` returns null outright for anything that isn't a
+  // feature adapter — so most tracks reached this with nothing to say and got a
+  // FILE INFO heading with blank space under it. A panel with no content is not
+  // a panel
+  const empty = Object.values(details).every(v => v == null)
+  if (!error && !isLoading && empty) {
+    return null
+  }
+
   return (
     <BaseCard title="File info">
       {error ? (

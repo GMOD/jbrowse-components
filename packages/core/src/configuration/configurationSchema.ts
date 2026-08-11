@@ -24,6 +24,7 @@ import {
 import type PluginManager from '../PluginManager.ts'
 import type { ConfigSlotDefinition } from './configurationSlot.ts'
 import type {
+  AnyConfigurationModel,
   AnyConfigurationSchemaType,
   GetInheritedIdentifier,
 } from './types.ts'
@@ -424,6 +425,74 @@ function frozenTrackHydrationCache(
   return cache
 }
 
+// The frozen -> live half of TrackConfigurationReference's `get`, shared with
+// hydrateTrackConfig below so there is one hydration and one cache rather than
+// two that can drift on which env or which key they use.
+function hydrateInto(
+  pluginManager: PluginManager,
+  schemaType: IAnyType,
+  frozen: object,
+) {
+  const cache = frozenTrackHydrationCache(pluginManager, schemaType)
+  const cached = cache.get(frozen)
+  if (cached) {
+    return cached
+  }
+  const model = schemaType.create(frozen, { pluginManager })
+  cache.set(frozen, model)
+  return model
+}
+
+/**
+ * #api core/configuration
+ * Hydrate a plain track config into a live config node, dispatching on its
+ * `type` to find the schema. `session.tracks` holds `types.frozen` plain
+ * objects until something references a track (ADR-031), so a caller handed one
+ * of those has a config that reads nothing but what was literally authored: a
+ * slot at its schema default is absent, `preProcessSnapshot` has not run, and
+ * nothing that walks a live node — the promotable cascade above all — applies
+ * to it.
+ *
+ * For the callers that need the resolved answer rather than the authored one
+ * and cannot know which of the two they were handed. The About dialog's "Copy
+ * config" is the case this exists for: it is reached from two menus, and one of
+ * them passes a `session.tracks` entry.
+ *
+ * Returns **undefined** rather than throwing when the config names a track type
+ * no plugin registered, or when it is invalid enough that `create` rejects it —
+ * an un-hydrated config has never been validated, so a dialog that opens over
+ * it must not be the thing that discovers this. Callers fall back to treating
+ * it as the plain object it is.
+ *
+ * Shares `TrackConfigurationReference`'s per-PluginManager cache, so hydrating
+ * the same entry twice returns the same node and a track that gets opened later
+ * reuses it.
+ */
+export function hydrateTrackConfig(
+  pluginManager: PluginManager,
+  config: Record<string, unknown>,
+): AnyConfigurationModel | undefined {
+  const type = config.type
+  if (typeof type !== 'string') {
+    return undefined
+  }
+  try {
+    // getTrackType throws on an unregistered name rather than returning
+    // undefined, so it is inside the guard with `create` — the two failures are
+    // the same failure (nothing here can build this config) and neither should
+    // reach a dialog that is only trying to show it
+    const { configSchema } = pluginManager.getTrackType(type)
+    return hydrateInto(
+      pluginManager,
+      configSchema,
+      config,
+    ) as AnyConfigurationModel
+  } catch (e) {
+    console.error(e)
+    return undefined
+  }
+}
+
 // A slot holding either an id string (resolved through `ref`) or a full inline
 // config snapshot (held as a standalone schema instance). Both reference kinds
 // resolve to `schemaType` instances, so MST can't auto-dispatch on the instance
@@ -496,15 +565,7 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
           ret = editable
         } else {
           const env = getEnv<{ pluginManager: PluginManager }>(parent)
-          const cache = frozenTrackHydrationCache(env.pluginManager, schemaType)
-          const cached = cache.get(ret)
-          if (cached) {
-            ret = cached
-          } else {
-            const model = schemaType.create(ret, env)
-            cache.set(ret, model)
-            ret = model
-          }
+          ret = hydrateInto(env.pluginManager, schemaType, ret)
         }
       }
       return ret

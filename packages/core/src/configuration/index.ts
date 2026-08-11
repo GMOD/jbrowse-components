@@ -1,6 +1,7 @@
 export {
   ConfigurationReference,
   ConfigurationSchema,
+  hydrateTrackConfig,
 } from './configurationSchema.ts'
 export type { ConfigurationSchemaDefinition } from './configurationSchema.ts'
 

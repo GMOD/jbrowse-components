@@ -2,7 +2,10 @@ import { Suspense, useState } from 'react'
 
 import Attributes from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
-import { getTrackConfigWithPromotables } from '@jbrowse/core/configuration'
+import {
+  getTrackConfigWithPromotables,
+  hydrateTrackConfig,
+} from '@jbrowse/core/configuration'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -27,18 +30,32 @@ const AboutDialogContents = observer(function AboutDialogContents({
   config,
   session,
 }: AboutPanelProps) {
+  const { classes } = useStyles()
+  const [showRefNames, setShowRefNames] = useState(false)
+
+  const { pluginManager } = getEnv(session)
+
   // "Copy config" output leaves the cascade for good (a user pastes it into a
   // config.json), so promotable slots are resolved rather than left stripped —
   // otherwise the copied config renders differently from the track it came from.
   // `fromDisplayTypeDefaults` names what that folded in, so materializing a
   // session-wide preference into a track config isn't silent.
-  const { config: conf, fromDisplayTypeDefaults } = isStateTreeNode(config)
-    ? getTrackConfigWithPromotables(session, config)
+  //
+  // The two menus that open this dialog hand over different things: the in-view
+  // track label passes `track.configuration`, a live node, while the
+  // hierarchical selector passes a `session.tracks` entry, which is a
+  // `types.frozen` plain object until something references the track. Resolving
+  // only the first meant the same track copied a different config depending on
+  // which menu you came from — and the selector is the one you can reach
+  // without opening the track at all. Hydrating converges them; it returns
+  // undefined for a config no plugin can build, and that falls back to copying
+  // it as authored.
+  const live = isStateTreeNode(config)
+    ? config
+    : hydrateTrackConfig(pluginManager, config)
+  const { config: conf, fromDisplayTypeDefaults } = live
+    ? getTrackConfigWithPromotables(session, live)
     : { config, fromDisplayTypeDefaults: [] }
-  const { classes } = useStyles()
-  const [showRefNames, setShowRefNames] = useState(false)
-
-  const { pluginManager } = getEnv(session)
 
   const { config: shown, hideUris } = getAboutDialogConfig({
     config,
