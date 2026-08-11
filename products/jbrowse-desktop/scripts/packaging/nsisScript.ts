@@ -30,7 +30,21 @@ export interface NsisScriptOptions {
   version: string
   /** url scheme to claim, so an "open in Desktop" link launches this install */
   protocol: string
+  /** file extension to claim, so a saved session opens on double-click */
+  sessionExtension: string
 }
+
+// Windows names a file type by a "ProgID" key under Software\Classes, which the
+// extension key then points at. It may not contain spaces, so it cannot just be
+// the product name.
+function progIdFor(productName: string) {
+  return `${productName.replaceAll(/[^A-Za-z0-9]/g, '')}.Session`
+}
+
+// SHCNE_ASSOCCHANGED. Explorer caches associations, so a new one is not visible
+// — no icon, no double-click — until something tells the shell to reread them.
+const NOTIFY_SHELL =
+  "System::Call 'shell32::SHChangeNotify(i 0x08000000, i 0, p 0, p 0)'"
 
 export function createNsisScript({
   appDir,
@@ -40,7 +54,9 @@ export function createNsisScript({
   productName,
   version,
   protocol,
+  sessionExtension,
 }: NsisScriptOptions) {
+  const progId = progIdFor(productName)
   return `
 Unicode true
 
@@ -99,6 +115,26 @@ Section "Install"
   WriteRegStr HKCU "Software\\Classes\\${protocol}\\DefaultIcon" "" "$INSTDIR\\${appName}.exe,0"
   WriteRegStr HKCU "Software\\Classes\\${protocol}\\shell\\open\\command" "" '"$INSTDIR\\${appName}.exe" "%1"'
 
+  ; Associate ${sessionExtension}, so double-clicking a saved session opens it.
+  ; The app has always been able to open one from argv (see findLaunchTarget)
+  ; and "Save session as..." forces this extension precisely so a session is
+  ; identifiable — but on Windows nothing connected the two, and Explorer had
+  ; no idea what the file was. Registered as a ProgID that the extension points
+  ; at, which is the shape Windows expects; ${sessionExtension} alone with a
+  ; command under it is the old Win3.1 form and does not get an icon.
+  ;
+  ; .json is deliberately NOT claimed even though the app opens those too: it is
+  ; the most common config format on the machine, and taking the default for all
+  ; of them is not something an install should do.
+  WriteRegStr HKCU "Software\\Classes\\${progId}" "" "${productName} Session"
+  WriteRegStr HKCU "Software\\Classes\\${progId}\\DefaultIcon" "" "$INSTDIR\\${appName}.exe,0"
+  WriteRegStr HKCU "Software\\Classes\\${progId}\\shell\\open\\command" "" '"$INSTDIR\\${appName}.exe" "%1"'
+  WriteRegStr HKCU "Software\\Classes\\${sessionExtension}" "" "${progId}"
+  ; also list it under "Open with", which is where the user goes when something
+  ; else has taken the default
+  WriteRegStr HKCU "Software\\Classes\\${sessionExtension}\\OpenWithProgids" "${progId}" ""
+  ${NOTIFY_SHELL}
+
   ; Get installed size
   \${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
   IntFmt $0 "0x%08X" $0
@@ -142,6 +178,20 @@ Section "Uninstall"
   ; Remove registry keys
   DeleteRegKey HKCU "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${productName}"
   DeleteRegKey HKCU "Software\\Classes\\${protocol}"
+
+  ; The file association. The ProgID is ours and goes unconditionally; the
+  ; extension key is shared, so only drop it if it still points at us. Another
+  ; application (or a newer JBrowse install) may have taken the default since,
+  ; and removing it then would leave ${sessionExtension} associated with nothing
+  ; on the way out of an app the user was not even uninstalling.
+  DeleteRegKey HKCU "Software\\Classes\\${progId}"
+  ReadRegStr $0 HKCU "Software\\Classes\\${sessionExtension}" ""
+  \${If} $0 == "${progId}"
+    DeleteRegKey HKCU "Software\\Classes\\${sessionExtension}"
+  \${Else}
+    DeleteRegValue HKCU "Software\\Classes\\${sessionExtension}\\OpenWithProgids" "${progId}"
+  \${EndIf}
+  ${NOTIFY_SHELL}
 SectionEnd
 `
 }

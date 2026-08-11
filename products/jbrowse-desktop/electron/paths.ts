@@ -3,6 +3,8 @@ import path from 'node:path'
 
 import { app } from 'electron'
 
+import { SESSION_EXTENSION } from './launchTarget.ts'
+
 /**
  * Path management utilities
  */
@@ -36,9 +38,10 @@ export function initializePaths(): AppPaths {
   }
 }
 
-// The extension "Save session as..." forces, and with it the one reliable mark
-// of a file JBrowse wrote as a session rather than one the user brought.
-export const SESSION_EXTENSION = '.jbrowse'
+// Defined in launchTarget.ts, which the packaging scripts can import and this
+// module (which needs `electron`) cannot. Re-exported so its existing callers
+// keep one import site.
+export { SESSION_EXTENSION }
 
 /**
  * Whether a path is one of the session files JBrowse manages for itself. Those

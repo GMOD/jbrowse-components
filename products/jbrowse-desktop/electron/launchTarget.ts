@@ -13,11 +13,27 @@ export type { LaunchTarget }
 
 export const JBROWSE_PROTOCOL = 'jbrowse'
 
+/**
+ * The extension "Save session as..." forces, and with it the one reliable mark
+ * of a file JBrowse wrote as a session rather than one the user brought — see
+ * `isSessionFile` in paths.ts.
+ *
+ * Here rather than there because the packaging scripts need it too, to register
+ * the file association, and paths.ts imports `electron`. It belongs next to
+ * LAUNCH_FILE_EXTENSIONS in any case: this is the extension the OS is told to
+ * hand us, and that list is what we accept when it does.
+ */
+export const SESSION_EXTENSION = '.jbrowse'
+
 // A launch argument may be a saved session (.jbrowse) or a hand-written /
 // CLI-generated config (config.json); both are JSON snapshots loaded the same
 // way, and the start screen's "Open config.json or .jbrowse file" accepts the
 // same pair.
-const LAUNCH_FILE_EXTENSIONS = ['.jbrowse', '.json']
+//
+// Only the first is registered as a file association: `.json` is every
+// machine's most common config format, and claiming it would make JBrowse the
+// default application for all of them.
+const LAUNCH_FILE_EXTENSIONS = [SESSION_EXTENSION, '.json']
 
 // Only ever wrap a web link. A jbrowse:// url arrives from anywhere that can
 // make the OS open a link (any web page), so the wrapped url is restricted to

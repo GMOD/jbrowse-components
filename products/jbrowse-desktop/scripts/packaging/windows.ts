@@ -1,7 +1,10 @@
 import fs from 'fs'
 import path from 'path'
 
-import { JBROWSE_PROTOCOL } from '../../electron/launchTarget.ts'
+import {
+  JBROWSE_PROTOCOL,
+  SESSION_EXTENSION,
+} from '../../electron/launchTarget.ts'
 import { winArtifacts } from './artifacts.ts'
 import { APP_NAME, ASSETS, DIST, PRODUCT_NAME, VERSION } from './config.ts'
 import { createNsisScript } from './nsisScript.ts'
@@ -43,6 +46,7 @@ export function nsisScriptFor(
     productName: PRODUCT_NAME,
     version: VERSION,
     protocol: JBROWSE_PROTOCOL,
+    sessionExtension: SESSION_EXTENSION,
   })
 }
 
