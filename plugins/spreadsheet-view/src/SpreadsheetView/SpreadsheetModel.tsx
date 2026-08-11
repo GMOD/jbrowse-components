@@ -341,19 +341,26 @@ export default function stateModelFactory() {
             } & Record<string, unknown>)
           | undefined,
       ) => {
-        const columns = snap?.columns?.filter(f => !f.isDerived) ?? []
-        return snap
-          ? {
-              ...snap,
-              columns,
-              rowSet: snap.rowSet
-                ? {
-                    ...snap.rowSet,
-                    rows: snap.rowSet.rows?.map(r => migrateRow(r, columns)),
-                  }
-                : undefined,
-            }
-          : snap
+        if (!snap) {
+          return snap
+        }
+        const columns = snap.columns?.filter(f => !f.isDerived) ?? []
+        const rows = snap.rowSet?.rows
+        // Rebuild the rows only when some row is actually in an older shape.
+        // migrateRow allocates a fresh object per row, and this hook runs on
+        // every snapshot applied to the node — including the freshly parsed one
+        // displaySpreadsheet casts on every import, which has nothing to
+        // migrate and can be six figures of rows. The scan that replaces it is
+        // two property checks per row and stops at the first legacy one
+        const legacy = rows?.some(r => !!r.cells || !!r.extendedData)
+        return {
+          ...snap,
+          columns,
+          rowSet:
+            legacy && rows
+              ? { ...snap.rowSet, rows: rows.map(r => migrateRow(r, columns)) }
+              : snap.rowSet,
+        }
       },
     )
 }

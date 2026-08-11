@@ -139,19 +139,25 @@ export default function stateModelFactory() {
       },
 
       /**
-       * #method
+       * #getter
+       * every track in the session this view could open, with its location and
+       * file type resolved, in label order.
+       *
+       * A getter rather than the body of tracksForAssembly so the sweep — a
+       * readConfObject per track over the whole config, plus a localeCompare
+       * sort — is memoized instead of re-running on every render. TrackSelector
+       * is an observer and calls this during render, and the assembly filter it
+       * applies is a cheap array check on the result
        */
-      tracksForAssembly(selectedAssembly: string) {
+      get importableTracks() {
         const session = getSession(self)
         const { pluginManager } = getEnv(self)
         // not [...tracks, ...sessionTracks]: session.tracks already contains
         // sessionTracks, so that listed every session track twice
         return allSessionTracks(session)
           .flatMap(track => {
-            const assemblyNames = readConfObject(track, 'assemblyNames') ?? []
-            if (!assemblyNames.includes(selectedAssembly)) {
-              return []
-            }
+            const assemblyNames: string[] =
+              readConfObject(track, 'assemblyNames') ?? []
             const rawAdapter = readConfObject(track, 'adapter')
             const adapterTypeName = rawAdapter?.type
             if (typeof adapterTypeName !== 'string') {
@@ -175,6 +181,7 @@ export default function stateModelFactory() {
             const categoryStr = category.join(',')
             return {
               track,
+              assemblyNames,
               label: [
                 categoryStr ? `[${categoryStr}]` : '',
                 getTrackName(track, session),
@@ -186,6 +193,14 @@ export default function stateModelFactory() {
             }
           })
           .sort((a, b) => a.label.localeCompare(b.label))
+      },
+      /**
+       * #method
+       */
+      tracksForAssembly(selectedAssembly: string) {
+        return this.importableTracks.filter(t =>
+          t.assemblyNames.includes(selectedAssembly),
+        )
       },
     }))
     .actions(self => ({

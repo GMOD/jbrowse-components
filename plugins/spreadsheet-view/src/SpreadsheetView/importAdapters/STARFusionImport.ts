@@ -16,9 +16,27 @@ function parseSTARFusionBreakpointString(str: string) {
 
 export function parseSTARFusionBuffer(buffer: Uint8Array) {
   const lines = bufferToLines(buffer)
-  const columns = lines[0]?.slice(1).split('\t') ?? []
+  const header = lines[0]
+  // the header is `#FusionName<TAB>...`, but the leading `#` is not universal
+  // across STAR-Fusion versions and wrappers — slicing it off unconditionally
+  // ate the first character of the first column's name
+  const columns =
+    (header?.startsWith('#') ? header.slice(1) : header)?.split('\t') ?? []
   if (!columns.length) {
     return { columns: [], rowSet: { rows: [] } }
+  }
+  // checked up front, and named. Every row builds its feature from these two,
+  // so a file without them (the wrong file, or the right file with the wrong
+  // File Type picked in the import form) used to fail on the first row with a
+  // bare "Cannot read properties of undefined (reading 'split')" — which names
+  // neither the column that is missing nor the guess that was wrong
+  const missing = ['LeftBreakpoint', 'RightBreakpoint'].filter(
+    c => !columns.includes(c),
+  )
+  if (missing.length) {
+    throw new Error(
+      `Not a STAR-Fusion file: no ${missing.join(' or ')} column. Found: ${columns.slice(0, 6).join(', ')}`,
+    )
   }
   return {
     columns: columns.map(c => ({ name: c })),

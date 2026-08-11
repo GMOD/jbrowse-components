@@ -43,6 +43,25 @@ test('rows handles legacy cells format', () => {
   ])
 })
 
+// The migration is gated on a row actually being in the older shape, since it
+// allocates a fresh object per row and runs on every snapshot applied — the
+// fresh parse of an import included. The gate has to look at the whole sheet:
+// keying off the first row would miss a file whose first row happens to carry
+// neither legacy field
+test('a legacy row anywhere in the sheet still triggers the migration', () => {
+  const model = makeModel({
+    rowSet: {
+      rows: [
+        { cellData: { chr: 'chr1', pos: 1 } },
+        { cells: [{ text: 'chrX' }, { text: 42 }] },
+      ],
+    },
+    columns: [{ name: 'chr' }, { name: 'pos' }],
+  })
+  expect(model.rows?.map(r => r.chr)).toEqual(['chr1', 'chrX'])
+  expect(model.rows?.map(r => r.pos)).toEqual([1, 42])
+})
+
 test('rows assigns sequential ids across multiple rows', () => {
   const model = makeModel({
     rowSet: {

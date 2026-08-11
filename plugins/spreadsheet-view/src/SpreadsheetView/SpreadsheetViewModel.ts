@@ -6,6 +6,7 @@ import { reaction } from 'mobx'
 
 import ImportWizard from './ImportWizard.ts'
 import Spreadsheet from './SpreadsheetModel.tsx'
+import { rowsExceedSnapshotBudget } from './snapshotBudget.ts'
 
 import type { SpreadsheetSnapshot } from './SpreadsheetModel.tsx'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -300,11 +301,11 @@ export default function stateModelFactory() {
       }
       const { rowSet, ...spreadsheetRest } = spreadsheet
       // omit rows when a URI is cached (re-fetched on load) or too large for
-      // localStorage. The cheap test is deliberately first: the size test
-      // serializes every row, and a cached URI makes the answer yes regardless
+      // localStorage. The cheap test is deliberately first: a cached URI makes
+      // the answer yes regardless of size
       const omitRows =
         !!rest.importWizard.cachedFileLocation ||
-        (rowSet !== undefined && JSON.stringify(rowSet).length > 1_000_000)
+        rowsExceedSnapshotBudget(rowSet)
       return {
         ...rest,
         spreadsheet: omitRows ? spreadsheetRest : spreadsheet,
