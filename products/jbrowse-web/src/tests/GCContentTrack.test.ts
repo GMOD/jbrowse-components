@@ -241,3 +241,38 @@ test('GCContentTrack display wraps a bare sequence adapter', async () => {
   expect(adapterConfig.type).toBe('GCContentAdapter')
   expect(adapterConfig.sequenceAdapter.type).toBe('FromConfigSequenceAdapter')
 })
+
+// The gccontent plugin contributes this item through Core-extraTrackMenuItems,
+// which reaches both the hierarchical selector's track menu and the in-view
+// label menu. The sequence display used to carry its own copy as well, so an
+// open reference sequence track offered it twice — once nested under "Track
+// actions" and once at the top level — and the copy asked whether gccontent was
+// loaded by calling getTrackType, which throws on an unregistered type instead
+// of answering no.
+test('the refseq label menu offers "Add GC content track" exactly once', () => {
+  const session = makeSession([
+    { id: 'display1', type: 'LinearReferenceSequenceDisplay' },
+  ])
+  const view = session.views[0]
+  const track = view.tracks[0]
+
+  // the two sources TrackLabelMenu concatenates
+  const flatten = (items: unknown[]): string[] =>
+    items.flatMap(item => {
+      const i = item as { label?: unknown; subMenu?: unknown[] }
+      return [
+        ...(typeof i.label === 'string' ? [i.label] : []),
+        ...(i.subMenu ? flatten(i.subMenu) : []),
+      ]
+    })
+  const labels = [
+    ...flatten(
+      session.getTrackActionMenuItems({ config: track.configuration, view }),
+    ),
+    ...flatten(track.trackMenuItems()),
+  ]
+
+  expect(labels.filter(l => l === 'Add GC content track')).toHaveLength(1)
+  // the display's own items are still there — only the duplicate went
+  expect(labels).toContain('Show translation')
+})

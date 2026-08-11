@@ -17,7 +17,7 @@ import {
   getRpcSessionId,
   getTrackAssemblyNames,
 } from '@jbrowse/core/util/tracks'
-import { getEnv, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
@@ -334,7 +334,14 @@ export function modelFactory(
       /**
        * #action
        * spins up a standalone GCContentTrack session track that wraps this
-       * track's sequence adapter (requires the gccontent plugin)
+       * track's sequence adapter (requires the gccontent plugin).
+       *
+       * Not on this display's menu: the gccontent plugin puts the item there
+       * itself, through `Core-extraTrackMenuItems`, which reaches the
+       * hierarchical selector's track menu as well as this one. A copy here
+       * showed it twice on an open reference sequence track, and had to ask
+       * whether the plugin was loaded — through `getTrackType`, which throws
+       * rather than answering no. Kept as an action because it is callable API.
        */
       addGCContentTrack() {
         const session = getSession(self)
@@ -485,8 +492,6 @@ export function modelFactory(
        * #method
        */
       trackMenuItems() {
-        const hasGCContent =
-          !!getEnv(self).pluginManager.getTrackType('GCContentTrack')
         return self.isDna
           ? [
               {
@@ -513,16 +518,6 @@ export function modelFactory(
                   self.toggleShowTranslation()
                 },
               },
-              ...(hasGCContent
-                ? [
-                    {
-                      label: 'Add GC content track',
-                      onClick: () => {
-                        self.addGCContentTrack()
-                      },
-                    },
-                  ]
-                : []),
             ]
           : []
       },
