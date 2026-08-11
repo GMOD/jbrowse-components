@@ -109,6 +109,7 @@
     "./ui/colors": "./src/ui/colors.ts",
     "./ui/filterMenuItems": "./src/ui/filterMenuItems.ts",
     "./ui/getGraphicsCapabilities": "./src/ui/getGraphicsCapabilities.ts",
+    "./ui/legendSpec": "./src/ui/legendSpec.ts",
     "./ui/menuItems": "./src/ui/menuItems.ts",
     "./ui/palette": "./src/ui/palette.ts",
     "./ui/showSubMenu": "./src/ui/showSubMenu.ts",
@@ -594,6 +595,10 @@
       "./ui/getGraphicsCapabilities": {
         "types": "./esm/ui/getGraphicsCapabilities.d.ts",
         "import": "./esm/ui/getGraphicsCapabilities.js"
+      },
+      "./ui/legendSpec": {
+        "types": "./esm/ui/legendSpec.d.ts",
+        "import": "./esm/ui/legendSpec.js"
       },
       "./ui/menuItems": {
         "types": "./esm/ui/menuItems.d.ts",
@@ -1184,6 +1189,9 @@
         ],
         "ui/getGraphicsCapabilities": [
           "esm/ui/getGraphicsCapabilities.d.ts"
+        ],
+        "ui/legendSpec": [
+          "esm/ui/legendSpec.d.ts"
         ],
         "ui/menuItems": [
           "esm/ui/menuItems.d.ts"

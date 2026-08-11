@@ -1,3 +1,8 @@
+// the leaf module, not the `@jbrowse/core/ui` barrel the types come from: this
+// file is reached from the display's state model, which a plugin evaluates at
+// install time, and a value import of the barrel would put ~80 Material
+// components on every host's first paint (see EAGER_BUNDLE.md)
+import { legendSwatches } from '@jbrowse/core/ui/legendSpec'
 import {
   colorShortInsertArc,
   methylated5hmC,
@@ -24,7 +29,12 @@ import type {
 import type { ReadConnectionsMode } from '../LinearAlignmentsDisplay/constants.ts'
 import type { ColorPalette } from '../shaders/colors.ts'
 import type { ColorBy, ColorSchemeType } from './types.ts'
-import type { LegendItem, LegendSection } from '@jbrowse/core/ui'
+import type {
+  LegendItem,
+  LegendMark,
+  LegendSection,
+  LegendSwatch,
+} from '@jbrowse/core/ui'
 
 export type { LegendItem } from '@jbrowse/core/ui'
 
@@ -32,24 +42,47 @@ export type { LegendItem } from '@jbrowse/core/ui'
 // box, so a color that two vocabularies both produce is keyed once, under the
 // first label it got — the arcs' neutral slot and the reads' LR slot are both
 // `colorPairLR`, and "Normal" listed under "LR - Normal pair orientation" is the
-// same grey twice. The label rule covers the mirror case: short insert is the
-// one bucket the reads and the arc curves paint in *different* colors (pale fill
-// vs. saturated stroke), so keying by color alone lists "Short insert" twice.
-// The reads' swatch comes first and wins, since a pileup fill is what most of
-// the frame shows. Color-less rows (headings, notes) are never merged.
-function oneRowPerColor(items: LegendItem[]): LegendItem[] {
-  const seenColors = new Set<string>()
-  const seenLabels = new Set<string>()
-  return items.filter(item => {
-    const dup =
-      (item.color !== undefined && seenColors.has(item.color)) ||
-      seenLabels.has(item.label)
-    if (item.color !== undefined) {
-      seenColors.add(item.color)
+// same grey twice.
+//
+// The label rule covers the mirror case, and it is where a row grows a SECOND
+// mark rather than losing one: short insert is the bucket the reads and the arc
+// curves paint in *different* colors (pale fill vs. saturated stroke), so keying
+// by color alone lists "Short insert" twice, while keying by label alone drops
+// whichever color arrived second — off a box whose whole claim is that it names
+// every color drawn. Keeping both as marks on one row is the only form that is
+// neither repetitive nor a lie. The reads' swatch leads, since a pileup fill is
+// what most of the frame shows.
+//
+// Color-less rows (headings, notes) merge by label only, never by color.
+function oneRowPerMeaning(items: LegendItem[]): LegendItem[] {
+  const rows: { item: LegendItem; swatches: LegendSwatch[] }[] = []
+  const byColor = new Map<string, number>()
+  const byLabel = new Map<string, number>()
+  for (const item of items) {
+    const at =
+      (item.color === undefined ? undefined : byColor.get(item.color)) ??
+      byLabel.get(item.label)
+    if (at === undefined) {
+      byLabel.set(item.label, rows.length)
+      if (item.color !== undefined) {
+        byColor.set(item.color, rows.length)
+      }
+      rows.push({ item, swatches: legendSwatches(item) })
+    } else if (item.color !== undefined) {
+      const row = rows[at]!
+      if (!row.swatches.some(s => s.color === item.color)) {
+        row.swatches.push({ color: item.color, mark: item.mark })
+      }
+      // so a third row in this color joins the same one rather than opening its
+      // own under the label it happens to carry
+      if (!byColor.has(item.color)) {
+        byColor.set(item.color, at)
+      }
     }
-    seenLabels.add(item.label)
-    return !dup
-  })
+  }
+  return rows.map(({ item, swatches }) =>
+    swatches.length > 1 ? { ...item, swatches } : item,
+  )
 }
 
 // "Arc colors" -> "Read and arc colors", keeping whatever noun the overlay
@@ -98,7 +131,7 @@ export function getAlignmentsLegendSections(model: {
       ? {
           id: 'reads',
           title: mergedTitle(model.arcLegendTitle),
-          items: oneRowPerColor([...reads, ...arcs]),
+          items: oneRowPerMeaning([...reads, ...arcs]),
         }
       : { id: 'reads', title: 'Read colors', items: reads },
     {
@@ -155,8 +188,15 @@ const CATEGORY_LEGEND: Record<SwatchCategory, string> = {
   normalInsert: 'Normal',
   longInsert: 'Long insert',
   shortInsert: 'Short insert',
-  splitInversion: 'Split-read inversion',
-  splitDeletion: 'Split read (deletion)',
+  // What was measured, not what it means. `splitJunctionKind` decides these from
+  // the two segments' strands ALONE — never their order, their distance, or even
+  // their refName — so a same-strand junction is equally a deletion, a tandem
+  // duplication, a templated insertion or a same-strand translocation, and
+  // "Split read (deletion)" named one of the four. Co-linear/inverted is the
+  // whole of what the classifier knows; the interpretation belongs to the reader
+  // (and to the docs), not to a swatch.
+  splitInversion: 'Split read (inverted)',
+  splitDeletion: 'Split read (co-linear)',
   interchrom: 'Inter-chromosomal',
   unmappedMate: 'Unmapped mate',
   supplementary: 'Supplementary/split',
@@ -190,12 +230,26 @@ export function readColorCategoryLabel(
 // non-split read. Naming these as split reads is what distinguishes the colored
 // split segments from the scheme's grey/base-colored non-split reads in
 // linked-reads (chain) mode, where only the splits pick up a color.
+//
+// "Forward"/"reverse" was the wrong axis to name: the branch frames each segment
+// against its chain's PRIMARY (`strand * primaryStrand`), so red means agrees
+// with the primary and blue means flipped at the junction — the read's own
+// mapping strand is not what the color says. A reverse-mapped long read whose
+// segments all agree is entirely red.
+//
+// That makes this the same measurement as `splitInversion`/`splitDeletion`
+// above, run on disjoint data (that branch is unpaired-only, those are
+// paired-only) and painted in a different pair of colors. Both wordings
+// therefore land in one list — the pileup fills of a mixed BAM — and they are
+// deliberately NOT identical: "segment" vs "read" says which one colored what,
+// since here only the flipped segment turns blue while there the whole mate
+// takes the junction's color.
 const SPLIT_STRAND_LABELS: Partial<Record<SwatchCategory, string>> = {
-  fwdStrand: 'Split read (forward)',
-  revStrand: 'Split read (reverse)',
+  fwdStrand: 'Split segment (same strand)',
+  revStrand: 'Split segment (flipped)',
   // the same argument, for the third member of the triple: under a non-strand
   // scheme an unstranded bucket can only have come from that same branch
-  noStrand: 'Split read (unstranded)',
+  noStrand: 'Split segment (strand unknown)',
 }
 
 // The first-of-pair-strand scheme colors by the FRAGMENT strand inferred from
@@ -320,6 +374,15 @@ function arcSwatches(
   return mode === 'arc' ? { shortInsert: colorShortInsertArc } : {}
 }
 
+// …and the mark those colors are drawn AS, which is the other half of the same
+// point. Once the overlay's colors are folded into the read key (the usual case
+// — see `getAlignmentsLegendSections`), a square is the only thing left saying
+// which vocabulary a row came from, and a square is wrong for both overlays:
+// 'cloud' draws flat lines at Y=|tlen|, 'arc' draws curves.
+function arcMark(mode: ReadConnectionsMode): LegendMark {
+  return mode === 'cloud' ? 'line' : 'curve'
+}
+
 /**
  * Key for the paired-end arc / read-cloud colors when they are their own
  * vocabulary — insert size or pair orientation while the reads underneath are
@@ -339,7 +402,10 @@ export function getArcLegendItems(
   palette: ColorPalette,
   mode: ReadConnectionsMode,
 ): LegendItem[] {
-  return bucketItems(presentCategories, palette, {}, arcSwatches(mode))
+  const mark = arcMark(mode)
+  return bucketItems(presentCategories, palette, {}, arcSwatches(mode)).map(
+    item => ({ ...item, mark }),
+  )
 }
 
 // The modification family's own key: the methylation views (fill-unmarked and

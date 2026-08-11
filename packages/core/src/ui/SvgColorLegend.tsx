@@ -1,6 +1,8 @@
 /* eslint-disable react-refresh/only-export-components -- geometry constants belong with this leaf SVG primitive; no component state to fast-refresh */
+import { LegendSwatchGlyph } from './LegendSwatchGlyph.tsx'
 import { measureLegendText } from './measureLegendText.ts'
 
+import type { LegendSwatch } from './legendSpec.ts'
 import type { ReactNode } from 'react'
 
 export interface ColorLegendEntry {
@@ -9,6 +11,10 @@ export interface ColorLegendEntry {
   label: string
   // CSS color for the default square swatch; omit when supplying `marker`
   color?: string
+  // several marks, or one that isn't a filled square (a connector color drawn as
+  // the line/curve it really is). Takes precedence over `color`; `legendEntries`
+  // sets it only for rows that need it.
+  swatches?: LegendSwatch[]
   // toggled-off entries render dimmed and struck through
   hidden?: boolean
   // custom SVG drawn in the swatch slot instead of the default color square, in
@@ -18,7 +24,8 @@ export interface ColorLegendEntry {
 }
 
 const FONT_SIZE = 10
-const TEXT_LEFT = 16
+const SWATCH_LEFT = 2
+const SWATCH_GAP = 2
 
 // Row geometry, exported so callers positioning `children` (or sizing an outer
 // container) stay in lockstep with what this draws.
@@ -27,6 +34,15 @@ export const LEGEND_SWATCH = 10
 
 // narrow right-side gutter reserved for the small dismiss "×"
 const DISMISS_GUTTER = 11
+
+// A row's marks, with the flat `color` shorthand read as the single filled
+// square it has always drawn.
+function entrySwatches(entry: ColorLegendEntry): LegendSwatch[] {
+  return (
+    entry.swatches ??
+    (entry.color === undefined ? [] : [{ color: entry.color }])
+  )
+}
 
 // Shared SVG categorical color key: one translucent row per entry, each a swatch
 // + label, right-aligned within canvasWidth. Used by any display that colors by
@@ -76,6 +92,13 @@ export default function SvgColorLegend({
   const overflowLabel =
     entries.length > fit ? `+${entries.length - shown.length} more` : undefined
 
+  // Labels line up across rows, so the swatch column is sized by the row with
+  // the most marks — otherwise a two-mark row shoves its own label out of the
+  // column the others share. One mark reproduces the original 16px inset.
+  const swatchColumns = Math.max(1, ...shown.map(e => entrySwatches(e).length))
+  const textLeft =
+    SWATCH_LEFT + swatchColumns * (LEGEND_SWATCH + SWATCH_GAP) + 2
+
   let maxLabelWidth = 0
   for (const entry of shown) {
     maxLabelWidth = Math.max(
@@ -90,7 +113,7 @@ export default function SvgColorLegend({
     )
   }
   const totalWidth =
-    TEXT_LEFT + maxLabelWidth + 6 + (onDismiss ? DISMISS_GUTTER : 0)
+    textLeft + maxLabelWidth + 6 + (onDismiss ? DISMISS_GUTTER : 0)
   const x = Math.max(0, canvasWidth - totalWidth - 4)
   return shown.length || overflowLabel || children ? (
     <g transform={`translate(${x} 0)`} data-testid={testid}>
@@ -111,17 +134,17 @@ export default function SvgColorLegend({
               bleed through and making the struck-out label harder to read */}
           <g opacity={entry.hidden ? 0.35 : 1}>
             {entry.marker ??
-              (entry.color === undefined ? null : (
-                <rect
-                  x={2}
+              entrySwatches(entry).map((swatch, i) => (
+                <LegendSwatchGlyph
+                  key={`${swatch.color}-${swatch.mark ?? 'fill'}`}
+                  swatch={swatch}
+                  size={LEGEND_SWATCH}
+                  x={SWATCH_LEFT + i * (LEGEND_SWATCH + SWATCH_GAP)}
                   y={2}
-                  width={LEGEND_SWATCH}
-                  height={LEGEND_SWATCH}
-                  fill={entry.color}
                 />
               ))}
             <text
-              x={TEXT_LEFT}
+              x={textLeft}
               y={11}
               fontSize={FONT_SIZE}
               fill="black"
@@ -141,7 +164,7 @@ export default function SvgColorLegend({
             height={LEGEND_ROW_HEIGHT}
             fill="rgba(255,255,255,0.95)"
           />
-          <text x={TEXT_LEFT} y={11} fontSize={FONT_SIZE} fill="#555">
+          <text x={textLeft} y={11} fontSize={FONT_SIZE} fill="#555">
             {overflowLabel}
           </text>
         </g>

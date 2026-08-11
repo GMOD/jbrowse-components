@@ -10,7 +10,7 @@ import { linkedReadColorPalette } from '../../shaders/palettes.ts'
 // shader's clamp on every slot in use and resolves an out-of-range one to a
 // different real color instead of the last slot.
 import { linkedReadColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
-import { connectionLabel, iterLinkedPairs } from './compute.ts'
+import { connectionLabel, connectionMark, iterLinkedPairs } from './compute.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { LinkedPair, ReadEntry } from './compute.ts'
@@ -35,7 +35,7 @@ export interface PileupArc {
   stroke: string
   id1: string
   id2: string
-  // Connection classification for the hover tooltip. Split-read inversion gets
+  // Connection classification for the hover tooltip. An inverted split gets
   // its own color (colorSplitReadInversion), distinct from the RR-pair blue, so
   // the two are tellable apart at a glance; the tooltip names which evidence
   // produced the arc rather than overloading a second dimension onto the stroke.
@@ -83,8 +83,10 @@ export function isCrossRegionPair({ e1, e2 }: LinkedPair): boolean {
 export type BezierArcScope = 'all' | 'crossRegion' | 'none'
 
 // Legend swatches for the connection types actually drawn as bezier/line arcs,
-// built from the same palette and labels the curves use (linkedReadColorPalette
-// + connectionLabel) so the on-screen key can never disagree with what's drawn.
+// built from the same palette, labels and straight-vs-curved rule the overlay
+// itself uses (linkedReadColorPalette + connectionLabel + connectionMark) so the
+// on-screen key can never disagree with what's drawn — including the glyph, now
+// that a row can be drawn as the connector it names rather than as a square.
 // `colorTypes` is the set of LINKED_READ_COLOR_* present in view; sorted so the
 // legend order is stable as reads stream in.
 export function bezierConnectionLegendItems(
@@ -95,6 +97,7 @@ export function bezierConnectionLegendItems(
     .map(colorType => ({
       color: rgb255(linkedReadColorPalette[linkedReadColorSlot(colorType)]!),
       label: connectionLabel(colorType),
+      mark: connectionMark(colorType),
     }))
 }
 

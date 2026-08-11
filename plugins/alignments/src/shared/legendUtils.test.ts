@@ -94,7 +94,7 @@ describe('getReadDisplayLegendItems', () => {
 
   test('a non-strand scheme reframes the unstranded bucket as a split read too', () => {
     expect(labels('insertSize', ['noStrand', 'normalInsert'])).toEqual([
-      'Split read (unstranded)',
+      'Split segment (strand unknown)',
       'Normal',
     ])
   })
@@ -110,8 +110,8 @@ describe('getReadDisplayLegendItems', () => {
         'pairLR',
       ]),
     ).toEqual([
-      'Split read (forward)',
-      'Split read (reverse)',
+      'Split segment (same strand)',
+      'Split segment (flipped)',
       'Unsplit read',
       'LR - Normal pair orientation',
     ])
@@ -144,26 +144,55 @@ describe('getReadDisplayLegendItems', () => {
     ])
   })
 
-  test('chain-mode split reads read as "Split read" under any non-strand scheme', () => {
+  test('chain-mode split reads read as split segments under any non-strand scheme', () => {
     // In linked-reads mode only the split segments pick up a fwd/rev color while
     // ordinary reads stay grey; a fwd/rev bucket here can only be a split, so it
-    // must not read as a plain "Forward strand".
+    // must not read as a plain "Forward strand" — and the color frames the
+    // segment against its chain primary, so it must not name a strand either.
     expect(labels('normal', ['plain', 'fwdStrand', 'revStrand'])).toEqual([
       'Reads',
-      'Split read (forward)',
-      'Split read (reverse)',
+      'Split segment (same strand)',
+      'Split segment (flipped)',
     ])
     // swatches follow CATEGORY_LEGEND order (strand buckets precede insert ones)
     expect(labels('insertSize', ['normalInsert', 'fwdStrand'])).toEqual([
-      'Split read (forward)',
+      'Split segment (same strand)',
       'Normal',
     ])
     expect(labels('mappingQuality', ['fwdStrand'])).toEqual([
       'MAPQ 0',
       'MAPQ 30',
       'MAPQ 60',
-      'Split read (forward)',
+      'Split segment (same strand)',
     ])
+  })
+
+  // Both classifiers run the same strand-equality test, on disjoint data (one
+  // unpaired, one paired), in two pairs of colors — so a mixed BAM keys all four
+  // in one list. They read as one dimension unless the wording keeps them apart,
+  // and they used to share the frame "Split read (…)" while the parenthetical
+  // meant a strand in one and a junction kind in the other.
+  test('the segment framing and the junction kinds do not read as one vocabulary', () => {
+    expect(
+      labels('pairOrientation', [
+        'fwdStrand',
+        'splitInversion',
+        'splitDeletion',
+      ]),
+    ).toEqual([
+      'Split segment (same strand)',
+      'Split read (inverted)',
+      'Split read (co-linear)',
+    ])
+  })
+
+  // Strand equality is the whole of what splitJunctionKind measures — never
+  // order, distance or refName — so a co-linear junction is evidence for a
+  // deletion, a tandem duplication, a templated insertion or a same-strand
+  // translocation alike, and the swatch must not pick one.
+  test('no split label names a variant class', () => {
+    const named = labels('pairOrientation', ['splitInversion', 'splitDeletion'])
+    expect(named.join(' ')).not.toMatch(/deletion|duplication|insertion/i)
   })
 
   test('the plain strand scheme keeps the plain wording (fwd/rev is its primary key)', () => {
@@ -188,8 +217,8 @@ describe('getReadDisplayLegendItems', () => {
     const mods = new Map([['m', 'red']])
     expect(labels('modifications', ['fwdStrand', 'revStrand'], mods)).toEqual([
       '5mC',
-      'Split read (forward)',
-      'Split read (reverse)',
+      'Split segment (same strand)',
+      'Split segment (flipped)',
     ])
   })
 
@@ -450,7 +479,7 @@ describe('getArcLegendItems', () => {
         makeTestPalette(),
         'arc',
       ).map(i => i.label),
-    ).toEqual(['Long insert', 'Split-read inversion'])
+    ).toEqual(['Long insert', 'Split read (inverted)'])
     expect(getArcLegendItems(new Set(), makeTestPalette(), 'arc')).toEqual([])
   })
 
@@ -466,6 +495,21 @@ describe('getArcLegendItems', () => {
     expect(swatch('arc')).toBe(colorShortInsertArc)
     // read cloud fills endpoint squares from the pale marker palette instead
     expect(swatch('cloud')).not.toBe(colorShortInsertArc)
+  })
+
+  // Once these fold into the read key (the usual case), the mark is the only
+  // thing left saying a color belongs to the overlay rather than to a pileup
+  // fill.
+  test('keys arc colors as the shape the overlay draws them', () => {
+    const marks = (mode: ReadConnectionsMode) =>
+      getArcLegendItems(
+        new Set<ReadColorCategory>(['longInsert']),
+        makeTestPalette(),
+        mode,
+      ).map(i => i.mark)
+    expect(marks('arc')).toEqual(['curve'])
+    // read cloud draws flat lines at Y=|tlen|, not curves
+    expect(marks('cloud')).toEqual(['line'])
   })
 
   test('takes no per-scheme rewording — an arc never produces a strand bucket', () => {
@@ -556,6 +600,46 @@ describe('getAlignmentsLegendSections', () => {
       ),
     ) as [[string, string[]]]
     expect(items).toEqual(['LR - Normal pair orientation', 'Short insert'])
+  })
+
+  // …and the arc's color is not thrown away to achieve that. The pale fill is
+  // genuinely not the color the curve is stroked in, so a box claiming to name
+  // every color drawn has to carry both marks on the row.
+  test('a shared label keeps both marks rather than dropping a drawn color', () => {
+    // the shared grey is what merges the two sections at all; short insert is
+    // the bucket inside the merged list whose two colors disagree
+    const [reads] = getAlignmentsLegendSections(
+      model(
+        [
+          { color: '#aaa', label: 'LR - Normal pair orientation' },
+          { color: '#ffc0cb', label: 'Short insert' },
+        ],
+        [
+          { color: '#aaa', label: 'Normal', mark: 'curve' },
+          { color: '#ff3a8c', label: 'Short insert', mark: 'curve' },
+        ],
+      ),
+    )
+    expect(reads!.items[1]).toEqual({
+      color: '#ffc0cb',
+      label: 'Short insert',
+      swatches: [
+        { color: '#ffc0cb', mark: undefined },
+        { color: '#ff3a8c', mark: 'curve' },
+      ],
+    })
+  })
+
+  // The mirror case stays one swatch: same color AND same meaning is one mark
+  // drawn two ways, and a column of doubled greys is noise, not information.
+  test('a shared color stays a single swatch', () => {
+    const [reads] = getAlignmentsLegendSections(
+      model(
+        [{ color: '#aaa', label: 'LR - Normal pair orientation' }],
+        [{ color: '#aaa', label: 'Normal', mark: 'curve' }],
+      ),
+    )
+    expect(reads!.items[0]!.swatches).toBeUndefined()
   })
 
   test('keeps them apart when the two vocabularies share nothing', () => {

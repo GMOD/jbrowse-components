@@ -8,10 +8,13 @@ import {
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { linkedReadColorPalette } from '../../shaders/palettes.ts'
 import {
+  LINKED_READ_COLOR_PAIR_LR,
   LINKED_READ_COLOR_PAIR_RR,
   LINKED_READ_COLOR_SPLIT_INV,
+  LINKED_READ_COLOR_SPLIT_NORMAL,
 } from './compute.ts'
 import {
+  bezierConnectionLegendItems,
   computePileupBezierArcs,
   enumerateBezierPairs,
 } from './computeOverlay.ts'
@@ -198,7 +201,7 @@ describe('computePileupBezierArcs — distinct inversion hue + tooltip label', (
     expect(arcs).toHaveLength(1)
     expect(splitInv).not.toBe(rr) // no longer shares the RR-pair blue
     expect(arcs[0]!.stroke).toBe(splitInv)
-    expect(arcs[0]!.label).toBe('Split-read inversion')
+    expect(arcs[0]!.label).toBe('Split read (inverted)')
   })
 
   it('RR pair: navy blue, distinct label', () => {
@@ -546,5 +549,31 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
     })
     expect(arcs).toHaveLength(1)
     expect(arcs[0]!.d).toMatch(/^M [\d.]+ [\d.]+ L /)
+  })
+})
+
+// The key is built from the palette, labels and straight-vs-curved rule the
+// overlay itself draws with, so the glyph is part of that guarantee: a color the
+// reader met as a curve must not be keyed by a square.
+describe('bezierConnectionLegendItems', () => {
+  it('draws each row as the connector shape that color is drawn in', () => {
+    const mark = (colorType: number) =>
+      bezierConnectionLegendItems([colorType])[0]!.mark
+    // aberrant orientations and inverted splits are the beziers
+    expect(mark(LINKED_READ_COLOR_PAIR_RR)).toBe('curve')
+    expect(mark(LINKED_READ_COLOR_SPLIT_INV)).toBe('curve')
+    // the normal slots reach this overlay only as cross-region pairs, which it
+    // draws as straight `M..L..` paths
+    expect(mark(LINKED_READ_COLOR_PAIR_LR)).toBe('line')
+    expect(mark(LINKED_READ_COLOR_SPLIT_NORMAL)).toBe('line')
+  })
+
+  it('keys the connection colors in view, sorted, in the arcs own words', () => {
+    expect(
+      bezierConnectionLegendItems([
+        LINKED_READ_COLOR_SPLIT_INV,
+        LINKED_READ_COLOR_PAIR_RR,
+      ]).map(i => i.label),
+    ).toEqual(['RR - Both mates reverse strand', 'Split read (inverted)'])
   })
 })

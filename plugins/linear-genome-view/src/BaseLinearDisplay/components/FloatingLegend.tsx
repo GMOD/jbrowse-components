@@ -1,6 +1,10 @@
 import { useState } from 'react'
 
-import { nonEmptyLegendSections } from '@jbrowse/core/ui'
+import {
+  LegendSwatchGlyph,
+  legendSwatches,
+  nonEmptyLegendSections,
+} from '@jbrowse/core/ui'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -106,9 +110,9 @@ const useStyles = makeStyles()(theme => ({
       marginBottom: 0,
     },
   },
-  colorBox: {
-    width: 12,
-    height: 12,
+  swatches: {
+    display: 'flex',
+    gap: 2,
     marginRight: 6,
     flexShrink: 0,
   },
@@ -139,10 +143,20 @@ const useStyles = makeStyles()(theme => ({
 
 const DEFAULT_MAX_ITEMS = 12
 
+// Side of one mark. The old fixed color box's size, kept so a legend of plain
+// fills is pixel-identical to what shipped before marks existed.
+const SWATCH = 12
+
 // The spec itself lives in core beside SvgColorLegend, so the export legends can
 // flatten the very value this component renders (see legendEntries). Re-exported
 // here because every display already imports it from this plugin.
-export type { LegendItem, LegendSection, LegendSpec } from '@jbrowse/core/ui'
+export type {
+  LegendItem,
+  LegendMark,
+  LegendSection,
+  LegendSpec,
+  LegendSwatch,
+} from '@jbrowse/core/ui'
 
 // One list of swatches with its own independent collapse state, so each section
 // in a multi-section legend expands/collapses on its own.
@@ -158,15 +172,30 @@ const LegendItemList = observer(function LegendItemList({
   const collapsible = items.length > maxItems
   const shown = collapsible && !expanded ? items.slice(0, maxItems) : items
   const hiddenCount = items.length - maxItems
+  // Every row reserves the widest row's swatch column, so labels stay in one
+  // vertical line whether a row draws one mark or two — and so a color-less
+  // heading row indents like the swatches it heads, as the fixed-size box it
+  // replaces used to.
+  const columns = Math.max(1, ...shown.map(i => legendSwatches(i).length))
   return (
     <>
       {shown.map((item, i) => (
         // eslint-disable-next-line @eslint-react/no-array-index-key
         <div key={`${item.label}-${i}`} className={classes.item}>
           <div
-            className={classes.colorBox}
-            style={{ backgroundColor: item.color }}
-          />
+            className={classes.swatches}
+            style={{ minWidth: columns * SWATCH + (columns - 1) * 2 }}
+          >
+            {legendSwatches(item).map(swatch => (
+              <svg
+                key={`${swatch.color}-${swatch.mark ?? 'fill'}`}
+                width={SWATCH}
+                height={SWATCH}
+              >
+                <LegendSwatchGlyph swatch={swatch} size={SWATCH} />
+              </svg>
+            ))}
+          </div>
           <span className={classes.label}>{item.label}</span>
         </div>
       ))}

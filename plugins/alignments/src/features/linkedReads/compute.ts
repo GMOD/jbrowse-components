@@ -28,19 +28,24 @@ export const LINKED_READ_COLOR_PAIR_LL = PAIR_DIRECTION_NUM.LL
 export const LINKED_READ_COLOR_SPLIT_NORMAL = LINKED_READ_COLOR_PAIR_LL + 1
 export const LINKED_READ_COLOR_SPLIT_INV = LINKED_READ_COLOR_PAIR_LL + 2
 
-// Human-readable connection classification for the bezier-arc hover tooltip.
-// Pair-orientation wording matches CATEGORY_LEGEND (the read-fill legend) so the
-// same LR/RL/RR/LL nomenclature IGV uses reads consistently across the swatch
-// and the arc. Split labels are interpretive because a split-read strand flip is
-// an unambiguous inversion junction (unlike library-dependent pair orientation);
-// split inversion gets its own color (colorSplitReadInversion), distinct from
-// the RR-pair blue (see linkedReadColorPalette), so the two are tellable apart.
+// Human-readable connection classification for the bezier-arc hover tooltip and
+// its legend row. Every label matches CATEGORY_LEGEND (the read-fill legend)
+// word for word: the LR/RL/RR/LL nomenclature IGV uses, and the same co-linear /
+// inverted split wording, so a color means one thing whether the reader met it
+// on a swatch, a fill or a curve. Split inversion gets its own color
+// (colorSplitReadInversion), distinct from the RR-pair blue (see
+// linkedReadColorPalette), so the two are tellable apart.
+//
+// Neither split label names a variant class. `splitJunctionKind` reads the two
+// strands and nothing else, and "deletion" — which this said until it was
+// noticed in a legend beside its own synonym — is one of the several rearrangements
+// a co-linear junction is evidence for.
 export function connectionLabel(colorType: number) {
   switch (colorType) {
     case LINKED_READ_COLOR_SPLIT_INV:
-      return 'Split-read inversion'
+      return 'Split read (inverted)'
     case LINKED_READ_COLOR_SPLIT_NORMAL:
-      return 'Split read (deletion)'
+      return 'Split read (co-linear)'
     case LINKED_READ_COLOR_PAIR_RR:
       return 'RR - Both mates reverse strand'
     case LINKED_READ_COLOR_PAIR_RL:
@@ -52,6 +57,27 @@ export function connectionLabel(colorType: number) {
     default:
       return 'Read pair'
   }
+}
+
+// The connection color types the overlay draws STRAIGHT rather than as a bezier.
+// `computePileupBezierArcs` decides that from `c.isNormal`, and these are the
+// color slots that flag it: `pairedColorType` maps every orientation above LR to
+// its own aberrant slot and everything at or below it to LR/unknown, and
+// `splitColorType` gives a co-linear junction (the split-read reading of
+// `isNormal`) SPLIT_NORMAL. So the legend's glyph follows the same rule the path
+// shape does — a hand-kept list of "these ones look straight" would not.
+//
+// The one pair the two rules disagree on is a split with an unknown strand on
+// exactly one side, which lands in the unknown slot while drawing as a curve;
+// mapped reads always carry ±1, so nothing reaches it.
+const STRAIGHT_CONNECTION_COLORS = new Set([
+  LINKED_READ_COLOR_PAIR_UNKNOWN,
+  LINKED_READ_COLOR_PAIR_LR,
+  LINKED_READ_COLOR_SPLIT_NORMAL,
+])
+
+export function connectionMark(colorType: number): 'line' | 'curve' {
+  return STRAIGHT_CONNECTION_COLORS.has(colorType) ? 'line' : 'curve'
 }
 
 export interface ReadEntry {

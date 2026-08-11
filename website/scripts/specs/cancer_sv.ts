@@ -1781,9 +1781,11 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // coloured by that segment's strand relative to the chain's primary
           // instead (`readColorCategory`, the `isChain && hasSupp && !isPaired`
           // branch). So the frame holds three categories and the legend names
-          // all three: `Split read (forward)`, `Split read (reverse)` and plain
-          // `Reads`. `showLegend` is opt-in per track and off by default, so a
-          // figure that leans on those colours has to ask for it.
+          // all three: `Split segment (same strand)`, `Split segment (flipped)`
+          // and plain `Reads` — same/flipped being relative to the chain's
+          // primary, which is why the rows do not name a strand.
+          // `showLegend` is opt-in per track and off by default, so a figure
+          // that leans on those colours has to ask for it.
           showLegend: true,
           // chain layout's own connecting line is emitted per displayed region
           // and draws as a 1px hairline; the bezier pass is the one that

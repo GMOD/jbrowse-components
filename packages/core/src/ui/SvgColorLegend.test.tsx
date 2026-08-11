@@ -53,6 +53,48 @@ test('a custom marker replaces the default color square', () => {
   expect(container.querySelectorAll('rect')).toHaveLength(1)
 })
 
+// A key for a display that draws connectors as well as bodies has to say which
+// is which; a square for both says a color exists but not what to look for.
+test('a connector color draws as the curve it is, not as a square', () => {
+  const { container } = renderSvg(
+    <SvgColorLegend
+      canvasWidth={500}
+      entries={[
+        {
+          key: 'a',
+          label: 'Long insert',
+          color: 'red',
+          swatches: [{ color: 'red', mark: 'curve' }],
+        },
+      ]}
+    />,
+  )
+  expect(container.querySelectorAll('path')).toHaveLength(1)
+  // the paper rect alone — the swatch is no longer one
+  expect(container.querySelectorAll('rect')).toHaveLength(1)
+})
+
+test('a two-mark row draws both, and every label keeps one column', () => {
+  const { getByText, container } = renderSvg(
+    <SvgColorLegend
+      canvasWidth={500}
+      entries={[
+        {
+          key: 'a',
+          label: 'Short insert',
+          swatches: [{ color: '#ffc0cb' }, { color: '#ff3a8c', mark: 'curve' }],
+        },
+        { key: 'b', label: 'Long insert', color: 'red' },
+      ]}
+    />,
+  )
+  // fill + paper + paper, and the arc
+  expect(container.querySelectorAll('path')).toHaveLength(1)
+  // the widest row sets the inset for all of them, or the labels stagger
+  expect(getByText('Short insert').getAttribute('x')).toBe('28')
+  expect(getByText('Long insert').getAttribute('x')).toBe('28')
+})
+
 test('children render inside the positioned box', () => {
   const { getByText } = renderSvg(
     <SvgColorLegend canvasWidth={500} entries={[]}>

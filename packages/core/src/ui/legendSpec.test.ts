@@ -42,6 +42,25 @@ test('heading rows carry no color, so they read as headings not swatches', () =>
   expect(heading!.color).toBeUndefined()
 })
 
+// The export carries marks only when they say something a plain color square
+// doesn't, so an ordinary entry stays the three fields it has always been and
+// every existing consumer keeps rendering it identically.
+test('marks reach the export, and only where they mean something', () => {
+  const [fill, curve, both] = legendEntries({
+    items: [
+      { label: 'A', color: 'red' },
+      { label: 'B', color: 'blue', mark: 'curve' },
+      {
+        label: 'C',
+        swatches: [{ color: 'pink' }, { color: 'red', mark: 'curve' }],
+      },
+    ],
+  })
+  expect(fill!.swatches).toBeUndefined()
+  expect(curve!.swatches).toEqual([{ color: 'blue', mark: 'curve' }])
+  expect(both!.swatches).toHaveLength(2)
+})
+
 test('nonEmptyLegendSections wraps the items shorthand', () => {
   expect(nonEmptyLegendSections({ items: [{ label: 'A' }] })).toEqual([
     { id: 'items', items: [{ label: 'A' }] },

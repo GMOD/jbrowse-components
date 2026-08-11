@@ -1,10 +1,43 @@
 import type { ColorLegendEntry } from './SvgColorLegend.tsx'
 
+// How a color is drawn, so a key row can carry the mark it belongs to instead
+// of a square for everything: a filled body (a read, a feature, a bar), a
+// straight connector, or a curved one. Omitted means 'fill'.
+//
+// A legend that mixes marks needs this to say anything true. A display drawing
+// both bodies and connectors keys colors from both vocabularies, and with only
+// squares available the two are indistinguishable — the reader is told a color
+// exists but not what shape to look for.
+export type LegendMark = 'fill' | 'line' | 'curve'
+
+// One drawn mark in one color.
+export interface LegendSwatch {
+  color: string
+  mark?: LegendMark
+}
+
 // One swatch of a color vocabulary. `color` is omitted for a row that is text
 // only (a heading, a note).
+//
+// `swatches` is for the row two vocabularies produced: one meaning, drawn twice
+// in different colors (a pale pileup fill and the saturated stroke its arc
+// needs to stay visible). Listing that twice repeats the label and listing it
+// once drops a color the display really painted, so the row keeps both marks.
+// Set it OR `color`/`mark`, not both — `legendSwatches` prefers it.
 export interface LegendItem {
   color?: string
+  mark?: LegendMark
+  swatches?: LegendSwatch[]
   label: string
+}
+
+// The marks a row draws: its explicit list, else its single color/mark pair,
+// else nothing at all (a heading).
+export function legendSwatches(item: LegendItem): LegendSwatch[] {
+  return (
+    item.swatches ??
+    (item.color === undefined ? [] : [{ color: item.color, mark: item.mark }])
+  )
 }
 
 // One color vocabulary. A display that colors by several at once (genotype
@@ -56,9 +89,21 @@ export function legendEntries(spec: LegendSpec): ColorLegendEntry[] {
         key: `${section.id}-${idx}`,
         label: item.label,
         color: item.color,
+        swatches: exportSwatches(item),
       })),
     ]),
   ]
+}
+
+// A single filled swatch is what `color` alone already draws, so only a row
+// that says something more — several marks, or one that isn't a fill — carries
+// the list into the export. Keeps the common entry the three fields it has
+// always been.
+function exportSwatches(item: LegendItem) {
+  const swatches = legendSwatches(item)
+  return swatches.length > 1 || swatches.some(s => s.mark && s.mark !== 'fill')
+    ? swatches
+    : undefined
 }
 
 /**
