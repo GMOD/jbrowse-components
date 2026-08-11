@@ -1036,7 +1036,7 @@ interface Row {
 /** The component half — which on-screen chrome, and where the component is. */
 type ComponentRow = Pick<Row, 'name' | 'chrome' | 'via'>
 
-export function collectAdoption(): Row[] {
+function collectAdoption(): Row[] {
   const regs = collectRegistrations()
   const byName = new Map(regs.map(r => [r.name, r]))
   const resolve = (r: Registration, seen = new Set<string>()): ComponentRow => {

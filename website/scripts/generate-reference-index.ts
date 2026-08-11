@@ -41,7 +41,7 @@ interface Doc {
   description: string
 }
 
-export function collectReferenceDocs(): Doc[] {
+function collectReferenceDocs(): Doc[] {
   const docs: Doc[] = []
   const missing: string[] = []
   for (const file of readdirSync(referenceDir)) {
