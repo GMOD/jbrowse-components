@@ -52,10 +52,10 @@ BigWig file and drawn as an XY plot or density
 
 - **Display:** [LinearWiggleDisplay](../linearwiggledisplay)
   ([state model](../../models/linearwiggledisplay))
+- **Adapter:** [BigWigAdapter](../bigwigadapter)
 - **Adapter:** [BedGraphAdapter](../bedgraphadapter)
 - **Adapter:** [BedGraphTabixAdapter](../bedgraphtabixadapter)
 - **Adapter:** [GCContentAdapter](../gccontentadapter)
-- **Adapter:** [BigWigAdapter](../bigwigadapter)
 - **Base config:** [BaseTrack](../basetrack)
 
 ## Config slots

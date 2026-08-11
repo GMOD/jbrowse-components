@@ -117,6 +117,10 @@ export function createTestEnvironment() {
       name: 'testSession',
       view: types.maybe(LinearGenomeModel),
       configuration: types.map(types.frozen()),
+      // same shape as BaseSession's preferencesOverrides.displayTypeDefaults
+      displayTypeDefaults: types.frozen<
+        Record<string, Record<string, unknown>>
+      >({}),
     })
     .volatile(() => ({
       rpcManager: { call: mockRpcCall },
@@ -134,14 +138,18 @@ export function createTestEnvironment() {
         isValidRefName: () => true,
       },
     }))
-    .views(() => ({
+    .views(self => ({
       getTrackById(id: string) {
         return id === 'test_track' ? trackConfig : undefined
       },
-      // every promotable-slot read walks the cascade through this; nothing is
-      // promoted in these tests, so every display resolves to its promotedBase
-      getDisplayTypeDefault() {
-        return undefined
+      // Every promotable-slot read walks the cascade through this. Backed by
+      // the same nested displayType -> slot -> value shape BaseSession uses, so
+      // a test can promote a default and watch a display pick it up; with
+      // nothing promoted (the usual case) every display resolves to its
+      // promotedBase, which is what this returned unconditionally before
+      // `showLdLegend` gave the harness a second promotable slot worth driving.
+      getDisplayTypeDefault(displayType: string, slot: string): unknown {
+        return self.displayTypeDefaults[displayType]?.[slot]
       },
     }))
     .actions(self => ({
@@ -150,7 +158,22 @@ export function createTestEnvironment() {
         return view
       },
       notifyError() {},
+      // the promotable pin reports through this ("Set as the default")
+      notify(_message: string, _level?: string) {},
       queueDialog() {},
+      // reassigned wholesale so the display getters track it reactively
+      setDisplayTypeDefault(displayType: string, slot: string, value: unknown) {
+        const forType = { ...self.displayTypeDefaults[displayType] }
+        if (value === undefined) {
+          delete forType[slot]
+        } else {
+          forType[slot] = value
+        }
+        self.displayTypeDefaults = {
+          ...self.displayTypeDefaults,
+          [displayType]: forType,
+        }
+      },
     }))
 
   function createDisplay({

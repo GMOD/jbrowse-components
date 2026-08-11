@@ -129,6 +129,28 @@ export function configSchemaFactory() {
         // basic setting here and stays out of "Show advanced settings"
         advanced: false,
       },
+      /**
+       * #slot
+       * Draw the LD color key, which labels the r² ramp the points are painted
+       * against. Only appears while LD coloring is active — the ramp means
+       * nothing under the plain single-color scheme.
+       */
+      // Named for the LD legend specifically, not `showLegend` like the eight
+      // displays whose key is their color scheme's: this display could grow a
+      // second key (a chromosome band, a significance threshold) and the two
+      // would need separate switches.
+      //
+      // Promotable, and a config slot at all only as of this change — it was a
+      // volatile, so it sat with `featureUnderMouse` and `rpcDataMap` and reset
+      // on every retick. Read through the resolved `showLdLegend` getter
+      // (resolveConf), never raw.
+      showLdLegend: {
+        type: 'maybeBoolean',
+        defaultValue: undefined,
+        promotedBase: true,
+        description:
+          'Draw the LD color key while LD coloring is active. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false customizes the track',
+      },
     },
     {
       /**

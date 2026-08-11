@@ -4980,6 +4980,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "scatterPointSize",
           "type": "(JexlString | (number | undefined))"
+        },
+        {
+          "name": "showLdLegend",
+          "type": "(JexlString | (boolean | undefined))"
         }
       ],
       "stateModelProps": [

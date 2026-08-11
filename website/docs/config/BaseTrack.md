@@ -22,9 +22,9 @@ identifies it (not one of the config slots below).
 ## Related links
 
 - **Extended by:** [FeatureTrack](../featuretrack)
-- **Extended by:** [AlignmentsTrack](../alignmentstrack)
 - **Extended by:** [MultiQuantitativeTrack](../multiquantitativetrack)
 - **Extended by:** [QuantitativeTrack](../quantitativetrack)
+- **Extended by:** [AlignmentsTrack](../alignmentstrack)
 - **Extended by:** [GCContentTrack](../gccontenttrack)
 - **Extended by:** [GWASTrack](../gwastrack)
 - **Extended by:** [HicTrack](../hictrack)

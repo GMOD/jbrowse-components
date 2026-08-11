@@ -1,6 +1,8 @@
 import {
   ConfigurationReference,
   getConf,
+  makePin,
+  resolveConf,
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -101,7 +103,6 @@ export function stateModelFactory(
         flatbushes: regionDataMap<Flatbush>(),
         // Currently hovered point — drives the hover circle + tooltip.
         featureUnderMouse: undefined as ManhattanHit | undefined,
-        showLdLegend: true,
       }))
       .views(self => ({
         /**
@@ -179,6 +180,30 @@ export function stateModelFactory(
          */
         get ldColoringActive(): boolean {
           return this.colorBy === 'ld' && this.hasLdData
+        },
+        /**
+         * #getter
+         * Whether the LD color key is drawn. Resolved through the
+         * promotable-slot tiers (resolveConf): an explicit track value
+         * customizes it either way, otherwise it follows the session-wide
+         * default for this display type, falling back to on.
+         *
+         * Config-backed rather than volatile, which it was until this became a
+         * slot: a volatile reset on every retick, so turning the key off lasted
+         * until the track was hidden and reshown. It reads as a setting in the
+         * menu and now behaves like one.
+         */
+        get showLdLegend(): boolean {
+          return resolveConf(self, 'showLdLegend')
+        },
+        /**
+         * #getter
+         * "make the current LD-key visibility the default for all tracks"
+         * control (pin): symmetric, so it promotes whichever value the track
+         * shows.
+         */
+        get showLdLegendDisplayTypeDefault() {
+          return makePin(self, 'showLdLegend')
         },
         /**
          * #getter
@@ -379,7 +404,7 @@ export function stateModelFactory(
          * #action
          */
         setShowLdLegend(val: boolean) {
-          self.showLdLegend = val
+          setConf(self, 'showLdLegend', val)
         },
         /**
          * #action
@@ -458,6 +483,7 @@ export function stateModelFactory(
                 {
                   disabled: !self.ldColoringActive,
                   disabledHelpText: 'Requires LD coloring to be active',
+                  pin: self.showLdLegendDisplayTypeDefault,
                 },
               ),
             ]),

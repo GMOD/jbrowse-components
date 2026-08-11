@@ -23,11 +23,11 @@ that identifies it (not one of the config slots below).
 
 ## Related links
 
+- **Extended by:** [LinearManhattanDisplay](../linearmanhattandisplay)
 - **Extended by:** [LinearAlignmentsDisplay](../linearalignmentsdisplay)
 - **Extended by:** [LinearArcDisplay](../lineararcdisplay)
 - **Extended by:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
 - **Extended by:** [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)
-- **Extended by:** [LinearManhattanDisplay](../linearmanhattandisplay)
 - **Extended by:** [LinearHicDisplay](../linearhicdisplay)
 - **Extended by:** [SharedLDDisplay](../sharedlddisplay)
 - **Extended by:** [SharedVariantDisplay](../sharedvariantdisplay)
