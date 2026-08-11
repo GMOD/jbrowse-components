@@ -1236,6 +1236,39 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * The per-read values the CPU-baked schemes actually painted in the
+         * rendered reads — tag values, or mate refNames under chromosome
+         * painting. `colorTagMap` cannot answer this: it only ever grows (it is
+         * cleared solely when the scheme changes), so after panning it holds
+         * every value the track has ever seen, and keying the legend straight
+         * off it listed swatches for a chromosome the user navigated away from.
+         * The presence filter every other scheme gets through
+         * `colorLegendCategories`, for the one vocabulary that isn't a fixed
+         * category set.
+         *
+         * `undefined` for schemes with no such values, which is what tells the
+         * legend not to filter — distinct from the empty set, which means the
+         * scheme has values and none are on screen. Same showLegend gate as the
+         * category scan, for the same reason: it is O(reads).
+         */
+        get presentTagValues(): ReadonlySet<string> | undefined {
+          const { type } = this.colorBy
+          if (!this.showLegend || (type !== 'tag' && type !== 'mateRefName')) {
+            return undefined
+          }
+          const present = new Set<string>()
+          for (const map of this.laidOutByGroup.values()) {
+            for (const { readTagValues } of map.values()) {
+              for (const value of readTagValues ?? []) {
+                present.add(value)
+              }
+            }
+          }
+          return present
+        },
+
+        /**
+         * #getter
          */
         // Derived from the session theme so it's always available — including
         // headless SVG export and RPC, where no component mounts to seed it.
@@ -1308,6 +1341,7 @@ export default function stateModelFactory(
             palette: this.colorPalette,
             detectedModifications: self.detectedModifications,
             colorTagMap: self.colorTagMap,
+            presentTagValues: this.presentTagValues,
           })
         },
 

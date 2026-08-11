@@ -386,13 +386,26 @@ function modificationLegend(
   ]
 }
 
-// One swatch per discovered value of a CPU-baked scheme (tag values, or mate
-// refNames under chromosome painting), colored exactly as painted — colorTagMap
-// holds the same color buildReadTagColors bakes into readTagColors. Sorted by
-// value so the legend order stays stable as reads stream in rather than
-// reordering by discovery. Empty until reads carrying a value load.
-function bakedValueLegend(colorTagMap: Record<string, string>): LegendItem[] {
+// One swatch per value of a CPU-baked scheme (tag values, or mate refNames under
+// chromosome painting) that the rendered reads actually carry, colored exactly
+// as painted — colorTagMap holds the same color buildReadTagColors bakes into
+// readTagColors. Sorted by value so the legend order stays stable as reads
+// stream in rather than reordering by discovery. Empty until reads carrying a
+// value load.
+//
+// `present` is what keeps this honest. colorTagMap only ever grows — it is
+// cleared when the scheme changes and never on navigation — so listing it whole
+// keyed every value the track had ever seen: pan to chr1 under chromosome
+// painting and the key still named chr7 and every scaffold visited on the way,
+// none of them on screen. Undefined means the caller can't tell (tests, and any
+// consumer without a laid-out map), in which case the unfiltered list is still
+// the best available answer.
+function bakedValueLegend(
+  colorTagMap: Record<string, string>,
+  present: ReadonlySet<string> | undefined,
+): LegendItem[] {
   return Object.entries(colorTagMap)
+    .filter(([value]) => present === undefined || present.has(value))
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([value, color]) => ({ color, label: value }))
 }
@@ -414,6 +427,7 @@ function schemeLegend(
   palette: ColorPalette,
   detectedModifications: ReadonlyMap<string, string> | undefined,
   colorTagMap: Record<string, string>,
+  presentTagValues: ReadonlySet<string> | undefined,
 ): LegendItem[] {
   // The normal scheme paints every read one flat color ('plain' → colorPairLR),
   // which isn't a CATEGORY_LEGEND bucket, so without an explicit entry its
@@ -432,7 +446,7 @@ function schemeLegend(
     ]
   }
   if (colorType === 'tag' || colorType === 'mateRefName') {
-    return bakedValueLegend(colorTagMap)
+    return bakedValueLegend(colorTagMap, presentTagValues)
   }
   if (colorType === 'mappingQuality') {
     // Ramp stops, not buckets: hue IS the score in degrees (categoryColor /
@@ -479,8 +493,9 @@ function schemeLegend(
  * only relevant swatches are listed, and `palette` is the live render palette so
  * swatch colors match the painted reads exactly. Modification swatches come from
  * `detectedModifications` (type code -> painted color); tag / chromosome-painting
- * swatches from `colorTagMap` (value -> painted color); mapping/per-base quality
- * are fixed hue ramps.
+ * swatches from `colorTagMap` (value -> painted color), narrowed to
+ * `presentTagValues` the way the fixed swatches are narrowed by
+ * `presentCategories`; mapping/per-base quality are fixed hue ramps.
  */
 export function getReadDisplayLegendItems({
   colorBy,
@@ -488,12 +503,17 @@ export function getReadDisplayLegendItems({
   palette,
   detectedModifications,
   colorTagMap = {},
+  presentTagValues,
 }: {
   colorBy: ColorBy | undefined
   presentCategories: ReadonlySet<ReadColorCategory>
   palette: ColorPalette
   detectedModifications?: ReadonlyMap<string, string>
   colorTagMap?: Record<string, string>
+  // Values the rendered reads carry, for the CPU-baked schemes. Undefined means
+  // "not known here" and leaves colorTagMap unfiltered; the empty set means the
+  // scheme has values and none are on screen.
+  presentTagValues?: ReadonlySet<string>
 }): LegendItem[] {
   // A strand tag keys fwd/rev itself, in those exact colors, so drop them from
   // the cross-cutting tail rather than listing the same two swatches again
@@ -506,7 +526,13 @@ export function getReadDisplayLegendItems({
       )
     : presentCategories
   return [
-    ...schemeLegend(colorBy, palette, detectedModifications, colorTagMap),
+    ...schemeLegend(
+      colorBy,
+      palette,
+      detectedModifications,
+      colorTagMap,
+      presentTagValues,
+    ),
     ...crossCuttingBuckets(categories, palette, colorBy),
   ]
 }

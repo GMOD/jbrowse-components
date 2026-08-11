@@ -18,6 +18,7 @@ function legendFor(
   rest?: {
     detectedModifications?: Map<string, string>
     colorTagMap?: Record<string, string>
+    presentTagValues?: ReadonlySet<string>
   },
 ) {
   return getReadDisplayLegendItems({
@@ -41,8 +42,11 @@ function labels(
 function tagLabels(
   colorBy: { type: 'tag'; tag: string },
   colorTagMap?: Record<string, string>,
+  presentTagValues?: ReadonlySet<string>,
 ) {
-  return legendFor(colorBy, ['tag'], { colorTagMap }).map(i => i.label)
+  return legendFor(colorBy, ['tag'], { colorTagMap, presentTagValues }).map(
+    i => i.label,
+  )
 }
 
 describe('getReadDisplayLegendItems', () => {
@@ -266,6 +270,24 @@ describe('getReadDisplayLegendItems', () => {
       { color: 'red', label: 'ctgA' },
       { color: 'blue', label: 'ctgB' },
     ])
+  })
+
+  // colorTagMap only ever grows — cleared when the scheme changes, never on
+  // navigation — so on its own it keyed every value the track had ever seen.
+  // Panning to a region whose reads all mate to ctgA still listed ctgB.
+  test('baked-value swatches are narrowed to the values on screen', () => {
+    expect(
+      legendFor({ type: 'mateRefName' }, ['tag'], {
+        colorTagMap: { ctgA: 'red', ctgB: 'blue' },
+        presentTagValues: new Set(['ctgA']),
+      }),
+    ).toEqual([{ color: 'red', label: 'ctgA' }])
+    // the empty set is a real state: the scheme has values, none are drawn
+    expect(
+      tagLabels({ type: 'tag', tag: 'HP' }, { '1': 'red' }, new Set()),
+    ).toEqual([])
+    // undefined is "the caller can't tell" and leaves the list alone
+    expect(tagLabels({ type: 'tag', tag: 'HP' }, { '1': 'red' })).toEqual(['1'])
   })
 
   test('mapping quality is a fixed ramp regardless of present buckets', () => {
