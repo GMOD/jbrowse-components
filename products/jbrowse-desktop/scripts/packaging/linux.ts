@@ -11,6 +11,11 @@ import { linuxArtifacts } from './artifacts.ts'
 import { APP_NAME, ASSETS, DIST, PRODUCT_NAME, VERSION } from './config.ts'
 import { packageApp } from './packager.ts'
 import {
+  SESSION_MIME_ICON_NAME,
+  SESSION_MIME_TYPE,
+  sessionMimeXml,
+} from './sessionFileType.ts'
+import {
   ensureDir,
   fileSizeMB,
   generateLatestYml,
@@ -72,8 +77,19 @@ Terminal=false
 Type=Application
 Icon=${APP_NAME}
 Categories=Science;Biology;
-MimeType=application/x-jbrowse;x-scheme-handler/${JBROWSE_PROTOCOL};
+MimeType=${SESSION_MIME_TYPE};x-scheme-handler/${JBROWSE_PROTOCOL};
 `,
+  )
+
+  // Define the type the MimeType line above claims. Saying we handle
+  // application/x-jbrowse does not say which files are of that type, and until
+  // this existed nothing did — no glob, so no session ever matched and the
+  // declaration could not fire however thoroughly the AppImage was integrated.
+  const mimeDir = path.join(appDir, 'usr/share/mime/packages')
+  ensureDir(mimeDir)
+  fs.writeFileSync(
+    path.join(mimeDir, `${APP_NAME}.xml`),
+    sessionMimeXml(PRODUCT_NAME),
   )
 
   // Handle icons
@@ -87,6 +103,21 @@ MimeType=application/x-jbrowse;x-scheme-handler/${JBROWSE_PROTOCOL};
   fs.copyFileSync(pngIcon, path.join(iconDir, `${APP_NAME}.png`))
   fs.copyFileSync(pngIcon, path.join(appDir, `${APP_NAME}.png`))
   fs.copyFileSync(pngIcon, path.join(appDir, '.DirIcon'))
+
+  // The same icon again, for the file type rather than the application. A
+  // mimetypes-context icon named after the media type with its slash dashed is
+  // how freedesktop looks one up, so the name is the whole registration — and
+  // the apps-context copy above will not do, because that context is only
+  // consulted for applications.
+  const mimeIconDir = path.join(
+    appDir,
+    'usr/share/icons/hicolor/256x256/mimetypes',
+  )
+  ensureDir(mimeIconDir)
+  fs.copyFileSync(
+    pngIcon,
+    path.join(mimeIconDir, `${SESSION_MIME_ICON_NAME}.png`),
+  )
 
   const appimagetool = path.join(DIST, '.tools', 'appimagetool')
   ensureDir(path.dirname(appimagetool))

@@ -58,46 +58,64 @@ as the url scheme — `findLaunchTarget` reads a file argument off argv,
 `openTarget` loads it — so all that is platform-specific is telling the OS which
 extension to hand us.
 
-**Windows only, today.** `scripts/packaging/nsisScript.ts` registers a
-`JBrowse2.Session` ProgID (icon, type description, open command) and points
-`HKCU\Software\Classes\.jbrowse` at it, rather than putting a command directly
-under the extension key — that older form still launches, but Explorer shows no
-icon and no type in the Type column. It also lists the ProgID under
-`OpenWithProgids`, which is where a user goes when something else holds the
-default, and calls `SHChangeNotify(SHCNE_ASSOCCHANGED)`, without which Explorer
-serves its cached associations until the next logon.
+Each platform declares it in its own format, and they are declarations of the
+same three facts — this extension, this type, this application:
 
-The other two platforms register nothing for the extension, and neither is one
-line away from it:
+| Platform    | Where                                                                                               |
+| ----------- | --------------------------------------------------------------------------------------------------- |
+| The type    | `scripts/packaging/sessionFileType.ts` (pure; the mime package and the Info.plist keys)             |
+| **Windows** | `scripts/packaging/nsisScript.ts` — registry, install and uninstall                                 |
+| **macOS**   | `scripts/packaging/packager.ts` (`extendInfo`)                                                      |
+| **Linux**   | `scripts/packaging/linux.ts` — mime package + `.desktop` `MimeType`, with the AppImage caveat below |
 
-- **macOS** gets `CFBundleURLTypes` from `packager.ts`'s `protocols`, which is
-  the url scheme only. A file association is `CFBundleDocumentTypes`, which
-  nothing writes. The receiving end is wired — `electron.ts` handles `open-file`
-  — but with no declared document type the Finder never routes a `.jbrowse` file
-  to it, and a drop onto the dock icon is refused unless the user forces it with
-  ⌘⌥.
-- **Linux** has the same AppImage caveat as the scheme above, plus one more: the
-  `.desktop` file declares `MimeType=application/x-jbrowse`, but nothing ships a
-  shared-mime-info XML mapping `*.jbrowse` onto that type, so even an integrated
-  AppImage never sees a session as `application/x-jbrowse`. That half of the
-  MimeType line is currently inert.
+**Windows** registers a `JBrowse2.Session` ProgID (icon, type description, open
+command) and points `HKCU\Software\Classes\.jbrowse` at it, rather than putting
+a command directly under the extension key — that older form still launches, but
+Explorer shows no icon and no type in the Type column. It also lists the ProgID
+under `OpenWithProgids`, which is where a user goes when something else holds
+the default, and calls `SHChangeNotify(SHCNE_ASSOCCHANGED)`, without which
+Explorer serves its cached associations until the next logon.
+
+**macOS** both _exports the type_ (`UTExportedTypeDeclarations`, since we are
+the application that invented `.jbrowse`) and declares that it opens it
+(`CFBundleDocumentTypes`, as `Editor` — a session opened from the Finder can be
+written back into its own file). A `CFBundleDocumentTypes` entry can instead
+carry a bare `CFBundleTypeExtensions` list, which LaunchServices still honours;
+the reason not to is that nothing else on the system then knows what a
+`.jbrowse` file _is_. Note the app also handles `open-file` for a drag onto the
+dock icon, which needs no registration at all — don't take that working as
+evidence the association does.
+
+**Linux** ships a shared-mime-info package defining `application/x-jbrowse` with
+a `*.jbrowse` glob. The `.desktop` file has named that type in its `MimeType=`
+line for years, but `MimeType=` only says _this application handles that type_ —
+nothing said which files were of it, so no session ever matched and the line was
+inert. The same AppImage caveat as the url scheme still applies on top: a bare
+AppImage installs none of its own metadata, so this makes the association
+possible for a user who integrates the AppImage rather than making it happen.
 
 **`.json` is deliberately not claimed**, on any platform, although
 `findLaunchTarget` opens one perfectly well. It is the most common config format
 on a developer's machine and an install has no business taking the default for
 all of them. `nsis.test.ts` pins that.
 
-Two things are easy to get wrong here and are pinned by tests, so read them
-before you change either. Extensions are matched **case-insensitively**
+Three things are easy to get wrong here and are pinned by tests, so read them
+before you change any of them. Extensions are matched **case-insensitively**
 (`hasSessionExtension`), because Windows' association is — Explorer will hand us
 `Session.JBROWSE`, and a case-sensitive predicate turns that into an app that
-silently opens to the start screen. And the uninstall removes only **values it
-wrote**, never the extension key recursively: `OpenWithProgids` is a list shared
-with every other application that can open the type.
+silently opens to the start screen. The Windows uninstall removes only **values
+it wrote**, never the extension key recursively: `OpenWithProgids` is a list
+shared with every other application that can open the type. And every platform's
+declaration of the extension is **derived from `SESSION_EXTENSION`**, never
+retyped — `sessionFileType.test.ts` exists mostly to keep them from drifting,
+which is how the inert MimeType line above happened.
 
-Smoke-testing this needs a packaged install too: save a session, double-click it
-in Explorer with the app closed and again with it running, check the icon and
-Type column, then uninstall and confirm the extension is no longer claimed.
+Neither non-Windows output has a compile step, but both go in front of their
+consumer without a build; `sessionFileType.ts`'s header has the two commands.
+Beyond that, this needs a packaged install to smoke-test, per platform: save a
+session, double-click it with the app closed and again with it running, and
+check the icon and type description the file manager shows. On Windows, then
+uninstall and confirm the extension is no longer claimed.
 
 ### Packaging
 

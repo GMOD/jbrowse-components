@@ -12,6 +12,7 @@ import {
   ROOT,
   VERSION,
 } from './config.ts'
+import { macSessionDocumentType } from './sessionFileType.ts'
 import { ensureDir, generateAppUpdateYml, log } from './utils.ts'
 
 export async function packageApp(
@@ -78,6 +79,16 @@ export async function packageApp(
       // packager writes CFBundleURLTypes into Info.plist; Windows registers the
       // scheme from the NSIS installer and Linux from the .desktop file.
       protocols: [{ name: PRODUCT_NAME, schemes: [JBROWSE_PROTOCOL] }],
+      // Claims the .jbrowse extension, so a saved session opens on double-click
+      // in the Finder. The scheme above has a packager option of its own;
+      // document types do not, so these go in as raw Info.plist keys. macOS
+      // only — packager ignores extendInfo elsewhere, and the other two
+      // platforms declare the same association in their own formats
+      // (nsisScript.ts, and the mime package in linux.ts).
+      extendInfo:
+        platform === 'darwin'
+          ? macSessionDocumentType(PRODUCT_NAME)
+          : undefined,
       osxSign,
     })
     return appPaths[0]!
