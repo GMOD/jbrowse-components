@@ -1646,8 +1646,8 @@ describe('arcsToRegionResult', () => {
 // read-fill categories describe a different vocabulary entirely, so
 // the arc-only split-junction buckets (which no read fill emits outside chain
 // mode) would be missing. These map the arc color slots back to legend
-// categories; each returned category's swatch must equal the plotted marker's
-// color (see arcMarkerColorPalette / swatchPaletteKeys).
+// categories; each returned category's swatch must equal the plotted mark's
+// color (see ARC_SLOT_CATEGORY / swatchPaletteKeys).
 describe('arcColorLegendCategory', () => {
   test('split junctions map to the cloud-only categories', () => {
     // COLOR_SPLIT_INVERSION = 7, COLOR_SPLIT_DELETION = 8
