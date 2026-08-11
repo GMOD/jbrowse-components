@@ -49,25 +49,40 @@ updaterCacheDirName: ${APP_NAME}-updater
 `
 }
 
+// The electron-updater feed for one platform: the artifacts a client may
+// download, and the hash it checks each against.
+//
+// A file that isn't there is a build failure, not an entry to leave out. Every
+// caller writes its artifact and then immediately describes it here, so a
+// missing one cannot happen — but skipping it yielded a manifest that is
+// perfectly well-formed and lists nothing, which publish.ts then uploads (it
+// checks the artifacts and the manifest exist, not that the manifest mentions
+// them) and which answers every client's update check with "no files". That is
+// the same silent-shortfall failure the note at the top of artifacts.ts is
+// about, one level down.
 export function generateLatestYml(files: string[]) {
+  const missing = files.filter(f => !fs.existsSync(path.join(DIST, f)))
+  if (missing.length > 0) {
+    throw new Error(
+      `cannot write the update manifest: ${missing.join(', ')} not in ${DIST}`,
+    )
+  }
   const lines = [`version: ${VERSION}`, `files:`]
-  const first = files[0]
 
   for (const file of files) {
     const filePath = path.join(DIST, file)
-    if (fs.existsSync(filePath)) {
-      lines.push(`  - url: ${file}`)
-      lines.push(`    sha512: ${sha512Base64(filePath)}`)
-      lines.push(`    size: ${fileSize(filePath)}`)
-    }
+    lines.push(`  - url: ${file}`)
+    lines.push(`    sha512: ${sha512Base64(filePath)}`)
+    lines.push(`    size: ${fileSize(filePath)}`)
   }
 
+  // The pre-`files` fields, still read by older clients. Always the first entry,
+  // which is why each caller passes the artifact its platform updates FROM
+  // first (mac's zip, not its dmg).
+  const first = files[0]
   if (first) {
-    const firstPath = path.join(DIST, first)
-    if (fs.existsSync(firstPath)) {
-      lines.push(`path: ${first}`)
-      lines.push(`sha512: ${sha512Base64(firstPath)}`)
-    }
+    lines.push(`path: ${first}`)
+    lines.push(`sha512: ${sha512Base64(path.join(DIST, first))}`)
   }
 
   lines.push(`releaseDate: '${new Date().toISOString()}'`)
