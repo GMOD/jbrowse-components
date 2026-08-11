@@ -1,7 +1,7 @@
 import type { ClusterProvenance } from './clusterProvenance.ts'
 import type { HierarchyNode, PositionedHierarchyNode } from './hierarchy.ts'
 import type { NewickNode } from './newick.ts'
-import type Flatbush from '@jbrowse/core/util/flatbush'
+import type { TreeSpatialIndex } from './spatialIndex.ts'
 
 export type ClusterNodeData = NewickNode
 
@@ -49,10 +49,9 @@ export interface TreeSidebarModel {
   sources?: TreeSource[]
   subtreeFilter?: string[]
   hoveredTreeNode?: HoveredTreeNode
-  spatialIndex?: {
-    index: Flatbush
-    nodes: ClusterHierarchyNode[]
-  }
+  // exactly what `buildSpatialIndex` returns, named rather than restructured:
+  // the array and the index into it are only meaningful together
+  spatialIndex?: TreeSpatialIndex
   setTreeCanvasRef: (ref: HTMLCanvasElement | null) => void
   setMouseoverCanvasRef: (ref: HTMLCanvasElement | null) => void
   setHoveredTreeNode: (node?: HoveredTreeNode) => void

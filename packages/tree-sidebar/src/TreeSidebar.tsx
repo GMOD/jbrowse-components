@@ -10,12 +10,13 @@ import { observer } from 'mobx-react'
 import { ClusterProvenanceHint } from './ClusterProvenanceHint.tsx'
 import { StaleTreeHint } from './StaleTreeHint.tsx'
 import { getLeafNames } from './clusterUtils.ts'
+import { pickTreeNode } from './spatialIndex.ts'
 import {
   TREE_RESIZE_HANDLE_WIDTH,
   treeContentHeight,
 } from './treeSidebarGeometry.ts'
 
-import type { TreeSidebarModel } from './types.ts'
+import type { ClusterHierarchyNode, TreeSidebarModel } from './types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { ReactNode } from 'react'
 
@@ -118,7 +119,7 @@ const TreeSidebar = observer(function TreeSidebar({
   top?: number
 }) {
   const { classes } = useStyles()
-  const { width: viewWidth } = getContainingView(model) as LinearGenomeViewModel
+  const view = getContainingView(model) as LinearGenomeViewModel
   const [menuAnchor, setMenuAnchor] = useState<MenuAnchor | null>(null)
 
   const {
@@ -131,29 +132,31 @@ const TreeSidebar = observer(function TreeSidebar({
     spatialIndex,
   } = model
 
+  // Cursor → tree node. All this owns is the coordinate change: the hit box is
+  // positioned at the top of the rows, so client coords become box-relative
+  // ones, and `+ scrollTop` puts them back into the un-scrolled space the tree
+  // was laid out in (the canvas beside it draws through the matching
+  // `translate(0, -scrollTop)`). Which node that lands on is `pickTreeNode`'s,
+  // beside the index it searches.
   function hitTestNode(event: React.MouseEvent) {
-    if (spatialIndex) {
-      const rect = event.currentTarget.getBoundingClientRect()
-      const x = event.clientX - rect.left
-      const y = event.clientY - rect.top + scrollTop
-      // node.y = tree depth → horizontal, node.x = row → vertical. Overlapping
-      // hit boxes come back in tree order, so pick the node whose center is
-      // nearest the cursor rather than an arbitrary first match.
-      let bestIdx: number | undefined
-      let best = Infinity
-      for (const idx of spatialIndex.index.search(x, y, x, y)) {
-        const node = spatialIndex.nodes[idx]!
-        const dx = node.y - x
-        const dy = node.x - y
-        const d = dx * dx + dy * dy
-        if (d < best) {
-          best = d
-          bestIdx = idx
-        }
-      }
-      return bestIdx === undefined ? undefined : spatialIndex.nodes[bestIdx]
+    if (!spatialIndex) {
+      return undefined
     }
-    return undefined
+    const rect = event.currentTarget.getBoundingClientRect()
+    return pickTreeNode(
+      spatialIndex,
+      event.clientX - rect.left,
+      event.clientY - rect.top + scrollTop,
+    )
+  }
+
+  // Hover a node and answer with its leaf names, which the caller also needs.
+  // `getLeafNames` walks the whole subtree, so the two writes go through one
+  // place rather than each doing that walk for itself.
+  function hoverNode(node: ClusterHierarchyNode) {
+    const names = getLeafNames(node)
+    model.setHoveredTreeNode({ node, descendantNames: names })
+    return names
   }
 
   function handleMouseMove(event: React.MouseEvent) {
@@ -165,9 +168,11 @@ const TreeSidebar = observer(function TreeSidebar({
       // leaf names and repaints the full view-width hover canvas, and mousemove
       // fires many times within one node's hit box
       if (node !== model.hoveredTreeNode?.node) {
-        model.setHoveredTreeNode(
-          node ? { node, descendantNames: getLeafNames(node) } : undefined,
-        )
+        if (node) {
+          hoverNode(node)
+        } else {
+          model.setHoveredTreeNode(undefined)
+        }
       }
     }
   }
@@ -175,11 +180,10 @@ const TreeSidebar = observer(function TreeSidebar({
   function handleClick(event: React.MouseEvent) {
     const node = hitTestNode(event)
     if (node) {
-      const names = getLeafNames(node)
       // keep the subtree highlighted for as long as its popover is open — the
       // cursor leaves the tree onto the menu backdrop, which would otherwise
       // clear the hover via onMouseLeave
-      model.setHoveredTreeNode({ node, descendantNames: names })
+      const names = hoverNode(node)
       setMenuAnchor({ x: event.clientX, y: event.clientY, names })
     }
   }
@@ -211,6 +215,14 @@ const TreeSidebar = observer(function TreeSidebar({
   }
 
   const contentHeight = treeContentHeight(model)
+  // Read past the early return, not with the other destructures above it. This
+  // is the only consumer of the view width (the hover canvas spans the track),
+  // and an observer that reads it subscribes to it — so reading it up top
+  // re-rendered every sidebar on every view resize even in the far more common
+  // state where there is no tree and nothing below is drawn. `width` also
+  // throws before the view has been measured, which is why the drawing autorun
+  // gates on `view.initialized`; here the gate is simply not needing it yet.
+  const viewWidth = view.width
 
   return (
     <>

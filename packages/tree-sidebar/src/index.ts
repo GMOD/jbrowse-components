@@ -1,4 +1,5 @@
-export { buildSpatialIndex } from './spatialIndex.ts'
+export { buildSpatialIndex, pickTreeNode } from './spatialIndex.ts'
+export type { TreeSpatialIndex } from './spatialIndex.ts'
 export { default as parseNewick } from './newick.ts'
 export type { NewickNode } from './newick.ts'
 export { default as TreeSidebar } from './TreeSidebar.tsx'
