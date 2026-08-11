@@ -1,3 +1,5 @@
+import { buildDisplaySnapshot, configTrackCategory } from './applyTrackOpts.ts'
+
 import type { Entry } from './parseArgv.ts'
 import type { Config, OpenTrack, Opts } from './types.ts'
 import type { BreakpointSplitViewInitView } from '@jbrowse/plugin-breakpoint-split-view'
@@ -55,12 +57,46 @@ export function breakpointLocs(argv: Entry[] | undefined, loc?: string) {
  * all panels. A track shown on one panel contributes no ribbon, so a per-panel
  * spelling would let a caller silently ask for a picture with nothing joining
  * it up.
+ *
+ * **The `--track` MODIFIERS apply here too**, which they did not until this
+ * function stopped returning bare trackIds. Every other mode routes them
+ * through `applyDisplayOpts`, which calls `view.showTrack` with the built
+ * snapshot; a breakpoint panel opens its tracks from its own `init` instead, so
+ * that call site does not exist and `height:240 force:true` was parsed,
+ * validated, warned about if misspelled — and then dropped. Silently, and in
+ * the direction that looks like the setting not working: the two jbrowse-img
+ * SV figures asked for `height:240` and got the default, and `force:true`
+ * could not lift the byte gate off a 200x ONT panel at all.
+ *
+ * A `TrackInit` object carries the snapshot instead: every key except
+ * `trackId`/`trackSnapshot`/`displaySnapshot` folds into the display snapshot
+ * (`normalizeTrackInit`), which is the same route a session spec takes.
  */
 export function breakpointTracks(
   openTracks: OpenTrack[] | undefined,
-  showTracks: string[],
+  showTracks: OpenTrack[],
+  tracks: Config['tracks'] = [],
 ): TrackInit[] {
-  return [...showTracks, ...(openTracks ?? []).map(t => t.trackId)]
+  return [...showTracks, ...(openTracks ?? [])].map(({ trackId, opts }) => {
+    const { snap, sort, displayType } = buildDisplaySnapshot(
+      configTrackCategory(tracks, trackId),
+      opts,
+    )
+    if (sort) {
+      // The center-line sort is resolved against a view's centerLineInfo, and
+      // there is no single view here -- one panel per --loc, each at its own
+      // locus, so "the position under the centre" is a different answer per
+      // panel. Say so rather than sorting one panel and not the others.
+      console.warn(
+        `Warning: sort:${sort.type} on "${trackId}" ignored — a breakpoint view has one panel per --loc and no single center position`,
+      )
+    }
+    return {
+      trackId,
+      ...snap,
+      ...(displayType ? { type: displayType } : {}),
+    }
+  })
 }
 
 /**
@@ -94,7 +130,7 @@ export function breakpointInitFromSpec(
 export function breakpointInit(
   data: Config,
   opts: Opts,
-  showTracks: string[],
+  showTracks: OpenTrack[],
 ): BreakpointSplitViewInitView[] {
   const locs = breakpointLocs(opts.argv, opts.loc)
   if (locs.length < 2) {
@@ -104,6 +140,6 @@ export function breakpointInit(
         'Quote a single --loc only to put SEVERAL windows in one panel.',
     )
   }
-  const tracks = breakpointTracks(data.openTracks, showTracks)
+  const tracks = breakpointTracks(data.openTracks, showTracks, data.tracks)
   return locs.map(loc => ({ assembly: data.assembly.name, loc, tracks }))
 }

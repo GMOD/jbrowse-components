@@ -1501,15 +1501,34 @@ export const jbrowseImgSpecs: CliSpec[] = [
   ]),
 
   // The two figures of the sv_callset_review tutorial, and deliberately a
-  // matched PAIR: the same junction of COLO829's der(3), at the same window and
-  // the same width, in the tumour and in its matched normal. The somatic call is
-  // the DIFFERENCE between them, so rendering them apart (different flank,
-  // different width) would be showing two pictures and asserting a comparison
-  // rather than drawing one.
+  // matched PAIR: the same junctions of COLO829's der(3), at the same windows
+  // and the same width, in the tumour and in its matched normal. The somatic
+  // call is the DIFFERENCE between them, so rendering them apart (different
+  // flank, different width) would be showing two pictures and asserting a
+  // comparison rather than drawing one.
   //
   // Both come from the hosted cancer_sv demo config, so neither needs a local
-  // file. Repeating --loc is what stacks the two panels; the reads crossing
-  // between them are drawn by the view.
+  // file. Repeating --loc is what stacks the panels; the reads crossing between
+  // them are drawn by the view.
+  //
+  // THREE PANELS, NOT TWO, AND THAT IS WHAT KILLED THE DOTTED LINES (review:
+  // "i dont like the dotted lines, because that means 'incomplete story'. we
+  // need to fix this, if needed with more multi-hop"). A dashed connector is
+  // exactly that, and the plugin says so: `AlignmentConnections` sets
+  // `strokeDasharray` on a pair whose `hiddenSegmentsBetween` is non-empty --
+  // the read has a supplementary alignment at a locus that is NOT in the view.
+  // Here that locus is chr10. COLO829 chain 1 is a closed three-chromosome
+  // cycle (agent-docs/reference/SV_MULTIHOP.md): chr3, then 199 bp of chr10 at
+  // 58,717,463-58,717,662, then 183 bp of chr12 inverted, then chr3 again. With
+  // only chr3 and chr12 on screen, every read that goes the long way round is
+  // drawn dashed and correctly so. Adding the chr10 panel makes every connector
+  // in the figure solid.
+  //
+  // `force:true` is new here and is not a taste call: the chr3 panel is 1.2 kb
+  // of 200x ONT and the byte gate refuses it, so it drew "Region too large to
+  // render". Which is also how this file found out that breakpoint mode DROPPED
+  // its --track modifiers -- `height:240` had never applied either. Fixed in
+  // products/jbrowse-img/src/breakpointInit.ts.
   cliSpec('sv_review_tumor', [
     'breakpoint',
     '--config',
@@ -1518,15 +1537,29 @@ export const jbrowseImgSpecs: CliSpec[] = [
     'hg38',
     '--track',
     'COLO829_tumor_ont',
-    'height:240',
+    'height:190',
+    'force:true',
     '--loc',
     'chr3:25,358,511-25,359,711',
     '--loc',
+    'chr10:58,716,962-58,718,162',
+    '--loc',
     'chr12:72,272,512-72,273,712',
     '--width',
-    '1100',
+    '1400',
   ]),
 
+  // The control, kept rather than deleted (review: "boring figure. consider
+  // deleting"). It is boring in the way a negative control is, and the tutorial
+  // is built on it -- its "## The control" section is what turns a fan of
+  // curves into a SOMATIC call, and `docs/tutorials/CLAUDE.md` asks every
+  // dataset for one.
+  //
+  // What it does instead is control the same claim the tumour figure now makes.
+  // At two loci it said "nothing joins these two windows"; at three it says
+  // nothing joins any of the three, which is the whole cycle, and it is a
+  // shorter figure because the normal is 55-70x rather than 200x and does not
+  // need 190 px of pileup to show it.
   cliSpec('sv_review_normal', [
     'breakpoint',
     '--config',
@@ -1535,12 +1568,15 @@ export const jbrowseImgSpecs: CliSpec[] = [
     'hg38',
     '--track',
     'COLO829BL_normal_ont',
-    'height:240',
+    'height:150',
+    'force:true',
     '--loc',
     'chr3:25,358,511-25,359,711',
     '--loc',
+    'chr10:58,716,962-58,718,162',
+    '--loc',
     'chr12:72,272,512-72,273,712',
     '--width',
-    '1100',
+    '1400',
   ]),
 ]

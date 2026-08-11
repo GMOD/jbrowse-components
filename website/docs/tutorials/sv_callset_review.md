@@ -93,7 +93,13 @@ A row that cannot be rendered is reported and the run continues, so a
 translocation into a contig the assembly does not have costs you that row and
 not the other 99.
 
-<Figure caption="One junction of COLO829's der(3), tumor reads: chr3 above, chr12 below, with a curve per read that leaves one panel and arrives in the other. The fan of curves is the junction's support, and the reads stop dead at the breakpoint on both sides." src="/img/jbrowse-img/sv_review_tumor.png" />
+A junction is two loci, so that is what `batch` draws. This one is worth looking
+at on its own, because two panels are not the whole story: a connector drawn
+dashed means the read carrying it has a segment at a locus the frame does not
+show, and these reads also visit chr10. Rendering the junction by hand with that
+third panel is the same picture with nothing left off it.
+
+<Figure caption="The three loci of COLO829's der(3) in the tumor reads, chr3 then chr10 then chr12, with a curve per read that leaves one panel and arrives in another. The fan of curves is the junction's support, the reads stop dead at the breakpoint on every side, and no connector is dashed." src="/img/jbrowse-img/sv_review_tumor.png" />
 
 ## The control
 
@@ -106,7 +112,10 @@ jb2export batch --vcf COLO829.somatic-sv.vcf.gz \
   --outDir normal --flank 600 --width 1100
 ```
 
-<Figure caption="The same two windows in the matched normal COLO829BL. The reads read straight through both loci and not one curve connects them, which is what somatic looks like." src="/img/jbrowse-img/sv_review_normal.png" />
+Drawn by hand with the same three panels, the control says the same thing about
+the whole cycle rather than about one of its junctions:
+
+<Figure caption="The same three windows in the matched normal COLO829BL. The reads read straight through all three loci and not one curve connects them, which is what somatic looks like." src="/img/jbrowse-img/sv_review_normal.png" />
 
 Put the two directories side by side and the somatic calls are the ones with
 curves in `tumor/` and none in `normal/`. That comparison is the whole reason to

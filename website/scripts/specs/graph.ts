@@ -793,6 +793,26 @@ const INV_REGION = {
 const INV_BLOCK = { refName: 'chr1', start: 144419292, end: 144572458 }
 const INV_BLOCK_LOCUS = `chr1:${INV_BLOCK.start + 1}-${INV_BLOCK.end}`
 
+// THE TWO GENES THAT SWAP, read out of the two CAT GFFs rather than off the
+// picture (`zcat test_data/graphgenomeview/hprc_inv_<hap>.genes.gff3.gz`, gene
+// records only). They are the outermost named pair inside the flagged bubble on
+// both haplotypes, which is what makes them the pair to box:
+//
+//   HG01891.1 (carrier)     PPIAL4F 6,537,074  ...  PPIAL4E 6,757,129
+//   HG02698.2 (non-carrier) PPIAL4E 4,064,546  ...  PPIAL4F 4,284,528
+//
+// Boxed on both rows because the claim was being ASSERTED (review: "the 'genes
+// reversed in this block' is hard to see in this figure"). It was: the evidence
+// was a run of eight ~9 px gene labels on one row against the same eight in the
+// other order on a row 700 px below it, and the pill told the reader the answer
+// rather than pointing at it. Two boxes per row is the same claim as a picture --
+// the left box on the carrier and the right box on the non-carrier name the same
+// gene.
+const INV_CARRIER_PPIAL4F = 'JAGYVO020000062.1:6,537,074-6,537,833'
+const INV_CARRIER_PPIAL4E = 'JAGYVO020000062.1:6,757,129-6,757,888'
+const INV_NONCARRIER_PPIAL4E = 'JBHDTM010000033.1:4,064,546-4,065,305'
+const INV_NONCARRIER_PPIAL4F = 'JBHDTM010000033.1:4,284,528-4,285,287'
+
 // The left edge of a window, as a point locus: what a row label anchors to, so
 // the callout sits at the start of the row it names instead of at a measured x.
 const windowStart = (loc: string) => loc.split('-')[0]!
@@ -3888,7 +3908,7 @@ export const graphSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     // the two ribbon bands, the three lanes between them and the bottom row's
     // ruler, plus a gene lane on each haplotype row and 60 px off the lower band
-    viewportHeight: 945,
+    viewportHeight: 965,
     hideTooltip: true,
     // The flagged bubble, and what each haplotype's own genes do inside it. The
     // row labels hang off the gene lanes the rows now carry, the same way the
@@ -3905,10 +3925,29 @@ export const graphSpecs: ScreenshotSpec[] = [
           locus: INV_BLOCK_LOCUS,
         },
       },
+      // the same two genes on each haplotype row, so the swap is a thing to
+      // look at rather than a sentence to believe
+      ...(
+        [
+          [0, INV_CARRIER_GENES, INV_CARRIER_PPIAL4F],
+          [0, INV_CARRIER_GENES, INV_CARRIER_PPIAL4E],
+          [2, INV_NONCARRIER_GENES, INV_NONCARRIER_PPIAL4E],
+          [2, INV_NONCARRIER_GENES, INV_NONCARRIER_PPIAL4F],
+        ] as const
+      ).map(([level, track, locus]): Annotation => ({
+        type: 'box',
+        strokeWidth: 3,
+        anchor: { view: [0, level], track, locus },
+      })),
+      // The order, spelled left to right so it matches what the boxes do. Short
+      // enough to clear the leftmost box on its own row (the carrier's is 23%
+      // across its window, the non-carrier's 38%), which is why the haplotype
+      // names came off: each row's track header already reads "HG01891.1
+      // genes (HPRC release 2 CAT annotation)".
       {
         type: 'text',
         fontSize: 17,
-        maxWidth: 520,
+        maxWidth: 260,
         anchor: {
           view: [0, 0],
           track: INV_CARRIER_GENES,
@@ -3917,12 +3956,12 @@ export const graphSpecs: ScreenshotSpec[] = [
           dx: 14,
           dy: -24,
         },
-        text: 'HG01891 hap1: genes reversed in the block',
+        text: 'PPIAL4F → PPIAL4E',
       },
       {
         type: 'text',
         fontSize: 17,
-        maxWidth: 520,
+        maxWidth: 260,
         anchor: {
           view: [0, 2],
           track: INV_NONCARRIER_GENES,
@@ -3931,7 +3970,7 @@ export const graphSpecs: ScreenshotSpec[] = [
           dx: 14,
           dy: -24,
         },
-        text: 'HG02698 hap2: reference gene order',
+        text: 'PPIAL4E → PPIAL4F, as in hg38',
       },
     ],
   },

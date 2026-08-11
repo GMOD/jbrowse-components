@@ -753,10 +753,12 @@ way the inversion does, so the script keeps only haplotypes whose alignments
 inside the drawn window are the inversion and its two forward flanks.
 
 Each haplotype row carries its own CAT gene annotation, which states the same
-event a second way and without reference to the ribbon: the genes named inside
-the boxed span run in opposite orders down the two rows.
+event a second way and without reference to the ribbon. The pair boxed on each
+row is the same two genes, PPIAL4F and PPIAL4E: on the carrier PPIAL4F comes
+first, on the non-carrier PPIAL4E does, and the hg38 row between them agrees
+with the non-carrier.
 
-<Figure caption="The 1q21.1 bubble the graph flags as an inversion, drawn as alignments. Between the two haplotype rows are the RefSeq genes, the bubble lane cut to inversion-flagged bubbles, and the rGFA segments. HG01891 hap 1 on top: its ribbon crosses inside the boxed span and its own genes run backwards through it. HG02698 hap 2 below: one forward ribbon, reference gene order." src="/img/pangenome/hprc_inversion.png" />
+<Figure caption="The 1q21.1 bubble the graph flags as an inversion, drawn as alignments. Between the two haplotype rows are the RefSeq genes, the bubble lane cut to inversion-flagged bubbles, and the rGFA segments. HG01891 hap 1 on top: its ribbon crosses inside the boxed span and the boxed PPIAL4F comes before the boxed PPIAL4E. HG02698 hap 2 below: one forward ribbon, and the same two genes in the reference's order." src="/img/pangenome/hprc_inversion.png" />
 
 The [allele inventory](#the-allele-inventory) has nothing for them by
 construction, since a mixed-orientation pair of backbone segments is a

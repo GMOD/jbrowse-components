@@ -69,12 +69,29 @@ describe('breakpointLocs', () => {
 describe('breakpointTracks', () => {
   it('puts hosted --track ids before the file-flag tracks, argv order', () => {
     expect(
-      breakpointTracks([{ trackId: 'file_bam', opts: [] }], ['hosted_genes']),
-    ).toEqual(['hosted_genes', 'file_bam'])
+      breakpointTracks(
+        [{ trackId: 'file_bam', opts: [] }],
+        [{ trackId: 'hosted_genes', opts: [] }],
+      ),
+    ).toEqual([{ trackId: 'hosted_genes' }, { trackId: 'file_bam' }])
   })
 
   it('is empty rather than undefined when nothing was opened', () => {
     expect(breakpointTracks(undefined, [])).toEqual([])
+  })
+
+  // Every other mode routes --track modifiers through applyDisplayOpts, which
+  // a breakpoint panel never reaches: it opens its tracks from `init`. They
+  // used to be dropped there in silence, so `height:240 force:true` parsed,
+  // validated, and did nothing.
+  it('folds the track modifiers into the panel TrackInit', () => {
+    expect(
+      breakpointTracks(
+        undefined,
+        [{ trackId: 'tumor_bam', opts: ['height:240', 'force:true'] }],
+        [{ trackId: 'tumor_bam', type: 'AlignmentsTrack' }],
+      ),
+    ).toEqual([{ trackId: 'tumor_bam', height: 240, forceLoad: true }])
   })
 })
 
@@ -98,7 +115,10 @@ describe('breakpointInit', () => {
       opts(BND),
       [],
     )
-    expect(init.map(v => v.tracks)).toEqual([['tumor_bam'], ['tumor_bam']])
+    expect(init.map(v => v.tracks)).toEqual([
+      [{ trackId: 'tumor_bam' }],
+      [{ trackId: 'tumor_bam' }],
+    ])
   })
 
   it('takes as many panels as the chain has hops, not two', () => {

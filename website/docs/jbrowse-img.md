@@ -346,31 +346,42 @@ to that panel** — the meaning a space already has for a linear view. So the
 two-breakend case needs no shell quoting, and a panel that wants two windows
 still can have them.
 
+A connector is drawn dashed when the read carrying it has a supplementary
+alignment at a locus that is not on screen. That is the view reporting an
+incomplete picture rather than a style, and the fix is to give it the missing
+panel. COLO829's der(3) is a closed cycle over three chromosomes, so the
+junction below needs a chr10 panel between the two it appears to join, and with
+it every connector in the figure is solid:
+
 <!-- jb2export: sv_review_tumor -->
 
 ```bash
 jb2export breakpoint --config https://jbrowse.org/demos/cancer_sv/config.json \
-  --assembly hg38 --track COLO829_tumor_ont height:240 \
-  --loc chr3:25,358,511-25,359,711 --loc chr12:72,272,512-72,273,712 \
-  --width 1100 --out sv_review_tumor.png
+  --assembly hg38 --track COLO829_tumor_ont height:190 force:true \
+  --loc chr3:25,358,511-25,359,711 --loc chr10:58,716,962-58,718,162 \
+  --loc chr12:72,272,512-72,273,712 --width 1400 --out sv_review_tumor.png
 ```
 
-<Figure src="/img/jbrowse-img/sv_review_tumor.png" caption="One junction of the COLO829 melanoma line's der(3): chr3 above, chr12 below, with a curve per tumour read that crosses between them" />
+<Figure src="/img/jbrowse-img/sv_review_tumor.png" caption="The three loci of the COLO829 melanoma line's der(3), chr3 then chr10 then chr12, with a curve per tumour read that crosses between them and no dashed connector anywhere" />
 
-The same two windows in the matched normal are the control, and the somatic call
-is the difference between the two pictures — so they are rendered at the same
-flank and the same width, or the difference is not the only thing that changed:
+`force:true` is there because the chr3 panel is 1.2 kb of 200x nanopore, which
+is over the byte gate; without it that panel draws the gate's message instead of
+reads.
+
+The same windows in the matched normal are the control, and the somatic call is
+the difference between the two pictures — so they are rendered at the same flank
+and the same width, or the difference is not the only thing that changed:
 
 <!-- jb2export: sv_review_normal -->
 
 ```bash
 jb2export breakpoint --config https://jbrowse.org/demos/cancer_sv/config.json \
-  --assembly hg38 --track COLO829BL_normal_ont height:240 \
-  --loc chr3:25,358,511-25,359,711 --loc chr12:72,272,512-72,273,712 \
-  --width 1100 --out sv_review_normal.png
+  --assembly hg38 --track COLO829BL_normal_ont height:150 force:true \
+  --loc chr3:25,358,511-25,359,711 --loc chr10:58,716,962-58,718,162 \
+  --loc chr12:72,272,512-72,273,712 --width 1400 --out sv_review_normal.png
 ```
 
-<Figure src="/img/jbrowse-img/sv_review_normal.png" caption="The same two windows in the matched normal COLO829BL: reads read straight through both loci and nothing connects the panels" />
+<Figure src="/img/jbrowse-img/sv_review_normal.png" caption="The same three windows in the matched normal COLO829BL: reads read straight through all three loci and nothing connects the panels" />
 
 To do that for a whole callset rather than one junction, `jb2export batch`
 renders one image per row of a BEDPE. See the

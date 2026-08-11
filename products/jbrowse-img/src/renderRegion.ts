@@ -520,14 +520,22 @@ const renderCircular: ModeRenderer = async ctx => {
 // identically.
 const renderBreakpoint: ModeRenderer = async ctx => {
   const { data, opts, model } = ctx
-  const showTracks = (opts.showTracks ?? []).map(([, [trackInput]]) => {
-    if (!trackInput) {
-      throw new Error(
-        '--track requires a trackId (list them with "jb2export list <hub>")',
-      )
-    }
-    return resolveTrackId(data.tracks, trackInput, data.assembly.name)
-  })
+  // trackId AND its modifiers: breakpointTracks builds a display snapshot from
+  // them, since a breakpoint panel opens its tracks from `init` and never
+  // reaches the `applyDisplayOpts`/`showTrack` call every other mode uses
+  const showTracks = (opts.showTracks ?? []).map(
+    ([, [trackInput, ...trackOpts]]) => {
+      if (!trackInput) {
+        throw new Error(
+          '--track requires a trackId (list them with "jb2export list <hub>")',
+        )
+      }
+      return {
+        trackId: resolveTrackId(data.tracks, trackInput, data.assembly.name),
+        opts: trackOpts,
+      }
+    },
+  )
   const init = ctx.spec
     ? breakpointInitFromSpec(ctx.spec)
     : breakpointInit(data, opts, showTracks)
