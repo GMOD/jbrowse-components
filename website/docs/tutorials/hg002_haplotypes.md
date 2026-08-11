@@ -2,8 +2,9 @@
 title: Comparing one genome's two haplotypes (T2T-HG002)
 sidebar_label: Haplotype synteny (T2T-HG002)
 description:
-  Load T2T-HG002 v1.2 and the Q100 project's own maternal-to-paternal chain, and
-  look at the 8p23.1 inversion in a linear synteny view
+  Load T2T-HG002 v1.2 and the Q100 project's own maternal-to-paternal chain,
+  plot one haplotype against the other genome-wide, and look at the 8p23.1
+  inversion in a linear synteny view
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 data: hosted
@@ -71,6 +72,46 @@ It is worth turning that same track on from each panel's own track selector as
 well. In a plain linear view it draws as blocks on that panel's ruler rather
 than as ribbons between the panels, and those blocks are what the right-click
 further down acts on.
+
+## The whole genome first
+
+Before framing any one locus, it is worth asking whether anything moved between
+chromosomes at all. That is a dotplot's question rather than a linear view's:
+twenty-three pairs of ribbons is not a shape anyone reads, and a dotplot answers
+it in one frame.
+
+Open **Add → Dotplot view**. Both axis dropdowns already read
+`T2T-HG002 v1.2 (diploid)`, because it is the only assembly here, which is
+exactly the problem this dataset poses. The two haplotypes are contigs of one
+assembly, so an axis set to that assembly carries both of them, and a plot of it
+against itself puts every maternal and paternal contig on both axes,
+interleaved.
+
+Switch to **Manual** and use the chromosome box beside each assembly. Each takes
+a comma-separated list of contig names, where `*` matches any characters, so
+`*_MATERNAL` on the X axis and `*_PATERNAL` on the Y axis give one haplotype per
+axis. Leave a box empty and you get the whole assembly, which is what every
+other dataset wants. These boxes exist for the fragmented ones.
+
+<Figure caption="The dotplot import form in Manual mode. Both axes are the same assembly, and the chromosome boxes cut each one down to a single haplotype. The Q100 chain is already selected as the synteny track." src="/img/hg002_haplotypes_import_form.png" />
+
+Press **Launch**, then turn on **Color by... → Strand** from the palette icon in
+the view's header. Without it the plot is one black diagonal; with it the
+collinear blocks are red and the inverted ones blue, which is the only other
+signal at this scale.
+
+What comes back is a clean per-chromosome diagonal: every maternal chromosome
+aligns to its paternal counterpart along its whole length, and nothing crosses
+between chromosomes. The blue ticks on it are the inverted blocks, and the
+largest of them is the subject of the next section. The `chrX_MATERNAL` column
+and the `chrY_PATERNAL` row are empty, which is not a loading failure: a male
+sample's sex chromosomes have no counterpart on the other haplotype to chain to.
+
+<Figure caption="The Q100 maternal-to-paternal chain as a dotplot, maternal contigs on x against paternal on y, colored by strand. Each chromosome pairs with its own counterpart on the diagonal; the blue ticks are inverted blocks and the empty lane and column are chrX and chrY." src="/img/hg002_haplotypes_wholegenome.png" />
+
+The same two boxes are on the **linear synteny view's** import form, one per
+row, so a whole-genome linear comparison of the two haplotypes is set up the
+same way.
 
 ## The 8p23.1 inversion
 

@@ -27,16 +27,22 @@ const useStyles = makeStyles()({
 export default function ChromosomeFilter({
   label,
   value,
+  testId,
   onChange,
 }: {
   label: string
   value: string
+  // on the input itself rather than the wrapper: both boxes on a form share a
+  // placeholder, so this is the only stable way for a test or a screenshot spec
+  // to say which one it means
+  testId?: string
   onChange: (arg: string) => void
 }) {
   const { classes } = useStyles()
   return (
     <TextField
       className={classes.chromosomeFilter}
+      slotProps={{ htmlInput: { 'data-testid': testId } }}
       label={label}
       value={value}
       placeholder="all (e.g. *_MATERNAL)"

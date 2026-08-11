@@ -143,6 +143,7 @@ const AssemblyRows = observer(function AssemblyRows({
           />
           <ChromosomeFilter
             label={`Row ${idx + 1} chromosomes`}
+            testId={`chromosome-filter-row-${idx}`}
             value={regionNames[idx] ?? ''}
             onChange={value => {
               setRegionName(idx, value)

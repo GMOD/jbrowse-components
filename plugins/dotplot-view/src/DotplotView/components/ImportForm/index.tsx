@@ -179,6 +179,7 @@ const DotplotImportForm = observer(function DotplotImportForm({
             />
             <ChromosomeFilter
               label="X-axis chromosomes"
+              testId="chromosome-filter-x"
               value={regionsX}
               onChange={setRegionsX}
             />
@@ -193,6 +194,7 @@ const DotplotImportForm = observer(function DotplotImportForm({
             />
             <ChromosomeFilter
               label="Y-axis chromosomes"
+              testId="chromosome-filter-y"
               value={regionsY}
               onChange={setRegionsY}
             />

@@ -365,6 +365,80 @@ const WHOLE_GENOME_AXES = [
 ]
 
 export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
+  // HOW THE FRAME BELOW IS REACHED BY CLICKING, which is the half of the story
+  // a session spec cannot tell. `{type: 'DotplotView'}` with neither axis named
+  // is the one route from a spec to the import form (see applyInit), so this
+  // opens the form itself rather than a plot.
+  //
+  // TWO EMPTY AXES, not a bare `{type: 'DotplotView'}`: launchSyntenyView
+  // throws outright below two views, so the spec has to name two and leave both
+  // unnamed. That is the state applyInit calls "the import form, deliberately".
+  //
+  // The config carries exactly one assembly, so both dropdowns already read
+  // T2T-HG002 v1.2 and there is nothing to pick -- which is the whole reason
+  // this dataset needs the chromosome boxes at all. A self-alignment's two axes
+  // are the same assembly, and without them both would carry all 47 contigs of
+  // both haplotypes interleaved.
+  {
+    mode: 'url',
+    name: 'hg002_haplotypes_import_form',
+    url: sessionSpec(HG002_CONFIG, {
+      views: [{ type: 'DotplotView', views: [{}, {}] }],
+    }),
+    // the form is DOM, so there is no canvas to wait on -- the assembly
+    // dropdowns are what has to have populated
+    readySelector: '[data-testid="import-form"]',
+    readyTimeout: 120000,
+    settleMs: 3000,
+    viewportWidth: 950,
+    // 505: measured back from the run's below-the-fold report, which had 55 css
+    // px of blank under the form at 560.
+    viewportHeight: 505,
+    stages: [
+      {
+        actions: [
+          // MANUAL FIRST. The config carries a synteny track, so the form opens
+          // in Quick start, which offers the track's own pair and a Launch and
+          // deliberately shows no chromosome boxes -- a Quick start launch is
+          // "this track, as it comes". The boxes are a Manual-mode control, so
+          // the click is part of the path a reader has to take, not setup this
+          // figure is skipping past.
+          { type: 'click', text: 'Manual' },
+          {
+            type: 'waitForSelector',
+            selector: '[data-testid="chromosome-filter-x"]',
+          },
+          {
+            type: 'type',
+            selector: '[data-testid="chromosome-filter-x"]',
+            value: '*_MATERNAL',
+          },
+          {
+            type: 'type',
+            selector: '[data-testid="chromosome-filter-y"]',
+            value: '*_PATERNAL',
+          },
+          { type: 'delay', ms: 500 },
+        ],
+        // The two boxes are the only thing on this form that is not the default,
+        // so they are what the figure is of. No text callout: the placeholder
+        // and the two typed values say it, and a pill would be naming the
+        // largest obvious thing in the frame.
+        annotations: [
+          {
+            type: 'box',
+            anchor: { selector: '[data-testid="chromosome-filter-x"]' },
+            strokeWidth: 3,
+          },
+          {
+            type: 'box',
+            anchor: { selector: '[data-testid="chromosome-filter-y"]' },
+            strokeWidth: 3,
+          },
+        ],
+      },
+    ],
+  },
   {
     mode: 'url',
     name: 'hg002_haplotypes_wholegenome',
@@ -375,7 +449,7 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
           // The header is otherwise `hg002v1.2,hg002v1.2`, which on a
           // self-alignment is the same name twice and says nothing about which
           // axis is which -- and which axis is which is the entire frame.
-          displayName: 'T2T-HG002 v1.2 — maternal (x) vs paternal (y)',
+          displayName: 'T2T-HG002 v1.2 maternal (x) vs paternal (y)',
           // The only signal here that is not the diagonal. Every chain runs
           // within a chromosome, so structure alone paints one straight line
           // and the 493 inverted chains are invisible without it; in strand
