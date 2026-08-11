@@ -7,7 +7,10 @@ import {
 import { useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
 import { DisplayUIProvider } from '@jbrowse/plugin-linear-genome-view'
-import { createViewState } from '@jbrowse/react-linear-genome-view2'
+import {
+  createViewState,
+  destroyViewState,
+} from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
 // Every page before this one gates its tracks on `view.ready`. That getter has
@@ -29,6 +32,11 @@ import { observer } from 'mobx-react'
 // the session and carrying on. JBrowse's own apps draw a snackbar for it; a
 // host drawing its own chrome renders nothing, so those messages are dropped
 // on the floor unless you read the array. The button below fires one.
+//
+// And because each radio builds a whole new engine, this is the only page here
+// that *throws one away* -- so it is where `destroyViewState` lives. An engine
+// is not owned by React, and unmounting the component that drew it leaves its
+// autoruns and its worker threads running. See the bottom of the file.
 //
 // Self-contained, like every page here: nothing below is imported from the rest
 // of this site, so you can copy the file and run it.
@@ -96,8 +104,9 @@ const conservationTrack = {
 }
 
 // Three engines, one per radio button. Each is a whole `createViewState`, and
-// the demo remounts to switch -- an assembly is not something you swap on a
-// live view.
+// the demo builds a fresh one to switch -- an assembly is not something you
+// swap on a live view. So this is also the one page here that *discards*
+// engines, which is what `destroyViewState` below is about.
 const SCENARIOS = {
   ready: {
     label: 'volvox — loads, then draws',
@@ -121,6 +130,9 @@ const SCENARIOS = {
 
 type ScenarioName = keyof typeof SCENARIOS
 
+// `state` comes back alongside the view here, unlike on every other page. It is
+// the root of the engine, and it is what `destroyViewState` takes -- a view is a
+// node inside that tree, not a handle on it.
 function makeView(name: ScenarioName) {
   const { assembly, track, loc } = SCENARIOS[name]
   const state = createViewState({
@@ -136,11 +148,12 @@ function makeView(name: ScenarioName) {
   // see the Pan and zoom example: scroll-to-zoom is a session preference, shared
   // with any display that scrolls vertically inside itself
   view.setScrollZoom(true)
-  return { view, session: state.session }
+  return { state, view, session: state.session, trackId: track.trackId }
 }
 
-type BrowserView = ReturnType<typeof makeView>['view']
-type BrowserSession = ReturnType<typeof makeView>['session']
+type Engine = ReturnType<typeof makeView>
+type BrowserView = Engine['view']
+type BrowserSession = Engine['session']
 
 const TrackRow = observer(function TrackRow({
   view,
@@ -363,13 +376,16 @@ function useSiteMode() {
 /**
  * One scenario's browser. Everything above the gate is the earlier pages; the
  * gate itself is the page.
+ *
+ * The engine arrives as a prop rather than being built here, which is the other
+ * half of the teardown below: whoever builds one has to be the one that
+ * discards it, and that is not this component.
  */
-const Browser = observer(function Browser({ name }: { name: ScenarioName }) {
-  const [{ view, session }] = useState(() => makeView(name))
+const Browser = observer(function Browser({ engine }: { engine: Engine }) {
+  const { view, session, trackId } = engine
   const ref = useWidthSetter(view)
   const { containerProps } = usePanZoom(ref, view)
   const palette = useSessionPalette(session, useSiteMode())
-  const { trackId } = SCENARIOS[name].track
 
   return (
     <PaletteProvider palette={palette}>
@@ -410,8 +426,36 @@ const Browser = observer(function Browser({ name }: { name: ScenarioName }) {
   )
 })
 
+/**
+ * The engine is not owned by React, and this is the page where that has teeth.
+ *
+ * Picking a radio builds a whole new `createViewState` -- which is the only way
+ * to replay a load, and an assembly is not swappable on a live view -- so the
+ * one that was on screen is now garbage. Unmounting the component that rendered
+ * it does **not** stop it: an engine is an MST tree with `addDisposer`'d
+ * autoruns and an RPC manager holding worker threads, none of which React knows
+ * about. Three clicks without this call leaves three live engines fetching.
+ *
+ * `destroyViewState(state)` terminates the workers and destroys the tree, and it
+ * is idempotent. Note it is called in the **handler that discards the engine**,
+ * not in an effect cleanup. The cleanup is the shape that looks right and is a
+ * trap: StrictMode mounts, cleans up and re-mounts in development, so an
+ * unmount-time teardown destroys the engine the demo is still using -- and it
+ * would be wrong here anyway, because a discard is something your app does, not
+ * something a render does.
+ *
+ * `name` and `engine` live in one state object so they cannot disagree about
+ * which scenario is on screen.
+ *
+ * Most hosts never call this: a page that builds one engine and keeps it until
+ * the tab closes has nothing to clean up. It is for the ones that churn -- an
+ * SPA route change, a re-run notebook cell, a dashboard swapping datasets.
+ */
 const LoadingAndErrors = observer(function LoadingAndErrors() {
-  const [name, setName] = useState<ScenarioName>('ready')
+  const [current, setCurrent] = useState(() => ({
+    name: 'ready' as ScenarioName,
+    engine: makeView('ready'),
+  }))
 
   return (
     <div>
@@ -433,19 +477,23 @@ const LoadingAndErrors = observer(function LoadingAndErrors() {
             <input
               type="radio"
               name="scenario"
-              checked={name === key}
+              checked={current.name === key}
               onChange={() => {
-                setName(key as ScenarioName)
+                destroyViewState(current.engine.state)
+                setCurrent({
+                  name: key as ScenarioName,
+                  engine: makeView(key as ScenarioName),
+                })
               }}
             />
             {label}
           </label>
         ))}
       </div>
-      {/* keyed on the scenario, so picking one builds a fresh engine rather
-          than mutating a live view's assembly. That also replays the load,
-          which is the only way to see the loading state twice. */}
-      <Browser key={name} name={name} />
+      {/* keyed on the scenario so the chrome around the new engine starts
+          clean -- the width setter, the gesture layer and the palette all
+          rebind rather than being handed a different view mid-life */}
+      <Browser key={current.name} engine={current.engine} />
     </div>
   )
 })
