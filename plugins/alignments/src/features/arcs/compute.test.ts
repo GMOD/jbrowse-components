@@ -1658,6 +1658,7 @@ describe('groupArcsByRef', () => {
         colorType: 0,
         shapeType: 0,
         yBp: 200,
+        support: 1,
       },
       {
         p1: { refName: 'chr2', bp: 5000 },
@@ -1665,6 +1666,7 @@ describe('groupArcsByRef', () => {
         colorType: 1,
         shapeType: 1,
         yBp: 500,
+        support: 1,
       },
     ]
     const lines = [
@@ -1689,6 +1691,7 @@ describe('arcsToRegionResult', () => {
         colorType: 0,
         shapeType: 0,
         yBp: 200,
+        support: 1,
       },
     ]
     const regionLines = [{ x: { refName: 'chr1', bp: 1200 }, colorType: 0 }]
