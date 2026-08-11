@@ -1381,39 +1381,45 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     // below-the-fold check, which still reported 10.5 css px under the fold at
     // 1410 -- the bottom retrocopy lane's own border.
     viewportHeight: 1421,
-    // ONE PILL, TWO SENTENCES (review: "reduce wordiness to bare minimum. like
-    // 1-2 sentences/phrases please"). It used to be three paragraphs answering
-    // an earlier round's three questions -- what the rows are, how the figure
-    // was made, and the finding. The first two are description a reader can get
-    // from the row labels and the caption, and only the third is something the
-    // picture alone does not say; so the pill keeps the third and the caption
-    // and the prose above the figure carry the rest.
+    // TWO LABELS, NO PROSE (review: "too much prose stiill. just put labels
+    // 'regular gene' and 'retrogene - no introns' on different gene areas of
+    // figure"). Every earlier round shrank the pill and kept it a sentence; this
+    // one drops the sentence. What is left names the two things the reader has
+    // to tell apart, each one sitting in the lane that draws it — a three-box
+    // model with two gaps, and a single box that has none — so the label is a
+    // pointer rather than a claim, and the ribbons between them are what argue.
     //
-    // What is deliberately NOT on the image any more: the two GenBank
-    // accessions (in the caption and in the track names), and the note that the
-    // parent is in the middle because both PAFs align a retrocopy to the PARENT
-    // and there is no CFA18-vs-CFA12 alignment -- that answers an earlier "put
-    // the reference on top", which is still not available, and it is a
-    // paragraph in the tutorial rather than a label.
+    // The finding the pill used to carry ("the blue calls sit in the same two
+    // places: they are the retrogene, not a deletion") is a conclusion drawn
+    // from all three lanes, so it moves to the caption. The GenBank accessions
+    // and the reason the parent is in the middle were already there.
     //
-    // Anchored in the sample lane, right of both blue blocks and below the
-    // in-app genotype/group legend, so it sits on homozygous-reference grey and
-    // covers no call. `y` is the FIRST line's baseline and the block grows
-    // downward, so `fracY` places the top of the pill, not its centre.
+    // Both anchors are a locus in the lane's own coordinates, right of the last
+    // exon / of the retrocopy's single CDS box, so each label sits on empty lane
+    // rather than on the glyph it names. `fracY` places the TOP of the pill
+    // (`y` is the first line's baseline and the block grows downward), so at
+    // fontSize 18 these clear the 55/60 px lanes they are in.
     annotations: [
       {
         type: 'text' as const,
-        fontSize: 20,
-        maxWidth: 460,
-        text:
-          "Every gap in a ribbon is one of the parent gene's introns. " +
-          'The blue calls sit in the same two places: they are the retrogene, ' +
-          'not a deletion.',
+        fontSize: 18,
+        text: 'retrogene — no introns',
+        anchor: {
+          view: [0, 0],
+          track: 'dog10k_fgf4_retro_cfa18_genes',
+          locus: 'FGF4retro-CFA18:1,050',
+          fracY: 0.42,
+        },
+      },
+      {
+        type: 'text' as const,
+        fontSize: 18,
+        text: 'regular gene',
         anchor: {
           view: [0, 1],
-          track: 'dog10k_fgf4_svs',
-          locus: 'chr18:48,871,300',
-          fracY: 0.34,
+          track: 'canFam4_ncbi_refseq',
+          locus: 'chr18:48,871,400',
+          fracY: 0.42,
         },
       },
     ],
