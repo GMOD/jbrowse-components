@@ -43,7 +43,11 @@ export interface TreeSidebarModel {
   clusterProvenance?: ClusterProvenance
   treeAreaWidth: number
   height: number
-  lineZoneHeight?: number
+  // Px the display reserves above its rows, so the sidebar starts where the
+  // rows do. It is a *total*, not any one band: the multi-sample variant
+  // displays stack a variant lane and a connector-line zone and hand over the
+  // sum (`rowsTopOffset`), which is why this is not named for either of them.
+  rowsTopOffset?: number
   scrollTop?: number
   showTree: boolean
   sources?: TreeSource[]
@@ -68,7 +72,7 @@ export interface TreeDrawingModel {
   hierarchy?: ClusterHierarchyNode
   treeAreaWidth: number
   height: number
-  lineZoneHeight?: number
+  rowsTopOffset?: number
   scrollTop?: number
   // Resolved px row height, never a fit-to-height sentinel. Every row display
   // spells the raw setting `rowHeight` (0 = fit to display height) and the

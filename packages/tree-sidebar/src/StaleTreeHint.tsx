@@ -58,7 +58,7 @@ export const StaleTreeHint = observer(function StaleTreeHint({
 }: {
   model: TreeSidebarModel
   // Top of the hint, matching the top of the tree canvas (the display's
-  // `lineZoneHeight`), so it sits at the head of the sidebar rather than up in
+  // `rowsTopOffset`), so it sits at the head of the sidebar rather than up in
   // whatever the display reserves above its rows — the variants matrix display's
   // connector zone is user-draggable, so at 0 the hint floated arbitrarily far
   // above the rows it is talking about. Same contract as

@@ -50,6 +50,10 @@ import {
   variantTrackMenuItems,
 } from './multiSampleVariantMenuItems.ts'
 import { getVariantLegendSections } from './variantLegend.ts'
+import {
+  DEFAULT_VARIANT_LANE_HEIGHT,
+  variantTopBandsGeometry,
+} from './variantTopBands.ts'
 
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
 import type { SharedVariantConfigModel } from './SharedVariantConfigSchema.ts'
@@ -543,6 +547,33 @@ export default function MultiSampleVariantBaseModelF(
          */
         get lineZoneHeight(): number {
           return getConf(self, 'lineZoneHeight')
+        },
+
+        /**
+         * #getter
+         * Whether the variant lane — a `LinearVariantDisplay`-style strip of the
+         * records themselves, above the genotype rows — is drawn.
+         *
+         * False here, and overridden by the display that paints one. The band
+         * geometry (`topBands`) is shared because every display's rows sit below
+         * whatever is stacked on them, but the *slots* live on the subclass that
+         * honors them: a display reserving a band it never fills would take the
+         * height from its rows and draw nothing there.
+         */
+        get showVariantLane(): boolean {
+          return false
+        },
+
+        /**
+         * #getter
+         * Configured height of the variant lane. Raw: it is spent only while
+         * `showVariantLane` is on, and the resolved value every consumer reads
+         * is `topBands.laneHeight`. Overridden alongside `showVariantLane`, off
+         * a config slot — a drag outlives the display instance, same as
+         * `lineZoneHeight`.
+         */
+        get variantLaneHeight(): number {
+          return DEFAULT_VARIANT_LANE_HEIGHT
         },
 
         /**
@@ -1121,15 +1152,39 @@ export default function MultiSampleVariantBaseModelF(
         // across the row displays — see agent-docs/reference/ROW_HEIGHT_AND_FIT.
         /**
          * #getter
-         * Available height for rows (total height minus lineZoneHeight).
-         * Floored at 0: `lineZoneHeight` (matrix only, user-draggable up to
-         * 1000 independently of `height`) can exceed a shrunk display height.
+         * The bands stacked above the rows — the variant lane and the
+         * connector-line zone — resolved once. Both the layout below and the
+         * painters read this, never their own sum: see `variantTopBands.ts`.
+         */
+        get topBands() {
+          return variantTopBandsGeometry({
+            showVariantLane: self.showVariantLane,
+            variantLaneHeight: self.variantLaneHeight,
+            lineZoneHeight: self.lineZoneHeight,
+          })
+        },
+        /**
+         * #getter
+         * Px reserved above the rows, and so where the rows begin. This is the
+         * name `TreeSidebar`'s model contract reads (it positions the sidebar
+         * against the rows, not against any one band), and what every component
+         * offsetting itself past the bands takes.
+         */
+        get rowsTopOffset() {
+          return this.topBands.bottom
+        },
+        /**
+         * #getter
+         * Available height for rows (total height minus whatever the bands
+         * above them take). Floored at 0: `lineZoneHeight` (matrix only,
+         * user-draggable up to 1000 independently of `height`) can exceed a
+         * shrunk display height on its own, and the variant lane adds to it.
          * Every consumer treats this as a real pixel dimension (canvas
          * height, CSS `height`, scroll viewport height), so it must never go
          * negative.
          */
         get availableHeight() {
-          return Math.max(0, self.height - self.lineZoneHeight)
+          return Math.max(0, self.height - this.rowsTopOffset)
         },
         /**
          * #getter

@@ -63,7 +63,7 @@ describe('StaleTreeHint', () => {
     expect(draw({ root: buildTree('((c,a),b);'), showTree: false })).toBeNull()
   })
 
-  // `lineZoneHeight` is the band a display reserves above its rows (the variants
+  // `rowsTopOffset` is the band a display reserves above its rows (the variants
   // matrix display's connector zone, which the user can drag arbitrarily tall).
   // At top:0 the hint floated that far above the rows it is describing, while
   // every other thing the sidebar paints — including its sibling

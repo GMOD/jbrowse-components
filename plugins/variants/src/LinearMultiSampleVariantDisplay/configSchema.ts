@@ -1,6 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 import sharedVariantConfigFactory from '../shared/SharedVariantConfigSchema.ts'
+import { DEFAULT_VARIANT_LANE_HEIGHT } from '../shared/variantTopBands.ts'
 
 /**
  * #config LinearMultiSampleVariantDisplay
@@ -125,6 +126,43 @@ export default function configSchemaFactory() {
         defaultValue: true,
         description:
           'widen insertion cells to a marker sized by the inserted bp, instead of drawing them at the 2px floor like a SNP',
+      },
+      /**
+       * #slot
+       * Draw a `LinearVariantDisplay`-style lane above the genotype rows: one
+       * mark per record at its genomic span, colored by whatever "Color by →
+       * Cells" is set to. It answers "which variant am I looking at" without a
+       * second track, the relationship the coverage band has to a pileup —
+       * `shared/variantTopBands.ts` holds the band stack.
+       *
+       * Off by default: on, it takes `variantLaneHeight` px away from the rows,
+       * so defaulting it on would resize every existing display and every
+       * committed figure.
+       *
+       * This display only, for now: it draws every cell at its genomic
+       * position, so the lane above lines up with the cells below it column for
+       * column. `LinearMultiSampleVariantMatrixDisplay` lays its columns out by
+       * feature index and ties them to the genome with connector lines instead;
+       * the band geometry is already shared with it (`topBands`), but nothing
+       * paints the lane there yet.
+       */
+      showVariantLane: {
+        type: 'boolean',
+        defaultValue: false,
+        description:
+          'draw a lane of the variants themselves above the genotype rows, at their genomic positions',
+      },
+      /**
+       * #slot
+       * Height of the variant lane, spent only while `showVariantLane` is on.
+       * On the config rather than a prop for the same reason `height` and
+       * `lineZoneHeight` are: a drag-resize outlives the display instance, so
+       * unticking and reticking the track keeps the lane the user sized.
+       */
+      variantLaneHeight: {
+        type: 'number',
+        defaultValue: DEFAULT_VARIANT_LANE_HEIGHT,
+        advanced: true,
       },
     },
     {

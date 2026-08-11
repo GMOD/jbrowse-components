@@ -9,11 +9,13 @@ import type React from 'react'
 
 // The frame both multi-sample variant SVG exports end in: the display-band clip,
 // the row content, the tree/label sidebar, and the color key. Row content and
-// sidebar are translated below `lineZoneHeight` together — the same offset the
-// on-screen canvas and `TreeSidebar` take — so a display with a connector-line
-// zone can't export its rows 20px high while its labels stay put. `lineZone`
-// draws in that top strip (the matrix display's connector lines); the legend
-// floats over the whole band, as it does on screen.
+// sidebar are translated below `rowsTopOffset` together — the same offset the
+// on-screen canvas and `TreeSidebar` take — so a display with bands above its
+// rows can't export its rows 20px high while its labels stay put. `variantLane`
+// and `lineZone` draw in those bands (the variant strip, and the matrix
+// display's connector lines, in that stacking order — see
+// shared/variantTopBands.ts); the legend floats over the whole band, as it does
+// on screen.
 //
 // The sidebar labels are `SvgSampleRowLabelGutter`, the very component the
 // on-screen overlay renders, rather than `SvgTreeSidebar`'s default
@@ -29,6 +31,7 @@ const SvgVariantOverlay = ({
   idPrefix,
   width,
   height,
+  variantLane,
   lineZone,
   insertionColor,
   children,
@@ -37,6 +40,9 @@ const SvgVariantOverlay = ({
   idPrefix: string
   width: number
   height: number
+  // The variant lane's own painted band, from the display that draws one.
+  // Untranslated: it sits at the top of the display, above `lineZone`.
+  variantLane?: React.ReactNode
   lineZone?: React.ReactNode
   // The export theme's `palette.insertion`, from the display that draws
   // insertion markers, so the key matches the glyphs this same export painted
@@ -54,12 +60,13 @@ const SvgVariantOverlay = ({
     showTree,
     showLegend,
     treeAreaWidth,
-    lineZoneHeight,
+    rowsTopOffset,
   } = model
   return (
     <SvgClipRect id={`${idPrefix}-${id}`} width={width} height={height}>
+      {variantLane}
       {lineZone}
-      <g transform={`translate(0 ${lineZoneHeight})`}>
+      <g transform={`translate(0 ${rowsTopOffset})`}>
         {children}
         <SvgTreeSidebar
           showTree={showTree}

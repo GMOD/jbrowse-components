@@ -246,13 +246,20 @@ portal can measure an offset the sidebar used to inherit from its container.
 Outside a `TrackContainer` the portal renders in place, so a standalone display
 and the component tests are unchanged.
 
-### maf's `top`, and why it is not `lineZoneHeight`
+### maf's `top`, and why it is not the model's `rowsTopOffset`
 
-`lineZoneHeight` is the same idea — px reserved above the rows — and maf's
-`rowsTopOffset` is exactly that number, so setting it looks like the obvious
-tidy-up. **It would be applied twice**: maf's sidebar sits inside its rows
-container, which is _already_ translated by `rowsTopOffset`. Only the portaled
-half escapes that container and needs to be told, which is what `top` is.
+The model contract's `rowsTopOffset` is the same idea — px reserved above the
+rows — and maf's own `rowsTopOffset` is exactly that number, so declaring it
+looks like the obvious tidy-up. **It would be applied twice**: maf's sidebar
+sits inside its rows container, which is _already_ translated by that offset.
+Only the portaled half escapes that container and needs to be told, which is
+what `top` is.
+
+(The contract field was called `lineZoneHeight` until the multi-sample variant
+displays grew a second band above their rows — a variant lane over the
+connector-line zone — at which point it was plainly a total rather than any one
+zone's height. `lineZoneHeight` still exists in `plugins/variants` and still
+means the connector zone alone.)
 
 Nor can the sidebar simply move to the display root the way every other
 display's does: maf binds its wheel-to-scroll listener to that rows element by

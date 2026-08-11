@@ -30,14 +30,15 @@ export function clampTreeAreaWidth(width: number, viewWidth: number) {
   )
 }
 
-// Drawable content zone height: sidebar height minus the reserved top line
-// zone. The tree canvas, hover canvas, and sidebar layout must agree on this,
-// so they all derive it here rather than recomputing `height - lineZoneHeight`.
+// Drawable content zone height: sidebar height minus whatever the display
+// stacks above its rows. The tree canvas, hover canvas, and sidebar layout must
+// agree on this, so they all derive it here rather than recomputing
+// `height - rowsTopOffset`.
 export function treeContentHeight(model: {
   height: number
-  lineZoneHeight?: number
+  rowsTopOffset?: number
 }) {
-  return model.height - (model.lineZoneHeight ?? 0)
+  return model.height - (model.rowsTopOffset ?? 0)
 }
 
 interface TreeShowingModel {

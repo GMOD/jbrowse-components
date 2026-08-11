@@ -126,7 +126,7 @@ const TreeSidebar = observer(function TreeSidebar({
 
   const {
     treeAreaWidth,
-    lineZoneHeight = 0,
+    rowsTopOffset = 0,
     scrollTop = 0,
     sources,
     spatialIndex,
@@ -210,7 +210,7 @@ const TreeSidebar = observer(function TreeSidebar({
     return (
       <TrackOverlayPortal>
         <GutterLayer top={top}>
-          <StaleTreeHint model={model} top={lineZoneHeight} />
+          <StaleTreeHint model={model} top={rowsTopOffset} />
         </GutterLayer>
       </TrackOverlayPortal>
     )
@@ -233,12 +233,12 @@ const TreeSidebar = observer(function TreeSidebar({
           <div
             className={classes.panel}
             style={{
-              top: lineZoneHeight,
+              top: rowsTopOffset,
               width: treeAreaWidth,
               height: contentHeight,
             }}
           />
-          <ClusterProvenanceHint model={model} top={lineZoneHeight} />
+          <ClusterProvenanceHint model={model} top={rowsTopOffset} />
           {/* the ref callbacks are the model's own actions, which are stable per
               instance — wrapping them in useCallback([model]) bought nothing */}
           <canvas
@@ -248,7 +248,7 @@ const TreeSidebar = observer(function TreeSidebar({
               width: treeAreaWidth,
               height: contentHeight,
               position: 'absolute',
-              top: lineZoneHeight,
+              top: rowsTopOffset,
               left: 0,
               pointerEvents: 'none',
             }}
@@ -259,7 +259,7 @@ const TreeSidebar = observer(function TreeSidebar({
               width: viewWidth,
               height: contentHeight,
               position: 'absolute',
-              top: lineZoneHeight,
+              top: rowsTopOffset,
               left: 0,
               zIndex: 1,
               pointerEvents: 'none',
@@ -281,7 +281,7 @@ const TreeSidebar = observer(function TreeSidebar({
           onClick={handleClick}
           style={{
             position: 'absolute',
-            top: lineZoneHeight,
+            top: rowsTopOffset,
             left: 0,
             width: treeAreaWidth,
             height: contentHeight,
@@ -298,7 +298,7 @@ const TreeSidebar = observer(function TreeSidebar({
           className={classes.resizeHandle}
           style={{
             position: 'absolute',
-            top: lineZoneHeight,
+            top: rowsTopOffset,
             height: contentHeight,
             width: TREE_RESIZE_HANDLE_WIDTH,
             zIndex: 101,

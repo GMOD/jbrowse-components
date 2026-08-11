@@ -51,7 +51,7 @@ const Display = types
     height: types.optional(types.number, 40),
     treeAreaWidth: types.optional(types.number, 80),
     rowHeight: types.optional(types.number, 0),
-    lineZoneHeight: types.optional(types.number, 0),
+    rowsTopOffset: types.optional(types.number, 0),
   })
   .volatile(() => ({
     treeCanvas: null as HTMLCanvasElement | null,

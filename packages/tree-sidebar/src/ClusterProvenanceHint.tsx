@@ -72,7 +72,7 @@ export const ClusterProvenanceHint = observer(function ClusterProvenanceHint({
 }: {
   model: TreeSidebarModel
   // Top of the chip, matching the top of the tree canvas (the display's
-  // `lineZoneHeight`), so it sits at the head of the sidebar rather than over
+  // `rowsTopOffset`), so it sits at the head of the sidebar rather than over
   // whatever the display reserves above it.
   top?: number
 }) {

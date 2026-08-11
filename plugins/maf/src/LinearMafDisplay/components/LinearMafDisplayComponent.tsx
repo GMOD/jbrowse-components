@@ -246,7 +246,7 @@ const MafBody = observer(function MafBody({
             land on the display's origin, not this container's — hence the
             explicit `top`, which is the band stack above the rows.
 
-            Not a `lineZoneHeight` getter on the model, which is the same idea
+            Not a `rowsTopOffset` getter on the model, which is the same idea
             and would look tidier: the sidebar's *inline* half stays in this
             container, which already carries the offset, so the model spelling
             would apply it twice. It stays here because maf's wheel listener is

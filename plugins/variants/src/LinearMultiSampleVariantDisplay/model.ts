@@ -1,4 +1,9 @@
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  getConf,
+  setConf,
+} from '@jbrowse/core/configuration'
+import { makeSizeMenu } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -6,6 +11,11 @@ import { createRegionUploadSync } from '@jbrowse/render-core/regionUploadSync'
 
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 import { placeVariantRows } from '../shared/placeVariantRows.ts'
+import {
+  DEFAULT_VARIANT_LANE_HEIGHT,
+  MIN_VARIANT_LANE_HEIGHT,
+  clampVariantLaneHeight,
+} from '../shared/variantTopBands.ts'
 import { markersForBlock } from './components/drawVariantInsertionGlyphs.ts'
 import { drawnCellHeightPx } from './components/shaders/variant.js.generated.ts'
 
@@ -16,6 +26,7 @@ import type {
   VariantUploadData,
 } from './components/variantRenderingBackendTypes.ts'
 import type { LinearMultiSampleVariantDisplayConfigModel } from './configSchema.ts'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 
@@ -52,13 +63,45 @@ export function stateModelFactory(
           ? { ...snap, type: 'LinearMultiSampleVariantDisplay' }
           : snap,
       )
+      .actions(self => ({
+        /**
+         * #action
+         * Switch the variant lane on or off. The rows resize with it —
+         * `availableHeight` subtracts the band — which is the point: the lane
+         * takes its space from the plot rather than growing the track.
+         */
+        setShowVariantLane(arg: boolean) {
+          setConf(self, 'showVariantLane', arg)
+        },
+        /**
+         * #action
+         * Resize the variant lane, clamped. Clamped in the setter rather than
+         * at read time for the same reason `setLineZoneHeight` is: a drag can
+         * deliver any number, and a band dragged shut has to stay grabbable.
+         */
+        setVariantLaneHeight(arg: number) {
+          setConf(self, 'variantLaneHeight', clampVariantLaneHeight(arg))
+        },
+      }))
       .views(self => {
         const {
           showSubmenuItems: superShowSubmenuItems,
+          trackMenuItems: superTrackMenuItems,
           rpcProps: superRpcProps,
         } = self
 
         return {
+          // The base declares these `false`/default and this display overrides
+          // them, because the slots are on *this* schema: the band geometry is
+          // shared (every display's rows sit under whatever is stacked on them)
+          // but a display that reserved a lane it cannot paint would take the
+          // height from its rows and leave it blank. See the slot docs.
+          get showVariantLane(): boolean {
+            return getConf(self, 'showVariantLane')
+          },
+          get variantLaneHeight(): number {
+            return getConf(self, 'variantLaneHeight')
+          },
           get visibleRegions() {
             const view = self.lgv
             return view.visibleRegions
@@ -87,9 +130,49 @@ export function stateModelFactory(
               referenceDrawingMode: self.referenceDrawingMode,
             }
           },
+          trackMenuItems(): MenuItem[] {
+            const items = superTrackMenuItems()
+            // Only offered while the lane is on: a slider that silently does
+            // nothing is worse than an absent one, and the checkbox that turns
+            // it on is in the "Show..." submenu at the head of the same menu.
+            return self.showVariantLane
+              ? [
+                  ...items,
+                  makeSizeMenu({
+                    label: 'Variant lane height',
+                    title: 'Variant lane height',
+                    min: MIN_VARIANT_LANE_HEIGHT,
+                    max: 120,
+                    step: 1,
+                    // Pure layout — no refetch and no re-upload, only a band
+                    // resize — so it tracks the drag rather than waiting for
+                    // release the way the fetch-input filter sliders do.
+                    getValue: () => self.topBands.laneHeight,
+                    isDefault:
+                      self.variantLaneHeight === DEFAULT_VARIANT_LANE_HEIGHT,
+                    onChange: n => {
+                      self.setVariantLaneHeight(n)
+                    },
+                    onReset: () => {
+                      self.setVariantLaneHeight(DEFAULT_VARIANT_LANE_HEIGHT)
+                    },
+                  }),
+                ]
+              : items
+          },
           showSubmenuItems() {
             return [
               ...superShowSubmenuItems(),
+              {
+                label: 'Show variant lane',
+                helpText:
+                  'Draw the variants themselves in a lane above the genotype rows, at their genomic positions and in whatever "Color by → Cells" is set to — the relationship the coverage band has to a pileup. The lane takes its height from the rows rather than growing the track',
+                type: 'checkbox',
+                checked: self.showVariantLane,
+                onClick: () => {
+                  self.setShowVariantLane(!self.showVariantLane)
+                },
+              },
               {
                 label: 'Show reference alleles',
                 helpText:
