@@ -101,7 +101,9 @@ export interface CardProps {
   message?: CardMessage
   pressed?: PressStatus
   drafts: DraftStore
-  onSetVerdict: (name: string, status: 'good' | 'bad') => void
+  // the note goes with the verdict, and it is the text in this card's box —
+  // see useReview for the two ways the report's copy stops matching it
+  onSetVerdict: (name: string, status: 'good' | 'bad', note: string) => void
   onClearVerdict: (name: string) => void
   onSaveNote: (name: string, note: string) => void
 }
@@ -141,7 +143,7 @@ export const Card = memo(function Card({
           : 'no image on disk — nothing to record a verdict against'
       }
       onClick={() => {
-        onSetVerdict(entry.name, want)
+        onSetVerdict(entry.name, want, note.value)
       }}
     >
       {label}

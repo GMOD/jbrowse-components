@@ -66,7 +66,7 @@ function Card({
   message: string
   pressed: PressStatus | undefined
   drafts: DraftStore
-  onSetVerdict: (name: string, status: 'good' | 'bad') => void
+  onSetVerdict: (name: string, status: 'good' | 'bad', note: string) => void
   onSaveNote: (name: string, note: string) => void
 }) {
   const note = useNoteDraft({ entry, drafts, onSave: onSaveNote })
@@ -77,7 +77,7 @@ function Card({
         type="button"
         className={shown === 'good' ? 'approve active' : 'approve'}
         onClick={() => {
-          onSetVerdict(entry.name, 'good')
+          onSetVerdict(entry.name, 'good', note.value)
         }}
       >
         A
@@ -86,7 +86,7 @@ function Card({
         type="button"
         className={shown === 'bad' ? 'deny active' : 'deny'}
         onClick={() => {
-          onSetVerdict(entry.name, 'bad')
+          onSetVerdict(entry.name, 'bad', note.value)
         }}
       >
         D

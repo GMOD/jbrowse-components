@@ -120,7 +120,9 @@ export interface CardProps {
   settled: boolean
   compareMode: CompareMode
   onCompareMode: (name: string, mode: CompareMode) => void
-  onSetVerdict: (name: string, status: 'good' | 'bad') => void
+  // the note goes with the verdict, and it is the text in this card's box —
+  // see useReview for the two ways the report's copy stops matching it
+  onSetVerdict: (name: string, status: 'good' | 'bad', note: string) => void
   onClearVerdict: (name: string) => void
   onSaveNote: (name: string, note: string) => void
   onDismiss: (name: string) => void
@@ -163,7 +165,7 @@ export const Card = memo(function Card({
           : 'no image on disk — nothing to record a verdict against'
       }
       onClick={() => {
-        onSetVerdict(spec.name, want)
+        onSetVerdict(spec.name, want, note.value)
       }}
     >
       {label}

@@ -176,8 +176,14 @@ export function useReview<E extends ReviewEntry>({
   const failed = (err: unknown) =>
     err instanceof Error ? err.message : String(err)
 
+  // `note` is the text in the card's own box at the moment of the click, and it
+  // is the caller's to supply because the card is the only thing that knows it.
+  // Reconstructing it here instead — draft, else the report's copy — was wrong
+  // wherever the report's copy moved out from under the box: clearing a verdict
+  // drops the note the box is still showing, and a 409 adopts the other side's.
+  // Both then posted a note the reviewer could see was not the one they had.
   const setVerdict = useCallback(
-    (name: string, status: Verdict['status']) => {
+    (name: string, status: Verdict['status'], note: string) => {
       if (!entryOf(name)) {
         return
       }
@@ -190,7 +196,7 @@ export function useReview<E extends ReviewEntry>({
           return
         }
         try {
-          const result = await postVerdict(entry, status, drafts.noteFor(entry))
+          const result = await postVerdict(entry, status, note)
           if (result.conflict) {
             adopt(name, result)
             setMessage(name, conflictText(result, imageMovedPhrase), 'warn')
@@ -212,7 +218,6 @@ export function useReview<E extends ReviewEntry>({
     },
     [
       adopt,
-      drafts,
       entryOf,
       imageMovedPhrase,
       patch,

@@ -61,13 +61,6 @@ export class DraftStore {
     return this.drafts.get(name)
   }
 
-  // The text to send with a write. The draft when there is one, and otherwise
-  // whatever the report already holds — which is the whole story, because a
-  // draft only exists while it differs from what is saved.
-  noteFor(entry: ReviewEntry) {
-    return this.drafts.get(entry.name) ?? entry.verdict?.note ?? ''
-  }
-
   // Record what is in the box right now. A draft is only a draft while it
   // differs from what the report holds, so this doubles as the cleanup: the
   // save paths call it with the text they just persisted and it drops itself.
