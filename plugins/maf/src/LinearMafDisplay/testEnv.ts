@@ -51,8 +51,13 @@ export function createMafTestEnvironment({
   // How much of the assembly `createDisplay` displays by default.
   viewRegionEnd?: number
 } = {}) {
+  // `console.warn` only. `console.error` is the channel the dev-only
+  // display-contract checks report through (assertDisplayContract,
+  // makeRetryContractCheck), so silencing it here would mute the one
+  // signal these harnesses exist to be able to produce. It was silenced
+  // by copied boilerplate and was hiding nothing: with it removed the
+  // seven display plugins run 3344 tests with no console.error at all.
   console.warn = jest.fn()
-  console.error = jest.fn()
   // MAF's configSchema reads baseLinearDisplayConfigSchema off the installed
   // LinearGenomeViewPlugin's exports, so the real plugin must be registered.
   const pluginManager = new PluginManager([new LinearGenomeViewPlugin()])

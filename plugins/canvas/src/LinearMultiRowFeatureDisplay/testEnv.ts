@@ -33,8 +33,13 @@ export function createTestEnvironment(opts?: {
   // install, so spell it out.
   displayConfig?: Record<string, unknown>
 }) {
+  // `console.warn` only. `console.error` is the channel the dev-only
+  // display-contract checks report through (assertDisplayContract,
+  // makeRetryContractCheck), so silencing it here would mute the one
+  // signal these harnesses exist to be able to produce. It was silenced
+  // by copied boilerplate and was hiding nothing: with it removed the
+  // seven display plugins run 3344 tests with no console.error at all.
   console.warn = jest.fn()
-  console.error = jest.fn()
   const pluginManager = new PluginManager([new LinearGenomeViewPlugin()])
 
   pluginManager.addAdapterType(
