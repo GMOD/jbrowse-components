@@ -84,6 +84,18 @@ Also worth knowing: `unzipChunkSlice` declines the pool outright when a chunk
 holds a single BGZF block, one block not being worth a round trip. A fixture
 small enough to have one-block chunks measures nothing, silently.
 
+**Jest suite time is not a usable signal here, and was once mistaken for one.**
+The helper's import is dynamic for bundle reasons — static pins the inlined
+worker blob into the initial bundle at 23.4kb gzipped, against 141 bytes plus a
+lazily fetched chunk — and that is the whole justification. A comment asserting
+it also took three jbrowse-web alignments suites from 16s to 181s did not
+reproduce: three variant suites measured 13.887s static against 13.856s
+dynamic on a warm cache. The 29s reading that seemed to confirm it was a cold
+jest transform cache in a fresh worktree, which is the *same* mistake as the
+HTTP-cache trap above, made twice in one session. Measure bundles with esbuild
+`--splitting --minify` and compare the entry chunk; don't infer graph weight
+from a test run.
+
 ## Harness
 
 Not committed — it was a scratch bundle. To rebuild it: esbuild a browser entry
