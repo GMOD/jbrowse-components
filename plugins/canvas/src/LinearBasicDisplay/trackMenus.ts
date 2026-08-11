@@ -7,6 +7,7 @@ import { pluralize } from '@jbrowse/core/util'
 import { heightModeMenuItems } from '@jbrowse/plugin-linear-genome-view'
 import HeightIcon from '@mui/icons-material/Height'
 import PaletteIcon from '@mui/icons-material/Palette'
+import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop'
 
 import { STRAND_COLOR_JEXL } from '../RenderFeatureDataRPC/featureColors.ts'
 import { inlineRadioGroup } from './baseModelHelpers.ts'
@@ -28,12 +29,12 @@ const displayModeOptions: { value: DisplayMode; label: string }[] = [
   { value: 'collapsed', label: 'Collapsed' },
 ]
 
-// What the two recovery groups (clear highlights, the filter family) carry so
+// What the recovery rows (clear highlights, unpin, the filter family) carry so
 // they sort to the bottom of the track menu. Every menu level sorts by
 // `priority` (CascadingMenu) and the sort is stable, so this pins them below
 // whatever a subclass appends — LinearBasicDisplay's "Gene glyph" landed after
 // "Filter by..." otherwise — while staying above the track's own "Display
-// types" at -1000. Shared by both groups so they stay adjacent.
+// types" at -1000. Shared by all of them so they stay adjacent.
 const RECOVERY_PRIORITY = -100
 
 // Structural for the same reason as FeatureMenuSelf: the model factory calls
@@ -68,6 +69,7 @@ interface TrackMenuSelf {
   featureNoun: string
   hiddenFeatureCount: number
   featureHighlightCount: number
+  pinnedFeatureCount: number
   // the model's own answer (subclasses add their own filters), not recomputed
   // here from its parts — see featureFilterCount on the canvas base
   featureFilterCount: () => number
@@ -75,34 +77,65 @@ interface TrackMenuSelf {
   featureHeightMenuItems: () => MenuItem[]
   colorMenuItems: () => MenuItem[]
   clearFeatureHighlights: () => void
+  clearPinnedFeatures: () => void
   openFilterDialog: () => void
   clearAllFeatureFilters: () => void
   showAllHidden: () => void
 }
 
-// The track-level "Clear N highlights" recovery item. Per-feature "Remove
-// highlight" needs the boxed feature under the cursor, and a highlight outlives
-// the navigation that created it (a text-search highlight is only ever replaced
-// by the next search) — so without this a highlight the user has panned away
-// from is unreachable. Empty when nothing is highlighted, matching the
-// "Show N hidden features" / "Clear all filters" shape.
-function clearHighlightsMenuItems(self: {
-  featureHighlightCount: number
-  clearFeatureHighlights: () => void
-}): MenuItem[] {
-  const n = self.featureHighlightCount
-  return n > 0
-    ? [
-        {
-          label: `Clear ${n} ${pluralize(n, 'highlight')}`,
-          icon: Highlighter,
-          priority: RECOVERY_PRIORITY,
-          onClick: () => {
-            self.clearFeatureHighlights()
-          },
-        },
-      ]
+// One track-level recovery row, present only while `count` says there is
+// something to recover and sunk to RECOVERY_PRIORITY so it sits below the
+// settings. Spread, don't insert.
+//
+// Every one of these undoes a persistent per-feature set that the FEATURE's own
+// right-click menu is otherwise the only way into — and a set that outlives the
+// navigation which created it, so the feature it names may be nowhere on screen.
+// That is the whole reason the track menu carries them, and the reason they
+// share a builder: each was a hand-written `n > 0 ? [row] : []` before, and the
+// pin set simply never got one.
+function recoveryMenuItems(
+  count: number,
+  label: string,
+  icon: MenuItem['icon'],
+  onClick: () => void,
+): MenuItem[] {
+  return count > 0
+    ? [{ label, icon, priority: RECOVERY_PRIORITY, onClick }]
     : []
+}
+
+// The two recovery rows the base contributes: clearing the highlight boxes, and
+// unpinning the features held at the top of the layout.
+//
+// Highlights: per-feature "Remove highlight" needs the boxed feature under the
+// cursor, and a text-search highlight is only ever replaced by the next search,
+// so without this one a highlight the user has panned away from is unreachable.
+//
+// Pins: same argument, and worse — a highlight at least draws a box, while a pin
+// has no on-screen mark at all, so a forgotten one goes on claiming the top row
+// of its bp range with nothing anywhere naming it. Counted with the display's own
+// noun, like "Show N hidden features".
+function featureSetRecoveryMenuItems(self: TrackMenuSelf): MenuItem[] {
+  const highlights = self.featureHighlightCount
+  const pins = self.pinnedFeatureCount
+  return [
+    ...recoveryMenuItems(
+      highlights,
+      `Clear ${highlights} ${pluralize(highlights, 'highlight')}`,
+      Highlighter,
+      () => {
+        self.clearFeatureHighlights()
+      },
+    ),
+    ...recoveryMenuItems(
+      pins,
+      `Unpin ${pins} ${pluralize(pins, self.featureNoun)}`,
+      VerticalAlignTopIcon,
+      () => {
+        self.clearPinnedFeatures()
+      },
+    ),
+  ]
 }
 
 // The checkbox rows of the "Show..." submenu. Subclasses append their own via the
@@ -230,7 +263,7 @@ export function canvasTrackMenuItems(self: TrackMenuSelf): MenuItem[] {
     ...makeShowSubMenu(self.showSubmenuMenuItems()),
     ...self.featureHeightMenuItems(),
     ...self.colorMenuItems(),
-    ...clearHighlightsMenuItems(self),
+    ...featureSetRecoveryMenuItems(self),
     ...canvasFilterMenuItems(self),
   ]
 }

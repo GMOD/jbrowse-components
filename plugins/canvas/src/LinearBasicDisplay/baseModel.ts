@@ -897,6 +897,16 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
+        // How many features are pinned to the top, for the "Unpin N features"
+        // recovery item. The array's length rather than `pinnedFeatureIdSet.size`
+        // for the same reason as `soloFeatureCount`: the count needs no Set.
+        get pinnedFeatureCount() {
+          return self.pinnedFeatureIds.length
+        },
+
+        /**
+         * #getter
+         */
         // How many highlight boxes are drawn, for the "Clear N highlights"
         // recovery item. Counts the specs, not the resolved boxes: a highlight
         // the user has panned away from resolves to nothing but is exactly the
@@ -1953,6 +1963,21 @@ export default function baseStateModelFactory(
         // and animates the feature to/from its top row via the Y morph.
         togglePinnedFeature(featureId: string) {
           toggleArrayMember(self.pinnedFeatureIds, featureId)
+        },
+
+        /**
+         * #action
+         */
+        // Unpin every feature. The track-level counterpart of the per-feature
+        // "Unpin from top", and the only way back once the pinned feature is out
+        // of reach: `togglePinnedFeature` needs the feature under the cursor, and
+        // a pin outlives the navigation that created it — nothing on screen marks
+        // a pinned feature, and the set persists in the snapshot, so a pin left on
+        // another chromosome goes on claiming a top row wherever it is drawn with
+        // no affordance naming it. Same gap, and the same shape of answer, as
+        // `clearFeatureHighlights`.
+        clearPinnedFeatures() {
+          self.pinnedFeatureIds.clear()
         },
 
         /**

@@ -101,6 +101,42 @@ describe('canvas track menu shape', () => {
     ])
   })
 
+  // A pin is reachable only from the pinned feature's own right-click menu, and
+  // nothing on screen marks a pinned feature — so a pin left on another locus
+  // went on claiming a top row with no affordance anywhere that named it. Its
+  // three sibling sets (hidden, show-only, highlights) each had a track-level
+  // way back; this one did not.
+  it('offers a way to unpin once something is pinned, and not before', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+
+    const labels = () => display.trackMenuItems().map(labelOf)
+    expect(labels().some((l: unknown) => `${l}`.startsWith('Unpin'))).toBe(
+      false,
+    )
+
+    display.togglePinnedFeature('gene1')
+    display.togglePinnedFeature('gene2')
+    // named with the display's own noun, like "Show N hidden features"
+    expect(labels()).toContain('Unpin 2 features')
+
+    // and it sinks with the other recovery rows rather than landing among the
+    // settings a subclass appends
+    const items: MenuItem[] = display.trackMenuItems()
+    expect(find(items, 'Unpin 2 features').priority).toBe(
+      find(items, 'Filter by...').priority,
+    )
+
+    const unpin = find(items, 'Unpin 2 features')
+    if ('onClick' in unpin) {
+      unpin.onClick()
+    }
+    expect(display.pinnedFeatureCount).toBe(0)
+    expect(labels().some((l: unknown) => `${l}`.startsWith('Unpin'))).toBe(
+      false,
+    )
+  })
+
   it('offers Filter by... at the top level until a recovery item joins it', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
