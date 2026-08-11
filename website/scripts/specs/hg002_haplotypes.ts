@@ -345,7 +345,67 @@ const CAPTURE = {
   settleMs: 10000,
 } satisfies Partial<ScreenshotSpec>
 
+// THE WHOLE-GENOME FRAME, which is a dotplot rather than a third linear pair:
+// the claim is "nothing moved between chromosomes", and 23 pairs of ribbons is
+// not how anyone reads that. Same one-assembly self-alignment as the two frames
+// below, so the axis split is the same trick done per axis instead of per panel
+// -- the maternal contigs on x, the paternal ones on y.
+//
+// GLOBS, NOT THE 23 NAMES. `displayedRegionNames` matches through
+// selectNamedRegions, so `*_MATERNAL` is the whole haplotype in assembly order
+// and survives the assembly being rebuilt; hand-listing them is 46 strings that
+// go stale silently. It also picks up exactly the right edge cases -- chrM
+// belongs to neither haplotype and matches neither glob, while chrX_MATERNAL
+// and chrY_PATERNAL match their own and have no counterpart on the other axis,
+// so those two lanes come out EMPTY. That is correct for a male sample and is
+// the one part of the frame that looks like a bug.
+const WHOLE_GENOME_AXES = [
+  { assembly: 'hg002v1.2', displayedRegionNames: ['*_MATERNAL'] },
+  { assembly: 'hg002v1.2', displayedRegionNames: ['*_PATERNAL'] },
+]
+
 export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
+  {
+    mode: 'url',
+    name: 'hg002_haplotypes_wholegenome',
+    url: sessionSpec(HG002_CONFIG, {
+      views: [
+        {
+          type: 'DotplotView',
+          // The header is otherwise `hg002v1.2,hg002v1.2`, which on a
+          // self-alignment is the same name twice and says nothing about which
+          // axis is which -- and which axis is which is the entire frame.
+          displayName: 'T2T-HG002 v1.2 — maternal (x) vs paternal (y)',
+          // The only signal here that is not the diagonal. Every chain runs
+          // within a chromosome, so structure alone paints one straight line
+          // and the 493 inverted chains are invisible without it; in strand
+          // color they are the blue ticks on a red line. Same red-forward /
+          // blue-reverse vocabulary as the gene lanes below (STRAND_COLOR).
+          colorBy: 'strand',
+          // Off (review: "can hide legend"). It floats over the top-right of
+          // the plot, which on a square-ish self-dotplot is where the diagonal
+          // terminates -- so the one thing it covers is data.
+          showColorLegend: false,
+          views: WHOLE_GENOME_AXES,
+          tracks: ['hg002v1.2_mat_vs_pat'],
+        },
+      ],
+    }),
+    // The dotplot paints its own canvas, so this is NOT the synteny_canvas the
+    // CAPTURE const above waits on -- hence its own settings rather than a
+    // spread. Same remote chain read, so the same generous timeout.
+    readySelector: displayPainted('dotplot_webgl_canvas'),
+    readyTimeout: 120000,
+    settleMs: 15000,
+    // Not 1400 like the two frames below: the view's height is fixed
+    // (defaultHeight, and a session spec has no way to set it), so width is the
+    // only aspect control there is and 1400 gives a plot twice as wide as it is
+    // tall. A dotplot's diagonal should read as a diagonal.
+    viewportWidth: 950,
+    // 767: measured back from the run's own below-the-fold report, which had 63
+    // css px of blank under the app frame at 830.
+    viewportHeight: 767,
+  },
   {
     ...CAPTURE,
     name: 'hg002_haplotypes_8p23_inversion',
