@@ -505,7 +505,7 @@ The bubble lane up top is cut to bubbles holding an allele over 100 kb, and the
 banded one is a short reference span. In the middle the boxed node is the CHM13
 sequence that hangs off it, attached at a small anchor.
 
-<Figure caption="One donor node, on both coordinate systems. Top: the GRCh38 window. Middle: the graph cut from it. Bottom: that same node on hs1's own chr17, an ordinary interval under UCSC's RepeatMasker, tiled by long L1 elements in red." src="/img/pangenome/hprc_chm13_allele.png" />
+<Figure caption="One donor node, on both coordinate systems. Top: the GRCh38 window. Middle: the graph cut from it. Bottom: that same node on hs1's own chr17, an ordinary interval under UCSC's RepeatMasker, tiled by long L1 elements in red. LINE covers 23.7% of the inserted sequence against 14.2% and 14.5% of the CHM13 sequence either side of it." src="/img/pangenome/hprc_chm13_allele.png" />
 
 CHM13 entered this graph at rank 61, after sixty haplotypes, so most of what it
 carries was already in the graph and little is credited to it:

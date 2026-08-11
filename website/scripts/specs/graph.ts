@@ -4198,8 +4198,9 @@ export const graphSpecs: ScreenshotSpec[] = [
     viewportWidth: 1000,
     // 1495 minus the 180 px the graph pane gave back at paneHeight 420. The
     // repeat lane still grows to its own row count (see repeatLane), 8 rows
-    // here rather than the 5 a 90px band held.
-    viewportHeight: 1315,
+    // here rather than the 5 a 90px band held. +16 for the pane label dropped
+    // into the RepeatMasker track's own label row.
+    viewportHeight: 1331,
     hideTooltip: true,
     annotations: [
       {
@@ -4207,16 +4208,79 @@ export const graphSpecs: ScreenshotSpec[] = [
         anchor: { view: 1, graphNode: CHM13_NODE },
         strokeWidth: 3,
       },
-      // The repeat lane's color key, on the lane. Two colors and no labels is a
-      // deliberate trade (see repeatLane) but it leaves the bottom pane reading
-      // as an abstract pattern until the caption is reached, which is the
-      // "not very interesting / glitchy" half of the review. Anchored to the
-      // track at the top of its own band rather than placed by pixel, so it
-      // stays on the lane as the lane grows to its row count.
+      // WHICH PANE IS WHICH, OVER THE APP AS WELL AS IN IT (review: "the in-app
+      // texts are too small to see. we need to add them"). Each pane already
+      // carries a `displayName`, which is what an earlier round asked for, and
+      // a view header draws it at 13 css px in a 1000 px frame that is 2,630 px
+      // tall -- correct, and not what the eye lands on. These repeat the same
+      // three sentences at 18 px in each pane's own empty corner. If the header
+      // text is ever reworded, reword these with it; they are two spellings of
+      // one label on purpose.
       {
         type: 'text',
-        text: 'red = LINE, nearly all L1',
+        text: 'hg38: no coordinates for this sequence',
         fontSize: 18,
+        maxWidth: 320,
+        anchor: {
+          view: 0,
+          track: 'hprc_minigraph_bubbles',
+          fracY: 0,
+          alignX: 'left',
+          dx: 16,
+          // the track rect starts at its HEADER, so dy has to clear the
+          // "HPRC release 2 bubbles" row before the lane's own whitespace
+          dy: 30,
+        },
+      },
+      {
+        type: 'text',
+        text: 'the graph, cut to that window',
+        fontSize: 18,
+        maxWidth: 320,
+        anchor: {
+          selector: '[data-testid="graph-genome-canvas"]',
+          alignX: 'left',
+          alignY: 'top',
+          dx: 16,
+          dy: 10,
+        },
+      },
+      {
+        type: 'text',
+        text: 'T2T-CHM13v2.0: an ordinary interval',
+        fontSize: 18,
+        maxWidth: 320,
+        anchor: {
+          view: 2,
+          track: HS1_RMSK_TRACK.trackId,
+          fracY: 0,
+          alignX: 'left',
+          // the track's own label row, which is empty right of
+          // "RepeatMasker (T2T-CHM13v2.0)"; the lane itself is bars edge to edge
+          dx: 330,
+          dy: -30,
+        },
+      },
+      // The repeat lane's color key AND the answer to "does this density
+      // matter", which is one pill because they are one sentence (review: "i
+      // still think user needs to understand whether that 'density' of L1
+      // matters or not"). It did not: the key said what red was and the reader
+      // was left to judge 48 bars by eye against no baseline.
+      //
+      // The baseline is measured, by `scripts/build_repeat_density.sh` rather
+      // than by hand -- 23.70% of the allele's 142 kb against 14.18% and 14.47%
+      // in the CHM13 sequence either side of it. 1.7x, as a MEAN: per 20 kb the
+      // allele runs 0.07-0.42 and the flanks 0.00-0.40, which is exactly why
+      // this is a number on the image rather than a wider window or a second
+      // lane. Both of those were tried and are recorded in `repeatLane`.
+      //
+      // Anchored to the track at the top of its own band rather than placed by
+      // pixel, so it stays on the lane as the lane grows to its row count.
+      {
+        type: 'text',
+        text: 'red = LINE, nearly all L1: 23.7% of the inserted 142 kb, against 14.2% and 14.5% either side',
+        fontSize: 18,
+        maxWidth: 420,
         anchor: {
           view: 2,
           track: HS1_RMSK_TRACK.trackId,
