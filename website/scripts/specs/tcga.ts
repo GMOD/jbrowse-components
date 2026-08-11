@@ -553,8 +553,12 @@ export const tcgaSpecs: ScreenshotSpec[] = [
   // Neutral stays near-white (#f7f7f7) on purpose. A darker neutral makes this
   // figure's balanced band more obviously "data", but washes out the
   // genome-wide figure above, where the recurrent stripes are the whole point,
-  // and near-white neutral is the convention for CNV heatmaps. The caption
-  // names the pale band instead.
+  // and near-white neutral is the convention for CNV heatmaps. So the pale band
+  // gets a callout instead of a color: on a white page the bottom of this frame
+  // reads as track that failed to load, and "those rows are the balanced
+  // majority" is the one thing about this figure a reader cannot see. Review
+  // note on the previous render asked for exactly that, plus a shorter gene
+  // lane.
   {
     mode: 'url',
     name: 'tcga/cohort_cnv_erbb2',
@@ -579,10 +583,12 @@ export const tcgaSpecs: ScreenshotSpec[] = [
               type: 'LinearBasicDisplay',
               // This window has far more MANE rows than the figure needs, and
               // height only controls how many are VISIBLE — growing it just
-              // reveals more rows and re-shears the last one's labels. So pin it
-              // to exactly two rows: content starts ~4px in and the row pitch is
-              // 40px, which is enough to name ERBB2 and its neighbors.
-              height: 84,
+              // reveals more rows and re-shears the last one's labels. One row
+              // is enough here: the figure's subject is the stack, ERBB2 is
+              // already marked by the `highlight` band rather than by having to
+              // be found among its neighbors' labels, and the row this leaves is
+              // the one ERBB2 is on. Content starts ~4px in, row pitch 40px.
+              height: 44,
             },
             {
               trackId: 'tcga_brca_cnv',
@@ -601,6 +607,45 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     viewportHeight: 1024,
     settleMs: 15000,
     diffThreshold: 0.02,
+    // Two labels, both about what the coloring cannot say on a white page.
+    //
+    // fracY of the display rather than a measured pixel: clustering decides
+    // where the band boundaries land, so a coordinate would be wrong the next
+    // time the cohort or the window changes, while "just below the last colored
+    // rows" survives it. The colored bands end around 0.36 of the display, so
+    // 0.44 sits in the pale region with the boundary still in view above the
+    // pill -- which is the whole point, since that boundary is where a reader
+    // decides the track stopped loading.
+    //
+    // No arrow. One was built pointing down into the pale band and it read as a
+    // broken annotation: it leaves a label and lands on nothing visible, which
+    // is exactly the thing the label exists to explain. The label sitting
+    // inside the region names it without having to point.
+    //
+    // No number in either label (see website/CLAUDE.md): the balanced share is
+    // in the tutorial's prose, where a reader can check it against the file.
+    annotations: [
+      {
+        type: 'text',
+        text: 'balanced: the largest group, painted near-white',
+        anchor: {
+          track: 'tcga_brca_cnv',
+          fracY: 0.44,
+          alignX: 'left',
+          dx: 430,
+        },
+      },
+      {
+        type: 'text',
+        text: 'amplified',
+        anchor: {
+          track: 'tcga_brca_cnv',
+          fracY: 0.17,
+          alignX: 'left',
+          dx: 180,
+        },
+      },
+    ],
   },
 
   // The pooled frequency profile split four ways by receptor subtype, genome
