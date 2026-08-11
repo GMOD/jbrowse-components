@@ -92,7 +92,7 @@ is no longer shared with anything.
 | --- | --- |
 | `extendToMinWidthPx` | tests only — `hpmathParity.test.ts`, `rectSpanParity.test.ts` |
 | `frequencyAlpha` | tests only — `alphaShaderParity.test.ts` |
-| `normalizeDepthScalar` | nothing |
+| `normalizeDepthScalar` | tests only — `coverageNormalizeParity.test.ts` |
 | `normalizeScore` | tests only — `normalizeScoreParity.test.ts` |
 | `sBlend` | tests only — `syntenyShaderParity.test.ts` |
 | `yCurve` | tests only — `syntenyShaderParity.test.ts` |
