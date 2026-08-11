@@ -4,7 +4,7 @@ import { LoadingEllipses, createJBrowseTheme } from '@jbrowse/core/ui'
 import { localStorageGetItem } from '@jbrowse/core/util'
 import { useEventCallback } from '@jbrowse/core/util/useEventCallback'
 import { setGpuOverride } from '@jbrowse/render-core/gpuDevice'
-import { CssBaseline, ThemeProvider } from '@mui/material'
+import { CssBaseline, LinearProgress, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { invokeIpc } from '../ipc.ts'
@@ -103,6 +103,16 @@ const LoaderContents = observer(function LoaderContents() {
 
   const handleSetPluginManager = useEventCallback((pm: PluginManager) => {
     const rootModel = pm.rootModel as DesktopRootModel | undefined
+    // These two are the in-app routes to the same swap useLaunchTarget performs,
+    // and they flush the other way round: their menu items call flushSession
+    // *before* invoking the callback, so anything edited while the load is in
+    // flight is still lost when replacePluginManager destroys the old manager.
+    // The window is narrow (the user has to edit during a load they just asked
+    // for) but it is the same bug, and the fix is the same — flush between the
+    // load resolving and the install. Doing it here, at the one point every
+    // route passes through, would cover all of them; it is left alone for now
+    // because this component has no test harness to prove it with, where the
+    // hook does.
     rootModel?.setOpenNewSessionCallback(async (path: string) => {
       handleSetPluginManager(await loadPluginManager(path))
     })
@@ -120,11 +130,10 @@ const LoaderContents = observer(function LoaderContents() {
   })
 
   // A launch that arrived while a session is already open (a jbrowse:// link,
-  // an OS open-file, a second-instance argv): flush, then swap in place, which
-  // is what the in-app "Open JBrowse Web link..." menu item does. See
-  // ensureWindow in electron.ts for why the main process pushes these rather
-  // than navigating the window to them.
-  useLaunchTarget({
+  // an OS open-file, a second-instance argv): load it, flush what is open, then
+  // swap in place. See ensureWindow in electron.ts for why the main process
+  // pushes these rather than navigating the window to them.
+  const launching = useLaunchTarget({
     flush: useEventCallback(async () => {
       const rootModel = installedRef.current?.rootModel as
         | DesktopRootModel
@@ -172,14 +181,36 @@ const LoaderContents = observer(function LoaderContents() {
 
   const loading = <LoadingEllipses variant="h6" message="Loading session" />
 
-  return pluginManager?.rootModel?.session ? (
-    <Suspense fallback={loading}>
-      <JBrowse pluginManager={pluginManager} />
-    </Suspense>
-  ) : target ? (
-    loading
-  ) : (
-    <StartScreen setPluginManager={handleSetPluginManager} />
+  return (
+    <>
+      {/* A launch pushed from the main process keeps the open session up while
+      it loads, so this bar is the only sign the click did anything. Not a
+      blocking overlay: the load can be a config fetch over a slow link, and the
+      session underneath is still perfectly usable — and still autosaving, with
+      the flush that precedes the swap taking whatever is edited meanwhile. */}
+      {launching ? (
+        <LinearProgress
+          aria-label="Opening link"
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            // over the app chrome, which is what it is reporting on
+            zIndex: theme => theme.zIndex.tooltip,
+          }}
+        />
+      ) : null}
+      {pluginManager?.rootModel?.session ? (
+        <Suspense fallback={loading}>
+          <JBrowse pluginManager={pluginManager} />
+        </Suspense>
+      ) : target ? (
+        loading
+      ) : (
+        <StartScreen setPluginManager={handleSetPluginManager} />
+      )}
+    </>
   )
 })
 

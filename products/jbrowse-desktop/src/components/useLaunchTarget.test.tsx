@@ -57,13 +57,13 @@ function setup(overrides: Partial<Parameters<typeof useLaunchTarget>[0]> = {}) {
   })
 
   const deps = { flush, load, onLoad, onError, ...overrides }
-  renderHook(() => {
-    useLaunchTarget(deps)
-  })
+  const { result } = renderHook(() => useLaunchTarget(deps))
   return {
     ...deps,
     flush,
     order,
+    // whether a launch is in flight, as the Loader reads it
+    launching: () => result.current,
     deliver: (t: LaunchTarget) => {
       deliver(t)
     },
@@ -82,17 +82,22 @@ test('does nothing until a target arrives', () => {
 })
 
 // the regression this whole hook exists for: the autosave is debounced by a
-// second, so replacing the session without flushing first loses whatever the
-// user did in that second
-test('flushes the open session before loading the replacement', async () => {
-  const { deliver, load, order } = setup()
+// second, so replacing the session without flushing loses whatever the user did
+// in that second.
+//
+// The flush goes between the load and the install, not before both. The session
+// stays live and autosaving through the load, so the only window is the instant
+// of replacement — and flushing before a load that takes seconds would leave
+// everything done during it unsaved when the manager is destroyed.
+test('flushes between loading the replacement and installing it', async () => {
+  const { deliver, onLoad, order } = setup()
 
   deliver(link)
 
   await waitFor(() => {
-    expect(load).toHaveBeenCalledWith(link)
+    expect(onLoad).toHaveBeenCalled()
   })
-  expect(order).toEqual(['flush', 'load', 'onLoad'])
+  expect(order).toEqual(['load', 'flush', 'onLoad'])
 })
 
 test('installs the loaded manager', async () => {
@@ -111,7 +116,7 @@ test('installs the loaded manager', async () => {
 // the start screen
 test('reports a failed load without installing anything', async () => {
   const error = new Error('config 404')
-  const { deliver, onLoad, onError } = setup({
+  const { deliver, onLoad, onError, flush } = setup({
     load: jest.fn().mockRejectedValue(error),
   })
 
@@ -122,6 +127,9 @@ test('reports a failed load without installing anything', async () => {
   })
   expect(onLoad).not.toHaveBeenCalled()
   expect(mockDestroy).not.toHaveBeenCalled()
+  // nothing is being replaced, so there is nothing to flush for: the session is
+  // still open and still autosaving on its own
+  expect(flush).not.toHaveBeenCalled()
 })
 
 // two links back to back: without the generation guard they install in whatever
@@ -156,4 +164,91 @@ test('a superseded launch is destroyed rather than installed', async () => {
   })
   expect(onLoad).toHaveBeenCalledTimes(1)
   expect(onLoad).toHaveBeenCalledWith(pluginManagerB)
+})
+
+// The swap keeps the open session on screen while it loads, so without this the
+// window shows nothing at all between accepting the link and the session
+// changing under you. The navigating path it replaced put up a loading screen
+// immediately.
+describe('the in-flight flag the Loader shows a progress bar for', () => {
+  test('is false until a launch arrives', () => {
+    expect(setup().launching()).toBe(false)
+  })
+
+  test('is set for the whole load and cleared once installed', async () => {
+    let resolveLoad = (_pm: PluginManager) => {}
+    const { deliver, launching, onLoad } = setup({
+      load: jest.fn(
+        () =>
+          new Promise<PluginManager>(res => {
+            resolveLoad = res
+          }),
+      ),
+    })
+
+    deliver(link)
+    await waitFor(() => {
+      expect(launching()).toBe(true)
+    })
+
+    resolveLoad(pluginManagerA)
+    await waitFor(() => {
+      expect(onLoad).toHaveBeenCalled()
+    })
+    expect(launching()).toBe(false)
+  })
+
+  test('is cleared when a launch fails, so the bar does not run forever', async () => {
+    const { deliver, launching, onError } = setup({
+      load: jest.fn().mockRejectedValue(new Error('config 404')),
+    })
+
+    deliver(link)
+
+    await waitFor(() => {
+      expect(onError).toHaveBeenCalled()
+    })
+    expect(launching()).toBe(false)
+  })
+
+  // a superseded launch finishing must not report that the one behind it is
+  // done — the bar would go out while a load is still running
+  test('stays set when a superseded launch finishes under a live one', async () => {
+    let resolveFirst = (_pm: PluginManager) => {}
+    let resolveSecond = (_pm: PluginManager) => {}
+    const load = jest
+      .fn<Promise<PluginManager>, [LaunchTarget]>()
+      .mockReturnValueOnce(
+        new Promise<PluginManager>(res => {
+          resolveFirst = res
+        }),
+      )
+      .mockReturnValueOnce(
+        new Promise<PluginManager>(res => {
+          resolveSecond = res
+        }),
+      )
+    const { deliver, launching, onLoad } = setup({ load })
+
+    deliver(link)
+    await waitFor(() => {
+      expect(load).toHaveBeenCalledTimes(1)
+    })
+    deliver(file)
+    await waitFor(() => {
+      expect(load).toHaveBeenCalledTimes(2)
+    })
+
+    resolveFirst(pluginManagerA)
+    await waitFor(() => {
+      expect(mockDestroy).toHaveBeenCalledWith(pluginManagerA)
+    })
+    expect(launching()).toBe(true)
+
+    resolveSecond(pluginManagerB)
+    await waitFor(() => {
+      expect(onLoad).toHaveBeenCalledWith(pluginManagerB)
+    })
+    expect(launching()).toBe(false)
+  })
 })
