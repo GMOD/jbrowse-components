@@ -576,10 +576,12 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     // artifact; that is the whole figure, and now it is pointed at.
     //
     // The reviewer's own example is a claim about DEPTH rather than mismatches,
-    // and it is a different figure: `rnaseq/strand_split_coverage` already
-    // draws it, with the forward band empty over NELFE and full over SKIV2L.
-    // ONT WGS cannot produce a depth split -- it is strand-balanced by
-    // construction, which is exactly why it is the right data for this one.
+    // and it is a different figure: `alignments/strand_split_depth` above,
+    // which is the viral one they asked for twice more after this note (HSV-1
+    // UL21 against UL22), with `rnaseq/strand_split_coverage` making the same
+    // claim on a human pair. ONT WGS cannot produce a depth split -- it is
+    // strand-balanced by construction, which is exactly why it is the right
+    // data for this one and the wrong data for that one.
     //
     // The box takes no `fracY`, so it wraps the whole track band and crosses
     // both coverage histograms and both pileups at once, which is the
