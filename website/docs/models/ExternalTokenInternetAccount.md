@@ -17,8 +17,8 @@ the shared behavior.
 The configuration slots for this model are documented on its
 [config schema page](../../config/externaltokeninternetaccount).
 
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+ExternalTokenInternetAccount declares no members of its own — it composes the
+models below, and everything here is theirs.
 
 ## Properties
 

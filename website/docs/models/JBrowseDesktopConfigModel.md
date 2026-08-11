@@ -10,8 +10,8 @@ see [pluggable elements](/docs/developer_guide/) for concepts.
 
 the rootModel.jbrowse state model for JBrowseDesktop
 
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+JBrowseDesktopConfigModel declares no members of its own — it composes the
+models below, and everything here is theirs.
 
 ## Getters
 

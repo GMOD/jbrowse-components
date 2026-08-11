@@ -149,7 +149,10 @@ async function main() {
       names: configGaps.noExample,
     },
     {
-      title: 'models with no #example',
+      title: 'display/view models with no #example',
+      // Only displays and views: a model page's example is a config/session
+      // snapshot, and no snapshot names a mixin, session, root or widget. See
+      // wantsExample in generateStateModelDocs.
       fix: 'add an #example to the type’s #stateModel JSDoc',
       names: modelGaps.noExample,
     },

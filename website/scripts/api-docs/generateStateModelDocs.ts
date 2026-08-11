@@ -362,6 +362,7 @@ function renderModel(
 ): string {
   const { header, filename } = model
   const inherited = collectInheritedMembers(model.members, ancestors)
+  const own = MEMBER_KINDS.reduce((n, k) => n + model.members[k.key].length, 0)
 
   // the member tables are h2 sections of their own, so the intro prose is
   // emitted bare rather than under an `## Overview` heading it would outweigh
@@ -369,7 +370,16 @@ function renderModel(
     exampleSection(header.examples),
     header.docs,
     configLinkSection(header.name, header.id, configNames),
-    inherited.length &&
+    // A model that composes others and declares nothing of its own renders a
+    // page of entirely other models' members, which reads as its surface when
+    // none of it is (PreferencesSessionMixin: 52 rows, 43 from BaseSessionModel
+    // and 9 from SnackbarModel, 0 its own — it exists for one untagged
+    // afterAttach). Say so instead of letting the tables imply otherwise.
+    own === 0 &&
+      inherited.length &&
+      `${header.name} declares no members of its own — it composes the models below, and everything here is theirs.`,
+    own > 0 &&
+      inherited.length &&
       'Members a composed model contributes are listed here too, so these tables are the whole surface.',
     ...MEMBER_KINDS.map(k =>
       kindSection(k, header.name, model.members[k.key], inherited),
@@ -410,6 +420,23 @@ export function writeModelDocs(
       items: withHeader,
       getName: m => m.header.name,
       hasExample: m => m.header.examples.length > 0,
+      // A model page's #example renders a pasteable config/session snapshot, so
+      // the gap only means anything for the categories that appear in one. Every
+      // example that has ever been written here is on a Display or a View — 23
+      // of 23 — and the other eleven categories have none, because there is no
+      // snapshot in which you name a mixin, a session, a root or a widget.
+      // Counting them made the list 92 names, of which 80 named a page nobody
+      // could fix; the twelve real ones were unfindable inside it. Same failure
+      // and the same remedy as the config pass's base-schema exemption below.
+      //
+      // Internet accounts and connections ARE named in config, and their missing
+      // examples are real — but they belong on the config page, which already
+      // reports them, and a second copy on the model page would be the same
+      // JSON under a different heading.
+      wantsExample: m =>
+        ['Display', 'View'].includes(
+          stateModelCategory(m.header.name, m.header.category),
+        ),
       isGeneralCategory: m =>
         stateModelCategory(m.header.name, m.header.category) === 'General',
     }),

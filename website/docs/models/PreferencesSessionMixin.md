@@ -14,8 +14,8 @@ loads and persists user-preference overrides (the BaseSession
 users edit preferences (web, desktop); embedded sessions omit it and resolve
 preferences from `configuration.preferences` admin defaults only.
 
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+PreferencesSessionMixin declares no members of its own — it composes the models
+below, and everything here is theirs.
 
 ## Properties
 

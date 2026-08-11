@@ -1298,9 +1298,14 @@ export function writeConfigDocs(
   // surface.
   return {
     ...headerGaps({
-      items: withHeader.filter(c => !isBaseSchema(c.header, links)),
+      items: withHeader,
       getName: c => c.header.name,
       hasExample: c => c.header.examples.length > 0,
+      // Was a filter on `items`, which also dropped these from the General gap —
+      // a base schema that fell out of every category is still a real gap, and
+      // that one was silently unreportable. Zero either way today; see the
+      // headerGaps comment.
+      wantsExample: c => !isBaseSchema(c.header, links),
       isGeneralCategory: c =>
         configCategory(c.header.name, c.header.category) === 'General',
     }),

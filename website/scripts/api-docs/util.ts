@@ -1579,19 +1579,29 @@ export function assertSingleHeader({
 // a CI log, which is how 40 config pages and 90 model pages came to be bare —
 // the driver commits these to a tracked file so each one is a reviewable line in
 // the PR diff instead.
+// `wantsExample` scopes the #example gap without scoping the General one. They
+// are different questions about the same item — "should this page show a
+// pasteable snippet" versus "did this fall out of every named category" — and a
+// type exempt from the first is still a real gap under the second, so filtering
+// `items` before the call (which is what the config pass used to do) quietly
+// suppressed both.
 export function headerGaps<T>({
   items,
   getName,
   hasExample,
+  wantsExample = () => true,
   isGeneralCategory,
 }: {
   items: T[]
   getName: (item: T) => string
   hasExample: (item: T) => boolean
+  wantsExample?: (item: T) => boolean
   isGeneralCategory: (item: T) => boolean
 }) {
   return {
-    noExample: items.filter(item => !hasExample(item)).map(getName),
+    noExample: items
+      .filter(item => wantsExample(item) && !hasExample(item))
+      .map(getName),
     general: items.filter(isGeneralCategory).map(getName),
   }
 }

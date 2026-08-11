@@ -11,8 +11,8 @@ see [pluggable elements](/docs/developer_guide/) for concepts.
 The full-app web session: the shared web session plus the saved-session database
 management surface (favorites, recent sessions, activate/delete).
 
-Members a composed model contributes are listed here too, so these tables are
-the whole surface.
+JBrowseWebSessionModel declares no members of its own — it composes the models
+below, and everything here is theirs.
 
 ## Properties
 
