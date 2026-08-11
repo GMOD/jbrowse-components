@@ -6,7 +6,8 @@ guide_category: General usage
 
 **TL;DR:** The in-app plugin store lets you browse, search, and install
 community plugins into the current session. Plugins can add new track types,
-view types, data adapters, custom menu items, and more.
+view types, data adapters, and custom menu items, and some carry their own data
+with them.
 
 The full catalog of white-listed plugins, each with its config snippet, is also
 listed on the [plugin store page](/plugin_store).

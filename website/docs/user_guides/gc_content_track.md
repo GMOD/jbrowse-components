@@ -5,10 +5,10 @@ guide_category: Track types
 ---
 
 **TL;DR:** A GC content track plots the base composition of the reference genome
-itself, with no data file required. It slides a window along the assembly's
-sequence and draws the result as a quantitative (wiggle) track, making GC-rich
-and GC-poor regions, isochores, and (in bacterial genomes) the replication
-origin visible at a glance.
+itself, with no data file required, sliding a window along the assembly's
+sequence and drawing the result as a quantitative (wiggle) track. GC-rich and
+GC-poor regions and isochores read off that profile. Switch the same track to GC
+skew instead and its sign flips at a bacterial replication origin.
 
 ## Launching a GC content track from the sequence
 

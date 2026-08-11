@@ -9,10 +9,12 @@ tutorial_category: Synteny & comparative genomics
 data: hosted
 ---
 
-**TL;DR:** T2T-HG002 v1.2 ships both haplotypes as contigs of a single assembly,
-and the Q100 project publishes the maternal-to-paternal alignment beside it, so
-comparing an individual's two haplotypes is one assembly, one alignment file and
-no pipeline.
+**TL;DR:** the two haplotypes of T2T-HG002 v1.2 are contigs of one assembly,
+`chr1_MATERNAL` beside `chr1_PATERNAL`, so maternal against paternal is a
+synteny track that names that assembly twice. The Q100 project publishes the
+alignment between them, so nothing has to be aligned, and the inversion at
+8p23.1, which HG002 is heterozygous for, draws as a sweep between the two
+panels.
 
 ## One assembly, both haplotypes
 

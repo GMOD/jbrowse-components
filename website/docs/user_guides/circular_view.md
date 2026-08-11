@@ -6,8 +6,9 @@ guide_category: Views
 
 **TL;DR:** The circular genome view lays out an entire assembly as a ring and
 draws long-range structural variants as chords across the interior, one arc per
-event connecting its two breakpoints. It is the best way to see translocations,
-inter-chromosomal breakends, and other whole-genome rearrangements at a glance.
+event connecting its two breakpoints. An arc with its two ends in different
+chromosome segments is an inter-chromosomal event, which no single linear window
+can hold.
 
 <Figure caption="A circular genome view of a structural-variant VCF. Each chord connects the two breakpoints of one variant; arcs spanning between different chromosomes are inter-chromosomal events (translocations/breakends)." src="/img/jbrowse-img/circular_chords.png" />
 

@@ -8,9 +8,8 @@ guide_category: General usage
 
 **TL;DR:** The `&hubURL=` query parameter opens a
 [UCSC track hub](/docs/user_guides/connections#ucsc-track-hub-url-format)
-straight from a link, with no config file to set up first. It is the one-click
-way to share a hub: whoever opens the link lands in JBrowse with the hub's
-assemblies and tracks already available.
+straight from a link, with no config file to set up first. Whoever opens the
+link lands in JBrowse with the hub's assemblies and tracks already available.
 
 The [UCSC GenArk hub import](/gallery/#hubs) on the gallery page is exactly
 this: a single URL that opens a hub.
