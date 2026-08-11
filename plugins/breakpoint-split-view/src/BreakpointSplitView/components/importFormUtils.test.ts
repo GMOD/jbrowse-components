@@ -26,6 +26,13 @@ test('rowsToViewInits maps blank loc to undefined (whole assembly)', () => {
   ])
 })
 
+// GRCh38 is the session's canonical name for the assembly the tracks below call
+// hg38, which is what the rows' dropdown supplies
+const assemblyManager = {
+  getCanonicalAssemblyName: (name: string) =>
+    name === 'hg38' || name === 'GRCh38' ? 'GRCh38' : undefined,
+}
+
 test('getSharedTracks keeps only tracks covering all selected assemblies', () => {
   const tracks = [
     { trackId: 'a', assemblyNames: ['hg38'] },
@@ -35,12 +42,17 @@ test('getSharedTracks keeps only tracks covering all selected assemblies', () =>
   ] as unknown as AnyConfigurationModel[]
 
   const ids = (assemblies: string[]) =>
-    getSharedTracks(tracks, assemblies).map(t => readConfObject(t, 'trackId'))
+    getSharedTracks(tracks, assemblies, assemblyManager).map(t =>
+      readConfObject(t, 'trackId'),
+    )
 
   expect(ids(['hg38'])).toEqual(['a', 'b'])
   expect(ids(['hg38', 'hg19'])).toEqual(['b'])
   expect(ids(['mm10'])).toEqual(['c'])
   expect(ids(['hg38', 'mm10'])).toEqual([])
+
+  // the row names the assembly canonically, the track names its alias
+  expect(ids(['GRCh38'])).toEqual(['a', 'b'])
 })
 
 test('rowsToViewInits opens the shared track in every row', () => {

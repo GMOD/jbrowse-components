@@ -58,6 +58,30 @@ export function getTrackAssemblyNames(
   return getConfAssemblyNames(track.configuration)
 }
 
+/**
+ * Assembly names as the aliases resolve them, so a track configured against
+ * `hg38` compares equal to a view on `GRCh38`. Every "does this track belong to
+ * these assemblies" test should run both sides through this, or the same track
+ * is offered by one picker and hidden by another.
+ *
+ * A name the assembly manager doesn't know is kept **as written**, not dropped.
+ * Dropping it means "matches nothing" on the track side but "no constraint at
+ * all" on the list side, and those disagree; kept, both sides compare the same
+ * raw string and matching degrades to the exact name — which is also the right
+ * answer in the window before the assembly manager has built its models. Empty
+ * names are dropped: a half-initialized view pads its assembly list with them.
+ */
+export function canonicalAssemblyNames(
+  names: string[],
+  assemblyManager: {
+    getCanonicalAssemblyName: (name: string) => string | undefined
+  },
+) {
+  return names
+    .filter(name => !!name)
+    .map(name => assemblyManager.getCanonicalAssemblyName(name) ?? name)
+}
+
 export function getConfAssemblyNames(conf: AnyConfigurationModel) {
   const trackAssemblyNames = readConfObject(conf, 'assemblyNames') as
     | string[]

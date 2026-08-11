@@ -1,5 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getEnv, getSession } from '@jbrowse/core/util'
+import { canonicalAssemblyNames } from '@jbrowse/core/util/tracks'
 
 import { containsAll, intersects } from './util.ts'
 
@@ -16,24 +17,6 @@ function assemblyMatches(
   return anyOverlap
     ? intersects(trackAssemblyNames, viewAssemblyNames)
     : containsAll(trackAssemblyNames, viewAssemblyNames)
-}
-
-// Assembly names as the aliases resolve them, so a track configured against
-// `hg38` still matches a view on `GRCh38`. A name the assembly manager doesn't
-// know is kept as written rather than dropped: dropped, an unknown assembly
-// means "matches nothing" on the track side but "no constraint at all" on the
-// view side, which is the more dangerous of the two — a view whose assembly
-// hasn't registered yet (or never will) then offers every track in the session,
-// for every other assembly. Kept, both sides compare the same raw string and
-// the filter degrades to exact-name matching. Empty names are dropped; a
-// half-initialized synteny level pads its assembly pair with them.
-function canonicalNames(
-  names: string[],
-  getCanonicalAssemblyName: (name: string) => string | undefined,
-) {
-  return names
-    .filter(name => !!name)
-    .map(name => getCanonicalAssemblyName(name) ?? name)
 }
 
 /**
@@ -93,9 +76,7 @@ export function filterTracks(
     return []
   }
   const canonical = (names: string[]) =>
-    canonicalNames(names, name =>
-      assemblyManager.getCanonicalAssemblyName(name),
-    )
+    canonicalAssemblyNames(names, assemblyManager)
   const viewAssemblyNames = canonical(self.assemblyNames)
   const viewDisplays = viewDisplayNames(pluginManager, view.type)
   return tracks.filter(c => {

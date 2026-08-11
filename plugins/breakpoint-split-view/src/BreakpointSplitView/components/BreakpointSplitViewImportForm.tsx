@@ -55,6 +55,7 @@ const BreakpointSplitViewImportForm = observer(
       // opened in every row just as well as a config one
       allSessionTracks(session),
       rows.map(r => r.assembly),
+      session.assemblyManager,
     )
     const validTrackId = sharedTracks.some(t => t.trackId === trackId)
       ? trackId
