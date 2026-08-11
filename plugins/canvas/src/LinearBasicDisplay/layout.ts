@@ -10,7 +10,10 @@ import {
   STRAND_ARROW_WIDTH,
   labelFontSize,
 } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
-import { MIN_RECT_WIDTH_PX } from './components/sharedRendererConstants.ts'
+import {
+  ARROW_MIN_FEATURE_WIDTH_PX,
+  MIN_RECT_WIDTH_PX,
+} from './components/sharedRendererConstants.ts'
 import { OFFSCREEN_Y, isPlacedRow } from './rowPlacement.ts'
 import { captureFeatureTops } from './yMorph.ts'
 
@@ -164,12 +167,29 @@ function keepFeatureLabel(
 // STRAND_ARROW_WIDTH wider than needed and hurt packing density. A feature
 // spanning both reversed and non-reversed regions points opposite ways in
 // each, so it legitimately reserves on both sides.
-function strandArrowPadding(ext: {
-  strand: number
-  hasReversed: boolean
-  hasNonReversed: boolean
-}) {
-  const arrow = ext.strand ? STRAND_ARROW_WIDTH : 0
+//
+// And only where the arrow DRAWS. Both backends drop the marker on a feature
+// under ARROW_MIN_FEATURE_WIDTH_PX wide, so a dense repeat run doesn't drown in
+// overlapping arrowheads (arrow.slang, and Canvas2D's twin of its gate) — the
+// packer reserving 8px for it anyway made every narrow stranded feature claim
+// space nothing paints into. Worst where it costs most: sub-pixel stranded marks
+// held out of the density collapse (by a wide feature overlapping them, say) got
+// ~8px of layout width apiece instead of ~0, so 5000 of them packed 46 rows deep
+// instead of 2.
+function strandArrowPadding(
+  ext: {
+    strand: number
+    hasReversed: boolean
+    hasNonReversed: boolean
+    startBp: number
+    endBp: number
+  },
+  bpPerPx: number,
+) {
+  const drawsArrow =
+    !!ext.strand &&
+    (ext.endBp - ext.startBp) / bpPerPx >= ARROW_MIN_FEATURE_WIDTH_PX
+  const arrow = drawsArrow ? STRAND_ARROW_WIDTH : 0
   const pointsLeft =
     (ext.hasNonReversed && ext.strand === -1) ||
     (ext.hasReversed && ext.strand === 1)
@@ -1308,7 +1328,10 @@ function packPreparedRef(
       layoutMap.set(id, 0)
       collapsed.push({ id, startPx: boxStartPx, endPx: boxEndPx })
     } else {
-      const { left: arrowLeft, right: arrowRight } = strandArrowPadding(geom)
+      const { left: arrowLeft, right: arrowRight } = strandArrowPadding(
+        geom,
+        bpPerPx,
+      )
       const leftPx = ext.layoutStartBp / bpPerPx - arrowLeft
       const rightPx = ext.layoutEndBp / bpPerPx + arrowRight
       // A null top means the stack passed GranularRectLayout's own row limit —

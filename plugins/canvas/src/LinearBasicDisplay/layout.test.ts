@@ -693,6 +693,48 @@ test('arrow padding is directional: forward features just past the arrow share a
   expect(out.get(0)!.flatbushItems[1]!.topPx).toBe(0)
 })
 
+test('a feature too narrow to draw its arrow reserves no room for one', () => {
+  // Both backends drop the direction marker under ARROW_MIN_FEATURE_WIDTH_PX
+  // (arrow.slang's gate and Canvas2D's twin of it), so reserving the 8px overhang
+  // there holds space nothing paints into. bpPerPx=1, so bp are px: two forward
+  // features 3px apart, sized either side of the 14px gate. Wide, f1's arrow
+  // draws and its overhang pushes f2 off the row; narrow, nothing paints into
+  // that 8px and the pair shares one row.
+  const tops = (widthBp: number) =>
+    layout(
+      new Map([
+        [
+          0,
+          makeFeatureData({
+            features: [
+              {
+                featureId: 'f1',
+                startBp: 100,
+                endBp: 100 + widthBp,
+                height: 20,
+                strand: 1,
+              },
+              {
+                featureId: 'f2',
+                startBp: 103 + widthBp,
+                endBp: 103 + 2 * widthBp,
+                height: 20,
+                strand: 1,
+              },
+            ],
+          }),
+        ],
+      ]),
+      new Map([[0, 'v:ctgA']]),
+      1,
+    )
+      .get(0)!
+      .flatbushItems.map(f => f.topPx)
+
+  expect(tops(20)[1]).toBeGreaterThan(0)
+  expect(tops(10)).toEqual([0, 0])
+})
+
 test('unstranded features without arrow padding can share a row when close', () => {
   const data = makeFeatureData({
     features: [
