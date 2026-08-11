@@ -357,6 +357,134 @@ async function viewStatusStatesAreDrawn(page, slug) {
   return out
 }
 
+// Everything the search page claims is a state you get to by typing, and two of
+// the three are *absences* — a search that resolves nothing, a search that
+// resolves several things and goes nowhere. A census at rest cannot tell any of
+// them from a page whose index URL 404s, which is the failure this is really
+// here for: the trix files are hosted rather than in this repo, so the demo can
+// stop working without a line of it changing.
+//
+// Scoped to the first `<section>` by id, because the second one's result rows
+// are also buttons and several of them contain the word EDEN. Exact text match
+// on the button for the same reason — `includes('EDEN')` finds `EDEN.1` first,
+// which is a different one of the four paths.
+async function searchByNameResolvesNames(page, slug) {
+  if (slug !== 'search-by-name') {
+    return []
+  }
+  const out = []
+
+  // No interaction for this one: the dropdown's box starts on `EDEN`, so a
+  // populated list is the evidence that `fetchResults` reached the hosted index
+  // and parsed it. Both columns are checked — the label proves the query
+  // matched, the trackId proves the row was decoded rather than guessed.
+  try {
+    await page.waitForFunction(
+      () => {
+        const t =
+          document.querySelector('[data-testid="search-results"]')?.innerText ??
+          ''
+        return t.includes('EDEN.1') && t.includes('gff3tabix_genes')
+      },
+      { timeout: 30000 },
+    )
+  } catch {
+    const listed = await page.evaluate(
+      () =>
+        document.querySelector('[data-testid="search-results"]')?.innerText ??
+        '(no result list rendered)',
+    )
+    out.push(
+      'the dropdown searched for EDEN and did not list EDEN.1 from ' +
+        `gff3tabix_genes — fetchResults or the hosted trix index is not ` +
+        `answering. List read:\n${listed}`,
+    )
+  }
+
+  const clickInFirstSection = async label =>
+    page.evaluate(t => {
+      const el = [
+        ...(document
+          .querySelector('#search-by-name')
+          ?.querySelectorAll('button') ?? []),
+      ].find(e => e.innerText.trim() === t)
+      el?.click()
+      return !!el
+    }, label)
+
+  // The page's sharpest claim: a query with no exact match and several prefix
+  // ones cannot navigate, so JBrowse queues a dialog and this host draws none.
+  // `Apple` and not `EDEN` — EDEN prefixes four features and is exactly one of
+  // them, so the exact pass wins and it navigates, which is the neighbouring
+  // button and the distinction the page is about.
+  if (await clickInFirstSection('Apple')) {
+    try {
+      await page.waitForFunction(
+        () => !!document.querySelector('[data-testid="queued-dialog-notice"]'),
+        { timeout: 30000 },
+      )
+    } catch {
+      out.push(
+        'searching the ambiguous name Apple queued no dialog — either the ' +
+          'multi-hit path stopped going through session.queueDialog, or the ' +
+          'index stopped returning more than one non-exact hit for it',
+      )
+    }
+  } else {
+    out.push('no exact "Apple" button in the first section')
+  }
+
+  // Clear it before the next click, or the EDEN check below reads Apple's
+  // notice and reports the opposite of what happened.
+  await clickInFirstSection('Dismiss')
+  await page.waitForFunction(
+    () => !document.querySelector('[data-testid="queued-dialog-notice"]'),
+    { timeout: 5000 },
+  )
+
+  // The other half of that pair, and the reason the one above says "no exact
+  // match" rather than "several hits": EDEN is ambiguous by prefix and still
+  // must not ask. Losing the exact-first pass would make this queue a dialog.
+  if (await clickInFirstSection('EDEN')) {
+    await new Promise(r => setTimeout(r, 3000))
+    const queued = await page.evaluate(
+      () => !!document.querySelector('[data-testid="queued-dialog-notice"]'),
+    )
+    if (queued) {
+      out.push(
+        'searching EDEN queued a dialog — the exact pass no longer runs ' +
+          'before the prefix one, so a gene that prefixes its own isoforms ' +
+          'now opens a picker instead of navigating',
+      )
+    }
+  } else {
+    out.push('no exact "EDEN" button in the first section')
+  }
+
+  // And the other absence: a plain word with no hits is a typed throw the page
+  // renders as prose, not an error.
+  if (await clickInFirstSection('zyzzyva')) {
+    try {
+      await page.waitForFunction(
+        () =>
+          document
+            .querySelector('#search-by-name')
+            ?.innerText.includes('No results found'),
+        { timeout: 30000 },
+      )
+    } catch {
+      out.push(
+        'a search for zyzzyva drew no "no results" line — ' +
+          'SearchResultsNotFoundError is no longer reaching the page',
+      )
+    }
+  } else {
+    out.push('no exact "zyzzyva" button in the first section')
+  }
+
+  return out
+}
+
 const failures = await smokeExamplesSite({
   distDir: path.join(here, '..', 'dist'),
   // single source of truth for the base path is astro.config.mjs
@@ -389,6 +517,7 @@ const failures = await smokeExamplesSite({
     ...(await censusWhileHovering(page)),
     ...(await clicksReachTheTrack(page)),
     ...(await highlightSurvivesAOneBaseRegion(page, slug)),
+    ...(await searchByNameResolvesNames(page, slug)),
     // last: this one replaces the engine on the page it runs on
     ...(await viewStatusStatesAreDrawn(page, slug)),
   ],

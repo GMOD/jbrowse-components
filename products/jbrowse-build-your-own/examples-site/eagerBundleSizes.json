@@ -27,6 +27,10 @@
     "chunks": 289,
     "gzipKb": 556
   },
+  "search-by-name": {
+    "chunks": 287,
+    "gzipKb": 555
+  },
   "synteny": {
     "chunks": 327,
     "gzipKb": 661

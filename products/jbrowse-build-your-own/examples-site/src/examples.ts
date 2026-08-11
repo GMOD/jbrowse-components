@@ -178,7 +178,7 @@ export const pages: ExamplePage[] = [
         slug: 'search-by-name',
         title: 'A name instead of a locstring',
         description:
-          'One `createViewState` option, and `navToLocString` resolves names itself. Four inputs, four different paths through it.',
+          'One `createViewState` option, and `navToLocString` resolves names itself. Five inputs, five different paths through it.',
       },
       {
         slug: 'your-own-search-results',

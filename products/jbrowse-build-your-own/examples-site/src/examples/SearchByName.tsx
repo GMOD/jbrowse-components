@@ -18,11 +18,12 @@ import { observer } from 'mobx-react'
 // -- `navToLocString` runs the search itself, so this page adds one config key
 // and no new call.
 //
-// What it does add is a case with nowhere to go. A name matching several
-// features has to ask which one, and the way JBrowse asks is a dialog it queues
-// on the session -- so a host drawing its own chrome, which is every page here,
-// renders nothing and the search appears to do nothing. That is the third
-// button below, and the section after this one is the way out.
+// What it does add is a case with nowhere to go. A query that cannot be
+// narrowed to one feature has to ask which you meant, and the way JBrowse asks
+// is a dialog it queues on the session -- so a host drawing its own chrome,
+// which is every page here, renders nothing and the search appears to do
+// nothing. That is the `Apple` button below, and the section after this one is
+// the way out.
 //
 // There is a finished component for all of this: `SearchBox` from
 // `@jbrowse/plugin-linear-genome-view` is JBrowse's own, autocomplete and result
@@ -82,12 +83,20 @@ const trixIndex = {
   },
 }
 
-// What the buttons put in the box. Four inputs because they take four different
-// paths through `navToLocString`, and only the first two look alike from outside.
+// What the buttons put in the box. Five inputs, five paths, and the pair in the
+// middle is the one worth clicking twice: `EDEN` and `Apple` both prefix several
+// features, and only one of them asks which you meant.
 const QUERIES = [
-  { label: 'EDEN.1', hint: 'one hit — navigates' },
   { label: 'ctgB', hint: 'a refName — never reaches the index' },
-  { label: 'EDEN', hint: 'four hits — asks, with a dialog you do not render' },
+  { label: 'EDEN.1', hint: 'one hit — navigates' },
+  {
+    label: 'EDEN',
+    hint: 'prefixes four features and is exactly one of them — navigates',
+  },
+  {
+    label: 'Apple',
+    hint: 'prefixes three and is none of them — asks, via a dialog you do not render',
+  },
   { label: 'zyzzyva', hint: 'no hits — a typed throw' },
 ]
 
@@ -181,11 +190,18 @@ const TrackRow = observer(function TrackRow({
  *
  * `navToLocString(input)` does the whole resolution, in this order: if every
  * whitespace-separated token is a refName or a `ref:start..end`, it navigates
- * and the index is never consulted. Otherwise it searches -- **exact first**, so
- * a precise name goes straight to its feature instead of opening a picker of
- * everything it prefixes, and only an exact miss retries as a prefix. One hit
- * navigates and shows the track the hit came from; several hits ask; none falls
- * back to parsing the input as a locstring anyway.
+ * and the index is never consulted. Otherwise it searches, one hit navigates and
+ * shows the track that hit came from, several hits ask, and none falls back to
+ * parsing the input as a locstring anyway.
+ *
+ * **"One hit" is decided by an exact pass before the prefix one**, and that is
+ * the part that surprises. A trix row is exact when *any* indexed attribute --
+ * name, id, description -- equals the query, so `EDEN` prefixes four features
+ * and still navigates, because one of the four is called exactly that. `Apple`
+ * prefixes three and is none of them, the exact pass returns nothing, the retry
+ * returns all three, and only then is there a question to ask. Without the exact
+ * pass first, every gene whose name is a prefix of its own isoforms would open a
+ * picker instead of going where you asked.
  *
  * So the two error shapes are worth separating. `SearchResultsNotFoundError` is
  * thrown for a plain word with no hits, and it is a distinct class precisely so
