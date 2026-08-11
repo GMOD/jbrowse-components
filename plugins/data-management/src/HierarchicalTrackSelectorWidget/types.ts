@@ -1,17 +1,16 @@
 import type { TrackRowAdornment } from './trackRowAdornment.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
-export interface TreeTrackNode {
-  name: string
-  // what a plugin added to this row: a glyph, a short suffix, a tooltip line
-  adornment?: TrackRowAdornment
+// A resolved track plus where the tree put it. Extends the source rather than
+// restating four of its fields, so a field added to TrackNodeSource reaches the
+// row without a second declaration and a copy in generateHierarchy — which is
+// three places to remember, and the adornment found all three.
+export interface TreeTrackNode extends TrackNodeSource {
   // unique per-node key for React/DOM/test ids, group-prefixed e.g.
   // "Tracks,myTrackId"; NOT the track identity. Use trackId to toggle a track
   id: string
   // the underlying track identity, used for show/hide/toggle
   trackId: string
-  conf: AnyConfigurationModel
-  description: string
   children: TreeNode[] // empty
   nestingLevel: number
   type: 'track'
