@@ -19,7 +19,7 @@ clinical column you point `groupBy` at.
   [web quickstart](/docs/quickstart_web), or the
   [desktop quickstart](/docs/quickstart_desktop), which loads these tracks by
   URL with nothing to host) and the [JBrowse CLI](/docs/cli)
-- Both files, hosted:
+- These files, hosted:
 
 | File                                                                                  | What                                  |
 | ------------------------------------------------------------------------------------- | ------------------------------------- |
