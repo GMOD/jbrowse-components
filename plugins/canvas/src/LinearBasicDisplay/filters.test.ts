@@ -162,6 +162,43 @@ describe('canvas display runtime filters', () => {
     ])
   })
 
+  // "Filter by... (n)" is the only affordance saying a filter is silently
+  // hiding features, so it must not count an override that changes nothing. The
+  // dialog seeds itself from activeFilters(), so opening it and pressing Submit
+  // banks an override identical to the config default — and the slot ships a
+  // non-empty default on every track, making that the ordinary path through the
+  // dialog rather than a corner.
+  it('does not count a runtime override equal to the config default', () => {
+    const display = createDisplay([`get(feature,'type')=='gene'`])
+    expect(display.featureFilterCount()).toBe(0)
+
+    // exactly what the dialog submits when the user edits nothing
+    display.setJexlFilters(display.activeFilters())
+    expect(display.featureFilterCount()).toBe(0)
+
+    // and the same on the schema default, which is what an ordinary track has
+    const defaulted = createDisplay()
+    defaulted.setJexlFilters(defaulted.activeFilters())
+    expect(defaulted.featureFilterCount()).toBe(0)
+  })
+
+  it('counts an override that differs from the config default, either way', () => {
+    const narrower = createDisplay([`get(feature,'type')=='gene'`])
+    narrower.setJexlFilters([`jexl:get(feature,'score')>5`])
+    expect(narrower.featureFilterCount()).toBe(1)
+
+    // emptying a slot that declares filters widens the view past what the
+    // config asked for; the clear is the way back to the declared set
+    const widened = createDisplay([`get(feature,'type')=='gene'`])
+    widened.setJexlFilters([])
+    expect(widened.featureFilterCount()).toBe(1)
+
+    // an empty override over an empty slot replaces nothing
+    const empty = createDisplay([])
+    empty.setJexlFilters([])
+    expect(empty.featureFilterCount()).toBe(0)
+  })
+
   it('rpcProps().displayConfig.jexlFilters carries the effective filters', () => {
     const display = createDisplay([`get(feature,'type')=='gene'`])
     expect(display.rpcProps().displayConfig.jexlFilters).toEqual([

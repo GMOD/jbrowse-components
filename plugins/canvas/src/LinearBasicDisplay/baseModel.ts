@@ -437,6 +437,22 @@ export default function baseStateModelFactory(
         get conf(): LinearBasicDisplayConfig {
           return self.configuration
         },
+
+        /**
+         * #method
+         * What the `jexlFilters` config slot alone declares, `jexl:`-prefixed.
+         * The slot stores expressions unprefixed (deferred evaluation) and every
+         * runtime consumer wants them prefixed, so the prefixing happens once
+         * here.
+         *
+         * In its own block ahead of `activeFilters` / `featureFilterCount` so
+         * both reach it through `self`: `featureFilterCount` is super-captured by
+         * subclasses and called unbound, so a same-block `this` is undefined
+         * there.
+         */
+        configuredFilters(): string[] {
+          return getConf(self, 'jexlFilters').map((f: string) => `jexl:${f}`)
+        },
       }))
       .views(() => ({
         /**
@@ -458,9 +474,10 @@ export default function baseStateModelFactory(
         /**
          * #getter
          * Overridable hook (default absent): a floating color key to draw over
-         * the canvas. Present only while a display's active coloring has a key
-         * worth showing and the user hasn't dismissed it (variants' consequence
-         * impact / SV type presets).
+         * the canvas. Present whenever a display's active coloring HAS a key
+         * worth showing (variants' consequence impact / SV type presets, the
+         * `legend` config slot) — whether or not the user has put it away, which
+         * is the hook's own `dismissed` flag. See CanvasColorLegend.
          */
         get colorLegend(): CanvasColorLegend | undefined {
           return undefined
@@ -696,10 +713,7 @@ export default function baseStateModelFactory(
          * are editable).
          */
         activeFilters(): string[] {
-          return (
-            toJS(self.jexlFiltersSetting) ??
-            getConf(self, 'jexlFilters').map((f: string) => `jexl:${f}`)
-          )
+          return toJS(self.jexlFiltersSetting) ?? self.configuredFilters()
         },
 
         /**
@@ -712,10 +726,28 @@ export default function baseStateModelFactory(
          *
          * A count rather than the boolean it used to be, because the count is
          * the only affordance saying that a filter is silently hiding features —
-         * see `filterMenuItems` for the counting rule (a filter counts when its
-         * value is not the no-op one, which is why an empty
-         * `jexlFiltersSetting` still counts: an empty override still replaces
-         * the config default).
+         * see `filterMenuItems` for the counting rule: a filter counts when its
+         * value is not the no-op one.
+         *
+         * For the runtime jexl override the no-op value is **the config
+         * default**, not the empty list — because "Clear all filters" drops the
+         * override and lets that default apply again, so an override equal to it
+         * is one the clear could not change. Counting the override's mere
+         * existence read as a filter in two states where nothing had moved:
+         *
+         *   - the dialog is SEEDED from `activeFilters()`, so opening
+         *     "Filter by..." and pressing Submit without an edit banks an
+         *     override identical to the default and the label went straight to
+         *     "Filter by... (1)". The slot's default is non-empty on every track
+         *     (the NCBI `gbkey!='Src'` row), so this is the ordinary path
+         *     through the dialog, not a corner.
+         *   - an empty override on a track whose slot is also empty replaces
+         *     nothing.
+         *
+         * An override that genuinely differs still counts, in both directions:
+         * narrowing further, and — with an empty override over a slot that
+         * declares filters — widening past what the config asked for, where the
+         * clear is the way back to the declared set.
          *
          * `soloApplied`, not `soloFeatureIds.length` — while the user is still
          * collecting (ctrl+click, the right-click "Add to show-only list") the
@@ -731,8 +763,14 @@ export default function baseStateModelFactory(
          * extension seam the menu builders use.
          */
         featureFilterCount(): number {
+          const override = self.jexlFiltersSetting
+          const configured = self.configuredFilters()
+          const overrideChangesSomething =
+            override !== undefined &&
+            (override.length !== configured.length ||
+              override.some((f, i) => f !== configured[i]))
           return (
-            (self.jexlFiltersSetting === undefined ? 0 : 1) +
+            (overrideChangesSomething ? 1 : 0) +
             (self.soloApplied ? 1 : 0) +
             (self.hiddenFeatureIds.length > 0 ? 1 : 0)
           )
