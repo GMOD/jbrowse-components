@@ -95,9 +95,14 @@ describe(`the ${SESSION_EXTENSION} file association`, () => {
     )
   })
 
-  // A ProgID may not contain spaces, and the product name does.
-  test('the ProgID has no spaces', () => {
-    expect(progId).not.toMatch(/\s/)
+  // A ProgID may not contain spaces, and PRODUCT_NAME ("JBrowse 2", which the
+  // fixture above passes) does — so the one the script writes has to be derived
+  // from it rather than be it. Asserted against the script because the deriving
+  // function is module-local; asserting `'JBrowse2.Session'` has no spaces would
+  // only be asking whether the literal three lines up has a space in it.
+  test('the ProgID is the product name with the spaces taken out', () => {
+    expect(script()).toContain(`Software\\Classes\\${progId}`)
+    expect(script()).not.toContain('Software\\Classes\\JBrowse 2.Session')
   })
 
   // .json is the other extension findLaunchTarget accepts. Claiming it would
@@ -124,7 +129,26 @@ describe(`the ${SESSION_EXTENSION} file association`, () => {
       `ReadRegStr $0 HKCU "Software\\Classes\\${SESSION_EXTENSION}" ""`,
     )
     expect(uninstall()).toMatch(
-      /\$\{If} \$0 == "JBrowse2\.Session"[\s\S]*DeleteRegKey HKCU "Software\\Classes\\\.jbrowse"[\s\S]*\$\{Else}/,
+      new RegExp(
+        String.raw`\$\{If} \$0 == "${progId}"[\s\S]*DeleteRegValue HKCU "Software\\Classes\\${SESSION_EXTENSION}" ""[\s\S]*\$\{EndIf}`,
+      ),
+    )
+  })
+
+  // OpenWithProgids is a list, one entry per application that can open the
+  // type, so an unconditional DeleteRegKey on the extension takes other
+  // applications' entries with it — the very harm the test above exists to
+  // prevent, one level down. Every removal names a value of ours; the keys go
+  // only once empty.
+  test('the uninstall never deletes the extension key recursively', () => {
+    expect(uninstall()).not.toContain(
+      `DeleteRegKey HKCU "Software\\Classes\\${SESSION_EXTENSION}"`,
+    )
+    expect(uninstall()).toContain(
+      `DeleteRegValue HKCU "Software\\Classes\\${SESSION_EXTENSION}\\OpenWithProgids" "${progId}"`,
+    )
+    expect(uninstall()).toContain(
+      `DeleteRegKey /ifempty HKCU "Software\\Classes\\${SESSION_EXTENSION}"`,
     )
   })
 })

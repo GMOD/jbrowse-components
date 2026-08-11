@@ -179,18 +179,25 @@ Section "Uninstall"
   DeleteRegKey HKCU "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${productName}"
   DeleteRegKey HKCU "Software\\Classes\\${protocol}"
 
-  ; The file association. The ProgID is ours and goes unconditionally; the
-  ; extension key is shared, so only drop it if it still points at us. Another
-  ; application (or a newer JBrowse install) may have taken the default since,
-  ; and removing it then would leave ${sessionExtension} associated with nothing
-  ; on the way out of an app the user was not even uninstalling.
+  ; The file association. The ProgID is ours and goes unconditionally. The
+  ; ${sessionExtension} key is not: another application (or a newer JBrowse
+  ; install) may have taken the default since, and removing it then would leave
+  ; ${sessionExtension} associated with nothing on the way out of an app the
+  ; user was not even uninstalling.
+  ;
+  ; So every removal below names one value of ours, and the keys go only once
+  ; they are empty. DeleteRegKey on the extension would be recursive, and
+  ; OpenWithProgids is a *list* — one entry per application that can open the
+  ; type — so taking the key would take other applications' entries with it.
+  ; That is the same harm the paragraph above refuses, one level down.
   DeleteRegKey HKCU "Software\\Classes\\${progId}"
+  DeleteRegValue HKCU "Software\\Classes\\${sessionExtension}\\OpenWithProgids" "${progId}"
+  DeleteRegKey /ifempty HKCU "Software\\Classes\\${sessionExtension}\\OpenWithProgids"
   ReadRegStr $0 HKCU "Software\\Classes\\${sessionExtension}" ""
   \${If} $0 == "${progId}"
-    DeleteRegKey HKCU "Software\\Classes\\${sessionExtension}"
-  \${Else}
-    DeleteRegValue HKCU "Software\\Classes\\${sessionExtension}\\OpenWithProgids" "${progId}"
+    DeleteRegValue HKCU "Software\\Classes\\${sessionExtension}" ""
   \${EndIf}
+  DeleteRegKey /ifempty HKCU "Software\\Classes\\${sessionExtension}"
   ${NOTIFY_SHELL}
 SectionEnd
 `
