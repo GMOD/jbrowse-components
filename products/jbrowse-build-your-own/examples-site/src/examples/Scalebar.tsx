@@ -198,7 +198,10 @@ const Gridlines = observer(function Gridlines({ view }: { view: BrowserView }) {
         left: 0,
         height: '100%',
         width: staticBlocks.totalWidthPx,
-        transform: `translateX(${Math.round(staticBlocksTranslateX)}px)`,
+        // unrounded, unlike the labels below: these are paths, and there is no
+        // glyph to blur. JBrowse's own Gridlines makes the same call, through
+        // `ZoomTransform`
+        transform: `translateX(${staticBlocksTranslateX}px)`,
         pointerEvents: 'none',
       }}
     >
@@ -244,6 +247,9 @@ const ScalebarLabels = observer(function ScalebarLabels({
         left: 0,
         height: '100%',
         width: staticBlocks.totalWidthPx,
+        // rounded, unlike the gridlines above: these are text, and a fractional
+        // offset blurs every number in the row. Same split JBrowse's own
+        // ScalebarCoordinateLabels makes
         transform: `translateX(${Math.round(staticBlocksTranslateX)}px)`,
       }}
     >
@@ -495,7 +501,8 @@ const RegionBoundaries = observer(function RegionBoundaries({
         left: 0,
         zIndex: 2,
         pointerEvents: 'none',
-        transform: `translateX(${Math.round(staticBlocksTranslateX)}px)`,
+        // boxes, so unrounded -- see Gridlines above for the split
+        transform: `translateX(${staticBlocksTranslateX}px)`,
       }}
     >
       {paddingSpans.map(({ key, x, width, kind }) => (

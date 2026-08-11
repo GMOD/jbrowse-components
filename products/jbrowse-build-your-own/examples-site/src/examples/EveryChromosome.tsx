@@ -229,7 +229,9 @@ const RegionBoundaries = observer(function RegionBoundaries({
         left: 0,
         zIndex: 2,
         pointerEvents: 'none',
-        transform: `translateX(${Math.round(staticBlocksTranslateX)}px)`,
+        // boxes, so unrounded: rounding is for text, where a fractional offset
+        // blurs a glyph. JBrowse's own PaddingBlocks makes the same call
+        transform: `translateX(${staticBlocksTranslateX}px)`,
       }}
     >
       {paddingSpans.map(({ key, x, width, kind }) => (
