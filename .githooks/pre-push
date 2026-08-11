@@ -101,18 +101,22 @@ docs_pid=$!
 #
 # `pnpm figures:check` settles the second in ~2s, which is worth it to keep the
 # 34s answer trustworthy.
+#
+# When it is NOT trustworthy the check still runs, and reports without blocking.
+# Skipping it outright was the first version of this and it was wrong: the very
+# next push went out with gallery links and the model docs stale, neither of
+# which reads a figure, because a corpus two thumbnails ahead of the lock had
+# switched the whole 34s check off. An advisory report costs a push nothing and
+# would have named both.
 autogen_pid=
+autogen_advisory=
 if [ ! -d website/static/img ] || [ ! -d products/jbrowse-img/img ]; then
-  echo "pre-push: no figure corpora, skipped 'pnpm autogen --check'." >&2
-  echo "  Run 'pnpm figures:pull' to have it checked here too." >&2
+  autogen_advisory="no figure corpora on disk ('pnpm figures:pull' installs them)"
 elif ! pnpm figures:check >"$tmp/figures.log" 2>&1; then
-  echo "pre-push: figures on disk differ from figures.lock, so skipped" >&2
-  echo "  'pnpm autogen --check' — it would report on those, not on your push." >&2
-  echo "  'pnpm figures:check' says what moved; push them if they are yours." >&2
-else
-  pnpm autogen --check >"$tmp/autogen.log" 2>&1 &
-  autogen_pid=$!
+  autogen_advisory="figures on disk differ from figures.lock ('pnpm figures:check' says which)"
 fi
+pnpm autogen --check >"$tmp/autogen.log" 2>&1 &
+autogen_pid=$!
 
 status=0
 wait "$docs_pid" || status=$?
@@ -122,15 +126,24 @@ if [ "$status" != 0 ]; then
   cat "$tmp/docs.log" >&2
 fi
 
-if [ -n "$autogen_pid" ]; then
-  astatus=0
-  wait "$autogen_pid" || astatus=$?
-  if [ "$astatus" != 0 ]; then
-    echo >&2
+astatus=0
+wait "$autogen_pid" || astatus=$?
+if [ "$astatus" != 0 ]; then
+  echo >&2
+  if [ -n "$autogen_advisory" ]; then
+    # Advisory: this run cannot tell a genuinely stale artifact from one the
+    # figure state faked, so it names both rather than blocking on either. The
+    # figure-derived generators (jbrowse-img doc, tutorial card thumbnails,
+    # homepage images) are the ones to discount; anything else in the list is
+    # real and CI will fail on it.
+    echo "pre-push: 'pnpm autogen --check' reported the following, NOT blocking" >&2
+    echo "  because $autogen_advisory." >&2
+    echo "  Discount the figure-derived generators; the rest are real." >&2
+  else
     echo "pre-push: pnpm autogen --check failed — run 'pnpm autogen' and commit" >&2
-    cat "$tmp/autogen.log" >&2
     status=$astatus
   fi
+  cat "$tmp/autogen.log" >&2
 fi
 
 if [ "$status" != 0 ]; then
