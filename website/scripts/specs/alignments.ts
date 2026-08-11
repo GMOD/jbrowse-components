@@ -505,6 +505,24 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     // `fracY: 0` is the top of the band and a negative `dy` lifts it out.
     // fontSize 15 rather than 17 is what makes it fit that strip (~26 css px)
     // instead of spilling back over the Forward strand divider.
+    //
+    // THE CONTROL IS FIVE BASES AWAY, AND IT WAS UNLABELLED. The loudest object
+    // in this frame is not the boxed column: it is 1:55,705,716, an orange
+    // column running the full height of BOTH pileups and colouring both
+    // coverage bands. Unmarked, it reads as a counterexample -- a reader is
+    // told "one strand only" and their eye lands on a column that is plainly on
+    // both. Marked, it is the control the figure needs, and the pair is the
+    // whole claim: same 250 bp, same track, one column carried by one strand
+    // and one carried by both.
+    //
+    // Both positions come out of `rank_strand_asymmetry.py`, which now reads
+    // the assembly's own FASTA instead of taking each column's majority base as
+    // the reference. That substitution had a blind spot exactly here: at
+    // 55,705,716 every read disagrees with hg19 (fwd 0.85 of 13, rev 0.73 of
+    // 11, both to G), so the majority base IS the alt and the position scored
+    // 0.00 asymmetry AND 0.00 mismatch -- invisible in both directions, which
+    // is how the busiest column in the figure went unnamed through three review
+    // rounds. `--both` ranks it now.
     annotations: [
       {
         type: 'box',
@@ -512,7 +530,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'reverse reads only',
+        text: 'reverse reads only: a basecalling artifact',
         fontSize: 15,
         textAlign: 'end',
         anchor: {
@@ -524,6 +542,27 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           dy: -14,
           alignX: 'left',
           dx: -14,
+        },
+      },
+      {
+        type: 'box',
+        anchor: { track: 'hg002_nanopore_hp', locus: '1:55,705,716' },
+      },
+      {
+        // the two pills share the label row and leave their own column in
+        // opposite directions, so 5 bp of separation is enough for both: this
+        // one starts 14 px right of its box, the other ends 14 px left of its
+        // own, and neither has to encode a width measured off an image
+        type: 'text',
+        text: 'both strands: a real variant',
+        fontSize: 15,
+        anchor: {
+          track: 'hg002_nanopore_hp',
+          locus: '1:55,705,716',
+          fracY: 0,
+          dy: -14,
+          alignX: 'right',
+          dx: 14,
         },
       },
     ],
