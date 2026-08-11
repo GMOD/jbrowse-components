@@ -2079,8 +2079,11 @@ export default function stateModelFactory(
             return {
               groupKey: sec.groupKey,
               ...splitArcsBySide(arcs),
-              // Content-space band tops; the overlay scrolls them for grouped,
-              // the export reads them as-is (scrollTop 0).
+              // Content-space band tops. Both consumers project them through
+              // `bandScreenTop` — sticky when ungrouped, scrolled with the
+              // section when grouped. That includes the SVG export, which since
+              // it started honoring the display's scroll no longer reads them
+              // as-is at scrollTop 0.
               coverageOverlayTop: sec.coverageTop + YSCALEBAR_LABEL_OFFSET,
               sashimiBandTop: sec.sashimiBandTop,
             }
