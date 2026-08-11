@@ -18,6 +18,7 @@ import {
 } from '../../shaders/slang/arcFlat.iface.generated.ts'
 import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.iface.generated.ts'
 import { ARC_MARKER_PX } from '../../shaders/slang/arcMarker.iface.generated.ts'
+import { arcLineWidth } from './arcLineWidth.ts'
 import { arcAvailH, arcYOffsetPx, arcYScale } from './arcYScale.ts'
 import { ARC_SHAPE_FLAT_SPLIT, isFlatArcShape } from './compute.ts'
 
@@ -119,13 +120,17 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
   const anchorY = pairedArcsDown ? arcsTop : arcsTop + arcsH
   const availH = arcAvailH(arcsH)
 
-  ctx.lineWidth = lineWidth
   for (let i = 0; i < data.numArcs; i++) {
     const x1Bp = data.arcX1[i]!
     const x2Bp = data.arcX2[i]!
     const colorIdx = data.arcColorTypes[i]!
     const shape = data.arcShapeTypes[i]!
     const yBp = data.arcYBp[i]!
+    // Per arc, not once per draw: an arc is one junction now rather than one
+    // read, and its width is how many reads it stands for (`arcLineWidth`).
+    // Support 1 resolves to exactly `lineWidth`, so a feed with no repeats
+    // paints what it painted before coalescing existed.
+    ctx.lineWidth = arcLineWidth(data.arcSupport[i]!, lineWidth)
 
     const sx1 = bpToScreenX(x1Bp)
     const sx2 = bpToScreenX(x2Bp)

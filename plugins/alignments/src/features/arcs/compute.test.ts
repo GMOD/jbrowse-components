@@ -1754,3 +1754,73 @@ describe('arcColorLegendCategory', () => {
     expect(arcColorLegendCategory(0, 'orientation')).toBe('pairLR')
   })
 })
+
+// Coalescing. Every read over a junction used to be its own instance, and arc
+// colors are opaque, so N identical arcs painted as one and the support was
+// simply lost. These pin the fold: the same junction sums, a neighbouring one
+// does not.
+describe('identical arcs coalesce and carry their support', () => {
+  // n paired reads describing the SAME pair of endpoints, which is what a
+  // junction with n-read support looks like coming out of the fetch.
+  function pairedReadsAt(starts: number[], mateBp: number) {
+    return makePileupData({
+      regionStart: 1000,
+      readPositions: new Uint32Array(starts.flatMap(s => [s, s + 100])),
+      readFlags: new Uint16Array(starts.map(() => SAM_FLAG_PAIRED)),
+      readStrands: new Int8Array(starts.map(() => 1)),
+      readInsertSizes: new Float32Array(starts.map(() => 500)),
+      readPairOrientations: new Uint8Array(starts.map(() => 1)),
+      readNames: starts.map((_, i) => `read${i}`),
+      readNextRefs: starts.map(() => 'chr1'),
+      readNextPositions: new Uint32Array(starts.map(() => mateBp)),
+    })
+  }
+  const regions = [
+    { refName: 'chr1', start: 1000, end: 3000, displayedRegionIndex: 0 },
+  ]
+  const settings = {
+    colorByType: 'insertSizeAndOrientation' as const,
+    drawInter: false,
+    drawLongRange: true,
+  }
+
+  test('three reads over one junction are one arc of support 3', () => {
+    const result = computeArcsFromPileupData(
+      new Map([[0, pairedReadsAt([1000, 1000, 1000], 2000)]]),
+      regions,
+      settings,
+    )
+    expect(result.arcs.length).toBe(1)
+    expect(result.arcs[0]!.support).toBe(3)
+  })
+
+  test('a junction one base over is a second arc, not more support', () => {
+    const result = computeArcsFromPileupData(
+      new Map([[0, pairedReadsAt([1000, 1000, 1001], 2000)]]),
+      regions,
+      settings,
+    )
+    expect(result.arcs.length).toBe(2)
+    expect(result.arcs.map(a => a.support).sort()).toEqual([1, 2])
+  })
+
+  test('a lone connection keeps support 1', () => {
+    const result = computeArcsFromPileupData(
+      new Map([[0, pairedReadsAt([1000], 2000)]]),
+      regions,
+      settings,
+    )
+    expect(result.arcs[0]!.support).toBe(1)
+  })
+
+  test('support reaches the upload arrays in feed order', () => {
+    const { arcs, lines } = computeArcsFromPileupData(
+      new Map([[0, pairedReadsAt([1000, 1001, 1001], 2000)]]),
+      regions,
+      settings,
+    )
+    const region = arcsToRegionResult(arcs, lines)
+    expect(region.numArcs).toBe(2)
+    expect(Array.from(region.arcSupport)).toEqual([1, 2])
+  })
+})
