@@ -21,7 +21,6 @@ export {
   colorRevStrand,
   colorRevStrandNotProper,
   colorShortInsert,
-  colorShortInsertArc,
   colorSplitReadInversion,
   colorSupplementary,
   colorUnknown,

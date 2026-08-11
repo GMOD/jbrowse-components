@@ -5,7 +5,7 @@ import {
   colorPairLR,
   colorPairRL,
   colorPairRR,
-  colorShortInsertArc,
+  colorShortInsert,
   colorSplitReadInversion,
   colorSupplementary,
 } from '@jbrowse/core/ui/palette'
@@ -28,7 +28,7 @@ const rgb = cssColorToNormalizedRgb
 export const arcColorPalette: RGBColor[] = [
   rgb(colorPairLR),
   rgb(colorLongInsert),
-  rgb(colorShortInsertArc),
+  rgb(colorShortInsert),
   rgb(colorInterchrom),
   rgb(colorPairLL),
   rgb(colorPairRR),
