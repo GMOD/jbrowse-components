@@ -209,6 +209,35 @@ which point synteny is paying the conversion anyway.
 **Do not** split the difference by leaving the worker relative and converting on
 arrival — that is the current cost plus a copy.
 
+### `FeatPos` is absolute, and is *not* what the ribbon is drawn from
+
+The band's main-thread feature data obeys the absolute-uint32 rule:
+`starts`/`ends`/`mateStarts`/`mateEnds` in `SyntenyFeatureData` are absolute
+chromosome-local bp, and `getFeatureAtIndex` hands them out as `FeatPos`. Nothing
+relative is in there. That is the good news and also the trap.
+
+Those numbers are the **original block extent**, written before the geometry
+stage. The ribbon on screen is not: `clipLargeBlockToWindow` re-anchors a
+chain-sized block to just its visible slice, CIGAR-accurately, and
+`clampBlockToRegions` trims it again to what both axes can show
+(`executeSyntenyFeaturesAndPositions.ts`). Only the geometry sees the result;
+`startsArray[validCount] = start` stores the pre-clip value on purpose, because
+the detail panel and the min-length cull want the whole block.
+
+So main-thread code that reads `FeatPos` coordinates and reasons about *what the
+user is looking at* is wrong wherever the block was clipped — which is precisely
+the liftOver-style chain, the case such code is usually written for. In
+particular, interpolating a mate position across `start..end` is not "the
+geometry the picture is drawn with", however reasonable that sounds: the picture
+followed the CIGAR and the interpolation did not. This has been shipped once and
+reverted (`8981347686`).
+
+The correct route for anything needing a position correspondence is a worker
+round trip that walks the real CIGAR and returns absolute bp —
+`SyntenyResolveMatchingRegion`, which is what the band's "Move … panel to the
+matching region" items use, gated on `featureData.hasCigar` so a CIGAR-less tier
+gets no answer rather than a guessed one.
+
 ### The same hazard on the CSS side: `staticBlocksTranslateX`
 
 Everything above is about the worker and the GPU. The DOM has the identical
