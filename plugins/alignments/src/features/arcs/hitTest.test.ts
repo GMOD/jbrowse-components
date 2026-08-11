@@ -54,7 +54,7 @@ function drawnEllipse(
   sx1: number,
   sx2: number,
   anchorY: number,
-  apexY: number,
+  destY: number,
   down: boolean,
   screenWidthPx: number,
 ) {
@@ -66,7 +66,7 @@ function drawnEllipse(
       call = { cx, cy, rx, ry }
     },
   } as unknown as Ctx2D
-  strokeArc(ctx, sx1, sx2, anchorY, apexY, down, screenWidthPx)
+  strokeArc(ctx, sx1, sx2, anchorY, destY, down, screenWidthPx)
   return call!
 }
 
@@ -79,8 +79,7 @@ function pointsOnDrawnCurve(
   screenWidthPx = BAND.screenWidthPx,
 ) {
   const anchorY = down ? BAND.arcsTop : BAND.arcsTop + BAND.arcsH
-  const apexY = down ? anchorY + yBp : anchorY - yBp
-  const e = drawnEllipse(sx1, sx2, anchorY, apexY, down, screenWidthPx)
+  const e = drawnEllipse(sx1, sx2, anchorY, yBp, down, screenWidthPx)
   const [start, end] = down ? [0, Math.PI] : [Math.PI, 2 * Math.PI]
   return [0.05, 0.25, 0.5, 0.75, 0.95].map(f => {
     const t = start + f * (end - start)

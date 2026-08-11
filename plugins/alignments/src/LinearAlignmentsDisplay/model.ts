@@ -1346,21 +1346,20 @@ export default function stateModelFactory(
          * color — and the scheme names alone do not support it, because the arc
          * classifier is not a re-spelling of the read one:
          *
-         * - `getArcColorType` folds a LONG-RANGE pair (span past
-         *   LARGE_INSERT_THRESHOLD) into the long-insert color, on the ground
-         *   that a discordant pair's TLEN is often 0 or unreliable, and the read
-         *   classifier has no such rule — it reads TLEN alone. So the arcs can
-         *   carry `longInsert` while the reads carry `normalInsert`, in EVERY
-         *   mode.
-         * - In `orientation` mode that same fallback is the LR case, so the arcs
-         *   can key `longInsert` while the reads are on `pairOrientation`, a
-         *   scheme with no long-insert bucket at all. That one produced a red
-         *   "Long insert" square in the read key of a track whose reads are
-         *   never red.
+         * - A SPLIT JUNCTION colors by its two segments' strands
+         *   (`splitInversion` / `splitDeletion`), whatever the mode, since it has
+         *   no TLEN and no pair orientation to classify. The read fills reach
+         *   those two categories only in chain mode, so an ordinary pileup of
+         *   SA-split long reads paints arc buckets its reads never paint.
+         * - `hasPaired` is a property of the whole fetched set, so a track with
+         *   no paired reads at all sends every arc down that same branch.
          *
-         * Asked of the categories in hand rather than of a table of what each
-         * scheme COULD emit: the two classifiers are free to diverge again, and
-         * a table saying they don't would be the same assertion one level up.
+         * (It used to name a different divergence: the arcs folded a pair whose
+         * mates were drawn far apart into `longInsert` while the reads read TLEN
+         * alone. That rule is gone — `getArcColorType` keys on TLEN and only
+         * TLEN now, for the reasons written there — but the check outlives its
+         * first example, which is exactly why it is asked of the categories in
+         * hand rather than of a table of what each scheme COULD emit.)
          */
         get arcColorsMatchReads() {
           return (

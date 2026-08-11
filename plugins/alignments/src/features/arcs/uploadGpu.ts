@@ -3,6 +3,7 @@ import {
   PASS_ARC_FLAT,
   PASS_ARC_LINE,
   PASS_ARC_MARKER,
+  curvedArcCount,
   packArcFlats,
   packArcLines,
   packArcMarkers,
@@ -25,8 +26,10 @@ export function uploadArcs(
 ) {
   // Curved arcs and flat read-cloud connectors are separate passes with very
   // different vertex counts (see packGpu). Read cloud fills the second and
-  // leaves the first empty; arc mode does the reverse.
-  const curvedCount = data.numArcs - data.numFlatArcs
+  // leaves the first empty; arc mode does the reverse. `curvedArcCount` is
+  // `packArcs`' own — the instance count handed to the HAL has to be the number
+  // that packer wrote, not a second subtraction agreeing with it.
+  const curvedCount = curvedArcCount(data)
   if (curvedCount > 0) {
     hal.uploadBuffer(
       displayedRegionIndex,

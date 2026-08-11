@@ -72,28 +72,31 @@ const ArcDebugOverlay = observer(function ArcDebugOverlay({
   if (!model.debugArcGeometry || model.readConnections === 'off') {
     return null
   }
-  const bands = model.renderSections.flatMap(sec => {
-    const region = view.visibleRegions[0]
-    if (!region) {
-      return []
-    }
-    const geom = resolveArcBandDebug(
-      model.arcsByGroup.get(sec.groupKey)?.get(region.displayedRegionIndex),
-      {
-        region,
-        band: {
-          arcBandTop: sec.arcBandTop,
-          arcBandHeight: sec.arcBandHeight,
-          arcDown: sec.arcDown,
+  // Every section CROSSED WITH every visible region, because that is what the
+  // renderer draws: the arc feed is per group per region, each buffer clipped to
+  // its own block. Taking `visibleRegions[0]` drew region 0's arcs and left the
+  // rest of a multi-region view unannotated — in a view where the arcs actually
+  // in question are as likely to be in the second region as the first.
+  const bands = model.renderSections.flatMap(sec =>
+    view.visibleRegions.flatMap(region => {
+      const geom = resolveArcBandDebug(
+        model.arcsByGroup.get(sec.groupKey)?.get(region.displayedRegionIndex),
+        {
+          region,
+          band: {
+            arcBandTop: sec.arcBandTop,
+            arcBandHeight: sec.arcBandHeight,
+            arcDown: sec.arcDown,
+          },
+          scroll: model.scrollModel,
+          lineWidth: model.readConnectionsLineWidth,
+          arcsYDomainBp: model.arcsYDomainBp,
+          canvasWidthPx: view.trackWidthPx,
         },
-        scroll: model.scrollModel,
-        lineWidth: model.readConnectionsLineWidth,
-        arcsYDomainBp: model.arcsYDomainBp,
-        canvasWidthPx: view.trackWidthPx,
-      },
-    )
-    return geom ? [geom] : []
-  })
+      )
+      return geom ? [geom] : []
+    }),
+  )
   if (bands.length === 0) {
     return null
   }
@@ -139,7 +142,7 @@ const ArcDebugOverlay = observer(function ArcDebugOverlay({
                 <text className={classes.label}>
                   {`rx=${s.rx.toFixed(0)} ry=${s.ry.toFixed(0)} ` +
                     `aspect=${(s.rx / Math.max(s.ry, 1e-6)).toFixed(2)} ` +
-                    `${s.far ? 'FAR(circle)' : 'near(ellipse)'} ` +
+                    `${s.isFlat ? 'FLAT(bar)' : s.far ? 'FAR(circle)' : 'near(ellipse)'} ` +
                     `yBp=${s.yBp} span=${Math.abs(s.x2 - s.x1)}bp n=${s.support}`}
                 </text>
               </g>

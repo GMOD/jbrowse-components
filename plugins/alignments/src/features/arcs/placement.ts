@@ -35,10 +35,15 @@ export interface ArcPlacement {
   // The band edge the arc springs from — insert size 0. Bottom of the band when
   // arcs point up, top when they point down.
   anchorY: number
-  // Screen y of the apex (a dome) or of the bar (a flat read-cloud line).
-  apexY: number
-  // How far the apex is from the anchor, on the drawn side, always positive.
-  // The frame the hit test measures in, where "up" and "down" are one case.
+  // Screen y of a FLAT read-cloud mark: the bar itself and the two endpoint
+  // squares on it. It was called `apexY` and documented as the dome's apex too,
+  // which is not true of any dome the renderers draw: a curve peaks at
+  // `ARC_APEX_FRACTION` of `destY` (see `arcRadiiPx`), and the only dome caller
+  // it ever had took it apart again to recover `destY`.
+  markY: number
+  // How far `yBp` plots from the anchor, on the drawn side, always positive.
+  // The frame the hit test measures in, where "up" and "down" are one case, and
+  // the height the dome's radii are derived from.
   destY: number
   isFlat: boolean
 }
@@ -69,7 +74,7 @@ export function arcPlacement(
     sx1: bpToScreenX(data.arcX1[i]!),
     sx2: bpToScreenX(data.arcX2[i]!),
     anchorY,
-    apexY: pairedArcsDown ? anchorY + destY : anchorY - destY,
+    markY: pairedArcsDown ? anchorY + destY : anchorY - destY,
     destY,
     isFlat,
   }

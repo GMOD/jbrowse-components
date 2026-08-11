@@ -56,6 +56,13 @@ interface DrawArcsOpts {
 // ellipse rising from the two endpoints. Caller sets strokeStyle and clips to
 // the band.
 //
+// `destY` is `arcPlacement`'s — the drawn-side-positive distance the insert size
+// earns, NOT where the ink peaks. The apex is `ARC_APEX_FRACTION` of the way
+// there (`arcRadiiPx`, which owns that scaling), so this used to take
+// `placement.apexY` and immediately undo it with `abs(apexY - anchorY)`. The
+// round trip cost nothing but it made the parameter read as a claim about the
+// curve's top that neither renderer honours.
+//
 // Both radii come from `arcRadiiPx`, generated from arc.slang (adr-051) — the
 // near/far branch, the ARC_APEX_FRACTION scaling and the span threshold behind
 // them are the shader's, and were hand-written here until
@@ -70,15 +77,11 @@ export function strokeArc(
   sx1: number,
   sx2: number,
   anchorY: number,
-  apexY: number,
+  destY: number,
   pairedArcsDown: boolean,
   screenWidthPx: number,
 ) {
-  const [rx, ry] = arcRadiiPx(
-    Math.abs(sx2 - sx1) / 2,
-    Math.abs(apexY - anchorY),
-    screenWidthPx,
-  )
+  const [rx, ry] = arcRadiiPx(Math.abs(sx2 - sx1) / 2, destY, screenWidthPx)
   const [start, end] = pairedArcsDown ? [0, Math.PI] : [Math.PI, 2 * Math.PI]
   ctx.beginPath()
   ctx.ellipse((sx1 + sx2) / 2, anchorY, rx, ry, 0, start, end)
@@ -115,7 +118,7 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
     // none of the three can drift from the other two. The band clip is the
     // caller's; a dome deliberately leaves the band rather than flattening onto
     // its ceiling.
-    const { sx1, sx2, apexY, isFlat } = arcPlacement(data, i, opts)
+    const { sx1, sx2, markY, destY, isFlat } = arcPlacement(data, i, opts)
 
     ctx.setLineDash(shape === ARC_SHAPE_FLAT_SPLIT ? [3, 3] : [])
     if (isFlat) {
@@ -126,17 +129,17 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
       const mid = (sx1 + sx2) / 2
       const halfPx = Math.max(Math.abs(sx2 - sx1), ARC_FLAT_MIN_PX) / 2
       ctx.beginPath()
-      ctx.moveTo(mid - halfPx, apexY)
-      ctx.lineTo(mid + halfPx, apexY)
+      ctx.moveTo(mid - halfPx, markY)
+      ctx.lineTo(mid + halfPx, markY)
       ctx.stroke()
       // Colored square at each read endpoint (mirrors the arcMarker GPU pass).
       ctx.fillStyle = cssPalette[arcColorSlot(colorIdx)]!
       const m = ARC_MARKER_PX
-      ctx.fillRect(sx1 - m / 2, apexY - m / 2, m, m)
-      ctx.fillRect(sx2 - m / 2, apexY - m / 2, m, m)
+      ctx.fillRect(sx1 - m / 2, markY - m / 2, m, m)
+      ctx.fillRect(sx2 - m / 2, markY - m / 2, m, m)
     } else {
       ctx.strokeStyle = cssPalette[arcColorSlot(colorIdx)]!
-      strokeArc(ctx, sx1, sx2, anchorY, apexY, pairedArcsDown, screenWidthPx)
+      strokeArc(ctx, sx1, sx2, anchorY, destY, pairedArcsDown, screenWidthPx)
     }
   }
   ctx.setLineDash([])

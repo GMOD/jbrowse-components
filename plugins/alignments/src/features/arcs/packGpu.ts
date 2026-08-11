@@ -51,7 +51,7 @@ export const ARC_MARKER_PASS = slangPass({
 // In practice one of the two is always empty — `computeArcShape` emits a flat
 // shape iff `cloud` — so the extra pass costs nothing in either mode. Nothing
 // depends on that, though: a mixed feed packs and draws correctly.
-function curvedArcCount(data: ArcsUploadData) {
+export function curvedArcCount(data: ArcsUploadData) {
   return data.numArcs - data.numFlatArcs
 }
 

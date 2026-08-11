@@ -41,11 +41,11 @@ function arcsData(
 }
 
 // The ellipse `strokeArc` hands Canvas2D when the DRAW places this arc — with
-// the apex `arcPlacement` resolved, not one the test picked. An earlier version
-// of this check passed its own apexY in, which is why it kept passing while the
-// highlight was reading the clamped Y for a dome.
+// the height `arcPlacement` resolved, not one the test picked. An earlier
+// version of this check passed its own in, which is why it kept passing while
+// the highlight was reading a different Y for a dome.
 function drawnEllipse(data: ArcsUploadData, i: number, opts: ArcHitOptions) {
-  const { sx1, sx2, anchorY, apexY } = arcPlacement(data, i, opts)
+  const { sx1, sx2, anchorY, destY } = arcPlacement(data, i, opts)
   let call: { cx: number; cy: number; rx: number; ry: number } | undefined
   const ctx = {
     beginPath: () => {},
@@ -59,7 +59,7 @@ function drawnEllipse(data: ArcsUploadData, i: number, opts: ArcHitOptions) {
     sx1,
     sx2,
     anchorY,
-    apexY,
+    destY,
     opts.pairedArcsDown,
     opts.screenWidthPx,
   )
@@ -112,9 +112,9 @@ test('a dome past the domain still closes inside the band', () => {
   ])
   const bar = arcPlacement(flat, 0, FRAME)
   const dome = arcPlacement(TALL_DOME, 0, FRAME)
-  expect(dome.apexY).toBeGreaterThanOrEqual(FRAME.arcsTop)
+  expect(dome.markY).toBeGreaterThanOrEqual(FRAME.arcsTop)
   expect(dome.destY).toBeLessThanOrEqual(FRAME.arcsH)
-  expect(dome.apexY).toBe(bar.apexY)
+  expect(dome.markY).toBe(bar.markY)
 })
 
 test('a down-pointing band mirrors every consumer at once', () => {

@@ -16,7 +16,7 @@ export function arcScreenPath(
   i: number,
   frame: ArcBandFrame & { screenWidthPx: number },
 ) {
-  const { sx1, sx2, anchorY, apexY, destY, isFlat } = arcPlacement(
+  const { sx1, sx2, anchorY, markY, destY, isFlat } = arcPlacement(
     data,
     i,
     frame,
@@ -27,7 +27,7 @@ export function arcScreenPath(
     // drawn length — so a sub-minimum pair traces the bar it actually paints,
     // the same extent `flatDistance` hit-tests.
     const halfPx = Math.max(Math.abs(sx2 - sx1), ARC_FLAT_MIN_PX) / 2
-    return `M ${mid - halfPx} ${apexY} L ${mid + halfPx} ${apexY}`
+    return `M ${mid - halfPx} ${markY} L ${mid + halfPx} ${markY}`
   }
   const [rx, ry] = arcRadiiPx(
     Math.abs(sx2 - sx1) / 2,
