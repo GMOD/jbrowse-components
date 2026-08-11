@@ -24,7 +24,6 @@ Exploratory concepts that are *not* committed work live in
 | [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | five independent small items |
 | [Make the capture scroll-invariant](#make-the-snapshot-capture-scroll-invariant-then-widen-the-gate-to-webgpu) | browser tests | it is `snapshot.ts`, not a shader — attribution is done |
 | [Widen `CI_GATE_SUITES`](#widen-ci_gate_suites) | browser tests, CI | measure before adding; say why the alignments pair is safe |
-| [The chevron arrowhead's outline](#the-chevron-arrowheads-outline-is-a-centred-stroke-on-one-side-a-distance-test-on-the-other) | alignments, GPU | the rect half is done; fill the pentagon twice rather than stroking it |
 | [Attribute the TIMEOUT mode](#attribute-the-browser-test-timeout-failure-mode) | browser tests | report the display's state, don't extend the wait |
 | [Make the webgl blank verdict readable](#make-the-webgl-blank-verdict-readable) | browser tests | one diagnostic run; never leave it on |
 | [Report a callout that draws off-frame](#report-a-callout-that-draws-off-frame) | figures | the overlay already reports the unresolvable case |
@@ -116,22 +115,6 @@ Then the local deterministic suites never measured under swiftshader — arcs,
 workspaces, redraw, cursor-guides, svg-export, custom-url, variant-force-load.
 Arcs and workspaces carry overrides tuned on a real GPU, so **measure before
 adding**; that is the whole procedure, and it is a measurement, not an edit.
-
-### The chevron arrowhead's outline is a centred stroke on one side, a distance test on the other
-
-What is left of the read-outline divergence after the rect half was fixed. The
-body rect now agrees — `READ_OUTLINE_*` from read.slang plus `strokeRectInside`
-took `alignments-long-reads-sv-linked` from 1.99% to **0.75%** and retired its
-threshold override. The residue is the arrowhead: `traceReadArrow` builds a
-pentagon and `ctx.stroke()`s it centred on the path, while read.slang measures
-`min(localPos.x, localPos.y)` to the two diagonal edges and shades an inner band.
-Still rasterizer-independent, so still a real difference and not AA.
-
-Insetting a polygon is not the one-liner insetting a rect is. The cheap version
-is to trace the arrow a half-width smaller and stroke that; the honest version is
-to fill the pentagon twice (once at the outline shade, once inset), which is what
-the shader effectively does and needs no stroke at all. Under the 1.5% default
-either way, so this is cleanup, not a gate.
 
 ### Attribute the browser-test TIMEOUT failure mode
 

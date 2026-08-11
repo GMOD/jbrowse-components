@@ -253,12 +253,31 @@ three things that had *not* agreed were placement (boundary vs inner band), widt
 (0.5 vs 1 px) and the gate (Canvas2D tested width only, so a 2 px row outlined
 where the GPU did not).
 
-The remaining **0.75% still does not move between rasterizers**, and is the same
-concept one level down: the chevron arrowhead's outline is a centred stroke on a
-polygon on the canvas side and a distance-to-the-two-diagonals test on the GPU.
-Insetting an arbitrary polygon is not the one-liner insetting a rect is, so it is
-filed rather than done — and it is under the default, so it is a note, not an
-exemption.
+The **0.75%** left after that was the same concept one level down, and is now
+also done: the chevron arrowhead's outline was a centred stroke on a polygon on
+the canvas side against a distance-to-the-two-diagonals test on the GPU. It is
+worth recording that the residue was the *worse* half of the two, because it is
+the half a gate percentage does not describe. Converting the rect branch and not
+the pentagon left the pentagon stroking its fill path at the new, doubled
+`READ_OUTLINE_PX` — still centred, so half of a line twice as wide now landed
+outside the read, in the 1 px gap between pileup rows. One pixel column down a
+chain-mode read stack at featureHeight 7, fill `#d3d3d3`:
+
+| | edge row | the gap between rows |
+| --- | --- | --- |
+| the 0.5 px centred spelling | 194 | 217 |
+| after the rect-half fix | 177, 182 | **185** |
+| read.slang, and now both | **148** | **255** |
+
+A darkened gap is two neighbouring reads smudged into one soft band, which is
+visible as a blurrier pileup long before 0.75% sounds like anything.
+
+Insetting an arbitrary polygon is not the one-liner insetting a rect is, but it
+is not the two-fill rewrite this note previously assumed either: the polygon
+offset of a home plate is two closed-form terms off the apex half-angle (see
+`traceReadArrow`), and it keeps the single `fillStyle` per read that the two-fill
+version would have spent twice — which is the per-read cost the read painter is
+built around.
 
 ### The connector width bug, which is real and is not this
 
