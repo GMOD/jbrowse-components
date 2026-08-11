@@ -1403,7 +1403,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
       {
         type: 'text' as const,
         fontSize: 18,
-        text: 'retrogene — no introns',
+        text: 'retrogene - no introns',
         anchor: {
           view: [0, 0],
           track: 'dog10k_fgf4_retro_cfa18_genes',
