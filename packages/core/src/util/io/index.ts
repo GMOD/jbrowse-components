@@ -7,7 +7,10 @@ import {
   isRootModelWithInternetAccounts,
   isUriLocation,
 } from '../types/index.ts'
-import { RemoteFileWithRangeCache } from './RemoteFileWithRangeCache.ts'
+import {
+  CachedFilehandle,
+  RemoteFileWithRangeCache,
+} from './RemoteFileWithRangeCache.ts'
 
 import type PluginManager from '../../PluginManager.ts'
 import type { BaseInternetAccountModel } from '../../pluggableElementTypes/models/index.ts'
@@ -53,7 +56,13 @@ export function openLocation(
     }
 
     if (isNode || isElectron) {
-      return new LocalFile(location.localPath)
+      // Same chunk cache the remote path has always had. A local read is not
+      // free — desktop re-read every byte of every pan — and the layer above
+      // does not care where the bytes came from.
+      return new CachedFilehandle(
+        new LocalFile(location.localPath),
+        `file://${location.localPath}`,
+      )
     } else {
       throw new Error("can't use local files in the browser")
     }
@@ -66,7 +75,10 @@ export function openLocation(
         `file ("${location.name}") was opened locally from a previous session. To restore it, go to track settings and reopen the file`,
       )
     }
-    return new BlobFile(blob)
+    // keyed on the blobId rather than anything derived from the Blob: two
+    // handles for the same session-stored blob should share chunks, and two
+    // unrelated blobs must not
+    return new CachedFilehandle(new BlobFile(blob), `blob://${location.blobId}`)
   }
   if (isFileHandleLocationLocal(location)) {
     // FileHandleLocation uses an in-memory cache of File objects
@@ -77,7 +89,10 @@ export function openLocation(
         `file ("${location.name}") requires permission. Please reopen the file from track settings`,
       )
     }
-    return new BlobFile(file)
+    return new CachedFilehandle(
+      new BlobFile(file),
+      `filehandle://${location.handleId}`,
+    )
   }
   if (isUriLocation(location)) {
     // Check for empty string
@@ -184,4 +199,7 @@ async function checkAuthNeededFetch(url: RequestInfo, opts?: RequestInit) {
   return response
 }
 
-export { RemoteFileWithRangeCache } from './RemoteFileWithRangeCache.ts'
+export {
+  CachedFilehandle,
+  RemoteFileWithRangeCache,
+} from './RemoteFileWithRangeCache.ts'
