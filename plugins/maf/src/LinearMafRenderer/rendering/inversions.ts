@@ -29,13 +29,19 @@ export function drawInversions(
     ctx.clip()
     ctx.strokeStyle = hatchColor
     ctx.lineWidth = 1
-    // Diagonal hatch across the clipped block band.
+    // Diagonal hatch across the clipped block band, as one path rather than a
+    // `stroke()` per line. The lines are parallel, 1px wide and `HATCH_SPACING`
+    // apart, so none of them overlaps another and stroking them together
+    // composites identically — which is only true because they don't overlap:
+    // the fill is translucent, so a shared path is what stops a crossing from
+    // reading darker than the rest. A wide inverted block on a deep alignment
+    // is hundreds of lines, and a rearranged pangenome has many such blocks.
+    ctx.beginPath()
     for (let x = m.xLeft - m.h; x < right; x += HATCH_SPACING) {
-      ctx.beginPath()
       ctx.moveTo(x, bottom)
       ctx.lineTo(x + m.h, m.rowTop)
-      ctx.stroke()
     }
+    ctx.stroke()
     ctx.restore()
     // Full-opacity outline marks the block extent (visible even when narrow).
     ctx.strokeStyle = color

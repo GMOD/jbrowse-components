@@ -341,6 +341,22 @@ export interface LocatedCodon {
   /** absolute genomic bp → screen px, for this codon's region */
   bpToPx: BpToPx
   /**
+   * The codon's pixel cells — one per run of consecutive reference positions,
+   * so a contiguous codon is one cell and an exon-boundary-stitched one is two.
+   *
+   * Memoized per codon rather than computed by each consumer, because there are
+   * two of them and they are both on at once whenever the conservation band is
+   * in codon mode under the codon view: `computeVisibleCodons` and
+   * `computeCodonConservation` each used to call `codonCells`, so every codon
+   * on screen ran the run-split and its two `bpToPx` calls twice per frame.
+   *
+   * Safe to cache on the object because `bpToPx` is captured from the region
+   * this codon was resolved in, and the whole `locatedCodons` array is rebuilt
+   * (the model's computed re-evaluates) whenever the view moves — the same
+   * thing that makes the array worth memoizing at all.
+   */
+  cells: () => CodonCell[]
+  /**
    * The species rows carrying a complete codon here, each with its three
    * alignment bytes in ascending order. A row absent from any block the codon
    * spans has no complete codon and is skipped, as is a row whose bytes can't
@@ -401,11 +417,16 @@ function* eachLocatedCodon(
       if (!locs) {
         continue
       }
+      // Resolved on first ask and kept — see `LocatedCodon.cells`. Not resolved
+      // eagerly here: a codon whose reference base is gapped emits nothing at
+      // all, and neither consumer reaches the cells for it.
+      let cellsCache: CodonCell[] | undefined
       yield {
         displayedRegionIndex,
         codon,
         refBytes: refCodonBytes(locs, blocks),
         bpToPx,
+        cells: () => (cellsCache ??= codonCells(codon.positions, bpToPx)),
         // A species must appear in every block the codon spans; iterate the rows
         // of the block holding its first (lowest) base and pull the other bases
         // from their blocks (all the same block in the common single-block case).
@@ -571,7 +592,7 @@ export function computeVisibleCodons(
   const hp2 = h / 2
 
   for (const located of codons) {
-    const { codon, bpToPx, rows } = located
+    const { codon, rows } = located
     const refCodon = refTriplet(located)
     // A reference codon with a gap/`N` has no amino acid to compare against,
     // so no species codon can be classified here (mirrors the conservation
@@ -579,7 +600,7 @@ export function computeVisibleCodons(
     if (refCodon === undefined || codonTable[refCodon] === undefined) {
       continue
     }
-    const cells = codonCells(codon.positions, bpToPx)
+    const cells = located.cells()
     const glyphIdx = widestCell(cells)
     for (const { rowIndex, bytes } of rows()) {
       if (rowIndex < firstRow || rowIndex >= endRow) {
@@ -660,7 +681,7 @@ export function computeCodonConservation(
   { refRowIndex }: ComputeCodonConservationParams,
 ): CodonConservationBar[] {
   const bars: CodonConservationBar[] = []
-  for (const { codon, refBytes, bpToPx, rows } of codons) {
+  for (const { codon, refBytes, cells, rows } of codons) {
     const refAa = translateCodonBytes(...refBytes, codon.strand)
     if (refAa === undefined) {
       continue
@@ -679,7 +700,7 @@ export function computeCodonConservation(
       }
     }
     const fraction = classifiable > 0 ? matches / classifiable : Number.NaN
-    for (const cell of codonCells(codon.positions, bpToPx)) {
+    for (const cell of cells()) {
       bars.push({ xLeft: cell.xLeft, width: cell.width, fraction })
     }
   }

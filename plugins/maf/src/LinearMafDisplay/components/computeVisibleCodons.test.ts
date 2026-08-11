@@ -341,6 +341,24 @@ test('computeCodonConservation stitches a boundary-straddling codon', () => {
   expect(bars.map(x => x.fraction)).toEqual([1, 1, 1])
 })
 
+// The cells are the one thing both consumers need, and with codon view and codon
+// conservation both on they used to be split out of the positions twice per
+// codon per frame. Memoized on the located codon, so the two get the same array.
+test('the pixel cells are resolved once and shared by both consumers', () => {
+  const codons = locate(
+    new Map([[0, regionData('ATGAAATAA', ['ATGAAATAA'])]]),
+    new Map([[0, frames]]),
+  )
+  const first = codons[0]!.cells()
+  expect(first).toBe(codons[0]!.cells())
+  // and it is the same geometry either consumer would have computed
+  expect(first.map(c => c.xLeft)).toEqual(
+    computeCodonConservation(codons.slice(0, 1), { refRowIndex: -1 }).map(
+      b => b.xLeft,
+    ),
+  )
+})
+
 test('findCodonAt resolves a codon straddling a block boundary', () => {
   const region = twoBlockRegion('AT', ['AT'], 'GAAATAA', [[0, 'GAAATAA']])
   const codons = locate(new Map([[0, region]]), new Map([[0, frames]]))

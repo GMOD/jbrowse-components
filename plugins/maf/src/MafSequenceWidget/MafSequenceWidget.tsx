@@ -1,5 +1,5 @@
 import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
+import { getBpDisplayStr, getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 import { Paper } from '@mui/material'
@@ -85,6 +85,7 @@ const MafSequenceWidget = observer(function MafSequenceWidget({
     singleLineFormat,
   )
   const sequenceTooLarge = formattedSequence.length > MAX_DISPLAY_LENGTH
+  const region = regions?.[0]
 
   return !adapterConfig || !samples || !regions ? (
     <Paper className={classes.root}>
@@ -107,7 +108,17 @@ const MafSequenceWidget = observer(function MafSequenceWidget({
         <LoadingEllipses />
       ) : sequenceTooLarge ? (
         <div>
-          Reference sequence too large to display, use the Download button
+          {/* "Reference sequence" and "the Download button" both came over from
+              `GetSequenceDialog`, where the first is accurate and the second
+              names a control that exists. Here it is every sample's row, not
+              the reference's, and the control is a menu item — so the message
+              described neither what was too big nor where to go next.
+              `region` is the widget's single selection (`openSubsequenceWidget`
+              passes exactly one), read defensively so the message degrades
+              rather than throws if one is ever absent. */}
+          Alignment too large to display ({samples.length} samples
+          {region ? ` over ${getBpDisplayStr(region.end - region.start)}` : ''}
+          ). Use &ldquo;Download as FASTA&rdquo; in the menu above.
         </div>
       ) : (
         <SequenceDisplay
