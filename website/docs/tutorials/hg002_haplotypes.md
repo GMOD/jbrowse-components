@@ -120,7 +120,12 @@ Right-click a chain block and choose **Move other panel to the matching
 region**, which walks that panel's visible window through the alignment's CIGAR
 and sends its neighbor there.
 
-<Figure caption="Maternal (top) and paternal (bottom) panels, each carrying the chain blocks on its own haplotype's coordinates. Both rulers read the same numbers and the paternal lane under them is empty: that window lands past the end of this chain, so nothing in it corresponds. The ring marks the right-clicked block; after the move the paternal panel is elsewhere and both lanes carry the block the ribbon joins." src="/img/hg002_haplotypes_follow_panel.png" />
+To check the alignment inside a ribbon rather than at its edges, turn on **View
+options → Show... → Show location markers**. It draws ticks at regularly spaced
+positions in both panels at once, so a point on the top row can be read against
+the point it maps to on the bottom.
+
+<Figure caption="Maternal (top) and paternal (bottom) panels, each carrying the chain blocks on its own haplotype's coordinates. The panels have drifted apart, so nothing in the frame lines up; the ring marks the right-clicked block. After the move the paternal panel is elsewhere and both lanes carry the block the ribbon joins. The last two frames turn on location markers, whose ticks pair up positions across the two panels." src="/img/hg002_haplotypes_follow_panel.png" />
 
 ## See also
 

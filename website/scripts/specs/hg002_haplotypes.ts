@@ -464,12 +464,14 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
               dy: 30,
             },
             fontSize: 22,
-            // WHAT THE PANELS ARE DOING WRONG, not what they contain (review:
-            // "it is unclear 'why' we are doing this"). Both rulers carry the
-            // same numbers and the paternal chain lane under them is empty:
-            // the numbers agree and the sequence does not, which is the reason
-            // there is a menu item at all.
-            text: '(1) Same numbers in both panels, and no chain under the paternal one',
+            // THE STATE THE MENU ITEM EXISTS FOR: the two panels have drifted
+            // apart, so the paternal lane shows nothing that lines up with the
+            // maternal one (review: "it is unclear 'why' we are doing this").
+            // Do NOT phrase this as the two rulers sharing coordinates -- a
+            // reader reads that as the regions matching, which is exactly the
+            // thing that is not true here. The message is only "you are lost,
+            // and the right-click gets you back".
+            text: '(1) The panels have drifted apart -- synteny ribbons are not matching here',
           },
           // WHERE THE CURSOR WAS (review: "it is unclear what is being right
           // clicked in the first image"). A context menu opens at the pointer,
@@ -520,10 +522,87 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
               dy: 30,
             },
             fontSize: 22,
-            // The result stated as the thing that changed: the paternal panel
-            // is somewhere else and its chain lane now carries the block the
-            // maternal one does, which is what "corresponding" means here.
-            text: '(2) The paternal panel jumps to the sequence that does correspond',
+            // The recovery, stated as the thing that changed: the paternal
+            // panel re-navigates and its chain lane now carries the block the
+            // maternal one does.
+            text: '(2) Right-click puts you back on track -- the paternal panel jumps to the matching region',
+          },
+        ],
+      },
+      // THE OTHER HALF OF "AM I LOOKING AT THE SAME PLACE" (review: "add a
+      // screenshot showing the guidelines ... with screenshot showing how to
+      // enable them"). Location markers are ticks drawn INSIDE a ribbon at
+      // regularly spaced positions in both panels at once, so a reader can see
+      // which point on the top maps to which point on the bottom rather than
+      // taking the whole band on trust. They are OFF by default, which is why
+      // there is an enable frame to show at all -- unlike the LGV hamburger's
+      // "Show guidelines", which is already on and would give a stage where
+      // nothing changes.
+      //
+      // The menu is the synteny view's own "View options" (aria-label, and the
+      // one handle that does not depend on which panel is which), then the
+      // "Show..." submenu. Both levels are boxed, because the item's own name
+      // is not enough to find it -- it is two clicks down from a MoreVert.
+      {
+        actions: [
+          { type: 'click', selector: '[aria-label="View options"]' },
+          { type: 'waitForText', text: 'Show...' },
+          { type: 'hover', text: 'Show...' },
+          { type: 'waitForText', text: 'Show location markers' },
+          { type: 'delay', ms: 500 },
+        ],
+        annotations: [
+          {
+            type: 'text',
+            anchor: {
+              selector: '[data-testid="app-bar"]',
+              alignX: 'left',
+              alignY: 'top',
+              dx: 24,
+              dy: 30,
+            },
+            fontSize: 22,
+            text: '(3) Turn on location markers from the view options menu',
+          },
+          {
+            type: 'circle',
+            anchor: { selector: '[aria-label="View options"]' },
+          },
+          { type: 'box', anchor: { text: 'Show...' }, strokeWidth: 3 },
+          {
+            type: 'box',
+            anchor: { text: 'Show location markers' },
+            strokeWidth: 3,
+          },
+        ],
+      },
+      {
+        actions: [
+          { type: 'click', text: 'Show location markers' },
+          // a checkbox row keeps CascadingMenu open, so dismiss BOTH levels --
+          // the submenu sits over the ribbon this frame is about. The hidden
+          // waits fail the spec rather than baking an open menu into the figure.
+          { type: 'press', key: 'Escape' },
+          { type: 'press', key: 'Escape' },
+          { type: 'waitForText', text: 'Show location markers', hidden: true },
+          { type: 'waitForText', text: 'Show...', hidden: true },
+          // the markers come back through the synteny RPC, not from a repaint
+          // of what is already on the GPU, so this waits on a refetch
+          { type: 'delay', ms: 4000 },
+        ],
+        closeMenusAfter: true,
+        annotations: [
+          {
+            type: 'text',
+            anchor: {
+              selector: '[data-testid="app-bar"]',
+              alignX: 'left',
+              alignY: 'top',
+              dx: 24,
+              dy: 30,
+            },
+            fontSize: 22,
+            text: '(4) The ticks pair up positions across the two panels',
           },
         ],
       },
