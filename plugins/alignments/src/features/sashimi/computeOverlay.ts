@@ -128,27 +128,13 @@ const SPAN_REF_MAX_BP = 100_000
 export const SASHIMI_APEX_CLEARANCE_PX =
   SASHIMI_LABEL_FONT_SIZE / 2 + SASHIMI_LABEL_HALO_WIDTH / 2
 
-// A junction resolved to screen space, before height-scaling. `left`/`right`
-// are screen-ordered (left <= right), NOT start/end-ordered: a reversed
+// The one place a projected (start, end) pair becomes screen order. `left` and
+// `right` are screen-ordered (left <= right), NOT start/end-ordered: a reversed
 // displayed region maps the junction's start to the larger screen x, so the raw
-// projection comes back flipped. Building all three fields only through
-// `screenSpan` keeps every downstream consumer on screen order by construction.
-interface RawArc {
-  left: number
-  right: number
-  spanPx: number
-  count: number
-  strand: number
-  start: number
-  end: number
-  refName: string
-  key: string
-}
-
-// The one place a projected (start, end) pair becomes screen order. Returning
-// all three fields together is what makes `left <= right` and
-// `spanPx === right - left` true by construction rather than by three
-// separately-written Math.min/max/abs calls agreeing.
+// projection comes back flipped. Returning all three fields together is what
+// makes `left <= right` and `spanPx === right - left` true by construction
+// rather than by three separately-written Math.min/max/abs calls agreeing —
+// and going through it is what keeps every consumer below on screen order.
 function screenSpan(x1: number, x2: number) {
   const [left, right] = x1 <= x2 ? [x1, x2] : [x2, x1]
   return { left, right, spanPx: right - left }
@@ -252,7 +238,6 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts): SashimiArc[] {
   // junction (see junctions.ts) — the same merge, on the same keys, the layout's
   // side assignment ran on. Only the visible regions contribute: a junction that
   // just scrolled off has no business drawing at the edge it left behind.
-  const raw: RawArc[] = []
   const merged = mergeJunctions(
     visibleRegions.flatMap(region => {
       const data = rpcDataMap.get(region.displayedRegionIndex)
@@ -262,26 +247,25 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts): SashimiArc[] {
     }),
     minSashimiScore,
   )
-  for (const j of merged.values()) {
-    const left = bpToScreenX(j.refName, j.start)
-    const right = bpToScreenX(j.refName, j.end)
-    // A coordinate inside a collapsed intron is in no displayed region at all,
-    // so it has no pixel to hang from and the whole arc is dropped rather than
-    // drawn against a clamped edge that asserts a splice site not on screen.
-    if (left === undefined || right === undefined) {
-      continue
-    }
-    raw.push({ ...screenSpan(left, right), ...j })
-  }
 
   // The overlay/export place each side in the matching SVG, so `d` is
   // band-local. MAX_ARC_FRAC leaves the top margin that keeps the tallest arc
   // clear of the y-scalebar label.
-  return raw.map(a => {
+  const arcs: SashimiArc[] = []
+  for (const j of merged.values()) {
+    const x1 = bpToScreenX(j.refName, j.start)
+    const x2 = bpToScreenX(j.refName, j.end)
+    // A coordinate inside a collapsed intron is in no displayed region at all,
+    // so it has no pixel to hang from and the whole arc is dropped rather than
+    // drawn against a clamped edge that asserts a splice site not on screen.
+    if (x1 === undefined || x2 === undefined) {
+      continue
+    }
+    const span = screenSpan(x1, x2)
     // Junctions the layout never saw can't exist (it merges the loaded regions,
     // a superset of the visible ones), but 'up' is the side that needs no
     // reserved strip, so it is also the safe answer if one ever did.
-    const side: SashimiSide = downJunctionKeys.has(a.key) ? 'down' : 'up'
+    const side: SashimiSide = downJunctionKeys.has(j.key) ? 'down' : 'up'
     const { band, baseline, dir } = bandGeometry(side, {
       effectiveHeight,
       sashimiArcsHeight,
@@ -291,18 +275,19 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts): SashimiArc[] {
     // inverting through the neighbouring band.
     const arcHeight =
       Math.max(0, band - SASHIMI_APEX_CLEARANCE_PX) *
-      arcHeightFraction(Math.abs(a.end - a.start))
-    return {
-      ...arcCubic(a, baseline, baseline + dir * arcHeight),
-      stroke: getArcColor(a.strand),
-      strokeWidth: strokeWidthForCount(a.count),
-      start: a.start,
-      end: a.end,
-      refName: a.refName,
-      score: a.count,
-      strand: a.strand,
+      arcHeightFraction(Math.abs(j.end - j.start))
+    arcs.push({
+      ...arcCubic(span, baseline, baseline + dir * arcHeight),
+      stroke: getArcColor(j.strand),
+      strokeWidth: strokeWidthForCount(j.count),
+      start: j.start,
+      end: j.end,
+      refName: j.refName,
+      score: j.count,
+      strand: j.strand,
       side,
-      showLabel: a.spanPx >= labelSpanPx(a.count),
-    }
-  })
+      showLabel: span.spanPx >= labelSpanPx(j.count),
+    })
+  }
+  return arcs
 }
