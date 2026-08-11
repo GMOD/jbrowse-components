@@ -5,6 +5,7 @@ import {
   getInsertionType,
   passesFrequencyGate,
 } from '../../LinearAlignmentsDisplay/constants.ts'
+import { findTopmostOnRow } from '../../shared/hitTestTypes.ts'
 import { interbaseRangeEnds } from '../../shared/uploadTypes.ts'
 
 import type {
@@ -41,54 +42,53 @@ function hitTestInsertion(
   const { insEnd } = interbaseRangeEnds(resolved.rpcData)
   const pxPerBp = 1 / bpPerPx
 
-  for (let i = 0; i < insEnd; i++) {
-    if (interbaseYs[i] !== row) {
-      continue
-    }
+  // Topmost, not first: see `findTopmostOnRow`. Bounded to the insertion prefix
+  // for the reason above, which is a separate rule from the direction.
+  const hit = findTopmostOnRow(interbaseYs, 0, insEnd, row, i => {
     const pos = interbasePositions[i]
-    if (pos !== undefined) {
-      const len = interbaseLengths[i] ?? 0
-      // Tracks the size fade the same way the frequency gate below tracks the
-      // frequency one: an insertion the renderer has faded out for being
-      // unresolvable at this zoom must not intercept clicks either, or a
-      // whole-genome view is carpeted in invisible hit targets. Both backends
-      // multiply this in (insertion.slang, drawCanvas.ts).
-      if (insertionSizeAlpha(len, pxPerBp) === 0) {
-        continue
-      }
-      const isSmall = getInsertionType(len, pxPerBp) === 'small'
-      if (sizeFilter === 'small' ? isSmall : !isSmall) {
-        // Small insertions are narrow bars; when not at base-level zoom only
-        // let high-frequency insertions intercept clicks so the read body
-        // remains easy to click through. Same gate as mismatches (drift-proof
-        // via passesFrequencyGate) so it tracks the draw fade — with filtering
-        // off, low-freq insertions draw opaque and must stay clickable too.
-        if (
-          sizeFilter === 'small' &&
-          !passesFrequencyGate(
-            bpPerPx,
-            interbaseFrequencies[i] ?? 0,
-            filterMismatchesByFrequency,
-          )
-        ) {
-          continue
-        }
-        const rectWidthPx =
-          getInsertionRectWidthPx(len, pxPerBp, featureHeight) + 4
-        const rectHalfWidthBp = (rectWidthPx / 2) * bpPerPx
-        if (Math.abs(genomicPos - pos) < rectHalfWidthBp) {
-          return {
-            type: 'insertion',
-            index: i,
-            position: pos,
-            length: len,
-            sequence: interbaseSequences[i] || undefined,
-          }
-        }
-      }
+    if (pos === undefined) {
+      return false
     }
-  }
-  return undefined
+    const len = interbaseLengths[i] ?? 0
+    // Tracks the size fade the same way the frequency gate below tracks the
+    // frequency one: an insertion the renderer has faded out for being
+    // unresolvable at this zoom must not intercept clicks either, or a
+    // whole-genome view is carpeted in invisible hit targets. Both backends
+    // multiply this in (insertion.slang, drawCanvas.ts).
+    if (insertionSizeAlpha(len, pxPerBp) === 0) {
+      return false
+    }
+    const isSmall = getInsertionType(len, pxPerBp) === 'small'
+    if (sizeFilter === 'small' ? !isSmall : isSmall) {
+      return false
+    }
+    // Small insertions are narrow bars; when not at base-level zoom only let
+    // high-frequency insertions intercept clicks so the read body remains easy
+    // to click through. Same gate as mismatches (drift-proof via
+    // passesFrequencyGate) so it tracks the draw fade — with filtering off,
+    // low-freq insertions draw opaque and must stay clickable too.
+    if (
+      sizeFilter === 'small' &&
+      !passesFrequencyGate(
+        bpPerPx,
+        interbaseFrequencies[i] ?? 0,
+        filterMismatchesByFrequency,
+      )
+    ) {
+      return false
+    }
+    const rectWidthPx = getInsertionRectWidthPx(len, pxPerBp, featureHeight) + 4
+    return Math.abs(genomicPos - pos) < (rectWidthPx / 2) * bpPerPx
+  })
+  return hit === undefined
+    ? undefined
+    : {
+        type: 'insertion',
+        index: hit,
+        position: interbasePositions[hit]!,
+        length: interbaseLengths[hit] ?? 0,
+        sequence: interbaseSequences[hit] || undefined,
+      }
 }
 
 export function hitTestLargeInsertion(

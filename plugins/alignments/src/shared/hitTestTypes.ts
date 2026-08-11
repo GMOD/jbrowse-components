@@ -73,3 +73,47 @@ export interface CigarCoords {
 export function isWithinReadBand(coords: CigarCoords, featureHeight: number) {
   return coords.adjustedY >= 0 && coords.yWithinRow <= featureHeight
 }
+
+/**
+ * The index of the entry on `row` that is drawn LAST — i.e. whose pixels are
+ * actually the ones under the cursor — or undefined for none. Every per-row hit
+ * test over a row-instanced `*Ys` array goes through this, because the direction
+ * is a correctness decision and not a style one.
+ *
+ * Both backends draw one instanced pass per feature kind in array order, so a
+ * later index paints over an earlier one; the arrays are built per read in read
+ * order (`buildMismatchArrays`, `buildGapArrays`, `buildInterbaseArrays`) and
+ * `cloneWithLayout` only remaps their rows, never reorders them. So scanning
+ * back to front answers with the mark on top, and — this is the point — with the
+ * mark belonging to the same read `hitTestFeature` answers with, since that walks
+ * `readIds` backwards under the same rule.
+ *
+ * It only decides anything where a layout puts several features on one row, and
+ * there it decides a lot: `buildCollapsedPileupMap` puts an entire group on row 0
+ * (all-zero `readYs`) with overlap as the normal case, and a chain's reads share
+ * a row. Scanning forwards there returned the underneath read's mark while
+ * `hitTestFeature` returned the top read, so the tooltip and the details widget
+ * paired one read's identity with another read's base, quality and position.
+ *
+ * `match` runs only for entries already known to be on `row` — a handful — so the
+ * per-element cost stays the inline `ys[i] === row` compare.
+ *
+ * `start`/`end` bound the scan for the arrays that are a concatenation of
+ * sub-ranges: interbases are laid out as (insertions, softclips, hardclips), and
+ * scanning a sub-range is what lets that layout, rather than scan order, decide
+ * priority between the kinds.
+ */
+export function findTopmostOnRow(
+  ys: ArrayLike<number>,
+  start: number,
+  end: number,
+  row: number,
+  match: (index: number) => boolean,
+): number | undefined {
+  for (let i = end - 1; i >= start; i--) {
+    if (ys[i] === row && match(i)) {
+      return i
+    }
+  }
+  return undefined
+}

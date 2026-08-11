@@ -1,4 +1,5 @@
 import { passesFrequencyGate } from '../../LinearAlignmentsDisplay/constants.ts'
+import { findTopmostOnRow } from '../../shared/hitTestTypes.ts'
 
 import type {
   CigarCoords,
@@ -19,32 +20,32 @@ export function hitTestMismatch(
     mismatchFrequencies,
     mismatchQuals,
   } = resolved.rpcData
-  const numMismatches = mismatchPositions.length
 
-  for (let i = 0; i < numMismatches; i++) {
-    if (mismatchYs[i] !== row) {
-      continue
-    }
-    const pos = mismatchPositions[i]
-    if (
-      pos !== undefined &&
-      basePos === pos &&
+  // Topmost, not first: see `findTopmostOnRow`. Two reads overlapping on one
+  // collapsed row rarely agree about the base at a position — that disagreement
+  // is what a pileup is for — so answering with the covered one named the wrong
+  // allele beside the right read.
+  const i = findTopmostOnRow(
+    mismatchYs,
+    0,
+    mismatchPositions.length,
+    row,
+    i =>
+      mismatchPositions[i] === basePos &&
       passesFrequencyGate(
         bpPerPx,
         mismatchFrequencies[i] ?? 0,
         filterMismatchesByFrequency,
-      )
-    ) {
-      const baseCode = mismatchBases[i]!
-      return {
+      ),
+  )
+  return i === undefined
+    ? undefined
+    : {
         type: 'mismatch',
         index: i,
-        position: pos,
+        position: mismatchPositions[i]!,
         length: 1,
-        base: String.fromCharCode(baseCode),
+        base: String.fromCharCode(mismatchBases[i]!),
         qual: mismatchQuals[i],
       }
-    }
-  }
-  return undefined
 }

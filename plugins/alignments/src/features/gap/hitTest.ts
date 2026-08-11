@@ -1,3 +1,5 @@
+import { findTopmostOnRow } from '../../shared/hitTestTypes.ts'
+
 import type {
   CigarCoords,
   CigarHitResult,
@@ -12,26 +14,27 @@ export function hitTestGap(
   const { gapPositions, gapYs, gapTypes } = resolved.rpcData
   const numGaps = gapPositions.length / 2
 
-  for (let i = 0; i < numGaps; i++) {
-    if (gapYs[i] !== row) {
-      continue
-    }
+  // Topmost, not first: see `findTopmostOnRow`. On a collapsed group every read
+  // sits on row 0, so scanning forwards answered with the deletion of a read
+  // painted under the one `hitTestFeature` names alongside it.
+  const i = findTopmostOnRow(gapYs, 0, numGaps, row, i => {
     const startPos = gapPositions[i * 2]
     const endPos = gapPositions[i * 2 + 1]
-    if (
+    return (
       startPos !== undefined &&
       endPos !== undefined &&
       genomicPos >= startPos &&
       genomicPos < endPos
-    ) {
-      const gapType = gapTypes[i]
-      return {
-        type: gapType === 1 ? 'skip' : 'deletion',
-        index: i,
-        position: startPos,
-        length: endPos - startPos,
-      }
-    }
+    )
+  })
+  if (i === undefined) {
+    return undefined
   }
-  return undefined
+  const startPos = gapPositions[i * 2]!
+  return {
+    type: gapTypes[i] === 1 ? 'skip' : 'deletion',
+    index: i,
+    position: startPos,
+    length: gapPositions[i * 2 + 1]! - startPos,
+  }
 }

@@ -2,6 +2,7 @@ import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import { passesFrequencyGate } from '../LinearAlignmentsDisplay/constants.ts'
 import * as clipShader from '../shaders/slang/clip.generated.ts'
+import { findTopmostOnRow } from './hitTestTypes.ts'
 import { interbaseRangeEnds } from './uploadTypes.ts'
 
 import type {
@@ -59,13 +60,22 @@ export function uploadClips(
   }
 }
 
-// Hit test for soft + hard clips in one pass, over the same `[insEnd, hcEnd)`
-// slice `packClips` uploads and deriving the kind from the same `i < scEnd`
-// boundary — so a bar's hit kind and its drawn color cannot disagree.
+// Hit test for soft + hard clips, over the same `[insEnd, hcEnd)` slice
+// `packClips` uploads and split on the same `scEnd` boundary — so a bar's hit
+// kind and its drawn color cannot disagree.
 //
-// Softclip wins a tie structurally rather than by scan order, for the same
-// reason: the worker lays the array out as (insertions, softclips, hardclips),
-// so a softclip at this row and position is always reached first.
+// TWO scans, softclips then hardclips, because two independent rules meet here
+// and one loop could only express one of them:
+//
+//   - **Softclip beats hardclip** at the same row and position. That is the
+//     worker's array layout (insertions, softclips, hardclips) talking, not scan
+//     order, so it is the order the two calls are written in.
+//   - **Within a kind, the topmost bar wins** — `findTopmostOnRow`, same as
+//     every other mark test, which matters where a collapsed group or a chain
+//     puts several reads on one row.
+//
+// Fused into one forward loop those two disagreed: the second rule silently
+// became "whichever read comes first in the array", i.e. the bar underneath.
 export function hitTestClip(
   resolved: ResolvedBlock,
   coords: CigarCoords,
@@ -81,10 +91,7 @@ export function hitTestClip(
   const { insEnd, scEnd, hcEnd } = interbaseRangeEnds(resolved.rpcData)
   const hitToleranceBp = Math.max(0.5, bpPerPx * 3)
 
-  for (let i = insEnd; i < hcEnd; i++) {
-    if (interbaseYs[i] !== row) {
-      continue
-    }
+  const matches = (i: number) => {
     // Same significance gate as the mismatch and small-insertion tests, off the
     // same `interbaseFrequencies` byte the clip shader fades by (clip.slang's
     // `frequencyFade`). This test was the one mark hit-test without it, so a
@@ -97,22 +104,25 @@ export function hitTestClip(
         filterMismatchesByFrequency,
       )
     ) {
-      continue
+      return false
     }
     const pos = interbasePositions[i]
     const len = interbaseLengths[i]
-    if (
+    return (
       pos !== undefined &&
       len !== undefined &&
       Math.abs(genomicPos - pos) < hitToleranceBp
-    ) {
-      return {
+    )
+  }
+
+  const soft = findTopmostOnRow(interbaseYs, insEnd, scEnd, row, matches)
+  const i = soft ?? findTopmostOnRow(interbaseYs, scEnd, hcEnd, row, matches)
+  return i === undefined
+    ? undefined
+    : {
         type: i < scEnd ? 'softclip' : 'hardclip',
         index: i,
-        position: pos,
-        length: len,
+        position: interbasePositions[i]!,
+        length: interbaseLengths[i]!,
       }
-    }
-  }
-  return undefined
 }

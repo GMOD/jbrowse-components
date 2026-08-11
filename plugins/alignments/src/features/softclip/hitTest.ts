@@ -1,4 +1,7 @@
-import { isWithinReadBand } from '../../shared/hitTestTypes.ts'
+import {
+  findTopmostOnRow,
+  isWithinReadBand,
+} from '../../shared/hitTestTypes.ts'
 
 import type { CigarCoords, ResolvedBlock } from '../../shared/hitTestTypes.ts'
 
@@ -30,20 +33,20 @@ export function hitTestSoftclipBase(
   }
   const { softclipBasePositions, softclipBaseYs, softclipBaseReadIndices } =
     resolved.rpcData
-  // Backwards, so a cell drawn over another (two reads' clips sharing a row in
-  // a chain or collapsed group) resolves to the one on top — same reason
-  // hitTestFeature walks backwards.
-  for (let i = softclipBasePositions.length - 1; i >= 0; i--) {
-    if (softclipBaseYs[i] !== row) {
-      continue
-    }
-    // Cells are one bp wide, so this indexes a base — `basePos`, not the
-    // fractional `genomicPos` (see canvasXToBasePos).
-    if (softclipBasePositions[i] === basePos) {
-      const readIdx = softclipBaseReadIndices[i]!
-      const id = resolved.rpcData.readIds[readIdx]
-      return id === undefined ? undefined : { id, index: readIdx }
-    }
+  // Topmost, not first: see `findTopmostOnRow`. Cells are one bp wide, so the
+  // match indexes a base — `basePos`, not the fractional `genomicPos` (see
+  // canvasXToBasePos).
+  const i = findTopmostOnRow(
+    softclipBaseYs,
+    0,
+    softclipBasePositions.length,
+    row,
+    i => softclipBasePositions[i] === basePos,
+  )
+  if (i === undefined) {
+    return undefined
   }
-  return undefined
+  const readIdx = softclipBaseReadIndices[i]!
+  const id = resolved.rpcData.readIds[readIdx]
+  return id === undefined ? undefined : { id, index: readIdx }
 }
