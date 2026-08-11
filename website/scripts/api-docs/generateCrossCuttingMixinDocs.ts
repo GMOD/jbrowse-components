@@ -1,11 +1,9 @@
 import fs from 'fs'
 
-import * as ts from 'typescript'
-
 import {
+  composeCalls,
   listSources,
   markdownTable,
-  parseSourceFileSyntactic,
   rewriteMarkerBlock,
   runMarkerScript,
 } from './util.ts'
@@ -92,38 +90,15 @@ function modelNameAt(models: { name: string; pos: number }[], pos: number) {
 }
 
 // Walk one file's compose calls, recording which models compose which mixins.
-// The argument is reduced to its head identifier so `TrackHeightMixin()` reads
-// as `TrackHeightMixin`, matching the foundations scan.
 function collectComposes(file: string, src: string) {
   const models = [...src.matchAll(MODEL)].map(m => ({
     name: m[1]!,
     pos: m.index,
   }))
-  const out: { mixin: string; composer: string }[] = []
-  const walk = (node: ts.Node) => {
-    if (
-      ts.isCallExpression(node) &&
-      ts.isPropertyAccessExpression(node.expression) &&
-      node.expression.name.text === 'compose' &&
-      node.arguments[0] &&
-      ts.isStringLiteral(node.arguments[0])
-    ) {
-      const literal = node.arguments[0].text
-      const composer = modelNameAt(models, node.getStart()) ?? literal
-      for (const arg of node.arguments.slice(1)) {
-        let expr: ts.Expression = arg
-        while (ts.isCallExpression(expr) || ts.isNonNullExpression(expr)) {
-          expr = expr.expression
-        }
-        if (ts.isIdentifier(expr) && expr.text !== 'types') {
-          out.push({ mixin: expr.text, composer })
-        }
-      }
-    }
-    ts.forEachChild(node, walk)
-  }
-  walk(parseSourceFileSyntactic(file, src))
-  return out
+  return composeCalls(file, src).flatMap(call => {
+    const composer = modelNameAt(models, call.pos) ?? call.name
+    return call.mixins.map(mixin => ({ mixin, composer }))
+  })
 }
 
 export function collectCrossCuttingMixins() {

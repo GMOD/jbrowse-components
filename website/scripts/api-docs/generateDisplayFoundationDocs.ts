@@ -1,11 +1,9 @@
 import fs from 'fs'
 
-import * as ts from 'typescript'
-
 import {
+  composeCalls,
   listSources,
   markdownTable,
-  parseSourceFileSyntactic,
   rewriteMarkerBlock,
   runMarkerScript,
 } from './util.ts'
@@ -59,37 +57,14 @@ interface Foundation {
 }
 
 // The mixins a foundation composes, read off its own
-// `types.compose('<name>', A(), B(), types.model({}))` call — the arguments
-// after the name literal, reduced to the head identifier of each so `FetchMixin()`
-// reads as `FetchMixin`. `types.model(...)` and other `types.*` members are the
-// empty model every foundation ends with, and are skipped.
+// `types.compose('<name>', A(), B(), types.model({}))` call.
 //
 // Structural, deliberately: this is the one column the architecture spec kept by
 // hand, and it is a restatement of a call three lines below the tag.
 function composedMixins(file: string, name: string) {
-  const out: string[] = []
-  const walk = (node: ts.Node) => {
-    if (
-      ts.isCallExpression(node) &&
-      ts.isPropertyAccessExpression(node.expression) &&
-      node.expression.name.text === 'compose' &&
-      ts.isStringLiteral(node.arguments[0] ?? ({} as ts.Node)) &&
-      (node.arguments[0] as ts.StringLiteral).text === name
-    ) {
-      for (const arg of node.arguments.slice(1)) {
-        let expr: ts.Expression = arg
-        while (ts.isCallExpression(expr) || ts.isNonNullExpression(expr)) {
-          expr = expr.expression
-        }
-        if (ts.isIdentifier(expr)) {
-          out.push(expr.text)
-        }
-      }
-    }
-    ts.forEachChild(node, walk)
-  }
-  walk(parseSourceFileSyntactic(file))
-  return out
+  return composeCalls(file)
+    .filter(call => call.name === name)
+    .flatMap(call => call.mixins)
 }
 
 export function collectFoundations() {

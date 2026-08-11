@@ -1306,6 +1306,54 @@ export function collectTransitive<T>(
   return out
 }
 
+export interface ComposeCall {
+  // The compose call's own name literal.
+  name: string
+  // Offset of the call, so a caller can attribute it to the `#stateModel` tag
+  // above it.
+  pos: number
+  // The composed mixins, each reduced to the head identifier of its argument so
+  // `TrackHeightMixin()` reads as `TrackHeightMixin`.
+  mixins: string[]
+}
+
+// Every `types.compose('<name>', A(), B(), types.model({}))` in a file.
+//
+// Two generated tables read composition — the display-foundations "Composes"
+// column and the cross-cutting-mixin "Composed by" column — and they had a walk
+// each, differing only in ways neither intended. The unwrap loop leaves
+// `types.model({})` as a PropertyAccessExpression rather than an identifier, so
+// the trailing empty model drops out on its own; the copy that additionally
+// filtered `types` by name was filtering something that never reached it.
+export function composeCalls(file: string, text?: string): ComposeCall[] {
+  const out: ComposeCall[] = []
+  const walk = (node: ts.Node) => {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isPropertyAccessExpression(node.expression) &&
+      node.expression.name.text === 'compose'
+    ) {
+      const [first, ...rest] = node.arguments
+      if (first && ts.isStringLiteral(first)) {
+        out.push({
+          name: first.text,
+          pos: node.getStart(),
+          mixins: rest.flatMap(arg => {
+            let expr: ts.Expression = arg
+            while (ts.isCallExpression(expr) || ts.isNonNullExpression(expr)) {
+              expr = expr.expression
+            }
+            return ts.isIdentifier(expr) ? [expr.text] : []
+          }),
+        })
+      }
+    }
+    ts.forEachChild(node, walk)
+  }
+  walk(parseSourceFileSyntactic(file, text))
+  return out
+}
+
 // Keep only the items whose `name` isn't already in `seen`, and add each kept
 // name to `seen` — so a caller walking outward through several sources (e.g. a
 // config's base chain) shows each name once, at its closest/most-specific
