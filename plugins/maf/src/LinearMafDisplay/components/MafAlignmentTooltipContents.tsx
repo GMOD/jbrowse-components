@@ -6,6 +6,7 @@ import { useTooltipStyles } from './tooltipStyles.ts'
 import type { MafStatus } from '../../types.ts'
 import type { GenomicPosition, MafHover } from '../util.ts'
 import type { CodonChange, CodonHit } from './computeVisibleCodons.ts'
+import type { SummaryBar } from './computeVisibleSummaryBars.ts'
 import type { ReactNode } from 'react'
 
 function strandStr(strand?: number) {
@@ -150,6 +151,46 @@ function HoverContents({
   )
 }
 
+/**
+ * The zoom-out tier's answer to `HoverContents`. Without it a summary bar is
+ * unhoverable in practice: the alignment blocks the row hover resolves against
+ * were cleared to get here, so the tooltip fell through to the bare "Ref:
+ * position" readout — over a display whose rows *are* per-species, one bar per
+ * aligned run, with no other way to find out which species a row is.
+ *
+ * `score` is the summary file's own, and the two producers mean different
+ * things by it (UCSC a normalized HOXD70 alignment score, `maf2bed --summary`
+ * percent identity to the reference), so it is labelled as what it is rather
+ * than as either. It is what shades the bar, and shading is otherwise the one
+ * thing here with no decoder at all.
+ */
+function SummaryContents({
+  bar,
+  location,
+  sampleLabel,
+}: {
+  bar: SummaryBar
+  location: string
+  sampleLabel?: string
+}) {
+  return (
+    <TableShell caption={`Summary - ${location}`}>
+      {sampleLabel ? <Row label="Sample" value={sampleLabel} /> : null}
+      <Row
+        label="Aligned block"
+        value={`${toLocale(bar.start + 1)}-${toLocale(bar.end)} (${getBpDisplayStr(bar.end - bar.start)})`}
+      />
+      <Row label="Score" value={bar.score.toFixed(2)} />
+      {bar.leftStatus ? (
+        <Row label="Before block" value={contextStr(bar.leftStatus)} />
+      ) : null}
+      {bar.rightStatus ? (
+        <Row label="After block" value={contextStr(bar.rightStatus)} />
+      ) : null}
+    </TableShell>
+  )
+}
+
 // Just the gene name; the raw reading-frame number isn't useful to read.
 export interface FrameHover {
   name: string
@@ -212,15 +253,34 @@ export default function MafAlignmentTooltipContents({
   hover,
   frame,
   codon,
+  summary,
+  summarySampleLabel,
 }: {
   p1?: GenomicPosition
   p2: GenomicPosition
   hover?: MafHover
   frame?: FrameHover
   codon?: CodonHit
+  summary?: SummaryBar
+  summarySampleLabel?: string
 }) {
   if (p1) {
     return <RangeContents p1={p1} p2={p2} />
+  }
+  // The zoom-out tier: `hover` is always absent here (no alignment blocks), so
+  // this is the whole readout rather than a section stacked under one. The CDS
+  // strip can still draw on this tier, so its table still rides along.
+  if (summary) {
+    return (
+      <>
+        <SummaryContents
+          bar={summary}
+          location={refLabel(p2)}
+          sampleLabel={summarySampleLabel}
+        />
+        {frame ? <FrameContents frame={frame} /> : null}
+      </>
+    )
   }
   // Codon view: one consolidated table (species + gene + codon change) instead
   // of stacking the per-base alignment, CDS, and codon tables.

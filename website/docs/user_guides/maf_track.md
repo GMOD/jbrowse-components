@@ -33,10 +33,13 @@ deep alignment. JBrowse blocks that with a "requested too much data" prompt.
 
 A track configured with a summary file shows presence bars there instead: one
 bar per species per aligned region, shaded by the summary's score, with no
-sequence read at all. Zooming back in swaps the bars for the alignment itself.
-The coverage band is not drawn on the summary tier, since its depths come from
-the per-base alignment that the tier exists to avoid reading. Pointing a track
-at a summary file is covered in the
+sequence read at all. Hover one to name the species, the aligned block and its
+score — the row labels are the first thing to go as the rows shrink, so on a
+deep alignment that is the way to tell one row from another. Zooming back in
+swaps the bars for the alignment itself. Neither the coverage band nor the
+conservation band is drawn on the summary tier: both are computed from the
+per-base alignment that the tier exists to avoid reading, and both come back
+untouched on zoom-in. Pointing a track at a summary file is covered in the
 [MAF track configuration guide](/docs/config_guides/maf_track#the-zoom-out-tier).
 
 <Figure src="/img/maf_summary_tier.png" caption="The UCSC hg38 470-way narrowed to ~30 representative mammals, over GAPDH at two zooms. At 180 kb (top) the track reads its summary file: one grey bar per species per aligned region, and no coverage band. At 200 bp (bottom) the same track draws the alignment itself, one colored cell per base, with the coverage band above it. The guide tree in the left sidebar is the same in both."/>

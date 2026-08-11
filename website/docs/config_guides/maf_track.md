@@ -230,11 +230,13 @@ Its `#` header names the columns, so the sub-adapter needs no `columnNames`:
 }
 ```
 
-The bars are shaded by the summary's score. The two producers put different
-metrics there — UCSC a normalized alignment score, `maf2bed` percent identity to
-the reference — but both are 0..1, both shade the same way, and neither is shown
-as a number. Both are distinct from the conservation band, which is computed
-from the alignment itself and needs no file.
+The bars are shaded by the summary's score, and hovering one reports it as a
+number alongside the species and the aligned block. The two producers put
+different metrics there — UCSC a normalized alignment score, `maf2bed` percent
+identity to the reference — but both are 0..1 and both shade the same way, so
+the tooltip labels it as the file's `score` rather than as either. Both are
+distinct from the conservation band, which is computed from the alignment itself
+and needs no file.
 
 `BgzipMafAdapter` and `BgzipTaffyAdapter` take the same slot, and the same
 `maf2bed --summary` BED serves them. Their `.tai` index seeks within an

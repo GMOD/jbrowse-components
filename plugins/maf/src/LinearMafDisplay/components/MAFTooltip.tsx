@@ -5,6 +5,7 @@ import { observer } from 'mobx-react'
 import MafAlignmentTooltipContents from './MafAlignmentTooltipContents.tsx'
 import MafCoverageTooltipContents from './MafCoverageTooltipContents.tsx'
 import MafInterbaseTooltipContents from './MafInterbaseTooltipContents.tsx'
+import { findSummaryBarAt } from './computeVisibleSummaryBars.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 import type { MafPointerHit } from './mafHitTest.ts'
@@ -86,6 +87,14 @@ const MAFTooltip = observer(function ({
   const codon = onRow
     ? model.codonHoverInfo(p2.index, gposFrac, rowIndex)
     : undefined
+  // The zoom-out tier resolves nothing above: `hover` and `codon` both read
+  // `rpcDataMap`, which the summary fetch clears. Hit-test the bars the overlay
+  // drew instead, so a summary row is identifiable by pointing at it — which is
+  // the only way to identify one, since the sidebar labels are the first thing
+  // to go as the row height falls.
+  const summary = onRow
+    ? findSummaryBarAt(model.visibleSummaryBars, rowIndex, mouseState.x)
+    : undefined
 
   return (
     <BaseTooltip clientPoint={clientPoint}>
@@ -95,6 +104,8 @@ const MAFTooltip = observer(function ({
         hover={hover}
         frame={frame}
         codon={codon}
+        summary={summary}
+        summarySampleLabel={model.samples?.[rowIndex]?.label}
       />
     </BaseTooltip>
   )

@@ -20,12 +20,17 @@ function makeCtx() {
 
 const palette = { matchColor: '#808080' } as MafColorPalette
 
+// `rowIndex`/`start`/`end` are the hover's, not the painter's — spelled out
+// here only to satisfy the shape.
 const bar = (score: number): SummaryBar => ({
   x: 5,
   width: 20,
   rowTop: 10,
   h: 12,
   score,
+  rowIndex: 0,
+  start: 100,
+  end: 200,
 })
 
 test('summaryBarAlpha maps score 0..1 onto floor..1', () => {
