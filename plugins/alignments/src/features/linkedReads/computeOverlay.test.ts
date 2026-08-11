@@ -201,7 +201,7 @@ describe('computePileupBezierArcs — distinct inversion hue + tooltip label', (
     expect(arcs).toHaveLength(1)
     expect(splitInv).not.toBe(rr) // no longer shares the RR-pair blue
     expect(arcs[0]!.stroke).toBe(splitInv)
-    expect(arcs[0]!.label).toBe('Split read (inverted)')
+    expect(arcs[0]!.label).toBe('Split junction (inverted)')
   })
 
   it('RR pair: navy blue, distinct label', () => {
@@ -574,6 +574,6 @@ describe('bezierConnectionLegendItems', () => {
         LINKED_READ_COLOR_SPLIT_INV,
         LINKED_READ_COLOR_PAIR_RR,
       ]).map(i => i.label),
-    ).toEqual(['RR - Both mates reverse strand', 'Split read (inverted)'])
+    ).toEqual(['RR - Both mates reverse strand', 'Split junction (inverted)'])
   })
 })

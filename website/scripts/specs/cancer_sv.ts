@@ -1781,7 +1781,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           // coloured by that segment's strand relative to the chain's primary
           // instead (`readColorCategory`, the `isChain && hasSupp && !isPaired`
           // branch). So the frame holds three categories and the legend names
-          // all three: `Split segment (same strand)`, `Split segment (flipped)`
+          // all three: `Split segment (same strand)`, `Split segment (inverted)`
           // and plain `Reads` — same/flipped being relative to the chain's
           // primary, which is why the rows do not name a strand.
           // `showLegend` is opt-in per track and off by default, so a figure

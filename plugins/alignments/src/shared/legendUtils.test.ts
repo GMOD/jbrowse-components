@@ -109,7 +109,7 @@ describe('getReadDisplayLegendItems', () => {
       ]),
     ).toEqual([
       'Split segment (same strand)',
-      'Split segment (flipped)',
+      'Split segment (inverted)',
       'Unsplit read',
       'LR - Normal pair orientation',
     ])
@@ -150,7 +150,7 @@ describe('getReadDisplayLegendItems', () => {
     expect(labels('normal', ['plain', 'fwdStrand', 'revStrand'])).toEqual([
       'Reads',
       'Split segment (same strand)',
-      'Split segment (flipped)',
+      'Split segment (inverted)',
     ])
     // swatches follow CATEGORY_LEGEND order (strand buckets precede insert ones)
     expect(labels('insertSize', ['normalInsert', 'fwdStrand'])).toEqual([
@@ -179,8 +179,8 @@ describe('getReadDisplayLegendItems', () => {
       ]),
     ).toEqual([
       'Split segment (same strand)',
-      'Split read (inverted)',
-      'Split read (co-linear)',
+      'Split paired-end read (inverted)',
+      'Split paired-end read (same strand)',
     ])
   })
 
@@ -216,7 +216,7 @@ describe('getReadDisplayLegendItems', () => {
     expect(labels('modifications', ['fwdStrand', 'revStrand'], mods)).toEqual([
       '5mC',
       'Split segment (same strand)',
-      'Split segment (flipped)',
+      'Split segment (inverted)',
     ])
   })
 
@@ -477,7 +477,10 @@ describe('getArcLegendItems', () => {
         makeTestPalette(),
         'arc',
       ).map(i => i.label),
-    ).toEqual(['Long insert', 'Split read (inverted)'])
+      // …and in the overlay's own words, not the read fills': a curve is drawn
+      // for a split junction whether or not the read is paired, so it must not
+      // inherit "paired-end read" from CATEGORY_LEGEND.
+    ).toEqual(['Long insert', 'Split junction (inverted)'])
     expect(getArcLegendItems(new Set(), makeTestPalette(), 'arc')).toEqual([])
   })
 
@@ -639,6 +642,42 @@ describe('getAlignmentsLegendSections', () => {
       ),
     )
     expect(reads!.items[0]!.swatches).toBeUndefined()
+  })
+
+  // Seen on a paired track in chain mode: the pair colors are drawn as fills and
+  // as connector curves, and both vocabularies use CATEGORY_LEGEND's wording, so
+  // three of the four connection rows were the row above them in a different
+  // section — same color, same words.
+  test('a connection row that repeats a keyed row verbatim is dropped', () => {
+    const sections = getAlignmentsLegendSections({
+      legendItems: () => [
+        { color: '#5555bb', label: 'RR - Both mates reverse strand' },
+        { color: '#aaa', label: 'LR - Normal pair orientation' },
+      ],
+      arcLegendTitle: 'Arc colors',
+      arcLegendItems: () => [],
+      bezierLegendItems: () => [
+        // the verbatim repeat
+        {
+          color: '#5555bb',
+          label: 'RR - Both mates reverse strand',
+          mark: 'curve' as const,
+        },
+        // same color, but the curves call it something the fills don't
+        {
+          color: '#9b30b0',
+          label: 'Split junction (inverted)',
+          mark: 'curve' as const,
+        },
+      ],
+    })
+    expect(shown(sections)).toEqual([
+      [
+        'Read colors',
+        ['RR - Both mates reverse strand', 'LR - Normal pair orientation'],
+      ],
+      ['Read connections', ['Split junction (inverted)']],
+    ])
   })
 
   test('keeps them apart when the two vocabularies share nothing', () => {

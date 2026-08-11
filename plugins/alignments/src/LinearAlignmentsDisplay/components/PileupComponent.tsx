@@ -10,7 +10,10 @@ import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
-import { getAlignmentsLegendSections } from '../../shared/legendUtils.ts'
+import {
+  LEGEND_MAX_WIDTH,
+  getAlignmentsLegendSections,
+} from '../../shared/legendUtils.ts'
 import {
   AXIS_SVG_WIDTH,
   COMPACT_AXIS_HEIGHT,
@@ -582,6 +585,11 @@ const LegendHost = observer(function LegendHost({
     <FloatingLegend
       sections={getAlignmentsLegendSections(model)}
       onDismiss={onDismiss}
+      // wider than the 200 default: the split-read rows have to name which kind
+      // of read they classify ("Split paired-end read (same strand)"), which is
+      // this display's longest label and the only one that overflows. Sized to
+      // it, not padded — see LEGEND_MAX_WIDTH.
+      maxWidth={LEGEND_MAX_WIDTH}
     />
   )
 })

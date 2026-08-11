@@ -29,23 +29,28 @@ export const LINKED_READ_COLOR_SPLIT_NORMAL = LINKED_READ_COLOR_PAIR_LL + 1
 export const LINKED_READ_COLOR_SPLIT_INV = LINKED_READ_COLOR_PAIR_LL + 2
 
 // Human-readable connection classification for the bezier-arc hover tooltip and
-// its legend row. Every label matches CATEGORY_LEGEND (the read-fill legend)
-// word for word: the LR/RL/RR/LL nomenclature IGV uses, and the same co-linear /
-// inverted split wording, so a color means one thing whether the reader met it
-// on a swatch, a fill or a curve. Split inversion gets its own color
-// (colorSplitReadInversion), distinct from the RR-pair blue (see
-// linkedReadColorPalette), so the two are tellable apart.
+// its legend row. The pair labels match CATEGORY_LEGEND (the read-fill legend)
+// word for word — the LR/RL/RR/LL nomenclature IGV uses — so a color means one
+// thing whether the reader met it on a swatch, a fill or a curve. Split
+// inversion gets its own color (colorSplitReadInversion), distinct from the
+// RR-pair blue (see linkedReadColorPalette), so the two are tellable apart.
+//
+// The two split labels deliberately do NOT match the read fills', which say
+// "paired-end read": a connector is drawn between the segments of any split read
+// regardless of pairing, so that claim would be false for every long read on
+// screen. A curve marks the junction, and says so; `SPLIT_JUNCTION_LABELS` in
+// legendUtils gives the arc overlay the identical pair of strings.
 //
 // Neither split label names a variant class. `splitJunctionKind` reads the two
 // strands and nothing else, and "deletion" — which this said until it was
-// noticed in a legend beside its own synonym — is one of the several rearrangements
-// a co-linear junction is evidence for.
+// noticed in a legend beside its own synonym — is one of several rearrangements
+// a same-strand junction is evidence for.
 export function connectionLabel(colorType: number) {
   switch (colorType) {
     case LINKED_READ_COLOR_SPLIT_INV:
-      return 'Split read (inverted)'
+      return 'Split junction (inverted)'
     case LINKED_READ_COLOR_SPLIT_NORMAL:
-      return 'Split read (co-linear)'
+      return 'Split junction (same strand)'
     case LINKED_READ_COLOR_PAIR_RR:
       return 'RR - Both mates reverse strand'
     case LINKED_READ_COLOR_PAIR_RL:

@@ -29,7 +29,7 @@ const useStyles = makeStyles()(theme => ({
     padding: 3,
     fontSize: 10,
     zIndex: 100,
-    maxWidth: 200,
+    // the default; `maxWidth` overrides it per display
     // portaled into the TrackContainer's above-the-masks overlay node, which is
     // pointer-events:none so it doesn't eat canvas events; re-enable events on
     // the legend itself so its close buttons/links stay clickable (harmless when
@@ -142,6 +142,7 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 const DEFAULT_MAX_ITEMS = 12
+const DEFAULT_MAX_WIDTH = 200
 
 // Side of one mark. The old fixed color box's size, kept so a legend of plain
 // fills is pixel-identical to what shipped before marks existed.
@@ -227,6 +228,7 @@ const FloatingLegend = observer(function FloatingLegend({
   onDismiss,
   onDismissSection,
   maxItems = DEFAULT_MAX_ITEMS,
+  maxWidth = DEFAULT_MAX_WIDTH,
   top = 10,
 }: {
   items?: LegendItem[]
@@ -235,6 +237,13 @@ const FloatingLegend = observer(function FloatingLegend({
   onDismiss?: () => void
   onDismissSection?: (id: string) => void
   maxItems?: number
+  // How wide the box may grow before labels ellipsize. The box floats OVER the
+  // data, so this is an occlusion budget, not a text budget — which is why it is
+  // per-display rather than sized to whichever plugin has the longest label.
+  // Raise it for a vocabulary that genuinely needs the words (alignments, whose
+  // split-read rows have to say which kind of read they classify); leave it for
+  // everything else, and let the ellipsis be the signal that a label is too long.
+  maxWidth?: number
   // Distance from the top of the display box. Raise it for a display that
   // already draws something in that corner — multi-wiggle's score legend is
   // pinned to the same right edge and drawn from y=0, so the two overprint at
@@ -256,7 +265,7 @@ const FloatingLegend = observer(function FloatingLegend({
     <TrackOverlayPortal>
       <div
         className={cx(classes.legend, onDismiss && classes.withClose)}
-        style={{ top }}
+        style={{ top, maxWidth }}
         // Same doctrine as `plainChromeOverlays`' testids: a stable hook for the
         // harnesses that have to find this box. The build-your-own site's smoke
         // census needs it to prove the zero it reports for a page showing a

@@ -385,7 +385,7 @@ export const colorUnmappedMate = '#b05a20'
 export const colorUnknown = '#808080'
 export const colorLongreadRevFwd = '#6688ee'
 export const colorLongreadInv = '#7755bb'
-/** #color alignments-pair-orientation | Split read (inverted) | A paired read's supplementary segment maps opposite-strand to its primary, so the junction is inverted — an inversion or an inverted duplication */
+/** #color alignments-pair-orientation | Split paired-end read (inverted) | A paired read's supplementary segment maps opposite-strand to its primary, so the junction is inverted — an inversion or an inverted duplication */
 export const colorSplitReadInversion = '#9b30b0'
 export const colorSupplementary = '#f0b878'
 
