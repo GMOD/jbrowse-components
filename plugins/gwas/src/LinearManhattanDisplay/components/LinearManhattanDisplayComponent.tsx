@@ -132,6 +132,7 @@ const ManhattanBody = observer(function ManhattanBody({
   const mouseState = useMouseState(mouseTracker)
   const { ticks, featureUnderMouse, showCrossHatches, ldColoringActive } = model
   const ldMode = ldColoringActive && model.canvasDrawn && model.showLdLegend
+  const plotBox = axisPlotBox(height)
 
   return (
     <>
@@ -139,11 +140,13 @@ const ManhattanBody = observer(function ManhattanBody({
         ref={canvasRef}
         style={{
           width,
-          // the box `ticks` places itself in, so a tick lands on its data
-          height: axisPlotBox(height).plotHeight,
+          // the box `ticks` places itself in, so a tick lands on its data —
+          // both ends off the one helper, as the wiggle body does, rather than
+          // the height from it and the top from the raw constant
+          height: plotBox.plotHeight,
           position: 'absolute',
           left: 0,
-          top: YSCALEBAR_LABEL_OFFSET,
+          top: plotBox.yTop,
         }}
       />
       {ticks ? (

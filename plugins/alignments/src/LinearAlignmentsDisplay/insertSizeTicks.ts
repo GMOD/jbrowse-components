@@ -26,23 +26,26 @@ function formatBp(v: number) {
 // max) so a short band shows just a couple of readable ticks instead of a dense
 // unreadable ladder — `maxTicks` is derived from the band height by the caller.
 function logTickValues(domain: number, maxTicks: number) {
-  const values: number[] = [1]
+  const decades = [1]
   for (let v = 10; v <= domain; v *= 10) {
-    values.push(v)
+    decades.push(v)
   }
-  if (values.at(-1) !== domain) {
-    values.push(domain)
+  if (decades.at(-1) !== domain) {
+    decades.push(domain)
   }
-  if (values.length <= maxTicks) {
-    return values
+  if (decades.length <= maxTicks) {
+    return decades
   }
-  // thin evenly across the decades, always keeping the first (min) and last (max)
-  const step = (values.length - 1) / (maxTicks - 1)
-  const out: number[] = []
-  for (let i = 0; i < maxTicks; i++) {
-    out.push(values[Math.round(i * step)]!)
-  }
-  return [...new Set(out)]
+  // Thin evenly across the decades, always keeping the first (min) and last
+  // (max): `i = maxTicks - 1` rounds to exactly `decades.length - 1`. Getting
+  // here means `decades.length > maxTicks >= 2`, so `step > 1` and consecutive
+  // `i` land on distinct indices — no value is emitted twice, which matters
+  // because YScaleBar and CrossHatchLines both key on `${value}-${y}`.
+  const step = (decades.length - 1) / (maxTicks - 1)
+  return Array.from(
+    { length: maxTicks },
+    (_, i) => decades[Math.round(i * step)]!,
+  )
 }
 
 // Ruler for the read-cloud insert-size arcs. Geometry is derived from the same
