@@ -223,6 +223,17 @@ const SPAN_FILL = {
  * is the right edge of the blocks *currently loaded*, so inside a region wider
  * than the viewport it slides as you scroll), and the flag is set on elided
  * blocks too, where a bar per region at whole-genome zoom is a solid grey wall.
+ *
+ * **One thing this layer is over that you may not want it over.** Some displays
+ * float their own chrome -- a colour key, hic's overlay panel -- and JBrowse's
+ * own track container lifts that clear of these spans by giving the display an
+ * overlay node mounted above them. A host mounting `RenderingComponent`
+ * directly supplies no such node, so that chrome renders inside the display's
+ * `contain: strict` box and this layer paints over it. Nothing on this site
+ * raises one (no page sets a `colorBy` that produces a key), so you will not
+ * see it here; if you turn one on, that is what happened. `TrackOverlayContext`
+ * is the seam, and agent-docs/TODO.md carries the work to make it something a
+ * host can reasonably use.
  */
 const RegionBoundaries = observer(function RegionBoundaries({
   view,

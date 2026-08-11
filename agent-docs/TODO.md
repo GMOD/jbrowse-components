@@ -31,6 +31,7 @@ Exploratory concepts that are *not* committed work live in
 | [`partitionField` throws on `bigRmskBed`](#partitionfield-jexl-throws-through-its-own-guard-on-bigrmskbed) | canvas | the per-feature catch is there and not holding |
 | [Overlay labels cover the row below](#overlay-subfeature-labels-swallow-the-row-below-them-in-compact-modes) | canvas | decide: reserve a row, or call overlay normal-mode only |
 | [Render the converted callout specs](#render-the-twenty-specs-whose-callouts-were-converted-to-anchors) | figures | sweep them; five move deliberately |
+| [A BYO host cannot supply the overlay node](#a-bring-your-own-host-has-no-way-to-give-a-display-its-overlay-node) | embedded, display chrome | publish the protocol, then demo it with a colorBy that raises a legend |
 | [Comparative cancel and retry](#give-the-comparative-displays-a-cancel-and-a-retry) | synteny, dotplot | read ADR-054 first; retry is a button, never automatic |
 | [Stop uploading every rect twice](#stop-uploading-every-rect-twice-for-the-continuation-pass) | GPU canvas | unify `ATTR4`, then verify headed on both backends |
 | [Linearize the pangenome](#linearize-the-pangenome-draw-graph-variation-as-alignment-style-glyphs) | pangenome | read PANGENOME_GRAPHS.md — four findings constrain the layout |
@@ -250,6 +251,49 @@ is the method, including why the 40 remaining raw coordinates are deliberate.
 
 Each of these carries a design that already survived a rejected alternative.
 Read the linked ADR or reference doc before re-proposing the thing it rejected.
+
+### A bring-your-own host has no way to give a display its overlay node
+
+A display that portals floating chrome — `FloatingLegend` (canvas, alignments,
+variants, multi-wiggle), `HicOverlayPanel`, maf's row labels — reaches its
+track's overlay node through `TrackOverlayContext`. `TrackContainer` mounts that
+node as a later sibling of the `contain: strict` rendering box and *after*
+`PaddingBlocks`, which is what lifts the chrome above the inter-region masks;
+see `TrackOverlayPortal` and ADR-058 for why the containment cannot simply be
+dropped.
+
+**An embedder mounting `RenderingComponent` directly provides none of it.** The
+context is null, `TrackOverlayPortal` falls back to rendering inline, and inline
+means inside the sandbox — under whatever the host paints over the stack. That
+is not hypothetical for a host that follows our own examples:
+`products/jbrowse-build-your-own` draws `view.paddingSpans` as a `zIndex: 2`
+sibling across the whole column on four pages, which reproduces exactly the
+burial the portal exists to prevent. It is invisible today only because no page
+there sets a `colorBy` that raises a legend.
+
+`TrackOverlayContext` is exported, so nothing is technically missing — what is
+missing is that no host could know to use it, and there is no shape to copy.
+The two halves:
+
+1. **Publish the protocol.** The host still owns the box (that is the
+   examples-site rule and it is right), so this is not "publish TrackRow". It is
+   the smaller thing the host cannot derive: the node, the context, and the
+   paint order between them. Sketch: a `TrackOverlaySlot` in the LGV barrel
+   rendering `<TrackOverlayContext value={el}>{children}</TrackOverlayContext>`
+   plus the `pointer-events: none` sibling, leaving placement and z-index to the
+   caller. Check it against `TrackContainer`, which must end up using it too, or
+   it is a second implementation of the same rule.
+2. **Demo it, which means raising a legend.** Nothing on the BYO site currently
+   shows a display whose chrome portals. The natural page is the missing
+   "track settings from your own UI" one — a colorBy dropdown driving
+   `display.setColorScheme({type: 'strand'})` — which raises a legend as a side
+   effect and so makes both this and the MUI census real rather than latent.
+   That page is worth having on its own merits; see EXAMPLES_SITES.md for what
+   adding one costs (MUI_BUDGET entry, eager-bundle entry, demoHeights
+   re-measure, `push.yml` twice).
+
+Found 2026-08-11 reviewing the BYO examples, alongside the `FloatingLegend` MUI
+fix, which is the same component from the other direction.
 
 ### Give the comparative displays a cancel and a retry
 
