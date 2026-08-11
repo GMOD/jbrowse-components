@@ -2408,6 +2408,36 @@ export const graphSpecs: ScreenshotSpec[] = [
           assembly: 'hg38',
           loc: 'chr1',
           tracks: [
+            // CYTOBANDS, AS A LANE AS WELL AS ON THE HEADER (review: "need to
+            // see the cytobands on assembly config, and ideally, a bed track
+            // showing this"). The fixture's hg38 now carries `cytobands`, so
+            // the view's own overview band is banded rather than blank; the
+            // BED lane under it is what puts 1q12 on the SAME axis as the
+            // bubbles, which is the comparison the two callouts were making in
+            // words. `showLabels: 'none'` -- 63 band names over 249 Mb is a
+            // mat, and the two the figure names are named by the callouts.
+            {
+              trackId: 'hg38_cytobands_ucsc',
+              type: 'LinearBasicDisplay',
+              displayMode: 'collapsed',
+              showLabels: 'none',
+              // The Giemsa stain, which is column 5 of UCSC's cytoBand BED and
+              // lands on `score` positionally (`chr1 125100000 143200000 q12
+              // gvar`). Uncoloured the lane is one gold bar 249 Mb long and
+              // says nothing; with the stain it is the ideogram, on the same
+              // axis as the bubbles -- and the two bands the callouts name are
+              // the two that are not grey: acen for the centromere and gvar
+              // for 1q12.
+              color:
+                "jexl:get(feature,'gieStain')=='acen' ? 'rgb(190,50,50)' : " +
+                "get(feature,'gieStain')=='gvar' ? 'rgb(120,120,200)' : " +
+                "get(feature,'gieStain')=='stalk' ? 'rgb(100,160,100)' : " +
+                "get(feature,'gieStain')=='gneg' ? 'rgb(235,235,235)' : " +
+                "get(feature,'gieStain')=='gpos25' ? 'rgb(190,190,190)' : " +
+                "get(feature,'gieStain')=='gpos50' ? 'rgb(150,150,150)' : " +
+                "get(feature,'gieStain')=='gpos75' ? 'rgb(110,110,110)' : 'rgb(70,70,70)'",
+              height: 30,
+            },
             {
               trackId: 'hprc_bubble_score',
               type: 'LinearWiggleDisplay',
@@ -2449,8 +2479,9 @@ export const graphSpecs: ScreenshotSpec[] = [
     readyTimeout: 300000,
     settleMs: 15000,
     viewportWidth: 1400,
-    // the variability curve, the tier lane, and a two-row anchored drawing
-    viewportHeight: 685,
+    // the cytoband lane, the variability curve, the tier lane, and a two-row
+    // anchored drawing
+    viewportHeight: 733,
     hideTooltip: true,
     // The blank is the loudest thing in the picture and nothing on the image
     // said what it was. The caption used to call it the centromere and 1q12,

@@ -12,6 +12,9 @@
       "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
       "refNameAliases": {
         "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+      },
+      "cytobands": {
+        "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/cytoBand.txt"
       }
     },
     {
@@ -258,6 +261,18 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "uri": "hprc_inv_HG02698.2.genes.gff3.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hg38_cytobands_ucsc",
+      "name": "Cytogenetic bands (hg38)",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "uri": "https://jbrowse.org/ucsc/hg38/cytoBand.bed.gz",
+        "csi": true,
+        "columnNames": ["refName", "start", "end", "name", "gieStain"]
       }
     }
   ]
