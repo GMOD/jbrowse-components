@@ -414,6 +414,53 @@ const CLINVAR_TRACK = {
   height: 40,
 }
 
+// Four rows share this. 200px (50 a row) was built first and the four bars read
+// as four similar stripes: they were proportional, but at 50px a row the
+// difference between 19% and 80% of the axis is 8px against 34px, and the
+// neighbouring rows' bars nearly touch. 400 is what makes the comparison the
+// figure exists for legible at a glance.
+const MUTATION_RECURRENCE_HEIGHT = 400
+
+// The same tally the matrix draws as band darkness, on an axis: one row per
+// receptor subtype, one interval per gene, in percent of that subtype's tumors.
+// scripts/mutation_recurrence.py --groups writes a column per group, and
+// BedGraphTabixAdapter reads every column past `end` as its own signal, so the
+// four rows come out of one 126KB file with no subadapter list -- the same
+// shape the copy-number recurrence uses.
+//
+// 0-100 rather than autoscaled, for the reason the copy-number rows are pinned:
+// per-row autoscale fits each subtype to its own maximum and makes the four
+// look alike, which is the one thing this track exists to disprove.
+const TCGA_BRCA_MUTATION_RECURRENCE_TRACK = {
+  type: 'MultiQuantitativeTrack',
+  trackId: 'tcga_brca_mutation_recurrence_by_subtype',
+  name: 'TCGA-BRCA mutation recurrence by receptor subtype',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BedGraphTabixAdapter',
+    bedGraphGzLocation: {
+      uri: 'https://jbrowse.org/demos/tcga/tcga_brca_mutation_recurrence_by_subtype.bedGraph.gz',
+      locationType: 'UriLocation',
+    },
+    index: {
+      indexType: 'TBI',
+      location: {
+        uri: 'https://jbrowse.org/demos/tcga/tcga_brca_mutation_recurrence_by_subtype.bedGraph.gz.tbi',
+        locationType: 'UriLocation',
+      },
+    },
+  },
+  displays: [
+    {
+      type: 'MultiLinearWiggleDisplay',
+      height: MUTATION_RECURRENCE_HEIGHT,
+      minScore: 0,
+      maxScore: 100,
+      showRowSeparators: true,
+    },
+  ],
+}
+
 function mutationFigure({
   loc,
   groupBy = '',
@@ -421,6 +468,7 @@ function mutationFigure({
   height = 1010,
   lineZoneHeight = 20,
   clinvar = false,
+  recurrence = false,
 }: {
   loc: string
   groupBy?: string
@@ -428,10 +476,12 @@ function mutationFigure({
   height?: number
   lineZoneHeight?: number
   clinvar?: boolean
+  recurrence?: boolean
 }) {
   return kgUrl({
     sessionTracks: [
       mutationTrack({ groupBy, colorBy, height, lineZoneHeight }),
+      ...(recurrence ? [TCGA_BRCA_MUTATION_RECURRENCE_TRACK] : []),
     ],
     views: [
       {
@@ -442,6 +492,16 @@ function mutationFigure({
         tracks: [
           MANE_TRACK,
           ...(clinvar ? [CLINVAR_TRACK] : []),
+          // above the matrix, so a bar and the band it measures are adjacent
+          ...(recurrence
+            ? [
+                {
+                  trackId: 'tcga_brca_mutation_recurrence_by_subtype',
+                  type: 'MultiLinearWiggleDisplay',
+                  height: MUTATION_RECURRENCE_HEIGHT,
+                },
+              ]
+            : []),
           {
             trackId: 'tcga_brca_mutations',
             type: 'LinearMultiSampleVariantMatrixDisplay',
@@ -888,6 +948,51 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     viewportWidth: 1500,
     viewportHeight:
       MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT + MATRIX_CHROME_HEIGHT,
+    settleMs: 10000,
+  },
+
+  // The same TP53 window as the figure above, with the per-gene recurrence rows
+  // over the matrix: the section's whole claim is that a rate has to be read off
+  // an axis, so the two readings of one number sit in one frame.
+  //
+  // Why the bands cannot carry it, measured off the hosted VCF: the 143
+  // triple-negative tumors carry 118 marks in this window and the 540
+  // HR+/HER2- tumors carry 108, so a rate ratio of 4x (80.4% against 19.4%)
+  // draws as near-equal ink. The bars above are the same two numbers.
+  //
+  // The recurrence track is one interval per gene, so at a gene-scale window it
+  // is one flat bar per row rather than a profile. That is the point -- the
+  // reader is comparing four heights, not reading a shape -- and it is why this
+  // is a gene-scale figure and not the genome-wide sweep the copy-number
+  // recurrence gets.
+  //
+  // Introns collapsed for the same reason as the two figures above, and the
+  // recurrence interval spans the gene, so it survives the reshape as one bar
+  // per collapsed exon block rather than being clipped to one of them.
+  {
+    mode: 'url',
+    name: 'tcga/mutations_tp53_recurrence',
+    url: mutationFigure({
+      loc: '17:7,668,000-7,688,000',
+      groupBy: 'subtype',
+      colorBy: 'subtype',
+      recurrence: true,
+      lineZoneHeight: LINE_ZONE_HEIGHT,
+      height: MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT,
+    }),
+    readySelector: MATRIX_DONE,
+    readyTimeout: 180000,
+    actions: collapseIntrons('TP53'),
+    hideSelectors: ['.MuiSnackbar-root'],
+    viewportWidth: 1500,
+    // the recurrence track's own height on top of what the matrix figures take,
+    // plus its track label row (the run reported 38px still below the fold)
+    viewportHeight:
+      MATRIX_ROWS_HEIGHT +
+      LINE_ZONE_HEIGHT +
+      MATRIX_CHROME_HEIGHT +
+      MUTATION_RECURRENCE_HEIGHT +
+      40,
     settleMs: 10000,
   },
 ]

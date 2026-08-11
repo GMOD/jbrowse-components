@@ -289,6 +289,10 @@ pin every row to one axis for the reason the copy-number recurrence rows are
 pinned: left to autoscale each row fits its own maximum and the groups look
 alike, which is the one thing this track exists to disprove.
 
+Put it over the matrix and the same number is in the frame twice:
+
+<Figure caption="The TP53 window from the figure above, with the per-gene mutation rate for each receptor subtype over the matrix it summarizes. One interval per gene, so at this zoom each row is a single bar. The bar heights separate the four groups; the bands below them do not." src="/img/tcga/mutations_tp53_recurrence.png" />
+
 The two genes above are each other's control. TP53 climbs from the HR+/HER2-
 column to the triple-negative one and PIK3CA falls across the same four columns,
 in the same track, from the same pipeline, so a bar that tracked band size

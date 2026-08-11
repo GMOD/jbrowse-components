@@ -43,6 +43,9 @@ GROUP_COLUMN=${3:-subtype}
 OUT=$(echo "$PROJECT" | tr '[:upper:]-' '[:lower:]_')_mutations
 CLINICAL=$(echo "$PROJECT" | tr '[:upper:]-' '[:lower:]_')_clinical.tsv
 RECURRENCE=$(echo "$PROJECT" | tr '[:upper:]-' '[:lower:]_')_mutation_recurrence_by_${GROUP_COLUMN}.bedGraph
+# The same tally pooled over the whole cohort, which is what says which genes
+# the project mutates at all before any group is asked about.
+RECURRENCE_ALL=$(echo "$PROJECT" | tr '[:upper:]-' '[:lower:]_')_mutation_recurrence.bedGraph
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 
@@ -119,9 +122,14 @@ python3 "$SCRIPT_DIR/mutation_recurrence.py" "$OUT.vcf.gz" "$RECURRENCE" \
 bgzip -f "$RECURRENCE"
 tabix -f -p bed "$RECURRENCE.gz"
 
+python3 "$SCRIPT_DIR/mutation_recurrence.py" "$OUT.vcf.gz" "$RECURRENCE_ALL"
+bgzip -f "$RECURRENCE_ALL"
+tabix -f -p bed "$RECURRENCE_ALL.gz"
+
 echo "== done: $OUT.vcf.gz ($(du -h "$OUT.vcf.gz" | cut -f1))"
 echo "         $CLINICAL ($(du -h "$CLINICAL" | cut -f1))"
 echo "         $RECURRENCE.gz ($(du -h "$RECURRENCE.gz" | cut -f1))"
+echo "         $RECURRENCE_ALL.gz ($(du -h "$RECURRENCE_ALL.gz" | cut -f1))"
 
 # ── JBrowse app ──────────────────────────────────────────────────────────────
 # The files above are the cohort; this is what opens them, so "reproduce it end
@@ -224,4 +232,5 @@ recoverable.
   aws s3 cp $OUT.vcf.gz{,.tbi} s3://jbrowse.org/demos/tcga/
   aws s3 cp $CLINICAL s3://jbrowse.org/demos/tcga/
   aws s3 cp $RECURRENCE.gz{,.tbi} s3://jbrowse.org/demos/tcga/
+  aws s3 cp $RECURRENCE_ALL.gz{,.tbi} s3://jbrowse.org/demos/tcga/
 EOF
