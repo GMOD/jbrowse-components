@@ -193,6 +193,9 @@ function oneRegion(
         arcsRpcDataMap: arcs ? new Map([[0, arcs]]) : new Map(),
       },
     ],
+    // Matches the render state below: the GPU packs arc instances at this
+    // width, so the two have to agree for the backends to be comparable.
+    readConnectionsLineWidth: 1,
   }
 }
 
@@ -289,6 +292,7 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
           arcsRpcDataMap: new Map(),
         },
       ],
+      readConnectionsLineWidth: 1,
     })
 
     // The normalized depths should be identical
@@ -326,6 +330,7 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
           arcsRpcDataMap: new Map(),
         },
       ],
+      readConnectionsLineWidth: 1,
     })
 
     // Both should have same yOffset, height, colorType per segment
@@ -357,6 +362,7 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
           arcsRpcDataMap: new Map(),
         },
       ],
+      readConnectionsLineWidth: 1,
     })
 
     const covH = 100
@@ -499,7 +505,7 @@ describe('GPU sync rebuild transaction', () => {
     gpu.sync(oneRegion(makeMinimalPileupResult(cov)))
     expect(hal.getBufferCount(0, 'coverage')).toBeGreaterThan(0)
 
-    gpu.sync({ sections: [] })
+    gpu.sync({ sections: [], readConnectionsLineWidth: 1 })
     expect(hal.getBufferCount(0, 'coverage')).toBe(0)
   })
 })
@@ -592,7 +598,7 @@ describe('GPU sync skips regions whose data is unchanged', () => {
     const first = uploadsFor(hal)
 
     // Scrolled out: endUpload swept its buffers, so the memo must forget it.
-    gpu.sync({ sections: [] })
+    gpu.sync({ sections: [], readConnectionsLineWidth: 1 })
     expect(hal.getBufferCount(0, 'coverage')).toBe(0)
 
     gpu.sync(oneRegion(data))
@@ -726,6 +732,7 @@ describe('renderBlocks canvasDrawn gating parity', () => {
           arcsRpcDataMap: new Map(),
         },
       ],
+      readConnectionsLineWidth: 1,
     })
     return renderer
   }

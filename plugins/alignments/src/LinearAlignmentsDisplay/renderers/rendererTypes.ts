@@ -175,6 +175,13 @@ export interface AlignmentsSources {
   // One entry per stacked group, in stacking order. Ungrouped = single entry
   // (groupKey ''). Parallel to `RenderState.sections`.
   sections: SectionSource[]
+  // The configured arc stroke width — the same number `RenderState` carries,
+  // and deliberately in both places. The GPU resolves each arc's width from its
+  // read support when it PACKS the instance (`packArcs`), so for that backend
+  // this is an upload-tier input: the upload autorun has to read it here or a
+  // width change never repacks. Canvas2D has no upload tier and applies it per
+  // arc at draw time, off the render state.
+  readConnectionsLineWidth: number
 }
 
 export interface AlignmentsRenderingBackend {

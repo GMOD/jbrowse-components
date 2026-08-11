@@ -43,6 +43,12 @@ struct Instance {
   uint  x2     : ATTR1;
   uint  yBp    : ATTR2;
   float dashed : ATTR3;
+  // Stroke width in CSS px for this connector, `arcLineWidth(support, …)`
+  // resolved on the CPU exactly as arc.slang's is. Flat arcs coalesce on the
+  // same key as curved ones, and drawCanvas widens every arc by its support
+  // before it branches on shape — so a flat pass left on the bare uniform would
+  // be the one place read cloud disagreed with its own Canvas2D/SVG export.
+  float lineWidthPx : ATTR4;
 };
 
 struct VsOut {
@@ -58,6 +64,10 @@ struct VsOut {
   // NOT fragIn.position.x (physical px), which would halve the dash period on a
   // dpr=2 display and diverge from the Canvas2D setLineDash([3,3]) mirror.
   float  screenPx : COLOR3;
+  // The resolved half stroke width. Constant per instance, so it interpolates
+  // back to itself; carried so the quad's pad and the fragment's ramp cannot be
+  // sized from two different widths.
+  float  halfWidthPx : COLOR4;
 };
 
 [shader("vertex")]
@@ -76,11 +86,16 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float halfLen = max(abs(x2Px - x1Px), ARC_FLAT_MIN_PX) * 0.5;
   float2 c = float2((x1Px + x2Px) * 0.5, destY * yDir);
 
+  // Same floor arc.slang applies, and for the same reason: u.lineWidthPx is the
+  // configured width already raised to 1.5 device px (fillArcUniforms), which is
+  // an antialiasing minimum rather than anything about read support.
+  o.halfWidthPx = max(inst.lineWidthPx, u.lineWidthPx) * 0.5;
+
   // Overshoot both ends by a half-width: the flat form's caps are not cut by
   // the band scissor, so the fragment's box distance needs somewhere to ramp
   // them down. segmentQuadLocal (alignmentsUniforms) owns that pad, paired with
   // the sdSegment the fragment measures with.
-  o.local = segmentQuadLocal(vid, halfLen, u.lineWidthPx * 0.5);
+  o.local = segmentQuadLocal(vid, halfLen, o.halfWidthPx);
   o.halfLen = halfLen;
   o.dashed = inst.dashed;
 
@@ -98,7 +113,7 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   // |grad d| is analytically 1 per CSS px, so the AA ramp is a constant number
   // of device pixels, not a derivative — see STROKE_AA_PX.
   float d = sdSegment(fragIn.local, fragIn.halfLen);
-  float alpha = strokeCoverage(d, u.lineWidthPx * 0.5, u);
+  float alpha = strokeCoverage(d, fragIn.halfWidthPx, u);
   // Split-read flat arcs render dashed (samplot.py's dotted style, and
   // Canvas2D's setLineDash([3,3])): 3px on, 3px off, with the same STROKE_AA_PX
   // ramp on the dash ends that the stroke's sides get. The +0.25 rotates the

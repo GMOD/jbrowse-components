@@ -3358,6 +3358,10 @@ export default function stateModelFactory(
             upload: b => {
               b.sync({
                 sections: self.sourceSections,
+                // Read inside the upload autorun, not lifted into an action:
+                // arc instances are packed at this width (arcLineWidth ×
+                // support), so a change to it has to reach the pack.
+                readConnectionsLineWidth: self.readConnectionsLineWidth,
               })
             },
             // size === 0 keeps first paint gated until data arrives, so the

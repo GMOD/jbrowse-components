@@ -72,6 +72,14 @@ struct Instance {
   uint  x2        : ATTR1;
   float colorType : ATTR2;
   uint  yBp       : ATTR3;
+  // This arc's own stroke width in CSS px. An instance is a junction rather than
+  // a read — resolveArcs coalesces identical connections and counts them — so
+  // the weight is what says how many reads stand behind it. The count becomes a
+  // width through `arcLineWidth`, evaluated once per arc on the CPU (packGpu):
+  // that log curve has exactly one implementation, shared with Canvas2D and the
+  // SVG export, and re-deriving it here would be a second one. u.lineWidthPx is
+  // still read, as the floor every arc gets — see vs_main.
+  float lineWidthPx : ATTR4;
 };
 
 struct VsOut {
@@ -83,6 +91,10 @@ struct VsOut {
   float2 local    : COLOR1;
   float2 radii    : COLOR2;
   float  kind     : COLOR3;
+  // The resolved half stroke width, also constant per instance. Carried rather
+  // than recomputed in the fragment so the hull the vertex stage inflated and
+  // the ink the fragment measures can only ever be the same width.
+  float  halfWidthPx : COLOR4;
 };
 
 // Whether a pair is wide enough that its dome degenerates to a circle. Its own
@@ -160,10 +172,13 @@ Curve arcCurve(Instance inst, Uniforms u) {
 // along its normal, given both in the frame the fragment measures distance in
 // and in band-local screen px. Uniform t is uniform in angle, which is
 // equal-arc-length on the circle and close enough on the ellipse for a hull.
+//
+// `halfWidthPx` is the instance's own, not the uniform's: since coalescing,
+// each arc is drawn at the width its read support earns (see Instance).
 struct ArcVertex { float2 screen; float2 local; };
 
-ArcVertex evalArcVertex(float t, float side, Curve cv, Uniforms u) {
-  float hw = u.lineWidthPx * 0.5 + STROKE_AA_PX;
+ArcVertex evalArcVertex(float t, float side, float halfWidthPx, Curve cv) {
+  float hw = halfWidthPx + STROKE_AA_PX;
   float2 p;
   float2 tang;
   float2 origin;
@@ -208,7 +223,16 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float side = (vid % 2u == 0u) ? -1.0 : 1.0;
   float t = float(seg) / float(ARC_CURVE_SEGMENTS);
 
-  ArcVertex av = evalArcVertex(t, side, cv, u);
+  // u.lineWidthPx is the CONFIGURED width already raised to 1.5 device px
+  // (fillArcUniforms): a near-horizontal arc thinner than that has no vertical
+  // room to anti-alias and stairsteps. That floor is a property of the display,
+  // not of how many reads an arc stands for, so it applies to per-instance
+  // widths too. `arcLineWidth` never returns less than the configured width, so
+  // a support-1 arc still resolves to exactly what this pass drew before
+  // coalescing existed.
+  o.halfWidthPx = max(inst.lineWidthPx, u.lineWidthPx) * 0.5;
+
+  ArcVertex av = evalArcVertex(t, side, o.halfWidthPx, cv);
   o.local = av.local;
   o.radii = cv.radii;
   o.kind = cv.kind;
@@ -231,7 +255,7 @@ float arcDistance(VsOut i) {
 float4 fs_main(VsOut fragIn) : SV_Target {
   // |∇d| is analytically 1 per CSS px, so the AA ramp is a constant number of
   // device pixels, not a derivative — see STROKE_AA_PX.
-  float alpha = strokeCoverage(arcDistance(fragIn), u.lineWidthPx * 0.5, u);
+  float alpha = strokeCoverage(arcDistance(fragIn), fragIn.halfWidthPx, u);
   // Output straight alpha — the HAL blend func does the premultiply.
   return float4(fragIn.color.rgb, fragIn.color.a * alpha);
 }

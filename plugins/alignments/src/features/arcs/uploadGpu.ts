@@ -12,10 +12,16 @@ import {
 import type { ArcsUploadData } from './types.ts'
 import type { GpuHal } from '@jbrowse/render-core/hal'
 
+// `baseWidth` is the configured `readConnectionsLineWidth`. It reaches the
+// upload tier rather than staying a per-frame uniform because each arc's own
+// width is resolved at pack time from its read support (see packGpu), which
+// makes the setting part of what a buffer was packed from — the renderer's
+// upload memo carries it for exactly that reason.
 export function uploadArcs(
   hal: GpuHal,
   displayedRegionIndex: number,
   data: ArcsUploadData,
+  baseWidth: number,
 ) {
   // Curved arcs and flat read-cloud connectors are separate passes with very
   // different vertex counts (see packGpu). Read cloud fills the second and
@@ -25,7 +31,7 @@ export function uploadArcs(
     hal.uploadBuffer(
       displayedRegionIndex,
       PASS_ARC,
-      packArcs(data),
+      packArcs(data, baseWidth),
       curvedCount,
     )
   }
@@ -33,7 +39,7 @@ export function uploadArcs(
     hal.uploadBuffer(
       displayedRegionIndex,
       PASS_ARC_FLAT,
-      packArcFlats(data),
+      packArcFlats(data, baseWidth),
       data.numFlatArcs,
     )
   }

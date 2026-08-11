@@ -349,6 +349,7 @@ function drawAt(reversed: boolean, overrides: Partial<RenderState> = {}) {
         arcsRpcDataMap: new Map(),
       },
     ],
+    readConnectionsLineWidth: 1,
   })
   renderer.renderBlocks(
     [
@@ -482,6 +483,7 @@ describe('reversed selection box SVG export', () => {
             arcsRpcDataMap: new Map(),
           },
         ],
+        readConnectionsLineWidth: 1,
       },
       [
         {

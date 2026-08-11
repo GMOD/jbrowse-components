@@ -4,6 +4,7 @@ import * as arcShader from '../../shaders/slang/arc.generated.ts'
 import * as arcFlatShader from '../../shaders/slang/arcFlat.generated.ts'
 import * as arcLineShader from '../../shaders/slang/arcLine.generated.ts'
 import * as arcMarkerShader from '../../shaders/slang/arcMarker.generated.ts'
+import { arcLineWidth } from './arcLineWidth.ts'
 import { ARC_SHAPE_FLAT_SPLIT, isFlatArcShape } from './compute.ts'
 
 import type { ArcsUploadData } from './types.ts'
@@ -54,14 +55,28 @@ function curvedArcCount(data: ArcsUploadData) {
   return data.numArcs - data.numFlatArcs
 }
 
+// Stroke width, in CSS px, for the arc at index `i` of a feed — the whole
+// reason the packers take the configured `readConnectionsLineWidth`. An arc is
+// a junction rather than a read (resolveArcs coalesces identical connections
+// and counts them), so its weight is what says how many reads stand behind it.
+//
+// Resolved HERE, on the CPU, for both GPU passes: `arcLineWidth` is the one
+// implementation of that curve, shared with Canvas2D and the SVG export, and a
+// shader evaluating a log2 of its own would be a second one to keep in step.
+// The vertex stage receives a width and no support count at all.
+function widthOf(data: ArcsUploadData, i: number, baseWidth: number) {
+  return arcLineWidth(data.arcSupport[i]!, baseWidth)
+}
+
 // Field-for-field packing is delegated to the generated packInstances so the
 // instance layout can never drift from the shader struct.
-export function packArcs(data: ArcsUploadData): ArrayBuffer {
+export function packArcs(data: ArcsUploadData, baseWidth: number): ArrayBuffer {
   const count = curvedArcCount(data)
   const x1 = new Uint32Array(count)
   const x2 = new Uint32Array(count)
   const colorType = new Uint8Array(count)
   const yBp = new Uint32Array(count)
+  const lineWidthPx = new Float32Array(count)
   let n = 0
   for (let i = 0; i < data.numArcs; i++) {
     if (!isFlatArcShape(data.arcShapeTypes[i]!)) {
@@ -69,21 +84,31 @@ export function packArcs(data: ArcsUploadData): ArrayBuffer {
       x2[n] = data.arcX2[i]!
       colorType[n] = data.arcColorTypes[i]!
       yBp[n] = data.arcYBp[i]!
+      lineWidthPx[n] = widthOf(data, i, baseWidth)
       n++
     }
   }
-  return arcShader.packInstances({ x1, x2, colorType, yBp }, count)
+  return arcShader.packInstances({ x1, x2, colorType, yBp, lineWidthPx }, count)
 }
 
 // The flat read-cloud connectors. No color — the line is black and the category
 // color lives in the endpoint squares (packArcMarkers) — but `dashed` is a real
 // per-instance bit, since the solid and split variants coexist in one draw.
-export function packArcFlats(data: ArcsUploadData): ArrayBuffer {
+//
+// Widths are per instance here for the same reason as the curved pass: flat
+// arcs coalesce on the same key, and `drawArcsToCtx` sets `ctx.lineWidth` from
+// support BEFORE it branches on shape, so a flat pass left on the global
+// uniform would be the one place read cloud disagreed with its own SVG export.
+export function packArcFlats(
+  data: ArcsUploadData,
+  baseWidth: number,
+): ArrayBuffer {
   const count = data.numFlatArcs
   const x1 = new Uint32Array(count)
   const x2 = new Uint32Array(count)
   const yBp = new Uint32Array(count)
   const dashed = new Uint8Array(count)
+  const lineWidthPx = new Float32Array(count)
   let n = 0
   for (let i = 0; i < data.numArcs; i++) {
     const shape = data.arcShapeTypes[i]!
@@ -92,10 +117,14 @@ export function packArcFlats(data: ArcsUploadData): ArrayBuffer {
       x2[n] = data.arcX2[i]!
       yBp[n] = data.arcYBp[i]!
       dashed[n] = shape === ARC_SHAPE_FLAT_SPLIT ? 1 : 0
+      lineWidthPx[n] = widthOf(data, i, baseWidth)
       n++
     }
   }
-  return arcFlatShader.packInstances({ x1, x2, yBp, dashed }, count)
+  return arcFlatShader.packInstances(
+    { x1, x2, yBp, dashed, lineWidthPx },
+    count,
+  )
 }
 
 // Position only — a tick's color is ARC_COLOR_INTERCHROM, which the shader

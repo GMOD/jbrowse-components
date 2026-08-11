@@ -445,12 +445,13 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[259] = uniforms.dpr
 }
 
-export const INSTANCE_STRIDE_BYTES = 16
-export const INSTANCE_STRIDE_WORDS = 4
+export const INSTANCE_STRIDE_BYTES = 20
+export const INSTANCE_STRIDE_WORDS = 5
 
 // Word indices into a Float32Array view over the instance buffer.
 export const INSTANCE_OFFSET_F32 = {
   dashed: 3,
+  lineWidthPx: 4,
 } as const
 
 // Word indices into a Uint32Array view over the instance buffer.
@@ -465,6 +466,7 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_x2', components: 1, type: 'uint', offsetBytes: 4, integer: true },
   { name: 'a_yBp', components: 1, type: 'uint', offsetBytes: 8, integer: true },
   { name: 'a_dashed', components: 1, type: 'float', offsetBytes: 12, integer: false },
+  { name: 'a_lineWidthPx', components: 1, type: 'float', offsetBytes: 16, integer: false },
 ]
 
 export interface InstanceArrays {
@@ -472,6 +474,7 @@ export interface InstanceArrays {
   x2: ArrayLike<number>
   yBp: ArrayLike<number>
   dashed: ArrayLike<number>
+  lineWidthPx: ArrayLike<number>
 }
 
 export function packInstances(
@@ -481,13 +484,14 @@ export function packInstances(
 ) {
   const f32 = new Float32Array(buf)
   const u32 = new Uint32Array(buf)
-  const { x1, x2, yBp, dashed } = arrays
+  const { x1, x2, yBp, dashed, lineWidthPx } = arrays
   for (let i = 0; i < numInstances; i++) {
     const o = i * INSTANCE_STRIDE_WORDS
     u32[o + 0] = x1[i]!
     u32[o + 1] = x2[i]!
     u32[o + 2] = yBp[i]!
     f32[o + 3] = dashed[i]!
+    f32[o + 4] = lineWidthPx[i]!
   }
   return buf
 }

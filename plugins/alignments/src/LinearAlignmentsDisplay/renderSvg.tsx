@@ -139,6 +139,7 @@ function AlignmentsSvgBody({
               ctx,
               {
                 sections: model.sourceSections,
+                readConnectionsLineWidth: model.readConnectionsLineWidth,
               },
               renderBlocks,
               state,

@@ -268,6 +268,11 @@ function fillArcUniforms(f: Float32Array, a: ArcFrame) {
   // anti-alias and stairsteps. Floor at 1.5 device px (expressed in CSS px via
   // /dpr) so the AA always spans >1px. On HiDPI a 1px CSS line is already 2
   // device px, so the floor is below it and the look is unchanged.
+  //
+  // The arc and arcFlat passes take their width per instance now (support-scaled
+  // at pack time) and read this as the FLOOR to raise it to — the floor is about
+  // the display, not about how many reads an arc stands for. The connector-tick
+  // pass (arcLine) still strokes with it directly.
   f[U.lineWidthPx] = Math.max(state.readConnectionsLineWidth, 1.5 / dpr)
   // Sizes the antialiasing ramp in device pixels (see STROKE_AA_PX).
   f[U.dpr] = dpr
@@ -462,6 +467,12 @@ interface UploadedRegion {
   tagColors: Uint32Array | undefined
   colorCategories: Uint8Array | undefined
   arcs: ArcsUploadData | undefined
+  // The arc stroke width those buffers were packed at. Not a uniform any more:
+  // each arc carries its own width, resolved from its read support at pack time
+  // (packArcs), so identical arc data at a new configured width is genuinely
+  // different bytes. Without this the width setting would appear to do nothing
+  // until the next fetch.
+  arcLineWidth: number
 }
 
 // Per-block inputs collected before each writeUniforms call. Keeping them
@@ -726,7 +737,12 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
       for (const [regionIdx, data] of section.laidOutPileupMap) {
         const idx = sectionRegionKey(s, regionIdx)
         seen.add(idx)
-        this.syncRegion(idx, data, section.arcsRpcDataMap.get(regionIdx))
+        this.syncRegion(
+          idx,
+          data,
+          section.arcsRpcDataMap.get(regionIdx),
+          sources.readConnectionsLineWidth,
+        )
       }
       // Each section draws its own arcs. A region with arcs but no pileup (mate
       // off-screen) gets its own pass here; the loop above already handled every
@@ -735,7 +751,12 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
         if (!section.laidOutPileupMap.has(regionIdx)) {
           const idx = sectionRegionKey(s, regionIdx)
           seen.add(idx)
-          this.syncRegion(idx, undefined, arcs)
+          this.syncRegion(
+            idx,
+            undefined,
+            arcs,
+            sources.readConnectionsLineWidth,
+          )
         }
       }
     })
@@ -777,6 +798,7 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
     idx: number,
     data: PileupDataResult | undefined,
     arcs: ArcsUploadData | undefined,
+    arcLineWidth: number,
   ) {
     this.regions.set(idx, data ? regionMeta(data) : emptyRegion())
     const prev = this.uploaded.get(idx)
@@ -785,9 +807,15 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
       tagColors: data?.readTagColors,
       colorCategories: data?.readColorCategories,
       arcs,
+      arcLineWidth,
     })
 
-    if (prev && prev.layout === data?.readYs && prev.arcs === arcs) {
+    if (
+      prev &&
+      prev.layout === data?.readYs &&
+      prev.arcs === arcs &&
+      prev.arcLineWidth === arcLineWidth
+    ) {
       this.hal.retainRegion(idx)
       if (
         data &&
@@ -827,7 +855,7 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
       }
     }
     if (arcs) {
-      uploadArcs(this.hal, idx, arcs)
+      uploadArcs(this.hal, idx, arcs, arcLineWidth)
     }
   }
 
