@@ -1,6 +1,7 @@
 import { BamFile } from '@gmod/bam'
 import { packReference } from '@jbrowse/cigar-utils'
 import { downloadStatus, withProgress } from '@jbrowse/core/util'
+import { sharedBgzfWorkerPool } from '@jbrowse/core/util/bgzfWorkerPool'
 import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
@@ -49,34 +50,12 @@ export default class BamAdapter extends BaseSamAdapter<BamAdapterConfig> {
           // bounding the sum; see cacheBudgets
           cacheBudget: decompressedBytesBudget,
           // Inflate this file's BGZF blocks across a worker pool instead of on
-          // this thread. Decompression is 70-90% of a cold query (@gmod/bam ADR
-          // 0003) and BGZF blocks are independently inflatable, so it is the
-          // largest remaining lever: measured 1.95x end to end on a 22-view
-          // pan/zoom over 1000x long-read data, same records returned.
-          //
-          // Imported dynamically, and that is load-bearing rather than tidy:
-          // @gmod/bgzf-filehandle inlines its wasm and its worker bundle as
-          // base64 strings and declares no `sideEffects`, so a static import
-          // here drags both into this module's graph and cannot be tree-shaken
-          // (see core's util/unzip.ts and fetchAndMaybeUnzip.ts, which dodge it
-          // the same way). Measured: statically importing it took three
-          // jbrowse-web alignment suites from 16s to 181s.
-          //
-          // A PROMISE is what @gmod/bam wants anyway — configure() is sync and
-          // the pool is only available asynchronously — so the dynamic import
-          // costs nothing extra here. One pool per JS context, i.e. one per RPC
-          // worker, which is the scope with spare cores. Resolves to undefined
-          // wherever Workers cannot be created (node, jest) and @gmod/bam then
-          // takes its in-process path, so no environment check is needed.
-          // The catch is load-bearing, not defensive habit. Under jest the
-          // dynamic import resolves to a CJS interop shape with no named
-          // export, so the call throws inside the `then` and the promise
-          // rejects — and @gmod/bam awaits this, so without the catch every
-          // BAM read throws. A pool is an optimization; anything going wrong
-          // here has to degrade to inflating in process, never break a query.
-          bgzfWorkerPool: import('@gmod/bgzf-filehandle')
-            .then(m => m.getSharedWorkerPool())
-            .catch(() => undefined),
+          // this thread; measured 1.95x end to end on a 22-view pan/zoom over
+          // 1000x long-read data, same records returned. Shared with the nine
+          // tabix adapters — see bgzfWorkerPool for why it is one pool per JS
+          // context, why the import inside it has to be dynamic, and why it
+          // degrades to inflating in process rather than throwing.
+          bgzfWorkerPool: sharedBgzfWorkerPool(),
         }),
       }
     }
