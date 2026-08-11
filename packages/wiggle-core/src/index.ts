@@ -27,8 +27,10 @@ export { computeYTicks } from './computeYTicks.ts'
 export { resolveRenderState } from './resolveRenderState.ts'
 
 export {
+  AXIS_GUTTER_WIDTH_PX,
   axisPlotBox,
   clampStrokeInsideAxis,
+  leftAxisSpineX,
   scoreToAxisY,
 } from './yScaleTicks.ts'
 export type { YScaleTicks } from './yScaleTicks.ts'

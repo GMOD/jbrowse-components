@@ -3,19 +3,21 @@ import { YScaleBar } from '@jbrowse/wiggle-core'
 
 import { recombinationTicks } from './recombinationAxis.ts'
 
-// Width of the opaque gutter the axis paints over the left of the curve. 40 for
-// as long as the axis was drawn by hand at fontSize 9; the shared `YScaleBar`
-// draws at 10, and a four-character label ("0.00".."1.00") at that size needs
-// ~20px, which at a spine on the gutter's far edge reaches back to x≈14. The
-// rotated caption is centred on x=10 and so occupies roughly [5, 15] — at 40 the
-// two touched, which they already did a little at fontSize 9.
+// Width of the opaque gutter the axis paints over the left of the curve.
+// Deliberately narrower than `AXIS_GUTTER_WIDTH_PX`, the width the alignments
+// and MAF axes share: those sit above their plots, this one sits ON its plot, so
+// every px of it is a px of curve hidden. 40 for as long as the axis was drawn
+// by hand at fontSize 9; the shared `YScaleBar` draws at 10, and a
+// four-character label ("0.00".."1.00") at that size needs ~20px, reaching back
+// to x≈14 from a spine on the far edge. The rotated caption is centred on x=10
+// and so occupies roughly [5, 15] — at 40 the two touched, which they already
+// did a little at fontSize 9.
 const Y_AXIS_WIDTH = 44
 
+// The same rule `leftAxisSpineX` states, against this gutter's own width:
 // YScaleBar crispens its spine to a local x of 0.5, so translating by
-// `width - 1` lands that 1px stroke on the gutter's last pixel. Left-oriented,
-// so the ticks and numbers grow back across the gutter from there — the same
-// "spine on the far edge" placement `leftAxisSpineX` makes for the alignments
-// coverage axis.
+// `width - 1` lands that 1px stroke on the gutter's last pixel, and the ticks
+// and numbers grow back across the gutter from there.
 const SPINE_X = Y_AXIS_WIDTH - 1
 
 const CAPTION_X = 10

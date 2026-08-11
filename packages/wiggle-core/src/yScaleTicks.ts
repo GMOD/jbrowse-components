@@ -63,6 +63,30 @@ export function scoreToAxisY(
 }
 
 /**
+ * Width of the gutter a left-oriented {@link YScaleBar} is drawn in, and the x
+ * inside that gutter its spine goes at.
+ *
+ * `YScaleBar` grows its ticks and numbers *away* from the spine, so a
+ * left-oriented axis has to inset its spine by the label width or the labels
+ * land at negative x — which is what once put an exported coverage axis off the
+ * image entirely. Both numbers live here, beside the component whose own
+ * geometry (`x = ±9`, `fontSize 10`, `textAnchor: end`) is what makes them the
+ * right ones: the alignments coverage axis and the MAF band axes had each
+ * arrived at this same 50/45 pair independently, so a change to the labels moved
+ * neither.
+ *
+ * An axis drawn over its own plot rather than in reserved space may narrow the
+ * gutter — every px of it is a px of data hidden — and the recombination axis
+ * does. It still places its spine at `width - 1`, the same rule stated against
+ * its own width.
+ */
+export const AXIS_GUTTER_WIDTH_PX = 50
+
+export function leftAxisSpineX(gutterLeft = 0) {
+  return gutterLeft + AXIS_GUTTER_WIDTH_PX - YSCALEBAR_LABEL_OFFSET
+}
+
+/**
  * Keep a 1px stroke's center inside the axis box. At `yBottom` — the box's own
  * bottom edge — the stroke has to cover the pixel *above* the boundary, since
  * the one below belongs to whatever is drawn next; in multi-wiggle, where rows

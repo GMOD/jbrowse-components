@@ -1,12 +1,19 @@
-import { YScaleBar } from '@jbrowse/wiggle-core'
+import {
+  AXIS_GUTTER_WIDTH_PX,
+  YScaleBar,
+  leftAxisSpineX,
+} from '@jbrowse/wiggle-core'
 
 import type { YScaleTicks } from '@jbrowse/wiggle-core'
 
-// Layout for the coverage/conservation Y-axis gutter. The left-oriented
-// YScaleBar sits in a 50px-wide gutter translated 45px right (a 5px margin).
-// Shared by the on-screen axes and SVG export so they can't drift.
-export const YSCALE_AXIS_WIDTH = 50
-export const YSCALE_AXIS_X = 45
+// Layout for the coverage/conservation Y-axis gutter: the left-oriented
+// YScaleBar's spine sits at the far edge of the gutter and its numbers grow back
+// across it. Both numbers come from wiggle-core, beside the YScaleBar whose
+// label geometry is what makes them the right ones — this pair and the
+// alignments coverage axis's had drifted apart into two identical copies.
+// Shared by the on-screen axes and SVG export so those can't drift either.
+export const YSCALE_AXIS_WIDTH = AXIS_GUTTER_WIDTH_PX
+export const YSCALE_AXIS_X = leftAxisSpineX()
 
 /**
  * A left-oriented Y-axis in the shared gutter, at a vertical band offset.

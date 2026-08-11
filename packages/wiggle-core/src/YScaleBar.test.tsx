@@ -1,6 +1,7 @@
 import { render } from '@testing-library/react'
 
 import YScaleBar from './YScaleBar.tsx'
+import { AXIS_GUTTER_WIDTH_PX, leftAxisSpineX } from './yScaleTicks.ts'
 
 describe('YScaleBar', () => {
   it('returns null when ticks is undefined', () => {
@@ -147,6 +148,53 @@ describe('YScaleBar', () => {
     expect(groups.map(g => g.querySelector('text')?.getAttribute('y'))).toEqual(
       ['-4.5', null, '4.5'],
     )
+  })
+
+  // What `AXIS_GUTTER_WIDTH_PX` / `leftAxisSpineX` are for, checked against the
+  // component they compensate for rather than against a transcription of its
+  // numbers. A left-oriented axis grows leftward, so a spine at x=0 puts every
+  // label at negative x — which is what once put an exported coverage axis off
+  // the image. The alignments coverage gutter and the MAF band gutters both go
+  // through these.
+  it('a left axis at leftAxisSpineX keeps spine and labels inside the gutter', () => {
+    const { container } = render(
+      <svg>
+        <g transform={`translate(${leftAxisSpineX()}, 0)`}>
+          <YScaleBar
+            ticks={{
+              items: [
+                { value: 0, y: 40, label: '0' },
+                { value: 100, y: 0, label: '100' },
+              ],
+              yTop: 0,
+              yBottom: 40,
+            }}
+            orientation="left"
+          />
+        </g>
+      </svg>,
+    )
+    const originX = leftAxisSpineX()
+    // the spine's own stroke and the tick marks reaching back from it: M and H
+    // carry the xs (V is the spine's y), and all of them land in the gutter
+    const d = container.querySelector('path')!.getAttribute('d')!
+    const spineXs = [...d.matchAll(/[MH](-?[\d.]+)/g)].map(m => Number(m[1]!))
+    expect(spineXs).not.toHaveLength(0)
+    for (const localX of spineXs) {
+      expect(originX + localX).toBeGreaterThan(0)
+      expect(originX + localX).toBeLessThanOrEqual(AXIS_GUTTER_WIDTH_PX)
+    }
+    // every label anchor sits inside the gutter, with room left for the text
+    // itself — the labels are `textAnchor: end`, so they extend leftward from
+    // their x and it is the *left* margin that has to be positive
+    const labelXs = [...container.querySelectorAll('text')].map(
+      t => originX + Number(t.getAttribute('x')),
+    )
+    expect(labelXs).not.toHaveLength(0)
+    for (const x of labelXs) {
+      expect(x).toBeGreaterThan(0)
+      expect(x).toBeLessThan(AXIS_GUTTER_WIDTH_PX)
+    }
   })
 
   it('leaves labels centered on their ticks without insetLabels', () => {

@@ -1,4 +1,4 @@
-import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'
+import { AXIS_GUTTER_WIDTH_PX } from '@jbrowse/wiggle-core'
 
 // Below this band height a full YScaleBar's tick labels overlap each other, so
 // both the on-screen axis and the SVG export drop to a single `[0, max]` label
@@ -12,18 +12,13 @@ export function compactAxisLabel(maxValue: number) {
   return `[0, ${Math.round(maxValue)}]`
 }
 
-// Width reserved for a full y-axis. Shared, not re-declared per path: the
-// on-screen box width and the export's spine inset are derived from the same
-// number, so a copy in each file would silently disagree the moment one moved.
-export const AXIS_SVG_WIDTH = 50
-
-// YScaleBar grows its ticks and labels away from the spine: orientation 'left'
-// grows leftward, so the spine is the axis's right edge. A left-hand axis
-// therefore has to inset its spine by the label width, or the labels land at
-// negative x, which is what put the exported axis off the image entirely.
-export function leftAxisSpineX(left: number) {
-  return left + AXIS_SVG_WIDTH - YSCALEBAR_LABEL_OFFSET
-}
+// Width reserved for a full y-axis, and where inside it the spine goes. Both
+// come from wiggle-core, beside the `YScaleBar` whose label geometry is what
+// makes them the right numbers — this file and MAF's band gutter had each
+// arrived at the same 50/45 pair on their own. Re-exported under the local name
+// every caller already uses.
+export const AXIS_SVG_WIDTH = AXIS_GUTTER_WIDTH_PX
+export { leftAxisSpineX } from '@jbrowse/wiggle-core'
 
 // Left edge of the box the read-cloud insert-size (TLEN) axis lays itself out
 // in — down mode on the left of the canvas, up mode on the right, both flush
