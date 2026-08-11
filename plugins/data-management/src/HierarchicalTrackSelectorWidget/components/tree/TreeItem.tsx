@@ -29,6 +29,13 @@ const useStyles = makeStyles()(theme => ({
   rowContent: {
     whiteSpace: 'nowrap',
     flex: 1,
+    // a flex line rather than a nowrap block, so an over-long track label can
+    // be told to shrink instead of overflowing the drawer. minWidth 0 because a
+    // flex item's automatic minimum is its content width, which is exactly the
+    // width being escaped from
+    display: 'flex',
+    alignItems: 'center',
+    minWidth: 0,
   },
   accordionCard: {
     padding: 3,

@@ -36,6 +36,9 @@ const useStyles = makeStyles()(theme => ({
     WebkitTapHighlightColor: 'transparent',
     marginLeft: -11,
     marginRight: 0,
+    // shrinkable, so the name inside can ellipsise rather than the row running
+    // past the drawer and taking the adornment and the ... menu with it
+    minWidth: 0,
     '&:hover': {
       backgroundColor: theme.palette.action.selected,
     },
@@ -52,14 +55,19 @@ const useStyles = makeStyles()(theme => ({
     display: 'flex',
     alignItems: 'center',
     gap: 2,
-    // the name is what yields when the drawer is narrow; the adornment is a few
-    // words and reads as noise half-truncated
     minWidth: 0,
   },
+  // The name is what yields when the drawer is narrow: it shrinks and
+  // ellipsises while the adornment beside it keeps its full width, because a
+  // few words half-truncated ("vs pea") read as damage rather than as
+  // information. Needs the whole flex chain above it to allow shrinking —
+  // rowContent, the label, and this — since each one's automatic minimum size
+  // would otherwise be its own content.
   name: {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
+    minWidth: 0,
   },
   adornmentIcon: {
     color: theme.palette.primary.main,
