@@ -31,6 +31,14 @@ import { TrackOverlayContext } from './TrackOverlayContext.ts'
 // on the positioned element itself, and full-span SVG overlays deliberately
 // stay `none` except on their sub-content (see FloatingLegend).
 //
+// Taking events back is all a panel has to do: the overlay node carries
+// `data-gesture-owner`, so the LGV's click-drag pan already skips anything in
+// this layer that can be a press target (TrackContainer). Without that, every
+// panel here would separately have to know that dragging its own text pans the
+// view under it — which is how it shipped, on the legend and the Hi-C panel.
+// The `fallbackInline` path renders outside that node, so chrome that is
+// interactive AND meaningful inline still declares its own marker.
+//
 // `TrackOverlayContext` is null outside a TrackContainer (some tests, or a
 // display used standalone). `fallbackInline` (default) then renders the children
 // in place, preserving behavior for chrome that is still meaningful without the

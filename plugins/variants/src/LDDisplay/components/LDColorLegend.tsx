@@ -22,6 +22,11 @@ export default function LDColorLegend({
         zIndex: 10,
         overflow: 'visible',
       }}
+      // A plain positioned box in the display's own tree, so unlike the portaled
+      // chrome it gets no marker from the overlay node — it needs its own, or a
+      // drag across the ramp's `0`/`R²`/`1` labels pans the view underneath
+      // instead of selecting them (see `useSideScroll`).
+      data-gesture-owner="true"
     >
       <LDColorLegendContent
         ldMetric={ldMetric}

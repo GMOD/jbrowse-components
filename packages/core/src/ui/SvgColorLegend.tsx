@@ -150,6 +150,11 @@ export default function SvgColorLegend({
         <g
           transform={`translate(${totalWidth - DISMISS_GUTTER} 0)`}
           style={{ cursor: 'pointer', pointerEvents: 'auto' }}
+          // The one part of this legend that takes pointer events, so it is the
+          // one part that has to claim the press: without it a press on the "×"
+          // that drifts a pixel pans the view under the legend. Only rendered on
+          // the interactive path, so the exported SVG never carries it.
+          data-gesture-owner="true"
           onClick={() => {
             onDismiss()
           }}

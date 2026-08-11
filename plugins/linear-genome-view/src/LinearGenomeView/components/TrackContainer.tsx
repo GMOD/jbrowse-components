@@ -145,6 +145,17 @@ const TrackContainer = observer(function TrackContainer({
           ref={setOverlayEl}
           className={classes.trackOverlay}
           style={{ left: -outlineOffset }}
+          // The node is pointer-events:none, so the only descendants that can
+          // ever be an event target are the ones that deliberately took events
+          // back — which by construction is the interactive chrome (legends,
+          // status banners, panels). All of it wants the same thing from an
+          // ancestor gesture: leave my press alone. Marking the target once
+          // says that for the whole layer, so a new panel gets it by following
+          // the `pointer-events:auto` instruction in TrackOverlayPortal rather
+          // than by also knowing about `useSideScroll`. Chrome that lives
+          // inline (LDColorLegend) or that runs its own drag (ResizeHandle,
+          // VerticalScrollbar) still carries its own marker.
+          data-gesture-owner="true"
         />
       </div>
       {/* so the separator masks the track content at the same x the data is
