@@ -285,6 +285,9 @@ export interface ComputedArc {
   colorType: number
   shapeType: number
   yBp: number
+  // How many connections were coalesced into this arc — see `resolveArcs`.
+  // Always >= 1.
+  support: number
 }
 
 // A connector tick. No color: every tick is ARC_COLOR_INTERCHROM (see the
@@ -800,7 +803,45 @@ function poolArcScale(inputs: ArcInputs[]): ArcScale {
   }
 }
 
-// Colour + shape one group's resolved connections against the pooled scale.
+// The identity of a drawn arc: two endpoints, a colour and a shape. Two
+// connections agreeing on all four produce the same pixels, which is what makes
+// them summable.
+//
+// EXACT COORDINATES, deliberately, and it is the same rule sashimi's
+// `junctionKey` follows for the same reason. A tolerance looks like the obvious
+// improvement — aligners do wobble a junction by a base or two — but junctions
+// genuinely cluster at this scale: over the HG002 chr12 fold-back the reads put
+// feet at 86,845,554 / 86,846,342 / 86,846,818 / 86,847,127 / 86,847,804, five
+// distinct events inside 2.3 kb. Merging on tolerance would draw them as one
+// thick arc, which states something the data does not.
+function arcKey(a: {
+  p1Ref: string
+  p1Bp: number
+  p2Ref: string
+  p2Bp: number
+  colorType: number
+  shapeType: number
+}) {
+  return `${a.p1Ref} ${a.p1Bp} ${a.p2Ref} ${a.p2Bp} ${a.colorType} ${a.shapeType}`
+}
+
+// Colour + shape one group's resolved connections against the pooled scale,
+// COALESCING connections that would draw as the same arc.
+//
+// Every read spanning a junction used to contribute its own instance, and arc
+// colours are opaque with no alpha, so N identical arcs were pixel-identical to
+// one: the picture said "a junction is here" and could not say how many reads
+// said so. Measured on the HG002 chr12 fold-back, a 24 kb window: 89
+// connections over 38 distinct arcs, the busiest drawn 27 times, and a 6-read
+// junction 689 bp away drawn with exactly the same weight as the 27-read one.
+//
+// Coalescing is what lets support become a channel (`arcLineWidth`) instead of
+// being thrown away, and it removes the redundant instances rather than
+// stacking them: 57% of the arcs in that window were exact repeats.
+//
+// `yBp` is not part of the key because it is derived from the endpoints and
+// shape — including the read-cloud jitter, which hashes the same two bp to the
+// same offset (`pairJitter01`). Arcs that agree on the key agree on it.
 function resolveArcs(
   pendingArcs: PendingArc[],
   { hasPaired, stats, longRangeThreshold }: ArcScale,
@@ -808,6 +849,7 @@ function resolveArcs(
 ) {
   const { colorByType, cloud = false, drawInter } = settings
   const arcs: ComputedArc[] = []
+  const byKey = new Map<string, ComputedArc>()
   const lines: ComputedLine[] = []
 
   for (const arc of pendingArcs) {
@@ -860,13 +902,24 @@ function resolveArcs(
     })
     const { shapeType, yBp } = computeArcShape({ cloud, arc, absrad })
 
-    arcs.push({
+    const key = arcKey({ p1Ref, p1Bp, p2Ref, p2Bp, colorType, shapeType })
+    const seen = byKey.get(key)
+    if (seen) {
+      seen.support++
+      continue
+    }
+    const computed = {
       p1: { refName: p1Ref, bp: p1Bp },
       p2: { refName: p2Ref, bp: p2Bp },
       colorType,
       shapeType,
       yBp,
-    })
+      support: 1,
+    }
+    byKey.set(key, computed)
+    // pushed in first-seen order, so the feed's order is still the reads' —
+    // a later support bump mutates the entry already in the array
+    arcs.push(computed)
   }
 
   return { arcs, lines }
@@ -899,6 +952,7 @@ export function arcsToRegionResult(
   const arcColorTypes = new Uint8Array(regionArcs.length)
   const arcShapeTypes = new Uint8Array(regionArcs.length)
   const arcYBp = new Uint32Array(regionArcs.length)
+  const arcSupport = new Uint32Array(regionArcs.length)
 
   let numFlatArcs = 0
   let maxFlatArcYBp = 0
@@ -909,6 +963,7 @@ export function arcsToRegionResult(
     arcColorTypes[i] = arc.colorType
     arcShapeTypes[i] = arc.shapeType
     arcYBp[i] = arc.yBp
+    arcSupport[i] = arc.support
     if (isFlatArcShape(arc.shapeType)) {
       numFlatArcs++
       if (arc.yBp > maxFlatArcYBp) {
@@ -930,6 +985,7 @@ export function arcsToRegionResult(
     arcColorTypes,
     arcShapeTypes,
     arcYBp,
+    arcSupport,
     numArcs: regionArcs.length,
     numFlatArcs,
     maxFlatArcYBp,

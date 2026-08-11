@@ -6,6 +6,10 @@ export interface ArcsUploadData {
   arcColorTypes: Uint8Array
   arcShapeTypes: Uint8Array
   arcYBp: Uint32Array
+  // Reads supporting each arc: how many identical connections `resolveArcs`
+  // folded into it, always >= 1. The three draw paths turn it into stroke width
+  // through `arcLineWidth` — none of them may re-derive that curve.
+  arcSupport: Uint32Array
   numArcs: number
   // How many of `numArcs` are flat (read-cloud) shapes, and the max `arcYBp`
   // across them. Both precomputed in the pass that builds the arrays, so the
@@ -41,6 +45,7 @@ export function emptyArcsUploadData(): ArcsUploadData {
     arcColorTypes: new Uint8Array(0),
     arcShapeTypes: new Uint8Array(0),
     arcYBp: new Uint32Array(0),
+    arcSupport: new Uint32Array(0),
     numArcs: 0,
     numFlatArcs: 0,
     maxFlatArcYBp: 0,
