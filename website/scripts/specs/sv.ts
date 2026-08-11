@@ -799,29 +799,42 @@ export const svSpecs: ScreenshotSpec[] = [
     // both sections at this window, so it is the one band here that a label
     // costs nothing to cover.
     //
-    // maxWidth is set so each is two lines rather than the three the default
-    // gave, which is taller than the lane they are being dropped onto.
+    // ONE LINE EACH (reviewer: "reduce wordiness. just say like 'Split reads
+    // with SA tag - most showing INV' and 'Reads without SA tag'"). The two
+    // pills used to spell out what the reader is looking at — three pieces, the
+    // middle one reverse, the other section crossing in one piece — and that is
+    // a sentence the caption can carry. On the image the pills only have to say
+    // WHICH PILE each section is, because the piles look different and the
+    // difference is the finding. Two lines became one, which also means each
+    // pill now fits inside its own coverage lane instead of reaching into the
+    // rows under it (the "Not split" one was covering four rows of reads).
     //
     // The heterozygosity the two sections add up to is in the caption instead —
     // that is a conclusion drawn from both, not a label for either.
     //
-    // NO "FLANK" (reviewer: "i dont really like the term flank here"). It is
-    // the field's word for the pieces either side, and the figure does not need
-    // a word for them at all: the top pill names what a reader can already see
-    // — the read breaks into three pieces and the middle one is a different
-    // colour — and says what that middle piece IS. The colour is the pointer,
-    // so the pill needs no coordinate and no anatomy vocabulary.
+    // The SETTING is named once, on the track header (reviewer: "you can note
+    // clearly that the track is 'Group by->SA tag'"). `Split read (SA tag)` is
+    // the menu item's own text (`groupByLabels.ts`), so the pill is the path a
+    // reader retypes rather than a paraphrase of it — and it belongs on the
+    // track, not on one of the two sections, since the setting made both. The
+    // label row is empty from the end of the track name to the right edge.
     annotations: [
       {
         type: 'text',
-        text: 'each read breaks into three pieces; the blue middle piece is aligned in reverse: that is the inverted segment',
+        text: 'Group by → Split read (SA tag)',
+        fontSize: 16,
+        anchor: { text: 'HG00151 Nanopore', alignX: 'right', dx: 16 },
+      },
+      {
+        type: 'text',
+        text: 'Split reads with SA tag — most showing INV',
         fontSize: 18,
         maxWidth: 560,
         anchor: { text: 'Split (SA)', alignX: 'right', dx: 14, dy: 45 },
       },
       {
         type: 'text',
-        text: 'these reads cross the same span in one piece, so this haplotype is not inverted',
+        text: 'Reads without SA tag',
         fontSize: 18,
         maxWidth: 560,
         anchor: { text: 'Not split', alignX: 'right', dx: 14, dy: 45 },
