@@ -1040,6 +1040,18 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   ...DEEP_ONT,
                   showOnlySplitAlignments: true,
                   linkedReads: 'normal',
+                  // CURVED CONNECTORS (reviewer: "i am not seeing 'beziers'
+                  // connecting the reads in the first row like i expected").
+                  // They were not there, and chaining alone was never going to
+                  // put them there: with this unticked `bezierArcScope` is
+                  // 'crossRegion' in chain mode, which draws only the joins that
+                  // straddle two displayed regions and draws a normal-orientation
+                  // one as a straight `M..L..`. That is what the faint horizontal
+                  // hairlines between the three windows were. Ticked, the scope
+                  // is 'all' and every join the GPU line pass does not own is a
+                  // curve colored by connection type, which is the thing that
+                  // makes a molecule's path across the three windows followable.
+                  showBezierConnections: true,
                   heightMode: 'fit',
                   height: 200,
                   coverageHeight: 40,
@@ -1247,6 +1259,14 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   ...DEEP_ONT,
                   showOnlySplitAlignments: true,
                   linkedReads: 'normal',
+                  // curved connectors, same reviewer note and same reason as the
+                  // sibling lane on derivative_synteny: chain mode alone leaves
+                  // `bezierArcScope` at 'crossRegion', which draws a normal join
+                  // as a straight hairline. It matters more here than there --
+                  // this is the base-scale panel, where the point IS that a row
+                  // stops at the junction, and the curve is what carries the eye
+                  // to where the same molecule picks up again.
+                  showBezierConnections: true,
                   heightMode: 'fit',
                   height: 170,
                   coverageHeight: 40,
