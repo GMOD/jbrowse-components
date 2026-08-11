@@ -107,16 +107,105 @@ test('rejects a link with no session', () => {
   ).toThrow(/no session in it/)
 })
 
-// a hub link having no session is not the user pasting the wrong thing, so
-// "go find a session=spec- link" is the wrong advice for it
-test('points a track hub link at the connection route instead', () => {
-  expect(() =>
-    parseSessionSpecUrl(
-      'https://jbrowse.org/code/jb2/main/?hubURL=https://example.com/hub.txt&config=none',
-    ),
-  ).toThrow(
-    /track hub link \(https:\/\/example\.com\/hub\.txt\).*Open connection/,
-  )
+// A hub link carries no `session=` and never was going to, so it used to be
+// reported as one to go add by hand. A spec has carried sessionConnections
+// since they landed, so it can just say what the hub is.
+describe('a track hub link', () => {
+  const base = 'https://jbrowse.org/code/jb2/main/'
+  const hub = 'https://example.com/myHub/hub.txt'
+
+  test('becomes a session connection', () => {
+    const { spec } = parseSessionSpecUrl(
+      `${base}?hubURL=${encodeURIComponent(hub)}&config=none`,
+    )
+    expect(spec.sessionConnections).toEqual([
+      {
+        type: 'UCSCTrackHubConnection',
+        connectionId: hub,
+        // the hub's own directory, rather than the whole url in a category header
+        name: 'myHub',
+        hubTxtLocation: { uri: hub, locationType: 'UriLocation' },
+      },
+    ])
+  })
+
+  // no view of our own, so loadSessionSpec registers the connection
+  // non-silently and the hub opens at its own defaultPos — the best guess
+  // available when the link named no genome
+  test('opens no view of its own without an assembly', () => {
+    expect(
+      parseSessionSpecUrl(`${base}?hubURL=${encodeURIComponent(hub)}`).spec
+        .views,
+    ).toEqual([])
+  })
+
+  // `&loc=` alone cannot launch a view: the launcher resolves everything against
+  // an assembly, and a hub's assemblies are genome ids only the hub carries
+  test('a loc with no assembly still opens the hub at its default position', () => {
+    expect(
+      parseSessionSpecUrl(
+        `${base}?hubURL=${encodeURIComponent(hub)}&loc=chr1:1-100`,
+      ).spec.views,
+    ).toEqual([])
+  })
+
+  test('navigates inside the hub when the link names one of its genomes', () => {
+    const { spec } = parseSessionSpecUrl(
+      `${base}?hubURL=${encodeURIComponent(hub)}&assembly=hg38&loc=chr1:1-100&tracks=a,b`,
+    )
+    expect(spec.views).toEqual([
+      {
+        type: 'LinearGenomeView',
+        assembly: 'hg38',
+        loc: 'chr1:1-100',
+        tracks: ['a', 'b'],
+      },
+    ])
+    // loadSessionSpec makes the connection silently when the spec brings views
+    // of its own, so the hub's own defaultPos view cannot compete with this one
+    expect(spec.sessionConnections).toHaveLength(1)
+  })
+
+  test('attaches every hub in a comma-separated list', () => {
+    const second = 'https://example.com/other/hub.txt'
+    expect(
+      parseSessionSpecUrl(
+        `${base}?hubURL=${encodeURIComponent(`${hub},${second}`)}`,
+      ).spec.sessionConnections,
+    ).toHaveLength(2)
+  })
+
+  // a present-but-empty param is still truthy: jbrowse-web used to route on
+  // that and build a session with no hub in it and no diagnostic
+  test('an empty hubURL is no hub at all, not a blank one', () => {
+    expect(() => parseSessionSpecUrl(`${base}?hubURL=&config=x.json`)).toThrow(
+      /no session in it/,
+    )
+    expect(() =>
+      parseSessionSpecUrl(`${base}?hubURL=,,&config=x.json`),
+    ).toThrow(/no session in it/)
+  })
+
+  // web ranks extendSession+shorthand above the hub branch, so a link carrying
+  // all three means the defaultSession one — which is the case this refuses.
+  // Taking the hub branch here would open something the link did not ask for.
+  test('extendSession outranks the hub, as it does in web', () => {
+    expect(() =>
+      parseSessionSpecUrl(
+        `${base}?hubURL=${encodeURIComponent(hub)}&assembly=hg38&extendSession=true`,
+      ),
+    ).toThrow(/extendSession/)
+  })
+
+  // ...but with no shorthand to layer, web's extendSession branch never fires,
+  // so the hub is what the link means
+  test('extendSession with nothing to layer leaves the hub alone', () => {
+    expect(
+      parseSessionSpecUrl(
+        `${base}?hubURL=${encodeURIComponent(hub)}&extendSession=true`,
+      ).spec.sessionConnections,
+    ).toHaveLength(1)
+  })
 })
 
 test('allows a deliberately empty views list (the import-form figures)', () => {
@@ -260,12 +349,12 @@ describe('the loc/assembly shorthand', () => {
   // web ranks &hubURL= above the shorthand, because a hub is the only param
   // that brings its own assemblies: a link carrying both is asking to navigate
   // inside the hub, not to drop it for a bare LGV
-  test('a hub link carrying loc is still reported as a hub link', () => {
-    expect(() =>
-      parseSessionSpecUrl(
-        `${base}?hubURL=https://example.com/hub.txt&assembly=hg38&loc=chr1:1-100`,
-      ),
-    ).toThrow(/track hub link/)
+  test('a link carrying a hub keeps the hub as well as the view', () => {
+    const { spec } = parseSessionSpecUrl(
+      `${base}?hubURL=https://example.com/hub.txt&assembly=hg38&loc=chr1:1-100`,
+    )
+    expect(spec.sessionConnections).toHaveLength(1)
+    expect(spec.views).toHaveLength(1)
   })
 
   // &extendSession=true means "apply this onto the config's own defaultSession",

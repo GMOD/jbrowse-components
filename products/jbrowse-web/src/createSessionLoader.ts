@@ -1,4 +1,8 @@
-import { readNavParam, readTracklistParam } from '@jbrowse/app-core'
+import {
+  readHubUrlParam,
+  readNavParam,
+  readTracklistParam,
+} from '@jbrowse/app-core'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import SessionLoader from './SessionLoader.ts'
@@ -54,7 +58,7 @@ export function createSessionLoaderFromUrl(initialTimestamp: number) {
     nav: readNavParam(p.nav),
     highlight: p.highlight,
     extendSession: p.extendSession === 'true',
-    hubURL: p.hubURL?.split(',').filter(Boolean),
+    hubURL: readHubUrlParam(p.hubURL),
     sessionName: p.sessionName,
     initialTimestamp,
   })

@@ -121,6 +121,47 @@ export function buildLgvInit(args: {
   return init
 }
 
+/**
+ * `&hubURL=` — a comma-separated list of hub.txt urls.
+ *
+ * Empty entries are dropped, so `&hubURL=` and `&hubURL=,,` are no hubs at all
+ * rather than a list of blanks. jbrowse-web learned that the hard way: a
+ * present-but-empty param is still truthy, which routed the load to a hub
+ * builder with no url to connect to and produced a session with nothing in it
+ * and no diagnostic.
+ */
+export function readHubUrlParam(value: string | undefined) {
+  return value?.split(',').filter(Boolean) ?? []
+}
+
+/**
+ * A short, readable label for a hub connection, before its hub.txt has been
+ * read: the second-to-last path segment, which for `…/myHub/hub.txt` is the
+ * hub's own directory. Beats showing the whole url in a track-selector category
+ * header.
+ */
+export function shortHubLabel(url: string) {
+  try {
+    const segments = new URL(url).pathname.split('/').filter(Boolean)
+    return segments.at(-2) ?? segments.at(-1) ?? url
+  } catch {
+    return url
+  }
+}
+
+/**
+ * The `sessionConnections` entry for a hub url — the spec vocabulary for "attach
+ * this track hub", which loadSessionSpec registers before it launches any view.
+ */
+export function hubConnectionSpec(url: string) {
+  return {
+    type: 'UCSCTrackHubConnection',
+    connectionId: url,
+    name: shortHubLabel(url),
+    hubTxtLocation: { uri: url, locationType: 'UriLocation' },
+  }
+}
+
 // URLSearchParams.get returns null for an absent param, and every reader here
 // distinguishes absent from present-and-empty
 function read(params: URLSearchParams, key: string) {

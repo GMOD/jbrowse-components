@@ -1,5 +1,10 @@
-import { buildLgvInitFromParams } from './lgvUrlInit.ts'
+import {
+  buildLgvInitFromParams,
+  hubConnectionSpec,
+  readHubUrlParam,
+} from './lgvUrlInit.ts'
 
+import type { LgvUrlInit } from './lgvUrlInit.ts'
 import type { LayoutNode, ViewSpec } from './types.ts'
 
 // Reads a JBrowse Web URL (the kind the website's figure links and the share
@@ -9,9 +14,10 @@ import type { LayoutNode, ViewSpec } from './types.ts'
 // `jbrowse://` one — resolves it identically instead of reimplementing the query
 // format.
 //
-// Two link forms produce a spec:
+// Three link forms produce a spec:
 //
 // - `session=spec-…`, which is one already.
+// - `&hubURL=`, a track hub, which becomes a `sessionConnections` entry.
 // - the `&loc=`/`&assembly=`/`&tracks=` shorthand JBrowse has read since JB1,
 //   which jbrowse-web turns into a spec of a single LGV. It is the form the URL
 //   params documentation teaches and the one people write by hand, and it used
@@ -102,36 +108,27 @@ function resolveConfig(params: URLSearchParams, url: URL) {
 }
 
 /**
- * The spec a link with no `session=` describes, from the `&loc=`/`&assembly=`
- * shorthand — or the error explaining why it describes none.
+ * The spec a link with no `session=` describes — or the error explaining why it
+ * describes none.
  *
- * The order of the branches is jbrowse-web's own ranking in loadSessionByType,
- * and has to be: a link carrying both `&hubURL=` and `&loc=` is asking to
- * navigate *inside* the hub, so reading the shorthand first would build a bare
- * LGV and drop the hub with no diagnostic. Web ranks the hub above the
- * shorthand for exactly that reason.
+ * The branches below are in jbrowse-web's own ranking (SessionLoader's
+ * loadSessionByType), and have to be, because a link can carry several of these
+ * at once and which one wins decides what the link means:
+ *
+ * 1. `&extendSession=true` alongside the shorthand, which outranks even a hub.
+ * 2. `&hubURL=`, above the bare shorthand, because a hub is the only param that
+ *    brings its own assemblies and tracks — a link carrying both is asking to
+ *    navigate *inside* the hub. Ranking the shorthand first builds a bare LGV
+ *    and drops the hub with no diagnostic.
+ * 3. the shorthand on its own.
  */
 function shorthandSpec(params: URLSearchParams): ParsedSessionSpec['spec'] {
-  const hubURL = params.get('hubURL')
-  if (hubURL) {
-    // A `?hubURL=` link legitimately carries no session: it's a track hub, which
-    // jbrowse-web turns into a session connection (loadHubSpec) rather than a
-    // spec. Name that case instead of sending someone to look for a
-    // `session=spec-` param a perfectly good hub link was never going to have.
-    throw new Error(
-      `That is a track hub link (${hubURL}), not a session link. Add the hub through File → "Open connection..." instead.`,
-    )
-  }
-
   const init = buildLgvInitFromParams(params)
-  // `loc`/`assembly` are what make a link a jb1-style one, the same test as
-  // jbrowse-web's isJb1StyleSession. The rest of the shorthand only modifies a
-  // view; none of it can conjure one.
-  if (init.loc === undefined && init.assembly === undefined) {
-    throw new Error(
-      'That link has no session in it. Copy a JBrowse Web link that contains "&session=spec-...", or one with "&assembly=" and "&loc=".',
-    )
-  }
+  // what makes a link a jb1-style one, the same test as jbrowse-web's
+  // isJb1StyleSession. The rest of the shorthand only modifies a view; none of
+  // it can conjure one.
+  const isJb1Style = init.loc !== undefined || init.assembly !== undefined
+
   // `&extendSession=true` means "apply this shorthand to the config's own
   // defaultSession", and there is no honest way to do that here: this builds a
   // session spec, and loadSessionSpec replaces the session rather than
@@ -139,17 +136,54 @@ function shorthandSpec(params: URLSearchParams): ParsedSessionSpec['spec'] {
   // defaultSession's curated tracks would quietly be a different session than
   // the link asks for, so say so instead — and say what to remove, since the
   // link works fine without it.
-  if (params.get('extendSession') === 'true') {
+  //
+  // Gated on the shorthand being present for the same reason web's branch is:
+  // the param names the default session as the thing to navigate, and with no
+  // loc or assembly there is no navigation to apply to it.
+  if (isJb1Style && params.get('extendSession') === 'true') {
     throw new Error(
       'That link uses "&extendSession=true", which layers its location onto a defaultSession that only the JBrowse Web instance it points at can supply. Remove that parameter to open just the view the link describes.',
+    )
+  }
+
+  const hubURL = readHubUrlParam(params.get('hubURL') ?? undefined)
+  if (hubURL.length) {
+    // A track hub is a session connection, which a spec has carried since
+    // sessionConnections landed. So this is no longer the dead end it was
+    // ("that's a track hub, go add it by hand") — the hub attaches, and
+    // loadSessionSpec waits for it to settle before launching anything, because
+    // the assemblies and tracks the view below names are ones the hub brings.
+    return {
+      sessionConnections: hubURL.map(hubConnectionSpec),
+      sessionTracks: readSessionTracks(params),
+      // Only with an assembly. The launcher resolves everything against one,
+      // and a hub's assemblies are genome ids only the hub carries, so `&loc=`
+      // alone has nothing to launch against. Leaving the list empty is what
+      // makes loadSessionSpec register the connection non-silently, so the hub
+      // opens at its own defaultPos — the best guess available without a name,
+      // and what jbrowse-web does with the same link.
+      views: init.assembly === undefined ? [] : [lgvSpec(init)],
+    }
+  }
+
+  if (!isJb1Style) {
+    throw new Error(
+      'That link has no session in it. Copy a JBrowse Web link that contains "&session=spec-...", or one with "&assembly=" and "&loc=".',
     )
   }
   return {
     // `&sessionTracks=` carries whole track configs the views then reference by
     // id, exactly as in a spec link
     sessionTracks: readSessionTracks(params),
-    views: [{ type: 'LinearGenomeView', ...init }],
+    views: [lgvSpec(init)],
   }
+}
+
+// The init keys are LGV `InitState` ones the LaunchView-LinearGenomeView
+// extension point partitions for itself; ViewSpec carries only what every view
+// type has, which is why this spreads rather than naming them.
+function lgvSpec(init: LgvUrlInit): ViewSpec {
+  return { type: 'LinearGenomeView', ...init }
 }
 
 function readSessionTracks(params: URLSearchParams) {

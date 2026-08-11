@@ -1,8 +1,11 @@
 export {
   buildLgvInit,
   buildLgvInitFromParams,
+  hubConnectionSpec,
+  readHubUrlParam,
   readNavParam,
   readTracklistParam,
+  shortHubLabel,
   splitHighlights,
 } from './lgvUrlInit.ts'
 export { loadSessionSpec } from './loadSessionSpec.ts'

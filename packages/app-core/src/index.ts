@@ -19,10 +19,13 @@ export type {
 export {
   buildLgvInit,
   buildLgvInitFromParams,
+  hubConnectionSpec,
   loadSessionSpec,
   parseSessionSpecUrl,
+  readHubUrlParam,
   readNavParam,
   readTracklistParam,
+  shortHubLabel,
   splitHighlights,
 } from './SessionSpec/index.ts'
 export type {

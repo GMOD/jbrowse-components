@@ -179,6 +179,9 @@ forms work:
   any figure in these docs
 - one using the [URL parameter](/docs/urlparams/) shorthand, i.e. `&assembly=`
   with an optional `&loc=`, `&tracks=`, `&highlight=` and so on
+- one naming a track hub with `&hubURL=`, which is attached as a connection; add
+  `&assembly=` naming one of the hub's genomes to open at a particular place in
+  it, or leave it off to land at the hub's own default position
 
 The config the link names is downloaded and saved alongside the session, so it
 reopens later like any other. Share links (`&session=share-...`) can't be opened
