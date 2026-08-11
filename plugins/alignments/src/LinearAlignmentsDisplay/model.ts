@@ -3626,6 +3626,7 @@ export default function stateModelFactory(
                       },
                     },
               supplementaryColoring: {
+                isChainMode: self.isChainMode,
                 flipStrandLongReadChains: self.flipStrandLongReadChains,
                 setFlipStrandLongReadChains: (flag: boolean) => {
                   self.setFlipStrandLongReadChains(flag)

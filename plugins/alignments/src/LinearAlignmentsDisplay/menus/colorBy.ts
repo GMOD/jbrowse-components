@@ -67,8 +67,12 @@ interface ColorByMenuOptions {
   }
   // Supplementary/split-read coloring modifiers. These color how chained
   // supplementary alignments are drawn, so they belong with the color scheme
-  // rather than in the "Show..." visibility menu.
+  // rather than in the "Show..." visibility menu. Both are read only by
+  // `readColorCategory`'s chain branches, hence `isChainMode`: without a chain
+  // there is nothing chained to recolor and each row would be a live tickbox
+  // that does nothing.
   supplementaryColoring?: {
+    isChainMode: boolean
     flipStrandLongReadChains: boolean
     setFlipStrandLongReadChains: (flag: boolean) => void
     colorSupplementaryChains: boolean
@@ -224,11 +228,21 @@ function arcColorItem(
   }
 }
 
+// Both rows recolor a chain that carries a supplementary segment, and orange
+// wins where they overlap (see readColorCategory's ladder). Each subLabel says
+// which reads it reaches and what the result looks like, because "supplementary"
+// alone doesn't distinguish them and the difference is the whole choice. Greyed
+// out rather than hidden while chain mode is off, matching the read-connection
+// band options: the settings stay discoverable, and the tooltip names the one
+// switch that makes them live.
 function supplementaryItem(
   supp: NonNullable<ColorByMenuOptions['supplementaryColoring']>,
 ): MenuItem {
   return {
     label: 'Supplementary / split reads',
+    disabled: !supp.isChainMode,
+    disabledHelpText:
+      'Enable "Read connections ▸ View as pairs / link supplementary alignments" first',
     subMenu: [
       checkboxItem(
         'Color supplementary alignments by primary strand',
@@ -236,12 +250,20 @@ function supplementaryItem(
         () => {
           supp.setFlipStrandLongReadChains(!supp.flipStrandLongReadChains)
         },
+        {
+          subLabel:
+            'long (unpaired) reads: the primary stays red and a segment that flipped at the junction goes blue, so an inversion reads as a color flip',
+        },
       ),
       checkboxItem(
         'Color supplementary chains orange',
         supp.colorSupplementaryChains,
         () => {
           supp.setColorSupplementaryChains(!supp.colorSupplementaryChains)
+        },
+        {
+          subLabel:
+            'one flat color for the whole chain, paired and long reads alike — marks the split without classifying it, so it replaces both the strand flip and the inversion/deletion hues',
         },
       ),
     ],

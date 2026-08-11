@@ -276,6 +276,29 @@ describe('readColorCategory', () => {
     ).toBe('pairRR')
   })
 
+  // It reaches long reads too, and outranks the strand framing there — the two
+  // tickboxes are ordered, not scoped to different data.
+  test('the orange opt-in covers unpaired chains and beats the strand framing', () => {
+    const longRead = makeData({ chainHasSupp: 2, flags: 0, strand: 1 })
+    expect(readColorCategory(0, longRead, ColorScheme.normal, chainOpts)).toBe(
+      'revStrand',
+    )
+    expect(
+      readColorCategory(0, longRead, ColorScheme.normal, {
+        ...chainOpts,
+        colorSupplementaryChains: true,
+      }),
+    ).toBe('supplementary')
+    // and it is the one override that a data-carrying scheme does not displace,
+    // because the user asked for it by name
+    expect(
+      readColorCategory(0, longRead, ColorScheme.tag, {
+        ...chainOpts,
+        colorSupplementaryChains: true,
+      }),
+    ).toBe('supplementary')
+  })
+
   test('long-read (unpaired) supplementary chains frame strand against primary', () => {
     // unpaired (flags=0) supplementary with a reverse primary (chainHasSupp=2):
     // a forward segment reads as reverse once flipped into the primary frame

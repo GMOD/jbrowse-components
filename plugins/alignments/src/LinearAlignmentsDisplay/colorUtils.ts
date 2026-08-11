@@ -270,17 +270,31 @@ export function readColorCategory(
     (colorScheme === ColorScheme.pairOrientation ||
       colorScheme === ColorScheme.insertSizeAndOrientation)
 
-  // Opt-in legacy behavior: paint paired supplementary chains a flat
-  // supplementary color (hides the discordant-pair signal; off by default).
-  if (isChain && hasSupp && isPaired && colorSupplementaryChains) {
+  // Three overrides can repaint a chain that carries a supplementary segment,
+  // and they are one ladder rather than three independent rules:
+  //
+  //   1. orange (opt-in) — "don't classify the split, just mark the chain". The
+  //      user asked for it explicitly, so it outranks both classifiers and every
+  //      scheme.
+  //   2. the unpaired classifier — the red/blue strand framing below.
+  //   3. the paired classifier — the magenta/yellow split markers further down.
+  //
+  // 2 and 3 are scoped to opposite data because a pair HAS a richer answer: a
+  // supplementary framed against its own mate's primary is an inversion or a
+  // deletion junction, which `buildChainMetadata` already resolved into
+  // CHAIN_FILL_SPLIT_*. An unpaired read has no mate to frame against, so the
+  // strand flip is the whole story. 1 is scoped to neither, and used to be
+  // paired-only purely because it was added to restore what a paired-only change
+  // removed (5b8aa129d9) — on long reads the tickbox then did nothing at all,
+  // which is the one kind of setting this menu must not have.
+  if (isChain && hasSupp && colorSupplementaryChains) {
     return 'supplementary'
   }
 
   // Long-read (unpaired) supplementary chains frame each segment's strand
-  // against the primary, so an inversion at a split junction reads as a strand
-  // flip. Paired supplementary chains otherwise keep their normal per-scheme
-  // color (pair orientation, insert size, …): a flat override would hide the
-  // discordant-pair signal, and the split is already shown by arcs/clip marks.
+  // against the primary: the primary is always forward-red and a segment that
+  // flipped at the split junction goes reverse-blue, so an inversion reads as a
+  // colour flip rather than as something to look up.
   //
   // Held off the data-carrying schemes (`dataFillSchemes`) so it refines the
   // fill rather than replacing it, and off entirely when the user unticks
