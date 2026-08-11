@@ -520,6 +520,15 @@ function useSiteMode() {
   return mode
 }
 
+// The box `usePanZoom`'s handlers go on -- see the Pan and zoom page for what
+// each property is doing and which half of it the hook cannot do for you.
+const viewport: React.CSSProperties = {
+  position: 'relative',
+  overflow: 'hidden',
+  touchAction: 'none',
+  cursor: 'grab',
+}
+
 const DriveItFromYourApp = observer(function DriveItFromYourApp() {
   const [{ view, session }] = useState(makeView)
   const ref = useWidthSetter(view)
@@ -543,16 +552,7 @@ const DriveItFromYourApp = observer(function DriveItFromYourApp() {
           <Bookmarks view={view} />
           <TrackToggles view={view} />
         </div>
-        <div
-          ref={ref}
-          {...containerProps}
-          style={{
-            position: 'relative',
-            overflow: 'hidden',
-            touchAction: 'none',
-            cursor: 'grab',
-          }}
-        >
+        <div ref={ref} {...containerProps} style={viewport}>
           {/* `RegionBoundaries` is inside the same gate as the tracks, not
            * beside it: `staticBlocks` reads `view.width`, which *throws*
            * ("make sure to check for model.initialized") until the

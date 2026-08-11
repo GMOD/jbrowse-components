@@ -176,6 +176,27 @@ function ZoomHint({ show }: { show: boolean }) {
   )
 }
 
+/**
+ * The box `usePanZoom`'s handlers go on, and every page here spreads the same
+ * four properties onto it.
+ *
+ * `touchAction: 'none'` is the one thing the hook cannot do for you, because
+ * your own `style` would overwrite it. Without it the browser claims a touch
+ * drag as a page scroll and the pointer stream never arrives -- so a demo that
+ * works on a desktop is inert on a phone, with nothing in the console.
+ *
+ * `position: relative` is the frame everything a host draws over the data is
+ * placed against: seams, bands, gridlines, a scalebar. `overflow: hidden`
+ * because the blocks either side of the viewport really are laid out past its
+ * edges. `cursor: grab` is just manners.
+ */
+const viewport: React.CSSProperties = {
+  position: 'relative',
+  overflow: 'hidden',
+  touchAction: 'none',
+  cursor: 'grab',
+}
+
 const PanAndZoom = observer(function PanAndZoom({
   scrollZoom = true,
 }: {
@@ -211,12 +232,7 @@ const PanAndZoom = observer(function PanAndZoom({
         ref={ref}
         {...containerProps}
         style={{
-          position: 'relative',
-          overflow: 'hidden',
-          // your half of the deal: without it the browser claims a touch-drag
-          // as a page scroll and the pointer stream never arrives
-          touchAction: 'none',
-          cursor: 'grab',
+          ...viewport,
           // hold the track's configured height from the first paint, so nothing
           // below it moves when the assembly finishes loading and it appears
           minHeight: wiggleTrack.displayDefaults.height,

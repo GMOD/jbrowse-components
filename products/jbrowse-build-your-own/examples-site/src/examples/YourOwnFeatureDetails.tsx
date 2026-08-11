@@ -277,6 +277,15 @@ function useSiteMode() {
   return mode
 }
 
+// The box `usePanZoom`'s handlers go on -- see the Pan and zoom page for what
+// each property is doing and which half of it the hook cannot do for you.
+const viewport: React.CSSProperties = {
+  position: 'relative',
+  overflow: 'hidden',
+  touchAction: 'none',
+  cursor: 'grab',
+}
+
 const YourOwnFeatureDetails = observer(function YourOwnFeatureDetails() {
   const [{ view, session }] = useState(makeView)
   const ref = useWidthSetter(view)
@@ -290,14 +299,10 @@ const YourOwnFeatureDetails = observer(function YourOwnFeatureDetails() {
           <div
             ref={ref}
             {...containerProps}
-            style={{
-              flex: 1,
-              minWidth: 0,
-              position: 'relative',
-              overflow: 'hidden',
-              touchAction: 'none',
-              cursor: 'grab',
-            }}
+            // `flex: 1, minWidth: 0` because the panel beside it is fixed
+            // width and this half takes the rest; without the minWidth a flex
+            // item refuses to shrink below its content
+            style={{ ...viewport, flex: 1, minWidth: 0 }}
           >
             {view.ready ? (
               <TrackRow view={view} trackId="volvox_genes" />

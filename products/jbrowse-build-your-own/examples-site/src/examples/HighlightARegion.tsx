@@ -332,6 +332,15 @@ const HitList = observer(function HitList({ view }: { view: BrowserView }) {
   )
 })
 
+// The box `usePanZoom`'s handlers go on -- see the Pan and zoom page for what
+// each property is doing and which half of it the hook cannot do for you.
+const viewport: React.CSSProperties = {
+  position: 'relative',
+  overflow: 'hidden',
+  touchAction: 'none',
+  cursor: 'grab',
+}
+
 const HighlightARegion = observer(function HighlightARegion() {
   const [{ view, session }] = useState(makeView)
   const ref = useWidthSetter(view)
@@ -364,16 +373,7 @@ const HighlightARegion = observer(function HighlightARegion() {
             </span>
           </label>
         </div>
-        <div
-          ref={ref}
-          {...containerProps}
-          style={{
-            position: 'relative',
-            overflow: 'hidden',
-            touchAction: 'none',
-            cursor: 'grab',
-          }}
-        >
+        <div ref={ref} {...containerProps} style={viewport}>
           {/* `getHighlightCoords` reads block geometry, which throws until the
            * ResizeObserver has reported a width -- so the bands sit inside the
            * same gate as the tracks. See the Drive it from your app page. */}

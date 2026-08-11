@@ -298,6 +298,15 @@ function useSiteMode() {
   return mode
 }
 
+// The box `usePanZoom`'s handlers go on -- see the Pan and zoom page for what
+// each property is doing and which half of it the hook cannot do for you.
+const viewport: React.CSSProperties = {
+  position: 'relative',
+  overflow: 'hidden',
+  touchAction: 'none',
+  cursor: 'grab',
+}
+
 const EveryChromosome = observer(function EveryChromosome() {
   const [{ view, session }] = useState(makeView)
   const ref = useWidthSetter(view)
@@ -307,16 +316,7 @@ const EveryChromosome = observer(function EveryChromosome() {
   return (
     <PaletteProvider palette={palette}>
       <DisplayUIProvider>
-        <div
-          ref={ref}
-          {...containerProps}
-          style={{
-            position: 'relative',
-            overflow: 'hidden',
-            touchAction: 'none',
-            cursor: 'grab',
-          }}
-        >
+        <div ref={ref} {...containerProps} style={viewport}>
           {/* both overlays read block geometry, which throws until the
            * ResizeObserver has reported a width -- see the Drive it from
            * your app page */}

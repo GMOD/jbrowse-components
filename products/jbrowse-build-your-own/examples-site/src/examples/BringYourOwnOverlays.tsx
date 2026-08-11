@@ -177,6 +177,15 @@ const TrackRow = observer(function TrackRow({
   )
 })
 
+// The box `usePanZoom`'s handlers go on -- see the Pan and zoom page for what
+// each property is doing and which half of it the hook cannot do for you.
+const viewport: React.CSSProperties = {
+  position: 'relative',
+  overflow: 'hidden',
+  touchAction: 'none',
+  cursor: 'grab',
+}
+
 const TrackStack = observer(function TrackStack({
   view,
 }: {
@@ -185,16 +194,7 @@ const TrackStack = observer(function TrackStack({
   const ref = useWidthSetter(view)
   const { containerProps } = usePanZoom(ref, view)
   return (
-    <div
-      ref={ref}
-      {...containerProps}
-      style={{
-        position: 'relative',
-        overflow: 'hidden',
-        touchAction: 'none',
-        cursor: 'grab',
-      }}
-    >
+    <div ref={ref} {...containerProps} style={viewport}>
       {view.ready ? (
         trackIds.map(trackId => (
           <TrackRow key={trackId} view={view} trackId={trackId} />

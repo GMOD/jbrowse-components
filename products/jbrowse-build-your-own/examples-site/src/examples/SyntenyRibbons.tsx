@@ -256,6 +256,16 @@ const TrackRow = observer(function TrackRow({
   )
 })
 
+// The box `usePanZoom`'s handlers go on -- see the Pan and zoom page for what
+// each property is doing and which half of it the hook cannot do for you. One
+// per row here, which is what lets the rows move independently.
+const viewport: React.CSSProperties = {
+  position: 'relative',
+  overflow: 'hidden',
+  touchAction: 'none',
+  cursor: 'grab',
+}
+
 /**
  * One genome row.
  *
@@ -275,16 +285,7 @@ const SyntenyRow = observer(function SyntenyRow({
   const ref = useRef<HTMLDivElement>(null)
   const { containerProps } = usePanZoom(ref, view)
   return (
-    <div
-      ref={ref}
-      {...containerProps}
-      style={{
-        position: 'relative',
-        overflow: 'hidden',
-        touchAction: 'none',
-        cursor: 'grab',
-      }}
-    >
+    <div ref={ref} {...containerProps} style={viewport}>
       <div
         style={{
           fontSize: '0.7rem',

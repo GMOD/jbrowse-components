@@ -283,6 +283,15 @@ function byCategory(entries: CatalogueEntry[]) {
   return [...groups]
 }
 
+// The box `usePanZoom`'s handlers go on -- see the Pan and zoom page for what
+// each property is doing and which half of it the hook cannot do for you.
+const viewport: React.CSSProperties = {
+  position: 'relative',
+  overflow: 'hidden',
+  touchAction: 'none',
+  cursor: 'grab',
+}
+
 const checkboxRow: React.CSSProperties = {
   display: 'flex',
   alignItems: 'center',
@@ -453,14 +462,10 @@ const TrackColumn = observer(function TrackColumn({
     <div
       ref={ref}
       {...containerProps}
-      style={{
-        flex: 1,
-        minWidth: 0,
-        position: 'relative',
-        overflow: 'hidden',
-        touchAction: 'none',
-        cursor: 'grab',
-      }}
+      // `flex: 1, minWidth: 0` because the sidebar beside it is fixed width and
+      // this half takes the rest; without the minWidth a flex item refuses to
+      // shrink below its content
+      style={{ ...viewport, flex: 1, minWidth: 0 }}
     >
       {view.ready ? (
         catalogueEntries(session).map(({ trackId }) => (

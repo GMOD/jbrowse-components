@@ -569,6 +569,15 @@ function useSiteMode() {
   return mode
 }
 
+// The box `usePanZoom`'s handlers go on -- see the Pan and zoom page for what
+// each property is doing and which half of it the hook cannot do for you.
+const viewport: React.CSSProperties = {
+  position: 'relative',
+  overflow: 'hidden',
+  touchAction: 'none',
+  cursor: 'grab',
+}
+
 const Scalebar = observer(function Scalebar() {
   const [{ view, session }] = useState(makeView)
   const ref = useWidthSetter(view)
@@ -582,16 +591,7 @@ const Scalebar = observer(function Scalebar() {
   return (
     <PaletteProvider palette={palette}>
       <DisplayUIProvider>
-        <div
-          ref={ref}
-          {...containerProps}
-          style={{
-            position: 'relative',
-            overflow: 'hidden',
-            touchAction: 'none',
-            cursor: 'grab',
-          }}
-        >
+        <div ref={ref} {...containerProps} style={viewport}>
           {/* every piece below reads block geometry, and `staticBlocks`
            * *throws* until the ResizeObserver has reported a width -- so all
            * of it sits inside one gate rather than each guarding itself. See

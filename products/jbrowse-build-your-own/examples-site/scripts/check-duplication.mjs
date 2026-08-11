@@ -57,6 +57,8 @@ const DIVERGES = {
 const COPY_THRESHOLD = 3
 
 const COPIED = {
+  viewport:
+    "the box the gesture handlers go on, which is the reader's to style — but it is named rather than written inline so that this check can see it at all; `touchAction: 'none'` is the property whose loss is silent (see the note above `blocks`)",
   TrackRow:
     "mounting a display is what the reader came to see, and the box it goes in is theirs to style — see EXAMPLES_SITES.md, 'the one good way out is to publish the block'",
   TrackStack: 'ditto: the reader owns the column their tracks sit in',
@@ -80,6 +82,22 @@ const COPIED = {
 // / `function` / `type` line to the next one (or to `export default`), so any
 // leading comment belongs to the block before it — which does not matter, since
 // comments are stripped before comparison.
+//
+// **Only NAMED top-level declarations are visible to this file, and that is the
+// blind spot to keep in mind when adding a page.** Repeated JSX written inline
+// is invisible: it has no name to group by, so neither the drift check nor
+// COPY_THRESHOLD can reach it. That is not hypothetical — the single most
+// repeated thing on this site was the pan/zoom container div, spread across 13
+// files with its four style properties written out inline in each, and this
+// check had never once looked at it. One of those four is
+// `touchAction: 'none'`, whose absence costs nothing on a desktop and makes the
+// demo inert on a phone with nothing in the console: exactly the silent drift
+// the file exists to catch.
+//
+// So the rule the blind spot implies: **behaviour that repeats gets a name.**
+// It is now `viewport`, one `const` per file, and the check covers it. When you
+// find yourself pasting a styled div into a fifth example, name it there rather
+// than assuming a green run means anything about it.
 function blocks(file) {
   const lines = fs.readFileSync(file, 'utf8').split('\n')
   const starts = []

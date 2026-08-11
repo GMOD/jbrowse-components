@@ -151,9 +151,12 @@ function makeView(name: ScenarioName) {
   return { state, view, session: state.session, trackId: track.trackId }
 }
 
+type BrowserView = ReturnType<typeof makeView>['view']
+type BrowserSession = ReturnType<typeof makeView>['session']
+
+// The whole engine, passed around as one thing on this page because it is the
+// page that discards one. Every other page only ever needs the two above.
 type Engine = ReturnType<typeof makeView>
-type BrowserView = Engine['view']
-type BrowserSession = Engine['session']
 
 const TrackRow = observer(function TrackRow({
   view,
@@ -189,6 +192,15 @@ const TrackRow = observer(function TrackRow({
     </div>
   )
 })
+
+// The box `usePanZoom`'s handlers go on -- see the Pan and zoom page for what
+// each property is doing and which half of it the hook cannot do for you.
+const viewport: React.CSSProperties = {
+  position: 'relative',
+  overflow: 'hidden',
+  touchAction: 'none',
+  cursor: 'grab',
+}
 
 const statusBox: React.CSSProperties = {
   display: 'flex',
@@ -403,16 +415,7 @@ const Browser = observer(function Browser({ engine }: { engine: Engine }) {
           >
             Show a track that isn't in the config
           </button>
-          <div
-            ref={ref}
-            {...containerProps}
-            style={{
-              position: 'relative',
-              overflow: 'hidden',
-              touchAction: 'none',
-              cursor: 'grab',
-            }}
-          >
+          <div ref={ref} {...containerProps} style={viewport}>
             {view.ready ? (
               <TrackRow view={view} trackId={trackId} />
             ) : (

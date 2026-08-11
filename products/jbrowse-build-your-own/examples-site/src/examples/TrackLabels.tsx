@@ -304,6 +304,15 @@ function useSiteMode() {
 // displays read the palette for their own content colours. See the previous
 // two pages.
 
+// The box `usePanZoom`'s handlers go on -- see the Pan and zoom page for what
+// each property is doing and which half of it the hook cannot do for you.
+const viewport: React.CSSProperties = {
+  position: 'relative',
+  overflow: 'hidden',
+  touchAction: 'none',
+  cursor: 'grab',
+}
+
 const TrackLabels = observer(function TrackLabels() {
   const [{ view, session }] = useState(makeView)
   const ref = useWidthSetter(view)
@@ -325,16 +334,7 @@ const TrackLabels = observer(function TrackLabels() {
             ))}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div
-              ref={ref}
-              {...containerProps}
-              style={{
-                position: 'relative',
-                overflow: 'hidden',
-                touchAction: 'none',
-                cursor: 'grab',
-              }}
-            >
+            <div ref={ref} {...containerProps} style={viewport}>
               {view.ready ? (
                 trackIds.map(id => (
                   <div key={id}>

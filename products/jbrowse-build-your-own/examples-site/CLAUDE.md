@@ -42,6 +42,16 @@ Deliberately **not** a redundant-line budget. Adding a page adds copies, which
 is the rule working; introducing a new widely-shared block is the event worth
 interrupting. The line total is printed for the trend, and gates nothing.
 
+**It only sees named top-level declarations, so behaviour that repeats has to be
+given a name.** Repeated JSX written inline has nothing to group by and is
+invisible to both halves above — which is not hypothetical: the most-repeated
+thing on this site was the pan/zoom container div, its four style properties
+written out inline in 13 files, and the check had never looked at it. One of the
+four is `touchAction: 'none'`, whose absence costs nothing on a desktop and
+makes the demo inert on a phone, silently. It is `viewport` now, one `const` per
+file. When a styled div reaches a fifth example, name it there rather than
+reading a green run as coverage.
+
 Keep both lists short. If either starts growing, the shared surface has outgrown
 copy-paste and the answer is a different rule argued here, not more entries.
 
