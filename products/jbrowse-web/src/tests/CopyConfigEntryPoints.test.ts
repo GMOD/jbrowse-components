@@ -30,6 +30,7 @@ interface TestSession {
   tracks: AnyConfigurationModel[]
   setDisplayTypeDefault: (type: string, slot: string, value: unknown) => void
   getDisplayTypeDefault: (type: string, slot: string) => unknown
+  getEditableTrackConfig?: (trackId: string) => unknown
 }
 
 beforeEach(() => {
@@ -37,8 +38,8 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-function setup() {
-  const { pluginManager, rootModel } = getPluginManager()
+function setup(adminMode = true) {
+  const { pluginManager, rootModel } = getPluginManager(undefined, adminMode)
   const session = rootModel.session as unknown as TestSession
   return { pluginManager, session, view: session.views[0]! }
 }
@@ -122,10 +123,75 @@ test('hydration reuses the node the track itself later resolves', () => {
 
 test('an unbuildable config hydrates to undefined instead of throwing', () => {
   const { pluginManager } = setup()
+  // it logs the reason it gave up; that is the point, not suite noise
+  const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
   expect(
     hydrateTrackConfig(pluginManager, {
       trackId: 'x',
       type: 'NoSuchTrackType',
     }),
   ).toBeUndefined()
+  expect(spy).toHaveBeenCalled()
+  spy.mockRestore()
 })
+
+// The case above is the easy one: in admin mode with no edit, both entry points
+// bottom out in the same frozen-hydration cache, so agreeing costs nothing.
+// Non-admin with an edited track is where the two genuinely differ —
+// TrackConfigurationReference hands the in-view menu a private working copy
+// from `editableTrackConfigs` that in-place setSlot edits mutate (ADR-032),
+// while the selector gets `mergeTrackConfig(base, delta)`, a different object
+// built from `trackConfigDeltas`. They agree only because BaseTrackModel's
+// debounced reaction pushes every config mutation through
+// updateTrackConfiguration into that delta. Nothing pinned that, and "the
+// settings I applied come out in Copy config" rests on it.
+const EDITED = 'superCompact'
+
+function displayConfig(trackConfig: AnyConfigurationModel) {
+  return (trackConfig.displays as AnyConfigurationModel[]).find(
+    d => d.type === DISPLAY_TYPE,
+  )!
+}
+
+test('a non-admin quick-edit reaches Copy config from both menus', async () => {
+  const { pluginManager, session, view } = setup(false)
+  view.showTrack(TRACK_ID)
+  const inViewConf = view.tracks.find(
+    t => t.configuration.trackId === TRACK_ID,
+  )!.configuration
+  // the working copy, not the shared base — this is the ADR-032 path
+  expect(inViewConf).toBe(session.getEditableTrackConfig!(TRACK_ID))
+
+  // a track-menu quick-edit: setSlot straight onto the config schema
+  displayConfig(inViewConf).setSlot(SLOT, EDITED)
+  // BaseTrackModel's persist reaction is debounced 400ms
+  await new Promise(resolve => setTimeout(resolve, 600))
+
+  const selector = copiedConfig(pluginManager, session, fromSelector(session))
+  const inView = copiedConfig(pluginManager, session, inViewConf)
+
+  expect(displayEntry(inView.config)[SLOT]).toBe(EDITED)
+  expect(displayEntry(selector.config)[SLOT]).toBe(EDITED)
+  expect(selector.config).toEqual(inView.config)
+}, 10000)
+
+test("a non-admin edit isn't reported as inherited from a session default", async () => {
+  const { pluginManager, session, view } = setup(false)
+  session.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)
+  view.showTrack(TRACK_ID)
+  const inViewConf = view.tracks.find(
+    t => t.configuration.trackId === TRACK_ID,
+  )!.configuration
+  displayConfig(inViewConf).setSlot(SLOT, EDITED)
+  await new Promise(resolve => setTimeout(resolve, 600))
+
+  const { config, fromDisplayTypeDefaults } = copiedConfig(
+    pluginManager,
+    session,
+    fromSelector(session),
+  )
+  // the track states its own value, so the "includes N settings from your
+  // session-wide defaults" note must not claim this one
+  expect(displayEntry(config)[SLOT]).toBe(EDITED)
+  expect(fromDisplayTypeDefaults).not.toContain(`${DISPLAY_TYPE}.${SLOT}`)
+}, 10000)
