@@ -237,10 +237,18 @@ export default class SimpleFeature implements Feature {
   }
 
   // raw subfeatures arrive as either plain arg objects or already-inflated
-  // features; inflate the former into SimpleFeature instances, inheriting this
-  // feature's strand when a subfeature doesn't specify its own. The result is
+  // features; inflate the former into SimpleFeature instances. The result is
   // kept in a separate field so the caller's input data is never mutated
-  // (features are effectively immutable)
+  // (features are effectively immutable).
+  //
+  // The raw object is handed to the child as-is rather than copied. It used to
+  // be spread — `{...f, strand: f.strand ?? this.data.strand}` — which copied
+  // every attribute of every node in the subtree in order to set one field
+  // that is usually already set. On a GENCODE-shaped 1000-gene tree (26,870
+  // nodes, 18 keys each) that spread was 2.8 ms of the 3.8 ms this whole
+  // method cost. Strand inheritance now happens where it is read, in `get`,
+  // and is baked back into `toJSON` for the deserialized copy that has no
+  // parent to inherit from.
   private inflateSubfeatures(): Feature[] | undefined {
     const raw = this.data.subfeatures
     return Array.isArray(raw)
@@ -249,7 +257,7 @@ export default class SimpleFeature implements Feature {
             ? f
             : new SimpleFeature({
                 id: f.uniqueId ?? `${this.uniqueId}-${i}`,
-                data: { ...f, strand: f.strand ?? this.data.strand },
+                data: f,
                 parent: this,
               }),
         )
@@ -269,18 +277,34 @@ export default class SimpleFeature implements Feature {
   get(name: 'subfeatures'): Feature[] | undefined
   get(name: string): unknown
   public get(name: string): unknown {
-    return name === 'subfeatures'
-      ? this.subfeatures
-      : name === 'parent'
-        ? this.parent()
-        : this.data[name]
+    switch (name) {
+      case 'subfeatures': {
+        return this.subfeatures
+      }
+      case 'parent': {
+        return this.parent()
+      }
+      case 'strand': {
+        // a subfeature with no strand of its own inherits its parent's,
+        // resolved here rather than copied onto it at construction
+        return this.data.strand ?? this.parentHandle?.get('strand')
+      }
+      default: {
+        return this.data[name]
+      }
+    }
   }
 
   /**
    * Get an array listing which data keys are present in this feature.
    */
   public tags(): string[] {
-    return Object.keys(this.data)
+    const keys = Object.keys(this.data)
+    // an inherited strand is a readable field of this feature without being a
+    // key of its data, so name it here too
+    return 'strand' in this.data || this.get('strand') === undefined
+      ? keys
+      : [...keys, 'strand']
   }
 
   /**
@@ -309,6 +333,13 @@ export default class SimpleFeature implements Feature {
     const p = this.parent()
     if (p) {
       d.parentId = p.id()
+      // bake the inherited strand in: the serialized form is what crosses the
+      // RPC boundary, and what comes back the other side is reconstructed with
+      // no parent handle to inherit from
+      const strand = this.get('strand')
+      if (strand !== undefined) {
+        d.strand = strand
+      }
     }
     const c = this.children()
     if (c) {
