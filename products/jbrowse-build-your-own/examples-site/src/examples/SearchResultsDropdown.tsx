@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useState, useSyncExternalStore } from 'react'
 
 import {
   PaletteProvider,
@@ -363,6 +363,15 @@ const SearchPanel = observer(function SearchPanel({
   )
 })
 
+// The box `usePanZoom`'s handlers go on -- see the Pan and zoom page for what
+// each property is doing and which half of it the hook cannot do for you.
+const viewport: React.CSSProperties = {
+  position: 'relative',
+  overflow: 'hidden',
+  touchAction: 'none',
+  cursor: 'grab',
+}
+
 // A display paints no background of its own -- its labels are drawn straight
 // onto whatever is behind them, so light-theme text on a dark page is near-black
 // on near-black. This is the page's own answer to "which mode am I in".
@@ -376,12 +385,32 @@ function readSiteMode(): 'light' | 'dark' {
     : 'light'
 }
 
+// The two places that answer can change from. The site's toggle writes an
+// attribute on <html> and the OS preference arrives as a media query, and
+// either can move without the other, so both are watched.
+function watchSiteMode(onChange: () => void) {
+  const observer = new MutationObserver(onChange)
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['data-theme'],
+  })
+  const media = window.matchMedia('(prefers-color-scheme: dark)')
+  media.addEventListener('change', onChange)
+  return () => {
+    observer.disconnect()
+    media.removeEventListener('change', onChange)
+  }
+}
+
 /**
  * Follow whatever the page around this demo is themed as. All of this is the
- * *host's* half, and yours will look nothing like it -- the toggle writes an
- * attribute on <html>, the OS preference arrives as a media query, and either
- * can move without the other, so both are watched. Swap it for however your app
- * already knows it is in dark mode.
+ * *host's* half, and yours will look nothing like it -- swap it for however
+ * your app already knows it is in dark mode.
+ *
+ * `useSyncExternalStore`, not `useState` + `useEffect`: the mode lives outside
+ * React, so this reads it *during* render rather than publishing one value and
+ * correcting it a paint later. The third argument is the server snapshot, for
+ * a reader pasting this into a framework that prerenders.
  *
  * JBrowse's half is one call, `useSessionPalette` below. It writes the config
  * slot that *both* halves of the rendering derive from -- the palette React
@@ -390,24 +419,11 @@ function readSiteMode(): 'light' | 'dark' {
  * alone would leave those baked labels in the old mode.
  */
 function useSiteMode() {
-  const [mode, setMode] = useState(readSiteMode)
-  useEffect(() => {
-    const update = () => {
-      setMode(readSiteMode())
-    }
-    const observer = new MutationObserver(update)
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['data-theme'],
-    })
-    const media = window.matchMedia('(prefers-color-scheme: dark)')
-    media.addEventListener('change', update)
-    return () => {
-      observer.disconnect()
-      media.removeEventListener('change', update)
-    }
-  }, [])
-  return mode
+  return useSyncExternalStore(
+    watchSiteMode,
+    readSiteMode,
+    () => 'light' as const,
+  )
 }
 
 const SearchResultsDropdown = observer(function SearchResultsDropdown() {
@@ -422,16 +438,7 @@ const SearchResultsDropdown = observer(function SearchResultsDropdown() {
         <div style={{ paddingBottom: 8 }}>
           <SearchPanel view={view} session={session} />
         </div>
-        <div
-          ref={ref}
-          {...containerProps}
-          style={{
-            position: 'relative',
-            overflow: 'hidden',
-            touchAction: 'none',
-            cursor: 'grab',
-          }}
-        >
+        <div ref={ref} {...containerProps} style={viewport}>
           {view.ready ? (
             <TrackRow view={view} trackId="gff3tabix_genes" />
           ) : (
