@@ -1750,23 +1750,69 @@ export function normalizeMarkerWhitespace(s: string) {
   return s.replaceAll(/[ \t]+/g, ' ').replaceAll(/-+/g, '-')
 }
 
-// Rewrite the region between a single `<!-- MARKER START -->`/`<!-- MARKER END -->`
-// pair in every doc that contains it, returning the docs whose block content
-// changed (used by --check to flag stale generated blocks without rewriting). A
-// function replacer keeps any `$`-sequence in the rendered block literal. Shared
-// by the single-marker generators (jexl catalog, extension-point index); the
-// color tables use a per-group variant of the same idea.
+// The docs both marker sweeps walk. agent-docs is swept alongside the published
+// guides: the architecture spec restates several of the same tables the guides
+// do, and hand-mirroring one into the other is the drift these generators exist
+// to remove — the spec used to carry an explicit "then mirror it here"
+// instruction for exactly that. A file is only touched if it holds the marker
+// pair, so widening the sweep costs nothing to the docs that don't opt in.
 //
 // Each marker generator sweeps the whole tree for its own pair, so a run relists
-// and rereads website/docs eight times. Caching that measured 113ms for all eight
+// and rereads these eight times. Caching that measured 113ms for all eight
 // sweeps — not worth the module-level state, so don't.
+function markerDocs() {
+  return [...listDocs('website/docs'), ...listDocs('agent-docs')]
+}
+
+// Replace every `<!-- … START -->`/`<!-- … END -->` region in one doc, and fail
+// on a START with no matching END. A function replacer keeps any `$`-sequence in
+// the rendered block literal.
 //
-// agent-docs is swept alongside the published guides. The architecture spec
-// restates several of the same tables the guides do, and hand-mirroring one into
-// the other is the drift these generators exist to remove — the spec used to
-// carry an explicit "then mirror it here" instruction for exactly that. A file
-// is only touched if it holds the marker pair, so widening the sweep costs
-// nothing to the docs that don't opt in.
+// Both halves are load-bearing, and both used to fail the same silent way. A
+// non-global replace rewrote only the FIRST region, so a second block of the
+// same marker in one file kept the previous run's table forever — and passed
+// `--check`, since the text compared is identical whether or not the second
+// block was regenerated. An unterminated START is that failure with no region
+// written at all: the doc renders nothing between the markers, the generator
+// prints "up to date", and no gate disagrees. Both are authoring mistakes a
+// generator has to report, because nothing downstream can.
+export function replaceMarkerRegions({
+  text,
+  startMarker,
+  endMarker,
+  block,
+  file,
+}: {
+  text: string
+  startMarker: string
+  endMarker: string
+  block: string
+  file: string
+}) {
+  const region = new RegExp(
+    `${escapeRegExp(startMarker)}[\\s\\S]*?${escapeRegExp(endMarker)}`,
+    'g',
+  )
+  // A region is non-greedy, so `START … START … END` matches once and consumes
+  // both starts — which is what makes comparing the two counts catch it.
+  const starts = text.split(startMarker).length - 1
+  const regions = text.match(region)?.length ?? 0
+  if (starts !== regions) {
+    throw new Error(
+      `${file}: ${starts - regions} \`${startMarker}\` with no matching \`${endMarker}\`. The block between them is never generated, and the generator would report the doc as up to date.`,
+    )
+  }
+  return text.replace(
+    region,
+    () => `${startMarker}\n\n${block}\n\n${endMarker}`,
+  )
+}
+
+// Rewrite the region between every `<!-- MARKER START -->`/`<!-- MARKER END -->`
+// pair in every doc that contains it, returning the docs whose block content
+// changed (used by --check to flag stale generated blocks without rewriting).
+// Shared by the single-marker generators (jexl catalog, extension-point index);
+// the color tables use a per-group variant of the same idea.
 export function rewriteMarkerBlock(
   marker: string,
   block: string,
@@ -1774,13 +1820,17 @@ export function rewriteMarkerBlock(
 ): string[] {
   const startMarker = `<!-- ${marker} START -->`
   const endMarker = `<!-- ${marker} END -->`
-  const re = new RegExp(`${startMarker}[\\s\\S]*?${endMarker}`)
-  const full = `${startMarker}\n\n${block}\n\n${endMarker}`
   const stale: string[] = []
-  for (const file of [...listDocs('website/docs'), ...listDocs('agent-docs')]) {
+  for (const file of markerDocs()) {
     const original = fs.readFileSync(file, 'utf8')
     if (original.includes(startMarker)) {
-      const updated = original.replace(re, () => full)
+      const updated = replaceMarkerRegions({
+        text: original,
+        startMarker,
+        endMarker,
+        block,
+        file,
+      })
       if (check) {
         if (
           normalizeMarkerWhitespace(updated) !==
@@ -1805,6 +1855,13 @@ export function rewriteMarkerBlock(
 // Returns the docs whose block content changed (used by --check to flag stale
 // blocks without rewriting) and the groups some doc actually rendered, so a
 // caller can catch a tagged group that no page pulls in.
+//
+// Sweeps the same docs as `rewriteMarkerBlock`, agent-docs included. It used to
+// walk website/docs alone, which made a grouped block in agent-docs worse than
+// unsupported: the block silently kept whatever was committed, and — because
+// `seen` is what tells a caller a tagged group reached some page — the group it
+// rendered read as rendered by nothing, so `writeColorDocs`/`writeFileTypeDocs`
+// would abort the whole run over a group that was in fact in use.
 export function rewriteGroupedMarkerBlocks(
   marker: string,
   render: (group: string, file: string) => string,
@@ -1813,18 +1870,23 @@ export function rewriteGroupedMarkerBlocks(
   const markerRe = new RegExp(`<!-- ${marker} (\\S+) START -->`, 'g')
   const stale: string[] = []
   const seen = new Set<string>()
-  for (const file of listDocs('website/docs')) {
+  for (const file of markerDocs()) {
     const original = fs.readFileSync(file, 'utf8')
     let updated = original
-    for (const [, group] of original.matchAll(markerRe)) {
-      seen.add(group!)
-      const startMarker = `<!-- ${marker} ${group} START -->`
-      const endMarker = `<!-- ${marker} ${group} END -->`
-      const re = new RegExp(
-        `${escapeRegExp(startMarker)}[\\s\\S]*?${escapeRegExp(endMarker)}`,
-      )
-      const full = `${startMarker}\n\n${render(group!, file)}\n\n${endMarker}`
-      updated = updated.replace(re, () => full)
+    // A group repeated in one doc matches twice; rendering it twice is
+    // wasted work, not a wrong answer, and dropping the duplicate keeps the
+    // per-group replace from running over text it already rewrote.
+    for (const group of new Set(
+      [...original.matchAll(markerRe)].map(m => m[1]!),
+    )) {
+      seen.add(group)
+      updated = replaceMarkerRegions({
+        text: updated,
+        startMarker: `<!-- ${marker} ${group} START -->`,
+        endMarker: `<!-- ${marker} ${group} END -->`,
+        block: render(group, file),
+        file,
+      })
     }
     if (check) {
       if (

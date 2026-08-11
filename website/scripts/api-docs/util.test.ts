@@ -8,6 +8,7 @@ import {
   overviewSection,
   parseTaggedComment,
   removeComments,
+  replaceMarkerRegions,
   repoRelative,
   section,
   stripComposedBlock,
@@ -295,6 +296,58 @@ describe('filterUnseenByName', () => {
     const farther = filterUnseenByName(seen, [{ name: 'featureHeight' }])
     expect(closer.map(i => i.name)).toEqual(['featureHeight'])
     expect(farther).toEqual([])
+  })
+})
+
+describe('replaceMarkerRegions', () => {
+  const splice = (text: string, block = 'BODY') =>
+    replaceMarkerRegions({
+      text,
+      startMarker: '<!-- T START -->',
+      endMarker: '<!-- T END -->',
+      block,
+      file: 'doc.md',
+    })
+
+  test('rewrites the region between a pair', () => {
+    expect(splice('a\n<!-- T START -->\n\nold\n\n<!-- T END -->\nb')).toBe(
+      'a\n<!-- T START -->\n\nBODY\n\n<!-- T END -->\nb',
+    )
+  })
+
+  test('rewrites EVERY pair, not just the first', () => {
+    // A non-global replace left the second block on the previous run's content
+    // forever, and `--check` could not see it: the text it compares is the same
+    // whether or not that block was regenerated.
+    const doc = [
+      '<!-- T START -->\n\nBODY\n\n<!-- T END -->',
+      '<!-- T START -->\n\nstale\n\n<!-- T END -->',
+    ].join('\n\nprose\n\n')
+    expect(splice(doc)).not.toContain('stale')
+  })
+
+  test('leaves a doc with no marker alone', () => {
+    expect(splice('nothing to see')).toBe('nothing to see')
+  })
+
+  test('throws on a START with no matching END', () => {
+    // Silently a no-op before: the doc rendered nothing between the markers and
+    // the generator still reported it up to date.
+    expect(() => splice('<!-- T START -->\n\nold\n')).toThrow(
+      /no matching .*T END/,
+    )
+  })
+
+  test('throws on a second START before the END closes the first', () => {
+    expect(() =>
+      splice('<!-- T START -->\n<!-- T START -->\n<!-- T END -->'),
+    ).toThrow(/no matching/)
+  })
+
+  test('keeps a $-sequence in the rendered block literal', () => {
+    expect(splice('<!-- T START -->\n<!-- T END -->', "$' and $&")).toContain(
+      "$' and $&",
+    )
   })
 })
 
