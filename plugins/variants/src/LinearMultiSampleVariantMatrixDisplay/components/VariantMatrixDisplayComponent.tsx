@@ -18,27 +18,31 @@ import type { ReactNode } from 'react'
 // Both pointer-driven pieces below read the tracker themselves, so a mousemove
 // re-renders them alone rather than `DisplayChrome` and every overlay under it
 // — see `useMouseTracking`. They share one definition of "the cursor is in the
-// matrix rather than the line zone above it"; `lineZoneHeight` arrives as a
-// prop because these are plain components, and the observer above already
-// tracks it.
+// matrix rather than in the bands above it"; `rowsTopOffset` arrives as a prop
+// because these are plain components, and the observer above already tracks it.
+//
+// `rowsTopOffset` and not `lineZoneHeight`: the connector zone is the only band
+// this display currently stacks, so the two are equal here — but the offset the
+// rows actually begin at is the total, and reaching for one band's height as if
+// it were that total is what `shared/variantTopBands.ts` exists to stop.
 function useMatrixMouseState(
   mouseTracker: MouseTracker,
-  lineZoneHeight: number,
+  rowsTopOffset: number,
 ) {
   const mouseState = useMouseState(mouseTracker)
-  return mouseState && mouseState.y > lineZoneHeight ? mouseState : undefined
+  return mouseState && mouseState.y > rowsTopOffset ? mouseState : undefined
 }
 
 function MatrixConnectingLines({
   model,
   mouseTracker,
-  lineZoneHeight,
+  rowsTopOffset,
 }: {
   model: LinearMultiSampleVariantMatrixDisplayModel
   mouseTracker: MouseTracker
-  lineZoneHeight: number
+  rowsTopOffset: number
 }) {
-  const inMatrix = useMatrixMouseState(mouseTracker, lineZoneHeight)
+  const inMatrix = useMatrixMouseState(mouseTracker, rowsTopOffset)
   return (
     <LinesConnectingMatrixToGenomicPosition
       model={model}
@@ -50,17 +54,17 @@ function MatrixConnectingLines({
 function MatrixCrosshairLayer({
   model,
   mouseTracker,
-  lineZoneHeight,
+  rowsTopOffset,
 }: {
   model: LinearMultiSampleVariantMatrixDisplayModel
   mouseTracker: MouseTracker
-  lineZoneHeight: number
+  rowsTopOffset: number
 }) {
-  const inMatrix = useMatrixMouseState(mouseTracker, lineZoneHeight)
+  const inMatrix = useMatrixMouseState(mouseTracker, rowsTopOffset)
   return inMatrix ? <Crosshair mouseState={inMatrix} model={model} /> : null
 }
 
-// The matrix's own box, offset past the connector zone and clamped to the
+// The matrix's own box, offset past the bands above the rows and clamped to the
 // viewport's left edge.
 //
 // Its own observer purely so `offsetPx` is read HERE. It moves every frame of a
@@ -97,7 +101,7 @@ const VariantMatrixDisplayComponent = observer(
     model: LinearMultiSampleVariantMatrixDisplayModel
   }) {
     const { model } = props
-    const { lineZoneHeight, height } = model
+    const { rowsTopOffset, height } = model
     return (
       <DisplayChrome
         model={model}
@@ -110,21 +114,21 @@ const VariantMatrixDisplayComponent = observer(
             <MatrixConnectingLines
               model={model}
               mouseTracker={mouseTracker}
-              lineZoneHeight={lineZoneHeight}
+              rowsTopOffset={rowsTopOffset}
             />
-            <MatrixBodyOffset model={model} top={lineZoneHeight}>
+            <MatrixBodyOffset model={model} top={rowsTopOffset}>
               <VariantMatrixBody
                 model={model}
                 canvasRef={canvasRef}
                 canvas={canvas}
               />
             </MatrixBodyOffset>
-            <VariantOverlay model={model} top={lineZoneHeight} />
+            <VariantOverlay model={model} top={rowsTopOffset} />
             <TreeSidebar model={model} />
             <MatrixCrosshairLayer
               model={model}
               mouseTracker={mouseTracker}
-              lineZoneHeight={lineZoneHeight}
+              rowsTopOffset={rowsTopOffset}
             />
           </>
         )}
