@@ -414,29 +414,30 @@ const CLINVAR_TRACK = {
   height: 40,
 }
 
-// ONE axis, not four (review: "the multiwiggle just is not necessarily clear
-// what is going on and it's hard to tell the pattern"). The default multi-row
-// layout gives each subtype its own 0-100 panel, so "which group is highest" is
-// a comparison of four bar tops read across four vertical offsets, each against
-// its own copy of the same ruler -- and every earlier attempt tuned the wrong
-// dial: 200px (50 a row) read as four similar stripes and 400 just spread the
-// same four panels further apart. The track's whole claim is a comparison
-// BETWEEN the groups, and a comparison wants the groups on one ruler.
+// Four filled rows, at a quarter less height than they used to have. The round
+// before this one read the review ("the multiwiggle just is not necessarily
+// clear what is going on and it's hard to tell the pattern") as a complaint
+// about the four separate 0-100 panels, and overlaid the four onto one axis as
+// step lines. It was rejected on sight ("the multiline does not look good"), and
+// it deserved to be: over one interval per gene each source is a single flat
+// level, so an overlay is four horizontal strokes in an otherwise empty panel --
+// technically one ruler, visually a wireframe, and nothing about it looks like
+// the amount of something. A filled bar does.
 //
-// So overlay, and a step line rather than the overlay XY plot: this file is one
-// interval per gene, so at a gene-scale window each source is a single flat
-// level and four overlapping FILLED bars would simply paint over each other
-// smallest-last (or read as a stack, which would be a lie -- these are four
-// independent rates, not parts of a whole). Four unfilled step lines at four
-// heights on one axis is the honest picture of four levels, and it is a quarter
-// of the height the four panels took.
-const MUTATION_RECURRENCE_HEIGHT = 190
+// So the layout was never the half that was broken. What was is below: every row
+// came out the one default blue, which is what made four bars of quite different
+// heights read as four similar stripes and sent the previous rounds tuning the
+// height (200, then 400) instead. 260 is 65 a row, where the shortest bar is
+// still a bar and the tallest is four times it.
+const MUTATION_RECURRENCE_HEIGHT = 260
 
-// The four lines painted the same colors the matrix under them paints its
-// bands, so a line and the band it measures are the SAME color and the reader
-// never has to hold "third row from the top" in their head to cross between the
-// two readings -- which is the whole point of putting them in one frame. The
-// bare track had every row in the one default blue.
+// The four rows painted the same colors the matrix under them paints its bands,
+// so a bar and the band it measures are the SAME color and the reader never has
+// to hold "third row from the top" in their head to cross between the two
+// readings -- which is the whole point of putting them in one frame. The bare
+// track had every row in the one default blue. In a multi-row plot type a
+// source's `color` paints its positive bars (`rowColorMode` in sourcesLogic.ts),
+// which is exactly the channel wanted here.
 //
 // These are not free-chosen colors, they are the matrix's own, read off the
 // rendered legend. `colorBy: 'subtype'` palettizes through applyColorPalette,
@@ -452,7 +453,7 @@ const SUBTYPE_LAYOUT = [
   { name: 'unknown', color: '#76b7b2' },
 ]
 
-// The same tally the matrix draws as band darkness, on an axis: one line per
+// The same tally the matrix draws as band darkness, on an axis: one row per
 // receptor subtype, one interval per gene, in percent of that subtype's tumors.
 // scripts/mutation_recurrence.py --groups writes a column per group, and
 // BedGraphTabixAdapter reads every column past `end` as its own signal, so the
@@ -488,20 +489,9 @@ const TCGA_BRCA_MUTATION_RECURRENCE_TRACK = {
       height: MUTATION_RECURRENCE_HEIGHT,
       minScore: 0,
       maxScore: 100,
-      defaultRendering: 'multiline',
-      // a level, not a hairline. At the 1px default these read as four scratches
-      // on an empty panel at the size the page shows the figure at, and the two
-      // lines seven points apart (HER2+ and unknown) touch.
-      lineWidth: 3,
-      // rule the panel at the ticks, so a line's height is read against a guide
-      // beside it rather than by tracking 1400px back to the axis. Cheap here in
-      // a way it would not be over a real profile: the plot is four flat levels,
-      // so the hatches cross nothing they could be confused with.
-      displayCrossHatches: true,
-      // overlay collapses every source onto one plot, so the row labels that
-      // named the four rows are gone and the key is the only thing left that
-      // says which line is which subtype
-      showLegend: true,
+      // the default multirowxy, left implicit as it is on every other recurrence
+      // track on both TCGA pages
+      showRowSeparators: true,
     },
   ],
 }
