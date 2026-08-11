@@ -295,9 +295,10 @@ describe('readColorCategory', () => {
         ColorScheme.strand,
       ),
     ).toBe('fwdStrand')
-    // Turning the framing off keeps the segment's own strand. The assertion
-    // above omits the option and relies on it defaulting ON, so the two together
-    // pin the default rather than just one side of the flag.
+    // Turning the framing off falls through to the scheme, which under `strand`
+    // is the segment's own strand. The assertion above omits the option and
+    // relies on it defaulting ON, so the two together pin the default rather
+    // than just one side of the flag.
     expect(
       readColorCategory(
         0,
@@ -306,6 +307,46 @@ describe('readColorCategory', () => {
         { ...chainOpts, flipStrandLongReadChains: false },
       ),
     ).toBe('fwdStrand')
+  })
+
+  // The framing repaints the whole read, so it may only refine a fill that is
+  // already about the alignment's geometry. Over a scheme carrying a per-read
+  // datum it would answer a different question than the one the user asked.
+  test('the long-read framing yields to the data-carrying schemes', () => {
+    const supp = makeData({ chainHasSupp: 2, flags: 0, strand: 1, tagColor: 7 })
+    expect(readColorCategory(0, supp, ColorScheme.tag, chainOpts)).toBe('tag')
+    expect(
+      readColorCategory(0, supp, ColorScheme.mappingQuality, chainOpts),
+    ).toBe('mapq')
+    expect(
+      readColorCategory(0, supp, ColorScheme.modifications, chainOpts),
+    ).toBe('modFwd')
+    // the geometry schemes still frame — including the chain-mode default
+    expect(
+      readColorCategory(
+        0,
+        supp,
+        ColorScheme.insertSizeAndOrientation,
+        chainOpts,
+      ),
+    ).toBe('revStrand')
+    expect(readColorCategory(0, supp, ColorScheme.normal, chainOpts)).toBe(
+      'revStrand',
+    )
+  })
+
+  // Unticking it is the only escape hatch under a geometry scheme, and it used
+  // to leave the reads strand-coloured anyway.
+  test('unticking the framing restores the scheme, not the unframed strand', () => {
+    const supp = makeData({ chainHasSupp: 2, flags: 0, strand: 1 })
+    const off = { ...chainOpts, flipStrandLongReadChains: false }
+    expect(readColorCategory(0, supp, ColorScheme.normal, chainOpts)).toBe(
+      'revStrand',
+    )
+    expect(readColorCategory(0, supp, ColorScheme.normal, off)).toBe('plain')
+    expect(readColorCategory(0, supp, ColorScheme.pairOrientation, off)).toBe(
+      'nonSplit',
+    )
   })
 
   test('unmapped mate and inter-chromosomal apply to orientation schemes', () => {

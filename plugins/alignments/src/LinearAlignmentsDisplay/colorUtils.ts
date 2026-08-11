@@ -150,6 +150,25 @@ export const orientationSchemes = new Set(
     .map(s => ColorScheme[s.shaderScheme]),
 )
 
+// Schemes whose read fill is a per-read DATUM — a MAPQ ramp, a tag palette slot,
+// a modification hue — rather than the alignment's own geometry. They are
+// exactly the categories `categoryColor` resolves per read instead of through
+// `swatchPaletteKeys`, which is the same distinction seen from the painting end.
+//
+// The chain supplementary framing below repaints a whole read, so over one of
+// these it answers a different question than the one the user asked: picking
+// "Tag (HP)" in chain mode painted every long read whose chain has a
+// supplementary segment fwd/rev grey-red instead of its haplotype colour — on
+// exactly the split reads at an SV that the mode exists to show. The paired
+// split markers already state this rule as `splitsUnderOrientationScheme`; this
+// is the unpaired half of it, and everything left out (normal, strand, insert
+// size, orientation) is geometry that the framing refines rather than displaces.
+const dataFillSchemes = new Set([
+  ColorScheme.mappingQuality,
+  ColorScheme.tag,
+  ColorScheme.modifications,
+])
+
 // Category → the shader's RC_* index. Built from the generated constants, so
 // the GPU and this file cannot disagree on what an index means. Exhaustive by
 // type: adding a ReadColorCategory member without an index fails to compile.
@@ -262,13 +281,24 @@ export function readColorCategory(
   // flip. Paired supplementary chains otherwise keep their normal per-scheme
   // color (pair orientation, insert size, …): a flat override would hide the
   // discordant-pair signal, and the split is already shown by arcs/clip marks.
-  if (isChain && hasSupp && !isPaired) {
+  //
+  // Held off the data-carrying schemes (`dataFillSchemes`) so it refines the
+  // fill rather than replacing it, and off entirely when the user unticks
+  // `flipStrandLongReadChains` — its checkbox says "color supplementary
+  // alignments by primary strand", and unticking it used to keep colouring them
+  // by strand, just unframed, which under `strand` (the one scheme it was ever
+  // tested against) is indistinguishable from having no effect at all.
+  if (
+    isChain &&
+    hasSupp &&
+    !isPaired &&
+    flipStrandLongReadChains &&
+    !dataFillSchemes.has(colorScheme)
+  ) {
     // Only reachable with chainSupp 1 or 2 — buildChainMetadata writes the
     // split markers (3/4) for paired chains only.
     const primaryStrand = chainSupp > CHAIN_FILL_SUPP_PRIMARY_FWD ? -1 : 1
-    return strandCategory(
-      flipStrandLongReadChains ? strand * primaryStrand : strand,
-    )
+    return strandCategory(strand * primaryStrand)
   }
 
   // Paired split read whose supplementary segment maps opposite-strand to its
@@ -331,9 +361,10 @@ export function readColorCategory(
       return strandCategory(firstOfPairStrand(strand, flags))
 
     case ColorScheme.pairOrientation: {
-      // Only SPLIT alignments show strand coloring (via the chained-supplementary
-      // branch above). A read reaching here has no pair orientation and isn't a
-      // split segment, so it's a non-split read → grey.
+      // A split alignment normally shows strand coloring instead, via the
+      // chained-supplementary branch above; a read reaching here with no pair
+      // orientation is either a non-split read or a split one whose framing the
+      // user turned off, and grey is the right answer for both.
       return pairOrientationCategory(data.readPairOrientations[i]!)
     }
 
