@@ -9,6 +9,23 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // two panels of the same assembly, framed on the two haplotypes of a
 // chromosome. The demo config carries the Q100 project's own maternal-to-
 // paternal chain, so nothing here is aligned by us.
+//
+// WHAT IS ACTUALLY IN THAT CHAIN, measured rather than taken from the README,
+// which is written about the GRCh38 pair and not this file (its awk step keys
+// on stripping _MATERNAL/_PATERNAL off the TARGET name, which only produces a
+// reference-vs-haplotype pairing). The tutorial's "what this alignment cannot
+// show" rests on these, so they are worth not re-deriving:
+//
+//   zcat hg002v1.2_to_other_haplotype.chain.gz |
+//     awk '$1=="chain"{...}'   -> 6,830 chains, 0 cross-chromosome,
+//                                 3,415 with a MATERNAL target and 3,415 with
+//                                 a PATERNAL one (hence "carries both
+//                                 directions", which is what lets one track
+//                                 serve both panels)
+//     awk 'NF==3{...}'         -> 1,310,500 aligned blocks, largest gap 9,983
+//                                 bp on either side, against the README's
+//                                 10 kb split threshold. So the biggest indel
+//                                 in the file is the cut, not a measurement.
 const HG002_CONFIG = 'https://jbrowse.org/demos/hg002/config.json'
 
 // The 8p23.1 inversion, the largest inverted chain in that file by about five
