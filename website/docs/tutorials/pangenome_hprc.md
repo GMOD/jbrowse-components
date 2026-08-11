@@ -332,7 +332,7 @@ class II window drawn both ways:
 Both halves ring the same node, the 12 kb reference stretch the graph draws in
 green: near the top of the force drawing, out on the backbone row of the
 anchored one. On the left a right-click menu is open on the black allele beside
-it, and **Highlight in hg38** is what wrote the orange band above — over that
+it, and **Highlight in hg38** is what wrote the orange band above, over that
 ringed backbone segment rather than over the clicked node, because an
 off-reference allele is drawn across the reference it replaces and never over
 its own length.
@@ -700,8 +700,8 @@ The graph is 474 nodes against about 751,000 segments in the graph itself, laid
 out in 18 ms. The chain alternates strictly, 237 backbone nodes and 237 bubbles,
 because `gfatools bubble` reports top-level bubbles only and those never
 overlap, which is what makes one flat walk complete rather than lossy. The
-heterochromatin gap the caption names — 18.7 Mb of unknown sequence (N) in
-GRCh38 — costs it a single backbone node. The centromere itself is not blank:
+heterochromatin gap the caption names, a long run of unknown sequence (N) in
+GRCh38, costs it a single backbone node. The centromere itself is not blank:
 bubbles are called across it.
 
 This is the coarse end of a ladder, not a replacement: a tier node is a bubble,

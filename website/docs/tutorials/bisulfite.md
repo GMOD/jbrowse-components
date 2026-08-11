@@ -257,11 +257,11 @@ both regions, so the figure can be checked against this run's own numbers.
 
 The RepeatMasker lane is what names the element, and it is worth adding for
 that: the gene track alone shows a pseudogene there (`AT1G12935`), which is a
-different thing. RepeatMasker calls the block `META1_LTR#LTR/Copia` — a 5.1 kb
-LTR retrotransposon — and TAIR10's own transposable-element annotation calls the
-same interval `AT1TE14315`, family META1. It comes from UCSC's GenArk hub for
-TAIR10, whose sequence names are the RefSeq accessions this assembly already
-uses, so it loads with no aliasing.
+different thing. RepeatMasker calls the block `META1_LTR#LTR/Copia`, an LTR
+retrotransposon, and TAIR10's own transposable-element annotation calls the same
+interval `AT1TE14315`, family META1. It comes from UCSC's GenArk hub for TAIR10,
+whose sequence names are the RefSeq accessions this assembly already uses, so it
+loads with no aliasing.
 
 <Figure caption="TAIR10 genes, the RepeatMasker lane, the aggregate MethylDackel track (one 0-100% row per context), and three copies of the same WGBS pileup colored by CpG, CHG, and CHH. AT1G12930 on the left is red in CpG only, at both levels. The LTR/Copia element on the right is red in all three." src="/img/methylation/arabidopsis_wgbs_contexts.png" />
 

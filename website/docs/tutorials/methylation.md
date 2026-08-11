@@ -119,7 +119,7 @@ not.
 Loading the two per-haplotype bedMethyl files above the reads puts the summary
 and its source in the same view, on one x scale.
 
-<Figure caption="Imprinting at the SNRPN / Prader-Willi center: one haplotype methylated, the other not. Averaging the two would show half-methylation and hide it — the point of grouping reads by HP is that the summary profile on top and the individual reads below it are the same data, and you can check one against the other." src="/img/methylation/hg002_snrpn_combined.png" />
+<Figure caption="Imprinting at the SNRPN / Prader-Willi center: one haplotype methylated, the other not. Averaging the two would show half-methylation and hide it. Grouping reads by HP keeps the summary profile on top and the individual reads below it as the same data, so one can be checked against the other." src="/img/methylation/hg002_snrpn_combined.png" />
 
 Reading the figure top to bottom is the check worth making: the aggregate says
 one allele is methylated over the island and the other is not, and the reads

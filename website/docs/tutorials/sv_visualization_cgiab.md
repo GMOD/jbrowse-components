@@ -475,12 +475,12 @@ walkthroughs below visit all four in this genome.
 
 Nothing in the browser marks that distinction. The benchmark BED states copy
 number and haplotype; it makes no claim about consequence, and neither does the
-gene track. Driver status is a literature question, not a track — the somatic
-driver catalogues that would answer it as a lane (COSMIC's Cancer Gene Census
-among them) are licensed rather than redistributable, so a public demo cannot
-carry one. What the figures below do instead is name the gene: each copy-number
-figure draws one MANE Select transcript under the lanes, so the event and the
-gene it covers are read off the same axis.
+gene track. Driver status is a literature question rather than a track: the
+somatic driver catalogues that would answer it as a lane (COSMIC's Cancer Gene
+Census among them) are licensed rather than redistributable, so a public demo
+cannot carry one. What the figures below do instead is name the gene: each
+copy-number figure draws one MANE Select transcript under the lanes, so the
+event and the gene it covers are read off the same axis.
 
 ### Walkthrough: a small deletion in CUZD1
 
