@@ -5,7 +5,10 @@ import { computed } from 'mobx'
 
 import GlobalFetchMixin from './GlobalFetchMixin.ts'
 import { autorunOnReadyView } from './MultiRegionDisplayMixin.ts'
-import { assertDisplayContract } from './assertDisplayContract.ts'
+import {
+  assertDisplayContract,
+  makeRetryContractCheck,
+} from './assertDisplayContract.ts'
 import { foundationDisplayPhase } from './foundationDisplayPhase.ts'
 import { serializeRpcProps } from './rpcPropsCacheKey.ts'
 
@@ -107,6 +110,9 @@ export type GlobalDataDisplayMixinType = ReturnType<
 interface GlobalFetchAutorunHost extends IStateTreeNode {
   isMinimized: boolean
   reloadCounter: number
+  // `FetchMixin`'s, which `GlobalFetchMixin` composes. Read only by the dev-only
+  // retry check below, as the "deliberately not fetching" exemption.
+  loadingSuppressed: boolean
   rpcProps?: () => unknown
   // Both from `RegionTooLargeMixin`, which `GlobalFetchMixin` composes — so
   // every display reaching this helper has them, and one that opts into no byte
@@ -164,6 +170,10 @@ export function installGlobalFetchAutorun(
   // family's ONLY settings-invalidation path, and there is no
   // `makeSettingsLoopGuard` on this side to notice anything either.
   assertDisplayContract(self, 'installGlobalFetchAutorun')
+  // The other half of the same doctrine, and the one this family gets wrong:
+  // the trigger reads below guarantee `reload()` re-RUNS the autorun, not that
+  // the run reaches a fetch. See makeRetryContractCheck.
+  const noteFetchAutorunRun = makeRetryContractCheck(self)
 
   const debounce = leadingEdgeDebounce(opts.delay)
   // a computed, not a bare `rpcProps()` in the body: that tracks every
@@ -197,13 +207,16 @@ export function installGlobalFetchAutorun(
       // §"Measurement follows the viewport". A display with no byte gate reads
       // `regionTooLarge` as a literal false and never gets here.
       if (self.regionTooLarge && !self.gateMeasurementStale) {
+        noteFetchAutorunRun('gated')
         return
       }
 
       // The only gate here is the display's own. Each `fetch` re-checks
       // isMinimized / view.initialized / an empty viewport for its direct
       // callers, so repeating them would be duplication, not safety.
-      if (opts.shouldFetch()) {
+      const willFetch = opts.shouldFetch()
+      noteFetchAutorunRun(willFetch ? 'fetched' : 'declined')
+      if (willFetch) {
         opts.fetch()
         debounce.prime()
       }

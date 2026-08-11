@@ -37,6 +37,14 @@ per-family `getMembers` test.
 Only these two method-shaped hooks are exposed; a getter can't regress this way,
 which is why the byte gate's opt-in is the `measuresBytesPreFlight` getter.
 
+`makeRetryContractCheck` is the same idea for the retry contract, and lives in
+the same file: `installGlobalFetchAutorun` reports when a `reloadCounter` bump
+re-runs the autorun and the display's own gate still declines, which is the dead
+Retry button arc shipped. Exempt yourself with `loadingSuppressed` if the
+display is deliberately not fetching — don't reach for anything else, and don't
+silence `console.error` in a test harness, which is what kept every one of these
+checks inaudible until 2026-08.
+
 **A `fetchNeeded` that declines to fetch must be woken by something the autorun
 already tracks.** The coverage test short-circuits, so `isCacheValid`'s
 observables may register no dependency — an early return _without_ fetching

@@ -13,6 +13,10 @@ interface LDModel extends IStateTreeNode {
   regionTooLarge: boolean
   isMinimized: boolean
   reloadCounter: number
+  // The retry check's exemption, and this display is the reason it exists: with
+  // the triangle off `shouldFetch` is false forever, so a reload legitimately
+  // reaches no fetch. LD answers `!showLDTriangle` here, off the same slot.
+  loadingSuppressed: boolean
   rpcProps(): Record<string, unknown>
   performLDFetch(): void
   clearByteEstimate(): void

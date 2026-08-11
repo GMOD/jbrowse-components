@@ -1,4 +1,5 @@
 import { getMembers } from '@jbrowse/mobx-state-tree'
+import { untracked } from 'mobx'
 
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -83,5 +84,84 @@ export function assertDisplayContract(
           `callers keep a stale answer — silently. Move it to a .views() block.`,
       )
     }
+  }
+}
+
+/** What one run of a global display's fetch autorun did. */
+export type FetchAutorunOutcome =
+  /** the display's own gate opened and `fetch()` ran */
+  | 'fetched'
+  /** the gate stayed shut, so this run did nothing */
+  | 'declined'
+  /** the byte gate skipped the run before the display's gate was consulted */
+  | 'gated'
+
+interface RetryContractHost {
+  reloadCounter: number
+  loadingSuppressed: boolean
+}
+
+/**
+ * Dev-only check that a display's `reload()` can actually reach a fetch — the
+ * retry contract, which `DisplayErrorBar` depends on and which no type can
+ * state. No-op in production.
+ *
+ * **The button is the contract.** `DisplayErrorBar`'s only action is
+ * `model.reload()`, so every state that can raise the error bar has to be one
+ * `reload()` actually undoes; otherwise the button is present, looks live, and
+ * does nothing. It has failed three times, and the shape this catches is the one
+ * that recurs on its own: a `shouldFetch` gate that goes false the moment data
+ * lands. `GlobalFetchMixin.reload()` clears the error and bumps `reloadCounter`,
+ * `installGlobalFetchAutorun` reads that counter unconditionally so the autorun
+ * re-runs — and then the gate declines, because from its point of view nothing
+ * has changed. Arc shipped exactly that: `shouldFetch: () => !dataCurrent`, with
+ * the error clearing on click and no arcs ever coming back. Its `reload()`
+ * override drops `loadedRegionSignature` so `dataCurrent` goes false, which is
+ * the fix this message asks for.
+ *
+ * Detected at the moment it happens rather than statically, because the relation
+ * between `reload()` and `shouldFetch` is semantic: a run that follows a
+ * `reloadCounter` bump and declines to fetch IS the dead button.
+ *
+ * The one legitimate decline is a display deliberately not fetching at all — LD
+ * with the triangle off, whose `reload()` correctly does nothing because there
+ * is nothing to load. That is already a named state: `loadingSuppressed`, which
+ * the loading scrim reads for the same reason, so the exemption is not a second
+ * thing to remember. A display that suppresses the scrim and still wants the
+ * retry checked has the two questions genuinely apart and should say so here.
+ *
+ * **Everything it reads is `untracked`.** It runs inside the fetch autorun, so a
+ * tracked read of `loadingSuppressed` would put that observable in the autorun's
+ * dependency set in dev and not in production — a display whose fetch re-fires
+ * only in development, which is worse than the bug being checked for.
+ */
+export function makeRetryContractCheck(
+  self: IAnyStateTreeNode & RetryContractHost,
+) {
+  if (process.env.NODE_ENV === 'production') {
+    return () => {}
+  }
+  let lastCounter = untracked(() => self.reloadCounter)
+  return function noteFetchAutorunRun(outcome: FetchAutorunOutcome) {
+    untracked(() => {
+      const retried = self.reloadCounter !== lastCounter
+      // Consumed on every outcome, `gated` included: a run the byte gate
+      // skipped answers the retry legitimately (that banner offers Force load,
+      // not Retry), and leaving the bump unconsumed would report against
+      // whichever unrelated run cleared the gate later.
+      lastCounter = self.reloadCounter
+      if (retried && outcome === 'declined' && !self.loadingSuppressed) {
+        report(
+          `${getMembers(self).name}: reload() bumped reloadCounter but the ` +
+            `fetch autorun's shouldFetch() is still false, so Retry is a dead ` +
+            `button — it clears the error and nothing refetches. reload() has ` +
+            `to invalidate whatever shouldFetch gates on, not just bump the ` +
+            `counter (ArcFetchModel.reload drops loadedRegionSignature so its ` +
+            `dataCurrent goes false). If this display is deliberately not ` +
+            `fetching, say so with loadingSuppressed — the loading scrim reads ` +
+            `it too. See DISPLAYCHROME.md, "The retry contract".`,
+        )
+      }
+    })
   }
 }

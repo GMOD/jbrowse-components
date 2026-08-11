@@ -310,6 +310,31 @@ button is present, looks live, and does nothing. Two shapes have failed it:
 The check when adding a display: raise each error it can produce, press retry,
 and confirm the display can actually leave that state. Cancel is one of them.
 
+**The first of those three shapes now reports itself.** `makeRetryContractCheck`
+(`assertDisplayContract.ts`) runs inside `installGlobalFetchAutorun`, so every
+global display gets it with no per-display test: a run that follows a
+`reloadCounter` bump and declines to fetch *is* the dead button, and it says so
+through the same `console.error` channel as the rest of the contract checks,
+naming the fix. Dev-only, and everything it reads is `untracked` — a tracked
+read there would put an observable in the fetch autorun's dependency set in
+development and not in production. The one legitimate decline, a display
+deliberately not fetching at all (LD with the triangle off), exempts itself with
+`loadingSuppressed`, the flag the loading scrim already reads.
+
+It catches the shape that recurs on its own — a `shouldFetch` that goes false the
+moment data lands. The other two are still manual: **work `reload()` never
+re-runs** (HiC's header read) can't be seen from here, because the autorun does
+reach a fetch; and **a display rendering its own banner** (dotplot, synteny) is
+off this path entirely.
+
+Reports are only useful if something can hear them, and until 2026-08 nothing
+could: nine `testEnv.ts` harnesses set `console.error = jest.fn()` as copied
+boilerplate, which muted every contract check in exactly the suites that build
+real displays. Removed — it was hiding nothing (the seven display plugins run
+3344 tests with no `console.error` at all). Don't reinstate a blanket silencer;
+capture and assert on the channel instead, the way
+`assertDisplayContract.test.ts` and `installGlobalFetchAutorun.test.ts` do.
+
 **The non-LGV views owe the same contract by hand, and were not paying it.**
 They render their own banner, and `ErrorBanner`'s `onReset` is optional and
 silently draws no button without it — so until 2026-08 a dotplot GPU error, a
