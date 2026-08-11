@@ -271,6 +271,13 @@ sibling across the whole column on four pages, which reproduces exactly the
 burial the portal exists to prevent. It is invisible today only because no page
 there sets a `colorBy` that raises a legend.
 
+**Paint order is the whole of it, and only because the gesture half was fixed
+separately.** The overlay node also carries `data-gesture-owner`, so chrome in
+that layer does not pan the view when dragged — but `FloatingLegend` and
+`HicOverlayPanel` each declare their own marker for the `fallbackInline` path
+(29377a37a5), so a host with no node still gets the gesture behaviour. Don't
+re-derive that as a second symptom; it is covered.
+
 `TrackOverlayContext` is exported, so nothing is technically missing — what is
 missing is that no host could know to use it, and there is no shape to copy.
 The two halves:
