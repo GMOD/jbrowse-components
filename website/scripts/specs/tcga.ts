@@ -414,23 +414,55 @@ const CLINVAR_TRACK = {
   height: 40,
 }
 
-// Four rows share this. 200px (50 a row) was built first and the four bars read
-// as four similar stripes: they were proportional, but at 50px a row the
-// difference between 19% and 80% of the axis is 8px against 34px, and the
-// neighbouring rows' bars nearly touch. 400 is what makes the comparison the
-// figure exists for legible at a glance.
-const MUTATION_RECURRENCE_HEIGHT = 400
+// ONE axis, not four (review: "the multiwiggle just is not necessarily clear
+// what is going on and it's hard to tell the pattern"). The default multi-row
+// layout gives each subtype its own 0-100 panel, so "which group is highest" is
+// a comparison of four bar tops read across four vertical offsets, each against
+// its own copy of the same ruler -- and every earlier attempt tuned the wrong
+// dial: 200px (50 a row) read as four similar stripes and 400 just spread the
+// same four panels further apart. The track's whole claim is a comparison
+// BETWEEN the groups, and a comparison wants the groups on one ruler.
+//
+// So overlay, and a step line rather than the overlay XY plot: this file is one
+// interval per gene, so at a gene-scale window each source is a single flat
+// level and four overlapping FILLED bars would simply paint over each other
+// smallest-last (or read as a stack, which would be a lie -- these are four
+// independent rates, not parts of a whole). Four unfilled step lines at four
+// heights on one axis is the honest picture of four levels, and it is a quarter
+// of the height the four panels took.
+const MUTATION_RECURRENCE_HEIGHT = 190
 
-// The same tally the matrix draws as band darkness, on an axis: one row per
+// The four lines painted the same colors the matrix under them paints its
+// bands, so a line and the band it measures are the SAME color and the reader
+// never has to hold "third row from the top" in their head to cross between the
+// two readings -- which is the whole point of putting them in one frame. The
+// bare track had every row in the one default blue.
+//
+// These are not free-chosen colors, they are the matrix's own, read off the
+// rendered legend. `colorBy: 'subtype'` palettizes through applyColorPalette,
+// which hands PALETTE (tableau10 first) out in DESCENDING order of group size,
+// and the four subtypes rank HR+/HER2- > HER2+ > triple-negative > unknown --
+// hence tableau10[0..3] in that order. Nothing enforces the match: if that
+// palette or the group sizes change, these stop agreeing with the bands and
+// have to be re-read off the legend.
+const SUBTYPE_LAYOUT = [
+  { name: 'HR+/HER2-', color: '#4e79a7' },
+  { name: 'HER2+', color: '#f28e2c' },
+  { name: 'triple-negative', color: '#e15759' },
+  { name: 'unknown', color: '#76b7b2' },
+]
+
+// The same tally the matrix draws as band darkness, on an axis: one line per
 // receptor subtype, one interval per gene, in percent of that subtype's tumors.
 // scripts/mutation_recurrence.py --groups writes a column per group, and
 // BedGraphTabixAdapter reads every column past `end` as its own signal, so the
-// four rows come out of one 126KB file with no subadapter list -- the same
-// shape the copy-number recurrence uses.
+// four sources come out of one 126KB file with no subadapter list -- the same
+// shape the copy-number recurrence uses. Their names are that file's header
+// columns verbatim, which is what SUBTYPE_LAYOUT keys off.
 //
 // 0-100 rather than autoscaled, for the reason the copy-number rows are pinned:
-// per-row autoscale fits each subtype to its own maximum and makes the four
-// look alike, which is the one thing this track exists to disprove.
+// autoscale fits the plot to its own maximum, and a rate read against a ruler
+// that moves is the one thing this track exists to disprove.
 const TCGA_BRCA_MUTATION_RECURRENCE_TRACK = {
   type: 'MultiQuantitativeTrack',
   trackId: 'tcga_brca_mutation_recurrence_by_subtype',
@@ -456,7 +488,20 @@ const TCGA_BRCA_MUTATION_RECURRENCE_TRACK = {
       height: MUTATION_RECURRENCE_HEIGHT,
       minScore: 0,
       maxScore: 100,
-      showRowSeparators: true,
+      defaultRendering: 'multiline',
+      // a level, not a hairline. At the 1px default these read as four scratches
+      // on an empty panel at the size the page shows the figure at, and the two
+      // lines seven points apart (HER2+ and unknown) touch.
+      lineWidth: 3,
+      // rule the panel at the ticks, so a line's height is read against a guide
+      // beside it rather than by tracking 1400px back to the axis. Cheap here in
+      // a way it would not be over a real profile: the plot is four flat levels,
+      // so the hatches cross nothing they could be confused with.
+      displayCrossHatches: true,
+      // overlay collapses every source onto one plot, so the row labels that
+      // named the four rows are gone and the key is the only thing left that
+      // says which line is which subtype
+      showLegend: true,
     },
   ],
 }
@@ -499,6 +544,11 @@ function mutationFigure({
                   trackId: 'tcga_brca_mutation_recurrence_by_subtype',
                   type: 'MultiLinearWiggleDisplay',
                   height: MUTATION_RECURRENCE_HEIGHT,
+                  // a model prop, not a config slot: `layout` is where a
+                  // per-source color lives (reconcileLayout merges it onto the
+                  // adapter's source of the same name), so it rides the display
+                  // snapshot rather than the track config above
+                  layout: SUBTYPE_LAYOUT,
                 },
               ]
             : []),
