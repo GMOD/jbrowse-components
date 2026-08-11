@@ -1,5 +1,3 @@
-import { notEmpty } from '@jbrowse/core/util'
-
 import { applyRowFilters, useGenomesData } from './useGenomesData.ts'
 import { useGlobalSearch } from './useGlobalSearch.ts'
 
@@ -90,11 +88,14 @@ export function useResultSet({
       }
     : {
         rows: data,
-        // against the whole group, not the rows the current filters leave
+        // Against the whole group, not the rows the current filters leave. Walks
+        // the rows rather than the selection so this is one pass instead of one
+        // scan per selected accession, and so it yields them in the group's own
+        // order — which is what entriesForAccessions does on the other branch,
+        // and the two disagreeing on the order a multi-launch merges in was not
+        // a distinction anything wanted.
         resolveSelection: accessions =>
-          [...accessions]
-            .map(acc => allData.find(row => row.accession === acc))
-            .filter(notEmpty),
+          allData.filter(row => accessions.has(row.accession)),
         // an unresolved url is the pre-fetch state, not an idle one
         isLoading: categoriesLoading || genomesLoading || !url,
         error,

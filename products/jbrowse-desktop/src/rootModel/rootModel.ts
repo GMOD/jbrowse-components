@@ -258,7 +258,6 @@ export default function rootModelFactory({
                         session.queueDialog(doneCallback => [
                           OpenSequenceDialog,
                           {
-                            model: self,
                             onClose: (confs?: AnyConfigurationModel[]) => {
                               try {
                                 if (confs) {

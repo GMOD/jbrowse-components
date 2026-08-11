@@ -74,6 +74,25 @@ function websiteUrl(accession: string, isUcsc: boolean) {
     : `https://genomes.jbrowse.org/accession/${accession}/`
 }
 
+// NCBI's verdict on the assembly, shown beside the name. Only GenArk/NCBI rows
+// carry these fields, so the UCSC main genomes render nothing here.
+function NcbiBadges({ row }: { row: Entry }) {
+  return (
+    <>
+      {row.ncbiRefSeqCategory === 'reference genome' ? (
+        <Tooltip title="NCBI designated reference">
+          <Check style={{ color: green[600] }} />
+        </Tooltip>
+      ) : null}
+      {row.suppressed ? (
+        <Tooltip title="NCBI RefSeq suppressed">
+          <Close style={{ color: red[600] }} />
+        </Tooltip>
+      ) : null}
+    </>
+  )
+}
+
 export function getColumnDefinitions({
   typeOption,
   favs,
@@ -117,42 +136,61 @@ export function getColumnDefinitions({
     value: r => r.taxonId?.toString(),
   }
 
+  // The column that names a row is also the one that launches it, and it is the
+  // same cell in all three shapes below. Only three things vary: which field
+  // names the row, whether the NCBI badges apply, and which half of
+  // genomes.jbrowse.org "More info" points at — and `isUcsc` is per-row rather
+  // than per-table because cross-group hits come from both halves at once.
+  const nameColumn = ({
+    id,
+    header,
+    value,
+    isUcsc,
+    badges = false,
+  }: {
+    id: string
+    header: string
+    value: (row: Entry) => string | undefined
+    isUcsc: (row: Entry) => boolean
+    badges?: boolean
+  }): GenomeColumn => ({
+    id,
+    header,
+    value,
+    cell: row => (
+      <GenomeNameCell
+        displayName={value(row)}
+        jbrowseConfig={row.jbrowseConfig}
+        jbrowseMinimalConfig={row.jbrowseMinimalConfig}
+        websiteUrl={websiteUrl(row.accession, isUcsc(row))}
+        isFavorite={favs.has(row.accession)}
+        launch={launch}
+        onClose={onClose}
+        toggleFavorite={() => {
+          toggleFavorite(row)
+        }}
+      >
+        {badges ? <NcbiBadges row={row} /> : null}
+      </GenomeNameCell>
+    ),
+  })
+
+  const commonNameColumn = (isUcsc: (row: Entry) => boolean) =>
+    nameColumn({
+      id: 'commonName',
+      header: 'Common name',
+      value: r => r.commonName,
+      isUcsc,
+      badges: true,
+    })
+
   // Cross-group results: rows arrive from the search index with only the fields
   // it carries, so the columns are the intersection of both shapes plus the
   // group each hit came from.
   if (groupTitles) {
     const baseColumns: GenomeColumn[] = [
       favoriteColumn,
-      {
-        id: 'commonName',
-        header: 'Common name',
-        value: r => r.commonName,
-        cell: row => (
-          <GenomeNameCell
-            displayName={row.commonName}
-            jbrowseConfig={row.jbrowseConfig}
-            jbrowseMinimalConfig={row.jbrowseMinimalConfig}
-            websiteUrl={websiteUrl(row.accession, row.source === 'ucsc')}
-            isFavorite={favs.has(row.accession)}
-            launch={launch}
-            onClose={onClose}
-            toggleFavorite={() => {
-              toggleFavorite(row)
-            }}
-          >
-            {row.ncbiRefSeqCategory === 'reference genome' ? (
-              <Tooltip title="NCBI designated reference">
-                <Check style={{ color: green[600] }} />
-              </Tooltip>
-            ) : null}
-            {row.suppressed ? (
-              <Tooltip title="NCBI RefSeq suppressed">
-                <Close style={{ color: red[600] }} />
-              </Tooltip>
-            ) : null}
-          </GenomeNameCell>
-        ),
-      },
+      commonNameColumn(row => row.source === 'ucsc'),
       {
         id: 'source',
         header: 'Group',
@@ -184,25 +222,12 @@ export function getColumnDefinitions({
   } else if (typeOption === 'ucsc') {
     const baseColumns: GenomeColumn[] = [
       favoriteColumn,
-      {
+      nameColumn({
         id: 'name',
         header: 'Name',
         value: r => r.name,
-        cell: row => (
-          <GenomeNameCell
-            displayName={row.name}
-            jbrowseConfig={row.jbrowseConfig}
-            jbrowseMinimalConfig={row.jbrowseMinimalConfig}
-            websiteUrl={websiteUrl(row.accession, true)}
-            isFavorite={favs.has(row.accession)}
-            launch={launch}
-            onClose={onClose}
-            toggleFavorite={() => {
-              toggleFavorite(row)
-            }}
-          />
-        ),
-      },
+        isUcsc: () => true,
+      }),
       {
         id: 'scientificName',
         header: 'Scientific name',
@@ -221,36 +246,7 @@ export function getColumnDefinitions({
   } else {
     const baseColumns: GenomeColumn[] = [
       favoriteColumn,
-      {
-        id: 'commonName',
-        header: 'Common name',
-        value: r => r.commonName,
-        cell: row => (
-          <GenomeNameCell
-            displayName={row.commonName}
-            jbrowseConfig={row.jbrowseConfig}
-            jbrowseMinimalConfig={row.jbrowseMinimalConfig}
-            websiteUrl={websiteUrl(row.accession, false)}
-            isFavorite={favs.has(row.accession)}
-            launch={launch}
-            onClose={onClose}
-            toggleFavorite={() => {
-              toggleFavorite(row)
-            }}
-          >
-            {row.ncbiRefSeqCategory === 'reference genome' ? (
-              <Tooltip title="NCBI designated reference">
-                <Check style={{ color: green[600] }} />
-              </Tooltip>
-            ) : null}
-            {row.suppressed ? (
-              <Tooltip title="NCBI RefSeq suppressed">
-                <Close style={{ color: red[600] }} />
-              </Tooltip>
-            ) : null}
-          </GenomeNameCell>
-        ),
-      },
+      commonNameColumn(() => false),
       {
         id: 'assemblyStatus',
         header: 'Assembly status',
