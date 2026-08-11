@@ -83,18 +83,38 @@ test('a FASTA that cannot be indexed leaves no partial .fai behind', async () =>
 })
 
 // The index name is built from the FASTA's own basename, which is whatever the
-// user picked in the file dialog or typed as a url. getFaiPath percent-encodes
-// it, so a name carrying spaces, a separator or `..` still resolves to one file
-// directly inside faiDir rather than somewhere up the tree.
-test.each(['my genome (v2)', 'a/b', '../escape'])(
-  'getFaiPath keeps the name %p inside faiDir',
-  name => {
-    const faiPath = getFaiPath(paths, name)
+// user picked in the file dialog or typed as a url. getFaiPath reduces it to
+// ASCII word characters, so a name carrying spaces, a separator or `..` still
+// resolves to one file directly inside faiDir rather than somewhere up the tree.
+test.each([
+  'my genome (v2)',
+  'a/b',
+  '../escape',
+  String.raw`c:\windows\style`,
+  'star*and?marks',
+  'ヒトゲノム参照配列',
+])('getFaiPath keeps the name %p inside faiDir', name => {
+  const faiPath = getFaiPath(paths, name)
 
-    expect(path.dirname(faiPath)).toEqual(paths.faiDir)
-    expect(path.resolve(faiPath)).toEqual(faiPath)
-  },
-)
+  expect(path.dirname(faiPath)).toEqual(paths.faiDir)
+  expect(path.resolve(faiPath)).toEqual(faiPath)
+  // every character Windows rejects in a filename
+  expect(path.basename(faiPath)).not.toMatch(/[<>:"/\\|?*]/)
+})
+
+// The name arrives as `<basename>-<Date.now()>`, so its length is the user's to
+// choose. Percent-encoding was what bounded it before, and it does the opposite
+// for anything non-ASCII: nine characters out per character in, which is
+// ENAMETOOLONG at ~28 characters of Japanese and well inside what a real file is
+// called. Nothing reads this name back, so it is truncated and disambiguated by
+// a hash of the whole thing rather than kept reversible.
+test('getFaiPath bounds the name and still separates two long ones', () => {
+  const a = getFaiPath(paths, `${'ゲノム'.repeat(40)}-1`)
+  const b = getFaiPath(paths, `${'ゲノム'.repeat(40)}-2`)
+
+  expect(path.basename(a).length).toBeLessThanOrEqual(255)
+  expect(a).not.toEqual(b)
+})
 
 test('a FASTA whose name needs escaping still indexes', async () => {
   const odd = path.join(dir, 'my genome (v2).fa')

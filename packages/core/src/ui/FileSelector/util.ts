@@ -56,9 +56,30 @@ export function getInitialSourceType(location?: FileLocation) {
   return !location || isUriLocation(location) ? 'url' : 'file'
 }
 
+/**
+ * The directory containing `filePath`, for remembering where the user last
+ * picked a file. Undefined when there is no directory to remember.
+ *
+ * String surgery rather than `node:path` because this is renderer code that
+ * also builds for the web, and it has to read a Windows path from Electron
+ * either way. Which means keeping the separator: `idx` is the index of the last
+ * one, so slicing *before* it drops it, and `C:\reads.bam` — a file at the root
+ * of a data drive, which is where an external disk mounts — yielded `"C:"`.
+ * That is not the root; to Windows a drive letter with no separator means the
+ * current directory on that drive, so the dialog reopened wherever the process
+ * happened to be. Keep the separator when dropping it would leave a bare root
+ * (`C:\`, and `/` on POSIX).
+ */
 export function dirFromPath(filePath: string) {
   const idx = Math.max(filePath.lastIndexOf('/'), filePath.lastIndexOf('\\'))
-  return idx > 0 ? filePath.slice(0, idx) : undefined
+  if (idx === -1) {
+    return undefined
+  }
+  const dir = filePath.slice(0, idx)
+  // `C:` (drive-relative) or `` (posix root) — both need the separator back
+  return /^[a-zA-Z]:$/.test(dir) || dir === ''
+    ? filePath.slice(0, idx + 1)
+    : dir
 }
 
 export function addAccountToLocation(

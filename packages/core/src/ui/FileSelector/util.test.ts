@@ -170,8 +170,16 @@ describe('dirFromPath', () => {
     expect(dirFromPath('file.bam')).toBeUndefined()
   })
 
-  test('file at root returns undefined', () => {
-    expect(dirFromPath('/file.bam')).toBeUndefined()
+  // A root is the one directory whose separator is part of its name. Dropping
+  // it leaves `C:`, which Windows reads as "the current directory on drive C"
+  // rather than the root — and a data drive is exactly where a file sits at the
+  // root of its volume.
+  test('file at a windows drive root keeps the separator', () => {
+    expect(dirFromPath(String.raw`C:\reads.bam`)).toBe('C:\\')
+  })
+
+  test('file at posix root keeps the separator', () => {
+    expect(dirFromPath('/file.bam')).toBe('/')
   })
 })
 

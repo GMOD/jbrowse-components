@@ -52,8 +52,37 @@ export function isSessionFile(paths: AppPaths, filePath: string) {
   return filePath.endsWith(SESSION_EXTENSION) || isAutosave(paths, filePath)
 }
 
+/**
+ * Whether `filePath` names a file inside `autosaveDir`.
+ *
+ * Asked through path.relative rather than as a string prefix, because a string
+ * prefix answers a different question in two ways. It has no separator
+ * boundary, so a sibling directory that merely starts with the same characters
+ * (`autosaved-backup/`) matches. And it is case-sensitive against a filesystem
+ * that is not: on Windows nothing canonicalizes the case of a drive letter, so
+ * `c:\...\autosaved\1.json` handed to argv by a cmd prompt is the same file as
+ * the `C:\...` one `newAutosavePath` produced and does not match it.
+ *
+ * The second one is the expensive one. An autosave that reads as *not* an
+ * autosave is also not a session file, so `loadSession` mints a fresh autosave
+ * path for it — and the session silently forks to a new file instead of writing
+ * back to the one the user opened.
+ */
 export function isAutosave(paths: AppPaths, filePath: string) {
-  return filePath.startsWith(paths.autosaveDir)
+  const win32 = process.platform === 'win32'
+  // the same flavor for both calls: a win32 `rel` of `D:\other\1.json` (the two
+  // are on different drives) is absolute only to path.win32
+  const p = win32 ? path.win32 : path.posix
+  const fold = (s: string) => (win32 ? s.toLowerCase() : s)
+  const rel = p.relative(fold(paths.autosaveDir), fold(filePath))
+  // inside it, and not the directory itself. `..${sep}` rather than `..`, so a
+  // subdirectory whose name merely begins with dots still counts as inside
+  return (
+    rel !== '' &&
+    rel !== '..' &&
+    !rel.startsWith(`..${p.sep}`) &&
+    !p.isAbsolute(rel)
+  )
 }
 
 // Session files are named for the moment they were created. The counter only
@@ -100,8 +129,32 @@ export function getLegacyThumbnailPath(paths: AppPaths, sessionPath: string) {
   )
 }
 
+// Longest readable prefix kept in a .fai name. faiDir itself is already ~60
+// characters on Windows (`C:\Users\<user>\AppData\Roaming\JBrowse 2\fai\`), and
+// this leaves the whole name far inside both the 255-char per-component limit
+// and MAX_PATH.
+const FAI_LABEL_MAX = 60
+
+/**
+ * Where the .fai generated for `name` is written. Unlike a quickstart, nothing
+ * ever reads this name back — `indexFasta` returns the path and the assembly
+ * config carries it as a localPath — so it only has to be unique, bounded, and
+ * recognizable to someone looking at the directory or at track settings.
+ *
+ * The bound is the point. This was `encodeURIComponent(name).fai`, which is not
+ * a filename encoder: it expands a non-ASCII character to nine characters, so a
+ * FASTA named in Japanese or Chinese hit ENAMETOOLONG at about 28 characters of
+ * basename — and it leaves `*` unescaped, which Windows rejects outright. A
+ * truncated label plus a hash of the full name gives up nothing that was being
+ * used, and cannot collide two files onto one index.
+ */
 export function getFaiPath(paths: AppPaths, name: string) {
-  return path.join(paths.faiDir, `${encodeURIComponent(name)}.fai`)
+  const hash = createHash('sha256').update(name).digest('hex').slice(0, 16)
+  // ASCII word characters only: everything Windows forbids, everything the
+  // shell quotes, and every multi-byte character (the length blowup above) is
+  // out by construction rather than by a list of exceptions to keep current.
+  const label = name.replaceAll(/[^\w.-]+/g, '_').slice(0, FAI_LABEL_MAX)
+  return path.join(paths.faiDir, `${label}-${hash}.fai`)
 }
 
 export function stringify(obj: unknown) {
