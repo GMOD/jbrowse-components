@@ -22,6 +22,15 @@
 # without its regeneration: stale gallery links, an unpushed tutorial thumb, a
 # jbrowse-img README whose CLI options had moved, three captions over the
 # ratchet. Every one of them was already visible locally at commit time.
+#
+# IT READS THE WORKING TREE, NOT THE COMMITS BEING PUSHED. Both commands answer
+# "is this artifact current" against the files on disk, so pushing from the
+# SHARED primary checkout reports on whatever else is uncommitted there — the
+# first push after this landed was told `config/model/api docs` was stale, which
+# was six model docs another agent had regenerated and not yet committed, not
+# anything in the push. Push from your own worktree and the question is about
+# your work. There is no cheap fix: checking the pushed commits instead means
+# materialising them somewhere clean, which costs more than the check.
 set -eu
 
 if [ "${SKIP_DOCS_CHECK:-}" = 1 ]; then
