@@ -2,7 +2,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { fetchAndMaybeUnzip, getEnv, getSession } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { allSessionTracks, getTrackName } from '@jbrowse/core/util/tracks'
-import { types } from '@jbrowse/mobx-state-tree'
+import { isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import type { SpreadsheetSnapshot } from './SpreadsheetModel.tsx'
 import type { FileLocation } from '@jbrowse/core/util'
@@ -271,6 +271,14 @@ export default function stateModelFactory() {
         if (src && self.isReadyToOpen) {
           self.selectedAssemblyName = assemblyName
           const typeParser = await fileTypeParsers[self.fileType]()
+          // every await here is a place the user can close the view, and every
+          // write past one lands on a node MST has torn down. Under the default
+          // livelinessChecking that does not throw — it logs three warnings and
+          // drops the write — so the cost is a console full of them plus a
+          // whole file fetched and parsed for a view that is gone
+          if (!isAlive(self)) {
+            return undefined
+          }
           const { pluginManager } = getEnv(self)
           const filehandle = openLocation(src, pluginManager)
           self.setLoading(true)
@@ -281,6 +289,11 @@ export default function stateModelFactory() {
             } catch (e) {
               // stat failure is non-fatal; proceed without size check
               console.warn(e)
+            }
+            // and again after the stat, which is the first round trip that can
+            // take long enough for the user to close the view
+            if (!isAlive(self)) {
+              return undefined
             }
             if (stat && stat.size > IMPORT_SIZE_LIMIT) {
               self.setError(
@@ -300,9 +313,13 @@ export default function stateModelFactory() {
             }
           } catch (e) {
             console.error(e)
-            self.setError(e)
+            if (isAlive(self)) {
+              self.setError(e)
+            }
           } finally {
-            self.setLoading(false)
+            if (isAlive(self)) {
+              self.setLoading(false)
+            }
           }
         }
         return result

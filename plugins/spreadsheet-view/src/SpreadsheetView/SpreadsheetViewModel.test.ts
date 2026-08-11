@@ -17,6 +17,9 @@ function makeSession() {
         self.view = view
         return self.view
       },
+      closeView() {
+        self.view = undefined
+      },
       notifyError() {},
     }))
   return { Session, SpreadsheetView }
@@ -122,6 +125,32 @@ test('returning to the import form drops the cached location', () => {
   model.returnToImportForm()
   expect(model.spreadsheet).toBeUndefined()
   expect(model.importWizard.cachedFileLocation).toBeUndefined()
+})
+
+// MST's default liveliness checking is "warn", so writing to a view the user
+// closed mid-load does not throw — it logs three of these per write and drops
+// the write, which is how this went unnoticed. The file is fetched and parsed
+// in full either way, for a view that is gone
+test('closing the view mid-load stops writing to the dead node', async () => {
+  const { Session, SpreadsheetView } = makeSession()
+  const session = Session.create({ rpcManager: {}, configuration: {} })
+  const model = session.setView(
+    SpreadsheetView.create({ type: 'SpreadsheetView' }),
+  )
+  model.importWizard.setFileSource({
+    uri: 'test.vcf',
+    locationType: 'UriLocation',
+  })
+
+  const warn = jest.spyOn(console, 'warn')
+  const load = model.loadSpreadsheet('volvox')
+  session.closeView()
+  await load
+
+  const liveliness = warn.mock.calls
+    .map(c => String(c[0]))
+    .filter(m => m.includes('no longer part of a state tree'))
+  expect(liveliness).toEqual([])
 })
 
 test('width churn does not re-trigger the load (reaction tracks init, not width)', () => {

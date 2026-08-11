@@ -1,6 +1,6 @@
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSession } from '@jbrowse/core/util'
-import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { reaction } from 'mobx'
 
@@ -152,12 +152,17 @@ export default function stateModelFactory() {
             const session = getSession(self)
             try {
               const data = await self.importWizard.import(assemblyName)
-              if (data) {
+              // the view can be closed while the file is still in flight, and
+              // there is then neither a node to write to nor anyone left to
+              // read the snackbar
+              if (data && isAlive(self)) {
                 self.displaySpreadsheet(data)
               }
             } catch (e) {
               console.error(e)
-              session.notifyError(`${e}`, e)
+              if (isAlive(self)) {
+                session.notifyError(`${e}`, e)
+              }
             }
           },
           /**
@@ -208,7 +213,9 @@ export default function stateModelFactory() {
               // not exist until then: displaySpreadsheet replaces the whole
               // node, so a filter set before it would be thrown away with the
               // sheet it was set on
-              self.spreadsheet?.setFilterText(filterText)
+              if (isAlive(self)) {
+                self.spreadsheet?.setFilterText(filterText)
+              }
             }
           },
         }))
