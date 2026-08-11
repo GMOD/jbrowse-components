@@ -208,8 +208,19 @@ async function getTag(tag: string) {
   }
 }
 
+// The prefix a branch build is deployed under is slash-free. push.yml collapses
+// `/` to `-` before it syncs (`SAFE_REF="${REF_NAME//\//-}"`) and then asserts
+// the result is [A-Za-z0-9_.-], because the prefix is an S3 path and a nested
+// branch name would otherwise open a directory in it. The zip inside is named
+// from the same collapsed ref.
+//
+// So the collapse has to happen on this side too, or `--branch port/foo` asks
+// for code/jb2/port/foo/jbrowse-web-port/foo.zip and 404s — for a build that
+// was deployed, and is sitting at code/jb2/port-foo/. Slashes are the normal
+// case for a branch name here (port/*, dependabot/*, anyone's feature/*).
 function getBranch(branch: string) {
-  return `https://s3.amazonaws.com/jbrowse.org/code/jb2/${branch}/jbrowse-web-${branch}.zip`
+  const safeBranch = branch.replaceAll('/', '-')
+  return `https://s3.amazonaws.com/jbrowse.org/code/jb2/${safeBranch}/jbrowse-web-${safeBranch}.zip`
 }
 
 interface ReleaseFlags {

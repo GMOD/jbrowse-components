@@ -119,6 +119,35 @@ test('upgrades a directory from a url', async () => {
   })
 })
 
+// push.yml deploys a branch build under a slash-free prefix, so the URL built
+// here has to collapse the slashes the same way or the request 404s against a
+// build that exists. --nightly is the same code path with a name that has no
+// slash to collapse, which is why this never showed up.
+test('--branch asks for the prefix the branch was actually deployed under', async () => {
+  await runInTmpDir(async () => {
+    const requested: string[] = []
+    mockFetch(url => {
+      requested.push(url)
+      return {
+        headers: { 'content-type': 'application/zip' },
+        arrayBuffer: readZipAsArrayBuffer(),
+      }
+    })
+    await writeFile('manifest.json', '{"name":"JBrowse"}')
+
+    await runCommand(['upgrade', '--branch', 'port/some-feature'])
+    expect(requested).toEqual([
+      'https://s3.amazonaws.com/jbrowse.org/code/jb2/port-some-feature/jbrowse-web-port-some-feature.zip',
+    ])
+
+    requested.length = 0
+    await runCommand(['upgrade', '--nightly'])
+    expect(requested).toEqual([
+      'https://s3.amazonaws.com/jbrowse.org/code/jb2/main/jbrowse-web-main.zip',
+    ])
+  })
+})
+
 test('fails to upgrade if version does not exist', async () => {
   await runInTmpDir(async () => {
     mockFetch({ ok: false, status: 404, statusText: 'Not Found' })
