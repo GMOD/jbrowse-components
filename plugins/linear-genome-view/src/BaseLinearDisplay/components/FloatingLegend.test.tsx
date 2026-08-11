@@ -41,6 +41,31 @@ describe('FloatingLegend', () => {
     expect(queryByText('item12')).toBeNull()
   })
 
+  // A display drawing bodies and connectors at once keys colors from both, and
+  // a square for each says a color exists without saying what shape to find.
+  it('draws a row as the mark it names, and both marks when it has two', () => {
+    const { container } = render(
+      <FloatingLegend
+        items={[
+          { color: '#aaa', label: 'LR - Normal pair orientation' },
+          { color: '#f00', label: 'Long insert', mark: 'curve' },
+          {
+            label: 'Short insert',
+            swatches: [
+              { color: '#ffc0cb' },
+              { color: '#ff3a8c', mark: 'curve' },
+            ],
+          },
+        ]}
+      />,
+    )
+    // two fills (the grey, and the pale half of short insert) and two arcs
+    expect(container.querySelectorAll('rect')).toHaveLength(2)
+    expect(container.querySelectorAll('path')).toHaveLength(2)
+    // …the two arcs being one row's own mark and one row's second mark
+    expect(container.querySelectorAll('svg')).toHaveLength(4)
+  })
+
   it('shows section titles and per-section close when multi-section', () => {
     const onDismissSection = jest.fn()
     const { getByText, getByTitle } = render(
