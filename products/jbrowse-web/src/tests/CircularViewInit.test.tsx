@@ -96,6 +96,35 @@ test('CircularView showImportForm is true when no init', () => {
   expect(view.hasSomethingToShow).toBe(false)
 }, 40000)
 
+// Same channel LGV/dotplot/synteny report on — the spinner names which of the
+// assembly's files is downloading rather than a bare "Loading". `init` names the
+// assembly here, since displayedRegions (and so assemblyNames) is still empty.
+test('CircularView loadingMessage reports what the assembly load is downloading', async () => {
+  const { view } = await createCircularViewWithInit({ assembly: 'volvox' })
+
+  expect(view.showLoading).toBe(true)
+  expect(view.loadingMessage).toBe('Loading')
+  expect(view.loadingProgress).toBeUndefined()
+
+  // one synchronous block: the real load is in flight and its `finally` clears
+  // the status, so anything after an await races it
+  const asm = view.loadingAssembly!
+  asm.setStatus({ message: 'Downloading cytobands', current: 1, total: 2 })
+  expect(view.loadingMessage).toBe('Downloading cytobands')
+  expect(view.loadingProgress).toBe(0.5)
+
+  await waitFor(
+    () => {
+      expect(view.initialized).toBe(true)
+    },
+    { timeout: 30000 },
+  )
+
+  // loaded: no spinner, so nothing to label
+  expect(view.loadingMessage).toBeUndefined()
+  expect(view.loadingProgress).toBeUndefined()
+}, 40000)
+
 test('CircularView init with 404 TwoBitAdapter shows error', async () => {
   const config404 = {
     assemblies: [

@@ -450,6 +450,42 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
+       * The assembly whose load the spinner is waiting on. `init` names it
+       * before displayedRegions exist, so it is the source until then — the same
+       * order `initialized` above resolves in.
+       */
+      get loadingAssembly() {
+        const { assemblyManager } = getSession(self)
+        return assemblyManager.loadingAssembly(
+          self.init ? [self.init.assembly] : this.assemblyNames,
+        )
+      },
+
+      /**
+       * #getter
+       * What the spinner says: which of the assembly's files is downloading,
+       * rather than a bare "Loading" for the slow part of startup. See
+       * agent-docs/reference/PROGRESS_REPORTING.md.
+       */
+      get loadingMessage() {
+        return this.showLoading
+          ? this.loadingAssembly?.statusMessage || 'Loading'
+          : undefined
+      },
+
+      /**
+       * #getter
+       * Determinate fraction for the spinner's bar, when the assembly load
+       * reports one
+       */
+      get loadingProgress() {
+        return this.showLoading
+          ? this.loadingAssembly?.statusProgress
+          : undefined
+      },
+
+      /**
+       * #getter
        * Whether the view is fully initialized and ready to display
        */
       get showView() {

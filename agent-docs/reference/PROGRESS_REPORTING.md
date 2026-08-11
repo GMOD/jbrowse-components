@@ -79,8 +79,19 @@ the fastest of the four finished), behind one `createStatusThrottle`, writing
 
 Views read it through `assemblyManager.loadingAssembly(names)` — the first name
 that isn't `initialized` — and expose `loadingMessage` / `loadingProgress`, which
-`ViewLoadingScreen` renders. LGV prefers `initAssembly` there: pre-navigation the
-assembly `init` names isn't in `assemblyNames` yet.
+`ViewLoadingScreen` renders. All five views that spin on an assembly do this:
+LGV, dotplot, linear synteny, circular and breakpoint-split. Circular and
+breakpoint-split were the two that didn't, and showed a bare `LoadingEllipses`
+with no label and no bar for the same wait the other three narrated.
+
+Which names to ask about is the only per-view part, and it is the same shape
+each time: `init` names the assemblies before the view has materialized the
+thing `assemblyNames` derives from, so it is the source until then. LGV spells
+this as `initAssembly` (pre-navigation the assembly `init` names isn't in
+`assemblyNames` yet); circular reads `init.assembly`; dotplot and synteny map
+`init.views`; breakpoint-split delegates to the first sub-view that hasn't
+initialized, since each LGV already resolves its own, and falls back to `init`
+before the sub-views exist.
 
 `ViewLoadingScreen` exists because a bare `LoadingProgress` renders an
 unconstrained full-width bar under an unaligned label — every other caller wraps

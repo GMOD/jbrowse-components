@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { LoadingEllipses } from '@jbrowse/core/ui'
+import { ViewLoadingScreen } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { MultiLevelRubberband } from '@jbrowse/plugin-linear-genome-view'
@@ -85,28 +85,33 @@ const BreakpointSplitView = observer(function BreakpointSplitView({
   model: BreakpointViewModel
 }) {
   const { classes } = useStyles()
-  if (model.showImportForm) {
+  const { showLoading, showImportForm, loadingMessage, loadingProgress } = model
+
+  // showLoading first, and both branches outside the rubberband container, so
+  // the three phases read the same way here as in LGV/dotplot/synteny. The two
+  // are disjoint (showLoading needs hasSomethingToShow and no error, which is
+  // exactly what showImportForm negates), so the order is legibility, not logic.
+  if (showLoading) {
+    return (
+      <ViewLoadingScreen message={loadingMessage} fraction={loadingProgress} />
+    )
+  } else if (showImportForm) {
     return <BreakpointSplitViewImportForm model={model} />
+  } else {
+    return (
+      <div className={classes.rubberbandContainer}>
+        {model.showHeader ? <Header model={model} /> : null}
+        <MultiLevelRubberband
+          model={model}
+          ControlComponent={<div className={classes.rubberbandDiv} />}
+        />
+        <div className={classes.container}>
+          <BreakpointSplitViewLevels model={model} />
+          <BreakpointSplitViewOverlay model={model} />
+        </div>
+      </div>
+    )
   }
-  return (
-    <div className={classes.rubberbandContainer}>
-      {model.showLoading ? (
-        <LoadingEllipses variant="h6" />
-      ) : (
-        <>
-          {model.showHeader ? <Header model={model} /> : null}
-          <MultiLevelRubberband
-            model={model}
-            ControlComponent={<div className={classes.rubberbandDiv} />}
-          />
-          <div className={classes.container}>
-            <BreakpointSplitViewLevels model={model} />
-            <BreakpointSplitViewOverlay model={model} />
-          </div>
-        </>
-      )}
-    </div>
-  )
 })
 
 export default BreakpointSplitView

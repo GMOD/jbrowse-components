@@ -180,6 +180,43 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
+       * The assembly whose load the spinner is waiting on. Delegated to the
+       * first sub-view that hasn't initialized, since each LGV already resolves
+       * this for itself; before the sub-views exist, `init` is what names them.
+       */
+      get loadingAssembly() {
+        return self.views.length > 0
+          ? self.views.find(v => !v.initialized)?.loadingAssembly
+          : getSession(self).assemblyManager.loadingAssembly(
+              self.init?.map(v => v.assembly) ?? [],
+            )
+      },
+
+      /**
+       * #getter
+       * What the spinner says: which of the assembly's files is downloading,
+       * rather than a bare "Loading" for the slow part of startup. See
+       * agent-docs/reference/PROGRESS_REPORTING.md.
+       */
+      get loadingMessage() {
+        return this.showLoading
+          ? this.loadingAssembly?.statusMessage || 'Loading'
+          : undefined
+      },
+
+      /**
+       * #getter
+       * Determinate fraction for the spinner's bar, when the assembly load
+       * reports one
+       */
+      get loadingProgress() {
+        return this.showLoading
+          ? this.loadingAssembly?.statusProgress
+          : undefined
+      },
+
+      /**
+       * #getter
        * A failed assembly counts: the views it left behind never initialize, so
        * there is nothing to show and no second attempt coming in this session.
        * The form — which reports `error` in its banner — is then the only way

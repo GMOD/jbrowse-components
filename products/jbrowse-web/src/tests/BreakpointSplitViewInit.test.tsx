@@ -54,6 +54,41 @@ function createBreakpointView(init: object) {
   return view
 }
 
+// Same channel LGV/dotplot/synteny/circular report on. Before the sub-views
+// exist `init` is what names the assemblies; once they do, the wait belongs to
+// the first uninitialized LGV and this delegates to the one it already computes.
+test('BreakpointSplitView loadingMessage reports what the assembly load is downloading', async () => {
+  const view = createBreakpointView([
+    { loc: 'chr3:186,700,000..186,701,000', assembly: 'hg19' },
+    { loc: 'chr6:56,758,000..56,759,000', assembly: 'hg19' },
+  ])
+
+  expect(view.showLoading).toBe(true)
+  expect(view.loadingMessage).toBe('Loading')
+
+  // one synchronous block: the real load is in flight and its `finally` clears
+  // the status, so anything after an await races it
+  const asm = view.loadingAssembly!
+  asm.setStatus({
+    message: 'Downloading chromosome sizes',
+    current: 3,
+    total: 4,
+  })
+  expect(view.loadingMessage).toBe('Downloading chromosome sizes')
+  expect(view.loadingProgress).toBe(0.75)
+
+  await waitFor(
+    () => {
+      expect(view.initialized).toBe(true)
+    },
+    { timeout: 30000 },
+  )
+
+  // loaded: no spinner, so nothing to label
+  expect(view.loadingMessage).toBeUndefined()
+  expect(view.loadingProgress).toBeUndefined()
+}, 40000)
+
 test('BreakpointSplitView initializes with init property', async () => {
   const view = createBreakpointView([
     { loc: 'chr3:186,700,000..186,701,000', assembly: 'hg19' },
