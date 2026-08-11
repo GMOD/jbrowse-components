@@ -173,26 +173,31 @@ export interface FeatureDataResult {
   outlineColor: number
 }
 
+/**
+ * Every packed primitive array above, selected by the naming convention the
+ * three primitives already follow — `rect*` / `line*` / `arrow*`, one array per
+ * attribute. The convention IS the contract here: a new attribute joins
+ * `PackedPrimitives` and `RegionRenderData` by being named for its primitive,
+ * where the two hand-written name lists this replaces (twenty entries in this
+ * file, twenty more in packRenderArrays) had to be edited in step, and a missed
+ * one is a field the renderer's type simply doesn't have.
+ */
+export type PrimitiveArrayKey = Extract<
+  keyof FeatureDataResult,
+  `rect${string}` | `line${string}` | `arrow${string}`
+>
+
+/** What `packRenderArrays` produces: every primitive array, indices included. */
+export type PackedPrimitives = Pick<FeatureDataResult, PrimitiveArrayKey>
+
+/**
+ * What a renderer backend draws one region from. The `*FeatureIndices` arrays
+ * are excluded on purpose — they map each element back to its hit-test entry for
+ * the main-thread layout, and nothing in a draw call reads them.
+ */
 export type RegionRenderData = Pick<
   FeatureDataResult,
-  | 'rectPositions'
-  | 'rectYs'
-  | 'rectHeights'
-  | 'rectColors'
-  | 'rectStrands'
-  | 'rectDensityFade'
-  | 'outlineColor'
-  | 'linePositions'
-  | 'lineYs'
-  | 'lineHeights'
-  | 'lineColors'
-  | 'lineDirections'
-  | 'arrowXs'
-  | 'arrowYs'
-  | 'arrowHeights'
-  | 'arrowWidthsBp'
-  | 'arrowDirections'
-  | 'arrowColors'
+  Exclude<PrimitiveArrayKey, `${string}FeatureIndices`> | 'outlineColor'
 >
 
 export interface RegionTooLargeResult {

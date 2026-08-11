@@ -1,4 +1,4 @@
-import type { FeatureDataResult } from './rpcTypes.ts'
+import type { PackedPrimitives } from './rpcTypes.ts'
 
 export interface RectData {
   start: number
@@ -65,29 +65,7 @@ export function packRenderArrays(
   arrows: ArrowData[],
   regionStart: number,
   regionEnd: number,
-): Pick<
-  FeatureDataResult,
-  | 'rectPositions'
-  | 'rectYs'
-  | 'rectHeights'
-  | 'rectColors'
-  | 'rectStrands'
-  | 'rectDensityFade'
-  | 'rectFeatureIndices'
-  | 'linePositions'
-  | 'lineYs'
-  | 'lineHeights'
-  | 'lineColors'
-  | 'lineDirections'
-  | 'lineFeatureIndices'
-  | 'arrowXs'
-  | 'arrowYs'
-  | 'arrowHeights'
-  | 'arrowWidthsBp'
-  | 'arrowDirections'
-  | 'arrowColors'
-  | 'arrowFeatureIndices'
-> {
+): PackedPrimitives {
   const visibleRects = rects.filter(r =>
     spanInWindow(r.start, r.end, regionStart, regionEnd),
   )
