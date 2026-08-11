@@ -1,7 +1,7 @@
 import { assembleLocString } from '@jbrowse/core/util'
 import { readTranslocationMate } from '@jbrowse/sv-core'
 
-import { findFeatureViewLevel } from '../util.ts'
+import { findFeatureViewLevel } from './overlayGeometry.ts'
 import {
   LEFT,
   VariantOverlay,

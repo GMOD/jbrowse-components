@@ -4,14 +4,10 @@ import {
   pairDirection,
 } from '@jbrowse/alignments-core'
 import { featurizeSAEntries, getClip, splitSA } from '@jbrowse/cigar-utils'
-import {
-  assembleLocString,
-  assembleLocStringRaw,
-  notEmpty,
-} from '@jbrowse/core/util'
+import { assembleLocString, assembleLocStringRaw } from '@jbrowse/core/util'
 import { safeParseBreakend } from '@jbrowse/sv-core'
 
-import type { ChainSegment, LayoutMatch } from '../types.ts'
+import type { ChainSegment, LayoutMatch } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 function bucket<K, V>(map: Map<K, V[]>, key: K, value: V) {
@@ -169,15 +165,6 @@ export function hasPairedReads(features: Map<string, Feature>) {
     }
   }
   return false
-}
-
-export function findMatchingAlt(feat1: Feature, feat2: Feature) {
-  const alts = feat1.get('ALT') as string[] | undefined
-  const target = `${feat2.get('refName')}:${feat2.get('start') + 1}`
-  return alts
-    ?.map(alt => safeParseBreakend(alt))
-    .filter(notEmpty)
-    .find(bnd => bnd.MatePosition === target)
 }
 
 export function getMatchedBreakendFeatures(feats: Map<string, Feature>) {

@@ -21,7 +21,7 @@ import {
   hasPairedReads,
   markHiddenSegments,
   readChainSegments,
-} from './components/util.ts'
+} from './featureMatching.ts'
 import {
   VIEW_DIVIDER_HEIGHT,
   calc,

@@ -7,9 +7,9 @@ import {
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { computeOverlayX } from '../util.ts'
 import BreakpointTooltip from './BreakpointTooltip.tsx'
 import { useOrientationColor } from './getOrientationColor.tsx'
+import { computeOverlayX } from './overlayGeometry.ts'
 import {
   LEFT,
   RIGHT,

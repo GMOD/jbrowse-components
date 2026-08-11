@@ -1,6 +1,10 @@
+// deliberately across the eager/lazy split documented in
+// components/overlayGeometry.ts: computeOverlayX lives on the overlay side now,
+// and pairing it here with this file's computeOverlayY and makeOffscreenLayout
+// is what fails if the two duplicated OFFSCREEN_Y_SENTINELs ever drift apart
+import { computeOverlayX } from './components/overlayGeometry.ts'
 import {
   OFFSCREEN_Y_SENTINEL,
-  computeOverlayX,
   computeOverlayY,
   findFeatureViewLevel,
   isOffscreenLayout,

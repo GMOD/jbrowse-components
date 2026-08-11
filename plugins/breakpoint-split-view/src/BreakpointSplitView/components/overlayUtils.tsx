@@ -9,8 +9,8 @@ import { pxToBp } from '@jbrowse/core/util/Base1DUtils'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { computeOverlayX, isOffscreenLayout } from '../util.ts'
 import BreakpointTooltip from './BreakpointTooltip.tsx'
+import { computeOverlayX, isOffscreenLayout } from './overlayGeometry.ts'
 
 import type { BreakpointViewModel } from '../model.ts'
 import type { LayoutRecord, OverlayLevel, OverlayMatch } from '../types.ts'

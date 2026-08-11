@@ -1,6 +1,6 @@
+import { findMatchingAlt } from './components/overlayGeometry.ts'
 import {
   classifyVariantFeatures,
-  findMatchingAlt,
   getBadlyPairedAlignments,
   getClipLengthAtStartOfRead,
   getMatchedAlignmentFeatures,
@@ -10,9 +10,9 @@ import {
   hasPairedReads,
   markHiddenSegments,
   readChainSegments,
-} from './util.ts'
+} from './featureMatching.ts'
 
-import type { LayoutMatch } from '../types.ts'
+import type { LayoutMatch } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 function fakeFeature(id: string, type: string) {

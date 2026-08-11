@@ -1,10 +1,10 @@
+import { findMatchingAlt } from './overlayGeometry.ts'
 import {
   VariantOverlay,
   buildBreakpointPath,
   canonicalPairs,
   tickAtPx,
 } from './overlayUtils.tsx'
-import { findMatchingAlt } from './util.ts'
 
 import type { OverlayProps, PathSpec } from './overlayUtils.tsx'
 
