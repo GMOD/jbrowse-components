@@ -16,6 +16,22 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
 
 ## Rendering and displays
 
+- **Colouring an arc long-insert from the pair's drawn SPAN** — shipped, then
+  removed 2026-08. `getArcColorType` overrode the TLEN class whenever the mates
+  sat more than `LARGE_INSERT_THRESHOLD` apart, on the sound ground that a
+  discordant pair often carries an unreliable or 0 TLEN and the distance is the
+  better signal. The read fills never had the rule, so the two disagreed on
+  exactly the pairs it existed to catch — `classifyInsertSize` sorts TLEN 0 into
+  `normal`, so those arcs went red over reads that stayed grey, and a figure
+  shipped that way. Half the test was also `absrad >= longRangeThreshold`, a
+  median+MAD cut over the arcs IN VIEW, so an arc's colour depended on what else
+  was on screen and changed as you panned.
+  **What was given up:** pairs whose TLEN is 0 or wrong are now `normal` on both
+  sides rather than long-insert on one. The consistency was bought with that
+  signal, deliberately. Restoring it means giving the READ path the same
+  span rule (it has no mate span today — a worker-data change), not
+  reintroducing it on the arc side alone. See
+  [ALIGNMENTS_COLOR_PARITY.md](ALIGNMENTS_COLOR_PARITY.md).
 - **Unified GPU/Canvas2D "layer manifest" draw dispatch** — declined 2026-06.
   Layers aren't 1:1 across backends: `PASS_CLIP` is one GPU pass but two
   Canvas2D calls, coverage is individual passes vs one `drawCoverage` wrapper,

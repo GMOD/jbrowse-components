@@ -22,6 +22,9 @@ Exploratory concepts that are *not* committed work live in
 | [Autofit height for the LGV demo](#autofit-height-for-the-lineargenomeview-example-site-demo) | embedded | no view-level auto-height exists yet |
 | [Extra large text SVG mode](#extra-large-text-svg-mode-for-pub-ready-figures) | SVG export | thread a scale the way `fontFamily` threads |
 | [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | six independent small items |
+| [Verify the overlay palettes in dark mode](#verify-the-overlay-palettes-in-dark-mode) | alignments | open a pileup with arcs, dark theme, look |
+| [Audit the wiggle colour paths for the same split](#audit-the-wiggle-colour-paths-for-the-same-split) | wiggle | read `sourcesLogic.ts` against its legend |
+| [What colour is an arc with no pair orientation](#what-colour-is-an-arc-with-no-pair-orientation) | alignments | a visual call, then one of two edits |
 | [Make the capture scroll-invariant](#make-the-snapshot-capture-scroll-invariant-then-widen-the-gate-to-webgpu) | browser tests | it is `snapshot.ts`, not a shader — attribution is done |
 | [Widen `CI_GATE_SUITES`](#widen-ci_gate_suites) | browser tests, CI | measure before adding; say why the alignments pair is safe |
 | [Attribute the TIMEOUT mode](#attribute-the-browser-test-timeout-failure-mode) | browser tests | report the display's state, don't extend the wait |
@@ -96,6 +99,38 @@ labels will overflow the boxes laid out for them.
   already in hand at hit time: the flatbush search returns every match before
   `topmostMatch` picks one. A tooltip line ("+3 more here") is probably the
   whole job; a click-to-list is the larger version.
+
+### Verify the overlay palettes in dark mode
+
+`shaders/palettes.ts` now resolves the arc and linked-read palettes through the
+themed `ColorPalette`, which fixed reads being dimmed in dark mode while the
+arcs over them were not (the stock dark palette changes exactly one entry,
+`pairLR`). That fix is verified by tests over the tables and **has never been
+looked at**. Open any figure's locus with `readConnections: 'arc'` in the dark
+theme and check the arcs, the read-cloud squares, the connectors and the reads
+under them read as the same greys. It is the last claim in
+[ALIGNMENTS_COLOR_PARITY.md](reference/ALIGNMENTS_COLOR_PARITY.md) resting on
+reasoning rather than observation.
+
+While there: `arcColorsMatchReads` (the getter deciding whether the arc key
+folds into the read key) has no test, because it is a model getter and the
+parity tests exercise the classifiers instead. It is still load-bearing — the
+arcs can emit `splitInversion` where a non-chain-mode read scheme does not.
+
+### Audit the wiggle colour paths for the same split
+
+The alignments plugin turned up three instances of one failure mode — a colour
+or label table duplicated across two paths, agreeing by comment rather than by
+derivation, and agreeing only in the default theme with well-formed data. All
+three are written up in
+[ALIGNMENTS_COLOR_PARITY.md](reference/ALIGNMENTS_COLOR_PARITY.md).
+
+`plugins/wiggle` has the same shape and has not been looked at:
+`MultiLinearWiggleDisplay/sourcesLogic.ts` carries a three-mode colour model
+(overlay / multirow / density, with identity displaced to `labelColor` in
+density) and `legendItems.ts` derives the key separately. The question to ask is
+the one that found the others: does the legend derive from the table the
+renderer paints, or restate it.
 
 ### Make the snapshot capture scroll-invariant, then widen the gate to webgpu
 
@@ -645,6 +680,28 @@ the PIF tier letter). All four `demos/ecoli_pangenome` files were checked that
 way.
 
 ## Blocked on a visual call
+
+### What colour is an arc with no pair orientation
+
+The last meaning still split between the read fills and the arc overlay. A pair
+with `po === 0` is `nonSplit` to the reads — deliberately the neutral grey,
+"distinct from the strand-colored split segments" — and the arcs have no such
+slot, so they fall to their baseline, `pairLR`. `swatchPaletteKeys` maps those
+to `colorNostrand` and `colorPairLR`: two greys, not the same grey, and two
+legend rows for one thing. Pinned by the last `describe` in
+`shaders/overlayPaletteParity.test.ts`.
+
+Two ways to close it, and the choice is visual rather than structural:
+
+- **Give the arcs a `nonSplit` slot.** Correct, and the wider change: the Slang
+  `arcColor` uniform grows by one entry, `ARC_SLOT_CATEGORY` gains a row, and
+  the shader's own CI job covers it. An unknown-orientation arc then draws the
+  same grey as the read under it.
+- **Stop distinguishing it on the read side.** Smaller, and gives up a
+  distinction the read fills document as deliberate.
+
+Everything else these two classifiers once disagreed about now derives from one
+table, so this is the whole of what is left.
 
 ### The synteny clicked outline strokes every match tile in transparent-indel mode
 
