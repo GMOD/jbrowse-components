@@ -85,6 +85,12 @@ const useStyles = makeStyles()(theme => ({
     justifyContent: 'center',
     color: theme.palette.text.secondary,
   },
+  // The select this stands in for carried `margin="dense"`, and without that
+  // space the locus, the dataset and the line explaining the panel order stack
+  // as three touching lines of text with nothing to say where one ends.
+  dataset: {
+    marginBottom: theme.spacing(1),
+  },
   // outside the checkbox's own label, so the row's accessible name stays the
   // assembly — the locus is what the panel will show, not what it is
   panelLocus: {
@@ -285,7 +291,11 @@ export default function LaunchSyntenyViewForRegionDialog({
           ))}
         </TextField>
       ) : (
-        <Typography variant="body2" color="textSecondary">
+        <Typography
+          variant="body2"
+          color="textSecondary"
+          className={classes.dataset}
+        >
           Synteny dataset: {track.name}
         </Typography>
       )}

@@ -338,7 +338,13 @@ function launchFromSelectionParts(): ScreenshotSpec[] {
       // `Advanced` disclosure, collapsed — see AdvancedLaunchOptions in
       // plugins/linear-comparative-view. The run reported exactly 84 css px
       // blank below the shorter dialog.
-      viewportHeight: 676,
+      //
+      // 676 -> 622 when the dataset selector became a line of text. This config
+      // declares four synteny tracks over K12, and the dialog used to offer all
+      // four; it offers what the view has OPEN, which here is the one, so there
+      // is nothing to select between (see launchableTracks). The run reported 62
+      // css px blank, less the spacing the line took back off the select.
+      viewportHeight: 622,
       actions: [...select, ...openDialog],
     },
     {
