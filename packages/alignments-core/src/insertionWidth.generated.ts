@@ -4,6 +4,14 @@
 // Scalar twins of insertion.slang, transliterated from slangc's WGSL so
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
+function _clamp(x: number, lo: number, hi: number) {
+  return _min(_max(x, lo), hi)
+}
+
+function _max(a: number, b: number) {
+  return a > b ? a : b
+}
+
 function _min(a: number, b: number) {
   return a < b ? a : b
 }
@@ -45,4 +53,8 @@ export function insertionBarWidthPx(length: number, pxPerBp: number, featHeight:
     return _min(5.0, (insWPx / 3.0))
   }
   return 1.0
+}
+
+export function insertionSizeAlpha(length: number, pxPerBp: number): number {
+  return _clamp(((length) * pxPerBp), 0.0, 1.0)
 }

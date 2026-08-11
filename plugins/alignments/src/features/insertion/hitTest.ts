@@ -1,3 +1,5 @@
+import { MIN_VISIBLE_ALPHA, insertionSizeAlpha } from '@jbrowse/alignments-core'
+
 import {
   insertionBarWidth as getInsertionRectWidthPx,
   getInsertionType,
@@ -46,6 +48,14 @@ function hitTestInsertion(
     const pos = interbasePositions[i]
     if (pos !== undefined) {
       const len = interbaseLengths[i] ?? 0
+      // Tracks the size fade the same way the frequency gate below tracks the
+      // frequency one: an insertion the renderer has faded out for being
+      // unresolvable at this zoom must not intercept clicks either, or a
+      // whole-genome view is carpeted in invisible hit targets. Both backends
+      // multiply this in (insertion.slang, drawCanvas.ts).
+      if (insertionSizeAlpha(len, pxPerBp) <= MIN_VISIBLE_ALPHA) {
+        continue
+      }
       const isSmall = getInsertionType(len, pxPerBp) === 'small'
       if (sizeFilter === 'small' ? isSmall : !isSmall) {
         // Small insertions are narrow bars; when not at base-level zoom only

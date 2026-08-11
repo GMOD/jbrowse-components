@@ -7,8 +7,12 @@ import {
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
   MIN_HEIGHT_FOR_TEXT,
+  MIN_VISIBLE_ALPHA,
 } from './insertionLabel.generated.ts'
-import { insertionBarWidthPx } from './insertionWidth.generated.ts'
+import {
+  insertionBarWidthPx,
+  insertionSizeAlpha,
+} from './insertionWidth.generated.ts'
 
 // The insertion thresholds are insertion.slang's, generated in by
 // `pnpm gen:shaders` — re-exported here because this module is the vocabulary
@@ -20,6 +24,8 @@ export {
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
   MIN_HEIGHT_FOR_TEXT,
+  MIN_VISIBLE_ALPHA,
+  insertionSizeAlpha,
 }
 // Min px-per-bp before per-base text (mismatch letters, small-insertion `(N)`
 // labels, clip summaries) is drawn. Shared by plugin-alignments and plugin-maf

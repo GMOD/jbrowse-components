@@ -1,4 +1,8 @@
-import { drawInsertionMarker } from '@jbrowse/alignments-core'
+import {
+  MIN_VISIBLE_ALPHA,
+  drawInsertionMarker,
+  insertionSizeAlpha,
+} from '@jbrowse/alignments-core'
 
 import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { LONG_INSERTION_MIN_LENGTH } from '../../LinearAlignmentsDisplay/constants.ts'
@@ -42,11 +46,22 @@ export function drawInsertions(
     const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
     const length = region.insertionLengths[i]!
 
-    // Long insertions draw as a fixed marker and never frequency-fade.
+    // Long insertions draw as a fixed marker and never frequency-fade. They do
+    // still fade by size — insertionSizeAlpha is the gate for "is this
+    // resolvable at this zoom" rather than "is this site rare", and the two
+    // multiply. Both are insertion.slang's, imported rather than mirrored.
     const isLong = length >= LONG_INSERTION_MIN_LENGTH
-    const alpha = isLong
-      ? 1
-      : frequencyFade(state, pxPerBp * pxPerBp, region.insertionFrequencies[i]!)
+    const alpha =
+      (isLong
+        ? 1
+        : frequencyFade(
+            state,
+            pxPerBp * pxPerBp,
+            region.insertionFrequencies[i]!,
+          )) * insertionSizeAlpha(length, pxPerBp)
+    if (alpha <= MIN_VISIBLE_ALPHA) {
+      continue
+    }
 
     // Box + serif caps shared with plugin-maf via drawInsertionMarker: a wide
     // labelled box for large insertions, a short bar for long, 1px + serifs for
