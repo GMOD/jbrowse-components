@@ -112,76 +112,84 @@ export function TreeSidebarMixin<
         )
       },
     }))
-    .actions(self => ({
-      // Provenance is written and cleared in the same action as the tree it
-      // describes, never on its own. The failure it guards against is not a
-      // missing caption but a *wrong* one: provenance left standing from a
-      // previous run would label the new dendrogram with the old run's locus,
-      // which is worse than saying nothing at all.
-      setLayout(layout: S[]) {
-        const clearTree = self.willClearTree(layout)
-        self.layout = layout
-        if (clearTree) {
-          self.clusterTree = undefined
-          self.clusterProvenance = undefined
-        }
-      },
-      // Reset to no arrangement at all, which includes the subtree filter: the
-      // user asked for the rows back as they came.
+    .actions(self => {
+      // The ONLY place `clusterTree` is assigned, because `clusterProvenance`
+      // has to move with it in the same action — always. The failure that
+      // guards against is not a missing caption but a *wrong* one: provenance
+      // left standing from a previous run labels the new dendrogram with the
+      // old run's locus, which is worse than saying nothing at all.
       //
-      // The filter is otherwise **independent of the tree**. It is a set of row
-      // names, and `filterRowsBySubtree` matches on `name` with no tree
-      // involved, so a reorder or a re-cluster leaves it perfectly valid and
-      // `setLayout` deliberately keeps it — dropping a focused clade on every
-      // reorder would discard the user's focus, and for maf (where
-      // `subtreeFilter` is a fetch argument) refetch every loaded region. What
-      // does invalidate it is a change to what rows are *called*: the
-      // multi-sample variant displays' rendering mode renames rows between
-      // sample and haplotype ("HG001" ↔ "HG001 HP0"), and `setPhasedMode`
-      // clears the filter for exactly that reason.
-      clearLayout() {
-        self.layout = []
-        self.clusterTree = undefined
-        self.clusterProvenance = undefined
-        self.subtreeFilter = undefined
-      },
-      // For a tree that arrives as data rather than from a run — maf's `.nh`
-      // guide tree. It has no locus and no settings, so this clears provenance
-      // rather than leaving the previous tree's attached.
-      setClusterTree(tree?: string) {
-        self.clusterTree = tree
-        self.clusterProvenance = undefined
-      },
-      setLayoutAndClusterTree(
-        layout: S[],
-        tree?: string,
-        provenance?: ClusterProvenance,
-      ) {
-        self.layout = layout
+      // A helper rather than four hand-written pairs because taking both
+      // together is what makes "set the tree and keep the old provenance"
+      // unspellable. It also puts each caller's intent in its argument list:
+      // omitting `provenance` is how a tree that arrives as data (maf's `.nh`)
+      // says it has no locus, rather than being a separate line to forget.
+      function writeTree(tree?: string, provenance?: ClusterProvenance) {
         self.clusterTree = tree
         self.clusterProvenance = provenance
-      },
-      setTreeAreaWidth(width: number) {
-        self.treeAreaWidth = width
-      },
-      setSubtreeFilter(names?: string[]) {
-        // normalize empty to undefined so the field has a single stripped state
-        self.subtreeFilter = names?.length ? cast(names) : undefined
-      },
-      setRunClustering(arg?: boolean) {
-        self.runClustering = arg
-      },
-      setClusterRegion(arg?: string) {
-        self.clusterRegion = arg
-      },
-      setHoveredTreeNode(node?: HoveredTreeNode) {
-        self.hoveredTreeNode = node
-      },
-      setTreeCanvasRef(ref: HTMLCanvasElement | null) {
-        self.treeCanvas = ref
-      },
-      setMouseoverCanvasRef(ref: HTMLCanvasElement | null) {
-        self.mouseoverCanvas = ref
-      },
-    }))
+      }
+      return {
+        setLayout(layout: S[]) {
+          const clearTree = self.willClearTree(layout)
+          self.layout = layout
+          if (clearTree) {
+            writeTree(undefined)
+          }
+        },
+        // Reset to no arrangement at all, which includes the subtree filter: the
+        // user asked for the rows back as they came.
+        //
+        // The filter is otherwise **independent of the tree**. It is a set of
+        // row names, and `filterRowsBySubtree` matches on `name` with no tree
+        // involved, so a reorder or a re-cluster leaves it perfectly valid and
+        // `setLayout` deliberately keeps it — dropping a focused clade on every
+        // reorder would discard the user's focus, and for maf (where
+        // `subtreeFilter` is a fetch argument) refetch every loaded region. What
+        // does invalidate it is a change to what rows are *called*: the
+        // multi-sample variant displays' rendering mode renames rows between
+        // sample and haplotype ("HG001" ↔ "HG001 HP0"), and `setPhasedMode`
+        // clears the filter for exactly that reason.
+        clearLayout() {
+          self.layout = []
+          writeTree(undefined)
+          self.subtreeFilter = undefined
+        },
+        // For a tree that arrives as data rather than from a run — maf's `.nh`
+        // guide tree. It has no locus and no settings, so it passes no
+        // provenance, which is how it drops the previous tree's.
+        setClusterTree(tree?: string) {
+          writeTree(tree)
+        },
+        setLayoutAndClusterTree(
+          layout: S[],
+          tree?: string,
+          provenance?: ClusterProvenance,
+        ) {
+          self.layout = layout
+          writeTree(tree, provenance)
+        },
+        setTreeAreaWidth(width: number) {
+          self.treeAreaWidth = width
+        },
+        setSubtreeFilter(names?: string[]) {
+          // normalize empty to undefined so the field has one stripped state
+          self.subtreeFilter = names?.length ? cast(names) : undefined
+        },
+        setRunClustering(arg?: boolean) {
+          self.runClustering = arg
+        },
+        setClusterRegion(arg?: string) {
+          self.clusterRegion = arg
+        },
+        setHoveredTreeNode(node?: HoveredTreeNode) {
+          self.hoveredTreeNode = node
+        },
+        setTreeCanvasRef(ref: HTMLCanvasElement | null) {
+          self.treeCanvas = ref
+        },
+        setMouseoverCanvasRef(ref: HTMLCanvasElement | null) {
+          self.mouseoverCanvas = ref
+        },
+      }
+    })
 }
