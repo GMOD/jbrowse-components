@@ -1,3 +1,5 @@
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -74,7 +76,17 @@ type PanelTracks = (string | Record<string, unknown>)[]
 // instead of two, which is also what stops the blocks and the ribbons from
 // disagreeing. Nine records either side across this window, against a het-site
 // track that is orders of magnitude over the feature gate here.
-const CHAIN_BLOCKS = { trackId: 'hg002v1.2_mat_vs_pat', height: 40 }
+// At 5.2 Mb the CIGAR layer buries the thing this lane is for: a whole-genome
+// chain carries indels every few kb, and they draw as a wall of ticks over the
+// strand color. The blocks and their boundaries are what the page reads off
+// these lanes. (`showInterbaseIndicators` is NOT the other half of this: those
+// marks live in the coverage band, which this display defaults off, so setting
+// it here changes nothing.)
+const CHAIN_BLOCKS = {
+  trackId: 'hg002v1.2_mat_vs_pat',
+  height: 40,
+  showMismatches: false,
+}
 
 function haplotypeSession(
   matLoc: string,
@@ -106,7 +118,7 @@ function haplotypeSession(
 const CAPTURE = {
   mode: 'url',
   viewportWidth: 1400,
-  readySelector: '[data-testid="synteny_canvas_done"]',
+  readySelector: displayPainted('synteny_canvas'),
   readyTimeout: 120000,
   settleMs: 10000,
 } satisfies Partial<ScreenshotSpec>
