@@ -5,13 +5,28 @@ export function parseExtraColNames(
   coreColCount: number,
   numExtraColumns: number,
 ) {
-  return lastHeaderLine?.includes('\t')
-    ? lastHeaderLine
-        .slice(1)
-        .split('\t')
-        .slice(coreColCount)
-        .map(t => t.trim())
-    : Array.from({ length: numExtraColumns }, (_v, i) => `field_${i}`)
+  // The header names as many of the extra columns as it names, and the field_N
+  // fallback covers whatever it leaves. It used to decide the list outright, so
+  // any column past the header's last name vanished from the sheet — from the
+  // column list and from every row's cellData alike, with nothing to say so.
+  //
+  // A header that undercounts is not the exotic case it sounds like: the header
+  // is "the last `#` line before the data", and a leading `# produced by\tfoo`
+  // provenance comment is indistinguishable from a real one. That names zero
+  // extras, which used to throw away every extra column in the file.
+  const named =
+    lastHeaderLine
+      ?.slice(1)
+      .split('\t')
+      .slice(coreColCount)
+      .map(t => t.trim()) ?? []
+  // still the first data row's width when the header names fewer, but never
+  // fewer than the header names: a ragged file can have more columns further
+  // down than its first row does
+  return Array.from(
+    { length: Math.max(numExtraColumns, named.length) },
+    (_v, i) => named[i] || `field_${i}`,
+  )
 }
 
 export function parseExtraCols(
@@ -39,12 +54,14 @@ export function bufferToLines(buffer: Uint8Array) {
     .filter(f => f !== '')
 }
 
+// `browser position ...` and `track name=...` are whole words in the UCSC spec.
+// Matching them as bare prefixes also swallowed any data line whose refName
+// merely began with one — a `track1` or `browserScaffold` contig was dropped
+// from the sheet as if it were a header
+const BED_DIRECTIVE_REGEXP = /^(?:browser|track)(?:\s|$)/
+
 function isBedHeaderLine(line: string) {
-  return (
-    line.startsWith('#') ||
-    line.startsWith('browser') ||
-    line.startsWith('track')
-  )
+  return line.startsWith('#') || BED_DIRECTIVE_REGEXP.test(line)
 }
 
 export function filterBedHeaderLines(lines: string[]) {
