@@ -20,8 +20,10 @@ interface RegionView {
   ref?: PackedReference
   id: () => string
   get: (field: string) => unknown
-  // duck-typed by modifications-utils' getTag(); see the surface test below
+  // duck-typed by modifications-utils' getTag()/getTagAlt(); see the surface
+  // test below
   getTag?: (tag: string) => unknown
+  getTagAlt?: (tag: string, alt: string) => unknown
 }
 
 // Synthetic reference: base at p is 'ACGT'[p % 4], so any slice is well-defined
@@ -151,15 +153,23 @@ test('parallel region fetches each get their own reference slice', async () => {
 })
 
 // A reference-bound read is a wrapper around the cached record, so it has to
-// re-expose the surface the pipeline uses. Two members degrade SILENTLY if the
+// re-expose the surface the pipeline uses. Three members degrade SILENTLY if the
 // wrapper drops them, which is why they get their own assertions rather than
-// being left to the `Feature` type:
+// being left to the `Feature` type — `MaybeTagged` declares the first two
+// OPTIONAL, so dropping either compiles clean:
 //
 //   - `getTag` is duck-typed by modifications-utils' getTag(). Absent, that
 //     helper still "works" by falling back to `get('tags')` — which decodes
 //     every tag on the read to answer one, on the hot path.
+//   - `getTagAlt` is duck-typed the same way by getTagAlt(). Absent, that helper
+//     falls back to two getTag calls, i.e. two full walks of the tag block per
+//     read, which is the exact cost it exists to avoid.
 //   - `get('mismatches')` depends on the binding, so forwarding it to the
 //     unbound record would quietly return mismatches resolved against nothing.
+//
+// ADR-049 keeps this wrapper and names precisely this as the reason to revisit
+// it one day — "nothing would catch it if a future edit dropped it". This test
+// is what catches it.
 test('a reference-bound read keeps the surface the pipeline relies on', async () => {
   const adapter = makeAdapter()
   const feats = await fetchRegion(adapter, 20000, 22000)
@@ -173,6 +183,12 @@ test('a reference-bound read keeps the surface the pipeline relies on', async ()
   const [someTag] = Object.keys(tags)
   expect(someTag).toBeDefined()
   expect(f.getTag!(someTag!)).toEqual(tags[someTag!])
+
+  // getTagAlt resolves the primary name when it is present, and falls through
+  // to the alternate when it is not — both against this binding
+  expect(typeof f.getTagAlt).toBe('function')
+  expect(f.getTagAlt!(someTag!, 'zZ')).toEqual(tags[someTag!])
+  expect(f.getTagAlt!('zZ', someTag!)).toEqual(tags[someTag!])
 
   // extended_cigar.bam has no MD, so mismatches can only come from the bound
   // reference — an unbound record would report none

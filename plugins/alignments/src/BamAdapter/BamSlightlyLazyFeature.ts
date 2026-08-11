@@ -15,11 +15,19 @@ import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
  * `recordClass`, so the library constructs it directly and a read is ONE object
  * rather than a record plus a wrapper around it.
  *
+ * **ADR-049 is where this was decided** — it measured `recordClass` at 33
+ * bytes/read RETAINED (27.2 MB vs 33.5 MB over 200k records) with the heap
+ * profiler, and its finding is the one to carry: the win is that the wrapper
+ * moved from retained to TRANSIENT, and retained is the kind that costs. Read it
+ * before reopening any of this.
+ *
  * That inheritance is not free — a purely additive @gmod/bam release can shadow
  * one of our members without semver saying anything, which 8.6.0 did with
  * `forEachMismatch`, and which `bamRecordOverrides.test.ts` now guards. So what
- * it buys is worth stating precisely. From `benches/recordShape.bench.ts`, four
- * samples over 184k pacbio reads:
+ * it buys is worth stating precisely. `benches/recordShape.bench.ts` is the
+ * reproducible form of ADR-049's memory number and adds the read-path half it
+ * did not have; its ~40 bytes/read corroborates the ADR's 33 by a different
+ * method. Four samples over 184k pacbio reads:
  *
  *   inject (this)   1.00x   baseline
  *   wrap            1.01-1.08x   (median ~1.05)
@@ -36,7 +44,8 @@ import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
  * Worth keeping, and worth keeping in proportion: it is a few percent and some
  * heap, not a design the render path depends on. If a future @gmod/bam release
  * ever collides badly enough to make the inheritance painful, moving to a
- * wrapper is a bounded, known cost rather than a cliff.
+ * wrapper is a bounded, known cost rather than a cliff — which is the same
+ * conclusion ADR-049 reached from the memory side.
  */
 export default class BamSlightlyLazyFeature
   extends BamRecord
