@@ -120,6 +120,7 @@ exports[`sm uncategorized tracks 1`] = `
 
 exports[`unsorted categories 1`] = `
 [
+  "Reference sequence (volvox)",
   "1 toplevel",
   "2 toplevel",
   "3 toplevel",

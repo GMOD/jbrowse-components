@@ -20,3 +20,15 @@ export function buildSearchText(fields: unknown[]) {
     fields.filter(f => f !== undefined && f !== null).join('\n'),
   ).toLowerCase()
 }
+
+/**
+ * The other half of the same contract: what a filter box's raw contents mean as
+ * a query. Lowercased to match {@link buildSearchText}, and trimmed — a
+ * trailing space from a paste or a mistyped word is not something the user
+ * means to search for, and since the fields are newline-joined it can only ever
+ * subtract matches. Empty means "no query": `''.includes` is always true, so
+ * every selector's unfiltered case falls out of the same substring test.
+ */
+export function normalizeSearchQuery(filterText: string) {
+  return filterText.trim().toLowerCase()
+}

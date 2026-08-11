@@ -2,6 +2,8 @@ import { useLayoutEffect } from 'react'
 
 import { alpha, useTheme } from '@mui/material'
 
+import { normalizeSearchQuery } from './searchText.ts'
+
 import type { RefObject } from 'react'
 
 // one <style> per highlight name, so two tables highlighting at once don't
@@ -70,7 +72,9 @@ export function useSearchHighlight(
     }
     setHighlightStyle(highlightName, color)
     const container = containerRef.current
-    const queryLower = query.trim().toLowerCase()
+    // the same normalization the filter itself applies, so what is highlighted
+    // is what matched
+    const queryLower = normalizeSearchQuery(query)
     if (container && queryLower) {
       const highlight = new Highlight()
       for (const range of collectMatchRanges(container, queryLower)) {

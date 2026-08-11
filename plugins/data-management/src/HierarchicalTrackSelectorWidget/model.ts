@@ -12,7 +12,12 @@ import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun, observable } from 'mobx'
 
 import { configScopedKey, keyConfigPostFix } from '../shared/configScopedKey.ts'
-import { filterTracks } from './filterTracks.ts'
+import { normalizeSearchQuery } from '../shared/searchText.ts'
+import {
+  filterTracks,
+  viewCanDisplayTrack,
+  viewDisplayNames,
+} from './filterTracks.ts'
 import { generateHierarchy } from './generateHierarchy.ts'
 import { sortSources } from './sortUtils.ts'
 import {
@@ -538,18 +543,22 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         assemblyName: string,
       ): AnyConfigurationModel | undefined {
         const { view } = self
-        const { assemblyManager } = getSession(self)
-        const assembly = assemblyManager.get(assemblyName)
-        const trackConf = assembly?.configuration.sequence
         if (!view) {
           return undefined
         }
-        const viewType = pluginManager.getViewType(view.type)
-        const viewDisplayNames = new Set(viewType.displayTypes.map(d => d.name))
-        const matches = trackConf?.displays.some((display: { type: string }) =>
-          viewDisplayNames.has(display.type),
-        )
-        return matches ? trackConf : undefined
+        const { assemblyManager } = getSession(self)
+        const trackConf = assemblyManager.get(assemblyName)?.configuration
+          .sequence as AnyConfigurationModel | undefined
+        // same display-compatibility question filterTracks asks of every other
+        // track, so a view that can't draw a sequence doesn't list one
+        return trackConf &&
+          viewCanDisplayTrack(
+            pluginManager,
+            viewDisplayNames(pluginManager, view.type),
+            trackConf.type,
+          )
+          ? trackConf
+          : undefined
       },
     }))
 
@@ -583,26 +592,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           ...filterTracks(getSession(self).tracks, self),
         ].filter(notEmpty)
       },
-      /**
-       * #getter
-       */
-      get allTrackConfigurations() {
-        const { connectionInstances = [] } = getSession(self)
-        return [
-          ...this.configAndSessionTrackConfigurations,
-          ...connectionInstances.flatMap(c => c.tracks),
-        ]
-      },
-
-      /**
-       * #getter
-       * unfiltered map of every track (incl. connection tracks for other
-       * assemblies/view types); used by the faceted selector
-       */
-      get allTrackConfigurationMap() {
-        return new Map(this.allTrackConfigurations.map(t => [t.trackId, t]))
-      },
-
       /**
        * #getter
        * one group per connection *config* (not just live instances), so a
@@ -656,7 +645,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * searched for
        */
       get filterQuery() {
-        return self.filterText.trim().toLowerCase()
+        return normalizeSearchQuery(self.filterText)
       },
 
       /**
@@ -703,17 +692,21 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * map restricted to tracks the current view can display; derived from
-       * allTracks so connection tracks go through exactly one filterTracks()
-       * pass, shared with the tree, and favorites / recently-used can't surface
-       * a track the view cannot show
+       * every track the current view can display, tree order. Derived from
+       * allTracks so there is exactly one filterTracks() pass, shared with the
+       * tree: the faceted selector, favorites and recently-used then can't
+       * offer a track the view has no way to open. Connection tracks used to
+       * reach the faceted selector unfiltered, which listed a connection's
+       * other-assembly tracks next to the config's filtered ones
        */
-      get displayableTrackConfigurationMap() {
-        return new Map(
-          this.allTracks
-            .flatMap(g => g.tracks)
-            .map(s => [s.conf.trackId, s.conf]),
-        )
+      get allTrackConfigurations() {
+        return this.allTracks.flatMap(g => g.tracks).map(s => s.conf)
+      },
+      /**
+       * #getter
+       */
+      get allTrackConfigurationMap() {
+        return new Map(this.allTrackConfigurations.map(t => [t.trackId, t]))
       },
     }))
     .views(self => ({
@@ -723,7 +716,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       get favoriteTracks() {
         return self.favorites
-          .map(t => self.displayableTrackConfigurationMap.get(t))
+          .map(t => self.allTrackConfigurationMap.get(t))
           .filter(notEmpty)
       },
 
@@ -733,7 +726,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       get recentlyUsedTracks() {
         return self.recentlyUsed
-          .map(t => self.displayableTrackConfigurationMap.get(t))
+          .map(t => self.allTrackConfigurationMap.get(t))
           .filter(notEmpty)
       },
     }))

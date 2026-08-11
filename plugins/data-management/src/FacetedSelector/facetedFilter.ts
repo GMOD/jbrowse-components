@@ -1,4 +1,4 @@
-import { buildSearchText } from '../shared/searchText.ts'
+import { buildSearchText, normalizeSearchQuery } from '../shared/searchText.ts'
 import { getRowStr } from './components/util.ts'
 
 import type { Row } from './components/util.ts'
@@ -40,9 +40,9 @@ function activeFilterSets(filters: Map<string, string[]>) {
  */
 export function filterRowsByText<T extends { searchText: string }>(
   rows: T[],
-  query: string,
+  filterText: string,
 ): T[] {
-  const q = query.toLowerCase()
+  const q = normalizeSearchQuery(filterText)
   return q ? rows.filter(row => row.searchText.includes(q)) : rows
 }
 

@@ -193,6 +193,11 @@ test('session tracks are grouped under the Session tracks category', () => {
   ).toEqual(['barC', 'fooC'])
 })
 
+// the five sorting tests below draw their tracks from test_order/config.json,
+// whose tracks are all `volvox` — so the view has to be on volvox too. They
+// used to name volMyt1, an assembly no such session has, and passed only
+// because an unresolvable view assembly used to switch assembly filtering off
+// entirely rather than match nothing (see filterTracks)
 test('unsorted categories', async () => {
   const session = createTestSession({
     jbrowseConfig: conf,
@@ -200,7 +205,7 @@ test('unsorted categories', async () => {
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
       {
-        assemblyName: 'volMyt1',
+        assemblyName: 'volvox',
         refName: 'ctgA',
         start: 0,
         end: 1000,
@@ -238,7 +243,7 @@ test('configuration preference - sorting categories', async () => {
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
       {
-        assemblyName: 'volMyt1',
+        assemblyName: 'volvox',
         refName: 'ctgA',
         start: 0,
         end: 1000,
@@ -276,7 +281,7 @@ test('configuration preference - sorting track names', async () => {
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
       {
-        assemblyName: 'volMyt1',
+        assemblyName: 'volvox',
         refName: 'ctgA',
         start: 0,
         end: 1000,
@@ -308,7 +313,7 @@ test('localstorage preference - sorting categories', async () => {
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
       {
-        assemblyName: 'volMyt1',
+        assemblyName: 'volvox',
         refName: 'ctgA',
         start: 0,
         end: 1000,
@@ -341,7 +346,7 @@ test('localstorage preference - sorting track names', async () => {
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
       {
-        assemblyName: 'volMyt1',
+        assemblyName: 'volvox',
         refName: 'ctgA',
         start: 0,
         end: 1000,
