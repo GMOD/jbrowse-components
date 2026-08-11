@@ -1,5 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config BigMafAdapter
  * #trackType MafTrack
@@ -64,5 +66,7 @@ const configSchema = ConfigurationSchema(
   },
   { explicitlyTyped: true },
 )
+
+export type BigMafAdapterConfig = Instance<typeof configSchema>
 
 export default configSchema

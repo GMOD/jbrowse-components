@@ -1,5 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri
     ? {
@@ -124,5 +126,7 @@ const configSchema = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+
+export type BgzipMafAdapterConfig = Instance<typeof configSchema>
 
 export default configSchema

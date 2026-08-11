@@ -26,6 +26,7 @@ import type { MafAdapterOptions } from '../types.ts'
 import type { SamplesHolder } from '../util/getSamples.ts'
 import type { MafSummaryHolder } from '../util/loadMafSummaryAdapter.ts'
 import type { SourceResolver } from '../util/parseAssemblyName.ts'
+import type { BgzipTaffyAdapterConfig } from './configSchema.ts'
 import type { AlignmentBlock, TafFeature } from './tafParsing.ts'
 import type { IndexData } from './types.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -42,7 +43,7 @@ interface SetupData {
  *
  * TAF Format: https://github.com/ComparativeGenomicsToolkit/taffy
  */
-export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
+export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter<BgzipTaffyAdapterConfig> {
   public setupP?: Promise<SetupData>
 
   public samplesP?: SamplesHolder['samplesP']

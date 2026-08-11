@@ -16,6 +16,7 @@ import type { IndexData } from '../BgzipTaffyAdapter/types.ts'
 import type { MafAdapterOptions } from '../types.ts'
 import type { SamplesHolder } from '../util/getSamples.ts'
 import type { MafSummaryHolder } from '../util/loadMafSummaryAdapter.ts'
+import type { BgzipMafAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
@@ -35,7 +36,7 @@ import type { Feature, Region } from '@jbrowse/core/util'
  * is the only thing this does not share. Measured against HPRC's own index, a
  * 10 kb locus resolves to a ~924 KB read out of the 53 GB file.
  */
-export default class BgzipMafAdapter extends BaseFeatureDataAdapter {
+export default class BgzipMafAdapter extends BaseFeatureDataAdapter<BgzipMafAdapterConfig> {
   public setupP?: Promise<IndexData>
 
   public samplesP?: SamplesHolder['samplesP']

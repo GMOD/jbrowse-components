@@ -12,6 +12,7 @@ import { parseBigMafStanza } from '../util/parseBigMaf.ts'
 import type { MafAdapterOptions } from '../types.ts'
 import type { SamplesHolder } from '../util/getSamples.ts'
 import type { MafSummaryHolder } from '../util/loadMafSummaryAdapter.ts'
+import type { BigMafAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
@@ -37,7 +38,7 @@ function mafBlockField(feature: Feature) {
   return block
 }
 
-export default class BigMafAdapter extends BaseFeatureDataAdapter {
+export default class BigMafAdapter extends BaseFeatureDataAdapter<BigMafAdapterConfig> {
   public setupP?: Promise<{ adapter: BaseFeatureDataAdapter }>
 
   public summaryAdapterP?: MafSummaryHolder['summaryAdapterP']
