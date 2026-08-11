@@ -170,6 +170,56 @@ gets a second, separated run of entries.
   a missing doc and on an orphan one (prose whose section was renamed out from
   under it).
 
+## Contrast is measured, in both themes
+
+`checkTextContrast` (`@jbrowse/browser-test-utils`, wired into all four
+`smoke.mjs`) composites every DOM text node's colour against whatever is
+actually painted behind it and fails under **3:1**.
+
+It exists because of a specific hole. An example may not use the shell's custom
+properties — it has to stay a file the reader can paste — so the demos style
+themselves with CSS **system colours**, on the stated grounds that those read
+correctly wherever they land. That is only true while `color-scheme` is
+declared, and for a long time it wasn't: system colours stayed on the light
+palette whatever `data-theme` said, so `color-mix(in srgb, CanvasText 8%,
+Canvas)` painted rgb(235,235,235) behind text inheriting rgb(228,230,232). The
+notification on BYO's Loading and error states page — the one thing that page
+exists to prove a host must draw — was unreadable in dark mode, and every check
+was green, on the site whose whole premise is that its claims are measured.
+
+Four things about it are load-bearing, each of which was a way it silently
+passed while broken:
+
+- **Both themes, always.** Smoke loads pages in the default theme and headless
+  Chrome defaults to light. The bug was dark-only, so a light-only pass would
+  have watched it ship. The check toggles `data-theme` itself and restores it.
+- **Colours are resolved by painting them**, not by parsing the computed string.
+  `color-mix` resolves to `color(srgb …)`, so the first version's `rgb()` regex
+  skipped exactly the syntax under test and reported a clean run against the
+  bug it was written for.
+- **A floor on how much it examined.** A check that reads nothing reports
+  nothing, which looks like a pass — an early run served each `dist` without
+  stripping the astro `base`, so all four sites were 404 shells and it declared
+  four clean sites. Under 25 text elements it now fails instead.
+- **Text over a `<canvas>` is skipped structurally**, by asking whether an
+  absolutely-positioned ancestor's containing block holds a canvas — never by
+  intersecting rectangles. Geometry depends on the canvas having been laid out,
+  and on a slow page the feature labels stop being skipped and report as
+  white-on-white against their container. That flake was real, alternating
+  between 22 findings and none on one page.
+
+3:1 is the large-text AA bound and sits well below anything deliberate (a muted
+0.6-alpha hint on this palette is ~5.6:1), so a failure means two colours came
+from different themes, never that something could be crisper. Raising it toward
+4.5 would start reporting design choices, which is how a check like this gets
+muted.
+
+**A state you can only reach by clicking needs its own pass.** The check in each
+site's list runs at rest, so it never sees the snackbar that motivated it —
+BYO's `viewStatusStatesAreDrawn` calls `checkTextContrast` again once it has
+driven one onto the screen. Drawing a thing and being able to read it are two
+claims.
+
 ## Generated artifacts and CI
 
 - **`demoHeights.json` is generated, and it is an input to the build** — every

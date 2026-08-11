@@ -156,6 +156,322 @@ export async function checkPluginTookEffect(
     : []
 }
 
+// The floor, not the standard. WCAG AA is 4.5:1 for body text and these pages
+// clear it nearly everywhere, but this check is not a design review — it is here
+// for one failure, and the number is chosen to catch that failure and stay
+// silent about taste.
+//
+// The failure: an example may not use this shell's custom properties, because it
+// has to stay a file the reader can paste into their own app, so the demos style
+// themselves with CSS *system* colours. Get the theme plumbing wrong and those
+// stop tracking the page — `color-mix(in srgb, CanvasText 8%, Canvas)` painted a
+// near-white box under near-white text on every dark-mode page for as long as
+// `color-scheme` went undeclared, and the *only* reason anyone found out was
+// somebody happening to screenshot a dark page. Nothing measured it, on the one
+// site whose whole premise is that its claims are measured.
+//
+// 3:1 is the large-text AA bound, and it sits well below anything deliberate: a
+// muted 0.6-alpha hint on this palette lands near 5.6:1. So a failure here is
+// never "this could be crisper", it is "these two colours came from different
+// themes". Raising it toward 4.5 would start reporting design choices, which is
+// how a check like this gets muted.
+const MIN_CONTRAST = 3
+
+// The floor below which a clean result is meaningless rather than good. See the
+// guard at the bottom of the check.
+const MIN_TEXT_ELEMENTS = 25
+
+/**
+ * Check that every piece of DOM text on the page is legible against what is
+ * actually painted behind it.
+ *
+ * Both colours are *composited*, which is the whole reason this can't be a
+ * stylesheet review: `color` and `background-color` are frequently translucent,
+ * an ancestor's `opacity` multiplies through, and the effective background is
+ * whatever the first opaque layer up the tree turns out to be. The pair that
+ * shipped broken read `rgb(228,230,232)` on `rgb(235,235,235)` — two colours
+ * neither of which is wrong on its own.
+ *
+ * **Text over a `<canvas>` is skipped, and that is not laziness.** A scalebar
+ * label or a track label sits on pixels the DOM cannot report: the background
+ * walk finds the container's colour, not the rendered image, so any ratio
+ * computed for it would be fiction — and a confident fiction is worse here than
+ * a gap, because it would be the number someone later tunes the palette
+ * against. Those labels get their colour from `usePalette`, which is the
+ * mechanism `PaletteProvider` exists to keep correct.
+ */
+async function contrastPass(page: Page, minContrast: number) {
+  const found = await page.evaluate(min => {
+    type Rgba = [number, number, number, number]
+
+    // Painted, not parsed. `getComputedStyle` hands back whatever notation the
+    // author's value resolves to, and a regex over `rgb()` quietly drops the
+    // rest: `color-mix(in srgb, …)` resolves to `color(srgb 0.92 0.92 0.92)`,
+    // which is exactly the recipe every demo here styles itself with. A parser
+    // that skips the one syntax under test is worse than no check — this
+    // returned a clean run against the very bug it was written for. So the
+    // browser resolves it: fill one pixel and read it back, which works for
+    // `color-mix`, `color()`, `lab()`, system colours and named colours alike.
+    // Every input here comes from `getComputedStyle`, so it is always a resolved,
+    // valid colour — no validity handling is needed, and adding some would only
+    // be another place to be quietly wrong.
+    const probe = document.createElement('canvas')
+    probe.width = 1
+    probe.height = 1
+    const ctx = probe.getContext('2d', { willReadFrequently: true })!
+    const cache = new Map<string, Rgba>()
+    const parse = (css: string): Rgba => {
+      const hit = cache.get(css)
+      if (hit) {
+        return hit
+      }
+      ctx.clearRect(0, 0, 1, 1)
+      ctx.fillStyle = css
+      ctx.fillRect(0, 0, 1, 1)
+      const d = ctx.getImageData(0, 0, 1, 1).data
+      const out: Rgba = [d[0]!, d[1]!, d[2]!, d[3]! / 255]
+      cache.set(css, out)
+      return out
+    }
+
+    // src over dst
+    const over = (src: Rgba, dst: Rgba): Rgba => {
+      const a = src[3] + dst[3] * (1 - src[3])
+      if (a === 0) {
+        return [0, 0, 0, 0]
+      }
+      const c = (i: 0 | 1 | 2) =>
+        (src[i] * src[3] + dst[i] * dst[3] * (1 - src[3])) / a
+      return [c(0), c(1), c(2), a]
+    }
+
+    const luminance = ([r, g, b]: Rgba) => {
+      const f = (v: number) => {
+        const s = v / 255
+        return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
+      }
+      return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b)
+    }
+
+    const ratio = (x: Rgba, y: Rgba) => {
+      const a = luminance(x)
+      const b = luminance(y)
+      return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05)
+    }
+
+    // The ground under everything, for text whose ancestors are all
+    // transparent. White is the browser's own default canvas, so it is the
+    // honest fallback when the document declares none.
+    const rootBg = parse(
+      getComputedStyle(document.documentElement).backgroundColor,
+    )
+    const ground: Rgba = rootBg[3] === 1 ? rootBg : [255, 255, 255, 1]
+
+    // Stack the translucent layers from the element outward until one is
+    // opaque. `opacity` on an ancestor applies to the whole subtree including
+    // the text, so it is folded into both sides rather than only the background.
+    const backgroundOf = (el: Element): Rgba => {
+      let acc: Rgba = [0, 0, 0, 0]
+      let node: Element | null = el
+      while (node) {
+        const cs = getComputedStyle(node)
+        const own = parse(cs.backgroundColor)
+        if (own[3] > 0) {
+          const layer: Rgba = [
+            own[0],
+            own[1],
+            own[2],
+            own[3] * Number(cs.opacity),
+          ]
+          acc = over(acc, layer)
+          if (acc[3] >= 0.99) {
+            return acc
+          }
+        }
+        node = node.parentElement
+      }
+      return over(acc, ground)
+    }
+
+    // Is this text painted on top of a canvas?
+    //
+    // Structural, deliberately, and NOT a rectangle intersection with the
+    // canvas's box. Geometry here depends on the canvas having been laid out at
+    // the instant the check runs, and a display that has not drawn yet reports
+    // no box — so on a slow page a hundred feature labels stop being skipped and
+    // report as white-on-white against their container. That is not a
+    // theoretical flake; it is what the first version of this check did,
+    // alternating between 22 findings and none on the same page. A check that
+    // invents failures on a slow machine gets muted, and then it is worth less
+    // than nothing.
+    //
+    // The structural question has a stable answer: a label overlay is an
+    // absolutely-positioned element whose containing block also holds the
+    // canvas. Walk out through every positioned ancestor and ask that.
+    const overCanvas = (el: Element) => {
+      let node: Element | null = el
+      while (node && node !== document.body) {
+        const pos = getComputedStyle(node).position
+        if (pos === 'absolute' || pos === 'fixed') {
+          let block = node.parentElement
+          while (block && getComputedStyle(block).position === 'static') {
+            block = block.parentElement
+          }
+          if (block?.querySelector('canvas')) {
+            return true
+          }
+        }
+        node = node.parentElement
+      }
+      return false
+    }
+
+    // Kept alongside it, because the two miss different things and both only
+    // ever *skip*: a false negative here costs a gap, never a wrong failure.
+    const canvasRects = [...document.querySelectorAll('canvas')].map(c =>
+      c.getBoundingClientRect(),
+    )
+    const overlapsCanvas = (r: DOMRect) =>
+      canvasRects.some(
+        c =>
+          r.left < c.right &&
+          r.right > c.left &&
+          r.top < c.bottom &&
+          r.bottom > c.top,
+      )
+
+    let examined = 0
+    const out: {
+      ratio: number
+      fg: string
+      bg: string
+      tag: string
+      cls: string
+      text: string
+    }[] = []
+
+    for (const el of document.querySelectorAll('body *')) {
+      // only elements owning their own text: a wrapper reports its child's
+      // words too, which would report one failure once per ancestor
+      const text = [...el.childNodes]
+        .filter(n => n.nodeType === Node.TEXT_NODE)
+        .map(n => n.textContent ?? '')
+        .join('')
+        .trim()
+      if (!text) {
+        continue
+      }
+      const cs = getComputedStyle(el)
+      if (
+        cs.visibility === 'hidden' ||
+        cs.display === 'none' ||
+        Number(cs.opacity) === 0
+      ) {
+        continue
+      }
+      const rect = el.getBoundingClientRect()
+      if (
+        rect.width === 0 ||
+        rect.height === 0 ||
+        overCanvas(el) ||
+        overlapsCanvas(rect)
+      ) {
+        continue
+      }
+
+      // effective alpha of the text: its own, times every ancestor opacity
+      let mult = 1
+      for (let n: Element | null = el; n; n = n.parentElement) {
+        mult *= Number(getComputedStyle(n).opacity)
+      }
+      examined++
+      const rawFg = parse(cs.color)
+      const bg = backgroundOf(el)
+      const fg = over([rawFg[0], rawFg[1], rawFg[2], rawFg[3] * mult], bg)
+      const r = ratio(fg, bg)
+      if (r < min) {
+        out.push({
+          ratio: Math.round(r * 100) / 100,
+          fg: `rgb(${fg.slice(0, 3).map(Math.round).join(',')})`,
+          bg: `rgb(${bg.slice(0, 3).map(Math.round).join(',')})`,
+          tag: el.tagName.toLowerCase(),
+          cls: el.getAttribute('class') ?? '',
+          text: text.slice(0, 50),
+        })
+      }
+    }
+    return { examined, bad: out.sort((a, b) => a.ratio - b.ratio) }
+  }, minContrast)
+
+  // A contrast check reports nothing on a page it could not read, and that is
+  // indistinguishable from a pass. It is not a hypothetical: an early run of
+  // this served every site's `dist` without stripping the astro `base`, so all
+  // four were 404 shells, and it reported four clean sites in a row. Every page
+  // here carries a sidebar, a heading and prose before any demo mounts, so a
+  // couple of dozen text nodes is a floor no real page approaches — falling
+  // under it means the page did not load, not that its colours are good.
+  if (found.examined < MIN_TEXT_ELEMENTS) {
+    return [
+      `contrast check examined only ${found.examined} text elements (expected ` +
+        `at least ${MIN_TEXT_ELEMENTS}) — the page did not render, so a clean ` +
+        'result here would mean nothing',
+    ]
+  }
+
+  return found.bad.map(
+    b =>
+      `text at ${b.ratio}:1 (needs ${minContrast}) — ${b.fg} on ${b.bg} — ` +
+      `<${b.tag}${b.cls ? ` class="${b.cls}"` : ''}> ${JSON.stringify(b.text)}`,
+  )
+}
+
+/**
+ * Run {@link contrastPass} in both themes.
+ *
+ * **Both, always, and this is the point of the check rather than a thoroughness
+ * flourish.** Smoke loads every page in the default theme, headless Chrome
+ * defaults to light, and the bug that motivated all of this was dark-only — a
+ * light-only contrast check would have watched it ship. The toggle is the same
+ * attribute the shell's own theme button writes, so this exercises the real
+ * mechanism rather than a simulation of it.
+ *
+ * The page is left on whatever theme it arrived with, because this shares a
+ * page with every other check in the composition. Even so, prefer to call it
+ * before anything that clicks: the settle below is sized for a CSS cascade
+ * (which is what these colours are), not for a display refetching at a new
+ * theme, and a check that drives the UI afterwards should start from a page
+ * that has stopped moving.
+ */
+export async function checkTextContrast(
+  page: Page,
+  { minContrast = MIN_CONTRAST, themes = ['light', 'dark'] as const } = {},
+): Promise<string[]> {
+  const original = await page.evaluate(
+    () => document.documentElement.dataset.theme ?? '',
+  )
+  const out: string[] = []
+  try {
+    for (const theme of themes) {
+      await page.evaluate(t => {
+        document.documentElement.dataset.theme = t
+      }, theme)
+      await new Promise(resolve => setTimeout(resolve, 300))
+      out.push(
+        ...(await contrastPass(page, minContrast)).map(m => `[${theme}] ${m}`),
+      )
+    }
+  } finally {
+    await page.evaluate(t => {
+      if (t) {
+        document.documentElement.dataset.theme = t
+      } else {
+        delete document.documentElement.dataset.theme
+      }
+    }, original)
+  }
+  return out
+}
+
 /**
  * The first demo on a page has to begin above the fold.
  *

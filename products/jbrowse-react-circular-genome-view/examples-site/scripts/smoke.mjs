@@ -9,6 +9,7 @@ import {
   checkDemoAboveFold,
   checkDemoHeights,
   checkSessionUrlRoundTrip,
+  checkTextContrast,
   smokeExamplesSite,
 } from '@jbrowse/browser-test-utils'
 
@@ -25,6 +26,8 @@ const failures = await smokeExamplesSite({
   check: async (page, slug) => [
     ...(await checkDemoHeights(page)),
     ...(await checkDemoAboveFold(page)),
+    // before the round trip below, which reloads the page
+    ...(await checkTextContrast(page)),
     ...(slug === 'session-in-url' ? await checkSessionUrlRoundTrip(page) : []),
   ],
   log: m => {

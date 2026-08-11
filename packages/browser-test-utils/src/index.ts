@@ -31,6 +31,7 @@ export {
   checkDemoHeights,
   checkPluginTookEffect,
   checkSessionUrlRoundTrip,
+  checkTextContrast,
 } from './examplesChecks.ts'
 export {
   buildDocIndex,

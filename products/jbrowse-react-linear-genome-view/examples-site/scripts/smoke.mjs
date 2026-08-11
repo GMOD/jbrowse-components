@@ -10,6 +10,7 @@ import {
   checkDemoHeights,
   checkPluginTookEffect,
   checkSessionUrlRoundTrip,
+  checkTextContrast,
   smokeExamplesSite,
 } from '@jbrowse/browser-test-utils'
 
@@ -35,6 +36,8 @@ const failures = await smokeExamplesSite({
   check: async (page, slug) => [
     ...(await checkDemoHeights(page)),
     ...(await checkDemoAboveFold(page)),
+    // before the per-slug checks below, which click and reload
+    ...(await checkTextContrast(page)),
     ...(await (checks[slug]?.(page) ?? [])),
   ],
   log: m => {

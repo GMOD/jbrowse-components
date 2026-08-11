@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url'
 import {
   checkDemoAboveFold,
   checkDemoHeights,
+  checkTextContrast,
   smokeExamplesSite,
 } from '@jbrowse/browser-test-utils'
 
@@ -336,6 +337,16 @@ async function viewStatusStatesAreDrawn(page, slug) {
     )
   }
 
+  // …and now that it is on screen, is it readable? This is the one place the
+  // repo's actual dark-mode bug can be caught, rather than a sibling of it: the
+  // snackbar exists only after the click above, so the at-rest contrast pass in
+  // the check list never sees it, and for as long as `color-scheme` went
+  // undeclared this notification — the single thing this page exists to prove a
+  // host must render — sat at 1.0:1 in dark mode with every check green.
+  // Drawing it and reading it are two different claims and both are this
+  // function's.
+  out.push(...(await checkTextContrast(page)))
+
   // half two: view.error. The radio builds a fresh engine on an assembly whose
   // sequence file 404s, which is the state `view.ready ? tracks : null` renders
   // as an empty box with nothing anywhere saying why.
@@ -515,6 +526,12 @@ const failures = await smokeExamplesSite({
     ...(await checkDemoAboveFold(page)),
     ...(await muiThemedStyling(page, 'at rest')),
     ...(await censusWhileHovering(page)),
+    // Toggles the theme to dark and back, so it goes before everything below,
+    // which clicks. It is also the check with the most to say on this site
+    // specifically: these demos may not use the shell's custom properties, so
+    // they style themselves with CSS system colours, which is the thing that
+    // silently stops tracking the page when the theme plumbing is wrong.
+    ...(await checkTextContrast(page)),
     ...(await clicksReachTheTrack(page)),
     ...(await highlightSurvivesAOneBaseRegion(page, slug)),
     ...(await searchByNameResolvesNames(page, slug)),
