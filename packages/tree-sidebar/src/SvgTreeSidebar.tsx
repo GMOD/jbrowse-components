@@ -1,7 +1,7 @@
 import { SvgClusterProvenanceCaption } from './SvgClusterProvenanceCaption.tsx'
 import { SvgRowLabels } from './SvgRowLabels.tsx'
 import { SvgTreePath } from './SvgTreePath.tsx'
-import { treeSidebarOffset } from './treeSidebarGeometry.ts'
+import { treeIsShowing, treeSidebarOffset } from './treeSidebarGeometry.ts'
 
 import type { ClusterProvenance } from './clusterProvenance.ts'
 import type { ClusterHierarchyNode, RowLabelSource } from './types.ts'
@@ -48,16 +48,21 @@ export function SvgTreeSidebar({
   // that arrives as data (maf's `.nh` phylogeny), which has no locus.
   clusterProvenance?: ClusterProvenance
 }) {
-  // Single source of truth for whether the tree occupies the gutter, so the
-  // label offset can't disagree with whether the tree is actually drawn.
-  const treeShowing = showTree && !!hierarchy
+  // The tree, but only if it is showing — one binding rather than a boolean
+  // beside the hierarchy it is about, so the caption, the path and the label
+  // offset cannot come apart. `treeSidebarOffset` is this same gate times
+  // `treeAreaWidth`; the two used to be spelled out separately here, under a
+  // comment claiming they were one.
+  const drawnTree = treeIsShowing({ showTree, hierarchy })
+    ? hierarchy
+    : undefined
   const labelOffset = treeSidebarOffset({ showTree, hierarchy, treeAreaWidth })
   return (
     <>
       {/* see SvgClusterProvenanceCaption for why the locus travels with the
           exported figure, and why multi-wiggle draws the same caption without
           going through this component */}
-      {treeShowing ? (
+      {drawnTree ? (
         <SvgClusterProvenanceCaption clusterProvenance={clusterProvenance} />
       ) : null}
       {showLabels && sources.length ? (
@@ -73,8 +78,8 @@ export function SvgTreeSidebar({
           <g transform={`translate(${labelOffset} 0)`}>{labels}</g>
         )
       ) : null}
-      {treeShowing ? (
-        <SvgTreePath hierarchy={hierarchy} scrollTop={scrollTop} />
+      {drawnTree ? (
+        <SvgTreePath hierarchy={drawnTree} scrollTop={scrollTop} />
       ) : null}
     </>
   )

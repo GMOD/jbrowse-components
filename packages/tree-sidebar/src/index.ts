@@ -5,6 +5,7 @@ export type { NewickNode } from './newick.ts'
 export { default as TreeSidebar } from './TreeSidebar.tsx'
 export { DisplayCrosshairs } from './DisplayCrosshairs.tsx'
 export {
+  treeIsShowing,
   treeSidebarOffset,
   treeSidebarRightEdge,
 } from './treeSidebarGeometry.ts'

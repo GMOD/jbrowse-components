@@ -14,6 +14,7 @@ import { pickTreeNode } from './spatialIndex.ts'
 import {
   TREE_RESIZE_HANDLE_WIDTH,
   treeContentHeight,
+  treeIsShowing,
 } from './treeSidebarGeometry.ts'
 
 import type { ClusterHierarchyNode, TreeSidebarModel } from './types.ts'
@@ -123,11 +124,9 @@ const TreeSidebar = observer(function TreeSidebar({
   const [menuAnchor, setMenuAnchor] = useState<MenuAnchor | null>(null)
 
   const {
-    hierarchy,
     treeAreaWidth,
     lineZoneHeight = 0,
     scrollTop = 0,
-    showTree,
     sources,
     spatialIndex,
   } = model
@@ -201,7 +200,9 @@ const TreeSidebar = observer(function TreeSidebar({
     closeMenu()
   }
 
-  if (!hierarchy || !showTree || !sources?.length) {
+  // the same gate `treeSidebarOffset` reserves the gutter under, so the
+  // painting and the space kept for it cannot come apart
+  if (!treeIsShowing(model) || !sources?.length) {
     // one of those is "there IS a tree, it just doesn't describe these rows any
     // more" — which needs saying rather than silently drawing nothing. Portaled
     // for the same reason the panel is: it is text in the gutter.
