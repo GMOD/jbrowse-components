@@ -403,32 +403,42 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   //
   // K562 PacBio Iso-Seq, already hosted for the cancer_sv tutorial. Iso-Seq
   // reads are oriented to the transcript, so read strand IS transcript strand
-  // and a gene's coverage lands entirely in one band. Counted off the hosted BAM
-  // with samtools rather than read off a picture:
+  // and a gene's coverage lands entirely in one band.
   //
-  //   samtools view -c -F 2320 <bam> <region>   # forward
-  //   samtools view -c -F 2304 -f 16 <bam> <region>   # reverse
+  // TWO GENES OF COMPARABLE DEPTH, NOT THE GLOBIN CLUSTER. The first cut framed
+  // chr16:146,000-196,000, the alpha-globin locus, where every gene is on the
+  // forward strand: 10,153 forward reads against 224 reverse over HBA2/HBA1
+  // alone. That is the most dramatic ratio in the file and it made a bad figure
+  // (review: "this is boring and does not show reads ... there is no reverse
+  // strand activity here"). A band at the floor is not a comparison, and at
+  // 10,000 reads the pileup cannot be drawn at all.
   //
-  // chr16:172,000-178,000 (HBA2/HBA1) is 10,153 forward against 224 reverse, and
-  // chr16:184,000-190,000 (LUC7L's first exons) is 14 forward against 277.
+  // So: LUC7L, transcribed right to left, then FAM234A left to right, both at a
+  // few hundred reads. Counted off the hosted BAM rather than read off a
+  // picture --
   //
-  // WHY THIS LOCUS. K562 is an erythroleukemia line, so the alpha-globin cluster
-  // is its loudest transcription: HBZ, HBM, HBA2, HBA1 and HBQ1 in a row, every
-  // one of them on the forward strand. That makes the forward band a stack of
-  // transcript profiles and the reverse band flat across 40 kb. LUC7L is in
-  // frame on purpose and is the control: it is the next gene along, it is on the
-  // reverse strand, and it is the thing that stops an empty band reading as a
-  // broken track.
+  //   samtools view -c -F 2320 <bam> <region>        # forward
+  //   samtools view -c -F 2304 -f 16 <bam> <region>  # reverse
   //
-  // No pileup. `showPileup: false` is the guide's own instruction for this
-  // setting, and at ~10,000 reads the alternative is a black wall under a band
-  // nobody can then see.
+  // -- LUC7L's body runs ~230 reverse against ~15 forward per 10 kb and
+  // FAM234A's ~380 forward against ~36 reverse. Both bands carry a transcript
+  // profile, each over its own gene and neither over the other's, which is the
+  // switch; and at that depth the reads themselves fit under the bands, which is
+  // what the review asked to see.
+  //
+  // `colorBy: strand` for the same reason the ONT figure below sets it: the
+  // reads are coloured by the dimension the grouping used, so which section a
+  // read belongs to is readable off the read.
+  //
+  // `showSashimiArcs: false`. Arcs are on by default and drawn per junction
+  // whatever the read count, and on cDNA every intron is a junction -- with them
+  // on, both bands are a fan of arcs and neither profile is visible under it.
   {
     mode: 'url',
     name: 'alignments/strand_split_depth',
     url: lgvSession(CANCER_SV_CONFIG, {
       assembly: 'hg38',
-      loc: 'chr16:146,000-196,000',
+      loc: 'chr16:186,000-270,000',
       tracks: [
         {
           trackId: 'ncbi_refseq_hg38',
@@ -439,25 +449,25 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           trackId: 'K562_isoseq',
           type: 'LinearAlignmentsDisplay',
           groupBy: { type: 'strand' },
-          showPileup: false,
-          // NO SASHIMI ARCS. They are on by default and they wreck this claim:
-          // an arc is drawn per junction whatever its read count, so the reverse
-          // band came back full of blue arcs over the globin cluster on the
-          // strength of the ~200 reverse reads there, against 10,000 forward.
-          // The figure is about the two bands' HEIGHTS.
+          colorBy: { type: 'strand' },
           showSashimiArcs: false,
-          coverageHeight: 190,
-          height: 420,
+          featureHeight: 3,
+          // the coverage bands ARE the claim, so they get the room: a few long
+          // reads spanning a 40 kb gene draw as long thin intron lines whatever
+          // their number, so the pileup under each band reads busier than its
+          // depth and cannot be the thing a reader measures
+          coverageHeight: 165,
+          height: 600,
         },
       ],
     }),
     // `pileup-display` is the whole alignments display's testid, coverage band
-    // included, so it is still the gate with the pileup switched off
+    // included
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 120000,
     settleMs: 12000,
     // off the run's own below-the-fold report
-    viewportHeight: 740,
+    viewportHeight: 960,
     hideTooltip: true,
   },
 
