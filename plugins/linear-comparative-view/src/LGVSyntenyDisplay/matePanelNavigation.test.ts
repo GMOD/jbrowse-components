@@ -90,9 +90,13 @@ test('the locstring is the visible window walked through the CIGAR', () => {
 })
 
 // A block with no CIGAR (minimap2 without -c, MashMap, MCScan, a PIF's coarse
-// tier) interpolates across itself instead, which is the geometry its ribbon is
-// drawn with.
-test('a CIGAR-less block interpolates the same window', () => {
+// tier) has no walkable correspondence, and this refuses rather than
+// interpolating one. The launch path still interpolates -- its dialog pads the
+// result and shows what it resolved -- but a panel navigated flush against its
+// neighbour presents the guess as a correspondence. On a coarse PIF tier the
+// skew is not even bounded by the 10 kb split threshold `make-pif` uses, since
+// smaller indels accumulate without triggering a split.
+test('a CIGAR-less block names no region', () => {
   const feature = new SimpleFeature({
     uniqueId: 'block1',
     refName: 'chr8_MATERNAL',
@@ -108,7 +112,7 @@ test('a CIGAR-less block interpolates the same window', () => {
   })
   expect(
     matePanelLocString(feature, { start: 2_000_000, end: 2_100_000 }),
-  ).toBe('chr8_PATERNAL:2000001..2100000')
+  ).toBeUndefined()
 })
 
 test('a feature with no mate names no region', () => {

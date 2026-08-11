@@ -3,6 +3,7 @@ import { isViewModel } from '@jbrowse/core/util/types'
 import { getParent, hasParent } from '@jbrowse/mobx-state-tree'
 
 import { resolvedMateSpan } from '../LaunchSyntenyView/buildSyntenyViewSpec.ts'
+import { getCigar } from '../syntenyMate.ts'
 
 import type { RegionOfInterest } from '../LaunchSyntenyView/buildSyntenyViewSpec.ts'
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
@@ -99,11 +100,23 @@ export function matePanelIndexes({
  * and the ribbons between them come back near-vertical. Reverse-strand
  * alignments are deliberately not opened reversed: the crossed ribbon is how an
  * inversion reads, and flipping a panel the user did not ask to flip hides it.
+ *
+ * NO CIGAR, NO ANSWER. `resolvedMateSpan` will happily interpolate across a
+ * block instead of walking it, and for the LAUNCH that is right — its dialog
+ * pads the result by a window size and shows what it resolved. This navigates a
+ * neighbouring panel and parks it flush against the anchor, where a
+ * straight-line guess reads as a correspondence and nothing on screen says
+ * otherwise. The refusal lives here rather than only in the menu so that every
+ * caller inherits it; the menu gates on the same thing so the item is absent
+ * rather than inert.
  */
 export function matePanelLocString(
   feature: Feature,
   region: RegionOfInterest,
 ): string | undefined {
+  if (!getCigar(feature)) {
+    return undefined
+  }
   const span = resolvedMateSpan(feature, region)
   return span
     ? assembleLocStringRaw({

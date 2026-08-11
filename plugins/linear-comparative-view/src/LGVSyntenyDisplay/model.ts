@@ -32,7 +32,7 @@ import SyncAltIcon from '@mui/icons-material/SyncAlt'
 
 import { anchorPanelTracks } from '../LaunchSyntenyView/anchorPanelTracks.ts'
 import { canLaunchSyntenyForMate } from '../LaunchSyntenyView/canLaunchSyntenyForMate.ts'
-import { getMate } from '../syntenyMate.ts'
+import { getCigar, getMate } from '../syntenyMate.ts'
 import {
   containingPanelStack,
   matePanelIndexes,
@@ -324,14 +324,28 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
               // whose neighbour is already on the mate's assembly — in a
               // standalone linear view there is nothing to move, and launching
               // is the whole answer.
+              //
+              // AND ONLY WITH A CIGAR TO WALK. Without one, `resolvedMateSpan`
+              // interpolates across the block — which is the right answer for
+              // the LAUNCH above, whose dialog pads the result by a window size
+              // and shows what it resolved, but not for this: this navigates a
+              // neighbouring panel and parks it flush against this one, which
+              // presents a straight-line guess as a correspondence with nothing
+              // on screen to say so. A minimap2 PAF without `-c`, MashMap,
+              // MCScan and a PIF's coarse tier all carry no CIGAR, and on the
+              // coarse tier the skew is not even bounded by its 10 kb split
+              // threshold — smaller indels accumulate without triggering a
+              // split. The band's own right-click menu gates on the same thing
+              // via `featureData.hasCigar`.
               const stack = containingPanelStack(view)
-              const indexes = stack
-                ? matePanelIndexes({
-                    panelAssemblies: stack.views.map(v => v.assemblyNames[0]),
-                    anchorIndex: stack.views.indexOf(view),
-                    mateAssemblyName: getMate(feature)?.assemblyName,
-                  })
-                : []
+              const indexes =
+                stack && getCigar(feature)
+                  ? matePanelIndexes({
+                      panelAssemblies: stack.views.map(v => v.assemblyNames[0]),
+                      anchorIndex: stack.views.indexOf(view),
+                      mateAssemblyName: getMate(feature)?.assemblyName,
+                    })
+                  : []
               if (stack && block && indexes.length) {
                 items.push({
                   label:
