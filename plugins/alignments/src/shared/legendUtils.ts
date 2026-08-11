@@ -124,31 +124,49 @@ function hslRamp(
   }))
 }
 
-// Each fixed-swatch category with its label, in display order. The swatch color
-// is resolved from the live palette (categorySwatchColor), so the only thing
-// the legend hard-codes is the wording. Categories not listed here ('plain',
-// 'mapq', 'tag', 'modFwd'/'modRev') are dynamic ramps/palettes with no single
-// swatch. Driving the legend off this table means it lists exactly the buckets
-// the renderer produced (readColorCategory) — no per-scheme item arrays.
-const CATEGORY_LEGEND: { category: SwatchCategory; label: string }[] = [
-  { category: 'fwdStrand', label: 'Forward strand' },
-  { category: 'revStrand', label: 'Reverse strand' },
-  { category: 'nonSplit', label: 'Unsplit read' },
-  { category: 'pairLR', label: 'LR - Normal pair orientation' },
-  { category: 'pairRL', label: 'RL - Mates point outward' },
-  { category: 'pairLL', label: 'LL - Both mates forward strand' },
-  { category: 'pairRR', label: 'RR - Both mates reverse strand' },
-  { category: 'normalInsert', label: 'Normal' },
-  { category: 'longInsert', label: 'Long insert' },
-  { category: 'shortInsert', label: 'Short insert' },
-  { category: 'splitInversion', label: 'Split-read inversion' },
-  { category: 'splitDeletion', label: 'Split read (deletion)' },
-  { category: 'interchrom', label: 'Inter-chromosomal' },
-  { category: 'unmappedMate', label: 'Unmapped mate' },
-  { category: 'supplementary', label: 'Supplementary/split' },
+// The label for each fixed-swatch category, in display order — object key order
+// is the order, the same way `GROUP_BY_DIMENSIONS`' is its menu order. The
+// swatch color is resolved from the live palette (categorySwatchColor), so
+// wording is the only thing the legend hard-codes. Categories absent from
+// `SwatchCategory` ('plain', 'mapq', 'tag', 'modFwd'/'modRev') are dynamic
+// ramps/palettes with no single swatch and are keyed by `schemeLegend` instead.
+//
+// A `Record<SwatchCategory, …>` and not an array. `colorUtils` calls this pair
+// correct BY CONSTRUCTION — "the legend can never list a color the renderer
+// didn't paint (or omit one it did)" — and as an array only the first half of
+// that held: `swatchPaletteKeys` is exhaustive over the categories, but leaving
+// one out HERE compiled. `noStrand` was left out, and nothing said so.
+//
+// Nothing draws it today, which is why it went unnoticed: `strandCategory`
+// emits it for strand 0, and neither feature source this pipeline serves can
+// produce one — `SamRecordFeature.strand` is `flags & SAM_FLAG_REVERSE ? -1 : 1`
+// and PAF parses `'-' ? -1 : 1`. So this is the latent half of the invariant,
+// not a swatch users are missing; `presentCategories` filters the row out until
+// something does emit the bucket. The type is the point.
+const CATEGORY_LEGEND: Record<SwatchCategory, string> = {
+  fwdStrand: 'Forward strand',
+  revStrand: 'Reverse strand',
+  noStrand: 'Unstranded',
+  nonSplit: 'Unsplit read',
+  pairLR: 'LR - Normal pair orientation',
+  pairRL: 'RL - Mates point outward',
+  pairLL: 'LL - Both mates forward strand',
+  pairRR: 'RR - Both mates reverse strand',
+  normalInsert: 'Normal',
+  longInsert: 'Long insert',
+  shortInsert: 'Short insert',
+  splitInversion: 'Split-read inversion',
+  splitDeletion: 'Split read (deletion)',
+  interchrom: 'Inter-chromosomal',
+  unmappedMate: 'Unmapped mate',
+  supplementary: 'Supplementary/split',
   // last: the leftover bucket of the CPU-baked schemes, named per scheme below
-  { category: 'noTagValue', label: 'No value' },
-]
+  noTagValue: 'No value',
+}
+
+// Display order, taken off the exhaustive table above so the two can't be
+// separately incomplete.
+const CATEGORY_ORDER = Object.keys(CATEGORY_LEGEND) as SwatchCategory[]
 
 // Under any scheme that colors ordinary reads by something OTHER than their own
 // strand (normal, insert size, pair orientation, mapq, modifications, tag …), a
@@ -161,6 +179,9 @@ const CATEGORY_LEGEND: { category: SwatchCategory; label: string }[] = [
 const SPLIT_STRAND_LABELS: Partial<Record<SwatchCategory, string>> = {
   fwdStrand: 'Split read (forward)',
   revStrand: 'Split read (reverse)',
+  // the same argument, for the third member of the triple: under a non-strand
+  // scheme an unstranded bucket can only have come from that same branch
+  noStrand: 'Split read (unstranded)',
 }
 
 // The first-of-pair-strand scheme colors by the FRAGMENT strand inferred from
@@ -262,12 +283,13 @@ function bucketItems(
   overrides: Partial<Record<SwatchCategory, string>>,
   swatchOverrides: Partial<Record<SwatchCategory, string>> = {},
 ): LegendItem[] {
-  return CATEGORY_LEGEND.filter(({ category }) =>
-    presentCategories.has(category),
-  ).map(({ category, label }) => ({
-    color: swatchOverrides[category] ?? categorySwatchColor(category, palette),
-    label: overrides[category] ?? label,
-  }))
+  return CATEGORY_ORDER.filter(category => presentCategories.has(category)).map(
+    category => ({
+      color:
+        swatchOverrides[category] ?? categorySwatchColor(category, palette),
+      label: overrides[category] ?? CATEGORY_LEGEND[category],
+    }),
+  )
 }
 
 function crossCuttingBuckets(

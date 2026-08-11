@@ -61,12 +61,37 @@ describe('getReadDisplayLegendItems', () => {
     expect(labels('strand', ['fwdStrand'])).toEqual(['Forward strand'])
   })
 
-  test('strand scheme lists only forward/reverse — a read always has a strand', () => {
-    // noStrand is never a real read bucket (strand is derived from the 0x10 flag,
-    // always ±1), so the legend never advertises a "No strand" swatch.
+  test('strand scheme lists forward/reverse', () => {
     expect(labels('strand', ['fwdStrand', 'revStrand'])).toEqual([
       'Forward strand',
       'Reverse strand',
+    ])
+  })
+
+  // `noStrand` is the defensive branch of `strandCategory` (strand 0). NEITHER
+  // feature source this pipeline serves emits one — `SamRecordFeature.strand` is
+  // `flags & SAM_FLAG_REVERSE ? -1 : 1`, PAF parses `'-' ? -1 : 1` — so this
+  // asserts a row nothing currently reaches. It is here because the legend table
+  // is now exhaustive over `SwatchCategory` by type, and the pair of tests below
+  // is what says which wording that completeness bought: a bucket the renderer
+  // has a palette slot and a shader index for is no longer one the key can drop
+  // silently if a future adapter does emit it.
+  //
+  // (A previous test asserted the opposite — that `noStrand` "is never a real
+  // read bucket" — which was true, but reasoned from the BAM flag alone about a
+  // pipeline that also serves flagless PAF. Right answer, wrong argument.)
+  test('the unstranded bucket has a row if it is ever produced', () => {
+    expect(labels('strand', ['fwdStrand', 'revStrand', 'noStrand'])).toEqual([
+      'Forward strand',
+      'Reverse strand',
+      'Unstranded',
+    ])
+  })
+
+  test('a non-strand scheme reframes the unstranded bucket as a split read too', () => {
+    expect(labels('insertSize', ['noStrand', 'normalInsert'])).toEqual([
+      'Split read (unstranded)',
+      'Normal',
     ])
   })
 
