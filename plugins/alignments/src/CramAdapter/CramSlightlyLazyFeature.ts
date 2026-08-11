@@ -3,13 +3,25 @@ import { numericCigarToString } from '@jbrowse/cigar-utils'
 import { collectMismatches } from '../shared/collectMismatches.ts'
 import { convertTagsToPlainArrays } from '../shared/util.ts'
 import { packCigar } from './packCigar.ts'
-import { readFeaturesToMismatches } from './readFeaturesToMismatches.ts'
 
 import type { MismatchFeature } from '../shared/extractCigarFeatures.ts'
 import type CramAdapter from './CramAdapter.ts'
 import type { CramRecord } from '@gmod/cram'
 import type { MismatchCallback } from '@jbrowse/cigar-utils'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
+
+// Reused across every call of forEachMismatch below, because a fresh literal is
+// one allocation per read per render pass and that measured 16.5ms -> 20.7ms on
+// 80,177 short reads, most of the cost of delegating at all.
+//
+// Safe because @gmod/cram reads all three fields before the walk starts, and
+// retains none of them: even a callback that walks another feature cannot see a
+// mutated window, because its own values are already copied out by then.
+const MISMATCH_OPTS: { start?: number; end?: number; origin: number } = {
+  start: undefined,
+  end: undefined,
+  origin: 0,
+}
 
 export default class CramSlightlyLazyFeature implements MismatchFeature {
   // parameter properties auto-create the record/adapter fields
@@ -253,35 +265,32 @@ export default class CramSlightlyLazyFeature implements MismatchFeature {
     return collectMismatches(this)
   }
 
-  // windowStart/windowEnd (genomic) clip emissions to the viewport, matching
-  // BamSlightlyLazyFeature. The readFeatures walk works in read-relative space,
-  // so the window is converted to that space once before delegating.
+  // windowStart/windowEnd (genomic, half-open) clip emissions to the viewport,
+  // matching BamSlightlyLazyFeature.
+  //
+  // This used to be a copy of @gmod/cram's own walk, kept here because the two
+  // vocabularies disagreed and translating between them cost 17% of this path.
+  // They agree now: MISMATCH_TYPE and friends are the CRAM feature codes (see
+  // mismatchCallback.ts), and `origin` moves the reported positions into the
+  // read-relative space this callback's consumers work in, so `callback` is
+  // what the walk itself calls. @gmod/cram ADR 0008 has that story.
+  //
+  // Not free even so: ~5% against the copy it replaced (interleaved, min of 13
+  // rounds, 1.047x and 1.066x on 628 ONT reads, 1.046x and 1.119x on 80,177
+  // short ones), which is the cost of the walk living across a package boundary
+  // rather than in this module. Taken for deleting a 110-line second
+  // implementation of the format's trickiest walk — one that had been silently
+  // dropping 'B' features, and that nothing but a hand-diff against cram-js's
+  // copy would have caught.
   forEachMismatch(
     callback: MismatchCallback,
     windowStart?: number,
     windowEnd?: number,
   ) {
-    const featStart = this.start
-    const wLo =
-      windowStart === undefined
-        ? Number.NEGATIVE_INFINITY
-        : windowStart - featStart
-    const wHi =
-      windowEnd === undefined ? Number.POSITIVE_INFINITY : windowEnd - featStart
-    // the quality column and this record's offset into it, rather than
-    // `qualRaw` — that getter builds a fresh subarray view per call, and this
-    // runs once per read per render pass
-    readFeaturesToMismatches(
-      this.record.readFeatureArena,
-      this.record.readFeatureStart,
-      this.record.readFeatureCount,
-      featStart,
-      this.record.qualityColumn,
-      this.record.qualityStart,
-      wLo,
-      wHi,
-      callback,
-    )
+    MISMATCH_OPTS.start = windowStart
+    MISMATCH_OPTS.end = windowEnd
+    MISMATCH_OPTS.origin = this.start
+    this.record.forEachMismatch(callback, MISMATCH_OPTS)
   }
 
   get fields(): SimpleFeatureSerialized {

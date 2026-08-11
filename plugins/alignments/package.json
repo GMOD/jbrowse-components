@@ -33,7 +33,7 @@
   "dependencies": {
     "@gmod/bam": "^8.5.0",
     "@gmod/bgzf-filehandle": "^6.4.0",
-    "@gmod/cram": "^12.0.1",
+    "@gmod/cram": "^13.1.0",
     "@jbrowse/alignments-core": "workspace:^",
     "@jbrowse/cigar-utils": "workspace:^",
     "@jbrowse/core": "workspace:^",

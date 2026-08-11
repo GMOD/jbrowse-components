@@ -39,10 +39,25 @@ export function collectMismatches(feature: {
           insertlen: cliplen!,
           insertedBases: base,
         })
+        // a clip occupies one reference column whatever its read length, which
+        // travels in `cliplen`. Set here rather than per emission: the walks
+        // report `length` 0 for a clip (it consumes no reference), and the hot
+        // render path reads `cliplen` and ignores `length` entirely, so this is
+        // the only place the object convention has to hold.
       } else if (type === SOFTCLIP_TYPE) {
-        mismatches.push({ type: 'softclip', start, length, cliplen: cliplen! })
+        mismatches.push({
+          type: 'softclip',
+          start,
+          length: 1,
+          cliplen: cliplen!,
+        })
       } else if (type === HARDCLIP_TYPE) {
-        mismatches.push({ type: 'hardclip', start, length, cliplen: cliplen! })
+        mismatches.push({
+          type: 'hardclip',
+          start,
+          length: 1,
+          cliplen: cliplen!,
+        })
       } else if (type === DELETION_TYPE) {
         mismatches.push({ type: 'deletion', start, length })
       } else if (type === SKIP_TYPE) {
