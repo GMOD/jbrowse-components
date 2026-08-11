@@ -1,14 +1,13 @@
-// Which arc, if any, the cursor is on. The counterpart to `drawArcs` — every
-// screen-space step below is the same one `drawArcsToCtx` takes, off the same
-// generated helpers, because a hit test that re-derives the geometry is a second
-// placement of the arcs that can disagree with the drawn one.
+// Which arc, if any, the cursor is on. The counterpart to `drawArcs`: it takes
+// its geometry from `arcPlacement`, the same call the draw makes, because a hit
+// test that re-derives it is a second placement of the arcs — free to disagree
+// with the drawn one, and it has, twice.
 import { distToWideCirclePx } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 import { arcRadiiPx } from '../../shaders/slang/arc.js.generated.ts'
 import { ARC_FLAT_MIN_PX } from '../../shaders/slang/arcFlat.iface.generated.ts'
 import { arcLineWidth } from './arcLineWidth.ts'
-import { arcAvailH, arcDomeDestY, arcYOffsetPx } from './arcYScale.ts'
-import { isFlatArcShape } from './compute.ts'
 import { ellipseDistance } from './ellipseDistance.ts'
+import { arcPlacement } from './placement.ts'
 
 import type { ArcsUploadData } from './types.ts'
 
@@ -66,16 +65,9 @@ export function hitTestArcs(
   data: ArcsUploadData,
   opts: ArcHitOptions,
 ): ArcHitResult | undefined {
-  const {
-    bpToScreenX,
-    arcsYDomainBp,
-    arcsYLog,
-    arcsTop,
-    arcsH,
-    pairedArcsDown,
-    lineWidth,
-    screenWidthPx,
-  } = opts
+  // The projection and the Y scale are read by `arcPlacement`, not here — this
+  // needs only the band rect, the direction, and the two widths.
+  const { arcsTop, arcsH, pairedArcsDown, lineWidth, screenWidthPx } = opts
   // The band's own gate, and it is EXACT rather than widened by the slop below:
   // both renderers clip the arc pass to this rect, so there is no arc ink
   // outside it to be near. Widening it would let a foot at the band edge answer
@@ -89,7 +81,6 @@ export function hitTestArcs(
   }
 
   const anchorY = pairedArcsDown ? arcsTop : arcsTop + arcsH
-  const availH = arcAvailH(arcsH)
   // Drawn-side-positive local Y: an up-pointing band measures upward from the
   // anchor, a down-pointing one downward, and every test below is written once
   // against that single frame instead of twice against the two directions.
@@ -127,20 +118,14 @@ export function hitTestArcs(
     if (localY < -(halfWidth + ARC_HIT_SLOP_PX)) {
       continue
     }
-    const sx1 = bpToScreenX(data.arcX1[i]!)
-    const sx2 = bpToScreenX(data.arcX2[i]!)
-    // Same split the draw makes: a flat mark's Y is clamped into the band, a
-    // dome's is not (arcDomeDestY). Reading the clamped one for a dome would
-    // measure a squashed ellipse the renderer no longer draws, so a wide pair's
-    // arc would answer hovers along a ceiling it does not sit on.
-    const isFlat = isFlatArcShape(data.arcShapeTypes[i]!)
-    const yBp = data.arcYBp[i]!
-    const arcH = isFlat
-      ? arcYOffsetPx(yBp, arcsYDomainBp, arcsYLog, availH)
-      : arcDomeDestY(yBp, arcsYDomainBp, arcsYLog, availH)
+    // `destY` is the apex height above the anchor on the drawn side, which is
+    // the frame `localY` is in — so an up band and a down band are one case
+    // here, and the flat/dome Y split is `arcPlacement`'s to make rather than
+    // this file's to remember.
+    const { sx1, sx2, destY, isFlat } = arcPlacement(data, i, opts)
     const dist = isFlat
-      ? flatDistance(canvasX, localY, sx1, sx2, arcH)
-      : curveDistance(canvasX, localY, sx1, sx2, arcH, screenWidthPx)
+      ? flatDistance(canvasX, localY, sx1, sx2, destY)
+      : curveDistance(canvasX, localY, sx1, sx2, destY, screenWidthPx)
     // How far past this arc's own ink the cursor is: the quantity that both
     // gates the hit and sorts the two buckets above.
     const outside = dist - halfWidth
