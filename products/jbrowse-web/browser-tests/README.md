@@ -47,10 +47,16 @@ node browser-tests/runner.ts --include-remote
 # (not needed when --filter is given — remote is auto-enabled)
 
 # Exactly what the blocking CI job renders — CI_GATE_SUITES, remote forced off.
-# Scoping only, so it composes: drop --swiftshader to run the same set on the
-# real GPU. --retries=N (default 1 under --ci-gate, 0 otherwise) re-runs a
-# failing test in a fresh browser and names it in the summary.
+# Scoping only, so it composes. --retries=N (default 1 under --ci-gate, 0
+# otherwise) re-runs a failing test in a fresh browser and names it in the
+# summary.
 node browser-tests/runner.ts --backend=all --skip-webgpu --swiftshader --gate-only --ci-gate
+
+# The same set on the machine's real GPU. Use --real-gpu; do NOT just drop
+# --swiftshader, which leaves headless Chrome on SwiftShader anyway (verified by
+# browser-tests/probe-renderer.ts). --drift-report prints every compared pair's
+# drift instead of the worst five, which is what a threshold audit reads.
+node browser-tests/runner.ts --backend=all --skip-webgpu --real-gpu --gate-only --ci-gate --drift-report
 ```
 
 ## How It Works
@@ -101,8 +107,14 @@ pnpm test:browser:gate:ci    # CI_GATE_SUITES, remote off — exactly what CI ru
 pnpm test:browser:gate       # every local suite — the hand-run tool
 ```
 
-Both software-render webgl (`--swiftshader`), which is what CI has to do; drop
-that flag from either to exercise the machine's real GPU.
+Both software-render webgl (`--swiftshader`), which is what CI has to do. To
+exercise the machine's real GPU, pass **`--real-gpu`** — not merely the absence
+of `--swiftshader`, which is what this line used to say and is wrong: headless
+Chrome does not select a GPU on its own, so with no flag at all you get
+SwiftShader again. `browser-tests/probe-renderer.ts` prints the renderer each
+launch configuration actually gets, and the distinction matters because the
+threshold audit in `crossBackendGate.ts` decides whether a drift is antialiasing
+by whether it _moves_ between the two.
 
 It is differential (canvas2d vs webgl, both rendered in the one run), so it
 needs no committed baseline and cannot drift between machines. `--ci-gate`

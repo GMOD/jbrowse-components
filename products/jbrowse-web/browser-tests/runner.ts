@@ -14,6 +14,7 @@ import { launch } from 'puppeteer'
 import {
   CI_GATE_SUITES,
   enableCrossBackendCollection,
+  formatThresholdPct,
   runCrossBackendGate,
 } from './crossBackendGate.ts'
 import { BASICAUTH_PORT, OAUTH_PORT, PORT, setPort } from './helpers.ts'
@@ -54,7 +55,8 @@ const { values } = parseArgs({
     backend: { type: 'string' },
     'skip-webgpu': { type: 'boolean', default: false },
     // Software-render the webgl backend (no GPU needed) — required in CI, whose
-    // runners have no GPU; locally, omit it to exercise the real GPU.
+    // runners have no GPU. Its opposite is `--real-gpu`, NOT the absence of this
+    // flag; see chromeArgsForRenderingBackend.
     swiftshader: { type: 'boolean', default: false },
     // Capture + run the cross-backend gate but skip the golden comparison. The
     // CI-facing mode: goldens are environment-specific, the gate is not.
@@ -64,6 +66,20 @@ const { values } = parseArgs({
     // --backend/--swiftshader/--gate-only, so running it on a real GPU locally
     // shows exactly what CI compares.
     'ci-gate': { type: 'boolean', default: false },
+    // Print EVERY compared pair's drift instead of the worst five, and change
+    // nothing about the verdict. This is what a threshold audit needs
+    // (crossBackendGate.ts THRESHOLD_OVERRIDES), and the method documented there
+    // was to temporarily zero the thresholds so every pair printed as a failure
+    // — which also writes a diff PNG per pair and exits non-zero, so the audit
+    // could not be run against a tree you then wanted to test. Reading the
+    // distribution and judging it are different jobs; only the second one is the
+    // gate's.
+    'drift-report': { type: 'boolean', default: false },
+    // Force the webgl backend onto the machine's actual GPU. The opposite of
+    // --swiftshader, and NOT the same as omitting it — see
+    // chromeArgsForRenderingBackend. Pair the two to run the rasterizer test the
+    // threshold audit is built on.
+    'real-gpu': { type: 'boolean', default: false },
     // Extra attempts for a failing test, each in a fresh browser. Defaults to 1
     // under --ci-gate and 0 otherwise: a hand run wants the failure, a blocking
     // job wants the rare capture race not to block a merge — while still saying
@@ -94,6 +110,7 @@ const testFilter = values.test?.toLowerCase() ?? ''
 // hs1/mm39 synteny), whose data is fetched straight from S3/UCSC at runtime.
 const smoke = values.smoke
 const ciGate = values['ci-gate']
+const driftReport = values['drift-report']
 const retries = values.retries ? Number(values.retries) : ciGate ? 1 : 0
 // Tests that failed and then passed on a later attempt, for the end-of-run
 // report. Never folded into the pass count: the whole value of a retry is that
@@ -109,6 +126,11 @@ const includeRemote =
 const backendValue = values.backend
 const skipWebGPU = values['skip-webgpu']
 const swiftshader = values.swiftshader
+const realGpu = values['real-gpu']
+if (swiftshader && realGpu) {
+  console.error('--swiftshader and --real-gpu are mutually exclusive')
+  process.exit(1)
+}
 const gateOnly = values['gate-only']
 const quiet = values.quiet
 const debug = values.debug
@@ -127,9 +149,9 @@ type RenderingBackend = 'webgl' | 'webgpu' | 'canvas2d'
 
 function chromeArgsForRenderingBackend(backend?: RenderingBackend) {
   const chromeArgs = [...BASE_CHROME_ARGS, '--disable-popup-blocking']
-  // webgl runs on the machine's real GPU (run headed) — no swiftshader, whose
-  // per-context memory growth is why we moved off it (see
-  // agent-docs/reference/TEST_INFRASTRUCTURE.md). webgpu does not use Chrome at all
+  // With neither flag the webgl backend takes whatever Chrome picks, which
+  // headless is SwiftShader — see the --real-gpu branch below, and don't read
+  // "no --swiftshader" as "real GPU". webgpu does not use Chrome at all
   // (it requires Firefox Nightly, see runWithRenderingBackend), so neither needs
   // extra chrome flags. --swiftshader forces the webgl backend to software-render
   // so it can run on a GPU-less CI runner; modern Chrome needs
@@ -138,6 +160,23 @@ function chromeArgsForRenderingBackend(backend?: RenderingBackend) {
     chromeArgs.push('--disable-gpu')
   } else if (swiftshader) {
     chromeArgs.push('--use-gl=swiftshader', '--enable-unsafe-swiftshader')
+  } else if (realGpu) {
+    // **Headless Chrome does NOT pick the machine's GPU on its own.** Measured
+    // 2026-08-11 via WEBGL_debug_renderer_info, on a box with two real GPUs:
+    //
+    //   (no flags)              ANGLE (Google, Vulkan 1.3.0 (SwiftShader …))
+    //   --use-gl=swiftshader    ANGLE (Google, Vulkan 1.3.0 (SwiftShader …))
+    //   --use-gl=angle          ANGLE (Intel, Mesa Intel(R) UHD Graphics 630)
+    //
+    // So "run it again without --swiftshader" — which is how the threshold
+    // audit in crossBackendGate.ts describes getting a second rasterizer —
+    // silently compares SwiftShader against SwiftShader when run headless, and
+    // the two figures then agree for a reason that has nothing to do with the
+    // renderer. That is a check that passes by proving nothing, and the audit's
+    // whole decision rule ("identical across rasterizers ⇒ not antialiasing")
+    // rests on the comparison being real. `--real-gpu` makes it real without
+    // needing --headed (which also forces concurrency 1 and a display).
+    chromeArgs.push('--use-gl=angle')
   }
   return chromeArgs
 }
@@ -692,12 +731,25 @@ async function main() {
       for (const n of skippedNames) {
         console.log(`    ? uncompared: ${n}`)
       }
-      const topPassing = drifts
-        .filter(d => d.pct <= d.threshold * 100)
-        .slice(0, 5)
-      for (const d of topPassing) {
+      const passing = drifts.filter(d => d.pct <= d.threshold * 100)
+      // --drift-report wants the whole distribution, because the question it
+      // answers is "where could the threshold go", and the answer is set by the
+      // shape of the tail rather than by its worst member.
+      for (const d of driftReport ? passing : passing.slice(0, 5)) {
         console.log(
-          `    · ${d.name} [${d.pair}]: ${d.pct.toFixed(2)}% (threshold ${(d.threshold * 100).toFixed(0)}%)`,
+          `    · ${d.name} [${d.pair}]: ${d.pct.toFixed(2)}% (threshold ${formatThresholdPct(d.threshold)}%)`,
+        )
+      }
+      if (driftReport && passing.length > 0) {
+        // The margin in one line, so two runs can be compared without diffing
+        // sixty. Under swiftshader these figures have been byte-identical run to
+        // run, so a moving max is itself the finding.
+        const pcts = passing.map(d => d.pct)
+        const over = (n: number) => pcts.filter(p => p > n).length
+        console.log(
+          `\n  drift-report: ${pcts.length} passing pair(s), max ${Math.max(...pcts).toFixed(2)}%, ` +
+            `median ${pcts.toSorted((a, b) => a - b)[pcts.length >> 1]!.toFixed(2)}% — ` +
+            `over 0.5%: ${over(0.5)}, over 1%: ${over(1)}, over 2%: ${over(2)}`,
         )
       }
       if (failures.length > 0) {

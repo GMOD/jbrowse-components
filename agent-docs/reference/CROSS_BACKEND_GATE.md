@@ -1,6 +1,6 @@
 ---
 name: cross-backend-gate
-description: The canvas2d-vs-GPU render gate that blocks CI — what is in its scope and why, the measured baselines to check an alignments render change against, and the methodology that made it blockable (a threshold override is a testable claim; a whole-suite A/B cannot resolve an effect this size). Read before widening CI_GATE_SUITES, adding a threshold override, or re-opening the blank-capture question.
+description: The canvas2d-vs-GPU render gate that blocks CI — what is in its scope and why, the measured drift distribution behind the 1.5% threshold, the measured baselines to check an alignments render change against, and the methodology that made it blockable (a threshold override is a testable claim, tested with --real-gpu since omitting --swiftshader does not give you one; a whole-suite A/B cannot resolve an effect this size). Read before widening CI_GATE_SUITES, changing the threshold, adding an override, or re-opening the blank-capture question.
 ---
 
 # The cross-backend render gate
@@ -17,9 +17,39 @@ build.
 ## What made a blocking gate possible
 
 1. **A scope whose noise floor is nowhere near the threshold.** 66 pairs per run,
-   0 over threshold, worst *passing* drift 0.51% against a 3% default. The drift
-   comparison was never the problem — it has been clean for the deterministic
-   view types across every measurement.
+   0 over threshold, worst *passing* drift 0.51% against a then-3% default. The
+   drift comparison was never the problem — it has been clean for the
+   deterministic view types across every measurement.
+
+   **The default is 1.5% since 2026-08-11**, because that headroom was measured
+   rather than spent. Re-measured on the CI scope with `--drift-report`: 66
+   pairs, **max 0.62%**, median 0.00%, exactly one pair over 0.5% and none over
+   1% — byte-identical across two consecutive runs, which is the property that
+   makes a tight threshold safe rather than merely tighter. 1.5% is ~2.4x the
+   worst case. Deliberately not 1%: this gate was once switched off for being
+   noisy, and on a blocking job margin is worth more than tightness.
+
+   The number to check a change against is that distribution, not the max alone.
+   The worst pair has moved 0.51% → 0.62% since August and is
+   `targeted_bigwig-multibigwig-multirowline`; the top four are all wiggle line
+   plots, and all of them move between rasterizers, so that floor is genuine
+   antialiasing.
+
+   **What 1.5% costs, measured: a loaded full hand run can now flag a pair that
+   is fine.** `pnpm test:browser:gate` over all 310 tests, on a run that
+   degraded badly (23 failures, 29 uncompared, 132 pairs instead of 157), put
+   `dotplot-default` at 1.88% / 1.68%. Re-run scoped to `Dotplot View` it is
+   **0.06% / 0.04%**, which is what all three `--ci-gate` runs also measured. So
+   it is the documented capture degradation — a partial capture is a *fixed*
+   diff, so the magnitude looks stable while the occurrence stays racy — and not
+   a rendering difference. At 3% that noise sat under the ceiling; at 1.5% it
+   surfaces.
+   
+   This does not reach the blocking job: CI runs `--ci-gate` (106 tests, and
+   `retries` defaults to 1 there against 0 for a hand run), and dotplot was
+   0.06% in every one. **If a heavy full run flags something, re-run it scoped
+   before believing it** — that is the same instruction the load section below
+   already gives, now with a threshold that will actually make you follow it.
 2. **The gate can no longer pass by checking less.** An uncompared pair is a
    failure under `--ci-gate`.
 3. **A blank capture fails its test and takes one retry, in a fresh browser,
@@ -95,16 +125,100 @@ The durable capture-side mechanics are in
   diff, so the magnitude reproduces while the occurrence stays racy. Check
   whether the pair was compared at all before inferring determinism.
 
+## The rasterizer test needs `--real-gpu`, and did not have it
+
+**Omitting `--swiftshader` does not give you the real GPU when running headless,
+and that is how the rasterizer test was described.** Measured 2026-08-11 with
+`browser-tests/probe-renderer.ts`, reading `UNMASKED_RENDERER_WEBGL` on a box
+with two discrete GPUs:
+
+| launch | renderer |
+| --- | --- |
+| no flags (runner *without* `--swiftshader`) | SwiftShader |
+| `--use-gl=swiftshader` (runner `--swiftshader`) | SwiftShader |
+| `--use-gl=angle` (runner `--real-gpu`) | Intel UHD Graphics 630 |
+| `--disable-gpu` (the canvas2d backend) | SwiftShader |
+
+So "render it twice, once with `--swiftshader` and once on the real GPU" run
+headless is SwiftShader against SwiftShader, every figure agrees to two decimals
+for a reason that has nothing to do with rendering, and the audit's decision rule
+— *identical ⇒ not antialiasing ⇒ something is drawn differently* — fires on
+every row. **A check that passes by proving nothing**, which is this file's own
+recurring complaint pointed at itself.
+
+`runner.ts --real-gpu` pushes `--use-gl=angle` and makes the comparison real
+without needing `--headed` (which also forces concurrency 1 and a display). Use
+`--drift-report` with it to print every pair rather than the worst five; the
+previous recipe was to zero every threshold, which also writes a diff PNG per
+pair and exits non-zero.
+
+This does **not** retract the `inversion-pbsim` result below. Those two bugs were
+confirmed by reading the code and by measured improvements (16.71 → 7.32 → 6.59),
+which no flag can fake. What is unknown is whether that audit's rasterizer test
+was itself real; re-run it with `--real-gpu` before relying on the *method*
+again.
+
+## `alignments-long-reads-sv-linked`: 1.99%, and it is a real difference
+
+Found by re-running the audit properly (2026-08-11, swiftshader vs `--real-gpu`,
+same build):
+
+| pair | swiftshader | real GPU | verdict |
+| --- | --- | --- | --- |
+| `targeted_alignments-long-reads-sv-linked` | 1.99% | **1.99%** | does not move |
+| `fullpage_alignments-long-reads-sv-linked` | 0.62% | **0.62%** | does not move |
+| `targeted_color-by-insert-size-orientation` | 0.70% | 0.68% | moves |
+| `targeted_alignments-volvox-sv` | 0.64% | 0.56% | moves |
+| `targeted_bigwig-multibigwig-multirowline` | 0.62% | 0.61% | moves |
+| `targeted_additional-line-wiggle` | 0.41% | 0.23% | moves |
+| `fullpage_additional-color-wiggle` | 0.08% | 0.04% | moves |
+
+Every other pair in the tree moves between rasterizers. This one does not, on
+both its captures.
+
+**The cause is line width, and it is structural.** `linkedReads/packGpu.ts`
+declares `topology: 'line-list'`, and a GPU line list is 1 px wide — WebGPU has
+no line-width parameter at all and WebGL2 requires only 1.0 — while
+`features/linkedReads/drawCanvas.ts` strokes `ctx.lineWidth = 1.5`. So every
+linked-read connector is half a pixel wider on the Canvas2D and SVG-export paths
+than on either GPU backend, over long diagonals across the whole pileup, which is
+exactly the shape of a stable ~2% pixel difference.
+
+This pair was one of the **seven overrides deleted on 2026-08-05** for measuring
+1.99% against a 10% ceiling. Deleting it was right — the ceiling was
+meaningless — but "it is under the default" was read as "it is fine", and the
+rasterizer test that would have separated those two claims was not run on it.
+**Being under the threshold is not evidence of agreement.**
+
+Not fixed here. The honest fix is the one `arcFlat.slang` already made for the
+read-cloud connectors (`8117814a13`): draw the line as a quad carrying
+`u.lineWidthPx` with a proper AA ramp, rather than as a line-list primitive whose
+width the GPU will not honour. That is a shader rewrite plus a golden
+re-baseline. Filed in TODO.md; the override below is a record of it, not a
+setting.
+
 ## Threshold overrides: an override is a claim, and claims are testable
 
-The list held eight entries and is audited down to **one**. Seven were deleted on
-2026-08-05, measuring 0.00–2.22% against ceilings of 5–10%. **The audit method is
-at the top of `THRESHOLD_OVERRIDES`; re-run it after any change to a shared draw
-path, and never add an entry without a measured number.**
+The list held eight entries and was audited down to **one** on 2026-08-05, the
+seven deleted ones measuring 0.00–2.22% against ceilings of 5–10%. **The audit
+method is at the top of `THRESHOLD_OVERRIDES`; re-run it after any change to a
+shared draw path, and never add an entry without a measured number.**
 
-(If you count them with `grep -c 'match:'` you get nine, because it counts the
-type annotation on the declaration line. That is the exact miscount the entry
-warns about.)
+It is **four** since 2026-08-11, and the three additions are what tightening the
+default to 1.5% exposed rather than a loosening: two `-linked` entries recording
+the line-width bug above (3.96% and 1.99%, neither moving between rasterizers),
+and `inversion-paired-coverage` at 2.40%/2.31% — the first entry in this list
+whose antialiasing claim the audit has ever *confirmed* rather than refuted.
+Splitting `inversion-pbsim-linked` out also stopped the 10% coverage ceiling
+silently covering a second, unrelated bug.
+
+**Order matters now, and did not before.** `thresholdFor` takes the first
+substring match, so `inversion-pbsim-linked` has to sit above `inversion-pbsim`
+or it is swallowed by it. Latent while there was one entry.
+
+(If you count them with `grep -c 'match:'` you get one more than there are,
+because it counts the type annotation on the declaration line. That is the exact
+miscount the entry warns about.)
 
 The survivor, `inversion-pbsim`, is the worked example of why this matters. Its
 comment blamed "uniform edge shimmer over identically-shaped reads" — an
@@ -142,15 +256,25 @@ sides moved the bar a pixel apart. Both use `floor(x + 0.5)` now. Every
 hand-written canvas twin of a shader has this available to it, and ADR-051's
 codegen does not cover them — it covers generated twins, not paired ones.
 
-**Swept 2026-08-11, and the tree is clean — don't re-run it, extend it.** Every
-`Math.round` in every file that draws to a canvas, against every shader-side
-`floor(x + 0.5)`: no pairing. What is left is color quantization, dpr scaling
-(`devicePxSpan`, `backingPx` — shared by both backends by construction, which is
-the point of those helpers), and two row-centre midpoints,
+The remaining 6.59% is the same accumulate-vs-resolve asymmetry on marks that
+**cannot** be snapped: SNP ticks and indicator triangles at arbitrary sub-pixel
+x, ~40 deep per column. Canvas2D is the wrong one — drawing the same opaque shape
+twice should not make it more opaque — but closing it means canvas2d drawing one
+merged mark per pixel column instead of 40 overlapping antialiased ones, which is
+a change to the drawing model rather than an offset fix. Left deliberately: the
+override is at 10% with the gap understood rather than mysterious.
+
+### The `Math.round` pairing is swept, and clean
+
+**Swept 2026-08-11 — don't re-run it, extend it.** Every `Math.round` in every
+file that draws to a canvas, against every shader-side `floor(x + 0.5)`: no
+pairing. What is left is color quantization, dpr scaling (`devicePxSpan`,
+`backingPx` — shared by both backends by construction, which is the point of
+those helpers), and two row-centre midpoints,
 `LinearMafRenderer/rendering/emptyLines.ts` and
 `LinearMultiRowFeatureDisplay/rendering/drawMultiRowIndelGlyphs.ts`, on paths that
 have no GPU pass at all. A clean sweep is worth recording precisely because it
-leaves nothing behind to look at: the next reader of this paragraph would
+leaves nothing behind to look at: the next reader of the paragraph above would
 otherwise do it again.
 
 The sweep is two greps and it is the *pairing* that matters, not either half:
@@ -165,16 +289,8 @@ spelling; the codegen closes it structurally wherever a decision is exported
 (`MISLEADING_BUILTINS` refuses `round()` in a shader outright, with the reason).
 The residue is a hand-paired snap someone writes tomorrow, and nothing checks for
 that — the sweep is a point-in-time measurement, not a gate. It was not made one
-for the reason the threshold overrides were audited down to one: a check whose
-findings are all "no" teaches people to skip it.
-
-The remaining 6.59% is the same accumulate-vs-resolve asymmetry on marks that
-**cannot** be snapped: SNP ticks and indicator triangles at arbitrary sub-pixel
-x, ~40 deep per column. Canvas2D is the wrong one — drawing the same opaque shape
-twice should not make it more opaque — but closing it means canvas2d drawing one
-merged mark per pixel column instead of 40 overlapping antialiased ones, which is
-a change to the drawing model rather than an offset fix. Left deliberately: the
-override is at 10% with the gap understood rather than mysterious.
+for the same reason the override list is kept short: a check whose findings are
+all "no" teaches people to skip it.
 
 ## Alignments vs webgl: the historical drift does not reproduce
 

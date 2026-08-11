@@ -16,13 +16,17 @@ const diffDir = path.resolve(__dirname, '__snapshots__', 'backend-diffs')
 // process). Its counterpart is compare-backends.ts, which diffs the committed
 // per-backend snapshot dirs for local visual review.
 //
-// Two ways to run it, both under swiftshader (drop `--swiftshader` from either
-// to exercise the machine's real GPU):
+// Two ways to run it, both under swiftshader:
 //
 //   pnpm test:browser:gate      every local suite — by hand, when touching a
 //                               shader or a backend
 //   pnpm test:browser:gate:ci   CI_GATE_SUITES, remote off — what the blocking
 //                               `cross_backend_gate` push job runs
+//
+// To exercise the machine's real GPU add `--real-gpu`. **Not** by dropping
+// `--swiftshader`, which is what this comment used to say: headless Chrome does
+// not select a GPU on its own and you get SwiftShader either way (measured,
+// `probe-renderer.ts`). The distinction is the whole rasterizer test below.
 //
 // It ran non-blocking over every suite until 2026-07-16 and was removed
 // (f3cb3b962b) because it only published drift logs nobody read while costing a
@@ -63,8 +67,8 @@ export function recordCapture(
   byBackend.set(backend, png)
 }
 
-// Where the gate is told not to look. The default is 3%; a name listed here
-// raises its own ceiling. Keyed by substring of the snapshot name (the
+// Where the gate is told not to look. The default is 1.5% (below); a name listed
+// here raises its own ceiling. Keyed by substring of the snapshot name (the
 // targeted_ / fullpage_ prefix is included, so a bare base name matches both).
 //
 // **Every entry is a testable claim about why two backends disagree, and the
@@ -94,10 +98,68 @@ export function recordCapture(
 // and nobody re-measured. A stale override is worse than no override — those
 // five views could have regressed by 10% in silence.
 //
+// **Run the second pass with `--real-gpu`, not by omitting `--swiftshader`.**
+// Headless Chrome does not select a GPU on its own, so "render it again without
+// the flag" is SwiftShader against SwiftShader and every pair then agrees to two
+// decimals for a reason that has nothing to do with rendering — which makes the
+// rule above fire on everything. Measured with `probe-renderer.ts`, 2026-08-11;
+// `--drift-report` prints every pair, which is what the audit reads.
+//
 // So: an entry needs a measured number and a reason that survives the rasterizer
 // test. Re-run the audit after any change to a shared draw path.
-const DEFAULT_THRESHOLD = 0.03
+//
+// **3% -> 1.5%, 2026-08-11.** The default is set by the antialiasing floor, and
+// the floor was measured rather than assumed: across the CI gate's 66 pairs the
+// worst is 0.62%, the median 0.00%, and exactly one pair exceeds 0.5% — with the
+// figures byte-identical between two consecutive runs. 1.5% is ~2.4x that worst
+// case. It is deliberately not 1%: this gate was once switched off for being
+// noisy, and margin is worth more than tightness on a blocking job.
+//
+// Tightening a GLOBAL default is pinned by the widest scope, not by CI's, since
+// `pnpm test:browser:gate` runs every local suite. Measured there too — 157
+// pairs, median 0.02% — which is where the four entries below come from. Three
+// of the five pairs over 1% turned out to be the SAME bug (see
+// `-linked` below); that is the tightening paying for itself before it lands.
+const DEFAULT_THRESHOLD = 0.015
+
+// **Order matters: `find` takes the FIRST match, so a specific entry must sit
+// above the broader one it would otherwise be swallowed by.** Latent until now,
+// because there was only one entry; `inversion-pbsim-linked` is a substring of
+// `inversion-pbsim` and means something different.
 const THRESHOLD_OVERRIDES: { match: string; threshold: number }[] = [
+  // The two `-linked` views, which are ONE bug and not antialiasing. Both are
+  // byte-identical across rasterizers — 3.96% and 1.99% under swiftshader and on
+  // a real Intel GPU — while every neighbouring pair moves (pbsim-coverage
+  // 7.59 -> 7.41, paired-coverage 2.40 -> 2.31, paired-cloud 0.84 -> 0.83). By
+  // the rule above that is not the rasterizer; something is drawn differently.
+  //
+  // It is line width. `linkedReads/packGpu.ts` declares `topology: 'line-list'`
+  // and a GPU line list is 1 px — WebGPU has no line-width parameter, WebGL2
+  // requires only 1.0 — while `features/linkedReads/drawCanvas.ts` strokes
+  // `ctx.lineWidth = 1.5`. Every connector is half a pixel wider on Canvas2D and
+  // in the SVG export, over long diagonals across the whole pileup.
+  //
+  // `alignments-long-reads-sv-linked` was one of the seven overrides deleted on
+  // 2026-08-05 for measuring 1.99% against a 10% ceiling. Deleting the ceiling
+  // was right; reading "under the default" as "fine" was not, and the rasterizer
+  // test that separates those was never run on it. **Being under the threshold
+  // is not evidence of agreement.**
+  //
+  // Both are records of a known bug, not settings. Delete them when the pass
+  // draws quads carrying `u.lineWidthPx` the way arcFlat.slang already does
+  // (8117814a13) — agent-docs/TODO.md, "Draw linked-read connectors as quads".
+  { match: 'inversion-pbsim-linked', threshold: 0.05 },
+  { match: 'alignments-long-reads-sv-linked', threshold: 0.025 },
+  // Dense paired-end coverage strip, measured 2.40% under swiftshader and 2.31%
+  // on a real GPU. It MOVES, so unlike the two above this really is
+  // rasterization — the first entry in this list whose antialiasing claim the
+  // audit has actually confirmed rather than refuted. Same
+  // accumulate-vs-resolve asymmetry the inversion-pbsim entry describes, on a
+  // shallower pileup.
+  //
+  // It was deleted on 2026-08-05 at "measured 2.22%" because it sat under the
+  // old 3% default; it is 2.40% now, which is worth watching on its own.
+  { match: 'inversion-paired-coverage', threshold: 0.03 },
   // Dense simulated-long-read pileups + their coverage strip. This entry was
   // 20% and excused as "uniform edge shimmer over identically-shaped reads".
   // **That was wrong, and the ceiling was hiding two real bugs.** The drifts
@@ -123,14 +185,35 @@ const THRESHOLD_OVERRIDES: { match: string; threshold: number }[] = [
   // drawing one merged mark per pixel column instead of 40 overlapping
   // antialiased ones — a change to the drawing model, not an offset fix.
   //
-  // 10%, above the measured 6.59%. This number should keep falling; it is a
-  // record of what is still broken, not a setting.
+  // 10%, above the measured 6.59% — now 7.59% under swiftshader and 7.41% on a
+  // real GPU, so it still moves and is still the rasterizer plus that residue.
+  // This number should keep falling; it is a record of what is still broken, not
+  // a setting.
+  //
+  // **It was also covering a second, unrelated bug**, which is the argument for
+  // splitting the entry above out of it: `inversion-pbsim-linked` sits at 3.96%
+  // under this same 10% ceiling and has nothing to do with SNP ticks. A broad
+  // ceiling written for one reason silently absorbs every other reason that
+  // lands under it, and nothing says so.
   { match: 'inversion-pbsim', threshold: 0.1 },
 ]
 
 function thresholdFor(name: string) {
   const override = THRESHOLD_OVERRIDES.find(o => name.includes(o.match))
   return override ? override.threshold : DEFAULT_THRESHOLD
+}
+
+/**
+ * A threshold as a percentage, without inventing precision or losing it: `0.015`
+ * prints `1.5`, `0.03` prints `3`, `0.1` prints `10`.
+ *
+ * It was `.toFixed(0)`, which was exact while every threshold was a whole
+ * percent and started rounding 1.5% to "2%" the moment the default was not — so
+ * every line of the gate's own output would have misreported the number it had
+ * just judged against.
+ */
+export function formatThresholdPct(threshold: number) {
+  return String(Number((threshold * 100).toFixed(2)))
 }
 
 // Alignment PILEUP views intermittently disagree across the two independent
@@ -288,7 +371,7 @@ export function runCrossBackendGate() {
           name,
           pair,
           detail: diff.sameSize
-            ? `${(diff.diffFraction * 100).toFixed(2)}% drift (threshold ${(threshold * 100).toFixed(0)}%)`
+            ? `${(diff.diffFraction * 100).toFixed(2)}% drift (threshold ${formatThresholdPct(threshold)}%)`
             : `size differs (${diff.widthA}x${diff.heightA} vs ${diff.widthB}x${diff.heightB})`,
         })
       }
