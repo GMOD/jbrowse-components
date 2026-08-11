@@ -1,5 +1,10 @@
 ---
+import { getCollection } from 'astro:content'
+
 import { baseUrl } from '../lib/base-url.ts'
+import { buildSearchCategoryPrefixes } from '../lib/docs-sidebar.ts'
+
+const searchPrefixes = buildSearchCategoryPrefixes(await getCollection('docs'))
 ---
 
 <!-- Header search: a compact input with an instant pagefind results dropdown.
@@ -33,12 +38,49 @@ import { baseUrl } from '../lib/base-url.ts'
   <div id="hs-results" class="hs-results" hidden></div>
 </form>
 
-<script is:inline define:vars={{ baseUrl }}>
+<script is:inline define:vars={{ baseUrl, searchPrefixes }}>
   const form = document.querySelector('.hs-form')
   const input = document.getElementById('hs-input')
   const panel = document.getElementById('hs-results')
   let pagefind
   let debounce
+
+  // The generated reference (config schema, state models, exported functions) is
+  // 244 of the ~390 indexed doc pages, so on a word that appears in a lot of
+  // JSDoc it can take the whole dropdown: measured against this index, "session"
+  // returned six state-model internals and nothing else, and "display" five of
+  // six. Those are ordinary user-level words, and the six slots here are the
+  // only search result most readers ever see.
+  //
+  // A quota rather than a re-rank. Sorting reference below guides outright — the
+  // way the /search page's CATEGORY_PRIORITY does, where it costs less because
+  // every result is on the page — would push config/bamadapter out of the
+  // dropdown for the query "bam", which is the one hit that should be first.
+  // Keeping pagefind's order and only dropping reference hits past the third
+  // leaves a name match at the top and still guarantees half the panel to
+  // everything else.
+  const REFERENCE_SLOTS = 3
+  const HITS = 6
+  // Enough to find three non-reference hits under the worst query measured
+  // ("display" needed 29 to find six; three arrive far sooner). Each costs one
+  // small fragment fetch, and only for the results we actually rank.
+  const WINDOW = 24
+
+  // shortPath is hoisted; a non-docs page (gallery, features) has no "docs/"
+  // prefix to strip, finds no bucket, and is never reference — which is right.
+  function isReference(url) {
+    const path = shortPath(url)
+    if (!path.startsWith('docs/')) {
+      return false
+    }
+    const slug = path.slice('docs/'.length)
+    const slash = slug.indexOf('/')
+    return (
+      (slash === -1
+        ? searchPrefixes.slugs[slug]
+        : searchPrefixes.dirs[slug.slice(0, slash)]) === 'autogen'
+    )
+  }
 
   async function getPagefind() {
     if (pagefind === undefined) {
@@ -72,9 +114,26 @@ import { baseUrl } from '../lib/base-url.ts'
       return
     }
     const { results } = await pf.search(query)
-    const items = await Promise.all(results.slice(0, 6).map(r => r.data()))
+    const window = await Promise.all(
+      results.slice(0, WINDOW).map(r => r.data()),
+    )
     if (input.value !== query) {
       return // a newer keystroke already superseded this search
+    }
+    // one pass in relevance order, skipping reference hits past the quota
+    const items = []
+    let reference = 0
+    for (const hit of window) {
+      if (isReference(hit.url)) {
+        if (reference === REFERENCE_SLOTS) {
+          continue
+        }
+        reference++
+      }
+      items.push(hit)
+      if (items.length === HITS) {
+        break
+      }
     }
     const all = `${baseUrl}/search/?q=${encodeURIComponent(query)}`
     panel.innerHTML = items.length

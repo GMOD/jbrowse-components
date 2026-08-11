@@ -504,3 +504,45 @@ export function buildSearchCategoryMap(
   Object.assign(map, SEARCH_CATEGORY_OVERRIDES)
   return map
 }
+
+// The same buckets as buildSearchCategoryMap, folded to one entry per top-level
+// docs directory plus the handful of pages that sit at the root and belong to no
+// directory. ~10 entries instead of 389.
+//
+// Size is the whole point: the /search page inlines the full map once via
+// define:vars, which is free, but the header search box lives in BaseLayout and
+// would inline it into all ~500 built pages. Folded, it is small enough to ship
+// everywhere.
+//
+// Derived and CHECKED rather than hand-listed — a directory whose pages don't
+// all agree throws instead of silently picking one, which is the failure a
+// second hand-written copy of this categorization would have (see the comment on
+// buildSearchCategoryMap, and the 2026-07 reorg it describes).
+export function buildSearchCategoryPrefixes(allDocs: DocEntry[]): {
+  dirs: Record<string, SearchCategory>
+  slugs: Record<string, SearchCategory>
+} {
+  const map = buildSearchCategoryMap(allDocs)
+  const dirs: Record<string, SearchCategory> = {}
+  const slugs: Record<string, SearchCategory> = {}
+  for (const [slug, category] of Object.entries(map)) {
+    const slash = slug.indexOf('/')
+    if (slash === -1) {
+      slugs[slug] = category
+      continue
+    }
+    const dir = slug.slice(0, slash)
+    const seen = dirs[dir]
+    if (seen === undefined) {
+      dirs[dir] = category
+    } else if (seen !== category) {
+      throw new Error(
+        `docs/${dir}/ spans two search categories (${seen}, ${category}); ` +
+          'buildSearchCategoryPrefixes folds a directory to one bucket and ' +
+          'cannot represent this. Split the directory, or teach the header ' +
+          'search box the full per-slug map.',
+      )
+    }
+  }
+  return { dirs, slugs }
+}
