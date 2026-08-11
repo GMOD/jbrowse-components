@@ -392,11 +392,11 @@ aligns straight through it.
 The same event drawn as an alignment rather than as a graph is a synteny gap,
 and it is worth drawing because it is separate evidence: the graph's claim comes
 out of its own segment and link indexes, and the alignment below comes out of a
-whole-genome alignment the graph had no part in. Two panels at two scales, 13 kb
-of K12 against 77 kb of CFT073, with the flanks aligning ribbon to ribbon and
-nothing at all between them.
+whole-genome alignment the graph had no part in. Two panels at two scales, each
+window running from one flanking chain to the other, so the flanks align ribbon
+to ribbon at both edges and nothing at all sits between them.
 
-<Figure caption="The same insertion as an alignment. K12 above, CFT073 below, each panel at its own scale: the two flanks align, and the 65.4 kb CFT073 carries between them lands on nothing. The CFT073 lane names what is in it, a siderophore and fimbrial gene cluster the reference has no copy of." src="/img/pangenome/rgfa_insertion_synteny.png" />
+<Figure caption="The same insertion as an alignment. K12 above, CFT073 below, each panel at its own scale: the two chains that flank the event align ribbon to ribbon at both frame edges, and everything CFT073 carries between them lands on nothing. The CFT073 lane names what is in it, a siderophore and fimbrial gene cluster the reference has no copy of." src="/img/pangenome/rgfa_insertion_synteny.png" />
 
 The [all-vs-all tutorial](/docs/tutorials/allvsall_synteny) puts the same kind
 of panel beside its own graph.

@@ -3038,6 +3038,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
     settleMs: 12000,
     // the default 800 clips the bottom strain's gene labels
     viewportHeight: 822,
+    // half of a side-by-side pair — see color_by_attribute_steps
+    viewportWidth: 900,
   },
 
   // HOW A READER PRODUCES THE FIGURE ABOVE (review: "we may want to show users
@@ -3063,6 +3065,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // the dialog is what the frame is for, and it opens centred over a stack
     // whose lower half is the other two strains
     viewportHeight: 822,
+    // half of a side-by-side pair — see color_by_attribute_steps
+    viewportWidth: 900,
     hideTooltip: true,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
@@ -3078,11 +3082,16 @@ export const syntenySpecs: ScreenshotSpec[] = [
 
   // The click and its result as ONE figure (review: "if needed, show the UI
   // steps as a side by side before and after image. e.g. the dialog/track menu
-  // in part 1, then the result in part 2"). Vertical rather than side by side:
-  // each part is a three-panel stack 1000 px wide and 822 tall, so `+append`ed
-  // horizontally the pair is 2000x822 and each strain row is a 270 px sliver.
-  // Stacked, the dialog sits directly above the colouring it produced, which is
-  // also the order a reader performs them in.
+  // in part 1, then the result in part 2", then "use side-by-side figures" on
+  // the stacked version this note used to argue for).
+  //
+  // Side by side is what a before/after is, and the argument the other way was
+  // about pixels: each part is a three-panel stack, so at the default 1500 the
+  // pair would be 3000x822 — nearly 4:1, and the docs' column halves each part
+  // again. That is paid for in the PARTS rather than by stacking them: both are
+  // 900 px wide now, which puts the composite at 1800x822. The panels lose no
+  // content by it — each row is the same 12.6 kb window either way, and what
+  // both halves are read for is which gene carries which colour, not the ruler.
   //
   // Both parts stay their own specs, so each still has its own live link under
   // the figure.
@@ -3090,7 +3099,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     mode: 'compose',
     name: 'sv_synteny/color_by_attribute_steps',
     parts: ['sv_synteny/color_by_attribute', 'sv_synteny/ortholog_colors'],
-    direction: 'vertical',
+    direction: 'horizontal',
   },
 
   // The mistake the tutorial's Troubleshooting table describes, and the app's own

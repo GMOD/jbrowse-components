@@ -5025,10 +5025,28 @@ export const graphSpecs: ScreenshotSpec[] = [
   // (K12 chr:1,095,051 +451) and s405 (K12 chr:1,097,564), which is the 2,062 bp
   // the hover band draws.
   //
-  // The two panels are at wildly different scales on purpose -- 13 kb of K12
-  // against 77 kb of CFT073 -- because that IS the finding. Each panel is its
+  // The two panels are at wildly different scales on purpose -- 28 kb of K12
+  // against 138 kb of CFT073 -- because that IS the finding. Each panel is its
   // own view with its own bp/px, so the flanks still align ribbon to ribbon and
-  // the 65 kb between them lands on nothing at all.
+  // the 114 kb between them lands on nothing at all.
+  //
+  // ZOOMED OUT (review: "zoom out please"), and the zoom-out found a
+  // registration bug the old crop was hiding. The windows are now derived from
+  // the PAF's own chain ends rather than from the graph's segment interval:
+  // `tabix ecoli_pggb_ava.pif.gz 'tK12#1#chr:1050000-1150000'` gives two chains
+  // to CFT073, K12 887,944-1,094,152 <-> CFT073 942,350-1,127,332 and K12
+  // 1,097,432-1,183,704 <-> CFT073 1,241,061-1,327,893, so each window is its
+  // chain end plus ~12 kb of flank and the two edges map onto each other. The
+  // old CFT073 window started at 1,170,000 -- 43 kb PAST where the left flank
+  // reaches it -- so the left ribbon left the frame at the bottom-left corner
+  // and only the right flank was actually registered.
+  //
+  // The shaded block is the alignment's number, not the graph's: 113.7 kb of
+  // CFT073 that no K12 chain touches. The 65.4 kb node the hover figure rings
+  // is the LAST 65.4 kb of it (s2037 runs 1,175,651-1,241,061, ending exactly
+  // where the right chain resumes) and the 48 kb before it is the same bubble's
+  // s2030-s2036, all rank 2 -- so at the old crop the frame was showing part of
+  // the gap and labelling it the whole of it.
   {
     mode: 'url',
     name: 'pangenome/rgfa_insertion_synteny',
@@ -5042,14 +5060,14 @@ export const graphSpecs: ScreenshotSpec[] = [
           views: [
             {
               assembly: 'K12',
-              // the 2,062 bp the two flanking backbone segments leave, plus
-              // ~5 kb either side so both flank ribbons have somewhere to land
-              loc: 'chr:1,090,000-1,103,000',
+              // the 3.3 kb the two chains leave, plus ~12 kb of flank either
+              // side so both flank ribbons are ribbons rather than frame edges
+              loc: 'chr:1,082,000-1,110,000',
               highlight: [
                 {
                   refName: 'chr',
-                  start: 1095502,
-                  end: 1097564,
+                  start: 1094152,
+                  end: 1097432,
                   color: 'rgba(60,65,72,0.10)',
                 },
               ],
@@ -5057,11 +5075,14 @@ export const graphSpecs: ScreenshotSpec[] = [
             },
             {
               assembly: 'CFT073',
-              loc: 'chr:1,170,000-1,247,000',
+              // the same two chain ends carried through the alignment, so the
+              // left edge (1,115,000) is where K12 1,082,000 lands and the
+              // right edge is where K12 1,110,000 does
+              loc: 'chr:1,115,000-1,253,000',
               highlight: [
                 {
                   refName: 'chr',
-                  start: 1175651,
+                  start: 1127332,
                   end: 1241061,
                   color: 'rgba(60,65,72,0.10)',
                 },
@@ -5075,37 +5096,43 @@ export const graphSpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
     settleMs: 8000,
-    viewportWidth: 1000,
+    // wider than the 1000 the tighter crop used: 5x more CFT073 in frame at the
+    // same 1000 px would have cost the gene lane its labels, which the caption
+    // reads the cluster's names out of
+    viewportWidth: 1400,
     // two gene lanes, two rulers and the 200 px band between them
     viewportHeight: 582,
     hideTooltip: true,
     annotations: [
       {
         type: 'text',
-        text: 'CFT073 carries 65.4 kb here',
+        text: 'no K12 chain touches any of this',
         fontSize: 16,
         maxWidth: 260,
         anchor: {
           view: [0, 1],
           track: 'CFT073_genes',
-          locus: 'chr:1,175,651-1,241,061',
+          locus: 'chr:1,127,332-1,241,061',
           fracY: 0,
           dy: -30,
         },
       },
       {
         type: 'text',
-        text: 'K12 has 2.1 kb',
+        text: 'the two chains meet here',
         fontSize: 16,
         maxWidth: 200,
-        textAlign: 'end',
+        // Starting at the gap's LEFT edge, which is as close to centred over it
+        // as this gets: the gap is ~140 px at this scale, the pill is a little
+        // wider than that, and `textAlign` offers only start and end. Anchored
+        // to the locus centre (the default) it began at the midpoint and ran out
+        // over the right-hand flank, which reads as naming the flank.
         anchor: {
           view: [0, 0],
           track: 'K12_genes',
-          locus: 'chr:1,095,502-1,097,564',
+          locus: 'chr:1,094,152-1,097,432',
           alignX: 'left',
           fracY: 0,
-          dx: -6,
           dy: -16,
         },
       },
