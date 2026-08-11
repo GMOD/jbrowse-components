@@ -7,9 +7,11 @@ export const BINDINGS: readonly ShaderBinding[] = [
   { index: 1, kind: 'uniform', name: 'u' },
 ]
 
-export const VERTS_PER_INSTANCE = 2
+export const VERTS_PER_INSTANCE = 6
 
 export const LINKED_READ_LINE_ALPHA = 0.8
+
+export const LINKED_READ_LINE_WIDTH_PX = 1.5
 
 export const UNIFORMS_SIZE_BYTES = 1040
 

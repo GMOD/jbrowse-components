@@ -4,7 +4,10 @@ import {
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import { linkedReadColorPalette } from '../../shaders/palettes.ts'
-import { LINKED_READ_LINE_ALPHA } from '../../shaders/slang/linkedReadLine.iface.generated.ts'
+import {
+  LINKED_READ_LINE_ALPHA,
+  LINKED_READ_LINE_WIDTH_PX,
+} from '../../shaders/slang/linkedReadLine.iface.generated.ts'
 
 import type {
   DrawBlock,
@@ -32,7 +35,10 @@ export function drawLinkedReadLines(
   state: RenderState,
 ) {
   const fH = state.featureHeight
-  ctx.lineWidth = 1.5
+  // From linkedReadLine.slang, like the alpha above. It was a bare 1.5 here and
+  // nothing at all on the GPU, which drew a native line list at a fixed 1 px —
+  // the two backends disagreed on the weight of every connector.
+  ctx.lineWidth = LINKED_READ_LINE_WIDTH_PX
   for (let i = 0; i < region.numLinkedReadLines; i++) {
     const y1 = pileupRowY(region.linkedReadLineYs[i * 2]!, state) + fH / 2
     const y2 = pileupRowY(region.linkedReadLineYs[i * 2 + 1]!, state) + fH / 2
