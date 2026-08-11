@@ -188,7 +188,10 @@ export {
 // so the view registration module holds no React component at all.
 export { default as SearchBox } from './LinearGenomeView/components/SearchBox.tsx'
 export { normalizeTrackInit } from '@jbrowse/core/util/tracks'
-export { partitionLaunchKeys } from './LinearGenomeView/initKeys.ts'
+export {
+  linearGenomeViewPropKeys,
+  partitionLaunchKeys,
+} from './LinearGenomeView/initKeys.ts'
 export { MultiLevelRubberband } from './MultiLevelRubberband/index.ts'
 export { fetchResults, SearchResultsNotFoundError } from './searchUtils.ts'
 export type { LaunchLinearGenomeViewArgs } from './LaunchLinearGenomeView/index.ts'

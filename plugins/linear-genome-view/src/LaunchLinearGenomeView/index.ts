@@ -1,4 +1,5 @@
 import {
+  linearGenomeViewPropKeys,
   partitionLaunchKeys,
   warnUnknownLaunchKeys,
 } from '../LinearGenomeView/initKeys.ts'
@@ -45,7 +46,10 @@ export default function LaunchLinearGenomeViewF(pluginManager: PluginManager) {
     // showCenterLine, persist on save). Anything in neither set is a typo — MST
     // drops unknown snapshot keys and `init` is a frozen blob, so nothing
     // downstream would notice.
-    const { init, viewProps, unknown } = partitionLaunchKeys(spec)
+    const { init, viewProps, unknown } = partitionLaunchKeys(
+      spec,
+      linearGenomeViewPropKeys(pluginManager),
+    )
     warnUnknownLaunchKeys('LaunchView-LinearGenomeView', unknown)
     // A provided id is passed top-level so MST's optional identifier honors it
     // (undefined falls back to an auto-generated id).

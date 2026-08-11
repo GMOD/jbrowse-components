@@ -1,7 +1,8 @@
 import { getSession, selectNamedRegions } from '@jbrowse/core/util'
 import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
-import { isAlive } from '@jbrowse/mobx-state-tree'
+import { getEnv, isAlive } from '@jbrowse/mobx-state-tree'
 import {
+  linearGenomeViewPropKeys,
   normalizeTrackInit,
   partitionLaunchKeys,
   SearchResultsNotFoundError,
@@ -47,6 +48,10 @@ async function buildViews(
   superseded: () => boolean,
 ) {
   const { assemblyManager } = getSession(self)
+  // The LGV's declared property names, so a row can carry any of them. Read
+  // from the registered view type rather than a list here: the rows do not
+  // exist yet, and a second list is what went stale last time.
+  const rowPropKeys = linearGenomeViewPropKeys(getEnv(self).pluginManager)
   const assemblies = await Promise.all(
     init.views.map(async v => {
       const asm = await assemblyManager.waitForAssembly(v.assembly)
@@ -77,7 +82,7 @@ async function buildViews(
       // go straight onto the row's snapshot, where MST restores them natively.
       // Partitioned rather than listed, so a prop the LGV gains is a prop a
       // synteny row can set, with no second list to keep in step.
-      ...partitionLaunchKeys(init.views[idx] ?? {}).viewProps,
+      ...partitionLaunchKeys(init.views[idx] ?? {}, rowPropKeys).viewProps,
     })),
   )
   // a row only initializes once it has been laid out, so this parks

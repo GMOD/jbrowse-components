@@ -7,7 +7,7 @@ import {
 import { coerceHighlight } from '@jbrowse/core/util/highlights'
 import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
 import { normalizeTrackInit } from '@jbrowse/core/util/tracks'
-import { addDisposer } from '@jbrowse/mobx-state-tree'
+import { addDisposer, getPropertyMembers } from '@jbrowse/mobx-state-tree'
 import { autorun, when } from 'mobx'
 
 import { SearchResultsNotFoundError } from '../searchUtils.ts'
@@ -18,8 +18,11 @@ import type { InitState } from './types.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { InitApplyContext } from '@jbrowse/core/util/installInitAutorun'
 
-function warnInitKeyProblems(init: InitState) {
-  const { viewProps, unknown } = partitionLaunchKeys(init)
+function warnInitKeyProblems(self: LinearGenomeViewModel, init: InitState) {
+  const { viewProps, unknown } = partitionLaunchKeys(
+    init,
+    new Set(Object.keys(getPropertyMembers(self).properties)),
+  )
   const viewPropKeys = Object.keys(viewProps)
   warnUnknownLaunchKeys('LinearGenomeView init', unknown)
   if (viewPropKeys.length) {
@@ -210,7 +213,7 @@ async function applyInit(
   { superseded }: InitApplyContext,
 ) {
   const session = getSession(self)
-  warnInitKeyProblems(init)
+  warnInitKeyProblems(self, init)
   if (init.tracklist) {
     await openTracklist(self, session, superseded)
   }

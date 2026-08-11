@@ -1,14 +1,20 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 
+import LinearGenomeViewPlugin from '../index.ts'
 import LaunchLinearGenomeViewF from './index.ts'
 
 import type { LaunchLinearGenomeViewArgs } from './index.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
-// the real extension point on a real plugin manager, against a session stubbed
-// down to the one action a launch calls
+// The real extension point on a real plugin manager, against a session stubbed
+// down to the one action a launch calls. The plugin itself is registered
+// because the launcher reads the view's declared property names off the
+// registered state model — that IS the list of settable props now, so a manager
+// without the view type has nothing to sort the spec against.
 function setup() {
-  const pluginManager = new PluginManager()
+  const pluginManager = new PluginManager([new LinearGenomeViewPlugin()])
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
   LaunchLinearGenomeViewF(pluginManager)
   const addView = jest.fn()
   return {
