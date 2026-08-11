@@ -165,6 +165,23 @@ export const pages: ExamplePage[] = [
     ],
   },
   {
+    slug: 'highlight-a-region',
+    title: 'Highlighting a region',
+    description:
+      'Arrive from a search hit or a variant table with the region marked, and keep it marked while the reader pans.',
+    group: 'Your own UI',
+    // Last in the group, because it is the one that assumes the rest: the band
+    // is drawn in the viewport frame the scalebar page introduced, behind the
+    // `view.ready` gate the loading page is about, from a list your app already
+    // has -- which is what the page before it drives the view from.
+    sections: [
+      {
+        slug: 'highlight-a-region',
+        title: 'A band your app places, and the four cases it survives',
+      },
+    ],
+  },
+  {
     slug: 'web-workers',
     title: 'Web workers',
     description:

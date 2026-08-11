@@ -61,6 +61,7 @@ const MUI_BUDGET = {
   'loading-and-errors': 0,
   'scalebar-and-labels': 0,
   'controlling-the-view': 0,
+  'highlight-a-region': 0,
   'web-workers': 0,
   // measured, not chosen -- see the note below the budget
   synteny: 0,
@@ -235,6 +236,48 @@ async function clicksReachTheTrack(page) {
     : [`a click inside the track landed on <${target}>, not the track canvas`]
 }
 
+// `getHighlightCoords` earns its place by what it does to awkward input, and
+// none of that is visible on a page at rest. The floor is the case worth
+// driving: a one-base highlight at 40kb of zoom is a hundredth of a pixel, so
+// the method clamps the band to 3px, and losing that clamp reads as "the
+// highlight didn't work" rather than as a rendering bug.
+async function highlightSurvivesAOneBaseRegion(page, slug) {
+  if (slug !== 'highlight-a-region') {
+    return []
+  }
+  const clicked = await page.evaluate(() => {
+    const el = [...document.querySelectorAll('button')].find(e =>
+      e.innerText.includes('A single base'),
+    )
+    el?.click()
+    return !!el
+  })
+  if (!clicked) {
+    return ['no "A single base" button on the page']
+  }
+  try {
+    await page.waitForFunction(
+      () =>
+        [...document.querySelectorAll('[data-testid="highlight-band"]')].some(
+          el => el.getBoundingClientRect().width >= 3,
+        ),
+      { timeout: 15000 },
+    )
+    return []
+  } catch {
+    const widths = await page.evaluate(() =>
+      [...document.querySelectorAll('[data-testid="highlight-band"]')].map(
+        el => el.getBoundingClientRect().width,
+      ),
+    )
+    return [
+      'a one-base highlight zoomed out to 40kb drew no band at least 3px wide ' +
+        `— getHighlightCoords' minimum width is gone, or the band is not being ` +
+        `drawn at all. Band widths found: ${JSON.stringify(widths)}`,
+    ]
+  }
+}
+
 // The one page whose subject is a state you cannot see by loading it.
 //
 // `loading-and-errors` argues that `view.ready` is false in two situations and
@@ -344,6 +387,7 @@ const failures = await smokeExamplesSite({
     ...(await muiThemedStyling(page, 'at rest')),
     ...(await censusWhileHovering(page)),
     ...(await clicksReachTheTrack(page)),
+    ...(await highlightSurvivesAOneBaseRegion(page, slug)),
     // last: this one replaces the engine on the page it runs on
     ...(await viewStatusStatesAreDrawn(page, slug)),
   ],

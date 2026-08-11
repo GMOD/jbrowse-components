@@ -1,0 +1,16 @@
+---
+import HighlightARegion from '../examples/HighlightARegion.tsx'
+import HighlightARegionCode from '../examples/HighlightARegion.tsx?raw'
+import { getPage, section } from '../examples.ts'
+import Layout from '../layouts/ExampleLayout.astro'
+import Section from '../layouts/ExampleSection.astro'
+
+const page = getPage('highlight-a-region')
+const sec = section(page, 'highlight-a-region')
+---
+
+<Layout page={page}>
+  <Section {...sec} code={HighlightARegionCode}>
+    <HighlightARegion client:only="react" />
+  </Section>
+</Layout>
