@@ -13,6 +13,7 @@ import { VariantMatrixRenderer } from './VariantMatrixRenderer.ts'
 import type { LinearMultiSampleVariantMatrixDisplayModel } from '../model.ts'
 import type { MouseTracker } from '@jbrowse/core/ui'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { ReactNode } from 'react'
 
 // Both pointer-driven pieces below read the tracker themselves, so a mousemove
 // re-renders them alone rather than `DisplayChrome` and every overlay under it
@@ -59,14 +60,44 @@ function MatrixCrosshairLayer({
   return inMatrix ? <Crosshair mouseState={inMatrix} model={model} /> : null
 }
 
+// The matrix's own box, offset past the connector zone and clamped to the
+// viewport's left edge.
+//
+// Its own observer purely so `offsetPx` is read HERE. It moves every frame of a
+// pan, and read in the component that mounts `DisplayChrome` it re-rendered the
+// chrome for the whole of every drag — `useRenderingBackend` re-run, the status
+// container rebuilt with a fresh inline `style`, the overlay portal re-created —
+// to move one div. The body inside is passed as `children`, so it is an element
+// built by the caller and re-renders on its own terms.
+const MatrixBodyOffset = observer(function MatrixBodyOffset({
+  model,
+  top,
+  children,
+}: {
+  model: LinearMultiSampleVariantMatrixDisplayModel
+  top: number
+  children: ReactNode
+}) {
+  const view = getContainingView(model) as LinearGenomeViewModel
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        top,
+        left: Math.max(0, -view.offsetPx),
+      }}
+    >
+      {children}
+    </div>
+  )
+})
+
 const VariantMatrixDisplayComponent = observer(
   function VariantMatrixDisplayComponent(props: {
     model: LinearMultiSampleVariantMatrixDisplayModel
   }) {
     const { model } = props
     const { lineZoneHeight, height } = model
-    const view = getContainingView(model) as LinearGenomeViewModel
-    const left = Math.max(0, -view.offsetPx)
     return (
       <DisplayChrome
         model={model}
@@ -81,13 +112,13 @@ const VariantMatrixDisplayComponent = observer(
               mouseTracker={mouseTracker}
               lineZoneHeight={lineZoneHeight}
             />
-            <div style={{ position: 'absolute', top: lineZoneHeight, left }}>
+            <MatrixBodyOffset model={model} top={lineZoneHeight}>
               <VariantMatrixBody
                 model={model}
                 canvasRef={canvasRef}
                 canvas={canvas}
               />
-            </div>
+            </MatrixBodyOffset>
             <VariantOverlay model={model} top={lineZoneHeight} />
             <TreeSidebar model={model} />
             <MatrixCrosshairLayer

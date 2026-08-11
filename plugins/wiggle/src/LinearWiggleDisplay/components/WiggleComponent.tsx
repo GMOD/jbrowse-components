@@ -71,9 +71,6 @@ const WiggleComponent = observer(function WiggleComponent({
           model={model}
           canvasRef={canvasRef}
           width={width}
-          // Pin the right-aligned score legend to the content's right edge, not
-          // the full track width (see legendRightEdgePx).
-          legendWidth={legendRightEdgePx(view.visibleRegions, width)}
           height={height}
           mouseTracker={mouseTracker}
         />
@@ -86,14 +83,12 @@ const WiggleBody = observer(function WiggleBody({
   model,
   canvasRef,
   width,
-  legendWidth,
   height,
   mouseTracker,
 }: {
   model: WiggleDisplayModel
   canvasRef: (node: HTMLCanvasElement | null) => void
   width: number
-  legendWidth: number
   height: number
   mouseTracker: MouseTracker
 }) {
@@ -101,6 +96,15 @@ const WiggleBody = observer(function WiggleBody({
   // body instead of the whole DisplayChrome above it
   const mouseState = useMouseState(mouseTracker)
   const plotBox = axisPlotBox(height)
+  // Pin the right-aligned score legend to the content's right edge, not the
+  // full track width (see legendRightEdgePx). Read HERE, in the body, and not
+  // where the chrome is mounted — `visibleRegions` rebuilds its array on every
+  // pan frame, so a read up there re-rendered `DisplayChrome` itself (and with
+  // it `useRenderingBackend`, the status container's fresh inline style and the
+  // overlay portal) for the whole of every drag. Multi-wiggle already reads it
+  // in its body for this reason; this was the last copy that didn't.
+  const view = getContainingView(model) as LGV
+  const legendWidth = legendRightEdgePx(view.visibleRegions, width)
   return (
     <>
       <canvas
