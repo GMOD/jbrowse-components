@@ -1,6 +1,40 @@
 Show rather than tell — use informative screenshot specs and keep prose minimal.
-No numeric values in prose unless programmatically derived. No em-dashes
-anywhere, including code comments.
+No em-dashes anywhere, including code comments.
+
+**No numbers in prose. Not even ones a script in the repo prints.** This rule
+used to end "unless programmatically derived", and that clause is what let a
+page argue its result in percentages: "83.2% of the reads are at MAPQ 0 against
+0.8%", "4.5x against 30.6x", "18.3% of DGV's call midpoints". Every one of those
+was emitted by `scan_mappability_qc.sh` and every one was a claim the reader
+could not check against the figure it sat under, so the prose was telling the
+story the picture is there to tell. Say which way it went and let the lane show
+how far ("most of them at _SMN1_ and almost none at the control"). A measurement
+worth keeping goes in a table, which is data presentation, or stays in the
+script that prints it. The same goes for widths and spans: "a much larger block
+containing it" over "about 1.5 Mb", unless the number is one the reader types
+into a box.
+
+**Don't argue, and don't preach.** A tutorial cultivates an air of exploring
+data; it is not a case being made. Three shapes to watch for, all of which have
+had to be cut from these pages:
+
+- **The thesis paragraph.** A section that ends by telling the reader what it
+  all means ("The chains are an argument. The reads are the measurement", "This
+  is the general habit worth taking from the page"). Stop at the observation.
+- **Anticipate-and-correct.** Naming a wrong inference in order to refute it
+  ("That is not evidence the DGV records are wrong", "The pile at one end is not
+  a defect"). If the wrong reading is likely, prevent it by framing the thing
+  positively the first time.
+- **Moral framing.** "the honest outcome", "checked rather than trusted", "it
+  would be easy to produce that figure dishonestly". State what the setting does
+  and let the reader draw the conclusion.
+
+**Ease the reader in.** Terse is not the goal; unargued is. A section that opens
+cold on mechanics ("Everything is hosted. The assembly needs a name and the URL
+of its sequence") drops the reader into a config with no idea what they are
+about to build. One sentence of orientation first, saying what this step
+produces and why it is short, then the mechanics. The TL;DR primes the page, not
+each section.
 
 These are about _using JBrowse_, not bioinformatics scripting. Commands that
 produce an input file belong in the tutorial's `scripts/build_*.sh` under

@@ -52,8 +52,11 @@ gitignored). `deploy_staging.sh` wraps a staging deploy.
 
 ## Prose, captions, cards
 
-- Never write a hand-computed statistic into prose. Numbers must be published
-  with a citation, structural, or emitted by a script in the repo.
+- **Keep numbers out of prose**, including ones a script in the repo prints.
+  "Emitted by a script" was an allowance here and it got used to argue results
+  in percentages the reader cannot check against the figure beside them. A
+  measurement belongs in a table, in the script, or in a spec comment; the prose
+  says which way it went. `docs/tutorials/CLAUDE.md` has the worked examples.
 - **Keep specific values out of captions and callouts.** Even a sourced number
   is a claim a reader cannot check against the picture, and a caption full of
   them reads as arithmetic rather than as a result. Say what the frame shows;
