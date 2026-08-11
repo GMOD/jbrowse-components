@@ -246,6 +246,39 @@ describe('computeArcsFromPileupData', () => {
     expect(result.lines.length).toBe(2)
   })
 
+  test('reads over one translocation share a tick instead of stacking them', () => {
+    // Three reads naming the same breakpoint. A tick has no support channel —
+    // it is a fixed-width mark — so N of them draw the same picture as one, and
+    // the GPU pass shades its edges by coverage, so the duplicates composite
+    // into a wider, harder-edged tick than the opaque Canvas2D mirror strokes.
+    const data = makePileupData({
+      regionStart: 1000,
+      readPositions: new Uint32Array([1000, 1100, 1000, 1100, 1000, 1100]),
+      readFlags: new Uint16Array(3).fill(SAM_FLAG_PAIRED),
+      readStrands: new Int8Array([1, 1, 1]),
+      readInsertSizes: new Float32Array([0, 0, 0]),
+      readPairOrientations: new Uint8Array([1, 1, 1]),
+      readNames: ['readA', 'readB', 'readC'],
+      readNextRefs: ['chr2', 'chr2', 'chr2'],
+      readNextPositions: new Uint32Array([5000, 5000, 5000]),
+    })
+
+    const result = computeArcsFromPileupData(
+      new Map([[0, data]]),
+      [{ refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 }],
+      {
+        colorByType: 'insertSize',
+        drawInter: true,
+        drawLongRange: true,
+      },
+    )
+
+    expect(result.lines).toEqual([
+      { x: { refName: 'chr1', bp: 1000 } },
+      { x: { refName: 'chr2', bp: 5000 } },
+    ])
+  })
+
   test('inter-chromosomal produces nothing when drawInter=false', () => {
     const data = makePileupData({
       regionStart: 1000,

@@ -277,7 +277,8 @@ export interface ComputedArc {
 }
 
 // A connector tick. No color: every tick is ARC_COLOR_INTERCHROM (see the
-// interchromosomal branch of `resolveArcs` for why that isn't a setting).
+// interchromosomal branch of `resolveArcs` for why that isn't a setting). One
+// per distinct breakpoint, not one per supporting read — see `resolveArcs`.
 export interface ComputedLine {
   x: ArcEndpoint
 }
@@ -842,6 +843,23 @@ function resolveArcs(
   const arcs: ComputedArc[] = []
   const byKey = new Map<string, ComputedArc>()
   const lines: ComputedLine[] = []
+  const lineKeys = new Set<string>()
+
+  // One tick per breakpoint, for the reason `arcKey` coalesces arcs: every read
+  // over a translocation used to push its own pair of ticks, and a tick is a
+  // fixed-width mark with no support channel, so N of them are the same picture
+  // as one. Not merely redundant, though — the GPU pass shades its edges by
+  // coverage (`strokeCoverage`), so the duplicates alpha-composite and a
+  // 50-read breakpoint drew a perceptibly wider, harder-edged tick than a
+  // 1-read one, while the Canvas2D mirror strokes opaque and drew both the
+  // same. Deduping is what makes the two renderers agree again.
+  function pushLine(refName: string, bp: number) {
+    const key = `${refName}\0${bp}`
+    if (!lineKeys.has(key)) {
+      lineKeys.add(key)
+      lines.push({ x: { refName, bp } })
+    }
+  }
 
   for (const arc of pendingArcs) {
     const { p1Ref, p1Bp, p2Ref, p2Bp } = arc
@@ -855,10 +873,8 @@ function resolveArcs(
     // arcLine.slang where the pass reads it.
     if (p1Ref !== p2Ref) {
       if (drawInter) {
-        lines.push(
-          { x: { refName: p1Ref, bp: p1Bp } },
-          { x: { refName: p2Ref, bp: p2Bp } },
-        )
+        pushLine(p1Ref, p1Bp)
+        pushLine(p2Ref, p2Bp)
       }
       continue
     }
