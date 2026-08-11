@@ -22,6 +22,8 @@ interface ReadConnectionsModel {
   setDrawInter: (draw: boolean) => void
   showBezierConnections: boolean
   setShowBezierConnections: (flag: boolean) => void
+  debugArcGeometry: boolean
+  setDebugArcGeometry: (on: boolean) => void
 }
 
 // Everything about pairing/connecting reads lives here (arcs, read cloud, linked
@@ -112,6 +114,17 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
             model.setDrawInter(!model.drawInter)
           },
           { helpText: 'reads whose mate maps to a different chromosome' },
+        ),
+        checkboxItem(
+          'Debug: show arc geometry',
+          model.debugArcGeometry,
+          () => {
+            model.setDebugArcGeometry(!model.debugArcGeometry)
+          },
+          {
+            helpText:
+              'diagnostic overlay: outlines the band, the pre-unclamp apex ceiling, and every arc traced from the same radii the renderer uses, with rx/ry/aspect printed for the widest few. An outline that does not sit on its painted arc is a real disagreement between the model and the paint.',
+          },
         ),
       ],
     },

@@ -47,6 +47,10 @@ function makeModel() {
     setShowBezierConnections(v: boolean) {
       this.showBezierConnections = v
     },
+    debugArcGeometry: false,
+    setDebugArcGeometry(v: boolean) {
+      this.debugArcGeometry = v
+    },
   }
 }
 

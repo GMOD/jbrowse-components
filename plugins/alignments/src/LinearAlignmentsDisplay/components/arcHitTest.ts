@@ -2,8 +2,14 @@ import { clampBlockScissor } from '@jbrowse/render-core'
 
 import { arcLineWidth } from '../../features/arcs/arcLineWidth.ts'
 import { arcScreenPath } from '../../features/arcs/arcPath.ts'
-import { arcAvailH, arcYScale } from '../../features/arcs/arcYScale.ts'
+import {
+  arcAvailH,
+  arcDomeDestY,
+  arcYScale,
+} from '../../features/arcs/arcYScale.ts'
 import { hitTestArcs } from '../../features/arcs/hitTest.ts'
+import { ARC_APEX_FRACTION } from '../../shaders/slang/arc.iface.generated.ts'
+import { arcRadiiPx } from '../../shaders/slang/arc.js.generated.ts'
 import { bandScreenTop, makeBpToPx } from './sectionScreen.ts'
 
 import type {
@@ -127,6 +133,86 @@ function arcBandScreenScale(
     pairedArcsDown: band.arcDown,
     lineWidth,
     screenWidthPx: scissor.scissorW,
+  }
+}
+
+// One arc's geometry, spelled out for the debug overlay.
+export interface ArcDebugShape {
+  d: string
+  rx: number
+  ry: number
+  // `arcRadiiPx` returns an equal pair only on the far branch, so this reads the
+  // branch off the radii rather than re-asking `arcIsFar` — the same rule
+  // `curveDistance` follows, and the reason the predicate is js-skipped.
+  far: boolean
+  x1: number
+  x2: number
+  yBp: number
+  support: number
+}
+
+// Every arc in one band, with the numbers behind its shape — the debug
+// visualization's whole content.
+//
+// It goes through `arcScreenPath`, NOT a second placement, because the question
+// a debug overlay has to answer is "what does the renderer think this arc is",
+// and a lookalike traced beside it would answer a different one. If these paths
+// do not sit on the painted arcs, that disagreement IS the finding.
+export interface ArcDebugGeometry {
+  shapes: ArcDebugShape[]
+  arcsTop: number
+  arcsH: number
+  // Where a dome's apex used to be pinned before the clamp came off. Drawn as a
+  // reference line: ink lying along it is the clamped-plateau signature, so the
+  // overlay can tell "this arc is genuinely flat here" from "something is still
+  // clamping".
+  legacyCeilingY: number
+  screenWidthPx: number
+}
+
+export function resolveArcBandDebug(
+  arcs: ArcsUploadData | undefined,
+  opts: ArcHitBandOptions,
+): ArcDebugGeometry | undefined {
+  if (!arcs || arcs.numArcs === 0 || opts.band.arcBandHeight === 0) {
+    return undefined
+  }
+  const scale = arcBandScreenScale(opts)
+  if (!scale) {
+    return undefined
+  }
+  const { arcsTop, arcsH, pairedArcsDown, screenWidthPx } = scale
+  const shapes: ArcDebugShape[] = []
+  for (let i = 0; i < arcs.numArcs; i++) {
+    const sx1 = scale.bpToScreenX(arcs.arcX1[i]!)
+    const sx2 = scale.bpToScreenX(arcs.arcX2[i]!)
+    const arcH = arcDomeDestY(
+      arcs.arcYBp[i]!,
+      scale.arcsYDomainBp,
+      scale.arcsYLog,
+      arcAvailH(arcsH),
+    )
+    const [rx, ry] = arcRadiiPx(Math.abs(sx2 - sx1) / 2, arcH, screenWidthPx)
+    shapes.push({
+      d: arcScreenPath(arcs, i, scale),
+      rx,
+      ry,
+      far: rx === ry,
+      x1: arcs.arcX1[i]!,
+      x2: arcs.arcX2[i]!,
+      yBp: arcs.arcYBp[i]!,
+      support: arcs.arcSupport[i]!,
+    })
+  }
+  const ceiling = ARC_APEX_FRACTION * arcAvailH(arcsH)
+  return {
+    shapes,
+    arcsTop,
+    arcsH,
+    legacyCeilingY: pairedArcsDown
+      ? arcsTop + ceiling
+      : arcsTop + arcsH - ceiling,
+    screenWidthPx,
   }
 }
 

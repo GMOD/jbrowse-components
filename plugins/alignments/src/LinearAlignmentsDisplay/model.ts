@@ -569,6 +569,14 @@ export default function stateModelFactory(
         return {
           /**
            * #volatile
+           * Draws the arc band's own geometry over the canvas — see
+           * `ArcDebugOverlay`. Volatile rather than a config slot: it is a
+           * diagnostic for "why is this arc this shape", not a display setting,
+           * so it should not survive into a saved session or a shared link.
+           */
+          debugArcGeometry: false,
+          /**
+           * #volatile
            */
           featureIdUnderMouse: undefined as undefined | string,
           /**
@@ -3206,6 +3214,13 @@ export default function stateModelFactory(
           // per-feature direction to keep in sync.
           setReadConnectionsDown(down: boolean) {
             setConf(self, 'readConnectionsDown', down)
+          },
+
+          /**
+           * #action
+           */
+          setDebugArcGeometry(on: boolean) {
+            self.debugArcGeometry = on
           },
 
           /**
