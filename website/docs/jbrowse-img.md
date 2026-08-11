@@ -435,8 +435,12 @@ jb2export --fasta ref.fa --bam reads.bam color:insertSizeAndOrientation --loc ch
 jb2export --fasta ref.fa --bam reads.bam arcs:cloud coverageHeight:300 \
   readConnectionsLineWidth:2 height:600 --loc chr1:1-50000
 
-## 10x linked-read chains (bezier mode)
-jb2export --fasta ref.fa --bam linked.bam linkedReads:bezier --loc chr1:1-50000
+## view as pairs / link supplementary alignments: mates and split segments of one
+## read share a row, joined by a connecting line. linkedReads:bezier is NOT this —
+## it is a back-compat alias for the curved-connector overlay (showBezierConnections)
+## and leaves the layout an ordinary pileup. Add both to curve the connectors that
+## cross between displayed regions, which the per-region line pass cannot draw.
+jb2export --fasta ref.fa --bam linked.bam linkedReads:normal --loc chr1:1-50000
 ```
 
 ### BigWig / quantitative tracks
