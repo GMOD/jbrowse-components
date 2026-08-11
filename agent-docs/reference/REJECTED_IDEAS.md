@@ -362,11 +362,28 @@ re-attempt without genuinely new data.
     (~47x against ~47x flanking, spikes only at the two breakpoints) — a
     heterozygous 12.9 kb inversion, which is what `inversion_long_read` already
     shows.
-  - So the search that would land it is: for every INVdup record with an ONT
-    carrier, fetch that carrier's reads and score both halves — reads with an
-    intra-read strand flip whose junctions agree, AND interior/flank depth
-    ratio > 1. Rank by the product. That is a batch job over hundreds of remote
-    range queries, not something to do a locus at a time.
+  - **Both routes were then sampled properly and rendered — 20 ONT pileups with
+    `arcs:up linkedReads:normal color:strand`, through `jb2export` (the 1000g-ont
+    bucket sends no `Access-Control-Allow-Origin`, so a browser capture cannot
+    read it at all). Neither route produced an inverted DUPLICATION.** Route A,
+    12 INVdup records drawn at random from the 17 in a renderable size band with
+    an ONT carrier: every one draws as an insertion column over flat depth, the
+    1/1 carrier included. Route B, the 144 single-sided-`STRAND` Sniffles calls
+    from 8 genomes: real fold-backs that photograph well, and flat depth.
+  - **Don't rank on Sniffles' `COVERAGE` field.** It put the top two Route B
+    candidates at 2.1x interior/flank, which is exactly the copy gain being
+    hunted; measured off the BAM with `samtools depth` the same two are **1.07x**
+    (chr7:70,961,198, 39 of 98 reads strand-flipped) and **1.25x**
+    (chr3:162,827,574, 46 of 64). The field was reading against a flank with no
+    coverage at all — both loci sit beside a mapping desert, which is also what
+    attracts the split alignments that got them ranked. A het duplication is
+    1.5x and a hom 2x, so 1.25x is a different event, not a noisy near miss.
+  - So the search that would land it is: for every candidate, measure the depth
+    ratio **from the BAM**, require both flanks non-zero, and require inverted
+    orientation and ratio > 1.4 *together*. Route B's 144 candidates are the
+    input and one remote depth profile each is the cost. Until that runs, the
+    best long-read pictures available are inversions, and captioning one as an
+    inverted duplication would be a claim the picture does not support.
 
 ## Tooling, tests and docs
 
