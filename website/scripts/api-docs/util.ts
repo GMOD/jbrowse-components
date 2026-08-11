@@ -293,6 +293,44 @@ function assertNoUntaggedSlots(gaps: ConfigSlotGap[]) {
   }
 }
 
+/**
+ * Every registered display type must have a `#config` block of its own name.
+ *
+ * Fatal, like `assertNoUntaggedSlots` above and for the same reason: the count
+ * is zero, and the fix is local and unambiguous. What it prevents is entirely
+ * silent — a display whose schema is built by a `makeConfigSchema(typeName)`
+ * helper has no `#config` block anywhere, because the generator keys a block to
+ * its FILE and cannot see a name that only exists as a parameter at runtime. So
+ * the display gets no config page, renders as bare unlinked text in the
+ * track-type table, is absent from the "settings with a session-wide default"
+ * table however many promotable slots it has, and — worst — the shared base it
+ * derives from is left as the only documented name, so ITS slot table tells
+ * readers to write `type: '<Base>Display'`, which nothing accepts.
+ *
+ * That has happened twice: the two GC-content displays, then the two LD ones.
+ * Both times it was found by a person reading a docs page, not by a check. The
+ * fix both times was one annotated file per registered type.
+ *
+ * `sources` excludes test files (see `extractWithComment`), so the fixtures that
+ * hand-build a `new DisplayType(...)` never reach `displayToTrackType` and this
+ * needs no exclusion list of its own.
+ */
+export function assertEveryDisplayTypeIsDocumented(
+  displayToTrackType: Map<string, string>,
+  configNames: Set<string>,
+) {
+  const missing = [...displayToTrackType.keys()]
+    .filter(name => !configNames.has(name))
+    .sort((a, b) => a.localeCompare(b))
+  if (missing.length) {
+    throw new Error(
+      `${missing.length} registered display type(s) have no #config block of their own name, so they get no config page and drop out of every generated table. Give each one an annotated schema file — a schema built from a \`makeConfigSchema(typeName)\` helper cannot be seen, since a #config block is keyed to its file:\n${missing
+        .map(name => `  ${name}`)
+        .join('\n')}`,
+    )
+  }
+}
+
 // A member that sits in an MST block but the structural pass can't document and
 // no tag rescued: an untagged `{ foo }` shorthand returning a local function in
 // .views()/.actions(). Surfaced as a warning so the gap is visible, not silent.

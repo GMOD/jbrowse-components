@@ -27,7 +27,12 @@ import { writeJexlDocs } from './generateJexlDocs.ts'
 import { writePaletteDocs } from './generatePaletteDocs.ts'
 import { writeReExportDocs } from './generateReExportDocs.ts'
 import { accumulateModel, writeModelDocs } from './generateStateModelDocs.ts'
-import { createDocProgram, extractWithComment, getAllFiles } from './util.ts'
+import {
+  assertEveryDisplayTypeIsDocumented,
+  createDocProgram,
+  extractWithComment,
+  getAllFiles,
+} from './util.ts'
 
 import type { ApiGroup } from './generateApiDocs.ts'
 import type { Config } from './generateConfigDocs.ts'
@@ -130,6 +135,11 @@ async function main() {
       .map(c => c.header?.name)
       .filter((name): name is string => Boolean(name)),
   )
+
+  // Before any page is written, so a run that would silently drop a display
+  // from every table fails without having rewritten the pages first — same
+  // placement, and same argument, as `assertNoBlankSlotDescriptions`.
+  assertEveryDisplayTypeIsDocumented(displayToTrackType, configNames)
 
   const configGaps = writeConfigDocs(
     configs,
