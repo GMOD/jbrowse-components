@@ -2201,10 +2201,10 @@ export default function stateModelFactory(
               minSashimiScore: self.minSashimiScore,
               downJunctionKeys: downKeys.get(sec.groupKey) ?? noDownKeys,
             })
-            // Ascending score so high-count arcs paint over low-count ones — and,
-            // since overlapping hit targets resolve to the last-painted path, so
-            // the heavier junction also wins the hover.
-            arcs.sort((a, b) => a.score - b.score)
+            // Already ascending by score — `computeSashimiArcs` emits them that
+            // way, and `computeOverlay.test.ts` pins it. The sort used to be
+            // here, one call up from the array's producer, which is why it read
+            // as missing to anyone looking at the producer.
             return {
               groupKey: sec.groupKey,
               ...splitArcsBySide(arcs),
