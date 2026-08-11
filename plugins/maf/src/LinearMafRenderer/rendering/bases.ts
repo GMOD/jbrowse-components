@@ -38,6 +38,18 @@ export function renderBases(
     flank,
   )
 
+  // Assigning `fillStyle` re-parses the CSS color string every time, and this
+  // walk is one iteration per base per row. An alignment is mostly runs of one
+  // color — a conserved stretch is all `matchColor`, a gap run all `gapColor` —
+  // so remembering the last one assigned skips nearly every assignment while
+  // painting identical pixels. The GPU encoder gets the same saving structurally
+  // by merging runs into one quad; this path can't merge (each cell is its own
+  // `fillBpSpan`, which insets a gap stroke) but it can still stop re-parsing.
+  //
+  // Per row rather than per block: `forEachClippedBlock`'s `restore()` resets
+  // the context state at each render block, and re-asserting the color on the
+  // first painted cell of a row is correct under any caller.
+  let lastCss: string | undefined
   for (let gpos = 0; gpos < refLen; gpos += binBp) {
     const col = colForGpos[gpos]!
     // Malformed files can ship a row shorter than the reference; nothing past
@@ -48,7 +60,10 @@ export function renderBases(
     if (col >= firstCol && col <= lastCol) {
       const css = resolveCellColor(seq[col]!, alignment[col]!, cellColorConfig)
       if (css !== undefined) {
-        ctx.fillStyle = css
+        if (css !== lastCss) {
+          ctx.fillStyle = css
+          lastCss = css
+        }
         fillBpSpan(
           ctx,
           bpToPx,

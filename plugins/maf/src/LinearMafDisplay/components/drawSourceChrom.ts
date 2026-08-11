@@ -212,6 +212,14 @@ export function drawSourceChrom(
       // The buffered region's off-screen blocks would emit a fill per row that
       // the clip then throws away — about half of them at a typical view.
       const { bpLo, bpHi } = paintedBpRange(block, clip)
+      // Assigning `fillStyle` re-parses the CSS color string every time, and
+      // this loop is blocks × visible rows — over a million iterations per
+      // frame on the ce11 26-way shape. The palette has five entries and the
+      // *point* of ranking is that nearly every row is rank 0, so tracking the
+      // last color assigned turns almost all of those back into a plain
+      // `fillRect`. Same reasoning as the run-length fill in `drawRowIdentity`,
+      // and lossless for the same reason: the pixels painted are identical.
+      let lastFill: string | undefined
       for (const mafBlock of region.blocks) {
         if (mafBlock.endBp > bpLo && mafBlock.startBp < bpHi) {
           const span = bpSpanPx(bpToX, mafBlock.startBp, mafBlock.endBp)
@@ -221,7 +229,11 @@ export function drawSourceChrom(
           for (const row of mafBlock.rows) {
             if (row.rowIndex >= firstRow && row.rowIndex < lastRow && row.chr) {
               const rank = ranks.get(row.rowIndex)?.get(row.chr) ?? 0
-              ctx.fillStyle = sourceChromRankColor(rank)
+              const fill = sourceChromRankColor(rank)
+              if (fill !== lastFill) {
+                ctx.fillStyle = fill
+                lastFill = fill
+              }
               ctx.fillRect(
                 xLeft,
                 bandOffset + rowHeight * row.rowIndex,

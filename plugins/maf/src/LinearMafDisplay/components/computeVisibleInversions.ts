@@ -15,25 +15,28 @@ export interface InversionMarker {
   h: number
 }
 
+/**
+ * The orientation each (display row, source chromosome) is measured against.
+ * Nested `rowIndex -> chr -> ±1` rather than one map under a `${row}\t${chr}`
+ * key, which is what this used to be, because both halves of the pair are
+ * per-cell: the consensus walk visits every block × row the display holds and
+ * the marker walk visits every block × row on screen, so a joined key built one
+ * throwaway string per cell — over a million per pass on the UCSC ce11 26-way,
+ * and on the marker side once per frame. The nested form is two integer/string
+ * hashes and allocates nothing. Same shape, for the same reason, as
+ * `perRowChromRanks`'s ranks.
+ */
+export type StrandConsensus = ReadonlyMap<number, ReadonlyMap<string, number>>
+
 interface ComputeVisibleInversionsParams extends MafOverlayParams {
   /**
-   * The orientation each (row, source chromosome) is measured against, from
-   * `consensusStrandByRowChr` over *all* loaded regions. Passed in rather than
-   * derived here: that walk covers every block × row the display holds — the
-   * buffered region, so far more than is on screen — while this runs on every
-   * pan and zoom. The model memoizes it (`inversionConsensus`), the same move
-   * `sourceChromRanks` made for color-by-source-chromosome.
+   * From `consensusStrandByRowChr` over *all* loaded regions. Passed in rather
+   * than derived here: that walk covers every block × row the display holds —
+   * the buffered region, so far more than is on screen — while this runs on
+   * every pan and zoom. The model memoizes it (`inversionConsensus`), the same
+   * move `sourceChromRanks` made for color-by-source-chromosome.
    */
-  consensus: ReadonlyMap<string, number>
-}
-
-// Inversions are scored per (display row, source chromosome): a scaffold's
-// overall alignment orientation is arbitrary, so an inversion is a block whose
-// strand differs from the *consensus* orientation of its own scaffold's
-// alignment — not simply any `−`-strand block. This key groups blocks by that
-// pair so the consensus is computed within each scaffold.
-function rowChrKey(rowIndex: number, chr: string) {
-  return `${rowIndex}\t${chr}`
+  consensus: StrandConsensus
 }
 
 /**
@@ -42,21 +45,30 @@ function rowChrKey(rowIndex: number, chr: string) {
  * data — hence a real map of every loaded region rather than the structural
  * `RegionDataMap` the visible-region walks take. `+1` when forward bases are at
  * least as many as reverse, else `−1`.
+ *
+ * Scored per (row, source chromosome) because a scaffold's overall alignment
+ * orientation is arbitrary: an inversion is a block whose strand differs from
+ * the consensus of its *own* scaffold's alignment, not simply any `−`-strand
+ * block.
  */
 export function consensusStrandByRowChr(
   rpcDataMap: ReadonlyMap<number, MafRegionData>,
-): Map<string, number> {
-  const totals = new Map<string, { fwd: number; rev: number }>()
+): Map<number, Map<string, number>> {
+  const totals = new Map<number, Map<string, { fwd: number; rev: number }>>()
   for (const region of rpcDataMap.values()) {
     for (const block of region.blocks) {
       const len = block.endBp - block.startBp
       for (const row of block.rows) {
         if (row.strand !== undefined && row.chr !== undefined) {
-          const key = rowChrKey(row.rowIndex, row.chr)
-          let t = totals.get(key)
+          let byChr = totals.get(row.rowIndex)
+          if (byChr === undefined) {
+            byChr = new Map()
+            totals.set(row.rowIndex, byChr)
+          }
+          let t = byChr.get(row.chr)
           if (t === undefined) {
             t = { fwd: 0, rev: 0 }
-            totals.set(key, t)
+            byChr.set(row.chr, t)
           }
           if (row.strand === -1) {
             t.rev += len
@@ -67,7 +79,14 @@ export function consensusStrandByRowChr(
       }
     }
   }
-  return new Map([...totals].map(([key, t]) => [key, t.fwd >= t.rev ? 1 : -1]))
+  const consensus = new Map<number, Map<string, number>>()
+  for (const [rowIndex, byChr] of totals) {
+    consensus.set(
+      rowIndex,
+      new Map([...byChr].map(([chr, t]) => [chr, t.fwd >= t.rev ? 1 : -1])),
+    )
+  }
+  return consensus
 }
 
 /**
@@ -102,14 +121,14 @@ export function computeVisibleInversions(
       let span: PxSpan | undefined
       for (const row of block.rows) {
         // The row test comes first: it is two comparisons, while the inversion
-        // test builds a key string and hits a map, and with a pinned row height
-        // most rows of a deep alignment are scrolled off screen.
+        // test is two map hits, and with a pinned row height most rows of a
+        // deep alignment are scrolled off screen.
         if (
           row.rowIndex >= firstRow &&
           row.rowIndex < endRow &&
           row.strand !== undefined &&
           row.chr !== undefined &&
-          row.strand !== consensus.get(rowChrKey(row.rowIndex, row.chr))
+          row.strand !== consensus.get(row.rowIndex)?.get(row.chr)
         ) {
           span ??= bpSpanPx(bpToPx, block.startBp, block.endBp)
           markers.push({

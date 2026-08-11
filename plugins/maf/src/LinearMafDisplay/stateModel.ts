@@ -92,6 +92,7 @@ import type {
   CodonMarker,
   LocatedCodon,
 } from './components/computeVisibleCodons.ts'
+import type { StrandConsensus } from './components/computeVisibleInversions.ts'
 import type { MafRowGeometryParams } from './components/visibleRegionGeometry.ts'
 import type {
   LinearMafDisplayConfig,
@@ -1613,10 +1614,10 @@ export default function stateModelFactory(
          * consumer runs on every pan and zoom. Empty when the indicator is off,
          * so a track that never shows inversions pays nothing.
          */
-        get inversionConsensus(): ReadonlyMap<string, number> {
+        get inversionConsensus(): StrandConsensus {
           return self.showInversions
             ? consensusStrandByRowChr(self.rpcDataMap)
-            : new Map<string, number>()
+            : new Map<number, Map<string, number>>()
         },
       }))
       .views(self => {
