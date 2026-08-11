@@ -115,6 +115,15 @@ const GENERATORS: Generator[] = [
     argv: web('gen-tutorial-thumbs.ts'),
   },
   { name: 'homepage images', argv: web('gen-home-images.ts') },
+  {
+    // Same reason as the tutorial cards above, one figure smaller: the social
+    // card is rendered from the wordmark outlines, the inline logo paths and a
+    // handful of layout constants, and nothing re-rendered it when those
+    // changed. It had no script entry, no autogen entry and no CI step — a
+    // by-hand `node website/scripts/generate-og-image.ts` and the honour system.
+    name: 'social card image',
+    argv: web('generate-og-image.ts'),
+  },
   { name: 'doc snippets', argv: web('sync-doc-snippets.ts') },
   { name: 'color tables', argv: api('generateColorDocs.ts') },
   { name: 'jexl catalog', argv: api('generateJexlDocs.ts') },

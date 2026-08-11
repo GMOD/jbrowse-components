@@ -1,5 +1,17 @@
 // Renders the social-card image used in <meta property="og:image">.
-// Run: node scripts/generate-og-image.ts
+// Run: `pnpm autogen` (or `node scripts/generate-og-image.ts`), `--check` in CI.
+//
+// It rides autogen for the reason gen-tutorial-thumbs.ts does: the card is
+// derived from things that change without anyone thinking about it — the
+// wordmark outlines below, the inline logo paths, the layout constants — and
+// nothing re-rendered it when they did. It was a by-hand script with no script
+// entry, no autogen entry and no CI step, so a changed input left the deployed
+// card showing the previous render with nothing to say so.
+//
+// The gate is a byte compare of a fresh render against the committed PNG, which
+// works because the render is deterministic: no live text (see below), and the
+// same sharp/libvips the tutorial-thumbnail gate already byte-compares against
+// in CI.
 //
 // The "JBrowse 2" wordmark is baked in as vector outlines (wordmark-path.ts)
 // rather than live text: the librsvg renderer behind sharp ignores embedded
@@ -19,10 +31,12 @@
 //       x+=hmtx[g][0]
 //   print(f['head'].unitsPerEm, x, ''.join(parts))
 //   PY
+import { readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
 import sharp from 'sharp'
 
+import { check } from './check-utils.ts'
 import { websiteDir } from './paths.ts'
 import {
   wordmarkAdvance,
@@ -67,5 +81,18 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${
   ${wordmark}
 </svg>`
 
-await sharp(new TextEncoder().encode(svg)).png().toFile(outPath)
-console.log(`wrote ${path.relative(websiteDir, outPath)}`)
+const next = await sharp(new TextEncoder().encode(svg)).png().toBuffer()
+const prev = await readFile(outPath).catch(() => undefined)
+const rel = path.relative(websiteDir, outPath)
+
+if (prev?.equals(next)) {
+  console.log(`${rel} is up to date`)
+} else if (check) {
+  console.error(
+    `${rel} is ${prev ? 'stale' : 'missing'} — run \`pnpm autogen\`, then \`pnpm figures:push\` and commit figures.lock`,
+  )
+  process.exit(1)
+} else {
+  await writeFile(outPath, next)
+  console.log(`wrote ${rel}`)
+}
