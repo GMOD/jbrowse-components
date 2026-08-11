@@ -894,14 +894,24 @@ export function hg38ChimpSynteny(
   // collapse each gene to its single longest coding transcript: MANE isn't
   // available for panTro6, so geneGlyphMode 'longestCoding' is the way to cut
   // the dense NCBI isoform stacks on both genomes (reviewer)
+  // NORMAL FEATURE HEIGHT, and the lane sized to what it draws. This used to
+  // pin `featureHeight: 18` against an earlier "reads as a bare sliver" note,
+  // and at these loci that is a gene reduced to one transcript with a handful of
+  // exons 15-30 px wide — so an 18 px body draws each exon as a SQUARE, next to
+  // a RepeatMasker lane whose elements are ordinary flat bars (review: "the
+  // canvasfeatures are oddly 'tall'"). The two lanes are the same renderer and
+  // there is no reason for the gene one to be at a different scale.
+  //
+  // `heightMode: 'grow'` for the same reason the repeat lanes have it, and it is
+  // worth saying that it buys no pixels HERE: probed on the live model, both
+  // gene lanes come out at 50, which is the grow floor rather than the content's
+  // own height, and is what the fixed slot already gave them. It is here so the
+  // lane follows its content if the locus ever holds more than one collapsed
+  // transcript — the empty strip under one row is the floor, not a setting.
   const genes = (id: string) => ({
     trackId: id,
     geneGlyphMode: 'longestCoding',
-    // default featureHeight (10px) reads as a bare sliver at this zoom —
-    // these loci have few, widely-spaced exons and no isoform stacking to
-    // fill a row, so there's nothing else shrinking them (verified
-    // autoHeight/height are not the cause: pinning both had no effect)
-    featureHeight: 18,
+    heightMode: 'grow',
   })
   // RepeatMasker: 'grow' height mode — the track auto-sizes to exactly the few
   // rows of repeats at these TE loci, so it stays compact without crowding the
