@@ -373,40 +373,6 @@ const IGF1_PEAK_WINDOW = 'chr15:41,400,000-41,600,000'
 // stripes, the most saturated thing in the frame and the least informative, and it
 // sat directly against the synteny bands competing with the ribbons. Bases are a
 // zoom away in the live link.
-// The FGF4 callset a second time, as its own track, so one view can carry both
-// the positional lane and the 55-row matrix. Config-identical to
-// `dog10k_fgf4_svs` in test_data/dog10k/config.json apart from the id and the
-// display it defaults to; the samples TSV comes along because the matrix is not
-// what reads it, the adapter is.
-const FGF4_POSITIONAL_TRACK = {
-  type: 'VariantTrack',
-  trackId: 'dog10k_fgf4_svs_positional',
-  name: 'Dog10K structural variants at FGF4 (calls)',
-  assemblyNames: ['UU_Cfam_GSD_1.0'],
-  // ABSOLUTE, and that is not laziness. A CONFIG track's relative `uri`
-  // resolves against the config that declares it, so the hosted config's bare
-  // `dog10k_fgf4_svs.vcf.gz` finds the file; a SESSION track's resolves against
-  // the PAGE, and the capture harness and the published app disagree about what
-  // that is. `test_data/...` 404s in the capture and `/test_data/...` 404s on
-  // jbrowse.org, so a relative path can only be right in one of them and the
-  // live link under this figure is the one that would break silently. The
-  // `main` build rather than `latest`: `latest` does not carry this fixture
-  // (404, checked), `main` does.
-  adapter: {
-    type: 'VcfTabixAdapter',
-    uri: 'https://jbrowse.org/code/jb2/main/test_data/dog10k/dog10k_fgf4_svs.vcf.gz',
-    samplesTsvLocation: {
-      uri: 'https://jbrowse.org/code/jb2/main/test_data/dog10k/dog10k_fgf4_samples.tsv',
-    },
-  },
-  displays: [
-    {
-      type: 'LinearVariantDisplay',
-      displayId: 'dog10k_fgf4_svs_positional-LinearVariantDisplay',
-      height: 50,
-    },
-  ],
-}
 
 const RETRO_TRACKS = (genesTrackId: string) => [
   {
@@ -423,7 +389,6 @@ const RETRO_TRACKS = (genesTrackId: string) => [
 // alignment covers would put ribbon-free sequence in the frame.
 function fgf4SyntenySession(parent: string, retro: Record<string, string>) {
   return sessionSpec(DOG_CONFIG, {
-    sessionTracks: [FGF4_POSITIONAL_TRACK],
     views: [
       {
         type: 'LinearSyntenyView',
@@ -466,25 +431,28 @@ function fgf4SyntenySession(parent: string, retro: Record<string, string>) {
               // The cost is real and was the reason for the earlier choice: it
               // puts ~690 px between the two synteny bands, so the upper ribbon
               // and the lower one can no longer be taken in at once.
-              // The SAME callset as one lane before the 55-row matrix (review:
-              // "there should be a linearvariantdisplay of same data
-              // multivariantdisplay is showing"). The matrix answers WHO
-              // carries a record and the positional lane answers WHAT the
-              // records are -- two boxes, the two the whole figure is about --
-              // and reading the matrix without it means inferring the record
-              // from a column of genotypes.
               //
-              // A SECOND trackId over the same VCF, not the same one twice. One
-              // track opens once per view: written as two `tracks` entries with
-              // one trackId the second is dropped in silence, and the frame came
-              // back with the positional lane where the matrix should have been.
-              // Same pattern as variants/potato_missingness.
-              FGF4_POSITIONAL_TRACK.trackId,
+              // `showVariantLane` is the other half of that review ("there
+              // should be a linearvariantdisplay of same data multivariantdisplay
+              // is showing"): the matrix answers WHO carries a record and the
+              // lane answers WHAT the records are, the two boxes the whole figure
+              // is about, and reading the matrix without it means inferring the
+              // record from a column of genotypes.
+              //
+              // It used to take a SECOND trackId over the same VCF, because one
+              // track opens once per view — two `tracks` entries with one
+              // trackId silently keeps the last, and the frame came back with
+              // the one-row lane where the matrix should have been. The lane is
+              // a band inside this display now, so there is nothing to
+              // duplicate: one track, one fetch, and the marks sit in the same
+              // box as the columns they name. It also gives ~50 px back to the
+              // gap between the two synteny bands.
               {
                 trackId: 'dog10k_fgf4_svs',
                 type: 'LinearMultiSampleVariantDisplay',
                 height: 690,
                 colorBy: 'group',
+                showVariantLane: true,
               },
             ],
           },
@@ -1423,8 +1391,10 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     // an annotation lane per retrocopy, the gene lane and the 55-row sample block
     // between them, and the two synteny bands. Sized by the generator's
     // below-the-fold check, which still reported 10.5 css px under the fold at
-    // 1410 -- the bottom retrocopy lane's own border.
-    viewportHeight: 1510,
+    // 1410 -- the bottom retrocopy lane's own border. 1510 until the variant
+    // lane replaced the separate one-row track, which the same check then
+    // reported as 62 css px of blank.
+    viewportHeight: 1448,
     // THREE LABELS, ONE PER ROW (review: "too much prose stiill. just put
     // labels 'regular gene' and 'retrogene - no introns' on different gene
     // areas of figure ... bottom row needs to also say retrogene, no introns,
