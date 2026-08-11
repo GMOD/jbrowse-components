@@ -340,7 +340,7 @@ Ribbons below are colored by the reference chromosome they come from, so the
 wide green one is the chr3 arm and the crossing ribbons at right are the chr10
 and chr12 inserts with chr3 returning inverted.
 
-<Figure caption="The reconstructed derivative against its three source loci: RefSeq genes above, the same annotation projected onto the allele below, each segment labelled with the interval it came from. The chr3 window runs past the last breakpoint, so the reference right of the ribbons is what this allele leaves behind, and the band under it is realigned depth, flat across every junction." src="/img/cancer_sv/derivative_synteny.png" />
+<Figure caption="The reconstructed derivative against its three source loci: RefSeq genes above, the same annotation projected onto the allele below, each segment labelled with the interval it came from. Both rows carry the same molecules — against hg38 (top, split alignments only) they end together on the last breakpoint, against the allele (bottom) they run the length of it at flat depth. The chr3 window reaches past that breakpoint, so the reference right of the ribbons is what this allele leaves behind." src="/img/cancer_sv/derivative_synteny.png" />
 
 ## Checking the reconstruction
 
@@ -351,15 +351,15 @@ reads clips at any of the four junction positions, and depth does not dip at
 them. Both the reconstruction and this check come from the reads, so the figure
 is evidence rather than illustration.
 
-<Figure caption="The stitching at base scale, over the reads realigned to it: chr3 runs out, chr10 follows, then chr12 inverted, then chr3 resumes backwards. The projected genes under the segments carry the same names as the reference row above, so the chr12 insert reads as a piece of TRHDE on the allele's other strand. The reads below cross every join at flat depth." src="/img/cancer_sv/derivative_inserts.png" />
+<Figure caption="The stitching at base scale, over the reads realigned to it: chr3 runs out, chr10 follows, then chr12 inverted, then chr3 resumes backwards. The projected genes under the segments carry the same names as the reference row above, so the chr12 insert reads as a piece of TRHDE on the allele's other strand. The pileup under the reference row is the same reads against hg38, stopping in a straight line on the junction; the one under the allele crosses every join at flat depth." src="/img/cancer_sv/derivative_inserts.png" />
 
-Reads crossing a junction only mean something against what the same molecules do
-against the reference. Both tracks below are real alignments with soft clipping
-shown, over the same junction: `derive`'s realigned BAM on the derivative, and
-the tumour BAM on hg38. The hg38 side carries a panel per locus the allele
-visits, so every connector runs between two segments that are both on screen. A
-connector drawn dashed would mean the opposite, that the read passes through a
-segment no panel is showing.
+The two figures above put both alignments of those molecules in one frame but
+leave the correspondence to the coordinates. Following one read across is the
+next figure's job, and it is what a breakpoint split view does: soft clipping is
+shown on both sides, and a curve joins each molecule's pieces. The hg38 side
+carries a panel per locus the allele visits, so every connector runs between two
+segments that are both on screen. A connector drawn dashed would mean the
+opposite, that the read passes through a segment no panel is showing.
 
 <Figure caption="COLO829 tumour ONT reads over one junction, twice. Against hg38 (left, split alignments only) they stop at chr3:25,359,568 with their tails clipped, and the curves follow the same molecules onto 199 bp of chr10, onto 183 bp of chr12, and back to chr3. Realigned to the derivative (right) they cross the junction at flat depth. The panes are at different zooms and each carries its own scale bar." src="/img/cancer_sv/realigned_reads.png" links="hg38=cancer_sv/realigned_reads_reference,derivative=cancer_sv/realigned_reads_derivative" />
 
