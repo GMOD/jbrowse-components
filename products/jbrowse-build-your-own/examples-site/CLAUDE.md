@@ -84,6 +84,29 @@ copy-paste and the answer is a different rule argued here, not more entries.
   product's graph from merging into the single-view pages — **not** another
   budget bump. Nobody has tried it yet.
 
+  **A shared React-free module lands in the LAZY chunk, and that is what two
+  regressions since have actually been.** Not the shape the failure text names —
+  in both, `--holds` reported _zero_ eagerly-evaluated modules importing any
+  React component. A module imported by both an eager module and a lazy one gets
+  grouped with the lazy chunk, so the eager import pays for the whole chunk. The
+  asymmetry to remember: a lazy module importing an eager one is free; only the
+  shared module costs. Check that before hunting for a component import that
+  isn't there.
+
+  - Fixed: `breakpoint-split-view`'s `model.ts -> components/util.ts` was
+    dragging eight overlay components and `@floating-ui` onto every page.
+    `components/overlayGeometry.ts` states the boundary and the duplication it
+    costs. 668 -> 655 KB.
+  - **Banked, and the next thing to fix:**
+    `plugins/alignments/src/shaders/slang/read.iface.generated.ts`. Its eager
+    consumers (`LinearAlignmentsDisplay/constants.ts`, `colorUtils.ts`) want ten
+    `CS_*` integers; the module also carries `writeUniforms`, 10.7 KB of its
+    20.6, for the lazy renderer. Same rule, one plugin over. The fix is in the
+    shader codegen — emit the constants as their own module — which regenerates
+    every shader in the repo and answers to the Shaders job, so it is its own
+    change rather than a lint-sized one. ~11 KB on `synteny`, banked into the
+    figures below rather than left failing.
+
 ## `pnpm probe-eager-graph` answers _why_, and is the one to reach for first
 
 `measure-eager-bundle` gives a number; this gives the modules behind it. It

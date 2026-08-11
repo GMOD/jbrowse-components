@@ -1,34 +1,34 @@
 {
   "index": {
-    "chunks": 267,
-    "gzipKb": 539
+    "chunks": 284,
+    "gzipKb": 549
   },
   "controlling-the-view": {
-    "chunks": 270,
-    "gzipKb": 544
+    "chunks": 287,
+    "gzipKb": 554
   },
   "multiple-tracks": {
-    "chunks": 224,
-    "gzipKb": 487
+    "chunks": 240,
+    "gzipKb": 496
   },
   "removing-material-ui": {
-    "chunks": 267,
-    "gzipKb": 539
+    "chunks": 284,
+    "gzipKb": 549
   },
   "scalebar-and-labels": {
-    "chunks": 270,
-    "gzipKb": 541
+    "chunks": 287,
+    "gzipKb": 551
   },
   "synteny": {
-    "chunks": 309,
-    "gzipKb": 644
+    "chunks": 325,
+    "gzipKb": 655
   },
   "ultraminimal": {
-    "chunks": 225,
-    "gzipKb": 487
+    "chunks": 241,
+    "gzipKb": 497
   },
   "web-workers": {
-    "chunks": 267,
-    "gzipKb": 538
+    "chunks": 284,
+    "gzipKb": 548
   }
 }
