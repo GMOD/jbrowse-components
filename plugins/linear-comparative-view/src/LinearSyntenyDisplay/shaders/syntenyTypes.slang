@@ -281,6 +281,16 @@ FillEdges fillEdges(float4 c, float s, float sd, float dydt) {
 // on screen instead of the most findable, and hoverDarken's 0.7 on the rgb could
 // not make up for it. Below 0.35 the max is inert, so the low display alphas a
 // whole-genome view actually uses are untouched.
+//
+// Rendered and measured, on a red ribbon over white: at the 0.2 default hovering
+// gives (255,204,204) -> (228,166,166), and at 1.0 (255,0,0) -> (178,0,0), which
+// is the strongest cue of any setting rather than the weakest as was once
+// feared. The weak point is displayAlpha EXACTLY 0.35, where hovering lands on
+// the same colour as hovering at 0.2 because both clamp here: the un-hovered
+// ribbon has already reached the alpha the boost would take it to, so only
+// hoverDarken is left and one channel moves 27/255. Still visible, and a narrow
+// band, so it is left alone — but that is the opacity to look at if this is ever
+// revisited. `browser-tests/hover-probe.ts` renders it.
 public float fillShade(float colorAlpha, float displayAlpha, bool isHovered) {
   float a = colorAlpha * displayAlpha;
   return isHovered ? max(a, min(a * 5.0, 0.35)) : a;

@@ -1058,6 +1058,65 @@ and could not: it builds both the polygon and the analytic clip from one copy of
 `ribbonEdges` is for — one corner→edge pairing, so the property is structural
 instead of tested.
 
+### What the pad costs, measured
+
+`browser-tests/probe-dotplot-pad-cost.ts` runs the shipped GLSL and changes one
+thing, the vertex stage's `ext`. 400k instances at dpr 1 on an Intel UHD 630:
+
+| lineWidth | padded | unpadded | pad costs |
+| --- | --- | --- | --- |
+| 1 | 5.473 ms | 5.317 ms | +2.9% |
+| 2.5 (default) | 6.530 ms | 5.629 ms | +16.0% |
+| 5 | 9.826 ms | 8.271 ms | +18.8% |
+
+Real, inside a 60fps budget, and it buys a correct edge — the GPU's ink error
+against the Canvas2D render of the same segments goes from −1.87% (under-inked,
+the ~1px-narrow line) to +0.91%. Two results worth keeping because both invert
+the obvious guess:
+
+- **Cost scales opposite to the area *ratio*.** The ratio is worst for thin lines
+  (4× for a `lineWidth` 1 dot) and the measured cost is *lowest* there: the quads
+  are small enough that per-instance setup dominates and fill barely registers.
+  Once fill dominates, absolute added area is what matters, not the ratio.
+- **The `discard` is not a lever on it.** `finalAlpha <= 0.0` holds only at
+  `d ≥ halfWidth + aa`, so along a line's body the pad ring never discards — that
+  ring *is* the outer half of the ramp and has to be shaded. Only the quad corners
+  past each cap go. The pad is geometrically required; the only reduction
+  available is a narrower ramp, which is a quality decision.
+
+Measuring it has two traps that each produce a confident wrong answer. Headless
+Chrome falls back to SwiftShader, whose cost is not area-dominated — it reports
+the pad as free (0.8%, against ±3.5% noise); the real GPU needs a headed browser,
+as `runner.ts` says for the webgl backend. And machine contention lands mostly on
+the cheaper variant: a contended run read 8.1% where a quiet one read 16.0%.
+Judge a run by whether the two distributions separate.
+
+### Which backend disagreement is evidence, and which is not
+
+Verifying this family of fixes turned on one question, and it generalizes:
+**does the change move one backend, or all of them at once?**
+
+`pnpm test:browser:compare` diffs `webgl` / `webgpu` / `canvas2d`. Where a change
+is GPU-only, Canvas2D is an *independent render of the same marks*, so "closer to
+Canvas2D" replaces "looks better" with a number — that is what settled both the
+dotplot pad above and the point-glyph ramp (differing pixels against the canvas2d
+golden 4.51% → 2.03%, excess chroma +11.19% → +5.72%). The goldens corroborate on
+their own: canvas2d's capture does not move while webgl's does.
+
+It is no oracle at all for a change that reaches every path together — a
+`//! js-export`ed function whose generated twin Canvas2D and the SVG export call
+(`fillShade`), or a constant a CPU path imports from the shader
+(hi-C's `MIN_VISIBLE_ALPHA`). Those move in lockstep and agree on the new answer,
+right or wrong, so they need a snapshot diff or an eye. Ask which side of that
+line a change falls on *before* planning how to verify it.
+
+Two things have no suite and needed one-off probes, both of which record their
+traps in the file header: `browser-tests/hover-probe.ts` (drive
+`setHoveredFeatureIdx`, never the mouse — a mouse move that lands on no feature
+is indistinguishable from a hover cue that draws nothing; and require a settled
+non-blank frame, because the repaint clears the canvas first) and the pad-cost
+probe above.
+
 ## `displayedRegionIndex`
 
 Zero-based index into `view.displayedRegions`. Stable unless regions are added,
