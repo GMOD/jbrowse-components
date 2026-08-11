@@ -663,18 +663,14 @@ whole-chromosome scale it is a handful of pixels wide.
 <Figure caption="KRAS on chr12: the gene's MANE Select transcript, boxed, over the segmented copy ratio, the HiFiCNV depth and the BAF, above the CNV calls. Over the tandem duplication (SV_101, CN 3, 2+1) the copy-ratio segment rises above its flanks, its edges landing on the called boundaries, while the BAF separates into bands at 1/3 and 2/3 against the flanks' single 0.5 band." src="/img/sv_cgiab/driver_kras_gain.png" />
 
 `SMAD4` on 18q is lost with LOH (`CNA_48`, CN 1, 0+1), the mirror image of the
-TP53 event. Two controls are in the same picture rather than in a second figure:
-the balanced p-arm beside the event, and the matched normal drawn on the same
-axis as the tumor. The gene's own MANE transcript is the top lane, boxed, so the
-arm-level call and the gene it covers share an axis.
+TP53 event. Two controls are in the same picture: the balanced p-arm, and the
+matched normal on the same axis as the tumor.
 
-Read the copy ratio against zero rather than against itself. It is a log2 of
-tumor over normal, so the value that matters is the sign: filling the lane from
-a zero pivot (the display's bicolor mode, on by default) puts a loss below the
-midline and a gain above it, and a symmetric axis keeps those two the same
-distance.
+The copy ratio is a log2 of tumor over normal, so read it against zero. Leave
+the display's bicolor mode on and it fills from a zero pivot, loss below the
+midline and gain above; a symmetric axis keeps the two the same distance.
 
-<Figure caption="Chromosome 18: SMAD4's MANE Select transcript over the segmented copy ratio, the tumor and its matched normal from indexcov, and the BAF, above the CNV calls. CNA_48 (single-copy loss with LOH over SMAD4) runs from ~30 Mb to the telomere: the copy ratio drops below zero against the CN 2 p-arm beside it, the tumor's coverage falls to about half while the normal stays flat across the whole chromosome, and the BAF spreads off the single band the p-arm holds." src="/img/sv_cgiab/driver_smad4_loh.png" />
+<Figure caption="Chromosome 18: SMAD4's MANE Select transcript over the segmented copy ratio, the tumor and its matched normal from indexcov, and the BAF, above the CNV calls. Over CNA_48, from ~30 Mb to the telomere, the copy ratio drops below zero, the tumor's coverage falls to about half the normal's, and the BAF spreads off the p-arm's single band." src="/img/sv_cgiab/driver_smad4_loh.png" />
 
 See also the
 [multi-quantitative track guide](/docs/user_guides/multiquantitative_track) for

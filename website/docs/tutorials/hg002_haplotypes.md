@@ -151,14 +151,12 @@ v1.2 across chromosome 8. Added as a track per panel it says what kind of
 sequence the inverted block is: ordinary gene-carrying euchromatin, not a blank
 segment that happened to flip.
 
-Across 9 Mb no gene in that lane can carry a label, so add a second lane over
-the same GFF and cut it down with **Edit filters...** in its track menu, one
-expression per gene you want named. Six is enough here, and the six read in one
-order under the maternal panel and in the reverse order under the paternal one.
-That is the same inversion the ribbons cross for, in a form that can be read
-without following a ribbon at all.
+At 9 Mb no gene in that lane can carry a label. Add a second lane over the same
+GFF and cut it to a few genes with **Edit filters...** in its track menu: those
+do get labels, and they read in one order under the maternal panel and in the
+reverse order under the paternal one.
 
-<Figure caption="HG002 v1.2 maternal (top) against paternal (bottom) across 9 Mb of 8p23.1, with chain blocks and genes on each panel's own coordinates and the ribbons between them colored by strand. The inverted block is the long blue bar in both panels and the sweep crossing between them; the red blocks either side are the collinear flanks. The lane beside the ribbons carries the six largest protein coding genes inside the block, which read MFHAS1, TNKS, MSRA, XKR6, BLK, GATA4 on the maternal haplotype and the same six in the opposite order on the paternal one." src="/img/hg002_haplotypes_8p23_inversion.png" />
+<Figure caption="HG002 v1.2 maternal (top) against paternal (bottom) across 9 Mb of 8p23.1, with chain blocks and genes on each panel's own coordinates and the ribbons between them colored by strand. The inverted block is the long blue bar in both panels and the sweep crossing between them; the red blocks either side are the collinear flanks. The labelled lane beside the ribbons carries the same six genes in opposite orders on the two haplotypes." src="/img/hg002_haplotypes_8p23_inversion.png" />
 
 Set the ribbon coloring from the palette button in the view header, and turn on
 **Show curved lines** under **View options** then **Show...** so a block landing
