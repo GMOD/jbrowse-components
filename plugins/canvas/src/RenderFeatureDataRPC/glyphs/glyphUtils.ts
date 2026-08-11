@@ -23,10 +23,31 @@ export const HEIGHT_MULTIPLIERS: Record<DisplayMode, number> = {
 // don't dwarf the tighter rows. Deliberately gentler than HEIGHT_MULTIPLIERS:
 // reusing 0.6/0.3 would drop superCompact labels to ~3px and make them
 // illegible, so labels shrink only enough to track the denser layout.
+//
+// This table is ALSO the row reservation — `labelFontPx` is `labelFontSize()`,
+// and both the packed row height (`bodyHeightPx + rowPadding + labelLines ×
+// labelFontPx`) and the `below` subfeature-label row are spent at it. So a
+// change here is a layout change, not only a typography one. That is new: the
+// `below` row used to be reserved in the worker against HEIGHT_MULTIPLIERS,
+// which is the mismatch that let labels overlap (see reservesBelowLabelRow).
+//
+// Which makes these numbers the only lever on how compact a LABELED compact
+// track is, because in these modes the text is most of the row — the bodies have
+// already shrunk past it. With a 10px feature and one name line:
+//
+//   labels off   normal 15.0   compact  8.0 (0.53x)   superCompact  4.0 (0.27x)
+//   one line     normal 26.0   compact 17.4 (0.67x)   superCompact 11.7 (0.45x)
+//   two lines    normal 37.0   compact 26.7 (0.72x)   superCompact 19.4 (0.52x)
+//
+// i.e. a labeled superCompact row is 66% label, and lands at 0.45x rather than
+// the 0.3x its body multiplier suggests. 0.85/0.7 were set when this table did
+// NOT drive the reservation, so shrinking the text bought nothing but smaller
+// text; 0.75/0.65 now takes 6-11% off a labeled row (text 8.3px / 7.2px), which
+// is the compaction available without dropping label lines outright.
 export const LABEL_FONT_MULTIPLIERS: Record<DisplayMode, number> = {
   normal: 1,
-  compact: 0.85,
-  superCompact: 0.7,
+  compact: 0.75,
+  superCompact: 0.65,
   // collapsed never draws labels, so the value is unused; keep it defined so the
   // Record stays exhaustive over DisplayMode.
   collapsed: 1,
