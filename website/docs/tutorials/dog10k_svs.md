@@ -256,11 +256,12 @@ for the deletion. Dimorphic SINE and LINE-1 variants like these make up over 45%
 of all deletions in the callset, which is why a dog SV panel looks nothing like
 a SNV panel.
 
-The window holds the whole gene, and the lines above the matrix tie each column
-back to the intron it sits in. The Greek wolves have lost the left repeat
+The window holds the whole gene, and each record is drawn at its own position
+and size, so the two columns land in the introns they sit in and are visibly
+narrow against the gene above. The Greek wolves have lost the left repeat
 entirely while a third of them still carry the right one.
 
-<Figure caption="Two SINEC2A1 deletions in adjacent DENR introns, one column each, every animal of every breed in the panel. A matrix column is one variant and its width is the panel divided by the number of variants, not the variant's size: both of these are about 220 bp, named in the record lane under the matrix. The Mastiff-clade breeds carry both repeats and the Labrador Retrievers have lost both." src="/img/dog10k-denr-sine-deletions.png" />
+<Figure caption="Two SINEC2A1 deletions in adjacent DENR introns, every animal of every breed in the panel. Each column sits at its record's genomic position and is drawn at its width — about 220 bp apiece, which is why they are slivers against the 18 kb of gene above them — and the lane over the rows names each one. The Mastiff-clade breeds carry both repeats and the Labrador Retrievers have lost both." src="/img/dog10k-denr-sine-deletions.png" />
 
 This contrasts with the Collie eye anomaly figure. That deletion was long, rare,
 and confined to one clade. These are short, common, and it is the reference that
