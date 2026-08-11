@@ -21,6 +21,7 @@ on one that doesn't. Don't edit between the markers; write the doc's
 | Doc | Read when |
 | --- | --- |
 | [architectural-limits](ARCHITECTURAL_LIMITS.md) | Live register of the architecture's resource ceilings, accepted couplings, and correctness surfaces nothing mechanical protects. Each entry carries its mitigation state and the condition that retires it. Read before scaling work (many tracks, many views, whole-genome), or when a symptom looks like a product bug but is a ceiling. |
+| [benchmarking](BENCHMARKING.md) | How to build a benchmark whose number is real, and the catalogue of traps that have produced fake ones in this repo — each with the bogus figure it actually reported. Read before writing a bench or quoting a speedup. |
 | [bgzf-worker-pool](BGZF_WORKER_POOL.md) | What the BGZF inflate pool is worth, measured per format, and the benchmark traps that produce fake numbers. Read before quoting a speedup for it or benchmarking it again. |
 | [bp-precision](BP_PRECISION.md) | The absolute-uint32 coordinate convention, the three coordinate families the GPU renderers use, and genome-size limits. Read when writing a Slang shader or a CPU instance packer. |
 | [clustering-workflow](CLUSTERING_WORKFLOW.md) | In-app hierarchical clustering for wiggle and variants. Read when touching cluster dialogs, dendrograms, or the TreeSidebar. |

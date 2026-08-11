@@ -6,11 +6,11 @@
 //
 // Flags: --base=<ref> (default main), --rounds=<n> (default 12), --allow-diff
 //
-// Four things here are not decoration, and three of them are the same lessons
-// the alignments mismatch-walk bench recorded before the walk moved to
-// `@gmod/bam` and the bench went with it (deleted in ec75079bf1; `git show
-// ec75079bf1^:plugins/alignments/benches/mismatchWalk.bench.ts` to read it).
-// This file exists because coverage needed them too, plus one more.
+// Four things here are not decoration. The first three are general and are
+// written up once, with the fake numbers they produced, in
+// `agent-docs/reference/BENCHMARKING.md` — read that before writing a new bench
+// rather than reverse-engineering it from this one. Repeated here because this
+// file has to be readable on its own; the fourth is specific to coverage.
 //
 // INTERLEAVING AND MIN. Sides run round-robin in one process and the reported
 // number is the MIN across rounds, not the mean. On a machine doing other work

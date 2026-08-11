@@ -8,6 +8,10 @@
 //
 // Flags: --rounds=<n> (default 12), --repeat=<n> (default 4)
 //
+// The general harness rules below — interleave, min-of-rounds, run a control —
+// and the traps they exist for are written up once in
+// `agent-docs/reference/BENCHMARKING.md`. Read that before writing a new bench.
+//
 // THREE SIDES, one of which is a control:
 //   inject   — recordClass: our subclass. One object per read. What we ship.
 //   wrap     — plain BamRecord + a delegating feature. Two objects per read.

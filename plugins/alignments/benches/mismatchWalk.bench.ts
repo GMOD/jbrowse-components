@@ -12,6 +12,11 @@
 //        walk), --rounds=<n> (default 60), --scale=<f> (default 0.25, sizes the
 //        working set), --allow-diff
 //
+// The general harness rules below — interleave, min-of-rounds, run a control,
+// check identity before believing timing — and the traps they exist for are
+// written up once in `agent-docs/reference/BENCHMARKING.md`. Read that before
+// writing a new bench.
+//
 // THREE SIDES, one a control:
 //   library   — @gmod/bam's forEachMismatchNumeric. What we ship now.
 //   ours      — packages/cigar-utils' walk, extracted from --base.
