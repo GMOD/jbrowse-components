@@ -33,7 +33,7 @@ import type {
   ExportSvgOptions,
   FadeThinMode,
   ImportFormSyntenyTrack,
-  LinearSyntenyViewInit,
+  LinearSyntenyViewCommands,
 } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -70,8 +70,11 @@ const AddRowDialog = lazy(() => import('./components/AddRowDialog.tsx'))
  *   },
  * }
  * ```
- * Other `init` fields: `colorBy`, `levelHeights`, `alpha`, `minAlignmentLength`,
- * `autoDiagonalize`, `sameScale` — see the `init` property below.
+ * `init` also takes the launch commands (`levelHeights`, `autoDiagonalize`,
+ * `sameScale`, `collapseEmptyRows`) and ANY property below — `colorBy`,
+ * `alpha`, `minAlignmentLength`, `drawLocationMarkers`, … . There is no list to
+ * join: `applyInitSettings` matches an init key against this model's own
+ * properties, and `LinearSyntenyViewInit` is derived from its snapshot type.
  */
 export default function stateModelFactory(pluginManager: PluginManager) {
   return types
@@ -87,6 +90,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         type: types.literal('LinearSyntenyView'),
         /**
          * #property
+         * How per-base insertions and deletions inside each alignment are
+         * shown: 'full' paints indel wedges, 'matches' leaves them see-through,
+         * 'off' draws blocks only.
          */
         cigarMode: types.stripDefault(
           // `as const` so this resolves to the CigarMode union rather than
@@ -96,10 +102,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         ),
         /**
          * #property
+         * Render ribbons as bezier curves rather than straight chords. Reads
+         * much better at whole-genome scale, where straight crossings stack
+         * into noise.
          */
         drawCurves: types.stripDefault(types.boolean, false),
         /**
          * #property
+         * Continue the query view's scalebar grid down through the ribbons: a
+         * tick at each round query coordinate, joined to the coordinate the
+         * alignment pairs it with.
          */
         drawLocationMarkers: types.stripDefault(types.boolean, false),
         /**
@@ -109,6 +121,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         overdrawPx: types.stripDefault(types.number, DEFAULT_OVERDRAW_PX),
         /**
          * #property
+         * Per-feature opacity in [0,1]. The default is tuned for dense
+         * unfiltered hairballs; a whole-genome view with minAlignmentLength set
+         * can use a higher value (~0.4) for stronger color.
          */
         alpha: types.stripDefault(types.number, 0.2),
         /**
@@ -167,7 +182,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * }
          * ```
          */
-        init: types.frozen<LinearSyntenyViewInit | undefined>(),
+        init: types.frozen<LinearSyntenyViewCommands | undefined>(),
       }),
     )
     .volatile(() => ({
@@ -503,7 +518,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setInit(init?: LinearSyntenyViewInit) {
+      setInit(init?: LinearSyntenyViewCommands) {
         self.init = init
       },
     }))

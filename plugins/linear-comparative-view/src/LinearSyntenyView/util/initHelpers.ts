@@ -1,3 +1,8 @@
+import {
+  applyInitSettings as applyDeclaredSettings,
+  warnInitSettings,
+} from '@jbrowse/core/util/applyInitSettings'
+
 import type { LinearSyntenyViewModel } from '../model.ts'
 import type { LinearSyntenyViewInit } from '../types.ts'
 
@@ -15,39 +20,43 @@ export function normalizeTrackLevels(
   return isFlatTrackList(tracks) ? [tracks] : tracks
 }
 
-// Apply the one-time-on-load display settings carried in an init block. Order
-// matters only for levelHeights, which intentionally runs after the rest so it
-// can override per-level heights set by an earlier autoScaleLevelHeights pass.
+// The init keys this view writes code for. Everything else in an init blob is
+// matched against the view's own declared properties and applied verbatim —
+// see `applyInitSettings` in core for why that is the default and this the
+// exception. A new display setting joins the model and nothing else; the only
+// way it belongs on this list is if one of the three reasons below applies, and
+// there is no fourth:
+//
+//   - no property behind it, it means "do something": `views`,
+//     `autoDiagonalize`, `sameScale`, `collapseEmptyRows`
+//   - the name collides with a property meaning something else: a spec's
+//     `tracks` is trackIds per level, the model's is not that shape
+//   - it is ordered against another step: `levelHeights` has to win over the
+//     auto-scale pass that runs immediately before it
+export const LINEAR_SYNTENY_INIT_COMMANDS = [
+  'views',
+  'tracks',
+  'levelHeights',
+  'autoDiagonalize',
+  'sameScale',
+  'collapseEmptyRows',
+] as const
+
+/**
+ * Apply the display settings an init block carries. Called after
+ * `autoScaleLevelHeights`, which `levelHeights` is allowed to override.
+ */
 export function applyInitSettings(
   self: LinearSyntenyViewModel,
   init: LinearSyntenyViewInit,
 ) {
-  if (init.colorBy) {
-    self.setColorBy(init.colorBy)
-  }
-  if (init.showColorLegend !== undefined) {
-    self.setShowColorLegend(init.showColorLegend)
-  }
-  if (init.minAlignmentLength !== undefined) {
-    self.setMinAlignmentLength(init.minAlignmentLength)
-  }
-  if (init.drawCurves !== undefined) {
-    self.setDrawCurves(init.drawCurves)
-  }
-  if (init.drawLocationMarkers !== undefined) {
-    self.setDrawLocationMarkers(init.drawLocationMarkers)
-  }
-  if (init.cigarMode !== undefined) {
-    self.setCigarMode(init.cigarMode)
-  }
-  if (init.alpha !== undefined) {
-    self.setAlpha(init.alpha)
-  }
-  if (init.fadeThinAlignmentsMode !== undefined) {
-    self.setFadeThinAlignmentsMode(init.fadeThinAlignmentsMode)
-  } else if (init.fadeThinAlignments !== undefined) {
-    self.setFadeThinAlignmentsMode(init.fadeThinAlignments ? 'on' : 'off')
-  }
+  warnInitSettings(
+    'LinearSyntenyView init',
+    applyDeclaredSettings(self, init, {
+      commands: LINEAR_SYNTENY_INIT_COMMANDS,
+    }),
+  )
+
   if (init.levelHeights) {
     for (const [i, h] of init.levelHeights.entries()) {
       self.levels[i]?.setHeight(h)

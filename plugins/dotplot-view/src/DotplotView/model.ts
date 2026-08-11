@@ -52,7 +52,11 @@ import type {
 } from '../DotplotDisplay/dotplotRenderingBackendTypes.ts'
 import type { DotplotDisplayModel } from '../DotplotDisplay/stateModelFactory.tsx'
 import type { Dotplot1DViewModel } from './1dview.ts'
-import type { Coord, DotplotViewInit, ImportFormSyntenyTrack } from './types.ts'
+import type {
+  Coord,
+  DotplotViewCommands,
+  ImportFormSyntenyTrack,
+} from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { PxToBpResult } from '@jbrowse/core/util/Base1DUtils'
@@ -323,7 +327,7 @@ export default function stateModelFactory(pm: PluginManager) {
            * #property
            * used for initializing the view from a session snapshot
            */
-          init: types.frozen<DotplotViewInit | undefined>(),
+          init: types.frozen<DotplotViewCommands | undefined>(),
         }),
       )
       .volatile(() => ({
@@ -974,7 +978,7 @@ export default function stateModelFactory(pm: PluginManager) {
         /**
          * #action
          */
-        setInit(init?: DotplotViewInit) {
+        setInit(init?: DotplotViewCommands) {
           self.init = init
         },
 

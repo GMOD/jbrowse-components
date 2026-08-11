@@ -128,6 +128,7 @@
     "./util/aborting": "./src/util/aborting.ts",
     "./util/addRelativeUris": "./src/util/addRelativeUris.ts",
     "./util/analytics": "./src/util/analytics.ts",
+    "./util/applyInitSettings": "./src/util/applyInitSettings.ts",
     "./util/assemblyConfigUtils": "./src/util/assemblyConfigUtils.ts",
     "./util/bandHeight": "./src/util/bandHeight.ts",
     "./util/bgzfWorkerPool": "./src/util/bgzfWorkerPool.ts",
@@ -671,6 +672,10 @@
       "./util/analytics": {
         "types": "./esm/util/analytics.d.ts",
         "import": "./esm/util/analytics.js"
+      },
+      "./util/applyInitSettings": {
+        "types": "./esm/util/applyInitSettings.d.ts",
+        "import": "./esm/util/applyInitSettings.js"
       },
       "./util/assemblyConfigUtils": {
         "types": "./esm/util/assemblyConfigUtils.d.ts",
@@ -1246,6 +1251,9 @@
         ],
         "util/analytics": [
           "esm/util/analytics.d.ts"
+        ],
+        "util/applyInitSettings": [
+          "esm/util/applyInitSettings.d.ts"
         ],
         "util/assemblyConfigUtils": [
           "esm/util/assemblyConfigUtils.d.ts"

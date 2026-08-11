@@ -4,6 +4,10 @@ import {
   parseLocString,
   selectNamedRegions,
 } from '@jbrowse/core/util'
+import {
+  applyInitSettings,
+  warnInitSettings,
+} from '@jbrowse/core/util/applyInitSettings'
 import { coerceHighlight } from '@jbrowse/core/util/highlights'
 import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
 import { leadingEdgeDebounce } from '@jbrowse/core/util/leadingEdgeDebounce'
@@ -121,19 +125,30 @@ function applyInitTracks(self: DotplotViewModel, init: DotplotViewInit) {
   }
 }
 
+// The init keys this view writes code for; everything else is matched against
+// the view's own declared properties and applied verbatim. See
+// `applyInitSettings` in core — and note what the hand-written switchboard this
+// replaced actually covered: showColorLegend, colorBy and minAlignmentLength,
+// out of a model that also declares alpha, drawCigar, lineWidth,
+// lockAspectRatio, lodMode and height. Those six were never authorable at all.
+const DOTPLOT_INIT_COMMANDS = [
+  // the spec's `views` is a per-axis {assembly, loc, displayedRegionNames}
+  // pair; the model has no such property, and `tracks` means trackIds here
+  // rather than the built track models
+  'views',
+  'tracks',
+  'highlight',
+  'autoDiagonalize',
+] as const
+
 function applyInitDisplaySettings(
   self: DotplotViewModel,
   init: DotplotViewInit,
 ) {
-  if (init.showColorLegend !== undefined) {
-    self.setShowColorLegend(init.showColorLegend)
-  }
-  if (init.colorBy) {
-    self.setColorBy(init.colorBy)
-  }
-  if (init.minAlignmentLength !== undefined) {
-    self.setMinAlignmentLength(init.minAlignmentLength)
-  }
+  warnInitSettings(
+    'DotplotView init',
+    applyInitSettings(self, init, { commands: DOTPLOT_INIT_COMMANDS }),
+  )
 }
 
 function applyInitHighlights(self: DotplotViewModel, init: DotplotViewInit) {

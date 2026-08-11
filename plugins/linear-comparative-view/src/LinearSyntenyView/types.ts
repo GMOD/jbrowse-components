@@ -1,3 +1,5 @@
+import type { LinearSyntenyViewStateModel } from './model.ts'
+import type { ViewInit } from '@jbrowse/core/util/applyInitSettings'
 import type {
   LinearGenomeViewLaunchProps,
   TrackInit,
@@ -15,7 +17,15 @@ export type CigarMode = 'off' | 'matches' | 'full'
 // Sub-pixel width fade: 'auto' turns on once the view is dense enough to tangle.
 export type FadeThinMode = 'auto' | 'on' | 'off'
 
-export interface LinearSyntenyViewInit extends SyntenyViewSharedInit {
+/**
+ * The init keys `LinearSyntenyView` writes code for — things to DO rather than
+ * state to hold, plus the names that mean something here other than what the
+ * model's property of the same name means. `LINEAR_SYNTENY_INIT_COMMANDS` is
+ * the runtime twin of this list.
+ *
+ * A new display setting does not belong here. See `LinearSyntenyViewInit`.
+ */
+export interface LinearSyntenyViewCommands extends SyntenyViewSharedInit {
   // a row is an LGV, so it takes the LGV's own launch props (trackLabels,
   // showAminoAcids, colorByCDS, …) alongside what to show
   views: ({
@@ -55,27 +65,22 @@ export interface LinearSyntenyViewInit extends SyntenyViewSharedInit {
   // by the per-row stretch — and orthologs between two rows line up at the same
   // scale on both. Applied last, after any autoDiagonalize pass.
   sameScale?: boolean
-  // Render ribbons as bezier curves rather than straight chords. Reads much
-  // better at whole-genome scale where straight crossings stack into noise.
-  drawCurves?: boolean
-  // Draw the query view's scalebar grid down through the ribbons: a tick at
-  // each round query coordinate, joined to the coordinate the alignment pairs
-  // it with. Off by default.
-  drawLocationMarkers?: boolean
-  cigarMode?: CigarMode
-  // Per-feature opacity in [0,1]. The default (0.2) is tuned for dense
-  // unfiltered hairballs; whole-genome views with minAlignmentLength set
-  // can use a higher value (~0.4) for stronger color.
-  alpha?: number
-  // Fade sub-pixel-thin ribbons by their on-screen width. 'auto' (default)
-  // fades only once the view is dense enough to tangle; a sparse whole-genome
-  // comparison (e.g. distant species, every alignment sub-pixel) stays unfaded
-  // so the fade doesn't wash it out. 'on'/'off' pin it.
-  fadeThinAlignmentsMode?: FadeThinMode
-  // Deprecated: legacy boolean form of fadeThinAlignmentsMode (true -> 'on',
-  // false -> 'off'). Prefer fadeThinAlignmentsMode.
-  fadeThinAlignments?: boolean
 }
+
+/**
+ * What a `LinearSyntenyView` can be launched with — a session spec's flat args,
+ * a config `defaultSession` view's `init` blob, a share link.
+ *
+ * The commands above, plus every declared property of the view (`drawCurves`,
+ * `cigarMode`, `alpha`, `drawLocationMarkers`, `opacityByIdentity`, `lodMode`,
+ * and whatever the model grows next), each in its own type. None of them is
+ * listed anywhere: the type comes off the state model and the runtime asks the
+ * model too, so declaring a property is the whole of making it authorable.
+ */
+export type LinearSyntenyViewInit = ViewInit<
+  LinearSyntenyViewStateModel,
+  LinearSyntenyViewCommands
+>
 
 export interface ExportSvgOptions {
   rasterizeLayers?: boolean

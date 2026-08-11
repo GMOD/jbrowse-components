@@ -7,12 +7,11 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 /**
- * The view's own `init` contract plus where to put it. Derived from
- * `LinearSyntenyViewInit` rather than restated: every field below `views` is
- * forwarded verbatim by the handler, so a hand-copied subset only ever meant
- * that a field the view already honored (`collapseEmptyRows`,
- * `fadeThinAlignmentsMode`, a row's LGV launch props) was rejected by the type
- * while working perfectly at runtime.
+ * The view's own `init` contract plus where to put it. Derived from the view's
+ * types rather than restated: everything but `session`/`id` is forwarded
+ * verbatim by the handler, so a hand-copied subset only ever meant that a field
+ * the view already honored (`collapseEmptyRows`, a row's LGV launch props) was
+ * rejected by the type while working perfectly at runtime.
  */
 export interface LaunchLinearSyntenyViewArgs extends Omit<
   LinearSyntenyViewInit,

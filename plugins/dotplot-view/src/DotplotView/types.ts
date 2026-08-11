@@ -1,3 +1,5 @@
+import type { DotplotViewStateModel } from './model.ts'
+import type { ViewInit } from '@jbrowse/core/util/applyInitSettings'
 import type { SyntenyViewSharedInit } from '@jbrowse/synteny-core'
 
 // A plot-area pointer position in component px, as the drag handlers and the
@@ -14,7 +16,12 @@ export const DRAG_THRESHOLD_PX = 3
 
 export type { ImportFormSyntenyTrack } from '@jbrowse/synteny-core'
 
-export interface DotplotViewInit extends SyntenyViewSharedInit {
+/**
+ * The init keys `DotplotView` writes code for — things to DO, and the names
+ * that mean something here other than what the model's property of the same
+ * name means. `DOTPLOT_INIT_COMMANDS` is the runtime twin of this list.
+ */
+export interface DotplotViewCommands extends SyntenyViewSharedInit {
   views: {
     assembly: string
     // optional per-axis region to navigate to ("ctgA:5000-15000"); hview is
@@ -37,3 +44,17 @@ export interface DotplotViewInit extends SyntenyViewSharedInit {
   // mirroring LinearGenomeView's init.highlight
   highlight?: string[]
 }
+
+/**
+ * What a `DotplotView` can be launched with: the commands above, plus ANY
+ * declared property of the view — `alpha`, `drawCigar`, `lineWidth`,
+ * `lockAspectRatio`, `lodMode`, `height`, and whatever the model grows next,
+ * each in its own type. None of them is listed anywhere: the type comes off the
+ * state model and the runtime asks the model too, so declaring a property is
+ * the whole of making it authorable. Each stays documented once, on the
+ * property.
+ */
+export type DotplotViewInit = ViewInit<
+  DotplotViewStateModel,
+  DotplotViewCommands
+>

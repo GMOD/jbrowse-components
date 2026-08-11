@@ -1,126 +1,111 @@
+import { createTestSession } from '@jbrowse/web/testUtils'
+
 import { applyInitSettings, normalizeTrackLevels } from './initHelpers.ts'
 
 import type { LinearSyntenyViewModel } from '../model.ts'
+import type { LinearSyntenyViewInit } from '../types.ts'
 
-// A minimal stand-in recording which one-time-on-load setters applyInitSettings
-// invokes; the real model's setters just assign observable props.
-function makeModel() {
-  const calls: Record<string, unknown> = {}
-  return {
-    calls,
-    setColorBy: (v: string) => {
-      calls.colorBy = v
-    },
-    setShowColorLegend: (v: boolean) => {
-      calls.showColorLegend = v
-    },
-    setMinAlignmentLength: (v: number) => {
-      calls.minAlignmentLength = v
-    },
-    setDrawCurves: (v: boolean) => {
-      calls.drawCurves = v
-    },
-    setDrawLocationMarkers: (v: boolean) => {
-      calls.drawLocationMarkers = v
-    },
-    setCigarMode: (v: string) => {
-      calls.cigarMode = v
-    },
-    setAlpha: (v: number) => {
-      calls.alpha = v
-    },
-    setFadeThinAlignmentsMode: (v: string) => {
-      calls.fadeThinAlignmentsMode = v
-    },
-    levels: [],
-  }
+jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
+
+// A real view, because the whole mechanism is "ask the model what properties it
+// has". A hand-rolled stand-in with the setters on it would pass while proving
+// nothing, which is what the per-property tests this file used to carry did.
+function view() {
+  return createTestSession().addView(
+    'LinearSyntenyView',
+    {},
+  ) as LinearSyntenyViewModel
 }
 
 describe('applyInitSettings', () => {
-  test('applies showColorLegend:false (guarded on !== undefined, not truthiness)', () => {
-    const model = makeModel()
-    applyInitSettings(model as unknown as LinearSyntenyViewModel, {
-      views: [],
-      showColorLegend: false,
-    })
-    expect(model.calls.showColorLegend).toBe(false)
-  })
-
-  test('leaves showColorLegend untouched when omitted', () => {
-    const model = makeModel()
-    applyInitSettings(model as unknown as LinearSyntenyViewModel, { views: [] })
-    expect('showColorLegend' in model.calls).toBe(false)
-  })
-
-  test('applies colorBy when set', () => {
-    const model = makeModel()
-    applyInitSettings(model as unknown as LinearSyntenyViewModel, {
-      views: [],
-      colorBy: 'reference',
-    })
-    expect(model.calls.colorBy).toBe('reference')
-  })
-
-  test('applies cigarMode when set (session-authorable transparent indels)', () => {
-    const model = makeModel()
-    applyInitSettings(model as unknown as LinearSyntenyViewModel, {
-      views: [],
-      cigarMode: 'matches',
-    })
-    expect(model.calls.cigarMode).toBe('matches')
-  })
-
-  test('leaves cigarMode untouched when omitted', () => {
-    const model = makeModel()
-    applyInitSettings(model as unknown as LinearSyntenyViewModel, { views: [] })
-    expect('cigarMode' in model.calls).toBe(false)
-  })
-
-  // The view has had the toggle since #5190, but `init` never carried it, so a
-  // session spec, a share link or a config defaultSession asking for markers
-  // was silently ignored — the setting was reachable only by hand, from the
-  // menu, every time.
-  test('applies drawLocationMarkers when set', () => {
-    const model = makeModel()
-    applyInitSettings(model as unknown as LinearSyntenyViewModel, {
+  // The gap this replaced: a property was authorable only once someone
+  // remembered to write an arm for it here, and `drawLocationMarkers` shipped
+  // without one. None of these names is mentioned anywhere in initHelpers.
+  test('applies any declared view property, named nowhere in this module', () => {
+    const v = view()
+    applyInitSettings(v, {
       views: [],
       drawLocationMarkers: true,
+      opacityByIdentity: true,
+      lodMode: 'coarse',
+      overdrawPx: 42,
+      cigarMode: 'matches',
+      alpha: 0.55,
     })
-    expect(model.calls.drawLocationMarkers).toBe(true)
+    expect(v.drawLocationMarkers).toBe(true)
+    expect(v.opacityByIdentity).toBe(true)
+    expect(v.lodMode).toBe('coarse')
+    expect(v.overdrawPx).toBe(42)
+    expect(v.cigarMode).toBe('matches')
+    expect(v.alpha).toBe(0.55)
   })
 
-  test('leaves drawLocationMarkers untouched when omitted', () => {
-    const model = makeModel()
-    applyInitSettings(model as unknown as LinearSyntenyViewModel, { views: [] })
-    expect('drawLocationMarkers' in model.calls).toBe(false)
+  test('applies a property a composed mixin contributes', () => {
+    const v = view()
+    applyInitSettings(v, { views: [], colorBy: 'query', showColorLegend: true })
+    expect(v.colorBy).toBe('query')
+    expect(v.showColorLegend).toBe(true)
   })
 
-  test('applies fadeThinAlignmentsMode when set', () => {
-    const model = makeModel()
-    applyInitSettings(model as unknown as LinearSyntenyViewModel, {
+  test('false is applied, not read as absent', () => {
+    const v = view()
+    applyInitSettings(v, { views: [], showColorLegend: true })
+    applyInitSettings(v, { views: [], showColorLegend: false })
+    expect(v.showColorLegend).toBe(false)
+  })
+
+  test('an omitted property keeps its default', () => {
+    const v = view()
+    applyInitSettings(v, { views: [] })
+    expect(v.cigarMode).toBe('full')
+    expect(v.drawCurves).toBe(false)
+  })
+
+  // `views` is the reason commands are skipped by name rather than by "is it a
+  // property": the spec's is a list of assemblies to open, the model's is the
+  // rows built from them.
+  test('the spec commands are left alone, including the ones that shadow a property', () => {
+    const v = view()
+    applyInitSettings(v, {
+      views: [{ assembly: 'volvox' }],
+      tracks: ['a_track'],
+      autoDiagonalize: true,
+      sameScale: true,
+      collapseEmptyRows: true,
+    })
+    expect(v.views).toHaveLength(0)
+  })
+
+  test('an unrecognized key is reported and changes nothing', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    const v = view()
+    // cast: the static type rejects this, which is the point — the runtime
+    // guard is for JSON off a URL, which has no static type at all
+    applyInitSettings(v, {
       views: [],
-      fadeThinAlignmentsMode: 'off',
-    })
-    expect(model.calls.fadeThinAlignmentsMode).toBe('off')
+      drawCurvez: true,
+    } as LinearSyntenyViewInit)
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('unknown key(s): drawCurvez'),
+    )
+    warn.mockRestore()
   })
 
-  test('maps legacy fadeThinAlignments boolean onto the mode', () => {
-    const model = makeModel()
-    applyInitSettings(model as unknown as LinearSyntenyViewModel, {
+  // An init blob comes off a URL, so one bad value costs that key and no more.
+  test('a value the property rejects is dropped, and its neighbours still land', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    const v = view()
+    applyInitSettings(v, {
       views: [],
-      fadeThinAlignments: false,
-    })
-    expect(model.calls.fadeThinAlignmentsMode).toBe('off')
-  })
-
-  test('fadeThinAlignmentsMode wins over the legacy boolean', () => {
-    const model = makeModel()
-    applyInitSettings(model as unknown as LinearSyntenyViewModel, {
-      views: [],
-      fadeThinAlignmentsMode: 'auto',
-      fadeThinAlignments: false,
-    })
-    expect(model.calls.fadeThinAlignmentsMode).toBe('auto')
+      alpha: 'loud',
+      drawCurves: true,
+    } as unknown as LinearSyntenyViewInit)
+    expect(v.alpha).toBe(0.2)
+    expect(v.drawCurves).toBe(true)
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('invalid value: alpha'),
+    )
+    warn.mockRestore()
   })
 })
 

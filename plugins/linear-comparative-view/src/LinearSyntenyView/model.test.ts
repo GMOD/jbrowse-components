@@ -76,11 +76,33 @@ describe('LinearSyntenyViewInit type', () => {
     expect(init.fadeThinAlignmentsMode).toBe('auto')
   })
 
-  test('init type still accepts the legacy fadeThinAlignments boolean', () => {
+  // The settings half of the type is derived from the state model, so a
+  // property is typed here from the line that declares it — with the property's
+  // own type, not `unknown`. Nothing in the init types names any of these.
+  test('accepts any declared view property, in the property own type', () => {
     const init: LinearSyntenyViewInit = {
       views: [{ assembly: 'hg38' }, { assembly: 'mm39' }],
-      fadeThinAlignments: false,
+      drawLocationMarkers: true,
+      opacityByIdentity: true,
+      overdrawPx: 500,
+      cigarMode: 'matches',
+      lodMode: 'coarse',
+      alpha: 0.4,
     }
-    expect(init.fadeThinAlignments).toBe(false)
+    expect(init.cigarMode).toBe('matches')
+  })
+
+  test('rejects a misspelled property and a wrong value type', () => {
+    // @ts-expect-error drawCurvez is not a property of the view
+    const typo: LinearSyntenyViewInit = { views: [], drawCurvez: true }
+    // @ts-expect-error alpha is a number
+    const wrongType: LinearSyntenyViewInit = { views: [], alpha: 'loud' }
+    expect([typo, wrongType]).toHaveLength(2)
+  })
+
+  test('rejects an enumeration value outside the property own union', () => {
+    // @ts-expect-error cigarMode is 'off' | 'matches' | 'full'
+    const bad: LinearSyntenyViewInit = { views: [], cigarMode: 'colored' }
+    expect(bad).toBeTruthy()
   })
 })
