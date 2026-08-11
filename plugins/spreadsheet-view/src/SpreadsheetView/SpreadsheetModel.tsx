@@ -34,6 +34,33 @@ interface LegacyRow extends Row {
   extendedData?: { vcfFeature?: SimpleFeatureSerialized }
 }
 
+type VisibleRowFlags = Record<number, boolean>
+
+/**
+ * Whether two visible-row lookups describe the same set of rows.
+ *
+ * The grid hands back a freshly built lookup on every pass of its filter
+ * pipeline, and several of those passes cannot have changed the result: it
+ * re-applies filters on `rowsSet`, on a strategy-processor change, and on a
+ * column-visibility change while a quick filter is active. A new object each
+ * time is a new `visibleRows`, which for the SV inspector means a new chord
+ * track configuration — and that track carries every visible feature inline, so
+ * rebuilding it deep-clones and re-validates the whole callset. Comparing the
+ * lookups is one linear scan, which is far less than that.
+ */
+export function sameVisibleRowFlags(a?: VisibleRowFlags, b?: VisibleRowFlags) {
+  if (a === b) {
+    return true
+  }
+  if (!a || !b) {
+    return false
+  }
+  const keys = Object.keys(a)
+  return (
+    keys.length === Object.keys(b).length && keys.every(k => a[+k] === b[+k])
+  )
+}
+
 function migrateRow(row: LegacyRow, columns: { name: string }[]): Row {
   const { feature, cellData, cells, extendedData } = row
   return {
@@ -94,7 +121,7 @@ export default function stateModelFactory() {
       /**
        * #volatile
        */
-      visibleRowFlags: undefined as Record<number, boolean> | undefined,
+      visibleRowFlags: undefined as VisibleRowFlags | undefined,
     }))
     .views(self => ({
       /**
@@ -156,10 +183,13 @@ export default function stateModelFactory() {
               {
                 field: 'Length',
                 type: 'number',
+                // measured through the same formatter the cell renders with:
+                // measuring the bare number left the column a separator short
+                // per three digits, so a megabase-scale SV read as `1,234,5…`
                 width: measureGridWidth(
                   rows.map(row => {
                     const { feature } = row
-                    return feature ? feature.end - feature.start : 0
+                    return feature ? toLocale(feature.end - feature.start) : ''
                   }),
                 ),
                 valueGetter: (
@@ -239,12 +269,17 @@ export default function stateModelFactory() {
       /**
        * #action
        */
-      setVisibleRows(arg?: Record<number, boolean>) {
+      setVisibleRows(arg?: VisibleRowFlags) {
         // the grid reports an empty lookup when nothing is filtered (its own
         // selectors read it that way), so normalize that back to undefined:
         // otherwise mounting the grid reads as a filter change and rebuilds the
         // SV inspector's chord track for no reason
-        self.visibleRowFlags = arg && Object.keys(arg).length ? arg : undefined
+        const next = arg && Object.keys(arg).length ? arg : undefined
+        // and a re-filter that lands on the same rows is the same non-change,
+        // just spelled as a fresh object rather than an empty one
+        if (!sameVisibleRowFlags(self.visibleRowFlags, next)) {
+          self.visibleRowFlags = next
+        }
       },
       /**
        * #action

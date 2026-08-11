@@ -33,6 +33,8 @@ const selectorTypes: { value: SelectorType; label: string }[] = [
   { value: 'existing', label: 'Open from track' },
 ]
 
+const fileTypeOptions = fileTypes.map(f => ({ value: f, label: f }))
+
 const useStyles = makeStyles()({
   container: {
     margin: '0 auto',
@@ -144,7 +146,7 @@ const ImportWizard = observer(function ImportWizard({
             ariaLabel="file type"
             name="type"
             value={fileType}
-            options={fileTypes.map(f => ({ value: f, label: f }))}
+            options={fileTypeOptions}
             onChange={val => {
               importWizard.setFileType(val)
             }}

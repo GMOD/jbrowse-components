@@ -88,32 +88,20 @@ export default function stateModelFactory() {
           /**
            * #action
            */
-          setWidth(newWidth: number) {
-            self.width = newWidth
-            return self.width
-          },
-          /**
-           * #action
-           */
           setHeight(newHeight: number) {
             self.height = Math.max(newHeight, minHeight)
             return self.height
           },
           /**
            * #action
+           * returns the distance actually applied, which is less than the
+           * requested one once the drag runs into minHeight — the ResizeHandle
+           * needs that to keep the bar under the pointer
            */
           resizeHeight(distance: number) {
             const oldHeight = self.height
             self.height = Math.max(self.height + distance, minHeight)
             return self.height - oldHeight
-          },
-          /**
-           * #action
-           */
-          resizeWidth(distance: number) {
-            const oldWidth = self.width
-            self.width = self.width + distance
-            return self.width - oldWidth
           },
 
           /**
@@ -172,6 +160,16 @@ export default function stateModelFactory() {
               session.notifyError(`${e}`, e)
             }
           },
+          /**
+           * #action
+           * drop the loaded sheet and the cached location together: leaving the
+           * cache behind makes afterAttach re-fetch the dismissed file on the
+           * next session load, putting the user back where they left
+           */
+          returnToImportForm() {
+            self.displaySpreadsheet(undefined)
+            self.importWizard.setCachedFileLocation(undefined)
+          },
         }))
         .actions(self => ({
           /**
@@ -212,18 +210,6 @@ export default function stateModelFactory() {
               // sheet it was set on
               self.spreadsheet?.setFilterText(filterText)
             }
-          },
-        }))
-        .actions(self => ({
-          /**
-           * #action
-           * drop the loaded sheet and the cached location together: leaving the
-           * cache behind makes afterAttach re-fetch the dismissed file on the
-           * next session load, putting the user back where they left
-           */
-          returnToImportForm() {
-            self.displaySpreadsheet(undefined)
-            self.importWizard.setCachedFileLocation(undefined)
           },
         }))
         .actions(self => ({
@@ -282,18 +268,19 @@ export default function stateModelFactory() {
         })),
     )
     .postProcessSnapshot(snap => {
-      const { init, importWizard, spreadsheet, ...rest } = snap
+      const { init, spreadsheet, ...rest } = snap
       if (!spreadsheet) {
-        return { ...rest, importWizard }
+        return rest
       }
       const { rowSet, ...spreadsheetRest } = spreadsheet
-      // omit rows when a URI is cached (re-fetched on load) or too large for localStorage
+      // omit rows when a URI is cached (re-fetched on load) or too large for
+      // localStorage. The cheap test is deliberately first: the size test
+      // serializes every row, and a cached URI makes the answer yes regardless
       const omitRows =
-        !!importWizard.cachedFileLocation ||
+        !!rest.importWizard.cachedFileLocation ||
         (rowSet !== undefined && JSON.stringify(rowSet).length > 1_000_000)
       return {
         ...rest,
-        importWizard,
         spreadsheet: omitRows ? spreadsheetRest : spreadsheet,
       }
     })

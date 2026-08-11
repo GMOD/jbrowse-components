@@ -1,5 +1,9 @@
 import { ActionLink } from '@jbrowse/core/ui'
-import { assembleLocString, getSession } from '@jbrowse/core/util'
+import {
+  assembleLocString,
+  assembleLocStringRaw,
+  getSession,
+} from '@jbrowse/core/util'
 import { getParent } from '@jbrowse/mobx-state-tree'
 import { observer } from 'mobx-react'
 
@@ -18,7 +22,12 @@ export default observer(function LocationCell({
   const session = getSession(model)
   const spreadsheetViewId = getParent<{ id: string }>(model).id
   const { assemblyName } = model
+  // two spellings on purpose: the link shows grouped coordinates, but what is
+  // handed to locationLinkClick is parsed at the other end, and the raw form is
+  // the one that does not shift under the numberGrouping preference. The row's
+  // FeatureMenu navigates from the same raw string
   const locString = assembleLocString(feature)
+  const rawLocString = assembleLocStringRaw(feature)
   return assemblyName ? (
     <>
       <FeatureMenu
@@ -33,7 +42,7 @@ export default observer(function LocationCell({
             await locationLinkClick({
               spreadsheetViewId,
               session,
-              locString,
+              locString: rawLocString,
               assemblyName,
             })
           } catch (e) {

@@ -62,11 +62,17 @@ export function getFileSourceName(src: FileLocation): string | undefined {
         : undefined
 }
 
-// case-insensitive match against the canonical list to handle e.g. STAR-Fusion
+// case-insensitive match against the canonical list to handle e.g. STAR-Fusion.
+//
+// The query string and fragment are cut first because the extension is anchored
+// to the end: a presigned URL (`.../calls.bed?X-Amz-Signature=...`) matched
+// nothing, so an "open file from URL" of anything but a VCF silently kept the
+// VCF default and parsed the file as the wrong format
 export function detectFileType(
   name: string,
 ): (typeof fileTypes)[number] | undefined {
-  const match = fileTypesRegexp.exec(name)?.[1]?.toLowerCase()
+  const path = name.split(/[?#]/)[0]!
+  const match = fileTypesRegexp.exec(path)?.[1]?.toLowerCase()
   return match ? fileTypes.find(t => t.toLowerCase() === match) : undefined
 }
 

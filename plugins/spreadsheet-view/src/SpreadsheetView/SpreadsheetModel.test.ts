@@ -1,3 +1,5 @@
+import { autorun } from 'mobx'
+
 import stateModelFactory from './SpreadsheetModel.tsx'
 
 const SpreadsheetStateModel = stateModelFactory()
@@ -81,6 +83,37 @@ test('setVisibleRows(undefined) restores full row list', () => {
   expect(model.visibleRows?.length).toBe(1)
   model.setVisibleRows(undefined)
   expect(model.visibleRows?.length).toBe(2)
+})
+
+// Regression: the grid rebuilds its visible-rows lookup on passes that cannot
+// have changed the answer (a rows-set, a column-visibility change while a quick
+// filter is on), and a fresh object each time re-derived visibleRows — which in
+// the SV inspector is a whole new chord track built from every visible feature
+test('re-reporting the same visible rows does not invalidate visibleRows', () => {
+  const model = makeModel({
+    rowSet: { rows: [{ cellData: {} }, { cellData: {} }, { cellData: {} }] },
+    columns: [],
+  })
+  let recomputes = 0
+  const dispose = autorun(() => {
+    void model.visibleRows
+    recomputes++
+  })
+  expect(recomputes).toBe(1)
+
+  model.setVisibleRows({ 0: false, 1: true, 2: true })
+  expect(recomputes).toBe(2)
+  // the same answer in a new object: nothing downstream should hear about it
+  model.setVisibleRows({ 0: false, 1: true, 2: true })
+  expect(recomputes).toBe(2)
+
+  // a lookup that really differs still gets through, in either direction
+  model.setVisibleRows({ 0: false, 1: false, 2: true })
+  expect(recomputes).toBe(3)
+  expect(model.visibleRows?.map(r => r.id)).toEqual([2])
+  model.setVisibleRows({ 0: true, 1: true })
+  expect(model.visibleRows?.map(r => r.id)).toEqual([0, 1, 2])
+  dispose()
 })
 
 test('svType getters are inert without an INFO.SVTYPE column', () => {

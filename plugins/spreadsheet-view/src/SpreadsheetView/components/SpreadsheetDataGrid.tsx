@@ -101,11 +101,26 @@ const SpreadsheetDataGrid = observer(function SpreadsheetDataGrid({
           model.setFilterText(
             filterModel.quickFilterValues?.join(' ') || undefined,
           )
+          // the same direction for the SV-type dropdown: it owns one item in
+          // the grid's filter model, but the grid's own filter panel can edit
+          // or delete that item, and the dropdown then went on naming a filter
+          // nothing was applying. Reading it back keeps the two spellings of
+          // the one filter agreed
+          if (svTypeColumnField) {
+            const item = filterModel.items.find(
+              i => i.id === SV_TYPE_FILTER_ID && i.field === svTypeColumnField,
+            )
+            model.setSvTypeFilter(
+              typeof item?.value === 'string' && item.value
+                ? item.value
+                : undefined,
+            )
+          }
         },
       )
     }
     return undefined
-  }, [apiRef, model, gridReady])
+  }, [apiRef, model, gridReady, svTypeColumnField])
 
   const showSvTypeFilter = !!svTypeColumnField && svTypeOptions.length > 0
   return rows && dataGridColumns ? (

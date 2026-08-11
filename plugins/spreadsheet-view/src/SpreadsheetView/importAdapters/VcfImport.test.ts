@@ -13,6 +13,34 @@ test('vcf file import', () => {
   expect(parseVcfBuffer(fs.readFileSync(filepath))).toMatchSnapshot()
 })
 
+// Regression: `.` is how VCF spells "no INFO here", and splitting it produced a
+// nameless key — a phantom `INFO..` flag column, true in every row, that no
+// file declared and no filter could mean anything against
+test('a sites-only VCF gets neither a phantom INFO column nor a FORMAT one', () => {
+  const vcf = [
+    '##fileformat=VCFv4.2',
+    '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO',
+    'chr1\t100\trs1\tG\tA\t50\tPASS\t.',
+    'chr1\t200\trs2\tC\tT\t60\tPASS\tDP=14;',
+  ].join('\n')
+  const { columns, rowSet } = parseVcfBuffer(new TextEncoder().encode(vcf))
+  const names = columns.map(c => c.name)
+  expect(names).toEqual([
+    'CHROM',
+    'POS',
+    'ID',
+    'REF',
+    'ALT',
+    'QUAL',
+    'FILTER',
+    'INFO.DP',
+  ])
+  expect(rowSet.rows[0]!.cellData).not.toHaveProperty('INFO..')
+  // the trailing `;` on the second row is the same nameless key by another
+  // spelling, and its real field still parses
+  expect(rowSet.rows[1]!.cellData).toMatchObject({ 'INFO.DP': 14 })
+})
+
 test('structural-variant VCF hoists SVTYPE ahead of REF/ALT', () => {
   const vcf = [
     '##fileformat=VCFv4.2',

@@ -27,6 +27,19 @@ describe('detectFileType', () => {
     expect(detectFileType('foo.bam')).toBeUndefined()
     expect(detectFileType('foo.txt')).toBeUndefined()
   })
+
+  // Regression: the extension is anchored to the end of the string, so a
+  // presigned URL detected as nothing and silently kept the VCF default
+  test('looks past a query string or fragment', () => {
+    expect(detectFileType('https://x.test/calls.bed?X-Amz-Signature=abc')).toBe(
+      'BED',
+    )
+    expect(detectFileType('https://x.test/calls.bedpe.gz?a=1&b=2')).toBe(
+      'BEDPE',
+    )
+    expect(detectFileType('https://x.test/calls.vcf.gz#frag')).toBe('VCF')
+    expect(detectFileType('https://x.test/calls.bam?a=.bed')).toBeUndefined()
+  })
 })
 
 describe('getFileSourceName', () => {
