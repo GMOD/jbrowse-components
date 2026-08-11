@@ -3644,15 +3644,20 @@ export default function stateModelFactory(
               const newDataMap = new Map<number, GroupedAlignmentsResult>()
               self.setModificationsReady(true)
               for (const r of results) {
-                // newTagValues are discovered per group; union across groups so
-                // colorTagMap covers every section's reads.
-                const tagValues = r.result.groups.flatMap(
-                  g => g.data.newTagValues ?? [],
-                )
-                if (tagValues.length > 0) {
-                  self.updateColorTagMap(tagValues)
-                }
                 newDataMap.set(r.displayedRegionIndex, r.result)
+              }
+              // newTagValues are discovered per group; union across every group
+              // of every region so colorTagMap covers each section's reads —
+              // and so this is ONE action. Called per region it was one action
+              // per region, and each one assigns colorTagMap, which invalidates
+              // laidOutByGroup and rebakes the read colors of every region
+              // already loaded. A pan that turned up new values in three
+              // regions paid that three times.
+              const tagValues = results.flatMap(r =>
+                r.result.groups.flatMap(g => g.data.newTagValues ?? []),
+              )
+              if (tagValues.length > 0) {
+                self.updateColorTagMap(tagValues)
               }
               // Assigning colorTagMap (above) re-runs laidOutByGroup, which
               // bakes readTagColors on the main thread — no refetch needed, so

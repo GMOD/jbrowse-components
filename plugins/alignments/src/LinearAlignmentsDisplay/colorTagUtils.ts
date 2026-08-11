@@ -7,17 +7,26 @@ export const TAG_COLOR_PALETTE = tagColorPalette
 // Object.hasOwn, not `!map[value]`: a tag value like 'toString' or 'constructor'
 // inherits a truthy value off Object.prototype, so the truthiness check would
 // skip assigning it a color and leave the read on the no-tag fallback.
+//
+// The clone is deferred to the first genuine addition. Callers only assign when
+// `added` is true (a no-op assignment would rebake every read's color), so an
+// eager `{ ...currentMap }` copied the whole map on every fetch that turned up
+// nothing new — which, once a track has been panned around a while, is most of
+// them.
 function addValues(
   currentMap: Record<string, string>,
   values: string[],
   colorFor: (value: string) => string,
 ) {
-  const map = { ...currentMap }
+  let map = currentMap
   let added = false
   for (const value of values) {
     if (!Object.hasOwn(map, value)) {
+      if (!added) {
+        map = { ...currentMap }
+        added = true
+      }
       map[value] = colorFor(value)
-      added = true
     }
   }
   return { map, added }
