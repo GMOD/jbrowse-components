@@ -1,6 +1,5 @@
 import { makePin } from '@jbrowse/core/configuration'
-import { Highlighter } from '@jbrowse/core/ui/Icons'
-import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
+import { filterMenuItems, undoItems } from '@jbrowse/core/ui/filterMenuItems'
 import {
   checkboxItem,
   promotableRadioItems,
@@ -8,20 +7,18 @@ import {
   showLegendCheckboxItem,
 } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
-import { pluralize } from '@jbrowse/core/util'
 import { heightModeMenuItems } from '@jbrowse/plugin-linear-genome-view'
 import HeightIcon from '@mui/icons-material/Height'
 import PaletteIcon from '@mui/icons-material/Palette'
-import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop'
 
 import { STRAND_COLOR_JEXL } from '../RenderFeatureDataRPC/featureColors.ts'
-import { showHiddenFeaturesMenuItems } from './featureContextMenu.ts'
 import { SHOW_LABELS_MODES } from './showLabelsMode.ts'
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { CanvasColorLegend } from './baseModel.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
-import type { MenuItem, NormalMenuItem } from '@jbrowse/core/ui'
+import type { MenuItem } from '@jbrowse/core/ui'
+import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { HeightModeMenuModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -93,76 +90,26 @@ interface FeatureHeightSelf extends IStateTreeNode, HeightModeMenuModel {
 }
 
 interface TrackMenuSelf {
-  featureNoun: string
-  hiddenFeatureCount: number
-  featureHighlightCount: number
-  pinnedFeatureCount: number
-  // the model's own answer (subclasses add their own filters), not recomputed
-  // here from its parts — see featureFilterCount on the canvas base
-  featureFilterCount: () => number
+  // The model's own declarations — the count, the undo rows and the group clear
+  // are derived from these here, so this menu reads no separately-maintained
+  // total and no separately-maintained reset.
+  featureNarrowings: () => Reversibles
+  featureMarks: () => Reversibles
   showSubmenuMenuItems: () => MenuItem[]
   featureHeightMenuItems: () => MenuItem[]
   colorMenuItems: () => MenuItem[]
-  clearFeatureHighlights: () => void
-  clearPinnedFeatures: () => void
   openFilterDialog: () => void
-  clearAllFeatureFilters: () => void
-  showAllHidden: () => void
 }
 
-// One track-level recovery row, present only while `count` says there is
-// something to recover and sunk to RECOVERY_PRIORITY so it sits below the
-// settings. Spread, don't insert.
-//
-// Every one of these undoes a persistent per-feature set that the FEATURE's own
-// right-click menu is otherwise the only way into — and a set that outlives the
-// navigation which created it, so the feature it names may be nowhere on screen.
-// That is the whole reason the track menu carries them, and the reason they
-// share a builder: each was a hand-written `n > 0 ? [row] : []` before, and the
-// pin set simply never got one.
-function recoveryMenuItems(
-  count: number,
-  label: string,
-  icon: NormalMenuItem['icon'],
-  onClick: () => void,
-): MenuItem[] {
-  return count > 0
-    ? [{ label, icon, priority: RECOVERY_PRIORITY, onClick }]
-    : []
-}
-
-// The two recovery rows the base contributes: clearing the highlight boxes, and
-// unpinning the features held at the top of the layout.
-//
-// Highlights: per-feature "Remove highlight" needs the boxed feature under the
-// cursor, and a text-search highlight is only ever replaced by the next search,
-// so without this one a highlight the user has panned away from is unreachable.
-//
-// Pins: same argument, and worse — a highlight at least draws a box, while a pin
-// has no on-screen mark at all, so a forgotten one goes on claiming the top row
-// of its bp range with nothing anywhere naming it. Counted with the display's own
-// noun, like "Show N hidden features".
+// The two recovery rows the base contributes — clearing the highlight boxes and
+// unpinning the features held at the top — built from the display's own
+// declaration (see `featureMarks`) rather than assembled here. Both are
+// reversible state that MARKS rather than hides, so neither joins the filter
+// family's count; what they share with it is the row shape and the reason for
+// having one at all, which is that both outlive the navigation that created
+// them and neither is reachable from the feature once it is off screen.
 function featureSetRecoveryMenuItems(self: TrackMenuSelf): MenuItem[] {
-  const highlights = self.featureHighlightCount
-  const pins = self.pinnedFeatureCount
-  return [
-    ...recoveryMenuItems(
-      highlights,
-      `Clear ${highlights} ${pluralize(highlights, 'highlight')}`,
-      Highlighter,
-      () => {
-        self.clearFeatureHighlights()
-      },
-    ),
-    ...recoveryMenuItems(
-      pins,
-      `Unpin ${pins} ${pluralize(pins, self.featureNoun)}`,
-      VerticalAlignTopIcon,
-      () => {
-        self.clearPinnedFeatures()
-      },
-    ),
-  ]
+  return undoItems(self.featureMarks(), RECOVERY_PRIORITY)
 }
 
 // The checkbox rows of the "Show..." submenu. Subclasses append their own via the
@@ -314,18 +261,16 @@ export function canvasTrackMenuItems(self: TrackMenuSelf): MenuItem[] {
 // dialog opener until there is something to recover, then earns its submenu.
 // The priority rides the top-level row the builder returns, never the dialog
 // opener inside it — there it would sort below the recovery rows it heads.
+//
+// The count, the recovery rows inside the submenu and what "Clear all filters"
+// clears all come from `featureNarrowings`, so a subclass that adds a filter
+// (LinearBasicDisplay's "Show only genes") gets all three by appending one
+// entry — it used to have to override a count AND a clear and keep them in step.
 function canvasFilterMenuItems(self: TrackMenuSelf): MenuItem[] {
   return filterMenuItems({
-    activeCount: self.featureFilterCount(),
+    narrowings: self.featureNarrowings(),
     onEdit: () => {
       self.openFilterDialog()
-    },
-    // Track-level unhide: the per-feature "Show N hidden" item is only
-    // reachable from a still-visible feature's menu, so this is the sole
-    // recovery once every feature in view is hidden.
-    recoveryItems: showHiddenFeaturesMenuItems(self),
-    onClear: () => {
-      self.clearAllFeatureFilters()
     },
     priority: RECOVERY_PRIORITY,
   })

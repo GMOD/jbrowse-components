@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 
 import { Highlighter } from '@jbrowse/core/ui/Icons'
+import { undoItems } from '@jbrowse/core/ui/filterMenuItems'
 import { getContainingView, getSession, pluralize } from '@jbrowse/core/util'
 import { copyText } from '@jbrowse/core/util/copyText'
 import BiotechIcon from '@mui/icons-material/Biotech'
@@ -24,6 +25,7 @@ import type {
 import type { HighlightTarget } from './featureHighlight.ts'
 import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -75,7 +77,8 @@ export interface FeatureMenuSelf extends IStateTreeNode {
   soloFeatureIdSet: ReadonlySet<string>
   soloFeatureCount: number
   soloApplied: boolean
-  hiddenFeatureCount: number
+  // the display's declared narrowings; this menu offers the hidden-features one
+  featureNarrowings: () => Reversibles
   selectFeatureById: (
     featureId: string,
     subfeatureInfo: SubfeatureInfo | undefined,
@@ -95,29 +98,15 @@ export interface FeatureMenuSelf extends IStateTreeNode {
   soloFeature: (featureId: string) => void
   hideFeature: (featureId: string) => void
   clearSolo: () => void
-  showAllHidden: () => void
 }
 
-// The "Show N hidden features" recovery item, shared by the feature context
-// menu (Show/hide submenu) and the track menu (Edit filters submenu). Empty
-// when nothing is hidden.
-export function showHiddenFeaturesMenuItems(self: {
-  featureNoun: string
-  hiddenFeatureCount: number
-  showAllHidden: () => void
-}): MenuItem[] {
-  const n = self.hiddenFeatureCount
-  return n > 0
-    ? [
-        {
-          label: `Show ${n} hidden ${pluralize(n, self.featureNoun)}`,
-          icon: VisibilityIcon,
-          onClick: () => {
-            self.showAllHidden()
-          },
-        },
-      ]
-    : []
+// The "Show N hidden features" row, taken from the display's own declaration
+// (see `featureNarrowings`) rather than rebuilt here. Both this menu and the
+// track menu's filter submenu offer it, and building it twice is how a label and
+// a gate drift; picking the one entry out of the record is what the record shape
+// is for.
+function showHiddenFeaturesMenuItems(self: FeatureMenuSelf): MenuItem[] {
+  return undoItems({ hiddenFeatures: self.featureNarrowings().hiddenFeatures! })
 }
 
 // What every group below is built from: the model to act on, the right-click

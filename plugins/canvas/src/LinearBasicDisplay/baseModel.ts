@@ -9,6 +9,8 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { Highlighter } from '@jbrowse/core/ui/Icons'
+import { activeCount, clearAll } from '@jbrowse/core/ui/filterMenuItems'
 import {
   clamp,
   getContainingTrack,
@@ -16,6 +18,7 @@ import {
   getSession,
   isFeature,
   openFeatureWidget,
+  pluralize,
 } from '@jbrowse/core/util'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
@@ -31,6 +34,8 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { regionDataMap } from '@jbrowse/render-core/installPerRegionLifecycle'
 import { createRegionUploadSync } from '@jbrowse/render-core/regionUploadSync'
+import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 import { toJS, untracked } from 'mobx'
 
 import {
@@ -128,6 +133,7 @@ import type { IncrementalLayout, LayoutInputs } from './layout.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
 import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
@@ -678,66 +684,6 @@ export default function baseStateModelFactory(
          */
         activeFilters(): string[] {
           return toJS(self.jexlFiltersSetting) ?? self.configuredFilters()
-        },
-
-        /**
-         * #method
-         * How many independent things are currently narrowing what the display
-         * shows. Drives the shared "Filter by... (n)" label and gates "Clear all
-         * filters"; paired with `clearAllFeatureFilters`, since every filter
-         * counted here must be reset there or the menu offers a recovery that
-         * doesn't fully recover.
-         *
-         * A count rather than the boolean it used to be, because the count is
-         * the only affordance saying that a filter is silently hiding features —
-         * see `filterMenuItems` for the counting rule: a filter counts when its
-         * value is not the no-op one.
-         *
-         * For the runtime jexl override the no-op value is **the config
-         * default**, not the empty list — because "Clear all filters" drops the
-         * override and lets that default apply again, so an override equal to it
-         * is one the clear could not change. Counting the override's mere
-         * existence read as a filter in two states where nothing had moved:
-         *
-         *   - the dialog is SEEDED from `activeFilters()`, so opening
-         *     "Filter by..." and pressing Submit without an edit banks an
-         *     override identical to the default and the label went straight to
-         *     "Filter by... (1)". The slot's default is non-empty on every track
-         *     (the NCBI `gbkey!='Src'` row), so this is the ordinary path
-         *     through the dialog, not a corner.
-         *   - an empty override on a track whose slot is also empty replaces
-         *     nothing.
-         *
-         * An override that genuinely differs still counts, in both directions:
-         * narrowing further, and — with an empty override over a slot that
-         * declares filters — widening past what the config asked for, where the
-         * clear is the way back to the declared set.
-         *
-         * `soloApplied`, not `soloFeatureIds.length` — while the user is still
-         * collecting (ctrl+click, the right-click "Add to show-only list") the
-         * set only draws boxes and nothing is filtered yet, so counting it made
-         * the track menu offer to clear filters that weren't in effect. The
-         * SoloSelectionChip's × is the recovery for an unapplied collection.
-         *
-         * The hidden set is one filter however many features it holds: it is one
-         * thing to clear, and "Show N hidden features" already names N.
-         *
-         * A method rather than a getter so a subclass can super-capture and add
-         * its own filters (LinearBasicDisplay's "Show only genes"), the same
-         * extension seam the menu builders use.
-         */
-        featureFilterCount(): number {
-          const override = self.jexlFiltersSetting
-          const configured = self.configuredFilters()
-          const overrideChangesSomething =
-            override !== undefined &&
-            (override.length !== configured.length ||
-              override.some((f, i) => f !== configured[i]))
-          return (
-            (overrideChangesSomething ? 1 : 0) +
-            (self.soloApplied ? 1 : 0) +
-            (self.hiddenFeatureIds.length > 0 ? 1 : 0)
-          )
         },
 
         /**
@@ -2059,22 +2005,6 @@ export default function baseStateModelFactory(
           self.soloFeatureIds.replace([featureId])
           self.soloApplied = true
         },
-
-        /**
-         * #action
-         */
-        // Reset every feature-level filter: the show-only collection, the hidden
-        // set, and the runtime "Filter by..." jexl override. Backs the track
-        // menu's "Clear filters" item, which is offered only when
-        // `featureFilterCount()` counts something narrowing the view — so the two
-        // must stay in step, including through a subclass's overrides of both.
-        clearAllFeatureFilters() {
-          self.clearSolo()
-          self.showAllHidden()
-          // Drop the runtime "Filter by..." override so the config jexlFilters
-          // default applies again (setJexlFilters is defined in a later block).
-          self.jexlFiltersSetting = undefined
-        },
       }))
       .actions(self => {
         // cache the header-metadata round-trip so repeated feature clicks reuse
@@ -2276,6 +2206,133 @@ export default function baseStateModelFactory(
             featureId,
             region,
           )
+        },
+      }))
+      .views(self => ({
+        /**
+         * #method
+         * Everything this display is doing to narrow what the user sees, each
+         * declared once (see `Reversible`). The "Filter by... (n)" count, the
+         * undo rows inside that submenu, and what "Clear all filters" clears are
+         * all derived from this one list, so they cannot disagree — the pairing
+         * rule that used to be a comment on two separately-maintained members.
+         *
+         * A METHOD, not a getter, because it is the subclass extension seam and
+         * a getter cannot be super-captured — `const { x } = self` on a getter
+         * evaluates it once at composition time and freezes that value forever.
+         * Same rule as every other seam here (showSubmenuMenuItems,
+         * trackMenuItems); the count this replaces carried the same note.
+         *
+         * A subclass adds a filter by super-capturing THIS and appending one
+         * entry, rather than overriding a count and a clear and hoping the two
+         * stay in step (LinearBasicDisplay's "Show only genes" did exactly that).
+         *
+         * A narrowing counts when its value is not the **no-op** one, which is
+         * not always its default:
+         *
+         * - the jexl override's no-op is the CONFIG DEFAULT, not the empty list,
+         *   because clearing it restores that default — so an override equal to
+         *   it is one the clear could not change. The dialog is seeded from
+         *   `activeFilters()` and the slot ships a non-empty default on every
+         *   track (the NCBI `gbkey!='Src'` row), so opening "Filter by..." and
+         *   pressing Submit unchanged used to read as a filter. It counts in both
+         *   directions when it differs: narrowing further, and — emptied over a
+         *   slot that declares filters — widening past what the config asked for.
+         * - `soloApplied`, not `soloFeatureIds.length`: while the user is still
+         *   collecting (ctrl+click) the set only draws boxes and hides nothing.
+         *   The SoloSelectionChip's × is the recovery for an unapplied one.
+         * - the hidden set is ONE narrowing however many features it holds — one
+         *   thing to clear, and its own row already names N.
+         */
+        featureNarrowings(): Reversibles {
+          const override = self.jexlFiltersSetting
+          const configured = self.configuredFilters()
+          const overrideDiffers =
+            override !== undefined &&
+            (override.length !== configured.length ||
+              override.some((f, i) => f !== configured[i]))
+          return {
+            jexlFilters: {
+              count: overrideDiffers ? 1 : 0,
+              // no per-item row: a list of jexl expressions has no recovery to
+              // name beyond restoring the config default, which the group clear
+              // already is
+              clear: () => {
+                self.setJexlFilters(undefined)
+              },
+            },
+            solo: {
+              count: self.soloApplied ? 1 : 0,
+              clear: () => {
+                self.clearSolo()
+              },
+            },
+            hiddenFeatures: {
+              count: self.hiddenFeatureIds.length > 0 ? 1 : 0,
+              label: () =>
+                `Show ${self.hiddenFeatureCount} hidden ${pluralize(self.hiddenFeatureCount, self.featureNoun)}`,
+              icon: VisibilityIcon,
+              clear: () => {
+                self.showAllHidden()
+              },
+            },
+          }
+        },
+
+        /**
+         * #method
+         * Reversible state that MARKS features rather than hiding them — the
+         * highlight boxes and the pins holding features at the top of the layout.
+         * Same declaration shape as the narrowings above and the same undo rows,
+         * but deliberately a separate list: neither hides anything, so neither
+         * belongs in the "Filter by... (n)" count or under "Clear all filters".
+         *
+         * They need the rows for the same reason the narrowings do. Both outlive
+         * the navigation that created them and neither is reachable from the
+         * feature itself once the user has panned away — and a pin is worse than
+         * a highlight, because nothing on screen marks a pinned feature at all.
+         */
+        featureMarks(): Reversibles {
+          return {
+            highlights: {
+              count: self.featureHighlightCount,
+              label: n => `Clear ${n} ${pluralize(n, 'highlight')}`,
+              icon: Highlighter,
+              clear: () => {
+                self.clearFeatureHighlights()
+              },
+            },
+            pinned: {
+              count: self.pinnedFeatureCount,
+              label: n => `Unpin ${n} ${pluralize(n, self.featureNoun)}`,
+              icon: VerticalAlignTopIcon,
+              clear: () => {
+                self.clearPinnedFeatures()
+              },
+            },
+          }
+        },
+      }))
+      .views(self => ({
+        /**
+         * #method
+         * How many independent things are narrowing what the display shows —
+         * the "(n)" in "Filter by... (n)", and the gate on "Clear all filters".
+         * Derived, so it cannot drift from the list it counts.
+         */
+        featureFilterCount(): number {
+          return activeCount(self.featureNarrowings())
+        },
+      }))
+      .actions(self => ({
+        /**
+         * #action
+         * Reverse every narrowing. Derived from the same list `featureFilterCount`
+         * counts, so a subclass that adds one gets both halves at once and the
+         * menu cannot offer a recovery that doesn't recover.
+         */
+        clearAllFeatureFilters() {
+          clearAll(self.featureNarrowings())
         },
       }))
       .views(self => ({

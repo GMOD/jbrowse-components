@@ -275,14 +275,27 @@ export default function stateModelFactory(
       const superShowSubmenuRadioGroups = self.showSubmenuRadioGroups
       const superTrackMenuItems = self.trackMenuItems
       const superContextMenuItems = self.contextMenuItems
-      const superFeatureFilterCount = self.featureFilterCount
+      const superFeatureNarrowings = self.featureNarrowings
       return {
         // "Show only genes" is a worker-side admission filter (see
-        // featureAdmission.ts), so it counts here — otherwise a track showing
-        // only genes reports nothing is filtering it and the track menu never
-        // offers "Clear filters".
-        featureFilterCount() {
-          return superFeatureFilterCount() + (self.showOnlyGenes ? 1 : 0)
+        // featureAdmission.ts), so it is one of this display's narrowings —
+        // otherwise a track showing only genes reports nothing is filtering it
+        // and the track menu never offers "Clear filters".
+        //
+        // ONE override, where this used to be two: a `featureFilterCount` that
+        // added to the base's total and a `clearAllFeatureFilters` that reset the
+        // slot, held together by comments on each pointing at the other. The
+        // count, the group clear and any row all derive from this entry now.
+        featureNarrowings() {
+          return {
+            ...superFeatureNarrowings(),
+            showOnlyGenes: {
+              count: self.showOnlyGenes ? 1 : 0,
+              clear: () => {
+                self.setShowOnlyGenes(false)
+              },
+            },
+          }
         },
 
         // Append gene-specific checkbox toggles after the base display toggles,
@@ -459,18 +472,6 @@ export default function stateModelFactory(
                   },
                 },
           ]
-        },
-      }
-    })
-    .actions(self => {
-      const superClearAllFeatureFilters = self.clearAllFeatureFilters
-      return {
-        // The other half of the featureFilterCount override above: "Clear
-        // filters" has to actually clear the gene-only view too, or it leaves
-        // the one filter it was counted for still in effect.
-        clearAllFeatureFilters() {
-          superClearAllFeatureFilters()
-          self.setShowOnlyGenes(false)
         },
       }
     })
