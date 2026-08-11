@@ -56,9 +56,13 @@ interface DrawReadsRegion {
 // the outermost READ_OUTLINE_PX of the glyph at READ_OUTLINE_SHADE of its own
 // fill; compositing black at `1 - shade` over that fill is the same operation,
 // which is how these two spellings came to agree on colour while disagreeing on
-// everything else. Derived from the shader's number rather than restating 0.3,
+// everything else. Derived from the shader's number rather than restating it,
 // so a change to the shade reaches both.
-const OUTLINE_STYLE = `rgba(0,0,0,${1 - READ_OUTLINE_SHADE})`
+//
+// Rounded because the subtraction does not land clean in binary — 1 - 0.85 is
+// 0.15000000000000002 — and this string is not only parsed by a canvas. The SVG
+// export emits it verbatim as a `stroke` attribute on every read in the file.
+const OUTLINE_STYLE = `rgba(0,0,0,${Math.round((1 - READ_OUTLINE_SHADE) * 1e4) / 1e4})`
 
 // Frame-level inputs to the chevron gate, constant across reads in one block.
 export interface ChevronFrame {

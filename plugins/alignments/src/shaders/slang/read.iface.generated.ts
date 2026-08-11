@@ -85,7 +85,7 @@ export const IS_GRADIENT_SPAN_FRAC = 0.5
 
 export const READ_OUTLINE_PX = 1
 
-export const READ_OUTLINE_SHADE = 0.7
+export const READ_OUTLINE_SHADE = 0.85
 
 export const READ_OUTLINE_MIN_PX = 2
 

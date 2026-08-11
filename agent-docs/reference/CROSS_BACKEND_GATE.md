@@ -247,11 +247,19 @@ override was **deleted rather than lowered**, which is what an override reaching
 zero should look like.
 
 Worth keeping the shape of the bug: only the *colour* had agreed, and by
-coincidence — compositing black at 0.3 over a fill is arithmetically `fill * 0.7`,
-so one rule had been written once as a composite and once as a multiply. The
-three things that had *not* agreed were placement (boundary vs inner band), width
-(0.5 vs 1 px) and the gate (Canvas2D tested width only, so a 2 px row outlined
-where the GPU did not).
+coincidence — compositing black at `1 - s` over a fill is arithmetically
+`fill * s`, so one rule had been written once as a composite and once as a
+multiply. The three things that had *not* agreed were placement (boundary vs
+inner band), width (0.5 vs 1 px) and the gate (Canvas2D tested width only, so a
+2 px row outlined where the GPU did not).
+
+Unifying them settled on the GPU's `0.7`, and that was the wrong half of the
+disagreement to keep. It was never chosen against the canvas's number; the two
+were written apart and compared only on colour. A 0.5 px stroke at alpha 0.3 is
+0.15 px·alpha of ink per edge, and a 1 px band at 0.3 is twice that — so
+adopting 0.7 everywhere doubled the outline's weight as a side effect of
+deduplicating it. `READ_OUTLINE_SHADE` is **0.85** now, which is the same ink the
+canvas spelling laid down, all of it inside the glyph.
 
 The **0.75%** left after that was the same concept one level down, and is now
 also done: the chevron arrowhead's outline was a centred stroke on a polygon on
@@ -267,10 +275,13 @@ chain-mode read stack at featureHeight 7, fill `#d3d3d3`:
 | --- | --- | --- |
 | the 0.5 px centred spelling | 194 | 217 |
 | after the rect-half fix | 177, 182 | **185** |
-| read.slang, and now both | **148** | **255** |
+| inside the glyph, at shade 0.7 | 148 | **255** |
+| inside the glyph, at shade 0.85 | **180** | **255** |
 
 A darkened gap is two neighbouring reads smudged into one soft band, which is
-visible as a blurrier pileup long before 0.75% sounds like anything.
+visible as a blurrier pileup long before 0.75% sounds like anything. The last two
+rows are the same geometry and differ only in weight; the gap column is what the
+fix bought, and it is why the lighter shade does not bring the haze back with it.
 
 Insetting an arbitrary polygon is not the one-liner insetting a rect is, but it
 is not the two-fill rewrite this note previously assumed either: the polygon
@@ -278,6 +289,15 @@ offset of a home plate is two closed-form terms off the apex half-angle (see
 `traceReadArrow`), and it keeps the single `fillStyle` per read that the two-fill
 version would have spent twice — which is the per-read cost the read painter is
 built around.
+
+**A shade change will not rebaseline under `-u`.** Changing only the outline's
+value leaves its geometry and both its neighbours (the fill and the background)
+exactly where they were, which is the signature pixelmatch uses to classify a
+pixel as anti-aliasing — and jest-image-snapshot runs it with the default
+`includeAA: false`, so every changed pixel is skipped and the suite passes
+against a stale golden. 0.7 → 0.85 moves 9,211 pixels and reports 0. Delete the
+`.png` and let the run write a fresh one; `-u` never fires because nothing
+failed. It also means the golden is not the check here — the pixel column is.
 
 ### The connector width bug, which is real and is not this
 

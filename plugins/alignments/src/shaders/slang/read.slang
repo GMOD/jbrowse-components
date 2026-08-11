@@ -92,19 +92,34 @@ static const float IS_GRADIENT_SPAN_FRAC = 0.5;
 // geometry, and it can never leave the read.
 //
 // Exported because `features/read/drawCanvas.ts` has to reproduce it with a
-// `strokeRect`, and the three numbers were stated twice with three different
-// answers: it stroked `rgba(0,0,0,0.3)` at width 0.5 CENTRED on the boundary,
-// against this 1 px band inside it, and gated on width alone where this gates on
-// both axes. Only the colour happened to agree, and by coincidence of algebra —
-// compositing black at 0.3 over a fill IS `fill * 0.7`, so the same rule had been
-// written once as a multiply and once as a composite.
+// stroke, and the three numbers were stated twice with three different answers:
+// it stroked `rgba(0,0,0,0.3)` at width 0.5 CENTRED on the boundary, against
+// this 1 px band inside it, and gated on width alone where this gates on both
+// axes. Only the colour happened to agree, and by coincidence of algebra —
+// compositing black at `1 - shade` over a fill IS `fill * shade`, so the same
+// rule had been written once as a multiply and once as a composite. See
+// agent-docs/reference/CROSS_BACKEND_GATE.md for the 1.99% that found it.
 //
-// Measured before the fix: 1.99% cross-backend drift on
-// `alignments-long-reads-sv-linked`, and the webgl edge pixel was exactly
-// `(236,139,139) * 0.7 = (165,97,97)` — see
-// agent-docs/reference/CROSS_BACKEND_GATE.md.
+// SHADE is 0.85 because that is the ink the Canvas2D spelling actually laid
+// down, and it is the number the two fixes together are answerable for. That
+// spelling was 0.5 px at alpha 0.3 — 0.15 px·alpha per edge — while this band
+// was 1 px at 0.3, twice as much. Nobody chose that; the two were written apart
+// and only ever compared on colour. Conserving the ink and putting all of it
+// inside the glyph is 1 px at alpha 0.15, so 0.85.
+//
+// It reads lighter than 0.7 without reading hazier, which is the whole point:
+// what made the old outline soft was placement, not weight. A centred stroke
+// spends half its width in the 1 px gap between pileup rows — and that gap takes
+// it from the read above and the read below at once, which is why the boundary
+// smudged. Inside the glyph, the same ink is a clean edge.
+//
+// The one number this does NOT reproduce is the old boundary's total darkening
+// (17 + 38 + 17 grey levels across edge/gap/edge, against 32 + 32 here). Exactly
+// matching that is 0.83, and the 8 levels between them are precisely the two
+// half-strokes overlapping in the gap — the artifact being removed. Don't
+// restore it by tuning this number.
 static const float READ_OUTLINE_PX = 1.0;
-static const float READ_OUTLINE_SHADE = 0.7;
+static const float READ_OUTLINE_SHADE = 0.85;
 // Below this the glyph is too small to spend a pixel of each edge on an outline
 // — it would be most of the read. Both axes, which is the half the Canvas2D twin
 // was missing: on a 2 px row it outlined and the GPU did not.
