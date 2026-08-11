@@ -184,7 +184,7 @@ matching region**. It walks that panel's visible window through the alignment's
 CIGAR and sends its neighbour there, leaving the panel you are reading alone.
 This is the one control that needs the chain track open in the panel.
 
-<Figure caption="Maternal (top) and paternal (bottom) panels on the same 70 kb of coordinates, each carrying the chain blocks and its own haplotype's genes. The paternal window lands past the end of this chain, so nothing in it corresponds; moving it from a maternal chain block brings the matching sequence under it." src="/img/hg002_haplotypes_follow_panel.png" />
+<Figure caption="Maternal (top) and paternal (bottom) panels on the same coordinates, each carrying the chain blocks and its own haplotype's genes. The paternal window lands past the end of this chain, so nothing in it corresponds; moving it from a maternal chain block brings the matching sequence under it. The two search boxes carry the same locus in the first frame and different ones in the second, which is the move." src="/img/hg002_haplotypes_follow_panel.png" />
 
 Two neighbouring controls do something different. **Center on feature**, on a
 ribbon's right-click menu, moves both panels to the alignment's midpoint, which

@@ -404,6 +404,14 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
         // to hang off -- and a bare `x`/`y` is the thing that goes stale in
         // silence when a viewport width or a lane height moves. Same two
         // numbers, now as offsets into an element that cannot drift.
+        //
+        // INSIDE the app bar rather than 52 px down it (review, on the figure as
+        // a whole: "any other changes you'd suggest?"). At 52 the pill landed on
+        // the toolbar row and covered the MATERNAL search box -- and the pair of
+        // search boxes is the entire evidence for both frames: frame one says
+        // the two panels hold the same numbers, frame two says one of them
+        // changed. The app bar's left half is empty in this session, so the
+        // title fits there over nothing.
         annotations: [
           {
             type: 'text',
@@ -412,9 +420,9 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
               alignX: 'left',
               alignY: 'top',
               dx: 24,
-              dy: 52,
+              dy: 30,
             },
-            fontSize: 26,
+            fontSize: 22,
             text: '(1) Same coordinates, different sequence',
           },
           {
@@ -441,9 +449,9 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
               alignX: 'left',
               alignY: 'top',
               dx: 24,
-              dy: 52,
+              dy: 30,
             },
-            fontSize: 26,
+            fontSize: 22,
             text: '(2) The other panel moves to the match',
           },
         ],
