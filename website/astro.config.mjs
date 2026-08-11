@@ -78,17 +78,42 @@ export default defineConfig({
   // client: directives, so adding it only emits an unreferenced ~190KB React
   // runtime chunk. Re-add it (and the react deps) if an island comes back.
   integrations: [icon(), fixAbsoluteLinks(), emitRawMarkdownIntegration()],
-  // Self-hosted Roboto (downloaded + optimized at build, served from our own
-  // origin) — no render-blocking request to fonts.googleapis.com. Exposed as
-  // var(--font-roboto); emit the <Font> tags with <Font cssVariable> in the head.
+  // Self-hosted Roboto, served from our own origin — no render-blocking request
+  // to fonts.googleapis.com. Exposed as var(--font-roboto); emit the <Font> tags
+  // with <Font cssVariable> in the head.
+  //
+  // The file is VENDORED rather than fetched, which is the difference between
+  // this and what it replaced. `fontProviders.google()` downloads from
+  // fonts.gstatic.com at build time, so a docs build depended on Google being
+  // reachable — and on 2026-08-10 it wasn't, and `Build website` failed on
+  // CannotFetchFontFile with nothing wrong in the tree. Same objection as
+  // website/scripts/third-party-hosts.txt makes about figure specs: a build
+  // should not need a server we do not run.
+  //
+  // One file covers every weight because Roboto v51's latin subset is a variable
+  // font (wght axis 100-900, 363 glyphs, 42 kB) — the five weights below all
+  // resolved to the same URL from Google. Apache-2.0, so vendoring is clean; the
+  // licence travels in fonts/LICENSE.txt beside it.
+  //
+  // To update: fetch the css2 URL in fonts/README.md with a browser user-agent,
+  // take the `/* latin */` woff2, and drop it in. Not automated on purpose —
+  // automating it would put the network back in the build.
   fonts: [
     {
-      provider: fontProviders.google(),
+      provider: fontProviders.local(),
       name: 'Roboto',
       cssVariable: '--font-roboto',
-      weights: [400, 500, 600, 700, 900],
-      styles: ['normal'],
-      subsets: ['latin'],
+      // under `options`, not alongside `name` — the family type puts every
+      // provider-specific key there
+      options: {
+        variants: [
+          {
+            src: ['./src/assets/fonts/roboto-latin-variable.woff2'],
+            weight: '100 900',
+            style: 'normal',
+          },
+        ],
+      },
     },
   ],
   // NOTE: this only applies to Astro's built-in markdown (the `.md` *pages* like
