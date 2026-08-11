@@ -80,7 +80,15 @@ const App = observer(function App(props: Props) {
       ) : null}
       <DialogQueue session={session} />
       <div className={classes.appContainer}>
-        <AppBar className={classes.appBar} position="static">
+        {/* the testid is what a figure's stage title anchors to: it is the one
+            element whose rect is the top-left of the whole frame, so a caption
+            that belongs to the picture rather than to any track has something
+            to hang off other than a measured pixel */}
+        <AppBar
+          className={classes.appBar}
+          position="static"
+          data-testid="app-bar"
+        >
           <AppToolbar {...props} />
         </AppBar>
         <ViewsContainer {...props} />

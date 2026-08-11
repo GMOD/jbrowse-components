@@ -399,11 +399,22 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
           { type: 'hover', text: 'Move other panel to the matching region' },
           { type: 'delay', ms: 500 },
         ],
+        // STAGE TITLES ANCHOR TO THE APP BAR, which is the one element whose
+        // rect is the frame's own top-left corner (0,0). A stage title belongs
+        // to the picture rather than to any track, so there is no locus for it
+        // to hang off -- and a bare `x`/`y` is the thing that goes stale in
+        // silence when a viewport width or a lane height moves. Same two
+        // numbers, now as offsets into an element that cannot drift.
         annotations: [
           {
             type: 'text',
-            x: 24,
-            y: 52,
+            anchor: {
+              selector: '[data-testid="app-bar"]',
+              alignX: 'left',
+              alignY: 'top',
+              dx: 24,
+              dy: 52,
+            },
             fontSize: 26,
             text: '(1) Same coordinates, different sequence',
           },
@@ -426,8 +437,13 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
         annotations: [
           {
             type: 'text',
-            x: 24,
-            y: 52,
+            anchor: {
+              selector: '[data-testid="app-bar"]',
+              alignX: 'left',
+              alignY: 'top',
+              dx: 24,
+              dy: 52,
+            },
             fontSize: 26,
             text: '(2) The other panel moves to the match',
           },
