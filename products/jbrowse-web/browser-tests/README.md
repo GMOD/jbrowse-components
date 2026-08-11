@@ -128,10 +128,11 @@ reads is decoration. What it needed was not a bigger scope but a verdict that
 counts, and a scope narrow enough to deserve one:
 
 - **Only views measured clean under swiftshader.** 66 pairs per run, 0 over
-  threshold, worst passing drift 0.51% against a 3% default — the headroom is
-  the argument. Alignments pileups are deliberately out (every over-threshold
-  failure ever recorded here has been one) and so is anything fetching remote
-  data.
+  threshold, worst passing drift 0.62% against a 1.5% default (was 0.51%/3% when
+  the gate was made blocking) — the headroom is the argument, and the threshold
+  was tightened once it had been measured rather than assumed. Alignments
+  pileups are deliberately out (every over-threshold failure ever recorded here
+  has been one) and so is anything fetching remote data.
 - **A failing test fails the run.** A test that dies before its screenshot
   removes a pair from the comparison, and a snapshot only one backend captured
   is skipped rather than failed — so ignoring test failures let a run report "0
