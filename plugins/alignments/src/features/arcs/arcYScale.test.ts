@@ -14,7 +14,6 @@ import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 import { makeTestPalette } from '../../LinearAlignmentsDisplay/testUtils.ts'
 import {
   buildArcColorPalette,
-  buildArcMarkerColorPalette,
   buildLinkedReadColorPalette,
 } from '../../shaders/palettes.ts'
 import {
@@ -122,20 +121,20 @@ describe('linkedReadColorSlot', () => {
 // slots and indexed there), so pinning it here pins every renderer.
 describe('the arc marker palette (read-cloud endpoint squares)', () => {
   it('paints short insert the one color the curves and the pileup use', () => {
-    expect(buildArcMarkerColorPalette(STOCK)[2]).toEqual(
+    expect(buildArcColorPalette(STOCK)[2]).toEqual(
       cssColorToNormalizedRgb(colorShortInsert),
     )
     expect(buildArcColorPalette(STOCK)[2]).toEqual(
-      buildArcMarkerColorPalette(STOCK)[2],
+      buildArcColorPalette(STOCK)[2],
     )
   })
   it('leaves every other slot identical to the stroke arc palette', () => {
-    expect(buildArcMarkerColorPalette(STOCK).length).toBe(
+    expect(buildArcColorPalette(STOCK).length).toBe(
       buildArcColorPalette(STOCK).length,
     )
     buildArcColorPalette(STOCK).forEach((c, i) => {
       if (i !== 2) {
-        expect(buildArcMarkerColorPalette(STOCK)[i]).toEqual(c)
+        expect(buildArcColorPalette(STOCK)[i]).toEqual(c)
       }
     })
   })

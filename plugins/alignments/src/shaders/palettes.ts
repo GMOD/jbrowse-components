@@ -72,17 +72,6 @@ export function buildArcColorPalette(c: ColorPalette) {
   return resolve(ARC_SLOT_CATEGORY, c)
 }
 
-// The read-cloud endpoint squares. Identical to the arc palette: the squares are
-// opaque fills and the curves are thin strokes, and short insert used to need a
-// different colour for each — a pale fill that vanished as a stroke against the
-// saturated pink the curves used. Both are the pale pink now (see
-// colorShortInsert), so there is nothing left to substitute. Kept as its own
-// name because the marker paths name it — Canvas2D, SVG and the GPU
-// `arcMarkerColor` slots — so a future mark-specific colour has one place to go.
-export function buildArcMarkerColorPalette(c: ColorPalette) {
-  return resolve(ARC_SLOT_CATEGORY, c)
-}
-
 export function buildLinkedReadColorPalette(c: ColorPalette) {
   return resolve(LINKED_READ_SLOT_CATEGORY, c)
 }

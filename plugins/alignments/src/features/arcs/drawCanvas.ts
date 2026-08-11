@@ -1,9 +1,6 @@
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { bpToScreenX } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import {
-  buildArcColorPalette,
-  buildArcMarkerColorPalette,
-} from '../../shaders/palettes.ts'
+import { buildArcColorPalette } from '../../shaders/palettes.ts'
 // The palette-index rule, generated from alignmentsUniforms.slang (adr-051) —
 // imported from the generated module directly, with no re-export hop.
 import { arcColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
@@ -195,6 +192,7 @@ export function drawArcs(
     arcAvailH(arcsH),
     fullBlockWidth / bpLength,
   )
+  const arcColors = buildArcColorPalette(state.colors)
   drawArcsToCtx(ctx, region, {
     bpToScreenX: bp => bpToScreenX(bp, block, bpLength, fullBlockWidth),
     arcsYDomainBp: domainBp,
@@ -203,8 +201,8 @@ export function drawArcs(
     arcsH,
     pairedArcsDown,
     lineWidth: state.readConnectionsLineWidth,
-    palette: buildArcColorPalette(state.colors),
-    markerPalette: buildArcMarkerColorPalette(state.colors),
+    palette: arcColors,
+    markerPalette: arcColors,
     screenWidthPx,
   })
 
@@ -214,9 +212,7 @@ export function drawArcs(
   // hoisted out of the loop rather than read per instance.
   ctx.lineWidth = state.readConnectionsLineWidth
   ctx.setLineDash([])
-  ctx.strokeStyle = rgb255(
-    buildArcColorPalette(state.colors)[ARC_COLOR_INTERCHROM]!,
-  )
+  ctx.strokeStyle = rgb255(arcColors[ARC_COLOR_INTERCHROM]!)
   for (let i = 0; i < region.numArcLines; i++) {
     const bp = region.arcLinePositions[i]!
     const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)

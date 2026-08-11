@@ -1,6 +1,7 @@
 import {
   categorySwatchColor,
   rgb255,
+  swatchPaletteKeys,
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
 import { arcColorLegendCategory } from '../features/arcs/compute.ts'
@@ -15,8 +16,8 @@ import {
 } from '../features/linkedReads/compute.ts'
 import { readColorCategoryLabel } from '../shared/legendUtils.ts'
 import {
+  ARC_SLOT_CATEGORY,
   buildArcColorPalette,
-  buildArcMarkerColorPalette,
   buildLinkedReadColorPalette,
 } from './palettes.ts'
 
@@ -57,7 +58,6 @@ const OVERRIDDEN = makeTestPalette({
 describe('overlay palettes follow the theme', () => {
   test.each([
     ['arc', buildArcColorPalette],
-    ['arc marker', buildArcMarkerColorPalette],
     ['linked read', buildLinkedReadColorPalette],
   ])('%s palette resolves against the palette it is given', (_name, build) => {
     // Nothing is left over from the module constants: every slot has to be one
@@ -127,4 +127,22 @@ describe('connector labels match the read key word for word', () => {
       expect(connectionLabel(colorType)).toBe(readColorCategoryLabel(category))
     },
   )
+})
+
+// THE ONE MEANING STILL SPLIT ACROSS THE TWO CLASSIFIERS, pinned so it stays
+// visible. A pair with NO computed orientation (po 0) is 'nonSplit' to the read
+// fills — deliberately the neutral grey, "distinct from the strand-colored split
+// segments" — while the arc has no such slot and falls to its baseline, which is
+// pairLR. Two greys, but not the same grey, and two legend rows for one thing.
+//
+// Fixing it is not a refactor, it is a decision: either the arcs grow a
+// nonSplit slot (a shader uniform wider by one) or the reads stop distinguishing
+// it. Everything else these two once disagreed about is now derived from one
+// table; this is what is left.
+describe('known gap: unknown pair orientation', () => {
+  test('the arc baseline and the read fill are still different greys', () => {
+    expect(swatchPaletteKeys.nonSplit).not.toBe(swatchPaletteKeys.pairLR)
+    expect(ARC_SLOT_CATEGORY[0]).toBe('normalInsert')
+    expect(arcColorLegendCategory(0, 'orientation')).toBe('pairLR')
+  })
 })
