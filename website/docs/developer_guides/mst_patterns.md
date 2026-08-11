@@ -288,12 +288,14 @@ get colorLegendItems(): LegendItem[] {
 /**
  * #getter
  */
-// Show the floating color key while a preset coloring is active, unless
-// the user dismissed it.
+// Whether a preset coloring is active, i.e. whether there is a key at all.
+// NOT anded with `colorLegendDismissed`: dismissal is the hook's own flag
+// (see CanvasColorLegend), so the track menu's "Show legend" checkbox can
+// offer the way back from the key's own "×".
 get showColorLegend() {
   // `this` for the sibling defined just above (same block), `self` for
   // what earlier blocks and the volatile added — see the MST patterns guide
-  return this.colorLegendItems.length > 0 && !self.colorLegendDismissed
+  return this.colorLegendItems.length > 0
 },
 ```
 

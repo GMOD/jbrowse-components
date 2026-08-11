@@ -4,9 +4,9 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { onDisplayedRegionsChange } from '@jbrowse/plugin-linear-genome-view'
 import { regionDataMap } from '@jbrowse/render-core/installPerRegionLifecycle'
 
-import { screenDensity } from '../LinearBasicDisplay/baseModelHelpers.ts'
+import { screenDensity } from './regionDensity.ts'
 
-import type { RegionDensityStats } from '../LinearBasicDisplay/baseModelHelpers.ts'
+import type { RegionDensityStats } from './regionDensity.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
   GateViewport,

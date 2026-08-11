@@ -4,6 +4,7 @@ import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
 import {
   checkboxItem,
   promotableRadioItems,
+  radioItems,
   showLegendCheckboxItem,
 } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
@@ -14,7 +15,6 @@ import PaletteIcon from '@mui/icons-material/Palette'
 import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop'
 
 import { STRAND_COLOR_JEXL } from '../RenderFeatureDataRPC/featureColors.ts'
-import { inlineRadioGroup } from './baseModelHelpers.ts'
 import { showHiddenFeaturesMenuItems } from './featureContextMenu.ts'
 import { SHOW_LABELS_MODES } from './showLabelsMode.ts'
 
@@ -41,6 +41,25 @@ const displayModeOptions: { value: DisplayMode; label: string }[] = [
 // "Filter by..." otherwise — while staying above the track's own "Display
 // types" at -1000. Shared by all of them so they stay adjacent.
 const RECOVERY_PRIORITY = -100
+
+// A named group of mutually-exclusive radio options rendered inline: a
+// subHeader followed by the radios, so a settings menu reads as one flat list
+// of checkboxes/radios instead of nesting a submenu the user has to hover into.
+// The rows come from core's `radioItems` rather than being spelled out here, so
+// every radio in every canvas menu keeps the menu open on click — a hand-rolled
+// copy is how the "Gene glyph" submenu ended up dismissing the whole track menu
+// while its siblings stayed put.
+function inlineRadioGroup<T extends string>(
+  header: string,
+  current: T,
+  options: readonly { value: T; label: string; subLabel?: string }[],
+  onSelect: (value: T) => void,
+): MenuItem[] {
+  return [
+    { type: 'subHeader' as const, label: header },
+    ...radioItems(options, current, onSelect),
+  ]
+}
 
 // Structural for the same reason as FeatureMenuSelf: the model factory calls
 // these builders, so it can't hand them its own inferred type. The model is

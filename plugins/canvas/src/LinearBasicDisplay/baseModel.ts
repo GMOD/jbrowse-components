@@ -45,8 +45,8 @@ import {
 import { THEME_DERIVED_COLOR } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import CanvasFeatureGateMixin from '../shared/CanvasFeatureGateMixin.ts'
+import { fetchCanvasFeatureDetails } from '../shared/fetchCanvasFeatureDetails.ts'
 import {
-  fetchCanvasFeatureDetails,
   findSubfeatureById,
   indexById,
   toggleArrayMember,

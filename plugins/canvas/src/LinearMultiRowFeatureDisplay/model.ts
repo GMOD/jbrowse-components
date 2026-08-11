@@ -40,8 +40,8 @@ import {
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 
-import { fetchCanvasFeatureDetails } from '../LinearBasicDisplay/baseModelHelpers.ts'
 import CanvasFeatureGateMixin from '../shared/CanvasFeatureGateMixin.ts'
+import { fetchCanvasFeatureDetails } from '../shared/fetchCanvasFeatureDetails.ts'
 import { fetchMultiRowFeatures } from './fetchMultiRowFeatures.ts'
 import { blockScreenRect } from './rendering/blockScreenRect.ts'
 import {

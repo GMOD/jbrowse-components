@@ -99,7 +99,7 @@ export type {
   CanvasColorLegend,
   GeneGlyphNotice,
 } from './LinearBasicDisplay/baseModel.ts'
-export type { RegionDensityStats } from './LinearBasicDisplay/baseModelHelpers.ts'
+export type { RegionDensityStats } from './shared/regionDensity.ts'
 export type { CanvasFeatureRenderingBackend } from './LinearBasicDisplay/components/canvasFeatureRenderingBackendTypes.ts'
 export type { LinearBasicDisplayComponentProps } from './LinearBasicDisplay/components/FeatureComponent.tsx'
 export type {

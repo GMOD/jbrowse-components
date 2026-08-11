@@ -1,12 +1,15 @@
-import { radioItems } from '@jbrowse/core/ui/menuItems'
-import { SimpleFeature } from '@jbrowse/core/util'
-
-import { featuresPerPx } from '../RenderFeatureDataRPC/densityGate.ts'
+// Pure data helpers for the LinearBasicDisplay model chain — no menus, no
+// session, nothing another display composes.
+//
+// That last part is what the file is now for. It used to also hold
+// `screenDensity` and `fetchCanvasFeatureDetails`, which are used by BOTH canvas
+// displays and by `CanvasFeatureGateMixin` — so `shared/` imported out of a
+// single display's directory, and the multi-row display reached into
+// LinearBasicDisplay for a fetch helper. Both now live in `shared/`, where a
+// thing two displays need belongs.
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
-import type RpcManager from '@jbrowse/core/rpc/RpcManager'
-import type { MenuItem } from '@jbrowse/core/ui'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 
 // Add id if absent, remove it if present — the shared body of the pin/solo
 // feature-toggle actions. Structural param so any observable string array fits.
@@ -43,71 +46,6 @@ export function findSubfeatureById(
     }
   }
   return undefined
-}
-
-export async function fetchCanvasFeatureDetails(
-  session: {
-    rpcManager: RpcManager
-    notifyError: (msg: string, err?: unknown) => void
-  },
-  sessionId: string,
-  adapterConfig: Record<string, unknown>,
-  featureId: string,
-  region: Region,
-) {
-  try {
-    const result = await session.rpcManager.call(
-      sessionId,
-      'GetCanvasFeatureDetails',
-      { adapterConfig, featureId, region },
-    )
-    return result.feature ? new SimpleFeature(result.feature) : undefined
-  } catch (e) {
-    console.error('Failed to fetch feature details:', e)
-    session.notifyError(`${e}`, e)
-    return undefined
-  }
-}
-
-// A named group of mutually-exclusive radio options rendered inline: a
-// subHeader followed by the radios, so a settings menu reads as one flat list
-// of checkboxes/radios instead of nesting a submenu the user has to hover into.
-// The rows come from core's `radioItems` rather than being spelled out here, so
-// every radio in every canvas menu keeps the menu open on click — a hand-rolled
-// copy is how the "Gene glyph" submenu ended up dismissing the whole track menu
-// while its siblings stayed put.
-export function inlineRadioGroup<T extends string>(
-  header: string,
-  current: T,
-  options: readonly { value: T; label: string; subLabel?: string }[],
-  onSelect: (value: T) => void,
-): MenuItem[] {
-  return [
-    { type: 'subHeader' as const, label: header },
-    ...radioItems(options, current, onSelect),
-  ]
-}
-
-// Per-region density sample written after each fetch. featureCount comes from
-// the worker; regionWidthBp is derived locally from the request's region.
-export interface RegionDensityStats {
-  featureCount: number
-  regionWidthBp: number
-}
-
-// Features-per-pixel for a single region given its raw count, the region's
-// genomic span, and the current bpPerPx. Used by the derived regionTooLarge
-// banner and by force-load to sample observed density. Delegates to the same
-// `featuresPerPx` the worker's gate uses: main thread and worker must agree on
-// the number, or the banner contradicts the short-circuit that produced it.
-export function screenDensity(ds: RegionDensityStats, bpPerPx: number) {
-  return ds.regionWidthBp > 0
-    ? featuresPerPx(
-        ds.featureCount,
-        { start: 0, end: ds.regionWidthBp },
-        bpPerPx,
-      )
-    : 0
 }
 
 // First-wins index from per-region arrays. Spanning features can appear in
