@@ -224,7 +224,9 @@ export function CollapsePanelsCheckbox({
 
 // Padding added to both sides of every launched panel. `undefined` is a cleared
 // or invalid field, which the dialogs turn into a disabled Submit rather than
-// silently launching on the default.
+// silently launching on the default. Labelled for what it does to the panels
+// rather than as "Add window size in bp", which read as an instruction with its
+// object missing and named a quantity nothing else in the dialog mentions.
 //
 // Inline-level, like the checkboxes above it, so with an odd number of them it
 // shares the last one's line as a second column. Checked at full resolution in
@@ -237,7 +239,7 @@ export function WindowSizeField({
 }) {
   return (
     <NumberTextField
-      label="Add window size in bp"
+      label="Padding around each panel (bp)"
       defaultValue={DEFAULT_WINDOW_SIZE}
       onValueChange={val => {
         onChange(val)

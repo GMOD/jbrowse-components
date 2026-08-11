@@ -138,29 +138,39 @@ test('a failed discovery surfaces rather than spinning forever', async () => {
 })
 
 // The anchor is a row so it can be moved through the stack, but it is where the
-// coordinates came from, so it cannot be dropped from it.
-test('the anchor is listed first and its checkbox is disabled', async () => {
+// coordinates came from, so it cannot be dropped from it. Said with a mark
+// rather than a disabled checkbox: `disabled` greyed out the row every other row
+// is measured against, and took its name out of the tab order while leaving its
+// own move buttons in it.
+test('the anchor is listed first, as a mark rather than a dead checkbox', async () => {
   renderDialog(() => Promise.resolve(mates('volvox_ins', 'volvox_del')))
-  const anchor = await screen.findByLabelText(/volvox \(your selection\)/)
-  expect(anchor).toBeDisabled()
-  expect(anchor).toBeChecked()
-  expect(screen.getByLabelText('Move volvox up')).toBeDisabled()
-  expect(screen.getByLabelText('Move volvox down')).toBeEnabled()
+  expect(await screen.findByText('volvox (your selection)')).toBeTruthy()
+  expect(screen.queryByLabelText(/volvox \(your selection\)/)).toBeNull()
+  expect(screen.getByLabelText('Move volvox (panel 1) up')).toBeDisabled()
+  expect(screen.getByLabelText('Move volvox (panel 1) down')).toBeEnabled()
 })
 
-test('select none leaves the anchor checked and disables submit', async () => {
+test('select none leaves the anchor in the stack and disables submit', async () => {
   renderDialog(() =>
     Promise.resolve(mates('volvox_ins', 'volvox_del', 'volvox_dup')),
   )
   fireEvent.click(await screen.findByText('Select none'))
 
-  expect(screen.getByLabelText(/volvox \(your selection\)/)).toBeChecked()
+  expect(screen.getByText('volvox (your selection)')).toBeTruthy()
   expect(screen.getByLabelText('volvox_ins')).not.toBeChecked()
   expect(screen.getByText('Submit').closest('button')).toBeDisabled()
 
   fireEvent.click(screen.getByText('Select all'))
   expect(screen.getByLabelText('volvox_ins')).toBeChecked()
   expect(screen.getByText('Submit').closest('button')).toBeEnabled()
+})
+
+// One open synteny dataset is not a choice, and a full-width select holding its
+// only value is a control the reader has to try before ruling it out.
+test('a single dataset is stated rather than offered as a select', async () => {
+  renderDialog(() => Promise.resolve(mates('volvox_ins')))
+  expect(await screen.findByText('Synteny dataset: all vs all')).toBeTruthy()
+  expect(screen.queryByRole('combobox', { name: 'Synteny dataset' })).toBeNull()
 })
 
 // a rubberband can cover a whole chromosome without looking like it
@@ -183,6 +193,15 @@ test('the region size is stated alongside the locstring', async () => {
 test('each mate row shows the locus its panel will open on', async () => {
   renderDialog(() => Promise.resolve(invertedMate()))
   expect(await screen.findByText('ctgZ:800,001..810,000 (-)')).toBeTruthy()
+})
+
+// The column is read down — a mate's locus says little except against the
+// anchor's — so the row every other row was resolved against is in it, title
+// line above notwithstanding.
+test('the anchor row carries the selection locus too', async () => {
+  renderDialog(() => Promise.resolve(invertedMate()))
+  await screen.findByLabelText('volvox_inv')
+  expect(screen.getByText('ctgA:1..50,000')).toBeTruthy()
 })
 
 // The launch is anchored on the locus the rubberband was dragged over, so the

@@ -1,4 +1,3 @@
-import { getConf } from '@jbrowse/core/configuration'
 import { extendViewType } from '@jbrowse/core/pluggableElementTypes'
 import { pushLaunchViewMenuItem } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
@@ -39,17 +38,17 @@ export default function LinearViewMenuItemsF(pluginManager: PluginManager) {
         // The two entries differ only in their label and which region they
         // read; everything else about the offer is the view's current state,
         // resolved at menu time so it is what is open as of the launch
-        // rather than as of the extend(). `openTrackIds` sorts the dialog's
-        // session-wide dataset list (see launchableTracks) and the tracks
-        // are what the launched view's panel for this assembly opens with.
+        // rather than as of the extend(). The open tracks are read twice over,
+        // for two different purposes: the synteny ones among them are the
+        // datasets the dialog offers to cut panels from (see launchableTracks),
+        // and the rest are what the launched view's panel for this assembly
+        // opens with.
         const menuItemsFor = (label: string, region: Region | undefined) =>
           syntenyRegionMenuItems({
             label,
             region,
             session: getSession(self),
-            openTrackIds: self.tracks.map(
-              track => getConf(track, 'trackId') as string,
-            ),
+            openTracks: self.tracks.map(track => track.configuration),
             anchorTracks: anchorPanelTracks(self.tracks),
             sourceView: self,
           })

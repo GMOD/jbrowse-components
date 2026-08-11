@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 
 import {
   ErrorMessage,
@@ -13,6 +13,7 @@ import {
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import AnchorIcon from '@mui/icons-material/Anchor'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import {
@@ -21,6 +22,7 @@ import {
   IconButton,
   MenuItem,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material'
 
@@ -68,6 +70,21 @@ const useStyles = makeStyles()(theme => ({
     flex: 1,
     margin: 0,
   },
+  anchorLabel: {
+    flex: 1,
+    display: 'flex',
+    alignItems: 'center',
+  },
+  // stands in the checkbox column the mate rows have. MUI's small Checkbox is a
+  // 20px icon in 9px of padding either side, so 38px starts the anchor's name in
+  // the same place as every mate's.
+  anchorMark: {
+    width: 38,
+    flexShrink: 0,
+    display: 'flex',
+    justifyContent: 'center',
+    color: theme.palette.text.secondary,
+  },
   // outside the checkbox's own label, so the row's accessible name stays the
   // assembly — the locus is what the panel will show, not what it is
   panelLocus: {
@@ -82,14 +99,26 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// The mate interval a row's panel will open on, unpadded. Unpadded because the
+// The interval a row's panel will open on, unpadded. Unpadded because the
 // window size is a live field further down the dialog and this is meant to say
-// where in the mate assembly the region lands, not to restate that arithmetic;
-// the anchor row contributes nothing, since its locus is the dialog's own title
-// line. The strand is spelled out rather than left to the locstring's `[rev]`,
-// which means "this panel opens flipped" and so depends on the checkbox below.
-function PanelLocus({ row, className }: { row: PanelRow; className?: string }) {
-  const span = row.kind === 'anchor' ? undefined : row.span
+// where in each assembly the region lands, not to restate that arithmetic. The
+// strand is spelled out rather than left to the locstring's `[rev]`, which means
+// "this panel opens flipped" and so depends on the checkbox below.
+//
+// The anchor's locus is the selection itself, which the dialog's title line also
+// carries. That repetition is deliberate: this is a column and it is read down,
+// a mate's locus says little except against the anchor's, and the row every
+// other row was resolved against is the wrong place to leave a hole.
+function PanelLocus({
+  row,
+  region,
+  className,
+}: {
+  row: PanelRow
+  region: Region
+  className?: string
+}) {
+  const span = row.kind === 'anchor' ? { ...region, reversed: false } : row.span
   return span ? (
     <Typography variant="body2" className={className}>
       {assembleLocString({
@@ -131,6 +160,7 @@ export default function LaunchSyntenyViewForRegionDialog({
   handleClose: () => void
 }) {
   const { classes } = useStyles()
+  const panelsLabelId = useId()
   const [trackId, setTrackId] = useState(tracks[0]!.trackId)
   const [rows, setRows] = useState<PanelRow[] | undefined>()
   const [unconfigured, setUnconfigured] = useState<string[]>([])
@@ -231,28 +261,39 @@ export default function LaunchSyntenyViewForRegionDialog({
         })}{' '}
         ({getBpDisplayStr(region.end - region.start)})
       </Typography>
-      {/* First field, and present even for a single dataset: the panel list
-       below is what this dataset aligns to, so which one it is has to be read
-       before the list means anything. Changing it refetches that list. */}
-      <TextField
-        select
-        fullWidth
-        margin="dense"
-        label="Synteny dataset"
-        value={trackId}
-        onChange={event => {
-          setTrackId(event.target.value)
-        }}
-      >
-        {tracks.map(t => (
-          <MenuItem key={t.trackId} value={t.trackId}>
-            {t.name}
-          </MenuItem>
-        ))}
-      </TextField>
+      {/* Which dataset the panels are cut from has to be READ before the list
+       below means anything, but with one open synteny track there is nothing to
+       decide — and a full-width select holding its only value is a control the
+       reader has to try before ruling it out. Stated in a line instead, in the
+       same words as the field's label so the two renderings agree. Changing the
+       field, when there is one, refetches the list. */}
+      {tracks.length > 1 ? (
+        <TextField
+          select
+          fullWidth
+          margin="dense"
+          label="Synteny dataset"
+          value={trackId}
+          onChange={event => {
+            setTrackId(event.target.value)
+          }}
+        >
+          {tracks.map(t => (
+            <MenuItem key={t.trackId} value={t.trackId}>
+              {t.name}
+            </MenuItem>
+          ))}
+        </TextField>
+      ) : (
+        <Typography variant="body2" color="textSecondary">
+          Synteny dataset: {track.name}
+        </Typography>
+      )}
       {/* outside the scroller below: with a dozen panels the list scrolls, and
-       the line saying what the order means is what would scroll away first */}
-      <Typography variant="subtitle2">
+       the line saying what the order means is what would scroll away first.
+       Named rather than merely adjacent, so the checkbox group below announces
+       what it is a group of. */}
+      <Typography variant="subtitle2" id={panelsLabelId}>
         Panels, top to bottom. Alignments are drawn between neighbouring panels,
         so the order decides which comparisons the view shows.
       </Typography>
@@ -280,7 +321,11 @@ export default function LaunchSyntenyViewForRegionDialog({
             : `Nothing in ${track.name} aligns to this region`}
         </Typography>
       ) : null}
-      <div className={classes.panels}>
+      <div
+        className={classes.panels}
+        role="group"
+        aria-labelledby={panelsLabelId}
+      >
         {/* keyed by position, which is also what movePanel/setPanelChecked
         address: a self-alignment track keeps its own lane as a mate (see
         pickMatesForRegion), so the anchor and that mate carry the same
@@ -291,32 +336,49 @@ export default function LaunchSyntenyViewForRegionDialog({
             // eslint-disable-next-line @eslint-react/no-array-index-key -- see above
             key={`${row.assemblyName}-${index}`}
           >
-            <LabeledCheckbox
-              className={classes.panelLabel}
-              size="small"
-              // the anchor is the assembly the region was selected on, and
-              // every mate's coordinates were resolved against it, so it is in
-              // the stack unconditionally — it can only be moved
-              disabled={row.kind === 'anchor'}
-              checked={row.kind === 'anchor' || row.checked}
-              onChange={val => {
-                setRows(setPanelChecked(rows, index, val))
-              }}
-              label={
-                row.kind === 'anchor'
-                  ? `${row.assemblyName} (your selection)`
-                  : row.assemblyName
-              }
-            />
+            {row.kind === 'anchor' ? (
+              // Not a disabled checkbox. The anchor is in the stack
+              // unconditionally — it is the assembly the region was selected
+              // on, and every mate's coordinates were resolved against it — but
+              // `disabled` said so by making the row everything else is
+              // measured from the lowest-contrast line in the dialog, and by
+              // dropping its name out of the tab order while its own move
+              // buttons stayed in it. A mark instead of a control: nothing to
+              // click, and nothing greyed out.
+              <Tooltip title="The assembly you selected in. Every other panel's locus is resolved against it, so this panel can be moved but not removed.">
+                <div className={classes.anchorLabel}>
+                  <div className={classes.anchorMark}>
+                    <AnchorIcon fontSize="small" />
+                  </div>
+                  <Typography>{`${row.assemblyName} (your selection)`}</Typography>
+                </div>
+              </Tooltip>
+            ) : (
+              <LabeledCheckbox
+                className={classes.panelLabel}
+                size="small"
+                checked={row.checked}
+                onChange={val => {
+                  setRows(setPanelChecked(rows, index, val))
+                }}
+                label={row.assemblyName}
+              />
+            )}
             {/* Where this panel will actually open, resolved the same way the
              launch resolves it — the assembly name alone says nothing about
              which contig the region reaches, whether the match is inverted, or
-             that a mate's alignment stops short of the selection. The anchor
-             row's own locus is the line at the top of the dialog. */}
-            <PanelLocus row={row} className={classes.panelLocus} />
+             that a mate's alignment stops short of the selection. */}
+            <PanelLocus
+              row={row}
+              region={region}
+              className={classes.panelLocus}
+            />
+            {/* positioned as well as named: a self-alignment track lists the
+             anchor's assembly twice (see the key above), and "Move volvox up"
+             twice over is two buttons a screen reader cannot tell apart */}
             <IconButton
               size="small"
-              aria-label={`Move ${row.assemblyName} up`}
+              aria-label={`Move ${row.assemblyName} (panel ${index + 1}) up`}
               disabled={index === 0}
               onClick={() => {
                 setRows(movePanel(rows, index, -1))
@@ -326,7 +388,7 @@ export default function LaunchSyntenyViewForRegionDialog({
             </IconButton>
             <IconButton
               size="small"
-              aria-label={`Move ${row.assemblyName} down`}
+              aria-label={`Move ${row.assemblyName} (panel ${index + 1}) down`}
               disabled={index === rows.length - 1}
               onClick={() => {
                 setRows(movePanel(rows, index, 1))

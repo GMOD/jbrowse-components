@@ -237,9 +237,16 @@ test('Show mismatches is a live layer on a synteny track', async () => {
 // synteny strip in every gap.
 test('launch a multi-panel synteny view from a region selection', async () => {
   await mockConsoleWarn(async () => {
-    const { session, view, findByText } = await createView()
+    const { session, view, findByTestId, findByText } = await createView()
 
     await view.navToLocString('ctgA:1..50,000')
+
+    // The dialog offers the synteny datasets this view has OPEN, so the launch
+    // entry does not exist until one is — and volvox_all_vs_all is the only
+    // dataset here spanning three assemblies, i.e. the only one that can fill
+    // more than a single target panel.
+    fireEvent.click(await findByTestId(hts('volvox_all_vs_all'), ...opts))
+
     const bp = (coord: number) => ({
       refName: 'ctgA',
       assemblyName: 'volvox',
@@ -252,8 +259,9 @@ test('launch a multi-panel synteny view from a region selection', async () => {
     })
     view.setOffsets(bp(10000), bp(20000))
 
-    // one entry, under the rubberband menu's "Launch" group: volvox has many
-    // synteny datasets and the choice between them is a field in the dialog
+    // one entry, under the rubberband menu's "Launch" group: a view can have
+    // several synteny datasets open and the choice between them is a field in
+    // the dialog, not a submenu here
     const launch = view
       .rubberBandMenuItems()
       .find(f => 'label' in f && f.label === 'Launch')
@@ -268,15 +276,8 @@ test('launch a multi-panel synteny view from a region selection', async () => {
     }
     item.onClick()
 
-    // volvox_all_vs_all spans three assemblies, i.e. the only dataset here that
-    // can fill more than a single target panel, so the dialog is switched onto
-    // it from whichever it opened on
-    fireEvent.mouseDown(
-      await screen.findByRole('combobox', { name: 'Synteny dataset' }, delay),
-    )
-    fireEvent.click(
-      await screen.findByRole('option', { name: ALL_VS_ALL_TRACK_NAME }, delay),
-    )
+    // the one open dataset, so it is stated rather than offered as a select
+    await findByText(`Synteny dataset: ${ALL_VS_ALL_TRACK_NAME}`, ...opts)
 
     // every assembly the region aligns to arrives checked, so the payoff is one
     // click away rather than opt-in per panel

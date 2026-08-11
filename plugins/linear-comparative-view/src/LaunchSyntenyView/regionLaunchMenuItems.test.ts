@@ -6,6 +6,7 @@ import {
   widestRegion,
 } from './regionLaunchMenuItems.ts'
 
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel, Region } from '@jbrowse/core/util'
 
 // Real config models rather than stubs with a mocked readConfObject: the
@@ -20,8 +21,23 @@ const schema = ConfigurationSchema(
   { explicitIdentifier: 'trackId', explicitlyTyped: true },
 )
 
+// A view has more than synteny tracks open, and every one of them now reaches
+// the discovery — so the type gate is part of what is under test here.
+const alignmentsSchema = ConfigurationSchema(
+  'AlignmentsTrack',
+  {
+    name: { type: 'string', defaultValue: '' },
+    assemblyNames: { type: 'stringArray', defaultValue: [] },
+  },
+  { explicitIdentifier: 'trackId', explicitlyTyped: true },
+)
+
 function track(trackId: string, assemblyNames: string[]) {
   return schema.create({ trackId, name: trackId, assemblyNames })
+}
+
+function alignmentsTrack(trackId: string, assemblyNames: string[]) {
+  return alignmentsSchema.create({ trackId, name: trackId, assemblyNames })
 }
 
 function makeSession(tracks: ReturnType<typeof track>[]) {
@@ -47,12 +63,15 @@ const region: Region = {
   end: 200,
 }
 
-function menuItems(session: AbstractSessionModel, openTrackIds: string[] = []) {
+function menuItems(
+  session: AbstractSessionModel,
+  openTracks: AnyConfigurationModel[] = [],
+) {
   return syntenyRegionMenuItems({
     label: 'Launch',
     region,
     session,
-    openTrackIds,
+    openTracks,
     anchorTracks: [],
   })
 }
@@ -64,32 +83,39 @@ function dialogProps(queued: unknown[][]) {
   }
 }
 
-test('no synteny dataset for the assembly means no menu item', () => {
-  const { session } = makeSession([track('t1', ['other', 'other2'])])
-  expect(menuItems(session)).toEqual([])
+test('an open dataset for another assembly pair means no menu item', () => {
+  const other = track('t1', ['other', 'other2'])
+  const { session } = makeSession([other])
+  expect(menuItems(session, [other])).toEqual([])
+})
+
+test('a view with no synteny track open means no menu item', () => {
+  const genes = alignmentsTrack('genes', ['volvox'])
+  const { session } = makeSession([genes])
+  expect(menuItems(session, [genes])).toEqual([])
 })
 
 test('no region means no menu item', () => {
-  const { session } = makeSession([track('t1', ['volvox', 'volvox_ins'])])
+  const t = track('t1', ['volvox', 'volvox_ins'])
+  const { session } = makeSession([t])
   expect(
     syntenyRegionMenuItems({
       label: 'Launch',
       region: undefined,
       session,
-      openTrackIds: [],
+      openTracks: [t],
       anchorTracks: [],
     }),
   ).toEqual([])
 })
 
-// One item however many datasets there are: the choice between them is a field
-// in the dialog, because this discovery is session-wide and has no ceiling.
-test('one flat item queues the dialog with every dataset', () => {
-  const { session, queued } = makeSession([
-    track('t1', ['volvox', 'volvox_ins']),
-    track('t2', ['volvox', 'volvox_del']),
-  ])
-  const items = menuItems(session)
+// One item however many datasets are open: the choice between them is a field
+// in the dialog, where picking one can refetch the panel list it decides.
+test('one flat item queues the dialog with every open dataset', () => {
+  const t1 = track('t1', ['volvox', 'volvox_ins'])
+  const t2 = track('t2', ['volvox', 'volvox_del'])
+  const { session, queued } = makeSession([t1, t2])
+  const items = menuItems(session, [t1, t2])
   expect(items.length).toBe(1)
   const item = items[0]!
   expect('label' in item && item.label).toBe('Launch')
@@ -100,23 +126,34 @@ test('one flat item queues the dialog with every dataset', () => {
   expect(dialogProps(queued).tracks.map(t => t.name)).toEqual(['t1', 't2'])
 })
 
-// A config can declare far more synteny tracks than a session opens, and the
-// dialog opens on the first of this list — so it should be one the user has in
-// front of them rather than whatever the config happened to declare first.
-test('tracks open in the view sort ahead of the rest', () => {
-  const { session, queued } = makeSession([
-    track('closed', ['volvox', 'volvox_ins']),
-    track('open', ['volvox', 'volvox_del']),
-  ])
-  const item = menuItems(session, ['open'])[0]!
+// The dialog opens on the first of this list, and which dataset the panels are
+// cut from decides what the launched view shows. A config can declare far more
+// synteny tracks than a session opens; offering all of them put a dozen names
+// here with the first in CONFIG ORDER preselected, on a menu entry the user had
+// no reason to expect. The offer is the data in front of them instead.
+test('a synteny track the view does not have open is not on offer', () => {
+  const closed = track('closed', ['volvox', 'volvox_ins'])
+  const open = track('open', ['volvox', 'volvox_del'])
+  const { session, queued } = makeSession([closed, open])
+  const item = menuItems(session, [open])[0]!
   if (!('onClick' in item)) {
     throw new Error('expected a flat item')
   }
   item.onClick()
-  expect(dialogProps(queued).tracks.map(t => t.name)).toEqual([
-    'open',
-    'closed',
-  ])
+  expect(dialogProps(queued).tracks.map(t => t.name)).toEqual(['open'])
+})
+
+// Every open track reaches the discovery now, not just the synteny ones
+test('the rest of the view’s tracks are not offered as datasets', () => {
+  const genes = alignmentsTrack('genes', ['volvox'])
+  const synteny = track('synteny', ['volvox', 'volvox_del'])
+  const { session, queued } = makeSession([genes, synteny])
+  const item = menuItems(session, [genes, synteny])[0]!
+  if (!('onClick' in item)) {
+    throw new Error('expected a flat item')
+  }
+  item.onClick()
+  expect(dialogProps(queued).tracks.map(t => t.name)).toEqual(['synteny'])
 })
 
 // A dynamic block's bounds are fractional, and toLocale renders a fractional bp
@@ -183,14 +220,13 @@ describe('widestRegion', () => {
 })
 
 test('the queued dialog gets the rounded region', () => {
-  const { session, queued } = makeSession([
-    track('t1', ['volvox', 'volvox_ins']),
-  ])
+  const t = track('t1', ['volvox', 'volvox_ins'])
+  const { session, queued } = makeSession([t])
   const item = syntenyRegionMenuItems({
     label: 'Launch',
     region: { ...region, start: 100.4, end: 200.6 },
     session,
-    openTrackIds: [],
+    openTracks: [t],
     anchorTracks: [],
   })[0]!
   if (!('onClick' in item)) {
