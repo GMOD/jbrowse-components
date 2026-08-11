@@ -75,8 +75,13 @@ function BottomRightIndicators({
       style={
         cornerEl
           ? {
-              // an in-flow member of the corner's column; it owns the position
+              // an in-flow member of the corner's column, which owns the
+              // position. The z-index is still ours and still means what it
+              // always did — the corner sets none, so this competes in the
+              // overlay layer directly, and a flex item honours `z-index` with
+              // no `position` of its own (Flexbox §5.4).
               order: BOTTOM_RIGHT_CONTROLS_ORDER,
+              zIndex: OVERFLOW_INDICATOR_Z_INDEX,
               marginRight: scrollbarWidth,
               display: 'flex',
               alignItems: 'center',

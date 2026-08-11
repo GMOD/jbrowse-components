@@ -191,16 +191,21 @@ export default function DisplayStatusChromeBase({
 
             `pointer-events` stays `none`, the overlay layer's own value: the
             control row sets `auto` on its own box and the chip never wants it.
-            The z-index is the row's old one and matters only where that one
-            did — a display mounted with no TrackContainer to portal into, where
-            this competes with `VerticalScrollbar` at 10. */}
+
+            Deliberately carries NO `z-index`, so it creates no stacking context
+            and its two members go on competing in the overlay layer exactly as
+            they did when each was its own box there — the chip at 2, under the
+            tree sidebar, the legends and the cluster hints at 100; the row at
+            999, over them. A `z-index` here would have lifted the chip over all
+            of those as a side effect of sharing a parent. Flex items honour
+            `z-index` with no `position` of their own (Flexbox §5.4), so the two
+            can keep their own values without either needing to be positioned. */}
         <div
           ref={setCornerEl}
           style={{
             position: 'absolute',
             bottom: 2,
             right: 2,
-            zIndex: 999,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'flex-end',

@@ -14,6 +14,11 @@ const appear = keyframes`
 
 const useStyles = makeStyles()(theme => ({
   root: {
+    // Kept out of `anchored` below, because it has to hold in both modes and
+    // does: a flex item honours `z-index` with no `position` of its own
+    // (Flexbox §5.4). In the chrome's shared corner this is what keeps the chip
+    // under the tree sidebar and the legends at 100, where it has always been.
+    zIndex: 2,
     pointerEvents: 'none',
     padding: '0 4px',
     borderRadius: 4,
@@ -34,7 +39,6 @@ const useStyles = makeStyles()(theme => ({
     position: 'absolute',
     bottom: 2,
     right: 2,
-    zIndex: 2,
   },
   bar: {
     width: 120,
