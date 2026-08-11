@@ -50,6 +50,10 @@ export interface LinearSyntenyViewInit extends SyntenyViewSharedInit {
   // Render ribbons as bezier curves rather than straight chords. Reads much
   // better at whole-genome scale where straight crossings stack into noise.
   drawCurves?: boolean
+  // Draw the query view's scalebar grid down through the ribbons: a tick at
+  // each round query coordinate, joined to the coordinate the alignment pairs
+  // it with. Off by default.
+  drawLocationMarkers?: boolean
   cigarMode?: CigarMode
   // Per-feature opacity in [0,1]. The default (0.2) is tuned for dense
   // unfiltered hairballs; whole-genome views with minAlignmentLength set

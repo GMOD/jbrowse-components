@@ -110,3 +110,16 @@ export function cumBpInEntry(entry: RegionIndexEntry, coord: number) {
   const clamped = Math.min(Math.max(coord, r.start), r.end)
   return entry.bpBefore + (r.reversed ? r.end - clamped : clamped - r.start)
 }
+
+// The cumBp that genomic coordinate 0 of this region's refName maps to, i.e.
+// `cumBpInEntry` with the clamp removed and extrapolated back to the origin.
+// Deliberately outside the region — usually far outside, and negative for a
+// forward region — because it is a PHASE, not a position: a consumer laying a
+// round-genomic-coordinate grid over cumBp needs only `anchor mod pitch` to
+// know where the grid's ticks fall. Direction is not encoded, and does not need
+// to be: a reversed region walks the same grid backwards, which is the same set
+// of tick positions.
+export function cumBpAtGenomicZero(entry: RegionIndexEntry) {
+  const r = entry.region
+  return entry.bpBefore + (r.reversed ? r.end : -r.start)
+}

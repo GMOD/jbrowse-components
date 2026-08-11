@@ -34,6 +34,9 @@ export function applyInitSettings(
   if (init.drawCurves !== undefined) {
     self.setDrawCurves(init.drawCurves)
   }
+  if (init.drawLocationMarkers !== undefined) {
+    self.setDrawLocationMarkers(init.drawLocationMarkers)
+  }
   if (init.cigarMode !== undefined) {
     self.setCigarMode(init.cigarMode)
   }

@@ -20,6 +20,9 @@ function makeModel() {
     setDrawCurves: (v: boolean) => {
       calls.drawCurves = v
     },
+    setDrawLocationMarkers: (v: boolean) => {
+      calls.drawLocationMarkers = v
+    },
     setCigarMode: (v: string) => {
       calls.cigarMode = v
     },
@@ -71,6 +74,25 @@ describe('applyInitSettings', () => {
     const model = makeModel()
     applyInitSettings(model as unknown as LinearSyntenyViewModel, { views: [] })
     expect('cigarMode' in model.calls).toBe(false)
+  })
+
+  // The view has had the toggle since #5190, but `init` never carried it, so a
+  // session spec, a share link or a config defaultSession asking for markers
+  // was silently ignored — the setting was reachable only by hand, from the
+  // menu, every time.
+  test('applies drawLocationMarkers when set', () => {
+    const model = makeModel()
+    applyInitSettings(model as unknown as LinearSyntenyViewModel, {
+      views: [],
+      drawLocationMarkers: true,
+    })
+    expect(model.calls.drawLocationMarkers).toBe(true)
+  })
+
+  test('leaves drawLocationMarkers untouched when omitted', () => {
+    const model = makeModel()
+    applyInitSettings(model as unknown as LinearSyntenyViewModel, { views: [] })
+    expect('drawLocationMarkers' in model.calls).toBe(false)
   })
 
   test('applies fadeThinAlignmentsMode when set', () => {

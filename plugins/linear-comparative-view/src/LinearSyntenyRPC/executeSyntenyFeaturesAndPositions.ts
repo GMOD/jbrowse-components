@@ -13,6 +13,7 @@ import {
   buildBpRegionIndex,
   clampBlockToRegions,
   createAttributeChannels,
+  cumBpAtGenomicZero,
   cumBpInEntry,
   declaredAttributes,
   dnDsRatio,
@@ -218,6 +219,11 @@ export async function executeSyntenyFeaturesAndPositions({
   const p12Array = new Float64Array(count)
   const p21Array = new Float64Array(count)
   const p22Array = new Float64Array(count)
+  // Where a round genomic coordinate of the query axis lands in cumBp, per
+  // feature, for the location-marker grid. Per feature because a view can show
+  // several regions of the query assembly at once and each sits at its own
+  // offset into cumBp; Float64 for the same reason the corners are.
+  const queryGridAnchorArray = new Float64Array(count)
   const strandsArray = new Int8Array(count)
   // These are chromosome-LOCAL feature/mate coords (not cumulative), so they
   // fit in uint32 as long as no single reference sequence exceeds 2^32 = 4.29
@@ -409,6 +415,7 @@ export async function executeSyntenyFeaturesAndPositions({
     p12Array[validCount] = p12
     p21Array[validCount] = p21
     p22Array[validCount] = p22
+    queryGridAnchorArray[validCount] = cumBpAtGenomicZero(e1)
     strandsArray[validCount] = strand
     startsArray[validCount] = start
     endsArray[validCount] = end
@@ -461,6 +468,7 @@ export async function executeSyntenyFeaturesAndPositions({
   const p12_cumBp = p12Array.subarray(0, validCount)
   const p21_cumBp = p21Array.subarray(0, validCount)
   const p22_cumBp = p22Array.subarray(0, validCount)
+  const queryGridAnchors = queryGridAnchorArray.subarray(0, validCount)
 
   const featureData = {
     strands: strandsArray.subarray(0, validCount),
@@ -491,6 +499,7 @@ export async function executeSyntenyFeaturesAndPositions({
         p12_cumBp,
         p21_cumBp,
         p22_cumBp,
+        queryGridAnchors,
         strands: featureData.strands,
         parsedCigars,
         starts: featureData.starts,

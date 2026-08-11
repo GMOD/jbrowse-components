@@ -20,6 +20,7 @@ function buildIndelGeometry() {
     p12_cumBp: new Float64Array([refSpan]),
     p21_cumBp: new Float64Array([0]),
     p22_cumBp: new Float64Array([querySpan]),
+    queryGridAnchors: new Float64Array([0]),
     strands: new Int8Array([1]),
     parsedCigars: [
       [

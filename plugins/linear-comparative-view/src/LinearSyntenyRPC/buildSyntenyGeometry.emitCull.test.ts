@@ -21,6 +21,7 @@ function markersAt({
     p12_cumBp: new Float64Array([screenX + 800]),
     p21_cumBp: new Float64Array([screenX]),
     p22_cumBp: new Float64Array([screenX + 800]),
+    queryGridAnchors: new Float64Array([0]),
     strands: new Int8Array([1]),
     parsedCigars: [[]],
     starts: new Uint32Array([screenX]),

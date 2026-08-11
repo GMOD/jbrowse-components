@@ -4,6 +4,7 @@ import {
   CIGAR_INDEL_MASK,
   CIGAR_N,
 } from '@jbrowse/cigar-utils'
+import { chooseGridPitch } from '@jbrowse/core/util/chooseGridPitch'
 import {
   syntenyPanBufferPx,
   visitCigarRenderedSegments,
@@ -64,20 +65,34 @@ export type SyntenyInstanceData = SyntenyGeometry & { colors: Uint32Array }
 // interesting" frission this view is meant to preserve.
 export const MIN_CIGAR_PX_WIDTH = 2
 
-// Location-marker ladder. Markers are emitted every MARKER_SPACING_PX of
-// average on-screen travel along a feature, and only for features at least
-// MIN_MARKER_FEATURE_PX wide on average — a tick every 20px across a 25px
-// ribbon says nothing a reader can use.
+// Location markers are the TOP PANEL'S RULER, continued down through the
+// ribbons. A tick is drawn wherever a round genomic coordinate of the query
+// axis falls inside an alignment, joining it to the coordinate the alignment
+// pairs it with on the target axis — so a tick's top end sits on a labelled
+// scalebar gridline and its bottom end says where that position went.
 //
-// BOTH are measured over the WHOLE FEATURE, never over a rendered CIGAR
-// segment. That distinction is the bug this pair of constants exists to
-// prevent: markers used to be emitted per rendered segment with the 30px gate
-// applied per segment, and visitCigarRenderedSegments emits a segment as soon
-// as either axis has advanced ~1px, so essentially every segment failed the
-// gate. The visible effect was that turning CIGAR detail on (the default
-// cigarMode is 'full') silently turned location markers OFF for every feature
-// carrying a CIGAR — only a lone multi-megabase M/D/N op ever cleared 30px.
-const MARKER_SPACING_PX = 20
+// (120, 15) is LinearGenomeView's own scalebar contract (makeTicks), so the
+// grid IS the ruler's rather than merely resembling it, at whatever pitch the
+// current zoom put the ruler on.
+//
+// What this replaced, and why the replacement is not a tuning change: markers
+// used to be spaced by PIXELS along each drawn shape, one every 20px, with a
+// "skip anything under 30px" gate — applied per rendered CIGAR segment. Since
+// visitCigarRenderedSegments emits a segment as soon as either axis has
+// advanced ~1px, essentially every segment failed that gate, so with the
+// default cigarMode ('full') a feature carrying a CIGAR drew NO markers at all
+// unless it happened to contain a lone multi-megabase op. Pixel spacing was
+// also per-shape, so ticks restarted at every block boundary and slid under
+// zoom: regularly spaced within one ribbon and unrelated between two.
+const MARKER_GRID_MIN_MAJOR_PX = 120
+const MARKER_GRID_MIN_MINOR_PX = 15
+
+// A feature narrower than this draws no markers. The grid pitch is >=120px, so
+// this is not about tick density within a block — it is that a tick on a 20px
+// sliver marks a position to +-10px and reads as speckle, and that a
+// whole-genome hairball would otherwise put one on each of a hundred thousand
+// sub-pixel ribbons. Measured over the WHOLE FEATURE, never a rendered CIGAR
+// segment; see above for what that distinction cost.
 const MIN_MARKER_FEATURE_PX = 30
 
 // Colored-indel instance kind for an I/D/N op; undefined for any match op.
@@ -96,6 +111,7 @@ export function buildSyntenyGeometry({
   p12_cumBp,
   p21_cumBp,
   p22_cumBp,
+  queryGridAnchors,
   strands,
   parsedCigars,
   starts,
@@ -113,6 +129,12 @@ export function buildSyntenyGeometry({
   p12_cumBp: Float64Array
   p21_cumBp: Float64Array
   p22_cumBp: Float64Array
+  // Per feature, the query axis's cumBp at genomic coordinate 0 of the
+  // displayed region it was placed in (`cumBpAtGenomicZero`). Only its residue
+  // mod the grid pitch is read: it is what turns "a round coordinate of this
+  // chromosome" into "this cumBp", and it is per feature because a view can
+  // show several regions at once, each with its own offset into cumBp.
+  queryGridAnchors: Float64Array
   strands: Int8Array
   parsedCigars: ArrayLike<number>[]
   starts: Uint32Array
@@ -147,6 +169,15 @@ export function buildSyntenyGeometry({
   // without a hi/lo split). The main thread turns base into the panPx uniform.
   const base0 = viewOff0 * bpPerPx0
   const base1 = viewOff1 * bpPerPx1
+
+  // Marker grid pitch, in query-axis bp. One pitch for the whole build: it is
+  // the query view's ruler, and the ruler does not change per feature.
+  const markerPitchBp = chooseGridPitch(
+    bpPerPx0,
+    MARKER_GRID_MIN_MAJOR_PX,
+    MARKER_GRID_MIN_MINOR_PX,
+  ).majorPitch
+  const markerPitchPx = markerPitchBp * bpPerPxInv0
 
   const alignmentLengths = new Float32Array(featureCount)
   // Per-feature: did we decide to draw CIGAR detail? Pass 1 always emits
@@ -192,20 +223,21 @@ export function buildSyntenyGeometry({
       willDrawCigarArr[i] = 1
       cigarBudget = Math.min(cigar.length, Math.ceil(widthPx0 + widthPx1) + 4)
     }
-    // Gated on the same whole-feature width the ladder emits at, so a
+    // Gated on the same whole-feature width the markers emit at, so a
     // whole-genome view of sub-pixel blocks doesn't reserve unused slots per
     // feature. The arrays are handed out as `subarray` views, so unused capacity
     // is not just allocated but transferred across the RPC boundary intact.
     //
-    // The ladder walks (widthPx0 + widthPx1) / 2 px of travel at one marker per
-    // MARKER_SPACING_PX, so twice that is a bound with room to spare — slack
-    // that matters because a feature's CIGAR spans need not sum to exactly its
-    // corner span, and addInstance drops silently past capacity.
+    // Grid ticks inside a query-axis span of widthPx0 number at most
+    // widthPx0/markerPitchPx + 1, whether the span arrives whole or as the CIGAR
+    // segments that partition it — the +2 is slack for the segments' floating
+    // point not summing to exactly the corner span, and matters because
+    // addInstance drops silently past capacity.
     const wantMarkers =
       drawLocationMarkers && (widthPx0 + widthPx1) / 2 >= MIN_MARKER_FEATURE_PX
     wantMarkersArr[i] = wantMarkers ? 1 : 0
     const markerBudget = wantMarkers
-      ? Math.ceil((widthPx0 + widthPx1) / MARKER_SPACING_PX) + 4
+      ? Math.ceil(widthPx0 / markerPitchPx) + 2
       : 0
     capacity += 1 + cigarBudget + markerBudget
   }
@@ -253,68 +285,66 @@ export function buildSyntenyGeometry({
     idx++
   }
 
-  // One feature's marker ladder, fed one span at a time. A CIGAR-less feature
-  // feeds its single full span; a CIGAR one feeds every rendered segment in
-  // order. Because `travelled` and `nextAt` persist across the calls, the ladder
-  // is one ruler laid along the whole feature rather than a fresh one per span —
-  // which is what lets it survive a CIGAR whose rendered segments are each ~1px
-  // (see MARKER_SPACING_PX).
+  // Emit one feature's grid ticks over one span of it — the whole feature for a
+  // CIGAR-less one, or a single rendered CIGAR segment. Ticks sit at multiples
+  // of the pitch off this feature's grid anchor, so a span is asked only where
+  // the grid falls INSIDE it: the answer does not depend on how the feature was
+  // cut into spans, which is what makes ~1px CIGAR segments and one whole-feature
+  // trapezoid produce the same ticks in the same places.
   //
-  // Feeding the segments rather than the corners is also what makes the markers
-  // TRUE: each tick's two endpoints are the pair the CIGAR actually aligns, so a
-  // deletion shears the ladder exactly where the alignment shears. Interpolating
-  // across the whole feature would draw an evenly-sheared ribbon over a
-  // unevenly-aligned one.
+  // Segments are nonetheless the better thing to feed, and are what pass 2
+  // feeds: a tick found inside one is paired using that segment's own
+  // correspondence, so it lands where the CIGAR actually sends it. The
+  // whole-feature interpolation only has the corners, and smears a deletion
+  // evenly across the ribbon instead of shearing at it.
   //
-  // Off-screen spans must still be fed — they carry travel, and skipping them
-  // would slide every later tick — so the emit cull is per marker, not per span.
-  function createMarkerLadder(featureIdx: number, alignmentLength: number) {
-    let travelled = 0
-    let nextAt = 0
+  // Half-open in the query axis, [lo, hi), so a tick on the boundary two
+  // adjacent segments share is emitted by exactly one of them. A span with no
+  // query travel at all — an insertion, which advances only the target axis —
+  // therefore emits nothing, which is right: it occupies no query coordinate for
+  // a query-coordinate grid to land on.
+  function emitGridMarkers(
+    featureIdx: number,
+    alignmentLength: number,
+    bp1Start: number,
+    bp1End: number,
+    bp2Start: number,
+    bp2End: number,
+  ) {
+    const lo = Math.min(bp1Start, bp1End)
+    const hi = Math.max(bp1Start, bp1End)
+    const anchor = queryGridAnchors[featureIdx]!
+    // Grid steps landing in [lo, hi), as a count rather than a `break` on the
+    // tick position: a non-finite corner would leave a position test never
+    // satisfied and the loop spinning forever inside a worker, where the count
+    // comes out NaN and runs zero times.
+    const firstStep = Math.ceil((lo - anchor) / markerPitchBp)
+    const stepCount = Math.ceil((hi - anchor) / markerPitchBp) - firstStep
 
-    // All four values are cumBp, in the natural pairing: bp1Start aligns to
-    // bp2Start (t=0) and bp1End to bp2End (t=1).
-    return function feedSpan(
-      bp1Start: number,
-      bp1End: number,
-      bp2Start: number,
-      bp2End: number,
-    ) {
-      const width1 = Math.abs(bp1End - bp1Start) * bpPerPxInv0
-      const width2 = Math.abs(bp2End - bp2Start) * bpPerPxInv1
-      const span = (width1 + width2) / 2
-      if (span <= 0) {
-        return
-      }
-      const spanEnd = travelled + span
+    for (let n = 0; n < stepCount; n++) {
+      const markerBp1 = anchor + (firstStep + n) * markerPitchBp
+      const t =
+        bp1End === bp1Start ? 0 : (markerBp1 - bp1Start) / (bp1End - bp1Start)
+      const markerBp2 = bp2Start + (bp2End - bp2Start) * t
 
-      while (nextAt <= spanEnd) {
-        const t = (nextAt - travelled) / span
-        nextAt += MARKER_SPACING_PX
-        const markerBp1 = bp1Start + (bp1End - bp1Start) * t
-        const markerBp2 = bp2Start + (bp2End - bp2Start) * t
-
-        const screenTopX = markerBp1 * bpPerPxInv0 - viewOff0
-        const screenBottomX = markerBp2 * bpPerPxInv1 - viewOff1
-        if (
-          (screenTopX < emitLeft || screenTopX > emitRight) &&
-          (screenBottomX < emitLeft || screenBottomX > emitRight)
-        ) {
-          continue
-        }
-
-        addInstance(
-          markerBp1,
-          markerBp1,
-          markerBp2,
-          markerBp2,
-          KIND_MARKER,
-          featureIdx,
-          alignmentLength,
-        )
+      const screenTopX = markerBp1 * bpPerPxInv0 - viewOff0
+      const screenBottomX = markerBp2 * bpPerPxInv1 - viewOff1
+      if (
+        (screenTopX < emitLeft || screenTopX > emitRight) &&
+        (screenBottomX < emitLeft || screenBottomX > emitRight)
+      ) {
+        continue
       }
 
-      travelled = spanEnd
+      addInstance(
+        markerBp1,
+        markerBp1,
+        markerBp2,
+        markerBp2,
+        KIND_MARKER,
+        featureIdx,
+        alignmentLength,
+      )
     }
   }
 
@@ -376,8 +406,7 @@ export function buildSyntenyGeometry({
     // Only the no-CIGAR features ladder here; pass 2 ladders the rest along
     // their rendered segments, where the alignment is actually known.
     if (!willDrawCigarArr[i] && wantMarkersArr[i]) {
-      const feedMarkerSpan = createMarkerLadder(i, alignmentLength)
-      feedMarkerSpan(x11, x12, x21, x22)
+      emitGridMarkers(i, alignmentLength, x11, x12, x21, x22)
     }
   }
 
@@ -400,9 +429,7 @@ export function buildSyntenyGeometry({
     const rev1 = k1 < k2 ? 1 : -1
     const rev2 = (x21 < x22 ? 1 : -1) * strand
 
-    const feedMarkerSpan = wantMarkersArr[i]
-      ? createMarkerLadder(i, alignmentLength)
-      : undefined
+    const wantMarkers = !!wantMarkersArr[i]
 
     visitCigarRenderedSegments(
       cigar,
@@ -427,8 +454,19 @@ export function buildSyntenyGeometry({
             )
           }
         }
-        // Outside the cull: the ladder has to see every span to keep counting.
-        feedMarkerSpan?.(segBp1Start, segBp1End, segBp2Start, segBp2End)
+        // Outside the cull: a marker is culled by its own two ends, not by the
+        // segment's — on a crossed ribbon a tick can leave the frame where its
+        // segment stays, and vice versa.
+        if (wantMarkers) {
+          emitGridMarkers(
+            i,
+            alignmentLength,
+            segBp1Start,
+            segBp1End,
+            segBp2Start,
+            segBp2End,
+          )
+        }
       },
     )
   }

@@ -14,6 +14,7 @@ function build(drawCIGARMatchesOnly: boolean) {
     p12_cumBp: new Float64Array([150]),
     p21_cumBp: new Float64Array([0]),
     p22_cumBp: new Float64Array([100]),
+    queryGridAnchors: new Float64Array([0]),
     strands: new Int8Array([1]),
     parsedCigars: [
       [packed(50, CIGAR_M), packed(50, CIGAR_D), packed(50, CIGAR_M)],

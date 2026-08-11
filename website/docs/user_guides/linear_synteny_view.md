@@ -157,7 +157,8 @@ The view's hamburger menu controls how the ribbons are drawn:
 - CIGAR display mode - how per-base insertions and deletions inside each
   alignment are shown: **Colored indels** paints them, **Transparent indels**
   leaves them as see-through gaps in the ribbon, and **None** draws blocks only
-- Show location markers - vertical guides marking each alignment's endpoints
+- Show location markers - continue the top panel's scalebar grid down through
+  the ribbons, so each tick shows where a round coordinate up there lands below
 - Show all regions - fit both whole assemblies into view
 - Square view - equalize the horizontal scale of the two panels
 - Add assembly row - compare three or more assemblies stacked vertically
