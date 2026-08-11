@@ -179,6 +179,55 @@ describe('support widens the target the way it widens the ink', () => {
   })
 })
 
+// The crowding case: arcs a couple of px apart, one of them the junction the
+// picture is ranking as strong. Ranking on centre-line distance gave those
+// hovers to whichever hairline the cursor happened to be nearest, so a band
+// whose whole point was "this junction has 32 reads behind it" answered
+// "supported by 1 read".
+//
+// Flat (read-cloud) lines, because inside the bar's own span the distance to one
+// IS the difference in Y — every number below is readable without solving a
+// conic. The heavy arc is index 0 in each fixture, so nothing here can pass by
+// the last-drawn-wins tie-break instead of by the rule under test.
+describe('when arcs crowd together, the visible one wins', () => {
+  // localY (drawn-side-positive, measured off the anchor at the band bottom) is
+  // `arcsH - canvasY`, and yBp maps 1:1 to px in BAND — so an arc at yBp 40 is
+  // ink at canvasY 60. Half-widths: support 32 draws 3.75px (1.875 each side),
+  // support 1 draws the configured 1px (0.5).
+  const y = (localY: number) => BAND.arcsH - localY
+  const flat = (yBp: number, support: number) => ({
+    x1: 300,
+    x2: 500,
+    yBp,
+    support,
+    shape: ARC_SHAPE_FLAT,
+  })
+
+  test('on both arcs at once, the heavier one answers', () => {
+    const data = arcsData([flat(40, 32), flat(42, 1)])
+    // 1.6px off the thick line's centre — inside its 1.875px half-width — and
+    // 0.4px off the hairline's. Both are ink under the cursor; the old rule took
+    // the nearer centre and reported the singleton.
+    expect(hitTestArcs(400, y(41.6), data, BAND)?.support).toBe(32)
+  })
+
+  test('a singleton the cursor is on beats a heavy neighbour it is not on', () => {
+    const data = arcsData([flat(38, 32), flat(42, 1)])
+    // Dead on the hairline, 4px off the thick line — past its ink, inside its
+    // slop. Support is a tie-break between arcs under the cursor, not a
+    // licence to capture hovers on somebody else's stroke.
+    expect(hitTestArcs(400, y(42), data, BAND)?.support).toBe(1)
+  })
+
+  test('off every stroke, nearest decides — measured from the ink, not the centre', () => {
+    const data = arcsData([flat(40, 32), flat(44, 1)])
+    // 2.5px off the thick line and 1.5px off the hairline, on neither: 0.625px
+    // outside the thick ink against 1.0px outside the thin. The thick arc is
+    // the nearer MARK even though its centre is further away.
+    expect(hitTestArcs(400, y(42.5), data, BAND)?.support).toBe(32)
+  })
+})
+
 test('the nearest arc wins when two overlap', () => {
   // Two domes sharing a left foot, different apexes. A point on the lower one
   // must not be captured by the higher one passing nearby.

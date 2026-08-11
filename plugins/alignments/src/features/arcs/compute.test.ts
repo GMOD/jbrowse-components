@@ -1867,4 +1867,22 @@ describe('identical arcs coalesce and carry their support', () => {
     expect(region.numArcs).toBe(2)
     expect(Array.from(region.arcSupport)).toEqual([1, 2])
   })
+
+  // Array order is paint order and the strokes are opaque, so whichever arc is
+  // last keeps the pixels the two share. Reads arrive in no particular order
+  // with respect to support, so without the sort a singleton fetched after a
+  // heavy junction draws over it — and `hitTestArcs` resolves the overlap the
+  // same way, which is how a hover on the strongest junction in the band
+  // reported "1 read".
+  test('the heavier junction packs last, whatever order the reads arrived in', () => {
+    const { arcs, lines } = computeArcsFromPileupData(
+      // The 3-read junction is seen FIRST, and the singleton last.
+      new Map([[0, pairedReadsAt([1000, 1000, 1000, 1001], 2000)]]),
+      regions,
+      settings,
+    )
+    expect(Array.from(arcsToRegionResult(arcs, lines).arcSupport)).toEqual([
+      1, 3,
+    ])
+  })
 })

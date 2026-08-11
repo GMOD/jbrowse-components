@@ -961,6 +961,18 @@ function resolveArcs(
     arcs.push(computed)
   }
 
+  // ASCENDING SUPPORT, because array order is paint order and the strokes are
+  // opaque: the last arc drawn over a shared pixel is the one that keeps it.
+  // First-seen order is the reads' order, which is arbitrary with respect to
+  // support, so a singleton fetched late punched a gap through every heavier arc
+  // it crossed — and `hitTestArcs`' last-drawn-wins tie-break then handed those
+  // pixels to it too. Heaviest-last is the ranking `arcLineWidth` exists to
+  // express, and it is what lets the hit test resolve an overlap toward the
+  // strongest junction and still be describing the arc on top.
+  //
+  // Stable, so equal-support arcs keep the reads' order they arrived in.
+  arcs.sort((a, b) => a.support - b.support)
+
   return { arcs, lines }
 }
 

@@ -21,6 +21,46 @@ import type { ArcsUploadData } from './types.ts'
 // ink, rather than every arc getting one fixed-size hitbox.
 export const ARC_HIT_SLOP_PX = 3
 
+// Which of two candidates the cursor is really on. `outside` is the distance
+// beyond the arc's OWN stroke — `dist - arcLineWidth(support)/2` — so <= 0 means
+// the cursor is on ink this arc actually painted, and the hit gate is
+// `outside <= ARC_HIT_SLOP_PX`.
+//
+// Ranking on the raw centre-line distance is what a hit test usually does, and
+// here it was wrong. Stroke width IS support (`arcLineWidth`), so a 10-read arc
+// paints roughly three times the ink of a singleton; hovering the fat arc's ink
+// with a hairline running a pixel nearer its centre reported the hairline —
+// "supported by 1 read" over the junction the picture had just drawn as the
+// strongest thing in the band. The per-arc tolerance already grew the target
+// with support, but ranking on `dist` handed that straight back: support only
+// ever decided when the rival was out of range entirely, which is the one case
+// where there was nothing to decide.
+//
+// So the rule is in two tiers. An arc the cursor is ON beats one reached only
+// through the slop; among arcs it is on, the heaviest wins — which is also the
+// one painted on top, since `resolveArcs` orders the feed by support. The hit
+// test and the painter therefore name the same arc as the visible one. Only
+// when the cursor is on no stroke at all does nearest decide, and `outside`
+// already discounts each arc's own width there.
+function isBetterArcHit(
+  outside: number,
+  support: number,
+  bestOutside: number,
+  bestSupport: number,
+) {
+  const onInk = outside <= 0
+  if (onInk !== bestOutside <= 0) {
+    return onInk
+  }
+  // `>=` on support keeps the old tie rule underneath both tiers: candidates
+  // that rank equal resolve to the last drawn, which is the one painted over
+  // the other. Scanning ascending, that is the later index.
+  return onInk
+    ? support >= bestSupport
+    : outside < bestOutside ||
+        (outside === bestOutside && support >= bestSupport)
+}
+
 export interface ArcHitResult {
   // Index into the ArcsUploadData parallel arrays, so a caller can reach any
   // channel this result does not name.
@@ -84,15 +124,16 @@ export function hitTestArcs(
   const localY = (canvasY - anchorY) * (pairedArcsDown ? 1 : -1)
 
   let best: ArcHitResult | undefined
-  let bestDist = Number.POSITIVE_INFINITY
+  let bestOutside = Number.POSITIVE_INFINITY
+  let bestSupport = 0
   for (let i = 0; i < data.numArcs; i++) {
     const support = data.arcSupport[i]!
-    const tol = arcLineWidth(support, lineWidth) / 2 + ARC_HIT_SLOP_PX
+    const halfWidth = arcLineWidth(support, lineWidth) / 2
     // Nothing is drawn on the far side of the anchor line, and the stroke does
     // not cross it either: at the feet the tangent is vertical, so the stroke
     // there runs horizontally, out to the sides rather than down. Without this
     // the mirrored half of the conic answers hovers over blank band.
-    if (localY < -tol) {
+    if (localY < -(halfWidth + ARC_HIT_SLOP_PX)) {
       continue
     }
     const sx1 = bpToScreenX(data.arcX1[i]!)
@@ -101,20 +142,25 @@ export function hitTestArcs(
     const dist = isFlatArcShape(data.arcShapeTypes[i]!)
       ? flatDistance(canvasX, localY, sx1, sx2, arcH)
       : curveDistance(canvasX, localY, sx1, sx2, arcH, screenWidthPx)
-    // `<=` so a later arc wins a tie, which is "last drawn is the one under the
-    // cursor" — the same rule hitTestFeature and hitTestChain settle ties with,
-    // and here the arcs are painted in this array's order.
-    if (dist <= tol && dist <= bestDist) {
-      bestDist = dist
-      best = {
-        index: i,
-        x1: data.arcX1[i]!,
-        x2: data.arcX2[i]!,
-        support,
-        colorType: data.arcColorTypes[i]!,
-        shapeType: data.arcShapeTypes[i]!,
-        yBp: data.arcYBp[i]!,
-      }
+    // How far past this arc's own ink the cursor is — the quantity
+    // `isBetterArcHit` both gates and ranks on.
+    const outside = dist - halfWidth
+    if (outside > ARC_HIT_SLOP_PX) {
+      continue
+    }
+    if (best && !isBetterArcHit(outside, support, bestOutside, bestSupport)) {
+      continue
+    }
+    bestOutside = outside
+    bestSupport = support
+    best = {
+      index: i,
+      x1: data.arcX1[i]!,
+      x2: data.arcX2[i]!,
+      support,
+      colorType: data.arcColorTypes[i]!,
+      shapeType: data.arcShapeTypes[i]!,
+      yBp: data.arcYBp[i]!,
     }
   }
   return best
