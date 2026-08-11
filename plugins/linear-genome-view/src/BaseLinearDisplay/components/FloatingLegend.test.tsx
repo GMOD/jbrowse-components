@@ -75,4 +75,32 @@ describe('FloatingLegend', () => {
     expect(getByText('r² to index')).toBeTruthy()
     expect(getByText('item0')).toBeTruthy()
   })
+
+  // Canvas, alignments, variants and multi-wiggle displays render this
+  // component directly, so it sits behind NEITHER bring-your-own seam: an
+  // embedder who mounts `DisplayUIProvider` and expects no Material UI still
+  // gets whatever this file renders. It used to be two `IconButton`s and a
+  // `Link`.
+  //
+  // Pinned here for the same reason `BaseTooltip.test.tsx` is: the census that
+  // would otherwise catch it (`products/jbrowse-build-your-own`'s `pnpm smoke`)
+  // can only count a legend that some page actually raises, and no page there
+  // turns on a colorBy that raises one. A browser check that never runs is not
+  // a check.
+  it('renders no Material UI, in every state that has a control', () => {
+    const { container } = render(
+      <FloatingLegend
+        // all three controls at once: the box close, a section close, and the
+        // overflow toggle
+        sections={[
+          { id: 'genotypes', title: 'Genotypes', items: items(32) },
+          { id: 'group', title: 'Population', items: items(2) },
+        ]}
+        maxItems={12}
+        onDismiss={jest.fn()}
+        onDismissSection={jest.fn()}
+      />,
+    )
+    expect(container.querySelectorAll('[class*="Mui"]')).toHaveLength(0)
+  })
 })

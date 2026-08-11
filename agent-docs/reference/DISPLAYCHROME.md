@@ -788,6 +788,26 @@ reaching for a fourth context — a component that only needs colors doesn't nee
 a seam. `BaseTooltip.test.tsx` pins the plain rendering, because the browser
 census can only see a tooltip that a headless hover happened to raise.
 
+**`FloatingLegend` was the same shape and was found the same way, in 2026-08.**
+Canvas's `FeatureComponent`, alignments' `PileupComponent`, variants and
+multi-wiggle all render it directly — behind neither provider, like the tooltip
+— and it drew two MUI `IconButton`s (with `CloseIcon`) and a
+`Link component="button"`. Its `makeStyles` was already the theme-free one, so
+the *styling* half had been fixed and the components had not, and the BYO
+census scored it zero for a third reason: it only counts what is on screen, and
+a legend appears only once something sets a `colorBy` that produces one, which
+no page there does. Every one of these has now been a component nobody
+remembered was outside both seams; when adding one, the question is not "does
+it look like chrome" but "does a stock display import it directly".
+
+Same resolution: plain `<button>`s styled from the existing theme-free
+`makeStyles`, `×` for the glyph — which is what `SvgColorLegend` already draws
+for this control, so the exported legend and the on-screen one now agree — and
+no new seam. `FloatingLegend.test.tsx` pins it with the census itself
+(`[class*="Mui"]` must be empty with all three controls rendered), for the
+reason `BaseTooltip` is pinned in jest: a browser check that never runs is not
+a check. Verified as a regression test — 7 Material elements before, 0 after.
+
 **Reach vs weight.** Both providers are *reach*: they redirect what stock
 displays render, but `DisplayChrome`/`TrackControl` still reference MUI, so it
 stays in the bundle. What the *host* pays either way — and the pins that were

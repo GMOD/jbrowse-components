@@ -2,9 +2,6 @@ import { useState } from 'react'
 
 import { nonEmptyLegendSections } from '@jbrowse/core/ui'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
-import CloseIcon from '@mui/icons-material/Close'
-import IconButton from '@mui/material/IconButton'
-import Link from '@mui/material/Link'
 import { observer } from 'mobx-react'
 
 import { TrackOverlayPortal } from '../../LinearGenomeView/TrackOverlayPortal.tsx'
@@ -35,10 +32,34 @@ const useStyles = makeStyles()(theme => ({
     // rendered inline, where events already pass through)
     pointerEvents: 'auto',
   },
+  // A plain <button>, not MUI's IconButton, and the glyph is `×` rather than
+  // the Material Close icon.
+  //
+  // This component is rendered by canvas, alignments, variants and multi-wiggle
+  // displays *directly*, behind neither bring-your-own seam, so a Material
+  // widget here reaches an embedder who has opted out of both — and the
+  // build-your-own site's zero-MUI census, which no page currently trips only
+  // because no page turns on a colorBy that raises a legend. Same call
+  // `BaseTooltip` made in 2026-08: what it needed was colors, and colors have a
+  // toolkit-free home already. See DISPLAYCHROME.md, "a third seam was
+  // considered for the tooltip and rejected".
+  //
+  // `×` is what `SvgColorLegend` already draws for this control, so the
+  // exported legend and the on-screen one now agree.
   closeButton: {
     position: 'absolute',
     top: 0,
     right: 0,
+    font: 'inherit',
+    lineHeight: 1,
+    padding: '1px 3px',
+    border: 0,
+    background: 'none',
+    color: theme.palette.text.secondary,
+    cursor: 'pointer',
+    '&:hover': {
+      color: theme.palette.text.primary,
+    },
   },
   withClose: {
     paddingRight: 20,
@@ -65,8 +86,17 @@ const useStyles = makeStyles()(theme => ({
     textOverflow: 'ellipsis',
   },
   sectionClose: {
+    font: 'inherit',
+    lineHeight: 1,
     padding: 0,
     marginLeft: 2,
+    border: 0,
+    background: 'none',
+    color: theme.palette.text.secondary,
+    cursor: 'pointer',
+    '&:hover': {
+      color: theme.palette.text.primary,
+    },
   },
   item: {
     display: 'flex',
@@ -87,11 +117,23 @@ const useStyles = makeStyles()(theme => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
+  // was `<Link component="button" underline="hover">`, which is the same
+  // element with Material's typography on it — see `closeButton` above for why
+  // that mattered
   toggle: {
-    cursor: 'pointer',
-    marginTop: 2,
-    display: 'block',
+    font: 'inherit',
     fontSize: 10,
+    display: 'block',
+    marginTop: 2,
+    padding: 0,
+    border: 0,
+    background: 'none',
+    textAlign: 'left',
+    color: theme.palette.primary.main,
+    cursor: 'pointer',
+    '&:hover': {
+      textDecoration: 'underline',
+    },
   },
 }))
 
@@ -129,16 +171,15 @@ const LegendItemList = observer(function LegendItemList({
         </div>
       ))}
       {collapsible ? (
-        <Link
-          component="button"
-          underline="hover"
+        <button
+          type="button"
           className={classes.toggle}
           onClick={() => {
             setExpanded(!expanded)
           }}
         >
           {expanded ? 'Show less' : `Show ${hiddenCount} more…`}
-        </Link>
+        </button>
       ) : null}
     </>
   )
@@ -198,16 +239,16 @@ const FloatingLegend = observer(function FloatingLegend({
         data-gesture-owner="true"
       >
         {onDismiss ? (
-          <IconButton
+          <button
+            type="button"
             className={classes.closeButton}
-            size="small"
             title="Hide legend"
             onClick={() => {
               onDismiss()
             }}
           >
-            <CloseIcon fontSize="inherit" />
-          </IconButton>
+            ×
+          </button>
         ) : null}
         {title ? <div className={classes.topTitle}>{title}</div> : null}
         {nonEmpty.map(section => (
@@ -216,16 +257,16 @@ const FloatingLegend = observer(function FloatingLegend({
               <div className={classes.sectionHeader}>
                 <span className={classes.sectionTitle}>{section.title}</span>
                 {onDismissSection ? (
-                  <IconButton
+                  <button
+                    type="button"
                     className={classes.sectionClose}
-                    size="small"
                     title={`Hide ${section.title}`}
                     onClick={() => {
                       onDismissSection(section.id)
                     }}
                   >
-                    <CloseIcon fontSize="inherit" />
-                  </IconButton>
+                    ×
+                  </button>
                 ) : null}
               </div>
             ) : null}
