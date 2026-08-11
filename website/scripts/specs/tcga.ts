@@ -414,87 +414,17 @@ const CLINVAR_TRACK = {
   height: 40,
 }
 
-// Four filled rows, at a quarter less height than they used to have. The round
-// before this one read the review ("the multiwiggle just is not necessarily
-// clear what is going on and it's hard to tell the pattern") as a complaint
-// about the four separate 0-100 panels, and overlaid the four onto one axis as
-// step lines. It was rejected on sight ("the multiline does not look good"), and
-// it deserved to be: over one interval per gene each source is a single flat
-// level, so an overlay is four horizontal strokes in an otherwise empty panel --
-// technically one ruler, visually a wireframe, and nothing about it looks like
-// the amount of something. A filled bar does.
-//
-// So the layout was never the half that was broken. What was is below: every row
-// came out the one default blue, which is what made four bars of quite different
-// heights read as four similar stripes and sent the previous rounds tuning the
-// height (200, then 400) instead. 260 is 65 a row, where the shortest bar is
-// still a bar and the tallest is four times it.
-const MUTATION_RECURRENCE_HEIGHT = 260
-
-// The four rows painted the same colors the matrix under them paints its bands,
-// so a bar and the band it measures are the SAME color and the reader never has
-// to hold "third row from the top" in their head to cross between the two
-// readings -- which is the whole point of putting them in one frame. The bare
-// track had every row in the one default blue. In a multi-row plot type a
-// source's `color` paints its positive bars (`rowColorMode` in sourcesLogic.ts),
-// which is exactly the channel wanted here.
-//
-// These are not free-chosen colors, they are the matrix's own, read off the
-// rendered legend. `colorBy: 'subtype'` palettizes through applyColorPalette,
-// which hands PALETTE (tableau10 first) out in DESCENDING order of group size,
-// and the four subtypes rank HR+/HER2- > HER2+ > triple-negative > unknown --
-// hence tableau10[0..3] in that order. Nothing enforces the match: if that
-// palette or the group sizes change, these stop agreeing with the bands and
-// have to be re-read off the legend.
-const SUBTYPE_LAYOUT = [
-  { name: 'HR+/HER2-', color: '#4e79a7' },
-  { name: 'HER2+', color: '#f28e2c' },
-  { name: 'triple-negative', color: '#e15759' },
-  { name: 'unknown', color: '#76b7b2' },
-]
-
-// The same tally the matrix draws as band darkness, on an axis: one row per
-// receptor subtype, one interval per gene, in percent of that subtype's tumors.
-// scripts/mutation_recurrence.py --groups writes a column per group, and
-// BedGraphTabixAdapter reads every column past `end` as its own signal, so the
-// four sources come out of one 126KB file with no subadapter list -- the same
-// shape the copy-number recurrence uses. Their names are that file's header
-// columns verbatim, which is what SUBTYPE_LAYOUT keys off.
-//
-// 0-100 rather than autoscaled, for the reason the copy-number rows are pinned:
-// autoscale fits the plot to its own maximum, and a rate read against a ruler
-// that moves is the one thing this track exists to disprove.
-const TCGA_BRCA_MUTATION_RECURRENCE_TRACK = {
-  type: 'MultiQuantitativeTrack',
-  trackId: 'tcga_brca_mutation_recurrence_by_subtype',
-  name: 'TCGA-BRCA mutation recurrence by receptor subtype',
-  assemblyNames: ['hg38'],
-  adapter: {
-    type: 'BedGraphTabixAdapter',
-    bedGraphGzLocation: {
-      uri: 'https://jbrowse.org/demos/tcga/tcga_brca_mutation_recurrence_by_subtype.bedGraph.gz',
-      locationType: 'UriLocation',
-    },
-    index: {
-      indexType: 'TBI',
-      location: {
-        uri: 'https://jbrowse.org/demos/tcga/tcga_brca_mutation_recurrence_by_subtype.bedGraph.gz.tbi',
-        locationType: 'UriLocation',
-      },
-    },
-  },
-  displays: [
-    {
-      type: 'MultiLinearWiggleDisplay',
-      height: MUTATION_RECURRENCE_HEIGHT,
-      minScore: 0,
-      maxScore: 100,
-      // the default multirowxy, left implicit as it is on every other recurrence
-      // track on both TCGA pages
-      showRowSeparators: true,
-    },
-  ],
-}
+// The per-gene mutation-rate track that used to be drawn over the TP53 matrix
+// was DELETED here (reviewer, after two rebuilds: "please just delete this
+// figure or do something better. it is just total nonsense as is"). Worth one
+// note so it is not re-proposed: the file is one interval per GENE, so over a
+// single gene every subtype is one flat level and the track's x axis carries
+// nothing at all. Four stacked panels made that four rulers, an overlay made it
+// a wireframe, and filled colored rows made it four rectangles -- each version
+// was a bar chart of four numbers wearing a genome browser. The tutorial still
+// builds the track and shows the bedGraph the numbers come from; what it no
+// longer does is photograph it. Anything that DOES belong in a picture here
+// would need a window where the track varies, i.e. many genes, not one.
 
 function mutationFigure({
   loc,
@@ -503,7 +433,6 @@ function mutationFigure({
   height = 1010,
   lineZoneHeight = 20,
   clinvar = false,
-  recurrence = false,
 }: {
   loc: string
   groupBy?: string
@@ -511,12 +440,10 @@ function mutationFigure({
   height?: number
   lineZoneHeight?: number
   clinvar?: boolean
-  recurrence?: boolean
 }) {
   return kgUrl({
     sessionTracks: [
       mutationTrack({ groupBy, colorBy, height, lineZoneHeight }),
-      ...(recurrence ? [TCGA_BRCA_MUTATION_RECURRENCE_TRACK] : []),
     ],
     views: [
       {
@@ -527,21 +454,6 @@ function mutationFigure({
         tracks: [
           MANE_TRACK,
           ...(clinvar ? [CLINVAR_TRACK] : []),
-          // above the matrix, so a bar and the band it measures are adjacent
-          ...(recurrence
-            ? [
-                {
-                  trackId: 'tcga_brca_mutation_recurrence_by_subtype',
-                  type: 'MultiLinearWiggleDisplay',
-                  height: MUTATION_RECURRENCE_HEIGHT,
-                  // a model prop, not a config slot: `layout` is where a
-                  // per-source color lives (reconcileLayout merges it onto the
-                  // adapter's source of the same name), so it rides the display
-                  // snapshot rather than the track config above
-                  layout: SUBTYPE_LAYOUT,
-                },
-              ]
-            : []),
           {
             trackId: 'tcga_brca_mutations',
             type: 'LinearMultiSampleVariantMatrixDisplay',
@@ -988,51 +900,6 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     viewportWidth: 1500,
     viewportHeight:
       MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT + MATRIX_CHROME_HEIGHT,
-    settleMs: 10000,
-  },
-
-  // The same TP53 window as the figure above, with the per-gene recurrence rows
-  // over the matrix: the section's whole claim is that a rate has to be read off
-  // an axis, so the two readings of one number sit in one frame.
-  //
-  // Why the bands cannot carry it, measured off the hosted VCF: the 143
-  // triple-negative tumors carry 118 marks in this window and the 540
-  // HR+/HER2- tumors carry 108, so a rate ratio of 4x (80.4% against 19.4%)
-  // draws as near-equal ink. The bars above are the same two numbers.
-  //
-  // The recurrence track is one interval per gene, so at a gene-scale window it
-  // is one flat bar per row rather than a profile. That is the point -- the
-  // reader is comparing four heights, not reading a shape -- and it is why this
-  // is a gene-scale figure and not the genome-wide sweep the copy-number
-  // recurrence gets.
-  //
-  // Introns collapsed for the same reason as the two figures above, and the
-  // recurrence interval spans the gene, so it survives the reshape as one bar
-  // per collapsed exon block rather than being clipped to one of them.
-  {
-    mode: 'url',
-    name: 'tcga/mutations_tp53_recurrence',
-    url: mutationFigure({
-      loc: '17:7,668,000-7,688,000',
-      groupBy: 'subtype',
-      colorBy: 'subtype',
-      recurrence: true,
-      lineZoneHeight: LINE_ZONE_HEIGHT,
-      height: MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT,
-    }),
-    readySelector: MATRIX_DONE,
-    readyTimeout: 180000,
-    actions: collapseIntrons('TP53'),
-    hideSelectors: ['.MuiSnackbar-root'],
-    viewportWidth: 1500,
-    // the recurrence track's own height on top of what the matrix figures take,
-    // plus its track label row (the run reported 38px still below the fold)
-    viewportHeight:
-      MATRIX_ROWS_HEIGHT +
-      LINE_ZONE_HEIGHT +
-      MATRIX_CHROME_HEIGHT +
-      MUTATION_RECURRENCE_HEIGHT +
-      40,
     settleMs: 10000,
   },
 ]

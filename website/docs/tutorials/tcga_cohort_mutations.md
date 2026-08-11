@@ -289,20 +289,12 @@ one row per group.
 [`minScore`](/docs/config/multilinearwiggledisplay/#slot-minscore)/[`maxScore`](/docs/config/multilinearwiggledisplay/#slot-maxscore)
 pin every row to one axis for the reason the copy-number recurrence rows are
 pinned: left to autoscale each row fits its own maximum and the groups look
-alike, which is the one thing this track exists to disprove.
+alike, which is the one thing this track exists to disprove. Open it above the
+matrix and each band has its own rate over it.
 
-Put it over the matrix and the same number is in the frame twice:
-
-<Figure caption="The TP53 window from the figure above, with the per-gene mutation rate for each receptor subtype over the matrix it summarizes. One interval per gene, so at this zoom each row is a single bar, and every row is pinned to the same axis. Each bar carries the color of the band it measures: the bar heights separate the four groups, the bands below them do not." src="/img/tcga/mutations_tp53_recurrence.png" />
-
-The bar colors are the matrix's own, set by hand from **Edit
-colors/arrangement...** in the recurrence track's menu. Left to themselves the
-two tracks palettize independently, and a reader then has to cross between them
-by counting rows; matched, a bar and the band it measures are the same color.
-
-The two genes above are each other's control. TP53 climbs from the HR+/HER2-
-column to the triple-negative one and PIK3CA falls across the same four columns,
-in the same track, from the same pipeline, so a bar that tracked band size
+The two rows of that bedGraph are each other's control. TP53 climbs from the
+HR+/HER2- column to the triple-negative one and PIK3CA falls across the same
+four columns, from one run of one script, so a number that tracked band size
 rather than rate could not produce both. Whichever way the reader expects a
 column to go, one of the two genes goes the other way.
 
@@ -310,7 +302,7 @@ What the track counts is set by
 [`--impact`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/mutation_recurrence.py),
 which defaults to the HIGH and MODERATE tiers, the ones the matrix's own
 consequence-impact coloring draws in a color rather than in grey. So a gene's
-bar and the cells beside it agree about what counts as a hit.
+rate and the cells beside it agree about what counts as a hit.
 
 Read it as a rate and not as a result. There is no background model and no
 significance test, and gene length enters the count directly: _TTN_ is 100 kb of
