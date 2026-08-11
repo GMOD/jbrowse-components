@@ -95,6 +95,64 @@ test('a two-mark row draws both, and every label keeps one column', () => {
   expect(getByText('Long insert').getAttribute('x')).toBe('28')
 })
 
+// A scheme whose fill is a ramp (alignments' insert-size gradient) keys the ramp
+// rather than its endpoint, which only the most extreme features paint.
+test('a ramp swatch fills from its own defs, not a flat color', () => {
+  const { container } = renderSvg(
+    <SvgColorLegend
+      canvasWidth={500}
+      entries={[
+        {
+          key: 'a',
+          label: 'Long insert',
+          color: 'red',
+          swatches: [{ color: 'red', gradient: ['grey', 'red'] }],
+        },
+      ]}
+    />,
+  )
+  const stops = container.querySelectorAll('linearGradient stop')
+  expect([...stops].map(s => s.getAttribute('offset'))).toEqual(['0%', '100%'])
+  // the swatch points at the gradient it just defined, rather than at `color`
+  const id = container.querySelector('linearGradient')!.getAttribute('id')
+  const swatch = [...container.querySelectorAll('rect')].find(
+    r => r.getAttribute('fill') !== 'rgba(255,255,255,0.95)',
+  )
+  expect(swatch!.getAttribute('fill')).toBe(`url(#${id})`)
+})
+
+// The id has to survive being pointed at by url(#...), and two DIFFERENT ramps
+// must not collide onto one — the second would silently paint the first's colors.
+test('ramp ids are url-safe and distinct per ramp', () => {
+  const { container } = renderSvg(
+    <SvgColorLegend
+      canvasWidth={500}
+      entries={[
+        {
+          key: 'a',
+          label: 'Long',
+          color: 'a',
+          swatches: [{ color: 'a', gradient: ['rgb(1,2,3)', 'rgb(4,5,6)'] }],
+        },
+        {
+          key: 'b',
+          label: 'Short',
+          color: 'b',
+          swatches: [{ color: 'b', gradient: ['rgb(1,2,3)', 'rgb(7,8,9)'] }],
+        },
+      ]}
+    />,
+  )
+  const ids = [...container.querySelectorAll('linearGradient')].map(g =>
+    g.getAttribute('id'),
+  )
+  expect(new Set(ids).size).toBe(2)
+  // no whitespace, parens or commas, which an unquoted url() cannot carry
+  for (const id of ids) {
+    expect(id).toMatch(/^[\w.:~-]+$/)
+  }
+})
+
 test('children render inside the positioned box', () => {
   const { getByText } = renderSvg(
     <SvgColorLegend canvasWidth={500} entries={[]}>

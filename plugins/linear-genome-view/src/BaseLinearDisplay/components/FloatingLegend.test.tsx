@@ -66,6 +66,29 @@ describe('FloatingLegend', () => {
     expect(container.querySelectorAll('svg')).toHaveLength(4)
   })
 
+  // A ramp-filled row (alignments' insert-size gradient, where each read lerps
+  // toward the endpoint by severity) has to reach the on-screen legend, not just
+  // the SVG export — the two describing the same colors differently is the thing
+  // the shared glyph exists to prevent.
+  it('fills a ramp row from a gradient, leaving flat rows flat', () => {
+    const { container } = render(
+      <FloatingLegend
+        items={[
+          { color: 'rgb(128,128,128)', label: 'Normal' },
+          {
+            color: 'rgb(255,0,0)',
+            gradient: ['rgb(128,128,128)', 'rgb(255,0,0)'],
+            label: 'Long insert',
+          },
+        ]}
+      />,
+    )
+    expect(container.querySelectorAll('linearGradient')).toHaveLength(1)
+    expect(
+      [...container.querySelectorAll('rect')].map(r => r.getAttribute('fill')),
+    ).toEqual(['rgb(128,128,128)', expect.stringMatching(/^url\(#/)])
+  })
+
   it('shows section titles and per-section close when multi-section', () => {
     const onDismissSection = jest.fn()
     const { getByText, getByTitle } = render(
