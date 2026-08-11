@@ -286,6 +286,22 @@ repeated A/B put the real difference at **zero**.
   A first made it look 2x slower than B when the real gap was 8%.
 - `ab-compare.ts` below does the interleaving for built bundles.
 
+**Contention can also *compress* a ratio, not only add noise to it.** Worth
+knowing because it makes a contended measurement feel safe: the number is
+merely conservative rather than wrong, so it survives review and then
+undersells the change. The GTF attribute scanner measured **1.65-1.78x** at load
+28-36 and **1.71-2.12x** on the same corpus and harness at load ~4, with the
+per-round spread tightening from 1.29-2.61x to 1.55-1.87x. Both arms slow down
+under load, but the arm that allocates more is already GC-bound, so the extra
+contention lands disproportionately on the faster one.
+
+The safe reading: a ratio measured under load is a **floor**, not an estimate.
+Take medians of *paired* rounds — each arm run back to back, ratio computed per
+round — rather than a ratio of medians, which lets drift between two long runs
+walk straight into the answer. Two consecutive ratio-of-medians runs of that
+same GTF case disagreed 1.49x vs 2.46x; pairing inside the round is what made it
+reproducible.
+
 ## Decoding a shared Firefox profile offline
 
 Colin drops Firefox profiler exports (`~/Downloads/Firefox <date> profile.json.gz`)
