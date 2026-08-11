@@ -57,9 +57,9 @@ describe('Gff3Feature', () => {
   })
 
   it('nests children with the same ids the eager path used', () => {
-    const kids = lazy(GENE).children()!
+    const kids = lazy(GENE).children!()!
     expect(kids.map(k => k.id())).toEqual(['test-0-0'])
-    expect(kids[0]!.children()!.map(k => k.id())).toEqual([
+    expect(kids[0]!.children!()!.map(k => k.id())).toEqual([
       'test-0-0-0',
       'test-0-0-1',
     ])
@@ -67,7 +67,7 @@ describe('Gff3Feature', () => {
 
   it('links a child back to its parent', () => {
     const gene = lazy(GENE)
-    const mrna = gene.children()![0]!
+    const mrna = gene.children!()![0]!
     expect(mrna.parent!()).toBe(gene)
     expect(mrna.get('parent')).toBe(gene)
   })
@@ -83,8 +83,10 @@ describe('Gff3Feature', () => {
       'ctgA\tex\tgene\t1\t100\t.\t-\t.\tID=g1',
       'ctgA\tex\texon\t1\t50\t.\t.\t.\tParent=g1',
     ]
-    const child = lazy(lines).children()![0]!
-    expect(child.get('strand')).toBe(eager(lines).children()![0]!.get('strand'))
+    const child = lazy(lines).children!()![0]!
+    expect(child.get('strand')).toBe(
+      eager(lines).children!()![0]!.get('strand'),
+    )
     expect(child.get('strand')).toBe(0)
   })
 
@@ -101,8 +103,8 @@ describe('Gff3Feature', () => {
   })
 
   it('carries parentId into a child’s serialized form, as SimpleFeature does', () => {
-    const lazyChild = lazy(GENE).children()![0]!.toJSON()
-    const eagerChild = eager(GENE).children()![0]!.toJSON()
+    const lazyChild = lazy(GENE).children!()![0]!.toJSON()
+    const eagerChild = eager(GENE).children!()![0]!.toJSON()
     expect(lazyChild.parentId).toBe(eagerChild.parentId)
   })
 })
