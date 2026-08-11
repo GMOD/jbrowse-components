@@ -726,11 +726,29 @@ function isSubPixelFade(
 // sub-pixel mark measure 2px wider than it paints, so marks that had room to
 // collapse onto row 0 stacked instead and dense pileups packed taller than the
 // fade regime intends.
+//
+// The anchor is the one thing that is NOT the same for every span: a degenerate
+// (interbase) one is CENTERED on its coordinate rather than grown off its start
+// edge, matching rect.slang's rectSpanPx `isPoint` branch, because a zero-length
+// interval sits between two bases. Anchoring it at the start put the layout's
+// idea of the mark a pixel right of where it paints, so a VCF insertion abutting
+// a solid feature on its left read as clear of it, collapsed onto row 0, and
+// painted into it.
+//
+// Deliberately NOT `rectSpanPx` itself, despite adr-051's one-source rule: that
+// twin also snaps both edges to whole pixels, and it does so in SCREEN space,
+// where the region offset has already been subtracted. Here the coordinates are
+// absolute-genomic px, so snapping would quantize on a different phase — a
+// different approximation, not a better one.
 function renderedSpanPx(
   ext: { startBp: number; endBp: number },
   bpPerPx: number,
 ): [number, number] {
   const startPx = ext.startBp / bpPerPx
+  if (ext.endBp === ext.startBp) {
+    const halfPx = MIN_RECT_WIDTH_PX / 2
+    return [startPx - halfPx, startPx + halfPx]
+  }
   return [startPx, Math.max(ext.endBp / bpPerPx, startPx + MIN_RECT_WIDTH_PX)]
 }
 

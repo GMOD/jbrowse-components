@@ -1323,6 +1323,44 @@ test('a sub-pixel fade box overlapping a visible feature stacks, not overprints'
   expect(top('fakeSNP')).toBeGreaterThan(0)
 })
 
+test('an interbase mark measures its collapse span centered, as it paints', () => {
+  // A VCF insertion is zero-length (it sits BETWEEN two bases), and the
+  // renderers center its min-width mark on the coordinate rather than growing it
+  // rightward — rect.slang's rectSpanPx `isPoint` branch. So at bpPerPx=1 an
+  // insertion at 100 paints [99,101] and overlaps a gene ending at 100, even
+  // though a same-width real span starting there ([100,102]) would clear it.
+  // Measuring it off the start edge let it collapse onto row 0 and paint a pixel
+  // into the gene.
+  const insertionAt = (bp: number) =>
+    makeFeatureData({
+      features: [
+        {
+          featureId: 'gene',
+          startBp: 50,
+          endBp: 100,
+          height: 12,
+          densityFade: false,
+        },
+        {
+          featureId: 'ins',
+          startBp: bp,
+          endBp: bp,
+          height: 12,
+          densityFade: true,
+        },
+      ],
+    })
+  const top = (data: FeatureDataResult) =>
+    layout(new Map([[0, data]]), new Map([[0, 'volvox:ctgA']]), 1, false)
+      .get(0)!
+      .flatbushItems.find(f => f.featureId === 'ins')!.topPx
+
+  // paints [99,101], overlapping the gene's [50,100] — must stack
+  expect(top(insertionAt(100))).toBeGreaterThan(0)
+  // paints [101,103], clear of it — free to collapse
+  expect(top(insertionAt(102))).toBe(0)
+})
+
 test('a sparse handful of collapsed sub-pixel boxes render opaque, not faded', () => {
   // The fixture pre-seeds rectDensityFade to 1 to prove layout owns the value: a
   // few collapsed variants are not the dense-pileup regime, so they must stay
