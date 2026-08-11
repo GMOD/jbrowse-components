@@ -157,11 +157,13 @@ type PanelTracks = (string | Record<string, unknown>)[]
 // instead of two, which is also what stops the blocks and the ribbons from
 // disagreeing. Nine records either side across this window, against a het-site
 // track that is orders of magnitude over the feature gate here.
-// The CIGAR layer is left ON, which it could not be when this figure was first
-// cut: at 5.2 Mb a whole-genome chain's indels each painted a full-opacity tick
-// and buried the strand color they sit on. insertionSizeAlpha now fades an
-// insertion whose own sequence is sub-pixel, so what survives at this zoom is
-// the kilobase-scale indels, which is what the lane is worth reading for.
+//
+// The CIGAR layer is left ON, which it could not be when this lane was first
+// cut: at megabase scale a whole-genome chain's indels each painted a
+// full-opacity marker and buried the strand color they sit on. The renderer's
+// `sizeAlpha` now fades an indel whose own on-screen span is sub-pixel, so what
+// survives here is the kilobase-scale ones -- which is the "chains are split at
+// large gaps" the page discusses, rather than noise over it.
 const CHAIN_BLOCKS = { trackId: 'hg002v1.2_mat_vs_pat', height: 40 }
 
 function haplotypeSession(
