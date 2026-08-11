@@ -158,7 +158,26 @@ which no flag can fake. What is unknown is whether that audit's rasterizer test
 was itself real; re-run it with `--real-gpu` before relying on the *method*
 again.
 
-## `alignments-long-reads-sv-linked`: 1.99%, and it is a real difference
+## `alignments-long-reads-sv-linked`: 1.99%, and it is the read outline
+
+> **Corrected 2026-08-11, same day.** This section first attributed the drift to
+> the linked-read connector width, on the strength of the `-linked` suffix and a
+> real width bug found in that pass. **That was wrong**, and the way it was wrong
+> is the useful part: the `-linked` correlation was a naming coincidence, and the
+> supporting evidence had a hole in it — `targeted_inversion-pbsim` was
+> *uncompared* in the run I read the rasterizer test off, so "only the `-linked`
+> views fail to move" was drawn from a gap in the data rather than from the data.
+> Its figure is 3.94%, identical to `inversion-pbsim-linked`'s, which says the
+> connectors contribute ~nothing.
+>
+> Two lessons worth more than the fix: **check whether a pair was compared at all
+> before reading meaning into which pairs are missing** (this file already says
+> that about determinism and it applies to attribution too), and **a percentage
+> cannot tell you what differs — decode the pixels.** `probe-linked-diff.ts` gave
+> the answer in one run after an afternoon of plausible reasoning had not.
+>
+> The connector width bug below is real and is fixed; it is just worth ~0.02pp,
+> not 1.99pp.
 
 Found by re-running the audit properly (2026-08-11, swiftshader vs `--real-gpu`,
 same build):
@@ -173,16 +192,41 @@ same build):
 | `targeted_additional-line-wiggle` | 0.41% | 0.23% | moves |
 | `fullpage_additional-color-wiggle` | 0.08% | 0.04% | moves |
 
-Every other pair in the tree moves between rasterizers. This one does not, on
-both its captures.
+These pairs do not move between rasterizers where their neighbours do. **That
+much held**; what it meant did not.
 
-**The cause is line width, and it is structural.** `linkedReads/packGpu.ts`
-declares `topology: 'line-list'`, and a GPU line list is 1 px wide — WebGPU has
-no line-width parameter at all and WebGL2 requires only 1.0 — while
-`features/linkedReads/drawCanvas.ts` strokes `ctx.lineWidth = 1.5`. So every
-linked-read connector is half a pixel wider on the Canvas2D and SVG-export paths
-than on either GPU backend, over long diagonals across the whole pileup, which is
-exactly the shape of a stable ~2% pixel difference.
+**The cause is the read outline.** `probe-linked-diff.ts` decodes the two
+captures and reports the differing colour pairs and their scanlines, which
+settles in one run what the percentage cannot say at all. A vertical slice
+through the hottest row, at a column inside a read:
+
+| y | canvas2d | webgl | |
+| --- | --- | --- | --- |
+| 194 | (236,139,139) | (236,139,139) | read fill, agrees |
+| 195 | (218,128,128) | (165, 97, 97) | read edge scanline |
+| 196 | (219,219,219) | (255,255,255) | the inter-row **gap** |
+| 197 | (218,128,128) | (165, 97, 97) | read edge scanline |
+
+Canvas2D's 1 px outline is centred on the rect boundary, so half of it lands
+outside the glyph: a lighter edge (218 against 165) and grey bled into a gap the
+GPU leaves white. The shader draws its outline inside the glyph. A systematic
+half-pixel stroke-placement difference — which is exactly why no rasterizer
+moves it.
+
+**The controlled comparison is already in the suite.** `showOutline` defaults to
+`isChainMode`, and `isChainMode` is `linkedReads === 'normal'`:
+
+| snapshot | `linkedReads` | outline | drift |
+| --- | --- | --- | --- |
+| `alignments-long-reads-sv-linked` | `'normal'` | on | **1.99%** |
+| `alignments-long-reads-sv-zoomed-out` | unset | off | **0.02%** |
+
+Same track, same locus, one setting apart, 100x the drift.
+
+Note what this also means: in chain mode `showLinkedReadLines` is
+`showBezierConnections && !isChainMode`, so the linked-read connector pass does
+not run in this view at all. The horizontal connectors visible in the capture are
+`connLine`, which has been a proper quad all along.
 
 This pair was one of the **seven overrides deleted on 2026-08-05** for measuring
 1.99% against a 10% ceiling. Deleting it was right — the ceiling was
@@ -190,12 +234,27 @@ meaningless — but "it is under the default" was read as "it is fine", and the
 rasterizer test that would have separated those two claims was not run on it.
 **Being under the threshold is not evidence of agreement.**
 
-Not fixed here. The honest fix is the one `arcFlat.slang` already made for the
-read-cloud connectors (`8117814a13`): draw the line as a quad carrying
-`u.lineWidthPx` with a proper AA ramp, rather than as a line-list primitive whose
-width the GPU will not honour. That is a shader rewrite plus a golden
-re-baseline. Filed in TODO.md; the override below is a record of it, not a
-setting.
+Not fixed here: making the two agree is a visual decision (which side is right —
+a stroke straddling the boundary, or one inside it) and it moves every alignments
+golden. Filed in TODO.md; the override is a record of it, not a setting.
+
+### The connector width bug, which is real and is not this
+
+Found on the way, fixed, and worth about 0.02pp. `linkedReads/packGpu.ts`
+declared `topology: 'line-list'`, and a GPU line list is 1 px wide whatever you
+ask for — WebGPU has no line-width parameter at all and WebGL2 requires only
+1.0 — while `features/linkedReads/drawCanvas.ts` strokes `ctx.lineWidth = 1.5`.
+The pass is a 6-vertex quad now, extruded along the segment's own frame because a
+linked-read connector is diagonal, with the same box SDF and `STROKE_AA_PX` ramp
+`arcFlat.slang` uses; the width is `LINKED_READ_LINE_WIDTH_PX`, `export-consts`ed
+so both sides read one value. That was the third and last native line in the
+plugin.
+
+It only ever affected **bezier** mode (`inversion-pbsim-linked`,
+`inversion-simple-bam-linked`), which is why it moved so little: connectors are a
+handful of pixels against a full pileup. `targeted_inversion-pbsim` and
+`targeted_inversion-pbsim-linked` measure the same 3.94%, and that equality is
+the cleanest statement of how little the connectors contribute.
 
 ## Threshold overrides: an override is a claim, and claims are testable
 

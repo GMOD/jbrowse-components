@@ -122,33 +122,42 @@ export function recordCapture(
 // `-linked` below); that is the tightening paying for itself before it lands.
 const DEFAULT_THRESHOLD = 0.015
 
-// **Order matters: `find` takes the FIRST match, so a specific entry must sit
-// above the broader one it would otherwise be swallowed by.** Latent until now,
-// because there was only one entry; `inversion-pbsim-linked` is a substring of
-// `inversion-pbsim` and means something different.
+// **Order matters: `find` takes the FIRST match**, so a specific entry must sit
+// above the broader one it would otherwise be swallowed by. Latent while there
+// was only one entry.
 const THRESHOLD_OVERRIDES: { match: string; threshold: number }[] = [
-  // The two `-linked` views, which are ONE bug and not antialiasing. Both are
-  // byte-identical across rasterizers — 3.96% and 1.99% under swiftshader and on
-  // a real Intel GPU — while every neighbouring pair moves (pbsim-coverage
-  // 7.59 -> 7.41, paired-coverage 2.40 -> 2.31, paired-cloud 0.84 -> 0.83). By
-  // the rule above that is not the rasterizer; something is drawn differently.
+  // 1.99%, and it is the READ OUTLINE, not antialiasing. The drift is
+  // byte-identical under swiftshader and on a real Intel GPU while neighbouring
+  // pairs move (paired-coverage 2.40 -> 2.31, paired-cloud 0.84 -> 0.83), so by
+  // the rule above something is drawn differently.
   //
-  // It is line width. `linkedReads/packGpu.ts` declares `topology: 'line-list'`
-  // and a GPU line list is 1 px — WebGPU has no line-width parameter, WebGL2
-  // requires only 1.0 — while `features/linkedReads/drawCanvas.ts` strokes
-  // `ctx.lineWidth = 1.5`. Every connector is half a pixel wider on Canvas2D and
-  // in the SVG export, over long diagonals across the whole pileup.
+  // What, exactly, from `probe-linked-diff.ts` — a vertical slice through the
+  // hottest row, at a column inside a read:
   //
-  // `alignments-long-reads-sv-linked` was one of the seven overrides deleted on
-  // 2026-08-05 for measuring 1.99% against a 10% ceiling. Deleting the ceiling
-  // was right; reading "under the default" as "fine" was not, and the rasterizer
-  // test that separates those was never run on it. **Being under the threshold
-  // is not evidence of agreement.**
+  //     y=194  c2d(236,139,139)  gl(236,139,139)     read fill, agrees
+  //     y=195  c2d(218,128,128)  gl(165, 97, 97)     read edge scanline
+  //     y=196  c2d(219,219,219)  gl(255,255,255)     the inter-row GAP
+  //     y=197  c2d(218,128,128)  gl(165, 97, 97)     read edge scanline
   //
-  // Both are records of a known bug, not settings. Delete them when the pass
-  // draws quads carrying `u.lineWidthPx` the way arcFlat.slang already does
-  // (8117814a13) — agent-docs/TODO.md, "Draw linked-read connectors as quads".
-  { match: 'inversion-pbsim-linked', threshold: 0.05 },
+  // Canvas2D's 1 px outline is centred on the rect boundary, so half of it lands
+  // outside the glyph — a lighter edge (218 against 165) and grey bled into a
+  // gap the GPU leaves white. The shader draws its outline inside. A systematic
+  // half-pixel stroke placement difference, which is why no rasterizer can move
+  // it.
+  //
+  // The setting that turns it on is `showOutline ?? isChainMode`, and
+  // `isChainMode` is `linkedReads === 'normal'`. That is the whole explanation
+  // for the pair: `alignments-long-reads-sv-linked` sets `linkedReads: 'normal'`
+  // and drifts 1.99%; `alignments-long-reads-sv-zoomed-out` is the same track at
+  // the same locus without it and drifts **0.02%**. One setting, 100x.
+  //
+  // It was one of the seven overrides deleted on 2026-08-05 for measuring 1.99%
+  // against a 10% ceiling. Deleting the ceiling was right; reading "under the
+  // default" as "fine" was not, and the rasterizer test that separates those was
+  // never run on it. **Being under the threshold is not evidence of agreement.**
+  //
+  // A record of a known bug, not a setting — agent-docs/TODO.md, "The read
+  // outline is drawn on the boundary on Canvas2D and inside it on the GPU".
   { match: 'alignments-long-reads-sv-linked', threshold: 0.025 },
   // Dense paired-end coverage strip, measured 2.40% under swiftshader and 2.31%
   // on a real GPU. It MOVES, so unlike the two above this really is
@@ -190,11 +199,12 @@ const THRESHOLD_OVERRIDES: { match: string; threshold: number }[] = [
   // This number should keep falling; it is a record of what is still broken, not
   // a setting.
   //
-  // **It was also covering a second, unrelated bug**, which is the argument for
-  // splitting the entry above out of it: `inversion-pbsim-linked` sits at 3.96%
-  // under this same 10% ceiling and has nothing to do with SNP ticks. A broad
-  // ceiling written for one reason silently absorbs every other reason that
-  // lands under it, and nothing says so.
+  // Covers `inversion-pbsim-linked` too, and deliberately: the two measure the
+  // SAME 3.94%, which is the evidence that the bezier connectors those views add
+  // contribute essentially nothing and the drift is the shared pileup rendering.
+  // An earlier revision split `-linked` out as its own entry on the theory that
+  // it was a separate connector bug; the equal figures refuted that before it
+  // landed.
   { match: 'inversion-pbsim', threshold: 0.1 },
 ]
 

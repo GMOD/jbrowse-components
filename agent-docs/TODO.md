@@ -24,7 +24,7 @@ Exploratory concepts that are *not* committed work live in
 | [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | five independent small items |
 | [Make the capture scroll-invariant](#make-the-snapshot-capture-scroll-invariant-then-widen-the-gate-to-webgpu) | browser tests | it is `snapshot.ts`, not a shader — attribution is done |
 | [Widen `CI_GATE_SUITES`](#widen-ci_gate_suites) | browser tests, CI | measure before adding; say why the alignments pair is safe |
-| [Linked-read connectors as quads](#draw-linked-read-connectors-as-quads-so-the-gpu-honours-their-width) | alignments, GPU | copy `arcFlat.slang`; a line-list is always 1px |
+| [The read outline straddles the boundary](#the-read-outline-is-drawn-on-the-boundary-on-canvas2d-and-inside-it-on-the-gpu) | alignments, GPU | get the visual call first — inside the glyph, or on its edge |
 | [Attribute the TIMEOUT mode](#attribute-the-browser-test-timeout-failure-mode) | browser tests | report the display's state, don't extend the wait |
 | [Make the webgl blank verdict readable](#make-the-webgl-blank-verdict-readable) | browser tests | one diagnostic run; never leave it on |
 | [Report a callout that draws off-frame](#report-a-callout-that-draws-off-frame) | figures | the overlay already reports the unresolvable case |
@@ -117,30 +117,29 @@ workspaces, redraw, cursor-guides, svg-export, custom-url, variant-force-load.
 Arcs and workspaces carry overrides tuned on a real GPU, so **measure before
 adding**; that is the whole procedure, and it is a measurement, not an edit.
 
-### Draw linked-read connectors as quads, so the GPU honours their width
+### The read outline is drawn on the boundary on Canvas2D and inside it on the GPU
 
-`features/linkedReads/packGpu.ts` declares `topology: 'line-list'` and a GPU line
-list is 1 px — WebGPU has no line-width parameter, WebGL2 requires only 1.0 —
-while `features/linkedReads/drawCanvas.ts` strokes `ctx.lineWidth = 1.5`. Every
-connector is half a pixel wider on Canvas2D and in the SVG export than on either
-GPU backend.
+Worth 1.99% cross-backend drift on `alignments-long-reads-sv-linked`, and it does
+not move between rasterizers, so it is a placement difference rather than
+antialiasing. Canvas2D's 1 px outline is centred on the rect boundary and spills
+half a pixel into the inter-row gap; the shader draws its outline inside the
+glyph. Decoded pixel-by-pixel — the edge scanlines and the grey-vs-white gap are
+tabulated in [CROSS_BACKEND_GATE.md](reference/CROSS_BACKEND_GATE.md).
 
-Measured, and it is the only pair in the tree that does **not** move between
-rasterizers: `targeted_alignments-long-reads-sv-linked` is 1.99% under
-swiftshader and 1.99% on a real GPU, its fullpage twin 0.62% on both, while every
-neighbouring pair moves. See
-[CROSS_BACKEND_GATE.md](reference/CROSS_BACKEND_GATE.md).
+The controlled comparison is already in the suite: `showOutline` defaults to
+`isChainMode` (`linkedReads === 'normal'`), so
+`alignments-long-reads-sv-zoomed-out` is the same track at the same locus with
+the outline off, and drifts 0.02% against 1.99%.
 
-The move is the one `arcFlat.slang` already made for the read-cloud connectors
-(`8117814a13`): a 6-vertex quad carrying `u.lineWidthPx` with a `STROKE_AA_PX`
-ramp, instead of a primitive whose width the GPU will not honour. Copy that
-shader — it is the same shape, a butt-capped horizontal-ish segment, and it
-already solves the AA. Expect a golden re-baseline, and drop the
-`alignments-long-reads-sv-linked` threshold override when it lands.
+**The first move is a visual call, not a code change**: which side is right? A
+stroke straddling the boundary reads heavier and eats the row gap; one inset
+inside the glyph keeps the gap but thins the read by a pixel at small row
+heights. Decide that, then make the other side follow. Either way every
+alignments golden moves, and the `alignments-long-reads-sv-linked` threshold
+override comes out when it lands.
 
-**Do not "fix" it by setting `ctx.lineWidth = 1`.** That makes the two backends
-agree by making both wrong — 1.5 px is the chosen weight, and the GPU is the side
-that cannot currently draw it.
+Do **not** reach for `Math.round` on either side to line them up — see the
+`Math.round` / `floor(x + 0.5)` trap in the same doc.
 
 ### Attribute the browser-test TIMEOUT failure mode
 
