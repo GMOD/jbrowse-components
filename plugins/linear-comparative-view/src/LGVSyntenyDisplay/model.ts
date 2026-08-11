@@ -28,10 +28,16 @@ import {
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import SyncAltIcon from '@mui/icons-material/SyncAlt'
 
 import { anchorPanelTracks } from '../LaunchSyntenyView/anchorPanelTracks.ts'
 import { canLaunchSyntenyForMate } from '../LaunchSyntenyView/canLaunchSyntenyForMate.ts'
 import { getMate } from '../syntenyMate.ts'
+import {
+  containingPanelStack,
+  matePanelIndexes,
+  moveMatePanels,
+} from './matePanelNavigation.ts'
 import { getSyntenyGroupByMenuItem, getSyntenyShowMenuItems } from './menus.ts'
 
 import type { LGVSyntenyDisplayConfigModel } from './configSchemaF.ts'
@@ -310,6 +316,43 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
                   ])
                 },
               })
+
+              // The in-place twin of the launch above: same alignment, same
+              // region of interest, but instead of building a new view it moves
+              // the panel next to this one to the region the alignment says
+              // corresponds. Only offered when this view IS a panel of a stack
+              // whose neighbour is already on the mate's assembly — in a
+              // standalone linear view there is nothing to move, and launching
+              // is the whole answer.
+              const stack = containingPanelStack(view)
+              const indexes = stack
+                ? matePanelIndexes({
+                    panelAssemblies: stack.views.map(v => v.assemblyNames[0]),
+                    anchorIndex: stack.views.indexOf(view),
+                    mateAssemblyName: getMate(feature)?.assemblyName,
+                  })
+                : []
+              if (stack && block && indexes.length) {
+                items.push({
+                  label:
+                    indexes.length > 1
+                      ? 'Move other panels to the matching region'
+                      : 'Move other panel to the matching region',
+                  icon: SyncAltIcon,
+                  onClick: () => {
+                    moveMatePanels({
+                      stack,
+                      indexes,
+                      feature,
+                      region: {
+                        start: block.bpRange[0],
+                        end: block.bpRange[1],
+                      },
+                      session: getSession(self),
+                    })
+                  },
+                })
+              }
             }
           }
           return items

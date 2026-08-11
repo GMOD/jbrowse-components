@@ -135,3 +135,60 @@ export function createDisplay() {
   ])
   return view.tracks[0]!.displays[0]!
 }
+
+/**
+ * A session holding one multi-panel view (two bare LGVs as its `views`) and one
+ * standalone LGV — the two shapes `containingPanelStack` has to tell apart.
+ *
+ * The session's own `views` array is the trap the walk exists to avoid, so it
+ * is here rather than stubbed away: a walk that only checked membership would
+ * report the session as the standalone view's stack, and offer to move whatever
+ * unrelated views the user has open.
+ */
+export function createPanelStack() {
+  const pluginManager = new PluginManager()
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
+  const LinearGenomeModel = LinearGenomeViewModelFactory(pluginManager)
+
+  // width/setWidth are what isViewModel keys on, and the whole point of the
+  // stack being a VIEW rather than any node with a `views` array
+  const Stack = types
+    .model('TestPanelStack', {
+      id: types.optional(types.identifier, 'stack1'),
+      type: types.literal('TestPanelStack'),
+      views: types.array(LinearGenomeModel),
+    })
+    .volatile(() => ({ width: 800 }))
+    .actions(self => ({
+      setWidth(n: number) {
+        self.width = n
+      },
+    }))
+  const Session = types
+    .model({
+      name: 'testSession',
+      views: types.array(types.union(Stack, LinearGenomeModel)),
+    })
+    .volatile(() => ({
+      rpcManager: {},
+      theme: createJBrowseTheme(),
+      assemblyManager: { get: () => undefined },
+    }))
+
+  const session = Session.create(
+    {
+      views: [
+        {
+          type: 'TestPanelStack',
+          views: [{ type: 'LinearGenomeView' }, { type: 'LinearGenomeView' }],
+        },
+        { type: 'LinearGenomeView' },
+      ],
+    },
+    { pluginManager },
+  )
+  const stack = session.views[0] as Instance<typeof Stack>
+  const standalone = session.views[1] as Instance<typeof LinearGenomeModel>
+  return { session, stack, panels: [...stack.views], standalone }
+}
