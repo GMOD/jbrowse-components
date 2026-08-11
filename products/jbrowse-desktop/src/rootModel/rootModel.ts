@@ -290,12 +290,12 @@ export default function rootModelFactory({
                           try {
                             const path = await invokeIpc('promptOpenFile')
                             if (path) {
-                              // opening replaces this plugin manager, and the
-                              // Loader destroys the one it replaces: flush
-                              // first, exactly as Exit and "Return to start
-                              // screen" do, or the last second of edits goes
-                              // with it
-                              await self.flushSession()
+                              // no flush here: the swap behind this callback
+                              // flushes between loading the replacement and
+                              // installing it, which also covers whatever is
+                              // edited while the load is in flight. Flushing
+                              // first, as this used to, covered only up to the
+                              // click. See useSessionSwap.
                               await self.openNewSessionCallback(path)
                             }
                           } catch (e) {
@@ -316,11 +316,12 @@ export default function rootModelFactory({
                             session.queueDialog(handleClose => [
                               OpenLinkDialog,
                               {
-                                // flushed for the same reason opening a file
-                                // above is: the link's session replaces this
-                                // one, and the Loader destroys what it replaces
+                                // not flushed here for the same reason opening
+                                // a file above is not: the swap behind the
+                                // callback does it at the moment of
+                                // replacement. A rejection reaches the dialog,
+                                // which reports it inline and stays open.
                                 onSubmit: async (link: string) => {
-                                  await self.flushSession()
                                   await self.openLinkCallback(link)
                                 },
                                 onClose: handleClose,

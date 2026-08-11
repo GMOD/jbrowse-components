@@ -20,6 +20,7 @@ import {
 } from './StartScreen/util.tsx'
 import { useLaunchTarget } from './useLaunchTarget.ts'
 import { usePluginManagerLoad } from './usePluginManagerLoad.ts'
+import { useSessionSwap } from './useSessionSwap.ts'
 
 import type { LaunchTarget } from '../../electron/ipc/channelTypes.ts'
 import type { DesktopRootModel } from '../rootModel/rootModel.ts'
@@ -103,21 +104,20 @@ const LoaderContents = observer(function LoaderContents() {
 
   const handleSetPluginManager = useEventCallback((pm: PluginManager) => {
     const rootModel = pm.rootModel as DesktopRootModel | undefined
-    // These two are the in-app routes to the same swap useLaunchTarget performs,
-    // and they flush the other way round: their menu items call flushSession
-    // *before* invoking the callback, so anything edited while the load is in
-    // flight is still lost when replacePluginManager destroys the old manager.
-    // The window is narrow (the user has to edit during a load they just asked
-    // for) but it is the same bug, and the fix is the same — flush between the
-    // load resolving and the install. Doing it here, at the one point every
-    // route passes through, would cover all of them; it is left alone for now
-    // because this component has no test harness to prove it with, where the
-    // hook does.
+    // Both in-app routes to a session replacement go through the same swap the
+    // pushed one does, so all three flush at the same moment — between the load
+    // resolving and the install. Their menu items used to call flushSession
+    // before invoking these, which left everything edited during the load unsaved
+    // when replacePluginManager destroyed the old manager.
+    //
+    // Rejections are left to propagate: each caller has somewhere better to put
+    // them than this does — the link dialog reports inline, and the file route's
+    // menu item catches into the session's error reporter.
     rootModel?.setOpenNewSessionCallback(async (path: string) => {
-      handleSetPluginManager(await loadPluginManager(path))
+      await swap(() => loadPluginManager(path))
     })
     rootModel?.setOpenLinkCallback(async (link: string) => {
-      handleSetPluginManager(await openSpecLink(link))
+      await swap(() => openSpecLink(link))
     })
     rootModel?.setReturnToStartScreenCallback(() => {
       // "Return to start screen": tear down the manager and leave none, so its
@@ -129,23 +129,26 @@ const LoaderContents = observer(function LoaderContents() {
     clearTarget()
   })
 
-  // A launch that arrived while a session is already open (a jbrowse:// link,
-  // an OS open-file, a second-instance argv): load it, flush what is open, then
-  // swap in place. See ensureWindow in electron.ts for why the main process
-  // pushes these rather than navigating the window to them.
-  const launching = useLaunchTarget({
+  const { swap, swapping } = useSessionSwap({
     flush: useEventCallback(async () => {
       const rootModel = installedRef.current?.rootModel as
         | DesktopRootModel
         | undefined
       await rootModel?.flushSession()
     }),
+    onLoad: handleSetPluginManager,
+  })
+
+  // A launch that arrived while a session is already open (a jbrowse:// link, an
+  // OS open-file, a second-instance argv). The only swap trigger with nowhere to
+  // return a rejection to, so it reports its own.
+  useLaunchTarget({
+    swap,
     load: useEventCallback((target: LaunchTarget) =>
       target.type === 'file'
         ? loadPluginManager(target.path)
         : openSpecLink(target.url),
     ),
-    onLoad: handleSetPluginManager,
     onError: useEventCallback((e: unknown, target: LaunchTarget) => {
       // The session this failed to replace is still open and still on screen —
       // nothing was torn down — so this notifies rather than falling back to
@@ -188,7 +191,7 @@ const LoaderContents = observer(function LoaderContents() {
       blocking overlay: the load can be a config fetch over a slow link, and the
       session underneath is still perfectly usable — and still autosaving, with
       the flush that precedes the swap taking whatever is edited meanwhile. */}
-      {launching ? (
+      {swapping ? (
         <LinearProgress
           aria-label="Opening link"
           sx={{
