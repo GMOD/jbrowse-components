@@ -4348,6 +4348,24 @@ export const graphSpecs: ScreenshotSpec[] = [
         dx: 150,
         dy: 20,
       },
+      // HALF OF THE PAIR ①, whose other half is on the density part. The two
+      // parts are side by side and this is the one landmark they share: the
+      // sequence this pane draws per repeat element is the sliver shaded over
+      // there. See the density part for why a badge and not an arrow.
+      //
+      // On the SEGMENTS lane rather than the RepeatMasker one above it, because
+      // the segments lane draws the allele as a single feature -- the badge sits
+      // on one bar that is exactly the thing being identified, where on the
+      // repeat lane it would land in the middle of eight rows of elements.
+      {
+        type: 'circle',
+        text: '1',
+        anchor: {
+          view: 2,
+          track: SEGMENTS_TRACK,
+          locus: 'chr17:83,899,576-84,041,803',
+        },
+      },
     ],
   },
   // PART TWO: IS THAT A LOT? (review, on the part above: "we keep relitigated
@@ -4415,7 +4433,16 @@ export const graphSpecs: ScreenshotSpec[] = [
               minScore: 0,
               maxScore: 0.3,
               displayCrossHatches: true,
-              height: 220,
+              // Sized to the column it sits beside rather than to the lane's own
+              // needs: the compose is horizontal, so this part's height is the
+              // panes part's 1,331 and the only question is what fills it. 220
+              // was right when this was stacked UNDER 2,662 px of panes and every
+              // pixel was one the reader had to scroll past; beside them, a short
+              // lane just leaves white. The axis is fixed at 0-0.3 either way, so
+              // the extra height is resolution on the one comparison the part
+              // exists to make -- the shaded plateau against the 3 Mb around it --
+              // and the crosshatches keep it readable rather than a wall of bars.
+              height: 1081,
             },
           ],
         },
@@ -4425,7 +4452,10 @@ export const graphSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     settleMs: 6000,
     viewportWidth: 1000,
-    viewportHeight: 470,
+    // the panes part's viewportHeight exactly. `+append` pads the shorter part
+    // to the taller one and top-aligns it, so any mismatch here is white down
+    // the bottom of this column rather than an error.
+    viewportHeight: 1331,
     hideTooltip: true,
     annotations: [
       {
@@ -4442,16 +4472,45 @@ export const graphSpecs: ScreenshotSpec[] = [
         },
         textAlign: 'end',
       },
+      // HALF OF THE PAIR ①. The other half is on the panes part's bottom pane,
+      // and together they say that the shaded sliver here is the sequence drawn
+      // per repeat element over there. It has to be a badge rather than the
+      // arrow the pairing wants: compose parts are separate captures `+append`ed
+      // afterwards, so nothing can be drawn across the seam (see ComposeSpec).
+      //
+      // Anchored to the allele's own span on the track, so it stays on the
+      // sliver as the lane's height changes; `fracY: 0.5` puts it at the lane's
+      // middle, below the label above and clear of the plateau's own bars.
+      {
+        type: 'circle',
+        text: '1',
+        anchor: {
+          track: HS1_LINE_DENSITY_TRACK.trackId,
+          locus: 'chr17:83,899,576-84,041,803',
+          fracY: 0.5,
+        },
+      },
     ],
   },
   // The two as one figure. The name is the one the doc and the review log
   // already carry, so what moves is which spec renders it, and a reader cannot
   // reach the claim without the check under it.
   //
-  // Vertical, and both parts are viewportWidth 1000, so the stack needs no
-  // padding. It IS a tall figure -- the three panes are 2,662 px and this adds
-  // ~940 -- which is why the second part is one lane at 470 px rather than the
-  // several a repeat-density figure could carry.
+  // SIDE BY SIDE, not stacked (review: "this may want to be a side-by-side
+  // figure, with an arrow pointing from the first to the second figure, in the
+  // relevant region"). Stacked it was 2,000x3,602 -- the three panes' 2,662 plus
+  // the density's 940 -- and the second half read as the next step down the
+  // page rather than as the check on the first, which is what it is.
+  //
+  // The arrow the review asks for is the half that is NOT available: parts are
+  // separate captures `+append`ed afterwards, so nothing can be drawn across the
+  // seam. The pairing is a numbered badge on each half instead (① on both), the
+  // substitute ComposeSpec documents, and each half also carries the allele's
+  // own `highlight` in the app so the badge lands on something already marked.
+  //
+  // Horizontal makes HEIGHT the shared dimension rather than width, so the
+  // density part is 1,331 to match the panes part rather than the 470 it wanted
+  // on its own -- see its `height` for what fills that.
   {
     mode: 'compose',
     name: 'pangenome/hprc_chm13_allele',
@@ -4459,6 +4518,7 @@ export const graphSpecs: ScreenshotSpec[] = [
       'pangenome/hprc_chm13_allele_panes',
       'pangenome/hprc_chm13_allele_density',
     ],
+    direction: 'horizontal',
   },
   // pangenome/hprc_repeat_classes was here and is DELETED (review: "i dont think
   // i really understand this figure. consider deleting. just not actually

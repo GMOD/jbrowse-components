@@ -261,8 +261,11 @@ export interface EmbeddedSpec extends CommonSpecFields {
 // Note there is no `annotations` here, and that is not an oversight: the parts
 // are separate captures `+append`ed afterwards, so nothing can be drawn across
 // the seam. An arrow from one half to the other is not available — number the
-// two halves' anchors instead (`pangenome/hprc_mhc_anchored` uses `circle`
-// badges for this).
+// two halves' anchors instead, a `circle` with `text` on each part at the thing
+// they share (`pangenome/hprc_chm13_allele`'s two ① badges). Where the app
+// already labels the shared landmark itself, prefer that and drop the numbers:
+// `pangenome/hprc_mhc_anchored` marks its two nodes with bare rings, because the
+// graph writes each node's length beside it in both halves.
 export interface ComposeSpec extends BaseSpecFields {
   mode: 'compose'
   parts: string[] // spec names whose static/img PNGs are stacked, top to bottom
