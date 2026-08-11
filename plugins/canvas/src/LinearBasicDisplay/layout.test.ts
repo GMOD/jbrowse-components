@@ -1557,14 +1557,16 @@ test('a handful of collapsed marks on one pixel fade rather than hide each other
   expect([...out.get(0)!.rectDensityFade].every(v => v === 1)).toBe(true)
 })
 
-test('one mark of a pair fading does not fade an isolated neighbour', () => {
-  // The decision is per mark, not per region: `pair*` share a pixel and fade,
-  // `lone` sits 500px clear of them and stays solid. A region-wide verdict (the
-  // old count) could only ever answer this one way for all three.
+test('marks in a pile fade without fading an isolated neighbour', () => {
+  // The decision is per mark, not per region: `pile*` are three alleles called at
+  // one position, so all three paint the same 2px column and fade, while `lone`
+  // sits 500px clear of them and stays solid. A region-wide verdict (the old
+  // count) could only ever answer this one way for all four.
   const data = makeFeatureData({
     features: [
-      { featureId: 'pairA', startBp: 100, endBp: 101, height: 10 },
-      { featureId: 'pairB', startBp: 101, endBp: 102, height: 10 },
+      { featureId: 'pileA', startBp: 100, endBp: 101, height: 10 },
+      { featureId: 'pileB', startBp: 100, endBp: 101, height: 10 },
+      { featureId: 'pileC', startBp: 100, endBp: 101, height: 10 },
       { featureId: 'lone', startBp: 600, endBp: 601, height: 10 },
     ].map(f => ({ ...f, densityFade: true })),
   })
@@ -1573,9 +1575,47 @@ test('one mark of a pair fading does not fade an isolated neighbour', () => {
   const fadeOf = (id: string) =>
     out.get(0)!.rectDensityFade[items.findIndex(f => f.featureId === id)]
   expect(items.every(it => it.topPx === 0)).toBe(true)
-  expect(fadeOf('pairA')).toBe(1)
-  expect(fadeOf('pairB')).toBe(1)
+  expect(fadeOf('pileA')).toBe(1)
+  expect(fadeOf('pileB')).toBe(1)
+  expect(fadeOf('pileC')).toBe(1)
   expect(fadeOf('lone')).toBe(0)
+})
+
+test('two abutting marks stay opaque, so a coverage read survives', () => {
+  // The min-width clamp widens every sub-pixel mark to MIN_RECT_WIDTH_PX, so two
+  // annotations that merely ABUT — disjoint in bp, one starting where the other
+  // ends — always overlap once painted. Fading on that pair is what inverted the
+  // repeat lane in website/scripts/specs/graph.ts: a lane read for how much of
+  // the interval is covered drew its denser clusters LIGHTER than their isolated
+  // neighbours, because two marks at MIN_DENSITY_ALPHA accumulate to 0.51 where
+  // one lone mark draws 1.0. Below PILEUP_FADE_DEPTH nothing fades and the
+  // coverage read holds.
+  const data = makeFeatureData({
+    features: [
+      { featureId: 'left', startBp: 100, endBp: 101, height: 10 },
+      { featureId: 'right', startBp: 101, endBp: 102, height: 10 },
+    ].map(f => ({ ...f, densityFade: true })),
+  })
+  const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 1, false)
+  expect([...out.get(0)!.rectDensityFade].every(v => v === 0)).toBe(true)
+})
+
+test('a mark ending where another begins does not stack coverage with it', () => {
+  // Painted spans are half-open, so the sweep must sort ends before starts at
+  // equal px. These three 1bp marks are 1px apart and each paints 2px, so `left`
+  // ends at exactly the px `right` starts: two marks cover every point, three
+  // cover none. Sorting the tie the other way counts that touch and reports a
+  // depth of three, fading a run that is merely evenly spaced — the shape of any
+  // tiled annotation, which is the coverage read at its purest.
+  const data = makeFeatureData({
+    features: [
+      { featureId: 'left', startBp: 100, endBp: 101, height: 10 },
+      { featureId: 'mid', startBp: 101, endBp: 102, height: 10 },
+      { featureId: 'right', startBp: 102, endBp: 103, height: 10 },
+    ].map(f => ({ ...f, densityFade: true })),
+  })
+  const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 1, false)
+  expect([...out.get(0)!.rectDensityFade].every(v => v === 0)).toBe(true)
 })
 
 test('a dense pileup of thousands of collapsed marks fades', () => {

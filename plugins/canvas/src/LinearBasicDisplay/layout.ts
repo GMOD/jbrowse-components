@@ -1380,10 +1380,12 @@ function packPreparedRef(
   // big to stack.
   //
   // The pileup fade still applies, and for the reason it exists everywhere else:
-  // row 0 is the only row, so marks that share pixels are drawn over each other
-  // and the ones underneath are gone. This mode is where that is guaranteed
-  // rather than incidental — a collapsed dbSNP track drew as one opaque bar
-  // conveying nothing about its depth.
+  // row 0 is the only row, so marks piled on the same pixels are drawn over each
+  // other and the ones underneath are gone. This mode is where that is
+  // guaranteed rather than incidental — a collapsed dbSNP track drew as one
+  // opaque bar conveying nothing about its depth. It is also the mode a lane
+  // read for COVERAGE picks, which is why the fade waits for a real pile rather
+  // than for a pair (see PILEUP_FADE_DEPTH).
   //
   // Candidacy is the same sub-pixel test, deliberately, so a wide feature stays
   // opaque. A ~2px mark IS its own overlap, which is what makes a per-instance
@@ -1505,50 +1507,88 @@ interface CollapsedMark {
   endPx: number
 }
 
-// Which collapsed marks share pixels with another collapsed mark, i.e. exactly
-// the ones the fade exists for: on row 0 nothing stacks, so two marks over the
-// same pixels are one drawn on top of the other, and at full opacity the one
-// underneath is not merely hard to read but *gone*, with no cue that it is
-// there. Drawn at MIN_DENSITY_ALPHA instead they accumulate through the standard
-// src-alpha blend, so a pixel's opacity tracks how many marks landed on it (see
-// rect.slang) — a pair reads as a pair, a pileup as a density gradient.
+// How many collapsed marks have to cover one point before they read as a pileup
+// rather than as neighbours. Below it every mark draws opaque, so the lane
+// answers "is this interval covered"; at or above it they draw at
+// MIN_DENSITY_ALPHA and accumulate through the standard src-alpha blend, so a
+// pixel's opacity tracks how many marks landed on it (see rect.slang) and the
+// lane answers "how deep is the pile" instead.
+//
+// It has to be a threshold, and the threshold has to bite somewhere, because
+// opacity cannot answer both questions at once. Depth needs headroom below
+// opaque to be visible at all, so entering the fade regime always makes a region
+// LIGHTER: one mark draws 1.0, and three sharing a pixel accumulate to
+// 1-(1-0.3)^3 = 0.66. Adding a neighbour can only ever subtract, which inverts a
+// coverage read. The question is therefore not whether to have a boundary but
+// where to put it, and the answer is: past where the min-width clamp alone
+// explains the overlap.
+//
+// 3, because 2 cannot tell "co-located" from "adjacent". `renderedSpanPx` widens
+// every sub-pixel mark to MIN_RECT_WIDTH_PX, so two annotations that merely abut
+// — disjoint in bp, one ending where the next begins — always overlap once
+// clamped. A pair is the signature of ordinary tiled annotation, not of a pile.
+// Three marks covering one point means three within ~2px however they are
+// spread, which no clamp explains and no zoom can resolve.
+//
+// Measured on website/scripts/specs/graph.ts's repeat lane, which is read for
+// how much of the interval is red and so needs the coverage answer: of the 171
+// RepeatMasker elements on screen over its 180 kb, 89 are sub-pixel at a 900px
+// pane, and a threshold of 2 faded 24 of them — the denser clusters rendering
+// LIGHTER than their isolated neighbours, which is the inversion above, in the
+// figure. At 3 nothing on screen fades, at any pane width the figure is captured
+// at; the only three marks the sweep still flags anywhere sit in the fetch
+// buffer, off screen, which is the decision staying local doing its job.
+const PILEUP_FADE_DEPTH = 3
+
+// Which collapsed marks sit under a pileup that deep. This is the whole reason
+// the fade exists: on row 0 nothing stacks, so marks over the same pixels are
+// drawn one on top of another, and at full opacity the ones underneath are not
+// merely hard to read but *gone*, with no cue that they are there.
 //
 // This replaced a count: fade every collapsed mark once a ref-group held >= 1000
 // of them, else none. Three things were wrong with measuring it that way, and
 // they are all the same mistake — occlusion is *local* and the count was not.
-// Two marks on one pixel occlude each other whether or not 998 more exist
+// Marks piled on one pixel occlude each other whether or not 998 more exist
 // elsewhere. The count was per ref-group, so one view could draw a track at two
 // different opacities, chr1 faded and chr21 not. And it counted the fetched span
 // — which buffers half a viewport either side — against a threshold justified as
 // "~1 mark per pixel of a typical viewport", a ratio that also moves with the
-// window width.
+// window width. Depth keeps all three properties: it is local, it is per mark,
+// and it is measured in painted pixels rather than in features fetched.
 //
 // A lone mark with clear space around it still renders opaque, which is what the
 // count was protecting and is preserved here exactly.
 //
-// Sweep in start order: a mark overlaps something earlier iff it starts before
-// the running max end. Only ONE earlier mark can still be unflagged at that
-// point — an unflagged mark is by definition disjoint from everything before it,
-// so it owns the running max end — hence the single `pending` slot rather than a
-// set of open intervals.
+// An interval sweep, because "how many marks cover this point" is not answerable
+// from a running max end. Ends sort before starts at equal px so half-open spans
+// that merely touch don't count as sharing a point. `open` holds the marks that
+// are covering the current point and not yet flagged: the moment `depth` reaches
+// the threshold every one of them is under a pileup that deep, so they all fade
+// and leave the set — `depth` goes on counting them, and any mark that opens
+// while it stays at or above the threshold is flagged as it arrives.
 function pileupFadeIds(collapsed: CollapsedMark[]): ReadonlySet<string> {
+  const events = collapsed.flatMap(mark => [
+    { px: mark.startPx, delta: 1, id: mark.id },
+    { px: mark.endPx, delta: -1, id: mark.id },
+  ])
+  events.sort((a, b) => a.px - b.px || a.delta - b.delta)
+
   const fade = new Set<string>()
-  const byStart = [...collapsed].sort((a, b) => a.startPx - b.startPx)
-  let maxEndPx = Number.NEGATIVE_INFINITY
-  let pending: string | undefined
-  for (const mark of byStart) {
-    if (mark.startPx < maxEndPx) {
-      fade.add(mark.id)
-      if (pending !== undefined) {
-        fade.add(pending)
-        pending = undefined
-      }
+  const open = new Set<string>()
+  let depth = 0
+  for (const { delta, id } of events) {
+    if (delta === -1) {
+      depth--
+      open.delete(id)
+      continue
     }
-    if (mark.endPx > maxEndPx) {
-      maxEndPx = mark.endPx
-      // `pending` must track whoever owns maxEndPx, and only while unflagged:
-      // an already-faded owner has nothing left to flag later.
-      pending = fade.has(mark.id) ? undefined : mark.id
+    depth++
+    open.add(id)
+    if (depth >= PILEUP_FADE_DEPTH) {
+      for (const openId of open) {
+        fade.add(openId)
+      }
+      open.clear()
     }
   }
   return fade
@@ -1564,9 +1604,10 @@ function applyLayoutToRegion(
   // Feature ids whose name was decimated away: their floatingLabelsData entry is
   // deleted below so no renderer/hit-test draws a name the packer didn't reserve.
   droppedLabelIds: ReadonlySet<string>,
-  // Feature ids whose collapsed box piles into shared pixels with another (a
-  // genuine density pileup). Only these keep the fade flag; every other box —
-  // stacked, or a lone collapsed mark — is rewritten to 0 and drawn opaque.
+  // Feature ids whose collapsed box sits under a pileup PILEUP_FADE_DEPTH marks
+  // deep. Only these keep the fade flag; every other box — stacked, or a
+  // collapsed mark with no more than a neighbour or two over it — is rewritten
+  // to 0 and drawn opaque.
   densityFadeIds: ReadonlySet<string>,
 ) {
   const featureOffsets = new Float32Array(data.flatbushItems.length)
