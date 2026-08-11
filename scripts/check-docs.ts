@@ -114,6 +114,13 @@ const VALIDATORS: Validator[] = [
     argv: web('check-captions.ts', '--check'),
   },
   {
+    // Not a ratchet, because the corpus is at zero: the sweep that motivated
+    // this check also cleared it. A page missing its TL;DR entirely is the
+    // other half, and is the half nothing else would ever surface.
+    name: 'TL;DR paragraphs are present and unsalesy',
+    argv: web('check-tldr.ts'),
+  },
+  {
     // Same ratchet shape, guarding what a scheduled figure sweep will fetch:
     // `--check` fails when a spec newly points at a server we do not run.
     name: 'no new third-party hosts in figure specs',

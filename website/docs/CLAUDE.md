@@ -61,4 +61,27 @@ build reads as "write one line here".
 The figure carries the result; the prose says what was done and what it means.
 No drama or stakes, no rhetorical framing of a method, no reveals held for
 effect, no conclusion one picture can't support. Applies to captions, gallery
-descriptions, and headings too.
+descriptions, TL;DRs, and headings too.
+
+## The TL;DR
+
+Every page under `user_guides/`, `config_guides/`, `developer_guides/` and
+`tutorials/` opens with a `**TL;DR:**` paragraph. `pnpm check-tldr` enforces
+that it exists and that it doesn't sell; what it can't check is whether the
+paragraph is worth reading. Four failure modes, one page each from the sweep
+that added the check:
+
+- **Restating the title.** "load the Cancer Genome in a Bottle HG008 ... data
+  into JBrowse" told a reader nothing the tab hadn't.
+- **Restating itself.** "... a single assembly, and the project publishes the
+  alignment, so comparing two haplotypes is one assembly, one alignment file and
+  no pipeline" — the third clause is the first two, recounted as files.
+- **Closing on a superlative** rather than a fact. This is the part `check-tldr`
+  catches.
+- **Crediting the page's result to the wrong mechanism.** The GC content TL;DR
+  claimed the bacterial replication origin, which is a GC _skew_ result, and the
+  page's own section said so.
+
+Say what the page shows and the one thing that makes it work. A page whose body
+is shorter than its summary would be needs no TL;DR, which is why the check has
+a length floor.
