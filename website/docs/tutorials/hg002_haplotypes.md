@@ -156,7 +156,7 @@ GFF and cut it to a few genes with **Edit filters...** in its track menu: those
 do get labels, and they read in one order under the maternal panel and in the
 reverse order under the paternal one.
 
-<Figure caption="HG002 v1.2 maternal (top) against paternal (bottom) across 9 Mb of 8p23.1, with chain blocks and genes on each panel's own coordinates and the ribbons between them colored by strand. The inverted block is the long blue bar in both panels and the sweep crossing between them; the red blocks either side are the collinear flanks. The labelled lane beside the ribbons carries the same six genes in opposite orders on the two haplotypes." src="/img/hg002_haplotypes_8p23_inversion.png" />
+<Figure caption="HG002 v1.2 maternal (top) against paternal (bottom) across 9 Mb of 8p23.1, ribbons colored by strand. The inverted block is the long blue bar in both panels and the sweep crossing between them, and the labelled lane beside the ribbons carries the same six genes in opposite orders." src="/img/hg002_haplotypes_8p23_inversion.png" />
 
 Set the ribbon coloring from the palette button in the view header, and turn on
 **Show curved lines** under **View options** then **Show...** so a block landing
