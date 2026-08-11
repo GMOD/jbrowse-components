@@ -58,6 +58,7 @@ import {
 import { LABEL_CULL_BUCKET_PX } from './components/labelPositioning.ts'
 import { featureContextMenuItems } from './featureContextMenu.ts'
 import {
+  FeatureHighlightModel,
   resolveFeatureHighlights,
   warnUnresolvedHighlights,
 } from './featureHighlight.ts'
@@ -129,11 +130,7 @@ import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
-import type {
-  IAnyStateTreeNode,
-  Instance,
-  SnapshotIn,
-} from '@jbrowse/mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   FetchContext,
@@ -143,39 +140,6 @@ import type {
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
-
-// Persistent, declarative feature-highlight request (see featureHighlight.ts).
-// A plain span+name signature — never the adapter uniqueId — so it can be
-// authored in a session snapshot / URL and resolved once the region renders.
-// Mirror of the plain FeatureHighlight signature: the pure matcher + search
-// bridge use the interface, this MST model persists it, and
-// setFeatureHighlights(cast(...)) silently DROPS any field the model lacks — so
-// the assertion below fails typecheck if the two ever drift.
-// start/end are maybe so a highlight can be authored by name alone
-// (`{ refName: 'chr12', name: 'KRAS' }`); see FeatureHighlight.
-const FeatureHighlightModel = types.model('FeatureHighlight', {
-  refName: types.string,
-  start: types.maybe(types.number),
-  end: types.maybe(types.number),
-  name: types.maybe(types.string),
-  featureId: types.maybe(types.string),
-})
-
-// Compile-time proof the persisted model's snapshot and the plain
-// FeatureHighlight interface stay structurally identical (checked both ways, the
-// same AssignableTo guard idiom as modelContract.ts). Errors here instead of a
-// silent field drop the next time either side gains a field.
-type AssignableTo<A extends B, B> = A
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-type _HighlightModelToInterface = AssignableTo<
-  SnapshotIn<typeof FeatureHighlightModel>,
-  FeatureHighlight
->
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-type _HighlightInterfaceToModel = AssignableTo<
-  FeatureHighlight,
-  SnapshotIn<typeof FeatureHighlightModel>
->
 
 // Region identity (regionKey/reversed) is stored alongside the data so layout
 // grouping derives from rpcDataMap directly. Deriving it from loadedRegions

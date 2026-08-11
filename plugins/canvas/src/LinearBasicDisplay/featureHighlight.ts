@@ -1,4 +1,7 @@
+import { types } from '@jbrowse/mobx-state-tree'
+
 import type { FlatbushItem } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 // The fields any rendered item — top-level feature or subfeature — is matched on
 type HighlightItem = Pick<FlatbushItem, 'startBp' | 'endBp' | 'name'>
@@ -30,6 +33,39 @@ export interface FeatureHighlight {
   // pin. When present it is the sole matcher — span/name are ignored.
   featureId?: string
 }
+
+// Persistent, declarative feature-highlight request (see featureHighlight.ts).
+// A plain span+name signature — never the adapter uniqueId — so it can be
+// authored in a session snapshot / URL and resolved once the region renders.
+// Mirror of the plain FeatureHighlight signature: the pure matcher + search
+// bridge use the interface, this MST model persists it, and
+// setFeatureHighlights(cast(...)) silently DROPS any field the model lacks — so
+// the assertion below fails typecheck if the two ever drift.
+// start/end are maybe so a highlight can be authored by name alone
+// (`{ refName: 'chr12', name: 'KRAS' }`); see FeatureHighlight.
+export const FeatureHighlightModel = types.model('FeatureHighlight', {
+  refName: types.string,
+  start: types.maybe(types.number),
+  end: types.maybe(types.number),
+  name: types.maybe(types.string),
+  featureId: types.maybe(types.string),
+})
+
+// Compile-time proof the persisted model's snapshot and the plain
+// FeatureHighlight interface stay structurally identical (checked both ways, the
+// same AssignableTo guard idiom as modelContract.ts). Errors here instead of a
+// silent field drop the next time either side gains a field.
+type AssignableTo<A extends B, B> = A
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _HighlightModelToInterface = AssignableTo<
+  SnapshotIn<typeof FeatureHighlightModel>,
+  FeatureHighlight
+>
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _HighlightInterfaceToModel = AssignableTo<
+  FeatureHighlight,
+  SnapshotIn<typeof FeatureHighlightModel>
+>
 
 // A rendered thing the user right-clicked, carrying the exact id to highlight
 // along with the span/name stored for display and search-highlight parity.
