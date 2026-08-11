@@ -219,10 +219,10 @@ wolf-derived. A short block is weaker evidence than its color suggests and need
 not be a cross at all, since some variation was never sorted cleanly between the
 two panels in the first place.
 
-Orange does not mean descended from wolves, which every dog is. Both panels are
-modern, so what domestication carried into dogs is in both and separates
-nothing. Orange is what resembles a present-day gray wolf and not a breed dog,
-which is why the German Shepherd at the foot paints solid dog.
+Orange marks what resembles a present-day gray wolf rather than a breed dog.
+Both reference panels are modern, so whatever domestication carried into dogs
+sits in both of them and separates nothing, which is why the German Shepherd at
+the foot paints solid dog.
 
 One feature of the painting is not about the dogs at all. Blocks break up
 towards the end of chr1, and that is the genetic map rather than the animals.

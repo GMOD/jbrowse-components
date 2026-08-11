@@ -25,20 +25,20 @@ draws one row per file.
   [desktop quickstart](/docs/quickstart_desktop), which opens local `.bw` files
   with nothing hosted)
 
-## Why pseudobulk
+## Pooling cells into rows
 
 One ATAC cell contributes only a few thousand fragments, so a coverage track of
 a single cell is almost entirely zero and no locus reads as open or closed.
-Pseudobulking is the standard answer: take the labels your clustering already
-assigned, pool every fragment belonging to a label into one profile, and each
-cell type comes out as a dense track that looks like a bulk ATAC experiment run
+Pseudobulking is the usual way around that: take the labels your clustering
+already assigned, pool every fragment belonging to a label into one profile, and
+each cell type comes out as a dense track resembling a bulk ATAC experiment run
 on that cell type alone. JBrowse stacks the resulting files as rows of one
-track, and accessibility restricted to one lineage reads as a peak present in a
+track, so accessibility restricted to one lineage draws as a peak present in a
 few rows and flat in the rest.
 
-PBMCs are a good check on the whole path, because the answer is known in
-advance: at a T-cell marker the T-cell rows have to carry the signal, and at a
-B-cell marker the same rows have to go flat and the B-cell rows light up.
+PBMCs make a good dataset to try this on, since the answer is known in advance:
+at a T-cell marker the T-cell rows should carry the signal, and at a B-cell
+marker those rows should go flat while the B-cell rows light up.
 
 Each row keeps the color its cluster had in the single-cell object, and the rows
 are ordered by lineage, so the two markers land in different blocks.

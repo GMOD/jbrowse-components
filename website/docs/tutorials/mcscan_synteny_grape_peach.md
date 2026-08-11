@@ -32,12 +32,13 @@ On Debian/Ubuntu, `apt install samtools tabix wget last-align` covers the
 aligner and the file tools; jcvi installs with `pip install jcvi` and `node`
 comes from [nodejs.org](https://nodejs.org/).
 
-## Why MCScan rather than a whole-genome aligner
+## What MCScan compares
 
-Unlike [pairwise minimap2](/docs/tutorials/synteny_visualization), MCScan
-compares two genomes through their gene annotations, so it finds synteny between
-species too divergent to line up base by base. The cost is resolution: an anchor
-is a gene pair, so there is no CIGAR and nothing to draw below the gene.
+MCScan works through the two genomes' gene annotations rather than their
+sequence, which is what lets it find synteny between species too divergent to
+line up base by base with [minimap2](/docs/tutorials/synteny_visualization). The
+trade is resolution: an anchor is a gene pair, so there is no CIGAR and nothing
+to draw below the level of a gene.
 
 For three or more genomes from one MCScan run, see
 [ortholog tables](/docs/tutorials/multiway_synteny_grape_peach_cacao), which

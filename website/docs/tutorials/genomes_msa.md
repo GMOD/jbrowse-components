@@ -20,17 +20,16 @@ annotations are drawn on top of it.
 - nothing to install: this is a click-path through a hosted site, and no
   sequence, alignment or tree is prepared by hand
 
-## Orthologs, not a search
+## Where the sequences come from
 
 NCBI publishes one ortholog gene per species for most annotated genes, so the
-plugin can look up what this gene is in each species instead of submitting a
-similarity search for what looks like this sequence. The lookup returns
+plugin looks up what this gene is in each species rather than submitting a
+similarity search for what resembles this sequence. The lookup returns
 immediately, which leaves the multiple alignment itself as the only step that
-takes real time; a `blastp` submission has to queue and run before an alignment
-can start.
+takes real time; a `blastp` submission has to queue and run first.
 
-The dialog's **NCBI BLAST query** tab is the route for a gene with no resolvable
-symbol, which is the case a search handles and a lookup cannot.
+For a gene with no resolvable symbol there is nothing to look up, and the
+dialog's **NCBI BLAST query** tab is the route to take instead.
 
 ## Opening the gene
 

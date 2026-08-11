@@ -161,37 +161,34 @@ adaptive evolution of primate lysozyme is one of the older results in molecular
 evolution, the enzyme having been recruited as a digestive protein in foregut
 fermenters.
 
-**The plot does not establish that, and it is worth being exact about what it
-does show.** Click the orange link and the detail panel gives the count and the
-p behind it: a handful of synonymous differences, and a Fisher p nowhere near
-significant. One pairwise comparison has very little power, and the published
-result rests on codon models across many primate lineages rather than on a ratio
-between two of them. What the figure shows is that this gene's ratio stands
-apart from every neighbour's, which is a hypothesis worth the codon model, not a
-substitute for it.
+Click the orange link and the detail panel gives the count and the p behind it:
+a handful of synonymous differences, and a Fisher p nowhere near significant.
+One pairwise comparison carries very little power, and the published result
+rests on codon models across many primate lineages rather than on a ratio
+between two of them. So what the figure gives you is a gene whose ratio stands
+apart from every neighbour's, which is where a codon model would start.
 
-The colour that _is_ significant here is the blue. A conserved gene accumulates
+The blue is the colour that tests strongly here. A conserved gene accumulates
 enough synonymous change to measure while holding non-synonymous change near
-zero, and that asymmetry tests overwhelmingly: ACTB elsewhere in this table
-reaches p of about 1e-20. Across the whole table the great majority of pairs are
-significantly _below_ 1 and almost none significantly above, which is the
-genuine genome-wide result and the reason the ramp is mostly blue.
+zero, and that asymmetry comes out overwhelmingly significant. Across the whole
+table the great majority of pairs sit significantly _below_ 1 and almost none
+significantly above, which is why the ramp is mostly blue.
 
 ## Checking it against the raw data
 
-The figure carries its own control. YEATS4 begins about eleven kilobases from
-where LYZ ends, so the two share a locus, a divergence time and a neighbourhood,
-and they land at opposite ends of the ramp. Anything that moved both genes
-together, an alignment artefact or a mis-set divergence, would not produce that.
-YEATS4 is also the case a floor on dS would have thrown away: it is conserved
-and compact, so its dS is low while its synonymous count is perfectly adequate,
-which is why the floor counts substitutions instead.
+The figure carries its own control. YEATS4 begins just past where LYZ ends, so
+the two share a locus, a divergence time and a neighbourhood, and they land at
+opposite ends of the ramp. Anything that moved both genes together, an alignment
+artefact or a mis-set divergence, would not produce that. YEATS4 is also the
+case a floor on dS would have thrown away: it is conserved and compact, so its
+dS is low while its synonymous count is perfectly adequate, which is why the
+floor counts substitutions instead.
 
 The [script](#reproduce-it-end-to-end) prints the neighbourhood beside the
-genome-wide distribution, and the honest summary of that distribution is two
-numbers rather than one: how many pairs exceed 1, and how many of those survive
-the Fisher test. The first is a small percentage. The second is close to what
-chance alone would give at that many tests.
+genome-wide distribution, and reports it as two counts rather than one: how many
+pairs exceed 1, and how many of those survive the Fisher test. Few do the first,
+and those that survive the second are about what chance alone would give at that
+many tests.
 
 ## Reproduce it end to end
 

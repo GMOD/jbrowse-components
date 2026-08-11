@@ -44,9 +44,9 @@ that open the cluster at all stop between HOXA7 and HOXA9, which is what makes
 the change read as a column across the rows rather than as nine unrelated
 patterns.
 
-Which rows those are is the point of picking nine cell types rather than one.
-The posterior genes carry a trunk-and-limb address, and the two cell types that
-open them are the endothelial and skeletal-muscle lines, HUVEC and HSMM, the
+Which rows those are is why nine cell types are loaded rather than one. The
+posterior genes carry a trunk-and-limb address, and the two cell types that open
+them are the endothelial and skeletal-muscle lines, HUVEC and HSMM, the
 mesodermal pair. The keratinocyte, lung-fibroblast and mammary lines stop at
 HOXA7. GM12878 and K562 are blood, and hold the whole cluster shut. H1-hESC is
 pluripotent and has no address yet, so it is neither: its magenta is
@@ -170,9 +170,9 @@ are keyed by color, one uncheck hides every state sharing that color.
 Two more track-menu actions turn the painting into a comparison:
 
 - **Clustering → Cluster rows by similarity** reorders the rows by their state
-  colors across the region in view and draws the dendrogram in the sidebar. On
-  the 127-epigenome track below this is the whole point: related tissues group
-  themselves at whatever locus you're looking at, rather than sitting in a
+  colors across the region in view and draws the dendrogram in the sidebar. It
+  earns its keep on the 127-epigenome track below, where related tissues group
+  themselves at whatever locus you're looking at rather than sitting in a
   hand-written order.
 - Right-click a column of the painting and pick **Sort rows by color here** to
   rank the rows by the state each one carries at that base. On a promoter, the
