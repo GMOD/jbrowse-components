@@ -11,12 +11,17 @@ import {
   menuCascade,
   sessionSpec,
 } from '../screenshot-spec-helpers.ts'
+import { CANCER_SV_BASE } from './cancer_sv.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 // The menu label for `fit`, straight from the shared option table, so the click
 // path and the boxed annotation below can't drift from the menu.
 const FIT_LABEL = heightModeLabel('fit', 'read')
+
+// The cancer_sv tutorial's demo config, borrowed for its K562 Iso-Seq track --
+// the one hosted alignment file whose reads carry a transcript's strand.
+const CANCER_SV_CONFIG = encodeURIComponent(`${CANCER_SV_BASE}/config.json`)
 
 // The green-A mismatch column `alignments_sort_by_base` is about: the base the
 // session sorts on, the base its right-click has to land on, and the base both
@@ -387,6 +392,75 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   // feature details / Copy info / Dotplot of read vs ref / Linear read vs ref).
   // Read glyphs are canvas-drawn, so the rightclick uses a viewport coordinate;
   // a follow-up mouse move off the read clears its hover tooltip.
+  // STRAND-SPLIT COVERAGE AS DEPTH, WHICH IS THE OTHER HALF OF THE SETTING
+  // (review, twice, on the figure below: "i really think we should seek out a
+  // viral sample or something that has dramatically diff forward and reverse
+  // coverage"). The figure below is about each band's own MISMATCH colouring
+  // and cannot show a depth split -- HG002 ONT is WGS and strand-balanced by
+  // construction, which is exactly why it is the right data for that claim and
+  // the wrong data for this one. So this is a second frame rather than a
+  // replacement.
+  //
+  // K562 PacBio Iso-Seq, already hosted for the cancer_sv tutorial. Iso-Seq
+  // reads are oriented to the transcript, so read strand IS transcript strand
+  // and a gene's coverage lands entirely in one band. Counted off the hosted BAM
+  // with samtools rather than read off a picture:
+  //
+  //   samtools view -c -F 2320 <bam> <region>   # forward
+  //   samtools view -c -F 2304 -f 16 <bam> <region>   # reverse
+  //
+  // chr16:172,000-178,000 (HBA2/HBA1) is 10,153 forward against 224 reverse, and
+  // chr16:184,000-190,000 (LUC7L's first exons) is 14 forward against 277.
+  //
+  // WHY THIS LOCUS. K562 is an erythroleukemia line, so the alpha-globin cluster
+  // is its loudest transcription: HBZ, HBM, HBA2, HBA1 and HBQ1 in a row, every
+  // one of them on the forward strand. That makes the forward band a stack of
+  // transcript profiles and the reverse band flat across 40 kb. LUC7L is in
+  // frame on purpose and is the control: it is the next gene along, it is on the
+  // reverse strand, and it is the thing that stops an empty band reading as a
+  // broken track.
+  //
+  // No pileup. `showPileup: false` is the guide's own instruction for this
+  // setting, and at ~10,000 reads the alternative is a black wall under a band
+  // nobody can then see.
+  {
+    mode: 'url',
+    name: 'alignments/strand_split_depth',
+    url: lgvSession(CANCER_SV_CONFIG, {
+      assembly: 'hg38',
+      loc: 'chr16:146,000-196,000',
+      tracks: [
+        {
+          trackId: 'ncbi_refseq_hg38',
+          geneGlyphMode: 'longestCoding',
+          height: 70,
+        },
+        {
+          trackId: 'K562_isoseq',
+          type: 'LinearAlignmentsDisplay',
+          groupBy: { type: 'strand' },
+          showPileup: false,
+          // NO SASHIMI ARCS. They are on by default and they wreck this claim:
+          // an arc is drawn per junction whatever its read count, so the reverse
+          // band came back full of blue arcs over the globin cluster on the
+          // strength of the ~200 reverse reads there, against 10,000 forward.
+          // The figure is about the two bands' HEIGHTS.
+          showSashimiArcs: false,
+          coverageHeight: 190,
+          height: 420,
+        },
+      ],
+    }),
+    // `pileup-display` is the whole alignments display's testid, coverage band
+    // included, so it is still the gate with the pileup switched off
+    readySelector: displayPainted('pileup-display'),
+    readyTimeout: 120000,
+    settleMs: 12000,
+    // off the run's own below-the-fold report
+    viewportHeight: 740,
+    hideTooltip: true,
+  },
+
   // Strand-split coverage: what grouping does to the coverage band itself. The
   // depth split is the obvious half; the half worth a figure is that each band
   // carries its OWN mismatch coloring, because every section's band is computed

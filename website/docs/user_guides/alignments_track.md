@@ -173,6 +173,19 @@ transcript strand is which mate the read is; the
 [RNA-seq tutorial](/docs/tutorials/rnaseq#strand-specific-rna-seq) shows that on
 a pair of genes transcribed in opposite directions.
 
+On data where read strand carries meaning, the two bands are the whole result.
+Long-read cDNA is the clearest case: the reads are oriented to the transcript,
+so a gene's coverage lands entirely in one band and the other stays at the
+floor.
+
+<Figure caption="K562 PacBio Iso-Seq grouped by strand over the alpha-globin cluster. Every gene in frame but the last is transcribed off the forward strand, so the forward band carries the depth and the reverse band sits at the floor; LUC7L at the right edge runs the other way and is what the reverse band does carry." src="/img/alignments/strand_split_depth.png" />
+
+The same split read the other way is a check on the reads rather than on the
+transcripts. Each band's mismatch coloring is computed from only its own
+strand's reads, so a position colored in one band and not the other is carried
+by one strand alone, which is the signature of a systematic basecalling error
+rather than a variant.
+
 <Figure caption="HG002 nanopore reads grouped by strand, each band colored from only its own strand's reads. The two boxed columns are five bases apart: at the left one only the reverse reads disagree with the reference, a basecalling error; at the right one both strands do, a real variant." src="/img/alignments/strand_split_coverage.png" />
 
 ## Read height and track sizing
