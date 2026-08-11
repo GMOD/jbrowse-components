@@ -306,5 +306,26 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
       ],
     ),
     viewportHeight: 700,
+    // ONE PILL, AND IT DEFINES THE TICK. "Heterozygous sites" is the track's
+    // name and a reader who does not already know the term learns nothing from
+    // it -- while the whole figure rests on what one tick means: the two
+    // haplotypes in this frame carry different bases there. Said once, on the
+    // top panel, on the empty half of the lane under the row of ticks.
+    //
+    // The structural half of the claim (the ribbon is one band, so the panels
+    // agree) needs no label: it is one shape and the caption names it.
+    annotations: [
+      {
+        type: 'text',
+        text: 'each tick: one base where the two haplotypes differ',
+        fontSize: 16,
+        anchor: {
+          view: [0, 0],
+          track: 'hg002v1.2_hetsites',
+          locus: 'chr8_MATERNAL:7,703,000',
+          fracY: 0.45,
+        },
+      },
+    ],
   },
 ]
