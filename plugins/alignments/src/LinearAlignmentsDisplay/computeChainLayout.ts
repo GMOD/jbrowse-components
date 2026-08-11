@@ -60,13 +60,14 @@ function buildChainRowMap(
 }
 
 // Chains spanning multiple regions are merged by name. min/max give the true
-// span; `distance` takes the max, that being the longest reach any one region
-// saw. It is a packing-order key only (`compareChainsCanonically` sorts it
-// ASCENDING, so the tightest chains take the lowest rows) — placement itself
-// uses the merged min/max, so a chain whose reach this understates still cannot
-// collide with anything. It does understate one: a pair split across two
-// regions is a singleton in each, so a merged chain reaching across a fusion
-// keeps a single alignment's distance and packs among the tight ones.
+// span; `distance` is a packing-order key only (`compareChainsCanonically` sorts
+// it ASCENDING, so the tightest chains take the lowest rows) — placement itself
+// uses the merged min/max, so the key can never cause a collision, only a worse
+// ordering. It used to take the max of what each region reported, which for the
+// case this layout exists to serve is every region understating it: a fusion's
+// read is a singleton in each of the two regions, so a chain crossing the whole
+// view carried one alignment's distance and packed among the tight ones. See the
+// max at the end.
 //
 // Bounds are shifted onto their region's refName segment of the placement axis
 // (`refNameAxisShift`) before merging — refNames share the genomic coordinate
@@ -129,7 +130,18 @@ function mergeChains(
       }
     }
   }
-  return [...merged.entries()].map(([name, bounds]) => ({ name, ...bounds }))
+  // A merged chain reaches at least as far as its merged bounds, whatever any
+  // single region saw. Taking the max here is what generalizes `chainDistance`'s
+  // own rule (a region reports |TLEN| when its local span understates the
+  // fragment) to the cross-region case, where every region's span understates it
+  // by construction. Identity for a single-region chain, whose merged span IS
+  // the span its distance was computed from — so the common case keeps its
+  // existing order exactly.
+  return [...merged.entries()].map(([name, bounds]) => ({
+    name,
+    ...bounds,
+    distance: Math.max(bounds.distance, bounds.maxEnd - bounds.minStart),
+  }))
 }
 
 export function readYsFromRowMap(

@@ -306,6 +306,48 @@ describe('computeMultiRegionChainLayout — cross-region consistency', () => {
     expect(rowMap.get('readA')).not.toBe(rowMap.get('readB'))
   })
 
+  // `distance` orders the packing (ascending — tightest to the lowest rows), and
+  // for the case this layout exists to serve every region understates it: a
+  // fusion's read is a singleton in each of the two windows, so the chain that
+  // crosses the whole view reported one alignment's length and packed among the
+  // tight ones. The merged span is what it actually reaches.
+  test('a chain crossing regions packs by its merged reach', () => {
+    const wideL = makeChainData({
+      regionStart: 1000,
+      chains: [{ name: 'wide', minStart: 1000, maxEnd: 1100, distance: 100 }],
+    })
+    const wideR = makeChainData({
+      regionStart: 9000,
+      chains: [
+        { name: 'wide', minStart: 9000, maxEnd: 9100, distance: 100 },
+        // Longer than either of `wide`'s per-region spans, so the old key sorted
+        // it AFTER `wide` — and since it sits inside `wide`'s merged span the
+        // two collide, which is what makes the order decide the rows. `wide`
+        // really reaches 8100, so it is the one that belongs below.
+        { name: 'local', minStart: 2000, maxEnd: 2400, distance: 400 },
+      ],
+    })
+
+    const { rowMap } = computeMultiRegionChainLayout([
+      [0, wideL],
+      [1, wideR],
+    ])
+    expect(rowMap.get('local')!).toBeLessThan(rowMap.get('wide')!)
+  })
+
+  // The merged span of a single-region chain IS the span its distance came from,
+  // so nothing about the ordinary case may move.
+  test('a single-region chain keeps the distance its region reported', () => {
+    const chains = [
+      { name: 'a', minStart: 1000, maxEnd: 1900, distance: 900 },
+      { name: 'b', minStart: 1200, maxEnd: 1300, distance: 100 },
+    ]
+    const { rowMap } = computeMultiRegionChainLayout([
+      [0, makeChainData({ regionStart: 1000, chains })],
+    ])
+    expect(rowMap.get('b')!).toBeLessThan(rowMap.get('a')!)
+  })
+
   test('non-overlapping chains in different regions share a row', () => {
     const region1 = makeChainData({
       regionStart: 1000,
