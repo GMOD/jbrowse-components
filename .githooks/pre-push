@@ -1,0 +1,140 @@
+#!/bin/sh
+# Runs `pnpm check-docs` and `pnpm autogen --check` over what you are about to
+# push, so main does not go red on something a local check would have caught.
+# `pnpm install` points core.hooksPath here; skip with SKIP_DOCS_CHECK=1 or
+# `git push --no-verify`.
+#
+# WHY PRE-PUSH AND NOT PRE-COMMIT. Both commands read the whole tree — there is
+# no staged-paths version of "is this generated artifact current", because the
+# artifact is a function of every source that feeds it. At ~45s that is far too
+# slow per commit and about right per push, which is also the moment the cost
+# lands on other people rather than on you.
+#
+# WHAT IT COSTS. Measured 2026-08-10 on this tree, warm:
+#   pnpm check-docs         43.1s
+#   pnpm autogen --check    33.9s
+# Run in parallel below, so ~45s wall. Against that, the CI jobs they stand in
+# for take ~8 and ~4 minutes to report, and until someone fixes it main is red
+# for everyone pulling.
+#
+# WHY IT EARNS THE 45s. On 2026-08-10 these two gates went red on main four
+# separate times in one day, every time because a figure or docs commit landed
+# without its regeneration: stale gallery links, an unpushed tutorial thumb, a
+# jbrowse-img README whose CLI options had moved, three captions over the
+# ratchet. Every one of them was already visible locally at commit time.
+set -eu
+
+if [ "${SKIP_DOCS_CHECK:-}" = 1 ]; then
+  exit 0
+fi
+
+root=$(git rev-parse --show-toplevel)
+cd "$root"
+
+if ! command -v pnpm >/dev/null 2>&1; then
+  echo "pre-push: no pnpm, skipping docs checks" >&2
+  exit 0
+fi
+
+# stdin is one `<local ref> <local sha> <remote ref> <remote sha>` line per ref.
+# A zero local sha is a branch deletion (nothing to check); a zero remote sha is
+# a branch the remote has never seen, so bound the range by what the remote
+# already has rather than walking to the root commit.
+zero=0000000000000000000000000000000000000000
+range_files=
+found=
+while read -r _localref localsha _remoteref remotesha; do
+  [ "$localsha" = "$zero" ] && continue
+  found=1
+  if [ "$remotesha" = "$zero" ]; then
+    files=$(git diff --name-only "$(git merge-base "$localsha" HEAD@{upstream} 2>/dev/null || echo "$localsha^")" "$localsha" 2>/dev/null || true)
+  else
+    files=$(git diff --name-only "$remotesha" "$localsha" 2>/dev/null || true)
+  fi
+  range_files=$range_files$files'
+'
+done
+
+# No refs on stdin (a hook run by hand) means check anyway rather than silently
+# passing; nothing to push at all means nothing to check.
+if [ -z "$found" ]; then
+  exit 0
+fi
+if [ -z "$(printf '%s' "$range_files" | tr -d '[:space:]')" ]; then
+  exit 0
+fi
+
+# The sources these artifacts are generated FROM. Deliberately broad — model and
+# config docs come out of plugin and package sources, so a push touching only
+# code can still leave a doc table stale. A push that is purely CI config or
+# editor settings matches nothing here and skips.
+if ! printf '%s' "$range_files" | grep -Eq \
+  '^(website/|products/|plugins/|packages/|agent-docs/|scripts/|figures\.lock)'; then
+  exit 0
+fi
+
+echo "pre-push: checking docs and generated artifacts (~45s, SKIP_DOCS_CHECK=1 to skip)" >&2
+
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+
+# In parallel: they share no state and each is single-digit-percent CPU-bound on
+# the other's work. Output is buffered to files and replayed in a fixed order so
+# two interleaved streams do not land on top of each other.
+pnpm check-docs >"$tmp/docs.log" 2>&1 &
+docs_pid=$!
+
+# autogen only answers CI's question when this checkout's figures are the ones
+# CI will have, and there are two ways for that to be false. Both produce a
+# stale-artifact report about the figure corpus rather than about the push,
+# which is the kind of false positive that gets a hook switched off.
+#
+#   - No corpora at all. They are gitignored, so a fresh worktree has none
+#     (`pnpm figures:pull`, or the two symlinks in CLAUDE.md), and the
+#     jbrowse-img doc and tutorial-thumb generators then report OUT OF DATE
+#     rather than failing outright.
+#   - Corpora ahead of figures.lock. A regen someone has not pushed yet is
+#     invisible to git and to CI: CI pulls the lock's sources, derives the
+#     committed thumb and agrees, while the same generators here derive from
+#     the newer sources on disk and disagree. On a machine that shoots figures
+#     this is the normal state, not the exception.
+#
+# `pnpm figures:check` settles the second in ~2s, which is worth it to keep the
+# 34s answer trustworthy.
+autogen_pid=
+if [ ! -d website/static/img ] || [ ! -d products/jbrowse-img/img ]; then
+  echo "pre-push: no figure corpora, skipped 'pnpm autogen --check'." >&2
+  echo "  Run 'pnpm figures:pull' to have it checked here too." >&2
+elif ! pnpm figures:check >"$tmp/figures.log" 2>&1; then
+  echo "pre-push: figures on disk differ from figures.lock, so skipped" >&2
+  echo "  'pnpm autogen --check' — it would report on those, not on your push." >&2
+  echo "  'pnpm figures:check' says what moved; push them if they are yours." >&2
+else
+  pnpm autogen --check >"$tmp/autogen.log" 2>&1 &
+  autogen_pid=$!
+fi
+
+status=0
+wait "$docs_pid" || status=$?
+if [ "$status" != 0 ]; then
+  echo >&2
+  echo "pre-push: pnpm check-docs failed" >&2
+  cat "$tmp/docs.log" >&2
+fi
+
+if [ -n "$autogen_pid" ]; then
+  astatus=0
+  wait "$autogen_pid" || astatus=$?
+  if [ "$astatus" != 0 ]; then
+    echo >&2
+    echo "pre-push: pnpm autogen --check failed — run 'pnpm autogen' and commit" >&2
+    cat "$tmp/autogen.log" >&2
+    status=$astatus
+  fi
+fi
+
+if [ "$status" != 0 ]; then
+  echo >&2
+  echo "Push blocked. Fix the above, or push anyway with SKIP_DOCS_CHECK=1." >&2
+  exit "$status"
+fi
