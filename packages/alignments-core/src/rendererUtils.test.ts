@@ -1,6 +1,6 @@
+import { coverageLayout } from './coverageBandBox.ts'
 import {
   CANVAS2D_COVERAGE,
-  coverageLayout,
   drawCoverageBins,
   drawIndicators,
   drawModCovSegments,

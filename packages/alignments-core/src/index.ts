@@ -84,9 +84,9 @@ export type {
   ReadVsRefInput,
   ReadVsRefMate,
 } from '@jbrowse/cigar-utils'
+export { coverageLayout } from './coverageBandBox.ts'
 export {
   CANVAS2D_COVERAGE,
-  coverageLayout,
   drawCoverageBins,
   drawIndicators,
   drawInterbaseSegments,

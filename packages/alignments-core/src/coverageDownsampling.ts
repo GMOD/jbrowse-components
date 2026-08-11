@@ -5,6 +5,8 @@
 // are erased, so they can keep using the barrel.
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 
+import { coverageLayout } from './coverageBandBox.ts'
+
 import type { ScoreStats, YScaleTicks } from '@jbrowse/wiggle-core'
 
 export function niceStep(maxDepth: number) {
@@ -44,16 +46,22 @@ export function computeCoverageTicks(
   coverageHeight: number,
   scaleType = 'linear',
 ): YScaleTicks {
+  // The box the coverage marks are drawn in, not a second spelling of it: the
+  // bars measure up from `bottom` over `effectiveH` (rendererUtils, and the
+  // shader those numbers are generated from), so a tick placed any other way is
+  // a tick that doesn't sit on its own data. This used to open-code
+  // `coverageHeight - offset` / `coverageHeight - 2 * offset`, the same twin
+  // `coverageBandLayoutParity.test.ts` retired from the drawing side.
+  const { effectiveH, bottom } = coverageLayout(coverageHeight)
   const yTop = YSCALEBAR_LABEL_OFFSET
-  const yBottom = coverageHeight - YSCALEBAR_LABEL_OFFSET
+  const yBottom = bottom
 
   if (maxDepth === 0) {
     return { items: [], yTop, yBottom }
   }
 
-  const effectiveHeight = coverageHeight - 2 * YSCALEBAR_LABEL_OFFSET
   const fractionOf = makeDepthFraction(maxDepth, scaleType)
-  const yOf = (value: number) => yBottom - fractionOf(value) * effectiveHeight
+  const yOf = (value: number) => yBottom - fractionOf(value) * effectiveH
 
   const ticks: YScaleTicks['items'] = []
   if (scaleType === 'log') {

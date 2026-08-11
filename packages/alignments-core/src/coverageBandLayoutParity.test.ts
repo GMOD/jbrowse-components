@@ -1,9 +1,12 @@
+import { coverageLayout } from './coverageBandBox.ts'
 import {
   covBottomOffsetPx,
   covEffectiveHeightPx,
 } from './coverageBandLayout.generated.ts'
-import { YSCALEBAR_LABEL_OFFSET } from './coverageDownsampling.ts'
-import { coverageLayout } from './rendererUtils.ts'
+import {
+  YSCALEBAR_LABEL_OFFSET,
+  computeCoverageTicks,
+} from './coverageDownsampling.ts'
 
 // The retirement gate for coverage.slang's `//! js-export` (adr-051), and the
 // first export lifted from a function the exporting shader only *imports* —
@@ -45,6 +48,24 @@ test('the baseline sits inside the band, and the bars fit between the insets', (
   const { effectiveH, bottom } = coverageLayout(h)
   expect(bottom).toBeLessThan(h)
   expect(bottom - effectiveH).toBeGreaterThan(0)
+})
+
+// The other half of the band's contract, and the reason `coverageLayout` is its
+// own module: the ticks are only trustworthy if they are placed in the box the
+// bars are drawn in. `computeCoverageTicks` open-coded that box, so the two
+// agreed by transcription rather than by construction.
+test('the coverage axis places itself in the band the bars are drawn in', () => {
+  for (const h of HEIGHTS.filter(x => x > 2 * YSCALEBAR_LABEL_OFFSET)) {
+    const { effectiveH, bottom } = coverageLayout(h)
+    const ticks = computeCoverageTicks(100, h)
+    expect(ticks.yBottom).toBe(bottom)
+    expect(ticks.yBottom - ticks.yTop).toBe(effectiveH)
+    // domain-min at the baseline, domain-max a full drawable height above it
+    expect(ticks.items[0]!.y).toBe(bottom)
+    expect(Math.min(...ticks.items.map(t => t.y))).toBeGreaterThanOrEqual(
+      bottom - effectiveH,
+    )
+  }
 })
 
 test('the two generated functions are read in the units the shader uses', () => {

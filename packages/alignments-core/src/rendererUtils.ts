@@ -1,8 +1,4 @@
-import {
-  covBottomOffsetPx,
-  covEffectiveHeightPx,
-} from './coverageBandLayout.generated.ts'
-import { YSCALEBAR_LABEL_OFFSET } from './coverageDownsampling.ts'
+import { coverageLayout } from './coverageBandBox.ts'
 import {
   INSTANCE_OFFSET_F32 as INDICATOR_F32,
   INSTANCE_OFFSET_U32 as INDICATOR_U32,
@@ -36,18 +32,6 @@ interface InterbaseDrawColors {
 }
 
 type Ctx = CanvasRenderingContext2D | SvgCanvas
-
-// Where the coverage bars live inside the band: the drawable height, and how
-// far the baseline sits below the band's top edge. Every coverage mark on both
-// backends measures from these two, and they are the shader's own — generated
-// from alignmentsUniforms via coverage.slang (adr-051). The label inset is
-// reserved at both ends, which is the whole reason the two differ.
-export function coverageLayout(coverageHeight: number) {
-  return {
-    effectiveH: covEffectiveHeightPx(coverageHeight, YSCALEBAR_LABEL_OFFSET),
-    bottom: covBottomOffsetPx(coverageHeight, YSCALEBAR_LABEL_OFFSET),
-  }
-}
 
 // Left edge of a mark whose width is about to be clamped to a 1px minimum.
 // Sub-pixel marks are CENTERED on their span, which is what
