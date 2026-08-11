@@ -51,6 +51,21 @@ describe('mafPointerAt', () => {
     expect(mafPointerAt(model, 25.5, 100).gposFrac).toBe(1974.5)
   })
 
+  test('baseBp is the base painted at the pixel, which reversed is not a floor', () => {
+    expect(mafPointerAt(makeModel(), 25.5, 100).baseBp).toBe(1025)
+    const reversed = makeModel({
+      lgv: { pxToBp: pxToBp(true), bpPerPx: 1 },
+    })
+    // mid-cell the two agree...
+    expect(mafPointerAt(reversed, 25.5, 100).baseBp).toBe(1974)
+    // ...and on a cell boundary they don't: bp runs leftward, so base b covers
+    // offsets (b, b+1] and the floor names the base to its right. At offset 0
+    // that is `end` itself, outside the region — which is what used to make the
+    // leftmost pixel column of a flipped region resolve no hover at all.
+    expect(mafPointerAt(reversed, 0, 100).gposFrac).toBe(2000)
+    expect(mafPointerAt(reversed, 0, 100).baseBp).toBe(1999)
+  })
+
   test('row index is measured from the bottom of the stacked bands', () => {
     // rowsTopOffset 45, rowHeight 10: y=45 is row 0, y=54 still row 0, y=55 is row 1
     const model = makeModel()
@@ -99,7 +114,7 @@ describe('resolveMafRowHover', () => {
       },
     })
     resolveMafRowHover(model, 25.5, 65)
-    expect(calls).toEqual([[3, 1025.5, 2, 1]])
+    expect(calls).toEqual([[3, { gposFrac: 1025.5, baseBp: 1025 }, 2, 1]])
   })
 })
 

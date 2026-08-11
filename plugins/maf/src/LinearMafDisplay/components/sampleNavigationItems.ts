@@ -42,8 +42,13 @@ export function sampleNavigationItems(
   const { startX, endX, startY, endY } = contextCoord
   const left = mafPointerAt(model, Math.min(startX, endX), startY)
   const right = mafPointerAt(model, Math.max(startX, endX), endY)
-  const startBp = Math.floor(Math.min(left.gposFrac, right.gposFrac))
-  const endBp = Math.ceil(Math.max(left.gposFrac, right.gposFrac))
+  // The half-open span of bases actually painted between the two pixels, from
+  // `baseBp` rather than a floor/ceil of the fractional coordinate — which on a
+  // reversed region names one base past each edge (see `HoverBp`), so the
+  // navigation target could include a base the selection rectangle did not
+  // cover. Same span `selectionRegion` computes for the subsequence widget.
+  const startBp = Math.min(left.baseBp, right.baseBp)
+  const endBp = Math.max(left.baseBp, right.baseBp) + 1
   const { startRow, endRow } = rowSpanAtY(model, startY, endY)
 
   const targets: SampleNavigationTarget[] = []

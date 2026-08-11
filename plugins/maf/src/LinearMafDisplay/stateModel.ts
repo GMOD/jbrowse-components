@@ -93,6 +93,7 @@ import type {
   LocatedCodon,
 } from './components/computeVisibleCodons.ts'
 import type { StrandConsensus } from './components/computeVisibleInversions.ts'
+import type { HoverBp } from './components/findRowHover.ts'
 import type { MafRowGeometryParams } from './components/visibleRegionGeometry.ts'
 import type {
   LinearMafDisplayConfig,
@@ -1434,15 +1435,19 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #method
-         * Resolve a hover hit on `rowIndex` at absolute genomic `bp` (uint32, per
-         * worker-output convention): an aligned base (`cell`) or a bridged/empty
-         * region (`empty`), each tagged with the sample label. Returns undefined
-         * when no fetched block covers the bp, the row is out of range, or the
-         * cell is a gap.
+         * Resolve a hover hit on `rowIndex` at the cursor's genomic position
+         * (absolute uint32, per worker-output convention): an aligned base
+         * (`cell`) or a bridged/empty region (`empty`), each tagged with the
+         * sample label. Returns undefined when no fetched block covers the bp,
+         * the row is out of range, or the cell is a gap.
+         *
+         * `bp` carries both readings of the cursor (see `HoverBp`) because the
+         * cell and the interbase insertion marker are selected by different
+         * ones, and they differ on a reversed region.
          */
         rowHoverInfo(
           displayedRegionIndex: number,
-          gposFrac: number,
+          bp: HoverBp,
           rowIndex: number,
           bpPerPx: number,
         ) {
@@ -1454,7 +1459,7 @@ export default function stateModelFactory(
           const hit = region
             ? findRowHoverAtBp(
                 region,
-                gposFrac,
+                bp,
                 rowIndex,
                 self.showAsUpperCase,
                 bpPerPx,
@@ -1513,6 +1518,10 @@ export default function stateModelFactory(
          * species is matched by the same `src`→row projection the overlay draws
          * with, so the tooltip and the strip can't disagree about which row a gene
          * is on.
+         *
+         * `bp` is a base index — the caller passes `MafPointer.baseBp`, not a
+         * floored `gposFrac`, so this names the same base the row hover and the
+         * coverage tooltip do on a reversed region.
          */
         frameHoverInfo(
           displayedRegionIndex: number,
@@ -1524,7 +1533,7 @@ export default function stateModelFactory(
           }
           const hit = findFrameAt(
             self.framesDataMap.get(displayedRegionIndex),
-            Math.floor(bp),
+            bp,
             rowIndex,
             self.rowIndexBySrc,
           )
@@ -2133,7 +2142,9 @@ export default function stateModelFactory(
             ? findCodonAt({
                 codons: self.locatedCodons,
                 displayedRegionIndex,
-                bp: Math.floor(bp),
+                // a base index from the caller (`MafPointer.baseBp`), for the
+                // same reason as `frameHoverInfo`
+                bp,
                 rowIndex,
               })
             : undefined

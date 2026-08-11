@@ -36,7 +36,7 @@ const MAFTooltip = observer(function ({
   const mouseY = mouseState.y
   const view = model.lgv
   const p1 = origMouseX !== undefined ? view.pxToBp(origMouseX) : undefined
-  const { pos: p2, gposFrac, rowIndex, inBands, onRow, hover } = hit
+  const { pos: p2, gposFrac, baseBp, rowIndex, inBands, onRow, hover } = hit
 
   // Over the band area above the rows (coverage and/or conservation). Both show
   // the depth + SNP + identity breakdown via the shared alignments-core tooltip
@@ -81,11 +81,15 @@ const MAFTooltip = observer(function ({
   // than only the colored strip; `codon` is the actual codon/amino-acid change in
   // codon view, so a specific change reads directly instead of being inferred
   // from color.
+  // `baseBp`, not a floored `gposFrac`: both index per-base data, so they want
+  // the base painted under the pixel — the same one the coverage tooltip above
+  // reads through `basePaintedAt`, which on a reversed region is a different
+  // base. See `HoverBp`.
   const frame = onRow
-    ? model.frameHoverInfo(p2.index, gposFrac, rowIndex)
+    ? model.frameHoverInfo(p2.index, baseBp, rowIndex)
     : undefined
   const codon = onRow
-    ? model.codonHoverInfo(p2.index, gposFrac, rowIndex)
+    ? model.codonHoverInfo(p2.index, baseBp, rowIndex)
     : undefined
   // The zoom-out tier resolves nothing above: `hover` and `codon` both read
   // `rpcDataMap`, which the summary fetch clears. Hit-test the bars the overlay

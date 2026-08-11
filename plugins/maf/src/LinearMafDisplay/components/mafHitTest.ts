@@ -1,4 +1,7 @@
+import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
+
 import type { MafHover } from '../util.ts'
+import type { HoverBp } from './findRowHover.ts'
 import type { PxToBpResult } from '@jbrowse/core/util/Base1DUtils'
 
 /**
@@ -18,17 +21,15 @@ export interface MafHitTestModel {
   effectiveRowHeight: number
   rowHoverInfo: (
     displayedRegionIndex: number,
-    gposFrac: number,
+    bp: HoverBp,
     rowIndex: number,
     bpPerPx: number,
   ) => MafHover | undefined
 }
 
 /** The cursor projected into the display's coordinate systems. */
-export interface MafPointer {
+export interface MafPointer extends HoverBp {
   pos: PxToBpResult
-  /** absolute fractional genomic coordinate, orientation-aware */
-  gposFrac: number
   /** display row index; meaningless when `inBands`, and not range-checked */
   rowIndex: number
   /** cursor is over the stacked bands above the per-sample rows */
@@ -52,6 +53,9 @@ export function mafPointerAt(
   return {
     pos,
     gposFrac: pos.reversed ? pos.end - pos.offset : pos.start + pos.offset,
+    // The base *painted* at this pixel, which on a reversed region is not the
+    // floor of `gposFrac` — see `HoverBp`.
+    baseBp: basePaintedAt(pos, pos.offset),
     rowIndex: Math.floor(rowAtY(model, mouseY)),
     inBands: mouseY < model.rowsTopOffset,
   }
@@ -118,13 +122,18 @@ export function resolveMafPointerHit({
   resolveRowHover: boolean
 }): MafPointerHit {
   const pointer = mafPointerAt(model, mouseX, mouseY)
-  const { pos, gposFrac, rowIndex, inBands } = pointer
+  const { pos, gposFrac, baseBp, rowIndex, inBands } = pointer
   const onRow = resolveRowHover && !pos.oob && !inBands
   return {
     ...pointer,
     onRow,
     hover: onRow
-      ? model.rowHoverInfo(pos.index, gposFrac, rowIndex, model.lgv.bpPerPx)
+      ? model.rowHoverInfo(
+          pos.index,
+          { gposFrac, baseBp },
+          rowIndex,
+          model.lgv.bpPerPx,
+        )
       : undefined,
   }
 }

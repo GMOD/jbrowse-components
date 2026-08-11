@@ -54,6 +54,30 @@ export interface EmptyHit {
 
 export type RowHit = CellHit | InsertionHit | DeletionHit | EmptyHit
 
+/**
+ * The cursor's genomic position in the two forms a row hover needs, which are
+ * genuinely different questions and used to be answered by one number.
+ *
+ * `gposFrac` is continuous, and the insertion hit-test wants exactly that: an
+ * insertion is *interbase*, so what decides the hit is the px distance from the
+ * cursor to a cell boundary.
+ *
+ * `baseBp` names a cell, so it has to be the base the painters actually put
+ * under that pixel — `basePaintedAt` / render-core's `bpAtPx`, which pivot one
+ * base on a reversed region. `Math.floor(gposFrac)` is not that: reversed, bp
+ * runs leftward, so a base covers `(b, b+1]` and the floor names the base to
+ * its right — `region.end` itself, outside the region entirely, on the region's
+ * first pixel column. Every reader of this in the plugin (`openSubsequenceWidget`,
+ * the coverage tooltip) already asked `basePaintedAt`; the row hover, the CDS
+ * frame lookup and the codon tooltip were the three that still floored, so on a
+ * flipped region they named a different base than the coverage band did for the
+ * same pixel.
+ */
+export interface HoverBp {
+  gposFrac: number
+  baseBp: number
+}
+
 // Forward-strand coordinate of the base `baseOffset` non-gap bases into the row.
 // For '-' rows the MAF start is relative to the reverse complement, so we mirror
 // through srcSize (the standard MAF coordinate transform).
@@ -198,18 +222,18 @@ function emptyHit(e: MafEmptyRow): EmptyHit {
  * when no block covers the bp or the row is absent. Blocks are genomically
  * disjoint and sorted, so `blockIndexAtBp` binary-searches the one covering
  * block — this runs on every mousemove against the *buffered* region, which is
- * tens of thousands of blocks on a fine-grained multiz. `gposFrac` is the
- * fractional cursor coordinate (its integer floor selects the cell; the
- * fraction enables px-accurate insertion hit-testing).
+ * tens of thousands of blocks on a fine-grained multiz. See `HoverBp` for why
+ * the cell and the interbase marker are selected by two different readings of
+ * the same cursor.
  */
 export function findRowHoverAtBp(
   region: MafRegionData,
-  gposFrac: number,
+  bp: HoverBp,
   rowIndex: number,
   showAsUpperCase: boolean,
   bpPerPx: number,
 ): RowHit | undefined {
-  const targetBp = Math.floor(gposFrac)
+  const { gposFrac, baseBp: targetBp } = bp
   const i = blockIndexAtBp(region.blocks, targetBp)
   if (i === -1) {
     return undefined
