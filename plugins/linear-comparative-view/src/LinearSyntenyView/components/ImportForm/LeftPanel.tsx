@@ -4,6 +4,7 @@ import { AssemblySelector } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import {
+  ChromosomeFilter,
   allSessionTracks,
   getConnectedAssemblies,
   getSyntenyTracks,
@@ -72,6 +73,8 @@ const useStyles = makeStyles()(theme => ({
 const AssemblyRows = observer(function AssemblyRows({
   selectedRow,
   selectedAssemblyNames,
+  regionNames,
+  setRegionName,
   statusByPair,
   applyRows,
   setSelectedRow,
@@ -79,6 +82,8 @@ const AssemblyRows = observer(function AssemblyRows({
 }: {
   selectedRow: number
   selectedAssemblyNames: string[]
+  regionNames: string[]
+  setRegionName: (idx: number, value: string) => void
   statusByPair: PairStatus[]
   applyRows: (rows: string[], nextSelectedPair: number) => void
   setSelectedRow: (idx: number) => void
@@ -135,6 +140,13 @@ const AssemblyRows = observer(function AssemblyRows({
               )
             }}
             session={session}
+          />
+          <ChromosomeFilter
+            label={`Row ${idx + 1} chromosomes`}
+            value={regionNames[idx] ?? ''}
+            onChange={value => {
+              setRegionName(idx, value)
+            }}
           />
           <Tooltip
             title={
@@ -197,6 +209,8 @@ const LeftPanel = observer(function LeftPanel({
   statusByPair,
   selectedAssemblyNames,
   setSelectedAssemblyNames,
+  regionNames,
+  setRegionNames,
   selectedRow,
   setSelectedRow,
 }: {
@@ -206,6 +220,8 @@ const LeftPanel = observer(function LeftPanel({
   statusByPair: PairStatus[]
   selectedAssemblyNames: string[]
   setSelectedAssemblyNames: (names: string[]) => void
+  regionNames: string[]
+  setRegionNames: (names: string[]) => void
   selectedRow: number
   setSelectedRow: (row: number) => void
 }) {
@@ -235,6 +251,19 @@ const LeftPanel = observer(function LeftPanel({
       }
     }
     setSelectedAssemblyNames(rows)
+    // POSITIONAL, and reset when the assembly at a position changes. Rows are
+    // added, removed and reordered through here with only the new name list to
+    // go on, so there is no permutation to follow a glob along — and following
+    // one would be wrong anyway: `*_MATERNAL` was typed about a particular
+    // assembly, so a row that becomes a different assembly must not keep it.
+    // A row still holding the same name keeps what was typed, which covers
+    // every edit to some OTHER row, and covers a self-alignment reorder (both
+    // rows name the same assembly) for free.
+    setRegionNames(
+      rows.map((asm, i) =>
+        asm === selectedAssemblyNames[i] ? (regionNames[i] ?? '') : '',
+      ),
+    )
     setSelectedRow(nextSelectedPair)
   }
 
@@ -291,6 +320,14 @@ const LeftPanel = observer(function LeftPanel({
           selectedAssemblyNames={selectedAssemblyNames}
           statusByPair={statusByPair}
           applyRows={applyRows}
+          regionNames={regionNames}
+          setRegionName={(idx, value) => {
+            setRegionNames(
+              selectedAssemblyNames.map((_, i) =>
+                i === idx ? value : (regionNames[i] ?? ''),
+              ),
+            )
+          }}
           selectedRow={selectedRow}
           setSelectedRow={setSelectedRow}
         />

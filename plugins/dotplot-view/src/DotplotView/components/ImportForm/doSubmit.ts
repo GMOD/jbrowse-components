@@ -1,27 +1,11 @@
-import { applySyntenyTrackSelections } from '@jbrowse/synteny-core'
+import {
+  applySyntenyTrackSelections,
+  parseRegionNames,
+} from '@jbrowse/synteny-core'
 import { transaction } from 'mobx'
 
 import type { DotplotViewModel } from '../../model.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
-
-/**
- * Split an axis' chromosome box into the entries `selectNamedRegions` takes.
- * Comma-separated, because the two things a user types here are one glob
- * (`*_MATERNAL`) or a short explicit list (`chr1, chr2`), and neither wants
- * punctuation ceremony.
- *
- * Whitespace-trimmed and empties dropped, so a trailing comma or a box holding
- * only spaces is the same as an empty box: no restriction, whole assembly. An
- * empty result must NOT reach the init as `[]` — that reads as "restrict to
- * nothing", and applyInitDisplayedRegions would leave the axis alone anyway,
- * but only by way of a guard rather than because it was asked to.
- */
-export function parseRegionNames(value: string) {
-  return value
-    .split(',')
-    .map(s => s.trim())
-    .filter(s => s !== '')
-}
 
 export function doSubmit({
   model,

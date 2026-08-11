@@ -1,4 +1,4 @@
-import { getSession } from '@jbrowse/core/util'
+import { getSession, selectNamedRegions } from '@jbrowse/core/util'
 import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import {
@@ -14,7 +14,28 @@ import { applyInitSettings, normalizeTrackLevels } from './util/initHelpers.ts'
 import type { LinearSyntenyViewModel } from './model.ts'
 import type { LinearSyntenyViewInit } from './types.ts'
 import type { InitApplyContext } from '@jbrowse/core/util/installInitAutorun'
+import type { Region } from '@jbrowse/core/util/types'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+// The regions one genome row opens on: its assembly's whole set, or the subset
+// `displayedRegionNames` picks out. Resolved here rather than left to the row's
+// own LGV init because the row is built from a snapshot — `displayedRegions` is
+// a prop of that snapshot, and a second pass that rewrote it afterwards would
+// be a visible reflow through the whole-genome state on every launch.
+function rowRegions(
+  asm: {
+    regions?: Region[]
+    getCanonicalRefName: (n: string) => string | undefined
+  },
+  names: string[] | undefined,
+) {
+  const all = asm.regions ?? []
+  if (!names?.length) {
+    return all
+  }
+  const picked = selectNamedRegions(all, names, n => asm.getCanonicalRefName(n))
+  return picked.length ? picked : all
+}
 
 // One genome row per init.views entry, each opened on its assembly's whole
 // region set. Awaits every assembly first so a failure surfaces before any view
@@ -47,7 +68,11 @@ async function buildViews(
       // policy is the caller's.
       scalebarOnly:
         !!init.collapseEmptyRows && !init.views[idx]?.tracks?.length,
-      displayedRegions: asm.regions,
+      // The row's own subset, or the whole genome. A name list that resolves to
+      // nothing falls back rather than blanking the row: an empty LGV renders
+      // as a broken panel with nothing saying why, and the same choice is made
+      // for the dotplot's axes (applyInitDisplayedRegions).
+      displayedRegions: rowRegions(asm, init.views[idx]?.displayedRegionNames),
       // Plain persisted LGV props (trackLabels, showAminoAcids, colorByCDS, …)
       // go straight onto the row's snapshot, where MST restores them natively.
       // Partitioned rather than listed, so a prop the LGV gains is a prop a
@@ -98,6 +123,13 @@ async function applyInitViewLocsAndTracks(
       if (view) {
         if (viewInit.loc) {
           await navRowToLoc(self, view, viewInit.loc, viewInit.assembly)
+        } else if (viewInit.displayedRegionNames?.length) {
+          // Fit to what the row DISPLAYS, not to the assembly.
+          // showAllRegionsInAssembly re-reads the assembly's own region list and
+          // writes it over displayedRegions, which would throw away the subset
+          // buildViews just installed — the restriction would apply for one
+          // frame and then silently undo itself.
+          view.showAllRegions()
         } else {
           view.showAllRegionsInAssembly(viewInit.assembly)
         }

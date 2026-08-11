@@ -25,6 +25,14 @@ export interface LinearSyntenyViewInit extends SyntenyViewSharedInit {
     // per-panel track (e.g. a compact LGVSyntenyDisplay height) — display props
     // sit inline, no displaySnapshot nesting needed
     tracks?: TrackInit[]
+    // Subset of the assembly this row shows, in the given order, instead of the
+    // whole genome. Entries may be globs (`*_MATERNAL`); same field, same
+    // matching (selectNamedRegions) as the LGV's own init and the dotplot's
+    // per-axis one. `loc` navigates WITHIN what a row displays, this decides
+    // what it displays at all — which is what a self-alignment needs, since one
+    // haplotype per row is the only way two rows of ONE haplotype-resolved
+    // assembly are a comparison rather than two copies of the same picture.
+    displayedRegionNames?: string[]
   } & LinearGenomeViewLaunchProps)[]
   // synteny track ids per level: tracks[i] is shown between views[i] and
   // views[i+1]. string[] shorthand is treated as a single level-0 entry

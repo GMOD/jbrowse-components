@@ -4,6 +4,7 @@ import { AssemblySelector, ErrorBanner } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
+  ChromosomeFilter,
   ImportFormModes,
   allSessionTracks,
   blockedByUnfinishedUpload,
@@ -11,7 +12,7 @@ import {
   syntenyPairStatuses,
   useQuickStartState,
 } from '@jbrowse/synteny-core'
-import { Button, Container, Paper, TextField, Typography } from '@mui/material'
+import { Button, Container, Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import TrackSelector from './TrackSelector.tsx'
@@ -46,42 +47,7 @@ const useStyles = makeStyles()(theme => ({
   header: {
     marginBottom: theme.spacing(1),
   },
-  // Wide enough for `*_MATERNAL` plus room to see a two-name list, and narrow
-  // enough that the assembly dropdown beside it stays the row's main object.
-  chromosomeFilter: {
-    minWidth: 180,
-  },
 }))
-
-// The axis' region subset, typed rather than picked. A picker would be the
-// obvious shape and is the wrong one here: the assemblies this exists for are
-// the fragmented ones, so the list to pick from is hundreds of names long and
-// the useful selections are patterns over it, not hand-checked sets. This is
-// `displayedRegionNames` — the session-spec field — with a text box in front of
-// it, so what a user types here and what a spec carries are the same strings.
-function ChromosomeFilter({
-  label,
-  value,
-  onChange,
-}: {
-  label: string
-  value: string
-  onChange: (arg: string) => void
-}) {
-  const { classes } = useStyles()
-  return (
-    <TextField
-      className={classes.chromosomeFilter}
-      label={label}
-      value={value}
-      placeholder="all (e.g. *_MATERNAL)"
-      size="small"
-      onChange={event => {
-        onChange(event.target.value)
-      }}
-    />
-  )
-}
 
 const DotplotImportForm = observer(function DotplotImportForm({
   model,

@@ -1,14 +1,21 @@
-import { applySyntenyTrackSelections } from '@jbrowse/synteny-core'
+import {
+  applySyntenyTrackSelections,
+  parseRegionNames,
+} from '@jbrowse/synteny-core'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 export function doSubmit({
   selectedAssemblyNames,
+  regionNames = [],
   model,
   session,
 }: {
   selectedAssemblyNames: string[]
+  // per row, parallel to selectedAssemblyNames; '' or absent means the whole
+  // assembly
+  regionNames?: string[]
   model: LinearSyntenyViewModel
   session: AbstractSessionModel
 }) {
@@ -17,11 +24,19 @@ export function doSubmit({
   // so we don't wait for assemblies or navigate here (see LinearGenomeView
   // model.ts). Width flows in from the comparative view's width autorun.
   model.setViews(
-    selectedAssemblyNames.map(assembly => ({
-      type: 'LinearGenomeView' as const,
-      hideHeader: true,
-      init: { assembly },
-    })),
+    selectedAssemblyNames.map((assembly, idx) => {
+      // omitted rather than passed as [] when the box is empty: the LGV's init
+      // branches on the key being present, and an empty list would take the
+      // named-regions path with nothing to name
+      const names = parseRegionNames(regionNames[idx] ?? '')
+      return {
+        type: 'LinearGenomeView' as const,
+        hideHeader: true,
+        init: names.length
+          ? { assembly, displayedRegionNames: names }
+          : { assembly },
+      }
+    }),
   )
   applySyntenyTrackSelections({
     session,

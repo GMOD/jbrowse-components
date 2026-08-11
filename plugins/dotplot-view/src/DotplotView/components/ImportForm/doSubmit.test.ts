@@ -1,4 +1,6 @@
-import { doSubmit, parseRegionNames } from './doSubmit.ts'
+import { parseRegionNames } from '@jbrowse/synteny-core'
+
+import { doSubmit } from './doSubmit.ts'
 
 import type { DotplotViewModel } from '../../model.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
