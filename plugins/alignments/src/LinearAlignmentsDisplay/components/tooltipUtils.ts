@@ -14,6 +14,7 @@ import { getOrCreate } from '../../shared/util.ts'
 import { accumulateLength, toLengthStats } from './lengthStats.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types'
+import type { ArcHitResult } from '../../features/arcs/hitTest.ts'
 import type { ModificationHitResult } from '../../features/modification/hitTest.ts'
 import type { CigarHitResult } from '../../shared/hitTestTypes.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
@@ -84,6 +85,29 @@ export interface ArcTooltipPayload {
   // Absent for a curved arc, whose Y is derived from the endpoints and would
   // just restate the span.
   insertSize?: number
+  // The other connections the cursor is on at the same time (`ArcHitResult.
+  // coincident`), heaviest first — empty in the ordinary one-arc case. Their
+  // spans are named too, because the reason two arcs coincide is usually that
+  // their breakpoints differ by less than a pixel, and that is worth being able
+  // to read off the hover rather than infer.
+  coincident: { support: number; category: string | undefined; span: string }[]
+  // How many further arcs were under the cursor beyond the ones listed. A
+  // tooltip that grows without bound covers the thing it is describing.
+  coincidentHidden: number
+}
+
+// How many coincident arcs the tooltip names before it starts counting instead.
+const MAX_COINCIDENT_LISTED = 3
+
+// "Supported by 1 read" / "Supported by 12 reads". Singular at 1 so a lone
+// connection does not read as a suspiciously weak junction. Shared by the
+// hovered arc's own line and by each coincident arc listed under it: the whole
+// point of that list is comparing the counts, which is hard if the two are
+// worded differently.
+export function supportLabel(support: number) {
+  return support === 1
+    ? 'Supported by 1 read'
+    : `Supported by ${toLocale(support)} reads`
 }
 
 // HTML/plain strings come from formatChainTooltip / formatCigarTooltip /
@@ -457,10 +481,14 @@ export function formatSashimiTooltip(arc: {
 // as the worker resolved them (mate 1, mate 2). A location range reads
 // backwards otherwise, and the arc itself is symmetric — `arcKey` already
 // treats the pair as ordered, so nothing downstream distinguishes them.
+//
+// `categoryOf` rather than a resolved label, because the coincident arcs need
+// the same mapping and a caller that resolved one label would have to remember
+// to resolve theirs the same way.
 export function formatArcTooltip(
-  hit: { x1: number; x2: number; support: number; yBp: number },
+  hit: ArcHitResult,
   refName: string,
-  category: string | undefined,
+  categoryOf: (colorType: number) => string | undefined,
   isFlat: boolean,
 ): ArcTooltipPayload {
   return {
@@ -469,10 +497,23 @@ export function formatArcTooltip(
     start: Math.min(hit.x1, hit.x2),
     end: Math.max(hit.x1, hit.x2),
     support: hit.support,
-    category,
+    category: categoryOf(hit.colorType),
     // A flat line's Y IS |tlen| (that is what the read cloud plots); a curve's
     // is the genomic radius, which is just half the span already shown above.
     ...(isFlat ? { insertSize: hit.yBp } : {}),
+    coincident: hit.coincident.slice(0, MAX_COINCIDENT_LISTED).map(other => ({
+      support: other.support,
+      category: categoryOf(other.colorType),
+      span: formatLocationRange(
+        refName,
+        Math.min(other.x1, other.x2),
+        Math.max(other.x1, other.x2),
+      ),
+    })),
+    coincidentHidden: Math.max(
+      hit.coincident.length - MAX_COINCIDENT_LISTED,
+      0,
+    ),
   }
 }
 

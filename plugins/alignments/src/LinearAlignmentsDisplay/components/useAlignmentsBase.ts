@@ -360,9 +360,10 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
         mouseoverExtraInformation: formatArcTooltip(
           arc.hit,
           arc.refName,
-          readColorCategoryLabel(
-            arcColorLegendCategory(arc.hit.colorType, model.arcColorByType),
-          ),
+          colorType =>
+            readColorCategoryLabel(
+              arcColorLegendCategory(colorType, model.arcColorByType),
+            ),
           isFlatArcShape(arc.hit.shapeType),
         ),
         hoverCoverageBand,

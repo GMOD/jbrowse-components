@@ -21,47 +21,7 @@ import type { ArcsUploadData } from './types.ts'
 // ink, rather than every arc getting one fixed-size hitbox.
 export const ARC_HIT_SLOP_PX = 3
 
-// Which of two candidates the cursor is really on. `outside` is the distance
-// beyond the arc's OWN stroke — `dist - arcLineWidth(support)/2` — so <= 0 means
-// the cursor is on ink this arc actually painted, and the hit gate is
-// `outside <= ARC_HIT_SLOP_PX`.
-//
-// Ranking on the raw centre-line distance is what a hit test usually does, and
-// here it was wrong. Stroke width IS support (`arcLineWidth`), so a 10-read arc
-// paints roughly three times the ink of a singleton; hovering the fat arc's ink
-// with a hairline running a pixel nearer its centre reported the hairline —
-// "supported by 1 read" over the junction the picture had just drawn as the
-// strongest thing in the band. The per-arc tolerance already grew the target
-// with support, but ranking on `dist` handed that straight back: support only
-// ever decided when the rival was out of range entirely, which is the one case
-// where there was nothing to decide.
-//
-// So the rule is in two tiers. An arc the cursor is ON beats one reached only
-// through the slop; among arcs it is on, the heaviest wins — which is also the
-// one painted on top, since `resolveArcs` orders the feed by support. The hit
-// test and the painter therefore name the same arc as the visible one. Only
-// when the cursor is on no stroke at all does nearest decide, and `outside`
-// already discounts each arc's own width there.
-function isBetterArcHit(
-  outside: number,
-  support: number,
-  bestOutside: number,
-  bestSupport: number,
-) {
-  const onInk = outside <= 0
-  if (onInk !== bestOutside <= 0) {
-    return onInk
-  }
-  // `>=` on support keeps the old tie rule underneath both tiers: candidates
-  // that rank equal resolve to the last drawn, which is the one painted over
-  // the other. Scanning ascending, that is the later index.
-  return onInk
-    ? support >= bestSupport
-    : outside < bestOutside ||
-        (outside === bestOutside && support >= bestSupport)
-}
-
-export interface ArcHitResult {
+export interface ArcHit {
   // Index into the ArcsUploadData parallel arrays, so a caller can reach any
   // channel this result does not name.
   index: number
@@ -75,6 +35,38 @@ export interface ArcHitResult {
   colorType: number
   shapeType: number
   yBp: number
+}
+
+export interface ArcHitResult extends ArcHit {
+  // The arcs the cursor is on BESIDES this one, heaviest first.
+  //
+  // Two arcs can be separated by less than a pixel — the HG002 chr12 fold-back
+  // has junctions 689 bp apart, which is sub-pixel at any zoom that shows the
+  // whole event — and `arcKey` folds only exact repeats, so two connections
+  // between the same pair of breakpoints that classify into different colors
+  // stay two arcs drawn on the same curve. There is no ranking rule that can
+  // pick between those, because there is nothing to pick with: the cursor
+  // really is on all of them. Naming the winner alone is then a guess presented
+  // as a fact, which is how a hover reads "supported by 1 read" over a spot the
+  // user is holding the mouse on because it looked heavy.
+  //
+  // So the hover reports them. Empty in the ordinary case of one arc under the
+  // cursor, and empty for a near-miss — if the cursor is on no ink at all the
+  // answer is already a best guess and a list of things it is also not on adds
+  // nothing.
+  coincident: ArcHit[]
+}
+
+function arcHitAt(data: ArcsUploadData, i: number): ArcHit {
+  return {
+    index: i,
+    x1: data.arcX1[i]!,
+    x2: data.arcX2[i]!,
+    support: data.arcSupport[i]!,
+    colorType: data.arcColorTypes[i]!,
+    shapeType: data.arcShapeTypes[i]!,
+    yBp: data.arcYBp[i]!,
+  }
 }
 
 export interface ArcHitOptions {
@@ -123,9 +115,27 @@ export function hitTestArcs(
   // against that single frame instead of twice against the two directions.
   const localY = (canvasY - anchorY) * (pairedArcsDown ? 1 : -1)
 
-  let best: ArcHitResult | undefined
-  let bestOutside = Number.POSITIVE_INFINITY
-  let bestSupport = 0
+  // The candidates split in two, because the two are answered differently.
+  //
+  // ON THE INK (`outside <= 0`): every one of these is an arc the cursor is
+  // literally over. Stroke width IS support (`arcLineWidth` — a 10-read arc
+  // paints roughly three times the ink of a singleton), so ranking these on
+  // distance to the centre line, as this used to, reported whichever hairline
+  // the cursor was nearest and threw away the target the per-arc tolerance had
+  // just widened. They are ranked by support instead, and the losers are
+  // reported rather than discarded (see `coincident`).
+  //
+  // NEAR THE INK: reached only through the slop, so the cursor is over blank
+  // band and the answer is a best guess. Nearest wins, measured from each arc's
+  // own ink rather than its centre so a fat arc is not beaten by a hairline it
+  // is visibly wider than. Consulted only when nothing was hit.
+  //
+  // Indices rather than objects: this runs per mousemove over the whole feed.
+  const onInk: number[] = []
+  let nearest = -1
+  let nearestOutside = Number.POSITIVE_INFINITY
+  let nearestSupport = 0
+
   for (let i = 0; i < data.numArcs; i++) {
     const support = data.arcSupport[i]!
     const halfWidth = arcLineWidth(support, lineWidth) / 2
@@ -142,28 +152,40 @@ export function hitTestArcs(
     const dist = isFlatArcShape(data.arcShapeTypes[i]!)
       ? flatDistance(canvasX, localY, sx1, sx2, arcH)
       : curveDistance(canvasX, localY, sx1, sx2, arcH, screenWidthPx)
-    // How far past this arc's own ink the cursor is — the quantity
-    // `isBetterArcHit` both gates and ranks on.
+    // How far past this arc's own ink the cursor is: the quantity that both
+    // gates the hit and sorts the two buckets above.
     const outside = dist - halfWidth
     if (outside > ARC_HIT_SLOP_PX) {
       continue
     }
-    if (best && !isBetterArcHit(outside, support, bestOutside, bestSupport)) {
-      continue
-    }
-    bestOutside = outside
-    bestSupport = support
-    best = {
-      index: i,
-      x1: data.arcX1[i]!,
-      x2: data.arcX2[i]!,
-      support,
-      colorType: data.arcColorTypes[i]!,
-      shapeType: data.arcShapeTypes[i]!,
-      yBp: data.arcYBp[i]!,
+    if (outside <= 0) {
+      onInk.push(i)
+    } else if (
+      outside < nearestOutside ||
+      // `>=` keeps the old tie rule: candidates that rank equal resolve to the
+      // last drawn, which is the one painted over the other. Scanning
+      // ascending, that is the later index.
+      (outside === nearestOutside && support >= nearestSupport)
+    ) {
+      nearest = i
+      nearestOutside = outside
+      nearestSupport = support
     }
   }
-  return best
+
+  if (onInk.length === 0) {
+    return nearest === -1
+      ? undefined
+      : { ...arcHitAt(data, nearest), coincident: [] }
+  }
+  // Heaviest first — the arc `resolveArcs` ordered last and the painter drew on
+  // top, so the hit test and the picture name the same arc as the visible one.
+  // Equal support falls back to the later index, which is that same rule.
+  onInk.sort((a, b) => data.arcSupport[b]! - data.arcSupport[a]! || b - a)
+  return {
+    ...arcHitAt(data, onInk[0]!),
+    coincident: onInk.slice(1).map(i => arcHitAt(data, i)),
+  }
 }
 
 // The read cloud's flat connector: a horizontal segment at the arc's Y, widened

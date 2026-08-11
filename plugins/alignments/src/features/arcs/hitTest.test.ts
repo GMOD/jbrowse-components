@@ -228,6 +228,53 @@ describe('when arcs crowd together, the visible one wins', () => {
   })
 })
 
+// The case no ranking rule can settle, because there is nothing to settle it
+// with: the arcs are drawn on top of each other, and the cursor is genuinely on
+// all of them. `arcKey` folds only EXACT repeats, so two connections between the
+// same breakpoints that classify into different colors stay two arcs on one
+// curve — and breakpoints a few hundred bp apart are sub-pixel at any zoom that
+// shows the whole event. Naming the winner alone is a guess presented as a fact,
+// so the winner carries the rest.
+describe('coincident arcs are reported, not silently narrowed to one', () => {
+  const y = (localY: number) => BAND.arcsH - localY
+  const flat = (yBp: number, support: number, colorType = 0) => ({
+    x1: 300,
+    x2: 500,
+    yBp,
+    support,
+    colorType,
+    shape: ARC_SHAPE_FLAT,
+  })
+
+  test('the heaviest answers and carries the others, heaviest first', () => {
+    const data = arcsData([flat(40, 3, 1), flat(40, 12, 0), flat(40, 1, 4)])
+    const hit = hitTestArcs(400, y(40), data, BAND)!
+    expect(hit.support).toBe(12)
+    expect(hit.coincident.map(o => o.support)).toEqual([3, 1])
+    // The colorType comes along, so the tooltip can name each one's bucket
+    // rather than repeating the winner's.
+    expect(hit.coincident.map(o => o.colorType)).toEqual([1, 4])
+  })
+
+  test('being NEAR an arc is not being on it', () => {
+    // 1px off the hairline's centre is past its 0.5px half-width. It is still
+    // in range of the slop — it would answer the hover if it were alone — but
+    // the cursor is not on its ink, so it is not one of the things here.
+    const data = arcsData([flat(40, 12), flat(41, 1)])
+    const hit = hitTestArcs(400, y(40), data, BAND)!
+    expect(hit.support).toBe(12)
+    expect(hit.coincident).toEqual([])
+  })
+
+  test('a lone arc and a near-miss both report nothing extra', () => {
+    const lone = arcsData([flat(40, 12)])
+    expect(hitTestArcs(400, y(40), lone, BAND)?.coincident).toEqual([])
+    // 2.5px off a 1.5px half-width: the answer is already a best guess, and a
+    // list of other things the cursor is also not on would not improve it.
+    expect(hitTestArcs(400, y(42.5), lone, BAND)?.coincident).toEqual([])
+  })
+})
+
 test('the nearest arc wins when two overlap', () => {
   // Two domes sharing a left foot, different apexes. A point on the lower one
   // must not be captured by the higher one passing nearby.
