@@ -76,6 +76,36 @@ describe('computeCoverageTicks', () => {
       [1],
     )
   })
+
+  // The top tick IS the announced scale max: the compact `[0, max]` caption the
+  // band falls back to under 30px reads `items.at(-1)`. The octave ladder's top
+  // rung is the last power of two at or below the max, so a log axis that kept
+  // running at those heights announced 64 for a depth-100 pileup — and drew
+  // seven labels into 30px of band to do it.
+  test.each(['linear', 'log'])(
+    'a short %s band shows exactly its two endpoints, the top one the real max',
+    scaleType => {
+      for (const height of [10, 20, 40, 69]) {
+        const items = computeCoverageTicks(100, height, scaleType).items
+        expect(items.map(t => t.value)).toEqual([
+          scaleType === 'log' ? 1 : 0,
+          100,
+        ])
+      }
+    },
+  )
+
+  test('a short log band at maxDepth 1 emits its one endpoint once', () => {
+    expect(computeCoverageTicks(1, 20, 'log').items.map(t => t.value)).toEqual([
+      1,
+    ])
+  })
+
+  test('the endpoints land on the ends of the plot box', () => {
+    const { items, yTop, yBottom } = computeCoverageTicks(100, 40, 'log')
+    expect(items[0]!.y).toBe(yBottom)
+    expect(items.at(-1)!.y).toBe(yTop)
+  })
 })
 
 describe('downsampleDenseMax', () => {

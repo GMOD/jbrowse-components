@@ -41,6 +41,79 @@ function makeDepthFraction(maxDepth: number, scaleType: string) {
   return (value: number) => value / maxDepth
 }
 
+// Below this band height the axis drops to its two endpoints: a full ladder's
+// 10px labels need ~15px of vertical room apiece and there isn't any.
+// Deliberately above `COMPACT_AXIS_HEIGHT` (30, where the axis gives up
+// entirely and becomes a one-line `[0, max]` caption) — between the two a
+// two-tick axis still reads.
+const FULL_LADDER_MIN_HEIGHT = 70
+
+/**
+ * The value a coverage axis starts from: 0 on a linear scale, 1 on a log one
+ * (`makeDepthFraction` floors at 1, which is where the bars start too).
+ */
+function coverageBaseline(scaleType: string) {
+  return scaleType === 'log' ? 1 : 0
+}
+
+/**
+ * The three ladders below all answer in **values**, leaving the value → y
+ * mapping to one place. They are the whole of what differs between the branches,
+ * so each can be read against its own rule without the geometry in the way.
+ *
+ * Every one of them is required to end at `maxDepth` or below it and to emit no
+ * value twice: `YScaleBar` and `CrossHatchLines` both key on `${value}-${y}`, so
+ * a repeat is a React duplicate-key warning and a label drawn over itself.
+ */
+function endpointTickValues(maxDepth: number, scaleType: string) {
+  const baseline = coverageBaseline(scaleType)
+  return baseline === maxDepth ? [maxDepth] : [baseline, maxDepth]
+}
+
+/** Powers of two up to `maxDepth`, ending at `maxDepth` if nothing else did. */
+function octaveTickValues(maxDepth: number) {
+  const values = [1]
+  for (let tick = 2; tick <= maxDepth; tick *= 2) {
+    values.push(tick)
+  }
+  // A log axis whose octave ladder never fired still wants a top tick — but only
+  // when maxDepth isn't the 1 already pushed.
+  if (values.length < 2 && maxDepth > 1) {
+    values.push(maxDepth)
+  }
+  return values
+}
+
+/** 0, step, 2·step … the last multiple of a nice step at or below `maxDepth`. */
+function niceStepTickValues(maxDepth: number) {
+  // Depth is integer-valued, so floor the nice step to 1: for maxDepth < 3
+  // niceStep returns 0.5, which would emit meaningless fractional depth labels
+  // (0, 0.5, 1).
+  const step = Math.max(1, niceStep(maxDepth))
+  const stepCount = Math.floor(maxDepth / step)
+  return Array.from({ length: stepCount + 1 }, (_, i) => i * step)
+}
+
+function coverageTickValues(
+  maxDepth: number,
+  coverageHeight: number,
+  scaleType: string,
+) {
+  // The short-band gate is on BOTH scale types on purpose. The log ladder used
+  // to run at every height, so a 40px band over a depth-100 pileup drew seven
+  // labels into 30px of space — and its top rung is the last power of 2 *below*
+  // the max (64 for 100), so the band's own ceiling went unlabelled while the
+  // linear branch at the same height labelled it. The compact `[0, max]`
+  // fallback under COMPACT_AXIS_HEIGHT reads the top tick, so it inherited that
+  // 64 as the scale max it announced.
+  if (coverageHeight < FULL_LADDER_MIN_HEIGHT) {
+    return endpointTickValues(maxDepth, scaleType)
+  }
+  return scaleType === 'log'
+    ? octaveTickValues(maxDepth)
+    : niceStepTickValues(maxDepth)
+}
+
 export function computeCoverageTicks(
   maxDepth: number,
   coverageHeight: number,
@@ -63,36 +136,13 @@ export function computeCoverageTicks(
   const fractionOf = makeDepthFraction(maxDepth, scaleType)
   const yOf = (value: number) => yBottom - fractionOf(value) * effectiveH
 
-  const ticks: YScaleTicks['items'] = []
-  if (scaleType === 'log') {
-    ticks.push({ value: 1, y: yOf(1) })
-    let tick = 2
-    while (tick <= maxDepth) {
-      ticks.push({ value: tick, y: yOf(tick) })
-      tick *= 2
-    }
-    // A log axis whose octave ladder never fired still wants a top tick — but
-    // only when maxDepth isn't the 1 already pushed. At maxDepth === 1 (a
-    // single-read pileup) this used to emit {value:1} twice at the same y, and
-    // both YScaleBar and CrossHatchLines key on `${value}-${y}` — so it drew a
-    // duplicate label and guide line under a React duplicate-key warning.
-    if (ticks.length < 2 && maxDepth > 1) {
-      ticks.push({ value: maxDepth, y: yOf(maxDepth) })
-    }
-  } else if (coverageHeight < 70) {
-    ticks.push({ value: 0, y: yOf(0) }, { value: maxDepth, y: yOf(maxDepth) })
-  } else {
-    // Depth is integer-valued, so floor the nice step to 1: for maxDepth < 3
-    // niceStep returns 0.5, which would emit meaningless fractional depth labels
-    // (0, 0.5, 1).
-    const step = Math.max(1, niceStep(maxDepth))
-    const stepCount = Math.floor(maxDepth / step)
-    for (let i = 0; i <= stepCount; i++) {
-      ticks.push({ value: i * step, y: yOf(i * step) })
-    }
+  return {
+    items: coverageTickValues(maxDepth, coverageHeight, scaleType).map(
+      value => ({ value, y: yOf(value) }),
+    ),
+    yTop,
+    yBottom,
   }
-
-  return { items: ticks, yTop, yBottom }
 }
 
 export interface CoverageRegion {
