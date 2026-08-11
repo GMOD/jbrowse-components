@@ -1,4 +1,4 @@
-import { getSyntenyGroupByMenuItem } from './menus.ts'
+import { getSyntenyGroupByMenuItem, getSyntenyShowMenuItems } from './menus.ts'
 
 import type { GroupByType } from '@jbrowse/plugin-alignments'
 
@@ -70,4 +70,48 @@ test('the self-lane toggle reflects and flips hideSelfAlignments', () => {
     .find(i => i.label === 'Hide self-alignment lane')!
     .onClick()
   expect(on.setHideSelfAlignments).toHaveBeenCalledWith(false)
+})
+
+// Every interbase mark is drawn in the coverage band, and this display defaults
+// coverage OFF (the configSchemaF override), unlike the alignments display it
+// borrows the menu shape from. So with coverage off the toggle could not change
+// anything visible, and it is offered only when it can act.
+function makeShowModel(showCoverage: boolean) {
+  return {
+    showLegend: false,
+    setShowLegend: jest.fn(),
+    showCoverage,
+    setShowCoverage: jest.fn(),
+    showPileup: true,
+    setShowPileup: jest.fn(),
+    showMismatches: true,
+    setShowMismatches: jest.fn(),
+    showInterbaseIndicators: true,
+    setShowInterbaseIndicators: jest.fn(),
+    canCollapseGroupRows: false,
+    collapseGroupRows: false,
+    setCollapseGroupRows: jest.fn(),
+  }
+}
+
+function showLabels(showCoverage: boolean) {
+  return getSyntenyShowMenuItems(makeShowModel(showCoverage))
+    .flatMap(i => ('subMenu' in i ? i.subMenu : [i]))
+    .filter(i => 'label' in i)
+    .map(i => i.label)
+}
+
+test('the interbase toggle is offered only while coverage is drawn', () => {
+  expect(showLabels(true)).toContain('Show interbase indicators')
+  expect(showLabels(false)).not.toContain('Show interbase indicators')
+})
+
+test('the rest of the Show menu does not depend on coverage', () => {
+  expect(showLabels(false)).toEqual(
+    expect.arrayContaining([
+      'Show coverage',
+      'Show alignments',
+      'Show mismatches',
+    ]),
+  )
 })

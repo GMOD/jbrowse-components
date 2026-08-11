@@ -132,18 +132,29 @@ export function getSyntenyShowMenuItems(model: ShowModel) {
           "the alignment's cs tag or CIGAR.",
       },
     ),
-    checkboxItem(
-      'Show interbase indicators',
-      model.showInterbaseIndicators,
-      () => {
-        model.setShowInterbaseIndicators(!model.showInterbaseIndicators)
-      },
-      {
-        helpText:
-          'Mark insertions in the other assembly, which occupy no reference ' +
-          'base, with a between-base tick. Drawn in the coverage band, so it ' +
-          'needs "Show coverage" on.',
-      },
-    ),
+    // Only while the coverage band is drawn. Every interbase mark lives in
+    // that band — `coveragePassPlan` is reached under `showCoverage`, and the
+    // hit test gates on `showCoverage && showInterbaseIndicators` — and this
+    // display defaults coverage OFF, unlike the alignments display it borrows
+    // the menu shape from. So on a synteny track the toggle spent most of its
+    // life unable to change anything a user could see. It previously said so
+    // in its own helpText, which is the tell: a checkbox that has to explain
+    // why it does nothing should not be offered.
+    ...(model.showCoverage
+      ? [
+          checkboxItem(
+            'Show interbase indicators',
+            model.showInterbaseIndicators,
+            () => {
+              model.setShowInterbaseIndicators(!model.showInterbaseIndicators)
+            },
+            {
+              helpText:
+                'Mark insertions in the other assembly, which occupy no ' +
+                'reference base, with a between-base tick in the coverage band.',
+            },
+          ),
+        ]
+      : []),
   ] satisfies MenuItem[])
 }
