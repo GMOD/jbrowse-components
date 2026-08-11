@@ -96,16 +96,23 @@ not the other 99.
 A junction is two loci, so that is what `batch` draws. This one is worth looking
 at on its own for two reasons. A connector drawn dashed means the read carrying
 it has a segment at a locus the frame does not show, and these reads also visit
-chr10, so the junction wants a third panel. And repeating `--track` puts the
-matched normal under the tumour in every panel, which is the control drawn
-rather than filed in a second directory: the connecting curves are per track, so
-the tumour lanes carry the fan and the normal lanes carry none.
+chr10, so the junction wants a third panel. And the control belongs beside it
+rather than in a second directory: one render per sample, the same `--loc` list
+and the same `--width`, so the two are comparable line for line.
 
-<Figure caption="The three loci of COLO829's der(3), chr3 then chr10 then chr12. Left, the tumour nanopore reads; right, the matched normal at the same loci and the same width. Every curve is solid, the reads stop dead at the breakpoint on every side, and the normal render carries none of them." src="/img/jbrowse-img/sv_review_pair.png" />
+<Figure caption="The three loci of COLO829's der(3), chr3 then chr10 then chr12, at the same width in every panel. The tumour nanopore reads carry a solid curve at every breakend and stop dead there; the matched normal carries none. On the right the same three loci as one 39.5 kb contig, the allele reconstructed from those junctions, with the spanning reads running through it." src="/img/jbrowse-img/sv_review_pair.png" />
 
 Reads at 1 px apiece (`featureHeight:super-compact`) is what keeps six pileups
 on one screen; at the default height the picture is mostly pileup and the curves
 it is read for are drawn over it.
+
+The third panel is where triage stops and interpretation starts, and it is worth
+knowing it is available before you need it: a curve says two loci are joined in
+this sample, while a contig says in what order and in which orientation, which
+takes a reconstruction step this page does not do. The
+[multi-hop tutorial](/docs/tutorials/cancer_sv) builds that contig from these
+same reads. Rendering it is another `jb2export` run with a different
+`--assembly`, since a derivative allele is an assembly like any other.
 
 ## The control
 
@@ -180,10 +187,11 @@ run it, and load its output here.
 ## Reproduce it end to end
 
 Everything on this page is the commands above against hosted files. The figure
-is two `jb2export breakpoint` invocations, one per sample, with one `--loc` per
-panel: the `sv_review_tumor` and `sv_review_normal` specs in
-`website/scripts/screenshot-spec-helpers.ts`. Putting them side by side is the
-figure pipeline's job, not jb2export's.
+is three `jb2export` invocations: two `breakpoint` renders with one `--loc` per
+panel, one per sample, and a plain render of the derivative assembly — the
+`sv_review_tumor`, `sv_review_normal` and `sv_review_derivative` specs in
+`website/scripts/screenshot-spec-helpers.ts`. Putting them side by side, and
+labelling which is which, is the figure pipeline's job, not jb2export's.
 
 ## See also
 

@@ -972,7 +972,7 @@ export function cliSpec(name: string, args: string[]): CliSpec {
   return { mode: 'cli', name: `jbrowse-img/${name}`, args }
 }
 
-// One half of jbrowse-img/sv_review_pair: the same three der(3) loci and the
+// One panel of jbrowse-img/sv_review_pair: the same three der(3) loci and the
 // same render settings, with one sample's track. See the note on the two specs
 // that use it for why each modifier is there.
 function svReviewHalf(trackId: string) {
@@ -1615,4 +1615,46 @@ export const jbrowseImgSpecs: CliSpec[] = [
   // whose assembly differs from the one above it.
   cliSpec('sv_review_tumor', svReviewHalf('COLO829_tumor_ont')),
   cliSpec('sv_review_normal', svReviewHalf('COLO829BL_normal_ont')),
+
+  // THE THIRD PANEL: THE ALLELE ITSELF (review: "if there was a 'derived allele'
+  // view of this, in order to show the linearized derived allele, it would be
+  // interesting to show alongside it"). There is, and it is a plain view rather
+  // than a breakpoint one, because the whole point of the reconstruction is that
+  // the three loci stop needing separate panels: `der3_RARB_BICC1_TRHDE` is one
+  // 39,549 bp contig, and the two panels beside this one are the first 32.7 kb
+  // of chr3, 199 bp of chr10 and 183 bp of chr12 laid end to end on it, in that
+  // order, with 6.4 kb of chr3 closing the cycle. `der3_segments` is what says
+  // so -- each segment drawn with the locus it came from -- so it goes above the
+  // reads rather than being left to the caption.
+  //
+  // Same `--config` and the same hosted files as the other two panels: the
+  // derivative assembly is in that config beside hg38 (sv_multihop.py built it;
+  // see the cancer_sv tutorial), so the third invocation differs only in which
+  // assembly it names.
+  //
+  // No `force:true` and no `featureHeight`, unlike the two beside it: 39.5 kb of
+  // a BAM holding 69 spanning reads is nowhere near the byte gate, and at the
+  // default 7 px every read is a row a reader can follow across the junctions --
+  // which is the claim. The two sample panels are 200x over 1.2 kb and need both
+  // flags for the opposite reason.
+  //
+  // The heights are picked so `+append` pads nothing: 128 + 374 comes out 619 to
+  // the sample panels' 624. `der3_segments` needs ~120 of its 128 for the four
+  // segment rows, and the pileup ends ~35 px short of its own 374.
+  cliSpec('sv_review_derivative', [
+    '--config',
+    'https://jbrowse.org/demos/cancer_sv/config.json',
+    '--assembly',
+    'der3_RARB_BICC1_TRHDE',
+    '--track',
+    'der3_segments',
+    'height:128',
+    '--track',
+    'reads_vs_der3',
+    'height:374',
+    '--loc',
+    'der3_RARB_BICC1_TRHDE:1-39,549',
+    '--width',
+    '1000',
+  ]),
 ]

@@ -258,14 +258,29 @@ export interface EmbeddedSpec extends CommonSpecFields {
 // `<Figure links=...>`), so the review UI folds parts into their parent's card
 // rather than listing them as figures of their own, and the generator recomposes
 // the parent whenever a --filter selects one of its parts.
-// Note there is no `annotations` here, and that is not an oversight: the parts
-// are separate captures `+append`ed afterwards, so nothing can be drawn across
-// the seam. An arrow from one half to the other is not available — number the
-// two halves' anchors instead, a `circle` with `text` on each part at the thing
-// they share (`pangenome/hprc_chm13_allele`'s two ① badges). Where the app
-// already labels the shared landmark itself, prefer that and drop the numbers:
-// `pangenome/hprc_mhc_anchored` marks its two nodes with bare rings, because the
-// graph writes each node's length beside it in both halves.
+// `annotations` here draw over the FINISHED composition, which is a different
+// thing from a part's own annotations and is the only kind a part rendered by
+// the jb2export CLI can have at all (React SSR straight to PNG — there is no
+// page for the overlay to draw into). They anchor to a part rather than to
+// anything inside one: the generator lays an element over each part's own box
+// in the composed image, so `{ selector: '[data-part="1"]' }` plus the usual
+// alignX/alignY/dx/dy is a real anchor and not a pixel measured off a previous
+// capture. A part's box comes from that part's own dimensions, so it follows a
+// re-render that changes them.
+//
+// Anchoring INSIDE a part is still not available — the composition is a flat
+// image with no view model and no track elements in it — so anything that has
+// to point at a locus belongs on the part's own spec, where it can. Two
+// consequences worth knowing before reaching for this:
+//
+// - An arrow CAN now cross the seam, since both ends resolve in the same page.
+//   That does not make it the first choice: where the two halves share a
+//   landmark, a numbered `circle` on each part still says it without a line
+//   across the gutter (`pangenome/hprc_chm13_allele`'s two ① badges), and where
+//   the app already labels the landmark itself, prefer that and drop the
+//   numbers (`pangenome/hprc_mhc_anchored`'s bare rings).
+// - Sizes are in the composition's OWN pixels, which for a CLI part is 1x — so
+//   a `fontSize` that looks right on a 2x app capture reads half as large here.
 export interface ComposeSpec extends BaseSpecFields {
   mode: 'compose'
   parts: string[] // spec names whose static/img PNGs are stacked, top to bottom
@@ -275,6 +290,8 @@ export interface ComposeSpec extends BaseSpecFields {
   // stacking makes the second look like the next step rather than the
   // alternative. The parts then have to share a HEIGHT rather than a width.
   direction?: 'vertical' | 'horizontal'
+  // callouts drawn over the composed image, anchored per part (see above)
+  annotations?: Annotation[]
 }
 
 export type BrowserScreenshotSpec = SessionUrlSpec | EmbeddedSpec

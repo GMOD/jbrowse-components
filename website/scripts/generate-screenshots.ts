@@ -36,6 +36,7 @@ import { matchesFilterTokens } from './filter-tokens.ts'
 import {
   IM,
   commitScreenshot,
+  imageSize,
   optimizePng,
   pngDiffFraction,
   trailingBackgroundPx,
@@ -532,6 +533,96 @@ function mirrorFile(src: string, dest: string) {
   }
 }
 
+// Draw a compose spec's callouts over the finished composition.
+//
+// The composition is a flat PNG with no app in it, so this opens a page that is
+// nothing but that image and one absolutely-positioned element per part, and
+// runs the SAME overlay every other figure's callouts go through — the parts
+// are then anchorable by `[data-part="N"]` and the pill/arrow/badge vocabulary
+// is one implementation rather than an ImageMagick lookalike beside it. It is
+// also the only way a jb2export part can carry a callout at all: those render
+// through React SSR with no browser involved.
+//
+// Each part's box is computed from that part's own dimensions and the gutter,
+// never measured off the composed image: `+append` top-aligns and `-append`
+// left-aligns, and `padPanels` puts half a gutter on every side of a
+// side-by-side panel.
+//
+// deviceScaleFactor 1 with the viewport and the img sized to the PNG's own
+// pixels, so the capture is the composition unresampled with the overlay on
+// top. A CLI part is 1x and an app part is 2x; this pass does not know which,
+// and does not have to.
+async function annotateComposition(spec: ComposeSpec, renderPath: string) {
+  const annotations = spec.annotations
+  if (!annotations?.length) {
+    return
+  }
+  const { width, height } = await imageSize(renderPath)
+  const gutter = spec.direction === 'horizontal' ? GRID_GUTTER_PX : 0
+  const sizes = await Promise.all(
+    spec.parts.map(part => imageSize(path.join(outDir, `${part}.png`))),
+  )
+  let offset = 0
+  const boxes = sizes.map(size => {
+    const box =
+      spec.direction === 'horizontal'
+        ? { left: offset + gutter / 2, top: gutter / 2, ...size }
+        : { left: 0, top: offset, ...size }
+    offset +=
+      spec.direction === 'horizontal' ? size.width + gutter : size.height
+    return box
+  })
+  // The page is written beside the image and opened as a file:// URL rather
+  // than pushed in with setContent: an about:blank page cannot load a file://
+  // subresource, so the img would come back empty and the capture would be the
+  // callouts on white.
+  const pagePath = `${renderPath}.html`
+  fs.writeFileSync(
+    pagePath,
+    `<!doctype html><html><body style="margin:0;background:#fff">
+<img src="${path.basename(renderPath)}" style="display:block;width:${width}px;height:${height}px">
+${boxes
+  .map(
+    (b, i) =>
+      `<div data-part="${i}" style="position:absolute;left:${b.left}px;top:${b.top}px;width:${b.width}px;height:${b.height}px"></div>`,
+  )
+  .join('\n')}
+</body></html>`,
+  )
+  // `--window-size` IS LOAD-BEARING, and its absence fails in a way that looks
+  // like a corrupt figure rather than a capture bug: a viewport wider than the
+  // window screenshots as the leftmost window-width of the page TILED across
+  // the frame. `page.evaluate` reading the same image into a canvas returns the
+  // right pixels throughout, so nothing about the page or the PNG is wrong --
+  // only the compositor surface the screenshot is taken off. A composition is
+  // routinely 3000+ px wide (three 1000 px panels), which is where this bites;
+  // the app captures never do, because their viewport is CSS px at
+  // deviceScaleFactor 2. Not fixable with captureBeyondViewport or fullPage,
+  // both tried.
+  //
+  // The window is asked for LARGER than the frame in both directions, because
+  // `--window-size` is the outer window and the surface inside it is smaller by
+  // whatever chrome the headless build draws -- at an exact fit the bottom
+  // ~60 px tiled while the rest was correct, which is the same bug in its
+  // easiest-to-miss form. The viewport override still fixes the page's layout
+  // size, so the slack costs nothing.
+  const browser = await launch({
+    headless: true,
+    executablePath: findChromeExecutable(),
+    args: [...BASE_CHROME_ARGS, `--window-size=${width + 100},${height + 300}`],
+  })
+  try {
+    const page = await browser.newPage()
+    await page.setViewport({ width, height, deviceScaleFactor: 1 })
+    await page.goto(`file://${pagePath}`, { waitUntil: 'load' })
+    await drawAnnotations(page, annotations)
+    await page.screenshot({ path: renderPath })
+  } finally {
+    await browser.close()
+    fs.rmSync(pagePath, { force: true })
+  }
+}
+
 // Stack the committed PNGs of `spec.parts` into one figure (top to bottom) with
 // the same `convert -append` a `stages` capture uses, or side by side with
 // `+append` when the spec asks for it. Runs after the render pool so the parts
@@ -563,6 +654,7 @@ async function captureComposeSpec(spec: ComposeSpec) {
       horizontal ? '+append' : '-append',
       renderPath,
     ])
+    await annotateComposition(spec, renderPath)
     optimizePng(renderPath)
     return commitTemp(renderPath, path.join(outDir, `${spec.name}.png`), spec)
   } finally {

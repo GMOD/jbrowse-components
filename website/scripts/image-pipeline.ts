@@ -93,6 +93,17 @@ export function pngDiffFraction(a: string, b: string): number | null {
 // Rows of uninterrupted page background along the bottom of a capture, in image
 // pixels, or null if it could not be measured.
 //
+// Pixel dimensions of an image, for the callers that have to lay something out
+// over one: the compose step, which puts an anchor element over each part's own
+// box. Via sharp's header read rather than `identify`, so it costs no process.
+export async function imageSize(file: string) {
+  const { width, height } = await sharp(file).metadata()
+  if (!width || !height) {
+    throw new Error(`could not read the dimensions of ${file}`)
+  }
+  return { width, height }
+}
+
 // A spec's `viewportHeight` is a hand-picked number that ages badly: it is sized
 // to whatever the app laid out on the day it was written, and any later change
 // to how tall something renders leaves the difference as dead grey under the

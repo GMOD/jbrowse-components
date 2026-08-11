@@ -92,14 +92,77 @@ export const specs: ScreenshotSpec[] = [
   // The one composed jbrowse-img figure. It lives here rather than in
   // `jbrowseImgSpecs`, which is typed `CliSpec[]` because `sync-img-readme.ts`
   // walks it to regenerate every command fence in the jb2export README -- and
-  // this is not a command. Its two halves are: the compose is the figure
+  // this is not a command. Its three panels are: the compose is the figure
   // pipeline putting one render beside another, which is what the review asked
   // for ("not something jbrowse-img has to do").
+  //
+  // WHICH PANEL IS WHICH, IN RED (review: "add red text annotation boxes"). Each
+  // render does name its own track, at the 10 px jb2export writes a track label
+  // in -- correct, and unreadable in a 3072 px figure scaled to a column of
+  // prose, which is the same problem the in-app labels have in every stacked
+  // figure here. These are the parts' identities and nothing else; what each
+  // panel MEANS is the caption's job, and the third pill is the exception that
+  // proves it, since "on one axis" is the only thing in the frame that says the
+  // ruler under it is not a chromosome.
+  //
+  // Anchored per part rather than per pixel: the generator lays an element over
+  // each part's own box in the composition. The bottom-left corner is white in
+  // all three -- the sample panels' last pileup ends ~80 px short of their
+  // bottom edge and the derivative's ~35 -- so the pills sit in the frame rather
+  // than over any read.
   {
     mode: 'compose',
     name: 'jbrowse-img/sv_review_pair',
-    parts: ['jbrowse-img/sv_review_tumor', 'jbrowse-img/sv_review_normal'],
+    parts: [
+      'jbrowse-img/sv_review_tumor',
+      'jbrowse-img/sv_review_normal',
+      'jbrowse-img/sv_review_derivative',
+    ],
     direction: 'horizontal',
+    annotations: [
+      // fontSize 22 in a 1x composition. The app captures these pills usually
+      // sit on are 2x, where the same number draws half this size relative to
+      // the frame -- see ComposeSpec.
+      {
+        type: 'text',
+        text: 'tumour',
+        fontSize: 22,
+        anchor: {
+          selector: '[data-part="0"]',
+          alignX: 'left',
+          alignY: 'bottom',
+          dx: 20,
+          dy: -30,
+        },
+      },
+      {
+        type: 'text',
+        text: 'matched normal, same loci',
+        fontSize: 22,
+        anchor: {
+          selector: '[data-part="1"]',
+          alignX: 'left',
+          alignY: 'bottom',
+          dx: 20,
+          dy: -30,
+        },
+      },
+      {
+        type: 'text',
+        text: 'the allele those curves imply, on one axis',
+        fontSize: 22,
+        // one line: at the 420 default this wraps, and the second line drops
+        // out of the white strip the pills are placed in
+        maxWidth: 600,
+        anchor: {
+          selector: '[data-part="2"]',
+          alignX: 'left',
+          alignY: 'bottom',
+          dx: 20,
+          dy: -30,
+        },
+      },
+    ],
   },
 ]
 

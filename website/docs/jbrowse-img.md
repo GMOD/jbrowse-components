@@ -385,13 +385,30 @@ jb2export breakpoint --config https://jbrowse.org/demos/cancer_sv/config.json \
 
 <Figure src="/img/jbrowse-img/sv_review_normal.png" caption="The same three loci in the matched normal, with no connecting curves in any panel" />
 
-Putting the two beside each other is your docs' job; jb2export does not compose
-them.
-
 `force:true` is there because the chr3 panel is 1.2 kb of 200x nanopore, which
 is over the byte gate; without it that panel draws the gate's message instead of
 reads. `featureHeight:super-compact` draws each read 1 px tall, which is what
 keeps six pileups on one screen.
+
+**A reconstructed allele is an assembly, so it is a third render and not a
+special mode.** Once the junctions have been resolved into a derivative contig,
+the three loci above stop needing three panels: they are one axis, in order.
+That contig is an assembly in the same config, so the only thing that changes is
+which `--assembly` is named.
+
+<!-- jb2export: sv_review_derivative -->
+
+```bash
+jb2export --config https://jbrowse.org/demos/cancer_sv/config.json \
+  --assembly der3_RARB_BICC1_TRHDE --track der3_segments height:128 \
+  --track reads_vs_der3 height:374 --loc der3_RARB_BICC1_TRHDE:1-39,549 \
+  --width 1000 --out sv_review_derivative.png
+```
+
+<Figure src="/img/jbrowse-img/sv_review_derivative.png" caption="The COLO829 der(3) allele as a single 39.5 kb contig: 32.7 kb of chr3, 199 bp of chr10 and 183 bp of chr12 end to end, with the spanning reads running through every junction" />
+
+Putting the three beside each other is your docs' job; jb2export does not
+compose them.
 
 To do that for a whole callset rather than one junction, `jb2export batch`
 renders one image per row of a BEDPE. See the
