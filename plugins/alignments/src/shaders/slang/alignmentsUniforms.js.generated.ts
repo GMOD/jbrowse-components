@@ -93,3 +93,8 @@ export function normalizeDepthScalar(rawDepth: number, domainMin: number, domain
   }
   return _clamp(((rawDepth - domainMin) / range), 0.0, 1.0)
 }
+
+export function distToWideCirclePx(x: number, y: number, r: number): number {
+  let rk = ((2.0 * x) + (((x * x) + (y * y)) / r))
+  return Math.abs((rk / (Math.sqrt(_max((1.0 + (rk / r)), 0.0)) + 1.0)))
+}

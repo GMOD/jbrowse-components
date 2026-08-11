@@ -10,7 +10,7 @@
 // The sub-pixel frequency lerp is a pure scalar decision both backends must
 // make identically; rendererTypes.ts imports the generated twin rather than
 // re-deriving it (adr-051).
-//! js-export: frequencyAlpha, frequencyFadeGate, sizeAlpha, arcYFraction, arcYOffsetPx, arcColorSlot, linkedReadColorSlot, normalizeDepthScalar
+//! js-export: frequencyAlpha, frequencyFadeGate, sizeAlpha, arcYFraction, arcYOffsetPx, arcColorSlot, linkedReadColorSlot, normalizeDepthScalar, distToWideCirclePx
 // consts-out takes the WHOLE export-consts list, so this path names what that
 // list currently is rather than a category it will keep meaning. Anything added
 // above lands in a file called indicatorTriangle.generated.ts; put a constant
@@ -276,6 +276,31 @@ public float sdSegment(float2 local, float halfLenPx) {
 // 88:1): measured against an fp64 reference at fp32 precision, this stays
 // within 0.031px out to 88:1, where a seeded Newton on the parametric angle
 // runs away entirely.
+// NOT `//! js-export`ed, and the arc band's hover hit test has a second copy of
+// this formula (features/arcs/ellipseDistance.ts) BECAUSE of that. The reasoning
+// is worth keeping, since "lift it like arcRadiiPx" is the obvious first move
+// and it was tried:
+//
+//   - The emitter refuses float2 params, so lifting means splitting a scalar
+//     core out (the ADR-051 step-1 pattern). That part works.
+//   - But making it liftable also puts it in `pnpm check-shader-oracle`'s sweep,
+//     which compares the float64 twin against slangc's float32 C++ at 1e-5
+//     relative — and this is a quartic solve whose conditioning degrades with
+//     aspect ratio. It fails on ~85 of 400 tuples, and NOT because the twin is
+//     wrong: on `(0.25, 2, 0.5, 65536)` the C++ answers 2.0156 and the twin
+//     0.25, and 0.25 is the geometrically correct one. float32 loses the
+//     solver, float64 does not.
+//   - So the oracle cannot referee this function at any tolerance it could keep
+//     for the rest of the tree, the same way it cannot referee `mix`/`step`
+//     (SHADER_JS_CODEGEN.md). Exporting it would have meant a suppression in
+//     the strongest gate here, to share a NUMERICAL METHOD rather than a
+//     decision.
+//
+// What actually has to agree is WHICH ELLIPSE, and that is `arcRadiiPx` — which
+// is exported, oracle-clean, and is what the hit test reads. Given the same two
+// radii, the distance to them is geometry with one right answer, and the copy is
+// pinned against a brute-force reference rather than against this (see
+// ellipseDistance.test.ts), which is the stronger check of the two.
 public float sdEllipse(float2 p, float2 radii) {
   float2 q = abs(p);
   float2 ab = radii;
@@ -325,10 +350,17 @@ public float sdEllipse(float2 p, float2 radii) {
 // terms. Evaluating `length(p - c) - r`, or even recovering x as
 // `abs(p.x) - r` from a centre-relative point, loses every significant digit
 // past r ≈ 1e6 px.
-public float distToWideCircle(float2 legLocal, float r) {
-  float rk = 2.0 * legLocal.x
-           + (legLocal.x * legLocal.x + legLocal.y * legLocal.y) / r;
+// Scalar core, `//! js-export`ed for the same consumer as `sdEllipsePx` — and
+// for the same reason it is written this way at all: the hit test asking "is
+// the cursor on this leg" from `length(p - c) - r` would lose every significant
+// digit exactly where far pairs live.
+public float distToWideCirclePx(float x, float y, float r) {
+  float rk = 2.0 * x + (x * x + y * y) / r;
   return abs(rk / (sqrt(max(1.0 + rk / r, 0.0)) + 1.0));
+}
+
+public float distToWideCircle(float2 legLocal, float r) {
+  return distToWideCirclePx(legLocal.x, legLocal.y, r);
 }
 
 // ---- Helper functions ---------------------------------------------------
