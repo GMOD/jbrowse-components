@@ -21,7 +21,7 @@ Exploratory concepts that are *not* committed work live in
 | [Grey out the genomic-coordinate option](#grey-out-the-genomic-coordinate-option-instead-of-hiding-it) | feature details | render the radio disabled |
 | [Autofit height for the LGV demo](#autofit-height-for-the-lineargenomeview-example-site-demo) | embedded | no view-level auto-height exists yet |
 | [Extra large text SVG mode](#extra-large-text-svg-mode-for-pub-ready-figures) | SVG export | thread a scale the way `fontFamily` threads |
-| [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | five independent small items |
+| [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | six independent small items |
 | [Make the capture scroll-invariant](#make-the-snapshot-capture-scroll-invariant-then-widen-the-gate-to-webgpu) | browser tests | it is `snapshot.ts`, not a shader — attribution is done |
 | [Widen `CI_GATE_SUITES`](#widen-ci_gate_suites) | browser tests, CI | measure before adding; say why the alignments pair is safe |
 | [Attribute the TIMEOUT mode](#attribute-the-browser-test-timeout-failure-mode) | browser tests | report the display's state, don't extend the wait |
@@ -86,6 +86,14 @@ labels will overflow the boxes laid out for them.
 - Add a "hide this feature" option to `LinearMultiSampleVariantDisplay` (and
   similar displays). `plugins/canvas` already has `hideFeature`
   (`LinearBasicDisplay/baseModel.ts`) to copy.
+- Say how many features are under the cursor in a collapsed pileup,
+  `plugins/canvas`. The density collapse pins sub-pixel marks to row 0, where
+  several share a pixel column; `performMultiRegionHitDetection` resolves the
+  topmost, so the rest can be seen (they fade, so the column's opacity tracks
+  how many there are — `pileupFadeIds`) but never inspected. The count is
+  already in hand at hit time: the flatbush search returns every match before
+  `topmostMatch` picks one. A tooltip line ("+3 more here") is probably the
+  whole job; a click-to-list is the larger version.
 
 ### Make the snapshot capture scroll-invariant, then widen the gate to webgpu
 
