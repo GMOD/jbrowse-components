@@ -1022,6 +1022,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "summaryAdapter",
           "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "annotationAdapter",
+          "type": "(JexlString | frozen)"
         }
       ],
       "shorthandKeys": [
