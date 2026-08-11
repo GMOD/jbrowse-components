@@ -72,7 +72,14 @@ is a palindrome stated rather than inferred from a shape. The one below is the
 402 kb alignment at chrY:22,368,211 to 22,769,851, aligned to its own reverse
 complement.
 
-<Figure caption="Top, the boxed 4.8 Mb replotted on its own at a 100 kb minimum length: four crossings, every inverted alignment that long in the window, and the P1 to P5 family. Bottom, one of them in a linear synteny view, both panels on chrY:22.33 to 22.81 Mb, colored by strand. The magenta ribbon pinched at its centre is the 402 kb inverted alignment and the salmon it sits on is the plus-strand self match; the gene lanes show each arm carrying its own copies of the same Y-linked families, RBMY1B and RBMY1A1 on one side against RBMY1D and RBMY1E on the other, with CDY10P and CDY11P either side of the centre. It is a true palindrome rather than an alignment artifact, and near-exact rather than exact: the unpainted gaps inside the arms are where they differ." src="/img/synteny_self_chry_palindromes.png" />
+The gene lanes answer the obvious objection, that a sequence aligned to itself
+could be drawing an artifact. Each arm carries its own copies of the same
+Y-linked families — RBMY1B and RBMY1A1 on one side against RBMY1D and RBMY1E on
+the other, CDY10P and CDY11P either side of the centre — so the duplication is
+annotated as well as aligned. Near-exact rather than exact: the unpainted gaps
+inside the arms are where the two copies differ.
+
+<Figure caption="Top, the boxed 4.8 Mb replotted on its own at a 100 kb minimum length: four crossings, every inverted alignment that long in the window, and the P1 to P5 family. Bottom, one of them in a linear synteny view, colored by strand, with the genes beneath each panel. The magenta ribbon pinched at its centre is the 402 kb inverted alignment; the salmon it sits on is the plus-strand self match." src="/img/synteny_self_chry_palindromes.png" />
 
 Which view to reach for is a question of how many alignments are in frame. Every
 ribbon spans the full height of the strip, so ribbons stack rather than
