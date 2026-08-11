@@ -19,6 +19,7 @@ import {
   findLaunchTarget,
   parseProtocolUrl,
 } from './launchTarget.ts'
+import { describeLaunchLink } from './linkPrompt.ts'
 import { initializePaths } from './paths.ts'
 import { logError } from './util.ts'
 import { buildAppUrl, createMainWindow } from './window.ts'
@@ -129,22 +130,29 @@ function loadTarget(win: BrowserWindow, target: LaunchTarget) {
 }
 
 // A jbrowse:// link is handed to us by whatever web page wanted it opened, and
-// acting on one navigates the window to a new session — destroying whatever the
-// user was looking at. So confirm the destination first, the way the paste-a-
-// link dialog does in-app: this is the only consent point on the protocol route
-// when the linked config declares no plugins (an untrusted plugin has its own
-// prompt). Shows the exact url, so a user who did click a real link just
-// accepts, and one who did not can decline. A file argument is not gated — it
-// only ever comes from the user's own machine (argv or an OS open-file).
+// acting on one replaces the open session with the one the link describes. So
+// confirm the destination first, the way the paste-a-link dialog does in-app:
+// this is the only consent point on the protocol route when the linked config
+// declares no plugins (an untrusted plugin has its own prompt). A file argument
+// is not gated — it only ever comes from the user's own machine (argv or an OS
+// open-file).
+//
+// The origin leads, because it is the question: a link the user really did click
+// on jbrowse.org is accepted on sight, and one that arrived from somewhere else
+// is refused on the same glance. The link itself follows, shortened — see
+// describeLaunchLink for why it cannot be shown whole.
 async function confirmOpenLink(url: string, parent: BrowserWindow | null) {
+  const { origin, displayUrl } = describeLaunchLink(url)
   const options = {
     type: 'question' as const,
     buttons: ['Open', 'Cancel'],
     defaultId: 0,
     cancelId: 1,
     title: 'Open JBrowse Web link',
-    message: 'A link is asking to open a new session in JBrowse. Open it?',
-    detail: url,
+    message: origin
+      ? `Open a new session from ${origin}?`
+      : 'Open a new session from this link?',
+    detail: `${displayUrl}\n\nThis replaces the session you have open.`,
   }
   const { response } = await (parent
     ? dialog.showMessageBox(parent, options)
