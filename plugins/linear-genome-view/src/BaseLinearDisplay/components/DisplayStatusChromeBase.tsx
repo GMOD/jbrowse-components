@@ -1,10 +1,7 @@
 import { useState } from 'react'
 
 import { TrackOverlayPortal } from '../../LinearGenomeView/TrackOverlayPortal.tsx'
-import {
-  BOTTOM_RIGHT_STATUS_ORDER,
-  BottomRightCornerContext,
-} from './bottomRightCorner.ts'
+import { BottomRightCornerContext } from './bottomRightCorner.ts'
 
 import type { TooLargeMessageModel } from '../../shared/TooLargeMessage.tsx'
 import type { DisplayBackgroundProgressModel } from './DisplayBackgroundProgress.tsx'
@@ -211,13 +208,18 @@ export default function DisplayStatusChromeBase({
             pointerEvents: 'none',
           }}
         >
-          {/* the same status channel, for work with no fetch behind it
+          {/* The same status channel, for work with no fetch behind it
               (clustering) — a corner chip, since the drawn content stays usable
-              meanwhile. In flow here rather than anchoring itself, which is
-              what used to put it underneath the control row. */}
-          <div style={{ order: BOTTOM_RIGHT_STATUS_ORDER }}>
-            <BackgroundProgress model={model} visible={phase === 'ready'} />
-          </div>
+              meanwhile. In flow here rather than anchoring itself, which is what
+              used to put it underneath the control row.
+
+              Rendered bare, with no wrapper of its own: a component returning
+              null contributes no DOM node, while a wrapper around it would stay
+              a zero-height flex ITEM and spend the `gap` above — lifting the
+              control row 4px on every display that has one and no status. It
+              takes CSS's default `order: 0` and the row asks for
+              `BOTTOM_RIGHT_CONTROLS_ORDER` to sort below it. */}
+          <BackgroundProgress model={model} visible={phase === 'ready'} />
         </div>
       </TrackOverlayPortal>
     </div>

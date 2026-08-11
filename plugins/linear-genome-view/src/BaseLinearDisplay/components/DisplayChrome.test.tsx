@@ -166,8 +166,7 @@ describe('the bottom-right corner has one owner', () => {
 
     const chip = await findByTestId('progress-chip')
     const controlRow = getByTestId('probe-control').parentElement!
-    // chip -> its order slot -> the corner; control -> the row -> the corner
-    const corner = chip.parentElement!.parentElement
+    const corner = chip.parentElement
     expect(corner).toBe(controlRow.parentElement)
     expect(corner!.style.position).toBe('absolute')
     // and the row joined it rather than pinning itself, which is the half that
@@ -183,12 +182,28 @@ describe('the bottom-right corner has one owner', () => {
     const { findByTestId, getByTestId } = renderWithControls(model)
 
     // `order`, not DOM position: one member arrives as a portal and the other as
-    // an ordinary child, and React documents no ordering between those two
-    const chipSlot = (await findByTestId('progress-chip')).parentElement!
+    // an ordinary child, and React documents no ordering between those two. The
+    // chip stays on CSS's default 0 and the row asks to sort below it.
+    const chip = await findByTestId('progress-chip')
     const controlRow = getByTestId('probe-control').parentElement!
-    expect(Number(chipSlot.style.order)).toBeLessThan(
-      Number(controlRow.style.order),
-    )
+    expect(chip.style.order).toBe('')
+    expect(Number(controlRow.style.order)).toBeGreaterThan(0)
+  })
+
+  // The trap the chip's own wrapper would have been: a component returning null
+  // contributes no DOM node, but a wrapper around it stays a zero-height flex
+  // ITEM and spends the column's `gap`, lifting the control row off the corner
+  // on every display that has one and no background job — which is all of them,
+  // nearly all of the time.
+  test('with no status the controls keep the corner to themselves', async () => {
+    const model = TestChromeModel.create({})
+    const { findByTestId, getByTestId } = renderWithControls(model)
+
+    await findByTestId('probe-canvas')
+    const controlRow = getByTestId('probe-control').parentElement!
+    const corner = controlRow.parentElement!
+    expect(getByTestId('chrome')).toBeTruthy()
+    expect(corner.childElementCount).toBe(1)
   })
 
   test('with no chrome above it the row still anchors itself', () => {

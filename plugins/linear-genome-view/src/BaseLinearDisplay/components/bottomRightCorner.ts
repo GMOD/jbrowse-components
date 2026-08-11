@@ -39,9 +39,14 @@ export const BottomRightCornerContext = createContext<HTMLElement | null>(null)
  * Stacked because the status chip is much wider than a control (it carries a
  * label and a 120px bar): in one horizontal row it would shove the controls
  * leftwards whenever a background job started and let them snap back when it
- * finished. Ordered by `order` rather than by DOM position because one member
- * arrives as a portal and the other as an ordinary child, and the relative
- * order of those two in the container is not something React documents.
+ * finished.
+ *
+ * Ordered by `order` rather than by DOM position because one member arrives as
+ * a portal and the other as an ordinary child, and the relative order of those
+ * two inside the container is not something React documents. Only the control
+ * row needs a value: the status chip takes CSS's default 0, so anything the
+ * chrome adds to the corner later sorts above the controls unless it says
+ * otherwise — which is the right default, the controls being the thing whose
+ * position in the corner users learn.
  */
-export const BOTTOM_RIGHT_STATUS_ORDER = 0
 export const BOTTOM_RIGHT_CONTROLS_ORDER = 1
