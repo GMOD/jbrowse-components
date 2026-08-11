@@ -10,10 +10,10 @@ import {
   readLeadingBp,
 } from '@jbrowse/cigar-utils'
 
+import { ARC_SLOT_CATEGORY } from '../../shaders/palettes.ts'
 // Generated constants, imported from the generated modules with no re-export
 // hop through palettes.ts (SHADER_JS_CODEGEN.md).
 import { ARC_COLOR_SHORT_INSERT } from '../../shaders/slang/arc.iface.generated.ts'
-import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.iface.generated.ts'
 import { classifyInsertSize } from '../../shared/insertSizeStats.ts'
 import { resolveReadGroup } from '../../shared/readGroupConnections.ts'
 import { getOrCreate } from '../../shared/util.ts'
@@ -105,11 +105,9 @@ const COLOR_LONG_INSERT = 1
 // index with the pale pileup fill, and the Canvas2D marker palette overrides the
 // same one. A local `2` here agreed with them by inspection only.
 const COLOR_SHORT_INSERT = ARC_COLOR_SHORT_INSERT
-// Also the shader's own, for the same reason: arcLine.slang names this slot
-// directly now that a tick carries no per-instance color, so a local `3` here
-// would be the only thing keeping the legend's interchrom swatch on the color
-// the ticks actually paint.
-const COLOR_INTERCHROM = ARC_COLOR_INTERCHROM
+// Interchrom has no local alias: arcLine.slang names ARC_COLOR_INTERCHROM
+// directly now that a tick carries no per-instance color, and ARC_SLOT_CATEGORY
+// is what puts the legend's interchrom swatch on the color the ticks paint.
 // LL slot 4; RR slot 5; RL slot 6 (see arcColorPalette).
 const COLOR_PAIR_LL = 4
 const COLOR_PAIR_RR = 5
@@ -121,40 +119,30 @@ const COLOR_SPLIT_INVERSION = 7
 // supplementary yellow, matching the read-fill + connector deletion color.
 const COLOR_SPLIT_DELETION = 8
 
-// Legend category for a read-cloud endpoint-square color slot. The read
-// legend is otherwise driven purely by read-fill categories (readColorCategory),
-// so cloud-only buckets — split junctions especially, which no read fill
-// produces outside chain mode — would be missing. Mapping the arc color slots
-// back to legend categories fills that gap, and by construction each square's
-// color equals its category swatch: COLOR_SHORT_INSERT paints the pale
-// colorShortInsert (arcMarkerColorPalette / arcMarkerColorByIndex), matching the
-// 'shortInsert' swatch, and the split slots reuse the split-junction swatches.
-// The default slot is the baseline colorPairLR; its label follows the coloring
-// mode ('Normal' insert vs. 'LR' orientation, both colorPairLR).
+// Legend category for an arc / read-cloud color slot. The read legend is
+// otherwise driven purely by read-fill categories (readColorCategory), so
+// cloud-only buckets — split junctions especially, which no read fill produces
+// outside chain mode — would be missing; mapping the slots back to categories
+// fills that gap.
+//
+// Reads ARC_SLOT_CATEGORY, the same table the arc palette resolves its colours
+// through, so "each square's colour equals its category swatch" is now true by
+// construction rather than by inspection. It used to be a second hand-written
+// switch, which is how the two ended up describing different things.
 export function arcColorLegendCategory(
   colorType: number,
   colorByType: ArcColorByType,
 ): ReadColorCategory {
-  switch (colorType) {
-    case COLOR_LONG_INSERT:
-      return 'longInsert'
-    case COLOR_SHORT_INSERT:
-      return 'shortInsert'
-    case COLOR_INTERCHROM:
-      return 'interchrom'
-    case COLOR_PAIR_LL:
-      return 'pairLL'
-    case COLOR_PAIR_RR:
-      return 'pairRR'
-    case COLOR_PAIR_RL:
-      return 'pairRL'
-    case COLOR_SPLIT_INVERSION:
-      return 'splitInversion'
-    case COLOR_SPLIT_DELETION:
-      return 'splitDeletion'
-    default:
-      return colorByType === 'orientation' ? 'pairLR' : 'normalInsert'
-  }
+  const category = ARC_SLOT_CATEGORY[colorType]
+  // Slot 0 and anything out of range are the baseline colorPairLR; its LABEL is
+  // the one thing that follows the coloring mode ('Normal' insert vs 'LR'
+  // orientation), which is why this is not a bare table lookup. Every other slot
+  // means the same thing whatever the mode.
+  return category === undefined || category === 'normalInsert'
+    ? colorByType === 'orientation'
+      ? 'pairLR'
+      : 'normalInsert'
+    : category
 }
 
 // This path's encoding of the shared junction classifier: magenta inversion /

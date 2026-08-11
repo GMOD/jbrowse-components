@@ -49,12 +49,12 @@ const STOCK = makeTestPalette({
 // mis-coloring instead of failing. Pin the lengths equal so that drift is a
 // test failure, not a subtle visual bug.
 describe('arc palette parity (JS ↔ GPU uniform slots)', () => {
-  it('buildArcColorPalette(STOCK) length matches the GPU arcColor slot count', () => {
+  it('the arc palette length matches the GPU arcColor slot count', () => {
     expect(buildArcColorPalette(STOCK).length).toBe(
       UNIFORM_SLOT_ARRAYS.arcColor.length,
     )
   })
-  it('buildLinkedReadColorPalette(STOCK) length matches the GPU linkedReadColor slot count', () => {
+  it('the linked-read palette length matches the GPU linkedReadColor slot count', () => {
     expect(buildLinkedReadColorPalette(STOCK).length).toBe(
       UNIFORM_SLOT_ARRAYS.linkedReadColor.length,
     )

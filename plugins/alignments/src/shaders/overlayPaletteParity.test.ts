@@ -26,16 +26,22 @@ import type {
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 
 // A pileup draws one meaning through three vocabularies — read fills, arc /
-// read-cloud overlays, linked-read connectors — and each has its own table. The
-// tables are supposed to agree, and until this file nothing said so; the
-// agreement was asserted in comments, which is how the overlays came to be baked
-// from the module palette while the read fills resolved through the theme. In
-// the default light palette that is invisible, and light is where every figure
-// is captured, so it survived.
+// read-cloud overlays, linked-read connectors — and each used to carry its own
+// colour table, agreeing by comment. That is how the overlays came to be baked
+// from the module palette while the read fills resolved through the theme: in
+// the default light palette the divergence is invisible, and light is where
+// every figure is captured.
 //
-// `makeTestPalette` is deliberately NOT the stock palette: it takes overrides,
-// so the assertions below fail if any path goes back to reading a module
-// constant instead of the palette it was handed.
+// The colour half of this file is now a TAUTOLOGY, and deliberately kept as one.
+// ARC_SLOT_CATEGORY / LINKED_READ_SLOT_CATEGORY say what a slot means and the
+// colour is resolved through `swatchPaletteKeys`, the read fills' own table, so
+// there is one table and nothing left to reconcile. What these assertions still
+// buy is the wiring: they fail if any path goes back to a baked constant, or if
+// a slot is pointed at the wrong meaning.
+//
+// `makeTestPalette` is deliberately NOT the stock palette. Every entry below is
+// distinct, so a path reading a module constant cannot pass by coincidence —
+// which is exactly how the original survived.
 const OVERRIDDEN = makeTestPalette({
   colorPairLR: [0.11, 0.12, 0.13],
   colorPairRL: [0.21, 0.22, 0.23],

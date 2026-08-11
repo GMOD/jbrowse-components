@@ -1,6 +1,11 @@
 import { splitJunctionKind } from '@jbrowse/alignments-core'
 
+import { LINKED_READ_SLOT_CATEGORY } from '../../shaders/palettes.ts'
 import { PAIR_DIRECTION_NUM } from '../../shared/buildBaseFeatureData.ts'
+import {
+  SPLIT_JUNCTION_LABELS,
+  readColorCategoryLabel,
+} from '../../shared/legendUtils.ts'
 import {
   connectionEndpoints,
   readGroupConnections,
@@ -29,39 +34,35 @@ export const LINKED_READ_COLOR_SPLIT_NORMAL = LINKED_READ_COLOR_PAIR_LL + 1
 export const LINKED_READ_COLOR_SPLIT_INV = LINKED_READ_COLOR_PAIR_LL + 2
 
 // Human-readable connection classification for the bezier-arc hover tooltip and
-// its legend row. The pair labels match CATEGORY_LEGEND (the read-fill legend)
-// word for word — the LR/RL/RR/LL nomenclature IGV uses — so a color means one
-// thing whether the reader met it on a swatch, a fill or a curve. Split
-// inversion gets its own color (colorSplitReadInversion), distinct from the
-// RR-pair blue (see linkedReadColorPalette), so the two are tellable apart.
+// its legend row. DERIVED, not restated: the slot's meaning comes from
+// LINKED_READ_SLOT_CATEGORY (the table its colour also comes from) and the
+// wording from the read key, so a colour means one thing whether the reader met
+// it on a swatch, a fill or a curve.
 //
-// The two split labels deliberately do NOT match the read fills', which say
-// "paired-end read": a connector is drawn between the segments of any split read
-// regardless of pairing, so that claim would be false for every long read on
-// screen. A curve marks the junction, and says so; `SPLIT_JUNCTION_LABELS` in
-// legendUtils gives the arc overlay the identical pair of strings.
+// The four pair labels used to be copied here from CATEGORY_LEGEND, under a
+// comment saying they must match word for word. They are the same strings now
+// because they are the same strings.
+//
+// The two split labels deliberately do NOT use the read fills' wording, which
+// says "paired-end read": a connector is drawn between the segments of any split
+// read regardless of pairing, so that claim would be false for every long read
+// on screen. `SPLIT_JUNCTION_LABELS` is that override, and the arc overlay reads
+// the identical table.
 //
 // Neither split label names a variant class. `splitJunctionKind` reads the two
 // strands and nothing else, and "deletion" — which this said until it was
 // noticed in a legend beside its own synonym — is one of several rearrangements
 // a same-strand junction is evidence for.
 export function connectionLabel(colorType: number) {
-  switch (colorType) {
-    case LINKED_READ_COLOR_SPLIT_INV:
-      return 'Split junction (inverted)'
-    case LINKED_READ_COLOR_SPLIT_NORMAL:
-      return 'Split junction (same strand)'
-    case LINKED_READ_COLOR_PAIR_RR:
-      return 'RR - Both mates reverse strand'
-    case LINKED_READ_COLOR_PAIR_RL:
-      return 'RL - Mates point outward'
-    case LINKED_READ_COLOR_PAIR_LL:
-      return 'LL - Both mates forward strand'
-    case LINKED_READ_COLOR_PAIR_LR:
-      return 'LR - Normal pair orientation'
-    default:
-      return 'Read pair'
-  }
+  const category = LINKED_READ_SLOT_CATEGORY[colorType]
+  // Slots 0 and 7 are the unknown/fallback baseline. They take LR's swatch, but
+  // calling them LR would assert an orientation nothing measured, so they keep
+  // the neutral wording.
+  return category === undefined ||
+    colorType === LINKED_READ_COLOR_PAIR_UNKNOWN ||
+    colorType >= LINKED_READ_SLOT_CATEGORY.length - 1
+    ? 'Read pair'
+    : (SPLIT_JUNCTION_LABELS[category] ?? readColorCategoryLabel(category)!)
 }
 
 // The connection color types the overlay draws STRAIGHT rather than as a bezier.
