@@ -4309,6 +4309,18 @@ export const graphSpecs: ScreenshotSpec[] = [
         anchor: { view: 1, graphNode: CHM13_NODE },
         strokeWidth: 3,
       },
+      // THE LOOP CARRIES THE BADGE TOO (review: "presumably the loop should
+      // also be labeled with '1'"). It is the same object as the bar in the
+      // pane below and the shaded column in the part beside this one, and it
+      // was the only one of the three drawn without the number. A graph-node
+      // anchor resolves to a point ON the node's polyline rather than to its
+      // bounding box, so the badge lands on the arc itself -- which is what
+      // makes it a label on the loop and not on the box around it.
+      {
+        type: 'circle',
+        text: '1',
+        anchor: { view: 1, graphNode: CHM13_NODE },
+      },
       // WHICH PANE IS WHICH, OVER THE APP AS WELL AS IN IT (review: "the in-app
       // texts are too small to see. we need to add them"). Each pane already
       // carries a `displayName`, which is what an earlier round asked for, and
