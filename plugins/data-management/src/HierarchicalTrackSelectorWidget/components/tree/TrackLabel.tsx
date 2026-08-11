@@ -10,7 +10,6 @@ import TrackSelectorTrackMenu from './TrackSelectorTrackMenu.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 import type { TreeTrackNode } from '../../types.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 // checkboxLabel merges MUI FormControlLabel's root styles, so the row renders a
 // plain <label> instead of mounting FormControlLabel + its Typography wrapper
@@ -84,21 +83,19 @@ const TrackCheckbox = observer(function TrackCheckbox({
 // Separate observer so only this label re-renders when selection changes
 const TrackLabelText = observer(function TrackLabelText({
   model,
-  conf,
   id,
   name,
   trackId,
   selectedClass,
 }: {
   model: HierarchicalTrackSelectorModel
-  conf: AnyConfigurationModel
   id: string
   name: string
   trackId: string
   selectedClass: string
 }) {
   const { classes } = useStyles()
-  const selected = model.selectionSet.has(conf)
+  const selected = model.selectionSet.has(trackId)
   return (
     <div
       data-testid={`htsTrackLabel-${id}`}
@@ -128,10 +125,10 @@ const TrackLabel = observer(function TrackLabel({
         aria-description={description}
         onClick={event => {
           if (event.ctrlKey || event.metaKey) {
-            if (model.selectionSet.has(conf)) {
-              model.removeFromSelection([conf])
+            if (model.selectionSet.has(trackId)) {
+              model.removeFromSelection([trackId])
             } else {
-              model.addToSelection([conf])
+              model.addToSelection([trackId])
             }
             event.preventDefault()
           }
@@ -145,7 +142,6 @@ const TrackLabel = observer(function TrackLabel({
         />
         <TrackLabelText
           model={model}
-          conf={conf}
           id={id}
           name={name}
           trackId={trackId}

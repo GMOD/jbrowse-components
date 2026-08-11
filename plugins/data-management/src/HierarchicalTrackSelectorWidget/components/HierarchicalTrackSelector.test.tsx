@@ -691,7 +691,7 @@ test('model selection methods', () => {
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
 
-  const tracks = model.allTrackConfigurations
+  const tracks = model.allTrackConfigurations.map(t => t.trackId as string)
   expect(tracks.length).toBeGreaterThanOrEqual(2)
 
   // initially no selection
@@ -724,9 +724,9 @@ test('model selection methods', () => {
   expect(model.selection.length).toBe(0)
 })
 
-// deleting a track destroys its config; the selection holds plain references to
-// those configs, so without pruning the shopping cart keeps counting a track
-// that no longer exists (and reads slots off a dead MST node)
+// deleting a track takes it out of the selector's track map, so the selected
+// trackId stops resolving and the shopping cart stops counting a track that no
+// longer exists
 test('deleting a selected track drops it from the selection', () => {
   const session = addTestData(createTestSession())
   const firstView = session.addView('LinearGenomeView', {
@@ -738,12 +738,54 @@ test('deleting a selected track drops it from the selection', () => {
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
 
   const track = session.tracks.find(t => t.trackId === 'fooC')!
-  model.setSelection([track])
+  model.setSelection([track.trackId])
   expect(model.selection.length).toBe(1)
 
   session.deleteTrackConf(track)
   expect(model.selection.length).toBe(0)
   expect(model.selectionSet.size).toBe(0)
+})
+
+// a non-admin's edit to an admin track resolves through a fresh merged config
+// object (ADR-032), so a selection keyed by config identity kept counting the
+// track in the cart while its row went back to looking unselected
+test('editing a track keeps it selected', () => {
+  const session = createTestSession({
+    adminMode: false,
+    jbrowseConfig: {
+      tracks: [
+        {
+          trackId: 'fooC',
+          name: 'fooC',
+          assemblyNames: ['volMyt1'],
+          type: 'FeatureTrack',
+          adapter: { type: 'FromConfigAdapter', features: [] },
+        },
+      ],
+    },
+  })
+  addTestAssembly(session)
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
+    ],
+  })
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
+
+  model.setSelection(['fooC'])
+  expect(model.isSelected('fooC')).toBe(true)
+
+  session.updateTrackConfiguration({
+    trackId: 'fooC',
+    name: 'renamed',
+    assemblyNames: ['volMyt1'],
+    type: 'FeatureTrack',
+    adapter: { type: 'FromConfigAdapter', features: [] },
+  })
+
+  expect(model.isSelected('fooC')).toBe(true)
+  expect(model.selection.length).toBe(1)
 })
 
 test('category collapse and expand', async () => {
@@ -1845,7 +1887,7 @@ function addTestDataWithMetadata(
   return session
 }
 
-function addTestData(session: ReturnType<typeof createTestSession>) {
+function addTestAssembly(session: ReturnType<typeof createTestSession>) {
   session.addAssemblyConf({
     name: 'volMyt1',
     sequence: {
@@ -1865,7 +1907,11 @@ function addTestData(session: ReturnType<typeof createTestSession>) {
       },
     },
   })
+  return session
+}
 
+function addTestData(session: ReturnType<typeof createTestSession>) {
+  addTestAssembly(session)
   session.addTrackConf({
     trackId: 'fooC',
     name: 'fooC',

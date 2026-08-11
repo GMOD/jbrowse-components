@@ -40,7 +40,7 @@ const FacetedSelector = observer(function FacetedSelector({
 }) {
   const { classes } = useStyles()
   const { width, height } = useWindowSize()
-  const { selection, shownTrackIds } = model
+  const { selectionSet, shownTrackIds } = model
   const { showFilters } = faceted
 
   const columns = getFacetedColumns({ faceted, model })
@@ -72,7 +72,7 @@ const FacetedSelector = observer(function FacetedSelector({
             faceted={faceted}
             columns={columns}
             shownTrackIds={shownTrackIds}
-            selection={selection}
+            selectionSet={selectionSet}
           />
         </div>
 

@@ -1,8 +1,6 @@
-import { notEmpty } from '@jbrowse/core/util'
 import { transaction } from 'mobx'
 
 import type { HierarchicalTrackSelectorModel } from '../HierarchicalTrackSelectorWidget/model.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 /**
  * Select or deselect a set of tracks by id. In shopping-cart mode this mutates
@@ -16,17 +14,10 @@ export function setTracksSelected(
   useShoppingCart: boolean,
 ) {
   if (useShoppingCart) {
-    const { selection } = model
     if (selected) {
-      const current = new Set(selection.map(s => `${s.trackId}`))
-      const toAdd = ids
-        .filter(id => !current.has(id))
-        .map(id => model.allTrackConfigurationMap.get(id))
-        .filter(notEmpty)
-      model.setSelection([...selection, ...toAdd])
+      model.addToSelection(ids)
     } else {
-      const remove = new Set(ids)
-      model.setSelection(selection.filter(s => !remove.has(`${s.trackId}`)))
+      model.removeFromSelection(ids)
     }
   } else {
     transaction(() => {
@@ -52,18 +43,16 @@ export function getRowSelectionState({
   model,
   useShoppingCart,
   shownTrackIds,
-  selection,
+  selectionSet,
   filteredRows,
 }: {
   model: HierarchicalTrackSelectorModel
   useShoppingCart: boolean
   shownTrackIds: Set<string>
-  selection: AnyConfigurationModel[]
+  selectionSet: Set<string>
   filteredRows: { id: string }[]
 }) {
-  const selectedIds = useShoppingCart
-    ? new Set(selection.map(s => `${s.trackId}`))
-    : shownTrackIds
+  const selectedIds = useShoppingCart ? selectionSet : shownTrackIds
   const allSelected =
     filteredRows.length > 0 &&
     filteredRows.every(row => selectedIds.has(row.id))

@@ -156,13 +156,13 @@ function categoryTrackMenuItems(
     {
       label: 'Add to selection',
       onClick: () => {
-        model.addToSelection(trackNodes.map(n => n.conf))
+        model.addToSelection(trackNodes.map(n => n.trackId))
       },
     },
     {
       label: 'Remove from selection',
       onClick: () => {
-        model.removeFromSelection(trackNodes.map(n => n.conf))
+        model.removeFromSelection(trackNodes.map(n => n.trackId))
       },
     },
     {

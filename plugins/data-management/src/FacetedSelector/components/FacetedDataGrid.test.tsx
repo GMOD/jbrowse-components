@@ -78,7 +78,7 @@ function renderGrid(
         faceted={faceted}
         columns={columns}
         shownTrackIds={model.shownTrackIds}
-        selection={model.selection}
+        selectionSet={model.selectionSet}
       />
     )
   })

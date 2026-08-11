@@ -17,7 +17,6 @@ import { useVirtualRows } from './useVirtualRows.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 import type { FacetedModel, FacetedRow } from '../facetedModel.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 export interface FacetedColumn {
   id: string
@@ -40,13 +39,13 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
   faceted,
   columns,
   shownTrackIds,
-  selection,
+  selectionSet,
 }: {
   model: HierarchicalTrackSelectorModel
   faceted: FacetedModel
   columns: FacetedColumn[]
   shownTrackIds: Set<string>
-  selection: AnyConfigurationModel[]
+  selectionSet: Set<string>
 }) {
   const { classes } = useFacetedTableStyles()
   const {
@@ -66,7 +65,7 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
       model,
       useShoppingCart,
       shownTrackIds,
-      selection,
+      selectionSet,
       filteredRows: sortedRows,
     })
 

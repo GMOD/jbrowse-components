@@ -1,6 +1,5 @@
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import {
-  dedupe,
   getSession,
   isSessionWithSessionTracks,
   localStorageGetJSON,
@@ -25,7 +24,6 @@ import {
   findSubCategories,
   findTopLevelCategories,
   getAllTrackNodes,
-  isUsableTrackConfig,
   trackNodeSourceFor,
 } from './util.ts'
 
@@ -212,10 +210,14 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       recentlyUsed: [] as string[],
       /**
        * #volatile
-       * backing store for `selection`; read that instead, it drops entries
-       * whose track has since been deleted
+       * the shopping cart, by trackId — like favorites, recentlyUsed and
+       * shownTrackIds, and unlike the config objects it used to hold. A config
+       * is not a stable identity: a non-admin's edit to an admin track resolves
+       * through a fresh merged object (ADR-032), so a selection holding the old
+       * one kept counting in the cart while the row it belonged to went back to
+       * looking unselected. Read `selection` for the configs.
        */
-      selectionRaw: [] as AnyConfigurationModel[],
+      selectedTrackIds: [] as string[],
       /**
        * #volatile
        */
@@ -274,23 +276,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * The selected track configs. Deleting a track destroys its config but
-       * leaves this list holding it, so entries are dropped on read: one gate
-       * for every delete path (the cart's own "Delete tracks", a single track's
-       * menu) rather than a cleanup call at each of them. Reading a slot off a
-       * destroyed node is also what MST warns about.
-       */
-      get selection(): AnyConfigurationModel[] {
-        return self.selectionRaw.filter(isUsableTrackConfig)
-      },
-      /**
-       * #getter
-       */
-      get selectionSet() {
-        return new Set(this.selection)
-      },
-      /**
-       * #getter
        */
       get favoritesSet() {
         return new Set(self.favorites)
@@ -324,27 +309,29 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setSelection(elt: AnyConfigurationModel[]) {
-        self.selectionRaw = elt
+      setSelection(trackIds: string[]) {
+        self.selectedTrackIds = [...new Set(trackIds)]
       },
       /**
        * #action
        */
-      addToSelection(elt: AnyConfigurationModel[]) {
-        self.selectionRaw = dedupe([...self.selection, ...elt], e => e.trackId)
+      addToSelection(trackIds: string[]) {
+        self.selectedTrackIds = [
+          ...new Set([...self.selectedTrackIds, ...trackIds]),
+        ]
       },
       /**
        * #action
        */
-      removeFromSelection(elt: AnyConfigurationModel[]) {
-        const s = new Set(elt)
-        self.selectionRaw = self.selection.filter(f => !s.has(f))
+      removeFromSelection(trackIds: string[]) {
+        const s = new Set(trackIds)
+        self.selectedTrackIds = self.selectedTrackIds.filter(id => !s.has(id))
       },
       /**
        * #action
        */
       clearSelection() {
-        self.selectionRaw = []
+        self.selectedTrackIds = []
       },
 
       /**
@@ -518,12 +505,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       },
     }))
     .views(self => ({
-      /**
-       * #method
-       */
-      isSelected(track: AnyConfigurationModel) {
-        return self.selectionSet.has(track)
-      },
       /**
        * #method
        */
@@ -710,6 +691,35 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       * The selected track configs, resolved from `selectedTrackIds` on read
+       * exactly as favorites and recently-used are. That is the one gate for
+       * every delete path (the cart's own "Delete tracks", a single track's
+       * menu) — a track that has gone away no longer resolves, so nothing has
+       * to clean up after it — and it is what keeps an edited track selected,
+       * since the id outlives the config object an edit replaces.
+       */
+      get selection(): AnyConfigurationModel[] {
+        return self.selectedTrackIds
+          .map(t => self.allTrackConfigurationMap.get(t))
+          .filter(notEmpty)
+      },
+      /**
+       * #getter
+       * the selected trackIds that still resolve to a track — `selection`'s
+       * ids, so a row can ask whether it is selected without the config
+       * identity comparison that used to answer it
+       */
+      get selectionSet() {
+        return new Set(this.selection.map(t => t.trackId as string))
+      },
+      /**
+       * #method
+       */
+      isSelected(trackId: string) {
+        return this.selectionSet.has(trackId)
+      },
       /**
        * #getter
        * filters out tracks that are not in the favorites group
