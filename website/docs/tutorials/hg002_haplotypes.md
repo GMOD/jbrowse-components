@@ -121,11 +121,11 @@ region**, which walks that panel's visible window through the alignment's CIGAR
 and sends its neighbor there.
 
 To check the alignment inside a ribbon rather than at its edges, turn on **View
-options → Show... → Show location markers**. It draws ticks at regularly spaced
-positions in both panels at once, so a point on the top row can be read against
-the point it maps to on the bottom.
+options → Show... → Show location markers**. It draws lines through the ribbon
+at regularly spaced positions, each joining a point on the top row to the point
+it maps to on the bottom.
 
-<Figure caption="Maternal (top) and paternal (bottom) panels, each carrying the chain blocks on its own haplotype's coordinates. The panels have drifted apart, so nothing in the frame lines up; the ring marks the right-clicked block. After the move the paternal panel is elsewhere and both lanes carry the block the ribbon joins. The last two frames turn on location markers, whose ticks pair up positions across the two panels." src="/img/hg002_haplotypes_follow_panel.png" />
+<Figure caption="Maternal (top) and paternal (bottom) panels, each carrying the chain blocks on its own haplotype's coordinates. The panels have drifted apart, so nothing in the frame lines up; the ring marks the right-clicked block. After the move the paternal panel is elsewhere and both lanes carry the block the ribbon joins. The last two frames turn on location markers, whose lines through the ribbon pair up positions across the two panels." src="/img/hg002_haplotypes_follow_panel.png" />
 
 ## See also
 

@@ -101,13 +101,21 @@ independently:
 - Click a ribbon to highlight it across both panels
 - Right-click a ribbon for a context menu with **Center on feature**, which
   recenters both panels on that alignment
-- With the synteny track also open as a track inside a panel, right-click one of
-  its blocks for **Move other panel to the matching region**. Where **Center on
-  feature** moves both panels to the alignment's midpoint, this leaves the panel
-  you clicked in alone and sends its neighbour to the sequence the panel's
-  visible window aligns to, resolved through the alignment's CIGAR. That is the
-  one to reach for on a chain-scale alignment, whose midpoint can be tens of
-  megabases from what is on screen
+- The same menu offers **Move top panel to the matching region** and **Move
+  bottom panel to the matching region**. Where **Center on feature** moves both
+  panels to the alignment's midpoint, these leave one panel alone and send the
+  other to the sequence that panel's visible window aligns to, resolved through
+  the alignment's CIGAR. That is what to reach for on a chain-scale alignment,
+  whose midpoint can be tens of megabases from what is on screen. Two items
+  because a ribbon sits between two panels, so which one stays is yours to say
+- The same item is on the right-click menu of a synteny track opened as a track
+  _inside_ a panel, as **Move other panel to the matching region** — there the
+  panel you clicked in is the one that stays
+- Those items appear only where the alignment carries a CIGAR to walk. A PAF
+  written without `minimap2 -c`, a MashMap or MCScan file, and the coarse tier
+  of a tiered PIF all describe a block without describing the correspondence
+  inside it, so there is no matching region to resolve; zooming in far enough to
+  load the fine tier brings the items back
 
 ## Coloring the ribbons
 

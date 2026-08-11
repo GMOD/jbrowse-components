@@ -591,10 +591,12 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
       },
       // THE OTHER HALF OF "AM I LOOKING AT THE SAME PLACE" (review: "add a
       // screenshot showing the guidelines ... with screenshot showing how to
-      // enable them"). Location markers are ticks drawn INSIDE a ribbon at
-      // regularly spaced positions in both panels at once, so a reader can see
-      // which point on the top maps to which point on the bottom rather than
-      // taking the whole band on trust. They are OFF by default, which is why
+      // enable them"). Location markers draw a line THROUGH the ribbon at
+      // regularly spaced positions, joining a point on the top panel to the
+      // point it maps to on the bottom, so a reader can read the
+      // correspondence off the band instead of taking the whole band on trust.
+      // They draw as lines spanning the ribbon, not as ticks on a lane, and the
+      // frame title says so. They are OFF by default, which is why
       // there is an enable frame to show at all -- unlike the LGV hamburger's
       // "Show guidelines", which is already on and would give a stage where
       // nothing changes.
@@ -662,7 +664,7 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
               dy: 30,
             },
             fontSize: 22,
-            text: '(4) The ticks pair up positions across the two panels',
+            text: '(4) The lines through the ribbon pair up positions across the two panels',
           },
         ],
       },
