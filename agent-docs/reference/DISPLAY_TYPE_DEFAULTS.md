@@ -83,8 +83,8 @@ accidental.
 | `endAdornment` menu-row primitive + renderer | `packages/core/src/ui/{MenuTypes.ts,CascadingMenu.tsx,MenuItemTrailing.tsx}` |
 | Adopters: `displayMode` / `heightMode` / `subfeatureLabels` / `displayDirectionalChevrons` | `plugins/canvas/src/LinearBasicDisplay/{baseConfigSchema,baseModel,model}.ts`. All four slots are **inherited by every `linearCanvasBaseDisplayStateModelFactory` consumer** (e.g. `LinearVariantDisplay`) via `baseConfiguration`, and all four resolve into its worker payload through the base `rpcProps`. Only two of the *pins* come along: `displayMode` and `heightMode` are built in the shared `trackMenus.ts`, while the `subfeatureLabels` / `displayDirectionalChevrons` rows **and their `resolveConf` getters** live in the concrete `LinearBasicDisplay/model.ts`. That split is right — both are transcript-structure settings, inert on a variant track — so don't move them down; see the variant row in [the pin table](#promotable-is-a-schema-fact-the-pin-is-a-menu-fact) |
 | Adopters: `featureHeight` / `heightMode` / `colorBy` / `mismatchAlpha` / `linkedReads` / `readConnections` / `readConnectionsDown` / `showSashimiArcs` / `sashimiArcsMode` / `showSashimiLabels` / `showSoftClipping` / `showLegend` | `plugins/alignments/src/LinearAlignmentsDisplay/{configSchema,model}.ts` |
-| Adopters: `scatterPointSize` + `lineWidth` (wiggle), `lineWidth` (paired-arc), `scatterPointSize` (Manhattan) | `plugins/wiggle/src/shared/{wiggleConfigSchemaFields.ts,WiggleScoreConfigMixin.ts}`, `plugins/arc/src/LinearPairedArcDisplay/{configSchema,model}.ts`, `plugins/gwas/src/LinearManhattanDisplay/configSchemaFactory.ts` |
-| Adopters: `showLegend`, in six schemas | `plugins/{alignments/src/LinearAlignmentsDisplay,hic/src/LinearHicDisplay,canvas/src/LinearMultiRowFeatureDisplay,wiggle/src/MultiLinearWiggleDisplay}/configSchema.ts`, `plugins/variants/src/{shared/SharedVariantConfigSchema,LDDisplay/SharedLDConfigSchema}.ts`. `promotedBase` differs per display and is each one's old `defaultValue` (Hi-C and LD off, the rest on), because the legends are different objects. `LGVSyntenyDisplay` inherits the alignments slot and wires its own pin. The row itself is one builder — see [the `showLegend` note](#showlegend-is-one-row-across-eight-displays-and-two-of-them-have-no-slot) |
+| Adopters: `scatterPointSize` + `lineWidth` (wiggle), `lineWidth` (paired-arc), `scatterPointSize` + `showLdLegend` (Manhattan) | `plugins/wiggle/src/shared/{wiggleConfigSchemaFields.ts,WiggleScoreConfigMixin.ts}`, `plugins/arc/src/LinearPairedArcDisplay/{configSchema,model}.ts`, `plugins/gwas/src/LinearManhattanDisplay/configSchemaFactory.ts` |
+| Adopters: `showLegend`, in six schemas | `plugins/{alignments/src/LinearAlignmentsDisplay,hic/src/LinearHicDisplay,canvas/src/LinearMultiRowFeatureDisplay,wiggle/src/MultiLinearWiggleDisplay}/configSchema.ts`, `plugins/variants/src/{shared/SharedVariantConfigSchema,LDDisplay/SharedLDConfigSchema}.ts`. `promotedBase` differs per display and is each one's old `defaultValue` (Hi-C and LD off, the rest on), because the legends are different objects. `LGVSyntenyDisplay` inherits the alignments slot and wires its own pin. The row itself is one builder — see [the `showLegend` note](#showlegend-is-one-row-across-nine-displays-and-one-of-them-has-no-slot) |
 | Shared `heightMode` mixin (canvas + alignments) | `plugins/linear-genome-view/src/BaseLinearDisplay/models/{HeightModeMixin.ts,heightMode.ts}` |
 
 Tests: `promotableDefaults.test.ts` (resolver + `makePin`),
@@ -197,7 +197,7 @@ production one — harmless while `MenuItemPin` holds the control by reference, 
 the reason flattening that wrapper into `interface MenuItemPin extends Pin` breaks
 them. `MenuTypes.ts` says so at the declaration.
 
-### `showLegend` is one row across eight displays, and two of them have no slot
+### `showLegend` is one row across nine displays, and one of them has no slot
 
 Every other promotable slot is one display's (or one base schema's).
 `showLegend` is eight displays', declared in six schemas — alignments
@@ -214,20 +214,38 @@ otherwise — the same "plus a pin" relationship every builder in
 `promotableMenuItems.ts` has, so the promotable and plain forms of "Show legend"
 cannot drift in label, help text or disabled state.
 
-The optional `pin` is not laxity, it is the two callers with nothing to promote:
-`LinearManhattanDisplay`'s LD legend is a **volatile**, and
+The optional `pin` is now down to **one** caller with nothing to promote:
 `LinearBasicDisplay`'s color key is a per-legend `dismissed` flag on the legend
-object rather than config at all. Neither is a promotable-slot gap to close by
-adding a pin — there is no slot for a pin to name. Closing them means first
-deciding the setting should be config, which is a product question about two
-displays, not a cascade one.
+object, not config at all, so there is no slot for a pin to name. That is not a
+promotable-slot gap to close by adding a pin — closing it means first deciding
+the setting should be config, which is a product question about that display,
+not a cascade one.
 
-Only three of the eight are in `PromotablePinCoverage.test.ts`'s fixtures
-(alignments, LGVSynteny, multi-wiggle); the other five have no fixture there for
-unrelated reasons, so their pins are checked only by their own menu tests.
-Multi-wiggle needed a new fixture state to be checked at all: its row is gated
-on `overlayLegendApplies`, which wants an overlay rendering **and** sources, and
-sources arrive with data the test never fetches.
+`LinearManhattanDisplay` was the other, and it is the worked example of making
+that decision. Its `showLdLegend` was a **volatile**, sitting with
+`featureUnderMouse` and `rpcDataMap` while being a track-menu setting — so it
+reset on every retick, and no config or session could set it. It is now a
+`maybeBoolean` slot with `promotedBase: true` (the volatile's old initial
+value, so an untouched track is unchanged) and carries a pin. The name stayed
+`showLdLegend` rather than joining the `showLegend` family: it labels the r²
+ramp specifically, and the display could grow a second key wanting its own
+switch.
+
+**A volatile is the thing to look for when a "Show ..." row has no pin.** The
+alignments doctrine — display options are config slots, volatiles are for
+hover/selection/scroll — puts every such row on the config side, so a volatile
+one is usually a slot that was never made.
+
+Four of the nine are in `PromotablePinCoverage.test.ts`'s fixtures (alignments,
+LGVSynteny, multi-wiggle, Manhattan); the rest have no fixture there for
+unrelated reasons, so their pins are checked only by their own menu tests. Two
+needed care to be checked at all: multi-wiggle's row is gated on
+`overlayLegendApplies`, which wants an overlay rendering **and** sources, and
+sources arrive with data the test never fetches — hence a fixture state that
+seeds them. Manhattan's row is `disabled` without LD coloring but still built
+and still pinned, which is what lets the walk (which runs in the default
+`colorBy: 'normal'` state) find it; gating the row out entirely would have
+hidden the pin.
 
 ## The cascade
 
