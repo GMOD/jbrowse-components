@@ -4,18 +4,11 @@ import { readConfSlot } from '@jbrowse/core/configuration'
 import { ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { AboutPanelProps } from './util.ts'
 
 type FileInfo = Record<string, unknown> | string
 
-export default function FileInfoPanel({
-  config,
-  session,
-}: {
-  config: AnyConfigurationModel | Record<string, unknown>
-  session: AbstractSessionModel
-}) {
+export default function FileInfoPanel({ config, session }: AboutPanelProps) {
   const { rpcManager } = session
   const trackId = readConfSlot<string>(config, 'trackId')
 

@@ -5,13 +5,14 @@ import {
   ErrorBanner,
   LoadingEllipses,
 } from '@jbrowse/core/ui'
+import { getConfAssemblyNames } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useFetch } from '@jbrowse/core/util/useFetch'
+import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { AboutConfig, AboutPanelProps } from './util.ts'
 
 const MAX_REF_NAMES = 10_000
 
@@ -43,29 +44,37 @@ function formatRefNames(
     .join('\n')
 }
 
+/**
+ * A `ReferenceSequenceTrack` config declares no `assemblyNames` slot at all —
+ * `createReferenceSeqTrackConfig` omits it deliberately, because such a track's
+ * assembly is the config node holding it. `getConfAssemblyNames` is the shared
+ * resolver that walks to that parent, and reading the slot directly instead is
+ * what left "Show ref names" on every reference sequence track loading forever:
+ * `undefined` serialized into the fetch key, which `useFetch` reads as "don't
+ * fetch". It throws when a config has neither, which is why this is called
+ * inside the fetcher — an unanswerable question belongs in the error banner
+ * rather than thrown out of a render.
+ */
+function aboutAssemblyNames(config: AboutConfig) {
+  return isStateTreeNode(config)
+    ? getConfAssemblyNames(config)
+    : (readConfSlot<string[] | undefined>(config, 'assemblyNames') ?? [])
+}
+
 const RefNameInfoDialog = observer(function RefNameInfoDialog({
   config,
   session,
   onClose,
-}: {
-  config: AnyConfigurationModel | Record<string, unknown>
-  session: AbstractSessionModel
-  onClose: () => void
-}) {
+}: AboutPanelProps & { onClose: () => void }) {
   const { classes } = useStyles()
   const { rpcManager } = session
   const trackId = readConfSlot<string>(config, 'trackId')
-  const assemblyNames = readConfSlot<string[]>(config, 'assemblyNames')
 
-  const {
-    data: refNames,
-    error,
-    isLoading,
-  } = useFetch(
-    ['CoreGetRefNames', trackId, JSON.stringify(assemblyNames)],
+  const { data, error, isLoading } = useFetch(
+    ['CoreGetRefNames', trackId],
     () =>
       Promise.all(
-        [...new Set(assemblyNames)].map(
+        [...new Set(aboutAssemblyNames(config))].map(
           async assemblyName =>
             [
               assemblyName,
@@ -80,6 +89,11 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
         ),
       ),
   )
+  // undefined here means the key was incomplete and the fetch never ran, not
+  // that one is still in flight — `isLoading` is what says that. Treating the
+  // two as the same thing is what left the dialog spinning with nothing behind
+  // it; an empty list at least says so
+  const refNames = data ?? []
 
   return (
     <Dialog
@@ -91,7 +105,7 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
       <DialogContent className={classes.container}>
         {error ? (
           <ErrorBanner error={error} />
-        ) : isLoading || refNames === undefined ? (
+        ) : isLoading ? (
           <LoadingEllipses message="Loading refNames" />
         ) : (
           <>

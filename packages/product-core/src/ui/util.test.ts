@@ -34,9 +34,12 @@ const passthroughPluginManager = {
   evaluateExtensionPoint: (_name: string, arg: unknown) => arg,
 } as unknown as PluginManager
 
-function makeSession(formatAboutConfig: Record<string, unknown> = {}) {
+function makeSession(
+  formatAboutConfig: Record<string, unknown> = {},
+  hideUris = false,
+) {
   return SessionModel.create(
-    { configuration: { formatAbout: { config: formatAboutConfig } } },
+    { configuration: { formatAbout: { config: formatAboutConfig, hideUris } } },
     { pluginManager: corePluginManager },
   ) as unknown as AbstractSessionModel
 }
@@ -110,6 +113,27 @@ describe('getAboutDialogConfig', () => {
     })
     expect(out.config).not.toHaveProperty('0')
     expect(out.config.name).toBe('Track 1')
+  })
+
+  // the two formatAbout slots fold differently: `config` is a merge a track can
+  // win key-by-key, `hideUris` is an OR a track cannot turn back off
+  it.each([
+    [false, false, false],
+    [false, true, true],
+    [true, false, true],
+    [true, true, true],
+  ])('ORs hideUris (session %p, track %p)', (session, track, expected) => {
+    const config = TrackConf.create(
+      { trackId: 't1', formatAbout: { hideUris: track } },
+      { pluginManager: corePluginManager },
+    )
+    expect(
+      getAboutDialogConfig({
+        config,
+        session: makeSession({}, session),
+        pluginManager: passthroughPluginManager,
+      }).hideUris,
+    ).toBe(expected)
   })
 
   it('routes the merged config through Core-customizeAbout', () => {

@@ -5,18 +5,13 @@ import { getTrackName } from '@jbrowse/core/util/tracks'
 
 import AboutContents from './AboutDialogContents.tsx'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { AboutPanelProps } from './util.ts'
 
 export default function AboutDialog({
   config,
   session,
   handleClose,
-}: {
-  config: AnyConfigurationModel | Record<string, unknown>
-  session: AbstractSessionModel
-  handleClose: () => void
-}) {
+}: AboutPanelProps & { handleClose: () => void }) {
   const trackName = getTrackName(config, session)
   const { pluginManager } = getEnv(session)
 

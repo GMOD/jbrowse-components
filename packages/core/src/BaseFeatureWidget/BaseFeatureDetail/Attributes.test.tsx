@@ -62,6 +62,24 @@ describe('Attributes', () => {
     expect(queryByText('file')).toBeNull()
   })
 
+  // regression: only UriLocation was suppressed, so a desktop or
+  // `--load copy` config printed the full path under hideUris
+  test('hides local path values when hideUris is set', () => {
+    const { queryByText } = renderWithTheme(
+      <Attributes
+        hideUris
+        attributes={{
+          file: {
+            localPath: '/home/someone/secret/x.bam',
+            locationType: 'LocalPathLocation',
+          },
+        }}
+      />,
+    )
+    expect(queryByText(/secret/)).toBeNull()
+    expect(queryByText('file.localPath')).toBeNull()
+  })
+
   // DataGridDetails is lazy() behind a null Suspense fallback, so nothing at all
   // renders — not even the field name — until the chunk resolves. That chunk
   // pulls @mui/x-data-grid and core's `ui` barrel, which is slower than

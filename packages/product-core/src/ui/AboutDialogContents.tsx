@@ -2,11 +2,7 @@ import { Suspense, useState } from 'react'
 
 import Attributes from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
-import {
-  getConf,
-  getTrackConfigWithPromotables,
-  readConfSlot,
-} from '@jbrowse/core/configuration'
+import { getTrackConfigWithPromotables } from '@jbrowse/core/configuration'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -42,14 +38,9 @@ const AboutDialogContents = observer(function AboutDialogContents({
   const { classes } = useStyles()
   const [showRefNames, setShowRefNames] = useState(false)
 
-  const hideUris = Boolean(
-    getConf(session, ['formatAbout', 'hideUris']) ||
-    readConfSlot<boolean>(config, ['formatAbout', 'hideUris']),
-  )
-
   const { pluginManager } = getEnv(session)
 
-  const confPostExt = getAboutDialogConfig({
+  const { config: shown, hideUris } = getAboutDialogConfig({
     config,
     session,
     pluginManager,
@@ -57,13 +48,12 @@ const AboutDialogContents = observer(function AboutDialogContents({
 
   // each registered panel scopes itself (returns null when it doesn't apply)
   // and owns its own BaseCard chrome
-  const extraPanels = [
+  const extraPanels = pluginManager.evaluateExtensionPoint(
     /** #extensionPoint Core-extraAboutPanel | sync | Add extra panels to a track's About dialog */
-    pluginManager.evaluateExtensionPoint('Core-extraAboutPanel', [], {
-      session,
-      config,
-    }),
-  ].flat()
+    'Core-extraAboutPanel',
+    [],
+    { session, config },
+  )
 
   return (
     <div className={classes.content}>
@@ -75,15 +65,15 @@ const AboutDialogContents = observer(function AboutDialogContents({
           setShowRefNames={setShowRefNames}
         />
         <Attributes
-          attributes={confPostExt.config}
+          attributes={shown}
           omit={[...hideFields, 'metadata']}
           hideUris={hideUris}
         />
       </BaseCard>
-      {confPostExt.config.metadata ? (
+      {shown.metadata ? (
         <BaseCard title="Metadata">
           <Attributes
-            attributes={confPostExt.config.metadata}
+            attributes={shown.metadata}
             omit={hideFields}
             hideUris={hideUris}
           />

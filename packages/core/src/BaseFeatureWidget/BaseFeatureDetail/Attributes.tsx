@@ -1,6 +1,10 @@
 import { Suspense, lazy } from 'react'
 
-import { isObject, isUriLocation } from '../../util/index.ts'
+import {
+  isLocalPathLocation,
+  isObject,
+  isUriLocation,
+} from '../../util/index.ts'
 import ArrayValue from './ArrayValue.tsx'
 import SimpleField from './SimpleField.tsx'
 import UriAttribute from './UriField.tsx'
@@ -108,15 +112,18 @@ export default function Attributes(props: {
             />
           )
         } else if (isObject(value)) {
+          // hideUris means "don't show where the data sits". A LocalPathLocation
+          // says that as plainly as a UriLocation does — it is what desktop and
+          // `jbrowse add-track --load copy` write — and it used to fall through
+          // to the recursive branch below and print the path in full
+          if (
+            hideUris &&
+            (isUriLocation(value) || isLocalPathLocation(value))
+          ) {
+            return null
+          }
           return isUriLocation(value) ? (
-            hideUris ? null : (
-              <UriAttribute
-                key={key}
-                name={key}
-                prefix={prefix}
-                value={value}
-              />
-            )
+            <UriAttribute key={key} name={key} prefix={prefix} value={value} />
           ) : (
             <Attributes
               key={key}
