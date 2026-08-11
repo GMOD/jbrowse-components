@@ -81,12 +81,15 @@ tree constantly and train the reader to ignore it. That is what makes the quiet
 state safe to drop: the chip appearing now always means something.
 
 The invariant is not that it is present but that it is never **wrong**: it may
-only describe the tree currently loaded. So every write touching `clusterTree`
-sets or clears it in the same action — `setLayoutAndClusterTree` takes it,
-`setLayout`/`clearLayout` drop it with the tree, and `setClusterTree` (maf's
-supplied `.nh` phylogeny) clears it, since captioning a phylogeny with the
-previous run's region is worse than no caption. A tree with no provenance is
-therefore also the signal that it was supplied rather than computed.
+only describe the tree currently loaded. So `clusterTree` has exactly one
+writer, the mixin's private `writeTree(tree, provenance)`, which takes both — a
+tree cannot be set without saying what provenance goes with it, and the four
+public actions differ only in what they pass. `setLayoutAndClusterTree` passes
+the run's; `setLayout`/`clearLayout` pass nothing, dropping it with the tree;
+`setClusterTree` (maf's supplied `.nh` phylogeny) passes nothing because a
+phylogeny has no locus, and captioning one with the previous run's region is
+worse than no caption. A tree with no provenance is therefore also the signal
+that it was supplied rather than computed.
 
 ## `subtreeFilter` goes with the row _names_, not with the tree
 
@@ -180,12 +183,29 @@ Below `MIN_TEXT_ROW_HEIGHT` a row draws as a `labelColor` swatch rather than
 stopping — a clustered track can sit far below a pixel a row and the tint is all
 that carries row identity. The rect is floored to a pixel (a 0.32px rect
 antialiases to nothing) and runs paint **longest-first**, so the rarest group
-isn't overdrawn by its neighbours. Consecutive same-color rows merge into one
-rect, keeping a 2000-row track from putting a DOM node per row into a
-scroll-time overlay.
+isn't overdrawn by its neighbours.
 
 Consequence: **the stripe is a marker, not a proportional encoding.** Mark the
 group a reader is hunting for, not the majority.
+
+## Anything marking rows draws **runs**, never a rect per row (`rowRuns`)
+
+Two things mark rows — the swatch stripe above and the hovered-subtree highlight
+in `treeDrawingAutorun` — and both merge consecutive rows into one rect for the
+same two reasons:
+
+- `effectiveRowHeight` is fractional whenever a display fits its rows to a
+  height, and is deliberately never floored (`resolveRowHeight`), so a rect per
+  row abuts its neighbour mid-pixel. A **translucent** fill then blends over
+  that shared pixel twice and draws a seam at every row boundary — the highlight
+  grows a grid the data does not have. (That was live in the hover highlight.)
+- 2000 rows is otherwise 2000 fill calls per hover frame, or 2000 DOM nodes in a
+  scroll-time SVG overlay, for what is visually one block.
+
+The part worth having a shared function for is the gap: a row whose key is
+`undefined` **breaks** the run rather than being bridged, or the mark points at
+rows it does not describe. Reach for `rowRuns` before writing a
+`for (row of rows) fillRect` here.
 
 ## On screen: `TreeSidebar` + `RowLabelsOverlay` are the two halves
 
@@ -280,3 +300,16 @@ leaves a blank gutter. `SvgTreeSidebar` owns the single gate driving both. A
 sidebar that draws more than a label box passes its own renderer as the `labels`
 prop rather than teaching `SvgRowLabels` a second drawing — that would change
 the MAF, multirow-feature, and wiggle sidebars too.
+
+## …and that gate is `treeIsShowing`, not `showTree && hierarchy`
+
+The gutter is reserved for the **positioned** tree, never `clusterTree` — a tree
+that no longer describes the rows on screen is deliberately not positioned
+(`computeClusterHierarchy`), and reserving off the newick string puts the labels
+`treeAreaWidth` right of an empty gutter. Three places decide it:
+`TreeSidebar`'s early return, `SvgTreeSidebar`, and `treeSidebarOffset` (which
+is the same predicate times `treeAreaWidth`), and all three spelled it out
+separately — including one directly under a comment claiming to be their single
+source of truth. Call `treeIsShowing`; `SvgTreeSidebar` goes further and binds
+`drawnTree`, the tree-if-showing, so nothing carries a boolean beside the
+hierarchy it is about.
