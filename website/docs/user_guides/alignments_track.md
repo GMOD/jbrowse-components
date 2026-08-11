@@ -315,6 +315,17 @@ draw as large semicircular arcs and inter-chromosomal mates as vertical lines;
 both can be toggled off. Dragging the track taller re-fits the arcs into the
 available height.
 
+Reads describing the same connection draw as **one arc, thickened by how many of
+them there are**, the way a sashimi arc is sized by its junction's read count. A
+junction crossed by thirty reads is one thick curve rather than thirty identical
+curves stacked on the same pixels, so the arcs rank the evidence instead of only
+locating it. Thickness is on a log scale, and a connection supported by a single
+read draws at the width
+[`readConnectionsLineWidth`](/docs/config/LinearAlignmentsDisplay/#slot-readconnectionslinewidth)
+sets. Arcs coalesce only on exactly equal endpoints: junctions a few bases apart
+stay separate curves, because at long-read scale they are usually separate
+events.
+
 <Figure caption="Enabling 'Show read arcs' from the Read connections submenu; the arcs draw alongside the coverage panel." src="/img/alignments/select_arc_display.png" />
 
 ### Read cloud
