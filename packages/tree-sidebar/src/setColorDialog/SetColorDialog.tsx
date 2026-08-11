@@ -98,6 +98,13 @@ export default observer(function SetColorDialog<
 
   // Every color column is reserved from the auto-derived extras, not just the
   // active one, so an inactive swatch field never leaks as a raw hex column.
+  // The palettizer takes this same set rather than the bare `reservedFields`:
+  // its menu is also derived by `extraColumns`, so anything the grid declines to
+  // show as a column it must equally decline to offer as a palette KEY — a
+  // per-row hex value buckets every row on its own and paints ~40 palette
+  // entries one row each. It only agreed by accident, because both color
+  // columns in the tree are named `color`/`labelColor`, which the palettizer
+  // hardcodes; a display naming a third one diverged silently.
   const reserved = new Set<string>([
     ...IDENTITY_FIELDS,
     ...colorColumns.map(c => c.field),
@@ -144,7 +151,7 @@ export default observer(function SetColorDialog<
                   currLayout={currLayout}
                   setCurrLayout={setCurrLayout}
                   colorColumn={activeColumn}
-                  excludedFields={reservedFields}
+                  excludedFields={reserved}
                 />
               ) : null}
               {enableBulkEdit ? (

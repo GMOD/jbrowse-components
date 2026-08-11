@@ -39,6 +39,16 @@ const ClusterDialog = observer(function ClusterDialog(
 ) {
   const { title, description, maxWidth, handleClose } = props
   const [activeMode, setActiveMode] = useState('auto')
+  // One element, handed to whichever tab is up: the mode radios are the thing
+  // that switches the tabs, so both tabs render the identical header and the
+  // two spellings could only ever drift apart.
+  const header = (
+    <Header
+      activeMode={activeMode}
+      setActiveMode={setActiveMode}
+      description={description}
+    />
+  )
   return (
     <Dialog
       open
@@ -52,21 +62,9 @@ const ClusterDialog = observer(function ClusterDialog(
       }}
     >
       {activeMode === 'auto' ? (
-        <ClusterAutoTab {...props}>
-          <Header
-            activeMode={activeMode}
-            setActiveMode={setActiveMode}
-            description={description}
-          />
-        </ClusterAutoTab>
+        <ClusterAutoTab {...props}>{header}</ClusterAutoTab>
       ) : (
-        <ClusterManualTab {...props}>
-          <Header
-            activeMode={activeMode}
-            setActiveMode={setActiveMode}
-            description={description}
-          />
-        </ClusterManualTab>
+        <ClusterManualTab {...props}>{header}</ClusterManualTab>
       )}
     </Dialog>
   )
