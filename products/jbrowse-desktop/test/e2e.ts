@@ -234,6 +234,13 @@ async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
   console.log('    DEBUG: Clicking Add...')
   await driver.executeScript('arguments[0].click();', addButton)
 
+  // Here, not further down: doSubmit queues the name-indexing job synchronously
+  // on this click, so this is the only point at which there is reliably
+  // something to synchronise on. Ten seconds later the queue has usually
+  // drained already and the wait degrades into a sleep.
+  console.log('    DEBUG: Waiting for name indexing to finish...')
+  await waitForIndexingToFinish(driver)
+
   console.log('    DEBUG: Waiting after Submit...')
   await delay(5000)
 
@@ -263,42 +270,45 @@ async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
   console.log('    DEBUG: Browser logs after track add:')
   await flushBrowserLogs(driver)
 
-  // EDEN.1 is a feature name, so the search below can only answer once the
-  // track's name index exists — and adding the track is what starts building
-  // it. Without this the two raced, and the query lost often enough to fail
-  // about half of all runs; the autocomplete does not retry a query it has
-  // already answered, so an early search stays empty for the rest of the test.
-  console.log('    DEBUG: Waiting for name indexing to finish...')
-  await waitForIndexingToFinish(driver)
-
-  // Now search for EDEN.1 in the refname autocomplete
+  // EDEN.1 is a feature name, so this can only be answered out of the track's
+  // name index — which adding the track is what builds. See the wait above.
   console.log('    DEBUG: Looking for location search input...')
   const searchInput = await driver.wait(
     until.elementLocated(By.css('input[placeholder="Search for location"]')),
     10000,
   )
 
-  console.log('    DEBUG: Clearing and typing EDEN.1...')
-  await clearInput(driver, searchInput)
-  await searchInput.sendKeys('EDEN.1')
-  console.log('    DEBUG: Waiting for autocomplete suggestions...')
-  await delay(3000) // Wait for autocomplete suggestions
-
   // Flush browser logs to see any errors from the app
   console.log('    DEBUG: Browser logs before EDEN.1 search:')
   await flushBrowserLogs(driver)
 
-  // Look for EDEN.1 in the autocomplete dropdown and click it
-  console.log('    DEBUG: Looking for EDEN.1 in autocomplete suggestions...')
-  const edenOption = await driver.wait(
-    until.elementLocated(
-      By.xpath(
-        "//*[contains(@class, 'MuiAutocomplete') or contains(@class, 'MuiPopper')]//*[contains(text(), 'EDEN')]",
-      ),
-    ),
-    10000,
-  )
+  // Ask more than once, rather than watching one empty dropdown for longer.
+  // The autocomplete does not re-run a query it has already answered, so if the
+  // index was not ready for the first attempt the suggestions stay empty for as
+  // long as the query text is unchanged — a `driver.wait` on the option simply
+  // burns its timeout. Retyping is what asks the question again.
+  const EDEN_XPATH =
+    "//*[contains(@class, 'MuiAutocomplete') or contains(@class, 'MuiPopper')]//*[contains(text(), 'EDEN')]"
+  let found = 0
+  for (let attempt = 1; attempt <= 3 && !found; attempt++) {
+    console.log(`    DEBUG: Typing EDEN.1 (attempt ${attempt})...`)
+    await clearInput(driver, searchInput)
+    await searchInput.sendKeys('EDEN.1')
+    await delay(4000) // let the search run and the dropdown render
+    // via executeScript, not findElements: a findElements that matches nothing
+    // waits out the 30s implicit timeout, which is most of this loop's budget
+    found = await driver.executeScript<number>(
+      `return document.evaluate(arguments[0], document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null).snapshotLength`,
+      EDEN_XPATH,
+    )
+    console.log(`    DEBUG: ${found} EDEN suggestion(s)`)
+  }
+  if (!found) {
+    throw new Error('EDEN.1 never appeared in the autocomplete suggestions')
+  }
+
   console.log('    DEBUG: Found EDEN.1 suggestion, clicking...')
+  const edenOption = await driver.findElement(By.xpath(EDEN_XPATH))
   await edenOption.click()
   await delay(2000)
 

@@ -290,15 +290,18 @@ export async function waitForSession(
 //
 // Reads the job queue rather than the track's config: `running` and `jobsQueue`
 // are what indexJobsModel actually drives, and they say "started" as well as
-// "finished". A caller that arrives after the queue has already drained (a
-// small file, a fast machine) sees no work at all, which is indistinguishable
-// from "not queued yet" — hence the grace period rather than a hard failure.
+// "finished". Call it immediately after the submit that queues the job —
+// `queueJob` runs synchronously there, so the queue is non-empty on the first
+// poll. Called later it may find the queue already drained, which is
+// indistinguishable from "not queued yet", hence the grace period; a caller in
+// the right place never reaches it.
 export async function waitForIndexingToFinish(
   driver: WebDriver,
-  { timeout = 180000, grace = 15000 } = {},
+  { timeout = 180000, grace = 5000 } = {},
 ): Promise<void> {
   const start = Date.now()
   let sawWork = false
+  let readModel = false
   while (Date.now() - start < timeout) {
     const state = await driver.executeScript<
       { running: boolean; queued: number } | undefined
@@ -306,13 +309,23 @@ export async function waitForIndexingToFinish(
       const jm = window.JBrowseRootModel?.jobsManager
       return jm ? { running: jm.running, queued: jm.jobsQueue.length } : undefined
     `)
+    if (state) {
+      readModel = true
+    }
     if (state?.running || (state?.queued ?? 0) > 0) {
       sawWork = true
     } else if (sawWork) {
       console.log(`    DEBUG: indexing drained after ${Date.now() - start}ms`)
       return
     } else if (Date.now() - start > grace) {
-      console.log('    DEBUG: no indexing job was queued, continuing')
+      // Distinguished on purpose: an unreadable jobsManager means this is a
+      // sleep pretending to be a synchronisation point, which is worth knowing
+      // rather than passing quietly.
+      console.log(
+        readModel
+          ? '    DEBUG: no indexing job queued, continuing'
+          : '    WARN: could not read jobsManager; not waiting on indexing',
+      )
       return
     }
     await delay(500)
