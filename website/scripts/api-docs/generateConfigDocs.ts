@@ -627,8 +627,13 @@ function renderConfig(
     derivesLine,
   ].filter(Boolean)
 
-  const hasSlots = slots.length > 0 || bases.some(b => b.slots.length > 0)
-  const slotsNote = hasSlots
+  // Keyed on the rendered table, not on whether any slot exists: `slotsTable`
+  // drops container sub-schema rows (see isContainerSlot), so a config whose
+  // every slot is a container has slots and no table — and the note would point
+  // at a "Config slots" section this page does not emit. No page hits that
+  // today; the two were separate predicates for the same question, which is the
+  // part worth removing.
+  const slotsNote = table
     ? 'See the **Config slots** section below for all available configuration fields.'
     : ''
   // On adapter pages, show the full track config a user pastes, not just the
