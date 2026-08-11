@@ -84,6 +84,28 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
 
 ## Performance and measurement
 
+- **Deferring `SimpleFeature`'s subtree inflation to `children()`** — measured
+  2026-08-11 and declined, having looked very promising in isolation: **10.9x**
+  on construction alone, and **1.00–1.06x** once the consumer walks the subtree,
+  which every renderer does. The construction-only number is the trap — it is
+  real and it is not what any caller experiences. Removing the *spread* from
+  `inflateSubfeatures` was the win there and shipped separately (2.03x construct,
+  1.56x through a render's reads); laziness on top of it buys nothing and would
+  move subfeature validation out of the constructor and into the middle of a
+  render. One process per arm, generated GENCODE-shaped corpus.
+- **Deleting the alignments dup guard (`dedupeById`)** — investigated 2026-08-11
+  and kept, though it is catching nothing today. `@gmod/bam`'s `blocksForRange`
+  runs `optimizeChunks`, which absorbs a chunk already covered by its neighbour:
+  ~4800 index queries over the 20x/200x/1000x fixtures produced **zero**
+  overlapping chunk pairs — including where the 5MB merge cap fires, the only
+  branch that could push one — and fetching the benchmark window on all six
+  produced **zero** duplicate records. The motivation that is genuinely gone is
+  older than the code comment's: block rendering fetched adjacent overlapping
+  regions, so a feature spanning a boundary arrived twice. It stays because what
+  it prevents is silent (a doubled coverage depth, not a crash), because
+  `@gmod/bam` hit the same class in its own mate path and still guards it, and
+  because keying it on the record's number instead of its id string made it
+  nearly free anyway (12.5% → 5.9% of busy worker time).
 - **Consolidating jest test files** — not the lever. Cold babel transform is a
   ~39.4s serial prefix per worker; app boot is ~1.3s median per suite. Cache
   warmth is the lever.
