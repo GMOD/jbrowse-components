@@ -113,7 +113,7 @@ the whole surface.
 | <span id="getter-showconservation">**showConservation**</span><br><code>boolean</code> |  | LinearMafDisplay |
 | <span id="getter-conservationheight">**conservationHeight**</span><br><code>number</code> |  | LinearMafDisplay |
 | <span id="getter-conservationmode">**conservationMode**</span><br><code>"base" &#124; "codon"</code> |  | LinearMafDisplay |
-| <span id="getter-rowidentitymode">**rowIdentityMode**</span><br><code>"none" &#124; "heatmap" &#124; "xyplot"</code> |  | LinearMafDisplay |
+| <span id="getter-rowidentitymode">**rowIdentityMode**</span><br><code>"none" &#124; "xyplot" &#124; "heatmap"</code> |  | LinearMafDisplay |
 | <span id="getter-rowidentityautozoom">**rowIdentityAutoZoom**</span><br><code>boolean</code> |  | LinearMafDisplay |
 | <span id="getter-showannotations">**showAnnotations**</span><br><code>boolean</code> |  | LinearMafDisplay |
 | <span id="getter-showtranslation">**showTranslation**</span><br><code>boolean</code> |  | LinearMafDisplay |
@@ -273,7 +273,7 @@ the whole surface.
 | <span id="action-resizecoverageheight">**resizeCoverageHeight**</span><br><code>(distance: number) =&gt; void</code> | Apply one drag delta to the coverage band. Reads the current height inside the action rather than taking an absolute target: `ResizeHandle` emits one delta per animation frame, so a component computing `renderHeight + delta` drops every tick that lands before React re-renders. Mirrors `resizeHeight`. | LinearMafDisplay |
 | <span id="action-setshowconservation">**setShowConservation**</span><br><code>(arg: boolean) =&gt; void</code> |  | LinearMafDisplay |
 | <span id="action-setconservationmode">**setConservationMode**</span><br><code>(arg: "base" &#124; "codon") =&gt; void</code> |  | LinearMafDisplay |
-| <span id="action-setrowidentitymode">**setRowIdentityMode**</span><br><code>(arg: "none" &#124; "heatmap" &#124; "xyplot") =&gt; void</code> |  | LinearMafDisplay |
+| <span id="action-setrowidentitymode">**setRowIdentityMode**</span><br><code>(arg: "none" &#124; "xyplot" &#124; "heatmap") =&gt; void</code> |  | LinearMafDisplay |
 | <span id="action-setrowidentityautozoom">**setRowIdentityAutoZoom**</span><br><code>(arg: boolean) =&gt; void</code> |  | LinearMafDisplay |
 | <span id="action-setshowannotations">**setShowAnnotations**</span><br><code>(arg: boolean) =&gt; void</code> |  | LinearMafDisplay |
 | <span id="action-setshowtranslation">**setShowTranslation**</span><br><code>(arg: boolean) =&gt; void</code> |  | LinearMafDisplay |
