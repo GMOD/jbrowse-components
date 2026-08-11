@@ -130,7 +130,7 @@ ordinary gene-carrying euchromatin, not a blank segment that happened to flip.
 At 9 Mb no gene in that lane can carry a label. Add a second lane over the same
 GFF and cut it to a few genes with **Edit filters...** in its track menu.
 
-<Figure caption="HG002 v1.2 maternal (top) against paternal (bottom) across 9 Mb of 8p23.1, ribbons colored by strand. The inverted block is the long blue bar in both panels and the sweep crossing between them. The labelled lane beside the ribbons carries the same genes in opposite orders, coloured by strand, so each one is the other panel's colour: an arrowhead is unreadable at this zoom and the colour is not." src="/img/hg002_haplotypes_8p23_inversion.png" />
+<Figure caption="HG002 v1.2 maternal (top) against paternal (bottom) across 9 Mb of 8p23.1, ribbons colored by strand. The inverted block is the long blue bar in both panels and the sweep crossing between them. The labelled lane beside the ribbons carries the same genes in opposite orders, coloured by strand, so each one is the other panel's colour. An arrowhead is unreadable at this zoom and a colour is not." src="/img/hg002_haplotypes_8p23_inversion.png" />
 
 Ribbon coloring is the palette button in the view header; **Show curved lines**,
 under **View options** then **Show...**, makes a block landing far from where it
@@ -199,18 +199,28 @@ ribbon, which is what places a feature inside a long collinear block.
 ## Collinear does not mean identical
 
 Structural agreement and sequence identity are separate claims, and the view
-above only makes the first one. Zoom into the collinear block beside the
-inversion, turn on the heterozygous-sites track, and the second becomes
-checkable in the same frame. Each panel carries its own haplotype's annotation,
-so the sites can be read against the genes they fall in.
+above only makes the first one. Frame a collinear block left of the inversion,
+turn on the heterozygous-sites track, and the second becomes checkable in the
+same frame. Each panel carries its own haplotype's annotation, so the sites can
+be read against the genes they fall in, and here the two annotations are the
+same list in the same order, which leaves the ticks as the only thing that
+differs.
 
-<Figure caption="A window inside the collinear block left of the inversion, with each haplotype's genes and heterozygous sites under its own panel. The ribbon runs as one band, so the haplotypes agree structurally, while the sites below show they differ at base level throughout. The pale wedge is an indel." src="/img/hg002_haplotypes_hetsites.png" />
+<Figure caption="A window inside a collinear block left of the inversion, over MCPH1, with each haplotype's genes and heterozygous sites under its own panel. The ribbon runs as one band and both gene lanes carry the same genes in the same order, so the haplotypes agree; the ticks below show they still differ at base level throughout." src="/img/hg002_haplotypes_hetsites.png" />
 
 This has to be its own view. Across the whole inversion the het-site track is
 over its feature-count limit and paints a warning instead of data, and a window
 centered on a breakpoint cannot work at all: the flanking and inverted sequence
 land megabases apart on the other haplotype, so no single paternal window holds
 both and the ribbons come back empty. Frame one side or the other.
+
+Even at this width the track is over that limit; the figure is what the
+warning's own **FORCE LOAD** button gives you. Pick the block, too, and not just
+the width: the collinear block immediately beside the inversion is inside
+8p23.1's defensin and FAM90A duplications, where each haplotype's array copies
+are annotated against whichever hg38 paralog they best match, so the two gene
+lanes come back with different symbols for the same sequence. That is a real
+difference between the haplotypes and it is not the one this section is about.
 
 Each site is named for its own coordinate and alleles, so at this density the
 labels are the ruler written twice. Turn them off with **Show labels**.

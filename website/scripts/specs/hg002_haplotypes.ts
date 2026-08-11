@@ -75,10 +75,10 @@ function geneTrack(hap: 'MAT' | 'PAT', kind: 'genes' | 'landmarks' = 'genes') {
     type: 'FeatureTrack',
     trackId: `hg002_${kind}_${hap.toLowerCase()}`,
     // the landmark lane's name carries its colour key, so the figure needs no
-    // overlay to say what blue and red mean — see STRAND_COLOR
+    // overlay to say what blue and red mean; see STRAND_COLOR
     name:
       kind === 'landmarks'
-        ? `Landmark genes (${hap}) — forward blue, reverse red`
+        ? `Landmark genes (${hap}), forward blue / reverse red`
         : `Genes (JHU Liftoff v0.6, HG002 v1.1 ${hap})`,
     assemblyNames: ['hg002v1.2'],
     adapter: {
@@ -201,11 +201,44 @@ function landmarkLane(hap: 'MAT' | 'PAT') {
 // ~11.6 Mb, so no single paternal window contains both and the ribbons come
 // back empty -- which is what the first attempt at this figure did.
 //
-// Paternal coordinates are the maternal ones through the collinear block's own
-// offset (MAT 7,618,894-7,822,846 -> PAT 7,475,532-7,681,207, so -143,362),
-// which is what puts the same sequence in both panels.
-const COLLINEAR_WINDOW_MAT = 'chr8_MATERNAL:7,700,000-7,770,000'
-const COLLINEAR_WINDOW_PAT = 'chr8_PATERNAL:7,556,638-7,626,638'
+// MCPH1, AND NOT THE OLD 8p23.1 REPEAT WINDOW. This used to frame 70 kb of the
+// 204 kb collinear block immediately left of the inversion, which sits inside
+// the defensin / FAM90A segmental duplication -- and there Liftoff maps each
+// haplotype's array copies onto whichever hg38 paralog they best match, so the
+// two gene lanes came back with DIFFERENT SYMBOLS for the same sequence:
+// FAM90A19/FAM90A7 against FAM90A17/FAM90A8, FAM85B against FAM85A, ENPP7P1
+// against ENPP7P3, ALG1L13P against ALG1L14P. Review: "it is unclear why the
+// gene annotations are so different". They are different because the arrays
+// are, which is a true and interesting fact about 8p23.1 and is not this
+// figure's subject -- the figure is about het sites under a collinear ribbon,
+// and a reader spending the frame on paralog naming is not reading it.
+//
+// This window is 1.1 Mb further left, inside the 1.5 Mb collinear chain MAT
+// 5,680,160-7,195,262, and the two haplotypes' annotations over it are the same
+// list in the same order with the same strands: MCPH1-DT, MCPH1, LOC101928016,
+// ANGPT2, MCPH1-AS1, MIR8055, AGPAT5, LOC100422495, MIR4659A/B. So the gene
+// lanes now agree and the het ticks are the only thing that differs, which is
+// the whole claim.
+//
+// 410 kb, from 70 (review: "zoom out farther also"). What bounds it is the het
+// track's own gate rather than taste: `maxFeatureScreenDensity` is 1 feature per
+// px and the capture is 1400 px, so ~1,400 sites is the ceiling; this window
+// carries 936 (counted with bigBedToBed over the published bigBed) and the 5.2
+// Mb inversion frame carries far more, which is why that one paints a warning.
+//
+// Paternal coordinates are the maternal ones walked through the chain's own
+// blocks (scripts do it by CIGAR; here it was a one-off walk of
+// hg002v1.2_to_other_haplotype.chain.gz), not a subtracted offset: MAT
+// 6,330,000 -> PAT 6,311,995 and MAT 6,740,000 -> PAT 6,721,552, so the two
+// windows differ in width by the indels between them.
+const COLLINEAR_WINDOW_MAT = 'chr8_MATERNAL:6,330,000-6,740,000'
+const COLLINEAR_WINDOW_PAT = 'chr8_PATERNAL:6,311,995-6,721,552'
+
+// A real het site with 4.3 kb of clear lane before it and 4.2 kb after -- ~15 px
+// either side at this scale -- so the callout's arrow lands on a tick a reader
+// can pick out rather than in the middle of the fence. It also sits at about a
+// quarter across the frame, which is what keeps the pill off the right edge.
+const HETSITE_TICK = 'chr8_MATERNAL:6,442,543'
 
 type PanelTracks = (string | Record<string, unknown>)[]
 
@@ -350,7 +383,14 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
           // written twice -- once on the ruler and once over the feature --
           // and they cover the track at this density
           showLabels: 'none',
-          height: 70,
+          // FORCE LOAD, which is what a reader does here too. 410 kb of this
+          // file is over the display's own feature gate, and the gate's answer
+          // is a banner with a FORCE LOAD button on it -- `forceLoad` is that
+          // button, declared. The tutorial says so beside the figure.
+          forceLoad: true,
+          // 90 rather than 70: the ticks use the top ~15 px and the rest is the
+          // callout's room, which it needs now that the callout has an arrow
+          height: 90,
         },
       ],
       [
@@ -358,16 +398,25 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
         {
           trackId: 'hg002v1.2_hetsites',
           showLabels: 'none',
-          height: 70,
+          forceLoad: true,
+          height: 90,
         },
       ],
     ),
-    viewportHeight: 700,
-    // ONE PILL, AND IT DEFINES THE TICK. "Heterozygous sites" is the track's
+    // 740: +40 for the two het lanes going 70 -> 90, off the run's own
+    // below-the-fold report
+    viewportHeight: 740,
+    // ONE PILL, AND IT POINTS AT A TICK. "Heterozygous sites" is the track's
     // name and a reader who does not already know the term learns nothing from
     // it -- while the whole figure rests on what one tick means: the two
-    // haplotypes in this frame carry different bases there. Said once, on the
-    // top panel, on the empty half of the lane under the row of ticks.
+    // haplotypes in this frame carry different bases there.
+    //
+    // The arrow is the review note (on the pill as it was, floating in the empty
+    // half of the lane: "this is not a very interesting red text callout box").
+    // A definition with nothing under it is a caption that happens to be inside
+    // the frame; anchored to a NAMED site with clear lane either side, it is a
+    // label on an object. Both ends resolve through the same locus anchor, so
+    // the arrow stays vertical and stays on that tick at any width.
     //
     // The structural half of the claim (the ribbon is one band, so the panels
     // agree) needs no label: it is one shape and the caption names it.
@@ -376,11 +425,27 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
         type: 'text',
         text: 'each tick: one base where the two haplotypes differ',
         fontSize: 16,
+        maxWidth: 300,
         anchor: {
           view: [0, 0],
           track: 'hg002v1.2_hetsites',
-          locus: 'chr8_MATERNAL:7,703,000',
-          fracY: 0.45,
+          locus: HETSITE_TICK,
+          fracY: 0.85,
+        },
+      },
+      {
+        type: 'arrow',
+        fromAnchor: {
+          view: [0, 0],
+          track: 'hg002v1.2_hetsites',
+          locus: HETSITE_TICK,
+          fracY: 0.62,
+        },
+        anchor: {
+          view: [0, 0],
+          track: 'hg002v1.2_hetsites',
+          locus: HETSITE_TICK,
+          fracY: 0.16,
         },
       },
     ],
