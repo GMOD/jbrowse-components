@@ -56,6 +56,37 @@ genotype field per sample. A format with narrow lines would sit closer to BAM.
 Anyone wanting more than 1.5x on multi-sample VCF should attack the scan, not
 the decompression; the pool has already taken most of what it can reach.
 
+## It does engage in production — verified, and how to re-check
+
+Worth verifying deliberately, because the failure mode is silence. jbrowse-web
+runs adapters under `WebWorkerRpcDriver`, so `sharedBgzfWorkerPool()` is called
+*inside* a web worker and the pool is a worker spawning workers — **nested**
+workers. Where those are unavailable `workersAvailable()` is false, the pool
+resolves to `undefined`, every read quietly inflates in process, and nothing
+fails: no error, no failing test, just the speedup silently gone. That is the
+same graceful degradation that makes the option safe to pass unconditionally,
+working against you.
+
+Checked on the production build (2026-08-11), and it works:
+
+- Inside a dedicated worker, `Worker` / `Blob` / `URL.createObjectURL` are all
+  present, the pool is created, and it round-tripped 55 BGZF blocks to 3.4MB.
+- `pnpm build` puts the bgzf worker in its own 56.7kb chunk rather than
+  `main.js`, so the dynamic import splits in the shipped app too.
+- Loading a BAM track, and separately a VCF tabix track, spawns the RPC worker
+  plus **4** `blob:` workers — the pool, at `min(hardwareConcurrency, 4)`.
+- Control: a bigwig track spawns the RPC worker and **0** blob workers, so the
+  signal is specific and the pool really is lazy — nothing spawns at app boot.
+
+To re-check without touching any source, count worker targets with puppeteer:
+`browser.on('targetcreated', …)` and filter for `blob:` URLs while loading a
+session spec with one bgzip-backed track. Four means engaged, zero means it
+fell back. Always run the non-bgzip control in the same session, or you are
+just counting whatever else spawns workers.
+
+Note Safari only gained nested workers in 16.4; below that this degrades to
+in-process by design, which is correct rather than a bug to fix.
+
 ## Benchmark traps
 
 Three, and two of them produce numbers that look real.
