@@ -7,8 +7,10 @@
 // Flags: --base=<ref> (default main), --rounds=<n> (default 12), --allow-diff
 //
 // Four things here are not decoration, and three of them are the same lessons
-// `mismatchWalk.bench.ts` records — this file exists because coverage needed
-// them too, plus one more.
+// the alignments mismatch-walk bench recorded before the walk moved to
+// `@gmod/bam` and the bench went with it (deleted in ec75079bf1; `git show
+// ec75079bf1^:plugins/alignments/benches/mismatchWalk.bench.ts` to read it).
+// This file exists because coverage needed them too, plus one more.
 //
 // INTERLEAVING AND MIN. Sides run round-robin in one process and the reported
 // number is the MIN across rounds, not the mean. On a machine doing other work

@@ -23,7 +23,6 @@
   "scripts": {
     "build": "pnpm run /^build:/",
     "test": "cd ../..; jest --passWithNoTests plugins/alignments",
-    "bench:mismatch-walk": "cd ../..; node --expose-gc plugins/alignments/benches/mismatchWalk.bench.ts",
     "prepublishOnly": "pnpm test",
     "prepack": "pnpm build",
     "prebuild": "pnpm clean",
