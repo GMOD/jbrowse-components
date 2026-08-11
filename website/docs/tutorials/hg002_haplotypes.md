@@ -15,6 +15,15 @@ and maternal against paternal is a self-alignment. The Q100 project publishes
 the chain between the two haplotypes, so there is nothing to align, and the
 8p23.1 inversion draws as a sweep between the two panels.
 
+## Prerequisites
+
+- nothing to read the figures, which load hosted data
+- to build the config yourself: a JBrowse instance to load it into (the
+  [web quickstart](/docs/quickstart_web), or the
+  [desktop quickstart](/docs/quickstart_desktop)), plus the
+  [JBrowse CLI](/docs/cli) if you take the CLI tab under each config below
+  rather than editing `config.json` by hand
+
 ## The config
 
 There is not much to set up here, which is most of the appeal of this dataset.
@@ -22,19 +31,15 @@ The Q100 project serves the assembly and the alignment between the haplotypes
 itself, so nothing has to be downloaded, converted or indexed, and the whole
 tutorial is two URLs and a view.
 
-Start with the assembly. It needs a name and the URL of its sequence and nothing
-else: the adapter comes from the file extension, and the `.fai` and `.gzi`
-sitting beside the FASTA are found the same way.
+Start with the assembly, one entry in `assemblies`. It needs a name and the URL
+of its sequence and nothing else: the adapter comes from the file extension, and
+the `.fai` and `.gzi` sitting beside the FASTA are found the same way.
 
-```json
+```json addassembly
 {
-  "assemblies": [
-    {
-      "name": "hg002v1.2",
-      "displayName": "T2T-HG002 v1.2 (diploid)",
-      "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/hg002v1.2.fasta.gz"
-    }
-  ]
+  "name": "hg002v1.2",
+  "displayName": "T2T-HG002 v1.2 (diploid)",
+  "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/hg002v1.2.fasta.gz"
 }
 ```
 
@@ -81,7 +86,8 @@ assembly has no annotation of its own, but the JHU Liftoff annotation of HG002
 v1.1 is published beside it, one bgzipped GFF per haplotype, with contig names
 that already match. Its records carry the gene symbol in `gene_name` and no
 `Name`, so point the label there, and load the file once per haplotype (`MAT`
-here, `PAT` in both places for the other panel):
+here; the other panel takes the same config with `PAT` in the name and the URL,
+under its own `trackId`):
 
 ```json addtrack
 {
