@@ -118,7 +118,7 @@ menu), the Insert size option uses threshold-based coloring:
 | --- | --- | --- | --- |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#6e4b3a;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#6e4b3a"></span> | Mate on a different chromosome | `#6e4b3a` | Suggests an inter-chromosomal event |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#ff0000;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#ff0000"></span> | Insert larger than expected | `#ff0000` | Suggests a deletion spanning the pair |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#ff3a8c;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#ff3a8c"></span> | Insert smaller than expected | `#ff3a8c` | Suggests an insertion between the pair |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#ffbcd8;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#ffbcd8"></span> | Insert smaller than expected | `#ffbcd8` | Suggests an insertion between the pair |
 
 <!-- COLOR_TABLE alignments-insert-size END -->
 

@@ -373,14 +373,38 @@ export const colorInterchrom = '#6e4b3a'
 /** #color alignments-insert-size | Insert larger than expected | Suggests a deletion spanning the pair */
 export const colorLongInsert = '#ff0000'
 /** #color alignments-insert-size | Insert smaller than expected | Suggests an insertion between the pair */
-// Saturated on purpose. It was a pale #ffc0cb, which is the same hue as
-// colorLongInsert #ff0000 at a lower saturation (351 vs 0) — so the two ends of
-// the insert-size axis were the least separable colors on the track while
-// carrying its most important distinction — and which additionally vanished
-// against the grey neutral fill and as a thin arc stroke. The arcs already
-// substituted this value for their strokes under the name colorShortInsertArc;
-// adopting it everywhere fixed both problems and removed that substitution.
-export const colorShortInsert = '#ff3a8c'
+// LIGHT, and separated from long-insert red by LIGHTNESS rather than by hue
+// (review, twice: "the pink short insert way too similar to long insert still.
+// needs to be like...very light pink if anything").
+//
+// The history is worth keeping, because this value has now failed in both
+// directions and the axis it failed on is the same one. It began pale #ffc0cb,
+// which is #ff0000's own hue desaturated, and read as "washed-out red" beside
+// it. The fix then was to SATURATE it to #ff3a8c, which separated the two in
+// chroma but left them both fully saturated warm reds -- still the least
+// separable pair on a track that carries its most important distinction in
+// exactly this pair. Neither of those moved the one channel that reads at a
+// glance and survives a downscaled figure: how light it is.
+//
+// Measured, in CIELCh, because "pale pink" is exactly what was tried and
+// rejected and the difference has to be more than a hunch:
+//
+//   colorLongInsert  #ff0000   L* 53.2   C* 104.6   h  40
+//   was              #ff3a8c   L* 58.2   C*  76.9   h   1   <- 5 L* from red
+//   rejected pale    #ffc0cb   L* 83.6   C*  24.4   h   8
+//   this             #ffbcd8   L* 83.0   C*  28.6   h 351
+//   colorNostrand    #c8c8c8   L* 80.6   C*   0
+//
+// The saturated value sat FIVE L* from red: same lightness, same warm end of
+// the wheel, which is why no amount of chroma made them read apart. 30 L* does,
+// at any size and through any downscale.
+//
+// It is not a return to #ffc0cb either. That one is hue 8, which is red's own
+// hue washed out; this is hue 351, round the other side of the red point and
+// heading for magenta, at slightly more chroma. Against the neutral grey fill
+// the margin is chroma alone (the two are within 3 L*), which is the pair to
+// re-check if this is ever touched again.
+export const colorShortInsert = '#ffbcd8'
 export const colorUnmappedMate = '#b05a20'
 export const colorUnknown = '#808080'
 export const colorLongreadRevFwd = '#6688ee'

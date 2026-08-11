@@ -930,7 +930,9 @@ export const uiSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     // 860: the run reported 97.5 css px of page still below the viewport at
     // 760, i.e. the fourth track was cut rather than the frame being tight.
-    viewportHeight: 860,
+    // 874 for the 13.5 the run reported still below the fold after the arc
+    // legend gained its short-insert row.
+    viewportHeight: 874,
     settleMs: 25000,
   },
 
