@@ -1,25 +1,11 @@
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
-import { LABEL_FONT_SIZE } from './constants.ts'
 import {
-  applyLabelDimensions,
   getFeatureName,
   readFeatureLabels,
+  reservesBelowLabelRow,
 } from './labelUtils.ts'
 import { mockDisplayConfig } from './testUtils.ts'
-
-import type { FeatureLayout } from './types.ts'
-
-function createMockLayout(height = 10): FeatureLayout {
-  return {
-    feature: null as any,
-    glyphType: 'ProcessedTranscript',
-    y: 0,
-    height,
-    totalLayoutHeight: height,
-    children: [],
-  }
-}
 
 function createMockFeature(name: string, id = 'feat-1') {
   return {
@@ -108,72 +94,41 @@ describe('readFeatureLabels', () => {
   })
 })
 
-describe('applyLabelDimensions', () => {
-  describe('transcript children with "below" subfeature labels', () => {
-    it('increases totalLayoutHeight using feature name even when config labels.name is empty', () => {
-      const layout = createMockLayout(10)
-      applyLabelDimensions(layout, {
-        feature: createMockFeature('NM_001234'),
-        config: mockDisplayConfig({ subfeatureLabels: 'below' }),
-        isTranscriptChild: true,
-      })
-      expect(layout.totalLayoutHeight).toBe(10 + LABEL_FONT_SIZE)
+// The row is COUNTED here, not sized: its height is the display mode's label
+// font size and the worker is mode-agnostic. layoutSubfeatures turns each `true`
+// into one `labelRowsAbove` step, which the main thread spends at labelFontPx.
+describe('reservesBelowLabelRow', () => {
+  const ask = (
+    feature: unknown,
+    subfeatureLabels: string,
+    isTranscriptChild = true,
+  ) =>
+    reservesBelowLabelRow({
+      feature: feature as any,
+      config: mockDisplayConfig({ subfeatureLabels } as any),
+      isTranscriptChild,
     })
 
-    it('falls back to feature id when name is empty', () => {
-      const layout = createMockLayout(10)
-      applyLabelDimensions(layout, {
-        feature: createMockFeature('', 'transcript-fallback-id'),
-        config: mockDisplayConfig({ subfeatureLabels: 'below' }),
-        isTranscriptChild: true,
-      })
-      expect(layout.totalLayoutHeight).toBe(10 + LABEL_FONT_SIZE)
-    })
-
-    it('does not change totalLayoutHeight when both name and id are empty', () => {
-      const layout = createMockLayout(10)
-      applyLabelDimensions(layout, {
-        feature: createMockFeature('', ''),
-        config: mockDisplayConfig({ subfeatureLabels: 'below' }),
-        isTranscriptChild: true,
-      })
-      expect(layout.totalLayoutHeight).toBe(10)
-    })
+  it('reserves for a named transcript child in "below" mode', () => {
+    expect(ask(createMockFeature('NM_001234'), 'below')).toBe(true)
   })
 
-  describe('transcript children with "overlay" subfeature labels', () => {
-    it('does not add extra height', () => {
-      const layout = createMockLayout(10)
-      applyLabelDimensions(layout, {
-        feature: createMockFeature('NM_001234'),
-        config: mockDisplayConfig({ subfeatureLabels: 'overlay' }),
-        isTranscriptChild: true,
-      })
-      expect(layout.totalLayoutHeight).toBe(10)
-    })
+  it('falls back to the feature id when the name is empty', () => {
+    expect(ask(createMockFeature('', 'transcript-fallback-id'), 'below')).toBe(
+      true,
+    )
   })
 
-  describe('transcript children with "none" subfeature labels', () => {
-    it('skips calculation entirely', () => {
-      const layout = createMockLayout(10)
-      applyLabelDimensions(layout, {
-        feature: createMockFeature('NM_001234'),
-        config: mockDisplayConfig({ subfeatureLabels: 'none' }),
-        isTranscriptChild: true,
-      })
-      expect(layout.totalLayoutHeight).toBe(10)
-    })
+  it('reserves nothing when there is no text to draw', () => {
+    expect(ask(createMockFeature('', ''), 'below')).toBe(false)
   })
 
-  describe('non-transcript nested children', () => {
-    it('skips calculation for nested non-transcript children', () => {
-      const layout = createMockLayout(10)
-      applyLabelDimensions(layout, {
-        feature: createMockFeature('exon-1'),
-        config: mockDisplayConfig({ subfeatureLabels: 'below' }),
-        isTranscriptChild: false,
-      })
-      expect(layout.totalLayoutHeight).toBe(10)
-    })
+  it('reserves nothing for overlay or none — neither costs a row', () => {
+    expect(ask(createMockFeature('NM_001234'), 'overlay')).toBe(false)
+    expect(ask(createMockFeature('NM_001234'), 'none')).toBe(false)
+  })
+
+  it('reserves nothing for a nested non-transcript child', () => {
+    expect(ask(createMockFeature('exon-1'), 'below', false)).toBe(false)
   })
 })

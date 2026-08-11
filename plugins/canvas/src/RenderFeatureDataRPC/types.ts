@@ -21,6 +21,21 @@ export interface FeatureLayout {
   // height + label space (label visibility depends on config, not bpPerPx).
   totalLayoutHeight: number
   children: FeatureLayout[]
+  // How many `below` subfeature-label rows are stacked ABOVE this layout inside
+  // its parent, and (on a container) how many it contains in total.
+  //
+  // A count, not a height, because the worker is display-mode agnostic and the
+  // row's height is the mode's resolved label font size — which only the main
+  // thread knows. Everything else the worker emits in Y is proportional to
+  // `heightPx` and so survives the main thread's uniform compact scale exactly;
+  // a label row is the one thing that does not, because label text shrinks on
+  // LABEL_FONT_MULTIPLIERS while geometry shrinks on the steeper
+  // HEIGHT_MULTIPLIERS. So the worker counts the rows and the main thread spends
+  // them (see applyHeightScale / bodyHeightPx).
+  labelRowsAbove?: number
+  labelRows?: number
+  // this layout reserves a `below` label row of its own, under its body
+  ownsLabelRow?: boolean
   // set when geneGlyphMode === 'longestCoding' collapsed a multi-isoform gene
   // down to its single longest coding transcript (layoutSubfeatures)
   isoformsCollapsed?: boolean

@@ -10,6 +10,7 @@ function rect(start: number, end: number): RectData {
     height: 10,
     color: 0,
     flatbushIdx: 0,
+    labelRowsAbove: 0,
     strand: 0,
   }
 }
@@ -22,6 +23,7 @@ function line(start: number, end: number): LineData {
     color: 0,
     direction: 0,
     flatbushIdx: 0,
+    labelRowsAbove: 0,
   }
 }
 function arrow(x: number): ArrowData {
@@ -33,6 +35,7 @@ function arrow(x: number): ArrowData {
     direction: 1,
     color: 0,
     flatbushIdx: 0,
+    labelRowsAbove: 0,
   }
 }
 

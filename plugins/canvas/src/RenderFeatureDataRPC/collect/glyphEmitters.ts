@@ -56,7 +56,7 @@ function emitExonRects(
   ctx: RenderContext,
   collector: Collector,
 ) {
-  const { baseTopPx, flatbushIdx } = place
+  const { baseTopPx, flatbushIdx, labelRowsAbove } = place
   const transcriptFeature = transcript.feature
   // exon path: CDS children align 1:1 with the translation segments, so each
   // child's residues are an exact `start-end` key lookup
@@ -80,6 +80,7 @@ function emitExonRects(
           height: transcript.height,
           strand: transcriptFeature.get('strand') ?? 0,
           flatbushIdx,
+          labelRowsAbove,
         },
         collector,
       )
@@ -90,6 +91,7 @@ function emitExonRects(
           topPx: baseTopPx,
           height: transcript.height,
           flatbushIdx,
+          labelRowsAbove,
         },
         ctx,
         collector,
@@ -109,6 +111,7 @@ function processTranscriptLayout(
     flatbushIdx,
     isRoot,
     parentFeature,
+    labelRowsAbove,
   } = place
   const transcriptFeature = transcript.feature
   const strokeUint = colorToUint32(strokeColor(transcriptFeature, ctx))
@@ -117,6 +120,7 @@ function processTranscriptLayout(
     {
       transcript,
       topPx: transcriptTopPx,
+      labelRowsAbove,
       strokeUint,
       flatbushIdx,
       showChevrons: ctx.config.displayDirectionalChevrons,
@@ -148,6 +152,10 @@ function processTranscriptLayout(
       endBp: transcriptEnd,
       topPx: transcriptTopPx,
       bottomPx: transcriptTopPx + transcript.totalLayoutHeight,
+      labelRowsAbove,
+      // when this transcript reserved a label row, the row falls below its body
+      // and the hit box covers it
+      ownsLabelRow: transcript.ownsLabelRow,
       displayLabel: transcriptName,
       transcript: transcriptCoords(transcript),
     })
@@ -160,6 +168,7 @@ function processTranscriptLayout(
         minX: transcriptStart,
         maxX: transcriptEnd,
         topY: transcriptTopPx,
+        labelRowsAbove,
         parentFeatureId: parentFeature.id(),
       },
       ctx,
@@ -174,6 +183,7 @@ function processTranscriptLayout(
       height: transcript.height,
       strokeUint,
       flatbushIdx,
+      labelRowsAbove,
     },
     collector,
   )
@@ -190,12 +200,14 @@ function registerSubfeature(
     type: string
     topPx: number
     heightPx: number
+    labelRowsAbove: number
     displayLabel: string | undefined
   },
   ctx: RenderContext,
   collector: Collector,
 ) {
   const { feature, parentFeatureId, type, topPx, heightPx, displayLabel } = args
+  const { labelRowsAbove } = args
   const startBp = feature.get('start')
   const endBp = feature.get('end')
   collector.subfeatureInfos.push({
@@ -207,6 +219,7 @@ function registerSubfeature(
     endBp,
     topPx,
     bottomPx: topPx + heightPx,
+    labelRowsAbove,
     displayLabel,
   })
   emitSubfeatureLabel(
@@ -217,6 +230,7 @@ function registerSubfeature(
       minX: startBp,
       maxX: endBp,
       topY: topPx,
+      labelRowsAbove,
       parentFeatureId,
     },
     ctx,
@@ -254,7 +268,8 @@ function processMatureProteinLayout(
   ctx: RenderContext,
   collector: Collector,
 ) {
-  const { baseTopPx, flatbushIdx, parentFeature: rootFeature } = place
+  const { baseTopPx, flatbushIdx, labelRowsAbove } = place
+  const { parentFeature: rootFeature } = place
   const cdsFeature = layout.feature
   // one flat residue list for the whole ORF; the polyprotein CDS is a single
   // reading frame, so mature regions are sub-slices of it rather than the
@@ -295,6 +310,7 @@ function processMatureProteinLayout(
           height: childLayout.height,
           strand: cdsFeature.get('strand') ?? 0,
           flatbushIdx,
+          labelRowsAbove,
         },
         collector,
       )
@@ -305,6 +321,7 @@ function processMatureProteinLayout(
           topPx,
           height: childLayout.height,
           flatbushIdx,
+          labelRowsAbove,
           colorOverride: MATURE_PROTEIN_COLORS[colorIdx],
         },
         ctx,
@@ -335,6 +352,7 @@ function processMatureProteinLayout(
         type: featureType(childFeature),
         topPx,
         heightPx: childLayout.height,
+        labelRowsAbove,
         displayLabel,
       },
       ctx,
@@ -348,6 +366,7 @@ function processMatureProteinLayout(
       height: layout.height,
       strokeUint: colorToUint32(strokeColor(layout.feature, ctx)),
       flatbushIdx,
+      labelRowsAbove,
     },
     collector,
   )
@@ -365,7 +384,7 @@ function processRepeatRegionLayout(
   ctx: RenderContext,
   collector: Collector,
 ) {
-  const { baseTopPx, flatbushIdx } = place
+  const { baseTopPx, flatbushIdx, labelRowsAbove } = place
   const { feature } = layout
   const strokeUint = colorToUint32(strokeColor(feature, ctx))
   collector.lines.push({
@@ -376,6 +395,7 @@ function processRepeatRegionLayout(
     color: strokeUint,
     direction: 0,
     flatbushIdx,
+    labelRowsAbove,
   })
 
   // retrotransposon body underneath; LTRs/TSDs painted over it
@@ -403,6 +423,7 @@ function processRepeatRegionLayout(
         topPx,
         height: heightPx,
         flatbushIdx,
+        labelRowsAbove,
         colorOverride: color === undefined ? undefined : colorToUint32(color),
       },
       ctx,
@@ -417,6 +438,7 @@ function processRepeatRegionLayout(
         type: childType,
         topPx,
         heightPx,
+        labelRowsAbove,
         displayLabel,
       },
       ctx,
@@ -440,10 +462,17 @@ function pushCutTicks(
     topPx: number
     height: number
     flatbushIdx: number
+    labelRowsAbove: number
   },
   collector: Collector,
 ) {
-  const { feature, topPx: baseTopPx, height, flatbushIdx } = args
+  const {
+    feature,
+    topPx: baseTopPx,
+    height,
+    flatbushIdx,
+    labelRowsAbove,
+  } = args
   const strand = feature.get('strand') ?? 0
   const rawTop: unknown = feature.get('cutSite')
   const rawBottom: unknown = feature.get('cutSiteBottom')
@@ -458,6 +487,7 @@ function pushCutTicks(
       color: CUT_SITE_COLOR,
       strand,
       flatbushIdx,
+      labelRowsAbove,
     })
   }
   if (topCut !== undefined && bottomCut !== undefined) {
@@ -486,12 +516,12 @@ function processCrisprGuideLayout(
   ctx: RenderContext,
   collector: Collector,
 ) {
-  const { baseTopPx, flatbushIdx } = place
+  const { baseTopPx, flatbushIdx, labelRowsAbove } = place
   const { feature, height } = layout
   const strand = feature.get('strand') ?? 0
 
   pushBoxRect(
-    { feature, topPx: baseTopPx, height, flatbushIdx },
+    { feature, topPx: baseTopPx, height, flatbushIdx, labelRowsAbove },
     ctx,
     collector,
   )
@@ -508,6 +538,7 @@ function processCrisprGuideLayout(
       color: CRISPR_PAM_COLOR,
       strand,
       flatbushIdx,
+      labelRowsAbove,
     })
     registerSubfeature(
       {
@@ -516,6 +547,7 @@ function processCrisprGuideLayout(
         type: 'PAM',
         topPx: baseTopPx,
         heightPx: height,
+        labelRowsAbove,
         displayLabel: 'PAM',
       },
       ctx,
@@ -523,7 +555,10 @@ function processCrisprGuideLayout(
     )
   }
 
-  pushCutTicks({ feature, topPx: baseTopPx, height, flatbushIdx }, collector)
+  pushCutTicks(
+    { feature, topPx: baseTopPx, height, flatbushIdx, labelRowsAbove },
+    collector,
+  )
 
   emitTopLevelStrandArrow(layout, place, ctx, collector)
 }
@@ -538,15 +573,18 @@ function processMotifLayout(
   ctx: RenderContext,
   collector: Collector,
 ) {
-  const { baseTopPx, flatbushIdx } = place
+  const { baseTopPx, flatbushIdx, labelRowsAbove } = place
   const { feature, height } = layout
 
   pushBoxRect(
-    { feature, topPx: baseTopPx, height, flatbushIdx },
+    { feature, topPx: baseTopPx, height, flatbushIdx, labelRowsAbove },
     ctx,
     collector,
   )
-  pushCutTicks({ feature, topPx: baseTopPx, height, flatbushIdx }, collector)
+  pushCutTicks(
+    { feature, topPx: baseTopPx, height, flatbushIdx, labelRowsAbove },
+    collector,
+  )
 
   emitTopLevelStrandArrow(layout, place, ctx, collector)
 }
@@ -563,10 +601,11 @@ function emitBox(
   ctx: RenderContext,
   collector: Collector,
 ) {
-  const { baseTopPx, flatbushIdx, isRoot, parentFeature } = place
+  const { baseTopPx, flatbushIdx, isRoot, parentFeature, labelRowsAbove } =
+    place
   const { feature, height } = layout
   pushBoxRect(
-    { feature, topPx: baseTopPx, height, flatbushIdx },
+    { feature, topPx: baseTopPx, height, flatbushIdx, labelRowsAbove },
     ctx,
     collector,
   )
@@ -580,6 +619,7 @@ function emitBox(
         type: featureType(feature),
         topPx: baseTopPx,
         heightPx: height,
+        labelRowsAbove,
         displayLabel: resolveSubfeatureLabel(feature, ctx),
       },
       ctx,
@@ -601,6 +641,7 @@ function emitSubfeaturesGlyph(
       child,
       {
         baseTopPx: place.baseTopPx + child.y,
+        labelRowsAbove: place.labelRowsAbove + (child.labelRowsAbove ?? 0),
         flatbushIdx: place.flatbushIdx,
         isRoot: false,
         parentFeature: layout.feature,
@@ -711,12 +752,19 @@ export function processFeatureRecord(
     // layout may collapse onto row 0 and fade (see isSubPixelFade). The actual
     // per-rect decision is layout's alone. The worker writes no rect-level flag.
     densityFade: layout.glyphType === 'Box',
+    labelRows: layout.labelRows,
   })
   const flatbushIdx = collector.flatbushItems.length - 1
 
   emitGlyph(
     layout,
-    { baseTopPx: 0, flatbushIdx, isRoot: true, parentFeature: feature },
+    {
+      baseTopPx: 0,
+      labelRowsAbove: 0,
+      flatbushIdx,
+      isRoot: true,
+      parentFeature: feature,
+    },
     ctx,
     collector,
   )

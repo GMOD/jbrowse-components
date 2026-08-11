@@ -1,9 +1,7 @@
-import { LABEL_FONT_SIZE } from './constants.ts'
 import { readConfigValueSafe } from './renderConfig.ts'
 import { hasVisibleText, truncateLabel } from './util.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
-import type { FeatureLayout } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
@@ -68,48 +66,42 @@ export function readFeatureLabels(
   }
 }
 
-// Reserves a label row under a transcript child in `below` mode so stacking
-// accounts for the floating name drawn beneath it. Only the transcript-child
-// path reserves height (top-level and overlay labels float without reserving);
-// the name is the feature's own name/id, never a config-jexl slot, so this pass
-// stays jexl-free.
+// Whether a transcript child inside a gene needs a `below` label row reserved
+// under it — i.e. `below` mode is on and this transcript has a name to draw.
+// Only the transcript-child path reserves height (top-level and overlay labels
+// float without reserving); the name is the feature's own name/id, never a
+// config-jexl slot, so this pass stays jexl-free.
 //
-// KNOWN LIMITATION (compact/superCompact), VERTICAL ONLY: this reserves a raw
-// LABEL_FONT_SIZE in the worker's normal-mode units, which the main thread then
-// scales by HEIGHT_MULTIPLIERS along with all other geometry. But the label is
-// actually drawn at labelFontSize() = LABEL_FONT_SIZE × LABEL_FONT_MULTIPLIERS,
-// which is deliberately gentler than HEIGHT_MULTIPLIERS. So in compact/
-// superCompact the reserved slot (×0.6 / ×0.3) is smaller than the drawn label
-// (×0.85 / ×0.7) and `below` labels overlap the next row. Correct in normal mode
-// (both ×1).
+// Answers a BOOLEAN rather than writing a height, and that is the whole point.
+// The row's height is the display mode's resolved label font size, and the
+// worker is deliberately mode-agnostic (so a compact toggle never refetches), so
+// the worker cannot know it. It used to write `height + LABEL_FONT_SIZE` into
+// `totalLayoutHeight`, which the main thread then scaled by HEIGHT_MULTIPLIERS
+// along with everything else — but the label is drawn at LABEL_FONT_MULTIPLIERS,
+// which is deliberately gentler, so the reserved slot came out smaller than the
+// text: 6.6px against 9.35px in compact, 3.3px against 7.7px in superCompact.
+// `below` labels lay across the next transcript, and the shortfall accumulated
+// down a gene's stack.
+//
+// No constant could fix that in the worker: clearing the drawn label in every
+// mode needs a reservation of `LABEL_FONT_SIZE × max(L/m)` = 2.33 ×, which is
+// 2.33 × too much in normal mode. So the row is COUNTED here and SPENT on the
+// main thread, where the mode is known (see `labelRowsAbove` on FeatureLayout).
 //
 // The same base-vs-drawn mismatch on the HORIZONTAL axis (baked `textWidth` at
-// LABEL_FONT_SIZE vs the narrower drawn text) is already handled: every consumer
-// of a baked width scales it through `renderedTextWidth`. That fix does not carry
-// over here because a width is one multiply at the point of use, whereas this
-// height is folded into a running Y offset. See below.
-//
-// The real fix is bigger than "reserve the row on the main thread": this gap is
-// NOT a separable row. layoutSubfeatures folds totalLayoutHeight into the
-// running currentYPx, so every following transcript's exon/intron Y positions
-// (and thus rectYs/lineYs) already carry it, and applyHeightScale then scales
-// the lot uniformly. Correcting it means re-doing intra-gene transcript vertical
-// stacking on the main thread (inserting labelFontPx gaps in place of the
-// worker's LABEL_FONT_SIZE), since that's where the mode is known — the worker
-// is intentionally mode-agnostic so compact toggles never trigger a re-fetch.
-export function applyLabelDimensions(
-  layout: FeatureLayout,
-  args: {
-    feature: Feature
-    config: DisplayConfig
-    isTranscriptChild: boolean
-  },
-) {
+// LABEL_FONT_SIZE vs the narrower drawn text) is handled the other way, by
+// converting at the point of use (`renderedTextWidth`) — a width is one multiply
+// where it is read, while this height is folded into a running Y offset that
+// every following transcript inherits.
+export function reservesBelowLabelRow(args: {
+  feature: Feature
+  config: DisplayConfig
+  isTranscriptChild: boolean
+}) {
   const { feature, config, isTranscriptChild } = args
-  if (isTranscriptChild && config.subfeatureLabels === 'below') {
-    const name = truncateLabel(getFeatureName(feature) ?? '')
-    if (hasVisibleText(name)) {
-      layout.totalLayoutHeight = layout.height + LABEL_FONT_SIZE
-    }
-  }
+  return (
+    isTranscriptChild &&
+    config.subfeatureLabels === 'below' &&
+    hasVisibleText(truncateLabel(getFeatureName(feature) ?? ''))
+  )
 }

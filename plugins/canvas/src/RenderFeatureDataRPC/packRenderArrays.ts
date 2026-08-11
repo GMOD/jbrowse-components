@@ -1,6 +1,9 @@
 import type { PackedPrimitives } from './rpcTypes.ts'
 
 export interface RectData {
+  // `below` label rows above this primitive inside its gene; the main thread
+  // spends them at the display mode's label font size (see GlyphPlacement)
+  labelRowsAbove: number
   start: number
   end: number
   y: number
@@ -11,6 +14,9 @@ export interface RectData {
 }
 
 export interface LineData {
+  // `below` label rows above this primitive inside its gene; the main thread
+  // spends them at the display mode's label font size (see GlyphPlacement)
+  labelRowsAbove: number
   start: number
   end: number
   y: number
@@ -23,6 +29,9 @@ export interface LineData {
 }
 
 export interface ArrowData {
+  // `below` label rows above this primitive inside its gene; the main thread
+  // spends them at the display mode's label font size (see GlyphPlacement)
+  labelRowsAbove: number
   x: number
   y: number
   // Height of the box this arrow sits on, so the renderer can snap it onto the
@@ -53,6 +62,21 @@ function spanInWindow(
   return start === end
     ? start >= regionStart && start <= regionEnd
     : end > regionStart && start < regionEnd
+}
+
+// The per-primitive `below`-label-row counts, or a length-zero array when no
+// primitive in this region carries one — which is the ordinary case, since
+// `subfeatureLabels` defaults to `none` and only a multi-transcript gene in
+// `below` mode produces a nonzero count at all. Length-zero is how the main
+// thread knows the pass is off without a parallel boolean that could disagree
+// with the array it gates (the same idiom as `featureDeltas` in the multi-row
+// pack). Uint8 because the count is transcripts-within-one-gene; a gene with
+// more than 255 labeled isoforms would clamp, which costs alignment on rows
+// nothing can legibly label anyway.
+function labelRowArray(items: { labelRowsAbove: number }[]) {
+  return items.some(i => i.labelRowsAbove > 0)
+    ? new Uint8Array(items.length)
+    : new Uint8Array(0)
 }
 
 // Filters a per-feature accumulator down to the visible bp window and packs
@@ -89,6 +113,7 @@ export function packRenderArrays(
   // say, so it doesn't pretend to by writing a per-rect eligibility flag.
   const rectDensityFade = new Uint32Array(visibleRects.length)
   const rectFeatureIndices = new Uint32Array(visibleRects.length)
+  const rectLabelRows = labelRowArray(visibleRects)
 
   for (const [i, rect] of visibleRects.entries()) {
     rectPositions[i * 2] = rect.start
@@ -98,6 +123,9 @@ export function packRenderArrays(
     rectColors[i] = rect.color
     rectStrands[i] = rect.strand
     rectFeatureIndices[i] = rect.flatbushIdx
+    if (rectLabelRows.length) {
+      rectLabelRows[i] = rect.labelRowsAbove
+    }
   }
 
   const linePositions = new Uint32Array(visibleLines.length * 2)
@@ -106,6 +134,7 @@ export function packRenderArrays(
   const lineColors = new Uint32Array(visibleLines.length)
   const lineDirections = new Int8Array(visibleLines.length)
   const lineFeatureIndices = new Uint32Array(visibleLines.length)
+  const lineLabelRows = labelRowArray(visibleLines)
 
   for (const [i, line] of visibleLines.entries()) {
     linePositions[i * 2] = line.start
@@ -115,6 +144,9 @@ export function packRenderArrays(
     lineColors[i] = line.color
     lineDirections[i] = line.direction
     lineFeatureIndices[i] = line.flatbushIdx
+    if (lineLabelRows.length) {
+      lineLabelRows[i] = line.labelRowsAbove
+    }
   }
 
   const arrowXs = new Uint32Array(visibleArrows.length)
@@ -124,6 +156,7 @@ export function packRenderArrays(
   const arrowDirections = new Int8Array(visibleArrows.length)
   const arrowColors = new Uint32Array(visibleArrows.length)
   const arrowFeatureIndices = new Uint32Array(visibleArrows.length)
+  const arrowLabelRows = labelRowArray(visibleArrows)
 
   for (const [i, arrow] of visibleArrows.entries()) {
     arrowXs[i] = arrow.x
@@ -133,6 +166,9 @@ export function packRenderArrays(
     arrowDirections[i] = arrow.direction
     arrowColors[i] = arrow.color
     arrowFeatureIndices[i] = arrow.flatbushIdx
+    if (arrowLabelRows.length) {
+      arrowLabelRows[i] = arrow.labelRowsAbove
+    }
   }
 
   return {
@@ -143,12 +179,14 @@ export function packRenderArrays(
     rectStrands,
     rectDensityFade,
     rectFeatureIndices,
+    rectLabelRows,
     linePositions,
     lineYs,
     lineHeights,
     lineColors,
     lineDirections,
     lineFeatureIndices,
+    lineLabelRows,
     arrowXs,
     arrowYs,
     arrowHeights,
@@ -156,5 +194,6 @@ export function packRenderArrays(
     arrowDirections,
     arrowColors,
     arrowFeatureIndices,
+    arrowLabelRows,
   }
 }

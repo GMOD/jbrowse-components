@@ -51,6 +51,7 @@ export function packFixtureRects(
     color: 0xff_80_40_ff,
     strand: 0,
     flatbushIdx: i,
+    labelRowsAbove: 0,
   }))
   return packRenderArrays(rects, [], [], 0, Number.MAX_SAFE_INTEGER)
 }
@@ -109,6 +110,7 @@ export function makeAminoAcidOverlayItem(
     isStopOrNonTriplet: overrides.aminoAcid === '*',
     isTranslExcept: false,
     flatbushIdx: 0,
+    labelRowsAbove: 0,
     ...overrides,
   }
 }

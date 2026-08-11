@@ -1,4 +1,3 @@
-import { LABEL_FONT_SIZE } from '../constants.ts'
 import { mockDisplayConfig } from '../testUtils.ts'
 import { layoutSubfeatures } from './subfeatures.ts'
 
@@ -61,7 +60,13 @@ const TRANSCRIPT_PADDING = 2
 
 describe('layoutSubfeatures layout', () => {
   describe('subfeatureLabels = "below"', () => {
-    it('allocates extra height for transcript labels', () => {
+    // The label ROW is counted here, never added to a Y or a height: its height
+    // is the display mode's label font size and the worker is mode-agnostic, so
+    // the main thread spends it (see reservesBelowLabelRow). What this asserts is
+    // that the worker's own geometry stays label-free and purely proportional to
+    // the feature height — the property that makes the main thread's uniform
+    // compact scale exact.
+    it('counts a label row per transcript and leaves the geometry label-free', () => {
       const gene = makeGeneWithTranscripts(['mRNA-1', 'mRNA-2'])
       const config = mockDisplayConfig({
         subfeatureLabels: 'below',
@@ -73,20 +78,19 @@ describe('layoutSubfeatures layout', () => {
       })
 
       const featureHeight = 10
-      const fontHeight = LABEL_FONT_SIZE
-      const expectedTranscriptTotalHeight = featureHeight + fontHeight
 
       expect(layout.children).toHaveLength(2)
       expect(layout.children[0]!.y).toBe(0)
-      expect(layout.children[1]!.y).toBe(
-        expectedTranscriptTotalHeight + TRANSCRIPT_PADDING,
-      )
-      expect(layout.height).toBe(
-        expectedTranscriptTotalHeight * 2 + TRANSCRIPT_PADDING,
-      )
+      // stacked on body + padding alone; the first transcript's label row is a
+      // count the second one carries, not px in its offset
+      expect(layout.children[1]!.y).toBe(featureHeight + TRANSCRIPT_PADDING)
+      expect(layout.children[0]!.labelRowsAbove).toBe(0)
+      expect(layout.children[1]!.labelRowsAbove).toBe(1)
+      expect(layout.height).toBe(featureHeight * 2 + TRANSCRIPT_PADDING)
+      expect(layout.labelRows).toBe(2)
     })
 
-    it('allocates space for a single transcript label', () => {
+    it('counts the row for a single transcript label', () => {
       const gene = makeGeneWithTranscripts(['mRNA-1'])
       const config = mockDisplayConfig({
         subfeatureLabels: 'below',
@@ -97,9 +101,8 @@ describe('layoutSubfeatures layout', () => {
         config,
       })
 
-      const featureHeight = 10
-      const fontHeight = LABEL_FONT_SIZE
-      expect(layout.height).toBe(featureHeight + fontHeight)
+      expect(layout.height).toBe(10)
+      expect(layout.labelRows).toBe(1)
     })
   })
 
@@ -223,9 +226,11 @@ describe('layoutSubfeatures layout', () => {
         config: mockDisplayConfig({ subfeatureLabels: 'none' }),
       })
 
-      expect(belowLayout.height).toBeGreaterThan(noneLayout.height)
-      const fontHeight = LABEL_FONT_SIZE
-      expect(belowLayout.height - noneLayout.height).toBe(fontHeight * 3)
+      // Same worker geometry either way — the difference is the counted rows,
+      // which the main thread turns into px at the mode's label font size.
+      expect(belowLayout.height).toBe(noneLayout.height)
+      expect(belowLayout.labelRows).toBe(3)
+      expect(noneLayout.labelRows).toBe(0)
     })
   })
 

@@ -108,6 +108,13 @@ export interface FeatureDataResult {
   // density. Fade *eligibility* lives on `FlatbushItem.densityFade` (per feature);
   // there is deliberately no worker-side rect-level flag to disagree with it.
   rectDensityFade: Uint32Array
+  // Per-primitive `below` subfeature-label row counts, or LENGTH ZERO when this
+  // region has none (the ordinary case — `subfeatureLabels` defaults to `none`).
+  // The main thread adds `count × labelFontPx` to each Y after the compact
+  // scale, because a label row's height is the mode's label font size and the
+  // worker is mode-agnostic; see FeatureLayout.labelRowsAbove for why the row
+  // cannot simply be baked into the Y the worker emits.
+  rectLabelRows: Uint8Array
 
   // Connecting lines (introns) with strand info for dynamic chevron generation
   linePositions: Uint32Array
@@ -117,6 +124,7 @@ export interface FeatureDataResult {
   lineHeights: Float32Array
   lineColors: Uint32Array
   lineDirections: Int8Array // strand direction: -1, 0, or 1
+  lineLabelRows: Uint8Array
 
   // Strand arrows (at feature ends)
   arrowXs: Uint32Array
@@ -133,6 +141,7 @@ export interface FeatureDataResult {
   arrowWidthsBp: Uint32Array
   arrowDirections: Int8Array
   arrowColors: Uint32Array
+  arrowLabelRows: Uint8Array
 
   // Hit detection
   flatbushItems: FlatbushItem[]
@@ -191,13 +200,16 @@ export type PrimitiveArrayKey = Extract<
 export type PackedPrimitives = Pick<FeatureDataResult, PrimitiveArrayKey>
 
 /**
- * What a renderer backend draws one region from. The `*FeatureIndices` arrays
- * are excluded on purpose — they map each element back to its hit-test entry for
- * the main-thread layout, and nothing in a draw call reads them.
+ * What a renderer backend draws one region from. The `*FeatureIndices` and
+ * `*LabelRows` arrays are excluded on purpose: both are main-thread layout
+ * inputs — one maps an element back to its hit-test entry, the other is spent
+ * into the element's Y before a draw ever sees it — and nothing in a draw call
+ * reads either.
  */
 export type RegionRenderData = Pick<
   FeatureDataResult,
-  Exclude<PrimitiveArrayKey, `${string}FeatureIndices`> | 'outlineColor'
+  | Exclude<PrimitiveArrayKey, `${string}FeatureIndices` | `${string}LabelRows`>
+  | 'outlineColor'
 >
 
 export interface RegionTooLargeResult {
@@ -218,6 +230,7 @@ export interface RegionTooLargeResult {
 export type RenderFeatureDataResult = FeatureDataResult | RegionTooLargeResult
 
 export interface AminoAcidOverlayItem {
+  labelRowsAbove?: number
   startBp: number
   endBp: number
   aminoAcid: string
@@ -258,6 +271,11 @@ export interface HitItemBase {
 
 export interface FlatbushItem extends HitItemBase {
   kind: 'feature'
+  // Total `below` label rows stacked inside this feature. The gene's own row has
+  // to grow by them, and it happens in `bodyHeightPx` — the one derivation both
+  // the fit probe and the committed pack read, so the two cannot disagree about
+  // how tall a labeled gene is.
+  labelRows?: number
   featureHeightPx: number
   tooltip: string
   name?: string
@@ -269,12 +287,18 @@ export interface FlatbushItem extends HitItemBase {
 
 export interface SubfeatureInfo extends HitItemBase {
   kind: 'subfeature'
+  // label rows above this subfeature (shifts topPx) and whether it owns one
+  // (extends bottomPx over the row its own label occupies)
+  labelRowsAbove?: number
+  ownsLabelRow?: boolean
   parentFeatureId: string
   displayLabel?: string
 }
 
 export interface FeatureLabelData {
   featureId: string
+  // label rows above this entry, shifting topY — see FlatbushItem.labelRows
+  labelRowsAbove?: number
   minX: number
   maxX: number
   topY: number

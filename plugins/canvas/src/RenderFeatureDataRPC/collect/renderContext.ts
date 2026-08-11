@@ -36,6 +36,12 @@ export interface RenderContext {
 // attributing it to a feature that isn't there.
 export interface GlyphPlacement {
   baseTopPx: number
+  // How many `below` subfeature-label rows sit above this glyph inside its gene.
+  // Rides beside `baseTopPx` because it IS the other half of the offset: the
+  // main thread adds `labelRowsAbove × labelFontPx` to every Y emitted here, so
+  // the label row is spent in the mode's own label units rather than scaled with
+  // the geometry (see FeatureLayout.labelRowsAbove).
+  labelRowsAbove: number
   flatbushIdx: number
   isRoot: boolean
   parentFeature: Feature

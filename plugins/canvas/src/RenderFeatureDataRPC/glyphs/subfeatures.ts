@@ -1,4 +1,4 @@
-import { applyLabelDimensions } from '../labelUtils.ts'
+import { reservesBelowLabelRow } from '../labelUtils.ts'
 import { featureType, getSubfeatures, isCDS } from '../util.ts'
 import { findGlyph } from './findGlyph.ts'
 import { featureHeightPx, hasCodingSubfeature } from './glyphUtils.ts'
@@ -83,7 +83,7 @@ function longestCodingTranscript(isoforms: Feature[]): {
 
 export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
   const { feature, config } = args
-  const { geneGlyphMode, transcriptTypes, subfeatureLabels } = config
+  const { geneGlyphMode, transcriptTypes } = config
 
   // the gene's own resolved height, used only for the inter-transcript gap below
   // — each stacked child carries whatever height its own glyph resolved
@@ -120,6 +120,14 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
 
   const children: FeatureLayout[] = []
   let currentYPx = 0
+  // `below` label rows placed so far. They are counted, never added to
+  // `currentYPx`: their height is the display mode's label font size and only
+  // the main thread knows it (see reservesBelowLabelRow). Every Y this loop
+  // writes therefore stays proportional to `heightPx`, which is what makes the
+  // main thread's uniform compact scale exact — the property
+  // TRANSCRIPT_PADDING_RATIO exists to preserve, and the one an absolute
+  // LABEL_FONT_SIZE in this running offset used to break.
+  let labelRows = 0
 
   for (const [i, child] of subfeatures.entries()) {
     const childType = featureType(child)
@@ -134,22 +142,22 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
       parentFeature: feature,
     })
 
-    applyLabelDimensions(childLayout, {
-      feature: child,
-      config,
-      isTranscriptChild: isChildTranscript,
-    })
-
     childLayout.y = currentYPx
+    childLayout.labelRowsAbove = labelRows
 
     children.push(childLayout)
 
-    const useExtraHeightForLabels =
-      subfeatureLabels === 'below' && isChildTranscript
-    const heightForStacking = useExtraHeightForLabels
-      ? childLayout.totalLayoutHeight
-      : childLayout.height
-    currentYPx += heightForStacking
+    currentYPx += childLayout.height
+    if (
+      reservesBelowLabelRow({
+        feature: child,
+        config,
+        isTranscriptChild: isChildTranscript,
+      })
+    ) {
+      childLayout.ownsLabelRow = true
+      labelRows++
+    }
     if (i < subfeatures.length - 1) {
       currentYPx += heightPx * TRANSCRIPT_PADDING_RATIO
     }
@@ -164,6 +172,10 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
     height: totalHeightPx,
     totalLayoutHeight: totalHeightPx,
     children,
+    // the gene's own row has to grow by every label row it contains; the main
+    // thread spends them in bodyHeightPx, which is the one place both the fit
+    // probe and the committed pack read
+    labelRows,
     isoformsCollapsed,
     hasMultipleIsoforms,
   }

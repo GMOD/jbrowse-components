@@ -369,33 +369,72 @@ function scaleFloat32(arr: Float32Array, multiplier: number) {
   }
 }
 
-// Scales all height/y fields in a cloned FeatureDataResult by the compact
-// multiplier. Worker geometry is always in normal-mode units (multiplier=1);
-// this makes compact/superCompact a pure main-thread operation.
-function applyHeightScale(data: FeatureDataResult, multiplier: number) {
-  if (multiplier === 1) {
-    return
+// Scales a Y array by the compact multiplier and then spends each element's
+// `below` label rows at the mode's own label font size. Two units, because the
+// worker emits geometry in normal-mode px (scaled by `multiplier`) but counts
+// label rows (see FeatureLayout.labelRowsAbove) — their height is `labelFontPx`,
+// which shrinks on the gentler LABEL_FONT_MULTIPLIERS and so cannot ride the
+// geometry scale. `rows` is length-zero whenever the region has no below-labels,
+// which is the ordinary case and costs nothing here.
+function scaleYWithLabelRows(
+  ys: Float32Array,
+  rows: Uint8Array,
+  multiplier: number,
+  labelFontPx: number,
+) {
+  const hasRows = rows.length > 0
+  for (let i = 0; i < ys.length; i++) {
+    ys[i] = ys[i]! * multiplier + (hasRows ? rows[i]! * labelFontPx : 0)
   }
-  scaleFloat32(data.rectYs, multiplier)
+}
+
+// Scales all height/y fields in a cloned FeatureDataResult by the compact
+// multiplier, and spends the worker's counted `below` label rows at the mode's
+// label font size. Worker geometry is always in normal-mode units; this makes
+// compact/superCompact a pure main-thread operation.
+//
+// No `multiplier === 1` early return: normal mode still has label rows to spend
+// (the worker leaves the Y gap-free in EVERY mode), so the pass is uniform
+// across modes rather than special-cased for one.
+function applyHeightScale(
+  data: FeatureDataResult,
+  multiplier: number,
+  labelFontPx: number,
+) {
+  scaleYWithLabelRows(data.rectYs, data.rectLabelRows, multiplier, labelFontPx)
+  scaleYWithLabelRows(data.lineYs, data.lineLabelRows, multiplier, labelFontPx)
+  scaleYWithLabelRows(
+    data.arrowYs,
+    data.arrowLabelRows,
+    multiplier,
+    labelFontPx,
+  )
   scaleFloat32(data.rectHeights, multiplier)
-  scaleFloat32(data.lineYs, multiplier)
   scaleFloat32(data.lineHeights, multiplier)
-  scaleFloat32(data.arrowYs, multiplier)
   scaleFloat32(data.arrowHeights, multiplier)
   for (const item of data.flatbushItems) {
-    item.featureHeightPx *= multiplier
+    // A gene's own extent has to cover every label row it contains. The packed
+    // ROW height comes from `bodyHeightPx`, which applies the same term — this
+    // keeps the hit box in step with it.
+    item.featureHeightPx =
+      item.featureHeightPx * multiplier + (item.labelRows ?? 0) * labelFontPx
   }
   for (const info of data.subfeatureInfos) {
-    info.topPx *= multiplier
-    info.bottomPx *= multiplier
+    const above = (info.labelRowsAbove ?? 0) * labelFontPx
+    info.topPx = info.topPx * multiplier + above
+    // a transcript's own label row sits under its body, so its hit box covers it
+    info.bottomPx =
+      info.bottomPx * multiplier + above + (info.ownsLabelRow ? labelFontPx : 0)
   }
   for (const labelData of Object.values(data.floatingLabelsData)) {
-    labelData.topY *= multiplier
+    labelData.topY =
+      labelData.topY * multiplier +
+      (labelData.labelRowsAbove ?? 0) * labelFontPx
     labelData.featureHeight *= multiplier
   }
   if (data.aminoAcidOverlay) {
     for (const aa of data.aminoAcidOverlay) {
-      aa.topPx *= multiplier
+      aa.topPx = aa.topPx * multiplier + (aa.labelRowsAbove ?? 0) * labelFontPx
       // heightPx drives the peptide letter font size and vertical centering
       // (peptidePositioning.ts) and the codon hit box (hitTesting.ts); scale it
       // with topPx so letters stay sized to and centered on the shrunken codon
@@ -476,7 +515,7 @@ function layoutRefGroups(
     // committed layout pays it.
     for (const [n, raw] of regions) {
       const cloned = cloneMutableFields(raw)
-      applyHeightScale(cloned, metrics.heightMultiplier)
+      applyHeightScale(cloned, metrics.heightMultiplier, metrics.labelFontPx)
       applyLayoutToRegion(
         cloned,
         layoutMap,
@@ -811,7 +850,13 @@ export function scaleLaidOutData(
       // Ys+heights, subfeature/label/amino-acid tops, featureHeightPx), then add
       // the packed flatbush box tops/bottoms it doesn't touch (those are 0 at the
       // pre-pack stage applyHeightScale was written for).
-      applyHeightScale(cloned, scale)
+      // labelFontPx 0: the label rows were already spent when this layout was
+      // committed (layoutRefGroups), so they are part of the Y values being
+      // scaled here and must not be added a second time. Scaling them with
+      // everything else is right — a fit scale below 1 only ever lands on the
+      // `bodies` rung, where no label draws, and a scale above 1 only
+      // over-reserves.
+      applyHeightScale(cloned, scale, 0)
       for (const item of cloned.flatbushItems) {
         item.topPx *= scale
         item.bottomPx *= scale
@@ -1120,7 +1165,15 @@ function prepareRefPack(
         features.set(item.featureId, {
           startBp: item.startBp,
           endBp: item.endBp,
-          bodyHeightPx: item.featureHeightPx * metrics.heightMultiplier,
+          // plus the `below` label rows stacked inside this feature, spent at
+          // the mode's label font size rather than scaled with the geometry (see
+          // FeatureLayout.labelRowsAbove). Here rather than only in
+          // applyHeightScale because this derivation is the one BOTH the fit
+          // probe and the committed pack read — split across the two, a fitted
+          // track would measure a labeled gene shorter than it draws.
+          bodyHeightPx:
+            item.featureHeightPx * metrics.heightMultiplier +
+            (item.labelRows ?? 0) * metrics.labelFontPx,
           strand: item.strand ?? 0,
           hasReversed: reversed,
           hasNonReversed: !reversed,

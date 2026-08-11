@@ -55,13 +55,15 @@ export function emitIntronLines(
   args: {
     transcript: FeatureLayout
     topPx: number
+    labelRowsAbove: number
     strokeUint: number
     flatbushIdx: number
     showChevrons: boolean
   },
   collector: Collector,
 ) {
-  const { transcript, topPx, strokeUint, flatbushIdx, showChevrons } = args
+  const { transcript, topPx, labelRowsAbove, strokeUint, flatbushIdx } = args
+  const { showChevrons } = args
   const { lines } = collector
   const feature = transcript.feature
   const start = feature.get('start')
@@ -84,6 +86,7 @@ export function emitIntronLines(
         color: strokeUint,
         direction,
         flatbushIdx,
+        labelRowsAbove,
       })
     }
     if (childEnd > prevEnd) {
@@ -99,6 +102,7 @@ export function emitIntronLines(
       color: strokeUint,
       direction,
       flatbushIdx,
+      labelRowsAbove,
     })
   }
 }
@@ -111,10 +115,12 @@ export function emitCodonRects(
     height: number
     strand: number
     flatbushIdx: number
+    labelRowsAbove: number
   },
   collector: Collector,
 ) {
   const { aminoAcids, baseColor, topPx: y, height, strand, flatbushIdx } = args
+  const { labelRowsAbove } = args
   const { rects, aminoAcidOverlay: overlayItems } = collector
   const baseHex = formatHEX(parseCssColor(baseColor))
   const color1 = colorToUint32(lighten(baseHex, 0.5))
@@ -137,8 +143,10 @@ export function emitCodonRects(
           : color1,
       strand,
       flatbushIdx,
+      labelRowsAbove,
     })
     overlayItems.push({
+      labelRowsAbove,
       startBp: aa.startBp,
       endBp: aa.endBp,
       aminoAcid: aa.aminoAcid,
@@ -158,6 +166,7 @@ export function pushBoxRect(
     topPx: number
     height: number
     flatbushIdx: number
+    labelRowsAbove: number
     // packed RGBA32 override (mature-protein palette); 0 is a valid color so the
     // guard is `=== undefined`, not a falsy/`??` check
     colorOverride?: number
@@ -170,6 +179,7 @@ export function pushBoxRect(
     topPx: baseTopPx,
     height: baseHeight,
     flatbushIdx,
+    labelRowsAbove,
     colorOverride,
   } = args
   const { rects } = collector
@@ -185,6 +195,7 @@ export function pushBoxRect(
         : colorOverride,
     strand: feature.get('strand') ?? 0,
     flatbushIdx,
+    labelRowsAbove,
   })
 }
 
@@ -195,10 +206,12 @@ export function emitStrandArrow(
     height: number
     strokeUint: number
     flatbushIdx: number
+    labelRowsAbove: number
   },
   collector: Collector,
 ) {
   const { feature, topPx, height, strokeUint, flatbushIdx } = args
+  const { labelRowsAbove } = args
   const { arrows } = collector
   const strand = feature.get('strand') ?? 0
   if (strand !== 0) {
@@ -212,6 +225,7 @@ export function emitStrandArrow(
       direction: strand,
       color: strokeUint,
       flatbushIdx,
+      labelRowsAbove,
     })
   }
 }
@@ -236,6 +250,7 @@ export function emitTopLevelStrandArrow(
         height: layout.height,
         strokeUint: colorToUint32(strokeColor(feature, ctx)),
         flatbushIdx: place.flatbushIdx,
+        labelRowsAbove: place.labelRowsAbove,
       },
       collector,
     )
@@ -253,6 +268,7 @@ export function emitSubfeatureLabel(
     minX: number
     maxX: number
     topY: number
+    labelRowsAbove: number
     parentFeatureId: string
   },
   ctx: RenderContext,
@@ -277,6 +293,7 @@ export function emitSubfeatureLabel(
       minX,
       maxX,
       topY,
+      labelRowsAbove: args.labelRowsAbove,
       featureHeight,
       parentFeatureId: result.parentFeatureId,
       subfeatureLabel: result.subfeatureLabel,
