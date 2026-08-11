@@ -98,25 +98,35 @@ export interface CardProps {
   // re-parsed every two seconds for ~25s, so passing it would re-render every
   // card on every poll and defeat the memo — while a reviewer is typing.
   drift?: number
+  // this snapshot has two or more backend captures, so a drift number is coming
+  // — which is what lets the card hold its place before one arrives
+  comparable: boolean
   message?: CardMessage
   pressed?: PressStatus
   drafts: DraftStore
+  // this card is done with as far as the current filters are concerned, and is
+  // only still on screen because taking it away is the reviewer's call
+  settled: boolean
   // the note goes with the verdict, and it is the text in this card's box —
   // see useReview for the two ways the report's copy stops matching it
   onSetVerdict: (name: string, status: 'good' | 'bad', note: string) => void
   onClearVerdict: (name: string) => void
   onSaveNote: (name: string, note: string) => void
+  onDismiss: (name: string) => void
 }
 
 export const Card = memo(function Card({
   entry,
   drift,
+  comparable,
   message,
   pressed,
   drafts,
+  settled,
   onSetVerdict,
   onClearVerdict,
   onSaveNote,
+  onDismiss,
 }: CardProps) {
   const note = useNoteDraft({ entry, drafts, onSave: onSaveNote })
   const v = entry.verdict
@@ -151,7 +161,9 @@ export const Card = memo(function Card({
   )
 
   return (
-    <div className={`card ${entry.stale ? 'stale' : status}`}>
+    <div
+      className={`card ${entry.stale ? 'stale' : status}${settled ? ' settled' : ''}`}
+    >
       <div className="card-images">
         <ImgCol
           label={entry.refLoc ? `rendered (${entry.refLoc})` : 'rendered'}
@@ -168,14 +180,34 @@ export const Card = memo(function Card({
         </ImgCol>
       </div>
       <div className="meta">
+        {/* Nothing in here changes while the page is open, which is the point:
+            the title is a wrapping row, and a pill leaving it can drop it from
+            two lines to one and take ~22px off everything below — the buttons
+            the reviewer is about to press again included. The two pills that DO
+            change moved to the reserved row underneath. */}
         <h2>
           {entry.name}
           <Pill cls={entry.kind}>{entry.kind}</Pill>
-          {entry.stale ? (
-            <Pill cls="stale">image changed since {status}</Pill>
-          ) : null}
-          {drift === undefined ? null : <DriftPill pct={drift} />}
         </h2>
+        {/* Both of these arrive after the card is already on screen and
+            clickable: `stale` goes away when the reviewer's own verdict lands,
+            and the drift number is filled in by a background pass that walks the
+            whole corpus over ~25s. So the row is reserved (app.css) on any card
+            that will ever have something to put in it. */}
+        {comparable || entry.stale ? (
+          <div className="flags">
+            {entry.stale ? (
+              <Pill cls="stale">image changed since {status}</Pill>
+            ) : null}
+            {!comparable ? null : drift === undefined ? (
+              // Said out loud rather than left blank. Blank is also what "only
+              // one backend captured this" looks like, and that one is `n/a`.
+              <Pill cls="absent">measuring drift…</Pill>
+            ) : (
+              <DriftPill pct={drift} />
+            )}
+          </div>
+        ) : null}
         <div className="reviewedAt">present in: {where}</div>
         {/* a textarea, not an input: a denial reason is a paragraph, and
             useNoteDraft grows this one to fit it */}
@@ -192,17 +224,24 @@ export const Card = memo(function Card({
         <div className="actions">
           {verdictBtn('approve', '✓ Approve', 'good')}
           {verdictBtn('deny', '✗ Deny', 'bad')}
-          {v ? (
-            <button
-              type="button"
-              className="clear"
-              onClick={() => {
-                onClearVerdict(entry.name)
-              }}
-            >
-              clear
-            </button>
-          ) : null}
+          {/* Disabled rather than absent on an unreviewed snapshot. Rendered
+              only when there is a verdict, it appears the instant a write lands
+              and pushes everything after it along the row. */}
+          <button
+            type="button"
+            className="clear"
+            disabled={!v}
+            title={
+              v
+                ? 'Drop this verdict — the card goes back to unreviewed'
+                : 'nothing recorded yet'
+            }
+            onClick={() => {
+              onClearVerdict(entry.name)
+            }}
+          >
+            clear
+          </button>
           {/* Always rendered, including on an empty box where it only focuses
               the field: shown only when there is text to preserve, it would
               have to appear and disappear as the note is typed. */}
@@ -218,6 +257,22 @@ export const Card = memo(function Card({
             <span className="reviewedAt">
               {new Date(v.reviewedAt).toLocaleString()}
             </span>
+          ) : null}
+          {/* Appended at the END of the row, never inserted among the verdict
+              buttons: this appears the instant a write lands, and a control that
+              grows in front of Approve/Deny would move them out from under a
+              pointer already on its way to the next click. */}
+          {settled ? (
+            <button
+              type="button"
+              className="hide"
+              title="Recorded. It only stays on the list so you can still add a note — this takes it off."
+              onClick={() => {
+                onDismiss(entry.name)
+              }}
+            >
+              done — hide
+            </button>
           ) : null}
         </div>
         {/* Below the buttons, not under the box it describes — see app.css for

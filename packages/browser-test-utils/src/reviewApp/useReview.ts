@@ -41,8 +41,6 @@ import type {
 // bug ever appears here, it is a bug — not an invitation to add a guard.
 // ---------------------------------------------------------------------------
 
-const noneActed: ReadonlySet<string> = new Set()
-
 export interface UseReviewOptions {
   // localStorage key this tool's note drafts live under
   draftsKey: string
@@ -66,16 +64,6 @@ export function useReview<E extends ReviewEntry>({
   const [entries, setEntriesState] = useState<E[]>([])
   const [messages, setMessages] = useState<Record<string, CardMessage>>({})
   const [pressed, setPressed] = useState<Record<string, PressStatus>>({})
-  // Names acted on since the current filter view was entered. They stay visible
-  // even once their new verdict no longer matches the filter, so you can still
-  // type a reason after clicking Deny in the unreviewed/denied queue.
-  //
-  // Superseded by useStickyQueue, which holds the whole LIST still rather than
-  // exempting the acted-on rows from it — the exemption keeps a card on screen
-  // but not in its place, and touching any filter drops every card it was
-  // holding. The website's screenshot review is on the queue; the snapshot
-  // review still reads this.
-  const [justActed, setJustActed] = useState(noneActed)
 
   const publish = useCallback((next: E[]) => {
     entriesRef.current = next
@@ -211,7 +199,6 @@ export function useReview<E extends ReviewEntry>({
         } catch (err) {
           setMessage(name, `Not saved — ${failed(err)}`)
         }
-        setJustActed(a => new Set(a).add(name))
         reconcileDraft(name)
         unpress(name, status)
       })
@@ -310,18 +297,12 @@ export function useReview<E extends ReviewEntry>({
     [adopt, entryOf, imageMovedPhrase, patch, press, setMessage, unpress],
   )
 
-  const clearJustActed = useCallback(() => {
-    setJustActed(noneActed)
-  }, [])
-
   return {
     entries,
     loadEntries,
     drafts,
     messages,
     pressed,
-    justActed,
-    clearJustActed,
     setVerdict,
     saveNote,
     clearVerdict,

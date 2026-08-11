@@ -19,6 +19,15 @@ body {
   background: #f4f5f7;
   color: #1a1a1a;
 }
+/* A wrapping flex row in the flow directly above the cards, so anything that
+   changes its width can add a line and move every snapshot on the page down by
+   that. Every count in here moves — verdicts change the tab counts, and the
+   background drift pass walks `drifting` from 0 up over the first ~25 seconds,
+   which is exactly when the reviewer starts clicking.
+   So nothing here is conditionally MOUNTED on anything a verdict or that pass
+   can change — with nothing to say a control goes `visibility: hidden` and keeps
+   its box — and every count sits in a fixed-width slot. Give anything you add
+   the same treatment. */
 header {
   position: sticky;
   top: 0;
@@ -60,10 +69,32 @@ header input[type='search'] {
   border-color: #2563eb;
   color: #fff;
 }
+/* 9 → 10 → 199 all draw in the same box. Nothing in the corpus reaches four. */
+.tabcount {
+  display: inline-block;
+  min-width: 3ch;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
 .tab .tabcount {
   opacity: 0.7;
   margin-left: 5px;
   font-size: 12px;
+}
+/* Holds its place in the row with nothing to say. `visibility` rather than
+   `opacity`, which would leave it in the tab order and the a11y tree. */
+.reserved {
+  visibility: hidden;
+}
+/* Not a filter — it is the only thing that takes cards off the list, so it does
+   not use the blue active state the tabs share. */
+.tab.flush {
+  border-color: #22c55e;
+  color: #16a34a;
+}
+.tab.requeue {
+  align-self: flex-start;
+  color: #666;
 }
 .counts {
   font-size: 13px;
@@ -146,20 +177,39 @@ main {
   max-width: 1500px;
   margin: 0 auto;
 }
+/* The status stripe is always 5px and only its COLOUR says which status, because
+   a border is layout: growing it 1px → 5px on a verdict takes 4px off the
+   content width, the image well reflows into it, and the card gets shorter —
+   see `main` for what a card that shrinks mid-press does to a click. A verdict
+   paints, it does not resize. */
 .card {
   background: #fff;
   border: 1px solid #e0e0e0;
+  border-left: 5px solid #e0e0e0;
   border-radius: 10px;
   overflow: hidden;
 }
 .card.good {
-  border-left: 5px solid #22c55e;
+  border-left-color: #22c55e;
 }
 .card.bad {
-  border-left: 5px solid #ef4444;
+  border-left-color: #ef4444;
 }
 .card.stale {
-  border-left: 5px solid #f59e0b;
+  border-left-color: #f59e0b;
+}
+/* Settled, and kept on the list anyway so the reviewer can still type a reason.
+   It recedes rather than disappearing: dimming a card is the one way to say
+   "this one is done" that does not move the card below it. Full opacity comes
+   back on hover/focus, because "still editable" is the whole point of it being
+   here. */
+.card.settled {
+  opacity: 0.55;
+  transition: opacity 0.15s;
+}
+.card.settled:hover,
+.card.settled:focus-within {
+  opacity: 1;
 }
 .card-images {
   display: flex;
@@ -224,6 +274,21 @@ main {
   gap: 6px;
   flex-wrap: wrap;
 }
+/* The two pills that appear or disappear under the reviewer — "changed since
+   review", which their own verdict clears, and the drift number, which a
+   background pass fills in over the first ~25 seconds — on a line whose height
+   is RESERVED, the same rule as `.unsaved` below. Among the name's pills they
+   could unwrap the title and take a line off everything under it, buttons
+   included, with no click of the reviewer's involved at all. The row exists only
+   on cards that will ever have something to put in it. */
+.flags {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  line-height: 1.6;
+  min-height: 1.6em;
+}
 .actions {
   display: flex;
   gap: 8px;
@@ -262,11 +327,24 @@ button.addnote {
   border-color: #ccc;
   color: #666;
 }
+/* pushed to the far end of the row, away from Approve/Deny */
+button.hide {
+  margin-left: auto;
+  border-color: #ccc;
+  color: #666;
+  font-size: 13px;
+}
 button:disabled {
   opacity: 0.45;
   cursor: not-allowed;
   border-color: #ccc;
   color: #666;
+}
+/* No cards, said out loud. See App.tsx for why a blank main is not good enough. */
+.empty {
+  color: #666;
+  font-size: 14px;
+  align-self: flex-start;
 }
 .loaderror {
   color: #b91c1c;

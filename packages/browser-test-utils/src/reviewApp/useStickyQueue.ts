@@ -28,7 +28,16 @@ export interface StickyQueue<E> {
   queue: E[]
   // names in `queue` the live query no longer selects — settled, still on screen
   leaving: ReadonlySet<string>
-  // capture the live query again: everything in `leaving` goes
+  // how many the live query selects that the capture does not have. Non-zero
+  // means the answer moved on since it was captured, which a page has to be able
+  // to say: the reviewer cannot tell a queue that is genuinely empty from one
+  // whose question was answered after it was asked. It arrives two ways — a
+  // capture taken before the data did, and a filter whose predicate is still
+  // being computed server-side (the snapshot review's drift pass fills in over
+  // ~25s, so 'show me the drifting ones' keeps finding more).
+  pending: number
+  // capture the live query again: everything in `leaving` goes, everything in
+  // `pending` arrives
   refresh: () => void
   // drop one card, for a reviewer done with that one but not with the batch
   dismiss: (name: string) => void
@@ -80,6 +89,10 @@ export function useStickyQueue<E extends { name: string }>({
     () => new Set(queue.map(e => e.name).filter(n => !selected.has(n))),
     [queue, selected],
   )
+  const pending = useMemo(() => {
+    const held = new Set(queue.map(e => e.name))
+    return matching.filter(e => !held.has(e.name)).length
+  }, [matching, queue])
 
   const refresh = useCallback(() => {
     setPinned({ key: viewKey, names: matching.map(e => e.name) })
@@ -89,5 +102,5 @@ export function useStickyQueue<E extends { name: string }>({
     setPinned(p => ({ ...p, names: p.names.filter(n => n !== name) }))
   }, [])
 
-  return { queue, leaving, refresh, dismiss }
+  return { queue, leaving, pending, refresh, dismiss }
 }

@@ -250,7 +250,7 @@ export function App() {
   // approving or denying one never moves, reorders or removes anything: it is
   // the reviewer who decides when a settled card leaves, per card or by the
   // batch.
-  const { queue, leaving, refresh, dismiss } = useStickyQueue({
+  const { queue, leaving, pending, refresh, dismiss } = useStickyQueue({
     entries,
     matching,
     viewKey: `${dataEpoch} ${queryKey(filters)}`,
@@ -500,20 +500,20 @@ export function App() {
             onDismiss={dismiss}
           />
         ))}
-        {/* An empty list under filters that DO select things is the one state
-            the reviewer cannot tell from "nothing left to review": the queue is
-            a capture, so it stays empty until it is retaken. */}
-        {!loadError && !queue.length && matching.length ? (
+        {/* The live query selects cards this capture does not hold, which the
+            reviewer cannot tell from "nothing left to review": the queue is a
+            capture, so it stays as it is until it is retaken. */}
+        {!loadError && pending ? (
           <button type="button" className="tab requeue" onClick={refresh}>
-            {matching.length} card{matching.length === 1 ? '' : 's'} match these
-            filters — load them
+            {pending} card{pending === 1 ? '' : 's'} match these filters — load
+            {pending === 1 ? ' it' : ' them'}
           </button>
         ) : null}
         {/* …and an empty list under filters that select NOTHING has to say so
             out loud. Bare, `main` renders as blank page, which is what a review
             server that failed to start, a bad bookmark and a finished sweep all
             look like — and only one of those is worth celebrating. */}
-        {!loadError && !queue.length && !matching.length ? (
+        {!loadError && !queue.length && !pending ? (
           <div className="empty">{emptyText(dataEpoch, filters)}</div>
         ) : null}
       </main>

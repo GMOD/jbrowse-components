@@ -79,6 +79,30 @@ test('the first capture is empty until the data arrives, so the key carries it',
   expect(nameList(result.current.queue)).toEqual(['a', 'b'])
 })
 
+test('pending counts what the query has found since the capture', () => {
+  const entries = es('a', 'b', 'c')
+  const { result, rerender } = setup(entries, es('a'))
+  expect(result.current.pending).toBe(0)
+  // the drift pass finished deciding about 'b' and 'c', so the live query now
+  // selects them — but the reviewer's list is still the one they asked for
+  rerender({ entries, matching: entries, viewKey: 'v1' })
+  expect(nameList(result.current.queue)).toEqual(['a'])
+  expect(result.current.pending).toBe(2)
+  act(() => {
+    result.current.refresh()
+  })
+  expect(nameList(result.current.queue)).toEqual(['a', 'b', 'c'])
+  expect(result.current.pending).toBe(0)
+})
+
+test('a settled card is not pending — it is already on the list', () => {
+  const entries = es('a', 'b')
+  const { result, rerender } = setup(entries, entries)
+  rerender({ entries, matching: es('a'), viewKey: 'v1' })
+  expect([...result.current.leaving]).toEqual(['b'])
+  expect(result.current.pending).toBe(0)
+})
+
 test('a captured name the data no longer has drops out', () => {
   const entries = es('a', 'b')
   const { result, rerender } = setup(entries, entries)

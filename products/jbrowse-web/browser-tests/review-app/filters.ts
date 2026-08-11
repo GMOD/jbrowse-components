@@ -57,24 +57,39 @@ export function maxDrift(diffs: Diffs, name: string) {
 export const isDrifting = (diffs: Diffs, name: string) =>
   maxDrift(diffs, name) >= DRIFT_THRESHOLD
 
+// Trimmed, because no snapshot name contains a space: an unnoticed trailing one
+// — pasted, or left behind by a keyboard that space-completes — otherwise
+// selects nothing at all, and an empty list with no card on it reads as a
+// finished queue rather than as a typo in the search box.
+export const searchText = (f: Filters) => f.q.trim().toLowerCase()
+
 // The status tab only applies on the basic-pass page; the backends page is
 // read-only, so filtering it by verdict would hide comparisons for no reason.
 export function matchesFilters(
   s: SnapshotPayloadEntry,
   f: Filters,
   diffs: Diffs,
-  justActed: ReadonlySet<string>,
 ) {
-  const q = f.q.toLowerCase()
+  const q = searchText(f)
   const matchesStatus =
     f.page !== 'basic' ||
     f.status === 'all' ||
     (f.status === 'needs' ? needsReview(s) : settledAs(s, f.status))
   return (
     (!q || s.name.toLowerCase().includes(q)) &&
-    (justActed.has(s.name) ||
-      (matchesStatus &&
-        (f.kind === 'all' || s.kind === f.kind) &&
-        (f.drift === 'all' || isDrifting(diffs, s.name))))
+    matchesStatus &&
+    (f.kind === 'all' || s.kind === f.kind) &&
+    (f.drift === 'all' || isDrifting(diffs, s.name))
   )
 }
+
+// Which of a card's own properties the list is selected on: change one and the
+// reviewer is asking a different question, so useStickyQueue re-captures.
+//
+// `diffs` is deliberately absent even though the drift filter reads it. It
+// arrives over ~25s of background PNG decoding, so folding it in would re-take
+// the capture every two seconds — throwing away the batch under the reviewer,
+// repeatedly, for the whole first half-minute. The queue's `pending` count says
+// the answer has grown instead, and the reviewer takes it when they are ready.
+export const queryKey = (f: Filters) =>
+  [searchText(f), f.page, f.status, f.kind, f.drift].join(' ')
