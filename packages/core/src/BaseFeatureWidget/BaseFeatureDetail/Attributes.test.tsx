@@ -62,7 +62,12 @@ describe('Attributes', () => {
     expect(queryByText('file')).toBeNull()
   })
 
-  // DataGridDetails is lazy(), so the grid only appears after the chunk resolves
+  // DataGridDetails is lazy() behind a null Suspense fallback, so nothing at all
+  // renders — not even the field name — until the chunk resolves. That chunk
+  // pulls @mui/x-data-grid and core's `ui` barrel, which is slower than
+  // findByText's 1s default under a loaded `jest --ci` run: this test was red on
+  // main, and passes at 4s in isolation with no other change. The generous
+  // timeout is the fix; shortening it makes the suite flaky rather than fast.
   test('homogeneous object array renders via the data grid', async () => {
     const { findByText } = renderWithTheme(
       <Attributes
@@ -74,6 +79,6 @@ describe('Attributes', () => {
         }}
       />,
     )
-    expect(await findByText('transcripts')).toBeTruthy()
-  })
+    expect(await findByText('transcripts', {}, { timeout: 15000 })).toBeTruthy()
+  }, 20000)
 })
