@@ -82,7 +82,7 @@
   "private": true,
   "devDependencies": {
     "@jbrowse/browser-test-utils": "workspace:*",
-    "generic-filehandle2": "^2.3.0",
+    "generic-filehandle2": "^2.3.1",
     "pixelmatch": "^7.2.0",
     "pngjs": "^7.0.0"
   }
