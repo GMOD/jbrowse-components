@@ -12,9 +12,11 @@ export { DraftStore, draftHint } from './drafts.ts'
 export { settledAs, shownStatus } from './protocol.ts'
 export { useNoteDraft } from './useNoteDraft.ts'
 export { useReview } from './useReview.ts'
+export { useStickyQueue } from './useStickyQueue.ts'
 
 export type { UseNoteDraftOptions } from './useNoteDraft.ts'
 export type { UseReviewOptions } from './useReview.ts'
+export type { StickyQueue } from './useStickyQueue.ts'
 export type {
   CardMessage,
   PressStatus,

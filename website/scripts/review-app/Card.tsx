@@ -115,11 +115,15 @@ export interface CardProps {
   message?: CardMessage
   pressed?: PressStatus
   drafts: DraftStore
+  // this card is done with as far as the current filters are concerned, and is
+  // only still on screen because taking it away is the reviewer's call
+  settled: boolean
   compareMode: CompareMode
   onCompareMode: (name: string, mode: CompareMode) => void
   onSetVerdict: (name: string, status: 'good' | 'bad') => void
   onClearVerdict: (name: string) => void
   onSaveNote: (name: string, note: string) => void
+  onDismiss: (name: string) => void
 }
 
 export const Card = memo(function Card({
@@ -127,11 +131,13 @@ export const Card = memo(function Card({
   message,
   pressed,
   drafts,
+  settled,
   compareMode,
   onCompareMode,
   onSetVerdict,
   onClearVerdict,
   onSaveNote,
+  onDismiss,
 }: CardProps) {
   const note = useNoteDraft({ entry: spec, drafts, onSave: onSaveNote })
   const v = spec.verdict
@@ -165,7 +171,9 @@ export const Card = memo(function Card({
   )
 
   return (
-    <div className={`card ${spec.stale ? 'stale' : status}`}>
+    <div
+      className={`card ${spec.stale ? 'stale' : status}${settled ? ' settled' : ''}`}
+    >
       <Compare
         spec={spec}
         mode={compareMode}
@@ -246,6 +254,22 @@ export const Card = memo(function Card({
             <span className="reviewedAt">
               {new Date(v.reviewedAt).toLocaleString()}
             </span>
+          ) : null}
+          {/* Appended at the END of the row, never inserted among the verdict
+              buttons: this appears the instant a write lands, and a control that
+              grows in front of Approve/Deny would move them out from under a
+              pointer already on its way to the next click. */}
+          {settled ? (
+            <button
+              type="button"
+              className="hide"
+              title="Recorded. It only stays on the list so you can still add a note — this takes it off."
+              onClick={() => {
+                onDismiss(spec.name)
+              }}
+            >
+              done — hide
+            </button>
           ) : null}
         </div>
         {/* Below the buttons, not under the box it describes: this line appears

@@ -96,6 +96,16 @@ header label {
   margin-left: 5px;
   font-size: 12px;
 }
+/* Not a filter — it is the only thing that takes cards off the list, so it does
+   not use the blue active state the toggles share. */
+.tab.flush {
+  border-color: #22c55e;
+  color: #16a34a;
+}
+.tab.requeue {
+  align-self: flex-start;
+  color: GrayText;
+}
 .counts {
   font-size: 13px;
   color: GrayText;
@@ -247,6 +257,19 @@ main {
 }
 .card.answered {
   border-left: 5px solid #3b82f6;
+}
+/* Settled, and kept on the list anyway so the reviewer can still type a reason.
+   It recedes rather than disappearing: dimming a card is the one way to say
+   "this one is done" that does not move the card below it. Full opacity comes
+   back on hover/focus, because "still editable" is the whole point of it being
+   here. */
+.card.settled {
+  opacity: 0.55;
+  transition: opacity 0.15s;
+}
+.card.settled:hover,
+.card.settled:focus-within {
+  opacity: 1;
 }
 .card-images {
   display: flex;
@@ -629,6 +652,13 @@ button.clear {
 button.addnote {
   border-color: ButtonBorder;
   color: GrayText;
+}
+/* pushed to the far end of the row, away from Approve/Deny */
+button.hide {
+  margin-left: auto;
+  border-color: ButtonBorder;
+  color: GrayText;
+  font-size: 13px;
 }
 button:disabled {
   opacity: 0.45;

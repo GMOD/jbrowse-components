@@ -150,6 +150,16 @@ bookkeeping: `GLOBAL_TRIGGERS` in `screenshot-impact.ts` matches that prefix, so
   against prose you already fixed. Same for editing the review UI itself: its
   page is React under `scripts/review-app/`, bundled by esbuild once at startup
   with no watcher, so a reload serves the bundle the last restart built.
+- **The card list is a CAPTURE of the filters, not a live query**
+  (`useStickyQueue`, shared). Approving or denying is what makes a card stop
+  matching "needs review", so a live list deletes the card you are still writing
+  a note on and slides the next one under the pointer — and under `sort=recent`
+  it teleports it to the top instead. Verdicts therefore change how a card looks
+  and never which cards are on screen: a settled one dims in place and leaves on
+  its own `done — hide`, on `Clear settled`, or when a filter change asks a
+  different question. If you add a control to the header, decide which of those
+  it is — a display-only one (like `compare`) must stay out of `queryKey` in
+  `filters.ts`, or reaching for a closer look throws away the batch.
 - **"This figure changes between runs" is checkable, and usually isn't a race.**
   A review entry's `hash` is the sha1 of the PNG the verdict was made against,
   so `sha1sum` the file on disk and compare. Both revisions are fetchable from

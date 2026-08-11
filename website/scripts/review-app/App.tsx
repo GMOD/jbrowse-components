@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { settledAs, useReview } from '@jbrowse/browser-test-utils/reviewApp'
+import {
+  settledAs,
+  useReview,
+  useStickyQueue,
+} from '@jbrowse/browser-test-utils/reviewApp'
 
 import { Card } from './Card.tsx'
 import { StoreBanner } from './StoreBanner.tsx'
@@ -19,6 +23,7 @@ import {
   matchesRun,
   matchesScope,
   nameGroup,
+  queryKey,
   readUrl,
   writeUrl,
 } from './filters.ts'
@@ -53,8 +58,6 @@ export function App() {
     drafts,
     messages,
     pressed,
-    justActed,
-    clearJustActed,
     setVerdict,
     saveNote,
     clearVerdict,
@@ -64,6 +67,10 @@ export function App() {
   })
 
   const [filters, setFilters] = useState(readUrl)
+  // Bumped when a page load replaces the entries, which is the other thing that
+  // makes the captured queue the answer to a stale question — the first capture
+  // is taken before the fetch lands and is empty.
+  const [dataEpoch, setDataEpoch] = useState(0)
   const [loadError, setLoadError] = useState<string>()
   const [figureState, setFigureState] = useState<FigureState>()
   const [figureError, setFigureError] = useState<string>()
@@ -119,6 +126,7 @@ export function App() {
       }
       if (!cancelled) {
         loadEntries(specs)
+        setDataEpoch(e => e + 1)
         // drop a restored group filter that no longer names an existing group
         const groups = new Set(specs.map(s => nameGroup(s.name)))
         setFilters(f =>
@@ -140,10 +148,9 @@ export function App() {
 
   const changeFilter = useCallback(
     <K extends keyof Filters>(key: K, value: Filters[K]) => {
-      clearJustActed()
       setFilters(f => ({ ...f, [key]: value }))
     },
-    [clearJustActed],
+    [],
   )
 
   const onCompareMode = useCallback((name: string, mode: CompareMode) => {
@@ -155,15 +162,25 @@ export function App() {
     [entries],
   )
 
-  const visible = useMemo(() => {
-    const list = entries.filter(s => matchesFilters(s, filters, justActed))
+  const matching = useMemo(() => {
+    const list = entries.filter(s => matchesFilters(s, filters))
     if (filters.sortBy !== 'recent') {
       return list
     }
     const at = (s: SpecEntry) =>
       s.verdict ? new Date(s.verdict.reviewedAt).getTime() : 0
     return [...list].sort((a, b) => at(b) - at(a))
-  }, [entries, filters, justActed])
+  }, [entries, filters])
+
+  // The cards on screen are a capture of that query, not the query itself, so
+  // approving or denying one never moves, reorders or removes anything: it is
+  // the reviewer who decides when a settled card leaves, per card or by the
+  // batch.
+  const { queue, leaving, refresh, dismiss } = useStickyQueue({
+    entries,
+    matching,
+    viewKey: `${dataEpoch} ${queryKey(filters)}`,
+  })
 
   // A badge answers "how many cards do I get if I click this", so it counts
   // within the group/kind/search scope and under every OTHER control's current
@@ -330,6 +347,21 @@ export function App() {
         >
           Render problems<span className="tabcount">{runCount}</span>
         </button>
+        {/* The one control that removes cards from the list, so that removing
+            them is something the reviewer does rather than something that
+            happens to them mid-note. Absent until there is something to clear,
+            which also makes it the progress readout for the batch in front of
+            you — the pill row to its right counts the whole sweep. */}
+        {leaving.size ? (
+          <button
+            type="button"
+            className="tab flush"
+            title="These are settled and no longer match the filters — take them off the list"
+            onClick={refresh}
+          >
+            Clear settled<span className="tabcount">{leaving.size}</span>
+          </button>
+        ) : null}
         <div className="counts">
           <span className="pill good">{settled('good')} approved</span>
           <span className="pill bad">{settled('bad')} denied</span>
@@ -354,21 +386,32 @@ export function App() {
             {loadError}
           </div>
         ) : (
-          visible.map(spec => (
+          queue.map(spec => (
             <Card
               key={spec.name}
               spec={spec}
               message={messages[spec.name]}
               pressed={pressed[spec.name]}
               drafts={drafts}
+              settled={leaving.has(spec.name)}
               compareMode={overrides[spec.name] ?? filters.compare}
               onCompareMode={onCompareMode}
               onSetVerdict={setVerdict}
               onClearVerdict={clearVerdict}
               onSaveNote={saveNote}
+              onDismiss={dismiss}
             />
           ))
         )}
+        {/* An empty list under filters that DO select things is the one state
+            the reviewer cannot tell from "nothing left to review": the queue is
+            a capture, so it stays empty until it is retaken. */}
+        {!loadError && !queue.length && matching.length ? (
+          <button type="button" className="tab requeue" onClick={refresh}>
+            {matching.length} card{matching.length === 1 ? '' : 's'} match these
+            filters — load them
+          </button>
+        ) : null}
       </main>
     </>
   )

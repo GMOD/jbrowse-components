@@ -69,6 +69,12 @@ export function useReview<E extends ReviewEntry>({
   // Names acted on since the current filter view was entered. They stay visible
   // even once their new verdict no longer matches the filter, so you can still
   // type a reason after clicking Deny in the unreviewed/denied queue.
+  //
+  // Superseded by useStickyQueue, which holds the whole LIST still rather than
+  // exempting the acted-on rows from it — the exemption keeps a card on screen
+  // but not in its place, and touching any filter drops every card it was
+  // holding. The website's screenshot review is on the queue; the snapshot
+  // review still reads this.
   const [justActed, setJustActed] = useState(noneActed)
 
   const publish = useCallback((next: E[]) => {
