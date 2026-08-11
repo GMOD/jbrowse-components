@@ -175,9 +175,12 @@ a pair of genes transcribed in opposite directions.
 
 On data where read strand carries meaning, the two bands are the whole result.
 Long-read cDNA is the clearest case: the reads are oriented to the transcript,
-so a gene's coverage lands in one band and its neighbour's in the other.
+so a gene's coverage lands in one band and its neighbour's in the other. A viral
+genome makes it clearest of all, because the genes are packed on both strands
+and unspliced — one screen holds two whole transcription units, and every base
+of both carries reads.
 
-<Figure caption="K562 PacBio Iso-Seq over two adjacent genes, grouped by strand and colored by it. LUC7L is transcribed right to left and FAM234A left to right, so the reverse band carries the coverage over the first and the forward band over the second, with each section's reads under its own band in the same color." src="/img/alignments/strand_split_depth.png" />
+<Figure caption="HSV-1 mRNA (MinION cDNA) over two neighbouring genes of the 152 kb viral genome, grouped by strand and colored by it. UL21 is transcribed left to right and UL22 right to left, so the forward band carries the coverage over the first and the reverse band over the second, each section's reads under its own band in the same color, and the switch falls between the two genes." src="/img/alignments/strand_split_depth.png" />
 
 The same split read the other way is a check on the reads rather than on the
 transcripts. Each band's mismatch coloring is computed from only its own

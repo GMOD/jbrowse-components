@@ -11,7 +11,6 @@ import {
   menuCascade,
   sessionSpec,
 } from '../screenshot-spec-helpers.ts'
-import { CANCER_SV_BASE } from './cancer_sv.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -19,9 +18,13 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // path and the boxed annotation below can't drift from the menu.
 const FIT_LABEL = heightModeLabel('fit', 'read')
 
-// The cancer_sv tutorial's demo config, borrowed for its K562 Iso-Seq track --
-// the one hosted alignment file whose reads carry a transcript's strand.
-const CANCER_SV_CONFIG = encodeURIComponent(`${CANCER_SV_BASE}/config.json`)
+// HSV-1 strain 17 and one MinION mRNA run over it, built by
+// scripts/build_hsv1_demo.sh. A 152 kb genome with genes packed on both strands
+// and a library whose read strand is the transcript's -- see the strand-split
+// depth spec for why that combination is what the figure needed.
+const HSV1_CONFIG = encodeURIComponent(
+  'https://jbrowse.org/demos/hsv1/config.json',
+)
 
 // The green-A mismatch column `alignments_sort_by_base` is about: the base the
 // session sorts on, the base its right-click has to land on, and the base both
@@ -388,76 +391,81 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Right-click context menu on a read in a LinearAlignmentsDisplay (Open
-  // feature details / Copy info / Dotplot of read vs ref / Linear read vs ref).
-  // Read glyphs are canvas-drawn, so the rightclick uses a viewport coordinate;
-  // a follow-up mouse move off the read clears its hover tooltip.
-  // STRAND-SPLIT COVERAGE AS DEPTH, WHICH IS THE OTHER HALF OF THE SETTING
-  // (review, twice, on the figure below: "i really think we should seek out a
-  // viral sample or something that has dramatically diff forward and reverse
-  // coverage"). The figure below is about each band's own MISMATCH colouring
-  // and cannot show a depth split -- HG002 ONT is WGS and strand-balanced by
-  // construction, which is exactly why it is the right data for that claim and
-  // the wrong data for this one. So this is a second frame rather than a
-  // replacement.
+  // STRAND-SPLIT COVERAGE AS DEPTH, WHICH IS THE OTHER HALF OF THE SETTING.
+  // The figure below is about each band's own MISMATCH colouring and cannot
+  // show a depth split -- HG002 ONT is WGS and strand-balanced by construction,
+  // which is exactly why it is the right data for that claim and the wrong data
+  // for this one. So this is a second frame rather than a replacement.
   //
-  // K562 PacBio Iso-Seq, already hosted for the cancer_sv tutorial. Iso-Seq
-  // reads are oriented to the transcript, so read strand IS transcript strand
-  // and a gene's coverage lands entirely in one band.
+  // A VIRUS, AND NOT RNA-SEQ OF A GENOME (review, three rounds: "i really think
+  // we should seek out a viral sample or something that has dramatically diff
+  // forward and reverse coverage", then "sorry but we need a new viral coverage
+  // example. rnaseq is too crazy"). Two earlier cuts were K562 PacBio Iso-Seq
+  // over human loci -- first the alpha-globin cluster, which is one-sided and
+  // put a band on the floor, then LUC7L against FAM234A, which flips properly
+  // but is 40 kb genes drawn as long thin intron lines with a pileup of
+  // isoforms under them. What was wrong with both is the same thing: a
+  // vertebrate transcript is mostly intron, so most of the frame is the parts
+  // of a gene that carry no reads.
   //
-  // TWO GENES OF COMPARABLE DEPTH, NOT THE GLOBIN CLUSTER. The first cut framed
-  // chr16:146,000-196,000, the alpha-globin locus, where every gene is on the
-  // forward strand: 10,153 forward reads against 224 reverse over HBA2/HBA1
-  // alone. That is the most dramatic ratio in the file and it made a bad figure
-  // (review: "this is boring and does not show reads ... there is no reverse
-  // strand activity here"). A band at the floor is not a comparison, and at
-  // 10,000 reads the pileup cannot be drawn at all.
+  // HSV-1 has no such problem. 74 genes in 152 kb, packed on both strands,
+  // essentially none of them spliced, so a 3 kb window holds two whole
+  // neighbouring transcription units and every base of both carries reads.
+  // scripts/build_hsv1_demo.sh builds the dataset and prints the split it
+  // depends on; the short version is that read strand is transcript strand in
+  // this library (ERR2379735, poly(A)-selected mRNA on MinION) and the other
+  // nanopore run in the same study is randomly primed and comes back 50/50 in
+  // every window, which would draw two identical bands.
   //
-  // So: LUC7L, transcribed right to left, then FAM234A left to right, both at a
-  // few hundred reads. Counted off the hosted BAM rather than read off a
-  // picture --
+  // UL21 AND UL22, NOT THE LOUDEST PAIR IN THE GENOME. US9 against US10-US12 is
+  // more extreme -- 1,079 forward against 10, then 3 against 2,567 -- and it is
+  // the wrong pick for the same reason the globin cut was: at 2,500 reads the
+  // pileup cannot be drawn, and the reviewer has twice asked to see the reads.
+  // Here each strand runs ~150 over its own gene and ~5 over its neighbour's,
+  // which is the same flip at a depth whose pileup fits under its own band.
   //
-  //   samtools view -c -F 2320 <bam> <region>        # forward
-  //   samtools view -c -F 2304 -f 16 <bam> <region>  # reverse
-  //
-  // -- LUC7L's body runs ~230 reverse against ~15 forward per 10 kb and
-  // FAM234A's ~380 forward against ~36 reverse. Both bands carry a transcript
-  // profile, each over its own gene and neither over the other's, which is the
-  // switch; and at that depth the reads themselves fit under the bands, which is
-  // what the review asked to see.
+  // The switch lands at 43,800, between UL21's 3' end and UL22's. Both are
+  // 3'-biased by the poly(A) selection, so each band peaks on the side facing
+  // the other -- the two maxima are ~150 bp apart across the boundary, which is
+  // what makes the flip read as one event rather than as two separate genes.
   //
   // `colorBy: strand` for the same reason the ONT figure below sets it: the
   // reads are coloured by the dimension the grouping used, so which section a
   // read belongs to is readable off the read.
-  //
-  // `showSashimiArcs: false`. Arcs are on by default and drawn per junction
-  // whatever the read count, and on cDNA every intron is a junction -- with them
-  // on, both bands are a fan of arcs and neither profile is visible under it.
   {
     mode: 'url',
     name: 'alignments/strand_split_depth',
-    url: lgvSession(CANCER_SV_CONFIG, {
-      assembly: 'hg38',
-      loc: 'chr16:186,000-270,000',
+    url: lgvSession(HSV1_CONFIG, {
+      assembly: 'hsv1',
+      loc: 'NC_001806.2:41,900-45,300',
       tracks: [
         {
-          trackId: 'ncbi_refseq_hg38',
-          geneGlyphMode: 'longestCoding',
+          trackId: 'hsv1_genes',
+          // The NCBI GFF3's first record is the whole 108 kb long-unique region
+          // as one feature, which packs above the genes and takes the lane the
+          // two labels need. Filtering it out leaves UL21 and UL22 on one row,
+          // each with an arrow saying which way it is transcribed -- which is
+          // the claim the two bands under it make.
+          jexlFiltersSetting: ["jexl:feature.type=='gene'"],
           height: 70,
         },
         {
-          trackId: 'K562_isoseq',
+          trackId: 'hsv1_mrna',
           type: 'LinearAlignmentsDisplay',
+          // 23 MB of BAM over a 152 kb genome puts every region in one index
+          // bin, so the byte gate estimates 7.15 Mb for this 3.4 kb window and
+          // draws its own message instead of reads. What actually arrives is
+          // ~300 reads.
+          forceLoad: true,
           groupBy: { type: 'strand' },
           colorBy: { type: 'strand' },
-          showSashimiArcs: false,
-          featureHeight: 3,
-          // the coverage bands ARE the claim, so they get the room: a few long
-          // reads spanning a 40 kb gene draw as long thin intron lines whatever
-          // their number, so the pileup under each band reads busier than its
-          // depth and cannot be the thing a reader measures
-          coverageHeight: 165,
-          height: 600,
+          // ~150 reads a strand and each one 1-3 kb against a 3.4 kb window, so
+          // almost every read gets a row of its own: at 2px the two pileups are
+          // ~600px and the bands lose the frame, at 1px they are the strip under
+          // each band that the review asked to keep.
+          featureHeight: 1,
+          coverageHeight: 150,
+          height: 700,
         },
       ],
     }),
@@ -467,7 +475,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     settleMs: 12000,
     // off the run's own below-the-fold report
-    viewportHeight: 960,
+    viewportHeight: 1015,
     hideTooltip: true,
   },
 

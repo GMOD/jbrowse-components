@@ -44,6 +44,12 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   CpG-only methylation on AT1G12930 beside a silenced tri-context element
   (AT1G12935 + unannotated repeat). The old demo looked blank because that chr1
   euchromatin is globally unmethylated in CHH.
+- **Strand-split coverage → HSV-1 `NC_001806.2:41,900-45,300` (UL21/UL22).**
+  Two neighbouring viral genes on opposite strands at comparable depth: ~150
+  reads a strand over its own gene against ~5 over its neighbour's. US9 against
+  US10-US12 is the same flip an order of magnitude louder (1,079/10 then
+  3/2,567) and is the wrong pick, because at 2,500 reads the pileup cannot be
+  drawn and the figure is two bands with nothing under them.
 
 ## Datasets tried and rejected
 
@@ -161,6 +167,16 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   GenBank `.gb` ORIGIN from the build repo (zika, measles). Zika is a
   polyprotein: 12 mature peptides render as subfeatures of one mRNA, not 12
   genes.
+- **HSV-1 long-read mRNA** (`demos/hsv1/`, `scripts/build_hsv1_demo.sh`) — RefSeq
+  NC_001806.2 plus its NCBI genes and ERR2379735, one MinION run of
+  poly(A)-selected HSV-1 mRNA from PRJEB25433. Hosted for the strand-split
+  coverage figure and picked for a property that is the prep's, not the
+  platform's: **read strand is transcript strand here, and is not in the same
+  study's other nanopore run** (ERR2379736, randomly primed, 50/50 forward and
+  reverse in every 2 kb window of the genome). 97% of the reads map to the
+  virus. A 152 kb genome with 74 genes packed on both strands and essentially no
+  splicing is what makes it the right shape for any figure about strand: the
+  flip happens several times per screen and no part of the frame is intron.
 - **rastair** methylation BED (TAPS / mod-C→T) is not modkit bedMethyl;
   detection keys on the `#`-header column names (`beta_est unmod mod coverage`),
   and `beta_est` is 0-1, scaled ×100 to match modkit.
@@ -213,3 +229,11 @@ more dramatic data and both ended in a measurement instead:
 Both now ship a script in `website/scripts/` that prints the numbers, which is
 what makes the answer re-checkable rather than an assertion. **Count before
 hunting for new data, and again before deleting a figure.**
+
+The converse also happened, on the review note directly after that one, and it
+is why the rule is "count", not "don't look": the *depth* half of the same
+setting really did need other data, and counting is what found it. Three human
+cuts failed for two different measurable reasons — one-sided (alpha-globin,
+10,153 forward against 224 reverse), or drawable but mostly intron (LUC7L
+against FAM234A). HSV-1 fixed both, and the count that mattered was of the
+genome rather than of the reads: 74 genes in 152 kb on both strands.
