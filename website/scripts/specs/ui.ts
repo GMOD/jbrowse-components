@@ -1,3 +1,5 @@
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
 import { SPLIT_VIEW_LINK_LABEL } from '../../../plugins/variants/src/VariantFeatureWidget/LaunchBreakendPanel/labels.ts'
 import {
   DEMO_CONFIG,
@@ -642,8 +644,7 @@ export const uiSpecs: ScreenshotSpec[] = [
       // evidence it ran with the dendrogram off.
       {
         type: 'waitForSelector',
-        selector:
-          '[data-testid="multi-wiggle-display-done"][data-clustered="true"]',
+        selector: `${displayPainted('multi-wiggle-display')}[data-clustered="true"]`,
         timeout: 240000,
       },
       // the matrix, at the middle of the deletion the sort is keyed on: a locus

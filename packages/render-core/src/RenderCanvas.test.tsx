@@ -35,15 +35,20 @@ function Harness({
       />
       <button
         type="button"
-        data-testid="toggle-done"
+        data-testid="toggle-drawn"
         onClick={() => {
           setDone(d => !d)
         }}
       />
+      {/* A deliberately CHANGING testid, which is this fixture's "unrelated
+          prop" -- the point is that mutating one does not remount the canvas.
+          The names are the fixture's own and match nothing real: no display
+          spells readiness into `data-testid` any more (ADR-065), and using a
+          retired `*_done` id here read as live usage to every later grep. */}
       <RenderCanvas
         handle={{ canvasRef, canvasKey }}
         drawn={done}
-        data-testid={done ? 'synteny_canvas_done' : 'synteny_canvas'}
+        data-testid={done ? 'demo_canvas_painted' : 'demo_canvas'}
       />
     </>
   )
@@ -75,9 +80,9 @@ test('an unrelated prop change keeps the live element', () => {
   // A remount here would drop a live GPU context and re-run the whole backend
   // factory for a changed attribute, so "the key is the *only* thing that
   // remounts" is half the invariant.
-  fireEvent.click(getByTestId('toggle-done'))
+  fireEvent.click(getByTestId('toggle-drawn'))
   expect(canvas()).toBe(first)
-  expect(canvas()?.dataset.testid).toBe('synteny_canvas_done')
+  expect(canvas()?.dataset.testid).toBe('demo_canvas_painted')
 })
 
 test('the hook is handed each fresh element through canvasRef', () => {
@@ -101,7 +106,7 @@ test('the hook is handed each fresh element through canvasRef', () => {
 // centralize and the id is now stable for the element's whole life.
 test('forwards data-testid verbatim rather than composing one', () => {
   const { canvas } = setup()
-  expect(canvas()?.dataset.testid).toBe('synteny_canvas')
+  expect(canvas()?.dataset.testid).toBe('demo_canvas')
 })
 
 test('emits no testid attribute when none is passed', () => {
@@ -141,6 +146,6 @@ test('publishes the paint state the readiness waits select on', () => {
   const { canvas, getByTestId } = setup()
   expect(canvas()?.dataset.displayDrawn).toBe('false')
 
-  fireEvent.click(getByTestId('toggle-done'))
+  fireEvent.click(getByTestId('toggle-drawn'))
   expect(canvas()?.dataset.displayDrawn).toBe('true')
 })

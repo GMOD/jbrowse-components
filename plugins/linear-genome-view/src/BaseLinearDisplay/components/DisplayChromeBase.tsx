@@ -58,8 +58,9 @@ export interface CanvasHandle {
 // This file owns only what the backend makes possible: the hook, and the
 // `renderError` phase — the one phase whose banner needs the hook's `retry()`
 // and so cannot live in the backend-free `DisplayStatusChromeBase` below it.
-// Everything after that (the container, the `-done` testid,
-// `data-display-phase`, the four remaining overlays) is shared verbatim with
+// Everything after that (the container, the testid and its
+// `data-display-drawn`, `data-display-phase`, the four remaining overlays) is
+// shared verbatim with
 // arc, which has no backend. See that file for the tree-shape rule.
 //
 // What it does NOT own is what those states look like. The five components come
@@ -97,10 +98,12 @@ export interface CanvasHandle {
 // it, because the measurement here reads `currentTarget` and holds no ref to
 // collide with.
 //
-// `testid` is the *base* first-paint selector; the chrome owns the `-done`
-// convention, appending it once `canvasDrawn` flips, so no consumer hand-writes
-// the ternary and the separator/gating can't drift. Tests wait on
-// `${testid}-done` (the single first-paint signal), then read the canvas inside.
+// `testid` names the display TYPE and never changes value. It used to gain a
+// `-done` suffix once `canvasDrawn` flipped; ADR-065 removed that in favour of
+// the `data-display-drawn` attribute the chrome publishes beside it, so a test
+// waits on `[data-testid="x"][data-display-drawn="true"]` (the
+// `displayPainted()` builder in @jbrowse/browser-test-utils writes it), then
+// reads the canvas inside.
 // Displays whose tests pixel-match or screenshot the canvas itself (hic, ld)
 // give the inner <canvas> a *static* selector (`hic_canvas`) for that lookup —
 // the readiness gate stays here on the chrome div, never duplicated as a

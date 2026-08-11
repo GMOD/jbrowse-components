@@ -68,7 +68,7 @@ instead of committing an empty PNG.
 
 ### Gotcha: the chrome element is 0-height
 
-The obvious signal, `[data-testid="<name>-display-done"]`, does **not** work
+The obvious signal, `displayPainted('<name>-display')`, does **not** work
 through a `readySelector` (which uses puppeteer `waitForSelector({visible:true})`):
 the GPU displays paint into a `position:absolute` canvas, so the DisplayChrome
 element collapses to **height 0** and never passes the visibility check (it

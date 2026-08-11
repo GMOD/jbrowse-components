@@ -39,12 +39,12 @@ export function readyTimeoutOf(spec: BrowserScreenshotSpec) {
 // off a different signal, and none is sufficient alone — see the waits' own docs
 // in @jbrowse/browser-test-utils.
 //
-// FETCH FIRST, THEN PAINT. `-done` is canvasDrawn (first paint), which a display
-// can reach on an empty canvas while its fetch is still in flight, so waiting on
-// it *before* the phase gate proves nothing about content; waiting after it
-// means every display has both finished fetching and drawn what it fetched.
-// That ordering is what lets a spec's `readySelector` stay a single
-// `[data-testid="…-done"]` instead of a hand-written `body:has(…):not(:has(…))`
+// FETCH FIRST, THEN PAINT. `data-display-drawn` is canvasDrawn (first paint),
+// which a display can reach on an empty canvas while its fetch is still in
+// flight, so waiting on it *before* the phase gate proves nothing about content;
+// waiting after it means every display has both finished fetching and drawn what
+// it fetched. That ordering is what lets a spec's `readySelector` stay a single
+// `displayPainted('…')` instead of a hand-written `body:has(…):not(:has(…))`
 // puzzle enumerating each panel — the generic pair below already says "all of
 // them, fetched and painted" for every display DisplayChrome wraps.
 //

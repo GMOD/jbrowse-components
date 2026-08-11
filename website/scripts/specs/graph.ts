@@ -4603,7 +4603,7 @@ export const graphSpecs: ScreenshotSpec[] = [
     // dendrogram exists), and the callset's own fetch finished — not just first
     // paint, which an empty canvas flips on its own. A bare comma list would be
     // a CSS OR and fire on whichever landed first.
-    readySelector: `body:has(${GRAPH_DRAWN}):has([data-testid="graph-layout-select"]):has([data-testid="tree_sidebar_dendrogram"]) [data-testid="variant-display-done"][data-display-phase="ready"]`,
+    readySelector: `body:has(${GRAPH_DRAWN}):has([data-testid="graph-layout-select"]):has([data-testid="tree_sidebar_dendrogram"]) ${displayPainted('variant-display')}[data-display-phase="ready"]`,
     readyTimeout: 360000,
     settleMs: 5000,
     viewportWidth: 1000,

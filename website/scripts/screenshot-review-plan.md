@@ -379,7 +379,7 @@ tolerance ball for "did this figure move".
   `multisv_rhd`'s first render came back mid-clustering with a "Clustering
   samples 62%" overlay and the rows in panel order. The attribute rides on the
   same element as the first-paint testid, so
-  `[data-testid="multi-wiggle-display-done"][data-clustered="true"]` as a
+  `` `${displayPainted('multi-wiggle-display')}[data-clustered="true"]` `` as a
   `waitForSelector` action (with its own `timeout`) is the gate.
 - **hgdownload can fail INSIDE the browser while `curl` from the same box gets
   200s.** Three consecutive renders of `pangenome/hprc_chm13_allele` drew the

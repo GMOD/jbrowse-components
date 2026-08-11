@@ -1,3 +1,5 @@
+import { execFileSync, spawnSync } from 'node:child_process'
+
 import { displayById, displayPainted, displaySettled } from './waits.ts'
 
 // The three builders exist so that "this display, painted" is written once
@@ -32,4 +34,49 @@ test('the testid a selector is built from does not carry readiness', () => {
     expect(displayPainted(testid)).toContain(`[data-testid="${testid}"]`)
     expect(displaySettled(testid)).toContain(`[data-testid="${testid}"]`)
   }
+})
+
+// A retired suffix leaves no wreckage a normal run can trip over, which is what
+// makes this worth a repo scan rather than a code review. Nothing emits
+// `*-done` any more, so a selector still naming one matches NOTHING -- and the
+// places that kept one are exactly the places CI does not exercise on a PR:
+// figure specs (weekly), a standalone verification script, a component-test
+// workspace. Each one hangs its own wait and fails alone, long after the change,
+// reading as a flake in whatever it was pointed at. Two hg002 figures sat
+// broken this way, and the migration's own inventory undercounted by grepping
+// selector *lines*.
+//
+// The pattern matches an equals-sign testid whose value ends in the retired
+// suffix, and deliberately NOT the attribute-ends-with form (`data-testid$=`),
+// so prose quoting the old convention — ADR-065's own write-up — is not a hit.
+// It is spelled only in the regex below for the same reason: written out in a
+// comment, it matches itself, which is the first thing this test caught.
+test('no selector anywhere still spells readiness into a testid', () => {
+  const root = execFileSync('git', ['rev-parse', '--show-toplevel'], {
+    encoding: 'utf8',
+  }).trim()
+  expect(root).not.toBe('')
+  // `git grep` respects .gitignore, so node_modules and build output are out
+  // without an exclude list. It exits 1 on NO matches, which is the passing
+  // case here — hence spawnSync and reading status, rather than execFileSync,
+  // which would throw on exactly the run that should pass.
+  const { status, stdout, stderr } = spawnSync(
+    'git',
+    [
+      'grep',
+      '-nE',
+      'data-testid="[^"]*(-|_)done"',
+      '--',
+      '*.ts',
+      '*.tsx',
+      '*.js',
+      '*.mjs',
+      '*.md',
+    ],
+    { cwd: root, encoding: 'utf8' },
+  )
+  // 0 = found something, 1 = clean. Anything else is git failing, and must not
+  // read as a pass.
+  expect({ status, stderr }).toEqual({ status: 1, stderr: '' })
+  expect(stdout.trim()).toBe('')
 })

@@ -1947,7 +1947,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     //
     // GRAPH_DRAWN rather than the perf readout, which is behind a display
     // setting now and stopped existing; graph.ts states the whole trap.
-    readySelector: `body:has(${GRAPH_DRAWN}) [data-testid="pileup-display-done"]`,
+    readySelector: `body:has(${GRAPH_DRAWN}) ${displayPainted('pileup-display')}`,
     readyTimeout: 120000,
     settleMs: 12000,
     // name the island, since "three lanes stop here" is only interesting once

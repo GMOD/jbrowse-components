@@ -63,16 +63,21 @@ async function main() {
   console.log(`navigating ${url}`)
   await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 })
 
-  // Wait for the synteny canvas to settle. The test rig uses the
-  // synteny_canvas_done test id.
+  // Wait for the synteny canvas to settle. `data-testid` names the display type
+  // and does not change on paint; readiness is the separate `data-display-drawn`
+  // attribute (ADR-065). Spelled out rather than imported from
+  // @jbrowse/browser-test-utils because this script runs standalone off the repo
+  // root with only puppeteer and serve-handler.
+  const SYNTENY_PAINTED =
+    '[data-testid="synteny_canvas"][data-display-drawn="true"]'
   const startWait = Date.now()
   try {
-    await page.waitForSelector('[data-testid="synteny_canvas_done"]', {
+    await page.waitForSelector(SYNTENY_PAINTED, {
       timeout: 120000,
     })
     console.log(`canvas done after ${Date.now() - startWait}ms`)
   } catch (e) {
-    console.warn(`timeout waiting for synteny_canvas_done: ${e.message}`)
+    console.warn(`timeout waiting for a painted synteny canvas: ${e.message}`)
   }
 
   // Give the autoDiagonalize autorun extra time after the first render — it
