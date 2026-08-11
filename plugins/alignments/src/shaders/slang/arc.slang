@@ -122,6 +122,31 @@ struct VsOut {
   // than recomputed in the fragment so the hull the vertex stage inflated and
   // the ink the fragment measures can only ever be the same width.
   float  halfWidthPx : COLOR4;
+  // WHICH LEG a far circle's vertex belongs to: +1 right, -1 left (and +1
+  // throughout for an ellipse, which is one connected curve). It exists to kill
+  // the SEAM.
+  //
+  // Both legs are one triangle strip, and a strip has no break in it: the quad
+  // between vertex pair SEG/2 (the right leg's tip) and pair SEG/2+1 (the left
+  // leg's tip) is a real, rasterized quad spanning the whole pair. Worse, the
+  // fragment cannot see that it is spurious — each tip carries the SAME `local`,
+  // because the two legs are measured in their own mirrored frames and both end
+  // at the same point of the same circle. So `local` interpolates to a constant
+  // across that quad, the distance comes out ~0, and it inks: a horizontal bar
+  // at the sweep's end depth, joined to the leg at a right angle. An elbow.
+  //
+  // It only became visible when `legSweepAngle` started ending the sweep at the
+  // band edge. At the old full quarter sweep the tips met at the circle's apex,
+  // depth r — thousands of px below a band tens of px tall — so the seam quad
+  // was always scissored away. The bar was always being drawn; the band just
+  // never contained it.
+  //
+  // A varying rather than degenerate vertices because the strip length is a
+  // compile-time constant shared with the ellipse branch: splitting it would
+  // grow VERTS_PER_INSTANCE for every instance to add a break only one branch
+  // needs. Both vertices of every quad WITHIN a leg carry the same value, so it
+  // interpolates to exactly ±1 there and only the seam quad ramps between them.
+  float  legSide : COLOR5;
 };
 
 // Whether a pair is wide enough that its dome degenerates to a circle. Its own
@@ -248,7 +273,7 @@ Curve arcCurve(Instance inst, Uniforms u, float strokeHalfPx) {
 //
 // `halfWidthPx` is the instance's own, not the uniform's: since coalescing,
 // each arc is drawn at the width its read support earns (see Instance).
-struct ArcVertex { float2 screen; float2 local; };
+struct ArcVertex { float2 screen; float2 local; float legSide; };
 
 ArcVertex evalArcVertex(float t, float side, float halfWidthPx, Curve cv) {
   float hw = halfWidthPx + STROKE_AA_PX;
@@ -258,6 +283,8 @@ ArcVertex evalArcVertex(float t, float side, float halfWidthPx, Curve cv) {
   // Mirrors local x into screen x, so a far circle's two legs can share one
   // outward-positive frame.
   float legDir = 1.0;
+  // An ellipse is one connected curve, so every vertex is on the same "leg".
+  float legSide = 1.0;
 
   if (cv.kind >= KIND_CIRCLE) {
     // Two legs, each built from ITS OWN real endpoint outward. Reconstructing a
@@ -274,6 +301,8 @@ ArcVertex evalArcVertex(float t, float side, float halfWidthPx, Curve cv) {
     tang = float2(-sin(b), cos(b) * cv.yDir);
     origin = float2(rightLeg ? cv.ends.y : cv.ends.x, 0.0);
     legDir = rightLeg ? 1.0 : -1.0;
+    // Constant within a leg, opposite between them — see VsOut.legSide.
+    legSide = legDir;
   } else {
     float a = t * PI;
     p = float2(cos(a) * cv.radii.x, sin(a) * cv.radii.y * cv.yDir);
@@ -287,6 +316,7 @@ ArcVertex evalArcVertex(float t, float side, float halfWidthPx, Curve cv) {
   ArcVertex av;
   av.local = p + float2(-tn.y, tn.x) * hw * side;
   av.screen = origin + float2(legDir * av.local.x, av.local.y);
+  av.legSide = legSide;
   return av;
 }
 
@@ -310,6 +340,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   Curve cv = arcCurve(inst, u, o.halfWidthPx);
   ArcVertex av = evalArcVertex(t, side, o.halfWidthPx, cv);
   o.local = av.local;
+  o.legSide = av.legSide;
   o.radii = cv.radii;
   o.kind = cv.kind;
   float clipX = (av.screen.x / u.canvasW) * 2.0 - 1.0;
@@ -329,6 +360,11 @@ float arcDistance(VsOut i) {
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
+  // Drop the seam quad joining a far circle's two legs — see VsOut.legSide.
+  // Every vertex WITHIN a leg carries the same value, so a leg interpolates to
+  // exactly +/-1 and only the seam ramps between them; 0.999 therefore spares
+  // the legs entirely while leaving under a pixel of the bar at each tip.
+  if (abs(fragIn.legSide) < 0.999) { discard; }
   // |∇d| is analytically 1 per CSS px, so the AA ramp is a constant number of
   // device pixels, not a derivative — see STROKE_AA_PX.
   float alpha = strokeCoverage(arcDistance(fragIn), fragIn.halfWidthPx, u);
