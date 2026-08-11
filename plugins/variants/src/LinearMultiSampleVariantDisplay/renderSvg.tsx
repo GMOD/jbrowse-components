@@ -7,9 +7,11 @@ import SvgVariantOverlay from '../shared/components/SvgVariantOverlay.tsx'
 import { REFERENCE_COLOR } from '../shared/constants.ts'
 import { drawVariantBlocks } from './components/Canvas2DVariantRenderer.ts'
 import { drawVariantInsertionGlyphs } from './components/drawVariantInsertionGlyphs.ts'
+import { drawVariantLane } from './components/drawVariantLane.ts'
 
 import type { RenderSvgBaseModel } from '../shared/renderSvgUtils.ts'
 import type { VariantInsertionGlyphData } from './components/drawVariantInsertionGlyphs.ts'
+import type { VariantLaneData } from './components/drawVariantLane.ts'
 import type {
   VariantRenderBlock,
   VariantRenderState,
@@ -29,6 +31,8 @@ interface RenderSvgModel extends RenderSvgBaseModel {
   insertionGlyphRegions:
     | ReadonlyMap<number, VariantInsertionGlyphData>
     | undefined
+  // undefined when the variant lane band is off
+  variantLaneRegions: ReadonlyMap<number, VariantLaneData> | undefined
 }
 
 export async function renderSvg(
@@ -55,6 +59,8 @@ function VariantSvgBody({
     perRegionCellMap,
     renderState,
     insertionGlyphRegions,
+    variantLaneRegions,
+    topBands,
   } = model
   // canvasWidth is the block scissor bound and the cell pixel-snapping origin,
   // so it has to be the width this layer is actually painted at — see
@@ -71,6 +77,24 @@ function VariantSvgBody({
       idPrefix="variant-clip"
       width={canvasWidth}
       height={height}
+      // Its own paint layer in the band above the rows, untranslated — the
+      // same split the screen takes (a separate canvas outside the offset
+      // container), so the lane cannot pick up the rows' scroll.
+      variantLane={
+        variantLaneRegions ? (
+          <PaintLayer
+            width={canvasWidth}
+            height={topBands.laneHeight}
+            opts={opts}
+            paint={ctx => {
+              drawVariantLane(ctx, variantLaneRegions, renderBlocks, {
+                canvasWidth,
+                laneHeight: topBands.laneHeight,
+              })
+            }}
+          />
+        ) : null
+      }
       // the same color the glyphs below are painted with, so the key can't
       // describe the live session's theme while the markers show the export's
       insertionColor={insertion}

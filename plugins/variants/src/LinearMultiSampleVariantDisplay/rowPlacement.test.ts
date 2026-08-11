@@ -59,6 +59,7 @@ function regularCellData(rowNames: string[]): CellDataResult {
         featurePositions: Uint32Array.from([100, 200]),
         featureIndexData: featureIndexData(1),
         featureInsertedBp: Int32Array.from([0]),
+        featureColors: Uint32Array.from([0xff00ff00]),
       },
     },
   }

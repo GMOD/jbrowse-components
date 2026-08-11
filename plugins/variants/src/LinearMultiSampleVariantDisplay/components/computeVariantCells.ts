@@ -2,7 +2,11 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { buildSourceSampleIndices } from '../../VariantRPC/computeSampleInfo.ts'
 import { getInsertedBp } from '../../shared/alleleLength.ts'
-import { BLACK_ABGR, NO_CALL_COLOR } from '../../shared/constants.ts'
+import {
+  BLACK_ABGR,
+  NO_CALL_COLOR,
+  VARIANT_LANE_DEFAULT_COLOR,
+} from '../../shared/constants.ts'
 import {
   featureHasPhaseSet,
   getPhasedColor,
@@ -63,6 +67,18 @@ export interface VariantCellData {
   // `getAlleleLength` and the `alleleLength()` jexl the docs already teach; a
   // decomposed pangenome callset is biallelic, so there it is exact.
   featureInsertedBp: Int32Array
+  // Packed ABGR per *feature*, aligned to `featureIdList`: what the variant
+  // lane paints each record with. The `featureColor` override when one resolves
+  // for that record, the default variant color otherwise — so the lane and the
+  // alt-carrying cells beneath it are the same color, which is the whole point
+  // of drawing them in one display.
+  //
+  // Per feature and not per cell, so it costs 4 bytes x variants next to the
+  // payload's 22 B/cell. It is filled whether or not the lane is switched on:
+  // the lane is a render-tier setting (a band resize must not refetch), and the
+  // fill is one array write per variant inside a loop that already resolved the
+  // color.
+  featureColors: Uint32Array
 }
 
 function getShapeType(featureType: string) {
@@ -146,6 +162,10 @@ export function computeVariantCells({
   const featureIdList: string[] = []
   const insertedBp = new Int32Array(filteredVariants.length)
   const featurePositions = new Uint32Array(filteredVariants.length * 2)
+  const featureColors = new Uint32Array(filteredVariants.length)
+  // Packed once — a callset with no `featureColor` override reuses it for every
+  // record instead of re-packing the same string per variant.
+  const defaultFeatureAbgr = getCachedABGR(VARIANT_LANE_DEFAULT_COLOR)
 
   const featureGenotypeMap: Record<string, VariantFeatureInfo> = {}
   // Write cursors for the two buckets. `refEnd` grows up from 0, `nonRefStart`
@@ -408,6 +428,15 @@ export function computeVariantCells({
     insertedBp[featureIdx] = inserted
     featurePositions[featureIdx * 2] = start
     featurePositions[featureIdx * 2 + 1] = end
+    // The lane's color for this record. `overrideColor` is the same value the
+    // alt cells of this variant took above, so the mark and its column agree;
+    // with no override set there is no per-genotype color that means anything
+    // for a whole record, so it falls to the default the single-variant display
+    // paints an uncolored feature with.
+    featureColors[featureIdx] =
+      overrideColor === undefined
+        ? defaultFeatureAbgr
+        : getCachedABGR(overrideColor)
     featureIdList.push(featureId)
     featureIdx++
   }
@@ -491,5 +520,6 @@ export function computeVariantCells({
     featurePositions,
     featureIndexData: featureIndex.data,
     featureInsertedBp: insertedBp,
+    featureColors,
   }
 }

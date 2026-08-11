@@ -35,6 +35,14 @@ export function clampLineZoneHeight(n: number) {
 // float32 — the GPU paths carry the row index through a `float()` cast.
 export const HIDDEN_ROW = 0x00ffffff
 
+// What the variant lane paints a record with when no `featureColor` override
+// resolves for it. Deliberately the value `plugins/canvas` gives an uncolored
+// feature (`FEATURE_DEFAULT_COLOR`), so a lane above a genotype matrix and a
+// `LinearVariantDisplay` over the same VCF read as the same track. Restated
+// rather than imported: this is reached from the RPC worker, and the canvas
+// plugin's barrel is not something to pull across that boundary for one string.
+export const VARIANT_LANE_DEFAULT_COLOR = 'goldenrod'
+
 // Variant rendering colors
 export const REFERENCE_COLOR = '#ccc'
 export const NO_CALL_COLOR = 'hsl(50,50%,50%)'

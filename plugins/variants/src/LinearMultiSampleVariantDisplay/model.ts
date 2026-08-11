@@ -248,6 +248,19 @@ export function stateModelFactory(
         },
         /**
          * #getter
+         * Per-region data for the variant lane, or undefined when the band is
+         * off. The same `perRegionCellMap` the canvas and the glyph overlay
+         * read, so the lane cannot see a different region set — or a different
+         * row placement — than the cells under it. The lane itself only touches
+         * the per-*feature* arrays in there.
+         */
+        get variantLaneRegions() {
+          return self.topBands.laneHeight > 0
+            ? self.perRegionCellMap
+            : undefined
+        },
+        /**
+         * #getter
          * Overrides the base's `undefined`: this display draws the markers, so
          * it is the one that puts them in the legend. `getSession(self).palette`
          * rather than a React theme, because this is a model getter — and it is

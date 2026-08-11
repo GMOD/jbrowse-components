@@ -58,6 +58,7 @@ function cellData(insertedBp: number): CellDataResult {
         featurePositions: Uint32Array.from([100, 200]),
         featureIndexData: featureIndexData(),
         featureInsertedBp: Int32Array.from([insertedBp]),
+        featureColors: Uint32Array.from([0xff00ff00]),
       },
     },
   }
