@@ -55,6 +55,10 @@ are the same assembly, since the two haplotypes are contigs of one:
 puts the maternal copy of a chromosome on top and the paternal below. Type a
 locus into either panel's search box to move it.
 
+Turn that same track on from each panel's own track selector as well. In a plain
+linear view it draws as blocks on that panel's ruler rather than as ribbons, and
+those blocks are what the right-click below acts on.
+
 ## The 8p23.1 inversion
 
 Chromosome 8 carries an inversion polymorphism at 8p23.1 that HG002 is
