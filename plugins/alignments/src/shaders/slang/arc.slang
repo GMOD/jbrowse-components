@@ -32,6 +32,8 @@
 // genomic radius).
 //! targets: wgsl, glsl
 //! export-consts: ARC_HEIGHT_MARGIN, ARC_FAR_SCREEN_WIDTHS, ARC_APEX_FRACTION, ARC_COLOR_SHORT_INSERT
+//! js-export: arcRadiiPx
+//! js-skip: arcIsFar — reached as a private helper inside the generated arcRadiiPx, so the predicate is already shared without being public; exporting it too would let a consumer ask the question separately from the pair it decides
 
 import alignmentsUniforms;
 
@@ -83,6 +85,47 @@ struct VsOut {
   float  kind     : COLOR3;
 };
 
+// Whether a pair is wide enough that its dome degenerates to a circle. Its own
+// function because the radii below and the fragment's `kind` are two readings of
+// one predicate, and spelling it twice is how they would come to disagree about
+// which shape an arc at exactly the threshold is.
+bool arcIsFar(float halfWidthPx, float canvasWidthPx) {
+  return 2.0 * halfWidthPx > ARC_FAR_SCREEN_WIDTHS * canvasWidthPx;
+}
+
+// The two radii of the half-ellipse an arc draws, in CSS px: the pair's own
+// on-screen half-width, and the height its insert size earns — except once the
+// pair is `arcIsFar`, when the ellipse becomes a true circle so the band clips
+// the apex away and only near-vertical legs at each real endpoint remain.
+//
+// `//! js-export`ed as a PAIR — adr-051's float2-in-return-position case, and the
+// second function to meet its test after `rectSpanPx`:
+//
+//   - The decision IS the pair. `ry` is defined in terms of `rx` (both through
+//     `arcIsFar` and as its far-branch value), so splitting it into two scalar
+//     exports makes each recompute the other's branch.
+//   - There is no packaging to leave behind. Both lanes are CSS px on both
+//     backends; the only per-backend step is choosing a sweep direction, which
+//     is Canvas2D's alone.
+//   - The pair is the consumer's argument list: `ctx.ellipse(cx, cy, rx, ry, …)`
+//     takes them adjacently. That is the honest limit of "generate canvas
+//     drawing commands" — the extent a mark occupies, with each backend keeping
+//     its own paint and culling.
+//
+// It was stated twice, and the two copies did not look alike: this pass wrote
+// the gate as `2*halfWidthPx > k*canvasW` while drawCanvas.ts's `strokeArc`
+// wrote `|sx2-sx1| > k*screenWidthPx` and took the answer as a `far` boolean
+// parameter. That is the shape the chevron layout drifted in (adr-051, "the
+// blind spot the survey had") — stated in different units on the two sides, so
+// comment-syncing holds while the arithmetic diverges. A disagreement here is
+// not sub-pixel: an ellipse and a circle are different marks.
+public float2 arcRadiiPx(float halfWidthPx, float destYPx, float canvasWidthPx) {
+  if (arcIsFar(halfWidthPx, canvasWidthPx)) {
+    return float2(halfWidthPx, halfWidthPx);
+  }
+  return float2(halfWidthPx, ARC_APEX_FRACTION * destYPx);
+}
+
 // The analytic curve, in band-local CSS px. `radii` and `kind` say which
 // distance function measures it; `c` is the centre an ellipse is measured from,
 // `ends` the two endpoints' screen x a far circle's legs rise from.
@@ -107,11 +150,9 @@ Curve arcCurve(Instance inst, Uniforms u) {
   cv.yDir = yDir;
   cv.ends = float2(min(x1Px, x2Px), max(x1Px, x2Px));
   // `far` is purely a function of on-screen span — no bp limit.
-  bool far = 2.0 * halfWidthPx > ARC_FAR_SCREEN_WIDTHS * u.canvasW;
-  cv.kind = far ? KIND_CIRCLE : KIND_ELLIPSE;
+  cv.kind = arcIsFar(halfWidthPx, u.canvasW) ? KIND_CIRCLE : KIND_ELLIPSE;
   cv.c = float2((x1Px + x2Px) * 0.5, 0.0);
-  cv.radii = float2(halfWidthPx,
-                    far ? halfWidthPx : ARC_APEX_FRACTION * destY);
+  cv.radii = arcRadiiPx(halfWidthPx, destY, u.canvasW);
   return cv;
 }
 

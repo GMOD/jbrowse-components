@@ -46,6 +46,13 @@ function apexRise(call: EllipseCall, anchorY: number) {
 // an axis-aligned half-ellipse, so if the mirror ever goes back to stroking a
 // bezier — or multiplies ARC_APEX_FRACTION into the wrong quantity — the two
 // renderers disagree on arc height with nothing else failing.
+// Every case here spans 400px, so the block width decides the near/far branch:
+// wider than the span keeps the insert-size dome, narrower degenerates it to a
+// circle. `strokeArc` takes the width rather than a `far` boolean now — the
+// threshold moved into the generated `arcRadiiPx` (see arcRadiiParity.test.ts).
+const NEAR_SCREEN_W = 1000
+const FAR_SCREEN_W = 100
+
 describe('strokeArc mirrors the half-ellipse arc.slang measures', () => {
   const anchorY = 100
   const arcH = 40
@@ -53,7 +60,7 @@ describe('strokeArc mirrors the half-ellipse arc.slang measures', () => {
 
   it('spans the two endpoints and rises ARC_APEX_FRACTION of the insert Y', () => {
     const { calls, ctx } = recordingCtx()
-    strokeArc(ctx, 200, 600, anchorY, apexY, false, false)
+    strokeArc(ctx, 200, 600, anchorY, apexY, false, NEAR_SCREEN_W)
     expect(calls).toHaveLength(1)
     expect(calls[0]!.cx).toBe(400)
     expect(calls[0]!.cy).toBe(anchorY)
@@ -69,7 +76,7 @@ describe('strokeArc mirrors the half-ellipse arc.slang measures', () => {
   // also drift the arcs' correspondence with the insert-size scalebar.
   it('peaks exactly where the cubic bezier it replaced peaked', () => {
     const { calls, ctx } = recordingCtx()
-    strokeArc(ctx, 200, 600, anchorY, apexY, false, false)
+    strokeArc(ctx, 200, 600, anchorY, apexY, false, NEAR_SCREEN_W)
     const bezierPeak = 3 * 0.5 * 0.5 * arcH
     expect(apexRise(calls[0]!, anchorY)).toBeCloseTo(bezierPeak, 10)
   })
@@ -77,16 +84,16 @@ describe('strokeArc mirrors the half-ellipse arc.slang measures', () => {
   it('is endpoint-order independent', () => {
     const fwd = recordingCtx()
     const rev = recordingCtx()
-    strokeArc(fwd.ctx, 200, 600, anchorY, apexY, false, false)
-    strokeArc(rev.ctx, 600, 200, anchorY, apexY, false, false)
+    strokeArc(fwd.ctx, 200, 600, anchorY, apexY, false, NEAR_SCREEN_W)
+    strokeArc(rev.ctx, 600, 200, anchorY, apexY, false, NEAR_SCREEN_W)
     expect(rev.calls).toEqual(fwd.calls)
   })
 
   it('sweeps above the baseline pointing up and below pointing down', () => {
     const up = recordingCtx()
     const down = recordingCtx()
-    strokeArc(up.ctx, 200, 600, anchorY, apexY, false, false)
-    strokeArc(down.ctx, 200, 600, anchorY, anchorY + arcH, true, false)
+    strokeArc(up.ctx, 200, 600, anchorY, apexY, false, NEAR_SCREEN_W)
+    strokeArc(down.ctx, 200, 600, anchorY, anchorY + arcH, true, NEAR_SCREEN_W)
     // Canvas angles run clockwise on a y-down axis: [PI, 2PI] passes through
     // 3PI/2, which is above the centre; [0, PI] passes through PI/2, below.
     expect([up.calls[0]!.start, up.calls[0]!.end]).toEqual([
@@ -102,7 +109,7 @@ describe('strokeArc mirrors the half-ellipse arc.slang measures', () => {
   // instead of legs.
   it('degenerates to a circle on the real half-width when far', () => {
     const { calls, ctx } = recordingCtx()
-    strokeArc(ctx, 200, 600, anchorY, apexY, false, true)
+    strokeArc(ctx, 200, 600, anchorY, apexY, false, FAR_SCREEN_W)
     expect(calls[0]!.rx).toBe(200)
     expect(calls[0]!.ry).toBe(200)
   })

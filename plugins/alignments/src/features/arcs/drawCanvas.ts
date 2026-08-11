@@ -7,10 +7,9 @@ import {
 // The palette-index rule, generated from alignmentsUniforms.slang (adr-051) —
 // imported from the generated module directly, with no re-export hop.
 import { arcColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
-import {
-  ARC_APEX_FRACTION,
-  ARC_FAR_SCREEN_WIDTHS,
-} from '../../shaders/slang/arc.iface.generated.ts'
+// The dome's two radii and the near/far branch behind them, likewise generated
+// (adr-051) — see strokeArc.
+import { arcRadiiPx } from '../../shaders/slang/arc.js.generated.ts'
 // The flat-line constants moved with the flat line: they are arcFlat.slang's
 // now, declared on the pass that consumes them.
 import {
@@ -59,13 +58,17 @@ interface DrawArcsOpts {
 
 // Strokes one non-flat paired-read arc between screen-x sx1 and sx2 as a half
 // ellipse rising from the two endpoints. Caller sets strokeStyle and clips to
-// the band. `far` picks the vertical radius:
-//  - near: ARC_APEX_FRACTION of the insert size's Y, so the apex sits where the
-//    cubic bezier this replaced peaked.
-//  - far: the real half-width, i.e. a true circle — so big the band clip leaves
-//    only the near-vertical sides at each real endpoint.
-// Mirrors arc.slang, which measures the same ellipse analytically per fragment.
-// Exported for arcShape.test.ts, which pins that mirror.
+// the band.
+//
+// Both radii come from `arcRadiiPx`, generated from arc.slang (adr-051) — the
+// near/far branch, the ARC_APEX_FRACTION scaling and the span threshold behind
+// them are the shader's, and were hand-written here until
+// `arcRadiiParity.test.ts` retired them. The threshold in particular was stated
+// in different terms on the two sides (`2*halfWidth > k*canvasW` there,
+// `|sx2-sx1| > k*screenWidth` here), which is the shape a comment-synced twin
+// drifts in unnoticed; what it decides is an ellipse versus a circle, not a
+// pixel. Still exported for arcShape.test.ts, which pins the sweep and the
+// centre this wraps them in.
 export function strokeArc(
   ctx: Ctx2D,
   sx1: number,
@@ -73,10 +76,13 @@ export function strokeArc(
   anchorY: number,
   apexY: number,
   pairedArcsDown: boolean,
-  far: boolean,
+  screenWidthPx: number,
 ) {
-  const rx = Math.abs(sx2 - sx1) / 2
-  const ry = far ? rx : ARC_APEX_FRACTION * Math.abs(apexY - anchorY)
+  const [rx, ry] = arcRadiiPx(
+    Math.abs(sx2 - sx1) / 2,
+    Math.abs(apexY - anchorY),
+    screenWidthPx,
+  )
   const [start, end] = pairedArcsDown ? [0, Math.PI] : [Math.PI, 2 * Math.PI]
   ctx.beginPath()
   ctx.ellipse((sx1 + sx2) / 2, anchorY, rx, ry, 0, start, end)
@@ -146,9 +152,7 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
       ctx.fillRect(sx2 - m / 2, apexY - m / 2, m, m)
     } else {
       ctx.strokeStyle = cssPalette[arcColorSlot(colorIdx)]!
-      // far is purely a function of on-screen span — no bp limit.
-      const far = Math.abs(sx2 - sx1) > ARC_FAR_SCREEN_WIDTHS * screenWidthPx
-      strokeArc(ctx, sx1, sx2, anchorY, apexY, pairedArcsDown, far)
+      strokeArc(ctx, sx1, sx2, anchorY, apexY, pairedArcsDown, screenWidthPx)
     }
   }
   ctx.setLineDash([])

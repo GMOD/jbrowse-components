@@ -12,8 +12,8 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 41 shaders with entry points. 71 functions
-are inside the emitter's subset, of which **54 are exported**.
+Scanned 41 shaders with entry points. 73 functions
+are inside the emitter's subset, of which **55 are exported**.
 
 ## Candidates
 
@@ -32,6 +32,7 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 
 | Function | Signature | Why not |
 | --- | --- | --- |
+| `arcIsFar` | `(f32, f32) -> bool` | reached as a private helper inside the generated arcRadiiPx, so the predicate is already shared without being public; exporting it too would let a consumer ask the question separately from the pair it decides |
 | `clipXToPx` | `(f32, f32) -> f32` | the x half of the same clip-space conversion, and the reason a px decision can be written once — nothing outside a shader is in clip space |
 | `discExpand` | `(f32) -> f32` | expands a quad so the fragment AA ramp is not clipped; Canvas2D draws ctx.arc and has no quad to expand |
 | `expandMinWidthX` | `(f32, f32, f32) -> vec2f` | widens about the midpoint in clip space, and has no Canvas2D counterpart: the pileup floors a cell width one-sidedly and adds a seam fudge the shader deliberately omits (rendererTypes.ts pileupCellWidth). A different rule, not a twin |
