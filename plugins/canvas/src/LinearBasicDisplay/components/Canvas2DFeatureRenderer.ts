@@ -194,10 +194,11 @@ function rectFillStyle(
   const key = fade ? c + 0x1_0000_0000 : c
   let style = styles.get(key)
   if (style === undefined) {
-    // In the dense-pileup regime (thousands of collapsed row-0 marks) boxes draw
+    // Where collapsed row-0 marks pile PILEUP_FADE_DEPTH deep, boxes draw
     // semi-transparent so src-over accumulation makes the pileup read as a density
     // texture instead of a flat block (mirrors rect.slang's densityAlpha); gene
-    // subfeature rects, stacked boxes, and sparse tracks stay fully opaque.
+    // subfeature rects, stacked boxes, and marks with room around them stay
+    // fully opaque.
     // rectDensityFade is that decision, so it alone gates the fade. Fold the
     // factor into the fill color's alpha so it also applies on the SVG-export
     // path (SvgCanvas has no globalAlpha).

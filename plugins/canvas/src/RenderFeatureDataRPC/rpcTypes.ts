@@ -102,11 +102,12 @@ export interface FeatureDataResult {
   rectStrands: Float32Array // strand direction per rect: -1, 0, or +1
   // Allocated zero-filled by the worker, VALUED by the main-thread layout.
   // `applyLayoutToRegion` writes every element from its own per-feature decision:
-  // 1 only for a feature whose sub-pixel box collapsed onto row 0 in the
-  // dense-pileup regime (thousands of such marks), 0 otherwise, so a sparse
-  // handful of variants stays opaque and only a genuine pileup fades to convey
-  // density. Fade *eligibility* lives on `FlatbushItem.densityFade` (per feature);
-  // there is deliberately no worker-side rect-level flag to disagree with it.
+  // 1 only for a feature whose sub-pixel box collapsed onto row 0 and landed
+  // under a pile `PILEUP_FADE_DEPTH` marks deep, 0 otherwise, so a mark with
+  // room around it — or with no more than a neighbour or two over it — stays
+  // opaque and only a genuine pileup fades to convey density. Fade *eligibility*
+  // lives on `FlatbushItem.densityFade` (per feature); there is deliberately no
+  // worker-side rect-level flag to disagree with it.
   rectDensityFade: Uint32Array
   // Per-primitive `below` subfeature-label row counts, or LENGTH ZERO when this
   // region has none (the ordinary case — `subfeatureLabels` defaults to `none`).

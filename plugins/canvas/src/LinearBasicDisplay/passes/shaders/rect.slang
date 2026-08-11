@@ -16,12 +16,15 @@ import featureGlyphUniforms;
 
 public static const uint VERTS_PER_INSTANCE = 6u;
 static const float MIN_RECT_WIDTH_PX = 2.0;
-// Where sub-pixel marks collapsed onto row 0 land on each other's pixels
-// (densityFade flag set — the min-width clamp widens each to abut its neighbors,
-// e.g. a dense SNP track collapsing to solid orange), drawing them
-// semi-transparent lets the standard src-alpha blend accumulate, so density
-// reads as opacity/texture instead of a flat fill, and so the marks underneath
-// show at all. A mark with room around it, and everything else, stays opaque.
+// Where sub-pixel marks collapsed onto row 0 pile several deep on each other's
+// pixels (densityFade flag set — e.g. a dense SNP track collapsing to solid
+// orange), drawing them semi-transparent lets the standard src-alpha blend
+// accumulate, so density reads as opacity/texture instead of a flat fill, and so
+// the marks underneath show at all. How deep the pile has to be is the layout's
+// call and not re-tested here: see PILEUP_FADE_DEPTH, which waits for a third
+// mark because the min-width clamp widens every mark to abut its neighbors, so a
+// mere pair proves nothing. A mark with room around it, and everything else,
+// stays opaque.
 //
 // Kept low so the accumulated opacity 1-(1-a)^count stays proportional to the
 // number of variants stacked at a pixel over a useful range (a=0.3: 1→.30,
