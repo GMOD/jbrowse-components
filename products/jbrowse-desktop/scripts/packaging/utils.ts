@@ -26,6 +26,16 @@ export function sha512Base64(filePath: string) {
   return hash.digest('base64')
 }
 
+// For pinned build tools, whose published checksums are hex sha256. (The update
+// manifest above wants base64 sha512 — that is electron-updater's format, not a
+// preference.)
+export function sha256Hex(filePath: string) {
+  return crypto
+    .createHash('sha256')
+    .update(fs.readFileSync(filePath))
+    .digest('hex')
+}
+
 export function fileSize(filePath: string) {
   return fs.statSync(filePath).size
 }
