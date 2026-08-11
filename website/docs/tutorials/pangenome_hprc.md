@@ -506,12 +506,12 @@ The bubble lane up top is cut to bubbles holding an allele over 100 kb, and the
 banded one is a short reference span. In the middle the boxed node is the CHM13
 sequence that hangs off it, attached at a small anchor.
 
-The last part is the same measurement at a scale that can answer whether the L1
-density means anything, since a 180 kb window has only its own flanks to be
-dense against. Open the LINE row alone over the last 3 Mb of the chromosome and
-set the track's **Resolution** low, so each drawn value averages about 100 kb
-rather than 3 kb: at 5 kb the allele is invisible inside the spikes, and at its
-own scale it is a block.
+The part beside them is the same measurement at a scale that can answer whether
+the L1 density means anything, since a 180 kb window has only its own flanks to
+be dense against. Open the LINE row alone over the last 3 Mb of the chromosome
+and set the track's **Resolution** low, so each drawn value averages about 100
+kb rather than 3 kb: at 5 kb the allele is invisible inside the spikes, and at
+its own scale it is a block.
 
 <Figure caption="A donor node on both coordinate systems: the GRCh38 window, the graph cut from it, then that node on hs1's own chr17 tiled by long L1 elements in red. Beside them ①, LINE density across the last 3 Mb of the chromosome at a ~100 kb mean, where the shaded allele is the tallest sustained level: of the 262 same-size windows within 5 Mb, 2 carry more LINE." src="/img/pangenome/hprc_chm13_allele.png" />
 
