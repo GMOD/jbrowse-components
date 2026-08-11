@@ -817,3 +817,73 @@ jobs:
         working-directory: products/jbrowse-desktop
         env:
           NO_MINIMIZE: true
+
+  linux_electron_e2e:
+    name: Linux Electron E2E Tests
+    # Unlike the Windows job above, this one runs on every branch. Desktop had
+    # no pre-merge coverage at all: the Windows job is main-only, so a desktop
+    # regression could only be found after it had landed. Linux is where that
+    # gap is cheapest to close — no Wine, no signing, and the AppImage is a real
+    # release artifact that nothing else exercises.
+    #
+    # `test:e2e:ci` is the script that has existed for this all along and that
+    # no workflow ever called. It was not worth calling until recently, and both
+    # reasons had to be fixed before this job could exist:
+    #
+    #   - the run opened volvox.fa, which goes through the app's own FASTA
+    #     indexing and hangs about half the time (reproduced: the assembly sits
+    #     at initialized:false with an empty error). It opens the 2bit now.
+    #   - the EDEN.1 search raced the name index that answers it, with no wait
+    #     between them.
+    #
+    # A job that fails a coin flip on every branch is worse than no job. Five
+    # consecutive green runs locally on the packaged Linux app; the runs that
+    # failed while getting there all failed for one of the two reasons above, or
+    # under deliberate CPU contention. If it does turn out to flake on a runner,
+    # the fallback is the Windows job's `github.ref == 'refs/heads/main'` gate,
+    # which keeps the Linux coverage without blocking anyone's PR.
+    needs: [test, typecheck]
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      # The runner image ships Chromium's own dependencies, so the packaged
+      # Electron tree needs nothing extra — but it has no X server, and the app
+      # is a real window even in --headless. xvfb-run is what test:e2e:headless
+      # wraps the run in.
+      - name: Install xvfb
+        run: sudo apt-get update && sudo apt-get -y install xvfb
+      - name: Package and test Electron on Linux
+        run: pnpm test:e2e:ci
+        working-directory: products/jbrowse-desktop
+        env:
+          # skip webpack minification: nothing here reads the bundle's size or
+          # its stack traces, and it is the longest part of the build
+          NO_MINIMIZE: true
+
+  nsis_installer_script:
+    name: Windows installer script compiles
+    # Its own job rather than a step on the Windows E2E one, because it needs
+    # neither Windows nor a build: it compiles the generated NSIS program
+    # against a stand-in app directory. Until this existed the only thing that
+    # ever parsed that script was the release job, which runs on a tag after
+    # everything else has passed — so a typo in it cost a release rather than a
+    # push. Takes well under a minute.
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      # Native makensis, not the Wine-hosted NSIS the release uses. Both compile
+      # the same language; installing NSIS under Wine takes minutes (see
+      # release.yml) and buys nothing this does not already catch.
+      - name: Install NSIS
+        run: sudo apt-get update && sudo apt-get -y install nsis
+      - name: Compile the installer script
+        run: pnpm check:nsis
+        working-directory: products/jbrowse-desktop
