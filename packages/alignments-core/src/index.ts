@@ -91,6 +91,7 @@ export {
   drawModCovSegments,
   drawSnpSegments,
   emptyCanvas2DCoverageBuffer,
+  minWidthLeft,
   packCoverageBinsCanvas2D,
 } from './rendererUtils.ts'
 export type { Canvas2DCoverageBuffer } from './rendererUtils.ts'

@@ -62,9 +62,17 @@ export function coverageLayout(coverageHeight: number) {
 // centered, with a comment saying so — these three call sites were the odd ones
 // out, not the convention.
 //
+// Exported because the pileup's gap pass is a fourth call site in the same
+// position — `gap.slang` widens through `expandMinWidthX` too — and it was left
+// behind by that fix. Every Canvas2D mark whose GPU twin calls
+// `expandMinWidthX` goes through here; the pileup's 1bp CELL layers
+// deliberately do not (`makePileupCellMapper` floors one-sidedly, matching
+// `mismatch.slang`'s snapped left edge — see the `js-skip: expandMinWidthX`
+// note in alignmentsUniforms.slang).
+//
 // Returns a number rather than a {left,width} pair: these loops run per covered
 // bp, and an object per bin would allocate.
-function minWidthLeft(px: number, px2: number, w: number) {
+export function minWidthLeft(px: number, px2: number, w: number) {
   return w < 1 ? (px + px2) / 2 - 0.5 : px
 }
 

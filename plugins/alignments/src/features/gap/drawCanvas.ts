@@ -1,3 +1,5 @@
+import { minWidthLeft } from '@jbrowse/alignments-core'
+
 import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   bpToScreenX,
@@ -48,11 +50,20 @@ export function drawGaps(
     const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
     const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
     const gapType = region.gapTypes[i]!
-    // reversed (flipped) regions map startBp to the larger screen x, so anchor
-    // at the smaller edge and use the absolute width
-    const left = Math.min(x1, x2)
-    const widthPx = Math.abs(x2 - x1)
+    // reversed (flipped) regions map startBp to the larger screen x, so order
+    // the edges and use the absolute width
+    const px = Math.min(x1, x2)
+    const px2 = Math.max(x1, x2)
+    const widthPx = px2 - px
     const w = Math.max(1, widthPx)
+    // A sub-pixel gap is widened to 1px CENTERED on its span, because that is
+    // what gap.slang's `expandMinWidthX` does. Anchoring the widened mark at
+    // the gap's left edge put every Canvas2D gap up to half a pixel right of
+    // the GPU's once the deletion went under 1px — the same divergence the
+    // coverage marks were fixed for (see minWidthLeft), on the call site that
+    // fix missed. Both branches below share it: the shader widens once, before
+    // it splits deletion from skip.
+    const left = minWidthLeft(px, px2, widthPx)
 
     if (gapType === GAP_DELETION) {
       // Twin of gap.slang's deletion branch: the frequency fade, times the
