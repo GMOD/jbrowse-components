@@ -66,26 +66,16 @@ what makes it a self-alignment:
 }
 ```
 
-That one track also goes in each panel. Turned on from a panel's own track
-selector, a synteny track draws its alignments as ordinary features on that
-panel's ruler rather than as ribbons between two, which is where the boundaries
-the last section is about become visible. It needs no second file and no extra
-config: `LGVSyntenyDisplay` is the display a synteny track takes in a plain
-linear view, and it colors by strand already.
+Turn that same track on from each panel's own track selector too: in a plain
+linear view a synteny track draws as blocks on that panel's ruler rather than as
+ribbons, needing no second file and no extra config. It resolves per panel
+because the published chain carries both directions, so the blocks in a panel
+and the ribbons above them are the same records and cannot disagree. The project
+also publishes the alignment as bigChain, one file per haplotype's coordinates,
+for loading as a plain feature track instead.
 
-This resolves per panel because the published chain carries both directions.
-Every alignment appears in it twice, once with the maternal contig as the query
-and once with the paternal one, so the maternal panel finds the
-maternal-coordinate copy and the paternal panel the paternal-coordinate copy.
-The blocks in a panel and the ribbons above them are then the same records, and
-cannot disagree.
-
-The project also publishes the same alignment as bigChain, one file per
-haplotype's coordinates (`mat2pat` built on the maternal contigs, `pat2mat` on
-the paternal ones), for loading as a plain feature track instead.
-
-The project also publishes the heterozygous sites called between the two
-haplotypes, which the last section uses as a check on the alignment:
+The heterozygous sites called between the two haplotypes are published beside
+it, and the last section uses them as a check on the alignment:
 
 ```json addtrack
 {
@@ -111,45 +101,11 @@ Launch a linear synteny view with the maternal copy of a chromosome on top and
 the paternal copy below, both from the same assembly. Type a locus into either
 panel's search box to move it.
 
-The two panels move independently, which matters more here than in a
-cross-species comparison because both rulers carry the same coordinates and it
-is easy to assume they are locked. They are not, and the same number is not the
-same sequence: an indel anywhere upstream offsets one haplotype against the
-other, so a locus typed into both panels frames two places that do not
-correspond. Three things bring them back together:
-
-- right-click a ribbon and choose **Center on feature**, which recenters both
-  panels on that alignment
-- right-click a chain block in a panel and choose **Move other panel to the
-  matching region**, which sends the other panel to the sequence this panel's
-  visible window aligns to
-- turn on **Link views** from the **View options** button in the view header,
-  which replays a pan or zoom in one panel onto the other
-
-Which of the first two to reach for depends on the size of the alignment.
-Centering on a feature moves both panels to its midpoint, which is the right
-answer for a short block and the wrong one for a chain tens of megabases long:
-its midpoint is nowhere near what is on screen. Moving the other panel instead
-resolves the visible window through the alignment's own CIGAR, so it keeps the
-panel you are reading where it is and matches the other one to it, scale
-included. It needs the chain track open in the panel, which is the same track
-the ribbons come from.
-
-<Figure caption="The same 70 kb of coordinates typed into both panels, on the collinear block left of the inversion. Top: the paternal window lands past the end of that chain, so its chain lane is empty, its gene lane is a different neighbourhood, and the ribbon leaves the frame. Bottom: after moving the other panel from a maternal chain block, the corresponding paternal sequence is under it and the alignment's indel wedge stands upright." src="/img/hg002_haplotypes_follow_panel.png" />
-
-Link views is the third option and a different one: it moves both panels by the
-same number of base pairs, so it holds only as long as the haplotypes stay in
-register and drifts again across the next indel. Re-anchoring on an alignment is
-what corrects it.
-
-The vertical **guidelines** each panel draws are worth keeping on here, and are
-the toggle under a panel's own menu, **Show...** then **Show guidelines**. A
-long collinear ribbon is one flat block of colour with no landmark in it, so
-without the ticks behind it there is nothing in the frame that says how far
-along the block a feature sits, or how far the two panels have drifted since
-they were last anchored. See
+Both rulers carry the same coordinates, so it is easy to assume the panels are
+locked together. They are not, which becomes
+[its own step](#framing-both-panels-on-the-same-sequence) once you zoom in. See
 [the linear synteny view guide](/docs/user_guides/linear_synteny_view) for the
-rest of the view's controls.
+rest of the controls.
 
 ## The 8p23.1 inversion
 
@@ -160,36 +116,33 @@ al._ 2009). HG002 is heterozygous for it, so it is one of the few places where
 the two haplotypes of one person disagree at a scale a whole-chromosome view can
 show.
 
-Colored by strand, the inversion is the one block whose ribbons sweep across the
-frame, and the same block is the long reverse-strand bar in each panel's chain
-track. The flanks stay collinear at this scale, which is what makes it legible:
-a segment reads as inverted only because the sequence around it did not move.
-They are not uniformly collinear, though. Smaller reverse-strand chains sit
-inside them, drawn as short bars in the panels and as thin off-color threads
-among the flank ribbons, well short of the scale the sweep is drawn at.
+Color by strand, and the flanks are the control: a segment reads as inverted
+only because the sequence around it did not move. They are not uniformly
+collinear, though. Smaller reverse-strand chains sit inside them, drawn as thin
+off-color threads well short of the scale the inversion is drawn at.
 
-The assembly has no gene annotation of its own. What it has is the JHU Liftoff
-annotation of HG002 v1.1, published beside it as one bgzipped GFF per haplotype,
-whose contig names already match and whose coordinates are within a few bases of
-v1.2 across chromosome 8. Added as a track per panel it says what kind of
-sequence the inverted block is: ordinary gene-carrying euchromatin, not a blank
-segment that happened to flip.
+The assembly has no gene annotation of its own. The JHU Liftoff annotation of
+HG002 v1.1 is published beside it, one bgzipped GFF per haplotype, with contig
+names that already match and coordinates within a few bases of v1.2 across
+chromosome 8. A lane per panel says what kind of sequence the inverted block is:
+ordinary gene-carrying euchromatin, not a blank segment that happened to flip.
 
 At 9 Mb no gene in that lane can carry a label. Add a second lane over the same
-GFF and cut it to a few genes with **Edit filters...** in its track menu: those
-do get labels, and they read in one order under the maternal panel and in the
-reverse order under the paternal one.
+GFF and cut it to a few genes with **Edit filters...** in its track menu.
 
 <Figure caption="HG002 v1.2 maternal (top) against paternal (bottom) across 9 Mb of 8p23.1, ribbons colored by strand. The inverted block is the long blue bar in both panels and the sweep crossing between them, and the labelled lane beside the ribbons carries the same six genes in opposite orders." src="/img/hg002_haplotypes_8p23_inversion.png" />
 
-Set the ribbon coloring from the palette button in the view header, and turn on
-**Show curved lines** under **View options** then **Show...** so a block landing
-far from where it started is easier to follow across the gap.
+Ribbon coloring is the palette button in the view header; **Show curved lines**,
+under **View options** then **Show...**, makes a block landing far from where it
+started easier to follow across the gap.
 
-The Liftoff GFF carries its gene symbol in `gene_name` and no `Name` attribute,
-so the default label falls through to the assembly's own ordinal identifier
-(`hg002_chr8_maternal_195` for ENPP7P1). Point the display's name label at
-`gene_name` instead:
+To see where else the two haplotypes disagree, put the same track on both axes
+of a [dotplot view](/docs/user_guides/dotplot_view), the way
+[oat against itself](/docs/tutorials/homoeolog_synteny) is drawn.
+
+The Liftoff GFF carries its gene symbol in `gene_name` and no `Name`, so the
+default label falls through to the assembly's own ordinal identifier
+(`hg002_chr8_maternal_195` for ENPP7P1). Point the name label at `gene_name`:
 
 ```json addtrack
 {
@@ -221,33 +174,46 @@ so the default label falls through to the assembly's own ordinal identifier
 }
 ```
 
+## Framing both panels on the same sequence
+
+Zoomed in, the same number stops being the same sequence: an indel anywhere
+upstream offsets one haplotype against the other, and the offset accumulates.
+
+Right-click a chain block in a panel and choose **Move other panel to the
+matching region**. It walks that panel's visible window through the alignment's
+CIGAR and sends its neighbour there, leaving the panel you are reading alone.
+This is the one control that needs the chain track open in the panel.
+
+<Figure caption="Maternal (top) and paternal (bottom) panels on the same 70 kb of coordinates, each carrying the chain blocks and its own haplotype's genes. The paternal window lands past the end of this chain, so nothing in it corresponds; moving it from a maternal chain block brings the matching sequence under it." src="/img/hg002_haplotypes_follow_panel.png" />
+
+Two neighbouring controls do something different. **Center on feature**, on a
+ribbon's right-click menu, moves both panels to the alignment's midpoint, which
+on a chain tens of megabases long is nowhere near what is on screen. **Link
+views**, under **View options**, replays a pan from one panel onto the other, so
+it drifts again at the next indel.
+
+Each panel's vertical **guidelines** (its menu, **Show...** then **Show
+guidelines**) are on by default and carry the ruler's ticks down through the
+ribbon, which is what places a feature inside a long collinear block.
+
 ## Collinear does not mean identical
 
 Structural agreement and sequence identity are separate claims, and the view
-above only makes the first one. Zooming into the collinear block beside the
-inversion and turning on the heterozygous-sites track makes the second one
-checkable in the same frame: the ribbon runs as one band apart from a single
-indel, and the sites underneath it are dense in both panels. The solid run of
-sites beneath that indel on the paternal panel is where the two haplotypes stop
-agreeing base for base.
-
-At this width the gene lane is readable, and each panel carries its own
-haplotype's annotation rather than one shared lane, so the sites can be read
-against the genes they fall in.
+above only makes the first one. Zoom into the collinear block beside the
+inversion, turn on the heterozygous-sites track, and the second becomes
+checkable in the same frame. Each panel carries its own haplotype's annotation,
+so the sites can be read against the genes they fall in.
 
 <Figure caption="A window inside the collinear block left of the inversion, with each haplotype's genes and heterozygous sites under its own panel. The ribbon runs as one band, so the haplotypes agree structurally, while the sites below show they differ at base level throughout. The pale wedge is an indel." src="/img/hg002_haplotypes_hetsites.png" />
 
-This has to be its own view for two reasons worth knowing before you try to
-combine them. Across the whole inversion the het-site track is over its
-feature-count limit and paints a warning instead of data. And a window centered
-on a breakpoint cannot work at all: the flanking sequence and the inverted
-sequence land megabases apart on the other haplotype, so no single paternal
-window contains both and the ribbons come back empty. Frame one side or the
-other.
+This has to be its own view. Across the whole inversion the het-site track is
+over its feature-count limit and paints a warning instead of data, and a window
+centered on a breakpoint cannot work at all: the flanking and inverted sequence
+land megabases apart on the other haplotype, so no single paternal window holds
+both and the ribbons come back empty. Frame one side or the other.
 
 Each site is named for its own coordinate and alleles, so at this density the
-labels are the ruler written a second time over the data. The track menu's
-**Show labels** setting turns them off.
+labels are the ruler written twice. Turn them off with **Show labels**.
 
 ## What this alignment cannot show
 
@@ -257,19 +223,16 @@ repository's `assemblies/changes/README.txt` gives the pipeline. Three
 consequences bound what the view can be read to mean, and each one is an absence
 rather than a mark on screen:
 
-- **Only homologous chromosomes were kept.** An alignment between one chromosome
-  and a different-numbered one on the other haplotype was discarded, so
-  interchromosomal rearrangement cannot appear here at all. Its absence is a
-  property of the file, not a finding about HG002.
-- **Chains are split at large gaps.** No single chain therefore holds an indel
-  above that threshold, and the largest indels in the file are the threshold
-  rather than a measurement. The chain track is where this is visible: the gaps
-  between its blocks are where the alignment was cut, not places the haplotypes
-  stop corresponding.
-- **The alignment is trimmed to one-to-one.** Every position has exactly one
-  counterpart, so a segmental duplication is represented once rather than fanned
-  out. This is what makes the view easy to read, and also what makes it the
-  wrong file for asking about copy number.
+- **Only homologous chromosomes were kept.** Interchromosomal rearrangement
+  cannot appear here at all, and its absence is a property of the file, not a
+  finding about HG002.
+- **Chains are split at large gaps.** The largest indels in the file are that
+  threshold rather than a measurement, and the gaps between blocks in the chain
+  track are where the alignment was cut, not places the haplotypes stop
+  corresponding.
+- **The alignment is trimmed to one-to-one.** A segmental duplication is
+  represented once rather than fanned out, which makes the view easy to read and
+  makes it the wrong file for asking about copy number.
 
 For a comparison that keeps those, align the haplotypes yourself and load the
 result as in [](/docs/tutorials/synteny_visualization).
@@ -283,6 +246,8 @@ result as in [](/docs/tutorials/synteny_visualization).
 - [](/docs/tutorials/genomes_synteny), the hosted pairwise alignments on
   genomes.jbrowse.org
 - [](/docs/user_guides/linear_synteny_view)
+- [](/docs/user_guides/dotplot_view), the whole-chromosome view of the same
+  alignment
 
 ## References
 
