@@ -51,15 +51,24 @@ checkout, so ordinary git is yours to use without asking.
   every `website/scripts/*.ts` needs `puppeteer`, which is not hoisted to the
   root, so resolve it from `packages/browser-test-utils/`
   (`createRequire(<that>/package.json)`) or run from a package that depends on
-  it. One symlink:
+  it. **Two** corpora, not one — `products/jbrowse-img/img` is separate and just
+  as gitignored:
 
   ```
   ln -s ~/src/jbrowse-components/website/static/img website/static/img
+  ln -s ~/src/jbrowse-components/products/jbrowse-img/img products/jbrowse-img/img
   ```
 
-  That link is what lets figure tooling see the machine's real figures, unpushed
-  regens included, which is the whole point of a before/after comparison. Delete
-  it before committing — gitignored, but it muddies a `git status` read.
+  Those links are what let figure tooling see the machine's real figures,
+  unpushed regens included, which is the whole point of a before/after
+  comparison. Delete them before committing — gitignored, but they muddy a
+  `git status` read.
+
+  Miss the second one and `pnpm autogen` **dies** on the jbrowse-img doc
+  generator (`README references /img/jbrowse-img/1.png but … does not exist`)
+  rather than reporting it stale, so every generator after it in the run never
+  executes and the report you get is short by however many those are.
+  `pnpm figures:pull` is the other way to get both, and is what CI does.
 
 - **Never symlink `node_modules` from the primary checkout.** This section used
   to recommend it, before the install was automatic, and it is a trap worth
