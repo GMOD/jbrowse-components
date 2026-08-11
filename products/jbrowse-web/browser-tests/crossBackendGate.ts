@@ -126,39 +126,18 @@ const DEFAULT_THRESHOLD = 0.015
 // above the broader one it would otherwise be swallowed by. Latent while there
 // was only one entry.
 const THRESHOLD_OVERRIDES: { match: string; threshold: number }[] = [
-  // 1.99%, and it is the READ OUTLINE, not antialiasing. The drift is
-  // byte-identical under swiftshader and on a real Intel GPU while neighbouring
-  // pairs move (paired-coverage 2.40 -> 2.31, paired-cloud 0.84 -> 0.83), so by
-  // the rule above something is drawn differently.
+  // `alignments-long-reads-sv-linked` had an entry here at 2.5%, for a read
+  // outline that Canvas2D straddled on the rect boundary while the shader
+  // repainted an inner band. Both draw the inner band now (READ_OUTLINE_* in
+  // read.slang, `strokeRectInside` on the canvas side) and the pair measures
+  // **0.75%**, under the default — so the entry is gone rather than lowered,
+  // which is what an override reaching zero is supposed to look like.
   //
-  // What, exactly, from `probe-linked-diff.ts` — a vertical slice through the
-  // hottest row, at a column inside a read:
-  //
-  //     y=194  c2d(236,139,139)  gl(236,139,139)     read fill, agrees
-  //     y=195  c2d(218,128,128)  gl(165, 97, 97)     read edge scanline
-  //     y=196  c2d(219,219,219)  gl(255,255,255)     the inter-row GAP
-  //     y=197  c2d(218,128,128)  gl(165, 97, 97)     read edge scanline
-  //
-  // Canvas2D's 1 px outline is centred on the rect boundary, so half of it lands
-  // outside the glyph — a lighter edge (218 against 165) and grey bled into a
-  // gap the GPU leaves white. The shader draws its outline inside. A systematic
-  // half-pixel stroke placement difference, which is why no rasterizer can move
-  // it.
-  //
-  // The setting that turns it on is `showOutline ?? isChainMode`, and
-  // `isChainMode` is `linkedReads === 'normal'`. That is the whole explanation
-  // for the pair: `alignments-long-reads-sv-linked` sets `linkedReads: 'normal'`
-  // and drifts 1.99%; `alignments-long-reads-sv-zoomed-out` is the same track at
-  // the same locus without it and drifts **0.02%**. One setting, 100x.
-  //
-  // It was one of the seven overrides deleted on 2026-08-05 for measuring 1.99%
-  // against a 10% ceiling. Deleting the ceiling was right; reading "under the
-  // default" as "fine" was not, and the rasterizer test that separates those was
-  // never run on it. **Being under the threshold is not evidence of agreement.**
-  //
-  // A record of a known bug, not a setting — agent-docs/TODO.md, "The read
-  // outline is drawn on the boundary on Canvas2D and inside it on the GPU".
-  { match: 'alignments-long-reads-sv-linked', threshold: 0.025 },
+  // The 0.75% left still does not move between rasterizers, and is the same
+  // concept one level down: the chevron arrowhead's outline is a centred stroke
+  // on a polygon here and a distance-to-the-two-diagonals test on the GPU. Filed
+  // in agent-docs/TODO.md; it is under the default, so it is a note and not an
+  // exemption.
   // Dense paired-end coverage strip, measured 2.40% under swiftshader and 2.31%
   // on a real GPU. It MOVES, so unlike the two above this really is
   // rasterization — the first entry in this list whose antialiasing claim the

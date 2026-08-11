@@ -3,7 +3,7 @@
 // clipped to the segment's leading (fwd) or trailing (rev) edge.
 //! targets: wgsl, glsl
 //! js-export: insertGradientT, showChevron
-//! export-consts: READ_CATEGORY_SLOTS, CS_NORMAL, CS_STRAND, CS_MAPQ, CS_INSERT_SIZE, CS_FIRST_OF_PAIR, CS_PAIR_ORIENT, CS_IS_AND_ORIENT, CS_MODIFICATIONS, CS_TAG, CS_IS_GRADIENT, RC_SUPPLEMENTARY, RC_SPLIT_INVERSION, RC_SPLIT_DELETION, RC_UNMAPPED_MATE, RC_INTERCHROM, RC_FWD_STRAND, RC_REV_STRAND, RC_NO_STRAND, RC_NON_SPLIT, RC_PAIR_LR, RC_PAIR_RL, RC_PAIR_RR, RC_PAIR_LL, RC_LONG_INSERT, RC_SHORT_INSERT, RC_NORMAL_INSERT, RC_PLAIN, RC_MAPQ, RC_TAG, RC_NO_TAG_VALUE, RC_MOD_FWD, RC_MOD_REV, CHEVRON_PX, CHEVRON_DIRLESS_MIN_WIDTH_PX, PAIR_MIN_SPAN_PX, IS_GRADIENT_SPAN_FRAC
+//! export-consts: READ_CATEGORY_SLOTS, CS_NORMAL, CS_STRAND, CS_MAPQ, CS_INSERT_SIZE, CS_FIRST_OF_PAIR, CS_PAIR_ORIENT, CS_IS_AND_ORIENT, CS_MODIFICATIONS, CS_TAG, CS_IS_GRADIENT, RC_SUPPLEMENTARY, RC_SPLIT_INVERSION, RC_SPLIT_DELETION, RC_UNMAPPED_MATE, RC_INTERCHROM, RC_FWD_STRAND, RC_REV_STRAND, RC_NO_STRAND, RC_NON_SPLIT, RC_PAIR_LR, RC_PAIR_RL, RC_PAIR_RR, RC_PAIR_LL, RC_LONG_INSERT, RC_SHORT_INSERT, RC_NORMAL_INSERT, RC_PLAIN, RC_MAPQ, RC_TAG, RC_NO_TAG_VALUE, RC_MOD_FWD, RC_MOD_REV, CHEVRON_PX, CHEVRON_DIRLESS_MIN_WIDTH_PX, PAIR_MIN_SPAN_PX, IS_GRADIENT_SPAN_FRAC, READ_OUTLINE_PX, READ_OUTLINE_SHADE, READ_OUTLINE_MIN_PX
 
 import alignmentsUniforms;
 import colorPack;
@@ -86,6 +86,29 @@ static const float PAIR_MIN_SPAN_PX = 10.0;
 // a moderate outlier already reads as clearly colored instead of near-neutral.
 // Exported so colorUtils.ts (Canvas2D / SVG) shares the exact ramp.
 static const float IS_GRADIENT_SPAN_FRAC = 0.5;
+
+// The read outline, which is not a stroke: the outermost READ_OUTLINE_PX of the
+// glyph is repainted at READ_OUTLINE_SHADE of its own fill. No second colour, no
+// geometry, and it can never leave the read.
+//
+// Exported because `features/read/drawCanvas.ts` has to reproduce it with a
+// `strokeRect`, and the three numbers were stated twice with three different
+// answers: it stroked `rgba(0,0,0,0.3)` at width 0.5 CENTRED on the boundary,
+// against this 1 px band inside it, and gated on width alone where this gates on
+// both axes. Only the colour happened to agree, and by coincidence of algebra —
+// compositing black at 0.3 over a fill IS `fill * 0.7`, so the same rule had been
+// written once as a multiply and once as a composite.
+//
+// Measured before the fix: 1.99% cross-backend drift on
+// `alignments-long-reads-sv-linked`, and the webgl edge pixel was exactly
+// `(236,139,139) * 0.7 = (165,97,97)` — see
+// agent-docs/reference/CROSS_BACKEND_GATE.md.
+static const float READ_OUTLINE_PX = 1.0;
+static const float READ_OUTLINE_SHADE = 0.7;
+// Below this the glyph is too small to spend a pixel of each edge on an outline
+// — it would be most of the read. Both axes, which is the half the Canvas2D twin
+// was missing: on a 2 px row it outlined and the GPU did not.
+static const float READ_OUTLINE_MIN_PX = 2.0;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -278,8 +301,10 @@ float4 fs_main(VsOut fragIn) : SV_Target {
       float dy = min(fragIn.localPos.y, 1.0 - fragIn.localPos.y) * fragIn.featSize.y;
       edgeDist = min(min(dxLL, dxR), dy);
     }
-    if (edgeDist < 1.0 && fragIn.featSize.x > 2.0 && fragIn.featSize.y > 2.0) {
-      return float4(fragIn.color.rgb * 0.7, fragIn.color.a);
+    if (edgeDist < READ_OUTLINE_PX
+        && fragIn.featSize.x > READ_OUTLINE_MIN_PX
+        && fragIn.featSize.y > READ_OUTLINE_MIN_PX) {
+      return float4(fragIn.color.rgb * READ_OUTLINE_SHADE, fragIn.color.a);
     }
   }
   return fragIn.color;

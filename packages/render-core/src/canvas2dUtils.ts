@@ -277,6 +277,44 @@ export function forEachClippedBlock<T, B extends BpRegionBounds>(
 }
 
 /**
+ * Stroke the outline of `[x, y, w, h]` so the line lands **inside** the rect
+ * rather than straddling its edge.
+ *
+ * Canvas2D centres a stroke on its path, so `strokeRect(x, y, w, h)` puts half
+ * the line width outside the rectangle you named. Every GPU pass in this repo
+ * draws an outline as an inner band — a fragment test on distance-to-edge, which
+ * has no way to paint outside the glyph — so the straddling spelling is a
+ * guaranteed half-pixel disagreement with the shader, and it eats whatever gap
+ * separates the glyph from its neighbour.
+ *
+ * **It matters more in the SVG export than on screen**, which is the reason this
+ * is a helper and not a house style. On a canvas the difference is half a pixel;
+ * in SVG a centred stroke means the emitted element's *declared geometry* and
+ * its painted extent differ by half the stroke width, so a 10px-tall read
+ * exports as an 11px-tall mark. Anything that measures the file, or opens it in
+ * a vector editor and snaps to the shape's bounds, is then reading a rectangle
+ * whose coordinates do not describe what is drawn.
+ *
+ * Degenerate rects are left to the caller: below `lineWidth` on an axis the
+ * inset would invert it, and what to do instead (skip the outline, or fill
+ * solid) is a per-glyph decision. The alignments read painter and the canvas
+ * feature painter both gate on a minimum size first.
+ */
+export function strokeRectInside(
+  ctx: {
+    strokeRect: (x: number, y: number, w: number, h: number) => void
+  },
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  lineWidth = 1,
+) {
+  const inset = lineWidth / 2
+  ctx.strokeRect(x + inset, y + inset, w - lineWidth, h - lineWidth)
+}
+
+/**
  * `fillRect` x for a mark that spans `x1`→`x2` but is painted at `width` — the
  * Canvas2D pivot for every painter that widens a too-narrow span to a floor (a
  * 1bp feature, a zoomed-out coverage bin), and the twin of the pivot baked into

@@ -83,6 +83,12 @@ export const PAIR_MIN_SPAN_PX = 10
 
 export const IS_GRADIENT_SPAN_FRAC = 0.5
 
+export const READ_OUTLINE_PX = 1
+
+export const READ_OUTLINE_SHADE = 0.7
+
+export const READ_OUTLINE_MIN_PX = 2
+
 export const UNIFORMS_SIZE_BYTES = 1040
 
 // Word indices into a Float32Array view over the uniform buffer.

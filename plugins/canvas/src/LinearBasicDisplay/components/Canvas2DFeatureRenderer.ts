@@ -9,6 +9,7 @@ import {
   forEachClippedBlock,
   makeBpMapper,
   spanLeft,
+  strokeRectInside,
 } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import {
@@ -272,7 +273,10 @@ function drawRects(
     }
     ctx.fillRect(xLeft, y, w, h)
     if (outlineStyle !== undefined && w > 2 && h > 2) {
-      ctx.strokeRect(xLeft + 0.5, y + 0.5, w - 1, h - 1)
+      // This file had the inset spelling open-coded and was the only painter
+      // that did; the rule is `strokeRectInside` now, so the alignments read
+      // painter gets it too rather than rediscovering the `+0.5`.
+      strokeRectInside(ctx, xLeft, y, w, h)
     }
   }
 }

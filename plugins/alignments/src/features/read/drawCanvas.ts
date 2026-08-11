@@ -1,10 +1,17 @@
+import { strokeRectInside } from '@jbrowse/render-core/canvas2dUtils'
+
 import { readColorFromCategoryIndex } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   bpToScreenX,
   pileupRowOffCanvas,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import { CHEVRON_PX } from '../../shaders/slang/read.iface.generated.ts'
+import {
+  CHEVRON_PX,
+  READ_OUTLINE_MIN_PX,
+  READ_OUTLINE_PX,
+  READ_OUTLINE_SHADE,
+} from '../../shaders/slang/read.iface.generated.ts'
 import { showChevron as shaderShowChevron } from '../../shaders/slang/read.js.generated.ts'
 
 import type {
@@ -44,8 +51,14 @@ interface DrawReadsRegion {
 // Read-edge clipping that the shader's edgeFlags handle is covered here by the
 // per-block scissor clip: drawing the arrowhead at the true genomic edge means
 // a region-clipped edge falls outside the clip and is suppressed automatically.
-const OUTLINE_STYLE = 'rgba(0,0,0,0.3)'
-const OUTLINE_WIDTH = 0.5
+
+// The outline read.slang draws, reproduced with a stroke. The shader repaints
+// the outermost READ_OUTLINE_PX of the glyph at READ_OUTLINE_SHADE of its own
+// fill; compositing black at `1 - shade` over that fill is the same operation,
+// which is how these two spellings came to agree on colour while disagreeing on
+// everything else. Derived from the shader's number rather than restating 0.3,
+// so a change to the shade reaches both.
+const OUTLINE_STYLE = `rgba(0,0,0,${1 - READ_OUTLINE_SHADE})`
 
 // Frame-level inputs to the chevron gate, constant across reads in one block.
 export interface ChevronFrame {
@@ -134,7 +147,7 @@ export function drawReads(
 
   // Outline paint state is constant across reads; set it once.
   ctx.strokeStyle = OUTLINE_STYLE
-  ctx.lineWidth = OUTLINE_WIDTH
+  ctx.lineWidth = READ_OUTLINE_PX
 
   // Assigning fillStyle re-parses the CSS string, which is the per-read cost
   // that matters here — the category→CSS lookup is minor next to it. Under
@@ -170,7 +183,11 @@ export function drawReads(
     const xL = Math.min(xStart, xEnd)
     const xR = Math.max(xStart, xEnd)
     const w = Math.max(1, xR - xL)
-    const outline = state.showOutline && w > 2
+    // Both axes, matching read.slang: a read too short to spare a pixel of each
+    // edge gets no outline, and the height half of that test was missing here —
+    // on a 2px row this outlined where the GPU did not.
+    const outline =
+      state.showOutline && w > READ_OUTLINE_MIN_PX && fH > READ_OUTLINE_MIN_PX
 
     // Paints the category the classification pass already decided — the exact
     // byte read.slang gets as `inst.colorCategory`, so the two backends cannot
@@ -216,7 +233,10 @@ export function drawReads(
     } else {
       ctx.fillRect(xL, y, w, fH)
       if (outline) {
-        ctx.strokeRect(xL, y, w, fH)
+        // Inside the rect, not straddling its edge — the shader's outline is a
+        // fragment test on distance-to-edge and cannot paint outside the glyph.
+        // See strokeRectInside for why this matters most in the SVG export.
+        strokeRectInside(ctx, xL, y, w, fH, READ_OUTLINE_PX)
       }
     }
   }

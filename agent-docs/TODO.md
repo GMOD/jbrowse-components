@@ -24,7 +24,7 @@ Exploratory concepts that are *not* committed work live in
 | [Alignments / canvas odds and ends](#alignments--canvas) | alignments, canvas | five independent small items |
 | [Make the capture scroll-invariant](#make-the-snapshot-capture-scroll-invariant-then-widen-the-gate-to-webgpu) | browser tests | it is `snapshot.ts`, not a shader — attribution is done |
 | [Widen `CI_GATE_SUITES`](#widen-ci_gate_suites) | browser tests, CI | measure before adding; say why the alignments pair is safe |
-| [The read outline straddles the boundary](#the-read-outline-is-drawn-on-the-boundary-on-canvas2d-and-inside-it-on-the-gpu) | alignments, GPU | get the visual call first — inside the glyph, or on its edge |
+| [The chevron arrowhead's outline](#the-chevron-arrowheads-outline-is-a-centred-stroke-on-one-side-a-distance-test-on-the-other) | alignments, GPU | the rect half is done; fill the pentagon twice rather than stroking it |
 | [Attribute the TIMEOUT mode](#attribute-the-browser-test-timeout-failure-mode) | browser tests | report the display's state, don't extend the wait |
 | [Make the webgl blank verdict readable](#make-the-webgl-blank-verdict-readable) | browser tests | one diagnostic run; never leave it on |
 | [Report a callout that draws off-frame](#report-a-callout-that-draws-off-frame) | figures | the overlay already reports the unresolvable case |
@@ -117,29 +117,21 @@ workspaces, redraw, cursor-guides, svg-export, custom-url, variant-force-load.
 Arcs and workspaces carry overrides tuned on a real GPU, so **measure before
 adding**; that is the whole procedure, and it is a measurement, not an edit.
 
-### The read outline is drawn on the boundary on Canvas2D and inside it on the GPU
+### The chevron arrowhead's outline is a centred stroke on one side, a distance test on the other
 
-Worth 1.99% cross-backend drift on `alignments-long-reads-sv-linked`, and it does
-not move between rasterizers, so it is a placement difference rather than
-antialiasing. Canvas2D's 1 px outline is centred on the rect boundary and spills
-half a pixel into the inter-row gap; the shader draws its outline inside the
-glyph. Decoded pixel-by-pixel — the edge scanlines and the grey-vs-white gap are
-tabulated in [CROSS_BACKEND_GATE.md](reference/CROSS_BACKEND_GATE.md).
+What is left of the read-outline divergence after the rect half was fixed. The
+body rect now agrees — `READ_OUTLINE_*` from read.slang plus `strokeRectInside`
+took `alignments-long-reads-sv-linked` from 1.99% to **0.75%** and retired its
+threshold override. The residue is the arrowhead: `traceReadArrow` builds a
+pentagon and `ctx.stroke()`s it centred on the path, while read.slang measures
+`min(localPos.x, localPos.y)` to the two diagonal edges and shades an inner band.
+Still rasterizer-independent, so still a real difference and not AA.
 
-The controlled comparison is already in the suite: `showOutline` defaults to
-`isChainMode` (`linkedReads === 'normal'`), so
-`alignments-long-reads-sv-zoomed-out` is the same track at the same locus with
-the outline off, and drifts 0.02% against 1.99%.
-
-**The first move is a visual call, not a code change**: which side is right? A
-stroke straddling the boundary reads heavier and eats the row gap; one inset
-inside the glyph keeps the gap but thins the read by a pixel at small row
-heights. Decide that, then make the other side follow. Either way every
-alignments golden moves, and the `alignments-long-reads-sv-linked` threshold
-override comes out when it lands.
-
-Do **not** reach for `Math.round` on either side to line them up — see the
-`Math.round` / `floor(x + 0.5)` trap in the same doc.
+Insetting a polygon is not the one-liner insetting a rect is. The cheap version
+is to trace the arrow a half-width smaller and stroke that; the honest version is
+to fill the pentagon twice (once at the outline shade, once inset), which is what
+the shader effectively does and needs no stroke at all. Under the 1.5% default
+either way, so this is cleanup, not a gate.
 
 ### Attribute the browser-test TIMEOUT failure mode
 

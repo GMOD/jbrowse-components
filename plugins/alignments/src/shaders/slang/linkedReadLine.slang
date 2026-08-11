@@ -92,12 +92,10 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float2 dir = (len > 0.0001) ? delta / len : float2(1.0, 0.0);
   float2 nrm = float2(-dir.y, dir.x);
 
-  // Overshoot both ends by a half-width so the fragment's box distance has
-  // somewhere to ramp the butt caps down.
+  // segmentQuadLocal (alignmentsUniforms) owns the AA pad, paired with the
+  // sdSegment the fragment measures with — the same pair arcFlat.slang uses.
   float halfLen = len * 0.5;
-  float hw = LINKED_READ_LINE_WIDTH_PX * 0.5 + STROKE_AA_PX;
-  float2 q = quadLocal(vid) * 2.0 - 1.0;
-  o.local = float2(q.x * (halfLen + hw), q.y * hw);
+  o.local = segmentQuadLocal(vid, halfLen, LINKED_READ_LINE_WIDTH_PX * 0.5);
   o.halfLen = halfLen;
 
   float2 p = mid + dir * o.local.x + nrm * o.local.y;
@@ -111,13 +109,11 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  // Distance to a butt-capped segment: the y-extent-zero box SDF, exactly as
-  // arcFlat.slang measures its horizontal one — `local` is already in the
-  // segment's frame, so the diagonal costs nothing here.
-  float2 q = float2(abs(fragIn.local.x) - fragIn.halfLen, abs(fragIn.local.y));
-  float d = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0);
-  // |grad d| is analytically 1 per CSS px, so the ramp is a constant number of
-  // device pixels rather than a derivative — see STROKE_AA_PX.
+  // `local` is already in the segment's own frame, so the diagonal costs
+  // nothing here — this is the same measurement arcFlat.slang makes of its
+  // horizontal one. |grad d| is analytically 1 per CSS px, so the ramp is a
+  // constant number of device pixels rather than a derivative (STROKE_AA_PX).
+  float d = sdSegment(fragIn.local, fragIn.halfLen);
   float alpha = strokeCoverage(d, LINKED_READ_LINE_WIDTH_PX * 0.5, u);
   // Straight alpha; the HAL blend func does the premultiply.
   return float4(fragIn.color.rgb, fragIn.color.a * alpha);

@@ -234,9 +234,31 @@ meaningless — but "it is under the default" was read as "it is fine", and the
 rasterizer test that would have separated those two claims was not run on it.
 **Being under the threshold is not evidence of agreement.**
 
-Not fixed here: making the two agree is a visual decision (which side is right —
-a stroke straddling the boundary, or one inside it) and it moves every alignments
-golden. Filed in TODO.md; the override is a record of it, not a setting.
+### Fixed: the outline is one rule now, and the override is gone
+
+`read.slang` `export-consts`es `READ_OUTLINE_PX` / `READ_OUTLINE_SHADE` /
+`READ_OUTLINE_MIN_PX`, and `features/read/drawCanvas.ts` reads all three. The
+placement rule is `strokeRectInside` in `canvas2dUtils` — stroke inside the rect,
+never straddling it — which `plugins/canvas` had open-coded as `+0.5` and is now
+the one spelling both painters use.
+
+**1.99% → 0.75%**, so the pair sits under the 1.5% default and its threshold
+override was **deleted rather than lowered**, which is what an override reaching
+zero should look like.
+
+Worth keeping the shape of the bug: only the *colour* had agreed, and by
+coincidence — compositing black at 0.3 over a fill is arithmetically `fill * 0.7`,
+so one rule had been written once as a composite and once as a multiply. The
+three things that had *not* agreed were placement (boundary vs inner band), width
+(0.5 vs 1 px) and the gate (Canvas2D tested width only, so a 2 px row outlined
+where the GPU did not).
+
+The remaining **0.75% still does not move between rasterizers**, and is the same
+concept one level down: the chevron arrowhead's outline is a centred stroke on a
+polygon on the canvas side and a distance-to-the-two-diagonals test on the GPU.
+Insetting an arbitrary polygon is not the one-liner insetting a rect is, so it is
+filed rather than done — and it is under the default, so it is a note, not an
+exemption.
 
 ### The connector width bug, which is real and is not this
 

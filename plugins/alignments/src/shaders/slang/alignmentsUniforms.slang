@@ -233,6 +233,39 @@ public float strokeCoverage(float d, float halfWidthPx, Uniforms u) {
   return clamp((halfWidthPx - d) / aa + 0.5, 0.0, 1.0);
 }
 
+// A butt-capped stroked segment, as the two halves of one contract: the quad
+// that covers it, and the distance that shades it. They belong together because
+// the pad is the contract — the quad is grown by exactly STROKE_AA_PX beyond the
+// half-width on both axes, which is what makes |grad d| analytically 1 CSS px
+// per px and lets `strokeCoverage` use a constant ramp instead of `fwidth`. Pad
+// one without the other and the ramp is clipped at the caps, silently.
+//
+// arcFlat.slang and linkedReadLine.slang each carried a copy of both. Sharing
+// them clears ADR-040's bar rather than working around it — that ADR turned down
+// a generic quad skeleton for want of two real consumers and non-obvious math,
+// and this now has both. arcLine.slang is deliberately NOT a third: it is a
+// full-band tick with no caps, so it measures `abs(dx)` alone and a halfLen it
+// does not have would be noise.
+//
+// `local` is in the SEGMENT's own frame — x along it, y across it — so a
+// diagonal segment costs nothing here. Mapping that frame to the screen is the
+// caller's, and genuinely differs: arcFlat's segment is horizontal by
+// construction and adds `local` to a centre, while a linked-read connector
+// rotates it onto `dir`/`nrm`.
+public float2 segmentQuadLocal(uint vid, float halfLenPx, float halfWidthPx) {
+  float hw = halfWidthPx + STROKE_AA_PX;
+  float2 q = quadLocal(vid) * 2.0 - 1.0;
+  return float2(q.x * (halfLenPx + hw), q.y * hw);
+}
+
+// Perpendicular distance in CSS px from `local` to that segment's centreline —
+// the y-extent-zero box SDF, which is the cap-correct form: inside the caps it
+// is |local.y|, past them it rounds the corner off the cap's end.
+public float sdSegment(float2 local, float halfLenPx) {
+  float2 q = float2(abs(local.x) - halfLenPx, abs(local.y));
+  return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0);
+}
+
 // Exact distance from a point to the axis-aligned ellipse |p/ab| = 1 — Inigo
 // Quilez's closed-form solve of the quartic. Used by arc.slang so a dome's
 // coverage comes from the analytic curve rather than from the tessellated hull

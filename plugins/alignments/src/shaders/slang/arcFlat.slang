@@ -78,10 +78,9 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
   // Overshoot both ends by a half-width: the flat form's caps are not cut by
   // the band scissor, so the fragment's box distance needs somewhere to ramp
-  // them down.
-  float hw = u.lineWidthPx * 0.5 + STROKE_AA_PX;
-  float2 q = quadLocal(vid) * 2.0 - 1.0;
-  o.local = float2(q.x * (halfLen + hw), q.y * hw);
+  // them down. segmentQuadLocal (alignmentsUniforms) owns that pad, paired with
+  // the sdSegment the fragment measures with.
+  o.local = segmentQuadLocal(vid, halfLen, u.lineWidthPx * 0.5);
   o.halfLen = halfLen;
   o.dashed = inst.dashed;
 
@@ -96,11 +95,9 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  // Distance to a butt-capped horizontal segment: the y-extent-zero box SDF.
-  float2 q = float2(abs(fragIn.local.x) - fragIn.halfLen, abs(fragIn.local.y));
-  float d = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0);
   // |grad d| is analytically 1 per CSS px, so the AA ramp is a constant number
   // of device pixels, not a derivative — see STROKE_AA_PX.
+  float d = sdSegment(fragIn.local, fragIn.halfLen);
   float alpha = strokeCoverage(d, u.lineWidthPx * 0.5, u);
   // Split-read flat arcs render dashed (samplot.py's dotted style, and
   // Canvas2D's setLineDash([3,3])): 3px on, 3px off, with the same STROKE_AA_PX
