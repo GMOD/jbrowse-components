@@ -1098,6 +1098,49 @@ test('incremental memo busts when the pinned set reference changes', () => {
   expect(topOf(after, 'B')).toBe(0)
 })
 
+test('a collapsed mark does not outrank an arriving gene for the top row', () => {
+  // The memo seeds each re-pack with the previous layout's rows so features near
+  // the top keep them. A collapsed mark never competed for a row — it skips the
+  // stacker — so its y=0 must not enter that seed: here a wide gene arrives over
+  // a 1bp mark that had collapsed, which stops the mark collapsing (it would
+  // paint on top of the gene) and sends it through the packer. Seeded with the
+  // mark's y=0 it was inserted first and took row 0, leaving the gene stacked
+  // under a feature 1/2000th its width.
+  const mark = {
+    featureId: 'snp',
+    startBp: 5000,
+    endBp: 5001,
+    height: 10,
+    densityFade: true,
+  }
+  const gene = {
+    featureId: 'gene',
+    startBp: 4000,
+    endBp: 6000,
+    height: 10,
+    densityFade: false,
+  }
+  const keys = new Map([[0, 'v:ctgA']])
+  const memo = createIncrementalLayout()
+  const topOf = (r: Map<number, FeatureDataResult>, id: string) =>
+    r.get(0)!.flatbushItems.find(it => it.featureId === id)!.topPx
+
+  // zoomed out, nothing else on screen: the mark collapses to row 0
+  const before = memo(
+    new Map([[0, makeFeatureData({ features: [mark] })]]),
+    incInputs(keys, 100),
+  )
+  expect(topOf(before, 'snp')).toBe(0)
+
+  // the gene's fetch lands
+  const after = memo(
+    new Map([[0, makeFeatureData({ features: [gene, mark] })]]),
+    incInputs(keys, 100),
+  )
+  expect(topOf(after, 'gene')).toBe(0)
+  expect(topOf(after, 'snp')).toBeGreaterThan(0)
+})
+
 test('density-fade boxes collapse onto row 0 only when sub-pixel', () => {
   // Two abutting boxes at bpPerPx=1; the 1px inter-feature padding makes them
   // collide, so first-fit stacks the second onto its own row unless collapsed.

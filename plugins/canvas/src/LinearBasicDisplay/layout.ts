@@ -340,16 +340,38 @@ export function computeLaidOutData(
   // so top features keep their rows across a re-pack (see packRef).
   prevYByFeatureId?: ReadonlyMap<string, number>,
 ): Map<number, FeatureDataResult> {
+  return layoutRefGroups(rpcDataMap, inputs, prevYByFeatureId).out
+}
+
+// `computeLaidOutData` plus the ids the density collapse pinned to row 0, which
+// the incremental wrapper needs and no other caller does — those marks must not
+// seed the next re-pack's row priority (see `seedRowsFrom`). Kept as the shared
+// body rather than widening `computeLaidOutData`'s return, so the pure entry
+// point every test and probe uses still answers with just the layout.
+function layoutRefGroups(
+  rpcDataMap: ReadonlyMap<number, FeatureDataResult>,
+  inputs: LayoutInputs,
+  prevYByFeatureId?: ReadonlyMap<string, number>,
+) {
   const metrics = displayModeMetrics(inputs.displayMode)
   const out = new Map<number, FeatureDataResult>()
+  const collapsedIds = new Set<string>()
   for (const [, regions] of groupRawByRef(rpcDataMap, inputs.regionKeys)) {
-    const { layoutMap, layoutHeights, droppedLabelIds, densityFadeIds } =
-      packPreparedRef(
-        prepareRefPack(regions, inputs, metrics),
-        inputs,
-        metrics,
-        prevYByFeatureId,
-      )
+    const {
+      layoutMap,
+      layoutHeights,
+      droppedLabelIds,
+      densityFadeIds,
+      collapsed,
+    } = packPreparedRef(
+      prepareRefPack(regions, inputs, metrics),
+      inputs,
+      metrics,
+      prevYByFeatureId,
+    )
+    for (const mark of collapsed) {
+      collapsedIds.add(mark.id)
+    }
     // Clone only now that the packing is decided: cloneMutableFields dominates
     // this function's cost (~4/5 of it at 4k features), so the height probes the
     // fit solve runs skip it entirely (see packedContentHeight) and only the
@@ -376,7 +398,7 @@ export function computeLaidOutData(
     }
   }
 
-  return out
+  return { out, collapsedIds }
 }
 
 // Content height of a set of packed rows, matching `maxBottom` of the layout the
@@ -503,6 +525,9 @@ interface GroupCache {
   reversed: Set<number>
   // idx -> laid-out result, reused verbatim when the group is unchanged
   output: Map<number, FeatureDataResult>
+  // ids the density collapse pinned to row 0 in `output`, excluded when this
+  // layout seeds the next one's insertion order (see `seedRowsFrom`)
+  collapsedIds: ReadonlySet<string>
 }
 
 function groupUnchanged(
@@ -537,6 +562,28 @@ function groupUnchanged(
         prev.reversed.has(idx) === reversedRegions.has(idx),
     )
   )
+}
+
+// The rows a cached group offers the next re-pack as its insertion priority.
+//
+// Every feature the packer placed, MINUS the sub-pixel marks the density
+// collapse pinned to row 0. Those never competed for a row — they skip the
+// stacker entirely — so carrying their y=0 into the sort would rank thousands of
+// them alongside the features that genuinely won the top row, and ahead of every
+// feature on a lower one. On the zoom step where they stop collapsing (the box
+// crosses the min-width clamp and each one starts claiming a real row) they
+// would then take the low rows across the whole span and shove the genes that
+// held them downward — the exact churn the seeding exists to prevent. Dropped
+// here they rank as new (PRIOR_ROW_NONE) and fill gaps instead.
+//
+// The morph reads `captureFeatureTops` unfiltered, and should: a mark that WAS
+// drawn at y=0 animates from y=0. This is only about who gets first pick.
+function seedRowsFrom(prev: GroupCache) {
+  const tops = captureFeatureTops(prev.output)
+  for (const id of prev.collapsedIds) {
+    tops.delete(id)
+  }
+  return tops
 }
 
 // Incremental wrapper over `computeLaidOutData`. Layout is independent per
@@ -607,10 +654,10 @@ export function createIncrementalLayout({
         // Order this group's re-pack by each feature's row in the prior output
         // so top features keep their rows across a zoom (see packRef), unless
         // this instance packs measured candidates (see seedPriorRows).
-        const output = computeLaidOutData(
+        const { out: output, collapsedIds } = layoutRefGroups(
           members,
           inputs,
-          seedPriorRows && prev ? captureFeatureTops(prev.output) : undefined,
+          seedPriorRows && prev ? seedRowsFrom(prev) : undefined,
         )
         const reversed = new Set<number>()
         for (const idx of members.keys()) {
@@ -632,6 +679,7 @@ export function createIncrementalLayout({
           members: new Map(members),
           reversed,
           output,
+          collapsedIds,
         })
       }
     }
@@ -991,6 +1039,21 @@ function prepareRefPack(
     }
   }
 
+  // Whether the collapse can fire at all here. `solidSpansPx` below is queried by
+  // nothing else, so without a candidate to test against it — every feature wide
+  // enough to draw (any zoom past the min-width clamp), every feature labeled, or
+  // collapsed mode, where there is no stacking to opt out of — building it is a
+  // per-feature allocation and an O(n log n) sort thrown away on every re-pack.
+  let anyCollapseCandidate = false
+  if (!metrics.singleRow) {
+    for (const [id, geom] of features) {
+      if (isSubPixelFade(geom, bpPerPx) && !labeledFeatureIds.has(id)) {
+        anyCollapseCandidate = true
+        break
+      }
+    }
+  }
+
   // Everything that will hold a real row, which is the collapse test below minus
   // its own overlap clause: a wide feature, OR a sub-pixel one held out of the
   // collapse because it carries a label. Counting the labeled sub-pixel features
@@ -998,9 +1061,11 @@ function prepareRefPack(
   // (a partially-rs-ID'd VCF at sub-pixel zoom: the named variant stacks, so the
   // unnamed one must see it).
   const solidSpansPx: [number, number][] = []
-  for (const [id, geom] of features) {
-    if (!isSubPixelFade(geom, bpPerPx) || labeledFeatureIds.has(id)) {
-      solidSpansPx.push(renderedSpanPx(geom, bpPerPx))
+  if (anyCollapseCandidate) {
+    for (const [id, geom] of features) {
+      if (!isSubPixelFade(geom, bpPerPx) || labeledFeatureIds.has(id)) {
+        solidSpansPx.push(renderedSpanPx(geom, bpPerPx))
+      }
     }
   }
 
@@ -1152,6 +1217,29 @@ function packPreparedRef(
     inputs,
     metrics,
   )
+  const layoutMap = new Map<string, number>()
+  const layoutHeights = new Map<string, number>()
+
+  // Collapsed mode: every feature shares row 0. No greedy stacking, no sub-pixel
+  // density collapse — just one overlapping row, so nothing below this point has
+  // anything to decide. Taken as a whole-function early-out rather than a branch
+  // inside the loop because everything it skips is dead here and none of it is
+  // cheap: the row grid, the priority sort, and the collapse tests, in the mode
+  // picked precisely because the track is too big to stack.
+  if (singleRow) {
+    for (const [id, ext] of packed) {
+      layoutMap.set(id, 0)
+      layoutHeights.set(id, ext.height)
+    }
+    return {
+      layoutMap,
+      layoutHeights,
+      droppedLabelIds,
+      densityFadeIds: NO_FADE,
+      collapsed: NO_COLLAPSED,
+    }
+  }
+
   // GranularRectLayout quantizes rows to pitchY (default 10px), so tops snap to
   // a 10px grid and compact/superCompact features can't pack below one grid
   // cell. Shrink the grid with the mode so the row spacing tightens too — else
@@ -1166,8 +1254,6 @@ function packPreparedRef(
     pitchX: 1,
     pitchY: Math.max(1, Math.round(10 * heightMultiplier)),
   })
-  const layoutMap = new Map<string, number>()
-  const layoutHeights = new Map<string, number>()
   // Every feature pinned to row 0 by the density-collapse path below, with the
   // px span it paints — the input to `pileupFadeIds`, which decides which of
   // them fade.
@@ -1199,13 +1285,6 @@ function packPreparedRef(
 
   for (const [id, ext] of sorted) {
     const geom = features.get(id)!
-    // Collapsed mode: every feature shares row 0. No greedy stacking, no
-    // sub-pixel density collapse — just one overlapping row.
-    if (singleRow) {
-      layoutMap.set(id, 0)
-      layoutHeights.set(id, ext.height)
-      continue
-    }
     // A sub-pixel density-fade box collapses into the shared density texture
     // (rect.slang densityAlpha), so pin it to row 0 and skip the greedy stacker:
     // it reserves no vertical space and never overflows maxHeight. This keeps a
@@ -1249,6 +1328,7 @@ function packPreparedRef(
     layoutHeights,
     droppedLabelIds,
     densityFadeIds: pileupFadeIds(collapsed),
+    collapsed,
   }
 }
 
@@ -1258,6 +1338,10 @@ interface CollapsedMark {
   startPx: number
   endPx: number
 }
+
+// The "nothing collapsed" pair, for the paths that can't collapse anything.
+const NO_COLLAPSED: CollapsedMark[] = []
+const NO_FADE: ReadonlySet<string> = new Set()
 
 // Which collapsed marks share pixels with another collapsed mark, i.e. exactly
 // the ones the fade exists for: on row 0 nothing stacks, so two marks over the
