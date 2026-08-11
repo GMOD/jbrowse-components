@@ -4247,7 +4247,7 @@ export const graphSpecs: ScreenshotSpec[] = [
         },
         {
           type: 'GraphGenomeView',
-          displayName: 'HPRC release 2 graph, cut to that window',
+          displayName: 'HPRC release 2 graph, cut from the window above',
           loadedTrackId: SEGMENTS_TRACK,
           loadedRegion: CHM13_REGION,
           layoutMode: 'force',
@@ -4325,10 +4325,10 @@ export const graphSpecs: ScreenshotSpec[] = [
       // texts are too small to see. we need to add them"). Each pane already
       // carries a `displayName`, which is what an earlier round asked for, and
       // a view header draws it at 13 css px in a 1000 px frame that is 2,630 px
-      // tall -- correct, and not what the eye lands on. These repeat the same
-      // three sentences at 18 px in each pane's own empty corner. If the header
-      // text is ever reworded, reword these with it; they are two spellings of
-      // one label on purpose.
+      // tall -- correct, and not what the eye lands on. These repeat the pane
+      // headers at 18 px in each pane's own empty corner. If a header is
+      // reworded, reword the overlay with it -- EXCEPT the graph pane's, which
+      // deliberately says something the header does not; see below.
       {
         type: 'text',
         text: 'hg38: no coordinates for this sequence',
@@ -4348,9 +4348,25 @@ export const graphSpecs: ScreenshotSpec[] = [
           dy: 30,
         },
       },
+      // THE GRAPH PANE'S OVERLAY IS NOT ITS HEADER (review: "the text annotation
+      // 'cut to that window' is meaningless"). It was, and the header is where
+      // that belongs: which interval the subgraph was cut from is a fact about
+      // the pane, and repeating it at 18 px spent the pane's one free corner
+      // saying nothing twice. What the pane cannot say for itself is why one
+      // node is charcoal in a rainbow: `reference-position` ramps hue across the
+      // window the cut came from and drops any segment with no reference
+      // coordinate off the ramp entirely (graph_genome_view.md, "Colors that
+      // mean the same thing in both panels"). So the boxed arc is grey for
+      // exactly the reason the pane above it carries no coordinates for that
+      // sequence -- one claim, stated once per pane in each pane's own terms.
+      //
+      // PLURAL on purpose: the boxed arc is the largest charcoal node, not the
+      // only one. The chain carries a dozen small grey segments between the
+      // coloured ones, which is the same statement at a scale that does not
+      // need a box.
       {
         type: 'text',
-        text: 'the graph, cut to that window',
+        text: 'charcoal nodes have no hg38 coordinate',
         fontSize: 18,
         maxWidth: 320,
         anchor: {
