@@ -58,6 +58,30 @@ export function isBezierArcPair({ e1, e2, c }: LinkedPair): boolean {
   return !(c.isNormal && e1.displayedRegionIndex === e2.displayedRegionIndex)
 }
 
+// The two ends sit in different displayed regions, so no per-region pass can
+// join them: each block clips to its own bp range and projects the far end off
+// its edge. This overlay is the only one that resolves each end through its own
+// region index, which is what makes it the fallback in `crossRegion` scope.
+export function isCrossRegionPair({ e1, e2 }: LinkedPair): boolean {
+  return e1.displayedRegionIndex !== e2.displayedRegionIndex
+}
+
+/**
+ * Which connections this overlay is responsible for.
+ *
+ * - `all` — the user ticked "Use curved connectors", so it draws every
+ *   connection the GPU line pass doesn't own (`isBezierArcPair`).
+ * - `crossRegion` — chain mode with that box unticked. Chain layout puts a
+ *   chain's alignments on ONE row across displayed regions (`mergeChains`) but
+ *   its connecting-line pass is per region and gated on a per-worker-call
+ *   `chainHasMultiple`, so a chain holding one alignment in each of two regions
+ *   gets no line from either and the mode silently drops the link it exists to
+ *   show. Everything inside a single region is already drawn by that pass, so
+ *   this scope adds only the pairs that straddle a boundary.
+ * - `none` — no overlay.
+ */
+export type BezierArcScope = 'all' | 'crossRegion' | 'none'
+
 // Legend swatches for the connection types actually drawn as bezier/line arcs,
 // built from the same palette and labels the curves use (linkedReadColorPalette
 // + connectionLabel) so the on-screen key can never disagree with what's drawn.
@@ -79,10 +103,24 @@ export function bezierConnectionLegendItems(
 // resolution live here, so a model getter can memoize it (recompute on relayout
 // only) while the per-frame screen projection stays in `computePileupBezierArcs`
 // — the name→reads Map is no longer rebuilt on every scroll frame.
+//
+// The `crossRegion` short-circuit is what keeps that scope free where it can buy
+// nothing: a pair needs two regions to straddle, so a section holding one is
+// answered without the O(reads) grouping at all. That is the single-region view,
+// i.e. almost every view — which matters because unlike `all`, this scope is not
+// something the user opted into.
 export function enumerateBezierPairs(
   laidOutPileupMap: ReadonlyMap<number, PileupDataResult>,
+  scope: BezierArcScope = 'all',
 ): LinkedPair[] {
-  return [...iterLinkedPairs(laidOutPileupMap)]
+  if (
+    scope === 'none' ||
+    (scope === 'crossRegion' && laidOutPileupMap.size < 2)
+  ) {
+    return []
+  }
+  const pairs = [...iterLinkedPairs(laidOutPileupMap)]
+  return scope === 'crossRegion' ? pairs.filter(isCrossRegionPair) : pairs
 }
 
 interface Opts {

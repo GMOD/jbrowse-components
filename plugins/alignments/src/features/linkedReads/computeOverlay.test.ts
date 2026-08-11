@@ -481,3 +481,70 @@ describe('computePileupBezierArcs — exclusions', () => {
     expect(arcs).toHaveLength(0)
   })
 })
+
+// Chain layout puts a chain's alignments on one row across displayed regions but
+// its connecting-line pass is per region, so nothing joins them. This overlay is
+// the only pass that resolves both ends, and `crossRegion` is it doing exactly
+// that job and nothing the per-region pass already covers.
+describe('enumerateBezierPairs — crossRegion scope', () => {
+  // A split read whose supplementary was fetched in region 1, plus a second read
+  // wholly inside region 0 whose junction the per-region line already draws.
+  const inRegion0 = makeData({
+    names: ['r', 'w', 'w'],
+    ids: ['r-primary', 'w-primary', 'w-supplementary'],
+    flags: [0, 0, SAM_FLAG_SUPPLEMENTARY],
+    strands: [1, 1, -1],
+    positions: [
+      [2400, 2500],
+      [100, 200],
+      [300, 400],
+    ],
+    ys: [0, 1, 1],
+  })
+  const inRegion1 = makeData({
+    names: ['r'],
+    ids: ['r-supplementary'],
+    flags: [SAM_FLAG_SUPPLEMENTARY],
+    strands: [1],
+    positions: [[9000, 9100]],
+    ys: [0],
+  })
+  const twoRegions = new Map([
+    [0, inRegion0],
+    [1, inRegion1],
+  ])
+
+  it('keeps only the pairs that straddle a region boundary', () => {
+    expect(enumerateBezierPairs(twoRegions, 'all')).toHaveLength(2)
+    const cross = enumerateBezierPairs(twoRegions, 'crossRegion')
+    expect(cross).toHaveLength(1)
+    expect(cross[0]!.e1.displayedRegionIndex).toBe(0)
+    expect(cross[0]!.e2.displayedRegionIndex).toBe(1)
+  })
+
+  // The short-circuit that makes this scope affordable to turn on by default:
+  // one region can hold no straddling pair, so the O(reads) grouping is skipped.
+  it('answers a single-region section without enumerating', () => {
+    expect(
+      enumerateBezierPairs(new Map([[0, inRegion0]]), 'crossRegion'),
+    ).toHaveLength(0)
+    expect(enumerateBezierPairs(new Map([[0, inRegion0]]))).toHaveLength(1)
+  })
+
+  it('none yields nothing at all', () => {
+    expect(enumerateBezierPairs(twoRegions, 'none')).toHaveLength(0)
+  })
+
+  // The straddling pair still draws through the normal geometry: a co-linear
+  // split is a straight line, matching BreakpointSplitView's rule that a curve
+  // means something aberrant.
+  it('draws the straddling pair as a connector', () => {
+    const arcs = computePileupBezierArcs({
+      ...baseOpts,
+      displayedRegions: [{ refName: 'chr1' }, { refName: 'chr1' }],
+      pairs: enumerateBezierPairs(twoRegions, 'crossRegion'),
+    })
+    expect(arcs).toHaveLength(1)
+    expect(arcs[0]!.d).toMatch(/^M [\d.]+ [\d.]+ L /)
+  })
+})

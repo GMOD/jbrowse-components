@@ -157,6 +157,17 @@ that each share one geometry source with the export — don't port them into
 depends on pan/zoom but **not** `scrollTop`, and recomputing per scroll frame
 re-projected every junction.
 
+**No GPU pass can join two displayed regions** — one buffer per region, each
+clipped to its own bp range — so the bezier overlay is not only a style choice.
+`bezierArcScope` is the one place that decides: `all` when the user ticked
+curved connectors, `crossRegion` in chain mode without it (chain layout puts a
+chain's ends on one row across regions and its per-region line pass then joins
+nothing), `none` otherwise. Anything reading it must read the getter, not
+`showBezierConnections` — the live overlay, the SVG export and the legend
+disagreeing means a connector on screen with no key entry, or the reverse. The
+`crossRegion` short-circuit on `laidOutPileupMap.size < 2` is what keeps a scope
+nobody opted into off the single-region hot path.
+
 **Which sub-band a sashimi arc draws in is decided once**, in genomic bp, by
 `sashimiDownKeysByGroup` (→ `features/sashimi/junctions.ts`), and read by both
 the layout that reserves the strip and the geometry that fills it. Don't

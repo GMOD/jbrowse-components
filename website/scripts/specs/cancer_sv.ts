@@ -1882,24 +1882,18 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           showOnlySplitAlignments: true,
           // one row per molecule across both regions -- see the note above
           linkedReads: 'normal',
-          // AND the beziers, which the previous round removed on the reasoning
-          // that chain layout draws its own connecting line so the curve was
-          // redundant (reviewer, on the result: "this is no longer showing the
-          // connection between reads across the different chromosomes"). The
-          // reasoning was wrong about what reaches the screen. Chain layout's
-          // line (`buildChainConnectingData`) is emitted per DISPLAYED REGION
-          // as an absolute-coordinate [minStart, maxEnd] pair, so for a chain
-          // whose ends are on chr22 and chr9 each region's block projects the
-          // far end outside its own bp range and draws a 1px black hairline
-          // from its edge to the junction -- which is what a full-width thin
-          // line at 2px rows looks like, i.e. nothing. The bezier overlay is
-          // the pass that knows about both regions (`computePileupBezierArcs`
-          // resolves each end through `view.bpToPx` with its own region index)
-          // and it is NOT gated on chain mode -- only the straight-line pass
-          // is (`showLinkedReadLines = showBezierConnections && !isChainMode`).
-          // So this is a curve per molecule between two ends that chain layout
-          // has already put on ONE row, which is the flat fan the last round
-          // wanted without the diagonal one it removed.
+          // No longer load-bearing for the chr22<->chr9 fan, and kept only so
+          // this figure does not shift under an unrelated change. The overlay
+          // now claims cross-region connectors on its own in chain mode
+          // (`bezierArcScope`), which is the general form of what this line was
+          // working around: a previous round removed it on the reasoning that
+          // chain layout draws its own connecting line, and the reviewer got
+          // back "this is no longer showing the connection between reads across
+          // the different chromosomes" -- because that line is emitted per
+          // DISPLAYED REGION, so each block projected the far end outside its
+          // own bp range as a hairline to its edge, i.e. nothing. What this flag
+          // still adds here is the WITHIN-region curves (a read with two chr22
+          // segments), which is a different set from the fan.
           showBezierConnections: true,
           ...SPLIT_READS,
         },

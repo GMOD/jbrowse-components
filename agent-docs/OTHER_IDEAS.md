@@ -21,9 +21,8 @@ reference others may hold, not as free-form prose.
 
 **Rendering and displays**
 
-- [Alignments](#alignments) — cross-region chains draw no connector, read-pair
-  links, coverage decomposition by MAPQ / discordancy / HP, large-region viewing
-  for dense BAM, SBX duplex `yc` coloring
+- [Alignments](#alignments) — read-pair links, coverage decomposition by MAPQ /
+  discordancy / HP, large-region viewing for dense BAM, SBX duplex `yc` coloring
 - [Methylation plotting](#methylation-plotting) — HP-stratified aggregate lines,
   per-read matrix
 - [Multi-sample variant display](#multi-sample-variant-display) — genotype-quality
@@ -115,40 +114,6 @@ reference others may hold, not as free-form prose.
   staging flags in `~/src/jb2hubs` that decide what a link to that site reaches
 
 ## Alignments
-
-**A chain that spans two displayed regions draws no connector.** "View as pairs /
-link supplementary alignments" puts a read's two alignments on one row across
-regions — `mergeChains` merges by name and shifts each region's bounds onto its
-own segment of the packing axis — and then draws nothing between them, which is
-the one thing the mode promises. The reason is structural: chain layout's line
-pass (`buildChainConnectingData`) emits one `[minStart, maxEnd]` pair PER REGION
-and gates it on `chainHasMultiple`, which the worker computes per call. A chain
-holding one alignment in chr22 and one in chr9 is a singleton in both, so neither
-region emits a line — and even if one did, that block clips to its own bp range,
-so the far end projects off-screen as a hairline to the block edge. The GPU
-straight-line pass can't help either: `computeLinkedReadLinesByRegion` explicitly
-drops cross-region pairs.
-
-Only the screen-space overlay knows about both regions
-(`computePileupBezierArcs` resolves each end through `view.bpToPx` with its own
-region index), and it is not gated on chain mode — so today the fix is to also
-tick "Use curved connectors". That is what `cancer_sv/k562_bcr_abl_split` does,
-after a reviewer reported the figure "no longer showing the connection between
-reads across the different chromosomes".
-
-The change would be to let chain mode drive that overlay for cross-region pairs
-alone: enumerate when `showBezierConnections || isChainMode`, and when only the
-latter, keep just `!sameRegion` pairs (`isBezierArcPair`'s stricter sibling) so
-the per-region `connLine` still owns everything it can draw. Two things to settle
-first, which is why this is here and not in TODO:
-
-- **Cost.** `enumerateBezierPairs` is an O(reads) grouping per relayout. It is a
-  no-op in a single-region view (no cross-region pairs exist), but it is not free
-  to *find* that out at depth, and chain mode is where the deepest pileups are.
-- **The legend.** `bezierConnectionColorTypes` reads the same enumeration, so
-  cross-region connectors drawn this way would start naming their colors in the
-  key — probably right, but it is a visible change to a display that did not ask
-  for the overlay.
 
 **Curved read links.** Reuse breakpoint logic for a "link with curved lines" mode
 (better orientation encoding than straight connectors).

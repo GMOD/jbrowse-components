@@ -262,6 +262,13 @@ function buildChainOverlaps(data: PileupDataResult, readYs: Uint16Array) {
  * lines between mates in each chain, intra-chain overlap intervals, plus a
  * Flatbush spatial index for hit testing. Returns empty-arrays/undefined when
  * the input has no chain metadata.
+ *
+ * Per REGION, which bounds what the line can join. `chainHasMultiple` counts a
+ * chain's reads in this region alone, so a chain holding one alignment in each
+ * of two displayed regions emits no line here — and could not usefully, since
+ * each block clips to its own bp range and would project the far end off its
+ * edge as a hairline. The SVG overlay resolves each end through its own region
+ * index and draws that case instead (`bezierArcScope`, `crossRegion`).
  */
 export function buildChainConnectingData(
   data: PileupDataResult,

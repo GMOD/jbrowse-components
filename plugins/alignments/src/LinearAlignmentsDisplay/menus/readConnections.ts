@@ -78,7 +78,7 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
       },
       {
         helpText:
-          'draw a curve between a read and its mate or split-read segment; curve color marks the connection type (e.g. inversion, deletion, pair orientation — see the legend). Hover a curve to identify it.',
+          'draw a curve between a read and its mate or split-read segment; curve color marks the connection type (e.g. inversion, deletion, pair orientation — see the legend). Hover a curve to identify it. A connection between two different displayed regions is drawn this way whatever this is set to, since the per-region pass cannot reach across one.',
       },
     ),
     {

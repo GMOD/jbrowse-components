@@ -39,7 +39,7 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
   const [selectedArcId, setSelectedArcId] = useState<string | null>(null)
   const [hoveredArcId, setHoveredArcId] = useState<string | null>(null)
   const view = getContainingView(model) as LinearGenomeViewModel
-  const { showBezierConnections, scrollTop, height } = model
+  const { bezierArcScope, scrollTop, height } = model
 
   // `view.width` is read AFTER this gate, never destructured alongside
   // `initialized` above it: destructuring evaluates the getter, and `width`
@@ -52,7 +52,7 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
   // it is also why the fix is worth keeping rather than deleting the check: the
   // gate below is now the only thing standing between this body and a throw if
   // it is ever mounted somewhere that doesn't share the LGV's screen.
-  if (!showBezierConnections || !view.initialized) {
+  if (bezierArcScope === 'none' || !view.initialized) {
     return null
   }
   const { width } = view

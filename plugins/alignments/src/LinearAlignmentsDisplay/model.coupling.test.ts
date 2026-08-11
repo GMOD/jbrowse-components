@@ -485,6 +485,31 @@ describe('ordering controls in chain mode', () => {
   })
 })
 
+// Chain layout puts a chain's alignments on one row across displayed regions,
+// but its connecting-line pass is per region and can't join them — so the SVG
+// overlay has to, whether or not the user asked for curved connectors. It stays
+// scoped to the pairs that straddle a boundary; the per-region line owns the
+// rest, and drawing both would double every within-region connector.
+describe('cross-region chain connectors', () => {
+  test('chain mode claims the overlay for straddling pairs alone', () => {
+    const display = createDisplay()
+    expect(display.bezierArcScope).toBe('none')
+
+    display.setLinkedReads('normal')
+    expect(display.bezierArcScope).toBe('crossRegion')
+  })
+
+  test('ticking curved connectors widens it back to every connection', () => {
+    const display = createDisplay()
+    display.setShowBezierConnections(true)
+    expect(display.bezierArcScope).toBe('all')
+
+    // and chain mode doesn't narrow an explicit choice
+    display.setLinkedReads('normal')
+    expect(display.bezierArcScope).toBe('all')
+  })
+})
+
 // Proper-pair / singleton visibility reads as a "Show..." toggle, so it lives in
 // the Show menu (not Read connections, not the filter submenu). "Filter by..."
 // wraps the flag/tag dialog.

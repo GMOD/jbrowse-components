@@ -135,6 +135,7 @@ import type {
 import type { ArcsUploadData } from '../features/arcs/types.ts'
 import type { DerivativeCandidate } from '../features/derivativePaths/computePaths.ts'
 import type { IndicatorHitResult } from '../features/indicator/types.ts'
+import type { BezierArcScope } from '../features/linkedReads/computeOverlay.ts'
 import type { ModificationHitResult } from '../features/modification/hitTest.ts'
 import type { CigarHitResult, ResolvedBlock } from '../shared/hitTestTypes.ts'
 import type {
@@ -728,7 +729,9 @@ export default function stateModelFactory(
          * Whether to draw the straight-line pass connecting normal read-pairs
          * in pileup layout. Only meaningful when bezier connections are on AND
          * we are in pileup mode — chain layout has its own connecting-line pass
-         * that already covers normal pairs.
+         * that already covers normal pairs WITHIN a region. Neither pass reaches
+         * across one (both are per region, one buffer each); that is
+         * `bezierArcScope`'s `crossRegion`.
          */
         get showLinkedReadLines() {
           return self.showBezierConnections && !this.isChainMode
@@ -2008,21 +2011,44 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * What the SVG connection overlay is responsible for drawing — see
+         * `BezierArcScope`. Chain mode claims `crossRegion` even with the curved
+         * connectors unticked, because it is the only pass that can join a
+         * chain's two ends when they land in different displayed regions; the
+         * per-region connecting line covers everything else.
+         *
+         * One getter rather than a check at each of the four consumers (the live
+         * overlay, the SVG export, the legend, and the pair enumeration itself),
+         * since a scope they disagreed on would draw a curve the key doesn't
+         * name, or the reverse.
+         */
+        get bezierArcScope(): BezierArcScope {
+          return self.showBezierConnections
+            ? 'all'
+            : self.isChainMode
+              ? 'crossRegion'
+              : 'none'
+        },
+
+        /**
+         * #getter
          * Scroll/pan-invariant half of the bezier connection overlay: the linked
          * pairs of each section, resolved once per relayout. The read grouping +
          * connection resolution (`enumerateBezierPairs`) is the allocation-heavy
          * step; memoizing it here (this getter never reads `scrollTop`) keeps a
          * scroll frame down to the cheap per-pair screen projection in
-         * `computePileupBezierArcsFromModel`. Empty when the overlay is off.
+         * `computePileupBezierArcsFromModel`. Narrowed by `bezierArcScope`, and
+         * empty when that is `none`.
          */
         get bezierPairSections() {
-          return self.showBezierConnections
-            ? this.renderSections.map(sec => ({
+          const scope = this.bezierArcScope
+          return scope === 'none'
+            ? []
+            : this.renderSections.map(sec => ({
                 topOffset: sec.topOffset,
                 pileupHeight: sec.pileupHeight,
-                pairs: enumerateBezierPairs(sec.laidOutPileupMap),
+                pairs: enumerateBezierPairs(sec.laidOutPileupMap, scope),
               }))
-            : []
         },
 
         /**
@@ -2050,7 +2076,10 @@ export default function stateModelFactory(
         /**
          * #method
          * Legend swatches for the linked-read connection curves, empty unless the
-         * bezier overlay is on and at least one connection is in view.
+         * overlay has something to draw (`bezierArcScope`) and at least one
+         * connection is in view — including the cross-region connectors chain
+         * mode draws without the curved-connector box ticked, since those are
+         * colored by the same rules and a color on screen needs its key.
          */
         bezierLegendItems() {
           return bezierConnectionLegendItems(this.bezierConnectionColorTypes)
