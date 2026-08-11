@@ -112,6 +112,13 @@ export function bezierConnectionLegendItems(
 // answered without the O(reads) grouping at all. That is the single-region view,
 // i.e. almost every view — which matters because unlike `all`, this scope is not
 // something the user opted into.
+//
+// Measured, since "not free at depth" was the open question when this scope was
+// added: at 200k reads the short-circuit is 0.0ms, and the multi-region case
+// that does enumerate is ~80ms (2 regions) / ~63ms (8 regions). Against the
+// `buildLaidOutChainMap` relayout it runs beside — 587ms and 1317ms on the same
+// inputs — that is +13% and +5%. So it is real but not the thing to attack in
+// this path, and it did not warrant a cheaper multi-region-name pre-pass.
 export function enumerateBezierPairs(
   laidOutPileupMap: ReadonlyMap<number, PileupDataResult>,
   scope: BezierArcScope = 'all',

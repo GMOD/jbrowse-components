@@ -183,14 +183,34 @@ function getPairTypeDescriptions({
   return out
 }
 
+// The span the chain covers in THIS region, from the chain arrays rather than
+// from the read at `idx`. `hitTestChain` answers a hover with the chain's FIRST
+// read, so a cursor on the connecting line between two mates was told mate 1's
+// coordinates under a heading naming the whole template — and the connecting
+// line is a thing users hover on purpose now that chain mode draws one across
+// displayed regions too. Falls back to the read's own span for a hover that
+// resolved no chain (an ordinary read, or data with no chain metadata).
+function chainSpan(rpcData: PileupDataResult, idx: number) {
+  const chainIdx = rpcData.readChainIndices?.[idx]
+  const start =
+    chainIdx === undefined ? undefined : rpcData.chainAbsMinStarts?.[chainIdx]
+  const end =
+    chainIdx === undefined ? undefined : rpcData.chainAbsMaxEnds?.[chainIdx]
+  return start !== undefined && end !== undefined
+    ? { start, end }
+    : {
+        start: rpcData.readPositions[idx * 2] ?? 0,
+        end: rpcData.readPositions[idx * 2 + 1] ?? 0,
+      }
+}
+
 export function formatChainTooltip(
   rpcData: PileupDataResult,
   idx: number,
   refName: string,
 ) {
   const name = rpcData.readNames[idx] ?? ''
-  const start = rpcData.readPositions[idx * 2] ?? 0
-  const end = rpcData.readPositions[idx * 2 + 1] ?? 0
+  const { start, end } = chainSpan(rpcData, idx)
   const flags = rpcData.readFlags[idx] ?? 0
   const insertSize = rpcData.readInsertSizes[idx] ?? 0
   const pairOrientation = rpcData.readPairOrientations[idx] ?? 0

@@ -125,6 +125,31 @@ describe('read tooltip location', () => {
     )
   })
 
+  // `hitTestChain` answers with the chain's FIRST read, so reading the location
+  // off that read described mate 1 under a heading naming the whole template.
+  // The connecting line between mates is a deliberate hover target — more so
+  // now that chain mode draws one across displayed regions.
+  it('spans the whole chain, not the read the hit test happened to name', () => {
+    const tip = formatChainTooltip(
+      makeRpcData({
+        readChainIndices: new Uint32Array([0]),
+        chainAbsMinStarts: new Uint32Array([1000]),
+        chainAbsMaxEnds: new Uint32Array([4200]),
+      }),
+      0,
+      'chr1',
+    )
+    expect(tip).toContain('chr1:1,001-4,200')
+  })
+
+  // A hover on an ordinary read carries no chain arrays; the read's own span is
+  // the right answer there and must still be what it reports.
+  it('falls back to the read span with no chain metadata', () => {
+    expect(formatChainTooltip(makeRpcData(), 0, 'chr1')).toContain(
+      'chr1:1,001-1,100',
+    )
+  })
+
   it('formats a feature label 1-based, with the strand only when asked', () => {
     const info = {
       id: 'f1',
