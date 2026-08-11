@@ -722,9 +722,18 @@ purpose; every other page there carries the short form.
 `session.snackbarMessages` is the third channel and the quietest, since it is
 not on the view at all: `showTrack` with an unresolvable id returns `undefined`
 and reports the reason there, and so do `addSessionTrackConf` on an invalid
-config and a failed `init.loc`. `app-core`'s `App` is the **only** thing in the
-repo that renders it, so both the embedded LGV product and every hand-built host
-drop those messages on the floor.
+config and a failed `init.loc`. Nothing throws, so a surface that does not read
+the array shows a ticked checkbox and a track that never arrives, with the
+reason sitting in memory.
+
+`app-core`'s `App` was the **only** thing in the repo rendering it until
+2026-08, which meant both embedded React products dropped every message. Both
+mount `ui/Snackbar` now (its module scope is two `lazy()` calls, so it costs
+their eager bundles nothing), pinned in each product's own test through a call
+that really fails rather than through a pushed message — the regression is the
+path going quiet, not the array. **A host drawing its own chrome is still on its
+own**, by construction; `products/jbrowse-build-your-own`'s "Loading and error
+states" page is where that is said, and its smoke check drives it.
 
 **Colors are not a seam and are not in it.** A display reads `usePalette()` for
 its own content colors, which is a palette of strings rather than a toolkit, so

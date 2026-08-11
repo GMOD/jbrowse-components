@@ -2,6 +2,7 @@ import { Suspense, lazy } from 'react'
 
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { StyleThemeProvider } from '@jbrowse/core/ui/PaletteContext'
+import Snackbar from '@jbrowse/core/ui/Snackbar'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { EmbeddedViewContainer } from '@jbrowse/embedded-core'
@@ -87,6 +88,19 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
                 </Suspense>
               ) : null}
             </div>
+            {/* Everything JBrowse has to survive rather than throw reports
+                itself through `session.snackbarMessages` -- `showTrack` with an
+                unresolvable id, a session track whose config won't validate, an
+                `init.loc` that doesn't resolve. Those calls return `undefined`
+                and carry on, so without this the message is the only record of
+                what went wrong and nothing reads it: the embed shows a track
+                that simply never appears. `app-core`'s App was the only thing in
+                the repo rendering it until 2026-08.
+
+                Costs the eager bundle nothing worth counting -- `Snackbar`'s
+                module scope is two `lazy()` calls, so the toast and its
+                stack-trace dialog arrive only if something is reported. */}
+            <Snackbar session={session} />
           </ScopedCssBaseline>
         </div>
       </StyleThemeProvider>

@@ -93,6 +93,31 @@ test('createViewState with no defaultSession auto-displays the assembly', async 
   expect(state.session.view.displayedRegions.length).toBe(2)
 }, 10000)
 
+// Same hole as the linear product had, and the same fix -- see
+// JBrowseLinearGenomeView.test.tsx for why this is asserted through a call that
+// really fails rather than by pushing a message onto the session.
+test('a failure the session survives reaches the screen', async () => {
+  const state = createViewState({ assembly, tracks: [], defaultSession })
+  state.session.view.setWidth(800)
+  const { findByText } = render(
+    <Suspense fallback={<div>Loading...</div>}>
+      <JBrowseCircularGenomeView viewState={state} />
+    </Suspense>,
+  )
+
+  expect(state.session.view.showTrack('not_a_track_in_this_config')).toBe(
+    undefined,
+  )
+
+  expect(
+    await findByText(
+      /Could not resolve identifier "not_a_track_in_this_config"/,
+      {},
+      { timeout: 10000 },
+    ),
+  ).toBeTruthy()
+}, 10000)
+
 test('config internetAccounts are auto-initialized via the shared mixin', () => {
   const state = createViewState({
     assembly,

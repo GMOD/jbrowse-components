@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { StyleThemeProvider } from '@jbrowse/core/ui/PaletteContext'
+import Snackbar from '@jbrowse/core/ui/Snackbar'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { EmbeddedViewContainer } from '@jbrowse/embedded-core'
@@ -49,6 +50,12 @@ const JBrowseCircularGenomeView = observer(function JBrowseCircularGenomeView({
                 session.hideAllWidgets()
               }}
             />
+            {/* see JBrowseLinearGenomeView for why: `session.snackbarMessages`
+                is where every path that has to keep going after a failure
+                reports itself, and until 2026-08 only `app-core`'s App drew it,
+                so this product dropped them all. Module scope is two `lazy()`
+                calls, so it costs the eager bundle nothing. */}
+            <Snackbar session={session} />
           </ScopedCssBaseline>
         </div>
       </StyleThemeProvider>

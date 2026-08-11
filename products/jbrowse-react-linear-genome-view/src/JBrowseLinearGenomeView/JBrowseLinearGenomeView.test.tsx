@@ -119,3 +119,31 @@ test('top-level location + highlight navigate via init', async () => {
     }),
   ])
 }, 40000)
+
+// This product rendered no Snackbar until 2026-08, so every `session.notify` /
+// `notifyError` went into `snackbarMessages` and stayed there. That is the
+// quietest failure shape available: `showTrack` with an id that isn't in the
+// config returns `undefined` rather than throwing, so the embed showed a track
+// that simply never appeared and the reason existed only in memory.
+//
+// Asserted through a real failing call rather than by pushing a message
+// directly, because the message arriving is only half of what regressed -- the
+// other half is that this path reports at all.
+test('a failure the session survives reaches the screen', async () => {
+  const state = createViewState({ assembly, tracks: [], defaultSession })
+  const { findByText } = render(<JBrowseLinearGenomeView viewState={state} />)
+
+  expect(state.session.view.showTrack('not_a_track_in_this_config')).toBe(
+    undefined,
+  )
+
+  expect(
+    await findByText(
+      /Could not resolve identifier "not_a_track_in_this_config"/,
+      undefined,
+      {
+        timeout,
+      },
+    ),
+  ).toBeTruthy()
+}, 40000)
