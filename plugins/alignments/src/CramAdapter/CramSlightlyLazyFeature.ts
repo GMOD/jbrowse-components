@@ -196,6 +196,15 @@ export default class CramSlightlyLazyFeature implements MismatchFeature {
     return `${this.adapter.id}-${this.record.uniqueId}`
   }
 
+  /**
+   * The number `id()` is built from — cram-js assigns each record a uniqueId
+   * within its file. The BAM twin of this (over `fileOffset`) carries the
+   * reasoning; both exist for `dedupeById` in the alignments render RPC.
+   */
+  get recordId() {
+    return this.record.uniqueId
+  }
+
   get(name: 'refName'): string
   get(name: 'name' | 'type' | 'id' | 'source'): string | undefined
   get(name: 'start' | 'end'): number

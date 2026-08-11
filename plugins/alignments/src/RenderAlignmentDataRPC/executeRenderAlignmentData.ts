@@ -90,17 +90,48 @@ function isProperPairChain(chain: Feature[]) {
   })
 }
 
-// Guard against the same physical record being emitted twice — rare, only when
-// overlapping BAM index chunks re-decode one read; a dup would double-count
-// coverage depth and double-draw. `id()` (`${adapter}-${fileOffset}`) is unique
-// per record. In the overwhelmingly common no-dup case this returns the input
-// array untouched, so the guard costs one Set build, not a full-length copy of
-// every feature (matters at ultra-deep coverage — hundreds of thousands).
+/**
+ * The key `dedupeById` tells two records apart by.
+ *
+ * The alignments features build `id()` as `` `${adapter.id}-${n}` `` over a
+ * number they already hold — the BamRecord's `fileOffset`, cram-js's record
+ * `uniqueId` — and every feature in one call comes from one adapter, since
+ * `fetchFeaturesFromAdapter` takes a single `adapterConfig`. So the prefix
+ * distinguishes nothing here and the number is the whole key. Reading it skips
+ * building a template literal per feature and hashing it, which at ultra-deep
+ * coverage was 15% of the RPC worker's busy time for a guard that in the
+ * common case rejects nothing.
+ *
+ * Falls back to `id()` for any feature without one, so this stays correct for
+ * an adapter whose features are neither of those two.
+ */
+function dedupeKey(f: Feature): number | string {
+  // `??`, not `||`: fileOffset 0 is the first record of a BAM
+  return (f as Feature & { recordId?: number }).recordId ?? f.id()
+}
+
+// Guard against the same physical record being emitted twice — a dup would
+// double-count coverage depth and double-draw.
+//
+// Nothing has been observed to produce one for some time: `@gmod/bam`'s
+// `blocksForRange` runs `optimizeChunks`, which absorbs a chunk already covered
+// by its neighbour, and a sweep of ~4800 index queries over the 20x/200x/1000x
+// fixtures found no overlapping chunk pair and no duplicate record. The
+// motivation that is genuinely gone is the older one: block rendering fetched
+// adjacent overlapping regions, so a feature spanning a boundary arrived twice,
+// and there are no blocks now.
+//
+// It stays because it is now nearly free and because the failure it prevents is
+// silent — a wrong depth, not a crash — and because the class is not
+// hypothetical: `@gmod/bam` hit it in its own mate path ("their records came
+// back twice") and still keeps a `readIds` set there. In the common no-dup case
+// this returns the input array untouched, so it costs one Set build rather than
+// a full-length copy.
 function dedupeById(features: Feature[]) {
-  const seen = new Set<string>()
+  const seen = new Set<number | string>()
   let dupIndex = -1
   for (let i = 0; i < features.length; i++) {
-    const id = features[i]!.id()
+    const id = dedupeKey(features[i]!)
     if (seen.has(id)) {
       dupIndex = i
       break
@@ -114,7 +145,7 @@ function dedupeById(features: Feature[]) {
   const out = features.slice(0, dupIndex)
   for (let i = dupIndex; i < features.length; i++) {
     const f = features[i]!
-    const id = f.id()
+    const id = dedupeKey(f)
     if (!seen.has(id)) {
       seen.add(id)
       out.push(f)
@@ -159,13 +190,15 @@ export function filterChainFeatures(
   if (showOnlySplitAlignments) {
     rawChains = rawChains.filter(c => isSplitChain(c))
   }
-  const keptIds = new Set<string>()
+  // same key as the dedupe above, for the same reason: this is identity within
+  // one fetch, which is the thing `dedupeKey` is cheap at
+  const keptIds = new Set<number | string>()
   for (const chain of rawChains) {
     for (const f of chain) {
-      keptIds.add(f.id())
+      keptIds.add(dedupeKey(f))
     }
   }
-  return deduped.filter(f => keptIds.has(f.id()))
+  return deduped.filter(f => keptIds.has(dedupeKey(f)))
 }
 
 // Chain metadata + the per-read arrays linking each read back to its chain.

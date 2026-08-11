@@ -82,6 +82,21 @@ export default class BamSlightlyLazyFeature
     return `${this.adapter.id}-${this.fileOffset}`
   }
 
+  /**
+   * The number `id()` is built from, for callers that only need to tell two
+   * records of one fetch apart and would otherwise pay for the string.
+   * `fileOffset` is unique per record within a file, so within a single
+   * `getFeatures` — which is always one adapter — it carries the whole of the
+   * identity and the `${adapter.id}-` prefix distinguishes nothing.
+   *
+   * Not a replacement for `id()`, which is the cross-adapter identity every
+   * other consumer wants. See `dedupeById` in the alignments render RPC, which
+   * is the reason this exists.
+   */
+  get recordId() {
+    return this.fileOffset
+  }
+
   // performance profiling showed that using forEachMismatch rather than
   // computing mismatches array up front was faster, so this is no longer the
   // primary way mismatches are used
@@ -309,6 +324,10 @@ class RegionBoundBamFeature implements MismatchFeature {
 
   id() {
     return this.base.id()
+  }
+
+  get recordId() {
+    return this.base.recordId
   }
 
   get start() {
