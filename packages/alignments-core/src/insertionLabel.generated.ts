@@ -8,3 +8,7 @@ export const LONG_INSERTION_TEXT_THRESHOLD_PX = 15
 export const MIN_HEIGHT_FOR_TEXT = 5
 
 export const INSERTION_SERIF_MIN_PX_PER_BP = 3
+
+export const SERIF_HALF_W_PX = 2
+
+export const SERIF_H_PX = 2

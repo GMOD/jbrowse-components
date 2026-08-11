@@ -10,6 +10,8 @@ export {
   MIN_LABEL_OPACITY,
   MIN_PX_PER_BP_FOR_TEXT,
   MISMATCH_COLOR,
+  SERIF_H_PX,
+  SERIF_HALF_W_PX,
   computeLabelFontSize,
   drawIndicatorTriangle,
   drawInsertionMarker,

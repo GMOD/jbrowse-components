@@ -7,6 +7,8 @@ import {
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
   MIN_HEIGHT_FOR_TEXT,
+  SERIF_H_PX,
+  SERIF_HALF_W_PX,
 } from './insertionLabel.generated.ts'
 import {
   insertionBarWidthPx,
@@ -23,6 +25,8 @@ export {
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
   MIN_HEIGHT_FOR_TEXT,
+  SERIF_H_PX,
+  SERIF_HALF_W_PX,
   insertionSizeAlpha,
 }
 // Min px-per-bp before per-base text (mismatch letters, small-insertion `(N)`
@@ -158,6 +162,14 @@ export function formatInsertionLabel(length: number, sequence?: string) {
 // count text. Shared by plugin-alignments (Canvas2D/SVG export) and plugin-maf
 // (insertion overlay + export) so the marker geometry can't drift between the
 // two displays.
+//
+// The caps are `SERIF_HALF_W_PX` / `SERIF_H_PX`, generated from insertion.slang
+// so this and the GPU pass draw the same glyph. They had drifted: the shader
+// drew 3x1px RECTANGLES sitting OUTSIDE the row while this drew 4x2px triangles
+// inside it, which on a small insertion — 1px of bar — is most of the mark, so
+// the on-screen render disagreed with its own SVG export. The bottom cap's base
+// also sat a pixel inside the row while the top's sat on the edge; both are on
+// their edge now, which is what a symmetric I-beam wants.
 export function drawInsertionMarker(
   ctx: DrawCtx,
   xCenter: number,
@@ -170,19 +182,25 @@ export function drawInsertionMarker(
   ctx.fillRect(xCenter - w / 2, y, w, height)
   const isLong = length >= LONG_INSERTION_MIN_LENGTH
   if (!isLong && pxPerBp >= INSERTION_SERIF_MIN_PX_PER_BP) {
-    ctx.beginPath()
-    ctx.moveTo(xCenter - 2, y)
-    ctx.lineTo(xCenter + 2, y)
-    ctx.lineTo(xCenter, y + 2)
-    ctx.closePath()
-    ctx.fill()
-    ctx.beginPath()
-    ctx.moveTo(xCenter - 2, y + height - 1)
-    ctx.lineTo(xCenter + 2, y + height - 1)
-    ctx.lineTo(xCenter, y + height - 3)
-    ctx.closePath()
-    ctx.fill()
+    drawSerif(ctx, xCenter, y, y + SERIF_H_PX)
+    drawSerif(ctx, xCenter, y + height, y + height - SERIF_H_PX)
   }
+}
+
+// One serif cap: a wedge `SERIF_HALF_W_PX` either side of `xCenter` at `baseY`,
+// tapering to a point at `apexY`. Mirrors `serifPos` in insertion.slang.
+function drawSerif(
+  ctx: DrawCtx,
+  xCenter: number,
+  baseY: number,
+  apexY: number,
+) {
+  ctx.beginPath()
+  ctx.moveTo(xCenter - SERIF_HALF_W_PX, baseY)
+  ctx.lineTo(xCenter + SERIF_HALF_W_PX, baseY)
+  ctx.lineTo(xCenter, apexY)
+  ctx.closePath()
+  ctx.fill()
 }
 
 interface DrawCtx {

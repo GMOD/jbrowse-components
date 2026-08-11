@@ -17,6 +17,10 @@ export const MIN_HEIGHT_FOR_TEXT = 5
 
 export const INSERTION_SERIF_MIN_PX_PER_BP = 3
 
+export const SERIF_HALF_W_PX = 2
+
+export const SERIF_H_PX = 2
+
 export const UNIFORMS_SIZE_BYTES = 1040
 
 // Word indices into a Float32Array view over the uniform buffer.

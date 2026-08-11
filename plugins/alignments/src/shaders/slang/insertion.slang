@@ -1,7 +1,7 @@
 // Insertion pass: renders up to 3 rects per instance — the insertion bar
 // (or numeric label box when long + zoomed), plus top/bottom serifs.
 //! targets: wgsl, glsl
-//! export-consts: LONG_INSERTION_MIN_LENGTH, LONG_INSERTION_TEXT_THRESHOLD_PX, MIN_HEIGHT_FOR_TEXT, INSERTION_SERIF_MIN_PX_PER_BP
+//! export-consts: LONG_INSERTION_MIN_LENGTH, LONG_INSERTION_TEXT_THRESHOLD_PX, MIN_HEIGHT_FOR_TEXT, INSERTION_SERIF_MIN_PX_PER_BP, SERIF_HALF_W_PX, SERIF_H_PX
 //! consts-out: packages/alignments-core/src/insertionLabel.generated.ts
 //! js-export: insertionBarWidthPx, textWidth, insertionSizeAlpha
 //! js-export-out: packages/alignments-core/src/insertionWidth.generated.ts
@@ -21,6 +21,20 @@ static const uint  LONG_INSERTION_MIN_LENGTH = 10u;
 static const float LONG_INSERTION_TEXT_THRESHOLD_PX = 15.0;
 static const float INSERTION_SERIF_MIN_PX_PER_BP = 3.0;
 static const float MIN_HEIGHT_FOR_TEXT = 5.0;
+
+// The serif cap: a wedge `SERIF_HALF_W_PX` either side of the bar, tapering to
+// a point `SERIF_H_PX` into the row. Two caps, mirrored, so a small insertion
+// reads as an I-beam rather than a bare tick.
+//
+// Exported for the same reason the four above are: `drawInsertionMarker` in
+// @jbrowse/alignments-core draws these caps for the Canvas2D and SVG paths and
+// for three other plugins, and the two spellings had drifted into different
+// glyphs — this pass drew 3x1px RECTANGLES placed OUTSIDE the row (clip-space
+// `syTop + th` is above the top edge), while the CPU drew 4x2px TRIANGLES
+// inside it. On a small insertion the bar is 1px, so the caps are most of the
+// mark, and the on-screen GPU render disagreed with its own SVG export.
+static const float SERIF_HALF_W_PX = 2.0;
+static const float SERIF_H_PX = 2.0;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -92,6 +106,19 @@ float insertionBarWidthPx(uint length, float pxPerBp, float featHeight) {
   return 1.0;
 }
 
+// One corner of a serif cap: a wedge whose base is `halfWClip` either side of
+// `cx` at `baseY`, tapering to a point at `apexY`. The taper is what makes it a
+// triangle rather than a box — the quad's far edge collapses onto the apex, so
+// its second triangle is degenerate and rasterizes to nothing.
+//
+// A cap can't go through `flippedQuadPos` because its x depends on local.y,
+// which is exactly the difference this replaces: the cap used to be a plain
+// quad, and a quad is the one thing the CPU twin was not drawing.
+float4 serifPos(float cx, float baseY, float apexY, float halfWClip, float2 local, Uniforms u) {
+  float x = cx + halfWClip * (2.0 * local.x - 1.0) * (1.0 - local.y);
+  return float4(flipX(x, u), lerp(baseY, apexY, local.y), 0.0, 1.0);
+}
+
 [shader("vertex")]
 ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   ColorVsOut o;
@@ -104,39 +131,13 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   bool isLong = inst.length >= LONG_INSERTION_MIN_LENGTH;
   float rectW = insertionBarWidthPx(inst.length, pxPerBp, u.featHeight);
 
-  float onePx = 2.0 / u.canvasW;
   float rectWClip = rectW * 2.0 / u.canvasW;
-  float tickWClip = onePx * 3.0;
+  float serifHalfWClip = SERIF_HALF_W_PX * 2.0 / u.canvasW;
+  float serifHClip = SERIF_H_PX * 2.0 / u.canvasH;
 
   float2 yy = pileupY(float(inst.y), u);
   float syTop = yy.x;
   float syBot = yy.y;
-
-  float x1, x2, y1, y2;
-  if (rectIdx == 0u) {
-    x1 = cx - rectWClip * 0.5;
-    x2 = cx + rectWClip * 0.5;
-    y1 = syBot;
-    y2 = syTop;
-  } else if (rectIdx == 1u) {
-    if (isLong || pxPerBp < INSERTION_SERIF_MIN_PX_PER_BP) {
-      x1 = cx; x2 = cx; y1 = syTop; y2 = syTop;  // degenerate
-    } else {
-      x1 = cx - tickWClip * 0.5;
-      x2 = cx + tickWClip * 0.5;
-      float th = 2.0 / u.canvasH;
-      y1 = syTop; y2 = syTop + th;
-    }
-  } else {
-    if (isLong || pxPerBp < INSERTION_SERIF_MIN_PX_PER_BP) {
-      x1 = cx; x2 = cx; y1 = syBot; y2 = syBot;
-    } else {
-      x1 = cx - tickWClip * 0.5;
-      x2 = cx + tickWClip * 0.5;
-      float th = 2.0 / u.canvasH;
-      y1 = syBot - th; y2 = syBot;
-    }
-  }
 
   // Long insertions draw as a fixed marker and never frequency-fade. They do
   // still fade by size — see insertionSizeAlpha, which is the gate that answers
@@ -145,7 +146,19 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
     * insertionSizeAlpha(inst.length, pxPerBp);
   if (alpha <= 0.0) { return discardVertex(); }
 
-  o.position = flippedQuadPos(x1, x2, y1, y2, local, u);
+  bool serifs = !isLong && pxPerBp >= INSERTION_SERIF_MIN_PX_PER_BP;
+  if (rectIdx != 0u && !serifs) { return discardVertex(); }
+
+  if (rectIdx == 0u) {
+    o.position = flippedQuadPos(cx - rectWClip * 0.5, cx + rectWClip * 0.5,
+                                syBot, syTop, local, u);
+  } else if (rectIdx == 1u) {
+    // Top cap: base on the row's top edge, point down into the row. Clip y
+    // decreases downward, hence the subtraction.
+    o.position = serifPos(cx, syTop, syTop - serifHClip, serifHalfWClip, local, u);
+  } else {
+    o.position = serifPos(cx, syBot, syBot + serifHClip, serifHalfWClip, local, u);
+  }
   o.color = float4(unpackRGBA(u.colorInsertion).xyz, alpha);
   return o;
 }
