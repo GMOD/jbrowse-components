@@ -62,8 +62,18 @@ float insertionSizeAlpha(uint length, float pxPerBp) {
 // room the marker has earned:
 //
 //   large: wide enough for the count label, and in a row tall enough to draw it
-//   long:  a short noticeable bar, capped at 5px
+//   long:  a short noticeable bar, between 1 and 5px
 //   small: a 1px tick
+//
+// The `long` bar is floored at 1px for the same reason the `small` tick IS 1px:
+// below that a marker is sub-pixel and rasterizes to a fraction of one column's
+// coverage on either backend. Without the floor the width was NOT monotonic in
+// length — `min(5, insWPx/3)` drops under 1 whenever the insertion spans less
+// than 3 screen px, so at 10bp/px a 10-29bp insertion drew *narrower and
+// fainter* than a 5bp one (0.33-0.97px against a hard 1.0), and at 20bp/px the
+// whole 10-99bp range did. That is exactly the size range long-read SV calls
+// live in, and `long` insertions deliberately never frequency-fade, so nothing
+// downstream compensated.
 //
 // `//! js-export`ed to @jbrowse/alignments-core (see js-export-out), because
 // this width is not just the shader's: the Canvas2D/SVG renderer, hit-testing
@@ -78,7 +88,7 @@ float insertionBarWidthPx(uint length, float pxPerBp, float featHeight) {
     && insWPx >= LONG_INSERTION_TEXT_THRESHOLD_PX
     && featHeight >= MIN_HEIGHT_FOR_TEXT;
   if (isLarge) { return textWidth(length); }
-  if (isLong)  { return min(5.0, insWPx / 3.0); }
+  if (isLong)  { return clamp(insWPx / 3.0, 1.0, 5.0); }
   return 1.0;
 }
 

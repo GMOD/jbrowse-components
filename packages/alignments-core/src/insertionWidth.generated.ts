@@ -50,7 +50,7 @@ export function insertionBarWidthPx(length: number, pxPerBp: number, featHeight:
     return textWidth(length)
   }
   if (isLong) {
-    return _min(5.0, (insWPx / 3.0))
+    return _clamp((insWPx / 3.0), 1.0, 5.0)
   }
   return 1.0
 }
