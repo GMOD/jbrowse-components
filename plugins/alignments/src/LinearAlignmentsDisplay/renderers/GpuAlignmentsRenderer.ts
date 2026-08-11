@@ -93,9 +93,9 @@ import {
 } from '../../features/softclip/packBases.ts'
 import { uploadSoftclipBases } from '../../features/softclip/uploadBases.ts'
 import {
-  arcColorPalette,
-  arcMarkerColorPalette,
-  linkedReadColorPalette,
+  buildArcColorPalette,
+  buildArcMarkerColorPalette,
+  buildLinkedReadColorPalette,
 } from '../../shaders/palettes.ts'
 import * as flatQuadShader from '../../shaders/slang/flatQuad.generated.ts'
 import * as readShader from '../../shaders/slang/read.generated.ts'
@@ -369,9 +369,12 @@ function writePaletteToUbo(u: Uint32Array, f: Float32Array, c: ColorPalette) {
   // fell out of step leaves an undefined behind here rather than silently
   // painting stale colors in the slots it didn't reach. arcYScale.test.ts pins
   // the two lengths equal.
-  writeSlots(USLOTS.arcColor, arcColorPalette)
-  writeSlots(USLOTS.arcMarkerColor, arcMarkerColorPalette)
-  writeSlots(USLOTS.linkedReadColor, linkedReadColorPalette)
+  // Resolved against `c`, the same themed palette the read categories below
+  // use. These three used to be module constants, which is how a dark-mode
+  // pileup ended up with dimmed reads under undimmed arcs.
+  writeSlots(USLOTS.arcColor, buildArcColorPalette(c))
+  writeSlots(USLOTS.arcMarkerColor, buildArcMarkerColorPalette(c))
+  writeSlots(USLOTS.linkedReadColor, buildLinkedReadColorPalette(c))
   // One color per read category, indexed by the RC_* the CPU classifier baked
   // into each instance. read.slang used to branch through 17 `cat == RC_X` arms
   // to reach the same named colors; this is that mapping, from the one table

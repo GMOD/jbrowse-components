@@ -6,7 +6,20 @@ import {
 } from '@jbrowse/alignments-core'
 
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
-import { linkedReadColorPalette } from '../../shaders/palettes.ts'
+import { makeTestPalette } from '../../LinearAlignmentsDisplay/testUtils.ts'
+
+// Distinguishable values, not makeTestPalette's all-zero default: the
+// assertions below are that two SLOTS carry different colors, which every
+// palette entry being [0,0,0] would satisfy vacuously.
+const PALETTE = makeTestPalette({
+  colorPairLR: [0.1, 0.1, 0.1],
+  colorPairRL: [0.2, 0.2, 0.2],
+  colorPairRR: [0.3, 0.3, 0.3],
+  colorPairLL: [0.4, 0.4, 0.4],
+  colorSupplementary: [0.5, 0.5, 0.5],
+  colorSplitInversion: [0.6, 0.6, 0.6],
+})
+import { buildLinkedReadColorPalette } from '../../shaders/palettes.ts'
 import {
   LINKED_READ_COLOR_PAIR_LR,
   LINKED_READ_COLOR_PAIR_RR,
@@ -103,6 +116,7 @@ describe('computePileupBezierArcs — split-read tangent direction', () => {
       ys: [0, 1],
     })
     const arcs = computePileupBezierArcs({
+      colors: PALETTE,
       ...baseOpts,
       pairs: enumerateBezierPairs(new Map([[0, data]])),
     })
@@ -124,6 +138,7 @@ describe('computePileupBezierArcs — split-read tangent direction', () => {
       ys: [0, 1],
     })
     const arcs = computePileupBezierArcs({
+      colors: PALETTE,
       ...baseOpts,
       pairs: enumerateBezierPairs(new Map([[0, data]])),
     })
@@ -147,6 +162,7 @@ describe('computePileupBezierArcs — split-read tangent direction', () => {
       ys: [0, 1],
     })
     const arcs = computePileupBezierArcs({
+      colors: PALETTE,
       ...baseOpts,
       displayedRegions: [{ refName: 'chr1', reversed: true }],
       pairs: enumerateBezierPairs(new Map([[0, data]])),
@@ -169,6 +185,7 @@ describe('computePileupBezierArcs — split-read tangent direction', () => {
       ys: [0, 1],
     })
     const arcs = computePileupBezierArcs({
+      colors: PALETTE,
       ...baseOpts,
       pairs: enumerateBezierPairs(new Map([[0, data]])),
     })
@@ -180,8 +197,12 @@ describe('computePileupBezierArcs — distinct inversion hue + tooltip label', (
   // A split-read inversion gets its OWN color (colorSplitReadInversion), distinct
   // from the RR-pair blue, so the connector matches the magenta read fill and the
   // two categories are tellable apart in the legend.
-  const rr = rgb255(linkedReadColorPalette[LINKED_READ_COLOR_PAIR_RR]!)
-  const splitInv = rgb255(linkedReadColorPalette[LINKED_READ_COLOR_SPLIT_INV]!)
+  const rr = rgb255(
+    buildLinkedReadColorPalette(PALETTE)[LINKED_READ_COLOR_PAIR_RR]!,
+  )
+  const splitInv = rgb255(
+    buildLinkedReadColorPalette(PALETTE)[LINKED_READ_COLOR_SPLIT_INV]!,
+  )
 
   it('split inversion: own inversion hue, distinct from RR, labeled', () => {
     const data = makeData({
@@ -195,6 +216,7 @@ describe('computePileupBezierArcs — distinct inversion hue + tooltip label', (
       ys: [0, 1],
     })
     const arcs = computePileupBezierArcs({
+      colors: PALETTE,
       ...baseOpts,
       pairs: enumerateBezierPairs(new Map([[0, data]])),
     })
@@ -220,6 +242,7 @@ describe('computePileupBezierArcs — distinct inversion hue + tooltip label', (
       ys: [0, 1],
     })
     const arcs = computePileupBezierArcs({
+      colors: PALETTE,
       ...baseOpts,
       pairs: enumerateBezierPairs(new Map([[0, data]])),
     })
@@ -250,6 +273,7 @@ describe('computePileupBezierArcs — paired tangent direction', () => {
       ys: [0, 1],
     })
     const arcs = computePileupBezierArcs({
+      colors: PALETTE,
       ...baseOpts,
       pairs: enumerateBezierPairs(new Map([[0, data]])),
     })
@@ -277,6 +301,7 @@ describe('computePileupBezierArcs — discordant curves dip', () => {
       ys: [0, 0],
     })
     const arcs = computePileupBezierArcs({
+      colors: PALETTE,
       ...baseOpts,
       pairs: enumerateBezierPairs(new Map([[0, data]])),
     })
@@ -302,6 +327,7 @@ describe('computePileupBezierArcs — discordant curves dip', () => {
       ys: [0, 0],
     })
     const arcs = computePileupBezierArcs({
+      colors: PALETTE,
       ...baseOpts,
       pairs: enumerateBezierPairs(new Map([[0, data]])),
     })
@@ -374,6 +400,7 @@ describe('computePileupBezierArcs — one refName displayed twice', () => {
 
   it('draws each endpoint in the region it was fetched from', () => {
     const arcs = computePileupBezierArcs({
+      colors: PALETTE,
       ...baseOpts,
       displayedRegions: REGIONS,
       bpToScreenX,
@@ -388,6 +415,7 @@ describe('computePileupBezierArcs — one refName displayed twice', () => {
 
   it('collapses onto region 0 when the index is ignored', () => {
     const arcs = computePileupBezierArcs({
+      colors: PALETTE,
       ...baseOpts,
       displayedRegions: REGIONS,
       // the pre-fix projection: refName + coordinate, no region index
@@ -421,6 +449,7 @@ describe('computePileupBezierArcs — off-screen culling', () => {
 
   it('keeps a curve whose endpoints are off-screen but whose body is not', () => {
     const arcs = computePileupBezierArcs({
+      colors: PALETTE,
       ...scrolledJustAbove,
       pairs: enumerateBezierPairs(new Map([[0, wideInversion]])),
     })
@@ -433,6 +462,7 @@ describe('computePileupBezierArcs — off-screen culling', () => {
 
   it('still culls a curve that is wholly off-screen', () => {
     const arcs = computePileupBezierArcs({
+      colors: PALETTE,
       ...baseOpts,
       scrollTop: 5000,
       pairs: enumerateBezierPairs(new Map([[0, wideInversion]])),
@@ -459,6 +489,7 @@ describe('computePileupBezierArcs — exclusions', () => {
       ys: [0, 0],
     })
     const arcs = computePileupBezierArcs({
+      colors: PALETTE,
       ...baseOpts,
       pairs: enumerateBezierPairs(new Map([[0, data]])),
     })
@@ -477,6 +508,7 @@ describe('computePileupBezierArcs — exclusions', () => {
       ys: [0, 1],
     })
     const arcs = computePileupBezierArcs({
+      colors: PALETTE,
       ...baseOpts,
       pairs: enumerateBezierPairs(new Map([[0, data]])),
       bpToScreenX: () => undefined,
@@ -543,6 +575,7 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
   // means something aberrant.
   it('draws the straddling pair as a connector', () => {
     const arcs = computePileupBezierArcs({
+      colors: PALETTE,
       ...baseOpts,
       displayedRegions: [{ refName: 'chr1' }, { refName: 'chr1' }],
       pairs: enumerateBezierPairs(twoRegions, 'crossRegion'),
@@ -558,7 +591,7 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
 describe('bezierConnectionLegendItems', () => {
   it('draws each row as the connector shape that color is drawn in', () => {
     const mark = (colorType: number) =>
-      bezierConnectionLegendItems([colorType])[0]!.mark
+      bezierConnectionLegendItems([colorType], PALETTE)[0]!.mark
     // aberrant orientations and inverted splits are the beziers
     expect(mark(LINKED_READ_COLOR_PAIR_RR)).toBe('curve')
     expect(mark(LINKED_READ_COLOR_SPLIT_INV)).toBe('curve')
@@ -570,10 +603,10 @@ describe('bezierConnectionLegendItems', () => {
 
   it('keys the connection colors in view, sorted, in the arcs own words', () => {
     expect(
-      bezierConnectionLegendItems([
-        LINKED_READ_COLOR_SPLIT_INV,
-        LINKED_READ_COLOR_PAIR_RR,
-      ]).map(i => i.label),
+      bezierConnectionLegendItems(
+        [LINKED_READ_COLOR_SPLIT_INV, LINKED_READ_COLOR_PAIR_RR],
+        PALETTE,
+      ).map(i => i.label),
     ).toEqual(['RR - Both mates reverse strand', 'Split junction (inverted)'])
   })
 })

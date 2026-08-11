@@ -1,10 +1,21 @@
-import { colorInterchrom, colorShortInsert } from '@jbrowse/core/ui/theme'
+import {
+  colorInterchrom,
+  colorLongInsert,
+  colorPairLL,
+  colorPairLR,
+  colorPairRL,
+  colorPairRR,
+  colorShortInsert,
+  colorSplitReadInversion,
+  colorSupplementary,
+} from '@jbrowse/core/ui/palette'
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 
+import { makeTestPalette } from '../../LinearAlignmentsDisplay/testUtils.ts'
 import {
-  arcColorPalette,
-  arcMarkerColorPalette,
-  linkedReadColorPalette,
+  buildArcColorPalette,
+  buildArcMarkerColorPalette,
+  buildLinkedReadColorPalette,
 } from '../../shaders/palettes.ts'
 import {
   arcColorSlot,
@@ -14,17 +25,37 @@ import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.iface.generate
 import { UNIFORM_SLOT_ARRAYS } from '../../shaders/slang/read.iface.generated.ts'
 import { arcYFraction } from './arcYScale.ts'
 
+// The stock colors, as a ColorPalette. These tests pin SLOT POSITIONS (which
+// index holds interchrom, that the marker and stroke palettes agree), so they
+// need real distinguishable values rather than makeTestPalette's all-zero
+// default -- and building it from the module constants is what keeps them
+// asserting the same thing they did when the palettes were baked from those
+// constants directly.
+const STOCK = makeTestPalette({
+  colorPairLR: cssColorToNormalizedRgb(colorPairLR),
+  colorLongInsert: cssColorToNormalizedRgb(colorLongInsert),
+  colorShortInsert: cssColorToNormalizedRgb(colorShortInsert),
+  colorInterchrom: cssColorToNormalizedRgb(colorInterchrom),
+  colorPairLL: cssColorToNormalizedRgb(colorPairLL),
+  colorPairRR: cssColorToNormalizedRgb(colorPairRR),
+  colorPairRL: cssColorToNormalizedRgb(colorPairRL),
+  colorSplitInversion: cssColorToNormalizedRgb(colorSplitReadInversion),
+  colorSupplementary: cssColorToNormalizedRgb(colorSupplementary),
+})
+
 // The JS palettes (Canvas2D / SVG) and the GPU uniform slots are two hand-kept
 // copies of the same color table. If they drift — a color constant added to one
 // side but not the other — the GPU copy loop silently uploads a short palette,
 // mis-coloring instead of failing. Pin the lengths equal so that drift is a
 // test failure, not a subtle visual bug.
 describe('arc palette parity (JS ↔ GPU uniform slots)', () => {
-  it('arcColorPalette length matches the GPU arcColor slot count', () => {
-    expect(arcColorPalette.length).toBe(UNIFORM_SLOT_ARRAYS.arcColor.length)
+  it('buildArcColorPalette(STOCK) length matches the GPU arcColor slot count', () => {
+    expect(buildArcColorPalette(STOCK).length).toBe(
+      UNIFORM_SLOT_ARRAYS.arcColor.length,
+    )
   })
-  it('linkedReadColorPalette length matches the GPU linkedReadColor slot count', () => {
-    expect(linkedReadColorPalette.length).toBe(
+  it('buildLinkedReadColorPalette(STOCK) length matches the GPU linkedReadColor slot count', () => {
+    expect(buildLinkedReadColorPalette(STOCK).length).toBe(
       UNIFORM_SLOT_ARRAYS.linkedReadColor.length,
     )
   })
@@ -32,12 +63,12 @@ describe('arc palette parity (JS ↔ GPU uniform slots)', () => {
 
 // arcLine.slang reads ARC_COLOR_INTERCHROM out of the palette directly now that
 // a connector tick carries no per-instance color, and the Canvas2D tick loop
-// indexes the same constant into `arcColorPalette`. Nothing else ties the
+// indexes the same constant into the built arc palette. Nothing else ties the
 // shader's slot number to what sits at that position in the JS array, so pin it
 // — a color inserted above index 3 would repaint every translocation tick.
 describe('ARC_COLOR_INTERCHROM', () => {
   it('is the palette position holding the interchrom color', () => {
-    expect(arcColorPalette[ARC_COLOR_INTERCHROM]).toEqual(
+    expect(buildArcColorPalette(STOCK)[ARC_COLOR_INTERCHROM]).toEqual(
       cssColorToNormalizedRgb(colorInterchrom),
     )
   })
@@ -51,13 +82,13 @@ describe('ARC_COLOR_INTERCHROM', () => {
 // one. That is the class of drift the lift exists to end, so pin both ends.
 describe('arcColorSlot', () => {
   it('is the identity over every slot the classifier can emit', () => {
-    arcColorPalette.forEach((_, i) => {
+    buildArcColorPalette(STOCK).forEach((_, i) => {
       expect(arcColorSlot(i)).toBe(i)
     })
   })
   it('clamps past the last slot instead of wrapping to the first', () => {
-    const last = arcColorPalette.length - 1
-    expect(arcColorSlot(arcColorPalette.length)).toBe(last)
+    const last = buildArcColorPalette(STOCK).length - 1
+    expect(arcColorSlot(buildArcColorPalette(STOCK).length)).toBe(last)
     expect(arcColorSlot(99)).toBe(last)
   })
 })
@@ -67,13 +98,15 @@ describe('arcColorSlot', () => {
 // it `colorType % palette.length` while linkedReadLine.slang clamped.
 describe('linkedReadColorSlot', () => {
   it('is the identity over every slot in the palette', () => {
-    linkedReadColorPalette.forEach((_, i) => {
+    buildLinkedReadColorPalette(STOCK).forEach((_, i) => {
       expect(linkedReadColorSlot(i)).toBe(i)
     })
   })
   it('clamps past the last slot, and does not use the arc palette bound', () => {
-    const last = linkedReadColorPalette.length - 1
-    expect(linkedReadColorSlot(linkedReadColorPalette.length)).toBe(last)
+    const last = buildLinkedReadColorPalette(STOCK).length - 1
+    expect(linkedReadColorSlot(buildLinkedReadColorPalette(STOCK).length)).toBe(
+      last,
+    )
     // The two palettes are different lengths (9 vs 8), so a shared rule taking
     // the wrong bound would show up right here.
     expect(linkedReadColorSlot(99)).not.toBe(arcColorSlot(99))
@@ -87,18 +120,22 @@ describe('linkedReadColorSlot', () => {
 // substitution is gone and the two palettes are the same array. This is what all
 // three draw paths use, the GPU included (uploaded to the arcMarkerColor uniform
 // slots and indexed there), so pinning it here pins every renderer.
-describe('arcMarkerColorPalette (read-cloud endpoint squares)', () => {
+describe('the arc marker palette (read-cloud endpoint squares)', () => {
   it('paints short insert the one color the curves and the pileup use', () => {
-    expect(arcMarkerColorPalette[2]).toEqual(
+    expect(buildArcMarkerColorPalette(STOCK)[2]).toEqual(
       cssColorToNormalizedRgb(colorShortInsert),
     )
-    expect(arcColorPalette[2]).toEqual(arcMarkerColorPalette[2])
+    expect(buildArcColorPalette(STOCK)[2]).toEqual(
+      buildArcMarkerColorPalette(STOCK)[2],
+    )
   })
   it('leaves every other slot identical to the stroke arc palette', () => {
-    expect(arcMarkerColorPalette.length).toBe(arcColorPalette.length)
-    arcColorPalette.forEach((c, i) => {
+    expect(buildArcMarkerColorPalette(STOCK).length).toBe(
+      buildArcColorPalette(STOCK).length,
+    )
+    buildArcColorPalette(STOCK).forEach((c, i) => {
       if (i !== 2) {
-        expect(arcMarkerColorPalette[i]).toBe(c)
+        expect(buildArcMarkerColorPalette(STOCK)[i]).toEqual(c)
       }
     })
   })

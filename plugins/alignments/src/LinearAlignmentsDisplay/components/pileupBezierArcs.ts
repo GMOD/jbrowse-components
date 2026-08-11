@@ -43,6 +43,7 @@ export function computePileupBezierArcsFromModel(
     result.push(
       ...computePileupBezierArcs({
         pairs: sec.pairs,
+        colors: model.colorPalette,
         displayedRegions: view.displayedRegions,
         bpToScreenX,
         featureHeight: model.featureHeight,

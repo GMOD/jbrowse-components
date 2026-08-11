@@ -3,7 +3,7 @@ import {
   bpToScreenX,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import { linkedReadColorPalette } from '../../shaders/palettes.ts'
+import { buildLinkedReadColorPalette } from '../../shaders/palettes.ts'
 import {
   LINKED_READ_LINE_ALPHA,
   LINKED_READ_LINE_WIDTH_PX,
@@ -13,18 +13,32 @@ import type {
   DrawBlock,
   RenderState,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import type { ColorPalette } from '../../shaders/colors.ts'
 import type { LinkedReadLinesUploadData } from './types.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
-// Palette and alpha are both module constants, so every stroke this pass can
-// ever use is known up front — build the seven CSS strings once rather than
-// formatting one per line (the cost `drawReads` documents for fillStyle).
+// Every stroke this pass can use is still known up front — build the eight CSS
+// strings once per draw rather than formatting one per line (the cost
+// `drawReads` documents for fillStyle). Once per draw and not once per module,
+// because the palette is the THEMED one now: baking it at import time is what
+// left dark mode drawing connectors in the light palette's colors while the
+// reads under them were dimmed. Memoized on the palette object, which the model
+// rebuilds only when the theme changes.
 // LINKED_READ_LINE_ALPHA comes from linkedReadLine.generated.ts
 // (linkedReadLine.slang is the source of truth), so this path can't drift from
 // the shader.
-const LINE_CSS = linkedReadColorPalette.map(c =>
-  rgba255(c, LINKED_READ_LINE_ALPHA),
-)
+let lineCssMemo: { colors: ColorPalette; css: string[] } | undefined
+function lineCss(colors: ColorPalette) {
+  if (lineCssMemo?.colors !== colors) {
+    lineCssMemo = {
+      colors,
+      css: buildLinkedReadColorPalette(colors).map(c =>
+        rgba255(c, LINKED_READ_LINE_ALPHA),
+      ),
+    }
+  }
+  return lineCssMemo.css
+}
 
 export function drawLinkedReadLines(
   ctx: Ctx2D,
@@ -39,6 +53,7 @@ export function drawLinkedReadLines(
   // nothing at all on the GPU, which drew a native line list at a fixed 1 px —
   // the two backends disagreed on the weight of every connector.
   ctx.lineWidth = LINKED_READ_LINE_WIDTH_PX
+  const css = lineCss(state.colors)
   for (let i = 0; i < region.numLinkedReadLines; i++) {
     const y1 = pileupRowY(region.linkedReadLineYs[i * 2]!, state) + fH / 2
     const y2 = pileupRowY(region.linkedReadLineYs[i * 2 + 1]!, state) + fH / 2
@@ -51,8 +66,7 @@ export function drawLinkedReadLines(
       const endBp = region.linkedReadLinePositions[i * 2 + 1]!
       const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
       const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-      ctx.strokeStyle =
-        LINE_CSS[region.linkedReadLineColorTypes[i]! % LINE_CSS.length]!
+      ctx.strokeStyle = css[region.linkedReadLineColorTypes[i]! % css.length]!
       ctx.beginPath()
       ctx.moveTo(x1, y1)
       ctx.lineTo(x2, y2)

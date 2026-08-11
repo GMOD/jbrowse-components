@@ -4,7 +4,7 @@ import {
 } from '@jbrowse/core/util'
 
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
-import { linkedReadColorPalette } from '../../shaders/palettes.ts'
+import { buildLinkedReadColorPalette } from '../../shaders/palettes.ts'
 // The palette-index rule, generated from alignmentsUniforms.slang (adr-051).
 // Canvas2D/SVG spelled it `colorType % palette.length`, which agrees with the
 // shader's clamp on every slot in use and resolves an out-of-range one to a
@@ -13,6 +13,7 @@ import { linkedReadColorSlot } from '../../shaders/slang/alignmentsUniforms.js.g
 import { connectionLabel, connectionMark, iterLinkedPairs } from './compute.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
+import type { ColorPalette } from '../../shaders/colors.ts'
 import type { LinkedPair, ReadEntry } from './compute.ts'
 import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
@@ -91,11 +92,13 @@ export type BezierArcScope = 'all' | 'crossRegion' | 'none'
 // legend order is stable as reads stream in.
 export function bezierConnectionLegendItems(
   colorTypes: Iterable<number>,
+  colors: ColorPalette,
 ): LegendItem[] {
+  const palette = buildLinkedReadColorPalette(colors)
   return [...colorTypes]
     .sort((a, b) => a - b)
     .map(colorType => ({
-      color: rgb255(linkedReadColorPalette[linkedReadColorSlot(colorType)]!),
+      color: rgb255(palette[linkedReadColorSlot(colorType)]!),
       label: connectionLabel(colorType),
       mark: connectionMark(colorType),
     }))
@@ -147,6 +150,10 @@ interface Opts {
   scrollTop: number
   // Screen-y of this section's band bottom — the visibility cull's lower edge.
   viewportBottom: number
+  // The themed palette, for the same reason the read fills take one: a baked
+  // module palette drew connectors in light-mode colors over dimmed dark-mode
+  // reads.
+  colors: ColorPalette
 }
 
 // Bezier curves for aberrant pairs, plus straight `M..L..` paths for
@@ -164,7 +171,9 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
     pileupTopOffset,
     scrollTop,
     viewportBottom,
+    colors,
   } = opts
+  const linkedReadPalette = buildLinkedReadColorPalette(colors)
 
   const rowH = featureHeight + featureSpacing
   const readCenterDy = featureHeight / 2
@@ -224,9 +233,7 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
           reversed2: !!r2.reversed,
           dip: true,
         })
-    const stroke = rgb255(
-      linkedReadColorPalette[linkedReadColorSlot(c.colorType)]!,
-    )
+    const stroke = rgb255(linkedReadPalette[linkedReadColorSlot(c.colorType)]!)
 
     result.push({
       d,

@@ -1,0 +1,124 @@
+import {
+  categorySwatchColor,
+  rgb255,
+} from '../LinearAlignmentsDisplay/colorUtils.ts'
+import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
+import { arcColorLegendCategory } from '../features/arcs/compute.ts'
+import {
+  LINKED_READ_COLOR_PAIR_LL,
+  LINKED_READ_COLOR_PAIR_LR,
+  LINKED_READ_COLOR_PAIR_RL,
+  LINKED_READ_COLOR_PAIR_RR,
+  LINKED_READ_COLOR_SPLIT_INV,
+  LINKED_READ_COLOR_SPLIT_NORMAL,
+  connectionLabel,
+} from '../features/linkedReads/compute.ts'
+import { readColorCategoryLabel } from '../shared/legendUtils.ts'
+import {
+  buildArcColorPalette,
+  buildArcMarkerColorPalette,
+  buildLinkedReadColorPalette,
+} from './palettes.ts'
+
+import type {
+  ReadColorCategory,
+  SwatchCategory,
+} from '../LinearAlignmentsDisplay/colorUtils.ts'
+
+// A pileup draws one meaning through three vocabularies — read fills, arc /
+// read-cloud overlays, linked-read connectors — and each has its own table. The
+// tables are supposed to agree, and until this file nothing said so; the
+// agreement was asserted in comments, which is how the overlays came to be baked
+// from the module palette while the read fills resolved through the theme. In
+// the default light palette that is invisible, and light is where every figure
+// is captured, so it survived.
+//
+// `makeTestPalette` is deliberately NOT the stock palette: it takes overrides,
+// so the assertions below fail if any path goes back to reading a module
+// constant instead of the palette it was handed.
+const OVERRIDDEN = makeTestPalette({
+  colorPairLR: [0.11, 0.12, 0.13],
+  colorPairRL: [0.21, 0.22, 0.23],
+  colorPairRR: [0.31, 0.32, 0.33],
+  colorPairLL: [0.41, 0.42, 0.43],
+  colorSupplementary: [0.51, 0.52, 0.53],
+  colorSplitInversion: [0.61, 0.62, 0.63],
+  colorLongInsert: [0.71, 0.72, 0.73],
+  colorShortInsert: [0.81, 0.82, 0.83],
+  colorInterchrom: [0.91, 0.92, 0.93],
+})
+
+describe('overlay palettes follow the theme', () => {
+  test.each([
+    ['arc', buildArcColorPalette],
+    ['arc marker', buildArcMarkerColorPalette],
+    ['linked read', buildLinkedReadColorPalette],
+  ])('%s palette resolves against the palette it is given', (_name, build) => {
+    // Nothing is left over from the module constants: every slot has to be one
+    // of the values this palette carries.
+    const carried = new Set(
+      Object.values(OVERRIDDEN).map(c => (c as number[]).join(',')),
+    )
+    for (const slot of build(OVERRIDDEN)) {
+      expect(carried).toContain(slot.join(','))
+    }
+  })
+
+  // The sharp one. An arc slot and the read swatch it maps to are the SAME
+  // meaning, so a themed pileup must not paint them two colors — that is the
+  // dark-mode bug this file exists to stop coming back (`pairLR` is the entry
+  // the stock dark palette dims).
+  test('each arc slot equals the read swatch of the category it keys', () => {
+    const arc = buildArcColorPalette(OVERRIDDEN)
+    for (const [slot, rgb] of arc.entries()) {
+      const category = arcColorLegendCategory(slot, 'insertSizeAndOrientation')
+      expect([slot, rgb255(rgb)]).toEqual([
+        slot,
+        categorySwatchColor(category as SwatchCategory, OVERRIDDEN),
+      ])
+    }
+  })
+
+  // Same claim for the connector palette, whose slots are the orientation codes
+  // plus the two split junctions.
+  test('each connector slot equals the read swatch it shares a meaning with', () => {
+    const linked = buildLinkedReadColorPalette(OVERRIDDEN)
+    const expected: [number, ReadColorCategory][] = [
+      [LINKED_READ_COLOR_PAIR_LR, 'pairLR'],
+      [LINKED_READ_COLOR_PAIR_RL, 'pairRL'],
+      [LINKED_READ_COLOR_PAIR_RR, 'pairRR'],
+      [LINKED_READ_COLOR_PAIR_LL, 'pairLL'],
+      [LINKED_READ_COLOR_SPLIT_NORMAL, 'splitDeletion'],
+      [LINKED_READ_COLOR_SPLIT_INV, 'splitInversion'],
+    ]
+    for (const [slot, category] of expected) {
+      expect([category, rgb255(linked[slot]!)]).toEqual([
+        category,
+        categorySwatchColor(category as SwatchCategory, OVERRIDDEN),
+      ])
+    }
+  })
+})
+
+// The other half of the same problem, in strings rather than colors. Both files
+// carry a comment saying these must agree word for word — legendUtils because
+// "one box can show both", `connectionLabel` because "a color means one thing
+// whether the reader met it on a swatch, a fill or a curve". They are two hand-
+// kept tables, and `getAlignmentsLegendSections` de-dupes the connections
+// section against the already-keyed rows on `${color} ${label}`: drift one
+// string and the same connection is keyed twice in one box under two wordings.
+// One of these has already drifted once ("deletion"), and it was caught by
+// somebody reading a legend.
+describe('connector labels match the read key word for word', () => {
+  test.each([
+    [LINKED_READ_COLOR_PAIR_LR, 'pairLR'],
+    [LINKED_READ_COLOR_PAIR_RL, 'pairRL'],
+    [LINKED_READ_COLOR_PAIR_RR, 'pairRR'],
+    [LINKED_READ_COLOR_PAIR_LL, 'pairLL'],
+  ] as [number, ReadColorCategory][])(
+    'connector %i uses the same wording as its read swatch',
+    (colorType, category) => {
+      expect(connectionLabel(colorType)).toBe(readColorCategoryLabel(category))
+    },
+  )
+})

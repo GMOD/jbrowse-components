@@ -2153,7 +2153,10 @@ export default function stateModelFactory(
          * colored by the same rules and a color on screen needs its key.
          */
         bezierLegendItems() {
-          return bezierConnectionLegendItems(this.bezierConnectionColorTypes)
+          return bezierConnectionLegendItems(
+            this.bezierConnectionColorTypes,
+            self.colorPalette,
+          )
         },
 
         /**
