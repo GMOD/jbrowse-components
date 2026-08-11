@@ -574,6 +574,26 @@ async function captureComposeSpec(spec: ComposeSpec) {
   }
 }
 
+// The repo-relative figure path(s) a spec writes, in the spelling figures.lock
+// uses. A cli spec writes two: jb2export's own output under
+// products/jbrowse-img/img and the website mirror captureCliSpec copies it to.
+function manifestPathsFor(spec: ScreenshotSpec): string[] {
+  const rel = (abs: string) =>
+    path.relative(repoRoot, abs).split(path.sep).join('/')
+  const website = rel(path.join(outDir, `${spec.name}.png`))
+  return spec.mode === 'cli'
+    ? [
+        website,
+        rel(
+          path.join(
+            jbrowseImgOutDir,
+            `${spec.name.replace(/^jbrowse-img\//, '')}.png`,
+          ),
+        ),
+      ]
+    : [website]
+}
+
 async function main() {
   // The content-stable gate needs the figures it is comparing against.
   //
@@ -589,16 +609,15 @@ async function main() {
   // has to live here rather than only in the npm script. It refuses instead of
   // pulling: a sweep is a long, expensive operation and silently going to the
   // network at minute zero is not something to do on the user's behalf.
+  //
+  // It is checked against THIS RUN's own outputs, below, once the filters have
+  // been applied — not against the whole manifest. An absent figure only
+  // matters to a capture that is about to overwrite it, and scoping it that way
+  // is what lets a `--filter` run work in a worktree whose figure directory is
+  // shared with another one: a figure some other branch has deleted is not on
+  // disk, is not in that branch's lock, and has nothing to do with the two
+  // specs being re-rendered here. Unscoped, it stopped the run outright.
   const manifest = readManifest()
-  const absent = [...manifest.keys()].filter(p => !fileExists(p))
-  if (absent.length > 0) {
-    console.error(
-      `${absent.length} of ${manifest.size} figures are not on disk, so the ` +
-        'diff gate cannot compare against them and every capture would be ' +
-        'written as new.\n  Run `pnpm figures:pull` first.',
-    )
-    process.exit(1)
-  }
 
   // Before anything is rendered: a duplicate name or a compose part that names
   // no spec is an hour of capture producing a wrong figure, and neither fails on
@@ -705,6 +724,28 @@ async function main() {
       s.parts.some(p => selectedNames.has(p)),
   )
   const filteredSpecs = [...selected, ...impliedCompose]
+
+  // The guard described at the top of main(), now that the run knows what it
+  // will write. commitScreenshot treats a missing output as a brand-new figure
+  // and writes it unconditionally — correct for a new spec, catastrophic for
+  // all of them at once (a fresh clone has no figure bytes at all, so a sweep
+  // there would rewrite every figure as "new", never run pngDiffFraction once,
+  // and leave a push reporting the whole corpus as changed). A figure absent
+  // from the manifest is a genuinely new spec and is not counted.
+  const willWrite = new Set(filteredSpecs.flatMap(manifestPathsFor))
+  const absent = [...manifest.keys()].filter(
+    p => willWrite.has(p) && !fileExists(p),
+  )
+  if (absent.length > 0) {
+    console.error(
+      `${absent.length} of this run's ${willWrite.size} output(s) are not on ` +
+        'disk, so the diff gate cannot compare against them and every capture ' +
+        `would be written as new:\n${absent
+          .map(p => `  - ${p}`)
+          .join('\n')}\n  Run \`pnpm figures:pull\` first.`,
+    )
+    process.exit(1)
+  }
 
   console.log(
     `Generating ${filteredSpecs.length} screenshot(s)${filterTokens.length ? ` (filter: ${filterTokens.join(',')})` : ''}`,
