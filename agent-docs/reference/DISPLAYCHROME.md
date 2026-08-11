@@ -85,6 +85,10 @@ description: The shared display status chrome that owns loading, error, and retr
   would show there as a `—` row. Arc and paired-arc sit on the backend-free
   half. Off it by design: dotplot and synteny (non-LGV, drop to
   `useRenderingBackend`), circular-view (radial, own banners).
+- **The map covers the export too**, in its last two columns: every LGV display's
+  `renderSvg` reaches `SvgChrome`, the narrower export-side gate, and the same
+  `—` row would appear for one that stopped. Two chromes, two columns, one list —
+  because on-screen and export drift independently.
 - **One element per display**, carrying a stable `data-testid` plus
   `data-display-id`, `data-display-drawn` and `data-display-phase` — one
   question each (ADR-065). `testid` is required, no display bypasses the chrome,
@@ -120,9 +124,9 @@ It is two files, split exactly where the backend stops mattering.
 `DisplayChromeBase` holds the hook and the `renderError` branch;
 `DisplayStatusChromeBase` holds the rest and takes `phase`/`drawn` as **props**,
 so it reads no observable and needs no `observer`. The split exists because arc
-needs everything except the hook — see the SVG exception below. Two phase types
-carry the distinction into the type system: `DisplayPhase` for a display with a
-backend, `DisplayStatusPhase` (the same union minus `renderError`) for one
+needs everything except the hook — see the on-screen exception below. Two phase
+types carry the distinction into the type system: `DisplayPhase` for a display
+with a backend, `DisplayStatusPhase` (the same union minus `renderError`) for one
 without, so the status chrome can't be handed a state whose banner it has no
 `retry()` to build, and a backend-less model can't claim that state.
 
@@ -244,29 +248,29 @@ structural rather than remembered — there is no position at that level to hold
 
 <!-- BEGIN GENERATED DISPLAY_CHROME_ADOPTION -->
 
-19 display types are registered for `LinearGenomeView`: 17 on `DisplayChrome`, 2 on `DisplayStatusChrome`.
+19 display types are registered for `LinearGenomeView`: 17 on `DisplayChrome`, 2 on `DisplayStatusChrome`. On export, all 19 reach `SvgChrome`.
 
-| Display type | Chrome | Component |
-| --- | --- | --- |
-| LDDisplay | `DisplayChrome` | `plugins/variants/src/LDDisplay/components/LDDisplayComponent.tsx` |
-| LDTrackDisplay | `DisplayChrome` | `plugins/variants/src/LDDisplay/components/LDDisplayComponent.tsx` |
-| LGVSyntenyDisplay | `DisplayChrome` | borrows LinearAlignmentsDisplay |
-| LinearAlignmentsDisplay | `DisplayChrome` | `plugins/alignments/src/LinearAlignmentsDisplay/components/AlignmentsDisplayComponent.tsx` |
-| LinearArcDisplay | `DisplayStatusChrome` | `plugins/arc/src/LinearArcDisplay/components/ReactComponent.tsx` |
-| LinearBasicDisplay | `DisplayChrome` | `plugins/canvas/src/LinearBasicDisplay/components/FeatureComponent.tsx` |
-| LinearGCContentDisplay | `DisplayChrome` | borrows `LinearWiggleDisplayReactComponent` |
-| LinearGCContentTrackDisplay | `DisplayChrome` | borrows `LinearWiggleDisplayReactComponent` |
-| LinearHicDisplay | `DisplayChrome` | `plugins/hic/src/LinearHicDisplay/components/ReactComponent.tsx` |
-| LinearMafDisplay | `DisplayChrome` | `plugins/maf/src/LinearMafDisplay/components/LinearMafDisplayComponent.tsx` |
-| LinearManhattanDisplay | `DisplayChrome` | `plugins/gwas/src/LinearManhattanDisplay/components/LinearManhattanDisplayComponent.tsx` |
-| LinearMultiRowFeatureDisplay | `DisplayChrome` | `plugins/canvas/src/LinearMultiRowFeatureDisplay/components/LinearMultiRowFeatureDisplayComponent.tsx` |
-| LinearMultiSampleVariantDisplay | `DisplayChrome` | `plugins/variants/src/LinearMultiSampleVariantDisplay/components/VariantDisplayComponent.tsx` |
-| LinearMultiSampleVariantMatrixDisplay | `DisplayChrome` | `plugins/variants/src/LinearMultiSampleVariantMatrixDisplay/components/VariantMatrixDisplayComponent.tsx` |
-| LinearPairedArcDisplay | `DisplayStatusChrome` | `plugins/arc/src/LinearPairedArcDisplay/components/ReactComponent.tsx` |
-| LinearReferenceSequenceDisplay | `DisplayChrome` | `plugins/sequence/src/LinearReferenceSequenceDisplay/components/SequenceDisplayComponent.tsx` |
-| LinearVariantDisplay | `DisplayChrome` | borrows LinearBasicDisplay |
-| LinearWiggleDisplay | `DisplayChrome` | `plugins/wiggle/src/LinearWiggleDisplay/components/WiggleComponent.tsx` |
-| MultiLinearWiggleDisplay | `DisplayChrome` | `plugins/wiggle/src/MultiLinearWiggleDisplay/components/MultiWiggleComponent.tsx` |
+| Display type | Chrome | Component | SVG chrome | renderSvg |
+| --- | --- | --- | --- | --- |
+| LDDisplay | `DisplayChrome` | `plugins/variants/src/LDDisplay/components/LDDisplayComponent.tsx` | `SvgChrome` | `plugins/variants/src/LDDisplay/renderSvg.tsx` |
+| LDTrackDisplay | `DisplayChrome` | `plugins/variants/src/LDDisplay/components/LDDisplayComponent.tsx` | `SvgChrome` | `plugins/variants/src/LDDisplay/renderSvg.tsx` |
+| LGVSyntenyDisplay | `DisplayChrome` | borrows LinearAlignmentsDisplay | `SvgChrome` | inherits `plugins/alignments/src/LinearAlignmentsDisplay/renderSvg.tsx` |
+| LinearAlignmentsDisplay | `DisplayChrome` | `plugins/alignments/src/LinearAlignmentsDisplay/components/AlignmentsDisplayComponent.tsx` | `SvgChrome` | `plugins/alignments/src/LinearAlignmentsDisplay/renderSvg.tsx` |
+| LinearArcDisplay | `DisplayStatusChrome` | `plugins/arc/src/LinearArcDisplay/components/ReactComponent.tsx` | `SvgChrome` | `plugins/arc/src/LinearArcDisplay/renderSvg.tsx` |
+| LinearBasicDisplay | `DisplayChrome` | `plugins/canvas/src/LinearBasicDisplay/components/FeatureComponent.tsx` | `SvgChrome` | `plugins/canvas/src/LinearBasicDisplay/renderSvg.tsx` |
+| LinearGCContentDisplay | `DisplayChrome` | borrows `LinearWiggleDisplayReactComponent` | `SvgChrome` | inherits `plugins/wiggle/src/LinearWiggleDisplay/renderSvg.tsx` |
+| LinearGCContentTrackDisplay | `DisplayChrome` | borrows `LinearWiggleDisplayReactComponent` | `SvgChrome` | inherits `plugins/wiggle/src/LinearWiggleDisplay/renderSvg.tsx` |
+| LinearHicDisplay | `DisplayChrome` | `plugins/hic/src/LinearHicDisplay/components/ReactComponent.tsx` | `SvgChrome` | `plugins/hic/src/LinearHicDisplay/renderSvg.tsx` |
+| LinearMafDisplay | `DisplayChrome` | `plugins/maf/src/LinearMafDisplay/components/LinearMafDisplayComponent.tsx` | `SvgChrome` | `plugins/maf/src/LinearMafDisplay/renderSvg.tsx` |
+| LinearManhattanDisplay | `DisplayChrome` | `plugins/gwas/src/LinearManhattanDisplay/components/LinearManhattanDisplayComponent.tsx` | `SvgChrome` | `plugins/gwas/src/LinearManhattanDisplay/renderSvg.tsx` |
+| LinearMultiRowFeatureDisplay | `DisplayChrome` | `plugins/canvas/src/LinearMultiRowFeatureDisplay/components/LinearMultiRowFeatureDisplayComponent.tsx` | `SvgChrome` | `plugins/canvas/src/LinearMultiRowFeatureDisplay/renderSvg.tsx` |
+| LinearMultiSampleVariantDisplay | `DisplayChrome` | `plugins/variants/src/LinearMultiSampleVariantDisplay/components/VariantDisplayComponent.tsx` | `SvgChrome` | `plugins/variants/src/LinearMultiSampleVariantDisplay/renderSvg.tsx` |
+| LinearMultiSampleVariantMatrixDisplay | `DisplayChrome` | `plugins/variants/src/LinearMultiSampleVariantMatrixDisplay/components/VariantMatrixDisplayComponent.tsx` | `SvgChrome` | `plugins/variants/src/LinearMultiSampleVariantMatrixDisplay/renderSvg.tsx` |
+| LinearPairedArcDisplay | `DisplayStatusChrome` | `plugins/arc/src/LinearPairedArcDisplay/components/ReactComponent.tsx` | `SvgChrome` | `plugins/arc/src/LinearPairedArcDisplay/renderSvg.tsx` |
+| LinearReferenceSequenceDisplay | `DisplayChrome` | `plugins/sequence/src/LinearReferenceSequenceDisplay/components/SequenceDisplayComponent.tsx` | `SvgChrome` | `plugins/sequence/src/LinearReferenceSequenceDisplay/renderSvg.tsx` |
+| LinearVariantDisplay | `DisplayChrome` | borrows LinearBasicDisplay | `SvgChrome` | inherits `plugins/canvas/src/LinearBasicDisplay/renderSvg.tsx` |
+| LinearWiggleDisplay | `DisplayChrome` | `plugins/wiggle/src/LinearWiggleDisplay/components/WiggleComponent.tsx` | `SvgChrome` | `plugins/wiggle/src/LinearWiggleDisplay/renderSvg.tsx` |
+| MultiLinearWiggleDisplay | `DisplayChrome` | `plugins/wiggle/src/MultiLinearWiggleDisplay/components/MultiWiggleComponent.tsx` | `SvgChrome` | `plugins/wiggle/src/MultiLinearWiggleDisplay/renderSvg.tsx` |
 <!-- END GENERATED DISPLAY_CHROME_ADOPTION -->
 
 Generated by `website/scripts/generate-display-chrome-adoption.ts` from the
@@ -291,16 +295,49 @@ against a VariantTrack's own genotypes and against an LDTrack's precomputed
 file. The hand-written version of this section missed the LD pair entirely,
 which is why the table is generated now.
 
-**SVG exception: arc / paired-arc.** These render main-thread SVG (no worker,
-no GPU backend, all features in one array), so they can't wrap `DisplayChrome`,
-which owns the backend hook. They render `DisplayStatusChrome` — the *same
-component* the GPU chrome delegates to, not a parallel implementation — and
-supply the two facts it can't derive for a display whose canvas it doesn't own:
-`phase` (off `ArcFetchModel.displayPhase`, computed by `computeDisplayStatusPhase`)
-and `drawn` (`ArcFetchModel.painted`, its `canvasDrawn` analogue). Container,
-the four `data-*` attributes, banners and progress chip all come from the shared file.
-The phase lives on the model, not in the component, for the same reason it does
-for a GPU display: the component then can't disagree with it. See
+**The last two columns are the same question asked of the export**, resolved
+from the registration's `stateModel` rather than its `ReactComponent`: the model
+chain's `renderSvg` action, the module it hands the export to, and whether that
+module reaches `SvgChrome`. `renderDisplaySvg` is followed rather than trusted
+by name, so a row claiming a display is on the export chrome is derived at every
+hop.
+
+**`SvgChrome` is the only value that column can hold**, which is why it reads as
+a yes/no where the on-screen one names a component. The export chrome is
+deliberately narrower — one terminal (`regionTooLarge`) against the on-screen
+five — and the asymmetry is argued in `packages/core/src/svg/SvgExport.tsx`
+rather than being decay: an over-budget region is a state the user navigated to
+on purpose and a figure saying so is the honest export of it, while a fetch that
+failed is the export being unable to answer, which `throwOnExportErrors` reports
+by failing rather than by drawing.
+
+**An `inherits` row means the display composes another display's model** and
+gets that model's `renderSvg`, the export-side twin of a borrowed component. The
+two coincide where you would expect: `LGVSyntenyDisplay` borrows the alignments
+component and inherits the alignments export; `LinearVariantDisplay` and the two
+GC content displays likewise. A display splitting its own model across
+`model.ts` and `baseModel.ts` is not a borrow and is not marked as one.
+
+**The export column exists because that side had the same drift axis and no
+guard.** It was audited by hand once, in 2026-08, and came back clean: every LGV
+display on the chrome, and the only `renderSvg` files not reaching it were
+circular-view's, dotplot's and synteny's — the non-LGV exemption this map
+already documents. A hand-audit that has to be repeated is exactly what a
+generator is for, so the result is now recomputed on every `pnpm autogen`
+instead of remembered.
+
+**On-screen exception: arc / paired-arc.** These paint the *live view* as
+main-thread SVG (no worker, no GPU backend, all features in one array) — nothing
+to do with the export columns above, where both are on `SvgChrome` like every
+other row. Having no backend, they can't wrap `DisplayChrome`, which owns the
+backend hook. They render `DisplayStatusChrome` — the *same component* the GPU
+chrome delegates to, not a parallel implementation — and supply the two facts it
+can't derive for a display whose canvas it doesn't own: `phase` (off
+`ArcFetchModel.displayPhase`, computed by `computeDisplayStatusPhase`) and
+`drawn` (`ArcFetchModel.painted`, its `canvasDrawn` analogue). Container, the
+four `data-*` attributes, banners and progress chip all come from the shared
+file. The phase lives on the model, not in the component, for the same reason it
+does for a GPU display: the component then can't disagree with it. See
 `plugins/arc/CLAUDE.md`.
 
 **This was a hand-written copy until 2026-08, and it had already drifted** — arc

@@ -98,7 +98,8 @@ const GENERATORS: Generator[] = [
     // DISPLAYCHROME.md's adoption map, read off the DisplayType registrations.
     // The hand-maintained version was already short by one (LDTrackDisplay),
     // which is the same way the display-foundations table drifted before it
-    // was generated.
+    // was generated. Covers both chromes: the on-screen one off `ReactComponent`
+    // and `SvgChrome` off `stateModel`'s `renderSvg`, since the two drift apart.
     name: 'DisplayChrome adoption map',
     argv: web('generate-display-chrome-adoption.ts'),
   },

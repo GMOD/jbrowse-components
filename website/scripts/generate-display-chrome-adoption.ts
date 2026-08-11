@@ -8,11 +8,20 @@
 // claimed a foundation used by displays that did not compose it.
 //
 // What is generated is one row per display type registered for
-// `LinearGenomeView`, naming which chrome its React component renders. That is
-// the drift axis: a display that quietly stops rendering the chrome, or a new
-// one that never started, changes a row rather than going unnoticed. Non-LGV
-// views (dotplot, synteny, circular) are deliberately NOT here — they are off
-// the chrome by design and for reasons prose has to give, so they stay prose.
+// `LinearGenomeView`, naming which chrome it renders **on screen and on
+// export**. Those are two independent drift axes over the same set of displays:
+// a display that quietly stops rendering the chrome, or a new one that never
+// started, changes a row rather than going unnoticed. Non-LGV views (dotplot,
+// synteny, circular) are deliberately NOT here — they are off the chrome by
+// design and for reasons prose has to give, so they stay prose.
+//
+// The export column exists because the SVG side had the same drift axis and no
+// guard. It was audited by hand once, in 2026-08, and came back clean; a
+// hand-audit that has to be repeated is the thing this file replaces. The two
+// columns are resolved from the two halves of the same registration:
+//
+//   ReactComponent  →  the render tree  →  DisplayChrome / DisplayStatusChrome
+//   stateModel      →  renderSvg        →  SvgChrome
 //
 // Resolution handles the four idioms a registration uses to name its component,
 // because all four are in the tree today:
@@ -24,6 +33,13 @@
 //                                        `const { ReactComponent } =
 //                                          pluginManager.getDisplayType('Y')`
 //
+// and the two a `stateModel` uses:
+//
+//   stateModel: modelFactory(configSchema)          most displays
+//   stateModel                                      shorthand, after
+//                                                   `const stateModel =
+//                                                     modelFactory(schema)`
+//
 // **An unresolvable registration is a hard error, never a dropped row.** A
 // silently missing row is the exact failure this replaces: the table would look
 // authoritative and be short. If a fifth idiom appears, this fails and names
@@ -32,7 +48,7 @@
 // Only the block between the markers is generated. Run: `pnpm autogen`
 // (or `--check` in CI).
 import { readFileSync } from 'node:fs'
-import { join, resolve as resolvePath } from 'node:path'
+import { dirname, join, resolve as resolvePath } from 'node:path'
 
 import * as ts from 'typescript'
 
@@ -52,7 +68,20 @@ const docPath = join(repoRoot, 'agent-docs', 'reference', 'DISPLAYCHROME.md')
 // is what a display with no backend (arc) renders directly.
 const CHROMES = new Set(['DisplayChrome', 'DisplayStatusChrome'])
 
+// The export-side counterpart, and there is only one of it: `SvgChrome` has a
+// single terminal (regionTooLarge) where the on-screen chrome has five, and the
+// asymmetry is argued in `packages/core/src/svg/SvgExport.tsx` rather than being
+// decay. So the SVG column's information is not *which* chrome but whether the
+// display reaches it, and by which route.
+const SVG_CHROME = 'SvgChrome'
+
 const LGV = 'LinearGenomeView'
+
+/** How a registration names one of its two resolvable members. */
+type Ref =
+  | { kind: 'module'; module: string }
+  | { kind: 'borrowsDisplayType'; from: string }
+  | { kind: 'borrowsExport'; pkg: string; exportName: string }
 
 interface Registration {
   /** Display type name, e.g. `LinearWiggleDisplay`. */
@@ -60,10 +89,9 @@ interface Registration {
   /** File the `new DisplayType({...})` call sits in. */
   file: string
   /** How the registration names its React component. */
-  component:
-    | { kind: 'module'; module: string }
-    | { kind: 'borrowsDisplayType'; from: string }
-    | { kind: 'borrowsExport'; pkg: string; exportName: string }
+  component: Ref
+  /** Module of the factory the registration's `stateModel` calls. */
+  model: string
 }
 
 function parse(file: string) {
@@ -83,6 +111,98 @@ function propertyOf(obj: ts.ObjectLiteralExpression, key: string) {
   for (const p of obj.properties) {
     if (p.name && ts.isIdentifier(p.name) && p.name.text === key) {
       return p
+    }
+  }
+  return undefined
+}
+
+/** A module-scope `function name(){}` or `const name = () => {}`. */
+function moduleScopeFunction(src: ts.SourceFile, name: string) {
+  for (const s of src.statements) {
+    if (ts.isFunctionDeclaration(s) && s.name?.text === name) {
+      return s
+    }
+    if (ts.isVariableStatement(s)) {
+      for (const d of s.declarationList.declarations) {
+        const init = d.initializer
+        if (
+          ts.isIdentifier(d.name) &&
+          d.name.text === name &&
+          init &&
+          (ts.isArrowFunction(init) || ts.isFunctionExpression(init))
+        ) {
+          return init
+        }
+      }
+    }
+  }
+  return undefined
+}
+
+/** The object literals a module-scope function returns. */
+function returnedObjectLiterals(src: ts.SourceFile, name: string) {
+  const fn = moduleScopeFunction(src, name)
+  const out: ts.ObjectLiteralExpression[] = []
+  const body = fn?.body
+  if (!body) {
+    return out
+  }
+  if (!ts.isBlock(body)) {
+    const expr = ts.isParenthesizedExpression(body) ? body.expression : body
+    if (ts.isObjectLiteralExpression(expr)) {
+      out.push(expr)
+    }
+    return out
+  }
+  for (const st of body.statements) {
+    if (st.kind === ts.SyntaxKind.ReturnStatement) {
+      const expr = (st as ts.ReturnStatement).expression
+      if (expr && ts.isObjectLiteralExpression(expr)) {
+        out.push(expr)
+      }
+    }
+  }
+  return out
+}
+
+/**
+ * A property of a registration's object literal, following `...helper(...)`
+ * spreads into the object that helper returns. The LD pair is registered that
+ * way: `...makeLDStateModel('LDDisplay')` supplies both `configSchema` and
+ * `stateModel`, because the two registrations differ only in their names and
+ * the helper is how they avoid being a loop — see the comment in
+ * `plugins/variants/src/LDDisplay/index.ts` for why a loop is not an option.
+ *
+ * Only same-file helpers are followed, which is every one today and is what
+ * keeps the caller's import map the right one to resolve the result against.
+ */
+function registrationProperty(
+  obj: ts.ObjectLiteralExpression,
+  key: string,
+  src: ts.SourceFile,
+  seen = new Set<ts.Node>(),
+): ts.ObjectLiteralElementLike | undefined {
+  const direct = propertyOf(obj, key)
+  if (direct) {
+    return direct
+  }
+  for (const p of obj.properties) {
+    if (!ts.isSpreadAssignment(p) || !ts.isCallExpression(p.expression)) {
+      continue
+    }
+    const callee = p.expression.expression
+    if (!ts.isIdentifier(callee)) {
+      continue
+    }
+    for (const returned of returnedObjectLiterals(src, callee.text)) {
+      if (seen.has(returned)) {
+        continue
+      }
+      seen.add(returned)
+      const hit = registrationProperty(returned, key, src, seen)
+      if (hit) {
+        return hit
+      }
     }
   }
   return undefined
@@ -260,7 +380,8 @@ function collectRegistrations(): Registration[] {
             out.push({
               name,
               file,
-              component: resolveComponent(arg, file, imports, lazies),
+              component: resolveComponent(arg, src, file, imports, lazies),
+              model: resolveStateModel(arg, src, file, imports),
             })
           }
         }
@@ -274,11 +395,12 @@ function collectRegistrations(): Registration[] {
 
 function resolveComponent(
   obj: ts.ObjectLiteralExpression,
+  src: ts.SourceFile,
   file: string,
   imports: Map<string, string>,
   lazies: Map<string, string>,
 ): Registration['component'] {
-  const prop = propertyOf(obj, 'ReactComponent')
+  const prop = registrationProperty(obj, 'ReactComponent', src)
   if (!prop) {
     throw new Error(
       `${rel(file)}: a DisplayType registration has no ReactComponent. Every display registered for ${LGV} needs one; if that has genuinely changed, this generator needs to learn the new shape.`,
@@ -331,6 +453,189 @@ function resolveComponent(
   throw new Error(
     `${rel(file)}: cannot resolve ReactComponent (${ts.SyntaxKind[init.kind]}). Teach this generator the idiom rather than letting the row disappear.`,
   )
+}
+
+/**
+ * The module of the factory a registration's `stateModel` calls — the entry
+ * point of the model half, as `resolveComponent` is of the component half.
+ *
+ * Unlike `ReactComponent` there is no registry borrow to handle: a display that
+ * wants another's model composes the factory inside its own, which is
+ * `modelChainBases`' problem rather than this one's.
+ */
+function resolveStateModel(
+  obj: ts.ObjectLiteralExpression,
+  src: ts.SourceFile,
+  file: string,
+  imports: Map<string, string>,
+): string {
+  const prop = registrationProperty(obj, 'stateModel', src)
+  if (!prop) {
+    throw new Error(
+      `${rel(file)}: a DisplayType registration has no stateModel. Every display registered for ${LGV} needs one; if that has genuinely changed, this generator needs to learn the new shape.`,
+    )
+  }
+  // `stateModel,` shorthand, after `const stateModel = factory(configSchema)` —
+  // four registrations do this so they can name the model before the object.
+  const init = ts.isShorthandPropertyAssignment(prop)
+    ? localBinding(prop, 'stateModel')
+    : ts.isPropertyAssignment(prop)
+      ? prop.initializer
+      : undefined
+  if (!init) {
+    throw new Error(
+      `${rel(file)}: cannot read the \`stateModel\` of a DisplayType registration — a shorthand with no \`const stateModel = ...\` in the enclosing function, or a property shape this generator has not been taught.`,
+    )
+  }
+  const bases = modelChainBases(init, localBindings(init))
+  // One base is what every registration has today: `factory(configSchema)`,
+  // possibly with `.named(...).props(...)` chained on. A registration that
+  // composes two models inline would land here with two, and picking one would
+  // silently report half the model — so it fails and asks to be taught.
+  if (bases.size !== 1) {
+    throw new Error(
+      `${rel(file)}: \`stateModel\` resolves to ${bases.size} base factories (${[...bases].join(', ') || 'none'}), and this generator reads exactly one. Teach it the idiom rather than letting the row report half a model.`,
+    )
+  }
+  const [base] = [...bases]
+  const module = moduleForName(base!, file, imports)
+  if (!module) {
+    throw new Error(
+      `${rel(file)}: cannot resolve the \`stateModel\` factory \`${base}\` — it is neither a relative import nor a \`@jbrowse/plugin-*\` one.`,
+    )
+  }
+  return module
+}
+
+/** The initializer of a `const <name> = ...` in the function enclosing `node`. */
+function localBinding(node: ts.Node, name: string): ts.Expression | undefined {
+  let scope: ts.Node = node
+  while (!ts.isFunctionLike(scope)) {
+    if (ts.isSourceFile(scope)) {
+      return undefined
+    }
+    scope = scope.parent
+  }
+  let found: ts.Expression | undefined
+  const visit = (n: ts.Node) => {
+    if (
+      ts.isVariableDeclaration(n) &&
+      ts.isIdentifier(n.name) &&
+      n.name.text === name &&
+      n.initializer
+    ) {
+      found ??= n.initializer
+    }
+    ts.forEachChild(n, visit)
+  }
+  ts.forEachChild(scope, visit)
+  return found
+}
+
+/** Every `const x = ...` in the function enclosing `node`, by name. */
+function localBindings(node: ts.Node): Map<string, ts.Expression> {
+  const map = new Map<string, ts.Expression>()
+  let scope: ts.Node = node
+  while (!ts.isFunctionLike(scope)) {
+    if (ts.isSourceFile(scope)) {
+      return map
+    }
+    scope = scope.parent
+  }
+  const visit = (n: ts.Node) => {
+    if (
+      ts.isVariableDeclaration(n) &&
+      ts.isIdentifier(n.name) &&
+      n.initializer
+    ) {
+      if (!map.has(n.name.text)) {
+        map.set(n.name.text, n.initializer)
+      }
+    }
+    ts.forEachChild(n, visit)
+  }
+  ts.forEachChild(scope, visit)
+  return map
+}
+
+/**
+ * The factories a model expression is built out of — the MST equivalent of the
+ * render tree the component half walks. Two positions count, and both are in
+ * the tree today:
+ *
+ *   return baseFactory(schema).props({...}).views(...)   the chain's base
+ *   types.compose('X', baseFactory(schema), types.model({...}))   an argument
+ *
+ * `locals` resolves `const baseModel = factory(schema)`, which three displays
+ * write before composing it. `types.*` calls other than `compose` terminate:
+ * `types.model({...})` adds props, never a `renderSvg`.
+ */
+function modelChainBases(
+  expr: ts.Expression,
+  locals: Map<string, ts.Expression>,
+  out = new Set<string>(),
+  seen = new Set<ts.Node>(),
+): Set<string> {
+  if (seen.has(expr)) {
+    return out
+  }
+  seen.add(expr)
+  if (ts.isParenthesizedExpression(expr)) {
+    return modelChainBases(expr.expression, locals, out, seen)
+  }
+  if (ts.isIdentifier(expr)) {
+    const init = locals.get(expr.text)
+    if (init) {
+      modelChainBases(init, locals, out, seen)
+    } else {
+      out.add(expr.text)
+    }
+    return out
+  }
+  if (ts.isCallExpression(expr)) {
+    const callee = expr.expression
+    if (ts.isPropertyAccessExpression(callee)) {
+      if (
+        ts.isIdentifier(callee.expression) &&
+        callee.expression.text === 'types'
+      ) {
+        if (callee.name.text === 'compose') {
+          for (const a of expr.arguments) {
+            modelChainBases(a, locals, out, seen)
+          }
+        }
+        return out
+      }
+      // `.props(...)` / `.views(...)` / `.named(...)` — the receiver is the base.
+      return modelChainBases(callee.expression, locals, out, seen)
+    }
+    if (ts.isIdentifier(callee)) {
+      out.add(callee.text)
+    }
+  }
+  return out
+}
+
+/**
+ * A module for an imported binding: the file itself for a relative import, and
+ * for a `@jbrowse/plugin-*` one the file that actually declares the name, since
+ * a plugin entry point re-exports through a display's barrel and the barrel is
+ * not where the model lives. Returns undefined for anything else — `@jbrowse/core`
+ * and the `*-core` packages export helpers, never a display model.
+ */
+function moduleForName(
+  name: string,
+  file: string,
+  imports: Map<string, string>,
+): string | undefined {
+  const spec = imports.get(name)
+  if (spec?.startsWith('.')) {
+    return moduleFrom(file, spec)
+  }
+  if (spec?.startsWith('@jbrowse/plugin-')) {
+    return findPluginExport(spec, name)
+  }
+  return undefined
 }
 
 function rel(file: string) {
@@ -416,8 +721,285 @@ function chromeOf(
   return undefined
 }
 
-/** Resolve an `export { X as Y } from './p'` chain in a plugin's entry point. */
-function moduleForPluginExport(pkg: string, exportName: string) {
+/** Where a display's `renderSvg` is declared, and what it delegates to. */
+interface SvgRoute {
+  /** Model module whose `.actions()` declares `renderSvg`. */
+  model: string
+  /** The module that declaration hands the export to. */
+  body: string
+}
+
+/** Module-scope function declarations and `const f = () => ...` bindings. */
+function topLevelFunctions(src: ts.SourceFile) {
+  const out: (
+    | ts.FunctionDeclaration
+    | ts.ArrowFunction
+    | ts.FunctionExpression
+  )[] = []
+  for (const s of src.statements) {
+    if (ts.isFunctionDeclaration(s)) {
+      out.push(s)
+    } else if (ts.isVariableStatement(s)) {
+      for (const d of s.declarationList.declarations) {
+        const init = d.initializer
+        if (
+          init &&
+          (ts.isArrowFunction(init) || ts.isFunctionExpression(init))
+        ) {
+          out.push(init)
+        }
+      }
+    }
+  }
+  return out
+}
+
+/**
+ * The factories a module's own model factories compose, read off their `return`
+ * statements. Scoped to module-scope functions on purpose: a model file is
+ * mostly `.views(self => ({...}))` and `.actions(self => ({...}))` callbacks,
+ * which return objects rather than models, and following every `return` in the
+ * file would walk into whatever a helper happens to call.
+ */
+function factoryBases(src: ts.SourceFile) {
+  const out = new Set<string>()
+  for (const fn of topLevelFunctions(src)) {
+    const { body } = fn
+    if (!body) {
+      continue
+    }
+    if (!ts.isBlock(body)) {
+      modelChainBases(body, localBindings(body), out)
+      continue
+    }
+    for (const st of body.statements) {
+      if (ts.isReturnStatement(st) && st.expression) {
+        modelChainBases(st.expression, localBindings(st.expression), out)
+      }
+    }
+  }
+  return out
+}
+
+/** The `renderSvg` action of a model, at any depth inside its `.actions()`. */
+function renderSvgMethod(src: ts.SourceFile) {
+  let found: ts.Node | undefined
+  const visit = (n: ts.Node) => {
+    if (
+      (ts.isMethodDeclaration(n) || ts.isPropertyAssignment(n)) &&
+      ts.isIdentifier(n.name) &&
+      n.name.text === 'renderSvg'
+    ) {
+      found ??= n
+    }
+    ts.forEachChild(n, visit)
+  }
+  ts.forEachChild(src, visit)
+  return found
+}
+
+/**
+ * The module a `renderSvg` action hands the export to. Every display writes the
+ * same two lines — `const { renderSvg } = await import('./renderSvg.tsx')` —
+ * which keeps the export path out of the bundle until someone exports; a static
+ * import of the same function is accepted as the other way to spell it.
+ */
+function delegateOf(
+  method: ts.Node,
+  file: string,
+  imports: Map<string, string>,
+) {
+  let dynamic: string | undefined
+  const called = new Set<string>()
+  const visit = (n: ts.Node) => {
+    if (ts.isCallExpression(n)) {
+      if (n.expression.kind === ts.SyntaxKind.ImportKeyword) {
+        dynamic ??= literal(n.arguments[0])
+      } else if (ts.isIdentifier(n.expression)) {
+        called.add(n.expression.text)
+      }
+    }
+    ts.forEachChild(n, visit)
+  }
+  ts.forEachChild(method, visit)
+  if (dynamic?.startsWith('.')) {
+    return moduleFrom(file, dynamic)
+  }
+  for (const name of called) {
+    const module = moduleForName(name, file, imports)
+    if (module) {
+      return module
+    }
+  }
+  return undefined
+}
+
+/**
+ * Where a display's SVG export is implemented: the model module declaring
+ * `renderSvg`, and the module that declaration delegates to. Undefined when no
+ * model in the composition chain declares one — a real answer, and the row that
+ * says an LGV display cannot be exported at all.
+ *
+ * A display need not declare it itself. `LGVSyntenyDisplay` composes the
+ * alignments model and inherits its export, the same way it borrows the
+ * alignments component on the other half of the registration — so a missing
+ * `renderSvg` here means following what the factory composes, not stopping.
+ */
+function renderSvgRouteOf(
+  module: string,
+  seen = new Set<string>(),
+): SvgRoute | undefined {
+  if (seen.has(module)) {
+    return undefined
+  }
+  seen.add(module)
+  const src = parse(module)
+  const imports = importMap(src)
+  const method = renderSvgMethod(src)
+  if (method) {
+    const body = delegateOf(method, module, imports)
+    // Same doctrine as an unresolvable registration: a `renderSvg` whose body
+    // this cannot follow would otherwise be reported as no chrome at all, which
+    // is a false accusation rather than a missing row.
+    if (!body) {
+      throw new Error(
+        `${rel(module)}: \`renderSvg\` delegates to nothing this generator can follow — neither a relative \`await import('...')\` nor a call to an imported function. Teach it the idiom rather than letting the row claim the export is off the chrome.`,
+      )
+    }
+    return { model: module, body }
+  }
+  for (const name of factoryBases(src)) {
+    const next = moduleForName(name, module, imports)
+    const route = next && renderSvgRouteOf(next, seen)
+    if (route) {
+      return route
+    }
+  }
+  return undefined
+}
+
+/**
+ * Whether an export body reaches `SvgChrome`, following the call tree the way
+ * `chromeOf` follows the render tree. Two hops are needed in the tree today:
+ * most `renderSvg.tsx` call `renderDisplaySvg`, which renders the chrome, but
+ * arc's calls `renderArcSvg` first and that calls `renderDisplaySvg`.
+ *
+ * `renderDisplaySvg` is followed rather than trusted by name, so the claim that
+ * a display is on the chrome is derived at both hops.
+ */
+function svgChromeOf(module: string, seen = new Set<string>()): boolean {
+  if (seen.has(module)) {
+    return false
+  }
+  seen.add(module)
+  const src = parse(module)
+  const imports = importMap(src)
+  // Rendered as JSX or called outright — the chrome is reached either way, and
+  // one set of names covers both the terminal test and what to follow next.
+  const used = new Set<string>()
+  const visit = (n: ts.Node) => {
+    if (ts.isJsxOpeningElement(n) || ts.isJsxSelfClosingElement(n)) {
+      if (ts.isIdentifier(n.tagName)) {
+        used.add(n.tagName.text)
+      }
+    } else if (ts.isCallExpression(n) && ts.isIdentifier(n.expression)) {
+      used.add(n.expression.text)
+    }
+    ts.forEachChild(n, visit)
+  }
+  ts.forEachChild(src, visit)
+  if (used.has(SVG_CHROME)) {
+    return true
+  }
+  for (const name of used) {
+    const next = moduleForName(name, module, imports)
+    if (next && svgChromeOf(next, seen)) {
+      return true
+    }
+  }
+  return false
+}
+
+/** Whether a module declares `name` itself, rather than re-exporting it. */
+function declaresName(src: ts.SourceFile, name: string) {
+  for (const s of src.statements) {
+    if (
+      (ts.isFunctionDeclaration(s) || ts.isClassDeclaration(s)) &&
+      s.name?.text === name
+    ) {
+      return true
+    }
+    if (ts.isVariableStatement(s)) {
+      for (const d of s.declarationList.declarations) {
+        if (ts.isIdentifier(d.name) && d.name.text === name) {
+          return true
+        }
+      }
+    }
+  }
+  return false
+}
+
+/**
+ * The module that actually declares `name`, following `export { A as B } from
+ * './p'` chains. One hop is not enough: a plugin's entry point re-exports
+ * through the *display's* barrel, so `@jbrowse/plugin-canvas` →
+ * `LinearBasicDisplay/index.ts` → `baseModel.ts`, and stopping at the barrel
+ * names a file that holds two different models. Which one matters, because the
+ * barrel is where `LinearBasicDisplay`'s model and the base every other canvas
+ * display composes both come from.
+ *
+ * A re-export chain that runs out before a declaration returns the last module
+ * it reached, which is the best answer available and the one-hop behaviour this
+ * replaced.
+ */
+function declaringModule(
+  module: string,
+  name: string,
+  seen = new Set<string>(),
+): string | undefined {
+  const key = `${module}#${name}`
+  if (seen.has(key)) {
+    return undefined
+  }
+  seen.add(key)
+  const src = parse(module)
+  if (declaresName(src, name)) {
+    return module
+  }
+  for (const s of src.statements) {
+    if (!ts.isExportDeclaration(s) || s.isTypeOnly) {
+      continue
+    }
+    const spec = literal(s.moduleSpecifier)
+    if (!spec?.startsWith('.')) {
+      continue
+    }
+    const target = moduleFrom(module, spec)
+    if (!s.exportClause) {
+      const hit = declaringModule(target, name, seen)
+      if (hit) {
+        return hit
+      }
+      continue
+    }
+    if (!ts.isNamedExports(s.exportClause)) {
+      continue
+    }
+    for (const e of s.exportClause.elements) {
+      if (e.isTypeOnly || e.name.text !== name) {
+        continue
+      }
+      return (
+        declaringModule(target, e.propertyName?.text ?? name, seen) ?? target
+      )
+    }
+  }
+  return undefined
+}
+
+/** `declaringModule` from a plugin's entry point. Undefined if it has none. */
+function findPluginExport(pkg: string, exportName: string) {
   const entry = join(
     repoRoot,
     'plugins',
@@ -425,42 +1007,39 @@ function moduleForPluginExport(pkg: string, exportName: string) {
     'src',
     'index.ts',
   )
-  if (!isFile(entry)) {
+  return isFile(entry) ? declaringModule(entry, exportName) : undefined
+}
+
+/** The throwing form, for a registration that must resolve or fail the run. */
+function moduleForPluginExport(pkg: string, exportName: string) {
+  const module = findPluginExport(pkg, exportName)
+  if (!module) {
     throw new Error(
-      `${pkg}: no src/index.ts to resolve '${exportName}' through`,
+      `${pkg}: '${exportName}' is not re-exported from src/index.ts, so its component cannot be resolved`,
     )
   }
-  const src = parse(entry)
-  for (const s of src.statements) {
-    if (
-      !ts.isExportDeclaration(s) ||
-      !s.exportClause ||
-      !ts.isNamedExports(s.exportClause)
-    ) {
-      continue
-    }
-    const spec = literal(s.moduleSpecifier)
-    for (const e of s.exportClause.elements) {
-      if (e.name.text === exportName && spec?.startsWith('.')) {
-        return moduleFrom(entry, spec)
-      }
-    }
-  }
-  throw new Error(
-    `${pkg}: '${exportName}' is not re-exported from src/index.ts, so its component cannot be resolved`,
-  )
+  return module
 }
 
 interface Row {
   name: string
+  /** On-screen chrome the registered component renders. */
   chrome: string | undefined
+  /** Where that component is. */
   via: string
+  /** Whether the export reaches `SvgChrome`. */
+  svgChrome: boolean
+  /** Where the export body is, and whether the display declares it itself. */
+  svgVia: string
 }
+
+/** The component half — which on-screen chrome, and where the component is. */
+type ComponentRow = Pick<Row, 'name' | 'chrome' | 'via'>
 
 export function collectAdoption(): Row[] {
   const regs = collectRegistrations()
   const byName = new Map(regs.map(r => [r.name, r]))
-  const resolve = (r: Registration, seen = new Set<string>()): Row => {
+  const resolve = (r: Registration, seen = new Set<string>()): ComponentRow => {
     if (seen.has(r.name)) {
       throw new Error(`${r.name}: circular ReactComponent borrow`)
     }
@@ -494,7 +1073,27 @@ export function collectAdoption(): Row[] {
       via: `borrows \`${component.exportName}\``,
     }
   }
-  return regs.map(r => resolve(r))
+  return regs.map(r => {
+    const route = renderSvgRouteOf(r.model)
+    // "inherits" is the model half's answer to the component half's "borrows":
+    // the display composes another display's model rather than declaring a
+    // `renderSvg` of its own. Keyed on the *directory*, not the module, because
+    // a display routinely splits its model across `model.ts` and `baseModel.ts`
+    // and inheriting from the file next door is not a borrow — the four real
+    // ones all reach across a plugin boundary. Either way the export body is
+    // named rather than the lending model, since the body is the file the
+    // chrome is reached from.
+    const inherited = !!route && dirname(route.model) !== dirname(r.model)
+    return {
+      ...resolve(r),
+      svgChrome: !!route && svgChromeOf(route.body),
+      svgVia: !route
+        ? '—'
+        : inherited
+          ? `inherits \`${rel(route.body)}\``
+          : `\`${rel(route.body)}\``,
+    }
+  })
 }
 
 const rows = collectAdoption()
@@ -503,6 +1102,7 @@ for (const r of rows) {
   const k = r.chrome ?? 'none'
   counts.set(k, (counts.get(k) ?? 0) + 1)
 }
+const onSvgChrome = rows.filter(r => r.svgChrome).length
 
 checkOrWrite({
   path: docPath,
@@ -515,13 +1115,19 @@ checkOrWrite({
         .map(([k, n]) =>
           k === 'none' ? `${n} on neither` : `${n} on \`${k}\``,
         )
-        .join(', ')}.`,
+        .join(', ')}. On export, ${
+        onSvgChrome === rows.length
+          ? `all ${rows.length}`
+          : `${onSvgChrome} of ${rows.length}`
+      } reach \`${SVG_CHROME}\`.`,
       '',
       ...markdownTable(
-        ['Display type', 'Chrome', 'Component'],
+        ['Display type', 'Chrome', 'Component', 'SVG chrome', 'renderSvg'],
         rows.map(
           r =>
-            `| ${r.name} | ${r.chrome ? `\`${r.chrome}\`` : '—'} | ${r.via} |`,
+            `| ${r.name} | ${r.chrome ? `\`${r.chrome}\`` : '—'} | ${r.via} | ${
+              r.svgChrome ? `\`${SVG_CHROME}\`` : '—'
+            } | ${r.svgVia} |`,
         ),
       ),
     ],
