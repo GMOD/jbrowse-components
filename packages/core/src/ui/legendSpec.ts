@@ -10,18 +10,10 @@ import type { ColorLegendEntry } from './SvgColorLegend.tsx'
 // exists but not what shape to look for.
 export type LegendMark = 'fill' | 'line' | 'curve'
 
-// One drawn mark in one color — or, with `gradient`, in a ramp.
+// One drawn mark in one color.
 export interface LegendSwatch {
   color: string
   mark?: LegendMark
-  // Two or more evenly-spaced stop colors, filling the mark with a ramp instead
-  // of the flat `color`. For a scheme whose fill is genuinely continuous: a flat
-  // swatch of the endpoint claims a color most of the features don't paint.
-  //
-  // `color` stays required and meaningful — it is the representative end of the
-  // ramp, which is what a consumer that can't draw a gradient falls back to, and
-  // what dedupe-by-color keys on.
-  gradient?: string[]
 }
 
 // One swatch of a color vocabulary. `color` is omitted for a row that is text
@@ -35,9 +27,6 @@ export interface LegendSwatch {
 export interface LegendItem {
   color?: string
   mark?: LegendMark
-  // Ramp for the single-swatch case; see `LegendSwatch.gradient`. `color` is
-  // still required alongside it, as the representative end of the ramp.
-  gradient?: string[]
   swatches?: LegendSwatch[]
   label: string
 }
@@ -47,9 +36,7 @@ export interface LegendItem {
 export function legendSwatches(item: LegendItem): LegendSwatch[] {
   return (
     item.swatches ??
-    (item.color === undefined
-      ? []
-      : [{ color: item.color, mark: item.mark, gradient: item.gradient }])
+    (item.color === undefined ? [] : [{ color: item.color, mark: item.mark }])
   )
 }
 
@@ -109,13 +96,12 @@ export function legendEntries(spec: LegendSpec): ColorLegendEntry[] {
 }
 
 // A single filled swatch is what `color` alone already draws, so only a row
-// that says something more — several marks, one that isn't a fill, or one
-// filled with a ramp — carries the list into the export. Keeps the common entry
-// the three fields it has always been.
+// that says something more — several marks, or one that isn't a fill — carries
+// the list into the export. Keeps the common entry the three fields it has
+// always been.
 function exportSwatches(item: LegendItem) {
   const swatches = legendSwatches(item)
-  return swatches.length > 1 ||
-    swatches.some(s => (s.mark && s.mark !== 'fill') || s.gradient)
+  return swatches.length > 1 || swatches.some(s => s.mark && s.mark !== 'fill')
     ? swatches
     : undefined
 }

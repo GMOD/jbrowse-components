@@ -25,31 +25,6 @@ test('a heading never appears over an empty section', () => {
   )
 })
 
-// `color` alone is a flat square, so only a row saying something more carries a
-// swatch list into the export. A ramp is one of those things — dropping it here
-// would leave the exported figure flat while the live legend showed the ramp.
-test('a ramp row carries its swatches into the export', () => {
-  const [entry] = legendEntries({
-    items: [{ label: 'Long insert', color: 'red', gradient: ['grey', 'red'] }],
-  })
-  expect(entry).toEqual({
-    key: 'items-0',
-    label: 'Long insert',
-    color: 'red',
-    swatches: [{ color: 'red', mark: undefined, gradient: ['grey', 'red'] }],
-  })
-})
-
-test('a plain flat row still carries no swatch list', () => {
-  const [entry] = legendEntries({ items: [{ label: 'Normal', color: 'grey' }] })
-  expect(entry).toEqual({
-    key: 'items-0',
-    label: 'Normal',
-    color: 'grey',
-    swatches: undefined,
-  })
-})
-
 test('a box title shows even as the only section', () => {
   expect(
     legendEntries({
