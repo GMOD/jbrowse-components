@@ -236,6 +236,11 @@ export function isRibbonCulled(
   c: ProjectedCorners,
   viewWidth: number,
   overdrawPx: number,
+  // A marker is a 1px line between one point per view, so the hull IS its
+  // extent and the per-edge test below would drop it whenever ONE end left the
+  // band — see the marker arm of isCulled() in syntenyTypes.slang for the
+  // inversion this deleted half the tick fan on.
+  isMarker = false,
 ) {
   // Per-edge extents first — the hull is their union, so taking it from these
   // costs two more comparisons rather than two four-argument Math.min/max
@@ -252,11 +257,18 @@ export function isRibbonCulled(
   }
   const leftLimit = -overdrawPx
   const rightLimit = viewWidth + overdrawPx
+  if (
+    Math.max(topMax, botMax) < leftLimit ||
+    Math.min(topMin, botMin) > rightLimit
+  ) {
+    return true
+  }
   return (
-    topMax < leftLimit ||
-    topMin > rightLimit ||
-    botMax < leftLimit ||
-    botMin > rightLimit
+    !isMarker &&
+    (topMax < leftLimit ||
+      topMin > rightLimit ||
+      botMax < leftLimit ||
+      botMin > rightLimit)
   )
 }
 

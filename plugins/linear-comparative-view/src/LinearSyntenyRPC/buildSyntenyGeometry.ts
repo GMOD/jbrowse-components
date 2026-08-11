@@ -87,12 +87,26 @@ export const MIN_CIGAR_PX_WIDTH = 2
 const MARKER_GRID_MIN_MAJOR_PX = 120
 const MARKER_GRID_MIN_MINOR_PX = 15
 
-// A feature narrower than this draws no markers. The grid pitch is >=120px, so
-// this is not about tick density within a block — it is that a tick on a 20px
-// sliver marks a position to +-10px and reads as speckle, and that a
-// whole-genome hairball would otherwise put one on each of a hundred thousand
-// sub-pixel ribbons. Measured over the WHOLE FEATURE, never a rendered CIGAR
-// segment; see above for what that distinction cost.
+// A feature narrower than this on the QUERY AXIS draws no markers.
+//
+// Not a density rule — the >=120px pitch already spaces the ticks. It is that a
+// tick is a 1px line, so on a block of comparable width the tick IS the block
+// and marks nothing inside it; and that a whole-genome hairball would otherwise
+// put one on every sub-pixel thread it crosses, at the markers' fixed 0.25 alpha
+// over ribbons the thin-fade has taken down to 0.15 — a ruler louder than the
+// data it rules. 30px is ~30 tick-widths, where a tick reads as a mark in a
+// block rather than as an edge of it.
+//
+// THE QUERY AXIS, not the average of the two, because that is the axis the grid
+// is defined on: a tick's position is a query coordinate, so how much of the
+// query axis the block occupies is what decides whether the tick lands inside
+// it. Averaging in the target width let a block 10px wide on the query axis and
+// 60px on the target clear the gate and take a tick at a query position it
+// barely covers. Same quantity the budget below counts ticks with, so the gate
+// and the count cannot disagree.
+//
+// Measured over the WHOLE FEATURE, never a rendered CIGAR segment; see above
+// for what that distinction cost.
 const MIN_MARKER_FEATURE_PX = 30
 
 // Colored-indel instance kind for an I/D/N op; undefined for any match op.
@@ -233,8 +247,7 @@ export function buildSyntenyGeometry({
     // segments that partition it — the +2 is slack for the segments' floating
     // point not summing to exactly the corner span, and matters because
     // addInstance drops silently past capacity.
-    const wantMarkers =
-      drawLocationMarkers && (widthPx0 + widthPx1) / 2 >= MIN_MARKER_FEATURE_PX
+    const wantMarkers = drawLocationMarkers && widthPx0 >= MIN_MARKER_FEATURE_PX
     wantMarkersArr[i] = wantMarkers ? 1 : 0
     const markerBudget = wantMarkers
       ? Math.ceil(widthPx0 / markerPitchPx) + 2

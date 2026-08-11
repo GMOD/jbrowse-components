@@ -154,7 +154,7 @@ public float4 computeCorners(Instance inst, Uniforms u) {
                 inst.bp4 * u.bpPerPxInv1 + u.panPx1);
 }
 
-public bool isCulled(float4 c, float alignmentLength, Uniforms u) {
+public bool isCulled(float4 c, float alignmentLength, float kind, Uniforms u) {
   // No `minAlignmentLength > 0` guard needed: lengths are non-negative, so an
   // unset (0) filter never matches.
   if (alignmentLength < u.minAlignmentLength) {
@@ -162,6 +162,26 @@ public bool isCulled(float4 c, float alignmentLength, Uniforms u) {
   }
   float mOff = u.overdrawPx;
   float rW = u.resolution.x;
+  // Hull: nothing of the instance is anywhere near the band. Subsumed by the
+  // per-edge test below for a ribbon (both edges out implies the hull is out),
+  // so it is here for the marker case, which returns right after it.
+  if (max(max(c.x, c.y), max(c.z, c.w)) < -mOff
+      || min(min(c.x, c.y), min(c.z, c.w)) > rW + mOff) {
+    return true;
+  }
+  // A MARKER STOPS HERE. It is a 1px line between two points, one per view, so
+  // the hull is its whole extent and either endpoint being on screen means part
+  // of the line is. The per-edge test below would drop it whenever ONE endpoint
+  // left the band — and the two endpoints of a marker are exactly what a
+  // crossed ribbon pulls apart, so on an inversion spanning the frame, panning
+  // past the overdraw band deleted the leading half of the tick fan while the
+  // ribbon under it stayed.
+  if (isMarkerKind(kind)) {
+    return false;
+  }
+  // Per-edge for ribbons, and deliberately harsher than the hull: an edge
+  // entirely outside the band contributes only a sliver, and keeping the
+  // instance costs a trapezoid spanning the whole horizontal travel.
   return max(c.x, c.y) < -mOff || min(c.x, c.y) > rW + mOff
       || max(c.z, c.w) < -mOff || min(c.z, c.w) > rW + mOff;
 }
@@ -399,7 +419,7 @@ public bool fillVsBegin(Instance inst, Uniforms u, out FillVsOut o,
   o.localPos = float2(0.0);
   o.kind = inst.kind;
   c = computeCorners(inst, u);
-  if (isCulled(c, inst.alignmentLength, u)) {
+  if (isCulled(c, inst.alignmentLength, inst.kind, u)) {
     return false;
   }
   o.corners = c;

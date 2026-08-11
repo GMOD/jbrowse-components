@@ -176,8 +176,13 @@ export function drawSyntenyTrack(
       continue
     }
 
+    // Read before the cull, which needs it: a marker is culled by its hull
+    // where a ribbon is culled per edge (see isRibbonCulled).
+    const kind = data.kinds[i]!
+    const isMarker = isMarkerKind(kind)
+
     const c = projectCorners(data, i, transform, scratch)
-    if (isRibbonCulled(c, logicalW, overdrawPx)) {
+    if (isRibbonCulled(c, logicalW, overdrawPx, isMarker)) {
       continue
     }
 
@@ -187,8 +192,7 @@ export function drawSyntenyTrack(
     // isMarker path in syntenyTypes.slang's fillFs/shadeFill — and the
     // predicate itself is now the shader's, generated (adr-051), so the
     // threshold can't drift even though the shading below still can.
-    const kind = data.kinds[i]!
-    if (isMarkerKind(kind)) {
+    if (isMarker) {
       const xt = (c.sx1 + c.sx2) * 0.5
       const xb = (c.sx3 + c.sx4) * 0.5
       style.stroke(
