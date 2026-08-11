@@ -1,6 +1,5 @@
 import { getBlob } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
-import { BlobFile } from 'generic-filehandle2'
 
 import { registerLocalFiles, resolveLocalFileUris } from './localFiles.ts'
 
@@ -15,8 +14,16 @@ test('registering bytes yields a BlobLocation openable as a filehandle', () => {
   expect(getBlob(location.blobId)!.size).toBe(bytes.length)
 
   // openLocation discriminates on locationType, so this is what proves the
-  // location we mint is one adapters can actually open
-  expect(openLocation(location)).toBeInstanceOf(BlobFile)
+  // location we mint is one adapters can actually open. Asserted as the
+  // filehandle interface rather than as a class: openLocation wraps blobs in
+  // the byte-range cache, so the concrete type is CachedFilehandle-over-
+  // BlobFile and naming either of them here would pin an implementation detail
+  // in place of the thing the test is about.
+  const filehandle = openLocation(location)
+  expect(typeof filehandle.read).toBe('function')
+  expect(typeof filehandle.readFile).toBe('function')
+  expect(typeof filehandle.stat).toBe('function')
+  expect(typeof filehandle.close).toBe('function')
 })
 
 // The byte-range read itself — the reason this beats inlining features — is
