@@ -1,5 +1,6 @@
 import { staysOpenOnClick } from '@jbrowse/core/ui'
 
+import { STRAND_COLOR_JEXL } from '../RenderFeatureDataRPC/featureColors.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -287,5 +288,37 @@ describe('color swatches under a per-feature jexl slot', () => {
     display.setUtrColor('#00ff00')
     expect(display.featureColor).toBe('#ff0000')
     expect(display.utrColor).toBe('#00ff00')
+  })
+})
+
+// `colorByMode` recognizes the built-in strand expression by string identity, so
+// the spelling is load-bearing rather than cosmetic: a track painted by an
+// equivalent expression reads back as "color by attribute" and the menu's radio
+// lands on the wrong rung. It is spelled the short way the docs teach, so
+// someone who writes the documented form by hand gets the mode they see in the
+// menu -- which was not true while the constant used `get(feature,'strand')`.
+describe('the built-in strand color expression', () => {
+  it('is the documented short form, not get(feature,...)', () => {
+    expect(STRAND_COLOR_JEXL).toBe(
+      "jexl:feature.strand==1?'tomato':feature.strand==-1?'cornflowerblue':'goldenrod'",
+    )
+  })
+
+  it('round-trips: what the menu writes is what it reads back', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setFeatureColor(STRAND_COLOR_JEXL)
+    expect(display.colorByMode).toBe('strand')
+  })
+
+  it('is what the Color by... > Strand menu item writes', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    const strand = find(
+      subMenuOf(display.trackMenuItems(), 'Color by...'),
+      'Strand',
+    ) as { onClick: () => void }
+    strand.onClick()
+    expect(display.colorByMode).toBe('strand')
   })
 })

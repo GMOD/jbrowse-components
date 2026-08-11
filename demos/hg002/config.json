@@ -79,7 +79,7 @@
         "labels": {
           "name": "jexl:feature.gene_name || feature.name || feature.id"
         },
-        "color": "jexl:get(feature,'strand')==1?'tomato':get(feature,'strand')==-1?'cornflowerblue':'goldenrod'"
+        "color": "jexl:feature.strand==1?'tomato':feature.strand==-1?'cornflowerblue':'goldenrod'"
       }
     },
     {
@@ -96,7 +96,7 @@
         "labels": {
           "name": "jexl:feature.gene_name || feature.name || feature.id"
         },
-        "color": "jexl:get(feature,'strand')==1?'tomato':get(feature,'strand')==-1?'cornflowerblue':'goldenrod'"
+        "color": "jexl:feature.strand==1?'tomato':feature.strand==-1?'cornflowerblue':'goldenrod'"
       }
     }
   ]

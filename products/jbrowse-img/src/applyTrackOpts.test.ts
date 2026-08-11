@@ -383,7 +383,7 @@ describe('color routing', () => {
     for (const category of ['feature', 'variant'] as const) {
       const { snap } = buildDisplaySnapshot(category, ['color:strand'])
       expect(snap.color).toBe(
-        "jexl:get(feature,'strand')==1?'tomato':get(feature,'strand')==-1?'cornflowerblue':'goldenrod'",
+        "jexl:feature.strand==1?'tomato':feature.strand==-1?'cornflowerblue':'goldenrod'",
       )
     }
     // wiggle has no strand notion — 'strand' stays a literal color there

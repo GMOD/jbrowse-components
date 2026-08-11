@@ -216,7 +216,7 @@ const LANDMARK_FILTER = `jexl:${LANDMARK_GENES.map(
 // the ribbons of the same frame, three inches apart. Now one vocabulary paints
 // the whole figure: red forward, blue reverse.
 const STRAND_COLOR =
-  "jexl:get(feature,'strand')==1?'tomato':get(feature,'strand')==-1?'cornflowerblue':'goldenrod'"
+  "jexl:feature.strand==1?'tomato':feature.strand==-1?'cornflowerblue':'goldenrod'"
 
 function landmarkLane(hap: 'MAT' | 'PAT') {
   return {
