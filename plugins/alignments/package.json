@@ -24,6 +24,7 @@
     "build": "pnpm run /^build:/",
     "test": "cd ../..; jest --passWithNoTests plugins/alignments",
     "bench:record-shape": "node --expose-gc benches/recordShape.bench.ts",
+    "bench:mismatch-walk": "node --expose-gc benches/mismatchWalk.bench.ts",
     "prepublishOnly": "pnpm test",
     "prepack": "pnpm build",
     "prebuild": "pnpm clean",
