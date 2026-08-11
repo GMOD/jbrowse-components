@@ -63,3 +63,51 @@ describe('search resilience', () => {
     spy.mockRestore()
   })
 })
+
+// A track's text index names whatever assembly the track it was built from
+// named, while a search arrives under the name the session knows — so the two
+// only meet through the aliases. Comparing them raw left an index unreachable
+// from the very assembly it indexes.
+describe('relevantAdapters', () => {
+  // hg19 is an alias of the session's GRCh37
+  const aliasing = {
+    getCanonicalAssemblyName: (name: string) =>
+      name === 'hg19' ? 'GRCh37' : name,
+  }
+
+  function managerWith(assemblyNames: string[], assemblyManager?: unknown) {
+    return new TextSearchManager({
+      rootModel: {
+        jbrowse: {
+          aggregateTextSearchAdapters: [
+            {
+              assemblyNames,
+              textSearchAdapterId: 'agg',
+            },
+          ],
+        },
+        session: { tracks: [], assemblyManager },
+      },
+    } as never)
+  }
+
+  it('finds an index that names an alias of the searched assembly', () => {
+    expect(
+      managerWith(['hg19'], aliasing).relevantAdapters('GRCh37'),
+    ).toHaveLength(1)
+    expect(
+      managerWith(['GRCh37'], aliasing).relevantAdapters('hg19'),
+    ).toHaveLength(1)
+  })
+
+  it('still rejects an index for a different assembly', () => {
+    expect(managerWith(['mm10'], aliasing).relevantAdapters('GRCh37')).toEqual(
+      [],
+    )
+  })
+
+  it('falls back to the raw name with no session to resolve against', () => {
+    expect(managerWith(['hg19']).relevantAdapters('hg19')).toHaveLength(1)
+    expect(managerWith(['hg19']).relevantAdapters('GRCh37')).toEqual([])
+  })
+})

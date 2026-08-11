@@ -1,6 +1,7 @@
 import { readConfObject } from '../configuration/index.ts'
 import QuickLRU from '../util/QuickLRU/index.ts'
 import { isAbortException } from '../util/aborting.ts'
+import { canonicalAssemblyNames } from '../util/tracks.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
@@ -72,38 +73,50 @@ export default class TextSearchManager {
     const { aggregateTextSearchAdapters = [] } = (rootModel?.jbrowse ?? {}) as {
       aggregateTextSearchAdapters?: AnyConfigurationModel[]
     }
+    // The caller searches an assembly by the name the session knows it by,
+    // while an index names whatever the track it was built from named — so both
+    // sides go through the aliases, as every other "does this belong to this
+    // assembly" test in the app now does. Absent a session there is nothing to
+    // resolve against and the raw name is the best available answer.
+    const assemblyManager = rootModel?.session?.assemblyManager
+    const canonical = (names: string[]) =>
+      assemblyManager
+        ? canonicalAssemblyNames(names, assemblyManager)
+        : names.filter(name => !!name)
+    const [wanted] = canonical([assemblyName])
+    const matches = (names: string[] | undefined) =>
+      !!wanted && !!names && canonical(names).includes(wanted)
     return [
-      ...this.getAdaptersWithAssembly(
-        assemblyName,
-        aggregateTextSearchAdapters,
-      ),
+      ...this.getAdaptersWithAssembly(matches, aggregateTextSearchAdapters),
       ...this.getTrackAdaptersWithAssembly(
-        assemblyName,
+        matches,
         rootModel?.session?.tracks ?? [],
       ),
     ]
   }
 
   getAdaptersWithAssembly(
-    assemblyName: string,
+    matches: (names: string[] | undefined) => boolean,
     confs: AnyConfigurationModel[],
   ) {
     return confs.filter(c =>
-      readConfObject(c, 'assemblyNames')?.includes(assemblyName),
+      matches(readConfObject(c, 'assemblyNames') as string[] | undefined),
     )
   }
 
   getTrackAdaptersWithAssembly(
-    assemblyName: string,
+    matches: (names: string[] | undefined) => boolean,
     confs: AnyConfigurationModel[],
   ) {
     return confs
       .filter(conf =>
-        readConfObject(conf, [
-          'textSearching',
-          'textSearchAdapter',
-          'assemblyNames',
-        ])?.includes(assemblyName),
+        matches(
+          readConfObject(conf, [
+            'textSearching',
+            'textSearchAdapter',
+            'assemblyNames',
+          ]) as string[] | undefined,
+        ),
       )
       .map(
         conf => conf.textSearching.textSearchAdapter as AnyConfigurationModel,
