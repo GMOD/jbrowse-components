@@ -238,6 +238,7 @@ export type {
 } from './shared/renderDisplaySvg.tsx'
 export {
   defaultTextHeight,
+  getRowHeaderLayout,
   labelBaselineFromTop,
   labelOffset,
   totalHeight,

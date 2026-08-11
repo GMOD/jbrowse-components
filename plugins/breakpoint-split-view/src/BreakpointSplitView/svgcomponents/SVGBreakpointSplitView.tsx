@@ -10,6 +10,7 @@ import {
   SVGRowHeader,
   SVGView,
   defaultTextHeight,
+  getRowHeaderLayout,
   labelOffset,
   renderViewTracks,
   trackLabelLeftOffset,
@@ -42,10 +43,21 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   const session = getSession(model)
   const theme = session.getActiveThemeOptions?.(themeName)
   const { width, views } = model
-  // each view is a header band (which the assembly label floats in, and which
-  // separates the view from the one above) plus a ruler, stacked above its
-  // track bodies. `offset` is where those bodies start within the view.
-  const offset = headerHeight + rulerHeight
+  // EVERY ROW SAYS WHAT IT SPANS (review of jbrowse-img/sv_review_pair: "it
+  // might be helpful to have scale indicators and/or trying to keep each row on
+  // the same relative scale"). A breakpoint stack is N loci a reader compares
+  // row against row, and whether two of them are at the same zoom was legible
+  // only off the ruler coordinates — which is 10 px of text in an export that
+  // gets published at a third of its rendered width. The bar and its span label
+  // are the standalone LGV export's, drawn per row here.
+  const rowHeader = getRowHeaderLayout({ fontSize, showScalebar: true })
+  // each view is a header band (which the assembly label and the scalebar sit
+  // in, and which separates the view from the one above) plus a ruler, stacked
+  // above its track bodies. `offset` is where those bodies start within the
+  // view. The band is the caller's to reserve, so it is the larger of what the
+  // option asks for and what the header actually draws.
+  const headerBand = Math.max(headerHeight, rowHeader.bandHeight)
+  const offset = headerBand + rulerHeight
   // renderViewTracks drops minimized tracks (as the standalone LGV export does,
   // so a collapsed track doesn't export as a full-height panel) and measures
   // each row only once its displays have settled — which is what keeps the
@@ -104,9 +116,10 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
         {rows.map(({ view, top }, idx) => (
           <g
             key={view.id}
-            // the assembly label floats in the header band above the ruler (see
-            // SVGView), which is why the group starts that far down
-            transform={`translate(${exportMargin} ${top + headerHeight})`}
+            // the assembly label and the scalebar sit in the header band above
+            // the ruler (see SVGView), which is why the group starts that far
+            // down
+            transform={`translate(${exportMargin} ${top + headerBand})`}
           >
             <SVGView
               view={view}
@@ -127,6 +140,9 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
                     rows[idx - 1]!.view.assemblyNames.join(', ') !==
                       view.assemblyNames.join(', ')
                   }
+                  // every row, unlike the assembly name: the span is what
+                  // differs between rows, so printing it once says nothing
+                  showScalebar
                 />
               }
               fontSize={fontSize}

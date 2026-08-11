@@ -1638,9 +1638,21 @@ export const jbrowseImgSpecs: CliSpec[] = [
   // which is the claim. The two sample panels are 200x over 1.2 kb and need both
   // flags for the opposite reason.
   //
-  // The heights are picked so `+append` pads nothing: 128 + 374 comes out 619 to
-  // the sample panels' 624. `der3_segments` needs ~120 of its 128 for the four
-  // segment rows, and the pileup ends ~35 px short of its own 374.
+  // The heights are picked so `+append` pads nothing: 128 + 440 comes out 679,
+  // the sample panels' height exactly. `der3_segments` needs ~120 of its 128 for
+  // the four segment rows; the reads track is the one carrying the slack, and it
+  // carries ~100 px of it, since 69 spanning reads pack shorter than the three
+  // 200x pileups beside them at any read height worth reading. Check the
+  // rendered height rather than adding to these numbers -- a track's box is not
+  // its `height:` plus a constant (374 -> 440 moved the panel 619 -> 679).
+  //
+  // 440 rather than the 374 that matched before: each row of a breakpoint export
+  // grew by its scalebar band when SVGRowHeader started drawing one (review:
+  // "scale indicators and/or keeping each row on the same relative scale"), so
+  // the sample panels are three bands taller and this one, an ordinary LGV
+  // export that has always drawn its bar, is not. Matching them is what keeps
+  // the three captions on one line -- each is anchored to the bottom of its own
+  // part, so a short panel lifts its caption out of the row.
   cliSpec('sv_review_derivative', [
     '--config',
     'https://jbrowse.org/demos/cancer_sv/config.json',
@@ -1651,7 +1663,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
     'height:128',
     '--track',
     'reads_vs_der3',
-    'height:374',
+    'height:440',
     '--loc',
     'der3_RARB_BICC1_TRHDE:1-39,549',
     '--width',

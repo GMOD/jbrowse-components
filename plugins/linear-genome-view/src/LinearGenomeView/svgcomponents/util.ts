@@ -131,6 +131,57 @@ export function insetLabelBaselineY(fontSize: number) {
   return labelBaselineFromTop(LABEL_PAD_TOP, fontSize)
 }
 
+// The same layout for a STACKED row's header (SVGRowHeader), which differs from
+// the standalone one in direction: its origin is the top of the ruler, and what
+// sits above the ruler is drawn at negative y, into a band the caller reserves
+// between this row and the one above. `bandHeight` is that reservation.
+//
+// A row with no scalebar keeps the layout it has always had — the assembly label
+// on the alphabetic baseline at the origin, its ink box in the caller's band —
+// so the height of a synteny stack does not move.
+//
+// With one, the bar and its bp label go between the assembly name and the ruler.
+// A stacked export is several loci a reader is asked to compare, and without a
+// scale in each row the only thing saying whether two rows are at the same zoom
+// is their ruler coordinates, which are unreadable at the size a figure is
+// published at. The standalone LGV export has drawn this bar all along.
+export function getRowHeaderLayout({
+  fontSize,
+  showScalebar,
+}: {
+  fontSize: number
+  showScalebar: boolean
+}) {
+  const label = labelInkHeight(fontSize)
+  // the bp label hangs a cap below the bar's line and its own ink box ends a gap
+  // above the ruler at y=0
+  const scalebarLineY = showScalebar
+    ? -(ROW_GAP + label + SVG_SCALEBAR_CAP)
+    : undefined
+  // the assembly name's ink box ends a gap above the bar's top cap, which is a
+  // vertical line at the same x the name starts at. Everything here is placed by
+  // ink box rather than by baseline, because the gaps are fixed while a font's
+  // descent is not: laying the label out from its baseline instead put its
+  // descenders through that cap at the larger export fonts.
+  const assemblyInkTop =
+    scalebarLineY === undefined
+      ? -label
+      : scalebarLineY - SVG_SCALEBAR_CAP - ROW_GAP - label
+  return {
+    // undefined rather than an unused number: a row without a scalebar has no
+    // line to place, and the caller draws nothing
+    scalebarLineY,
+    // 0 is the pre-scalebar placement, kept exactly so a synteny stack doesn't
+    // move
+    assemblyLabelBaselineY: showScalebar
+      ? labelBaselineFromTop(assemblyInkTop, fontSize)
+      : 0,
+    // up from the ruler to the top of the topmost ink box — the assembly
+    // label's, in both cases
+    bandHeight: -assemblyInkTop,
+  }
+}
+
 // Compact vertical layout for the exported header: rows (assembly name,
 // cytoband overview, "you are here" polygon, total-bp scalebar, ruler) are
 // stacked with a small fixed gap rather than reserving loose fixed-height

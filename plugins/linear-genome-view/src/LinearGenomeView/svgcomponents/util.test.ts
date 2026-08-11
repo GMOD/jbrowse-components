@@ -1,7 +1,9 @@
+import { SVG_SCALEBAR_CAP } from '../consts.ts'
 import { REF_NAME_LABEL_FONT_SIZE } from '../util.ts'
 import {
   defaultTextHeight,
   getHeaderLayout,
+  getRowHeaderLayout,
   insetLabelBaselineY,
   labelBaselineFromTop,
   labelInkHeight,
@@ -85,6 +87,41 @@ test('the refName label box holds the glyphs it clips', () => {
     refNameLabelBaselineY - (labelInkHeight(REF_NAME_LABEL_FONT_SIZE) - d)
   expect(inkTop).toBeGreaterThanOrEqual(0)
   expect(refNameLabelBaselineY + d).toBeLessThanOrEqual(refNameLabelBoxHeight)
+})
+
+// A stacked row's header grows UPWARD from the ruler into a band the caller
+// reserves, so the two things that can go wrong are ink outside that band and
+// ink over the ruler. Both are checked against the same measured descent.
+test.each(fontSizes)(
+  'a row header with a scalebar fits the band it asks for at fontSize %i',
+  fontSize => {
+    const d = descent(fontSize)
+    const ink = labelInkHeight(fontSize)
+    const { assemblyLabelBaselineY, scalebarLineY, bandHeight } =
+      getRowHeaderLayout({ fontSize, showScalebar: true })
+    // the ruler is at y=0 and the band is above it
+    expect(assemblyLabelBaselineY - (ink - d)).toBeGreaterThanOrEqual(
+      -bandHeight,
+    )
+    // the assembly name's descenders clear the scalebar's top cap, which is a
+    // vertical line at the same x the name starts at
+    expect(assemblyLabelBaselineY + d).toBeLessThanOrEqual(
+      scalebarLineY! - SVG_SCALEBAR_CAP,
+    )
+    // and the bp label hanging under the bar clears the ruler
+    expect(scalebarLineY! + SVG_SCALEBAR_CAP + ink).toBeLessThanOrEqual(0)
+  },
+)
+
+// Without one, the row keeps the layout every synteny export was built around:
+// the assembly label on the alphabetic baseline at the origin, nothing else
+// above the ruler.
+test('a row header without a scalebar is unmoved', () => {
+  expect(getRowHeaderLayout({ fontSize: 13, showScalebar: false })).toEqual({
+    assemblyLabelBaselineY: 0,
+    scalebarLineY: undefined,
+    bandHeight: labelInkHeight(13),
+  })
 })
 
 // The header stacks assembly name, scalebar and ruler by ink box, not by
