@@ -236,7 +236,7 @@ describe('packGenotypeKey', () => {
 
   // Keys index an Int32Array, so the top bit must stay clear.
   it('keeps keys non-negative for the widest ASCII genotype', () => {
-    expect(key('\x7f\x7f\x7f\x7f')).toBeGreaterThan(0)
+    expect(key('\x7F\x7F\x7F\x7F')).toBeGreaterThan(0)
   })
 
   it('reads only the given range', () => {
