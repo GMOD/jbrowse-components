@@ -160,6 +160,18 @@ bookkeeping: `GLOBAL_TRIGGERS` in `screenshot-impact.ts` matches that prefix, so
   different question. If you add a control to the header, decide which of those
   it is — a display-only one (like `compare`) must stay out of `queryKey` in
   `filters.ts`, or reaching for a closer look throws away the batch.
+- **The review page must not move under the reviewer, and two of the three ways
+  it did were invisible to the eye.** `node scripts/probe-review-layout.ts`
+  (against a running server) checks the pair that a screenshot cannot: the
+  document does not grow as figures load, and no figure is drawn at a size other
+  than its own geometry. Each card's images are sized from `figures.lock` before
+  their bytes arrive — via width/height **attributes**, which only stay honest
+  because `.imgwrap img` sets `height: auto`, since those attributes are
+  presentational hints for the height property too and otherwise stretch every
+  figure past the 400px cap. The third way is the header, which needs a click to
+  provoke: nothing in it is conditionally mounted and every count sits in a
+  fixed-width slot, so a verdict cannot rewrap it. Give any control you add
+  there the same treatment.
 - **"This figure changes between runs" is checkable, and usually isn't a race.**
   A review entry's `hash` is the sha1 of the PNG the verdict was made against,
   so `sha1sum` the file on disk and compare. Both revisions are fetchable from
