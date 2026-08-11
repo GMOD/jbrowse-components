@@ -15,15 +15,26 @@ to "leave it", and a check whose findings all end in a suppression teaches peopl
 to suppress. It would also not catch the accretion ADR-051 actually fears, since
 a *new* marginal export always has a consumer — that being why someone added it.
 
-All five current rows were examined; re-deriving this is the waste the table
+All six current rows were examined; re-deriving this is the waste the table
 exists to prevent:
 
 | Export | Why it stays |
 | --- | --- |
 | `extendToMinWidthPx` | still the shared rule. Its direct importer went away when `rectSpanPx` subsumed the call site, but `rectSpanPx`'s own twin calls it as a private helper, and the shader uses it |
 | `frequencyAlpha` | production moved to `frequencyFadeGate`; the rule is unchanged and still lifted |
+| `normalizeDepthScalar` | a test oracle by construction: production reads the coverage depth scale through `makeScoreNormalizer`, and this pins the GPU's copy of it to that one. Three independent normalizers with three independent floors is the bug it was split out of (`9d70e37bd9`) |
 | `normalizeScore` | wiggle's normalizer, still the shared half of the deliberately-divergent `scoreToY` |
 | `sBlend`, `yCurve` | the deliberate test oracles ADR-051 describes. The report agreeing with the ADR here is a check on both |
+
+**This table was stale by one row for a day**, saying "all five" while the
+generated inventory listed six — the ADR's own "a prose list of things that are
+*absent* has no way to notice when it stops being true", recurring in the file
+that quotes it. The generated half also went stale in the same commit, for a
+reason worth knowing: the *Imported by* column is a whole-tree **TypeScript**
+scan, so it moves when a consumer moves, and `pnpm gen:shaders` is a shader build
+nobody re-runs after editing TS. CI's staleness gate catches it, but the red job
+lands on whatever unrelated PR touched the TypeScript. If you see it, the fix is
+`pnpm gen:shaders` — never `pnpm autogen`, which has no shader generator.
 
 **What would change a verdict** is a shader-side rule that stops being shared at
 all — the function deleted from the `.slang`, or its Canvas2D counterpart gone.

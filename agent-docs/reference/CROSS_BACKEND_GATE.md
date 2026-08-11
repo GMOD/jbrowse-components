@@ -142,6 +142,32 @@ sides moved the bar a pixel apart. Both use `floor(x + 0.5)` now. Every
 hand-written canvas twin of a shader has this available to it, and ADR-051's
 codegen does not cover them — it covers generated twins, not paired ones.
 
+**Swept 2026-08-11, and the tree is clean — don't re-run it, extend it.** Every
+`Math.round` in every file that draws to a canvas, against every shader-side
+`floor(x + 0.5)`: no pairing. What is left is color quantization, dpr scaling
+(`devicePxSpan`, `backingPx` — shared by both backends by construction, which is
+the point of those helpers), and two row-centre midpoints,
+`LinearMafRenderer/rendering/emptyLines.ts` and
+`LinearMultiRowFeatureDisplay/rendering/drawMultiRowIndelGlyphs.ts`, on paths that
+have no GPU pass at all. A clean sweep is worth recording precisely because it
+leaves nothing behind to look at: the next reader of this paragraph would
+otherwise do it again.
+
+The sweep is two greps and it is the *pairing* that matters, not either half:
+
+```sh
+grep -rn 'Math\.round' --include='*.ts' --include='*.tsx' packages plugins   # canvas side
+grep -rn 'floor(.*+ 0\.5)' --include='*.slang' packages plugins              # shader side
+```
+
+Note what this does and does not buy. It closes the ties case for *this*
+spelling; the codegen closes it structurally wherever a decision is exported
+(`MISLEADING_BUILTINS` refuses `round()` in a shader outright, with the reason).
+The residue is a hand-paired snap someone writes tomorrow, and nothing checks for
+that — the sweep is a point-in-time measurement, not a gate. It was not made one
+for the reason the threshold overrides were audited down to one: a check whose
+findings are all "no" teaches people to skip it.
+
 The remaining 6.59% is the same accumulate-vs-resolve asymmetry on marks that
 **cannot** be snapped: SNP ticks and indicator triangles at arbitrary sub-pixel
 x, ~40 deep per column. Canvas2D is the wrong one — drawing the same opaque shape

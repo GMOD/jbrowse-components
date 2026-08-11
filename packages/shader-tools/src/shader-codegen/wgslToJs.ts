@@ -174,8 +174,9 @@ export type WgslType = 'f32' | 'u32' | 'i32' | 'bool'
  * none of the signedness/division inference below has to know about it.
  *
  * adr-051 held vector support open for "a function whose decision is genuinely
- * vector-valued"; `rectSpanPx` is that function, and a pair is as far as the
- * evidence goes. `vec3`/`vec4` remain refused, by name.
+ * vector-valued"; `rectSpanPx` was that function and `arcRadiiPx` is the second,
+ * so a pair is as far as the evidence goes but is no longer a sample of one.
+ * `vec3`/`vec4` remain refused, by name.
  */
 export type WgslReturnType = WgslType | 'vec2f' | 'void'
 

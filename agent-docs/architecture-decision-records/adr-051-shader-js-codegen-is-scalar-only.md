@@ -236,6 +236,7 @@ the part a scanner cannot know and the part that says whether the bar was met.
 | `ldUniforms.slang` | `ldRSquared`, `ldGenotypeD`, `ldGenotypeCorrelation`, `ldHaplotypeCorrelation` | `@jbrowse/ld-core` `calculateLDStats` + `calculateLDStatsPhased` — the rest of what `dprimeFinalize` left behind. Both compute kernels now end in these too, so the r/r²/D block is stated once instead of four times |
 | `rect.slang` | `rectSpanPx` | `Canvas2DFeatureRenderer` `paintedRectSpan` — the point-vs-span branch, the pixel snap and the widening, all restated there; the first export whose answer is a pair |
 | `chevron.slang` | `showChevrons`, `chevronCount`, `chevronOffset` | `Canvas2DFeatureRenderer` `drawLines` — the strand-marker layout, stated in bp in the shader and in px here, so the two copies did not even look alike |
+| `arc.slang` | `arcRadiiPx` | `features/arcs/drawCanvas.ts` `strokeArc` — the paired-read dome's two radii and the near/far branch behind them. The second export whose answer is a pair, and the second one whose copies did not look alike: the gate was `2*halfWidthPx > k*canvasW` in the shader and `\|sx2-sx1\| > k*screenWidthPx` here, taken as a `far` boolean the caller worked out |
 | `ldUniforms.slang` | `ldEnoughGenotypes`, `ldEnoughGametes`, `ldLociPolymorphic`, `ldGenotypeAlleleFreq` | `@jbrowse/ld-core` + both compute kernels — the degenerate-input gates that stood between the moments and the already-generated estimators. The polymorphism test was written out in four places |
 
 ### A vector signature is usually a scalar decision in a wrapper
@@ -326,6 +327,36 @@ clip-space wrapper" is not only more liftable but slightly better conditioned,
 since clip space is normalized by a division and pixel-scale arithmetic there
 rounds where px-space arithmetic does not. Prefer the shape for the first
 reason; the second is a bonus, not a justification.
+
+### The second one: `arcRadiiPx` (2026-08-11)
+
+A pair is no longer a sample of one. `arc.slang`'s dome takes its two ellipse
+radii from a single branch — beyond `ARC_FAR_SCREEN_WIDTHS` of on-screen span the
+ellipse becomes a true circle on the pair's own half-width, so the band clips the
+apex away and only near-vertical legs remain — and `strokeArc` in
+`features/arcs/drawCanvas.ts` restated it, taking the branch's answer as a `far`
+boolean its caller computed.
+
+It passes the same three tests, which is the point of recording it: the section
+above could have been a one-off, and two instances agreeing on *why* is what
+makes the shape reusable.
+
+- **The decision is the pair.** `ry` is defined in terms of `rx` twice over —
+  through the threshold, and as its own far-branch value — so two scalar exports
+  would each recompute the other's branch.
+- **No packaging to leave behind.** Both lanes are CSS px on both backends. The
+  only per-backend step is choosing a sweep direction, which is Canvas2D's alone.
+- **The pair is the consumer's argument list**, the adjacent `rx, ry` of
+  `ctx.ellipse`.
+
+It also repeats `rectSpanPx`'s *finding* rather than only its shape, and that is
+the part worth generalizing. Both copies were stated in different terms from
+their shader — bp against px for the chevrons, `2*halfWidth > k*canvasW` against
+`|sx2-sx1| > k*screenWidthPx` here — so a "mirrors arc.slang" comment stays
+true-looking while the arithmetic parts company. **Two spellings of one rule that
+do not look alike is the signature to search for**, and it is the opposite of the
+intuition, which is to go looking for copies that match. Unlike `scoreToYParity`
+this one found no live bug; the retirement gate passed first run.
 
 ### The blind spot the survey had, and why two decisions were missed
 
