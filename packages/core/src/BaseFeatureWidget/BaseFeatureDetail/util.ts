@@ -1,4 +1,4 @@
-import { isObject, max, measureText } from '../../util/index.ts'
+import { isObject } from '../../util/index.ts'
 import { ellipses } from '../util.tsx'
 
 export function isEmpty(obj: Record<string, unknown>) {
@@ -33,14 +33,6 @@ export function generateTitle(name: unknown, id: unknown, type: unknown) {
   return [label ? ellipses(`${label}`) : '', type ? `${type}` : '']
     .filter(Boolean)
     .join(' - ')
-}
-
-export function generateMaxWidth(array: unknown[][], prefix: string[]) {
-  return (
-    Math.ceil(
-      max(array.map(key => measureText([...prefix, key[0]].join('.'), 12))),
-    ) + 10
-  )
 }
 
 // pick using a path from an object, similar to _.get from lodash with special

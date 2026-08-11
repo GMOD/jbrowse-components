@@ -10,7 +10,70 @@ function renderWithTheme(ui: React.ReactElement) {
   )
 }
 
+// every rendered label, with the inline width Attributes gave its column
+function labelWidths(container: HTMLElement) {
+  return Object.fromEntries(
+    [...container.querySelectorAll<HTMLElement>('div[style*="width"]')].map(
+      el => [el.textContent, el.style.width],
+    ),
+  )
+}
+
 describe('Attributes', () => {
+  // regression: the column was measured per nesting level, so `a` sat in one
+  // width, `nested.b` in another and the URI row — which was handed no width at
+  // all — sized itself to content. Three ragged steps down one card.
+  test('every label in a card shares one column width', () => {
+    const { container } = renderWithTheme(
+      <Attributes
+        attributes={{
+          a: 'x',
+          nested: {
+            aLongerFieldName: 'y',
+            file: { uri: 'https://example.com/x' },
+          },
+        }}
+      />,
+    )
+    const widths = labelWidths(container)
+    expect(Object.keys(widths).sort()).toEqual([
+      'a',
+      'nested.aLongerFieldName',
+      'nested.file',
+    ])
+    expect(new Set(Object.values(widths)).size).toBe(1)
+  })
+
+  // the padding around a label is added once, not once per level: a recursive
+  // measurement that returned its own padded result compounded it with depth
+  test('nesting depth does not pad the column', () => {
+    const width = (attributes: Record<string, unknown>) =>
+      Object.values(
+        labelWidths(
+          renderWithTheme(<Attributes {...{ attributes }} />).container,
+        ),
+      )[0]
+    expect(width({ 'a.b.c': 'x' })).toBe(width({ a: { b: { c: 'x' } } }))
+  })
+
+  // the walk that measures has to make the same branch decisions the render
+  // does; measuring a label that hideUris removes would widen the column for a
+  // row nobody sees
+  test('the column ignores labels hideUris removes', () => {
+    const attributes = {
+      a: 'x',
+      aVeryMuchLongerFieldName: { uri: 'https://example.com/x' },
+    }
+    const shown = labelWidths(
+      renderWithTheme(<Attributes {...{ attributes }} />).container,
+    )
+    const hidden = labelWidths(
+      renderWithTheme(<Attributes attributes={attributes} hideUris />)
+        .container,
+    )
+    expect(hidden.a).not.toBe(shown.a)
+  })
+
   test('renders a scalar field with its label and value', () => {
     const { getByText } = renderWithTheme(
       <Attributes attributes={{ foo: 'bar' }} />,

@@ -5,14 +5,11 @@ import {
   isObject,
   isUriLocation,
 } from '../../util/index.ts'
+import { measureText } from '../../util/index.ts'
 import ArrayValue from './ArrayValue.tsx'
 import SimpleField from './SimpleField.tsx'
 import UriAttribute from './UriField.tsx'
-import {
-  accessNested,
-  applyFeatureFormatting,
-  generateMaxWidth,
-} from './util.ts'
+import { accessNested, applyFeatureFormatting } from './util.ts'
 
 import type { Descriptors, FeatureFormatter } from '../types.tsx'
 
@@ -22,6 +19,11 @@ import type { Descriptors, FeatureFormatter } from '../types.tsx'
 const DataGridDetails = lazy(() => import('./DataGridDetails.tsx'))
 
 const MAX_FIELD_NAME_WIDTH = 170
+
+// must match FieldName's own font size and horizontal padding, or the measured
+// column is not the width the label needs
+const FIELD_NAME_FONT_SIZE = 12
+const FIELD_NAME_PADDING = 10
 
 // Max extra unique columns vs. first row before falling back to per-row field
 // sections instead of the data grid (avoids a mostly-empty, hard-to-read grid)
@@ -61,6 +63,64 @@ const globalOmit = [
   'cdsEndStat',
 ]
 
+/**
+ * The widest label `Attributes` will actually render under `attributes`, in
+ * text units — the padding is added once by `widestLabel`, not per level.
+ *
+ * Follows the same branches the render below does: an array hands off to
+ * `ArrayValue`/`DataGridDetails`, which lay their own label out and so start a
+ * fresh column; a `UriLocation` is one field; any other object recurses. Kept
+ * next to the render for that reason — the two agree by being read together,
+ * and `Attributes.test.tsx` fails if they stop.
+ */
+function measureLabels(
+  attributes: Record<string, unknown>,
+  opts: {
+    omits: Set<string>
+    deepOmits: Set<string>
+    hideUris?: boolean
+    prefix: string[]
+  },
+): number {
+  const { omits, deepOmits, hideUris, prefix } = opts
+  let widest = 0
+  const measure = (key: string) =>
+    measureText([...prefix, key].join('.'), FIELD_NAME_FONT_SIZE)
+  for (const [key, value] of Object.entries(
+    applyFeatureFormatting(attributes),
+  )) {
+    if (value == null || omits.has(key) || Array.isArray(value)) {
+      continue
+    }
+    if (isObject(value)) {
+      if (hideUris && (isUriLocation(value) || isLocalPathLocation(value))) {
+        continue
+      }
+      widest = Math.max(
+        widest,
+        isUriLocation(value)
+          ? measure(key)
+          : measureLabels(value, {
+              omits: deepOmits,
+              deepOmits,
+              hideUris,
+              prefix: [...prefix, key],
+            }),
+      )
+    } else {
+      widest = Math.max(widest, measure(key))
+    }
+  }
+  return widest
+}
+
+function widestLabel(
+  attributes: Record<string, unknown>,
+  opts: Parameters<typeof measureLabels>[1],
+) {
+  return Math.ceil(measureLabels(attributes, opts)) + FIELD_NAME_PADDING
+}
+
 export default function Attributes(props: {
   attributes: {
     [key: string]: unknown
@@ -72,6 +132,11 @@ export default function Attributes(props: {
   descriptions?: Descriptors
   prefix?: string[]
   hideUris?: boolean
+  /**
+   * The label column's width, measured once for the whole card and threaded
+   * down the recursion. Set by `Attributes` itself; a caller leaves it alone.
+   */
+  labelWidth?: number
 }) {
   const {
     attributes,
@@ -81,13 +146,32 @@ export default function Attributes(props: {
     formatter,
     hideUris,
     prefix = [],
+    labelWidth,
   } = props
 
   const omits = new Set([...omit, ...globalOmit, ...omitSingleLevel])
   const filteredFormattedAttributes = Object.entries(
     applyFeatureFormatting(attributes),
   ).filter(([k, v]) => v != null && !omits.has(k))
-  const maxLabelWidth = generateMaxWidth(filteredFormattedAttributes, prefix)
+  // Measured over the whole subtree on the outermost call, then handed down, so
+  // one card has one label column. Per-level measurement put `type`/`trackId` in
+  // a narrow column, `adapter.type` in a wider one and `adapter.craiLocation` in
+  // a wider one still — three ragged steps down a single card.
+  const width = Math.min(
+    labelWidth ??
+      widestLabel(attributes, {
+        omits,
+        // `omitSingleLevel` is what its name says: the recursive call below
+        // passes only `omit` on, so the measurement must stop honoring it at
+        // the same depth or it measures a label that isn't there
+        deepOmits: omitSingleLevel.length
+          ? new Set([...omit, ...globalOmit])
+          : omits,
+        hideUris,
+        prefix,
+      }),
+    MAX_FIELD_NAME_WIDTH,
+  )
 
   return (
     <>
@@ -123,7 +207,13 @@ export default function Attributes(props: {
             return null
           }
           return isUriLocation(value) ? (
-            <UriAttribute key={key} name={key} prefix={prefix} value={value} />
+            <UriAttribute
+              key={key}
+              name={key}
+              prefix={prefix}
+              value={value}
+              width={width}
+            />
           ) : (
             <Attributes
               key={key}
@@ -133,6 +223,7 @@ export default function Attributes(props: {
               formatter={formatter}
               hideUris={hideUris}
               prefix={[...prefix, key]}
+              labelWidth={width}
             />
           )
         } else {
@@ -144,7 +235,7 @@ export default function Attributes(props: {
               value={value}
               description={description}
               prefix={prefix}
-              width={Math.min(maxLabelWidth, MAX_FIELD_NAME_WIDTH)}
+              width={width}
             />
           )
         }
