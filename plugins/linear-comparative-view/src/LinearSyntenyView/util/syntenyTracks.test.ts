@@ -18,6 +18,12 @@ const session = (
   ({
     tracks,
     assemblies: [],
+    // hg19 is an alias of hg38 here purely so one test can cover the resolution;
+    // every other name is already canonical
+    assemblyManager: {
+      getCanonicalAssemblyName: (name: string) =>
+        name === 'hg19' ? 'hg38' : name,
+    },
     connectionInstances: connectionTracks
       ? [{ tracks: connectionTracks }]
       : undefined,
@@ -63,4 +69,13 @@ test('a self-alignment dataset adds the same assembly again', () => {
   expect(options).toEqual([
     { trackId: 'hg38_self', name: 'hg38_self', newAssembly: 'hg38' },
   ])
+})
+
+// the terminal row names the assembly canonically while the dataset names an
+// alias of it; the option must still appear, and must offer the other endpoint
+// under the name the rest of the form uses
+test('a dataset naming an alias of the terminal assembly is an option', () => {
+  expect(
+    getAddRowOptions(session([track('aliased', ['hg19', 'mm39'])]), 'hg38'),
+  ).toEqual([{ trackId: 'aliased', name: 'aliased', newAssembly: 'mm39' }])
 })

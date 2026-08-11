@@ -2,6 +2,7 @@ import { resolveSyntenyTrackActions } from './resolveRowTrackAction.ts'
 
 import type { ImportFormSyntenyTrack } from './SelectorTypes.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AssemblyNameResolver } from '@jbrowse/core/util/tracks'
 
 /**
  * What launching would do to each row pair. Launch's own answer
@@ -36,15 +37,18 @@ export function syntenyPairStatuses({
   tracks,
   selections,
   assemblyNames,
+  assemblyManager,
 }: {
   tracks: AnyConfigurationModel[]
   selections: (ImportFormSyntenyTrack | undefined)[]
   assemblyNames: string[]
+  assemblyManager: AssemblyNameResolver
 }): PairStatus[] {
   return resolveSyntenyTrackActions({
     tracks,
     selections,
     assemblyNames,
+    assemblyManager,
   }).map((action, idx) =>
     action
       ? 'configured'

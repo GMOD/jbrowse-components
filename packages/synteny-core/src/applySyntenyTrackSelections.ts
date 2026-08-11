@@ -44,6 +44,7 @@ export function applySyntenyTrackSelections({
     tracks: allSessionTracks(session),
     selections,
     assemblyNames,
+    assemblyManager: session.assemblyManager,
   })
   for (const [level, action] of actions.entries()) {
     if (action?.kind === 'open') {

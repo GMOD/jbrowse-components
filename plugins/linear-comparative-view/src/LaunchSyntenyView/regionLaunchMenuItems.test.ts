@@ -30,6 +30,8 @@ function makeSession(tracks: ReturnType<typeof track>[]) {
     session: {
       tracks,
       assemblies: [],
+      // no aliases in these fixtures: every name is already canonical
+      assemblyManager: { getCanonicalAssemblyName: (name: string) => name },
       queueDialog: (cb: (close: () => void) => unknown[]) => {
         queued.push(cb(() => {}))
       },

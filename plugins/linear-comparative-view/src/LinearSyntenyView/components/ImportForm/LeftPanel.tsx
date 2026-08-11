@@ -243,7 +243,11 @@ const LeftPanel = observer(function LeftPanel({
   // stacking blank
   function addRow() {
     const bottom = selectedAssemblyNames.at(-1)!
-    const connected = getConnectedAssemblies(allSessionTracks(session), bottom)
+    const connected = getConnectedAssemblies(
+      allSessionTracks(session),
+      bottom,
+      session.assemblyManager,
+    )
     applyRows(
       [
         ...selectedAssemblyNames,
@@ -269,7 +273,8 @@ const LeftPanel = observer(function LeftPanel({
     applyRows(
       planSyntenyChain(
         selectedAssemblyNames,
-        (a, b) => getSyntenyTracks(tracks, [a, b]).length > 0,
+        (a, b) =>
+          getSyntenyTracks(tracks, [a, b], session.assemblyManager).length > 0,
       ),
       0,
     )

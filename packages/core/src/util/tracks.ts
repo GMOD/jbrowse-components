@@ -71,11 +71,18 @@ export function getTrackAssemblyNames(
  * answer in the window before the assembly manager has built its models. Empty
  * names are dropped: a half-initialized view pads its assembly list with them.
  */
+/**
+ * What {@link canonicalAssemblyNames} needs of an assembly manager — the one
+ * method — so a picker that only resolves names says so in its signature and a
+ * test can stand in for it without building a session.
+ */
+export interface AssemblyNameResolver {
+  getCanonicalAssemblyName: (name: string) => string | undefined
+}
+
 export function canonicalAssemblyNames(
   names: string[],
-  assemblyManager: {
-    getCanonicalAssemblyName: (name: string) => string | undefined
-  },
+  assemblyManager: AssemblyNameResolver,
 ) {
   return names
     .filter(name => !!name)

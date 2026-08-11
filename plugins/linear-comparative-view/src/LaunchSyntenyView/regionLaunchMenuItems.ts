@@ -42,9 +42,11 @@ function launchableTracks(
   assemblyName: string,
   openTrackIds: string[],
 ): LaunchableTrack[] {
-  const tracks = getSyntenyTracks(allSessionTracks(session), [
-    assemblyName,
-  ]).map(conf => ({
+  const tracks = getSyntenyTracks(
+    allSessionTracks(session),
+    [assemblyName],
+    session.assemblyManager,
+  ).map(conf => ({
     trackId: readConfObject(conf, 'trackId') as string,
     name: getTrackName(conf, session),
     conf,

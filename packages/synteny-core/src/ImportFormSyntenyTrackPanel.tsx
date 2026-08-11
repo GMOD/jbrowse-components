@@ -93,10 +93,11 @@ const ImportFormSyntenyTrackPanel = observer(
             model={model}
             // scanned here rather than by the form above, so the config reads
             // only happen while this radio is the one selected
-            tracks={getSyntenyTracks(allSessionTracks(session), [
-              assembly1,
-              assembly2,
-            ])}
+            tracks={getSyntenyTracks(
+              allSessionTracks(session),
+              [assembly1, assembly2],
+              session.assemblyManager,
+            )}
             rowIndex={rowIndex}
             emptyState={
               <NoSyntenyTrackMessage

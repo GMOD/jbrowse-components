@@ -46,6 +46,8 @@ function setup({
     rpcManager: {},
     configuration: {},
     tracks,
+    // no aliases in these fixtures: every name is already canonical
+    assemblyManager: { getCanonicalAssemblyName: (name: string) => name },
     connectionInstances: connectionTracks
       ? [{ tracks: connectionTracks }]
       : undefined,

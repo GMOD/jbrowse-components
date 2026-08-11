@@ -42,6 +42,8 @@ function setup(
     rpcManager: {},
     configuration: {},
     tracks,
+    // no aliases in these fixtures: every name is already canonical
+    assemblyManager: { getCanonicalAssemblyName: (name: string) => name },
     addTrackConf: (conf: { trackId: string }) => calls.added.push(conf),
   } as unknown as AbstractSessionModel
 
@@ -127,6 +129,7 @@ describe('doSubmit', () => {
       rpcManager: {},
       configuration: {},
       tracks: [track('picked')],
+      assemblyManager: { getCanonicalAssemblyName: (name: string) => name },
       notify: (message: string) => notified.push(message),
     } as unknown as AbstractSessionModel
     doSubmit({

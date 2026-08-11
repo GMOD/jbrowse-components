@@ -7,6 +7,7 @@ import { syntenyPairs } from './syntenyPairs.ts'
 
 import type { ImportFormSyntenyTrack } from './SelectorTypes.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AssemblyNameResolver } from '@jbrowse/core/util/tracks'
 
 type UserOpened = Extract<ImportFormSyntenyTrack, { type: 'userOpened' }>
 
@@ -60,15 +61,17 @@ export function resolveSyntenyTrackActions({
   tracks,
   selections,
   assemblyNames,
+  assemblyManager,
 }: {
   tracks: AnyConfigurationModel[]
   selections: (ImportFormSyntenyTrack | undefined)[]
   assemblyNames: string[]
+  assemblyManager: AssemblyNameResolver
 }) {
   return syntenyPairs(assemblyNames).map((pair, idx) =>
     resolveRowTrackAction(
       selections[idx],
-      getSyntenyTracks(tracks, pair),
+      getSyntenyTracks(tracks, pair, assemblyManager),
       pair,
     ),
   )

@@ -1,6 +1,8 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { canonicalAssemblyNames } from '@jbrowse/core/util/tracks'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AssemblyNameResolver } from '@jbrowse/core/util/tracks'
 
 function countByName(names: string[]) {
   const counts = new Map<string, number>()
@@ -43,18 +45,30 @@ export function isSyntenyTrack(track: AnyConfigurationModel) {
  * not an arbitrary `a`↔`b` cross-species track that happens to include `a`.
  * Shared by the linear-synteny and dotplot import forms (the per-level/per-pair
  * track selectors) and the "add assembly row" dialog.
+ *
+ * Both sides resolve through the assembly manager's aliases, as the track
+ * selector's own filter does: the rows name assemblies canonically (they come
+ * from a dropdown of the session's) while a track config is free to name an
+ * alias, and comparing the two raw leaves a perfectly good synteny track
+ * invisible to the import form that exists to find it.
  */
 export function getSyntenyTracks(
   tracks: AnyConfigurationModel[],
   assemblies: string[],
+  assemblyManager: AssemblyNameResolver,
 ) {
-  const needed = [...countByName(assemblies)]
+  const needed = [
+    ...countByName(canonicalAssemblyNames(assemblies, assemblyManager)),
+  ]
   return tracks.filter(track => {
     if (!isSyntenyTrack(track)) {
       return false
     }
     const available = countByName(
-      readConfObject(track, 'assemblyNames') as string[],
+      canonicalAssemblyNames(
+        readConfObject(track, 'assemblyNames') as string[],
+        assemblyManager,
+      ),
     )
     return needed.every(([name, count]) => (available.get(name) ?? 0) >= count)
   })
@@ -69,11 +83,22 @@ export function getSyntenyTracks(
 export function getConnectedAssemblies(
   tracks: AnyConfigurationModel[],
   assembly: string,
+  assemblyManager: AssemblyNameResolver,
 ) {
+  // canonical throughout: the caller feeds these back into an assembly dropdown
+  // whose options are the session's own names, so an alias read off a track
+  // config would be an option that matches nothing
+  const [canonicalAssembly] = canonicalAssemblyNames(
+    [assembly],
+    assemblyManager,
+  )
   const names = new Set<string>()
-  for (const track of getSyntenyTracks(tracks, [assembly])) {
-    for (const name of readConfObject(track, 'assemblyNames') as string[]) {
-      if (name !== assembly) {
+  for (const track of getSyntenyTracks(tracks, [assembly], assemblyManager)) {
+    for (const name of canonicalAssemblyNames(
+      readConfObject(track, 'assemblyNames') as string[],
+      assemblyManager,
+    )) {
+      if (name !== canonicalAssembly) {
         names.add(name)
       }
     }

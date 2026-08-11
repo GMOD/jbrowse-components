@@ -88,6 +88,7 @@ const LinearSyntenyViewImportForm = observer(
       tracks: allSessionTracks(session),
       selections: model.importFormSyntenyTrackSelections,
       assemblyNames: selectedAssemblyNames,
+      assemblyManager: session.assemblyManager,
     })
     const blockedPair = statusByPair.indexOf('unfinishedUpload')
     const canLaunch = !blockedByUnfinishedUpload(statusByPair)

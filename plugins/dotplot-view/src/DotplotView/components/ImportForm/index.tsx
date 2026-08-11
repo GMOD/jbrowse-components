@@ -81,6 +81,7 @@ const DotplotImportForm = observer(function DotplotImportForm({
       tracks,
       selections: model.importFormSyntenyTrackSelections,
       assemblyNames: [assemblyX, assemblyY],
+      assemblyManager: session.assemblyManager,
     }),
   )
 
