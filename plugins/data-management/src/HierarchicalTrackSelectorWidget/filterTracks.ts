@@ -33,12 +33,23 @@ export function viewDisplayNames(
  * un-hydrated frozen track config (ADR-032). The two agree:
  * `preprocessTrackConfigSnapshot` fills in a stub display for every display the
  * track type registers.
+ *
+ * A type no plugin registered is one nothing can open, so it answers false
+ * rather than reaching for it: `getTrackType` *throws* on an unregistered name,
+ * and a frozen config track never passes through the schema that would have
+ * rejected it at load (ADR-032), so a config naming a plugin that failed to
+ * load put the throw inside the computed the whole tree reads — one unopenable
+ * track taking out the entire selector rather than dropping its own row.
+ * jb2export's circular-view filter learned this first; the reason is the same.
  */
 export function viewCanDisplayTrack(
   pluginManager: PluginManager,
   viewDisplays: Set<string>,
   trackType: string,
 ) {
+  if (!pluginManager.trackTypes.has(trackType)) {
+    return false
+  }
   return (
     viewDisplays.size === 0 ||
     pluginManager
