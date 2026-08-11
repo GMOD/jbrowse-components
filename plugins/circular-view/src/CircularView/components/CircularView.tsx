@@ -143,10 +143,10 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
       if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
         model.rotate(event.deltaX * 0.003)
       } else if (event.deltaY !== 0) {
-        const cursorAngle = Math.atan2(dy, dx)
         model.zoomToPoint(
           model.bpPerPx * Math.exp(event.deltaY * 0.001),
-          cursorAngle,
+          dx,
+          dy,
         )
       }
     }

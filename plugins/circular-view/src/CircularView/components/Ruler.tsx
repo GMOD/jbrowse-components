@@ -12,6 +12,7 @@ import { observer } from 'mobx-react'
 import {
   labelFitsAlongArc,
   labelFontSizePx,
+  labelIsDrawn,
   labelOffsetPx,
   sliceLabelText,
 } from '../rulerLabels.ts'
@@ -77,6 +78,9 @@ const RulerLabel = observer(function RulerLabel({
   title?: string
   color: string
 }) {
+  if (!labelIsDrawn(text, maxWidthPx)) {
+    return null
+  }
   const textXY = polarToCartesian(radiusPx + labelOffsetPx, radians)
   const deg = radToDeg(radians)
   const parallel = labelFitsAlongArc(text, maxWidthPx)
@@ -97,7 +101,7 @@ const RulerLabel = observer(function RulerLabel({
     : rightHalf
       ? deg
       : deg + 180
-  return !text || maxWidthPx <= 4 ? null : (
+  return (
     <text
       x={0}
       y={0}

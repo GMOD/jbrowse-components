@@ -8,17 +8,17 @@ import {
   isSessionModelWithWidgets,
   selectNamedRegions,
 } from '@jbrowse/core/util'
+import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
 import {
   hideTrackGeneric,
   normalizeTrackInit,
   showTrackGeneric,
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
-import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
+import { cast, types } from '@jbrowse/mobx-state-tree'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
-import { autorun } from 'mobx'
 
 import { calculateStaticSlices } from './slices.ts'
 
@@ -27,7 +27,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { TrackInit } from '@jbrowse/core/util/tracks'
 import type { Region } from '@jbrowse/core/util/types'
-import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type { FC, ReactNode } from 'react'
 
 const twoPi = 2 * Math.PI
@@ -55,6 +55,52 @@ export interface ExportSvgOptions {
   Wrapper?: FC<{ children: ReactNode }>
   themeName?: string
   fontFamily?: string
+}
+
+// the part of the view `applyInit` drives. Duck-typed rather than the model's
+// own Instance so the helper can live above the factory that defines it
+interface CircularViewInitSelf extends IStateTreeNode {
+  setDisplayedRegions: (regions: Region[]) => void
+  showTrack: (
+    trackId: string,
+    trackSnapshot?: Record<string, unknown>,
+    displaySnapshot?: Record<string, unknown>,
+  ) => unknown
+}
+
+/**
+ * Apply one `init` blob: the regions the circle is drawn from, then the chord
+ * tracks. Nothing here awaits, so `installInitAutorun`'s supersede ceiling never
+ * comes up — it is still the owner of the re-entry guard, the `isAlive` checks,
+ * the identity-checked clear of `init`, and the failure policy.
+ */
+function applyInit(self: CircularViewInitSelf, init: CircularViewInit) {
+  const session = getSession(self)
+  const assembly = session.assemblyManager.get(init.assembly)
+  const regions = assembly?.regions
+  if (assembly && regions) {
+    const names = init.displayedRegionNames
+    const named = names
+      ? selectNamedRegions(regions, names, n => assembly.getCanonicalRefName(n))
+      : regions
+    // A list that matches nothing draws the whole assembly rather than blanking
+    // the circle — the same fallback the LGV's and the dotplot's key of this
+    // name take, and it matters more here: an empty displayedRegions drops the
+    // view to its import form, and `init`, the only thing that could rebuild
+    // the figure, is consumed on the way out. So a typo'd refName used to lose
+    // the view outright with nothing said.
+    if (names && !named.length) {
+      session.notify(
+        `displayedRegionNames matched no regions in ${init.assembly}: ${names.join(', ')}`,
+        'warning',
+      )
+    }
+    self.setDisplayedRegions(named.length ? named : regions)
+  }
+  for (const t of init.tracks ?? []) {
+    const { trackId, trackSnapshot, displaySnapshot } = normalizeTrackInit(t)
+    self.showTrack(trackId, trackSnapshot, displaySnapshot)
+  }
 }
 
 /**
@@ -560,19 +606,26 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       * zoom toward/away from a specific angle on the circle, keeping the
-       * genome position at that angle visually fixed under the cursor
+       * zoom toward/away from a point on the figure, keeping whatever is under
+       * it visually fixed. The point is its offset in screen px from the middle
+       * of the circle — what `offsetFromCenter` in the component hands back
        */
-      zoomToPoint(newBpPerPx: number, cursorAngle: number) {
+      zoomToPoint(newBpPerPx: number, cursorX: number, cursorY: number) {
         self.autoFit = false
-        const oldRadius = self.radiusPx
+        const oldRadiusPx = self.radiusPx
         this.setBpPerPx(newBpPerPx)
+        if (!oldRadiusPx) {
+          return
+        }
         // figureOriginXY keeps the circle's center pinned to the middle of the
-        // box, so the only thing that moves the cursor's point is its own
-        // offset from that center growing with the radius
-        const dr = oldRadius - self.radiusPx
-        self.panX += dr * Math.cos(cursorAngle)
-        self.panY += dr * Math.sin(cursorAngle)
+        // box, so the only thing that moves the point under the cursor is its
+        // own offset from that center scaling with the radius. Taking the real
+        // offset rather than assuming the cursor sits on the ruler ring is what
+        // makes this hold over the chords too — at the middle of the figure the
+        // ring assumption pushed the drawing by the whole radius change
+        const scale = self.radiusPx / oldRadiusPx
+        self.panX += cursorX * (1 - scale)
+        self.panY += cursorY * (1 - scale)
       },
 
       /**
@@ -709,45 +762,18 @@ function stateModelFactory(pluginManager: PluginManager) {
     }))
     .actions(self => ({
       afterAttach() {
-        addDisposer(
-          self,
-          autorun(
-            function circularViewInitAutorun() {
-              const { init, initialized } = self
-              if (!initialized) {
-                return
-              }
-              if (init) {
-                const session = getSession(self)
-                const { assemblyManager } = session
-                const assembly = assemblyManager.get(init.assembly)
-                const regions = assembly?.regions
-
-                if (regions) {
-                  const names = init.displayedRegionNames
-                  self.setDisplayedRegions(
-                    names
-                      ? selectNamedRegions(regions, names, n =>
-                          assembly.getCanonicalRefName(n),
-                        )
-                      : regions,
-                  )
-                }
-
-                if (init.tracks) {
-                  for (const t of init.tracks) {
-                    const { trackId, trackSnapshot, displaySnapshot } =
-                      normalizeTrackInit(t)
-                    self.showTrack(trackId, trackSnapshot, displaySnapshot)
-                  }
-                }
-
-                self.setInit(undefined)
-              }
-            },
-            { name: 'CircularViewInit' },
-          ),
-        )
+        installInitAutorun(self, {
+          name: 'CircularViewInit',
+          ready: () => self.initialized,
+          // the same line postProcessSnapshot draws for persistence: once
+          // regions are on the circle the view is up, so a later failure is one
+          // step's problem and must not take the figure down with it —
+          // showImportForm keys off `error` alone
+          materialized: () => self.displayedRegions.length > 0,
+          apply: async init => {
+            applyInit(self, init)
+          },
+        })
       },
     }))
     .views(self => ({

@@ -90,29 +90,34 @@ test('the figure is centered in the box', () => {
 })
 
 // zooming toward a point keeps whatever is under the cursor under the cursor:
-// the point's on-screen position is figureOrigin + centerXY + r*(cos,sin)
-test('zoomToPoint holds the position under the cursor still', () => {
+// the point's on-screen position is figureOrigin + centerXY + its offset from
+// the center, and the drawing scales that offset with the radius.
+//
+// 0.35 is the case the old ring-only compensation got wrong — it moved the pan
+// by the whole radius change no matter where the cursor was, so zooming over a
+// chord shoved the figure across the box instead of holding it still
+test.each([1, 0.35])('zoomToPoint holds a point at %fx the radius still', f => {
   const view = createView({ regions: [region('chr1', 1_000_000)] })
-  const cursorAngle = 0.7
-  const screenXY = () => {
+  const angle = 0.7
+  const cursorX = view.radiusPx * f * Math.cos(angle)
+  const cursorY = view.radiusPx * f * Math.sin(angle)
+  const screenXY = (scale: number) => {
     const [originX, originY] = view.figureOriginXY
     const [cx, cy] = view.centerXY
-    return [
-      originX + cx + view.radiusPx * Math.cos(cursorAngle),
-      originY + cy + view.radiusPx * Math.sin(cursorAngle),
-    ]
+    return [originX + cx + cursorX * scale, originY + cy + cursorY * scale]
   }
-  const [beforeX, beforeY] = screenXY()
-  view.zoomToPoint(view.bpPerPx / 2, cursorAngle)
-  expect(view.radiusPx).toBeGreaterThan(0)
-  const [afterX, afterY] = screenXY()
+  const [beforeX, beforeY] = screenXY(1)
+  const oldRadiusPx = view.radiusPx
+  view.zoomToPoint(view.bpPerPx / 2, cursorX, cursorY)
+  expect(view.radiusPx).toBeGreaterThan(oldRadiusPx)
+  const [afterX, afterY] = screenXY(view.radiusPx / oldRadiusPx)
   expect(afterX).toBeCloseTo(beforeX!)
   expect(afterY).toBeCloseTo(beforeY!)
 })
 
 test('resetView refits and clears the zoom-to-cursor pan', () => {
   const view = createView({ regions: [region('chr1', 1_000_000)] })
-  view.zoomToPoint(view.bpPerPx / 4, 1)
+  view.zoomToPoint(view.bpPerPx / 4, 100, 0)
   expect(view.autoFit).toBe(false)
   expect(view.panX).not.toBe(0)
 

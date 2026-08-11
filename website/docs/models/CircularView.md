@@ -116,7 +116,7 @@ the whole surface.
 | <span id="action-zoominbutton">**zoomInButton**</span><br><code>() =&gt; void</code> |  | CircularView |
 | <span id="action-zoomoutbutton">**zoomOutButton**</span><br><code>() =&gt; void</code> |  | CircularView |
 | <span id="action-setbpperpx">**setBpPerPx**</span><br><code>(newVal: number) =&gt; void</code> |  | CircularView |
-| <span id="action-zoomtopoint">**zoomToPoint**</span><br><code>(newBpPerPx: number, cursorAngle: number) =&gt; void</code> | zoom toward/away from a specific angle on the circle, keeping the genome position at that angle visually fixed under the cursor | CircularView |
+| <span id="action-zoomtopoint">**zoomToPoint**</span><br><code>(newBpPerPx: number, cursorX: number, cursorY: number) =&gt; void</code> | zoom toward/away from a point on the figure, keeping whatever is under it visually fixed. The point is its offset in screen px from the middle of the circle — what `offsetFromCenter` in the component hands back | CircularView |
 | <span id="action-setdisplayedregions">**setDisplayedRegions**</span><br><code>(regions: Region[]) =&gt; void</code> |  | CircularView |
 | <span id="action-activatetrackselector">**activateTrackSelector**</span><br><code>() =&gt; Widget &#124; undefined</code> |  | CircularView |
 | <span id="action-toggletrack">**toggleTrack**</span><br><code>(trackId: string) =&gt; boolean</code> |  | CircularView |

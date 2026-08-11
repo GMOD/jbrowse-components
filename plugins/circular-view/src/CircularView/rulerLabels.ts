@@ -26,6 +26,13 @@ export function labelFitsAlongArc(text: string, maxWidthPx: number) {
   return labelWidthPx(text) < maxWidthPx
 }
 
+// an empty label, or an arc too short to hang one off, draws nothing at all.
+// One predicate, so `RulerLabel` and the room `labelGutterPx` reserves for it
+// can't disagree about which labels exist
+export function labelIsDrawn(text: string, maxWidthPx: number) {
+  return !!text && maxWidthPx > 4
+}
+
 // the text a slice labels itself with: its refName, or how many regions the
 // elision swallowed
 export function sliceLabelText(slice: Slice) {
@@ -52,9 +59,7 @@ export function labelGutterPx(model: {
     staticSlices.map(slice => {
       const text = sliceLabelText(slice)
       const maxWidthPx = (slice.endRadians - slice.startRadians) * radiusPx
-      // mirrors RulerLabel's own bail-out: nothing is drawn, so nothing needs
-      // room
-      if (!text || maxWidthPx <= 4) {
+      if (!labelIsDrawn(text, maxWidthPx)) {
         return 0
       }
       return (
