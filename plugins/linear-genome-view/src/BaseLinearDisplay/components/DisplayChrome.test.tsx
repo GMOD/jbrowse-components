@@ -1,14 +1,19 @@
+import { useMouseState } from '@jbrowse/core/ui/useMouseTracking'
 import {
   isGpuRenderingDisabled,
   setGpuOverride,
 } from '@jbrowse/render-core/gpuDevice'
 import { createGpuContextLostError } from '@jbrowse/render-core/useRenderingBackend'
-import { act, render, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, waitFor } from '@testing-library/react'
 import { observer } from 'mobx-react'
 
 import DisplayChrome, { DisplayStatusChrome } from './DisplayChrome.tsx'
 import { TestChromeModel, stubFactory } from './chromeTestModel.ts'
 
+import type {
+  MouseState,
+  MouseTracker,
+} from '@jbrowse/core/ui/useMouseTracking'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // Fast guard that the banner/overlay/canvas subtrees actually COMMIT to the DOM
@@ -465,6 +470,117 @@ describe('fresh canvas element per re-init', () => {
       model.setStatus('Clustering samples', 0.25)
     })
     expect(getByTestId('probe-canvas')).toBe(first)
+  })
+})
+
+// A terminal state replaces the subtree, which removes the very element the
+// chrome's pointer handlers are bound to — and `mouseleave` cannot fire on an
+// element unmounted under the cursor. Nothing reads the tracker while the banner
+// is up, which is what hides the leak: the body remounts the instant the phase
+// clears (Force load, Retry) and reads the stale snapshot on its first render.
+// The pointer layers with no other gate (multi-row features, maf, both
+// multi-sample variant displays) draw a crosshair there straight away.
+describe('the pointer measurement drops when the container is replaced', () => {
+  beforeEach(() => {
+    jest.useFakeTimers()
+  })
+  afterEach(() => {
+    jest.useRealTimers()
+  })
+
+  // What a real pointer layer does: read the tracker in the body and draw from
+  // it. Rendering the value is what makes "the body's FIRST render after the
+  // remount" observable at all.
+  function PointerProbe({ tracker }: { tracker: MouseTracker }) {
+    const state = useMouseState(tracker)
+    return (
+      <div data-testid="probe-pointer">
+        {state ? `${state.x},${state.y}` : 'none'}
+      </div>
+    )
+  }
+
+  function renderTracked(
+    model: Instance<typeof TestChromeModel>,
+    onPointerPosition?: (state?: MouseState) => void,
+  ) {
+    return render(
+      <DisplayChrome
+        model={model}
+        factory={stubFactory}
+        testid="chrome"
+        onPointerPosition={onPointerPosition}
+      >
+        {({ canvasRef, mouseTracker }) => (
+          <>
+            <canvas data-testid="probe-canvas" ref={canvasRef} />
+            <PointerProbe tracker={mouseTracker} />
+          </>
+        )}
+      </DisplayChrome>,
+    )
+  }
+
+  // the measurement is rAF-coalesced, so a move only lands on the next frame
+  function moveOver(el: HTMLElement, clientX: number, clientY: number) {
+    act(() => {
+      fireEvent.mouseMove(el, { clientX, clientY })
+      jest.advanceTimersByTime(20)
+    })
+  }
+
+  test('tooLarge clears it, so the remounted body starts with no pointer', () => {
+    const model = TestChromeModel.create({})
+    const { getByTestId } = renderTracked(model)
+
+    moveOver(getByTestId('chrome'), 30, 12)
+    expect(getByTestId('probe-pointer').textContent).toBe('30,12')
+
+    act(() => {
+      model.setRegionTooLarge(true, 'Requested too much data')
+    })
+    // force load: the body comes back, and must not come back mid-hover
+    act(() => {
+      model.setRegionTooLarge(false)
+    })
+    expect(getByTestId('probe-pointer').textContent).toBe('none')
+  })
+
+  test('renderError clears it too, and the hit goes with it', () => {
+    const seen: (MouseState | undefined)[] = []
+    const model = TestChromeModel.create({})
+    const { getByTestId } = renderTracked(model, state => {
+      seen.push(state)
+    })
+
+    moveOver(getByTestId('chrome'), 8, 40)
+    expect(seen.at(-1)).toMatchObject({ x: 8, y: 40 })
+
+    act(() => {
+      model.setRenderError(new Error('boom'))
+    })
+    // `onPointerPosition` consumers (featureUnderMouse, hoveredFeature) would
+    // otherwise stay pinned to the hit under the banner
+    expect(seen.at(-1)).toBeUndefined()
+
+    act(() => {
+      model.setRenderError(undefined)
+    })
+    expect(getByTestId('probe-pointer').textContent).toBe('none')
+  })
+
+  // the other half: only a *replaced* container clears it, not any re-render —
+  // otherwise a status tick during a hover would drop the crosshair
+  test('an overlay phase keeps it, because the container is still there', () => {
+    const model = TestChromeModel.create({})
+    const { getByTestId } = renderTracked(model)
+
+    moveOver(getByTestId('chrome'), 5, 6)
+    act(() => {
+      model.setStatus('Downloading', 0.5)
+      model.setLoadingCondition(true)
+    })
+    expect(getByTestId('probe-pointer').textContent).toBe('5,6')
   })
 })
 

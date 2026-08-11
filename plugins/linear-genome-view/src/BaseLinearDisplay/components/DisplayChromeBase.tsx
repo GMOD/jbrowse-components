@@ -1,4 +1,4 @@
-import { Fragment } from 'react'
+import { Fragment, useEffect } from 'react'
 
 // deep subpath, never the `@jbrowse/core/ui` barrel: this file is the
 // toolkit-free half of the chrome and the barrel pulls in MUI
@@ -164,6 +164,27 @@ function DisplayChromeBaseInner<B extends { dispose(): void }>({
   const { mouseTracker, handleMouseMove, handleMouseLeave } =
     useMouseTracking(onPointerPosition)
   const phase = model.displayPhase
+  // The two subtree-replacing phases remove the very element the handlers above
+  // are bound to, and `mouseleave` cannot fire on an element unmounted under the
+  // cursor — so without this the tracker keeps publishing the position the
+  // pointer had when the banner went up. Nothing reads it while the banner is
+  // there, which is exactly why it goes unnoticed: the body remounts the instant
+  // the phase clears (Force load, Retry) and reads that stale snapshot on its
+  // FIRST render, drawing a crosshair or tooltip where the cursor is not. The
+  // displays whose pointer layer has no other gate — multi-row features, maf,
+  // both multi-sample variant displays — draw it immediately. `onPointerPosition`
+  // consumers (`featureUnderMouse`, `hoveredFeature`) are pinned to the same
+  // stale hit, and get their `undefined` from the same call.
+  //
+  // Declared above the `renderError` return because it is a hook; the handler is
+  // identity-stable (see `useMouseTracking`) so this effect runs on the
+  // transition rather than on every render.
+  const containerMounted = phase !== 'renderError' && phase !== 'tooLarge'
+  useEffect(() => {
+    if (!containerMounted) {
+      handleMouseLeave()
+    }
+  }, [containerMounted, handleMouseLeave])
   if (phase === 'renderError') {
     // destructured for the same reason as in DisplayStatusChromeBase: a plain
     // component-typed prop reads better as `<RenderError/>` than as a member

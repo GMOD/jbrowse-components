@@ -1,4 +1,4 @@
-import { useRef, useSyncExternalStore } from 'react'
+import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react'
 
 export interface MouseState {
   x: number
@@ -84,14 +84,36 @@ export function useMouseTracking(onMove?: (state?: MouseState) => void) {
   const storeRef = useRef<MouseStore | undefined>(undefined)
   storeRef.current ??= createMouseStore()
   const store = storeRef.current
+  // Reached through a ref rather than captured, so `handleMouseLeave` below can
+  // be identity-stable — one of its callers is an effect, and a handler that
+  // changed identity every render would make that effect re-run every render.
+  // Reading the latest is also the better answer for the frame callback, which
+  // runs after the render whose closure scheduled it.
+  //
+  // Written in an effect rather than during render: a render React discards must
+  // not leave this pointing at a callback from it. Nothing can read it before
+  // the first commit — both users are event/effect callbacks — and `useRef`'s
+  // initial value covers the first commit itself.
+  const onMoveRef = useRef(onMove)
+  useEffect(() => {
+    onMoveRef.current = onMove
+  })
 
-  const handleMouseLeave = () => {
+  /**
+   * Drop the published position and tell `onMove` the pointer is gone.
+   *
+   * Bound as the container's `onMouseLeave` — and called directly when the
+   * container is *removed* rather than left, which `mouseleave` cannot report.
+   * See its call in `DisplayChromeBase`. Identity-stable for that second caller.
+   */
+  const handleMouseLeave = useCallback(() => {
     if (rafRef.current) {
       cancelAnimationFrame(rafRef.current)
+      rafRef.current = undefined
     }
     store.set(undefined)
-    onMove?.(undefined)
-  }
+    onMoveRef.current?.(undefined)
+  }, [store])
 
   const handleMouseMove = (event: React.MouseEvent) => {
     // An overlay portaled out of the container still *bubbles* its React events
@@ -127,7 +149,7 @@ export function useMouseTracking(onMove?: (state?: MouseState) => void) {
           clientY,
         }
         store.set(state)
-        onMove?.(state)
+        onMoveRef.current?.(state)
       }
     })
   }
