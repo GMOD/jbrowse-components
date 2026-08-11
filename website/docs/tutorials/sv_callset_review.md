@@ -94,16 +94,22 @@ translocation into a contig the assembly does not have costs you that row and
 not the other 99.
 
 A junction is two loci, so that is what `batch` draws. This one is worth looking
-at on its own, because two panels are not the whole story: a connector drawn
-dashed means the read carrying it has a segment at a locus the frame does not
-show, and these reads also visit chr10. Rendering the junction by hand with that
-third panel is the same picture with nothing left off it.
+at on its own for two reasons. A connector drawn dashed means the read carrying
+it has a segment at a locus the frame does not show, and these reads also visit
+chr10, so the junction wants a third panel. And repeating `--track` puts the
+matched normal under the tumour in every panel, which is the control drawn
+rather than filed in a second directory: the connecting curves are per track, so
+the tumour lanes carry the fan and the normal lanes carry none.
 
-<Figure caption="The three loci of COLO829's der(3) in the tumor reads, chr3 then chr10 then chr12, with a curve per read that leaves one panel and arrives in another. The fan of curves is the junction's support, the reads stop dead at the breakpoint on every side, and no connector is dashed." src="/img/jbrowse-img/sv_review_tumor.png" />
+<Figure caption="The three loci of COLO829's der(3), chr3 then chr10 then chr12, with the tumour reads above the matched normal in each panel. Every curve is solid, the reads stop dead at the breakpoint on every side, and not one curve is in a normal lane." src="/img/jbrowse-img/sv_review_pair.png" />
+
+Reads at 1 px apiece (`featureHeight:super-compact`) is what keeps six pileups
+on one screen; at the default height the picture is mostly pileup and the curves
+it is read for are drawn over it.
 
 ## The control
 
-The same junctions, the same windows, the matched normal:
+The whole callset gets the same treatment, one directory per track:
 
 ```bash
 jb2export batch --vcf COLO829.somatic-sv.vcf.gz \
@@ -111,11 +117,6 @@ jb2export batch --vcf COLO829.somatic-sv.vcf.gz \
   --track COLO829BL_normal_ont height:240 \
   --outDir normal --flank 600 --width 1100
 ```
-
-Drawn by hand with the same three panels, the control says the same thing about
-the whole cycle rather than about one of its junctions:
-
-<Figure caption="The same three windows in the matched normal COLO829BL. The reads read straight through all three loci and not one curve connects them, which is what somatic looks like." src="/img/jbrowse-img/sv_review_normal.png" />
 
 Put the two directories side by side and the somatic calls are the ones with
 curves in `tumor/` and none in `normal/`. That comparison is the whole reason to
@@ -178,10 +179,11 @@ run it, and load its output here.
 
 ## Reproduce it end to end
 
-Everything on this page is the commands above against hosted files. The figures
-are rendered by the `sv_review_tumor` and `sv_review_normal` specs in
-`website/scripts/screenshot-spec-helpers.ts`, which are the same
-`jb2export breakpoint` invocation with one `--loc` per panel.
+Everything on this page is the commands above against hosted files. The figure
+is rendered by the `sv_review_pair` spec in
+`website/scripts/screenshot-spec-helpers.ts`, which is one
+`jb2export breakpoint` invocation with one `--loc` per panel and one `--track`
+per sample.
 
 ## See also
 

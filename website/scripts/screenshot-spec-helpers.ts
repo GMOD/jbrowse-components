@@ -1500,36 +1500,49 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1900',
   ]),
 
-  // The two figures of the sv_callset_review tutorial, and deliberately a
-  // matched PAIR: the same junctions of COLO829's der(3), at the same windows
-  // and the same width, in the tumour and in its matched normal. The somatic
-  // call is the DIFFERENCE between them, so rendering them apart (different
-  // flank, different width) would be showing two pictures and asserting a
-  // comparison rather than drawing one.
+  // ONE FIGURE, BOTH TRACKS, and the control is inside it rather than beside
+  // it (review on sv_review_normal: "boring figure. consider deleting. if this
+  // is just to show in contrast to the other, it needs to be side-by-side
+  // figure"). It was two separate renders of the same three windows, tumour and
+  // matched normal, and the somatic call is the DIFFERENCE between them -- a
+  // difference nobody can measure across two pictures on two parts of a page.
+  // Both tracks in every panel makes it one picture: the connecting curves are
+  // drawn per track, so they appear on the tumour rows and nowhere else, which
+  // is what somatic looks like.
   //
-  // Both come from the hosted cancer_sv demo config, so neither needs a local
-  // file. Repeating --loc is what stacks the panels; the reads crossing between
-  // them are drawn by the view.
+  // That also deletes the boring figure without deleting the control, which
+  // `docs/tutorials/CLAUDE.md` asks every dataset for.
   //
-  // THREE PANELS, NOT TWO, AND THAT IS WHAT KILLED THE DOTTED LINES (review:
-  // "i dont like the dotted lines, because that means 'incomplete story'. we
-  // need to fix this, if needed with more multi-hop"). A dashed connector is
-  // exactly that, and the plugin says so: `AlignmentConnections` sets
-  // `strokeDasharray` on a pair whose `hiddenSegmentsBetween` is non-empty --
-  // the read has a supplementary alignment at a locus that is NOT in the view.
-  // Here that locus is chr10. COLO829 chain 1 is a closed three-chromosome
-  // cycle (agent-docs/reference/SV_MULTIHOP.md): chr3, then 199 bp of chr10 at
+  // THREE PANELS, AND THAT IS WHAT KILLED THE DOTTED LINES (review: "i dont
+  // like the dotted lines, because that means 'incomplete story'. we need to fix
+  // this, if needed with more multi-hop"). A dashed connector is exactly that,
+  // and the plugin says so: `AlignmentConnections` sets `strokeDasharray` on a
+  // pair whose `hiddenSegmentsBetween` is non-empty -- the read has a
+  // supplementary alignment at a locus that is NOT in the view. Here that locus
+  // is chr10. COLO829 chain 1 is a closed three-chromosome cycle
+  // (agent-docs/reference/SV_MULTIHOP.md): chr3, then 199 bp of chr10 at
   // 58,717,463-58,717,662, then 183 bp of chr12 inverted, then chr3 again. With
   // only chr3 and chr12 on screen, every read that goes the long way round is
-  // drawn dashed and correctly so. Adding the chr10 panel makes every connector
-  // in the figure solid.
+  // drawn dashed and correctly so. The third panel makes every connector solid.
   //
-  // `force:true` is new here and is not a taste call: the chr3 panel is 1.2 kb
-  // of 200x ONT and the byte gate refuses it, so it drew "Region too large to
-  // render". Which is also how this file found out that breakpoint mode DROPPED
-  // its --track modifiers -- `height:240` had never applied either. Fixed in
+  // `featureHeight:super-compact` (review: "use supercompact"), which is 1 px
+  // per read. What the figure is read for is the bundle of curves and the
+  // absence of any in the normal lanes, and at the default 7 px the six pileups
+  // were most of a very tall page. `--width 1400` with six lanes rather than
+  // three needs the reads that small to stay one screen.
+  //
+  // `force:true` is not a taste call: the chr3 panel is 1.2 kb of 200x ONT and
+  // the byte gate refuses it, so it drew "Region too large to render". Which is
+  // also how this file found out that breakpoint mode DROPPED its --track
+  // modifiers -- `height:240` had never applied either. Fixed in
   // products/jbrowse-img/src/breakpointInit.ts.
-  cliSpec('sv_review_tumor', [
+  //
+  // The assembly name is no longer printed once per panel (review: "we also do
+  // not need assembly name on each level necessarily"). That is a change in
+  // SVGBreakpointSplitView rather than a flag here: a breakpoint stack is
+  // usually one assembly at several loci, so it names the first row and any row
+  // whose assembly differs from the one above it.
+  cliSpec('sv_review_pair', [
     'breakpoint',
     '--config',
     'https://jbrowse.org/demos/cancer_sv/config.json',
@@ -1537,39 +1550,14 @@ export const jbrowseImgSpecs: CliSpec[] = [
     'hg38',
     '--track',
     'COLO829_tumor_ont',
-    'height:190',
+    'height:130',
     'force:true',
-    '--loc',
-    'chr3:25,358,511-25,359,711',
-    '--loc',
-    'chr10:58,716,962-58,718,162',
-    '--loc',
-    'chr12:72,272,512-72,273,712',
-    '--width',
-    '1400',
-  ]),
-
-  // The control, kept rather than deleted (review: "boring figure. consider
-  // deleting"). It is boring in the way a negative control is, and the tutorial
-  // is built on it -- its "## The control" section is what turns a fan of
-  // curves into a SOMATIC call, and `docs/tutorials/CLAUDE.md` asks every
-  // dataset for one.
-  //
-  // What it does instead is control the same claim the tumour figure now makes.
-  // At two loci it said "nothing joins these two windows"; at three it says
-  // nothing joins any of the three, which is the whole cycle, and it is a
-  // shorter figure because the normal is 55-70x rather than 200x and does not
-  // need 190 px of pileup to show it.
-  cliSpec('sv_review_normal', [
-    'breakpoint',
-    '--config',
-    'https://jbrowse.org/demos/cancer_sv/config.json',
-    '--assembly',
-    'hg38',
+    'featureHeight:super-compact',
     '--track',
     'COLO829BL_normal_ont',
-    'height:150',
+    'height:90',
     'force:true',
+    'featureHeight:super-compact',
     '--loc',
     'chr3:25,358,511-25,359,711',
     '--loc',

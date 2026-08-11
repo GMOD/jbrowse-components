@@ -194,12 +194,13 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.25, 1],
   },
   sv_callset_review: {
-    // The tumour half of the page's before/after pair. Cropped to the band that
-    // carries the junction itself — the fan of curves between the two panels —
-    // rather than to either pileup, since the connections are the only thing on
-    // this page a card can show at thumbnail size.
-    src: 'jbrowse-img/sv_review_tumor.png',
-    band: [0.3, 0.85],
+    // Cropped to the band that carries the junction itself — the fan of curves
+    // between two panels — rather than to any one pileup, since the connections
+    // are the only thing on this page a card can show at thumbnail size. The
+    // figure now stacks the matched normal under each tumour lane, so the band
+    // is narrower than it was: six lanes in the height three used to take.
+    src: 'jbrowse-img/sv_review_pair.png',
+    band: [0.3, 0.75],
   },
   hic_structural_variants: {
     // Same split as sv_visualization_cgiab above: the translocation comparison

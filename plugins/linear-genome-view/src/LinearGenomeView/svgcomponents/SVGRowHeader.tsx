@@ -17,10 +17,20 @@ export default function SVGRowHeader({
   // ruler hangs its ticks off the bottom of this budget so they meet the
   // tracks, and the tracks start at `contentTop`.
   rulerHeight,
+  // Whether this row draws its assembly name. Default true, which is what a
+  // stack of DIFFERENT assemblies wants — a synteny export names each row
+  // because each row is a different genome. A breakpoint split view is usually
+  // one assembly seen at several loci, and there the name is the same string
+  // printed once per panel, so that caller passes false on every row after the
+  // first whose assembly matches the row above it. The reserved band above the
+  // ruler is unchanged either way: it is the caller's offset, not this
+  // component's.
+  showAssemblyName = true,
 }: {
   view: LinearGenomeViewModel
   fontSize: number
   rulerHeight: number
+  showAssemblyName?: boolean
 }) {
   const theme = useTheme()
   return (
@@ -34,13 +44,15 @@ export default function SVGRowHeader({
         without also reworking those callers' offsets, or the label collides
         with the ruler.
       */}
-      <text
-        x={0}
-        fontSize={fontSize}
-        fill={stripAlpha(theme.palette.text.primary)}
-      >
-        {view.assemblyNames.join(', ')}
-      </text>
+      {showAssemblyName ? (
+        <text
+          x={0}
+          fontSize={fontSize}
+          fill={stripAlpha(theme.palette.text.primary)}
+        >
+          {view.assemblyNames.join(', ')}
+        </text>
+      ) : null}
       <SVGRuler model={view} rulerHeight={rulerHeight} />
     </>
   )

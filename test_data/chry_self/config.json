@@ -11,7 +11,8 @@
           "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.2bit",
           "chromSizes": "chrY.chrom.sizes"
         }
-      }
+      },
+      "refNameAliases": { "uri": "chrY.aliases.txt" }
     },
     {
       "name": "T2T_chrY_self",
@@ -24,7 +25,8 @@
           "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.2bit",
           "chromSizes": "chrY.chrom.sizes"
         }
-      }
+      },
+      "refNameAliases": { "uri": "chrY.aliases.txt" }
     }
   ],
   "tracks": [
@@ -41,6 +43,17 @@
         "type": "PairwiseIndexedPAFAdapter",
         "assemblyNames": ["T2T_chrY_self", "T2T_chrY"],
         "uri": "https://jbrowse.org/demos/scratch/hs1_chrY_self.pif.gz",
+        "csi": true
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hs1_chrY_genes",
+      "name": "NCBI RefSeq genes (hs1)",
+      "assemblyNames": ["T2T_chrY", "T2T_chrY_self"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://jbrowse.org/ucsc/hs1/hs1.gff.gz",
         "csi": true
       }
     }

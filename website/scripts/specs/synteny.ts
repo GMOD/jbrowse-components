@@ -38,6 +38,38 @@ const CHRY_YQ_PALINDROMES = 'chrY:21,200,000-26,000,000'
 // complement, which is what a palindrome is.
 const CHRY_P_PALINDROME_WINDOW = 'chrY:22,330,000-22,810,000'
 
+// THE GENES, ON BOTH PANELS (review: "if showing gene features would make it
+// look cooler we can consider"). They do, and not decoratively: this is the
+// RBMY1 palindrome, and each arm carries its own copies of the family, so the
+// two lanes read RBMY1B, RBMY1A1, TTTY13 down one side of the centre and
+// RBMY1D, RBMY1E back up the other. The mirror is the thing the ribbons are
+// drawing, stated a second way by an annotation the alignment had no part in.
+//
+// It needed two lines of fixture config rather than a new file. The T2T-CHM13
+// GFF we already host is keyed on RefSeq accessions (`NC_060948.1`) while this
+// fixture's assembly is a committed `chrY.chrom.sizes`, so the track resolved
+// to nothing until the assemblies got a `refNameAliases` mapping the two --
+// which is also why the note on hprc_chm13_allele's deleted hs1 gene lane says
+// that file "has nothing in this window". It may well have.
+//
+// `showOnlyGenes` because the palindrome's members each carry a stack of
+// isoforms and what this lane is read for is where a NAME sits relative to the
+// centre.
+const CHRY_GENE_LANE = {
+  trackId: 'hs1_chrY_genes',
+  type: 'LinearBasicDisplay',
+  showOnlyGenes: true,
+  geneGlyphMode: 'longestCoding',
+  displayMode: 'compact',
+  // NAMES ONLY. The default 'auto' adds each gene's description at this
+  // density, and RefSeq's are full sentences ("RNA binding motif protein
+  // Y-linked family 1 member A1"), so the lane came back as two rows of blue
+  // prose under one row of glyphs. What the lane is read for is which SYMBOL
+  // sits where relative to the palindrome's centre.
+  showLabels: 'name',
+  height: 60,
+}
+
 // hg38 vs T2T-CHM13 (hs1) at TNNT3, the locus the genomes.jbrowse.org demo
 // session parks on. `view` carries the ribbon-drawing settings that differ
 // between the default figure and the curved/transparent-indel one.
@@ -3382,11 +3414,15 @@ export const syntenySpecs: ScreenshotSpec[] = [
           levelHeights: [220],
           collapseEmptyRows: true,
           views: [
-            { assembly: 'T2T_chrY', loc: CHRY_P_PALINDROME_WINDOW, tracks: [] },
+            {
+              assembly: 'T2T_chrY',
+              loc: CHRY_P_PALINDROME_WINDOW,
+              tracks: [CHRY_GENE_LANE],
+            },
             {
               assembly: 'T2T_chrY_self',
               loc: CHRY_P_PALINDROME_WINDOW,
-              tracks: [],
+              tracks: [CHRY_GENE_LANE],
             },
           ],
         },
@@ -3394,18 +3430,23 @@ export const syntenySpecs: ScreenshotSpec[] = [
     }),
     // same width as the dotplot it is composed under
     viewportWidth: 1000,
-    viewportHeight: 420,
+    // 420 + the two gene lanes and their rulers, off the run's own
+    // below-the-fold report
+    viewportHeight: 602,
     readySelector: displayPainted('synteny_canvas'),
     // 21 MB PIF plus the hs1 chrom.sizes, both remote
     readyTimeout: 180000,
     settleMs: 10000,
-    // WHAT THE TWO COLOURS ARE, said in the frame (review: "it is unclear what
-    // 'inversion on top of match' ... actually even means. is this a 'alignment
-    // artifact'? truly an exact palindrome?"). Both questions get an answer:
-    // it is not an artifact, and it is near-exact rather than exact -- which
-    // the picture itself already shows, because `cigarMode: 'matches'` leaves
-    // every indel inside the arms as an unpainted gap in the fill. So the pill
-    // points at something visible rather than asserting a number.
+    // WHAT THE TWO COLOURS ARE, and nothing else (review: "reduce wordiness.
+    // just say, palindrome, is a full match (red) and inverted match (blue)").
+    // It was four lines answering an older round's "is this an alignment
+    // artifact?", and that answer is now the caption's job. The colours are the
+    // display's own strand palette rather than the note's red/blue, so the pill
+    // names the ones on screen.
+    //
+    // What the pill dropped, the figure gained: the two gene lanes carry the
+    // RBMY1 copies mirrored about the centre, which is the same claim the
+    // ribbons make and is not an assertion at all.
     //
     // FAR LEFT, deliberately. There is no empty space in this part -- the band
     // is ribbon edge to edge -- so the pill has to sit on it, and the far left
@@ -3419,11 +3460,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         type: 'text',
         fontSize: 17,
         maxWidth: 380,
-        text:
-          'NOT AN ARTIFACT — a true palindrome. Magenta is this interval ' +
-          'aligned to its own reverse complement, so its two arms cross at ' +
-          'the centre; salmon is the plus-strand self-match. The unpainted ' +
-          'gaps are where the arms differ: near-exact, not exact.',
+        text: 'a palindrome: a forward match (salmon) and an inverted one (magenta)',
         anchor: {
           // the bare testid, not `displayPainted(...)`: an annotation anchor
           // only has to FIND the element, and annotations are drawn after the

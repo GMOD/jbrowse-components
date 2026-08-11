@@ -116,6 +116,17 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
                   view={view}
                   fontSize={fontSize}
                   rulerHeight={rulerHeight}
+                  // A breakpoint split view is usually ONE assembly seen at
+                  // several loci, so naming it per panel prints the same
+                  // string once per row and says nothing. Named on the first
+                  // row, and again on any row whose assembly differs from the
+                  // one above it — so a cross-assembly stack still labels
+                  // every change and this rule needs no flag.
+                  showAssemblyName={
+                    idx === 0 ||
+                    rows[idx - 1]!.view.assemblyNames.join(', ') !==
+                      view.assemblyNames.join(', ')
+                  }
                 />
               }
               fontSize={fontSize}

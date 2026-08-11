@@ -4245,42 +4245,29 @@ export const graphSpecs: ScreenshotSpec[] = [
           dy: 10,
         },
       },
-      {
-        type: 'text',
-        text: 'T2T-CHM13v2.0: an ordinary interval',
-        fontSize: 18,
-        maxWidth: 320,
-        anchor: {
-          view: 2,
-          track: HS1_RMSK_TRACK.trackId,
-          fracY: 0,
-          alignX: 'left',
-          // the track's own label row, which is empty right of
-          // "RepeatMasker (T2T-CHM13v2.0)"; the lane itself is bars edge to edge
-          dx: 330,
-          dy: -30,
-        },
-      },
-      // The repeat lane's color key AND the answer to "does this density
-      // matter", which is one pill because they are one sentence (review: "i
-      // still think user needs to understand whether that 'density' of L1
-      // matters or not"). It did not: the key said what red was and the reader
-      // was left to judge 48 bars by eye against no baseline.
+      // ONE PILL ON THE BOTTOM PANE, NOT TWO (review: "too chaotic red
+      // annotation boxes in lower fig now. aggressively reduce wordiness. one
+      // box only"). The previous round put the pane's name in one pill and the
+      // colour key plus the L1 baseline in another, and at 18 px over a lane
+      // that is bars edge to edge they landed on top of each other.
       //
-      // The baseline is measured, by `scripts/build_repeat_density.sh` rather
-      // than by hand -- 23.70% of the allele's 142 kb against 14.18% and 14.47%
-      // in the CHM13 sequence either side of it. 1.7x, as a MEAN: per 20 kb the
-      // allele runs 0.07-0.42 and the flanks 0.00-0.40, which is exactly why
-      // this is a number on the image rather than a wider window or a second
-      // lane. Both of those were tried and are recorded in `repeatLane`.
+      // All three things it has to say fit in one line: which assembly, what
+      // red means, and whether the density is worth anything. The last is the
+      // part with no other home -- 48 red bars have no baseline beside them, so
+      // a reader cannot judge them. It is `scripts/build_repeat_density.sh`'s
+      // number: 23.70% of the allele's 142 kb against 14.18% and 14.47% in the
+      // CHM13 sequence either side, rounded here and exact in the caption. 1.7x
+      // as a MEAN -- per 20 kb the allele runs 0.07-0.42 and the flanks
+      // 0.00-0.40, which is why it is a number rather than a wider window or a
+      // second lane; both of those were tried and are recorded in `repeatLane`.
       //
       // Anchored to the track at the top of its own band rather than placed by
       // pixel, so it stays on the lane as the lane grows to its row count.
       {
         type: 'text',
-        text: 'red = LINE, nearly all L1: 23.7% of the inserted 142 kb, against 14.2% and 14.5% either side',
+        text: 'T2T-CHM13v2.0 — red = LINE, 23.7% here vs 14% either side',
         fontSize: 18,
-        maxWidth: 420,
+        maxWidth: 460,
         anchor: {
           view: 2,
           track: HS1_RMSK_TRACK.trackId,
