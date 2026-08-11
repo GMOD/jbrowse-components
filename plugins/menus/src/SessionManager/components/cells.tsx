@@ -15,7 +15,16 @@ import type { SessionModel } from './util.ts'
  */
 export interface Row {
   id: string
+  /** the editable value — what a rename writes, never what the cell draws */
   name: string
+  /**
+   * what the name cell draws, which is `name` plus a "(current)" suffix on the
+   * open session. Precomputed so the column that *measures* the names to pick
+   * its width measures the same strings the cells render: measuring `name`
+   * alone left the current row — the one that is always at the top — as the one
+   * row ellipsed.
+   */
+  label: string
   createdAt: Date
   lastUsed: Date
   fav: boolean
@@ -73,18 +82,24 @@ export const NameCell = observer(function NameCell({
   row,
   session,
 }: CellProps) {
-  // the open session is not offered as a link: re-opening it from IndexedDB can
+  // A native `title`, not a MUI Tooltip: the drawer is narrow enough that a
+  // long session name ellipses, and a tooltip here would mean a popper laid
+  // over the row underneath — which is exactly how this column lost its clicks
+  // once already (see the scrollbar note in SessionManager's useStyles).
+  //
+  // The open session is not offered as a link: re-opening it from IndexedDB can
   // only lose work, since that row is up to one autosave tick behind the live
   // model. The File menu leaves it out of the recent list for the same reason.
   return row.current ? (
-    <span>{row.name} (current)</span>
+    <span title={row.label}>{row.label}</span>
   ) : (
     <ActionLink
+      title={row.label}
       onClick={() => {
         void session.activateSession(row.id)
       }}
     >
-      {row.name}
+      {row.label}
     </ActionLink>
   )
 })

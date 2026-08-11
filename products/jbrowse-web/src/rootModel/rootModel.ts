@@ -207,58 +207,72 @@ export default function RootModel({
       },
     }))
 
-    .actions(self => ({
-      /**
-       * #action
-       */
-      setSavedSessionMetadata(sessions: SessionMetadata[]) {
-        self.savedSessionMetadata = sessions
-      },
+    .actions(self => {
+      // Which fetchSessionMetadata call is allowed to publish. The read is
+      // async and several actions trigger one, so two can be in flight at once
+      // — and then whichever `getAll` happens to resolve LAST wins, which is
+      // not necessarily the one that saw the most writes. That reinstates a row
+      // the user just deleted, or un-stars one they just starred, until
+      // something else happens to refresh the list. Only the newest call wins.
+      let latestFetch = 0
+      return {
+        /**
+         * #action
+         */
+        setSavedSessionMetadata(sessions: SessionMetadata[]) {
+          self.savedSessionMetadata = sessions
+        },
 
-      /**
-       * #action
-       * Re-reads the whole `metadata` store. For anything that changes rows this
-       * model didn't just write itself (first load, pruning, favorite, rename,
-       * delete) — the autosave path uses `upsertSessionMetadata` instead.
-       */
-      async fetchSessionMetadata() {
-        if (self.sessionDB) {
-          const ret = await self.sessionDB.getAll('metadata')
-          this.setSavedSessionMetadata(
-            ret
-              .filter(f => f.configPath === (self.configPath ?? ''))
-              .sort((a, b) => +sessionLastUsed(b) - +sessionLastUsed(a)),
-          )
-        }
-      },
-      /**
-       * #action
-       * Merges a row this model has just written into the in-memory list. The
-       * autosave autorun writes exactly one row on every debounced session edit
-       * — every 400ms for as long as you keep panning — and already holds its
-       * contents, so re-reading every session's metadata to learn what it just
-       * stored is the expensive way to move one row to the top.
-       */
-      upsertSessionMetadata(meta: SessionMetadata) {
-        // a row for another config belongs to a different bucket of the list
-        if (meta.configPath === (self.configPath ?? '')) {
-          this.setSavedSessionMetadata(
-            [
-              meta,
-              ...(self.savedSessionMetadata ?? []).filter(
-                m => m.id !== meta.id,
-              ),
-            ].sort((a, b) => +sessionLastUsed(b) - +sessionLastUsed(a)),
-          )
-        }
-      },
-      /**
-       * #action
-       */
-      setSessionDB(sessionDB: SessionDBHandle | undefined) {
-        self.sessionDB = sessionDB
-      },
-    }))
+        /**
+         * #action
+         * Re-reads the whole `metadata` store. For anything that changes rows
+         * this model didn't just write itself (first load, pruning, favorite,
+         * rename, delete) — the autosave path uses `upsertSessionMetadata`
+         * instead.
+         */
+        async fetchSessionMetadata() {
+          if (self.sessionDB) {
+            const token = ++latestFetch
+            const ret = await self.sessionDB.getAll('metadata')
+            if (token !== latestFetch) {
+              return
+            }
+            this.setSavedSessionMetadata(
+              ret
+                .filter(f => f.configPath === (self.configPath ?? ''))
+                .sort((a, b) => +sessionLastUsed(b) - +sessionLastUsed(a)),
+            )
+          }
+        },
+        /**
+         * #action
+         * Merges a row this model has just written into the in-memory list. The
+         * autosave autorun writes exactly one row on every debounced session
+         * edit — every 400ms for as long as you keep panning — and already
+         * holds its contents, so re-reading every session's metadata to learn
+         * what it just stored is the expensive way to move one row to the top.
+         */
+        upsertSessionMetadata(meta: SessionMetadata) {
+          // a row for another config belongs to a different bucket of the list
+          if (meta.configPath === (self.configPath ?? '')) {
+            this.setSavedSessionMetadata(
+              [
+                meta,
+                ...(self.savedSessionMetadata ?? []).filter(
+                  m => m.id !== meta.id,
+                ),
+              ].sort((a, b) => +sessionLastUsed(b) - +sessionLastUsed(a)),
+            )
+          }
+        },
+        /**
+         * #action
+         */
+        setSessionDB(sessionDB: SessionDBHandle | undefined) {
+          self.sessionDB = sessionDB
+        },
+      }
+    })
     .actions(self => ({
       /**
        * #aftercreate

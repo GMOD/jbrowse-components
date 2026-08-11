@@ -2,7 +2,6 @@ import { useState } from 'react'
 
 import { LabeledCheckbox } from '@jbrowse/core/ui'
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
-import { measureGridWidth } from '@jbrowse/core/util'
 import { useLocalStorage } from '@jbrowse/core/util/hooks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, Typography } from '@mui/material'
@@ -17,6 +16,23 @@ import type { Row } from './cells.tsx'
 import type { SessionModel } from './util.ts'
 
 const useStyles = makeStyles()(theme => ({
+  // The widget fills its drawer and the grid takes what is left below the
+  // controls. Not cosmetic: MUI's DataGrid draws its horizontal scrollbar as an
+  // absolutely positioned overlay at the bottom of its own box, so a grid sized
+  // to its content puts that 14px bar *on top of the last row* — and z-index 60
+  // wins the hit test, so the bottom session silently stops responding to
+  // clicks. Given room, the bar lands below every row.
+  root: {
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
+  },
+  grid: {
+    flex: 1,
+    // a flex child defaults to min-height:auto, which refuses to shrink below
+    // its content and would push the grid past the drawer instead of scrolling
+    minHeight: 0,
+  },
   mb: {
     margin: theme.spacing(1),
     marginBottom: theme.spacing(4),
@@ -34,25 +50,43 @@ function buildRows(
   showOnlyFavs: boolean,
 ): Row[] | undefined {
   return session.savedSessionMetadata
-    ?.map(r => ({
-      id: r.id,
-      name: r.name,
-      createdAt: r.createdAt,
-      lastUsed: sessionLastUsed(r),
-      fav: r.favorite,
-      current: r.id === session.id,
-    }))
+    ?.map(r => {
+      const current = r.id === session.id
+      return {
+        id: r.id,
+        name: r.name,
+        label: current ? `${r.name} (current)` : r.name,
+        createdAt: r.createdAt,
+        lastUsed: sessionLastUsed(r),
+        fav: r.favorite,
+        current,
+      }
+    })
     .filter(f => !showOnlyFavs || f.fav)
 }
 
-// One entry per column, each deferring to a named cell in cells.tsx so this
-// reads as the shape of the table rather than as four inline components.
-function buildColumns(session: SessionModel, rows: Row[] | undefined) {
+/**
+ * One entry per column, each deferring to a named cell in cells.tsx so this
+ * reads as the shape of the table rather than as four inline components.
+ *
+ * Name takes the leftover width (`flex`) rather than a width measured from the
+ * session names, and the three fixed columns are kept narrow enough that their
+ * sum plus Name's minWidth fits a default-width drawer. `measureGridWidth`
+ * hands back a *fixed* width — up to 1000px for a long session name — and any
+ * total past the panel width grows the horizontal scrollbar this widget's
+ * styles exist to keep off the rows (see useStyles).
+ */
+function buildColumns(session: SessionModel) {
   return [
     {
       field: 'fav',
       headerName: 'Fav',
+      // the header of an icon column is short, and its sort arrow and column
+      // menu are what push it into an ellipsis. Only sorting earns its space
+      // here -- grouping the favorites is a real thing to want -- so the menu
+      // goes and the header reads.
       width: 60,
+      disableColumnMenu: true,
       renderCell: ({ row }: { row: Row }) => (
         <FavoriteCell row={row} session={session} />
       ),
@@ -61,7 +95,8 @@ function buildColumns(session: SessionModel, rows: Row[] | undefined) {
       field: 'name',
       headerName: 'Name',
       editable: true,
-      width: measureGridWidth((rows ?? []).map(r => r.name)),
+      flex: 1,
+      minWidth: 120,
       renderCell: ({ row }: { row: Row }) => (
         <NameCell row={row} session={session} />
       ),
@@ -69,6 +104,7 @@ function buildColumns(session: SessionModel, rows: Row[] | undefined) {
     {
       field: 'lastUsed',
       headerName: 'Last used',
+      width: 100,
       renderCell: ({ row }: { row: Row }) => (
         <LastUsedCell row={row} session={session} />
       ),
@@ -76,9 +112,12 @@ function buildColumns(session: SessionModel, rows: Row[] | undefined) {
     {
       field: 'delete',
       headerName: 'Delete',
-      width: 70,
+      // nothing to sort or filter on a column of buttons, and dropping both
+      // gives the header room to say "Delete" instead of "Del..."
+      width: 66,
       sortable: false,
       filterable: false,
+      disableColumnMenu: true,
       renderCell: ({ row }: { row: Row }) => (
         <DeleteCell row={row} session={session} />
       ),
@@ -100,7 +139,7 @@ const SessionManager = observer(function SessionManager({
   const rows = buildRows(session, showOnlyFavs)
 
   return (
-    <div>
+    <div className={classes.root}>
       <div className={classes.mb}>
         <LabeledCheckbox
           checked={showOnlyFavs}
@@ -120,7 +159,7 @@ const SessionManager = observer(function SessionManager({
         </Button>
       </div>
       {rows ? (
-        <DataGridFlexContainer>
+        <DataGridFlexContainer className={classes.grid}>
           <DataGrid
             disableRowSelectionOnClick
             columnHeaderHeight={35}
@@ -129,7 +168,7 @@ const SessionManager = observer(function SessionManager({
             showToolbar
             slotProps={{ toolbar: { showQuickFilter: true } }}
             rows={rows}
-            columns={buildColumns(session, rows)}
+            columns={buildColumns(session)}
             processRowUpdate={(newRow: Row, oldRow: Row) => {
               if (newRow.name !== oldRow.name) {
                 void session.renameSavedSession(newRow.id, newRow.name)
