@@ -965,8 +965,9 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     // two gene tracks going compact, + 300 for the hg38 read lane and + 59 for
     // the der3 lane unchaining into its own rows, then -350 for the compact
     // pass (read lanes at the Compact pitch, both gene lanes and the ribbon
-    // band down)
-    viewportHeight: 1100,
+    // band down), then -179 for the super-compact pass, which is what the run
+    // reported blank below the content once both read lanes went to a 1px pitch
+    viewportHeight: 921,
     viewportWidth: 1600,
     url: sessionSpec(CONFIG, {
       sessionTracks: [DER3_GENES_TRACK],
@@ -1052,10 +1053,21 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   // curve colored by connection type, which is the thing that
                   // makes a molecule's path across the three windows followable.
                   showBezierConnections: true,
-                  heightMode: 'fit',
+                  // SUPER-COMPACT (reviewer: "please show reads as
+                  // supercompact"), which is the 1px COMPACTNESS_PRESETS entry,
+                  // gap 0. `heightMode` goes from 'fit' to 'grow' to make it
+                  // take effect at all: while fitting, `featureHeight` is
+                  // DERIVED from the lane height over the row count and the
+                  // configured value is ignored, so a spec asking for 1px in
+                  // fit mode silently gets whatever the fit lands on. Grow does
+                  // the opposite -- the pitch is what the spec says and the
+                  // lane sizes itself to the rows -- which also means nothing
+                  // scrolls out of sight inside the lane, the one failure the
+                  // run's own size checks cannot see.
+                  heightMode: 'grow',
                   height: 200,
                   coverageHeight: 40,
-                  featureHeight: 3,
+                  featureHeight: 1,
                   colorBy: { type: 'strand' },
                 },
               ],
@@ -1136,13 +1148,15 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 {
                   trackId: 'reads_vs_der3',
                   coverageHeight: 40,
-                  // 53 non-secondary records pack into ~41 rows (a few of the
-                  // short ones share), now at the Compact pitch of 3
-                  // (featureHeight 3 derives a 0 gap, featureSpacingForHeight),
-                  // + the band. Measured off the capture rather than off the
-                  // record count, which over-reserved the last version by 70 px.
+                  // super-compact, same reviewer note as the lane above. 53
+                  // non-secondary records pack into ~41 rows (a few of the
+                  // short ones share); at a 1px pitch that is 41px of reads
+                  // under the band, where the Compact pitch of 3 took 130.
+                  // `grow` sizes the lane to them rather than the spec guessing
+                  // a height that could scroll rows out of sight.
+                  heightMode: 'grow',
                   height: 170,
-                  featureHeight: 3,
+                  featureHeight: 1,
                   colorBy: { type: 'strand' },
                   filterBy: { flagInclude: 0, flagExclude: 1796 },
                 },
@@ -1211,8 +1225,9 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     name: 'cancer_sv/derivative_inserts',
     // as before, less the 160 px the read lane gives back once the secondary
     // alignments are filtered and the split segments chain (46 rows -> 28),
-    // plus the hg38 read lane, then -270 for the compact pass
-    viewportHeight: 1115,
+    // plus the hg38 read lane, then -270 for the compact pass, then -214 for
+    // the super-compact one (the run's own blank-below-content figure)
+    viewportHeight: 901,
     viewportWidth: 1600,
     url: sessionSpec(CONFIG, {
       sessionTracks: [DER3_GENES_TRACK],
@@ -1267,10 +1282,14 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   // stops at the junction, and the curve is what carries the eye
                   // to where the same molecule picks up again.
                   showBezierConnections: true,
-                  heightMode: 'fit',
+                  // super-compact, same reviewer note and same 'fit' -> 'grow'
+                  // reason as the sibling lane on derivative_synteny: a
+                  // configured featureHeight is ignored while fitting, so 1px
+                  // only takes effect once the lane stops deriving its pitch.
+                  heightMode: 'grow',
                   height: 170,
                   coverageHeight: 40,
-                  featureHeight: 3,
+                  featureHeight: 1,
                   colorBy: { type: 'strand' },
                 },
               ],
@@ -1339,15 +1358,19 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 // sized for, counted every record including the secondaries.)
                 {
                   trackId: 'reads_vs_der3',
-                  // 28 chain rows at a pitch of 7 ("as compact as possible",
-                  // reviewer). NOT the Compact preset's 3: this capture is
-                  // 3200 px wide and the page draws it about a third of that,
-                  // so a 3 px row lands at 1 px and 28 of them are hash again
-                  // -- the exact failure featureHeight 8 was set to fix. 6 is
-                  // 2 px published, which is the floor a bar survives at.
+                  // SUPER-COMPACT, 28 chain rows at a pitch of 1 (reviewer:
+                  // "please show reads as supercompact"). This lane had argued
+                  // its way UP to 6 twice, on the ground that the capture is
+                  // 3200px wide and the page draws it about a third of that, so
+                  // a 1px row publishes at a third of a pixel and the lane is
+                  // hash rather than 28 readable bars. That reasoning is on the
+                  // record and was overridden knowing it; the lane is now 28px
+                  // where it was 175, and what it shows is the shape of the
+                  // stack rather than any individual read.
+                  heightMode: 'grow',
                   height: 175,
                   showCoverage: false,
-                  featureHeight: 6,
+                  featureHeight: 1,
                   linkedReads: 'normal',
                   filterBy: { flagInclude: 0, flagExclude: 1796 },
                 },
@@ -1387,12 +1410,19 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         type: 'text',
         text: 'the derivative allele',
         fontSize: 19,
+        // ON THE GENE LANE, not on the reads. It used to sit at fracY 0.88 of
+        // `reads_vs_der3`, which was a comfortable margin while that lane was
+        // 175px and became a pill taller than the lane once the reads went
+        // super-compact -- a label lying across the data it names. The lane
+        // above it is the bottom panel's own gene track, so anchoring to its
+        // foot puts the pill immediately over the reads without covering them,
+        // and it still labels the panel rather than any one track.
         anchor: {
           view: [0, 1],
-          track: 'reads_vs_der3',
+          track: 'der3_genes',
           alignX: 'left',
           dx: 10,
-          fracY: 0.88,
+          fracY: 0.95,
         },
       },
     ],
