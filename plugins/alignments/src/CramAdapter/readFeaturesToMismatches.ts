@@ -1,4 +1,5 @@
 import {
+  RF_BASE_QUAL,
   RF_DELETION,
   RF_HARD_CLIP,
   RF_INSERTION,
@@ -37,6 +38,19 @@ const NO_BASES = ''
 // not as `record.qualityScores` — that getter builds a fresh ~104-byte subarray
 // view on every access, and this is called once per read per render pass. It is
 // the same pair cram-js's own forEachMismatch takes, for the same reason.
+//
+// @gmod/cram has this same walk as `CramRecord.forEachMismatch`, and delegating
+// to it was tried: it is correct (identical emissions, 3,140,520 of them, on
+// 628 ONT reads) but **17% slower**, because the vocabularies differ — cram-js
+// reports the CRAM feature code and absolute positions, jbrowse's callback
+// wants a `*_TYPE` constant and read-relative ones, so delegating puts a
+// translating callback between the walk and this one's consumer. Measured one
+// variant per process, fastest of 9: 266ms against 312ms on 200x.longread, and
+// 13.2ms against 18.4ms on 200x.shortread. Consolidating the translation into
+// lookup tables and a single call site made no difference — the cost is the
+// indirect call per emission, which is the same thing @gmod/cram's ADR 0006
+// measured for forEachCigarOp. This is the plotting path, so the duplication
+// stays and is kept honest against cram-js's copy instead.
 export function readFeaturesToMismatches(
   arena: ReadFeatureArena | undefined,
   featureStart: number,
@@ -143,6 +157,28 @@ export function readFeaturesToMismatches(
           insertionPos = rPos
           insertedBases += arena.payloadStringAt(i)
           insertedBasesLen += n
+        } else if (code === RF_BASE_QUAL) {
+          // 'B' stores one read base verbatim with its own quality score
+          // instead of through the substitution matrix 'X' uses. It aligns as a
+          // match, so it is a difference only when the base it carries is not
+          // the reference base — and with no reference applied there is nothing
+          // to compare against, so a refCode of 0 reports nothing rather than
+          // guessing. `num` is B's own quality, which is the one the file
+          // preserved for this base. Matches cram-js's forEachMismatch, which
+          // is where this branch came from; this walk used to drop B entirely.
+          const refCharCode = refCodes[i]! & ~0x20
+          const base = arena.payloadByteAt(i) & ~0x20
+          if (inWindow && refCharCode !== 0 && base !== refCharCode) {
+            callback(
+              MISMATCH_TYPE,
+              rPos,
+              1,
+              String.fromCharCode(base),
+              n,
+              refCharCode,
+              0,
+            )
+          }
         }
       }
     }

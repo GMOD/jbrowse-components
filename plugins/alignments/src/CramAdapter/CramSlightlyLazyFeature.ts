@@ -67,6 +67,11 @@ export default class CramSlightlyLazyFeature implements MismatchFeature {
     return this.record.templateLength ?? this.record.templateSize
   }
 
+  // `mate` was an object per paired record through @gmod/cram 11; from 12 the
+  // position is two numbers on the record, under SAM's names for those fields.
+  // hasNextPosition() is the test, not truthiness: nextSequenceId is -2 when
+  // the file gave no position, which is deliberately distinct from -1, a next
+  // segment that has a position but is unplaced.
   get next_ref() {
     return this.record.hasNextPosition()
       ? this.adapter.refIdToName(this.record.nextSequenceId)
