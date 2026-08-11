@@ -25,6 +25,7 @@ import {
   nameGroup,
   queryKey,
   readUrl,
+  searchText,
   writeUrl,
 } from './filters.ts'
 
@@ -65,6 +66,31 @@ function CountPill({
       <Count n={n} /> {label}
     </span>
   )
+}
+
+// What no cards means. `dataEpoch` is 0 until /api/specs lands, and the fetch
+// takes as long as hashing the figure corpus — long enough that "nothing to
+// review" would otherwise be the page's answer for the first second of every
+// load, which is the one wrong answer that reads as good news.
+const NOTHING: Record<Status, string> = {
+  needs: 'Nothing needs review',
+  good: 'Nothing is approved',
+  answered: 'Nothing is awaiting your call',
+  bad: 'Nothing is denied',
+  all: 'There are no figures',
+}
+
+function emptyText(dataEpoch: number, f: Filters) {
+  if (!dataEpoch) {
+    return 'Loading the screenshot list…'
+  }
+  const narrowed =
+    !!searchText(f) ||
+    !!f.group ||
+    f.kind !== 'all' ||
+    f.changedOnly ||
+    f.runOnly
+  return `${NOTHING[f.status]}${narrowed ? ' under these filters' : ''}.`
 }
 
 const TABS: { status: Status; label: string }[] = [
@@ -435,6 +461,13 @@ export function App() {
             {matching.length} card{matching.length === 1 ? '' : 's'} match these
             filters — load them
           </button>
+        ) : null}
+        {/* …and an empty list under filters that select NOTHING has to say so
+            out loud. Bare, `main` renders as blank page, which is what a review
+            server that failed to start, a bad bookmark and a finished sweep all
+            look like — and only one of those is worth celebrating. */}
+        {!loadError && !queue.length && !matching.length ? (
+          <div className="empty">{emptyText(dataEpoch, filters)}</div>
         ) : null}
       </main>
     </>

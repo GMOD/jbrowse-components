@@ -609,6 +609,22 @@ main {
   gap: 6px;
   flex-wrap: wrap;
 }
+/* The two flags a verdict can clear — "answered" and "changed since review" —
+   on a line whose height is RESERVED, the same rule as `.unsaved` further down
+   and for the same reason: they used to sit among the name's pills, where
+   losing one could unwrap the h2 and take a whole line off everything below it,
+   buttons included, in the middle of the press that caused it. The row exists
+   only on cards that have carried a flag (Card.tsx latches it), so the rest pay
+   nothing. One line is reserved: the two pills share it at any width the cards
+   are readable at. */
+.flags {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  line-height: 1.6;
+  min-height: 1.6em;
+}
 .usages {
   font-size: 13px;
   display: flex;
@@ -766,6 +782,12 @@ button:disabled {
   color: #b45309;
   line-height: 1.5;
   min-height: 1.5em;
+}
+/* No cards, said out loud. See App.tsx for why a blank main is not good enough. */
+.empty {
+  color: GrayText;
+  font-size: 14px;
+  align-self: flex-start;
 }
 .loaderror {
   color: #b91c1c;
