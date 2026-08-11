@@ -71,6 +71,7 @@ noticing in a diff.
 | type 'FillVsOut' is outside the supported scalar subset | 2 | `fillFs`, `strokeFs` |
 | //! js-export: 'bpToClipX' reaches hpClipX(), which is outside the supported scalar subset | 1 | `bpToClipX` |
 | //! js-export: 'bpToLinear' reaches hpLinear(), which is outside the supported scalar subset | 1 | `bpToLinear` |
+| call to 'asin' at line N is neither a supported builtin nor a function in this module | 1 | `legSweepAngle` |
 | call to 'length' at line N is neither a supported builtin nor a function in this module | 1 | `glyphEdgeAlpha` |
 | type 'ColorVsOut' is outside the supported scalar subset | 1 | `discardVertex` |
 | type 'Curve' is outside the supported scalar subset | 1 | `evalArcVertex` |
