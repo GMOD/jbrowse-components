@@ -6,7 +6,7 @@ import { generateFastaIndex } from '@gmod/faidx'
 import { app, dialog } from 'electron'
 
 import { getFileStream } from '../fileStream.ts'
-import { SESSION_EXTENSION, getFaiPath } from '../paths.ts'
+import { SESSION_EXTENSION, getFaiPath, hasSessionExtension } from '../paths.ts'
 import { ipcHandle } from './channels.ts'
 
 import type { AppPaths } from '../paths.ts'
@@ -80,7 +80,9 @@ export function registerFileHandlers(paths: AppPaths) {
       filters: FILE_FILTERS,
     })
 
-    if (choice.filePath && !choice.filePath.endsWith(SESSION_EXTENSION)) {
+    // asked case-insensitively, so a user who typed "MySession.JBROWSE" gets
+    // that file rather than "MySession.JBROWSE.jbrowse"
+    if (choice.filePath && !hasSessionExtension(choice.filePath)) {
       choice.filePath = `${choice.filePath}${SESSION_EXTENSION}`
     }
     return choice.filePath

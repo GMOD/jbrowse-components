@@ -3,7 +3,7 @@ import path from 'node:path'
 
 import { app } from 'electron'
 
-import { SESSION_EXTENSION } from './launchTarget.ts'
+import { SESSION_EXTENSION, hasSessionExtension } from './launchTarget.ts'
 
 /**
  * Path management utilities
@@ -39,9 +39,9 @@ export function initializePaths(): AppPaths {
 }
 
 // Defined in launchTarget.ts, which the packaging scripts can import and this
-// module (which needs `electron`) cannot. Re-exported so its existing callers
+// module (which needs `electron`) cannot. Re-exported so their existing callers
 // keep one import site.
-export { SESSION_EXTENSION }
+export { SESSION_EXTENSION, hasSessionExtension }
 
 /**
  * Whether a path is one of the session files JBrowse manages for itself. Those
@@ -52,7 +52,7 @@ export { SESSION_EXTENSION }
  * must never write back over. See the `loadSession` handler.
  */
 export function isSessionFile(paths: AppPaths, filePath: string) {
-  return filePath.endsWith(SESSION_EXTENSION) || isAutosave(paths, filePath)
+  return hasSessionExtension(filePath) || isAutosave(paths, filePath)
 }
 
 /**

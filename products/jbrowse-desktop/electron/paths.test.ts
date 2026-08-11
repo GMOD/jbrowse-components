@@ -143,4 +143,12 @@ describe('isSessionFile', () => {
   test('a config.json the user brought', () => {
     expect(isSessionFile(paths, '/home/u/data/config.json')).toBe(false)
   })
+
+  // Windows and macOS both match an extension without regard to case, so a
+  // session can reach loadSession spelled this way — and reading it as "not a
+  // session" is the expensive answer: loadSession mints a fresh autosave path
+  // and the session forks away from the file the user opened.
+  test('a saved session whose extension is cased differently', () => {
+    expect(isSessionFile(paths, '/home/u/Documents/Mine.JBROWSE')).toBe(true)
+  })
 })

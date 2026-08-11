@@ -110,6 +110,23 @@ test('recognizes the jbrowse:// scheme case-insensitively', () => {
   ).toEqual({ type: 'link', url: webUrl })
 })
 
+// The Windows installer points `.jbrowse` at us through a registry association,
+// and Windows matches an extension without regard to case — so Explorer runs
+// `jbrowse-desktop.exe "C:\...\Session.JBROWSE"` for a file that a case-
+// sensitive endsWith reads as no file argument at all. That failure is silent:
+// the app comes up on the start screen as if nothing had been double-clicked.
+test('matches a launch file extension case-insensitively', () => {
+  expect(
+    findLaunchTarget(
+      ['jbrowse-desktop', String.raw`C:\me\Session.JBROWSE`],
+      'C:\\',
+    ),
+  ).toMatchObject({ type: 'file' })
+  expect(
+    findLaunchTarget(['jbrowse-desktop', '/tmp/Config.JSON'], '/home/me'),
+  ).toEqual({ type: 'file', path: '/tmp/Config.JSON' })
+})
+
 test('ignores flags and the argv[0] binary path', () => {
   expect(
     findLaunchTarget(

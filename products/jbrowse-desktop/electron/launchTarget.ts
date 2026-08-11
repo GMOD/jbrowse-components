@@ -25,6 +25,23 @@ export const JBROWSE_PROTOCOL = 'jbrowse'
  */
 export const SESSION_EXTENSION = '.jbrowse'
 
+/**
+ * Whether a path carries {@link SESSION_EXTENSION}, and so is a file JBrowse
+ * wrote as a session.
+ *
+ * Case-insensitively, which is the whole reason this is a function. Windows
+ * matches a file extension without regard to case, and so does the registry
+ * association the installer writes, so Explorer will hand us `Session.JBROWSE`
+ * for a file a plain `endsWith` rejects; macOS's default filesystem is
+ * case-insensitive too. An extension states what a file *is* rather than
+ * forming part of its identity, so this folds on every platform — unlike
+ * `isAutosave`, which compares two paths for identity and folds only where the
+ * filesystem does.
+ */
+export function hasSessionExtension(filePath: string) {
+  return filePath.toLowerCase().endsWith(SESSION_EXTENSION)
+}
+
 // A launch argument may be a saved session (.jbrowse) or a hand-written /
 // CLI-generated config (config.json); both are JSON snapshots loaded the same
 // way, and the start screen's "Open config.json or .jbrowse file" accepts the
@@ -34,6 +51,16 @@ export const SESSION_EXTENSION = '.jbrowse'
 // machine's most common config format, and claiming it would make JBrowse the
 // default application for all of them.
 const LAUNCH_FILE_EXTENSIONS = [SESSION_EXTENSION, '.json']
+
+// Folded like hasSessionExtension above, and for the sharper version of the
+// same reason: this predicate is what the Windows file association runs into.
+// Explorer launches us for `Session.JBROWSE` because the association is
+// case-insensitive, and an argument this misses is not an error — it is
+// `undefined`, i.e. the start screen with nothing on it and no explanation.
+function hasLaunchExtension(arg: string) {
+  const lower = arg.toLowerCase()
+  return LAUNCH_FILE_EXTENSIONS.some(ext => lower.endsWith(ext))
+}
 
 // Only ever wrap a web link. A jbrowse:// url arrives from anywhere that can
 // make the OS open a link (any web page), so the wrapped url is restricted to
@@ -125,8 +152,6 @@ export function findLaunchTarget(
     const url = protocolArgs.map(parseProtocolUrl).find(Boolean)
     return url ? { type: 'link', url } : undefined
   }
-  const file = args.find(a =>
-    LAUNCH_FILE_EXTENSIONS.some(ext => a.endsWith(ext)),
-  )
+  const file = args.find(a => hasLaunchExtension(a))
   return file ? { type: 'file', path: path.resolve(cwd, file) } : undefined
 }
