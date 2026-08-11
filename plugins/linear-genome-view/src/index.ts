@@ -223,6 +223,11 @@ export { default as ConnectedHoverHighlight } from './LinearGenomeView/component
 export { default as HoverPositionHighlight } from './LinearGenomeView/components/HoverPositionHighlight.tsx'
 export { TrackOverlayContext } from './LinearGenomeView/TrackOverlayContext.ts'
 export { TrackOverlayPortal } from './LinearGenomeView/TrackOverlayPortal.tsx'
+// The host-side half of the portal: the display's box, the overlay node beside
+// it and the paint order between them. `TrackContainer` mounts it, and so does
+// an embedder mounting `RenderingComponent` directly — who otherwise supplies no
+// node at all and gets display chrome buried under their own region masks.
+export { TrackOverlaySlot } from './LinearGenomeView/TrackOverlaySlot.tsx'
 export { FloatingSvgOverlay } from './LinearGenomeView/FloatingSvgOverlay.tsx'
 export type { HoverHighlightPosition } from './LinearGenomeView/components/HoverPositionHighlight.tsx'
 export { SvgChrome, SvgClipRect } from '@jbrowse/core/svg/SvgExport'

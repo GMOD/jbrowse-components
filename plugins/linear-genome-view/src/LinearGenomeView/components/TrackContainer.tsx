@@ -1,12 +1,10 @@
-import { useState } from 'react'
-
 import { ErrorBanner, ResizeHandle } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { TrackOverlayContext } from '../TrackOverlayContext.ts'
+import { TrackOverlaySlot } from '../TrackOverlaySlot.tsx'
 import Gridlines from './Gridlines.tsx'
 import PaddingBlocks from './PaddingBlocks.tsx'
 import TrackLabel from './TrackLabel.tsx'
@@ -62,33 +60,6 @@ const useStyles = makeStyles()({
   trackLabelOverlap: {
     position: 'absolute',
   },
-  // Wraps the rendering container so the overlay node below can be the display's
-  // own box rather than the Paper's. Anchored on the Paper, a portaled `top:0`
-  // overlay sat a track label's height above the canvas it was meant to be drawn
-  // on — which is every display with a tree sidebar, since they all set
-  // `prefersOffset` — and a `bottom:0` one only lined up via a hardcoded
-  // resize-handle subtraction. Position only: no z-index, so the overlay's own
-  // still competes in the Paper's stacking context against PaddingBlocks.
-  trackContent: {
-    position: 'relative',
-  },
-  // Portal target for display-provided floating chrome (the multi-wiggle legend,
-  // the tree sidebar's painted half and its row labels, the bottom-right status
-  // chips). zIndex 100 paints it above the inter-region masks and below
-  // TrackLabel (200); pointer-events pass through to the canvas.
-  //
-  // Its box is the *display's*, so chrome portaled here keeps the coordinates it
-  // would have had inline: same origin, same height, and — via the inline `left`
-  // — the same outline offset the rendering container takes, so an opaque
-  // overlay covers the canvas edge-to-edge instead of leaving a sliver.
-  trackOverlay: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    width: '100%',
-    pointerEvents: 'none',
-    zIndex: 100,
-  },
 })
 
 type LGV = LinearGenomeViewModel
@@ -112,9 +83,6 @@ const TrackContainer = observer(function TrackContainer({
   // the data. One binding rather than three copies of the ternary, because the
   // three agreeing is the whole point.
   const outlineOffset = showTrackOutlines ? 1 : 0
-  // element state (not a ref) so consumers re-render once the portal target
-  // mounts and the context value flips from null to the node
-  const [overlayEl, setOverlayEl] = useState<HTMLDivElement | null>(null)
   const trackLabelStyle =
     model.effectiveTrackLabels !== 'overlapping' || display.prefersOffset
       ? classes.trackLabelOffset
@@ -133,31 +101,36 @@ const TrackContainer = observer(function TrackContainer({
       {model.effectiveTrackLabels !== 'hidden' ? (
         <TrackLabel track={track} className={trackLabelStyle} />
       ) : null}
-      <div className={classes.trackContent}>
+      {/* The slot is the display's box plus the overlay node beside it, and the
+          same component an embedder mounting `RenderingComponent` directly uses
+          — one implementation of the paint order rather than two.
+
+          Anchored on the display rather than on the Paper: a portaled `top:0`
+          overlay anchored on the Paper sat a track label's height above the
+          canvas it was meant to be drawn on (every display with a tree sidebar,
+          since they all set `prefersOffset`), and a `bottom:0` one only lined up
+          via a hardcoded resize-handle subtraction.
+
+          zIndex 100 paints it above `PaddingBlocks` below and under `TrackLabel`
+          (200). The negative `left` cancels the Paper's border, the same shift
+          the rendering container takes, so an opaque overlay covers the canvas
+          edge-to-edge instead of leaving a sliver.
+
+          The node takes no pointer events, so the only descendants that can ever
+          be an event target are the ones that deliberately took them back —
+          which by construction is the interactive chrome (legends, status
+          banners, panels), all of which wants the same thing from an ancestor
+          gesture: leave my press alone. `TrackOverlaySlot` marks the node
+          `data-gesture-owner` once for the whole layer, so a new panel gets it
+          by following the `pointer-events:auto` instruction in
+          `TrackOverlayPortal` rather than by also knowing about `useSideScroll`.
+          Chrome that lives inline (LDColorLegend) or runs its own drag
+          (ResizeHandle, VerticalScrollbar) still carries its own marker. */}
+      <TrackOverlaySlot zIndex={100} overlayStyle={{ left: -outlineOffset }}>
         <ErrorBoundary FallbackComponent={e => <ErrorBanner error={e.error} />}>
-          <TrackOverlayContext value={overlayEl}>
-            <TrackRenderingContainer model={model} track={track} />
-          </TrackOverlayContext>
+          <TrackRenderingContainer model={model} track={track} />
         </ErrorBoundary>
-        {/* the display's own box, outside its `contain:strict` sandbox — see
-            TrackOverlayContext */}
-        <div
-          ref={setOverlayEl}
-          className={classes.trackOverlay}
-          style={{ left: -outlineOffset }}
-          // The node is pointer-events:none, so the only descendants that can
-          // ever be an event target are the ones that deliberately took events
-          // back — which by construction is the interactive chrome (legends,
-          // status banners, panels). All of it wants the same thing from an
-          // ancestor gesture: leave my press alone. Marking the target once
-          // says that for the whole layer, so a new panel gets it by following
-          // the `pointer-events:auto` instruction in TrackOverlayPortal rather
-          // than by also knowing about `useSideScroll`. Chrome that lives
-          // inline (LDColorLegend) or that runs its own drag (ResizeHandle,
-          // VerticalScrollbar) still carries its own marker.
-          data-gesture-owner="true"
-        />
-      </div>
+      </TrackOverlaySlot>
       {/* so the separator masks the track content at the same x the data is
           drawn. Painted over by the overlay node above, which is what lifts
           display chrome clear of it. */}

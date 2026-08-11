@@ -13,15 +13,15 @@
   },
   "loading-and-errors": {
     "chunks": 286,
-    "gzipKb": 555
+    "gzipKb": 554
   },
   "multiple-tracks": {
     "chunks": 242,
-    "gzipKb": 502
+    "gzipKb": 501
   },
   "removing-material-ui": {
     "chunks": 286,
-    "gzipKb": 555
+    "gzipKb": 554
   },
   "scalebar-and-labels": {
     "chunks": 289,
@@ -29,19 +29,19 @@
   },
   "search-by-name": {
     "chunks": 287,
-    "gzipKb": 557
+    "gzipKb": 556
   },
   "synteny": {
     "chunks": 327,
     "gzipKb": 663
   },
   "track-settings": {
-    "chunks": 286,
+    "chunks": 287,
     "gzipKb": 554
   },
   "ultraminimal": {
     "chunks": 243,
-    "gzipKb": 503
+    "gzipKb": 502
   },
   "web-workers": {
     "chunks": 286,

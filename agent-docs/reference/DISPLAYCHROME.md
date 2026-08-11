@@ -756,6 +756,28 @@ The build-your-own site's overlays page now writes a set this way, in the page's
 own source — until 2026-08 that page (then called "Bring your own overlays",
 now "Removing Material UI") only ever swapped in JBrowse's *other* set.
 
+**The overlay node is published too, and is the host's half of the portal.**
+Floating chrome a display draws — `FloatingLegend` (canvas, alignments,
+variants, multi-wiggle), `HicOverlayPanel`, maf's row labels — escapes its
+`contain: strict` sandbox through `TrackOverlayPortal`, into a node the *host*
+supplies via `TrackOverlayContext`. An embedder mounting `RenderingComponent`
+directly supplied none, so the context was null, the portal fell back to
+rendering inline, and inline is under whatever the host paints over its column;
+`products/jbrowse-build-your-own` draws `paddingSpans` at `zIndex: 2` on five
+pages, which is exactly that. Nothing throws, and it only shows at a zoom where
+the masks are wide.
+
+`TrackOverlaySlot` (LGV barrel) is the node, the context and the paint order in
+one place, and `TrackContainer` mounts it too — one implementation rather than
+JBrowse's and a copy. **`zIndex` is required with no default**, because it
+answers "above what?", which is a fact about the caller's layout: the container
+passes 100 (above `PaddingBlocks`, below `TrackLabel` at 200), the BYO site's
+`track-settings` page passes 3 because its seams are at 2. A default would be
+right once and silently wrong everywhere else, and silence is the whole failure
+mode here. `TrackOverlaySlot.test.tsx` pins the escape, the pointer-events, the
+gesture marker and the inline fallback; the BYO smoke check drives a real
+legend over real seams and asserts it left the sandbox.
+
 **Gestures are published too, and are not a seam.** An embedder drawing their
 own chrome still has to get a wheel and a drag into `zoomTo`/`horizontalScroll`,
 and that has no interesting variants — so it is

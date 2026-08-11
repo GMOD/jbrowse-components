@@ -7,7 +7,10 @@ import {
 import { useWidthSetter } from '@jbrowse/core/util/hooks'
 import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
 import { pickColorOptions } from '@jbrowse/plugin-alignments'
-import { DisplayUIProvider } from '@jbrowse/plugin-linear-genome-view'
+import {
+  DisplayUIProvider,
+  TrackOverlaySlot,
+} from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-linear-genome-view2'
 import { observer } from 'mobx-react'
 
@@ -28,11 +31,15 @@ import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
 // **Show legend** on a scheme that has a key and one shows up in the corner,
 // drawn by JBrowse rather than by this file: a display draws its own floating
 // chrome, and unlike the loading and error states there is no provider to swap
-// it for yours. What there is instead is in `TrackRow` below, and it is the
-// reason this page draws no region seams.
+// it for yours. Two conditions, not one -- the legend is opt-in, and a scheme
+// has to have a key to show. `LegendToggle` is the first, and is a setting like
+// the others.
 //
-// Two conditions, not one -- the legend is opt-in, and a scheme has to have a
-// key to show. `LegendToggle` is the first, and is a setting like the others.
+// That chrome is drawn inside the display's own stacking context, so it cannot
+// paint above the region seams this page draws over the stack -- there are two
+// regions below, so there is a seam to be buried under. `TrackOverlaySlot` in
+// `TrackRowWithOverlay` is what lifts it clear, and it is the same component
+// JBrowse's own track container mounts.
 //
 // Self-contained, like every page here: nothing below is imported from the rest
 // of this site, so you can copy the file and run it.
@@ -88,9 +95,11 @@ function makeView() {
   const { view } = state.session
   view.setInit({
     assembly: volvox.name,
-    // close enough in that reads are individually visible: a colour scheme you
-    // cannot see one read of is not a demo of a colour scheme
-    loc: 'ctgA:1..8,000',
+    // Close enough in that reads are individually visible -- a colour scheme
+    // you cannot see one read of is not a demo of a colour scheme -- and two
+    // regions rather than one, so there is a seam for the legend to have to
+    // paint above. Both on ctgA, which is where this BAM's reads are.
+    loc: 'ctgA:1..8,000 ctgA:12,000..20,000',
     tracks: [alignmentsTrack.trackId],
   })
   // see the Pan and zoom example: scroll-to-zoom is a session preference, and the
@@ -127,25 +136,38 @@ const ViewStatus = observer(function ViewStatus({
   )
 })
 
-// Unchanged from every other page, and the legend lands inside it -- which is
-// the thing to know before you copy this page's layout somewhere with more
-// chrome in it.
-//
-// `contain: strict` is what stops a display painting over its neighbours, and
-// it also seals the display's React tree into its own stacking context. So
-// floating chrome the display draws (this legend; hi-c's overlay panel) cannot
-// out-z-index anything you paint over the stack from outside. JBrowse's own
-// track container hands each display an overlay node mounted above its region
-// masks for exactly that, through `TrackOverlayContext`; a host mounting
-// `RenderingComponent` directly supplies none, and the chrome falls back to
-// rendering in place.
-//
-// Which is fine here, and is why this page draws no seams: one region, nothing
-// painted over the tracks, nothing to be buried under. On a page that does draw
-// them -- see A location box, zoom buttons and a track list -- a legend would
-// end up under the seams. agent-docs/TODO.md carries the work to give a host a
-// usable way to supply that node.
-const TrackRow = observer(function TrackRow({
+/**
+ * `TrackRow` from every other page, plus the one thing a track with **floating
+ * chrome over region seams** needs. Named differently because it does more, not
+ * because the other pages are wrong: a page whose displays draw no floating
+ * chrome, or that paints nothing over its tracks, wants the shorter one.
+ *
+ * The problem is a stacking context. `contain: strict` is what stops a display
+ * painting over its neighbours, and it seals the display's React tree into its
+ * own stacking context as a side effect -- so the legend below, which the
+ * display draws, cannot out-z-index the seams this page draws over the stack at
+ * `zIndex: 2`. Nothing errors. The legend is simply under a grey bar, and at
+ * whole-genome zoom, where most spans are elided, under a grey wall.
+ *
+ * `TrackOverlaySlot` is the fix and it is the same component JBrowse's own
+ * track container mounts: the display's box, plus an overlay node *beside* the
+ * sandbox rather than inside it, published to the display through
+ * `TrackOverlayContext`. Chrome that calls `TrackOverlayPortal` -- the colour
+ * key, hi-c's overlay panel, maf's row labels -- lands in that node and paints
+ * at the `zIndex` you give it. With no slot the context is null and the portal
+ * falls back to rendering in place, which is what every page here did before.
+ *
+ * **`zIndex` has no default, and that is deliberate.** It is the answer to
+ * "above what?", which is a fact about your layout: 3 here, because the seams
+ * are at 2. JBrowse's own container passes 100, positioned against its own
+ * stacking, and inheriting that number would be right once and quietly wrong
+ * everywhere else.
+ *
+ * The inner `contain: strict` box is now `position: absolute; inset: 0` inside
+ * the slot's box rather than being the sized box itself, because the slot owns
+ * the height -- exactly what `TrackRenderingContainer` does inside JBrowse.
+ */
+const TrackRowWithOverlay = observer(function TrackRowWithOverlay({
   view,
   trackId,
 }: {
@@ -163,19 +185,69 @@ const TrackRow = observer(function TrackRow({
   const display = track.activeDisplay
   const { RenderingComponent } = display
   return (
+    <TrackOverlaySlot zIndex={3} style={{ height: display.height }}>
+      <div style={{ position: 'absolute', inset: 0, contain: 'strict' }}>
+        <Suspense fallback={null}>
+          <RenderingComponent
+            model={display}
+            onHorizontalScroll={view.horizontalScroll}
+          />
+        </Suspense>
+      </div>
+    </TrackOverlaySlot>
+  )
+})
+
+// What each kind of span looks like is yours; that there are three is not. A
+// seam must be opaque -- regions are laid out contiguously, so both sides are
+// drawn right up to it and a see-through line tints two regions' features
+// instead of separating them.
+const SPAN_FILL = {
+  seam: 'color-mix(in srgb, CanvasText 45%, Canvas)',
+  boundary: 'color-mix(in srgb, CanvasText 12%, Canvas)',
+  elided: 'color-mix(in srgb, CanvasText 30%, Canvas)',
+}
+
+/**
+ * The spans along the row that are not track data -- region seams, the greyed
+ * ends of the genome, and regions too narrow to draw. `view.paddingSpans` is
+ * the geometry; see the Drive it from your app page for the frame it is in and
+ * for why deriving it yourself misses two cases.
+ */
+const RegionBoundaries = observer(function RegionBoundaries({
+  view,
+}: {
+  view: BrowserView
+}) {
+  const { paddingSpans, staticBlocksTranslateX } = view
+  return (
     <div
+      aria-hidden
       style={{
-        position: 'relative',
-        height: display.height,
-        contain: 'strict',
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        left: 0,
+        zIndex: 2,
+        pointerEvents: 'none',
+        // boxes, so unrounded: rounding is for text, where a fractional offset
+        // blurs a glyph. JBrowse's own PaddingBlocks makes the same call
+        transform: `translateX(${staticBlocksTranslateX}px)`,
       }}
     >
-      <Suspense fallback={null}>
-        <RenderingComponent
-          model={display}
-          onHorizontalScroll={view.horizontalScroll}
+      {paddingSpans.map(({ key, x, width, kind }) => (
+        <div
+          key={key}
+          style={{
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            left: x,
+            width,
+            background: SPAN_FILL[kind],
+          }}
         />
-      </Suspense>
+      ))}
     </div>
   )
 })
@@ -423,8 +495,17 @@ const TrackSettings = observer(function TrackSettings() {
           <ReadHeightControl view={view} trackId={alignmentsTrack.trackId} />
         </div>
         <div ref={ref} {...containerProps} style={viewport}>
+          {/* `RegionBoundaries` reads block geometry, which throws until the
+           * ResizeObserver has reported a width, so it sits inside the same
+           * gate as the track. See the Drive it from your app page. */}
           {view.ready ? (
-            <TrackRow view={view} trackId={alignmentsTrack.trackId} />
+            <>
+              <TrackRowWithOverlay
+                view={view}
+                trackId={alignmentsTrack.trackId}
+              />
+              <RegionBoundaries view={view} />
+            </>
           ) : (
             <ViewStatus view={view} />
           )}

@@ -64,7 +64,7 @@ const MUI_BUDGET = {
   'controlling-the-view': 0,
   // At rest this page shows a pileup coloured `normal`, which has no key — so
   // this zero is the ordinary one and says nothing about the legend. The legend
-  // is a separate check (`legendRendersNoMaterialUI`), because it has to be
+  // is a separate check (`legendIsPlainAndAboveTheSeams`), because it has to be
   // driven and because a census that only ever runs before the thing appears is
   // the `ultraminimal` unearned-zero trap one paragraph up.
   'track-settings': 0,
@@ -297,7 +297,7 @@ async function highlightSurvivesAOneBaseRegion(page, slug) {
 // So the census is re-run with one on screen. Three assertions, and the middle
 // one is the one that stops this becoming another unearned zero: the scheme is
 // picked, the legend is confirmed *present*, and only then is the count taken.
-async function legendRendersNoMaterialUI(page, slug) {
+async function legendIsPlainAndAboveTheSeams(page, slug) {
   if (slug !== 'track-settings') {
     return []
   }
@@ -363,6 +363,8 @@ async function legendRendersNoMaterialUI(page, slug) {
         `its start location moving, not the legend. Read:\n${rows}`,
     ]
   }
+  const out = []
+
   const found = await page.evaluate(() =>
     [
       ...document
@@ -370,13 +372,55 @@ async function legendRendersNoMaterialUI(page, slug) {
         .querySelectorAll('[class*="Mui"]'),
     ].map(el => el.getAttribute('class')),
   )
-  return found.length === 0
-    ? []
-    : [
-        `the colour legend renders ${found.length} Material UI element(s), and ` +
-          'no provider can swap them — a host that mounted DisplayUIProvider to ' +
-          `avoid exactly this gets them anyway:\n${found.map(f => `           - ${f}`).join('\n')}`,
-      ]
+  if (found.length > 0) {
+    out.push(
+      `the colour legend renders ${found.length} Material UI element(s), and ` +
+        'no provider can swap them — a host that mounted DisplayUIProvider to ' +
+        `avoid exactly this gets them anyway:\n${found.map(f => `           - ${f}`).join('\n')}`,
+    )
+  }
+
+  // The other half, and the reason this page draws seams at all: the legend has
+  // to paint ABOVE them. Not `elementFromPoint`, which would pass whatever the
+  // z-order is — the seams are `pointer-events: none`, so hit testing skips
+  // them and the check would be about nothing. So the mechanism is tested
+  // instead: the legend escaped the display's `contain: strict` sandbox into
+  // `TrackOverlaySlot`'s node, and that node outranks the seam layer.
+  const order = await page.evaluate(() => {
+    const legend = document.querySelector('[data-testid="floating-legend"]')
+    const seams = document.querySelector('.demo div[aria-hidden="true"]')
+    const z = el => Number.parseInt(getComputedStyle(el).zIndex, 10)
+    let sandboxed = false
+    let node
+    for (let el = legend; el; el = el.parentElement) {
+      if (getComputedStyle(el).contain.includes('strict')) {
+        sandboxed = true
+      }
+      if (!node && el.dataset?.gestureOwner) {
+        node = el
+      }
+    }
+    return {
+      sandboxed,
+      escaped: !!node,
+      legendZ: node ? z(node) : undefined,
+      seamZ: seams ? z(seams) : undefined,
+    }
+  })
+  if (order.sandboxed || !order.escaped) {
+    out.push(
+      'the legend is still inside the display sandbox — TrackOverlaySlot is ' +
+        'not wrapping the display, or TrackOverlayPortal fell back to inline. ' +
+        'It will render under the region seams.',
+    )
+  } else if (!(order.legendZ > order.seamZ)) {
+    out.push(
+      `the legend escaped the sandbox but sits at z-index ${order.legendZ}, ` +
+        `not above the seams at ${order.seamZ} — the slot's zIndex prop and ` +
+        'what the page paints over the stack have drifted apart.',
+    )
+  }
+  return out
 }
 
 // The one page whose subject is a state you cannot see by loading it.
@@ -634,7 +678,7 @@ const failures = await smokeExamplesSite({
     ...(await clicksReachTheTrack(page)),
     ...(await highlightSurvivesAOneBaseRegion(page, slug)),
     ...(await searchByNameResolvesNames(page, slug)),
-    ...(await legendRendersNoMaterialUI(page, slug)),
+    ...(await legendIsPlainAndAboveTheSeams(page, slug)),
     // last: this one replaces the engine on the page it runs on
     ...(await viewStatusStatesAreDrawn(page, slug)),
   ],

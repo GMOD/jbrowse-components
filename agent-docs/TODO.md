@@ -31,7 +31,6 @@ Exploratory concepts that are *not* committed work live in
 | [`partitionField` throws on `bigRmskBed`](#partitionfield-jexl-throws-through-its-own-guard-on-bigrmskbed) | canvas | the per-feature catch is there and not holding |
 | [Overlay labels cover the row below](#overlay-subfeature-labels-swallow-the-row-below-them-in-compact-modes) | canvas | decide: reserve a row, or call overlay normal-mode only |
 | [Render the converted callout specs](#render-the-twenty-specs-whose-callouts-were-converted-to-anchors) | figures | sweep them; five move deliberately |
-| [A BYO host cannot supply the overlay node](#a-bring-your-own-host-has-no-way-to-give-a-display-its-overlay-node) | embedded, display chrome | the demo half is done; publish the protocol, then give `track-settings` its seams |
 | [Comparative cancel and retry](#give-the-comparative-displays-a-cancel-and-a-retry) | synteny, dotplot | read ADR-054 first; retry is a button, never automatic |
 | [Stop uploading every rect twice](#stop-uploading-every-rect-twice-for-the-continuation-pass) | GPU canvas | unify `ATTR4`, then verify headed on both backends |
 | [Linearize the pangenome](#linearize-the-pangenome-draw-graph-variation-as-alignment-style-glyphs) | pangenome | read PANGENOME_GRAPHS.md — four findings constrain the layout |
@@ -251,66 +250,6 @@ is the method, including why the 40 remaining raw coordinates are deliberate.
 
 Each of these carries a design that already survived a rejected alternative.
 Read the linked ADR or reference doc before re-proposing the thing it rejected.
-
-### A bring-your-own host has no way to give a display its overlay node
-
-A display that portals floating chrome — `FloatingLegend` (canvas, alignments,
-variants, multi-wiggle), `HicOverlayPanel`, maf's row labels — reaches its
-track's overlay node through `TrackOverlayContext`. `TrackContainer` mounts that
-node as a later sibling of the `contain: strict` rendering box and *after*
-`PaddingBlocks`, which is what lifts the chrome above the inter-region masks;
-see `TrackOverlayPortal` and ADR-058 for why the containment cannot simply be
-dropped.
-
-**An embedder mounting `RenderingComponent` directly provides none of it.** The
-context is null, `TrackOverlayPortal` falls back to rendering inline, and inline
-means inside the sandbox — under whatever the host paints over the stack. That
-is not hypothetical for a host that follows our own examples:
-`products/jbrowse-build-your-own` draws `view.paddingSpans` as a `zIndex: 2`
-sibling across the whole column on four pages, which reproduces exactly the
-burial the portal exists to prevent.
-
-**The `track-settings` page is the live case, and it dodges rather than solves
-this.** It raises a real legend (a colorBy plus the `showLegend` opt-in) and
-draws no region seams, which is the only reason the legend is visible there —
-its `TrackRow` comment says so. So the demo half below is done and the missing
-piece is now exactly one thing: a host that wants seams *and* display chrome
-still cannot have both.
-
-**Paint order is the whole of it, and only because the gesture half was fixed
-separately.** The overlay node also carries `data-gesture-owner`, so chrome in
-that layer does not pan the view when dragged — but `FloatingLegend` and
-`HicOverlayPanel` each declare their own marker for the `fallbackInline` path
-(29377a37a5), so a host with no node still gets the gesture behaviour. Don't
-re-derive that as a second symptom; it is covered.
-
-`TrackOverlayContext` is exported, so nothing is technically missing — what is
-missing is that no host could know to use it, and there is no shape to copy.
-
-**Publish the protocol.** The host still owns the box (that is the
-examples-site rule and it is right), so this is not "publish TrackRow". It is
-the smaller thing the host cannot derive: the node, the context, and the paint
-order between them. Sketch: a `TrackOverlaySlot` in the LGV barrel rendering
-`<TrackOverlayContext value={el}>{children}</TrackOverlayContext>` plus the
-`pointer-events: none` sibling, leaving placement and z-index to the caller.
-
-Two constraints on the shape, both from reading `TrackContainer`:
-
-- **It has to express `TrackContainer`'s own use**, or it is a second
-  implementation of the same rule. That means an overlay-style escape hatch,
-  since the container passes `left: -outlineOffset` to cancel the Paper border.
-- **`zIndex` cannot just default to the container's 100.** That number is
-  positioned against JBrowse's own stacking (above `PaddingBlocks`, below
-  `TrackLabel` at 200); a host whose masks sit at `zIndex: 2` needs its own. So
-  the z-index is the caller's, and the doc comment has to say what it is
-  competing with rather than hand over a magic number.
-
-Then update `track-settings` to draw seams and keep its legend clear of them —
-which is the acceptance test, and the reason that page exists in the shape it
-does.
-
-Found 2026-08-11 reviewing the BYO examples, alongside the `FloatingLegend` MUI
-fix, which is the same component from the other direction.
 
 ### Give the comparative displays a cancel and a retry
 
