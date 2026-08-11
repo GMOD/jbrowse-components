@@ -453,11 +453,14 @@ const ColorLegendOverlay = observer(function ColorLegendOverlay({
   model,
 }: LinearBasicDisplayComponentProps) {
   const legend = model.colorLegend
-  return legend ? (
+  // The hook is present whenever a key exists; `dismissed` is what decides
+  // whether it draws, so the track menu's "Show legend" checkbox can still see a
+  // key the user has put away. See CanvasColorLegend.
+  return legend && !legend.dismissed ? (
     <FloatingLegend
       items={legend.items}
       onDismiss={() => {
-        legend.dismiss()
+        legend.setDismissed(true)
       }}
     />
   ) : null

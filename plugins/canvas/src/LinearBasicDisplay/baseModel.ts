@@ -210,7 +210,16 @@ export interface GeneGlyphNotice {
 
 export interface CanvasColorLegend {
   items: LegendItem[]
-  dismiss: () => void
+  // Session-only visibility, and the reason this is a flag rather than the
+  // one-way `dismiss()` it used to be: the key's own "×" is the only thing that
+  // could put it away, and it disappears with the key it just removed, so a
+  // dismissal lasted until reload with nothing anywhere offering it back. The
+  // multi-row painting hit this and answered it with a "Show legend" checkbox;
+  // the hook is therefore present whenever a key EXISTS — dismissed or not — so
+  // that checkbox has something to see. Drawing is `!dismissed`, on screen and
+  // in the SVG export alike.
+  dismissed: boolean
+  setDismissed: (value: boolean) => void
 }
 
 export type { Region } from '@jbrowse/core/util'

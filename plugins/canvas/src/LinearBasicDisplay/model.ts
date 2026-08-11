@@ -211,8 +211,8 @@ export default function stateModelFactory(
         self.geneGlyphNoticeDismissed = true
       },
 
-      dismissColorLegend() {
-        self.colorLegendDismissed = true
+      setColorLegendDismissed(value: boolean) {
+        self.colorLegendDismissed = value
       },
 
       setShowOnlyGenes(value: boolean) {
@@ -258,8 +258,15 @@ export default function stateModelFactory(
        */
       get colorLegend() {
         const items = getConf(self, 'legend') as LegendItem[]
-        return items.length > 0 && !self.colorLegendDismissed
-          ? { items, dismiss: self.dismissColorLegend }
+        // Present whenever the slot declares a key, dismissed or not — see
+        // CanvasColorLegend for why dismissal is a flag on the hook rather than
+        // the hook's absence.
+        return items.length > 0
+          ? {
+              items,
+              dismissed: self.colorLegendDismissed,
+              setDismissed: self.setColorLegendDismissed,
+            }
           : undefined
       },
     }))

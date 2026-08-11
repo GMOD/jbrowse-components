@@ -207,8 +207,10 @@ function CanvasFeaturesSvgBody({
           feature track). Without it an exported figure has colored glyphs and
           nothing saying what the colors mean. Vector, via the shared
           SvgColorLegend the multi-row painting export already uses; no
-          `onDismiss`, since an exported legend can't be clicked. */}
-      {colorLegend ? (
+          `onDismiss`, since an exported legend can't be clicked. Skipped when
+          the user has put the key away on screen, so the export matches what
+          they were looking at. */}
+      {colorLegend && !colorLegend.dismissed ? (
         <SvgColorLegend
           canvasWidth={canvasWidth}
           maxHeight={height}

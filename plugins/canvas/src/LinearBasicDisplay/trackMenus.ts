@@ -1,7 +1,11 @@
 import { makePin } from '@jbrowse/core/configuration'
 import { Highlighter } from '@jbrowse/core/ui/Icons'
 import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
-import { checkboxItem, promotableRadioItems } from '@jbrowse/core/ui/menuItems'
+import {
+  checkboxItem,
+  promotableRadioItems,
+  showLegendCheckboxItem,
+} from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { pluralize } from '@jbrowse/core/util'
 import { heightModeMenuItems } from '@jbrowse/plugin-linear-genome-view'
@@ -15,6 +19,7 @@ import { showHiddenFeaturesMenuItems } from './featureContextMenu.ts'
 import { SHOW_LABELS_MODES } from './showLabelsMode.ts'
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
+import type { CanvasColorLegend } from './baseModel.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
 import type { MenuItem, NormalMenuItem } from '@jbrowse/core/ui'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -49,6 +54,9 @@ interface ShowSubmenuSelf {
   // it just isn't reaching the canvas in this display mode. ('auto' hiding at
   // high density needs no such note: that is the mode doing its advertised job.)
   displayMode: DisplayMode
+  // the display's color-key chrome hook, present whenever it has a key at all —
+  // the "Show legend" checkbox below is the only way back from the key's own "×"
+  colorLegend: CanvasColorLegend | undefined
   setShowOutline: (value: boolean) => void
   setShowLabels: (mode: ShowLabelsMode) => void
 }
@@ -143,10 +151,24 @@ function featureSetRecoveryMenuItems(self: TrackMenuSelf): MenuItem[] {
 // before the radio groups so the menu reads top-to-bottom as
 // checkboxes-then-radios rather than an interleaved mix.
 export function showSubmenuCheckboxItems(self: ShowSubmenuSelf): MenuItem[] {
+  const legend = self.colorLegend
   return [
     checkboxItem('Show outline', self.showOutline, () => {
       self.setShowOutline(!self.showOutline)
     }),
+    // Only where there is a key to show — a plain feature track declaring no
+    // `legend` slot, and a variant track colored by anything but its two preset
+    // schemes, have nothing to toggle. Offered at all because the key's own "×"
+    // is otherwise a one-way door: it removes the surface it lives on, so a
+    // dismissal lasted the whole session with nothing anywhere naming it. Same
+    // item and same reasoning as the multi-row painting's.
+    ...(legend
+      ? [
+          showLegendCheckboxItem(!legend.dismissed, () => {
+            legend.setDismissed(!legend.dismissed)
+          }),
+        ]
+      : []),
   ]
 }
 

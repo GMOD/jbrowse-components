@@ -311,25 +311,31 @@ describe('renderSvg', () => {
   // The color key a display contributes through the `colorLegend` hook (variants'
   // consequence-impact / SV-type presets) has to reach the export too — an
   // exported figure of colored glyphs is unreadable without it. A plain feature
-  // track answers `undefined` and draws none.
-  it('bakes the display color key into the export, and omits it when absent', async () => {
+  // track answers `undefined` and draws none, and a key the user has put away on
+  // screen stays away, so the export matches what they were looking at.
+  it('bakes the display color key into the export, and omits it when absent or dismissed', async () => {
     const data = makeData([{ startBp: 1100, endBp: 1200 }])
-    const withKey = renderResult(
-      await renderSvg(
-        makeModel({
-          laidOutDataMap: new Map([[0, data]]),
-          colorLegend: {
-            items: [
-              { label: 'HIGH', color: '#d32f2f' },
-              { label: 'LOW', color: '#fbc02d' },
-            ],
-            dismiss: () => {},
-          },
-        }),
-      ),
-    )
+    const exportWith = async (dismissed: boolean) =>
+      renderResult(
+        await renderSvg(
+          makeModel({
+            laidOutDataMap: new Map([[0, data]]),
+            colorLegend: {
+              items: [
+                { label: 'HIGH', color: '#d32f2f' },
+                { label: 'LOW', color: '#fbc02d' },
+              ],
+              dismissed,
+              setDismissed: () => {},
+            },
+          }),
+        ),
+      )
+    const withKey = await exportWith(false)
     expect(withKey).toContain('HIGH')
     expect(withKey).toContain('#d32f2f')
+
+    expect(await exportWith(true)).not.toContain('HIGH')
 
     const withoutKey = renderResult(
       await renderSvg(makeModel({ laidOutDataMap: new Map([[0, data]]) })),
