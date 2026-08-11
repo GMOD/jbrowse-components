@@ -2510,6 +2510,20 @@ export const graphSpecs: ScreenshotSpec[] = [
           loadedRegion: CHR1_REGION,
           // the whole point: 249 Mb past the 5 Mb default
           maxRegionBp: 250000000,
+          // ANCHORED, and the Bandage force drawing was TRIED here rather than
+          // declined on another figure's measurement (review: "please try the
+          // bandage graph. humor me"). It does not work, and the reason is in
+          // the pane's own header: 474 nodes and 473 edges. n-1 edges on a
+          // connected drawing is a PATH -- the tier is one node per bubble in
+          // reference order with one edge between consecutive bubbles, so every
+          // branch the graph had was collapsed away when the tier was built.
+          // A force layout of a path is a long wiggly line; rendered, it fills
+          // the pane with one arc at 4.2% zoom and runs off both edges, and
+          // nothing about the chromosome is legible in it. The anchored layout
+          // of the same path is the reference axis, which is the one thing the
+          // drawing has to say at this scale. Bandage's own subject -- where the
+          // graph branches -- is what the locus figures on this page draw, on
+          // the fine index.
           layoutMode: 'auto',
           colorScheme: 'reference-position',
         },
