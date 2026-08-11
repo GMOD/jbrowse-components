@@ -12,8 +12,8 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 41 shaders with entry points. 73 functions
-are inside the emitter's subset, of which **55 are exported**.
+Scanned 41 shaders with entry points. 74 functions
+are inside the emitter's subset, of which **56 are exported**.
 
 ## Candidates
 
@@ -62,7 +62,7 @@ noticing in a diff.
 | Refused because | Functions | For example |
 | --- | --- | --- |
 | type 'vec2' is outside the supported scalar subset | 19 | `covSegQuad`, `crispSquareCornerPx`, `diagonalCellToClip`, `discAlpha`, `discCoverage`, `distToWideCircle`, … |
-| member access (vector swizzle or struct field) is outside the supported scalar subset | 16 | `aaHalf`, `arcBandDestY`, `covAreaTop`, `covBarScale`, `covBottom`, `drawsCapsule`, … |
+| member access (vector swizzle or struct field) is outside the supported scalar subset | 17 | `aaHalf`, `arcBandDestY`, `arcDomeBandDestY`, `covAreaTop`, `covBarScale`, `covBottom`, … |
 | type 'ptr' is outside the supported scalar subset | 10 | `aaHalfPx`, `bpToClipX`, `curveGeometry`, `curveParamAtY`, `fillVsEmit`, `flipX`, … |
 | type 'vec3' is outside the supported scalar subset | 10 | `arcColorByIndex`, `arcMarkerColorByIndex`, `baseColor`, `bpRange`, `categoryPaletteColor`, `clipKindColor`, … |
 | type 'vec4' is outside the supported scalar subset | 9 | `edgeSpan`, `fillEdges`, `isCulled`, `ribbonEdgeDeltas`, `ribbonEdges`, `ribbonWidths`, … |

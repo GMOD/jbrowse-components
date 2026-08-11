@@ -6,7 +6,7 @@ import { distToWideCirclePx } from '../../shaders/slang/alignmentsUniforms.js.ge
 import { arcRadiiPx } from '../../shaders/slang/arc.js.generated.ts'
 import { ARC_FLAT_MIN_PX } from '../../shaders/slang/arcFlat.iface.generated.ts'
 import { arcLineWidth } from './arcLineWidth.ts'
-import { arcAvailH, arcYOffsetPx } from './arcYScale.ts'
+import { arcAvailH, arcDomeDestY, arcYOffsetPx } from './arcYScale.ts'
 import { isFlatArcShape } from './compute.ts'
 import { ellipseDistance } from './ellipseDistance.ts'
 
@@ -129,8 +129,16 @@ export function hitTestArcs(
     }
     const sx1 = bpToScreenX(data.arcX1[i]!)
     const sx2 = bpToScreenX(data.arcX2[i]!)
-    const arcH = arcYOffsetPx(data.arcYBp[i]!, arcsYDomainBp, arcsYLog, availH)
-    const dist = isFlatArcShape(data.arcShapeTypes[i]!)
+    // Same split the draw makes: a flat mark's Y is clamped into the band, a
+    // dome's is not (arcDomeDestY). Reading the clamped one for a dome would
+    // measure a squashed ellipse the renderer no longer draws, so a wide pair's
+    // arc would answer hovers along a ceiling it does not sit on.
+    const isFlat = isFlatArcShape(data.arcShapeTypes[i]!)
+    const yBp = data.arcYBp[i]!
+    const arcH = isFlat
+      ? arcYOffsetPx(yBp, arcsYDomainBp, arcsYLog, availH)
+      : arcDomeDestY(yBp, arcsYDomainBp, arcsYLog, availH)
+    const dist = isFlat
       ? flatDistance(canvasX, localY, sx1, sx2, arcH)
       : curveDistance(canvasX, localY, sx1, sx2, arcH, screenWidthPx)
     // How far past this arc's own ink the cursor is: the quantity that both

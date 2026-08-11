@@ -21,29 +21,27 @@
 // band clips the apex away and only near-vertical legs rising from each
 // endpoint remain.
 //
-// THE TWO BRANCHES DO NOT SHARE A CEILING, and that is a live design question
-// rather than an oversight to quietly close. In arc mode arcsYDomainBp is
-// availH/pxPerBp, so destY reduces to min(availH, rx) and a near arc's apex is
-// 0.75·min(rx, availH) — every pair wider than availH draws the SAME depth,
-// 0.75·availH, on its own rx. Two consequences, both measured on HG02768
-// (1:39,658,650-39,659,550, 200px band, so availH 192 and that ceiling 144px):
+// NEITHER BRANCH CLAMPS ITS APEX — the band clips both. That is one rule now,
+// and it used not to be: the dome's destY was clamped to availH, so in arc mode
+// (where arcsYDomainBp is availH/pxPerBp, making destY reduce to rx) every pair
+// wider than availH drew the SAME 0.75·availH depth on its own rx. Measured on
+// HG02768 1:39,658,650-39,659,550 in a 200px band: 699 arcs stacked on the
+// 142px row, against the 0.75·192 = 144 that predicts.
 //
-//   - rx >> ry makes the ellipse a plateau with steep shoulders, foot curvature
-//     radius ry²/rx — 34px at rx=600, 15px at rx=1400. It reads as an elbow,
-//     and 699 clamped arcs stacked on the 142px row measured in that view,
-//     which is the ceiling and not a coincidence. Inherited, not new: the cubic
-//     bezier this shape replaced peaked at the same 0.75·destY.
-//   - a FAR leg has no apex to clamp, so it runs the full arcBandH — past the
-//     ceiling every near arc respects, into the 0.25·availH the domes never use.
+// Two things were wrong with that, and they are the same thing. rx >> ry is a
+// plateau with a tightening bend at each foot — the elbow — and a far pair,
+// having no apex to clamp, ran the full arcBandH instead, so crossing
+// ARC_FAR_SCREEN_WIDTHS while zooming stepped an arc from 144px to 200px. The
+// step was invisible until the hull was fixed: the old chord truncated far legs
+// at ~100-144px (see legSweepAngle), landing on the near ceiling by accident.
 //
-// So crossing ARC_FAR_SCREEN_WIDTHS while zooming steps an arc from a 144px
-// plateau to a 200px pair of legs. That step was masked until the hull was
-// fixed: the old chord truncated far legs at ~100-144px (see legSweepAngle),
-// which happened to land on the near ceiling. Nothing was decided there — an
-// accident agreed with a convention. Unifying them is a real change (one rule
-// would be ry = 0.75·destY unclamped, letting the band scissor the apex, which
-// deletes arcIsFar and this whole branch) and it moves every committed arc
-// figure, so it wants a decision, not a patch.
+// Unclamped, arc mode is self-similar — destY IS rx, so every dome is
+// ARC_APEX_FRACTION of its own half-width — and the far circle is the same
+// shape at aspect 1.0 rather than a different rule, so the two now differ only
+// in how fast the flanks rise. See arcDomeDestY (alignmentsUniforms) for why a
+// smoother curve was not the alternative: anything leaving its endpoint
+// vertically and flattening into a fixed height elbows, the bezier this dome
+// replaced included.
 //
 // There is no `shapeType` attribute. It used to select between this curve and
 // the read cloud's flat connector (values 1 and 2), which meant a 130-vertex
@@ -217,9 +215,12 @@ Curve arcCurve(Instance inst, Uniforms u, float strokeHalfPx) {
   float yDir = (u.pairedArcsDown > 0.5) ? 1.0 : -1.0;
   // Y the insert size maps to: availH px spans arcsYDomainBp bp, the CPU-chosen
   // domain (zoom-proportional for arcs, autoscaled |tlen| for read cloud).
-  // arcBandDestY (alignmentsUniforms) is the shared formula — the same one
-  // arcFlat.slang and arcMarker.slang use.
-  float destY = arcBandDestY(inst.yBp, availH, u);
+  // arcDomeBandDestY (alignmentsUniforms) is the UNCLAMPED half of that
+  // formula. arcFlat.slang and arcMarker.slang take the clamped `arcBandDestY`,
+  // because a flat mark off the band is invisible while a dome off the band is
+  // just a dome the band is clipping — see arcDomeDestY for why holding one at
+  // the ceiling is what drew elbows.
+  float destY = arcDomeBandDestY(inst.yBp, availH, u);
   float x1Px = u.blockStartPx + bpToLinear(inst.x1, u) * u.blockWidth;
   float x2Px = u.blockStartPx + bpToLinear(inst.x2, u) * u.blockWidth;
   float halfWidthPx = abs(x2Px - x1Px) * 0.5;

@@ -10,7 +10,7 @@
 // The sub-pixel frequency lerp is a pure scalar decision both backends must
 // make identically; rendererTypes.ts imports the generated twin rather than
 // re-deriving it (adr-051).
-//! js-export: frequencyAlpha, frequencyFadeGate, sizeAlpha, arcYFraction, arcYOffsetPx, arcColorSlot, linkedReadColorSlot, normalizeDepthScalar, distToWideCirclePx
+//! js-export: frequencyAlpha, frequencyFadeGate, sizeAlpha, arcYFraction, arcYOffsetPx, arcDomeDestY, arcColorSlot, linkedReadColorSlot, normalizeDepthScalar, distToWideCirclePx
 // consts-out takes the WHOLE export-consts list, so this path names what that
 // list currently is rather than a category it will keep meaning. Anything added
 // above lands in a file called indicatorTriangle.generated.ts; put a constant
@@ -507,10 +507,41 @@ public float arcYFraction(uint yBp, float arcsYDomainBp, bool useLog) {
 }
 
 // Distance from the band's zero anchor to where `yBp` plots, clamped to the
-// band.
+// band. This is the FLAT-MARK rule: a read-cloud connector and its endpoint
+// squares are a horizontal line AT this Y, so a line that left the band would
+// simply be invisible and clamping is what keeps it on the axis.
 public float arcYOffsetPx(uint yBp, float arcsYDomainBp, bool useLog,
                           float availH) {
   return min(availH, arcYFraction(yBp, arcsYDomainBp, useLog) * availH);
+}
+
+// The same distance UNCLAMPED, for the curved dome — which is a different
+// question, and clamping it was what drew the elbows.
+//
+// A dome leaves both its endpoints vertically (that is what makes it spring
+// from the exact bp) and then has to reach its apex. Hold the apex at a ceiling
+// while the pair keeps widening and the bend joining the two has to tighten
+// without limit: the foot's curvature radius is ry²/rx, so a 200px band's 144px
+// ceiling turns into a 35px corner by rx = 600 and a 15px one by rx = 1400,
+// with every clamped arc stacked on the one ceiling row. That is not a shape
+// the ellipse is to blame for and not one a smoother curve fixes — the cubic
+// bezier this dome replaced leaves vertically too, and bends at 1.5·H²/W (46px
+// where the ellipse gives 35px). Anything that starts vertical and flattens
+// into a fixed height over a growing width elbows.
+//
+// So the dome does not clamp; the band clips it. In arc mode that makes it
+// self-similar — arcsYDomainBp is availH/pxPerBp, so this returns yBp·pxPerBp,
+// which IS the pair's on-screen half-width, and every dome is one shape scaled
+// by its own width (ARC_APEX_FRACTION of it, see arcRadiiPx). A pair too big
+// for the band shows the two rising flanks and no apex, which is exactly what
+// the far branch has always done — the two agree now instead of stepping.
+//
+// The cost is that `readConnectionsHeight` stops meaning "the tallest an arc
+// can be" and starts meaning "how much of the arc field is on screen". A dome
+// that used to flatten onto the ceiling now leaves through it.
+public float arcDomeDestY(uint yBp, float arcsYDomainBp, bool useLog,
+                          float availH) {
+  return arcYFraction(yBp, arcsYDomainBp, useLog) * availH;
 }
 
 // Pixels of padding above the arc apex, subtracted from `u.arcBandH` to get the
@@ -528,10 +559,18 @@ public float arcYOffsetPx(uint yBp, float arcsYDomainBp, bool useLog,
 public static const float ARC_HEIGHT_MARGIN = 8.0;
 
 // Read cloud/arc flat-line Y offset (unsigned px) within an `availH`-tall band.
-// Shared by arc.slang (flat line + dome apex) and arcMarker.slang so a read
-// cloud endpoint square lands exactly on its flat line.
+// Shared by arcFlat.slang and arcMarker.slang so a read cloud endpoint square
+// lands exactly on its flat line. The curved dome takes `arcDomeBandDestY`
+// instead — see arcDomeDestY for why the two differ.
 public float arcBandDestY(uint yBp, float availH, Uniforms u) {
   return arcYOffsetPx(yBp, u.arcsYDomainBp, u.arcsYLog > 0.5, availH);
+}
+
+// The dome's counterpart, reading the same uniforms. Only arc.slang calls it,
+// and only ever in arc mode: `computeArcShape` emits a flat shape iff `cloud`,
+// so the curved pass never sees a read-cloud instance.
+public float arcDomeBandDestY(uint yBp, float availH, Uniforms u) {
+  return arcDomeDestY(yBp, u.arcsYDomainBp, u.arcsYLog > 0.5, availH);
 }
 
 // Interbase-histogram / indicator clip-kind palette: 1=insertion 2=softclip

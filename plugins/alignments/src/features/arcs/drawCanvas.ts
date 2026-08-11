@@ -19,7 +19,12 @@ import {
 import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.iface.generated.ts'
 import { ARC_MARKER_PX } from '../../shaders/slang/arcMarker.iface.generated.ts'
 import { arcLineWidth } from './arcLineWidth.ts'
-import { arcAvailH, arcYOffsetPx, arcYScale } from './arcYScale.ts'
+import {
+  arcAvailH,
+  arcDomeDestY,
+  arcYOffsetPx,
+  arcYScale,
+} from './arcYScale.ts'
 import { ARC_SHAPE_FLAT_SPLIT, isFlatArcShape } from './compute.ts'
 
 import type {
@@ -134,10 +139,15 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
 
     const sx1 = bpToScreenX(x1Bp)
     const sx2 = bpToScreenX(x2Bp)
-    const arcH = arcYOffsetPx(yBp, arcsYDomainBp, arcsYLog, availH)
+    // Flat marks clamp to the band, the curved dome does not — the same split
+    // arc.slang makes, off the same two generated helpers, because a dome held
+    // at a ceiling elbows (see arcDomeDestY). The band clip is the caller's.
+    const isFlat = isFlatArcShape(shape)
+    const arcH = isFlat
+      ? arcYOffsetPx(yBp, arcsYDomainBp, arcsYLog, availH)
+      : arcDomeDestY(yBp, arcsYDomainBp, arcsYLog, availH)
     const apexY = pairedArcsDown ? anchorY + arcH : anchorY - arcH
 
-    const isFlat = isFlatArcShape(shape)
     ctx.setLineDash(shape === ARC_SHAPE_FLAT_SPLIT ? [3, 3] : [])
     if (isFlat) {
       // Black connector line clamped to a minimum drawn width (centered on the

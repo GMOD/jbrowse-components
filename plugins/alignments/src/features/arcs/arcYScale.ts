@@ -13,9 +13,14 @@ import { ARC_HEIGHT_MARGIN } from '../../shaders/slang/arc.iface.generated.ts'
 // Re-exported under these names because they are the arcs feature's vocabulary
 // and every caller already imports them from here; the shader adopted the same
 // spelling rather than the other way round.
+// `arcYOffsetPx` is the clamped, flat-mark rule (read cloud's connector lines
+// and their endpoint squares); `arcDomeDestY` is the unclamped one the curved
+// dome takes, so a wide pair leaves the band instead of flattening onto its
+// ceiling. The shader draws the same split — see arcDomeDestY.
 export {
   arcYFraction,
   arcYOffsetPx,
+  arcDomeDestY,
 } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 
 // Plottable height of the band: the drawn height less the apex padding.
