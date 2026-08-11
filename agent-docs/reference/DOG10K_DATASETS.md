@@ -31,9 +31,9 @@ coordinate from a paper as canFam3.1 until proven otherwise.**
   Genomes ASW trio the local-ancestry material used to use. Built by
   `scripts/build_dog10k_wolfdog_ancestry.sh`.
 - `tutorials/dog10k_svs.md` — the Collie eye anomaly deletion from Schall
-  & Kidd 2025, plus the two _DENR_ SINEC2A1 dimorphisms as the contrasting kind
-  of variant (220 bp at ~90% frequency, the reference carrying the rare allele).
-  Both built by `scripts/build_dog10k_nhej1_sv.sh`.
+  & Kidd 2025, built by `scripts/build_dog10k_nhej1_sv.sh`. That script still
+  writes the _DENR_ slice too, and the config still declares the tracks, but
+  **there is no DENR figure and it should not be rebuilt** — see below.
 - `tutorials/dog10k_lof.md` — the _CYP1A2_ p.Arg373Ter nonsense allele
   from the Dog10K paper's Fig 10, built by `scripts/build_dog10k_cyp1a2.sh`.
   The coordinate is derived by translating the reference CDS rather than copied,
@@ -87,7 +87,29 @@ of the eight positives came out wrong, which is the argument for having them.
   11-animal run implied. The local-ancestry tutorial's numbers are chr1 only and
   say so; the sweep is what would let it quote genome-wide fractions.
 
-_DENR_ and _CYP1A2_ are done (see above).
+_CYP1A2_ is done (see above).
+
+**_DENR_ was cut, 2026-08-11, and the reason generalizes.** The two SINEC2A1
+dimorphisms in adjacent introns are a real result — 220 bp at ~90% frequency
+with the reference carrying the rare allele, and the two repeats have different
+ages (every wolf has lost the left one, a third still carry the right one). It
+never became a figure. Drawn at their true spans the records are two ~35 px
+stripes in an otherwise blank frame ("it just doesn't seem to be telling a
+strong story by itself. visually it is like 'ok two verticalstripes'"); moved to
+the matrix display, which widens them to half a panel each, they read as
+multi-kb deletions over the whole gene and needed a caption saying they are not
+("this is a somewhat chaotic screenshot, unsure what i should be getting from
+this. are there 'giant' SV overshadowing the ones that are intending to be
+shown?"). Two displays, two rejections, and re-zooming lands back on the width
+that produced the first one.
+
+The diagnosis is not the display. **Two ~220 bp records genotyped across 56
+animals is a table, not a picture** — the finding is a frequency-and-ancestry
+claim, and the only positional content ("adjacent introns") is one sentence the
+gene model already carries. The polarity point it also carried (the reference
+genome holds both repeats, so "how many SVs does this dog have" depends on what
+you called against) is worth keeping in prose somewhere; it does not need this
+locus.
 
 **Verified 2026-07-29, genotypes checked remotely.** Use the
 `SV-genotype-v2.merge.agg_only.08032022.vcf.gz` callset under

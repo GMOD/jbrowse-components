@@ -240,53 +240,6 @@ estimate. More broadly, this figure is one locus in one set of breeds, chosen
 because the variant was already characterized; the same track scrolled anywhere
 else in the callset is a screen of variants nobody has interpreted yet.
 
-## A different kind of variant, at DENR
-
-The deletion above is rare, long, and breed-restricted. Most of what an SV
-callset holds is the opposite, and the same slice-and-load recipe shows it two
-chromosomes away.
-
-Schall and Kidd report two deletions in adjacent introns of _DENR_ in the
-Mastiff clade, each removing a SINEC2A1 repeat with an intact poly(A) tail and
-target-site duplications. Both SINEs are present in the `UU_Cfam_GSD_1.0`
-reference, which is a German Shepherd, so "deletion" here means the repeat is
-absent in that dog: grey in the matrix below is homozygous reference, with the
-repeat on both chromosomes, light blue heterozygous, and dark blue homozygous
-for the deletion. Dimorphic SINE and LINE-1 variants like these make up over 45%
-of all deletions in the callset, which is why a dog SV panel looks nothing like
-a SNV panel.
-
-The window holds the whole gene, and each record is drawn at its own position
-and size, so the two columns land in the introns they sit in and are visibly
-narrow against the gene above. The Greek wolves have lost the left repeat
-entirely while a third of them still carry the right one.
-
-<Figure caption="Two SINEC2A1 deletions in adjacent DENR introns, every animal of every breed in the panel. Each column sits at its record's genomic position and is drawn at its width — about 220 bp apiece, which is why they are slivers against the 18 kb of gene above them — and the lane over the rows names each one. The Mastiff-clade breeds carry both repeats and the Labrador Retrievers have lost both." src="/img/dog10k-denr-sine-deletions.png" />
-
-This contrasts with the Collie eye anomaly figure. That deletion was long, rare,
-and confined to one clade. These are short, common, and it is the reference that
-carries the rare allele. Because a callset mixes both kinds, "how many
-structural variants does this dog have" depends on which genome you called
-against.
-
-The two columns also do not say the same thing, which is why the panel carries
-every Greek wolf rather than a token few. Every wolf in the callset has lost the
-left repeat, so that insertion postdates the split from wolves. The right repeat
-is still segregating in wolves, so it does not. Two SINEs in adjacent introns of
-one gene, both dimorphic in dogs, with different ages: a per-sample panel makes
-that visible, and a frequency in an INFO field does not.
-
-Reading a genotype here needs the polarity kept straight. The reference genome
-carries both repeats, so homozygous reference is the animal that has them and
-homozygous alt is the animal that does not. The display's default fills the lane
-grey and omits homozygous-reference cells, which is right when a cell means
-"carries the variant" and wrong here, so this figure sets
-`referenceDrawingMode: "draw"` and every genotype gets a box.
-
-The shipped slice keeps only these two variants. The locus carries seven others,
-one of which overlaps the first SINE, but a per-sample panel of all of them is
-unreadable and adds nothing the two do not already show.
-
 ## Two diet genes that run opposite ways
 
 A 14.9 kb `DUP` at chr6:47,375,677 in the Michigan Manta callset spans the
