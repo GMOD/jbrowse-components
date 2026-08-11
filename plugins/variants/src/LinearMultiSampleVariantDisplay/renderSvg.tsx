@@ -70,7 +70,8 @@ function VariantSvgBody({
   // The export's palette comes from the user-selected export theme rather than
   // the live on-screen one, the same rule plugin-maf's export follows, so a
   // light export of a dark session still gets light-theme colors.
-  const { insertion } = resolvePalette({ configTheme: opts?.theme })
+  const exportPalette = resolvePalette({ configTheme: opts?.theme })
+  const { insertion } = exportPalette
   return (
     <SvgVariantOverlay
       model={model}
@@ -89,7 +90,10 @@ function VariantSvgBody({
             paint={ctx => {
               drawVariantLane(ctx, variantLaneRegions, renderBlocks, {
                 canvasWidth,
-                laneHeight: topBands.laneHeight,
+                bands: topBands,
+                // the export theme's text color, not the live session's, the
+                // same rule the insertion markers beside it follow
+                labelColor: exportPalette.text.primary,
               })
             }}
           />

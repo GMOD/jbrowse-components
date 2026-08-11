@@ -1,9 +1,18 @@
+import { measureText } from '@jbrowse/core/util'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
+import {
+  LABEL_FONT_SIZE,
+  computeLabelPosition,
+  truncateLabel,
+} from '@jbrowse/plugin-canvas'
 import { forEachClippedBlock } from '@jbrowse/render-core/canvas2dUtils'
 
+import { LABEL_GAP_PX } from '../../shared/variantTopBands.ts'
 import { forEachFeatureSpan } from './forEachFeatureSpan.ts'
 import { drawVariantShape } from './variantShape.ts'
 
+import type { VariantFeatureInfo } from '../../shared/types.ts'
+import type { VariantTopBands } from '../../shared/variantTopBands.ts'
 import type { VariantRenderBlock } from './variantRenderingBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
@@ -19,6 +28,13 @@ export interface VariantLaneData {
   featureInsertedBp: Int32Array
   featureColors: Uint32Array
   featureShapeTypes: Uint8Array
+  // The names the lane letters its marks with. Read through the two the payload
+  // already carries rather than as a third per-feature array: `featureIdList[f]`
+  // is the record at index f and `featureGenotypeMap` already holds its `name`
+  // for the tooltip. A names array beside them would be a second spelling of
+  // one fact, and the one that goes stale.
+  featureIdList: string[]
+  featureGenotypeMap: Record<string, VariantFeatureInfo>
 }
 
 // Sub-pixel marks would antialias to nothing at the lane's typical zoom, and a
@@ -45,16 +61,42 @@ const MIN_MARK_WIDTH_PX = 1
  * spans computed two ways is how a lane ends up one pixel off its own data at
  * some zooms and looks like a rendering bug.
  *
+ * **Labels cull; they do not stack.** plugin-canvas resolves label overlap by
+ * layout — `computeLabelExtraWidth` widens each feature's packed box so the
+ * packer pushes a colliding neighbour onto another row — and a one-row lane has
+ * no other row to push onto. So a label is drawn only if it clears the last one
+ * drawn, greedily left to right. That degrades the right way: zoomed out, where
+ * a cohort window holds fifty variants a few px apart, nothing is lettered and
+ * the marks carry the information; zoomed in to a handful, every one is. The
+ * text, its measured width, the font size and the left-edge clamps are all
+ * plugin-canvas's, so a lettered mark reads identically to the same record in a
+ * LinearVariantDisplay — only the collision rule differs, and it differs
+ * because the question does.
+ *
  * Shared by the on-screen overlay and the SVG export.
  */
 export function drawVariantLane(
   ctx: Ctx2D,
   regions: ReadonlyMap<number, VariantLaneData>,
   blocks: VariantRenderBlock[],
-  { canvasWidth, laneHeight }: { canvasWidth: number; laneHeight: number },
+  {
+    canvasWidth,
+    bands,
+    labelColor,
+  }: {
+    canvasWidth: number
+    bands: VariantTopBands
+    labelColor: string
+  },
 ) {
+  const { laneHeight, markHeight, labelTop, labelsFit } = bands
   if (laneHeight <= 0) {
     return
+  }
+  if (labelsFit) {
+    ctx.font = `${LABEL_FONT_SIZE}px sans-serif`
+    ctx.textBaseline = 'top'
+    ctx.textAlign = 'left'
   }
   forEachClippedBlock(
     ctx,
@@ -71,16 +113,20 @@ export function drawVariantLane(
       // case) neither rebuilds the CSS string nor reassigns fillStyle. -1 is
       // "not one of ours", which no packed ABGR can be.
       let currentAbgr = -1
+      // Right edge of the last label drawn, so the next one is only drawn if it
+      // clears it. See the note above on why a lane culls rather than stacks.
+      let lastLabelRight = Number.NEGATIVE_INFINITY
       // The shared per-record walk: the lane's marks and the insertion markers
       // over the cells come out of one geometry, so a mark cannot sit a pixel
-      // off the column it names. `laneHeight` is the band an insertion marker
+      // off the column it names. `markHeight` is the band an insertion marker
       // is sized against here, the way a row height is for a cell.
-      forEachFeatureSpan(region, block, laneHeight, (f, span) => {
+      forEachFeatureSpan(region, block, markHeight, (f, span) => {
         const abgr = region.featureColors[f]!
         if (abgr !== currentAbgr) {
           ctx.fillStyle = abgrToCssRgba(abgr)
           currentAbgr = abgr
         }
+        const width = Math.max(MIN_MARK_WIDTH_PX, span.width)
         // The cells' own glyph painter, so an inversion is the same
         // left-pointing triangle in the lane as in every row under it — and a
         // new shape lands in both at once instead of in whichever was
@@ -90,9 +136,37 @@ export function drawVariantLane(
           region.featureShapeTypes[f]!,
           span.left,
           0,
-          Math.max(MIN_MARK_WIDTH_PX, span.width),
-          laneHeight,
+          width,
+          markHeight,
         )
+        if (labelsFit) {
+          const name = region.featureGenotypeMap[region.featureIdList[f]!]?.name
+          if (name) {
+            const text = truncateLabel(name)
+            const textWidth = measureText(text, LABEL_FONT_SIZE)
+            // plugin-canvas's anchoring, so a label in the lane sits where the
+            // same record's label sits in a LinearVariantDisplay: left-aligned
+            // to the mark, pushed right when the mark starts off-screen, and
+            // held to the mark's right edge when it fits inside it.
+            const { labelX } = computeLabelPosition(
+              { relativeY: 0, textWidth },
+              0,
+              {
+                featureLeftPx: span.left,
+                featureRightPx: span.left + width,
+                featureBottomPx: 0,
+                screenStartPx: block.screenStartPx,
+              },
+            )
+            if (labelX > lastLabelRight) {
+              ctx.fillStyle = labelColor
+              ctx.fillText(text, labelX, labelTop)
+              lastLabelRight = labelX + textWidth + LABEL_GAP_PX
+              // the label reset the fill, so the next mark must reassign it
+              currentAbgr = -1
+            }
+          }
+        }
       })
     },
   )

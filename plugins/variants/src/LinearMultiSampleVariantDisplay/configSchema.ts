@@ -164,6 +164,25 @@ export default function configSchemaFactory() {
         defaultValue: DEFAULT_VARIANT_LANE_HEIGHT,
         advanced: true,
       },
+      /**
+       * #slot
+       * Letter the lane's marks with each record's VCF ID, in plugin-canvas's
+       * label font at its measured widths — the same text a
+       * `LinearVariantDisplay` puts under the same record.
+       *
+       * A label is drawn only where it clears the previous one: the lane is one
+       * row, so it has nowhere to push a collision (that display resolves
+       * overlap by stacking features onto more rows). So labels appear as you
+       * zoom in and thin out as you zoom out, which is the honest behavior for
+       * a single strip. They are also dropped wholesale when the lane is too
+       * short to hold a mark and a text line — see `variantTopBands.ts`.
+       */
+      showVariantLaneLabels: {
+        type: 'boolean',
+        defaultValue: true,
+        description:
+          "letter the variant lane's marks with each record's VCF ID where there is room",
+      },
     },
     {
       /**

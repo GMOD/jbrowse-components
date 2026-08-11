@@ -123,7 +123,7 @@ test('the variant lane is painted, and takes its height from the rows', async ()
   await view.exportSvg({ rasterizeLayers: false })
 
   display.setShowVariantLane(true)
-  const { laneHeight } = display.topBands
+  const { laneHeight, markHeight, labelsFit } = display.topBands
   await view.exportSvg({ rasterizeLayers: false })
 
   // two exports in one test, so index rather than getSavedSvg()
@@ -139,10 +139,18 @@ test('the variant lane is painted, and takes its height from the rows', async ()
   expect(svg).toContain(`transform="translate(0 ${laneHeight})"`)
 
   // and the band is actually painted: marks at y=0, above that translate, which
-  // the lane-less export had none of
+  // the lane-less export had none of. `markHeight`, not `laneHeight` — labels
+  // are on by default and the marks give up the text strip's height to them.
   const laneMarks = [
     ...svg.matchAll(/<rect[^>]*\by="0"[^>]*\bheight="([\d.]+)"/g),
-  ].filter(m => Number(m[1]) === laneHeight)
+  ].filter(m => Number(m[1]) === markHeight)
   expect(laneMarks.length).toBeGreaterThan(0)
   expect(cellRowYs(svg).rectCount).toBeGreaterThan(before.rectCount)
+
+  // the labels are exported too, and are the records' own IDs — this VCF's are
+  // rs-numbers, so a lettered lane is one that found real names rather than
+  // drawing empty strings
+  expect(labelsFit).toBe(true)
+  expect(markHeight).toBeLessThan(laneHeight)
+  expect(svg).toMatch(/<text[^>]*>rs\d+</)
 }, 60000)

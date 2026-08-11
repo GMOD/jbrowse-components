@@ -1,3 +1,4 @@
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { OverlayCanvas } from '@jbrowse/render-core'
 import { observer } from 'mobx-react'
 
@@ -24,8 +25,8 @@ const VariantLaneOverlay = observer(function VariantLaneOverlay({
 }: {
   model: LinearMultiSampleVariantDisplayModel
 }) {
+  const palette = usePalette()
   const { variantLaneRegions, renderBlocks, topBands, canvasWidthPx } = model
-  const { laneHeight } = topBands
   return variantLaneRegions ? (
     <div style={{ position: 'absolute', top: 0, left: 0 }}>
       <OverlayCanvas
@@ -33,11 +34,13 @@ const VariantLaneOverlay = observer(function VariantLaneOverlay({
         // the width the blocks were mapped into, and it is the scissor bound
         // inside the draw below.
         width={canvasWidthPx}
-        height={laneHeight}
+        height={topBands.laneHeight}
         draw={ctx => {
           drawVariantLane(ctx, variantLaneRegions, renderBlocks, {
             canvasWidth: canvasWidthPx,
-            laneHeight,
+            bands: topBands,
+            // the theme's text color, as plugin-canvas letters a feature with
+            labelColor: palette.text.primary,
           })
         }}
       />

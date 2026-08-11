@@ -82,6 +82,12 @@ export function stateModelFactory(
         setVariantLaneHeight(arg: number) {
           setConf(self, 'variantLaneHeight', clampVariantLaneHeight(arg))
         },
+        /**
+         * #action
+         */
+        setShowVariantLaneLabels(arg: boolean) {
+          setConf(self, 'showVariantLaneLabels', arg)
+        },
       }))
       .views(self => {
         const {
@@ -101,6 +107,9 @@ export function stateModelFactory(
           },
           get variantLaneHeight(): number {
             return getConf(self, 'variantLaneHeight')
+          },
+          get showVariantLaneLabels(): boolean {
+            return getConf(self, 'showVariantLaneLabels')
           },
           get visibleRegions() {
             const view = self.lgv
@@ -173,6 +182,22 @@ export function stateModelFactory(
                   self.setShowVariantLane(!self.showVariantLane)
                 },
               },
+              ...(self.showVariantLane
+                ? [
+                    {
+                      label: 'Label the variant lane',
+                      helpText:
+                        'Letter each mark with its VCF ID where there is room. The lane is one row, so a label is drawn only where it clears the previous one — they thin out as you zoom out, and are dropped entirely if the lane is too short to hold a mark and a line of text',
+                      type: 'checkbox' as const,
+                      checked: self.showVariantLaneLabels,
+                      onClick: () => {
+                        self.setShowVariantLaneLabels(
+                          !self.showVariantLaneLabels,
+                        )
+                      },
+                    },
+                  ]
+                : []),
               {
                 label: 'Show reference alleles',
                 helpText:

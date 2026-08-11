@@ -3816,6 +3816,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "variantLaneHeight",
           "type": "(JexlString | number)"
+        },
+        {
+          "name": "showVariantLaneLabels",
+          "type": "(JexlString | boolean)"
         }
       ],
       "aliases": [

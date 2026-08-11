@@ -578,6 +578,16 @@ export default function MultiSampleVariantBaseModelF(
 
         /**
          * #getter
+         * Whether the variant lane letters its marks. Overridden alongside the
+         * two above by the display that paints one; `topBands.labelsFit` is the
+         * resolved answer, which also folds in whether the lane is tall enough.
+         */
+        get showVariantLaneLabels(): boolean {
+          return false
+        },
+
+        /**
+         * #getter
          * Raw per-row height setting: `0` is fit-to-display-height, any
          * positive value is a pinned px height. The resolved value is
          * `effectiveRowHeight` — consumers read that, never this. On the config
@@ -1160,6 +1170,7 @@ export default function MultiSampleVariantBaseModelF(
           return variantTopBandsGeometry({
             showVariantLane: self.showVariantLane,
             variantLaneHeight: self.variantLaneHeight,
+            showVariantLaneLabels: self.showVariantLaneLabels,
             lineZoneHeight: self.lineZoneHeight,
           })
         },

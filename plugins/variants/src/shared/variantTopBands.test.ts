@@ -38,10 +38,19 @@ describe('the band stack', () => {
     expect(
       variantTopBandsGeometry({
         showVariantLane: true,
+        showVariantLaneLabels: false,
         variantLaneHeight: 20,
         lineZoneHeight: 30,
       }),
-    ).toEqual({ laneTop: 0, laneHeight: 20, lineZoneTop: 20, bottom: 50 })
+    ).toEqual({
+      laneTop: 0,
+      laneHeight: 20,
+      markHeight: 20,
+      labelTop: 0,
+      labelsFit: false,
+      lineZoneTop: 20,
+      bottom: 50,
+    })
   })
 
   // Off spends nothing, not a clamped minimum: the toggle has to leave the
@@ -51,10 +60,19 @@ describe('the band stack', () => {
     expect(
       variantTopBandsGeometry({
         showVariantLane: false,
+        showVariantLaneLabels: false,
         variantLaneHeight: 20,
         lineZoneHeight: 30,
       }),
-    ).toEqual({ laneTop: 0, laneHeight: 0, lineZoneTop: 0, bottom: 30 })
+    ).toEqual({
+      laneTop: 0,
+      laneHeight: 0,
+      markHeight: 0,
+      labelTop: 0,
+      labelsFit: false,
+      lineZoneTop: 0,
+      bottom: 30,
+    })
   })
 
   // The stored height is honored whether or not it was written through the
@@ -64,6 +82,7 @@ describe('the band stack', () => {
     const bands = (variantLaneHeight: number) =>
       variantTopBandsGeometry({
         showVariantLane: true,
+        showVariantLaneLabels: false,
         variantLaneHeight,
         lineZoneHeight: 0,
       })
