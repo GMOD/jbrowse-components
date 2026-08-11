@@ -7,7 +7,6 @@
 # introduces the figure. Removing one is the win. A multi-panel figure that has
 # to name each panel is the legitimate reason to stay listed.
 config_guides/variant_track.md /img/ld/lct_haploblock.png
-tutorials/cancer_sv.md /img/cancer_sv/k562_starfusion_triage.png
 tutorials/cancer_sv.md /img/cancer_sv/multihop_reads.png
 tutorials/cancer_sv.md /img/cancer_sv/split_view_from_breakend.png
 tutorials/chromhmm.md /img/chromhmm.png

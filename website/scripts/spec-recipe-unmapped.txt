@@ -17,6 +17,7 @@ featureHighlights
 filterBy
 gfaLocation
 height
+jexlFiltersSetting
 label
 legend
 maxRegionBp
