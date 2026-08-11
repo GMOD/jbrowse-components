@@ -1859,19 +1859,41 @@ export default function stateModelFactory(
         /**
          * #getter
          * Positioned per-species presence bars for the zoom-out summary overlay.
-         * Empty unless `showSummary` is active. Unmatched `src` rows drop via the
-         * `sources` index, keeping the render robust to summary files that list
-         * extra species.
+         * Unmatched `src` rows drop via the `sources` index, keeping the render
+         * robust to summary files that list extra species.
+         *
+         * Drawn on the summary tier, **and as the coarse stand-in for a region
+         * the detail tier hasn't landed yet** — which is the swap back in, and
+         * used to be a blank track. Zooming in past the floor stays spatially
+         * inside the region the summary fetch loaded, so `viewportWithinLoadedData`
+         * is true and `canvasDrawn` is already set: the display reads as `ready`
+         * with nothing in it, for the 600ms fetch debounce plus the alignment
+         * RPC, which on a deep alignment is the slow one. Nothing was wrong
+         * except that the rows we could still draw had been switched off.
+         *
+         * Suppressed per region rather than in one decision, because the tiers
+         * arrive per region: the one under the cursor can be showing bases while
+         * its neighbour is still bars. `showSummary` short-circuits it because
+         * the two maps *can* both hold a region — zooming back out reuses the
+         * summary cache and never calls `clearAlignmentData`, and the bars are
+         * what is on screen there.
          */
         get visibleSummaryBars() {
-          return self.rowsVisible && self.showSummary
-            ? computeVisibleSummaryBars({
-                view: self.lgv,
-                summaryDataMap: self.summaryDataMap,
-                rowIndexBySrc: self.rowIndexBySrc,
-                ...self.rowGeometry(),
-              })
-            : []
+          if (!self.rowsVisible || self.summaryDataMap.size === 0) {
+            return []
+          }
+          const summary = self.summaryDataMap
+          return computeVisibleSummaryBars({
+            view: self.lgv,
+            summaryDataMap: self.showSummary
+              ? summary
+              : {
+                  get: (i: number) =>
+                    self.rpcDataMap.has(i) ? undefined : summary.get(i),
+                },
+            rowIndexBySrc: self.rowIndexBySrc,
+            ...self.rowGeometry(),
+          })
         },
         /**
          * #getter
