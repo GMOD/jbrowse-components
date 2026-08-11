@@ -32,6 +32,9 @@ interface Dim {
 
 const dimText = (d: Dim) => `${d.w}×${d.h}`
 
+const toDim = (wh: [number, number] | undefined): Dim | undefined =>
+  wh ? { w: wh[0], h: wh[1] } : undefined
+
 // The hash rides in the URL so the browser refetches exactly when the pixels
 // change and caches otherwise. Without it a regen leaves the reviewer looking at
 // a cached image while judging the one now on disk.
@@ -64,7 +67,16 @@ export function Compare({
   // The natural sizes of whichever images have arrived. Held here rather than in
   // the stage so the size-mismatch warning, which is drawn up in the bar, is
   // derived rather than pushed.
-  const [dims, setDims] = useState<{ base?: Dim; top?: Dim }>({})
+  //
+  // Seeded from the payload, which got both sizes out of the two manifests for
+  // nothing, so the stage has its box before either image loads rather than
+  // growing into it as they arrive. `onLoad` still overwrites with what actually
+  // decoded — the manifest can be wrong about a figure regenerated since the
+  // page was served, and the picture is the authority.
+  const [dims, setDims] = useState<{ base?: Dim; top?: Dim }>(() => ({
+    base: toDim(spec.mainSize),
+    top: toDim(spec.size),
+  }))
   const [noBaseline, setNoBaseline] = useState(false)
 
   const onDim = useCallback((which: 'base' | 'top', d: Dim) => {
@@ -287,6 +299,15 @@ function SideBySide({ spec }: { spec: SpecEntry }) {
   // is immutable, public and cached for a year by CloudFront — nothing for this
   // server to proxy, and the link keeps resolving from any commit's manifest.
   const [mainFailed, setMainFailed] = useState(false)
+  // width/height ATTRIBUTES, not styles: they give the browser the aspect ratio
+  // to reserve the box with while the bytes are in flight, and the CSS
+  // (max-width/max-height, height auto) still decides the drawn size. Without
+  // them a column is its 180px floor until the picture decodes and up to 400px
+  // after, so scrolling the list is a procession of cards growing under the
+  // pointer. 58% of the corpus draws shorter than the 400px cap, so reserving a
+  // flat box instead would letterbox most of it.
+  const size = (wh: [number, number] | undefined) =>
+    wh ? { width: wh[0], height: wh[1] } : {}
   return (
     <div className="card-images">
       <ImgCol label="current branch">
@@ -294,6 +315,7 @@ function SideBySide({ spec }: { spec: SpecEntry }) {
           <img
             src={currentSrc(spec)}
             alt={spec.name}
+            {...size(spec.size)}
             onClick={e => {
               window.open(e.currentTarget.src)
             }}
@@ -321,6 +343,7 @@ function SideBySide({ spec }: { spec: SpecEntry }) {
             src={spec.mainUrl}
             alt={`${spec.name} on origin/main`}
             loading="lazy"
+            {...size(spec.mainSize)}
             onClick={e => {
               window.open(e.currentTarget.src)
             }}

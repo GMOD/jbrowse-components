@@ -71,6 +71,10 @@ export interface ScreenshotPart {
   // present in the baseline but the working-tree pixels differ — i.e. an update
   // the current work introduced
   changed: boolean
+  // natural pixel size of each side, for reserving the image's box before it
+  // loads — see FigureComparison
+  size?: [number, number]
+  mainSize?: [number, number]
 }
 
 export interface Screenshot extends ScreenshotPart {

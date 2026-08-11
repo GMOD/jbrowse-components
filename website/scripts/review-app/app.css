@@ -242,13 +242,18 @@ header label {
   opacity: 0.85;
 }
 /* The trailing space is load-bearing, not decoration.
-   A card that shrinks while a pointer is down — every note save does, see
-   `.unsaved` — shortens the document. If the page is at the bottom of its scroll
-   range, the browser has to clamp scrollY to the new maximum, and that moves
-   every pixel in the viewport DOWN by the difference. The button between whose
-   mousedown and mouseup it lands goes out from under the pointer, the mouseup
-   happens somewhere else, and the browser dispatches no click at all: the
-   reviewer's Deny silently does nothing and they click again.
+   A card that shrinks while a pointer is down shortens the document. If the page
+   is at the bottom of its scroll range, the browser has to clamp scrollY to the
+   new maximum, and that moves every pixel in the viewport DOWN by the
+   difference. The button between whose mousedown and mouseup it lands goes out
+   from under the pointer, the mouseup happens somewhere else, and the browser
+   dispatches no click at all: the reviewer's Deny silently does nothing and they
+   click again.
+   The three ways a card USED to shrink have each since been closed at source —
+   the note hint reserves its line (`.unsaved`), the status stripe no longer
+   widens a border, and an image's box is reserved from the manifest before it
+   loads. This is the net under all three, kept because it costs nothing and
+   because the next thing to resize a card will not announce itself.
    Nothing about React prevents this — it is not a repaint, it is the scroll
    position. Slack past the last card is what does: the clamp only fires when
    scrollY exceeds the new maximum, and with half a screen of run-off a card you

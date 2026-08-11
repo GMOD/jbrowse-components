@@ -416,7 +416,18 @@ export interface FigureComparison {
   unpulled: boolean
   mainUrl?: string
   changed: boolean
+  // Natural size of each side, so the review page can reserve an image's box
+  // before its bytes land. Both manifests already carry it, so this is free —
+  // and without it a card is 180px tall until its picture decodes and up to
+  // 400px after, which moves every card below it while you are scrolling.
+  // Absent for a side that has no figure, and for one whose entry predates the
+  // manifest carrying dimensions.
+  size?: [number, number]
+  mainSize?: [number, number]
 }
+
+const naturalSize = (e: FigureEntry | undefined) =>
+  e?.width && e.height ? ([e.width, e.height] as [number, number]) : undefined
 
 export function compareToBaseline(
   path: string,
@@ -426,12 +437,16 @@ export function compareToBaseline(
 ): FigureComparison {
   const here = disk.get(path)
   const there = base.get(path)
+  const size = naturalSize(here)
+  const mainSize = naturalSize(there)
   return {
     exists: here !== undefined,
     unpulled: here === undefined && missing.has(path),
     ...(there ? { mainUrl: storeUrl(there) } : {}),
     changed:
       here !== undefined && there !== undefined && here.sha256 !== there.sha256,
+    ...(size ? { size } : {}),
+    ...(mainSize ? { mainSize } : {}),
   }
 }
 

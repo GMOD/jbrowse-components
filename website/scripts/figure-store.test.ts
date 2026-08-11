@@ -364,8 +364,9 @@ describe('a card against its baseline', () => {
   const disk = new Map([
     ['website/static/img/same.png', entry('website/static/img/same.png', A)],
     [
+      // resized as well as regenerated, so the two sides' sizes are told apart
       'website/static/img/moved.png',
-      entry('website/static/img/moved.png', B, 300, 800, 600),
+      entry('website/static/img/moved.png', B, 300, 900, 600),
     ],
     ['website/static/img/added.png', entry('website/static/img/added.png', B)],
   ])
@@ -389,6 +390,8 @@ describe('a card against its baseline', () => {
       unpulled: false,
       changed: false,
       mainUrl: storeUrl(entry('website/static/img/same.png', A)),
+      size: [10, 20],
+      mainSize: [10, 20],
     })
   })
 
@@ -401,6 +404,10 @@ describe('a card against its baseline', () => {
     expect(c.mainUrl).not.toBe(
       storeUrl(entry('website/static/img/moved.png', B)),
     )
+    // and the sizes the page reserves each column with come from the side they
+    // name — swapping them would reserve the wrong box for both
+    expect(c.size).toEqual([900, 600])
+    expect(c.mainSize).toEqual([800, 600])
   })
 
   test('a figure the branch added has no baseline to show', () => {
@@ -408,6 +415,7 @@ describe('a card against its baseline', () => {
       exists: true,
       unpulled: false,
       changed: false,
+      size: [10, 20],
     })
   })
 

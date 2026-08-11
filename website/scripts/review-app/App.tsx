@@ -51,7 +51,15 @@ function Count({ n }: { n: number }) {
   return <span className="tabcount">{n}</span>
 }
 
-function Pill({ cls, n, label }: { cls: string; n: number; label: string }) {
+function CountPill({
+  cls,
+  n,
+  label,
+}: {
+  cls: string
+  n: number
+  label: string
+}) {
   return (
     <span className={`pill ${cls}`}>
       <Count n={n} /> {label}
@@ -379,15 +387,15 @@ export function App() {
           <Count n={leaving.size} />
         </button>
         <div className="counts">
-          <Pill cls="good" n={settled('good')} label="approved" />
-          <Pill cls="bad" n={settled('bad')} label="denied" />
-          <Pill
+          <CountPill cls="good" n={settled('good')} label="approved" />
+          <CountPill cls="bad" n={settled('bad')} label="denied" />
+          <CountPill
             cls="answered"
             n={settled('answered')}
             label="answered, awaiting you"
           />
-          <Pill cls="stale" n={stale} label="changed since review" />
-          <Pill
+          <CountPill cls="stale" n={stale} label="changed since review" />
+          <CountPill
             cls="none"
             n={entries.filter(s => !s.verdict).length}
             label="unreviewed"
