@@ -52,6 +52,62 @@ test('a SNP read contributes its actual base, not the reference', () => {
   })
 })
 
+// Membership comes off a bitmap covering [min, max] of the requested positions,
+// so anything outside that span has to be rejected before the bitmap is indexed.
+// The tests above all sit a read inside the span; these put one across and
+// outside the edges, where an off-by-one would drop a real tally or read past
+// the end of the array.
+describe('positions outside the bitmap span', () => {
+  test('counts the boundary positions themselves', () => {
+    // read covers 100-104; only the two ends are requested, so both are exactly
+    // on the clamp boundary
+    const reads = [read({ start: 100, seq: 'ACGTA', CIGAR: '5M' })]
+    const counts = computeReadBaseCounts(reads, new Set([100, 104]))
+    expect(counts.get(100)).toEqual({ A: { fwd: 1, rev: 0 } })
+    expect(counts.get(104)).toEqual({ A: { fwd: 1, rev: 0 } })
+    expect(counts.size).toBe(2)
+  })
+
+  test('a read overhanging both ends still tallies the middle', () => {
+    // the geometry this exists for: the read is far longer than the span, so
+    // most of the walk is outside it
+    const reads = [read({ start: 100, seq: 'A'.repeat(50), CIGAR: '50M' })]
+    const counts = computeReadBaseCounts(reads, new Set([120, 121]))
+    expect(counts.get(120)).toEqual({ A: { fwd: 1, rev: 0 } })
+    expect(counts.get(121)).toEqual({ A: { fwd: 1, rev: 0 } })
+    expect(counts.size).toBe(2)
+  })
+
+  test('a read entirely outside the span contributes nothing', () => {
+    const reads = [read({ start: 500, seq: 'ACGT', CIGAR: '4M' })]
+    expect(computeReadBaseCounts(reads, new Set([100, 101])).size).toBe(0)
+  })
+
+  test('an insertion before the span keeps the mapping aligned', () => {
+    // the clamp skips bases by reference offset while `seq` is indexed by read
+    // offset, so a preceding insertion is where the two could drift apart
+    // read:  A C [GG] T A
+    // ref:  100 101     102 103
+    const reads = [read({ start: 100, seq: 'ACGGTA', CIGAR: '2M2I2M' })]
+    const counts = computeReadBaseCounts(reads, new Set([103]))
+    expect(counts.get(103)).toEqual({ A: { fwd: 1, rev: 0 } })
+  })
+
+  test('no requested positions means no counts', () => {
+    const reads = [read({ start: 100, seq: 'ACGT', CIGAR: '4M' })]
+    expect(computeReadBaseCounts(reads, new Set()).size).toBe(0)
+  })
+
+  test('a span too wide for the bitmap still counts correctly', () => {
+    // over MAX_BITMAP_SPAN, so the fallback membership test runs; the clamp is
+    // still in force and the answer must not change
+    const reads = [read({ start: 100, seq: 'ACGT', CIGAR: '4M' })]
+    const counts = computeReadBaseCounts(reads, new Set([101, 90_000_000]))
+    expect(counts.get(101)).toEqual({ C: { fwd: 1, rev: 0 } })
+    expect(counts.size).toBe(1)
+  })
+})
+
 test('CIGAR indels/clips keep read- and ref-position in sync', () => {
   // 2M 1I 2M against ref starting at 100: the inserted base must not shift the
   // genomic mapping of bases after it.
