@@ -1,9 +1,34 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
-import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'
+import { YScaleBar } from '@jbrowse/wiggle-core'
 
-const Y_AXIS_WIDTH = 40
-const NUM_TICKS = 4
+import { recombinationTicks } from './recombinationAxis.ts'
 
+// Width of the opaque gutter the axis paints over the left of the curve. 40 for
+// as long as the axis was drawn by hand at fontSize 9; the shared `YScaleBar`
+// draws at 10, and a four-character label ("0.00".."1.00") at that size needs
+// ~20px, which at a spine on the gutter's far edge reaches back to x≈14. The
+// rotated caption is centred on x=10 and so occupies roughly [5, 15] — at 40 the
+// two touched, which they already did a little at fontSize 9.
+const Y_AXIS_WIDTH = 44
+
+// YScaleBar crispens its spine to a local x of 0.5, so translating by
+// `width - 1` lands that 1px stroke on the gutter's last pixel. Left-oriented,
+// so the ticks and numbers grow back across the gutter from there — the same
+// "spine on the far edge" placement `leftAxisSpineX` makes for the alignments
+// coverage axis.
+const SPINE_X = Y_AXIS_WIDTH - 1
+
+const CAPTION_X = 10
+
+/**
+ * The recombination curve's y-axis, drawn over the left edge of the strip.
+ *
+ * The axis itself is the shared `YScaleBar`, not a local copy: this used to
+ * hand-roll the spine path, the tick lines and the labels, which meant a second
+ * set of answers to where the spine crispens, whether the bottom stroke stays
+ * inside the box, and how a label is haloed against the plot behind it. All this
+ * owns now is the gutter it paints in and the caption naming the statistic.
+ */
 export default function RecombinationYScaleBar({
   height,
   maxValue,
@@ -15,53 +40,26 @@ export default function RecombinationYScaleBar({
 }) {
   const palette = usePalette()
   const fg = palette.text.primary
-  const bg = palette.background.default
-  const plotHeight = height - 2 * YSCALEBAR_LABEL_OFFSET
-  const yTop = YSCALEBAR_LABEL_OFFSET + 0.5
-  const yBottom = height - YSCALEBAR_LABEL_OFFSET + 0.5
 
   const content = (
     <>
-      <rect x={0} y={0} width={Y_AXIS_WIDTH} height={height} fill={bg} />
-      <g fill="none" fontSize={9} textAnchor="end" strokeWidth={1}>
-        <path
-          stroke={fg}
-          d={`M${Y_AXIS_WIDTH - 6},${yTop}H${Y_AXIS_WIDTH - 0.5}V${yBottom}H${Y_AXIS_WIDTH - 6}`}
-        />
-        {Array.from({ length: NUM_TICKS + 1 }, (_, i) => {
-          const value = (maxValue * i) / NUM_TICKS
-          const y = YSCALEBAR_LABEL_OFFSET + plotHeight * (1 - i / NUM_TICKS)
-          return (
-            <g key={value} transform={`translate(0,${y})`}>
-              <line
-                stroke={fg}
-                x1={Y_AXIS_WIDTH - 6}
-                x2={Y_AXIS_WIDTH}
-                y1={0.5}
-                y2={0.5}
-              />
-              <text
-                stroke={bg}
-                strokeWidth={2}
-                paintOrder="stroke"
-                fill={fg}
-                dy="0.32em"
-                x={Y_AXIS_WIDTH - 9}
-                y={0.5}
-              >
-                {value.toFixed(2)}
-              </text>
-            </g>
-          )
-        })}
+      <rect
+        x={0}
+        y={0}
+        width={Y_AXIS_WIDTH}
+        height={height}
+        fill={palette.background.default}
+      />
+      <g transform={`translate(${SPINE_X}, 0)`}>
+        <YScaleBar ticks={recombinationTicks(height, maxValue)} />
       </g>
       <text
-        x={10}
+        x={CAPTION_X}
         y={height / 2}
         fontSize={10}
         fill={fg}
         textAnchor="middle"
-        transform={`rotate(-90, 10, ${height / 2})`}
+        transform={`rotate(-90, ${CAPTION_X}, ${height / 2})`}
       >
         1 - r²
       </text>

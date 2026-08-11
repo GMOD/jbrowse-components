@@ -1,6 +1,8 @@
 import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
-import { YSCALEBAR_LABEL_OFFSET, gapBreakLimit } from '@jbrowse/wiggle-core'
+import { gapBreakLimit } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
+
+import { recombinationBox, recombinationY } from './recombinationAxis.ts'
 
 const FILL_COLOR = 'rgba(59, 130, 246, 0.2)'
 const STROKE_COLOR = 'rgb(59, 130, 246)'
@@ -67,9 +69,10 @@ const RecombinationTrack = observer(function RecombinationTrack({
   height: number
   exportSVG?: boolean
 }) {
-  const topPadding = YSCALEBAR_LABEL_OFFSET
-  const bottomPadding = YSCALEBAR_LABEL_OFFSET
-  const plotHeight = height - topPadding - bottomPadding
+  // The box RecombinationYScaleBar places its ticks in, through the mapping it
+  // places them with — so a tick at 0.5 is at the height the curve reaches when
+  // it reads 0.5, rather than at whatever a second copy of the arithmetic said.
+  const box = recombinationBox(height)
 
   const plotted: [number, number][] = []
   for (const { x, value } of points) {
@@ -77,7 +80,7 @@ const RecombinationTrack = observer(function RecombinationTrack({
     // two skipped in a row is jitter the line should span; a long run of them is
     // a hole, which `runs` below breaks on.
     if (Number.isFinite(value) && Number.isFinite(x)) {
-      plotted.push([x, topPadding + plotHeight * (1 - value / maxValue)])
+      plotted.push([x, recombinationY(value, maxValue, box)])
     }
   }
 
@@ -117,7 +120,7 @@ const RecombinationTrack = observer(function RecombinationTrack({
 
   // Each run closes its own area, so the fill stops at the hole instead of
   // sweeping under it.
-  const baseY = topPadding + plotHeight
+  const baseY = box.yBottom
   const areaPath = runs
     .map(
       run =>
