@@ -187,6 +187,15 @@ const FloatingLegend = observer(function FloatingLegend({
       <div
         className={cx(classes.legend, onDismiss && classes.withClose)}
         style={{ top }}
+        // Claims the press, so a drag that starts on the key isn't the LGV's
+        // click-drag pan (`useSideScroll` tests `closest('[data-gesture-owner]')`).
+        // Without it, dragging across a label panned the view under the legend
+        // and the `preventDefault` on each pan frame also meant the label text
+        // could not be selected. The marker, not `stopPropagation`: the pan
+        // reads `event.target` off a bubbling mousedown, and stopping that one
+        // would also cost focus-on-click, whose document-level listener
+        // (`useFocusOnInteraction`) React's stopPropagation does block.
+        data-gesture-owner="true"
       >
         {onDismiss ? (
           <IconButton

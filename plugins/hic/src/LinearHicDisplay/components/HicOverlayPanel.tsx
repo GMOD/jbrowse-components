@@ -141,7 +141,12 @@ const HicOverlayPanel = observer(function HicOverlayPanel({
   // whole-genome / multi-region scale (see TrackOverlayPortal)
   return (
     <TrackOverlayPortal>
-      <div className={classes.panel}>
+      <div
+        className={classes.panel}
+        // same reason as FloatingLegend: a panel that takes pointer events must
+        // claim the press, or dragging its text pans the view underneath
+        data-gesture-owner="true"
+      >
         {showResArea ? <ResolutionRow model={model} /> : null}
         {showLegendArea ? (
           <>
