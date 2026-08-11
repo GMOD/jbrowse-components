@@ -306,8 +306,18 @@ function SideBySide({ spec }: { spec: SpecEntry }) {
   // after, so scrolling the list is a procession of cards growing under the
   // pointer. 58% of the corpus draws shorter than the 400px cap, so reserving a
   // flat box instead would letterbox most of it.
+  //
+  // `--ratio` is the same two numbers again, in the form the height cap needs to
+  // become a width cap. The attributes make the width definite, and a definite
+  // width is not something `max-height` can shrink — the CSS says why.
   const size = (wh: [number, number] | undefined) =>
-    wh ? { width: wh[0], height: wh[1] } : {}
+    wh
+      ? {
+          width: wh[0],
+          height: wh[1],
+          style: { '--ratio': wh[0] / wh[1] } as React.CSSProperties,
+        }
+      : {}
   return (
     <div className="card-images">
       <ImgCol label="current branch">

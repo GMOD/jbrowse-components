@@ -17,6 +17,11 @@
  *    what leaves the aspect ratio intact; without it every figure past the
  *    400px cap draws stretched, which nothing about the page looks wrong.
  *
+ *    Both dimensions, and that is the point. This probe shipped checking only
+ *    the height, and a height-only check cannot see the failure it was written
+ *    for: a figure past the cap is 400px tall whether or not it is the right
+ *    shape, so the stretched page passed. Compare the drawn box.
+ *
  * Read-only: it never files a verdict, so it cannot touch screenshot-review.json.
  * The header's own invariant — that a verdict never resizes it — does need a
  * click, so it is checked by hand rather than here.
@@ -68,15 +73,23 @@ const bad = await page.evaluate(() =>
     .map(i => {
       const avail = i.parentElement!.getBoundingClientRect().width
       const scale = Math.min(1, avail / i.naturalWidth, 400 / i.naturalHeight)
+      const box = i.getBoundingClientRect()
       return {
         name: i.getAttribute('alt') || i.src,
         reserved: `${i.getAttribute('width')}x${i.getAttribute('height')}`,
         decoded: `${i.naturalWidth}x${i.naturalHeight}`,
-        drawn: Math.round(i.getBoundingClientRect().height),
-        wants: Math.round(i.naturalHeight * scale),
+        drawn: [Math.round(box.width), Math.round(box.height)],
+        wants: [
+          Math.round(i.naturalWidth * scale),
+          Math.round(i.naturalHeight * scale),
+        ],
       }
     })
-    .filter(r => r.reserved !== r.decoded || Math.abs(r.drawn - r.wants) > 1),
+    .filter(
+      r =>
+        r.reserved !== r.decoded ||
+        r.drawn.some((n, j) => Math.abs(n - r.wants[j]!) > 1),
+    ),
 )
 
 const grew = after - before
@@ -84,7 +97,7 @@ console.log(`document grew ${grew}px while the figures loaded`)
 console.log(`${bad.length} column(s) reserved or drawn at the wrong size`)
 for (const r of bad.slice(0, 10)) {
   console.log(
-    `  ${r.name}: reserved ${r.reserved}, decoded ${r.decoded}, drawn ${r.drawn} where geometry says ${r.wants}`,
+    `  ${r.name}: reserved ${r.reserved}, decoded ${r.decoded}, drawn ${r.drawn.join('x')} where geometry says ${r.wants.join('x')}`,
   )
 }
 await browser.close()

@@ -333,18 +333,28 @@ main {
   min-height: 180px;
   flex: 1;
 }
-/* `width: auto; height: auto` is what makes the width/height ATTRIBUTES safe,
-   and it is not optional. Those attributes are there to give the box an aspect
-   ratio to reserve before the bytes arrive (see Compare.tsx) — but they are also
-   presentational hints for the `width` and `height` PROPERTIES, so on their own
-   they hand the image a definite height that `max-height` then clamps with no
-   ratio left to preserve. Every tall figure drew 400px tall and 18% stretched,
-   which in a tool for judging figures is worse than the jank it fixed. Setting
-   both back to auto leaves the ratio and nothing else. */
+/* The width/height ATTRIBUTES are here to reserve each figure's box before its
+   bytes arrive (see Compare.tsx), and they are also presentational hints for the
+   width and height PROPERTIES — so the cap has to be careful with both.
+
+   `height: auto` gives the height back to the aspect ratio. It is necessary and
+   it is not sufficient: the WIDTH is still definite, from the attribute, and
+   clamping a definite width's height does not feed back into the width. So a
+   figure past the cap drew the full column wide and `--figcap` tall — 2000×2684
+   at 697×400, stretched 2.3×, in a tool whose whole job is judging figures.
+   Nothing about it looks wrong, which is why the probe now measures width too.
+
+   The fix is to express the same cap as a width, through the ratio the payload
+   already knows (`--ratio`, set alongside the attributes). Whichever of the two
+   binds, it binds on the width, where `height: auto` can follow it. A figure
+   whose size the manifest does not carry gets no attributes and no `--ratio`,
+   so its width is auto and `max-height` alone is already ratio-preserving —
+   that is what the 100000 fallback leaves in charge. */
 .imgwrap img {
+  --figcap: 400px;
   height: auto;
-  max-width: 100%;
-  max-height: 400px;
+  max-width: min(100%, calc(var(--figcap) * var(--ratio, 100000)));
+  max-height: var(--figcap);
   display: block;
   cursor: zoom-in;
 }
