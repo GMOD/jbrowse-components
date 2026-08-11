@@ -471,6 +471,22 @@ tolerance ball for "did this figure move".
   captures `+append`ed afterwards — so nothing can draw across the seam. An
   arrow from one half to the other is not available; number the two halves'
   anchors instead, as `pangenome/hprc_mhc_anchored` does with `circle` badges.
+
+  **This has now been asked for directly** ("add red text annotation boxes", on
+  `jbrowse-img/sv_review_pair`, whose halves are two `jb2export` renders and so
+  carry no annotations either — `CliSpec` extends `BaseSpecFields` too). Where
+  the parts are browser captures the workaround above holds; where they are CLI
+  renders there is no workaround at all, and the only in-frame labelling
+  available is jb2export's own track names. Building it is a contained change
+  and worth writing down so the next round does not re-derive it:
+  `captureComposeSpec` already knows each part's exact pixel offset because it
+  did the `+append`, so an anchor of the form
+  `{ part: N, alignX, alignY, dx, dy }` resolves node-side with nothing measured
+  off a picture. The drawing itself is the existing `drawAnnotationOverlay`, run
+  over a blank page holding the composed PNG as an `<img>` at its own CSS size,
+  captured at `deviceScaleFactor` 2. Do not reach for `convert -draw` instead:
+  the pill style would then exist in two places and drift.
+
 - **A callout anchored to a node can land under another callout.** Render and
   look before believing an offset — the MHC pair's two landmarks are an allele
   and the reference stretch it replaces, so the force layout draws them touching
