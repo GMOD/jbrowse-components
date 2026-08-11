@@ -1,6 +1,6 @@
 import { parseCigar2 } from '@jbrowse/cigar-utils'
 
-import { findPosInCigar } from './findPosInCigar.ts'
+import { findPosInCigar, findPosInCigarByMate } from './findPosInCigar.ts'
 
 describe('findPosInCigar', () => {
   it('pure match advances both axes equally up to startX', () => {
@@ -69,5 +69,47 @@ describe('findPosInCigar', () => {
     //  - 30M → 30,30
     //  - 50N capped → featX 30→50, mateX stays 30
     expect(findPosInCigar(parseCigar2('30M50N30M'), 50)).toEqual([50, 30])
+  })
+})
+
+describe('findPosInCigarByMate', () => {
+  it('pure match advances both axes equally up to startX', () => {
+    expect(findPosInCigarByMate(parseCigar2('100='), 50)).toEqual([50, 50])
+  })
+
+  it('startX past the CIGAR end returns the totals (capped)', () => {
+    expect(findPosInCigarByMate(parseCigar2('50='), 100)).toEqual([50, 50])
+  })
+
+  it('deletions advance only the feature axis', () => {
+    // the mirror of the insertion case above: 10D is zero-width on the mate
+    // axis, so a 150bp walk along the mate crosses it and leaves the feature
+    // axis 10 ahead
+    expect(findPosInCigarByMate(parseCigar2('100=10D100='), 150)).toEqual([
+      160, 150,
+    ])
+  })
+
+  it('deletions at the exact breakpoint are NOT consumed', () => {
+    expect(findPosInCigarByMate(parseCigar2('100=10D100='), 100)).toEqual([
+      100, 100,
+    ])
+  })
+
+  it('insertions advance only the mate axis', () => {
+    // mate 105 is 5bp into the insertion, where the feature axis has not moved
+    expect(findPosInCigarByMate(parseCigar2('100=10I100='), 105)).toEqual([
+      100, 105,
+    ])
+  })
+
+  it('undoes findPosInCigar for a position in a match run', () => {
+    // The two walks are not each other's arithmetic inverse in general -- an
+    // offset landing inside an indel has no unique partner -- but a position
+    // in a match run round-trips exactly, which is what the two menu
+    // directions rely on.
+    const cigar = parseCigar2('100=10I50=10D100=')
+    const [, mateX] = findPosInCigar(cigar, 200)
+    expect(findPosInCigarByMate(cigar, mateX)).toEqual([200, mateX])
   })
 })

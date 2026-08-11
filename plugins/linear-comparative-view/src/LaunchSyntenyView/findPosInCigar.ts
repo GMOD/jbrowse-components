@@ -55,3 +55,41 @@ export function findPosInCigar(cigar: number[], startX: number) {
   }
   return [featX, mateX] as const
 }
+
+// The mirror of findPosInCigar: walk up to `startX` bp along the MATE
+// (query) axis and report how far the feature axis advanced.
+//
+// Needed because a synteny band sits between two panels, so "move the other
+// panel" runs in both directions — the panel being moved is sometimes the
+// feature axis, and mapping into it is this walk rather than the one above.
+// Not derivable by subtracting the forward walk from the block length: the two
+// axes advance at different rates through indels, which is the entire reason a
+// CIGAR walk beats interpolating across the block.
+//
+// Exactly the same op semantics with the axes swapped. Above, an insertion is
+// zero-width on the feature axis and so consumes its whole length on the mate
+// axis; here a deletion/skip is zero-width on the mate axis and consumes its
+// whole length on the feature axis. The same half-open tie-break falls out: the
+// loop stops once mateX reaches startX, so a deletion sitting exactly at the
+// boundary is not consumed.
+export function findPosInCigarByMate(cigar: number[], startX: number) {
+  let featX = 0
+  let mateX = 0
+  for (const packed of cigar) {
+    if (mateX >= startX) {
+      break
+    }
+    const len = packed >>> 4
+    const opIdx = packed & 0xf
+    const min = Math.min(len, startX - mateX)
+    if (opIdx === CIGAR_D || opIdx === CIGAR_N) {
+      featX += len
+    } else if (opIdx === CIGAR_I) {
+      mateX += min
+    } else if (opIdx === CIGAR_M || opIdx === CIGAR_EQ || opIdx === CIGAR_X) {
+      mateX += min
+      featX += min
+    }
+  }
+  return [featX, mateX] as const
+}
