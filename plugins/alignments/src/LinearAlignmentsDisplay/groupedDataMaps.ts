@@ -168,7 +168,7 @@ export function orderedGroups(
 // globally-unique chain name, not the raw chainIdx: chainIdx is assigned per
 // worker call (per region, and now per group), so the same integer means
 // different chains across calls — keying by index would merge unrelated chains.
-export function buildChainIdMap(
+export function buildReadIdsByChainName(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
   chainMode: boolean,
 ): Map<string, string[]> {

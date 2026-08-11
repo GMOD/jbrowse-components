@@ -57,8 +57,8 @@ export function getSelectionBounds(
   region: ChainBoundsRegion,
 ) {
   let result: { startBp: number; endBp: number; yRow: number } | undefined
-  if (state.selectedChainIds.length > 0) {
-    result = getChainBounds(state.selectedChainIds, region)
+  if (state.selectedChainReadIds.length > 0) {
+    result = getChainBounds(state.selectedChainReadIds, region)
   } else if (state.selectedFeatureId) {
     const idx = region.readIdToIndex().get(state.selectedFeatureId)
     if (idx !== undefined && idx < region.readYs.length) {

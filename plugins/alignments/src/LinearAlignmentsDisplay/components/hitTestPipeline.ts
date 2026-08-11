@@ -382,7 +382,7 @@ export function performHitTest(
   // The read under the cursor always wins. A miss then falls back to the read's
   // soft-clipped tail (drawn past its aligned extent, so `hitTestFeature` can't
   // see it) and, in chain mode, to the chain — so the connecting line between
-  // mates stays hoverable. `chainIdsForRead` resolves the whole chain from any
+  // mates stays hoverable. `readIdsSharingChain` resolves the whole chain from any
   // of its reads, so the chain highlight/selection is unaffected by which read
   // answers.
   const hit =

@@ -78,7 +78,10 @@ export interface RenderState {
   // mousemove repaints only the overlay div, not the canvas. Selection stays
   // canvas-side: it changes on click (rare) and belongs in SVG export.
   selectedFeatureId?: string
-  selectedChainIds: string[]
+  // Every READ of the selected chain, keyed the same way as `selectedFeatureId`
+  // — `getSelectionBounds` resolves both through `readIdToIndex`. Not chain
+  // ids: `chainNames` is that space, and nothing in the renderers holds one.
+  selectedChainReadIds: string[]
   // Color palette from theme
   colors: ColorPalette
   // Chain (linked-reads) layout is active. The `linkedReads` enum stops at the

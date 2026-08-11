@@ -201,7 +201,7 @@ export function buildChainMetadata(features: ChainFeatureData[]) {
     chainDistances[chainIdx] = chainDistance(chain, summary)
     // For normal chains this is the QNAME; secondary alignments get a
     // unique synthetic key so they never merge with their primary's chain
-    // (cross-region merge + chainIdMap both key on this). Never displayed.
+    // (cross-region merge + readIdsByChainName both key on this). Never displayed.
     chainNames.push(chainKey)
     chainSuppTypes[chainIdx] = suppType(summary)
     chainMate0SplitKind[chainIdx] = mate0SplitKind

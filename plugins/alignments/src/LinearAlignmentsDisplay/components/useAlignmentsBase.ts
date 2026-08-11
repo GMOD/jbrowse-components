@@ -223,17 +223,18 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
   // --- Hit test processing helpers ---
 
-  // The chain a hovered read belongs to, for the chain highlight. Empty outside
-  // chain mode, and empty for a cigar/modification hit that resolved no read.
+  // The reads of the chain a hovered read belongs to, for the chain highlight.
+  // Empty outside chain mode, and empty for a cigar/modification hit that
+  // resolved no read.
   // Keeping it keyed off the read (rather than only the bare-body branch) is what
   // stops the previous read's highlight going stale while the cursor sits on a
   // mismatch or modified base.
-  function hoveredChainIds(
+  function hoveredChainReadIds(
     featureHit: FeatureHit | undefined,
     resolved: ResolvedBlock,
   ) {
     return model.isChainMode && featureHit
-      ? model.chainIdsForRead(resolved.rpcData, featureHit.index)
+      ? model.readIdsSharingChain(resolved.rpcData, featureHit.index)
       : []
   }
 
@@ -323,7 +324,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
           featureIdUnderMouse: undefined,
           mouseoverExtraInformation: tooltip,
           hoverCoverageBand,
-          highlightedChainIds: [],
+          highlightedChainReadIds: [],
         })
         return
       }
@@ -337,7 +338,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
             snpBaseFromCigar(result.cigarHit),
           ),
           hoverCoverageBand,
-          highlightedChainIds: hoveredChainIds(
+          highlightedChainReadIds: hoveredChainReadIds(
             result.featureHit,
             result.resolved,
           ),
@@ -349,7 +350,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
           featureIdUnderMouse: result.featureHit?.id,
           mouseoverExtraInformation: formatCigarTooltip(result.hit),
           hoverCoverageBand,
-          highlightedChainIds: hoveredChainIds(
+          highlightedChainReadIds: hoveredChainReadIds(
             result.featureHit,
             result.resolved,
           ),
@@ -366,7 +367,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
             ? formatChainTooltip(resolved.rpcData, hit.index, resolved.refName)
             : formatFeatureTooltip(hit.id, id => model.getFeatureInfoById(id)),
           hoverCoverageBand,
-          highlightedChainIds: hoveredChainIds(hit, resolved),
+          highlightedChainReadIds: hoveredChainReadIds(hit, resolved),
         })
         return
       }
@@ -416,8 +417,8 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
         const { hit, resolved } = result
         void model.selectFeatureById(hit.id)
         if (model.isChainMode) {
-          model.setSelectedChainIds(
-            model.chainIdsForRead(resolved.rpcData, hit.index),
+          model.setSelectedChainReadIds(
+            model.readIdsSharingChain(resolved.rpcData, hit.index),
           )
         }
         return

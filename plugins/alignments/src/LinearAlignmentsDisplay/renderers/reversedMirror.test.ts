@@ -285,7 +285,7 @@ function state(overrides: Partial<RenderState> = {}): RenderState {
     showModifications: true,
     showPerBaseQuality: true,
     showPerBaseLetter: true,
-    selectedChainIds: [],
+    selectedChainReadIds: [],
     selectedFeatureId: undefined,
     colors: {
       colorFwdStrand: triple,

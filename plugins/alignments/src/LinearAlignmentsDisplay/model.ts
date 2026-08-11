@@ -98,7 +98,7 @@ import {
   nextGroupHeightOverride,
 } from './groupLayout.ts'
 import {
-  buildChainIdMap,
+  buildReadIdsByChainName,
   buildRawDataByGroup,
   buildReadIdIndexMap,
   buildSashimiDownKeys,
@@ -667,12 +667,15 @@ export default function stateModelFactory(
           fittedHeightPx: 0,
           /**
            * #volatile
+           * Read ids of the chain under the cursor — NOT chain ids; see
+           * `readIdsByChainName`, which is where they come from.
            */
-          highlightedChainIds: [] as string[],
+          highlightedChainReadIds: [] as string[],
           /**
            * #volatile
+           * Read ids of the clicked chain. Same id space as the hover set above.
            */
-          selectedChainIds: [] as string[],
+          selectedChainReadIds: [] as string[],
 
           /**
            * #volatile
@@ -900,9 +903,15 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * Chain name → the ids of the READS in it. The two id spaces are easy to
+         * confuse and nothing else in this model crosses them: `chainNames` (the
+         * key here) is a chain's own identity, `readIds` (the values) are the
+         * reads', and every consumer of this map resolves the values through
+         * `readIdToIndex` / `readIdIndexMap`. Hence the names carried downstream
+         * — `highlightedChainReadIds`, `selectedChainReadIds`.
          */
-        get chainIdMap() {
-          return buildChainIdMap(self.rpcDataMap, self.isChainMode)
+        get readIdsByChainName() {
+          return buildReadIdsByChainName(self.rpcDataMap, self.isChainMode)
         },
 
         /**
@@ -2235,13 +2244,13 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Chain member ids to highlight, empty unless in `normal` linked-read
-         * mode. Single source for the "is this a chain highlight" decision that
-         * both `highlightBoxes` (which ids to box) and `HighlightOverlay` (how
+         * Read ids of the hovered chain's members, empty unless in chain mode.
+         * Single source for the "is this a chain highlight" decision that both
+         * `highlightBoxes` (which ids to box) and `HighlightOverlay` (how
          * strongly to shade them) read, so the two can't drift.
          */
-        get highlightChainIds() {
-          return self.isChainMode ? self.highlightedChainIds : []
+        get highlightChainReadIds() {
+          return self.isChainMode ? self.highlightedChainReadIds : []
         },
 
         /**
@@ -2253,10 +2262,10 @@ export default function stateModelFactory(
          */
         get highlightBoxes() {
           const view = self.lgv
-          const chainIds = this.highlightChainIds
+          const chainReadIds = this.highlightChainReadIds
           const ids =
-            chainIds.length > 0
-              ? chainIds
+            chainReadIds.length > 0
+              ? chainReadIds
               : self.featureIdUnderMouse
                 ? [self.featureIdUnderMouse]
                 : []
@@ -2322,16 +2331,19 @@ export default function stateModelFactory(
 
         /**
          * #method
-         * Chain IDs sharing a QNAME with the read at `index` in `rpcData`.
-         * Empty when the read isn't part of a chain. Shared by hover-highlight
-         * and click-select so the two paths can't drift.
+         * Read ids sharing a chain with the read at `index` in `rpcData` — the
+         * read's own included, since it is a member of its chain. Empty when the
+         * read isn't part of a chain. Shared by hover-highlight and click-select
+         * so the two paths can't drift.
          */
-        chainIdsForRead(rpcData: PileupDataResult, index: number) {
+        readIdsSharingChain(rpcData: PileupDataResult, index: number) {
           const { readChainIndices, chainNames } = rpcData
           const chainIdx = readChainIndices?.[index]
           const name =
             chainIdx === undefined ? undefined : chainNames?.[chainIdx]
-          return name === undefined ? [] : (self.chainIdMap.get(name) ?? [])
+          return name === undefined
+            ? []
+            : (self.readIdsByChainName.get(name) ?? [])
         },
 
         // refName/assemblyName come from `loadedRegions` (the region this read
@@ -2486,7 +2498,9 @@ export default function stateModelFactory(
             // mode check, so this is the one place the invariant must hold.
             // (Hover highlight lives in `highlightBoxes` / `HighlightOverlay`,
             // not here, so a hover never triggers a canvas repaint.)
-            selectedChainIds: self.isChainMode ? self.selectedChainIds : [],
+            selectedChainReadIds: self.isChainMode
+              ? self.selectedChainReadIds
+              : [],
             colors: palette,
             chainMode: self.isChainMode,
             showLinkedReadLines: self.showLinkedReadLines,
@@ -2635,8 +2649,8 @@ export default function stateModelFactory(
           self.mouseoverExtraInformation = undefined
           self.overCigarItem = false
           self.hoverCoverageBand = undefined
-          if (self.highlightedChainIds.length > 0) {
-            self.highlightedChainIds = []
+          if (self.highlightedChainReadIds.length > 0) {
+            self.highlightedChainReadIds = []
           }
         }
         // Sashimi only renders over the coverage band, so the two settings are
@@ -2724,16 +2738,16 @@ export default function stateModelFactory(
             if (isFeature(session.selection)) {
               session.clearSelection()
             }
-            if (self.selectedChainIds.length > 0) {
-              self.selectedChainIds = []
+            if (self.selectedChainReadIds.length > 0) {
+              self.selectedChainReadIds = []
             }
           },
 
           /**
            * #action
            */
-          setSelectedChainIds(ids: string[]) {
-            self.selectedChainIds = ids
+          setSelectedChainReadIds(ids: string[]) {
+            self.selectedChainReadIds = ids
           },
 
           /**
@@ -3227,8 +3241,8 @@ export default function stateModelFactory(
             // render-safety mechanism: `renderState` already gates chain
             // highlights on `isChainMode`, so stale IDs can't render regardless.
             clearMouseoverState()
-            if (self.selectedChainIds.length > 0) {
-              self.selectedChainIds = []
+            if (self.selectedChainReadIds.length > 0) {
+              self.selectedChainReadIds = []
             }
             const currentType = self.colorBy.type
             if (mode === 'off') {
@@ -3299,14 +3313,14 @@ export default function stateModelFactory(
            * mousemove handler goes through here — including the plain-read
            * branch, which used to fire three or four separate setters per move
            * and was the only one that left `hoverCoverageBand` stale.
-           * `highlightedChainIds` is empty outside chain mode.
+           * `highlightedChainReadIds` is empty outside chain mode.
            */
           setHoverState(state: {
             overCigarItem: boolean
             featureIdUnderMouse: string | undefined
             mouseoverExtraInformation: TooltipPayload | undefined
             hoverCoverageBand?: { topOffset: number; coverageHeight: number }
-            highlightedChainIds: string[]
+            highlightedChainReadIds: string[]
           }) {
             self.overCigarItem = state.overCigarItem
             self.featureIdUnderMouse = state.featureIdUnderMouse
@@ -3318,9 +3332,12 @@ export default function stateModelFactory(
             // recompute every box on every mousemove. MobX already skips the
             // no-op writes above, since those are primitives.
             if (
-              !sameStrings(self.highlightedChainIds, state.highlightedChainIds)
+              !sameStrings(
+                self.highlightedChainReadIds,
+                state.highlightedChainReadIds,
+              )
             ) {
-              self.highlightedChainIds = state.highlightedChainIds
+              self.highlightedChainReadIds = state.highlightedChainReadIds
             }
           },
 

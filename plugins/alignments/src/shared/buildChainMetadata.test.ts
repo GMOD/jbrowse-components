@@ -178,7 +178,7 @@ test('a secondary alignment does NOT chain with its primary', () => {
     }),
   ])
   // two independent chains: the primary keyed by QNAME, the secondary by a
-  // unique synthetic key so cross-region merge / chainIdMap never rejoin them
+  // unique synthetic key so cross-region merge / readIdsByChainName never rejoin them
   expect(chainNames).toHaveLength(2)
   expect(chainNames).toContain('r1')
   expect(chainNames.filter(n => n === 'r1')).toHaveLength(1)

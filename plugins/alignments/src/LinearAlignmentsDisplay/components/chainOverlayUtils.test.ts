@@ -34,7 +34,7 @@ function makeState(overrides: Partial<RenderState> = {}): RenderState {
     showModifications: false,
     canvasWidth: 800,
     canvasHeight: 600,
-    selectedChainIds: [],
+    selectedChainReadIds: [],
     colors: {} as RenderState['colors'],
     chainMode: false,
     readConnections: 'off',

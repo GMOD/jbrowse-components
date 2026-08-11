@@ -3,7 +3,7 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { partitionFeatures } from '../shared/groupFeatures.ts'
 import {
   buildSashimiDownKeys,
-  buildChainIdMap,
+  buildReadIdsByChainName,
   buildRawDataByGroup,
   buildReadIdIndexMap,
   hasNamedGroups,
@@ -287,18 +287,18 @@ test('buildRawDataByGroup keeps the single ungrouped group under key ""', () => 
   expect(byGroup.get('')!.get(0)).toBe(d)
 })
 
-test('buildChainIdMap is empty when linked-reads off', () => {
-  const m = buildChainIdMap(
+test('buildReadIdsByChainName is empty when linked-reads off', () => {
+  const m = buildReadIdsByChainName(
     new Map([[0, grouped([{ key: '', data: data(['a'], [0], ['chain0']) }])]]),
     false,
   )
   expect(m.size).toBe(0)
 })
 
-test('buildChainIdMap unions a chain by name across regions', () => {
+test('buildReadIdsByChainName unions a chain by name across regions', () => {
   // 'chain0' is the local chainIdx-0 in both regions; keying by name unions its
   // reads instead of letting region 1 overwrite region 0.
-  const m = buildChainIdMap(
+  const m = buildReadIdsByChainName(
     new Map([
       [0, grouped([{ key: '', data: data(['a', 'b'], [0, 1], ['c0', 'c1']) }])],
       [1, grouped([{ key: '', data: data(['c'], [0], ['c0']) }])],
@@ -309,11 +309,11 @@ test('buildChainIdMap unions a chain by name across regions', () => {
   expect(m.get('c1')).toEqual(['b'])
 })
 
-test('buildChainIdMap keyed by name never collides across groups', () => {
+test('buildReadIdsByChainName keyed by name never collides across groups', () => {
   // Both groups number their chains from 0, so group '1' and group '2' each have
   // a local chainIdx 0 for *different* chains; keying by name keeps them apart
   // (index keying would merge them).
-  const m = buildChainIdMap(
+  const m = buildReadIdsByChainName(
     new Map([
       [
         0,
