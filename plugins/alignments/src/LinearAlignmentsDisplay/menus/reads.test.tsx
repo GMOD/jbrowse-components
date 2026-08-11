@@ -20,6 +20,7 @@ function makeModel(overrides?: Partial<{ canCollapseGroupRows: boolean }>) {
   return {
     showLegend: false,
     setShowLegend: jest.fn(),
+    showLegendDisplayTypeDefault: noPin,
     showCoverage: true,
     setShowCoverage: jest.fn(),
     showPileup: true,

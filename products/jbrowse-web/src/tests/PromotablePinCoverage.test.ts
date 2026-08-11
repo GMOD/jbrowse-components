@@ -94,7 +94,10 @@ const FIXTURES: Fixture[] = [
     // match on the `scatter` / `line` substring, so these are the same two gates
     displayType: 'MultiLinearWiggleDisplay',
     trackId: 'volvox_microarray_multi',
-    states: wiggleRenderingStates('multirowscatter', 'multirowline'),
+    states: [
+      ...wiggleRenderingStates('multirowscatter', 'multirowline'),
+      overlayWithSources,
+    ],
   },
   {
     displayType: 'LinearGCContentTrackDisplay',
@@ -114,6 +117,18 @@ function wiggleRenderingStates(scatter = 'scatter', line = 'line') {
   return [scatter, line].map(rendering => (d: any) => {
     d.setRenderingType(rendering)
   })
+}
+
+// The multi-wiggle "Show legend" row is gated on `overlayLegendApplies`, which
+// needs an overlay rendering AND more than one source — and sources arrive with
+// the data, which this test never fetches. `setRpcData` is the action a landed
+// fetch calls, and the only field it reads is `sources`, so seeding it directly
+// is the honest way to reach the state rather than a shortcut around it. Without
+// this the display's promotable `showLegend` would look pin-less here while
+// being pinned in every real session that has data.
+function overlayWithSources(d: any) {
+  d.setRenderingType('multixyplot')
+  d.setRpcData(0, { sources: [{ name: 'a' }, { name: 'b' }] })
 }
 
 interface TestView {

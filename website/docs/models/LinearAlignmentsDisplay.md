@@ -194,6 +194,7 @@ the whole surface.
 | <span id="getter-mismatchalpha">**mismatchAlpha**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-mismatchalphadisplaytypedefault">**mismatchAlphaDisplayTypeDefault**</span><br><code>Pin</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-showlegend">**showLegend**</span><br><code>boolean</code> |  | LinearAlignmentsDisplay |
+| <span id="getter-showlegenddisplaytypedefault">**showLegendDisplayTypeDefault**</span><br><code>Pin</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-sortedby">**sortedBy**</span><br><code>SortedBy &#124; undefined</code> |  | LinearAlignmentsDisplay |
 | <span id="getter-largefeaturesfirst">**largeFeaturesFirst**</span><br><code>boolean</code> | Lay out the widest features in the lowest pileup rows (main-thread tier-2 relayout via laidOutPileupMap). LGVSyntenyDisplay defaults it on. Ignored while an explicit `sortedBy` position sort is active. | LinearAlignmentsDisplay |
 | <span id="getter-groupby">**groupBy**</span><br><code>GroupBy &#124; undefined</code> | In-track stacked grouping dimension (undefined = ungrouped). Falls back to the `groupBy` config slot, so a track can be pre-grouped declaratively. Sent to the worker via rpcProps; the worker partitions one fetch into N sections. The slot is `frozen` (unvalidated JSON), so `normalizeGroupBy` is the chokepoint that keeps an unrecognized type or a tag grouping with no tag name from reaching the worker. | LinearAlignmentsDisplay |

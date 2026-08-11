@@ -177,9 +177,14 @@ const configSchema = ConfigurationSchema(
      * #slot
      */
     showLegend: {
-      type: 'boolean',
-      defaultValue: true,
-      description: 'Draw the source color key in overlay mode',
+      type: 'maybeBoolean',
+      description:
+        'Draw the source color key in overlay mode. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false customizes the track',
+      // Promotable: `undefined` (unset) is the inherit state, `promotedBase`
+      // (true) is what it resolves to when nothing is promoted. Read through the
+      // resolved `showLegend` getter (resolveConf), never raw.
+      defaultValue: undefined,
+      promotedBase: true,
     },
   },
   {

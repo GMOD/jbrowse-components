@@ -956,12 +956,29 @@ export default function stateModelFactory(
         /**
          * #getter
          */
-        get showLegend() {
+        get showLegend(): boolean {
           // Opt-in: the floating color legend is hidden by default for every
           // color scheme (including modifications) and shown only on demand via
           // the "Show legend" track-menu item, rather than eagerly covering the
           // top of every alignments track.
-          return !!getConf(self, 'showLegend')
+          //
+          // Resolved through the promotable-slot tiers (resolveConf): an
+          // explicit track value customizes the legend on or off; otherwise it
+          // follows the session-wide default, falling back to the opt-in base.
+          // A `maybeBoolean` slot, so a session default of "on" can be
+          // customized back off on a single track — which is what the legend's
+          // own "×" writes.
+          return resolveConf(self, 'showLegend')
+        },
+
+        /**
+         * #getter
+         */
+        // "make the current legend visibility the default for all tracks"
+        // control (pin): symmetric, so it promotes whichever value the track
+        // currently shows.
+        get showLegendDisplayTypeDefault() {
+          return makePin(self, 'showLegend')
         },
 
         /**

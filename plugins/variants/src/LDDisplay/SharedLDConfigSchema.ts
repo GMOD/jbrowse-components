@@ -57,11 +57,17 @@ export default function sharedLDConfigFactory() {
       },
       /**
        * #slot
-       * Whether to show the legend
+       * Whether to show the legend. Unset (the default) follows the
+       * session-wide default for this display type, falling back to off; an
+       * explicit true/false customizes the track.
        */
       showLegend: {
-        type: 'boolean',
-        defaultValue: false,
+        type: 'maybeBoolean',
+        // Promotable: `undefined` (unset) is the inherit state, `promotedBase`
+        // (false) is what it resolves to when nothing is promoted. Read through
+        // the resolved `showLegend` getter (resolveConf), never raw.
+        defaultValue: undefined,
+        promotedBase: false,
       },
       /**
        * #slot

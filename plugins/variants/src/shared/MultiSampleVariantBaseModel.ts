@@ -1,6 +1,8 @@
 import {
   ConfigurationReference,
   getConf,
+  makePin,
+  resolveConf,
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -623,9 +625,23 @@ export default function MultiSampleVariantBaseModelF(
          * which is what lets a short lane be sized to its rows: the legend is
          * clipped to the display's bounds, so while it is on it sets a floor
          * under the lane height.
+         *
+         * Resolved through the promotable-slot tiers (resolveConf): an explicit
+         * track value customizes it either way; otherwise it follows the
+         * session-wide default for this display type, falling back to on.
          */
         get showLegend(): boolean {
-          return getConf(self, 'showLegend')
+          return resolveConf(self, 'showLegend')
+        },
+
+        /**
+         * #getter
+         * "make the current legend visibility the default for all tracks"
+         * control (pin): symmetric, so it promotes whichever value the track
+         * shows.
+         */
+        get showLegendDisplayTypeDefault() {
+          return makePin(self, 'showLegend')
         },
 
         /**

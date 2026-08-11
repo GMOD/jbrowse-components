@@ -9,6 +9,7 @@ import {
   pickGroupByOptions,
 } from '@jbrowse/plugin-alignments'
 
+import type { Pin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type {
   CollapseGroupRowsModel,
@@ -69,6 +70,7 @@ export function getSyntenyGroupByMenuItem(model: GroupByModel) {
 interface ShowModel extends CollapseGroupRowsModel {
   showLegend: boolean
   setShowLegend: (show: boolean | undefined) => void
+  showLegendDisplayTypeDefault: Pin
   showCoverage: boolean
   setShowCoverage: (show: boolean) => void
   showPileup: boolean
@@ -90,9 +92,13 @@ interface ShowModel extends CollapseGroupRowsModel {
 // menu, which this display also builds.
 export function getSyntenyShowMenuItems(model: ShowModel) {
   return makeShowSubMenu([
-    showLegendCheckboxItem(model.showLegend, () => {
-      model.setShowLegend(!model.showLegend)
-    }),
+    showLegendCheckboxItem(
+      model.showLegend,
+      () => {
+        model.setShowLegend(!model.showLegend)
+      },
+      { pin: model.showLegendDisplayTypeDefault },
+    ),
     checkboxItem(
       'Show coverage',
       model.showCoverage,

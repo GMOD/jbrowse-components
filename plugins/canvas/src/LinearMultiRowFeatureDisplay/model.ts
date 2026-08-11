@@ -1,7 +1,9 @@
 import {
   ConfigurationReference,
   getConf,
+  makePin,
   readConfObject,
+  resolveConf,
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -198,8 +200,19 @@ export default function stateModelFactory(
       /**
        * #getter
        */
+      // Resolved through the promotable-slot tiers (resolveConf): an explicit
+      // track value customizes the key on or off; otherwise it follows the
+      // session-wide default, falling back to on.
       get showLegend(): boolean {
-        return getConf(self, 'showLegend')
+        return resolveConf(self, 'showLegend')
+      },
+      /**
+       * #getter
+       * "make the current key visibility the default for all tracks" control
+       * (pin): symmetric, so it promotes whichever value the track shows.
+       */
+      get showLegendDisplayTypeDefault() {
+        return makePin(self, 'showLegend')
       },
       /**
        * #getter

@@ -1,5 +1,7 @@
+import { promotableToggleItem } from './promotableMenuItems.ts'
 import { checkboxItem } from './toggleMenuItems.ts'
 
+import type { Pin } from '../configuration/promotableDefaults.ts'
 import type { MenuItem } from './MenuTypes.ts'
 
 /**
@@ -12,9 +14,19 @@ import type { MenuItem } from './MenuTypes.ts'
  * and would otherwise need an adapter object at the call site. Same argument
  * order as `checkboxItem`, which is all this adds a label to.
  *
- * The `showLegend` **config slots** stay per display: their defaults
- * legitimately differ (a Hi-C color scale is off by default, a variant genotype
- * key on), and their descriptions describe genuinely different legends.
+ * The `showLegend` **config slots** stay per display: their `promotedBase`
+ * values legitimately differ (a Hi-C color scale is off by default, a variant
+ * genotype key on), and their descriptions describe genuinely different legends.
+ * What they now share is being *promotable* — pass `opts.pin` (from
+ * `makePin(self, 'showLegend')`) and the row gains the pin that makes the
+ * current state this display type's session-wide default. Every display whose
+ * legend is backed by a config slot passes one.
+ *
+ * `pin` is optional because two callers have no slot to promote: the Manhattan
+ * plot's LD legend and `LinearBasicDisplay`'s color key are a volatile and a
+ * per-legend `dismissed` flag respectively, neither of which is config at all.
+ * They get the plain row, which is what `checkboxItem` builds either way — the
+ * promotable form is that same row plus the pin, per `promotableToggleItem`.
  *
  * Deliberately not used by `synteny-core`'s "Show color legend", which sits
  * inside a "Color by..." submenu where the bare word would not say which legend.
@@ -26,7 +38,17 @@ export function showLegendCheckboxItem(
     helpText?: string
     disabled?: boolean
     disabledHelpText?: string
+    pin?: Pin
   },
 ): MenuItem {
-  return checkboxItem('Show legend', checked, onToggle, opts)
+  const { pin, ...rest } = opts ?? {}
+  return pin
+    ? promotableToggleItem({
+        label: 'Show legend',
+        checked,
+        onToggle,
+        pin,
+        ...rest,
+      })
+    : checkboxItem('Show legend', checked, onToggle, rest)
 }

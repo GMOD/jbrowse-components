@@ -15,12 +15,14 @@ import TuneIcon from '@mui/icons-material/Tune'
 import { HIC_COLOR_SCHEME_OPTIONS } from './components/colorRamp.ts'
 
 import type { HicColorScheme } from './components/colorRamp.ts'
+import type { Pin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 interface HicMenuSelf {
   useLogScale: boolean
   useColorPercentile: boolean
   showLegend: boolean
+  showLegendDisplayTypeDefault: Pin
   showResolutionControls: boolean
   squashToHeight: boolean
   colorScheme: HicColorScheme
@@ -89,9 +91,13 @@ function resolutionMenuItems(self: HicMenuSelf): MenuItem[] {
 
 function showMenuItems(self: HicMenuSelf): MenuItem[] {
   return [
-    showLegendCheckboxItem(self.showLegend, () => {
-      self.setShowLegend(!self.showLegend)
-    }),
+    showLegendCheckboxItem(
+      self.showLegend,
+      () => {
+        self.setShowLegend(!self.showLegend)
+      },
+      { pin: self.showLegendDisplayTypeDefault },
+    ),
     ...(self.hasResolutions
       ? [
           checkboxItem(

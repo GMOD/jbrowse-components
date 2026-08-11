@@ -14,6 +14,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 interface ReadsModel extends CollapseGroupRowsModel {
   showLegend: boolean
   setShowLegend: (show: boolean | undefined) => void
+  showLegendDisplayTypeDefault: Pin
   showCoverage: boolean
   setShowCoverage: (show: boolean) => void
   showPileup: boolean
@@ -49,9 +50,13 @@ interface ReadsModel extends CollapseGroupRowsModel {
 // belongs in another menu.
 export function getReadsMenuItems(model: ReadsModel) {
   return makeShowSubMenu([
-    showLegendCheckboxItem(model.showLegend, () => {
-      model.setShowLegend(!model.showLegend)
-    }),
+    showLegendCheckboxItem(
+      model.showLegend,
+      () => {
+        model.setShowLegend(!model.showLegend)
+      },
+      { pin: model.showLegendDisplayTypeDefault },
+    ),
     checkboxItem('Show coverage', model.showCoverage, () => {
       model.setShowCoverage(!model.showCoverage)
     }),

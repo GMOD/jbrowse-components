@@ -19,6 +19,11 @@ function makeSelf(overrides: Partial<LDMenuSelf> = {}) {
     showLDTriangle: true,
     showRecombination: false,
     showLegend: false,
+    showLegendDisplayTypeDefault: {
+      slot: 'showLegend',
+      active: false,
+      toggle: () => {},
+    },
     showLabels: false,
     showVerticalGuides: true,
     squashToHeight: false,

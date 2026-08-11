@@ -14,6 +14,7 @@ import { AddFiltersDialog, LDFilterDialog } from '../shared/lazyDialogs.ts'
 
 import type { LDMethod, LDMetric, LDSnp } from '../VariantRPC/getLDMatrix.ts'
 import type { LDFilterModel } from '../shared/components/LDFilterDialog.tsx'
+import type { Pin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -39,6 +40,7 @@ export interface LDMenuSelf extends IStateTreeNode, LDFilterModel {
   showLDTriangle: boolean
   showRecombination: boolean
   showLegend: boolean
+  showLegendDisplayTypeDefault: Pin
   showLabels: boolean
   showVerticalGuides: boolean
   squashToHeight: boolean
@@ -134,9 +136,13 @@ function showMenuItems(self: LDMenuSelf): MenuItem[] {
           'Displays 1-r² between neighboring SNPs only (not all pairwise comparisons). Peaks indicate haplotype block boundaries where historical recombination has broken down LD between adjacent variants.',
       },
     ),
-    showLegendCheckboxItem(self.showLegend, () => {
-      self.setShowLegend(!self.showLegend)
-    }),
+    showLegendCheckboxItem(
+      self.showLegend,
+      () => {
+        self.setShowLegend(!self.showLegend)
+      },
+      { pin: self.showLegendDisplayTypeDefault },
+    ),
     checkboxItem('Show variant labels', self.showLabels, () => {
       self.setShowLabels(!self.showLabels)
     }),

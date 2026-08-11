@@ -2982,7 +2982,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | boolean)"
+          "type": "(JexlString | (boolean | undefined))"
         },
         {
           "name": "legend",
@@ -3121,7 +3121,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | boolean)"
+          "type": "(JexlString | (boolean | undefined))"
         },
         {
           "name": "sortedBy",
@@ -3419,7 +3419,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | boolean)"
+          "type": "(JexlString | (boolean | undefined))"
         },
         {
           "name": "sortedBy",
@@ -3795,7 +3795,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | boolean)"
+          "type": "(JexlString | (boolean | undefined))"
         },
         {
           "name": "colorBy",
@@ -3920,7 +3920,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | boolean)"
+          "type": "(JexlString | (boolean | undefined))"
         },
         {
           "name": "colorBy",
@@ -4005,7 +4005,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | boolean)"
+          "type": "(JexlString | (boolean | undefined))"
         },
         {
           "name": "showLDTriangle",
@@ -4111,7 +4111,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | boolean)"
+          "type": "(JexlString | (boolean | undefined))"
         },
         {
           "name": "showLDTriangle",
@@ -4352,7 +4352,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | boolean)"
+          "type": "(JexlString | (boolean | undefined))"
         }
       ],
       "stateModelProps": [
@@ -4754,7 +4754,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | boolean)"
+          "type": "(JexlString | (boolean | undefined))"
         },
         {
           "name": "resolutionBias",

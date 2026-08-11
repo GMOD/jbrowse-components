@@ -1,6 +1,8 @@
 import {
   ConfigurationReference,
   getConf,
+  makePin,
+  resolveConf,
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
@@ -210,8 +212,22 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       get colorScheme(): HicColorScheme {
         return getConf(self, 'colorScheme')
       },
+      /**
+       * #getter
+       * Resolved through the promotable-slot tiers (resolveConf): an explicit
+       * track value customizes the legend on or off; otherwise it follows the
+       * session-wide default, falling back to off.
+       */
       get showLegend(): boolean {
-        return getConf(self, 'showLegend')
+        return resolveConf(self, 'showLegend')
+      },
+      /**
+       * #getter
+       * "make the current legend visibility the default for all tracks" control
+       * (pin): symmetric, so it promotes whichever value the track shows.
+       */
+      get showLegendDisplayTypeDefault() {
+        return makePin(self, 'showLegend')
       },
       /**
        * #getter

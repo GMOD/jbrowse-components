@@ -48,9 +48,13 @@ export function variantShowSubmenuItems(
         self.setShowSidebarLabels(!self.showSidebarLabels)
       },
     },
-    showLegendCheckboxItem(self.showLegend, () => {
-      self.setShowLegend(!self.showLegend)
-    }),
+    showLegendCheckboxItem(
+      self.showLegend,
+      () => {
+        self.setShowLegend(!self.showLegend)
+      },
+      { pin: self.showLegendDisplayTypeDefault },
+    ),
   ]
 }
 

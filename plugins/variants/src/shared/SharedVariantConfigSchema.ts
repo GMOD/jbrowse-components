@@ -123,10 +123,14 @@ export default function sharedVariantConfigFactory() {
        * handful of carriers wants.
        */
       showLegend: {
-        type: 'boolean',
-        defaultValue: true,
+        type: 'maybeBoolean',
         description:
-          'Whether to show the floating legend over the display; turn it off to size a short lane to its rows rather than to its key',
+          'Whether to show the floating legend over the display; turn it off to size a short lane to its rows rather than to its key. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false customizes the track',
+        // Promotable: `undefined` (unset) is the inherit state, `promotedBase`
+        // (true) is what it resolves to when nothing is promoted. Read through
+        // the resolved `showLegend` getter (resolveConf), never raw.
+        defaultValue: undefined,
+        promotedBase: true,
       },
       /**
        * #slot

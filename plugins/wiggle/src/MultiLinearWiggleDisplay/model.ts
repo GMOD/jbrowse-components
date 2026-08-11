@@ -3,6 +3,8 @@ import { lazy } from 'react'
 import {
   ConfigurationReference,
   getConf,
+  makePin,
+  resolveConf,
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -353,8 +355,20 @@ export default function stateModelFactory(
         return getConf(self, 'showRowSeparators')
       },
 
+      // Resolved through the promotable-slot tiers (resolveConf): an explicit
+      // track value customizes the key on or off; otherwise it follows the
+      // session-wide default, falling back to on.
       get showLegend(): boolean {
-        return getConf(self, 'showLegend')
+        return resolveConf(self, 'showLegend')
+      },
+
+      /**
+       * #getter
+       * "make the current key visibility the default for all tracks" control
+       * (pin): symmetric, so it promotes whichever value the track shows.
+       */
+      get showLegendDisplayTypeDefault() {
+        return makePin(self, 'showLegend')
       },
 
       /**
@@ -672,9 +686,13 @@ export default function stateModelFactory(
           // the color key only renders as an overlay of >1 source
           ...(self.overlayLegendApplies
             ? [
-                showLegendCheckboxItem(self.showLegend, () => {
-                  self.setShowLegend(!self.showLegend)
-                }),
+                showLegendCheckboxItem(
+                  self.showLegend,
+                  () => {
+                    self.setShowLegend(!self.showLegend)
+                  },
+                  { pin: self.showLegendDisplayTypeDefault },
+                ),
               ]
             : []),
           // density maps score to color, so score-axis cross hatches are

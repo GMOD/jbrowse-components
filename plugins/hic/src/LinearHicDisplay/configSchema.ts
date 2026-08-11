@@ -69,9 +69,14 @@ const HicTrackConfigFactory = () => {
        * #slot
        */
       showLegend: {
-        type: 'boolean',
-        defaultValue: false,
-        description: 'show the color scale legend',
+        type: 'maybeBoolean',
+        description:
+          'show the color scale legend. Unset (the default) follows the session-wide default for this display type, falling back to off; an explicit true/false customizes the track',
+        // Promotable: `undefined` (unset) is the inherit state, `promotedBase`
+        // (false) is what it resolves to when nothing is promoted. Read through
+        // the resolved `showLegend` getter (resolveConf), never raw.
+        defaultValue: undefined,
+        promotedBase: false,
       },
       /**
        * #slot

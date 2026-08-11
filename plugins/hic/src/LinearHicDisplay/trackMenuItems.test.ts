@@ -14,6 +14,11 @@ function baseSelf() {
     useLogScale: false,
     useColorPercentile: true,
     showLegend: false,
+    showLegendDisplayTypeDefault: {
+      slot: 'showLegend',
+      active: false,
+      toggle: () => {},
+    },
     showResolutionControls: false,
     squashToHeight: false,
     colorScheme: DEFAULT_HIC_COLOR_SCHEME,

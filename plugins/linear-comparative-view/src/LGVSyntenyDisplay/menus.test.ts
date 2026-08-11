@@ -80,6 +80,11 @@ function makeShowModel(showCoverage: boolean) {
   return {
     showLegend: false,
     setShowLegend: jest.fn(),
+    showLegendDisplayTypeDefault: {
+      slot: 'showLegend',
+      active: false,
+      toggle: () => {},
+    },
     showCoverage,
     setShowCoverage: jest.fn(),
     showPileup: true,

@@ -63,6 +63,7 @@ the whole surface.
 | <span id="getter-linezoneheight">**lineZoneHeight**</span><br><code>number</code> |  | SharedLDModel |
 | <span id="getter-ldmetric">**ldMetric**</span><br><code>"r2" &#124; "dprime"</code> |  | SharedLDModel |
 | <span id="getter-showlegend">**showLegend**</span><br><code>boolean</code> |  | SharedLDModel |
+| <span id="getter-showlegenddisplaytypedefault">**showLegendDisplayTypeDefault**</span><br><code>Pin</code> |  | SharedLDModel |
 | <span id="getter-showldtriangle">**showLDTriangle**</span><br><code>boolean</code> |  | SharedLDModel |
 | <span id="getter-showrecombination">**showRecombination**</span><br><code>boolean</code> |  | SharedLDModel |
 | <span id="getter-recombinationzoneheight">**recombinationZoneHeight**</span><br><code>number</code> |  | SharedLDModel |

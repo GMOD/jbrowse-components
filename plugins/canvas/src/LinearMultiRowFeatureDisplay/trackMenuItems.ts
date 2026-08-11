@@ -20,6 +20,7 @@ import { MIN_SEPARATOR_ROW_PX } from './rendering/rowBand.ts'
 
 import type { LegendEntry } from './rendering/colorLegend.ts'
 import type { MultiRowSource } from './sourcesLogic.ts'
+import type { Pin } from '@jbrowse/core/configuration'
 import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -46,6 +47,7 @@ interface MultiRowMenuSelf
   extends IStateTreeNode, TreeLayoutModel<MultiRowSource> {
   showTree: boolean
   showLegend: boolean
+  showLegendDisplayTypeDefault: Pin
   showRowSeparators: boolean
   showRowLabels: boolean
   setShowRowLabels: (f: boolean) => void
@@ -107,9 +109,13 @@ function showMenuItems(self: MultiRowMenuSelf): MenuItem[] {
     // menu item left to bring it back.
     ...(self.colorLegend.length || self.rowGroupLegend.length
       ? [
-          showLegendCheckboxItem(self.showLegend, () => {
-            self.setShowLegend(!self.showLegend)
-          }),
+          showLegendCheckboxItem(
+            self.showLegend,
+            () => {
+              self.setShowLegend(!self.showLegend)
+            },
+            { pin: self.showLegendDisplayTypeDefault },
+          ),
         ]
       : []),
     // stays clickable below the draw threshold (the toggle is a setting, and

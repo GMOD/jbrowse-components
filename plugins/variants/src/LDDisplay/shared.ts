@@ -1,6 +1,8 @@
 import {
   ConfigurationReference,
   getConf,
+  makePin,
+  resolveConf,
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
@@ -154,8 +156,16 @@ export default function sharedModelFactory(
       get ldMetric() {
         return getConf(self, 'ldMetric')
       },
-      get showLegend() {
-        return getConf(self, 'showLegend')
+      // Resolved through the promotable-slot tiers (resolveConf): an explicit
+      // track value customizes the legend on or off; otherwise it follows the
+      // session-wide default, falling back to off.
+      get showLegend(): boolean {
+        return resolveConf(self, 'showLegend')
+      },
+      // "make the current legend visibility the default for all tracks" control
+      // (pin): symmetric, so it promotes whichever value the track shows.
+      get showLegendDisplayTypeDefault() {
+        return makePin(self, 'showLegend')
       },
       get showLDTriangle() {
         return getConf(self, 'showLDTriangle')
