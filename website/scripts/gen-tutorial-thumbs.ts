@@ -196,10 +196,15 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
   sv_callset_review: {
     // Cropped to the band that carries the junction itself — the fan of curves
     // between two panels — rather than to any one pileup, since the connections
-    // are the only thing on this page a card can show at thumbnail size. The
-    // figure now stacks the matched normal under each tumour lane, so the band
-    // is narrower than it was: six lanes in the height three used to take.
-    src: 'jbrowse-img/sv_review_pair.png',
+    // are the only thing on this page a card can show at thumbnail size.
+    //
+    // The TUMOUR PANEL rather than the three-panel composition the page shows,
+    // which is a card-framing decision and not a second figure: a 5:3 crop of
+    // 3072 px lands inside one panel whatever `position` says, and of the three
+    // only this one has connectors in it -- centred it took the matched normal,
+    // which is by construction the panel with none, so the card was a
+    // featureless grey pileup for exactly the reason the figure exists.
+    src: 'jbrowse-img/sv_review_tumor.png',
     band: [0.3, 0.75],
   },
   hic_structural_variants: {

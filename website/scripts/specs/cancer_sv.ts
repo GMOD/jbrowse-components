@@ -1686,26 +1686,18 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
       },
     ],
   },
-  {
-    mode: 'compose',
-    name: 'cancer_sv/k562_starfusion_triage',
-    // TWO frames, not four (review: "we do not need screenshots 1 and 2. just
-    // keep 3 and 4. then allocate more vertical y-space to 4"). The import form
-    // and the unfiltered table were the route in and the starting state, and
-    // both are steps a reader performs rather than results they read: the form
-    // is two dropdowns, and the 44-row table's own content is described by the
-    // prose above it. What is left is the pair of frames that carry the
-    // finding — the search that leaves two rows and one chord, and where one of
-    // those rows opens. Both part specs stay, so the prose can still link each
-    // dropped step as a live view.
-    parts: [
-      'cancer_sv/k562_fusion_inspector_pair',
-      'cancer_sv/k562_fusion_inspector_reads',
-    ],
-    // stacked, not side by side: each frame is a wide table plus a circle, and
-    // two of those in a row would put the pair of circles a screen apart
-    direction: 'vertical',
-  },
+  // cancer_sv/k562_starfusion_triage WAS HERE and is gone, in three steps of the
+  // same review. It composed four frames of the SV inspector walkthrough, then
+  // two ("we do not need screenshots 1 and 2. just keep 3 and 4"), and now none
+  // ("remove the first screenshot from this. the second is complex enough as
+  // is") -- which leaves one frame, and a composition of one frame is the frame.
+  // The tutorial renders `k562_fusion_inspector_reads` directly.
+  //
+  // Every dropped frame is still a spec, and that is the point rather than an
+  // oversight: the Figure's `links=` carries all four as live views, so the
+  // import form, the unfiltered 44-row table and the searched pair are each one
+  // click from the figure without any of them costing a screen of page. Don't
+  // delete them to tidy up.
 
   // BCR beside ABL1 in one row, the way FusionInspector lays a fusion out: two
   // displayed regions in a single view rather than two stacked panels, each
