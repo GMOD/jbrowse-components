@@ -217,8 +217,8 @@ stayed put.
 The wheat panel comes from Ensembl Compara's own homoeolog calls
 ([`compara_to_blocks.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/compara_to_blocks.py)),
 so the two sides differ in assembly and in how the pairs were called as well as
-in species. That the segments still read as collinear on one side and scattered
-on the other is the point: neither pipeline put the pattern there.
+in species. The segments still read as collinear on one side and scattered on
+the other, which is a pattern neither pipeline put there.
 
 ## Checking it against the raw data
 

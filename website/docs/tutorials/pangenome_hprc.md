@@ -647,9 +647,9 @@ bash build_bubble_tier.sh hprc-v2.0-mc-grch38.bubbles.bed.gz \
 ```
 
 The threshold is on **content**, not reference span: a pure insertion is an
-alternative to nothing, so 53,293 of the 130,510 bubbles are zero-length on
-GRCh38 and thresholding on `end - start` would drop every one of them, including
-the 100 kb insertions that are the whole point. Content is the larger of the
+alternative to nothing, so a large share of the bubbles are zero-length on
+GRCh38, and thresholding on `end - start` would drop every one of them,
+including the largest insertions in the graph. Content is the larger of the
 reference span and the longest allele.
 
 The result reads through the same adapter as the fine index. A tier is a prefix,

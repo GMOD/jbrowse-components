@@ -213,8 +213,8 @@ the genome is the whole design, and it is why the store is under a megabyte.
 Because the rows are just signal, an RNA set and an ATAC set stack in one view:
 the demo config carries a pseudobulk scATAC set over the same PBMCs beside the
 RNA one. The two assays disagree about where the interesting coordinate is,
-which is the point of opening both, and [](/docs/tutorials/scatac_pseudobulk) is
-the accessibility half.
+which is what makes opening both worthwhile, and
+[](/docs/tutorials/scatac_pseudobulk) is the accessibility half.
 
 ## Linking the UMAP to the tracks
 
