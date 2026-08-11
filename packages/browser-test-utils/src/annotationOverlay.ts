@@ -174,7 +174,20 @@ export const ANNOTATION_OVERLAY_ID = '__screenshot_annotation_overlay'
 //
 // Splits on the LAST colon, so a refName may contain colons as long as
 // coordinates follow it.
-export function parseAnnotationLocus(locus: string): AnnotationRegion {
+export function parseAnnotationLocus(
+  locus: string,
+  // What a SINGLE coordinate means, which depends on the callout drawn from it.
+  // An arrow head or a text pill points AT the position, and the zero-width
+  // interval between two bases is the honest answer for that — it is what the
+  // callout centres on. A box has to wrap it, and a box built on that same
+  // zero-width region is centred on the boundary rather than around the base:
+  // the column ends up in one half of the frame with the stroke drawn over it,
+  // which is what "the boxes cover up the variant they are trying to show"
+  // looked like at one base per ~6 css px. `wrap` asks for the base's own
+  // column instead. (`locusAnchor.ts`'s click parser always wants the base, for
+  // the neighbouring reason: a click cannot land on an edge.)
+  wrap = false,
+): AnnotationRegion {
   const cleaned = locus.replaceAll(/[\s,]/g, '')
   const idx = cleaned.lastIndexOf(':')
   const refName = cleaned.slice(0, idx)
@@ -186,7 +199,8 @@ export function parseAnnotationLocus(locus: string): AnnotationRegion {
     )
   }
   const start = Number(match[1]) - 1
-  return { refName, start, end: match[2] ? Number(match[2]) : start }
+  const end = match[2] ? Number(match[2]) : wrap ? start + 1 : start
+  return { refName, start, end }
 }
 
 // Draw the annotations as a fixed SVG overlay covering the viewport so the

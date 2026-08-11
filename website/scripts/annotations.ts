@@ -24,9 +24,13 @@ import type { Page } from 'puppeteer'
 // single canvas, so there is no element in the page for the overlay to measure
 // and the view's own layout is the only thing that knows where they went.
 //
-// `wantBounds` is a graph question only. A force-directed node bends, so the
-// centre of its bounding box can sit off the node and everything but a box
-// wants a point ON it; a dotplot block's cell is a rectangle either way.
+// `wantBounds` is the same question for both kinds of anchor: does this callout
+// WRAP the thing it names, or point at it? A force-directed graph node bends, so
+// the centre of its bounding box can sit off the node and everything but a box
+// wants a point ON it (a dotplot block's cell is a rectangle either way). A
+// one-base locus is the same shape of question — the base's own column for a
+// box, the zero-width position between two bases for a pill or an arrow head —
+// which is what parseAnnotationLocus's `wrap` decides.
 async function withRegion(
   page: Page,
   anchor: AnnotationAnchor | undefined,
@@ -38,7 +42,9 @@ async function withRegion(
   const isDotplot = anchor.hLocus !== undefined || anchor.vLocus !== undefined
   return {
     ...anchor,
-    region: anchor.locus ? parseAnnotationLocus(anchor.locus) : undefined,
+    region: anchor.locus
+      ? parseAnnotationLocus(anchor.locus, wantBounds)
+      : undefined,
     rect: anchor.graphNode
       ? await graphNodeRect(page, anchor, wantBounds)
       : isDotplot
@@ -70,8 +76,9 @@ export async function drawAnnotations(page: Page, annotations: Annotation[]) {
   const items: PayloadAnnotation[] = await Promise.all(
     annotations.map(async a => ({
       ...a,
-      // only a box wants the node's drawn bounds; a ring/arrow/label wants a
-      // point on it, and an arrow's tail always does
+      // only a box wants the drawn bounds — of a graph node, or of the base a
+      // one-coordinate locus names; a ring/arrow/label wants a point on it, and
+      // an arrow's tail always does
       anchor: await withRegion(page, a.anchor, a.type === 'box'),
       fromAnchor: await withRegion(page, a.fromAnchor, false),
     })),

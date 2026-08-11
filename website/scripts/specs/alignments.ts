@@ -12,7 +12,7 @@ import {
   sessionSpec,
 } from '../screenshot-spec-helpers.ts'
 
-import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 // The menu label for `fit`, straight from the shared option table, so the click
 // path and the boxed annotation below can't drift from the menu.
@@ -39,6 +39,36 @@ const SORT_COLUMN = {
   // fraction has to land on one of the eleven that do rather than on any read.
   fracY: 0.22,
 }
+
+// The frame `alignments/strand_split_coverage` puts around a SINGLE BASE, and
+// the reason it is not the default one (review: "thinner and wider red boxes,
+// they cover up the variant they are trying to show").
+//
+// A default box is 5 px of stroke and 6 px of pad, which frames a menu item
+// nicely and draws very nearly a solid bar around one base: 250 bp across this
+// viewport is ~6 css px a base, the stroke takes 2.5 of the padding back on each
+// side, and the ~3 px of white left over is half the width of the column inside
+// it. The two strokes then read AS the column and the column reads as the gap
+// between them. 2 px of stroke and 8 px of pad leave 7 css px of clear white on
+// either side of the base -- more than a base's width of margin, so the column
+// is inside a frame instead of under one. `pad` cannot go much past this: the
+// two positions this figure marks are 5 bp apart, ~30 css px, so the two boxes
+// share that budget with the gap between them, and at 9 the gap closes to ~4 css
+// px, which at the width a reader sees this figure is two red lines with a
+// hairline between them rather than two marks.
+//
+// The other half of that complaint was not the stroke at all, and no width would
+// have fixed it: a one-coordinate locus used to resolve to the ZERO-WIDTH
+// position between two bases for every callout, so the box was centred on the
+// column's left edge rather than around the column, and the right-hand stroke
+// covered the left of the base. A box now asks for the base itself
+// (`parseAnnotationLocus`'s `wrap`), which is the only reason 8 px of pad is
+// enough here.
+const COLUMN_BOX = {
+  type: 'box',
+  strokeWidth: 2,
+  pad: 8,
+} satisfies Partial<Annotation>
 
 // The read `linear_align_ctx_menu` right-clicks, and the read its caption's
 // arrow points at. One anchor for both: the figure's whole subject is that the
@@ -585,8 +615,9 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     //
     // The box takes no `fracY`, so it wraps the whole track band and crosses
     // both coverage histograms and both pileups at once, which is the
-    // comparison. The label right-aligns 14 px left of it (`textAlign: 'end'`,
-    // since a pill's width is only known in-page).
+    // comparison. Its stroke and padding are `COLUMN_BOX`, which is where the
+    // one-base geometry is argued. The label right-aligns 14 px left of it
+    // (`textAlign: 'end'`, since a pill's width is only known in-page).
     //
     // THE PILL IS OFF THE DATA NOW (review: "the agents 'call out' is obscuring
     // the result"). At `fracY: 0.04` it sat inside the track band, over the top
@@ -619,7 +650,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     // rounds. `--both` ranks it now.
     annotations: [
       {
-        type: 'box',
+        ...COLUMN_BOX,
         anchor: { track: 'hg002_nanopore_hp', locus: '1:55,705,711' },
       },
       {
@@ -639,7 +670,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         },
       },
       {
-        type: 'box',
+        ...COLUMN_BOX,
         anchor: { track: 'hg002_nanopore_hp', locus: '1:55,705,716' },
       },
       {
