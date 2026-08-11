@@ -111,7 +111,23 @@ try {
       }
     </script>
     <style is:global>
+      /*
+        `color-scheme` tracks the palette below, and it is load-bearing rather
+        than a nicety. The demos are copy-pasteable files, so they cannot reach
+        for the custom properties on this page -- they style themselves with CSS
+        *system* colours (`Canvas`, `CanvasText`, `color-mix` of the two), on the
+        stated grounds that those read correctly on whatever host they are pasted
+        into. Without this declaration they don't: `color-scheme` defaults to
+        `normal`, system colours stay on the light palette whatever `data-theme`
+        says, and `color-mix(in srgb, CanvasText 8%, Canvas)` paints a near-white
+        box on a dark page while the text inside it inherits `--fg` and stays
+        near-white too. That is a 1.0 contrast ratio, and it shipped: the
+        notification on BYO's Loading and error states page -- the one thing that
+        page exists to prove a host must draw -- was unreadable in dark mode.
+        Declared in all three states for the same reason the palette is.
+      */
       :root {
+        color-scheme: light;
         --accent: #135ba8;
         --accent-fg: #ffffff;
         --bg: #ffffff;
@@ -128,6 +144,7 @@ try {
       }
       /* dark palette: explicit toggle wins; otherwise follow the OS setting */
       :root[data-theme='dark'] {
+        color-scheme: dark;
         --accent: #6db3f2;
         --accent-fg: #10151b;
         --bg: #16191d;
@@ -142,6 +159,7 @@ try {
       }
       @media (prefers-color-scheme: dark) {
         :root:not([data-theme='light']) {
+          color-scheme: dark;
           --accent: #6db3f2;
           --accent-fg: #10151b;
           --bg: #16191d;
