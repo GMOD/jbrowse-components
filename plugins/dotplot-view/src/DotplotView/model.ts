@@ -42,6 +42,7 @@ import {
   getBlockLabelKeysToHide,
   makeTicks,
   thinTickPositions,
+  truncateRefNames,
 } from './components/util.ts'
 import { DRAG_THRESHOLD_PX, LS_CURSOR_MODE } from './types.ts'
 
@@ -576,6 +577,21 @@ export default function stateModelFactory(pm: PluginManager) {
             self.vview.dynamicBlocks.contentBlocks,
             this.viewHeight,
             self.vview.offsetPx,
+          )
+        },
+        // refName -> the string the axis actually prints for it. Off
+        // displayedRegions rather than off the visible blocks so panning and
+        // zooming can't change a label, and cached here so the axis component
+        // and borderX/borderY (which sizes the margin to fit these very
+        // strings) cannot disagree about what is drawn.
+        get hRefNameLabels() {
+          return truncateRefNames(
+            self.hview.displayedRegions.map(r => r.refName),
+          )
+        },
+        get vRefNameLabels() {
+          return truncateRefNames(
+            self.vview.displayedRegions.map(r => r.refName),
           )
         },
         /**

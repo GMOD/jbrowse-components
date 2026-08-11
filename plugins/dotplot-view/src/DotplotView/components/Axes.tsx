@@ -11,7 +11,6 @@ import {
   fitAxisTitle,
   tickKey,
   tickLabel,
-  truncateRefName,
 } from './util.ts'
 
 import type { DotplotViewModel } from '../model.ts'
@@ -106,6 +105,7 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
   const { offsetPx, dynamicBlocks, bpPerPx } = hview
   const blocks = dynamicBlocks.contentBlocks
   const hide = model.hblockLabelKeysToHide
+  const labels = model.hRefNameLabels
   const color = useAxisColor()
 
   return (
@@ -126,7 +126,7 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
               fill={color}
             >
               <title>{b.refName}</title>
-              {truncateRefName(b.refName)}
+              {labels.get(b.refName) ?? b.refName}
             </text>
           )
         })}
@@ -193,6 +193,7 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
   const { offsetPx, dynamicBlocks, bpPerPx } = vview
   const blocks = dynamicBlocks.contentBlocks
   const hide = model.vblockLabelKeysToHide
+  const labels = model.vRefNameLabels
   const color = useAxisColor()
 
   // Vertical axis is flipped: block offsetPx grows upward visually, so we map
@@ -213,7 +214,7 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
               fill={color}
             >
               <title>{b.refName}</title>
-              {truncateRefName(b.refName)}
+              {labels.get(b.refName) ?? b.refName}
             </text>
           )
         })}

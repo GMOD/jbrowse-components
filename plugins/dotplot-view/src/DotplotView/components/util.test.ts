@@ -11,6 +11,7 @@ import {
   thinTickPositions,
   tickKey,
   truncateRefName,
+  truncateRefNames,
 } from './util.ts'
 
 import type { Tick } from './util.ts'
@@ -64,6 +65,50 @@ describe('truncateRefName', () => {
 
   test('long names are middle-elided, keeping prefix and suffix', () => {
     expect(truncateRefName('scaffold_1234')).toBe('scaf…1234')
+  })
+})
+
+describe('truncateRefNames', () => {
+  test('elides while the short forms stay distinct', () => {
+    const labels = truncateRefNames(['scaffold_1234', 'scaffold_5678', 'chr1'])
+    expect(labels.get('scaffold_1234')).toBe('scaf…1234')
+    expect(labels.get('scaffold_5678')).toBe('scaf…5678')
+    expect(labels.get('chr1')).toBe('chr1')
+  })
+
+  test('keeps full names when the elide would collide', () => {
+    // The T2T-HG002 case: the elide preserves `chr1` and `RNAL`, which is the
+    // boilerplate, and cuts the chromosome number, which is the name. chr1 and
+    // chr10..chr19 all land on `chr1…RNAL`.
+    const names = ['chr1_MATERNAL', 'chr10_MATERNAL', 'chr2_MATERNAL']
+    expect(names.map(truncateRefName)).toEqual([
+      'chr1…RNAL',
+      'chr1…RNAL',
+      'chr2…RNAL',
+    ])
+    const labels = truncateRefNames(names)
+    for (const n of names) {
+      expect(labels.get(n)).toBe(n)
+    }
+  })
+
+  test('one collision keeps the whole axis full, not just the pair', () => {
+    // A half-elided axis reads as arbitrary, and the margin is sized to the
+    // widest label regardless, so there is nothing to win by mixing.
+    const labels = truncateRefNames([
+      'chr1_MATERNAL',
+      'chr10_MATERNAL',
+      'scaffold_1234',
+    ])
+    expect(labels.get('scaffold_1234')).toBe('scaffold_1234')
+  })
+
+  test('a repeated refName is not a collision', () => {
+    // gatherOverlaps can put one refName on the axis twice (a read aligned
+    // twice to one chromosome); that is the same name, not two names sharing a
+    // label, and must not cost the axis its elide.
+    const labels = truncateRefNames(['scaffold_1234', 'scaffold_1234'])
+    expect(labels.get('scaffold_1234')).toBe('scaf…1234')
   })
 })
 

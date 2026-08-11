@@ -87,6 +87,30 @@ export function truncateRefName(refName: string) {
     : refName
 }
 
+// The middle elide above is only worth anything while it stays INJECTIVE over
+// the names sharing an axis, and on a haplotype-resolved assembly it is not:
+// `chr1_MATERNAL` and `chr10_MATERNAL`..`chr19_MATERNAL` all come out as
+// `chr1…RNAL`, because both ends it preserves are the shared boilerplate and the
+// part that names the chromosome is what it cuts. A whole-genome T2T-HG002
+// self-dotplot therefore labelled eleven of its 23 rows identically — an axis
+// that cannot say which contig a row is, which is most of what an axis is for.
+//
+// So the decision is made for the axis as a SET, not per name: elide only while
+// no two names collide, and otherwise keep every name in full. Whole-axis rather
+// than per-name because a mix of elided and full labels reads as arbitrary, and
+// the margin is sized off the widest label either way.
+//
+// It costs axis margin exactly when it buys distinguishability — hg002v1.2 goes
+// from a 55px border of `chr1…RNAL` to ~90px of `chr10_MATERNAL` — and nothing
+// at all on the scaffold sets the elide was written for, where `scaf…1234` stays
+// unique and stays short.
+export function truncateRefNames(refNames: string[]) {
+  const unique = [...new Set(refNames)]
+  const elided = unique.map(truncateRefName)
+  const collides = new Set(elided).size < unique.length
+  return new Map(unique.map((n, i) => [n, collides ? n : elided[i]!]))
+}
+
 // The assembly title parked along each axis, centered on the plot's own length.
 export const AXIS_TITLE_FONT = 11
 
@@ -131,11 +155,18 @@ export function axisBorderPx(
   regions: { refName: string; start: number; end: number }[],
   bpPerPx: number,
 ) {
+  // The elide decision is taken over EVERY displayed region, not just the ones
+  // wide enough to be measured below: it is a property of the axis, so a zoom
+  // that hides a small contig must not silently re-elide the labels that stay.
+  // Same map the axis component draws from (model.h/vRefNameLabels), for the
+  // usual reason — a margin sized off a different string than the one drawn is
+  // a clipped label.
+  const labels = truncateRefNames(regions.map(r => r.refName))
   const labelWidth = max(
     regions.flatMap(r =>
       (r.end - r.start) / bpPerPx >= LABEL_PX
         ? [
-            measureText(truncateRefName(r.refName), AXIS_LABEL_FONT),
+            measureText(labels.get(r.refName)!, AXIS_LABEL_FONT),
             measureText(getTickDisplayStr(r.end, bpPerPx), AXIS_LABEL_FONT),
           ]
         : [],
