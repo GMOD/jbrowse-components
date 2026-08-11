@@ -97,12 +97,28 @@ const { title, description, toggleLabel, navLabel, mdHref } = Astro.props
     font-weight: 500;
     border-radius: 3px;
     transition: background 0.15s;
-    /* Labels carry a "<Category>: " prefix (docs-sidebar.ts) and so wrap often;
-       the hanging indent keeps a continuation line from reading as its own
-       entry. The negative indent pulls the first line back to the 12px the
+    /* Hanging indent, so the few labels long enough to wrap don't read as two
+       entries. The negative indent pulls the first line back to the 12px the
        shorthand above sets. */
     padding-left: calc(12px + 1em);
     text-indent: -1em;
+  }
+
+  /* A subcategory label, not a control: no caret, no hover, not focusable. It
+     sits in the same <ul> at the same text offset as the links it heads (the
+     12px here lands on the same x as their calc(12px + 1em) first line, after
+     the -1em text-indent), so the list still reads as one flat column. */
+  .sidebar :global(.sidebar-heading) {
+    margin: 0.85rem 0 0.1rem;
+    padding: 0 12px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+  .sidebar :global(li:first-child.sidebar-heading) {
+    margin-top: 0.2rem;
   }
   .sidebar :global(a:hover) {
     background: var(--color-sidebar-hover-bg);
@@ -153,8 +169,12 @@ const { title, description, toggleLabel, navLabel, mdHref } = Astro.props
     transform: rotate(45deg);
   }
 
-  /* A summary that is itself a page link (showcase groups): the summary supplies
-     the padding + caret, so the inner link is plain text that fills the row. */
+  /* A summary that is itself a page link (a category with an `overview` page):
+     the summary supplies the padding + caret, so the inner link is plain text
+     that fills the row. The caret still toggles — clicking it, or the padding
+     around the label, opens the category without leaving the page — and the
+     underline on hover is what distinguishes these headers from the two that
+     have no page of their own and are pure toggles. */
   .sidebar :global(summary > .summary-link) {
     display: block;
     flex: 1;
@@ -162,6 +182,10 @@ const { title, description, toggleLabel, navLabel, mdHref } = Astro.props
     color: inherit;
     font-weight: inherit;
     border-radius: 0;
+    /* Cancel the hanging indent every other sidebar link carries: here the row's
+       first line starts after the caret, and a -1em pull puts the label on top
+       of it — which reads as the category having lost its disclosure arrow. */
+    text-indent: 0;
   }
   .sidebar :global(summary > .summary-link:hover) {
     background: none;

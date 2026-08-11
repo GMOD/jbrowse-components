@@ -15,14 +15,15 @@ const sidebar = buildSiteSidebar(allDocs, baseUrl)
 ---
 
 {
-  /* A filter over the nav itself, not a search: 370-odd pages sit behind nine
+  /* A filter over the nav itself, not a search: 370-odd pages sit behind ten
      categories that are collapsed unless they hold the current page, so a
      reader who knows a page's name ("cookbook", "jexl", "BamAdapter") but not
      which category owns it had no way in short of opening every drawer.
      Filtering keeps the structure rather than flattening it — a matching
-     category opens itself and keeps its heading, so a hit still reads as "Track
-     types: MAF track" under "User guide", which is what tells apart the four
-     pages the same feature has under different categories. Distinct from the
+     category opens itself and keeps its heading, and the section heading above
+     a surviving row survives with it, so a hit still reads as "MAF track" under
+     "Track types" under "User guide". That is what tells apart the several
+     pages the same feature has in different categories. Distinct from the
      header search, which is full-text over page bodies and leaves the page. */
 }
 <div class="sidebar-filter">
@@ -83,18 +84,40 @@ const sidebar = buildSiteSidebar(allDocs, baseUrl)
       return tokens.every(token => haystack.includes(token))
     }
 
+    // A page's section is no longer in its visible label — it is the heading row
+    // above it — but it IS in the aria-label the same heading puts there
+    // (SidebarItem.astro), so matching on that keeps "track types" finding the
+    // pages under Track types rather than only the heading itself.
+    function searchText(link: Element | null) {
+      return link?.getAttribute('aria-label') ?? link?.textContent ?? ''
+    }
+
     // Returns whether anything under `ul` survived. `forced` is set for the
     // children of a category whose own label matched, so filtering on
     // "tutorials" lists the tutorials instead of emptying the drawer that
     // matched.
+    //
+    // A heading row has no page of its own: it survives only if a page under it
+    // did, which is why it is resolved one row late, when the next heading (or
+    // the end of the list) says its run is over.
     function filterList(
       ul: Element,
       tokens: string[],
       forced: boolean,
     ): boolean {
       let anyVisible = false
+      let heading: HTMLElement | undefined
+      let headingKept = false
       for (const li of ul.children) {
         if (!(li instanceof HTMLElement)) {
+          continue
+        }
+        if (li.classList.contains('sidebar-heading')) {
+          if (heading) {
+            heading.hidden = !headingKept
+          }
+          heading = li
+          headingKept = false
           continue
         }
         const details = li.querySelector(':scope > details')
@@ -107,11 +130,16 @@ const sidebar = buildSiteSidebar(allDocs, baseUrl)
           visible = self || kept
           details.open = visible
         } else {
-          const link = li.querySelector(':scope > a')
-          visible = forced || matches(link?.textContent ?? '', tokens)
+          visible =
+            forced ||
+            matches(searchText(li.querySelector(':scope > a')), tokens)
         }
         li.hidden = !visible
         anyVisible ||= visible
+        headingKept ||= visible
+      }
+      if (heading) {
+        heading.hidden = !headingKept
       }
       return anyVisible
     }

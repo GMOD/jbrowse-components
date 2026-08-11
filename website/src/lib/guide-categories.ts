@@ -1,22 +1,24 @@
 // Ordered `guide_category` values for each hand-written guide directory. A page
 // declares one of these in its frontmatter; that value sections it on the
-// landing-page index (scripts/generate-guide-indexes.ts) and prefixes its
-// sidebar label (docs-sidebar.ts), in the order listed here. Keeping the orders
-// in one place stops the two groupings from drifting — a page's sidebar
+// landing-page index (scripts/generate-guide-indexes.ts) and heads its run of
+// pages in the sidebar (docs-sidebar.ts), in the order listed here. Keeping the
+// orders in one place stops the two groupings from drifting — a page's sidebar
 // neighbors and its overview-page section are guaranteed to match.
 //
-// Keep these names SHORT. Since the sidebar flattened they are prefixed onto
-// every page label, so "<Category>: <Title>" has to fit ~40 characters or the
-// entry wraps to two lines. "Callbacks and customization" wrapped every page
-// under it, which is why it is now just "Callbacks".
+// Keep these names SHORT, though no longer to a character budget: they were
+// prefixed onto every page label until the sidebar grew heading rows, so
+// "<Category>: <Title>" had to fit ~40 characters, and "Callbacks and
+// customization" wrapped every page under it, which is why it is now just
+// "Callbacks". A heading is written once on a line of its own and can afford
+// more, but it is also read as a group name rather than as part of a title, so
+// short still wins.
 //
-// Every name also has to SAY something. Both guide dirs used to end in an
-// "Other features" bucket, which named nothing, meant something different in
-// each dir, and spent 16 of those ~40 characters saying so on a dozen labels.
-// The pages in them were not actually miscellaneous — user_guides' were mostly
-// sequence operations, config_guides' were session/appearance settings and
-// deployment ops — so they are named for that now. A page that fits no category
-// is a signal the categories are wrong, not that a drawer is needed.
+// Every name has to SAY something. Both guide dirs used to end in an "Other
+// features" bucket, which named nothing and meant something different in each
+// dir. The pages in them were not actually miscellaneous — user_guides' were
+// mostly sequence operations, config_guides' were session/appearance settings
+// and deployment ops — so they are named for that now. A page that fits no
+// category is a signal the categories are wrong, not that a drawer is needed.
 
 export const USER_CATEGORIES = [
   'General usage',

@@ -12,12 +12,22 @@ const { item, currentSlug } = Astro.props
 ---
 
 {
-  item.type === 'link' ? (
+  /* A page under a section heading keeps the heading in its accessible name
+     ("Adapter: BamAdapter") though not in its visible label: a screen reader
+     moving link by link never sees the heading row, which is exactly the
+     grouping the visible prefix used to carry. The visible text is a substring
+     of it, so the name still satisfies label-in-name. */
+}
+{
+  item.type === 'heading' ? (
+    <li class="sidebar-heading">{item.label}</li>
+  ) : item.type === 'link' ? (
     <li>
       <a
         href={item.href}
         class:list={[{ active: item.slug === currentSlug }]}
         aria-current={item.slug === currentSlug ? 'page' : undefined}
+        aria-label={item.group ? `${item.group}: ${item.label}` : undefined}
       >
         {item.label}
       </a>
