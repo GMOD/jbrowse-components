@@ -17,9 +17,14 @@ the chain between the two haplotypes, so there is nothing to align, and the
 
 ## The config
 
-Everything is hosted. The assembly needs a name and the URL of its sequence; the
-adapter comes from the file extension, and the `.fai` and `.gzi` beside it are
-found the same way.
+There is not much to set up here, which is most of the appeal of this dataset.
+The Q100 project serves the assembly and the alignment between the haplotypes
+itself, so nothing has to be downloaded, converted or indexed, and the whole
+tutorial is two URLs and a view.
+
+Start with the assembly. It needs a name and the URL of its sequence and nothing
+else: the adapter comes from the file extension, and the `.fai` and `.gzi`
+sitting beside the FASTA are found the same way.
 
 ```json
 {
@@ -33,8 +38,9 @@ found the same way.
 }
 ```
 
-The alignment is the Q100 project's own chain, read as published. Both endpoints
-are the same assembly, since the two haplotypes are contigs of one:
+The alignment goes in as a synteny track. It is the Q100 project's own chain,
+read as published, and the thing to notice is that both of its endpoints are the
+same assembly, since the two haplotypes are contigs of one:
 
 ```json addtrack
 {
@@ -51,13 +57,15 @@ are the same assembly, since the two haplotypes are contigs of one:
 }
 ```
 
-**Add → Linear synteny view**, with `T2T-HG002 v1.2 (diploid)` in both rows,
-puts the maternal copy of a chromosome on top and the paternal below. Type a
-locus into either panel's search box to move it.
+With those two in place, open **Add → Linear synteny view** and pick
+`T2T-HG002 v1.2 (diploid)` in both rows. That gives two panels of the same
+assembly, so put the maternal copy of a chromosome on top and the paternal
+below, and type a locus into either panel's search box to move it.
 
-Turn that same track on from each panel's own track selector as well. In a plain
-linear view it draws as blocks on that panel's ruler rather than as ribbons, and
-those blocks are what the right-click below acts on.
+It is worth turning that same track on from each panel's own track selector as
+well. In a plain linear view it draws as blocks on that panel's ruler rather
+than as ribbons between the panels, and those blocks are what the right-click
+further down acts on.
 
 ## The 8p23.1 inversion
 
@@ -67,11 +75,13 @@ haplotypes of one person differ at a scale a whole-chromosome view can show.
 Colored by strand it is the one sweep crossing an otherwise flat frame, and the
 collinear flanks either side are what make it read as an inversion.
 
-The assembly has no gene annotation of its own, but the JHU Liftoff annotation
-of HG002 v1.1 is published beside it, one bgzipped GFF per haplotype, with
-contig names that already match. Its records carry the gene symbol in
-`gene_name` and no `Name`, so point the label there, and load the file once per
-haplotype (`MAT` here, `PAT` in both places for the other panel):
+Genes underneath the ribbons make the sweep easier to read, since they show the
+same sequence arriving in the opposite order on the other haplotype. The
+assembly has no annotation of its own, but the JHU Liftoff annotation of HG002
+v1.1 is published beside it, one bgzipped GFF per haplotype, with contig names
+that already match. Its records carry the gene symbol in `gene_name` and no
+`Name`, so point the label there, and load the file once per haplotype (`MAT`
+here, `PAT` in both places for the other panel):
 
 ```json addtrack
 {
