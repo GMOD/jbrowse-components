@@ -58,6 +58,29 @@ export function densityTooLargeResult(
     : undefined
 }
 
+// The post-fetch verdict: the exact admitted feature count, measured the same
+// way the sampled estimate above is. The backstop for the pre-fetch gate — which
+// may be skipped entirely (no budget) or may sample a window that under-counts —
+// and the one whose `featureCount` the main thread re-derives its own density
+// banner from, so it must be the same number the result carries.
+//
+// Beside its estimate twin rather than inline in the executor, so both verdicts
+// read `featuresPerPx` from one place: the worker's short-circuit and the
+// display's banner have to agree on the number, or the banner contradicts the
+// decision that produced it.
+export function exactDensityTooLargeResult(
+  featureCount: number,
+  region: { start: number; end: number },
+  bpPerPx: number,
+  maxFeatureDensity: number | undefined,
+  bytes: number | undefined,
+): RegionTooLargeResult | undefined {
+  return maxFeatureDensity !== undefined &&
+    featuresPerPx(featureCount, region, bpPerPx) > maxFeatureDensity
+    ? tooManyFeaturesResult(featureCount, bytes)
+    : undefined
+}
+
 // Cheap pre-fetch density gate: sample a small window to estimate density
 // before downloading the whole region, returning a too-large result on a
 // confident over-threshold estimate, else undefined so the caller proceeds to

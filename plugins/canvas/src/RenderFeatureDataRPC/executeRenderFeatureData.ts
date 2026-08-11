@@ -11,9 +11,8 @@ import { measureRegionBytes } from './byteGate.ts'
 import { collectRenderData } from './collectRenderData.ts'
 import { dedupeFeaturesById } from './dedupeFeatures.ts'
 import {
-  featuresPerPx,
+  exactDensityTooLargeResult,
   samplePreFetchDensity,
-  tooManyFeaturesResult,
 } from './densityGate.ts'
 import { buildFeatureAdmission } from './featureAdmission.ts'
 import { findGlyph } from './glyphs/findGlyph.ts'
@@ -144,15 +143,16 @@ export async function executeRenderFeatureData({
   // count it reports and main-thread and worker decisions stay in sync.
   const features = dedupeFeaturesById(featuresArray, admit)
 
-  if (maxFeatureDensity !== undefined) {
-    const featureDensity = featuresPerPx(
-      features.size,
-      region,
-      requestedBpPerPx,
-    )
-    if (featureDensity > maxFeatureDensity) {
-      return tooManyFeaturesResult(features.size, bytes)
-    }
+  // Stage 2: the exact count, the backstop for the sampled estimate above.
+  const tooManyFeatures = exactDensityTooLargeResult(
+    features.size,
+    region,
+    requestedBpPerPx,
+    maxFeatureDensity,
+    bytes,
+  )
+  if (tooManyFeatures) {
+    return tooManyFeatures
   }
 
   const layouts = await withProgress(
