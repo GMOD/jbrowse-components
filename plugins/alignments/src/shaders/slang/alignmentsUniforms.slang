@@ -154,14 +154,14 @@ public struct Uniforms {
   // costing an unpack per vertex — packing buys nothing in a uniform array (it
   // buys plenty in a vertex attribute, which is where it stays). And slangc
   // cannot compile the packed form at all: see colorPack.slang.
+  // The read-cloud endpoint squares (arcMarker.slang) index this same array.
+  // They used to have `arcMarkerColor`, a second copy with the short-insert
+  // slot swapped for the pale pileup fill, because a saturated stroke colour
+  // was needed to keep a thin arc line visible while the opaque square had to
+  // match the pileup. Both are the pale swatch now, so the substitution is
+  // gone; a second table holding the identical nine colours is only somewhere
+  // for them to drift.
   public float4 arcColor[ARC_COLOR_SLOTS];
-  // The same palette with the short-insert slot swapped for the pale
-  // pileup-fill variant, used by the read-cloud endpoint squares. See
-  // arcMarkerColorByIndex for why the two differ and why this is a second
-  // table rather than a branch. The CPU builds it (arcMarkerColorPalette),
-  // which is also what the Canvas2D and SVG marker draws read, so there is one
-  // place where the substitution happens.
-  public float4 arcMarkerColor[ARC_COLOR_SLOTS];
   // Linked-read connecting-line palette (linkedReadBezier mode). 8 slots so
   // every paired-orientation (unknown/LR/RL/RR/LL) and split-strand pairing
   // (RF/FR/same) has its own color, looked up by per-instance colorType.
@@ -454,11 +454,10 @@ public float3 arcColorByIndex(uint idx, Uniforms u) {
   return u.arcColor[arcColorSlot(idx)].xyz;
 }
 
-// The one arc palette slot whose meaning three separate files have to agree on:
-// the pair classifier assigns it (COLOR_SHORT_INSERT in features/arcs/compute.ts),
-// the marker palette below overrides it, and the Canvas2D palette overrides the
-// same position. It is `//! export-consts`ed through arc.slang, so the two TS
-// sides read this number instead of spelling `2` a second and third time.
+// The short-insert slot, named because `getArcColorType` in
+// features/arcs/compute.ts has to assign the same number this palette resolves.
+// It is `//! export-consts`ed through arc.slang, so that side reads this
+// constant instead of spelling `2` a second time.
 public static const uint ARC_COLOR_SHORT_INSERT = 2u;
 
 // The connector-tick slot, and the ONLY color an interchromosomal tick takes.
@@ -469,24 +468,6 @@ public static const uint ARC_COLOR_SHORT_INSERT = 2u;
 // colorType: the attribute existed to convey a constant. `//! export-consts`ed
 // through arcLine.slang, the pass that consumes it.
 public static const uint ARC_COLOR_INTERCHROM = 3u;
-
-// Read-cloud endpoint-square palette. The squares are filled opaque marks, so
-// they read fine with the pale pileup-fill short-insert (colorShortInsert
-// #ffc0cb) and must match it. The short-insert slot in the arc palette is the
-// *saturated* stroke variant (colorShortInsertArc #ff3a8c), chosen so a thin
-// translucent arc line stays visible, which would mismatch the pale
-// legend/pileup swatch. Every other slot is the arc palette's.
-//
-// This was a branch on that one index reading the packed `u.colorShortInsert`,
-// which left one function indexing a float4 palette and unpacking a uint in
-// its two arms. The substitution is the CPU's to make and it already makes it
-// (arcMarkerColorPalette in palettes.ts, which the Canvas2D and SVG marker
-// draws read), so the shader now reads the result rather than reproducing the
-// rule. What used to be a comment in palettes.ts saying it mirrors this
-// function "down to the slot it overrides" is a shared table instead.
-public float3 arcMarkerColorByIndex(uint idx, Uniforms u) {
-  return u.arcMarkerColor[arcColorSlot(idx)].xyz;
-}
 
 // Where `yBp` plots within the arcs band, as a fraction in [0, inf).
 // `useLog` picks a base-2 log scale (read cloud, so small inserts spread near

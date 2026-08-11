@@ -43,13 +43,10 @@ interface DrawArcsOpts {
   arcsH: number
   pairedArcsDown: boolean
   lineWidth: number
+  // The arc slot colors, indexed by the curves and by the read-cloud endpoint
+  // squares alike — one meaning, one color. The squares took a `markerPalette`
+  // of their own until the short-insert substitution behind it went away.
   palette: RGBColor[]
-  // Palette for the read-cloud endpoint squares. Same as `palette` except the
-  // filled short-insert square is pale (matching pileup + legend) rather than
-  // the saturated stroke color the arc curves use. Not a mirror of anything:
-  // the GPU indexes this same array, uploaded to the arcMarkerColor uniform
-  // slots.
-  markerPalette: RGBColor[]
   // Visible width in px (mirrors arc.slang's `canvasW`); sets the far-pair
   // threshold below.
   screenWidthPx: number
@@ -91,20 +88,11 @@ export function strokeArc(
 // Inner arc rasterizer. yBp is the Y apex in genomic bp — for flat it is the
 // constant line Y, otherwise the curve apex. See ARC_SHAPE_* in compute.ts.
 function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
-  const {
-    arcsTop,
-    arcsH,
-    pairedArcsDown,
-    lineWidth,
-    palette,
-    markerPalette,
-    screenWidthPx,
-  } = opts
-  // Pre-stringify the palettes once per draw — saves N Math.round + string
-  // allocations per frame (N = numArcs, often thousands). The stroke palette
-  // colors the curves; the marker palette colors the read-cloud endpoint squares.
+  const { arcsTop, arcsH, pairedArcsDown, lineWidth, palette, screenWidthPx } =
+    opts
+  // Pre-stringify the palette once per draw — saves N Math.round + string
+  // allocations per frame (N = numArcs, often thousands).
   const cssPalette = palette.map(c => rgb255(c))
-  const cssMarkerPalette = markerPalette.map(c => rgb255(c))
   // Flat (read cloud) connector lines are neutral black; the category color lives
   // in the endpoint squares drawn by the arcMarker pass. ARC_FLAT_ALPHA comes
   // from arc.generated.ts (arc.slang is the source of truth).
@@ -142,7 +130,7 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
       ctx.lineTo(mid + halfPx, apexY)
       ctx.stroke()
       // Colored square at each read endpoint (mirrors the arcMarker GPU pass).
-      ctx.fillStyle = cssMarkerPalette[arcColorSlot(colorIdx)]!
+      ctx.fillStyle = cssPalette[arcColorSlot(colorIdx)]!
       const m = ARC_MARKER_PX
       ctx.fillRect(sx1 - m / 2, apexY - m / 2, m, m)
       ctx.fillRect(sx2 - m / 2, apexY - m / 2, m, m)
@@ -186,7 +174,6 @@ export function drawArcs(
     pairedArcsDown,
     lineWidth: state.readConnectionsLineWidth,
     palette: arcColors,
-    markerPalette: arcColors,
     screenWidthPx,
   })
 

@@ -101,9 +101,10 @@ function isConcordantFRPair(
 // classifier reads as a story rather than as magic numbers.
 const COLOR_DEFAULT = 0
 const COLOR_LONG_INSERT = 1
-// The shader's own slot number: arcMarkerColorByIndex overrides exactly this
-// index with the pale pileup fill, and the Canvas2D marker palette overrides the
-// same one. A local `2` here agreed with them by inspection only.
+// The shader's own slot number, rather than a local `2` agreeing with it by
+// inspection. It is the slot two palettes used to disagree on — the endpoint
+// squares carried a pale fill where the curves carried a saturated stroke —
+// which is why it, alone of the nine, is a shared constant.
 const COLOR_SHORT_INSERT = ARC_COLOR_SHORT_INSERT
 // Interchrom has no local alias: arcLine.slang names ARC_COLOR_INTERCHROM
 // directly now that a tick carries no per-instance color, and ARC_SLOT_CATEGORY

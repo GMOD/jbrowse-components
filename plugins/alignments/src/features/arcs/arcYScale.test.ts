@@ -20,6 +20,7 @@ import {
   arcColorSlot,
   linkedReadColorSlot,
 } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
+import { ARC_COLOR_SHORT_INSERT } from '../../shaders/slang/arc.iface.generated.ts'
 import { ARC_COLOR_INTERCHROM } from '../../shaders/slang/arcLine.iface.generated.ts'
 import { UNIFORM_SLOT_ARRAYS } from '../../shaders/slang/read.iface.generated.ts'
 import { arcYFraction } from './arcYScale.ts'
@@ -115,28 +116,20 @@ describe('linkedReadColorSlot', () => {
 // The read-cloud endpoint squares are opaque fills and the arc curves are thin
 // strokes, and short insert used to need a different color for each: a pale
 // #ffc0cb fill that vanished as a stroke, against the saturated pink the curves
-// used. The fill is now that saturated pink too (see colorShortInsert), so the
-// substitution is gone and the two palettes are the same array. This is what all
-// three draw paths use, the GPU included (uploaded to the arcMarkerColor uniform
-// slots and indexed there), so pinning it here pins every renderer.
-describe('the arc marker palette (read-cloud endpoint squares)', () => {
-  it('paints short insert the one color the curves and the pileup use', () => {
-    expect(buildArcColorPalette(STOCK)[2]).toEqual(
+// used. The fill is now that saturated pink too, so the substitution is gone and
+// there is ONE palette — the two builders, the two shader tables and the
+// Canvas2D `markerPalette` option that carried it have all been removed.
+//
+// What is left to pin is the slot the substitution lived at, since a fill that
+// went pale again would be a change to `colorShortInsert` rather than to
+// anything named after markers. (The block that used to sit here compared
+// `buildArcColorPalette` to itself, which is what a parity test collapses to
+// once the two sides become one.)
+describe('the short-insert slot', () => {
+  it('is the one color the curves, the endpoint squares and the pileup use', () => {
+    expect(buildArcColorPalette(STOCK)[ARC_COLOR_SHORT_INSERT]).toEqual(
       cssColorToNormalizedRgb(colorShortInsert),
     )
-    expect(buildArcColorPalette(STOCK)[2]).toEqual(
-      buildArcColorPalette(STOCK)[2],
-    )
-  })
-  it('leaves every other slot identical to the stroke arc palette', () => {
-    expect(buildArcColorPalette(STOCK).length).toBe(
-      buildArcColorPalette(STOCK).length,
-    )
-    buildArcColorPalette(STOCK).forEach((c, i) => {
-      if (i !== 2) {
-        expect(buildArcColorPalette(STOCK)[i]).toEqual(c)
-      }
-    })
   })
 })
 

@@ -64,7 +64,7 @@ noticing in a diff.
 | type 'vec2' is outside the supported scalar subset | 19 | `covSegQuad`, `crispSquareCornerPx`, `diagonalCellToClip`, `discAlpha`, `discCoverage`, `distToWideCircle`, … |
 | member access (vector swizzle or struct field) is outside the supported scalar subset | 16 | `aaHalf`, `arcBandDestY`, `covAreaTop`, `covBarScale`, `covBottom`, `drawsCapsule`, … |
 | type 'ptr' is outside the supported scalar subset | 10 | `aaHalfPx`, `bpToClipX`, `curveGeometry`, `curveParamAtY`, `fillVsEmit`, `flipX`, … |
-| type 'vec3' is outside the supported scalar subset | 10 | `arcColorByIndex`, `arcMarkerColorByIndex`, `baseColor`, `bpRange`, `categoryPaletteColor`, `clipKindColor`, … |
+| type 'vec3' is outside the supported scalar subset | 9 | `arcColorByIndex`, `baseColor`, `bpRange`, `categoryPaletteColor`, `clipKindColor`, `hueRampHalfSat`, … |
 | type 'vec4' is outside the supported scalar subset | 9 | `edgeSpan`, `fillEdges`, `isCulled`, `ribbonEdgeDeltas`, `ribbonEdges`, `ribbonWidths`, … |
 | type 'Instance' is outside the supported scalar subset | 5 | `arcCurve`, `computeCorners`, `fillVsBegin`, `getReadColor`, `isClickedSilhouette` |
 | indexing is outside the supported scalar subset | 2 | `getGeno`, `getWord` |

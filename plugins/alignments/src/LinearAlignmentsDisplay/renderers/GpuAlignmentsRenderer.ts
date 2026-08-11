@@ -371,13 +371,11 @@ function writePaletteToUbo(u: Uint32Array, f: Float32Array, c: ColorPalette) {
   // Resolved against `c`, the same themed palette the read categories below
   // use. These three used to be module constants, which is how a dark-mode
   // pileup ended up with dimmed reads under undimmed arcs.
-  // The read-cloud endpoint squares take the arc palette itself. They used to
-  // have a builder of their own for a substitution that no longer exists (a pale
-  // short-insert fill against the saturated stroke; both are pale now), and a
-  // second function returning the identical array is a place for them to drift.
-  const arcColors = buildArcColorPalette(c)
-  writeSlots(USLOTS.arcColor, arcColors)
-  writeSlots(USLOTS.arcMarkerColor, arcColors)
+  // One array, indexed by the arc curves, the connector ticks and the
+  // read-cloud endpoint squares alike. The squares had a `arcMarkerColor` copy
+  // of their own for a substitution that no longer exists (a pale short-insert
+  // fill against the saturated stroke; both are pale now).
+  writeSlots(USLOTS.arcColor, buildArcColorPalette(c))
   writeSlots(USLOTS.linkedReadColor, buildLinkedReadColorPalette(c))
   // One color per read category, indexed by the RC_* the CPU classifier baked
   // into each instance. read.slang used to branch through 17 `cat == RC_X` arms

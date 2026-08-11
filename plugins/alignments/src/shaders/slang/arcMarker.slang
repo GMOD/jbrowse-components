@@ -48,8 +48,11 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float clipX = (px / u.canvasW) * 2.0 - 1.0;
   float clipY = 1.0 - ((py + u.covOffset) / u.canvasH) * 2.0;
   o.position = float4(flipX(clipX, u), clipY, 0.0, 1.0);
+  // The arc palette itself — the squares and the curves paint one meaning in
+  // one colour. A second `arcMarkerColor` table existed for a short-insert
+  // substitution that no longer exists; see arcColor in alignmentsUniforms.
   uint idx = uint(inst.colorType + 0.5);
-  o.color = float4(arcMarkerColorByIndex(idx, u), 1.0);
+  o.color = float4(arcColorByIndex(idx, u), 1.0);
   return o;
 }
 
