@@ -13,8 +13,10 @@ data: hosted
 **TL;DR:** T2T-HG002 v1.2 ships both haplotypes in one FASTA, as contigs named
 `chr1_MATERNAL` and `chr1_PATERNAL`, so JBrowse loads it as a single assembly
 and maternal against paternal is a self-alignment. The Q100 project publishes
-the chain between the two haplotypes, so there is nothing to align, and the
-8p23.1 inversion draws as a sweep between the two panels.
+the chain between the two haplotypes, so there is nothing to align. A dotplot
+with one haplotype per axis shows the two are collinear chromosome by
+chromosome; 8p23.1 is one of the blocks that is not, and draws as a sweep
+between the panels of a linear view.
 
 ## Prerequisites
 
@@ -63,22 +65,12 @@ same assembly, since the two haplotypes are contigs of one:
 }
 ```
 
-With those two in place, open **Add → Linear synteny view** and pick
-`T2T-HG002 v1.2 (diploid)` in both rows. That gives two panels of the same
-assembly, so put the maternal copy of a chromosome on top and the paternal
-below, and type a locus into either panel's search box to move it.
-
-It is worth turning that same track on from each panel's own track selector as
-well. In a plain linear view it draws as blocks on that panel's ruler rather
-than as ribbons between the panels, and those blocks are what the right-click
-further down acts on.
-
 ## The whole genome first
 
-Before framing any one locus, it is worth asking whether anything moved between
-chromosomes at all. That is a dotplot's question rather than a linear view's:
-twenty-three pairs of ribbons is not a shape anyone reads, and a dotplot answers
-it in one frame.
+With those two in place, the first thing to ask a haplotype-resolved assembly is
+whether anything moved between chromosomes at all. That is a dotplot's question
+rather than a linear view's: twenty-three pairs of ribbons is not a shape anyone
+reads, and a dotplot answers it in one frame.
 
 Open **Add → Dotplot view**. Both axis dropdowns already read
 `T2T-HG002 v1.2 (diploid)`, because it is the only assembly here, which is
@@ -109,11 +101,20 @@ sample's sex chromosomes have no counterpart on the other haplotype to chain to.
 
 <Figure caption="The Q100 maternal-to-paternal chain as a dotplot, maternal contigs on x against paternal on y, colored by strand. Each chromosome pairs with its own counterpart on the diagonal; the blue ticks are inverted blocks and the empty lane and column are chrX and chrY." src="/img/hg002_haplotypes_wholegenome.png" />
 
-The same two boxes are on the **linear synteny view's** import form, one per
-row, so a whole-genome linear comparison of the two haplotypes is set up the
-same way.
-
 ## The 8p23.1 inversion
+
+The blue blocks are worth taking one at a time, which is a linear synteny view's
+job rather than a dotplot's. Open **Add → Linear synteny view** and pick
+`T2T-HG002 v1.2 (diploid)` in both rows. That gives two panels of the same
+assembly, so put the maternal copy of a chromosome on top and the paternal
+below, and type a locus into either panel's search box to move it. The same
+chromosome boxes are on this form too, one per row, if you want the whole-genome
+comparison as ribbons instead of as a plot.
+
+It is worth turning that same track on from each panel's own track selector as
+well. In a plain linear view it draws as blocks on that panel's ruler rather
+than as ribbons between the panels, and those blocks are what the right-click
+further down acts on.
 
 Chromosome 8 carries an inversion polymorphism at 8p23.1 that HG002 is
 heterozygous for (Bosch _et al._ 2009), so it is one of the places where the two
