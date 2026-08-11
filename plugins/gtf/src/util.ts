@@ -201,6 +201,9 @@ function parseGtfAttributes(s: string, from: number, to: number) {
 function parseShortGtfLine(line: string): FeatureLoc {
   const c = line.split('\t')
   const score = c[5]
+  // a line this short has no ninth column at all, but read it if one is
+  // somehow there rather than differing from the old behaviour twice over
+  const attrs = c[8] ?? ''
   return {
     seq_name: c[0] ?? '',
     source: nullIfDot(c[1]),
@@ -210,7 +213,7 @@ function parseShortGtfLine(line: string): FeatureLoc {
     score: score === undefined || score === '.' ? null : Number(score),
     strand: toStrand(c[6]),
     frame: nullIfDot(c[7]),
-    attributes: parseGtfAttributes(c[8] ?? '', 0, (c[8] ?? '').length),
+    attributes: parseGtfAttributes(attrs, 0, attrs.length),
   }
 }
 
