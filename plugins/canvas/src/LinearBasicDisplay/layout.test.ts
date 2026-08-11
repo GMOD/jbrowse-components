@@ -445,6 +445,52 @@ test('collapsed mode leaves marks with room around them opaque', () => {
   ).toBe(true)
 })
 
+// The next two pin PILEUP_FADE_DEPTH from both sides in the mode that motivated
+// it, at the geometry that motivated it. Collapsed mode admits every sub-pixel
+// mark as a fade candidate — unlike the stacking path, it cannot hold labeled or
+// solid-overlapping ones back, since row 0 is the only row — so it is the mode
+// where a threshold that is too low does the most damage, and it is the mode
+// website/scripts/specs/graph.ts's repeat lane runs in.
+//
+// 200bp elements at 150 bp/px: 1.33px each, under the 2px clamp, so each paints
+// exactly 2px from its start.
+test('collapsed mode leaves abutting repeat-style elements opaque', () => {
+  // Neighbouring RepeatMasker elements: disjoint in bp, touching or nearly so,
+  // which the clamp turns into a painted overlap. That is ordinary tiled
+  // annotation and not a pile, and a lane read for how much of the interval is
+  // covered needs it solid — faded, its denser stretches render LIGHTER than its
+  // sparse ones, because two marks at MIN_DENSITY_ALPHA accumulate to 0.51 where
+  // a lone mark draws 1.0.
+  const data = makeFeatureData({
+    features: [
+      // paints [6.67,8.67) and [8.0,10.0) — abutting in bp, overlapping in px
+      { featureId: 'rep0', startBp: 1000, endBp: 1200, height: 10 },
+      { featureId: 'rep1', startBp: 1200, endBp: 1400, height: 10 },
+      // paints [10.67,12.67), clear of both
+      { featureId: 'rep2', startBp: 1600, endBp: 1800, height: 10 },
+    ].map(f => ({ ...f, densityFade: true })),
+  })
+  const r = collapsedModeLayout(data, 150)
+  expect(r.flatbushItems.every(it => it.topPx === 0)).toBe(true)
+  expect([...r.rectDensityFade].every(v => v === 0)).toBe(true)
+})
+
+test('collapsed mode fades the same elements once a third lands on them', () => {
+  // One element further into the same 2px and the clamp is no longer an
+  // explanation: three marks cover x=8.0, which no zoom short of base level can
+  // resolve and which draws as one opaque bar with two features silently gone.
+  const data = makeFeatureData({
+    features: [
+      // paint [6.67,8.67), [7.33,9.33) and [8.0,10.0) — all three cover 8.0
+      { featureId: 'rep0', startBp: 1000, endBp: 1200, height: 10 },
+      { featureId: 'rep1', startBp: 1100, endBp: 1300, height: 10 },
+      { featureId: 'rep2', startBp: 1200, endBp: 1400, height: 10 },
+    ].map(f => ({ ...f, densityFade: true })),
+  })
+  const r = collapsedModeLayout(data, 150)
+  expect([...r.rectDensityFade].every(v => v === 1)).toBe(true)
+})
+
 test('collapsed mode does not fade a wide feature it overlaps another with', () => {
   // A ~2px mark is its own overlap, so one instance alpha reads as the pileup's
   // depth. A gene overlaps its neighbour over part of its length, and fading the
