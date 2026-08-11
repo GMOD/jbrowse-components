@@ -163,7 +163,7 @@ importers:
         version: 4.4.5(eslint-plugin-import-x@4.17.1(@typescript-eslint/utils@8.66.0(eslint@10.8.1(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))(eslint@10.8.1(supports-color@8.1.1))(supports-color@8.1.1))(eslint@10.8.1(supports-color@8.1.1))(supports-color@8.1.1)
       eslint-plugin-astro:
         specifier: 3.1.0
-        version: 3.1.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(@typescript-eslint/parser@8.66.0(eslint@10.8.1(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))(eslint@10.8.1(supports-color@8.1.1))(supports-color@8.1.1)(typescript-eslint@8.66.0(eslint@10.8.1(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))
+        version: 3.1.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@typescript-eslint/parser@8.66.0(eslint@10.8.1(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))(eslint@10.8.1(supports-color@8.1.1))(supports-color@8.1.1)(typescript-eslint@8.66.0(eslint@10.8.1(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))
       eslint-plugin-import-x:
         specifier: ^4.17.1
         version: 4.17.1(@typescript-eslint/utils@8.66.0(eslint@10.8.1(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))(eslint@10.8.1(supports-color@8.1.1))(supports-color@8.1.1)
@@ -723,8 +723,11 @@ importers:
   plugins/alignments:
     dependencies:
       '@gmod/bam':
-        specifier: ^8.4.2
-        version: 8.4.2
+        specifier: ^8.5.0
+        version: 8.5.0
+      '@gmod/bgzf-filehandle':
+        specifier: ^6.4.0
+        version: 6.4.0
       '@gmod/cram':
         specifier: ^11.4.1
         version: 11.4.1
@@ -4280,8 +4283,8 @@ packages:
   '@fontsource/roboto@5.3.0':
     resolution: {integrity: sha512-BapRJOWYP+LZ21zp+wBQjfpPYKRoxc4LspJ/RLuI+HSMBD5u/X4O+ESDrSvEqDSy0rAl7GwBJ+09mdc16cVQ1Q==}
 
-  '@gmod/bam@8.4.2':
-    resolution: {integrity: sha512-eweA6Pcdvj03KHKQrNp2XJHE34fn1saSs8hV8xwQX2iYwp4VFY5L8ljkVzXDstBBR3n6E+SJCF+i7YuMLwvdMg==}
+  '@gmod/bam@8.5.0':
+    resolution: {integrity: sha512-yNhv+BKYceTRNosDJIE9/c3ivyNYsAinkjKxj+MtmNTXmzkGwb1Qc0g7ks6cY4J1Yl4y8BTNHeONfPzE9RO3xA==}
 
   '@gmod/bbi@11.0.1':
     resolution: {integrity: sha512-X006LXWrTZacaws4j8AjCbhjSI3RRuMigwoWqyj0HJhnxW9nWdBpmZ5L6HHfQl5G7Y7DkJKCz0Q4Grec4aVi3g==}
@@ -4291,6 +4294,9 @@ packages:
 
   '@gmod/bgzf-filehandle@6.3.3':
     resolution: {integrity: sha512-wseQYvhl7HcSQSj8jPijiGFS7rJaliZFcQcuYDdHqQvU3dL3ybOLlYD3e7c8nXsG5lVSBP0FTwnY3UH6/U2/GQ==}
+
+  '@gmod/bgzf-filehandle@6.4.0':
+    resolution: {integrity: sha512-PrID2FLkIqPZWSuHwYnc4A4riG4qJ6jOg+c4UXnfNio+hejZrKctUn7A3+BPMJ8i8W+S0fZOmCfKgreFHzFuBg==}
 
   '@gmod/cram@11.4.1':
     resolution: {integrity: sha512-1W67sJ9Ri+QSOqHeO/wXhirE36zGFlDuswoeSjDMtozsZe3xjGNv0bSrMoNZEVs4Ev6HN2/JS0gxBwYH7jAPPw==}
@@ -10584,6 +10590,14 @@ snapshots:
   '@astrojs/compiler-binding-linux-x64-musl@0.3.2':
     optional: true
 
+  '@astrojs/compiler-binding-wasm32-wasi@0.3.2(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
+    dependencies:
+      '@napi-rs/wasm-runtime': 1.2.2(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
+    transitivePeerDependencies:
+      - '@emnapi/core'
+      - '@emnapi/runtime'
+    optional: true
+
   '@astrojs/compiler-binding-wasm32-wasi@0.3.2(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)':
     dependencies:
       '@napi-rs/wasm-runtime': 1.2.2(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)
@@ -10598,6 +10612,21 @@ snapshots:
   '@astrojs/compiler-binding-win32-x64-msvc@0.3.2':
     optional: true
 
+  '@astrojs/compiler-binding@0.3.2(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
+    optionalDependencies:
+      '@astrojs/compiler-binding-darwin-arm64': 0.3.2
+      '@astrojs/compiler-binding-darwin-x64': 0.3.2
+      '@astrojs/compiler-binding-linux-arm64-gnu': 0.3.2
+      '@astrojs/compiler-binding-linux-arm64-musl': 0.3.2
+      '@astrojs/compiler-binding-linux-x64-gnu': 0.3.2
+      '@astrojs/compiler-binding-linux-x64-musl': 0.3.2
+      '@astrojs/compiler-binding-wasm32-wasi': 0.3.2(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
+      '@astrojs/compiler-binding-win32-arm64-msvc': 0.3.2
+      '@astrojs/compiler-binding-win32-x64-msvc': 0.3.2
+    transitivePeerDependencies:
+      - '@emnapi/core'
+      - '@emnapi/runtime'
+
   '@astrojs/compiler-binding@0.3.2(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)':
     optionalDependencies:
       '@astrojs/compiler-binding-darwin-arm64': 0.3.2
@@ -10609,6 +10638,13 @@ snapshots:
       '@astrojs/compiler-binding-wasm32-wasi': 0.3.2(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)
       '@astrojs/compiler-binding-win32-arm64-msvc': 0.3.2
       '@astrojs/compiler-binding-win32-x64-msvc': 0.3.2
+    transitivePeerDependencies:
+      - '@emnapi/core'
+      - '@emnapi/runtime'
+
+  '@astrojs/compiler-rs@0.3.2(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
+    dependencies:
+      '@astrojs/compiler-binding': 0.3.2(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
     transitivePeerDependencies:
       - '@emnapi/core'
       - '@emnapi/runtime'
@@ -12148,9 +12184,9 @@ snapshots:
 
   '@fontsource/roboto@5.3.0': {}
 
-  '@gmod/bam@8.4.2':
+  '@gmod/bam@8.5.0':
     dependencies:
-      '@gmod/bgzf-filehandle': 6.3.3
+      '@gmod/bgzf-filehandle': 6.4.0
       '@gmod/shared-read-cache': 1.5.1
       '@jbrowse/quick-lru': 7.3.5
       crc: 4.3.2
@@ -12166,6 +12202,11 @@ snapshots:
   '@gmod/bed@2.2.10': {}
 
   '@gmod/bgzf-filehandle@6.3.3':
+    dependencies:
+      generic-filehandle2: 2.2.3
+      pako-esm2: 2.0.2
+
+  '@gmod/bgzf-filehandle@6.4.0':
     dependencies:
       generic-filehandle2: 2.2.3
       pako-esm2: 2.0.2
@@ -14021,9 +14062,9 @@ snapshots:
       pvutils: 1.2.0
       tslib: 2.8.1
 
-  astro-eslint-parser@3.0.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(supports-color@8.1.1):
+  astro-eslint-parser@3.0.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(supports-color@8.1.1):
     dependencies:
-      '@astrojs/compiler-rs': 0.3.2(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)
+      '@astrojs/compiler-rs': 0.3.2(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
       '@typescript-eslint/scope-manager': 8.66.0
       '@typescript-eslint/types': 8.66.0
       debug: 4.4.3(supports-color@8.1.1)
@@ -15012,12 +15053,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-astro@3.1.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(@typescript-eslint/parser@8.66.0(eslint@10.8.1(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))(eslint@10.8.1(supports-color@8.1.1))(supports-color@8.1.1)(typescript-eslint@8.66.0(eslint@10.8.1(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)):
+  eslint-plugin-astro@3.1.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@typescript-eslint/parser@8.66.0(eslint@10.8.1(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))(eslint@10.8.1(supports-color@8.1.1))(supports-color@8.1.1)(typescript-eslint@8.66.0(eslint@10.8.1(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)):
     dependencies:
       '@eslint-community/eslint-utils': 4.10.1(eslint@10.8.1(supports-color@8.1.1))
       '@jridgewell/sourcemap-codec': 1.5.5
       '@typescript-eslint/types': 8.66.0
-      astro-eslint-parser: 3.0.0(@emnapi/core@2.0.0-alpha.3)(@emnapi/runtime@2.0.0-alpha.3)(supports-color@8.1.1)
+      astro-eslint-parser: 3.0.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(supports-color@8.1.1)
       eslint: 10.8.1(supports-color@8.1.1)
       espree: 11.2.0
       globals: 17.9.0

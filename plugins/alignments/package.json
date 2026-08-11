@@ -31,7 +31,7 @@
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/bam": "^8.4.2",
+    "@gmod/bam": "^8.5.0",
     "@gmod/cram": "^11.4.1",
     "@jbrowse/alignments-core": "workspace:^",
     "@jbrowse/cigar-utils": "workspace:^",
@@ -47,7 +47,8 @@
     "generic-filehandle2": "^2.2.3",
     "mobx": "^7.0.0",
     "mobx-react": "^10.0.0",
-    "rxjs": "^7.8.2"
+    "rxjs": "^7.8.2",
+    "@gmod/bgzf-filehandle": "^6.4.0"
   },
   "peerDependencies": {
     "react": ">=19.0.0"
