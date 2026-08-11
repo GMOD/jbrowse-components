@@ -22,15 +22,26 @@
  * paints over the first row of the plot, and nothing fails — it just looks
  * wrong, in the direction a screenshot review reads as a rendering bug.
  */
-import { LABEL_FONT_SIZE } from '@jbrowse/plugin-canvas'
+import {
+  LABEL_FONT_SIZE,
+  modeCanShowDescription,
+  modeCanShowName,
+} from '@jbrowse/plugin-canvas'
+
+import type { ShowLabelsMode } from '@jbrowse/plugin-canvas'
 
 export interface VariantTopBandsInput {
   /** `showVariantLane`: whether the variant lane is switched on at all. */
   showVariantLane: boolean
   /** `variantLaneHeight`: the lane's configured height, spent only when on. */
   variantLaneHeight: number
-  /** `showVariantLaneLabels`: whether the lane reserves room to letter its marks. */
-  showVariantLaneLabels: boolean
+  /**
+   * `variantLaneLabels`: plugin-canvas's label-content enum. The lane reserves
+   * one text line per kind the mode admits — a name over a description, the
+   * same stacking order and the same two colors `resolveFeatureLabels` gives
+   * them.
+   */
+  variantLaneLabels: ShowLabelsMode
   /** `lineZoneHeight`: the connector-line zone, 0 on genomic-position displays. */
   lineZoneHeight: number
 }
@@ -46,12 +57,20 @@ export interface VariantTopBands {
    */
   markHeight: number
   /**
-   * Baseline-ish top of the label strip inside the lane, or **0 when the lane
-   * letters nothing** — which is both "labels are off" and "the lane is too
-   * short to letter", since a label strip taller than the marks it annotates is
-   * not worth the height it costs the rows.
+   * Top of the label strip inside the lane, or **0 when the lane letters
+   * nothing** — which is both "labels are off" and "the lane is too short to
+   * letter", since a label strip taller than the marks it annotates is not
+   * worth the height it costs the rows.
    */
   labelTop: number
+  /** Whether a record's name is drawn, at `labelTop`. */
+  showName: boolean
+  /**
+   * Whether a record's description is drawn, one line below the name when both
+   * are on and at `labelTop` when it is alone. Same order plugin-canvas stacks
+   * them in.
+   */
+  showDescription: boolean
   /** Whether the lane letters its marks at all. `labelTop` is only meaningful when true. */
   labelsFit: boolean
   /** Top of the connector-line zone, i.e. the bottom of the lane. */
@@ -90,14 +109,37 @@ export const MAX_VARIANT_LANE_HEIGHT = 500
 /**
  * The `variantLaneHeight` slot's default, stated here so the slot and the
  * menu's "is this the default" / reset both read one number. Sized to hold a
- * readable mark AND a label strip at the shared label font, since labels are on
- * by default — a lane that has to drop its labels at the default height would
- * teach the reader they don't exist.
+ * readable mark AND both label lines at the shared label font, since the
+ * default mode admits both — a lane that had to drop a line at its own default
+ * would teach the reader that line does not exist. 40 = 16px mark + 2 x 11px
+ * text + the 2px gap.
  */
-export const DEFAULT_VARIANT_LANE_HEIGHT = 28
+export const DEFAULT_VARIANT_LANE_HEIGHT = 40
 
 /** Gap between the marks and the text under them. */
 export const LABEL_GAP_PX = 2
+
+/**
+ * The label-mode radio rows, wording the five shared modes for a lane. The
+ * values are plugin-canvas's enum; only the prose is ours, because "auto" means
+ * something narrower here — the lane has no density thresholds, so what adapts
+ * is its collision cull.
+ */
+export const VARIANT_LANE_LABEL_OPTIONS = [
+  {
+    value: 'auto' as const,
+    label: 'Auto',
+    helpText:
+      'Draw the ID and the description wherever they clear the previous mark’s text',
+  },
+  {
+    value: 'nameAndDescription' as const,
+    label: 'ID and description',
+  },
+  { value: 'name' as const, label: 'ID only' },
+  { value: 'description' as const, label: 'Description only' },
+  { value: 'none' as const, label: 'None' },
+]
 
 export function clampVariantLaneHeight(n: number) {
   return clampBandHeight(n, MIN_VARIANT_LANE_HEIGHT, MAX_VARIANT_LANE_HEIGHT)
@@ -112,7 +154,7 @@ const MIN_MARK_HEIGHT_WITH_LABELS = 6
 export function variantTopBandsGeometry({
   showVariantLane,
   variantLaneHeight,
-  showVariantLaneLabels,
+  variantLaneLabels,
   lineZoneHeight,
 }: VariantTopBandsInput): VariantTopBands {
   // Off spends nothing rather than spending a clamped minimum: the toggle has
@@ -121,21 +163,37 @@ export function variantTopBandsGeometry({
   const laneHeight = showVariantLane
     ? clampVariantLaneHeight(variantLaneHeight)
     : 0
-  // The label strip is the text plus the gap that keeps it off the marks. Both
-  // are plugin-canvas's, because the lane letters with plugin-canvas's font at
+  // One text line per kind the mode admits. The font and the gap are
+  // plugin-canvas's, because the lane letters with plugin-canvas's font at
   // plugin-canvas's measured widths — reserving a different amount than the
   // text occupies is how a strip clips its own descenders.
-  const labelStrip = LABEL_FONT_SIZE + LABEL_GAP_PX
-  const labelsFit =
-    showVariantLaneLabels &&
-    laneHeight - labelStrip >= MIN_MARK_HEIGHT_WITH_LABELS
-  const markHeight = labelsFit ? laneHeight - labelStrip : laneHeight
+  const wantsName = modeCanShowName(variantLaneLabels)
+  const wantsDescription = modeCanShowDescription(variantLaneLabels)
+  const lines = (wantsName ? 1 : 0) + (wantsDescription ? 1 : 0)
+  const labelStrip = lines ? lines * LABEL_FONT_SIZE + LABEL_GAP_PX : 0
+  // Both kinds or neither: a lane tall enough for one line but not two draws
+  // the name and drops the description rather than refusing to letter, since
+  // the name is the one plugin-canvas drops last.
+  const roomForBoth =
+    laneHeight - labelStrip >= MIN_MARK_HEIGHT_WITH_LABELS && lines > 0
+  const roomForOne =
+    laneHeight - (LABEL_FONT_SIZE + LABEL_GAP_PX) >= MIN_MARK_HEIGHT_WITH_LABELS
+  const drawnLines = roomForBoth ? lines : roomForOne && lines ? 1 : 0
+  // With room for one line and both kinds asked for, the name wins — except
+  // where the mode asked for a description alone, which then IS the one line.
+  const showName = drawnLines > 0 && wantsName
+  const showDescription =
+    drawnLines === 2 || (drawnLines === 1 && wantsDescription && !wantsName)
+  const strip = drawnLines * LABEL_FONT_SIZE + (drawnLines ? LABEL_GAP_PX : 0)
+  const markHeight = laneHeight - strip
   return {
     laneTop: 0,
     laneHeight,
     markHeight,
-    labelTop: labelsFit ? markHeight + LABEL_GAP_PX : 0,
-    labelsFit,
+    labelTop: drawnLines ? markHeight + LABEL_GAP_PX : 0,
+    showName,
+    showDescription,
+    labelsFit: drawnLines > 0,
     lineZoneTop: laneHeight,
     bottom: laneHeight + lineZoneHeight,
   }

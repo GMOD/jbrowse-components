@@ -94,6 +94,7 @@ function VariantSvgBody({
                 // the export theme's text color, not the live session's, the
                 // same rule the insertion markers beside it follow
                 labelColor: exportPalette.text.primary,
+                descriptionColor: exportPalette.featureDescription,
               })
             }}
           />

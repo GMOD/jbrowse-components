@@ -1,4 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { types } from '@jbrowse/mobx-state-tree'
+import { SHOW_LABELS_MODES } from '@jbrowse/plugin-canvas'
 
 import sharedVariantConfigFactory from '../shared/SharedVariantConfigSchema.ts'
 import { DEFAULT_VARIANT_LANE_HEIGHT } from '../shared/variantTopBands.ts'
@@ -166,22 +168,24 @@ export default function configSchemaFactory() {
       },
       /**
        * #slot
-       * Letter the lane's marks with each record's VCF ID, in plugin-canvas's
-       * label font at its measured widths — the same text a
-       * `LinearVariantDisplay` puts under the same record.
+       * Letter the lane's marks with each record's VCF ID and/or its
+       * description, in plugin-canvas's label font at its measured widths and
+       * in its two colors — the same text a `LinearVariantDisplay` puts under
+       * the same record, under the same enum it spells the choice with.
        *
        * A label is drawn only where it clears the previous one: the lane is one
        * row, so it has nowhere to push a collision (that display resolves
        * overlap by stacking features onto more rows). So labels appear as you
        * zoom in and thin out as you zoom out, which is the honest behavior for
-       * a single strip. They are also dropped wholesale when the lane is too
-       * short to hold a mark and a text line — see `variantTopBands.ts`.
+       * a single strip. Lines are also dropped when the lane is too short to
+       * hold a mark and the text — see `variantTopBands.ts`.
        */
-      showVariantLaneLabels: {
-        type: 'boolean',
-        defaultValue: true,
+      variantLaneLabels: {
+        type: 'stringEnum',
+        model: types.enumeration('variantLaneLabels', [...SHOW_LABELS_MODES]),
+        defaultValue: 'auto',
         description:
-          "letter the variant lane's marks with each record's VCF ID where there is room",
+          "which label text the variant lane draws beside each mark: the record's ID and/or its description, in plugin-canvas's own vocabulary. 'auto' admits both — the lane has no density thresholds of its own, so adaptivity is its collision cull",
       },
     },
     {

@@ -83,13 +83,24 @@ export function drawVariantLane(
     canvasWidth,
     bands,
     labelColor,
+    descriptionColor,
   }: {
     canvasWidth: number
     bands: VariantTopBands
+    /** theme `text.primary`, as plugin-canvas letters a feature name with */
     labelColor: string
+    /** theme `featureDescription`, its blue for the second line */
+    descriptionColor: string
   },
 ) {
-  const { laneHeight, markHeight, labelTop, labelsFit } = bands
+  const {
+    laneHeight,
+    markHeight,
+    labelTop,
+    labelsFit,
+    showName,
+    showDescription,
+  } = bands
   if (laneHeight <= 0) {
     return
   }
@@ -140,10 +151,25 @@ export function drawVariantLane(
           markHeight,
         )
         if (labelsFit) {
-          const name = region.featureGenotypeMap[region.featureIdList[f]!]?.name
-          if (name) {
-            const text = truncateLabel(name)
-            const textWidth = measureText(text, LABEL_FONT_SIZE)
+          const featureInfo =
+            region.featureGenotypeMap[region.featureIdList[f]!]
+          // Name over description, plugin-canvas's stacking order and its two
+          // colors — the name in the theme's text color, the description in
+          // `featureDescription`. Truncated and measured with its helpers too,
+          // so the same record letters identically in a LinearVariantDisplay.
+          const name = showName ? truncateLabel(featureInfo?.name ?? '') : ''
+          const description = showDescription
+            ? truncateLabel(featureInfo?.description ?? '')
+            : ''
+          // The collision test is over the WIDEST line, so a long description
+          // under a short name cannot run into the next record's text. One
+          // decision for the pair, because they are drawn as a block.
+          const nameWidth = name ? measureText(name, LABEL_FONT_SIZE) : 0
+          const descWidth = description
+            ? measureText(description, LABEL_FONT_SIZE)
+            : 0
+          const textWidth = Math.max(nameWidth, descWidth)
+          if (textWidth > 0) {
             // plugin-canvas's anchoring, so a label in the lane sits where the
             // same record's label sits in a LinearVariantDisplay: left-aligned
             // to the mark, pushed right when the mark starts off-screen, and
@@ -159,10 +185,18 @@ export function drawVariantLane(
               },
             )
             if (labelX > lastLabelRight) {
-              ctx.fillStyle = labelColor
-              ctx.fillText(text, labelX, labelTop)
+              let y = labelTop
+              if (name) {
+                ctx.fillStyle = labelColor
+                ctx.fillText(name, labelX, y)
+                y += LABEL_FONT_SIZE
+              }
+              if (description) {
+                ctx.fillStyle = descriptionColor
+                ctx.fillText(description, labelX, y)
+              }
               lastLabelRight = labelX + textWidth + LABEL_GAP_PX
-              // the label reset the fill, so the next mark must reassign it
+              // the labels reset the fill, so the next mark must reassign it
               currentAbgr = -1
             }
           }

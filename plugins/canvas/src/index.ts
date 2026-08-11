@@ -65,6 +65,15 @@ export {
   renderedTextWidth,
 } from './RenderFeatureDataRPC/constants.ts'
 export { truncateLabel } from './RenderFeatureDataRPC/util.ts'
+// The label-content vocabulary, so a display outside this plugin offers the
+// same five choices under the same names rather than a second spelling of the
+// same setting. The variant lane admits both kinds under 'auto' and leaves the
+// adaptivity to its own collision cull, having no density thresholds of its own.
+export {
+  SHOW_LABELS_MODES,
+  modeCanShowDescription,
+  modeCanShowName,
+} from './LinearBasicDisplay/showLabelsMode.ts'
 export { computeLabelPosition } from './LinearBasicDisplay/components/labelPositioning.ts'
 export type {
   FeatureBoundsPx,

@@ -3818,8 +3818,8 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | number)"
         },
         {
-          "name": "showVariantLaneLabels",
-          "type": "(JexlString | boolean)"
+          "name": "variantLaneLabels",
+          "type": "(JexlString | variantLaneLabels)"
         }
       ],
       "aliases": [

@@ -41,6 +41,7 @@ const VariantLaneOverlay = observer(function VariantLaneOverlay({
             bands: topBands,
             // the theme's text color, as plugin-canvas letters a feature with
             labelColor: palette.text.primary,
+            descriptionColor: palette.featureDescription,
           })
         }}
       />

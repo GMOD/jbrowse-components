@@ -946,21 +946,19 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           type: 'LinearBasicDisplay',
           height: 100,
         },
-        // The record itself, above the 86 rows of it (review: "put the regular
-        // linearvariantdisplay above the multisamplevariantdisplay so users can
-        // see what type of feature everything is"). The matrix below paints a
-        // genotype per dog and never says WHAT is being genotyped; this lane is
-        // the one feature, drawn and labelled as the duplication it is, over
-        // exactly the span the columns below cover. Same track, so nothing new
-        // is fetched.
-        {
-          trackId: 'dog10k_amy2b_svs_positional',
-          type: 'LinearVariantDisplay',
-          height: 50,
-        },
         {
           trackId: 'dog10k_amy2b_svs',
           type: 'LinearMultiSampleVariantDisplay',
+          // The record itself, above the 86 rows of it (review: "put the
+          // regular linearvariantdisplay above the multisamplevariantdisplay so
+          // users can see what type of feature everything is"). The matrix
+          // paints a genotype per dog and never says WHAT is being genotyped;
+          // the lane is the one feature, drawn and labelled as the duplication
+          // it is, over exactly the span the columns below cover. It is a band
+          // inside this display rather than the separate LinearVariantDisplay
+          // track it replaced: same records, same fetch, and the mark now sits
+          // in the same box as the columns it names.
+          showVariantLane: true,
           // 86 rows. The VCF holds one record, so every pixel of width is the
           // one block and the height is all that has to be budgeted.
           height: 900,
@@ -975,9 +973,9 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     readyText: 'chr6',
     readyTimeout: 90000,
     settleMs: 6000,
-    // gene track, the positional lane, all 86 sample rows, the group swatch
-    // legend and the genotype legend under it. Both halves stay the same
-    // height, since the pair is read across.
+    // gene track, then the variant track: its lane, all 86 sample rows, the
+    // group swatch legend and the genotype legend under it. Both halves stay
+    // the same height, since the pair is read across.
     viewportHeight: 1323,
     // The gene's name, because the RefSeq row cannot supply it, plus the caveat
     // that is the reason this locus is on the page at all: the column is
@@ -1053,18 +1051,14 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           type: 'LinearBasicDisplay',
           height: 100,
         },
-        // the same positional lane as the AMY2B half, and the pairing is the
-        // reason it earns its place twice: one record draws as a block over the
-        // span it duplicates, the other as an insertion marker at a point, so
-        // the two halves differ in the glyph as well as in the genotypes
-        {
-          trackId: 'dog10k_rnase1_svs_positional',
-          type: 'LinearVariantDisplay',
-          height: 50,
-        },
         {
           trackId: 'dog10k_rnase1_svs',
           type: 'LinearMultiSampleVariantDisplay',
+          // the same lane as the AMY2B half, and the pairing is the reason it
+          // earns its place twice: one record draws as a block over the span it
+          // duplicates, the other as an insertion marker at a point, so the two
+          // halves differ in the glyph as well as in the genotypes
+          showVariantLane: true,
           height: 900,
           layout: AMY2B_LAYOUT,
         },
@@ -1561,22 +1555,15 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           type: 'LinearBasicDisplay',
           height: 60,
         },
-        // the same site as a plain variant lane, carrying the description a
-        // reader gets from any other variant track. Same filter as the matrix
-        // below, so the two lanes agree on which column is being described.
-        {
-          trackId: 'dog10k_cyp1a2_snvs_positional',
-          type: 'LinearVariantDisplay',
-          height: 60,
-          // no `jexl:` prefix, unlike the matrix below: this is a canvas
-          // display, whose jexlFilters slot takes bare expressions and adds the
-          // prefix itself (ensureJexlPrefix). Written with one, it parses
-          // `jexl:jexl:...` and the track errors.
-          jexlFilters: ["get(feature,'start') == 38261634"],
-        },
         {
           trackId: 'dog10k_cyp1a2_snvs',
           type: 'LinearMultiSampleVariantDisplay',
+          // the same site as a plain variant lane, carrying the description a
+          // reader gets from any other variant track ("C -> T"). One track now
+          // rather than two: the lane reads the same filtered records the
+          // columns do, so the two cannot disagree about which site is being
+          // described the way two separately-filtered tracks could.
+          showVariantLane: true,
           height: 500,
           layout: CYP_LAYOUT,
           // Only the stop-gained site. Two neighbours are in frame otherwise --
@@ -1592,9 +1579,11 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     settleMs: 6000,
     // sequence + gene track plus all 39 sample rows and the genotype legend.
-    // 870 (pre-sequence-track) cut the last wolf row's block against the frame;
-    // the per-position variant lane above the matrix adds its own 60, and the
-    // run reports 13.5 css px still under the fold at 1010.
+    // 870 (pre-sequence-track) cut the last wolf row's block against the frame.
+    // The variant lane is a band inside the matrix rather than the separate 60px
+    // track it replaced, so the stack lost that track's height and the rows
+    // divide what is left — the run has room to spare here rather than the 13.5
+    // css px it used to report.
     viewportHeight: 1024,
     // The sequence track puts CGA and its Arg on screen; `colorByCDS` above is
     // what says which of the three forward frames it is read in (the third,

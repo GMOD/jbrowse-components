@@ -4,6 +4,7 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { makeSizeMenu } from '@jbrowse/core/ui'
+import { radioItems } from '@jbrowse/core/ui/menuItems'
 import { getSession } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -14,6 +15,7 @@ import { placeVariantRows } from '../shared/placeVariantRows.ts'
 import {
   DEFAULT_VARIANT_LANE_HEIGHT,
   MIN_VARIANT_LANE_HEIGHT,
+  VARIANT_LANE_LABEL_OPTIONS,
   clampVariantLaneHeight,
 } from '../shared/variantTopBands.ts'
 import { markersForBlock } from './components/drawVariantInsertionGlyphs.ts'
@@ -28,6 +30,7 @@ import type {
 import type { LinearMultiSampleVariantDisplayConfigModel } from './configSchema.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { ShowLabelsMode } from '@jbrowse/plugin-canvas'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 
 /**
@@ -85,8 +88,8 @@ export function stateModelFactory(
         /**
          * #action
          */
-        setShowVariantLaneLabels(arg: boolean) {
-          setConf(self, 'showVariantLaneLabels', arg)
+        setVariantLaneLabels(arg: ShowLabelsMode) {
+          setConf(self, 'variantLaneLabels', arg)
         },
       }))
       .views(self => {
@@ -108,8 +111,8 @@ export function stateModelFactory(
           get variantLaneHeight(): number {
             return getConf(self, 'variantLaneHeight')
           },
-          get showVariantLaneLabels(): boolean {
-            return getConf(self, 'showVariantLaneLabels')
+          get variantLaneLabels(): ShowLabelsMode {
+            return getConf(self, 'variantLaneLabels')
           },
           get visibleRegions() {
             const view = self.lgv
@@ -182,19 +185,22 @@ export function stateModelFactory(
                   self.setShowVariantLane(!self.showVariantLane)
                 },
               },
+              // plugin-canvas's own five choices under its own names, so a
+              // reader who has set this on a variant track finds the same menu
+              // here. Only offered while the lane is on.
               ...(self.showVariantLane
                 ? [
                     {
-                      label: 'Label the variant lane',
+                      label: 'Variant lane labels',
                       helpText:
-                        'Letter each mark with its VCF ID where there is room. The lane is one row, so a label is drawn only where it clears the previous one — they thin out as you zoom out, and are dropped entirely if the lane is too short to hold a mark and a line of text',
-                      type: 'checkbox' as const,
-                      checked: self.showVariantLaneLabels,
-                      onClick: () => {
-                        self.setShowVariantLaneLabels(
-                          !self.showVariantLaneLabels,
-                        )
-                      },
+                        'Which text is drawn under each mark. The lane is one row, so a label is drawn only where it clears the previous one — they thin out as you zoom out, and a line is dropped when the lane is too short to hold the mark and the text',
+                      subMenu: radioItems(
+                        VARIANT_LANE_LABEL_OPTIONS,
+                        self.variantLaneLabels,
+                        mode => {
+                          self.setVariantLaneLabels(mode)
+                        },
+                      ),
                     },
                   ]
                 : []),

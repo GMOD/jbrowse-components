@@ -62,6 +62,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { ShowLabelsMode } from '@jbrowse/plugin-canvas'
 import type {
   FetchContext,
   LegendSection,
@@ -582,8 +583,8 @@ export default function MultiSampleVariantBaseModelF(
          * two above by the display that paints one; `topBands.labelsFit` is the
          * resolved answer, which also folds in whether the lane is tall enough.
          */
-        get showVariantLaneLabels(): boolean {
-          return false
+        get variantLaneLabels(): ShowLabelsMode {
+          return 'none'
         },
 
         /**
@@ -1170,7 +1171,7 @@ export default function MultiSampleVariantBaseModelF(
           return variantTopBandsGeometry({
             showVariantLane: self.showVariantLane,
             variantLaneHeight: self.variantLaneHeight,
-            showVariantLaneLabels: self.showVariantLaneLabels,
+            variantLaneLabels: self.variantLaneLabels,
             lineZoneHeight: self.lineZoneHeight,
           })
         },

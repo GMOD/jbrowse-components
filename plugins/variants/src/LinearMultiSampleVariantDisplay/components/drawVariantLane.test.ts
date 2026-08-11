@@ -7,6 +7,7 @@ import { SHAPE_RECT, SHAPE_TRI_LEFT } from './variantShape.ts'
 import type { VariantLaneData } from './drawVariantLane.ts'
 import type { VariantRenderBlock } from './variantRenderingBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { ShowLabelsMode } from '@jbrowse/plugin-canvas'
 
 interface FillRectCall {
   x: number
@@ -20,6 +21,7 @@ interface FillTextCall {
   text: string
   x: number
   y: number
+  fillStyle: string
 }
 
 function mockCtx() {
@@ -39,7 +41,7 @@ function mockCtx() {
       calls.push({ x, y, w, h, fillStyle: this.fillStyle })
     },
     fillText(text: string, x: number, y: number) {
-      texts.push({ text, x, y })
+      texts.push({ text, x, y, fillStyle: this.fillStyle })
     },
   }
   return { ctx: ctx as unknown as Ctx2D, calls, texts }
@@ -61,12 +63,12 @@ const BLUE = cssColorToABGR('blue')
 // Two records: 10-12bp and 50-51bp, one red and one blue. Per-feature arrays
 // only — the lane never reads a cell array, which is what keeps it independent
 // of sample count.
-function info(name: string) {
+function info(name: string, description = 'DUP') {
   return {
     name,
     alt: ['T'],
     ref: 'A',
-    description: '',
+    description,
     length: 1,
     insertedBp: 0,
     type: 'SNV',
@@ -90,11 +92,11 @@ function data(overrides?: Partial<VariantLaneData>): VariantLaneData {
 // the marks alone. `bands` is the real geometry function, not a literal: the
 // painter and the layout share it, and a test that hand-rolled the split would
 // stop catching a change to it.
-function bands(laneHeight: number, showVariantLaneLabels = false) {
+function bands(laneHeight: number, variantLaneLabels: ShowLabelsMode = 'none') {
   return variantTopBandsGeometry({
     showVariantLane: laneHeight > 0,
     variantLaneHeight: laneHeight,
-    showVariantLaneLabels,
+    variantLaneLabels,
     lineZoneHeight: 0,
   })
 }
@@ -102,13 +104,14 @@ function bands(laneHeight: number, showVariantLaneLabels = false) {
 function draw(
   laneHeight: number,
   overrides?: Partial<VariantLaneData>,
-  showLabels = false,
+  labels: ShowLabelsMode = 'none',
 ) {
   const { ctx, calls, texts } = mockCtx()
   drawVariantLane(ctx, new Map([[0, data(overrides)]]), [block], {
     canvasWidth: 1000,
-    bands: bands(laneHeight, showLabels),
+    bands: bands(laneHeight, labels),
     labelColor: 'black',
+    descriptionColor: 'blue',
   })
   return { calls, texts }
 }
@@ -153,7 +156,12 @@ test('a run of one color assigns fillStyle once', () => {
     ctx,
     new Map([[0, data({ featureColors: Uint32Array.from([RED, RED]) })]]),
     [block],
-    { canvasWidth: 1000, bands: bands(20), labelColor: 'black' },
+    {
+      canvasWidth: 1000,
+      bands: bands(20),
+      labelColor: 'black',
+      descriptionColor: 'blue',
+    },
   )
 
   expect(calls).toHaveLength(2)
@@ -217,7 +225,12 @@ test('an inversion draws the cells own triangle glyph, not a rect', () => {
       ],
     ]),
     [block],
-    { canvasWidth: 1000, bands: bands(20), labelColor: 'black' },
+    {
+      canvasWidth: 1000,
+      bands: bands(20),
+      labelColor: 'black',
+      descriptionColor: 'blue',
+    },
   )
 
   // the rect record still went through fillRect
@@ -235,27 +248,39 @@ test('an inversion draws the cells own triangle glyph, not a rect', () => {
 })
 
 describe('labels', () => {
-  // Each record lettered with its VCF ID, under its own mark, inside the band —
-  // the marks give up the label strip's height rather than the lane growing.
-  test('letters each mark with its record ID, under the mark', () => {
-    const { calls, texts } = draw(28, undefined, true)
-    const b = bands(28, true)
+  // ID over description, plugin-canvas's stacking order, inside the band — the
+  // marks give up the strip's height rather than the lane growing. The
+  // description is the line these figures actually read ("C -> T",
+  // "<DUP:SVSIZE=14852...>"), which is why the lane letters both.
+  test('letters the ID and the description, stacked under the mark', () => {
+    const { calls, texts } = draw(40, undefined, 'auto')
+    const b = bands(40, 'auto')
 
-    expect(texts.map(t => t.text)).toEqual(['rs1', 'rs2'])
-    expect(texts.every(t => t.y === b.labelTop)).toBe(true)
-    // left-aligned to the mark it names
+    expect(texts.map(t => t.text)).toEqual(['rs1', 'DUP', 'rs2', 'DUP'])
+    // name at labelTop, description one text line below it
+    expect(texts[0]).toMatchObject({ y: b.labelTop })
+    expect(texts[1]!.y).toBeGreaterThan(texts[0]!.y)
+    // two different colors, as plugin-canvas gives them
+    expect(texts[0]!.fillStyle).toBe('black')
+    expect(texts[1]!.fillStyle).toBe('blue')
+    // left-aligned to the mark they name
     expect(texts[0]!.x).toBe(calls[0]!.x)
     // and the marks shrank to make room, rather than the lane growing
     expect(calls.every(c => c.h === b.markHeight)).toBe(true)
-    expect(b.markHeight).toBeLessThan(b.laneHeight)
-    expect(b.laneHeight).toBe(28)
+    expect(b.markHeight).toBeLessThan(40)
   })
 
-  test('off, the marks get the whole band back', () => {
-    const { calls, texts } = draw(28, undefined, false)
+  test.each([
+    ['name', ['rs1', 'rs2']],
+    ['description', ['DUP', 'DUP']],
+    ['nameAndDescription', ['rs1', 'DUP', 'rs2', 'DUP']],
+    ['none', []],
+  ] as const)('mode %s draws %p', (mode, expected) => {
+    expect(draw(40, undefined, mode).texts.map(t => t.text)).toEqual(expected)
+  })
 
-    expect(texts).toHaveLength(0)
-    expect(calls.every(c => c.h === 28)).toBe(true)
+  test('none gives the marks the whole band back', () => {
+    expect(draw(40, undefined, 'none').calls.every(c => c.h === 40)).toBe(true)
   })
 
   // A one-row lane has nowhere to push a collision, so a label that would
@@ -269,34 +294,85 @@ describe('labels', () => {
       new Map([[0, data()]]),
       // same two records over 20px instead of 1000: ~8px apart
       [{ ...block, screenEndPx: 20 }],
-      { canvasWidth: 20, bands: bands(28, true), labelColor: 'black' },
+      {
+        canvasWidth: 20,
+        bands: bands(40, 'auto'),
+        labelColor: 'black',
+        descriptionColor: 'blue',
+      },
     )
 
-    expect(texts.map(t => t.text)).toEqual(['rs1'])
+    expect(texts.map(t => t.text)).toEqual(['rs1', 'DUP'])
   })
 
-  // A lane too short to hold a mark and a line of text drops the labels
-  // wholesale rather than clipping them — a strip that leaves 2px of glyph has
-  // spent the rows' height describing something no longer visible.
-  test('a lane too short to letter drops labels and keeps its marks', () => {
-    const { calls, texts } = draw(12, undefined, true)
+  // The collision test is over the WIDEST line of the pair, so a long
+  // description under a short ID cannot run into the next record's text.
+  //
+  // At 400px the two records are 160px apart: a 3-character ID clears that
+  // easily, a 50-character description (truncateLabel's cap) does not. So the
+  // same data letters both records under 'name' and only the first under
+  // 'auto' — which is the rule, demonstrated by the mode that changes it.
+  test('collision is measured on the widest line of the pair', () => {
+    const long = 'x'.repeat(80)
+    const narrow = [{ ...block, screenEndPx: 400 }]
+    const laneData = new Map([
+      [
+        0,
+        data({
+          featureGenotypeMap: { v0: info('rs1', long), v1: info('rs2') },
+        }),
+      ],
+    ])
+    const run = (labels: ShowLabelsMode) => {
+      const { ctx, texts } = mockCtx()
+      drawVariantLane(ctx, laneData, narrow, {
+        canvasWidth: 400,
+        bands: bands(40, labels),
+        labelColor: 'black',
+        descriptionColor: 'blue',
+      })
+      return texts.map(t => t.text)
+    }
+
+    expect(run('name')).toEqual(['rs1', 'rs2'])
+    // the wide description pushes the second record's pair out entirely
+    expect(run('auto')).toHaveLength(2)
+    expect(run('auto')[0]).toBe('rs1')
+  })
+
+  // A lane with room for one line draws the ID and drops the description
+  // rather than refusing to letter — the name is the one plugin-canvas drops
+  // last. Below even that it gives up and keeps the marks readable.
+  test('a lane with room for one line keeps the ID', () => {
+    expect(draw(24, undefined, 'auto').texts.map(t => t.text)).toEqual([
+      'rs1',
+      'rs2',
+    ])
+    expect(bands(24, 'auto')).toMatchObject({
+      showName: true,
+      showDescription: false,
+    })
+  })
+
+  test('a lane too short to letter drops the text and keeps its marks', () => {
+    const { calls, texts } = draw(12, undefined, 'auto')
 
     expect(texts).toHaveLength(0)
     expect(calls.every(c => c.h === 12)).toBe(true)
-    expect(bands(12, true).labelsFit).toBe(false)
+    expect(bands(12, 'auto').labelsFit).toBe(false)
   })
 
   // A record with no ID ('.' in the VCF, which VcfFeature reports as no name)
-  // simply is not lettered; it must not letter the previous one twice or draw
-  // an empty string that still consumes collision space.
-  test('a record with no ID is not lettered, and does not block the next', () => {
+  // still gets its description, and must not letter the previous one twice or
+  // draw an empty string that still consumes collision space.
+  test('a record with no ID still gets its description', () => {
     const { texts } = draw(
-      28,
-      { featureGenotypeMap: { v0: info(''), v1: info('rs2') } },
-      true,
+      40,
+      { featureGenotypeMap: { v0: info('', ''), v1: info('rs2') } },
+      'auto',
     )
 
-    expect(texts.map(t => t.text)).toEqual(['rs2'])
+    expect(texts.map(t => t.text)).toEqual(['rs2', 'DUP'])
   })
 })
 
@@ -318,7 +394,12 @@ test('a region with no records is skipped', () => {
       ],
     ]),
     [block],
-    { canvasWidth: 1000, bands: bands(20), labelColor: 'black' },
+    {
+      canvasWidth: 1000,
+      bands: bands(20),
+      labelColor: 'black',
+      descriptionColor: 'blue',
+    },
   )
 
   expect(calls).toHaveLength(0)
