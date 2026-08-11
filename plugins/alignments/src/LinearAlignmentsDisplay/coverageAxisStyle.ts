@@ -25,6 +25,16 @@ export function leftAxisSpineX(left: number) {
   return left + AXIS_SVG_WIDTH - YSCALEBAR_LABEL_OFFSET
 }
 
+// Left edge of the box the read-cloud insert-size (TLEN) axis lays itself out
+// in — down mode on the left of the canvas, up mode on the right, both flush
+// with the edge. On screen the same box is expressed as the axis <svg>'s
+// `left: 0` / `right: 0` with `width: AXIS_SVG_WIDTH`; only an export, which has
+// no CSS box to anchor, needs the number. `InsertSizeAxis` places the spine
+// inside it, so neither path spells that offset.
+export function insertSizeAxisBoxLeft(canvasWidth: number, down: boolean) {
+  return down ? 0 : canvasWidth - AXIS_SVG_WIDTH
+}
+
 // A grouped axis goes on the right so it clears the group label chips, which
 // are anchored at the left edge on both paths. On screen the inset is the
 // scrollbar (`right: SCROLLBAR_WIDTH + 2`); an export has no scrollbar, so it is

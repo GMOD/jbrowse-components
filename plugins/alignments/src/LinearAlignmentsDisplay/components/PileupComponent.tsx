@@ -15,12 +15,13 @@ import {
   AXIS_SVG_WIDTH,
   COMPACT_AXIS_HEIGHT,
   compactAxisLabel,
+  leftAxisSpineX,
 } from '../coverageAxisStyle.ts'
 import GroupLabelsOverlay from './GroupLabelsOverlay.tsx'
 import HighlightOverlay from './HighlightOverlay.tsx'
+import InsertSizeAxis from './InsertSizeAxis.tsx'
 import PileupBezierOverlay from './PileupBezierOverlay.tsx'
 import SashimiArcsOverlay from './SashimiArcsOverlay.tsx'
-import TlenAxisLabel from './TlenAxisLabel.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import {
   bandOnScreen,
@@ -502,7 +503,8 @@ const UngroupedCoverageAxis = observer(function UngroupedCoverageAxis({
         width: AXIS_SVG_WIDTH,
       }}
     >
-      <g transform={`translate(${AXIS_SVG_WIDTH - YSCALEBAR_LABEL_OFFSET}, 0)`}>
+      {/* the same spine placement the export uses, so the two can't drift */}
+      <g transform={`translate(${leftAxisSpineX(0)}, 0)`}>
         <YScaleBar ticks={coverageTicks} orientation="left" />
       </g>
     </svg>
@@ -550,6 +552,8 @@ const InsertSizeAxisHost = observer(function InsertSizeAxisHost({
       style={{
         position: 'absolute',
         top: 0,
+        // the box `InsertSizeAxis` lays itself out in; the export anchors the
+        // same one with `insertSizeAxisBoxLeft`
         ...(readConnectionsDown ? { left: 0 } : { right: 0 }),
         pointerEvents: 'none',
         height,
@@ -557,20 +561,7 @@ const InsertSizeAxisHost = observer(function InsertSizeAxisHost({
       }}
     >
       <g transform={`translate(0, ${yShift})`}>
-        {readConnectionsDown ? (
-          <g
-            transform={`translate(${AXIS_SVG_WIDTH - YSCALEBAR_LABEL_OFFSET}, 0)`}
-          >
-            <YScaleBar ticks={insertSizeTicks} orientation="left" />
-          </g>
-        ) : (
-          <YScaleBar ticks={insertSizeTicks} orientation="right" />
-        )}
-        <TlenAxisLabel
-          yTop={insertSizeTicks.yTop}
-          yBottom={insertSizeTicks.yBottom}
-          x={readConnectionsDown ? 11 : undefined}
-        />
+        <InsertSizeAxis ticks={insertSizeTicks} down={readConnectionsDown} />
       </g>
     </svg>
   )

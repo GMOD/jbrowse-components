@@ -16,9 +16,9 @@ import { YScaleBar } from '@jbrowse/wiggle-core'
 
 import { getAlignmentsLegendSections } from '../shared/legendUtils.ts'
 import { getMismatchContrastMap } from '../shared/util.ts'
+import InsertSizeAxis from './components/InsertSizeAxis.tsx'
 import PileupBezierArcsSvg from './components/PileupBezierArcsSvg.tsx'
 import SashimiArcsSvg from './components/SashimiArcsSvg.tsx'
-import TlenAxisLabel from './components/TlenAxisLabel.tsx'
 import { buildColorPaletteFromPalette } from './components/alignmentComponentUtils.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { drawAlignmentLabels } from './components/drawAlignmentLabels.ts'
@@ -26,6 +26,7 @@ import { bandScreenTop, sectionKey } from './components/sectionScreen.ts'
 import {
   COMPACT_AXIS_HEIGHT,
   compactAxisLabel,
+  insertSizeAxisBoxLeft,
   leftAxisSpineX,
   rightAxisLabelX,
   rightAxisSpineX,
@@ -274,11 +275,10 @@ export function CoverageScaleBars({
   )
 }
 
-// Insert-size (TLEN) scale bar, read-cloud mode only. Down mode puts it on the
-// left, up mode on the right, mirroring PileupComponent's InsertSizeAxisHost.
-// Down mode nests only the axis (left-orientation labels grow leftward from
-// x=40) so the TLEN label stays at x=11 to the left of them, matching on-screen;
-// wrapping the label in the axis translate would push it to the wrong side.
+// Insert-size (TLEN) scale bar, read-cloud mode only. The axis lays itself out
+// inside its own box (`InsertSizeAxis`, shared with PileupComponent's
+// InsertSizeAxisHost); all this supplies is where that box goes, which is the
+// only thing that differs from the on-screen overlay's CSS-anchored one.
 function InsertSizeScaleBar({
   ticks,
   down,
@@ -290,17 +290,11 @@ function InsertSizeScaleBar({
   canvasWidth: number
   yShift: number
 }) {
-  return down ? (
-    <g transform={`translate(0, ${yShift})`}>
-      <g transform="translate(40, 0)">
-        <YScaleBar ticks={ticks} orientation="left" />
-      </g>
-      <TlenAxisLabel yTop={ticks.yTop} yBottom={ticks.yBottom} x={11} />
-    </g>
-  ) : (
-    <g transform={`translate(${canvasWidth - 50}, ${yShift})`}>
-      <YScaleBar ticks={ticks} orientation="right" />
-      <TlenAxisLabel yTop={ticks.yTop} yBottom={ticks.yBottom} />
+  return (
+    <g
+      transform={`translate(${insertSizeAxisBoxLeft(canvasWidth, down)}, ${yShift})`}
+    >
+      <InsertSizeAxis ticks={ticks} down={down} />
     </g>
   )
 }
