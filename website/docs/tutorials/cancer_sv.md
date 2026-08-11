@@ -145,15 +145,13 @@ chr10 breakend it names has a second junction a couple of hundred bases away
 whose far end is on chr12. The walk then stops, since the only junction at the
 chr12 end returns to where the chain began.
 
-What the option assumes is worth being clear about, because the caller does not
-assert it: two junctions leaving one locus are being read as one molecule. The
-walk refuses the cases where that reading is a guess rather than a reading. Two
-open continuations at a locus stop it, because the records cannot say which
-molecule carries which; a continuation that leads back into the chain stops it
-too, since a closed cycle is a shape already fully on screen. The evidence for
-the assumption is the reads, and it is the dialog above: **Reconstruct
-derivative allele** ranks whole routes by how many molecules independently take
-each.
+The option makes an assumption the caller does not: that two junctions leaving
+one locus belong to one molecule. It stops wherever that stops being safe. Two
+open continuations at a locus end the walk, because the records cannot say which
+molecule carries which; a continuation leading back into the chain ends it too,
+since a closed cycle is a shape already fully on screen. The evidence for the
+assumption is the reads, and it is the dialog above: **Reconstruct derivative
+allele** ranks whole routes by how many molecules independently take each.
 
 <Figure caption="Opening the split view from the record rather than the import form, in three steps. 1: right-click the breakend and choose Open breakpoint split view. 2: the dialog, where the shape, the window each panel opens at, and whether to follow further breakends are set together. 3: the result, three panels because the chain runs chr3 to chr10 to chr12, with the reads that cross each junction drawn as connectors between the pileups." src="/img/cancer_sv/split_view_from_breakend.png" />
 

@@ -144,9 +144,9 @@ What the picture can tell you, and what it cannot:
   connectors are drawn from what the aligner said, so a read mismapped into a
   repeat contributes a confident-looking curve
 
-That last point is the limit of this whole workflow, and it is worth being blunt
-about: these images rank nothing and vouch for nothing. They are a fast way to
-put your eyes on all 100 calls instead of on the six you had time for.
+That last point marks what the contact sheet is for. The images rank nothing and
+vouch for nothing; they are a fast way to put your eyes on every call in the set
+rather than on the handful there was time for.
 
 ## Opening one in the browser
 
