@@ -20,6 +20,11 @@ interface MafFetchSelf extends IStateTreeNode {
   subtreeFilterSet: string[] | undefined
   annotationDataActive: boolean
   annotationAdapterConfig: Record<string, unknown> | undefined
+  // The byte budget the main gate enforces, and the force-load exemption that
+  // lifts it. Read rather than restated so the frames pre-flight below cannot
+  // end up bounded by a different number than everything else on this display.
+  gateByteLimit: number | undefined
+  gateExempt: boolean
   fetchRegions: (
     needed: Needed,
     work: (ctx: FetchContext) => Promise<void>,
@@ -28,6 +33,7 @@ interface MafFetchSelf extends IStateTreeNode {
   setRpcData: (regionIndex: number, data: MafWireRegionData) => void
   setSummaryData: (regionIndex: number, records: MafSummaryRecord[]) => void
   setFramesData: (regionIndex: number, records: MafFrameRecord[]) => void
+  setFramesGateBlocked: (blocked: boolean) => void
   clearAlignmentData: () => void
   setSamples: (arg: SampleSet) => void
 }
@@ -127,6 +133,50 @@ async function fetchMafRegions<R extends SampleSet>(
 }
 
 /**
+ * Whether the frames read for `needed` is over budget, measured against the
+ * `annotationAdapter` itself.
+ *
+ * The display's byte gate measures exactly one file — `byteGateAdapterConfig`,
+ * the alignment or the summary depending on the tier — and `mafFrames` is a
+ * third, fetched concurrently with whichever of those won. So nothing was
+ * watching it, which is the premise `measuresBytesPreFlight`'s own docstring
+ * rejects in as many words: "off means nothing is watching, and 'this tier is
+ * cheap' is a premise, not a bound." It is not cheap at every zoom — the file is
+ * one record per CDS exon **per species**, so on a deep alignment the read grows
+ * with the span times the species count, exactly like the alignment the gate
+ * does watch, and the summary tier carries it out to whole-genome spans.
+ *
+ * Measured here rather than through `byteGateBlocksFetch` because that one owns
+ * the *banner*: it stamps `byteEstimate`, which is the number the too-large
+ * message quotes, and quoting the frames file's cost for a track whose alignment
+ * loaded fine would be a banner about the wrong download. This is a private
+ * bound on an auxiliary overlay, so it reports nothing and simply declines.
+ *
+ * `undefined` bytes means unmeasurable (an adapter quoting no index estimate),
+ * which keeps the byte axis out of the verdict here exactly as it does there.
+ */
+async function framesReadOverBudget(
+  self: MafFetchSelf,
+  needed: Needed,
+  adapterConfig: Record<string, unknown>,
+  ctx: FetchContext,
+) {
+  const limit = self.gateByteLimit
+  // Force-load exempts the track outright, on every axis — the same boolean the
+  // main gate reads, so one informed click covers this read too rather than
+  // leaving the overlay mysteriously off after the banner is gone.
+  if (self.gateExempt || limit === undefined) {
+    return false
+  }
+  const bytes = await getSession(self).rpcManager.call(
+    getRpcSessionId(self),
+    'CoreGetRegionByteEstimate',
+    { regions: needed.map(n => n.region), adapterConfig },
+  )
+  return !ctx.isStale() && bytes !== undefined && bytes > limit
+}
+
+/**
  * Fetch per-species CDS frame rows (UCSC `mafFrames`) for the buffered regions
  * from the MAF adapter's `annotationAdapter` sub-adapter, in parallel with the
  * main alignment/summary fetch and under its stop token. No-op when no adapter is
@@ -135,6 +185,9 @@ async function fetchMafRegions<R extends SampleSet>(
  *
  * Fails soft: the overlay is auxiliary, so a frames-file error is logged but
  * swallowed rather than rejecting the combined fetch and blanking the alignment.
+ * An over-budget read takes that same soft path — the overlay is the only thing
+ * that goes missing — but it is *reported*, through `framesGateBlocked`, so the
+ * menu can say why the strip stopped drawing instead of leaving it silently off.
  */
 async function fetchAnnotationData(
   self: MafFetchSelf,
@@ -148,6 +201,12 @@ async function fetchAnnotationData(
   const { rpcManager } = getSession(self)
   const sessionId = getRpcSessionId(self)
   try {
+    if (await framesReadOverBudget(self, needed, adapterConfig, ctx)) {
+      if (!ctx.isStale()) {
+        self.setFramesGateBlocked(true)
+      }
+      return
+    }
     const results = await callEachRegion(needed, ctx, region =>
       rpcManager.call(sessionId, 'LinearMafGetAnnotationData', {
         adapterConfig,
@@ -156,6 +215,7 @@ async function fetchAnnotationData(
       }),
     )
     if (!ctx.isStale()) {
+      self.setFramesGateBlocked(false)
       for (const { displayedRegionIndex, result } of results) {
         self.setFramesData(displayedRegionIndex, result.records)
       }

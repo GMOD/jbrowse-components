@@ -39,6 +39,7 @@ import { autorun } from 'mobx'
 import { buildInstanceBuffer } from '../LinearMafRenderer/mafInstanceBuffer.ts'
 import {
   getCodonLegendItems,
+  getFrameLegendItems,
   getMafColorPalette,
 } from '../LinearMafRenderer/util.ts'
 import {
@@ -232,6 +233,19 @@ export default function stateModelFactory(
          * summary↔detail data swap.
          */
         framesDataMap: regionDataMap<MafFrameRecord[]>(),
+        /**
+         * #volatile
+         * The last frames fetch declined to read the `annotationAdapter` because
+         * its own byte estimate was over budget (`framesReadOverBudget`). The
+         * overlay is auxiliary and fails soft, so the only thing that happens is
+         * that the strip stops drawing — this is what lets the menu say so
+         * rather than leaving the tick on over nothing.
+         *
+         * Volatile and not a config slot: it describes a measurement of the
+         * current viewport, not a setting. **Never in `rpcProps()`** — it is
+         * written by the fetch, which is the loop trap ARCHITECTURE.md names.
+         */
+        framesGateBlocked: false,
         /**
          * #volatile
          */
@@ -2076,19 +2090,28 @@ export default function stateModelFactory(
           if (!view.initialized) {
             return []
           }
+          const { palette } = getSession(self)
           const rendering = self.activeRowRendering
-          if (rendering === 'codon') {
-            return getCodonLegendItems(getSession(self).palette)
-          }
-          if (rendering === 'sourceChrom') {
-            // Colored by each row's per-row chromosome RANK, not by chromosome
-            // name, so the key is this short fixed scheme rather than a
-            // per-scaffold rainbow.
-            return sourceChromLegendItems(self.sourceChromRanks.maxRank)
-          }
-          return isRowIdentityMode(rendering)
-            ? identityLegendItems(rendering)
-            : []
+          const rows =
+            rendering === 'codon'
+              ? getCodonLegendItems(palette)
+              : rendering === 'sourceChrom'
+                ? // Colored by each row's per-row chromosome RANK, not by
+                  // chromosome name, so the key is this short fixed scheme
+                  // rather than a per-scaffold rainbow.
+                  sourceChromLegendItems(self.sourceChromRanks.maxRank)
+                : isRowIdentityMode(rendering)
+                  ? identityLegendItems(rendering)
+                  : []
+          // The CDS strip is not one of the alternatives above — it draws *over*
+          // whichever of them won — so it is appended rather than dispatched to,
+          // and this is why it had no key at all: a dispatch on
+          // `activeRowRendering` has no branch that is ever the strip. Last, so
+          // the key reads in paint order, and so the rendering's own swatches
+          // stay where a reader of the other modes already expects them.
+          return self.visibleFrames.length > 0
+            ? [...rows, ...getFrameLegendItems(palette)]
+            : rows
         },
         /**
          * #method
@@ -2170,6 +2193,15 @@ export default function stateModelFactory(
         setFramesData(regionIndex: number, records: MafFrameRecord[]) {
           self.framesDataMap.set(regionIndex, records)
         },
+        /**
+         * #action
+         * Record whether the last frames read was declined as over budget. Set
+         * both ways by every fetch pass that reaches the annotation adapter, so
+         * zooming back in clears it without anything else having to.
+         */
+        setFramesGateBlocked(blocked: boolean) {
+          self.framesGateBlocked = blocked
+        },
         // Drop alignment blocks when entering summary mode so the GPU sequence
         // canvas paints nothing under the summary overlay.
         //
@@ -2189,6 +2221,11 @@ export default function stateModelFactory(
           self.rpcDataMap.clear()
           self.summaryDataMap.clear()
           self.framesDataMap.clear()
+          // The verdict describes a read of the viewport that was just thrown
+          // away, so it goes with the data rather than outliving it — otherwise
+          // chromosome nav carries "too much data" onto a region nobody has
+          // measured yet.
+          self.framesGateBlocked = false
         },
         // reload() not overridden — MultiRegionDisplayMixin's base default
         // (clearAllRpcData) is exactly maf's behavior; no extra teardown.
