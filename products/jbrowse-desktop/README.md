@@ -51,6 +51,54 @@ table above, smoke-test a **packaged** build per platform: install it, then open
 a `jbrowse://open?url=…` link from a browser, both with the app closed (cold
 start) and already running (`second-instance` / `open-url`).
 
+### The `.jbrowse` file association
+
+A saved session opens on double-click. The app end of this is the same machinery
+as the url scheme — `findLaunchTarget` reads a file argument off argv,
+`openTarget` loads it — so all that is platform-specific is telling the OS which
+extension to hand us.
+
+**Windows only, today.** `scripts/packaging/nsisScript.ts` registers a
+`JBrowse2.Session` ProgID (icon, type description, open command) and points
+`HKCU\Software\Classes\.jbrowse` at it, rather than putting a command directly
+under the extension key — that older form still launches, but Explorer shows no
+icon and no type in the Type column. It also lists the ProgID under
+`OpenWithProgids`, which is where a user goes when something else holds the
+default, and calls `SHChangeNotify(SHCNE_ASSOCCHANGED)`, without which Explorer
+serves its cached associations until the next logon.
+
+The other two platforms register nothing for the extension, and neither is one
+line away from it:
+
+- **macOS** gets `CFBundleURLTypes` from `packager.ts`'s `protocols`, which is
+  the url scheme only. A file association is `CFBundleDocumentTypes`, which
+  nothing writes. The receiving end is wired — `electron.ts` handles `open-file`
+  — but with no declared document type the Finder never routes a `.jbrowse` file
+  to it, and a drop onto the dock icon is refused unless the user forces it with
+  ⌘⌥.
+- **Linux** has the same AppImage caveat as the scheme above, plus one more: the
+  `.desktop` file declares `MimeType=application/x-jbrowse`, but nothing ships a
+  shared-mime-info XML mapping `*.jbrowse` onto that type, so even an integrated
+  AppImage never sees a session as `application/x-jbrowse`. That half of the
+  MimeType line is currently inert.
+
+**`.json` is deliberately not claimed**, on any platform, although
+`findLaunchTarget` opens one perfectly well. It is the most common config format
+on a developer's machine and an install has no business taking the default for
+all of them. `nsis.test.ts` pins that.
+
+Two things are easy to get wrong here and are pinned by tests, so read them
+before you change either. Extensions are matched **case-insensitively**
+(`hasSessionExtension`), because Windows' association is — Explorer will hand us
+`Session.JBROWSE`, and a case-sensitive predicate turns that into an app that
+silently opens to the start screen. And the uninstall removes only **values it
+wrote**, never the extension key recursively: `OpenWithProgids` is a list shared
+with every other application that can open the type.
+
+Smoke-testing this needs a packaged install too: save a session, double-click it
+in Explorer with the app closed and again with it running, check the icon and
+Type column, then uninstall and confirm the extension is no longer claimed.
+
 ### Packaging
 
 You will need some development libraries installed to be able to package the
