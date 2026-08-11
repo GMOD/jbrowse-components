@@ -105,14 +105,15 @@ describe('a dome answers along the curve Canvas2D draws', () => {
     expect(hitTestArcs(50, 100, data, BAND)).toBeUndefined()
   })
 
-  test('the far side of the anchor line is not a hit', () => {
-    // The apex points up, so below the baseline is blank band. The stroke does
-    // not reach there either: at the feet the curve is vertical, so its stroke
-    // runs out sideways rather than down.
+  test('a foot answers from inside the band but the arc does not reach across it', () => {
+    // The apex points up, so the anchor line IS the band bottom here. Just
+    // inside it, at a foot, is ink; the same column a few px further up is the
+    // blank inside of the dome, because the stroke at a vertical tangent runs
+    // out sideways rather than along the curve's own direction.
     const foot = 200
-    expect(hitTestArcs(foot, BAND.arcsH + 1, data, BAND)?.index).toBe(0)
+    expect(hitTestArcs(foot, BAND.arcsH - 1, data, BAND)?.index).toBe(0)
     expect(
-      hitTestArcs(foot, BAND.arcsH + ARC_HIT_SLOP_PX + 4, data, BAND),
+      hitTestArcs(foot + ARC_HIT_SLOP_PX + 4, BAND.arcsH - 1, data, BAND),
     ).toBeUndefined()
   })
 })

@@ -168,6 +168,18 @@ const CATEGORY_LEGEND: Record<SwatchCategory, string> = {
 // separately incomplete.
 const CATEGORY_ORDER = Object.keys(CATEGORY_LEGEND) as SwatchCategory[]
 
+// The wording for one category, for consumers outside the legend box that still
+// have to name a color bucket — the arc hover tooltip is the first, so the
+// tooltip and the swatch beside it cannot say different things about the same
+// color. `undefined` for the categories the table deliberately omits (the
+// dynamic ramps and palettes: mapq, tag, modifications), which have no single
+// swatch and therefore no single name.
+export function readColorCategoryLabel(
+  category: ReadColorCategory,
+): string | undefined {
+  return CATEGORY_LEGEND[category as SwatchCategory]
+}
+
 // Under any scheme that colors ordinary reads by something OTHER than their own
 // strand (normal, insert size, pair orientation, mapq, modifications, tag …), a
 // fwd/rev-strand bucket can only have been produced by the split-read

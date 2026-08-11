@@ -64,12 +64,15 @@ export function hitTestArcs(
     lineWidth,
     screenWidthPx,
   } = opts
-  // The band's own gate, so this is correct called on a bare canvas Y rather
-  // than only from a caller that already narrowed to the band. Widened by the
-  // largest slop any arc here could claim, so the cheap reject can't cut off an
-  // arc whose stroke legitimately reaches the cursor.
-  const maxTol = ARC_HIT_SLOP_PX + arcLineWidth(maxSupport(data), lineWidth) / 2
-  if (canvasY < arcsTop - maxTol || canvasY > arcsTop + arcsH + maxTol) {
+  // The band's own gate, and it is EXACT rather than widened by the slop below:
+  // both renderers clip the arc pass to this rect, so there is no arc ink
+  // outside it to be near. Widening it would let a foot at the band edge answer
+  // hovers a few px into whatever is stacked next to the band — the coverage
+  // histogram above, the sashimi strip or the pileup below — which is the
+  // "layer with no matching hit gate" trap in this display's CLAUDE.md, just
+  // pointed outward instead of inward. Inside the band the per-arc slop applies
+  // in full.
+  if (canvasY < arcsTop || canvasY > arcsTop + arcsH) {
     return undefined
   }
 
@@ -171,14 +174,4 @@ function curveDistance(
     return distToWideCirclePx(legX, localY, rx)
   }
   return ellipseDistance(canvasX - (sx1 + sx2) / 2, localY, rx, ry)
-}
-
-function maxSupport(data: ArcsUploadData) {
-  let max = 1
-  for (let i = 0; i < data.numArcs; i++) {
-    if (data.arcSupport[i]! > max) {
-      max = data.arcSupport[i]!
-    }
-  }
-  return max
 }

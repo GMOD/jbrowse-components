@@ -67,6 +67,25 @@ export interface SashimiTooltipPayload {
   refName: string
 }
 
+export interface ArcTooltipPayload {
+  type: 'arc'
+  refName: string
+  // The two endpoints in absolute genomic bp, already ordered left-to-right.
+  start: number
+  end: number
+  // Reads behind this arc. One arc is one junction since `resolveArcs`, so this
+  // is the number the stroke width encodes — and the reason the hover is worth
+  // having: the picture ranks junctions, and this says by how much.
+  support: number
+  // The color bucket's own wording, so the tooltip names what the color already
+  // says. Undefined for a bucket with no single swatch.
+  category: string | undefined
+  // |tlen| for a read-cloud flat line, which is the quantity its Y encodes.
+  // Absent for a curved arc, whose Y is derived from the endpoints and would
+  // just restate the span.
+  insertSize?: number
+}
+
 // HTML/plain strings come from formatChainTooltip / formatCigarTooltip /
 // formatFeatureTooltip / arcTooltip; structured payloads come from the other
 // formatters. The consumer dispatches on typeof + .type.
@@ -76,6 +95,7 @@ export type TooltipPayload =
   | CoverageTooltipPayload
   | ModificationTooltipPayload
   | SashimiTooltipPayload
+  | ArcTooltipPayload
 
 export function pct(n: number, total: number) {
   return `${((n / (total || 1)) * 100).toFixed(1)}%`
@@ -406,6 +426,33 @@ export function formatSashimiTooltip(arc: {
     score,
     strand: strand === 1 ? '+' : strand === -1 ? '-' : 'unknown',
     refName,
+  }
+}
+
+// Unlike sashimi's, this one DOES come from a hit test: read-connection arcs are
+// painted into the canvas by both renderers, so there is no per-path mouse
+// handler to hand its own arc over and `hitTestArcs` has to find it first.
+//
+// The endpoints are ordered here rather than at the hit test, which reports them
+// as the worker resolved them (mate 1, mate 2). A location range reads
+// backwards otherwise, and the arc itself is symmetric — `arcKey` already
+// treats the pair as ordered, so nothing downstream distinguishes them.
+export function formatArcTooltip(
+  hit: { x1: number; x2: number; support: number; yBp: number },
+  refName: string,
+  category: string | undefined,
+  isFlat: boolean,
+): ArcTooltipPayload {
+  return {
+    type: 'arc',
+    refName,
+    start: Math.min(hit.x1, hit.x2),
+    end: Math.max(hit.x1, hit.x2),
+    support: hit.support,
+    category,
+    // A flat line's Y IS |tlen| (that is what the read cloud plots); a curve's
+    // is the genomic radius, which is just half the span already shown above.
+    ...(isFlat ? { insertSize: hit.yBp } : {}),
   }
 }
 

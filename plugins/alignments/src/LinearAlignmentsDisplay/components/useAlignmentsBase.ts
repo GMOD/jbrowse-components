@@ -4,7 +4,12 @@ import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { clamp, getContainingView } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
+import {
+  arcColorLegendCategory,
+  isFlatArcShape,
+} from '../../features/arcs/compute.ts'
 import { snpBaseFromCigar } from '../../shared/hitTestTypes.ts'
+import { readColorCategoryLabel } from '../../shared/legendUtils.ts'
 import { getMismatchContrastMap } from '../../shared/util.ts'
 import {
   CLICK_SUPPRESS_THRESHOLD_PX,
@@ -12,6 +17,7 @@ import {
   startDocumentDrag,
   useAbortableRef,
 } from './alignmentComponentUtils.ts'
+import { hitTestArcBand } from './arcHitTest.ts'
 import {
   openCigarWidget,
   openCoverageWidget,
@@ -25,6 +31,7 @@ import {
   performHitTest,
 } from './hitTestPipeline.ts'
 import {
+  formatArcTooltip,
   formatChainTooltip,
   formatCigarTooltip,
   formatCoverageTooltip,
@@ -118,32 +125,70 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     })
   }
 
+  // The visible region the cursor is over. Regions don't overlap in screen x, so
+  // at most one matches. Split out because the arc band needs the region itself —
+  // its `displayedRegionIndex` keys the per-region arc feed, and its bp/px edges
+  // are the projection — while the pileup path only wants the block.
+  function visibleRegionAt(canvasX: number) {
+    return view.initialized
+      ? view.visibleRegions.find(
+          r => canvasX >= r.screenStartPx && canvasX < r.screenEndPx,
+        )
+      : undefined
+  }
+
   function resolveBlockForCanvasX(
     canvasX: number,
     dataMap: { get(idx: number): ResolvedBlock['rpcData'] | undefined },
   ): ResolvedBlock | undefined {
-    if (!view.initialized) {
+    const r = visibleRegionAt(canvasX)
+    const data = r ? dataMap.get(r.displayedRegionIndex) : undefined
+    return r && data
+      ? {
+          rpcData: data,
+          bpRange: [r.start, r.end],
+          blockStartPx: r.screenStartPx,
+          blockWidth: r.screenEndPx - r.screenStartPx,
+          refName: r.refName,
+          reversed: r.reversed ?? false,
+        }
+      : undefined
+  }
+
+  // Which arc, if any, the cursor is on, for the hovered section.
+  //
+  // Kept OUT of `performHitTest`: that pipeline is the pileup's, and takes a
+  // resolved block of laid-out reads. Arcs are a different feed (per group, per
+  // region, straight off `arcsByGroup`), drawn into a band of their own, and a
+  // lane can have arcs with no drawn pileup at all — read-cloud mode is exactly
+  // that. Threading them through the block pipeline would have made the block
+  // the gate on a hover that does not depend on one.
+  function resolveArcHover(
+    canvasX: number,
+    canvasY: number,
+    section: {
+      groupKey: string
+      arcBandTop: number
+      arcBandHeight: number
+      arcDown: boolean
+    },
+  ) {
+    const region = visibleRegionAt(canvasX)
+    if (!region || model.readConnections === 'off') {
       return undefined
     }
-
-    const regions = view.visibleRegions
-
-    for (const r of regions) {
-      if (canvasX >= r.screenStartPx && canvasX < r.screenEndPx) {
-        const data = dataMap.get(r.displayedRegionIndex)
-        if (data) {
-          return {
-            rpcData: data,
-            bpRange: [r.start, r.end],
-            blockStartPx: r.screenStartPx,
-            blockWidth: r.screenEndPx - r.screenStartPx,
-            refName: r.refName,
-            reversed: r.reversed ?? false,
-          }
-        }
-      }
-    }
-    return undefined
+    const arcs = model.arcsByGroup
+      .get(section.groupKey)
+      ?.get(region.displayedRegionIndex)
+    const hit = hitTestArcBand(canvasX, canvasY, arcs, {
+      region,
+      band: section,
+      scroll: model.scrollModel,
+      lineWidth: model.readConnectionsLineWidth,
+      arcsYDomainBp: model.arcsYDomainBp,
+      canvasWidthPx: view.trackWidthPx,
+    })
+    return hit ? { hit, refName: region.refName } : undefined
   }
 
   // Maps a canvas mouse event to canvas coordinates and runs the full hit-test
@@ -298,6 +343,33 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
           coverageHeight: picked.section.coverageHeight,
         }
       : undefined
+
+    // Arcs are painted AFTER coverage by both backends (see the pass order in
+    // drawAlignmentBlocks), so in up mode an arc is the ink on top of the
+    // histogram it overlays — and the ink under the cursor is what a hover
+    // should name. Safe to put first because this is a stroke test, not a band
+    // test: it only answers within a few px of a curve, so the rest of the
+    // coverage band still reaches `hitTestCoverage` below untouched.
+    const arc = picked
+      ? resolveArcHover(canvasX, canvasY, picked.section)
+      : undefined
+    if (arc) {
+      model.setHoverState({
+        overCigarItem: true,
+        featureIdUnderMouse: undefined,
+        mouseoverExtraInformation: formatArcTooltip(
+          arc.hit,
+          arc.refName,
+          readColorCategoryLabel(
+            arcColorLegendCategory(arc.hit.colorType, model.arcColorByType),
+          ),
+          isFlatArcShape(arc.hit.shapeType),
+        ),
+        hoverCoverageBand,
+        highlightedChainReadIds: [],
+      })
+      return
+    }
 
     switch (result.type) {
       case 'indicator':

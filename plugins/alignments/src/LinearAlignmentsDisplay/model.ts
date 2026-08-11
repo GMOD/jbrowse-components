@@ -1976,6 +1976,15 @@ export default function stateModelFactory(
             // no arcs has none to resize.
             sashimiBandTop: sec.sashimiBandTop,
             hasArcsBand: sec.hasArcsBand,
+            // The arcs' DRAW band, which is not the same question as
+            // `hasArcsBand` (whether a strip was reserved): up-mode arcs
+            // reserve nothing and draw over the coverage histogram. This is the
+            // rect `buildSectionRenders` hands the renderers, in content space,
+            // so the hover hit test measures against the band the arcs were
+            // actually plotted into.
+            arcBandTop: sec.arcBandTop,
+            arcBandHeight: sec.arcBandHeight,
+            arcDown: sec.arcDown,
             hasSashimiBand: sec.hasSashimiBand,
             pileupHeight: sec.pileupHeight,
             // The strip down to the next section, which is what the label chip

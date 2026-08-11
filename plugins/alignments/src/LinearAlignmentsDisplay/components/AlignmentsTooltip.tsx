@@ -360,6 +360,32 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
         </BaseTooltip>
       )
     }
+    case 'arc': {
+      const { refName, start, end, support, category, insertSize } = tooltipData
+      return (
+        <BaseTooltip clientPoint={{ x, y }}>
+          <div className={classes.tooltipContent}>
+            <div>
+              <strong>Read connection</strong>
+            </div>
+            <div>Location: {formatLocationRange(refName, start, end)}</div>
+            <div>Distance: {toLocale(end - start)} bp</div>
+            {/* The count `resolveArcs` folded into this arc, which is what its
+                stroke width encodes. Singular at 1 so a lone connection does
+                not read as a suspiciously weak junction. */}
+            <div>
+              {support === 1
+                ? 'Supported by 1 read'
+                : `Supported by ${toLocale(support)} reads`}
+            </div>
+            {insertSize === undefined ? null : (
+              <div>Insert size: {toLocale(insertSize)} bp</div>
+            )}
+            {category === undefined ? null : <div>Type: {category}</div>}
+          </div>
+        </BaseTooltip>
+      )
+    }
     case 'modification': {
       const { modType, noMod, probability, color, refName, position, snpBase } =
         tooltipData
