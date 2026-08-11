@@ -58,7 +58,13 @@ export function firstOfPairStrand(strand: number, flags: number) {
   return flags & SAM_FLAG_SECOND_IN_PAIR ? -strand : strand
 }
 
-// A feature's mapping quality; 255 is the SAM spec's "unavailable" sentinel.
+// The SAM spec's "mapping quality is not available" sentinel — a real value with
+// a meaning, not a score. Named because two places have to agree on it: this
+// file produces it, and `readColorCategory` gives it its own color bucket rather
+// than feeding 255 to the MAPQ hue ramp.
+export const MAPQ_UNAVAILABLE = 255
+
+// A feature's mapping quality, or MAPQ_UNAVAILABLE when it has none.
 // BAM/CRAM spell it `score`; PAF/MashMap synteny features, which
 // LGVSyntenyDisplay pushes through this same pipeline, spell it `mappingQual`
 // and leave `score` unset. `score` is read first because it is a switch case on
@@ -70,7 +76,7 @@ export function getMappingQuality(feature: Feature) {
     score === undefined
       ? (feature.get('mappingQual') as number | undefined)
       : score
-  return mappingQual ?? 255
+  return mappingQual ?? MAPQ_UNAVAILABLE
 }
 
 // Element-wise equality for two id lists, so a setter can skip rewriting an MST

@@ -9,7 +9,7 @@ export const BINDINGS: readonly ShaderBinding[] = [
 
 export const VERTS_PER_INSTANCE = 6
 
-export const UNIFORMS_SIZE_BYTES = 1040
+export const UNIFORMS_SIZE_BYTES = 1056
 
 // Word indices into a Float32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_F32 = {
@@ -41,9 +41,9 @@ export const UNIFORM_OFFSET_F32 = {
   arcsYDomainBp: 25,
   arcsYLog: 26,
   reversed: 33,
-  pxPerBp: 256,
-  arcBandH: 258,
-  dpr: 259,
+  pxPerBp: 260,
+  arcBandH: 262,
+  dpr: 263,
 } as const
 
 // Word indices into a Int32Array view over the uniform buffer.
@@ -87,7 +87,7 @@ export const UNIFORM_OFFSET_U32 = {
   colorUnmappedMate: 60,
   colorInterchrom: 61,
   colorMutedSnpBase: 62,
-  colorSplitInversion: 257,
+  colorSplitInversion: 261,
 } as const
 
 
@@ -99,7 +99,7 @@ export const UNIFORM_SLOT_ARRAYS = {
   arcColor: [64, 68, 72, 76, 80, 84, 88, 92, 96] as const,
   arcMarkerColor: [100, 104, 108, 112, 116, 120, 124, 128, 132] as const,
   linkedReadColor: [136, 140, 144, 148, 152, 156, 160, 164] as const,
-  readCategoryColor: [168, 172, 176, 180, 184, 188, 192, 196, 200, 204, 208, 212, 216, 220, 224, 228, 232, 236, 240, 244, 248, 252] as const,
+  readCategoryColor: [168, 172, 176, 180, 184, 188, 192, 196, 200, 204, 208, 212, 216, 220, 224, 228, 232, 236, 240, 244, 248, 252, 256] as const,
 } as const
 
 export interface Uniforms {
@@ -169,7 +169,7 @@ export interface Uniforms {
   arcColor: [[number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number]]
   arcMarkerColor: [[number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number]]
   linkedReadColor: [[number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number]]
-  readCategoryColor: [[number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number]]
+  readCategoryColor: [[number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number]]
   pxPerBp: number
   colorSplitInversion: number
   arcBandH: number
@@ -435,10 +435,14 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[253] = uniforms.readCategoryColor[21][1]
   f32[254] = uniforms.readCategoryColor[21][2]
   f32[255] = uniforms.readCategoryColor[21][3]
-  f32[256] = uniforms.pxPerBp
-  u32[257] = uniforms.colorSplitInversion
-  f32[258] = uniforms.arcBandH
-  f32[259] = uniforms.dpr
+  f32[256] = uniforms.readCategoryColor[22][0]
+  f32[257] = uniforms.readCategoryColor[22][1]
+  f32[258] = uniforms.readCategoryColor[22][2]
+  f32[259] = uniforms.readCategoryColor[22][3]
+  f32[260] = uniforms.pxPerBp
+  u32[261] = uniforms.colorSplitInversion
+  f32[262] = uniforms.arcBandH
+  f32[263] = uniforms.dpr
 }
 
 export const INSTANCE_STRIDE_BYTES = 12

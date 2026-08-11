@@ -9,6 +9,7 @@ import {
   RC_INTERCHROM,
   RC_LONG_INSERT,
   RC_MAPQ,
+  RC_MAPQ_UNAVAILABLE,
   RC_MOD_FWD,
   RC_MOD_REV,
   RC_NON_SPLIT,
@@ -37,7 +38,7 @@ import {
   CHAIN_FILL_SPLIT_INVERSION,
   CHAIN_FILL_SUPP_PRIMARY_FWD,
 } from '../shared/types.ts'
-import { firstOfPairStrand } from '../shared/util.ts'
+import { MAPQ_UNAVAILABLE, firstOfPairStrand } from '../shared/util.ts'
 import { ColorScheme } from './constants.ts'
 
 import type { ColorPalette, RGBColor } from '../shaders/colors.ts'
@@ -91,6 +92,7 @@ export type ReadColorCategory =
   | 'normalInsert'
   | 'plain'
   | 'mapq'
+  | 'mapqUnavailable'
   | 'tag'
   | 'noTagValue'
   | 'modFwd'
@@ -191,6 +193,7 @@ export const READ_COLOR_CATEGORY: Record<ReadColorCategory, number> = {
   normalInsert: RC_NORMAL_INSERT,
   plain: RC_PLAIN,
   mapq: RC_MAPQ,
+  mapqUnavailable: RC_MAPQ_UNAVAILABLE,
   tag: RC_TAG,
   noTagValue: RC_NO_TAG_VALUE,
   modFwd: RC_MOD_FWD,
@@ -358,8 +361,12 @@ export function readColorCategory(
     case ColorScheme.strand:
       return strandCategory(strand)
 
+    // 255 is the SAM spec's "unavailable", not a score of 255 — and it is what
+    // `getMappingQuality` returns for a feature carrying no mapping quality at
+    // all (PAF/MashMap blocks without one). Split out so it takes the neutral
+    // grey rather than a hue the ramp's legend never names.
     case ColorScheme.mappingQuality:
-      return 'mapq'
+      return data.readMapqs[i] === MAPQ_UNAVAILABLE ? 'mapqUnavailable' : 'mapq'
 
     // insertSizeGradient lerps its fill but buckets identically; categoryColor
     // applies the gradient when the scheme calls for it.
@@ -511,8 +518,12 @@ export function readColorFromCategoryIndex(
   )
 }
 
-// Classify-then-paint, for callers with no baked array (the arcs legend, tests).
-// The render paths go through readColorFromCategoryIndex instead.
+// Classify-then-paint in one call. Every render path goes through
+// `readColorFromCategoryIndex` against the baked array instead, so the only
+// caller left is colorUtils.test.ts — kept because it is the seam that checks
+// the classifier and the painter agree end to end, which testing the two halves
+// separately would not. (It used to say "the arcs legend" too; the arcs legend
+// has its own category vocabulary and never called this.)
 export function getReadColor(
   i: number,
   data: ReadColorData,
@@ -559,6 +570,9 @@ export const swatchPaletteKeys = {
   // read a CPU-baked scheme resolved no color for: the shader's tagColor==0
   // fallback, which is the same neutral 'plain' paints
   noTagValue: 'colorPairLR',
+  // MAPQ 255 = "unavailable". The same grey `noStrand` uses for an unknown
+  // strand, and for the same reason: the answer is missing, not extreme.
+  mapqUnavailable: 'colorNostrand',
 } satisfies Partial<Record<ReadColorCategory, keyof ColorPalette>>
 
 export type SwatchCategory = keyof typeof swatchPaletteKeys

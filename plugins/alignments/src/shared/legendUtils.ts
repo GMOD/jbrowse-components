@@ -160,7 +160,9 @@ const CATEGORY_LEGEND: Record<SwatchCategory, string> = {
   interchrom: 'Inter-chromosomal',
   unmappedMate: 'Unmapped mate',
   supplementary: 'Supplementary/split',
-  // last: the leftover bucket of the CPU-baked schemes, named per scheme below
+  // the two leftover buckets, last: a read whose scheme resolved no value for
+  // it. `noTagValue` is named per scheme below (no HP value / no mate).
+  mapqUnavailable: 'MAPQ unavailable (255)',
   noTagValue: 'No value',
 }
 
@@ -433,10 +435,17 @@ function schemeLegend(
     return bakedValueLegend(colorTagMap)
   }
   if (colorType === 'mappingQuality') {
+    // Ramp stops, not buckets: hue IS the score in degrees (categoryColor /
+    // read.slang's hueRampHalfSat), so 60 is a stop on a continuous sweep and
+    // not a ceiling — a MAPQ 70 read from an aligner that emits past bwa/
+    // minimap2's cap of 60 paints its own distinct hue. The old '≥60' claimed
+    // otherwise. The 255 sentinel is not on this ramp at all; it classifies as
+    // `mapqUnavailable` and is keyed by the cross-cutting buckets, so it appears
+    // only when reads actually carry it.
     return hslRamp(50, [
       { hue: 0, label: 'MAPQ 0' },
       { hue: 30, label: 'MAPQ 30' },
-      { hue: 60, label: 'MAPQ ≥60' },
+      { hue: 60, label: 'MAPQ 60' },
     ])
   }
   if (colorType === 'perBaseQuality') {

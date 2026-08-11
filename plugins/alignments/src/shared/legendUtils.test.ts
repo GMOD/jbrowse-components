@@ -157,7 +157,7 @@ describe('getReadDisplayLegendItems', () => {
     expect(labels('mappingQuality', ['fwdStrand'])).toEqual([
       'MAPQ 0',
       'MAPQ 30',
-      'MAPQ ≥60',
+      'MAPQ 60',
       'Split read (forward)',
     ])
   })
@@ -269,10 +269,24 @@ describe('getReadDisplayLegendItems', () => {
   })
 
   test('mapping quality is a fixed ramp regardless of present buckets', () => {
+    // Stops on a continuous hue sweep, not buckets — 60 is not a ceiling, so the
+    // label doesn't claim to be one.
     expect(labels('mappingQuality', [])).toEqual([
       'MAPQ 0',
       'MAPQ 30',
-      'MAPQ ≥60',
+      'MAPQ 60',
+    ])
+  })
+
+  // 255 is the spec's "unavailable" sentinel; it classifies out of the ramp
+  // (readColorCategory) into its own flat-swatch bucket, so it is keyed like
+  // every other cross-cutting bucket — present-gated, and named.
+  test('MAPQ unavailable is keyed only when reads carry it', () => {
+    expect(labels('mappingQuality', ['mapqUnavailable'])).toEqual([
+      'MAPQ 0',
+      'MAPQ 30',
+      'MAPQ 60',
+      'MAPQ unavailable (255)',
     ])
   })
 

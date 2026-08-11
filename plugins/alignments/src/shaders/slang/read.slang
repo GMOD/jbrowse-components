@@ -3,7 +3,7 @@
 // clipped to the segment's leading (fwd) or trailing (rev) edge.
 //! targets: wgsl, glsl
 //! js-export: insertGradientT, showChevron
-//! export-consts: READ_CATEGORY_SLOTS, CS_NORMAL, CS_STRAND, CS_MAPQ, CS_INSERT_SIZE, CS_FIRST_OF_PAIR, CS_PAIR_ORIENT, CS_IS_AND_ORIENT, CS_MODIFICATIONS, CS_TAG, CS_IS_GRADIENT, RC_SUPPLEMENTARY, RC_SPLIT_INVERSION, RC_SPLIT_DELETION, RC_UNMAPPED_MATE, RC_INTERCHROM, RC_FWD_STRAND, RC_REV_STRAND, RC_NO_STRAND, RC_NON_SPLIT, RC_PAIR_LR, RC_PAIR_RL, RC_PAIR_RR, RC_PAIR_LL, RC_LONG_INSERT, RC_SHORT_INSERT, RC_NORMAL_INSERT, RC_PLAIN, RC_MAPQ, RC_TAG, RC_NO_TAG_VALUE, RC_MOD_FWD, RC_MOD_REV, CHEVRON_PX, CHEVRON_DIRLESS_MIN_WIDTH_PX, PAIR_MIN_SPAN_PX, IS_GRADIENT_SPAN_FRAC, READ_OUTLINE_PX, READ_OUTLINE_SHADE, READ_OUTLINE_MIN_WIDTH_PX, READ_OUTLINE_MIN_HEIGHT_PX
+//! export-consts: READ_CATEGORY_SLOTS, CS_NORMAL, CS_STRAND, CS_MAPQ, CS_INSERT_SIZE, CS_FIRST_OF_PAIR, CS_PAIR_ORIENT, CS_IS_AND_ORIENT, CS_MODIFICATIONS, CS_TAG, CS_IS_GRADIENT, RC_SUPPLEMENTARY, RC_SPLIT_INVERSION, RC_SPLIT_DELETION, RC_UNMAPPED_MATE, RC_INTERCHROM, RC_FWD_STRAND, RC_REV_STRAND, RC_NO_STRAND, RC_NON_SPLIT, RC_PAIR_LR, RC_PAIR_RL, RC_PAIR_RR, RC_PAIR_LL, RC_LONG_INSERT, RC_SHORT_INSERT, RC_NORMAL_INSERT, RC_PLAIN, RC_MAPQ, RC_TAG, RC_NO_TAG_VALUE, RC_MOD_FWD, RC_MOD_REV, RC_MAPQ_UNAVAILABLE, CHEVRON_PX, CHEVRON_DIRLESS_MIN_WIDTH_PX, PAIR_MIN_SPAN_PX, IS_GRADIENT_SPAN_FRAC, READ_OUTLINE_PX, READ_OUTLINE_SHADE, READ_OUTLINE_MIN_WIDTH_PX, READ_OUTLINE_MIN_HEIGHT_PX
 
 import alignmentsUniforms;
 import colorPack;
@@ -64,6 +64,14 @@ static const uint RC_TAG             = 18u;
 static const uint RC_NO_TAG_VALUE    = 19u;
 static const uint RC_MOD_FWD         = 20u;
 static const uint RC_MOD_REV         = 21u;
+// MAPQ 255 is the SAM spec's "mapping quality unavailable" sentinel, not a
+// mapping quality of 255. Fed to the hue ramp it painted an ordinary
+// blue-violet — a color a reader would take for a genuine very high score, and
+// one the MAPQ legend named nothing. Its own flat-swatch category instead, so it
+// paints the neutral grey and the legend lists it exactly when reads carry it.
+// No branch is needed in getReadColor: a flat category resolves straight out of
+// u.readCategoryColor.
+static const uint RC_MAPQ_UNAVAILABLE = 22u;
 
 // Arrowhead size in CSS px (protrusion past the read edge + cap dimensions).
 // Exported so features/read/drawCanvas.ts (Canvas2D) uses the same value.

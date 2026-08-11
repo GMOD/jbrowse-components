@@ -477,6 +477,19 @@ describe('getReadColor maps each category to its palette color', () => {
       ),
     ).toBe('hsl(42,50%,50%)')
   })
+
+  // 255 is "mapping quality unavailable", not a score of 255. On the ramp it
+  // came out an ordinary blue-violet — indistinguishable from a genuine very
+  // high score, and named by nothing in the legend.
+  test('mapq 255 leaves the ramp for the neutral unavailable swatch', () => {
+    const data = makeData({ mapq: 255 })
+    expect(readColorCategory(0, data, ColorScheme.mappingQuality)).toBe(
+      'mapqUnavailable',
+    )
+    expect(getReadColor(0, data, ColorScheme.mappingQuality, palette)).toBe(
+      rgb255(palette.colorNostrand),
+    )
+  })
 })
 
 // The `firstOfPairStrand` COLOR scheme and the `firstOfPairStrand` GROUPING

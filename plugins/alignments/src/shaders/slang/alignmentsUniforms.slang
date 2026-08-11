@@ -35,7 +35,7 @@ public static const uint LINKED_READ_COLOR_SLOTS = 8u;
 // It lives here rather than with the RC_* block because the uniform declaring it
 // does, and imports only resolve one way. read.slang re-exports it so
 // colorCategory.test.ts can pin the two counts equal.
-public static const uint READ_CATEGORY_SLOTS = 22u;
+public static const uint READ_CATEGORY_SLOTS = 23u;
 
 public struct Uniforms {
   // HP-split bp range: hi = base-pair offset (high 20 bits), lo = fractional

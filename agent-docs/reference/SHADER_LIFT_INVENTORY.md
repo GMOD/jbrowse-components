@@ -91,7 +91,6 @@ is no longer shared with anything.
 
 | Export | Imported by |
 | --- | --- |
-| `distToWideCirclePx` | nothing |
 | `extendToMinWidthPx` | tests only — `hpmathParity.test.ts`, `rectSpanParity.test.ts` |
 | `frequencyAlpha` | tests only — `alphaShaderParity.test.ts` |
 | `normalizeDepthScalar` | tests only — `coverageNormalizeParity.test.ts` |
