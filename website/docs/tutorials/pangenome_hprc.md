@@ -758,7 +758,7 @@ row is the same two genes, PPIAL4F and PPIAL4E: on the carrier PPIAL4F comes
 first, on the non-carrier PPIAL4E does, and the hg38 row between them agrees
 with the non-carrier.
 
-<Figure caption="The 1q21.1 bubble the graph flags as an inversion, drawn as alignments. Between the two haplotype rows are the RefSeq genes, the bubble lane cut to inversion-flagged bubbles, and the rGFA segments. HG01891 hap 1 on top: its ribbon crosses inside the boxed span and the boxed PPIAL4F comes before the boxed PPIAL4E. HG02698 hap 2 below: one forward ribbon, and the same two genes in the reference's order." src="/img/pangenome/hprc_inversion.png" />
+<Figure caption="The 1q21.1 bubble the graph flags as an inversion, drawn as alignments. Between the two haplotype rows are the RefSeq genes, the bubble lane cut to inversion-flagged bubbles, and the rGFA segments. HG01891 hap 1 on top, its ribbon crossing inside the boxed span; HG02698 hap 2 below, one forward ribbon. The boxed pair on each row is PPIAL4F and PPIAL4E." src="/img/pangenome/hprc_inversion.png" />
 
 The [allele inventory](#the-allele-inventory) has nothing for them by
 construction, since a mixed-orientation pair of backbone segments is a

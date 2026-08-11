@@ -353,7 +353,7 @@ jb2export breakpoint --config https://jbrowse.org/demos/cancer_sv/config.json \
   --loc chr12:72,272,512-72,273,712 --width 1400 --out sv_review_tumor.png
 ```
 
-![The three loci of the COLO829 melanoma line's der(3), chr3 then chr10 then chr12, with a curve per tumour read that crosses between them and no dashed connector anywhere](https://jbrowse.org/jb2-figures/jbrowse-img/sv_review_tumor.33db9c18bec0.png)
+![The three loci of the COLO829 melanoma line's der(3), chr3 then chr10 then chr12, with a curve per tumour read that crosses between them and no dashed connector anywhere](https://jbrowse.org/jb2-figures/jbrowse-img/sv_review_tumor.770d855fbd51.png)
 
 `force:true` is there because the chr3 panel is 1.2 kb of 200x nanopore, which
 is over the byte gate; without it that panel draws the gate's message instead of
@@ -372,7 +372,7 @@ jb2export breakpoint --config https://jbrowse.org/demos/cancer_sv/config.json \
   --loc chr12:72,272,512-72,273,712 --width 1400 --out sv_review_normal.png
 ```
 
-![The same three windows in the matched normal COLO829BL: reads read straight through all three loci and nothing connects the panels](https://jbrowse.org/jb2-figures/jbrowse-img/sv_review_normal.7290e1f63e73.png)
+![The same three windows in the matched normal COLO829BL: reads read straight through all three loci and nothing connects the panels](https://jbrowse.org/jb2-figures/jbrowse-img/sv_review_normal.9ca2f6272e83.png)
 
 To do that for a whole callset rather than one junction, `jb2export batch`
 renders one image per row of a BEDPE. See the

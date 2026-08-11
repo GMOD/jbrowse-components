@@ -198,13 +198,15 @@ Structural agreement and sequence identity are separate claims, and the view
 above only makes the first one. Zooming into the collinear block beside the
 inversion and turning on the heterozygous-sites track makes the second one
 checkable in the same frame: the ribbon runs as one band apart from a single
-indel, and the sites underneath it are dense in both panels.
+indel, and the sites underneath it are dense in both panels. The solid run of
+sites beneath that indel on the paternal panel is where the two haplotypes stop
+agreeing base for base.
 
 At this width the gene lane is readable, and each panel carries its own
 haplotype's annotation rather than one shared lane, so the sites can be read
 against the genes they fall in.
 
-<Figure caption="A window inside the collinear block left of the inversion, with each haplotype's genes and heterozygous sites under its own panel. The ribbon runs as one band, so the haplotypes agree structurally, while the sites below show they differ at base level throughout. The pale wedge is an indel, and the solid run of sites beneath it on the paternal panel is where the two haplotypes stop agreeing base for base." src="/img/hg002_haplotypes_hetsites.png" />
+<Figure caption="A window inside the collinear block left of the inversion, with each haplotype's genes and heterozygous sites under its own panel. The ribbon runs as one band, so the haplotypes agree structurally, while the sites below show they differ at base level throughout. The pale wedge is an indel." src="/img/hg002_haplotypes_hetsites.png" />
 
 This has to be its own view for two reasons worth knowing before you try to
 combine them. Across the whole inversion the het-site track is over its
