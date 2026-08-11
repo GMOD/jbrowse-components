@@ -8,8 +8,7 @@ import {
   makeIndex,
   makeIndexType,
 } from '@jbrowse/core/util/tracks'
-
-import { syntenyTypes } from '../syntenyTypes.ts'
+import { syntenyTypes } from '@jbrowse/synteny-core'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

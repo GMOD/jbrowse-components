@@ -1,7 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { canonicalAssemblyNames } from '@jbrowse/core/util/tracks'
 
-import { allVsAllTypes, syntenyTypes } from '../syntenyTypes.ts'
+import { allVsAllTypes, syntenyTypes } from './syntenyTypes.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AssemblyNameResolver } from '@jbrowse/core/util/tracks'

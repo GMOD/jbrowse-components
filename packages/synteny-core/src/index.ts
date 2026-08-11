@@ -9,6 +9,14 @@ export type {
   BpRegionIndex,
   RegionIndexEntry,
 } from './bpRegionIndex.ts'
+export {
+  allVsAllTypes,
+  mcscanBlocksTypes,
+  mcscanTypes,
+  pairwiseTypes,
+  syntenyTypes,
+} from './syntenyTypes.ts'
+export { syntenyMateLabel, syntenyRowAdornment } from './syntenyRowAdornment.ts'
 export { clampBlockToRegions } from './clampBlockToRegions.ts'
 export type { ClampedBlock } from './clampBlockToRegions.ts'
 export {

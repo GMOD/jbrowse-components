@@ -1,8 +1,7 @@
 import { lazy } from 'react'
 
 import { addAddTrackComponent } from '@jbrowse/core/util'
-
-import { pairwiseTypes } from '../syntenyTypes.ts'
+import { pairwiseTypes } from '@jbrowse/synteny-core'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
