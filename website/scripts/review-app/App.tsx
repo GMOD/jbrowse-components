@@ -68,10 +68,6 @@ function CountPill({
   )
 }
 
-// What no cards means. `dataEpoch` is 0 until /api/specs lands, and the fetch
-// takes as long as hashing the figure corpus — long enough that "nothing to
-// review" would otherwise be the page's answer for the first second of every
-// load, which is the one wrong answer that reads as good news.
 const NOTHING: Record<Status, string> = {
   needs: 'Nothing needs review',
   good: 'Nothing is approved',
@@ -80,6 +76,10 @@ const NOTHING: Record<Status, string> = {
   all: 'There are no figures',
 }
 
+// What no cards means. `dataEpoch` is 0 until /api/specs lands, and that request
+// takes as long as hashing the figure corpus — long enough that "nothing needs
+// review" would otherwise be the page's answer for the first second of every
+// load, which is the one wrong answer here that reads as good news.
 function emptyText(dataEpoch: number, f: Filters) {
   if (!dataEpoch) {
     return 'Loading the screenshot list…'
