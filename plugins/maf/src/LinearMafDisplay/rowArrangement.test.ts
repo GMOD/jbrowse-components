@@ -33,6 +33,38 @@ describe('a discovered row set widens under a custom arrangement', () => {
     expect(rowNames(display)).toEqual(['panTro4', 'hg38', 'mm10'])
   })
 
+  // The other half of the union: a region that re-reports a species the display
+  // already knows supplies the newer label/color without moving the row. Adapter
+  // configs carry a per-sample color, and a discovery track can meet the same
+  // species again in a later region — first-seen order is what keeps the rows
+  // from reshuffling under the user while that happens.
+  it('takes the newer label and color without reordering', () => {
+    const { display } = createMafTestEnvironment().createDisplay()
+    display.setSamples({
+      samples: [sample('hg38'), sample('panTro4')],
+      treeNewick: undefined,
+      samplesCanonical: false,
+    })
+    display.setSamples({
+      samples: [{ id: 'panTro4', label: 'Chimp', color: 'red' }],
+      treeNewick: undefined,
+      samplesCanonical: false,
+    })
+
+    expect(rowNames(display)).toEqual(['hg38', 'panTro4'])
+    expect(display.sources[1]).toMatchObject({
+      name: 'panTro4',
+      label: 'Chimp',
+      color: 'red',
+    })
+    // and the rename reaches the sidebar, which tints from `labelColor`
+    expect(display.labelSources[1]).toEqual({
+      name: 'panTro4',
+      label: 'Chimp',
+      labelColor: 'red',
+    })
+  })
+
   it('drops a layout row the data no longer has', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     display.setSamples({
