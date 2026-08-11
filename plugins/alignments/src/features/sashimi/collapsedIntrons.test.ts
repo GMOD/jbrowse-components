@@ -2,6 +2,7 @@ import { computeSashimiArcs } from './computeOverlay.ts'
 import { downJunctionKeys, mergeJunctions } from './junctions.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
+import type { ComputeSashimiArcsOpts } from './computeOverlay.ts'
 
 // Collapsed introns (plugins/canvas CollapseIntronsDialog) are the one routine
 // way a single refName becomes many displayedRegions: each exon is padded by a
@@ -103,14 +104,17 @@ const ADJACENT_A: [number, number, number] = [1200, 2000, 30]
 const ADJACENT_B: [number, number, number] = [2000, 3000, 25]
 const EXON_SKIP: [number, number, number] = [1200, 3000, 4]
 
+// WHICH junctions draw, not in what order — `computeSashimiArcs` emits ascending
+// by score so the heaviest paints last, and that is `computeOverlay.test.ts`'s to
+// pin. The count is half the claim here: three distinct spans AND three arcs is
+// "each exactly once", where a set alone would hide a duplicate.
 test('every region re-emits the gene’s junctions; each draws exactly once', () => {
   const all = junctions([ADJACENT_A, ADJACENT_B, EXON_SKIP])
   const arcs = computeSashimiArcs(collapsedOpts([all, all, all]))
-  expect(arcs.map(a => [a.start, a.end])).toEqual([
-    [1200, 2000],
-    [2000, 3000],
-    [1200, 3000],
-  ])
+  expect(arcs).toHaveLength(3)
+  expect(new Set(arcs.map(a => `${a.start}-${a.end}`))).toEqual(
+    new Set(['1200-2000', '2000-3000', '1200-3000']),
+  )
 })
 
 test('a collapsed intron leaves its junction a narrow arc, not a zero-width spike', () => {
@@ -223,12 +227,14 @@ test('only the regions actually on screen contribute arcs', () => {
     junctions([ADJACENT_B]),
     junctions([EXON_SKIP]),
   ])
-  expect(computeSashimiArcs(opts).map(a => a.end)).toEqual([2000, 3000, 3000])
+  // Sorted, for the same reason as above: the emitted order is by score.
+  const ends = (o: ComputeSashimiArcsOpts) =>
+    computeSashimiArcs(o)
+      .map(a => a.end)
+      .toSorted((p, q) => p - q)
+  expect(ends(opts)).toEqual([2000, 3000, 3000])
   expect(
-    computeSashimiArcs({
-      ...opts,
-      visibleRegions: opts.visibleRegions.slice(0, 2),
-    }).map(a => a.end),
+    ends({ ...opts, visibleRegions: opts.visibleRegions.slice(0, 2) }),
   ).toEqual([2000, 3000])
 })
 

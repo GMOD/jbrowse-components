@@ -56,6 +56,16 @@ test('shows all arcs when minSashimiScore is 0', () => {
   expect(arcs.map(a => a.score)).toEqual([1, 5, 10])
 })
 
+// The array IS the SVG's document order, which decides both which arc is on top
+// and — the paths carrying `pointerEvents: 'stroke'` — which one answers a
+// hover. Junctions arrive in the worker's order, which says nothing about count,
+// so this is the only thing standing between a 1-read junction and the tooltip
+// of the 200-read one it overlaps.
+test('arcs are emitted heaviest-last, whatever order the junctions arrived in', () => {
+  const arcs = computeSashimiArcs(baseOpts(makeData([200, 1, 40]), 0))
+  expect(arcs.map(a => a.score)).toEqual([1, 40, 200])
+})
+
 test('filters arcs below minSashimiScore', () => {
   const arcs = computeSashimiArcs(baseOpts(makeData([1, 5, 10]), 5))
   expect(arcs.map(a => a.score)).toEqual([5, 10])

@@ -303,5 +303,25 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts): SashimiArc[] {
       showLabel: span.spanPx >= labelSpanPx(j.count),
     })
   }
+
+  // ASCENDING SCORE, because this array is the SVG's document order and that
+  // decides two things at once.
+  //
+  // Paint: the last path drawn keeps the pixels it shares, so a junction merged
+  // from a later region punched its hairline through every heavier arc it
+  // overlapped. `mergeJunctions` returns first-seen order, which is the worker's
+  // and has nothing to do with count.
+  //
+  // Hover: the paths carry `pointerEvents: 'stroke'`, so the topmost one under
+  // the cursor takes the tooltip. Alternative 5'/3' splice sites sit a few bp
+  // apart and draw as near-identical arcs, so a 1-read junction laid over a
+  // 200-read one answered for it — the same defect `hitTestArcs` had for
+  // read-connection arcs, arriving here through the browser's hit test instead
+  // of one of ours.
+  //
+  // `SashimiArcLabels` already stated this order as the reason its text is a
+  // separate pass. That was true of the intent and not of the code; the labels
+  // still need their own pass, but now for the reason given.
+  arcs.sort((a, b) => a.score - b.score)
   return arcs
 }
