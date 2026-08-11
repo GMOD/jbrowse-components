@@ -1,7 +1,10 @@
+import type { TrackRowAdornment } from './trackRowAdornment.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 export interface TreeTrackNode {
   name: string
+  // what a plugin added to this row: a glyph, a short suffix, a tooltip line
+  adornment?: TrackRowAdornment
   // unique per-node key for React/DOM/test ids, group-prefixed e.g.
   // "Tracks,myTrackId"; NOT the track identity. Use trackId to toggle a track
   id: string
@@ -54,6 +57,7 @@ export interface TreeRow {
 export interface TrackNodeSource {
   conf: AnyConfigurationModel
   name: string
+  adornment?: TrackRowAdornment
   sortName: string
   description: string
   categories: string[]

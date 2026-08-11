@@ -9,6 +9,7 @@ import OverrideBadge from './OverrideBadge.tsx'
 import TrackSelectorTrackMenu from './TrackSelectorTrackMenu.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
+import type { TrackRowAdornment } from '../../trackRowAdornment.ts'
 import type { TreeTrackNode } from '../../types.ts'
 
 // checkboxLabel merges MUI FormControlLabel's root styles, so the row renders a
@@ -51,6 +52,23 @@ const useStyles = makeStyles()(theme => ({
     display: 'flex',
     alignItems: 'center',
     gap: 2,
+    // the name is what yields when the drawer is narrow; the adornment is a few
+    // words and reads as noise half-truncated
+    minWidth: 0,
+  },
+  name: {
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
+  adornmentIcon: {
+    color: theme.palette.primary.main,
+    flex: 'none',
+  },
+  adornmentLabel: {
+    color: theme.palette.text.secondary,
+    flex: 'none',
+    fontSize: '0.85em',
   },
 }))
 
@@ -86,22 +104,41 @@ const TrackLabelText = observer(function TrackLabelText({
   id,
   name,
   trackId,
+  adornment,
   selectedClass,
 }: {
   model: HierarchicalTrackSelectorModel
   id: string
   name: string
   trackId: string
+  adornment?: TrackRowAdornment
   selectedClass: string
 }) {
   const { classes } = useStyles()
   const selected = model.selectionSet.has(trackId)
+  const AdornmentIcon = adornment?.icon
   return (
     <div
       data-testid={`htsTrackLabel-${id}`}
       className={`${classes.label} ${selected ? selectedClass : ''}`}
     >
-      <SanitizedHTML html={name} />
+      {/* fontSize inherit, not a class: MUI's default 20px icon would push the
+      22px row taller, and the prop settles that without depending on which of
+      two stylesheets was injected last */}
+      {AdornmentIcon ? (
+        <AdornmentIcon fontSize="inherit" className={classes.adornmentIcon} />
+      ) : null}
+      <span className={classes.name}>
+        <SanitizedHTML html={name} />
+      </span>
+      {adornment?.label ? (
+        <span
+          className={classes.adornmentLabel}
+          data-testid={`htsTrackAdornment-${id}`}
+        >
+          {adornment.label}
+        </span>
+      ) : null}
       <OverrideBadge model={model} trackId={trackId} name={name} />
     </div>
   )
@@ -115,14 +152,17 @@ const TrackLabel = observer(function TrackLabel({
   item: TreeTrackNode
 }) {
   const { classes } = useStyles()
-  const { id, name, conf, trackId, description } = item
+  const { id, name, conf, trackId, description, adornment } = item
+  // one string, because the tree shares a single tooltip element keyed off this
+  // attribute (SharedTooltip)
+  const tooltip = [description, adornment?.detail].filter(Boolean).join(' — ')
 
   return (
     <>
       <label
         className={classes.checkboxLabel}
-        data-tooltip={description}
-        aria-description={description}
+        data-tooltip={tooltip}
+        aria-description={tooltip}
         onClick={event => {
           if (event.ctrlKey || event.metaKey) {
             if (model.selectionSet.has(trackId)) {
@@ -145,6 +185,7 @@ const TrackLabel = observer(function TrackLabel({
           id={id}
           name={name}
           trackId={trackId}
+          adornment={adornment}
           selectedClass={classes.selected}
         />
       </label>

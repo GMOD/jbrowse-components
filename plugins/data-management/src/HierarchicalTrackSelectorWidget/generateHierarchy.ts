@@ -22,7 +22,7 @@ export function generateHierarchy({
   // trackSources arrive resolved and sorted (see model.allTracks), so nothing
   // here reads a config or sorts; filtering preserves the order
   for (const source of trackSources.filter(s => filteredTrackSet.has(s.conf))) {
-    const { conf, name, description, categories } = source
+    const { conf, name, description, categories, adornment } = source
     const { trackId } = conf
 
     let currLevel: NodeWithChildren = root
@@ -60,6 +60,7 @@ export function generateHierarchy({
       trackId,
       name,
       description,
+      adornment,
       conf,
       children: [],
       // one level below its deepest category (or level 1 at the group root)
