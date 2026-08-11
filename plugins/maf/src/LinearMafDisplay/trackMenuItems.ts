@@ -31,11 +31,27 @@ const SetRowArrangementDialog = lazy(
 // negation to the setter explicitly, so no event argument can reach it.
 // A checkbox row keeps the menu open by its type — users flip several of these
 // in one visit, and the menu is an observer, so the ticks move live.
-function toggle(label: string, checked: boolean, set: (v: boolean) => void) {
-  return checkboxItem(label, checked, () => {
-    set(!checked)
-  })
+function toggle(
+  label: string,
+  checked: boolean,
+  set: (v: boolean) => void,
+  opts?: { subLabel?: string },
+) {
+  return checkboxItem(
+    label,
+    checked,
+    () => {
+      set(!checked)
+    },
+    opts,
+  )
 }
+
+// Both bands are computed from the per-base alignment, which the zoom-out
+// summary tier does not read — so past the floor they collapse and the tick
+// keeps reporting what the user chose. Said out loud, because otherwise the
+// only feedback for ticking either one there is nothing happening.
+const ZOOM_IN_FOR_BAND = 'zoom in past the summary tier to see it'
 
 // Row-height presets for the shared "Row height" menu. Each pairs a height with
 // the glyph proportion that reads best at it — maf is the one display that has
@@ -57,6 +73,9 @@ interface MafMenuSelf extends IStateTreeNode {
   showCoverage: boolean
   showAlignments: boolean
   showConservation: boolean
+  // Not a setting and not settable — the zoom-out tier the two band toggles
+  // above are inert on. Read only to say so.
+  showSummary: boolean
   conservationMode: ConservationMode
   showAnnotations: boolean
   showInversions: boolean
@@ -186,12 +205,15 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
       ? [toggle('Show row labels', self.showRowLabels, self.setShowRowLabels)]
       : []),
     treeBranchLengthMenuItem(self),
-    toggle('Show coverage', self.showCoverage, self.setShowCoverage),
+    toggle('Show coverage', self.showCoverage, self.setShowCoverage, {
+      subLabel: self.showSummary ? ZOOM_IN_FOR_BAND : undefined,
+    }),
     toggle('Show alignments', self.showAlignments, self.setShowAlignments),
     toggle(
       'Show conservation (% identity)',
       self.showConservation,
       self.setShowConservation,
+      { subLabel: self.showSummary ? ZOOM_IN_FOR_BAND : undefined },
     ),
     // Per-codon (amino-acid) conservation needs a reading frame, so the
     // resolution radio only appears alongside the other frame-gated items.
