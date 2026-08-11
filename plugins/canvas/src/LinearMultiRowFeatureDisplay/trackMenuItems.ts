@@ -21,6 +21,7 @@ import type { LegendEntry } from './rendering/colorLegend.ts'
 import type { MultiRowSource } from './sourcesLogic.ts'
 import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type { TreeLayoutModel } from '@jbrowse/tree-sidebar'
 
 const SetRowArrangementDialog = lazy(
   () => import('./components/SetRowArrangementDialog.tsx'),
@@ -34,7 +35,13 @@ const ROW_HEIGHT_PRESETS = [
   { label: 'Compact', rowHeight: 8 },
 ]
 
-interface MultiRowMenuSelf extends IStateTreeNode {
+// The four row-arrangement members are inherited from `TreeLayoutModel` rather
+// than re-declared: they exist here only because `rowArrangementMenuItem` hands
+// this same `self` to SetRowArrangementDialog, so the dialog's own contract is
+// what they have to satisfy. Spelled out locally they were a second copy of it,
+// free to drift from the thing actually type-checking the dialog call.
+interface MultiRowMenuSelf
+  extends IStateTreeNode, TreeLayoutModel<MultiRowSource> {
   showTree: boolean
   showLegend: boolean
   showRowSeparators: boolean
@@ -55,6 +62,8 @@ interface MultiRowMenuSelf extends IStateTreeNode {
   treeHasBranchLengths: boolean
   subtreeFilter?: readonly string[]
   layout: readonly MultiRowSource[]
+  // narrowed from TreeLayoutModel's optional: `rowArrangementMenuItem` gates on
+  // its length, so this menu needs it to be there
   editableSources: MultiRowSource[]
   sourcesWithoutLayout: MultiRowSource[]
   clusterTree?: string
@@ -67,9 +76,6 @@ interface MultiRowMenuSelf extends IStateTreeNode {
   setHiddenCategories: (labels: string[]) => void
   setShowBranchLength: (f: boolean) => void
   setSubtreeFilter: (names?: string[]) => void
-  setLayout: (s: MultiRowSource[]) => void
-  clearLayout: () => void
-  willClearTree: (s: MultiRowSource[]) => boolean
   setRowHeight: (n: number) => void
   setFitToHeight: () => void
   setRunClustering: (arg?: boolean) => void

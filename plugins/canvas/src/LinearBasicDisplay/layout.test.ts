@@ -8,6 +8,7 @@ import {
   computeLaidOutData,
   packedContentHeight,
   createIncrementalLayout,
+  featureIdsTouchingBlocks,
   maxBottom,
   scaleLaidOutData,
 } from './layout.ts'
@@ -1763,5 +1764,77 @@ describe('packedContentHeight matches the committed layout', () => {
       displayMode: 'compact',
     })
     expect(compactH).toBeLessThan(maxBottom(new Map([[0, laid]])))
+  })
+})
+
+// The set fit mode measures its candidate stacks over. Extracted from the
+// model's `fitMeasureFeatureIds` so the half-open rule — the one thing here that
+// can be off by one, asked per feature per block — is checked directly instead of
+// only through a fitted display.
+describe('featureIdsTouchingBlocks', () => {
+  const region = (regionKey: string, spans: [string, number, number][]) => ({
+    regionKey,
+    flatbushItems: spans.map(([featureId, startBp, endBp]) => ({
+      featureId,
+      startBp,
+      endBp,
+    })),
+  })
+  const block = (refName: string, start: number, end: number) => ({
+    assemblyName: 'volvox',
+    refName,
+    start,
+    end,
+  })
+
+  it('takes a feature overlapping the block and leaves one that merely abuts it', () => {
+    const ids = featureIdsTouchingBlocks(
+      [
+        region('volvox:ctgA', [
+          // ends exactly where the block starts: draws nothing inside it
+          ['before', 50, 100],
+          ['overlapsStart', 90, 110],
+          ['inside', 120, 130],
+          ['overlapsEnd', 190, 210],
+          // starts exactly where the block ends
+          ['after', 200, 260],
+        ]),
+      ],
+      [block('ctgA', 100, 200)],
+    )
+    expect([...ids].sort()).toEqual(['inside', 'overlapsEnd', 'overlapsStart'])
+  })
+
+  it('matches regions to blocks by ref, not by index, and unions several blocks', () => {
+    const regions = [
+      region('volvox:ctgA', [['a', 0, 10]]),
+      region('volvox:ctgB', [['b', 0, 10]]),
+    ]
+    // a region with no block on its ref contributes nothing, and one ref covered
+    // by two blocks takes features from either
+    expect([
+      ...featureIdsTouchingBlocks(regions, [block('ctgA', 0, 5)]),
+    ]).toEqual(['a'])
+    expect(
+      [
+        ...featureIdsTouchingBlocks(regions, [
+          block('ctgA', 0, 5),
+          block('ctgB', 5, 20),
+        ]),
+      ].sort(),
+    ).toEqual(['a', 'b'])
+    // same refName under a different assembly is a different ref-group
+    expect([
+      ...featureIdsTouchingBlocks(regions, [
+        { assemblyName: 'other', refName: 'ctgA', start: 0, end: 10 },
+      ]),
+    ]).toEqual([])
+  })
+
+  it('is empty with no blocks at all', () => {
+    expect(
+      featureIdsTouchingBlocks([region('volvox:ctgA', [['a', 0, 10]])], [])
+        .size,
+    ).toBe(0)
   })
 })

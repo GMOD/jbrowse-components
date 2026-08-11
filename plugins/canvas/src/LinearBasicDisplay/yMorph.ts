@@ -1,6 +1,7 @@
 import { isPlacedRow } from './rowPlacement.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { AnimationMode } from '@jbrowse/core/util'
 
 // Duration of the feature-Y transition played when the layout re-packs rows
 // (e.g. on a zoom step) so features ease into their new row instead of jumping.
@@ -96,6 +97,35 @@ export function captureDisplayedTops(
     }
   }
   return out
+}
+
+// Whether a morph may play at all, before anything about the layout is
+// consulted: a frame clock has to exist, and the resolved animation mode has to
+// allow motion — 'enabled' always does, 'disabled' never does, and 'system'
+// honors the OS prefers-reduced-motion setting, so reduced-motion users get
+// instant snaps unless they explicitly opt in. The mode comes from the session
+// preference (configuration.preferences.animationMode + user override).
+//
+// Lives beside `canMorph` (the layout half of the same question) rather than in
+// the model, which is where it used to sit — it reads no model state, and the
+// two are always asked together.
+export function morphAllowed(mode: AnimationMode) {
+  const hasFrameClock = typeof requestAnimationFrame === 'function'
+  const prefersReduced =
+    typeof matchMedia === 'function' &&
+    matchMedia('(prefers-reduced-motion: reduce)').matches
+  return (
+    hasFrameClock &&
+    (mode === 'enabled' || (mode === 'system' && !prefersReduced))
+  )
+}
+
+// The clock a morph is timed against, guarded for environments without
+// `performance` (jsdom sub-environments, node RPC workers importing this file
+// transitively). Paired with `morphAllowed` above so both of the model's
+// environment probes sit in one place.
+export function morphClockMs() {
+  return typeof performance === 'undefined' ? 0 : performance.now()
 }
 
 // Whether anything is worth animating: at least one feature shared with

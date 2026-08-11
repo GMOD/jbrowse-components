@@ -415,12 +415,19 @@ export default function stateModelFactory(
             subfeature && isGeneLikeType(subfeature.type)
               ? subfeature
               : undefined
+          // One row's identity, spread into whichever of the two shapes the hit
+          // earns — a submenu of the two scopes, or the plain gene-scope action.
+          // Written once so the two can't drift into reading as two different
+          // menu entries.
+          const collapseIntrons = {
+            label: 'Collapse introns',
+            icon: CloseFullscreenIcon,
+          }
           return [
             ...base,
             transcriptHit
               ? {
-                  label: 'Collapse introns',
-                  icon: CloseFullscreenIcon,
+                  ...collapseIntrons,
                   subMenu: [
                     {
                       label: transcriptHit.displayLabel
@@ -439,8 +446,7 @@ export default function stateModelFactory(
                   ],
                 }
               : {
-                  label: 'Collapse introns',
-                  icon: CloseFullscreenIcon,
+                  ...collapseIntrons,
                   onClick: async () => {
                     await openDialog()
                   },

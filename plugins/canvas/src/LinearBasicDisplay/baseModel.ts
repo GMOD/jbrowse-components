@@ -71,6 +71,7 @@ import {
   countTruncatedFeatures,
   createContentHeightProbe,
   createIncrementalLayout,
+  featureIdsTouchingBlocks,
   maxBottom,
   minBodyHeight,
   scaleLaidOutData,
@@ -90,6 +91,8 @@ import {
   captureFeatureTops,
   easeInOutCubic,
   interpolateYData,
+  morphAllowed,
+  morphClockMs,
   rowGeometrySignature,
 } from './yMorph.ts'
 
@@ -124,7 +127,7 @@ import type { IncrementalLayout, LayoutInputs } from './layout.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
 import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { AnimationMode, Feature, Region } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type {
   IAnyStateTreeNode,
@@ -210,25 +213,6 @@ export interface CanvasColorLegend {
   dismiss: () => void
 }
 
-const morphClockMs = () =>
-  typeof performance === 'undefined' ? 0 : performance.now()
-
-// Animate only where a frame clock exists and the resolved animation mode
-// allows it: 'enabled' always animates, 'disabled' never does, and 'system'
-// honors the OS prefers-reduced-motion setting (so reduced-motion users get
-// instant snaps unless they explicitly opt in). Mode comes from the session
-// preference (configuration.preferences.animationMode + user override).
-function morphAllowed(mode: AnimationMode) {
-  const hasFrameClock = typeof requestAnimationFrame === 'function'
-  const prefersReduced =
-    typeof matchMedia === 'function' &&
-    matchMedia('(prefers-reduced-motion: reduce)').matches
-  return (
-    hasFrameClock &&
-    (mode === 'enabled' || (mode === 'system' && !prefersReduced))
-  )
-}
-
 export type { Region } from '@jbrowse/core/util'
 
 const ColorByAttributeDialog = lazy(
@@ -245,21 +229,6 @@ const MIN_FIT_HEIGHT = 50
 // pack tighter than this the squeeze stops and the surplus scrolls, rather than
 // shrinking boxes to invisibility. See `fitMinScale`.
 const MIN_FIT_BOX_PX = 2
-
-// Do two half-open bp spans touch? Each must start strictly before the other
-// ends, so a feature that merely abuts the viewport edge — ending exactly where
-// the block starts, drawing nothing inside it — does not count as on screen. One
-// named test because `fitMeasureFeatureIds` asks it per feature per visible block,
-// and an off-by-one here silently widens or narrows what fit mode measures itself
-// against.
-function spansOverlap(
-  aStart: number,
-  aEnd: number,
-  bStart: number,
-  bEnd: number,
-) {
-  return aStart < bEnd && aEnd > bStart
-}
 
 /**
  * #stateModel LinearCanvasBaseDisplay
@@ -1105,20 +1074,9 @@ export default function baseStateModelFactory(
         /**
          * #getter
          * The features fit mode measures its stack against: those whose bp span
-         * touches the viewport. The fetch deliberately buffers half a screen
-         * either side (`bufferedVisibleRegions`), and every one of those
-         * off-screen features claims a row — rows that add stack height but draw
-         * nothing in view. Measuring the whole packed stack therefore squeezed
-         * the boxes and stripped the labels to fit features the user cannot see:
-         * a viewport holding eight genes could land on the `bodies` rung at the
-         * minimum box size because twenty more sat just outside it.
-         *
-         * It narrows the MEASUREMENT only — the pack still places every buffered
-         * feature, so panning inside the buffer doesn't reshuffle rows and a
-         * feature half off screen keeps the row it will hold once it is fully on.
-         * That works because greedy first-fit gives a visible feature the topmost
-         * row its own x-span is free in, and an off-screen feature never contests
-         * that span, so the on-screen stack stays packed against the top.
+         * touches the viewport. Why that is not the whole packed stack — and the
+         * matching rules — live with the pure `featureIdsTouchingBlocks` in
+         * layout.ts; this getter is the reactive half, deciding when to ask.
          *
          * Read off `coarseDynamicBlocks` (500ms debounced), like the layout's
          * `coarseBpPerPx`, so a pan re-fits once it settles instead of breathing
@@ -1130,38 +1088,10 @@ export default function baseStateModelFactory(
           if (!self.fitHeightToDisplay || !self.layoutReady) {
             return undefined
           }
-          const view = getView(self)
-          const blocks = view.coarseDynamicBlocks
-          if (blocks.length === 0) {
-            return undefined
-          }
-          const rangesByKey = new Map<string, [number, number][]>()
-          for (const block of blocks) {
-            const key = `${block.assemblyName}:${block.refName}`
-            let ranges = rangesByKey.get(key)
-            if (!ranges) {
-              ranges = []
-              rangesByKey.set(key, ranges)
-            }
-            ranges.push([block.start, block.end])
-          }
-          const ids = new Set<string>()
-          for (const data of self.rpcDataMap.values()) {
-            const ranges = rangesByKey.get(data.regionKey)
-            if (!ranges) {
-              continue
-            }
-            for (const item of data.flatbushItems) {
-              if (
-                ranges.some(([start, end]) =>
-                  spansOverlap(item.startBp, item.endBp, start, end),
-                )
-              ) {
-                ids.add(item.featureId)
-              }
-            }
-          }
-          return ids
+          const blocks = getView(self).coarseDynamicBlocks
+          return blocks.length === 0
+            ? undefined
+            : featureIdsTouchingBlocks(self.rpcDataMap.values(), blocks)
         },
       }))
       .views(self => ({

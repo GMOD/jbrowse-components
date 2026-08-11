@@ -16,7 +16,7 @@ import { SHOW_LABELS_MODES } from './showLabelsMode.ts'
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
-import type { MenuItem } from '@jbrowse/core/ui'
+import type { MenuItem, NormalMenuItem } from '@jbrowse/core/ui'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { HeightModeMenuModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -96,7 +96,7 @@ interface TrackMenuSelf {
 function recoveryMenuItems(
   count: number,
   label: string,
-  icon: MenuItem['icon'],
+  icon: NormalMenuItem['icon'],
   onClick: () => void,
 ): MenuItem[] {
   return count > 0

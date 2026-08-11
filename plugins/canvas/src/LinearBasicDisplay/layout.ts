@@ -98,6 +98,88 @@ export function countTruncatedFeatures(
   return n
 }
 
+// Do two half-open bp spans touch? Each must start strictly before the other
+// ends, so a feature that merely abuts a block edge — ending exactly where the
+// block starts, drawing nothing inside it — does not count as on screen.
+function spansOverlap(
+  aStart: number,
+  aEnd: number,
+  bStart: number,
+  bEnd: number,
+) {
+  return aStart < bEnd && aEnd > bStart
+}
+
+// What `featureIdsTouchingBlocks` needs from one fetched region: which ref-group
+// it holds and each feature's absolute bp span. A structural subset of the
+// model's `LoadedFeatureData`, kept local so this stays a pure function decoupled
+// from the RPC-result shape (same idiom as featureHighlight.ts).
+interface BlockMeasurableRegion {
+  // `assemblyName:refName`, matched against a block's own pair
+  regionKey: string
+  flatbushItems: readonly {
+    featureId: string
+    startBp: number
+    endBp: number
+  }[]
+}
+
+// The features whose bp span touches one of `blocks` — the "on screen" set fit
+// mode measures its candidate stacks over (see `fitMeasureFeatureIds`).
+//
+// The fetch deliberately buffers half a screen either side
+// (`bufferedVisibleRegions`), and every one of those off-screen features claims a
+// row — rows that add stack height but draw nothing in view. Measuring the whole
+// packed stack therefore squeezed the boxes and stripped the labels to fit
+// features the user cannot see: a viewport holding eight genes could land on the
+// `bodies` rung at the minimum box size because twenty more sat just outside it.
+//
+// It narrows the MEASUREMENT only — the pack still places every buffered feature,
+// so panning inside the buffer doesn't reshuffle rows.
+//
+// Regions are matched to blocks by `regionKey`, not by displayed-region index: a
+// region can be covered by several blocks, and a block names its ref rather than
+// the index. An off-by-one in the overlap test silently widens or narrows what fit
+// mode measures itself against, which is why `spansOverlap` above has a test of
+// its own.
+export function featureIdsTouchingBlocks(
+  regions: Iterable<BlockMeasurableRegion>,
+  blocks: readonly {
+    assemblyName: string
+    refName: string
+    start: number
+    end: number
+  }[],
+): ReadonlySet<string> {
+  const rangesByKey = new Map<string, [number, number][]>()
+  for (const block of blocks) {
+    const key = `${block.assemblyName}:${block.refName}`
+    let ranges = rangesByKey.get(key)
+    if (!ranges) {
+      ranges = []
+      rangesByKey.set(key, ranges)
+    }
+    ranges.push([block.start, block.end])
+  }
+  const ids = new Set<string>()
+  for (const data of regions) {
+    const ranges = rangesByKey.get(data.regionKey)
+    if (!ranges) {
+      continue
+    }
+    for (const item of data.flatbushItems) {
+      if (
+        ranges.some(([start, end]) =>
+          spansOverlap(item.startBp, item.endBp, start, end),
+        )
+      ) {
+        ids.add(item.featureId)
+      }
+    }
+  }
+  return ids
+}
+
 // How names are chosen when `showLabels` is on. `all` reserves + renders every
 // feature's name (the default, used at the `full`/`labels` fit rungs and in all
 // non-fit modes); `fitWidth` keeps a name only where the feature's box is wide
