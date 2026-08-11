@@ -340,7 +340,7 @@ Ribbons below are colored by the reference chromosome they come from, so the
 wide green one is the chr3 arm and the crossing ribbons at right are the chr10
 and chr12 inserts with chr3 returning inverted.
 
-<Figure caption="The reconstructed derivative against its three source loci: RefSeq genes above, the same annotation projected onto the allele below, each segment labelled with the interval it came from. Both rows carry the same molecules — against hg38 (top, split alignments only) they end together on the last breakpoint, against the allele (bottom) they run the length of it at flat depth. The chr3 window reaches past that breakpoint, so the reference right of the ribbons is what this allele leaves behind." src="/img/cancer_sv/derivative_synteny.png" />
+<Figure caption="The reconstructed derivative against its three source loci: RefSeq genes above, the same annotation projected onto the allele below, each segment labelled with the interval it came from. Both rows carry the same molecules: against hg38 (top, split alignments only) they end together on the last breakpoint, and against the allele (bottom) they run the length of it at flat depth. The chr3 window reaches past that breakpoint, so the reference right of the ribbons is what this allele leaves behind." src="/img/cancer_sv/derivative_synteny.png" />
 
 ## Checking the reconstruction
 
