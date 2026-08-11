@@ -100,6 +100,17 @@ const MULTIHOP_GENE_HEIGHT = 70
 // a solid block and the connectors then fan out of a smear.
 const SPLIT_READS = { featureHeight: 2 }
 
+// HALF A PIXEL, on the one figure whose subject is the CURVES rather than the
+// reads (review on k562_starfusion_triage: "you can also consider making
+// alignments less than 1px in height"). `featureSpacingForHeight` returns 0 for
+// anything at or under 3, so the pitch is the height and ~250 split rows become
+// a 125 px block instead of a 500 px one. What that buys is not the height on
+// its own: at 2 px the pileup was the largest object in the frame and the
+// bundle of connectors was drawn over it, and at 0.5 the pileup is a texture
+// and the bundle is the figure. Everywhere else 2 px is still right, because
+// everywhere else the reads are what is being read.
+const FUSION_SPLIT_READS = { featureHeight: 0.5 }
+
 // The 29 reads realigned to the derivative used to share one row height across
 // the three figures that draw them. They no longer do, and the reason is that
 // the three are at three zooms: 40 kb (derivative_synteny, now the coverage
@@ -1595,21 +1606,44 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   // the reads in both panels so the junction the reads support is marked on
   // each.
   //
-  // 2.5 kb and not the 5 kb this used to frame (review: "the screenshot in 4 is
-  // also VERY chaotic"). Halving each window halves the reads that intersect
-  // it, and every read that supports the fusion touches the junction, so the
-  // ones dropped are the ones that were only ever adding a row and a curve. It
-  // is the row count that makes this figure hard: one curve is drawn per
-  // molecule and its far end is a ROW in the other panel's pileup, so 200 rows
-  // is 200 long diagonals crossing everything between them.
+  // WINDOW, ORIENTATION AND ROW HEIGHT, all three from one note (review: "this
+  // is a very complex figure still. please think about ways to dramatically
+  // simplify. for example, if the lower panel was horizontally flipped, and
+  // both top and bottom were zoomed out, it would be more clear how it is a
+  // 'gene fusion' ... you can also consider making alignments less than 1px in
+  // height"). All three are taken, and the flip is the one that changes what
+  // the picture says rather than how much of it there is:
+  //
+  // - **The chr22 panel is `[rev]`.** The call is `chr9:131199015:+` and
+  //   `chr22:16808083:-`, so the fusion transcript runs 5'->3' left to right
+  //   through NUP214 and then continues into XKR3, which is on the MINUS
+  //   strand — right to left on chr22's forward coordinates. Unflipped, both
+  //   pileups sat left of their own junction and every connector had to travel
+  //   backwards across the seam to reach the second half of the same molecule.
+  //   Flipped, chr9's reads are left of the junction and chr22's are right of
+  //   it, and one molecule reads straight across the two panels. The `[rev]`
+  //   locstring is the same switch as the view's Horizontally flip; see
+  //   `horizontally_flip_before`/`_after`.
+  // - **10 kb per panel, up from 5.** Which reverses an earlier round's halving
+  //   ("the screenshot in 4 is also VERY chaotic") and does not contradict it:
+  //   what made that frame chaotic was ~250 rows of pileup at 2 px each, and
+  //   that is now 0.5 px. With the pileup compressed, width buys gene context
+  //   instead of rows — enough of NUP214 and XKR3 either side of the junction
+  //   for the fusion to read as two genes rather than two coordinates. 20 kb
+  //   was rendered too and is worse: the reads cluster at the junction, so the
+  //   extra width is empty lane.
+  // - **`featureHeight: 0.5`**, see FUSION_SPLIT_READS.
+  //
+  // The frame is 1,322 px where it was 2,205.
   {
     mode: 'url' as const,
     name: 'cancer_sv/k562_fusion_inspector_split',
-    // Sized off the run's own below-the-fold report with both lanes grown, so
-    // it is the row count that sets it rather than a guess. 830 cut 269 css px;
-    // 1100 and 1500 both looked complete and were not, because a pinned
-    // alignments lane scrolls instead of pushing the page down.
-    viewportHeight: 2205,
+    // Sized off the run's own blank-below-the-content report with both lanes
+    // grown, so it is the row count that sets it rather than a guess. At 2 px
+    // rows this was 2,205, and 830 / 1100 / 1500 all looked complete and were
+    // not, because a pinned alignments lane scrolls instead of pushing the page
+    // down.
+    viewportHeight: 1322,
     url: sessionSpec(CONFIG, {
       views: [
         {
@@ -1626,7 +1660,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           showIntraviewLinks: false,
           views: [
             {
-              loc: 'chr9:131,196,515-131,201,515',
+              loc: 'chr9:131,194,015-131,204,015',
               assembly: 'hg38',
               tracks: [
                 GENE_TRACK,
@@ -1649,12 +1683,12 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   heightMode: 'grow',
                   coverageHeight: 80,
                   showOnlySplitAlignments: true,
-                  ...SPLIT_READS,
+                  ...FUSION_SPLIT_READS,
                 },
               ],
             },
             {
-              loc: 'chr22:16,805,583-16,810,583',
+              loc: 'chr22:16,803,083-16,813,083[rev]',
               assembly: 'hg38',
               tracks: [
                 GENE_TRACK,
@@ -1671,7 +1705,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   heightMode: 'grow',
                   coverageHeight: 80,
                   showOnlySplitAlignments: true,
-                  ...SPLIT_READS,
+                  ...FUSION_SPLIT_READS,
                 },
               ],
             },

@@ -385,7 +385,14 @@ caret, and **Open in breakpoint split view** takes that call's two breakpoints
 into one view with the reads under both, which is where a call stops being a
 line in a file.
 
-<Figure caption="K562 STAR-Fusion calls in the SV inspector. Above, the table searched for chr9, leaving two rows and the single chord they draw between 22q11 and 9q34. Below, the NUP214--XKR3 row opened in a breakpoint split view: its two breakpoints are banded green, and every grey curve is one Iso-Seq molecule whose alignment ends at the chr9 band and resumes at the chr22 one." src="/img/cancer_sv/k562_starfusion_triage.png" links="Import form=cancer_sv/k562_fusion_inspector_form,All 44 calls=cancer_sv/k562_fusion_inspector_all,Searched for chr9=cancer_sv/k562_fusion_inspector_pair,Breakpoint split view=cancer_sv/k562_fusion_inspector_split" />
+Flip the lower panel before reading it. XKR3 is on the minus strand, so the
+transcript runs right to left through it on chr22's forward coordinates; with
+the panel horizontally flipped both halves of a molecule run the same way and a
+connector crosses the seam without doubling back. Set the reads to their
+smallest size too: what this view is read for is the bundle of connectors, and
+at the default height the pileup they are drawn over is the larger object.
+
+<Figure caption="K562 STAR-Fusion calls in the SV inspector. Above, the table searched for chr9, leaving two rows and the single chord they draw between 22q11 and 9q34. Below, the NUP214--XKR3 row opened in a breakpoint split view, the chr22 panel horizontally flipped: its two breakpoints are banded green, and every grey curve is one Iso-Seq molecule whose alignment ends at the chr9 band and resumes at the chr22 one." src="/img/cancer_sv/k562_starfusion_triage.png" links="Import form=cancer_sv/k562_fusion_inspector_form,All 44 calls=cancer_sv/k562_fusion_inspector_all,Searched for chr9=cancer_sv/k562_fusion_inspector_pair,Breakpoint split view=cancer_sv/k562_fusion_inspector_split" />
 
 That split view is the `NUP214--XKR3` side of the pair. The `BCR--ABL1` side
 gets the rest of this section, laid out as two regions of one view rather than
