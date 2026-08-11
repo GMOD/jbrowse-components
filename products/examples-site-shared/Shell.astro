@@ -188,6 +188,18 @@ try {
       a {
         color: var(--accent);
       }
+      /*
+        …but not inside a demo. What renders in there is the embedded product,
+        which brings its own Material theme and its own surfaces, and those two
+        theme systems do not move together: a link in JBrowse's content — a
+        track name carrying markup, a formatted feature detail — sat on the
+        app's white paper wearing this page's *dark* accent, which measured
+        2.24:1. `revert` hands the colour back to the embedded app, falling
+        through to the UA default when it styles none.
+      */
+      .demo a {
+        color: revert;
+      }
       header.topbar {
         position: sticky;
         top: 0;
