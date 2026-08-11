@@ -1,3 +1,4 @@
+import { readNavParam, readTracklistParam } from '@jbrowse/app-core'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import SessionLoader from './SessionLoader.ts'
@@ -45,13 +46,12 @@ export function createSessionLoaderFromUrl(initialTimestamp: number) {
     tracks: p.tracks,
     regions: p.regions,
     sessionTracks: p.sessionTracks,
-    // absent stays absent, rather than collapsing into the param's default:
-    // buildLgvInit layers its result over a defaultSession's own pending init,
-    // so a `false`/`true` synthesized here would overwrite what that session
-    // set — `&extendSession=true&loc=…` forced the nav bar back on and closed a
-    // track selector the config had opened via `init.tracklist`
-    tracklist: p.tracklist === undefined ? undefined : p.tracklist === 'true',
-    nav: p.nav === undefined ? undefined : p.nav !== 'false',
+    // shared with parseSessionSpecUrl, which reads the same two params off a
+    // link Desktop was handed. Their defaults are opposite ways round and
+    // absent stays absent in both — see the readers for why — which is more
+    // than enough to get wrong twice.
+    tracklist: readTracklistParam(p.tracklist),
+    nav: readNavParam(p.nav),
     highlight: p.highlight,
     extendSession: p.extendSession === 'true',
     hubURL: p.hubURL?.split(',').filter(Boolean),

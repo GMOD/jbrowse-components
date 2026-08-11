@@ -16,9 +16,18 @@ export type {
   PendingMove,
   SessionWithDockviewLayout,
 } from './DockviewLayout/index.ts'
-export { loadSessionSpec, parseSessionSpecUrl } from './SessionSpec/index.ts'
+export {
+  buildLgvInit,
+  buildLgvInitFromParams,
+  loadSessionSpec,
+  parseSessionSpecUrl,
+  readNavParam,
+  readTracklistParam,
+  splitHighlights,
+} from './SessionSpec/index.ts'
 export type {
   LayoutNode,
+  LgvUrlInit,
   ParsedSessionSpec,
   TrackInit,
   ViewSpec,

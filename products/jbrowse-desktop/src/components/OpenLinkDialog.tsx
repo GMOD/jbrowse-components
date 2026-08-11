@@ -6,11 +6,12 @@ import { DialogContentText, TextField } from '@mui/material'
 
 import { useIpcAction } from './StartScreen/dialogs/useIpcAction.ts'
 
-// Opens a JBrowse Web link (a jbrowse.org figure/share link with a
-// `&session=spec-…`) as a Desktop session: the URL names a config and a session
-// spec, both of which Desktop can load itself. Anything else — an unreachable
-// config, a session kind only the originating instance can decrypt — surfaces
-// as the dialog's own error rather than a half-built session.
+// Opens a JBrowse Web link as a Desktop session — either a figure link carrying
+// a `&session=spec-…`, or the `&assembly=`/`&loc=` URL shorthand. Both name a
+// config and describe a session, which is everything Desktop needs to load it
+// itself. Anything else — an unreachable config, a session kind only the
+// originating instance can decrypt — surfaces as the dialog's own error rather
+// than a half-built session.
 export default function OpenLinkDialog({
   onSubmit,
   onClose,
@@ -42,8 +43,9 @@ export default function OpenLinkDialog({
     >
       <DialogContentText>
         Paste a JBrowse Web link — for example the "Open this view in JBrowse"
-        link under a figure in the documentation. Its genome, tracks, and
-        location open here as a new session.
+        link under a figure in the documentation, or any jbrowse.org URL with an
+        "&assembly=" in it. Its genome, tracks, and location open here as a new
+        session.
       </DialogContentText>
       <TextField
         autoFocus

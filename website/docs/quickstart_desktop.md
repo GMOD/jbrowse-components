@@ -171,13 +171,18 @@ Export session to web...**, which produces a shareable URL.
 The reverse direction works too, in JBrowse Desktop 5.0 and newer: **Open
 .jbrowse or config.json or link → Open JBrowse Web link...** on the start
 screen, or **File → Session → Open JBrowse Web link...** once a session is open.
-Either takes a JBrowse web URL containing a
-[session spec](/docs/urlparams/#session-spec) (such as the "Open this view in
-JBrowse" link under any figure in these docs) and rebuilds it here as a new
-session. The config the link names is downloaded and saved alongside the
-session, so it reopens later like any other. Share links (`&session=share-...`)
-can't be opened this way: only the JBrowse web instance that created one can
-resolve it.
+Either takes a JBrowse web URL and rebuilds it here as a new session. Two link
+forms work:
+
+- one containing a [session spec](/docs/urlparams/#session-spec)
+  (`&session=spec-...`) — for example the "Open this view in JBrowse" link under
+  any figure in these docs
+- one using the [URL parameter](/docs/urlparams/) shorthand, i.e. `&assembly=`
+  with an optional `&loc=`, `&tracks=`, `&highlight=` and so on
+
+The config the link names is downloaded and saved alongside the session, so it
+reopens later like any other. Share links (`&session=share-...`) can't be opened
+this way: only the JBrowse web instance that created one can resolve it.
 
 Figures in these docs also offer an "Open this view in JBrowse Desktop" button,
 which hands the view straight to Desktop through a `jbrowse://` link that the

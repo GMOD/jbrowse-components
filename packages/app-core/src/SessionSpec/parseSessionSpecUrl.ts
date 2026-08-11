@@ -1,15 +1,26 @@
+import { buildLgvInitFromParams } from './lgvUrlInit.ts'
+
 import type { LayoutNode, ViewSpec } from './types.ts'
 
 // Reads a JBrowse Web URL (the kind the website's figure links and the share
 // button hand out) back into the config it loads and the session spec it
 // encodes. jbrowse-web parses these out of its own address bar; this exists so
-// anything *else* holding such a URL — Desktop opening a pasted link, a future
-// `jbrowse://` protocol handler — resolves it identically instead of
-// reimplementing the query format.
+// anything *else* holding such a URL — Desktop opening a pasted link, or a
+// `jbrowse://` one — resolves it identically instead of reimplementing the query
+// format.
 //
-// Only `session=spec-…` is understood. A `share-`/`encoded-`/`local-` session
-// needs jbrowse-web's session store or its encryption key, neither of which
-// exists outside the browser that made it.
+// Two link forms produce a spec:
+//
+// - `session=spec-…`, which is one already.
+// - the `&loc=`/`&assembly=`/`&tracks=` shorthand JBrowse has read since JB1,
+//   which jbrowse-web turns into a spec of a single LGV. It is the form the URL
+//   params documentation teaches and the one people write by hand, and it used
+//   to be reported here as "that link has no session in it" — about a link that
+//   describes a perfectly openable view.
+//
+// A `share-`/`encoded-`/`local-` session is still not one of them: it needs
+// jbrowse-web's session store or its encryption key, neither of which exists
+// outside the browser that made it.
 
 export interface ParsedSessionSpec {
   // the `config=` value: an absolute URL, or a path relative to the JBrowse Web
@@ -73,6 +84,95 @@ function unwrapProtocolUrl(url: URL): URL {
   }
 }
 
+function resolveConfig(params: URLSearchParams, url: URL) {
+  const config = params.get('config')
+  return {
+    // a relative config (e.g. `test_data/volvox/config.json`) is served by the
+    // instance the link points at, so resolve it there rather than handing back
+    // a path nothing outside that instance could fetch.
+    //
+    // `config=none` is jbrowse-web's "load no config at all" sentinel
+    // (SessionLoader.fetchConfig), and the form a self-contained spec link has to
+    // take — omitting `config` entirely makes web fall back to its own
+    // config.json. Treated as no config here, not resolved, which would hand the
+    // caller `<instance>/none` to fetch.
+    configUrl:
+      config && config !== 'none' ? new URL(config, url.href).href : undefined,
+  }
+}
+
+/**
+ * The spec a link with no `session=` describes, from the `&loc=`/`&assembly=`
+ * shorthand — or the error explaining why it describes none.
+ *
+ * The order of the branches is jbrowse-web's own ranking in loadSessionByType,
+ * and has to be: a link carrying both `&hubURL=` and `&loc=` is asking to
+ * navigate *inside* the hub, so reading the shorthand first would build a bare
+ * LGV and drop the hub with no diagnostic. Web ranks the hub above the
+ * shorthand for exactly that reason.
+ */
+function shorthandSpec(params: URLSearchParams): ParsedSessionSpec['spec'] {
+  const hubURL = params.get('hubURL')
+  if (hubURL) {
+    // A `?hubURL=` link legitimately carries no session: it's a track hub, which
+    // jbrowse-web turns into a session connection (loadHubSpec) rather than a
+    // spec. Name that case instead of sending someone to look for a
+    // `session=spec-` param a perfectly good hub link was never going to have.
+    throw new Error(
+      `That is a track hub link (${hubURL}), not a session link. Add the hub through File → "Open connection..." instead.`,
+    )
+  }
+
+  const init = buildLgvInitFromParams(params)
+  // `loc`/`assembly` are what make a link a jb1-style one, the same test as
+  // jbrowse-web's isJb1StyleSession. The rest of the shorthand only modifies a
+  // view; none of it can conjure one.
+  if (init.loc === undefined && init.assembly === undefined) {
+    throw new Error(
+      'That link has no session in it. Copy a JBrowse Web link that contains "&session=spec-...", or one with "&assembly=" and "&loc=".',
+    )
+  }
+  // `&extendSession=true` means "apply this shorthand to the config's own
+  // defaultSession", and there is no honest way to do that here: this builds a
+  // session spec, and loadSessionSpec replaces the session rather than
+  // navigating one the config supplied. Opening the view without the
+  // defaultSession's curated tracks would quietly be a different session than
+  // the link asks for, so say so instead — and say what to remove, since the
+  // link works fine without it.
+  if (params.get('extendSession') === 'true') {
+    throw new Error(
+      'That link uses "&extendSession=true", which layers its location onto a defaultSession that only the JBrowse Web instance it points at can supply. Remove that parameter to open just the view the link describes.',
+    )
+  }
+  return {
+    // `&sessionTracks=` carries whole track configs the views then reference by
+    // id, exactly as in a spec link
+    sessionTracks: readSessionTracks(params),
+    views: [{ type: 'LinearGenomeView', ...init }],
+  }
+}
+
+function readSessionTracks(params: URLSearchParams) {
+  const sessionTracks = params.get('sessionTracks')
+  if (!sessionTracks) {
+    return undefined
+  }
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(sessionTracks)
+  } catch (e) {
+    throw new Error(`The "sessionTracks" in that link isn't valid JSON: ${e}`, {
+      cause: e,
+    })
+  }
+  if (!Array.isArray(parsed)) {
+    throw new Error(
+      'The "sessionTracks" in that link is not a list of track configurations.',
+    )
+  }
+  return parsed as Record<string, unknown>[]
+}
+
 export function parseSessionSpecUrl(input: string): ParsedSessionSpec {
   let url: URL
   try {
@@ -84,16 +184,11 @@ export function parseSessionSpecUrl(input: string): ParsedSessionSpec {
   const params = linkParams(url)
   const session = params.get('session')
   if (!session) {
-    // A `?hubURL=` link legitimately carries no session: it's a track hub, which
-    // jbrowse-web turns into a session connection (loadHubSpec) rather than a
-    // spec. Name that case instead of sending someone to look for a
-    // `session=spec-` param a perfectly good hub link was never going to have.
-    const hubURL = params.get('hubURL')
-    throw new Error(
-      hubURL
-        ? `That is a track hub link (${hubURL}), not a session link. Add the hub through File → "Open connection..." instead.`
-        : 'That link has no session in it. Copy a JBrowse Web link that contains "&session=spec-...".',
-    )
+    return {
+      ...resolveConfig(params, url),
+      spec: shorthandSpec(params),
+      sessionName: params.get('sessionName') ?? undefined,
+    }
   }
   if (!session.startsWith('spec-')) {
     const kind = /^(share|encoded|local|json)-/.exec(session)?.[1]
@@ -124,19 +219,8 @@ export function parseSessionSpecUrl(input: string): ParsedSessionSpec {
     )
   }
 
-  const config = params.get('config')
   return {
-    // a relative config (e.g. `test_data/volvox/config.json`) is served by the
-    // instance the link points at, so resolve it there rather than handing back
-    // a path nothing outside that instance could fetch.
-    //
-    // `config=none` is jbrowse-web's "load no config at all" sentinel
-    // (SessionLoader.fetchConfig), and the form a self-contained spec link has to
-    // take — omitting `config` entirely makes web fall back to its own
-    // config.json. Treated as no config here, not resolved, which would hand the
-    // caller `<instance>/none` to fetch.
-    configUrl:
-      config && config !== 'none' ? new URL(config, url.href).href : undefined,
+    ...resolveConfig(params, url),
     spec,
     sessionName: params.get('sessionName') ?? undefined,
   }
