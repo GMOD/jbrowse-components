@@ -69,12 +69,15 @@ const INVERSION_WINDOW_PAT = `chr8_PATERNAL:${INVERSION_RANGE}`
 const GENE_TRACK_BASE =
   'https://s3-us-west-2.amazonaws.com/human-pangenomics/T2T/HG002/assemblies/annotation/JHULiftoff/v0.6/hg002v1.1'
 
-function geneTrack(hap: 'MAT' | 'PAT') {
+function geneTrack(hap: 'MAT' | 'PAT', kind: 'genes' | 'landmarks' = 'genes') {
   const uri = `${GENE_TRACK_BASE}.${hap}.loff.v0.6.gff.gz`
   return {
     type: 'FeatureTrack',
-    trackId: `hg002_genes_${hap.toLowerCase()}`,
-    name: `Genes (JHU Liftoff v0.6, HG002 v1.1 ${hap})`,
+    trackId: `hg002_${kind}_${hap.toLowerCase()}`,
+    name:
+      kind === 'landmarks'
+        ? `Landmark genes (${hap})`
+        : `Genes (JHU Liftoff v0.6, HG002 v1.1 ${hap})`,
     assemblyNames: ['hg002v1.2'],
     adapter: {
       type: 'Gff3TabixAdapter',
@@ -97,7 +100,7 @@ function geneTrack(hap: 'MAT' | 'PAT') {
     displays: [
       {
         type: 'LinearBasicDisplay',
-        displayId: `hg002_genes_${hap.toLowerCase()}-LinearBasicDisplay`,
+        displayId: `hg002_${kind}_${hap.toLowerCase()}-LinearBasicDisplay`,
         labels: {
           name: "jexl:get(feature,'gene_name') || get(feature,'name') || get(feature,'id')",
         },
@@ -116,6 +119,36 @@ function geneLane(hap: 'MAT' | 'PAT', extra: Record<string, unknown> = {}) {
     type: 'LinearBasicDisplay',
     geneGlyphMode: 'longestCoding',
     ...extra,
+  }
+}
+
+// SIX GENES, LABELLED, SO THE FLIP IS READABLE AS TEXT (review: "it is hard to
+// see matching genes ... ideally a couple labels would be visible particularly
+// in the inverted region so we can see correspondence"). A 9 Mb lane of every
+// Liftoff gene cannot carry a label, so this is a second lane over the same
+// GFF, filtered to the six largest protein-coding genes inside the inverted
+// block. It is a separate trackId rather than a second display of the gene
+// track because a view cannot hold one track twice.
+//
+// The six are read off the annotation, not chosen: `tabix` the MAT GFF over the
+// inverted block (chr8_MATERNAL:7,822,846-11,688,252) and take the longest gene
+// records. What they then show is the whole claim, in a form that needs no
+// ribbon-reading -- the maternal lane runs MFHAS1, TNKS, MSRA, XKR6, BLK,
+// GATA4 and the paternal one runs the same six in the opposite order, because
+// the block between them is inverted.
+const LANDMARK_GENES = ['MFHAS1', 'TNKS', 'MSRA', 'XKR6', 'BLK', 'GATA4']
+
+const LANDMARK_FILTER = `jexl:${LANDMARK_GENES.map(
+  g => `get(feature,'gene_name')=='${g}'`,
+).join('||')}`
+
+function landmarkLane(hap: 'MAT' | 'PAT') {
+  return {
+    trackId: `hg002_landmarks_${hap.toLowerCase()}`,
+    type: 'LinearBasicDisplay',
+    geneGlyphMode: 'longestCoding',
+    jexlFiltersSetting: [LANDMARK_FILTER],
+    height: 60,
   }
 }
 
@@ -173,7 +206,12 @@ function haplotypeSession(
   patTracks: PanelTracks = matTracks,
 ) {
   return sessionSpec(HG002_CONFIG, {
-    sessionTracks: [geneTrack('MAT'), geneTrack('PAT')],
+    sessionTracks: [
+      geneTrack('MAT'),
+      geneTrack('PAT'),
+      geneTrack('MAT', 'landmarks'),
+      geneTrack('PAT', 'landmarks'),
+    ],
     views: [
       {
         type: 'LinearSyntenyView',
@@ -215,10 +253,26 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
       // one row deep enough to pack. What it is here for is the context the
       // review asked for -- the inverted segment is ordinary gene-carrying
       // euchromatin, not a blank block that happened to flip.
-      [CHAIN_BLOCKS, geneLane('MAT', { showLabels: 'none', height: 60 })],
-      [CHAIN_BLOCKS, geneLane('PAT', { showLabels: 'none', height: 60 })],
+      //
+      // The landmark lane is the one that carries text, and it goes NEXT TO THE
+      // RIBBONS on both sides -- last in the top panel, first in the bottom one,
+      // since a panel's array is its top-to-bottom order. That puts the two rows
+      // of gene names as close together as this layout allows, which is what
+      // makes reading one against the other cheap.
+      [
+        CHAIN_BLOCKS,
+        geneLane('MAT', { showLabels: 'none', height: 60 }),
+        landmarkLane('MAT'),
+      ],
+      [
+        landmarkLane('PAT'),
+        CHAIN_BLOCKS,
+        geneLane('PAT', { showLabels: 'none', height: 60 }),
+      ],
     ),
-    viewportHeight: 640,
+    // 838: the two landmark lanes are +120 over the old 640, and the run's own
+    // below-the-fold report asked for the remaining 78
+    viewportHeight: 838,
   },
   {
     ...CAPTURE,
