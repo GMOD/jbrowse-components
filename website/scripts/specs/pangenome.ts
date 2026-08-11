@@ -288,6 +288,42 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     settleMs: 15000,
     hideTooltip: true,
     actions: [PARK_CURSOR, { type: 'delay', ms: 2000 }],
+    // ONE ARM MARKED, AND MARKED IN THE DOTPLOT TOO (review: "still
+    // unconvinced. complementary visualizations are useful"). The two figures
+    // read the same file and neither one of them, alone, is proof: a red band
+    // is the untangle PAF's strand column, and a reader who does not already
+    // trust that column has nothing to check it against. So the largest of the
+    // five reverse runs is boxed here and boxed again on the dotplot below, at
+    // its own coordinates on both axes -- 594 kb of K12 at 1,635,838-2,229,302,
+    // which is IAI39 1,574,975-906,630 read backwards. A band in one picture
+    // and a descending arm in the other are then the same object, and a reader
+    // can carry the number between them.
+    //
+    // No `fracY`, so the box wraps the whole four-row band rather than the
+    // IAI39 row alone. That is the point: at this x the three rows above it are
+    // grey, so the control is inside the box rather than beside it.
+    annotations: [
+      {
+        type: 'box',
+        strokeWidth: 3,
+        anchor: {
+          track: 'ecoli_pggb_untangle_rows',
+          locus: 'chr:1,635,838-2,229,302',
+        },
+      },
+      {
+        type: 'text',
+        text: '594 kb, reversed in IAI39 only',
+        fontSize: 16,
+        maxWidth: 260,
+        anchor: {
+          track: 'ecoli_pggb_untangle_rows',
+          locus: 'chr:1,635,838',
+          fracY: 0,
+          dy: -34,
+        },
+      },
+    ],
   },
 
   // The same untangle file in a dotplot: the idiomatic comparative picture for
@@ -330,6 +366,20 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     }),
     readyTimeout: 120000,
     settleMs: 20000,
+    // The same arm the rows figure boxes, on both axes here: a dotplot cell is
+    // `{hLocus, vLocus}` and resolves through the plot's own axes, so this
+    // follows the data rather than a measured pixel. See the note on
+    // pggb_untangle_rows for why the pair is marked at all.
+    annotations: [
+      {
+        type: 'box',
+        strokeWidth: 3,
+        anchor: {
+          hLocus: 'chr:1,635,838-2,229,302',
+          vLocus: 'chr:906,630-1,574,975',
+        },
+      },
+    ],
   },
 
   // Projection 4: pangenome depth (core vs accessory) from `odgi depth`, as a

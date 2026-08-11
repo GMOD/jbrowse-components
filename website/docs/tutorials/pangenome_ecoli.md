@@ -283,7 +283,7 @@ genomes are arranged relative to each other. A stretch the strain traverses
 backwards descends instead of climbing, so every inversion is visible at once
 without knowing where to look.
 
-<Figure caption="The untangle projection as a dotplot, K12 on x against IAI39 on y. The ascending segments are sequence the two share in the same orientation; the five descending ones are inversions, including a 594 kb arm between 1.6 and 2.2 Mb of K12 and a pair detached from the diagonal near 4 Mb. IAI39 is the only one of the four strains that draws this way." src="/img/pangenome/pggb_untangle_dotplot.png" />
+<Figure caption="The untangle projection as a dotplot, K12 on x against IAI39 on y. The ascending segments are sequence the two share in the same orientation; the five descending ones are inversions, and the boxed one is the 594 kb arm at K12 1.6 to 2.2 Mb, boxed again in the per-strain figure below. IAI39 is the only one of the four strains that draws this way." src="/img/pangenome/pggb_untangle_dotplot.png" />
 
 Untangle is the slower of the two by a wide margin, because it indexes every
 step of every path rather than reading an alignment off disk. On a base-level
@@ -347,7 +347,13 @@ own `itemRgb`, so nothing here can drift from what the file says. The white gaps
 are where a strain has no untangle segment on that stretch of K12 at all, which
 is the same accessory sequence the depth and presence projections below measure.
 
-<Figure caption="odgi untangle over the whole K12 chromosome, one row per strain, grey where the strain runs the same way as K12 and red where it runs backwards. IAI39 is inverted over five long stretches; the one other red mark on the page is a 1.4 kb block in CFT073, so the comparison and its control are the same picture. The white gaps are where a strain has no untangle segment at all, which is accessory sequence." src="/img/pangenome/pggb_untangle_rows.png" />
+<Figure caption="odgi untangle over the whole K12 chromosome, one row per strain, grey where the strain runs the same way as K12 and red where it runs backwards. IAI39 is inverted over five long stretches; the one other red mark on the page is a 1.4 kb block in CFT073, so the comparison and its control are the same picture. The boxed 594 kb is the arm boxed in the dotplot above. The white gaps are where a strain has no untangle segment at all, which is accessory sequence." src="/img/pangenome/pggb_untangle_rows.png" />
+
+Neither picture is proof on its own, and that is why both are here. A red band
+is one column of the untangle PAF, and a descending run in the dotplot is the
+same file read as coordinates rather than as a strand flag; the box marks the
+same 594 kb in each, so the number carries between them. The dotplot says what
+the arm is, the per-strain rows say who has it.
 
 The same inversions are in the synteny figures above as ribbon crossings, but
 only whole-genome and only between the two rows in view. `selfCov` is in the
