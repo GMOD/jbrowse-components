@@ -7,6 +7,7 @@ import {
   HG008_BAF_TRACK,
   HG008_BICSEQ2_TRACK,
   HG008_DEPTH_TRACK,
+  HG008_INDEXCOV_TRACK,
   HG008_T_PACBIO_BAM,
   PARK_CURSOR,
   VOLVOX,
@@ -1479,33 +1480,7 @@ export const svSpecs: ScreenshotSpec[] = [
       sessionTracks: [
         HG008_BICSEQ2_TRACK,
         HG008_BAF_TRACK,
-        {
-          type: 'MultiQuantitativeTrack',
-          trackId: 'hg008_cnv_indexcov_chr5',
-          name: 'HG008 normal vs tumor coverage (indexcov)',
-          assemblyNames: ['GRCh38_GIABv3'],
-          adapter: {
-            type: 'MultiWiggleAdapter',
-            subadapters: [
-              {
-                name: 'HG008-N (normal)',
-                type: 'BigWigAdapter',
-                bigWigLocation: {
-                  uri: 'https://jbrowse.org/demos/cgiab/HG008-N_indexcov.bw',
-                  locationType: 'UriLocation',
-                },
-              },
-              {
-                name: 'HG008-T (tumor)',
-                type: 'BigWigAdapter',
-                bigWigLocation: {
-                  uri: 'https://jbrowse.org/demos/cgiab/HG008-T_indexcov.bw',
-                  locationType: 'UriLocation',
-                },
-              },
-            ],
-          },
-        },
+        HG008_INDEXCOV_TRACK,
       ],
       views: [
         {
@@ -1533,7 +1508,7 @@ export const svSpecs: ScreenshotSpec[] = [
               height: 90,
             },
             {
-              trackId: 'hg008_cnv_indexcov_chr5',
+              trackId: 'hg008_cnv_indexcov',
               type: 'MultiLinearWiggleDisplay',
               defaultRendering: 'multiscatter',
               // Fixed 0..3, which is the manual min/max cap the walkthrough
@@ -2129,7 +2104,7 @@ export const svSpecs: ScreenshotSpec[] = [
       sessionTracks: [
         SMAD4_MANE.track,
         HG008_BICSEQ2_TRACK,
-        HG008_DEPTH_TRACK,
+        HG008_INDEXCOV_TRACK,
         HG008_BAF_TRACK,
       ],
       views: [
@@ -2151,33 +2126,62 @@ export const svSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hg008_bicseq2',
               type: 'LinearWiggleDisplay',
-              // step, not scatter: 196 segments genome-wide, so every value is
-              // a plateau and the reader's question is where the plateau moves
-              defaultRendering: 'line',
-              useBicolor: false,
+              // FILLED FROM ZERO, NOT A LINE (review: "the line representation
+              // of the copy number here is very confusing, and there is no '0'
+              // horizontal line, and the scale from -2 to 1.5 is very
+              // unnatural"). All three are one setting apart, and the line was
+              // the worst of it: a log2 ratio is a signed quantity read against
+              // zero, and a 1px polyline at whole-chromosome scale gives the
+              // eye nothing to read it against, so a whole arm at -1 looked
+              // like a flat trace slightly lower down.
+              //
+              // `useBicolor` (the schema default, which this used to switch
+              // OFF) pivots at 0: the arm-level loss is now a red block hanging
+              // below the midline and a gain is a blue one above it, so the
+              // zero line is drawn by the fill rather than needing to be found.
+              defaultRendering: 'xyplot',
+              useBicolor: true,
               displayCrossHatches: true,
-              // fixed, and the same range on all four figures, so a step means
-              // the same thing from one to the next. Autoscale cannot do that
-              // here: a homozygous deletion has no reads, so BIC-seq2 writes
-              // -8.79 for it and one such segment (chr17:53.93 Mb, the
-              // benchmark's CN 0) flattens every other step on the chromosome
-              // into a hairline. That segment clips off the bottom instead,
-              // which is what an unbounded value should do.
+              // symmetric, so zero is the middle of the lane and a step down
+              // means the same distance as a step up. -2..1.5 put zero at 57%
+              // of the height for no reason other than where the data happened
+              // to reach. Still fixed rather than autoscaled, and still the same
+              // range on all four figures, so a step means the same thing from
+              // one to the next: a homozygous deletion has no reads, BIC-seq2
+              // writes -8.79 for it, and one such segment (chr17:53.93 Mb, the
+              // benchmark's CN 0) would flatten every other step on the
+              // chromosome into a hairline. That clips off the bottom instead.
               minScore: -2,
-              maxScore: 1.5,
-              height: 90,
+              maxScore: 2,
+              // 90 drew two axis labels, the two extremes, which is the other
+              // half of "there is no 0 horizontal line" -- tick density follows
+              // the lane's height.
+              height: 130,
             },
             {
-              trackId: 'hg008_depth',
-              type: 'LinearWiggleDisplay',
-              defaultRendering: 'scatter',
-              useBicolor: false,
-              summaryScoreMode: 'avg',
-              scatterPointSize: 1,
-              height: 140,
-              // pull finer bigwig bins than the default zoom level so the
-              // 500bp-binned log2 signal shows across this whole-chr18 view
-              resolution: 10,
+              // THE NORMAL, BESIDE THE TUMOUR (review: "use tumor vs normal to
+              // contrast, show why the tumor matters here"). Every other lane
+              // in this figure is the tumour on its own, so "18q is halved" was
+              // a claim about a level with nothing in frame to be half OF. This
+              // is the same matched-pair lane the chr5 walkthrough uses: the
+              // normal runs flat at 1.0 across the whole chromosome and the
+              // tumour steps to ~0.5 at 30 Mb and stays there to the telomere.
+              //
+              // It replaces the HiFiCNV depth lane rather than joining it. That
+              // lane was the tumour's own coverage, which is the upper row of
+              // this one, so keeping both would have drawn the same signal
+              // twice and left the figure a lane taller.
+              trackId: 'hg008_cnv_indexcov',
+              type: 'MultiLinearWiggleDisplay',
+              defaultRendering: 'multiscatter',
+              // fixed 0..3 as on chr5: indexcov's centromere and repeat spikes
+              // run into the hundreds, and an autoscaled axis puts every
+              // plateau in the bottom fifth of the lane
+              minScore: 0,
+              maxScore: 3,
+              displayCrossHatches: true,
+              resolution: 8,
+              height: 200,
             },
             {
               trackId: 'hg008_baf',
@@ -2202,9 +2206,40 @@ export const svSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     viewportWidth: 1500,
     // + the 50 px one-gene lane this figure gained, and the 52.7 the run then
-    // reported still under the fold
-    viewportHeight: 885,
+    // reported still under the fold; then +100 for the taller copy-ratio and
+    // coverage lanes, settled by the run's own report.
+    viewportHeight: 985,
     settleMs: 20000,
+    // WHAT STATE THE GENE IS IN, said on the image (review: "unclear why smad4
+    // matters here it looks in a relatively normal area is it a heterozygous
+    // deletion add red text annotation if it helps"). It is: CNA_48 is CN 1
+    // with haplotype copy numbers 0 and 1, so one parental copy is gone and the
+    // other is not duplicated -- a heterozygous loss that also removes an
+    // allele, which is why the BAF lane splits under it and would not under a
+    // copy-neutral event. The pill states that once, beside the gene it is
+    // about, and the four lanes below are then evidence for it rather than an
+    // exercise.
+    //
+    // Anchored on the gene's own lane at the gene's own start, and running LEFT
+    // (`textAlign: 'end'` puts the pill's right edge on the anchor, since a
+    // pill's width is only known in-page). Right of the glyph is where the app
+    // draws the gene's own "SMAD4" label, and a pill there covered it; left of
+    // it the lane is empty all the way back to the track name box.
+    annotations: [
+      {
+        type: 'text',
+        text: 'SMAD4: heterozygous loss with LOH (CN 1, 0|1)',
+        fontSize: 16,
+        textAlign: 'end',
+        anchor: {
+          track: 'mane_hg38',
+          locus: 'chr18:51,030,212',
+          fracY: 0.1,
+          alignX: 'left',
+          dx: -16,
+        },
+      },
+    ],
   },
 
   // SV inspector import form with a VCF URL pasted (sv_inspector_view.md) — the

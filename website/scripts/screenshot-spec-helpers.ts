@@ -293,6 +293,44 @@ export const HG008_BAF_TRACK = {
   },
 }
 
+// The matched pair, as one track: goleft indexcov coverage for the tumour and
+// for its own normal. indexcov normalizes each sample to that sample's own
+// median, which is the only reason two rows drawn on one axis can be read
+// against each other -- the normal sits flat at 1.0 and every level the tumour
+// holds is a ratio against it.
+//
+// Shared rather than inlined per figure, because a second copy of the two URIs
+// is a second chance for one figure's normal to be a different file from
+// another's. Both the chr5 CNV walkthrough and the chr18/SMAD4 driver figure
+// mount it.
+export const HG008_INDEXCOV_TRACK = {
+  type: 'MultiQuantitativeTrack',
+  trackId: 'hg008_cnv_indexcov',
+  name: 'HG008 normal vs tumor coverage (indexcov)',
+  assemblyNames: ['GRCh38_GIABv3'],
+  adapter: {
+    type: 'MultiWiggleAdapter',
+    subadapters: [
+      {
+        name: 'HG008-N (normal)',
+        type: 'BigWigAdapter',
+        bigWigLocation: {
+          uri: 'https://jbrowse.org/demos/cgiab/HG008-N_indexcov.bw',
+          locationType: 'UriLocation',
+        },
+      },
+      {
+        name: 'HG008-T (tumor)',
+        type: 'BigWigAdapter',
+        bigWigLocation: {
+          uri: 'https://jbrowse.org/demos/cgiab/HG008-T_indexcov.bw',
+          locationType: 'UriLocation',
+        },
+      },
+    ],
+  },
+}
+
 // Wakhan's published per-haplotype copy number, read straight off the C-GIAB
 // FTP. The file is long-format (one row per haplotype) and its last #-header
 // line is tab-separated, so BedAdapter names the columns on its own:
