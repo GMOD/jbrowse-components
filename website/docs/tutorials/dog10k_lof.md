@@ -89,7 +89,9 @@ Greek gray wolves.
 
 ## Loading it with breed labels
 
-An SNV VCF loads as an ordinary `VariantTrack`:
+Nothing about the track config is special to this dataset; an SNV VCF goes in as
+an ordinary `VariantTrack`, and the work is all in what gets attached to the
+rows afterwards:
 
 ```json addtrack
 {

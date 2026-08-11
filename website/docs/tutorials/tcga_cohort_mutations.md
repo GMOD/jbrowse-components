@@ -73,8 +73,10 @@ and there are none.
 
 ## Load it into JBrowse
 
-Add hg38. The hosted FASTA names its contigs bare (`1`) while the VCF uses
-`chr1`, so pass the alias file too and both resolve:
+Two commands set the whole thing up, an assembly and a track. Start with hg38,
+where the one thing to watch is naming: the hosted FASTA calls its contigs bare
+(`1`) while the VCF uses `chr1`, so pass the alias file alongside it and both
+resolve.
 
 ```bash
 export OUT=/var/www/html/jbrowse2

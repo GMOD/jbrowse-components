@@ -46,7 +46,9 @@ pile. That is the whole reason this tutorial has anything to show.
 
 ## Load it
 
-Add hg38, then one track holding every sample:
+The whole panel goes in as one track rather than one per individual, which is
+what keeps a cohort this size to a handful of requests. Add hg38 first, then the
+track:
 
 ```json
 {
