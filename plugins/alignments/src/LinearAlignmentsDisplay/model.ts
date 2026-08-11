@@ -2562,9 +2562,19 @@ export default function stateModelFactory(
             // orientation …) leaves these props identical and repaints from the
             // data already in memory instead of refetching the region.
             colorBy: workerColorBy(self.colorBy),
-            sortTag: self.sortTag,
+            // Both mirror what `executeRenderAlignmentData` does with them in
+            // chain mode — it forces soft clipping off and drops the sort tag —
+            // so that the cache key names the fetch the worker will actually
+            // perform. Sending the raw values instead made two settings that
+            // cannot reach chain output invalidate every fetched region anyway:
+            // "Show soft clipping" is a live checkbox in chain mode, so each
+            // click dropped `rpcDataMap` and re-read the region to receive
+            // byte-identical data, and a `sortedBy` carried in from before the
+            // mode was entered kept a tag name in the key that only ever
+            // extracted `sortTagValues` nothing reads (see `canSortReads`).
+            sortTag: self.isChainMode ? undefined : self.sortTag,
             groupBy: self.groupBy,
-            showSoftClipping: self.showSoftClipping,
+            showSoftClipping: self.isChainMode ? false : self.showSoftClipping,
             // showCoverage is here (not just renderState) because the worker
             // skips the entire coverage-band pipeline — including the per-bp GPU
             // depth buffer that overflows the device limit at whole-chromosome

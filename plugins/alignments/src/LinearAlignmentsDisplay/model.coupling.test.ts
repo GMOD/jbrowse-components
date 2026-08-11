@@ -455,6 +455,34 @@ describe('ordering controls in chain mode', () => {
       hasMenuLabel(display.contextMenuItems(), 'Open feature details'),
     ).toBe(true)
   })
+
+  // `rpcProps()` is the fetch cache key (serialized by `rpcPropsCacheKey`), so
+  // anything in it that the worker then throws away buys a refetch for nothing.
+  // Chain mode forces soft clipping off and drops the sort tag, so both have to
+  // be projected the same way here.
+  test('the sort tag leaves the fetch key when chain mode drops it', () => {
+    const display = createDisplay()
+    display.setSortSlot({ type: 'tag', pos: 50, refName: 'ctgA', tag: 'HP' })
+    expect(display.rpcProps().sortTag).toBe('HP')
+
+    display.setLinkedReads('normal')
+    expect(display.rpcProps().sortTag).toBeUndefined()
+  })
+
+  test('toggling soft clipping in chain mode leaves the fetch key alone', () => {
+    const display = createDisplay()
+    display.setLinkedReads('normal')
+    const before = JSON.stringify(display.rpcProps())
+
+    display.setShowSoftClipping(true)
+    expect(display.showSoftClipping).toBe(true)
+    expect(display.rpcProps().showSoftClipping).toBe(false)
+    expect(JSON.stringify(display.rpcProps())).toBe(before)
+
+    // ...and it is a real fetch input again the moment the mode is left
+    display.setLinkedReads('off')
+    expect(display.rpcProps().showSoftClipping).toBe(true)
+  })
 })
 
 // Proper-pair / singleton visibility reads as a "Show..." toggle, so it lives in
