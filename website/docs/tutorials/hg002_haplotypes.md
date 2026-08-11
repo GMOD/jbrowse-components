@@ -113,17 +113,41 @@ panel's search box to move it.
 
 The two panels move independently, which matters more here than in a
 cross-species comparison because both rulers carry the same coordinates and it
-is easy to assume they are locked. They are not. Two things bring them back
-together:
+is easy to assume they are locked. They are not, and the same number is not the
+same sequence: an indel anywhere upstream offsets one haplotype against the
+other, so a locus typed into both panels frames two places that do not
+correspond. Three things bring them back together:
 
 - right-click a ribbon and choose **Center on feature**, which recenters both
   panels on that alignment
+- right-click a chain block in a panel and choose **Move other panel to the
+  matching region**, which sends the other panel to the sequence this panel's
+  visible window aligns to
 - turn on **Link views** from the **View options** button in the view header,
   which replays a pan or zoom in one panel onto the other
 
-Neither follows the alignment as you scroll: Link views moves both panels by the
-same amount, so it holds only as long as the haplotypes stay in register.
-Re-centering on a ribbon is what re-anchors them. See
+Which of the first two to reach for depends on the size of the alignment.
+Centering on a feature moves both panels to its midpoint, which is the right
+answer for a short block and the wrong one for a chain tens of megabases long:
+its midpoint is nowhere near what is on screen. Moving the other panel instead
+resolves the visible window through the alignment's own CIGAR, so it keeps the
+panel you are reading where it is and matches the other one to it, scale
+included. It needs the chain track open in the panel, which is the same track
+the ribbons come from.
+
+<Figure caption="The same 70 kb of coordinates typed into both panels, on the collinear block left of the inversion. Top: the paternal window lands past the end of that chain, so its chain lane is empty, its gene lane is a different neighbourhood, and the ribbon leaves the frame. Bottom: after moving the other panel from a maternal chain block, the corresponding paternal sequence is under it and the alignment's indel wedge stands upright." src="/img/hg002_haplotypes_follow_panel.png" />
+
+Link views is the third option and a different one: it moves both panels by the
+same number of base pairs, so it holds only as long as the haplotypes stay in
+register and drifts again across the next indel. Re-anchoring on an alignment is
+what corrects it.
+
+The vertical **guidelines** each panel draws are worth keeping on here, and are
+the toggle under a panel's own menu, **Show...** then **Show guidelines**. A
+long collinear ribbon is one flat block of colour with no landmark in it, so
+without the ticks behind it there is nothing in the frame that says how far
+along the block a feature sits, or how far the two panels have drifted since
+they were last anchored. See
 [the linear synteny view guide](/docs/user_guides/linear_synteny_view) for the
 rest of the view's controls.
 

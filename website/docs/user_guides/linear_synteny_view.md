@@ -101,6 +101,13 @@ independently:
 - Click a ribbon to highlight it across both panels
 - Right-click a ribbon for a context menu with **Center on feature**, which
   recenters both panels on that alignment
+- With the synteny track also open as a track inside a panel, right-click one of
+  its blocks for **Move other panel to the matching region**. Where **Center on
+  feature** moves both panels to the alignment's midpoint, this leaves the panel
+  you clicked in alone and sends its neighbour to the sequence the panel's
+  visible window aligns to, resolved through the alignment's CIGAR. That is the
+  one to reach for on a chain-scale alignment, whose midpoint can be tens of
+  megabases from what is on screen
 
 ## Coloring the ribbons
 

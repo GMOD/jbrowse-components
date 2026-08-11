@@ -229,6 +229,28 @@ function haplotypeSession(
   })
 }
 
+// THE PANELS DRIFT, WHICH IS THE ONE THING ABOUT THIS VIEW EVERYONE ASKS ABOUT
+// (discussion #5610, from the Q100 project). The two rows pan and zoom
+// independently, and on a self-alignment that is easy to miss because both
+// rulers carry the same numbers -- but the same number is not the same
+// sequence: through this collinear block the paternal copy sits 143,362 bp left
+// of the maternal one, so typing one locus into both panels frames two places
+// that do not correspond.
+//
+// So the before-frame is the same numbers in both panels, which is what a
+// reader does first and is the state the question is about -- not a hand-picked
+// offset. Its paternal panel lands in the GAP past this block's end (PAT
+// 7,681,207) and before the inversion's (7,774,085), so its chain lane is empty
+// and the ribbon leaves the frame: two panels with nothing between them, which
+// is the picture of "these coordinates do not correspond".
+//
+// The maternal window's true counterpart is PAT 7,556,638-7,626,638 (the
+// block's own -143,362 offset, the same arithmetic COLLINEAR_WINDOW_PAT above
+// is), give or take the indels the CIGAR walk follows -- the after-frame is
+// where the move puts it, not a locstring written here.
+const DRIFT_WINDOW_MAT = 'chr8_MATERNAL:7,700,000-7,770,000'
+const DRIFT_WINDOW_PAT_BEFORE = 'chr8_PATERNAL:7,700,000-7,770,000'
+
 // Both frames wait on the same synteny-canvas signal and pay the same remote
 // fetch (a whole-genome chain read in one go), so the capture settings are
 // shared and only the viewport height differs.
@@ -325,6 +347,91 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
           locus: 'chr8_MATERNAL:7,703,000',
           fracY: 0.45,
         },
+      },
+    ],
+  },
+  {
+    ...CAPTURE,
+    name: 'hg002_haplotypes_follow_panel',
+    url: haplotypeSession(
+      DRIFT_WINDOW_MAT,
+      DRIFT_WINDOW_PAT_BEFORE,
+      // GENES ARE WHAT MAKES THE MOVE VISIBLE, and the frame is unreadable
+      // without them. One alignment covers this whole window, so its ribbon
+      // fills the band edge to edge with both its corners off-screen: it is the
+      // same flat block of colour before and after, and the only thing on the
+      // first cut of this figure that recorded the move was the locstring in
+      // the search box. With a gene lane under each ruler the same genes sit at
+      // different offsets in frame one and under each other in frame two, which
+      // is the whole claim.
+      [CHAIN_BLOCKS, geneLane('MAT', { displayMode: 'compact', height: 60 })],
+      [CHAIN_BLOCKS, geneLane('PAT', { displayMode: 'compact', height: 60 })],
+    ),
+    // The context menu opens below the chain lane, near the top of the maternal
+    // panel, so it hangs over the band rather than off the frame.
+    viewportHeight: 640,
+    hideTooltip: true,
+    stages: [
+      {
+        actions: [
+          // Mid-window, on the chain lane's block row (fracY 0 is the top of the
+          // display and the blocks are its first ~10px). The maternal panel is
+          // views[0].views[0]: a path, because both panels carry the same
+          // trackId and naming the track alone would resolve in whichever one
+          // the walk reached first.
+          {
+            type: 'rightclick',
+            anchor: {
+              view: [0, 0],
+              track: 'hg002v1.2_mat_vs_pat',
+              locus: 'chr8_MATERNAL:7,735,000',
+              fracY: 0,
+              dy: 6,
+            },
+          },
+          // The item waits on the feature fetch (the mate's assembly is what
+          // decides whether any panel can be moved), so gate on the item itself
+          // rather than on the menu opening.
+          {
+            type: 'waitForText',
+            text: 'Move other panel to the matching region',
+          },
+          { type: 'hover', text: 'Move other panel to the matching region' },
+          { type: 'delay', ms: 500 },
+        ],
+        annotations: [
+          {
+            type: 'text',
+            x: 24,
+            y: 52,
+            fontSize: 26,
+            text: '(1) Same coordinates, different sequence',
+          },
+          {
+            type: 'box',
+            anchor: { text: 'Move other panel to the matching region' },
+            strokeWidth: 3,
+          },
+        ],
+      },
+      {
+        actions: [
+          { type: 'click', text: 'Move other panel to the matching region' },
+          // the paternal panel re-navigates and the level refetches at its new
+          // window; the canvas is already painted, so there is no new selector
+          // to wait on
+          { type: 'delay', ms: 8000 },
+        ],
+        closeMenusAfter: true,
+        annotations: [
+          {
+            type: 'text',
+            x: 24,
+            y: 52,
+            fontSize: 26,
+            text: '(2) The other panel moves to the match',
+          },
+        ],
       },
     ],
   },
