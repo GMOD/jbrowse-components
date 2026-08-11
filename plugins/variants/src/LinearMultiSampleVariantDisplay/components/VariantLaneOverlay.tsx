@@ -26,7 +26,13 @@ const VariantLaneOverlay = observer(function VariantLaneOverlay({
   model: LinearMultiSampleVariantDisplayModel
 }) {
   const palette = usePalette()
-  const { variantLaneRegions, renderBlocks, topBands, canvasWidthPx } = model
+  const {
+    variantLaneRegions,
+    renderBlocks,
+    topBands,
+    canvasWidthPx,
+    showInsertionGlyphs,
+  } = model
   return variantLaneRegions ? (
     <div style={{ position: 'absolute', top: 0, left: 0 }}>
       <OverlayCanvas
@@ -39,6 +45,7 @@ const VariantLaneOverlay = observer(function VariantLaneOverlay({
           drawVariantLane(ctx, variantLaneRegions, renderBlocks, {
             canvasWidth: canvasWidthPx,
             bands: topBands,
+            insertionsWiden: showInsertionGlyphs,
             // the live theme, which is what plugin-canvas letters a feature
             // with on screen
             palette,

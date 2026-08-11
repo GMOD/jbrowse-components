@@ -253,8 +253,24 @@ the worker already ships the records the lane draws — so a combo would buy a
 second parse of the same VCF. What it shares instead is the variant-specific
 code: `forEachFeatureSpan` (one per-record walk, so a lane mark cannot sit a
 pixel off the column it names or the insertion marker it widens),
-`drawVariantShape`, `featureColor`, core's `featureDefaultColor`, and
-`breakendSplitViewMenuItem`.
+`drawVariantShape`, `featureColor`, core's `featureDefaultColor`,
+plugin-canvas's `createFeatureFloatingLabels` (the whole label-text half —
+truncation, measurement, colors — so a lettered mark reads like the same record
+in that display), and `breakendSplitViewMenuItem`.
+
+## How wide a record draws: `variantCellSpanPx` decides, and it asks
+
+Four geometries have to agree on one record's drawn extent — the marker overlay,
+the lane's mark, the hover box, the click target — and all four go through
+`variantCellSpanPx`. **`insertionsWiden` (the display's `showInsertionGlyphs`)
+has no default there on purpose.** It had one implicitly, by nobody asking: with
+glyphs switched off the GPU cells drew a 2px SNP while the lane drew a 40px bar
+above it, the hover box covered 40px of nothing, and a click 20px clear of the
+cell still opened its widget. The only caller that passes a literal is
+`markersForBlock`, where the widening _is_ the marker.
+
+`showInsertionGlyphs` is a model getter for the same reason — it is one answer
+four consumers need, not four `getConf` reads.
 
 ## Connector lines
 

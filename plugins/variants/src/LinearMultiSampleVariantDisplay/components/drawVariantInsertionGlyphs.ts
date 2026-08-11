@@ -74,7 +74,11 @@ export function markersForBlock(
   const pxPerBp = forEachFeatureSpan(
     region,
     block,
-    drawnRowHeight,
+    // `true` is not the `showInsertionGlyphs` setting leaking a default: this
+    // function's answer *is* the markers, and both callers already return early
+    // when the setting is off. Asking for spans with the widening switched off
+    // would be asking which markers a display that draws none draws.
+    { drawnHeight: drawnRowHeight, insertionsWiden: true },
     (f, span) => {
       if (span.drawsMarker) {
         markerXCenter[f] = span.center

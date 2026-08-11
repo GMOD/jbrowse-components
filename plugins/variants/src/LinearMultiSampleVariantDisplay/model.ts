@@ -14,6 +14,7 @@ import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.
 import { placeVariantRows } from '../shared/placeVariantRows.ts'
 import {
   DEFAULT_VARIANT_LANE_HEIGHT,
+  MAX_VARIANT_LANE_HEIGHT,
   MIN_VARIANT_LANE_HEIGHT,
   VARIANT_LANE_LABEL_OPTIONS,
   clampVariantLaneHeight,
@@ -114,6 +115,21 @@ export function stateModelFactory(
           get variantLaneLabels(): ShowLabelsMode {
             return getConf(self, 'variantLaneLabels')
           },
+          /**
+           * #getter
+           * Whether an insertion is drawn wider than the reference span it
+           * consumes — a marker sized by the inserted bp — or at the 2px floor
+           * like a SNP.
+           *
+           * A getter and not four `getConf` calls, because it is the answer
+           * *four* separate pieces of geometry need and they must give the same
+           * one: the marker overlay, the variant lane's marks, the hover
+           * highlight, and the click target. Three of those read it through
+           * `variantCellSpanPx`, which is where the invariant is written down.
+           */
+          get showInsertionGlyphs(): boolean {
+            return getConf(self, 'showInsertionGlyphs')
+          },
           get visibleRegions() {
             const view = self.lgv
             return view.visibleRegions
@@ -154,7 +170,9 @@ export function stateModelFactory(
                     label: 'Variant lane height',
                     title: 'Variant lane height',
                     min: MIN_VARIANT_LANE_HEIGHT,
-                    max: 120,
+                    // the clamp's own ceiling, so the slider stops exactly
+                    // where `setVariantLaneHeight` would stop it
+                    max: MAX_VARIANT_LANE_HEIGHT,
                     step: 1,
                     // Pure layout — no refetch and no re-upload, only a band
                     // resize — so it tracks the drag rather than waiting for
@@ -273,9 +291,7 @@ export function stateModelFactory(
          * when the slot is off.
          */
         get insertionGlyphRegions() {
-          return getConf(self, 'showInsertionGlyphs')
-            ? self.perRegionCellMap
-            : undefined
+          return self.showInsertionGlyphs ? self.perRegionCellMap : undefined
         },
         /**
          * #getter
@@ -316,7 +332,7 @@ export function stateModelFactory(
          * read `renderState`.
          */
         get insertionLegendColor(): string | undefined {
-          if (!getConf(self, 'showInsertionGlyphs')) {
+          if (!self.showInsertionGlyphs) {
             return undefined
           }
           const drawnRowHeight = drawnCellHeightPx(self.renderState.rowHeight)

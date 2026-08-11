@@ -119,6 +119,7 @@ function draw(
   drawVariantLane(ctx, new Map([[0, data(overrides)]]), [block], {
     canvasWidth: 1000,
     bands: bands(laneHeight, labels),
+    insertionsWiden: true,
     palette,
   })
   return { calls, texts }
@@ -167,6 +168,7 @@ test('a run of one color assigns fillStyle once', () => {
     {
       canvasWidth: 1000,
       bands: bands(20),
+      insertionsWiden: true,
       palette,
     },
   )
@@ -210,6 +212,38 @@ test('an insertion widens past its reference span', () => {
   expect(inserted[1]).toMatchObject(plain[1]!)
 })
 
+// ...but only while the display draws insertion markers at all. With
+// `showInsertionGlyphs` off the cells below paint the record at the 2px floor
+// like a SNP, and a wide mark above them would name a span the display is
+// deliberately not showing.
+test('an insertion does not widen when the rows below are not widening it', () => {
+  const { ctx, calls } = mockCtx()
+  drawVariantLane(
+    ctx,
+    new Map([
+      [
+        0,
+        data({
+          featurePositions: Uint32Array.from([10, 11, 50, 51]),
+          featureInsertedBp: Int32Array.from([65481, 0]),
+        }),
+      ],
+    ]),
+    [block],
+    {
+      canvasWidth: 1000,
+      bands: bands(20),
+      insertionsWiden: false,
+      palette,
+    },
+  )
+
+  const { calls: plain } = draw(20, {
+    featurePositions: Uint32Array.from([10, 11, 50, 51]),
+  })
+  expect(calls).toEqual(plain)
+})
+
 // The glyph vocabulary is the cells' (`drawVariantShape`), so an inversion is
 // the same left-pointing triangle in the lane as in every row under it. A
 // triangle is a path, not a fillRect, which is what this reads off the mock.
@@ -237,6 +271,7 @@ test('an inversion draws the cells own triangle glyph, not a rect', () => {
     {
       canvasWidth: 1000,
       bands: bands(20),
+      insertionsWiden: true,
       palette,
     },
   )
@@ -305,6 +340,7 @@ describe('labels', () => {
       {
         canvasWidth: 20,
         bands: bands(40, 'auto'),
+        insertionsWiden: true,
         palette,
       },
     )
@@ -336,6 +372,7 @@ describe('labels', () => {
       drawVariantLane(ctx, laneData, narrow, {
         canvasWidth: 400,
         bands: bands(40, labels),
+        insertionsWiden: true,
         palette,
       })
       return texts.map(t => t.text)
@@ -404,6 +441,7 @@ test('a region with no records is skipped', () => {
     {
       canvasWidth: 1000,
       bands: bands(20),
+      insertionsWiden: true,
       palette,
     },
   )

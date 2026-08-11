@@ -44,6 +44,12 @@ export interface FeatureSpan {
  * cells, the lane's height for the lane — because that is what
  * `insertionBarWidth` sizes a marker against.
  *
+ * `insertionsWiden` is the display's `showInsertionGlyphs`, passed rather than
+ * assumed: see `variantCellSpanPx`. `markersForBlock` passes `true` because a
+ * marker *is* the widening, and its two callers are already gated on the
+ * setting; the lane passes the setting, because with it off the record below is
+ * a 2px cell and a wide mark above it would name a column that is not there.
+ *
  * `pxPerBp` comes back because callers need it for the marker's own geometry
  * (`drawInsertionMarker`, `getInsertionType`), and re-deriving it beside a call
  * to this is how the two would drift.
@@ -51,7 +57,10 @@ export interface FeatureSpan {
 export function forEachFeatureSpan(
   region: FeatureSpanData,
   block: VariantRenderBlock,
-  drawnHeight: number,
+  {
+    drawnHeight,
+    insertionsWiden,
+  }: { drawnHeight: number; insertionsWiden: boolean },
   cb: (featureIndex: number, span: FeatureSpan) => void,
 ) {
   const toX = makeBpMapper(block)
@@ -70,6 +79,7 @@ export function forEachFeatureSpan(
       x1,
       x2,
       insertedBp: region.featureInsertedBp[f]!,
+      insertionsWiden,
       pxPerBp,
       drawnRowHeight: drawnHeight,
     })

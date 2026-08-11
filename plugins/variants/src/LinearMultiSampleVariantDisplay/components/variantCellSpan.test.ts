@@ -16,6 +16,7 @@ describe('variantCellSpanPx without an insertion', () => {
         x1: 100,
         x2: 140,
         insertedBp: 0,
+        insertionsWiden: true,
         pxPerBp: 1,
         drawnRowHeight: TALL_ROW,
       }),
@@ -28,6 +29,7 @@ describe('variantCellSpanPx without an insertion', () => {
         x1: 100,
         x2: 100.2,
         insertedBp: 0,
+        insertionsWiden: true,
         pxPerBp: 0.2,
         drawnRowHeight: TALL_ROW,
       }),
@@ -40,6 +42,7 @@ describe('variantCellSpanPx without an insertion', () => {
         x1: 140,
         x2: 100,
         insertedBp: 0,
+        insertionsWiden: true,
         pxPerBp: 1,
         drawnRowHeight: TALL_ROW,
       }),
@@ -58,6 +61,7 @@ describe('variantCellSpanPx with an insertion', () => {
         x1: 100,
         x2: 100.2,
         insertedBp: 5000,
+        insertionsWiden: true,
         pxPerBp: 0.2,
         drawnRowHeight: TALL_ROW,
       }),
@@ -73,6 +77,7 @@ describe('variantCellSpanPx with an insertion', () => {
       x1: 100,
       x2: 100.2,
       insertedBp: 5000,
+      insertionsWiden: true,
       pxPerBp: 0.2,
       drawnRowHeight: TALL_ROW,
     })
@@ -81,6 +86,7 @@ describe('variantCellSpanPx with an insertion', () => {
         x1: 100.2,
         x2: 100,
         insertedBp: 5000,
+        insertionsWiden: true,
         pxPerBp: 0.2,
         drawnRowHeight: TALL_ROW,
       }),
@@ -95,6 +101,7 @@ describe('variantCellSpanPx with an insertion', () => {
         x1: 100,
         x2: 300,
         insertedBp: 5,
+        insertionsWiden: true,
         pxPerBp: 10,
         drawnRowHeight: TALL_ROW,
       }),
@@ -106,12 +113,46 @@ describe('variantCellSpanPx with an insertion', () => {
       x1: 100,
       x2: 100.2,
       insertedBp: 5000,
+      insertionsWiden: true,
       pxPerBp: 0.2,
       drawnRowHeight: 1,
     })
     expect(drawsMarker).toBe(true)
     expect(width).toBe(insertionBarWidth(5000, 0.2, 1))
     expect(width).toBeLessThan(MAX_INSERTION_MARKER_WIDTH_PX)
+  })
+})
+
+// `showInsertionGlyphs: false` means an insertion is drawn at the 2px floor
+// like a SNP — in the GPU cells, and so in every geometry derived from them.
+// The lane, the hover box and the click target all read this function, so the
+// gate lives here rather than three times over: with it off they went on
+// widening while the cells did not, and a 40px mark sat over a 2px column.
+describe('variantCellSpanPx with insertion widening switched off', () => {
+  test('the largest insertion is its plain reference span', () => {
+    expect(
+      variantCellSpanPx({
+        x1: 100,
+        x2: 100.2,
+        insertedBp: 5000,
+        insertionsWiden: false,
+        pxPerBp: 0.2,
+        drawnRowHeight: TALL_ROW,
+      }),
+    ).toEqual({ left: 100, width: 2, drawsMarker: false })
+  })
+
+  test('a record that inserts nothing is unaffected either way', () => {
+    const args = {
+      x1: 100,
+      x2: 140,
+      insertedBp: 0,
+      pxPerBp: 1,
+      drawnRowHeight: TALL_ROW,
+    }
+    expect(variantCellSpanPx({ ...args, insertionsWiden: false })).toEqual(
+      variantCellSpanPx({ ...args, insertionsWiden: true }),
+    )
   })
 })
 

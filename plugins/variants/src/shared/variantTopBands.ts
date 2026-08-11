@@ -83,14 +83,17 @@ export interface VariantTopBands {
 }
 
 /**
- * Clamp a drag-resized band height.
+ * Clamp a user-resized band height.
  *
- * Every band above the rows is drag-resizable and every one of them clamps the
- * same way, for the same two reasons: the **floor** keeps the resize handle
- * (drawn just inside the band's bottom edge) reachable, so a band dragged shut
- * can always be dragged back open, and the **ceiling** stops a drag from
- * swallowing the plot it sits over — `availableHeight` floors at 0, so an
- * unbounded band takes the rows to zero height rather than to a scrollbar.
+ * Every band above the rows is resizable and every one of them clamps the same
+ * way, for the same two reasons. The **floor** keeps the band operable at its
+ * smallest — for the connector zone that means keeping the resize handle (drawn
+ * just inside its bottom edge) grabbable, so a zone dragged shut can be dragged
+ * back open; for the variant lane, which is sized from the track menu rather
+ * than by a handle, it is the height below which a record stops reading as a
+ * mark at all. The **ceiling** stops a resize from swallowing the plot it sits
+ * over — `availableHeight` floors at 0, so an unbounded band takes the rows to
+ * zero height rather than to a scrollbar.
  *
  * The bounds differ per band and the rule does not, which is why this is one
  * function taking them rather than one clamp per band re-deriving the reasoning
@@ -101,10 +104,14 @@ export function clampBandHeight(n: number, min: number, max: number) {
   return Math.min(max, Math.max(min, Math.round(n)))
 }
 
-// Floor/ceiling for a dragged lane. The floor is also about where a lane stops
-// being able to show a record as more than a hairline.
+// Floor/ceiling for a resized lane, and the ceiling is also the size menu's —
+// the menu is the only way to set this, so a slider that stopped short of the
+// clamp would be two different answers to "how tall can it get". 120 is roughly
+// three times what the lane needs at its default (a 16px mark over two lines of
+// text); past that it is spending the rows' height on empty band. The floor is
+// where a record stops reading as more than a hairline.
 export const MIN_VARIANT_LANE_HEIGHT = 8
-export const MAX_VARIANT_LANE_HEIGHT = 500
+export const MAX_VARIANT_LANE_HEIGHT = 120
 
 /**
  * The `variantLaneHeight` slot's default, stated here so the slot and the

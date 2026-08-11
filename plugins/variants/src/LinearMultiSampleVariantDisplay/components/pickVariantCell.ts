@@ -54,6 +54,7 @@ export function pickVariantCell({
   toX,
   pxPerBp,
   drawnRowHeight,
+  insertionsWiden,
 }: {
   data: PickCellData
   // Feature indices overlapping the cursor's bp window, from the per-feature
@@ -68,6 +69,9 @@ export function pickVariantCell({
   toX: (bp: number) => number
   pxPerBp: number
   drawnRowHeight: number
+  // The display's `showInsertionGlyphs`: with it off an insertion is a 2px cell
+  // and its click target has to be one too. See `variantCellSpanPx`.
+  insertionsWiden: boolean
 }): PickedCell | undefined {
   for (let rowIndex = rowNearest; rowIndex >= rowLowest; rowIndex--) {
     const workerRow = rowIndex < rowUnmap.length ? rowUnmap[rowIndex]! : -1
@@ -90,6 +94,7 @@ export function pickVariantCell({
             x1: toX(genomicStart),
             x2: toX(genomicEnd),
             insertedBp,
+            insertionsWiden,
             pxPerBp,
             drawnRowHeight,
           })

@@ -100,6 +100,7 @@ function getFeatureUnderMouse(
     pxPerBp:
       (region.screenEndPx - region.screenStartPx) / (region.end - region.start),
     drawnRowHeight: drawnCellHeightPx(model.effectiveRowHeight),
+    insertionsWiden: model.showInsertionGlyphs,
   })
   if (!picked) {
     return undefined
@@ -174,6 +175,9 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
     x1: toX(cell.genomicStart),
     x2: toX(cell.genomicEnd),
     insertedBp: cell.insertedBp,
+    // the box covers what was PAINTED, so it follows the setting that decides
+    // whether an insertion paints as a marker or as a 2px cell
+    insertionsWiden: model.showInsertionGlyphs,
     pxPerBp:
       (region.screenEndPx - region.screenStartPx) / (region.end - region.start),
     drawnRowHeight,

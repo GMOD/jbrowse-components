@@ -21,18 +21,31 @@ export const MAX_INSERTION_MARKER_WIDTH_PX = textWidthForNumber(99999)
  * highlight, and the click target from disagreeing — a 40px insertion marker
  * used to respond only within 5px of its locus.
  *
+ * **`insertionsWiden` is `showInsertionGlyphs`, and it has no default on
+ * purpose.** That setting is what decides whether an insertion is a marker at
+ * all or is drawn at the 2px floor like a SNP, and it is the display's answer,
+ * not this function's — so every caller states it. It had a default of "yes"
+ * implicitly, by nobody asking, and the three callers that are not the marker
+ * painter all inherited it: with glyphs switched off the cells and the GPU pass
+ * drew a 2px SNP while the variant lane drew a 40px bar above it, the hover box
+ * covered 40px of nothing, and a click 20px clear of the cell still selected it.
+ * The one place `false` is a tautology rather than a setting is
+ * `markersForBlock`, because a marker is the widening.
+ *
  * `insertedBp` of 0 (every SNP and deletion) short-circuits to the plain span.
  */
 export function variantCellSpanPx({
   x1,
   x2,
   insertedBp,
+  insertionsWiden,
   pxPerBp,
   drawnRowHeight,
 }: {
   x1: number
   x2: number
   insertedBp: number
+  insertionsWiden: boolean
   pxPerBp: number
   drawnRowHeight: number
 }) {
@@ -41,7 +54,9 @@ export function variantCellSpanPx({
   // fourth hand-written copy of it.
   const width = snappedCellWidthPx(left, Math.max(x1, x2))
   const markerWidth =
-    insertedBp > 0 ? insertionBarWidth(insertedBp, pxPerBp, drawnRowHeight) : 0
+    insertionsWiden && insertedBp > 0
+      ? insertionBarWidth(insertedBp, pxPerBp, drawnRowHeight)
+      : 0
   if (markerWidth > width) {
     const center = (x1 + x2) / 2
     return {

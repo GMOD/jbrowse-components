@@ -42,6 +42,7 @@ const geom = {
   toX: (bp: number) => bp,
   pxPerBp: 1,
   drawnRowHeight: 10,
+  insertionsWiden: true,
   rowUnmap: identityRows,
 }
 
@@ -207,6 +208,7 @@ describe('pickVariantCell insertion markers', () => {
     toX: (bp: number) => bp * 0.2,
     pxPerBp: 0.2,
     drawnRowHeight: 10,
+    insertionsWiden: true,
     rowUnmap: identityRows,
   }
   // 1000bp -> x 200; the marker is centered there.
@@ -249,6 +251,35 @@ describe('pickVariantCell insertion markers', () => {
     expect(onLocus?.rowIndex).toBe(1)
     expect(onLocus?.insertedBp).toBe(0)
   })
+
+  // With `showInsertionGlyphs` off the record is painted at the 2px floor like
+  // a SNP and no marker is drawn, so the click target has to shrink with it.
+  // It did not: the pick still measured the marker's box, and a click 20px
+  // clear of a 2px cell opened that cell's feature widget.
+  test('the drawn marker is not clickable when the display draws none', () => {
+    const noGlyphs = { ...zoomedOut, insertionsWiden: false }
+    expect(
+      pickVariantCell({
+        data,
+        candidateFeatures: [0],
+        mouseX: farFromLocus,
+        rowNearest: 0,
+        rowLowest: 0,
+        ...noGlyphs,
+      }),
+    ).toBeUndefined()
+    // the 2px cell itself still is
+    expect(
+      pickVariantCell({
+        data,
+        candidateFeatures: [0],
+        mouseX: 200,
+        rowNearest: 0,
+        rowLowest: 0,
+        ...noGlyphs,
+      })?.rowIndex,
+    ).toBe(0)
+  })
 })
 
 describe('pickVariantCell reversed regions', () => {
@@ -268,6 +299,7 @@ describe('pickVariantCell reversed regions', () => {
       toX: (bp: number) => 1000 - bp,
       pxPerBp: 1,
       drawnRowHeight: 10,
+      insertionsWiden: true,
     })
     expect(picked?.genomicStart).toBe(100)
     expect(picked?.genomicEnd).toBe(300)

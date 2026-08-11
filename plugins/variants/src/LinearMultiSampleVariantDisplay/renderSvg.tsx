@@ -33,6 +33,7 @@ interface RenderSvgModel extends RenderSvgBaseModel {
     | undefined
   // undefined when the variant lane band is off
   variantLaneRegions: ReadonlyMap<number, VariantLaneData> | undefined
+  showInsertionGlyphs: boolean
 }
 
 export async function renderSvg(
@@ -61,6 +62,7 @@ function VariantSvgBody({
     insertionGlyphRegions,
     variantLaneRegions,
     topBands,
+    showInsertionGlyphs,
   } = model
   // canvasWidth is the block scissor bound and the cell pixel-snapping origin,
   // so it has to be the width this layer is actually painted at — see
@@ -91,6 +93,7 @@ function VariantSvgBody({
               drawVariantLane(ctx, variantLaneRegions, renderBlocks, {
                 canvasWidth,
                 bands: topBands,
+                insertionsWiden: showInsertionGlyphs,
                 // the export theme's palette, not the live session's, the same
                 // rule the insertion markers beside it follow
                 palette: exportPalette,

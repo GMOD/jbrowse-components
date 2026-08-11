@@ -85,10 +85,17 @@ export function drawVariantLane(
   {
     canvasWidth,
     bands,
+    insertionsWiden,
     palette,
   }: {
     canvasWidth: number
     bands: VariantTopBands
+    /**
+     * The display's `showInsertionGlyphs`. With it off an insertion is drawn at
+     * the 2px floor like a SNP, in the rows and therefore here — a wide mark
+     * over a 2px column names a span the display is deliberately not showing.
+     */
+    insertionsWiden: boolean
     /**
      * The palette the labels take their two colors from — `text.primary` for a
      * name and `featureDescription` for the line under it. Passed whole rather
@@ -115,6 +122,15 @@ export function drawVariantLane(
     ctx.textBaseline = 'top'
     ctx.textAlign = 'left'
   }
+  // Right edge of the last label drawn, so the next one is only drawn if it
+  // clears it. See the note above on why a lane culls rather than stacks.
+  //
+  // Outside the block loop, because blocks are adjacent on screen and the cull
+  // is about pixels, not about regions: reset per block, the first label of a
+  // region always drew, so a whole-genome view collided one against the last
+  // label of the region left of it at every boundary. Blocks arrive in screen
+  // order, which is what makes one running edge enough.
+  let lastLabelRight = Number.NEGATIVE_INFINITY
   forEachClippedBlock(
     ctx,
     blocks,
@@ -128,99 +144,107 @@ export function drawVariantLane(
       // The color the context currently holds, so a run of records sharing one
       // (every record, whenever no `featureColor` override is set — the common
       // case) neither rebuilds the CSS string nor reassigns fillStyle. -1 is
-      // "not one of ours", which no packed ABGR can be.
+      // "not one of ours", which no packed ABGR can be. Per block, unlike the
+      // label edge above: `forEachClippedBlock` restores the context around each
+      // one, so a remembered fillStyle would be a lie by the next block.
       let currentAbgr = -1
-      // Right edge of the last label drawn, so the next one is only drawn if it
-      // clears it. See the note above on why a lane culls rather than stacks.
-      let lastLabelRight = Number.NEGATIVE_INFINITY
       // The shared per-record walk: the lane's marks and the insertion markers
       // over the cells come out of one geometry, so a mark cannot sit a pixel
       // off the column it names. `markHeight` is the band an insertion marker
       // is sized against here, the way a row height is for a cell.
-      forEachFeatureSpan(region, block, markHeight, (f, span) => {
-        const abgr = region.featureColors[f]!
-        if (abgr !== currentAbgr) {
-          ctx.fillStyle = abgrToCssRgba(abgr)
-          currentAbgr = abgr
-        }
-        // `variantCellSpanPx` already floors the span at the shader's snapped
-        // 2px, so a whole-chromosome zoom that puts every SNP under a pixel
-        // still draws each of them: a lane that silently dropped records would
-        // be worse than one that overplots.
-        const width = span.width
-        // The cells' own glyph painter, so an inversion is the same
-        // left-pointing triangle in the lane as in every row under it — and a
-        // new shape lands in both at once instead of in whichever was
-        // remembered.
-        drawVariantShape(
-          ctx,
-          region.featureShapeTypes[f]!,
-          span.left,
-          0,
-          width,
-          markHeight,
-        )
-        if (labelsFit) {
-          const featureInfo =
-            region.featureGenotypeMap[region.featureIdList[f]!]
-          // The whole text half in one plugin-canvas call, so the same record
-          // letters identically here and in a `LinearVariantDisplay`: a name
-          // truncated by length and a description by *rendered width*, a blank
-          // or `.` ID dropped rather than drawn, both measured at
-          // LABEL_FONT_SIZE, and the theme's two label colors — the name in
-          // `text.primary` over the description in `featureDescription`. The
-          // mode's kinds are applied by withholding the input, which is also
-          // what makes a name-less record letter with its description alone.
-          const { nameLabel, descriptionLabel } = createFeatureFloatingLabels({
-            name: showName ? featureInfo?.name : undefined,
-            description: showDescription ? featureInfo?.description : undefined,
-            palette,
-          })
-          // The collision test is over the WIDEST line, so a long description
-          // under a short name cannot run into the next record's text. One
-          // decision for the pair, because they are drawn as a block.
-          const textWidth = Math.max(
-            nameLabel?.textWidth ?? 0,
-            descriptionLabel?.textWidth ?? 0,
+      forEachFeatureSpan(
+        region,
+        block,
+        { drawnHeight: markHeight, insertionsWiden },
+        (f, span) => {
+          const abgr = region.featureColors[f]!
+          if (abgr !== currentAbgr) {
+            ctx.fillStyle = abgrToCssRgba(abgr)
+            currentAbgr = abgr
+          }
+          // `variantCellSpanPx` already floors the span at the shader's snapped
+          // 2px, so a whole-chromosome zoom that puts every SNP under a pixel
+          // still draws each of them: a lane that silently dropped records would
+          // be worse than one that overplots.
+          const width = span.width
+          // The cells' own glyph painter, so an inversion is the same
+          // left-pointing triangle in the lane as in every row under it — and a
+          // new shape lands in both at once instead of in whichever was
+          // remembered.
+          drawVariantShape(
+            ctx,
+            region.featureShapeTypes[f]!,
+            span.left,
+            0,
+            width,
+            markHeight,
           )
-          if (textWidth > 0) {
-            // plugin-canvas's anchoring, so a label in the lane sits where the
-            // same record's label sits in a LinearVariantDisplay: left-aligned
-            // to the mark, pushed right when the mark starts off-screen, and
-            // held to the mark's right edge when it fits inside it.
-            const { labelX } = computeLabelPosition(
-              { relativeY: 0, textWidth },
-              0,
+          if (labelsFit) {
+            const featureInfo =
+              region.featureGenotypeMap[region.featureIdList[f]!]
+            // The whole text half in one plugin-canvas call, so the same record
+            // letters identically here and in a `LinearVariantDisplay`: a name
+            // truncated by length and a description by *rendered width*, a blank
+            // or `.` ID dropped rather than drawn, both measured at
+            // LABEL_FONT_SIZE, and the theme's two label colors — the name in
+            // `text.primary` over the description in `featureDescription`. The
+            // mode's kinds are applied by withholding the input, which is also
+            // what makes a name-less record letter with its description alone.
+            const { nameLabel, descriptionLabel } = createFeatureFloatingLabels(
               {
-                featureLeftPx: span.left,
-                featureRightPx: span.left + width,
-                featureBottomPx: 0,
-                screenStartPx: block.screenStartPx,
+                name: showName ? featureInfo?.name : undefined,
+                description: showDescription
+                  ? featureInfo?.description
+                  : undefined,
+                palette,
               },
             )
-            if (labelX > lastLabelRight) {
-              let y = labelTop
-              if (nameLabel) {
-                ctx.fillStyle = nameLabel.color
-                ctx.fillText(nameLabel.text, labelX, y)
-                y += LABEL_FONT_SIZE
+            // The collision test is over the WIDEST line, so a long description
+            // under a short name cannot run into the next record's text. One
+            // decision for the pair, because they are drawn as a block.
+            const textWidth = Math.max(
+              nameLabel?.textWidth ?? 0,
+              descriptionLabel?.textWidth ?? 0,
+            )
+            if (textWidth > 0) {
+              // plugin-canvas's anchoring, so a label in the lane sits where the
+              // same record's label sits in a LinearVariantDisplay: left-aligned
+              // to the mark, pushed right when the mark starts off-screen, and
+              // held to the mark's right edge when it fits inside it.
+              const { labelX } = computeLabelPosition(
+                { relativeY: 0, textWidth },
+                0,
+                {
+                  featureLeftPx: span.left,
+                  featureRightPx: span.left + width,
+                  featureBottomPx: 0,
+                  screenStartPx: block.screenStartPx,
+                },
+              )
+              if (labelX > lastLabelRight) {
+                let y = labelTop
+                if (nameLabel) {
+                  ctx.fillStyle = nameLabel.color
+                  ctx.fillText(nameLabel.text, labelX, y)
+                  y += LABEL_FONT_SIZE
+                }
+                if (descriptionLabel) {
+                  ctx.fillStyle = descriptionLabel.color
+                  ctx.fillText(descriptionLabel.text, labelX, y)
+                }
+                // `LABEL_PADDING_PX`, the same gap plugin-canvas reserves around a
+                // packed label: it is what absorbs measureText's disagreement with
+                // the font actually rendered, which is why a smaller gap here let
+                // two lane labels touch even though the arithmetic said they
+                // cleared.
+                lastLabelRight = labelX + textWidth + LABEL_PADDING_PX
+                // the labels reset the fill, so the next mark must reassign it
+                currentAbgr = -1
               }
-              if (descriptionLabel) {
-                ctx.fillStyle = descriptionLabel.color
-                ctx.fillText(descriptionLabel.text, labelX, y)
-              }
-              // `LABEL_PADDING_PX`, the same gap plugin-canvas reserves around a
-              // packed label: it is what absorbs measureText's disagreement with
-              // the font actually rendered, which is why a smaller gap here let
-              // two lane labels touch even though the arithmetic said they
-              // cleared.
-              lastLabelRight = labelX + textWidth + LABEL_PADDING_PX
-              // the labels reset the fill, so the next mark must reassign it
-              currentAbgr = -1
             }
           }
-        }
-      })
+        },
+      )
     },
   )
 }
