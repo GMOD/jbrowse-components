@@ -26,7 +26,7 @@ Exploratory concepts that are *not* committed work live in
 | [Widen `CI_GATE_SUITES`](#widen-ci_gate_suites) | browser tests, CI | measure before adding; say why the alignments pair is safe |
 | [Attribute the TIMEOUT mode](#attribute-the-browser-test-timeout-failure-mode) | browser tests | report the display's state, don't extend the wait |
 | [Make the webgl blank verdict readable](#make-the-webgl-blank-verdict-readable) | browser tests | one diagnostic run; never leave it on |
-| [Look at the six AA-ramp commits](#look-at-the-six-aa-ramp-shader-commits--nobody-has) | shaders, GPU | two risks left, neither a look question; three cleared |
+| [Look at the six AA-ramp commits](#look-at-the-six-aa-ramp-shader-commits--nobody-has) | shaders, GPU | five cleared; one CIGAR assumption left, not a look question |
 | [Report a callout that draws off-frame](#report-a-callout-that-draws-off-frame) | figures | the overlay already reports the unresolvable case |
 | [`partitionField` throws on `bigRmskBed`](#partitionfield-jexl-throws-through-its-own-guard-on-bigrmskbed) | canvas | the per-feature catch is there and not holding |
 | [Render the converted callout specs](#render-the-twenty-specs-whose-callouts-were-converted-to-anchors) | figures | sweep them; five move deliberately |
@@ -146,10 +146,11 @@ must not be left on** — it was measured and refuted as a *fix*
 
 Six rendering commits landed on 2026-08-10 (`f96108bad9`, `75e0db7602`,
 `f082bad29f`, `333477b51c`, `c7ebdf6d9b`, `4261bbfe40`) verified by unit test and
-argument only. **Two have still never been looked at.** `4261bbfe40`,
-`c7ebdf6d9b` and `f96108bad9` have since been rendered and cleared (below);
-`75e0db7602` is a pure refactor with no picture to check, so what is actually
-open is the two ranked risks. The finding they share is in
+argument only. **All of them have now been looked at, and one item is left** —
+which is not a look question and never was. `4261bbfe40`, `c7ebdf6d9b`,
+`f96108bad9` and `333477b51c` were rendered and cleared (below); `75e0db7602` is
+a pure refactor with no picture to check; what remains is one assumption in
+`clipLargeBlockToWindow`. The finding they share is in
 [reference/GPU_RENDERING.md](reference/GPU_RENDERING.md#antialiasing-ramps-how-wide-and-where-the-width-comes-from).
 
 Suites exist for every view touched — `synteny.ts`, `grape-peach-synteny.ts`,
@@ -157,43 +158,72 @@ Suites exist for every view touched — `synteny.ts`, `grape-peach-synteny.ts`,
 `gwas-locuszoom.ts`, `wiggle-color.ts` under
 `products/jbrowse-web/browser-tests/suites/`.
 
-**`pnpm test:browser:compare` is an oracle for two of these commits and blind to
-two others**, which is the thing to plan around. It diffs `webgl` / `webgpu` /
-`canvas2d` (`compare-backends.ts`), so it catches the dotplot and glyph AA
-changes: those are GPU-only, Canvas2D was untouched, and a crop or an overdraw
-regression lands as GPU-vs-Canvas2D divergence. It cannot see the other two,
-by construction — `fillShade` reaches Canvas2D and the SVG export through the
-generated twin (`Canvas2DSyntenyRenderer.ts`), and hi-C's `colorRamp.ts` now
-imports `MIN_VISIBLE_ALPHA` from `hic.generated.ts`, so in both cases all the
-paths moved together and agree on the new answer. Those two need a snapshot
-diff or an eye.
+**`pnpm test:browser:compare` was an oracle for two of these commits and blind to
+two others**, which is the part worth keeping — it generalizes past this entry.
+It diffs `webgl` / `webgpu` / `canvas2d` (`compare-backends.ts`), so it saw the
+dotplot and glyph AA changes: those are GPU-only, Canvas2D was untouched, and it
+is an independent render of the same marks. That is what turned both from "looks
+different" into "is closer to correct". It could not see the other two, by
+construction — `fillShade` reaches Canvas2D and the SVG export through the
+generated twin (`Canvas2DSyntenyRenderer.ts`), and hi-C's `colorRamp.ts` imports
+`MIN_VISIBLE_ALPHA` from `hic.generated.ts`, so in both cases every path moved
+together and agrees on the new answer. Those two needed a snapshot diff and an
+eye. **Ask which side of that line a change falls on before planning how to
+verify it.**
 
-Ranked by how likely the author thought they were to be wrong:
+The one open item, testable with a crafted input rather than a picture:
 
-1. **The dotplot quad grew and was never measured — and the discard is not the
-   lever the pad needs.** Every capsule quad is now `halfWidth + aaHalf` on both
-   axes. At the default `lineWidth` 2.5 (`DotplotView/model.ts`) the ~40% figure
-   is the *long-segment asymptote*; a short alignment — a dot, which is most
-   instances at whole-genome zoom, and where the 300k+ counts come from — goes
-   from `2.5×2.5` to `3.5×3.5`, i.e. **+96% at dpr 1**. At dpr 2 it is +20% /
-   +44%, so the overhead is worst on the non-retina display. The `discard`
-   reclaims less than it looks: `finalAlpha <= 0.0` holds only where
-   `d ≥ halfWidth + aa`, and along the body the pad ring has `d ≤ halfWidth + aa`
-   with alpha ramping 0.5→0 — that ring *is* the outer half of the AA ramp and
-   has to be shaded. Only the quad corners past each cap discard, `1 - π/4` ≈ 21%
-   of each cap rectangle, so ~21% of a dot's quad and ~0% of a long line's; a dot
-   at dpr 1 is still +54% net. If the measurement comes back negative the pad is
-   still correct, but the levers are the pad width or the blend, not the discard.
-2. **`clipLargeBlockToWindow`'s pre-gate assumes the CIGAR's span matches
-   `end - start`** — but only on one side. `end < winStart` is the exposed half:
-   a malformed CIGAR walking past its declared `end` into the window would be
-   dropped. `start > winEnd` is safe whatever the CIGAR does, because the walk
-   only ever moves forward from `start`. Every other consumer would already be
-   mis-drawing such a block, so this was accepted — but it is a new assumption.
-   Untested corner alongside it: `winStart`/`winEnd` are clamped to the region,
-   so a window falling outside the chosen region collapses them to a point and
-   the gate drops nearly everything. The `if (!r0) return undefined` above picks
-   an overlapping region, which looks like it makes this unreachable.
+**`clipLargeBlockToWindow`'s pre-gate assumes the CIGAR's span matches
+`end - start`** — but only on one side. `end < winStart` is the exposed half: a
+malformed CIGAR walking past its declared `end` into the window would be dropped.
+`start > winEnd` is safe whatever the CIGAR does, because the walk only ever
+moves forward from `start`. Every other consumer would already be mis-drawing
+such a block, so this was accepted — but it is a new assumption. Untested corner
+alongside it: `winStart`/`winEnd` are clamped to the region, so a window falling
+outside the chosen region collapses them to a point and the gate drops nearly
+everything. The `if (!r0) return undefined` above picks an overlapping region,
+which looks like it makes this unreachable.
+
+**The dotplot (`333477b51c`) is done: the pad is correct, and it costs ~16% of
+GPU frame time at the default `lineWidth`.** Both halves are now measured rather
+than argued.
+
+*Correct*, because Canvas2D draws the same segments independently and the GPU's
+ink error against it crosses through zero: **−1.87%** before (under-inked, which
+is the ~1px-narrow line the commit describes) to **+0.91%** after. The rendered
+change is below the snapshot stability gate, so no golden moved.
+
+*Costs*, from [`browser-tests/probe-dotplot-pad-cost.ts`](../products/jbrowse-web/browser-tests/probe-dotplot-pad-cost.ts)
+— the shipped GLSL with one edit, the vertex stage's `ext`, at 400k instances and
+dpr 1 on an Intel UHD 630:
+
+| lineWidth | padded | unpadded | pad costs |
+| --- | --- | --- | --- |
+| 1 | 5.473 ms | 5.317 ms | +2.9% |
+| **2.5 (default)** | **6.530 ms** | **5.629 ms** | **+16.0%** (0.90 ms) |
+| 5 | 9.826 ms | 8.271 ms | +18.8% |
+
+Real, and comfortably inside a 60fps budget, and it buys the correct edge — so it
+stands. Two things worth carrying forward, because both invert what this entry
+used to say:
+
+- **The cost scales opposite to the area *ratio*.** The ratio is worst for thin
+  lines (4× for a `lineWidth` 1 dot) but the measured cost is *lowest* there: at
+  that size the quads are tiny and per-instance setup dominates, so fill barely
+  registers. Once fill dominates, absolute added area is what matters.
+- **There is no lever, and the discard was never one.** `finalAlpha <= 0.0` holds
+  only at `d ≥ halfWidth + aa`, so along a line's body the pad ring never
+  discards — that ring *is* the outer half of the ramp and has to be shaded. Only
+  the quad corners past each cap go. The pad is geometrically required; the only
+  reduction available is a narrower ramp, which is a quality decision, not an
+  optimization.
+
+Measuring it has two traps that each produce a confident wrong answer, both
+recorded in the probe's header: headless Chrome falls back to SwiftShader, whose
+cost is not area-dominated (it reports the pad free, 0.8% against ±3.5% noise),
+and machine contention lands mostly on the cheaper variant — a contended run read
+8.1% where a quiet one read 16.0%. Judge a run by whether the two distributions
+separate, which is why the probe prints all of them.
 
 **`fillShade` (`f96108bad9`) is done, and the design question was pointed at the
 wrong end of the slider.** Opacity 1.0 — the case this entry worried about — has
@@ -271,10 +301,9 @@ discard ever fires. A locus that does hit it would still move nothing visible, b
 the arithmetic above; if you want the branch exercised, assert on it in the
 shader test rather than looking for it in a picture.
 
-What is left is the two that were never look questions in the first place: the
-**dotplot**, which needs a headed perf measurement on a dense plot at dpr 1, and
-**`clipLargeBlockToWindow`**, which needs a malformed CIGAR rather than a
-picture.
+What is left is **`clipLargeBlockToWindow`**, which needs a malformed CIGAR
+rather than a picture — so this entry's title has outlived itself, and the next
+person to touch it should rename or retire it rather than keep looking.
 
 ### Report a callout that draws off-frame
 
