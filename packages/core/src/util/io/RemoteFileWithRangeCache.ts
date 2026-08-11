@@ -1,5 +1,12 @@
 import { RemoteFile } from 'generic-filehandle2'
 
+import type {
+  FilehandleOptions,
+  GenericFilehandle,
+  ReadFileOptions,
+  ReadFileTextOptions,
+} from 'generic-filehandle2'
+
 const CHUNK_SIZE = 256 * 1024
 
 // Cached chunks own their bytes (see fetchRun), so this entry count is a true
@@ -371,240 +378,51 @@ export class RemoteFileWithRangeCache extends RemoteFile {
     return buffer
   }
 
-  /**
-   * Fetch one contiguous run of missing chunks as a single range request, and
-   * publish a promise for each of its chunks. Publication is synchronous —
-   * before the request is awaited — so a read planned while this is in flight
-   * awaits these chunks instead of asking for the same bytes again.
-   */
-  private fetchRun(url: string, run: ChunkRun, init?: RequestInit) {
-    const state: RunState = {
-      signals: new Set(),
-      pinned: false,
-      controller: new AbortController(),
-      dispose: new AbortController(),
-      settled: false,
-    }
-    // The request runs under the run's own signal, not the opening reader's: it
-    // is shared, so it must outlive any one reader giving up. joinRun registers
-    // them, starting with the reader that opened it.
-    const data = limitConcurrency(() =>
-      this.fetchRange(
-        url,
-        run.start * CHUNK_SIZE,
-        (run.end + 1) * CHUNK_SIZE - 1,
-        { ...init, signal: state.controller.signal },
-      ),
-    )
-    this.joinRun(state, init?.signal)
-    const settle = () => {
-      state.settled = true
-      // nothing reads these once the request has settled, and holding them
-      // would pin each reader's AbortController behind this run
-      state.dispose.abort()
-      state.signals.clear()
-    }
-    data.then(settle, settle)
-    const pending: PendingChunk[] = []
-    for (let index = run.start; index <= run.end; index++) {
-      const key = cacheKey(url, index)
-      const offset = (index - run.start) * CHUNK_SIZE
-      // A run crossing EOF comes back short: its last chunk with data is short
-      // and any chunk past that is empty. Both are cached as-is, so a later read
-      // sees the EOF marker instead of re-requesting past EOF.
-      //
-      // slice, not subarray: a view would keep the whole run buffer alive for as
-      // long as any one of its chunks stays cached, so evicting a chunk would
-      // free nothing and MAX_CACHE_ENTRIES would bound nothing.
-      const chunk = data.then(buffer => {
-        const copy = buffer.slice(offset, offset + CHUNK_SIZE)
-        putCached(key, copy)
-        return copy
-      })
-      const entry = { chunk, run: state }
-      inFlight.set(key, entry)
-      const forget = () => {
-        // only if still the owner: clearCache, or a later run for the same
-        // chunk, may have replaced this entry
-        if (inFlight.get(key) === entry) {
-          inFlight.delete(key)
-        }
-      }
-      // runs after the putCached above, so a chunk is never absent from both the
-      // cache and this map
-      void chunk.then(forget, forget)
-      pending.push({ index, chunk })
-    }
-    return pending
-  }
-
-  /**
-   * Register a reader's interest in a run, so its request survives until that
-   * reader has given up too.
-   *
-   * A reader with **no signal cannot give up**, so it pins the run: there is no
-   * longer any set of aborts that should stop it. That is the honest reading of
-   * a caller that never asked to be cancellable, and it means one signal-free
-   * read makes that request uncancellable for everyone sharing it.
-   */
-  private joinRun(state: RunState, signal: RequestInit['signal']) {
-    if (!signal) {
-      state.pinned = true
-    } else if (signal.aborted) {
-      // A reader that has already given up is not a waiter, and must not be
-      // counted as one: an `abort` listener never fires on a signal that
-      // aborted before it was added, so nothing would ever take this signal
-      // back out of the set. The count would never reach zero and the request
-      // would be uncancellable for everyone sharing it, silently.
-      //
-      // `getCachedRange` rejects such a reader before it gets here, so this is
-      // the belt to that braces — the invariant is too quiet to fail to be left
-      // resting on a check several frames away.
-      if (!state.pinned && state.signals.size === 0) {
-        state.controller.abort(signal.reason)
-      }
-    } else if (!state.signals.has(signal)) {
-      // guarded so one signal joining twice — a read spanning several chunks of
-      // the same run — does not add two listeners
-      state.signals.add(signal)
-      signal.addEventListener(
-        'abort',
-        () => {
-          state.signals.delete(signal)
-          if (!state.pinned && state.signals.size === 0) {
-            state.controller.abort(signal.reason)
-          }
-        },
-        // `once` covers the abort firing; `dispose` covers it never firing
-        { once: true, signal: state.dispose.signal },
-      )
-    }
-  }
-
-  /**
-   * Await a chunk fetch another read already had in flight.
-   *
-   * Sharing one fetch between reads is what makes a row of adjacent genomic
-   * blocks cheap. It used to mean another reader's `AbortSignal` could reject a
-   * chunk this read still needed, which was handled by re-issuing the fetch —
-   * correct, but it threw away a 256 KiB request that was already in flight and
-   * that somebody still wanted. Joining the run's reference count instead means
-   * the request is simply not cancelled while anyone is still waiting on it, so
-   * there is nothing to re-issue. `@gmod/bam` and `@gmod/cram` do the same at
-   * their own cache layers.
-   */
-  private joinChunk(flight: InFlightChunk, init?: RequestInit) {
-    // a settled run has dropped its abort listeners, so joining it would add a
-    // signal nothing will ever take back out
-    if (!flight.run.settled) {
-      this.joinRun(flight.run, init?.signal)
-    }
-    return flight.chunk
-  }
-
-  private async getCachedRange(
+  private getCachedRange(
     url: string,
     start: number,
     length: number,
     init?: RequestInit,
   ) {
-    // A read whose caller has already given up must not join, or even open, a
-    // request. On a pan the abort routinely lands while the index is still
-    // being read — nothing between there and here looks at the signal — so a
-    // whole batch of reads arrives already cancelled, and letting them through
-    // both wastes the fetch and poisons the reference count (see joinRun).
-    init?.signal?.throwIfAborted()
-    // Clamp to a known file size. @gmod/bam and @gmod/tabix compute
-    // fetchedSize() = maxv.blockPosition + (1<<16) - minv.blockPosition to
-    // guarantee they read the complete final bgzf block, so their last read of
-    // a file routinely extends past EOF; unclamped, that tail asks for chunks
-    // starting past EOF and the server answers 416.
-    const size = sizeCache.get(url)
-    const end =
-      size === undefined ? start + length : Math.min(start + length, size)
-    const startChunk = Math.floor(start / CHUNK_SIZE)
-    const lastChunk = Math.floor((end - 1) / CHUNK_SIZE)
-
-    // Hold a strong reference to every chunk we'll assemble from. Already-cached
-    // chunks are captured here (before any await); fetched ones as their run
-    // resolves below. Assembly reads only from this local map, never from the
-    // module-global cache: that cache is capped and shared across every file, so
-    // a concurrent read's putCached can evict a chunk we depend on during our
-    // fetch await, and a later getCached would return undefined. Holding the
-    // reference locally makes eviction from the Map harmless.
-    const chunks = new Map<number, Uint8Array>()
-
-    // Plan the fetches. Contiguous runs of missing chunks become one range
-    // request each; a chunk another read is already fetching is awaited instead.
-    // Planning and publishing run to completion without an await, so two reads
-    // in the same tick can't both open a run for the same chunk.
-    //
-    // Stops at a cached chunk shorter than CHUNK_SIZE — the file ended inside it,
-    // so every later chunk starts past EOF. That covers the over-read above even
-    // when the size is unknown (CORS hiding Content-Range).
-    const pending: PendingChunk[] = []
-    const runs: ChunkRun[] = []
-    let endChunk = lastChunk
-    for (let index = startChunk; index <= lastChunk; index++) {
-      const key = cacheKey(url, index)
-      const cached = getCached(key)
-      if (cached === undefined) {
-        const flight = inFlight.get(key)
-        if (flight === undefined) {
-          const lastRun = runs.at(-1)
-          if (lastRun?.end === index - 1) {
-            lastRun.end = index
-          } else {
-            runs.push({ start: index, end: index })
-          }
-        } else {
-          pending.push({ index, chunk: this.joinChunk(flight, init) })
-        }
-      } else {
-        chunks.set(index, cached)
-        if (cached.length < CHUNK_SIZE) {
-          endChunk = index
-          break
-        }
-      }
-    }
-    for (const run of runs) {
-      pending.push(...this.fetchRun(url, run, init))
-    }
-
-    await Promise.all(
-      pending.map(async ({ index, chunk }) => {
-        chunks.set(index, await chunk)
-      }),
+    return getCachedRange(url, start, length, init, (s, e, runInit) =>
+      this.fetchRange(url, s, e, runInit),
     )
-    // The bytes arrived, but this read gave up while waiting for them — the
-    // request it was sharing kept going because somebody else still wanted it.
-    // Cancellation is per-reader even though the fetch is not.
-    init?.signal?.throwIfAborted()
+  }
 
-    const result = new Uint8Array(Math.max(0, end - start))
-    let dataEnd = end
-    for (let i = startChunk; i <= endChunk; i++) {
-      const chunk = chunks.get(i)
-      // Unreachable: every index in [startChunk, endChunk] was either captured
-      // as an already-cached chunk or filled by the run covering it. Throw
-      // rather than assert so a future refactor that breaks the invariant fails
-      // loudly instead of silently assembling a buffer of zeros.
-      if (chunk === undefined) {
-        throw new Error(
-          `internal: chunk ${i} missing during range assembly of ${url}`,
-        )
-      } else {
-        copyChunkInto({ result, start, end, chunkIndex: i, chunk })
-        if (chunk.length < CHUNK_SIZE) {
-          // the file ends inside this chunk, so nothing past that is real data
-          dataEnd = Math.min(dataEnd, i * CHUNK_SIZE + chunk.length)
-          break
-        }
-      }
+  /**
+   * Bytes for a byte range, straight out of the chunk cache.
+   *
+   * `RemoteFile.read` would build the range header, call {@link fetch}, and
+   * unwrap the `Response` it got back. Every one of those steps is a copy of
+   * the whole range, and on a cache hit there is no network for them to hide
+   * behind: measured warm, with the chunk cache fully populated, the
+   * `Response` round trip was **69-77%** of the read (6.15ms vs 1.90ms at
+   * 16MB, 0.36ms vs 0.08ms at 256KB).
+   *
+   * `fetch` below still caches, so anything that reaches this class by that
+   * route — a caller setting its own range header — is unaffected. This is
+   * the same cache, entered one layer lower.
+   */
+  override async read(
+    length: number,
+    position: number,
+    opts: FilehandleOptions = {},
+  ): Promise<Uint8Array<ArrayBuffer>> {
+    // mirrors RemoteFile.read's guards, which we no longer go through
+    if (length === 0) {
+      return new Uint8Array(0)
     }
-    // max(0) because a read wholly past EOF has dataEnd < start
-    return result.subarray(0, Math.max(0, dataEnd - start))
+    if (Number.isNaN(length) || Number.isNaN(position)) {
+      throw new TypeError(
+        `read() called with NaN length or position (length=${length}, position=${position}). The index file may be corrupt.`,
+      )
+    }
+    const bytes = await this.getCachedRange(this.url, position, length, {
+      ...(opts.signal ? { signal: opts.signal } : {}),
+      headers: opts.headers,
+      ...opts.overrides,
+    })
+    return bytes
   }
 
   // NOTE: range reads return a fully-assembled in-memory Response, so
@@ -637,4 +455,328 @@ export class RemoteFileWithRangeCache extends RemoteFile {
     }
     return super.fetch(url, init)
   }
+}
+
+/**
+ * The same chunk cache, in front of any filehandle.
+ *
+ * `RemoteFileWithRangeCache` gets its cache by *being* a `RemoteFile`, so for
+ * as long as that was the only entry point, local paths and blobs got no
+ * caching at all — `openLocation` handed back a bare `LocalFile`/`BlobFile` and
+ * every read went to disk. Nothing in the cache is about HTTP, so this wraps
+ * whatever it is given instead.
+ *
+ * `key` namespaces this file's chunks in the module-global cache, so it has to
+ * identify the underlying bytes: a path or a URL for something with a stable
+ * name, and something instance-unique for a Blob, which has no name to key on.
+ * Two wrappers sharing a key share chunks, which is right for two handles on
+ * one path and wrong for two unrelated blobs.
+ */
+export class CachedFilehandle implements GenericFilehandle {
+  constructor(
+    private inner: GenericFilehandle,
+    private key: string,
+  ) {}
+
+  async read(
+    length: number,
+    position: number,
+    opts: FilehandleOptions = {},
+  ): Promise<Uint8Array<ArrayBuffer>> {
+    if (length === 0) {
+      return new Uint8Array(0)
+    }
+    if (Number.isNaN(length) || Number.isNaN(position)) {
+      throw new TypeError(
+        `read() called with NaN length or position (length=${length}, position=${position}). The index file may be corrupt.`,
+      )
+    }
+    const bytes = await getCachedRange(
+      this.key,
+      position,
+      length,
+      opts.signal ? { signal: opts.signal } : undefined,
+      (start, end, init) =>
+        this.inner.read(end - start + 1, start, {
+          ...(init?.signal ? { signal: init.signal } : {}),
+        }),
+    )
+    return bytes
+  }
+
+  // Whole-file reads bypass the chunk cache: they are one pass over bytes the
+  // caller is about to hold in full anyway, so chunking them would double the
+  // peak for no reuse. This is what `RemoteFile.readFile` does too.
+  readFile(options?: ReadFileOptions): Promise<Uint8Array<ArrayBuffer>>
+  readFile(options: ReadFileTextOptions): Promise<string>
+  readFile(
+    options?: ReadFileOptions | ReadFileTextOptions,
+  ): Promise<Uint8Array<ArrayBuffer> | string> {
+    return this.inner.readFile(options as ReadFileOptions)
+  }
+
+  async stat() {
+    const stats = await this.inner.stat()
+    // lets getCachedRange clamp reads that run past EOF, which every bgzf
+    // reader does by construction on its last block
+    sizeCache.set(this.key, stats.size)
+    return stats
+  }
+
+  close() {
+    return this.inner.close()
+  }
+}
+
+/**
+ * Fetches an inclusive byte range `[start, end]`, however the underlying source
+ * does that. The one thing the chunk cache below needs from a file.
+ */
+type FetchByteRange = (
+  start: number,
+  end: number,
+  init?: RequestInit,
+) => Promise<Uint8Array>
+
+/**
+ * The chunk machinery, as free functions over a `FetchByteRange`.
+ *
+ * It was written as private methods on the HTTP class, but none of it is about
+ * HTTP: it is chunk indexing, an LRU, in-flight de-duplication and abort
+ * reference counting over byte ranges. Lifting it out is what lets the same
+ * cache sit in front of a local file or a Blob, which previously got no caching
+ * at all — see {@link CachedFilehandle}.
+ */
+function fetchRun(
+  key: string,
+  run: ChunkRun,
+  init: RequestInit | undefined,
+  doFetch: FetchByteRange,
+) {
+  const state: RunState = {
+    signals: new Set(),
+    pinned: false,
+    controller: new AbortController(),
+    dispose: new AbortController(),
+    settled: false,
+  }
+  // The request runs under the run's own signal, not the opening reader's: it
+  // is shared, so it must outlive any one reader giving up. joinRun registers
+  // them, starting with the reader that opened it.
+  const data = limitConcurrency(() =>
+    doFetch(run.start * CHUNK_SIZE, (run.end + 1) * CHUNK_SIZE - 1, {
+      ...init,
+      signal: state.controller.signal,
+    }),
+  )
+  joinRun(state, init?.signal)
+  const settle = () => {
+    state.settled = true
+    // nothing reads these once the request has settled, and holding them
+    // would pin each reader's AbortController behind this run
+    state.dispose.abort()
+    state.signals.clear()
+  }
+  data.then(settle, settle)
+  const pending: PendingChunk[] = []
+  for (let index = run.start; index <= run.end; index++) {
+    const chunkKey = cacheKey(key, index)
+    const offset = (index - run.start) * CHUNK_SIZE
+    // A run crossing EOF comes back short: its last chunk with data is short
+    // and any chunk past that is empty. Both are cached as-is, so a later read
+    // sees the EOF marker instead of re-requesting past EOF.
+    //
+    // slice, not subarray: a view would keep the whole run buffer alive for as
+    // long as any one of its chunks stays cached, so evicting a chunk would
+    // free nothing and MAX_CACHE_ENTRIES would bound nothing.
+    const chunk = data.then(buffer => {
+      const copy = buffer.slice(offset, offset + CHUNK_SIZE)
+      putCached(chunkKey, copy)
+      return copy
+    })
+    const entry = { chunk, run: state }
+    inFlight.set(chunkKey, entry)
+    const forget = () => {
+      // only if still the owner: clearCache, or a later run for the same
+      // chunk, may have replaced this entry
+      if (inFlight.get(chunkKey) === entry) {
+        inFlight.delete(chunkKey)
+      }
+    }
+    // runs after the putCached above, so a chunk is never absent from both the
+    // cache and this map
+    void chunk.then(forget, forget)
+    pending.push({ index, chunk })
+  }
+  return pending
+}
+
+/**
+ * Register a reader's interest in a run, so its request survives until that
+ * reader has given up too.
+ *
+ * A reader with **no signal cannot give up**, so it pins the run: there is no
+ * longer any set of aborts that should stop it. That is the honest reading of
+ * a caller that never asked to be cancellable, and it means one signal-free
+ * read makes that request uncancellable for everyone sharing it.
+ */
+function joinRun(state: RunState, signal: RequestInit['signal']) {
+  if (!signal) {
+    state.pinned = true
+  } else if (signal.aborted) {
+    // A reader that has already given up is not a waiter, and must not be
+    // counted as one: an `abort` listener never fires on a signal that
+    // aborted before it was added, so nothing would ever take this signal
+    // back out of the set. The count would never reach zero and the request
+    // would be uncancellable for everyone sharing it, silently.
+    //
+    // `getCachedRange` rejects such a reader before it gets here, so this is
+    // the belt to that braces — the invariant is too quiet to fail to be left
+    // resting on a check several frames away.
+    if (!state.pinned && state.signals.size === 0) {
+      state.controller.abort(signal.reason)
+    }
+  } else if (!state.signals.has(signal)) {
+    // guarded so one signal joining twice — a read spanning several chunks of
+    // the same run — does not add two listeners
+    state.signals.add(signal)
+    signal.addEventListener(
+      'abort',
+      () => {
+        state.signals.delete(signal)
+        if (!state.pinned && state.signals.size === 0) {
+          state.controller.abort(signal.reason)
+        }
+      },
+      // `once` covers the abort firing; `dispose` covers it never firing
+      { once: true, signal: state.dispose.signal },
+    )
+  }
+}
+
+/**
+ * Await a chunk fetch another read already had in flight.
+ *
+ * Sharing one fetch between reads is what makes a row of adjacent genomic
+ * blocks cheap. It used to mean another reader's `AbortSignal` could reject a
+ * chunk this read still needed, which was handled by re-issuing the fetch —
+ * correct, but it threw away a 256 KiB request that was already in flight and
+ * that somebody still wanted. Joining the run's reference count instead means
+ * the request is simply not cancelled while anyone is still waiting on it, so
+ * there is nothing to re-issue. `@gmod/bam` and `@gmod/cram` do the same at
+ * their own cache layers.
+ */
+function joinChunk(flight: InFlightChunk, init?: RequestInit) {
+  // a settled run has dropped its abort listeners, so joining it would add a
+  // signal nothing will ever take back out
+  if (!flight.run.settled) {
+    joinRun(flight.run, init?.signal)
+  }
+  return flight.chunk
+}
+
+async function getCachedRange(
+  key: string,
+  start: number,
+  length: number,
+  init: RequestInit | undefined,
+  doFetch: FetchByteRange,
+) {
+  // A read whose caller has already given up must not join, or even open, a
+  // request. On a pan the abort routinely lands while the index is still
+  // being read — nothing between there and here looks at the signal — so a
+  // whole batch of reads arrives already cancelled, and letting them through
+  // both wastes the fetch and poisons the reference count (see joinRun).
+  init?.signal?.throwIfAborted()
+  // Clamp to a known file size. @gmod/bam and @gmod/tabix compute
+  // fetchedSize() = maxv.blockPosition + (1<<16) - minv.blockPosition to
+  // guarantee they read the complete final bgzf block, so their last read of
+  // a file routinely extends past EOF; unclamped, that tail asks for chunks
+  // starting past EOF and the server answers 416.
+  const size = sizeCache.get(key)
+  const end =
+    size === undefined ? start + length : Math.min(start + length, size)
+  const startChunk = Math.floor(start / CHUNK_SIZE)
+  const lastChunk = Math.floor((end - 1) / CHUNK_SIZE)
+
+  // Hold a strong reference to every chunk we'll assemble from. Already-cached
+  // chunks are captured here (before any await); fetched ones as their run
+  // resolves below. Assembly reads only from this local map, never from the
+  // module-global cache: that cache is capped and shared across every file, so
+  // a concurrent read's putCached can evict a chunk we depend on during our
+  // fetch await, and a later getCached would return undefined. Holding the
+  // reference locally makes eviction from the Map harmless.
+  const chunks = new Map<number, Uint8Array>()
+
+  // Plan the fetches. Contiguous runs of missing chunks become one range
+  // request each; a chunk another read is already fetching is awaited instead.
+  // Planning and publishing run to completion without an await, so two reads
+  // in the same tick can't both open a run for the same chunk.
+  //
+  // Stops at a cached chunk shorter than CHUNK_SIZE — the file ended inside it,
+  // so every later chunk starts past EOF. That covers the over-read above even
+  // when the size is unknown (CORS hiding Content-Range).
+  const pending: PendingChunk[] = []
+  const runs: ChunkRun[] = []
+  let endChunk = lastChunk
+  for (let index = startChunk; index <= lastChunk; index++) {
+    const chunkKey = cacheKey(key, index)
+    const cached = getCached(chunkKey)
+    if (cached === undefined) {
+      const flight = inFlight.get(chunkKey)
+      if (flight === undefined) {
+        const lastRun = runs.at(-1)
+        if (lastRun?.end === index - 1) {
+          lastRun.end = index
+        } else {
+          runs.push({ start: index, end: index })
+        }
+      } else {
+        pending.push({ index, chunk: joinChunk(flight, init) })
+      }
+    } else {
+      chunks.set(index, cached)
+      if (cached.length < CHUNK_SIZE) {
+        endChunk = index
+        break
+      }
+    }
+  }
+  for (const run of runs) {
+    pending.push(...fetchRun(key, run, init, doFetch))
+  }
+
+  await Promise.all(
+    pending.map(async ({ index, chunk }) => {
+      chunks.set(index, await chunk)
+    }),
+  )
+  // The bytes arrived, but this read gave up while waiting for them — the
+  // request it was sharing kept going because somebody else still wanted it.
+  // Cancellation is per-reader even though the fetch is not.
+  init?.signal?.throwIfAborted()
+
+  const result = new Uint8Array(Math.max(0, end - start))
+  let dataEnd = end
+  for (let i = startChunk; i <= endChunk; i++) {
+    const chunk = chunks.get(i)
+    // Unreachable: every index in [startChunk, endChunk] was either captured
+    // as an already-cached chunk or filled by the run covering it. Throw
+    // rather than assert so a future refactor that breaks the invariant fails
+    // loudly instead of silently assembling a buffer of zeros.
+    if (chunk === undefined) {
+      throw new Error(
+        `internal: chunk ${i} missing during range assembly of ${key}`,
+      )
+    } else {
+      copyChunkInto({ result, start, end, chunkIndex: i, chunk })
+      if (chunk.length < CHUNK_SIZE) {
+        // the file ends inside this chunk, so nothing past that is real data
+        dataEnd = Math.min(dataEnd, i * CHUNK_SIZE + chunk.length)
+        break
+      }
+    }
+  }
+  // max(0) because a read wholly past EOF has dataEnd < start
+  return result.subarray(0, Math.max(0, dataEnd - start))
 }
