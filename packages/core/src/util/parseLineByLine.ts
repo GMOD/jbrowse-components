@@ -82,6 +82,37 @@ export function makeFeatureIntervalTreeMap<
   )
 }
 
+// Decode window. Deliberately small: the win over per-line decoding is in
+// amortizing the per-call cost, which is already gone by a few KB, and a small
+// window keeps the decoded string in cache and the extra memory bounded. A
+// whole-buffer decode measured no faster and has two failure modes this avoids
+// — it doubles peak memory, and V8 caps a string at ~512MB, which a large
+// uncompressed GFF3 can exceed.
+const DECODE_CHUNK_SIZE = 64 * 1024
+
+const NEWLINE = 10
+
+/**
+ * End of the decode chunk starting at `start`: the nominal window extended
+ * *forward* to just past the next newline, so a chunk never ends mid-line and
+ * therefore never ends mid-character either (a newline byte cannot occur inside
+ * a UTF-8 multi-byte sequence, whose continuation bytes are all >= 0x80). That
+ * is what lets each chunk be decoded independently, without `{stream: true}`.
+ *
+ * Extending forward rather than trimming back to the previous newline matters
+ * for a line longer than the window: trimming back has no newline to find and
+ * would either split the line or stall, while extending simply makes one
+ * oversized chunk and moves on.
+ */
+function chunkBoundary(buffer: Uint8Array, start: number) {
+  const nominal = start + DECODE_CHUNK_SIZE
+  if (nominal >= buffer.length) {
+    return buffer.length
+  }
+  const nl = buffer.indexOf(NEWLINE, nominal)
+  return nl === -1 ? buffer.length : nl + 1
+}
+
 /**
  * Parse buffer line by line, calling a callback for each line
  * @param buffer - The buffer to parse
@@ -110,29 +141,50 @@ export function parseLineByLine(
     statusCallback,
     stopToken,
   })
-  let blockStart = 0
+  let chunkStart = 0
   let i = 0
+  let stopped = false
 
   try {
-    while (blockStart < buffer.length) {
-      const n = buffer.indexOf(10, blockStart)
-      // could be a non-newline ended file, so subarray to end of file if n===-1
-      const lineEnd = n === -1 ? buffer.length : n
-      const b = buffer.subarray(blockStart, lineEnd)
-      const line = decoder.decode(b).trim()
+    while (chunkStart < buffer.length) {
+      const chunkEnd = chunkBoundary(buffer, chunkStart)
+      // One decode per chunk rather than one per line. TextDecoder.decode costs
+      // roughly a microsecond per call regardless of length, which a per-line
+      // decode pays once per line: ~100ms of a 12MB/157k-line GFF3 was this
+      // call alone, and the cost scales with line *count*, so the files that
+      // suffer most are the dense ones. Slicing the decoded chunk instead is
+      // ~4x faster over the same bytes.
+      const text = decoder.decode(buffer.subarray(chunkStart, chunkEnd))
 
-      if (line) {
-        const shouldContinue = lineCallback(line, i)
-        if (shouldContinue === false) {
-          break
+      let p = 0
+      while (p < text.length) {
+        const n = text.indexOf('\n', p)
+        // the final chunk of a file with no trailing newline ends without one
+        const lineEnd = n === -1 ? text.length : n
+        const line = text.slice(p, lineEnd).trim()
+
+        if (line) {
+          const shouldContinue = lineCallback(line, i)
+          if (shouldContinue === false) {
+            stopped = true
+            break
+          }
         }
+
+        i++
+        // Chunk-granular position, not line-granular: `report` is called every
+        // line so cancellation still lands within one throttle window, but the
+        // byte offset it publishes only advances per chunk. Interpolating
+        // within the chunk would mean converting a UTF-16 offset back to a byte
+        // offset, and at 64KB the bar already moves in sub-percent steps.
+        report(chunkStart)
+
+        p = lineEnd + 1
       }
-
-      i++
-      report(blockStart)
-
-      // If no newline found, we've reached the end
-      blockStart = lineEnd + 1
+      if (stopped) {
+        break
+      }
+      chunkStart = chunkEnd
     }
   } finally {
     // Cleared in a finally: on the happy path so the finished parse's last
