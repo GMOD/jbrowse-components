@@ -3,6 +3,7 @@ import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import { collectRenderData } from '../RenderFeatureDataRPC/collectRenderData.ts'
 import { labelFontSize } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
+import { layoutMatureProteinRegion } from '../RenderFeatureDataRPC/glyphs/matureProteinRegion.ts'
 import { layoutSubfeatures } from '../RenderFeatureDataRPC/glyphs/subfeatures.ts'
 import { mockDisplayConfig } from '../RenderFeatureDataRPC/testUtils.ts'
 import { computeLaidOutData } from './layout.ts'
@@ -58,12 +59,37 @@ function geneWithTranscripts(names: string[]) {
   })
 }
 
+// A polyprotein CDS whose mature_protein_region children tile the ORF — the
+// other glyph that reserves a `below` label row, and the one that reserved it by
+// halving its own row rather than by adding to a running offset.
+function polyprotein(names: string[]) {
+  return mockFeature({
+    type: 'CDS',
+    name: 'ORF1ab',
+    start: 100,
+    end: 100 + names.length * 300,
+    subfeatures: names.map((name, i) =>
+      mockFeature({
+        type: 'mature_protein_region',
+        name,
+        start: 100 + i * 300,
+        end: 400 + i * 300,
+      }),
+    ),
+  })
+}
+
 // Runs the real pipeline — worker layout, worker collect, main-thread pack —
 // and returns the laid-out region for one display mode.
-function layoutAt(displayMode: DisplayMode, subfeatureLabels: string) {
+function layoutAt(
+  displayMode: DisplayMode,
+  subfeatureLabels: string,
+  feature = geneWithTranscripts(['mRNA-a', 'mRNA-b', 'mRNA-c']),
+  glyph = layoutSubfeatures,
+) {
   const config = mockDisplayConfig({ subfeatureLabels } as any)
-  const layout = layoutSubfeatures({
-    feature: geneWithTranscripts(['mRNA-a', 'mRNA-b', 'mRNA-c']),
+  const layout = glyph({
+    feature,
     config,
   })
   const packed = collectRenderData({
@@ -87,12 +113,16 @@ function layoutAt(displayMode: DisplayMode, subfeatureLabels: string) {
   }).get(0)!
 }
 
-// Transcript rows in draw order, as [top, bottom].
-function transcriptRows(data: FeatureDataResult) {
+// Subfeature rows of one type, in draw order, as [top, bottom].
+function rowsOfType(data: FeatureDataResult, type: string) {
   return data.subfeatureInfos
-    .filter(i => i.type === 'mRNA')
+    .filter(i => i.type === type)
     .map(i => [i.topPx, i.bottomPx] as const)
     .sort((a, b) => a[0] - b[0])
+}
+
+function transcriptRows(data: FeatureDataResult) {
+  return rowsOfType(data, 'mRNA')
 }
 
 // The bug this file exists for: the worker reserved the `below` label row as a
@@ -147,5 +177,41 @@ describe('below subfeature-label rows survive compact scaling', () => {
     // label row shrinks only on LABEL_FONT_MULTIPLIERS (0.85 -> 0.7), so the
     // labeled row must NOT halve between the two modes
     expect(rowOf(superCompact)).toBeGreaterThan(rowOf(compact) / 2)
+  })
+})
+
+// The mature-protein glyph reserved its label by HALVING the row rather than by
+// adding to a running offset, so it expressed the label's share in geometry
+// units too — and, because halving also halves what a full-size label lives in,
+// it overflowed in NORMAL mode as well, unlike the transcript path.
+describe('below label rows on the polyprotein glyph', () => {
+  const modes: DisplayMode[] = ['normal', 'compact', 'superCompact']
+
+  it.each(modes)('gives each cleavage product a full label line (%s)', mode => {
+    const feature = polyprotein(['nsp1', 'nsp2', 'nsp3'])
+    const withLabels = layoutAt(
+      mode,
+      'below',
+      feature,
+      layoutMatureProteinRegion,
+    )
+    const without = layoutAt(mode, 'none', feature, layoutMatureProteinRegion)
+    const labeled = rowsOfType(withLabels, 'mature_protein_region')
+    const plain = rowsOfType(without, 'mature_protein_region')
+    expect(labeled).toHaveLength(3)
+
+    const drawnLabelPx = labelFontSize(mode)
+    // each product's own row grows by exactly the line its label is drawn at
+    for (const [i, row] of labeled.entries()) {
+      const grew = row[1] - row[0] - (plain[i]![1] - plain[i]![0])
+      expect(grew).toBeCloseTo(drawnLabelPx, 5)
+    }
+    // and consecutive products are pushed apart by that same line, so a label
+    // never lands on the product under it
+    for (let i = 1; i < labeled.length; i++) {
+      const plainGap = plain[i]![0] - plain[i - 1]![0]
+      const labeledGap = labeled[i]![0] - labeled[i - 1]![0]
+      expect(labeledGap - plainGap).toBeCloseTo(drawnLabelPx, 5)
+    }
   })
 })

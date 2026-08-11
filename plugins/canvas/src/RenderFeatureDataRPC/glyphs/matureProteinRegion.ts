@@ -80,21 +80,31 @@ export function layoutMatureProteinRegion(args: LayoutArgs): FeatureLayout {
   // callable directly, and a zero-height CDS would vanish rather than degrade to
   // a plain box.
   const numRows = Math.max(1, sortedChildren.length)
-  // 'below' labels need 2x row height: one half for the box, one for the label
-  const perRowMultiplier = subfeatureLabels === 'below' ? 2 : 1
-  const rowHeight = heightPx * perRowMultiplier
+  // One body row per cleavage product, and — in `below` mode — one COUNTED label
+  // row under each (see FeatureLayout.labelRowsAbove).
+  //
+  // This used to double the row and split it box/label, which put the label's
+  // share in geometry units: the main thread then scaled it by HEIGHT_MULTIPLIERS
+  // while the label drew on the gentler LABEL_FONT_MULTIPLIERS, so the half
+  // reserved for text came out smaller than the text — 10px against 11px in
+  // normal mode, 6px against 8.25px in compact, 3px against 7.15px in
+  // superCompact. Unlike the transcript path's version of this, it overflowed in
+  // NORMAL mode too, because halving the row also halved what a full-size label
+  // had to live in.
+  const rowHeight = heightPx
   const totalHeight = rowHeight * numRows
 
   const padding = 1
-  const boxHeight =
-    subfeatureLabels === 'below'
-      ? Math.floor(rowHeight / 2) - padding
-      : rowHeight - padding * 2
+  const boxHeight = rowHeight - padding * 2
+  const below = subfeatureLabels === 'below'
 
   for (const [i, child] of sortedChildren.entries()) {
     child.y = i * rowHeight + padding
     child.height = boxHeight
     child.totalLayoutHeight = rowHeight
+    // i products above this one, each having spent a label row
+    child.labelRowsAbove = below ? i : 0
+    child.ownsLabelRow = below
   }
 
   return {
@@ -104,5 +114,8 @@ export function layoutMatureProteinRegion(args: LayoutArgs): FeatureLayout {
     height: totalHeight,
     totalLayoutHeight: totalHeight,
     children: sortedChildren,
+    // propagates to the containing gene's row (and to this feature's own
+    // flatbush extent when the CDS is top-level)
+    labelRows: below ? numRows : 0,
   }
 }

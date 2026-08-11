@@ -211,7 +211,13 @@ describe('layoutMatureProteinRegion', () => {
     expect(layout.children[1]!.y).toBe(11)
   })
 
-  it('doubles row height for below labels', () => {
+  // The label row is COUNTED, not carved out of the row height. It used to
+  // double the row and give the label half of it, which put the label's share in
+  // geometry units — the main thread scales those by HEIGHT_MULTIPLIERS while the
+  // label draws on the gentler LABEL_FONT_MULTIPLIERS, so the reserved half came
+  // out smaller than the text in every mode, normal included. See
+  // FeatureLayout.labelRowsAbove.
+  it('counts a label row per cleavage product and leaves the rows body-sized', () => {
     const feature = viralPolyprotein([
       'mature_protein_region',
       'mature_protein_region',
@@ -220,11 +226,28 @@ describe('layoutMatureProteinRegion', () => {
       feature,
       config: mockDisplayConfig({ subfeatureLabels: 'below' }),
     })
-    // rowHeight = 20, boxHeight = floor(20/2)-1 = 9
-    expect(layout.height).toBe(40)
+    // identical worker geometry to the 'none' case above — one body row each
+    expect(layout.height).toBe(20)
     expect(layout.children[0]!.y).toBe(1)
-    expect(layout.children[0]!.height).toBe(9)
-    expect(layout.children[1]!.y).toBe(21)
+    expect(layout.children[0]!.height).toBe(8)
+    expect(layout.children[1]!.y).toBe(11)
+    // what `below` adds is the counts the main thread spends
+    expect(layout.labelRows).toBe(2)
+    expect(layout.children.map(c => c.labelRowsAbove)).toEqual([0, 1])
+    expect(layout.children.every(c => c.ownsLabelRow)).toBe(true)
+  })
+
+  it('counts no rows when below labels are off', () => {
+    const feature = viralPolyprotein([
+      'mature_protein_region',
+      'mature_protein_region',
+    ])
+    const layout = layoutMatureProteinRegion({
+      feature,
+      config: mockDisplayConfig({ subfeatureLabels: 'none' }),
+    })
+    expect(layout.labelRows).toBe(0)
+    expect(layout.children.some(c => c.ownsLabelRow)).toBe(false)
   })
 
   it('always has at least one row even with no mature regions', () => {

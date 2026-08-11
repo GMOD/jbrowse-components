@@ -201,13 +201,14 @@ function registerSubfeature(
     topPx: number
     heightPx: number
     labelRowsAbove: number
+    ownsLabelRow?: boolean
     displayLabel: string | undefined
   },
   ctx: RenderContext,
   collector: Collector,
 ) {
   const { feature, parentFeatureId, type, topPx, heightPx, displayLabel } = args
-  const { labelRowsAbove } = args
+  const { labelRowsAbove, ownsLabelRow } = args
   const startBp = feature.get('start')
   const endBp = feature.get('end')
   collector.subfeatureInfos.push({
@@ -220,6 +221,7 @@ function registerSubfeature(
     topPx,
     bottomPx: topPx + heightPx,
     labelRowsAbove,
+    ownsLabelRow,
     displayLabel,
   })
   emitSubfeatureLabel(
@@ -268,7 +270,7 @@ function processMatureProteinLayout(
   ctx: RenderContext,
   collector: Collector,
 ) {
-  const { baseTopPx, flatbushIdx, labelRowsAbove } = place
+  const { baseTopPx, flatbushIdx } = place
   const { parentFeature: rootFeature } = place
   const cdsFeature = layout.feature
   // one flat residue list for the whole ORF; the polyprotein CDS is a single
@@ -295,6 +297,10 @@ function processMatureProteinLayout(
   for (const [i, childLayout] of layout.children.entries()) {
     const childFeature = childLayout.feature
     const topPx = baseTopPx + childLayout.y
+    // this glyph's own rows are per CHILD (one label row under each cleavage
+    // product), so they compose with whatever the enclosing gene already spent
+    const labelRowsAbove =
+      place.labelRowsAbove + (childLayout.labelRowsAbove ?? 0)
     const colorIdx = i % MATURE_PROTEIN_COLORS.length
     const cStart = childFeature.get('start')
     const cEnd = childFeature.get('end')
@@ -353,6 +359,7 @@ function processMatureProteinLayout(
         topPx,
         heightPx: childLayout.height,
         labelRowsAbove,
+        ownsLabelRow: childLayout.ownsLabelRow,
         displayLabel,
       },
       ctx,
@@ -366,7 +373,7 @@ function processMatureProteinLayout(
       height: layout.height,
       strokeUint: colorToUint32(strokeColor(layout.feature, ctx)),
       flatbushIdx,
-      labelRowsAbove,
+      labelRowsAbove: place.labelRowsAbove,
     },
     collector,
   )

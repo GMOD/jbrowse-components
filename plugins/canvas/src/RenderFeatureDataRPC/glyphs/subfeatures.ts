@@ -148,6 +148,10 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
     children.push(childLayout)
 
     currentYPx += childLayout.height
+    // rows the child spends INSIDE itself (a polyprotein CDS labels each of its
+    // cleavage products), which sit between this child's top and the next one's
+    // and so are above every sibling that follows
+    labelRows += childLayout.labelRows ?? 0
     if (
       reservesBelowLabelRow({
         feature: child,
