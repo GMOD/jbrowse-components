@@ -7,11 +7,11 @@ import {
 } from '@jbrowse/core/util/stopToken'
 
 import { measureRegionBytes } from '../RenderFeatureDataRPC/byteGate.ts'
+import { dedupeFeaturesById } from '../RenderFeatureDataRPC/dedupeFeatures.ts'
 import { packMultiRowFeatures } from './packMultiRowFeatures.ts'
 
 import type { MultiRowGetFeaturesArgs } from './rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Feature } from '@jbrowse/core/util'
 
 export async function executeMultiRowGetFeatures({
   pluginManager,
@@ -61,16 +61,9 @@ export async function executeMultiRowGetFeatures({
   )
   checkStopTokenThrottled(stopTokenCheck)
 
-  // Dedup by feature id: multiple adapter passes can yield the same feature id
-  // (mirrors the feature-render RPC), which would otherwise pack duplicate
-  // quads.
-  const featureMap = new Map<string, Feature>()
-  for (const f of featuresArray) {
-    if (!featureMap.has(f.id())) {
-      featureMap.set(f.id(), f)
-    }
-  }
-  const features = [...featureMap.values()]
+  // Dedup by feature id — a duplicate would otherwise pack duplicate quads. See
+  // dedupeFeaturesById for why all three feature RPCs run the same one.
+  const features = [...dedupeFeaturesById(featuresArray).values()]
 
   const result = packMultiRowFeatures({
     features,

@@ -9,6 +9,7 @@ import {
 
 import { measureRegionBytes } from './byteGate.ts'
 import { collectRenderData } from './collectRenderData.ts'
+import { dedupeFeaturesById } from './dedupeFeatures.ts'
 import {
   featuresPerPx,
   samplePreFetchDensity,
@@ -22,7 +23,6 @@ import { shouldRenderPeptideBackground } from './zoomThresholds.ts'
 import type { FeatureDataResult, RenderFeatureDataArgs } from './rpcTypes.ts'
 import type { FeatureLayout, PeptideData } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Feature } from '@jbrowse/core/util'
 
 export async function executeRenderFeatureData({
   pluginManager,
@@ -138,18 +138,11 @@ export async function executeRenderFeatureData({
   // region.start / region.end are integer bp by contract — see
   // RenderFeatureDataArgs.region. No defensive rounding here.
 
-  // Admission (built above) runs before dedup and density-gating, so
-  // filtered-out features neither count toward density nor reach layout. Dedup
-  // before density-gating: multiple adapter passes can yield the same feature
-  // id, and the returned featureCount is the dedup'd size — the gate must use
-  // the same count it reports so main-thread and worker decisions stay in sync.
-  const features = new Map<string, Feature>()
-  for (const f of featuresArray) {
-    const id = f.id()
-    if (!features.has(id) && admit(f)) {
-      features.set(id, f)
-    }
-  }
+  // Admission (built above) runs inside the dedup, ahead of density-gating, so
+  // filtered-out features neither count toward density nor reach layout — and
+  // the returned featureCount is this map's size, so the gate uses the same
+  // count it reports and main-thread and worker decisions stay in sync.
+  const features = dedupeFeaturesById(featuresArray, admit)
 
   if (maxFeatureDensity !== undefined) {
     const featureDensity = featuresPerPx(

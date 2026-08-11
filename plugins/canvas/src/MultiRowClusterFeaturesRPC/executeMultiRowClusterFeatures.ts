@@ -10,6 +10,7 @@ import {
   makeFeatureColorResolver,
   makeFeaturePartitionResolver,
 } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
+import { dedupeFeaturesById } from '../RenderFeatureDataRPC/dedupeFeatures.ts'
 import { buildMultiRowMatrix } from './buildMultiRowMatrix.ts'
 
 import type { MatrixFeature } from './buildMultiRowMatrix.ts'
@@ -57,20 +58,18 @@ export async function executeMultiRowClusterFeatures({
       () => dataAdapter.getFeaturesArray(region, { statusCallback, stopToken }),
     )
     checkStopTokenThrottled(stopTokenCheck)
-    // dedup by feature id (mirrors the get-features RPC): a duplicate would
-    // double-count coverage in the clustering matrix and skew the row order
-    const seen = new Set<string>()
-    for (const f of feats) {
-      if (!seen.has(f.id())) {
-        seen.add(f.id())
-        features.push({
-          regionIndex,
-          row: featurePartition(f),
-          start: f.get('start'),
-          end: f.get('end'),
-          colorKey: featureColor(f).css,
-        })
-      }
+    // Dedup by feature id — a duplicate would double-count coverage in the
+    // matrix and skew the row order. Per region rather than across the whole
+    // fetch: a feature genuinely appearing in two clustered regions covers bins
+    // in both, and `regionIndex` is what keeps those apart.
+    for (const f of dedupeFeaturesById(feats).values()) {
+      features.push({
+        regionIndex,
+        row: featurePartition(f),
+        start: f.get('start'),
+        end: f.get('end'),
+        colorKey: featureColor(f).css,
+      })
     }
   }
 
