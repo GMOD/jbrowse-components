@@ -9,7 +9,7 @@ import { observer } from 'mobx-react'
 
 import { ClusterProvenanceHint } from './ClusterProvenanceHint.tsx'
 import { StaleTreeHint } from './StaleTreeHint.tsx'
-import { getLeafNames } from './clusterUtils.ts'
+import { getLeafNames, subtreeCoversEveryRow } from './clusterUtils.ts'
 import { pickTreeNode } from './spatialIndex.ts'
 import {
   TREE_RESIZE_HANDLE_WIDTH,
@@ -325,12 +325,21 @@ const TreeSidebar = observer(function TreeSidebar({
           </MenuItem>
         ) : null}
         {menuAnchor ? (
+          // Disabled where it would hide nothing (`subtreeCoversEveryRow` says
+          // why), rather than hidden, so the count still answers "how many are
+          // under here" — which is what a reader clicks the root to find out.
+          //
+          // "rows", not "samples": three of the four consumers do not have
+          // samples. They are subtracks (multi-wiggle), row groups (multi-row
+          // features) and genomes (maf), and rows is the word the rest of this
+          // package uses for all of them.
           <MenuItem
+            disabled={subtreeCoversEveryRow(menuAnchor.names, sources.length)}
             onClick={() => {
               applyFilter(menuAnchor.names)
             }}
           >
-            Show only subtree ({menuAnchor.names.length} samples)
+            Show only subtree ({menuAnchor.names.length} rows)
           </MenuItem>
         ) : null}
       </Menu>

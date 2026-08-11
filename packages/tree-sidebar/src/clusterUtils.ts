@@ -150,6 +150,28 @@ export function filterRowsBySubtree<T extends { name: string }>(
   return filterSet ? rows.filter(r => filterSet.has(r.name)) : rows
 }
 
+// True when focusing this subtree would hide nothing: the node already contains
+// every row on screen. The root always does, and clicking it is a natural "show
+// me everything" gesture — which is exactly the click that must not go through,
+// because applying that filter leaves the rows where they are while making
+// "Clear subtree filter" appear as though something had changed. On MAF it is
+// worse than cosmetic: `subtreeFilter` is a fetch argument and therefore an
+// `rpcProps()` cache key, so a full-set filter drops every loaded region and
+// re-downloads byte-identical rows.
+//
+// A count comparison rather than a set comparison, and that is sound only
+// because of `treeDescribesRows` below: the tree is positioned at all only when
+// its leaves are exactly the drawn rows, so a subtree holding as many leaves as
+// there are rows holds *those* rows. Written as its own function to say that
+// once — inline it reads like a cheap approximation of a set equality, and the
+// next reader "fixes" it into one.
+export function subtreeCoversEveryRow(
+  leafNames: readonly string[],
+  rowCount: number,
+) {
+  return leafNames.length === rowCount
+}
+
 // True when `root`'s leaves are exactly `rowNames`, in the same order — i.e.
 // the tree still describes the rows the display is drawing.
 //

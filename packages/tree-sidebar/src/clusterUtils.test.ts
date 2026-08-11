@@ -6,6 +6,7 @@ import {
   parseClusterTree,
   pruneNewickToLeaves,
   reconcileLayout,
+  subtreeCoversEveryRow,
   treeDescribesRows,
   validateClusterOrder,
 } from './clusterUtils.ts'
@@ -207,6 +208,32 @@ test('filterRowsBySubtree ignores filter names no row has', () => {
 // draws the whole dendrogram against the wrong ones. `computeClusterHierarchy`
 // is where every display positions its tree, so it is where that is caught —
 // including for the ways rows move with no `setLayout` call to hook.
+// The root always contains every row, and clicking it is a natural "show me
+// everything" gesture — which is the click that must not apply a filter. It
+// would leave the rows where they are while making "Clear subtree filter"
+// appear as though something had changed, and on MAF, where `subtreeFilter` is
+// an `rpcProps()` cache key, drop every loaded region to re-download identical
+// rows.
+describe('subtreeCoversEveryRow', () => {
+  it('is true for a node holding as many leaves as there are rows', () => {
+    expect(subtreeCoversEveryRow(['a', 'b', 'c'], 3)).toBe(true)
+  })
+
+  it('is false for a proper subtree, which is the case worth offering', () => {
+    expect(subtreeCoversEveryRow(['a', 'b'], 3)).toBe(false)
+  })
+
+  // A count comparison is sound only under `treeDescribesRows`, which is what
+  // positions the tree in the first place: its leaves ARE the drawn rows, so
+  // equal counts means the same set. Pinned together so the two do not drift.
+  it('agrees with the invariant it leans on', () => {
+    const rows = [{ name: 'a' }, { name: 'b' }]
+    const root = parseClusterTree('(a:1,b:1):0;')
+    expect(treeDescribesRows(root, rows)).toBe(true)
+    expect(subtreeCoversEveryRow(getLeafNames(root), rows.length)).toBe(true)
+  })
+})
+
 describe('treeDescribesRows', () => {
   const root = parseClusterTree('((a,b),c);')
 
