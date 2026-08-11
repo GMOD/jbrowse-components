@@ -1,6 +1,6 @@
-Linking into a browser is half the job. A reader who followed a search hit or a
-row in a variant table lands on a window of sequence with nothing marking what
-they clicked, and navigating alone does not fix that.
+[The page before this one](../search-by-name/) ends by navigating to a search
+hit, which is half the job: the reader lands on a window of sequence with
+nothing marking what they clicked.
 
 `view.highlight` is the mark, and it is data: an array of
 `{refName, start, end, color?, label?}`. `setHighlight(list)` replaces the set,
@@ -11,7 +11,7 @@ they clicked, and navigating alone does not fix that.
 
 It returns `{left, width}`, or `undefined` when the region is nowhere on screen.
 Four things live inside it, each a bug that only appears on an awkward input —
-the three buttons above are those inputs:
+the three buttons above:
 
 - it **clips to the displayed regions**, so a highlight running past the end of
   a contig is trimmed instead of drawn over the greyed-out end of the genome;
@@ -25,7 +25,7 @@ the three buttons above are those inputs:
 **`left` is in viewport pixels**, already net of `offsetPx` — so bands go in a
 plain container, unlike `paddingSpans` and `gridlineTicks`, which are laid out
 across every displayed region and need `view.staticBlocksTranslateX` on a
-wrapper. Two frames on one row; `scalebarRefNameLabels` is in this one.
+wrapper. `scalebarRefNameLabels` is in the viewport frame too.
 
 `session.highlightsVisible` is session-wide, so read it even if you draw no
 control for it. JBrowse re-reveals on _growth_ — `addToHighlights` while the
