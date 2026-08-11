@@ -25,10 +25,12 @@
     return x < box.left || x > box.right || y < box.top || y > box.bottom
   }
 
-  // open the recipe dialog for a clicked trigger
+  // open the recipe dialog for a clicked trigger. The trigger's whole visible
+  // area is an inline <svg>, so the click's target is an SVGElement — narrowing
+  // to HTMLElement here silently dropped every click on it.
   document.addEventListener('click', event => {
     const target = event.target
-    if (target instanceof HTMLElement) {
+    if (target instanceof Element) {
       const button = target.closest('[data-spec-dialog]')
       if (button instanceof HTMLElement) {
         const id = button.dataset.specDialog
@@ -45,7 +47,7 @@
   // figure's link, so it can't drift from the image.
   document.addEventListener('click', async event => {
     const target = event.target
-    if (target instanceof HTMLElement) {
+    if (target instanceof Element) {
       const button = target.closest('.spec-copy')
       if (button instanceof HTMLElement) {
         const code = button.parentElement?.querySelector('code')
