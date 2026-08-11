@@ -5,7 +5,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 // Structural coverage for the single "Feature height" menu, mirroring the
 // alignments display: the three size presets, then a "Track sizing" subheader,
 // then the scroll/expand/squeeze modes. The mutual-exclusion invariants are
-// covered in squeezeToDisplayHeight.test.ts; here we assert the menu wires up
+// covered in fitToDisplayHeight.test.ts; here we assert the menu wires up
 // to them.
 
 function hasLabel(item: MenuItem, label: string) {
