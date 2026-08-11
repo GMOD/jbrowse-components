@@ -1,5 +1,6 @@
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import {
+  LABEL_BASELINE_RATIO,
   LABEL_FONT_SIZE,
   LABEL_PADDING_PX,
   computeLabelPosition,
@@ -117,9 +118,17 @@ export function drawVariantLane(
   if (laneHeight <= 0) {
     return
   }
+  // Where the first line's BASELINE goes. `fillText` takes a baseline, and
+  // plugin-canvas positions a label by the top of its line box, so this is the
+  // same conversion its SVG export makes (`labelY + fontSize *
+  // LABEL_BASELINE_RATIO`) — and the reason the lane does not just set
+  // `textBaseline: 'top'`. That put the whole line ~1px lower than the same
+  // record's label in a LinearVariantDisplay, on top of pushing its descenders
+  // into the canvas edge.
+  const firstBaseline = labelTop + LABEL_FONT_SIZE * LABEL_BASELINE_RATIO
   if (labelsFit) {
     ctx.font = `${LABEL_FONT_SIZE}px sans-serif`
-    ctx.textBaseline = 'top'
+    ctx.textBaseline = 'alphabetic'
     ctx.textAlign = 'left'
   }
   // Right edge of the last label drawn, so the next one is only drawn if it
@@ -222,7 +231,7 @@ export function drawVariantLane(
                 },
               )
               if (labelX > lastLabelRight) {
-                let y = labelTop
+                let y = firstBaseline
                 if (nameLabel) {
                   ctx.fillStyle = nameLabel.color
                   ctx.fillText(nameLabel.text, labelX, y)

@@ -1,4 +1,5 @@
 import { abgrToCssRgba, cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { LABEL_BASELINE_RATIO, LABEL_FONT_SIZE } from '@jbrowse/plugin-canvas'
 
 import { variantTopBandsGeometry } from '../../shared/variantTopBands.ts'
 import { drawVariantLane } from './drawVariantLane.ts'
@@ -57,6 +58,10 @@ const block: VariantRenderBlock = {
   screenEndPx: 1000,
   reversed: false,
 }
+
+// Deepest descender among the faces plugin-canvas measured for
+// LABEL_BASELINE_RATIO (Roboto 0.244, Helvetica/Arial 0.212).
+const MAX_DESCENT_RATIO = 0.244
 
 const RED = cssColorToABGR('red')
 const BLUE = cssColorToABGR('blue')
@@ -300,9 +305,16 @@ describe('labels', () => {
     const b = bands(40, 'auto')
 
     expect(texts.map(t => t.text)).toEqual(['rs1', 'DUP', 'rs2', 'DUP'])
-    // name at labelTop, description one text line below it
-    expect(texts[0]).toMatchObject({ y: b.labelTop })
-    expect(texts[1]!.y).toBeGreaterThan(texts[0]!.y)
+    // `fillText` takes a BASELINE, and the label strip is reserved by line-box
+    // tops — so the name's baseline is `LABEL_BASELINE_RATIO` into the first
+    // box, the same conversion plugin-canvas's SVG export makes. Drawn against
+    // `labelTop` directly (i.e. `textBaseline: 'top'`) the line sat ~1px low
+    // and its descenders ran past the lane.
+    expect(texts[0]).toMatchObject({
+      y: b.labelTop + LABEL_FONT_SIZE * LABEL_BASELINE_RATIO,
+    })
+    // description exactly one line box below
+    expect(texts[1]!.y - texts[0]!.y).toBe(LABEL_FONT_SIZE)
     // two different colors, as plugin-canvas gives them
     expect(texts[0]!.fillStyle).toBe('black')
     expect(texts[1]!.fillStyle).toBe('blue')
@@ -311,6 +323,23 @@ describe('labels', () => {
     // and the marks shrank to make room, rather than the lane growing
     expect(calls.every(c => c.h === b.markHeight)).toBe(true)
     expect(b.markHeight).toBeLessThan(40)
+  })
+
+  // The last line is the one with nothing below it but the canvas edge, and it
+  // was losing the tails of `g`, `p`, `y` to that edge. The strip reserves a
+  // descender allowance so the deepest face in play (Roboto, descent 0.244)
+  // lands inside the lane.
+  test('the last lines descenders fit inside the lane', () => {
+    const b = bands(40, 'auto')
+    const { texts } = draw(40, undefined, 'auto')
+    const lastBaseline = Math.max(...texts.map(t => t.y))
+
+    expect(lastBaseline).toBeCloseTo(
+      b.labelTop + LABEL_FONT_SIZE * (1 + LABEL_BASELINE_RATIO),
+    )
+    expect(
+      lastBaseline + LABEL_FONT_SIZE * MAX_DESCENT_RATIO,
+    ).toBeLessThanOrEqual(b.laneHeight)
   })
 
   test.each([

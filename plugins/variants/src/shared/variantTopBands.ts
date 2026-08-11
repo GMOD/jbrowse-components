@@ -107,7 +107,7 @@ export function clampBandHeight(n: number, min: number, max: number) {
 // Floor/ceiling for a resized lane, and the ceiling is also the size menu's —
 // the menu is the only way to set this, so a slider that stopped short of the
 // clamp would be two different answers to "how tall can it get". 120 is roughly
-// three times what the lane needs at its default (a 16px mark over two lines of
+// three times what the lane needs at its default (a 14px mark over two lines of
 // text); past that it is spending the rows' height on empty band. The floor is
 // where a record stops reading as more than a hairline.
 export const MIN_VARIANT_LANE_HEIGHT = 8
@@ -118,8 +118,8 @@ export const MAX_VARIANT_LANE_HEIGHT = 120
  * menu's "is this the default" / reset both read one number. Sized to hold a
  * readable mark AND both label lines at the shared label font, since the
  * default mode admits both — a lane that had to drop a line at its own default
- * would teach the reader that line does not exist. 40 = 16px mark + 2 x 11px
- * text + the 2px gap.
+ * would teach the reader that line does not exist. 40 = 14px mark + 2 x 11px
+ * text + the 2px gap above them + the 2px descender allowance below.
  */
 export const DEFAULT_VARIANT_LANE_HEIGHT = 40
 
@@ -130,6 +130,24 @@ export const DEFAULT_VARIANT_LANE_HEIGHT = 40
  * is what `drawVariantLane`'s collision cull clears by.
  */
 const LABEL_GAP_PX = 2
+
+/**
+ * What the *last* text line needs below its line box, so its descenders land
+ * inside the lane instead of against the canvas edge.
+ *
+ * A label's line box is `LABEL_FONT_SIZE` tall and its baseline sits
+ * `LABEL_BASELINE_RATIO` (0.84) of the way down it — plugin-canvas's number, for
+ * the faces in play. The descender then runs to `0.84 + 0.244 = 1.084` of the
+ * box for Roboto, the deepest of them: ~0.9px past the bottom at 11px. Earlier
+ * lines are fine, because the next line's own box absorbs it (which is why this
+ * is added once, not per line); the last line has only the canvas edge, and was
+ * having the tails of `g`, `p`, `y` sliced off — visible on the ID line of every
+ * lettered mark whose ID carries one.
+ *
+ * 2 rather than 1: a whole pixel of margin over the ~0.9 the documented faces
+ * want, so a slightly deeper descender does not quietly bring the clip back.
+ */
+const LABEL_DESCENDER_PX = 2
 
 /**
  * The label-mode radio rows, wording the five shared modes for a lane. The
@@ -175,28 +193,31 @@ export function variantTopBandsGeometry({
   const laneHeight = showVariantLane
     ? clampVariantLaneHeight(variantLaneHeight)
     : 0
-  // One text line per kind the mode admits. The font and the gap are
+  // One text line per kind the mode admits, plus the gap above the first and
+  // the descender allowance below the last. The font and both spacings are
   // plugin-canvas's, because the lane letters with plugin-canvas's font at
   // plugin-canvas's measured widths — reserving a different amount than the
-  // text occupies is how a strip clips its own descenders.
+  // text occupies is how a strip clips its own descenders, which is exactly
+  // what `LABEL_DESCENDER_PX` was added to stop.
   const wantsName = modeCanShowName(variantLaneLabels)
   const wantsDescription = modeCanShowDescription(variantLaneLabels)
   const lines = (wantsName ? 1 : 0) + (wantsDescription ? 1 : 0)
-  const labelStrip = lines ? lines * LABEL_FONT_SIZE + LABEL_GAP_PX : 0
+  const stripFor = (n: number) =>
+    n ? n * LABEL_FONT_SIZE + LABEL_GAP_PX + LABEL_DESCENDER_PX : 0
+  const labelStrip = stripFor(lines)
   // Both kinds or neither: a lane tall enough for one line but not two draws
   // the name and drops the description rather than refusing to letter, since
   // the name is the one plugin-canvas drops last.
   const roomForBoth =
     laneHeight - labelStrip >= MIN_MARK_HEIGHT_WITH_LABELS && lines > 0
-  const roomForOne =
-    laneHeight - (LABEL_FONT_SIZE + LABEL_GAP_PX) >= MIN_MARK_HEIGHT_WITH_LABELS
+  const roomForOne = laneHeight - stripFor(1) >= MIN_MARK_HEIGHT_WITH_LABELS
   const drawnLines = roomForBoth ? lines : roomForOne && lines ? 1 : 0
   // With room for one line and both kinds asked for, the name wins — except
   // where the mode asked for a description alone, which then IS the one line.
   const showName = drawnLines > 0 && wantsName
   const showDescription =
     drawnLines === 2 || (drawnLines === 1 && wantsDescription && !wantsName)
-  const strip = drawnLines * LABEL_FONT_SIZE + (drawnLines ? LABEL_GAP_PX : 0)
+  const strip = stripFor(drawnLines)
   const markHeight = laneHeight - strip
   return {
     laneTop: 0,

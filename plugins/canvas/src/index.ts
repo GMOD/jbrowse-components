@@ -67,8 +67,11 @@ export {
 // different answer to a different question, not drift. `LABEL_PADDING_PX` is
 // shared even so: it is the horizontal breathing room two labels need whatever
 // resolves their overlap, and it is sized to absorb measureText's disagreement
-// with the rendered font.
+// with the rendered font. `LABEL_BASELINE_RATIO` is the vertical counterpart —
+// where a label's baseline sits inside its line box — and any canvas drawing a
+// label into a box owes that conversion, this plugin's SVG export included.
 export {
+  LABEL_BASELINE_RATIO,
   LABEL_FONT_SIZE,
   LABEL_PADDING_PX,
 } from './RenderFeatureDataRPC/constants.ts'
