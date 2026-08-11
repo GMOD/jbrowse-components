@@ -4,7 +4,7 @@ import { resolveCellColor } from '../resolveCellColor.ts'
 import { resolvedExtent } from './alignedExtent.ts'
 import { GAP_STROKE_OFFSET } from './types.ts'
 
-import type { buildColumnForGenomicOffset } from '../binning.ts'
+import type { GenomicColumns } from '../binning.ts'
 import type { RowFlank } from './rowFlank.ts'
 import type { RenderingContext } from './types.ts'
 
@@ -25,7 +25,7 @@ export function renderBases(
   context: RenderingContext,
   alignment: Uint8Array,
   seq: Uint8Array,
-  columns: ReturnType<typeof buildColumnForGenomicOffset>,
+  columns: GenomicColumns,
   startBp: number,
   rowTop: number,
   flank: RowFlank,

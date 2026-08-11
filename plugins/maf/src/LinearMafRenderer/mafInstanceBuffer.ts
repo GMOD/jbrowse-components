@@ -1,4 +1,4 @@
-import { buildColumnForGenomicOffset } from './binning.ts'
+import { ColumnMapper } from './binning.ts'
 import { resolvedExtent } from './rendering/alignedExtent.ts'
 import { makeRowFlank } from './rendering/rowFlank.ts'
 import {
@@ -118,10 +118,14 @@ export function buildInstanceBuffer(args: BuildInstancesArgs) {
   })
   const out = new InstanceWriter(maxInstances(blocks, binBp))
   const rowFlank = makeRowFlank(blocks)
+  // One buffer for the whole encode rather than one per block — a real MAF is
+  // tens of thousands of small blocks, so the per-block allocation was the
+  // encode's only remaining one. See `ColumnMapper`.
+  const columns = new ColumnMapper()
 
   for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
     const { startBp, refSeqBytes, rows } = blocks[blockIndex]!
-    const { colForGpos, refLen } = buildColumnForGenomicOffset(refSeqBytes)
+    const { colForGpos, refLen } = columns.build(refSeqBytes)
 
     for (const row of rows) {
       const { rowIndex, alignmentBytes } = row

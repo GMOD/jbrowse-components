@@ -8,7 +8,7 @@ import {
   rowBandGeometry,
   visibleRowRange,
 } from '../LinearMafDisplay/components/visibleRegionGeometry.ts'
-import { buildColumnForGenomicOffset } from './binning.ts'
+import { ColumnMapper } from './binning.ts'
 import { renderBases } from './rendering/bases.ts'
 import { makeRowFlank } from './rendering/rowFlank.ts'
 
@@ -54,6 +54,8 @@ export function drawMafBlocks(
     canvasHeight,
   )
   const cellColorConfig = { ...palette, showAllLetters, mismatchRendering }
+  // One buffer for the whole paint, not one per block — see `ColumnMapper`.
+  const columnMapper = new ColumnMapper()
 
   forEachClippedBlock(
     ctx,
@@ -86,7 +88,7 @@ export function drawMafBlocks(
         // Once per block, not per row: the map is a property of the block's
         // reference, and rebuilding it per row would put the O(columns x rows)
         // walk back that stepping by `binBp` exists to remove.
-        const columns = buildColumnForGenomicOffset(refSeqBytes)
+        const columns = columnMapper.build(refSeqBytes)
         for (const row of mafBlock.rows) {
           if (row.rowIndex >= firstRow && row.rowIndex < endRow) {
             renderBases(
