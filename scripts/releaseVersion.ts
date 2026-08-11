@@ -6,14 +6,42 @@
 const LEVELS = new Set(['patch', 'minor', 'major'])
 const VERSION = /^\d+\.\d+\.\d+(-[0-9A-Za-z][0-9A-Za-z.-]*)?$/
 
+// Every flag a script accepts, so the ones it doesn't can be refused rather
+// than ignored. Each of these scripts reads its flags with `includes`, which
+// makes a typo mean "off" — and the flags anyone would mistype are the two that
+// exist only to hold a run back: `pnpm release minor --dryrun` bumps, commits,
+// tags and pushes a real release, and `pnpm announce -- --dryrun` posts to
+// Bluesky, Mastodon and the newsletter for real. Same shape as parseTagArg's
+// missing-value guard, and the same reason: silence is the wrong default when
+// the mistake is one you cannot take back.
+export function unknownFlags(argv: string[], known: string[]) {
+  const valid = new Set(known)
+  return argv.filter(a => a.startsWith('--') && !valid.has(a))
+}
+
+const RELEASE_FLAGS = ['--skip-ci-check', '--dry-run', '--version']
+
 export function parseReleaseArgs(argv: string[]) {
-  const skipCiCheck = argv.includes('--skip-ci-check')
-  const dryRun = argv.includes('--dry-run')
   const versionIdx = argv.indexOf('--version')
   const explicitVersion = versionIdx === -1 ? undefined : argv[versionIdx + 1]
-  if (versionIdx !== -1 && !explicitVersion) {
+  // Rejected here rather than left to the VERSION test below, which would
+  // report `--version --dry-run` as a malformed version number instead of as a
+  // value the shell ate.
+  if (
+    versionIdx !== -1 &&
+    (!explicitVersion || explicitVersion.startsWith('--'))
+  ) {
     throw new Error('--version needs a value, e.g. --version 4.4.0-beta.1')
   }
+  // After the guard above, so --version's own value is never mistaken for one.
+  const unknown = unknownFlags(argv, RELEASE_FLAGS)
+  if (unknown.length > 0) {
+    throw new Error(
+      `Unknown option ${unknown.join(', ')}. Valid options: ${RELEASE_FLAGS.join(', ')}`,
+    )
+  }
+  const skipCiCheck = argv.includes('--skip-ci-check')
+  const dryRun = argv.includes('--dry-run')
   if (explicitVersion && !VERSION.test(explicitVersion)) {
     throw new Error(
       `--version '${explicitVersion}' is not X.Y.Z or X.Y.Z-prerelease`,

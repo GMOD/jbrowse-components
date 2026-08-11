@@ -18,11 +18,24 @@ import path from 'node:path'
 import { composeAnnouncement, linkFacets } from './announceFormat.ts'
 import { REPO, splitReleaseBody, stripImages } from './releaseBlog.ts'
 import { loadReleasePost } from './releaseCli.ts'
+import { unknownFlags } from './releaseVersion.ts'
 
 const MASTODON_INSTANCE =
   process.env.MASTODON_INSTANCE ?? 'https://genomic.social'
 
+const ANNOUNCE_FLAGS = ['--dry-run', '--tag']
+
 const args = process.argv.slice(2)
+// `--dry-run` is read with `includes`, so a mistyped one reads as "not a dry
+// run" and this posts to Bluesky, Mastodon and the newsletter for real, with
+// nothing to take back. Checked before anything is composed.
+const unknown = unknownFlags(args, ANNOUNCE_FLAGS)
+if (unknown.length > 0) {
+  console.error(
+    `Unknown option ${unknown.join(', ')}. Valid options: ${ANNOUNCE_FLAGS.join(', ')}`,
+  )
+  process.exit(1)
+}
 const dryRun = args.includes('--dry-run')
 
 // One post supplies the notes, the date parts and the tag, so the prose and

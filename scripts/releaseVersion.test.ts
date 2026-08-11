@@ -3,6 +3,7 @@ import {
   nextVersion,
   parseReleaseArgs,
   parseTagArg,
+  unknownFlags,
 } from './releaseVersion.ts'
 
 const from = (argv: string[], previousVersion = '4.3.0') => {
@@ -49,9 +50,46 @@ test('rejects bad input', () => {
   expect(() => parseReleaseArgs(['bogus'])).toThrow('Invalid semver level')
   expect(() => parseReleaseArgs(['--version'])).toThrow('needs a value')
   expect(() => parseReleaseArgs(['--version', '4.4'])).toThrow('is not X.Y.Z')
+  // a value the shell ate is that, not a malformed version number
+  expect(() => parseReleaseArgs(['--version', '--dry-run'])).toThrow(
+    'needs a value',
+  )
   expect(() =>
     nextVersion({ previousVersion: '4.4.0-beta.1', level: 'patch' }),
   ).toThrow('not a plain X.Y.Z')
+})
+
+// Both flags are read with `includes`, so an unrecognized one used to be
+// ignored in silence — and the flag anyone mistypes is the one holding the run
+// back: `--dryrun` would bump, commit, tag and push a real release, with no
+// undo for that or for the announcement equivalent.
+test('an unrecognized flag is refused, not ignored', () => {
+  expect(() => parseReleaseArgs(['minor', '--dryrun'])).toThrow(
+    'Unknown option --dryrun',
+  )
+  expect(() => parseReleaseArgs(['--skip-ci'])).toThrow('Unknown option')
+  expect(() =>
+    parseReleaseArgs(['--dry-run', '--nope', '--also-nope']),
+  ).toThrow('Unknown option --nope, --also-nope')
+  // and the flags that do exist still parse, including --version's own value
+  expect(() =>
+    parseReleaseArgs(['minor', '--dry-run', '--skip-ci-check']),
+  ).not.toThrow()
+  expect(parseReleaseArgs(['--version', '5.0.0-beta.1']).explicitVersion).toBe(
+    '5.0.0-beta.1',
+  )
+})
+
+// announce.ts shares this: `--dryrun` there posts to Bluesky, Mastodon and the
+// newsletter for real.
+test('unknownFlags reports only the flags, never a positional or a value', () => {
+  expect(
+    unknownFlags(['--dry-run', '--tag', 'v4.3.1'], ['--dry-run', '--tag']),
+  ).toEqual([])
+  expect(unknownFlags(['--dryrun'], ['--dry-run', '--tag'])).toEqual([
+    '--dryrun',
+  ])
+  expect(unknownFlags(['minor', '-v'], ['--dry-run'])).toEqual([])
 })
 
 test('isPrerelease', () => {
