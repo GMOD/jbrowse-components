@@ -32,26 +32,19 @@ export interface SvgDisplayResult {
 
 export const trackSpacing = 2
 
-// x shift from the staticBlocks frame (which `gridlineTicks`/`scalebarLabels`
-// are computed in, and which overhangs the viewport on both sides) into the
-// view frame. The on-screen counterpart is ZoomTransform's translateX.
-function staticBlocksDx(model: {
-  staticBlocks: { offsetPx: number }
-  offsetPx: number
-}) {
-  return model.staticBlocks.offsetPx - model.offsetPx
-}
-
 // Major and minor gridline tick x-positions, shifted from the staticBlocks
-// frame into the view frame. Shared by the SVG gridlines and ruler so their
-// tick pitch can't drift. `dx` is returned too since the ruler reuses it to
-// place its coordinate labels.
+// frame (which `gridlineTicks`/`scalebarLabels` are computed in, and which
+// overhangs the viewport on both sides) into the view frame. Shared by the SVG
+// gridlines and ruler so their tick pitch can't drift. `dx` is returned too
+// since the ruler reuses it to place its coordinate labels.
+//
+// The shift is the view's own `staticBlocksTranslateX`, so the export and
+// ZoomTransform cannot disagree about the frame.
 export function gridlineTickXs(model: {
-  staticBlocks: { offsetPx: number }
-  offsetPx: number
+  staticBlocksTranslateX: number
   gridlineTicks: { major: boolean; x: number }[]
 }) {
-  const dx = staticBlocksDx(model)
+  const dx = model.staticBlocksTranslateX
   const xs = (wantMajor: boolean) =>
     model.gridlineTicks.filter(t => t.major === wantMajor).map(t => dx + t.x)
   return { dx, major: xs(true), minor: xs(false) }

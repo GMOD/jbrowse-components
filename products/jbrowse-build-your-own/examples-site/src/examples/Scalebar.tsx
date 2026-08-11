@@ -130,11 +130,17 @@ const TrackRow = observer(function TrackRow({
  * clipped by the svg's own box, so nothing has to measure the height.
  *
  * The x values are in the **staticBlocks frame**: a pixel space that spans
- * every displayed region rather than the viewport, with its origin at
- * `staticBlocks.offsetPx`. So one element translated by
- * `staticBlocks.offsetPx - view.offsetPx` puts every tick in the right place at
- * once, and a pan moves that one transform rather than each tick. The
- * coordinate labels below use the same frame for the same reason.
+ * every displayed region rather than the viewport. So one element translated by
+ * `view.staticBlocksTranslateX` puts every tick in the right place at once, and
+ * a pan moves that one transform rather than each tick. The coordinate labels
+ * below use the same frame for the same reason.
+ *
+ * Laying the overlay out in absolute genome pixels and translating by
+ * `-view.offsetPx` is the shape that looks equivalent and is not. `offsetPx` is
+ * a whole-genome coordinate -- hg38 chr1 at base resolution is past 1e10 -- and
+ * a CSS length that size is float32 by the time it reaches the compositor,
+ * where neighbouring representable values are ~1000px apart. The getter does
+ * the subtraction in JS, so only its small difference reaches CSS.
  *
  * `usePalette()` is how a component asks JBrowse for a color without Material
  * UI -- the same hook its own displays use, reading the same theme, so chrome
@@ -144,7 +150,7 @@ const TrackRow = observer(function TrackRow({
  * `color-scheme` gets a white label box for its trouble.
  */
 const Gridlines = observer(function Gridlines({ view }: { view: BrowserView }) {
-  const { gridlineTicks, staticBlocks, offsetPx } = view
+  const { gridlineTicks, staticBlocks, staticBlocksTranslateX } = view
   const palette = usePalette()
   let minorD = ''
   let majorD = ''
@@ -166,7 +172,7 @@ const Gridlines = observer(function Gridlines({ view }: { view: BrowserView }) {
         left: 0,
         height: '100%',
         width: staticBlocks.totalWidthPx,
-        transform: `translateX(${Math.round(staticBlocks.offsetPx - offsetPx)}px)`,
+        transform: `translateX(${Math.round(staticBlocksTranslateX)}px)`,
         pointerEvents: 'none',
       }}
     >
@@ -202,7 +208,7 @@ const ScalebarLabels = observer(function ScalebarLabels({
 }: {
   view: BrowserView
 }) {
-  const { scalebarLabels, staticBlocks, offsetPx } = view
+  const { scalebarLabels, staticBlocks, staticBlocksTranslateX } = view
   const palette = usePalette()
   return (
     <div
@@ -212,7 +218,7 @@ const ScalebarLabels = observer(function ScalebarLabels({
         left: 0,
         height: '100%',
         width: staticBlocks.totalWidthPx,
-        transform: `translateX(${Math.round(staticBlocks.offsetPx - offsetPx)}px)`,
+        transform: `translateX(${Math.round(staticBlocksTranslateX)}px)`,
       }}
     >
       {scalebarLabels.map(({ x, label, key }) => (
@@ -452,7 +458,7 @@ const RegionBoundaries = observer(function RegionBoundaries({
 }: {
   view: BrowserView
 }) {
-  const { paddingSpans, staticBlocks, offsetPx } = view
+  const { paddingSpans, staticBlocksTranslateX } = view
   return (
     <div
       aria-hidden
@@ -463,7 +469,7 @@ const RegionBoundaries = observer(function RegionBoundaries({
         left: 0,
         zIndex: 2,
         pointerEvents: 'none',
-        transform: `translateX(${Math.round(staticBlocks.offsetPx - offsetPx)}px)`,
+        transform: `translateX(${Math.round(staticBlocksTranslateX)}px)`,
       }}
     >
       {paddingSpans.map(({ key, x, width, kind }) => (

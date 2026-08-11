@@ -188,8 +188,9 @@ const SPAN_FILL = {
  * The x values are in the **staticBlocks frame**, the same one `gridlineTicks`
  * and `scalebarLabels` use -- a pixel space spanning every displayed region
  * rather than the viewport. So one element translated by
- * `staticBlocks.offsetPx - view.offsetPx` places every span at once, and a pan
- * moves that one transform.
+ * `view.staticBlocksTranslateX` places every span at once, and a pan moves that
+ * one transform. That getter is the frame arithmetic, published: it is the only
+ * coordinate conversion on this site you do not get handed.
  *
  * Deriving this yourself off `isRightEndOfDisplayedRegion` is a near miss twice
  * over: `view.scalebarRegionEndPx` looks like the shortcut and is not one (it
@@ -202,7 +203,7 @@ const RegionBoundaries = observer(function RegionBoundaries({
 }: {
   view: BrowserView
 }) {
-  const { paddingSpans, staticBlocks, offsetPx } = view
+  const { paddingSpans, staticBlocksTranslateX } = view
   return (
     <div
       aria-hidden
@@ -213,7 +214,7 @@ const RegionBoundaries = observer(function RegionBoundaries({
         left: 0,
         zIndex: 2,
         pointerEvents: 'none',
-        transform: `translateX(${Math.round(staticBlocks.offsetPx - offsetPx)}px)`,
+        transform: `translateX(${Math.round(staticBlocksTranslateX)}px)`,
       }}
     >
       {paddingSpans.map(({ key, x, width, kind }) => (

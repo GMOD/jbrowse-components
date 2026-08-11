@@ -1875,6 +1875,47 @@ export function stateModelFactory(pluginManager: PluginManager) {
         },
         /**
          * #getter
+         * The x shift that maps the **staticBlocks frame** onto the viewport:
+         * `translateX(view.staticBlocksTranslateX)` on one container places
+         * every `gridlineTicks`, `scalebarLabels` and `paddingSpans` entry at
+         * once, and a pan then moves that single transform rather than each
+         * child.
+         *
+         * The frame exists because those three are laid out across every
+         * displayed region rather than across the viewport — it overhangs on
+         * both sides — so their `x` values are stable under a scroll and only
+         * this number moves. `scalebarRefNameLabels` is the exception and says
+         * so: its `transform` is already a screen x, because a sticky label's
+         * position is a function of the scroll rather than of block geometry.
+         *
+         * **The subtraction must happen here, in float64, and that is the
+         * load-bearing part.** `offsetPx` is a whole-genome pixel coordinate —
+         * hg38 chr1 at base resolution is already past 1e10 — and a length that
+         * size does not survive the trip through CSS: the transform matrix is
+         * float32 by the time it reaches the compositor, where consecutive
+         * representable values at 1e10 are ~1024px apart, and layout saturates
+         * sooner still (Blink's `LayoutUnit` is int32 at 1/64px, so ±33.5M px).
+         * So the shape that looks obvious — lay an overlay out in absolute
+         * genome pixels, write `translateX(-view.offsetPx)` — does not lose a
+         * subpixel, it puts the row somewhere else entirely, and only on large
+         * assemblies at high zoom, which is not where anyone tests. Both
+         * operands here are large and their difference is bounded by the
+         * overhang (a block or two), so what reaches CSS is small and exact.
+         * Same rule as the GPU side, one layer up —
+         * `agent-docs/reference/BP_PRECISION.md`.
+         *
+         * Published because it is the one piece of coordinate arithmetic a host
+         * drawing its own chrome would otherwise have to know, and because
+         * having it written out at each call site is how the two in-tree copies
+         * came to disagree about rounding. Round it where the content is text
+         * (a fractional offset blurs a label); leave it alone for paths and
+         * boxes.
+         */
+        get staticBlocksTranslateX() {
+          return this.staticBlocks.offsetPx - self.offsetPx
+        },
+        /**
+         * #getter
          * Gridline tick positions (x relative to the staticBlocks frame),
          * derived from staticBlocks + bpPerPx. Computed once and shared by every
          * Gridlines instance (scalebar, main view, each pinned track) rather
@@ -1998,9 +2039,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * #getter
          * Every span along the row that is not track data, as plain geometry in
          * the staticBlocks frame — the same frame as gridlineTicks and
-         * scalebarLabels, so one `translateX(staticBlocks.offsetPx - offsetPx)`
-         * places all three. Three kinds, and a host drawing its own chrome
-         * needs all of them:
+         * scalebarLabels, so one `translateX(staticBlocksTranslateX)` places all
+         * three. Three kinds, and a host drawing its own chrome needs all of
+         * them:
          *
          * - `seam`: the 3px bar at a region's right edge. Displayed regions are
          *   laid out **contiguously** — calculateStaticBlocks emits boundary

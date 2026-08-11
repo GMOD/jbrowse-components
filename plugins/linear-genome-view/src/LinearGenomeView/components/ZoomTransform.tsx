@@ -23,7 +23,7 @@ const useStyles = makeStyles()({
 
 // Shared zoom/scroll-transform wrapper for the gridline ticks and padding-block
 // overlays. Lays the overlay out in the staticBlocks frame and shifts it into
-// the viewport by staticBlocks.offsetPx - offsetPx, so it tracks scroll — but a
+// the viewport by `staticBlocksTranslateX`, so it tracks scroll — but a
 // re-render only patches this div's transform plus the child's path `d`
 // strings, so it stays cheap per frame.
 const ZoomTransform = observer(function ZoomTransform({
@@ -36,13 +36,15 @@ const ZoomTransform = observer(function ZoomTransform({
   children: ReactNode
 }) {
   const { classes } = useStyles()
-  const { staticBlocks, offsetPx } = model
+  const { staticBlocks, staticBlocksTranslateX } = model
   return (
     <div className={classes.zoomContainer}>
       <div
         className={classes.innerContainer}
         style={{
-          transform: `translateX(${staticBlocks.offsetPx - offsetPx - offset}px)`,
+          // unrounded, unlike ScalebarCoordinateLabels: the children here are
+          // paths and boxes rather than text, so there is no glyph to blur
+          transform: `translateX(${staticBlocksTranslateX - offset}px)`,
           width: staticBlocks.totalWidthPx,
         }}
       >

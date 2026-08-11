@@ -44,11 +44,12 @@ const ScalebarCoordinateLabels = observer(function ScalebarCoordinateLabels({
   model: LGV
 }) {
   const { classes } = useStyles()
-  const { scalebarLabels, staticBlocks, offsetPx } = model
+  const { scalebarLabels, staticBlocks, staticBlocksTranslateX } = model
   // labels are laid out in the staticBlocks frame, which overhangs the
   // viewport; shift it into view (the -1 clears the left track border, as
-  // Gridlines/PaddingBlocks do with their `offset` prop)
-  const offsetLeft = Math.round(staticBlocks.offsetPx - offsetPx)
+  // Gridlines/PaddingBlocks do with their `offset` prop). Rounded, unlike
+  // ZoomTransform: these children are text, and a fractional offset blurs it.
+  const offsetLeft = Math.round(staticBlocksTranslateX)
 
   return (
     <div

@@ -192,7 +192,7 @@ const RegionBoundaries = observer(function RegionBoundaries({
 }: {
   view: BrowserView
 }) {
-  const { paddingSpans, staticBlocks, offsetPx } = view
+  const { paddingSpans, staticBlocksTranslateX } = view
   return (
     <div
       aria-hidden
@@ -203,7 +203,7 @@ const RegionBoundaries = observer(function RegionBoundaries({
         left: 0,
         zIndex: 2,
         pointerEvents: 'none',
-        transform: `translateX(${Math.round(staticBlocks.offsetPx - offsetPx)}px)`,
+        transform: `translateX(${Math.round(staticBlocksTranslateX)}px)`,
       }}
     >
       {paddingSpans.map(({ key, x, width, kind }) => (

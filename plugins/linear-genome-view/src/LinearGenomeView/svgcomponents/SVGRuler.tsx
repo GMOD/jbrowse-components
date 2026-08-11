@@ -30,8 +30,8 @@ type LGV = LinearGenomeViewModel
 // on-screen Gridlines/ScalebarCoordinateLabels use (gridlineTicks /
 // scalebarLabels), so tick pitch, label text and label placement can't drift
 // from the screen. Both are computed in the staticBlocks frame, which overhangs
-// the viewport, so shift by staticBlocksDx and let the caller's clip trim the
-// overhang.
+// the viewport, so shift by the view's `staticBlocksTranslateX` and let the
+// caller's clip trim the overhang.
 function Ruler({
   model,
   tickTopY,

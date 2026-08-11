@@ -209,6 +209,39 @@ which point synteny is paying the conversion anyway.
 **Do not** split the difference by leaving the worker relative and converting on
 arrival — that is the current cost plus a copy.
 
+### The same hazard on the CSS side: `staticBlocksTranslateX`
+
+Everything above is about the worker and the GPU. The DOM has the identical
+problem and it is easy to miss, because nothing in CSS reports a range error.
+
+`view.offsetPx` is a **whole-genome** pixel coordinate: hg38 chr1 at base
+resolution is already past 1e10, and a whole-genome view of a large assembly
+sits above that again. A number that size does not survive the trip through CSS.
+The transform matrix is float32 by the time it reaches the compositor — at 1e10
+consecutive representable values are ~1024px apart — and layout saturates
+sooner, since Blink's `LayoutUnit` is an int32 at 1/64px, i.e. ±33.5M px.
+
+So the chrome that overlays the row — gridlines, coordinate labels, region seams
+— is **not** laid out in absolute genome pixels. It is laid out in the
+*staticBlocks frame*, which spans only the displayed regions currently on
+screen plus an overhang of a block or two, and the whole frame is shifted into
+the viewport by one transform. That shift is
+`LinearGenomeView.staticBlocksTranslateX`, and the reason it is a getter rather
+than an expression at each call site is this section: the subtraction is
+large-minus-large in float64 and only its small difference reaches CSS. Writing
+`translateX(-view.offsetPx)` over an absolutely-placed overlay is the shape that
+looks obvious, and it does not lose a subpixel — it puts the row somewhere else
+entirely, on large assemblies at high zoom, which is not where anyone tests.
+
+`paddingSpans`, `gridlineTicks` and `scalebarLabels` all publish `x` in that
+frame for the same reason. `scalebarRefNameLabels` is the deliberate exception:
+its `transform` is a screen x (already net of `offsetPx`, and therefore also
+small), because a sticky label's position is a function of the scroll rather
+than of block geometry.
+
+This is a published surface, not an internal one — `products/jbrowse-build-your-own`
+teaches hosts to draw exactly these overlays.
+
 ### Hi-C is not a precision problem
 
 `diagonalGrid.slang` says its grid units are "genomic bp for Hi-C", which reads

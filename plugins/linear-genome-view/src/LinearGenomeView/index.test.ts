@@ -3013,3 +3013,61 @@ describe('padding spans', () => {
     expect(model.paddingSpans.filter(s => s.kind === 'seam')).toHaveLength(1)
   })
 })
+
+// `staticBlocksTranslateX` is the shift that carries the three frame-relative
+// getters above onto the screen, and its whole reason for being a getter is
+// that the subtraction has to happen in float64 -- a CSS length is float32 by
+// the time it reaches the compositor, and `offsetPx` alone is far past where
+// that is exact. See reference/BP_PRECISION.md, "The same hazard on the CSS
+// side".
+describe('staticBlocksTranslateX', () => {
+  function makeView(end: number) {
+    const { Session, LinearGenomeModel } = initialize()
+    const model = Session.create({ configuration: {} }).setView(
+      LinearGenomeModel.create({ type: 'LinearGenomeView' }),
+    )
+    model.setWidth(800)
+    model.setDisplayedRegions([
+      { assemblyName: 'volvox', refName: 'ctgA', start: 0, end },
+    ])
+    return model
+  }
+
+  test('is the shift from the staticBlocks frame to the viewport', () => {
+    const model = makeView(100000)
+    model.showAllRegions()
+    expect(model.staticBlocksTranslateX).toBeCloseTo(
+      model.staticBlocks.offsetPx - model.offsetPx,
+    )
+
+    // a scroll moves it by exactly what it scrolled, and nothing else: the
+    // frame-relative x values are what stay put
+    const before = model.staticBlocksTranslateX
+    const spansBefore = model.paddingSpans.map(s => s.x)
+    model.horizontalScroll(120)
+    expect(model.staticBlocksTranslateX).toBeCloseTo(before - 120)
+    expect(model.paddingSpans.map(s => s.x)).toEqual(spansBefore)
+  })
+
+  // The claim the getter exists for. A human-sized chromosome at base
+  // resolution puts offsetPx past 1e10, where float32 steps ~1024px at a time,
+  // so an overlay translated by -offsetPx lands in a different part of the
+  // genome. The difference stays inside the overhang, which is a block or two.
+  test('stays small where offsetPx has left float32 behind', () => {
+    const model = makeView(248_000_000)
+    model.navTo({ refName: 'ctgA', start: 247_000_000, end: 247_000_016 })
+
+    // a whole pixel of pan is invisible at this magnitude in single precision,
+    // which is the failure mode: not a blurry line, a row in the wrong place
+    expect(model.offsetPx).toBeGreaterThan(1e10)
+    expect(Math.fround(model.offsetPx + 1)).toBe(Math.fround(model.offsetPx))
+
+    expect(Math.abs(model.staticBlocksTranslateX)).toBeLessThan(
+      model.staticBlocks.totalWidthPx,
+    )
+    // and what reaches CSS survives the round trip through single precision
+    expect(Math.fround(model.staticBlocksTranslateX)).toBeCloseTo(
+      model.staticBlocksTranslateX,
+    )
+  })
+})

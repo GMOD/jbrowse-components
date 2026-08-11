@@ -9,8 +9,11 @@ line. The view drops labels that would collide and formats them for the zoom.
 
 **Both x values are in the `staticBlocks` frame**: a pixel space spanning every
 displayed region, not the viewport. One element translated by
-`staticBlocks.offsetPx - view.offsetPx` places every tick at once, and a pan
-moves that transform instead of each tick.
+`view.staticBlocksTranslateX` places every tick at once, and a pan moves that
+transform instead of each tick. Use the getter rather than translating by
+`-view.offsetPx` over an absolutely-placed overlay: `offsetPx` is a whole-genome
+coordinate, past 1e10 on hg38 chr1 at base resolution, and a CSS length that
+size is float32 by the time it reaches the compositor.
 
 `view.scalebarRefNameLabels` hands back each region's name already placed. Three
 rules live inside it: which block carries the sliding label (not the region's
