@@ -116,6 +116,31 @@ test('re-reporting the same visible rows does not invalidate visibleRows', () =>
   dispose()
 })
 
+// Column widths come off a sample of the rows, since measuring all of them is
+// seconds of blocked main thread on a large sheet. An ordinary file is smaller
+// than the sample, so it must still be measured exactly — that is the part a
+// change to the sampling could regress without anyone noticing
+test('a sheet smaller than the width sample is still measured off every row', () => {
+  const wide = 'W'.repeat(60)
+  const model = makeModel({
+    rowSet: {
+      rows: [{ cellData: { c: 'x' } }, { cellData: { c: 'y' } }],
+    },
+    columns: [{ name: 'c' }],
+  })
+  const narrow = model.dataGridColumns!.find(c => c.field === 'c')!.width
+
+  const model2 = makeModel({
+    rowSet: {
+      rows: [{ cellData: { c: 'x' } }, { cellData: { c: wide } }],
+    },
+    columns: [{ name: 'c' }],
+  })
+  expect(
+    model2.dataGridColumns!.find(c => c.field === 'c')!.width,
+  ).toBeGreaterThan(narrow)
+})
+
 test('svType getters are inert without an INFO.SVTYPE column', () => {
   const model = makeModel({
     rowSet: { rows: [{ cellData: { ALT: '<DEL>' } }] },

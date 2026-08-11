@@ -37,6 +37,26 @@ interface LegacyRow extends Row {
 type VisibleRowFlags = Record<number, boolean>
 
 /**
+ * Rows to measure column widths against. Evenly spaced across the whole sheet
+ * rather than the first N, so a column that only widens near the end of the
+ * file is still seen — a VCF sorted by contig puts its longest REF/ALT
+ * sequences wherever they happen to fall, not at the top.
+ */
+const WIDTH_SAMPLE_ROWS = 1000
+
+function sampleRows<T>(rows: T[] | undefined) {
+  if (!rows || rows.length <= WIDTH_SAMPLE_ROWS) {
+    return rows ?? []
+  }
+  const stride = Math.ceil(rows.length / WIDTH_SAMPLE_ROWS)
+  const out: T[] = []
+  for (let i = 0; i < rows.length; i += stride) {
+    out.push(rows[i]!)
+  }
+  return out
+}
+
+/**
  * Whether two visible-row lookups describe the same set of rows.
  *
  * The grid hands back a freshly built lookup on every pass of its filter
@@ -154,13 +174,21 @@ export default function stateModelFactory() {
        */
       get dataGridColumns() {
         const { rows } = self
+        // widths come off a sample, not the sheet. measureGridWidth walks every
+        // character of every value it is handed, so measuring all of them is
+        // rows × columns × characters of blocking main thread — 3.6s for a
+        // 50k-row, 25-column sheet, spent the moment the import finishes and
+        // again on every session reload. The width is a heuristic for auto-fit
+        // and the columns below cap it anyway, so a sample buys the same answer
+        // for a fortieth of the cost
+        const sample = sampleRows(rows)
         return rows
           ? [
               {
                 field: 'Location',
                 width:
                   measureGridWidth(
-                    rows.map(row =>
+                    sample.map(row =>
                       row.feature ? assembleLocString(row.feature) : 'N/A',
                     ),
                   ) + 40,
@@ -187,7 +215,7 @@ export default function stateModelFactory() {
                 // measuring the bare number left the column a separator short
                 // per three digits, so a megabase-scale SV read as `1,234,5…`
                 width: measureGridWidth(
-                  rows.map(row => {
+                  sample.map(row => {
                     const { feature } = row
                     return feature ? toLocale(feature.end - feature.start) : ''
                   }),
@@ -213,12 +241,16 @@ export default function stateModelFactory() {
                     // value stays available via the cell tooltip / feature
                     // details; the user can still drag-resize wider.
                     width: measureGridWidth(
-                      [...rows.map(r => r[f.name]), f.name],
+                      [...sample.map(r => r[f.name]), f.name],
                       { minWidth: 20, maxWidth: 200 },
                     ),
                     // infer the column type from the first populated cell, not
                     // rows[0]: a leading empty/string cell would otherwise drop
-                    // numeric sorting for the whole column
+                    // numeric sorting for the whole column. Off the full rows,
+                    // not the sample: find stops at the first hit, so it costs
+                    // nothing on a populated column and only walks the sheet for
+                    // one that is empty — where sampling could pick the wrong
+                    // type outright rather than a slightly narrow column
                     type:
                       typeof rows.find(r => r[f.name] != null)?.[f.name] ===
                       'number'
