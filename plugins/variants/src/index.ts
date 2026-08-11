@@ -113,4 +113,5 @@ export default class VariantsPlugin extends Plugin {
 export { default as VcfFeature } from './VcfFeature/index.ts'
 
 export type { LinearVariantDisplayModel } from './LinearVariantDisplay/model.ts'
+export type { LinearMultiSampleVariantDisplayModel } from './LinearMultiSampleVariantDisplay/model.ts'
 export type { LinearMultiSampleVariantMatrixDisplayModel } from './LinearMultiSampleVariantMatrixDisplay/model.ts'

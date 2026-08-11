@@ -167,6 +167,46 @@ and `applyArrangement` re-arranges the rows already on screen rather than
 re-deriving from adapter order — re-deriving made "Color by…" discard a
 clustering run, and halve the row count in phased mode.
 
+## Bands above the rows
+
+Two things stack over the genotype rows — the **variant lane** (records at their
+genomic spans, `showVariantLane`) and the **connector-line zone** (matrix only,
+`lineZoneHeight`) — and `variantTopBands.ts` resolves both in one pure function,
+the way `belowCoverageBandsGeometry` does for the alignments display. **The
+layout that reserves a strip and the painter that fills it read that one
+function.** Deriving them separately is how a painter draws over the first row
+of the plot with nothing failing; it just looks like a rendering bug.
+
+- `rowsTopOffset` is the total, and is where the rows begin. It is the name
+  `TreeSidebarModel` reads (the sidebar positions against the rows, not against
+  any one band) and what every component offsetting past the bands takes.
+  `lineZoneHeight` is the connector zone **alone** — don't reach for it as an
+  offset.
+- **A band comes out of `availableHeight`, never out of `height`.** Turning one
+  on must leave the track the same size and the rows shorter; in the default
+  fit-to-height mode they re-divide what is left.
+- **Off spends 0 px, not a clamped minimum.** The toggle has to leave the
+  display pixel-identical to what it was before the band existed, or every
+  committed figure moves.
+- **The slots live on the display that can paint the band, not the shared
+  schema.** A display that reserves a band it cannot fill takes the height from
+  its rows and leaves it blank. The base declares the geometry plus a
+  `false`/default getter pair for the subclass to override. That is why the
+  matrix has no variant lane yet: it lays columns out by feature index and has
+  no painter for a genomic one.
+- A drag-resized band height goes on a **config slot** (it outlives the display
+  instance) and is clamped in the setter through `clampBandHeight` — floor keeps
+  the resize handle grabbable, ceiling stops a drag swallowing the plot.
+
+The lane is deliberately **not** a hosted `LinearVariantDisplay`: a track
+renders one display (`track.activeDisplay`), the two base models don't nest, and
+the worker already ships the records the lane draws — so a combo would buy a
+second parse of the same VCF. What it shares instead is the variant-specific
+code: `forEachFeatureSpan` (one per-record walk, so a lane mark cannot sit a
+pixel off the column it names or the insertion marker it widens),
+`drawVariantShape`, `featureColor`, core's `featureDefaultColor`, and
+`breakendSplitViewMenuItem`.
+
 ## Connector lines
 
 `connectorLineCoords` is a **model getter**, never a component `useMemo` — a

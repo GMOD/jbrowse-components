@@ -3808,6 +3808,14 @@ export const configManifest: ConfigManifest = {
         {
           "name": "showInsertionGlyphs",
           "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "showVariantLane",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "variantLaneHeight",
+          "type": "(JexlString | number)"
         }
       ],
       "aliases": [

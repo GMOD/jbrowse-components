@@ -5,12 +5,16 @@ import {
   doBeforeEach,
   findDisplayPainted,
   getSavedSvg,
+  getSavedSvgs,
   setup,
 } from './util.tsx'
 
 // `view.tracks[0].displays[0]` is untyped; annotating it makes a getter that
 // doesn't exist on the model a typecheck error rather than a silent undefined.
-import type { LinearMultiSampleVariantMatrixDisplayModel } from '@jbrowse/plugin-variants'
+import type {
+  LinearMultiSampleVariantDisplayModel,
+  LinearMultiSampleVariantMatrixDisplayModel,
+} from '@jbrowse/plugin-variants'
 
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
@@ -99,3 +103,46 @@ test(
   () => exportFitModeAndCheck('regular'),
   45000,
 )
+
+// The variant lane end to end, through the real adapter and the real model
+// rather than a fixture: the band has to come out of the ROWS (the display
+// height is unchanged, the rows start lower and get shorter) and it has to be
+// painted, not merely reserved. Reserved-but-blank is the failure mode the slot
+// is deliberately kept off the matrix schema to avoid, so it is worth a real
+// assertion rather than a geometry unit test alone.
+test('the variant lane is painted, and takes its height from the rows', async () => {
+  const { view, info } = await openMultiSampleVariantDisplay({
+    displayType: 'regular',
+  })
+  await findDisplayPainted(info.displayTestId, { timeout: 40000 })
+  const display: LinearMultiSampleVariantDisplayModel =
+    view.tracks[0].displays[0]
+
+  const height = display.height
+  const rowsBefore = display.availableHeight
+  await view.exportSvg({ rasterizeLayers: false })
+
+  display.setShowVariantLane(true)
+  const { laneHeight } = display.topBands
+  await view.exportSvg({ rasterizeLayers: false })
+
+  // two exports in one test, so index rather than getSavedSvg()
+  const [withoutLane, svg] = getSavedSvgs() as [string, string]
+  const before = cellRowYs(withoutLane)
+
+  // the track did not grow; the rows gave up the band
+  expect(laneHeight).toBeGreaterThan(0)
+  expect(display.height).toBe(height)
+  expect(display.availableHeight).toBe(rowsBefore - laneHeight)
+
+  // rows, labels and dendrogram all move into one group below the band
+  expect(svg).toContain(`transform="translate(0 ${laneHeight})"`)
+
+  // and the band is actually painted: marks at y=0, above that translate, which
+  // the lane-less export had none of
+  const laneMarks = [
+    ...svg.matchAll(/<rect[^>]*\by="0"[^>]*\bheight="([\d.]+)"/g),
+  ].filter(m => Number(m[1]) === laneHeight)
+  expect(laneMarks.length).toBeGreaterThan(0)
+  expect(cellRowYs(svg).rectCount).toBeGreaterThan(before.rectCount)
+}, 60000)
