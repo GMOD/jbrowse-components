@@ -1,4 +1,4 @@
-import { doSubmit } from './doSubmit.ts'
+import { doSubmit, parseRegionNames } from './doSubmit.ts'
 
 import type { DotplotViewModel } from '../../model.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -18,6 +18,7 @@ interface Calls {
   added: { trackId: string }[]
   assemblyNames?: [string, string]
   cleared: number
+  init?: unknown
 }
 
 function setup(
@@ -32,6 +33,9 @@ function setup(
     toggleTrack: (trackId: string) => calls.toggled.push(trackId),
     setAssemblyNames: (x: string, y: string) => {
       calls.assemblyNames = [x, y]
+    },
+    setInit: (init: unknown) => {
+      calls.init = init
     },
     clearImportFormSyntenyTracks: () => {
       calls.cleared++
@@ -143,5 +147,69 @@ describe('doSubmit', () => {
     // is what the synteny form already refused to do
     expect(notified).toEqual(["Can't add tracks"])
     expect(calls.assemblyNames).toEqual(['hg38', 'mm10'])
+  })
+
+  test('an empty chromosome box leaves the axes unrestricted', () => {
+    const { calls, model, session } = setup({ type: 'none' })
+    doSubmit({ model, session, assemblyX: 'hg38', assemblyY: 'mm10' })
+    // undefined, not an init holding two empty lists: `init` is persisted and
+    // is what hasSomethingToShow consults
+    expect(calls.init).toBeUndefined()
+  })
+
+  test('a glob per axis reaches the init as displayedRegionNames', () => {
+    const { calls, model, session } = setup({ type: 'none' })
+    doSubmit({
+      model,
+      session,
+      assemblyX: 'hg002v1.2',
+      assemblyY: 'hg002v1.2',
+      regionsX: '*_MATERNAL',
+      regionsY: '*_PATERNAL',
+    })
+    expect(calls.init).toEqual({
+      views: [
+        { assembly: 'hg002v1.2', displayedRegionNames: ['*_MATERNAL'] },
+        { assembly: 'hg002v1.2', displayedRegionNames: ['*_PATERNAL'] },
+      ],
+    })
+  })
+
+  test('one box used still restricts only that axis', () => {
+    const { calls, model, session } = setup({ type: 'none' })
+    doSubmit({
+      model,
+      session,
+      assemblyX: 'hg38',
+      assemblyY: 'mm10',
+      regionsX: 'chr1',
+    })
+    expect(calls.init).toEqual({
+      views: [
+        { assembly: 'hg38', displayedRegionNames: ['chr1'] },
+        { assembly: 'mm10', displayedRegionNames: [] },
+      ],
+    })
+  })
+})
+
+describe('parseRegionNames', () => {
+  test('splits on commas and trims', () => {
+    expect(parseRegionNames('chr1, chr2 ,chr3')).toEqual([
+      'chr1',
+      'chr2',
+      'chr3',
+    ])
+  })
+
+  test('a blank or whitespace box is no restriction at all', () => {
+    expect(parseRegionNames('')).toEqual([])
+    expect(parseRegionNames('   ')).toEqual([])
+    expect(parseRegionNames('chr1,')).toEqual(['chr1'])
+  })
+
+  test('keeps a name containing * intact for selectNamedRegions to resolve', () => {
+    // splitting on anything but the comma would break an HLA allele in half
+    expect(parseRegionNames('HLA-A*01:01:01:01')).toEqual(['HLA-A*01:01:01:01'])
   })
 })

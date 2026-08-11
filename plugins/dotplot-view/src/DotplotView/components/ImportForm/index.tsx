@@ -11,7 +11,7 @@ import {
   syntenyPairStatuses,
   useQuickStartState,
 } from '@jbrowse/synteny-core'
-import { Button, Container, Paper, Typography } from '@mui/material'
+import { Button, Container, Paper, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import TrackSelector from './TrackSelector.tsx'
@@ -46,7 +46,42 @@ const useStyles = makeStyles()(theme => ({
   header: {
     marginBottom: theme.spacing(1),
   },
+  // Wide enough for `*_MATERNAL` plus room to see a two-name list, and narrow
+  // enough that the assembly dropdown beside it stays the row's main object.
+  chromosomeFilter: {
+    minWidth: 180,
+  },
 }))
+
+// The axis' region subset, typed rather than picked. A picker would be the
+// obvious shape and is the wrong one here: the assemblies this exists for are
+// the fragmented ones, so the list to pick from is hundreds of names long and
+// the useful selections are patterns over it, not hand-checked sets. This is
+// `displayedRegionNames` — the session-spec field — with a text box in front of
+// it, so what a user types here and what a spec carries are the same strings.
+function ChromosomeFilter({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: string
+  onChange: (arg: string) => void
+}) {
+  const { classes } = useStyles()
+  return (
+    <TextField
+      className={classes.chromosomeFilter}
+      label={label}
+      value={value}
+      placeholder="all (e.g. *_MATERNAL)"
+      size="small"
+      onChange={event => {
+        onChange(event.target.value)
+      }}
+    />
+  )
+}
 
 const DotplotImportForm = observer(function DotplotImportForm({
   model,
@@ -65,6 +100,11 @@ const DotplotImportForm = observer(function DotplotImportForm({
   // any synteny track opens the form in Quick start instead, and reaching Manual
   // from there hands over that track's axes.
   const [assemblyY, setAssemblyY] = useState(assemblyNames[1] ?? firstAssembly)
+  // Empty is "whole assembly", which is what every non-fragmented assembly
+  // wants, so both boxes start empty and the form behaves as it always did
+  // until someone types in one.
+  const [regionsX, setRegionsX] = useState('')
+  const [regionsY, setRegionsY] = useState('')
 
   // the track's own row order plus the Swap flag, not `quick.rows`: Swap
   // transposes the pair on the axes rather than reversing the row list, which
@@ -96,9 +136,16 @@ const DotplotImportForm = observer(function DotplotImportForm({
 
   // the model owns the error: doSubmit clears it on the way in, so a re-submit
   // supersedes the old banner without a second copy of the state here
-  const launch = (x: string, y: string) => {
+  const launch = (x: string, y: string, rx = regionsX, ry = regionsY) => {
     try {
-      doSubmit({ model, session, assemblyX: x, assemblyY: y })
+      doSubmit({
+        model,
+        session,
+        assemblyX: x,
+        assemblyY: y,
+        regionsX: rx,
+        regionsY: ry,
+      })
     } catch (e) {
       console.error(e)
       model.setError(e)
@@ -124,7 +171,11 @@ const DotplotImportForm = observer(function DotplotImportForm({
           }}
           onQuickLaunch={() => {
             applyQuickSelection()
-            launch(quickX, quickY)
+            // '' explicitly: Quick start does not show the chromosome boxes, so
+            // it must not inherit text typed into the Manual ones behind it —
+            // the pair it launches is the track's, not the one those boxes were
+            // typed against.
+            launch(quickX, quickY, '', '')
           }}
           swapTitle="Put each assembly on the other axis (transposes the plot)"
           quickSummary={
@@ -160,6 +211,11 @@ const DotplotImportForm = observer(function DotplotImportForm({
                 setAssemblyX(asm)
               }}
             />
+            <ChromosomeFilter
+              label="X-axis chromosomes"
+              value={regionsX}
+              onChange={setRegionsX}
+            />
             <AssemblySelector
               label="Y-axis assembly"
               helperText=""
@@ -168,6 +224,11 @@ const DotplotImportForm = observer(function DotplotImportForm({
               onChange={asm => {
                 setAssemblyY(asm)
               }}
+            />
+            <ChromosomeFilter
+              label="Y-axis chromosomes"
+              value={regionsY}
+              onChange={setRegionsY}
             />
           </div>
           <TrackSelector
