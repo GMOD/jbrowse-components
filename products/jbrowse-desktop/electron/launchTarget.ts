@@ -1,13 +1,15 @@
 import path from 'node:path'
 
-// What a launch (argv, an OS open-file, or a jbrowse:// link) asks the app to
-// open. Kept free of `electron` imports so the parsing below is unit-testable
-// without an Electron runtime — the wiring in electron.ts is not.
+import type { LaunchTarget } from './ipc/channelTypes.ts'
 
-export type LaunchTarget =
-  | { type: 'file'; path: string }
-  // a JBrowse Web https link, unwrapped from a jbrowse:// url
-  | { type: 'link'; url: string }
+// Parses what a launch (argv, an OS open-file, or a jbrowse:// link) asks the
+// app to open. Kept free of `electron` imports so the parsing below is
+// unit-testable without an Electron runtime — the wiring in electron.ts is not.
+//
+// LaunchTarget itself lives in channelTypes.ts because it also crosses to the
+// renderer; re-exported here, where it is produced, so callers keep one import
+// site.
+export type { LaunchTarget }
 
 export const JBROWSE_PROTOCOL = 'jbrowse'
 

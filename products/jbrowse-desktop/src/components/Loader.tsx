@@ -18,8 +18,10 @@ import {
   loadPluginManager,
   openSpecLink,
 } from './StartScreen/util.tsx'
+import { useLaunchTarget } from './useLaunchTarget.ts'
 import { usePluginManagerLoad } from './usePluginManagerLoad.ts'
 
+import type { LaunchTarget } from '../../electron/ipc/channelTypes.ts'
 import type { DesktopRootModel } from '../rootModel/rootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -37,6 +39,18 @@ const JBrowse = lazy(() => import('./JBrowse.tsx'))
 // it. Cleared together because at most one was ever set.
 function clearTarget() {
   deleteQueryParams(['config', 'specLink'])
+}
+
+// A failing config path is a recent-session entry we can prune, so offer it as a
+// toast action rather than leaving a dead row behind. A bad link is not one, so
+// it gets a plain error.
+function removeRecentAction(path: string) {
+  return {
+    label: 'Remove from recent sessions',
+    onClick: () => {
+      invokeIpc('removeRecentSession', path).catch(console.error)
+    },
+  }
 }
 
 const LoaderContents = observer(function LoaderContents() {
@@ -105,6 +119,35 @@ const LoaderContents = observer(function LoaderContents() {
     clearTarget()
   })
 
+  // A launch that arrived while a session is already open (a jbrowse:// link,
+  // an OS open-file, a second-instance argv): flush, then swap in place, which
+  // is what the in-app "Open JBrowse Web link..." menu item does. See
+  // ensureWindow in electron.ts for why the main process pushes these rather
+  // than navigating the window to them.
+  useLaunchTarget({
+    flush: useEventCallback(async () => {
+      const rootModel = installedRef.current?.rootModel as
+        | DesktopRootModel
+        | undefined
+      await rootModel?.flushSession()
+    }),
+    load: useEventCallback((target: LaunchTarget) =>
+      target.type === 'file'
+        ? loadPluginManager(target.path)
+        : openSpecLink(target.url),
+    ),
+    onLoad: handleSetPluginManager,
+    onError: useEventCallback((e: unknown, target: LaunchTarget) => {
+      // The session this failed to replace is still open and still on screen —
+      // nothing was torn down — so this notifies rather than falling back to
+      // the start screen the way the query-string route has to.
+      notifyError(
+        e,
+        target.type === 'file' ? removeRecentAction(target.path) : undefined,
+      )
+    }),
+  })
+
   // What the main process asked this window to open, if anything. buildAppUrl
   // writes one param or the other, never both, so one load covers both routes
   // and `config` decides which of the two it is.
@@ -115,20 +158,7 @@ const LoaderContents = observer(function LoaderContents() {
   )
 
   const handleTargetError = useEventCallback((e: unknown) => {
-    // A failing config path is a recent-session entry we can prune, so offer it
-    // as a toast action rather than leaving a dead row behind. A bad link is not
-    // one, so it gets a plain error.
-    notifyError(
-      e,
-      config
-        ? {
-            label: 'Remove from recent sessions',
-            onClick: () => {
-              invokeIpc('removeRecentSession', config).catch(console.error)
-            },
-          }
-        : undefined,
-    )
+    notifyError(e, config ? removeRecentAction(config) : undefined)
     // fall back to the start screen so the user can pick another session
     clearTarget()
   })

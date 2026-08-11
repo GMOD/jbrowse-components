@@ -40,6 +40,22 @@ export interface LoadedSession {
 }
 
 /**
+ * What a launch (argv, an OS open-file, or a jbrowse:// link) asks the app to
+ * open.
+ *
+ * Lives here, rather than in launchTarget.ts where it is produced, because it
+ * crosses to the renderer on the openLaunchTarget push below — and this file is
+ * the import-free side of that boundary. launchTarget.ts imports `node:path`,
+ * so pointing the channel definition at it would drag the main process's module
+ * graph into the renderer's typecheck, which is the thing the note at the top
+ * of this file exists to prevent.
+ */
+export type LaunchTarget =
+  | { type: 'file'; path: string }
+  // a JBrowse Web https link, unwrapped from a jbrowse:// url
+  | { type: 'link'; url: string }
+
+/**
  * Pushes from the main process to the renderer — the one direction the invoke
  * channels above cannot express, since only the renderer can invoke.
  *
@@ -51,6 +67,12 @@ export interface IpcPushChannels {
   // Sent when the window is closing and a session is open. The renderer flushes
   // it and answers with sessionFlushed; until then the close is held.
   flushSessionForClose: { args: [] }
+  // Sent when a launch arrives while a session is already open, INSTEAD of
+  // navigating the window to it. The renderer flushes what it has and swaps the
+  // plugin manager in place, the same as the in-app "Open JBrowse Web link..."
+  // does. See the comment on ensureWindow for why the navigating route is still
+  // the right one when no session is open.
+  openLaunchTarget: { args: [target: LaunchTarget] }
 }
 
 export interface AuthWindowParams {

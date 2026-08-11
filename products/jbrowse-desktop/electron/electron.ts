@@ -9,6 +9,7 @@ import { registerDownloadHandler } from './downloads.ts'
 import { initializeFileSystem } from './fileSystemInit.ts'
 import { registerAuthHandlers } from './ipc/authHandlers.ts'
 import { registerBlatHandlers } from './ipc/blatHandlers.ts'
+import { ipcSend } from './ipc/channels.ts'
 import { registerFileHandlers } from './ipc/fileHandlers.ts'
 import { registerGlobalPluginHandlers } from './ipc/globalPluginHandlers.ts'
 import { registerPluginHandlers } from './ipc/pluginHandlers.ts'
@@ -123,6 +124,9 @@ function getInitialTarget(): Promise<LaunchTarget | undefined> {
   })
 }
 
+// Navigate the window to a target. This is a page load: whatever the renderer
+// had is gone, which is why ensureWindow only takes this route when there is
+// nothing to lose.
 function loadTarget(win: BrowserWindow, target: LaunchTarget) {
   win
     .loadURL(buildAppUrl(DEV_SERVER_URL, target, RENDERER_OVERRIDE).href)
@@ -192,6 +196,33 @@ function createWindowManager(closeGuard: CloseGuard) {
     }
   }
 
+  // Hand a target to a window that already exists.
+  //
+  // Navigating is a page load, and a page load is not a session close, so
+  // nothing flushes: the autosave runs on a 1s debounce, and the last second of
+  // edits went with the old page. The in-app route for this exact operation
+  // (File -> Session -> "Open JBrowse Web link...") has always flushed first,
+  // so an OS-delivered link and a pasted one did the same thing with different
+  // amounts of data loss.
+  //
+  // So when the renderer has a session, ask *it* to do the swap — it flushes,
+  // then replaces the plugin manager in place, which is the same code the menu
+  // item runs. Two things fall out of that beyond the flush: no full reload of
+  // the plugin graph, and a link that fails to load now leaves the session it
+  // failed to replace still open, instead of having already navigated away from
+  // it.
+  //
+  // With no session there is nothing to flush and no manager to swap, so the
+  // navigating path stays — it is also the only one that works before the
+  // renderer can answer at all, which is exactly when sessionOpen is false.
+  function sendTarget(win: BrowserWindow, target: LaunchTarget) {
+    if (closeGuard.sessionOpen) {
+      ipcSend(win.webContents, 'openLaunchTarget', target)
+    } else {
+      loadTarget(win, target)
+    }
+  }
+
   async function ensureWindow(target?: LaunchTarget): Promise<BrowserWindow> {
     if (mainWindow) {
       if (mainWindow.isMinimized()) {
@@ -199,14 +230,14 @@ function createWindowManager(closeGuard: CloseGuard) {
       }
       mainWindow.focus()
       if (target) {
-        loadTarget(mainWindow, target)
+        sendTarget(mainWindow, target)
       }
       return mainWindow
     }
     if (creating) {
       const win = await creating
       if (target) {
-        loadTarget(win, target)
+        sendTarget(win, target)
       }
       return win
     }

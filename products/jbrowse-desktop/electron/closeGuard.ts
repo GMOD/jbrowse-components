@@ -31,6 +31,17 @@ export interface CloseGuard {
    * attach to the main window once it exists
    */
   register: (window: Electron.BrowserWindow) => void
+  /**
+   * Whether the renderer currently has a session it would lose.
+   *
+   * Read by ensureWindow to decide whether an incoming launch target can be
+   * handed to the live renderer or has to navigate the window. It is the same
+   * question the close hold asks, answered by the same renderer report, so it
+   * inherits the same safety properties: a renderer that has died or gone
+   * unresponsive reads as false, which routes the launch back to the navigating
+   * path rather than pushing at something that cannot answer.
+   */
+  readonly sessionOpen: boolean
 }
 
 export function createCloseGuard({
@@ -75,6 +86,9 @@ export function createCloseGuard({
   })
 
   return {
+    get sessionOpen() {
+      return sessionOpen
+    },
     register(window) {
       const release = () => {
         // whatever the renderer's last word was, it cannot flush now

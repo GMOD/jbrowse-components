@@ -82,6 +82,7 @@ function setup() {
     invoke,
     quitApp,
     win,
+    guard,
     beforeQuit: () => {
       onBeforeQuit()
     },
@@ -172,4 +173,48 @@ test('returning to the start screen un-gates the close', async () => {
 
   expect(win.close()).toBe(false)
   expect(win.sent).toEqual([])
+})
+
+// `sessionOpen` is also what ensureWindow reads to decide whether an incoming
+// launch target can be handed to the live renderer (which flushes and swaps in
+// place) or has to navigate the window. It is the same value the hold above
+// uses, so these cover the routing decision rather than restating the hold.
+describe('sessionOpen, as ensureWindow reads it', () => {
+  test('is false before the renderer reports a session', () => {
+    // the window exists but the renderer is still booting: there is nobody to
+    // hand a target to yet, so a launch has to navigate
+    expect(setup().guard.sessionOpen).toBe(false)
+  })
+
+  test('follows the renderer both ways', async () => {
+    const { invoke, guard } = setup()
+
+    await invoke('setSessionOpen', true)
+    expect(guard.sessionOpen).toBe(true)
+
+    // back on the start screen there is nothing to flush and no manager to
+    // swap, so a launch navigates again
+    await invoke('setSessionOpen', false)
+    expect(guard.sessionOpen).toBe(false)
+  })
+
+  test('a dead renderer reads as no session', async () => {
+    const { invoke, guard, win } = setup()
+    await invoke('setSessionOpen', true)
+
+    win.emit('render-process-gone')
+
+    // pushing a target at a renderer that cannot answer would drop it with no
+    // diagnostic; reading false is what sends it back down the navigating path
+    expect(guard.sessionOpen).toBe(false)
+  })
+
+  test('an unresponsive renderer reads as no session', async () => {
+    const { invoke, guard, win } = setup()
+    await invoke('setSessionOpen', true)
+
+    win.emit('unresponsive')
+
+    expect(guard.sessionOpen).toBe(false)
+  })
 })
