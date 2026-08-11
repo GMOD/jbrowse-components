@@ -106,13 +106,16 @@ New entry: one bullet, idea first, then the verdict. Keep the measurement.
   one-byte string that `charCodeAt` reads as fast as `Uint8Array` indexing.
   Worse, `String.prototype.indexOf` beats `Uint8Array.prototype.indexOf` by ~2x
   on the same search, so the byte version gives up the one primitive the scan
-  most wants. What the investigation did find was a 2.5x in the string scan, now
-  in `@gmod/vcf` (`28300b1`, `781a3e9`): hop between samples with `indexOf`
-  rather than a `charCodeAt` loop, and hand the scans the *flat line plus
-  offsets* rather than a `line.slice()` — a V8 `SlicedString` costs an unwrap on
-  every `charCodeAt`, which is all this scan does. 300 real 1000G records × 3202
-  samples through a `computeSampleInfo`-shaped consumer: 156.5ms → 63.8ms,
-  identical codes. Same lesson as tabix-js ADR 0003, from the other side.
+  most wants. What the investigation found instead was 2.1x, in two places
+  neither of which is the decode. In `@gmod/vcf` (`28300b1`, `781a3e9`): hop
+  between samples with `indexOf` rather than a `charCodeAt` loop, and hand the
+  scans the *flat line plus offsets* rather than a `line.slice()` — a V8
+  `SlicedString` costs an unwrap on every `charCodeAt`, which is all this scan
+  does. In `computeSampleInfo` (`f016ae9b97`): accumulate ploidy/phasing by
+  column instead of by sample name, and probe the site memo by packed int. A
+  whole warm fetch of 1239 records × 3202 samples went **815.9ms → 387.0ms**,
+  with the tabix stage unchanged at ~90ms and identical interned codes. Same
+  lesson as tabix-js ADR 0003, from the other side.
 - **A GPU-side cull for dotplot** — not obviously worth it.
   `drawDotplotInstances` culls on the CPU and notes 87% of a fetch is offscreen,
   but dotplot quads are a few px, so the rasterizer discards them about as

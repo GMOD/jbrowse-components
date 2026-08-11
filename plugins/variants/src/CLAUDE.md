@@ -39,6 +39,29 @@ prefers declarative iteration.
   2504 samples × 400 variants, and the 168ms covers the cell painting the 613ms
   doesn't. **A new consumer reads codes.** Reintroducing the record to serve one
   is how the four passes come back.
+- **Nothing in that callback may be keyed by sample NAME.** It runs once per
+  cell, so a string-hash lookup there is 10⁸ hashes on a real panel — and
+  `sampleInfo` was exactly that, an object with one property per sample, looked
+  up by name to accumulate ploidy and phasing. It accumulates into typed arrays
+  indexed by the column the callback already holds, and folds into the
+  name-keyed `Record` once after the pass, through the same
+  `accumulateSampleInfo` the record path uses so a mixed fetch still agrees. The
+  fold has to run **before** the record block, which reads `sampleInfo`'s keys
+  to extend the canonical order. Ploidy 0 means "column never reported", which
+  is what keeps a genotype-less sample out of `sampleInfo`.
+- **The site memo probes by packed int where it can.** `packGenotypeKey` folds a
+  genotype of ≤4 ASCII chars — every diploid call an ordinary VCF spells — into
+  one int, so recognizing a repeat is an int compare rather than a two-range
+  character walk. Longer genotypes (polyploid, two-digit allele indices at a
+  decomposed multiallelic site) key 0 and keep the range compare; a non-ASCII
+  code unit declines to pack rather than truncating, because a truncated unit
+  could land on another genotype's key and paint the wrong cell.
+- The two above measured **1.87x** together on 1000G phase 3 (2504 samples) and
+  **2.47x** on 1000G high-coverage (3202 samples, `GT:AB:AD:DP:GQ:PGT:PID:PL`),
+  with byte-identical codes, dictionary, sample order, ploidy/phasing and legend
+  flags. Note the packed key measured **1.02x on its own** and read as not worth
+  having — the name lookup was masking it, and it was worth another 1.15x once
+  that went. Don't re-evaluate either half in isolation.
 - **A code's column is the canonical `sampleNames` position, never
   `processGenotypes`' `sampleIdx`.** That callback numbers samples against the
   header of the file _its own_ feature came from; `sampleNames` is the union of
