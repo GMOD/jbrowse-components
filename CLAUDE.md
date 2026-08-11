@@ -61,8 +61,12 @@ checkout, so ordinary git is yours to use without asking.
 
   Those links are what let figure tooling see the machine's real figures,
   unpushed regens included, which is the whole point of a before/after
-  comparison. Delete them before committing — gitignored, but they muddy a
-  `git status` read.
+  comparison. They are gitignored and can be left in place — but that is a
+  recent repair, and it is worth knowing what it repaired: the two ignore
+  entries used to end in `/`, which matches directories only, so the links
+  themselves were **not** ignored and a `git add -A` committed an absolute
+  `/home/<user>/src/...` path over the figure directory. If a checkout ever
+  arrives with `website/static/img` a dangling link, that is what happened.
 
   Miss the second one and `pnpm autogen` **dies** on the jbrowse-img doc
   generator (`README references /img/jbrowse-img/1.png but … does not exist`)

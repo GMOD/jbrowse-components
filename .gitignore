@@ -21,8 +21,16 @@
 # `pnpm figures:pull` installs them — plain HTTPS, no credentials, and `dev` and
 # `build` run it for you. `pnpm figures:push` publishes what you regenerated and
 # rewrites figures.lock; commit that, and its diff is the record of what moved.
-website/static/img/
-products/jbrowse-img/img/
+#
+# NO TRAILING SLASH, deliberately. A trailing slash matches directories only,
+# and the documented way to give a worktree the machine's figures is to SYMLINK
+# these two paths at the primary checkout's (CLAUDE.md). A symlink is not a
+# directory, so it was not ignored, and a `git add -A` in that worktree committed
+# an absolute path — /home/<user>/src/... — that replaces the figure directory
+# with a dangling link on every other machine. Without the slash the path is
+# ignored whatever it is, which is what the instruction to make the link assumes.
+website/static/img
+products/jbrowse-img/img
 
 website/static/video
 scripts/__pycache__
