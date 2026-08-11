@@ -91,10 +91,9 @@ function VariantSvgBody({
               drawVariantLane(ctx, variantLaneRegions, renderBlocks, {
                 canvasWidth,
                 bands: topBands,
-                // the export theme's text color, not the live session's, the
-                // same rule the insertion markers beside it follow
-                labelColor: exportPalette.text.primary,
-                descriptionColor: exportPalette.featureDescription,
+                // the export theme's palette, not the live session's, the same
+                // rule the insertion markers beside it follow
+                palette: exportPalette,
               })
             }}
           />

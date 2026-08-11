@@ -39,9 +39,9 @@ const VariantLaneOverlay = observer(function VariantLaneOverlay({
           drawVariantLane(ctx, variantLaneRegions, renderBlocks, {
             canvasWidth: canvasWidthPx,
             bands: topBands,
-            // the theme's text color, as plugin-canvas letters a feature with
-            labelColor: palette.text.primary,
-            descriptionColor: palette.featureDescription,
+            // the live theme, which is what plugin-canvas letters a feature
+            // with on screen
+            palette,
           })
         }}
       />

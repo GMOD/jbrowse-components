@@ -116,8 +116,13 @@ export const MAX_VARIANT_LANE_HEIGHT = 500
  */
 export const DEFAULT_VARIANT_LANE_HEIGHT = 40
 
-/** Gap between the marks and the text under them. */
-export const LABEL_GAP_PX = 2
+/**
+ * Vertical gap between the marks and the text under them. Not the *horizontal*
+ * one between two adjacent labels — that is plugin-canvas's `LABEL_PADDING_PX`,
+ * which is sized to absorb measureText's disagreement with the rendered font and
+ * is what `drawVariantLane`'s collision cull clears by.
+ */
+const LABEL_GAP_PX = 2
 
 /**
  * The label-mode radio rows, wording the five shared modes for a lane. The

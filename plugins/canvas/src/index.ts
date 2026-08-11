@@ -51,20 +51,28 @@ export {
 // Feature-label text and geometry, for a display outside this plugin that draws
 // labels beside features and must draw them the same way. The multi-sample
 // variant display's lane is the one that does: its marks are the same records a
-// LinearVariantDisplay would draw, so the truncation, the measured width, the
-// font size and the left-edge clamps have to be these and not a second set.
+// LinearVariantDisplay would draw, so the text, its color, its measured width,
+// the font size and the left-edge clamps have to be these and not a second set.
+//
+// `createFeatureFloatingLabels` is the whole text half in one call — it is what
+// truncates a name by length and a description by *rendered width*, drops one
+// that is blank or `.`, measures at LABEL_FONT_SIZE and picks the theme's two
+// label colors. Re-spelling any part of that outside this plugin is how the same
+// record ends up lettered differently in two displays.
 //
 // What is deliberately NOT shared is the *collision* rule. This plugin resolves
 // label overlap by layout — `computeLabelExtraWidth` widens each feature's
 // packed box so the packer pushes a colliding neighbour onto another row. A
 // single-row lane has no other row, so it culls horizontally instead. That is a
-// different answer to a different question, not drift.
+// different answer to a different question, not drift. `LABEL_PADDING_PX` is
+// shared even so: it is the horizontal breathing room two labels need whatever
+// resolves their overlap, and it is sized to absorb measureText's disagreement
+// with the rendered font.
 export {
   LABEL_FONT_SIZE,
   LABEL_PADDING_PX,
-  renderedTextWidth,
 } from './RenderFeatureDataRPC/constants.ts'
-export { truncateLabel } from './RenderFeatureDataRPC/util.ts'
+export { createFeatureFloatingLabels } from './RenderFeatureDataRPC/floatingLabels.ts'
 // The label-content vocabulary, so a display outside this plugin offers the
 // same five choices under the same names rather than a second spelling of the
 // same setting. The variant lane admits both kinds under 'auto' and leaves the
@@ -121,6 +129,7 @@ export type {
 export type {
   FeatureDataResult,
   FlatbushItem,
+  LabelItem,
   SubfeatureInfo,
 } from './RenderFeatureDataRPC/rpcTypes.ts'
 export type { RegionGateMeasurement } from './shared/CanvasFeatureGateMixin.ts'

@@ -6,6 +6,7 @@ import { SHAPE_RECT, SHAPE_TRI_LEFT } from './variantShape.ts'
 
 import type { VariantLaneData } from './drawVariantLane.ts'
 import type { VariantRenderBlock } from './variantRenderingBackendTypes.ts'
+import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { ShowLabelsMode } from '@jbrowse/plugin-canvas'
 
@@ -60,6 +61,14 @@ const block: VariantRenderBlock = {
 const RED = cssColorToABGR('red')
 const BLUE = cssColorToABGR('blue')
 
+// The two label colors plugin-canvas reads off a palette, distinguishable so
+// the assertions can tell a name from the description under it. Only these two
+// members are reached, which is why a stub is honest here rather than lossy.
+const palette = {
+  text: { primary: 'black' },
+  featureDescription: 'blue',
+} as unknown as JBrowsePalette
+
 // Two records: 10-12bp and 50-51bp, one red and one blue. Per-feature arrays
 // only — the lane never reads a cell array, which is what keeps it independent
 // of sample count.
@@ -110,8 +119,7 @@ function draw(
   drawVariantLane(ctx, new Map([[0, data(overrides)]]), [block], {
     canvasWidth: 1000,
     bands: bands(laneHeight, labels),
-    labelColor: 'black',
-    descriptionColor: 'blue',
+    palette,
   })
   return { calls, texts }
 }
@@ -159,8 +167,7 @@ test('a run of one color assigns fillStyle once', () => {
     {
       canvasWidth: 1000,
       bands: bands(20),
-      labelColor: 'black',
-      descriptionColor: 'blue',
+      palette,
     },
   )
 
@@ -171,14 +178,16 @@ test('a run of one color assigns fillStyle once', () => {
 // A sub-pixel record still draws. At a whole-chromosome zoom every SNP is far
 // under a pixel wide, and a variant lane that silently drops records is worse
 // than one that overplots — the same reasoning as `SvgRowLabels`' floored
-// swatch.
-test('a sub-pixel record draws at the 1px floor', () => {
+// swatch. The floor is the CELLS' (`snappedCellWidthPx`, generated from
+// variant.slang), reached through `variantCellSpanPx` rather than restated, so
+// a mark is never narrower than the column of genotypes it names.
+test('a sub-pixel record draws at the cells own 2px floor', () => {
   const { calls } = draw(20, {
-    // 0.02bp: 0.2px at this zoom
+    // zero-length span: 0px at this zoom
     featurePositions: Uint32Array.from([10, 10, 50, 51]),
   })
 
-  expect(calls[0]!.w).toBeGreaterThanOrEqual(1)
+  expect(calls[0]!.w).toBe(2)
 })
 
 // An insertion consumes no reference, so its span is the 1bp VCF convention
@@ -228,8 +237,7 @@ test('an inversion draws the cells own triangle glyph, not a rect', () => {
     {
       canvasWidth: 1000,
       bands: bands(20),
-      labelColor: 'black',
-      descriptionColor: 'blue',
+      palette,
     },
   )
 
@@ -297,8 +305,7 @@ describe('labels', () => {
       {
         canvasWidth: 20,
         bands: bands(40, 'auto'),
-        labelColor: 'black',
-        descriptionColor: 'blue',
+        palette,
       },
     )
 
@@ -309,9 +316,10 @@ describe('labels', () => {
   // description under a short ID cannot run into the next record's text.
   //
   // At 400px the two records are 160px apart: a 3-character ID clears that
-  // easily, a 50-character description (truncateLabel's cap) does not. So the
-  // same data letters both records under 'name' and only the first under
-  // 'auto' — which is the rule, demonstrated by the mode that changes it.
+  // easily, a description truncated to plugin-canvas's 200px description cap
+  // does not. So the same data letters both records under 'name' and only the
+  // first under 'auto' — which is the rule, demonstrated by the mode that
+  // changes it.
   test('collision is measured on the widest line of the pair', () => {
     const long = 'x'.repeat(80)
     const narrow = [{ ...block, screenEndPx: 400 }]
@@ -328,8 +336,7 @@ describe('labels', () => {
       drawVariantLane(ctx, laneData, narrow, {
         canvasWidth: 400,
         bands: bands(40, labels),
-        labelColor: 'black',
-        descriptionColor: 'blue',
+        palette,
       })
       return texts.map(t => t.text)
     }
@@ -397,8 +404,7 @@ test('a region with no records is skipped', () => {
     {
       canvasWidth: 1000,
       bands: bands(20),
-      labelColor: 'black',
-      descriptionColor: 'blue',
+      palette,
     },
   )
 
