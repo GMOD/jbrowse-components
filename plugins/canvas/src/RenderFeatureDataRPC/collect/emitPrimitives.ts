@@ -13,11 +13,13 @@ import {
   strokeColor,
 } from './glyphColors.ts'
 
-import type { ArrowData, LineData, RectData } from '../packRenderArrays.ts'
 import type { AggregatedAminoAcid } from '../peptides/aggregateAminoAcids.ts'
-import type { AminoAcidOverlayItem } from '../rpcTypes.ts'
 import type { FeatureLayout } from '../types.ts'
-import type { Collector, RenderContext } from './renderContext.ts'
+import type {
+  Collector,
+  GlyphPlacement,
+  RenderContext,
+} from './renderContext.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 const UTR_HEIGHT_FRACTION = 0.65
@@ -43,19 +45,29 @@ function applyUTRSizing(
     : [topPx, height]
 }
 
+// Every emitter below takes its geometry as one object and the whole
+// `Collector` rather than the single array it pushes into. The object is not
+// style: each of these carried three or four adjacent `number` parameters
+// (topPx, height, a packed color, flatbushIdx), so any two could be swapped at a
+// call site and still typecheck — and the failure is a primitive drawn at the
+// wrong row, or attributed to the wrong hit-test entry, which nothing throws on.
 export function emitIntronLines(
-  transcript: FeatureLayout,
-  transcriptTopPx: number,
-  strokeUint: number,
-  flatbushIdx: number,
-  lines: LineData[],
-  showChevrons: boolean,
+  args: {
+    transcript: FeatureLayout
+    topPx: number
+    strokeUint: number
+    flatbushIdx: number
+    showChevrons: boolean
+  },
+  collector: Collector,
 ) {
+  const { transcript, topPx, strokeUint, flatbushIdx, showChevrons } = args
+  const { lines } = collector
   const feature = transcript.feature
   const start = feature.get('start')
   const end = feature.get('end')
   const lineHeight = transcript.height
-  const lineY = transcriptTopPx + lineHeight / 2
+  const lineY = topPx + lineHeight / 2
   // direction drives chevron rendering; 0 means draw a plain connecting line
   const direction = showChevrons ? (feature.get('strand') ?? 0) : 0
 
@@ -92,15 +104,18 @@ export function emitIntronLines(
 }
 
 export function emitCodonRects(
-  aminoAcids: AggregatedAminoAcid[],
-  baseColor: string,
-  y: number,
-  height: number,
-  strand: number,
-  flatbushIdx: number,
-  rects: RectData[],
-  overlayItems: AminoAcidOverlayItem[],
+  args: {
+    aminoAcids: AggregatedAminoAcid[]
+    baseColor: string
+    topPx: number
+    height: number
+    strand: number
+    flatbushIdx: number
+  },
+  collector: Collector,
 ) {
+  const { aminoAcids, baseColor, topPx: y, height, strand, flatbushIdx } = args
+  const { rects, aminoAcidOverlay: overlayItems } = collector
   const baseHex = formatHEX(parseCssColor(baseColor))
   const color1 = colorToUint32(lighten(baseHex, 0.5))
   const color2 = colorToUint32(lighten(baseHex, 0.35))
@@ -138,16 +153,26 @@ export function emitCodonRects(
 }
 
 export function pushBoxRect(
-  feature: Feature,
-  baseTopPx: number,
-  baseHeight: number,
-  flatbushIdx: number,
+  args: {
+    feature: Feature
+    topPx: number
+    height: number
+    flatbushIdx: number
+    // packed RGBA32 override (mature-protein palette); 0 is a valid color so the
+    // guard is `=== undefined`, not a falsy/`??` check
+    colorOverride?: number
+  },
   ctx: RenderContext,
-  rects: RectData[],
-  // packed RGBA32 override (mature-protein palette); 0 is a valid color so the
-  // guard is `=== undefined`, not a falsy/`??` check
-  colorOverride?: number,
+  collector: Collector,
 ) {
+  const {
+    feature,
+    topPx: baseTopPx,
+    height: baseHeight,
+    flatbushIdx,
+    colorOverride,
+  } = args
+  const { rects } = collector
   const [y, height] = applyUTRSizing(baseTopPx, baseHeight, isUTR(feature))
   rects.push({
     start: feature.get('start'),
@@ -164,13 +189,17 @@ export function pushBoxRect(
 }
 
 export function emitStrandArrow(
-  feature: Feature,
-  topPx: number,
-  height: number,
-  strokeUint: number,
-  flatbushIdx: number,
-  arrows: ArrowData[],
+  args: {
+    feature: Feature
+    topPx: number
+    height: number
+    strokeUint: number
+    flatbushIdx: number
+  },
+  collector: Collector,
 ) {
+  const { feature, topPx, height, strokeUint, flatbushIdx } = args
+  const { arrows } = collector
   const strand = feature.get('strand') ?? 0
   if (strand !== 0) {
     const start = feature.get('start')
@@ -194,20 +223,21 @@ export function emitStrandArrow(
 // links to a parent is correctly treated as nested.
 export function emitTopLevelStrandArrow(
   layout: FeatureLayout,
-  baseTopPx: number,
-  flatbushIdx: number,
+  place: GlyphPlacement,
   ctx: RenderContext,
   collector: Collector,
 ) {
   const { feature } = layout
   if (!feature.parent?.()) {
     emitStrandArrow(
-      feature,
-      baseTopPx,
-      layout.height,
-      colorToUint32(strokeColor(feature, ctx)),
-      flatbushIdx,
-      collector.arrows,
+      {
+        feature,
+        topPx: place.baseTopPx,
+        height: layout.height,
+        strokeUint: colorToUint32(strokeColor(feature, ctx)),
+        flatbushIdx: place.flatbushIdx,
+      },
+      collector,
     )
   }
 }
