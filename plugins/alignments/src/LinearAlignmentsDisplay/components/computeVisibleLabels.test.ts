@@ -18,6 +18,7 @@ function makeRpcData(
     mismatchPositions: new Uint32Array(),
     mismatchYs: new Uint16Array(),
     mismatchBases: new Uint8Array(),
+    mismatchQuals: new Uint8Array(),
     softclipBasePositions: new Uint32Array(),
     softclipBaseYs: new Uint16Array(),
     softclipBaseBases: new Uint8Array(),
@@ -46,6 +47,7 @@ function run(rpcData: PileupDataResult, bpPerPx = 0.1) {
     featureHeight: 10,
     featureSpacing: 2,
     showMismatches: true,
+    mismatchAlpha: false,
     scrollTop: 0,
   })
 }
@@ -65,6 +67,9 @@ const threeMismatches = {
   mismatchPositions: new Uint32Array([10, 20, 10]),
   mismatchYs: new Uint16Array([0, 0, 1]),
   mismatchBases: new Uint8Array([65, 67, 71]),
+  // Phred 60, past mismatch.slang's OPAQUE_QUAL, so the quality fade is inert
+  // in every test that doesn't set out to exercise it.
+  mismatchQuals: new Uint8Array([60, 60, 60]),
 }
 
 function mismatchTexts(rpcData: PileupDataResult) {
@@ -98,6 +103,7 @@ test('a collapsed section (pileupHeight 0) draws no labels', () => {
     featureHeight: 10,
     featureSpacing: 2,
     showMismatches: true,
+    mismatchAlpha: false,
     scrollTop: 0,
   })
   expect(labels).toHaveLength(0)
@@ -105,6 +111,63 @@ test('a collapsed section (pileupHeight 0) draws no labels', () => {
 
 test('without the insertion all three SNP letters render', () => {
   expect(mismatchTexts(makeRpcData(threeMismatches))).toEqual(['A', 'C', 'G'])
+})
+
+// "Fade low quality mismatches" fades the SNP box (drawMismatches /
+// mismatch.slang). The letter drawn on top has to fade with it, or the setting
+// is a no-op at the only zoom letters appear at.
+describe('SNP letters carry the per-base quality fade', () => {
+  const qualLabels = (mismatchAlpha: boolean) =>
+    computeVisibleLabels({
+      view: {
+        visibleRegions: [
+          { displayedRegionIndex: 0, start: 0, end: 1000, screenStartPx: 0 },
+        ],
+        bpPerPx: 0.1,
+      },
+      sections: [
+        {
+          laidOutPileupMap: {
+            get: () =>
+              makeRpcData({
+                mismatchPositions: new Uint32Array([10, 20, 30, 40]),
+                mismatchYs: new Uint16Array([0, 0, 0, 0]),
+                mismatchBases: new Uint8Array([65, 67, 71, 84]),
+                // Phred 60 (opaque), 25 (half), 0 (no quality => opaque), 1
+                // (0.02, under MIN_LABEL_OPACITY)
+                mismatchQuals: new Uint8Array([60, 25, 0, 1]),
+              }),
+          },
+          topOffset: 0,
+          pileupHeight: 1000,
+        },
+      ],
+      height: 1000,
+      featureHeight: 10,
+      featureSpacing: 2,
+      showMismatches: true,
+      mismatchAlpha,
+      scrollTop: 0,
+    }).filter(l => l.type === 'mismatch')
+
+  test('off: every letter is opaque whatever its quality', () => {
+    expect(qualLabels(false).map(l => [l.text, l.opacity])).toEqual([
+      ['A', 1],
+      ['C', 1],
+      ['G', 1],
+      ['T', 1],
+    ])
+  })
+
+  test('on: the letter takes the same qual/50 ramp its box does', () => {
+    // The Phred-1 letter is under MIN_LABEL_OPACITY and drops out entirely
+    // rather than costing a fillText for an invisible glyph.
+    expect(qualLabels(true).map(l => [l.text, l.opacity])).toEqual([
+      ['A', 1],
+      ['C', 0.5],
+      ['G', 1],
+    ])
+  })
 })
 
 test('the large insertion still emits its own length label', () => {
@@ -185,6 +248,7 @@ describe('a deletion wider than the view labels its visible part', () => {
       featureHeight: 10,
       featureSpacing: 2,
       showMismatches: true,
+      mismatchAlpha: false,
       scrollTop: 0,
     }).find(l => l.type === 'deletion')
 
@@ -292,6 +356,7 @@ test('a grouped section near the top of its band stays visible after scrolling',
     featureHeight: 10,
     featureSpacing: 2,
     showMismatches: true,
+    mismatchAlpha: false,
     scrollTop: 200,
   })
   expect(labels.filter(l => l.type === 'mismatch')).toHaveLength(3)

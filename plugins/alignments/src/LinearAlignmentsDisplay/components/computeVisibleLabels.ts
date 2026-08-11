@@ -1,5 +1,6 @@
 import { measureText } from '@jbrowse/core/util'
 
+import { qualityFade } from '../../shaders/slang/mismatch.js.generated.ts'
 import {
   INTERBASE_HARDCLIP,
   INTERBASE_INSERTION,
@@ -31,8 +32,9 @@ export interface VisibleLabel {
   text: string
   fontSize: number
   // 0-1 draw opacity. Size labels on large indels ramp this down as their
-  // feature narrows so they fade out instead of popping when zoomed out; the
-  // per-base labels (mismatches, small insertions, clip summaries) stay 1.
+  // feature narrows so they fade out instead of popping when zoomed out, and a
+  // SNP letter carries the same per-base quality fade its box does. The rest
+  // (small insertions, clip summaries) stay 1.
   opacity: number
 }
 
@@ -64,6 +66,9 @@ interface ComputeVisibleLabelsParams {
   featureHeight: number
   featureSpacing: number
   showMismatches: boolean
+  // "Fade low quality mismatches". The SNP letter has to honor it as well as the
+  // box under it, or the setting does nothing at the one zoom it applies at.
+  mismatchAlpha: boolean
   scrollTop: number
 }
 
@@ -77,6 +82,7 @@ export function computeVisibleLabels(
     featureHeight,
     featureSpacing,
     showMismatches,
+    mismatchAlpha,
     scrollTop,
   } = params
 
@@ -288,7 +294,8 @@ export function computeVisibleLabels(
       }
 
       // Process mismatches
-      const { mismatchPositions, mismatchYs, mismatchBases } = rpcData
+      const { mismatchPositions, mismatchYs, mismatchBases, mismatchQuals } =
+        rpcData
       const numMismatches = mismatchPositions.length
       if (canRenderText) {
         for (let i = 0; i < numMismatches; i++) {
@@ -319,13 +326,28 @@ export function computeVisibleLabels(
             continue
           }
 
+          // The letter carries the same quality fade `drawMismatches` /
+          // mismatch.slang put on the box under it. Without this, "Fade low
+          // quality mismatches" drew a 20%-alpha box under a fully opaque
+          // letter — and letters only appear at base-level zoom, so the setting
+          // did nothing at the only zoom it applies at. `qualityFade` is the
+          // shader's own ramp (adr-051), the same call the box makes.
+          //
+          // The box's OTHER multiplier, the low-frequency fade, is deliberately
+          // absent: its gate is `pxPerBp < 1` and letters need pxPerBp >= 6.5,
+          // so it resolves to 1 wherever this loop runs.
+          const opacity = qualityFade(mismatchQuals[i]!, mismatchAlpha)
+          if (opacity < MIN_LABEL_OPACITY) {
+            continue
+          }
+
           labels.push({
             type: 'mismatch',
             x: centerPx,
             y: yPx,
             text: String.fromCharCode(mismatchBases[i]!),
             fontSize,
-            opacity: 1,
+            opacity,
           })
         }
       }
@@ -334,6 +356,11 @@ export function computeVisibleLabels(
       // arrays are only populated when "show soft clipping" is enabled, so this is
       // naturally empty otherwise. Reuses the 'mismatch' contrast-text coloring,
       // matching the base-color boxes the clipped bases draw under them.
+      //
+      // Opacity stays 1 rather than picking up the quality fade above: clipped
+      // bases carry no per-base quality here — the softclip pass shares
+      // mismatch.slang and packs qual 0, which `qualityFade` reads as opaque —
+      // so these letters match their boxes by staying opaque too.
       if (canRenderText && hasSoftclipBases) {
         const numSoftclipBases = softclipBasePositions.length
         for (let i = 0; i < numSoftclipBases; i++) {

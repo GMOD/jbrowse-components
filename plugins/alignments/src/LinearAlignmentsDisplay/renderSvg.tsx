@@ -114,6 +114,7 @@ function AlignmentsSvgBody({
     featureHeight: model.featureHeight,
     featureSpacing: model.featureSpacing,
     showMismatches: model.showMismatches,
+    mismatchAlpha: model.mismatchAlpha,
     scrollTop: scroll.scrollTop,
   })
   const contrastMap = getMismatchContrastMap(model.showModifications, palette)

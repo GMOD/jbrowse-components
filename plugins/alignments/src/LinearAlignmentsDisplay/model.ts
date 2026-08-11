@@ -2207,6 +2207,7 @@ export default function stateModelFactory(
             featureHeight: self.featureHeight,
             featureSpacing: self.featureSpacing,
             showMismatches: self.showMismatches,
+            mismatchAlpha: self.mismatchAlpha,
             scrollTop: self.scrollTop,
           })
         },
