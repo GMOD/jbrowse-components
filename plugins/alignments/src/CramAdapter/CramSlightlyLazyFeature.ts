@@ -275,13 +275,28 @@ export default class CramSlightlyLazyFeature implements MismatchFeature {
   // read-relative space this callback's consumers work in, so `callback` is
   // what the walk itself calls. @gmod/cram ADR 0008 has that story.
   //
-  // Not free even so: ~5% against the copy it replaced (interleaved, min of 13
-  // rounds, 1.047x and 1.066x on 628 ONT reads, 1.046x and 1.119x on 80,177
-  // short ones), which is the cost of the walk living across a package boundary
-  // rather than in this module. Taken for deleting a 110-line second
-  // implementation of the format's trickiest walk — one that had been silently
-  // dropping 'B' features, and that nothing but a hand-diff against cram-js's
-  // copy would have caught.
+  // What it costs, measured on a bundle rather than on node's ESM loader, since
+  // that is what ships (interleaved, min of 13 rounds, against the copy it
+  // replaced):
+  //
+  //   628 ONT reads      0.999x, 1.013x, 1.021x   — parity
+  //   80,177 short reads 1.088x, 1.111x, 1.132x   — ~10%
+  //
+  // The cost is per *call*, not per emission: one extra hop, since
+  // `record.forEachMismatch` then calls the walk. A long read amortizes it over
+  // ~5,000 emissions and a short read has ~7, which is the whole difference
+  // between those two rows.
+  //
+  // Measured unbundled it looks worse (a further ~6%), but that part is an
+  // artefact of module boundaries under node's loader — the identical walk,
+  // moved to another module, measured 1.065x unbundled and 0.993x bundled. Do
+  // not tune this against a node-ESM benchmark.
+  //
+  // Taken for deleting a 110-line second implementation of the format's
+  // trickiest walk — one that had been silently dropping 'B' features, and that
+  // nothing but a hand-diff against cram-js's copy would have caught. Revisit
+  // if an end-to-end render measurement, not this micro-benchmark, shows the
+  // short-read row mattering.
   forEachMismatch(
     callback: MismatchCallback,
     windowStart?: number,
