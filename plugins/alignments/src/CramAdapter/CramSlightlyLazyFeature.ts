@@ -68,21 +68,21 @@ export default class CramSlightlyLazyFeature implements MismatchFeature {
   }
 
   get next_ref() {
-    return this.record.mate
-      ? this.adapter.refIdToName(this.record.mate.sequenceId)
+    return this.record.hasNextPosition()
+      ? this.adapter.refIdToName(this.record.nextSequenceId)
       : undefined
   }
 
   get next_segment_position() {
-    return this.record.mate
-      ? `${this.adapter.refIdToName(this.record.mate.sequenceId)}:${
-          this.record.mate.start + 1
+    return this.record.hasNextPosition()
+      ? `${this.adapter.refIdToName(this.record.nextSequenceId)}:${
+          this.record.nextStart + 1
         }`
       : undefined
   }
 
   get next_pos() {
-    return this.record.mate ? this.record.mate.start : undefined
+    return this.record.hasNextPosition() ? this.record.nextStart : undefined
   }
 
   // Read group lives outside the CRAM tag block, so it is spliced in to match
@@ -92,6 +92,30 @@ export default class CramSlightlyLazyFeature implements MismatchFeature {
   get tags() {
     const RG = this.adapter.samHeader?.readGroups[this.record.readGroupId]
     return RG === undefined ? this.record.tags : { ...this.record.tags, RG }
+  }
+
+  /**
+   * One tag, without building the object `tags` above would.
+   *
+   * `extractFeatureTagValue` duck-types this method and only falls back to
+   * `get('tags')` without it, which is the full decode — so before CRAM records
+   * grew a `getTag`, every read on the colorBy.tag / sortTag / hasSA paths paid
+   * for every unrelated tag on the read to answer for one. `@gmod/cram` measures
+   * the targeted read at 3.8-7.8x the object's.
+   *
+   * The `RG` arm mirrors `tags` above rather than deferring to the record: the
+   * spread there lets the header's read group win over any `RG` the tag block
+   * carries, so this has to check the header first and only fall through when it
+   * has nothing.
+   */
+  getTag(tagName: string) {
+    if (tagName === 'RG') {
+      const RG = this.adapter.samHeader?.readGroups[this.record.readGroupId]
+      if (RG !== undefined) {
+        return RG
+      }
+    }
+    return this.record.getTag(tagName)
   }
 
   get seq() {

@@ -33,10 +33,13 @@ function shouldFilterRecord(
   }
   // Multiple tag filters are AND-ed: reject the read if any one rejects it.
   const failsTag = tagFilters?.some(tf => {
+    // getTag rather than record.tags[...]: this runs per record of the query, and
+    // the object form decodes every tag on the read to answer for the one being
+    // filtered on.
     const tagValue =
       tf.tag === 'RG'
         ? samHeader.readGroups[record.readGroupId]
-        : record.tags[tf.tag]
+        : record.getTag(tf.tag)
     return filterTagValue(tagValue, tf.value)
   })
   if (failsTag) {
