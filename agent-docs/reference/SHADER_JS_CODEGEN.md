@@ -201,6 +201,17 @@ artifact, which is right, since the artifacts are pinned by the staleness check.
 Widening it that way immediately found a real bug, which is the argument for it:
 `vertCoverage(20, 20, 0)` was 1 on the shader and NaN in the twin.
 
+**The corollary, which is the part that misleads: a function the emitter
+*refuses* leaves the sweep silently.** `emittableOf` filters the candidates
+through `emitRefusal`, so an unliftable function is dropped rather than
+reported, and the comparison count simply does not grow. Make something
+liftable, watch the oracle stay green, and you have proved nothing until you
+check that the count moved — the usual cause is a builtin the emitter does not
+implement, and a closed-form geometry solve reaches for `acos`/`cos`/`sin`
+first, none of which are in `MATH_BUILTINS`. `sdEllipse` in
+`alignmentsUniforms.slang` is the worked example: the scalar-core split alone
+left the count unchanged, and completing it turned the function red.
+
 **Where the oracle's authority stops, and it is not where you would guess.** It
 sweeps functions, so it covers a *translation rule* only when some shader in the
 tree happens to call that builtin from a liftable function. Measured against the

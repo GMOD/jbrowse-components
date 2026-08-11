@@ -282,14 +282,24 @@ public float sdSegment(float2 local, float halfLenPx) {
 // and it was tried:
 //
 //   - The emitter refuses float2 params, so lifting means splitting a scalar
-//     core out (the ADR-051 step-1 pattern). That part works.
-//   - But making it liftable also puts it in `pnpm check-shader-oracle`'s sweep,
-//     which compares the float64 twin against slangc's float32 C++ at 1e-5
-//     relative — and this is a quartic solve whose conditioning degrades with
-//     aspect ratio. It fails on ~85 of 400 tuples, and NOT because the twin is
-//     wrong: on `(0.25, 2, 0.5, 65536)` the C++ answers 2.0156 and the twin
-//     0.25, and 0.25 is the geometrically correct one. float32 loses the
-//     solver, float64 does not.
+//     core out (the ADR-051 step-1 pattern). Necessary but NOT sufficient, and
+//     the shortfall is SILENT: the core still calls acos/cos/sin, none of which
+//     are in wgslToJs.ts's MATH_BUILTINS, so the emitter refuses it — and
+//     check-oracle's `emittableOf` DROPS a refused candidate from the sweep
+//     rather than failing on it. Do the split alone and the oracle stays green
+//     on an unchanged comparison count, which reads as "the problem went away".
+//     It has not; nothing has been checked.
+//   - Add those three builtins and it does enter the sweep — which takes every
+//     declared function with an emittable scalar signature, not only the
+//     `//! js-export`ed ones, and `//! js-skip` does not exempt one either. Then
+//     it fails, at the oracle's 1e-5 relative: 90 of the 400 tuples, 42 of them
+//     on inputs with both radii positive (the sweep also generates negative
+//     radii, which `arcRadiiPx` does not produce).
+//   - And NOT because the twin is wrong. On every one of those 42 the float64
+//     twin matches a brute-force minimum over the parametric angle to 1.1e-6
+//     relative — inside the oracle's own tolerance — and slangc's float32 is the
+//     side that has drifted: `(1.5, 0, 65536, 3)` is 3.0, where the C++ answers
+//     3.3541019. float32 loses the solver, float64 does not.
 //   - So the oracle cannot referee this function at any tolerance it could keep
 //     for the rest of the tree, the same way it cannot referee `mix`/`step`
 //     (SHADER_JS_CODEGEN.md). Exporting it would have meant a suppression in
