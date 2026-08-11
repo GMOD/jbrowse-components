@@ -48,14 +48,66 @@ export function getMafColorPalette(palette: JBrowsePalette): MafColorPalette {
 
 /**
  * The theme's CDS reading-frame colors as plain CSS strings, indexed the same
- * as `palette.framesCDS` (slot 0 unused; slots 1..3 are the `+`-strand
- * frames, 4..6 the mirrored `−`-strand frames). The annotation overlay indexes
- * this with the `frameIndex` from `computeVisibleAnnotations` via `.at()`.
+ * as `palette.framesCDS`: slot 0 unused, slots 1..3 the `+`-strand frames,
+ * 4..6 the `−`-strand ones. Index it with `frameColorIndex`, never by hand.
  */
 export function getFrameColors(
   palette: JBrowsePalette,
 ): (string | undefined)[] {
   return palette.framesCDS.map(c => c?.main)
+}
+
+/**
+ * The `getFrameColors` slot for a `mafFrames` record's `frame` (0/1/2) and
+ * `strand`.
+ *
+ * The single place the palette's layout is known, and it exists because that
+ * layout was previously known in four: the marker builder computed
+ * `(frame % 3) + 1` and negated it on `−`, the painter looked it up with
+ * `Array.at` so the negation wrapped to the far end, the palette itself put
+ * slots 4..6 in reverse so the wrap landed on the matching hue, and the legend
+ * read 1..3 straight. Every one of those had to be right for a strip to be the
+ * color the key claims, and three of them were arithmetic no reader could check
+ * without the other two in front of them.
+ *
+ * The mirroring is the *point*, not an accident: `+` frame 0 and `−` frame 0
+ * come out the same color, so one reading frame reads as one color across
+ * species and strands. Stating it as `6 - frame` rather than as a negative
+ * index is what makes that visible here instead of implied by a palette table
+ * three files away.
+ */
+export function frameColorIndex(frame: number, strand: number): number {
+  const f = ((frame % 3) + 3) % 3
+  return strand === -1 ? 6 - f : f + 1
+}
+
+/**
+ * The color key for the CDS-frame strip, built through the very indexer
+ * `drawMafAnnotations` paints with — same rule as the codon key below.
+ *
+ * The strip had no key at all, on screen or exported, and could not have had
+ * one: `legendItems` dispatches on `activeRowRendering`, and the strip is an
+ * *overlay* that draws over whichever rendering won, so no branch of that
+ * dispatch is ever it. Three saturated colors on every species row with nothing
+ * anywhere saying they mean reading frame — a reader's first guess is strand, or
+ * gene identity, and both are wrong.
+ *
+ * Three entries, not six, because `frameColorIndex` maps both strands of a
+ * frame onto one color: a six-row key would be three duplicated pairs claiming
+ * a distinction the picture does not draw. `+` is passed for that reason and
+ * not because the key is about `+` genes.
+ *
+ * Labelled by codon position rather than by the raw `frame` number, which is
+ * 0-based and which the hover tooltip deliberately does not show at all.
+ */
+export function getFrameLegendItems(palette: JBrowsePalette): LegendItem[] {
+  const colors = getFrameColors(palette)
+  const color = (frame: number) => colors[frameColorIndex(frame, 1)]
+  return [
+    { label: 'CDS frame: 1st codon base', color: color(0) },
+    { label: '2nd codon base', color: color(1) },
+    { label: '3rd codon base', color: color(2) },
+  ]
 }
 
 /**

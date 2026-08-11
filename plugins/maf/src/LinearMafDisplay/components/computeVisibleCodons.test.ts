@@ -64,6 +64,10 @@ describe('enumerateCodons', () => {
     ])
   })
 
+  // `leadingPartialBases`: frame is the codon position of the record's first
+  // base, so frame 1 means one base of the previous codon is still to come and
+  // two of this exon's are needed — `(3 - frame) % 3`, which off by one either
+  // way shifts every codon in the exon and reads as the alignment being wrong.
   test('forward frame 1/2 skip the leading partial codon', () => {
     expect(
       enumerateCodons([frame({ frame: 1 })], 'ref').map(c => c.positions[0]),
@@ -71,6 +75,16 @@ describe('enumerateCodons', () => {
     expect(
       enumerateCodons([frame({ frame: 2 })], 'ref').map(c => c.positions[0]),
     ).toEqual([101, 104])
+  })
+
+  // A junk `frame` from a malformed file must not produce a negative skip and
+  // index off the front of the record; the modulo folds it back in range.
+  test('folds an out-of-spec frame back into 0..2', () => {
+    const at = (f: number) =>
+      enumerateCodons([frame({ frame: f })], 'ref').map(c => c.positions[0])
+    expect(at(3)).toEqual(at(0))
+    expect(at(-1)).toEqual(at(2))
+    expect(at(-3)).toEqual(at(0))
   })
 
   test('minus strand reads right-to-left from end', () => {

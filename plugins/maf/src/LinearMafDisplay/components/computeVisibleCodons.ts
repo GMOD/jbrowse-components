@@ -1,7 +1,7 @@
 import { codonTable } from '@jbrowse/core/util'
 
 import { blockIndexAtBp } from '../../LinearMafRenderer/blockAtBp.ts'
-import { DASH, LOWER_BIT, SPACE } from '../../util/asciiBytes.ts'
+import { DASH, LOWER_BIT, isNoBaseByte } from '../../util/asciiBytes.ts'
 import {
   bpSpanPx,
   eachVisibleRegion,
@@ -89,14 +89,7 @@ export function orientedTriplet(
   b2: number,
   strand: number,
 ): string | undefined {
-  if (
-    b0 === DASH ||
-    b1 === DASH ||
-    b2 === DASH ||
-    b0 === SPACE ||
-    b1 === SPACE ||
-    b2 === SPACE
-  ) {
+  if (isNoBaseByte(b0) || isNoBaseByte(b1) || isNoBaseByte(b2)) {
     return undefined
   }
   const c0 = String.fromCharCode(b0 & ~LOWER_BIT)
@@ -144,6 +137,25 @@ function codonOf(p: number[], strand: number): Codon {
 }
 
 /**
+ * How many bases at the *start* of an exon (in transcription order) belong to
+ * the previous exon's boundary codon, from this record's `frame`.
+ *
+ * `frame` is the codon position of the record's first base, so frame 0 starts a
+ * codon and skips nothing, frame 1 means one base of the previous codon is
+ * still to come and two of this exon's are needed, frame 2 means two are still
+ * to come and one is needed. That is `(3 - frame) % 3`, and the shape of it is
+ * why it gets a name: read inline it is easy to take for `frame` itself, and
+ * off by one either way it silently shifts every codon in the exon by a base —
+ * which reads as the alignment being wrong, not the arithmetic.
+ *
+ * The double modulo tolerates a junk `frame` from a malformed file rather than
+ * producing a negative skip that would index off the front of the record.
+ */
+function leadingPartialBases(frame: number): number {
+  return (3 - (((frame % 3) + 3) % 3)) % 3
+}
+
+/**
  * The reference codons defined by the anchor species' `mafFrames` records. Each
  * record's `frame` is the codon position (0/1/2) of its first base (`+`) or last
  * base (`−`); the leading `(3 − frame) % 3` bases belong to the previous exon's
@@ -163,8 +175,7 @@ export function enumerateCodons(
       continue
     }
     const len = f.end - f.start
-    const skip = (3 - (f.frame % 3)) % 3
-    let i = skip
+    let i = leadingPartialBases(f.frame)
     for (; i + 3 <= len; i += 3) {
       codons.push(
         codonOf([txPos(f, i), txPos(f, i + 1), txPos(f, i + 2)], f.strand),

@@ -48,19 +48,24 @@ test('positions a CDS frame strip at the bottom of its species row', () => {
     viewportHeight: 1000,
   })
   // h=12, offset=1.5, stripH=3, stripOffset=1.5+12-3=10.5
-  // row 2: rowTop = 10.5 + 15*2 = 40.5; + strand frame 1 → index 2
+  // row 2: rowTop = 10.5 + 15*2 = 40.5; + strand frame 1 → palette slot 2
   expect(markers).toEqual([
     {
       xLeft: 0,
       width: 10,
       rowTop: 40.5,
       h: 3,
-      frameIndex: 2,
+      colorIndex: 2,
     },
   ])
 })
 
-test('mirrors the frame index for minus-strand CDS', () => {
+// `frameColorIndex` mirrors the `−` half of the palette onto the `+` half, so
+// one reading frame is one color whichever strand the gene is on. It used to
+// hand the painter a NEGATIVE index and rely on `Array.at` wrapping it to the
+// far end of a table laid out in reverse — three pieces of arithmetic in three
+// files that were only jointly checkable.
+test('mirrors the palette slot for minus-strand CDS', () => {
   const markers = computeVisibleAnnotations({
     view,
     framesDataMap: { get: () => [rec({ frame: 2, strand: -1 })] },
@@ -70,8 +75,9 @@ test('mirrors the frame index for minus-strand CDS', () => {
     scrollTop: 0,
     viewportHeight: 1000,
   })
-  // frame 2 → base 3, minus strand → -3
-  expect(markers[0]!.frameIndex).toBe(-3)
+  // frame 2 → slot 3 on `+`, mirrored to 6-2=4 on `−`, which the palette gives
+  // the same hue
+  expect(markers[0]!.colorIndex).toBe(4)
 })
 
 test('drops rows whose src is not in the current source set', () => {

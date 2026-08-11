@@ -1,3 +1,4 @@
+import { frameColorIndex } from '../../LinearMafRenderer/util.ts'
 import {
   bpSpanPx,
   eachVisibleRegion,
@@ -20,11 +21,13 @@ export interface FrameMarker {
   rowTop: number
   h: number
   /**
-   * Index into the theme `framesCDS` palette (via `Array.at`): `+`-strand
-   * frames are `1..3`, `−`-strand frames `−1..−3` (mirrored), so the same
-   * reference reading frame reads as the same color across species rows.
+   * Plain index into `getFrameColors`, resolved once by `frameColorIndex` so
+   * the painter is a lookup and the legend can key itself from the same
+   * function. Was the frame number with a sign for strand, decoded by the
+   * painter through `Array.at`'s negative wrap — correct, and impossible to
+   * check without the palette table in front of you.
    */
-  frameIndex: number
+  colorIndex: number
 }
 
 interface ComputeVisibleAnnotationsParams extends MafRowGeometryParams {
@@ -102,14 +105,13 @@ export function computeVisibleAnnotations(
       const rowIndex = rowIndexBySrc.get(r.src)
       if (rowIndex !== undefined && rowIndex >= firstRow && rowIndex < endRow) {
         const { xLeft, width } = bpSpanPx(bpToPx, r.start, r.end)
-        const base = (r.frame % 3) + 1
         markers.push({
           xLeft,
           // >=1px so a single-base CDS segment still reads
           width: Math.max(1, width),
           rowTop: stripOffset + rowHeight * rowIndex,
           h: stripH,
-          frameIndex: r.strand === -1 ? -base : base,
+          colorIndex: frameColorIndex(r.frame, r.strand),
         })
       }
     }
