@@ -58,15 +58,15 @@ Several track-menu toggles tune how gene glyphs are drawn:
 
 ## Color by CDS
 
-By default CDS segments use the track's feature color. Turning on **Show CDS
-colored by reading frame** instead tints each CDS segment by its frame, so
-frameshifts and the phase relationship between exons are visible at a glance.
+By default CDS segments use the track's feature color. Turning on **Color CDS by
+reading frame** instead tints each CDS segment by its frame, so frameshifts and
+the phase relationship between exons are visible at a glance.
 
-Enable it from the linear genome view's hamburger menu → **Show...** → **Show
-CDS colored by reading frame**. The setting applies to every gene track in that
-view and is remembered across sessions.
+Enable it from the linear genome view's hamburger menu → **Color CDS by reading
+frame**. The setting applies to every gene track in that view and is remembered
+across sessions.
 
-<Figure caption="Turning on Color by CDS for the human BRCA1 gene (hg19, NCBI RefSeq). Top: the view's Show... submenu with the 'Show CDS colored by reading frame' toggle. Bottom: the result at base-pair resolution, each CDS codon tinted by its reading frame with its amino acid drawn over it, lined up to the codons in the reference sequence track above." src="/img/gene_track_color_by_cds.png" />
+<Figure caption="Turning on Color by CDS for the human BRCA1 gene (hg19, NCBI RefSeq). Top: the view's hamburger menu with the 'Color CDS by reading frame' toggle. Bottom: the result at base-pair resolution, each CDS codon tinted by its reading frame with its amino acid drawn over it, lined up to the codons in the reference sequence track above." src="/img/gene_track_color_by_cds.png" />
 
 ## Color transcripts by a value in the file
 
@@ -145,7 +145,8 @@ sequence, the codons, and the resulting peptide in register. The translation
 uses the standard genetic code (NCBI table 1).
 
 Translating needs the reference sequence, so if you would rather the view not
-fetch it, turn off **Show amino acids when zoomed in** in the same menu.
+fetch it, turn off **Show amino acids when zoomed in** from the view menu's
+**Show...** submenu.
 
 The translation follows the transcript's strand and CDS phase, and codons that
 straddle an exon boundary are split across the two exons. When a CDS carries a

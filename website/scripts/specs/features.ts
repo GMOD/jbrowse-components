@@ -180,9 +180,8 @@ export const featuresSpecs: ScreenshotSpec[] = [
 
   // Color-by-CDS frame coloring on a gene track: human BRCA1 (hg19 NCBI RefSeq)
   // zoomed to base-pair resolution with the reference sequence track above
-  // . Two stages mirror the how-to: stage 1 opens the view menu's "Show..."
-  // submenu with "Show CDS colored by reading frame" boxed; stage 2 clicks it,
-  // so each CDS codon is
+  // . Two stages mirror the how-to: stage 1 opens the view menu with
+  // "Color CDS by reading frame" boxed; stage 2 clicks it, so each CDS codon is
   // tinted by its reading frame, joining the amino acids that are drawn at this
   // zoom either way, lined up to the reference codons above.
   {
@@ -211,14 +210,14 @@ export const featuresSpecs: ScreenshotSpec[] = [
         // ringed + boxed so the one click that enables it reads at a glance
         actions: [
           { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-          ...menuCascade(['Show...', 'Show CDS colored by reading frame']),
+          ...menuCascade(['Color CDS by reading frame']),
         ],
         annotations: [
           {
             type: 'circle',
             anchor: { selector: '[data-testid="view_menu_icon"]' },
           },
-          ...cascadeBoxes(['Show...', 'Show CDS colored by reading frame']),
+          ...cascadeBoxes(['Color CDS by reading frame']),
         ],
       },
       {
@@ -227,7 +226,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
         // A checkbox row keeps the menu up (staysOnClick), so dismiss it —
         // otherwise it covers the left of the result it just produced
         actions: [
-          { type: 'click', text: 'Show CDS colored by reading frame' },
+          { type: 'click', text: 'Color CDS by reading frame' },
           // dismiss through the backdrop rather than Escape, which returns
           // focus to the hamburger and leaves its tooltip in the frame.
           //
