@@ -10,29 +10,36 @@ Everything else is filed:
 - `architecture-decision-records/` — *why*, one decision per file. Its README
   index is **generated** by `website/scripts/generate-adr-index.ts`; don't hand-
   edit the block between the marker comments.
-There is **no `handoffs/`**, and reintroducing one is the thing to resist. It
-existed until 2026-08-10 and held nine files: a place for a session to park the
-state of an unfinished thread. What actually happened is that measured results,
-refuted hypotheses and whole subsystem profiles accumulated there instead of in
-`reference/`, because parking is easier than filing — and a doc nobody opens
-until they pick that exact thread back up is a doc nobody reads. Two of the nine
-had already been superseded by their own later sections.
+- `handoffs/` — the live state of a thread that is not finished: what landed,
+  what is verified, what the next person has to decide. **Pointers, not content.**
 
-Everything they held is now filed by kind, which is what the split above is for:
+`handoffs/` is back as of 2026-08-11, and the reason it was removed is the rule
+for using it. It existed until 2026-08-10 and held nine files, and what
+accumulated there was measured results, refuted hypotheses and whole subsystem
+profiles — because parking is easier than filing, and a doc nobody opens until
+they pick that exact thread back up is a doc nobody reads. Two of the nine had
+already been superseded by their own later sections.
+
+So: **file first, then write the handoff against what you filed.** A handoff
+that would still be useful with its links removed is holding something that
+belongs in one of the homes below. Delete the file when the thread lands.
 
 - **A measurement, a profile, or how a subsystem behaves** → `reference/`. Three
-  of those files became reference docs outright (`CROSS_BACKEND_GATE.md`,
+  of the old nine became reference docs outright (`CROSS_BACKEND_GATE.md`,
   `MAF_WORKER_PIPELINE.md`, `HPRC_RELEASE2.md`), which is a good sign they should
   have been there from the start.
 - **Something tried and declined** → `reference/REJECTED_IDEAS.md`, with the
   number that declined it.
 - **Work someone intends to do** → `TODO.md`, in the order to take it.
 - **A proposal parked** → `OTHER_IDEAS.md`.
-- **The rest** — what a session did, which commits, what is now green — → the
-  commit messages and `git log`, which already hold it.
+- **What a session did, which commits, what is now green** → the commit messages
+  and `git log`, which already hold it. A handoff may cite commits; it should not
+  narrate them.
 
-If you are about to write "state as of \<date\>" into a new top-level file, that
-is the signal: split it into the four homes above instead.
+If you are about to write "state as of \<date\>" into a new **top-level** file,
+that is the signal: split it into the homes above instead. In `handoffs/` that
+sentence is the point of the file — but it is the only thing there that should
+survive a read of the links.
 
 `pnpm autogen` sweeps this tree for `<!-- NAME START -->` / `<!-- NAME END -->`
 pairs the same way it sweeps `website/docs`, and overwrites whatever is between

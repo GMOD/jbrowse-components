@@ -20,6 +20,7 @@ on one that doesn't. Don't edit between the markers; write the doc's
 
 | Doc | Read when |
 | --- | --- |
+| [alignments-color-parity](ALIGNMENTS_COLOR_PARITY.md) | How a pileup's three colour vocabularies (read fills, arc / read-cloud overlays, linked-read connectors) are kept saying the same thing, why they are derived from one table rather than tested against each other, and the one meaning still split between them. Read before touching arc colour, the connector palette, or the alignments legend. |
 | [architectural-limits](ARCHITECTURAL_LIMITS.md) | Live register of the architecture's resource ceilings, accepted couplings, and correctness surfaces nothing mechanical protects. Each entry carries its mitigation state and the condition that retires it. Read before scaling work (many tracks, many views, whole-genome), or when a symptom looks like a product bug but is a ceiling. |
 | [benchmarking](BENCHMARKING.md) | How to build a benchmark whose number is real, and the catalogue of traps that have produced fake ones in this repo — each with the bogus figure it actually reported. Read before writing a bench or quoting a speedup. |
 | [bgzf-worker-pool](BGZF_WORKER_POOL.md) | What the BGZF inflate pool is worth, measured per format, and the benchmark traps that produce fake numbers. Read before quoting a speedup for it or benchmarking it again. |
