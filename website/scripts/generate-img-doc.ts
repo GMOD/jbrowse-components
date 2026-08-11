@@ -15,18 +15,18 @@ import {
 } from '../../products/jbrowse-img/src/makeConfigs.ts'
 import { buildFullHelp } from '../../products/jbrowse-img/src/options.ts'
 import { check } from './check-utils.ts'
+import { docsDir, repoRoot, websiteDir } from './paths.ts'
 
 // Mirrors products/jbrowse-img/README.md into website/docs/jbrowse-img.md so the
 // @jbrowse/img static-export docs live alongside the CLI docs (cli.md). The
 // README is the source of truth — edit it there, then run `pnpm autogen` (or
 // this script directly) to regenerate. CI parity via `--check`.
 
-const repoRoot = join(import.meta.dirname, '..', '..')
 const productDir = join(repoRoot, 'products', 'jbrowse-img')
 const readmePath = join(productDir, 'README.md')
-const outPath = join(repoRoot, 'website', 'docs', 'jbrowse-img.md')
+const outPath = join(docsDir, 'jbrowse-img.md')
 const imgSrcDir = join(productDir, 'img')
-const imgDestDir = join(repoRoot, 'website', 'static', 'img', 'jbrowse-img')
+const imgDestDir = join(websiteDir, 'static', 'img', 'jbrowse-img')
 
 const githubBase =
   'https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-img'
@@ -88,7 +88,16 @@ function injectHelp(md: string) {
     throw new Error('README is missing the INJECT_HELP marker block')
   }
   const help = buildFullHelp('jb2export', trackTypes, syntenyTrackTypes)
-  return md.replace(helpStartRe, `$1\n\n\`\`\`\n${help}\n\`\`\`\n\n$2`)
+  // A function replacer: the help text is generated from the option
+  // descriptions and defaults, so a `$&` or `$'` in one of those would be read
+  // as a replacement pattern and splice the README into its own help block.
+  // The two markers are put back by hand rather than through `$1`/`$2` for the
+  // same reason.
+  return md.replace(
+    helpStartRe,
+    (_match, start: string, end: string) =>
+      `${start}\n\n\`\`\`\n${help}\n\`\`\`\n\n${end}`,
+  )
 }
 
 // The site renders captioned figures via the <Figure> component (handled by

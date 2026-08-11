@@ -174,7 +174,12 @@ export function writeApiReadmes(byGroup: Record<string, ApiGroup>) {
     writeDoc(
       readmePath,
       BLOCK_RE.test(existing)
-        ? existing.replace(BLOCK_RE, block)
+        ? // A function replacer, because the block is rendered JSDoc prose,
+          // type signatures and `#example` code: a `$&` or `$'` anywhere in
+          // that (an example calling `String.replace`, a template-literal type)
+          // is a replacement pattern to `String.replace`, and would splice the
+          // README's own text into the API section instead of appearing.
+          existing.replace(BLOCK_RE, () => block)
         : `${existing.trimEnd()}\n\n${block}\n`,
     )
   }

@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import { format, resolveConfig } from 'prettier'
 
 import { checkOrWrite } from './check-utils.ts'
+import { docsDir, repoRoot } from './paths.ts'
 
 // Mirrors products/jbrowse-cli/README.md into website/docs/cli.md. That README
 // is itself generated from the CLI (products/jbrowse-cli/generate_readme.sh
@@ -12,9 +13,8 @@ import { checkOrWrite } from './check-utils.ts'
 // command usage. To change the docs: edit the CLI command (or preamble.md),
 // regenerate the README, then run `pnpm autogen`. CI parity via `--check`.
 
-const repoRoot = join(import.meta.dirname, '..', '..')
 const readmePath = join(repoRoot, 'products', 'jbrowse-cli', 'README.md')
-const outPath = join(repoRoot, 'website', 'docs', 'cli.md')
+const outPath = join(docsDir, 'cli.md')
 
 const title = 'Command line tools (JBrowse CLI)'
 // No `: ` anywhere — this goes into the page's YAML frontmatter as a plain
