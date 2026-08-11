@@ -481,6 +481,13 @@ export default function stateModelFactory(pm: PluginManager) {
          * assembling itself: the axes can already exist, and be initialized,
          * while the tracks or the region restriction are still to come, which
          * is why the `settled` gate reads this.
+         *
+         * Read by `settled`, deliberately **not** by `showLoading` — a plot
+         * whose axes are up is worth showing while the rest lands. LGV's
+         * equivalent is `awaitingInitNavigation`, a narrower thing (init set
+         * and nothing on screen at all) that it does fold into `showLoading`;
+         * it used to share this name, and the two disagree exactly where a
+         * reader would assume they agree.
          */
         get initPending() {
           return !!self.init

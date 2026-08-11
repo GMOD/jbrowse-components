@@ -248,7 +248,8 @@ async function applyInit(
 export function setupInitAutorun(self: LinearGenomeViewModel) {
   installInitAutorun(self, {
     name: 'LGVInit',
-    // `init` is what makes hasSomethingToShow / initPending report "loading"
+    // `init` is what makes hasSomethingToShow / awaitingInitNavigation report
+    // "loading"
     // until navigation populates displayedRegions, so the alternative gate
     // (clearing `init` up front, the way SpreadsheetView does) would flash the
     // import form mid-load.

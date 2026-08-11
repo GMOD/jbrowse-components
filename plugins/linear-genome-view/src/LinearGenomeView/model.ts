@@ -806,8 +806,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * populated displayedRegions yet. `initialized` can already be true here
        * (it only tracks assembly readiness), so without this the container
        * would mount over empty regions and pxToBp/hover would throw.
+       *
+       * **Not dotplot's or synteny's `initPending`**, which is the bare
+       * `!!self.init` — "an init blob has not been applied" — and which those
+       * views read from their `settled` gate rather than from `showLoading`.
+       * This one is narrower on purpose: it closes only the window where there
+       * is nothing on screen. Once navigation has produced regions the view is
+       * usable and gets shown, even though `init` is still set while the tracks
+       * and highlights land. Renamed away from the shared spelling because the
+       * two predicates disagree exactly there, and the bare name reads as
+       * theirs.
        */
-      get initPending() {
+      get awaitingInitNavigation() {
         return !!self.init && !this.hasDisplayedRegions
       },
 
@@ -819,7 +829,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return (
           this.hasSomethingToShow &&
           !this.error &&
-          (!this.initialized || this.initPending)
+          (!this.initialized || this.awaitingInitNavigation)
         )
       },
 
@@ -843,7 +853,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * the first of two async steps: navigating then populates
        * `displayedRegions`, and in the window between the two `initialized` is
        * already true while there is still nothing on screen. `showLoading`
-       * folds in `initPending`, the getter that exists for exactly that gap.
+       * folds in `awaitingInitNavigation`, the getter that exists for exactly
+       * that gap.
        *
        * `error` is the third outcome and is why this is not a bare
        * `!showLoading`: a failed assembly load also ends the loading state, so

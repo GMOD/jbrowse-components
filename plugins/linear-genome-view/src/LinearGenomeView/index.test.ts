@@ -1336,14 +1336,14 @@ test('init with loc keeps loading until navigation populates regions', async () 
   // regions) — showLoading has to stay true, not fall through to the view.
   expect(model.initialized).toBe(true)
   expect(model.hasDisplayedRegions).toBe(false)
-  expect(model.initPending).toBe(true)
+  expect(model.awaitingInitNavigation).toBe(true)
   expect(model.showLoading).toBe(true)
   expect(model.showImportForm).toBe(false)
 
   await waitFor(() => {
     expect(model.hasDisplayedRegions).toBe(true)
   })
-  expect(model.initPending).toBe(false)
+  expect(model.awaitingInitNavigation).toBe(false)
   expect(model.showLoading).toBe(false)
 })
 

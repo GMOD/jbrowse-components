@@ -190,6 +190,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * itself: the rows can already exist, and be initialized, while the
        * synteny tracks are still several awaits away, which is why the levels'
        * `settled` gate reads this.
+       *
+       * Same predicate as dotplot's, and read the same way — by `settled`, not
+       * by `showLoading`. LGV's `awaitingInitNavigation` is the narrower "init
+       * set and nothing on screen at all", which it does fold into
+       * `showLoading`; it used to share this name.
        */
       get initPending() {
         return !!self.init
