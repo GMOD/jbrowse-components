@@ -814,6 +814,12 @@ function poolArcScale(inputs: ArcInputs[]): ArcScale {
 // feet at 86,845,554 / 86,846,342 / 86,846,818 / 86,847,127 / 86,847,804, five
 // distinct events inside 2.3 kb. Merging on tolerance would draw them as one
 // thick arc, which states something the data does not.
+// The separator is NUL because a refName may contain any printable character —
+// including the ':' and '-' a locstring uses — and two fields that can collide
+// under a printable separator collapse two junctions into one arc. It must stay
+// written as the ESCAPE `\0`: as a raw NUL byte in the source (which is how it
+// was first committed) the file reads as binary, so `grep`, `rg` and every
+// editor search silently skip all 1000 lines of it.
 function arcKey(a: {
   p1Ref: string
   p1Bp: number
@@ -822,7 +828,7 @@ function arcKey(a: {
   colorType: number
   shapeType: number
 }) {
-  return `${a.p1Ref} ${a.p1Bp} ${a.p2Ref} ${a.p2Bp} ${a.colorType} ${a.shapeType}`
+  return `${a.p1Ref}\0${a.p1Bp}\0${a.p2Ref}\0${a.p2Bp}\0${a.colorType}\0${a.shapeType}`
 }
 
 // Colour + shape one group's resolved connections against the pooled scale,
