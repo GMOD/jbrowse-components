@@ -68,13 +68,66 @@ const sidebar = buildSiteSidebar(allDocs, baseUrl)
     const allLink = allEl
     const searchHref = allLink.href
 
-    // Captured before the first filter run so clearing the box restores the
-    // categories the reader had open (and the one the current page opened)
-    // rather than collapsing everything.
     const groups = [...list.querySelectorAll('details')]
+
+    // Which categories are open is otherwise derived entirely from the current
+    // page (`open={containsSlug(...)}` in SidebarItem.astro), so a category a
+    // reader opened to browse closes again the moment they click anything —
+    // including anything inside it. Remembered per tab, by label.
+    //
+    // The current page's own category is deliberately never stored: it is
+    // already open from the server on the page that needs it, and storing it
+    // would leave it open on every later page, until enough browsing had
+    // accumulated that every category was open and the memory said nothing.
+    const OPEN_KEY = 'jbrowse-docs-sidebar-open'
+    const labelOf = (details: HTMLDetailsElement) =>
+      details.querySelector(':scope > summary')?.textContent?.trim() ?? ''
+    const isCurrent = (details: HTMLDetailsElement) =>
+      !!details.querySelector('[aria-current="page"]')
+
+    let remembered: string[] = []
+    try {
+      remembered = JSON.parse(sessionStorage.getItem(OPEN_KEY) ?? '[]')
+    } catch {
+      // a malformed value is not worth breaking the nav over
+    }
+    if (Array.isArray(remembered)) {
+      const open = new Set(remembered)
+      for (const details of groups) {
+        // only ever opens: the server already decided the current one, and
+        // closing that would hide the page the reader is on
+        details.open ||= open.has(labelOf(details))
+      }
+    }
+
+    // Captured after the restore above, and before the first filter run, so
+    // clearing the box restores the categories the reader had open (and the one
+    // the current page opened) rather than collapsing everything.
     const wasOpen = new WeakMap<HTMLDetailsElement, boolean>()
     for (const details of groups) {
       wasOpen.set(details, details.open)
+    }
+
+    for (const details of groups) {
+      details.addEventListener('toggle', () => {
+        // Filtering opens every category holding a match, which is not the
+        // reader saying they want it open. Clearing the box restores wasOpen
+        // and re-fires this with the query empty, so their own state is what
+        // ends up stored.
+        if (input.value.trim()) {
+          return
+        }
+        try {
+          sessionStorage.setItem(
+            OPEN_KEY,
+            JSON.stringify(
+              groups.filter(d => d.open && !isCurrent(d)).map(labelOf),
+            ),
+          )
+        } catch {
+          // private mode, or a full quota: the nav works, it just forgets
+        }
+      })
     }
 
     // Every token has to appear somewhere in the label, in any order, so both
