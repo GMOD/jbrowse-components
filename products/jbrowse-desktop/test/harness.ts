@@ -278,6 +278,48 @@ export async function waitForSession(
   return last
 }
 
+// Blocks until the desktop text-indexing queue has run and drained.
+//
+// Adding a GFF3 track queues a name-indexing job (doSubmit's textIndexTrack,
+// on by default), and until that job finishes there is no text search adapter
+// for a feature-name lookup to hit. The autocomplete does not retry a query it
+// has already answered, so a search typed while indexing is still running gets
+// an empty dropdown and then stays empty however long the caller waits on it —
+// which is a race, and it lost about half the time: a passing run indexed in
+// ~15s, a failing one had not finished by the time the query went in.
+//
+// Reads the job queue rather than the track's config: `running` and `jobsQueue`
+// are what indexJobsModel actually drives, and they say "started" as well as
+// "finished". A caller that arrives after the queue has already drained (a
+// small file, a fast machine) sees no work at all, which is indistinguishable
+// from "not queued yet" — hence the grace period rather than a hard failure.
+export async function waitForIndexingToFinish(
+  driver: WebDriver,
+  { timeout = 180000, grace = 15000 } = {},
+): Promise<void> {
+  const start = Date.now()
+  let sawWork = false
+  while (Date.now() - start < timeout) {
+    const state = await driver.executeScript<
+      { running: boolean; queued: number } | undefined
+    >(`
+      const jm = window.JBrowseRootModel?.jobsManager
+      return jm ? { running: jm.running, queued: jm.jobsQueue.length } : undefined
+    `)
+    if (state?.running || (state?.queued ?? 0) > 0) {
+      sawWork = true
+    } else if (sawWork) {
+      console.log(`    DEBUG: indexing drained after ${Date.now() - start}ms`)
+      return
+    } else if (Date.now() - start > grace) {
+      console.log('    DEBUG: no indexing job was queued, continuing')
+      return
+    }
+    await delay(500)
+  }
+  console.warn(`    WARN: indexing still running after ${timeout}ms`)
+}
+
 // Blocks until the view's span stops moving. A locstring is a function of the
 // view's width, so it keeps changing after the content is "there": opening the
 // results drawer narrows the view, and a track growing tall enough to raise a

@@ -31,6 +31,7 @@
     "release-electron:mac": "pnpm package:mac && node scripts/publish.ts --mac --publish",
     "release-electron:win": "pnpm package:win && node scripts/publish.ts --win --publish",
     "check:nsis": "node scripts/checkNsis.ts",
+    "update:appimagetool": "node scripts/updateAppimagetool.ts",
     "test:e2e": "node test/e2e.ts",
     "test:e2e:headless": "xvfb-run --auto-servernum node test/e2e.ts --headless",
     "test:e2e:headless:win": "node test/e2e.ts --headless",

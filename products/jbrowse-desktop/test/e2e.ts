@@ -19,6 +19,7 @@ import {
   startChromedriver,
   startStaticServer,
   waitForBackdropsToDisappear,
+  waitForIndexingToFinish,
 } from './harness.ts'
 
 const DATA_PORT = 9444
@@ -261,6 +262,14 @@ async function testAddGff3TrackAndSearch(driver: WebDriver): Promise<void> {
   // Flush browser logs to see any track loading errors
   console.log('    DEBUG: Browser logs after track add:')
   await flushBrowserLogs(driver)
+
+  // EDEN.1 is a feature name, so the search below can only answer once the
+  // track's name index exists — and adding the track is what starts building
+  // it. Without this the two raced, and the query lost often enough to fail
+  // about half of all runs; the autocomplete does not retry a query it has
+  // already answered, so an early search stays empty for the rest of the test.
+  console.log('    DEBUG: Waiting for name indexing to finish...')
+  await waitForIndexingToFinish(driver)
 
   // Now search for EDEN.1 in the refname autocomplete
   console.log('    DEBUG: Looking for location search input...')
